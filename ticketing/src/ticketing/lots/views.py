@@ -2,20 +2,22 @@
 import logging
 import operator
 import json
+from uuid import uuid4
+
 from pyramid.view import view_config, view_defaults
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound
-import ticketing.cart.api as cart_api
+from sqlalchemy.orm.exc import NoResultFound
+
 from ticketing.models import DBSession
 from ticketing.core.models import PaymentDeliveryMethodPair
-from sqlalchemy.orm.exc import NoResultFound
+from ticketing.cart import api as cart_api
+from ticketing.payments.payment import Payment
+from ticketing.cart.exceptions import NoCartError
+
 from . import api
 from . import helpers as h
 from . import schemas
 from .exceptions import NotElectedException
-from pyramid.httpexceptions import HTTPNotFound
-from uuid import uuid4
-from ticketing.payments.payment import Payment
-from ticketing.cart.exceptions import NoCartError
 from .models import (
     Lot,
     LotEntry,
@@ -45,21 +47,9 @@ class EntryLotView(object):
     決済方法を選択
     """
 
-    def __init__(self, request):
+    def __init__(self, context, request):
         self.request = request
-
-    def _get_lot_info(self):
-        event = api.get_event(self.request)
-        lot_id = self.request.matchdict.get('lot_id')
-        lot = Lot.query.filter(
-            Lot.event_id==event.id
-            ).filter(
-            Lot.id==lot_id,
-            ).one()
-        
-        member_group = api.get_member_group(self.request)
-        return lot, lot.performances, lot.stock_types
-
+        self.context = context
 
     def _create_product_performance_map(self, products):
         product_performance_map = {}
@@ -82,18 +72,24 @@ class EntryLotView(object):
         if form is None:
             form = schemas.ClientForm()
 
-        lot, performances, stocks = self._get_lot_info()
+        event = self.context.event
+        lot = self.context.lot
+
         if not lot:
             logger.debug('lot not not found')
             raise HTTPNotFound()
+
+        performances = lot.performances
         if not performances:
             logger.debug('lot performances not found')
             raise HTTPNotFound()
+
+        stocks = lot.stock_types
+
         # if not stocks:
         #     logger.debug('lot stocks found')
         #     raise HTTPNotFound()
 
-        event = lot.event
         sales_segment = lot.sales_segment
         payment_delivery_pairs = sales_segment.payment_delivery_method_pairs
         product_performance_map = self._create_product_performance_map(sales_segment.products)
@@ -113,7 +109,18 @@ class EntryLotView(object):
         - 申し込み回数
         - 申し込み内の公演、席種排他チェック
         """
-        lot, performances, stocks = self._get_lot_info()
+
+        lot = self.context.lot
+        if not lot:
+            logger.debug('lot not not found')
+            raise HTTPNotFound()
+
+        performances = lot.performances
+        if not performances:
+            logger.debug('lot performances not found')
+            raise HTTPNotFound()
+
+
         cform = schemas.ClientForm(formdata=self.request.params)
         sales_segment = lot.sales_segment
         payment_delivery_pairs = sales_segment.payment_delivery_method_pairs
@@ -176,8 +183,7 @@ class ConfirmLotEntryView(object):
             lot_id=self.request.matchdict.get('lot_id')))
 
     def get_lot(self):
-        event = api.get_event(self.request)
-        member_group = api.get_member_group(self.request)
+        """ TODO: context.lot"""
         lot_id = self.request.matchdict.get('lot_id')
         return Lot.query.filter(Lot.id==lot_id).one()
 
@@ -196,7 +202,6 @@ class ConfirmLotEntryView(object):
 
         lot_id = self.request.matchdict['lot_id']
         lot = Lot.query.filter(Lot.id==lot_id).one()
-        performances = lot.performances
 
         if not lot.validate_entry(self.request.params):
             return HTTPFound('lots.entry.index')

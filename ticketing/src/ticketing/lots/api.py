@@ -143,6 +143,7 @@ def get_entry(request, entry_no, tel_no):
 
 def generate_entry_no(request, lot_entry):
     """ 引き替え用の抽選申し込み番号生成
+    TODO:  ticketing.core.api.get_next_order_no を使う
     """
 
     organization_code = lot_entry.lot.event.organization.code

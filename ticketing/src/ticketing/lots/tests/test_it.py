@@ -60,7 +60,8 @@ class EntryLotViewTests(unittest.TestCase):
         request = testing.DummyRequest(
             matchdict=dict(event_id=1111, lot_id=lot.id),
         )
-        target = self._makeOne(request)        
+        context = testing.DummyResource(event=event, lot=lot)
+        target = self._makeOne(context, request)
         result = target.get()
 
         self.assertEqual(result['lot'].id, lot.id)
@@ -123,7 +124,8 @@ class EntryLotViewTests(unittest.TestCase):
             matchdict=dict(event_id=lot.event_id, lot_id=lot.id),
             params=data,
         )
-        target = self._makeOne(request)        
+        context = testing.DummyResource(event=lot.event, lot=lot)
+        target = self._makeOne(context, request)
         result = target.post()
 
         self.assertEqual(result.location, "http://example.com/lots/events/2/entry/1/confirm")
