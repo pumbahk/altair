@@ -27,52 +27,15 @@ class Electing(object):
         それ以外を落選処理にする
         """
 
-        elected_wishes = DBSession.query(LotEntryWish).filter(
-            LotEntryWish.lot_entry_id==LotEntry.id
-        ).filter(
-            LotEntry.lot_id==self.lot.id
-        ).filter(
-            LotElectWork.lot_entry_no==LotEntry.entry_no
-        ).filter(
-            (LotElectWork.wish_order-1)==LotEntryWish.wish_order
-        )
-    
+        elected_wishes = self.lot.get_elected_wishes()
+
         for ew in elected_wishes:
-            self.elect_entry(self.lot, ew)
-            # TODO: 再選処理
-    
-    
-    
+            ew.entry.elect(ew)
+
         # 落選処理
-        q = DBSession.query(LotEntry).filter(
-            LotEntry.elected_at==None
-        ).filter(
-            LotEntry.rejected_at==None
-        ).all()
+        rejected_wishes = self.lot.get_rejected_wishes()
     
-        for entry in q:
-            self.reject_entry(self.lot, entry)
+        for rw in rejected_wishes:
+            rw.entry.reject()
     
-        self.lot.status = int(LotStatusEnum.Elected)
-        LotElectWork.query.filter(LotElectWork.lot_id==self.lot.id).delete()
-
-
-    def reject_entry(self, lot, entry):
-        now = datetime.now()
-        entry.rejected_at = now
-        rejected = LotRejectedEntry(lot_entry=entry)
-        DBSession.add(rejected)
-        return rejected
-    
-    def elect_entry(self, lot, elected_wish):
-        """ 個々の希望申し込みに対する処理 
-        :return: 当選情報
-        """
-        now = datetime.now()
-        elected_wish.elected_at = now
-        elected_wish.lot_entry.elected_at = now
-        elected = LotElectedEntry(lot_entry=elected_wish.lot_entry,
-            lot_entry_wish=elected_wish)
-        DBSession.add(elected)
-        return elected
-    
+        self.lot.finish_lotting()

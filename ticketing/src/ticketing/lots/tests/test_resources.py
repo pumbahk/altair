@@ -57,5 +57,4 @@ class LotResourceTests(unittest.TestCase):
         )
         target = self._makeOne(request)
 
-        self.assertEqual(target.event, lot.event)
-
+        self.assertEqual(target.event, lot.event)        

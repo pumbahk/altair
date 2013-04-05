@@ -1,6 +1,6 @@
 import unittest
+import mock
 from pyramid import testing
-from zope.interface.verify import verifyObject
 
 class ElectingTests(unittest.TestCase):
 
@@ -13,6 +13,7 @@ class ElectingTests(unittest.TestCase):
 
     def test_it(self):
         from ..interfaces import IElecting
+        from zope.interface.verify import verifyObject
         request = testing.DummyRequest()
         lot = testing.DummyResource()
         target = self._makeOne(request, lot)
@@ -21,7 +22,16 @@ class ElectingTests(unittest.TestCase):
 
     def test_elect_lot_entries(self):
         request = testing.DummyRequest()
-        lot = testing.DummyResource(id=None)
-        target = self._makeOne(lot, request)
+        mock_lot = mock.Mock()
+        elected_wishes = [mock.Mock(entry=mock_lot.entry)]
+        rejected_wishes = [mock.Mock(entry=mock_lot.entry)]
+        mock_lot.get_elected_wishes.return_value = elected_wishes
+        mock_lot.get_rejected_wishes.return_value = rejected_wishes
+
+        target = self._makeOne(mock_lot, request)
 
         target.elect_lot_entries()
+
+        mock_lot.entry.elect.assert_called_with(elected_wishes[0])
+        mock_lot.entry.reject.assert_called_with()
+        mock_lot.finish_lotting.assert_called_with()
