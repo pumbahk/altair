@@ -102,9 +102,6 @@ class MobileSelectProductView(object):
 
     @view_config(route_name='cart.seat_types', renderer=selectable_renderer('carts_mobile/%(membership)s/seat_types.html'), xhr=False, request_type='ticketing.mobile.interfaces.IMobileRequest')
     def __call__(self):
-        event_id = self.request.matchdict['event_id']
-        performance_id = self.request.matchdict['performance_id']
-        sales_segment_id = self.request.matchdict['sales_segment_id']
         seat_type_id = self.request.params.get('stid')
 
         selector_name = c_api.get_organization(self.request).setting.performance_selector
@@ -113,27 +110,12 @@ class MobileSelectProductView(object):
         if seat_type_id:
             return HTTPFound(self.request.route_url(
                 "cart.products",
-                event_id=event_id,
-                performance_id=performance_id,
-                sales_segment_id=sales_segment_id,
+                event_id=self.context.sales_segment.performance.event.id,
+                performance_id=self.context.sales_segment.performance.id,
+                sales_segment_id=self.context.sales_segment.id,
                 seat_type_id=seat_type_id))
 
-        # セールスセグメント必須
-        sales_segment = c_models.SalesSegment.query.filter(c_models.SalesSegment.id==sales_segment_id).first()
-        if sales_segment is None:
-            raise NoEventError("No matching sales_segment")
-
-        event = c_models.Event.query.filter(c_models.Event.id==event_id).first()
-        if event is None:
-            raise NoEventError("No such event (%d)" % event_id)
-
-        performance = c_models.Performance.query.filter(
-            c_models.Performance.id==performance_id).filter(
-            c_models.Performance.event_id==event.id).first()
-        if performance is None:
-            raise NoEventError("No such performance (%d)" % performance_id)
-
-        seat_type_triplets = get_seat_type_triplets(event.id, performance.id, sales_segment.id)            
+        seat_type_triplets = get_seat_type_triplets(self.context.event.id, self.context.sales_segment.performance.id, self.context.sales_segment.id)
 
         data = dict(
             seat_types=[
@@ -143,58 +125,36 @@ class MobileSelectProductView(object):
                     description=s.description,
                     style=s.style,
                     products_url=self.request.route_url('cart.products',
-                                                        event_id=event_id, performance_id=performance_id, sales_segment_id=sales_segment.id, seat_type_id=s.id),
+                                                        event_id=self.context.event.id,
+                                                        performance_id=self.context.sales_segment.performance.id,
+                                                        sales_segment_id=self.context.sales_segment.id, seat_type_id=s.id),
                     availability=available > 0,
                     availability_text=h.get_availability_text(available),
                     quantity_only=s.quantity_only,
                     )
                 for s, total, available in seat_type_triplets
                 ],
-            event=event,
-            performance=performance,
-            venue=performance.venue,
-            sales_segment=sales_segment,
-            return_value=performance_selector.select_value(performance),
+            event=self.context.event,
+            performance=self.context.sales_segment.performance,
+            venue=self.context.sales_segment.performance.venue,
+            sales_segment=self.context.sales_segment,
+            return_value=performance_selector.select_value(self.context.sales_segment.performance)
             )
         return data
 
     @view_config(route_name='cart.products', renderer=selectable_renderer('carts_mobile/%(membership)s/products.html'), xhr=False, request_type='ticketing.mobile.interfaces.IMobileRequest')
     def products(self):
         logger.debug('cart.products')
-        event_id = self.request.matchdict['event_id']
-        performance_id = self.request.matchdict['performance_id']
         seat_type_id = self.request.matchdict['seat_type_id']
-        sales_segment_id = self.request.matchdict['sales_segment_id']
-
-        # イベント
-        event = c_models.Event.query.filter(c_models.Event.id==event_id).first()
-        if event is None:
-            raise NoEventError("No such event (%d)" % event_id)
-
-        # パフォーマンス(イベントにひもづいてること)
-        performance = c_models.Performance.query.filter(
-            c_models.Performance.id==performance_id).filter(
-            c_models.Performance.event_id==event.id).first()
-        if performance is None:
-            raise NoEventError("No such performance (%d)" % performance_id)
-
-        sales_segment = c_models.SalesSegment.query.filter(
-            c_models.SalesSegment.id==sales_segment_id
-        ).first()
-
-        if sales_segment is None:
-            raise NoEventError("No such sales segment (%s)" % sales_segment_id)
-        
 
         # 席種(イベントとパフォーマンスにひもづいてること)
         segment_stocks = DBSession.query(c_models.ProductItem.stock_id).filter(
             c_models.ProductItem.product_id==c_models.Product.id).filter(
-            c_models.Product.sales_segment_id==sales_segment.id).filter(
+            c_models.Product.sales_segment_id==self.context.sales_segment.id).filter(
             c_models.Product.public==True)
 
         seat_type = DBSession.query(c_models.StockType).filter(
-            c_models.Performance.event_id==event_id).filter(
-            c_models.Performance.id==performance_id).filter(
+            c_models.Performance.id==self.context.sales_segment.performance.id).filter(
             c_models.Performance.event_id==c_models.StockHolder.event_id).filter(
             c_models.StockHolder.id==c_models.Stock.stock_holder_id).filter(
             c_models.Stock.stock_type_id==c_models.StockType.id).filter(
@@ -205,34 +165,30 @@ class MobileSelectProductView(object):
             raise NoEventError("No such seat_type (%s)" % seat_type_id)
 
         # 商品一覧
-        # サブクエリの部分
-        product_items = DBSession.query(c_models.ProductItem.product_id).filter(
-            c_models.ProductItem.stock_id==c_models.Stock.id).filter(
-            c_models.Stock.stock_type_id==seat_type_id).filter(
-            c_models.ProductItem.performance_id==performance_id)
-
-        products = c_models.Product.query.filter(
-            c_models.Product.public==True).filter(
-            c_models.Product.id.in_(product_items)).order_by(
-            sa.desc("display_order, price")).filter_by(
-            sales_segment=sales_segment)
+        products = DBSession.query(c_models.Product) \
+            .join(c_models.Product.items) \
+            .join(c_models.ProductItem.stock) \
+            .filter(c_models.Stock.stock_type_id==seat_type_id) \
+            .filter(c_models.Product.sales_segment_id==self.context.sales_segment.id) \
+            .filter(c_models.Product.public==True) \
+            .order_by(sa.desc("Product.display_order, Product.price"))
 
         # CSRFトークン発行
         form = schemas.CSRFSecureForm(csrf_context=self.request.session)
 
         return dict(
-            event=event,
-            performance=performance,
-            venue=performance.venue,
-            sales_segment=sales_segment,
+            event=self.context.event,
+            performance=self.context.sales_segment.performance,
+            venue=self.context.sales_segment.performance.venue,
+            sales_segment=self.context.sales_segment,
             seat_type=seat_type,
-            upper_limit=sales_segment.upper_limit,
+            upper_limit=self.context.sales_segment.upper_limit,
             products=[
                 dict(
                     id=product.id,
                     name=product.name,
                     description=product.description,
-                    detail=h.product_name_with_unit(product, performance_id),
+                    detail=h.product_name_with_unit(product, self.context.sales_segment.performance.id),
                     price=h.format_number(product.price, ","),
                 )
                 for product in products

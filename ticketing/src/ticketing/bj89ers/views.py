@@ -123,7 +123,7 @@ class IndexView(object):
             logger.debug("%s" % form.errors)
             return dict(form=form, products=products)
 
-        cart = cart_api.order_products(self.request, self.context.performance.id, self.ordered_items)
+        cart = cart_api.order_products(self.request, self.context.sales_segment.performance.id, self.ordered_items)
         if cart is None:
             logger.debug('cart is None')
             return dict(form=form, products=products)

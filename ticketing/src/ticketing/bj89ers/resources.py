@@ -16,7 +16,6 @@ logger = logging.getLogger(__name__)
 class Bj89erCartResource(TicketingCartResource):
     def _populate_params(self):
         self._event_id = self.request.registry.settings['89ers.event_id']
-        self._performance_id = self.request.registry.settings['89ers.performance_id']
         self._sales_segment_id = None
 
     @reify
