@@ -59,8 +59,4 @@ class ClientFormTests(unittest.TestCase):
         )
         target = self._makeOne(formdata=data)
         result = target.validate()
-        for n, errors in target.errors.items():
-            print n
-            for e in errors:
-                print e
         self.assertTrue(result)

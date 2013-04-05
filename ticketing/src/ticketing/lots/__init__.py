@@ -86,7 +86,6 @@ def main(global_config, **local_config):
     config.add_static_view('c_static', 'ticketing.cart:static', cache_max_age=3600)
 
     config.include(".")
-    config.include(".secure")
 
     ### includes altair.*
     config.include('altair.auth')

@@ -125,8 +125,6 @@ class EntryLotViewTests(unittest.TestCase):
         )
         target = self._makeOne(request)        
         result = target.post()
-        if isinstance(result, dict):
-            print result['form'].errors
 
         self.assertEqual(result.location, "http://example.com/lots/events/2/entry/1/confirm")
         self.assertIsNotNone(request.session['lots.entry']['token'])
@@ -531,31 +529,31 @@ class PaymentViewTests(unittest.TestCase):
         self.session.flush()
         return entry
 
-    def _add_entry_elected(self, entry_id):
-        from datetime import datetime
-        from ticketing.core.models import (
-            PaymentDeliveryMethodPair,
-            PaymentMethod,
-            DeliveryMethod,
-            Performance,
-            Event,
-            Organization,
-        )
-        from ..models import LotEntry, LotElectedEntry, LotEntryWish, Lot
-        lot = Lot()
-        performance = Performance(event=Event(organization=Organization(short_name="testing", code="TEST")))
-        entry = LotEntry(id=entry_id, elected_at=datetime.now(), lot=lot,
-            payment_delivery_method_pair=PaymentDeliveryMethodPair(system_fee=999, 
-                transaction_fee=100, delivery_fee=234, discount=0,
-                payment_method=PaymentMethod(fee=11),
-                delivery_method=DeliveryMethod(fee=22)))
-        elected = LotElectedEntry(lot_entry=entry,
-            lot_entry_wish=LotEntryWish(performance=performance))
+    # def _add_entry_elected(self, entry_id):
+    #     from datetime import datetime
+    #     from ticketing.core.models import (
+    #         PaymentDeliveryMethodPair,
+    #         PaymentMethod,
+    #         DeliveryMethod,
+    #         Performance,
+    #         Event,
+    #         Organization,
+    #     )
+    #     from ..models import LotEntry, LotElectedEntry, LotEntryWish, Lot
+    #     lot = Lot()
+    #     performance = Performance(event=Event(organization=Organization(short_name="testing", code="TEST")))
+    #     entry = LotEntry(id=entry_id, elected_at=datetime.now(), lot=lot,
+    #         payment_delivery_method_pair=PaymentDeliveryMethodPair(system_fee=999, 
+    #             transaction_fee=100, delivery_fee=234, discount=0,
+    #             payment_method=PaymentMethod(fee=11),
+    #             delivery_method=DeliveryMethod(fee=22)))
+    #     elected = LotElectedEntry(lot_entry=entry,
+    #         lot_entry_wish=LotEntryWish(performance=performance))
 
-        self.session.add(entry)
-        self.session.flush()
+    #     self.session.add(entry)
+    #     self.session.flush()
 
-        return entry
+    #     return entry
 
 
     def test_not_elected(self):
@@ -570,39 +568,39 @@ class PaymentViewTests(unittest.TestCase):
 
         self.assertRaises(NotElectedException, target.submit)
 
-    def test_elected(self):
-        from ..testing import DummySession
-        from ticketing.payments.interfaces import IPaymentDeliveryPlugin
-        from ticketing.cart.models import Cart
+    # def test_elected(self):
+    #     from ..testing import DummySession
+    #     from ticketing.payments.interfaces import IPaymentDeliveryPlugin
+    #     from ticketing.cart.models import Cart
 
-        reg = self.config.registry
-        dummy_preparer = DummyPreperer()
-        reg.utilities.register([], IPaymentDeliveryPlugin,
-            "payment-None:delivery-None", 
-            dummy_preparer,
-            )
-        request = testing.DummyRequest(
-            matchdict={"event_id": None},
-            session=DummySession(),
-        )
-        entry_id = 999999
-        entry = self._add_entry_elected(entry_id)
-        request.session['lots.entry_id'] = entry.id
-        target = self._makeOne(request)
+    #     reg = self.config.registry
+    #     dummy_preparer = DummyPreperer()
+    #     reg.utilities.register([], IPaymentDeliveryPlugin,
+    #         "payment-None:delivery-None", 
+    #         dummy_preparer,
+    #         )
+    #     request = testing.DummyRequest(
+    #         matchdict={"event_id": None},
+    #         session=DummySession(),
+    #     )
+    #     entry_id = 999999
+    #     entry = self._add_entry_elected(entry_id)
+    #     request.session['lots.entry_id'] = entry.id
+    #     target = self._makeOne(request)
 
-        result = target.submit()
+    #     result = target.submit()
 
-        self.assertIn('ticketing.cart_id', request.session)
-        cart_id = request.session['ticketing.cart_id']
-        cart = Cart.query.filter(Cart.id==cart_id).one()
-        self.assertIsNotNone(cart.tickets_amount)
-        self.assertIsNotNone(cart.transaction_fee)
-        self.assertEqual(dummy_preparer.called,
-            [('prepare', request, cart)])
+    #     self.assertIn('ticketing.cart_id', request.session)
+    #     cart_id = request.session['ticketing.cart_id']
+    #     cart = Cart.query.filter(Cart.id==cart_id).one()
+    #     self.assertIsNotNone(cart.tickets_amount)
+    #     self.assertIsNotNone(cart.transaction_fee)
+    #     self.assertEqual(dummy_preparer.called,
+    #         [('prepare', request, cart)])
 
-class DummyPreperer(object):
-    def __init__(self):
-        self.called = []
+# class DummyPreperer(object):
+#     def __init__(self):
+#         self.called = []
 
-    def prepare(self, request, cart):
-        self.called.append(("prepare", request, cart))
+#     def prepare(self, request, cart):
+#         self.called.append(("prepare", request, cart))
