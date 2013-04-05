@@ -1,7 +1,7 @@
 # -*- encoding:utf-8 -*-
 import sqlalchemy as sa
 import sqlalchemy.orm as orm
-import datetime
+from datetime import datetime
 import logging
 logger = logging.getLogger(__file__)
 from altaircms.models import (
@@ -39,7 +39,7 @@ def as_empty_query(qs):
 ##
 def _refine_pageset_collect_future(qs, _nowday=None):
    if _nowday is None:
-      _nowday = datetime.datetime.now()
+      _nowday = datetime.now()
 
    qs = qs.filter((_nowday <= Event.deal_close )|( Event.deal_close == None))
    return qs
@@ -53,7 +53,7 @@ def _refine_pageset_only_published_term(qs, now=None):
    """ 公開期間中のページのみを集める
    """
    if now is None:
-      now = datetime.datetime.now()
+      now = datetime.now()
    qs = qs.filter(PageSet.id==Page.pageset_id)
    return qs.filter(Page.in_term(now)).filter(Page.published==True)
 
@@ -84,6 +84,16 @@ def get_pageset_query_from_hotword(request, query_params):
        return _refine_pageset_qs(search_by_hotword(request, qs, hotword))
     else:
        return as_empty_query(qs)
+
+@provider(ISearchFn)
+def get_pageset_query_from_pagetag(request, query_params):
+    """ Pagetagの検索"""
+    searcher = get_pageset_searcher(request)
+    pagetag = query_params["pagetag"]
+    if not pagetag:
+       return as_empty_query(request.allowable(PageSet))
+    qs = request.allowable(PageSet, searcher.query_publishing(datetime.now(), pagetag))
+    return _refine_pageset_qs(_refine_pageset_collect_future(qs))
 
 @provider(ISearchFn)
 def get_pageset_query_from_freeword(request, query_params):
@@ -271,7 +281,7 @@ def events_by_area(qs, prefectures):
 
 
 ##日以内に開始系の関数
-def events_by_within_n_days_of(qs, start_from, n, _nowday=datetime.datetime.now):
+def events_by_within_n_days_of(qs, start_from, n, _nowday=datetime.now):
    today = _nowday()
    qs = qs.filter(today+datetime.timedelta(days=-1-n) <= start_from).filter(start_from <= (today+datetime.timedelta(days=n)))
    return qs
@@ -299,7 +309,7 @@ def events_by_added_service(qs, flags):
     warnings.warn("not implemented, yet")
     return qs
 
-def events_by_about_deal(qs, before_deal_start, till_deal_end, closed_only, canceld_only, _nowday=datetime.datetime.now):
+def events_by_about_deal(qs, before_deal_start, till_deal_end, closed_only, canceld_only, _nowday=datetime.now):
     today = _nowday()
 
     if before_deal_start:
