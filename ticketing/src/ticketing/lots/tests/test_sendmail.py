@@ -17,18 +17,22 @@ class get_mail_infoTests(unittest.TestCase):
 
 
     def test_it(self):
-        from ticketing.core.models import Event, ExtraMailInfo
+        from ticketing.core.models import Event, ExtraMailInfo, Organization
         from ticketing.lots.models import Lot
         from ticketing.mails.traverser import EmailInfoTraverser
         self.config.registry.registerUtility(EmailInfoTraverser(default={}), name="lots")
         lot = Lot(
             event=Event(
                 extra_mailinfo=ExtraMailInfo(
-                    data={'subject': 'testing'})))
+                    data={'subject': 'testing_event'}),
+                organization=Organization(
+                    extra_mailinfo=ExtraMailInfo(
+                        data={'subject': 'testing_organization'}),
+                    )))
         request = testing.DummyRequest()
         result = self._callFUT(request, lot)
 
-        self.assertEqual(result.d, {'subject': 'testing'})
+        self.assertEqual(result.d, {'subject': 'testing_event'})
 
 
 class MailSenderTests(unittest.TestCase):
