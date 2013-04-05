@@ -37,6 +37,7 @@ def selectable_renderer(config):
 
 def includeme(config):
     config.include(setup_cart)
+    config.include(setup_mailtraverser)
     config.add_subscriber(register_globals, 'pyramid.events.BeforeRender')
     config.add_renderer('.html' , 'pyramid.mako_templating.renderer_factory')
     config.add_renderer('json'  , 'ticketing.renderers.json_renderer_factory')
@@ -70,6 +71,12 @@ def setup_cart(config):
     from ticketing.cart.stocker import Stocker
     reg = config.registry
     reg.adapters.register([IRequest], IStocker, "", Stocker)
+
+def setup_mailtraverser(config):
+    from ticketing.mails.traverser import EmailInfoTraverser
+    reg = config.registry
+    traverser = EmailInfoTraverser()
+    reg.registerUtility(traverser, name="lots")
 
 def main(global_config, **local_config):
     """ ひとまず機能実装のため(本番も別インスタンスにするか未定) """

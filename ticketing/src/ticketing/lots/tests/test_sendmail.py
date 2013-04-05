@@ -3,6 +3,34 @@
 import unittest
 from pyramid import testing
 
+
+class get_mail_infoTests(unittest.TestCase):
+    def setUp(self):
+        self.config = testing.setUp()
+
+    def tearDown(self):
+        testing.tearDown()
+
+    def _callFUT(self, *args, **kwargs):
+        from ..sendmail import get_mail_info
+        return get_mail_info(*args, **kwargs)
+
+
+    def test_it(self):
+        from ticketing.core.models import Event, ExtraMailInfo
+        from ticketing.lots.models import Lot
+        from ticketing.mails.traverser import EmailInfoTraverser
+        self.config.registry.registerUtility(EmailInfoTraverser(default={}), name="lots")
+        lot = Lot(
+            event=Event(
+                extra_mailinfo=ExtraMailInfo(
+                    data={'subject': 'testing'})))
+        request = testing.DummyRequest()
+        result = self._callFUT(request, lot)
+
+        self.assertEqual(result.d, {'subject': 'testing'})
+
+
 class MailSenderTests(unittest.TestCase):
     def _getTarget(self):
         from ..sendmail import MailSender

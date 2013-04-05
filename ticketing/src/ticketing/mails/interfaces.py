@@ -1,6 +1,11 @@
 # -*- coding:utf-8 -*-
 from zope.interface import Interface, Attribute
 
+class ITraverser(Interface):
+    data = Attribute(u"traversed mail information")
+    def visit(target):
+        """ start traverse """
+
 class IMailUtility(Interface):
     def build_message(request, order):
         """orderからメールオブジェクト作成"""
