@@ -332,9 +332,9 @@ class PaymentView(object):
         DBSession.add(cart)
         DBSession.flush()
         cart_api.set_cart(self.request, cart)
-        client_name = self.request.params['last_name'] + self.request.params['first_name']
+        client_name = self.request.params.get('last_name', '') + self.request.params.get('first_name', '')
 
-        order = cart_api.new_order_session(
+        cart_api.new_order_session(
             self.request,
             client_name=client_name,
             payment_delivery_method_pair_id=cart.payment_delivery_pair.id,

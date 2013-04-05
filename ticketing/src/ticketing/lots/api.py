@@ -32,26 +32,15 @@
 
 import transaction
 from datetime import datetime
-import itertools
 from sqlalchemy import sql
-from sqlalchemy.orm import joinedload
-from ticketing.core.api import get_organization
+from pyramid.interfaces import IRequest
 import ticketing.cart.api as cart_api
 from ticketing.utils import sensible_alnum_encode
 from ticketing.rakuten_auth.api import authenticated_user
-from zope.deprecation import deprecate
 
 from ticketing.core.models import (
-    Organization,
-    Account,
     Event,
     SalesSegment,
-    StockType,
-    Stock,
-    StockHolder,
-    Performance,
-    Product,
-    ProductItem,
     ShippingAddress,
     DBSession,
 )
@@ -70,16 +59,14 @@ from .models import (
     LotEntry,
     LotEntryWish,
     LotEntryProduct,
-    Lot_Performance,
-    Lot_StockType,
     LotElectedEntry,
     LotRejectedEntry,
     LotElectWork,
-    LotStatusEnum,
 )
 
 from . import sendmail
 from .events import LotEntriedEvent
+from .interfaces import IElecting
 
 def get_event(request):
     event_id = request.matchdict['event_id']
@@ -120,27 +107,6 @@ def get_requested_lot(request):
     lot_id = request.matchdict.get('lot_id')
     return Lot.query.filter(Lot.id==lot_id).one()
 
-# @deprecate(u"直接Lotのプロパティつかえ")
-# def get_lot(request, event, lot_id):
-#     """ 抽選取得
-#     :return: 抽選, 公演リスト, 席種リスト
-#     """
-#     lot = Lot.query.filter(
-#         Lot.event_id==event.id
-#     ).filter(
-#         Lot.id==lot_id,
-#     ).one()
-# 
-    performances = lot.performances
-
-    stock_types = StockType.query.filter(
-        StockType.id==Lot_StockType.c.stock_type_id
-    ).filter(
-        Lot_StockType.c.lot_id==lot.id
-    ).all()
-
-    return lot, performances, stock_types
-
 def entry_lot(request, lot, shipping_address, wishes, payment_delivery_method_pair, user):
     """
     wishes
@@ -149,11 +115,7 @@ def entry_lot(request, lot, shipping_address, wishes, payment_delivery_method_pa
     """
     membergroup = get_member_group(request)
     entry = LotEntry(lot=lot, shipping_address=shipping_address, membergroup=membergroup, payment_delivery_method_pair=payment_delivery_method_pair)
-    wished_product_ids = itertools.chain(*[[p[1] for p in w] for w in wishes])
 
-    products = Product.query.filter(
-        Product.id.in_(wished_product_ids)
-    ).all()
 
     for i, w in enumerate(wishes):
         performance_id = w["performance_id"]
@@ -234,9 +196,6 @@ def submit_lot_entries(lot_id, entries):
     entries : (entry_no, wish_order)のリスト
     """
 
-    lot = Lot.query.filter(Lot.id==lot_id).one()
-    #assert lot.status == int(LotStatusEnum.Electing)
-
     for entry_no, wish_order in entries:
         w = LotElectWork(lot_id=lot_id, lot_entry_no=entry_no, wish_order=wish_order,
             entry_wish_no="{0}-{1}".format(entry_no, wish_order))
@@ -245,64 +204,69 @@ def submit_lot_entries(lot_id, entries):
 
 
 
-def elect_lot_entries(lot_id):
-    """ 抽選申し込み確定 
-    申し込み番号と希望順で、当選確定処理を行う
-    ワークに入っているものから当選処理をする
-    それ以外を落選処理にする
-    """
-
-
+def elect_lot_entries(request, lot_id):
     # 当選処理
     lot = DBSession.query(Lot).filter_by(id=lot_id).one()
+    electing = request.registry.adapters.lookup([Lot, IRequest], IElecting, "")
+    elector = electing(lot)
 
-    elected_wishes = DBSession.query(LotEntryWish).filter(
-        LotEntryWish.lot_entry_id==LotEntry.id
-    ).filter(
-        LotEntry.lot_id==lot_id
-    ).filter(
-        LotElectWork.lot_entry_no==LotEntry.entry_no
-    ).filter(
-        (LotElectWork.wish_order-1)==LotEntryWish.wish_order
-    )
-
-    for ew in elected_wishes:
-        elect_entry(lot, ew)
-        # TODO: 再選処理
+    return elector.elect_lot_entries
+    
+    # """ 抽選申し込み確定 
+    # 申し込み番号と希望順で、当選確定処理を行う
+    # ワークに入っているものから当選処理をする
+    # それ以外を落選処理にする
+    # """
 
 
 
-    # 落選処理
-    q = DBSession.query(LotEntry).filter(
-        LotEntry.elected_at==None
-    ).filter(
-        LotEntry.rejected_at==None
-    ).all()
+    # elected_wishes = DBSession.query(LotEntryWish).filter(
+    #     LotEntryWish.lot_entry_id==LotEntry.id
+    # ).filter(
+    #     LotEntry.lot_id==lot_id
+    # ).filter(
+    #     LotElectWork.lot_entry_no==LotEntry.entry_no
+    # ).filter(
+    #     (LotElectWork.wish_order-1)==LotEntryWish.wish_order
+    # )
 
-    for entry in q:
-        reject_entry(lot, entry)
+    # for ew in elected_wishes:
+    #     elect_entry(lot, ew)
+    #     # TODO: 再選処理
 
-    lot.status = int(LotStatusEnum.Elected)
-    LotElectWork.query.filter(LotElectWork.lot_id==lot.id).delete()
 
-def reject_entry(lot, entry):
-    now = datetime.now()
-    entry.rejected_at = now
-    rejected = LotRejectedEntry(lot_entry=entry)
-    DBSession.add(rejected)
-    return rejected
 
-def elect_entry(lot, elected_wish):
-    """ 個々の希望申し込みに対する処理 
-    :return: 当選情報
-    """
-    now = datetime.now()
-    elected_wish.elected_at = now
-    elected_wish.lot_entry.elected_at = now
-    elected = LotElectedEntry(lot_entry=elected_wish.lot_entry,
-        lot_entry_wish=elected_wish)
-    DBSession.add(elected)
-    return elected
+    # # 落選処理
+    # q = DBSession.query(LotEntry).filter(
+    #     LotEntry.elected_at==None
+    # ).filter(
+    #     LotEntry.rejected_at==None
+    # ).all()
+
+    # for entry in q:
+    #     reject_entry(lot, entry)
+
+    # lot.status = int(LotStatusEnum.Elected)
+    # LotElectWork.query.filter(LotElectWork.lot_id==lot.id).delete()
+
+# def reject_entry(lot, entry):
+#     now = datetime.now()
+#     entry.rejected_at = now
+#     rejected = LotRejectedEntry(lot_entry=entry)
+#     DBSession.add(rejected)
+#     return rejected
+
+# def elect_entry(lot, elected_wish):
+#     """ 個々の希望申し込みに対する処理 
+#     :return: 当選情報
+#     """
+#     now = datetime.now()
+#     elected_wish.elected_at = now
+#     elected_wish.lot_entry.elected_at = now
+#     elected = LotElectedEntry(lot_entry=elected_wish.lot_entry,
+#         lot_entry_wish=elected_wish)
+#     DBSession.add(elected)
+#     return elected
 
 def entry_session(request, lot_entry=None):
     if lot_entry is not None:
