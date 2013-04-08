@@ -3145,6 +3145,13 @@ class SalesSegment(Base, BaseModel, LogicallyDeleted, WithTimestamp):
     def kind(self):
         return self.sales_segment_group.kind
 
+    @hybrid_property
+    def order(self):
+        for i, k in enumerate(SalesSegmentKindEnum.order.v):
+            if k == self.kind:
+                return i
+        return -1
+
     @hybrid_method
     def in_term(self, dt):
         return (self.start_at <= dt) & (dt <= self.end_at)
