@@ -1,5 +1,7 @@
 from pyramid.view import view_config, view_defaults
 from altaircms.auth.api import require_login
+from altaircms.auth.api import get_or_404
+from altaircms.page.models import Page    
 from . import forms
 import logging
 logger = logging.getLogger(__name__)
@@ -52,5 +54,6 @@ class PerformancelistWidgetView(object):
     def dialog(self):
         context = self.request.context
         widget = context.get_widget(self.request.GET.get("pk"))
-        form = forms.PerformancelistForm(**widget.to_dict())
+        page = get_or_404(self.request.allowable(Page), Page.id==self.request.GET["page"])
+        form = forms.PerformancelistForm(**widget.to_dict()).configure(self.request, page)
         return {"widget": widget, "form": form}
