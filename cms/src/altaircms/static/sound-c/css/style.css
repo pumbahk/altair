@@ -402,6 +402,10 @@ a:hover img {
 	margin-bottom: 10px;
 }
 
+.sidebar input{
+    width: 190px;
+}
+
 .sidebar .bk h3{
 	border-left:5px #fff solid;
 	border-bottom: 1px #fff solid;
@@ -781,6 +785,4 @@ dl.faq dd{
 .bgfff{
 	background: #fff !important;
 }
-
-
 
