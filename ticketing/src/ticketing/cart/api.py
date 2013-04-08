@@ -7,6 +7,7 @@ import logging
 import contextlib
 
 from zope.deprecation import deprecate
+from sqlalchemy.sql.expression import or_, and_
 
 from pyramid.interfaces import IRoutesMapper, IRequest
 from pyramid.security import effective_principals, forget
@@ -318,22 +319,19 @@ def update_order_session(request, **kw):
     request.session['order'].update(kw)
     return request.session['order']
 
-def get_seat_type_triplets(event_id, performance_id, sales_segment_id):
-    segment_stocks = DBSession.query(c_models.ProductItem.stock_id).filter(
-        c_models.ProductItem.product_id==c_models.Product.id).filter(
-        c_models.Product.sales_segment_id==sales_segment_id).filter(
-        c_models.Product.public==True)
-
+def get_seat_type_triplets(sales_segment_id):
+    # TODO: cachable
     seat_type_triplets = DBSession.query(c_models.StockType, c_models.Stock.quantity, c_models.StockStatus.quantity).filter(
             c_models.Stock.id==c_models.StockStatus.stock_id).filter(
-            c_models.Performance.event_id==event_id).filter(
-            c_models.Performance.id==performance_id).filter(
+            c_models.Performance.id==c_models.SalesSegment.performance_id).filter(
             c_models.Performance.event_id==c_models.StockHolder.event_id).filter(
             c_models.StockHolder.id==c_models.Stock.stock_holder_id).filter(
             c_models.Stock.stock_type_id==c_models.StockType.id).filter(
-            c_models.Stock.id.in_(segment_stocks)).filter(
+            c_models.Product.sales_segment_id==c_models.SalesSegment.id).filter(
+            c_models.ProductItem.product_id==c_models.Product.id).filter(
             c_models.ProductItem.stock_id==c_models.Stock.id).filter(
-            c_models.ProductItem.performance_id==performance_id).order_by(
+            c_models.ProductItem.performance_id==c_models.SalesSegment.performance_id).filter(
+            c_models.SalesSegment.id == sales_segment_id).order_by(
             c_models.StockType.display_order).all()
     return seat_type_triplets
 

@@ -26,6 +26,8 @@ from .api import get_seat_type_triplets
 from .view_support import IndexViewMixin
 from .exceptions import (
     NoEventError,
+    NoPerformanceError,
+    NoSalesSegment,
     InvalidCSRFTokenException, 
     OverQuantityLimitError, 
     ZeroQuantityError, 
@@ -41,53 +43,58 @@ class MobileIndexView(IndexViewMixin):
     def __init__(self, request):
         self.request = request
         self.context = request.context
-        logger.debug('init mobile index')
         self.prepare()
 
     @view_config(route_name='cart.index', renderer=selectable_renderer('carts_mobile/%(membership)s/index.html'), xhr=False, permission="buy", request_type='ticketing.mobile.interfaces.IMobileRequest')
     def __call__(self):
         logger.debug('mobile index')
         self.check_redirect(mobile=True)
-        venue_name = self.request.params.get('v')
-        sales_segments = self.context.available_sales_segments
-        # パフォーマンスIDが確定しているなら商品選択へリダイレクト
-        performance_id = self.request.params.get('pid') or self.request.params.get('performance')
-        if performance_id:
-            #performance = c_models.Performance.query.filter(c_models.Performance.id==performance_id).one()
-            for ss in sales_segments:
-                if str(ss.performance_id) == performance_id:
-                    #performance = ss.performance
-                    return HTTPFound(self.request.route_url(
-                            "cart.seat_types",
-                            event_id=self.context.event.id,
-                            performance_id=performance_id,
-                            sales_segment_id=ss.id))
 
-        perms = [ss.performance for ss in sales_segments]
-        if not perms:
-            raise HTTPNotFound()
+        try:
+            performance_id = long(self.request.params.get('pid') or self.request.params.get('performance'))
+        except (ValueError, TypeError):
+            performance_id = None
+
+        try:
+            sales_segment = self.context.sales_segment
+        except NoSalesSegment:
+            sales_segment = None
+
+        if sales_segment is None:
+            # パフォーマンスIDから販売区分の解決を試みる
+            if performance_id:
+                # performance_id で指定される Performance は
+                # available_sales_segments に関連するものでなければならない
+
+                for _sales_segment in self.context.available_sales_segments:
+                    if _sales_segment.performance_id == performance_id:
+                        sales_segment = _sales_segment
+                if sales_segment is None:
+                    raise NoPerformanceError(event_id=self.context.event_id)
+
+        if sales_segment is not None:
+            return HTTPFound(self.request.route_url(
+                    "cart.seat_types",
+                    event_id=self.context.event.id,
+                    performance_id=performance_id,
+                    sales_segment_id=sales_segment.id))
+
 
         selector_name = c_api.get_organization(self.request).setting.performance_selector
         performance_selector = api.get_performance_selector(self.request, selector_name)
-        performances = performance_selector.selection
-        logger.debug('performances %s' % performances)
+        key_to_formatted_sales_segments_map = performance_selector()
 
-        # 公演名が指定されている場合は、（日時、会場）のリスト
-        performance_name = self.request.params.get('performance_name')
-        venues = []
-        if performance_name:
-            performance_to_venue_map = performance_selector()
-            if performance_name not in performance_to_venue_map:
+        # キー (公演名) が指定されている場合は、（日時、会場）のリスト
+        key = self.request.params.get('key') or self.request.params.get('performance_name')
+        if key:
+            key_to_formatted_sales_segments_map = [(k, v) for k, v in key_to_formatted_sales_segments_map if k == key]
+            if not key_to_formatted_sales_segments_map:
                 return HTTPFound(self.request.route_url('cart.index', event_id=self.context.event.id))
-
-            venues = [(v['id'], v['name']) for v in performance_to_venue_map[performance_name]]
 
         return dict(
             event=self.context.event,
-            venues=venues,
-            venue_name=venue_name,
-            performances=performances,
-            performance_name=performance_name,
+            key_to_formatted_sales_segments_map=key_to_formatted_sales_segments_map,
+            key=key,
             selector_label_1=performance_selector.label,
             selector_label_2=performance_selector.second_label
             )
@@ -102,10 +109,13 @@ class MobileSelectProductView(object):
 
     @view_config(route_name='cart.seat_types', renderer=selectable_renderer('carts_mobile/%(membership)s/seat_types.html'), xhr=False, request_type='ticketing.mobile.interfaces.IMobileRequest')
     def __call__(self):
-        seat_type_id = self.request.params.get('stid')
-
         selector_name = c_api.get_organization(self.request).setting.performance_selector
         performance_selector = api.get_performance_selector(self.request, selector_name)
+
+        try:
+            seat_type_id = long(self.request.params.get('seat_type_id') or self.request.params.get('stid'))
+        except (ValueError, TypeError):
+            seat_type_id = None
 
         if seat_type_id:
             return HTTPFound(self.request.route_url(
@@ -115,7 +125,7 @@ class MobileSelectProductView(object):
                 sales_segment_id=self.context.sales_segment.id,
                 seat_type_id=seat_type_id))
 
-        seat_type_triplets = get_seat_type_triplets(self.context.event.id, self.context.sales_segment.performance.id, self.context.sales_segment.id)
+        seat_type_triplets = get_seat_type_triplets(self.context.sales_segment.id)
 
         data = dict(
             seat_types=[
@@ -138,7 +148,7 @@ class MobileSelectProductView(object):
             performance=self.context.sales_segment.performance,
             venue=self.context.sales_segment.performance.venue,
             sales_segment=self.context.sales_segment,
-            return_value=performance_selector.select_value(self.context.sales_segment.performance)
+            return_value=performance_selector.select_value(self.context.sales_segment)
             )
         return data
 
