@@ -269,10 +269,10 @@ class LotEntries(BaseView):
         lot_id = self.request.matchdict["lot_id"]
         lot = Lot.query.filter(Lot.id==lot_id).one()
 
-        lots_api.elect_lot_entries(lot.id)
+        lots_api.elect_lot_entries(self.request, lot.id)
 
         self.request.session.flash(u"当選確定処理を行いました")
-
+        LotElectWork.query.filter(LotElectWork.lot_id==lot.id).delete()
         return HTTPFound(location=self.request.route_url('lots.entries.index', lot_id=lot.id))
 
     @view_config(route_name='lots.entries.elect_entry_no', 

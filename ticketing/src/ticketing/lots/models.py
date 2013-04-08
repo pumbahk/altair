@@ -32,10 +32,14 @@ from ticketing.models import (
     BaseModel,
     WithTimestamp,
     LogicallyDeleted,
+    DBSession,
 )
 
 from ticketing.core.models import (
     Product,
+)
+from ticketing.users.models import (
+    SexEnum,
 )
 from ticketing.cart.models import (
     Cart,
@@ -107,6 +111,12 @@ class Lot(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     lotting_announce_datetime = sa.Column(sa.DateTime, doc=u"抽選結果発表予定日")
 
+    def is_elected(self):
+        return self.status == int(LotStatusEnum.Elected)
+
+    def finish_lotting(self):
+        self.status = int(LotStatusEnum.Elected)
+
     def validate_entry(self, entry):
         return True
 
@@ -155,6 +165,24 @@ class Lot(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             return None
         return self.sales_segment.seat_choice
         
+    def get_elected_wishes(self):
+        return DBSession.query(LotEntryWish).filter(
+            LotEntryWish.lot_entry_id==LotEntry.id
+        ).filter(
+            LotEntry.lot_id==self.lot.id
+        ).filter(
+            LotElectWork.lot_entry_no==LotEntry.entry_no
+        ).filter(
+            (LotElectWork.wish_order-1)==LotEntryWish.wish_order
+        )
+
+    def get_rejected_wishes(self):
+        return DBSession.query(LotEntry).filter(
+            LotEntry.elected_at==None
+        ).filter(
+            LotEntry.rejected_at==None
+        ).all()
+
 
 class LotEntry(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     """ 抽選申し込み """
@@ -189,6 +217,11 @@ class LotEntry(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     payment_delivery_method_pair_id = sa.Column(Identifier, sa.ForeignKey('PaymentDeliveryMethodPair.id'))
     payment_delivery_method_pair = orm.relationship('PaymentDeliveryMethodPair', backref='lot_entries')
 
+
+    gender = sa.Column(sa.Integer, default=int(SexEnum.NoAnswer))
+    birthday = sa.Column(sa.Date)
+    memo = sa.Column(sa.UnicodeText)
+
     @property
     def is_elected(self):   
         return bool(self.elected_at)
@@ -203,6 +236,24 @@ class LotEntry(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             return False
 
         return self.order_id != None
+
+    def reject(self):
+        now = datetime.now()
+        self.rejected_at = now
+        rejected = LotRejectedEntry(lot_entry=self)
+        for wish in self.wishes:
+            wish.reject(now)
+
+        return rejected
+
+    def elect(self, wish):
+        assert wish in self.wishes
+        now = datetime.now()
+        self.elected_at = now
+        elected = LotElectedEntry(lot_entry=self,
+                                  lot_entry_wish=wish)
+        wish.elect(now)
+        return elected
 
 class LotEntryWish(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     u""" 抽選申し込み希望 """
@@ -224,6 +275,15 @@ class LotEntryWish(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     @property
     def total_quantity(self):
         return sum([p.quantity for p in self.products])
+
+    def elect(self, now):
+        now = now or datetime.now()
+        self.elected_at = now
+
+    def reject(self, now):
+        now = now or datetime.now()
+        self.rejected_at = now
+
 
 class LotEntryProduct(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     u""" 抽選申し込み商品 """

@@ -70,7 +70,7 @@ preview.ApiCommunicationGateway = core.ApiCommunicationGateway.extend({
             }))
             .fail(this._apiFail.bind(this));
     }, 
-    svgNormalizeToX: function(){
+    svgNormalizeToX: function svgNormalizeToX(){
         this.preview.beforeRendering();
         var self = this;
         self.message.info("preview画像をレンダリングしています....");
@@ -83,16 +83,19 @@ preview.ApiCommunicationGateway = core.ApiCommunicationGateway.extend({
         return this.apis.previewbase64(params)
             .pipe(core.ApiService.rejectIfStatusFail(function(data){                
                 var mul = core.UnitCalcService.mul;
-                self.preview.initialImage(data.width, data.height, 
-                                          mul(data.width, self.params.get("sx")), 
-                                          mul(data.height, self.params.get("sy")));
+                if(!!data.width && !!data.height){
+                    self.preview.initialImage(data.width, data.height, 
+                                              mul(data.width, self.params.get("sx")), 
+                                              mul(data.height, self.params.get("sy")));
+
+                }
                 self.preview.startRendering("data:image/png;base64,"+data.data); //add-hoc                
                 self.useChangedModels();
                 self.message.info("preview画像がレンダリングされました。下のinput要素を変更しプレースホルダーに埋める値を入力してください");
             }))
             .fail(this._apiFail.bind(this));
     }, 
-    _svgFilledResize: function(sx, sy){
+    _svgFilledResize: function _svgFilledResize(sx, sy){
         var mul = core.UnitCalcService.mul;
         return this.preview.resizeImage(mul(this.preview.get("width"), sx), 
                                         mul(this.preview.get("height"), sy));

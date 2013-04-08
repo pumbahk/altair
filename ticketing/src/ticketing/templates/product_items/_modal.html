@@ -4,6 +4,7 @@
   $(function() {
     (function (modal_product_item) {
       new_product_item = function new_product_item(id) {
+        if (!id) return false;
         load_modal_form(
           modal_product_item,
           '${request.route_path('product_items.new', product_id='{id}')|n}'.replace(encodeURIComponent('{id}'), id),
@@ -12,6 +13,7 @@
         );
       };
       edit_product_item = function edit_product_item(id) {
+        if (!id) return false;
         load_modal_form(
           modal_product_item,
           '${request.route_path('product_items.edit', product_item_id='{id}')|n}'.replace(encodeURIComponent('{id}'), id),
@@ -20,6 +22,7 @@
         );
       };
       delete_product_item = function delete_product_item(id) {
+        if (!id) return false;
         var modal = $('#modal-delete');
         modal.find('#delete').attr('href', '${request.route_path('product_items.delete', product_item_id='{id}')}'.replace(encodeURIComponent('{id}'), id));
         modal.find('#message').text('選択した商品を削除します。よろしいですか？');

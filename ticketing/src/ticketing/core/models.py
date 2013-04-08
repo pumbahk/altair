@@ -1012,15 +1012,26 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             now)
 
 class SalesSegmentKindEnum(StandardEnum):
-    first_lottery   = u'最速抽選'
-    early_lottery   = u'先行抽選'
+    normal          = u'一般発売'
     early_firstcome = u'先行先着'
-    normal          = u'一般販売'
-    added_sales     = u'追加販売'
+    added_sales     = u'追加発売'
+    early_lottery   = u'先行抽選'
     added_lottery   = u'追加抽選'
+    first_lottery   = u'最速抽選'
     vip             = u'関係者'
     sales_counter   = u'窓口販売'
     other           = u'その他'
+    order = [
+        'normal',
+        'early_firstcome',
+        'added_sales',
+        'early_lottery',
+        'added_lottery',
+        'first_lottery',
+        'vip',
+        'sales_counter',
+        'other',
+    ]
 
 class SalesSegmentGroup(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'SalesSegmentGroup'
@@ -1046,6 +1057,12 @@ class SalesSegmentGroup(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     @hybrid_method
     def in_term(self, dt):
         return (self.start_at <= dt) & (dt <= self.end_at)
+
+    @classmethod
+    def get(cls, id, organization_id=None, **kwargs):
+        if organization_id:
+            return cls.query.filter(cls.id==id).join(Event).filter(Event.organization_id==organization_id).first()
+        return super(cls, cls).get(id, **kwargs)
 
     def delete(self):
         # delete SalesSegment
@@ -1341,6 +1358,9 @@ class ProductItem(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     @staticmethod
     def create_from_template(template, **kwargs):
+        if not template.product.performance:
+            # performance_idがないレコードはSalesSegmentGroup追加時の移行用なのでコピーしない
+            return
         product_item = ProductItem.clone(template)
         if 'performance_id' in kwargs:
             product_item.performance_id = kwargs['performance_id']
@@ -1766,6 +1786,8 @@ class Product(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     @staticmethod
     def create_from_template(template, with_product_items=False, **kwargs):
         product = Product.clone(template)
+        product.event_id = None
+        product.sales_segment_group_id = None
         if 'event_id' in kwargs:
             product.event_id = kwargs['event_id']
         if 'performance_id' in kwargs:
@@ -1775,7 +1797,6 @@ class Product(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         if 'sales_segment' in kwargs:
             # 販売区分なしの場合の product もありえる
             product.sales_segment_id = template.sales_segment_id and kwargs['sales_segment'][template.sales_segment_id]
-            #product.sales_segment_group_id = kwargs['sales_segment'][template.sales_segment_id]
         product.save()
 
         if with_product_items:
@@ -3129,6 +3150,13 @@ class SalesSegment(Base, BaseModel, LogicallyDeleted, WithTimestamp):
     @hybrid_property
     def kind(self):
         return self.sales_segment_group.kind
+
+    @hybrid_property
+    def order(self):
+        for i, k in enumerate(SalesSegmentKindEnum.order.v):
+            if k == self.kind:
+                return i
+        return -1
 
     @hybrid_method
     def in_term(self, dt):

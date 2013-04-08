@@ -10,16 +10,14 @@ if performance:
     stock_types = performance.event.stock_types
     stock_holders = StockHolder.query.join(Stock).filter(Stock.performance_id == performance.id).distinct().all()
     ticket_bundles = performance.event.ticket_bundles
-    sales_segments = performance.sales_segments
+    sales_segments = sorted(performance.sales_segments, key=lambda x:(x.order, x.name))
 elif sales_segment:
     event = sales_segment.event
     stock_types = event.stock_types
     ticket_bundles = event.ticket_bundles
     sales_segments = [sales_segment]
     performance_ids = [p.performance.id for p in sales_segment.products]
-
     stock_holders = StockHolder.query.join(Stock).filter(Stock.performance_id.in_(performance_ids)).distinct().all()
-
 %>
 %if performance:
 <%include file="/product_items/_modal.html" args="modal_id='modal-product_item', performance_id=performance.id" />
@@ -296,16 +294,15 @@ elif sales_segment:
   ss_to_st = {}
   if products:
     for product in products:
-      sales_segment_id = product.sales_segment.id if product.sales_segment else 0
-      if sales_segment_id not in ss_to_st:
-        name = product.sales_segment.name if product.sales_segment else u'販売区分なし'
-        ss_to_st[sales_segment_id] = {}
-      st_to_prod = ss_to_st[sales_segment_id]
+      sales_segment = product.sales_segment
+      if sales_segment not in ss_to_st:
+        ss_to_st[sales_segment] = {}
+      st_to_prod = ss_to_st[sales_segment]
 
-      stock_type_id = product.seat_stock_type_id
-      if stock_type_id not in st_to_prod:
-        st_to_prod[stock_type_id] = []
-      st_to_prod[stock_type_id].append(product)
+      stock_type = product.seat_stock_type
+      if stock_type not in st_to_prod:
+        st_to_prod[stock_type] = []
+      st_to_prod[stock_type].append(product)
 %>
 ## 旧商品登録フォーム
 <form>
@@ -319,9 +316,9 @@ elif sales_segment:
       <p>※このアイコン<i class="icon-eye-open"></i>をクリックすると券面のプレビューができます</p>
     % for i, sales_segment in enumerate(sales_segments):
       <div class="tab-pane ${'active' if i == 0 else ''}" id="sales-segment-${sales_segment.id}">
-        % if sales_segment.id in ss_to_st:
+        % if sales_segment in ss_to_st:
         <div style="margin: 10px 0 50px 30px;">
-          <% st_to_prod = ss_to_st[sales_segment.id] %>
+          <% st_to_prod = ss_to_st[sales_segment] %>
           <table class="table table-striped table-bordered table-condensed" style="margin-bottom: 10px;">
             <thead>
               <tr>
@@ -346,8 +343,8 @@ elif sales_segment:
 
             <tbody>
             <% row_count = 0 %>
-            % for stock_type_id in st_to_prod:
-              % for product in st_to_prod[stock_type_id]:
+            % for stock_type in sorted(st_to_prod, key=lambda x:x.display_order):
+              % for product in sorted(st_to_prod[stock_type], key=lambda x:x.display_order):
                 <% if limit and row_count >= limit: break %>
                 <% count = len(product.items_by_performance_id(performance.id)) if performance else 1 %>
                 <% rowspan = 'rowspan=%s' % (count)  if count else '' %>
@@ -397,8 +394,8 @@ elif sales_segment:
           </table>
           <%
             count_by_sales_segment = 0
-            for stock_type_id in st_to_prod:
-              count_by_sales_segment += len(st_to_prod[stock_type_id])
+            for stock_type in st_to_prod:
+              count_by_sales_segment += len(st_to_prod[stock_type])
           %>
           % if limit and count_by_sales_segment > limit:
           <div class="pull-right">

@@ -4,6 +4,12 @@ from pyramid import testing
 from zope.interface import implementer
 from ticketing.cart.interfaces import IStocker
 
+
+class DummySession(dict):
+    def persist(self):
+        pass
+
+
 @implementer(IStocker)
 class DummyStocker(object):
     def __init__(self, result):
@@ -74,8 +80,9 @@ def _add_lot(session, event_id, sales_segment_group_id, num_performances, num_st
 
     # sales_segment
     sales_segment = SalesSegment(id=sales_segment_group_id, 
-                                 payment_delivery_method_pairs=set([payment_delivery_method_pair]),
-                                 membergroups=membergroups)
+                                 payment_delivery_method_pairs=[payment_delivery_method_pair],
+                                 )
+                                 #membergroups=membergroups)
 
     # performances
     performances = []

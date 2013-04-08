@@ -5,8 +5,18 @@ from pyramid.renderers import get_renderer
 from pyramid_mailer import get_mailer
 from pyramid_mailer.message import Message
 from zope.interface import Interface, Attribute, implementer
-
+from ticketing.mails.interfaces import ITraverser
 logger = logging.getLogger(__name__)
+
+
+def get_traverser(request):
+    reg = request.registry
+    return reg.getUtility(ITraverser, name="lots")
+
+def get_mail_info(request, lot):
+    traverser = get_traverser(request)
+    traverser.visit(lot.event)
+    return traverser.data
 
 class IMailSender(Interface):
     subject = Attribute(u"subject of mail")

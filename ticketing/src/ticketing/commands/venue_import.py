@@ -213,12 +213,12 @@ def import_tree(update, organization, tree, file, venue_id=None):
             seat_index_type_obj = seat_index_type_obj_map.get(seat_index_type.name)
             if seat_index_type_obj is None:
                 # なければ既存のやつを削除する
-                print u'[DELETE] SeatIndexType(id=%d)' % seat_index_type.id
+                print '[DELETE] SeatIndexType(id=%d)' % seat_index_type.id
                 seat_index_type.delete()
             else:
                 # あれば、紐づいている SeatIndex を削除しておく
                 # (あとで追加されるので)
-                print u'[UPDATE] SeatIndexType(id=%d)' % seat_index_type.id
+                print '[UPDATE] SeatIndexType(id=%d)' % seat_index_type.id
                 for seat_index in DBSession.query(SeatIndex).filter_by(seat_index_type=seat_index_type):
                     # 論理削除したいのでループ
                     seat_index.delete()
@@ -226,7 +226,7 @@ def import_tree(update, organization, tree, file, venue_id=None):
         # new_seat_index_type_objs に入っているものに対応する SeatIndexType
         # を作る
         for seat_index_type_obj in new_seat_index_type_objs:
-            print u'[ADD] SeatIndexType(name="%s")' % seat_index_type_obj['properties']['name']
+            print (u'[ADD] SeatIndexType(name="%s")' % seat_index_type_obj['properties']['name']).encode(io_encoding)
             seat_index_type = SeatIndexType(venue=venue, name=seat_index_type_obj['properties']['name'])
             venue.seat_index_types.append(seat_index_type)
             seat_index_type_map[seat_index_type_obj['id']] = seat_index_type
@@ -261,7 +261,7 @@ def import_tree(update, organization, tree, file, venue_id=None):
                 block = venue_area
                 break
         else:
-            print u'[ADD] VenueArea(name="%s",id="%s")' % (block_obj['properties']['name'], block_obj['_node'].get('id'))
+            print (u'[ADD] VenueArea(name="%s",id="%s")' % (block_obj['properties']['name'], block_obj['_node'].get('id'))).encode(io_encoding)
             block = VenueArea(name=block_obj['properties']['name'])
             new_blocks.append(block)
 
@@ -292,7 +292,7 @@ def import_tree(update, organization, tree, file, venue_id=None):
                     seat = Seat(venue=venue, l0_id=seat_l0_id, group_l0_id=group_l0_id, row_l0_id=row_l0_id)
                     DBSession.add(seat)
                     if update:
-                        print u'[ADD] Seat(l0_id=%s)' % seat.l0_id
+                        print '[ADD] Seat(l0_id=%s)' % seat.l0_id
                     new_seat_count += 1
                 name = seat_obj['properties'].get('name')
                 seat_no = seat_obj['properties'].get('seat_no')
@@ -339,7 +339,7 @@ def import_tree(update, organization, tree, file, venue_id=None):
     seats_to_be_deleted = set(seats) - seats_given
     for seat_l0_id in seats_to_be_deleted:
         seat = seats.get(seat_l0_id)
-        print u'[DELETE] Seat(id=%d)' % seat.id
+        print '[DELETE] Seat(id=%d)' % seat.id
         seat.delete() # 論理削除
 
     print 'Number of seats to be added: %d' % new_seat_count
@@ -350,11 +350,11 @@ def import_tree(update, organization, tree, file, venue_id=None):
             if venue_area.name == block_obj['properties']['name']:
                 break
         else:
-            print u'[DELETE] VenueArea(id=%d)' % venue_area.id
+            print '[DELETE] VenueArea(id=%d)' % venue_area.id
             venue_area.delete()
 
     for adjacency_set in adjacency_sets.values():
-        print u'[ADD] SeatAdjacencySet(seat_count=%d)' % adjacency_set.seat_count
+        print '[ADD] SeatAdjacencySet(seat_count=%d)' % adjacency_set.seat_count
         DBSession.add(adjacency_set)
 
     DBSession.merge(site)

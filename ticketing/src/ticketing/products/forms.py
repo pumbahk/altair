@@ -103,6 +103,12 @@ class ProductForm(OurForm):
             if Decimal(field.data) < Decimal(sum_amount):
                 raise ValidationError(u'既に登録された商品合計金額以上で入力してください')
 
+    def validate_seat_stock_type_id(form, field):
+        if form.id.data:
+            product = Product.get(form.id.data)
+            if product.items and field.data != product.seat_stock_type_id:
+                raise ValidationError(u'既に在庫が割り当てられているため、席種は変更できません')
+
 
 class ProductItemForm(Form):
 

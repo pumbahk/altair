@@ -4,6 +4,9 @@
 from ticketing.formhelpers import OurDateWidget
 %>
 
+<script src="${request.static_url('ticketing:static/js/jquery.chosen.js')}"></script>
+<link rel="stylesheet" type="text/css" href="${request.static_url('ticketing:static/css/chosen.css')}" />
+
 <style type="text/css">
 .form-horizontal .control-label {
   width: 120px;
@@ -94,22 +97,24 @@ from ticketing.formhelpers import OurDateWidget
     <table>
       <tbody>
         <tr>
-          <th><label for="payment_method">${form.payment_method.label.text}</label></th>
-          <td>${form.payment_method(style="width:100%", size=4)}
-          <th><label for="delivery_method">${form.delivery_method.label.text}</label></th>
-          <td>${form.delivery_method(style="width:100%", size=4)}</td>
+          <th><label for="event_id">${form.event_id.label.text}</label></th>
+          <td>${form.event_id(style="width:750px", size=4)}</td>
+        </tr>
+        <tr>
+          <th><label for="performance_id">${form.performance_id.label.text}</label></th>
+          <td>${form.performance_id(style="width:750px", size=4)}</td>
         </tr>
       </tbody>
     </table>
     <table>
       <tbody>
         <tr>
-          <th><label for="event_id">${form.event_id.label.text}</label></th>
-          <td>${form.event_id(size=4)}</td>
-          <th><label for="performance_id">${form.performance_id.label.text}</label></th>
-          <td>${form.performance_id(size=4)}</td>
           <th><label for="sales_segment_id">${form.sales_segment_id.label.text}</label></th>
           <td>${form.sales_segment_id(size=4)}</td>
+          <th><label for="payment_method">${form.payment_method.label.text}</label></th>
+          <td>${form.payment_method(size=4)}
+            <th><label for="delivery_method">${form.delivery_method.label.text}</label></th>
+          <td>${form.delivery_method(size=4)}</td>
         </tr>
         <tr>
           <th><label>${form.start_on_from.label.text}</label></th>
@@ -139,6 +144,7 @@ from ticketing.formhelpers import OurDateWidget
         var update_on_empty = function(){
           var $target = $(this).parents("form").find("select[name='performance_id']").eq(0);
           $target.empty();
+          $target.chosen().trigger("liszt:updated");
           return;
         };
         var update_on_hasvalue = function(v){
@@ -153,6 +159,7 @@ from ticketing.formhelpers import OurDateWidget
                 var e = data.result[i];
                 $target.append($("<option>").attr("value", e.pk).text(e.name))
               }
+              $target.chosen().trigger("liszt:updated");
             }
           });
         };
@@ -165,7 +172,7 @@ from ticketing.formhelpers import OurDateWidget
             return update_on_hasvalue.call(self, v);
           }
         };
-        $("#search select[name='event_id']").change(update_performances);
+        $("#search select[name='event_id']").change(update_performances).chosen();
 
         var update_sales_segments_on_empty = function(){
           var $target = $(this).parents("form").find("select[name='sales_segment_id']").eq(0);
@@ -196,7 +203,7 @@ from ticketing.formhelpers import OurDateWidget
             return update_sales_segments_on_hasvalue.call(self, v);
           }
         };
-        $("#search select[name='performance_id']").change(update_sales_segments);
+        $("#search select[name='performance_id']").change(update_sales_segments).chosen();
       });
     </script>
     ${h.form_item(form.sort)}
@@ -244,47 +251,12 @@ from ticketing.formhelpers import OurDateWidget
   <div class="modal-body">
     <form id="download" class="form-horizontal" action="${request.route_path('orders.download')}" method="POST">
       <p>購入情報(CSV)をダウンロードします。よろしいですか？<br>
-        <div class="alert alert-error">
-          <% conditions = form.get_conditions() %>
-          % if conditions:
-            <div style="margin-bottom: 5px;">現在の検索条件で抽出されます。</div>
-          % else:
+        % if not form.get_conditions():
+          <div class="alert alert-error">
             <div style="margin-bottom: 5px;">検索条件がありません。<br>対象が多すぎると時間がかかる可能性があるので条件を指定してください。</div>
-          % endif
-
-          <ul>
-          <% listed = [] %>
-          % for k, v in conditions.items():
-            % if k in listed:
-              <% continue %>
-            % elif k in ['ordered_from', 'ordered_to']:
-              <%
-                ordered_from = conditions.pop('ordered_from', '')
-                if ordered_from:
-                  (label, ordered_from) = ordered_from
-                ordered_to = conditions.pop('ordered_to', '')
-                if ordered_to:
-                  (label, ordered_to) = ordered_to
-                listed += ['ordered_from', 'ordered_to']
-              %>
-              <li>${u'%s : %s 〜 %s' % (label, ordered_from, ordered_to)}</li>
-            % elif k in ['start_on_from', 'start_on_to']:
-              <%
-                start_on_from = conditions.pop('start_on_from', '')
-                if start_on_from:
-                  (label, start_on_from) = start_on_from
-                start_on_to = conditions.pop('start_on_to', '')
-                if start_on_to:
-                  (label, start_on_to) = start_on_to
-                listed += ['start_on_from', 'start_on_to']
-              %>
-              <li>${u'%s : %s 〜 %s' % (label, start_on_from, start_on_to)}</li>
-            % else:
-              <li>${'%s : %s' % v}</li>
-            % endif
-          % endfor
-          </ul>
-        </div>
+          </div>
+        % endif
+        <%include file="/orders/_search_condition.html" args="form=form" />
       </p>
       <fieldset>
         <div>
@@ -304,7 +276,6 @@ from ticketing.formhelpers import OurDateWidget
     <a href="javascript:download_orders();" class="btn danger">ダウンロード</a>
   </div>
 </div>
-
 
 % if len(orders) == 0:
   見つかりませんでした

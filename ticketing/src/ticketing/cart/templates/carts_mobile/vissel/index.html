@@ -5,19 +5,21 @@
 
 ${event.title}
 
-% if not venues:
+% if not key:
   <hr size="1" color="#960020" noshade="noshade" />
   <p><font color="#960020">■</font>${selector_label_1}をお選びください</p>
-  % for _performance_name in performances:
-  <a href="${request.current_route_url(_query={'performance_name': _performance_name.encode('sjis')})}">${_performance_name}</a><br />
+  % for _key, _ in key_to_formatted_sales_segments_map:
+  <a href="${request.current_route_path(_query={'key': _key.encode('sjis')})}">${_key}</a><br/>
   % endfor
 % else:
   <hr size="1" color="#960020" noshade="noshade" />
   <p><font color="#960020">■</font>${selector_label_2}をお選びください</p>
-  % for pid, _venue_name in venues:
-  <a href="${request.current_route_url(_query={'pid': pid})}">${_venue_name}</a><br />
+  % for _, sales_segments in key_to_formatted_sales_segments_map:
+  %   for sales_segment_info in sales_segments:
+  <a href="${request.route_path('cart.seat_types', event_id=event.id, sales_segment_id=sales_segment_info['id'])}">${sales_segment_info['name']}</a><br />
+  %   endfor
   % endfor
-  <form action="${request.route_url('cart.index', event_id=event.id)}" method="get">
+  <form action="${request.route_path('cart.index', event_id=event.id)}" method="get">
     <div style="text-align:center;">
       <input type="submit" value="戻る">
     </div>

@@ -56,6 +56,8 @@ class RootView(object):
 
             headers = security.remember(self.request, authenticated)
             return_url = get_return_url(self.request)
+            if not return_url:
+                return_url = "/"
             res = HTTPFound(location=return_url, headers=headers)
             return res
 

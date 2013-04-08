@@ -54,7 +54,7 @@ class SalesSegmentGroups(BaseView):
     @view_config(route_name='sales_segment_groups.show', renderer='ticketing:templates/sales_segment_groups/show.html')
     def show(self):
         sales_segment_group_id = int(self.request.matchdict.get('sales_segment_group_id', 0))
-        sales_segment_group = SalesSegmentGroup.get(sales_segment_group_id)
+        sales_segment_group = SalesSegmentGroup.get(sales_segment_group_id, self.context.user.organization_id)
         if sales_segment_group is None:
             return HTTPNotFound('sales_segment_group id %d is not found' % sales_segment_group_id)
 
@@ -75,7 +75,7 @@ class SalesSegmentGroups(BaseView):
     @view_config(route_name='sales_segment_groups.new', request_method='GET', renderer='ticketing:templates/sales_segment_groups/_form.html', xhr=True)
     def new_xhr(self):
         event_id = int(self.request.matchdict.get('event_id', 0))
-        event = Event.get(event_id)
+        event = Event.get(event_id, organization_id=self.context.user.organization_id)
         if not event:
             raise HTTPBadRequest(body=json.dumps({
                 'message':u'イベントが存在しません',
@@ -91,7 +91,7 @@ class SalesSegmentGroups(BaseView):
     @view_config(route_name='sales_segment_groups.new', request_method='POST', renderer='ticketing:templates/sales_segment_groups/_form.html', xhr=True)
     def new_post(self):
         event_id = int(self.request.POST.get('event_id', 0))
-        event = Event.get(event_id)
+        event = Event.get(event_id, organization_id=self.context.user.organization_id)
         if not event:
             return HTTPNotFound('event id %d is not found' % event_id)
 
@@ -115,7 +115,7 @@ class SalesSegmentGroups(BaseView):
     @view_config(route_name='sales_segment_groups.edit', request_method='GET', renderer='ticketing:templates/sales_segment_groups/_form.html', xhr=True)
     def edit_xhr(self):
         sales_segment_group_id = int(self.request.matchdict.get('sales_segment_group_id', 0))
-        sales_segment_group = SalesSegmentGroup.get(sales_segment_group_id)
+        sales_segment_group = SalesSegmentGroup.get(sales_segment_group_id, self.context.user.organization_id)
         if sales_segment_group is None:
             return HTTPNotFound('sales_segment_group id %d is not found' % sales_segment_group_id)
 
@@ -126,7 +126,7 @@ class SalesSegmentGroups(BaseView):
 
     def _edit_post(self):
         sales_segment_group_id = int(self.request.matchdict.get('sales_segment_group_id', 0))
-        sales_segment_group = SalesSegmentGroup.get(sales_segment_group_id)
+        sales_segment_group = SalesSegmentGroup.get(sales_segment_group_id, self.context.user.organization_id)
         if sales_segment_group is None:
             return HTTPNotFound('sales_segment_group id %d is not found' % sales_segment_group_id)
 
@@ -167,7 +167,7 @@ class SalesSegmentGroups(BaseView):
     @view_config(route_name='sales_segment_groups.delete')
     def delete(self):
         sales_segment_group_id = int(self.request.matchdict.get('sales_segment_group_id', 0))
-        sales_segment_group = SalesSegmentGroup.get(sales_segment_group_id)
+        sales_segment_group = SalesSegmentGroup.get(sales_segment_group_id, self.context.user.organization_id)
         if sales_segment_group is None:
             return HTTPNotFound('sales_segment_group id %d is not found' % sales_segment_group_id)
 
@@ -185,7 +185,7 @@ class SalesSegmentGroups(BaseView):
                  renderer='ticketing:templates/sales_segment_groups/bind_membergroup.html', request_method="GET")
     def bind_membergroup_get(self):
         sales_segment_group_id = int(self.request.matchdict.get('sales_segment_group_id', 0))
-        sales_segment_group = SalesSegmentGroup.get(sales_segment_group_id)
+        sales_segment_group = SalesSegmentGroup.get(sales_segment_group_id, self.context.user.organization_id)
         if sales_segment_group is None:
             return HTTPNotFound('sales_segment_group id %d is not found' % sales_segment_group_id)
         
@@ -204,7 +204,7 @@ class SalesSegmentGroups(BaseView):
                  renderer='ticketing:templates/sales_segment_groups/bind_membergroup.html', request_method="POST")
     def bind_membergroup_post(self):
         sales_segment_group_id = int(self.request.matchdict.get('sales_segment_group_id', 0))
-        sales_segment_group = SalesSegmentGroup.get(sales_segment_group_id)
+        sales_segment_group = SalesSegmentGroup.get(sales_segment_group_id, self.context.user.organization_id)
         if sales_segment_group is None:
             return HTTPNotFound('sales_segment_group id %d is not found' % sales_segment_group_id)
         
