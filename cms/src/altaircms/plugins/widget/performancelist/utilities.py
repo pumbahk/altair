@@ -25,6 +25,7 @@ def render_performancelist_with_template(template_name, request,  widget, bsetti
                   request)
 
 render_fullset = partial(render_performancelist_with_template,  "altaircms.plugins.widget:performancelist/render.html")
+render_soundc = partial(render_performancelist_with_template,  "altaircms.plugins.widget:performancelist/soundc_render.html")
 
 @implementer(IWidgetUtility)
 class PerformancelistWidgetUtilityDefault(object):
@@ -37,6 +38,7 @@ class PerformancelistWidgetUtilityDefault(object):
         self.settings = dict(configparser.items(PerformancelistWidget.type))
         self.rendering = DisplayTypeSelectRendering(self.settings, configparser)
         self.rendering.register("fullset", render_fullset)
+        self.rendering.register("soundc", render_soundc)
         self.choices = self.rendering.choices
         return self
 
@@ -45,4 +47,5 @@ class PerformancelistWidgetUtilityDefault(object):
 
     def render_action(self, request, page, widget, bsettings):
         kind = widget.kind or "default"
+
         return self.rendering.lookup(kind, default="")(request, widget, bsettings)

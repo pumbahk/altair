@@ -15,7 +15,9 @@ class PerformancelistWidgetView(object):
 
     def _create_or_update(self):
         try:
-            form = forms.PerformancelistForm(MultiDict(self.request.json_body["data"], page_id=self.request.json_body["page_id"]))
+            page_id = self.request.json_body["page_id"]
+            page = get_or_404(self.request.allowable(Page), Page.id==page_id)
+            form = forms.PerformancelistForm(MultiDict(self.request.json_body["data"], page_id=page_id)).configure(self.request, page)
             if not form.validate():
                 logger.warn(str(form.errors))
                 r = self.request.json_body.copy()
