@@ -25,7 +25,7 @@ def send_inquiry(request):
     log_info("send_inquiry", "send mail start")
     form.send.data = "Success"
     try:
-        send_mail(request=request, title=u'楽天チケット[MOB]　お問い合わせフォーム', body=create_mail_body(form), recipients=[request.inquiry_mailaddress])
+        send_mail(request=request, title=u'楽天チケット　モバイル　お問い合わせフォーム', body=create_mail_body(form), recipients=[request.inquiry_mailaddress])
     except Exception as e:
         log_error("send_inquiry", str(e))
         form.send.data = "Failed"
