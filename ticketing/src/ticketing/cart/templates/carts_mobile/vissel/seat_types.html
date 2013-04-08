@@ -20,7 +20,7 @@ ${event.title}
   % endfor
 <form action="${request.route_url('cart.index', event_id=event.id)}" method="get">
   <div style="text-align:center;">
-  <input type="hidden" name="performance_name" value="${return_value}" />
+  <input type="hidden" name="key" value="${return_value}" />
   <input type="submit" value="戻る">
   </div>
 </form>
