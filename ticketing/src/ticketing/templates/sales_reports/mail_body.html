@@ -133,15 +133,21 @@
         % endfor
       </table>
 
-      % for ((id, value), (id2, value_total)) in zip(performances_reports.items(), performances_reports_total.items()):
+      <%
+        sorted_performances = sorted(performances_reports, key=lambda x:(x.start_on, x.name))
+      %>
+      % for performance in sorted_performances:
         <%
-          performance = value['performance']
-          report_by_sales_segment_group = value['report_by_sales_segment_group']
-          report_by_sales_segment_group_total = value_total['report_by_sales_segment_group']
+          report_by_sales_segment_group = performances_reports[performance]
+          report_by_sales_segment_group_total = performances_reports_total[performance]
         %>
-        % for ((sale_segment_group_name, performance_reports), (sale_segment_group_name_total, performance_reports_total)) in zip(report_by_sales_segment_group.items(), report_by_sales_segment_group_total.items()):
+        % for sale_segment in sorted(report_by_sales_segment_group, key=lambda x:(x.order, x.name)):
+          <%
+            performance_reports = report_by_sales_segment_group[sale_segment]
+            performance_reports_total = report_by_sales_segment_group_total[sale_segment]
+          %>
       <h4 style="margin-top: 20px;">開催日:${h.safe_strftime(performance.start_on)}　${performance.name}</h4>
-      <h4>${sale_segment_group_name}</h4>
+      <h4>${sale_segment.name}</h4>
       <table style="width: 95%; border: 1px #DCDCDC solid; background-color: #C0FFFF;">
         % if form.limited_from.data or form.limited_to.data:
         <tr>
