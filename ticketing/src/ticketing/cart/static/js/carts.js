@@ -248,7 +248,7 @@ cart.ApplicationController.prototype.init = function(salesSegmentsSelection, sel
     this.performance.on("change", function () {
         $('#performanceDate').text(this.get('performance_name'));
         $('#descPerformanceDate').text(this.get('performance_start'));
-        $('#performanceVenue').text(this.get('performance'));
+        $('#performanceVenue').text(this.get('venue_name'));
         $(".performanceNameSpace").text(this.get('performance_name'));
     });
     // 席種
