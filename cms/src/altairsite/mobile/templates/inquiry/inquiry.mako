@@ -25,8 +25,8 @@
 % endif
 
 <form action="/inquiry" method="POST">
-    ${form.name.label}<br/>${form.name}<br/>
-    ${disp_error(form.name.errors)}
+    ${form.username.label}<br/>${form.username}<br/>
+    ${disp_error(form.username.errors)}
     ${form.mail.label}<br/>${form.mail}<br/>
     ${disp_error(form.mail.errors)}
     ${form.num.label}<br/>${form.num}<br/>

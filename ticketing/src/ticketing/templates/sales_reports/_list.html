@@ -35,7 +35,11 @@
         </tr>
       </thead>
       <tbody>
-        % for performance_report, performance_total_report in zip(performances_reports, performances_total_reports):
+        <%
+          sorted_performances_reports = sorted(performances_reports, key=lambda x:(x['start_on'], x['title']))
+          sorted_performances_total_reports = sorted(performances_total_reports, key=lambda x:(x['start_on'], x['title']))
+        %>
+        % for performance_report, performance_total_report in zip(sorted_performances_reports, sorted_performances_total_reports):
         <tr>
           <td><a href="javascript:performance_report(${performance_report['id']})">${performance_report['title']} (${h.safe_strftime(performance_report['start_on'])}開始)</a></td>
           <td class="span1 numeric">${h.price_format(performance_report['total_quantity'])}</td>

@@ -128,21 +128,15 @@ cart.Dialog.prototype = {
 };
 
 cart.events = {
-    ON_PERFORMANCE_RESOLVED: "onPerformanceResolved",
+    ON_SALES_SEGMENT_RESOLVED: "onSalesSegmentResolved",
     ON_STOCK_TYPE_SELECTED: "onStockTypeSelected",
     ON_CART_CANCELED: "onCartCanceled",
     ON_CART_ORDERED: "onCartOredered",
     ON_VENUE_DATASOURCE_UPDATED: "onVenueDataSourceUpdated"
 };
-cart.init = function(venues_selection, selected, cart_release_url) {
-    // venues_selection = $.extend({}, venues_selection); // clone
-    // $.each(venues_selection, function (k, v) {
-    //     for (var i = 0; i < v.length; i++) {
-    //         v[i].date = k;
-    //     }
-    // });
+cart.init = function(salesSegmentsSelection, selected, cartReleaseUrl) {
     this.app = new cart.ApplicationController();
-    this.app.init(venues_selection, selected, cart_release_url);
+    this.app.init(salesSegmentsSelection, selected, cartReleaseUrl);
     $('body').bind('selectstart', function() { return false; });
 };
 
@@ -183,7 +177,7 @@ cart.proceedToCheckout = function proceedToCheckout(performance, reservationData
         },
         cancel: function () {
             $.ajax({
-                url: cart_release_url, // global
+                url: cartReleaseUrl, // global
                 dataType: 'json',
                 type: 'POST',  
                 success: function() {}
@@ -232,11 +226,11 @@ cart.showErrorDialog = function showErrorDialog(title, message, footer_button_cl
 cart.ApplicationController = function() {
 };
 
-cart.ApplicationController.prototype.init = function(venues_selection, selected, cart_release_url) {
+cart.ApplicationController.prototype.init = function(salesSegmentsSelection, selected, cartReleaseUrl) {
     this.performanceSearch = new cart.PerformanceSearch({
-        venuesSelection: venues_selection,
-        performance: selected[1],
-        venue: null
+        salesSegmentsSelection: salesSegmentsSelection,
+        key: selected[1],
+        defaultSalesSegmentId: null
     });
     this.performance = new cart.Performance({
     });
@@ -249,6 +243,13 @@ cart.ApplicationController.prototype.init = function(venues_selection, selected,
         performanceSearch: this.performanceSearch,
         performance: this.performance,
         firstSelection: selected
+    });
+    // 対応するビューがないので直接
+    this.performance.on("change", function () {
+        $('#performanceDate').text(this.get('performance_name'));
+        $('#descPerformanceDate').text(this.get('performance_start'));
+        $('#performanceVenue').text(this.get('performance'));
+        $(".performanceNameSpace").text(this.get('performance_name'));
     });
     // 席種
     this.stockTypeListPresenter = new cart.StockTypeListPresenter({
@@ -292,25 +293,18 @@ cart.PerformanceSearchPresenter.prototype = {
         var self = this;
         this.view = new this.viewType({
             presenter: this,
+            model: this.performanceSearch,
             el: $("#form1")
         });
-        this.view.on(cart.events.ON_PERFORMANCE_RESOLVED,
-            function(performance) {self.onPerformanceResolved(performance);});
-        this.view.model = this.performanceSearch;
-        this.view.renderDateSelection();
+        this.view.on(cart.events.ON_SALES_SEGMENT_RESOLVED,
+            function(salesSegmentId) {self.onSalesSegmentResolved(salesSegmentId);});
         this.view.setInitialValue(this.firstSelection[0], this.firstSelection[1]);
     },
-    onPerformanceResolved: function(performance_id) {
-        var performance = this.performanceSearch.getPerformance(performance_id);
-        this.performance.url = performance.seat_types_url;
-        this.performance.fetch({
-            success: function (req, data) {
-                $('#performanceDate').text(data.performance_name);
-                $('#descPerformanceDate').text(data.performance_start);
-                $('#performanceVenue').text(performance.name);
-                $(".performanceNameSpace").text(data["performance_name"]);
-            }
-        });
+    onSalesSegmentResolved: function(salesSegmentId) {
+        var self = this;
+        var salesSegment = this.performanceSearch.getSalesSegment(salesSegmentId);
+        this.performance.url = salesSegment.seat_types_url;
+        this.performance.fetch();
     }
 };
 _.extend(cart.PerformanceSearchPresenter.prototype, Backbone.Event);
@@ -476,87 +470,90 @@ cart.PerformanceSearchView = Backbone.View.extend({
     initialize: function() {
         var self = this;
         this.selection = this.$el.find("#date-select");
-        this.selection.on("change",
-            function() {self.onDateSelectionChanged(this.value)});
-        this.venueSelection = this.$el.find("#venue-select");
-        this.venueSelection.on("change",
-            function() {self.onVenueSelectionChanged()});
+        this.selection.on("change", function() { self.onKeySelectionChanged(this.value); });
+        this.salesSegmentSelection = this.$el.find("#venue-select");
+        this.salesSegmentSelection.on("change", function() {self.onSalesSegmentSelectionChanged(this.value)});
+
+        this.model.on("change:key", function (model, value) { self.onKeyChanged(value); });
     },
-    renderDateSelection: function () {
+    renderKeySelection: function () {
         // 公演名
         this.selection.empty();
         var self = this;
-        var dates = this.model.getDates();
-        $.each(dates, function (_, v) {
+        var keys = this.model.getKeys();
+        $.each(keys, function (_, v) {
             self.selection.append($('<option></option>').attr('value', v).text(v));
         });
     },
-    render: function() {
-        // 絞り込み条件を設定する
-        var selected = this.model.get("performance");
-        this.renderPerformanceSelection(selected, null);
+    onKeySelectionChanged: function (value) {
+        this.model.set("key", value);
     },
-    renderPerformanceSelection: function(selected, selected_performance_id) {
-        var venues = this.model.getVenues(selected);
-        var venueSelection = this.$el.find("#venue-select");
-        venueSelection.empty();
+    renderSalesSegmentSelection: function() {
+        var key = this.model.get('key');
+        var salesSegments = this.model.getSalesSegments(key);
+        this.salesSegmentSelection.empty();
         // 公演会場選択
-        for (var i=0; i < venues.length; i++) {
-            var venue = venues[i];
+        for (var i = 0; i < salesSegments.length; i++) {
+            var salesSegment = salesSegments[i];
             var opt = $('<option/>');
-            $(opt).attr('value', venue.id);
-            $(opt).text(venue.name);
-            $(venueSelection).append(opt);
+            $(opt).attr('value', salesSegment.id);
+            $(opt).text(salesSegment.name);
+            this.salesSegmentSelection.append(opt);
         }
-        $(venueSelection).val(selected_performance_id);
-        $(venueSelection).change();
+        var salesSegmentId = this.model.get('defaultSalesSegmentId');
+        if (salesSegmentId) {
+            this.salesSegmentSelection.val(salesSegmentId);
+            this.onSalesSegmentSelectionChanged(salesSegmentId);
+        }
+
     },
-    onDateSelectionChanged: function(performanceDate) {
-        this.model.set("performance", performanceDate);
+    onSalesSegmentSelectionChanged: function(value) {
+        this.trigger(cart.events.ON_SALES_SEGMENT_RESOLVED, value);
+    },
+    onKeyChanged: function(key) {
+        this.selection.val(key);
+        this.model.set("defaultSalesSegmentId", this.model.getSalesSegments(key)[0].id); 
+        this.renderSalesSegmentSelection();
+    },
+    render: function() {
+        this.renderKeySelection();
+        this.renderSalesSegmentSelection();
+    },
+    setInitialValue: function(key, salesSegmentId) {
+        this.model.set("defaultSalesSegmentId", salesSegmentId);
+        this.model.set("key", key, { silent: true });
         this.render();
-    },
-    onVenueSelectionChanged: function() {
-        this.trigger(cart.events.ON_PERFORMANCE_RESOLVED,
-            $(this.venueSelection).val());
-    },
-    setInitialValue: function(performance_name, performance_id) {
-        this.selection.val(performance_name);
-        this.model.set("performance", performance_name);
-        this.renderPerformanceSelection(performance_name, performance_id);
     }
 });
 
 cart.PerformanceSearch = Backbone.Model.extend({
     defaults: {
-        venuesSelection: null,
-        performance: null
+        salesSegmentsSelection: null,
+        key: null
     },
-    getDates: function() {
+    getKeys: function() {
         var retval = [];
-        // for (var k in this.get('venuesSelection'))
-        //     retval.push(k);
-        var selections = this.get('venuesSelection');
+        var selections = this.get('salesSegmentsSelection');
         for (var i=0; i < selections.length; i++) {
             retval.push(selections[i][0]);
         }
         return retval;
     },
-    getVenues: function(selected) {
-        var venuesSelection = this.get('venuesSelection');
-        var selections = this.get('venuesSelection');
+    getSalesSegments: function(key) {
+        var selections = this.get('salesSegmentsSelection');
         for (var i=0; i < selections.length; i++) {
-            if (selections[i][0] == selected) {
+            if (selections[i][0] == key) {
                 return selections[i][1];
             }
         }
-        return []    
+        return [];   
     },
-    getPerformance: function(id) {
-        var venues = this.getVenues(this.get("performance"));
-        for (var i=0; i < venues.length; i++) {
-            var venue = venues[i];
-            if (venue.id == id) {
-                return venue;
+    getSalesSegment: function(id) {
+        var salesSegments = this.getSalesSegments(this.get("key"));
+        for (var i = 0; i < salesSegments.length; i++) {
+            var salesSegment = salesSegments[i];
+            if (salesSegment.id == id) {
+                return salesSegment;
             }
         }
     }

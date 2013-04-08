@@ -55,7 +55,11 @@
     <th>販売金額</th>
   </tr>
 
-  % for event_report, event_total_report in zip(event_reports, event_total_reports):
+  <%
+    sorted_event_reports = sorted(event_reports, key=lambda x:(x['start_on'], x['title']))
+    sorted_event_total_reports = sorted(event_total_reports, key=lambda x:(x['start_on'], x['title']))
+  %>
+  % for event_report, event_total_report in zip(sorted_event_reports, sorted_event_total_reports):
   <tr>
     <td><a href='javascript:event_link("${request.route_path("sales_reports.event", event_id=event_report["id"])}");'>${event_report['title']}</a></td>
     % if event_report['sales_start_day'] == event_report['sales_end_day']:

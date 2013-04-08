@@ -310,11 +310,8 @@ def get_performance_sales_detail(form, event):
                    (form.limited_to.data is None or sales_segment.start_at <= todatetime(form.limited_to.data)):
                     form.performance_id.data = performance.id
                     form.sales_segment_group_id.data = sales_segment.sales_segment_group_id
-                    report_by_sales_segment_group[sales_segment.sales_segment_group.name] = get_performance_sales_summary(form, event.organization)
-        performances_reports[performance.id] = dict(
-            performance=performance,
-            report_by_sales_segment_group=report_by_sales_segment_group
-        )
+                    report_by_sales_segment_group[sales_segment] = get_performance_sales_summary(form, event.organization)
+        performances_reports[performance] = report_by_sales_segment_group
     return performances_reports
 
 def sendmail(event, form=None):

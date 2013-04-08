@@ -75,9 +75,9 @@ prefix = str(random.random())[2:]
     var mainImageNormalize = normalize_factory(515,300,true);
 
     $(function(){
-      setInterval(function(){
+      var collectData = function collectData(){
         var params = {promotion_unit_id: pu_candidates.next_id()};
-        $.getJSON("/api/promotion/mainimage", params).done(
+        return $.getJSON("/api/promotion/mainimage", params).done(
           function(data){
             var img = $(".mainImage img");
             img.attr("src", data.src);
@@ -88,8 +88,13 @@ prefix = str(random.random())[2:]
             if(message.length > 50){message = message.substr(0,50)+"...";}
             $(".mainImageMessage").text(message);
            $(".thumbnail").append($(".thumbnailBox").eq(0));
-          });
-        }, interval_time);
+         });
+      };
+      var loop = function loop(){
+        collectData().done(function(){setTimeout(loop, interval_time)});       
+      }
+      setTimeout(loop, interval_time);
+
     // some magic numbers;
     var normalize = normalize_factory(58,58,true);
     normalize_factory(515,300,true)($(".mainImage img"), ${info.width}, ${info.height});

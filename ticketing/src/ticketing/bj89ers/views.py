@@ -56,6 +56,30 @@ def back(func):
         return func(*args, **kwargs)
     return retval
 
+class OutTermSalesView(object):
+    def __init__(self, context, request):
+        self.request = request
+        self.context = context
+
+    def pc(self):
+        if self.context.next is None:
+            datum = self.context.last
+            which = 'last'
+        else:
+            datum = self.context.next
+            which = 'next'
+        return dict(which=which, **datum)
+
+    def mobile(self):
+        if self.context.next is None:
+            datum = self.context.last
+            which = 'last'
+        else:
+            datum = self.context.next
+            which = 'next'
+        return dict(which=which, **datum)
+
+
 class IndexView(object):
     def __init__(self, request):
         self.request = request
@@ -79,13 +103,8 @@ class IndexView(object):
         form.member_type.choices = choices
         return form, products
 
-    def notready(self):
-        return dict(start_at=self.context.start_at, end_at=self.context.end_at)
-
     def get(self):
-        current_date = datetime.now()
-        if current_date < self.context.start_at or self.context.end_at < current_date:
-            return HTTPFound(location=self.request.route_url('notready'))
+        print self.context.available_sales_segments
         user_profile = load_user_profile(self.request)
         form, products = self._create_form(MultiDict(user_profile) if user_profile else MultiDict())
         return dict(form=form, products=products)
@@ -104,7 +123,7 @@ class IndexView(object):
             logger.debug("%s" % form.errors)
             return dict(form=form, products=products)
 
-        cart = cart_api.order_products(self.request, self.context.performance_id, self.ordered_items)
+        cart = cart_api.order_products(self.request, self.context.sales_segment.performance.id, self.ordered_items)
         if cart is None:
             logger.debug('cart is None')
             return dict(form=form, products=products)
@@ -112,10 +131,9 @@ class IndexView(object):
         cart_api.set_cart(self.request, cart)
         store_user_profile(self.request, form.data)
         logger.debug('OK redirect')
-        sales_segment_group_id = self.context.sales_segment_group_id
-        cart.sales_segment_group_id = sales_segment_group_id
-        cart.sales_segment = c_models.SalesSegment.query.filter(c_models.SalesSegment.id==1).one()
-        return HTTPFound(location=self.request.route_url("cart.payment", sales_segment_id=sales_segment_group_id))
+        cart.sales_segment = self.context.sales_segment
+        cart.sales_segment_group_id = cart.sales_segment.sales_segment_group.id
+        return HTTPFound(location=self.request.route_url("cart.payment", sales_segment_id=cart.sales_segment.id))
 
 class PaymentView(_PaymentView):
     def get_validated_address_data(self):

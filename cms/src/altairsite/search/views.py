@@ -3,6 +3,7 @@ from pyramid.view import view_config
 from pyramid.view import view_defaults
 from altaircms.tag.models import HotWord
 from altaircms.models import SalesSegmentKind
+from altaircms.page.models import PageTag
 from webob.multidict import MultiDict
 from pyramid.httpexceptions import HTTPNotFound
 import logging
@@ -220,6 +221,31 @@ class SearchByKindView(object):
             result_seq = self.context.get_result_sequence_from_query_params(
                 query_params,
                 searchfn=searcher.get_pageset_query_from_hotword
+                )
+            ## query_paramsをhtml化する
+
+            html_query_params = self.context.get_query_params_as_html(query_params)
+            ### header page用のcategoryを集めてくる
+            return dict(result_seq=result_seq, query_params=html_query_params)
+        except Exception, e:
+            logger.exception(e)
+            raise HTTPNotFound
+
+    @view_config(match_param="kind=pagetag") #kind, value
+    def search_by_pagetag(self):
+        """ ホットワードの飛び先
+        """
+        try:
+            pagetag_id = self.request.matchdict["value"]
+            pagetag = self.request.allowable(PageTag).filter(PageTag.id==pagetag_id, PageTag.publicp==True).first()
+            if pagetag is None:
+                logger.warn("page tag is not found" % pagetag_id)
+            self.request.body_id = "search"
+            query_params = {"pagetag": pagetag, 
+                            "query_expr_message": pagetag.label}
+            result_seq = self.context.get_result_sequence_from_query_params(
+                query_params,
+                searchfn=searcher.get_pageset_query_from_pagetag
                 )
             ## query_paramsをhtml化する
 

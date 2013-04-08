@@ -282,7 +282,7 @@ class OrderRefundSearchForm(OrderSearchForm):
         super(OrderRefundSearchForm, self).__init__(formdata, obj, prefix, **kwargs)
         self.status.data = ['ordered', 'delivered']
         self.payment_status.data = ['paid']
-        self.public.data = u'一般販売のみ'
+        self.public.data = u'一般発売のみ'
 
     def _get_translations(self):
         return Translations()
@@ -347,7 +347,7 @@ class OrderRefundSearchForm(OrderSearchForm):
         coerce=str,
     )
     public = TextField(
-        label=u'一般販売',
+        label=u'一般発売',
         validators=[Optional()],
     )
 

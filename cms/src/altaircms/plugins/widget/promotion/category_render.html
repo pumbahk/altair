@@ -111,9 +111,9 @@ prefix = str(random.random())[2:]
     var mainImageNormalize = normalize_factory(515,300,true);
 
     $(function(){
-      setInterval(function(){
+      var collectData = function collectData(){
         var params = {promotion_unit_id: pu_candidates.next_id()};
-        $.getJSON("/api/promotion/mainimage", params).done(
+        return $.getJSON("/api/promotion/mainimage", params).done(
           function(data){
             var img = $(".mainImage img");
             img.attr("src", data.src);
@@ -121,7 +121,11 @@ prefix = str(random.random())[2:]
             mainImageNormalize(img, data.width, data.height);
             $(".mainImageMessage").text(data.message);
           });
-        }, interval_time);
+      };
+      var loop = function loop(){
+        collectData().done(function(){setTimeout(loop, interval_time)});       
+      }
+      setTimeout(loop, interval_time);
     });
 
     // some magic numbers;

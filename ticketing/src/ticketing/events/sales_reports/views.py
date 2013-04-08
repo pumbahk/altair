@@ -77,11 +77,11 @@ class SalesReports(BaseView):
         report_by_sales_segment_group_total = {}
         for sales_segment in performance.sales_segments:
             form = SalesReportForm(self.request.params, performance_id=performance_id, sales_segment_group_id=sales_segment.sales_segment_group.id)
-            report_by_sales_segment_group[sales_segment.sales_segment_group.name] = get_performance_sales_summary(form, self.context.organization)
+            report_by_sales_segment_group[sales_segment] = get_performance_sales_summary(form, self.context.organization)
 
             form.limited_from.data = None
             form.limited_to.data = None
-            report_by_sales_segment_group_total[sales_segment.sales_segment_group.name] = get_performance_sales_summary(form, self.context.organization)
+            report_by_sales_segment_group_total[sales_segment] = get_performance_sales_summary(form, self.context.organization)
 
         return {
             'form':SalesReportForm(self.request.params, event_id=performance.event_id),

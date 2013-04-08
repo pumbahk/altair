@@ -45,9 +45,17 @@ class TicketingCartResource(object):
         self.now = datetime.now()
         self._event_id = None
         self._event = None
-        if request.matchdict:
+        self._sales_segment_id = None
+        self._populate_params()
+
+    def _populate_params(self):
+        if self.request.matchdict:
             try:
-                self._event_id = int(self.request.matchdict.get('event_id'))
+                self._event_id = long(self.request.matchdict.get('event_id'))
+            except (ValueError, TypeError):
+                pass
+            try:
+                self._sales_segment_id = long(self.request.matchdict.get('sales_segment_id'))
             except (ValueError, TypeError):
                 pass
 
@@ -84,14 +92,9 @@ class TicketingCartResource(object):
                 self._event = None
         return self._event
 
-
     @property
     def performance(self):
-        performance_id = self.request.matchdict['performance_id']
-        try:
-            return c_models.Performance.query.filter_by(id=performance_id).one()
-        except NoResultFound:
-            raise NoPerformanceError
+        return self.sales_segment.performance
 
     @reify
     def membergroups(self):
@@ -103,22 +106,6 @@ class TicketingCartResource(object):
     def get_system_fee(self):
         # 暫定で0に設定
         return 0
-
-    @property
-    def sales_counter_sales_segment(self):
-        """ 当日用販売区分"""
-        scs = [s for s in self.available_sales_segments if s.sales_segment_group.sales_counter]
-        if not scs:
-            return None
-        return scs[0]
-
-    @reify
-    def normal_sales_segment(self):
-        """ 当日以外販売区分"""
-        scs = [s for s in self.available_sales_segments if s.sales_segment_group.sales_counter]
-        if not scs:
-            return None
-        return scs[0]
 
     def get_payment_delivery_method_pair(self, start_on=None):
         segment = self.sales_segment
@@ -203,19 +190,12 @@ class TicketingCartResource(object):
     def sales_segment(self):
         """ 該当イベントのSalesSegment取得
         """
-
-        if not getattr(self.request, 'matchdict'):
-            raise NoSalesSegment()
-
-        try:
-            sales_segment_id = long(self.request.matchdict.get('sales_segment_id'))
-        except (ValueError, TypeError):
-            # sales_segment_id が与えられてないとか、非整数な文字列
+        if self._sales_segment_id is None:
             raise NoSalesSegment()
 
         # XXX: 件数少ないしリニアサーチでいいよね
         for sales_segment in self.available_sales_segments:
-            if sales_segment.id == sales_segment_id:
+            if sales_segment.id == self._sales_segment_id:
                 return sales_segment
 
         raise NoSalesSegment()
