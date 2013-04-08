@@ -76,8 +76,11 @@ class MobileIndexView(IndexViewMixin):
         performance_name = self.request.params.get('performance_name')
         venues = []
         if performance_name:
-            venues = performance_selector()
-            venues = [(v['id'], v['name']) for v in venues[performance_name]]
+            performance_to_venue_map = performance_selector()
+            if performance_name not in performance_to_venue_map:
+                return HTTPFound(self.request.route_url('cart.index', event_id=self.context.event.id))
+
+            venues = [(v['id'], v['name']) for v in performance_to_venue_map[performance_name]]
 
         return dict(
             event=self.context.event,
