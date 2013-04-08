@@ -40,6 +40,10 @@
             "auth_source": "oauth", 
             "backend_id": 4, 
             "short_name": "vissel"
+        },
+        "sound-creator": {
+            "auth_source": "oauth",
+            "short_name":  "sound-c"
         }
     }
 }

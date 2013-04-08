@@ -32,6 +32,10 @@
         "RT": {
             "auth_source": "oauth", 
             "short_name": "RT"
+        },
+        "sound-creator": {
+            "auth_source": "oauth",
+            "short_name":  "sound-c"
         }
     }
 }

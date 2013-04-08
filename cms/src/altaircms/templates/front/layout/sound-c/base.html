@@ -1,0 +1,43 @@
+## define {{{
+<%def name="widgets(name)">
+  % for w in display_blocks[name]:
+    ${w|n}
+  % endfor
+</%def>
+## }}} end of python code
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="jp">
+<%include file="./.head.html"/>
+<body>
+  <%include file="./.header.html"/>
+	<!-- wrapper -->	
+	<div class="wrapper">
+		
+		<div>
+			<div class="maincol">
+        <%block name="main1">
+         ${widgets("main1")}
+        </%block>
+			</div>
+			<!-- メインカラムおわり -->
+			
+			<!-- サイドバー -->
+			<div class="sidebar">
+      <%block name="side1">
+        <div class="bk">
+         ${widgets("side1")}
+        </div>
+      </%block>
+			</div>	
+			<!-- サイドバーおわり -->
+
+			<br class="clear" />
+
+		</div>
+		
+	</div>
+	<!-- wrapperおわり -->
+
+<%include file="./.footer.html"/>
+</body>
+</html>
