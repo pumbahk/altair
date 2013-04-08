@@ -131,7 +131,7 @@ class IndexView(IndexViewMixin):
 
             # performance_id が指定されていて、かつパフォーマンスが見つからない
             # 場合は例外
-            if selected_performance is None:
+            if selected_sales_segment is None:
                 raise NoPerformanceError(event_id=self.context.event.id)
 
         return dict(
