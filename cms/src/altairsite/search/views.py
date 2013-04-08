@@ -214,7 +214,7 @@ class SearchByKindView(object):
             hotword = self.request.allowable(HotWord).filter(HotWord.id==hotword_id, HotWord.enablep == True)
             hotword = hotword.options(orm.joinedload("tag")).first()
             if hotword is None:
-                logger.warn("hot word is not found" % hotword_id)
+                logger.warn("hot word is not found id=%s" % hotword_id)
             self.request.body_id = "search"
             query_params = {"hotword": hotword, 
                             "query_expr_message": u"ホットワード:%s" % hotword.name}
@@ -239,7 +239,7 @@ class SearchByKindView(object):
             pagetag_id = self.request.matchdict["value"]
             pagetag = self.request.allowable(PageTag).filter(PageTag.id==pagetag_id, PageTag.publicp==True).first()
             if pagetag is None:
-                logger.warn("page tag is not found" % pagetag_id)
+                logger.warn("page tag is not found id=%s" % pagetag_id)
             self.request.body_id = "search"
             query_params = {"pagetag": pagetag, 
                             "query_expr_message": pagetag.label}
