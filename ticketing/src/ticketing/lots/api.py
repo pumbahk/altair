@@ -344,3 +344,7 @@ def send_rejected_mails(request):
         sendmail.send_rejected_mail(request, rejected_entry)
         rejected_entry.mail_sent_at = datetime.now()
         transaction.commit()
+
+
+def get_entry_user(request):
+    return None

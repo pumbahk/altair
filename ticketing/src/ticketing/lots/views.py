@@ -19,11 +19,12 @@ from . import helpers as h
 from . import schemas
 from .exceptions import NotElectedException
 from .models import (
-    Lot,
+    #Lot,
     LotEntry,
     LotEntryWish,
     LotElectedEntry,
 )
+from . import urls
 
 logger = logging.getLogger(__name__)
 
@@ -152,7 +153,7 @@ class EntryLotView(object):
             shipping_address=shipping_address)
 
 
-        location = self.request.route_url('lots.entry.confirm', **self.request.matchdict)
+        location = urls.entry_confirm(self.request)
         return HTTPFound(location=location)
 
 @view_defaults(route_name='lots.entry.confirm', renderer="confirm.html")
@@ -178,14 +179,7 @@ class ConfirmLotEntryView(object):
             wishes=h.add_wished_product_names(entry['wishes']))
 
     def back_to_form(self):
-        return HTTPFound(location=self.request.route_url('lots.entry.index',
-            event_id=self.request.matchdict.get('event_id'),
-            lot_id=self.request.matchdict.get('lot_id')))
-
-    def get_lot(self):
-        """ TODO: context.lot"""
-        lot_id = self.request.matchdict.get('lot_id')
-        return Lot.query.filter(Lot.id==lot_id).one()
+        return HTTPFound(location=urls.entry_index(self.request))
 
     @view_config(request_method="POST")
     def post(self):
@@ -195,24 +189,25 @@ class ConfirmLotEntryView(object):
         if not h.validate_token(self.request):
             self.request.session.flash(u"セッションに問題が発生しました。")
             return self.back_to_form()
+
         entry = self.request.session['lots.entry']
         shipping_address = entry['shipping_address']
         shipping_address = h.convert_shipping_address(shipping_address)
         wishes = entry['wishes']
 
-        lot_id = self.request.matchdict['lot_id']
-        lot = Lot.query.filter(Lot.id==lot_id).one()
+        lot = self.context.lot
 
         if not lot.validate_entry(self.request.params):
             return HTTPFound('lots.entry.index')
         payment_delivery_method_pair_id = entry['payment_delivery_method_pair_id']
         payment_delivery_method_pair = PaymentDeliveryMethodPair.query.filter(PaymentDeliveryMethodPair.id==payment_delivery_method_pair_id).one()
 
-        user = None
+        user = api.get_entry_user(self.request)
+
         entry = api.entry_lot(self.request, lot, shipping_address, wishes, payment_delivery_method_pair, user)
         self.request.session['lots.entry_no'] = entry.entry_no
         api.notify_entry_lot(self.request, entry)
-        return HTTPFound(self.request.route_url('lots.entry.completion', **self.request.matchdict))
+        return HTTPFound(location=urls.entry_completion(self.request))
 
 @view_defaults(route_name='lots.entry.completion', renderer="completion.html")
 class CompletionLotEntryView(object):
@@ -324,7 +319,7 @@ class PaymentView(object):
         決済
         """
 
-        event_id = self.request.matchdict['event_id']
+        event_id = self.context.lot
         lot_entry = api.entry_session(self.request)
         if lot_entry is None:
             raise HTTPNotFound
@@ -368,7 +363,6 @@ class PaymentConfirm(object):
     def get(self):
         """
         """
-        event_id = self.request.matchdict['event_id']
         lot_entry = api.entry_session(self.request)
         if lot_entry is None:
             raise HTTPNotFound
@@ -396,7 +390,7 @@ class PaymentConfirm(object):
         cart_api.remove_cart(self.request)
         lot_entry = api.entry_session(self.request)
         lot_entry.order = order
-        return HTTPFound(self.request.route_url('lots.payment.completion', **self.request.matchdict))
+        return HTTPFound(location=urls.payment_completion(self.request))
 
 @view_defaults(route_name='lots.payment.completion', renderer='completion_2.html')
 class PaymentCompleted(object):
