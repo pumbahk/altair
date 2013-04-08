@@ -353,6 +353,8 @@ class ConfirmLotEntryViewTests(unittest.TestCase):
         request.registry.settings['lots.accepted_mail_sender'] = 'testing@sender.example.com'
         request.registry.settings['lots.accepted_mail_template'] = 'ticketing.lots:mail_templates/accept_entry.txt'
         context = testing.DummyResource()
+        context.lot = lot
+        context.event = lot.event
 
         target = self._makeOne(context, request)
 
@@ -520,7 +522,9 @@ class PaymentViewTests(unittest.TestCase):
         request = testing.DummyRequest(
             matchdict={"event_id": None},
         )
-        target = self._makeOne(request)
+        context = testing.DummyResource()
+        context.lot = None
+        target = self._makeOne(context, request)
 
         self.assertRaises(HTTPNotFound, target.submit)
 
@@ -563,10 +567,12 @@ class PaymentViewTests(unittest.TestCase):
         request = testing.DummyRequest(
             matchdict={"event_id": None},
         )
+        context = testing.DummyResource()
         entry_id = 999999
         entry = self._add_entry(entry_id)
+        context.lot = entry.lot
         request.session['lots.entry_id'] = entry_id
-        target = self._makeOne(request)
+        target = self._makeOne(context, request)
 
         self.assertRaises(NotElectedException, target.submit)
 

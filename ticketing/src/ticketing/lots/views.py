@@ -271,7 +271,8 @@ class PaymentView(object):
     """
     
 
-    def __init__(self, request):
+    def __init__(self, context, request):
+        self.context = context
         self.request = request
 
     @view_config(request_method="GET")
