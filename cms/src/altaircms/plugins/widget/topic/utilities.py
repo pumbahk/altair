@@ -24,6 +24,7 @@ def render_topics_with_template(template_name, request, widget):
 ## todo: refactoring
 
 render_cr_faq = partial(render_topics_with_template, "altaircms.plugins.widget:topic/CR_faq_render.html")
+render_soundc_faq = partial(render_topics_with_template, "altaircms.plugins.widget:topic/soundc_faq_render.html")
 render_nh_faq = partial(render_topics_with_template, "altaircms.plugins.widget:topic/NH_faq_render.html")
 render_89ers_faq = partial(render_topics_with_template, "altaircms.plugins.widget:topic/89ers_faq_render.html")
 render_89ers_info_render = partial(render_topics_with_template, "altaircms.plugins.widget:topic/89ers_info_render.html")
@@ -52,6 +53,7 @@ jnames = 注目のイベント
         """
         self.settings = dict(configparser.items(TopicWidget.type))
         self.rendering = DisplayTypeSelectRendering(self.settings, configparser)
+        self.rendering.register("soundc_faq", render_soundc_faq)
         self.rendering.register("cr_faq", render_cr_faq)
         self.rendering.register("nh_faq", render_nh_faq)
         self.rendering.register("89ers_faq", render_89ers_faq)

@@ -3,10 +3,8 @@
 	</div>
 	<div class="gnavi">
 		<ul>
-			<li><a href="top.html">SCweb会員先行TOP</a></li>
-			<li><a href="howto.html">申し込み方法</a></li>
-			<li><a href="faq.html">FAQ - よくある質問</a></li>
-			<li class="last"><a href="contact.html">お問い合わせ</a></li>
-
+      %for attr, c in h.first_and_last(layout.navigation_link_list("headermenu")):
+      <li ${attr()}><a href="${h.link.get_link_from_category(request,c)}">${c.label}</li>
+      %endfor
 		</ul>　　
 	</div>

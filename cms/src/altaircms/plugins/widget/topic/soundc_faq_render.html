@@ -1,0 +1,11 @@
+<dl class="faq">
+  %for topic in topics:
+    <dt>${topic.title|n}</dt>
+	<dd>${topic.text|n}
+    %if t.linked_page.event:
+    <br />
+	  <p><a>${t.countdown_type_ja}まであと${h.base.countdown_days_from(t.countdown_limit)}日</a></p>
+    %endif
+  </dd>
+  %endfor
+</dl>
