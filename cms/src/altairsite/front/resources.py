@@ -19,7 +19,7 @@ class PageRenderingResource(object):
 
     def get_preview_date(self):
         if 'datetime' not in self.request.params:
-            return get_now()
+            return get_now(self.request)
         else:
             dt = self.request.params['datetime']
             return datetime.strptime(dt, '%Y%m%d%H%M%S')
