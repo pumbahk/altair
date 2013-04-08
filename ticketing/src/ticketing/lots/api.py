@@ -37,7 +37,7 @@ from pyramid.interfaces import IRequest
 import ticketing.cart.api as cart_api
 from ticketing.utils import sensible_alnum_encode
 from ticketing.rakuten_auth.api import authenticated_user
-
+from ticketing.core import api as core_api
 from ticketing.core.models import (
     Event,
     SalesSegment,
@@ -145,10 +145,9 @@ def generate_entry_no(request, lot_entry):
     """ 引き替え用の抽選申し込み番号生成
     TODO:  ticketing.core.api.get_next_order_no を使う
     """
-
+    base_id = core_api.get_next_order_no()
     organization_code = lot_entry.lot.event.organization.code
-    base_id = lot_entry.id
-    return "LOT" + organization_code + sensible_alnum_encode(base_id).zfill(10)
+    return organization_code + sensible_alnum_encode(base_id).zfill(10)
 
 
 def get_lot_entries_iter(lot_id):
@@ -191,6 +190,7 @@ def _entry_info(wish):
         u"性別": format_sex(shipping_address.sex),
     }
 
+
 def submit_lot_entries(lot_id, entries):
     """
     当選リストの取り込み
@@ -213,61 +213,6 @@ def elect_lot_entries(request, lot_id):
 
     return elector.elect_lot_entries
     
-    # """ 抽選申し込み確定 
-    # 申し込み番号と希望順で、当選確定処理を行う
-    # ワークに入っているものから当選処理をする
-    # それ以外を落選処理にする
-    # """
-
-
-
-    # elected_wishes = DBSession.query(LotEntryWish).filter(
-    #     LotEntryWish.lot_entry_id==LotEntry.id
-    # ).filter(
-    #     LotEntry.lot_id==lot_id
-    # ).filter(
-    #     LotElectWork.lot_entry_no==LotEntry.entry_no
-    # ).filter(
-    #     (LotElectWork.wish_order-1)==LotEntryWish.wish_order
-    # )
-
-    # for ew in elected_wishes:
-    #     elect_entry(lot, ew)
-    #     # TODO: 再選処理
-
-
-
-    # # 落選処理
-    # q = DBSession.query(LotEntry).filter(
-    #     LotEntry.elected_at==None
-    # ).filter(
-    #     LotEntry.rejected_at==None
-    # ).all()
-
-    # for entry in q:
-    #     reject_entry(lot, entry)
-
-    # lot.status = int(LotStatusEnum.Elected)
-    # LotElectWork.query.filter(LotElectWork.lot_id==lot.id).delete()
-
-# def reject_entry(lot, entry):
-#     now = datetime.now()
-#     entry.rejected_at = now
-#     rejected = LotRejectedEntry(lot_entry=entry)
-#     DBSession.add(rejected)
-#     return rejected
-
-# def elect_entry(lot, elected_wish):
-#     """ 個々の希望申し込みに対する処理 
-#     :return: 当選情報
-#     """
-#     now = datetime.now()
-#     elected_wish.elected_at = now
-#     elected_wish.lot_entry.elected_at = now
-#     elected = LotElectedEntry(lot_entry=elected_wish.lot_entry,
-#         lot_entry_wish=elected_wish)
-#     DBSession.add(elected)
-#     return elected
 
 def entry_session(request, lot_entry=None):
     if lot_entry is not None:
