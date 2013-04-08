@@ -1,7 +1,7 @@
 # -*- encoding:utf-8 -*-
 import sqlalchemy as sa
 import sqlalchemy.orm as orm
-from datetime import datetime
+from datetime import datetime, timedelta
 import logging
 logger = logging.getLogger(__file__)
 from altaircms.models import (
@@ -283,7 +283,7 @@ def events_by_area(qs, prefectures):
 ##日以内に開始系の関数
 def events_by_within_n_days_of(qs, start_from, n, _nowday=datetime.now):
    today = _nowday()
-   qs = qs.filter(today+datetime.timedelta(days=-1-n) <= start_from).filter(start_from <= (today+datetime.timedelta(days=n)))
+   qs = qs.filter(today+timedelta(days=-1-n) <= start_from).filter(start_from <= (today+timedelta(days=n)))
    return qs
    
 
@@ -314,11 +314,11 @@ def events_by_about_deal(qs, before_deal_start, till_deal_end, closed_only, canc
 
     if before_deal_start:
         ## 販売開始？本当はN日以内に発送らし
-        end_point = today+datetime.timedelta(days=int(before_deal_start))
+        end_point = today+timedelta(days=int(before_deal_start))
         qs = qs.filter(today <= Event.deal_open).filter(Event.deal_open <= end_point)
 
     if till_deal_end:
-        end_point = today+datetime.timedelta(days=int(till_deal_end))
+        end_point = today+timedelta(days=int(till_deal_end))
         qs = qs.filter(today <= Event.deal_close).filter(Event.deal_close <= end_point)
 
     ## 通常は、現在の日付よりも未来にあるイベント以外見せない
