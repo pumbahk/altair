@@ -1058,6 +1058,12 @@ class SalesSegmentGroup(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     def in_term(self, dt):
         return (self.start_at <= dt) & (dt <= self.end_at)
 
+    @classmethod
+    def get(cls, id, organization_id=None, **kwargs):
+        if organization_id:
+            return cls.query.filter(cls.id==id).join(Event).filter(Event.organization_id==organization_id).first()
+        return super(cls, cls).get(id, **kwargs)
+
     def delete(self):
         # delete SalesSegment
         for sales_segment in self.sales_segments:

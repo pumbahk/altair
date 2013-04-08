@@ -12,6 +12,7 @@
         );
       };
       edit_product = function edit_product(id) {
+        if (!id) return false;
         load_modal_form(
           modal_product,
           '${request.route_path('products.edit', product_id='{id}')|n}'.replace(encodeURIComponent('{id}'), id),
@@ -20,12 +21,14 @@
         );
       };
       delete_product = function delete_product(id) {
+        if (!id) return false;
         var modal = $('#modal-delete');
         modal.find('#delete').attr('href', '${request.route_path('products.delete', product_id='{id}')}'.replace(encodeURIComponent('{id}'), id));
         modal.find('#message').text('選択した商品を削除します。よろしいですか？');
         modal.modal('toggle');
       };
       preview_ticket = function preview_ticket(id) {
+        if (!id) return false;
         $("a#productItem"+id).click();
       };
     })($('#${modal_id}'));

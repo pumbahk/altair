@@ -41,6 +41,7 @@
         );
       };
       edit_sales_segment_group = function edit_sales_segment_group(id, copy) {
+        if (!id) return false;
         var url = '';
         if (copy) {
           url = '${request.route_path('sales_segment_groups.copy', sales_segment_group_id='{id}')}';
@@ -58,6 +59,7 @@
         );
       };
       delete_sales_segment_group = function delete_sales_segment_group(id) {
+        if (!id) return false;
         var modal = $('#modal-delete');
         modal.find('#delete').attr('href', '${request.route_path('sales_segment_groups.delete', sales_segment_group_id='{id}')}'.replace(encodeURIComponent('{id}'), id));
         modal.find('#message').text('選択した販売区分を削除します。よろしいですか？');
