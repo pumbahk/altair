@@ -17,6 +17,12 @@ import sqlahelper
 
 authn_exemption = re.compile(r'^(/_deform)|(/static)|(/_debug_toolbar)|(/favicon.ico)')
 
+def setup_mailtraverser(config):
+    from ticketing.mails.traverser import EmailInfoTraverser
+    reg = config.registry
+    traverser = EmailInfoTraverser()
+    reg.registerUtility(traverser, name="lots")
+
 def main(global_config, **local_config):
     """ This function returns a Pyramid WSGI application.
     """

@@ -295,29 +295,29 @@ class entry_infoTests(unittest.TestCase):
         result = self._callFUT(wish)
 
 
-class elect_entryTests(unittest.TestCase):
-    def setUp(self):
-        from datetime import datetime
-        self.datetime = datetime
+# class elect_entryTests(unittest.TestCase):
+#     def setUp(self):
+#         from datetime import datetime
+#         self.datetime = datetime
 
-    def _callFUT(self, *args, **kwargs):
-        from .. import api
-        return api.elect_entry(*args, **kwargs)
+#     def _callFUT(self, *args, **kwargs):
+#         from .. import api
+#         return api.elect_entry(*args, **kwargs)
 
-    def test_it(self):
+#     def test_it(self):
 
-        from .. import models as m
-        lot = testing.DummyModel()
-        wish = m.LotEntryWish(
-            lot_entry=m.LotEntry()
-        )
+#         from .. import models as m
+#         lot = testing.DummyModel()
+#         wish = m.LotEntryWish(
+#             lot_entry=m.LotEntry()
+#         )
 
-        result = self._callFUT(lot, wish) 
-        self.assertTrue(wish.elected_at)
-        self.assertTrue(wish.lot_entry.elected_at)
+#         result = self._callFUT(lot, wish) 
+#         self.assertTrue(wish.elected_at)
+#         self.assertTrue(wish.lot_entry.elected_at)
 
-        self.assertEqual(result.lot_entry, wish.lot_entry)
-        self.assertEqual(result.lot_entry_wish, wish)
+#         self.assertEqual(result.lot_entry, wish.lot_entry)
+#         self.assertEqual(result.lot_entry_wish, wish)
 
 class notify_entry_lotTests(unittest.TestCase):
     def setUp(self):

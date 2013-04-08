@@ -37,6 +37,7 @@ def main(argv=sys.argv):
         frequency_num = ReportFrequencyEnum.Weekly.v
         target = datetime.now() - timedelta(days=7)
         limited_from = target.strftime('%Y-%m-%d 00:00')
+        target = datetime.now() - timedelta(days=1)
         limited_to = target.strftime('%Y-%m-%d 23:59')
     else:
         logging.error('invalid args %s' % sys.argv)
