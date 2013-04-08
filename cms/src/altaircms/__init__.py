@@ -95,6 +95,7 @@ def main(global_config, **local_config):
     config.add_layout(MyLayout, 'altaircms:templates/layout.html') #this is pyramid-layout's layout
 
     config.include("altaircms.auth", route_prefix='/auth')
+    config.include("altairsite.search.install_get_page_tag")
     config.include("altaircms.front", route_prefix="/front")
     config.include("altaircms.widget")
     config.include("altaircms.plugins")

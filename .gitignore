@@ -1,6 +1,7 @@
 .DS_Store
 .installed.cfg
 *.pyc
+build
 ticket-designer/doc/build
 cms/doc/build
 cms/src/.idea
