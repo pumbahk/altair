@@ -9,7 +9,7 @@ from .models import PerformancelistWidget
 
 ## todo refactoring
 WEEK =[u"月", u"火", u"水", u"木", u"金", u"土", u"日"]
-def render_performancelist_with_template(template_name, widget, bname, bsettings):
+def render_performancelist_with_template(template_name, request,  widget, bsettings):
     """ rendering: title,  iconset,  performance list
     """
     performances = bsettings.extra["performances"]
@@ -27,7 +27,7 @@ def render_performancelist_with_template(template_name, widget, bname, bsettings
 render_fullset = partial(render_performancelist_with_template,  "altaircms.plugins.widget:performancelist/render.html")
 
 @implementer(IWidgetUtility)
-class TopicWidgetUtilityDefault(object):
+class PerformancelistWidgetUtilityDefault(object):
     def __init__(self):
         self.renderers = None
         self.choices = None
@@ -44,5 +44,5 @@ class TopicWidgetUtilityDefault(object):
         return self.rendering.validation()
 
     def render_action(self, request, page, widget, bsettings):
-        display_type = widget.display_type or "default"
-        return self.rendering.lookup(display_type, default="")(request, widget)
+        kind = widget.kind or "default"
+        return self.rendering.lookup(kind, default="")(request, widget, bsettings)
