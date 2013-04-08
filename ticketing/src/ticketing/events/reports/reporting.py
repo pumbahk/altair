@@ -66,7 +66,7 @@ def export_for_stock_holder(event, stock_holder, report_type):
             if stock_type.quantity_only:
                 seat_record = report_sheet.SeatRecord(
                     block=stock_type.name,
-                    quantity=stock.quantity,
+                    quantity=stock.stock_status.quantity if report_type == 'unsold' else stock.quantity,
                     kind=kind,
                     date=today
                 )
