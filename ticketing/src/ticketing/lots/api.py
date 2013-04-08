@@ -107,14 +107,15 @@ def get_requested_lot(request):
     lot_id = request.matchdict.get('lot_id')
     return Lot.query.filter(Lot.id==lot_id).one()
 
-def entry_lot(request, lot, shipping_address, wishes, payment_delivery_method_pair, user):
+def entry_lot(request, lot, shipping_address, wishes, payment_delivery_method_pair, user, gender, birthday, memo):
     """
     wishes
     {product_id, quantity} の希望順リスト
     :param user: ゲストの場合は None
     """
     membergroup = get_member_group(request)
-    entry = LotEntry(lot=lot, shipping_address=shipping_address, membergroup=membergroup, payment_delivery_method_pair=payment_delivery_method_pair)
+    entry = LotEntry(lot=lot, shipping_address=shipping_address, membergroup=membergroup, payment_delivery_method_pair=payment_delivery_method_pair,
+                     gender=gender, birthday=birthday, memo=memo)
 
 
     for i, w in enumerate(wishes):

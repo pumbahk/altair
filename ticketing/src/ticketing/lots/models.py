@@ -38,6 +38,9 @@ from ticketing.models import (
 from ticketing.core.models import (
     Product,
 )
+from ticketing.users.models import (
+    SexEnum,
+)
 from ticketing.cart.models import (
     Cart,
 )
@@ -213,6 +216,11 @@ class LotEntry(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     payment_delivery_method_pair_id = sa.Column(Identifier, sa.ForeignKey('PaymentDeliveryMethodPair.id'))
     payment_delivery_method_pair = orm.relationship('PaymentDeliveryMethodPair', backref='lot_entries')
+
+
+    gender = sa.Column(sa.Integer, default=int(SexEnum.NoAnswer))
+    birthday = sa.Column(sa.Date)
+    memo = sa.Column(sa.UnicodeText)
 
     @property
     def is_elected(self):   

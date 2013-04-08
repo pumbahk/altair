@@ -1,4 +1,5 @@
 # -*- coding:utf-8 -*-
+from datetime import datetime
 import logging
 import operator
 import json
@@ -150,7 +151,12 @@ class EntryLotView(object):
             token=uuid4().hex,
             wishes=wishes,
             payment_delivery_method_pair_id=payment_delivery_method_pair_id,
-            shipping_address=shipping_address)
+            shipping_address=shipping_address,
+            gender=cform['sex'].data,
+            birthday=datetime(int(cform['year'].data),
+                              int(cform['month'].data),
+                              int(cform['day'].data)),
+            memo=cform['memo'].data)
 
 
         location = urls.entry_confirm(self.request)
@@ -173,10 +179,13 @@ class ConfirmLotEntryView(object):
         payment_delivery_method_pair_id = entry['payment_delivery_method_pair_id']
         payment_delivery_method_pair = PaymentDeliveryMethodPair.query.filter(PaymentDeliveryMethodPair.id==payment_delivery_method_pair_id).one()
         return dict(shipping_address=entry['shipping_address'],
-            payment_delivery_method_pair_id=entry['payment_delivery_method_pair_id'],
-            payment_delivery_method_pair=payment_delivery_method_pair,
-            token=entry['token'],
-            wishes=h.add_wished_product_names(entry['wishes']))
+                    payment_delivery_method_pair_id=entry['payment_delivery_method_pair_id'],
+                    payment_delivery_method_pair=payment_delivery_method_pair,
+                    token=entry['token'],
+                    wishes=h.add_wished_product_names(entry['wishes']),
+                    gender=entry['gender'],
+                    birthday=entry['birthday'],
+                    memo=entry['memo'])
 
     def back_to_form(self):
         return HTTPFound(location=urls.entry_index(self.request))
@@ -204,7 +213,8 @@ class ConfirmLotEntryView(object):
 
         user = api.get_entry_user(self.request)
 
-        entry = api.entry_lot(self.request, lot, shipping_address, wishes, payment_delivery_method_pair, user)
+        entry = api.entry_lot(self.request, lot, shipping_address, wishes, payment_delivery_method_pair, user,
+                              entry['gender'], entry['birthday'], entry['memo'])
         self.request.session['lots.entry_no'] = entry.entry_no
         api.notify_entry_lot(self.request, entry)
         return HTTPFound(location=urls.entry_completion(self.request))
