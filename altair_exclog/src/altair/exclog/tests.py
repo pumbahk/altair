@@ -37,7 +37,7 @@ class ExcLogTweenTests(unittest.TestCase):
         testing.tearDown()
 
     def _getTarget(self):
-        from . import ExcLogTween
+        from .tweens import ExcLogTween
         return ExcLogTween
 
     def _makeOne(self, *args, **kwargs):
@@ -47,12 +47,17 @@ class ExcLogTweenTests(unittest.TestCase):
         from pyramid.httpexceptions import WSGIHTTPException
 
         registry = self.config.registry
+        from . import create_exception_message_builder, create_exception_message_renderer, create_exception_logger
+        from .interfaces import IExceptionMessageBuilder, IExceptionMessageRenderer, IExceptionLogger
+        registry.registerUtility(create_exception_message_builder(registry), IExceptionMessageBuilder)
+        registry.registerUtility(create_exception_message_renderer(registry), IExceptionMessageRenderer)
+        registry.registerUtility(create_exception_logger(registry), IExceptionLogger)
         handler = testing.DummyResource()
         result = self._makeOne(handler, registry)
 
         self.assertEqual(result.handler, handler)
         self.assertEqual(result.registry, registry)
-        self.assertTrue(result.extra_info)
+        self.assertTrue(result.message_builder.extra_info)
         self.assertEqual(result.ignored, 
                          (WSGIHTTPException,))
 
@@ -61,6 +66,12 @@ class ExcLogTweenTests(unittest.TestCase):
     def test_call_with_exception(self, mock_logger):
         registry = self.config.registry
         registry.settings['altair.exclog.includes'] = 'testing'
+        from . import create_exception_message_builder, create_exception_message_renderer, create_exception_logger
+        from .interfaces import IExceptionMessageBuilder, IExceptionMessageRenderer, IExceptionLogger
+        registry.registerUtility(create_exception_message_builder(registry), IExceptionMessageBuilder)
+        registry.registerUtility(create_exception_message_renderer(registry), IExceptionMessageRenderer)
+        registry.registerUtility(create_exception_logger(registry), IExceptionLogger)
+
         handler = mock.Mock()
         handler.side_effect = Exception()
 
@@ -111,13 +122,18 @@ class ExcLogTweenTests(unittest.TestCase):
     @mock.patch('altair.exclog.logger')
     def test_call_with_short_message(self, mock_logger):
         registry = self.config.registry
+        from . import create_exception_message_builder, create_exception_message_renderer, create_exception_logger
+        from .interfaces import IExceptionMessageBuilder, IExceptionMessageRenderer, IExceptionLogger
+        registry.registerUtility(create_exception_message_builder(registry), IExceptionMessageBuilder)
+        registry.registerUtility(create_exception_message_renderer(registry), IExceptionMessageRenderer)
+        registry.registerUtility(create_exception_logger(registry), IExceptionLogger)
 
         handler = mock.Mock()
         request = testing.DummyRequest()
         handler.side_effect = DummyException()
 
         tween = self._makeOne(handler, registry)
-        tween.extra_info = False
+        tween.message_builder.extra_info = False
         result = tween(request)
 
         self.assertEqual(result.status_int, 500)
@@ -127,6 +143,11 @@ class ExcLogTweenTests(unittest.TestCase):
     @mock.patch('altair.exclog.logger')
     def test_call_with_tb_view(self, mock_logger):
         registry = self.config.registry
+        from . import create_exception_message_builder, create_exception_message_renderer, create_exception_logger
+        from .interfaces import IExceptionMessageBuilder, IExceptionMessageRenderer, IExceptionLogger
+        registry.registerUtility(create_exception_message_builder(registry), IExceptionMessageBuilder)
+        registry.registerUtility(create_exception_message_renderer(registry), IExceptionMessageRenderer)
+        registry.registerUtility(create_exception_logger(registry), IExceptionLogger)
 
         handler = mock.Mock()
         request = testing.DummyRequest()
@@ -134,7 +155,7 @@ class ExcLogTweenTests(unittest.TestCase):
 
         tween = self._makeOne(handler, registry)
         tween.show_traceback = True
-        tween.extra_info = False
+        tween.message_builder.extra_info = False
         result = tween(request)
 
         self.assertEqual(result.status_int, 500)

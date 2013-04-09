@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
-from pyramid.view import view_config
+from altairsite.config import usersite_view_config
 from altairsite.mobile.core.helper import log_info
 
-@view_config(route_name='privacy', request_type="altairsite.mobile.tweens.IMobileRequest"
+@usersite_view_config(route_name='privacy', request_type="altairsite.mobile.tweens.IMobileRequest"
     , renderer='altairsite.mobile:templates/privacy/privacy.mako')
 def move_privacy_policy(request):
     log_info("move_privacy_policy", "start")

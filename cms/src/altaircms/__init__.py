@@ -64,6 +64,8 @@ def main(global_config, **local_config):
         authentication_policy=authn_policy,
         authorization_policy=authz_policy
     )
+    config.include("altair.browserid")
+    config.include("altair.exclog")
     config.add_renderer('.html' , 'pyramid.mako_templating.renderer_factory')
 
     ## organization mapping

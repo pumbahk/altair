@@ -1,22 +1,22 @@
 # -*- coding: utf-8 -*-
 
-from pyramid.view import view_config
-from altaircms.topic.models import TopicTag, TopcontentTag
 from datetime import datetime
+from sqlalchemy import asc
+from altairsite.config import usersite_view_config
+from altaircms.topic.models import TopicTag, TopcontentTag
 from altaircms.topic.api import get_topic_searcher
 from altairsite.mobile.event.genre.forms import GenreForm
 from altaircms.tag.models import HotWord
 from altaircms.genre.searcher import GenreSearcher
 from altaircms.models import Genre
 from altairsite.mobile.core.helper import exist_value
-from sqlalchemy import asc
 from altairsite.mobile.core.helper import log_info
 from altairsite.mobile.core.eventhelper import EventHelper
 
 class ValidationFailure(Exception):
     pass
 
-@view_config(route_name='genre', request_type="altairsite.mobile.tweens.IMobileRequest"
+@usersite_view_config(route_name='genre', request_type="altairsite.mobile.tweens.IMobileRequest"
     , renderer='altairsite.mobile:templates/genre/genre.mako')
 def move_genre(request):
 
@@ -75,7 +75,7 @@ def move_genre(request):
         , 'helper':EventHelper()
     }
 
-@view_config(route_name='genre', context=ValidationFailure
+@usersite_view_config(route_name='genre', context=ValidationFailure
     , request_type="altairsite.mobile.tweens.IMobileRequest", renderer='altairsite.mobile:templates/common/error.mako')
 def failed_validation(request):
     return {}

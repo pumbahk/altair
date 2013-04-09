@@ -14,7 +14,7 @@ def includeme(config):
     config.include(install_as_mobile_app)
 
 def install_as_mobile_app(config):
-    config._add_tween("altairsite.mobile.tweens.mobile_encoding_convert_factory")
+    config._add_tween("altairsite.mobile.tweens.mobile_encoding_convert_factory", under='INGRESS')
     config.include(install_app)
 
 def install_app(config):

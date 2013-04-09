@@ -25,6 +25,9 @@ def main(global_config, **local_config):
     sqlahelper.add_engine(engine)
 
     config = Configurator(settings=settings)
+    config.include("altair.browserid")
+    config.include("altair.exclog")
+
     config.add_renderer('.html' , 'pyramid.mako_templating.renderer_factory')
     config.include(install_static_page)
     config.include("altaircms.tag:install_tagmanager")
@@ -45,8 +48,9 @@ def main(global_config, **local_config):
     config.include("altairsite.front")
 
     ## tween: [encodingfixer, mobile-tween]. the order is important
-    config.include("altair.encodingfixer")
+    # config.include("altair.encodingfixer")
     config.include("altairsite.mobile", route_prefix="/mobile")
+    config.add_tween('altair.encodingfixer.EncodingFixerTween', under='altairsite.mobile.tweens.mobile_encoding_convert_factory')
 
     config.include("altairsite.feature")
     config.include("altairsite.errors")

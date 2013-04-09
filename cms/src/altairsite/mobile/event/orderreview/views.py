@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
-from pyramid.view import view_config
+from altairsite.config import usersite_view_config
 from altairsite.mobile.event.orderreview.forms import OrderReviewForm
 from altairsite.mobile.core.helper import log_info
 
 class ValidationFailure(Exception):
     pass
 
-@view_config(route_name='order', request_type="altairsite.mobile.tweens.IMobileRequest"
+@usersite_view_config(route_name='order', request_type="altairsite.mobile.tweens.IMobileRequest"
     , renderer='altairsite.mobile:templates/orderreview/orderreview.mako')
 def move_order(request):
     log_info("move_order", "start")
