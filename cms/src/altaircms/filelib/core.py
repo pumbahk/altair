@@ -61,7 +61,11 @@ class FileCreator(object):
             signatured_file = self._write_to_tmppath(uploadfile)
         else:
             signatured_file = self._write_to_tmppath(uploadfile)
-        self.pool.append(signatured_file)
+
+        if signatured_file.name is None:
+            logger.info("signatured_file name is None")
+        else:
+            self.pool.append(signatured_file)
         return signatured_file
 
     def _get_realpath(self, target):

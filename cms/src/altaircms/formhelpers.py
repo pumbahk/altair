@@ -269,6 +269,17 @@ class AlignChoiceField(SelectField):
         super(AlignChoiceField, self).__init__(label=label, validators=validators, coerce=coerce, choices=choices, 
                  **kwargs)
 
+    @classmethod
+    def normalize_params(cls,  params):
+        """this is helpers"""
+        D = {}
+        for k, v in params.iteritems():
+            if k.startswith("data-"):
+                D[k.replace("data-", "", 1)] = v
+            else:
+                D[k] = v
+        return D
+
     def convert_as_style(self, align):
         if align == "left":
             return u""
