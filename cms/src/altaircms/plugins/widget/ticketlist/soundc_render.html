@@ -9,7 +9,7 @@
       %endif
 	    % for ticket in tickets:
 	    <tr>
-		    <td scope="row">${ ticket.seattype }</th>
+		    <td scope="row">${ ticket.seattype }</td>
 		    <td>${ ticket.name }</td>
         <td>${ h.event.price_format(ticket.price) }円 (税込)</td>
 		  </tr>
