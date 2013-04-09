@@ -517,3 +517,15 @@ class PageTag(WithOrganizationMixin, Base):
 def delete_orphan_pagetag(mapper, connection, target):
     PageTag.query.filter(~PageTag.pages.any()).delete(synchronize_session=False)
 sa.event.listen(Page, "after_delete", delete_orphan_pagetag)
+
+class MobileTag(WithOrganizationMixin, Base):
+    __tablename__ = "mobiletag"
+    query = DBSession.query_property()
+    id = sa.Column(sa.Integer, primary_key=True)
+    label = sa.Column(sa.Unicode(255), index=True)
+    publicp = sa.Column(sa.Boolean, default=False)
+    created_at = sa.Column(sa.DateTime, default=datetime.now)
+    updated_at = sa.Column(sa.DateTime, default=datetime.now, onupdate=datetime.now)
+    @declared_attr
+    def __tableargs__(cls):
+        return  ((sa.schema.UniqueConstraint(cls.label,cls.organization_id)))
