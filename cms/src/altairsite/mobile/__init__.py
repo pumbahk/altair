@@ -1,4 +1,5 @@
 from pyramid.config import Configurator
+from pyramid.tweens import INGRESS
 import altaircms.layout.models
 import altaircms.widget.models
 import altaircms.page.models
@@ -14,7 +15,7 @@ def includeme(config):
     config.include(install_as_mobile_app)
 
 def install_as_mobile_app(config):
-    config._add_tween("altairsite.mobile.tweens.mobile_encoding_convert_factory", under='INGRESS')
+    config._add_tween("altairsite.mobile.tweens.mobile_encoding_convert_factory", under=INGRESS)
     config.include(install_app)
 
 def install_app(config):
