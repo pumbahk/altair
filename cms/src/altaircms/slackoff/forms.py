@@ -18,7 +18,7 @@ from ..event.models import Event
 from altaircms.models import Performance, Genre
 from ..models import Category, SalesSegment, SalesSegmentGroup
 from ..asset.models import ImageAsset
-from ..page.models import PageSet
+from ..page.models import PageSet, MobileTag
 from ..topic.models import TopicTag, Topcontent,TopcontentTag, PromotionTag, Promotion
 from ..page.models import PageTag, PageType
 from ..plugins.api import get_extra_resource
@@ -256,7 +256,7 @@ class PromotionForm(Form):
         query_factory=lambda : PageSet.query.order_by("name"), 
         get_label=pageset_label)
     link = fields.TextField(label=u"外部リンク(ページより優先)", filters=[quote])
-
+    mobile_tag = dynamic_query_select_field_factory(MobileTag, label=u"モバイル検索用ページタグ", allow_blank=True, get_label=lambda obj: obj.label or u"名前なし")
     publish_open_on = fields.DateTimeField(label=u"公開開始日", validators=[required_field()])
     publish_close_on = fields.DateTimeField(label=u"公開終了日", validators=[required_field()])
     
@@ -270,7 +270,7 @@ class PromotionForm(Form):
 
     __display_fields__ = [
         u"tag_content", u"genre", 
-        u"main_image", u"text", u"linked_page", u"link", 
+        u"main_image", u"text", u"linked_page", u"link", u"mobile_tag",
         u"publish_open_on", u"publish_close_on", u"display_order", u"is_vetoed"
         ]
 

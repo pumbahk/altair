@@ -47,6 +47,7 @@ def promotion_mapper(request, obj):
     objlike.main_image = image_asset_layout(request, obj.main_image)
     objlike.linked_page = show_cms_detail_page(request, obj.linked_page)
     objlike.link = obj.link or u"-"
+    objlike.mobile_tag = obj.mobile_tag.label
     return objlike
 
 def topic_mapper(request, obj):

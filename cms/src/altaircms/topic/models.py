@@ -245,12 +245,13 @@ class Promotion(WithOrganizationMixin, TopicCore):
     __mapper_args__ = {"polymorphic_identity": type}
 
     id = sa.Column(sa.Integer, sa.ForeignKey("topiccore.id"), primary_key=True)
-    tags = orm.relationship("PromotionTag", secondary="topiccoretag2topiccore", 
+    mobile_tag = orm.relationship("MobileTag", uselist=False, backref="promotions")
+    tags = orm.relationship("PromotionTag", secondary="topiccoretag2topiccore",
                              backref=orm.backref("promotions"))
-
     main_image_id = sa.Column(sa.Integer, sa.ForeignKey("image_asset.id"))
     main_image = orm.relationship("ImageAsset", uselist=False, primaryjoin="Promotion.main_image_id==ImageAsset.id")
     text = sa.Column(sa.UnicodeText, default=u"no message")
+    mobile_tag_id = sa.Column(sa.Integer, sa.ForeignKey("mobiletag.id"))
 
     ## linkとpagesetは排他的
     link = sa.Column(sa.Unicode(255), nullable=True)
