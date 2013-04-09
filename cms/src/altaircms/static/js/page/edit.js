@@ -240,7 +240,7 @@ var DroppedWidgetView = (function(){
                         var dw = $(this).parent("."+self.className);
                         $(dw).data("view").close_view.on_close_button_clicked();
                     });
-                }, 0);
+                }, 100);
             }
         }, 
         template: _.template([
