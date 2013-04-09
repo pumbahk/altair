@@ -1,0 +1,18 @@
+%if widget.show_label:
+  <h3>チケット価格</h3>
+%endif
+
+<table class="ticketPrice0 info" summary="チケット価格表">
+  <tbody>
+      %if widget.caption:
+       <tr><th scope="row" colspan="3">${widget.caption}</th></tr>
+      %endif
+	    % for ticket in tickets:
+	    <tr>
+		    <td scope="row">${ ticket.seattype }</th>
+		    <td>${ ticket.name }</td>
+        <td>${ h.event.price_format(ticket.price) }円 (税込)</td>
+		  </tr>
+	    % endfor
+  </tbody>
+</table>
