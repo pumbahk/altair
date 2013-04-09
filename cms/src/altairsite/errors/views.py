@@ -1,7 +1,7 @@
 # coding: utf-8
 from pyramid.view import view_config
 from ..separation import selectable_renderer, tstar_mobile_or_not_renderer
-from altair.exclog.interfaces import IExceptionLogger, IExceptionMessageBuilder
+from altair.exclog.api import build_exception_message, log_exception_message
 
 
 @view_config(context="pyramid.exceptions.Forbidden", 
@@ -41,11 +41,9 @@ def notfound(request):
              renderer=selectable_renderer("altaircms:templates/usersite/errors/%(prefix)s/notfound.html"))
 def usersite_exc(context, request):
     message_builder = request.registry.queryUtility(IExceptionMessageBuilder)
-    if message_builder is not None:
-        exc_info, message = message_builder(request)
-        exc_logger = request.registry.queryUtility(IExceptionLogger)
-        if exc_logger:
-            exc_logger(exc_info, message)
+    exception_message = build_exception_message(request)
+    if exception_message:
+        log_exception_message(request, *exception_message)
     request.body_id = "error"
     request.response.status = 500
     request.response.text = u'test'
