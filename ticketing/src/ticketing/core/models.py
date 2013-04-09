@@ -2114,6 +2114,12 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             return True
         return False
 
+    def can_delete(self):
+        # キャンセルのみ論理削除可能
+        if self.status == 'canceled':
+            return True
+        return False
+
     def cancel(self, request, payment_method=None, now=None):
         now = now or datetime.now()
         if not self.can_refund() and not self.can_cancel():
@@ -2395,6 +2401,10 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             return False
 
     def delete(self):
+        if not self.can_delete():
+            logger.info('order (%s) cannot delete status (%s)' % (self.id, self.status))
+            raise Exception(u'キャンセル以外は非表示にできません')
+
         # delete OrderedProduct
         for ordered_product in self.items:
             ordered_product.delete()

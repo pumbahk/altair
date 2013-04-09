@@ -4,12 +4,20 @@
 
 <script type="text/javascript">
   function cancel_order(id) {
-    modal = $('#modal-delete');
-    modal.find('#delete').attr('href', '/orders/cancel/' + id);
-    message = '選択した予約をキャンセルします。よろしいですか？';
+    var modal = $('#modal-delete');
+    modal.find('#delete').attr('href', '/orders/cancel/' + id).text('注文をキャンセルする (取消不可)');
+    var message = '選択した予約をキャンセルします。よろしいですか？';
     % if order.printed_at or order.issued_at or order.issued:
       message += '<br><div class="alert alert-error">この予約は既に発券済み(または発券予約中)です。</div>'
     % endif
+    modal.find('#message').html('<p>' + message + '</p>');
+    modal.modal('toggle');
+  }
+  function delete_order(id) {
+    var modal = $('#modal-delete');
+    modal.find('#delete').attr('href', '/orders/delete/' + id).text('注文を非表示にする (取消不可)');
+    var message = '選択した予約を非表示にします。よろしいですか？';
+    message += '<br><div class="alert alert-error">この操作を行うとこの予約情報は閲覧できなくなります。</div>'
     modal.find('#message').html('<p>' + message + '</p>');
     modal.modal('toggle');
   }
@@ -138,6 +146,13 @@ actions = {
     icon='icon-pencil',
     route_name='orders.note',
   ),
+  'delete':dict(
+    label=u'非表示',
+    url='javascript:delete_order(%d);' % order.id,
+    icon='icon-remove',
+    attrs={'class': 'btn-danger'},
+    route_name='orders.delete',
+  ),
 }
 sort = sort or ['mailinfo', 'delivered', 'cancel', 'refund']
 
@@ -159,9 +174,12 @@ if 'print' in sort:
   elif order.issued or order.queued:
     sort.remove('print')
     sort.append('force_print')
+if 'delete' in sort:
+  if not order.can_delete():
+    sort.remove('delete')
 if sort:
   sort = iter(sort)
 %>
 ${h.action_button(actions, sort, vertical=False)}
 
-${m.delete_modal(label_delete=u'注文をキャンセルする (取消不可)', label_cancel=u'戻る')}
+${m.delete_modal(label_cancel=u'戻る')}

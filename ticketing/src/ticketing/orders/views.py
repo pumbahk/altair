@@ -488,6 +488,22 @@ class OrderDetailView(BaseView):
             self.request.session.flash(u'受注(%s)をキャンセルできません' % order.order_no)
         return HTTPFound(location=route_path('orders.show', self.request, order_id=order.id))
 
+    @view_config(route_name='orders.delete', permission='administrator')
+    def delete(self):
+        order_id = int(self.request.matchdict.get('order_id', 0))
+        order = Order.get(order_id, self.context.user.organization_id)
+        if order is None:
+            return HTTPNotFound('order id %d is not found' % order_id)
+
+        try:
+            order.delete()
+        except Exception:
+            self.request.session.flash(u'受注(%s)を非表示にできません' % order.order_no)
+            raise HTTPFound(location=route_path('orders.show', self.request, order_id=order.id))
+
+        self.request.session.flash(u'受注(%s)を非表示にしました' % order.order_no)
+        return HTTPFound(location=route_path('orders.index', self.request))
+
     @view_config(route_name='orders.refund.immediate', permission='sales_editor')
     def refund_immediate(self):
         order_id = int(self.request.matchdict.get('order_id', 0))
