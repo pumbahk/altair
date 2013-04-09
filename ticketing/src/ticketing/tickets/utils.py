@@ -594,6 +594,79 @@ class SvgPageSetBuilder(object):
         self.page.append(svgroot)
         self.offset = Position(self.offset.x + self.ticket_size.width + self.ticket_margin.left + self.ticket_margin.right, self.offset.y)
 
+class FallbackSvgPageSetBuilder(object):
+    def __init__(self, page_format, ticket_format):
+        orientation = page_format[u'orientation'].lower()
+        
+        printable_area = Rectangle(
+            x=as_user_unit(page_format[u'printable_area'][u'x']),
+            y=as_user_unit(page_format[u'printable_area'][u'y']),
+            width=as_user_unit(page_format[u'printable_area'][u'width']),
+            height=as_user_unit(page_format[u'printable_area'][u'height'])
+            )
+
+        if orientation == u'landscape':
+            printable_area = Rectangle(
+                printable_area.y, printable_area.x,
+                printable_area.height, printable_area.width
+                )
+
+        ticket_size = Size(
+            width=as_user_unit(ticket_format[u'size'][u'width']),
+            height=as_user_unit(ticket_format[u'size'][u'height'])
+            )
+
+        ticket_margin = Margin(
+            top=as_user_unit(page_format[u'ticket_margin'][u'top']),
+            bottom=as_user_unit(page_format[u'ticket_margin'][u'bottom']),
+            left=as_user_unit(page_format[u'ticket_margin'][u'left']),
+            right=as_user_unit(page_format[u'ticket_margin'][u'right'])
+            )
+
+        self.page_format = page_format
+        self.ticket_format = ticket_format
+        self.orientation = orientation
+        self.ticket_size = ticket_size
+        self.printable_area = printable_area
+        self.ticket_margin = ticket_margin
+        self.root = self.build_root_element()
+        self.pageset = etree.Element(u'{%s}pageSet' % SVG_NAMESPACE)
+        self.root.append(self.pageset)
+        self.offset = Position(printable_area.x, printable_area.y)
+
+    @property
+    def tickets_per_page(self):
+        return 1
+
+    def build_root_element(self):
+        width = unicode(as_user_unit(self.page_format[u'size'][u'width']))
+        height = unicode(as_user_unit(self.page_format[u'size'][u'height']))
+
+        # Swap width / height if the orientation is 'landscape'
+        if self.orientation == u'landscape':
+            width, height = height, width
+        return etree.Element(
+            u'{%s}svg' % SVG_NAMESPACE,
+            nsmap={ u'svg': SVG_NAMESPACE, u'ts' : TS_SVG_EXT_NAMESPACE },
+            version=u'1.2',
+            width=width,
+            height=height
+            )
+
+    def add(self, svg, queue_id, title=None):
+        page = etree.Element(u'{%s}page' % SVG_NAMESPACE)
+        if title is not None:
+            title_elem = etree.Element(u'{%s}title' % SVG_NAMESPACE)
+            title_elem.text = title
+            page.append(title_elem)
+        self.pageset.append(page)
+        svgroot = svg.getroot() if isinstance(svg, etree._ElementTree) else svg
+        svgroot.set(u'x', unicode(self.offset.x + self.ticket_margin.left))
+        svgroot.set(u'y', unicode(self.offset.y + self.ticket_margin.top))
+        svgroot.set(u'{%s}queue-id' % TS_SVG_EXT_NAMESPACE, unicode(queue_id))
+        page.append(svgroot)
+        self.offset = Position(self.offset.x + self.ticket_size.width + self.ticket_margin.left + self.ticket_margin.right, self.offset.y)
+
 
 def as_user_unit(size, rel_unit=None):
     if size is None:
