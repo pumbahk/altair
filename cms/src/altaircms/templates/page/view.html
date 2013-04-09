@@ -16,10 +16,11 @@
 <div class="row-fluid">
 %if page.event:
     ${nco.breadcrumbs(
-        names=["Top", "Event", page.event.title, page.name],
+        names=["Top", "Event", page.event.title, page.pageset.name, page.name],
         urls=[request.route_path("dashboard"),
               request.route_path("event_list"),
-              request.route_path("event", id=page.event.id)
+              request.route_path("event", id=page.event.id),
+              request.route_path("pageset_detail", pageset_id = page.pageset.id, kind="event")
               ]
     )}
 %else:
