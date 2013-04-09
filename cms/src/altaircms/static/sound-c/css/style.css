@@ -839,3 +839,7 @@ table.info {
   margin: 0 20px 20px;
   width: 640px;
 }
+
+.movie-widget[align=right],.flash-widget[align=right]{
+ margin-right: 20px;
+}
