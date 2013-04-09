@@ -9,14 +9,10 @@ from sqlalchemy import sql
 from webhelpers.containers import correlate_objects
 from ticketing.views import BaseView
 from ticketing.fanstatic import with_bootstrap
-from ticketing.models import (
-    DBSession,
-    )
 from ticketing.core.models import (
+    DBSession,
     Event, 
-    Performance, 
     Product, 
-    SalesSegment,
     PaymentDeliveryMethodPair,
     )
 from ticketing.lots.models import (
@@ -28,7 +24,7 @@ from ticketing.lots.models import (
     )
 import ticketing.lots.api as lots_api
 from .helpers import Link
-from . forms import ProductForm, LotForm
+from .forms import ProductForm, LotForm
 
 @view_defaults(decorator=with_bootstrap, permission="event_editor")
 class Lots(BaseView):
@@ -73,9 +69,12 @@ class Lots(BaseView):
             ]
         form = LotForm(formdata=self.request.POST)
         form.sales_segment_group_id.choices = sales_segment_group_choices
+
         if self.request.POST and form.validate():
             lot = form.create_lot(event)
+            DBSession.add(lot)
             return HTTPFound(self.request.route_url("lots.index", event_id=event_id))
+
         manage_sales_segment_group_link = Link(label=u"+", url=self.request.route_url('sales_segment_groups.index', event_id=event.id))
         return dict(
             event=event,
@@ -83,7 +82,8 @@ class Lots(BaseView):
             manage_sales_segment_group_link=manage_sales_segment_group_link,
             )
 
-    @view_config(route_name='lots.show', renderer='ticketing:templates/lots/show.html', permission='event_viewer')
+    @view_config(route_name='lots.show', renderer='ticketing:templates/lots/show.html', 
+                 permission='event_viewer')
     def show(self):
         lot_id = self.request.matchdict["lot_id"]
         lot = Lot.query.filter(Lot.id==lot_id).one()
