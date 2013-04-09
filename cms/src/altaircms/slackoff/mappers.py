@@ -57,6 +57,7 @@ def topic_mapper(request, obj):
     objlike.linked_page = show_cms_detail_page(request, obj.linked_page)
     objlike.link = obj.link or u"-"
     objlike.mobile_link = obj.mobile_link or u"-"
+    objlike.mobile_tag = obj.mobile_tag.label
     return objlike
 
 CDWN_DICT = dict(Topcontent.COUNTDOWN_CANDIDATES)    

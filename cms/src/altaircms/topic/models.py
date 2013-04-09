@@ -177,6 +177,8 @@ class Topic(WithOrganizationMixin, TopicCore):
     link = sa.Column(sa.Unicode(255), doc="external link", nullable=True)
     mobile_link = sa.Column(sa.Unicode(255), doc="external mobile_link", nullable=True)
     tags = orm.relationship("TopicTag", secondary="topiccoretag2topiccore", backref=orm.backref("topics"))
+    mobile_tag = orm.relationship("MobileTag", uselist=False, backref="topics")
+    mobile_tag_id = sa.Column(sa.Integer, sa.ForeignKey("mobiletag.id"))
 
     @classmethod
     def matched_qs(cls, d=None, tag=None, qs=None):
