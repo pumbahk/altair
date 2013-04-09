@@ -59,7 +59,7 @@ def thumbnail_filename_from_mainfile(mainfile, ext=None):
     return os.path.join(dirname,"thumb."+basename)
 
 def thumbnail_file_from_mainfile(mainfile, filestorage):
-    thumb_filename = thumbnail_filename_from_mainfile(mainfile)
+    thumb_filename = thumbnail_filename_from_mainfile(mainfile, os.path.splitext(filestorage.filename)[1])
     return File(name=thumb_filename, handler=filestorage.file)
 
 ## form
@@ -333,7 +333,9 @@ class MovieUpdater(Updater):
             datalist.append(dict(filepath=mainmovie_file.name))
 
         if is_filled_filefield(params["placeholder"]):
-            thumbnail_file = filesession.add(File(name=asset.thumbnail_path, handler=params["placeholder"].file))
+            placeholder = params["placeholder"]
+            name = asset.thumbnail_path or thumbnail_filename_from_mainfile(File(name=asset.filepath, handler=None),  placeholder.filename)
+            thumbnail_file = filesession.add(File(name=name, handler=placeholder.file))
             datalist.append(dict(thumbnail_path=thumbnail_file.name))
 
         datalist.append({k:v for k, v in params.iteritems() if v})
@@ -351,6 +353,7 @@ class FlashUpdater(Updater):
         tags, private_tags, params =  divide_data(params)
         datalist = []
         filesession = get_asset_filesession(self.request)
+
         if is_filled_filefield(params["filepath"]):
             extra_asset_data = FlashInfoDatector(self.request).detect(params["filepath"].file, params["filepath"].filename)
             datalist.append(extra_asset_data)
@@ -358,8 +361,10 @@ class FlashUpdater(Updater):
             datalist.append(dict(filepath=mainflash_file.name))
 
         if is_filled_filefield(params["placeholder"]):
-            thumbnail_file = filesession.add(File(name=asset.thumbnail_path, handler=params["placeholder"].file))
-            datalist.append(dict(placeholder=thumbnail_file.name))
+            placeholder = params["placeholder"]
+            name = asset.thumbnail_path or thumbnail_filename_from_mainfile(File(name=asset.filepath, handler=None),  placeholder.filename)
+            thumbnail_file = filesession.add(File(name=name, handler=placeholder.file))
+            datalist.append(dict(thumbnail_path=thumbnail_file.name))
 
         datalist.append({k:v for k, v in params.iteritems() if v})
         asset = update_asset(asset, datalist)
