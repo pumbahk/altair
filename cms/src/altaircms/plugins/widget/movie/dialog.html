@@ -24,6 +24,18 @@
 <div class="title">
   <h1>動画(movie)</h1>
 </div>
+
+<div>
+<table class="table">
+  <tbody>
+    ${co.formfield(form, "width")}
+    ${co.formfield(form, "height")}
+    ${co.formfield(form, "alt")}
+    ${co.formfield(form, "align")}
+  </tbody>
+</table>
+<button type="button" id="movie_submit">登録</button>
+
 <link rel="stylesheet" type="text/css" href="/plugins/static/css/widget/lib/image.css">
 <!-- "previous page" action -->
 <a class="prev browse left"></a>
@@ -37,13 +49,4 @@
    ${render(assets)}
    </div>
 </div>
-<table class="table">
-  <tbody>
-    ${co.formfield(form, "width")}
-    ${co.formfield(form, "height")}
-    ${co.formfield(form, "alt")}
-    ${co.formfield(form, "align")}
-  </tbody>
-</table>
-<button type="button" id="movie_submit">登録</button>
-
+</div>

@@ -3,12 +3,11 @@ from altaircms.auth.api import require_login
 from altaircms.lib.itertools import group_by_n
 from . import forms
 from webob.multidict import MultiDict
-from altaircms.helpers.viewhelpers import with_exception_logging
 from altaircms.formhelpers import AlignChoiceField
 import logging
 logger = logging.getLogger(__name__)
 
-@view_defaults(custom_predicates=(require_login,), decorator=with_exception_logging)
+@view_defaults(custom_predicates=(require_login,))
 class MovieWidgetView(object):
     def __init__(self, context, request):
         self.context = context
