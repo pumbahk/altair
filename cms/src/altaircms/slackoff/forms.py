@@ -225,6 +225,7 @@ class TopcontentForm(Form):
                                                      get_label=pageset_label)
     link = fields.TextField(label=u"外部リンク(ページより優先)", filters=[quote])
     mobile_link = fields.TextField(label=u"mobile外部リンク(ページより優先)", filters=[quote])
+    mobile_tag = dynamic_query_select_field_factory(MobileTag, label=u"モバイル検索用ページタグ", allow_blank=True, get_label=lambda obj: obj.label or u"名前なし")
 
     display_order = fields.IntegerField(label=u"表示順序(1〜100)", default=50)
     is_vetoed = fields.BooleanField(label=u"公開禁止")
@@ -233,7 +234,7 @@ class TopcontentForm(Form):
                          u"text", u"countdown_type", u"image_asset",u"mobile_image_asset",  
                          u"publish_open_on", u"publish_close_on", 
                          u"display_order", u"is_vetoed", 
-                         u"linked_page", u"link", u"mobile_link"]
+                         u"linked_page", u"link", u"mobile_link", u"mobile_tag"]
     
     def validate(self, **kwargs):
         if super(TopcontentForm, self).validate():

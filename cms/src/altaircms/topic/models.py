@@ -205,6 +205,9 @@ class Topcontent(WithOrganizationMixin, TopicCore):
     id = sa.Column(sa.Integer, sa.ForeignKey("topiccore.id"), primary_key=True)
     tags = orm.relationship("TopcontentTag", secondary="topiccoretag2topiccore", backref=orm.backref("topcontents"))
 
+    mobile_tag = orm.relationship("MobileTag", uselist=False, backref="topcontents")
+    mobile_tag_id = sa.Column(sa.Integer, sa.ForeignKey("mobiletag.id"))
+
     title = sa.Column(sa.Unicode(255))
     text = sa.Column(sa.Unicode(255))
 

@@ -70,6 +70,7 @@ def topcontent_mapper(request, obj):
     objlike.link = obj.link or u"-"
     objlike.mobile_link = obj.mobile_link or u"-"
     objlike.countdown_type = CDWN_DICT[obj.countdown_type]
+    objlike.mobile_tag = obj.mobile_tag.label
     return objlike
     
 PDICT = import_symbol("altaircms.seeds.prefecture:PrefectureMapping").name_to_label
