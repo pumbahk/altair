@@ -25,6 +25,7 @@ from ticketing.lots.models import (
 import ticketing.lots.api as lots_api
 from .helpers import Link
 from .forms import ProductForm, LotForm
+from . import api
 
 @view_defaults(decorator=with_bootstrap, permission="event_editor")
 class Lots(BaseView):
@@ -43,12 +44,11 @@ class Lots(BaseView):
                         lot.delete()
                         self.request.session.flash(u"{0}を削除しました。".format(lot.name))
 
-        event_id = int(self.request.matchdict.get('event_id', 0))
-        event = Event.get(event_id, organization_id=self.context.user.organization_id)
+        event = self.context.event
         if event is None:
             return HTTPNotFound()
 
-        lots = Lot.query.filter(Lot.event_id==event_id).all()
+        lots = Lot.query.filter(Lot.event_id==event.id).all()
 
         return dict(
             event=event,
@@ -57,8 +57,7 @@ class Lots(BaseView):
 
     @view_config(route_name='lots.new', renderer='ticketing:templates/lots/new.html', permission='event_viewer')
     def new(self):
-        event_id = int(self.request.matchdict.get('event_id', 0))
-        event = Event.get(event_id, organization_id=self.context.user.organization_id)
+        event = self.context.event
         if event is None:
             return HTTPNotFound()
 
@@ -73,7 +72,7 @@ class Lots(BaseView):
         if self.request.POST and form.validate():
             lot = form.create_lot(event)
             DBSession.add(lot)
-            return HTTPFound(self.request.route_url("lots.index", event_id=event_id))
+            return HTTPFound(self.request.route_url("lots.index", event_id=event.id))
 
         manage_sales_segment_group_link = Link(label=u"+", url=self.request.route_url('sales_segment_groups.index', event_id=event.id))
         return dict(
@@ -85,8 +84,7 @@ class Lots(BaseView):
     @view_config(route_name='lots.show', renderer='ticketing:templates/lots/show.html', 
                  permission='event_viewer')
     def show(self):
-        lot_id = self.request.matchdict["lot_id"]
-        lot = Lot.query.filter(Lot.id==lot_id).one()
+        lot = self.context.lot
         if "action-update-pdmp" in self.request.POST:
             for pdmp_id in self.request.POST.getall("pdmp_id"):
                 pdmp = PaymentDeliveryMethodPair.query.filter(PaymentDeliveryMethodPair.id==pdmp_id).first()
@@ -104,9 +102,8 @@ class Lots(BaseView):
 
     @view_config(route_name='lots.edit', renderer='ticketing:templates/lots/edit.html', permission='event_viewer')
     def edit(self):
-        lot_id = self.request.matchdict["lot_id"]
-        lot = Lot.query.filter(Lot.id==lot_id).one()
-        event = lot.event
+        lot = self.context.lot
+        event = self.context.event
         sales_segment_groups = event.sales_segment_groups
         sales_segment_group_choices = [
             (str(s.id), s.name)
@@ -116,7 +113,7 @@ class Lots(BaseView):
         form.sales_segment_group_id.choices = sales_segment_group_choices
         if self.request.POST and form.validate():
             form.update_lot(lot)
-            return HTTPFound(self.request.route_url("lots.show", lot_id=lot_id))
+            return HTTPFound(self.request.route_url("lots.show", lot_id=lot.id))
 
         manage_sales_segment_group_link = Link(label=u"+", url=self.request.route_url('sales_segment_groups.index', event_id=event.id))
 
@@ -130,9 +127,9 @@ class Lots(BaseView):
 
     @view_config(route_name='lots.product_new', renderer='ticketing:templates/lots/product_new.html', permission='event_viewer')
     def product_new(self):
-        lot_id = self.request.matchdict["lot_id"]
-        lot = Lot.query.filter(Lot.id==lot_id).one()
-        event = lot.event
+        lot = self.context.lot
+        event = self.context.event
+
         stock_types = event.stock_types
         stock_type_choices = [
             (s.id, s.name)
@@ -149,8 +146,10 @@ class Lots(BaseView):
 
         if self.request.POST and form.validate():
             product = form.create_product(lot)
+            DBSession.add(product)
             return HTTPFound(self.request.route_url('lots.show', lot_id=lot.id))
         return dict(form=form, lot=lot)
+
 
 @view_defaults(decorator=with_bootstrap, permission="event_editor")
 class LotEntries(BaseView):
@@ -158,44 +157,26 @@ class LotEntries(BaseView):
     def index(self):
         """ 申し込み状況確認画面
         """
+        lot = self.context.lot
+        lot_status = api.get_lot_entry_status(lot, self.request)
 
-        lot_id = self.request.matchdict["lot_id"]
-        lot = Lot.query.filter(Lot.id==lot_id).one()
-        performances = correlate_objects(lot.performances, 'id')
-
-        # 申し込み状況
-        entries = LotEntry.query.filter(LotEntry.lot_id==lot.id).all()
-        #  総数
-        total_entries = LotEntry.query.filter(LotEntry.lot_id==lot.id).count()
-        #  希望数
-        total_wishes = LotEntryWish.query.filter(LotEntry.lot_id==lot.id).filter(LotEntryWish.lot_entry_id==LotEntry.id).count()
-
-        #  公演、希望順ごとの数
-        sub_counts = [dict(performance=performances[r[1]],
-                           wish_order=r[2] + 1,
-                           count=r[0])
-                      for r in sql.select([sql.func.count(LotEntryWish.id), LotEntryWish.performance_id, LotEntryWish.wish_order]
-                                          ).where(sql.and_(LotEntryWish.lot_entry_id==LotEntry.id,
-                                                           LotEntry.lot_id==lot.id)
-                                                  ).group_by(LotEntryWish.performance_id, LotEntryWish.wish_order
-                                                             ).execute()]
-        
-        #  当選予定数
-        electing_count = LotElectWork.query.filter(LotElectWork.lot_id==lot.id).count()
-        #  当選数
-        elected_count = LotElectedEntry.query.filter(LotElectedEntry.lot_entry_id==LotEntry.id).filter(LotEntry.lot_id==lot_id).count()
-
-        #  メール送信済み
-        #  決済済み
         return dict(
             lot=lot,
-            entries=entries,
-            total_entries=total_entries,
-            total_wishes=total_wishes,
-            sub_counts=sub_counts,
-            performances=performances,
-            electing_count=electing_count,
-            elected_count=elected_count,
+            performances = lot_status.performances,
+            #  メール送信済み
+            #  決済済み
+            # 申し込み状況
+            entries = lot.entries,
+            #  総数
+            total_entries = lot_status.total_entries,
+            #  希望数
+            total_wishes = lot_status.total_wishes,
+            #  公演、希望順ごとの数
+            sub_counts = lot_status.sub_counts,
+            #  当選予定数
+            electing_count = lot_status.electing_count,
+            #  当選数
+            elected_count = lot_status.elected_count,
             )
 
 
