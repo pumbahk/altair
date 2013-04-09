@@ -280,6 +280,7 @@ a:hover img {
 	padding: 10px 15px;
 }
 
+/*
 .maincol .event-detail h3{
 	background: transparent;
 	font-size: 14px;
@@ -288,6 +289,7 @@ a:hover img {
 	color: #000;
 	padding: 0px 15px;
 }
+*/
 
 .maincol .event-detail dl {
     clear: both;
@@ -842,4 +844,178 @@ table.info {
 
 .movie-widget[align=right],.flash-widget[align=right]{
  margin-right: 20px;
+}
+
+/* calendar */
+.calendarInner{
+	height: 450px;
+	overflow: hidden;
+}
+
+
+div#performance-calendar {
+  padding: 0;
+}
+
+div#performance-calendar table {
+  width: 620px;
+  border-collapse: collapse;
+  font-family: "Trebuchet MS";
+  background: #fff;
+}
+
+div#performance-calendar table td,
+div#performance-calendar table th {
+  border: 1px solid #3a9dca;
+  background: #fff;
+  }
+
+div#performance-calendar table thead th {
+  border-top: 2px solid #3a9dca;
+  text-align: center;
+  font-weight: bold;
+  height: 20px;
+  background-color: #ccc;
+}
+
+div#performance-calendar table tr.last th,
+div#performance-calendar table tr.last td {
+  border-bottom: 2px solid #3a9dca;
+}
+
+div#performance-calendar table th.first,
+div#performance-calendar table td.first {
+  border-left: 2px solid #3a9dca;
+}
+
+div#performance-calendar table th.last,
+div#performance-calendar table td.last {
+  border-right: 2px solid #3a9dca;
+}
+
+div#performance-calendar table td.empty {
+  border: none !important;
+  width: 48px;
+}
+
+div#performance-calendar table th.month {
+  border: none !important;
+  width: 48px;
+  color: #fff;
+  font-weight: bold;
+  padding: 0 0;
+  margin: 0 0;
+}
+
+div#performance-calendar table tbody td {
+  width: 98px;
+  height: 64px;
+  vertical-align: top;
+  padding: 8px 8px;
+}
+
+div#performance-calendar table tbody td .day {
+  font-size: 15px;
+  font-weight: bold;
+}
+
+div#performance-calendar table tbody td ul {
+  margin: 0 0 0 0;
+  padding: 0 0 0 0;
+}
+
+div#performance-calendar table tbody td ul li {
+  list-style-type: none;
+  margin: 0 0 0 0;
+  padding: 0 0 0 0;
+}
+
+div#performance-calendar table tbody td.odd_month {
+  background-color: #fff;
+}
+
+div#performance-calendar table tbody td.even_month {
+  background-color: #ffd;
+}
+
+div#performance-calendar table tbody td.saturday .day {
+  color: #48e;
+}
+
+div#performance-calendar table tbody td.holiday .day {
+  color: #e48;
+}
+
+
+div#performance-calendar table td ul li.maru{
+	background: url(/static/89ers/images/maru.png) #f1fbff no-repeat left top;
+	padding: 3px;
+	text-align: center;
+	font-size: 11px;
+}
+
+div#performance-calendar table td ul li.sankaku{
+	background: url(/static/89ers/images/sankaku.png) #fffcf0 no-repeat left top;
+	padding: 3px;
+	text-align: center;
+	font-size: 11px;
+}
+
+div#performance-calendar table td ul li.batsu{
+	background: url(/static/89ers/images/batsu.png) #eee no-repeat left top;
+	padding: 3px;
+	text-align: center;
+	font-size: 11px;
+}
+
+div#performance-calendar table td ul li a{
+	text-decoration: underline;
+	color: #555;
+}
+
+table.phone th{
+	vertical-align: top;
+	text-align: right;
+	font-weight: bold;
+	font-size: 14px;
+}
+
+.phoneNo{
+	font-weight: bold;
+	font-size: 14px;
+	padding-left: 30px !important;
+}
+
+.f00{
+	color: #f00;
+}
+
+.month-tab{
+	margin:30px 10px 0 10px;
+}
+
+
+div#performance-calendar .month-tab span{
+	margin: 2px 10px;
+	background-color: #1a7daa;
+	padding: 10px 20px 5px 20px;
+	color: #fff;
+	border-radius: 5px 5px 0px 0px;
+	position: relative;
+	top:-2px;
+}
+
+div#performance-calendar .month-tab span.current{
+	background-color: #5abdfa;
+	font-weight: bold;
+}
+
+div#performance-calendar .month-tab span.current a{
+	color: #00F;
+	text-decoration: none;
+}
+
+div#performance-calendar .month-tab span a{
+	color: #fff;
+	text-decoration: underline;
 }
