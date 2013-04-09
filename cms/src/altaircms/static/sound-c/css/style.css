@@ -935,7 +935,7 @@ div#performance-calendar table tbody td.odd_month {
 }
 
 div#performance-calendar table tbody td.even_month {
-  background-color: #ffd;
+  background-color: #def;
 }
 
 div#performance-calendar table tbody td.saturday .day {
