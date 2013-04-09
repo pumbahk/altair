@@ -40,12 +40,14 @@ def create_mobile_request_from_request(request):
     logger.debug("**this is mobile access**")
     return decoded
 
-def as_mobile_response(request, handler):
-    response = handler(request)
+def convert_response_if_necessary(request, response):
     response = _convert_response_sjis(response)
     if request._ua.is_docomo():
         response = _convert_response_for_docomo(response)
     return response
+
+def as_mobile_response(request, handler):
+    return convert_response_if_necessary(request, handler(request))
 
 def mobile_request_factory(handler, registry):
     def tween(request):
@@ -68,7 +70,7 @@ def mobile_encoding_convert_factory(handler, registry):
                 if exception_message:
                     log_exception_message(request, *exception_message)
                 # XXX: テンプレ大丈夫?
-                return Response(status=400, body=render("altaircms:templates/mobile/default_notfound.html", dict(), request))
+                return convert_response_if_necessary(request, Response(status=400, body=render("altaircms:templates/mobile/default_notfound.html", dict(), request)))
         else:
             request.is_mobile = False
             logger.debug("**this is pc access**")
