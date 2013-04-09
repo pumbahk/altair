@@ -118,7 +118,7 @@ class OrderSearchForm(Form):
                 sales_segments = SalesSegment.query.filter(SalesSegment.performance_id == performance.id)
                 self.sales_segment_id.choices = [('', u'(すべて)')] + [(sales_segment.id, sales_segment.sales_segment_group.name) for sales_segment in sales_segments]
             else:
-                seles.sales_segment_id.choices = [(sales_segment.id, sales_segment.sales_segment_group.name)]
+                self.sales_segment_id.choices = [(sales_segment.id, sales_segment.sales_segment_group.name)]
 
     order_no = TextField(
         label=u'予約番号',
