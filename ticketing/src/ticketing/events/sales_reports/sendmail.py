@@ -6,7 +6,7 @@ from paste.util.multidict import MultiDict
 from pyramid.threadlocal import get_current_registry
 from pyramid.renderers import render_to_response
 from sqlalchemy import distinct
-from sqlalchemy.sql import func, and_
+from sqlalchemy.sql import func, and_, or_
 
 from ticketing.core.models import Event, Mailer
 from ticketing.core.models import StockType, StockHolder, StockStatus, Stock, Performance, Product, ProductItem, SalesSegmentGroup, SalesSegment
@@ -45,7 +45,7 @@ def get_sales_summary(form, organization, group='Event'):
         .outerjoin(Performance).filter(Performance.deleted_at==None)\
         .outerjoin(Stock).filter(Stock.deleted_at==None, Stock.stock_holder_id.in_(stock_holder_ids))\
         .outerjoin(StockStatus).filter(StockStatus.deleted_at==None)\
-        .outerjoin(SalesSegmentGroup).filter(SalesSegmentGroup.event_id==Event.id)
+        .outerjoin(SalesSegment, SalesSegment.performance_id==Performance.id).filter(SalesSegment.public==True)
 
     if form.performance_id.data:
         query = query.filter(Performance.id==form.performance_id.data)
@@ -64,8 +64,8 @@ def get_sales_summary(form, organization, group='Event'):
         group_key,
         name,
         start_on,
-        func.min(SalesSegmentGroup.start_at.label('sales_start_at')),
-        func.max(SalesSegmentGroup.end_at.label('sales_end_at')),
+        func.min(SalesSegment.start_at.label('sales_start_at')),
+        func.max(SalesSegment.end_at.label('sales_end_at')),
     ).group_by(group_key)
 
     for id, title, start_on, sales_start_day, sales_end_day in query.all():
@@ -87,7 +87,8 @@ def get_sales_summary(form, organization, group='Event'):
         .join(ProductItem)\
         .join(Product).filter(Product.seat_stock_type_id==Stock.stock_type_id)\
         .join(Performance).filter(Performance.id==Stock.performance_id)\
-        .join(Event).filter(Event.organization_id==organization.id)
+        .join(Event).filter(Event.organization_id==organization.id)\
+        .join(SalesSegment, SalesSegment.performance_id==Performance.id).filter(SalesSegment.public==True)
 
     if form.performance_id.data:
         query = query.filter(Performance.id==form.performance_id.data)
@@ -119,7 +120,9 @@ def get_sales_summary(form, organization, group='Event'):
     query = Event.query.filter(Event.organization_id==organization.id)\
         .outerjoin(Performance).filter(Performance.deleted_at==None)\
         .outerjoin(Order).filter(Order.canceled_at==None, Order.deleted_at==None)\
-        .outerjoin(OrderedProduct).filter(OrderedProduct.deleted_at==None)
+        .outerjoin(OrderedProduct).filter(OrderedProduct.deleted_at==None)\
+        .outerjoin(Product).filter(Product.deleted_at==None)\
+        .outerjoin(SalesSegment).filter(or_(SalesSegment.performance_id==None, SalesSegment.public==True))
 
     if form.limited_from.data:
         query = query.filter(Order.created_at >= form.limited_from.data)
@@ -190,7 +193,7 @@ def get_performance_sales_summary(form, organization):
     if form.event_id.data:
         query = query.filter(StockType.event_id==form.event_id.data)
     if form.sales_segment_group_id.data:
-        query = query.join(SalesSegment)
+        query = query.join(SalesSegment).filter(or_(SalesSegment.performance_id==None, SalesSegment.public==True))
         query = query.join(SalesSegmentGroup).filter(
             SalesSegmentGroup.id==form.sales_segment_group_id.data,
         )
@@ -238,7 +241,7 @@ def get_performance_sales_summary(form, organization):
     if form.event_id.data:
         query = query.join(StockType).filter(StockType.event_id==form.event_id.data)
     if form.sales_segment_group_id.data:
-        query = query.join(SalesSegment)
+        query = query.join(SalesSegment).filter(or_(SalesSegment.performance_id==None, SalesSegment.public==True))
         query = query.join(SalesSegmentGroup).filter(
             SalesSegmentGroup.id==form.sales_segment_group_id.data,
         )
@@ -263,7 +266,7 @@ def get_performance_sales_summary(form, organization):
     elif form.event_id.data:
         query = query.join(StockType).filter(StockType.event_id==form.event_id.data)
     if form.sales_segment_group_id.data:
-        query = query.join(SalesSegment)
+        query = query.join(SalesSegment).filter(or_(SalesSegment.performance_id==None, SalesSegment.public==True))
         query = query.join(SalesSegmentGroup).filter(
             SalesSegmentGroup.id==form.sales_segment_group_id.data
         )
@@ -306,6 +309,8 @@ def get_performance_sales_detail(form, event):
         report_by_sales_segment_group = {}
         if form.limited_from.data is None or performance.end_on is None or form.limited_from.data < performance.end_on:
             for sales_segment in performance.sales_segments:
+                if not sales_segment.public:
+                    continue
                 if (form.limited_from.data is None or todatetime(form.limited_from.data) < sales_segment.end_at) or\
                    (form.limited_to.data is None or sales_segment.start_at <= todatetime(form.limited_to.data)):
                     form.performance_id.data = performance.id
