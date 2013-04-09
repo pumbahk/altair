@@ -15,7 +15,9 @@ class RegressionTests(unittest.TestCase):
   <g>
     <flowRoot id="x">
       <flowDiv id="a">
-        <flowPara id="this-is-evil-of-root">{{</flowPara>
+        <flowPara id="this-is-evil-of-root">{{</flowPara><flowPara style="font-size:6px" id="flowPara176">{{券種名}}</flowPara>
+        <flowPara style="font-size:8px" id="flowPara192" />
+
         <flowPara id="i1"/>
       </flowDiv>
     </flowRoot> 
@@ -31,6 +33,7 @@ class RegressionTests(unittest.TestCase):
   </g>
 </svg>
 """.encode("utf-8")
+
     def test_2514(self):
         from StringIO import StringIO
         import pystache
