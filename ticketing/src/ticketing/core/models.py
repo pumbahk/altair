@@ -2137,11 +2137,12 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             return False
 
         # インナー予約の場合はAPI決済していないのでスキップ
-        if self.channel == ChannelEnum.INNER.v:
+        # ただしコンビニ決済はインナー予約でもAPIで通知しているので処理する
+        if self.channel == ChannelEnum.INNER.v and ppid != plugins.SEJ_PAYMENT_PLUGIN_ID:
             logger.info(u'インナー予約のキャンセルなので決済払戻処理をスキップ %s' % self.order_no)
 
         # クレジットカード決済
-        elif ppid == 1:
+        elif ppid == plugins.MULTICHECKOUT_PAYMENT_PLUGIN_ID:
             # 入金済みなら決済をキャンセル
             if self.payment_status in ['paid', 'refunding']:
                 # 売り上げキャンセル
@@ -2184,7 +2185,7 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                 self.multi_checkout_approval_no = multi_checkout_result.ApprovalNo
 
         # 楽天あんしん支払いサービス
-        elif ppid == 2:
+        elif ppid == plugins.CHECKOUT_PAYMENT_PLUGIN_ID:
             # 入金済みなら決済をキャンセル
             if self.payment_status in ['paid', 'refunding']:
                 from ticketing.checkout import api as checkout_api
@@ -2215,7 +2216,7 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                         return False
 
         # コンビニ決済 (セブン-イレブン)
-        elif ppid == 3:
+        elif ppid == plugins.SEJ_PAYMENT_PLUGIN_ID:
             # 未入金ならコンビニ決済のキャンセル通知
             if self.payment_status == 'unpaid':
                 sej_order = SejOrder.query.filter_by(order_id=self.order_no).first()
@@ -2306,7 +2307,7 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                 DBSession.merge(rt)
 
         # 窓口支払
-        elif ppid == 4:
+        elif ppid == plugins.RESERVE_NUMBER_PAYMENT_PLUGIN_ID:
             pass
 
         # 在庫を戻す

@@ -4,12 +4,16 @@ import locale
 from datetime import datetime
 
 from wtforms import Form, ValidationError
-from wtforms import (HiddenField, TextField, SelectField, SelectMultipleField, TextAreaField, BooleanField, RadioField, FieldList, FormField, DecimalField, IntegerField)
-from wtforms.validators import Optional, AnyOf, Length, Email
+from wtforms import (HiddenField, TextField, SelectField, SelectMultipleField, TextAreaField, BooleanField,
+                     RadioField, FieldList, FormField, DecimalField, IntegerField)
+from wtforms.validators import Optional, AnyOf, Length, Email, Regexp
 from wtforms.widgets import CheckboxInput
 
-from ticketing.formhelpers import DateTimeField, Translations, Required, DateField, Automatic, Max, Min, OurDateWidget, after1900, CheckboxMultipleSelect, BugFreeSelectMultipleField
-from ticketing.core.models import (Organization, PaymentMethodPlugin, DeliveryMethodPlugin, PaymentMethod, DeliveryMethod, SalesSegmentGroup, SalesSegment, Performance, Product, ProductItem, Event, OrderCancelReasonEnum)
+from ticketing.formhelpers import (DateTimeField, Translations, Required, DateField, Max, OurDateWidget,
+                                   after1900, CheckboxMultipleSelect, BugFreeSelectMultipleField,
+                                   NFKC, Zenkaku, Katakana, strip_spaces, ignore_space_hyphen)
+from ticketing.core.models import (Organization, PaymentMethod, DeliveryMethod, SalesSegmentGroup, PaymentDeliveryMethodPair,
+                                   SalesSegment, Performance, Product, ProductItem, Event, OrderCancelReasonEnum)
 from ticketing.cart.schemas import ClientForm
 from ticketing.payments import plugins
 
@@ -416,17 +420,19 @@ class OrderReserveForm(Form):
                                          .filter(now<=SalesSegment.end_at)\
                                          .join(SalesSegmentGroup).filter(SalesSegmentGroup.kind=='sales_counter').all()
             self.payment_delivery_method_pair_id.choices = []
+            self.payment_delivery_method_pair_id.sej_payment_plugin_id = []
             for sales_segment in sales_segments:
                 for pdmp in sales_segment.payment_delivery_method_pairs:
                     self.payment_delivery_method_pair_id.choices.append(
                         (pdmp.id, '%s  -  %s' % (pdmp.payment_method.name, pdmp.delivery_method.name))
                     )
+                    if pdmp.payment_method.payment_plugin_id == plugins.SEJ_PAYMENT_PLUGIN_ID:
+                        self.payment_delivery_method_pair_id.sej_payment_plugin_id.append(int(pdmp.id))
 
             self.sales_counter_payment_method_id.choices = [(0, '')]
             for pm in PaymentMethod.filter_by_organization_id(performance.event.organization_id):
                 self.sales_counter_payment_method_id.choices.append((pm.id, pm.name))
 
-            now = datetime.now()
             self.products.choices = []
             products = []
             if 'stocks' in kwargs and kwargs['stocks']:
@@ -484,6 +490,51 @@ class OrderReserveForm(Form):
         choices=[],
         coerce=int
     )
+    last_name = TextField(
+        label=u'姓',
+        filters=[strip_spaces],
+        validators=[
+            Optional(),
+            Zenkaku,
+            Length(max=255, message=u'255文字以内で入力してください'),
+        ],
+    )
+    last_name_kana = TextField(
+        label=u'姓(カナ)',
+        filters=[strip_spaces, NFKC],
+        validators=[
+            Optional(),
+            Katakana,
+            Length(max=255, message=u'255文字以内で入力してください'),
+        ]
+    )
+    first_name = TextField(
+        label=u'名',
+        filters=[strip_spaces],
+        validators=[
+            Optional(),
+            Zenkaku,
+            Length(max=255, message=u'255文字以内で入力してください'),
+        ]
+    )
+    first_name_kana = TextField(
+        label=u'名(カナ)',
+        filters=[strip_spaces, NFKC],
+        validators=[
+            Optional(),
+            Katakana,
+            Length(max=255, message=u'255文字以内で入力してください'),
+        ]
+    )
+    tel_1 = TextField(
+        label=u'TEL',
+        filters=[ignore_space_hyphen],
+        validators=[
+            Optional(),
+            Length(min=1, max=11),
+            Regexp(r'^\d*$', message=u'-を抜いた数字のみを入力してください'),
+        ]
+    )
 
     def validate_stocks(form, field):
         if len(field.data) == 0:
@@ -492,6 +543,15 @@ class OrderReserveForm(Form):
             raise ValidationError(u'複数の席種を選択することはできません')
         if not form.products.choices:
             raise ValidationError(u'選択された座席に紐づく予約可能な商品がありません')
+
+    def validate_payment_delivery_method_pair_id(form, field):
+        if field.data:
+            pdmp = PaymentDeliveryMethodPair.get(field.data)
+            if pdmp and pdmp.payment_method.payment_plugin_id == plugins.SEJ_PAYMENT_PLUGIN_ID:
+                for field_name in ['last_name', 'first_name', 'last_name_kana', 'first_name_kana', 'tel_1']:
+                    field = getattr(form, field_name)
+                    if not field.data:
+                        raise ValidationError(u'購入者情報を入力してください')
 
 class OrderRefundForm(Form):
 

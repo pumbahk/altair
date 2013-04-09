@@ -40,6 +40,8 @@ from ticketing.tickets.convert import to_opcodes
 from ticketing.views import BaseView
 from ticketing.fanstatic import with_bootstrap
 from ticketing.orders.events import notify_order_canceled
+from ticketing.payments.payment import Payment
+from ticketing.payments import plugins as payment_plugins
 from ticketing.tickets.utils import build_dicts_from_ordered_product_item
 from ticketing.cart import api
 from ticketing.cart.stocker import NotEnoughStockException
@@ -872,8 +874,8 @@ class OrdersReserveView(BaseView):
 
         return {
             'seats':seats,
-            'form':form_reserve, 
-            "performance": performance, 
+            'form':form_reserve,
+            'performance': performance,
         }
 
     @view_config(route_name='orders.reserve.confirm', request_method='POST', renderer='ticketing:templates/orders/_form_reserve_confirm.html')
@@ -929,14 +931,25 @@ class OrdersReserveView(BaseView):
             cart.channel = ChannelEnum.INNER.v
             cart.operator = self.context.user
 
+            # コンビニ決済は通知を行うので購入者情報が必要
+            payment_plugin_id = cart.payment_delivery_pair.payment_method.payment_plugin_id
+            if payment_plugin_id == payment_plugins.SEJ_PAYMENT_PLUGIN_ID:
+                cart.shipping_address = ShippingAddress(
+                    first_name=f.first_name.data,
+                    last_name=f.last_name.data,
+                    first_name_kana=f.first_name_kana.data,
+                    last_name_kana=f.last_name_kana.data,
+                    tel_1=f.tel_1.data,
+                )
+
             DBSession.add(cart)
             DBSession.flush()
             api.set_cart(self.request, cart)
 
             return {
-                'form':f,
                 'cart':cart,
-                "performance": performance, 
+                'form':f,
+                'performance': performance,
             }
         except ValidationError, e:
             raise HTTPBadRequest(body=json.dumps({'message':e.message}))
@@ -969,17 +982,22 @@ class OrdersReserveView(BaseView):
             cart = api.get_cart(self.request)
 
             # create order
-            order = Order.create_from_cart(cart)
-            order.organization_id = order.performance.event.organization_id
+            payment_plugin_id = cart.payment_delivery_pair.payment_method.payment_plugin_id
+            if payment_plugin_id == payment_plugins.SEJ_PAYMENT_PLUGIN_ID:
+                payment = Payment(cart, self.request)
+                order = payment.call_payment()
+            else:
+                order = Order.create_from_cart(cart)
+                order.organization_id = order.performance.event.organization_id
+                order.save()
+                cart.order = order
+                cart.finish()
+
             order.note = post_data.get('note')
             attr = 'sales_counter_payment_method_id'
             if int(post_data.get(attr, 0)):
                 order.paid_at = datetime.now()
                 order.attributes[attr] = post_data.get(attr)
-            DBSession.add(order)
-            DBSession.flush()
-            cart.order = order
-            cart.finish()
 
             if with_enqueue:
                 utils.enqueue_for_order(operator=self.context.user, order=order)
