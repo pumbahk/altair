@@ -855,6 +855,7 @@ table.info {
 
 div#performance-calendar {
   padding: 0;
+  margin-left: 20px;
 }
 
 div#performance-calendar table {
