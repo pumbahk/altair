@@ -554,7 +554,6 @@ class OrderDetailView(BaseView):
             return HTTPNotFound('order id %d is not found' % order_id)
 
         f = ClientOptionalForm(self.request.POST)
-
         if f.validate():
             shipping_address = merge_session_with_post(order.shipping_address or ShippingAddress(), f.data)
             shipping_address.tel_1 = f.tel_1.data
@@ -838,7 +837,7 @@ class OrdersReserveView(BaseView):
                 'message':u'パフォーマンスが存在しません',
             }))
 
-        # 古いカートがセッションの残っていたら削除
+        # 古いカートのセッションが残っていたら削除
         old_cart = api.get_cart(self.request)
         if old_cart:
             old_cart.release()
@@ -980,11 +979,11 @@ class OrdersReserveView(BaseView):
             }))
 
         try:
-            cart = api.get_cart(self.request)
-
             # create order
+            cart = api.get_cart(self.request)
             payment_plugin_id = cart.payment_delivery_pair.payment_method.payment_plugin_id
-            if payment_plugin_id == payment_plugins.SEJ_PAYMENT_PLUGIN_ID:
+            need_payment = (payment_plugin_id == payment_plugins.SEJ_PAYMENT_PLUGIN_ID)
+            if need_payment:
                 payment = Payment(cart, self.request)
                 order = payment.call_payment()
             else:
@@ -997,8 +996,9 @@ class OrdersReserveView(BaseView):
             order.note = post_data.get('note')
             attr = 'sales_counter_payment_method_id'
             if int(post_data.get(attr, 0)):
-                order.paid_at = datetime.now()
                 order.attributes[attr] = post_data.get(attr)
+                if not need_payment:
+                    order.paid_at = datetime.now()
 
             if with_enqueue:
                 utils.enqueue_for_order(operator=self.context.user, order=order)
