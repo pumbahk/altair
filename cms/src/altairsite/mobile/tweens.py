@@ -1,9 +1,13 @@
+# -*- coding:utf-8 -*-
 import uamobile
 import logging
 from zope.interface import directlyProvides
 from zope.interface import Interface
 from pyramid.threadlocal import manager
 from pyramid.response import Response
+from pyramid.renderers import render
+from altair.exclog.api import build_exception_message, log_exception_message
+
 logger = logging.getLogger(__name__)
 
 class IMobileRequest(Interface):
@@ -36,12 +40,14 @@ def create_mobile_request_from_request(request):
     logger.debug("**this is mobile access**")
     return decoded
 
-def as_mobile_response(request, handler):
-    response = handler(request)
+def convert_response_if_necessary(request, response):
     response = _convert_response_sjis(response)
     if request._ua.is_docomo():
         response = _convert_response_for_docomo(response)
     return response
+
+def as_mobile_response(request, handler):
+    return convert_response_if_necessary(request, handler(request))
 
 def mobile_request_factory(handler, registry):
     def tween(request):
@@ -60,8 +66,11 @@ def mobile_encoding_convert_factory(handler, registry):
             try:
                 return as_mobile_response(create_mobile_request_from_request(request), handler)
             except UnicodeDecodeError as e:
-                logger.warning(str(e))
-                return Response(status=400, body=str(e))
+                exception_message = build_exception_message(request)
+                if exception_message:
+                    log_exception_message(request, *exception_message)
+                # XXX: テンプレ大丈夫?
+                return convert_response_if_necessary(request, Response(status=400, body=render("altaircms:templates/mobile/default_notfound.html", dict(), request)))
         else:
             request.is_mobile = False
             logger.debug("**this is pc access**")

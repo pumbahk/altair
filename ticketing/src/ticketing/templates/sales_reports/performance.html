@@ -33,12 +33,12 @@
 <%
   report_by_ssg = sorted(report_by_sales_segment_group, key=lambda x:(x.order, x.name))
 %>
-% for sale_segment in report_by_ssg:
+% for sales_segment in report_by_ssg:
   <%
-    performance_reports = report_by_sales_segment_group[sale_segment]
-    performance_reports_total = report_by_sales_segment_group_total[sale_segment]
+    performance_reports = report_by_sales_segment_group[sales_segment]
+    performance_reports_total = report_by_sales_segment_group_total[sales_segment]
   %>
-<h3>${sale_segment.name}</h3>
+<h3>${sales_segment.name}</h3>
   % if performance_reports:
 <table class="table table-striped table-bordered table-condensed">
     % if form.limited_from.data or form.limited_to.data:

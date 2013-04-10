@@ -8,8 +8,14 @@
   % for g in assets:
   <div>
      % for movie in g:
-         <img pk="${movie.id}" src="${h.asset.to_show_page(request,movie,filepath=movie.thumbnail_path)}" alt="" class="${"managed" if widget.asset==movie else ""}"/>
-         <p>title:${movie.title} width:${movie.width} height:${movie.height} </p>
+       <div class="item">
+         <img pk="${movie.id}" src="${h.asset.to_show_page(request,movie, filepath=movie.image_path)}" alt="" class="${"managed" if widget.asset==movie else ""}"/>
+         <table class="item-table">
+           <tr><td>title:</td><td>${movie.title}</td></tr>          
+           <tr><td>width:</td><td>${movie.width}</td></tr>
+           <tr><td>height:</td><td>${movie.height}</td></tr>
+         </table>
+       </div>
      % endfor          
   </div>
   % endfor 
@@ -19,6 +25,18 @@
   <h1>動画(movie)</h1>
 </div>
 
+<div>
+<table class="table">
+  <tbody>
+    ${co.formfield(form, "width")}
+    ${co.formfield(form, "height")}
+    ${co.formfield(form, "alt")}
+    ${co.formfield(form, "align")}
+  </tbody>
+</table>
+<button type="button" id="movie_submit">登録</button>
+
+<link rel="stylesheet" type="text/css" href="/plugins/static/css/widget/lib/image.css">
 <!-- "previous page" action -->
 <a class="prev browse left"></a>
 <a class="next browse right"></a>
@@ -31,12 +49,4 @@
    ${render(assets)}
    </div>
 </div>
-<table class="table">
-  <tbody>
-    ${co.formfield(form, "width")}
-    ${co.formfield(form, "height")}
-    ${co.formfield(form, "alt")}
-  </tbody>
-</table>
-<button type="button" id="movie_submit">登録</button>
-
+</div>

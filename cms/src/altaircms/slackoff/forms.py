@@ -175,7 +175,7 @@ class TicketForm(Form):
 validate_publish_term = TermValidator("publish_open_on", "publish_close_on",  u"公開開始日よりも後に終了日が設定されています")
 class TopicForm(Form):
     title = fields.TextField(label=u"タイトル", validators=[required_field()])
-    tag_content = fields.SelectMultipleField(label=u"種別", choices=[]) #@todo rename
+    tag_content = fields.SelectMultipleField(label=u"種別", choices=[], validators=[validators.Required()]) #@todo rename
     genre = fields.SelectMultipleField(label=u"ジャンル", coerce=unicode)
     text = fields.TextField(label=u"内容", validators=[required_field()], widget=widgets.TextArea())
     publish_open_on = fields.DateTimeField(label=u"公開開始日", validators=[required_field()])
@@ -207,7 +207,7 @@ class TopicForm(Form):
 
 class TopcontentForm(Form):
     title = fields.TextField(label=u"タイトル", validators=[required_field()])
-    tag_content = fields.SelectMultipleField(label=u"種別", choices=[])
+    tag_content = fields.SelectMultipleField(label=u"種別", choices=[], validators=[validators.Required()])
     genre = fields.SelectMultipleField(label=u"ジャンル", coerce=unicode)
     countdown_type = fields.SelectField(label=u"カウントダウンの種別", choices=Topcontent.COUNTDOWN_CANDIDATES)    
     text = fields.TextField(label=u"内容", validators=[required_field()], widget=widgets.TextArea())
@@ -245,7 +245,7 @@ class TopcontentForm(Form):
         self.genre.choices = [(unicode(g.id), g.label) for g in request.allowable(Genre)]
 
 class PromotionForm(Form):
-    tag_content = fields.SelectMultipleField(label=u"表示場所", choices=[]) #@todo rename
+    tag_content = fields.SelectMultipleField(label=u"表示場所", choices=[], validators=[validators.Required()]) #@todo rename
     genre = fields.SelectMultipleField(label=u"ジャンル", coerce=unicode)
     main_image = dynamic_query_select_field_factory(
         ImageAsset, allow_blank=False, label=u"メイン画像",

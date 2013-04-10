@@ -2,6 +2,7 @@ from pyramid.view import view_config, view_defaults
 from altaircms.auth.api import require_login
 from altaircms.lib.itertools import group_by_n
 from . import forms
+from altaircms.formhelpers import AlignChoiceField
 from webob.multidict import MultiDict
 import logging
 logger = logging.getLogger(__name__)
@@ -64,15 +65,5 @@ class ImageWidgetView(object):
             widget.height = ""
         params = widget.to_dict()
         params.update(widget.attributes or {})      
-        form = forms.ImageInfoForm(**normalize_params(params))
-
+        form = forms.ImageInfoForm(**AlignChoiceField.normalize_params(params))
         return {"assets": assets, "form": form, "widget": widget}
-
-def normalize_params(params):
-    D = {}
-    for k, v in params.iteritems():
-        if k.startswith("data-"):
-            D[k.replace("data-", "", 1)] = v
-        else:
-            D[k] = v
-    return D

@@ -1,5 +1,7 @@
 from pyramid.view import view_config, view_defaults
 from altaircms.auth.api import require_login
+from altaircms.auth.api import get_or_404
+from altaircms.page.models import Page    
 from . import forms
 import logging
 logger = logging.getLogger(__name__)
@@ -13,7 +15,9 @@ class PerformancelistWidgetView(object):
 
     def _create_or_update(self):
         try:
-            form = forms.PerformancelistForm(MultiDict(self.request.json_body["data"], page_id=self.request.json_body["page_id"]))
+            page_id = self.request.json_body["page_id"]
+            page = get_or_404(self.request.allowable(Page), Page.id==page_id)
+            form = forms.PerformancelistForm(MultiDict(self.request.json_body["data"], page_id=page_id)).configure(self.request, page)
             if not form.validate():
                 logger.warn(str(form.errors))
                 r = self.request.json_body.copy()
@@ -52,5 +56,6 @@ class PerformancelistWidgetView(object):
     def dialog(self):
         context = self.request.context
         widget = context.get_widget(self.request.GET.get("pk"))
-        form = forms.PerformancelistForm(**widget.to_dict())
+        page = get_or_404(self.request.allowable(Page), Page.id==self.request.GET["page"])
+        form = forms.PerformancelistForm(**widget.to_dict()).configure(self.request, page)
         return {"widget": widget, "form": form}

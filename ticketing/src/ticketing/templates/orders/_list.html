@@ -69,9 +69,11 @@
         <td><a href="${request.route_path('events.show', event_id=performance.event.id)}">${performance.event.title}</a></td>
         <td><a href="${request.route_path('performances.show', performance_id=performance.id)}/reservation">${performance.start_on or ''}</a></td>
         % endif
-	<td>${order.card_brand if order.card_brand else ''}</td>
-	<td>${order.card_ahead_com_code if order.card_ahead_com_code else ''}<br/>
-	  ${order.card_ahead_com_name if order.card_ahead_com_name else ''}</td>
+      	<td>${order.card_brand or ''}</td>
+      	<td>
+          ${order.card_ahead_com_code or ''}<br/>
+      	  ${order.card_ahead_com_name or ''}
+        </td>
       </tr>
   % else:
       </tbody>

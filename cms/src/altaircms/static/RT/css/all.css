@@ -44,16 +44,29 @@
 }
 
 #search,
-#music,
-#stage,
-#sports,
-#event,
 #change,
 #first,
 #help,
 #sitemap {
     background: url(../img/first/bg_body.gif) no-repeat 50% 130px;
 }
+
+#music {
+    background: url(../img/music/bg_body.gif) no-repeat 50% 130px;
+}
+
+#stage {
+    background: url(../img/stage/bg_body.gif) no-repeat 50% 130px;
+}
+
+#sports {
+    background: url(../img/sports/bg_body.gif) no-repeat 50% 130px;
+}
+
+#event {
+    background: url(../img/event/bg_body.gif) no-repeat 50% 130px;
+}
+
 
 #first img#titleImage {
     width: 182px;

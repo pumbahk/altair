@@ -1,16 +1,16 @@
 # -*- coding:utf-8 -*-
 from datetime import datetime
-from pyramid.view import view_config
+from sqlalchemy import asc
 from altaircms.topic.models import TopicTag, PromotionTag, TopcontentTag
 from altaircms.topic.api import get_topic_searcher
 from altaircms.genre.searcher import GenreSearcher
 from altaircms.tag.models import HotWord
+from altairsite.config import usersite_view_config
 from altairsite.mobile.forms import TopForm
-from sqlalchemy import asc
-from core.helper import log_info
+from altairsite.mobile.core.helper import log_info
 from altairsite.mobile.core.eventhelper import EventHelper
 
-@view_config(route_name='home', request_type="altairsite.mobile.tweens.IMobileRequest"
+@usersite_view_config(route_name='home', request_type="altairsite.mobile.tweens.IMobileRequest"
              , renderer='altairsite.mobile:templates/top/top.mako')
 def main(request):
 

@@ -1,6 +1,6 @@
 ## movie widget output template
 ## 
-<div class="movie-widget">
+<div class="movie-widget" ${widget.html_attributes|n}>
     %if widget.asset.mimetype == 'video/quicktime':
         <embed 
            type="video/quicktime" 

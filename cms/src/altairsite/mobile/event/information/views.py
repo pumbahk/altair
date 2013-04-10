@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 
-from pyramid.view import view_config
-from altaircms.topic.models import TopicTag
 from datetime import datetime
+from altaircms.topic.models import TopicTag
 from altaircms.topic.api import get_topic_searcher
+from altairsite.config import usersite_view_config
 from altairsite.mobile.event.information.forms import InformationForm
 from altairsite.mobile.core.helper import log_info, Markup
 from altairsite.mobile.core.disphelper import DispHelper
@@ -11,9 +11,9 @@ from altairsite.mobile.core.disphelper import DispHelper
 class ValidationFailure(Exception):
     pass
 
-@view_config(route_name='information', request_type="altairsite.mobile.tweens.IMobileRequest"
+@usersite_view_config(route_name='information', request_type="altairsite.mobile.tweens.IMobileRequest"
     , renderer='altairsite.mobile:templates/information/information.mako')
-@view_config(route_name='infodetail', request_type="altairsite.mobile.tweens.IMobileRequest"
+@usersite_view_config(route_name='infodetail', request_type="altairsite.mobile.tweens.IMobileRequest"
     , renderer='altairsite.mobile:templates/information/infodetail.mako')
 def move_information(request):
 

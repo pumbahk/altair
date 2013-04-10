@@ -80,7 +80,8 @@ widget.configure({
                 asset_id: choiced_elt.attr("pk"), 
                 width: root.find("#width").val() || "", 
                 height: root.find("#height").val() || "", 
-                alt: root.find("#alt").val() || ""
+                alt: root.find("#alt").val() || "", 
+                align: root.find("#align").val() || ""
                };
     };
     return widget.include("flash", {

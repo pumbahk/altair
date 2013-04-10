@@ -128,7 +128,7 @@ class ModelUtilityTest(unittest.TestCase):
 
 class CSVRendererTest(unittest.TestCase):
     def testDereference(self):
-        from .utils import dereference
+        from ticketing.utils import dereference
         from datetime import date
         self.assertEqual(123, dereference({u'a':123}, u'a'))
         self.assertEqual(123, dereference({u'a':{u'b':123}}, u'a[b]'))
@@ -137,7 +137,7 @@ class CSVRendererTest(unittest.TestCase):
         self.assertEqual(2, dereference({u'a':date(2000, 1, 2)}, u'a.day'))
 
     def testPlainTextRenderer(self):
-        from .csvutils import PlainTextRenderer, CSVRenderer
+        from ticketing.csvutils import PlainTextRenderer, CSVRenderer
         renderer = CSVRenderer([
             PlainTextRenderer(u'a'),
             PlainTextRenderer(u'b'),
@@ -146,7 +146,7 @@ class CSVRendererTest(unittest.TestCase):
         self.assertEqual([[u'a', u'b'], [u'123', u'456']], list(renderer.render()))
 
     def testCollectionRenderer(self):
-        from .csvutils import PlainTextRenderer, CollectionRenderer, CSVRenderer
+        from ticketing.csvutils import PlainTextRenderer, CollectionRenderer, CSVRenderer
         renderer = CSVRenderer([
             PlainTextRenderer(u'a'),
             PlainTextRenderer(u'b'),
@@ -183,7 +183,7 @@ class CSVRendererTest(unittest.TestCase):
             )
 
     def testLocalizedRendering(self):
-        from .csvutils import PlainTextRenderer, CollectionRenderer, CSVRenderer
+        from ticketing.csvutils import PlainTextRenderer, CollectionRenderer, CSVRenderer
         renderer = CSVRenderer([
             PlainTextRenderer(u'a'),
             PlainTextRenderer(u'b'),
@@ -218,7 +218,7 @@ class CSVRendererTest(unittest.TestCase):
             )
 
     def testComplicated(self):
-        from .csvutils import PlainTextRenderer, CollectionRenderer, AttributeRenderer, CSVRenderer
+        from ticketing.csvutils import PlainTextRenderer, CollectionRenderer, AttributeRenderer, CSVRenderer
         renderer = CSVRenderer([
             PlainTextRenderer(u'a'),
             PlainTextRenderer(u'b'),

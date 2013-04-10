@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import logging
+import sys
 from StringIO import StringIO
 import json
 import webhelpers.paginate as paginate
@@ -21,10 +22,11 @@ from ..core.models import TicketPrintQueueEntry, TicketPrintHistory
 from ..core.models import OrderedProductItemToken, OrderedProductItem, OrderedProduct, Order
 from . import forms
 from . import helpers
-from .utils import SvgPageSetBuilder, build_dict_from_ordered_product_item_token, _default_builder
+from .utils import SvgPageSetBuilder, FallbackSvgPageSetBuilder, build_dict_from_ordered_product_item_token, _default_builder
 from .response import FileLikeResponse
 from .convert import to_opcodes
 
+logger = logging.getLogger(__name__)
 
 def ticket_format_to_dict(ticket_format):
     data = dict(ticket_format.data)
@@ -616,7 +618,11 @@ class TicketPrinter(BaseView):
         order_id = self.request.json_body.get('order_id')
         page_format = DBSession.query(PageFormat).filter_by(id=page_format_id).one()
         ticket_format = DBSession.query(TicketFormat).filter_by(id=ticket_format_id).one()
-        builder = SvgPageSetBuilder(page_format.data, ticket_format.data)
+        try:
+            builder = SvgPageSetBuilder(page_format.data, ticket_format.data)
+        except Exception as e:
+            logger.info(u'failed to create SvgPageSetBuilder', exc_info=sys.exc_info())
+            builder = FallbackSvgPageSetBuilder(page_format.data, ticket_format.data)
         tickets_per_page = builder.tickets_per_page
         for entry in TicketPrintQueueEntry.peek(self.context.user, ticket_format_id, order_id=order_id):
             builder.add(etree.fromstring(entry.data['drawing']), entry.id, title=(entry.summary if tickets_per_page == 1 else None))

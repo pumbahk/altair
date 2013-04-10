@@ -1,10 +1,10 @@
 # coding: utf-8
 from pyramid.httpexceptions import HTTPNotFound
-from pyramid.view import view_config
 from altaircms.lib.fanstatic_decorator import with_jquery
 from altaircms.page.api import as_static_page_response, StaticPageNotFound
 import logging 
 import os.path
+from altairsite.config import usersite_view_config
 logger = logging.getLogger(__name__)
 
 ## todo refactoring
@@ -20,19 +20,16 @@ todo:
 """
 
 EXCLUDE_EXT_LIST = (".ico", ".js", ".css")
-@view_config(route_name="front", decorator=with_jquery)
+@usersite_view_config(route_name="front", decorator=with_jquery)
 def rendering_page(context, request):
     url = request.matchdict["page_name"]
     dt = context.get_preview_date()
 
     control = context.pc_access_control()
 
-    try:
-        static_page = control.fetch_static_page_from_params(url, dt)
-        if static_page:
-            return as_static_page_response(request, static_page, url)
-    except StaticPageNotFound as e:
-        logger.info(str(e))
+    static_page = control.fetch_static_page_from_params(url, dt)
+    if static_page:
+        return as_static_page_response(request, static_page, url)
 
     if os.path.splitext(request.url)[1] != "":
         return HTTPNotFound()
@@ -55,7 +52,7 @@ def rendering_page(context, request):
 from altairsite.mobile.dispatch.views import dispatch_view as mobile_dispatch_view
 from pyramid.httpexceptions import HTTPFound
 
-@view_config(route_name="front", request_type="altairsite.mobile.tweens.IMobileRequest")
+@usersite_view_config(route_name="front", request_type="altairsite.mobile.tweens.IMobileRequest")
 def mobile_rendering_page(context, request):
     url = request.matchdict["page_name"]
     dt = context.get_preview_date()

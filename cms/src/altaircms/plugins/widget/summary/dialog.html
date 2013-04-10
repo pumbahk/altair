@@ -137,7 +137,18 @@
             var edit_view = new EditItemView({model: this.model, view: this});
             var edit_elt = edit_view.render().el;
             this.$el.after(edit_elt);
-            $(edit_elt).find("textarea").width(this.$el.parents(".table").find(".content").width());
+
+            var n = 5;
+            var resize_width = function resize_width(){
+              var w = this.$el.parents(".table").find(".content").width();
+              if(w > 0){
+                $(edit_elt).find("textarea").width(w);                 
+              } else if(n>0){
+                n -= 1;
+                setTimeout(resize_width.bind(this), 150);
+              }
+            }.bind(this);
+            resize_width();
         }, 
         remove: function() {
             $(this.el).remove();

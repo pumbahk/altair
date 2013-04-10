@@ -79,13 +79,13 @@ def parse_date(y, m, d):
 ### toppage sidebar
 class TopPageSidebarSearchForm(Form):
     """ top page のsidebarのform"""
-    start_year = MaybeSelectField(blank_value="",choices=years)
-    start_month = MaybeSelectField(choices=months)
-    start_day = MaybeSelectField(choices=days)
+    start_year = MaybeSelectField(blank_text=u'年', blank_value="",choices=years)
+    start_month = MaybeSelectField(blank_text=u'月', choices=months)
+    start_day = MaybeSelectField(blank_text=u'日', choices=days)
 
-    end_year = MaybeSelectField(blank_value="",choices=years)
-    end_month = MaybeSelectField(choices=months)
-    end_day = MaybeSelectField(choices=days)
+    end_year = MaybeSelectField(blank_text=u'年', blank_value="",choices=years)
+    end_month = MaybeSelectField(blank_text=u'月', choices=months)
+    end_day = MaybeSelectField(blank_text=u'日', choices=days)
     choices = import_symbol("altaircms.seeds.area:AREA_CHOICES")
     area = fields.SelectField(choices=[("", "-------")]+choices)
 

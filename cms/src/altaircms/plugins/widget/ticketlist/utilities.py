@@ -27,6 +27,7 @@ def render_with_template(template_name, request, widget, event):
     return render(template_name, {"widget": widget, "tickets": tickets}, request)
 
 render_default = partial(render_with_template, "altaircms.plugins.widget:ticketlist/render.html")
+render_soundc = partial(render_with_template, "altaircms.plugins.widget:ticketlist/soundc_render.html")
 
 @implementer(IWidgetUtility)
 class TicketlistWidgetUtilityDefault(object):
@@ -40,6 +41,7 @@ class TicketlistWidgetUtilityDefault(object):
         self.rendering = DisplayTypeSelectRendering(self.settings, configparser)
 
         self.rendering.register("default", render_default)
+        self.rendering.register("soundc", render_soundc)
         self.choices = self.rendering.choices
         return self
 

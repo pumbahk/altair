@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from pyramid_mailer.message import Message
 from pyramid_mailer import get_mailer
-from pyramid.view import view_config
+from altairsite.config import usersite_view_config
 from altairsite.inquiry.forms import InquiryForm
 from altairsite.mobile.core.helper import log_info, log_error
 
@@ -10,7 +10,7 @@ from altairsite.mobile.core.helper import log_info, log_error
 def pc_access(info, request):
     return hasattr(request, "is_mobile") and request.is_mobile == False
 
-@view_config(route_name='usersite.inquiry', request_method="GET",
+@usersite_view_config(route_name='usersite.inquiry', request_method="GET",
              custom_predicates=(pc_access, ), 
              renderer='altaircms:templates/usersite/inquiry.html')
 def move_inquiry(request):
@@ -19,7 +19,7 @@ def move_inquiry(request):
     log_info("move_inquiry", "end")
     return {'form':form}
 
-@view_config(route_name='usersite.inquiry', request_method="POST",
+@usersite_view_config(route_name='usersite.inquiry', request_method="POST",
              custom_predicates=(pc_access, ), 
              renderer='altaircms:templates/usersite/inquiry.html')
 def send_inquiry(request):

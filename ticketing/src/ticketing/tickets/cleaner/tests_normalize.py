@@ -142,6 +142,52 @@ class SVGNormalizeUnitTests(unittest.TestCase):
         self._callFUT(io, result)
         self.assertEquals("<doc><a><b> x{x}x </b> {{yyy}}</a></doc>", result.getvalue())
 
+    def test_cleaned_xml11(self):
+        """<a><b> {{ </b> {{y</a>yy}}"""
+        from StringIO import StringIO
+        io = StringIO("<doc><a><a> {{ </a> {{yyy}}</a></doc>")
+        
+        result = StringIO()
+        self._callFUT(io, result)
+        self.assertEquals("<doc><a><a> {{  {{yyy}}</a></a></doc>", result.getvalue())
+
+    def test_cleaned_xml13(self):
+        """<doc><g><a><b><c>{{</c><c>{{yyy}}</c></b></a><a><x><r/></x><b><c/><c/></b></a></g></doc>"""
+        from StringIO import StringIO
+        io = StringIO("<doc><g><a><b><c>{{</c><c>{{yyy}}</c></b></a><a><x><r/></x><b><c/><c/></b></a></g></doc>")
+        
+        result = StringIO()
+        self._callFUT(io, result)
+        self.assertEquals('<doc><g><a><b><c></c><c>{{{{yyy}}</c></b></a><a><x><r></r></x><b><c></c><c></c></b></a></g></doc>', result.getvalue())
+
+    def test_cleaned_xml14(self):
+        """<doc><g><a><b><c>{{yyy}}</c><c>}</c></b></a><a><x><r/></x><b><c/><c/></b></a></g></doc>"""
+        from StringIO import StringIO
+        io = StringIO("<doc><g><a><b><c>{{yyy}}</c><c>}</c></b></a><a><x><r/></x><b><c/><c/></b></a></g></doc>")
+        
+        result = StringIO()
+        self._callFUT(io, result)
+        self.assertEquals('<doc><g><a><b><c>{{yyy}}</c><c>}</c></b></a><a><x><r></r></x><b><c></c><c></c></b></a></g></doc>', result.getvalue())
+
+    ## simple xml1 and simple xml2 's result are asymnetric. this is support for unmatched parensis character set e.g. (().
+    def test_simple_xml1(self):
+        """<doc>{<a></a></doc>"""
+        from StringIO import StringIO
+        io = StringIO("<doc>{<a></a></doc>")
+        
+        result = StringIO()
+        self._callFUT(io, result)
+        self.assertEquals('<doc><a></a></doc>', result.getvalue())
+
+    def test_simple_xml2(self):
+        """<doc>}}<a></a></doc>"""
+        from StringIO import StringIO
+        io = StringIO("<doc>}}<a></a></doc>")
+        
+        result = StringIO()
+        self._callFUT(io, result)
+        self.assertEquals('<doc>}}<a></a></doc>', result.getvalue())
+
         
 class EliminatedTagNormalizeUnitTests(unittest.TestCase):
     def _callFUT(self, *args, **kwargs):
@@ -197,6 +243,6 @@ class EliminatedTagNormalizeUnitTests(unittest.TestCase):
         
         self.assertTrue(lxml.etree.parse(io))
 
-        
+
 if __name__ == "__main__":
     unittest.main()

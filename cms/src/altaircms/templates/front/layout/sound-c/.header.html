@@ -1,0 +1,10 @@
+	<div class="header">
+		<h1 id="title"><a href="#">SOUND CREATOR</a></h1>
+	</div>
+	<div class="gnavi">
+		<ul>
+      %for attr, c in h.first_and_last(layout.navigation_link_list("headermenu")):
+      <li ${attr()}><a href="${h.link.get_link_from_category(request,c)}">${c.label}</a></li>
+      %endfor
+		</ul>　　
+	</div>

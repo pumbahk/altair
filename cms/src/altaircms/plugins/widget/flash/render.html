@@ -1,17 +1,20 @@
 ## flash widget output template
 ## fixme: default width or height
 <div class="flash-widget"
-     url="${h.asset.to_show_page(request, widget.asset)}"
-     pk="${widget.asset.id}"
-     width="${widget.width or widget.asset.width or 480}"
-     height="${widget.height or widget.asset.height or 480}"
-     alt="${widget.alt}"
-></div>
+     ${widget.html_attributes|n}>
+  <div class="box"
+       url="${h.asset.to_show_page(request, widget.asset)}"
+       pk="${widget.asset.id}"
+       width="${widget.width or widget.asset.width or 480}"
+       height="${widget.height or widget.asset.height or 480}"
+       alt="${widget.alt}"
+       ></div>
+</div>
 ## this is not good
 <script type="text/javascript" src="/static/swfobject.js"></script>
 <script type="text/javascript">
 $(function(){
-    $(".flash-widget").each(function(i,e){
+    $(".flash-widget > .box").each(function(i,e){
         var flashvars = {};
         var params = {};
         var attributes = {};

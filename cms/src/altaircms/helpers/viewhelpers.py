@@ -1,6 +1,7 @@
 # -*- coding:utf-8 -*-
 
 import logging
+from functools import wraps
 logger = logging.getLogger(__name__)
 
 class RegisterViewPredicate(object):
@@ -64,3 +65,14 @@ class FlashMessage(object):
     @classmethod
     def info(cls, message, request=None):
         cls._flash(request, message, "infomessage")
+
+
+def with_exception_logging(fn):
+    @wraps(fn)
+    def wrapped(context, request):
+        try:
+            return fn(context, request)
+        except Exception as e:
+            logger.exception(e)
+            raise
+    return wrapped

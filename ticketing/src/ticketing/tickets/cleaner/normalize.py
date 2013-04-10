@@ -5,7 +5,8 @@ import re
 from collections import namedtuple
 import xml.sax
 from xml.sax.saxutils import XMLFilterBase, XMLGenerator
-
+import logging
+logger = logging.getLogger(__name__)
 """
 raw svg data -> cleaned svg data -> elminated needless tags svg data
 """
@@ -77,19 +78,15 @@ def in_place_holder(helper, tokens, level=0):
     while tokens:
         token = tokens.pop(0)
         helper.content[-1].append(token)
-        if isinstance(token, LBrace):
-            level += 1
-        elif isinstance(token, RBrace):
-            if level <= 0:
-                return after_first_rbrace(helper, tokens)
-            level -= 1
+        if isinstance(token, RBrace):
+            return after_first_rbrace(helper, tokens)
     return in_place_holder
 
 def after_first_rbrace(helper, tokens):
     while tokens:
         token = tokens.pop(0)
-        if isinstance(token, LBrace):
-            raise Exception("Invalid input %s" % token)
+        # if isinstance(token, LBrace):
+        #     raise Exception("Invalid input %s" % token)
         helper.content[-1].append(token)
         if isinstance(token, RBrace):
             return after_second_rbrace(helper, tokens)
@@ -98,9 +95,6 @@ def after_first_rbrace(helper, tokens):
 def after_second_rbrace(helper, tokens):
     while tokens:
         token = tokens.pop(0)
-        if isinstance(token, RBrace):
-            raise Exception("Invalid input %s" % token)
-
         if isinstance(token, LBrace):
             helper.make_stack()#xxx:
             helper.content[-1].append(token)            
@@ -124,12 +118,8 @@ class StateHandleHelper(object):
 
     def merge_stack(self):
         # self.display()
-        h = self.heads.pop()
-        self.heads[-1].extend(h)
-        c = self.content.pop()
-        self.heads[-1].extend(c)
-        t = self.tails.pop()
-        self.tails[-1].extend(t)
+        self.heads[-1].extend(self.content.pop())
+        self.content.append([])
         # self.display()
 
     def display(self):
@@ -215,33 +205,61 @@ class ConvertXmlForTicketTemplateRenderingFilter(XMLFilterBase):
         else:
             return _simple_dump_to_downstream(sm, downstream)
 
+class DocumentAlreadyEnd(Exception):
+    pass
+
 def _simple_dump_to_downstream(sm, downstream):
     # print "**end**"
     # sm.display()
-    for i in xrange(len(sm.heads)):
-        for xs in (sm.heads[i], sm.content[i], sm.tails[i]):
-            for x in xs:
-                if isinstance(x, Start):
-                    downstream.startElement(x.val, x.attrs)
-                elif isinstance(x, End):
-                    downstream.endElement(x.val)
-                else:
-                    downstream.characters(x.val)
+    if not sm.heads or not sm.heads[0]:
+        return
+    fst = sm.heads[0][0].val
+    fst_cnt = 0
+    try:
+        for i in xrange(len(sm.heads)):
+            for xs in (sm.heads[i], sm.content[i], sm.tails[i]):
+                for x in xs:
+                    if isinstance(x, Start):
+                        downstream.startElement(x.val, x.attrs)
+                    elif isinstance(x, End):
+                        downstream.endElement(x.val)
+                    else:
+                        downstream.characters(x.val)
+                    if x.val == fst:
+                        fst_cnt += 1
+                        if fst_cnt>1:
+                            raise DocumentAlreadyEnd(x.val)
+    except DocumentAlreadyEnd:
+        ## todo: useful message.
+        logger.info("reach. end document element")
+
 
 def _eliminated_dump_to_downstream(sm, downstream):
     prev = None
-    for i in xrange(len(sm.heads)):
-        for xs in (sm.heads[i], sm.content[i], sm.tails[i]):
-            for x in xs:
-                if isinstance(x, (Start, End)) and type(prev) == type(x) and prev.val == x.val:
-                    continue
-                if isinstance(x, Start):
-                    downstream.startElement(x.val, x.attrs)
-                elif isinstance(x, End):
-                    downstream.endElement(x.val)
-                else:
-                    downstream.characters(x.val)
-                prev = x
+    if not sm.heads or not sm.heads[0]:
+        return
+    fst = sm.heads[0][0].val
+    fst_cnt = 0
+    try:
+        for i in xrange(len(sm.heads)):
+            for xs in (sm.heads[i], sm.content[i], sm.tails[i]):
+                for x in xs:
+                    if isinstance(x, (Start, End)) and type(prev) == type(x) and prev.val == x.val:
+                        continue
+                    if isinstance(x, Start):
+                        downstream.startElement(x.val, x.attrs)
+                    elif isinstance(x, End):
+                        downstream.endElement(x.val)
+                    else:
+                        downstream.characters(x.val)
+                    prev = x
+                    if x.val == fst:
+                        fst_cnt += 1
+                        if fst_cnt>1:
+                            raise DocumentAlreadyEnd(x.val)
+    except DocumentAlreadyEnd:
+        ## todo: useful message.
+        logger.info("reach. end document element")
 
 def normalize(inp, outp=sys.stdout, encoding="UTF-8", header="", eliminate=True):
     return _normalize(inp, outp, encoding, eliminate=eliminate)

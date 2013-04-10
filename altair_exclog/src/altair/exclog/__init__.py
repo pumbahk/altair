@@ -1,18 +1,15 @@
 import __builtin__
-import sys
-import logging
-import traceback
-import StringIO
 
-from textwrap import dedent
-from pprint import pformat
+import logging
 
 from pyramid.tweens import INGRESS
 from pyramid.settings import aslist
 from pyramid.settings import asbool
 from pyramid.util import DottedNameResolver
-from pyramid.httpexceptions import HTTPInternalServerError, WSGIHTTPException
-from pyramid.response import Response
+
+from .interfaces import IExceptionMessageBuilder, IExceptionMessageRenderer, IExceptionLogger
+from .logger import ExceptionMessageBuilder, ExceptionLogger
+from .renderer import BasicExceptionMessageRenderer
 
 DEFAULT_INCLUDES = [
     'CONTENT_TYPE',
@@ -37,6 +34,18 @@ DEFAULT_INCLUDES = [
 resolver = DottedNameResolver(None)
 logger = logging.getLogger(__name__)
 
+def create_exception_message_builder(registry):
+    settings = registry.settings
+    return ExceptionMessageBuilder(
+        extra_info=asbool(settings.get('altair.exclog.extra_info', True)),
+        includes=aslist(settings.get('altair.exclog.includes', DEFAULT_INCLUDES)))
+
+def create_exception_message_renderer(registry):
+    return BasicExceptionMessageRenderer()
+
+def create_exception_logger(registry):
+    return ExceptionLogger(logger)
+
 def as_globals_list(value):
     L = []
     value = aslist(value)
@@ -46,58 +55,6 @@ def as_globals_list(value):
         obj = resolver.resolve(dottedname)
         L.append(obj)
     return L
-
-
-class ExcLogTween(object):
-    def __init__(self, handler, registry):
-        self.handler = handler
-        self.registry = registry
-
-        settings = self.registry.settings
-
-        self.extra_info = settings.get('altair.exclog.extra_info', True)
-        self.ignored = settings.get('altair.exclog.ignored', 
-                                    (WSGIHTTPException,))
-        self.show_traceback = settings.get('altair.exclog.show_traceback', False)
-        self.includes = aslist(settings.get('altair.exclog.includes', DEFAULT_INCLUDES))
-
-    def __call__(self, request):
-
-        # getLogger injected for testing purposes
-        try:
-            return self.handler(request)
-        except self.ignored:
-            raise
-        except:
-
-            if self.extra_info:
-                message = dedent("""\n
-                %(url)s
-                
-                ENVIRONMENT
-                
-                %(env)s
-                
-                
-                
-                """ % dict(url=request.url,
-                           env=pformat(self.filter_environ(request.environ))))
-
-            else:
-                message = request.url
-            logger.exception(message)
-
-            if self.show_traceback:
-                exc_type, exc_value, exc_traceback = sys.exc_info()
-                out = StringIO.StringIO()
-                out.write(message + "\n")
-                traceback.print_exception(exc_type, exc_value, exc_traceback, file=out)
-                return Response(out.getvalue(), status=500, content_type='text/plain')
-            return HTTPInternalServerError()
-
-    def filter_environ(self, environ):
-        return dict([(e, v) for e, v in environ.items() if e in self.includes])
-
 
 def _convert_settings(settings):
     extra_info = asbool(settings.get('altair.exclog.extra_info', True))
@@ -111,4 +68,8 @@ def _convert_settings(settings):
 
 def includeme(config):
     _convert_settings(config.registry.settings)
-    config.add_tween('.ExcLogTween', under=INGRESS)
+    config.registry.registerUtility(create_exception_message_builder(config.registry), IExceptionMessageBuilder)
+    config.registry.registerUtility(create_exception_message_renderer(config.registry), IExceptionMessageRenderer)
+    config.registry.registerUtility(create_exception_logger(config.registry), IExceptionLogger)
+    config.add_tween('.tweens.ExcLogTween', under=INGRESS)
+from pyramid.httpexceptions import HTTPInternalServerError, WSGIHTTPException

@@ -22,8 +22,16 @@ def purchase_simple_render(request, widget, event):
         href = h.link.get_purchase_page_from_event(request, event)  
     return u'<div %s><a class="purchaseButton" href="%s"></a></div>' % (widget.html_attributes, href)
 
+def purchase_link_render(request, widget, event):
+    if widget.external_link:
+        href = widget.external_link
+    else:
+        href = h.link.get_purchase_page_from_event(request, event)  
+    return u'<div %s><a class="purchase" href="%s">予約・購入する</a></div>' % (widget.html_attributes, href)
+
 PURCHASE_DISPATCH = {
     "simple": purchase_simple_render, 
+    "link": purchase_link_render, 
     }
 PURCHASE_KIND_CHOICES = [(x, x) for x in PURCHASE_DISPATCH.keys()]
 

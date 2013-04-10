@@ -2,27 +2,41 @@ from pyramid.view import view_config, view_defaults
 from altaircms.auth.api import require_login
 from altaircms.lib.itertools import group_by_n
 from . import forms
+from webob.multidict import MultiDict
+from altaircms.formhelpers import AlignChoiceField
+import logging
+logger = logging.getLogger(__name__)
 
 @view_defaults(custom_predicates=(require_login,))
 class MovieWidgetView(object):
-    def __init__(self, request):
+    def __init__(self, context, request):
+        self.context = context
         self.request = request
 
     def _create_or_update(self):
-        alt = self.request.json_body["data"].get("alt")
-        width = self.request.json_body["data"].get("width")
-        height = self.request.json_body["data"].get("height")
-        asset_id = self.request.json_body["data"]["asset_id"]
-        page_id = self.request.json_body["page_id"]
-        context = self.request.context
-        asset = context.get_asset(asset_id);
-        widget = context.get_widget(self.request.json_body.get("pk"))
-        widget = context.update_data(widget, page_id=page_id, asset_id=asset_id, asset=asset, alt=alt, width=width, height=height)
-        context.add(widget, flush=True)
+        try:
+            form = forms.MovieInfoForm(MultiDict(self.request.json_body["data"], page_id=self.request.json_body["page_id"]))
+            if not form.validate():
+                logger.warn(str(form.errors))
+                r = self.request.json_body.copy()
+                r.update(pk=None, asset_id=None)
+                return r
+            params = form.data
+            widget = self.context.get_widget(self.request.json_body.get("pk"))
+            params["asset_id"] = form.data.get("asset_id")
+            if widget and params.get("asset_id") is None:
+                params["asset_id"] = widget.asset_id
+            widget = self.context.update_data(widget, **params)
+            self.context.add(widget, flush=True)
 
-        r = self.request.json_body.copy()
-        r.update(pk=widget.id, asset_id=asset.id)
-        return r
+            r = self.request.json_body.copy()
+            r.update(pk=widget.id, asset_id=widget.asset_id)
+            return r
+        except Exception, e:
+            logger.exception(str(e))
+            r = self.request.json_body.copy()
+            r.update(pk=None, asset_id=None)
+            return r
 
     @view_config(route_name="movie_widget_create", renderer="json", request_method="POST")        
     def create(self):
@@ -48,5 +62,7 @@ class MovieWidgetView(object):
             widget.width = ""
         if widget.height == 0:
             widget.height = ""
-        form = forms.MovieInfoForm(**widget.to_dict())
+        params = widget.to_dict()
+        params.update(widget.attributes or {})      
+        form = forms.MovieInfoForm(**AlignChoiceField.normalize_params(params))
         return {"assets": assets, "form": form, "widget": widget}

@@ -40,6 +40,8 @@ from ticketing.tickets.convert import to_opcodes
 from ticketing.views import BaseView
 from ticketing.fanstatic import with_bootstrap
 from ticketing.orders.events import notify_order_canceled
+from ticketing.payments.payment import Payment
+from ticketing.payments import plugins as payment_plugins
 from ticketing.tickets.utils import build_dicts_from_ordered_product_item
 from ticketing.cart import api
 from ticketing.cart.stocker import NotEnoughStockException
@@ -467,6 +469,7 @@ class OrderDetailView(BaseView):
         return {
             'order_current':order,
             'order_history':order_history,
+            'sej_order':SejOrder.query.filter(SejOrder.order_id==order.order_no).first(),
             'mail_magazines':mail_magazines,
             'form_shipping_address':form_shipping_address,
             'form_order':form_order,
@@ -487,6 +490,22 @@ class OrderDetailView(BaseView):
         else:
             self.request.session.flash(u'受注(%s)をキャンセルできません' % order.order_no)
         return HTTPFound(location=route_path('orders.show', self.request, order_id=order.id))
+
+    @view_config(route_name='orders.delete', permission='administrator')
+    def delete(self):
+        order_id = int(self.request.matchdict.get('order_id', 0))
+        order = Order.get(order_id, self.context.user.organization_id)
+        if order is None:
+            return HTTPNotFound('order id %d is not found' % order_id)
+
+        try:
+            order.delete()
+        except Exception:
+            self.request.session.flash(u'受注(%s)を非表示にできません' % order.order_no)
+            raise HTTPFound(location=route_path('orders.show', self.request, order_id=order.id))
+
+        self.request.session.flash(u'受注(%s)を非表示にしました' % order.order_no)
+        return HTTPFound(location=route_path('orders.index', self.request))
 
     @view_config(route_name='orders.refund.immediate', permission='sales_editor')
     def refund_immediate(self):
@@ -535,7 +554,6 @@ class OrderDetailView(BaseView):
             return HTTPNotFound('order id %d is not found' % order_id)
 
         f = ClientOptionalForm(self.request.POST)
-
         if f.validate():
             shipping_address = merge_session_with_post(order.shipping_address or ShippingAddress(), f.data)
             shipping_address.tel_1 = f.tel_1.data
@@ -819,7 +837,7 @@ class OrdersReserveView(BaseView):
                 'message':u'パフォーマンスが存在しません',
             }))
 
-        # 古いカートがセッションの残っていたら削除
+        # 古いカートのセッションが残っていたら削除
         old_cart = api.get_cart(self.request)
         if old_cart:
             old_cart.release()
@@ -856,8 +874,8 @@ class OrdersReserveView(BaseView):
 
         return {
             'seats':seats,
-            'form':form_reserve, 
-            "performance": performance, 
+            'form':form_reserve,
+            'performance': performance,
         }
 
     @view_config(route_name='orders.reserve.confirm', request_method='POST', renderer='ticketing:templates/orders/_form_reserve_confirm.html')
@@ -913,14 +931,25 @@ class OrdersReserveView(BaseView):
             cart.channel = ChannelEnum.INNER.v
             cart.operator = self.context.user
 
+            # コンビニ決済は通知を行うので購入者情報が必要
+            payment_plugin_id = cart.payment_delivery_pair.payment_method.payment_plugin_id
+            if payment_plugin_id == payment_plugins.SEJ_PAYMENT_PLUGIN_ID:
+                cart.shipping_address = ShippingAddress(
+                    first_name=f.first_name.data,
+                    last_name=f.last_name.data,
+                    first_name_kana=f.first_name_kana.data,
+                    last_name_kana=f.last_name_kana.data,
+                    tel_1=f.tel_1.data,
+                )
+
             DBSession.add(cart)
             DBSession.flush()
             api.set_cart(self.request, cart)
 
             return {
-                'form':f,
                 'cart':cart,
-                "performance": performance, 
+                'form':f,
+                'performance': performance,
             }
         except ValidationError, e:
             raise HTTPBadRequest(body=json.dumps({'message':e.message}))
@@ -950,20 +979,26 @@ class OrdersReserveView(BaseView):
             }))
 
         try:
-            cart = api.get_cart(self.request)
-
             # create order
-            order = Order.create_from_cart(cart)
-            order.organization_id = order.performance.event.organization_id
+            cart = api.get_cart(self.request)
+            payment_plugin_id = cart.payment_delivery_pair.payment_method.payment_plugin_id
+            need_payment = (payment_plugin_id == payment_plugins.SEJ_PAYMENT_PLUGIN_ID)
+            if need_payment:
+                payment = Payment(cart, self.request)
+                order = payment.call_payment()
+            else:
+                order = Order.create_from_cart(cart)
+                order.organization_id = order.performance.event.organization_id
+                order.save()
+                cart.order = order
+                cart.finish()
+
             order.note = post_data.get('note')
             attr = 'sales_counter_payment_method_id'
             if int(post_data.get(attr, 0)):
-                order.paid_at = datetime.now()
                 order.attributes[attr] = post_data.get(attr)
-            DBSession.add(order)
-            DBSession.flush()
-            cart.order = order
-            cart.finish()
+                if not need_payment:
+                    order.paid_at = datetime.now()
 
             if with_enqueue:
                 utils.enqueue_for_order(operator=self.context.user, order=order)

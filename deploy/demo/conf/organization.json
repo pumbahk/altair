@@ -40,6 +40,10 @@
             "auth_source": "oauth", 
             "backend_id": 4, 
             "short_name": "d1"
+        },
+        "sound-creator": {
+            "auth_source": "oauth",
+            "short_name":  "sound-c"
         }
     }
 }

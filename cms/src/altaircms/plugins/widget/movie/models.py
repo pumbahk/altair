@@ -10,6 +10,7 @@ from altaircms.plugins.base import DBSession
 from altaircms.plugins.base import asset
 from altaircms.plugins.base.mixins import HandleSessionMixin
 from altaircms.plugins.base.mixins import UpdateDataMixin
+from altaircms.modellib import MutationDict, JSONEncodedDict
 from altaircms.security import RootFactory
 
 from pyramid.renderers import render
@@ -31,6 +32,14 @@ class MovieWidget(Widget):
     width = sa.Column(sa.Integer)
     height = sa.Column(sa.Integer)
     alt = sa.Column(sa.Unicode(255))
+    attributes = sa.Column(MutationDict.as_mutable(JSONEncodedDict(255)))
+
+    @property
+    def html_attributes(self):
+        attributes = {}
+        if self.attributes:
+            attributes.update(self.attributes)
+        return u" ".join([u'%s="%s"' % (k, v) for k, v in attributes.items()])
 
     def __init__(self, id=None, asset_id=None):
         self.id = id

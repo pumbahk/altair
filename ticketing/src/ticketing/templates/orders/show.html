@@ -124,7 +124,7 @@ ${h.breadcrumbs(
           </table>
           % if i == 0:
           <div class="pull-right">
-            <%include file="/orders/_action_button.html" args="order=order, sort=['mailinfo', 'delivered', 'cancel', 'refund', 'print']" />
+            <%include file="/orders/_action_button.html" args="order=order, sort=['mailinfo', 'delivered', 'cancel', 'refund', 'print', 'delete']" />
           </div>
           <div id="refund-form">
             <%include file="/orders/refund/_form.html" args="form=form_refund" />
@@ -245,7 +245,12 @@ ${h.breadcrumbs(
               <th>住所</th>
               <td>
                 % if shipping_address:
-                  ${shipping_address.zip} ${shipping_address.country or ''} ${shipping_address.prefecture} ${shipping_address.city} ${shipping_address.address_1} ${shipping_address.address_2}
+                  ${shipping_address.zip or ''}
+                  ${shipping_address.country or ''}
+                  ${shipping_address.prefecture or ''}
+                  ${shipping_address.city or ''}
+                  ${shipping_address.address_1 or ''}
+                  ${shipping_address.address_2 or ''}
                 % endif
               </td>
             </tr>
@@ -299,6 +304,16 @@ ${h.breadcrumbs(
               <th>マルチ決済受領番号</th>
               <td>${order.multicheckout_approval_no}</td>
             </tr>
+            <tr>
+              <th>カードブランド</th>
+              <td>${order.card_brand or ''}</td>
+            </tr>
+            <tr>
+              <th>仕向け先</th>
+              <td>
+                ${order.card_ahead_com_name or ''} (${order.card_ahead_com_code or ''})
+              </td>
+            </tr>
             % endif
             <% checkout = order.checkout %>
             % if checkout:
@@ -319,7 +334,25 @@ ${h.breadcrumbs(
               <td>${h.safe_strftime(checkout.sales_at)}</td>
             </tr>
             % endif
+            % if sej_order:
+            <tr>
+              <th>支払票番号</th>
+              <td>${sej_order.billing_number or ''}</td>
+            </tr>
+            <tr>
+              <th>引換票番号</th>
+              <td>${sej_order.exchange_number or ''}</td>
+            </tr>
+            % endif
           </table>
+          % if sej_order:
+          <div class="pull-right">
+            <form action="${sej_order.exchange_sheet_url}" method="POST">
+              <input type="hidden" name="iraihyo_id_00" value="${sej_order.exchange_sheet_number}">
+              <input type="submit" name="submit" value="引換え票を表示" class="btn"/>
+            </form>
+          </div>
+          % endif
         </div>
       </div>
 

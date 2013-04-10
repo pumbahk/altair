@@ -73,9 +73,11 @@ class ImageAsset(Asset):
     thumbnail_path = sa.Column(sa.String(255))
     mimetype = sa.Column(sa.String(255), default="")
 
+    @property
+    def image_path(self):
+        return self.filepath
+
 class FlashAsset(Asset):
-    DEFAULT_IMAGE_PATH = os.path.join(DIR, "img/not_found.jpg")
-    
     implements(IAsset, IHasMedia)
     type = "flash"
     MIMETYPE_DEFAULT = 'application/x-shockwave-flash'
@@ -90,11 +92,13 @@ class FlashAsset(Asset):
     height = sa.Column(sa.Integer)
     filepath = sa.Column(sa.String(255))
     mimetype = sa.Column(sa.String(255), default='application/x-shockwave-flash')
-    thumbnail_path = sa.Column(sa.String(255), default=DEFAULT_IMAGE_PATH)
+    thumbnail_path = sa.Column(sa.String(255))
+
+    @property
+    def image_path(self):
+        return self.thumbnail_path
 
 class MovieAsset(Asset):
-    DEFAULT_IMAGE_PATH = os.path.join(DIR, "img/not_found.jpg")
-
     implements(IAsset, IHasMedia)
     type = "movie"
 
@@ -108,7 +112,11 @@ class MovieAsset(Asset):
     height = sa.Column(sa.Integer)
     filepath = sa.Column(sa.String(255))
     mimetype = sa.Column(sa.String(255), default="")
-    thumbnail_path = sa.Column(sa.String(255), default=DEFAULT_IMAGE_PATH)
+    thumbnail_path = sa.Column(sa.String(255))
+
+    @property
+    def image_path(self):
+        return self.thumbnail_path
 
 # class CssAsset(Asset):
 #     pass

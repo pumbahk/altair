@@ -1,6 +1,15 @@
 <%page args="form, cart" />
 <%namespace file="/common/helpers.html" name="h" />
 
+<style type="text/css">
+  #modal-reserve .form-horizontal .control-group {
+    margin-bottom: 5px;
+  }
+  #modal-reserve .form-horizontal .controls {
+    padding-top: 5px;
+  }
+</style>
+
 <script type="text/javascript">
   $(function() {
     if (window.ticketPrinterService) {
@@ -20,7 +29,7 @@
   </div>
 
   <div class="modal-body">
-    <form action="javascript:completeOrder();" method="POST">
+    <form class="form-horizontal" action="javascript:completeOrder();" method="POST">
       <div class="content">
         <div class="alert alert-success">
           <h4 class="alert-heading">以下の内容で予約してよいですか？</h4>
@@ -90,9 +99,45 @@
         % endfor
       </table>
 
+      <div class="control-group">
+        <label class="control-label">${form.payment_delivery_method_pair_id.label.text}</label>
+        <div class="controls">
+          % for id, name in form.payment_delivery_method_pair_id.choices:
+            % if id == form.payment_delivery_method_pair_id.data:
+              ${name}
+            % endif
+          % endfor
+        </div>
+      </div>
+      <% from ticketing.payments import plugins as payment_plugins %>
+      % if cart.payment_delivery_pair.payment_method.payment_plugin_id == payment_plugins.SEJ_PAYMENT_PLUGIN_ID:
+      <div class="shipping-address">
+        <div class="control-group">
+          <label class="control-label">氏名</label>
+          <div class="controls">
+            ${form.last_name.data}
+            ${form.first_name.data}
+          </div>
+        </div>
+        <div class="control-group">
+          <label class="control-label">氏名(カナ)</label>
+          <div class="controls">
+            ${form.last_name_kana.data}
+            ${form.first_name_kana.data}
+          </div>
+        </div>
+        <div class="control-group">
+          <label class="control-label">TEL</label>
+          <div class="controls">
+            ${form.tel_1.data}
+          </div>
+        </div>
+      </div>
+      % endif
+
       ${h.form_item(form.sales_counter_payment_method_id)}
+      ${h.form_item(form.note, rows=3, class_='span10')}
       ${h.form_item(form.performance_id)}
-      ${h.form_item(form.note, rows=3, class_='span6')}
     </form>
   </div>
 
