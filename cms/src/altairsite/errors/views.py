@@ -40,7 +40,6 @@ def notfound(request):
 @view_config(context="altairsite.exceptions.UsersiteException", 
              renderer=selectable_renderer("altaircms:templates/usersite/errors/%(prefix)s/notfound.html"))
 def usersite_exc(context, request):
-    message_builder = request.registry.queryUtility(IExceptionMessageBuilder)
     exception_message = build_exception_message(request)
     if exception_message:
         log_exception_message(request, *exception_message)
