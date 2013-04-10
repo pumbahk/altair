@@ -20,3 +20,4 @@ def features_view(context, request):
         static_page = request.allowable(StaticPage).filter(StaticPage.name==prefix, StaticPage.published==True, StaticPage.interceptive==False).first()
         if static_page:
             return as_static_page_response(request, static_page, path)
+    raise HTTPNotFound()
