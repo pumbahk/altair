@@ -469,6 +469,7 @@ class OrderDetailView(BaseView):
         return {
             'order_current':order,
             'order_history':order_history,
+            'sej_order':SejOrder.query.filter(SejOrder.order_id==order.order_no).first(),
             'mail_magazines':mail_magazines,
             'form_shipping_address':form_shipping_address,
             'form_order':form_order,
