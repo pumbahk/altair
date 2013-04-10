@@ -1,6 +1,7 @@
 # -*- coding:utf-8 -*-
 import logging
 from .interfaces import IOrderDelivery, IOrderPayment
+from .interfaces import IGetCart
 from .interfaces import IPaymentDeliveryPlugin
 from .interfaces import IPaymentPlugin, IDeliveryPlugin
 
@@ -23,3 +24,9 @@ def add_delivery_plugin(config, plugin, plugin_id):
     :param plugin: an instance of IDeliveryPlugin 
     """
     config.registry.utilities.register([], IDeliveryPlugin, "delivery-%s" % plugin_id, plugin)
+
+
+def set_cart_getter(config, getter):
+    getter = config.maybe_dotted(getter)
+    reg = config.registry
+    reg.registerUtility(getter, IGetCart)
