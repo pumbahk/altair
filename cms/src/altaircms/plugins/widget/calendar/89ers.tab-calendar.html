@@ -1,5 +1,12 @@
+<%page args="cals,now,request,widget,months,visibilities,calendar_status"/>
+<%
+import logging
+logger = logging.getLogger(__name__)
+%>
+
+
 <%def name="calendar_table(cal, id, hidden)">
-<table height="390px" id="${id}"${'style="display:none"'if not hidden else ""|n}>
+<table height="390px" id="${id}" ${'style="display:none"'if not hidden else ""|n}>
  <thead>
    <tr>
      <th class="first">月</th>
@@ -23,9 +30,20 @@
         %for p in de["day_performances"]:
           <% status= calendar_status.get_status(p)%>
           <li class="${status["class"]}">
-			<!-- <strong>${status["string"]}</strong> -->
+            <% end_on_candidates = [s.end_on for s in p.sales if s.end_on] %>
+            %if not end_on_candidates:
+              <span>準備中</span>
+              <% logger.warn("p=%s does not have salessegment. ignored (p list widget)" % p.id)%>
+            %elif max(end_on_candidates) >= now:
+              <a href="${h.link.get_purchase_page_from_performance(request, p)}">${p.start_on.strftime("%H:%M")}</a>
+            %else:
+              <span>販売終了</span>
+            %endif
+            <%doc>
             <a href="${h.link.get_purchase_page_from_performance(request,p)}">${p.start_on.strftime("%H:%M")}</a>
-            <p>${p.calendar_content or u""}</p></li>
+            <p>${p.calendar_content or u""}</p>
+            </%doc>
+          </li>
         %endfor
         </ul>
       </td>   

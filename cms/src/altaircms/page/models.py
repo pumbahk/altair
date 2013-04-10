@@ -403,14 +403,12 @@ class PageType(WithOrganizationMixin, Base):
     DEFAULTS = (u"portal",
                 u"event_detail",
                 u"document", 
-                u"special", 
                 u"static", 
                 u"search")
 
     DEFAULTS_LABELS = (u"ポータル", 
                        u"イベント詳細", 
                        u"ドキュメント", 
-                       u"特集", 
                        u"静的ページ"
                        u"検索利用"
                        )

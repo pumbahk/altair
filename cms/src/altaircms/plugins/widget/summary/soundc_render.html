@@ -1,0 +1,6 @@
+<dl>
+%for item in items:
+  <dt>${item["label"]}</dt>
+  <dd>${(item["content"] or u"　")|n}</dd>
+%endfor
+</dl>

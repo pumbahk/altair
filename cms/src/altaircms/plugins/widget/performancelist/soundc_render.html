@@ -1,0 +1,45 @@
+## performancelist widget output template
+## 
+
+<%
+from altaircms.plugins.widget.performancelist import helpers as myhelpers
+from datetime import datetime 
+import logging
+now = datetime.now()
+logger = logging.getLogger(__name__)
+%>
+
+<table id="performanceList" summary="公演‥開催一覧" class="info">
+  <thead>
+    <tr>
+      <th>公演名</th><th>公演日時</th><th>会場</th><th></th>
+    </tr>
+  </thead>
+  <tbody>
+    % for i, (venue, p) in enumerate(myhelpers.PerformanceGrid.create(performances)):
+    <% performance = p.values %>
+    <tr>
+      <td scope="row"><span class="serial">${i+1}</span> ${performance.title}</td>
+        %if widget.mask_performance_date:
+          <td width="27%"> - </td>
+        %else:
+          <td width="27%">${myhelpers.performance_describe_date(performance)} <br/> ${myhelpers.performance_describe_time(performance)}</td>
+        %endif
+
+        %if venue:
+        <td rowspan="${venue.rowspan}" width="25%">${venue.values}</td>
+        %endif
+        <td width="10%" class="last"> 
+          <% end_on_candidates = [s.end_on for s in performance.sales if s.end_on] %>
+          %if not end_on_candidates:
+            <% logger.warn("performance=%s does not have salessegment. ignored (performance list widget)" % performance.id)%>
+          %elif max(end_on_candidates) >= now:
+            <a href="${h.link.get_purchase_page_from_performance(request, performance)}" class="purchase-small">購入する</a>
+          %else:
+            <span>販売終了</span>
+          %endif
+        </td>
+    </tr>
+  % endfor
+  </tbody>
+</table>

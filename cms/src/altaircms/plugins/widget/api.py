@@ -52,7 +52,6 @@ class DisplayTypeSelectRendering(object):
     def lookup(self, k, default=None):
         return self.actions.get(k, default)
 
-from webob.multidict import MultiDict
 from pyramid.interfaces import IRouter
 class WrappedRequest(object):
     def __init__(self, o):

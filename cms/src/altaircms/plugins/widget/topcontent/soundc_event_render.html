@@ -1,0 +1,13 @@
+%for t in qs:
+  <div class="event">
+		<img src="${h.asset.to_show_page(request, t.image_asset ,filepath=getattr(t.image_asset, widget.rendering_image_attribute))}" alt="${t.title  }" width="157" height="157" />
+    <div class="event-meta">
+			<div class="artist"><a href="${h.link.get_link_from_topcontent(request, t)}">${t.title}</a></div>
+      ${(t.text or u"")|n}
+      %if t.linked_page.event:
+      <br />
+      <p><a>${t.countdown_type_ja}まであと${h.base.countdown_days_from(t.countdown_limit)}日</a></p>
+      %endif
+		</div>
+  </div> 
+%endfor

@@ -8,7 +8,7 @@ import json
 
 import sqlalchemy as sa
 import sqlalchemy.orm as orm
-from pyramid.renderers import render
+from altaircms.plugins.widget.api import get_rendering_function_via_page
 
 
 from altaircms.interfaces import IWidget
@@ -72,11 +72,9 @@ class SummaryWidget(Widget):
     """
 
     def merge_settings(self, bname, bsettings):
-        bsettings.need_extra_in_scan("request")
-        items = json.loads(self.items or "[]")
-
-        content = render(self.template_name, {"widget": self,  "items": items}) 
-        bsettings.add(bname, content)
+        ## lookup utilities.py
+        closure = get_rendering_function_via_page(self, bname, bsettings, self.type)
+        bsettings.add(bname, closure)
 
     @classmethod
     def from_page(cls, page):
