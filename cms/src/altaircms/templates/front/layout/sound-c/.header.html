@@ -4,7 +4,7 @@
 	<div class="gnavi">
 		<ul>
       %for attr, c in h.first_and_last(layout.navigation_link_list("headermenu")):
-      <li ${attr()}><a href="${h.link.get_link_from_category(request,c)}">${c.label}</li>
+      <li ${attr()}><a href="${h.link.get_link_from_category(request,c)}">${c.label}</a></li>
       %endfor
 		</ul>　　
 	</div>
