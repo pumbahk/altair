@@ -152,7 +152,7 @@ class BaseExporter(object):
         """
         lower_name = sheetname.lower()
         if lower_name in self.workbook._Workbook__worksheet_idx_from_name:
-            raise Exception("duplicate worksheet name %r" % sheetname)
+            lower_name = u'%s%s' % (lower_name, self.workbook._Workbook__worksheet_idx_from_name.get(lower_name))
         # ワークブックからシートをコピー
         new_buffer, _ = xl_copy(self.read_buffer)
         new_sheet = new_buffer.get_sheet(0)
