@@ -478,10 +478,13 @@ class ReleaseCartView(object):
 
     @view_config(route_name='cart.release', request_method="POST", renderer="json")
     def __call__(self):
-        cart = api.get_cart(self.request)
-        cart.release()
-        api.remove_cart(self.request)
-
+        try:
+            cart = api.get_cart_safe(self.request)
+            cart.release()
+            api.remove_cart(self.request)
+        except NoCartError:
+            import sys
+            logger.info('exception ignored', exc_info=sys.exc_info())
         return dict()
 
 
