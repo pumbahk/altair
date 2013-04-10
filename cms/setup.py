@@ -31,6 +31,7 @@ requires = [
     'pyramid_selectable_renderer',
     'altair.findable_label', 
     'altair.encodingfixer', 
+    'altair.exclog', 
     'pyramid_layout',
     'lxml',
     ]
