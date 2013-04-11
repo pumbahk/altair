@@ -18,7 +18,7 @@ def is_file_field(field):
     return hasattr(field, "file") and hasattr(field, "filename")
 
 def get_filename(inputname, filename):
-    if inputname is None:
+    if not inputname:
         return filename
     dirname, _ = os.path.splitext(inputname)
     return dirname+os.path.splitext(filename)[1]
