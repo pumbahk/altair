@@ -191,7 +191,11 @@ class PageSet(Base,
                       )
         return params
     
-        
+    def kick_genre(self):
+        from altaircms.models import Genre
+        Genre.query.filter(Genre.category_top_pageset_id==self.id).update({"category_top_pageset_id": None})
+        self.genre_id = None
+
     # @property
     # def page_proxy(self):
     #     if hasattr(self, "_page_proxy"):

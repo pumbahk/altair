@@ -208,6 +208,9 @@ class Genre(Base,  WithOrganizationMixin):
     @reify
     def origin_genre(self):
         return self.query_ancestors().filter(Genre.name==self.origin).one()
+    
+    def kick_category_toppage(self):
+        self.category_top_pageset_id = None
 
     def is_category_toppage(self, pageset):
         return self.category_top_pageset_id == pageset.id
