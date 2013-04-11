@@ -32,6 +32,12 @@
     clear: both;
     visibility: hidden;
 }
+
+.subdescribe {
+    /* color: #ff3399; */
+    font-weight: bold;
+    color: #888;
+}
 /* }}} */
 
 /* per-page customization {{{ */
