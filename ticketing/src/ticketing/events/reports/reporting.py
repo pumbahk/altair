@@ -6,6 +6,7 @@ from sqlalchemy.sql import func, and_
 
 from ticketing.core.models import Stock, Seat, Site, Performance, Venue, SalesSegment, SalesSegmentGroup
 from ticketing.helpers.base import jdatetime, jdate, jtime
+from ticketing.formatter import Japanese_Japan_Formatter as formatter
 
 from . import xls_export
 from . import sheet as report_sheet
@@ -99,7 +100,7 @@ def export_for_sales(event):
         # Event
         data = report_sheet.SalesScheduleRecord(
             event_title=event.title,
-            output_datetime=jdatetime(datetime.now()),
+            output_datetime=jdate(datetime.now()),
             venue_name=site.name
         )
 
@@ -128,13 +129,13 @@ def export_for_sales(event):
         for p in query:
             # Price
             sales_segments = SalesSegment.query.filter(and_(SalesSegment.performance_id==p.id, SalesSegment.public==True)).all()
-            price_records = dict()  # (StockType.name, TicketBundle.name, Product.price) = [SalesSegmentGroup.name,]
+            price_records = dict()  # (Product.display_order, StockType.name, TicketBundle.name, Product.price) = [SalesSegmentGroup.name,]
             for sales_segment in sales_segments:
                 for product in sales_segment.products:
                     ticket_type = None
                     if product.items and product.items[0].ticket_bundle:
                         ticket_type = product.items[0].ticket_bundle.name
-                    key = (product.seat_stock_type.name, ticket_type, unicode(int(product.price)))
+                    key = (product.display_order, product.seat_stock_type.name, ticket_type, int(product.price))
                     if key not in price_records:
                         price_records[key] = []
                     price_records[key].append(sales_segment.sales_segment_group.name)
@@ -143,9 +144,9 @@ def export_for_sales(event):
             for key, value in sorted(price_records.items(), key=lambda x:(x[1], x[0])):
                 record = report_sheet.SalesSchedulePriceRecordRecord(
                     sales_segment=value,
-                    seat_type=key[0],
-                    ticket_type=key[1],
-                    price=key[2]
+                    seat_type=key[1],
+                    ticket_type=key[2],
+                    price=formatter().format_currency(key[3])
                 )
                 price_table.records.append(record)
 

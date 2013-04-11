@@ -245,6 +245,11 @@ class SalesScheduleReportExporter(BaseExporter):
     def add_sheet(self, sheetname):
         result = super(SalesScheduleReportExporter, self).add_sheet(sheetname)
         self.current_pos[result] = 8
+        # 印刷設定
+        result.portrait = 0
+        result.header_str = ''
+        result.footer_str = ''
+        result.fit_num_pages = 1
         return result
 
     def get_parts_sheet(self):
@@ -299,7 +304,7 @@ class SalesScheduleReportExporter(BaseExporter):
         self.remove_sheet(0)
 
     def write_output_datetime(self, sheet, value):
-        self.update_cell_text(sheet, 0, 11, value)
+        self.update_cell_text(sheet, 0, 12, value)
 
     def write_event_title(self, sheet, value):
         self.update_cell_text(sheet, 4, 0, value)
@@ -382,7 +387,7 @@ class SalesScheduleReportExporter(BaseExporter):
                 row_data['merged_ranges'],
             )
         # 価格名
-        self.update_cell_text(sheet, pos + 1, 0, u'■%s' % price_name)
+        self.update_cell_text(sheet, pos + 1, 0, u'■ %s' % price_name)
         self.current_pos[sheet] = pos + 1 + len(self._parts_prices_header)
 
     def write_price_record(self, sheet, record, use_footer=False):
