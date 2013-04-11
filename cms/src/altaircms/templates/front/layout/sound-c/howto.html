@@ -1,122 +1,39 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
-<html lang="jp">
-<%include file="./.head.html"/>
-<body>
-  <%include file="./.header.html"/>
-	<!-- wrapper -->	
-	<div class="wrapper">
-		
-		<div>
+<%!
+  bodyclass="faq"
+%>
+<%inherit file="./base.html"/>
+<%block name="main1">
+ ${parent.widgets("main1")}
+</%block>
 
-			<div class="maincol">
-				
-				<div class="howto">
-					
-<h2>お申込み方法</h2>
+<%block name="main2">
+ ${parent.widgets("main2")}
+</%block>
 
-<h3>公演毎にお申込方法が異なりますの下記をよくお読み頂きお申込下さい。</h3>
+<%block name="main3">
+ ${parent.widgets("main3")}
+</%block>
 
-<ol>
-	<li>公演一覧よりご希望の公演をクリック。</li>
-	<li>ご希望の枚数・決済方法を入力し、「申込｣をクリック。</li>
-	<li>お申込の内容を確認し、「次へ」をクリック。</li>
-	<li>お客様情報等、必要項目を入力し、「申込」をクリック。</li>
-	<li>「確認する（ここをクリックしてください）」をクリック。</li>
-	<li>申込完了！！</li>
-</ol>
+<%block name="side1">
+<div class="bk">
+   ${parent.widgets("side1")}
+</div>
+</%block>
 
-<h3>抽選エントリー時お申込方法</h3>
+<%block name="side2">
+<div class="bk">
+   ${parent.widgets("side2")}
+</div>
+</%block>
 
-<ol>
-	<li>公演一覧よりご希望の公演をクリック。</li>
-	<li>ご希望の枚数・決済方法を入力し、「申込｣をクリック。</li>
-	<li>お申込の内容を確認し、「次へ」をクリック。</li>
-	<li>お客様情報等、必要項目を入力し、「申込」をクリック。</li>
-	<li>「確認する（ここをクリックしてください）」をクリック。</li>
-	<li>申込完了！！　<strong>※「抽選の申込を受付ました。」というメッセージが出たことを確認してください。</strong></li>
-</ol>
+<%block name="side3">
+<div class="bk">
+   ${parent.widgets("side3")}
+</div>
+</%block>
 
-
-
-<h2>注意事項</h2>
-<p>お引換の際に予約番号とお客様の登録された電話番号が必要になります。忘れないようにメモなどをご用意ください。<br />
-	チケットは画面に掲出されたチケット引換期間内に引き換えられないとキャンセルになりますのでご注意ください。</p>
-<ul>
-	<li>お客様登録情報に関するお問い合わせは一切お受けできません。</li>
-	<li>公演毎に枚数制限を設定させて頂く場合がございますのでご了承下さい。</li>
-	<li>ドメイン指定受信、メール指定受信ご利用の方は、｢lawsonticket.jp｣、｢l-tike.com｣、｢lhe.lawson.co.jp｣を受信できるよう必ず設定してください。</li>
-	<li>予定枚数になり次第、終了になります。</li>
-</ul>
-
-<h3>抽選エントリー時お申込方法</h3>
-<p>当選・落選はご登録のメールアドレスに通知いたします。	<br />
-当選発表日翌日になってもメールが来ない場合は必ずメール当落発表期間内に、左メニュー内「チケット申込確認」からもご確認ください。<br />
-また、当選落選は本サイト内でのみの確認となり、ローソンチケットドットコムでは確認できませんのでご注意ください。</p>
-<ul>
-	<li>お客様登録情報に関するお問い合わせは一切お受けできません。</li>
-	<li>当選確認のための電話番号・パスワードのお問い合わせは一切お受けできません。</li>
-	<li>当選後のキャンセル、変更はできません。</li>
-</ul>
-
-
-<h2>チケット引取方法</h2>
-<p>サンプルテキストサンプルテキストサンプルテキストサンプルテキストサンプルテキスト</p>
-<ol>
-	<li>サンプルテキストサンプルテキストサンプルテキストサンプルテキスト</li>
-	<li>サンプルテキストサンプルテキストサンプルテキスト</li>
-	<li>サンプルテキストサンプルテキストサンプルテキストサンプルテキスト</li>
-	<li>サンプルテキストサンプルテキストサンプルテキスト</li>
-	<li>サンプルテキストサンプルテキストサンプルテキストサンプルテキスト</li>
-</ol>
-
-
-
-
-
-				
-				</div>
-				
-
-			</div>
-			<!-- メインカラムおわり -->
-			
-			<!-- サイドバー -->
-			<div class="sidebar">
-				<div class="bk">
-					<h3>Search</h3>
-					<form method="get">
-				        <input type="text" size="26">
-				        <button type="submit" name="example" value="ボタン" class="sidebtnA" style="margin-top:10px;">検索</button>
-			        </form>
-        
-				</div>
-				<div class="bk">
-					<h3>項目サンプル</h3>
-					テキストテキストテキストテキストテキストテキストテキストテキストテキストテキストテキスト
-				</div>
-				<div class="bk">
-					<h3>項目サンプル</h3>
-					<a href="" class="sidebtnA">リンクサンプル</a>
-					<a href="" class="sidebtnA">リンクサンプル</a>
-					<a href="" class="sidebtnA">リンクサンプル</a>
-				</div>
-				<div class="bk">
-					<h3>項目サンプル</h3>
-					<a href="" class="sidebtnB">リンクサンプル</a>
-					<a href="" class="sidebtnB">リンクサンプル</a>
-					<a href="" class="sidebtnB">リンクサンプル</a>
-				</div>
-				
-			</div>	
-			<!-- サイドバーおわり -->
-
-			<br class="clear" />
-
-		</div>
-		
-	</div>
-	<!-- wrapperおわり -->
-
-<%include file="./.footer.html"/>
-</body>
-</html>
+<%block name="side4">
+<div class="bk">
+   ${parent.widgets("side4")}
+</div>
+</%block>

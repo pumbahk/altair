@@ -1,41 +1,39 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
-## define {{{
-<%def name="widgets(name)">
-  % for w in display_blocks[name]:
-    ${w|n}
-  % endfor
-</%def>
-## }}} end of python code
-<html lang="jp">
-<%include file="./.head.html"/>
-<body>
-  <%include file="./.header.html"/>
-	<!-- wrapper -->	
-	<div class="wrapper">
-		
-		<div>
-			<div class="maincol">
-        <div class="faq">
-        <%block name="main1">
-         ${widgets("main1")}
-        </%block>
-        </div>
-			</div>
-			<!-- メインカラムおわり -->
-			
-			<!-- サイドバー -->
-			<div class="sidebar">
-        <%include file="./sidebar.sample.html"/>
-			</div>	
-			<!-- サイドバーおわり -->
+<%!
+  bodyclass="faq"
+%>
+<%inherit file="./base.html"/>
+<%block name="main1">
+ ${parent.widgets("main1")}
+</%block>
 
-			<br class="clear" />
+<%block name="main2">
+ ${parent.widgets("main2")}
+</%block>
 
-		</div>
-		
-	</div>
-	<!-- wrapperおわり -->
+<%block name="main3">
+ ${parent.widgets("main3")}
+</%block>
 
-<%include file="./.footer.html"/>
-</body>
-</html>
+<%block name="side1">
+<div class="bk">
+   ${parent.widgets("side1")}
+</div>
+</%block>
+
+<%block name="side2">
+<div class="bk">
+   ${parent.widgets("side2")}
+</div>
+</%block>
+
+<%block name="side3">
+<div class="bk">
+   ${parent.widgets("side3")}
+</div>
+</%block>
+
+<%block name="side4">
+<div class="bk">
+   ${parent.widgets("side4")}
+</div>
+</%block>
