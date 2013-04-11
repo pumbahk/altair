@@ -37,42 +37,38 @@
     <th colspan="4"></th>
     <th colspan="2">累計</th>
     <th colspan="2">
-      % if form.limited_from.data or form.limited_to.data:
-      <h5>${h.safe_strftime(form.limited_from.data)} 〜 ${h.safe_strftime(form.limited_to.data)}</h5>
-      % else:
-      <h5>全期間</h5>
-      % endif
+    % if form.limited_from.data or form.limited_to.data:
+      ${h.safe_strftime(form.limited_from.data)} 〜</br>
+      ${h.safe_strftime(form.limited_to.data)}
+    % else:
+      全期間
+    % endif
     </th>
   </tr>
   <tr>
-    <th>イベント名</th>
-    <th>販売期間</th>
-    <th>配席数</th>
-    <th>残席数</th>
-    <th>販売枚数</th>
-    <th>販売金額</th>
-    <th>販売枚数</th>
-    <th>販売金額</th>
+    <th style="width: 40%;">イベント名</th>
+    <th style="width: 24%;">販売期間</th>
+    <th style="width: 6%;">配席数</th>
+    <th style="width: 6%;">残席数</th>
+    <th style="width: 6%;">販売枚数</th>
+    <th style="width: 6%;">販売金額</th>
+    <th style="width: 6%;">販売枚数</th>
+    <th style="width: 6%;">販売金額</th>
   </tr>
-
-  <%
-    sorted_event_reports = sorted(event_reports, key=lambda x:(x['start_on'], x['title']))
-    sorted_event_total_reports = sorted(event_total_reports, key=lambda x:(x['start_on'], x['title']))
-  %>
-  % for event_report, event_total_report in zip(sorted_event_reports, sorted_event_total_reports):
+  % for record in event_total_reporter.sort_data():
   <tr>
-    <td><a href='javascript:event_link("${request.route_path("sales_reports.event", event_id=event_report["id"])}");'>${event_report['title']}</a></td>
-    % if event_report['sales_start_day'] == event_report['sales_end_day']:
-    <td class="span3">${h.safe_strftime(event_report['sales_start_day'])}</td>
+    <td><a href='javascript:event_link("${request.route_path("sales_reports.event", event_id=record.id)}");'>${record.title}</a></td>
+    % if record.sales_start_day == record.sales_end_day:
+    <td>${h.safe_strftime(record.sales_start_day)}</td>
     % else:
-    <td class="span3">${h.safe_strftime(event_report['sales_start_day'])}〜${h.safe_strftime(event_report['sales_end_day'])}</td>
+    <td>${h.safe_strftime(record.sales_start_day)} 〜 ${h.safe_strftime(record.sales_end_day)}</td>
     % endif
-    <td class="span1 numeric">${h.price_format(event_report['total_quantity'])}</td>
-    <td class="span1 numeric">${h.price_format(event_report['vacant_quantity'])}</td>
-    <td class="span1 numeric">${h.price_format(event_total_report['product_quantity'])}</td>
-    <td class="span1 price">${h.price_format(event_total_report['price_amount'])}</td>
-    <td class="span1 numeric">${h.price_format(event_report['product_quantity'])}</td>
-    <td class="span1 price">${h.price_format(event_report['price_amount'])}</td>
+    <td class="numeric">${h.price_format(record.stock_quantity)}</td>
+    <td class="numeric">${h.price_format(record.vacant_quantity)}</td>
+    <td class="numeric">${h.price_format(record.total_order_quantity)}</td>
+    <td class="price">${h.price_format(record.total_order_amount)}</td>
+    <td class="numeric">${h.price_format(record.order_quantity)}</td>
+    <td class="price">${h.price_format(record.order_amount)}</td>
   </tr>
   % endfor
 </table>

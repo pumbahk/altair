@@ -12,10 +12,10 @@ from sqlalchemy.sql import func
 from ticketing.models import merge_session_with_post
 from ticketing.views import BaseView
 from ticketing.fanstatic import with_bootstrap
-from ticketing.core.models import Event, ReportSetting, Mailer
+from ticketing.core.models import Event, ReportSetting
 from ticketing.core.models import Performance
 from ticketing.events.sales_reports.forms import SalesReportForm, SalesReportMailForm
-from ticketing.events.sales_reports.sendmail import get_sales_summary, get_performance_sales_summary, get_performance_sales_detail
+from ticketing.events.sales_reports.reports import SalesTotalReporter, PerformanceReporter, EventReporter, sendmail
 
 logger = logging.getLogger(__name__)
 
@@ -26,17 +26,11 @@ class SalesReports(BaseView):
     @view_config(route_name='sales_reports.index', renderer='ticketing:templates/sales_reports/index.html')
     def index(self):
         form = SalesReportForm(self.request.params)
-        event_reports = get_sales_summary(form, self.context.organization)
-
-        form_total = SalesReportForm(self.request.params)
-        form_total.limited_from.data = None
-        form_total.limited_to.data = None
-        event_total_reports = get_sales_summary(form_total, self.context.organization)
+        event_total_reporter = SalesTotalReporter(form, self.context.organization)
 
         return {
             'form':form,
-            'event_reports':event_reports,
-            'event_total_reports':event_total_reports
+            'event_total_reporter':event_total_reporter,
         }
 
     @view_config(route_name='sales_reports.event', renderer='ticketing:templates/sales_reports/event.html')
@@ -47,23 +41,15 @@ class SalesReports(BaseView):
             raise HTTPNotFound('event id %d is not found' % event_id)
 
         form = SalesReportForm(self.request.params, event_id=event_id)
-        event_reports = get_sales_summary(form, self.context.organization)
-        performances_reports = get_sales_summary(form, self.context.organization, group='Performance')
-
-        form_total = SalesReportForm(self.request.params, event_id=event_id)
-        form_total.limited_from.data = None
-        form_total.limited_to.data = None
-        event_total_reports = get_sales_summary(form_total, self.context.organization)
-        performances_total_reports = get_sales_summary(form_total, self.context.organization, group='Performance')
+        event_total_reporter = SalesTotalReporter(form, self.context.organization)
+        performance_total_reporter = SalesTotalReporter(form, self.context.organization, group_by='Performance')
 
         return {
             'form':form,
-            'event_report':event_reports.pop(),
-            'event_total_report':event_total_reports.pop(),
             'form_report_mail':SalesReportMailForm(organization_id=self.context.user.organization_id, event_id=event_id),
             'report_settings':ReportSetting.filter_by(event_id=event_id).all(),
-            'performances_reports':performances_reports,
-            'performances_total_reports':performances_total_reports,
+            'event_total_reporter':event_total_reporter,
+            'performance_total_reporter':performance_total_reporter
         }
 
     @view_config(route_name='sales_reports.performance', renderer='ticketing:templates/sales_reports/performance.html')
@@ -73,23 +59,9 @@ class SalesReports(BaseView):
         if performance is None:
             raise HTTPNotFound('performance id %d is not found' % performance_id)
 
-        report_by_sales_segment_group = {}
-        report_by_sales_segment_group_total = {}
-        for sales_segment in performance.sales_segments:
-            if not sales_segment.public:
-                continue
-            form = SalesReportForm(self.request.params, performance_id=performance_id, sales_segment_group_id=sales_segment.sales_segment_group.id)
-            report_by_sales_segment_group[sales_segment] = get_performance_sales_summary(form, self.context.organization)
-
-            form.limited_from.data = None
-            form.limited_to.data = None
-            report_by_sales_segment_group_total[sales_segment] = get_performance_sales_summary(form, self.context.organization)
-
+        form = SalesReportForm(self.request.params, performance_id=performance_id)
         return {
-            'form':SalesReportForm(self.request.params, event_id=performance.event_id),
-            'performance':performance,
-            'report_by_sales_segment_group':report_by_sales_segment_group,
-            'report_by_sales_segment_group_total':report_by_sales_segment_group_total,
+            'performance_reporter':PerformanceReporter(form, performance),
         }
 
     @view_config(route_name='sales_reports.preview', renderer='ticketing:templates/sales_reports/preview.html')
@@ -118,17 +90,8 @@ class SalesReports(BaseView):
             raise HTTPNotFound('event id %d is not found' % event_id)
 
         form = SalesReportForm(self.request.params, event_id=event_id)
-        event_product = get_performance_sales_summary(form, self.context.organization)
-        event_product_total = get_performance_sales_summary(SalesReportForm(event_id=event_id), self.context.organization)
-        performances_reports = get_performance_sales_detail(form, event)
-        performances_reports_total = get_performance_sales_detail(SalesReportForm(event_id=event_id), event)
-
         return {
-            'event_product':event_product,
-            'event_product_total':event_product_total,
-            'form':form,
-            'performances_reports':performances_reports,
-            'performances_reports_total':performances_reports_total,
+            'event_reporter':EventReporter(form, event),
         }
 
     @view_config(route_name='sales_reports.send_mail', renderer='ticketing:templates/sales_reports/preview.html')
@@ -140,39 +103,16 @@ class SalesReports(BaseView):
      
         form = SalesReportForm(self.request.params, event_id=event_id)
         if form.validate():
-            event_product = get_performance_sales_summary(form, self.context.organization)
-            event_product_total = get_performance_sales_summary(SalesReportForm(event_id=event_id), self.context.organization)
-            performances_reports = get_performance_sales_detail(form, event)
-            performances_reports_total = get_performance_sales_detail(SalesReportForm(event_id=event_id), event)
-
-            render_param = {
-                'event_product':event_product,
-                'event_product_total':event_product_total,
-                'form':form,
-                'performances_reports':performances_reports,
-                'performances_reports_total':performances_reports_total,
-            }
-
             settings = self.request.registry.settings
-            sender = settings['mail.message.sender']
-            recipient =  form.recipient.data
-            subject = form.subject.data
+            recipient = form.recipient.data
+            subject = form.subject.data or u'[売上レポート] %s' % event.title
+            render_param = {
+                'event_reporter':EventReporter(form, event),
+            }
             html = render_to_response('ticketing:templates/sales_reports/mail_body.html', render_param, request=self.request)
-
-            mailer = Mailer(settings)
-            mailer.create_message(
-                sender = sender,
-                recipient = recipient,
-                subject = subject,
-                body = '',
-                html = html.text
-            )
-
-            try:
-                mailer.send(sender, recipient.split(','))
+            if sendmail(settings, recipient, subject, html):
                 self.request.session.flash(u'レポートメールを送信しました')
-            except Exception, e:
-                logging.error(u'メール送信失敗 %s' % e.message)
+            else:
                 self.request.session.flash(u'メール送信に失敗しました')
         else:
             self.request.session.flash(u'入力されていません')

@@ -4,17 +4,19 @@ import logging
 import os
 import sys
 from datetime import datetime, timedelta
-
 from paste.util.multidict import MultiDict
+from pyramid.threadlocal import get_current_registry
+from pyramid.renderers import render_to_response
 from pyramid.paster import bootstrap
+
+from ticketing.events.sales_reports.reports import EventReporter
 
 logger = logging.getLogger(__name__)
 
 def main(argv=sys.argv):
-    from ticketing.core.models import ReportSetting, Mailer, Event, Organization, ReportFrequencyEnum
-    from ticketing.operators.models import Operator
+    from ticketing.core.models import ReportSetting, Event, ReportFrequencyEnum
     from ticketing.events.sales_reports.forms import SalesReportForm
-    from ticketing.events.sales_reports.sendmail import sendmail, get_performance_sales_summary
+    from ticketing.events.sales_reports.reports import sendmail
 
     if len(sys.argv) < 4:
         print 'ERROR: invalid args %s' % sys.argv
@@ -43,7 +45,10 @@ def main(argv=sys.argv):
         logging.error('invalid args %s' % sys.argv)
         return
 
+    reports = {}
+    settings = get_current_registry().settings
     report_settings = ReportSetting.query.filter_by(frequency=frequency_num).all()
+
     for report_setting in report_settings:
         event_id = report_setting.event_id
         event = Event.get(event_id)
@@ -60,8 +65,17 @@ def main(argv=sys.argv):
         if event.sales_end_on < form.limited_from.data or form.limited_to.data < event.sales_start_on:
             continue
 
-        logger.info('report_setting_id: %sl, event_id: %s, operator_id: %s' % (report_setting.id, event_id, report_setting.operator.id))
-        sendmail(event, form)
+        logger.info('report_setting_id: %sl, event_id: %s, operator_id: %s' %
+                    (report_setting.id, event_id, report_setting.operator.id))
+
+        if event_id not in reports:
+            render_param = {
+                'event_reporter':EventReporter(form, event),
+            }
+            reports[event_id] = render_to_response('ticketing:templates/sales_reports/mail_body.html', render_param)
+        subject = form.subject.data or u'[売上レポート] %s' % event.title
+        html = reports[event_id]
+        sendmail(settings, form.recipient.data, subject, html)
 
     logger.info('end send_sales_report batch (sent=%s)' % len(report_settings))
 
