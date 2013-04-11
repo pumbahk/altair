@@ -102,6 +102,10 @@ class Cart(Base):
 
     browserid = sa.Column(sa.String(40))
 
+    @property
+    def name(self):
+        return str(self.performance.id)
+
     @classmethod 
     def create(cls, **kwargs):
         performance_id = kwargs.pop('performance_id', None)

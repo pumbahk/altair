@@ -29,6 +29,8 @@ from . import urls
 
 logger = logging.getLogger(__name__)
 
+
+
 @view_config(context=NoResultFound)
 def no_results_found(context, request):
     """ 改良が必要。ログに該当のクエリを出したい。 """
@@ -157,6 +159,12 @@ class EntryLotView(object):
                               int(cform['month'].data),
                               int(cform['day'].data)),
             memo=cform['memo'].data)
+        cart_api.new_order_session(
+            self.request,
+            client_name=shipping_address["last_name"] + shipping_address["first_name"],
+            payment_delivery_method_pair_id=payment_delivery_method_pair_id,
+            email_1=shipping_address["email_1"],
+        )
 
 
         location = urls.entry_confirm(self.request)
@@ -217,6 +225,17 @@ class ConfirmLotEntryView(object):
                               entry['gender'], entry['birthday'], entry['memo'])
         self.request.session['lots.entry_no'] = entry.entry_no
         api.notify_entry_lot(self.request, entry)
+
+        cart = api.get_entry_cart(self.request, entry)
+
+        payment = Payment(cart, self.request)
+        self.request.session['payment_confirm_url'] = urls.entry_completion(self.request)
+
+        result = payment.call_prepare()
+        if callable(result):
+            return result
+
+
         return HTTPFound(location=urls.entry_completion(self.request))
 
 @view_defaults(route_name='lots.entry.completion', renderer="completion.html")
