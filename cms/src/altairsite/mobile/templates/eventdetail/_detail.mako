@@ -81,12 +81,12 @@ ${helper.nl2br(event.inquiry_for)|n}
             % endif
             [${i + 1}]<font size="-1"><a href="${purchase_links[perf.id]}">${perf.title}</a></font><br />
             % if perf.open_on:
-                開場:${str(perf.open_on.year)[2:]}/${str(perf.open_on.month).zfill(2)}/${str(perf.open_on.day).zfill(2)}
-                ${str(perf.open_on.hour).zfill(2)}:${str(perf.open_on.minute).zfill(2)}(${week[perf.open_on.weekday()]})<br />
+                開場:${str(perf.open_on.year)[2:]}/${str(perf.open_on.month).zfill(2)}/${str(perf.open_on.day).zfill(2)}(${week[perf.open_on.weekday()]})
+                ${str(perf.open_on.hour).zfill(2)}:${str(perf.open_on.minute).zfill(2)}<br />
             % endif
             % if perf.start_on:
-                開演:${str(perf.start_on.year)[2:]}/${str(perf.start_on.month).zfill(2)}/${str(perf.start_on.day).zfill(2)}
-                ${str(perf.start_on.hour).zfill(2)}:${str(perf.start_on.minute).zfill(2)}(${week[perf.start_on.weekday()]})<br />
+                開演:${str(perf.start_on.year)[2:]}/${str(perf.start_on.month).zfill(2)}/${str(perf.start_on.day).zfill(2)}(${week[perf.start_on.weekday()]})
+                ${str(perf.start_on.hour).zfill(2)}:${str(perf.start_on.minute).zfill(2)}<br />
             % endif
             % if perf.venue:
                 会場:${perf.venue}<br/>
