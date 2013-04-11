@@ -44,7 +44,6 @@ class TopcontentWidget(Widget):
         ## lookup utilities.py
         closure = get_rendering_function_via_page(self, bname, bsettings, self.type)
         bsettings.add(bname, closure)
-
         
 class TopcontentWidgetResource(HandleSessionMixin,
                           UpdateDataMixin,
