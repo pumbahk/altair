@@ -2,6 +2,7 @@
 
 # move it.
 import unittest
+from pyramid import testing
 from ticketing.testing import _setup_db, _teardown_db
    
 class ProductTests(unittest.TestCase):
@@ -177,3 +178,62 @@ class TicketPrintHistoryTests(unittest.TestCase):
             self.assert_(True)
         except DomainConstraintError:
             self.fail()
+
+
+class EventTests(unittest.TestCase):
+    def _getTarget(self):
+        from .models import Event
+        return Event
+
+
+    def test_find_next_and_last_sales_segment_period(self):
+        import datetime
+        target = self._getTarget()
+        
+        dates = [(datetime.datetime(2013, 4, 13, 10, 0),
+                  datetime.datetime(2013, 7, 7, 23, 59, 59)),
+                 (datetime.datetime(2013, 4, 8, 10, 0),
+                  datetime.datetime(2013, 4, 12, 9, 59, 59)),
+                 (datetime.datetime(2013, 4, 13, 10, 0),
+                  datetime.datetime(2013, 7, 7, 23, 59, 59)),
+                 (datetime.datetime(2013, 4, 8, 10, 0),
+                  datetime.datetime(2013, 4, 12, 9, 59, 59)),
+                 (datetime.datetime(2013, 4, 13, 10, 0),
+                  datetime.datetime(2013, 7, 7, 23, 59, 59)),
+                 (datetime.datetime(2013, 4, 8, 10, 0),
+                  datetime.datetime(2013, 4, 12, 9, 59, 59)),
+                 (datetime.datetime(2013, 4, 13, 10, 0),
+                  datetime.datetime(2013, 7, 7, 23, 59, 59)),
+                 (datetime.datetime(2013, 4, 8, 10, 0),
+                  datetime.datetime(2013, 4, 12, 9, 59, 59)),
+                 (datetime.datetime(2013, 4, 13, 10, 0),
+                  datetime.datetime(2013, 7, 7, 23, 59, 59)),
+                 (datetime.datetime(2013, 4, 8, 10, 0),
+                  datetime.datetime(2013, 4, 12, 9, 59, 59)),
+                 (datetime.datetime(2013, 4, 13, 10, 0),
+                  datetime.datetime(2013, 7, 7, 23, 59, 59)),
+                 (datetime.datetime(2013, 4, 8, 10, 0),
+                  datetime.datetime(2013, 4, 12, 9, 59, 59)),
+                 (datetime.datetime(2013, 4, 13, 10, 0),
+                  datetime.datetime(2013, 7, 7, 23, 59, 59)),
+                 (datetime.datetime(2013, 4, 8, 10, 0),
+                  datetime.datetime(2013, 4, 12, 9, 59, 59)),
+                 (datetime.datetime(2013, 4, 13, 10, 0),
+                  datetime.datetime(2013, 7, 7, 23, 59, 59))]
+
+        performance = testing.DummyModel()
+        sales_segments = [
+            testing.DummyModel(performance_id=1000,
+                               performance=performance,
+                               name=u'xxx',
+                               start_at=date[0],
+                               end_at=date[1])
+            for date in dates]
+
+        now = datetime.datetime(2013, 4, 13)
+
+        results = target.find_next_and_last_sales_segment_period(sales_segments, now)
+        print results
+
+        self.assertIsNotNone(results[0]['start_at'], datetime.datetime(2013, 4, 13, 10))
+
