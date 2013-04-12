@@ -12,7 +12,7 @@ from ..models import Identifier, WithTimestamp
 from ..utils import StandardEnum
 
 # for schema dependencies
-import ticketing.core.models
+# import ticketing.core.models
 
 Base = sqlahelper.get_base()
 DBSession = sqlahelper.get_session()
@@ -20,34 +20,6 @@ DBSession = sqlahelper.get_session()
 # 内部トランザクション用
 _session = orm.scoped_session(orm.sessionmaker())
 
-# class MulticheckoutSetting(Base):
-#     __tablename__ = 'MulticheckoutSetting'
-#     
-#     query = DBSession.query_property()
-# 
-#     id = sa.Column(Identifier, primary_key=True)
-#     
-#     # shop_name = sa.Column(sa.Unicode(255), unique=True)
-#     # shop_id = sa.Column(sa.Unicode(255))
-#     # auth_id = sa.Column(sa.Unicode(255))
-#     # auth_password = sa.Column(sa.Unicode(255))
-# 
-#     @property
-#     def shop_name(self):
-#         return self.organization.settings.multicheckout_shop_name
-#     @property
-#     def shop_id(self):
-#         return self.organization.settings.multicheckout_shop_id
-#     @property
-#     def auth_id(self):
-#         return self.organization.settings.multicheckout_auth_id
-#     @property
-#     def auth_password(self):
-#         return self.organization.settings.multicheckout_auth_password
-# 
-#     organization_id = sa.Column(Identifier, sa.ForeignKey('Organization.id'))
-#     organization = orm.relationship('Organization', backref='multicheckout_settings')
-# 
 
 class Secure3DReqEnrolRequest(Base):
     """ 3D認証可否確認依頼処理（リクエスト）
