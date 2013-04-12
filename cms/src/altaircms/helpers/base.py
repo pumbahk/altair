@@ -94,6 +94,31 @@ def confirm_stage():
 def execute_stage():
     return hidden_input("stage", "execute")
 
+def deal_limit(today, deal_open, deal_close):
+    today_date = datetime.datetime(today.year, today.month, today.day)
+    deal_open_date = datetime.datetime(deal_open.year, deal_open.month, deal_open.day)
+    deal_close_date = datetime.datetime(deal_close.year, deal_close.month, deal_close.day)
+
+    N = (deal_open_date - today_date).days
+    if N > 0:
+        return u"販売開始まであと%d日" % N
+    elif N == 0:
+        return u"本日販売"
+
+    N = (deal_close_date - today_date).days
+    if N > 0:
+        return u"販売終了まであと%d日" % N
+    elif N == 0:
+        S = (deal_close - today).seconds
+        H = S / 3600 + 1
+        if H > 1:
+            return u"販売終了まであと%d時間" % H
+        elif H == 1:
+            M = S / 60 + 1
+            return u"販売終了まであと%d分" % M
+    else:
+        return u"販売終了"
+
 if __name__ == "__main__":
     import doctest
     doctest.testmod()
