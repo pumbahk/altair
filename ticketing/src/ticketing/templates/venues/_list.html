@@ -20,52 +20,52 @@
   </thead>
   <tbody>
   % for item in items:
-  <tr id="venue-${item.venue.id}">
+  <tr id="venue-${item['venue'].id}">
     <td>
-      <!--<input name="venue_id" type="radio" value=${item.venue.id} />-->
+      <!--<input name="venue_id" type="radio" value=${item['venue'].id} />-->
     </td>
-    <!--<td><span class="id">${item.venue.original_venue_id}</span></td>-->
-	% if item.venue.performance:
+    <!--<td><span class="id">${item['venue'].original_venue_id}</span></td>-->
+	% if item['performance']:
 	<td colspan="4"></td>
 	% else:
-    <td><span class="id">${item.venue.site.id}</span></td>
+    <td><span class="id">${item['site'].id}</span></td>
 	<td>
-	% if item.site.prefecture != None:
-		${item.site.prefecture}
+	% if item['site'].prefecture != None:
+		${item['site'].prefecture}
 	% endif
 	</td>
-    <td><span class="name">${item.site.name}</span>
-	% if item.venue.sub_name != None:
-		<div class="sub_name">${item.venue.sub_name}</div>
+    <td><span class="name">${item['site'].name}</span>
+	% if item['venue'].sub_name != None:
+		<div class="sub_name">${item['venue'].sub_name}</div>
 	% endif
 	</td>
 	<td style="text-align: center;">
-		% if item.site._metadata_url != None:
+		% if item['site']._metadata_url != None:
 			◯
 		% else:
 			×
 		% endif
 	</td>
 	% endif
-    <td><span class="id">${item.venue.id}</span></td>
-	<td>${item.count}</td>
-    <td><a href="${request.route_path('venues.show', venue_id=item.venue.id)}">詳細</a>
+    <td><span class="id">${item['venue'].id}</span></td>
+	<td>${item['count']}</td>
+    <td><a href="${request.route_path('venues.show', venue_id=item['venue'].id)}">詳細</a>
 	<td>
-	% if item.venue.performance:
-		<a href="${request.route_path('performances.show', performance_id=item.venue.performance.id)}">
-		% if item.venue.performance.start_on:
-			${item.venue.performance.start_on.strftime('%Y/%m/%d')}
+	% if item['performance']:
+		<a href="${request.route_path('performances.show', performance_id=item['performance'].id)}">
+		% if item['performance'].start_on:
+			${item['performance'].start_on.strftime('%Y/%m/%d')}
 		% endif
-		${item.venue.performance.name}</a>
+		${item['performance'].name}</a>
 	% else:
 		-
 	% endif
 	</td>
 	<td>
-	% if item.venue.performance:
-		${item.venue.performance.created_at}
+	% if item['performance']:
+		${item['performance'].created_at}
 	% else:
-		${item.site.created_at}
+		${item['site'].created_at}
 	% endif
 	</td>
   </tr>
