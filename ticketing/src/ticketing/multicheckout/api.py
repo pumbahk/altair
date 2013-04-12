@@ -11,6 +11,7 @@ from . import models as m
 #from .interfaces import IMultiCheckout
 from datetime import date
 from . import logger
+from . import events
 import ticketing.core.api as core_api
 import ticketing.core.models as core_models
 
@@ -131,6 +132,7 @@ def secure3d_enrol(request, order_no, card_number, exp_year, exp_month, total_am
     )
 
     res = service.secure3d_enrol(order_no, enrol)
+    events.Secure3DEnrolEvent.notify(request, order_no, res)
     save_api_response(request, res)
     return res
 
@@ -144,6 +146,7 @@ def secure3d_auth(request, order_no, pares, md):
 
     service = get_multicheckout_service(request)
     res = service.secure3d_auth(order_no, auth)
+    events.Secure3DAuthEvent.notify(request, order_no, res)
     save_api_response(request, res)
     return res
 
@@ -180,42 +183,17 @@ def checkout_auth_secure3d(request,
     )
     service = get_multicheckout_service(request)
     res = service.request_card_auth(order_no, params)
+    events.CheckoutAuthSecure3DEvent.notify(request, order_no, res)
     save_api_response(request, res)
     return res
 
 
 def checkout_sales_secure3d(request,
-                  order_no, item_name, amount, tax, client_name, mail_address,
-                  card_no, card_limit, card_holder_name,
-                  mvn, xid, ts, eci, cavv, cavv_algorithm,
-                  free_data=None, item_cod=DEFAULT_ITEM_CODE, date=date):
+                  order_no):
     order_no = maybe_unicode(order_no)
-    order_ymd = date.today().strftime('%Y%m%d')
-    params = m.MultiCheckoutRequestCard(
-        ItemCd=item_cod,
-        ItemName=item_name,
-        OrderYMD=order_ymd,
-        SalesAmount=int(amount),
-        TaxCarriage=tax,
-        FreeData=free_data,
-        ClientName=client_name,
-        MailAddress=mail_address,
-        MailSend='0',
-        CardNo=card_no,
-        CardLimit=card_limit,
-        CardHolderName=card_holder_name,
-        PayKindCd='10',
-        PayCount=None,
-        SecureKind='3',
-        Mvn=mvn,
-        Xid=xid,
-        Ts=ts,
-        ECI=eci,
-        CAVV=cavv,
-        CavvAlgorithm=cavv_algorithm,
-    )
     service = get_multicheckout_service(request)
-    res = service.request_card_sales(order_no, params)
+    res = service.request_card_sales(order_no)
+    events.CheckoutSalesSecure3DEvent.notify(request, order_no, res)
     save_api_response(request, res)
     return res
 
@@ -224,6 +202,7 @@ def checkout_auth_cancel(request, order_no):
     order_no = maybe_unicode(order_no)
     service = get_multicheckout_service(request)
     res = service.request_card_cancel_auth(order_no)
+    events.CheckoutAuthCancelEvent.notify(request, order_no, res)
     save_api_response(request, res)
     return res
 
@@ -236,6 +215,7 @@ def checkout_sales_part_cancel(request, order_no, sales_amount_cancellation, tax
     )
     service = get_multicheckout_service(request)
     res = service.request_card_sales_part_cancel(order_no, params)
+    events.CheckoutSalesPartCancelEvent.notify(request, order_no, res)
     save_api_response(request, res)
     return res
 
@@ -244,6 +224,7 @@ def checkout_sales_cancel(request, order_no):
     order_no = maybe_unicode(order_no)
     service = get_multicheckout_service(request)
     res = service.request_card_cancel_sales(order_no)
+    events.CheckoutSalesCancelEvent.notify(request, order_no, res)
     save_api_response(request, res)
     return res
 
@@ -252,6 +233,7 @@ def checkout_inquiry(request, order_no):
     order_no = maybe_unicode(order_no)
     service = get_multicheckout_service(request)
     res = service.request_card_inquiry(order_no)
+    events.CheckoutInquiryEvent.notify(request, order_no, res)
     save_api_response(request, res)
     return res
 
@@ -284,38 +266,20 @@ def checkout_auth_secure_code(request, order_no, item_name, amount, tax, client_
         SecureCode=secure_code,
     )
     service = get_multicheckout_service(request)
-    return service.request_card_auth(order_no, params)
+    res = service.request_card_auth(order_no, params)
+    events.CheckoutAuthSecureCodeEvent.notify(request, order_no, res)
+    save_api_response(request, res)
+    return res
 
 
-def checkout_sales_secure_code(request, order_no, item_name, amount, tax, client_name, mail_address,
-                     card_no, card_limit, card_holder_name,
-                     secure_code,
-                     free_data=None, item_cd=DEFAULT_ITEM_CODE, date=date):
+def checkout_sales_secure_code(request, order_no):
     order_no = maybe_unicode(order_no)
 
-    order_ymd = date.today().strftime('%Y%m%d')
-    params = m.MultiCheckoutRequestCard(
-        ItemCd=item_cd,
-        ItemName=item_name,
-        OrderYMD=order_ymd,
-        SalesAmount=int(amount),
-        TaxCarriage=tax,
-        FreeData=free_data,
-        ClientName=client_name,
-        MailAddress=mail_address,
-        MailSend='0',
-
-        CardNo=card_no,
-        CardLimit=card_limit,
-        CardHolderName=card_holder_name,
-
-        PayKindCd='10',
-        PayCount=None,
-        SecureKind='2',
-        SecureCode=secure_code,
-    )
     service = get_multicheckout_service(request)
-    return service.request_card_sales(order_no, params)
+    res = service.request_card_sales(order_no)
+    events.CheckoutSalesSecureCodeEvent.notify(request, order_no, res)
+    save_api_response(request, res)
+    return res
 
 
 class MultiCheckoutAPIError(Exception):
@@ -396,7 +360,7 @@ class Checkout3D(object):
         logger.debug("got response %s" % etree.tostring(res))
         return self._parse_response_card_xml(res)
 
-    def request_card_sales(self, order_no, card_auth):
+    def request_card_sales(self, order_no):
         url = self.card_sales_url(order_no)
         res = self._request(url)
         logger.debug("got response %s" % etree.tostring(res))

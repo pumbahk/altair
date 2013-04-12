@@ -130,17 +130,9 @@ class MultiCheckoutPlugin(object):
         """ 売り上げ確定(3D認証) """
         order = request.session['order']
         order_no = order['order_no']
-        # pares = order['pares']
-        # md = order['md']
-        tran = order['tran']
-        item_name = api.get_item_name(request, cart.name)
 
         checkout_sales_result = multicheckout_api.checkout_sales_secure3d(
             request, get_order_no(request, cart),
-            item_name, cart.total_amount, 0, order['client_name'], order.get('email_1', ''),
-            order['card_number'], order['exp_year'] + order['exp_month'], order['card_holder_name'],
-            mvn=tran['mvn'], xid=tran['xid'], ts=tran['ts'],
-            eci=tran['eci'], cavv=tran['cavv'], cavv_algorithm=tran['cavv_algorithm'],
         )
         card_brand = detect_card_brand(request, order['card_number'])
         
@@ -172,13 +164,9 @@ class MultiCheckoutPlugin(object):
         """ 売り上げ確定 (セキュアコード認証) """
         order = request.session['order']
         order_no = order['order_no']
-        item_name = api.get_item_name(request, cart.name)
 
         checkout_sales_result = multicheckout_api.checkout_sales_secure_code(
             request, get_order_no(request, cart),
-            item_name, cart.total_amount, 0, order['client_name'], order.get('email_1', ''),
-            order['card_number'], order['exp_year'] + order['exp_month'], order['card_holder_name'],
-            order['secure_code'],
         )
         card_brand = detect_card_brand(request, order['card_number'])
 
@@ -350,7 +338,7 @@ class MultiCheckoutView(object):
 
         self.request.session['order'] = order
 
-        DBSession.add(checkout_auth_result)
+        #DBSession.add(checkout_auth_result)
 
         return HTTPFound(location=confirm_url(self.request))
 

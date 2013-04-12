@@ -5,8 +5,8 @@ from xml.etree import ElementTree as etree
 from pyramid import testing
 
 from ticketing.testing import _setup_db as _setup_db_, _teardown_db
-from .testing import DummyHTTPLib
-from . import api, models
+from ..testing import DummyHTTPLib
+from .. import api, models
 
 def _setup_db(echo=False):
     return _setup_db_(
@@ -29,7 +29,7 @@ def compare_xml(str1, str2):
 
 class secure3d_acs_form_Tests(unittest.TestCase):
     def _callFUT(self, *args, **kwargs):
-        from . import helpers
+        from .. import helpers
         return helpers.secure3d_acs_form(*args, **kwargs)
 
     def test_it(self):
@@ -708,7 +708,7 @@ class Checkout3DTests(unittest.TestCase):
         )
 
     def test_request_with_error(self):
-        from .api import MultiCheckoutAPIError
+        from ..api import MultiCheckoutAPIError
         target = self._makeOne("user", "pass", api_base_url="http://example.com/", shop_code="SHOP")
         target._httplib = DummyHTTPLib("<Message />", status="401")
         element = etree.XML('<root />')
@@ -912,30 +912,30 @@ class Checkout3DTests(unittest.TestCase):
 
     def test_request_card_sales(self):
         order_no = "this-is-order-no"
-        params = models.MultiCheckoutRequestCard(
-            ItemCd='this-is-item-cd',
-            ItemName=u'商品名',
-            OrderYMD='20120520',
-            SalesAmount=100,
-            TaxCarriage=50,
-            FreeData=u'任意項目',
-            ClientName=u'楽天太郎',
-            MailAddress='ticketstar@example.com',
-            MailSend='1',
-            CardNo='1111111111111111',
-            CardLimit='2009',
-            CardHolderName='RAKUTEN TAROU',
-            PayKindCd='61',
-            PayCount='10',
-            SecureKind='1',
-            SecureCode=None,
-            Mvn=None,
-            Xid=None,
-            Ts=None,
-            ECI=None,
-            CAVV=None,
-            CavvAlgorithm=None,
-        )
+        # params = models.MultiCheckoutRequestCard(
+        #     ItemCd='this-is-item-cd',
+        #     ItemName=u'商品名',
+        #     OrderYMD='20120520',
+        #     SalesAmount=100,
+        #     TaxCarriage=50,
+        #     FreeData=u'任意項目',
+        #     ClientName=u'楽天太郎',
+        #     MailAddress='ticketstar@example.com',
+        #     MailSend='1',
+        #     CardNo='1111111111111111',
+        #     CardLimit='2009',
+        #     CardHolderName='RAKUTEN TAROU',
+        #     PayKindCd='61',
+        #     PayCount='10',
+        #     SecureKind='1',
+        #     SecureCode=None,
+        #     Mvn=None,
+        #     Xid=None,
+        #     Ts=None,
+        #     ECI=None,
+        #     CAVV=None,
+        #     CavvAlgorithm=None,
+        # )
         res_data = """<?xml version="1.0"?>
         <Message>
             <Request>
@@ -959,7 +959,7 @@ class Checkout3DTests(unittest.TestCase):
 
         target = self._makeOne("user", "pass", api_base_url="http://example.com/", shop_code="SHOP")
         target._httplib = DummyHTTPLib(res_data)
-        result = target.request_card_sales(order_no, params)
+        result = target.request_card_sales(order_no)
 
         self.assertEqual(target._httplib.path, "/SHOP/card/OrderNo/this-is-order-no/Sales")
         self.assertEqual(result.__class__, models.MultiCheckoutResponseCard)

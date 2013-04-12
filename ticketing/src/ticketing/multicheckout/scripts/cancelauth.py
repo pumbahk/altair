@@ -2,19 +2,15 @@
 
 """ オーソリキャンセルバッチ
 
+TODO: 抽選などオーソリ保持が必要な機能によるものはキャンセルしない
 
-検討事項
-トランザクションは、1データずつ行う
 """
 
-import sys
 import argparse
 import logging
-import transaction
 from datetime import timedelta
 from pyramid.paster import bootstrap, setup_logging
 
-from ticketing.models import DBSession
 from ticketing.multicheckout import api
 from ticketing.multicheckout import models as m
 
