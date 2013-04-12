@@ -239,7 +239,7 @@ class Performances(BaseView):
         performance_id = int(self.request.matchdict.get('performance_id', 0))
         performance = Performance.get(performance_id, self.context.user.organization_id)
         if performance is None:
-            return HTTPNotFound('performance id %d is not found' % id)
+            return HTTPNotFound('performance id %d is not found' % performance_id)
 
         location = route_path('events.show', self.request, event_id=performance.event_id)
         try:
