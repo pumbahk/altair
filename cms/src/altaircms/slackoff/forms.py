@@ -90,6 +90,7 @@ class LayoutUpdateForm(Form):
 
 class PerformanceForm(Form):
     title = fields.TextField(label=u"公演タイトル")
+    display_order = fields.IntegerField(label=u"表示順序")
     backend_id = fields.IntegerField(validators=[required_field()], label=u"バックエンド管理番号")
     event = dynamic_query_select_field_factory(Event, allow_blank=False, label=u"イベント", get_label=lambda obj: obj.title)
     prefecture = fields.SelectField(label=u"開催県", choices=import_symbol("altaircms.seeds.prefecture:PREFECTURE_CHOICES"))
@@ -131,7 +132,7 @@ class PerformanceForm(Form):
                           u"prefecture", u"venue", 
                           u"open_on", u"start_on", u"end_on",
                           u"purchase_link", u"mobile_purchase_link", 
-                          u"calendar_content"]
+                          u"calendar_content", "display_order"]
 
 validate_term = TermValidator("start_on", "end_on",  u"公開開始日よりも後に終了日が設定されています")
 class SalesSegmentForm(Form):
