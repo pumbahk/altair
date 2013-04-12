@@ -388,6 +388,7 @@ class ParseAndSaveEventTests(unittest.TestCase):
         self.assertEqual(performance.venue, u"まついZEROホール")
         self.assertEqual(performance.open_on, datetime(2013, 3, 15, 8))
         self.assertEqual(performance.start_on, datetime(2013, 3, 15, 10))
+        self.assertEqual(performance.display_order, 50)
         self.assertEqual(performance.end_on, datetime(2013, 3, 15, 13))
 
         ## todo:change
