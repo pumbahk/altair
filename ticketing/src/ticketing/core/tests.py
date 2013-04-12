@@ -225,6 +225,7 @@ class EventTests(unittest.TestCase):
         sales_segments = [
             testing.DummyModel(performance_id=1000,
                                performance=performance,
+                               name=u'xxx',
                                start_at=date[0],
                                end_at=date[1])
             for date in dates]

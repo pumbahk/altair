@@ -976,23 +976,34 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     @staticmethod
     def find_next_and_last_sales_segment_period(sales_segments, now):
         per_performance_data = {}
+        next_sales_segment = None
+        last_sales_segment = None
 
         for sales_segment in sales_segments:
+            # 直近の販売区分を調べる
+            if sales_segment.start_at >= now and (next_sales_segment is None or next_sales_segment.start_at > sales_segment.start_at):
+                next_sales_segment = sales_segment
+            if sales_segment.end_at < now and (last_sales_segment is None or last_sales_segment.end_at < sales_segment.end_at):
+                last_sales_segment = sales_segment
+            # のと同時に、パフォーマンス毎の販売区分のリストをつくる
             per_performance_datum = per_performance_data.get(sales_segment.performance_id)
             if per_performance_datum is None:
                 per_performance_datum = per_performance_data[sales_segment.performance_id] = dict(
                     performance=sales_segment.performance,
+                    sales_segment=None,
                     sales_segments=[sales_segment],
                     start_at=sales_segment.start_at,
                     end_at=sales_segment.end_at
                     )
             else:
                 per_performance_datum['sales_segments'].append(sales_segment)
-                if per_performance_datum['start_at'] > sales_segment.start_at and sales_segment.start_at >= now:
+                if per_performance_datum['start_at'] > sales_segment.start_at:
                     per_performance_datum['start_at'] = sales_segment.start_at
-                if per_performance_datum['end_at'] < sales_segment.end_at and sales_segment.end_at < now:
+                if per_performance_datum['end_at'] < sales_segment.end_at:
                     per_performance_datum['end_at'] = sales_segment.end_at
 
+        # まずは個々のパフォーマンスについて、そのパフォーマンスの全販売区分を
+        # 含む期間の先頭と末尾が現在日時と被らないものを探す
         next = None
         last = None
         for per_performance_datum in per_performance_data.itervalues():
@@ -1003,7 +1014,19 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                 if last is None or per_performance_datum['end_at'] > last['end_at']:
                     last = per_performance_datum
 
-        return next, last
+        # もしそのようなパフォーマンスが見つからないときは、販売区分と販売区分の
+        # ちょうど合間であると考えられるので、販売区分をもとに戻り値を構築する
+        if not next and not last:
+            return tuple(sales_segment and \
+                            dict(sales_segment=sales_segment,
+                                sales_segment_name=sales_segment.name,
+                                performance=sales_segment.performance,
+                                sales_segments=None,
+                                start_at=sales_segment.start_at,
+                                end_at=sales_segment.end_at) \
+                         for sales_segment in (next_sales_segment, last_sales_segment))
+        else:
+            return next, last
 
     def get_next_and_last_sales_segment_period(self, user=None, now=None):
         now = now or datetime.now()
