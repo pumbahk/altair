@@ -27,11 +27,16 @@
       <h2 style="color:#004040">申込状況（速報)</h2>
 
       % for performance in event_reporter.sort_index():
-        <% performance_reporter = event_reporter.get_reporter(performance) %>
         <h3 style="margin-top: 30px;">開催日:${h.safe_strftime(performance.start_on)}　${performance.name}</h3>
-        % for ss_idx, sales_segment in enumerate([''] + performance_reporter.sort_index()):
+        <%
+          performance_reporter = event_reporter.get_reporter(performance)
+          sales_segments = performance_reporter.sort_index()
+          if len(sales_segments) > 1:
+            sales_segments = [''] + sales_segments
+        %>
+        % for ss_idx, sales_segment in enumerate(sales_segments):
           <%
-            if ss_idx == 0:
+            if ss_idx == 0 and len(sales_segments) > 1:
               reporter = performance_reporter.total
               ss_name = u'公演合計'
             else:
