@@ -988,9 +988,9 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                     )
             else:
                 per_performance_datum['sales_segments'].append(sales_segment)
-                if per_performance_datum['start_at'] > sales_segment.start_at:
+                if per_performance_datum['start_at'] > sales_segment.start_at and sales_segment.start_at >= now:
                     per_performance_datum['start_at'] = sales_segment.start_at
-                if per_performance_datum['end_at'] < sales_segment.end_at:
+                if per_performance_datum['end_at'] < sales_segment.end_at and sales_segment.end_at < now:
                     per_performance_datum['end_at'] = sales_segment.end_at
 
         next = None
