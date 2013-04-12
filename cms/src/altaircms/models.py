@@ -55,6 +55,7 @@ class Performance(BaseOriginalMixin, Base):
     backend_id = sa.Column(sa.Integer)
     event_id = sa.Column(sa.Integer, sa.ForeignKey('event.id'))
 
+    display_order = sa.Column(sa.Integer, default=50)
     created_at = sa.Column(sa.DateTime, default=datetime.now)
     updated_at = sa.Column(sa.DateTime, default=datetime.now, onupdate=datetime.now)
 

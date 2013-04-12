@@ -6,11 +6,11 @@
   from altaircms.helpers.event import performance_name
   %>
   <ul class="nav nav-tabs">
-     %for performance in performances:
+     %for performance in sorted(performances,key=lambda p: (p.display_order,p.start_on)):
        %if unicode(performance.id) == unicode(current_performance.id):
-          <li class="active"><a href="${h.current_route_path_override(request,_query=dict(performance_id=performance.id))}#performance">${performance_name(performance)}</a></li>
+          <li class="active"><a href="${h.current_route_path_override(request,_query=dict(performance_id=performance.id))}#performance">${performance.display_order}: ${performance_name(performance)}</a></li>
        %else:
-          <li><a href="${h.current_route_path_override(request,_query=dict(performance_id=performance.id))}#performance">${performance_name(performance)}</a></li>
+          <li><a href="${h.current_route_path_override(request,_query=dict(performance_id=performance.id))}#performance">${performance.display_order}: ${performance_name(performance)}</a></li>
        %endif
      %endfor
   </ul>

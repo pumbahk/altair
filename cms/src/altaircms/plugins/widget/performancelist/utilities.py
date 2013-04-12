@@ -13,6 +13,7 @@ def render_performancelist_with_template(template_name, request,  widget, bsetti
     """ rendering: title,  iconset,  performance list
     """
     performances = bsettings.extra["performances"]
+    performances = list(sorted(performances, key=lambda p: (p.display_order, p.start_on)))
     event = bsettings.extra["event"]
     request = bsettings.extra["request"]
     icon_classes = event.service_info_list
