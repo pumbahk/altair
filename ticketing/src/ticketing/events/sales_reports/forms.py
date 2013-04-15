@@ -2,7 +2,7 @@
 
 from wtforms import Form
 from wtforms import TextField, SelectField, HiddenField
-from wtforms.validators import Regexp, Length, Optional, ValidationError
+from wtforms.validators import Regexp, Length, Optional, ValidationError, Email
 
 from ticketing.formhelpers import DateTimeField, Translations, Required, after1900
 from ticketing.core.models import Event, Organization, Operator, ReportSetting
@@ -63,7 +63,7 @@ class SalesReportMailForm(Form):
                                 .filter(Operator.organization_id==kwargs['organization_id'])\
                                 .filter(Event.id==kwargs['event_id'])\
                                 .with_entities(Operator.id, Operator.name).all()
-            self.operator_id.choices = operators
+            self.operator_id.choices = [('', '')] + operators
 
     def _get_translations(self):
         return Translations()
@@ -76,9 +76,23 @@ class SalesReportMailForm(Form):
     )
     operator_id = SelectField(
         label=u'オペレータ',
-        validators=[Required()],
+        validators=[],
         choices=[],
-        coerce=int
+        coerce=lambda v: '' if not v else int(v)
+    )
+    name = TextField(
+        label=u'名前',
+        validators=[
+            Optional(),
+            Length(max=255, message=u'255文字以内で入力してください'),
+        ]
+    )
+    email = TextField(
+        label=u'メールアドレス',
+        validators=[
+            Optional(),
+            Email()
+        ]
     )
     frequency = SelectField(
         label=u'送信頻度',
@@ -121,6 +135,11 @@ class SalesReportMailForm(Form):
     )
 
     def validate_operator_id(form, field):
+        if not field.data and not form.email.data:
+            raise ValidationError(u'オペレーター、またはメールアドレスのいずれかを入力してください')
+        if field.data and form.email.data:
+            raise ValidationError(u'オペレーター、メールアドレスの両方を入力することはできません')
+
         count = ReportSetting.query.filter(
             ReportSetting.operator_id==field.data,
             ReportSetting.frequency==form.frequency.data,
@@ -129,4 +148,4 @@ class SalesReportMailForm(Form):
             ReportSetting.time==form.time.data
         ).count()
         if count > 0:
-            raise ValidationError(u"既に登録済みのオペレーターです")
+            raise ValidationError(u'既に登録済みのオペレーターです')

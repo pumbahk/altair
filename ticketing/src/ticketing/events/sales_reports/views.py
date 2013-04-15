@@ -73,8 +73,7 @@ class SalesReports(BaseView):
 
         form = SalesReportForm(self.request.params, event_id=event_id)
         if not form.recipient.data:
-            report_settings = ReportSetting.query.filter_by(event_id=event_id).all()
-            form.recipient.data = ','.join([rs.operator.email for rs in report_settings])
+            form.recipient.data = ','.join([rs.email or rs.operator.email for rs in event.report_setting])
         if not form.subject.data:
             form.subject.data = u'[売上レポート] %s' % event.title
 
