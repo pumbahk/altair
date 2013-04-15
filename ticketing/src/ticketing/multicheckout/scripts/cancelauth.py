@@ -45,6 +45,18 @@ def sync_data(request, multicheckout_setting):
         m._session.commit()
 
 
+def get_auth_orders(shop_id):
+    q = m._session.query(m.MultiCheckoutOrderStatus).filter(
+            m.MultiCheckoutOrderStatus.Storecd==shop_id
+        ).filter(
+            m.MultiCheckoutOrderStatus.is_authorized
+        ).filter(
+            m.MultiCheckoutOrderStatus.past(timedelta(hours=1))
+        ).filter(
+            m.MultiCheckoutOrderStatus.KeepAuthFor==None,
+        )
+    return q
+
 def cancel_auth(request, multicheckout_setting):
     """
     本処理
@@ -56,11 +68,7 @@ def cancel_auth(request, multicheckout_setting):
     shop_name = multicheckout_setting.shop_name
     logger.debug('search authorization for %s:%s' % (shop_name, shop_id))
 
-    q = m._session.query(m.MultiCheckoutOrderStatus).filter(
-            m.MultiCheckoutOrderStatus.is_authorized
-        ).filter(
-            m.MultiCheckoutOrderStatus.past(timedelta(hours=1))
-        )
+    q = get_auth_orders(shop_id)
 
     for st in q:
         order_no = st.OrderNo
