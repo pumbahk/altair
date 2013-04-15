@@ -318,15 +318,22 @@ class ConfirmLotEntryViewTests(unittest.TestCase):
 
     def test_post(self):
         from datetime import datetime
+        from ticketing.payments.testing import DummyPreparer
+        from ticketing.payments.directives import add_payment_plugin
+
         lot, products = self._add_datas([
             {'name': u'商品 A', 'price': 100},
             {'name': u'商品 B', 'price': 100},
             {'name': u'商品 C', 'price': 100},
         ])
+        self.session.flush()
         self.config.add_route('lots.entry.index', '/back/to/form')
         self.config.add_renderer('.txt' , 'pyramid.mako_templating.renderer_factory')
         sales_segment = lot.sales_segment
         payment_delivery_method_pair = sales_segment.payment_delivery_method_pairs[0]
+        plugin_id = payment_delivery_method_pair.payment_method.payment_plugin_id = 100
+        add_payment_plugin(self.config, DummyPreparer(None), plugin_id)
+
         event_id = lot.event_id
         request = testing.DummyRequest(
             session={'lots.entry': 
