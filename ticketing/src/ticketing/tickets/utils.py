@@ -1075,7 +1075,7 @@ class PathDataScanner(object):
                 self.current_position = (x, y)
         except StopIteration:
             pass
-        self.last_cb_control_point = none
+        self.last_cb_control_point = None
         self.last_qb_control_point = None
 
     def scan_A(self, operand):
@@ -1095,8 +1095,8 @@ class PathDataScanner(object):
                 self.current_position = (x, y)
         except StopIteration:
             pass
-        self.last_cb_control_point = none
-        self.last_qb_control_point = none
+        self.last_cb_control_point = None
+        self.last_qb_control_point = None
 
     def __call__(self):
         fn = None
