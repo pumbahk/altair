@@ -1,14 +1,14 @@
 """create performance_setting
 
 Revision ID: 2788e072c710
-Revises: 3ffc0a24682c
+Revises: e61547b1288
 Create Date: 2013-04-15 17:43:21.553969
 
 """
 
 # revision identifiers, used by Alembic.
 revision = '2788e072c710'
-down_revision = '3ffc0a24682c'
+down_revision = 'e61547b1288'
 
 from alembic import op
 import sqlalchemy as sa
