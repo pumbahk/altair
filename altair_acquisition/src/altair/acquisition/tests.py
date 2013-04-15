@@ -63,14 +63,15 @@ class AcquisitionTests(unittest.TestCase):
 
 
     def test_it(self):
-        d1 = Dummy(value1=100, value2=None, value3=None)
-        d2 = Dummy(value1=50, value2=200)
+        d1 = Dummy(value1=100, value2=None, value3=None,
+                   d2=Dummy(value1=50, value2=200),
+               )
+
         d3 = Dummy(value1=20, value2=300, value3=500)
 
         dummy = Dummy(d1=d1,
-                      d2=d2,
                       d3=d3)
-        target = self._makeOne(dummy, ['d1', 'd2', 'd3'])
+        target = self._makeOne(dummy, ['d1', 'd1.d2', 'd3'])
 
         self.assertEqual(target.value1, 100)
         self.assertEqual(target.value2, 200)
