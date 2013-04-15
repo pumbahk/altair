@@ -90,12 +90,7 @@ class SearchPageResource(object):
         return self.get_result_sequence_from_query_params(query_params, searchfn=with_filter_by_genre)
 
     def get_result_sequence_from_query_params(self, query_params, searchfn=_get_mocked_pageset_query):
-        logger.debug(query_params)
-        qp = deepcopy(query_params)
-        # escape query
-        if 'query' in qp:
-            qp['query'] = '"%s"' % qp['query'].replace('"', '\\"').replace("'", "\\'")
-        query = searchfn(self.request, qp)
+        query = searchfn(self.request, query_params)
         return self.result_sequence_from_query(query)
 
 class QueryParamsRender(object):
