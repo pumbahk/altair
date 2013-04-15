@@ -3339,3 +3339,13 @@ class OrganizationSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     multicheckout_auth_password = Column(Unicode(255))
 
     cart_item_name = Column(Unicode(255))
+
+class PerformanceSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
+    __tablename__ = "PerformanceSetting"
+    id = Column(Identifier, primary_key=True)
+    performance_id = Column(Identifier, ForeignKey('Performance.id'))
+    performance = relationship('Performance', backref='settings')
+    
+    abbreviated_title = Column(Unicode(255), doc=u"公演名略称")
+    subtitle = Column(Unicode(255), doc=u"公演名副題")
+    note = Column(UnicodeText, doc=u"公演名備考")
