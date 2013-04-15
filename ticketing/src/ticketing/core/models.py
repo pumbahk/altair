@@ -666,8 +666,8 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
 
 class ReportFrequencyEnum(StandardEnum):
-    Daily = 1
-    Weekly = 2
+    Daily = (1, u'毎日')
+    Weekly = (2, u'毎週')
 
 class ReportSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__   = 'ReportSetting'
@@ -677,6 +677,10 @@ class ReportSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     operator_id = Column(Identifier, ForeignKey('Operator.id', ondelete='CASCADE'), nullable=False)
     operator = relationship('Operator', backref='report_setting')
     frequency = Column(Integer, nullable=True)
+    day_of_week = Column(Integer, nullable=True, default=None)
+    time = Column(String(4), nullable=True, default=None)
+    start_on = Column(DateTime, nullable=True, default=None)
+    end_on = Column(DateTime, nullable=True, default=None)
 
 class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'Event'

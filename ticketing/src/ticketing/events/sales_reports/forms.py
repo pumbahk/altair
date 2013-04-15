@@ -68,15 +68,6 @@ class SalesReportMailForm(Form):
     def _get_translations(self):
         return Translations()
 
-    def validate_operator_id(form, field):
-        count = ReportSetting.query.filter(
-            ReportSetting.operator_id==field.data,
-            ReportSetting.frequency==form.frequency.data,
-            ReportSetting.event_id==form.event_id.data
-        ).count()
-        if count > 0:
-           raise ValidationError(u"既に登録済みのオペレーターです")
-
     id = HiddenField(
         validators=[Optional()],
     )
@@ -92,6 +83,50 @@ class SalesReportMailForm(Form):
     frequency = SelectField(
         label=u'送信頻度',
         validators=[Required()],
-        choices=[(kind.v, kind.k) for kind in ReportFrequencyEnum],
+        choices=[(kind.v[0], kind.v[1]) for kind in ReportFrequencyEnum],
         coerce=int
     )
+    day_of_week = SelectField(
+        label=u'送信曜日',
+        validators=[Optional()],
+        default=1,
+        choices=[
+            ('', ''),
+            (0, u'月'),
+            (1, u'火'),
+            (2, u'水'),
+            (3, u'木'),
+            (4, u'金'),
+            (5, u'土'),
+            (6, u'日'),
+        ],
+        coerce=lambda v: None if not v else int(v)
+    )
+    time = SelectField(
+        label=u'送信時間',
+        validators=[Required()],
+        default=7,
+        choices=[('', '')] + [(h, u'%d時' % h) for h in range(0, 24)],
+        coerce=lambda v: None if not v else int(v)
+    )
+    start_on = DateTimeField(
+        label=u'開始日時',
+        validators=[Optional(), after1900],
+        format='%Y-%m-%d %H:%M',
+    )
+    end_on = DateTimeField(
+        label=u'終了日時',
+        validators=[Optional(), after1900],
+        format='%Y-%m-%d %H:%M',
+    )
+
+    def validate_operator_id(form, field):
+        count = ReportSetting.query.filter(
+            ReportSetting.operator_id==field.data,
+            ReportSetting.frequency==form.frequency.data,
+            ReportSetting.event_id==form.event_id.data,
+            ReportSetting.day_of_week==form.day_of_week.data,
+            ReportSetting.time==form.time.data
+        ).count()
+        if count > 0:
+            raise ValidationError(u"既に登録済みのオペレーターです")

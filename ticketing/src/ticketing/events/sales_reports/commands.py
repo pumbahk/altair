@@ -8,6 +8,7 @@ from paste.util.multidict import MultiDict
 from pyramid.threadlocal import get_current_registry
 from pyramid.renderers import render_to_response
 from pyramid.paster import bootstrap
+from sqlalchemy import or_, and_
 
 from ticketing.events.sales_reports.reports import EventReporter
 
@@ -29,17 +30,18 @@ def main(argv=sys.argv):
     logging.config.fileConfig(log_file)
     logger.info('start send_sales_report batch')
 
+    now = datetime.now().replace(minute=0, second=0)
     frequency = argv[3]
     if frequency == ReportFrequencyEnum.Daily.k:
-        frequency_num = ReportFrequencyEnum.Daily.v
-        target = datetime.now() - timedelta(days=1)
+        frequency_num = ReportFrequencyEnum.Daily.v[0]
+        target = now - timedelta(days=1)
         limited_from = target.strftime('%Y-%m-%d 00:00')
         limited_to = target.strftime('%Y-%m-%d 23:59')
     elif frequency == ReportFrequencyEnum.Weekly.k:
-        frequency_num = ReportFrequencyEnum.Weekly.v
-        target = datetime.now() - timedelta(days=7)
+        frequency_num = ReportFrequencyEnum.Weekly.v[0]
+        target = now - timedelta(days=7)
         limited_from = target.strftime('%Y-%m-%d 00:00')
-        target = datetime.now() - timedelta(days=1)
+        target = now - timedelta(days=1)
         limited_to = target.strftime('%Y-%m-%d 23:59')
     else:
         logging.error('invalid args %s' % sys.argv)
@@ -47,9 +49,17 @@ def main(argv=sys.argv):
 
     reports = {}
     settings = get_current_registry().settings
-    report_settings = ReportSetting.query.filter_by(frequency=frequency_num).all()
+    query = ReportSetting.query.filter(and_(
+        ReportSetting.frequency==frequency_num,
+        ReportSetting.time==now.strftime('%H'),
+        or_(ReportSetting.start_on==None, ReportSetting.start_on<now),
+        or_(ReportSetting.end_on==None, ReportSetting.end_on>now),
+    ))
+    if frequency == ReportFrequencyEnum.Weekly.k:
+        query = query.filter(ReportSetting.day_of_week==now.weekday())
 
-    for report_setting in report_settings:
+    i = 0
+    for i, report_setting in enumerate(query.all()):
         event_id = report_setting.event_id
         event = Event.get(event_id)
         if event is None:
@@ -77,7 +87,7 @@ def main(argv=sys.argv):
         html = reports[event_id]
         sendmail(settings, form.recipient.data, subject, html)
 
-    logger.info('end send_sales_report batch (sent=%s)' % len(report_settings))
+    logger.info('end send_sales_report batch (sent=%s)' % i)
 
 if __name__ == '__main__':
     main()

@@ -86,6 +86,9 @@
     <th>名前</th>
     <th>メールアドレス</th>
     <th>メール通知頻度</th>
+    <th>送信曜日</th>
+    <th>送信時間</th>
+    <th>送信期間</th>
     <th></th>
   </tr>
   <%! from ticketing.core.models import ReportFrequencyEnum %>
@@ -94,7 +97,14 @@
     <td><input type="radio" name="sales_reports_mail_id" value=${rs.id}></td>
     <td>${rs.operator.name}</td>
     <td>${rs.operator.email}</td>
-    <td>${''.join([enum.k for enum in ReportFrequencyEnum if enum.v == rs.frequency])}</td>
+    <td>${''.join([enum.v[1] for enum in ReportFrequencyEnum if enum.v[0] == rs.frequency])}</td>
+    <td>${''.join([dow[1] for dow in form_report_mail.day_of_week.choices if rs.day_of_week == dow[0]])}</td>
+    <td>${u'%s時' % rs.time if rs.time else ''}</td>
+    <td>
+      ${h.safe_strftime(rs.start_on, '%Y-%m-%d %H')}
+      ${u' 〜 ' if rs.start_on or rs.end_on else ''}
+      ${h.safe_strftime(rs.end_on, '%Y-%m-%d %H')}
+    </td>
     <td><input class="btn btn-small" type="button" value="メール送信 プレビュー" onclick="javascript:preview('${rs.operator.email}');"></td>
   </tr>
   % endfor
