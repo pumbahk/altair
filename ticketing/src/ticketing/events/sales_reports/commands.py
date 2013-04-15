@@ -67,7 +67,7 @@ def main(argv=sys.argv):
             continue
 
         params = dict(
-            recipient=report_setting.operator.email,
+            recipient=report_setting.recipient,
             limited_from=limited_from,
             limited_to=limited_to
         )
@@ -75,8 +75,7 @@ def main(argv=sys.argv):
         if event.sales_end_on < form.limited_from.data or form.limited_to.data < event.sales_start_on:
             continue
 
-        logger.info('report_setting_id: %sl, event_id: %s, operator_id: %s' %
-                    (report_setting.id, event_id, report_setting.operator.id))
+        logger.info('report_setting_id: %sl, event_id: %s' % (report_setting.id, event_id))
 
         if event_id not in reports:
             render_param = {

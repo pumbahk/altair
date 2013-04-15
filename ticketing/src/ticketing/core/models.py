@@ -684,6 +684,13 @@ class ReportSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     start_on = Column(DateTime, nullable=True, default=None)
     end_on = Column(DateTime, nullable=True, default=None)
 
+    @property
+    def recipient(self):
+        if self.operator:
+            return '%s <%s>' % (self.operator.name, self.operator.email)
+        else:
+            return '%s <%s>' % (self.name, self.email)
+
 class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'Event'
 
