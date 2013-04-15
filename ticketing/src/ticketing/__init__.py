@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
-from ticketing.logicaldeleting import install as install_ld
+#from ticketing.logicaldeleting import install as install_ld
+from altair.logicaldeleting import install as install_ld
 install_ld()
 
 import re
