@@ -6,7 +6,9 @@ from altairsite.mobile.core.searcher import EventSearcher
 from altairsite.mobile.core.const import get_prefecture_name
 from altairsite.mobile.core.helper import exist_value, get_week_map, get_event_paging
 from altairsite.mobile.core.helper import log_info
-from datetime import date
+from altaircms.page.models import Page, PageSet, MobileTag, MobileTag2Page
+from altaircms.event.models import Event
+from .forms import MobileTagSearchForm
 
 class ValidationFailure(Exception):
     pass
@@ -60,3 +62,37 @@ def search(request):
 
     log_info("search", "end")
     return {'form':form}
+
+@view_config(route_name='mobile_tag_search', request_type="altairsite.mobile.tweens.IMobileRequest"
+    , renderer='altairsite.mobile:templates/searchresult/mobile_tag_search_result.mako')
+def mobile_tag_search(request):
+
+    log_info("mobile_tag_search", "start")
+    form = MobileTagSearchForm(request.GET)
+    form.page.data = request.matchdict['page']
+    form.week.data = get_week_map()
+
+    mobile_tag_id = request.matchdict["mobile_tag_id"]
+    mobile_tag = request.allowable(MobileTag).filter(MobileTag.id == mobile_tag_id).first()
+    if not mobile_tag:
+        log_info("mobile_tag_search", "mobile tag is not found")
+        raise ValidationFailure
+
+    qs = request.allowable(Event) \
+        .filter(Event.is_searchable == True) \
+        .join(PageSet, Event.id == PageSet.event_id) \
+        .join(MobileTag2Page, PageSet.id == MobileTag2Page.object_id) \
+        .join(MobileTag, MobileTag2Page.tag_id == MobileTag.id) \
+        .filter(MobileTag.id == mobile_tag_id)
+
+    form = get_event_paging(request=request, form=form, qs=qs)
+    form.mobile_tag.data = mobile_tag
+
+    log_info("mobile_tag_search", "end")
+    return {'form':form}
+
+@view_config(route_name='mobile_tag_search', context=ValidationFailure
+    , request_type="altairsite.mobile.tweens.IMobileRequest"
+    , renderer='altairsite.mobile:templates/common/error.mako')
+def failed_validation(request):
+    return {}

@@ -5,18 +5,10 @@
 <div>
   <% first = True %>
     % for attention in attentions:
-        % if genre:
-            % if helper.get_event_from_topcontent(request, attention):
-                <a href="/eventdetail?event_id=${helper.get_event_from_topcontent(request, attention).id}&genre=${genre}&sub_genre=${sub_genre}">${attention.text}</a><br />
-            % else:
-                ${attention.text}<br/>
-            % endif
+        % if attention.mobile_tag_id:
+            <a href="${request.mobile_route_path('mobile_tag_search', mobile_tag_id=attention.mobile_tag_id, genre=genre, sub_genre=sub_genre if sub_genre else "0", page=1)}">${attention.text}</a>
         % else:
-            % if helper.get_event_from_topcontent(request, attention):
-                <a href="/eventdetail?event_id=${helper.get_event_from_topcontent(request, attention).id}">${attention.text}</a><br />
-            % else:
-                ${attention.text}<br/>
-            % endif
+            ${attention.text}<br/>
         % endif
     % endfor
 </div>

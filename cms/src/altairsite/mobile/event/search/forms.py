@@ -15,3 +15,8 @@ class SearchForm(CommonForm):
 
     # --- 表示項目
     events = HiddenField(validators=[Optional()])
+
+class MobileTagSearchForm(SearchForm):
+
+    # --- 表示用
+    mobile_tag = HiddenField(validators=[Optional()])
