@@ -92,6 +92,3 @@ class CheckoutSalesSecureCodeEvent(MulticheckoutEvent):
     """ セキュアコード売上確定イベント """
 
     api = u"checkout_sales_secure_code"
-
-
-
