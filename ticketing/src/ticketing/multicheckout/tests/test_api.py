@@ -3,47 +3,7 @@ import unittest
 import mock
 from pyramid import testing
 
-class DummyCheckout3D(object):
-    def secure3d_enrol(self, order_no, enrol):
-        return testing.DummyModel(
-            OrderNo=order_no,
-            )
-
-    def secure3d_auth(self, order_no, auth):
-        return testing.DummyModel(
-            OrderNo=order_no,
-            )
-    
-    def request_card_auth(self, order_no, card_auth):
-        return testing.DummyModel(
-            OrderNo=order_no,
-            )
-
-    def request_card_sales(self, order_no):
-        return testing.DummyModel(
-            OrderNo=order_no,
-            )
-
-    def request_card_cancel_auth(self, order_no):
-        return testing.DummyModel(
-            OrderNo=order_no,
-            )
-
-    def request_card_sales_part_cancel(self, order_no, params):
-        return testing.DummyModel(
-            OrderNo=order_no,
-            )
-
-    def request_card_cancel_sales(self, order_no):
-        return testing.DummyModel(
-            OrderNo=order_no,
-            )
-
-    def request_card_inquiry(self, order_no):
-        return testing.DummyModel(
-            OrderNo=order_no,
-            )
-
+from ..testing import DummyCheckout3D
 
 class secure3d_enrolTests(unittest.TestCase):
 
