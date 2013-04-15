@@ -433,9 +433,10 @@ class PageSetForm(Form):
     name = fields.TextField(label=u"名前")
     tags_string = fields.TextField(label=u"タグ(区切り文字:\",\")")
     private_tags_string = fields.TextField(label=u"非公開タグ(区切り文字:\",\")")
+    mobile_tags_string = fields.TextField(label=u"モバイル用タグ(区切り文字:\",\")")
     genre_id = fields.SelectField(label=u"ジャンル", coerce=unicode)
     url = fields.TextField(label=u"URL")
 
     def configure(self, request):
         self.genre_id.choices = [(unicode(g.id), unicode(g)) for g in request.allowable(Genre)]
-    __display_fields__ = ["name", "genre_id", "url", "tags_string", "private_tags_string"]
+    __display_fields__ = ["name", "genre_id", "url", "tags_string", "private_tags_string", "mobile_tags_string"]

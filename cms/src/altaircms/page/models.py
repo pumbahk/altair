@@ -186,8 +186,9 @@ class PageSet(Base,
         params = model_to_dict(self)
         params.update(id=self.id, 
                       tags_string=u", ".join(t.label for t in self.public_tags if t.organization_id), 
-                      private_tags_string=u", ".join(t.label for t in self.private_tags), 
-                      genre_id=self.genre_id, 
+                      private_tags_string=u", ".join(t.label for t in self.private_tags if t.organization_id),
+                      mobile_tags_string=u", ".join(t.label for t in self.mobile_tags if t.organization_id),
+                      genre_id=self.genre_id,
                       )
         return params
     

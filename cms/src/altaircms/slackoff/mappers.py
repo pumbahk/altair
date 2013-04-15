@@ -131,6 +131,7 @@ def pageset_mapper(request, obj):
     objlike.genre_id =  label_from_genre([obj.genre_id])
     objlike.tags_string = obj.tags_string
     objlike.private_tags_string = obj.private_tags_string
+    objlike.mobile_tags_string = obj.mobile_tags_string
     return objlike
 
 def staticpage_mapper(request, obj):

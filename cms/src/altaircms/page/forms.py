@@ -102,7 +102,8 @@ class PageForm(Form):
     keywords = fields.TextField(widget=widgets.TextArea())
     tags = fields.TextField(label=u"タグ(区切り文字:\",\")")
     private_tags = fields.TextField(label=u"非公開タグ(区切り文字:\",\")")
-    layout = dynamic_query_select_field_factory(Layout, allow_blank=False, 
+    mobile_tags = fields.TextField(label=u"モバイルタグ(区切り文字:\",\")")
+    layout = dynamic_query_select_field_factory(Layout, allow_blank=False,
                                                 get_label=lambda obj: u"%s(%s)" % (obj.title, obj.template_filename), 
                                                 dynamic_query=layout_filter
                                                 )
