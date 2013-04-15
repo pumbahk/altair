@@ -130,27 +130,37 @@ class Venue(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         }
 
         # create Venue
+        logger.info('[copy] Venue start')
         venue = Venue.clone(template)
         venue.original_venue_id = template.id
         venue.performance_id = performance_id
         venue.save()
+        logger.info('[copy] Venue end')
 
         # create VenueArea - VenueArea_group_l0_id
+        logger.info('[copy] VenueArea start')
         for template_area in template.areas:
             VenueArea.create_from_template(template=template_area, venue_id=venue.id)
+        logger.info('[copy] VenueArea end')
 
+        '''
         # create SeatAdjacencySet - SeatAdjacency
+        logger.info('[copy] SeatAdjacencySet - SeatAdjacency start')
         for template_adjacency_set in template.adjacency_sets:
             convert_map['seat_adjacency'].update(SeatAdjacencySet.create_from_template(
                 template=template_adjacency_set,
                 venue_id=venue.id
             ))
+        logger.info('[copy] SeatAdjacencySet - SeatAdjacency end')
+        '''
 
         # create SeatIndexType
+        logger.info('[copy] SeatIndexType start')
         for template_seat_index_type in template.seat_index_types:
             convert_map['seat_index_type'].update(
                 SeatIndexType.create_from_template(template=template_seat_index_type, venue_id=venue.id)
             )
+        logger.info('[copy] SeatIndexType end')
 
         # Performanceのコピー時に配席情報があるならstockのリレーションをコピー
         if original_performance_id and venue.original_venue_id:
@@ -165,6 +175,7 @@ class Venue(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                 convert_map['stock_id'][old_stock.id] = new_stock_id
 
         # create Seat - SeatAttribute, SeatStatus, SeatIndex, Seat_SeatAdjacency
+        logger.info('[copy] Seat - SeatAttribute, SeatStatus, SeatIndex, Seat_SeatAdjacency start')
         default_stock = Stock.get_default(performance_id=performance_id)
         for template_seat in template.seats:
             Seat.create_from_template(
@@ -173,6 +184,7 @@ class Venue(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                 default_stock_id=default_stock.id,
                 **convert_map
             )
+        logger.info('[copy] Seat - SeatAttribute, SeatStatus, SeatIndex, Seat_SeatAdjacency end')
 
         # defaultのStockに未割当の席数をセット
         default_stock.quantity = Seat.query.filter_by(stock_id=default_stock.id).count()
@@ -303,6 +315,7 @@ class Seat(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             )
 
         # create Seat_SeatAdjacency
+        '''
         if template.adjacencies:
             seat_seat_adjacencies = []
             for template_adjacency in template.adjacencies:
@@ -311,6 +324,7 @@ class Seat(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                     'seat_id':seat.id,
                 })
             DBSession.execute(Seat_SeatAdjacency.__table__.insert(), seat_seat_adjacencies)
+        '''
 
     def delete_cascade(self):
         # delete SeatStatus
@@ -474,6 +488,7 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     redirect_url_mobile = Column(String(1024))
 
     def add(self):
+        logger.info('[copy] Stock start')
         BaseModel.add(self)
 
         origin_venue = None
@@ -499,6 +514,7 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             """
             # create default Stock
             Stock.create_default(self.event, performance_id=self.id)
+        logger.info('[copy] Stock end')
 
     def save(self):
         BaseModel.save(self)
@@ -523,6 +539,7 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         """
         # create SalesSegment - Product
         if hasattr(self, 'original_id') and self.original_id:
+            logger.info('[copy] SalesSegment start')
             template_performance = Performance.get(self.original_id)
             for template_sales_segment in template_performance.sales_segments:
                 convert_map = {
@@ -544,6 +561,7 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                     ProductItem.filter_by(product_id=org_id)\
                                .filter_by(performance_id=self.id)\
                                .update({'product_id':new_id})
+            logger.info('[copy] SalesSegment start')
 
         # create Venue - VenueArea, Seat - SeatAttribute
         if hasattr(self, 'create_venue_id') and self.venue_id:
@@ -556,8 +574,10 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
         # delete Venue - VenueArea, Seat - SeatAttribute
         if hasattr(self, 'delete_venue_id') and self.delete_venue_id:
+            logger.info('[delete] Venue start')
             venue = Venue.get(self.delete_venue_id)
             venue.delete_cascade()
+            logger.info('[delete] Venue end')
 
     def delete(self):
 
@@ -630,6 +650,7 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     @staticmethod
     def create_from_template(template, **kwargs):
+        logger.info('[copy] Performance start')
         performance = Performance.clone(template)
         if 'event_id' in kwargs:
             event = Event.get(kwargs['event_id'])
@@ -639,6 +660,7 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         performance.venue_id = template.venue.id
         performance.create_venue_id = template.venue.id
         performance.save()
+        logger.info('[copy] Performance end')
 
     @staticmethod
     def set_search_condition(query, form):
