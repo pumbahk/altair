@@ -140,6 +140,7 @@ class DictBuilder(object):
         retval = retval or {}
         event = performance.event
         retval = self.build_dict_from_event(event, retval=retval)
+        setting = performance.settings[0] if performance.settings else None
         retval.update({
             u'performance': {
                 u'name': performance.name,
@@ -159,6 +160,9 @@ class DictBuilder(object):
             u'開始時刻s': safe_format(self.formatter.format_time_short, performance.start_on),
             u'終了時刻': safe_format(self.formatter.format_time, performance.end_on), 
             u'終了時刻s': safe_format(self.formatter.format_time_short, performance.end_on),
+            u"公演名略称": setting.abbreviated_title if setting else u"", 
+            u"公演名副題": setting.subtitle if setting else u"", 
+            u"公演名備考": setting.note if setting else u"", 
             })
         return retval
         

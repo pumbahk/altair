@@ -506,6 +506,7 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         """
         Performanceの作成/更新時は以下のモデルを自動生成する
         またVenueの変更があったら関連モデルを削除する
+          - PerformanceSetting
           - SalesSegment
             - Product
             − MemberGroup_SalesSegment
@@ -521,9 +522,17 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
               - SeatIndex
               - SeatAdjacency_Seat
         """
-        # create SalesSegment - Product
+
         if hasattr(self, 'original_id') and self.original_id:
             template_performance = Performance.get(self.original_id)
+
+            # create PerformanceSetting
+            if template_performance.settings:
+                for setting in template_performance.settings:
+                    new_setting = PerformanceSetting.create_from_template(setting, performance_id=self.id)
+                    new_setting.performance = self
+
+            # create SalesSegment - Product
             for template_sales_segment in template_performance.sales_segments:
                 convert_map = {
                     'sales_segment':dict(),
@@ -576,6 +585,10 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
         if allocation > 0:
             raise Exception(u'配席されている為、削除できません')
+
+        # delete PerformanceSetting
+        for setting in self.settings:
+            setting.delete()
 
         # delete SalesSegment
         for sales_segment in self.sales_segments:
@@ -637,7 +650,7 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             performance.code = event.code + performance.code[5:]
         performance.original_id = template.id
         performance.venue_id = template.venue.id
-        performance.create_venue_id = template.venue.id
+        performance.create_venue_id = template.venue.id       
         performance.save()
 
     @staticmethod
@@ -3349,3 +3362,37 @@ class PerformanceSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     abbreviated_title = Column(Unicode(255), doc=u"公演名略称")
     subtitle = Column(Unicode(255), doc=u"公演名副題")
     note = Column(UnicodeText, doc=u"公演名備考")
+
+    KEYS = ["abbreviated_title", "subtitle", "note"]
+
+    @classmethod
+    def create_from_model(cls, obj, params):
+        settings = cls(**params)
+        settings.performance = obj
+        return settings
+
+    @classmethod
+    def update_from_model(cls, obj, params):
+        if obj.settings:
+            setting = obj.settings[0]
+        else:
+            setting = cls()
+
+        for k in cls.KEYS:
+            setattr(setting, k, params.get(k))
+        setting.performance = obj
+        return setting
+
+    def describe_iter(self):
+        columns = self.__mapper__.c
+        for k in self.KEYS:
+            col = getattr(columns, k, None)
+            if col is None:
+                yield k, getattr(self, k, None) or u"", k
+            else:
+                yield k, getattr(self, k, None) or u"", getattr(col, "doc", k) or k
+
+    @classmethod
+    def create_from_template(cls, template, **kwargs):
+        setting = cls.clone(template)
+        return setting
