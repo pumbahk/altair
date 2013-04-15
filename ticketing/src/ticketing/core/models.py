@@ -2890,6 +2890,8 @@ class TicketPrintQueueEntry(Base, BaseModel):
             .outerjoin(OrderedProduct.order) \
             .filter(TicketPrintQueueEntry.id.in_(ids)) \
             .filter(TicketPrintQueueEntry.processed_at == None) \
+            .options(joinedload(TicketPrintQueueEntry.seat)) \
+            .order_by(desc(TicketPrintQueueEntry.created_at)) \
             .all()
         if len(entries) == 0:
             return []
@@ -2913,9 +2915,20 @@ class TicketPrintQueueEntry(Base, BaseModel):
                 # XXX: this won't work right if multiple entries exist for the
                 # same order.
                 order.mark_issued_or_printed(issued=True, printed=True, now=now)
+        return self.sorted_entries(entries)
 
-        return entries
+    @classmethod
+    def sorted_entries(cls, entries):
+        return list(sorted(entries, key=TicketPrintQueueEntry.entry_key_order))
 
+    DIGIT_RX = re.compile(r"([0-9]+)")
+    @classmethod
+    def entry_key_order(cls, entry): #dorping. using summary instead of seat.name
+        if entry.seat_id is None:
+            return [entry.summary]
+        return [(int(x) if x.isdigit() else x) for x in re.split(cls.DIGIT_RX, entry.seat.name) if x]
+
+    
 from ..operators.models import Operator
 
 class TicketBundle(Base, BaseModel, WithTimestamp, LogicallyDeleted):
