@@ -3,7 +3,8 @@ import venusian
 def task_config():
     def dec(wrapped):
         def callback(scanner, name, ob):
-            pass
-        venusian.attatch(wrapped, callback)
+            config = scanner.config
+            config.add_task(ob)
+        venusian.attach(wrapped, callback)
         return wrapped
     return dec

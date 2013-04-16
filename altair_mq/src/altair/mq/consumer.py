@@ -1,5 +1,4 @@
 import logging
-from tornado.httpclient import AsyncHTTPClient, HTTPRequest
 from pika.adapters.tornado_connection import TornadoConnection
 from zope.interface import implementer
 from .interfaces import IConsumer, IConsumerFactory

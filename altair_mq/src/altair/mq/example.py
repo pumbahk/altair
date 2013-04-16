@@ -1,11 +1,13 @@
 import logging
-
+from .decorators import task_config
 logger = logging.getLogger(__name__)
 
 
 def includeme(config):
-    config.add_task(sample_task)
+    #config.add_task(sample_task)
+    config.scan(".example")
 
+@task_config()
 def sample_task(channel, method, header, body):
     from tornado.httpclient import AsyncHTTPClient, HTTPRequest
     logger.debug('got message {body}'.format(body=body))
