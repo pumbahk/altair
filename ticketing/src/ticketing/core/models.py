@@ -2919,14 +2919,14 @@ class TicketPrintQueueEntry(Base, BaseModel):
     def peek(self, operator, ticket_format_id, order_id=None):
         q = DBSession.query(TicketPrintQueueEntry) \
             .filter_by(processed_at=None, operator=operator) \
-            .filter(Ticket.ticket_format_id==ticket_format_id)
+            .filter(Ticket.ticket_format_id==ticket_format_id) \
+            .options(joinedload(TicketPrintQueueEntry.seat))
         if order_id is not None:
             q = q.join(OrderedProductItem) \
                 .join(OrderedProduct) \
                 .filter(OrderedProduct.order_id==order_id)
             q = q.order_by(asc(OrderedProduct.id))
-        q = q.order_by(desc(self.created_at))
-        return q.all()
+        return self.sorted_entries(q.all())
 
     @classmethod
     def dequeue(self, ids, now=None):
