@@ -35,7 +35,7 @@ def main(argv=sys.argv):
                 query = query.filter(not_(c.Venue.id.in_(venues_to_skip)))
             query = query.group_by(c.Venue.id).having(func.count(c.SeatAdjacencySet.id)==0)
 
-            venue = query.first()
+            venue = query.with_lockmode('update').first()
             if venue is None:
                 logging.info('venue not found')
                 break
@@ -43,6 +43,7 @@ def main(argv=sys.argv):
 
             org_venue = c.Venue.get(venue.original_venue_id)
             if org_venue is None or not org_venue.adjacency_sets:
+                logging.info('skip')
                 venues_to_skip.add(venue.id)
                 continue
 
@@ -68,7 +69,8 @@ def main(argv=sys.argv):
                         })
                     c.DBSession.execute(c.Seat_SeatAdjacency.__table__.insert(), seat_seat_adjacencies)
 
-            venues_to_commit.append(venue.id)
+            venues_to_commit.add(venue.id)
+            venue.save()
             transaction.commit()
 
             # 最大10件処理したら終了
