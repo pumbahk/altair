@@ -15,10 +15,15 @@
 <%m:header>ピックアップ</%m:header>
 % if form.promotions.data:
     % for count, promo in enumerate(form.promotions.data):
-        % if promo.mobile_tag_id:
-            <a href="${request.mobile_route_path('mobile_tag_search', mobile_tag_id=promo.mobile_tag_id, genre=0, sub_genre=0, page=1)}">${promo.text}</a>
+        <% event = helper.get_event_from_promotion(request, promo) %>
+        % if event:
+            <a href="/eventdetail?event_id=${event.id}">${promo.text}</a><br />
         % else:
-            ${promo.text}<br/>
+            % if promo.mobile_tag_id:
+                <a href="${request.mobile_route_path('mobile_tag_search', mobile_tag_id=promo.mobile_tag_id, genre=0, sub_genre=0, page=1)}">${promo.text}</a><br />
+            % else:
+                ${promo.text}<br/>
+            % endif
         % endif
     % endfor
 % endif
