@@ -3389,7 +3389,8 @@ class PerformanceSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     @classmethod
     def create_from_model(cls, obj, params):
-        settings = cls(**params)
+        kwargs = {k:params.get(k) for k in cls.KEYS}
+        settings = cls(**kwargs)
         settings.performance = obj
         return settings
 
