@@ -1,5 +1,5 @@
 <ul class="nav nav-tabs">
   %for cls, pagetype in pagetypes:
-   <li class="${cls}"><a href="${h.current_route_path_override(request, pagetype=pagetype.name)}">${pagetype.label}</a></li>
+   <li class="${cls}"><a href="${h.current_route_path_override(request, pagetype=pagetype.name,_dels=("page",))}">${pagetype.label}</a></li>
   %endfor
 </ul>
