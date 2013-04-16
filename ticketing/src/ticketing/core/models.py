@@ -722,9 +722,9 @@ class ReportSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     @property
     def recipient(self):
         if self.operator:
-            return '%s <%s>' % (self.operator.name, self.operator.email)
+            return '"%s" <%s>' % (self.operator.name, self.operator.email)
         else:
-            return '%s <%s>' % (self.name, self.email)
+            return '"%s" <%s>' % (self.name, self.email)
 
 class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'Event'
