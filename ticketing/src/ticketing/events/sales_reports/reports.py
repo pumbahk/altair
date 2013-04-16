@@ -504,8 +504,7 @@ class EventReporter(object):
         for performance in event.performances:
             if not performance.public:
                 continue
-            if (form.limited_from.data and performance.end_on and performance.end_on < todatetime(form.limited_from.data)) or\
-               (form.limited_to.data and todatetime(form.limited_to.data) < performance.start_on):
+            if (form.limited_from.data and performance.end_on and performance.end_on < todatetime(form.limited_from.data)):
                 continue
             form.performance_id.data = performance.id
             self.reporters[performance] = PerformanceReporter(form, performance)
