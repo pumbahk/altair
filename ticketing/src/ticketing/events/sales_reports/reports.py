@@ -70,6 +70,7 @@ class SalesTotalReporter(object):
         self.get_order_data()
 
     def add_form_filter(self, query):
+        query = query.filter(Performance.public==True)
         if self.form.performance_id.data:
             query = query.filter(Performance.id==self.form.performance_id.data)
         if self.form.event_id.data:

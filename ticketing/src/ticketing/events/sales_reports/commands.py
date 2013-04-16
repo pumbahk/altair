@@ -56,7 +56,7 @@ def main(argv=sys.argv):
         or_(ReportSetting.end_on==None, ReportSetting.end_on>now),
     ))
     if frequency == ReportFrequencyEnum.Weekly.k:
-        query = query.filter(ReportSetting.day_of_week==now.weekday())
+        query = query.filter(ReportSetting.day_of_week==now.isoweekday())
 
     i = 0
     for i, report_setting in enumerate(query.all()):
