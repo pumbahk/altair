@@ -103,23 +103,21 @@ class SalesReportMailForm(Form):
     day_of_week = SelectField(
         label=u'送信曜日',
         validators=[Optional()],
-        default=1,
         choices=[
             ('', ''),
-            (0, u'月'),
-            (1, u'火'),
-            (2, u'水'),
-            (3, u'木'),
-            (4, u'金'),
-            (5, u'土'),
-            (6, u'日'),
+            (1, u'月'),
+            (2, u'火'),
+            (3, u'水'),
+            (4, u'木'),
+            (5, u'金'),
+            (6, u'土'),
+            (7, u'日'),
         ],
         coerce=lambda v: None if not v else int(v)
     )
     time = SelectField(
         label=u'送信時間',
         validators=[Required()],
-        default=7,
         choices=[('', '')] + [(h, u'%d時' % h) for h in range(0, 24)],
         coerce=lambda v: None if not v else int(v)
     )
@@ -140,12 +138,32 @@ class SalesReportMailForm(Form):
         if field.data and form.email.data:
             raise ValidationError(u'オペレーター、メールアドレスの両方を入力することはできません')
 
-        count = ReportSetting.query.filter(
-            ReportSetting.operator_id==field.data,
-            ReportSetting.frequency==form.frequency.data,
-            ReportSetting.event_id==form.event_id.data,
-            ReportSetting.day_of_week==form.day_of_week.data,
-            ReportSetting.time==form.time.data
-        ).count()
-        if count > 0:
-            raise ValidationError(u'既に登録済みのオペレーターです')
+        if field.data:
+            query = ReportSetting.query.filter(
+                ReportSetting.event_id==form.event_id.data,
+                ReportSetting.frequency==form.frequency.data,
+                ReportSetting.time==form.time.data,
+                ReportSetting.operator_id==field.data
+            )
+            if form.day_of_week.data == ReportFrequencyEnum.Weekly.v[0]:
+                query = query.filter(ReportSetting.day_of_week==form.day_of_week.data)
+            if query.count() > 0:
+                raise ValidationError(u'既に登録済みのオペレーターです')
+
+    def validate_email(form, field):
+        if field.data:
+            query = ReportSetting.query.filter(
+                ReportSetting.event_id==form.event_id.data,
+                ReportSetting.frequency==form.frequency.data,
+                ReportSetting.time==form.time.data,
+                ReportSetting.email==form.email.data
+            )
+            if form.frequency.data == ReportFrequencyEnum.Weekly.v[0]:
+                query = query.filter(ReportSetting.day_of_week==form.day_of_week.data)
+            if query.count() > 0:
+                raise ValidationError(u'既に登録済みのメールアドレスです')
+
+    def validate_frequency(form, field):
+        if field.data:
+            if field.data == ReportFrequencyEnum.Weekly.v[0] and not form.day_of_week.data:
+                raise ValidationError(u'週次の場合は曜日を必ず選択してください')
