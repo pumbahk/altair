@@ -153,7 +153,8 @@ def _merge_dict(base, other=None, dels=None):
         r.update(other)
     if dels:
         for k in dels:
-            del r[k]
+            if k in r:
+                del r[k]
     return r
     
 def route_path_override(request, path, _query=None, _dels=None, **kwargs):
