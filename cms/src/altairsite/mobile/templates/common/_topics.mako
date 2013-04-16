@@ -7,10 +7,14 @@
 <%m:header>トピックス</%m:header>
 <div>
     % for event, topic in topics:
-        % if topic.mobile_tag_id:
-            <a href="${request.mobile_route_path('mobile_tag_search', mobile_tag_id=topic.mobile_tag_id, genre=genre, sub_genre=sub_genre if sub_genre else "0", page=1)}">${topic.text}</a>
+        % if event:
+            <a href="/eventdetail?event_id=${event.id}">${topic.text}</a><br />
         % else:
-            ${topic.text}<br/>
+            % if topic.mobile_tag_id:
+                <a href="${request.mobile_route_path('mobile_tag_search', mobile_tag_id=topic.mobile_tag_id, genre=genre, sub_genre=sub_genre if sub_genre else "0", page=1)}">${topic.text}</a>
+            % else:
+                ${topic.text}<br/>
+            % endif
         % endif
     % endfor
 </div>
