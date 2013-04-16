@@ -72,6 +72,11 @@ def setup_cart(config):
     reg = config.registry
     reg.adapters.register([IRequest], IStocker, "", Stocker)
 
+    from ticketing.payments.interfaces import IGetCart
+    cart_getter = config.maybe_dotted(".api.get_entry_cart")
+    reg.registerUtility(cart_getter, IGetCart)
+
+
 def setup_mailtraverser(config):
     from ticketing.mails.traverser import EmailInfoTraverser
     reg = config.registry

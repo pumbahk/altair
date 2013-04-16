@@ -134,6 +134,7 @@ a:hover img {
 
 .maincol .event .event-meta{
 	float: left;
+	width: 500px;
 }
 
 .maincol .event .artist{

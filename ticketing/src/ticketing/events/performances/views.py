@@ -17,6 +17,7 @@ from ticketing.views import BaseView
 from ticketing.fanstatic import with_bootstrap
 from ticketing.events.performances.forms import PerformanceForm, PerformancePublicForm
 from ticketing.core.models import Event, Performance, Order
+from ticketing.core.models import PerformanceSetting
 from ticketing.products.forms import ProductForm
 from ticketing.orders.forms import OrderForm, OrderSearchForm
 
@@ -162,6 +163,7 @@ class Performances(BaseView):
         f = PerformanceForm(self.request.POST, organization_id=self.context.user.organization_id)
         if f.validate():
             performance = merge_session_with_post(Performance(), f.data)
+            PerformanceSetting.create_from_model(performance, f.data)
             performance.event_id = event_id
             performance.create_venue_id = f.data['venue_id']
             performance.save()
@@ -224,6 +226,7 @@ class Performances(BaseView):
                 if f.data['venue_id'] != performance.venue.id:
                     performance.delete_venue_id = performance.venue.id
                     performance.create_venue_id = f.data['venue_id']
+                PerformanceSetting.update_from_model(performance, f.data)
 
             performance.save()
             self.request.session.flash(u'パフォーマンスを保存しました')
@@ -239,7 +242,7 @@ class Performances(BaseView):
         performance_id = int(self.request.matchdict.get('performance_id', 0))
         performance = Performance.get(performance_id, self.context.user.organization_id)
         if performance is None:
-            return HTTPNotFound('performance id %d is not found' % id)
+            return HTTPNotFound('performance id %d is not found' % performance_id)
 
         location = route_path('events.show', self.request, event_id=performance.event_id)
         try:

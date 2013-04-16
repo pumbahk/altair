@@ -1,8 +1,12 @@
 <%inherit file="/layout_2cols.html"/>
 <%namespace file="/common/helpers.html" name="h" />
+<%
+  performance = performance_reporter.performance
+  form = performance_reporter.form
+%>
 <div class="breadcrumbs">
   ${h.breadcrumbs(
-      names=[u'トップ', u'売上レポート', u'イベント', u'パフォーマンス'],
+      names=[u'トップ', u'売上レポート', u'イベント', u'公演'],
       urls=[
         request.route_path('index'),
         request.route_path('sales_reports.index'),
@@ -12,14 +16,13 @@
 </div>
 
 <div class="page-header">
-  <h2>売上レポート パフォーマンス</h2>
+  <h2>売上レポート 公演</h2>
 </div>
 
 <div class="content">
   ${h.flash_messages(request)}
 </div>
 
-<h3>開催日:${h.safe_strftime(performance.start_on)}　${performance.name}</h3>  
 <form id="limitation" action="${request.route_path('sales_reports.performance', performance_id=performance.id)}" method="POST">
   <div class="control-group">
     <div class="controls">
@@ -29,150 +32,110 @@
   </div>
 </form>
 
-<br />
+<h3>開催日:${h.safe_strftime(performance.start_on)}　${performance.name}</h3>
+
 <%
-  report_by_ssg = sorted(report_by_sales_segment_group, key=lambda x:(x.order, x.name))
+  sales_segments = performance_reporter.sort_index()
+  if len(sales_segments) > 1:
+    sales_segments = [''] + sales_segments
 %>
-% for sales_segment in report_by_ssg:
+% for ss_idx, sales_segment in enumerate(sales_segments):
   <%
-    performance_reports = report_by_sales_segment_group[sales_segment]
-    performance_reports_total = report_by_sales_segment_group_total[sales_segment]
+    if ss_idx == 0 and len(sales_segments) > 1:
+      reporter = performance_reporter.total
+      ss_name = u'公演合計'
+    else:
+      reporter = performance_reporter.get_reporter(sales_segment)
+      ss_name = sales_segment.name
   %>
-<h3>${sales_segment.name}</h3>
-  % if performance_reports:
-<table class="table table-striped table-bordered table-condensed">
+  <h4>${ss_name}</h4>
+  % if reporter:
+  <table class="table table-bordered table-condensed">
     % if form.limited_from.data or form.limited_to.data:
-  <tr>
-    <th colspan="6"></th>
-    <th colspan="4">累計</th>
-    <th colspan="4">${h.safe_strftime(form.limited_from.data)} 〜 ${h.safe_strftime(form.limited_to.data)}</th>
-  </tr>
-    % else:
-  <tr>
-    <th colspan="6"></th>
-    <th colspan="4">累計</th>
-  </tr>
+    <tr>
+      <th colspan="6"></th>
+      <th colspan="4">累計</th>
+      <th colspan="4">
+        ${h.safe_strftime(form.limited_from.data)} 〜
+        ${h.safe_strftime(form.limited_to.data)}
+      </th>
+    </tr>
     % endif
-    % if form.limited_from.data or form.limited_to.data:
-  <tr>
-    <th style="width: 16%;">席種</th>
-    <th style="width: 6%;">配券先</th>
-    <th style="width: 13%;">商品</th>
-    <th style="width: 5%;">価格</th>
-    <th style="width: 4%;">配席数</th>
-    <th style="width: 4%;">残数</th>
-    <th style="width: 4%;">受付</th>
-    <th style="width: 4%;">未入金</th>
-    <th style="width: 4%;">入金済み</th>
-    <th style="width: 8%;">小計</th>
-    <th style="width: 4%;">受付</th>
-    <th style="width: 4%;">未入金</th>
-    <th style="width: 4%;">入金済み</th>
-    <th style="width: 8%;">小計</th>
-    % else:
-    <th style="width: 18%;">席種</th>
-    <th style="width: 6%;">配券先</th>
-    <th style="width: 18%;">商品</th>
-    <th style="width: 6%;">価格</th>
-    <th style="width: 6%;">配席数</th>
-    <th style="width: 6%;">残数</th>
-    <th style="width: 4%;">受付</th>
-    <th style="width: 4%;">未入金</th>
-    <th style="width: 4%;">入金済み</th>
-    <th style="width: 8%;">小計</th>
-    % endif
-  </tr>
+    <tr>
+      <th style="width: 16%;">席種</th>
+      <th style="width: 8%;">配券先</th>
+      <th style="width: 16%;">商品</th>
+      <th style="width: 8%;">価格</th>
+      <th style="width: 4%;">配席数</th>
+      <th style="width: 4%;">残数</th>
+      <th style="width: 4%;">受付</th>
+      <th style="width: 4%;">未入金</th>
+      <th style="width: 4%;">入金済</th>
+      <th style="width: 8%;">小計</th>
+      % if form.limited_from.data or form.limited_to.data:
+      <th style="width: 4%;">受付</th>
+      <th style="width: 4%;">未入金</th>
+      <th style="width: 4%;">入金済</th>
+      <th style="width: 8%;">小計</th>
+      % endif
+    </tr>
     <%
-      stock_id = None
-      performance_sum = {
-        'total_quantity':0,
-        'vacant_quantity':0,
-        'unpaid_quantity':0,
-        'paid_quantity':0,
-        'price_total':0,
-      }
-      performance_total_sum = {
-        'total_quantity':0,
-        'vacant_quantity':0,
-        'unpaid_quantity':0,
-        'paid_quantity':0,
-        'price_total':0,
-      }
-      stock_reports = {}
-      for report in performance_reports:
-        t = stock_reports[report['stock_id']] if report['stock_id'] in stock_reports else []
-        t.append(report)
-        stock_reports[report['stock_id']] = t
-      stock_reports_total = {}
-      for report_total in performance_reports_total:
-        t = stock_reports_total[report_total['stock_id']] if report_total['stock_id'] in stock_reports_total else []
-        t.append(report_total)
-        stock_reports_total[report_total['stock_id']] = t
-      performance_reports = sorted(performance_reports, key=lambda x:(x['sales_segment_group_name'], x['stock_type_id'], x['stock_holder_id'], x['product_id']))
-      performance_reports_total = sorted(performance_reports_total, key=lambda x:(x['sales_segment_group_name'], x['stock_type_id'], x['stock_holder_id'], x['product_id']))
+      group_key = None
+      if ss_idx == 0 and len(sales_segments) > 1:
+        sorted_records = reporter.sort_and_merge_data()
+      else:
+        sorted_records = reporter.sort_data()
     %>
-    % for performance_report, performance_report_total in zip(performance_reports, performance_reports_total):
+    % for record in sorted_records:
       <%
-        if stock_id == performance_report['stock_id']:
+        if group_key == record.group_key():
           continue
-        else:
-          stock_id = performance_report['stock_id']
-        count = len(stock_reports[stock_id])
+        group_key = record.group_key()
+        count = len(reporter.group_key_to_reports(group_key))
       %>
-      % for i, report in enumerate(zip(stock_reports[stock_id], stock_reports_total[stock_id])):
-  <tr>
+      % for i, record in enumerate(reporter.group_key_to_reports(group_key)):
+    <tr>
         % if i == 0:
-    <td rowspan="${count}">${report[0]['stock_type_name']}</td>
+      <td rowspan="${count}">${record.stock_type_name}</td>
+      <td rowspan="${count}" style="border-left: 1px solid #ddd;">${record.stock_holder_name}</td>
         % endif
-    <td style="border-left: 1px solid #ddd;">${report[0]['stock_holder_name']}</td>
-    <td>${report[0]['product_name']}</td>
-    <td class="price">${h.price_format(report[0]['product_price'])}円</td>
+      <td>${record.product_name}</td>
+      <td class="price">${h.price_format(record.product_price)}円</td>
         % if i == 0:
-    <td rowspan="${count}" class="numeric">${h.price_format(report[0]['total_quantity']) or ''}</td>
-    <td rowspan="${count}" class="numeric">${h.price_format(report[0]['vacant_quantity']) or ''}</td>
-        <%
-          performance_sum['total_quantity'] += report[0]['total_quantity']
-          performance_sum['vacant_quantity'] += report[0]['vacant_quantity']
-        %>
+      <td rowspan="${count}" class="numeric">${h.price_format(record.stock_quantity) or ''}</td>
+      <td rowspan="${count}" class="numeric">${h.price_format(record.vacant_quantity) or ''}</td>
         % endif
+      <td class="numeric">${h.price_format(record.total_paid_quantity + record.total_unpaid_quantity) or ''}</td>
+      <td class="numeric">${h.price_format(record.total_unpaid_quantity) or ''}</td>
+      <td class="numeric">${h.price_format(record.total_paid_quantity) or ''}</td>
+      <td class="price">${h.price_format((record.total_paid_quantity + record.total_unpaid_quantity) * record.product_price)}円</td>
         % if form.limited_from.data or form.limited_to.data:
-    <td class="numeric">${h.price_format(report[1]['paid_quantity'] + report[1]['unpaid_quantity']) or ''}</td>
-    <td class="numeric">${h.price_format(report[1]['unpaid_quantity']) or ''}</td>
-    <td class="numeric">${h.price_format(report[1]['paid_quantity']) or ''}</td>
-    <td class="numeric">${h.price_format((report[1]['paid_quantity'] + report[1]['unpaid_quantity']) * report[1]['product_price'])}円</td>
+      <td class="numeric">${h.price_format(record.paid_quantity + record.unpaid_quantity) or ''}</td>
+      <td class="numeric">${h.price_format(record.unpaid_quantity) or ''}</td>
+      <td class="numeric">${h.price_format(record.paid_quantity) or ''}</td>
+      <td class="price">${h.price_format((record.paid_quantity + record.unpaid_quantity) * record.product_price)}円</td>
         % endif
-    <td class="numeric">${h.price_format(report[0]['paid_quantity'] + report[0]['unpaid_quantity']) or ''}</td>
-    <td class="numeric">${h.price_format(report[0]['unpaid_quantity']) or ''}</td>
-    <td class="numeric">${h.price_format(report[0]['paid_quantity']) or ''}</td>
-    <td class="numeric">${h.price_format((report[0]['paid_quantity'] + report[0]['unpaid_quantity']) * report[0]['product_price'])}円</td>
-    <%
-      performance_sum['unpaid_quantity'] += report[0]['unpaid_quantity']
-      performance_sum['paid_quantity'] += report[0]['paid_quantity']
-      performance_sum['price_total'] += (report[0]['paid_quantity'] + report[0]['unpaid_quantity'])*report[0]['product_price']
-      performance_total_sum['unpaid_quantity'] += report[1]['unpaid_quantity']
-      performance_total_sum['paid_quantity'] += report[1]['paid_quantity']
-      performance_total_sum['price_total'] += (report[1]['paid_quantity'] + report[1]['unpaid_quantity'])*report[1]['product_price']
-    %>
-  </tr>
+    </tr>
       % endfor
     % endfor
-  <tr>
-    <td colspan="4">合計</td>
-    <td class="numeric">${h.price_format(performance_sum['total_quantity']) or ''}</td>
-    <td class="numeric">${h.price_format(performance_sum['vacant_quantity']) or ''}</td>
+    <% total = reporter.total %>
+    <tr>
+      <td colspan="4">合計</td>
+      <td class="numeric">${h.price_format(total.stock_quantity) or ''}</td>
+      <td class="numeric">${h.price_format(total.vacant_quantity) or ''}</td>
+      <td class="numeric">${h.price_format(total.total_paid_quantity + total.total_unpaid_quantity) or ''}</td>
+      <td class="numeric">${h.price_format(total.total_unpaid_quantity) or ''}</td>
+      <td class="numeric">${h.price_format(total.total_paid_quantity) or ''}</td>
+      <td class="price">${h.price_format(total.total_sum_amount) or ''}円</td>
     % if form.limited_from.data or form.limited_to.data:
-    <td class="numeric">${h.price_format(performance_total_sum['paid_quantity'] + performance_total_sum['unpaid_quantity']) or ''}</td>
-    <td class="numeric">${h.price_format(performance_total_sum['unpaid_quantity']) or ''}</td>
-    <td class="numeric">${h.price_format(performance_total_sum['paid_quantity']) or ''}</td>
-    <td class="numeric">${h.price_format(performance_total_sum['price_total']) or ''}円</td>
+      <td class="numeric">${h.price_format(total.paid_quantity + total.unpaid_quantity) or ''}</td>
+      <td class="numeric">${h.price_format(total.unpaid_quantity) or ''}</td>
+      <td class="numeric">${h.price_format(total.paid_quantity) or ''}</td>
+      <td class="price">${h.price_format(total.sum_amount) or ''}円</td>
     % endif
-    <td class="numeric">${h.price_format(performance_sum['paid_quantity'] + performance_sum['unpaid_quantity']) or ''}</td>
-    <td class="numeric">${h.price_format(performance_sum['unpaid_quantity']) or ''}</td>
-    <td class="numeric">${h.price_format(performance_sum['paid_quantity']) or ''}</td>
-    <td class="numeric">${h.price_format(performance_sum['price_total']) or ''}円</td>
-  </tr>
-</table>
+    </tr>
+  </table>
   % else:
-<p style="margin-left: 30px; margin-top: 20px;">商品がありません</p>
+  <p style="margin-left: 30px; margin-top: 20px;">商品がありません</p>
   % endif
 % endfor

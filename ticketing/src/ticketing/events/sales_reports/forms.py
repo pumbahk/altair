@@ -2,7 +2,7 @@
 
 from wtforms import Form
 from wtforms import TextField, SelectField, HiddenField
-from wtforms.validators import Regexp, Length, Optional, ValidationError
+from wtforms.validators import Regexp, Length, Optional, ValidationError, Email
 
 from ticketing.formhelpers import DateTimeField, Translations, Required, after1900
 from ticketing.core.models import Event, Organization, Operator, ReportSetting
@@ -63,19 +63,10 @@ class SalesReportMailForm(Form):
                                 .filter(Operator.organization_id==kwargs['organization_id'])\
                                 .filter(Event.id==kwargs['event_id'])\
                                 .with_entities(Operator.id, Operator.name).all()
-            self.operator_id.choices = operators
+            self.operator_id.choices = [('', '')] + operators
 
     def _get_translations(self):
         return Translations()
-
-    def validate_operator_id(form, field):
-        count = ReportSetting.query.filter(
-            ReportSetting.operator_id==field.data,
-            ReportSetting.frequency==form.frequency.data,
-            ReportSetting.event_id==form.event_id.data
-        ).count()
-        if count > 0:
-           raise ValidationError(u"既に登録済みのオペレーターです")
 
     id = HiddenField(
         validators=[Optional()],
@@ -85,13 +76,76 @@ class SalesReportMailForm(Form):
     )
     operator_id = SelectField(
         label=u'オペレータ',
-        validators=[Required()],
+        validators=[],
         choices=[],
-        coerce=int
+        coerce=lambda v: '' if not v else int(v)
+    )
+    name = TextField(
+        label=u'名前',
+        validators=[
+            Optional(),
+            Length(max=255, message=u'255文字以内で入力してください'),
+        ]
+    )
+    email = TextField(
+        label=u'メールアドレス',
+        validators=[
+            Optional(),
+            Email()
+        ]
     )
     frequency = SelectField(
         label=u'送信頻度',
         validators=[Required()],
-        choices=[(kind.v, kind.k) for kind in ReportFrequencyEnum],
+        choices=[(kind.v[0], kind.v[1]) for kind in ReportFrequencyEnum],
         coerce=int
     )
+    day_of_week = SelectField(
+        label=u'送信曜日',
+        validators=[Optional()],
+        default=1,
+        choices=[
+            ('', ''),
+            (0, u'月'),
+            (1, u'火'),
+            (2, u'水'),
+            (3, u'木'),
+            (4, u'金'),
+            (5, u'土'),
+            (6, u'日'),
+        ],
+        coerce=lambda v: None if not v else int(v)
+    )
+    time = SelectField(
+        label=u'送信時間',
+        validators=[Required()],
+        default=7,
+        choices=[('', '')] + [(h, u'%d時' % h) for h in range(0, 24)],
+        coerce=lambda v: None if not v else int(v)
+    )
+    start_on = DateTimeField(
+        label=u'開始日時',
+        validators=[Optional(), after1900],
+        format='%Y-%m-%d %H:%M',
+    )
+    end_on = DateTimeField(
+        label=u'終了日時',
+        validators=[Optional(), after1900],
+        format='%Y-%m-%d %H:%M',
+    )
+
+    def validate_operator_id(form, field):
+        if not field.data and not form.email.data:
+            raise ValidationError(u'オペレーター、またはメールアドレスのいずれかを入力してください')
+        if field.data and form.email.data:
+            raise ValidationError(u'オペレーター、メールアドレスの両方を入力することはできません')
+
+        count = ReportSetting.query.filter(
+            ReportSetting.operator_id==field.data,
+            ReportSetting.frequency==form.frequency.data,
+            ReportSetting.event_id==form.event_id.data,
+            ReportSetting.day_of_week==form.day_of_week.data,
+            ReportSetting.time==form.time.data
+        ).count()
+        if count > 0:
+            raise ValidationError(u'既に登録済みのオペレーターです')

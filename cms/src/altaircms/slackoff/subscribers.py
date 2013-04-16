@@ -116,7 +116,8 @@ def update_pageset_genretag(self):
         genres = Genre.query.filter(Genre.id == self.params["genre_id"]).all()
         system_tag_labels = _tag_labels_from_genres(genres)
         put_system_tags(pageset, obj_type, system_tag_labels, self.request)
-
+    else:
+        pageset.kick_genre()
     if pageset.pagetype.is_portal and pageset.genre:
         DBSession.flush()
         pageset.genre.save_as_category_toppage(pageset)

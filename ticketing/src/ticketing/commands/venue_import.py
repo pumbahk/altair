@@ -137,7 +137,7 @@ class ObjectRetriever(object):
             raise FormatError("No object defined in the root metadata element")
         return self.retrieve_si_objects([self.doc.getroot()])[0]
 
-def import_tree(update, organization, tree, file, venue_id=None):
+def import_tree(update, organization, tree, file, venue_id=None, max_adjacency=None):
     # 論理削除をインストールする都合でコードの先頭でセッションが初期化
     # されてほしくないので、ここで import する
     from ticketing.models import DBSession
@@ -325,7 +325,7 @@ def import_tree(update, organization, tree, file, venue_id=None):
             seats_in_row.sort(lambda a, b: cmp(a.l0_id, b.l0_id))
 
             # generate adjacencies
-            for seat_count in range(2, num_seats_in_row + 1):
+            for seat_count in range(2, (min(num_seats_in_row, max_adjacency) if max_adjacency else num_seats_in_row) + 1):
                 adjacency_set = adjacency_sets.get(seat_count)
                 if adjacency_set is None:
                     adjacency_set = adjacency_sets[seat_count] = SeatAdjacencySet(venue=venue, seat_count=seat_count)
@@ -360,7 +360,7 @@ def import_tree(update, organization, tree, file, venue_id=None):
     DBSession.merge(site)
     DBSession.merge(venue)
 
-def import_or_update_svg(env, update, organization_name, file, venue_id, dry_run):
+def import_or_update_svg(env, update, organization_name, file, venue_id, max_adjacency, dry_run):
     from ticketing.models import DBSession
     from ticketing.core.models import Organization
     organization = DBSession.query(Organization).filter_by(name=organization_name).one()
@@ -373,7 +373,7 @@ def import_or_update_svg(env, update, organization_name, file, venue_id, dry_run
     print '  Title: %s' % title.text.encode(io_encoding)
     object_tree = ObjectRetriever(xmldoc)()
     try:
-        import_tree(update, organization, object_tree, file, venue_id)
+        import_tree(update, organization, object_tree, file, venue_id, max_adjacency)
         if dry_run:
             transaction.abort()
         else:
@@ -392,6 +392,8 @@ def main():
                         required=True, help='organization name')
     parser.add_argument('-u', '--update', action='store_true',
                         help='update existing data')
+    parser.add_argument('-A', '--max-adjacency', type=int,
+                        help='max adjacency')
     parser.add_argument('-n', '--dry-run', action='store_true',
                         help='show what would have been done')
     parser.add_argument('-v', '--verbose', action='store_true',
@@ -406,6 +408,8 @@ def main():
         global verbose
         verbose = True
 
+    print parsed_args.max_adjacency
+
     for svg_file in parsed_args.svg_files:
         import_or_update_svg(
             env,
@@ -413,6 +417,7 @@ def main():
             organization_name=unicode(parsed_args.organization, io_encoding),
             file=svg_file,
             venue_id=parsed_args.venue,
+            max_adjacency=parsed_args.max_adjacency,
             dry_run=parsed_args.dry_run)
 
 if __name__ == '__main__':

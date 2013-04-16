@@ -1,11 +1,10 @@
 <%inherit file="altaircms:templates/usersite/subbase.html"/>
-
 <div id="main">
 		<!-- InstanceBeginEditable name="main" -->
 		<form action="${request.route_path("page_search_result")}" method="GET">
 		<div class="searchInput">
 		  <dl>
-			<dt><div class="searchInputHeader">フリーワードで探す</div></dt>
+			  <dt><div class="searchInputHeader">フリーワードで探す</div></dt>
 			<dd>
 			  ${forms.query}
 			</dd>
@@ -55,7 +54,7 @@
 			</dd>
 		  </dl>
 		</div>
-
+<%doc>
 		<div class="searchInput">
 		  <dl>
 			<dt><div class="searchInputHeader">付加サービス</div></dt>
@@ -64,7 +63,7 @@
 			</dd>
 		  </dl>
 		</div>
-
+</%doc>
 		<div class="searchInput">
 		  <dl>
 			<dt><div class="searchInputHeader">発売日</div></dt>
@@ -84,3 +83,6 @@
 		</div>
 	</form>
 </div>
+<script type="text/javascript">
+  $('input#freeword_query').attr("placeholder", "イベント スポーツ")
+</script>

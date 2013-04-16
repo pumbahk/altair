@@ -19,7 +19,7 @@ from altaircms.tag.models import (
    HotWord, 
    PageTag, 
 )
-
+import re
 from . import api
 from altaircms.page.api import get_pageset_searcher
 ## todo: datetimeの呼び出し回数減らす
@@ -238,12 +238,17 @@ def search_by_freeword(request, qs, words, query_cond):
        return as_empty_query(qs)
     return qs.filter(PageSet.id.in_(pageset_ids))
 
+SPLIT_RX = re.compile(r'([^\s+"]+|".+?")')
+EXCLUDE_RX = re.compile(r'^["\'\\]+$')
+
 def _extract_tags(params, k):
     if k not in params:
         return []
     params = params.copy()
-    tags = [e.strip() for e in params.pop(k).split(",")] ##
-    return [k for k in tags if k]
+    logger.info(u"extract tag* input{0}".format(params[k]).encode("utf-8"))
+    xs = [e.strip() for e in SPLIT_RX.findall(params.pop(k).replace(u"　", " ").replace("'", '"'))]
+    logger.info("extract tag* return {0}".format(xs))
+    return [x for x in xs if x and not EXCLUDE_RX.match(x)]
 
 
 def search_by_events(qs, event_ids):

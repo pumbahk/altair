@@ -68,7 +68,7 @@ namespace TECImageWriterGateway
                 k.SetValue("margin_left", "0", RegistryValueKind.String);
                 k.SetValue("margin_right", "0", RegistryValueKind.String);
                 k.SetValue("Print_Background", "no", RegistryValueKind.String);
-                k.SetValue("Shrink_To_Fit", "yes", RegistryValueKind.String);
+                k.SetValue("Shrink_To_Fit", "no", RegistryValueKind.String);
             }
         }
 

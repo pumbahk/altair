@@ -98,6 +98,24 @@ class PerformanceForm(Form):
         validators=[Optional()],
     )
 
+    abbreviated_title = NullableTextField(
+        label=u'公演名略称',
+        validators=[
+            Length(max=255, message=u'255文字以内で入力してください'),
+        ]
+    )
+
+    subtitle = NullableTextField(
+        label=u'公演名副題',
+        validators=[
+            Length(max=255, message=u'255文字以内で入力してください'),
+        ]
+    )
+
+    note = NullableTextField(
+        label=u'公演名備考',
+    )
+
     def validate_start_on(form, field):
         if field.data and form.open_on.data and field.data < form.open_on.data:
             raise ValidationError(u'開場日時より過去の日時は入力できません')

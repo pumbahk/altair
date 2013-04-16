@@ -5,6 +5,9 @@
     ${w|n}
   % endfor
 </%def>
+<%!
+  bodyclass=""
+%>
 ## }}} end of python code
 <html lang="jp">
 <%include file="./.head.html"/>
@@ -12,21 +15,40 @@
   <%include file="./.header.html"/>
 	<!-- wrapper -->	
 	<div class="wrapper">
-		
 		<div>
 			<div class="maincol">
+        <div class="${self.attr.bodyclass}">
+
         <%block name="main1">
          ${widgets("main1")}
         </%block>
+
+        <%block name="main2">
+         ${widgets("main2")}
+        </%block>
+
+        <%block name="main3">
+         ${widgets("main3")}
+        </%block>
+
+        <%block name="main4">
+         ${widgets("main4")}
+        </%block>
+        </div>
 			</div>
 			<!-- メインカラムおわり -->
 			
 			<!-- サイドバー -->
 			<div class="sidebar">
+      <%block name="side">
+      </%block>
       <%block name="side1">
-        <div class="bk">
-         ${widgets("side1")}
-        </div>
+      </%block>
+      <%block name="side2">
+      </%block>
+      <%block name="side3">
+      </%block>
+      <%block name="side4">
       </%block>
 			</div>	
 			<!-- サイドバーおわり -->

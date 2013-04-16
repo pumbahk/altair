@@ -8,6 +8,36 @@ from .models import (
     LotElectWork,
     LotElectedEntry,
 )
+from zope.interface import implementer
+from ticketing.payments.interfaces import IPaymentCart
+
+@implementer(IPaymentCart)
+class LotEntryCart(object):
+    def __init__(self, entry):
+        self.entry = entry
+
+    @property
+    def sales_segment(self):
+        return self.entry.lot.sales_segment
+
+    @property
+    def payment_delivery_pair(self):
+        return self.entry.payment_delivery_method_pair
+
+    @property
+    def order_no(self):
+        return self.entry.entry_no
+
+    @property
+    def total_amount(self):
+        """ TODO: 最大金額をオーソリする """
+
+        return 10
+
+    @property
+    def name(self):
+        return "LOT" + str(self.entry.lot.id)
+
 
 class LotEntryStatus(object):
     """

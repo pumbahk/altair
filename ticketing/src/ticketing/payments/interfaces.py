@@ -5,6 +5,22 @@
 
 from zope.interface import Interface, Attribute
 
+class IGetCart(Interface):
+    def __call__(request):
+        """ get IPaymentCart impl from request """
+
+
+class IPaymentCart(Interface):
+
+    performance = Attribute(u"")
+    sales_segment = Attribute(u"")
+    payment_delivery_pair = Attribute(u"")
+    order_no = Attribute(u"")
+    total_amount = Attribute(u"")
+    
+    def finish():
+        """ finish cart lifecycle"""
+
 class IPaymentPreparer(Interface):
     def prepare(request, cart):
         """ 決済処理の前処理を行う

@@ -1,7 +1,7 @@
 <%namespace file="../common/tags_mobile.mako" name="m" />
 <%page args="event, week, month_unit, month_unit_keys, purchase_links, tickets, sales_start, sales_end, helper" />
 <%m:header>公演期間</%m:header>
-${event.deal_open.year}/${str(event.deal_open.month).zfill(2)}/${str(event.deal_open.day).zfill(2)}(${week[event.deal_open.weekday()]})〜${event.deal_close.year}/${str(event.deal_close.month).zfill(2)}/${str(event.deal_close.day).zfill(2)}(${week[event.deal_close.weekday()]})<br/>
+${event.event_open.year}/${str(event.event_open.month).zfill(2)}/${str(event.event_open.day).zfill(2)}(${week[event.event_open.weekday()]})〜${event.event_close.year}/${str(event.event_close.month).zfill(2)}/${str(event.event_close.day).zfill(2)}(${week[event.event_close.weekday()]})<br/>
 <%m:header>販売期間</%m:header>
 % if event.salessegment_groups:
     % for segment in event.salessegment_groups:
@@ -81,12 +81,12 @@ ${helper.nl2br(event.inquiry_for)|n}
             % endif
             [${i + 1}]<font size="-1"><a href="${purchase_links[perf.id]}">${perf.title}</a></font><br />
             % if perf.open_on:
-                開場:${str(perf.open_on.year)[2:]}/${str(perf.open_on.month).zfill(2)}/${str(perf.open_on.day).zfill(2)}
-                ${str(perf.open_on.hour).zfill(2)}:${str(perf.open_on.minute).zfill(2)}(${week[perf.open_on.weekday()]})<br />
+                開場:${str(perf.open_on.year)[2:]}/${str(perf.open_on.month).zfill(2)}/${str(perf.open_on.day).zfill(2)}(${week[perf.open_on.weekday()]})
+                ${str(perf.open_on.hour).zfill(2)}:${str(perf.open_on.minute).zfill(2)}<br />
             % endif
             % if perf.start_on:
-                開演:${str(perf.start_on.year)[2:]}/${str(perf.start_on.month).zfill(2)}/${str(perf.start_on.day).zfill(2)}
-                ${str(perf.start_on.hour).zfill(2)}:${str(perf.start_on.minute).zfill(2)}(${week[perf.start_on.weekday()]})<br />
+                開演:${str(perf.start_on.year)[2:]}/${str(perf.start_on.month).zfill(2)}/${str(perf.start_on.day).zfill(2)}(${week[perf.start_on.weekday()]})
+                ${str(perf.start_on.hour).zfill(2)}:${str(perf.start_on.minute).zfill(2)}<br />
             % endif
             % if perf.venue:
                 会場:${perf.venue}<br/>

@@ -1,6 +1,7 @@
 from pyramid.events import subscriber
 from . import api
 from . import sendmail
+from ticketing.multicheckout.models import MultiCheckoutOrderStatus
 
 @subscriber('ticketing.lots.events.LotEntriedEvent')
 def send_lot_accepted_mail(event):
@@ -15,3 +16,10 @@ def finish_elected_lot_entry(event):
     if lot_entry is None:
         return
     lot_entry.order = order
+
+@subscriber('ticketing.multicheckout.events.CheckoutAuthSecure3DEvent')
+@subscriber('ticketing.multicheckout.events.CheckoutAuthSecureCodeEvent')
+def keep_auth(event):
+    order_no = event.order_no
+    storecd = event.result.Storecd
+    MultiCheckoutOrderStatus.keep_auth(order_no, storecd, u"lots")
