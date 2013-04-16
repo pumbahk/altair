@@ -148,6 +148,14 @@ class CurrencyRenderer(SimpleRenderer):
             ((u'', self.name, u''), unicode(format_number(dereference(record, self.key))))
             ]
 
+class ZipRenderer(SimpleRenderer):
+    def __call__(self, record):
+        zip = dereference(record, self.key, True)
+        zip = ('%s-%s' % (zip[0:3], zip[3:])) if zip else ''
+        return [
+            ((u'', self.name, u''), zip)
+        ]
+
 class PrintHistoryRenderer(object):
     def __init__(self, key, column_name):
         self.key = key
@@ -200,7 +208,7 @@ class OrderCSV(object):
         PlainTextRenderer(u'shipping_address.first_name'),
         PlainTextRenderer(u'shipping_address.last_name_kana'),
         PlainTextRenderer(u'shipping_address.first_name_kana'),
-        PlainTextRenderer(u'shipping_address.zip'),
+        ZipRenderer(u'shipping_address.zip'),
         PlainTextRenderer(u'shipping_address.country'),
         PlainTextRenderer(u'shipping_address.prefecture'),
         PlainTextRenderer(u'shipping_address.city'),

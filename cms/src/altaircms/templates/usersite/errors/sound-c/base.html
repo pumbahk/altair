@@ -1,0 +1,26 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+## define {{{
+<%def name="widgets(name)">
+  % for w in display_blocks[name]:
+    ${w|n}
+  % endfor
+</%def>
+<%!
+  bodyclass=""
+%>
+## }}} end of python code
+<html lang="jp">
+<%include file="altaircms:templates/front/layout/sound-c/.head.html"/>
+<body>
+  <%include file="altaircms:templates/front/layout/sound-c/.header.html"/>
+	<!-- wrapper -->	
+	<div class="wrapper">
+		
+          ${self.body()  }
+		
+	</div>
+	<!-- wrapperおわり -->
+
+<%include file="altaircms:templates/front/layout/sound-c/.footer.html"/>
+</body>
+</html>

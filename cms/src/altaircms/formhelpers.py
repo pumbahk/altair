@@ -305,8 +305,7 @@ var ua = navigator.userAgent.toLowerCase();
 if(ua.indexOf("firefox") <= -1 && ua.indexOf("msie") <= -1){
   $('img[data-align="center"]:not(.align-done)').attr("style", "display: -webkit-box; display: -moz-box; display: -o-box; display: box; margin: 0px auto;").addClass("align-done");
 } else {
-  $('img[data-align="center"]:not(.align-done)').each(function(i, e){
-    var $e = $(e);
+  var align_image = function align_image($e, d, retry){
     var wrapper = $e;
     for(var i=0;i<3;i++){
       wrapper = wrapper.parent();
@@ -314,7 +313,20 @@ if(ua.indexOf("firefox") <= -1 && ua.indexOf("msie") <= -1){
         break;
       }
     }
-    $(e).css("margin-left", 0.5*(wrapper.width() - $e.width())).addClass("align-done");
+    var w = $e.width();
+    if(!!w && w > 0){
+      $e.css("margin-left", 0.5*(wrapper.width() - w)).addClass("align-done");
+    } else if(!retry){
+      setTimeout(function(){align_image($e, d, true)},  d);
+    }
+  };
+  $('img[data-align="center"]:not(.align-done)').each(function(i, e){
+    var $e = $(e);
+    if($e.width() <= 0){
+      e.onload(function(){return align_image($e, 300, false)});
+    } else {
+     align_image($e, 300, false);
+    }
   });
 }
 </script>

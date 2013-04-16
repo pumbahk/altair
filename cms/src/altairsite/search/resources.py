@@ -9,6 +9,8 @@ import altaircms.helpers as h
 from . import searcher
 from altaircms.models import Genre
 from ..pyramidlayout import get_salessegment_kinds
+from altaircms.helpers.base import deal_limit
+
 class SearchResult(dict):
     pass
 
@@ -88,12 +90,7 @@ class SearchPageResource(object):
         return self.get_result_sequence_from_query_params(query_params, searchfn=with_filter_by_genre)
 
     def get_result_sequence_from_query_params(self, query_params, searchfn=_get_mocked_pageset_query):
-        logger.debug(query_params)
-        qp = deepcopy(query_params)
-        # escape query
-        if 'query' in qp:
-            qp['query'] = '"%s"' % qp['query'].replace('"', '\\"').replace("'", "\\'")
-        query = searchfn(self.request, qp)
+        query = searchfn(self.request, query_params)
         return self.result_sequence_from_query(query)
 
 class QueryParamsRender(object):
@@ -207,7 +204,7 @@ class SearchResultRender(object):
         return SearchResult(
             category_icons = self.category_icons(), 
             page_description = self.page_description(),
-            deal_limit = self.deal_limit(),
+            deal_limit = deal_limit(self.today, self.pageset.event.deal_open, self.pageset.event.deal_close),
             deal_description = self.deal_description(),
             purchase_link = self.purchase_link()
             )
@@ -236,19 +233,6 @@ class SearchResultRender(object):
         performances = u"</p><p class='align1'>".join([u"%s %s(%s)" %
             (p.start_on.strftime("%Y-%m-%d %H:%M"), p.venue, p.jprefecture) for p in performances])
         return fmt % (link, link_label, len(event.performances), event.description, performances)
-
-    def deal_limit(self):
-        N = (self.pageset.event.deal_open - self.today).days
-        if N > 0:
-            return u"販売開始まであと%d日" % N
-        elif N == 0:
-            return u"本日販売"
-
-        N = (self.pageset.event.deal_close - self.today).days
-        if N > 0:
-            return u"販売終了まであと%d日" % N
-        else:
-            return u"販売終了"
 
     # def deal_info_icons(self):
     #     event = self.pageset.event

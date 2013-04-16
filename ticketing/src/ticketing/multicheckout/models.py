@@ -12,7 +12,7 @@ from ..models import Identifier, WithTimestamp
 from ..utils import StandardEnum
 
 # for schema dependencies
-import ticketing.core.models
+# import ticketing.core.models
 
 Base = sqlahelper.get_base()
 DBSession = sqlahelper.get_session()
@@ -20,34 +20,6 @@ DBSession = sqlahelper.get_session()
 # 内部トランザクション用
 _session = orm.scoped_session(orm.sessionmaker())
 
-# class MulticheckoutSetting(Base):
-#     __tablename__ = 'MulticheckoutSetting'
-#     
-#     query = DBSession.query_property()
-# 
-#     id = sa.Column(Identifier, primary_key=True)
-#     
-#     # shop_name = sa.Column(sa.Unicode(255), unique=True)
-#     # shop_id = sa.Column(sa.Unicode(255))
-#     # auth_id = sa.Column(sa.Unicode(255))
-#     # auth_password = sa.Column(sa.Unicode(255))
-# 
-#     @property
-#     def shop_name(self):
-#         return self.organization.settings.multicheckout_shop_name
-#     @property
-#     def shop_id(self):
-#         return self.organization.settings.multicheckout_shop_id
-#     @property
-#     def auth_id(self):
-#         return self.organization.settings.multicheckout_auth_id
-#     @property
-#     def auth_password(self):
-#         return self.organization.settings.multicheckout_auth_password
-# 
-#     organization_id = sa.Column(Identifier, sa.ForeignKey('Organization.id'))
-#     organization = orm.relationship('Organization', backref='multicheckout_settings')
-# 
 
 class Secure3DReqEnrolRequest(Base):
     """ 3D認証可否確認依頼処理（リクエスト）
@@ -259,6 +231,7 @@ class MultiCheckoutOrderStatus(Base, WithTimestamp):
     Storecd = sa.Column(sa.Unicode(10), doc=u"店舗コード")
     Status = sa.Column(sa.Unicode(3), doc=u"決済ステータス")
     Summary = sa.Column(sa.UnicodeText, doc=u"機能追記メモ")
+    KeepAuthFor = sa.Column(sa.Unicode(20), doc=u"オーソリキャンセル保持を必要とする機能名")
 
     @classmethod
     def by_storecd(cls, storecd):
@@ -294,3 +267,8 @@ class MultiCheckoutOrderStatus(Base, WithTimestamp):
         if s.Status != status:
             s.Status = status
             s.Summary = (s.Summary or u"") + "\n" + summary
+
+    @classmethod
+    def keep_auth(cls, order_no, storecd, name):
+        s = cls.get_or_create(order_no, storecd)
+        s.KeepAuthFor = name

@@ -72,6 +72,14 @@ Altair Backend -- ${performance.event.title}[${performance.name}]
           <th>リダイレクト先URL (モバイル)</th>
           <td colspan="3">${performance.redirect_url_mobile or u'未設定'}</td>
         </tr>
+        %if performance.settings:
+          %for k, v, doc in performance.settings[0].describe_iter():
+            <tr>
+              <th>${doc}</th>
+              <td colspan="3">${v}</td>
+            </tr>
+          %endfor
+        %endif
       </tbody>
     </table>
   </div>

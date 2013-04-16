@@ -131,6 +131,7 @@ def main(global_config, **local_config):
     config.include("ticketing.payments")
     config.include('ticketing.payments.plugins')
 
+    config.set_cart_getter('.api.get_cart_safe')
     config.include('.errors')
     config.add_tween('ticketing.tweens.session_cleaner_factory', under=INGRESS)
     config.scan()

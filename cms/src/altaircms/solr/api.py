@@ -5,7 +5,7 @@ import logging
 logger = logging.getLogger(__name__)
 from zope.interface import implementer
 from pyramid.decorator import reify
-from .interfaces import IFulltextSearch
+from altaircms.solr.interfaces import IFulltextSearch
 import random
 
 
@@ -57,9 +57,9 @@ class SolrSearchQuery(object):
 
     def query_iter(self):
         if isinstance(self.kwargs, dict):
-            return (u"(%s:%s)" % (k, v) for k, v in self.kwargs.iteritems())
+            return (u'(%s:%s)' % (k, v) for k, v in self.kwargs.iteritems())
         else:
-            return (u"(%s)" % e.query_string for e in self.kwargs)
+            return (u'(%s)' % e.query_string for e in self.kwargs)
 
     def NOT(self):
         return NSolrSearchQuery([self])
@@ -127,7 +127,7 @@ class SolrSearch(object):
         return self.solr.commit()
 
     def search(self, query, **kwargs):
-        logger.debug(u"fulltext search query: %s" % query)
+        logger.info(u"fulltext search query: %s" % query.query_string)
         result = self.solr.select(query.query_string, **kwargs)
         logger.info("fulltext search result %s" % result.results)
         return result.results
@@ -164,3 +164,8 @@ class DummySearch(object):
 
     def delete(self, doc, *args, **kwargs):
         logger.info(u"fulltext search delete: %s" % doc)
+
+if __name__ == "__main__":
+    query = create_query_from_freewords([u"abc", "def"], query_cond="intersection")
+    print query.query_string
+

@@ -50,7 +50,6 @@ def search_by_freeword(context, request):
     ## 全文検索を使って検索。, で区切られた文字はandで結合
     request.body_id = "search"
     query_params = dict(query=request.GET.get("q", u""), query_cond="intersection")
-
     result_seq = context.get_result_sequence_from_query_params(
         query_params,
         searchfn=searcher.get_pageset_query_from_freeword

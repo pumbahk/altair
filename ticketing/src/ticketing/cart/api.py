@@ -169,11 +169,10 @@ def _maybe_encoded(s, encoding='utf-8'):
         return s
     return s.decode(encoding)
 
-def get_item_name(request, performance):
-    #base_item_name = request.registry.settings['cart.item_name']
+def get_item_name(request, cart_name):
     organization = c_api.get_organization(request)
     base_item_name = organization.setting.cart_item_name
-    return _maybe_encoded(base_item_name) + " " + str(performance.id)
+    return _maybe_encoded(base_item_name) + " " + str(cart_name)
 
 def get_nickname(request, suffix=u'さん'):
     from ticketing.rakuten_auth.api import authenticated_user

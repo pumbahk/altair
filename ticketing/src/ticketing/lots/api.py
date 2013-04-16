@@ -67,6 +67,7 @@ from .models import (
 from . import sendmail
 from .events import LotEntriedEvent
 from .interfaces import IElecting
+from .adapters import LotEntryCart
 
 def get_event(request):
     event_id = request.matchdict['event_id']
@@ -107,6 +108,14 @@ def get_requested_lot(request):
     lot_id = request.matchdict.get('lot_id')
     return Lot.query.filter(Lot.id==lot_id).one()
 
+
+def get_entry_cart(request, entry=None):
+    if entry is None:
+        entry_id = request.session['altair.lots.entry_id']
+        entry = LotEntry.query.filter(LotEntry.id==entry_id).one()
+    return LotEntryCart(entry)
+
+
 def entry_lot(request, lot, shipping_address, wishes, payment_delivery_method_pair, user, gender, birthday, memo):
     """
     wishes
@@ -129,6 +138,7 @@ def entry_lot(request, lot, shipping_address, wishes, payment_delivery_method_pa
     entry.entry_no = generate_entry_no(request, entry)
     for wish in entry.wishes:
         wish.entry_wish_no = "{0}-{1}".format(entry.entry_no, wish.wish_order)
+    request.session['altair.lots.entry_id'] = entry.id
     return entry
 
 def get_entry(request, entry_no, tel_no):
@@ -294,3 +304,4 @@ def send_rejected_mails(request):
 
 def get_entry_user(request):
     return None
+

@@ -77,7 +77,7 @@ def validate_blocks(form, field):
 
 class LayoutCreateForm(Form):
     title = fields.TextField(u'タイトル', validators=[validators.Required()])
-    template_filename = fields.TextField(u'テンプレートファイル名', validators=[validators.Required()])
+    template_filename = fields.TextField(u'テンプレートファイル名', validators=[validators.Optional()])
     filepath = fields.FileField(label=u"テンプレートファイル")
     __display_fields__ = [u"title", "template_filename", "filepath"]
 
@@ -432,7 +432,7 @@ class PageSetForm(Form):
     name = fields.TextField(label=u"名前")
     tags_string = fields.TextField(label=u"タグ(区切り文字:\",\")")
     private_tags_string = fields.TextField(label=u"非公開タグ(区切り文字:\",\")")
-    genre_id = fields.SelectField(label=u"ジャンル", coerce=unicode)
+    genre_id = MaybeSelectField(label=u"ジャンル", coerce=unicode, choices=[])
     url = fields.TextField(label=u"URL")
 
     def configure(self, request):

@@ -223,6 +223,10 @@ class Topcontent(WithOrganizationMixin, TopicCore):
     countdown_type = sa.Column(sa.String(255)) #todo: fixme
 
     @property
+    def countdown_type_ja(self):
+        return self.COUNTDOWN_TYPE_MAPPING.get(self.countdown_type, u"")
+
+    @property
     def countdown_limit(self):
         return getattr(self.linked_page.event, self.countdown_type)
 

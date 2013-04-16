@@ -129,7 +129,7 @@ class EventSearcher(object):
     # 販売中
     def _get_events_on_sale(self, form, qs=None):
         log_info("_get_events_on_sale", "start")
-        where = (datetime.now() >= Event.deal_open) & (datetime.now() <= Event.deal_close)
+        where = (datetime.now() <= Event.deal_close)
         qs = self._create_common_qs(where=where, qs=qs)
         log_info("_get_events_on_sale", "end")
         return qs

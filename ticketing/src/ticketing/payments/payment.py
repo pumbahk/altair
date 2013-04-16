@@ -2,6 +2,7 @@
 import logging
 import transaction
 from zope.interface import directlyProvides
+from zope.deprecation.deprecation import deprecate
 from ticketing.models import DBSession
 from ticketing.cart.exceptions import DeliveryFailedException
 from ticketing.core.models import Order
@@ -60,6 +61,7 @@ class Payment(object):
         """ via PaymentView
         """
 
+    @deprecate(u"つかわれてなさそう")
     def select_payment(self, payment_delivery_pair, shipping_address):
         """ 決済・引取方法選択 via PaymentView
         """

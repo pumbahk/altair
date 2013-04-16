@@ -1,7 +1,7 @@
 # coding: utf-8
 import sqlalchemy as sa
 from datetime import datetime, timedelta
-from pyramid.httpexceptions import HTTPBadRequest, HTTPFound
+from pyramid.httpexceptions import HTTPBadRequest, HTTPFound, HTTPForbidden
 from pyramid.view import view_config
 from pyramid.view import view_defaults
 
@@ -18,13 +18,11 @@ def dashboard(request):
     """
     ログイン後トップページ
     """
-    if request.user:
-        events = request.allowable(Event).order_by(sa.desc(Event.updated_at)).limit(5)
-        today = datetime.now() - timedelta(days=1)
-        neary_open_events = request.allowable(Event).filter(Event.event_open>=today).order_by(sa.asc(Event.event_open)).limit(5)
-    else:
-        events = []
-        neary_open_events = []
+    if not (request.user and request.organization):
+        raise HTTPForbidden
+    events = request.allowable(Event).order_by(sa.desc(Event.updated_at)).limit(5)
+    today = datetime.now() - timedelta(days=1)
+    neary_open_events = request.allowable(Event).filter(Event.event_open>=today).order_by(sa.asc(Event.event_open)).limit(5)
     return {
         'events'        : events, 
         'neary_open_events'        : neary_open_events

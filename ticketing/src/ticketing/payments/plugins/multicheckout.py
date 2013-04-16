@@ -32,6 +32,7 @@ from ticketing.cart.selectable_renderer import selectable_renderer
 from ..exceptions import PaymentPluginException
 from ticketing.views import mobile_request
 from ticketing.fanstatic import with_jquery
+from ticketing.payments.api import get_cart
 
 logger = logging.getLogger(__name__)
 
@@ -129,17 +130,9 @@ class MultiCheckoutPlugin(object):
         """ 売り上げ確定(3D認証) """
         order = request.session['order']
         order_no = order['order_no']
-        pares = order['pares']
-        md = order['md']
-        tran = order['tran']
-        item_name = api.get_item_name(request, cart.performance)
 
         checkout_sales_result = multicheckout_api.checkout_sales_secure3d(
             request, get_order_no(request, cart),
-            item_name, cart.total_amount, 0, order['client_name'], order.get('email_1', ''),
-            order['card_number'], order['exp_year'] + order['exp_month'], order['card_holder_name'],
-            mvn=tran['mvn'], xid=tran['xid'], ts=tran['ts'],
-            eci=tran['eci'], cavv=tran['cavv'], cavv_algorithm=tran['cavv_algorithm'],
         )
         card_brand = detect_card_brand(request, order['card_number'])
         
@@ -171,13 +164,9 @@ class MultiCheckoutPlugin(object):
         """ 売り上げ確定 (セキュアコード認証) """
         order = request.session['order']
         order_no = order['order_no']
-        item_name = api.get_item_name(request, cart.performance)
 
         checkout_sales_result = multicheckout_api.checkout_sales_secure_code(
             request, get_order_no(request, cart),
-            item_name, cart.total_amount, 0, order['client_name'], order.get('email_1', ''),
-            order['card_number'], order['exp_year'] + order['exp_month'], order['card_holder_name'],
-            order['secure_code'],
         )
         card_brand = detect_card_brand(request, order['card_number'])
 
@@ -268,7 +257,7 @@ class MultiCheckoutView(object):
             self.request.errors = form.errors
             return dict(form=form)
         assert not form.csrf_token.errors
-        cart = api.get_cart_safe(self.request)
+        cart = get_cart(self.request)
         order = self._form_to_order(form)
 
         self.request.session['order'] = order
@@ -286,7 +275,7 @@ class MultiCheckoutView(object):
             self.request.errors = form.errors
             return dict(form=form)
         assert not form.csrf_token.errors
-        api.get_cart_safe(self.request) # raises NoCartError if no cart is bound to the request
+        get_cart(self.request) # raises NoCartError if no cart is bound to the request
 
         order = self._form_to_order(form)
 
@@ -299,7 +288,7 @@ class MultiCheckoutView(object):
         return self._secure3d(order['card_number'], order['exp_year'], order['exp_month'])
 
     def _form_to_order(self, form):
-        cart = api.get_cart_safe(self.request)
+        cart = get_cart(self.request)
 
         # 変換
         card_number = form['card_number'].data
@@ -322,12 +311,12 @@ class MultiCheckoutView(object):
 
     def _secure_code(self, order_no, card_number, exp_year, exp_month, secure_code):
         """ セキュアコード認証 """
-        cart = api.get_cart(self.request)
+        cart = get_cart(self.request)
         order = self.request.session['order']
         # 変換
         order_no = order['order_no']
 
-        item_name = api.get_item_name(self.request, cart.performance)
+        item_name = api.get_item_name(self.request, cart.name)
 
 
         checkout_auth_result = multicheckout_api.checkout_auth_secure_code(
@@ -349,14 +338,14 @@ class MultiCheckoutView(object):
 
         self.request.session['order'] = order
 
-        DBSession.add(checkout_auth_result)
+        #DBSession.add(checkout_auth_result)
 
         return HTTPFound(location=confirm_url(self.request))
 
 
     def _secure3d(self, card_number, exp_year, exp_month):
         """ セキュア3D """
-        cart = api.get_cart(self.request)
+        cart = get_cart(self.request)
         order = self.request.session['order']
         enrol = multicheckout_api.secure3d_enrol(self.request, get_order_no(self.request, cart), card_number, exp_year, exp_month, cart.total_amount)
         if enrol.is_enable_auth_api():
@@ -379,7 +368,7 @@ class MultiCheckoutView(object):
         """ カード情報入力(3Dセキュア)コールバック
         3Dセキュア認証結果取得
         """
-        cart = api.get_cart_safe(self.request)
+        cart = get_cart(self.request)
 
         order = self.request.session['order']
         # 変換
@@ -390,7 +379,7 @@ class MultiCheckoutView(object):
         order['order_no'] = get_order_no(self.request, cart)
 
         auth_result = multicheckout_api.secure3d_auth(self.request, get_order_no(self.request, cart), pares, md)
-        item_name = api.get_item_name(self.request, cart.performance)
+        item_name = api.get_item_name(self.request, cart.name)
 
         # TODO: エラーメッセージ
         #if not auth_result.is_enable_auth_checkout():
@@ -417,7 +406,7 @@ class MultiCheckoutView(object):
         logger.debug('called checkout auth')
         # TODO: エラーチェック CmnErrorCd CardErrorCd
         if checkout_auth_result.CmnErrorCd != '000000':
-            logger.info(u'card_info_secure3d_callback: 決済エラー order_no = %s, error_code = %s' % (order['order_no'], checkout_auth_result.CmnErrorCd))
+            logger.info(u'card_info_secure3d_callback: 決済エラー order_no = %s, error_code = %s' % (checkout_auth_result.OrderNo, checkout_auth_result.CmnErrorCd))
             self.request.session.flash(get_error_message(self.request, checkout_auth_result.CmnErrorCd))
             raise MultiCheckoutSettlementFailure(
                 message='card_info_secure3d_callback: generic failure',

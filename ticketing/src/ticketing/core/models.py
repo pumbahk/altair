@@ -522,6 +522,7 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         """
         Performanceの作成/更新時は以下のモデルを自動生成する
         またVenueの変更があったら関連モデルを削除する
+          - PerformanceSetting
           - SalesSegment
             - Product
             − MemberGroup_SalesSegment
@@ -537,10 +538,18 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
               - SeatIndex
               - SeatAdjacency_Seat
         """
-        # create SalesSegment - Product
+
         if hasattr(self, 'original_id') and self.original_id:
             logger.info('[copy] SalesSegment start')
             template_performance = Performance.get(self.original_id)
+
+            # create PerformanceSetting
+            if template_performance.settings:
+                for setting in template_performance.settings:
+                    new_setting = PerformanceSetting.create_from_template(setting, performance_id=self.id)
+                    new_setting.performance = self
+
+            # create SalesSegment - Product
             for template_sales_segment in template_performance.sales_segments:
                 convert_map = {
                     'sales_segment':dict(),
@@ -596,6 +605,10 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
         if allocation > 0:
             raise Exception(u'配席されている為、削除できません')
+
+        # delete PerformanceSetting
+        for setting in self.settings:
+            setting.delete()
 
         # delete SalesSegment
         for sales_segment in self.sales_segments:
@@ -658,7 +671,7 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             performance.code = event.code + performance.code[5:]
         performance.original_id = template.id
         performance.venue_id = template.venue.id
-        performance.create_venue_id = template.venue.id
+        performance.create_venue_id = template.venue.id       
         performance.save()
         logger.info('[copy] Performance end')
 
@@ -688,17 +701,30 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
 
 class ReportFrequencyEnum(StandardEnum):
-    Daily = 1
-    Weekly = 2
+    Daily = (1, u'毎日')
+    Weekly = (2, u'毎週')
 
 class ReportSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__   = 'ReportSetting'
     id = Column(Identifier, primary_key=True)
     event_id = Column(Identifier, ForeignKey('Event.id', ondelete='CASCADE'), nullable=False)
     event = relationship('Event', backref='report_setting')
-    operator_id = Column(Identifier, ForeignKey('Operator.id', ondelete='CASCADE'), nullable=False)
+    operator_id = Column(Identifier, ForeignKey('Operator.id', ondelete='CASCADE'), nullable=True)
     operator = relationship('Operator', backref='report_setting')
+    name = Column(String(255), nullable=True)
+    email = Column(String(255), nullable=True)
     frequency = Column(Integer, nullable=True)
+    day_of_week = Column(Integer, nullable=True, default=None)
+    time = Column(String(4), nullable=True, default=None)
+    start_on = Column(DateTime, nullable=True, default=None)
+    end_on = Column(DateTime, nullable=True, default=None)
+
+    @property
+    def recipient(self):
+        if self.operator:
+            return self.operator.email
+        else:
+            return self.email
 
 class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'Event'
@@ -2893,14 +2919,14 @@ class TicketPrintQueueEntry(Base, BaseModel):
     def peek(self, operator, ticket_format_id, order_id=None):
         q = DBSession.query(TicketPrintQueueEntry) \
             .filter_by(processed_at=None, operator=operator) \
-            .filter(Ticket.ticket_format_id==ticket_format_id)
+            .filter(Ticket.ticket_format_id==ticket_format_id) \
+            .options(joinedload(TicketPrintQueueEntry.seat))
         if order_id is not None:
             q = q.join(OrderedProductItem) \
                 .join(OrderedProduct) \
                 .filter(OrderedProduct.order_id==order_id)
             q = q.order_by(asc(OrderedProduct.id))
-        q = q.order_by(desc(self.created_at))
-        return q.all()
+        return self.sorted_entries(q.all())
 
     @classmethod
     def dequeue(self, ids, now=None):
@@ -2912,6 +2938,8 @@ class TicketPrintQueueEntry(Base, BaseModel):
             .outerjoin(OrderedProduct.order) \
             .filter(TicketPrintQueueEntry.id.in_(ids)) \
             .filter(TicketPrintQueueEntry.processed_at == None) \
+            .options(joinedload(TicketPrintQueueEntry.seat)) \
+            .order_by(desc(TicketPrintQueueEntry.created_at)) \
             .all()
         if len(entries) == 0:
             return []
@@ -2935,9 +2963,20 @@ class TicketPrintQueueEntry(Base, BaseModel):
                 # XXX: this won't work right if multiple entries exist for the
                 # same order.
                 order.mark_issued_or_printed(issued=True, printed=True, now=now)
+        return self.sorted_entries(entries)
 
-        return entries
+    @classmethod
+    def sorted_entries(cls, entries):
+        return list(sorted(entries, key=TicketPrintQueueEntry.entry_key_order))
 
+    DIGIT_RX = re.compile(r"([0-9]+)")
+    @classmethod
+    def entry_key_order(cls, entry): #dorping. using summary instead of seat.name
+        if entry.seat_id is None:
+            return [entry.summary]
+        return [(int(x) if x.isdigit() else x) for x in re.split(cls.DIGIT_RX, entry.seat.name) if x]
+
+    
 from ..operators.models import Operator
 
 class TicketBundle(Base, BaseModel, WithTimestamp, LogicallyDeleted):
@@ -3335,3 +3374,48 @@ class OrganizationSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     multicheckout_auth_password = Column(Unicode(255))
 
     cart_item_name = Column(Unicode(255))
+
+class PerformanceSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
+    __tablename__ = "PerformanceSetting"
+    id = Column(Identifier, primary_key=True)
+    performance_id = Column(Identifier, ForeignKey('Performance.id'))
+    performance = relationship('Performance', backref='settings')
+    
+    abbreviated_title = Column(Unicode(255), doc=u"公演名略称")
+    subtitle = Column(Unicode(255), doc=u"公演名副題")
+    note = Column(UnicodeText, doc=u"公演名備考")
+
+    KEYS = ["abbreviated_title", "subtitle", "note"]
+
+    @classmethod
+    def create_from_model(cls, obj, params):
+        kwargs = {k:params.get(k) for k in cls.KEYS}
+        settings = cls(**kwargs)
+        settings.performance = obj
+        return settings
+
+    @classmethod
+    def update_from_model(cls, obj, params):
+        if obj.settings:
+            setting = obj.settings[0]
+        else:
+            setting = cls()
+
+        for k in cls.KEYS:
+            setattr(setting, k, params.get(k))
+        setting.performance = obj
+        return setting
+
+    def describe_iter(self):
+        columns = self.__mapper__.c
+        for k in self.KEYS:
+            col = getattr(columns, k, None)
+            if col is None:
+                yield k, getattr(self, k, None) or u"", k
+            else:
+                yield k, getattr(self, k, None) or u"", getattr(col, "doc", k) or k
+
+    @classmethod
+    def create_from_template(cls, template, **kwargs):
+        setting = cls.clone(template)
+        return setting

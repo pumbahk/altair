@@ -164,24 +164,26 @@ def index(request):
     if direction not in ['asc', 'desc']:
         direction = 'asc'
 
-    query = DBSession.query(Venue, Site, func.count(Seat.id))
+    query = DBSession.query(Venue, Site, Site.created_at, func.count(Seat.id), Performance, Performance.created_at)
     query = query.filter_by(organization_id=request.context.user.organization_id)
     query = query.join((Site, and_(Site.id==Venue.site_id, Site.deleted_at==None)))
     query = query.outerjoin((Performance, and_(Performance.id==Venue.performance_id, Performance.deleted_at==None)))
-    query = query.outerjoin((Event, and_(Event.id==Performance.event_id, Event.deleted_at==None)))
+#   query = query.outerjoin((Event, and_(Event.id==Performance.event_id, Event.deleted_at==None)))
     query = query.outerjoin(Seat)
     query = query.group_by(Venue.id)
     query = query.order_by('Venue.site_id ASC, -Venue.performance_id ASC')
 
-    class VenueSiteCount:
-        def __init__(self, venue, site, count):
-            self.venue = venue
-            self.site = site
-            self.count = count
-
     items = []
-    for venue, site, count in query:
-        items.append(VenueSiteCount(venue, site, count))
+    for venue, site, site_created_at, count, performance, performance_created_at in query:
+        if site is not None:
+            site.created_at = site_created_at
+        if performance is not None:
+            performance.created_at = performance_created_at
+
+        items.append({ "venue": venue,
+                       "site": site,
+                       "count": count,
+                       "performance": performance })
 
     return {
         'items': items
