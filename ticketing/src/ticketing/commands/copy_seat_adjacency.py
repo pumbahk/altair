@@ -31,6 +31,8 @@ def main(argv=sys.argv):
         for venue in query.all():
             logger.info('copy from=%s, to=%s, %s, %s' % (venue.original_venue_id, venue.id, venue.name, venue.updated_at))
             org_venue = c.Venue.get(venue.original_venue_id)
+            if not org_venue:
+                continue
             seat_adjacency_map = {}
 
             # copy SeatAdjacencySet - SeatAdjacency
@@ -57,7 +59,7 @@ def main(argv=sys.argv):
 
         transaction.commit()
     except Exception, e:
-        logger.error(e.message, datetime.now())
+        logger.error(e.message)
         transaction.abort()
 
     logger.info('end copy_seat_adjacency batch')
