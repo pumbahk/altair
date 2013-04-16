@@ -3,13 +3,22 @@ import pika
 from . import consumer
 from .interfaces import IConsumerFactory, ITask, IConsumer
 
-def add_task(config, task):
-    task
+def add_task(config, task,
+             queue="test",
+             durable=True, 
+             exclusive=False, 
+             auto_delete=False):
+
     reg = config.registry
 
     def register():
         factory = reg.adapters.lookup([ITask], IConsumerFactory, "")
-        consumer = factory(task)
+        consumer = factory(task,
+                           queue=queue,
+                           durable=durable,
+                           exclusive=exclusive,
+                           auto_delete=auto_delete)
+
         reg.registerUtility(consumer)
 
     config.action("altair.mq.task",

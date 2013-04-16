@@ -11,15 +11,34 @@ class PikaClientFactory(object):
     def __init__(self, parameters):
         self.parameters = parameters
 
-    def __call__(self, task):
-        return PikaClient(task, self.parameters)
+    def __call__(self, task,
+                 queue="test",
+                 durable=True, 
+                 exclusive=False, 
+                 auto_delete=False):
+
+        return PikaClient(task, self.parameters,
+                          queue=queue,
+                          durable=durable, 
+                          exclusive=exclusive, 
+                          auto_delete=auto_delete)
+
 
 
 @implementer(IConsumer)
 class PikaClient(object):
-    def __init__(self, task, parameters):
+    def __init__(self, task, parameters,
+                 queue="test",
+                 durable=True, 
+                 exclusive=False, 
+                 auto_delete=False):
+
         self.task = task
         self.parameters = parameters
+        self.queue = queue
+        self.durable = durable
+        self.exclusive = exclusive
+        self.auto_delete = auto_delete
 
     def connect(self):
         logger.info("connecting")
@@ -33,7 +52,10 @@ class PikaClient(object):
     def on_open(self, channel):
         logger.debug('opened')
         self.channel = channel
-        channel.queue_declare(queue="test", durable=True, exclusive=False, auto_delete=False, 
+        channel.queue_declare(queue=self.queue, 
+                              durable=self.durable, 
+                              exclusive=self.exclusive,
+                              auto_delete=self.auto_delete, 
                               callback=self.on_queue_declared)
 
     def on_queue_declared(self, frame):
