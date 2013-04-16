@@ -195,7 +195,7 @@ class TopicForm(Form):
                          u"text",
                          u"publish_open_on", u"publish_close_on", 
                          u"display_order", u"is_vetoed", 
-                         u"linked_page", u"link", u"mobile_link", u"mobile_tag"]
+                         u"linked_page", u"link", u"mobile_tag", u"mobile_link"]
     
     def validate(self, **kwargs):
         if super(TopicForm, self).validate():
@@ -235,7 +235,7 @@ class TopcontentForm(Form):
                          u"text", u"countdown_type", u"image_asset",u"mobile_image_asset",  
                          u"publish_open_on", u"publish_close_on", 
                          u"display_order", u"is_vetoed", 
-                         u"linked_page", u"link", u"mobile_link", u"mobile_tag"]
+                         u"linked_page", u"link", u"mobile_tag", u"mobile_link"]
     
     def validate(self, **kwargs):
         if super(TopcontentForm, self).validate():
