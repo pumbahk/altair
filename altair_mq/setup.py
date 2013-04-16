@@ -8,6 +8,7 @@ requires = [
     "tornado",
     "pyramid",
     "cliff",
+    "venusian",
 ]
 
 points = {
