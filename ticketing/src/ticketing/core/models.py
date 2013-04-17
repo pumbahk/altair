@@ -43,7 +43,7 @@ from ticketing.sej.exceptions import SejServerError
 from ticketing.sej.payment import request_cancel_order
 from ticketing.assets import IAssetResolver
 from ticketing.utils import myurljoin, tristate, is_nonmobile_email_address, sensible_alnum_decode
-from ticketing.helpers import todate
+from ticketing.helpers import todate, todatetime
 from ticketing.payments import plugins
 from .utils import ApplicableTicketsProducer
 
@@ -2653,7 +2653,7 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             query = query.join(Order.performance).filter(Performance.start_on>=condition)
         condition = form.start_on_to.data
         if condition:
-            query = query.join(Order.performance).filter(Performance.start_on<=condition)
+            query = query.join(Order.performance).filter(Performance.start_on<=todatetime(condition).replace(hour=23, minute=59, second=59))
         condition = form.seat_number.data
         if condition:
             query = query.join(Order.ordered_products)
