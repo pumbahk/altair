@@ -12,15 +12,16 @@
 <br />
 <%include file='../common/_search.mako' args="form=form, genre=form.genre.data, sub_genre=form.sub_genre.data"/>
 
+<% promotions = [(event, promo) for event, promo in ((helper.get_event_from_linked_page_id(request, promo.linked_page_id), promo) for promo in form.promotions.data)] %>
+
 <%m:header>ピックアップ</%m:header>
 % if form.promotions.data:
-    % for count, promo in enumerate(form.promotions.data):
-        <% event = helper.get_event_from_promotion(request, promo) %>
+    % for event, promo in promotions:
         % if event:
-            <a href="/eventdetail?event_id=${event.id}">${promo.text}</a><br />
+            <a href="/eventdetail?event_id=${event.id}">${promo.text}</a><br/>
         % else:
-            % if promo.mobile_tag_id:
-                <a href="${request.mobile_route_path('mobile_tag_search', mobile_tag_id=promo.mobile_tag_id, genre=0, sub_genre=0, page=1)}">${promo.text}</a><br />
+            % if helper.get_eventsqs_from_mobile_tag_id(request, promo.mobile_tag_id).all():
+                <a href="${request.mobile_route_path('mobile_tag_search', mobile_tag_id=promo.mobile_tag_id, genre=0, sub_genre=0, page=1)}">${promo.text}</a><br/>
             % else:
                 ${promo.text}<br/>
             % endif

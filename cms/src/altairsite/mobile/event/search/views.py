@@ -4,10 +4,9 @@ from altaircms.models import Genre
 from altairsite.mobile.event.search.forms import SearchForm
 from altairsite.mobile.core.searcher import EventSearcher
 from altairsite.mobile.core.const import get_prefecture_name
-from altairsite.mobile.core.helper import exist_value, get_week_map, get_event_paging
-from altairsite.mobile.core.helper import log_info
-from altaircms.page.models import Page, PageSet, MobileTag, MobileTag2Page
-from altaircms.event.models import Event
+from altairsite.mobile.core.helper import exist_value, get_week_map, get_event_paging, log_info
+from altairsite.mobile.core.eventhelper import EventHelper
+from altaircms.page.models import MobileTag
 from .forms import MobileTagSearchForm
 
 class ValidationFailure(Exception):
@@ -78,12 +77,8 @@ def mobile_tag_search(request):
         log_info("mobile_tag_search", "mobile tag is not found")
         raise ValidationFailure
 
-    qs = request.allowable(Event) \
-        .filter(Event.is_searchable == True) \
-        .join(PageSet, Event.id == PageSet.event_id) \
-        .join(MobileTag2Page, PageSet.id == MobileTag2Page.object_id) \
-        .join(MobileTag, MobileTag2Page.tag_id == MobileTag.id) \
-        .filter(MobileTag.id == mobile_tag_id)
+    helper = EventHelper()
+    qs = helper.get_eventsqs_from_mobile_tag_id(request=request, mobile_tag_id=mobile_tag_id)
 
     form = get_event_paging(request=request, form=form, qs=qs)
     form.mobile_tag.data = mobile_tag
