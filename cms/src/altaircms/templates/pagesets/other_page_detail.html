@@ -44,6 +44,9 @@
   <tr>
     <th>非公開タグ</th><td>${u", ".join(t.label for t in pageset.private_tags if t.organization_id)}</td>
   </tr>
+  <tr>
+    <th>モバイルタグ(ドキュメントページでは使用不可)</th><td>${u", ".join(t.label for t in pageset.mobile_tags if t.organization_id)}</td>
+  </tr>
 </table>
 
 <hr/>
