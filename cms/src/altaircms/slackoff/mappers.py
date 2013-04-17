@@ -47,6 +47,7 @@ def promotion_mapper(request, obj):
     objlike.main_image = image_asset_layout(request, obj.main_image)
     objlike.linked_page = show_cms_detail_page(request, obj.linked_page)
     objlike.link = obj.link or u"-"
+    objlike.mobile_tag = obj.mobile_tag.label if obj.mobile_tag else ""
     return objlike
 
 def topic_mapper(request, obj):
@@ -56,6 +57,7 @@ def topic_mapper(request, obj):
     objlike.linked_page = show_cms_detail_page(request, obj.linked_page)
     objlike.link = obj.link or u"-"
     objlike.mobile_link = obj.mobile_link or u"-"
+    objlike.mobile_tag = obj.mobile_tag.label if obj.mobile_tag else ""
     return objlike
 
 CDWN_DICT = dict(Topcontent.COUNTDOWN_CANDIDATES)    
@@ -69,6 +71,7 @@ def topcontent_mapper(request, obj):
     objlike.link = obj.link or u"-"
     objlike.mobile_link = obj.mobile_link or u"-"
     objlike.countdown_type = CDWN_DICT[obj.countdown_type]
+    objlike.mobile_tag = obj.mobile_tag.label if obj.mobile_tag else ""
     return objlike
     
 PDICT = import_symbol("altaircms.seeds.prefecture:PrefectureMapping").name_to_label
@@ -128,6 +131,7 @@ def pageset_mapper(request, obj):
     objlike.genre_id =  label_from_genre([obj.genre_id])
     objlike.tags_string = obj.tags_string
     objlike.private_tags_string = obj.private_tags_string
+    objlike.mobile_tags_string = obj.mobile_tags_string
     return objlike
 
 def staticpage_mapper(request, obj):
