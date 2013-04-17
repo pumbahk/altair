@@ -75,7 +75,7 @@
     ${nco.breadcrumbs(
         names=[u"Top", u"Page", u"新しいページの追加"],
         urls=[request.route_path("dashboard"),
-              request.route_path("page")]
+              request.route_path("pageset_list", pagetype=request.params.get("pagetype"))]
     )}
   </div>
 </div>
