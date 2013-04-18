@@ -3,6 +3,7 @@
 import csv
 from datetime import datetime
 from urllib2 import urlopen
+import re
 
 from pyramid.view import view_config
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound
@@ -194,7 +195,10 @@ def frontend_drawing(request):
     venue_id = int(request.matchdict.get('venue_id', 0))
     venue = Venue.get(venue_id, organization_id=request.context.user.organization_id)
     part = request.matchdict.get('part')
-    return Response(body=venue.site.get_drawing(part).stream().read(), content_type='text/xml; charset=utf-8')
+    content_encoding = None
+    if re.match('^.+\.(svgz|gz)$', part):
+        content_encoding = 'gzip'
+    return Response(body=venue.site.get_drawing(part).stream().read(), content_type='text/xml; charset=utf-8', content_encoding=content_encoding)
 
 # FIXME: add permission limitation
 @view_config(route_name='venues.show', renderer='ticketing:templates/venues/show.html', decorator=with_bootstrap)
