@@ -42,7 +42,6 @@ class SVGNormalizeUnitTests(unittest.TestCase):
         self._callFUT(io, result)
         self.assertEquals(u'<doc><flowSpan style="font-weight:bold">{{価格}}</flowSpan></doc>', result.getvalue().decode("utf-8"))
 
-
     def test_cleaned_xml0(self):
         """<a>{{bb}}</a> -> <a>{{bb}}</a>"""
         from StringIO import StringIO
@@ -188,11 +187,11 @@ class SVGNormalizeUnitTests(unittest.TestCase):
         self._callFUT(io, result)
         self.assertEquals('<doc>}}<a></a></doc>', result.getvalue())
 
-        
+       
 class EliminatedTagNormalizeUnitTests(unittest.TestCase):
     def _callFUT(self, *args, **kwargs):
-        from ticketing.tickets.cleaner.normalize import _normalize
-        return _normalize(*args, **kwargs)
+        from ticketing.tickets.cleaner.normalize import normalize
+        return normalize(*args, **kwargs)
 
     def test_it(self):
         """<F id=1>{{<F id=2>zz</F><f id=3>}}</F></F> -> <F id=1>{{zz}}</F>"""
@@ -242,6 +241,17 @@ class EliminatedTagNormalizeUnitTests(unittest.TestCase):
         io.seek(0)
         
         self.assertTrue(lxml.etree.parse(io))
+
+    ## todo: move
+    def test_double(self):
+        """<doc><a>{{xxx}}{{yyy}}</a></doc>
+        {{{xxx}}{{yyy}}} => {{placeholder}} # placeholder={xxx}}{{yyy}
+
+        so. if you want to get {{xxx}}{{yyy}} from {{xxx}}. input {{{xxx}}{{yyy}}} at preview page.
+        """
+        from ticketing.tickets.preview.fillvalues import template_fillvalues
+        result = template_fillvalues("<doc><a>{{xxx}}</a></doc>", {"xxx": "{{{xxx}}{{yyy}}}"})
+        self.assertEquals("<doc><a>{{xxx}}{{yyy}}</a></doc>", result)
 
 
 if __name__ == "__main__":
