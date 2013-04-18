@@ -74,7 +74,7 @@ class StaticPageUpdate(ModelEventBase):
 
 ## need async
 ##
-from altaircms.tag.api import put_tags, tags_from_string, put_system_tags
+from altaircms.tag.api import put_tags, put_mobile_tags, tags_from_string, put_system_tags
 from altaircms.models import Genre
 
 def tags_from_value(v):
@@ -109,8 +109,11 @@ def update_pageset_genretag(self):
 
     tags = tags_from_value(self.params["tags_string"])
     private_tags = tags_from_value(self.params["private_tags_string"])
+    mobile_tags = tags_from_value(self.params["mobile_tags_string"])
     obj_type = "page"
+    mobile_obj_type = "mobilepage"
     put_tags(pageset, obj_type, tags, private_tags, self.request)
+    put_mobile_tags(pageset, mobile_obj_type, mobile_tags, self.request)
     ftsearch_register_from_page(self.request, page)
     if self.params.get("genre_id"):
         genres = Genre.query.filter(Genre.id == self.params["genre_id"]).all()
@@ -128,8 +131,11 @@ def update_page_genretag(self):
 
     tags = tags_from_value(self.params["tags"])
     private_tags = tags_from_value(self.params["private_tags"])
+    mobile_tags = tags_from_value(self.params["mobile_tags"])
     obj_type = "page"
+    mobile_obj_type = "mobilepage"
     put_tags(pageset, obj_type, tags, private_tags, self.request)
+    put_mobile_tags(pageset, mobile_obj_type, mobile_tags, self.request)
     ftsearch_register_from_page(self.request, page)
     if self.params.get("genre"):
         genres = [self.params["genre"]]

@@ -94,7 +94,7 @@ class ReserveViewTests(unittest.TestCase):
         seat5_status = c_m.SeatStatus(seat=seat5, status=int(c_m.SeatStatusEnum.Vacant))
         seat_index5 = c_m.SeatIndex(seat=seat5, index=5, seat_index_type=seat_index_type)
 
-        seat_adjacency_set = c_m.SeatAdjacencySet(venue=venue, seat_count=2)
+        seat_adjacency_set = c_m.SeatAdjacencySet(site=venue.site, seat_count=2)
         seat_adjacency = c_m.SeatAdjacency(adjacency_set=seat_adjacency_set,
             seats=[seat1, seat3])
         seat_adjacency = c_m.SeatAdjacency(adjacency_set=seat_adjacency_set,

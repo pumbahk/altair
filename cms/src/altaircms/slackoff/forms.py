@@ -18,7 +18,7 @@ from ..event.models import Event
 from altaircms.models import Performance, Genre
 from ..models import Category, SalesSegment, SalesSegmentGroup
 from ..asset.models import ImageAsset
-from ..page.models import PageSet
+from ..page.models import PageSet, MobileTag
 from ..topic.models import TopicTag, Topcontent,TopcontentTag, PromotionTag, Promotion
 from ..page.models import PageTag, PageType
 from ..plugins.api import get_extra_resource
@@ -188,6 +188,7 @@ class TopicForm(Form):
                                                      get_label=pageset_label)
     link = fields.TextField(label=u"外部リンク(ページより優先)", filters=[quote])
     mobile_link = fields.TextField(label=u"mobile外部リンク(ページより優先)", filters=[quote])
+    mobile_tag = dynamic_query_select_field_factory(MobileTag, label=u"モバイル検索用ページタグ(リンク先ページが指定されていない場合に使用される)", allow_blank=True, get_label=lambda obj: obj.label or u"名前なし")
 
     display_order = fields.IntegerField(label=u"表示順序(1〜100)", default=50)
     is_vetoed = fields.BooleanField(label=u"公開禁止")
@@ -195,7 +196,7 @@ class TopicForm(Form):
                          u"text",
                          u"publish_open_on", u"publish_close_on", 
                          u"display_order", u"is_vetoed", 
-                         u"linked_page", u"link", u"mobile_link"]
+                         u"linked_page", u"link", u"mobile_tag", u"mobile_link"]
     
     def validate(self, **kwargs):
         if super(TopicForm, self).validate():
@@ -226,6 +227,7 @@ class TopcontentForm(Form):
                                                      get_label=pageset_label)
     link = fields.TextField(label=u"外部リンク(ページより優先)", filters=[quote])
     mobile_link = fields.TextField(label=u"mobile外部リンク(ページより優先)", filters=[quote])
+    mobile_tag = dynamic_query_select_field_factory(MobileTag, label=u"モバイル検索用ページタグ(リンク先ページが指定されていない場合に使用される)", allow_blank=True, get_label=lambda obj: obj.label or u"名前なし")
 
     display_order = fields.IntegerField(label=u"表示順序(1〜100)", default=50)
     is_vetoed = fields.BooleanField(label=u"公開禁止")
@@ -234,7 +236,7 @@ class TopcontentForm(Form):
                          u"text", u"countdown_type", u"image_asset",u"mobile_image_asset",  
                          u"publish_open_on", u"publish_close_on", 
                          u"display_order", u"is_vetoed", 
-                         u"linked_page", u"link", u"mobile_link"]
+                         u"linked_page", u"link", u"mobile_tag", u"mobile_link"]
     
     def validate(self, **kwargs):
         if super(TopcontentForm, self).validate():
@@ -257,7 +259,7 @@ class PromotionForm(Form):
         query_factory=lambda : PageSet.query.order_by("name"), 
         get_label=pageset_label)
     link = fields.TextField(label=u"外部リンク(ページより優先)", filters=[quote])
-
+    mobile_tag = dynamic_query_select_field_factory(MobileTag, label=u"モバイル検索用ページタグ(リンク先ページが指定されていない場合に使用される)", allow_blank=True, get_label=lambda obj: obj.label or u"名前なし")
     publish_open_on = fields.DateTimeField(label=u"公開開始日", validators=[required_field()])
     publish_close_on = fields.DateTimeField(label=u"公開終了日", validators=[required_field()])
     
@@ -271,7 +273,7 @@ class PromotionForm(Form):
 
     __display_fields__ = [
         u"tag_content", u"genre", 
-        u"main_image", u"text", u"linked_page", u"link", 
+        u"main_image", u"text", u"linked_page", u"link", u"mobile_tag",
         u"publish_open_on", u"publish_close_on", u"display_order", u"is_vetoed"
         ]
 
@@ -432,9 +434,10 @@ class PageSetForm(Form):
     name = fields.TextField(label=u"名前")
     tags_string = fields.TextField(label=u"タグ(区切り文字:\",\")")
     private_tags_string = fields.TextField(label=u"非公開タグ(区切り文字:\",\")")
+    mobile_tags_string = fields.TextField(label=u"モバイル用タグ(区切り文字:\",\")")
     genre_id = MaybeSelectField(label=u"ジャンル", coerce=unicode, choices=[])
     url = fields.TextField(label=u"URL")
 
     def configure(self, request):
         self.genre_id.choices = [(unicode(g.id), unicode(g)) for g in request.allowable(Genre)]
-    __display_fields__ = ["name", "genre_id", "url", "tags_string", "private_tags_string"]
+    __display_fields__ = ["name", "genre_id", "url", "tags_string", "private_tags_string", "mobile_tags_string"]

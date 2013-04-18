@@ -46,6 +46,11 @@ def install_page_tagmanager(config):
                          xref="altaircms.page.models.PageTag2Page", 
                          tag="altaircms.page.models.PageTag"
                          )
+    config.add_tagmanager("mobilepage",
+                          model="altaircms.page.models.PageSet",
+                          xref="altaircms.page.models.MobileTag2Page",
+                          tag="altaircms.page.models.MobileTag"
+    )
 
 def includeme(config):
     config.add_route("tag", "/tag/{classifier}")

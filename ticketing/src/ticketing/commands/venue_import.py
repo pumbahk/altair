@@ -239,7 +239,7 @@ def import_tree(update, organization, tree, file, venue_id=None, max_adjacency=N
     new_blocks = []
 
     # 連席情報をクリア
-    for _set in DBSession.query(SeatAdjacencySet).filter_by(venue=venue):
+    for _set in DBSession.query(SeatAdjacencySet).filter_by(site=venue.site):
         # 論理削除したいのでループ
         _set.delete()
 
@@ -328,7 +328,7 @@ def import_tree(update, organization, tree, file, venue_id=None, max_adjacency=N
             for seat_count in range(2, (min(num_seats_in_row, max_adjacency) if max_adjacency else num_seats_in_row) + 1):
                 adjacency_set = adjacency_sets.get(seat_count)
                 if adjacency_set is None:
-                    adjacency_set = adjacency_sets[seat_count] = SeatAdjacencySet(venue=venue, seat_count=seat_count)
+                    adjacency_set = adjacency_sets[seat_count] = SeatAdjacencySet(site=venue.site, seat_count=seat_count)
                 adjacency_set.adjacencies.extend(
                     SeatAdjacency(seats=seats_in_row[i:i + seat_count])
                     for i in range(0, num_seats_in_row - seat_count + 1))

@@ -177,6 +177,8 @@ class Topic(WithOrganizationMixin, TopicCore):
     link = sa.Column(sa.Unicode(255), doc="external link", nullable=True)
     mobile_link = sa.Column(sa.Unicode(255), doc="external mobile_link", nullable=True)
     tags = orm.relationship("TopicTag", secondary="topiccoretag2topiccore", backref=orm.backref("topics"))
+    mobile_tag = orm.relationship("MobileTag", uselist=False, backref="topics")
+    mobile_tag_id = sa.Column(sa.Integer, sa.ForeignKey("mobiletag.id"))
 
     @classmethod
     def matched_qs(cls, d=None, tag=None, qs=None):
@@ -204,6 +206,9 @@ class Topcontent(WithOrganizationMixin, TopicCore):
 
     id = sa.Column(sa.Integer, sa.ForeignKey("topiccore.id"), primary_key=True)
     tags = orm.relationship("TopcontentTag", secondary="topiccoretag2topiccore", backref=orm.backref("topcontents"))
+
+    mobile_tag = orm.relationship("MobileTag", uselist=False, backref="topcontents")
+    mobile_tag_id = sa.Column(sa.Integer, sa.ForeignKey("mobiletag.id"))
 
     title = sa.Column(sa.Unicode(255))
     text = sa.Column(sa.Unicode(255))
@@ -249,12 +254,13 @@ class Promotion(WithOrganizationMixin, TopicCore):
     __mapper_args__ = {"polymorphic_identity": type}
 
     id = sa.Column(sa.Integer, sa.ForeignKey("topiccore.id"), primary_key=True)
-    tags = orm.relationship("PromotionTag", secondary="topiccoretag2topiccore", 
+    mobile_tag = orm.relationship("MobileTag", uselist=False, backref="promotions")
+    tags = orm.relationship("PromotionTag", secondary="topiccoretag2topiccore",
                              backref=orm.backref("promotions"))
-
     main_image_id = sa.Column(sa.Integer, sa.ForeignKey("image_asset.id"))
     main_image = orm.relationship("ImageAsset", uselist=False, primaryjoin="Promotion.main_image_id==ImageAsset.id")
     text = sa.Column(sa.UnicodeText, default=u"no message")
+    mobile_tag_id = sa.Column(sa.Integer, sa.ForeignKey("mobiletag.id"))
 
     ## linkとpagesetは排他的
     link = sa.Column(sa.Unicode(255), nullable=True)

@@ -127,10 +127,14 @@ class SolrSearch(object):
         return self.solr.commit()
 
     def search(self, query, **kwargs):
-        logger.info(u"fulltext search query: %s" % query.query_string)
-        result = self.solr.select(query.query_string, **kwargs)
-        logger.info("fulltext search result %s" % result.results)
-        return result.results
+        try:
+            logger.info(u"fulltext search query: %s" % query.query_string)
+            result = self.solr.select(query.query_string, **kwargs)
+            logger.info("fulltext search result %s" % result.results)
+            return result.results
+        except solr.SolrException as e:
+            logger.warn((u"fulltext search failed. exception=%s, query=%s" % (str(e), query.query_string)).encode("utf-8"))
+            return []
 
     def register(self, doc, commit=False):
         logger.debug(u"fulltext search register: %s" % doc)

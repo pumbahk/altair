@@ -73,6 +73,7 @@ ${pages.pager()}
       <th>標準順序</th>
       <th>タイトル</th>
       <th>掲載期間</th>
+      <th>モバイル検索用ページタグ</th>
       <th>表示場所</th>
       <th>ジャンル</th>
       <th>テキスト文言</th>
@@ -90,6 +91,7 @@ ${pages.pager()}
             <span class="label label-warning">掲載強制停止中</span>
           %endif
         </td>
+        <td>${item.mobile_tag.label if item.mobile_tag else "------"}</td>
         <td>${html_renderer.render_kind(item)}</td>
         <td>${html_renderer.render_genre(item)}</td>
         <td>${h.base.truncated(item.text)}</td>

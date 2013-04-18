@@ -83,6 +83,7 @@ requires = [
     "altair.exclog",
     "altair.now",
     "altair.logicaldeleting",
+    "altair.mq",
     ]
 
 tests_require = [
@@ -124,6 +125,7 @@ setup(name='ticketing',
         "file:../altair_exclog#egg=altair.exclog-0.0", 
         "file:../altair_now#egg=altair.now-0.0", 
         "file:../altair_logicaldeleting#egg=altair.logicaldeleting-0.0", 
+        "file:../altair_mq#egg=altair.mq-0.0", 
         'file:../bundle/js.bootstrap_ts-2.3.2.dev1-py2.7.egg',
         'https://github.com/moriyoshi/tableau/tarball/master#egg=tableau-0.0.4pre2',
         "https://github.com/numpy/numpy/tarball/v1.6.2#egg=numpy-1.6.2",
@@ -151,7 +153,6 @@ setup(name='ticketing',
       sej_nwts_upload=ticketing.sej.scripts.sej_nwts_upload:main
       release_carts=ticketing.cart.scripts.release_carts:main
       rakuten_checkout_sales=ticketing.checkout.commands:rakuten_checkout_sales
-      copy_seat_adjacency=ticketing.commands.copy_seat_adjacency:main
       refund_order=ticketing.orders.commands:refund_order
       sej_send_refund_file=ticketing.sej.commands:send_refund_file
       """,

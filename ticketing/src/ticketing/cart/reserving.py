@@ -118,7 +118,6 @@ class Reserving(object):
             seat_index_type_id = self.get_default_seat_index_type_id(stock_id)
 
         if quantity == 1:
-            
             return self._get_single_seat(stock_id, seat_index_type_id)
 
         # すでに確保済みのSeatを持つ連席
@@ -131,29 +130,29 @@ class Reserving(object):
             # すでに確保済み
             _SeatStatus.status != int(SeatStatusEnum.Vacant)
         ).filter(
-            _Seat_SeatAdjacency.seat_adjacency_id == _SeatAdjacency.id
+            _Seat_SeatAdjacency.seat_adjacency_id==_SeatAdjacency.id
         ).filter(
-            _Seat_SeatAdjacency.seat_id == _Seat.id
+            _Seat_SeatAdjacency.l0_id==_Seat.l0_id
         ).filter(
             _SeatAdjacencySet.seat_count==quantity,
+        ).filter(
+            _SeatAdjacencySet.id==_SeatAdjacency.adjacency_set_id,
         ).filter(
             _Seat.stock_id==stock_id
         ).filter(
             _SeatStatus.seat_id==_Seat.id
         )
 
-        adjacencies = SeatAdjacency.query.options(
-            joinedload(SeatAdjacency.seats, Seat.status_)
+        adjacencies = SeatAdjacency.query.filter(
+            Seat_SeatAdjacency.seat_adjacency_id==SeatAdjacency.id
+        ).filter(
+            Seat_SeatAdjacency.l0_id==Seat.l0_id
         ).filter(
             SeatAdjacencySet.seat_count==quantity,
         ).filter(
             SeatAdjacencySet.id==SeatAdjacency.adjacency_set_id,
         ).filter(
             Seat.stock_id==stock_id
-        ).filter(
-            SeatAdjacency.id==Seat_SeatAdjacency.seat_adjacency_id
-        ).filter(
-            Seat.id==Seat_SeatAdjacency.seat_id
         ).filter(
             SeatIndex.seat_id==Seat.id
         ).filter(
@@ -165,14 +164,17 @@ class Reserving(object):
         ).order_by(SeatIndex.index, Seat.l0_id).all()
 
         adjacency = None
+        seats = []
+        stock = Stock.get(stock_id)
         for adj in adjacencies:
-            if [s for s in adj.seats if s.stock_id != stock_id]:
+            seats = adj.seats_filter_by_venue(stock.performance.venue.id)
+            if [s for s in seats if s.stock_id != stock_id]:
                 continue
             adjacency = adj
             break
 
         if adjacency is None:
             raise NotEnoughAdjacencyException
-        assert len(adjacency.seats) == quantity
-        assert all(seat.status == SeatStatusEnum.Vacant.v for seat in adjacency.seats)
-        return adjacency.seats
+        assert len(seats) == quantity
+        assert all(seat.status == SeatStatusEnum.Vacant.v for seat in seats)
+        return seats

@@ -56,14 +56,14 @@ def _setup_performance(session):
     # seat_adjacency_set
     seat_adjacency_sets = {}
     for seat_count in range(2, 5):
-        seat_adjacency_sets[seat_count] = c_m.SeatAdjacencySet(venue=venue, seat_count=seat_count)
+        seat_adjacency_sets[seat_count] = c_m.SeatAdjacencySet(site=venue.site, seat_count=seat_count)
 
     seat_index_type = c_m.SeatIndexType(venue=venue, name='testing')
     for seat_index_index, (row, ss) in enumerate(zip(ROWS, SEAT_STATUSES)):
         seats = []
         for i, s in enumerate(ss):
             # seat
-            seat = c_m.Seat(venue=venue, stock=stock, name=u"%s-%s" % (row, i+1))
+            seat = c_m.Seat(venue=venue, stock=stock, name=u"%s-%s" % (row, i+1), l0_id='s%s' % i)
             # seat_status
             status = int(c_m.SeatStatusEnum.InCart) if s else int(c_m.SeatStatusEnum.Vacant)
             seat_status = c_m.SeatStatus(seat=seat, status=status)
@@ -575,7 +575,7 @@ class order_productsTests(unittest.TestCase):
         venue = Venue(id=venue_id, organization=organization, site_id=site_id, performance=performance)
         stock = Stock(id=stock_id, quantity=5, performance=performance, stock_type=StockType())
         stock_status = StockStatus(stock=stock, quantity=5)
-        seats = [Seat(id=i, stock=stock, venue=venue, status_=SeatStatus(status=int(SeatStatusEnum.Vacant))) for i in range(1, 6)]
+        seats = [Seat(id=i, l0_id='s%s' % i, stock=stock, venue=venue, status_=SeatStatus(status=int(SeatStatusEnum.Vacant))) for i in range(1, 6)]
         seat_index_type = SeatIndexType(name=u'', venue=venue)
         seat_indexes = [SeatIndex(seat=seat, seat_index_type=seat_index_type, index=1) for seat in seats]
         product_item = ProductItem(stock=stock, price=100, quantity=1, performance=performance)

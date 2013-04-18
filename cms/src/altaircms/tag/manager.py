@@ -92,18 +92,30 @@ class TagManagerBase(object):
             qs = self.Tag.query.filter(self.XRef.object_id==obj.id).filter(self.Tag.publicp == public_status)
             for tag in qs.filter(self.Tag.label.in_(deletes), self.Tag.organization_id==organization_id):
                 tags.remove(tag)
-        
+
+    def delete_mobile_tags(self, obj, deletes, public_status=True, organization_id=None):
+        if deletes:
+            tags = obj.mobile_tags
+            qs = self.Tag.query.filter(self.XRef.object_id==obj.id).filter(self.Tag.publicp == public_status)
+            for tag in qs.filter(self.Tag.label.in_(deletes), self.Tag.organization_id==organization_id):
+                tags.remove(tag)
+
     def replace_tags(self, obj, tag_label_list, public_status=True, organization_id=None):
         if obj.tags:
             return self.fullreplace_tags(obj, tag_label_list, public_status, organization_id=organization_id)
         else:
             return self.add_tags(obj, tag_label_list, public_status, organization_id=organization_id)
 
+    def replace_mobile_tags(self, obj, tag_label_list, public_status=True, organization_id=None):
+        if obj.mobile_tags:
+            return self.fullreplace_mobile_tags(obj, tag_label_list, public_status, organization_id=organization_id)
+        else:
+            return self.add_mobile_tags(obj, tag_label_list, public_status, organization_id=organization_id)
 
     def fullreplace_tags(self, obj, tag_label_list, public_status, organization_id=None):
         prev_name_set = set(x.label for x in obj.tags if x.publicp == public_status and x.organization_id==organization_id)
         deletes = prev_name_set.difference(tag_label_list)
-        self.delete_tags(obj, deletes, organization_id=organization_id)
+        self.delete_tags(obj, deletes, public_status=public_status, organization_id=organization_id)
         updates = set(tag_label_list).difference(prev_name_set)
 
         result = []
@@ -111,6 +123,19 @@ class TagManagerBase(object):
             t = self.get_or_create_tag(label, public_status, organization_id=organization_id)
             result.append(t)
             obj.tags.append(t)
+        return result
+
+    def fullreplace_mobile_tags(self, obj, tag_label_list, public_status, organization_id=None):
+        prev_name_set = set(x.label for x in obj.mobile_tags if x.publicp == public_status and x.organization_id==organization_id)
+        deletes = prev_name_set.difference(tag_label_list)
+        self.delete_mobile_tags(obj, deletes, organization_id=organization_id)
+        updates = set(tag_label_list).difference(prev_name_set)
+
+        result = []
+        for label in updates:
+            t = self.get_or_create_tag(label, public_status, organization_id=organization_id)
+            result.append(t)
+            obj.mobile_tags.append(t)
         return result
 
     def joined_query(self, query_target=None):
@@ -124,6 +149,15 @@ class TagManagerBase(object):
 
     def add_tags(self, obj, tag_label_list, public_status, organization_id=None):
         tags = obj.tags
+        result = []
+        for label in tag_label_list:
+            t = self.get_or_create_tag(label, public_status, organization_id=organization_id)
+            result.append(t)
+            tags.append(t)
+        return result
+
+    def add_mobile_tags(self, obj, tag_label_list, public_status, organization_id=None):
+        tags = obj.mobile_tags
         result = []
         for label in tag_label_list:
             t = self.get_or_create_tag(label, public_status, organization_id=organization_id)

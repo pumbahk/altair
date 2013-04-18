@@ -255,7 +255,7 @@ class IndexView(IndexViewMixin):
     @view_config(route_name='cart.seats', renderer="json")
     @view_config(route_name='cart.seats.obsolete', renderer="json")
     def get_seats(self):
-        """会場&座席情報""" 
+        """会場&座席情報"""
         venue = self.context.performance.venue
 
         sales_segment = c_models.SalesSegment.query.filter(c_models.SalesSegment.id==self.context.sales_segment.id).one()
@@ -293,7 +293,7 @@ class IndexView(IndexViewMixin):
                     adjacency_set.seat_count
                     for adjacency_set in \
                         DBSession.query(c_models.SeatAdjacencySet) \
-                        .filter_by(venue_id=venue.id)
+                        .filter_by(site_id=venue.site_id)
                     ]
                 ),
             pages=venue.site._metadata and venue.site._metadata.get('pages')
@@ -322,14 +322,11 @@ class IndexView(IndexViewMixin):
         return dict(
             seat_adjacencies={
                 length_or_range: [
-                    [seat.l0_id for seat in seat_adjacency.seats]
+                    [seat.l0_id for seat in seat_adjacency.seats_filter_by_venue(venue_id)]
                     for seat_adjacency_set in \
-                        DBSession.query(c_models.SeatAdjacencySet) \
-                        .options(joinedload("adjacencies"),
-                                 joinedload('adjacencies.seats')) \
-                        .filter_by(venue_id=venue_id,
-                                   seat_count=length_or_range)
-                    for seat_adjacency in seat_adjacency_set.adjacencies 
+                        DBSession.query(c_models.SeatAdjacencySet)\
+                            .filter_by(site_id=performance.venue.site_id, seat_count=length_or_range)
+                    for seat_adjacency in seat_adjacency_set.adjacencies
                     ]
                 }
             )
