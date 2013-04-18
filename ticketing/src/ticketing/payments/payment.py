@@ -1,51 +1,19 @@
 # -*- coding:utf-8 -*-
 import logging
 import transaction
-from zope.interface import directlyProvides
-from zope.deprecation.deprecation import deprecate
+#from zope.deprecation.deprecation import deprecate
 from ticketing.models import DBSession
 from ticketing.cart.exceptions import DeliveryFailedException
 from ticketing.core.models import Order
-from .interfaces import IPaymentPreparerFactory, IPaymentPreparer, IPaymentDeliveryPlugin, IPaymentPlugin, IDeliveryPlugin
-from .exceptions import PaymentDeliveryMethodPairNotFound
+from .api import (
+    get_payment_delivery_plugin, 
+    get_preparer, 
+    get_payment_plugin, 
+    get_delivery_plugin,
+)
 
 logger = logging.getLogger(__name__)
 
-# TODO: apiに移動
-def get_delivery_plugin(request, plugin_id):
-    registry = request.registry
-    return registry.utilities.lookup([], IDeliveryPlugin, name="delivery-%s" % plugin_id)
-
-# TODO: apiに移動
-def get_payment_plugin(request, plugin_id):
-    logger.debug("get_payment_plugin: %s" % plugin_id)
-    registry = request.registry
-    return registry.utilities.lookup([], IPaymentPlugin, name="payment-%s" % plugin_id)
-
-# TODO: apiに移動
-def get_payment_delivery_plugin(request, payment_plugin_id, delivery_plugin_id):
-    registry = request.registry
-    return registry.utilities.lookup([], IPaymentDeliveryPlugin, 
-        "payment-%s:delivery-%s" % (payment_plugin_id, delivery_plugin_id))
-
-# TODO: apiに移動
-def get_preparer(request, payment_delivery_pair):
-    if payment_delivery_pair is None:
-        raise PaymentDeliveryMethodPairNotFound
-    payment_delivery_plugin = get_payment_delivery_plugin(request, 
-        payment_delivery_pair.payment_method.payment_plugin_id,
-        payment_delivery_pair.delivery_method.delivery_plugin_id,)
-
-    if payment_delivery_plugin is not None:
-        directlyProvides(payment_delivery_plugin, IPaymentPreparer)
-        return payment_delivery_plugin
-    else:
-        payment_plugin = get_payment_plugin(request, payment_delivery_pair.payment_method.payment_plugin_id)
-        if payment_plugin is not None:
-            directlyProvides(payment_plugin, IPaymentPreparer)
-            return payment_plugin
-
-directlyProvides(get_preparer, IPaymentPreparerFactory)
 
 class Payment(object):
     """ 決済
@@ -61,19 +29,19 @@ class Payment(object):
         """ via PaymentView
         """
 
-    @deprecate(u"つかわれてなさそう")
-    def select_payment(self, payment_delivery_pair, shipping_address):
-        """ 決済・引取方法選択 via PaymentView
-        """
-        cart.payment_delivery_pair = payment_delivery_pair
-        cart.system_fee = payment_delivery_pair.system_fee
-        cart.shipping_address = shipping_address
-        order = dict(
-            client_name=client_name,
-            payment_delivery_method_pair_id=payment_delivery_method_pair_id,
-            mail_address=shipping_address.email,
-        )
-        self.request.session['order'] = order
+    # @deprecate(u"つかわれてなさそう")
+    # def select_payment(self, payment_delivery_pair, shipping_address):
+    #     """ 決済・引取方法選択 via PaymentView
+    #     """
+    #     cart.payment_delivery_pair = payment_delivery_pair
+    #     cart.system_fee = payment_delivery_pair.system_fee
+    #     cart.shipping_address = shipping_address
+    #     order = dict(
+    #         client_name=client_name,
+    #         payment_delivery_method_pair_id=payment_delivery_method_pair_id,
+    #         mail_address=shipping_address.email,
+    #     )
+    #     self.request.session['order'] = order
 
     def call_prepare(self):
         """ 決済方法前呼び出し
