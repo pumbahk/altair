@@ -56,20 +56,6 @@ def get_seats(request):
             for area in venue.areas
             )
 
-    if u'adjacencies' in necessary_params:
-        query = DBSession.query(SeatAdjacencySet).options(joinedload("adjacencies"), joinedload('adjacencies.seats'))
-        query = query.filter(SeatAdjacencySet.venue==venue)
-        retval[u'adjacencies'] = [
-            dict(
-                count=seat_adjacency_set.seat_count,
-                set=[
-                    [seat.l0_id for seat in seat_adjacency.seats]\
-                    for seat_adjacency in seat_adjacency_set.adjacencies\
-                    ]
-                )\
-            for seat_adjacency_set in query
-            ]
-
     if u'seats' in necessary_params:
         seats_data = {}
         query = DBSession.query(Seat).options(joinedload('attributes_'), joinedload('areas'), joinedload('status_')).filter_by(venue=venue)
@@ -236,10 +222,11 @@ def show(request):
 
     _adjs = DBSession\
         .query(SeatAdjacencySet, func.count(distinct(Seat.id)))\
-        .filter_by(venue_id=venue.id)\
+        .filter_by(site_id=venue.site_id)\
         .outerjoin(SeatAdjacencySet.adjacencies)\
         .join(Seat_SeatAdjacency)\
-        .join(Seat, Seat_SeatAdjacency.seat_id==Seat.id)\
+        .join(Seat, Seat_SeatAdjacency.l0_id==Seat.l0_id)\
+        .filter(Seat.venue_id==venue_id)\
         .order_by('seat_count')\
         .group_by(SeatAdjacencySet.id)\
         .all()
