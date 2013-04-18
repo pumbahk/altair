@@ -83,7 +83,6 @@ requires = [
     "altair.exclog",
     "altair.now",
     "altair.logicaldeleting",
-    "altair.mq",
     ]
 
 tests_require = [
@@ -125,7 +124,6 @@ setup(name='ticketing',
         "file:../altair_exclog#egg=altair.exclog-0.0", 
         "file:../altair_now#egg=altair.now-0.0", 
         "file:../altair_logicaldeleting#egg=altair.logicaldeleting-0.0", 
-        "file:../altair_mq#egg=altair.mq-0.0", 
         'file:../bundle/js.bootstrap_ts-2.3.2.dev1-py2.7.egg',
         'https://github.com/moriyoshi/tableau/tarball/master#egg=tableau-0.0.4pre2',
         "https://github.com/numpy/numpy/tarball/v1.6.2#egg=numpy-1.6.2",
