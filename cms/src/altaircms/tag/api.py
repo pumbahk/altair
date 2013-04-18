@@ -22,6 +22,12 @@ def put_tags(obj, classifier, tags, private_tags, request):
     notify_created_tags(request, tags)
     notify_created_tags(request, private_tags)
 
+def put_mobile_tags(obj, classifier, mobile_tags, request):
+    manager = get_tagmanager(classifier, request=request)
+    mobile_tags = manager.replace_mobile_tags(obj, mobile_tags, True, organization_id=request.organization.id)
+    ## put organization id
+    notify_created_tags(request, mobile_tags)
+
 def put_system_tags(obj, classifier, tags, request):
     manager = get_system_tagmanager(classifier, request=request)
     manager.replace_tags(obj, tags, True, organization_id=None)

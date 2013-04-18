@@ -3,6 +3,7 @@
 import csv
 from datetime import datetime
 from urllib2 import urlopen
+import re
 
 from pyramid.view import view_config
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound
@@ -54,20 +55,6 @@ def get_seats(request):
             (area.id, { 'id': area.id, 'name': area.name })\
             for area in venue.areas
             )
-
-    if u'adjacencies' in necessary_params:
-        query = DBSession.query(SeatAdjacencySet).options(joinedload("adjacencies"), joinedload('adjacencies.seats'))
-        query = query.filter(SeatAdjacencySet.venue==venue)
-        retval[u'adjacencies'] = [
-            dict(
-                count=seat_adjacency_set.seat_count,
-                set=[
-                    [seat.l0_id for seat in seat_adjacency.seats]\
-                    for seat_adjacency in seat_adjacency_set.adjacencies\
-                    ]
-                )\
-            for seat_adjacency_set in query
-            ]
 
     if u'seats' in necessary_params:
         seats_data = {}
@@ -194,7 +181,10 @@ def frontend_drawing(request):
     venue_id = int(request.matchdict.get('venue_id', 0))
     venue = Venue.get(venue_id, organization_id=request.context.user.organization_id)
     part = request.matchdict.get('part')
-    return Response(body=venue.site.get_drawing(part).stream().read(), content_type='text/xml; charset=utf-8')
+    content_encoding = None
+    if re.match('^.+\.(svgz|gz)$', part):
+        content_encoding = 'gzip'
+    return Response(body=venue.site.get_drawing(part).stream().read(), content_type='text/xml; charset=utf-8', content_encoding=content_encoding)
 
 # FIXME: add permission limitation
 @view_config(route_name='venues.show', renderer='ticketing:templates/venues/show.html', decorator=with_bootstrap)
@@ -232,10 +222,11 @@ def show(request):
 
     _adjs = DBSession\
         .query(SeatAdjacencySet, func.count(distinct(Seat.id)))\
-        .filter_by(venue_id=venue.id)\
+        .filter_by(site_id=venue.site_id)\
         .outerjoin(SeatAdjacencySet.adjacencies)\
         .join(Seat_SeatAdjacency)\
-        .join(Seat, Seat_SeatAdjacency.seat_id==Seat.id)\
+        .join(Seat, Seat_SeatAdjacency.l0_id==Seat.l0_id)\
+        .filter(Seat.venue_id==venue_id)\
         .order_by('seat_count')\
         .group_by(SeatAdjacencySet.id)\
         .all()

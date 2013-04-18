@@ -76,6 +76,7 @@ ${pages.pager()}
     <tr>
       <th>標準順序</th>
       <th>promoiton id</th>
+      <th>モバイル検索用ページタグ</th>
       <th>画像</th>
       <th>掲載期間</th>
       <th>表示場所</th>
@@ -89,6 +90,7 @@ ${pages.pager()}
       <tr>
         <td>${item.display_order}</td>
         <td><a href="${request.route_path("promotion_unit_update", action="input",id=item.id,_query=dict(endpoint=request.url))}">${item.id}</td>
+        <td>${item.mobile_tag.label if item.mobile_tag else "------"}</td>
         <td>${html_renderer.render_thumbnail_image(item)}</td>
         <td>
           ${h.term(item.publish_open_on,item.publish_close_on)}

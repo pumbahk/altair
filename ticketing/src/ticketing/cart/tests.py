@@ -489,7 +489,7 @@ class ReserveViewTests(unittest.TestCase):
         venue = self._add_venue(organization_id, site_id, venue_id)
         stock = Stock(id=stock_id, quantity=100, performance_id=performance_id)
         stock_status = StockStatus(stock_id=stock.id, quantity=100)
-        seats = [Seat(id=i, stock_id=stock.id, venue=venue) for i in range(2)]
+        seats = [Seat(id=i, stock_id=stock.id, venue=venue, l0_id='s%s' % i) for i in range(2)]
         seat_statuses = [SeatStatus(seat_id=i, status=int(SeatStatusEnum.Vacant)) for i in range(2)]
         performance = Performance(id=performance_id)
         product_item = ProductItem(id=product_item_id, stock_id=stock.id, price=100, quantity=1, performance=performance)
@@ -564,7 +564,7 @@ class ReserveViewTests(unittest.TestCase):
         venue = self._add_venue(organization_id, site_id, venue_id)
         stock = Stock(id=stock_id, quantity=100, performance_id=performance_id)
         stock_status = StockStatus(stock_id=stock.id, quantity=0)
-        seats = [Seat(id=i, stock_id=stock.id, venue=venue) for i in range(5)]
+        seats = [Seat(id=i, stock_id=stock.id, venue=venue, l0_id='s%s' % i) for i in range(5)]
         seat_statuses = [SeatStatus(seat_id=i, status=int(SeatStatusEnum.InCart)) for i in range(5)]
         performance = Performance(id=performance_id)
         product_item = ProductItem(id=product_item_id, stock_id=stock.id, price=100, quantity=1, performance=performance)

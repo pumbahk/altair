@@ -151,7 +151,6 @@ setup(name='ticketing',
       sej_nwts_upload=ticketing.sej.scripts.sej_nwts_upload:main
       release_carts=ticketing.cart.scripts.release_carts:main
       rakuten_checkout_sales=ticketing.checkout.commands:rakuten_checkout_sales
-      copy_seat_adjacency=ticketing.commands.copy_seat_adjacency:main
       refund_order=ticketing.orders.commands:refund_order
       sej_send_refund_file=ticketing.sej.commands:send_refund_file
       """,

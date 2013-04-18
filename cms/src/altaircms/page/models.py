@@ -186,8 +186,9 @@ class PageSet(Base,
         params = model_to_dict(self)
         params.update(id=self.id, 
                       tags_string=u", ".join(t.label for t in self.public_tags if t.organization_id), 
-                      private_tags_string=u", ".join(t.label for t in self.private_tags), 
-                      genre_id=self.genre_id, 
+                      private_tags_string=u", ".join(t.label for t in self.private_tags if t.organization_id),
+                      mobile_tags_string=u", ".join(t.label for t in self.mobile_tags if t.organization_id),
+                      genre_id=self.genre_id,
                       )
         return params
     
@@ -501,6 +502,15 @@ class PageTag2Page(Base):
         sa.UniqueConstraint("object_id", "tag_id") 
         )
 
+class MobileTag2Page(Base):
+    __tablename__ = "mobiletag2pageset"
+    query = DBSession.query_property()
+    object_id = sa.Column(sa.Integer, sa.ForeignKey("pagesets.id"), primary_key=True)
+    tag_id = sa.Column(sa.Integer, sa.ForeignKey("mobiletag.id"), primary_key=True)
+    __tableargs__ = (
+        sa.UniqueConstraint("object_id", "tag_id")
+    )
+
 class PageTag(WithOrganizationMixin, Base):
     CLASSIFIER = "page"
 
@@ -519,3 +529,16 @@ class PageTag(WithOrganizationMixin, Base):
 def delete_orphan_pagetag(mapper, connection, target):
     PageTag.query.filter(~PageTag.pages.any()).delete(synchronize_session=False)
 sa.event.listen(Page, "after_delete", delete_orphan_pagetag)
+
+class MobileTag(WithOrganizationMixin, Base):
+    __tablename__ = "mobiletag"
+    query = DBSession.query_property()
+    id = sa.Column(sa.Integer, primary_key=True)
+    label = sa.Column(sa.Unicode(255), index=True)
+    pages = orm.relationship("PageSet", secondary="mobiletag2pageset", backref="mobile_tags")
+    publicp = sa.Column(sa.Boolean, default=False)
+    created_at = sa.Column(sa.DateTime, default=datetime.now)
+    updated_at = sa.Column(sa.DateTime, default=datetime.now, onupdate=datetime.now)
+    @declared_attr
+    def __tableargs__(cls):
+        return  ((sa.schema.UniqueConstraint(cls.label,cls.organization_id)))

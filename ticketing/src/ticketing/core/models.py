@@ -43,15 +43,15 @@ from ticketing.sej.exceptions import SejServerError
 from ticketing.sej.payment import request_cancel_order
 from ticketing.assets import IAssetResolver
 from ticketing.utils import myurljoin, tristate, is_nonmobile_email_address, sensible_alnum_decode
-from ticketing.helpers import todate
+from ticketing.helpers import todate, todatetime
 from ticketing.payments import plugins
 from .utils import ApplicableTicketsProducer
 
 logger = logging.getLogger(__name__)
 
 class Seat_SeatAdjacency(Base):
-    __tablename__ = 'Seat_SeatAdjacency'
-    seat_id = Column(Identifier, ForeignKey('Seat.id', ondelete='CASCADE'), primary_key=True, nullable=False)
+    __tablename__ = 'Seat_SeatAdjacency2'
+    l0_id = Column(String(255), ForeignKey('Seat.l0_id'), primary_key=True)
     seat_adjacency_id = Column(Identifier, ForeignKey('SeatAdjacency.id', ondelete='CASCADE'), primary_key=True, nullable=False)
 
 class Site(Base, BaseModel, WithTimestamp, LogicallyDeleted):
@@ -121,6 +121,10 @@ class Venue(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     seat_index_types = relationship("SeatIndexType", backref='venue')
     attributes = deferred(Column(MutationDict.as_mutable(JSONEncodedDict(16384))))
 
+    @hybrid_property
+    def adjacency_sets(self):
+        return self.site.adjacency_sets
+
     @staticmethod
     def create_from_template(template, performance_id, original_performance_id=None):
         # 各モデルのコピー元/コピー先のidの対比表
@@ -143,17 +147,6 @@ class Venue(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             VenueArea.create_from_template(template=template_area, venue_id=venue.id)
         logger.info('[copy] VenueArea end')
 
-        '''
-        # create SeatAdjacencySet - SeatAdjacency
-        logger.info('[copy] SeatAdjacencySet - SeatAdjacency start')
-        for template_adjacency_set in template.adjacency_sets:
-            convert_map['seat_adjacency'].update(SeatAdjacencySet.create_from_template(
-                template=template_adjacency_set,
-                venue_id=venue.id
-            ))
-        logger.info('[copy] SeatAdjacencySet - SeatAdjacency end')
-        '''
-
         # create SeatIndexType
         logger.info('[copy] SeatIndexType start')
         for template_seat_index_type in template.seat_index_types:
@@ -174,8 +167,8 @@ class Venue(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                     .with_entities(Stock.id).scalar()
                 convert_map['stock_id'][old_stock.id] = new_stock_id
 
-        # create Seat - SeatAttribute, SeatStatus, SeatIndex, Seat_SeatAdjacency
-        logger.info('[copy] Seat - SeatAttribute, SeatStatus, SeatIndex, Seat_SeatAdjacency start')
+        # create Seat - SeatAttribute, SeatStatus, SeatIndex
+        logger.info('[copy] Seat - SeatAttribute, SeatStatus, SeatIndex start')
         default_stock = Stock.get_default(performance_id=performance_id)
         for template_seat in template.seats:
             Seat.create_from_template(
@@ -184,7 +177,7 @@ class Venue(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                 default_stock_id=default_stock.id,
                 **convert_map
             )
-        logger.info('[copy] Seat - SeatAttribute, SeatStatus, SeatIndex, Seat_SeatAdjacency end')
+        logger.info('[copy] Seat - SeatAttribute, SeatStatus, SeatIndex end')
 
         # defaultのStockに未割当の席数をセット
         default_stock.quantity = Seat.query.filter_by(stock_id=default_stock.id).count()
@@ -256,12 +249,16 @@ class Seat(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     attributes_     = relationship("SeatAttribute", backref='seat', collection_class=attribute_mapped_collection('name'), cascade='all,delete-orphan')
     areas           = relationship("VenueArea",
                                    primaryjoin=lambda:and_(
-                                        Seat.venue_id==VenueArea_group_l0_id.venue_id,
-                                        Seat.group_l0_id==VenueArea_group_l0_id.group_l0_id),
+                                       Seat.venue_id==VenueArea_group_l0_id.venue_id,
+                                       Seat.group_l0_id==VenueArea_group_l0_id.group_l0_id),
                                    secondary=VenueArea_group_l0_id.__table__,
                                    secondaryjoin=VenueArea_group_l0_id.venue_area_id==VenueArea.id,
                                    backref="seats")
-    adjacencies     = relationship("SeatAdjacency", secondary=Seat_SeatAdjacency.__table__, backref="seats")
+    adjacencies     = relationship("SeatAdjacency",
+                                   primaryjoin=lambda:Seat.l0_id==Seat_SeatAdjacency.l0_id,
+                                   secondary=Seat_SeatAdjacency.__table__,
+                                   secondaryjoin=lambda:Seat_SeatAdjacency.seat_adjacency_id==SeatAdjacency.id,
+                                   backref="seats")
     status_ = relationship('SeatStatus', uselist=False, backref='seat', cascade='all,delete-orphan') # 1:1
 
     status = association_proxy('status_', 'status')
@@ -313,18 +310,6 @@ class Seat(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                 seat_id=seat.id,
                 **kwargs
             )
-
-        # create Seat_SeatAdjacency
-        '''
-        if template.adjacencies:
-            seat_seat_adjacencies = []
-            for template_adjacency in template.adjacencies:
-                seat_seat_adjacencies.append({
-                    'seat_adjacency_id':kwargs['seat_adjacency'][template_adjacency.id],
-                    'seat_id':seat.id,
-                })
-            DBSession.execute(Seat_SeatAdjacency.__table__.insert(), seat_seat_adjacencies)
-        '''
 
     def delete_cascade(self):
         # delete SeatStatus
@@ -395,34 +380,19 @@ class SeatAdjacency(Base, BaseModel):
     id = Column(Identifier, primary_key=True)
     adjacency_set_id = Column(Identifier, ForeignKey('SeatAdjacencySet.id', ondelete='CASCADE'))
 
-    @staticmethod
-    def create_from_template(template, adjacency_set_id):
-        adjacency = SeatAdjacency.clone(template)
-        adjacency.adjacency_set_id = adjacency_set_id
-        adjacency.save()
-        return {template.id:adjacency.id}
+    def seats_filter_by_venue(self, venue_id):
+        query = Seat.query.filter(Seat.venue_id==venue_id)
+        query = query.join(Seat_SeatAdjacency, Seat.l0_id==Seat_SeatAdjacency.l0_id)
+        query = query.join(SeatAdjacency).filter(Seat_SeatAdjacency.seat_adjacency_id==self.id)
+        return query.all()
 
 class SeatAdjacencySet(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = "SeatAdjacencySet"
     id = Column(Identifier, primary_key=True)
-    venue_id = Column(Identifier, ForeignKey('Venue.id', ondelete='CASCADE'))
+    site_id = Column(Identifier, ForeignKey('Site.id', ondelete='CASCADE'))
+    site = relationship('Site', backref='adjacency_sets')
     seat_count = Column(Integer, nullable=False)
     adjacencies = relationship("SeatAdjacency", backref='adjacency_set')
-    venue = relationship("Venue", backref='adjacency_sets')
-
-    @staticmethod
-    def create_from_template(template, venue_id):
-        adjacency_set = SeatAdjacencySet.clone(template)
-        adjacency_set.venue_id = venue_id
-        adjacency_set.save()
-
-        convert_map = {}
-        for template_adjacency in template.adjacencies:
-            convert_map.update(
-                SeatAdjacency.create_from_template(template_adjacency, adjacency_set.id)
-            )
-
-        return convert_map
 
     def delete(self):
         query = SeatAdjacency.__table__.delete(SeatAdjacency.adjacency_set_id==self.id)
@@ -529,14 +499,11 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
           - Venue
             - VenueArea
               - VenueArea_group_l0_id
-            - SeatAdjacencySet
-              - SeatAdjacency
             - SeatIndexType
             - Seat
               - SeatAttribute
               - SeatStatus
               - SeatIndex
-              - SeatAdjacency_Seat
         """
 
         if hasattr(self, 'original_id') and self.original_id:
@@ -2653,7 +2620,7 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             query = query.join(Order.performance).filter(Performance.start_on>=condition)
         condition = form.start_on_to.data
         if condition:
-            query = query.join(Order.performance).filter(Performance.start_on<=condition)
+            query = query.join(Order.performance).filter(Performance.start_on<=todatetime(condition).replace(hour=23, minute=59, second=59))
         condition = form.seat_number.data
         if condition:
             query = query.join(Order.ordered_products)
