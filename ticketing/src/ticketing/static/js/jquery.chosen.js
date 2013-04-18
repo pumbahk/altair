@@ -132,6 +132,9 @@
             this.search_field.blur(b(function (g) {
                 return this.input_blur(g)
             }, this));
+            this.search_field.keypress(b(function (g) {
+                return this.keypress_checker(g)
+            }, this));
             this.search_field.keyup(b(function (g) {
                 return this.keyup_checker(g)
             }, this));
@@ -744,6 +747,14 @@
             }
             return this.pending_backstroke = null
         };
+        f.prototype.keypress_checker = function (g) {
+			if(g.keyCode == 13) {
+				this.enterPressed = true;
+				g.preventDefault();
+			} else {
+				this.enterPressed = false;
+			}
+		};
         f.prototype.keyup_checker = function (g) {
             var i, h;
             i = (h = g.which) != null ? h : g.keyCode;
@@ -761,8 +772,8 @@
                     break;
                 case 13:
                     g.preventDefault();
-                    if (this.results_showing) {
-//                      return this.result_select(g)
+                    if (this.results_showing && this.enterPressed) {
+                        return this.result_select(g)
                     }
                     break;
                 case 27:
@@ -796,7 +807,7 @@
                     this.mouse_on_container = false;
                     break;
                 case 13:
-                    g.preventDefault();
+				//  g.preventDefault();
                     break;
                 case 38:
                     g.preventDefault();
@@ -806,6 +817,7 @@
                     this.keydown_arrow();
                     break
             }
+			this.enterPressed = false;
         };
         f.prototype.search_field_scale = function () {
             var p, g, k, i, n, o, m, j, l;
