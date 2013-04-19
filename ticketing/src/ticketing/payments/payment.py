@@ -25,24 +25,6 @@ class Payment(object):
         self.cart = cart
         self.sales_segment = cart.sales_segment
 
-    def get_payment_delivery_methods(self):
-        """ via PaymentView
-        """
-
-    # @deprecate(u"つかわれてなさそう")
-    # def select_payment(self, payment_delivery_pair, shipping_address):
-    #     """ 決済・引取方法選択 via PaymentView
-    #     """
-    #     cart.payment_delivery_pair = payment_delivery_pair
-    #     cart.system_fee = payment_delivery_pair.system_fee
-    #     cart.shipping_address = shipping_address
-    #     order = dict(
-    #         client_name=client_name,
-    #         payment_delivery_method_pair_id=payment_delivery_method_pair_id,
-    #         mail_address=shipping_address.email,
-    #     )
-    #     self.request.session['order'] = order
-
     def call_prepare(self):
         """ 決済方法前呼び出し
         """
