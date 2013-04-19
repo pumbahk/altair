@@ -9,15 +9,16 @@ def includeme(config):
     config.scan(".example")
 
 @task_config()
-@gen.coroutine
-def sample_task(channel, method, header, body):
+def sample_task(message):
     from tornado.httpclient import AsyncHTTPClient, HTTPRequest
-    logger.debug('got message {body}'.format(body=body))
+    logger.debug('got message {body}'.format(body=message.body))
     client = AsyncHTTPClient()
-    request = HTTPRequest('http://localhost:8000?value=' + body,
+    request = HTTPRequest('http://localhost:8000?value=' + message.body,
                           request_timeout=100)
-    response = yield client.fetch(request)
-    logger.debug('got: {data}'.format(data=response.body))
-    channel.basic_ack(method.delivery_tag)
+    client.fetch(request,
+                 lambda response: logger.debug('got: {data}'.format(data=response.body)))
+
+    message.channel.basic_ack(message.method.delivery_tag)
+
 
 

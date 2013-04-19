@@ -1,9 +1,22 @@
 import logging
 from pika.adapters.tornado_connection import TornadoConnection
 from zope.interface import implementer
-from .interfaces import IConsumer, IConsumerFactory
+from .interfaces import (
+    IConsumer, 
+    IConsumerFactory,
+    IMessage,
+)
 
 logger = logging.getLogger(__name__)
+
+@implementer(IMessage)
+class Message(object):
+    def __init__(self, channel, method, header, body):
+        self.channel = channel
+        self.method = method
+        self.header = header
+        self.body = body
+
 
 @implementer(IConsumerFactory)
 class PikaClientFactory(object):
@@ -63,14 +76,5 @@ class PikaClient(object):
         self.channel.basic_consume(self.handle_delivery, queue="test")
 
     def handle_delivery(self, channel, method, header, body):
-        self.task(channel, method, header, body)
-    #     logger.debug('got message {body}'.format(body=body))
-    #     client = AsyncHTTPClient()
-    #     request = HTTPRequest('http://localhost:8000?value=' + body,
-    #                           request_timeout=100)
-    #     client.fetch(request,
-    #                  self.handle_request)
-    #     channel.basic_ack(method.delivery_tag)
-
-    # def handle_request(self, response):
-    #     logger.debug('got: {data}'.format(data=response.body))
+        message = Message(channel, method, header, body)
+        self.task(message)

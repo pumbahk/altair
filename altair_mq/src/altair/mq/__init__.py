@@ -2,6 +2,9 @@
 import pika
 from . import consumer
 from .interfaces import IConsumerFactory, ITask, IConsumer
+from .decorators import task_config
+
+task_config = task_config  ## for pyflakes
 
 def add_task(config, task,
              queue="test",
