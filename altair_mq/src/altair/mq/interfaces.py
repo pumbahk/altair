@@ -28,3 +28,4 @@ class IMessage(Interface):
     method = Attribute(u"method of message")
     header = Attribute(u"header of message")
     body = Attribute(u"body of message")
+    params = Attribute(u"parameters of this message, maybe parsed body.")

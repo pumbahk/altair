@@ -1,4 +1,5 @@
 import logging
+import json
 from pika.adapters.tornado_connection import TornadoConnection
 from zope.interface import implementer
 from .interfaces import (
@@ -17,6 +18,9 @@ class Message(object):
         self.header = header
         self.body = body
 
+    @property
+    def params(self):
+        return json.loads(self.body)
 
 @implementer(IConsumerFactory)
 class PikaClientFactory(object):
