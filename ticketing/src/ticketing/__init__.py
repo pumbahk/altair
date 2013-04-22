@@ -122,10 +122,10 @@ def main(global_config, **local_config):
             settings["altaircms.apikey"]
             )
         event_push_communication.bind_instance(config)
-        import ticketing.pyramid_boto
-        ticketing.pyramid_boto.register_default_implementations(config)
-        import ticketing.assets
-        ticketing.assets.register_default_implementations(config)
+        import altair.pyramid_boto
+        altair.pyramid_boto.register_default_implementations(config)
+        import altair.pyramid_assets
+        altair.pyramid_assets.register_default_implementations(config)
     
         config.scan(".views")
     

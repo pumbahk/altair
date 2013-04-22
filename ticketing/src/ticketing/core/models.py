@@ -41,7 +41,7 @@ from ticketing.users.models import User, UserCredential, MemberGroup, MemberGrou
 from ticketing.sej.models import SejOrder, SejTenant, SejTicket, SejRefundTicket, SejRefundEvent
 from ticketing.sej.exceptions import SejServerError
 from ticketing.sej.payment import request_cancel_order
-from ticketing.assets import IAssetResolver
+from altair.pyramid_assets.interfaces import IAssetResolver
 from ticketing.utils import myurljoin, tristate, is_nonmobile_email_address, sensible_alnum_decode
 from ticketing.helpers import todate, todatetime
 from ticketing.payments import plugins

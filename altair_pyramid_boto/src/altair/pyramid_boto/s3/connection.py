@@ -1,6 +1,6 @@
 from zope.interface import implementer
 from boto.s3.connection import S3Connection
-from .interfaces import IS3ConnectionFactory
+from ..interfaces import IS3ConnectionFactory
 
 CONFIG_PREFIXES = ('s3_asset_resolver', 's3')
 

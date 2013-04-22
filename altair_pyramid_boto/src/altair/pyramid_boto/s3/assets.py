@@ -3,13 +3,13 @@ from pyramid.path import Resolver, AssetResolver
 from boto.s3.connection import S3Connection
 from boto.s3.key import Key as S3Key
 from boto.s3.prefix import Prefix as S3Prefix
-from zope.interface import Interface, implementer, directlyProvides
+from zope.interface import Interface, Attribute, implementer, directlyProvides
 from zope.interface.verify import verifyObject
 from cStringIO import StringIO
 from urlparse import urlparse
 import re
-from .interfaces import IAssetResolver
-from ..pyramid_boto.interfaces import IS3ConnectionFactory
+from altair.pyramid_assets.interfaces import IAssetResolver
+from ..interfaces import IS3ConnectionFactory
 from beaker.cache import Cache, CacheManager
 
 def normalize_prefix(prefix, delimiter):
@@ -20,6 +20,16 @@ cache_manager = CacheManager()
 class IS3RetrieverFactory(Interface):
     def __call__(bucket, delimiter):
         pass
+
+class IS3Retriever(Interface):
+    bucket = Attribute('''bucket name''')
+    delimiter = Attribute('''delimiter''')
+
+    def get_entry(key_or_prefix):
+        """returns a dict that contains the various information for the key"""
+
+    def get_object(key_or_prefix):
+        """returns a file-like object that represents the specified object"""
 
 @implementer(IS3RetrieverFactory)
 class DefaultS3RetrieverFactory(object):
@@ -38,6 +48,7 @@ class DefaultS3RetrieverFactory(object):
 def newDefaultS3RetrieverFactory(config):
     return DefaultS3RetrieverFactory(config.registry.settings.get(__name__ + '.cache_region'))
 
+@implementer(IS3Retriever)
 class S3Retriever(object):
     def __init__(self, bucket, delimiter, entry_cache=None, object_cache=None):
         self.bucket = bucket

@@ -84,6 +84,8 @@ requires = [
     "altair.now",
     "altair.logicaldeleting",
     "altair.mq",
+    "altair.pyramid_assets",
+    "altair.pyramid_boto",
     ]
 
 tests_require = [
@@ -126,6 +128,8 @@ setup(name='ticketing',
         "file:../altair_now#egg=altair.now-0.0", 
         "file:../altair_logicaldeleting#egg=altair.logicaldeleting-0.0", 
         "file:../altair_mq#egg=altair.mq-0.0", 
+        "file:../altair_pyramid_assets#egg=altair.pyramid_assets-0.0.1",
+        "file:../altair_pyramid_boto#egg=altair.pyramid_boto-0.0.1",
         'file:../bundle/js.bootstrap_ts-2.3.2.dev1-py2.7.egg',
         'https://github.com/moriyoshi/tableau/tarball/master#egg=tableau-0.0.4pre2',
         "https://github.com/numpy/numpy/tarball/v1.6.2#egg=numpy-1.6.2",
