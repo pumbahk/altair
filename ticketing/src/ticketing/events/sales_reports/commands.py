@@ -51,7 +51,7 @@ def main(argv=sys.argv):
     settings = get_current_registry().settings
     query = ReportSetting.query.filter(and_(
         ReportSetting.frequency==frequency_num,
-        ReportSetting.time==now.strftime('%H'),
+        ReportSetting.time==now.hour,
         or_(ReportSetting.start_on==None, ReportSetting.start_on<now),
         or_(ReportSetting.end_on==None, ReportSetting.end_on>now),
     ))
