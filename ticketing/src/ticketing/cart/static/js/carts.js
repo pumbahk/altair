@@ -484,6 +484,7 @@ cart.PerformanceSearchView = Backbone.View.extend({
         $.each(keys, function (_, v) {
             self.selection.append($('<option></option>').attr('value', v).text(v));
         });
+        this.selection.val(this.model.get("key"));
     },
     onKeySelectionChanged: function (value) {
         this.model.set("key", value);
