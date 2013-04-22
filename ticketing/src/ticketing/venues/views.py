@@ -191,6 +191,9 @@ def frontend_drawing(request):
 def show(request):
     venue_id = int(request.matchdict.get('venue_id', 0))
     venue = Venue.get(venue_id, organization_id=request.context.user.organization_id)
+    if venue is None:
+        return HTTPNotFound("Venue id #%d not found" % venue_id)
+
     site = Site.get(venue.site_id)
     root = None
     if site._metadata != None:
