@@ -171,12 +171,31 @@ class Venue(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         logger.info('[copy] Seat - SeatAttribute, SeatStatus, SeatIndex start')
         default_stock = Stock.get_default(performance_id=performance_id)
         for template_seat in template.seats:
-            Seat.create_from_template(
-                template=template_seat,
-                venue_id=venue.id,
-                default_stock_id=default_stock.id,
-                **convert_map
-            )
+            # create Seat
+            seat = Seat.clone(template_seat)
+            seat.venue_id = venue.id
+            if 'stock_id' in convert_map and template_seat.stock:
+                seat.stock_id = convert_map['stock_id'][template_seat.stock.id]
+            else:
+                seat.stock_id = default_stock.id
+            for template_attribute in template_seat.attributes:
+                seat[template_attribute] = template_seat[template_attribute]
+            seat.created_at = datetime.now()
+            seat.updated_at = datetime.now()
+
+            # create SeatStatus
+            seat.status_ = SeatStatus(status=SeatStatusEnum.Vacant.v)
+
+            # create SeatIndex
+            seat_indexes = []
+            for template_seat_index in template_seat.indexes:
+                seat_index = SeatIndex.clone(template_seat_index)
+                if 'seat_index_type' in convert_map:
+                    seat_index.seat_index_type_id = convert_map['seat_index_type'][template_seat_index.seat_index_type_id]
+                seat_indexes.append(seat_index)
+            seat.indexes = seat_indexes
+
+            DBSession.add(seat)
         logger.info('[copy] Seat - SeatAttribute, SeatStatus, SeatIndex end')
 
         # defaultのStockに未割当の席数をセット
@@ -287,30 +306,6 @@ class Seat(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                 Product.sales_segment_id==sales_segment.id
             )
 
-    @staticmethod
-    def create_from_template(template, venue_id, default_stock_id, **kwargs):
-        # create Seat
-        seat = Seat.clone(template)
-        seat.venue_id = venue_id
-        if 'stock_id' in kwargs and template.stock:
-            seat.stock_id = kwargs['stock_id'][template.stock.id]
-        else:
-            seat.stock_id = default_stock_id
-        for template_attribute in template.attributes:
-            seat[template_attribute] = template[template_attribute]
-        seat.save()
-
-        # create SeatStatus
-        SeatStatus.create_default(seat_id=seat.id)
-
-        # create SeatIndex
-        for template_seat_index in template.indexes:
-            SeatIndex.create_from_template(
-                template=template_seat_index,
-                seat_id=seat.id,
-                **kwargs
-            )
-
     def delete_cascade(self):
         # delete SeatStatus
         seat_status = SeatStatus.filter_by(seat_id=self.id).first()
@@ -345,11 +340,6 @@ class SeatStatus(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = "SeatStatus"
     seat_id = Column(Identifier, ForeignKey("Seat.id", ondelete='CASCADE'), primary_key=True)
     status = Column(Integer)
-
-    @staticmethod
-    def create_default(seat_id):
-        seat_status = SeatStatus(status=SeatStatusEnum.Vacant.v, seat_id=seat_id)
-        seat_status.save()
 
     @staticmethod
     def get_for_update(stock_id):
@@ -537,11 +527,14 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                     ProductItem.filter_by(product_id=org_id)\
                                .filter_by(performance_id=self.id)\
                                .update({'product_id':new_id})
-            logger.info('[copy] SalesSegment start')
+            logger.info('[copy] SalesSegment end')
 
         # create Venue - VenueArea, Seat - SeatAttribute
         if hasattr(self, 'create_venue_id') and self.venue_id:
-            template_venue = Venue.get(self.venue_id)
+            template_venue = Venue.query.filter_by(id=self.venue_id).options(
+                joinedload(Venue.seats, Seat.indexes),
+                joinedload(Venue.seats, Seat.attributes_),
+            ).first()
             Venue.create_from_template(
                 template=template_venue,
                 performance_id=self.id,
@@ -1864,14 +1857,6 @@ class SeatIndex(Base, BaseModel):
     seat_id            = Column(Identifier, ForeignKey('Seat.id', ondelete='CASCADE'), primary_key=True)
     index              = Column(Integer, nullable=False)
     seat               = relationship('Seat', backref='indexes')
-
-    @staticmethod
-    def create_from_template(template, seat_id, **kwargs):
-        seat_index = SeatIndex.clone(template)
-        seat_index.seat_id = seat_id
-        if 'seat_index_type' in kwargs:
-            seat_index.seat_index_type_id = kwargs['seat_index_type'][template.seat_index_type_id]
-        seat_index.save()
 
 class OranizationTypeEnum(StandardEnum):
     Standard = 1
