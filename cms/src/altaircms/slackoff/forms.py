@@ -411,13 +411,14 @@ class HotWordForm(Form):
 
 class PageDefaultInfoForm(Form):
     url_prefix = fields.TextField(label=u"urlのフォーマット", validators=[])    
-    title_prefix = fields.TextField(label=u"titleのフォーマット", validators=[])    
-    description = fields.TextField(label=u"descriptionのデフォルト値",  widget=widgets.TextArea())    
+    title_prefix = fields.TextField(label=u"タイトルの接頭語", validators=[])
+    title_suffix = fields.TextField(label=u"タイトルの接尾語", validators=[])
+    description = fields.TextField(label=u"descriptionのデフォルト値",  widget=widgets.TextArea())
     keywords = fields.TextField(label=u"keywordsのデフォルト値",  widget=widgets.TextArea())    
     pagetype = dynamic_query_select_field_factory(PageType, 
                                                   label=u"ページタイプ", 
                                                   get_label=lambda obj: obj.label)
-    __display_fields__ = ["pagetype", "title_prefix", "url_prefix", "keywords", "description"]
+    __display_fields__ = ["pagetype", "title_prefix", "title_suffix", "url_prefix", "keywords", "description"]
 
 class PageTypeForm(Form):
     name = fields.TextField(label=u"名前", validators=[required_field()])

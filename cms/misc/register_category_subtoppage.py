@@ -68,7 +68,9 @@ def create_page(env, organization_id, layout, genre):
     params = {
         "name": info.name, 
         "caption": info.caption, 
-        "title": info.title, 
+        "title_prefix": info.title_prefix,
+        "title": info.title,
+        "title_suffix": info.title_suffix,
         "event": None, 
         "url": info.url.lstrip("/") if not info.url.startswith(("http://", "https://")) else info.url, 
         "genre": unicode(genre.id), 

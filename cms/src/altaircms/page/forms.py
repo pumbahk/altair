@@ -96,7 +96,9 @@ class PageForm(Form):
     pagetype = dynamic_query_select_field_factory(PageType, allow_blank=False, label=u"ページタイプ", 
                                                   get_label=lambda o: o.label, 
                                                   dynamic_query=pagetype_filter)
+    title_prefix = fields.TextField(label=u"ページタイトル（接頭語）")
     title = fields.TextField(label=u"ページタイトル", validators=[validators.Required()])
+    title_suffix = fields.TextField(label=u"ページタイトル（接尾語）")
 
     description = fields.TextField(label=u"概要", widget=widgets.TextArea())
     keywords = fields.TextField(widget=widgets.TextArea())
