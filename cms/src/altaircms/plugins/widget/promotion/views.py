@@ -63,6 +63,24 @@ def promotion_main_image(context, request):
     pm = api.get_promotion_manager(request)
     return pm.main_image_info(request)
 
+from .api import get_interval_time
+from .api import set_interval_time
+
+@view_defaults(renderer="json", route_name="internal.api.promotion.interval")
+class PromotionIntervalTimeView(object):
+    def _validate(self, request):
+        pass
+
+    @view_config(request_method="GET")
+    def get(self):
+        return {"url": self.request.url, "status": True, "data": get_interval_time()}
+
+    @view_config(request_param="interval_time", request_method="POST")
+    def post(self):
+        prev = get_interval_time()
+        set_interval_time(self.request.POST["interval_time"])
+        return {"url": self.request.url, "status": True, "data": get_interval_time(), "prev": prev}
+
 # @view_config(route_name="promotion_slideshow", renderer="altaircms.plugins.widget:promotion/slideshow.html", request_method="GET", 
 #              decorator="altaircms.lib.fanstatic_decorator.with_jquery")
 # def promotion_slideshow(context, request):

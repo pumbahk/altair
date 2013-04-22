@@ -14,10 +14,3 @@ def parse_and_save_event(request, parsed):
     # import pprint
     # pprint.pprint(parsed)
     return Scanner(DBSession, request)(parsed)
-
-def validate_apikey(apikey):
-    try:
-        APIKey.query.filter_by(apikey=apikey).one()
-    except NoResultFound:
-        return False
-    return True

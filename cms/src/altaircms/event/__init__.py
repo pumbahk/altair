@@ -28,7 +28,7 @@ def includeme(config):
     config.add_route('api_event_register', '/api/event/register')
 
     reg = config.registry
-    validate_apikey = config.maybe_dotted('.api.validate_apikey')
+    validate_apikey = config.maybe_dotted('altaircms.auth.api.validate_apikey')
     reg.registerUtility(validate_apikey, IAPIKeyValidator)
     event_repository = config.maybe_dotted('.api.EventRepositry')
     reg.registerUtility(event_repository(), IEventRepository)

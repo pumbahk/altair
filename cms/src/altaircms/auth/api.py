@@ -7,7 +7,7 @@ import logging
 logger = logging.getLogger(__file__)
 
 from pyramid.security import forget
-from .models import Organization
+from .models import Organization, APIKey
 from .interfaces import ILogoutAction
 from .interfaces import IActionResult
 from .interfaces import IOAuthComponent
@@ -170,6 +170,10 @@ def get_or_404(qs, criteria):
     if r is None:
         raise HTTPNotFound("----")
     return r
+
+def validate_apikey(apikey):
+    return bool(APIKey.query.filter_by(apikey=apikey).first())
+
 
 # def raise_error_if_notallowable(request, obj):
 #     if request.organization.id != obj.organization_id:
