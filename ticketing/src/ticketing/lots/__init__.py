@@ -8,6 +8,8 @@ from pyramid.interfaces import IRequest, IDict
 from pyramid_beaker import session_factory_from_settings
 from pyramid.authorization import ACLAuthorizationPolicy
 from pyramid.tweens import EXCVIEW
+from pyramid_selectable_renderer import SelectableRendererSetup
+from pyramid_selectable_renderer.custom import RecieveTemplatePathFormat, RecieveTemplatePathCandidatesDict, SelectByRequestGen
 from ticketing.core.api import get_organization
 
 import sqlalchemy as sa
@@ -28,12 +30,18 @@ def register_globals(event):
     event.update(h=helpers)
 
 
-def selectable_renderer(config):
-    config.include("ticketing.cart.selectable_renderer")
-    domain_candidates = json.loads(config.registry.settings["altair.cart.domain.mapping"])
-    config.registry.utilities.register([], IDict, "altair.cart.domain.mapping", domain_candidates)
-    selector = config.maybe_dotted("ticketing.cart.selectable_renderer.ByDomainMappingSelector")(domain_candidates)
-    config.add_selectable_renderer_selector(selector)
+@SelectByRequestGen.generate
+def get_template_path_args(request):
+    try:
+        return dict(membership=get_organization(request).short_name)
+    except:
+        return dict(membership="__default__")
+
+selectable_renderer = SelectableRendererSetup(
+    RecieveTemplatePathFormat,
+    get_template_path_args,
+    renderer_name="selectable_renderer"
+    )
 
 def includeme(config):
     config.include(setup_cart)
@@ -41,7 +49,7 @@ def includeme(config):
     config.add_subscriber(register_globals, 'pyramid.events.BeforeRender')
     config.add_renderer('.html' , 'pyramid.mako_templating.renderer_factory')
     config.add_renderer('json'  , 'ticketing.renderers.json_renderer_factory')
-    selectable_renderer(config)
+    selectable_renderer.register_to(config)
 
     # 申し込みフェーズ
     config.add_route('lots.entry.index', 'events/{event_id}/entry/{lot_id}')

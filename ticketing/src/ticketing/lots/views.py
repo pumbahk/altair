@@ -18,6 +18,7 @@ from ticketing.cart.exceptions import NoCartError
 from . import api
 from . import helpers as h
 from . import schemas
+from . import selectable_renderer
 from .exceptions import NotElectedException
 from .models import (
     #Lot,
@@ -42,7 +43,7 @@ def no_cart_error(context, request):
     logger.warning(context)
     return HTTPNotFound()
 
-@view_defaults(route_name='lots.entry.index', renderer="index.html")
+@view_defaults(route_name='lots.entry.index', renderer=selectable_renderer("pc/%(membership)s/index.html"))
 class EntryLotView(object):
     """
     申し込み画面
@@ -170,7 +171,7 @@ class EntryLotView(object):
         location = urls.entry_confirm(self.request)
         return HTTPFound(location=location)
 
-@view_defaults(route_name='lots.entry.confirm', renderer="confirm.html")
+@view_defaults(route_name='lots.entry.confirm', renderer=selectable_renderer("pc/%(membership)s/confirm.html"))
 class ConfirmLotEntryView(object):
     def __init__(self, context, request):
         self.context = context
@@ -238,7 +239,7 @@ class ConfirmLotEntryView(object):
 
         return HTTPFound(location=urls.entry_completion(self.request))
 
-@view_defaults(route_name='lots.entry.completion', renderer="completion.html")
+@view_defaults(route_name='lots.entry.completion', renderer=selectable_renderer("pc/%(membership)s/completion.html"))
 class CompletionLotEntryView(object):
     """ 申し込み完了 """
 
@@ -261,13 +262,13 @@ class LotReviewView(object):
         self.context = context
         self.request = request
 
-    @view_config(request_method="GET", renderer="review_form.html")
+    @view_config(request_method="GET", renderer=selectable_renderer("pc/%(membership)s/review_form.html"))
     def get(self):
         """ 申し込み確認照会フォーム """
         form = schemas.ShowLotEntryForm()
         return dict(form=form)
 
-    @view_config(request_method="POST", renderer="review.html")
+    @view_config(request_method="POST", renderer=selectable_renderer("pc/%(membership)s/review.html"))
     def post(self):
         """ 申し込み情報表示"""
         form = schemas.ShowLotEntryForm(formdata=self.request.params)
@@ -292,7 +293,7 @@ class LotReviewView(object):
             is_ordered=lot_entry.is_ordered,
             payment_url=self.request.route_url('lots.payment.index', event_id=event_id, lot_id=lot_id) if lot_entry.is_elected else None) 
 
-@view_defaults(route_name='lots.payment.index', renderer='index_2.html')
+@view_defaults(route_name='lots.payment.index', renderer=selectable_renderer("pc/%(membership)s/index_2.html"))
 class PaymentView(object):
     """ [当選者のみ]
     支払方法選択
@@ -384,7 +385,7 @@ class PaymentView(object):
             entry_no=lot_entry.entry_no)
         return HTTPFound(location)
 
-@view_defaults(route_name='lots.payment.confirm', renderer='confirm_2.html')
+@view_defaults(route_name='lots.payment.confirm', renderer=selectable_renderer("pc/%(membership)s/confirm_2.html"))
 class PaymentConfirm(object):
     def __init__(self, request):
         self.request = request
@@ -422,7 +423,7 @@ class PaymentConfirm(object):
         lot_entry.order = order
         return HTTPFound(location=urls.payment_completion(self.request))
 
-@view_defaults(route_name='lots.payment.completion', renderer='completion_2.html')
+@view_defaults(route_name='lots.payment.completion', renderer=selectable_renderer("pc/%(membership)s/completion_2.html"))
 class PaymentCompleted(object):
     """ [当選者のみ]
     """
