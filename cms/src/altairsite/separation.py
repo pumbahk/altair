@@ -46,7 +46,7 @@ class AllowableQueryFilterByOrganization(object):
 
 ## selectable renderer
 from pyramid_selectable_renderer import SelectableRendererSetup 
-from pyramid_selectable_renderer.custom import RecieveTemplatePathFormat, RecieveTemplatePathCandidatesDict
+from pyramid_selectable_renderer.custom import ReceiveTemplatePathFormat, ReceiveTemplatePathCandidatesDict
 from pyramid_selectable_renderer.custom import SelectByRequestGen
 
 @SelectByRequestGen.generate
@@ -58,12 +58,12 @@ def get_template_path_args(request):
 
 ## use this. view_config(...,  renderer=selectable_renderer="%(prefix)/errors.html")
 selectable_renderer = SelectableRendererSetup(
-    RecieveTemplatePathFormat,
+    ReceiveTemplatePathFormat,
     get_template_path_args, 
     renderer_name = "selectable_renderer")
 
 tstar_mobile_or_not_renderer = SelectableRendererSetup(
-    RecieveTemplatePathCandidatesDict, 
+    ReceiveTemplatePathCandidatesDict, 
     SelectByRequestGen.generate(lambda r : r.organization.short_name), 
     renderer_name = "tstar_mobile_or_not_renderer"
 )

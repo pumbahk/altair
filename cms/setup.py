@@ -28,7 +28,7 @@ requires = [
     'pyramid_who',
     'uamobile', 
     'fluent-logger == 0.3.3moriyoshi2',
-    'pyramid_selectable_renderer',
+    'pyramid_selectable_renderer >= 0.0.4',
     'altair.findable_label', 
     'altair.encodingfixer', 
     'altair.exclog', 
