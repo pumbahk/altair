@@ -5,6 +5,7 @@ from wtforms.validators  import ValidationError
 
 __all__ = ["ValidationError", "SESSION_NAME", "includeme"]
 SESSION_NAME = "asset"
+PROXY_FACTORY_NAME = "asset"
 
 def _make_asset_filesession(assetspec):
     from ..filelib import FileSession
@@ -14,6 +15,12 @@ def _make_asset_filesession(assetspec):
                               on_file_exists=on_file_exists_try_rename)
     filesession.assetspec = assetspec
     return filesession
+
+def install_virtual_asset_factory(config):
+    from ..modelmanager.virtualasset import VirtualAssetFactory
+    from ..modelmanager.interfaces import IVirtualProxyFactory
+    provided = VirtualAssetFactory()
+    config.registry(provided, IVirtualProxyFactory(), name=PROXY_FACTORY_NAME)
 
 
 def includeme(config):

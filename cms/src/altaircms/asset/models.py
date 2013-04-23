@@ -79,6 +79,11 @@ class ImageAsset(Asset):
     def image_path(self):
         return self.filepath
 
+    @property
+    def image_url(self):
+        return self.file_url
+
+
 class FlashAsset(Asset):
     implements(IAsset, IHasMedia)
     type = "flash"
@@ -102,6 +107,10 @@ class FlashAsset(Asset):
     def image_path(self):
         return self.thumbnail_path
 
+    @property
+    def image_url(self):
+        return self.thumbnail_url
+
 class MovieAsset(Asset):
     implements(IAsset, IHasMedia)
     type = "movie"
@@ -123,6 +132,10 @@ class MovieAsset(Asset):
     @property
     def image_path(self):
         return self.thumbnail_path
+
+    @property
+    def image_url(self):
+        return self.thumbnail_url
 
 # class CssAsset(Asset):
 #     pass
