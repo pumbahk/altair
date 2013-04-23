@@ -71,6 +71,8 @@ class ImageAsset(Asset):
     height = sa.Column(sa.Integer)
     filepath = sa.Column(sa.String(255))
     thumbnail_path = sa.Column(sa.String(255))
+    file_url = sa.Column(sa.String(255))
+    thumbnail_url = sa.Column(sa.String(255))
     mimetype = sa.Column(sa.String(255), default="")
 
     @property
@@ -93,6 +95,8 @@ class FlashAsset(Asset):
     filepath = sa.Column(sa.String(255))
     mimetype = sa.Column(sa.String(255), default='application/x-shockwave-flash')
     thumbnail_path = sa.Column(sa.String(255))
+    file_url = sa.Column(sa.String(255))
+    thumbnail_url = sa.Column(sa.String(255))
 
     @property
     def image_path(self):
@@ -113,6 +117,8 @@ class MovieAsset(Asset):
     filepath = sa.Column(sa.String(255))
     mimetype = sa.Column(sa.String(255), default="")
     thumbnail_path = sa.Column(sa.String(255))
+    file_url = sa.Column(sa.String(255))
+    thumbnail_url = sa.Column(sa.String(255))
 
     @property
     def image_path(self):

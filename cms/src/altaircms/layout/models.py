@@ -21,7 +21,7 @@ class Layout(BaseOriginalMixin, WithOrganizationMixin, Base):
     id = Column(Integer(), primary_key=True)
     created_at = Column(DateTime(), default=datetime.now())
     updated_at = Column(DateTime(), default=datetime.now())
-
+    file_url = Column(String(255))
     title = Column(String(255))
     template_filename = Column(String(255))
     DEFAULT_BLOCKS = "[]"
