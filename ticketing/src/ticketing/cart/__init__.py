@@ -143,9 +143,7 @@ def main(global_config, **local_config):
                             config.registry.settings["altaircms.apikey"]
                             )
 
-    import altair.pyramid_boto
-    altair.pyramid_boto.register_default_implementations(config)
-    import altair.pyramid_assets
-    altair.pyramid_assets.register_default_implementations(config)
+    config.include('altair.pyramid_assets')
+    config.include('altair.pyramid_boto')
 
     return config.make_wsgi_app()

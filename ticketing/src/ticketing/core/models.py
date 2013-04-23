@@ -41,7 +41,7 @@ from ticketing.users.models import User, UserCredential, MemberGroup, MemberGrou
 from ticketing.sej.models import SejOrder, SejTenant, SejTicket, SejRefundTicket, SejRefundEvent
 from ticketing.sej.exceptions import SejServerError
 from ticketing.sej.payment import request_cancel_order
-from altair.pyramid_assets.interfaces import IAssetResolver
+from altair.pyramid_assets import get_resolver 
 from ticketing.utils import myurljoin, tristate, is_nonmobile_email_address, sensible_alnum_decode
 from ticketing.helpers import todate, todatetime
 from ticketing.payments import plugins
@@ -78,14 +78,14 @@ class Site(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     def _metadata(self):
         __metadata = getattr(self, '__metadata', None)
         if not __metadata:
-            resolver = get_current_registry().queryUtility(IAssetResolver)
+            resolver = get_resolver(get_current_registry())
             self.__metadata = json.load(resolver.resolve(self.metadata_url).stream())
         return self.__metadata
 
     def get_drawing(self, name):
         page_meta = self._metadata[u'pages'].get(name)
         if page_meta is not None:
-            resolver = get_current_registry().queryUtility(IAssetResolver)
+            resolver = get_resolver(get_current_registry())
             return resolver.resolve(myurljoin(self.metadata_url, name))
         else:
             return None
