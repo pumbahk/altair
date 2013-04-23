@@ -45,7 +45,7 @@ tests_require = [
     "coverage",
     "webtest",
     "nosexcover",
-    "mock",
+    "mock", 
 ]
 
 devtools_require = [

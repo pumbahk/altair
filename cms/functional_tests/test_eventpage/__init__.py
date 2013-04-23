@@ -27,14 +27,14 @@ class NotifiedEventInfoFromBackendTests(AppFunctionalTests):
 
     def test_403_if_hasnot_apikey(self):
         app = self._getTarget()
-        response = app.post_json("/api/event/register", {}, [], status=403)
+        response = app.post_json("/api/event/register", params={}, headers=[], status=403)
         self.assertEqual(response.status_int, 403)
 
 
     def test_403_if_invalid_apikey(self):
         invalid_api_header = (CORRECT_API_HEADER_NAME, "heke-heke-heke")
         app = self._getTarget()
-        response = app.post_json("/api/event/register", {}, [invalid_api_header], status=403)
+        response = app.post_json("/api/event/register", params={}, headers=[invalid_api_header], status=403)
         self.assertEqual(response.status_int, 403)
         
     def test_400_if_access_with_correct_apikey_but_invalid_paramater(self):
@@ -43,7 +43,7 @@ class NotifiedEventInfoFromBackendTests(AppFunctionalTests):
         correct_api_header = (CORRECT_API_HEADER_NAME, apikey.apikey)
         app = self._getTarget()
 
-        response = app.post_json("/api/event/register", {}, [correct_api_header], status=400)
+        response = app.post_json("/api/event/register", params={}, headers=[correct_api_header], status=400)
         self.assertEqual(response.status_int, 400)
         result = json.loads(response.ubody)
 
@@ -61,7 +61,7 @@ class NotifiedEventInfoFromBackendTests(AppFunctionalTests):
         app = self._getTarget()
 
         params = json.loads(get_pushed_data_from_backend())
-        response = app.post_json("/api/event/register", params, [correct_api_header])
+        response = app.post_json("/api/event/register", headers=[correct_api_header], params=params)
         self.assertEqual(response.status_int, 201)
 
 
@@ -132,7 +132,7 @@ class EventDetailPageCreateTests(AppFunctionalTests):
         app = cls._getTarget()
         
         params = json.loads(get_pushed_data_from_backend())
-        app.post_json("/api/event/register", params, [correct_api_header])
+        app.post_json("/api/event/register", headers=[correct_api_header], params=params)
 
     @classmethod
     def tearDownClass(cls):

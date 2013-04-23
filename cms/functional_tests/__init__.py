@@ -20,6 +20,24 @@ _backend_app = None
 _lock = None
 
 
+### todo:replaces
+from bs4 import BeautifulSoup
+class ComfortableTestResponse(webtest.TestResponse):
+    @property
+    def html(self):
+        if 'html' not in self.content_type:
+            raise AttributeError(
+                "Not an HTML response body (content-type: %s)"
+                % self.content_type)
+        soup = BeautifulSoup(self.testbody)
+        return soup
+
+class ComfortableTestRequest(webtest.TestRequest):
+     ResponseClass = ComfortableTestResponse
+
+class ComfortableTestApp(webtest.TestApp):
+     RequestClass = ComfortableTestRequest
+
 def setUpModule():
      run_mock_backend_server({})
      build_app()
@@ -41,7 +59,7 @@ def build_app():
     here = set_here(os.path.join(altaircms.__path__[0], "../../"))
     _app = loadapp(_config_spec, None,  global_conf={}, relative_to=here)
     _registry = _app.values()[0].registry
-    _app = webtest.TestApp(_app, relative_to=os.path.join(here, "functional_tests"))
+    _app = ComfortableTestApp(_app, relative_to=os.path.join(here, "functional_tests"))
     return _app
 
 def get_app():
