@@ -16,6 +16,7 @@ class QueueSettings(object):
 
         self.queue = queue
         self.passive = passive
+        self.durable = durable
         self.exclusive = exclusive
         self.auto_delete = auto_delete
         self.nowait = nowait

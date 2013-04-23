@@ -5,7 +5,6 @@ logger = logging.getLogger(__name__)
 
 
 def includeme(config):
-    #config.add_task(sample_task)
     config.scan(".example")
 
 @task_config()
