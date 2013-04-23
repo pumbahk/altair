@@ -40,7 +40,7 @@ from ticketing.tickets.convert import to_opcodes
 from ticketing.views import BaseView
 from ticketing.fanstatic import with_bootstrap
 from ticketing.orders.events import notify_order_canceled
-from ticketing.payments.payment import Payment
+from ticketing.payments.payment import Payment, get_delivery_plugin
 from ticketing.payments import plugins as payment_plugins
 from ticketing.tickets.utils import build_dicts_from_ordered_product_item
 from ticketing.cart import api
@@ -932,8 +932,7 @@ class OrdersReserveView(BaseView):
             cart.operator = self.context.user
 
             # コンビニ決済は通知を行うので購入者情報が必要
-            payment_plugin_id = cart.payment_delivery_pair.payment_method.payment_plugin_id
-            if payment_plugin_id == payment_plugins.SEJ_PAYMENT_PLUGIN_ID:
+            if cart.payment_delivery_pair.id in f.payment_delivery_method_pair_id.sej_plugin_id:
                 cart.shipping_address = ShippingAddress(
                     first_name=f.first_name.data,
                     last_name=f.last_name.data,
@@ -981,16 +980,29 @@ class OrdersReserveView(BaseView):
         try:
             # create order
             cart = api.get_cart(self.request)
+
+            payment = Payment(cart, self.request)
             payment_plugin_id = cart.payment_delivery_pair.payment_method.payment_plugin_id
             need_payment = (payment_plugin_id == payment_plugins.SEJ_PAYMENT_PLUGIN_ID)
+
             if need_payment:
-                payment = Payment(cart, self.request)
                 order = payment.call_payment()
             else:
                 order = Order.create_from_cart(cart)
                 order.organization_id = order.performance.event.organization_id
                 order.save()
                 cart.order = order
+
+                delivery_plugin_id = cart.payment_delivery_pair.delivery_method.delivery_plugin_id
+                delivery_plugin = get_delivery_plugin(self.request, delivery_plugin_id)
+                if delivery_plugin:
+                    try:
+                        delivery_plugin.finish(self.request, cart)
+                    except Exception as e:
+                        logger.error('call delivery plugin error(%s)' % e.message)
+                        raise HTTPBadRequest(body=json.dumps({
+                            'message':u'配送手続でエラーが発生しました',
+                        }))
                 cart.finish()
 
             order.note = post_data.get('note')

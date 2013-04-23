@@ -30,7 +30,7 @@
     % endif
     $('#payment_delivery_method_pair_id').change(function(){
       var shipping_address = $('.shipping-address');
-      if ($.inArray(parseInt($(this).val()), ${form.payment_delivery_method_pair_id.sej_payment_plugin_id}) == -1) {
+      if ($.inArray(parseInt($(this).val()), ${form.payment_delivery_method_pair_id.sej_plugin_id}) == -1) {
         shipping_address.css('display', 'none');
       } else {
         shipping_address.css('display', 'block');
@@ -121,7 +121,7 @@
       <div class="shipping-address">
         <div class="control-group">
           <div class="controls">
-            <p style="color: #BA0000;">※ コンビニ決済は、払込票番号を発行する為に購入者情報が必要です。</p>
+            <p style="color: #BA0000;">※ コンビニ決済およびコンビニ受取は、払込票番号・引換票を発行する為に購入者情報が必要です。</p>
           </div>
         </div>
         <div class="control-group">

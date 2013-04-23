@@ -420,14 +420,15 @@ class OrderReserveForm(Form):
                                          .filter(now<=SalesSegment.end_at)\
                                          .join(SalesSegmentGroup).filter(SalesSegmentGroup.kind=='sales_counter').all()
             self.payment_delivery_method_pair_id.choices = []
-            self.payment_delivery_method_pair_id.sej_payment_plugin_id = []
+            self.payment_delivery_method_pair_id.sej_plugin_id = []
             for sales_segment in sales_segments:
                 for pdmp in sales_segment.payment_delivery_method_pairs:
                     self.payment_delivery_method_pair_id.choices.append(
                         (pdmp.id, '%s  -  %s' % (pdmp.payment_method.name, pdmp.delivery_method.name))
                     )
-                    if pdmp.payment_method.payment_plugin_id == plugins.SEJ_PAYMENT_PLUGIN_ID:
-                        self.payment_delivery_method_pair_id.sej_payment_plugin_id.append(int(pdmp.id))
+                    if pdmp.payment_method.payment_plugin_id == plugins.SEJ_PAYMENT_PLUGIN_ID or \
+                       pdmp.delivery_method.delivery_plugin_id == plugins.SEJ_DELIVERY_PLUGIN_ID:
+                        self.payment_delivery_method_pair_id.sej_plugin_id.append(int(pdmp.id))
 
             self.sales_counter_payment_method_id.choices = [(0, '')]
             for pm in PaymentMethod.filter_by_organization_id(performance.event.organization_id):
@@ -545,13 +546,12 @@ class OrderReserveForm(Form):
             raise ValidationError(u'選択された座席に紐づく予約可能な商品がありません')
 
     def validate_payment_delivery_method_pair_id(form, field):
-        if field.data:
-            pdmp = PaymentDeliveryMethodPair.get(field.data)
-            if pdmp and pdmp.payment_method.payment_plugin_id == plugins.SEJ_PAYMENT_PLUGIN_ID:
-                for field_name in ['last_name', 'first_name', 'last_name_kana', 'first_name_kana', 'tel_1']:
-                    field = getattr(form, field_name)
-                    if not field.data:
-                        raise ValidationError(u'購入者情報を入力してください')
+        if field.data and field.data in field.sej_plugin_id:
+            for field_name in ['last_name', 'first_name', 'last_name_kana', 'first_name_kana', 'tel_1']:
+                field = getattr(form, field_name)
+                if not field.data:
+                    raise ValidationError(u'購入者情報を入力してください')
+
 
 class OrderRefundForm(Form):
 
