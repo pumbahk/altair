@@ -27,7 +27,6 @@ def mobile_request_factory(handler, registry):
 def mobile_encoding_convert_factory(handler, registry):
     def tween(request):
         request.mobile_ua = detect(request)
-        debug_mobile = request.registry.settings.get('altair.debug_mobile', False)
 
         if not request.mobile_ua.carrier.is_nonmobile:
             ## DeprecationWarning: Use req = req.decode('cp932')
