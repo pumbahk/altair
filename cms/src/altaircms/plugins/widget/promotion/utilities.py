@@ -27,10 +27,10 @@ class PromotionSheet(object):
 
         selected = punits[idx]
         return PromotionInfo(
-            thumbnails=[h.asset.to_show_page(request, pu.main_image, filepath=pu.main_image.thumbnail_path) for pu in punits], 
+            thumbnails=[h.asset.rendering_object(request, pu.main_image).thumbnail_path for pu in punits], 
             idx=idx, 
             message=selected.text, 
-            main=h.asset.to_show_page(request, selected.main_image), 
+            main=h.asset.rendering_object(request, selected.main_image).filepath, 
             width= selected.main_image.width, 
             height= selected.main_image.height, 
             main_link=h.link.get_link_from_promotion(request, selected), 

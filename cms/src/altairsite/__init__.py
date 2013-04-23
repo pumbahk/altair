@@ -34,6 +34,7 @@ def main(global_config, **local_config):
     config.include("altaircms.topic:install_topic_searcher")
     config.include("altaircms.page:install_pageset_searcher")
     config.include("altaircms.widget:install_has_widget_page_finder")
+    config.include("altaircms.asset:install_virtual_asset")
 
     ## organization mapping
     OrganizationMapping = config.maybe_dotted("altaircms.auth.api.OrganizationMapping")

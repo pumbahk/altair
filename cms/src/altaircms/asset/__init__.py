@@ -16,11 +16,13 @@ def _make_asset_filesession(assetspec):
     filesession.assetspec = assetspec
     return filesession
 
-def install_virtual_asset_factory(config):
+def install_virtual_asset(config):
     from ..modelmanager.virtualasset import VirtualAssetFactory
-    from ..modelmanager.interfaces import IVirtualProxyFactory
-    provided = VirtualAssetFactory()
-    config.registry(provided, IVirtualProxyFactory(), name=PROXY_FACTORY_NAME)
+    from ..modelmanager.interfaces import IRenderingObjectFactory
+    provided = VirtualAssetFactory(static_route_name="__staticasset/")
+    config.registry.registerUtility(provided, IRenderingObjectFactory, name=PROXY_FACTORY_NAME)
+    assert config.registry.queryUtility(IRenderingObjectFactory, name=PROXY_FACTORY_NAME)
+
 
 
 def includeme(config):
@@ -28,11 +30,14 @@ def includeme(config):
     altaircms.asset.storepath = altaircms:../../data/assets
     """
     settings = config.registry.settings
+    ## file session
     filesession = _make_asset_filesession(settings["altaircms.asset.storepath"])
     config.add_filesession(filesession, name=SESSION_NAME)
 
-    add_route = functools.partial(config.add_route, factory=".resources.AssetResource")
+    ## virtual asset
+    config.include(install_virtual_asset)
 
+    add_route = functools.partial(config.add_route, factory=".resources.AssetResource")
     add_route("asset_add", "/asset/{kind}")
     add_route('asset_list', '')
     add_route("asset_image_list", "/image")

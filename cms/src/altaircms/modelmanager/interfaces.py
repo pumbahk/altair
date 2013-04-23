@@ -19,7 +19,7 @@ class IPublishingModelSearcher(Interface):
     def filter_by_genre(genre):
         pass
 
-class IVirtualProxyFactory(Interface):
+class IRenderingObjectFactory(Interface):
     env = Attribute("env")
     def create(*args, **kwargs):
         pass

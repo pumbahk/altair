@@ -3,7 +3,7 @@
 <div class="flash-widget"
      ${widget.html_attributes|n}>
   <div class="box"
-       url="${h.asset.to_show_page(request, widget.asset)}"
+       url="${h.asset.rendering_object(request, widget.asset)}"
        pk="${widget.asset.id}"
        width="${widget.width or widget.asset.width or 480}"
        height="${widget.height or widget.asset.height or 480}"

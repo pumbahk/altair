@@ -6,7 +6,7 @@
   <div>
      % for image in g:
        <div class="item">
-         <img pk="${image.id}" src="${h.asset.to_show_page(request,image,image.thumbnail_path)}" alt="" class="${"managed" if widget.asset==image else ""}"/>
+         <img pk="${image.id}" src="${h.asset.rendering_object(request,image).thumbnail_path}" alt="" class="${"managed" if widget.asset==image else ""}"/>
          <p>title:${image.title} width:${image.width} height:${image.height} </p>
        </div>
      % endfor          
