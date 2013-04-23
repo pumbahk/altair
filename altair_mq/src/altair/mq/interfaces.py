@@ -19,7 +19,7 @@ class IConsumer(Interface):
 
 
 class ITask(Interface):
-    def __call__(message):
+    def __call__(context, message):
         """ execute task by receiving message """
 
 
