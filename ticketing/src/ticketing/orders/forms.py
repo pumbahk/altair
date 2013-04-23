@@ -3,6 +3,7 @@
 import locale
 from datetime import datetime
 
+from pyramid.security import has_permission, ACLAllowed
 from wtforms import Form, ValidationError
 from wtforms import (HiddenField, TextField, SelectField, SelectMultipleField, TextAreaField, BooleanField,
                      RadioField, FieldList, FormField, DecimalField, IntegerField)
@@ -410,6 +411,8 @@ class OrderReserveForm(Form):
 
     def __init__(self, formdata=None, obj=None, prefix='', **kwargs):
         Form.__init__(self, formdata, obj, prefix, **kwargs)
+        if 'request' in kwargs:
+            self.request = kwargs['request']
         if 'performance_id' in kwargs:
             performance = Performance.get(kwargs['performance_id'])
             self.performance_id.data = performance.id
@@ -548,9 +551,17 @@ class OrderReserveForm(Form):
     def validate_payment_delivery_method_pair_id(form, field):
         if field.data and field.data in field.sej_plugin_id:
             for field_name in ['last_name', 'first_name', 'last_name_kana', 'first_name_kana', 'tel_1']:
-                field = getattr(form, field_name)
-                if not field.data:
+                f = getattr(form, field_name)
+                if not f.data:
                     raise ValidationError(u'購入者情報を入力してください')
+
+            # 決済せずにコンビニ受取できるのはadministratorのみ (不正行為対策)
+            pdmp = PaymentDeliveryMethodPair.get(field.data)
+            if pdmp\
+                and pdmp.payment_method.payment_plugin_id != plugins.SEJ_PAYMENT_PLUGIN_ID\
+                and pdmp.delivery_method.delivery_plugin_id == plugins.SEJ_DELIVERY_PLUGIN_ID\
+                and not isinstance(has_permission('administrator', form.request.context, form.request), ACLAllowed):
+                    raise ValidationError(u'この決済引取方法を選択する権限がありません')
 
 
 class OrderRefundForm(Form):
