@@ -82,7 +82,7 @@ def main(global_config, **local_config):
     
         config.include('altair.browserid')
         config.include('altair.exclog')
-        config.include('ticketing.mobile')
+        config.include('altair.mobile')
         config.include('ticketing.core')
         config.include('ticketing.multicheckout')
         config.include('ticketing.checkout')

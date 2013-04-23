@@ -125,7 +125,7 @@ def main(global_config, **local_config):
     config.include('ticketing.fc_auth')
     config.include('ticketing.checkout')
     config.include('ticketing.multicheckout')
-    config.include('ticketing.mobile')
+    config.include('altair.mobile')
     config.include("ticketing.payments")
     config.include('ticketing.payments.plugins')
 

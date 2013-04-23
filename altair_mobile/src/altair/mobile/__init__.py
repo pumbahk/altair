@@ -7,5 +7,5 @@ def includeme(config):
     config.registry.registerUtility(DefaultCarrierDetector(), IMobileCarrierDetector)
 
 def mobile_view_config(**kwargs):
-    return view_config(request_type='ticketing.mobile.interfaces.IMobileRequest', 
+    return view_config(request_type=__name__ + '.interfaces.IMobileRequest', 
                        **kwargs)    

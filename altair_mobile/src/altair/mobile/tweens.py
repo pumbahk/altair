@@ -1,6 +1,6 @@
 import logging
 from zope.interface import directlyProvides
-from ticketing.mobile.interfaces import IMobileRequest
+from .interfaces import IMobileRequest
 from pyramid.threadlocal import manager
 from pyramid.response import Response
 from .api import detect
@@ -20,7 +20,6 @@ def _convert_response_sjis(response):
 
 def mobile_request_factory(handler, registry):
     def tween(request):
-        #directlyProvides(request, IMobileRequest)
         return handler(request)
     return tween
     
@@ -41,7 +40,6 @@ def mobile_encoding_convert_factory(handler, registry):
                 directlyProvides(decoded, IMobileRequest)
                 decoded.registry = request.registry
                 decoded.mobile_ua = request.mobile_ua
-                logger.debug("**this is mobile access**")
                 response = handler(decoded)
                 response = _convert_response_sjis(response)
                 if request.mobile_ua.carrier.is_docomo:
@@ -52,6 +50,5 @@ def mobile_encoding_convert_factory(handler, registry):
                 return Response(status=400, body=str(e))
         else:
             request.is_mobile = False
-            logger.debug("**this is pc access**")
             return handler(request)
     return tween
