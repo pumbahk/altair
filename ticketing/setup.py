@@ -84,7 +84,7 @@ requires = [
     "altair.exclog",
     "altair.now",
     "altair.logicaldeleting",
-    "altair.mq",
+    # "altair.mq",
     "altair.pyramid_assets",
     "altair.pyramid_boto",
     "altair.mobile",
