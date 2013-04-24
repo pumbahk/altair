@@ -32,6 +32,7 @@
 
 import transaction
 from datetime import datetime
+from uuid import uuid4
 from sqlalchemy import sql
 from pyramid.interfaces import IRequest
 import ticketing.cart.api as cart_api
@@ -149,7 +150,7 @@ def get_entry(request, entry_no, tel_no):
             ShippingAddress.tel_2==tel_no)
     ).filter(
         ShippingAddress.id==LotEntry.shipping_address_id
-    ).one()
+    ).first()
 
 
 def generate_entry_no(request, lot_entry):
@@ -301,7 +302,62 @@ def send_rejected_mails(request):
         rejected_entry.mail_sent_at = datetime.now()
         transaction.commit()
 
-
 def get_entry_user(request):
     return None
 
+def new_lot_entry(request, wishes, payment_delivery_method_pair_id, shipping_address_dict, gender, birthday, memo):
+    request.session['lots.entry'] = dict(
+        token=uuid4().hex,
+        wishes=list(wishes),
+        payment_delivery_method_pair_id=payment_delivery_method_pair_id,
+        shipping_address=shipping_address_dict,
+        gender=gender,
+        birthday=birthday,
+        memo=memo
+        )
+    return cart_api.new_order_session(
+        request,
+        client_name=shipping_address_dict["last_name"] + shipping_address_dict["first_name"],
+        payment_delivery_method_pair_id=payment_delivery_method_pair_id,
+        email_1=shipping_address_dict["email_1"],
+        )
+
+class Options(object):
+    OPTIONS_KEY = 'altair.lots.options'
+
+    def __init__(self, request):
+        self.request = request
+        options = request.session.get(self.OPTIONS_KEY)
+        if options is None:
+            request.session[self.OPTIONS_KEY] = options = []
+        self.options = options
+
+    def __del__(self):
+        self.request.session.persist()
+
+    def clear(self):
+        self.request.session[OPTIONS_KEY] = self.options = []
+
+    def performance_selected(self, performance_id):
+        for data in self.options:
+            if data['performance_id'] == performance_id:
+                return True
+        return False
+
+    def __setitem__(self, index, data):
+        if len(self.options) == index:
+            self.options.append(data)
+        else:
+            self.options[index] = data
+
+    def __getitem__(self, index):
+        return self.options[index]
+
+    def __len__(self):
+        return len(self.options)
+
+    def __iter__(self):
+        return iter(self.options)
+
+def get_options(request):
+    return Options(request)

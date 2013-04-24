@@ -44,7 +44,7 @@
                     <p>${lot.description}</p>
 				</div>
 			</div>
-            %if is_elected and not is_ordered:
+            %if entry.is_elected and not entry.is_ordered:
             <div class="confirmBox">
 				<div class="confirmBoxInner">
                     <a href="${payment_url}"> 決済 </a>

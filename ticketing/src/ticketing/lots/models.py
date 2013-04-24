@@ -21,7 +21,7 @@ import sqlalchemy as sa
 import sqlalchemy.orm as orm
 
 from sqlalchemy import sql
-from sqlalchemy.ext.hybrid import hybrid_method
+from sqlalchemy.ext.hybrid import hybrid_property, hybrid_method
 from sqlalchemy.orm.exc import NoResultFound
 from zope.deprecation import deprecate
 
@@ -71,7 +71,13 @@ class LotStatusEnum(StandardEnum):
     Electing = 2 # ワークデータ取り込み済
     Elected = 3 # 確定処理実行済
     Sent = 4
-    
+
+class LotEntryStatusEnum(StandardEnum):
+    New = 0
+    Elected = 1
+    Rejected = 2
+    Ordered = 3
+
 Lot_SalesSegment = sa.Table(
     "Lot_SalesSegment",
     Base.metadata,
@@ -223,19 +229,29 @@ class LotEntry(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     memo = sa.Column(sa.UnicodeText)
 
     @property
+    def status(self):
+        retval = LotEntryStatusEnum.New
+        if self.rejected_at is not None:
+            retval = LotEntryStatusEnum.Rejected
+        else:
+            if self.elected_at is not None:
+                if self.order_id is not None:
+                    retval = LotEntryStatusEnum.Ordered
+                else:
+                    retval = LotEntryStatusEnum.Elected
+        return retval
+
+    @hybrid_property
     def is_elected(self):   
-        return bool(self.elected_at)
+        return self.elected_at != None and self.rejected_at == None
 
-    @property
+    @hybrid_property
     def is_rejected(self):
-        return bool(self.rejected_at)
+        return self.rejected_at != None
 
-    @property
+    @hybrid_property
     def is_ordered(self):
-        if not self.is_elected:
-            return False
-
-        return self.order_id != None
+        return self.is_elected and self.order_id != None
 
     def reject(self):
         now = datetime.now()

@@ -3,11 +3,13 @@ from datetime import datetime
 import logging
 import operator
 import json
-from uuid import uuid4
 
-from pyramid.view import view_config, view_defaults
-from pyramid.httpexceptions import HTTPFound, HTTPNotFound
+from pyramid.view import view_config, view_defaults, render_view_to_response
+from pyramid.httpexceptions import HTTPFound, HTTPNotFound, HTTPBadRequest
 from sqlalchemy.orm.exc import NoResultFound
+
+from wtforms.validators import ValidationError
+from altair.mobile import mobile_view_config
 
 from ticketing.models import DBSession
 from ticketing.core.models import PaymentDeliveryMethodPair
@@ -31,6 +33,15 @@ from . import urls
 logger = logging.getLogger(__name__)
 
 
+def my_render_view_to_response(context, request, view_name=''):
+    from pyramid.interfaces import IViewClassifier, IView
+    from zope.interface import providedBy
+    view_callable = request.registry.adapters.lookup(
+        (IViewClassifier, request.request_iface, providedBy(context)),
+        IView, name=view_name, default=None)
+    if view_callable is None:
+        return None
+    return view_callable(context, request)
 
 @view_config(context=NoResultFound)
 def no_results_found(context, request):
@@ -149,45 +160,42 @@ class EntryLotView(object):
             return self.get(form=cform)
 
 
-        shipping_address = cform.get_validated_address_data()
-        self.request.session['lots.entry'] = dict(
-            token=uuid4().hex,
+        shipping_address_dict = cform.get_validated_address_data()
+        api.new_lot_entry(
             wishes=wishes,
             payment_delivery_method_pair_id=payment_delivery_method_pair_id,
-            shipping_address=shipping_address,
+            shipping_address=shipping_address_dict,
             gender=cform['sex'].data,
             birthday=datetime(int(cform['year'].data),
                               int(cform['month'].data),
                               int(cform['day'].data)),
             memo=cform['memo'].data)
-        cart_api.new_order_session(
-            self.request,
-            client_name=shipping_address["last_name"] + shipping_address["first_name"],
-            payment_delivery_method_pair_id=payment_delivery_method_pair_id,
-            email_1=shipping_address["email_1"],
-        )
-
 
         location = urls.entry_confirm(self.request)
         return HTTPFound(location=location)
 
-@view_defaults(route_name='lots.entry.confirm', renderer=selectable_renderer("pc/%(membership)s/confirm.html"))
+@view_defaults(route_name='lots.entry.confirm')
 class ConfirmLotEntryView(object):
     def __init__(self, context, request):
         self.context = context
         self.request = request
 
-    @view_config(request_method="GET")
+    @view_config(request_method="GET", renderer=selectable_renderer("pc/%(membership)s/confirm.html"))
+    @mobile_view_config(request_method="GET", renderer=selectable_renderer("mobile/%(membership)s/confirm.html"))
     def get(self):
         # セッションから表示
         entry = self.request.session.get('lots.entry')
         if entry is None:
             return self.back_to_form()
         # wishesを表示内容にする
+        event = self.context.event
+        lot = self.context.lot
 
         payment_delivery_method_pair_id = entry['payment_delivery_method_pair_id']
         payment_delivery_method_pair = PaymentDeliveryMethodPair.query.filter(PaymentDeliveryMethodPair.id==payment_delivery_method_pair_id).one()
-        return dict(shipping_address=entry['shipping_address'],
+        return dict(event=event,
+                    lot=lot,
+                    shipping_address=entry['shipping_address'],
                     payment_delivery_method_pair_id=entry['payment_delivery_method_pair_id'],
                     payment_delivery_method_pair=payment_delivery_method_pair,
                     token=entry['token'],
@@ -239,7 +247,7 @@ class ConfirmLotEntryView(object):
 
         return HTTPFound(location=urls.entry_completion(self.request))
 
-@view_defaults(route_name='lots.entry.completion', renderer=selectable_renderer("pc/%(membership)s/completion.html"))
+@view_defaults(route_name='lots.entry.completion')
 class CompletionLotEntryView(object):
     """ 申し込み完了 """
 
@@ -247,12 +255,13 @@ class CompletionLotEntryView(object):
         self.context = context
         self.request = request
 
-    @view_config(request_method="GET")
+    @view_config(request_method="GET", renderer=selectable_renderer("pc/%(membership)s/completion.html"))
+    @mobile_view_config(request_method="GET", renderer=selectable_renderer("mobile/%(membership)s/completion.html"))
     def get(self):
         """ 完了画面 """
         entry_no = self.request.session['lots.entry_no']
         entry = DBSession.query(LotEntry).filter(LotEntry.entry_no==entry_no).one()
-        return dict(entry=entry)
+        return dict(event=self.context.event, lot=self.context.lot, sales_segment=self.context.lot.sales_segment, entry=entry)
 
 @view_defaults(route_name='lots.review.index')
 class LotReviewView(object):
@@ -263,37 +272,44 @@ class LotReviewView(object):
         self.request = request
 
     @view_config(request_method="GET", renderer=selectable_renderer("pc/%(membership)s/review_form.html"))
+    @mobile_view_config(request_method="GET", renderer=selectable_renderer("mobile/%(membership)s/review_form.html"))
     def get(self):
         """ 申し込み確認照会フォーム """
         form = schemas.ShowLotEntryForm()
         return dict(form=form)
 
-    @view_config(request_method="POST", renderer=selectable_renderer("pc/%(membership)s/review.html"))
+    @view_config(request_method="POST", renderer=selectable_renderer("pc/%(membership)s/review_form.html"))
+    @mobile_view_config(request_method="POST", renderer=selectable_renderer("mobile/%(membership)s/review_form.html"))
     def post(self):
         """ 申し込み情報表示"""
         form = schemas.ShowLotEntryForm(formdata=self.request.params)
-        if not form.validate():
-            self.request.override_renderer = "review_form.html"
+        try:
+            if not form.validate():
+                raise ValidationError()
+            entry_no = form.entry_no.data
+            tel_no = form.tel_no.data
+            lot_entry = api.get_entry(self.request, entry_no, tel_no)
+            if lot_entry is None:
+                form.entry_no.errors.append(u'%sまたは%sが違います' % (form.entry_no.label.text, form.tel_no.label.text))
+                raise ValidationError()
+        except ValidationError:
             return dict(form=form)
-        entry_no = form["entry_no"].data
-        tel_no = form["tel_no"].data
-        lot_entry = api.get_entry(self.request, entry_no, tel_no)
-        if lot_entry is None:
-            self.request.override_renderer = "review_form.html"
-            return dict(form=form)
+        # XXX: hack
+        return my_render_view_to_response(lot_entry, self.request)
 
+    @view_config(request_method="POST", renderer=selectable_renderer("pc/%(membership)s/review.html"), context=LotEntry)
+    @mobile_view_config(request_method="POST", renderer=selectable_renderer("mobile/%(membership)s/review.html"), context=LotEntry)
+    def post_validated(self):
+        lot_entry = self.context
         api.entry_session(self.request, lot_entry)
         event_id = lot_entry.lot.event.id
         lot_id = lot_entry.lot.id
         # 当選して、未決済の場合、決済画面に移動可能
         return dict(entry=lot_entry,
             lot=lot_entry.lot,
-            is_elected=lot_entry.is_elected,
-            is_rejected=lot_entry.is_rejected,
-            is_ordered=lot_entry.is_ordered,
             payment_url=self.request.route_url('lots.payment.index', event_id=event_id, lot_id=lot_id) if lot_entry.is_elected else None) 
 
-@view_defaults(route_name='lots.payment.index', renderer=selectable_renderer("pc/%(membership)s/index_2.html"))
+@view_defaults(route_name='lots.payment.index')
 class PaymentView(object):
     """ [当選者のみ]
     支払方法選択
@@ -305,7 +321,8 @@ class PaymentView(object):
         self.context = context
         self.request = request
 
-    @view_config(request_method="GET")
+    @view_config(request_method="GET", renderer=selectable_renderer("pc/%(membership)s/index_2.html"))
+    @mobile_view_config(request_method="GET", renderer=selectable_renderer("mobile/%(membership)s/index_2.html"))
     def show_form(self):
         """
         """
@@ -316,7 +333,8 @@ class PaymentView(object):
 
         # この申し込みは妥当か？
         if not lot_entry.is_elected:
-            return # Forbidden? NotFound?
+            # 通常のフローでは到達しない → 400
+            raise HTTPBadRequest()
 
         lot = api.get_requested_lot(self.request)
         payment_delivery_method_pairs = lot.sales_segment.payment_delivery_method_pairs
@@ -329,9 +347,10 @@ class PaymentView(object):
             LotElectedEntry.lot_entry_wish_id==LotEntryWish.id
         ).first()
         if elected is None:
-            return # NotFound?
+            # 通常のフローでは到達しない → 400
+            raise HTTPBadRequest()
         shipping_address = lot_entry.shipping_address
-        form_data = h.shipping_address_form_data(shipping_address)
+        form_data = h.shipping_address_form_data(shipping_address, lot_entry.gender)
         form = schemas.ClientForm(form_data)
         wish=elected.lot_entry_wish
         payment_delivery_method_pair=lot_entry.payment_delivery_method_pair
@@ -385,12 +404,13 @@ class PaymentView(object):
             entry_no=lot_entry.entry_no)
         return HTTPFound(location)
 
-@view_defaults(route_name='lots.payment.confirm', renderer=selectable_renderer("pc/%(membership)s/confirm_2.html"))
+@view_defaults(route_name='lots.payment.confirm')
 class PaymentConfirm(object):
     def __init__(self, request):
         self.request = request
     
-    @view_config(request_method="GET")
+    @view_config(request_method="GET", renderer=selectable_renderer("pc/%(membership)s/confirm_2.html"))
+    @mobile_view_config(request_method="GET", renderer=selectable_renderer("mobile/%(membership)s/confirm_2.html"))
     def get(self):
         """
         """
@@ -400,8 +420,18 @@ class PaymentConfirm(object):
 
         if not lot_entry.is_elected:
             raise NotElectedException
+        elected = lot_entry.lot_elected_entries[0]
         cart = cart_api.get_cart(self.request)
-        return dict(cart=cart)
+        return dict(
+            lot_entry=lot_entry,
+            lot=lot_entry.lot,
+            elected=elected,
+            performance=elected.lot_entry_wish.performance,
+            cart=cart,
+            payment_delivery_method_pair=cart.payment_delivery_pair,
+            shipping_address=cart.shipping_address,
+            total_amount=cart.total_amount
+            )
 
     @view_config(request_method="POST")
     def post(self):
@@ -423,7 +453,7 @@ class PaymentConfirm(object):
         lot_entry.order = order
         return HTTPFound(location=urls.payment_completion(self.request))
 
-@view_defaults(route_name='lots.payment.completion', renderer=selectable_renderer("pc/%(membership)s/completion_2.html"))
+@view_defaults(route_name='lots.payment.completion')
 class PaymentCompleted(object):
     """ [当選者のみ]
     """
@@ -431,7 +461,8 @@ class PaymentCompleted(object):
     def __init__(self, request):
         self.request = request
 
-    @view_config(request_method="GET")
+    @view_config(request_method="GET", renderer=selectable_renderer("pc/%(membership)s/completion_2.html"))
+    @mobile_view_config(request_method="GET", renderer=selectable_renderer("mobile/%(membership)s/completion_2.html"))
     def __call__(self):
         """ 完了画面 (表示のみ)
         """
@@ -443,8 +474,14 @@ class PaymentCompleted(object):
         if not order:
             raise HTTPNotFound()
 
-        return dict(order=order,
+        elected = lot_entry.lot_elected_entries[0]
+        return dict(
+            order=order,
             entry=lot_entry,
+            elected=elected,
+            performance=elected.lot_entry_wish.performance,
             lot=lot_entry.lot,
             payment_delivery_method_pair=order.payment_delivery_pair,
-            shipping_address=order.shipping_address)
+            shipping_address=order.shipping_address,
+            total_amount=order.total_amount
+            )

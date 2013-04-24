@@ -53,6 +53,10 @@ def includeme(config):
 
     # 申し込みフェーズ
     config.add_route('lots.entry.index', 'events/{event_id}/entry/{lot_id}')
+    config.add_route('lots.entry.step1', 'events/{event_id}/entry/{lot_id}/options/{option_index}/step1', factory='.resources.LotOptionSelectionResource')
+    config.add_route('lots.entry.step2', 'events/{event_id}/entry/{lot_id}/options/{option_index}/step2', factory='.resources.LotOptionSelectionResource')
+    config.add_route('lots.entry.step3', 'events/{event_id}/entry/{lot_id}/step3', factory='.resources.LotOptionSelectionResource')
+    config.add_route('lots.entry.step4', 'events/{event_id}/entry/{lot_id}/step4')
     config.add_route('lots.entry.confirm', 'events/{event_id}/entry/{lot_id}/confirm')
     config.add_route('lots.entry.completion', 'events/{event_id}/entry/{lot_id}/completion')
 
