@@ -356,7 +356,6 @@ class DetailSearchQueryForm(object):
         return params
 
 def get_search_forms(request, formdata=None):
-    logger.warn(formdata)
     return DetailSearchQueryForm(request, formdata)
     
 def form_as_filter(qs, form):
