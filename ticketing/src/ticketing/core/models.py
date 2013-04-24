@@ -12,7 +12,7 @@ import smtplib
 from email.MIMEText import MIMEText
 from email.Header import Header
 from email.Utils import formatdate
-
+from altair.sqla import association_proxy_many
 from sqlalchemy.sql import functions as sqlf
 from sqlalchemy import Table, Column, ForeignKey, func, or_, and_, event
 from sqlalchemy import ForeignKeyConstraint, UniqueConstraint, PrimaryKeyConstraint
@@ -446,6 +446,17 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     redirect_url_pc = Column(String(1024))
     redirect_url_mobile = Column(String(1024))
+
+    @property
+    def inner_sales_segments(self):
+        now = datetime.now()
+        sales_segment_sort_key_func = lambda ss: (ss.kind == u'sales_counter', ss.start_at <= now, now <= ss.end_at, ss.id)
+        return sorted(list(self.sales_segments), key=sales_segment_sort_key_func, reverse=True)
+
+    @property
+    def stock_types(self):
+        return sorted(list({s.stock_type for s in self.stocks if s.stock_type}),
+                      key=lambda s: s.id)
 
     def add(self):
         logger.info('[copy] Stock start')
@@ -3173,12 +3184,20 @@ class SalesSegment(Base, BaseModel, LogicallyDeleted, WithTimestamp):
     account_id = Column(Identifier, ForeignKey('Account.id'))
     account = relationship('Account', backref='sales_segments')
 
+    seat_stock_types = association_proxy('products', 'seat_stock_type')
+    stocks = association_proxy_many('products', 'stock')
     payment_delivery_method_pairs = relationship("PaymentDeliveryMethodPair",
         secondary="SalesSegment_PaymentDeliveryMethodPair",
         backref="sales_segments",
         order_by="PaymentDeliveryMethodPair.id",
         cascade="all",
         collection_class=list)
+
+    def has_stock_type(self, stock_type):
+        return stock_type in self.seat_stock_types
+
+    def has_stock(self, stock):
+        return stock in self.stocks
 
     def available_payment_delivery_method_pairs(self, now):
         return [pdmp 

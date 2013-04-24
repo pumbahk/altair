@@ -411,17 +411,19 @@ class OrderReserveForm(Form):
 
     def __init__(self, formdata=None, obj=None, prefix='', **kwargs):
         Form.__init__(self, formdata, obj, prefix, **kwargs)
+
         if 'request' in kwargs:
             self.request = kwargs['request']
+
         if 'performance_id' in kwargs:
             performance = Performance.get(kwargs['performance_id'])
             self.performance_id.data = performance.id
 
-            now = datetime.now()
-            sales_segments = SalesSegment.query.filter_by(performance_id=performance.id)\
-                                         .filter(SalesSegment.start_at<=now)\
-                                         .filter(now<=SalesSegment.end_at)\
-                                         .join(SalesSegmentGroup).filter(SalesSegmentGroup.kind=='sales_counter').all()
+            query = SalesSegment.query.filter_by(performance_id=performance.id).join(SalesSegmentGroup)
+            if 'sales_segment_id' in kwargs:
+                query = query.filter(SalesSegment.id==kwargs['sales_segment_id'])
+            sales_segments = query.all()
+
             self.payment_delivery_method_pair_id.choices = []
             self.payment_delivery_method_pair_id.sej_plugin_id = []
             for sales_segment in sales_segments:
@@ -438,26 +440,16 @@ class OrderReserveForm(Form):
                 self.sales_counter_payment_method_id.choices.append((pm.id, pm.name))
 
             self.products.choices = []
-            products = []
+            query = Product.query.filter(Product.performance_id==performance.id)\
+                        .join(ProductItem).filter(ProductItem.product_id==Product.id)
             if 'stocks' in kwargs and kwargs['stocks']:
-                # 座席選択あり
-                # products = Product.query.join(Product.items)\
-                #                   .filter(Product.performance_id==performance.id)\
-                #                   .filter(ProductItem.performance_id==performance.id)\
-                #                   .filter(ProductItem.stock_id.in_(kwargs['stocks'])).all()
-                products = Product.query.filter(Product.performance_id==performance.id)\
-                                  .filter(ProductItem.product_id==Product.id)\
-                                  .filter(ProductItem.stock_id.in_(kwargs['stocks'])).all()
-            #else:
-            #    # 数受け
-            #    products = Product.filter(Product.sales_segment_group_id.in_([ss.id for ss in sales_segments]))\
-            #                      .join(Product.seat_stock_type)\
-            #                      .filter(StockType.quantity_only==1).all()
-            for p in products:
-                if p.sales_segment.start_at <= now and p.sales_segment.end_at >= now:
-                    self.products.choices += [
-                        (p.id, dict(name=p.name, sales_segment=p.sales_segment.name, price=p.price))
-                    ]
+                query = query.filter(ProductItem.stock_id.in_(kwargs['stocks']))
+            if sales_segments:
+                query = query.filter(Product.sales_segment_id.in_([ss.id for ss in sales_segments]))
+            for p in query.all():
+                self.products.choices += [
+                    (p.id, dict(name=p.name, sales_segment=p.sales_segment.name, price=p.price))
+                ]
 
     def _get_translations(self):
         return Translations()

@@ -4,10 +4,9 @@
 <script type="text/javascript">
   $(function() {
     % for row in sales_summary:
-    $('#stock-type-${row['stock_type'].id}').click(function (){
-      % for stock in row['stocks']:
-      $('.stock-${stock['stock'].id}').toggle();
-      % endfor
+    <% stock_type = row['stock_type'] %>
+    $('#stock-type-${stock_type.id}').click(function (){
+      $('.stock-type-inner-${stock_type.id}').toggle();
     });
     % endfor
 
@@ -28,7 +27,9 @@
           <th style="width:40px">配券先</th>
           <th class="span3">商品名</th>
           <th class="span4">販売区分</th>
-          <th style="width:60px">残席数 <button class="btn btn-mini" onclick="javascript:getSalesSummary();"><i class="icon-refresh"></i></button></th>
+          <th style="width:60px">残席数
+            <button class="btn btn-mini" onclick="javascript:getSalesSummary();"><i class="icon-refresh"></i></button>
+          </th>
           <th class="span1">販売席数</th>
           <th class="span2">予約する</th>
         </tr>
@@ -36,39 +37,51 @@
         <tbody>
         % for row in sales_summary:
         <tr id="stock-type-${row['stock_type'].id}">
-          <td>${h.seat_style(row['stock_type'].style)}</td>
-          <td colspan="4">${row['stock_type'].name}</td>
-          <td>${row['rest_quantity']}</td>
-          <td>${row['total_quantity']}</td>
+          <%
+            stock_type = row['stock_type']
+            total_quantity = row['total_quantity']
+            rest_quantity = row['rest_quantity']
+            stocks = row['stocks']
+          %>
+          <td>${h.seat_style(stock_type.style)}</td>
+          <td colspan="4">${stock_type.name}</td>
+          <td ${'bgcolor="#ffeeee"' if rest_quantity == 0 else ""|n}>${rest_quantity}</td>
+          <td>${total_quantity}</td>
           <td></td>
         </tr>
-          % for stock in row['stocks']:
-        <tr style="display:none;" class="stock-${stock['stock'].id}">
-          <% rowspan = len(stock['products']) if stock['products'] else 1 %>
+          % for record in stocks:
+            <%
+              stock = record['stock']
+              products = record['products']
+              rowspan = len(products) if products else 1
+            %>
+        <tr style="display:none;" class="stock-type-inner-${stock_type.id}">
           <td rowspan="${rowspan}"></td>
           <td rowspan="${rowspan}"></td>
-          <td rowspan="${rowspan}">${stock['stock'].stock_holder.name}</td>
-            % if stock['products']:
-            <% product = stock['products'][0] %>
+          <td rowspan="${rowspan}">${stock.stock_holder.name}</td>
+            % if products:
+              <% product = products[0] %>
           <td>${product.name} (${h.price_format(product.price)}円)</td>
           <td>${product.sales_segment.name} (${h.safe_strftime(product.sales_segment.start_at)} 〜 ${h.safe_strftime(product.sales_segment.end_at)})</td>
             % else:
           <td rowspan="${rowspan}"></td>
           <td rowspan="${rowspan}"></td>
             % endif
-          <td rowspan="${rowspan}">${stock['stock'].stock_status.quantity}</td>
-          <td rowspan="${rowspan}">${stock['stock'].quantity}</td>
+          <td rowspan="${rowspan}" ${'bgcolor="#ffeeee"' if stock.stock_status.quantity == 0 else ""|n}>${stock.stock_status.quantity}</td>
+          <td rowspan="${rowspan}">${stock.quantity}</td>
           <td rowspan="${rowspan}">
-            % if stock['products'] and stock['stock'].stock_status.quantity:
-            <a href="javascript:getOrderForm(${stock['stock'].id});" class="btn btn-primary">おまかせ</a>
+            % if products and stock.stock_status.quantity:
+            <a href="javascript:getOrderForm(${stock.id});" class="btn btn-primary">おまかせ</a>
             % endif
           </td>
         </tr>
-            % if stock['products']:
-              % for product in stock['products'][1:]:
-        <tr style="display:none;" class="stock-${stock['stock'].id}">
+            % if products:
+              % for product in products[1:]:
+        <tr style="display:none;" class="stock-type-inner-${stock_type.id}">
           <td style="border-left: 1px solid #ddd;">${product.name} (${h.price_format(product.price)}円)</td>
-          <td>${product.sales_segment.name} (${h.safe_strftime(product.sales_segment.start_at)} 〜 ${h.safe_strftime(product.sales_segment.end_at)})</td>
+          <td>${product.sales_segment.name}
+            (${h.safe_strftime(product.sales_segment.start_at)} 〜 ${h.safe_strftime(product.sales_segment.end_at)})
+          </td>
         </tr>
               % endfor
             % endif
@@ -76,32 +89,33 @@
         % endfor
 
         <%
-          sum_quantity = {'total':{'rest':0, 'total':0}}
-          for row in sales_summary:
-            sum_quantity['total']['rest'] += row['rest_quantity']
-            sum_quantity['total']['total'] += row['total_quantity']
-            for stock in row['stocks']:
-              stock_holder = stock['stock'].stock_holder.name
-              if stock_holder not in sum_quantity:
-                sum_quantity.update({stock_holder:{'rest':0, 'total':0}})
-              sum_quantity[stock_holder]['rest'] += stock['stock'].stock_status.quantity
-              sum_quantity[stock_holder]['total'] += stock['stock'].quantity
+          sum_amount = {'total':dict(rest=0, total=0)}
+          for stock_type_data in sales_summary:
+            sum_amount['total']['rest'] += stock_type_data['rest_quantity']
+            sum_amount['total']['total'] += stock_type_data['total_quantity']
+            for stock_data in stock_type_data['stocks']:
+              stock = stock_data['stock']
+              stock_holder = stock.stock_holder.name
+              if stock_holder not in sum_amount:
+                sum_amount.update({stock_holder:dict(rest=0, total=0)})
+              sum_amount[stock_holder]['rest'] += stock.stock_status.quantity
+              sum_amount[stock_holder]['total'] += stock.quantity
         %>
-        <% sq = sum_quantity.pop('total') %>
+        <% sa = sum_amount.pop('total') %>
         <tr id="stock-type-total">
           <td></td>
           <td colspan="4"><strong>合計</strong></td>
-          <td><strong>${sq['rest']}</strong></td>
-          <td><strong>${sq['total']}</strong></td>
+          <td><strong>${sa['rest']}</strong></td>
+          <td><strong>${sa['total']}</strong></td>
           <td></td>
         </tr>
-        % for stock_holder, sq in sum_quantity.items():
+        % for stock_holder, sa in sum_amount.items():
         <tr style="display:none;" class="stock-holder-total">
           <td></td>
           <td></td>
           <td colspan="3">${stock_holder}</td>
-          <td>${sq['rest']}</td>
-          <td>${sq['total']}</td>
+          <td>${sa['rest']}</td>
+          <td>${sa['total']}</td>
           <td></td>
         </tr>
         % endfor
