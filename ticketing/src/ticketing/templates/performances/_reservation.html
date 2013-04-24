@@ -27,6 +27,23 @@
 </style>
 
 
+<div class="container-fluid pull-left">
+  <form class="form-horizontal" id="sales_summary-form">
+    <input type="hidden" name="performance_id" value="${performance.id}" />
+    <div class="control-group">
+      <label class="control-label" style="width: 60px;">販売区分</label>
+      <div class="controls" style="margin-left: 80px;">
+        <select name="sales_segment_id">
+          <option value=""></option>
+          % for sales_segment in performance.inner_sales_segments:
+          <option value="${sales_segment.id}" ${'selected=""' if sales_segment.id == int(sales_segment_id or 0) else ''|n}>${sales_segment.name}</option>
+          % endfor
+        </select>
+      </div>
+    </div>
+  </form>
+</div>
+
 <div class="container-fluid pull-right">
   <div class="row-fluid">
     <input id="sales-counter-button" type="button" class="btn btn-warning" style="vertical-align: baseline; font-size: 100%;" value="当日窓口発券モードにする" />
@@ -69,6 +86,8 @@
 <script type="text/javascript">
   function getOrderForm(stock_id) {
     var param = {'seats':[], 'stocks':[], 'performance_id':${performance.id}};
+    var sales_segment_id = $('#sales_summary-form').find('select[name="sales_segment_id"]').val();
+    if (sales_segment_id) param['sales_segment_id'] = sales_segment_id;
     if (stock_id) {
       param['stocks'].push(stock_id);
     } else {
@@ -191,13 +210,15 @@
   }
 
   function getSalesSummary() {
+    var form = $('#sales_summary-form');
+    var body = form.serialize();
     var table = '#sales-summary';
     var url = '${request.route_path('orders.sales_summary')}';
     $.ajax({
       type: 'post',
       url: url,
       dataType: 'html',
-      data: {'performance_id':${performance.id}},
+      data: body,
       success: function(data) {
         $('#sales-summary').effect("highlight", {color: '#DCDCDC'}, 1000);
         $('#sales-summary').html(data);
@@ -206,6 +227,13 @@
   }
 
   $(function() {
+    $('#sales_summary-form').find('select[name="sales_segment_id"]').change(function() {
+      var metadata = "${data_source.get('metadata')|n}"
+      venueEditorRoot.data('venueeditor').dataSource.metadata = metadata + '&sales_segment_id=' + $(this).val();
+      venueEditorRoot.venueeditor('load');
+      getSalesSummary();
+    });
+
     getSalesSummary();
   });
 </script>

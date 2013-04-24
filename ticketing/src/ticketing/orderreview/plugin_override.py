@@ -1,7 +1,7 @@
 from ticketing.payments.plugins.qr import DELIVERY_PLUGIN_ID as QR_PLUGIN_ID
 from ticketing.payments.plugins.shipping import PLUGIN_ID as SHIPPING_PLUGIN_ID
 from ticketing.payments.interfaces import IOrderDelivery
-from ticketing.mobile.interfaces import IMobileRequest
+from altair.mobile.interfaces import IMobileRequest
 
 def includeme(config):
     config.include(include_qr)

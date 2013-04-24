@@ -81,12 +81,14 @@ class SalesTotalReporter(object):
         # performance_idがないSalesSegmentは[SalesSegmentGroupのデータ移行以前のレコード]なので、publicがFalseでも含める
         # ただし、対象performance_idのSalesSegment.publicがTrueであること
         ss = aliased(SalesSegment, name='SalesSegment_alias')
-        query = query.join(SalesSegment, SalesSegment.id==Product.sales_segment_id).filter(
-            or_(SalesSegment.performance_id==None, SalesSegment.public==True)
-        )
+        query = query.join(SalesSegment, and_(
+            SalesSegment.id==Product.sales_segment_id,
+            SalesSegment.deleted_at==None
+        )).filter(or_(SalesSegment.performance_id==None, SalesSegment.public==True))
         query = query.outerjoin(ss, and_(
             ss.sales_segment_group_id==SalesSegment.sales_segment_group_id,
             ss.performance_id==Performance.id,
+            ss.deleted_at==None
         )).filter(or_(SalesSegment.public==True, ss.public==True))
         return query
 
@@ -288,16 +290,23 @@ class SalesDetailReporter(object):
     def add_sales_segment_filter(self, query):
         # performance_idがないSalesSegmentは[SalesSegmentGroupのデータ移行以前のレコード]なので、publicがFalseでも含める
         # ただし、対象performance_idのSalesSegment.publicがTrueであること
-        query = query.join(SalesSegment, SalesSegment.id==Product.sales_segment_id).filter(
+        query = query.join(SalesSegment, and_(
+            SalesSegment.id==Product.sales_segment_id,
+            SalesSegment.deleted_at==None
+        )).filter(
             or_(SalesSegment.performance_id==None, SalesSegment.public==True)
         )
         if self.form.sales_segment_group_id.data:
-            query = query.join(SalesSegmentGroup).filter(SalesSegmentGroup.id==self.form.sales_segment_group_id.data)
+            query = query.join(SalesSegmentGroup).filter(and_(
+                SalesSegmentGroup.id==self.form.sales_segment_group_id.data,
+                SalesSegmentGroup.deleted_at==None
+            ))
         if self.form.performance_id.data:
             ss = aliased(SalesSegment, name='SalesSegment_alias')
             query = query.outerjoin(ss, and_(
                 ss.sales_segment_group_id==SalesSegment.sales_segment_group_id,
                 ss.performance_id==self.form.performance_id.data,
+                ss.deleted_at==None
             )).filter(or_(SalesSegment.public==True, ss.public==True))
         return query
 

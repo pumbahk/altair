@@ -484,6 +484,7 @@ cart.PerformanceSearchView = Backbone.View.extend({
         $.each(keys, function (_, v) {
             self.selection.append($('<option></option>').attr('value', v).text(v));
         });
+        this.selection.val(this.model.get("key"));
     },
     onKeySelectionChanged: function (value) {
         this.model.set("key", value);
@@ -1041,7 +1042,7 @@ cart.VenueView = Backbone.View.extend({
 
                 if (part == 'info') {
                     var use_seatmap = $.map(viewer.stockTypes, function(st) {
-                        return !st.quantity_only ? st : null;
+                        return (!st.quantity_only && st.seat_choice) ? st : null;
                     });
                     $('.selectSeatLeftPane .guidance').css({ display: 0 < use_seatmap.length ? '' : 'none' });
                 }

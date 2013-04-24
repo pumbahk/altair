@@ -109,8 +109,7 @@
           % endfor
         </div>
       </div>
-      <% from ticketing.payments import plugins as payment_plugins %>
-      % if cart.payment_delivery_pair.payment_method.payment_plugin_id == payment_plugins.SEJ_PAYMENT_PLUGIN_ID:
+      % if form.payment_delivery_method_pair_id.data in form.payment_delivery_method_pair_id.sej_plugin_id:
       <div class="shipping-address">
         <div class="control-group">
           <label class="control-label">氏名</label>

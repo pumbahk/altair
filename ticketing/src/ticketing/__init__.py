@@ -23,6 +23,15 @@ def setup_mailtraverser(config):
     traverser = EmailInfoTraverser()
     reg.registerUtility(traverser, name="lots")
 
+def newRootFactory(klass):
+    from .resources import ExemptionResource
+    def root_factory(request): 
+        if authn_exemption.match(request.path):
+            return ExemptionResource()
+        else:
+            return klass(request)
+    return root_factory
+
 def main(global_config, **local_config):
     """ This function returns a Pyramid WSGI application.
     """
@@ -31,7 +40,7 @@ def main(global_config, **local_config):
         settings = dict(global_config)
         settings.update(local_config)
     
-        from .resources import newRootFactory, groupfinder
+        from .resources import TicketingAdminResource, groupfinder
         from .authentication import CombinedAuthenticationPolicy, APIAuthenticationPolicy
         from .authentication.apikey.impl import newDBAPIKeyEntryResolver
         from sqlalchemy.pool import NullPool
@@ -40,7 +49,7 @@ def main(global_config, **local_config):
         sqlahelper.add_engine(engine)
     
         config = Configurator(settings=settings,
-                              root_factory=newRootFactory(lambda request:authn_exemption.match(request.path)),
+                              root_factory=newRootFactory(TicketingAdminResource),
                               session_factory=session_factory_from_settings(settings))
     
         config.set_authentication_policy(
@@ -73,7 +82,7 @@ def main(global_config, **local_config):
     
         config.include('altair.browserid')
         config.include('altair.exclog')
-        config.include('ticketing.mobile')
+        config.include('altair.mobile')
         config.include('ticketing.core')
         config.include('ticketing.multicheckout')
         config.include('ticketing.checkout')
@@ -122,10 +131,8 @@ def main(global_config, **local_config):
             settings["altaircms.apikey"]
             )
         event_push_communication.bind_instance(config)
-        import ticketing.pyramid_boto
-        ticketing.pyramid_boto.register_default_implementations(config)
-        import ticketing.assets
-        ticketing.assets.register_default_implementations(config)
+        config.include('altair.pyramid_assets')
+        config.include('altair.pyramid_boto')
     
         config.scan(".views")
     

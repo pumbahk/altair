@@ -1,6 +1,6 @@
 # -*- coding:utf-8 -*-
 from collections import namedtuple
-Info = namedtuple("Info", "caption name url title description keywords")
+Info = namedtuple("Info", "caption name url title_prefix title title_suffix description keywords")
 import logging
 logger = logging.getLogger(__name__)
 class GetPageInfoException(Exception):
@@ -14,14 +14,18 @@ class OtherPageInfoResolver(object):
         return Info(url=self.resolve_url(), 
                     name=u"", 
                     caption=u"設定された初期設定から", 
-                    title=self.resolve_title(), 
-                    keywords=self.resolve_keywords(), 
+                    title_prefix=self.resolve_title_prefix(),
+                    title="",
+                    title_suffix=self.resolve_title_suffix(),
+                    keywords=self.resolve_keywords(),
                     description=self.resolve_description())
 
     def resolve_url(self):
         return self.defaultinfo.url_prefix
-    def resolve_title(self):
+    def resolve_title_prefix(self):
         return self.defaultinfo.title_prefix
+    def resolve_title_suffix(self):
+        return self.defaultinfo.title_suffix
     def resolve_description(self):
         return self.defaultinfo.description
     def resolve_keywords(self):
@@ -38,8 +42,10 @@ class GenrePageInfoResolver(object):
         return Info(url=self.resolve_url(genre, candidates=candidates), 
                     caption=u"「%s」のカテゴリトップページとして" % genre.label, 
                     name=genre.label, 
-                    title=self.resolve_title(genre, candidates=candidates), 
-                    keywords=self.resolve_keywords(genre, candidates=candidates), 
+                    title_prefix=self._resolve_title_prefix(genre, candidates=candidates),
+                    title="",
+                    title_suffix=self._resolve_title_suffix(),
+                    keywords=self.resolve_keywords(genre, candidates=candidates),
                     description=self.resolve_description(genre))
 
     def ordered_genres(self, genre):
@@ -58,9 +64,12 @@ class GenrePageInfoResolver(object):
         part = u"/".join([g.name for g in self._ordered_genres(candidates, genre)][self.skip:])
         return u"%s/%s" % ((self.defaultinfo.url_prefix or u"").rstrip("/"), part.lstrip("/"))
 
-    def resolve_title(self, genre, candidates=None):
+    def _resolve_title_prefix(self, genre, candidates=None):
         part = u"/".join([g.label for g in self._ordered_genres(candidates, genre)][self.skip:])
         return u"%s%s" % ((self.defaultinfo.title_prefix or u"").rstrip("/"), part.lstrip("/"))
+
+    def _resolve_title_suffix(self):
+        return self.defaultinfo.title_suffix
 
     def resolve_description(self, genre):
         return self.defaultinfo.description #genreがdescriptionを持っても良かったかもしれない　
@@ -85,7 +94,9 @@ class EventPageInfoResolver(object):
                     caption=u"「%s」のイベント詳細ページとして" % event.title, 
                     name=event.title, 
                     keywords=self._resolve_keywords(data.keywords, event), 
-                    title=self._resolve_title(data.title, event), 
+                    title_prefix=self._resolve_title_prefix(),
+                    title=self._resolve_title(data.title, event),
+                    title_suffix=self._resolve_title_suffix(),
                     description=self._resolve_description(data.description, event))
         
     ## cached
@@ -97,8 +108,14 @@ class EventPageInfoResolver(object):
         event_code = event.code.lstrip("/")
         return u"%s/%s" % (result.rstrip("/"), event_code)
 
+    def _resolve_title_prefix(self):
+        return self.defaultinfo.title_prefix
+
     def _resolve_title(self, result, event):
         return event.subtitle or event.title
+
+    def _resolve_title_suffix(self):
+        return self.defaultinfo.title_suffix
 
     def _resolve_description(self, result, event):
         return u"%s %s " % (result, event.description)
@@ -114,8 +131,12 @@ class EventPageInfoResolver(object):
 
     def resolve_url(self, genre, event):
         return self._resolve_url(self.genrepage_resolver.resolve_url(genre), event)
+    def resolve_title_prefix(self):
+        return self.defaultinfo.title_prefix
     def resolve_title(self, genre, event):
         return self._resolve_title(self.genrepage_resolver.resolve_title(genre), event)
+    def resolve_title_suffix(self):
+        return self.defaultinfo.title_suffix
     def resolve_description(self, genre, event):
         return self._resolve_description(self.genrepage_resolver.resolve_description(genre), event)
     def resolve_keywords(self, genre, event):

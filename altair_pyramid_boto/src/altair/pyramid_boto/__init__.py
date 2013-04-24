@@ -1,8 +1,8 @@
-from zope.interface import implementer
-from boto.s3.connection import S3Connection
+from pyramid.exceptions import ConfigurationError
 from .interfaces import IS3ConnectionFactory
+from .s3.connection import DefaultS3ConnectionFactory
 
-CONFIG_PREFIXES = ('s3_asset_resolver', 's3')
+CONFIG_PREFIXES = ('altair.s3',)
 
 def newDefaultS3ConnectionFactory(config):
     options = {}
@@ -16,11 +16,9 @@ def newDefaultS3ConnectionFactory(config):
     except:
         return None
 
-@implementer(IS3ConnectionFactory)
-class DefaultS3ConnectionFactory(object):
-    def __init__(self, access_key, secret_key, **options):
-        self.access_key = access_key
-        self.secret_key = secret_key
-
-    def __call__(self):
-        return S3Connection(self.access_key, self.secret_key) 
+def includeme(config):
+    factory = newDefaultS3ConnectionFactory(config)
+    if factory is not None:
+        config.registry.registerUtility(
+            factory,
+            IS3ConnectionFactory)

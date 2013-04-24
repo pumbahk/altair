@@ -63,7 +63,7 @@ selectable_renderer = SelectableRendererSetup(
     renderer_name = "selectable_renderer")
 
 tstar_mobile_or_not_renderer = SelectableRendererSetup(
-    RecieveTemplatePathCandidatesDict, 
+    RecieveTemplatePathCandidatesDict,
     SelectByRequestGen.generate(lambda r : r.organization.short_name), 
     renderer_name = "tstar_mobile_or_not_renderer"
 )

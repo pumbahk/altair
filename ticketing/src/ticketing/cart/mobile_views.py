@@ -13,7 +13,7 @@ import sqlalchemy as sa
 
 from ticketing.core import models as c_models
 from ticketing.core import api as c_api
-#from ticketing.mobile.interfaces import IMobileRequest
+#from altair.mobile.interfaces import IMobileRequest
 from ticketing.cart.selectable_renderer import selectable_renderer
 from ticketing.models import DBSession
 from .reserving import InvalidSeatSelectionException, NotEnoughAdjacencyException
@@ -45,7 +45,7 @@ class MobileIndexView(IndexViewMixin):
         self.context = request.context
         self.prepare()
 
-    @view_config(route_name='cart.index', renderer=selectable_renderer('carts_mobile/%(membership)s/index.html'), xhr=False, permission="buy", request_type='ticketing.mobile.interfaces.IMobileRequest')
+    @view_config(route_name='cart.index', renderer=selectable_renderer('carts_mobile/%(membership)s/index.html'), xhr=False, permission="buy", request_type='altair.mobile.interfaces.IMobileRequest')
     def __call__(self):
         logger.debug('mobile index')
         self.check_redirect(mobile=True)
@@ -107,7 +107,7 @@ class MobileSelectProductView(object):
         self.request = request
         self.context = request.context
 
-    @view_config(route_name='cart.seat_types', renderer=selectable_renderer('carts_mobile/%(membership)s/seat_types.html'), xhr=False, request_type='ticketing.mobile.interfaces.IMobileRequest')
+    @view_config(route_name='cart.seat_types', renderer=selectable_renderer('carts_mobile/%(membership)s/seat_types.html'), xhr=False, request_type='altair.mobile.interfaces.IMobileRequest')
     def __call__(self):
         selector_name = c_api.get_organization(self.request).setting.performance_selector
         performance_selector = api.get_performance_selector(self.request, selector_name)
@@ -152,7 +152,7 @@ class MobileSelectProductView(object):
             )
         return data
 
-    @view_config(route_name='cart.products', renderer=selectable_renderer('carts_mobile/%(membership)s/products.html'), xhr=False, request_type='ticketing.mobile.interfaces.IMobileRequest')
+    @view_config(route_name='cart.products', renderer=selectable_renderer('carts_mobile/%(membership)s/products.html'), xhr=False, request_type='altair.mobile.interfaces.IMobileRequest')
     def products(self):
         logger.debug('cart.products')
         seat_type_id = self.request.matchdict['seat_type_id']
@@ -241,7 +241,7 @@ class MobileReserveView(object):
 
         return [(products.get(int(c[0])), c[1]) for c in controls]
 
-    @view_config(route_name='cart.order', request_method="GET", renderer=selectable_renderer('carts_mobile/%(membership)s/reserve.html'), request_type='ticketing.mobile.interfaces.IMobileRequest')
+    @view_config(route_name='cart.order', request_method="GET", renderer=selectable_renderer('carts_mobile/%(membership)s/reserve.html'), request_type='altair.mobile.interfaces.IMobileRequest')
     def reserve_mobile(self):
         cart = api.get_cart_safe(self.request)
 
@@ -275,7 +275,7 @@ class MobileReserveView(object):
             ))
         return data
 
-    @view_config(route_name='cart.products', renderer=selectable_renderer('carts_mobile/%(membership)s/products.html'), xhr=False, request_type='ticketing.mobile.interfaces.IMobileRequest', request_method="POST")
+    @view_config(route_name='cart.products', renderer=selectable_renderer('carts_mobile/%(membership)s/products.html'), xhr=False, request_type='altair.mobile.interfaces.IMobileRequest', request_method="POST")
     def products_form(self):
         """商品の値検証とおまかせ座席確保とカート作成
         """

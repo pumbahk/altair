@@ -1,3 +1,4 @@
+from pyramid.httpexceptions import HTTPNotFound
 from altairsite.config import usersite_view_config
 
 ##workaround.
@@ -8,4 +9,6 @@ def pc_access(info, request):
                       custom_predicates=(pc_access, ), 
                       renderer='altaircms:templates/usersite/order.html')
 def move_order(request):
+    if request.organization.short_name != "RT":
+        raise HTTPNotFound
     return {}

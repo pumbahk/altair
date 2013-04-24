@@ -2,7 +2,6 @@
 
 <%namespace name="fco" file="../formcomponents.html"/>
 
-
 <div class="row">
     <h3>配下のページとして取り込む</h3>
 	<p>${event.title}の配下のページとして取り込む</p>
@@ -11,3 +10,9 @@
         <button class="btn" type="submit">配下のページとして取り込む</button>
     </form>
 </div>
+## chosen
+<script src="${request.static_url('altaircms:static/chosen/js/jquery.chosen.js')}"></script>
+<link rel="stylesheet" type="text/css" href="${request.static_url('altaircms:static/chosen/css/chosen.css')}" />
+<script type="text/javascript">
+$('select').chosen({single_only: true, no_results_text: '該当無し'});
+</script>

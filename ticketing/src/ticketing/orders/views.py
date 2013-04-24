@@ -5,11 +5,8 @@ import logging
 import csv
 import itertools
 from datetime import datetime
-from lxml import etree
 import pystache
 
-import sqlalchemy.orm as orm
-from pyramid import testing
 from pyramid.view import view_config, view_defaults
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound, HTTPBadRequest
 from pyramid.response import Response
@@ -36,11 +33,10 @@ from ticketing.orders.forms import (OrderForm, OrderSearchForm, OrderRefundSearc
                                     SejRefundEventForm,SejRefundOrderForm, SendingMailForm,
                                     PerformanceSearchForm, OrderReserveForm, OrderRefundForm, ClientOptionalForm,
                                     SalesSegmentGroupSearchForm, SalesSegmentSearchForm, PreviewTicketSelectForm)
-from ticketing.tickets.convert import to_opcodes
 from ticketing.views import BaseView
 from ticketing.fanstatic import with_bootstrap
 from ticketing.orders.events import notify_order_canceled
-from ticketing.payments.payment import Payment
+from ticketing.payments.payment import Payment, get_delivery_plugin
 from ticketing.payments import plugins as payment_plugins
 from ticketing.tickets.utils import build_dicts_from_ordered_product_item
 from ticketing.cart import api
@@ -693,25 +689,30 @@ class OrderDetailView(BaseView):
 
     @view_config(route_name='orders.sales_summary', renderer='ticketing:templates/orders/_sales_summary.html', permission='sales_counter')
     def sales_summary(self):
-        performance_id = int(self.request.params.get('performance_id', 0))
+        performance_id = int(self.request.params.get('performance_id') or 0)
         performance = Performance.get(performance_id, self.context.user.organization_id)
         if performance is None:
             return HTTPNotFound('performance id %d is not found' % performance_id)
 
-        now = datetime.now()
+        sales_segments = performance.inner_sales_segments
+        sales_segment_id = int(self.request.params.get('sales_segment_id') or 0)
+        if sales_segment_id:
+            sales_segments = [ss for ss in sales_segments if ss.id == sales_segment_id]
+
         sales_summary = []
-        for stock_type in performance.event.stock_types:
+        for stock_type in performance.stock_types:
             stock_data = []
             stocks = Stock.filter(Stock.performance_id==performance_id)\
-                          .filter(Stock.stock_type_id==stock_type.id)\
-                          .filter(Stock.quantity>0)\
-                          .filter(exists().where(and_(ProductItem.performance_id==performance_id, ProductItem.stock_id==Stock.id))).all()
+                .filter(Stock.stock_type_id==stock_type.id)\
+                .filter(Stock.quantity>0)\
+                .filter(exists().where(and_(ProductItem.performance_id==performance_id, ProductItem.stock_id==Stock.id))).all()
             for stock in stocks:
-                products = [p for p in performance.products if p.sales_segment.start_at <= now and p.sales_segment.end_at >= now and stock in p.stocks]
-                stock_data.append(dict(
-                    stock=stock,
-                    products=sorted(products, key=lambda x:(x.sales_segment.order, x.price)),
-                ))
+                products = [p for p in performance.products if stock in p.stocks and p.sales_segment in sales_segments]
+                if products:
+                    stock_data.append(dict(
+                        stock=stock,
+                        products=sorted(products, key=lambda x:(x.sales_segment.order, x.price)),
+                    ))
             sales_summary.append(dict(
                 stock_type=stock_type,
                 total_quantity=stock_type.num_seats(performance_id=performance.id, sale_only=True) or 0,
@@ -831,6 +832,7 @@ class OrdersReserveView(BaseView):
         logger.debug('order reserve post_data=%s' % post_data)
 
         performance_id = int(post_data.get('performance_id', 0))
+        sales_segment_id = int(post_data.get('sales_segment_id', 0))
         performance = Performance.get(performance_id, self.context.user.organization_id)
         if performance is None:
             raise HTTPBadRequest(body=json.dumps({
@@ -847,7 +849,7 @@ class OrdersReserveView(BaseView):
         self.clear_inner_cart_session()
 
         stocks = post_data.get('stocks')
-        form_reserve = OrderReserveForm(post_data, performance_id=performance_id, stocks=stocks)
+        form_reserve = OrderReserveForm(post_data, performance_id=performance_id, stocks=stocks, sales_segment_id=sales_segment_id)
         form_reserve.payment_delivery_method_pair_id.validators = [Optional()]
         form_reserve.validate()
 
@@ -894,7 +896,7 @@ class OrdersReserveView(BaseView):
             logger.debug('order reserve confirm post_data=%s' % post_data)
 
             # validation
-            f = OrderReserveForm(performance_id=performance_id, stocks=post_data.get('stocks'))
+            f = OrderReserveForm(performance_id=performance_id, stocks=post_data.get('stocks'), request=self.request)
             f.process(post_data)
             if not f.validate():
                 raise ValidationError(reduce(lambda a,b: a+b, f.errors.values(), []))
@@ -932,8 +934,7 @@ class OrdersReserveView(BaseView):
             cart.operator = self.context.user
 
             # コンビニ決済は通知を行うので購入者情報が必要
-            payment_plugin_id = cart.payment_delivery_pair.payment_method.payment_plugin_id
-            if payment_plugin_id == payment_plugins.SEJ_PAYMENT_PLUGIN_ID:
+            if cart.payment_delivery_pair.id in f.payment_delivery_method_pair_id.sej_plugin_id:
                 cart.shipping_address = ShippingAddress(
                     first_name=f.first_name.data,
                     last_name=f.last_name.data,
@@ -981,16 +982,29 @@ class OrdersReserveView(BaseView):
         try:
             # create order
             cart = api.get_cart(self.request)
+
+            payment = Payment(cart, self.request)
             payment_plugin_id = cart.payment_delivery_pair.payment_method.payment_plugin_id
             need_payment = (payment_plugin_id == payment_plugins.SEJ_PAYMENT_PLUGIN_ID)
+
             if need_payment:
-                payment = Payment(cart, self.request)
                 order = payment.call_payment()
             else:
                 order = Order.create_from_cart(cart)
                 order.organization_id = order.performance.event.organization_id
                 order.save()
                 cart.order = order
+
+                delivery_plugin_id = cart.payment_delivery_pair.delivery_method.delivery_plugin_id
+                delivery_plugin = get_delivery_plugin(self.request, delivery_plugin_id)
+                if delivery_plugin:
+                    try:
+                        delivery_plugin.finish(self.request, cart)
+                    except Exception as e:
+                        logger.error('call delivery plugin error(%s)' % e.message)
+                        raise HTTPBadRequest(body=json.dumps({
+                            'message':u'配送手続でエラーが発生しました',
+                        }))
                 cart.finish()
 
             order.note = post_data.get('note')

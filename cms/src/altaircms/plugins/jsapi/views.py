@@ -151,9 +151,11 @@ def page_setup_info(request):
         name = params["name"]
         result = {
             "name": name or info.name, 
-            "caption": info.caption, 
-            "title": info.title or name, 
-            "event": event.id if event else None, 
+            "caption": info.caption,
+            "title_prefix": info.title_prefix,
+            "title": info.title,
+            "title_suffix": info.title_suffix,
+            "event": event.id if event else None,
             "url": info.url.lstrip("/") if not info.url.startswith(("http://", "https://")) else info.url, 
             "genre": params["genre"], 
             "keywords": info.keywords, 

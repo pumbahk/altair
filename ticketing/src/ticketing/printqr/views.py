@@ -3,7 +3,7 @@
 import json
 import re
 from pyramid.view import view_config
-from pyramid.httpexceptions import HTTPFound, HTTPNotFound
+from pyramid.httpexceptions import HTTPFound, HTTPForbidden, HTTPNotFound
 from ticketing.qr import get_qrdata_builder
 import logging
 from ticketing.printqr import utils 
@@ -26,8 +26,22 @@ from ticketing.qr.utils import get_matched_token_query_from_order_no
 from ticketing.qr.utils import get_or_create_matched_history_from_token
 from ticketing.qr.utils import make_data_for_qr
 
+def _accepted_object(request, obj):
+    if obj is None:
+        raise HTTPNotFound
+    if request.context.organization is None:
+        request.session.flash(u"ログインしていません")
+        raise HTTPForbidden        
+    if unicode(obj.organization_id) != unicode(request.context.organization.id):
+        logger.info(str((unicode(obj.organization_id) , unicode(request.context.organization.id))))
+        request.session.flash(u"ログインしたアカウントとは異なるorganizationです")
+        raise HTTPForbidden
+    return obj
+
+
 ## login
 @view_config(route_name="login", request_method="GET", renderer="ticketing.printqr:templates/login.html")
+@view_config(context="pyramid.httpexceptions.HTTPForbidden", renderer="ticketing.printqr:templates/login.html")
 def login_view(request):
     logger.debug("login")
     form = forms.LoginForm()
@@ -78,8 +92,8 @@ def _signed_string_from_history(builder, history):
     return builder.sign(builder.make(params))
 
 def orderno_show_qrsigned_after_validated(context, request, form):
+    order = _accepted_object(request, form.order)
     request.override_renderer = "ticketing.printqr:templates/misc/orderqr.show.html"
-    order = form.order
     order_no = order.order_no
 
     tokens = get_matched_token_query_from_order_no(order_no)
@@ -95,6 +109,8 @@ def orderno_show_qrsigned_after_validated(context, request, form):
              renderer="ticketing.printqr:templates/progress.html")
 def progress_notify_view(context, request):
     event_id = request.matchdict["event_id"]
+    event = Event.query.filter_by(id=event_id).first()
+    event = _accepted_object(request, event)
     form = forms.PerformanceSelectForm(event_id=event_id)
     return dict(json=json, 
                 form=form, 
@@ -129,8 +145,7 @@ def choice_event_view(context, request):
 def qrapp_view(context, request):
     event_id = request.matchdict["event_id"]
     event = Event.query.filter_by(id=event_id).first()
-    if event is None:
-        raise HTTPNotFound
+    event = _accepted_object(request, event)
     return dict(json=json, 
                 event=event, 
                 form = forms.PerformanceSelectForm(event_id=event_id), 

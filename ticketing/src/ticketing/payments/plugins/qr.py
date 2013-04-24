@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 
 from pyramid.view import view_config
-from ticketing.mobile import mobile_view_config
+from altair.mobile import mobile_view_config
 from ticketing.payments.interfaces import IOrderDelivery
 from ticketing.cart.interfaces import ICartDelivery
 from ticketing.mails.interfaces import ICompleteMailDelivery, IOrderCancelMailDelivery

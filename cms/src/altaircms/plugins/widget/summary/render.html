@@ -1,5 +1,10 @@
 ## summary widget output template
-## 
+##
+
+<%def name="render_sale_image(label, sale, imagepath)">
+    <th scope="row" style="width: 120px">${label.replace(sale, "")}<img src=${imagepath} style="vertical-align: top; margin-top: 1px"/></th>
+</%def>
+
 <div class="detailBox describeBox" id="settlementEventDetail">
   <div class="detailBoxInner">
   %if widget.show_label:
@@ -8,7 +13,15 @@
 	<table summary="イベント詳細情報">
 	  % for item in items:
 	  <tr>
-	    <th scope="row">${item["label"]}</th>
+          % if item["label"].find(u"先行抽選") != -1:
+            ${render_sale_image(item["label"], u"先行抽選", "/static/RT/img/search/icon_lottery.gif")}
+          % elif item["label"].find(u"先行先着") != -1:
+            ${render_sale_image(item["label"], u"先行先着", "/static/RT/img/search/icon_firstcome.gif")}
+          % elif item["label"].find(u"一般販売") != -1:
+            ${render_sale_image(item["label"], u"一般販売", "/static/RT/img/search/icon_normal.gif")}
+          % else:
+            <th scope="row">${item["label"]}</th>
+          % endif
 		<td>${h.base.nl_to_br(item["content"])}</td>
       </tr>
       % endfor

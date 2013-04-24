@@ -105,9 +105,9 @@ class TopPageSidebarSearchForm(Form):
             "performance_close": performance_close, 
             }
         
-        if data["area"]:
+        if data["area"] and data["area"] != u"None":
             areas = params["areas"] = [data["area"]]
-            prefs = params["prefectures"] = [x for x,_ in  PREF_DICT[data["area"]]]
+            prefs = params["prefectures"] = [x for x,_ in  PREF_DICT.get(data["area"], [])]
             params["area_tree"] = MarkedTree(check_all_list=areas, 
                                              translator=PREF_EN_TO_JA, 
                                              tree=zip(areas, prefs))

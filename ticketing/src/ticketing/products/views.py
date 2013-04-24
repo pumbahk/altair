@@ -139,9 +139,8 @@ class Products(BaseView):
 
     @view_config(route_name='products.api.get', renderer='json')
     def api_get(self):
-        performance_id = self.request.params.get('performance_id', 0)
         sales_segment_id = self.request.params.get('sales_segment_id', 0)
-        products = Product.filter(Product.sales_segment_id==sales_segment_id).all()
+        products = Product.query.filter_by(sales_segment_id=sales_segment_id).order_by(Product.display_order).all()
         if not products:
             raise HTTPBadRequest(body=json.dumps({'message':u'データが見つかりません'}))
 
@@ -160,7 +159,6 @@ class Products(BaseView):
                 ),
                 parent='null',  # need for sorting
             )
-            # product_items = product.items_by_performance_id(performance_id)
             product_items = product.items
 
             for i, product_item in enumerate(product_items):

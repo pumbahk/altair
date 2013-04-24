@@ -12,7 +12,7 @@ import smtplib
 from email.MIMEText import MIMEText
 from email.Header import Header
 from email.Utils import formatdate
-
+from altair.sqla import association_proxy_many
 from sqlalchemy.sql import functions as sqlf
 from sqlalchemy import Table, Column, ForeignKey, func, or_, and_, event
 from sqlalchemy import ForeignKeyConstraint, UniqueConstraint, PrimaryKeyConstraint
@@ -41,7 +41,7 @@ from ticketing.users.models import User, UserCredential, MemberGroup, MemberGrou
 from ticketing.sej.models import SejOrder, SejTenant, SejTicket, SejRefundTicket, SejRefundEvent
 from ticketing.sej.exceptions import SejServerError
 from ticketing.sej.payment import request_cancel_order
-from ticketing.assets import IAssetResolver
+from altair.pyramid_assets import get_resolver 
 from ticketing.utils import myurljoin, tristate, is_nonmobile_email_address, sensible_alnum_decode
 from ticketing.helpers import todate, todatetime
 from ticketing.payments import plugins
@@ -78,14 +78,14 @@ class Site(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     def _metadata(self):
         __metadata = getattr(self, '__metadata', None)
         if not __metadata:
-            resolver = get_current_registry().queryUtility(IAssetResolver)
+            resolver = get_resolver(get_current_registry())
             self.__metadata = json.load(resolver.resolve(self.metadata_url).stream())
         return self.__metadata
 
     def get_drawing(self, name):
         page_meta = self._metadata[u'pages'].get(name)
         if page_meta is not None:
-            resolver = get_current_registry().queryUtility(IAssetResolver)
+            resolver = get_resolver(get_current_registry())
             return resolver.resolve(myurljoin(self.metadata_url, name))
         else:
             return None
@@ -171,12 +171,31 @@ class Venue(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         logger.info('[copy] Seat - SeatAttribute, SeatStatus, SeatIndex start')
         default_stock = Stock.get_default(performance_id=performance_id)
         for template_seat in template.seats:
-            Seat.create_from_template(
-                template=template_seat,
-                venue_id=venue.id,
-                default_stock_id=default_stock.id,
-                **convert_map
-            )
+            # create Seat
+            seat = Seat.clone(template_seat)
+            seat.venue_id = venue.id
+            if 'stock_id' in convert_map and template_seat.stock:
+                seat.stock_id = convert_map['stock_id'][template_seat.stock.id]
+            else:
+                seat.stock_id = default_stock.id
+            for template_attribute in template_seat.attributes:
+                seat[template_attribute] = template_seat[template_attribute]
+            seat.created_at = datetime.now()
+            seat.updated_at = datetime.now()
+
+            # create SeatStatus
+            seat.status_ = SeatStatus(status=SeatStatusEnum.Vacant.v)
+
+            # create SeatIndex
+            seat_indexes = []
+            for template_seat_index in template_seat.indexes:
+                seat_index = SeatIndex.clone(template_seat_index)
+                if 'seat_index_type' in convert_map:
+                    seat_index.seat_index_type_id = convert_map['seat_index_type'][template_seat_index.seat_index_type_id]
+                seat_indexes.append(seat_index)
+            seat.indexes = seat_indexes
+
+            DBSession.add(seat)
         logger.info('[copy] Seat - SeatAttribute, SeatStatus, SeatIndex end')
 
         # defaultのStockに未割当の席数をセット
@@ -287,30 +306,6 @@ class Seat(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                 Product.sales_segment_id==sales_segment.id
             )
 
-    @staticmethod
-    def create_from_template(template, venue_id, default_stock_id, **kwargs):
-        # create Seat
-        seat = Seat.clone(template)
-        seat.venue_id = venue_id
-        if 'stock_id' in kwargs and template.stock:
-            seat.stock_id = kwargs['stock_id'][template.stock.id]
-        else:
-            seat.stock_id = default_stock_id
-        for template_attribute in template.attributes:
-            seat[template_attribute] = template[template_attribute]
-        seat.save()
-
-        # create SeatStatus
-        SeatStatus.create_default(seat_id=seat.id)
-
-        # create SeatIndex
-        for template_seat_index in template.indexes:
-            SeatIndex.create_from_template(
-                template=template_seat_index,
-                seat_id=seat.id,
-                **kwargs
-            )
-
     def delete_cascade(self):
         # delete SeatStatus
         seat_status = SeatStatus.filter_by(seat_id=self.id).first()
@@ -345,11 +340,6 @@ class SeatStatus(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = "SeatStatus"
     seat_id = Column(Identifier, ForeignKey("Seat.id", ondelete='CASCADE'), primary_key=True)
     status = Column(Integer)
-
-    @staticmethod
-    def create_default(seat_id):
-        seat_status = SeatStatus(status=SeatStatusEnum.Vacant.v, seat_id=seat_id)
-        seat_status.save()
 
     @staticmethod
     def get_for_update(stock_id):
@@ -457,6 +447,17 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     redirect_url_pc = Column(String(1024))
     redirect_url_mobile = Column(String(1024))
 
+    @property
+    def inner_sales_segments(self):
+        now = datetime.now()
+        sales_segment_sort_key_func = lambda ss: (ss.kind == u'sales_counter', ss.start_at <= now, now <= ss.end_at, ss.id)
+        return sorted(list(self.sales_segments), key=sales_segment_sort_key_func, reverse=True)
+
+    @property
+    def stock_types(self):
+        return sorted(list({s.stock_type for s in self.stocks if s.stock_type}),
+                      key=lambda s: s.id)
+
     def add(self):
         logger.info('[copy] Stock start')
         BaseModel.add(self)
@@ -537,11 +538,14 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                     ProductItem.filter_by(product_id=org_id)\
                                .filter_by(performance_id=self.id)\
                                .update({'product_id':new_id})
-            logger.info('[copy] SalesSegment start')
+            logger.info('[copy] SalesSegment end')
 
         # create Venue - VenueArea, Seat - SeatAttribute
         if hasattr(self, 'create_venue_id') and self.venue_id:
-            template_venue = Venue.get(self.venue_id)
+            template_venue = Venue.query.filter_by(id=self.venue_id).options(
+                joinedload(Venue.seats, Seat.indexes),
+                joinedload(Venue.seats, Seat.attributes_),
+            ).first()
             Venue.create_from_template(
                 template=template_venue,
                 performance_id=self.id,
@@ -1865,14 +1869,6 @@ class SeatIndex(Base, BaseModel):
     index              = Column(Integer, nullable=False)
     seat               = relationship('Seat', backref='indexes')
 
-    @staticmethod
-    def create_from_template(template, seat_id, **kwargs):
-        seat_index = SeatIndex.clone(template)
-        seat_index.seat_id = seat_id
-        if 'seat_index_type' in kwargs:
-            seat_index.seat_index_type_id = kwargs['seat_index_type'][template.seat_index_type_id]
-        seat_index.save()
-
 class OranizationTypeEnum(StandardEnum):
     Standard = 1
 
@@ -3188,12 +3184,20 @@ class SalesSegment(Base, BaseModel, LogicallyDeleted, WithTimestamp):
     account_id = Column(Identifier, ForeignKey('Account.id'))
     account = relationship('Account', backref='sales_segments')
 
+    seat_stock_types = association_proxy('products', 'seat_stock_type')
+    stocks = association_proxy_many('products', 'stock')
     payment_delivery_method_pairs = relationship("PaymentDeliveryMethodPair",
         secondary="SalesSegment_PaymentDeliveryMethodPair",
         backref="sales_segments",
         order_by="PaymentDeliveryMethodPair.id",
         cascade="all",
         collection_class=list)
+
+    def has_stock_type(self, stock_type):
+        return stock_type in self.seat_stock_types
+
+    def has_stock(self, stock):
+        return stock in self.stocks
 
     def available_payment_delivery_method_pairs(self, now):
         return [pdmp 

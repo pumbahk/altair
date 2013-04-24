@@ -1,6 +1,5 @@
 from zope.interface import implementer
 from .interfaces import IMobileCarrier
-from ticketing.utils import StandardEnum
 
 @implementer(IMobileCarrier)
 class Carrier(object):

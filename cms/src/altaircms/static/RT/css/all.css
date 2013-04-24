@@ -353,7 +353,7 @@ div#grpheader ul.navSkip {
 /* #siteID {{{ */
 #siteID {
     float: left;
-    width: 250px; /* ←サイトID幅＋サービスタイトル幅＋マージンの合計値を入れる */
+    width: 400px; /* ←サイトID幅＋サービスタイトル幅＋マージンの合計値を入れる */
     height: 52px;
     margin: 0;
 }

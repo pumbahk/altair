@@ -104,9 +104,14 @@ form = TopPageSidebarSearchForm()
       <!-- ========== header ========== -->
       <div id="grpheader">
         <p id="tagLine">チケット販売・イベント予約</p>
-        <p id="siteID">
-            <a href="http://ticket.rakuten.co.jp/"><img src="/static/RT/img/renewal/logo.gif" alt="楽天チケット"/></a>
-        </p>
+          <div id="siteID">
+            <div id="logobox" style="width: 100px; float: left">
+              <a href="http://ticket.rakuten.co.jp/"><img src="/static/RT/img/renewal/logo.gif" alt="楽天チケット"/></a>
+            </div>
+            <div id="pointbox" style="width: 300px;float: right">
+              チケットの購入で楽天ポイントが<br/><span style="color: crimson;font-weight:bold">100円</span>ごとに<span style="color: crimson;font-weight:bold">1ポイント</span>貯まります♪
+            </div>
+          </div>
         <dl id="remoteNav">
             <dt>楽天グループ関連</dt>
             <dd class="grpRelation">
@@ -137,7 +142,7 @@ form = TopPageSidebarSearchForm()
     <!--- social buttons --->
     <div id="social">
         <iframe src="https://www.facebook.com/plugins/like.php?app_id=233610706676154&amp;href=${h.safe_url_quote("http://ticket.rakuten.co.jp/")}&amp;send=false&amp;layout=button_count&amp;width=100&amp;show_faces=false&amp;action=like&amp;colorscheme=light&amp;font&amp;height=20" scrolling="no" frameborder="0" style="border:none; overflow:hidden; width:100px; height:20px;" allowTransparency="true"></iframe>
-        <iframe allowtransparency="true" frameborder="0" scrolling="no" src="http://platform.twitter.com/widgets/tweet_button.html?url=${h.safe_url_quote("http://ticket.rakuten.co.jp/")}&amp;via=RakutenTicket&amp;count=none&amp;lang=ja&amp;" style="height: 20px; width: 70px;"></iframe>
+        <iframe allowtransparency="true" frameborder="0" scrolling="no" src="http://platform.twitter.com/widgets/tweet_button.html?url=${h.safe_url_quote("http://ticket.rakuten.co.jp/")}&amp;via=RakutenTicket&amp;count=none&amp;lang=ja&amp;text=${page.title}&amp;" style="height: 20px; width: 70px;"></iframe>
     </div>
 
     <div id="globalNav" class="clear">

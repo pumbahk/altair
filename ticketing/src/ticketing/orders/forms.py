@@ -3,6 +3,7 @@
 import locale
 from datetime import datetime
 
+from pyramid.security import has_permission, ACLAllowed
 from wtforms import Form, ValidationError
 from wtforms import (HiddenField, TextField, SelectField, SelectMultipleField, TextAreaField, BooleanField,
                      RadioField, FieldList, FormField, DecimalField, IntegerField)
@@ -410,50 +411,45 @@ class OrderReserveForm(Form):
 
     def __init__(self, formdata=None, obj=None, prefix='', **kwargs):
         Form.__init__(self, formdata, obj, prefix, **kwargs)
+
+        if 'request' in kwargs:
+            self.request = kwargs['request']
+
         if 'performance_id' in kwargs:
             performance = Performance.get(kwargs['performance_id'])
             self.performance_id.data = performance.id
 
-            now = datetime.now()
-            sales_segments = SalesSegment.query.filter_by(performance_id=performance.id)\
-                                         .filter(SalesSegment.start_at<=now)\
-                                         .filter(now<=SalesSegment.end_at)\
-                                         .join(SalesSegmentGroup).filter(SalesSegmentGroup.kind=='sales_counter').all()
+            query = SalesSegment.query.filter_by(performance_id=performance.id).join(SalesSegmentGroup)
+            if 'sales_segment_id' in kwargs:
+                query = query.filter(SalesSegment.id==kwargs['sales_segment_id'])
+            sales_segments = query.all()
+
             self.payment_delivery_method_pair_id.choices = []
-            self.payment_delivery_method_pair_id.sej_payment_plugin_id = []
+            self.payment_delivery_method_pair_id.sej_plugin_id = []
             for sales_segment in sales_segments:
                 for pdmp in sales_segment.payment_delivery_method_pairs:
                     self.payment_delivery_method_pair_id.choices.append(
                         (pdmp.id, '%s  -  %s' % (pdmp.payment_method.name, pdmp.delivery_method.name))
                     )
-                    if pdmp.payment_method.payment_plugin_id == plugins.SEJ_PAYMENT_PLUGIN_ID:
-                        self.payment_delivery_method_pair_id.sej_payment_plugin_id.append(int(pdmp.id))
+                    if pdmp.payment_method.payment_plugin_id == plugins.SEJ_PAYMENT_PLUGIN_ID or \
+                       pdmp.delivery_method.delivery_plugin_id == plugins.SEJ_DELIVERY_PLUGIN_ID:
+                        self.payment_delivery_method_pair_id.sej_plugin_id.append(int(pdmp.id))
 
             self.sales_counter_payment_method_id.choices = [(0, '')]
             for pm in PaymentMethod.filter_by_organization_id(performance.event.organization_id):
                 self.sales_counter_payment_method_id.choices.append((pm.id, pm.name))
 
             self.products.choices = []
-            products = []
+            query = Product.query.filter(Product.performance_id==performance.id)\
+                        .join(ProductItem).filter(ProductItem.product_id==Product.id)
             if 'stocks' in kwargs and kwargs['stocks']:
-                # 座席選択あり
-                # products = Product.query.join(Product.items)\
-                #                   .filter(Product.performance_id==performance.id)\
-                #                   .filter(ProductItem.performance_id==performance.id)\
-                #                   .filter(ProductItem.stock_id.in_(kwargs['stocks'])).all()
-                products = Product.query.filter(Product.performance_id==performance.id)\
-                                  .filter(ProductItem.product_id==Product.id)\
-                                  .filter(ProductItem.stock_id.in_(kwargs['stocks'])).all()
-            #else:
-            #    # 数受け
-            #    products = Product.filter(Product.sales_segment_group_id.in_([ss.id for ss in sales_segments]))\
-            #                      .join(Product.seat_stock_type)\
-            #                      .filter(StockType.quantity_only==1).all()
-            for p in products:
-                if p.sales_segment.start_at <= now and p.sales_segment.end_at >= now:
-                    self.products.choices += [
-                        (p.id, dict(name=p.name, sales_segment=p.sales_segment.name, price=p.price))
-                    ]
+                query = query.filter(ProductItem.stock_id.in_(kwargs['stocks']))
+            if sales_segments:
+                query = query.filter(Product.sales_segment_id.in_([ss.id for ss in sales_segments]))
+            for p in query.all():
+                self.products.choices += [
+                    (p.id, dict(name=p.name, sales_segment=p.sales_segment.name, price=p.price))
+                ]
 
     def _get_translations(self):
         return Translations()
@@ -545,13 +541,20 @@ class OrderReserveForm(Form):
             raise ValidationError(u'選択された座席に紐づく予約可能な商品がありません')
 
     def validate_payment_delivery_method_pair_id(form, field):
-        if field.data:
+        if field.data and field.data in field.sej_plugin_id:
+            for field_name in ['last_name', 'first_name', 'last_name_kana', 'first_name_kana', 'tel_1']:
+                f = getattr(form, field_name)
+                if not f.data:
+                    raise ValidationError(u'購入者情報を入力してください')
+
+            # 決済せずにコンビニ受取できるのはadministratorのみ (不正行為対策)
             pdmp = PaymentDeliveryMethodPair.get(field.data)
-            if pdmp and pdmp.payment_method.payment_plugin_id == plugins.SEJ_PAYMENT_PLUGIN_ID:
-                for field_name in ['last_name', 'first_name', 'last_name_kana', 'first_name_kana', 'tel_1']:
-                    field = getattr(form, field_name)
-                    if not field.data:
-                        raise ValidationError(u'購入者情報を入力してください')
+            if pdmp\
+                and pdmp.payment_method.payment_plugin_id != plugins.SEJ_PAYMENT_PLUGIN_ID\
+                and pdmp.delivery_method.delivery_plugin_id == plugins.SEJ_DELIVERY_PLUGIN_ID\
+                and not isinstance(has_permission('administrator', form.request.context, form.request), ACLAllowed):
+                    raise ValidationError(u'この決済引取方法を選択する権限がありません')
+
 
 class OrderRefundForm(Form):
 

@@ -18,6 +18,15 @@ get_promotion_widget_pages.widget = PromotionWidget
 def get_promotion_manager(request):
     return request.registry.getUtility(IPromotionManager)
 
+_INTERVAL_TIME = 5000
+def set_interval_time(n):
+    global _INTERVAL_TIME
+    logger.info("*promotion widget interval time: %s -> %s" % (_INTERVAL_TIME, n))
+    _INTERVAL_TIME = n
+
+def get_interval_time():
+    global _INTERVAL_TIME
+    return _INTERVAL_TIME
 
 @provider(IPromotionManager)
 class RealPromotionManager(object):

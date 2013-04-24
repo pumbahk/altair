@@ -109,8 +109,6 @@ def main(global_config, **local_config):
     config.include(".selectable_renderer")
     domain_candidates = json.loads(config.registry.settings["altair.cart.domain.mapping"])
     config.registry.utilities.register([], IDict, "altair.cart.domain.mapping", domain_candidates)
-    selector = config.maybe_dotted(".selectable_renderer.ByDomainMappingSelector")(domain_candidates)
-    config.add_selectable_renderer_selector(selector)
 
     ## mail
     config.include(import_mail_module)
@@ -127,7 +125,7 @@ def main(global_config, **local_config):
     config.include('ticketing.fc_auth')
     config.include('ticketing.checkout')
     config.include('ticketing.multicheckout')
-    config.include('ticketing.mobile')
+    config.include('altair.mobile')
     config.include("ticketing.payments")
     config.include('ticketing.payments.plugins')
 
@@ -145,9 +143,7 @@ def main(global_config, **local_config):
                             config.registry.settings["altaircms.apikey"]
                             )
 
-    import ticketing.pyramid_boto
-    ticketing.pyramid_boto.register_default_implementations(config)
-    import ticketing.assets
-    ticketing.assets.register_default_implementations(config)
+    config.include('altair.pyramid_assets')
+    config.include('altair.pyramid_boto')
 
     return config.make_wsgi_app()

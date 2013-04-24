@@ -175,6 +175,7 @@ class Reserving(object):
 
         if adjacency is None:
             raise NotEnoughAdjacencyException
+        logger.info('seat_adjacency_id=%s' % adj.id)
         assert len(seats) == quantity
         assert all(seat.status == SeatStatusEnum.Vacant.v for seat in seats)
         return seats
