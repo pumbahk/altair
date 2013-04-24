@@ -1,6 +1,5 @@
 from pyramid.decorator import reify
-from ticketing.core.models import Event, Performance
-from ticketing.core import api as core_api
+from ticketing.core.models import Event
 from .models import Lot
 
 class LotResource(object):
@@ -23,36 +22,3 @@ class LotResource(object):
             Lot.id==lot_id,
             ).first()
         return lot
-
-    @reify
-    def host_base_url(self):
-        return core_api.get_host_base_url(self.request)
-
-
-class LotOptionSelectionResource(LotResource):
-    def __init__(self, request):
-        super(LotOptionSelectionResource, self).__init__(request)
-        option_index = None
-        try:
-            option_index = int(self.request.matchdict.get('option_index'))
-        except (TypeError, ValueError):
-            pass
-        if option_index is None:
-            try:
-                option_index = int(self.request.params.get('option_index'))
-            except (TypeError, ValueError):
-                pass
-        if option_index > self.lot.limit_wishes:
-            option_index = None
-        self.option_index = option_index
-
-        performance_id = None
-        try:
-            performance_id = int(self.request.params.get('performance_id'))
-        except (ValueError, TypeError):
-            pass
-
-        if self.lot.sales_segment.performance_id != performance_id:
-            performance_id = None
-
-        self.performance = Performance.query.filter_by(id=performance_id).first()

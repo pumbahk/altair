@@ -1,8 +1,5 @@
-<%def name="band(bgcolor)">
-<div style="background-color:${bgcolor}" bgcolor="${bgcolor}">${caller.body()}</div>
-</%def>
 <%def name="header(bgcolor='#990018')">
-<%self:band bgcolor="${bgcolor}"><font color="white">${caller.body()}</font></%self:band>
+<div style="background-color:${bgcolor}" bgcolor="${bgcolor}"><font size="+1" color="white">${caller.body()}</font></div>
 </%def>
 <%def name="form_header(markercolor='#990018', requiredmarkcolor='#ff0000', required=False)">
 <div><font color="${markercolor}">■</font>${caller.body()}</font>

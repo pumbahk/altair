@@ -1,11 +1,7 @@
-# encoding: utf-8
-
 import re
 from webob.multidict import MultiDict
 import itertools
 from sqlalchemy.orm.exc import NoResultFound
-from markupsafe import Markup
-from ticketing.formhelpers.widgets.list import OurListWidget
 from ticketing.core.models import (
     ShippingAddress,
     Product,
@@ -160,15 +156,3 @@ def validate_token(request):
 
     return True
 
-def mobile_error_list(request, form, name, with_label=False):
-    errors = form[name].errors
-    if not errors:
-        return ""
-    
-    html = u'<div>'
-    html += u"".join([u'<font color="red">・%s%s</font><br />' % ((u'%s:' % form[name].label.text if with_label else u''), e)  for e in errors])
-    html += u'</div>'
-    return Markup(html)
-
-def mobile_list_widget(request):
-    return OurListWidget(outer_html_tag=None, inner_html_tag=None, inner_html_post='<br />', prefix_label=False)
