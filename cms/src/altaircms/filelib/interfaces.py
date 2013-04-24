@@ -15,7 +15,7 @@ class IFileSession(Interface):
         pass
     def delete(deletefile):
         pass
-    def commit():
+    def commit(extra_args=None):
         pass
 
 class IS3UtilityFactory(Interface):

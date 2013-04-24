@@ -162,7 +162,7 @@ class FileSession(object):
     def delete(self, uploadfile):
         return self.deleter.delete(uploadfile)
 
-    def commit(self):
+    def commit(self, extra_args=None):
         delete_results = self.deleter.commit()
         create_results = self.creator.commit()
-        return {"create": create_results, "delete": delete_results}
+        return {"create": create_results, "delete": delete_results, "extra_args": extra_args}

@@ -9,8 +9,8 @@ class AdaptsFileSession(object):
         self.request = request
         self.session = session
 
-    def commit(self):
-        result = self.session.commit()
+    def commit(self, extra_args=None):
+        result = self.session.commit(extra_args=extra_args)
         self.request.registry.notify(AfterCommit(self.request, self.session, result))
         return result
 

@@ -108,7 +108,7 @@ class Deleter(object):
         if self.confirm(asset):
             DBSession.delete(asset)
             ## moveit
-            self.filesession.commit()
+            self.filesession.commit([asset])
 
 
 class Display(object):
@@ -191,7 +191,7 @@ class ImageCreator(Creator):
 
         ## add
         DBSession.add(asset)
-        filesession.commit()
+        filesession.commit([asset])
         return asset
 
 class MovieCreator(Creator):
@@ -222,7 +222,7 @@ class MovieCreator(Creator):
 
         ## add
         DBSession.add(asset)
-        filesession.commit()
+        filesession.commit([asset])
         return asset
 
 class FlashCreator(Creator):
@@ -253,7 +253,7 @@ class FlashCreator(Creator):
 
         ## add
         DBSession.add(asset)
-        filesession.commit()
+        filesession.commit([asset])
         return asset
 
 class Committer(object):
@@ -318,7 +318,7 @@ class ImageUpdater(Updater):
 
         ## add
         DBSession.add(asset)
-        filesession.commit()
+        filesession.commit([asset])
         return asset
 
 class MovieUpdater(Updater):
@@ -345,7 +345,7 @@ class MovieUpdater(Updater):
 
         ## add
         DBSession.add(asset)
-        filesession.commit()
+        filesession.commit([asset])
         return asset
 
 class FlashUpdater(Updater):
@@ -373,7 +373,7 @@ class FlashUpdater(Updater):
 
         ## add
         DBSession.add(asset)
-        filesession.commit()
+        filesession.commit([asset])
         return asset
    
 class ImageSearcher(object):

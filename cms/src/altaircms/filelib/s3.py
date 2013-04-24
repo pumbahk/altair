@@ -12,11 +12,12 @@ def add_s3utility(config, factory):
         factory.add_subscribers(config)
 
 class AfterS3Upload(object):
-    def __init__(self, request, session, files, uploader):
+    def __init__(self, request, session, files, uploader, extra_args):
         self.request = request
         self.session = session
         self.files = files
         self.uploader = uploader
+        self.extra_args = extra_args
 
 @provider(IS3UtilityFactory)
 class S3ConnectionFactory(object):
@@ -35,15 +36,15 @@ class S3ConnectionFactory(object):
 
     def upload_s3_after_commit(self, event):
         request = event.request
-        result = event.result
+        result = event.result #{"create": [], "delete": [], "extra_args": []}
         session = event.session
         uploaded_files = []
         for f, realpath in result.get("create", []):
             with open(realpath) as rf:
-                logger.warn("upload: bucket={0} name={1}".format(self.uploader.bucket_name, f.name))
+                logger.warn("*debug upload: bucket={0} name={1}".format(self.uploader.bucket_name, f.name))
                 self.uploader.upload(rf, f.name)
                 uploaded_files.append(f)
-        request.registry.notify(AfterS3Upload(request, session, uploaded_files, self.uploader))
+        request.registry.notify(AfterS3Upload(request, session, uploaded_files, self.uploader, result.get("extra_args", [])))
 
 
 @provider(IS3UtilityFactory)
@@ -52,5 +53,12 @@ class NullConnectionFactory(object):
     def from_settings(cls, settings):
         return cls()
     
+    def add_subscribers(self, config):
+        config.add_subscriber(self.logging_message, "altaircms.filelib.adapts.AfterCommit")
+
+    def logging_message(self, event):
+        result = event.result #{"create": [], "delete": [], "extra_args": []}
+        logger.warn("*debug after upload. result={0}".format(result))
+
 def includeme(config):
     config.add_directive("add_s3utility", add_s3utility)
