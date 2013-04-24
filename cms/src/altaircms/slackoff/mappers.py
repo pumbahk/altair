@@ -116,6 +116,8 @@ def hotword_mapper(request, obj):
 def pagedefaultinfo_mapper(request, obj):
     objlike = ObjectLike(**model_to_dict(obj))
     objlike.pagetype = Markup(u'<a href="%s">%s</a>' % (request.route_path("pagetype_update", action="input", id=obj.pagetype.id, _query=dict(endpoint=request.url)), obj.pagetype.label)) if obj.pagetype else u"-"
+    objlike.title_prefix = obj.title_prefix if obj.title_prefix else ""
+    objlike.title_suffix = obj.title_suffix if obj.title_suffix else ""
     return objlike
 
 prole_dict = dict(PageType.page_role_candidates)

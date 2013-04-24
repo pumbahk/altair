@@ -3,8 +3,8 @@ from standardenum import StandardEnum
 from urlparse import uses_relative, uses_netloc, urlparse
 from decimal import Decimal
 from pyramid.threadlocal import get_current_registry
-from ticketing.mobile.interfaces import IMobileCarrierDetector
-from ticketing.mobile.api import _detect_from_email_address
+from altair.mobile.interfaces import IMobileCarrierDetector
+from altair.mobile.api import _detect_from_email_address
 from datetime import date, timedelta
 import urllib
 import re

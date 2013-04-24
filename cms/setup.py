@@ -28,7 +28,7 @@ requires = [
     'pyramid_who',
     'uamobile', 
     'fluent-logger == 0.3.3moriyoshi2',
-    'pyramid_selectable_renderer',
+    'pyramid_selectable_renderer >= 0.0.4',
     'altair.findable_label', 
     'altair.log',
     'altair.encodingfixer', 
@@ -46,7 +46,7 @@ tests_require = [
     "coverage",
     "webtest",
     "nosexcover",
-    "mock",
+    "mock", 
 ]
 
 devtools_require = [

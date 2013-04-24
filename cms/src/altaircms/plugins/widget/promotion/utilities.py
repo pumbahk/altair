@@ -9,15 +9,13 @@ import altaircms.helpers as h
 from altaircms.plugins.interfaces import IWidgetUtility
 from altaircms.plugins.widget.api import DisplayTypeSelectRendering
 from .models import PromotionWidget
-from .api import get_promotion_manager
+from .api import get_promotion_manager, get_interval_time
 from altaircms.topic.api import get_topic_searcher
 
 ## fixme: rename **info
 PromotionInfo = namedtuple("PromotionInfo", "idx thumbnails message main width height main_link links messages interval_time unit_candidates")
 
 class PromotionSheet(object):
-    INTERVAL_TIME = 5000
-
     def __init__(self, promotion_units):
         self.promotion_units = promotion_units
 
@@ -38,7 +36,7 @@ class PromotionSheet(object):
             main_link=h.link.get_link_from_promotion(request, selected), 
             links=[h.link.get_link_from_promotion(request, pu) for pu in punits], 
             messages=[pu.text for pu in punits], 
-            interval_time = self.INTERVAL_TIME, 
+            interval_time = get_interval_time(), 
             unit_candidates = [int(pu.id) for pu in punits]
             )
 

@@ -1,7 +1,7 @@
 # -*- encoding:utf-8 -*-
 
 import solr
-import logging
+import altaircms.safelogging as logging
 logger = logging.getLogger(__name__)
 from zope.interface import implementer
 from pyramid.decorator import reify

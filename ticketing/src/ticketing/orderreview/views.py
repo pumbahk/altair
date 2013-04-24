@@ -7,7 +7,7 @@ from ticketing.cart.selectable_renderer import selectable_renderer
 from ticketing.qr.image import qrdata_as_image_response
 from . import schemas
 from . import api
-from ticketing.mobile import mobile_view_config
+from altair.mobile import mobile_view_config
 from ticketing.core.utils import IssuedAtBubblingSetter
 from datetime import datetime
 

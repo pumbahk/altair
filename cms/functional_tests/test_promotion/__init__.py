@@ -22,6 +22,7 @@ class PromotionFunctionalTests(AppFunctionalTests):
         from altaircms.plugins.widget.promotion.models import PromotionWidget
         delete_models([Promotion, PromotionTag, Page, ImageAsset, PromotionWidget])
 
+
    def _get_promotion(self):
       from altaircms.topic.models import Promotion
       return Promotion.query.first()
@@ -130,12 +131,12 @@ class PromotionFunctionalTests(AppFunctionalTests):
          detail_response = app.get("/promotion/page/%s/detail" % page.id)
          detail_response.mustcontain(widget.tag.label)
 
-
          ### create
          ## promotionの追加ができる
          create_input_response = detail_response.click(linkid="create_link")
          form = find_form(create_input_response.forms, action_part="create")
          form.set("main_image", 1)
+         form.set("tag_content", [PromotionTag.query.first().label])
          form.set("text", u"this-is-text-message")
          form.set("link", u"http://www.example.com")
          form.set("publish_open_on", datetime(1900, 1, 1))

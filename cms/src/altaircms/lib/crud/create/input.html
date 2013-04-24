@@ -1,12 +1,5 @@
 <%inherit file='../../../templates/layout_2col.html'/>
 
-<script type="text/javascript">
-  <%include file="../_helper.js"/>  
-  $(function(){
-    $(".row-fluid select").each(function(i,e){select_helper($(e));});
-  });
-</script>
-
 <%namespace name="fco" file="../../../templates/formcomponents.html"/>
 <%namespace name="nco" file="../../../templates/navcomponents.html"/>
 
@@ -29,3 +22,10 @@
         <button class="btn" type="submit">保存</button>
     </form>
 </div>
+## chosen
+<script src="${request.static_url('altaircms:static/chosen/js/jquery.chosen.js')}"></script>
+<link rel="stylesheet" type="text/css" href="${request.static_url('altaircms:static/chosen/css/chosen.css')}" />
+<script type="text/javascript">
+$('.row-fluid select:not([multiple])').chosen({single_only: true, no_results_text: '該当無し'});
+$('.row-fluid select[multiple]').chosen({no_results_text: '該当無し'});
+</script>

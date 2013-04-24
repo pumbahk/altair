@@ -150,8 +150,8 @@ class SejPaymentPlugin(object):
                 username            = u'%s%s' % (shipping_address.last_name, shipping_address.first_name),
                 username_kana       = u'%s%s' % (shipping_address.last_name_kana, shipping_address.first_name_kana),
                 tel                 = tel1 if tel1 else tel2,
-                zip                 = shipping_address.zip.replace('-', ''),
-                email               = shipping_address.email_1,
+                zip                 = shipping_address.zip.replace('-', '') if shipping_address.zip else '',
+                email               = shipping_address.email_1 or '',
                 total               = order.total_amount,
                 ticket_total        = cart.tickets_amount,
                 commission_fee      = order.system_fee + order.transaction_fee,
@@ -208,8 +208,8 @@ class SejDeliveryPlugin(object):
                 username            = u'%s%s' % (shipping_address.last_name, shipping_address.first_name),
                 username_kana       = u'%s%s' % (shipping_address.last_name_kana, shipping_address.first_name_kana),
                 tel                 = tel1 if tel1 else tel2,
-                zip                 = shipping_address.zip.replace('-', ''),
-                email               = shipping_address.email_1,
+                zip                 = shipping_address.zip.replace('-', '') if shipping_address.zip else '',
+                email               = shipping_address.email_1 or '',
                 total               = 0,
                 ticket_total        = 0,
                 commission_fee      = 0,
@@ -282,7 +282,7 @@ class SejPaymentDeliveryPlugin(object):
 
 
 @view_config(context=IOrderDelivery, name="delivery-%d" % DELIVERY_PLUGIN_ID, renderer='ticketing.payments.plugins:templates/sej_delivery_complete.html')
-@view_config(context=IOrderDelivery, request_type='ticketing.mobile.interfaces.IMobileRequest',
+@view_config(context=IOrderDelivery, request_type='altair.mobile.interfaces.IMobileRequest',
              name="delivery-%d" % DELIVERY_PLUGIN_ID, renderer='ticketing.payments.plugins:templates/sej_delivery_complete_mobile.html')
 def sej_delivery_viewlet(context, request):
     order = context.order
@@ -302,7 +302,7 @@ def sej_delivery_confirm_viewlet(context, request):
 
 @view_config(context=IOrderPayment, name="payment-%d" % PAYMENT_PLUGIN_ID, 
              renderer='ticketing.payments.plugins:templates/sej_payment_complete.html')
-@view_config(context=IOrderPayment, request_type='ticketing.mobile.interfaces.IMobileRequest',
+@view_config(context=IOrderPayment, request_type='altair.mobile.interfaces.IMobileRequest',
              name="payment-%d" % PAYMENT_PLUGIN_ID, renderer='ticketing.payments.plugins:templates/sej_payment_complete_mobile.html')
 def sej_payment_viewlet(context, request):
     order = context.order

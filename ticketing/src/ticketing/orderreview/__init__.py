@@ -41,7 +41,7 @@ def main(global_config, **local_config):
 
     config.commit() #override qr plugins view(e.g. qr)
     config.include(".plugin_override")
-    config.include('..mobile')
+    config.include('altair.mobile')
 
     config.include(import_selectable_renderer)
     config.include(import_view)
@@ -54,10 +54,10 @@ def main(global_config, **local_config):
 
 def import_selectable_renderer(config):
     ### selectable renderer
+    from pyramid.interfaces import IDict
     config.include("ticketing.cart.selectable_renderer")
     domain_candidates = json.loads(config.registry.settings["altair.cart.domain.mapping"])
-    selector = config.maybe_dotted("ticketing.cart.selectable_renderer.ByDomainMappingSelector")(domain_candidates)
-    config.add_selectable_renderer_selector(selector)
+    config.registry.utilities.register([], IDict, "altair.cart.domain.mapping", domain_candidates)
 
 def import_view(config):
     ## reivew
@@ -78,9 +78,9 @@ def import_exc_view(config):
     ## exc
     from ticketing.cart.selectable_renderer import selectable_renderer
     config.add_view('.views.notfound_view', context=HTTPNotFound, renderer=selectable_renderer("%(membership)s/errors/not_found.html"))
-    config.add_view('.views.notfound_view', context=HTTPNotFound,  renderer=selectable_renderer("%(membership)s/errors_mobile/not_found.html"), request_type='ticketing.mobile.interfaces.IMobileRequest')
+    config.add_view('.views.notfound_view', context=HTTPNotFound,  renderer=selectable_renderer("%(membership)s/errors_mobile/not_found.html"), request_type='altair.mobile.interfaces.IMobileRequest')
     config.add_view('.views.exception_view',  context=StandardError, renderer=selectable_renderer("%(membership)s/errors/error.html"))
-    config.add_view('.views.exception_view', context=StandardError,  renderer=selectable_renderer("%(membership)s/errors_mobile/error.html"), request_type='ticketing.mobile.interfaces.IMobileRequest')
+    config.add_view('.views.exception_view', context=StandardError,  renderer=selectable_renderer("%(membership)s/errors_mobile/error.html"), request_type='altair.mobile.interfaces.IMobileRequest')
 
 
 

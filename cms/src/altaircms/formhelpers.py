@@ -92,14 +92,15 @@ class CheckboxListWidget(object):
         html = [u'<div %s>' % html_params(**kwargs)]
         for val, label, status in field.iter_choices():
             if status:
-                html.append(u'<input type="checkbox" checked="checked" name=%s value="%s"/>%s' % (name, val, label))
+                html.append(u'<span class="control-group"><label><input type="checkbox" checked="checked" name="%s" value="%s"/>%s</label></span>' % (name, val, label))
             else:
-                html.append(u'<input type="checkbox" name=%s value="%s"/>%s' % (name, val, label))
+                html.append(u'<span class="control-group"><label><input type="checkbox" name="%s" value="%s"/>%s</label></span>' % (name, val, label))
         html.append(u'</div>')
         return HTMLString(''.join(html))
 
 class CheckboxListField(fields.SelectMultipleField):
     widget = CheckboxListWidget()
+
 ##
 ## query_select filter
 ##

@@ -466,6 +466,7 @@ class PageDefaultInfo(WithOrganizationMixin, Base):
     __tablename__ = "page_default_info"
     id = sa.Column(sa.Integer, primary_key=True)
     title_prefix = sa.Column(sa.Unicode(255), default=u"")
+    title_suffix = sa.Column(sa.Unicode(255), default=u"")
     url_prefix = sa.Column(sa.Unicode(255), default=u"")
 
     keywords = Column(Unicode(255), default=u"")

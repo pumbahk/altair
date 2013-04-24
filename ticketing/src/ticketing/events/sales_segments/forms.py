@@ -175,19 +175,25 @@ class SalesSegmentForm(OurForm):
                         and_(SalesSegment.start_at<=start_at,
                              end_at<=SalesSegment.end_at),
                         )
-                ).filter(
-                        SalesSegment.sales_segment_group_id==self.sales_segment_group_id.data
                 )
+
+                if not self.public.data:
+                    q = q.filter(
+                        SalesSegment.sales_segment_group_id==self.sales_segment_group_id.data
+                    )
+                else: # カート表示の重複チェック
+                    q = q.filter(
+                        or_(SalesSegment.sales_segment_group_id==self.sales_segment_group_id.data,
+                            SalesSegment.public==True)
+                    )
 
                 if self.id.data is not None:
                     q = q.filter(SalesSegment.id != self.id.data)
-
 
                 dup = q.first()
                 if dup:
                     self.start_at.errors.append(u'同一公演について期間がかぶっています。{0}～{1}'.format(
                             dup.start_at, dup.end_at))
-
                     return False
 
             return True

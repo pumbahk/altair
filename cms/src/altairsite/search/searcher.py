@@ -2,7 +2,7 @@
 import sqlalchemy as sa
 import sqlalchemy.orm as orm
 from datetime import datetime, timedelta
-import logging
+import altaircms.safelogging as logging
 logger = logging.getLogger(__file__)
 from altaircms.models import (
    SalesSegmentGroup, 
@@ -245,7 +245,7 @@ def _extract_tags(params, k):
     if k not in params:
         return []
     params = params.copy()
-    logger.info(u"extract tag* input{0}".format(params[k]).encode("utf-8"))
+    logger.info(u"extract tag* input{0}".format(params[k]))
     xs = [e.strip() for e in SPLIT_RX.findall(params.pop(k).replace(u"　", " ").replace("'", '"'))]
     logger.info("extract tag* return {0}".format(xs))
     return [x for x in xs if x and not EXCLUDE_RX.match(x)]

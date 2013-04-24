@@ -152,8 +152,8 @@ ${json.dumps(style)}
   import locale
   locale.setlocale(locale.LC_ALL, "")
 %>
-<%def name="price_format(price)">
-${locale.format("%d", price, grouping=True)}
+<%def name="price_format(price, format='%d')">
+${locale.format(format, price, grouping=True)}
 </%def>
 
 <%def name="breadcrumbs(names=[], urls=[], length=20)">

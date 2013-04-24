@@ -65,6 +65,7 @@ class PageResource(security.RootFactory):
         page = models.Page.from_dict(form.data)
         pageset = models.PageSet.get_or_create(page)
 
+        page.title = form.data['title_prefix'] + form.data['title'] + form.data['title_suffix']
         if form.data["parent"]:
             pageset.parent = form.data["parent"]
         if form.data["genre"]:
