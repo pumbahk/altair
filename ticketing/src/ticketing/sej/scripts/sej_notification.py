@@ -2,8 +2,7 @@
 
 import optparse
 import sys
-from pyramid.paster import bootstrap
-import logging.config
+from pyramid.paster import bootstrap, setup_logging
 
 def main(argv=sys.argv):
     if len(sys.argv) < 2:
@@ -12,7 +11,7 @@ def main(argv=sys.argv):
 
     ini_file = sys.argv[1]
     env = bootstrap(ini_file)
-    logging.config.fileConfig(ini_file)
+    setup_logging(ini_file)
 
     request = env['request']
     registry = env['registry']

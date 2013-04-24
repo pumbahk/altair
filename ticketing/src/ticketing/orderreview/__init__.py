@@ -54,10 +54,10 @@ def main(global_config, **local_config):
 
 def import_selectable_renderer(config):
     ### selectable renderer
+    from pyramid.interfaces import IDict
     config.include("ticketing.cart.selectable_renderer")
     domain_candidates = json.loads(config.registry.settings["altair.cart.domain.mapping"])
-    selector = config.maybe_dotted("ticketing.cart.selectable_renderer.ByDomainMappingSelector")(domain_candidates)
-    config.add_selectable_renderer_selector(selector)
+    config.registry.utilities.register([], IDict, "altair.cart.domain.mapping", domain_candidates)
 
 def import_view(config):
     ## reivew

@@ -51,7 +51,7 @@ logger = logging.getLogger(__name__)
 
 class Seat_SeatAdjacency(Base):
     __tablename__ = 'Seat_SeatAdjacency2'
-    l0_id = Column(String(255), primary_key=True, nullable=False)
+    l0_id = Column(String(255), ForeignKey('Seat.l0_id'), primary_key=True)
     seat_adjacency_id = Column(Identifier, ForeignKey('SeatAdjacency.id', ondelete='CASCADE'), primary_key=True, nullable=False)
 
 class Site(Base, BaseModel, WithTimestamp, LogicallyDeleted):

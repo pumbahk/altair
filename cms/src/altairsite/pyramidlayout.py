@@ -48,6 +48,8 @@ class MyLayout(object):
             return []
         ancestors = genre.query_ancestors().with_entities(_GenrePath.hop, Genre)
         ancestors = ancestors.options(orm.joinedload(Genre.category_top_pageset)).all()
+        if not ancestors:
+            return []
         r = []
         max_depth = ancestors[-1][0]
         ancestors.pop()
