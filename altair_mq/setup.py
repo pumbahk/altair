@@ -1,5 +1,4 @@
 from setuptools import setup, find_packages
-import os
 
 version = '1.0'
 
@@ -7,7 +6,6 @@ requires = [
     "pika",
     "tornado",
     "pyramid",
-    "cliff",
     "venusian",
 ]
 
