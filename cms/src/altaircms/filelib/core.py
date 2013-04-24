@@ -86,10 +86,13 @@ class FileCreator(object):
             raise
         
     def commit(self):
+        used = []
         while self.pool:
             signatured_file = self.pool.pop(0)
             realpath = self._get_realpath(signatured_file)
             self._commit_one(signatured_file, realpath)
+            used.append((signatured_file, realpath))
+        return used
 
     def _write_to_tmppath(self, uploadfile):
         path = tempfile.mktemp() #suffix?
@@ -114,18 +117,21 @@ class FileDeleter(object):
         self.pool.append(uploadfile)
         
     def commit(self):
+        used = []
         while self.pool:
             deleted_file = self.pool.pop(0)
             filepath = self.root.abspath(deleted_file.name)
             logger.debug("filesession. delete: %s" % (filepath))
             try:
                 os.remove(filepath)
+                used.append((deleted_file, filepath))
             except (OSError, IOError), e:
                 logger.warn("%s is not deleted" % filepath)
                 logger.exception(str(e))
             except Exception, e:
                 logger.exception(str(e))
                 raise
+        return used
 
 @implementer(IFileSession)
 class FileSession(object):
@@ -152,5 +158,6 @@ class FileSession(object):
         return self.deleter.delete(uploadfile)
 
     def commit(self):
-        self.deleter.commit()
-        self.creator.commit()
+        delete_results = self.deleter.commit()
+        create_results = self.creator.commit()
+        return {"create": create_results, "delete": delete_results}

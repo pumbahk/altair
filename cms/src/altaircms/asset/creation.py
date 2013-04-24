@@ -12,7 +12,7 @@ from . import SESSION_NAME
 from . import ValidationError
 from . import models
 from ..models import DBSession
-from ..filelib import get_filesession
+from ..filelib import get_adapts_filesession
 from ..tag.api import tags_to_string, get_tagmanager, put_tags, tags_from_string
 from ..tag.manager import QueryParser
 from ..subscribers import notify_model_create
@@ -22,7 +22,7 @@ from .detect import FlashInfoDatector
 from ..filelib import File
 from .forms import normalize_filename
 def get_asset_filesession(request):
-    return get_filesession(request, name=SESSION_NAME)
+    return get_adapts_filesession(request, name=SESSION_NAME)
 
 try:
     import Image #PIL?

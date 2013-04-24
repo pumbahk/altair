@@ -9,10 +9,10 @@ from .models import Layout
 from .collectblock import collect_block_name_from_makotemplate
 
 from . import SESSION_NAME
-from ..filelib import get_filesession, File
+from ..filelib import get_adapts_filesession, File
 
 def get_layout_filesession(request):
-    return get_filesession(request, name=SESSION_NAME)
+    return get_adapts_filesession(request, name=SESSION_NAME)
 
 def is_file_field(field):
     return hasattr(field, "file") and hasattr(field, "filename")
