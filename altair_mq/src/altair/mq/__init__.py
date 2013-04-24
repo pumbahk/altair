@@ -35,7 +35,9 @@ def add_task(config, task,
     root_factory = config.maybe_dotted(root_factory)
 
     def register():
-        consumer = get_consumer()
+        pika_consumer = get_consumer(config)
+        pika_consumer.add_task(consumer.TaskMapper(task,
+                                                   root_factory=root_factory))
         reg.registerUtility(task, ITask)
 
     config.action("altair.mq.task",
@@ -47,10 +49,10 @@ def get_consumer(config):
     consumer = reg.queryUtility(IConsumer)
 
     if consumer is None:
-        factory = reg.adapters.lookup([ITask], IConsumerFactory, "")
+        factory = reg.queryUtility(IConsumerFactory)
         consumer = factory()
-        reg.adapters.register([ITask], IConsumer, "", 
-                              consumer)
+        reg.registerUtility(consumer, IConsumer)
+
     return consumer
 
 
@@ -60,8 +62,7 @@ def includeme(config):
     url = config.registry.settings['altair.mq.url']
     parameters = pika.URLParameters(url)
 
-    config.registry.adapters.register([ITask], IConsumerFactory, "", 
-                                      consumer.PikaClientFactory(parameters))
+    config.registry.registerUtility(consumer.PikaClientFactory(parameters))
 
 
     config.add_directive("add_task", add_task)

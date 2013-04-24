@@ -66,6 +66,9 @@ class PikaClient(object):
         self.parameters = parameters
         self.tasks = []
 
+    def add_task(self, task):
+        self.tasks.append(task)
+
     def connect(self):
         logger.info("connecting")
         self.connection = self.Connection(self.parameters,

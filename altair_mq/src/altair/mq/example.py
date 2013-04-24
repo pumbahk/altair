@@ -1,8 +1,13 @@
 import logging
-from tornado import gen
+from pyramid.config import Configurator
+
 from .decorators import task_config
 logger = logging.getLogger(__name__)
 
+
+def main(global_conf, **settings):
+    config = Configurator(settings=settings)
+    return config.make_wsgi_app()
 
 def includeme(config):
     config.scan(".example")
@@ -20,4 +25,8 @@ def sample_task(message):
     message.channel.basic_ack(message.method.delivery_tag)
 
 
+@task_config()
+def sample_task2(message):
+    logger.debug('got message {body}'.format(body=message.body))
+    message.channel.basic_ack(message.message.delivery_tag)
 
