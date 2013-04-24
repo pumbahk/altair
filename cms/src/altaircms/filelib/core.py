@@ -135,13 +135,18 @@ class FileDeleter(object):
 
 @implementer(IFileSession)
 class FileSession(object):
-    def __init__(self, prefix="", make_path=None, on_file_exists=on_file_exists_overwrite):
+    def __init__(self, prefix="",
+                 make_path=None,
+                 marker=None, 
+                 on_file_exists=on_file_exists_overwrite):
+        self.marker = marker
         if make_path is None:
             self.make_path = lambda : os.path.abspath(prefix)
         else:
             self.make_path = make_path
         self.deleter = FileDeleter(self)
         self.creator = FileCreator(self, on_file_exists=on_file_exists)
+
             
 
     def abspath(self, part):

@@ -79,11 +79,12 @@ def main(global_config, **local_config):
     config.include("pyramid_layout")
     config.include("altaircms.lib.crud")    
     config.include("altaircms.filelib")
-    config.include("altaircms.filelib.s3")
-    
-    s3utility = config.maybe_dotted(settings["altaircms.s3.utility"])
-    config.add_s3utility(s3utility.from_settings(settings))
 
+
+    config.include("altaircms.filelib.s3")
+    s3utility = config.maybe_dotted(settings["altaircms.s3.utility"])
+    config.add_s3utility(s3utility.from_settings(settings)) #need?
+   
     ## include 
     from altairsite.pyramidlayout import MyLayout as LayoutBase
     class MyLayout(LayoutBase):

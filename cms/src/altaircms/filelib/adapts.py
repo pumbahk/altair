@@ -1,6 +1,7 @@
 class AfterCommit(object):
-    def __init__(self, request, result):
+    def __init__(self, request, session, result):
         self.request = request
+        self.session = session #session is filesession
         self.result = result
 
 class AdaptsFileSession(object):
@@ -10,7 +11,7 @@ class AdaptsFileSession(object):
 
     def commit(self):
         result = self.session.commit()
-        self.request.registry.notify(AfterCommit(self.request, result))
+        self.request.registry.notify(AfterCommit(self.request, self.session, result))
         return result
 
     def add(self, *args, **kwargs):
