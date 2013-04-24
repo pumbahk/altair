@@ -33,18 +33,21 @@ class PikaClientFactory(object):
 
 class TaskMapper(object):
     Message = Message
-    def __init__(self, task=None, queue_settings=None, root_factory=None):
+    def __init__(self, name, task=None, queue_settings=None, root_factory=None):
         self.task = task
+        self.name = name
         self.queue_settings = queue_settings
         self.channel = None
         self.root_factory = root_factory
 
     def declare_queue(self, channel):
+        logger.debug("{name} declare queue {settings}".format(name=self.name,
+                                                              settings=self.queue_settings))
+        
         channel.queue_declare(queue=self.queue_settings.queue, 
                               durable=self.queue_settings.durable, 
                               exclusive=self.queue_settings.exclusive,
-                              auto_delete=self.queue_settings.auto_delete, 
-                              
+                              auto_delete=self.queue_settings.auto_delete,
                               callback=self.on_queue_declared)
         self.channel = channel
 
@@ -70,6 +73,9 @@ class PikaClient(object):
         self.tasks.append(task)
 
     def connect(self):
+        if not self.tasks:
+            logger.warning("no tasks registered")
+
         logger.info("connecting")
         self.connection = self.Connection(self.parameters,
                                           self.on_connected)
@@ -80,5 +86,6 @@ class PikaClient(object):
 
     def on_open(self, channel):
         logger.debug('opened')
+
         for task in self.tasks:
             task.declare_queue(channel)

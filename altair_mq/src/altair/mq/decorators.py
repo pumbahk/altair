@@ -4,6 +4,7 @@ from . import QueueSettings
 class task_config(object):
     venusian = venusian
     def __init__(self,
+                 name="",
                  root_factory=None,
                  queue="test",
                  passive=False,
@@ -12,6 +13,7 @@ class task_config(object):
                  auto_delete=False,
                  nowait=False,
                  arguments=None):
+        self.name = name
         self.root_factory = root_factory
         self.queue_settings = QueueSettings(
                  queue=queue,
@@ -27,6 +29,7 @@ class task_config(object):
         def callback(scanner, name, ob):
             config = scanner.config
             config.add_task(ob,
+                            name=self.name,
                             queue=self.queue_settings.queue,
                             durable=self.queue_settings.durable,
                             exclusive=self.queue_settings.exclusive,

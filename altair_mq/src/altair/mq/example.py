@@ -12,8 +12,8 @@ def main(global_conf, **settings):
 def includeme(config):
     config.scan(".example")
 
-@task_config()
-def sample_task(message):
+@task_config(name="sample1", queue="test-sample1")
+def sample_task(context, message):
     from tornado.httpclient import AsyncHTTPClient, HTTPRequest
     logger.debug('got message {body}'.format(body=message.body))
     client = AsyncHTTPClient()
@@ -25,8 +25,17 @@ def sample_task(message):
     message.channel.basic_ack(message.method.delivery_tag)
 
 
-@task_config()
-def sample_task2(message):
+class ExampleResource(object):
+    def __init__(self, message):
+        self.message = message
+
+    @property
+    def value(self):
+        return self.message.params.get('value')
+
+@task_config(name="sample2")
+def sample_task2(context, message):
+    logger.debug('context value = {value}'.format(context.value))
     logger.debug('got message {body}'.format(body=message.body))
     message.channel.basic_ack(message.message.delivery_tag)
 

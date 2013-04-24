@@ -22,8 +22,17 @@ class QueueSettings(object):
         self.nowait = nowait
         self.arguments = arguments
 
+    def __repr__(self):
+        return ("queue = {0.queue}; "
+                "passive = {0.passive}; "
+                "durable = {0.durable}; "
+                "exclusive = {0.exclusive}; "
+                "auto_delete = {0.auto_delete}; "
+                "nowait = {0.nowait}; "
+                "arguments = {0.arguments}; ").format(self)
 
 def add_task(config, task,
+             name,
              root_factory=None,
              queue="test",
              durable=True, 
@@ -36,11 +45,18 @@ def add_task(config, task,
 
     def register():
         pika_consumer = get_consumer(config)
-        pika_consumer.add_task(consumer.TaskMapper(task,
-                                                   root_factory=root_factory))
+        queue_settings = QueueSettings(queue=queue,
+                                       durable=durable,
+                                       exclusive=exclusive,
+                                       auto_delete=auto_delete)
+
+        pika_consumer.add_task(consumer.TaskMapper(task=task,
+                                                   name=name,
+                                                   root_factory=root_factory,
+                                                   queue_settings=queue_settings))
         reg.registerUtility(task, ITask)
 
-    config.action("altair.mq.task",
+    config.action("altair.mq.task-{name}".format(name=name),
                   register)
 
 
