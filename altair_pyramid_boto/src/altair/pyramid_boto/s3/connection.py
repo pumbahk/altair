@@ -1,10 +1,22 @@
 from zope.interface import implementer
 from boto.s3.connection import S3Connection
 from ..interfaces import IS3ConnectionFactory
+from ..interfaces import IS3ContentsUploader
+from pyramid.decorator import reify
+from boto.s3.key import Key
+import logging
+logger = logging.getLogger(__name__)
 
 CONFIG_PREFIXES = ('s3_asset_resolver', 's3')
 
 def newDefaultS3ConnectionFactory(config):
+    """
+    use:
+    s3_asset_resolver.access_key
+    s3_asset_resolver.secret_key
+    s3.access_key
+    s3.secret_key
+    """
     options = {}
     for prefix in CONFIG_PREFIXES:
         for key in ('access_key', 'secret_key'):
@@ -24,3 +36,37 @@ class DefaultS3ConnectionFactory(object):
 
     def __call__(self):
         return S3Connection(self.access_key, self.secret_key) 
+
+@implementer(IS3ContentsUploader)
+class DefaultS3Uploader(object):
+    def __init__(self, connection_factory, bucket_name):
+        self.connection_factory = connection_factory
+        self.bucket_name = bucket_name
+
+    @reify
+    def connection(self):
+        return self.connection_factory()
+
+    @reify
+    def bucket(self):
+        return self.connection.get_bucket(self.bucket_name)
+
+    def _force_upload(self, content, name, setter):
+        k = Key(self.bucket)
+        k.key = name
+        return setter(k, content)
+
+    def _upload(self, content, name, setter, overwrite=False):
+        if overwrite:
+            return self._force_upload(content, name, setter)
+        else:
+            logger.warn("DefaultS3Uploader.upload(overwrite=False) is not implemented")
+            return self._force_upload(content, name, setter)
+
+    def upload_string(self, content, name, overwrite=False):        
+        return self._upload(content, name, lambda k, content: k.set_contents_from_string(content))
+
+    def upload_file(self, content, name, overwrite=False):        
+        return self._upload(content, name, lambda k, content: k.set_contents_from_file(content))
+    upload = upload_file
+
