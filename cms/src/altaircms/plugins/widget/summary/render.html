@@ -19,6 +19,8 @@
             ${render_sale_image(item["label"], u"先行先着", "/static/RT/img/search/icon_firstcome.gif")}
           % elif item["label"].find(u"一般販売") != -1:
             ${render_sale_image(item["label"], u"一般販売", "/static/RT/img/search/icon_normal.gif")}
+          % elif item["label"].find(u"一般発売") != -1:
+            ${render_sale_image(item["label"], u"一般発売", "/static/RT/img/search/icon_release.gif")}
           % else:
             <th scope="row">${item["label"]}</th>
           % endif
