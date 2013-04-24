@@ -49,7 +49,8 @@ def add_task(config, task,
                                        durable=durable,
                                        exclusive=exclusive,
                                        auto_delete=auto_delete)
-
+        if pika_consumer is None:
+            return
         pika_consumer.add_task(consumer.TaskMapper(task=task,
                                                    name=name,
                                                    root_factory=root_factory,
@@ -66,6 +67,8 @@ def get_consumer(config):
 
     if consumer is None:
         factory = reg.queryUtility(IConsumerFactory)
+        if factory is None:
+            return None
         consumer = factory()
         reg.registerUtility(consumer, IConsumer)
 
