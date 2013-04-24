@@ -26,6 +26,7 @@ def install_virtual_asset(config):
 
 
 
+
 def includeme(config):
     """
     altaircms.asset.storepath = altaircms:../../data/assets
@@ -34,6 +35,10 @@ def includeme(config):
     ## file session
     filesession = _make_asset_filesession(settings["altaircms.asset.storepath"])
     config.add_filesession(filesession, name=SESSION_NAME)
+    ## after s3 upload event
+    ## file upload -> s3 upload -> set file url
+    config.add_subscriber(".subscribers.set_file_url", "altaircms.filelib.s3.AfterS3Upload")
+
 
     ## virtual asset
     config.include(install_virtual_asset)

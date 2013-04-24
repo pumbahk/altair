@@ -12,10 +12,11 @@ def add_s3utility(config, factory):
         factory.add_subscribers(config)
 
 class AfterS3Upload(object):
-    def __init__(self, request, session, file):
+    def __init__(self, request, session, files, uploader):
         self.request = request
         self.session = session
-        self.file = file
+        self.files = files
+        self.uploader = uploader
 
 @provider(IS3UtilityFactory)
 class S3ConnectionFactory(object):
@@ -31,20 +32,19 @@ class S3ConnectionFactory(object):
 
     def add_subscribers(self, config):
         config.add_subscriber(self.upload_s3_after_commit, "altaircms.filelib.adapts.AfterCommit")
-        def heh(*args, **kwargs):
-            print "heh"
-            print args, kwargs
-        config.add_subscriber(heh, "altaircms.filelib.s3.AfterS3Upload")
 
     def upload_s3_after_commit(self, event):
         request = event.request
         result = event.result
         session = event.session
+        uploaded_files = []
         for f, realpath in result.get("create", []):
             with open(realpath) as rf:
                 logger.warn("upload: bucket={0} name={1}".format(self.uploader.bucket_name, f.name))
                 self.uploader.upload(rf, f.name)
-                request.registry.notify(AfterS3Upload(request, session, f))
+                uploaded_files.append(f)
+        request.registry.notify(AfterS3Upload(request, session, uploaded_files, self.uploader))
+
 
 @provider(IS3UtilityFactory)
 class NullConnectionFactory(object):
