@@ -9,7 +9,7 @@ from pyramid_beaker import session_factory_from_settings
 from pyramid.authorization import ACLAuthorizationPolicy
 from pyramid.tweens import EXCVIEW
 from pyramid_selectable_renderer import SelectableRendererSetup
-from pyramid_selectable_renderer.custom import RecieveTemplatePathFormat, RecieveTemplatePathCandidatesDict, SelectByRequestGen
+from pyramid_selectable_renderer.custom import ReceiveTemplatePathFormat, ReceiveTemplatePathCandidatesDict, SelectByRequestGen
 from ticketing.core.api import get_organization
 
 import sqlalchemy as sa
@@ -38,7 +38,7 @@ def get_template_path_args(request):
         return dict(membership="__default__")
 
 selectable_renderer = SelectableRendererSetup(
-    RecieveTemplatePathFormat,
+    ReceiveTemplatePathFormat,
     get_template_path_args,
     renderer_name="selectable_renderer"
     )
