@@ -31,9 +31,6 @@ def main(global_config, **local_config):
     config.include("ticketing.cart.selectable_renderer")
     domain_candidates = json.loads(config.registry.settings["altair.cart.domain.mapping"])
     config.registry.utilities.register([], IDict, "altair.cart.domain.mapping", domain_candidates)
-    selector = config.maybe_dotted("ticketing.cart.selectable_renderer.ByDomainMappingSelector")(domain_candidates)
-    config.add_selectable_renderer_selector(selector)
-
 
     config.add_route('index', '/')
     config.add_route('contact', '/contact')
