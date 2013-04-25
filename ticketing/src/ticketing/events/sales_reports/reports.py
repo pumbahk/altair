@@ -81,10 +81,9 @@ class SalesTotalReporter(object):
         # performance_idがないSalesSegmentは[SalesSegmentGroupのデータ移行以前のレコード]なので、publicがFalseでも含める
         # ただし、対象performance_idのSalesSegment.publicがTrueであること
         ss = aliased(SalesSegment, name='SalesSegment_alias')
-        query = query.join(SalesSegment, and_(
-            SalesSegment.id==Product.sales_segment_id,
-            SalesSegment.deleted_at==None
-        )).filter(or_(SalesSegment.performance_id==None, SalesSegment.public==True))
+        query = query.join(SalesSegment, SalesSegment.id==Product.sales_segment_id).filter(
+            or_(SalesSegment.performance_id==None, SalesSegment.public==True)
+        )
         query = query.outerjoin(ss, and_(
             ss.sales_segment_group_id==SalesSegment.sales_segment_group_id,
             ss.performance_id==Performance.id,
@@ -290,10 +289,7 @@ class SalesDetailReporter(object):
     def add_sales_segment_filter(self, query):
         # performance_idがないSalesSegmentは[SalesSegmentGroupのデータ移行以前のレコード]なので、publicがFalseでも含める
         # ただし、対象performance_idのSalesSegment.publicがTrueであること
-        query = query.join(SalesSegment, and_(
-            SalesSegment.id==Product.sales_segment_id,
-            SalesSegment.deleted_at==None
-        )).filter(
+        query = query.join(SalesSegment, SalesSegment.id==Product.sales_segment_id).filter(
             or_(SalesSegment.performance_id==None, SalesSegment.public==True)
         )
         if self.form.sales_segment_group_id.data:
