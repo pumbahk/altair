@@ -14,7 +14,9 @@ ${h.japanese_date(wish[0]['performance'].start_on)}<br />
 開演: ${h.japanese_time(wish[0]['performance'].start_on)} (予定)<br />
 希望券種と枚数:<br />
 % for rec in wish:
+% if rec['quantity'] > 0:
 ・${rec['product'].name} ${rec['quantity']}枚<br />
+% endif
 % endfor
 </div>
 %endfor
