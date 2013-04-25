@@ -9,6 +9,11 @@ class DummyAsset(object):
     def __init__(self, filepath):
         self.filepath = filepath
         self.file_url = None
+        self.called_all_files_candidates = False
+
+    def all_files_candidates(self):
+        self.called_all_files_candidates = True
+        return []
 
 class DummyFileSession(object):
     """for testing"""
@@ -164,6 +169,19 @@ class SyncS3Tests(unittest.TestCase):
         session = self.get_filesession()
         session.delete(("test-file", "test-data"),)
         session.commit(extra_args=_result)
+
+    def test_after_s3delete_event_unpublish_files(self):
+        self.config.include("altaircms.asset.install_s3sync")
+        from altaircms.filelib.s3 import AfterS3Delete
+        session = self.get_filesession().session #wrapped object.
+        class uploader:
+            bucket_name = ":bucket:"
+        files = [File(name=":test-file.jpg:")]
+        assets = [DummyAsset(filepath=":test-file.jpg:")]
+
+        self.assertEqual(assets[0].called_all_files_candidates, False)
+        self.config.registry.notify(AfterS3Delete(request=None, session=session, files=files, uploader=uploader, extra_args=assets))
+        self.assertEqual(assets[0].called_all_files_candidates, True)
 
 if __name__ == "__main__":
     unittest.main()

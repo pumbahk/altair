@@ -303,14 +303,14 @@ class ImageUpdater(Updater):
             if not is_filled_filefield(params["thumbnail_path"]):
                 im = thumbnail_image_from_io(params["filepath"].file, self.size)
                 thumbnail_name = thumbnail_filename_from_mainfile(mainimage_file, ext=".png")
-                thumbnail_file = filesession.add(File(name=asset.filename_with_version(thumbnail_name), 
+                thumbnail_file = filesession.add(File(name=thumbnail_name, 
                                                       handler=im,
                                                       save=lambda path, handler: im.save(path, "PNG") #todo: image type
                                                       ))
                 datalist.append(dict(thumbnail_path=thumbnail_file.name))
 
         if is_filled_filefield(params["thumbnail_path"]):
-            thumbnail_file = filesession.add(File(name=asset.thumbnail_path, handler=params["thumbnail_path"].file))
+            thumbnail_file = filesession.add(File(name=asset.filename_with_version(asset.thumbnail_path), handler=params["thumbnail_path"].file))
             datalist.append(dict(thumbnail_path=thumbnail_file.name))
 
         datalist.append({k:v for k, v in params.iteritems() if v})
@@ -331,12 +331,13 @@ class MovieUpdater(Updater):
         if is_filled_filefield(params["filepath"]):
             extra_asset_data = MovieInfoDatector(self.request).detect(params["filepath"].file, params["filepath"].filename)
             datalist.append(extra_asset_data)
-            mainmovie_file = filesession.add(File(name=asset.filepath, handler=params["filepath"].file))
+            mainmovie_file = filesession.add(File(name=asset.filename_with_version(), handler=params["filepath"].file))
             datalist.append(dict(filepath=mainmovie_file.name))
 
         if is_filled_filefield(params["placeholder"]):
             placeholder = params["placeholder"]
-            name = asset.thumbnail_path or thumbnail_filename_from_mainfile(File(name=asset.filepath, handler=None),  placeholder.filename)
+            name = asset.filename_with_version(asset.thumbnail_path) or \
+                thumbnail_filename_from_mainfile(File(name=asset.filepath, handler=None),  placeholder.filename)
             thumbnail_file = filesession.add(File(name=name, handler=placeholder.file))
             datalist.append(dict(thumbnail_path=thumbnail_file.name))
 
@@ -359,12 +360,13 @@ class FlashUpdater(Updater):
         if is_filled_filefield(params["filepath"]):
             extra_asset_data = FlashInfoDatector(self.request).detect(params["filepath"].file, params["filepath"].filename)
             datalist.append(extra_asset_data)
-            mainflash_file = filesession.add(File(name=asset.filepath, handler=params["filepath"].file))
+            mainflash_file = filesession.add(File(name=asset.filename_with_version(), handler=params["filepath"].file))
             datalist.append(dict(filepath=mainflash_file.name))
 
         if is_filled_filefield(params["placeholder"]):
             placeholder = params["placeholder"]
-            name = asset.thumbnail_path or thumbnail_filename_from_mainfile(File(name=asset.filepath, handler=None),  placeholder.filename)
+            name = asset.filename_with_version(asset.thumbnail_path) or \
+                thumbnail_filename_from_mainfile(File(name=asset.filepath, handler=None),  placeholder.filename)
             thumbnail_file = filesession.add(File(name=name, handler=placeholder.file))
             datalist.append(dict(thumbnail_path=thumbnail_file.name))
 

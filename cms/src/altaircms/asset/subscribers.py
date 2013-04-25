@@ -20,9 +20,10 @@ def unpublish_deleted_files_on_s3(after_s3_delete):
 
     assets = event.extra_args
     uploader = event.uploader
-    logger.warn("*debug set_file_url start. assets={0}".format(assets))
+    logger.warn("*debug unpublish_deleted_files_on_s3 start. assets={0}".format(assets))
     for asset in assets:
         for filename in asset.all_files_candidates():
+            logger.warn("*debug unpublish key name={0}".format(filename))
             uploader.unpublish(filename, check=True)
 
 def set_file_url(after_s3_upload):
