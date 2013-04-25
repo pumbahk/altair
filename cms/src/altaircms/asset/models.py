@@ -12,6 +12,9 @@ from sqlalchemy.ext.hybrid import hybrid_property
 from zope.interface import implements
 from altaircms.interfaces import IAsset
 from altaircms.interfaces import IHasMedia
+from altaircms.models import WithOrganizationMixin
+import os
+import itertools
 
 __all__ = [
     'Asset',
@@ -20,8 +23,6 @@ __all__ = [
     'FlashAsset',
     # 'CssAsset'
 ]
-from altaircms.models import WithOrganizationMixin
-import os
 DIR = os.path.dirname(os.path.abspath(__file__))
 # import sqlalchemy.orm as orm
 
@@ -66,7 +67,23 @@ class Asset(BaseOriginalMixin, WithOrganizationMixin, Base):
     def all_files_candidates(self):
         """ version conter -> [filepath] + [thumbnail_path]
         """
-        pass
+        c = self.version_counter
+        filepath = self.filepath
+        for i in range((c or 0) + 1):
+            yield filename_with_version(filepath, i)
+
+        thumbnail_path = self.thumbnail_path
+        if thumbnail_path:
+            for i in range((c or 0) + 1):
+                yield filename_with_version(thumbnail_path, i)
+
+    def filename_with_version(self, path=None, version=None):
+        path = path or self.filepath
+        return filename_with_version(path, version or self.version_counter)
+
+def filename_with_version(fname, i):
+    base, ext = os.path.splitext(fname)
+    return "{0}.{1}{2}".format(base, i, ext)
 
 class ImageAsset(Asset):
     implements(IAsset, IHasMedia)
