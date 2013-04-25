@@ -164,7 +164,7 @@ class EntryLotView(object):
         api.new_lot_entry(
             wishes=wishes,
             payment_delivery_method_pair_id=payment_delivery_method_pair_id,
-            shipping_address=shipping_address_dict,
+            shipping_address_dict=shipping_address_dict,
             gender=cform['sex'].data,
             birthday=datetime(int(cform['year'].data),
                               int(cform['month'].data),
