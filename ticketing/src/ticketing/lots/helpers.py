@@ -208,4 +208,12 @@ def _enclose_if(content, tag, condition, **kwargs):
     buf.append(u'>')
     return Markup(u''.join(buf))
 
+# see cms/src/altairsite/mobile/core/disphelper.py
+def nl2br(s):
+    buf = []
+    for line in re.finditer(u'^.*$', s, re.MULTILINE):
+        buf.append(line.group(0))
+        buf.append(u'<br />')
+    return Markup(u''.join(buf))
+
 format_gender = format_sex
