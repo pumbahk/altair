@@ -449,7 +449,7 @@ class MultiCheckoutPluginTests(unittest.TestCase):
 
         target = self._makeOne()
 
-        result = target.finish_secure_3d(request, dummy_cart)
+        result = target.finish_secure(request, dummy_cart)
 
     @mock.patch('transaction._transaction.Transaction.commit')
     @mock.patch('ticketing.core.models.Order.create_from_cart')

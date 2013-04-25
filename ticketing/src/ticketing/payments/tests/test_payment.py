@@ -3,7 +3,7 @@
 import unittest
 import mock
 from pyramid import testing
-from ticketing.testing import _setup_db, _teardown_db
+from ticketing.testing import _setup_db, _teardown_db, DummyRequest
 
 model_dependencies = [
     'ticketing.models',
@@ -49,7 +49,7 @@ class get_preparerTests(unittest.TestCase):
         """
         from ..interfaces import IPaymentDeliveryPlugin
         from ..interfaces import IPaymentPreparer
-        request = testing.DummyRequest()
+        request = DummyRequest()
 
         payment_delivery_pair = testing.DummyModel(
             payment_method=testing.DummyModel(payment_plugin_id=1),
@@ -70,7 +70,7 @@ class get_preparerTests(unittest.TestCase):
         """
         from ..interfaces import IPaymentPlugin
         from ..interfaces import IPaymentPreparer
-        request = testing.DummyRequest()
+        request = DummyRequest()
 
         payment_delivery_pair = testing.DummyModel(
             payment_method=testing.DummyModel(payment_plugin_id=1),
@@ -90,7 +90,7 @@ class get_preparerTests(unittest.TestCase):
         """ 取得できなかった場合
         """
 
-        request = testing.DummyRequest()
+        request = DummyRequest()
 
         payment_delivery_pair = testing.DummyModel(
             payment_method=testing.DummyModel(payment_plugin_id=None),
@@ -127,7 +127,7 @@ class PaymentTests(unittest.TestCase):
         return self._getTarget()(*args, **kwargs)
 
     def test_prepare(self):
-        request = testing.DummyRequest()
+        request = DummyRequest()
         sales_segment = testing.DummyModel()
         cart = testing.DummyModel(sales_segment=sales_segment)
         target = self._getTarget()
@@ -143,7 +143,7 @@ class PaymentTests(unittest.TestCase):
         preparer.prepare.return_value = None
         get_preparer.return_value = preparer
 
-        request = testing.DummyRequest()
+        request = DummyRequest()
         payment_delivery_pair = testing.DummyModel()
         cart = testing.DummyModel(payment_delivery_pair=payment_delivery_pair,
             sales_segment=None)
@@ -166,7 +166,7 @@ class PaymentTests(unittest.TestCase):
         payment_delivery_plugin = mock.Mock()
         payment_delivery_plugin.finish.return_value = order
 
-        request = testing.DummyRequest()
+        request = DummyRequest()
         payment_delivery_pair = testing.DummyModel()
         cart = testing.DummyModel(payment_delivery_pair=payment_delivery_pair,
             sales_segment=None,
@@ -196,7 +196,7 @@ class PaymentTests(unittest.TestCase):
         payment_plugin.finish.return_value = order
         delivery_plugin = mock.Mock()
 
-        request = testing.DummyRequest()
+        request = DummyRequest()
         payment_delivery_pair = testing.DummyModel()
         cart = testing.DummyModel(payment_delivery_pair=payment_delivery_pair,
             sales_segment=None,
@@ -234,7 +234,7 @@ class PaymentTests(unittest.TestCase):
         e = Exception()
         delivery_plugin.finish.side_effect = e
 
-        request = testing.DummyRequest()
+        request = DummyRequest()
         payment_delivery_pair = testing.DummyModel()
         cart = testing.DummyModel(payment_delivery_pair=payment_delivery_pair,
             sales_segment=None,
@@ -259,12 +259,12 @@ class on_delivery_errorTests(unittest.TestCase):
     def test_it(self, mock_exc_info, mock_print_exception):
         exc_info = object(), object(), object()
         mock_exc_info.return_value = exc_info
-        request = testing.DummyRequest()
+        request = DummyRequest()
         e = mock.Mock()
         order_no = "error-order"
         event_id = 11111
-        cart = testing.DummyModel()
-        order = mock.Mock()
+        cart = testing.DummyModel(event_id=event_id)
+        order = mock.Mock(order_no=order_no, cart=cart)
 
 
         self._callFUT(e, request, order)

@@ -32,3 +32,4 @@ class DummyRequest(_DummyRequest):
         from webob.multidict import MultiDict
         if hasattr(self, 'params'):
             self.params = MultiDict(self.params)
+        self.browserid = kwargs.get("browserid")
