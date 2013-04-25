@@ -137,7 +137,7 @@ class AssetFunctionalTests(AppFunctionalTests):
             created_asset = self._get_image_asset_by_title(asset_title)
             created_asset_size = created_asset.size
             created_asset_filepath = created_asset.filepath
-
+            self.assertEquals(created_asset.version_counter, 0)
 
             ### update title
             asset_title = u"update-asset"
@@ -155,11 +155,11 @@ class AssetFunctionalTests(AppFunctionalTests):
             self.assertEqual(self._count_of_image_asset(), 1)
             updated_asset = self._get_image_asset_by_title(asset_title)
             self.assertEqual(updated_asset.title, asset_title)
+            self.assertEquals(updated_asset.version_counter, 1)
 
             ## 画像は変わらない
             self.assertEqual(updated_asset.size,  created_asset.size)            
             self.assertEqual(updated_asset.filepath, created_asset_filepath)
-
 
             ### update image
             created_asset = self._get_image_asset_by_title(asset_title)

@@ -1,3 +1,4 @@
+# -*-coding:utf-8 -*-
 from zope.interface import provider
 from .interfaces import IS3UtilityFactory
 from altair.pyramid_boto.s3.connection import DefaultS3ConnectionFactory
@@ -67,7 +68,8 @@ class S3ConnectionFactory(object):
 
     def delete(self, f, realpath):
         logger.warn("*debug delete: bucket={0} name={1}".format(self.uploader.bucket_name, f.name))
-        self.uploader.delete(f, f.name)
+        ## uploadしたファイルは残す.
+        # self.uploader.delete(f, f.name)
 
 
 @provider(IS3UtilityFactory)

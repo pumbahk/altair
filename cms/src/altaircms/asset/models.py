@@ -57,6 +57,17 @@ class Asset(BaseOriginalMixin, WithOrganizationMixin, Base):
     def private_tags(self):
         return [tag for tag in self.tags if tag.publicp == False]
 
+    def increment_version(self):
+        if self.version_counter is None:
+            self.version_counter = 0
+        self.version_counter += 1
+        return self.version_counter
+
+    def all_files_candidates(self):
+        """ version conter -> [filepath] + [thumbnail_path]
+        """
+        pass
+
 class ImageAsset(Asset):
     implements(IAsset, IHasMedia)
     type = "image"
@@ -74,6 +85,7 @@ class ImageAsset(Asset):
     file_url = sa.Column(sa.String(255))
     thumbnail_url = sa.Column(sa.String(255))
     mimetype = sa.Column(sa.String(255), default="")
+    version_counter = sa.Column(sa.SmallInteger, default=0, nullable=False)
 
     @property
     def image_path(self):
@@ -102,6 +114,7 @@ class FlashAsset(Asset):
     thumbnail_path = sa.Column(sa.String(255))
     file_url = sa.Column(sa.String(255))
     thumbnail_url = sa.Column(sa.String(255))
+    version_counter = sa.Column(sa.SmallInteger, default=0, nullable=False)
 
     @property
     def image_path(self):
@@ -128,6 +141,7 @@ class MovieAsset(Asset):
     thumbnail_path = sa.Column(sa.String(255))
     file_url = sa.Column(sa.String(255))
     thumbnail_url = sa.Column(sa.String(255))
+    version_counter = sa.Column(sa.SmallInteger, default=0, nullable=False)
 
     @property
     def image_path(self):

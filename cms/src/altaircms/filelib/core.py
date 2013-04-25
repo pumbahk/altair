@@ -113,7 +113,7 @@ class FileDeleter(object):
         if uploadfile.handler:
             raise Exception("Stream file can't delete %s" % uploadfile)
         if not os.path.exists(filepath):
-            raise Exception("%s is not found" % filepath)
+            logger.warn("%s is not found" % filepath)
         self.pool.append(uploadfile)
         
     def commit(self):
@@ -143,8 +143,6 @@ class FileSession(object):
         self.make_path = make_path or (lambda : os.path.abspath(prefix))
         self.deleter = FileDeleter(self)
         self.creator = FileCreator(self, on_file_exists=on_file_exists)
-
-            
 
     def abspath(self, part):
         return os.path.join(self.make_path(), part)

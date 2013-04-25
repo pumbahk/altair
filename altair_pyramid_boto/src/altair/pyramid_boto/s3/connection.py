@@ -90,3 +90,11 @@ class DefaultS3Uploader(object):
         k.key = name
         self.bucket.delete_key(k)
 
+    def unpublish(self, name, check=True):
+        k = Key(self.bucket)
+        k.key = name
+        if not check:
+            k.set_canned_acl("private")
+        elif k.exists():
+            k.set_canned_acl("private")
+

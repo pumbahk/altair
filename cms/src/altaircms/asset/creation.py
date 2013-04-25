@@ -277,6 +277,7 @@ class Updater(object):
             raise ValidationError(u"ファイルの拡張子が異なっています。変更できません。")
 
         def commit():
+            asset.increment_version()
             return self.commit_update(asset, params, form=form)
         return Committer(commit)
 

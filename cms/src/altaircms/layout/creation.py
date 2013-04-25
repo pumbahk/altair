@@ -72,6 +72,7 @@ class LayoutCreator(object):
     def create_model(self, basename, params, blocks):
         layout = Layout(template_filename=basename, 
                         title=params["title"], 
+                        version_counter=0, 
                         blocks=blocks)
         DBSession.add(layout)
         return layout
@@ -113,6 +114,7 @@ class LayoutUpdater(object):
                 blocks = params["blocks"]
             layout = self.update_model(layout, basename, params, blocks)
             layout.pagetype_id = pagetype_id
+            layout.increment_version()
             return layout
         except Exception, e:
             logger.error(str(e))
