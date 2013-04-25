@@ -82,6 +82,8 @@ class Asset(BaseOriginalMixin, WithOrganizationMixin, Base):
         return filename_with_version(path, version or self.version_counter)
 
 def filename_with_version(fname, i):
+    if i == 0:
+        return fname
     base, ext = os.path.splitext(fname)
     return "{0}.{1}{2}".format(base, i, ext)
 

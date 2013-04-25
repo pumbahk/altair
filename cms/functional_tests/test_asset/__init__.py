@@ -177,10 +177,8 @@ class AssetFunctionalTests(AppFunctionalTests):
             self.assertEqual(self._count_of_image_asset(), 1)
             updated_asset2 = self._get_image_asset_by_title(asset_title)
             
-            ## 画像を変更しても保存先は変わらない
-            self.assertEqual(updated_asset2.filepath, created_asset.filepath)
-            self.assertEqual(updated_asset2.filepath, created_asset_filepath)
-
+            ## 画像を変更しても保存先も変わる
+            self.assertEqual(updated_asset2.filepath, updated_asset.filename_with_version(created_asset_filepath, 2))
             ## ただし保存されているファイルは変わる
             self.assertNotEqual(updated_asset2.size, created_asset_size)
             

@@ -10,7 +10,7 @@ class AssetModelUtilitiesTests(unittest.TestCase):
 
     def test_filename_with_version(self):
         target = self._makeOne(version_counter=0, filepath="foo.txt")
-        self.assertEquals(target.filename_with_version(), "foo.0.txt")
+        self.assertEquals(target.filename_with_version(), "foo.txt")
 
     def test_filename_with_version2(self):
         target = self._makeOne(version_counter=0, filepath="foo.txt")
@@ -19,12 +19,12 @@ class AssetModelUtilitiesTests(unittest.TestCase):
     def test_all_candidates(self):
         target = self._makeOne(version_counter=0, filepath="/dir/foo.txt")
         result = list(target.all_files_candidates())
-        self.assertEquals(result, ["/dir/foo.0.txt"])
+        self.assertEquals(result, ["/dir/foo.txt"])
 
     def test_all_candidates2(self):
         target = self._makeOne(version_counter=3, filepath="foo.txt", thumbnail_path="thumb.txt")
         result = list(target.all_files_candidates())
-        self.assertEquals(result, ['foo.0.txt', 'foo.1.txt', 'foo.2.txt', 'foo.3.txt', 'thumb.0.txt', 'thumb.1.txt', 'thumb.2.txt', 'thumb.3.txt'])
+        self.assertEquals(result, ['foo.txt', 'foo.1.txt', 'foo.2.txt', 'foo.3.txt', 'thumb.txt', 'thumb.1.txt', 'thumb.2.txt', 'thumb.3.txt'])
 
 if __name__ == "__main__":
     unittest.main()

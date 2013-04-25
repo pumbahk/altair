@@ -298,11 +298,12 @@ class ImageUpdater(Updater):
         if is_filled_filefield(params["filepath"]):
             extra_asset_data = ImageInfoDatector(self.request).detect(params["filepath"].file, params["filepath"].filename)
             datalist.append(extra_asset_data)
-            mainimage_file = filesession.add(File(name=asset.filepath, handler=params["filepath"].file))
+            mainimage_file = filesession.add(File(name=asset.filename_with_version(), handler=params["filepath"].file))
             datalist.append(dict(filepath=mainimage_file.name))
             if not is_filled_filefield(params["thumbnail_path"]):
                 im = thumbnail_image_from_io(params["filepath"].file, self.size)
-                thumbnail_file = filesession.add(File(name=thumbnail_filename_from_mainfile(mainimage_file, ext=".png"), 
+                thumbnail_name = thumbnail_filename_from_mainfile(mainimage_file, ext=".png")
+                thumbnail_file = filesession.add(File(name=asset.filename_with_version(thumbnail_name), 
                                                       handler=im,
                                                       save=lambda path, handler: im.save(path, "PNG") #todo: image type
                                                       ))
