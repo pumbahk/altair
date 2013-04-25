@@ -10,7 +10,7 @@ def normalize(filename):
     return os.path.splitext(os.path.basename(filename))[0]
 
 def make_s3url(bucket_name, filename):
-    return "s3://{0}/{1}".format(bucket_name.rstrip("/"), filename.lstrip("/"))
+    return "http://s3.amazonaws.com/{0}/{1}".format(bucket_name.rstrip("/"), filename.lstrip("/"))
 
 def set_file_url(after_s3_upload):
     session = after_s3_upload.session

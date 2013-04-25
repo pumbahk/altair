@@ -7,15 +7,6 @@ __all__ = ["ValidationError", "SESSION_NAME", "includeme"]
 SESSION_NAME = "asset"
 PROXY_FACTORY_NAME = "asset"
 
-def _make_asset_filesession(assetspec):
-    from ..filelib import FileSession
-    from ..filelib.core import on_file_exists_try_rename
-    savepath = AssetResolver().resolve(assetspec).abspath()
-    filesession = FileSession(make_path=lambda : savepath, 
-                              on_file_exists=on_file_exists_try_rename, 
-                              marker=SESSION_NAME)
-    filesession.assetspec = assetspec
-    return filesession
 
 def install_virtual_asset(config):
     from ..modelmanager.virtualasset import VirtualAssetFactory
@@ -24,23 +15,32 @@ def install_virtual_asset(config):
     config.registry.registerUtility(provided, IRenderingObjectFactory, name=PROXY_FACTORY_NAME)
     assert config.registry.queryUtility(IRenderingObjectFactory, name=PROXY_FACTORY_NAME)
 
+def install_filesession(config):
+    from ..filelib.core import on_file_exists_try_rename
+    settings = config.registry.settings
 
+    ## filesession
+    FileSession = config.maybe_dotted(settings["altaircms.filesession"])
+    assetspec = settings["altaircms.asset.storepath"]
+    savepath = AssetResolver().resolve(assetspec).abspath()
+    filesession = FileSession(make_path=lambda : savepath, 
+                              on_file_exists=on_file_exists_try_rename, 
+                              marker=SESSION_NAME)
+    filesession.assetspec = assetspec
+    config.add_filesession(filesession, name=SESSION_NAME)
 
-
+def install_s3sync(config):
+    ## s3 upload setting
+    ## after s3 upload event
+    ## file upload -> s3 upload -> set file url
+    config.add_subscriber(".subscribers.set_file_url", "altaircms.filelib.s3.AfterS3Upload")
+    
 def includeme(config):
     """
     altaircms.asset.storepath = altaircms:../../data/assets
     """
-    settings = config.registry.settings
-    ## file session
-    filesession = _make_asset_filesession(settings["altaircms.asset.storepath"])
-    config.add_filesession(filesession, name=SESSION_NAME)
-    ## after s3 upload event
-    ## file upload -> s3 upload -> set file url
-    config.add_subscriber(".subscribers.set_file_url", "altaircms.filelib.s3.AfterS3Upload")
-
-
-    ## virtual asset
+    config.include(install_filesession)
+    config.include(install_s3sync)
     config.include(install_virtual_asset)
 
     add_route = functools.partial(config.add_route, factory=".resources.AssetResource")

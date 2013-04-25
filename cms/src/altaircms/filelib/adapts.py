@@ -1,9 +1,13 @@
+from zope.interface import implementer
+from .interfaces import IFileSession
+
 class AfterCommit(object):
     def __init__(self, request, session, result):
         self.request = request
         self.session = session #session is filesession
         self.result = result
 
+@implementer(IFileSession)
 class AdaptsFileSession(object):
     def __init__(self, request, session):
         self.request = request

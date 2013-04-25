@@ -37,9 +37,17 @@ class DefaultS3ConnectionFactory(object):
     def __call__(self):
         return S3Connection(self.access_key, self.secret_key) 
 
+class InvalidOption(Exception):
+    pass
+
 @implementer(IS3ContentsUploader)
 class DefaultS3Uploader(object):
-    def __init__(self, connection_factory, bucket_name):
+    OPTIONS = ("public", )
+    def __init__(self, connection_factory, bucket_name, **options):
+        self.options = options
+        for o in options.keys():
+            if not o in self.OPTIONS:
+                raise InvalidOption(o)
         self.connection_factory = connection_factory
         self.bucket_name = bucket_name
 
@@ -51,10 +59,17 @@ class DefaultS3Uploader(object):
     def bucket(self):
         return self.connection.get_bucket(self.bucket_name)
 
+    def _treat_options(self, k):
+        options = {}
+        if self.options.get("public", False):
+            options["policy"] = "public-read"
+        return options
+
     def _force_upload(self, content, name, setter):
         k = Key(self.bucket)
         k.key = name
-        return setter(k, content)
+        options = self._treat_options(k)
+        return setter(k, content, options)
 
     def _upload(self, content, name, setter, overwrite=False):
         if overwrite:
@@ -64,9 +79,14 @@ class DefaultS3Uploader(object):
             return self._force_upload(content, name, setter)
 
     def upload_string(self, content, name, overwrite=False):        
-        return self._upload(content, name, lambda k, content: k.set_contents_from_string(content))
+        return self._upload(content, name, lambda k, content, options: k.set_contents_from_string(content, **options))
 
     def upload_file(self, content, name, overwrite=False):        
-        return self._upload(content, name, lambda k, content: k.set_contents_from_file(content))
+        return self._upload(content, name, lambda k, content, options: k.set_contents_from_file(content, **options))
     upload = upload_file
+
+    def delete(self, content, name):
+        k = Key(self.bucket)
+        k.key = name
+        self.bucket.delete_key(k)
 

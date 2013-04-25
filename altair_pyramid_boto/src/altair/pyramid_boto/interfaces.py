@@ -10,3 +10,6 @@ class IS3ContentsUploader(Interface):
     def upload(content, name):
         pass
 
+    def delete(content, name):
+        pass
+
