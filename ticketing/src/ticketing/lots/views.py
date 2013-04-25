@@ -162,6 +162,7 @@ class EntryLotView(object):
 
         shipping_address_dict = cform.get_validated_address_data()
         api.new_lot_entry(
+            self.request,
             wishes=wishes,
             payment_delivery_method_pair_id=payment_delivery_method_pair_id,
             shipping_address_dict=shipping_address_dict,
