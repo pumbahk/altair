@@ -850,6 +850,7 @@ class OrdersReserveView(BaseView):
 
         stocks = post_data.get('stocks')
         form_reserve = OrderReserveForm(post_data, performance_id=performance_id, stocks=stocks, sales_segment_id=sales_segment_id)
+        form_reserve.sales_segment_id.validators = [Optional()]
         form_reserve.payment_delivery_method_pair_id.validators = [Optional()]
         form_reserve.validate()
 
@@ -877,7 +878,26 @@ class OrdersReserveView(BaseView):
         return {
             'seats':seats,
             'form':form_reserve,
-            'performance': performance,
+            'performance':performance,
+        }
+
+    @view_config(route_name='orders.reserve.form.reload', request_method='POST', renderer='ticketing:templates/orders/_form_reserve.html')
+    def reserve_form_reload(self):
+        post_data = MultiDict(self.request.json_body)
+        post_data.update(self.request.session.get('ticketing.inner_cart'))
+        performance_id = int(post_data.get('performance_id', 0))
+        performance = Performance.get(performance_id, self.context.user.organization_id)
+
+        f = OrderReserveForm(post_data, performance_id=performance_id, stocks=post_data.get('stocks'), sales_segment_id=post_data.get('sales_segment_id'))
+        selected_seats = Seat.query.filter(and_(
+            Seat.l0_id.in_(post_data.get('seats')),
+            Seat.venue_id==post_data.get('venue_id')
+        )).all()
+
+        return {
+            'seats':selected_seats,
+            'form':f,
+            'performance':performance,
         }
 
     @view_config(route_name='orders.reserve.confirm', request_method='POST', renderer='ticketing:templates/orders/_form_reserve_confirm.html')
@@ -896,7 +916,7 @@ class OrdersReserveView(BaseView):
             logger.debug('order reserve confirm post_data=%s' % post_data)
 
             # validation
-            f = OrderReserveForm(performance_id=performance_id, stocks=post_data.get('stocks'), request=self.request)
+            f = OrderReserveForm(performance_id=performance_id, stocks=post_data.get('stocks'), sales_segment_id=post_data.get('sales_segment_id'), request=self.request)
             f.process(post_data)
             if not f.validate():
                 raise ValidationError(reduce(lambda a,b: a+b, f.errors.values(), []))

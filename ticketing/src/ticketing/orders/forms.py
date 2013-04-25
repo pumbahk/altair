@@ -419,37 +419,50 @@ class OrderReserveForm(Form):
             performance = Performance.get(kwargs['performance_id'])
             self.performance_id.data = performance.id
 
-            query = SalesSegment.query.filter_by(performance_id=performance.id).join(SalesSegmentGroup)
-            if 'sales_segment_id' in kwargs:
-                query = query.filter(SalesSegment.id==kwargs['sales_segment_id'])
-            sales_segments = query.all()
+            query = Product.query.filter(Product.performance_id==performance.id)
+            if 'stocks' in kwargs and kwargs['stocks']:
+                query = query.join(ProductItem).filter(ProductItem.stock_id.in_(kwargs['stocks']))
+
+            sales_segments = []
+            for p in query.all():
+                sales_segments.append(p.sales_segment)
+
+            self.sales_segment_id.choices = []
+            for sales_segment in performance.inner_sales_segments:
+                if sales_segment in sales_segments:
+                    self.sales_segment_id.choices.append((sales_segment.id, sales_segment.name))
+
+            self.products.choices = []
+            if 'sales_segment_id' in kwargs and kwargs['sales_segment_id']:
+                self.sales_segment_id.default = kwargs['sales_segment_id']
+            else:
+                self.sales_segment_id.default = self.sales_segment_id.choices[0][0]
+            query = query.filter(Product.sales_segment_id==self.sales_segment_id.default)
+            if 'stocks' in kwargs and kwargs['stocks']:
+                for p in query.all():
+                    self.products.choices += [
+                        (p.id, dict(name=p.name, sales_segment=p.sales_segment.name, price=p.price))
+                    ]
 
             self.payment_delivery_method_pair_id.choices = []
             self.payment_delivery_method_pair_id.sej_plugin_id = []
-            for sales_segment in sales_segments:
-                for pdmp in sales_segment.payment_delivery_method_pairs:
-                    self.payment_delivery_method_pair_id.choices.append(
-                        (pdmp.id, '%s  -  %s' % (pdmp.payment_method.name, pdmp.delivery_method.name))
-                    )
-                    if pdmp.payment_method.payment_plugin_id == plugins.SEJ_PAYMENT_PLUGIN_ID or \
-                       pdmp.delivery_method.delivery_plugin_id == plugins.SEJ_DELIVERY_PLUGIN_ID:
-                        self.payment_delivery_method_pair_id.sej_plugin_id.append(int(pdmp.id))
+            sales_segment = SalesSegment.get(self.sales_segment_id.default)
+            pdmps = sorted(
+                sales_segment.payment_delivery_method_pairs,
+                key=lambda x: (x.payment_method.payment_plugin_id == plugins.RESERVE_NUMBER_PAYMENT_PLUGIN_ID),
+                reverse=True
+            )
+            for pdmp in pdmps:
+                self.payment_delivery_method_pair_id.choices.append(
+                    (pdmp.id, '%s  -  %s' % (pdmp.payment_method.name, pdmp.delivery_method.name))
+                )
+                if pdmp.payment_method.payment_plugin_id == plugins.SEJ_PAYMENT_PLUGIN_ID or \
+                   pdmp.delivery_method.delivery_plugin_id == plugins.SEJ_DELIVERY_PLUGIN_ID:
+                    self.payment_delivery_method_pair_id.sej_plugin_id.append(int(pdmp.id))
 
             self.sales_counter_payment_method_id.choices = [(0, '')]
             for pm in PaymentMethod.filter_by_organization_id(performance.event.organization_id):
                 self.sales_counter_payment_method_id.choices.append((pm.id, pm.name))
-
-            self.products.choices = []
-            query = Product.query.filter(Product.performance_id==performance.id)\
-                        .join(ProductItem).filter(ProductItem.product_id==Product.id)
-            if 'stocks' in kwargs and kwargs['stocks']:
-                query = query.filter(ProductItem.stock_id.in_(kwargs['stocks']))
-            if sales_segments:
-                query = query.filter(Product.sales_segment_id.in_([ss.id for ss in sales_segments]))
-            for p in query.all():
-                self.products.choices += [
-                    (p.id, dict(name=p.name, sales_segment=p.sales_segment.name, price=p.price))
-                ]
 
     def _get_translations(self):
         return Translations()
@@ -474,17 +487,23 @@ class OrderReserveForm(Form):
         choices=[],
         coerce=int
     )
+    sales_segment_id = SelectField(
+        label=u'販売区分',
+        validators=[Required()],
+        choices=[],
+        coerce=lambda x : int(x) if x else u'',
+    )
     payment_delivery_method_pair_id = SelectField(
         label=u'決済・引取方法',
         validators=[Required(u'決済・引取方法を選択してください')],
         choices=[],
-        coerce=int
+        coerce=lambda x : int(x) if x else u'',
     )
     sales_counter_payment_method_id = SelectField(
         label=u'当日窓口決済',
         validators=[Optional()],
         choices=[],
-        coerce=int
+        coerce=int,
     )
     last_name = TextField(
         label=u'姓',
