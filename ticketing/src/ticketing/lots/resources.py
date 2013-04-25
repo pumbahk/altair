@@ -1,5 +1,5 @@
 from pyramid.decorator import reify
-from ticketing.core.models import Event, Performance
+from ticketing.core.models import Event, Performance, Organization
 from ticketing.core import api as core_api
 from .models import Lot
 
@@ -7,22 +7,22 @@ class LotResource(object):
     def __init__(self, request):
         self.request = request
 
-    @reify
-    def event(self):
-        event_id = self.request.matchdict['event_id']
-        return Event.query.filter(Event.id==event_id).one()
-        
+        self.organization = core_api.get_organization(self.request)
 
-    @reify
-    def lot(self):
         event_id = self.request.matchdict.get('event_id')
-        lot_id = self.request.matchdict.get('lot_id')
-        lot = Lot.query.filter(
-            Lot.event_id==event_id
-            ).filter(
-            Lot.id==lot_id,
-            ).first()
-        return lot
+        self.event = Event.query \
+            .filter(Event.id==event_id) \
+            .filter(Organization.id==self.organization.id) \
+            .first()
+
+        lot = None 
+        if self.event is not None: 
+            lot_id = self.request.matchdict.get('lot_id')
+            lot = Lot.query \
+                .filter(Lot.event_id==event_id) \
+                .filter(Lot.id==lot_id) \
+                .first()
+        self.lot = lot
 
     @reify
     def host_base_url(self):
@@ -52,7 +52,7 @@ class LotOptionSelectionResource(LotResource):
         except (ValueError, TypeError):
             pass
 
-        if self.lot.sales_segment.performance_id != performance_id:
-            performance_id = None
-
-        self.performance = Performance.query.filter_by(id=performance_id).first()
+        self.performance = Performance.query \
+            .filter(Performance.id == performance_id) \
+            .filter(Performance.event_id == self.event.id) \
+            .first()
