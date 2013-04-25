@@ -350,7 +350,7 @@ class SalesDetailReporter(object):
         query = Stock.query.filter(Stock.stock_holder_id.in_(self.stock_holder_ids))\
             .join(StockStatus).filter(StockStatus.deleted_at==None)\
             .join(ProductItem).filter(ProductItem.deleted_at==None)\
-            .join(Product).filter(and_(Product.seat_stock_type_id==Stock.stock_type_id, Product.base_product_id==None))
+            .join(Product).filter(Product.seat_stock_type_id==Stock.stock_type_id)
         query = self.add_sales_segment_filter(query)
         if self.form.performance_id.data:
             query = query.filter(Stock.performance_id==self.form.performance_id.data)
