@@ -39,7 +39,7 @@ ${shipping_address['last_name_kana']} ${shipping_address['first_name_kana']}
 </div>
 <%mobile:form_header>性別</%mobile:form_header>
 <div>
-${gender}
+${h.format_gender(request, gender)}
 </div>
 <%mobile:form_header>生年月日</%mobile:form_header>
 <div>
