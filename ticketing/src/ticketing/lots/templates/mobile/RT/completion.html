@@ -5,14 +5,15 @@ ${event.title}<br />
 ${lot.name}
 </div>
 <%mobile:header>申込を完了しました</%mobile:header>
+受付番号: ${entry.entry_no}
 %for option_index_zb, wish in enumerate(entry.wishes):
-<%mobile:form_header>第${option_index_zb + 1}希望</%mobile:form_header>
+<%mobile:band bgcolor="#ffdddd">第${option_index_zb + 1}希望</%mobile:band>
 <div>
 ${wish.performance.name}<br />
 ${h.japanese_date(wish.performance.start_on)}<br />
-会場: ${wish.performance.venue.name}<br />
-開演: ${h.japanese_time(wish.performance.start_on)} (予定)<br />
-希望券種と枚数:<br />
+会場 ${wish.performance.venue.name}<br />
+開演 ${h.japanese_time(wish.performance.start_on)} (予定)<br />
+<%mobile:form_header>希望券種と枚数</%mobile:form_header>
 % for rec in wish.products:
 ・${rec.product.name} ${rec.quantity}枚<br />
 % endfor
