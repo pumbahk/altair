@@ -1829,6 +1829,7 @@ class Product(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     def create_from_template(template, with_product_items=False, **kwargs):
         product = Product.clone(template)
         product.event_id = None
+        product.base_product_id = None
         product.sales_segment_group_id = None
         if 'event_id' in kwargs:
             product.event_id = kwargs['event_id']
