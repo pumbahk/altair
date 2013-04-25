@@ -188,7 +188,7 @@ def checkout_auth_secure3d(request,
     return res
 
 
-def checkout_sales_secure3d(request,
+def checkout_sales(request,
                   order_no):
     order_no = maybe_unicode(order_no)
     service = get_multicheckout_service(request)
@@ -270,17 +270,6 @@ def checkout_auth_secure_code(request, order_no, item_name, amount, tax, client_
     events.CheckoutAuthSecureCodeEvent.notify(request, order_no, res)
     save_api_response(request, res)
     return res
-
-
-def checkout_sales_secure_code(request, order_no):
-    order_no = maybe_unicode(order_no)
-
-    service = get_multicheckout_service(request)
-    res = service.request_card_sales(order_no)
-    events.CheckoutSalesSecureCodeEvent.notify(request, order_no, res)
-    save_api_response(request, res)
-    return res
-
 
 class MultiCheckoutAPIError(Exception):
     pass

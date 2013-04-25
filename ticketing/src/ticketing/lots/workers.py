@@ -7,6 +7,9 @@
 import logging
 import transaction
 from .models import Lot
+from zope.interface import implementer
+from ticketing.payments.payment import Payment
+from ticketing.payments.interfaces import IPaymentCart
 from altair.mq.decorators import task_config
 
 logger = logging.getLogger(__name__)
@@ -34,6 +37,39 @@ class WorkerResource(object):
     def lot(self):
         return Lot.query.filter(Lot.id==self.lot_id).first()
 
+@implementer(IPaymentCart)
+class LotWishCart(object):
+    has_different_account = True  ## 差額(オーソリ時と売上確定処理で差額がある場合にTrue)
+
+    def __init__(self, lot_wish):
+        self.lot_wish = lot_wish
+
+    @property
+    def performance(self):
+        return None
+
+    @property
+    def sales_segment(self):
+        return None
+
+    @property
+    def payment_delivery_pair(self):
+        return None
+
+    @property
+    def order_no(self):
+        return None
+
+    @property
+    def total_amount(self):
+        return None
+
+    def finish(self):
+        """ finish cart lifecycle"""
+
+    @property
+    def different_account(self):
+        return 0
 
 @task_config(root_factory=WorkerResource)
 def elect_lots_task(context, message):
@@ -50,12 +86,13 @@ def elect_lots_task(context, message):
     wishes = lot.get_elected_wishes()
 
     for wish in wishes:
-
+        cart = LotWishCart(wish)
         try:
             # payment_plugin 売上確定など
             # delivery_plugin
             # 在庫処理
-            pass
+            payment = Payment(cart)
+            payment.call_payment()
         except Exception as e:
             logger.warning('lot_id, order_no, wish_no, wish_id')
             # 売上確定などできないものは別にまわす
@@ -63,9 +100,3 @@ def elect_lots_task(context, message):
         # ここでいったんトランザクション
     
         transaction.commit()
-
-def take_stock_wish(wish):
-    for wp in wish.products:
-        product = wp.product
-
-    

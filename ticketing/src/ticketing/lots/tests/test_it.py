@@ -28,14 +28,14 @@ class keep_authTests(unittest.TestCase):
     @mock.patch('ticketing.multicheckout.api.save_api_response')
     @mock.patch('ticketing.multicheckout.api.get_multicheckout_service')
     def test_it(self, mock_service_factory, mock_save_api_response):
-        from ticketing.multicheckout.api import checkout_sales_secure3d
+        from ticketing.multicheckout.api import checkout_sales
         from ticketing.multicheckout.testing import DummyCheckout3D
 
         mock_service_factory.return_value = DummyCheckout3D()
         request = testing.DummyRequest()
         order_no = 'test_order_no'        
 
-        result = checkout_sales_secure3d(
+        result = checkout_sales(
             request,
             order_no,
             )

@@ -119,19 +119,11 @@ class MultiCheckoutPlugin(object):
         return HTTPFound(location=back_url(request))
 
     def finish(self, request, cart):
-        if request.session.get('secure_type') == 'secure_code':
-            return self.finish_secure_code(request, cart)
-        elif request.session.get('secure_type') == 'secure_3d':
-            return self.finish_secure_3d(request, cart)
-        else:
-            assert False, u"unknown secure_type %s" % request.session.get('secure_type')
-
-    def finish_secure_3d(self, request, cart):
         """ 売り上げ確定(3D認証) """
         order = request.session['order']
         order_no = order['order_no']
 
-        checkout_sales_result = multicheckout_api.checkout_sales_secure3d(
+        checkout_sales_result = multicheckout_api.checkout_sales(
             request, get_order_no(request, cart),
         )
         card_brand = detect_card_brand(request, order['card_number'])
@@ -149,41 +141,6 @@ class MultiCheckoutPlugin(object):
                 )
         ahead_com_code = checkout_sales_result.AheadComCd
         #DBSession.add(checkout_sales_result)
-
-        order = c_models.Order.create_from_cart(cart)
-        order.card_brand = card_brand
-        order.card_ahead_com_code = ahead_com_code
-        order.card_ahead_com_name = get_card_ahead_com_name(request, ahead_com_code)
-        order.multicheckout_approval_no = checkout_sales_result.ApprovalNo
-        order.paid_at = datetime.now()
-        cart.finish()
-
-        return order
-
-    def finish_secure_code(self, request, cart):
-        """ 売り上げ確定 (セキュアコード認証) """
-        order = request.session['order']
-        order_no = order['order_no']
-
-        checkout_sales_result = multicheckout_api.checkout_sales_secure_code(
-            request, get_order_no(request, cart),
-        )
-        card_brand = detect_card_brand(request, order['card_number'])
-
-        if checkout_sales_result.CmnErrorCd != '000000':
-            logger.info(u'finish_secure_code: 決済エラー order_no = %s, error_code = %s' % (order_no, checkout_sales_result.CmnErrorCd))
-            multicheckout_api.checkout_auth_cancel(request, get_order_no(request, cart))
-            request.session.flash(get_error_message(request, checkout_sales_result.CmnErrorCd))
-            transaction.commit()
-            raise MultiCheckoutSettlementFailure(
-                message='finish_secure_code: generic failure',
-                order_no=order_no,
-                back_url=back_url(request),
-                error_code=checkout_sales_result.CmnErrorCd
-                )
-
-        #DBSession.add(checkout_sales_result)
-        ahead_com_code = checkout_sales_result.AheadComCd
 
         order = c_models.Order.create_from_cart(cart)
         order.card_brand = card_brand
