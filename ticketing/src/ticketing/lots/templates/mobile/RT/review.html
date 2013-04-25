@@ -29,15 +29,40 @@ ${entry.lot.name}<br />
 <div>${entry.lot.description}</div>
 <%mobile:header>希望選択</%mobile:header>
 %for option_index_zb, wish in enumerate(entry.wishes):
-<%mobile:form_header>第${option_index_zb + 1}希望</%mobile:form_header>
+<%mobile:band bgcolor="#ffdddd">第${option_index_zb + 1}希望</%mobile:band>
 <div>
 ${wish.performance.name}<br />
 ${h.japanese_date(wish.performance.start_on)}<br />
-会場: ${wish.performance.venue.name}<br />
-開演: ${h.japanese_time(wish.performance.start_on)} (予定)<br />
-希望券種と枚数:<br />
+会場 ${wish.performance.venue.name}<br />
+開演 ${h.japanese_time(wish.performance.start_on)} (予定)<br />
+<%mobile:form_header>希望券種と枚数</%mobile:form_header>
 % for rec in wish.products:
 ・${rec.product.name} ${rec.quantity}枚<br />
 % endfor
 </div>
 %endfor
+<%mobile:header>購入者情報</%mobile:header>
+<%mobile:form_header>氏名(漢字)</%mobile:form_header>
+<div>
+${shipping_address.last_name} ${shipping_address.first_name}
+</div>
+<%mobile:form_header>氏名(カナ)</%mobile:form_header>
+<div>
+${shipping_address.last_name_kana} ${shipping_address.first_name_kana}
+</div>
+<%mobile:form_header>性別</%mobile:form_header>
+<div>
+${h.format_gender(request, gender)}
+</div>
+<%mobile:form_header>生年月日</%mobile:form_header>
+<div>
+${h.japanese_date(birthday)}
+</div>
+<%mobile:form_header>電話番号</%mobile:form_header>
+<div>
+${shipping_address.tel_1}
+</div>
+<%mobile:form_header>配送先住所</%mobile:form_header>
+<div>
+${shipping_address.zip} ${shipping_address.prefecture}${shipping_address.city}${shipping_address.address_1}${shipping_address.address_2}
+</div>

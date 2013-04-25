@@ -308,6 +308,9 @@ class LotReviewView(object):
         # 当選して、未決済の場合、決済画面に移動可能
         return dict(entry=lot_entry,
             lot=lot_entry.lot,
+            shipping_address=lot_entry.shipping_address,
+            gender=lot_entry.gender,
+            birthday=lot_entry.birthday,
             payment_url=self.request.route_url('lots.payment.index', event_id=event_id, lot_id=lot_id) if lot_entry.is_elected else None) 
 
 @view_defaults(route_name='lots.payment.index')
