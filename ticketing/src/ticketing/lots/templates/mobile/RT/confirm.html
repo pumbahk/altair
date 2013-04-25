@@ -6,13 +6,15 @@ ${lot.name}
 </div>
 <%mobile:header>申込内容最終確認</%mobile:header>
 %for option_index_zb, wish in enumerate(wishes):
-<%mobile:form_header>第${option_index_zb + 1}希望</%mobile:form_header>
+<%mobile:band bgcolor="#ffdddd">第${option_index_zb + 1}希望</%mobile:band>
+<%mobile:form_header>公演・試合</%mobile:form_header>
 <div>
 ${wish[0]['performance'].name}<br />
 ${h.japanese_date(wish[0]['performance'].start_on)}<br />
-会場: ${wish[0]['performance'].venue.name}<br />
-開演: ${h.japanese_time(wish[0]['performance'].start_on)} (予定)<br />
-希望券種と枚数:<br />
+会場 ${wish[0]['performance'].venue.name}<br />
+開演 ${h.japanese_time(wish[0]['performance'].start_on)} (予定)
+</div>
+<%mobile:form_header>希望券種と枚数</%mobile:form_header>
 % for rec in wish:
 % if rec['quantity'] > 0:
 ・${rec['product'].name} ${rec['quantity']}枚<br />

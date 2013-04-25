@@ -62,7 +62,7 @@ ${lot.name}
 <%mobile:form_header>住所</%mobile:form_header>
 <div>
   ${form['zip'].label}(例:1410022)<br/>
-  ${form['zip']}
+  ${form['zip'](istyle='4')}
   ${h.mobile_error_list(request, form, 'zip')}
 </div>
 <div>

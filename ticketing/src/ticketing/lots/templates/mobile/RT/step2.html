@@ -24,20 +24,14 @@ ${product.name}<br />
 <input type="text" name="product-${product.id}" size="2" value="" istyle="4" />枚
 </div>
 %endfor
+<hr />
 <div align="center" style="text-align:center">
 <input type="submit" value="次へ" />
 <input type="submit" name="back" value="戻る" />
 </div>
 </form>
 <hr size="1" color="#888888" noshade="noshade" />
-
-<%mobile:band bgcolor="#ffdddd">会場</%mobile:band>
 <div>
-  ${performance.venue.name}
+会場 ${performance.venue.name}<br />
+開演 ${performance.start_on}(予定)<br />
 </div>
-
-<%mobile:band bgcolor="#ffdddd">開演</%mobile:band>
-<div>
-  ${performance.start_on}(予定)
-</div>
-
