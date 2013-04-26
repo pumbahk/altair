@@ -45,7 +45,6 @@ class SalesReports(BaseView):
         performance_total_reporter = SalesTotalReporter(form, self.context.organization, group_by='Performance')
 
         return {
-            'form':form,
             'form_report_mail':SalesReportMailForm(organization_id=self.context.user.organization_id, event_id=event_id),
             'report_settings':ReportSetting.filter_by(event_id=event_id).all(),
             'event_total_reporter':event_total_reporter,
@@ -61,6 +60,8 @@ class SalesReports(BaseView):
 
         form = SalesReportForm(self.request.params, performance_id=performance_id)
         return {
+            'form_report_mail':SalesReportMailForm(organization_id=self.context.user.organization_id, event_id=performance.event_id),
+            'report_settings':ReportSetting.filter_by(event_id=performance.event_id).all(),
             'performance_reporter':PerformanceReporter(form, performance),
         }
 

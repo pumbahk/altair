@@ -23,14 +23,10 @@
   ${h.flash_messages(request)}
 </div>
 
-<form id="limitation" action="${request.route_path('sales_reports.performance', performance_id=performance.id)}" method="POST">
-  <div class="control-group">
-    <div class="controls">
-      ${form.limited_from} 〜 ${form.limited_to}
-      <input type="submit" class="btn" value="集計期間を絞り込む" >
-    </div>
-  </div>
-</form>
+<div class="well well-small">
+  <%include file="/sales_reports/_report_settings.html"
+            args="form=form, form_report_mail=form_report_mail, event=performance.event, report_settings=report_settings" />
+</div>
 
 <h3>開催日:${h.safe_strftime(performance.start_on)}　${performance.name}</h3>
 
