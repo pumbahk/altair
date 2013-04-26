@@ -14,30 +14,28 @@
 <script type="text/javascript" src="${request.static_url('ticketing.lots:static/js/underscore-min.js')}"></script>
 </head>
 <body id="settlement">
-
 <p id="naviSkip"><a href="#main" tabindex="1" title="本文へジャンプ"><img src="${request.static_url('ticketing.lots:static/img/common/skip.gif')}" alt="本文へジャンプ" width="1" height="1" /></a></p>
-
 <div id="container">
-
-	<!-- ========== header ========== -->
-	<div id="grpheader">
+  <!-- ========== header ========== -->
+  <div id="grpheader">
         <p id="siteID"><a href="http://ticket.rakuten.co.jp/"><img src="${request.static_url('ticketing.lots:static/img/common/header_logo_03.gif')}" alt="楽天チケット" class="serviceLogo" width="70" height="34" /></a></p>
   </div>
-	<!-- ========== /header ========== -->
-	
-	<hr />
+  <!-- ========== /header ========== -->
+  
+  <hr />
 
-	<!-- ========== main ========== -->
+  <!-- ========== main ========== -->
     ${next.body()}
-	<!-- ========== /main ========== -->
-	<div class="footerCopy">Ticketstor.Inc All Rights Reserved</div>
-<!-- /container --></div>
+  <!-- ========== /main ========== -->
+  <div class="footerCopy">Ticketstor.Inc All Rights Reserved</div>
+</div>
+<!-- /container -->
 
 <%def name="error(form, field)">
 %if form.errors.get(field):
-    %for e in form.errors[field]:
-        <span class="validation-error">${form[field].label} ${e}</span>
-    %endfor
+  %for e in form.errors[field]:
+  <span class="validation-error">${form[field].label} ${e}</span>
+  %endfor
 %endif
 </%def>
 </body>
