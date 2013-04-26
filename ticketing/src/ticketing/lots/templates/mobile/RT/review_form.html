@@ -1,7 +1,7 @@
 <%inherit file="./base.html" />
 <%namespace file="./tags_mobile.html" name="mobile" />
 <div align="center" style="text-align:center">
-抽選申込確認
+申込状況確認
 </div>
 <form action="${request.url}" method="post">
 <%mobile:form_header>${form['entry_no'].label}</%mobile:form_header>
@@ -14,5 +14,5 @@ ${h.mobile_error_list(request, form, 'entry_no')}
 ${form['tel_no']}
 ${h.mobile_error_list(request, form, 'tel_no')}
 </div>
-<input type="submit" value="確認" />
+<input type="submit" value="確認する" />
 </form>
