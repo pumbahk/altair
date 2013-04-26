@@ -4,34 +4,18 @@ from ticketing.core import api as core_api
 from .models import Lot
 
 
-def lot_resource_factory(request):
-    if not request.matchdict.get('event_id'):
-        return None
-    if not request.matchdict.get('lot_id'):
-        return None
-
-    return LotResource(request)
-
 class LotResource(object):
     def __init__(self, request):
         self.request = request
 
-    @reify
-    def organization(self):
         self.organization = core_api.get_organization(self.request)
 
-    @reify
-    def event(self):
         event_id = self.request.matchdict.get('event_id')
-        event = Event.query \
+        self.event = Event.query \
             .filter(Event.id==event_id) \
             .filter(Organization.id==self.organization.id) \
             .first()
-        return event
 
-    @reify
-    def lot(self):
-        event_id = self.request.matchdict.get('event_id')
         lot = None 
         if self.event is not None: 
             lot_id = self.request.matchdict.get('lot_id')
@@ -39,7 +23,7 @@ class LotResource(object):
                 .filter(Lot.event_id==event_id) \
                 .filter(Lot.id==lot_id) \
                 .first()
-        return lot
+        self.lot = lot
 
     @reify
     def host_base_url(self):

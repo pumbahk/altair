@@ -105,7 +105,7 @@ def main(global_config, **local_config):
     session_factory = session_factory_from_settings(settings)
 
     config = Configurator(settings=settings,
-                          root_factory=".resources.lot_resource_factory")
+                          root_factory=".resources.LotResource")
     config.set_session_factory(session_factory)
     config.add_static_view('static', 'static', cache_max_age=3600)
     config.add_static_view('c_static', 'ticketing.cart:static', cache_max_age=3600)
