@@ -15,6 +15,9 @@ from ticketing.core.models import (
 
 logger = logging.getLogger(__name__)
 
+class InvalidProductSelectionException(Exception):
+    """ 選択商品が不正な場合 """
+
 class NotEnoughStockException(Exception):
     """ 必要な在庫数がない場合 """
 
@@ -89,13 +92,14 @@ class Stocker(object):
     def quantity_for_stock_id(self, performance_id, ordered_products):
         """ Productと個数の組から、stock_id, 個数の組に集約する
         :param ordered_product: iter of (product, quantity)
-
         """
-
         logger.debug("ordered products: %s" % ordered_products)
         ordered_product_items = self._convert_order_product_items(performance_id, ordered_products=ordered_products)
         ordered_product_items = list(ordered_product_items)
         logger.debug("ordered product items: %s" % ordered_product_items)
+        if sum([quantity for p, quantity in ordered_products]) > sum([quantity for p, quantity in ordered_product_items]):
+            logger.debug("invalid product selection %s > %s" % (sum([q for p, q in ordered_products]), sum([q for p, q in ordered_product_items])))
+            raise InvalidProductSelectionException
         q = sorted(ordered_product_items, key=lambda x: x[0].stock_id)
         q = itertools.groupby(q, key=lambda x: x[0].stock_id)
         return [(stock_id, sum(quantity for _, quantity in ordered_items)) for stock_id, ordered_items in q]
