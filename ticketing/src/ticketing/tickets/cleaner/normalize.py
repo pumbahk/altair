@@ -262,7 +262,7 @@ def _eliminated_dump_to_downstream(sm, downstream):
         ## todo: useful message.
         logger.info("reach. end document element")
 
-def normalize(inp, outp=sys.stdout, encoding="UTF-8", header="", eliminate=True):
+def normalize(inp, outp=sys.stdout, encoding="UTF-8", header="", eliminate=False):
     return _normalize(inp, outp, encoding, eliminate=eliminate)
 
 def _normalize(inp, outp=sys.stdout, encoding="UTF-8", eliminate=False):
