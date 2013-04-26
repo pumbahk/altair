@@ -3,6 +3,24 @@ from pyramid import testing
 from ticketing.testing import _setup_db, _teardown_db
 from altair.mq.testing import DummyMessage
 
+
+class lot_wish_cartTests(unittest.TestCase):
+    def _callFUT(self, *args, **kwargs):
+        from ..workers import lot_wish_cart
+        return lot_wish_cart(*args, **kwargs)
+
+    def test_it(self):
+        from ticketing.core.models import Performance
+        from ..models import LotEntryWish, LotEntry, Lot
+        wish = LotEntryWish(
+            performance=Performance(),
+            lot_entry=LotEntry(lot=Lot(),
+                               entry_no='testing-entry'))
+        result = self._callFUT(wish)
+
+        self.assertEqual(result.order_no, 'testing-entry')
+
+
 class WorkerResourceTests(unittest.TestCase):
     def setUp(self):
         self.session = _setup_db(modules=[
