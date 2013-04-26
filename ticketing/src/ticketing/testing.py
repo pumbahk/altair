@@ -1,5 +1,7 @@
 from pyramid.path import DottedNameResolver
 from pyramid.testing import DummyRequest as _DummyRequest
+from pyramid.interfaces import IRequest
+from zope.interface import alsoProvides
 
 def _setup_db(modules=[], echo=False):
     #from .logicaldeleting import install
@@ -33,3 +35,5 @@ class DummyRequest(_DummyRequest):
         if hasattr(self, 'params'):
             self.params = MultiDict(self.params)
         self.browserid = kwargs.get("browserid")
+        self.request_iface = kwargs.get('request_iface', IRequest)
+
