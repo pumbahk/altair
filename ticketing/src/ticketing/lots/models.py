@@ -19,7 +19,7 @@ import logging
 import sqlahelper
 import sqlalchemy as sa
 import sqlalchemy.orm as orm
-
+import ticketing.core.models as c_models
 from sqlalchemy import sql
 from sqlalchemy.ext.hybrid import hybrid_property, hybrid_method
 from sqlalchemy.orm.exc import NoResultFound
@@ -116,6 +116,9 @@ class Lot(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     entry_limit = sa.Column(sa.Integer, default=0, server_default="0")
 
     lotting_announce_datetime = sa.Column(sa.DateTime, doc=u"抽選結果発表予定日")
+
+    system_fee = sa.Column(sa.Numeric(precision=16, scale=2), default=0,
+                           server_default="0")
 
     def is_elected(self):
         return self.status == int(LotStatusEnum.Elected)
@@ -228,6 +231,12 @@ class LotEntry(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     birthday = sa.Column(sa.Date)
     memo = sa.Column(sa.UnicodeText)
 
+
+    @property
+    def max_amount(self):
+        """" """
+        return max([w.total_amount for w in self.wishes])
+
     @property
     def status(self):
         retval = LotEntryStatusEnum.New
@@ -287,10 +296,45 @@ class LotEntryWish(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     elected_at = sa.Column(sa.DateTime)
 
+    @property
+    def transaction_fee(self):
+        """ 決済手数料 """
+        payment_fee = self.lot_entry.payment_delivery_method_pair.transaction_fee
+        payment_method = self.lot_entry.payment_delivery_method_pair.payment_method
+        if payment_method.fee_type == c_models.FeeTypeEnum.Once.v[0]:
+            return payment_fee
+        elif payment_method.fee_type == c_models.FeeTypeEnum.PerUnit.v[0]:
+            return payment_fee * self.total_quantiy
+        else:
+            return 0
+
+    @property
+    def delivery_fee(self):
+        """ 引取手数料 """
+        delivery_fee = self.lot_entry.payment_delivery_method_pair.delivery_fee
+        delivery_method = self.lot_entry.payment_delivery_method_pair.delivery_method
+        if delivery_method.fee_type == c_models.FeeTypeEnum.Once.v[0]:
+            return delivery_fee
+        elif delivery_method.fee_type == c_models.FeeTypeEnum.PerUnit.v[0]:
+            return delivery_fee * self.total_quantiy
+        else:
+            return 0
+
+    @property
+    def tickets_amount(self):
+        return sum(p.amount for p in self.products)
+
+    @property
+    def total_amount(self):
+        return self.tickets_amount + self.system_fee + self.transaction_fee + self.delivery_fee
 
     @property
     def total_quantity(self):
         return sum([p.quantity for p in self.products])
+
+    @property
+    def system_fee(self):
+        return self.lot_entry.lot.system_fee
 
     def elect(self, now):
         now = now or datetime.now()
@@ -318,6 +362,12 @@ class LotEntryProduct(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     performance_id = sa.Column(Identifier, sa.ForeignKey('Performance.id'))
     performance = orm.relationship('Performance', backref='lot_entry_products')
+
+    @property
+    def amount(self):
+        """ 購入額小計
+        """
+        return self.product.price * self.quantity
 
 
 class LotElectWork(Base, BaseModel, WithTimestamp, LogicallyDeleted):

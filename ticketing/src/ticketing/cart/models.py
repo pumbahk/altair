@@ -103,8 +103,8 @@ class Cart(Base):
     browserid = sa.Column(sa.String(40))
 
 
-    has_different_account = False  ## 差額(オーソリ時と売上確定処理で差額がある場合にTrue)
-    different_account = 0
+    has_different_amount = False  ## 差額(オーソリ時と売上確定処理で差額がある場合にTrue)
+    different_amount = 0
 
     @property
     def name(self):

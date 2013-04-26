@@ -11,7 +11,7 @@ from zope.interface import implementer
 from ticketing.payments.payment import Payment
 from ticketing.payments.interfaces import IPaymentCart
 from altair.mq.decorators import task_config
-from ticketing.cart.models import Cart
+from ticketing.cart.models import Cart, CartedProduct
 
 
 logger = logging.getLogger(__name__)
@@ -28,12 +28,21 @@ def includeme(config):
 
 
 def lot_wish_cart(wish):
-    return Cart(performance=wish.performance,
+    cart = Cart(performance=wish.performance,
                 shipping_address=wish.lot_entry.shipping_address,
                 payment_delivery_pair=wish.lot_entry.payment_delivery_method_pair,
                 _order_no=wish.lot_entry.entry_no,
                 sales_segment=wish.lot_entry.lot.sales_segment,
+                system_fee=wish.lot_entry.lot.system_fee,
+                products=[
+                    CartedProduct(product=p.product,
+                                  quantity=p.quantity)
+                    for p in wish.products
+                    ],
                 )
+    cart.has_different_amount = True
+    cart.different_amount = wish.lot_entry.max_amount - wish.total_amount
+    return cart
 
 class WorkerResource(object):
     def __init__(self, message):

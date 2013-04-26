@@ -498,7 +498,7 @@ class MultiCheckoutPluginTests(unittest.TestCase):
             finished_at=None,
             order_no='000000000000',
             shipping_address=testing.DummyModel(),
-            has_different_account=False,
+            has_different_amount=False,
         )
         dummy_cart.finish = lambda: None
 

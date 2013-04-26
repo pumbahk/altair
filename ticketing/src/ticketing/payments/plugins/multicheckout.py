@@ -124,7 +124,7 @@ class MultiCheckoutPlugin(object):
         order_no = order['order_no']
         card_brand = detect_card_brand(request, order['card_number'])
 
-        if not cart.has_different_account:
+        if not cart.has_different_amount:
             checkout_sales_result = multicheckout_api.checkout_sales(
                 request, get_order_no(request, cart),
             )
