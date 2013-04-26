@@ -1428,7 +1428,7 @@
 }
 
 #settlementSelectBox {
-	width: 907px;
+	width: 930px;
 	margin: 0 10px 20px;
 	background: url(../img/settlement/bg_select_top.gif) no-repeat 0 0;
 }
@@ -1440,7 +1440,7 @@
 
 
 .settlementSelectBox {
-	width: 907px;
+	width: 930px;
 	margin: 0 10px 20px;
 	background: url(../img/settlement/bg_select_top.gif) no-repeat 0 0;
 }
@@ -1528,26 +1528,26 @@ table th label{
 
 
 .settlementBox {
-    margin: 0 10px 20px;
-	background: url(../img/settlement/bg_box_bottom_02.gif) no-repeat left bottom;
+    margin: 0 0 20px;
+	background: url(../img/settlement/bg_box_bottom.gif) no-repeat left bottom;
 }
 
 .settlementBoxInner {
 	overflow: hidden;
 	padding-bottom: 10px;
-	background: url(../img/settlement/bg_box_top_02.gif) no-repeat 0 0;
+	background: url(../img/settlement/bg_box_top.gif) no-repeat 0 0;
 }
 
 .settlementBox2 {
-	margin: 0 10px 20px;
-	background: url(../img/settlement/bg_box_bottom_02.gif) no-repeat left bottom;
+	margin: 0 0 20px;
+	background: url(../img/settlement/bg_box_bottom.gif) no-repeat left bottom;
 }
 
 .settlementBoxInner2 {
 	height: 1%;
 	overflow: hidden;
 	padding: 0 12px 10px;
-	background: url(../img/settlement/bg_box_top_02.gif) no-repeat 0 0;
+	background: url(../img/settlement/bg_box_top.gif) no-repeat 0 0;
 }
 
 .settlementBox3 {
@@ -1994,7 +1994,7 @@ table th label{
 
 /* 確認画面ボックス */
 .confirmBox {
-	margin: 0 10px 20px;
+	margin: 0 0 20px;
 	background: url(../img/settlement/bg_confirm_top.gif) no-repeat 0 0;
 }
 
