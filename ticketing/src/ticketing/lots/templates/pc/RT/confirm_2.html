@@ -92,7 +92,7 @@
               </tr>
               <tr>
                 <th><label>性別</label></th>
-                <td>${cart.shipping_address.sex}</td>
+                <td>${h.format_gender(request, cart.shipping_address.sex)}</td>
               </tr>
               <tr id="settlementSelectEnd">
                 <th><label>メモ欄</label></th>
