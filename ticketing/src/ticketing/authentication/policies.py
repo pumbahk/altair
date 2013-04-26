@@ -80,12 +80,17 @@ class APIAuthenticationPolicy(object):
         return self.userid_prefix + apikey
 
     def effective_principals(self, request):
-        apikeyentry = get_apikeyentry(request)
+        userid = self.unauthenticated_userid(request)
         retval = [Everyone]
-        if apikeyentry is not None:
-            retval.extend([Authenticated, apikeyentry.userid])
-            retval.extend(self.principals)
-            retval.extend(apikeyentry.principals)
+        if userid:
+            apikeyentry = get_apikeyentry(request)
+            if apikeyentry is None:
+                apikeyentry = self.resolver(userid, request)
+                set_apikeyentry(request, apikeyentry)
+            if apikeyentry is not None:
+                retval.extend([Authenticated, apikeyentry.userid])
+                retval.extend(self.principals)
+                retval.extend(apikeyentry.principals)
         return retval
 
     def remember(self, request, principal, **kw):
