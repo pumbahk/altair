@@ -296,6 +296,9 @@ class LotEntryWish(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     elected_at = sa.Column(sa.DateTime)
 
+    order_id = sa.Column(Identifier, sa.ForeignKey('Order.id'))
+    order = orm.relationship('Order', backref='lot_wishes')
+
     @property
     def transaction_fee(self):
         """ 決済手数料 """

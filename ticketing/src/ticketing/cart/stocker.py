@@ -43,8 +43,8 @@ class NotEnoughStockException(Exception):
             )).encode('utf-8')
 
 class Stocker(object):
-    def __init__(self, request):
-        self.request = request
+    def __init__(self, request=None):
+        self.request = request  # これ使ってないや...
 
     # TODO: 在庫オブジェクトの取得内容を確認。必要なproductの分がすべて取得できているか？
     def take_stock(self, performance_id, product_requires):

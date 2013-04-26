@@ -12,7 +12,7 @@ from ticketing.payments.payment import Payment
 from ticketing.payments.interfaces import IPaymentCart
 from altair.mq.decorators import task_config
 from ticketing.cart.models import Cart, CartedProduct
-
+from ticketing.cart.stockeri import Stocker
 
 logger = logging.getLogger(__name__)
 
@@ -71,15 +71,33 @@ def elect_lots_task(context, message):
     logger.info('start electing task: lot_id = {0}'.format(lot.id))
 
     wishes = lot.get_elected_wishes()
-
+    orders = []
     for wish in wishes:
+        order = elect_lot_wish(wish)
+        orders.append(order)
+
+    return len(orders)
+
+def elect_lot_wish(wish):
         cart = lot_wish_cart(wish)
+        payment = Payment(cart)
+        stocker = Stocker()
         try:
+            # 在庫処理
+            performance = cart.performance
+            product_requires = [(p.product_id, p.quantity)
+                                for p in cart.products]
+            stocked = stocker.take_stock(performance,
+                                         product_requires)
+            # TODO: 確保数確認
+
+
             # payment_plugin 売上確定など
             # delivery_plugin
-            # 在庫処理
-            payment = Payment(cart)
-            payment.call_payment()
+            order = payment.call_payment()
+            wish.order = order
+            return order
+
         except Exception as e:
             logger.warning('lot_id, order_no, wish_no, wish_id')
             # 売上確定などできないものは別にまわす
