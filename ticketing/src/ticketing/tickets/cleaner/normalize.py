@@ -248,11 +248,12 @@ def _eliminated_dump_to_downstream(sm, downstream):
                         continue
                     if isinstance(x, Start):
                         downstream.startElement(x.val, x.attrs)
+                        prev = x
                     elif isinstance(x, End):
                         downstream.endElement(x.val)
+                        prev = x
                     else:
                         downstream.characters(x.val)
-                    prev = x
                     if x.val == fst:
                         fst_cnt += 1
                         if fst_cnt>1:
