@@ -4,7 +4,6 @@ from ticketing.testing import _setup_db,_teardown_db
 from ..testing import _add_lots
 
 
-
 class LotResourceTests(unittest.TestCase):
     def setUp(self):
         self.session = _setup_db(modules=[
