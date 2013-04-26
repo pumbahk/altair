@@ -12,7 +12,7 @@ from ticketing.payments.payment import Payment
 from ticketing.payments.interfaces import IPaymentCart
 from altair.mq.decorators import task_config
 from ticketing.cart.models import Cart, CartedProduct
-from ticketing.cart.stockeri import Stocker
+from ticketing.cart.stocker import Stocker
 
 logger = logging.getLogger(__name__)
 
