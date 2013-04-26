@@ -141,8 +141,25 @@ class MultiCheckoutPlugin(object):
                     error_code=checkout_sales_result.CmnErrorCd
                 )
         else:
-            # 差分決済
-            pass
+            ## 金額変更での売上確定
+            checkout_sales_result = multicheckout_api.checkout_sales_different_amount(
+                request, get_order_no(request, cart, cart.different_amount),
+            )
+            if checkout_sales_result.CmnErrorCd != '000000':
+                logger.info(u'finish_secure: 決済エラー order_no = %s, error_code = %s' % (order_no, checkout_sales_result.CmnErrorCd))
+
+                ## 抽選特有の事情により、キャンセルは管理画面から行う
+                # multicheckout_api.checkout_auth_cancel(request, get_order_no(request, cart))
+
+                request.session.flash(get_error_message(request, checkout_sales_result.CmnErrorCd))
+                transaction.commit()
+                raise MultiCheckoutSettlementFailure(
+                    message='finish_secure: generic failure',
+                    order_no=order_no,
+                    back_url=back_url(request),
+                    error_code=checkout_sales_result.CmnErrorCd
+                )
+
 
         ahead_com_code = checkout_sales_result.AheadComCd
 
