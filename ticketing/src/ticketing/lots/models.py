@@ -307,7 +307,7 @@ class LotEntryWish(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         if payment_method.fee_type == c_models.FeeTypeEnum.Once.v[0]:
             return payment_fee
         elif payment_method.fee_type == c_models.FeeTypeEnum.PerUnit.v[0]:
-            return payment_fee * self.total_quantiy
+            return payment_fee * self.total_quantity
         else:
             return 0
 
@@ -319,7 +319,7 @@ class LotEntryWish(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         if delivery_method.fee_type == c_models.FeeTypeEnum.Once.v[0]:
             return delivery_fee
         elif delivery_method.fee_type == c_models.FeeTypeEnum.PerUnit.v[0]:
-            return delivery_fee * self.total_quantiy
+            return delivery_fee * self.total_quantity
         else:
             return 0
 
