@@ -68,31 +68,31 @@
             <table summary="お支払・お引取り方法選択">
               <tr>
                 <th><label>購入者氏名（全角）</label></th>
-                              <td>${cart.shipping_address.last_name} ${cart.shipping_address.first_name}</td>
+                <td>${cart.shipping_address.last_name} ${cart.shipping_address.first_name}</td>
               </tr>
               <tr>
                 <th><label>購入者氏名（カナ）</label></th>
-                              <td>${cart.shipping_address.last_name_kana} ${cart.shipping_address.first_name_kana}</td>
+                <td>${cart.shipping_address.last_name_kana} ${cart.shipping_address.first_name_kana}</td>
               </tr>
               <tr>
                 <th><label>電話番号（自宅）</label></th>
-                              <td>${cart.shipping_address.tel_1}</td>
+                <td>${cart.shipping_address.tel_1}</td>
               </tr>
               <tr>
                 <th><label>電話番号（携帯電話）</label></th>
-                              <td>${cart.shipping_address.tel_2}</td>
+                <td>${cart.shipping_address.tel_2}</td>
               </tr>
               <tr>
                 <th><label>配送先住所</label></th>
-                              <td>${cart.shipping_address.zip} ${cart.shipping_address.prefecture}${cart.shipping_address.city} ${cart.shipping_address.address_1}${cart.shipping_address.address_2}</td>
+                <td>${cart.shipping_address.zip} ${cart.shipping_address.prefecture}${cart.shipping_address.city} ${cart.shipping_address.address_1}${cart.shipping_address.address_2}</td>
               </tr>
               <tr>
                 <th><label>生年月日</label></th>
-                <td>$$</td>
+                <td>${u"{0.year} 年 {0.month}月 {0.day}日".format(lot_entry.birthday)}</td>
               </tr>
               <tr>
                 <th><label>性別</label></th>
-                <td>${h.format_gender(request, cart.shipping_address.sex)}</td>
+                <td>${h.format_gender(request, lot_entry.gender)}</td>
               </tr>
               <tr id="settlementSelectEnd">
                 <th><label>メモ欄</label></th>

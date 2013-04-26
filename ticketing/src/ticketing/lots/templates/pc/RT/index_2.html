@@ -175,7 +175,12 @@
               </tr>
               <tr>
                 <th><label>生年月日</label></th>
-                <td><input name="textfield" type="text" id="textfield" size="10" /> 年　<input name="textfield" type="text" id="textfield" size="10" /> 月　<input name="textfield" type="text" id="textfield" size="10" /> 日</td>
+                <td>
+                  ${form['year']} 年
+                　${form['month']} 月
+                　${form['day']} 日
+                  ${self.error(form, 'year')}
+                </td>
               </tr>
               <tr>
                 <th><label>${form['sex'].label}</label></th>
