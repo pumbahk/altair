@@ -1,17 +1,23 @@
 # -*- coding:utf-8 -*-
-from pyramid.mako_templating import MakoRendererFactoryHelper
-from pyramid.mako_templating import registry_lock
-from pyramid.mako_templating import PkgResourceTemplateLookup
-from pyramid.mako_templating import IMakoLookup
+import os
+import urllib
+import shutil
+
 from pyramid.settings import asbool
 from mako import exceptions
 from pyramid.compat import is_nonstr_iter
 from pyramid.util import DottedNameResolver
+from pyramid.mako_templating import (
+    MakoRendererFactoryHelper, 
+    registry_lock, 
+    PkgResourceTemplateLookup, 
+    IMakoLookup
+)
 from pyramid.asset import (
     resolve_asset_spec,
     abspath_from_asset_spec,
-    )
-
+)
+from pyramid.path import AssetResolver
 import logging
 logger = logging.getLogger()
 
@@ -21,6 +27,18 @@ from zope.interface import implementer
 class IMakoLookupFactory(Interface):
     def __call__(*args, **kwargs):
         pass
+
+class IFailBackLookup(Interface):
+    def __call__(lookup, uri):
+        """return template"""
+
+
+#utility
+def get_renderer_factory(request, filename):
+    from pyramid.interfaces import IRendererFactory
+    ext = os.path.splitext(filename)[1]
+    return request.registry.queryUtility(IRendererFactory, name=ext)
+
 
 @implementer(IMakoLookup)
 class HasFailbackTemplateLookup(PkgResourceTemplateLookup):
@@ -41,11 +59,47 @@ class HasFailbackTemplateLookup(PkgResourceTemplateLookup):
                     return v
                 raise e
             except Exception as sube:
+                raise sube
                 logger.exception(sube)
                 raise e
 
-def default_failback_lookup(lookup, uri):
-    raise uri
+@implementer(IFailBackLookup)
+class DefaultFailbackLookup(object):
+    def __init__(self, host, assetspec):
+        self.host = host.rstrip("/")
+        self.assetspec = assetspec
+        self.default_directory = AssetResolver().resolve(assetspec).abspath()        
+        if not ":" in assetspec:
+            self.prefix = assetspec+":"
+        else:
+            self.prefix = assetspec.rstrip("/")+"/"    
+
+    @classmethod 
+    def from_settings(cls, settings, prefix=""):
+        return cls(settings[prefix+"lookup.host"], 
+                   settings.get(prefix+"directories", [None])[0])
+
+    def is_assetspec(self, uri):
+        return ":" in uri
+
+    def __call__(self, lookup, uri):
+        if not self.is_assetspec(uri):
+            uri = "{0}{1}".format(self.prefix, uri)
+        lookup_url = "{0}/{1}".format(self.host, uri.lstrip("/"))
+        res = urllib.urlopen(lookup_url)
+        if res.getcode() != 200:
+            return None
+        adjusted = uri.replace(':', '$')
+        pname, path = resolve_asset_spec(uri)
+        srcfile = abspath_from_asset_spec(path, pname)
+        try:
+            with open(srcfile, "wb") as wf:
+                shutil.copyfileobj(res, wf)
+        except IOError:
+            os.makedirs(os.path.dirname(srcfile).rstrip(".."))
+            with open(srcfile, "wb") as wf:
+                shutil.copyfileobj(res, wf)
+        return lookup._load(srcfile, adjusted)
 
 @implementer(IMakoLookupFactory)
 class HasFailbackTemplateLookupFactory(object):
@@ -55,7 +109,9 @@ class HasFailbackTemplateLookupFactory(object):
         self.name = name
 
     def __call__(self, *args, **kwargs):
-        return self.TemplateLookupClass(self.failback_lookup, *args, **kwargs)
+        return self.TemplateLookupClass(
+            self.failback_lookup,
+            *args, **kwargs)
 
 _settings_prefix = "s3.mako."
 
@@ -64,7 +120,6 @@ def _make_lookup(config, package=None, _settings_prefix=_settings_prefix):
     settings = config.registry.settings
     def sget(name, default=None):
         return settings.get(_settings_prefix + name, default)
-
     reload_templates = settings.get('pyramid.reload_templates', None)
     if reload_templates is None:
         reload_templates = settings.get('reload_templates', False)
@@ -112,13 +167,16 @@ def _make_lookup(config, package=None, _settings_prefix=_settings_prefix):
 def includeme(config, _settings_prefix=_settings_prefix):
     settings = config.registry.settings
     download_if_notfound_helper = MakoRendererFactoryHelper(_settings_prefix)
-    registry_lock.acquire()
-    
-    factory = HasFailbackTemplateLookupFactory(settings[_settings_prefix+"failback.lookup"], 
-                                               settings[_settings_prefix+"renderer.name"])
-    config.registry.registerUtility(factory, IMakoLookupFactory)
 
+    FailBackClass = config.maybe_dotted(settings[_settings_prefix+"failback.lookup"])
+    lookup_factory = HasFailbackTemplateLookupFactory(
+        FailBackClass.from_settings(settings, prefix=_settings_prefix), 
+        settings[_settings_prefix+"renderer.name"])
+
+    # don't have to lock?'
+    registry_lock.acquire()
+    config.registry.registerUtility(lookup_factory, IMakoLookupFactory)
     lookup = _make_lookup(config, _settings_prefix=_settings_prefix)
     config.registry.registerUtility(lookup, IMakoLookup, name=_settings_prefix)
     registry_lock.release()
-    config.add_renderer(factory.name, download_if_notfound_helper)
+    config.add_renderer(lookup_factory.name, download_if_notfound_helper)
