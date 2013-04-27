@@ -31,7 +31,6 @@ class Layout(BaseOriginalMixin, WithOrganizationMixin, Base):
     pagetype = orm.relationship("PageType", backref="layouts", uselist=False)
     disposition_id = sa.Column(sa.Integer, sa.ForeignKey("widgetdisposition.id", use_alter=True, name="fk_default_disposition"),doc=u"default settings")
     default_disposition = orm.relationship(WidgetDisposition, uselist=False, primaryjoin="WidgetDisposition.id==Layout.disposition_id")
-    version_counter = sa.Column(sa.SmallInteger, default=0, nullable=False)
 
     @classmethod
     def applicable(cls, pagetype_id):
@@ -61,9 +60,3 @@ class Layout(BaseOriginalMixin, WithOrganizationMixin, Base):
         except ValueError:
             return False
         return True
-            
-    def increment_version(self):
-        if self.version_counter is None:
-            self.version_counter = 0
-        self.version_counter += 1
-        return self.version_counter

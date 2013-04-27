@@ -20,8 +20,6 @@ def upgrade():
     op.add_column('image_asset', sa.Column('file_url', sa.String(length=255), nullable=True))
     op.add_column('movie_asset', sa.Column('thumbnail_url', sa.String(length=255), nullable=True))
     op.add_column('movie_asset', sa.Column('file_url', sa.String(length=255), nullable=True))
-    op.add_column('flash_asset', sa.Column('thumbnail_url', sa.String(length=255), nullable=True))
-    op.add_column('flash_asset', sa.Column('file_url', sa.String(length=255), nullable=True))
     op.add_column('layout', sa.Column('file_url', sa.String(length=255), nullable=True))
 
 

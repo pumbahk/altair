@@ -114,7 +114,6 @@ class LayoutUpdater(object):
                 blocks = params["blocks"]
             layout = self.update_model(layout, basename, params, blocks)
             layout.pagetype_id = pagetype_id
-            layout.increment_version()
             return layout
         except Exception, e:
             logger.error(str(e))
