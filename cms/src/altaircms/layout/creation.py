@@ -72,7 +72,6 @@ class LayoutCreator(object):
     def create_model(self, basename, params, blocks):
         layout = Layout(template_filename=basename, 
                         title=params["title"], 
-                        version_counter=0, 
                         blocks=blocks)
         DBSession.add(layout)
         return layout

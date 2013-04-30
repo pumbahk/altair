@@ -53,9 +53,11 @@ class FrontPageRenderer(object):
             logger.warn("*debug validate template: cache is not found")
             return
         fmt = "*debug validate template: layout.updated_at=%s, template.last_modified=%s"
-        updated_at = time.mktime(layout.updated_at.timetuple())
-        logger.warn(fmt % (updated_at ,template.last_modified))
-        if updated_at > template.last_modified:
+        uploaded_at = time.mktime(layout.uploaded_at.timetuple())
+        if uploaded_at is None:
+            return
+        logger.warn(fmt % (uploaded_at ,template.last_modified))
+        if uploaded_at > template.last_modified:
             lookup = get_frontpage_template_lookup(self.request)
             refresh_targets = [lookup.as_layout_spec(f) for f in layout.dependencies]
             refresh_template_cache_only_needs(template, refresh_targets)

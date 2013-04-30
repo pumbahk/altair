@@ -1,22 +1,30 @@
 # coding: utf-8
 from pyramid.path import AssetResolver
 
-def _make_layout_filesession(assetspec):
-    from ..filelib import FileSession
-    savepath = AssetResolver().resolve(assetspec).abspath()
-    filesession = FileSession(make_path=lambda : savepath)
-    filesession.assetspec = assetspec
-    return filesession
-
 SESSION_NAME = "layout"
+
+def install_filesession(config):
+    from ..filelib import FileSession
+    settings = config.registry.settings
+    assetspec = settings["altaircms.layout_directory"]
+    savepath = AssetResolver().resolve(assetspec).abspath()
+    filesession = FileSession(make_path=lambda : savepath, 
+                              marker=SESSION_NAME)
+    filesession.assetspec = assetspec
+    config.add_filesession(filesession, name=SESSION_NAME)
+
+def install_s3sync(config):
+    ## s3 upload setting
+    ## after s3 upload event
+    ## file upload -> s3 upload -> set uploaded
+    config.add_subscriber(".subscribers.set_uploaded_at", "altaircms.filelib.s3.AfterS3Upload")
 
 def includeme(config):
     """
     altaircms.layout_directory = altaircms:templates/front/layout
     """
-    settings = config.registry.settings
-    filesession = _make_layout_filesession(settings["altaircms.layout_directory"])
-    config.add_filesession(filesession, name=SESSION_NAME)
+    config.include(install_filesession)
+    config.include(install_s3sync)
 
     config.add_route('layout_demo', '/demo/layout/')
     config.add_route("layout_preview", "/layout/{layout_id}/preview")
