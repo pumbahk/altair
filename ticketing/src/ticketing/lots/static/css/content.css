@@ -1898,6 +1898,7 @@ table th label {
 }
 
 #settlementEventDetail h2 {
+    text-align: left;
     margin: 0 3px 5px 2px;
     padding: 8px 0 10px 12px;
     background: url(../img/settlement/bg_line.gif) repeat-x left bottom;
@@ -1905,7 +1906,7 @@ table th label {
 
 #settlementEventDetail table {
     width: 900px;
-    margin: 0 auto;
+    margin: 0 25px;
 }
 
 
