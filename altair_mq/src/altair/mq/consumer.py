@@ -1,49 +1,84 @@
 import logging
+import json
 from pika.adapters.tornado_connection import TornadoConnection
 from zope.interface import implementer
-from .interfaces import IConsumer, IConsumerFactory
+from .interfaces import (
+    IConsumer, 
+    IConsumerFactory,
+    IMessage,
+)
 
 logger = logging.getLogger(__name__)
 
+@implementer(IMessage)
+class Message(object):
+    def __init__(self, channel, method, header, body):
+        self.channel = channel
+        self.method = method
+        self.header = header
+        self.body = body
+
+    @property
+    def params(self):
+        return json.loads(self.body)
+
+
 @implementer(IConsumerFactory)
 class PikaClientFactory(object):
-
     def __init__(self, parameters):
         self.parameters = parameters
 
-    def __call__(self, task,
-                 queue="test",
-                 durable=True, 
-                 exclusive=False, 
-                 auto_delete=False):
+    def __call__(self):
+        return PikaClient(self.parameters)
 
-        return PikaClient(task, self.parameters,
-                          queue=queue,
-                          durable=durable, 
-                          exclusive=exclusive, 
-                          auto_delete=auto_delete)
+class TaskMapper(object):
+    Message = Message
+    def __init__(self, name, task=None, queue_settings=None, root_factory=None):
+        self.task = task
+        self.name = name
+        self.queue_settings = queue_settings
+        self.channel = None
+        self.root_factory = root_factory
 
+    def declare_queue(self, channel):
+        logger.debug("{name} declare queue {settings}".format(name=self.name,
+                                                              settings=self.queue_settings))
+        
+        channel.queue_declare(queue=self.queue_settings.queue, 
+                              durable=self.queue_settings.durable, 
+                              exclusive=self.queue_settings.exclusive,
+                              auto_delete=self.queue_settings.auto_delete,
+                              callback=self.on_queue_declared)
+        self.channel = channel
+
+    def on_queue_declared(self, frame):
+        logger.debug('declared')
+        self.channel.basic_consume(self.handle_delivery, 
+                                   queue=self.queue_settings.queue)
+
+    def handle_delivery(self, channel, method, header, body):
+        message = self.Message(channel, method, header, body)
+        context = self.root_factory(message)
+        self.task(context, message)
 
 
 @implementer(IConsumer)
 class PikaClient(object):
-    def __init__(self, task, parameters,
-                 queue="test",
-                 durable=True, 
-                 exclusive=False, 
-                 auto_delete=False):
-
-        self.task = task
+    Connection = TornadoConnection
+    def __init__(self, parameters):
         self.parameters = parameters
-        self.queue = queue
-        self.durable = durable
-        self.exclusive = exclusive
-        self.auto_delete = auto_delete
+        self.tasks = []
+
+    def add_task(self, task):
+        self.tasks.append(task)
 
     def connect(self):
+        if not self.tasks:
+            logger.warning("no tasks registered")
+
         logger.info("connecting")
-        self.connection = TornadoConnection(self.parameters,
-                                            self.on_connected)
+        self.connection = self.Connection(self.parameters,
+                                          self.on_connected)
 
     def on_connected(self, connection):
         logger.debug('connected')
@@ -51,26 +86,6 @@ class PikaClient(object):
 
     def on_open(self, channel):
         logger.debug('opened')
-        self.channel = channel
-        channel.queue_declare(queue=self.queue, 
-                              durable=self.durable, 
-                              exclusive=self.exclusive,
-                              auto_delete=self.auto_delete, 
-                              callback=self.on_queue_declared)
 
-    def on_queue_declared(self, frame):
-        logger.debug('declared')
-        self.channel.basic_consume(self.handle_delivery, queue="test")
-
-    def handle_delivery(self, channel, method, header, body):
-        self.task(channel, method, header, body)
-    #     logger.debug('got message {body}'.format(body=body))
-    #     client = AsyncHTTPClient()
-    #     request = HTTPRequest('http://localhost:8000?value=' + body,
-    #                           request_timeout=100)
-    #     client.fetch(request,
-    #                  self.handle_request)
-    #     channel.basic_ack(method.delivery_tag)
-
-    # def handle_request(self, response):
-    #     logger.debug('got: {data}'.format(data=response.body))
+        for task in self.tasks:
+            task.declare_queue(channel)

@@ -1,7 +1,14 @@
+# encoding: utf-8
+
 import re
 from webob.multidict import MultiDict
 import itertools
 from sqlalchemy.orm.exc import NoResultFound
+from markupsafe import Markup
+from ticketing.formhelpers.widgets.list import OurListWidget
+from .models import LotEntryStatusEnum
+from ticketing.users.helpers import format_sex
+from cgi import escape
 from ticketing.core.models import (
     ShippingAddress,
     Product,
@@ -120,7 +127,7 @@ def convert_shipping_address(params):
             setattr(shipping_address, attr, params[attr])
     return shipping_address
 
-def shipping_address_form_data(shipping_address):
+def shipping_address_form_data(shipping_address, gender=None):
     s = shipping_address
     return MultiDict({
         "first_name": s.first_name,
@@ -133,6 +140,8 @@ def shipping_address_form_data(shipping_address):
         "address_1": s.address_1,
         "address_2": s.address_2,
         "email_1": s.email_1,
+        "email_1_confirm": s.email_1,
+        "sex": gender,
         "tel_1": s.tel_1,
         "tel_2": s.tel_2,
         "fax": s.fax,
@@ -156,3 +165,55 @@ def validate_token(request):
 
     return True
 
+def mobile_error_list(request, form, name, with_label=False):
+    errors = form[name].errors
+    if not errors:
+        return ""
+    
+    html = u'<div>'
+    html += u"".join([u'<font color="red">・%s%s</font><br />' % ((u'%s:' % form[name].label.text if with_label else u''), e)  for e in errors])
+    html += u'</div>'
+    return Markup(html)
+
+def mobile_list_widget(request):
+    return OurListWidget(outer_html_tag=None, inner_html_tag=None, inner_html_post='<br />', prefix_label=False)
+
+def lot_entry_status_as_string(request, status):
+    if status == LotEntryStatusEnum.New:
+        return u'抽選待ち'
+    elif status == LotEntryStatusEnum.Elected:
+        return u'当選'
+    elif status == LotEntryStatusEnum.Rejected:
+        return u'落選'
+    elif status == LotEntryStatusEnum.Ordered:
+        return u'注文済み'
+    return u'???' # never get here
+
+def _enclose_if(content, tag, condition, **kwargs):
+    buf = []
+    if condition:
+        buf.append(u'<')
+        buf.append(tag)
+        if kwargs:
+            buf.append(u' ')
+            for k, v in kwargs.items():
+                buf.append(escape(k))
+                buf.append(u'="')
+                buf.append(escape(v))
+                buf.append(u'"')
+        buf.append(u'>')
+    buf.append(content)
+    buf.append(u'</')
+    buf.append(tag)
+    buf.append(u'>')
+    return Markup(u''.join(buf))
+
+# see cms/src/altairsite/mobile/core/disphelper.py
+def nl2br(s):
+    buf = []
+    for line in re.finditer(u'^.*$', s, re.MULTILINE):
+        buf.append(line.group(0))
+        buf.append(u'<br />')
+    return Markup(u''.join(buf))
+
+format_gender = format_sex

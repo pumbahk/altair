@@ -10,12 +10,12 @@ from pyramid.renderers import render_to_response
 from pyramid.paster import bootstrap
 from sqlalchemy import or_, and_
 
-from ticketing.events.sales_reports.reports import EventReporter
+from ticketing.events.sales_reports.reports import EventReporter, PerformanceReporter
 
 logger = logging.getLogger(__name__)
 
 def main(argv=sys.argv):
-    from ticketing.core.models import ReportSetting, Event, ReportFrequencyEnum
+    from ticketing.core.models import ReportSetting, ReportFrequencyEnum
     from ticketing.events.sales_reports.forms import SalesReportForm
     from ticketing.events.sales_reports.reports import sendmail
 
@@ -59,32 +59,50 @@ def main(argv=sys.argv):
         query = query.filter(ReportSetting.day_of_week==now.isoweekday())
 
     i = 0
-    for i, report_setting in enumerate(query.all()):
-        event_id = report_setting.event_id
-        event = Event.get(event_id)
-        if event is None:
-            logging.error('event not found (id=%s)' % event_id)
-            continue
-
+    for report_setting in query.all():
+        event = report_setting.event
+        performance = report_setting.performance
         params = dict(
+            event_id=report_setting.event_id,
+            performance_id=report_setting.performance_id,
             recipient=report_setting.recipient,
             limited_from=limited_from,
             limited_to=limited_to
         )
-        form = SalesReportForm(MultiDict(params), event_id=event_id)
-        if event.sales_end_on < form.limited_from.data or form.limited_to.data < event.sales_start_on:
+        form = SalesReportForm(MultiDict(params))
+
+        if performance:
+            end_on = performance.end_on or performance.start_on
+            if end_on < now:
+                continue
+            logger.info('report_setting_id: %s, performance_id: %s' % (report_setting.id, performance.id))
+
+            if performance not in reports:
+                render_param = {
+                    'performance_reporter':PerformanceReporter(form, performance)
+                }
+                reports[performance] = render_to_response('ticketing:templates/sales_reports/performance_mail.html', render_param)
+            html = reports[performance]
+            subject = u'%s (開催日:%s)' % (performance.name, performance.start_on.strftime('%Y-%m-%d %H:%M'))
+        elif event:
+            if event.sales_end_on < form.limited_from.data or form.limited_to.data < event.sales_start_on:
+                continue
+            logger.info('report_setting_id: %s, event_id: %s' % (report_setting.id, event.id))
+
+            if event not in reports:
+                render_param = {
+                    'event_reporter':EventReporter(form, event),
+                }
+                reports[event] = render_to_response('ticketing:templates/sales_reports/event_mail.html', render_param)
+            html = reports[event]
+            subject = event.title
+        else:
+            logging.error('event/performance not found (report_setting_id=%s)' % report_setting.id)
             continue
 
-        logger.info('report_setting_id: %s, event_id: %s' % (report_setting.id, event_id))
-
-        if event_id not in reports:
-            render_param = {
-                'event_reporter':EventReporter(form, event),
-            }
-            reports[event_id] = render_to_response('ticketing:templates/sales_reports/mail_body.html', render_param)
-        subject = form.subject.data or u'[売上レポート] %s' % event.title
-        html = reports[event_id]
-        sendmail(settings, form.recipient.data, subject, html)
+        subject = u'[売上レポート] %s' % subject
+        sendmail(settings, report_setting.recipient, subject, html)
+        i += 1
 
     logger.info('end send_sales_report batch (sent=%s)' % i)
 

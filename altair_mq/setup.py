@@ -1,5 +1,4 @@
 from setuptools import setup, find_packages
-import os
 
 version = '1.0'
 
@@ -7,16 +6,12 @@ requires = [
     "pika",
     "tornado",
     "pyramid",
-    "cliff",
     "venusian",
 ]
 
 points = {
     "console_scripts": [
-        "mserve=altair.mq.app:main",
-    ],
-    "altair.mq.command": [
-        "serve=altair.mq.commands:ServeCommand",
+        "mserve=altair.mq.scripts.mserve:main",
     ],
 }
 

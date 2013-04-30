@@ -1,11 +1,11 @@
-<%page args="order=None" />
+<%page args="order=None, event=None, performance=None" />
 <%namespace file="/common/helpers.html" name="h" />
 <%namespace file="/common/modal.html" import="delete_modal" />
 
 <script type="text/javascript">
   function new_sales_reports_mail() {
     var modal = $('#modal-sales_reports_mail');
-    reset_form(modal, '#event_id');
+    reset_form(modal, '#event_id, #performance_id');
     modal.modal('toggle');
   }
   function delete_sales_reports_mail() {
@@ -20,7 +20,7 @@
     var modal = '#modal-sales_reports_mail';
     var form = '#sales_reports_mail-form';
     var id = $(modal).find('#id').val();
-    var url = id ? '/events/sales_reports/mail/edit/' + id : '/events/sales_reports/mail/new/' + $(modal).find('#event_id').val();
+    var url = id ? '/events/sales_reports/mail/edit/' + id : '/events/sales_reports/mail/new/';
     post_modal_form(modal, form, url);
   }
 </script>

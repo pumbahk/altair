@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 
 from wtforms import Form
-from wtforms import TextField, SelectField, HiddenField, IntegerField, BooleanField
+from wtforms import TextField, SelectField, HiddenField, IntegerField, BooleanField, TextAreaField
 from wtforms.validators import Regexp, Length, Optional, ValidationError
 from ticketing.formhelpers import DateTimeField, Translations, Required, NullableTextField
 from ticketing.core.models import Product, SalesSegment, SalesSegmentGroup
@@ -29,11 +29,10 @@ class LotForm(Form):
         ],
     )
 
-    description = TextField(
+    description = TextAreaField(
         label=u'詳細',
         validators=[
             Required(),
-            Length(max=255, message=u'255文字以内で入力してください'),
         ],
     )
 

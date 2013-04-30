@@ -49,5 +49,20 @@ class RegressionTests(unittest.TestCase):
         io.seek(0)
         self.assertTrue(lxml.etree.parse(io))
 
+    def test_3616(self):
+        from StringIO import StringIO
+        import pystache
+        import lxml.etree
+        io = StringIO()
+        rf = StringIO(u"<svg><tspan><tspan>text</tspan>)</tspan></svg>")
+        self._callFUT(rf, io, eliminate=True)            
+
+        render = pystache.Renderer()
+        emitted = render.render(io.getvalue(), {})
+        io = StringIO()
+        io.write(emitted)
+        io.seek(0)
+        self.assertTrue(lxml.etree.parse(io))
+
 if __name__ == "__main__":
     unittest.main()

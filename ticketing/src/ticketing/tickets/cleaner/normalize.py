@@ -248,11 +248,12 @@ def _eliminated_dump_to_downstream(sm, downstream):
                         continue
                     if isinstance(x, Start):
                         downstream.startElement(x.val, x.attrs)
+                        prev = x
                     elif isinstance(x, End):
                         downstream.endElement(x.val)
+                        prev = x
                     else:
                         downstream.characters(x.val)
-                    prev = x
                     if x.val == fst:
                         fst_cnt += 1
                         if fst_cnt>1:
@@ -261,7 +262,7 @@ def _eliminated_dump_to_downstream(sm, downstream):
         ## todo: useful message.
         logger.info("reach. end document element")
 
-def normalize(inp, outp=sys.stdout, encoding="UTF-8", header="", eliminate=True):
+def normalize(inp, outp=sys.stdout, encoding="UTF-8", header="", eliminate=False):
     return _normalize(inp, outp, encoding, eliminate=eliminate)
 
 def _normalize(inp, outp=sys.stdout, encoding="UTF-8", eliminate=False):

@@ -1,0 +1,33 @@
+<%namespace file="/common/helpers.html" name="h" />
+<%
+  form = event_reporter.form
+  event = event_reporter.event
+%>
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <div style="margin-left:20px;">
+      <br>
+      <p>いつもお世話になっております。</p>
+      <br>
+      <p>以下の内容で最新の申込状況（速報）をお送りいたします。</p>
+      <p>ご査収のほど、宜しくお願いいたします。</p>
+      <p>集計期間:
+        % if form.limited_from.data or form.limited_to.data:
+          ${h.safe_strftime(form.limited_from.data)} 〜 ${h.safe_strftime(form.limited_to.data)}
+        % else:
+          〜本日
+        % endif
+      </p>
+      <br>
+      <h2 style="color:#004040">申込状況（速報)</h2>
+      % for performance in event_reporter.sort_index():
+        <% performance_reporter = event_reporter.get_reporter(performance) %>
+        <%include file="/sales_reports/_mail_body.html" args="performance_reporter=performance_reporter" />
+      % endfor
+    </div>
+  </body>
+</html>

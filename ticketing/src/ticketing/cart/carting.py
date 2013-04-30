@@ -4,6 +4,7 @@ from ticketing.core.api import get_channel
 from .models import Cart, CartedProduct, CartedProductItem
 from .api import get_system_fee, is_quantity_only
 from .exceptions import CartCreationException
+from .stocker import InvalidProductSelectionException
 
 logger = logging.getLogger(__name__)
 
@@ -27,7 +28,8 @@ class CartFactory(object):
             for ordered_product_item in ordered_product.items:
                 # CartedProductItem
                 if str(ordered_product_item.performance_id) != str(performance_id):
-                    continue
+                    logger.debug("invalid product selection: performance_id does not match")
+                    raise InvalidProductSelectionException
                 subtotal_quantity = quantity * ordered_product_item.quantity
                 logger.debug("carted product item for product_item_id=%s, performance_id=%s, quantity=%d" % (ordered_product_item.id, ordered_product_item.performance_id, subtotal_quantity))
                 cart_product_item = CartedProductItem(

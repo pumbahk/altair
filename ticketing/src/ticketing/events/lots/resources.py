@@ -18,15 +18,20 @@ class LotResource(TicketingAdminResource):
 
     @property
     def event(self):
-        lot = self.lot
-        if lot is None:
-            return None
         event_id = None
         try:
             event_id = long(self.request.matchdict.get('event_id'))
         except (TypeError, ValueError):
             pass
+        lot = self.lot
         if event_id is not None:
-            if lot.event_id != event_id:
-                return None
-        return lot.event
+            if lot is not None and lot.event_id == event_id:
+                event = lot.event
+            else:
+                event = Event.query.filter(Event.id == event_id).first()
+        else:
+            if lot is not None:
+                event = lot.event
+            else:
+                event = None
+        return event
