@@ -1,6 +1,6 @@
 # -*- coding:utf-8 -*-
+import time
 import sqlalchemy as sa
-from pyramid.renderers import render_to_response
 import sqlalchemy.orm as orm
 from altaircms.widget.tree.proxy import WidgetTreeProxy
 from .bsettings import BlockSettings
@@ -12,6 +12,7 @@ logger = logging.getLogger(__file__)
 from ..pyramidlayout import get_subcategories_from_page #obsolete
 from .. import pyramidlayout
 from altaircms.models import Performance
+from altaircms.templatelib.api import refresh_template_cache
 
 def get_frontpage_renderer(request):
     """ rendererを取得
@@ -21,6 +22,7 @@ def get_frontpage_renderer(request):
 def get_frontpage_template_lookup(request):
     return request.registry.getUtility(ILayoutTemplateLookUp)
 
+from pyramid.renderers import RendererHelper    
 
 """
 todo: 複数の種類に分ける?
@@ -33,7 +35,28 @@ class FrontPageRenderer(object):
         bsettings = self.get_bsettings(page)
         params = self.build_render_params(page)
         params.update(page=page, display_blocks=bsettings.blocks)
-        return render_to_response(template, params, self.request)
+        return self._render(template, page.layout, params)
+
+    def _render(self, template, layout, params):
+        return self.render_to_response(template, layout, params, self.request)        
+
+    def render_to_response(self, renderer_name, layout, value, request=None, package=None):
+        """render_to_response_with_fresh_template"""
+        helper = RendererHelper(name=renderer_name, package=package,
+                                registry=request.registry)
+        template = helper.renderer.implementation()
+        self.refresh_template_if_need(template, layout)
+        return helper.render_to_response(value, None, request=request)
+
+    def refresh_template_if_need(self, template, layout):
+        if not hasattr(template, "cache"):
+            logger.warn("*debug validate template: cache is not found")
+            return
+        fmt = "*debug validate template: layout.updated_at=%s, template.last_modified=%s"
+        updated_at = time.mktime(layout.updated_at.timetuple())
+        logger.warn(fmt % (updated_at ,template.last_modified))
+        if updated_at > template.last_modified:
+            refresh_template_cache(template)
 
     def get_bsettings(self, page):
         bsettings = BlockSettings.from_widget_tree(WidgetTreeProxy(page))

@@ -2,7 +2,7 @@ from pyramid import testing
 import unittest
 from altaircms.templatelib import get_renderer_factory
 
-class FailBackFunctionAdapter(object):
+class FailbackFunctionAdapter(object):
     def __init__(self, fn):
         self.fn = fn
     def from_settings(self, *args, **kwargs):
@@ -67,7 +67,7 @@ class HasFailbackMakoLookupTests(unittest.TestCase):
             return _marker
 
         self.config.registry.settings.update(
-            {"s3.mako.failback.lookup": FailBackFunctionAdapter(failback), 
+            {"s3.mako.failback.lookup": FailbackFunctionAdapter(failback), 
              "s3.mako.renderer.name": ".mako"})
         self.config.include("altaircms.templatelib")
 
@@ -85,7 +85,7 @@ class HasFailbackMakoLookupTests(unittest.TestCase):
             raise MyException("failback is failure. anything wrong?")
 
         self.config.registry.settings.update(
-            {"s3.mako.failback.lookup": FailBackFunctionAdapter(failback), 
+            {"s3.mako.failback.lookup": FailbackFunctionAdapter(failback), 
              "s3.mako.renderer.name": ".mako"})
         self.config.include("altaircms.templatelib")
 

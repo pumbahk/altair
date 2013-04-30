@@ -20,28 +20,7 @@ import altaircms.helpers as h
 from ..slackoff.mappers import layout_mapper
 from ..page.models import PageType
 from ..front.api import get_frontpage_template_lookup
-
-
-@view_config(route_name="layout_demo", renderer="altaircms:templates/layout/demo.mako")
-def demo(request):
-    layout = get_or_404(request.allowable(Layout), Layout.id==request.GET["id"])
-    return dict(layout_image=LayoutRender(layout).blocks_image())
-
-@view_config(route_name="layout_preview", decorator="altaircms.lib.fanstatic_decorator.with_jquery", 
-             renderer="dummy.mako")
-def preview(context, request):
-    layout = get_or_404(request.allowable(Layout), Layout.id==request.matchdict["layout_id"])
-    lookup = get_frontpage_template_lookup(request)
-    template = lookup.get_renderable_template(request, layout, verbose=True)
-    if not template:
-        raise HTTPNotFound("template file %s is not found" % lookup.abspath(lookup.from_layout(request, layout))) 
-    request.override_renderer = template
-    blocks = defaultdict(list)
-    class Page(object):
-        title = layout.title
-        keywords = layout.title
-        description = "layout preview"
-    return {"display_blocks": blocks, "page": Page, "myhelper": fh}
+from ..front.api import get_frontpage_renderer
 
 class AfterInput(Exception):
     def __init__(self, form=None, context=None):
@@ -163,14 +142,18 @@ def demo(request):
              renderer="dummy.html")
 def preview(context, request):
     layout = get_or_404(request.allowable(Layout), Layout.id==request.matchdict["layout_id"])
-    template_path = os.path.join(get_layout_filesession(request).assetspec, layout.prefixed_template_filename)
-    request.override_renderer = template_path
+    lookup = get_frontpage_template_lookup(request)
+    template = lookup.get_renderable_template(request, layout, verbose=True)
+    if not template:
+        raise HTTPNotFound("template file %s is not found" % lookup.abspath(lookup.from_layout(request, layout))) 
     blocks = defaultdict(list)
     class Page(object):
         title = layout.title
         keywords = layout.title
         description = "layout preview"
-    return {"display_blocks": blocks, "page": Page, "myhelper": fh}
+    renderer = get_frontpage_renderer(request)
+    params = {"display_blocks": blocks, "page": Page, "myhelper": fh}
+    return renderer._render(template, layout, params)
 
 @view_config(route_name="layout_download")
 def download(request):

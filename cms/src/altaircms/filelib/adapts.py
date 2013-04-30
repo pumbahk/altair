@@ -26,3 +26,6 @@ class AdaptsFileSession(object):
 
     def abspath(self, *args, **kwargs):
         return self.session.abspath(*args, **kwargs)
+
+    def __getattr__(self, k):
+        return getattr(self.session, k)

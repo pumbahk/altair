@@ -32,7 +32,6 @@ def rendering_page(context, request):
         if static_page:
             return as_static_page_response(request, static_page, url)
     except StaticPageNotFound:
-        import sys
         logger.info(u'no corresponding static page found for url=%s; falls back to standard page discovery' % url)
 
     if os.path.splitext(request.url)[1] != "":

@@ -20,18 +20,16 @@ from pyramid.asset import (
 from pyramid.path import AssetResolver
 import logging
 logger = logging.getLogger()
-
-from zope.interface import Interface
 from zope.interface import implementer
+from zope.interface import Interface
 
 class IMakoLookupFactory(Interface):
     def __call__(*args, **kwargs):
         pass
 
-class IFailBackLookup(Interface):
+class IFailbackLookup(Interface):
     def __call__(lookup, uri):
         """return template"""
-
 
 #utility
 def get_renderer_factory(request, filename):
@@ -59,11 +57,10 @@ class HasFailbackTemplateLookup(PkgResourceTemplateLookup):
                     return v
                 raise e
             except Exception as sube:
-                raise sube
                 logger.exception(sube)
                 raise e
 
-@implementer(IFailBackLookup)
+@implementer(IFailbackLookup)
 class DefaultFailbackLookup(object):
     def __init__(self, host, assetspec):
         self.host = host.rstrip("/")
@@ -168,9 +165,9 @@ def includeme(config, _settings_prefix=_settings_prefix):
     settings = config.registry.settings
     download_if_notfound_helper = MakoRendererFactoryHelper(_settings_prefix)
 
-    FailBackClass = config.maybe_dotted(settings[_settings_prefix+"failback.lookup"])
+    FailbackClass = config.maybe_dotted(settings[_settings_prefix+"failback.lookup"])
     lookup_factory = HasFailbackTemplateLookupFactory(
-        FailBackClass.from_settings(settings, prefix=_settings_prefix), 
+        FailbackClass.from_settings(settings, prefix=_settings_prefix), 
         settings[_settings_prefix+"renderer.name"])
 
     # don't have to lock?'
