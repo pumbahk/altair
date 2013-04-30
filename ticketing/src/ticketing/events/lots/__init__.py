@@ -40,9 +40,10 @@ def includeme(config):
     from .interfaces import ILotEntryStatus
     from ticketing.lots.adapters import LotEntryStatus
     from ticketing.lots.models import Lot
-    from ticketing.lots.electing import Electing, Publisher
+    from ticketing.lots.electing import Electing
     from ticketing.lots.interfaces import IElecting
     from altair.mq.interfaces import IPublisher
+    from altair.mq.publisher import Publisher
 
     reg.registerAdapter(LotEntryStatus, [Lot, IRequest], 
                         ILotEntryStatus)
