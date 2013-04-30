@@ -276,7 +276,11 @@ class Seat(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     adjacencies     = relationship("SeatAdjacency",
                                    primaryjoin=lambda:Seat.l0_id==Seat_SeatAdjacency.l0_id,
                                    secondary=Seat_SeatAdjacency.__table__,
-                                   secondaryjoin=lambda:Seat_SeatAdjacency.seat_adjacency_id==SeatAdjacency.id,
+                                   secondaryjoin=lambda: \
+                                     (Seat_SeatAdjacency.seat_adjacency_id==SeatAdjacency.id) & \
+                                     (SeatAdjacency.adjacency_set_id == SeatAdjacencySet.id) &\
+                                     (SeatAdjacencySet.site_id == Venue.id) & \
+                                     (Venue.id==Seat.venue_id),
                                    backref="seats")
     status_ = relationship('SeatStatus', uselist=False, backref='seat', cascade='all,delete-orphan') # 1:1
 
