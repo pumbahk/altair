@@ -76,35 +76,40 @@ def elect_lots_task(context, message):
         order = elect_lot_wish(wish)
         orders.append(order)
 
+    rejected_wishes = lot.get_rejected_wishes()
+
+
+    for rw in rejected_wishes:
+        rw.entry.reject()
+
+    lot.finish_lotting()
+
     return len(orders)
 
 def elect_lot_wish(wish):
-        cart = lot_wish_cart(wish)
-        payment = Payment(cart)
-        stocker = Stocker()
-        try:
-            # 在庫処理
-            performance = cart.performance
-            product_requires = [(p.product_id, p.quantity)
-                                for p in cart.products]
-            stocked = stocker.take_stock(performance,
-                                         product_requires)
-            # TODO: 確保数確認
+    cart = lot_wish_cart(wish)
+    payment = Payment(cart)
+    stocker = Stocker()
+    try:
+        # 在庫処理
+        performance = cart.performance
+        product_requires = [(p.product_id, p.quantity)
+                            for p in cart.products]
+        stocked = stocker.take_stock(performance,
+                                     product_requires)
+        logger.debug("lot elected: entry_no = {0}, stocks = {1}".format(wish.lot_entry.entry_no, stocked))
+        # TODO: 確保数確認
+        wish.entry.elect(wish)
+        order = payment.call_payment()
+        wish.order = order
+        return order
 
-
-            # payment_plugin 売上確定など
-            # delivery_plugin
-            order = payment.call_payment()
-            wish.order = order
-            return order
-
-        except Exception as e:
-            logger.warning('lot_id, order_no, wish_no, wish_id')
+    except Exception as e:
+        logger.warning('lot_id, order_no, wish_no, wish_id')
             # 売上確定などできないものは別にまわす
 
         # ここでいったんトランザクション
     
-        transaction.commit()
 
     # def elect_lot_entries(self):
     #     """ 抽選申し込み確定
