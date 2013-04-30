@@ -4,7 +4,8 @@ import logging
 import operator
 import json
 
-from pyramid.view import view_config, view_defaults, render_view_to_response
+from pyramid.view import view_config, view_defaults
+#from pyramid.view import render_view_to_response
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound, HTTPBadRequest
 from sqlalchemy.orm.exc import NoResultFound
 
