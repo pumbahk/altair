@@ -14,14 +14,15 @@ class ILayoutTemplateLookUp(Interface):
 
 @implementer(ILayoutTemplateLookUp)
 class LayoutTemplate(object):
-    def __init__(self, layout_spec, default_prefix="default"):
+    def __init__(self, layout_spec, default_prefix="default", checkskip=False):
         self.layout_spec = layout_spec
         resolved = AssetResolver().resolve(layout_spec)
         if not resolved.exists():
             os.mkdir(resolved.abspath())
         self.layoutdir = resolved.abspath()
         self.default_prefix = default_prefix
-    
+        self.checkskip = checkskip
+
     def from_layout_default(self, request, layout):
         filename_default = os.path.join(self.default_prefix, layout.template_filename)
         logger.debug("layout template is not found. search %s" % (filename_default))
@@ -31,12 +32,14 @@ class LayoutTemplate(object):
         return layout.prefixed_template_filename
 
     def exists(self, filename):
-        return os.path.exists(self.abspath(filename))
+        return self.checkskip or os.path.exists(self.abspath(filename))
 
     def abspath(self, filename):
         return os.path.join(self.layoutdir, filename)
 
     def as_layout_spec(self, filename):
+        if ":" in filename:
+            return filename
         return os.path.join(self.layout_spec, filename)
 
     def get_renderable_template(self, request, layout, verbose=False):

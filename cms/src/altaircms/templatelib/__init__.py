@@ -13,6 +13,7 @@ from pyramid.mako_templating import (
     PkgResourceTemplateLookup, 
     IMakoLookup
 )
+from pyramid.interfaces import IRendererFactory
 from pyramid.asset import (
     resolve_asset_spec,
     abspath_from_asset_spec,
@@ -33,22 +34,53 @@ class IFailbackLookup(Interface):
 
 #utility
 def get_renderer_factory(request, filename):
-    from pyramid.interfaces import IRendererFactory
     ext = os.path.splitext(filename)[1]
     return request.registry.queryUtility(IRendererFactory, name=ext)
 
+def create_file_from_io(name, io):
+    try:
+        with open(name, "wb") as wf:
+            shutil.copyfileobj(io, wf)
+    except IOError:
+        os.makedirs(os.path.dirname(name).rstrip(".."))
+        with open(name, "wb") as wf:
+            shutil.copyfileobj(io, wf)
+
+def create_adjusted_name(uri):
+    return uri.replace(':', '$')
+
+class TemplateLookupEvents(object):
+    __slots__ = ("events", )
+    def __init__(self, **events):
+        self.events = events or {}
+
+    def exists(self, key):
+        return key in self.events
+
+    def fire(self, key, *args, **kwargs):
+        event = self.events.pop(key)
+        event(*args, **kwargs)
+
+    def fire_if_exists(self, key, *args, **kwargs):
+        return self.exists(key) and self.fire(key, *args, **kwargs)
 
 @implementer(IMakoLookup)
 class HasFailbackTemplateLookup(PkgResourceTemplateLookup):
+    Events = TemplateLookupEvents
     def __init__(self, failback_lookup, *args, **kwargs):
         self.failback_lookup = failback_lookup
+        self._events = self.Events()
         super(HasFailbackTemplateLookup, self).__init__(*args, **kwargs)
+
+    def add_event(self, k, fn):
+        self._events.events[k] = fn
 
     def get_template_failback(self, uri): #need cache
         return self.failback_lookup(self, uri)
 
     def get_template(self, uri):
         try:
+            self._events.fire_if_exists(uri, self)
             return super(HasFailbackTemplateLookup, self).get_template(uri)
         except exceptions.TopLevelLookupException as e:
             try:
@@ -74,7 +106,7 @@ class DefaultFailbackLookup(object):
     @classmethod 
     def from_settings(cls, settings, prefix=""):
         return cls(settings[prefix+"lookup.host"], 
-                   settings.get(prefix+"directories", [None])[0])
+                   settings[prefix+"directories"][0])
 
     def is_assetspec(self, uri):
         return ":" in uri
@@ -86,16 +118,10 @@ class DefaultFailbackLookup(object):
         res = urllib.urlopen(lookup_url)
         if res.getcode() != 200:
             return None
-        adjusted = uri.replace(':', '$')
+        adjusted = create_adjusted_name(uri)
         pname, path = resolve_asset_spec(uri)
         srcfile = abspath_from_asset_spec(path, pname)
-        try:
-            with open(srcfile, "wb") as wf:
-                shutil.copyfileobj(res, wf)
-        except IOError:
-            os.makedirs(os.path.dirname(srcfile).rstrip(".."))
-            with open(srcfile, "wb") as wf:
-                shutil.copyfileobj(res, wf)
+        create_file_from_io(srcfile, res)
         return lookup._load(srcfile, adjusted)
 
 @implementer(IMakoLookupFactory)

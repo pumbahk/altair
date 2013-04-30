@@ -12,7 +12,7 @@ logger = logging.getLogger(__file__)
 from ..pyramidlayout import get_subcategories_from_page #obsolete
 from .. import pyramidlayout
 from altaircms.models import Performance
-from altaircms.templatelib.api import refresh_template_cache
+from altaircms.templatelib.api import refresh_template_cache_only_needs
 
 def get_frontpage_renderer(request):
     """ rendererを取得
@@ -56,7 +56,9 @@ class FrontPageRenderer(object):
         updated_at = time.mktime(layout.updated_at.timetuple())
         logger.warn(fmt % (updated_at ,template.last_modified))
         if updated_at > template.last_modified:
-            refresh_template_cache(template)
+            lookup = get_frontpage_template_lookup(self.request)
+            refresh_targets = [lookup.as_layout_spec(f) for f in layout.dependencies]
+            refresh_template_cache_only_needs(template, refresh_targets)
 
     def get_bsettings(self, page):
         bsettings = BlockSettings.from_widget_tree(WidgetTreeProxy(page))

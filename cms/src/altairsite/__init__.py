@@ -28,7 +28,8 @@ def main(global_config, **local_config):
     config.include("altair.browserid")
     config.include("altair.exclog")
 
-    config.add_renderer('.html' , 'pyramid.mako_templating.renderer_factory')
+    # config.add_renderer('.html' , 'pyramid.mako_templating.renderer_factory')
+    config.include("altaircms.templatelib")
     config.include(install_static_page)
     config.include("altaircms.tag:install_tagmanager")
     config.include("altaircms.topic:install_topic_searcher")
