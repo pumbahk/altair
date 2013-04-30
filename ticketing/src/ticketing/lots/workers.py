@@ -105,3 +105,23 @@ def elect_lot_wish(wish):
         # ここでいったんトランザクション
     
         transaction.commit()
+
+    # def elect_lot_entries(self):
+    #     """ 抽選申し込み確定
+    #     申し込み番号と希望順で、当選確定処理を行う
+    #     ワークに入っているものから当選処理をする
+    #     それ以外を落選処理にする
+    #     """
+
+    #     elected_wishes = self.lot.get_elected_wishes()
+
+    #     for ew in elected_wishes:
+    #         ew.entry.elect(ew)
+
+    #     # 落選処理
+    #     rejected_wishes = self.lot.get_rejected_wishes()
+
+    #     for rw in rejected_wishes:
+    #         rw.entry.reject()
+
+    #     self.lot.finish_lotting()

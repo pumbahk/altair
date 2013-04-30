@@ -36,9 +36,18 @@ def includeme(config):
 
     # adapters
     reg = config.registry
+    settings = reg.settings
     from .interfaces import ILotEntryStatus
     from ticketing.lots.adapters import LotEntryStatus
     from ticketing.lots.models import Lot
+    from ticketing.lots.electing import Electing, Publisher
+    from ticketing.lots.interfaces import IElecting
+    from altair.mq.interfaces import IPublisher
 
     reg.registerAdapter(LotEntryStatus, [Lot, IRequest], 
                         ILotEntryStatus)
+    reg.registerAdapter(Electing, [Lot, IRequest],
+                        IElecting)
+    reg.registerUtility(Publisher(settings.get('altair.ticketing.lots.mq.url',
+                                               'amqp://guest:guest@localhost:5672/%2F')),
+                        IPublisher)
