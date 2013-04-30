@@ -56,7 +56,10 @@ exports.makeHitTester = function Util_makeHitTester(a) {
 
   return function(b) {
     var pb = b.position(),
-    sb = b.size(),
+    sb = b.size();
+    if(b._transform) {
+      pb = b._transform.apply(pb);
+    }
     bx0 = pb.x,
     bx1 = pb.x + sb.x,
     by0 = pb.y,
