@@ -198,7 +198,7 @@ class Reserving(object):
                 ).filter(
                     _Seat.venue_id == venue.id
                 ).filter(
-                    _SeatIndex.seat_id==Seat.id
+                    _SeatIndex.seat_id==_Seat.id
                 ).filter(
                     _SeatIndex.seat_index_type_id==seat_index_type_id
                 ).order_by(_SeatIndex.index, _Seat.l0_id)
