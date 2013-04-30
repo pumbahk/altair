@@ -371,9 +371,14 @@ class SeatAdjacency(Base, BaseModel):
     adjacency_set_id = Column(Identifier, ForeignKey('SeatAdjacencySet.id', ondelete='CASCADE'))
 
     def seats_filter_by_venue(self, venue_id):
-        query = Seat.query.filter(Seat.venue_id==venue_id)
-        query = query.join(Seat_SeatAdjacency, Seat.l0_id==Seat_SeatAdjacency.l0_id)
-        query = query.join(SeatAdjacency).filter(Seat_SeatAdjacency.seat_adjacency_id==self.id)
+        query = Seat.query.filter(Seat.venue_id == venue_id) \
+            .join(Seat_SeatAdjacency, Seat.l0_id == Seat_SeatAdjacency.l0_id) \
+            .join(SeatAdjacency, Seat_SeatAdjacency.seat_adjacency_id == SeatAdjacency.id) \
+            .join(SeatAdjacencySet, SeatAdjacencySet.id == SeatAdjacency.adjacency_set_id) \
+            .join(Venue, Venue.id == Seat.venue_id) \
+            .filter(SeatAdjacencySet.site_id == Venue.site_id) \
+            .filter(SeatAdjacency.id == self.id)
+
         return query.all()
 
 class SeatAdjacencySet(Base, BaseModel, WithTimestamp, LogicallyDeleted):
