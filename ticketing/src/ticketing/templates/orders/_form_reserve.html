@@ -112,12 +112,32 @@
         </div>
       </div>
 
+      <script type="text/javascript">
+        $(function(){
+          $("#modal-reserve select[name='sales_segment_id']").change(function(){
+            var modal = $('#modal-reserve');
+            modal.find('.modal-body .alert').remove();
+            var params = {performance_id: ${performance.id}, sales_segment_id: $(this).val()};
+            $.ajax({
+              type: 'post',
+              url: '${request.route_path('orders.reserve.form.reload')}',
+              data: JSON.stringify(params),
+              dataType: 'html',
+              success: function(data) {
+                $('#modal-reserve').modal('hide');
+                $('#reserve-form').html(data);
+                $('#modal-reserve').modal({'backdrop':'static', 'keyboard':false});
+                $('#modal-reserve').modal('show');
+              },
+              error: function(xhr, text) {
+                $('#modal-reserve').find('.modal-body').prepend('<div class="alert alert-error"><ul>エラーが発生しました</ul></div>');
+              }
+            });
+          });
+        });
+      </script>
+      ${h.form_item(form.sales_segment_id, class_='span10')}
       ${h.form_item(form.payment_delivery_method_pair_id, class_='span10')}
-      <div class="control-group">
-        <div class="controls">
-          <p>※ 決済・引取方法は「販売区分」が「窓口販売」で登録されている方法のみ選択可能です</p>
-        </div>
-      </div>
       <div class="shipping-address">
         <div class="control-group">
           <div class="controls">

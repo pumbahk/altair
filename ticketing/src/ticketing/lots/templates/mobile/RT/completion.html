@@ -1,0 +1,33 @@
+<%inherit file="./base.html" />
+<%namespace file="./tags_mobile.html" name="mobile" />
+<div align="center" style="text-align:center">
+${event.title}<br />
+${lot.name}
+</div>
+<%mobile:header>申込を完了しました</%mobile:header>
+受付番号: ${entry.entry_no}
+%for option_index_zb, wish in enumerate(entry.wishes):
+<%mobile:band bgcolor="#ffdddd">第${option_index_zb + 1}希望</%mobile:band>
+<div>
+${wish.performance.name}<br />
+${h.japanese_date(wish.performance.start_on)}<br />
+会場 ${wish.performance.venue.name}<br />
+開演 ${h.japanese_time(wish.performance.start_on)} (予定)<br />
+<%mobile:form_header>希望券種と枚数</%mobile:form_header>
+% for rec in wish.products:
+・${rec.product.name} ${rec.quantity}枚<br />
+% endfor
+</div>
+%endfor
+<%mobile:header>お支払方法</%mobile:header>
+<div>
+${entry.payment_delivery_method_pair.payment_method.name}
+${h.format_currency(entry.payment_delivery_method_pair.transaction_fee)}
+</div>
+<%mobile:header>お引取方法</%mobile:header>
+<div>
+${entry.payment_delivery_method_pair.delivery_method.name}
+${h.format_currency(entry.payment_delivery_method_pair.delivery_fee)}
+</div>
+<hr />
+<a href="${request.context.host_base_url}" accesskey="0">トップに戻る</a>

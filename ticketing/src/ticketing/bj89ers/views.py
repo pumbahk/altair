@@ -1,12 +1,14 @@
 # -*- coding:utf-8 -*-
 import logging
-from datetime import datetime, date
+#from datetime import datetime, date
+from datetime import date
 import sqlalchemy as sa
-from pyramid.httpexceptions import HTTPFound, HTTPNotFound
-from pyramid.renderers import render_to_response
+#from pyramid.httpexceptions import HTTPFound, HTTPNotFound
+from pyramid.httpexceptions import HTTPFound
+#from pyramid.renderers import render_to_response
 from pyramid.threadlocal import get_current_request
 from pyramid.view import view_config, render_view_to_response
-from pyramid.view import notfound_view_config
+#from pyramid.view import notfound_view_config
 from webob.multidict import MultiDict
 import transaction
 
@@ -14,11 +16,12 @@ from ..cart.events import notify_order_completed
 from ..cart.exceptions import NoCartError
 from ..cart.views import PaymentView as _PaymentView, CompleteView as _CompleteView
 from ..cart import api as cart_api
-from ..payments import payment as payment_api # XXX: aodag!
+#from ..payments import payment as payment_api # XXX: aodag!
+from ..payments import api as payment_api
 from ..cart import helpers as h
 from ..core import models as c_models
 
-from ..users.models import SexEnum
+#from ..users.models import SexEnum
 from ..users.models import User, UserProfile
 
 from . import schemas
@@ -39,13 +42,15 @@ def cart_creation_exception(context, request):
         cart_api.recover_cart(request) 
         transaction.commit()
         return HTTPFound(location=context.back_url)
-    else:
-        # カートの救済不可能
-        if cart is not None:
-            location = request.route_url('cart.index', event_id=cart.performance.event_id)
-        else:
-            location = request.context.host_base_url
-    return dict(message=Markup(u'決済中にエラーが発生しました。しばらく時間を置いてから<a href="%s">再度お試しください。</a>' % location))
+
+    # #以下のコードはまったく動かない
+    # else:
+    #     # カートの救済不可能
+    #     if cart is not None:
+    #         location = request.route_url('cart.index', event_id=cart.performance.event_id)
+    #     else:
+    #         location = request.context.host_base_url
+    # return dict(message=Markup(u'決済中にエラーが発生しました。しばらく時間を置いてから<a href="%s">再度お試しください。</a>' % location))
 
 
 def back(func):
@@ -293,10 +298,10 @@ def exception_view(context, request):
     return dict()
 
 def notfound_view(context, request):
-    logger.error("The error was: %s" % context, exc_info=request.exc_info)
+    #logger.error("The error was: %s" % context, exc_info=request.exc_info)
     return dict()
 def forbidden_view(context, request):
-    logger.error("The error was: %s" % context, exc_info=request.exc_info)
+    #logger.error("The error was: %s" % context, exc_info=request.exc_info)
     return dict()
 
 @view_config(name="contact")

@@ -12,6 +12,7 @@ def includeme(config):
     config.add_route('orders.download'                  , '/download/')
     config.add_route('orders.sales_summary'             , '/sales_summary/')
     config.add_route('orders.reserve.form'              , '/reserve/form/')
+    config.add_route('orders.reserve.form.reload'       , '/reserve/form/reload/')
     config.add_route('orders.reserve.confirm'           , '/reserve/confirm/')
     config.add_route('orders.reserve.complete'          , '/reserve/complete/')
     config.add_route('orders.reserve.reselect'          , '/reserve/reselect/')

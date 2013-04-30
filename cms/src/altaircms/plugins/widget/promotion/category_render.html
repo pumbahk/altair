@@ -38,7 +38,7 @@ prefix = str(random.random())[2:]
   <script type="text/javascript">
     var i = 0;
     var pu_candidates = ${info.unit_candidates};
-    var interval_time = ${info.interval_time}
+    var interval_time = ${info.interval_time};
     pu_candidates.next_id = function(){
       ++i;
       if(i>=this.length){
@@ -56,7 +56,7 @@ prefix = str(random.random())[2:]
         return [ay*x,Y];
       }  
     }
-
+              
     var normalize_factory = function(X,Y, force){
       if(!!force || navigator.userAgent.toLowerCase().indexOf("firefox") > -1 || navigator.userAgent.toLowerCase().indexOf("msie") > -1){
         return function normalize_size(e,x,y){
@@ -119,7 +119,7 @@ prefix = str(random.random())[2:]
             img.attr("src", data.src);
             img.parent("a").attr("href", data.link);
             mainImageNormalize(img, data.width, data.height);
-            $(".mainImageMessage").text(data.message);
+            $(".mainImageMessage").text((data.message.length <= 32 ? data.message : data.message.substr(0,32)+"..."));
           });
       };
       var loop = function loop(){
@@ -131,7 +131,7 @@ prefix = str(random.random())[2:]
     // some magic numbers;
     var normalize = normalize_factory(65,65);
     $(".subkindThumbnail img").each(function(i,e){normalize(e);});
-    $(".slideBoxRight").each(function(i,e){var $e = $(e); if($e.text().length > 40){$e.text($e.text().substr(0,40)+"...");} });
+    $(".slideBoxRight").each(function(i,e){var $e = $(e); if($e.text().length > 34){$e.text($e.text().substr(0,34)+"...");} });
     normalize_factory(515,300)($(".mainImage img"), ${info.width}, ${info.height});
   </script>
 %else:

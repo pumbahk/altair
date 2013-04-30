@@ -100,6 +100,16 @@
       </table>
 
       <div class="control-group">
+        <label class="control-label">${form.sales_segment_id.label.text}</label>
+        <div class="controls">
+          % for id, name in form.sales_segment_id.choices:
+            % if id == form.sales_segment_id.data:
+              ${name}
+            % endif
+          % endfor
+        </div>
+      </div>
+      <div class="control-group">
         <label class="control-label">${form.payment_delivery_method_pair_id.label.text}</label>
         <div class="controls">
           % for id, name in form.payment_delivery_method_pair_id.choices:

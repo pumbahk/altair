@@ -20,7 +20,7 @@ class SafeLoggingWrapper(object):
         return self.logger.debug(self.coerce(msg), *args, **kwargs)
     def log(self, msg, *args, **kwargs):
         return self.logger.log(self.coerce(msg), *args, **kwargs)
-    def warning(self, msg, *args, **kwargs):
+    def warn(self, msg, *args, **kwargs):
         return self.logger.warn(self.coerce(msg), *args, **kwargs)
     def error(self, msg, *args, **kwargs):
         return self.logger.error(self.coerce(msg), *args, **kwargs)

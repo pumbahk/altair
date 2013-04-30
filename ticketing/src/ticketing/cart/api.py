@@ -15,7 +15,7 @@ from pyramid.httpexceptions import HTTPNotFound
 
 from ticketing.api.impl import get_communication_api
 from ticketing.api.impl import CMSCommunicationApi
-from ticketing.mobile.interfaces import IMobileRequest
+from altair.mobile.interfaces import IMobileRequest
 from ticketing.core import models as c_models
 from ticketing.core import api as c_api
 from ticketing.users.models import User, UserCredential, Membership, MemberGroup, MemberGroup_SalesSegment

@@ -63,7 +63,7 @@ def _setup_performance(session):
         seats = []
         for i, s in enumerate(ss):
             # seat
-            seat = c_m.Seat(venue=venue, stock=stock, name=u"%s-%s" % (row, i+1), l0_id='s%s' % i)
+            seat = c_m.Seat(venue=venue, stock=stock, name=u"%s-%s" % (row, i+1), l0_id=u"%s-%s" % (row, i+1))
             # seat_status
             status = int(c_m.SeatStatusEnum.InCart) if s else int(c_m.SeatStatusEnum.Vacant)
             seat_status = c_m.SeatStatus(seat=seat, status=status)
@@ -317,6 +317,15 @@ class StockerTests(unittest.TestCase):
         stock = self._add_stock(10)
         self.assertRaises(NotEnoughStockException, target._take_stock, [(stock.id, 100)])
 
+    def test__take_stock_invalid_product(self):
+        from ticketing.cart.stocker import InvalidProductSelectionException
+        request = testing.DummyRequest()
+        target = self._makeOne(request)
+        stock = self._add_stock(10)
+        product = stock.product_items[0].product
+        other_performance_id = stock.performance_id + 1
+        self.assertRaises(InvalidProductSelectionException, target.take_stock, other_performance_id, [(product, 1)])
+
     def test_take_stock(self):
         stock = self._add_stock(10)
         status = stock.stock_status
@@ -461,6 +470,23 @@ class CartFactoryTests(unittest.TestCase):
         self.assertEqual(result.products[1].quantity, 3)
         self.assertEqual(result.products[2].items[0].seats, [])
         self.assertEqual(result.products[2].quantity, 10)
+
+    def test_create_cart_invalid_product(self):
+        import ticketing.core.models as c_m
+        from ticketing.cart.stocker import InvalidProductSelectionException
+        performance, product1, product2, product3, seats = self._add_seats()
+
+        request = testing.DummyRequest()
+        ordered_products = [
+            (product1, 2),
+            ]
+
+        other_performance = c_m.Performance(event=performance.event)
+        self.session.add(other_performance)
+        self.session.flush()
+
+        target = self._makeOne(request)
+        self.assertRaises(InvalidProductSelectionException, target.create_cart, other_performance.id, seats, ordered_products)
 
     def test_pop_seats(self):
 

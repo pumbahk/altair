@@ -4,6 +4,7 @@ import csv
 from datetime import datetime
 from urllib2 import urlopen
 import re
+import logging
 
 from pyramid.view import view_config
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound
@@ -15,10 +16,12 @@ from sqlalchemy.orm import joinedload, noload, aliased
 
 from ticketing.models import DBSession
 from ticketing.models import merge_session_with_post, record_to_multidict
-from ticketing.core.models import Site, Venue, VenueArea, Seat, SeatAttribute, SeatStatus, SeatAdjacencySet, SeatAdjacency, Seat_SeatAdjacency, Stock, StockStatus, StockHolder, StockType, ProductItem, Performance, Event
+from ticketing.core.models import Site, Venue, VenueArea, Seat, SeatAttribute, SeatStatus, SalesSegment, SeatAdjacencySet, Seat_SeatAdjacency, Stock, StockStatus, StockHolder, StockType, ProductItem, Product, Performance, Event
 from ticketing.venues.forms import SiteForm
 from ticketing.venues.export import SeatCSV
 from ticketing.fanstatic import with_bootstrap
+
+logger = logging.getLogger(__name__)
 
 @view_config(route_name="api.get_drawing", request_method="GET", permission='event_viewer')
 def get_drawing(request):
@@ -44,6 +47,7 @@ def get_seats(request):
     necessary_params = set() if _necessary_params is None else set(_necessary_params.split(u'|'))
     _filter_params = request.params.get(u'f', None)
     filter_params = set() if _filter_params is None else set(_filter_params.split(u'|'))
+    sales_segment_id = request.params.get(u'sales_segment_id', None)
     loaded_at = request.params.get(u'loaded_at', None)
     if loaded_at:
         loaded_at = datetime.fromtimestamp(float(loaded_at))
@@ -59,7 +63,10 @@ def get_seats(request):
     if u'seats' in necessary_params:
         seats_data = {}
         query = DBSession.query(Seat).options(joinedload('attributes_'), joinedload('areas'), joinedload('status_')).filter_by(venue=venue)
-        if u'sale_only' in filter_params:
+        if sales_segment_id:
+            query = query.join(ProductItem, and_(ProductItem.performance_id==venue.performance_id, ProductItem.stock_id==Seat.stock_id))
+            query = query.join(Product).join(SalesSegment).filter(SalesSegment.id==sales_segment_id).distinct()
+        elif u'sale_only' in filter_params:
             query = query.filter(exists().where(and_(ProductItem.performance_id==venue.performance_id, ProductItem.stock_id==Seat.stock_id)))
         if loaded_at:
             query = query.join(SeatStatus).filter(or_(Seat.updated_at>loaded_at, SeatStatus.updated_at>loaded_at))
@@ -79,7 +86,10 @@ def get_seats(request):
 
     if u'stocks' in necessary_params:
         query = DBSession.query(Stock).options(joinedload('stock_status')).filter_by(performance=venue.performance)
-        if u'sale_only' in filter_params:
+        if sales_segment_id:
+            query = query.join(ProductItem, and_(ProductItem.performance_id==venue.performance_id, ProductItem.stock_id==Stock.id))
+            query = query.join(Product).join(SalesSegment).filter(SalesSegment.id==sales_segment_id).distinct()
+        elif u'sale_only' in filter_params:
             query = query.filter(exists().where(and_(ProductItem.performance_id==venue.performance_id, ProductItem.stock_id==Seat.stock_id)))
         if loaded_at:
             query = query.join(StockStatus).filter(StockStatus.updated_at>loaded_at)
@@ -96,6 +106,10 @@ def get_seats(request):
 
     if u'stock_types' in necessary_params:
         query = DBSession.query(StockType).filter_by(event=venue.performance.event).order_by(StockType.display_order)
+        if sales_segment_id:
+            query = query.join(Stock, and_(Stock.performance_id==venue.performance_id, Stock.stock_type_id==StockType.id))
+            query = query.join(ProductItem, and_(ProductItem.performance_id==venue.performance_id, ProductItem.stock_id==Stock.id))
+            query = query.join(Product).join(SalesSegment).filter(SalesSegment.id==sales_segment_id).distinct()
         if loaded_at:
             query = query.filter(StockType.updated_at>loaded_at)
         retval[u'stock_types'] = [
@@ -110,6 +124,10 @@ def get_seats(request):
 
     if u'stock_holders' in necessary_params:
         query = DBSession.query(StockHolder).filter_by(event=venue.performance.event)
+        if sales_segment_id:
+            query = query.join(Stock, and_(Stock.performance_id==venue.performance_id, Stock.stock_holder_id==StockHolder.id))
+            query = query.join(ProductItem, and_(ProductItem.performance_id==venue.performance_id, ProductItem.stock_id==Stock.id))
+            query = query.join(Product).join(SalesSegment).filter(SalesSegment.id==sales_segment_id).distinct()
         if loaded_at:
             query = query.filter(StockHolder.updated_at>loaded_at)
         retval[u'stock_holders'] = [
@@ -120,6 +138,8 @@ def get_seats(request):
             for stock_holder in query
             ]
 
+    logger.debug('seats=%s, stocks=%s, stock_types=%s, stock_holders=%s'
+                 % (len(retval[u'seats']), len(retval[u'stocks']), len(retval[u'stock_types']), len(retval[u'stock_holders'])))
     return retval
 
 @view_config(route_name='seats.download', permission='event_editor')

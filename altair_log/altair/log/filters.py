@@ -1,10 +1,16 @@
 import logging
+import logging.handlers
 import fluent.handler
 from pyramid.threadlocal import get_current_request
 
 class BrowserIdStreamHandler(logging.StreamHandler):
     def __init__(self, *args, **kwargs):
         super(BrowserIdStreamHandler, self).__init__(*args, **kwargs)
+        self.addFilter(BrowserIdFilter())
+
+class BrowserIdTimedRotatingFileHandler(logging.handlers.TimedRotatingFileHandler):
+    def __init__(self, *args, **kwargs):
+        super(BrowserIdTimedRotatingFileHandler, self).__init__(*args, **kwargs)
         self.addFilter(BrowserIdFilter())
 
 BrowserIdHandler = BrowserIdStreamHandler

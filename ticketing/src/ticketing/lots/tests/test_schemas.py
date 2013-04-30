@@ -56,7 +56,11 @@ class ClientFormTests(unittest.TestCase):
             email_1_confirm=u"test@example.com",
             email_2=u"test2@example.com",
             email_2_confirm=u"test2@example.com",
+            year=u"1970",
+            month=u"01",
+            day=u"01",
         )
         target = self._makeOne(formdata=data)
         result = target.validate()
+        print target.errors
         self.assertTrue(result)

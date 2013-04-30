@@ -12,7 +12,7 @@ import smtplib
 from email.MIMEText import MIMEText
 from email.Header import Header
 from email.Utils import formatdate
-
+from altair.sqla import association_proxy_many
 from sqlalchemy.sql import functions as sqlf
 from sqlalchemy import Table, Column, ForeignKey, func, or_, and_, event
 from sqlalchemy import ForeignKeyConstraint, UniqueConstraint, PrimaryKeyConstraint
@@ -41,7 +41,7 @@ from ticketing.users.models import User, UserCredential, MemberGroup, MemberGrou
 from ticketing.sej.models import SejOrder, SejTenant, SejTicket, SejRefundTicket, SejRefundEvent
 from ticketing.sej.exceptions import SejServerError
 from ticketing.sej.payment import request_cancel_order
-from altair.pyramid_assets.interfaces import IAssetResolver
+from altair.pyramid_assets import get_resolver 
 from ticketing.utils import myurljoin, tristate, is_nonmobile_email_address, sensible_alnum_decode
 from ticketing.helpers import todate, todatetime
 from ticketing.payments import plugins
@@ -51,7 +51,7 @@ logger = logging.getLogger(__name__)
 
 class Seat_SeatAdjacency(Base):
     __tablename__ = 'Seat_SeatAdjacency2'
-    l0_id = Column(String(255), primary_key=True, nullable=False)
+    l0_id = Column(String(255), ForeignKey('Seat.l0_id'), primary_key=True)
     seat_adjacency_id = Column(Identifier, ForeignKey('SeatAdjacency.id', ondelete='CASCADE'), primary_key=True, nullable=False)
 
 class Site(Base, BaseModel, WithTimestamp, LogicallyDeleted):
@@ -78,14 +78,14 @@ class Site(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     def _metadata(self):
         __metadata = getattr(self, '__metadata', None)
         if not __metadata:
-            resolver = get_current_registry().queryUtility(IAssetResolver)
+            resolver = get_resolver(get_current_registry())
             self.__metadata = json.load(resolver.resolve(self.metadata_url).stream())
         return self.__metadata
 
     def get_drawing(self, name):
         page_meta = self._metadata[u'pages'].get(name)
         if page_meta is not None:
-            resolver = get_current_registry().queryUtility(IAssetResolver)
+            resolver = get_resolver(get_current_registry())
             return resolver.resolve(myurljoin(self.metadata_url, name))
         else:
             return None
@@ -447,6 +447,17 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     redirect_url_pc = Column(String(1024))
     redirect_url_mobile = Column(String(1024))
 
+    @property
+    def inner_sales_segments(self):
+        now = datetime.now()
+        sales_segment_sort_key_func = lambda ss: (ss.kind == u'sales_counter', ss.start_at <= now, now <= ss.end_at, ss.id)
+        return sorted(list(self.sales_segments), key=sales_segment_sort_key_func, reverse=True)
+
+    @property
+    def stock_types(self):
+        return sorted(list({s.stock_type for s in self.stocks if s.stock_type}),
+                      key=lambda s: s.id)
+
     def add(self):
         logger.info('[copy] Stock start')
         BaseModel.add(self)
@@ -667,8 +678,10 @@ class ReportFrequencyEnum(StandardEnum):
 class ReportSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__   = 'ReportSetting'
     id = Column(Identifier, primary_key=True)
-    event_id = Column(Identifier, ForeignKey('Event.id', ondelete='CASCADE'), nullable=False)
-    event = relationship('Event', backref='report_setting')
+    event_id = Column(Identifier, ForeignKey('Event.id', ondelete='CASCADE'), nullable=True)
+    event = relationship('Event', backref='report_settings')
+    performance_id = Column(Identifier, ForeignKey('Performance.id', ondelete='CASCADE'), nullable=True)
+    performance = relationship('Performance', backref='report_settings')
     operator_id = Column(Identifier, ForeignKey('Operator.id', ondelete='CASCADE'), nullable=True)
     operator = relationship('Operator', backref='report_setting')
     name = Column(String(255), nullable=True)
@@ -1818,6 +1831,7 @@ class Product(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     def create_from_template(template, with_product_items=False, **kwargs):
         product = Product.clone(template)
         product.event_id = None
+        product.base_product_id = None
         product.sales_segment_group_id = None
         if 'event_id' in kwargs:
             product.event_id = kwargs['event_id']
@@ -3173,12 +3187,20 @@ class SalesSegment(Base, BaseModel, LogicallyDeleted, WithTimestamp):
     account_id = Column(Identifier, ForeignKey('Account.id'))
     account = relationship('Account', backref='sales_segments')
 
+    seat_stock_types = association_proxy('products', 'seat_stock_type')
+    stocks = association_proxy_many('products', 'stock')
     payment_delivery_method_pairs = relationship("PaymentDeliveryMethodPair",
         secondary="SalesSegment_PaymentDeliveryMethodPair",
         backref="sales_segments",
         order_by="PaymentDeliveryMethodPair.id",
         cascade="all",
         collection_class=list)
+
+    def has_stock_type(self, stock_type):
+        return stock_type in self.seat_stock_types
+
+    def has_stock(self, stock):
+        return stock in self.stocks
 
     def available_payment_delivery_method_pairs(self, now):
         return [pdmp 

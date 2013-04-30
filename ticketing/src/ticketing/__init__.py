@@ -82,7 +82,7 @@ def main(global_config, **local_config):
     
         config.include('altair.browserid')
         config.include('altair.exclog')
-        config.include('ticketing.mobile')
+        config.include('altair.mobile')
         config.include('ticketing.core')
         config.include('ticketing.multicheckout')
         config.include('ticketing.checkout')
@@ -131,10 +131,8 @@ def main(global_config, **local_config):
             settings["altaircms.apikey"]
             )
         event_push_communication.bind_instance(config)
-        import altair.pyramid_boto
-        altair.pyramid_boto.register_default_implementations(config)
-        import altair.pyramid_assets
-        altair.pyramid_assets.register_default_implementations(config)
+        config.include('altair.pyramid_assets')
+        config.include('altair.pyramid_boto')
     
         config.scan(".views")
     

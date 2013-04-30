@@ -30,9 +30,8 @@ class LotEntryCart(object):
 
     @property
     def total_amount(self):
-        """ TODO: 最大金額をオーソリする """
-
-        return 10
+        # オーソリ時は申し込みの最大金額を使う
+        return self.entry.max_amount
 
     @property
     def name(self):

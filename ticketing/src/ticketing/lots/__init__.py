@@ -9,7 +9,7 @@ from pyramid_beaker import session_factory_from_settings
 from pyramid.authorization import ACLAuthorizationPolicy
 from pyramid.tweens import EXCVIEW
 from pyramid_selectable_renderer import SelectableRendererSetup
-from pyramid_selectable_renderer.custom import RecieveTemplatePathFormat, RecieveTemplatePathCandidatesDict, SelectByRequestGen
+from pyramid_selectable_renderer.custom import ReceiveTemplatePathFormat, ReceiveTemplatePathCandidatesDict, SelectByRequestGen
 from ticketing.core.api import get_organization
 
 import sqlalchemy as sa
@@ -38,7 +38,7 @@ def get_template_path_args(request):
         return dict(membership="__default__")
 
 selectable_renderer = SelectableRendererSetup(
-    RecieveTemplatePathFormat,
+    ReceiveTemplatePathFormat,
     get_template_path_args,
     renderer_name="selectable_renderer"
     )
@@ -53,6 +53,10 @@ def includeme(config):
 
     # 申し込みフェーズ
     config.add_route('lots.entry.index', 'events/{event_id}/entry/{lot_id}')
+    config.add_route('lots.entry.step1', 'events/{event_id}/entry/{lot_id}/options/{option_index}/step1', factory='.resources.LotOptionSelectionResource')
+    config.add_route('lots.entry.step2', 'events/{event_id}/entry/{lot_id}/options/{option_index}/step2', factory='.resources.LotOptionSelectionResource')
+    config.add_route('lots.entry.step3', 'events/{event_id}/entry/{lot_id}/step3', factory='.resources.LotOptionSelectionResource')
+    config.add_route('lots.entry.step4', 'events/{event_id}/entry/{lot_id}/step4')
     config.add_route('lots.entry.confirm', 'events/{event_id}/entry/{lot_id}/confirm')
     config.add_route('lots.entry.completion', 'events/{event_id}/entry/{lot_id}/completion')
 
@@ -113,11 +117,15 @@ def main(global_config, **local_config):
     config.include('altair.browserid')
     config.include('altair.exclog')
 
+    config.include('altair.mobile')
 
     config.include('ticketing.rakuten_auth')
     config.include("ticketing.payments")
     config.include("ticketing.payments.plugins")
     config.add_tween('ticketing.tweens.session_cleaner_factory', over=EXCVIEW)
+
+    config.include('altair.pyramid_assets')
+    config.include('altair.pyramid_boto')
 
     config.set_authorization_policy(ACLAuthorizationPolicy())
     return config.make_wsgi_app()

@@ -58,12 +58,9 @@ class SalesReportMailForm(Form):
     def __init__(self, formdata=None, obj=None, prefix='', **kwargs):
         Form.__init__(self, formdata, obj, prefix, **kwargs)
 
-        if 'event_id' in kwargs and 'organization_id' in kwargs:
-            operators = Operator.query.join(Organization).join(Event)\
-                                .filter(Operator.organization_id==kwargs['organization_id'])\
-                                .filter(Event.id==kwargs['event_id'])\
-                                .with_entities(Operator.id, Operator.name).all()
-            self.operator_id.choices = [('', '')] + operators
+        if 'organization_id' in kwargs:
+            operators = Operator.query.filter_by(organization_id=kwargs['organization_id']).all()
+            self.operator_id.choices = [('', '')] + [(o.id, o.name) for o in operators]
 
     def _get_translations(self):
         return Translations()
@@ -72,13 +69,16 @@ class SalesReportMailForm(Form):
         validators=[Optional()],
     )
     event_id = HiddenField(
-        validators=[Required()],
+        validators=[Optional()],
+    )
+    performance_id = HiddenField(
+        validators=[Optional()],
     )
     operator_id = SelectField(
         label=u'オペレータ',
-        validators=[],
+        validators=[Optional()],
         choices=[],
-        coerce=lambda v: '' if not v else int(v)
+        coerce=lambda v: None if not v else int(v)
     )
     name = TextField(
         label=u'名前',
@@ -118,7 +118,7 @@ class SalesReportMailForm(Form):
     time = SelectField(
         label=u'送信時間',
         validators=[Required()],
-        choices=[('', '')] + [(h, u'%d時' % h) for h in range(0, 24)],
+        choices=[(h, u'%d時' % h) for h in range(0, 24)],
         coerce=lambda v: None if not v else int(v)
     )
     start_on = DateTimeField(
@@ -133,18 +133,16 @@ class SalesReportMailForm(Form):
     )
 
     def validate_operator_id(form, field):
-        if not field.data and not form.email.data:
-            raise ValidationError(u'オペレーター、またはメールアドレスのいずれかを入力してください')
-        if field.data and form.email.data:
-            raise ValidationError(u'オペレーター、メールアドレスの両方を入力することはできません')
-
         if field.data:
             query = ReportSetting.query.filter(
-                ReportSetting.event_id==form.event_id.data,
                 ReportSetting.frequency==form.frequency.data,
                 ReportSetting.time==form.time.data,
                 ReportSetting.operator_id==field.data
             )
+            if form.event_id.data:
+                query = query.filter(ReportSetting.event_id==form.event_id.data)
+            if form.performance_id.data:
+                query = query.filter(ReportSetting.performance_id==form.performance_id.data)
             if form.day_of_week.data == ReportFrequencyEnum.Weekly.v[0]:
                 query = query.filter(ReportSetting.day_of_week==form.day_of_week.data)
             if query.count() > 0:
@@ -153,11 +151,14 @@ class SalesReportMailForm(Form):
     def validate_email(form, field):
         if field.data:
             query = ReportSetting.query.filter(
-                ReportSetting.event_id==form.event_id.data,
                 ReportSetting.frequency==form.frequency.data,
                 ReportSetting.time==form.time.data,
                 ReportSetting.email==form.email.data
             )
+            if form.event_id.data:
+                query = query.filter(ReportSetting.event_id==form.event_id.data)
+            if form.performance_id.data:
+                query = query.filter(ReportSetting.performance_id==form.performance_id.data)
             if form.frequency.data == ReportFrequencyEnum.Weekly.v[0]:
                 query = query.filter(ReportSetting.day_of_week==form.day_of_week.data)
             if query.count() > 0:
@@ -167,3 +168,27 @@ class SalesReportMailForm(Form):
         if field.data:
             if field.data == ReportFrequencyEnum.Weekly.v[0] and not form.day_of_week.data:
                 raise ValidationError(u'週次の場合は曜日を必ず選択してください')
+
+    def process(self, formdata=None, obj=None, **kwargs):
+        super(type(self), self).process(formdata, obj, **kwargs)
+        if not self.event_id.data:
+            self.event_id.data = None
+        if not self.performance_id.data:
+            self.performance_id.data = None
+
+    def validate(self):
+        status = super(type(self), self).validate()
+        if status:
+            # event_id or performance_id のどちらか必須
+            if (self.event_id.data and self.performance_id.data) or (not self.event_id.data and not self.performance_id.data):
+                self.event_id.errors.append(u'エラーが発生しました')
+                status = False
+            # operator_id or email のどちらか必須
+            email_length = len(self.email.data) if self.email.data else 0
+            if not self.operator_id.data and email_length == 0:
+                self.operator_id.errors.append(u'オペレーター、またはメールアドレスのいずれかを入力してください')
+                status = False
+            if self.operator_id.data and email_length > 0:
+                self.operator_id.errors.append(u'オペレーター、メールアドレスの両方を入力することはできません')
+                status = False
+        return status

@@ -19,5 +19,20 @@ class IConsumer(Interface):
 
 
 class ITask(Interface):
-    def __call__(channel, method, header, body):
+    def __call__(context, message):
         """ execute task by receiving message """
+
+
+class IMessage(Interface):
+    channel = Attribute(u"channel of message")
+    method = Attribute(u"method of message")
+    header = Attribute(u"header of message")
+    body = Attribute(u"body of message")
+    params = Attribute(u"parameters of this message, maybe parsed body.")
+
+
+class IPublisher(Interface):
+    def publish(exchange="", routing_key="",
+                body="", properties={}, mandatory=False,
+                intermmediate=False):
+        """ publish to queue """

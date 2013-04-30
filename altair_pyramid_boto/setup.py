@@ -40,7 +40,7 @@ setup(name='altair.pyramid_boto',
           'altair.pyramid_assets',
           # -*- Extra requirements: -*-
       ],
-      test_requires=[
+      tests_require=[
           'mock',
       ],
       test_suite='altair.pyramid_boto',

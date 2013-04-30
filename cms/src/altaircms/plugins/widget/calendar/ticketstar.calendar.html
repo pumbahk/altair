@@ -36,21 +36,28 @@ logger = logging.getLogger(__name__)
             ${de["day"]}
 			%for p in de["day_performances"]:
             <% status= calendar_status.get_status(p)%>
-            <% end_on_candidates = [s.end_on for s in p.sales if s.end_on] %>
             <div class="performances">
-            %if not end_on_candidates:
-              <span class="${status["class"]}">準備中</span>
-              <% logger.warn("p=%s does not have salessegment. ignored (p list widget)" % p.id)%>
+            <%
+               start_on_candidates = [s.start_on for s in p.sales]
+               end_on_candidates = [s.end_on for s in p.sales if s.end_on]
+            %>
+
+            % if min(start_on_candidates) >= now:
+              <strong>${status["string"]}</strong>${p.start_on.strftime("%H:%M")}<br/>
+              <span>販売前</span>
             %elif max(end_on_candidates) >= now:
-              <p class="${status["class"]}">
-	           	  <strong>${status["string"]}</strong>
-                <a href="${h.link.get_purchase_page_from_performance(request, p)}">${p.start_on.strftime("%H:%M")}</a>
-              </p>
-            %else:
-              <span class="${status["class"]}">販売終了</span>
-            %endif
-              <p>${p.calendar_content or u""}</p>
-         </div>
+              % if status["class"] == "cross":
+                <strong>${status["string"]}</strong>${p.start_on.strftime("%H:%M")}<br/>
+                予定枚数終了
+              % else:
+                <strong>${status["string"]}</strong><a href="${h.link.get_purchase_page_from_performance(request, p)}">${p.start_on.strftime("%H:%M")}</a>
+              % endif
+            % else:
+              <strong>${status["string"]}</strong>${p.start_on.strftime("%H:%M")}<br/>
+              <span>販売期間終了</span>
+            % endif
+             <p>${p.calendar_content or u""}</p>
+            </div>
 			%endfor
 		  </td>   
 		 %endfor
