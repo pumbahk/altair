@@ -126,6 +126,7 @@ def main(global_config, **local_config):
 
     config.include('altair.pyramid_assets')
     config.include('altair.pyramid_boto')
+    config.include('altair.pyramid_tz')
 
     config.set_authorization_policy(ACLAuthorizationPolicy())
     return config.make_wsgi_app()

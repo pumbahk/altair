@@ -18,13 +18,9 @@
         　<select name="<%= quantityField %>" >
         <option></option>
         <% for (var k=0; k < upperLimit; k++) { %>
-            <% if (values["product-quantity-" + wishOrder + "-" + j + ""] == k + 1) { %>
-            <option value="<%= k + 1 %>" selected="selected"><%= k + 1 %></option>
-            <% } else { %>
             <option value="<%= k + 1 %>"><%= k + 1 %></option>
-            <% } %>
         <% } %> 
   </select>　枚</td>
 </tr>
-<% }); %> 
+<% }); %>
 </%text>

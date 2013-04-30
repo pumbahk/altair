@@ -10,10 +10,12 @@ from sqlalchemy.orm.exc import NoResultFound
 
 from wtforms.validators import ValidationError
 from altair.mobile import mobile_view_config
+from altair.pyramid_tz.api import get_timezone
 
 from ticketing.models import DBSession
 from ticketing.core.models import PaymentDeliveryMethodPair
 from ticketing.cart import api as cart_api
+from ticketing.utils import toutc
 from ticketing.payments.payment import Payment
 from ticketing.cart.exceptions import NoCartError
 
@@ -32,6 +34,31 @@ from . import urls
 
 logger = logging.getLogger(__name__)
 
+def make_performance_map(request, performances):
+    tz = get_timezone(request)
+    performance_map = {}
+    for performance in performances:
+        performances_per_name = performance_map.get(performance.name)
+        if not performances_per_name:
+            performances_per_name = performance_map[performance.name] = []
+        performances_per_name.append(
+            dict(
+                id=performance.id,
+                name=performance.name,
+                venue=performance.venue.name,
+                open_on=toutc(performance.open_on, tz).isoformat(),
+                start_on=toutc(performance.start_on, tz).isoformat(),
+                start_on_str=h.japanese_datetime(performance.start_on)
+                )
+            )
+
+    for v in performance_map.itervalues():
+        v.sort(lambda a, b: cmp(a['start_on'], b['start_on']))
+
+    retval = list(performance_map.iteritems())
+    retval.sort(lambda a, b: cmp(a[1][0]['start_on'], b[1][0]['start_on']))
+
+    return retval
 
 def my_render_view_to_response(context, request, view_name=''):
     from pyramid.interfaces import IViewClassifier, IView
@@ -100,6 +127,8 @@ class EntryLotView(object):
             logger.debug('lot performances not found')
             raise HTTPNotFound()
 
+        performance_map = make_performance_map(self.request, performances)
+
         stocks = lot.stock_types
 
         # if not stocks:
@@ -115,7 +144,7 @@ class EntryLotView(object):
             posted_values=json.dumps(dict(self.request.POST)),
             products_json=json.dumps(product_performance_map),
             payment_delivery_method_pair_id=self.request.params.get('payment_delivery_method_pair_id'),
-            lot=lot, performances=performances, stocks=stocks)
+            lot=lot, performances=performances, performance_map=performance_map, stocks=stocks)
 
     @view_config(request_method="POST")
     def post(self):
