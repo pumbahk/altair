@@ -154,7 +154,7 @@ class Reserving(object):
                     _Seat.venue_id==venue.id
                 )
 
-        # 確保済み
+        # 未確保の座席だけからなる SeatAdjacency を探す
         def query_adjacency(venue, stock_id, quantity, seat_index_type_id):
             _SeatAdjacency = aliased(SeatAdjacency)
             _SeatAdjacencySet = aliased(SeatAdjacencySet)
