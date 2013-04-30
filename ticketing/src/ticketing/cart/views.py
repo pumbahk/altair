@@ -34,7 +34,7 @@ from . import helpers as h
 from . import schemas
 from .events import notify_order_completed
 from .reserving import InvalidSeatSelectionException, NotEnoughAdjacencyException
-from .stocker import NotEnoughStockException
+from .stocker import InvalidProductSelectionException, NotEnoughStockException
 from .selectable_renderer import selectable_renderer
 from .api import get_seat_type_triplets
 from .view_support import IndexViewMixin
@@ -442,6 +442,10 @@ class ReserveView(object):
             transaction.abort()
             logger.debug("seat selection is invalid.")
             return dict(result='NG', reason="invalid seats")
+        except InvalidProductSelectionException:
+            transaction.abort()
+            logger.debug("product selection is invalid.")
+            return dict(result='NG', reason="invalid products")
         except NotEnoughStockException:
             transaction.abort()
             logger.debug("not enough stock quantity.")

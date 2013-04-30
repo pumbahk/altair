@@ -15,7 +15,7 @@ from ..exceptions import (
     DeliveryFailedException,
 )
 from ..reserving import InvalidSeatSelectionException, NotEnoughAdjacencyException
-from ..stocker import NotEnoughStockException
+from ..stocker import InvalidProductSelectionException, NotEnoughStockException
 from .. import api
 from altair.mobile import mobile_view_config
 from ticketing.cart.selectable_renderer import selectable_renderer
@@ -93,6 +93,10 @@ def not_enough_stock_exception(request):
 @view_config(context=InvalidSeatSelectionException, renderer=selectable_renderer('ticketing.cart:templates/carts_mobile/%(membership)s/error.html'), request_type='altair.mobile.interfaces.IMobileRequest')
 def invalid_seat_selection_exception(request):
     return dict(message=u"座席選択に誤りがあります。\n座席を再度選択してください。")
+
+@view_config(context=InvalidProductSelectionException, renderer=selectable_renderer('ticketing.cart:templates/carts_mobile/%(membership)s/error.html'), request_type='altair.mobile.interfaces.IMobileRequest')
+def invalid_product_selection_exception(request):
+    return dict(message=u"席種選択に誤りがあります。\n席種を再度選択してください。")
 
 @view_config(context=NotEnoughAdjacencyException, renderer=selectable_renderer('ticketing.cart:templates/carts_mobile/%(membership)s/error.html'), request_type='altair.mobile.interfaces.IMobileRequest')
 def not_enough_ajacency_exception(request):

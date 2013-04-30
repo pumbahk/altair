@@ -3,7 +3,7 @@
 import unittest
 import mock
 from pyramid import testing
-from ticketing.testing import _setup_db, _teardown_db
+from ticketing.testing import _setup_db, _teardown_db, DummyRequest
 
 dependency_modules = [
     'ticketing.core.models',
@@ -28,14 +28,14 @@ class keep_authTests(unittest.TestCase):
     @mock.patch('ticketing.multicheckout.api.save_api_response')
     @mock.patch('ticketing.multicheckout.api.get_multicheckout_service')
     def test_it(self, mock_service_factory, mock_save_api_response):
-        from ticketing.multicheckout.api import checkout_sales_secure3d
+        from ticketing.multicheckout.api import checkout_sales
         from ticketing.multicheckout.testing import DummyCheckout3D
 
         mock_service_factory.return_value = DummyCheckout3D()
-        request = testing.DummyRequest()
+        request = DummyRequest()
         order_no = 'test_order_no'        
 
-        result = checkout_sales_secure3d(
+        result = checkout_sales(
             request,
             order_no,
             )
@@ -85,7 +85,7 @@ class EntryLotViewTests(unittest.TestCase):
         sales_segment = testing.DummyModel(id=12345)
         lot = _add_lot(self.session, event.id, sales_segment.id, 5, 3, membergroups=[membergroup])
 
-        request = testing.DummyRequest(
+        request = DummyRequest(
             matchdict=dict(event_id=1111, lot_id=lot.id),
         )
         context = testing.DummyResource(event=event, lot=lot)
@@ -149,7 +149,7 @@ class EntryLotViewTests(unittest.TestCase):
             payment_delivery_method_pair_id=str(payment_delivery_method_pair.id),
             **wishes
         )
-        request = testing.DummyRequest(
+        request = DummyRequest(
             matchdict=dict(event_id=lot.event_id, lot_id=lot.id),
             params=data,
         )
@@ -232,7 +232,7 @@ class ConfirmLotEntryViewTests(unittest.TestCase):
         payment_delivery_method_pair = sales_segment.payment_delivery_method_pairs[0]
         performances = lot.performances
         
-        request = testing.DummyRequest(
+        request = DummyRequest(
             session={'lots.entry': 
                 {
                     'shipping_address': 
@@ -266,7 +266,8 @@ class ConfirmLotEntryViewTests(unittest.TestCase):
                 }, #lots.entry
             }, #session
         )
-        context = testing.DummyResource()
+        context = testing.DummyResource(event=testing.DummyModel(), 
+                                        lot=testing.DummyModel())
 
         target = self._makeOne(context, request)
 
@@ -292,7 +293,7 @@ class ConfirmLotEntryViewTests(unittest.TestCase):
 
     def test_post_back(self):
         self.config.add_route('lots.entry.index', '/back/to/form')
-        request = testing.DummyRequest(
+        request = DummyRequest(
             session={'lots.entry': {'token': 'test-token'}},
             params={'back': 'Back', 
                     'token': 'test-token'},
@@ -306,7 +307,7 @@ class ConfirmLotEntryViewTests(unittest.TestCase):
 
     def test_post_without_token(self):
         self.config.add_route('lots.entry.index', '/back/to/form')
-        request = testing.DummyRequest(
+        request = DummyRequest(
         )
         request.session['lots.entry'] = {}
         context = testing.DummyResource()
@@ -335,7 +336,7 @@ class ConfirmLotEntryViewTests(unittest.TestCase):
         add_payment_plugin(self.config, DummyPreparer(None), plugin_id)
 
         event_id = lot.event_id
-        request = testing.DummyRequest(
+        request = DummyRequest(
             session={'lots.entry': 
                 {
                     'shipping_address': 
@@ -444,7 +445,7 @@ class LotReviewViewTests(unittest.TestCase):
     def test_post_invalid(self):
         from .. import schemas
 
-        request = testing.DummyRequest(
+        request = DummyRequest(
             params=self._params(),
         )
         context = testing.DummyResource()
@@ -460,7 +461,7 @@ class LotReviewViewTests(unittest.TestCase):
         self.config.add_route('lots.payment.index', '/lots/events/{event_id}/payment/{lot_id}')
         from ticketing.core.models import ShippingAddress, DBSession, Event
         from ticketing.lots.models import LotEntry, Lot
-        request = testing.DummyRequest()
+
         entry_no = u'LOTtest000001'
         tel_no = '0123456789'
         shipping_address = ShippingAddress(tel_1=tel_no)
@@ -470,7 +471,7 @@ class LotReviewViewTests(unittest.TestCase):
         DBSession.add(entry)
         DBSession.flush()
 
-        request = testing.DummyRequest(
+        request = DummyRequest(
             params=self._params(
                 entry_no=entry_no,
                 tel_no=tel_no,
@@ -481,6 +482,7 @@ class LotReviewViewTests(unittest.TestCase):
         target = self._makeOne(context, request)
 
         result = target.post()
+        self.assertIsNotNone(result)
         self.assertIn('entry', result)
         self.assertEqual(result['payment_url'], 'http://example.com/lots/events/1/payment/1')
         self.assertIn('lots.entry_id', request.session)
@@ -490,7 +492,6 @@ class LotReviewViewTests(unittest.TestCase):
         self.config.add_route('lots.payment', '/lots/payment')
         from ticketing.core.models import ShippingAddress, DBSession, Event
         from ticketing.lots.models import LotEntry, Lot
-        request = testing.DummyRequest()
         entry_no = u'LOTtest000001'
         tel_no = '0123456789'
         shipping_address = ShippingAddress(tel_1=tel_no)
@@ -500,7 +501,7 @@ class LotReviewViewTests(unittest.TestCase):
         DBSession.add(entry)
         DBSession.flush()
 
-        request = testing.DummyRequest(
+        request = DummyRequest(
             params=self._params(
                 entry_no=entry_no,
                 tel_no=tel_no,
@@ -511,6 +512,7 @@ class LotReviewViewTests(unittest.TestCase):
         target = self._makeOne(context, request)
 
         result = target.post()
+        self.assertIsNotNone(result)
         self.assertIn('entry', result)
         self.assertEqual(result['entry'], entry)
         self.assertIsNone(result['payment_url'])

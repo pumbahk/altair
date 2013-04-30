@@ -211,6 +211,23 @@ class EliminatedTagNormalizeUnitTests(unittest.TestCase):
         self._callFUT(io, result, eliminate=True)
         self.assertEquals('<doc><F id="2">{{zz}}</F></doc>', result.getvalue())
 
+    def test_it3(self):
+        from StringIO import StringIO
+        """<F id=1><F id=2></F>)</F> => <F id=1><F id=2></F>)</F>"""
+        io = StringIO('<doc><F id="1"><F id="2">x</F>)</F></doc>')
+
+        result = StringIO()
+        self._callFUT(io, result, eliminate=True)
+        self.assertEquals('<doc><F id="1">x</F>)</doc>', result.getvalue())
+
+    def test_it4(self):
+        from StringIO import StringIO
+        io = StringIO('<doc><F id="1">{{<F id="2">aaa}}</F>)</F></doc>')
+
+        result = StringIO()
+        self._callFUT(io, result, eliminate=True)
+        self.assertEquals('<doc><F id="1">{{aaa}}</F>)</doc>', result.getvalue())
+
     def test_complex(self):
         """ そのまま{{}}の中の文字列をmustacheで文字列を埋め込もうとするとxmlとして不正な形式になり失敗する.normalizeした後のものはok
         """

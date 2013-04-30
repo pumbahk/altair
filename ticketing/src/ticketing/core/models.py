@@ -678,8 +678,10 @@ class ReportFrequencyEnum(StandardEnum):
 class ReportSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__   = 'ReportSetting'
     id = Column(Identifier, primary_key=True)
-    event_id = Column(Identifier, ForeignKey('Event.id', ondelete='CASCADE'), nullable=False)
-    event = relationship('Event', backref='report_setting')
+    event_id = Column(Identifier, ForeignKey('Event.id', ondelete='CASCADE'), nullable=True)
+    event = relationship('Event', backref='report_settings')
+    performance_id = Column(Identifier, ForeignKey('Performance.id', ondelete='CASCADE'), nullable=True)
+    performance = relationship('Performance', backref='report_settings')
     operator_id = Column(Identifier, ForeignKey('Operator.id', ondelete='CASCADE'), nullable=True)
     operator = relationship('Operator', backref='report_setting')
     name = Column(String(255), nullable=True)

@@ -121,6 +121,8 @@ def get_multicheckout_service(request):
 
 
 def secure3d_enrol(request, order_no, card_number, exp_year, exp_month, total_amount):
+    """ セキュア3D認証要求 """
+
     order_no = maybe_unicode(order_no)
     service = get_multicheckout_service(request)
     enrol = m.Secure3DReqEnrolRequest(
@@ -138,6 +140,8 @@ def secure3d_enrol(request, order_no, card_number, exp_year, exp_month, total_am
 
 
 def secure3d_auth(request, order_no, pares, md):
+    """ セキュア3D認証結果取得"""
+
     order_no = maybe_unicode(order_no)
     auth = m.Secure3DAuthRequest(
         Md=md,
@@ -156,6 +160,8 @@ def checkout_auth_secure3d(request,
                   card_no, card_limit, card_holder_name,
                   mvn, xid, ts, eci, cavv, cavv_algorithm,
                   free_data=None, item_cod=DEFAULT_ITEM_CODE, date=date):
+    """ セキュア3D認証オーソリ """
+
     order_no = maybe_unicode(order_no)
     order_ymd = date.today().strftime('%Y%m%d')
     params = m.MultiCheckoutRequestCard(
@@ -188,8 +194,10 @@ def checkout_auth_secure3d(request,
     return res
 
 
-def checkout_sales_secure3d(request,
+def checkout_sales(request,
                   order_no):
+    """ 売上確定 """
+
     order_no = maybe_unicode(order_no)
     service = get_multicheckout_service(request)
     res = service.request_card_sales(order_no)
@@ -199,6 +207,8 @@ def checkout_sales_secure3d(request,
 
 
 def checkout_auth_cancel(request, order_no):
+    """ オーソリキャンセル """
+
     order_no = maybe_unicode(order_no)
     service = get_multicheckout_service(request)
     res = service.request_card_cancel_auth(order_no)
@@ -207,7 +217,25 @@ def checkout_auth_cancel(request, order_no):
     return res
 
 
+def checkout_sales_different_amount(request, order_no, different_amount):
+    """ オーソリ差額売上確定
+    オーソリ時金額で確定後に差額を一部キャンセルする
+    """
+
+    res = checkout_sales(request, order_no)
+    if res.CmnErrorCd != '000000':
+        logger.error(u"差額売上確定中に売上確定でエラーが発生しました")
+        return res
+
+    res = checkout_sales_part_cancel(request, order_no, different_amount, 0)
+    if res.CmnErrorCd != '000000':
+        logger.error(u"差額売上確定中に一部払い戻しでエラーが発生しました")
+        return res
+    return res
+
 def checkout_sales_part_cancel(request, order_no, sales_amount_cancellation, tax_carriage_cancellation):
+    """ 一部払い戻し """
+
     order_no = maybe_unicode(order_no)
     params = m.MultiCheckoutRequestCardSalesPartCancel(
         SalesAmountCancellation=int(sales_amount_cancellation),
@@ -221,6 +249,8 @@ def checkout_sales_part_cancel(request, order_no, sales_amount_cancellation, tax
 
 
 def checkout_sales_cancel(request, order_no):
+    """ 売上キャンセル"""
+
     order_no = maybe_unicode(order_no)
     service = get_multicheckout_service(request)
     res = service.request_card_cancel_sales(order_no)
@@ -230,6 +260,8 @@ def checkout_sales_cancel(request, order_no):
 
 
 def checkout_inquiry(request, order_no):
+    """ 取引照会"""
+
     order_no = maybe_unicode(order_no)
     service = get_multicheckout_service(request)
     res = service.request_card_inquiry(order_no)
@@ -242,7 +274,7 @@ def checkout_auth_secure_code(request, order_no, item_name, amount, tax, client_
                      card_no, card_limit, card_holder_name,
                      secure_code,
                      free_data=None, item_cd=DEFAULT_ITEM_CODE, date=date):
-
+    """ セキュアコードオーソリ """
     order_no = maybe_unicode(order_no)
     order_ymd = date.today().strftime('%Y%m%d')
     params = m.MultiCheckoutRequestCard(
@@ -270,17 +302,6 @@ def checkout_auth_secure_code(request, order_no, item_name, amount, tax, client_
     events.CheckoutAuthSecureCodeEvent.notify(request, order_no, res)
     save_api_response(request, res)
     return res
-
-
-def checkout_sales_secure_code(request, order_no):
-    order_no = maybe_unicode(order_no)
-
-    service = get_multicheckout_service(request)
-    res = service.request_card_sales(order_no)
-    events.CheckoutSalesSecureCodeEvent.notify(request, order_no, res)
-    save_api_response(request, res)
-    return res
-
 
 class MultiCheckoutAPIError(Exception):
     pass

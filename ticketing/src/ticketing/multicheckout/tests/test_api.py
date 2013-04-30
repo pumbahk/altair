@@ -142,7 +142,7 @@ class checkout_auth_secure3dTests(unittest.TestCase):
         self.assertEqual(mock_handler.call_args[0][0].order_no, 'test_order_no')
         self.assertEqual(mock_handler.call_args[0][0].api, 'checkout_auth_secure3d')
 
-class checkout_sales_secure3dTests(unittest.TestCase):
+class checkout_salesTests(unittest.TestCase):
 
     def setUp(self):
         self.config = testing.setUp()
@@ -151,8 +151,8 @@ class checkout_sales_secure3dTests(unittest.TestCase):
         testing.tearDown()
 
     def _callFUT(self, *args, **kwargs):
-        from ..api import checkout_sales_secure3d
-        return checkout_sales_secure3d(*args, **kwargs)
+        from ..api import checkout_sales
+        return checkout_sales(*args, **kwargs)
 
     @mock.patch('ticketing.multicheckout.api.save_api_response')
     @mock.patch('ticketing.multicheckout.api.get_multicheckout_service')
@@ -365,7 +365,7 @@ class checkout_auth_secure_codeTests(unittest.TestCase):
         self.assertEqual(mock_handler.call_args[0][0].api, 'checkout_auth_secure_code')
 
 
-class checkout_sales_secure_codeTests(unittest.TestCase):
+class checkout_sales_different_amountTests(unittest.TestCase):
 
     def setUp(self):
         self.config = testing.setUp()
@@ -374,26 +374,68 @@ class checkout_sales_secure_codeTests(unittest.TestCase):
         testing.tearDown()
 
     def _callFUT(self, *args, **kwargs):
-        from ..api import checkout_sales_secure_code
-        return checkout_sales_secure_code(*args, **kwargs)
+        from ..api import checkout_sales_different_amount
+        return checkout_sales_different_amount(*args, **kwargs)
 
     @mock.patch('ticketing.multicheckout.api.save_api_response')
     @mock.patch('ticketing.multicheckout.api.get_multicheckout_service')
     def test_it(self, mock_service_factory, mock_save_api_response):
         mock_service_factory.return_value = DummyCheckout3D()
-        mock_handler = mock.Mock()
-        self.config.add_subscriber(mock_handler,
-                                   'ticketing.multicheckout.events.CheckoutSalesSecureCodeEvent')
+        mock_handler1 = mock.Mock()
+        self.config.add_subscriber(mock_handler1,
+                                   'ticketing.multicheckout.events.CheckoutSalesSecure3DEvent')
+        mock_handler2 = mock.Mock()
+        self.config.add_subscriber(mock_handler2,
+                                   'ticketing.multicheckout.events.CheckoutSalesPartCancelEvent')
         request = testing.DummyRequest()
-        order_no = 'test_order_no'        
+        order_no = 'test_order_no'
+        different_amount = 999
 
         result = self._callFUT(
             request,
             order_no,
+            different_amount,
+            )
+
+        print mock_handler1.call_args
+        print mock_handler2.call_args
+
+        self.assertEqual(result.OrderNo, order_no)
+
+        mock_save_api_response.assert_called_with(request, result)
+        self.assertEqual(mock_handler1.call_args[0][0].order_no, 'test_order_no')
+        self.assertEqual(mock_handler1.call_args[0][0].api, 'checkout_sales_secure3d')
+
+        mock_save_api_response.assert_called_with(request, result)
+        self.assertEqual(mock_handler2.call_args[0][0].order_no, 'test_order_no')
+        self.assertEqual(mock_handler2.call_args[0][0].api, 'checkout_sales_part_cancel')
+
+    @mock.patch('ticketing.multicheckout.api.save_api_response')
+    @mock.patch('ticketing.multicheckout.api.get_multicheckout_service')
+    def test_with_sales_error(self, mock_service_factory, mock_save_api_response):
+        mock_service_factory.return_value = DummyCheckout3D(CmnErrorCd='999999')
+        mock_handler1 = mock.Mock()
+        self.config.add_subscriber(mock_handler1,
+                                   'ticketing.multicheckout.events.CheckoutSalesSecure3DEvent')
+        mock_handler2 = mock.Mock()
+        self.config.add_subscriber(mock_handler2,
+                                   'ticketing.multicheckout.events.CheckoutSalesPartCancelEvent')
+        request = testing.DummyRequest()
+        order_no = 'test_order_no'
+        different_amount = 999
+
+        result = self._callFUT(
+            request,
+            order_no,
+            different_amount,
             )
 
 
         self.assertEqual(result.OrderNo, order_no)
+        self.assertEqual(result.CmnErrorCd, '999999')
+
         mock_save_api_response.assert_called_with(request, result)
-        self.assertEqual(mock_handler.call_args[0][0].order_no, 'test_order_no')
-        self.assertEqual(mock_handler.call_args[0][0].api, 'checkout_sales_secure_code')
+        self.assertEqual(mock_handler1.call_args[0][0].order_no, 'test_order_no')
+        self.assertEqual(mock_handler1.call_args[0][0].api, 'checkout_sales_secure3d')
+
+        mock_save_api_response.assert_not_called()
