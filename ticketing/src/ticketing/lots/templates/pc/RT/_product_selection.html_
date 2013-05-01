@@ -14,7 +14,7 @@
     <td>
     <span><%= product.name %></span>
 </td><td>
-    　<input type="hidden" name="product-id-<%= wishOrder %>-<%= j %>" value="<%= product.id %>">
+    　<input type="hidden" name="product-id-<%= wishOrder %>-<%= j %>" value="<%= product.id %>" />
         　<select name="<%= quantityField %>" >
         <option></option>
         <% for (var k=0; k < upperLimit; k++) { %>
