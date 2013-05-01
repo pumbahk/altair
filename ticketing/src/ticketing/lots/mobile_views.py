@@ -78,7 +78,7 @@ class EntryLotView(object):
             event=event,
             lot=lot,
             sales_segment=sales_segment,
-            option_index=len(api.get_options(self.request)) + 1
+            option_index=len(api.get_options(self.request, lot.id)) + 1
             )
 
     @view_config(route_name='lots.entry.step1', renderer=selectable_renderer("mobile/%(membership)s/step1.html"))
@@ -152,13 +152,17 @@ class EntryLotView(object):
                         for rec in data['wished_products']
                         ]
                     )
-                for data in api.get_options(self.request)
+                for data in api.get_options(self.request, lot.id)
                 ]
             )
 
     @view_config(route_name='lots.entry.step3', request_method='GET', renderer=selectable_renderer("mobile/%(membership)s/step3.html"))
     def step3(self):
-        return self.step3_rendered_value(len(api.get_options(self.request)))
+        lot = self.context.lot
+        option_index = len(api.get_options(self.request, lot.id))
+        if option_index == 0:
+            return HTTPFound(self.request.route_path('lots.entry.index', event_id=self.context.event.id, lot_id=lot.id))
+        return self.step3_rendered_value(option_index)
 
     @back(mobile=back_to_step1)
     @view_config(route_name='lots.entry.step3', request_method='POST', renderer=selectable_renderer("mobile/%(membership)s/step3.html"))
@@ -197,7 +201,7 @@ class EntryLotView(object):
             raise HTTPBadRequest()
 
 
-        options = api.get_options(self.request)
+        options = api.get_options(self.request, lot.id)
         if len(options) < option_index_zb:
             raise HTTPBadRequest()
 
@@ -275,7 +279,7 @@ class EntryLotView(object):
         shipping_address_dict = cform.get_validated_address_data()
         api.new_lot_entry(
             self.request,
-            wishes=api.get_options(self.request),
+            wishes=api.get_options(self.request, lot.id),
             payment_delivery_method_pair_id=payment_delivery_method_pair_id,
             shipping_address_dict=shipping_address_dict,
             gender=cform['sex'].data,

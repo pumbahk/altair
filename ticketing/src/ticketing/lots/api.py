@@ -326,18 +326,22 @@ def new_lot_entry(request, wishes, payment_delivery_method_pair_id, shipping_add
 class Options(object):
     OPTIONS_KEY = 'altair.lots.options'
 
-    def __init__(self, request):
+    def __init__(self, request, lot_id):
         self.request = request
-        options = request.session.get(self.OPTIONS_KEY)
+        options_map = request.session.get(self.OPTIONS_KEY)
+        if not isinstance(options_map, dict):
+            request.session[self.OPTIONS_KEY] = options_map = {}
+        self.options_map = options_map
+        options = options_map.get(lot_id)
         if options is None:
-            request.session[self.OPTIONS_KEY] = options = []
+            self.options_map[lot_id] = options = []
         self.options = options
 
     def __del__(self):
         self.request.session.persist()
 
     def clear(self):
-        self.request.session[OPTIONS_KEY] = self.options = []
+        del self.options_map[self.lot_id]
 
     def performance_selected(self, performance_id):
         for data in self.options:
@@ -360,5 +364,5 @@ class Options(object):
     def __iter__(self):
         return iter(self.options)
 
-def get_options(request):
-    return Options(request)
+def get_options(request, lot_id):
+    return Options(request, lot_id)
