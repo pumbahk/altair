@@ -1,7 +1,16 @@
+from pyramid.traversal import DefaultRootFactory
 from pyramid.decorator import reify
 from ticketing.core.models import Event, Performance, Organization
 from ticketing.core import api as core_api
 from .models import Lot
+
+def lot_resource_factory(request):
+    if request.matchdict is None:
+        return DefaultRootFactory(request)
+
+    context = LotResource(request)
+    return context
+
 
 
 class LotResource(object):
