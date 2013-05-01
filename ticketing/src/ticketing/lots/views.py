@@ -95,18 +95,23 @@ class EntryLotView(object):
         self.request = request
         self.context = context
 
-    def _create_product_performance_map(self, products):
-        product_performance_map = {}
+    def _create_performance_product_map(self, products):
+        performance_product_map = {}
         for product in products:
             performance = product.performance
-            products = product_performance_map.get(performance.id, [])
-            products.append(dict(id=product.id, name=product.name, display_order=product.display_order))
-            product_performance_map[performance.id] = products
+            products = performance_product_map.get(performance.id, [])
+            products.append(dict(
+                id=product.id,
+                name=product.name,
+                display_order=product.display_order,
+                stock_type_id=product.seat_stock_type_id
+            ))
+            performance_product_map[performance.id] = products
 
         key_func = operator.itemgetter('display_order', 'id')
-        for p in product_performance_map.values():
+        for p in performance_product_map.values():
             p.sort(key=key_func)
-        return product_performance_map
+        return performance_product_map
 
     @view_config(request_method="GET")
     def get(self, form=None):
@@ -138,12 +143,14 @@ class EntryLotView(object):
 
         sales_segment = lot.sales_segment
         payment_delivery_pairs = sales_segment.payment_delivery_method_pairs
-        product_performance_map = self._create_product_performance_map(sales_segment.products)
+        performance_product_map = self._create_performance_product_map(sales_segment.products)
+        stock_types = sorted(set((product.seat_stock_type_id, product.seat_stock_type.name, product.seat_stock_type.display_order) for product in sales_segment.products), lambda a, b: cmp(a[2], b[2]))
 
         return dict(form=form, event=event, sales_segment=sales_segment,
             payment_delivery_pairs=payment_delivery_pairs,
-            posted_values=json.dumps(dict(self.request.POST)),
-            products_json=json.dumps(product_performance_map),
+            posted_values=dict(self.request.POST),
+            performance_product_map=performance_product_map,
+            stock_types=stock_types,
             payment_delivery_method_pair_id=self.request.params.get('payment_delivery_method_pair_id'),
             lot=lot, performances=performances, performance_map=performance_map, stocks=stocks)
 

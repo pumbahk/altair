@@ -88,7 +88,7 @@
                 <td colspan="2">
                 %else:
                 <td colspan="2">
-                  <select name="performanceName-${i}" data-wishOrder="${i}" data-wishCellTableId="wish-cell-table-${i}" class="performance-name-select">
+                  <select name="performanceName-${i}" data-wishOrder="${i}" class="performance-name-select">
                   %for performance_name, _ in performance_map:
                   <option value="${performance_name}">${performance_name}</option>
                   %endfor
@@ -98,9 +98,21 @@
               <tr>
                 <td colspan="2">
                 %endif
-                  <select name="performanceDate-${i}" data-wishOrder="${i}" data-wishCellTableId="wish-cell-table-${i}" class="performance-date-select">
+                  <select name="performanceDate-${i}" data-wishOrder="${i}" class="performance-date-select">
                   %for performance in performances:
                   <option value="${performance.id}">${h.japanese_datetime(performance.start_on)}</option>
+                  %endfor
+                  </select>
+                </td>
+              </tr>
+              <tr>
+                <th>
+                  <label>席種</label>
+                </th>
+                <td colspan="2">
+                  <select name="stockType-${i}" data-wishOrder="${i}" class="stock-type-select">
+                  %for stock_type_id, stock_type_name, _ in stock_types:
+                  <option value="${stock_type_id}">${stock_type_name}</option>
                   %endfor
                   </select>
                 </td>
@@ -269,16 +281,27 @@
 <%include file="_product_selection.html_" />
 </script>
 <script>
-var data = ${products_json | n};
-var postedValues = ${posted_values | n};
+var stockTypes = ${h.tojson(stock_types)|n};
+var performanceProductMap = ${h.tojson(performance_product_map)|n};
+var postedValues = ${h.tojson(posted_values)|n};
 var upperLimit = ${sales_segment.upper_limit};
 var performanceMap = ${h.tojson(performance_map)|n};
 
 (function($wishForm) {
-    function refreshProducts(dateSelect) {
-        var products = data[$(dateSelect).val()];
+    function cellTableId(n) {
+        return 'wish-cell-table-' + n
+    }
+
+    function refreshProducts(dateSelect, stockTypeSelect) {
+        var products = [];
+        var performanceId = $(dateSelect).val();
+        var stockTypeId = stockTypeSelect.val();
+        $.each(performanceProductMap[performanceId], function (_, product) {
+            if (product.stock_type_id == stockTypeId)
+                products.push(product);
+        });
         var wishOrder = $(dateSelect).data('wishorder');
-        var wishCellTableId = $(dateSelect).data('wishcelltableid');
+        var wishCellTableId = cellTableId(wishOrder);
         var rows = $("#" + wishCellTableId + " tr.product-select-tr");
         rows.remove();
         if (!products) {
@@ -288,26 +311,40 @@ var performanceMap = ${h.tojson(performance_map)|n};
         $("#" + wishCellTableId + " tbody").append(html);
     }
 
-    function refreshDateSelection(performanceNameSelect, dateSelect) {
-        var selectedPerformanceName = performanceNameSelect.val();
-        for (var i = 0; i < performanceMap.length; i++) {
-          if (performanceMap[i][0] == selectedPerformanceName) {
-            choices = performanceMap[i][1];
-          }
-        }
-        dateSelect.empty();
-        for (var i = 0; i < choices.length; i++) {
-          var choice = choices[i];
-          dateSelect.append($('<option></option>').attr('value', choice.id).text(choice.start_on_str));
+    function refreshStockTypeSelection(dateSelect, stockTypeSelect) {
+        var performanceId = dateSelect.val();
+        var filteredStockTypeIds = {};
+        var products = performanceProductMap[performanceId];
+        for (var i = 0; i < products.length; i++)
+            filteredStockTypeIds[products[i].stock_type_id] = true;
+        stockTypeSelect.empty();
+        for (var i = 0; i < stockTypes.length; i++) {
+            var stockTypeTriplet = stockTypes[i];
+            if (stockTypeTriplet[0] in filteredStockTypeIds)
+                stockTypeSelect.append($('<option></option>').attr('value', stockTypeTriplet[0]).text(stockTypeTriplet[1]));
         }
     }
 
-    function getPerformanceIdFromProductId(productId) {
-        for (var performanceId in data) {
-            var datum = data[performanceId];
+    function refreshDateSelection(performanceNameSelect, dateSelect) {
+        var selectedPerformanceName = performanceNameSelect.val();
+        for (var i = 0; i < performanceMap.length; i++) {
+            if (performanceMap[i][0] == selectedPerformanceName) {
+                choices = performanceMap[i][1];
+            }
+        }
+        dateSelect.empty();
+        for (var i = 0; i < choices.length; i++) {
+            var choice = choices[i];
+            dateSelect.append($('<option></option>').attr('value', choice.id).text(choice.start_on_str));
+        }
+    }
+
+    function getPerformanceIdAndStockTypeIdFromProductId(productId) {
+        for (var performanceId in performanceProductMap) {
+            var datum = performanceProductMap[performanceId];
             for (var i = 0; i < datum.length; i++) {
                 if (datum[i].id == productId)
-                    return performanceId;
+                    return [performanceId, datum[i].stock_type_id];
             }
         }
     }
@@ -319,9 +356,11 @@ var performanceMap = ${h.tojson(performance_map)|n};
             if (matches) {
                 var wishOrder = matches[1], wishedProductOrder = matches[2];
                 var productId = values[key];
-                var performanceId = getPerformanceIdFromProductId(productId);
+                var pair = getPerformanceIdAndStockTypeIdFromProductId(productId);
+                var performanceId = pair[0], stockTypeId = pair[1];
                 var performanceNameSelect = $wishForm.find('select.performance-name-select[data-wishOrder="' + wishOrder + '"]');
                 var dateSelect = $wishForm.find('select.performance-date-select[data-wishOrder="' + wishOrder + '"]');
+                var stockTypeSelect = $wishForm.find('select.stock-type-select[data-wishOrder="' + wishOrder + '"]');
                 if (!dateSelect.find('option[value="' + performanceId + '"]').length) {
                     var performanceName = null;
                     for (var i = 0; i < performanceMap.length; i++) {
@@ -336,9 +375,23 @@ var performanceMap = ${h.tojson(performance_map)|n};
                     if (performanceName) {
                         performanceNameSelect.val(performanceName);
                         refreshDateSelection(performanceNameSelect, dateSelect);
-                        dateSelect.val(performanceId);
-                        refreshProducts(dateSelect);
+                        stockTypeSelect.empty();
                     }
+                }
+                if (dateSelect.val() != performanceId) {
+                    dateSelect.val(performanceId);
+                    stockTypeSelect.empty();
+                }
+
+                var stockTypeSelectUpdated = false;
+                if (!stockTypeSelect.find('option[value="' + stockTypeId + '"]').length) {
+                    refreshStockTypeSelection(dateSelect, stockTypeSelect);
+                    stockTypeSelectUpdated = true;                    
+                }
+
+                if (stockTypeSelect.val() != stockTypeId || stockTypeSelectUpdated) {
+                    stockTypeSelect.val(stockTypeId);
+                    refreshProducts(dateSelect, stockTypeSelect);
                 }
 
                 var quantityFieldName = 'product-quantity-' + wishOrder + '-' + wishedProductOrder;
@@ -353,22 +406,38 @@ var performanceMap = ${h.tojson(performance_map)|n};
         var performanceNameSelect = $(this);
         var wishOrder = performanceNameSelect.data('wishorder');
         var dateSelect = $wishForm.find('select.performance-date-select[data-wishOrder="' + wishOrder + '"]');
+        var stockTypeSelect = $wishForm.find('select.stock-type-select[data-wishOrder="' + wishOrder + '"]');
         refreshDateSelection(performanceNameSelect, dateSelect);
-        refreshProducts(dateSelect);
+        refreshStockTypeSelection(dateSelect, stockTypeSelect);
+        refreshProducts(dateSelect, stockTypeSelect);
     });
-    $(".performance-date-select").change(function() {
-        refreshProducts($(this));
+    $wishForm.find(".performance-date-select").change(function() {
+        var dateSelect = $(this);
+        var wishOrder = dateSelect.data('wishorder');
+        var stockTypeSelect = $wishForm.find('select.stock-type-select[data-wishOrder="' + wishOrder + '"]');
+        refreshStockTypeSelection(dateSelect, stockTypeSelect);
+        refreshProducts(dateSelect, stockTypeSelect);
+    });
+    $wishForm.find(".stock-type-select").change(function() {
+        var stockTypeSelect = $(this);
+        var wishOrder = stockTypeSelect.data('wishorder');
+        var dateSelect = $wishForm.find('select.performance-date-select[data-wishOrder="' + wishOrder + '"]');
+        refreshProducts(dateSelect, stockTypeSelect);
     });
 
     $(function() { 
-        $(".performance-name-select").each(function(_, n) {
+        $wishForm.find("select.performance-name-select").each(function(_, n) {
             var performanceNameSelect = $(n);
             var wishOrder = performanceNameSelect.data('wishorder');
             var dateSelect = $wishForm.find('select.performance-date-select[data-wishOrder="' + wishOrder + '"]');
             refreshDateSelection(performanceNameSelect, dateSelect);
         });
-        $(".performance-date-select").each(function(_, n) {
-            refreshProducts($(n));
+        $wishForm.find("select.performance-date-select").each(function(_, n) {
+            var dateSelect = $(n); 
+            var wishOrder = dateSelect.data('wishorder');
+            var stockTypeSelect = $wishForm.find('select.stock-type-select[data-wishOrder="' + wishOrder + '"]');
+            refreshStockTypeSelection(dateSelect, stockTypeSelect);
+            refreshProducts(dateSelect, stockTypeSelect);
         });
         updateSelection(postedValues);
     });
