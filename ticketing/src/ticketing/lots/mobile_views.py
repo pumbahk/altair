@@ -267,7 +267,7 @@ class EntryLotView(object):
 
         payment_delivery_pairs = sales_segment.payment_delivery_method_pairs
         if payment_delivery_method_pair_id not in [m.id for m in payment_delivery_pairs]:
-            self.request.session.flash(u"お支払お引き取り方法を選択してください")
+            self.request.session.flash(u"お支払／引取方法をお選びください")
             return self.step4_rendered_value(form=cform)
         if not cform.validate():
             return self.step4_rendered_value(cform)
