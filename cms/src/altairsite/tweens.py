@@ -12,11 +12,20 @@ from altair.mobile.tweens import make_mobile_response
 from altair.mobile.tweens import convert_response_if_necessary
 from altair.mobile.tweens import mobile_request_factory
 from altair.mobile.api import detect
-__all__ = ["IMobileRequest", "ISmartphoneRequest", 
-           "mobile_encoding_convert_factory", "mobile_request_factory"]
+__all__ = ["IMobileRequest", 
+           "ISmartphoneRequest", 
+           "mobile_encoding_convert_factory", 
+           "mobile_request_factory", 
+           "smartphone_request_factory"]
 
 SMARTPHONE_USER_AGENT_RX = re.compile("iPhone|iPod|Opera Mini|Android.*Mobile|NetFront|PSP|BlackBerry")
 
+def smartphone_request_factory(handler, registry):
+    def tween(request):
+        directlyProvides(request, ISmartphoneRequest)
+        return handler(request)
+    return tween
+        
 def mobile_encoding_convert_factory(handler, registry):
     def tween(request):
         if not hasattr(request, "mobile_ua"):
