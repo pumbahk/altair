@@ -1,17 +1,22 @@
 # -*- coding:utf-8 -*-
+import re
 import logging
+from zope.interface import directlyProvides
 from pyramid.response import Response
 from pyramid.renderers import render
 from altair.exclog.api import build_exception_message, log_exception_message
 
 logger = logging.getLogger(__name__)
-from altair.mobile.interfaces import IMobileRequest
+from altair.mobile.interfaces import IMobileRequest, ISmartphoneRequest
 from altair.mobile.tweens import make_mobile_response
 from altair.mobile.tweens import convert_response_if_necessary
 from altair.mobile.tweens import mobile_request_factory
 from altair.mobile.api import detect
-__all__ = ["IMobileRequest", "mobile_encoding_convert_factory", "mobile_request_factory"]
-   
+__all__ = ["IMobileRequest", "ISmartphoneRequest", 
+           "mobile_encoding_convert_factory", "mobile_request_factory"]
+
+SMARTPHONE_USER_AGENT_RX = re.compile("iPhone|iPod|Opera Mini|Android.*Mobile|NetFront|PSP|BlackBerry")
+
 def mobile_encoding_convert_factory(handler, registry):
     def tween(request):
         if not hasattr(request, "mobile_ua"):
@@ -30,6 +35,10 @@ def mobile_encoding_convert_factory(handler, registry):
                 # XXX: テンプレ大丈夫?
                 return convert_response_if_necessary(request, Response(status=400, body=render("altaircms:templates/mobile/default_notfound.html", dict(), request)))
         else:
+            ## for smartphone
+            if "HTTP_USER_AGENT" in request.environ:
+                if SMARTPHONE_USER_AGENT_RX.match(request.environ["HTTP_USER_AGENT"]):
+                    directlyProvides(request, ISmartphoneRequest)
             request.is_mobile = False
             return handler(request)
     return tween
