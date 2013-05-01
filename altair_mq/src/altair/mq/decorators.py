@@ -7,7 +7,7 @@ class task_config(object):
     def __init__(self,
                  name="",
                  root_factory=None,
-                 queue="test",
+                 queue="",
                  passive=False,
                  durable=True, 
                  exclusive=False, 

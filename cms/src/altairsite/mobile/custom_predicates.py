@@ -1,9 +1,10 @@
 import logging
 logger = logging.getLogger(__file__)
-import uamobile
+from altair.mobile.api import detect
 
 def mobile_access_predicate(info, request):
-    if not hasattr(request, "_ua"):
-        request._ua = uamobile.detect(request.environ)
+    if not hasattr(request, "mobile_ua"):
+        request.mobile_ua = detect(request)
         logger.debug(request.environ.get("HTTP_USER_AGENT"))
-    return not request._ua.is_nonmobile()
+    return not request.mobile_ua.carrier.is_nonmobile
+

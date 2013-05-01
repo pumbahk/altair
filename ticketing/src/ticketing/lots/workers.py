@@ -6,13 +6,17 @@
 
 import logging
 import transaction
-from .models import Lot
-from zope.interface import implementer
 from ticketing.payments.payment import Payment
-from ticketing.payments.interfaces import IPaymentCart
 from altair.mq.decorators import task_config
 from ticketing.cart.models import Cart, CartedProduct
 from ticketing.cart.stocker import Stocker
+from pyramid.interfaces import IRequest
+from ticketing.cart.interfaces import (
+    IStocker, IReserving, ICartFactory,
+)
+from ticketing.cart.reserving import Reserving
+from ticketing.cart.carting import CartFactory
+from .models import Lot
 
 logger = logging.getLogger(__name__)
 
@@ -25,6 +29,12 @@ def includeme(config):
     config.include('ticketing.payments.plugins.qr')
     # 配送
     config.include('ticketing.payments.plugins.shipping')
+
+    reg = config.registry
+    reg.adapters.register([IRequest], IStocker, "", Stocker)
+    reg.adapters.register([IRequest], IReserving, "", Reserving)
+    reg.adapters.register([IRequest], ICartFactory, "", CartFactory)
+    config.scan(".workers")
 
 
 def lot_wish_cart(wish):
@@ -44,6 +54,7 @@ def lot_wish_cart(wish):
     cart.different_amount = wish.lot_entry.max_amount - wish.total_amount
     return cart
 
+
 class WorkerResource(object):
     def __init__(self, message):
         self.message = message
@@ -58,12 +69,13 @@ class WorkerResource(object):
         return Lot.query.filter(Lot.id==self.lot_id).first()
 
 
-@task_config(root_factory=WorkerResource)
+@task_config(root_factory=WorkerResource,
+             queue="")
 def elect_lots_task(context, message):
     """ 当選確定処理 """
-    
 
     lot = context.lot
+    logger.info("start electing lot_id = {lot_id}".format(lot_id=lot.id))
     if lot is None:
         logger.warning("lot is not found: lot_id = {0}".format(context.lot_id))
         return
@@ -77,14 +89,13 @@ def elect_lots_task(context, message):
         orders.append(order)
 
     rejected_wishes = lot.get_rejected_wishes()
-
-
     for rw in rejected_wishes:
         rw.entry.reject()
 
     lot.finish_lotting()
 
     return len(orders)
+
 
 def elect_lot_wish(wish):
     cart = lot_wish_cart(wish)
@@ -101,7 +112,9 @@ def elect_lot_wish(wish):
         # TODO: 確保数確認
         wish.entry.elect(wish)
         order = payment.call_payment()
-        wish.order = order
+        wish.order_id = order.id
+        transaction.commit()
+
         return order
 
     except Exception as e:

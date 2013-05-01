@@ -1,32 +1,6 @@
 (function (jQuery, I18n) {
 var __LIBS__ = {};
-__LIBS__['ECKM1KD5AEIML148'] = (function (exports) { (function () { 
-
-/************** translations.js **************/
-
-
-/************** en.js **************/
-exports.en = {
-  altair: {
-    venue_editor: {
-      unassigned: "Unassigned",
-      quantity_cannot_be_negative: "Quantity cannot be negative"
-    }
-  } 
-};
-
-
-/************** ja.js **************/
-exports.ja = {
-  altair: {
-    venue_editor: {
-      unassigned: "未割当",
-      quantity_cannot_be_negative: "在庫数は0より大きい数にしてください"
-    }
-  } 
-};
- })(); return exports; })({});
-__LIBS__['TZNDZAUNG_ZXS_9X'] = (function (exports) { (function () { 
+__LIBS__['MG4EUX16MDLB6IJ5'] = (function (exports) { (function () { 
 
 /************** CONF.js **************/
 exports.DEFAULT = {
@@ -97,7 +71,7 @@ exports.DEFAULT = {
   }
 };
  })(); return exports; })({});
-__LIBS__['Y54F4C7ZT_S84BGT'] = (function (exports) { (function () { 
+__LIBS__['pFXSXUXX49WQPV19'] = (function (exports) { (function () { 
 
 /************** util.js **************/
 exports.eventKey = function Util_eventKey(e) {
@@ -158,7 +132,10 @@ exports.makeHitTester = function Util_makeHitTester(a) {
 
   return function(b) {
     var pb = b.position(),
-    sb = b.size(),
+    sb = b.size();
+    if(b._transform) {
+      pb = b._transform.apply(pb);
+    }
     bx0 = pb.x,
     bx1 = pb.x + sb.x,
     by0 = pb.y,
@@ -211,7 +188,7 @@ timer.prototype.lap = function(msg) {
     return lap;
 };
  })(); return exports; })({});
-__LIBS__['b7BXV_JMKHU2EBKF'] = (function (exports) { (function () { 
+__LIBS__['pU11FS8_SM4SUAP8'] = (function (exports) { (function () { 
 
 /************** identifiableset.js **************/
 var IdentifiableSet = exports.IdentifiableSet = function IdentifiableSet(options) {
@@ -260,12 +237,12 @@ IdentifiableSet.prototype.each = function IdentifiableSet_each(f) {
  * vim: sts=2 sw=2 ts=2 et
  */
  })(); return exports; })({});
-__LIBS__['U4A4FFJ712DXYJY4'] = (function (exports) { (function () { 
+__LIBS__['BF178VRC35UBN51D'] = (function (exports) { (function () { 
 
 /************** models.js **************/
-var util = __LIBS__['Y54F4C7ZT_S84BGT'];
-var CONF = __LIBS__['TZNDZAUNG_ZXS_9X'];
-var IdentifiableSet = __LIBS__['b7BXV_JMKHU2EBKF'].IdentifiableSet;
+var util = __LIBS__['pFXSXUXX49WQPV19'];
+var CONF = __LIBS__['MG4EUX16MDLB6IJ5'];
+var IdentifiableSet = __LIBS__['pU11FS8_SM4SUAP8'].IdentifiableSet;
 
 var VenueItemCollectionMixin = {
   venue: null,
@@ -752,12 +729,12 @@ console.log(ad2);
  * vim: sts=2 sw=2 ts=2 et
  */
  })(); return exports; })({});
-__LIBS__['C18SD_QZ9WLOVSNE'] = (function (exports) { (function () { 
+__LIBS__['lAWLKCBMCO6DXVAK'] = (function (exports) { (function () { 
 
 /************** viewobjects.js **************/
-var util = __LIBS__['Y54F4C7ZT_S84BGT'];
-var CONF = __LIBS__['TZNDZAUNG_ZXS_9X'];
-var models = __LIBS__['U4A4FFJ712DXYJY4'];
+var util = __LIBS__['pFXSXUXX49WQPV19'];
+var CONF = __LIBS__['MG4EUX16MDLB6IJ5'];
+var models = __LIBS__['BF178VRC35UBN51D'];
 
 var Seat = exports.Seat = Backbone.Model.extend({
   defaults: {
@@ -934,18 +911,44 @@ var Seat = exports.Seat = Backbone.Model.extend({
  * vim: sts=2 sw=2 ts=2 et
  */
  })(); return exports; })({});
+__LIBS__['qLT2ZG2234O09A4I'] = (function (exports) { (function () { 
+
+/************** translations.js **************/
+
+
+/************** en.js **************/
+exports.en = {
+  altair: {
+    venue_editor: {
+      unassigned: "Unassigned",
+      quantity_cannot_be_negative: "Quantity cannot be negative"
+    }
+  } 
+};
+
+
+/************** ja.js **************/
+exports.ja = {
+  altair: {
+    venue_editor: {
+      unassigned: "未割当",
+      quantity_cannot_be_negative: "在庫数は0より大きい数にしてください"
+    }
+  } 
+};
+ })(); return exports; })({});
 
 
 /************** venue-editor.js **************/
 /* extern */ var jQuery, I18n;
 (function ($) {
-  var CONF = __LIBS__['TZNDZAUNG_ZXS_9X'];
-  var models = __LIBS__['U4A4FFJ712DXYJY4'];
-  var util = __LIBS__['Y54F4C7ZT_S84BGT'];
-  var viewobjects = __LIBS__['C18SD_QZ9WLOVSNE'];
-  var IdentifiableSet = __LIBS__['b7BXV_JMKHU2EBKF'].IdentifiableSet;
+  var CONF = __LIBS__['MG4EUX16MDLB6IJ5'];
+  var models = __LIBS__['BF178VRC35UBN51D'];
+  var util = __LIBS__['pFXSXUXX49WQPV19'];
+  var viewobjects = __LIBS__['lAWLKCBMCO6DXVAK'];
+  var IdentifiableSet = __LIBS__['pU11FS8_SM4SUAP8'].IdentifiableSet;
   if (I18n)
-    I18n.translations = __LIBS__['ECKM1KD5AEIML148'];
+    I18n.translations = __LIBS__['qLT2ZG2234O09A4I'];
 
   var parseCSSStyleText = (function () {
     var regexp_for_styles = /\s*(-?(?:[_a-z\u00a0-\u10ffff]|\\[^\n\r\f#])(?:[\-_A-Za-z\u00a0-\u10ffff]|\\[^\n\r\f])*)\s*:\s*((?:(?:(?:[^;\\ \n\r\t\f"']|\\[0-9A-Fa-f]{1,6}(?:\r\n|[ \n\r\t\f])?|\\[^\n\r\f0-9A-Fa-f])+|"(?:[^\n\r\f\\"]|\\(?:\n|\r\n|\r|\f)|\\[^\n\r\f])*"|'(?:[^\n\r\f\\']|\\(?:\n|\r\n|\r|\f)|\\[^\n\r\f])*')(?:\s+|(?=;|$)))+)(?:;|$)/g;

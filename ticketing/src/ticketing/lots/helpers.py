@@ -3,6 +3,7 @@
 import re
 from webob.multidict import MultiDict
 import itertools
+import json
 from sqlalchemy.orm.exc import NoResultFound
 from markupsafe import Markup
 from ticketing.formhelpers.widgets.list import OurListWidget
@@ -46,7 +47,7 @@ SHIPPING_ATTRS = (
     "fax",
 )
 
-wished_performance_id_pt = r"^performance-(?P<wish_order>\d+)$"
+wished_performance_id_pt = r"^performanceDate-(?P<wish_order>\d+)$"
 wished_product_id_pt = r"^product-id-(?P<wish_order>\d+)-(?P<wished_product_order>\d+)$"
 wished_product_quantity_pt = r"^product-quantity-(?P<wish_order>\d+)-(?P<wished_product_order>\d+)$"
 wished_performance_id_re = re.compile(wished_performance_id_pt)
@@ -217,3 +218,6 @@ def nl2br(s):
     return Markup(u''.join(buf))
 
 format_gender = format_sex
+
+def tojson(obj):
+    return json.dumps(obj) 

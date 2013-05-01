@@ -64,9 +64,9 @@ def includeme(config):
     config.add_route('lots.review.index', 'review')
 
     # 当選フェーズ
-    config.add_route('lots.payment.index', 'events/{event_id}/payment/{lot_id}')
-    config.add_route('lots.payment.confirm', 'events/{event_id}/payment/{lot_id}/confirm')
-    config.add_route('lots.payment.completion', 'events/{event_id}/payment/{lot_id}/completion')
+    #config.add_route('lots.payment.index', 'events/{event_id}/payment/{lot_id}')
+    #config.add_route('lots.payment.confirm', 'events/{event_id}/payment/{lot_id}/confirm')
+    #config.add_route('lots.payment.completion', 'events/{event_id}/payment/{lot_id}/completion')
   
     # 楽天認証コールバック
     config.add_route('rakuten_auth.login', '/login')
@@ -126,6 +126,7 @@ def main(global_config, **local_config):
 
     config.include('altair.pyramid_assets')
     config.include('altair.pyramid_boto')
+    config.include('altair.pyramid_tz')
 
     config.set_authorization_policy(ACLAuthorizationPolicy())
     return config.make_wsgi_app()

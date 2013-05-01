@@ -1,7 +1,11 @@
+import logging
 from altair.mq.interfaces import IPublisher
 from zope.interface import implementer
 
 import pika
+
+logger = logging.getLogger(__name__)
+
 
 @implementer(IPublisher)
 class Publisher(object):
@@ -11,11 +15,14 @@ class Publisher(object):
     def publish(self, exchange="", routing_key="",
                 body="", properties={}, mandatory=False,
                 immediate=False):
-
+        logger.debug("publish body={body} exchange={exchange} queue={routing_key}".format(body=body,
+                                                                                          exchange=exchange,
+                                                                                          routing_key=routing_key))
         connection = pika.BlockingConnection(self.parameters)
 
         try:
             channel = connection.channel()
+            channel.queue_declare(queue=routing_key, durable=True, exclusive=False, auto_delete=False)
 
             channel.basic_publish(exchange=exchange,
                                   routing_key=routing_key,
@@ -23,7 +30,9 @@ class Publisher(object):
                                   mandatory=mandatory,
                                   immediate=immediate,
                                   properties=pika.BasicProperties(**properties))
+            logger.debug("published")
 
         finally:
-            connection.close()
+            pass
+            #connection.close()
 

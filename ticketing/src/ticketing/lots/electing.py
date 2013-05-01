@@ -22,5 +22,7 @@ class Electing(object):
     def elect_lot_entries(self):
         publisher = self.publisher
         body = {"lot_id": self.lot.id}
-        publisher.publish(exchange="lot.electing",
-                          body=json.dumps(body))
+        publisher.publish(exchange="",
+                          routing_key='',
+                          body=json.dumps(body),
+                          properties=dict(content_type="application/json"))
