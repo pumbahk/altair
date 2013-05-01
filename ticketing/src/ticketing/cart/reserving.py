@@ -186,7 +186,7 @@ class Reserving(object):
                 ).order_by(_SeatIndex.index, _Seat.l0_id)
 
         def query_selected_seats(venue, stock_id, quantity, seat_index_type_id):
-            _Seat = aliased(Seat)
+            _Seat = Seat # aliased(Seat) # XXX: これをaliasedにするとSQLAlchemyが変なクエリ (余計な Seat へのテーブル参照) を生成する
             _Seat_SeatAdjacency = aliased(Seat_SeatAdjacency)
             _SeatIndex = aliased(SeatIndex)
             return DBSession.query(_Seat_SeatAdjacency.seat_adjacency_id, _Seat).options(
