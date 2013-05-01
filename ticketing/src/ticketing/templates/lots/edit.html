@@ -18,9 +18,9 @@
     <fieldset>
         <legend>抽選情報</legend>
       ${h.form_item(form.name, class_='span8', maxlength=255)}
-      ${h.form_item(form.limit_wishes)}
-      ${h.form_item(form.entry_limit)}
-      ${h.form_item(form.description)}
+      ${h.form_item(form.limit_wishes, help=u"1回の申し込み中で第何希望まで出せるかの設定")}
+      ${h.form_item(form.entry_limit, help=u"同一ユーザーがこの抽選に何回申し込めるかの設定")}
+      ${h.form_item(form.description, help=u"抽選申し込み画面に表示される注意事項など")}
       ${h.form_item(form.lotting_announce_datetime)}
     </fieldset>
     <fieldset>
