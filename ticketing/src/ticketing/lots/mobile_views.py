@@ -158,7 +158,7 @@ class EntryLotView(object):
 
     @view_config(route_name='lots.entry.step3', request_method='GET', renderer=selectable_renderer("mobile/%(membership)s/step3.html"))
     def step3(self):
-        return self.step3_rendered_value(None)
+        return self.step3_rendered_value(len(api.get_options(self.request)))
 
     @back(mobile=back_to_step1)
     @view_config(route_name='lots.entry.step3', request_method='POST', renderer=selectable_renderer("mobile/%(membership)s/step3.html"))
