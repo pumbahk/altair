@@ -60,9 +60,12 @@ class FrontPageRenderer(object):
         fmt = "*debug validate template: layout.updated_at={0}, template.last_modified={1}"
         logger.warn(fmt.format(uploaded_at ,template.last_modified))
         if uploaded_at > template.last_modified:
-            resolver = get_frontpage_discriptor_resolver(self.request)
-            refresh_targets = [resolver._resolve(f) for f in layout.dependencies]
-            refresh_template_cache_only_needs(template, refresh_targets, uploaded_at)
+            self.refresh_template_cache(template, layout, uploaded_at)
+
+    def refresh_template_cache(self, template, layout, uploaded_at):
+        resolver = get_frontpage_discriptor_resolver(self.request)
+        refresh_targets = [resolver._resolve(f) for f in layout.dependencies]
+        refresh_template_cache_only_needs(template, refresh_targets, uploaded_at)
 
     def get_bsettings(self, page):
         bsettings = BlockSettings.from_widget_tree(WidgetTreeProxy(page))
