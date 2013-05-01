@@ -1,3 +1,4 @@
+
 # -*- coding:utf-8 -*-
 import logging 
 logger = logging.getLogger(__name__)
@@ -437,8 +438,18 @@ class PageSetForm(Form):
     private_tags_string = fields.TextField(label=u"非公開タグ(区切り文字:\",\")")
     mobile_tags_string = fields.TextField(label=u"モバイル用タグ(区切り文字:\",\")")
     genre_id = MaybeSelectField(label=u"ジャンル", coerce=unicode, choices=[])
-    url = fields.TextField(label=u"URL", validators=[validators.Required(), url_not_conflict])
+    url = fields.TextField(label=u"URL", validators=[])
 
+    def object_validate(self, obj=None):
+        data = self.data
+        qs = self.request.allowable(PageSet).filter_by(url=data["url"]).filter(PageSet.id!=obj.id)
+        if qs.count() > 0:
+            append_errors(self.errors, "url", u'URL "%s" は既に登録されてます' % data["url"])
+            return False
+        return True
+            
+    
     def configure(self, request):
         self.genre_id.choices = [(unicode(g.id), unicode(g)) for g in request.allowable(Genre)]
+        self.request = request
     __display_fields__ = ["name", "genre_id", "url", "tags_string", "private_tags_string", "mobile_tags_string"]
