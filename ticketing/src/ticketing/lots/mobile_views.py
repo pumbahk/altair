@@ -123,7 +123,10 @@ class EntryLotView(object):
             lot=lot,
             sales_segment=sales_segment,
             performance=performance,
-            products=sales_segment.products,
+            products=DBSession.query(Product) \
+                .filter(Product.sales_segment_id == sales_segment.id) \
+                .filter(Product.performance_id == performance.id) \
+                .order_by(Product.display_order).all(),
             option_index=self.context.option_index,
             messages=self.request.session.pop_flash()
             )
@@ -137,7 +140,6 @@ class EntryLotView(object):
             event=event,
             lot=lot,
             sales_segment=sales_segment,
-            products=sales_segment.products,
             option_index=option_index,
             options=[
                 dict(
