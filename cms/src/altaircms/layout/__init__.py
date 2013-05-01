@@ -18,6 +18,7 @@ def install_s3sync(config):
     ## s3 upload setting
     ## after s3 upload event
     ## file upload -> s3 upload -> set uploaded
+    config.add_subscriber(".subscribers.rename_for_s3_upload", "altaircms.filelib.s3.BeforeS3Upload")
     config.add_subscriber(".subscribers.set_uploaded_at", "altaircms.filelib.s3.AfterS3Upload")
 
 def includeme(config):

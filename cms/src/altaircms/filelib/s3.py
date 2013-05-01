@@ -20,6 +20,12 @@ class S3Event(object):
         self.uploader = uploader
         self.extra_args = extra_args
 
+class BeforeS3Upload(S3Event):
+    pass
+
+class BeforeS3Delete(S3Event):
+    pass
+
 class AfterS3Upload(S3Event):
     pass
 
@@ -48,19 +54,31 @@ class S3ConnectionFactory(object):
         result = event.result #{"create": [], "delete": [], "extra_args": []}
         session = event.session
         options = event.options
+
         uploaded_files = []
         deleted_files = []
-        for f, realpath in result.get("create", []):
-            self.upload(f, realpath, options=options)
-            uploaded_files.append(f)
+        notify = request.registry.notify
+        #upload
+        files = result.get("create", [])
+        if files:
+            before_upload_event = BeforeS3Upload(request, session, files, self.uploader, result.get("extra_args", []))
+            notify(before_upload_event)
+            for f, realpath in before_upload_event.files:
+                self.upload(f, realpath, options=options)
+                uploaded_files.append(f)
         if uploaded_files:
-            request.registry.notify(AfterS3Upload(request, session, uploaded_files, self.uploader, result.get("extra_args", [])))
+            notify(AfterS3Upload(request, session, uploaded_files, self.uploader, result.get("extra_args", [])))
 
-        for f, realpath in result.get("delete", []):
-            self.delete(f, realpath, options=options)
-            deleted_files.append(f)
+        #delete
+        files = result.get("delete", [])
+        if files:
+            before_delete_event = BeforeS3Delete(request, session, files, self.deleteer, result.get("extra_args", []))
+            notify(before_delete_event)
+            for f, realpath in before_delete_event.files:
+                self.delete(f, realpath, options=options)
+                deleted_files.append(f)
         if deleted_files:
-            request.registry.notify(AfterS3Delete(request, session, deleted_files, self.uploader, result.get("extra_args", [])))
+            notify(AfterS3Delete(request, session, deleted_files, self.uploader, result.get("extra_args", [])))
 
     def upload(self, f, realpath, options=None):
         logger.warn("*debug upload: bucket={0} name={1}".format(self.uploader.bucket_name, f.name))
