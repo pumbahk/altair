@@ -25,7 +25,8 @@ def install_filesession(config):
     savepath = AssetResolver().resolve(assetspec).abspath()
     filesession = FileSession(make_path=lambda : savepath, 
                               on_file_exists=on_file_exists_try_rename, 
-                              marker=SESSION_NAME)
+                              marker=SESSION_NAME, 
+                              options={"public": True})
     filesession.assetspec = assetspec
     config.add_filesession(filesession, name=SESSION_NAME)
 

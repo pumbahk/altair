@@ -138,11 +138,13 @@ class FileSession(object):
     def __init__(self, prefix="",
                  make_path=None,
                  marker=None, 
-                 on_file_exists=on_file_exists_overwrite):
+                 on_file_exists=on_file_exists_overwrite, 
+                 options=None):
         self.marker = marker
         self.make_path = make_path or (lambda : os.path.abspath(prefix))
         self.deleter = FileDeleter(self)
         self.creator = FileCreator(self, on_file_exists=on_file_exists)
+        self.options = options
 
     def abspath(self, part):
         return os.path.join(self.make_path(), part)

@@ -2,13 +2,14 @@ import unittest
 from pyramid import testing
 
 class DummyFileSession(object):
+    options = "OPTION"
     def __init__(self):
         self.result = []
     def add(self, x):
         self.result.append(("add", x))
     def delete(self, x):
         self.result.append(("delete", x))
-    def commit(self):
+    def commit(self, extra_args=None):
         return self.result
 
 class HasRequestSessionTests(unittest.TestCase):
@@ -28,6 +29,7 @@ class HasRequestSessionTests(unittest.TestCase):
         from altaircms.filelib.adapts import AfterCommit
         def asseration(event):
             self.assertEquals(event.result, [("add", "a"), ("delete", "b")])
+            self.assertEquals(event.options, "OPTION")
         self.config.add_subscriber(asseration, AfterCommit)
 
         target = self._makeOne()

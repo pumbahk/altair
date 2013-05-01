@@ -40,9 +40,22 @@ class DefaultS3ConnectionFactory(object):
 class InvalidOption(Exception):
     pass
 
+marker = object()
+class Choice(object):
+    __slots__ = ("xs", )
+    def __init__(self, xs):
+        self.xs = xs
+
+    def get(self, k, default=None):
+        for x in self.xs:
+            v = x.get(k, marker)
+            if marker != v:
+                return v
+        return default
+
 @implementer(IS3ContentsUploader)
 class DefaultS3Uploader(object):
-    OPTIONS = ("public", )
+    OPTIONS = ("public", "overwrite")
     def __init__(self, connection_factory, bucket_name, **options):
         self.options = options
         for o in options.keys():
@@ -59,30 +72,33 @@ class DefaultS3Uploader(object):
     def bucket(self):
         return self.connection.get_bucket(self.bucket_name)
 
-    def _treat_options(self, k):
-        options = {}
-        if self.options.get("public", False):
-            options["policy"] = "public-read"
-        return options
+    def _treat_options(self, options):
+        result = {}
+        if options.get("public", False):
+            result["policy"] = "public-read"
+        return result
 
     def _force_upload(self, content, name, setter):
         k = Key(self.bucket)
         k.key = name
-        options = self._treat_options(k)
-        return setter(k, content, options)
+        return setter(k, content)
 
-    def _upload(self, content, name, setter, overwrite=False):
+    def _upload(self, content, name, setter, overwrite=True):
         if overwrite:
             return self._force_upload(content, name, setter)
         else:
-            logger.warn("DefaultS3Uploader.upload(overwrite=False) is not implemented")
+            logger.info("DefaultS3Uploader.upload(overwrite=False) is not implemented")
             return self._force_upload(content, name, setter)
 
-    def upload_string(self, content, name, overwrite=False):        
-        return self._upload(content, name, lambda k, content, options: k.set_contents_from_string(content, **options))
+    def upload_string(self, content, name, options={}):
+        options = self._treat_options(Choice([options, self.options]))
+        return self._upload(content, name, lambda k, content: k.set_contents_from_string(content, **options), 
+                            overwrite=options.get("overwrite", True))
 
-    def upload_file(self, content, name, overwrite=False):        
-        return self._upload(content, name, lambda k, content, options: k.set_contents_from_file(content, **options))
+    def upload_file(self, content, name, options={}):        
+        options = self._treat_options(Choice([options, self.options]))
+        return self._upload(content, name, lambda k, content: k.set_contents_from_file(content, **options), 
+                            overwrite=options.get("overwrite", True))
     upload = upload_file
 
     def delete(self, content, name):

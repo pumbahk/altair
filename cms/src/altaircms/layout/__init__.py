@@ -9,7 +9,8 @@ def install_filesession(config):
     assetspec = settings["altaircms.layout_directory"]
     savepath = AssetResolver().resolve(assetspec).abspath()
     filesession = FileSession(make_path=lambda : savepath, 
-                              marker=SESSION_NAME)
+                              marker=SESSION_NAME, 
+                              options={"public": False})
     filesession.assetspec = assetspec
     config.add_filesession(filesession, name=SESSION_NAME)
 

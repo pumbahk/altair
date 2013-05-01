@@ -2,10 +2,11 @@ from zope.interface import implementer
 from .interfaces import IFileSession
 
 class AfterCommit(object):
-    def __init__(self, request, session, result):
+    def __init__(self, request, session, result, options=None):
         self.request = request
         self.session = session #session is filesession
         self.result = result
+        self.options = options or {}
 
 @implementer(IFileSession)
 class AdaptsFileSession(object):
@@ -15,7 +16,7 @@ class AdaptsFileSession(object):
 
     def commit(self, extra_args=None):
         result = self.session.commit(extra_args=extra_args)
-        self.request.registry.notify(AfterCommit(self.request, self.session, result))
+        self.request.registry.notify(AfterCommit(self.request, self.session, result, self.session.options))
         return result
 
     def add(self, *args, **kwargs):

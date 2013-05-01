@@ -47,29 +47,30 @@ class S3ConnectionFactory(object):
         request = event.request
         result = event.result #{"create": [], "delete": [], "extra_args": []}
         session = event.session
+        options = event.options
         uploaded_files = []
         deleted_files = []
         for f, realpath in result.get("create", []):
-            self.upload(f, realpath)
+            self.upload(f, realpath, options=options)
             uploaded_files.append(f)
         if uploaded_files:
             request.registry.notify(AfterS3Upload(request, session, uploaded_files, self.uploader, result.get("extra_args", [])))
 
         for f, realpath in result.get("delete", []):
-            self.delete(f, realpath)
+            self.delete(f, realpath, options=options)
             deleted_files.append(f)
         if deleted_files:
             request.registry.notify(AfterS3Delete(request, session, deleted_files, self.uploader, result.get("extra_args", [])))
 
-    def upload(self, f, realpath):
+    def upload(self, f, realpath, options=None):
         logger.warn("*debug upload: bucket={0} name={1}".format(self.uploader.bucket_name, f.name))
         with open(realpath) as rf:
-            self.uploader.upload(rf, f.name)
+            self.uploader.upload(rf, f.name, options)
 
-    def delete(self, f, realpath):
+    def delete(self, f, realpath, options=None):
         logger.warn("*debug delete: bucket={0} name={1}".format(self.uploader.bucket_name, f.name))
         ## uploadしたファイルは残す.
-        # self.uploader.delete(f, f.name)
+        # self.uploader.delete(f, f.name, options)
 
 
 @provider(IS3UtilityFactory)
