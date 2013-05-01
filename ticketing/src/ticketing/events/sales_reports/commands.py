@@ -72,7 +72,8 @@ def main(argv=sys.argv):
         form = SalesReportForm(MultiDict(params))
 
         if performance:
-            if performance.end_on < now:
+            end_on = performance.end_on or performance.start_on
+            if end_on < now:
                 continue
             logger.info('report_setting_id: %s, performance_id: %s' % (report_setting.id, performance.id))
 
