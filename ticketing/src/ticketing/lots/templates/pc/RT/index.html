@@ -366,7 +366,9 @@ var performanceMap = ${h.tojson(performance_map)|n};
             var wishOrder = performanceNameSelect.data('wishorder');
             var dateSelect = $wishForm.find('select.performance-date-select[data-wishOrder="' + wishOrder + '"]');
             refreshDateSelection(performanceNameSelect, dateSelect);
-            refreshProducts(dateSelect);
+        });
+        $(".performance-date-select").each(function(_, n) {
+            refreshProducts($(n));
         });
         updateSelection(postedValues);
     });
