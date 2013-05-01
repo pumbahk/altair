@@ -1,5 +1,15 @@
 <%inherit file="${context['main_template'].uri}" />
 <div id="main">
+  %if entry.lot.is_elected():
+  <div class="">
+    <h1>抽選結果</h1>
+    %if entry.is_ordered:
+    当選しました。<a href="/orderreview" target="_blank">購入履歴</a>をご確認ください。 注文番号は ${entry.entry_no} です。
+    %elif entry.is_rejected:
+    落選となりました。
+    %endif
+  </div>
+  %endif
   <h1><img src="${request.static_url('ticketing.lots:static/img/order/title_settlement.gif')}" alt="チケット申込" width="950" height="40" /></h1>
   <div class="confirmBox">
     <div class="confirmBoxInner">
@@ -88,12 +98,4 @@
       <div class="confirmBoxText">${lot.description}</div>
     </div>
   </div>
-
-  %if entry.is_elected and not entry.is_ordered:
-  <div class="confirmBox">
-    <div class="confirmBoxInner">
-      <a href="${payment_url}"> 決済 </a>
-    </div>
-  </div>
-  %endif
 </div>

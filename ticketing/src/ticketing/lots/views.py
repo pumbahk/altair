@@ -4,16 +4,19 @@ import logging
 import operator
 import json
 
-from pyramid.view import view_config, view_defaults, render_view_to_response
+from pyramid.view import view_config, view_defaults
+#from pyramid.view import render_view_to_response
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound, HTTPBadRequest
 from sqlalchemy.orm.exc import NoResultFound
 
 from wtforms.validators import ValidationError
 from altair.mobile import mobile_view_config
+from altair.pyramid_tz.api import get_timezone
 
 from ticketing.models import DBSession
 from ticketing.core.models import PaymentDeliveryMethodPair
 from ticketing.cart import api as cart_api
+from ticketing.utils import toutc
 from ticketing.payments.payment import Payment
 from ticketing.cart.exceptions import NoCartError
 
@@ -32,6 +35,31 @@ from . import urls
 
 logger = logging.getLogger(__name__)
 
+def make_performance_map(request, performances):
+    tz = get_timezone(request)
+    performance_map = {}
+    for performance in performances:
+        performances_per_name = performance_map.get(performance.name)
+        if not performances_per_name:
+            performances_per_name = performance_map[performance.name] = []
+        performances_per_name.append(
+            dict(
+                id=performance.id,
+                name=performance.name,
+                venue=performance.venue.name,
+                open_on=toutc(performance.open_on, tz).isoformat(),
+                start_on=toutc(performance.start_on, tz).isoformat(),
+                start_on_str=h.japanese_datetime(performance.start_on)
+                )
+            )
+
+    for v in performance_map.itervalues():
+        v.sort(lambda a, b: cmp(a['start_on'], b['start_on']))
+
+    retval = list(performance_map.iteritems())
+    retval.sort(lambda a, b: cmp(a[1][0]['start_on'], b[1][0]['start_on']))
+
+    return retval
 
 def my_render_view_to_response(context, request, view_name=''):
     from pyramid.interfaces import IViewClassifier, IView
@@ -100,6 +128,8 @@ class EntryLotView(object):
             logger.debug('lot performances not found')
             raise HTTPNotFound()
 
+        performance_map = make_performance_map(self.request, performances)
+
         stocks = lot.stock_types
 
         # if not stocks:
@@ -115,7 +145,7 @@ class EntryLotView(object):
             posted_values=json.dumps(dict(self.request.POST)),
             products_json=json.dumps(product_performance_map),
             payment_delivery_method_pair_id=self.request.params.get('payment_delivery_method_pair_id'),
-            lot=lot, performances=performances, stocks=stocks)
+            lot=lot, performances=performances, performance_map=performance_map, stocks=stocks)
 
     @view_config(request_method="POST")
     def post(self):
@@ -314,179 +344,179 @@ class LotReviewView(object):
             memo=lot_entry.memo,
             payment_url=self.request.route_url('lots.payment.index', event_id=event_id, lot_id=lot_id) if lot_entry.is_elected else None) 
 
-@view_defaults(route_name='lots.payment.index')
-class PaymentView(object):
-    """ [当選者のみ]
-    支払方法選択
-    セッションに申し込み者の情報を持つ
-    """
+# @view_defaults(route_name='lots.payment.index')
+# class PaymentView(object):
+#     """ [当選者のみ]
+#     支払方法選択
+#     セッションに申し込み者の情報を持つ
+#     """
     
 
-    def __init__(self, context, request):
-        self.context = context
-        self.request = request
+#     def __init__(self, context, request):
+#         self.context = context
+#         self.request = request
 
-    @view_config(request_method="GET", renderer=selectable_renderer("pc/%(membership)s/index_2.html"))
-    @mobile_view_config(request_method="GET", renderer=selectable_renderer("mobile/%(membership)s/index_2.html"))
-    def show_form(self):
-        """
-        """
-        lot_entry = api.entry_session(self.request)
-        if lot_entry is None:
-            location = self.request.route_url('lots.review.index')
-            return HTTPFound(location)
+#     @view_config(request_method="GET", renderer=selectable_renderer("pc/%(membership)s/index_2.html"))
+#     @mobile_view_config(request_method="GET", renderer=selectable_renderer("mobile/%(membership)s/index_2.html"))
+#     def show_form(self):
+#         """
+#         """
+#         lot_entry = api.entry_session(self.request)
+#         if lot_entry is None:
+#             location = self.request.route_url('lots.review.index')
+#             return HTTPFound(location)
 
-        # この申し込みは妥当か？
-        if not lot_entry.is_elected:
-            # 通常のフローでは到達しない → 400
-            raise HTTPBadRequest()
+#         # この申し込みは妥当か？
+#         if not lot_entry.is_elected:
+#             # 通常のフローでは到達しない → 400
+#             raise HTTPBadRequest()
 
-        lot = api.get_requested_lot(self.request)
-        payment_delivery_method_pairs = lot.sales_segment.payment_delivery_method_pairs
-        # 当選情報
-        elected = DBSession.query(LotElectedEntry).filter(
-            LotElectedEntry.lot_entry_id==lot_entry.id
-        ).filter(
-            LotElectedEntry.lot_entry_id==LotEntryWish.lot_entry_id
-        ).filter(
-            LotElectedEntry.lot_entry_wish_id==LotEntryWish.id
-        ).first()
-        if elected is None:
-            # 通常のフローでは到達しない → 400
-            raise HTTPBadRequest()
-        shipping_address = lot_entry.shipping_address
-        form_data = h.shipping_address_form_data(shipping_address, lot_entry.gender)
-        form = schemas.ClientForm(form_data)
-        wish=elected.lot_entry_wish
-        payment_delivery_method_pair=lot_entry.payment_delivery_method_pair
-        total_amount = sum([wp.product.price * wp.quantity for wp in wish.products]) + payment_delivery_method_pair.transaction_fee + payment_delivery_method_pair.delivery_fee + payment_delivery_method_pair.system_fee
+#         lot = api.get_requested_lot(self.request)
+#         payment_delivery_method_pairs = lot.sales_segment.payment_delivery_method_pairs
+#         # 当選情報
+#         elected = DBSession.query(LotElectedEntry).filter(
+#             LotElectedEntry.lot_entry_id==lot_entry.id
+#         ).filter(
+#             LotElectedEntry.lot_entry_id==LotEntryWish.lot_entry_id
+#         ).filter(
+#             LotElectedEntry.lot_entry_wish_id==LotEntryWish.id
+#         ).first()
+#         if elected is None:
+#             # 通常のフローでは到達しない → 400
+#             raise HTTPBadRequest()
+#         shipping_address = lot_entry.shipping_address
+#         form_data = h.shipping_address_form_data(shipping_address, lot_entry.gender)
+#         form = schemas.ClientForm(form_data)
+#         wish=elected.lot_entry_wish
+#         payment_delivery_method_pair=lot_entry.payment_delivery_method_pair
+#         total_amount = sum([wp.product.price * wp.quantity for wp in wish.products]) + payment_delivery_method_pair.transaction_fee + payment_delivery_method_pair.delivery_fee + payment_delivery_method_pair.system_fee
 
-        return dict(form=form, lot=lot, elected=elected, wish=wish, lot_entry=lot_entry, 
-            total_amount=total_amount,
-            performance=elected.lot_entry_wish.performance,
-            payment_delivery_method_pair_id=lot_entry.payment_delivery_method_pair_id,
-            payment_delivery_method_pair=payment_delivery_method_pair,
-            payment_delivery_pairs=payment_delivery_method_pairs)
+#         return dict(form=form, lot=lot, elected=elected, wish=wish, lot_entry=lot_entry, 
+#             total_amount=total_amount,
+#             performance=elected.lot_entry_wish.performance,
+#             payment_delivery_method_pair_id=lot_entry.payment_delivery_method_pair_id,
+#             payment_delivery_method_pair=payment_delivery_method_pair,
+#             payment_delivery_pairs=payment_delivery_method_pairs)
 
-    @view_config(request_method="POST")
-    def submit(self):
-        """
-        決済
-        """
+#     @view_config(request_method="POST")
+#     def submit(self):
+#         """
+#         決済
+#         """
 
-        event_id = self.context.lot
-        lot_entry = api.entry_session(self.request)
-        if lot_entry is None:
-            raise HTTPNotFound
+#         event_id = self.context.lot
+#         lot_entry = api.entry_session(self.request)
+#         if lot_entry is None:
+#             raise HTTPNotFound
 
-        if not lot_entry.is_elected:
-            raise NotElectedException
+#         if not lot_entry.is_elected:
+#             raise NotElectedException
 
-        lot = lot_entry.lot
-        cart = api.create_cart(self.request, lot_entry)
-        DBSession.add(cart)
-        DBSession.flush()
-        cart_api.set_cart(self.request, cart)
-        client_name = self.request.params.get('last_name', '') + self.request.params.get('first_name', '')
+#         lot = lot_entry.lot
+#         cart = api.create_cart(self.request, lot_entry)
+#         DBSession.add(cart)
+#         DBSession.flush()
+#         cart_api.set_cart(self.request, cart)
+#         client_name = self.request.params.get('last_name', '') + self.request.params.get('first_name', '')
 
-        cart_api.new_order_session(
-            self.request,
-            client_name=client_name,
-            payment_delivery_method_pair_id=cart.payment_delivery_pair.id,
-            email_1=cart.shipping_address.email_1,
-        )
+#         cart_api.new_order_session(
+#             self.request,
+#             client_name=client_name,
+#             payment_delivery_method_pair_id=cart.payment_delivery_pair.id,
+#             email_1=cart.shipping_address.email_1,
+#         )
 
 
-        self.request.session['payment_confirm_url'] = self.request.route_url('lots.payment.confirm', event_id=lot.event_id, lot_id=lot.id)
-        payment = Payment(cart, self.request)
-        result = payment.call_prepare()
-        if callable(result):
-            return result
+#         self.request.session['payment_confirm_url'] = self.request.route_url('lots.payment.confirm', event_id=lot.event_id, lot_id=lot.id)
+#         payment = Payment(cart, self.request)
+#         result = payment.call_prepare()
+#         if callable(result):
+#             return result
 
-        location = self.request.route_url('lots.payment.confirm', 
-            event_id=event_id,
-            lot_id=lot_entry.lot.id,
-            entry_no=lot_entry.entry_no)
-        return HTTPFound(location)
+#         location = self.request.route_url('lots.payment.confirm', 
+#             event_id=event_id,
+#             lot_id=lot_entry.lot.id,
+#             entry_no=lot_entry.entry_no)
+#         return HTTPFound(location)
 
-@view_defaults(route_name='lots.payment.confirm')
-class PaymentConfirm(object):
-    def __init__(self, request):
-        self.request = request
+# @view_defaults(route_name='lots.payment.confirm')
+# class PaymentConfirm(object):
+#     def __init__(self, request):
+#         self.request = request
     
-    @view_config(request_method="GET", renderer=selectable_renderer("pc/%(membership)s/confirm_2.html"))
-    @mobile_view_config(request_method="GET", renderer=selectable_renderer("mobile/%(membership)s/confirm_2.html"))
-    def get(self):
-        """
-        """
-        lot_entry = api.entry_session(self.request)
-        if lot_entry is None:
-            raise HTTPNotFound
+#     @view_config(request_method="GET", renderer=selectable_renderer("pc/%(membership)s/confirm_2.html"))
+#     @mobile_view_config(request_method="GET", renderer=selectable_renderer("mobile/%(membership)s/confirm_2.html"))
+#     def get(self):
+#         """
+#         """
+#         lot_entry = api.entry_session(self.request)
+#         if lot_entry is None:
+#             raise HTTPNotFound
 
-        if not lot_entry.is_elected:
-            raise NotElectedException
-        elected = lot_entry.lot_elected_entries[0]
-        cart = cart_api.get_cart(self.request)
-        return dict(
-            lot_entry=lot_entry,
-            lot=lot_entry.lot,
-            elected=elected,
-            performance=elected.lot_entry_wish.performance,
-            cart=cart,
-            payment_delivery_method_pair=cart.payment_delivery_pair,
-            shipping_address=cart.shipping_address,
-            total_amount=cart.total_amount
-            )
+#         if not lot_entry.is_elected:
+#             raise NotElectedException
+#         elected = lot_entry.lot_elected_entries[0]
+#         cart = cart_api.get_cart(self.request)
+#         return dict(
+#             lot_entry=lot_entry,
+#             lot=lot_entry.lot,
+#             elected=elected,
+#             performance=elected.lot_entry_wish.performance,
+#             cart=cart,
+#             payment_delivery_method_pair=cart.payment_delivery_pair,
+#             shipping_address=cart.shipping_address,
+#             total_amount=cart.total_amount
+#             )
 
-    @view_config(request_method="POST")
-    def post(self):
-        lot_entry = api.entry_session(self.request)
-        if lot_entry is None:
-            raise HTTPNotFound
+#     @view_config(request_method="POST")
+#     def post(self):
+#         lot_entry = api.entry_session(self.request)
+#         if lot_entry is None:
+#             raise HTTPNotFound
 
-        if not lot_entry.is_elected:
-            raise NotElectedException
-        cart = cart_api.get_cart_safe(self.request)
-        if not cart.is_valid():
-            raise HTTPNotFound()
+#         if not lot_entry.is_elected:
+#             raise NotElectedException
+#         cart = cart_api.get_cart_safe(self.request)
+#         if not cart.is_valid():
+#             raise HTTPNotFound()
 
-        payment = Payment(cart, self.request)
-        order = payment.call_payment()
-        logger.debug("order_no = {0}".format(order.order_no))
-        cart_api.remove_cart(self.request)
-        lot_entry = api.entry_session(self.request)
-        lot_entry.order = order
-        return HTTPFound(location=urls.payment_completion(self.request))
+#         payment = Payment(cart, self.request)
+#         order = payment.call_payment()
+#         logger.debug("order_no = {0}".format(order.order_no))
+#         cart_api.remove_cart(self.request)
+#         lot_entry = api.entry_session(self.request)
+#         lot_entry.order = order
+#         return HTTPFound(location=urls.payment_completion(self.request))
 
-@view_defaults(route_name='lots.payment.completion')
-class PaymentCompleted(object):
-    """ [当選者のみ]
-    """
+# @view_defaults(route_name='lots.payment.completion')
+# class PaymentCompleted(object):
+#     """ [当選者のみ]
+#     """
     
-    def __init__(self, request):
-        self.request = request
+#     def __init__(self, request):
+#         self.request = request
 
-    @view_config(request_method="GET", renderer=selectable_renderer("pc/%(membership)s/completion_2.html"))
-    @mobile_view_config(request_method="GET", renderer=selectable_renderer("mobile/%(membership)s/completion_2.html"))
-    def __call__(self):
-        """ 完了画面 (表示のみ)
-        """
-        lot_entry = api.entry_session(self.request)
-        if lot_entry is None:
-            raise HTTPNotFound
+#     @view_config(request_method="GET", renderer=selectable_renderer("pc/%(membership)s/completion_2.html"))
+#     @mobile_view_config(request_method="GET", renderer=selectable_renderer("mobile/%(membership)s/completion_2.html"))
+#     def __call__(self):
+#         """ 完了画面 (表示のみ)
+#         """
+#         lot_entry = api.entry_session(self.request)
+#         if lot_entry is None:
+#             raise HTTPNotFound
 
-        order = lot_entry.order
-        if not order:
-            raise HTTPNotFound()
+#         order = lot_entry.order
+#         if not order:
+#             raise HTTPNotFound()
 
-        elected = lot_entry.lot_elected_entries[0]
-        return dict(
-            order=order,
-            entry=lot_entry,
-            elected=elected,
-            performance=elected.lot_entry_wish.performance,
-            lot=lot_entry.lot,
-            payment_delivery_method_pair=order.payment_delivery_pair,
-            shipping_address=order.shipping_address,
-            total_amount=order.total_amount
-            )
+#         elected = lot_entry.lot_elected_entries[0]
+#         return dict(
+#             order=order,
+#             entry=lot_entry,
+#             elected=elected,
+#             performance=elected.lot_entry_wish.performance,
+#             lot=lot_entry.lot,
+#             payment_delivery_method_pair=order.payment_delivery_pair,
+#             shipping_address=order.shipping_address,
+#             total_amount=order.total_amount
+#             )

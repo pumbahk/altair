@@ -18,8 +18,7 @@ from ..interfaces import IDirectoryResource
 from altaircms.modelmanager.searcher import IPublishingModelSearcher
 from altairsite.front.api import get_frontpage_template_lookup
 
-class StaticPageNotFound(Exception):
-    pass
+from . import StaticPageNotFound
 
 def directory_validate(basedir, tmpdir):
     if not os.path.exists(basedir):

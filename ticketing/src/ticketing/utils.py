@@ -5,7 +5,8 @@ from decimal import Decimal
 from pyramid.threadlocal import get_current_registry
 from altair.mobile.interfaces import IMobileCarrierDetector
 from altair.mobile.api import _detect_from_email_address
-from datetime import date, timedelta
+from datetime import date, timedelta, datetime
+import pytz
 import urllib
 import re
 import sys
@@ -334,3 +335,10 @@ def uniurldecode(buf, method='plus', encoding=None):
 
 def tristate(bool_or_none):
     return bool(bool_or_none) if bool_or_none is not None else None
+
+def toutc(dt, default_tz=None):
+    if dt.tzinfo is None:
+        if default_tz is None:
+            raise ValueError('default_tz is not given')
+        dt = dt.replace(tzinfo=default_tz)
+    return dt.astimezone(pytz.utc)
