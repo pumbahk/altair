@@ -27,16 +27,15 @@ def get_filename(inputname, filename):
 class LayoutWriter(object):
     def __init__(self, request):
         self.request = request
+        self.filesession = get_layout_filesession(self.request)
 
     def write_layout_file(self, basename, organization,  params):
-        filesession = get_layout_filesession(self.request)
         prefixed_name = os.path.join(organization.short_name, basename)
         filedata = File(name=prefixed_name, handler=params["filepath"].file)
-        filesession.add(filedata)
+        self.filesession.add(filedata)
 
-        ## todo:moveit
-        filesession.commit()
-        return 
+    def commit(self, *args, **kwargs):
+        return self.filesession.commit(*args, **kwargs)
 
 class LayoutInfoDetector(object):
     """
@@ -84,6 +83,7 @@ class LayoutCreator(object):
             layout = self.create_model(basename, params, blocks)
             layout.pagetype_id = pagetype_id
             notify_model_create(self.request, layout, params)
+            self.writer.commit([layout])
             return layout
         except Exception, e:
             logger.exception(str(e))
@@ -113,6 +113,7 @@ class LayoutUpdater(object):
                 blocks = params["blocks"]
             layout = self.update_model(layout, basename, params, blocks)
             layout.pagetype_id = pagetype_id
+            self.writer.commit([layout])
             return layout
         except Exception, e:
             logger.error(str(e))
