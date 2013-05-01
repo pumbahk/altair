@@ -5,7 +5,7 @@ from altair.exclog.api import build_exception_message, log_exception_message
 
 
 @view_config(context="pyramid.exceptions.Forbidden", 
-             request_type='altairsite.mobile.tweens.IMobileRequest', 
+             request_type='altairsite.tweens.IMobileRequest', 
              renderer=tstar_mobile_or_not_renderer({"ticketstar": "altaircms:templates/mobile/notfound.html"}, 
                                                    default = "altaircms:templates/mobile/default_notfound.html"))
 @view_config(context="pyramid.exceptions.Forbidden", 
@@ -16,13 +16,13 @@ def forbidden(request):
     return {}
 
 @view_config(context="pyramid.exceptions.NotFound", 
-             request_type='altairsite.mobile.tweens.IMobileRequest', 
+             request_type='altairsite.tweens.IMobileRequest', 
              renderer=tstar_mobile_or_not_renderer({"ticketstar": "altaircms:templates/mobile/notfound.html"}, 
                                                    default = "altaircms:templates/mobile/default_notfound.html"))
 @view_config(context="pyramid.exceptions.NotFound", 
              renderer=selectable_renderer("altaircms:templates/usersite/errors/%(prefix)s/notfound.html"))
 @view_config(context="altaircms.page.api.StaticPageNotFound", 
-             request_type='altairsite.mobile.tweens.IMobileRequest', 
+             request_type='altairsite.tweens.IMobileRequest', 
              renderer=tstar_mobile_or_not_renderer({"ticketstar": "altaircms:templates/mobile/notfound.html"}, 
                                                    default = "altaircms:templates/mobile/default_notfound.html"))
 @view_config(context="altaircms.page.api.StaticPageNotFound", 
@@ -33,7 +33,7 @@ def notfound(request):
     return {}
 
 @view_config(context="altairsite.exceptions.UsersiteException", 
-             request_type='altairsite.mobile.tweens.IMobileRequest', 
+             request_type='altairsite.tweens.IMobileRequest', 
              renderer=tstar_mobile_or_not_renderer(
                {"ticketstar": "altaircms:templates/mobile/notfound.html"}, 
                default = "altaircms:templates/mobile/default_notfound.html"))

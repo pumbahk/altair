@@ -34,5 +34,5 @@ def main(config, **settings):
     config.include(install_app)
 
     ## all requests are treated as mobile request
-    config._add_tween("altairsite.mobile.tweens.smartphone_request_factory", under=INGRESS)
+    config._add_tween("altairsite.tweens.smartphone_request_factory", under=INGRESS)
     return config.make_wsgi_app()
