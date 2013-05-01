@@ -687,7 +687,7 @@ class StaticPageView(object):
 
 @view_config(route_name="static_page_display")
 def static_page_display_view(context, request):
-    prefix = request.matchdict["path"].split("/", 1)[0]
+    prefix = request.matchdict["path"].lstrip("/").split("/", 1)[0]
     static_page = get_or_404(request.allowable(StaticPage), StaticPage.name==prefix)
     if request.GET.get("force_original"):
         return as_static_page_response(request, static_page, request.matchdict["path"], force_original=True)

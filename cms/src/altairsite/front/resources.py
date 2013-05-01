@@ -43,8 +43,8 @@ class AccessControlPC(object):
     def error_message(self):
         return u"\n".join(self._error_message)
 
-    def frontpage_template(self, page):
-        resolver = api.get_frontpage_template_resolver(self.request)
+    def frontpage_discriptor(self, page):
+        resolver = api.get_frontpage_discriptor_resolver(self.request)
         return resolver.resolve(self.request, page.layout, verbose=True)
 
     def frontpage_renderer(self):

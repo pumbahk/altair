@@ -34,7 +34,7 @@ class LayoutModelDescriptor(object):
         return os.path.join(self.layoutdir, self.filename)
 
     def exists(self):
-        return self.checkskip or os.path.exists(self.abspath)
+        return self.checkskip or os.path.exists(self.abspath())
 
     def absspec(self):
         if ":" in self.filename:
@@ -42,7 +42,7 @@ class LayoutModelDescriptor(object):
         return os.path.join(self.layout_spec, self.filename)
 
 @implementer(ILayoutModelResolver)
-class LayoutModelDescriptorFactory(object):
+class LayoutModelResolver(object):
     DescriptorBase = LayoutModelDescriptor
     DescriptorDefault = LayoutModelDescriptor
     def __init__(self, layout_spec, default_prefix="default", checkskip=False):

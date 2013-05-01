@@ -16,7 +16,7 @@ from .models import StaticPage
 from altaircms.solr import api as solr
 from ..interfaces import IDirectoryResource
 from altaircms.modelmanager.searcher import IPublishingModelSearcher
-from altairsite.front.api import get_frontpage_template_resolver
+from altairsite.front.api import get_frontpage_discriptor_resolver
 
 class StaticPageNotFound(Exception):
     pass
@@ -118,10 +118,9 @@ CACHE_MAX_AGE=60
 def as_wrapped_resource_response(request, static_page, fullpath, body_var_name="inner_body"):
     if not (static_page.layout_id and has_renderer(request, fullpath)):
         return FileResponse(fullpath, request=request, cache_max_age=CACHE_MAX_AGE)
-
-    lookup = get_frontpage_template_resolver(request)
-    template = lookup.get_renderable_template(request, static_page.layout, verbose=True)
-    if template is None:
+    resolver = get_frontpage_discriptor_resolver(request)
+    discriptor = resolver.resolve(request, static_page.layout, verbose=True)
+    if not discriptor.exists():
         return FileResponse(fullpath, request=request, cache_max_age=CACHE_MAX_AGE)
     try:
         params = {body_var_name: open(fullpath).read().decode("utf-8"), 
@@ -129,7 +128,7 @@ def as_wrapped_resource_response(request, static_page, fullpath, body_var_name="
     except Exception, e:
         logger.exception(str(e))
         params = {body_var_name: ""}
-    return render_to_response(template, params, request)
+    return render_to_response(discriptor.absspec(), params, request)
 
 
 def get_pageset_searcher(request):

@@ -19,7 +19,7 @@ from collections import defaultdict
 import altaircms.helpers as h
 from ..slackoff.mappers import layout_mapper
 from ..page.models import PageType
-from ..front.api import get_frontpage_template_resolver
+from ..front.api import get_frontpage_discriptor_resolver
 from ..front.api import get_frontpage_renderer
 
 class AfterInput(Exception):
@@ -142,10 +142,10 @@ def demo(request):
              renderer="dummy.html")
 def preview(context, request):
     layout = get_or_404(request.allowable(Layout), Layout.id==request.matchdict["layout_id"])
-    lookup = get_frontpage_template_resolver(request)
-    template = lookup.get_renderable_template(request, layout, verbose=True)
-    if not template:
-        raise HTTPNotFound("template file %s is not found" % lookup.abspath(lookup.from_layout(request, layout))) 
+    resolver = get_frontpage_discriptor_resolver(request)
+    discriptor = resolver.resolve(request, layout, verbose=True)
+    if not discriptor.exists():
+        raise HTTPNotFound("template file %s is not found" % discriptor.abspath()) 
     blocks = defaultdict(list)
     class Page(object):
         title = layout.title
@@ -153,7 +153,7 @@ def preview(context, request):
         description = "layout preview"
     renderer = get_frontpage_renderer(request)
     params = {"display_blocks": blocks, "page": Page, "myhelper": fh}
-    return renderer._render(template, layout, params)
+    return renderer._render(discriptor.absspec(), layout, params)
 
 @view_config(route_name="layout_download")
 def download(request):

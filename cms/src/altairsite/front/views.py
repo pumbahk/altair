@@ -43,7 +43,7 @@ def rendering_page(context, request):
         logger.info(control.error_message)
         raise HTTPNotFound(control.error_message)
 
-    descriptor = control.frontpage_template(page)
+    descriptor = control.frontpage_discriptor(page)
     if not descriptor.exists():
         logger.info("front pc access template is not found layout=%s template_file=%s" % (page.layout.id, descriptor.absspec()))
         raise HTTPNotFound("template is not found")

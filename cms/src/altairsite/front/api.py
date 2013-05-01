@@ -19,7 +19,7 @@ def get_frontpage_renderer(request):
     """
     return FrontPageRenderer(request)
 
-def get_frontpage_template_resolver(request):
+def get_frontpage_discriptor_resolver(request):
     return request.registry.getUtility(ILayoutModelResolver)
 
 from pyramid.renderers import RendererHelper    
@@ -60,7 +60,7 @@ class FrontPageRenderer(object):
         fmt = "*debug validate template: layout.updated_at={0}, template.last_modified={1}"
         logger.warn(fmt.format(uploaded_at ,template.last_modified))
         if uploaded_at > template.last_modified:
-            resolver = get_frontpage_template_resolver(self.request)
+            resolver = get_frontpage_discriptor_resolver(self.request)
             refresh_targets = [resolver._resolve(f) for f in layout.dependencies]
             refresh_template_cache_only_needs(template, refresh_targets)
 

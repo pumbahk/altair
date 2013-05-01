@@ -1,10 +1,10 @@
 def includeme(config):
     settings = config.registry.settings
-    from altairsite.front.impl import LayoutTemplate
-    from altairsite.front.impl import ILayoutTemplateLookUp
-    layout_lookup = LayoutTemplate(settings["altaircms.layout_directory"], 
+    from altairsite.front.impl import LayoutModelResolver
+    from altairsite.front.impl import ILayoutModelResolver
+    layout_lookup = LayoutModelResolver(settings["altaircms.layout_directory"], 
                                    checkskip=False)
-    config.registry.registerUtility(layout_lookup, ILayoutTemplateLookUp)
+    config.registry.registerUtility(layout_lookup, ILayoutModelResolver)
 
     config.add_route("preview_pageset", "/preview/pageset/{pageset_id}", factory=".resources.PageRenderingResource")
     config.add_route("preview_page", "/preview/page/{page_id}", factory=".resources.PageRenderingResource")
