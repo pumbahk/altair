@@ -328,6 +328,7 @@ class Options(object):
 
     def __init__(self, request, lot_id):
         self.request = request
+        self.lot_id = lot_id
         options_map = request.session.get(self.OPTIONS_KEY)
         if not isinstance(options_map, dict):
             request.session[self.OPTIONS_KEY] = options_map = {}
@@ -340,7 +341,8 @@ class Options(object):
     def __del__(self):
         self.request.session.persist()
 
-    def clear(self):
+    def dispose(self):
+        self.options = None
         del self.options_map[self.lot_id]
 
     def performance_selected(self, performance_id):

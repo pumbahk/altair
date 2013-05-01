@@ -292,6 +292,11 @@ class CompletionLotEntryView(object):
         """ 完了画面 """
         entry_no = self.request.session['lots.entry_no']
         entry = DBSession.query(LotEntry).filter(LotEntry.entry_no==entry_no).one()
+        try:
+            api.get_options(self.request, lot.id).dispose()
+        except TypeError:
+            pass
+
         return dict(event=self.context.event, lot=self.context.lot, sales_segment=self.context.lot.sales_segment, entry=entry)
 
 @view_defaults(route_name='lots.review.index')
