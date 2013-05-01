@@ -32,12 +32,12 @@ def _del_cache(k, lookup):
         del lookup._uri_cache[k]
         logger.warn("*debug del uri_cache: {0}".format(k))
 
-def refresh_template_cache_only_needs(template, target_uri):
+def refresh_template_cache_only_needs(template, discriptors):
     logger.warn("*debug *refresh template cache_only_needs (last_modified={1}, uri={0})".format(template.uri, template.last_modified))
     lookup = template.lookup
-    return refresh_template_cache_only_needs_lookup(lookup, target_uri)
+    return refresh_template_cache_only_needs_lookup(lookup, discriptors)
   
-def refresh_template_cache_only_needs_lookup(lookup, target_uri):
+def refresh_template_cache_only_needs_lookup(lookup, discriptors):
     if lookup is None:
         return
 
@@ -45,6 +45,6 @@ def refresh_template_cache_only_needs_lookup(lookup, target_uri):
         logger.warn("lookup has not _events. lookup={0}".format(lookup))
         return 
 
-    for k in target_uri:
-        lookup.add_event(k, partial(_del_cache, create_adjusted_name(k)))
-    logger.warn("*debug *refresh_template_cache,  target_uri={0}".format(target_uri))
+    for k in discriptors:
+        lookup.add_event(k, partial(_del_cache, create_adjusted_name(k.abssec())))
+    logger.warn("*debug *refresh_template_cache,  discriptors={0}".format(discriptors))

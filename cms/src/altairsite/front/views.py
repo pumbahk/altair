@@ -43,13 +43,13 @@ def rendering_page(context, request):
         logger.info(control.error_message)
         raise HTTPNotFound(control.error_message)
 
-    template = control.frontpage_template(page)
-    if template is None:
-        logger.info("front pc access template is not found layout=%s template_file=%s" % (page.layout.id, page.layout.template_filename))
+    descriptor = control.frontpage_template(page)
+    if not descriptor.exists():
+        logger.info("front pc access template is not found layout=%s template_file=%s" % (page.layout.id, descriptor.absspec()))
         raise HTTPNotFound("template is not found")
 
     renderer = control.frontpage_renderer()
-    response = renderer.render(template, page)
+    response = renderer.render(descriptor.absspec(), page)
     return response
 
 from altairsite.mobile.dispatch.views import dispatch_view as mobile_dispatch_view

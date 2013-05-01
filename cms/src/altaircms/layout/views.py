@@ -19,7 +19,7 @@ from collections import defaultdict
 import altaircms.helpers as h
 from ..slackoff.mappers import layout_mapper
 from ..page.models import PageType
-from ..front.api import get_frontpage_template_lookup
+from ..front.api import get_frontpage_template_resolver
 from ..front.api import get_frontpage_renderer
 
 class AfterInput(Exception):
@@ -142,7 +142,7 @@ def demo(request):
              renderer="dummy.html")
 def preview(context, request):
     layout = get_or_404(request.allowable(Layout), Layout.id==request.matchdict["layout_id"])
-    lookup = get_frontpage_template_lookup(request)
+    lookup = get_frontpage_template_resolver(request)
     template = lookup.get_renderable_template(request, layout, verbose=True)
     if not template:
         raise HTTPNotFound("template file %s is not found" % lookup.abspath(lookup.from_layout(request, layout))) 

@@ -33,11 +33,11 @@ class AccessControl(object):
         return u"\n".join(self._error_message)
 
     def frontpage_template(self, page):
-        lookup = api.get_frontpage_template_lookup(self.request)
+        lookup = api.get_frontpage_template_resolver(self.request)
         return lookup.get_renderable_template(self.request, page.layout)
 
     def frontpage_template_abspath(self, page):
-        lookup = api.get_frontpage_template_lookup(self.request)
+        lookup = api.get_frontpage_template_resolver(self.request)
         return lookup.abspath(lookup.from_layout(self.request, page.layout))
 
     def frontpage_renderer(self):

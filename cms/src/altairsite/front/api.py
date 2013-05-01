@@ -4,7 +4,7 @@ import sqlalchemy as sa
 import sqlalchemy.orm as orm
 from altaircms.widget.tree.proxy import WidgetTreeProxy
 from .bsettings import BlockSettings
-from .impl import ILayoutTemplateLookUp
+from .impl import ILayoutModelResolver
 
 import logging
 logger = logging.getLogger(__file__)
@@ -19,8 +19,8 @@ def get_frontpage_renderer(request):
     """
     return FrontPageRenderer(request)
 
-def get_frontpage_template_lookup(request):
-    return request.registry.getUtility(ILayoutTemplateLookUp)
+def get_frontpage_template_resolver(request):
+    return request.registry.getUtility(ILayoutModelResolver)
 
 from pyramid.renderers import RendererHelper    
 
@@ -52,14 +52,16 @@ class FrontPageRenderer(object):
         if not hasattr(template, "cache"):
             logger.warn("*debug validate template: cache is not found")
             return
-        fmt = "*debug validate template: layout.updated_at=%s, template.last_modified=%s"
-        uploaded_at = time.mktime(layout.uploaded_at.timetuple())
-        if uploaded_at is None:
+
+        if layout.uploaded_at is None:
             return
-        logger.warn(fmt % (uploaded_at ,template.last_modified))
+        uploaded_at = time.mktime(layout.uploaded_at.timetuple())
+
+        fmt = "*debug validate template: layout.updated_at={0}, template.last_modified={1}"
+        logger.warn(fmt.format(uploaded_at ,template.last_modified))
         if uploaded_at > template.last_modified:
-            lookup = get_frontpage_template_lookup(self.request)
-            refresh_targets = [lookup.as_layout_spec(f) for f in layout.dependencies]
+            resolver = get_frontpage_template_resolver(self.request)
+            refresh_targets = [resolver._resolve(f) for f in layout.dependencies]
             refresh_template_cache_only_needs(template, refresh_targets)
 
     def get_bsettings(self, page):

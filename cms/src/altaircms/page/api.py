@@ -16,7 +16,7 @@ from .models import StaticPage
 from altaircms.solr import api as solr
 from ..interfaces import IDirectoryResource
 from altaircms.modelmanager.searcher import IPublishingModelSearcher
-from altairsite.front.api import get_frontpage_template_lookup
+from altairsite.front.api import get_frontpage_template_resolver
 
 class StaticPageNotFound(Exception):
     pass
@@ -119,7 +119,7 @@ def as_wrapped_resource_response(request, static_page, fullpath, body_var_name="
     if not (static_page.layout_id and has_renderer(request, fullpath)):
         return FileResponse(fullpath, request=request, cache_max_age=CACHE_MAX_AGE)
 
-    lookup = get_frontpage_template_lookup(request)
+    lookup = get_frontpage_template_resolver(request)
     template = lookup.get_renderable_template(request, static_page.layout, verbose=True)
     if template is None:
         return FileResponse(fullpath, request=request, cache_max_age=CACHE_MAX_AGE)
