@@ -1455,9 +1455,9 @@
     background: url(../img/order/bg_select_bottom.gif) no-repeat left bottom;
 }
 
-.settlementSelectBoxInner02 p {
+.settlementSelectBoxInner02 p strong {
     color: #bf191f;
-    font-size: 116.7%;
+    font-size: 1.5em;
     margin-left: 10px;
 }
 
@@ -1475,20 +1475,11 @@
     width: 25%;
     padding: 5px 10px;
     font-size: 116.7%;
-    background: url(../img/settlement/bg_select_th.gif) no-repeat right bottom;
 }
 
 #settlementSelectBox td {
     padding: 5px 10px;
-    background: url(../img/settlement/bg_select_td.gif) repeat-x left bottom;
-}
-
-#settlementSelectEnd th {
-    background: url(../img/settlement/bg_select_th2.gif) repeat-y top right;
-}
-
-#settlementSelectEnd td {
-    background: none;
+    border-bottom: 1px ridge #fff;
 }
 
 .settlementSelectBox table {
@@ -1499,7 +1490,7 @@
     width: 25%;
     padding: 5px 10px;
     font-size: 116.7%;
-    background: url(../img/settlement/bg_select_th.gif) no-repeat right bottom;
+    background: url(../img/settlement/bg_select_td.gif) repeat-x left bottom;
     color: #aa5555;
 }
 
@@ -1509,7 +1500,7 @@
 }
 
 .settlementSelectEnd th {
-    background: url(../img/settlement/bg_select_th2.gif) repeat-y top right;
+    background: none;
 }
 
 .settlementSelectEnd td {
@@ -1895,71 +1886,32 @@
     background: url(../img/settlement/bg_line.gif) repeat-x left bottom;
 }
 
-#settlementEventDetail table {
+.settlementBox2 table {
     width: 900px;
     margin: 0 25px;
 }
 
 
-#settlementEventDetail table.border {
-/*    border: 1px solid #e6e6e6;*/
+.settlementBox2 table.border {
     margin: 0 auto 1em auto;    
 }
 
 
-#settlementEventDetail table.border th.title { 
+.settlementBox2 table.border th.title { 
     font-size: 116.7%;
+    color: #bf191f;
 }
 
 
-#settlementEventDetail p.ml10 {
+.settlementBox2 .ml10 {
     margin-left: 10px;
 }
 
-#settlementEventDetail table.border select.w170 {
+.settlementBox2 table.border select.w170 {
     width: 170px;
 }
 
-
-#settlementEventDetail table.border th span {
-    color: #bf191f;
-    font-size: 116.7%;
-}
-
-.confirmBoxInner table.border th,
-#settlementEventDetail table.border th {
-    padding: 5px 10px;
-}
-
-.confirmBoxInner table.border td,
-#settlementEventDetail table.border td {
-    padding: 5px 10px;
-}
-
-
-#settlementEventDetail table.border td table {
-    width: 100%;
-
-}
-
-#settlementEventDetail table.border td table th {
-    
-}
-
-#settlementEventDetail table.border td table td {
-    text-align: right;
-}
-
-#settlementEventDetail table.border td table th.line {
-    border-bottom: 1px solid #fff;    
-}
-
-#settlementEventDetail table.border td table td.line {
-    border-bottom: 1px solid #fff;
-}
-
-
-#settlementEventDetail th {
+.settlementBox2 table th {
     vertical-align: top;
     padding: 2px 20px 2px 2px;
     border-bottom: 1px solid #fff;
@@ -1967,19 +1919,18 @@
     white-space: nowrap;
 }
 
-#settlementEventDetail td {
+.settlementBox2 table td {
     width: 100%;
-    padding: 2px;
     border-bottom: 1px solid #fff;
 }
 
-#settlementEventDetail tr:last-child th,
-#settlementEventDetail tr:last-child td {
+.settlementBox2 table tr:last-child th,
+.settlementBox2 table tr:last-child td {
     border: none;
 }
 
-#settlementEventDetail tr.none th,
-#settlementEventDetail tr.none td {
+.settlementBox2 table tr.none th,
+.settlementBox2 table tr.none td {
     border: none;
 }
 
@@ -1992,6 +1943,14 @@
 
 .confirmBoxInner {
     background: url(../img/settlement/bg_confirm_bottom.gif) no-repeat left bottom;
+}
+
+.confirmBoxInner table.border th {
+    padding: 5px 10px;
+}
+
+.confirmBoxInner table.border td {
+    padding: 5px 10px;
 }
 
 #main .confirmBox h2 {
@@ -2224,7 +2183,7 @@
 }
 
 table.chooser select {
-    font-size: 15px;
+    font-size: 116.7%;
 }
 
 .form-field label {
