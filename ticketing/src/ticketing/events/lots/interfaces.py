@@ -46,10 +46,12 @@ class ILotEntryWishStatus(Interface):
 
 class ILotEntryPerformanceSeatTypeStatus(Interface):
     """ 公演席種ごとの抽選申し込み状況"""
+    performance = Attribute(u"公演")
+    seat_type = Attribute(u"席種")
     entry_quantity = Attribute(u"申込総枚数")
     elected_quantity = Attribute(u"当選件数")
     ordered_quantity = Attribute(u"決済件数")
-    Attribute(u"予約件数")
+    reserved_quantity = Attribute(u"予約件数")
 
 class ILotEntryPerformanceSeatTypesWishStatus(Interface):
     """ """

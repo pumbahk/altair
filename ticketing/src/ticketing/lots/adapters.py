@@ -7,6 +7,11 @@ from ticketing.models import (
 )
 from ticketing.core.models import (
     Order,
+    Performance,
+    Stock,
+    StockType,
+    Product,
+    ProductItem,
 )
 from .models import (
     LotEntry,
@@ -193,8 +198,94 @@ class LotEntryStatus(object):
 
         return results
 
+    ## 公演・席種ごとの情報
+    @reify
+    def performance_seat_type_statuses(self):
+
+        from sqlalchemy.sql.expression import case, and_
+
+        inner = DBSession.query(
+            Performance.id.label('performance_id'),
+            StockType.id.label('stock_type_id'),
+            LotEntryProduct.quantity.label('entry_quantity'),
+            case([
+                (LotEntry.elected_at != None, LotEntryProduct.quantity)
+            ],
+            else_=0).label('elected_quantity'),
+            case([
+                (Order.paid_at != None, LotEntryProduct.quantity)
+            ],
+            else_=0).label('ordered_quantity'),
+            case([
+                (and_(LotEntry.order_id != None, Order.paid_at != None),
+                 LotEntryProduct.quantity)
+            ],
+            else_=0).label('reserved_quantity'),
+            case([
+                (and_(LotEntry.order_id != None, Order.canceled_at != None),
+                 LotEntryProduct.quantity)
+            ],
+            else_=0).label('canceled_quantity'),
+        ).join(
+            Product,
+            Product.performance_id==Performance.id
+        ).join(
+            StockType,
+            StockType.id==Product.seat_stock_type_id
+        ).join(
+            LotEntryProduct,
+            LotEntryProduct.product_id==Product.id
+        ).join(
+            LotEntryWish,
+            LotEntryWish.id==LotEntryProduct.lot_wish_id
+        ).join(
+            LotEntry,
+            LotEntry.id==LotEntryWish.lot_entry_id
+        ).outerjoin(Order, Order.id==LotEntry.order_id
+        ).filter(
+            LotEntry.lot_id==self.lot.id
+        ).subquery()
+
+        results = DBSession.query(
+            Performance,
+            StockType,
+            sql.func.sum(inner.c.entry_quantity),
+            sql.func.sum(inner.c.elected_quantity),
+            sql.func.sum(inner.c.ordered_quantity),
+            sql.func.sum(inner.c.reserved_quantity),
+            sql.func.sum(inner.c.canceled_quantity),
+        ).filter(
+            inner.c.performance_id==Performance.id
+        ).filter(
+            inner.c.stock_type_id==StockType.id
+        ).group_by(inner.c.performance_id, inner.c.stock_type_id).all()
+        
+        return [LotEntryPerformanceSeatTypeStatus(performance, 
+                                                  stock_type, 
+                                                  entry_quantity,
+                                                  elected_quantity,
+                                                  ordered_quantity,
+                                                  reserved_quantity,
+                                                  canceled_quantity,
+                                              )
+                for (performance, stock_type, entry_quantity, elected_quantity, ordered_quantity,
+                     reserved_quantity, canceled_quantity) in results]
 
 class LotEntryWishStatus(object):
     def __init__(self, wish_order, quantity):
         self.wish_order = wish_order
         self.quantity = quantity
+
+class LotEntryPerformanceSeatTypeStatus(object):
+    def __init__(self, performance, seat_type, 
+                 entry_quantity, elected_quantity, 
+                 ordered_quantity,
+                 reserved_quantity,
+                 canceled_quantity):
+         self.performance = performance
+         self.seat_type = seat_type
+         self.entry_quantity = entry_quantity
+         self.elected_quantity = elected_quantity
+         self.ordered_quantity = ordered_quantity
+         self.reserved_quantity = reserved_quantity
+         self.canceled_quantity = canceled_quantity

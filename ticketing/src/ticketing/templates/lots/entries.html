@@ -84,19 +84,26 @@ Altair Backend -- ${lot.event.title}[${lot.name}]
   <h3>公演ごと、希望ごと</h3>
   <table class="table">
     <tr>
-      <th>公演名</th>
-      <th>希望順</th>
-      <th>申し込み数</th>
+      <th>公演日時</th>
+      <th>席種</th>
+      <th>申込総枚数</th>
+      <th>当選数</th>
+      <th>決済済</th>
+      <th>予約数</th>
+      <th>キャンセル・流れ</th>
     </tr>
-    %for sub in sub_counts:
     <tr>
-      <td>${sub['performance'].name}</td>
-      <td>${sub['wish_order']}</td>
-      <td>${sub['count']}</td>
+      %for status in lot_status.performance_seat_type_statuses:
+      <td>${status.performance.open_on}</td>
+      <td>${status.seat_type.name}</td>
+      <td>${status.entry_quantity}</td>
+      <td>${status.elected_quantity}</td>
+      <td>${status.ordered_quantity}</td>
+      <td>${status.reserved_quantity}</td>
+      <td>${status.canceled_quantity}</td>
+      %endfor
     </tr>
-    %endfor
   </table>
-</div>
 
 <div>
 <h3>アクション</h3>
