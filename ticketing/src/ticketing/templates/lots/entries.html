@@ -92,8 +92,8 @@ Altair Backend -- ${lot.event.title}[${lot.name}]
       <th>予約数</th>
       <th>キャンセル・流れ</th>
     </tr>
+    %for status in lot_status.performance_seat_type_statuses:
     <tr>
-      %for status in lot_status.performance_seat_type_statuses:
       <td>${status.performance.open_on}</td>
       <td>${status.seat_type.name}</td>
       <td>${status.entry_quantity}</td>
@@ -101,8 +101,8 @@ Altair Backend -- ${lot.event.title}[${lot.name}]
       <td>${status.ordered_quantity}</td>
       <td>${status.reserved_quantity}</td>
       <td>${status.canceled_quantity}</td>
-      %endfor
     </tr>
+      %endfor
   </table>
 
 <div>
