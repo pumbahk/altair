@@ -229,7 +229,7 @@ class EntryLotView(object):
 
         return self.step3_rendered_value(option_index_zb + 1)
 
-    def step4_rendered_value(self, form):
+    def step4_rendered_value(self, form, pdmp_messages=None):
         event = self.context.event
         lot = self.context.lot
 
@@ -243,7 +243,9 @@ class EntryLotView(object):
             lot=lot,
             sales_segment=sales_segment,
             payment_delivery_methods=sales_segment.payment_delivery_method_pairs,
-            form=form
+            form=form,
+            pdmp_messages=pdmp_messages,
+            messages=self.request.session.pop_flash()
             )
 
     @view_config(route_name='lots.entry.step4', renderer=selectable_renderer("mobile/%(membership)s/step4.html"))
@@ -270,16 +272,18 @@ class EntryLotView(object):
             pass
 
         validated = True
+        pdmp_messages = None
 
         payment_delivery_pairs = sales_segment.payment_delivery_method_pairs
         if payment_delivery_method_pair_id not in [m.id for m in payment_delivery_pairs]:
-            self.request.session.flash(u"お支払／引取方法をお選びください")
+            pdmp_messages = [u"お支払／引取方法をお選びください"]
             validated = False
         if not cform.validate():
             validated = False
 
         if not validated:
-            return self.step4_rendered_value(form=cform)
+            self.request.session.flash(u"入力内容を確認してください")
+            return self.step4_rendered_value(form=cform, pdmp_messages=pdmp_messages)
 
         shipping_address_dict = cform.get_validated_address_data()
         api.new_lot_entry(
