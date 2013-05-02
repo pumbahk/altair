@@ -75,7 +75,7 @@ logger = logging.getLogger(__name__)
       root.find(".endPerformance").parents("tr").hide();
     }
     // re numbering
-    root.find("tr .serial").each(function(i,e){ $(e).text(i+1);});
+    setTimeout(function(){root.find("tr:visible .serial").each(function(i,e){ $(e).text(i+1);});  },0);
   };
   if(!$("body").data("togglePerformance")){
     $("body").data("togglePerformance",true);
