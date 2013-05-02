@@ -8,6 +8,7 @@ from datetime import datetime
 
 import sqlalchemy as sa
 from sqlalchemy.orm import joinedload
+from sqlalchemy.sql import func
 
 from markupsafe import Markup
 
@@ -224,9 +225,10 @@ class IndexView(IndexViewMixin):
 
         seat_type = DBSession.query(c_models.StockType).filter_by(id=seat_type_id).one()
 
-        query = DBSession.query(c_models.Product) \
+        query = DBSession.query(c_models.Product, func.sum(c_models.StockStatus.quantity)) \
             .join(c_models.Product.items) \
             .join(c_models.ProductItem.stock) \
+            .join(c_models.Stock.stock_status) \
             .filter(c_models.Stock.stock_type_id==seat_type_id) \
             .filter(c_models.Product.sales_segment_id==self.context.sales_segment.id) \
             .filter(c_models.Product.public==True) \
@@ -240,9 +242,9 @@ class IndexView(IndexViewMixin):
                 price=h.format_number(p.price, ","), 
                 unit_template=h.build_unit_template(p, self.context.sales_segment.performance.id),
                 quantity_power=p.get_quantity_power(seat_type, self.context.sales_segment.performance.id),
-                upper_limit=p.sales_segment.upper_limit,
+                upper_limit=p.sales_segment.upper_limit if p.sales_segment.upper_limit < vacant_quantity else int(vacant_quantity),
                 )
-            for p in query
+            for p, vacant_quantity in query
             ]
 
         return dict(products=products,
