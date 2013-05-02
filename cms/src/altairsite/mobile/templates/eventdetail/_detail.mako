@@ -1,6 +1,7 @@
 <%namespace file="../common/tags_mobile.mako" name="m" />
 <%page args="event, week, month_unit, month_unit_keys, purchase_links, tickets, sales_start, sales_end, helper" />
 <%m:header>公演期間</%m:header>
+<% from datetime import datetime %>
 ${event.event_open.year}/${str(event.event_open.month).zfill(2)}/${str(event.event_open.day).zfill(2)}(${week[event.event_open.weekday()]})〜${event.event_close.year}/${str(event.event_close.month).zfill(2)}/${str(event.event_close.day).zfill(2)}(${week[event.event_close.weekday()]})<br/>
 <%m:header>販売期間</%m:header>
 % if event.salessegment_groups:
@@ -10,8 +11,14 @@ ${segment.name}:${segment.start_on.year}/${segment.start_on.month}/${segment.sta
     % endfor
     <br />
 % endif
+
 <div align="center">
+        % if event.deal_close < datetime.now():
+  &gt;&gt;<a href="#list">公演詳細</a>&lt;&lt;<br />
+　<font color="red">このイベントの販売は終了しました</font><br/>
+        % else:
   &gt;&gt;<a href="#list">購入はこちらから</a>&lt;&lt;<br />
+        % endif
 </div><br />
 <% text = self.template.get_def('render_info').render(event=event, helper=helper) %>
 <%def name="render_info(event)">
@@ -79,7 +86,11 @@ ${helper.nl2br(event.inquiry_for)|n}
             % if not first:
                 <hr />
             % endif
+            % if event.deal_close < datetime.now():
+            [${i + 1}]<font size="-1">${perf.title}</font><br />
+            % else:
             [${i + 1}]<font size="-1"><a href="${purchase_links[perf.id]}">${perf.title}</a></font><br />
+            % endif
             % if perf.open_on:
                 開場:${str(perf.open_on.year)[2:]}/${str(perf.open_on.month).zfill(2)}/${str(perf.open_on.day).zfill(2)}(${week[perf.open_on.weekday()]})
                 ${str(perf.open_on.hour).zfill(2)}:${str(perf.open_on.minute).zfill(2)}<br />
@@ -93,7 +104,9 @@ ${helper.nl2br(event.inquiry_for)|n}
             % endif
             <div align="center">
             <%m:band bgcolor="#ffcccc">
+            % if event.deal_close >= datetime.now():
               <a href="${purchase_links[perf.id]}"><font color="#cc0000">この公演のチケットを購入</font></a>
+            % endif
             </%m:band>
             </div>
             <% first = False %>
