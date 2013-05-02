@@ -8,6 +8,7 @@ from . import widget
 from . import tag
 from . import link
 from . import mobilelink
+from xml.etree import ElementTree
 __all__ = ["base", "asset", "event", "page", "widget", "tag", "link", "mobilelink"]
 
 WEEK = base.WEEK
@@ -100,6 +101,16 @@ class PagerAdapter(object):
         opts = self.DEFAULT_PAGER_OPT.copy()
         opts.update(kwargs)
         return self.pagination.pager(**opts)
+
+    def pager_value(self, key):
+        return self.pagination.pager(key)
+
+    def link_str(self, link):
+        doc = self.pagination.pager(link)
+        if doc:
+            root = ElementTree.fromstring(doc)
+            return root.attrib["href"]
+        return None
 
 paginate = PagerAdapter
 

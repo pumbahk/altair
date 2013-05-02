@@ -45,7 +45,7 @@
 <%def name="error(form, field)">
 %if form.errors.get(field):
   %for e in form.errors[field]:
-  <span class="validation-error">${form[field].label} ${e}</span>
+  <span class="validation-error">${e}</span>
   %endfor
 %endif
 </%def>

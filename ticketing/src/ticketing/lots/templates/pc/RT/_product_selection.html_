@@ -3,18 +3,22 @@
 <%
     var quantityField = "product-quantity-" + wishOrder + "-" + j + "";
 %>
-<tr id="settlementSelectEnd" class="product-select-tr">
+<tr class="product-select-tr<%= j + 1 == products.length ? ' settlementSelectEnd': '' %>">
 	<th>
         <% if (j == 0) { %>
-        <label>席種券種</label>
+        <label>券種</label>
         <% } else { %>
         &nbsp;
         <% } %>
     </th>
     <td>
     <span><%= product.name %></span>
+    <% if (product.description) { %>
+    <br/>
+    <span><%= product.description %></span>
+    <% } %>
 </td><td>
-    　<input type="hidden" name="product-id-<%= wishOrder %>-<%= j %>" value="<%= product.id %>">
+    　<input type="hidden" name="product-id-<%= wishOrder %>-<%= j %>" value="<%= product.id %>" />
         　<select name="<%= quantityField %>" >
         <option></option>
         <% for (var k=0; k < upperLimit; k++) { %>

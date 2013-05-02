@@ -221,3 +221,6 @@ format_gender = format_sex
 
 def tojson(obj):
     return json.dumps(obj) 
+
+def performance_date_label(performance):
+    return u'%s %s' % (japanese_date(performance.start_on), performance.venue.name)
