@@ -164,20 +164,9 @@ class LotEntries(BaseView):
         return dict(
             lot=lot,
             performances = lot_status.performances,
-            #  メール送信済み
-            #  決済済み
-            # 申し込み状況
-            entries = lot.entries,
-            #  総数
-            total_entries = lot_status.total_entries,
-            #  希望数
-            total_wishes = lot_status.total_wishes,
             #  公演、希望順ごとの数
             sub_counts = lot_status.sub_counts,
-            #  当選予定数
-            electing_count = lot_status.electing_count,
-            #  当選数
-            elected_count = lot_status.elected_count,
+            lot_status=lot_status,
             )
 
 

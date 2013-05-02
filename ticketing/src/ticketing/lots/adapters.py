@@ -2,6 +2,9 @@
 
 from sqlalchemy import sql
 from webhelpers.containers import correlate_objects
+from ticketing.core.models import (
+    Order,
+)
 from .models import (
     LotEntry,
     LotEntryWish,
@@ -39,11 +42,6 @@ class LotEntryCart(object):
 
 
 class LotEntryStatus(object):
-    """
-    TODO
-    #  メール送信済み
-    #  決済済み
-    """
     def __init__(self, lot, request):
         self.lot = lot
         self.request = request
@@ -57,11 +55,8 @@ class LotEntryStatus(object):
         return self.lot.entries
 
 
-    @property
-    def total_entries(self):
-        total_entries = LotEntry.query.filter(LotEntry.lot_id==self.lot.id).count()
-        return total_entries
 
+    ## いらん
     @property
     def total_wishes(self):
         total_wishes = LotEntryWish.query.filter(
@@ -85,6 +80,14 @@ class LotEntryStatus(object):
         return sub_counts
 
     @property
+    def total_entries(self):
+        """ 申込件数 """
+        total_entries = LotEntry.query.filter(LotEntry.lot_id==self.lot.id).count()
+        return total_entries
+
+
+
+    @property
     def electing_count(self):
         electing_count = LotElectWork.query.filter(
             LotElectWork.lot_id==self.lot.id
@@ -94,7 +97,56 @@ class LotEntryStatus(object):
 
     @property
     def elected_count(self):
+        """ 当選件数 当選フラグON """
+
         elected_count = LotElectedEntry.query.filter(
             LotElectedEntry.lot_entry_id==LotEntry.id
-        ).filter(LotEntry.lot_id==self.lot.id).count()
+        ).filter(
+            LotEntry.lot_id==self.lot.id
+        ).filter(
+            LotEntry.elected_at!=None
+        ).count()
+
         return elected_count
+
+    @property
+    def ordered_count(self):
+        """ 決済件数 注文があって決済済みのもの"""
+
+        ordered_count = LotElectedEntry.query.filter(
+            LotElectedEntry.lot_entry_id==LotEntry.id
+        ).filter(
+            LotEntry.lot_id==self.lot.id
+        ).filter(
+            LotEntry.order_id != None
+        ).count()
+        return ordered_count
+
+    @property
+    def canceled_count(self):
+        """ キャンセル件数 キャンセル済みの注文を持っているもの"""
+
+        canceled_count = LotElectedEntry.query.filter(
+            LotElectedEntry.lot_entry_id==LotEntry.id
+        ).filter(
+            LotEntry.lot_id==self.lot.id
+        ).filter(
+            LotEntry.order_id==Order.id
+        ).filter(
+            Order.canceled_at!=None
+        ).count()
+        return canceled_count
+
+    @property
+    def reserved_count(self):
+        """ 予約件数 注文があって未決済のもの """
+        reserved_count = LotElectedEntry.query.filter(
+            LotElectedEntry.lot_entry_id==LotEntry.id
+        ).filter(
+            LotEntry.lot_id==self.lot.id
+        ).filter(
+            LotEntry.order_id==Order.id
+        ).filter(
+            Order.paid_at!=None
+        ).count()
+        return reserved_count
