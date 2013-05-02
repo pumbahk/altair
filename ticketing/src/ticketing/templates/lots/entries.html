@@ -58,7 +58,27 @@ Altair Backend -- ${lot.event.title}[${lot.name}]
 </div>
 <div>
   <h3>枚数ベース</h3>
-
+  <table class="table">
+    <tr>
+      <th>&nbsp;</th>
+      <th>&nbsp;</th>
+      <th colspan="${lot_status.lot.limit_wishes}">希望順位別内訳枚数</th>
+    </tr>
+    <tr>
+      <th>&nbsp;</th>
+      <th>申込総枚数</th>
+      %for i in range(lot_status.lot.limit_wishes):
+      <th>第${i + 1}希望</th>
+      %endfor
+    </tr>
+    <tr>
+      <th>枚数</th>
+      <td>${lot_status.total_quantity}</td>
+      %for i in range(lot_status.lot.limit_wishes):
+      <td>${lot_status.wish_statuses[i].quantity}</td>
+      %endfor
+    </tr>
+  </table>
 </div>
 <div>
   <h3>公演ごと、希望ごと</h3>

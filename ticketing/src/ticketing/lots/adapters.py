@@ -1,7 +1,10 @@
 # -*- coding:utf-8 -*-
-
+from pyramid.decorator import reify
 from sqlalchemy import sql
 from webhelpers.containers import correlate_objects
+from ticketing.models import (
+    DBSession,
+)
 from ticketing.core.models import (
     Order,
 )
@@ -10,6 +13,7 @@ from .models import (
     LotEntryWish,
     LotElectWork,
     LotElectedEntry,
+    LotEntryProduct,
 )
 from zope.interface import implementer
 from ticketing.payments.interfaces import IPaymentCart
@@ -150,3 +154,47 @@ class LotEntryStatus(object):
             Order.paid_at!=None
         ).count()
         return reserved_count
+
+    @property
+    def total_quantity(self):
+        total_quantity = DBSession.query(
+            sql.func.sum(LotEntryProduct.quantity)
+        ).filter(
+            LotEntryProduct.lot_wish_id==LotEntryWish.id
+        ).filter(
+            LotEntryWish.lot_entry_id==LotEntry.id
+        ).filter(
+            LotEntry.lot_id==self.lot.id
+        ).scalar()
+        return total_quantity
+
+    ## 希望ごとの情報
+    @reify
+    def wish_statuses(self):
+        wishes = DBSession.query(
+            LotEntryWish.wish_order,
+            sql.func.sum(LotEntryProduct.quantity)
+        ).filter(
+            LotEntryProduct.lot_wish_id==LotEntryWish.id
+        ).filter(
+            LotEntryWish.lot_entry_id==LotEntry.id
+        ).filter(
+            LotEntry.lot_id==self.lot.id
+        ).group_by(LotEntryWish.wish_order).all()
+        results = {}
+        for wish_order, quantity in wishes:
+            results[wish_order] = LotEntryWishStatus(wish_order, quantity)
+
+        # 穴埋め
+        for i in range(self.lot.limit_wishes):
+            if i in results:
+                continue
+            results[i] = LotEntryWishStatus(i, 0)
+
+        return results
+
+
+class LotEntryWishStatus(object):
+    def __init__(self, wish_order, quantity):
+        self.wish_order = wish_order
+        self.quantity = quantity
