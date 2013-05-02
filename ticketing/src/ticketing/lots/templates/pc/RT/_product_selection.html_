@@ -13,6 +13,10 @@
     </th>
     <td>
     <span><%= product.name %></span>
+    <% if (product.description) { %>
+    <br/>
+    <span><%= product.description %></span>
+    <% } %>
 </td><td>
     　<input type="hidden" name="product-id-<%= wishOrder %>-<%= j %>" value="<%= product.id %>" />
         　<select name="<%= quantityField %>" >

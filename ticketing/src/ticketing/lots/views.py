@@ -104,7 +104,8 @@ class EntryLotView(object):
                 id=product.id,
                 name=product.name,
                 display_order=product.display_order,
-                stock_type_id=product.seat_stock_type_id
+                stock_type_id=product.seat_stock_type_id,
+                description=product.description,
             ))
             performance_product_map[performance.id] = products
 
