@@ -14,7 +14,7 @@ ${segment.name}:${segment.start_on.year}/${segment.start_on.month}/${segment.sta
 
 <div align="center">
         % if event.deal_close < datetime.now():
-  &gt;&gt;<a href="#list">公演詳細</a>&lt;&lt;<br />
+  <a href="#list">公演一覧</a><br />
 　<font color="red">このイベントの販売は終了しました</font><br/>
         % else:
   &gt;&gt;<a href="#list">購入はこちらから</a>&lt;&lt;<br />
