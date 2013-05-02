@@ -247,7 +247,7 @@ class ConfirmLotEntryView(object):
 
     @view_config(request_method="POST")
     def post(self):
-        if 'back' in self.request.params:
+        if 'back' in self.request.params or 'back.x' in self.request.params:
             return self.back_to_form()
 
         if not h.validate_token(self.request):
