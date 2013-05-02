@@ -63,11 +63,14 @@ logger = logging.getLogger(__name__)
 
 <script type="text/javascript">
   var toggleEndPerformance = function toggleEndPerformance(clicked){
+    var root = $("#performanceList");
     if(clicked){
-      $("#performanceList").find(".endPerformance").parents("tr").show();
+      root.find(".endPerformance").parents("tr").show();
     }else {
-      $("#performanceList").find(".endPerformance").parents("tr").hide();
+      root.find(".endPerformance").parents("tr").hide();
     }
+    // re numbering
+    root.find("tr .serial").each(function(i,e){ $(e).text(i+1);});
   };
   if(!$("body").data("togglePerformance")){
     $("body").data("togglePerformance",true);
