@@ -42,7 +42,11 @@ logger = logging.getLogger(__name__)
                end_on_candidates = [s.end_on for s in p.sales if s.end_on]
             %>
 
-            % if min(start_on_candidates) >= now:
+            %if not start_on_candidates:
+              <% logger.warn("performance=%s does not have salessegment. (calendar widget)" % p.id)%>
+              <strong>${status["string"]}</strong>${p.start_on.strftime("%H:%M")}<br/>
+              <span>準備中</span>
+            %elif min(start_on_candidates) >= now:
               <strong>${status["string"]}</strong>${p.start_on.strftime("%H:%M")}<br/>
               <span>販売前</span>
             %elif max(end_on_candidates) >= now:

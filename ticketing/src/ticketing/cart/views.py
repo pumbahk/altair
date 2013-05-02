@@ -573,7 +573,7 @@ class PaymentView(object):
     def _validate_extras(self, cart, payment_delivery_pair, shipping_address_params):
         if not payment_delivery_pair or shipping_address_params is None:
             if not payment_delivery_pair:
-                self.request.session.flash(u"お支払い方法／受け取り方法をどれかひとつお選びください")
+                self.request.session.flash(u"お支払／引取方法をお選びください")
                 logger.debug("invalid : %s" % 'payment_delivery_method_pair_id')
             else:
                 logger.debug("invalid : %s" % self.form.errors)

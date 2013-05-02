@@ -10,16 +10,16 @@
         %for wish in wishes:
         <div class="settlementSelectBox">
           <div class="settlementSelectBoxInner02">
-            <p><strong>第${wish[0]['wish_order'] + 1}希望</strong><span>${wish[0]['performance'].name}</span></p>
+            <p class="header"><strong>第${wish[0]['wish_order'] + 1}希望</strong>${wish[0]['performance'].name}</p>
             <table summary="チケット購入の絞り込み">
               <tr>
                 <th><label>公演日・会場</label></th>
-                <td>${wish[0]['performance'].open_on} ${wish[0]['performance'].venue.name}</td>
+                <td>${h.performance_date_label(wish[0]['performance'])}</td>
               </tr>
               %for i, w in enumerate(wish):
-              <tr>
+              <tr ${u'class="settlementSelectEnd"' if i + 1 == len(wish) else u''|n}>
                 %if i == 0:
-                <th><label>席種券種</label></th>
+                <th><label>席種</label></th>
                 %else:
                 <th>&nbsp;</th>
                 %endif
@@ -66,10 +66,9 @@
               <tr>
                 <th><label>配送先住所</label></th>
                 <td>
-                  ${shipping_address['zip']}
-                  ${shipping_address['prefecture']}
-                  ${shipping_address['city']}
-                  ${shipping_address['address_1']}
+                  〒${shipping_address['zip']}<br />
+                  ${shipping_address['prefecture']}<br />
+                  ${shipping_address['city']} ${shipping_address['address_1']}<br />
                   ${shipping_address['address_2']}
                 </td>
               </tr>
@@ -81,7 +80,7 @@
                 <th><label>性別</label></th>
                 <td>${h.format_gender(request, gender)}</td>
               </tr>
-              <tr id="settlementSelectEnd">
+              <tr class="settlementSelectEnd">
                 <th><label>メモ欄</label></th>
                 <td>${memo|h.nl2br}</td>
               </tr>
@@ -90,6 +89,6 @@
         </div>
       </div>
     </div>
-    <p class="align2"><input type="image" value="back" src="${request.static_url('ticketing.lots:static/img/order/btn_back.gif')}" alt="戻る" width="236" height="46" /><input type="image"  src="${request.static_url('ticketing.lots:static/img/order/btn_confirm.gif')}" alt="確定する" width="236" height="46" /></a></p>
+    <p class="align2"><input type="image" name="back" src="${request.static_url('ticketing.lots:static/img/order/btn_back.gif')}" alt="戻る" width="236" height="46" /><input type="image"  src="${request.static_url('ticketing.lots:static/img/order/btn_confirm.gif')}" alt="確定する" width="236" height="46" /></a></p>
   </form>
 </div>

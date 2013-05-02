@@ -86,6 +86,7 @@ class Lots(BaseView):
     def show(self):
         lot = self.context.lot
         if "action-update-pdmp" in self.request.POST:
+            lot.sales_segment.payment_delivery_method_pairs = []
             for pdmp_id in self.request.POST.getall("pdmp_id"):
                 pdmp = PaymentDeliveryMethodPair.query.filter(PaymentDeliveryMethodPair.id==pdmp_id).first()
                 if pdmp and pdmp not in lot.sales_segment.payment_delivery_method_pairs:

@@ -146,7 +146,7 @@ class ProductForm(Form):
     description = TextField(
         label=u'詳細',
         validators=[
-            Required(),
+            #Required(),
             Length(max=255, message=u'255文字以内で入力してください'),
         ],
     )

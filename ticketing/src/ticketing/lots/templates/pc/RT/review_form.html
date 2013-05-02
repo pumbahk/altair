@@ -6,20 +6,20 @@
       <h2><img src="${request.static_url('ticketing.lots:static/img/settlement/title_review.gif')}" alt="申込状況確認" /></h2>
       <div class="settlementSelectBox">
         <div class="settlementSelectBoxInner02">
-          <form action="${request.url}" method="post">
+          <form action="${request.url}" class="bigform" method="post">
             <table>
               <tr>
                 <th>${form['entry_no'].label}</th>
                 <td>
-                  ${form['entry_no']}
-                  ${self.error(form, 'entry_no')}
+                  ${form['entry_no'](class_="text")}
+                  ${self.error(form, 'entry_no', enclose=True)}
                 </td>
               </tr>
               <tr>
                 <th>${form['tel_no'].label}</th>
                 <td>
-                  ${form['tel_no']}
-                  ${self.error(form, 'tel_no')}
+                  ${form['tel_no'](class_="text")}
+                  ${self.error(form, 'tel_no', enclose=True)}
                 </td>
               </tr>
             </table>

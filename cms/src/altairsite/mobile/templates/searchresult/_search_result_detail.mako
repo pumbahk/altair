@@ -1,5 +1,6 @@
 <%page args="events, word, num, page, page_num, path, week, genre, sub_genre, area, sale, sales_segment, since_year, since_month, since_day, year, month, day, errors"/> 
 <%namespace file="../common/tags_mobile.mako" name="m" />
+<% from datetime import datetime %>
 % if int(num):
     ${num}件見つかりました。
 % else:
@@ -17,6 +18,9 @@
 　販売期間：${event.deal_open.year}/${str(event.deal_open.month).zfill(2)}/${str(event.deal_open.day).zfill(2)}(${week[event.deal_open.weekday()]})〜${event.deal_close.year}/${str(event.deal_close.month).zfill(2)}/${str(event.deal_close.day).zfill(2)}(${week[event.deal_close.weekday()]})<br />
         % if event.performances[0]:
 　会場：${event.performances[0].venue}<br />
+        % if event.deal_close < datetime.now():
+　<font color="red">このイベントの販売は終了しました</font><br/>
+        % endif
             % if count < len(events) - 1:
                 <hr/>
             % endif

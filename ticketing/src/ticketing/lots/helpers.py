@@ -7,6 +7,7 @@ import json
 from sqlalchemy.orm.exc import NoResultFound
 from markupsafe import Markup
 from ticketing.formhelpers.widgets.list import OurListWidget
+from wtforms.validators import Required
 from .models import LotEntryStatusEnum
 from ticketing.users.helpers import format_sex
 from cgi import escape
@@ -166,13 +167,16 @@ def validate_token(request):
 
     return True
 
+def render_mobile_error(msg):
+    return u'<font color="red">・%s</font><br />' % msg
+
 def mobile_error_list(request, form, name, with_label=False):
     errors = form[name].errors
     if not errors:
         return ""
     
     html = u'<div>'
-    html += u"".join([u'<font color="red">・%s%s</font><br />' % ((u'%s:' % form[name].label.text if with_label else u''), e)  for e in errors])
+    html += u"".join([render_mobile_error((u'%s:' % form[name].label.text if with_label else u'') + e)  for e in errors])
     html += u'</div>'
     return Markup(html)
 
@@ -221,3 +225,16 @@ format_gender = format_sex
 
 def tojson(obj):
     return json.dumps(obj) 
+
+def performance_date_label(performance):
+    return u'%s %s' % (japanese_date(performance.start_on), performance.venue.name)
+
+def is_required(field):
+    required = False
+    for v in field.validators:
+        if isinstance(v, Required):
+            required = True
+    return required
+
+def mobile_required_mark():
+    return Markup('<sup><font color="#f00">*</font></sup>')
