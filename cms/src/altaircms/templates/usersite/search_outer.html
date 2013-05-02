@@ -36,7 +36,7 @@ form = TopPageSidebarSearchForm()
 </%def>
 
 <%def name="pagenum()">
-  % if seq.pager_value("$page"):
+  % if seq and seq.pager_value("$page"):
     (${seq.pager_value("$page")}/${seq.pager_value("$last_page")})
   % endif
 </%def>
