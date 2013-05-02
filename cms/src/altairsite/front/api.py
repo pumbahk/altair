@@ -24,9 +24,16 @@ def get_frontpage_discriptor_resolver(request):
 
 from pyramid.renderers import RendererHelper    
 
-"""
-todo: 複数の種類に分ける?
-"""
+class Lock(object):
+    """todo: implementation. we needs filesystem based lock. (not thread local and not dblock(too-wide))"""
+    def acquire(self):
+        pass
+
+    def release(self):
+        pass
+
+_Lock  = Lock()
+
 class TemplateFetcher(object):
     def __init__(self, request):
         self.request = request
@@ -36,19 +43,29 @@ class TemplateFetcher(object):
             logger.warn("*debug validate template: cache is not found")
             return
 
-        if layout.uploaded_at is None:
+        if layout.synced_at is None:
             return
-        uploaded_at = time.mktime(layout.uploaded_at.timetuple())
+        synced_at = time.mktime(layout.synced_at.timetuple())
 
         fmt = "*debug validate template: layout.updated_at={0}, template.last_modified={1}"
-        logger.warn(fmt.format(uploaded_at ,template.last_modified))
-        if uploaded_at > template.last_modified:
-            self.refresh_template_cache(template, layout, uploaded_at)
+        logger.warn(fmt.format(synced_at ,template.last_modified))
+        if synced_at > template.last_modified:
+            self.refresh_template_cache(template, layout, synced_at)
 
-    def refresh_template_cache(self, template, layout, uploaded_at):
+    def _refresh_template_cache(self, template, layout, synced_at):
         resolver = get_frontpage_discriptor_resolver(self.request)
         refresh_targets = [resolver._resolve(f) for f in layout.dependencies]
-        refresh_template_cache_only_needs(template, refresh_targets, uploaded_at)
+        refresh_template_cache_only_needs(template, refresh_targets, synced_at)
+
+    def refresh_template_cache(self, template, layout, synced_at):
+        _Lock.acquire()
+        try:
+            self._refresh_template_cache(template, layout, synced_at)
+        except:
+            _Lock.release()
+            raise
+        else:
+            _Lock.release()
 
 class RenderingParamsCollector(object):
     def __init__(self, request):

@@ -21,12 +21,29 @@ from ..slackoff.mappers import layout_mapper
 from ..page.models import PageType
 from ..front.api import get_frontpage_discriptor_resolver
 from ..front.api import get_frontpage_renderer
+from altaircms.helpers.viewhelpers import set_endpoint, get_endpoint
 
 class AfterInput(Exception):
     def __init__(self, form=None, context=None):
         self.form = form
         self.context = context
 
+@view_config(route_name="layout_detail", renderer="altaircms:templates/layout/detail.html", 
+             decorator="altaircms.lib.fanstatic_decorator.with_bootstrap")
+def layout_detail(context, request):
+    obj = get_or_404(request.allowable(Layout), Layout.id==request.matchdict["layout_id"])
+    return {"obj": obj}
+
+from altaircms.models import DBSession
+from datetime import datetime
+@view_config(route_name="layout_sync", renderer="altaircms:templates/layout/sync.html", 
+             decorator="altaircms.lib.fanstatic_decorator.with_bootstrap")
+def layout_sync(context, request):
+    obj = get_or_404(request.allowable(Layout), Layout.id==request.matchdict["layout_id"])
+    obj.synced_at = datetime.now()
+    DBSession.add(obj)
+    FlashMessage.success("sync layout id=%s synced_at=%s" % (obj.id, obj.synced_at), request=request)
+    return HTTPFound(get_endpoint(request) or request.route_path("layout_list"))
 
 @view_config(route_name="layout_list")
 def layout_list(context, request):

@@ -15,6 +15,8 @@ import sqlalchemy as sa
 
 def upgrade():
     op.add_column('layout', sa.Column('uploaded_at', sa.DateTime(), nullable=True))
+    op.add_column('layout', sa.Column('synced_at', sa.DateTime(), nullable=True))
 
 def downgrade():
     op.drop_column('layout', 'uploaded_at')
+    op.drop_column('layout', 'synced_at')

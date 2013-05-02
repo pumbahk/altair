@@ -20,13 +20,11 @@ def upgrade():
     op.add_column('image_asset', sa.Column('file_url', sa.String(length=255), nullable=True))
     op.add_column('movie_asset', sa.Column('thumbnail_url', sa.String(length=255), nullable=True))
     op.add_column('movie_asset', sa.Column('file_url', sa.String(length=255), nullable=True))
-    op.add_column('layout', sa.Column('file_url', sa.String(length=255), nullable=True))
 
 
 def downgrade():
     op.drop_column('movie_asset', 'file_url')
     op.drop_column('movie_asset', 'thumbnail_url')
-    op.drop_column('layout', 'file_url')
     op.drop_column('image_asset', 'file_url')
     op.drop_column('image_asset', 'thumbnail_url')
     op.drop_column('flash_asset', 'file_url')

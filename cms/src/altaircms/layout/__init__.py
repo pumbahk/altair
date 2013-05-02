@@ -33,6 +33,8 @@ def includeme(config):
     config.add_route("layout_download", '/layout/{layout_id}/download')
     config.add_route("layout_list", "/layout")
     config.add_route("layout_list_with_pagetype", "/layout/pagetype/{pagetype_id}")
+    config.add_route("layout_detail", "/layout/{layout_id}/detail")
+    config.add_route("layout_sync", "/layout/{layout_id}/sync")
     config.add_route("layout_create", "/layout/pagetype/{pagetype_id}/create/{action}")
     config.add_route("layout_update", "/layout/{id}/pagetype/{pagetype_id}/update/{action}")
     config.scan(".views")
