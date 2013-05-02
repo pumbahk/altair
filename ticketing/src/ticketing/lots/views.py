@@ -49,7 +49,7 @@ def make_performance_map(request, performances):
                 venue=performance.venue.name,
                 open_on=toutc(performance.open_on, tz).isoformat() if performance.open_on else None,
                 start_on=toutc(performance.start_on, tz).isoformat() if performance.start_on else None,
-                start_on_str=h.japanese_datetime(performance.start_on) if performance.start_on else None
+                label=h.performance_date_label(performance)
                 )
             )
 
