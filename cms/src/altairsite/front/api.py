@@ -27,26 +27,9 @@ from pyramid.renderers import RendererHelper
 """
 todo: 複数の種類に分ける?
 """
-class FrontPageRenderer(object):
+class TemplateFetcher(object):
     def __init__(self, request):
         self.request = request
-
-    def render(self, template, page):
-        bsettings = self.get_bsettings(page)
-        params = self.build_render_params(page)
-        params.update(page=page, display_blocks=bsettings.blocks)
-        return self._render(template, page.layout, params)
-
-    def _render(self, template, layout, params):
-        return self.render_to_response(template, layout, params, self.request)        
-
-    def render_to_response(self, renderer_name, layout, value, request=None, package=None):
-        """render_to_response_with_fresh_template"""
-        helper = RendererHelper(name=renderer_name, package=package,
-                                registry=request.registry)
-        template = helper.renderer.implementation()
-        self.refresh_template_if_need(template, layout)
-        return helper.render_to_response(value, None, request=request)
 
     def refresh_template_if_need(self, template, layout):
         if not hasattr(template, "cache"):
@@ -66,6 +49,10 @@ class FrontPageRenderer(object):
         resolver = get_frontpage_discriptor_resolver(self.request)
         refresh_targets = [resolver._resolve(f) for f in layout.dependencies]
         refresh_template_cache_only_needs(template, refresh_targets, uploaded_at)
+
+class RenderingParamsCollector(object):
+    def __init__(self, request):
+        self.request = request
 
     def get_bsettings(self, page):
         bsettings = BlockSettings.from_widget_tree(WidgetTreeProxy(page))
@@ -87,3 +74,26 @@ class FrontPageRenderer(object):
         params.update(sub_categories=get_subcategories_from_page(self.request, page), 
                       myhelper=pyramidlayout)
         return params
+
+class FrontPageRenderer(object):
+    def __init__(self, request):
+        self.request = request
+        self.fetcher = TemplateFetcher(request)
+        self.param_collector = RenderingParamsCollector(request)
+
+    def render(self, template, page):
+        bsettings = self.params_collector.get_bsettings(page)
+        params = self.params_collector.build_render_params(page)
+        params.update(page=page, display_blocks=bsettings.blocks)
+        return self._render(template, page.layout, params)
+
+    def _render(self, template, layout, params):
+        return self.render_to_response(template, layout, params, self.request)        
+
+    def render_to_response(self, renderer_name, layout, value, request=None, package=None):
+        """render_to_response_with_fresh_template"""
+        helper = RendererHelper(name=renderer_name, package=package,
+                                registry=request.registry)
+        template = helper.renderer.implementation()
+        self.fetcher.refresh_template_if_need(template, layout)
+        return helper.render_to_response(value, None, request=request)

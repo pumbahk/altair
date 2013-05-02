@@ -4,8 +4,8 @@ import time
 
 class RefreshCacheFireTests(unittest.TestCase):
     def _getTarget(self):
-        from altairsite.front.api import FrontPageRenderer
-        class DummyContext(FrontPageRenderer):
+        from altairsite.front.api import TemplateFetcher
+        class DummyContext(TemplateFetcher):
             result = []
             called = False
             def refresh_template_cache(self, *args, **kwargs):
