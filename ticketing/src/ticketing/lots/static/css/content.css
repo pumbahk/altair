@@ -1455,16 +1455,15 @@
     background: url(../img/order/bg_select_bottom.gif) no-repeat left bottom;
 }
 
-.settlementSelectBoxInner02 p strong {
-    color: #bf191f;
-    font-size: 1.5em;
+.settlementSelectBoxInner02 p.header {
     margin-left: 10px;
+    vertical-align: top;
+    font-size: 116.7%;
 }
 
-.settlementSelectBoxInner02 p span{
-    color: #000;
-    font-size: 116.7%;
-    margin-left: 20px;
+.settlementSelectBoxInner02 p.header strong {
+    color: #bf191f;
+    margin-right: 1em;
 }
 
 #settlementSelectBox table {
@@ -2180,10 +2179,6 @@
     font-weight: bold;
     font-size: 180%;
     margin-bottom: 10px;
-}
-
-table.chooser select {
-    font-size: 116.7%;
 }
 
 .form-field label {

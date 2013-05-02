@@ -73,31 +73,24 @@
         %for i in range(lot.limit_wishes):
         <div class="settlementSelectBox">
           <div class="settlementSelectBoxInner02">
-            <p><strong>第${i + 1}希望</strong></p>
+            <p class="header">
+              <strong>第${i + 1}希望</strong>
+              %if len(performance_map) == 1:
+              <input type="hidden" name="performanceName-${i}" value="${performance_map[0][1]}" />
+              %else:
+              <select name="performanceName-${i}" data-wishOrder="${i}" class="performance-name-select">
+              %for performance_name, _ in performance_map:
+              <option value="${performance_name}">${performance_name}</option>
+              %endfor
+              </select>
+              %endif
+            </p>
             <table class="chooser" summary="希望する公演と券種の選択" id="wish-cell-table-${i}">
               <tr>
-                %if len(performance_map) == 1:
                 <th>
-                %else:
-                <th rowspan="2">
-                %endif
                   <label>公演日・会場</label>
                 </th>
-                %if len(performance_map) == 1:
-                <input type="hidden" name="performanceName-${i}" value="${performance_map[0][1]}" />
                 <td colspan="2">
-                %else:
-                <td colspan="2">
-                  <select name="performanceName-${i}" data-wishOrder="${i}" class="performance-name-select">
-                  %for performance_name, _ in performance_map:
-                  <option value="${performance_name}">${performance_name}</option>
-                  %endfor
-                  </select>
-                </td>
-              </tr>
-              <tr>
-                <td colspan="2">
-                %endif
                   <select name="performanceDate-${i}" data-wishOrder="${i}" class="performance-date-select">
                   %for performance in performances:
                   <option value="${performance.id}">${h.japanese_datetime(performance.start_on)}</option>
