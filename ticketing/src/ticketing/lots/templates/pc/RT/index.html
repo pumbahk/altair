@@ -161,95 +161,90 @@
               <tr>
                 <th><label>購入者氏名（全角）</label></th>
                 <td>
-                  ${form['last_name']}
-                  ${form['first_name']}
-                  ${self.error(form, 'last_name')}
-                  ${self.error(form, 'first_name')}
+                  <div class="form-field">
+                    ${form['last_name'].label} ${form['last_name']}
+                    ${self.error(form, 'last_name')}
+                  </div>
+                  <div class="form-field">
+                    ${form['first_name'].label} ${form['first_name']}
+                    ${self.error(form, 'first_name')}
+                  </div>
                 </td>
-              </tr>
               <tr>
                 <th><label>購入者氏名（カナ）</label></th>
                 <td>
-                  ${form['last_name_kana']}
-                  ${form['first_name_kana']}
-                  ${self.error(form, 'last_name_kana')}
-                  ${self.error(form, 'first_name_kana')}
+                  <div class="form-field">
+                    ${form['last_name_kana'].label} ${form['last_name_kana']}
+                    ${self.error(form, 'last_name_kana')}
+                  </div>
+                  <div class="form-field">
+                    ${form['first_name_kana'].label} ${form['first_name_kana']}
+                    ${self.error(form, 'first_name_kana')}
+                  </div>
                 </td>
               </tr>
               <tr>
-                <th><label>メールアドレス</label></th>
+                <th>メールアドレス</th>
                 <td>
-                  ${form['email_1']}
-                  ${self.error(form, 'email_1')}
+                  <div class="form-field">
+                    ${form['email_1'].label}
+                    ${form['email_1']}
+                    ${self.error(form, 'email_1')}
+                  </div>
+                  <div class="form-field">
+                    ${form['email_1_confirm'].label}
+                    ${form['email_1_confirm']}
+                    ${self.error(form, 'email_1_confirm')}
+                  </div>
                 </td>
               </tr>
               <tr>
-                <th><label>メールアドレス（確認）</label></th>
+                <th>電話番号</th>
                 <td>
-                  ${form['email_1_confirm']}
-                  ${self.error(form, 'email_1_confirm')}
+                  <div class="form-field">
+                    ${form['tel_1'].label}
+                    ${form['tel_1']}
+                    ${self.error(form, 'tel_1')}
+                  </div>
+                  <div class="form-field">
+                    ${form['tel_2'].label}
+                    ${form['tel_2']}
+                    ${self.error(form, 'tel_2')}
+                  </div>
                 </td>
               </tr>
-              <tr>
-                <th><label>電話番号（自宅）</label></th>
-                <td>
-                  ${form['tel_1']}
-                  ${self.error(form, 'tel_1')}
-                </td>
-              </tr>
-              <%doc>
-              <tr>
-                <th><label>電話番号（携帯電話）</label></th>
-                <td>
-                  ${form['mobile_tel']}
-                  ${self.error(form, 'mobile_tel')}
-                </td>
-              </tr>
-              </%doc>
               <tr>
                 <th><label>配送先住所</label></th>
                 <td>
-                  <table>
-                    <tr>
-                      <th><label>郵便番号</label></th>
-                      <td>
-                        ${form['zip']}
-                        ${self.error(form, 'zip')}
-                      </td>
-                    </tr>
-                    <tr>
-                      <th><label>都道府県</label></th>
-                      <td>
-                        ${form['prefecture']}
-                        ${self.error(form, 'prefecture')}
-                      </td>
-                    </tr>
-                    <tr>
-                      <th><label>市区町村</label></th>
-                      <td>
-                        ${form['city']}
-                        ${self.error(form, 'city')}
-                      </td>
-                    </tr>
-                    <tr>
-                      <th><label>住所１</label></th>
-                      <td>
-                        ${form['address_1']}
-                        ${self.error(form, 'address_1')}
-                      </td>
-                    </tr>
-                    <tr>
-                      <th><label>住所２</label></th>
-                      <td>
-                        ${form['address_2']}
-                        ${self.error(form, 'address_2')}
-                      </td>
-                    </tr>
-                  </table>
+                  <div class="form-field">
+                    ${form['zip'].label}
+                    ${form['zip']}
+                    ${self.error(form, 'zip')}
+                  </div>
+                  <div class="form-field">
+                    ${form['prefecture'].label}
+                    ${form['prefecture']}
+                    ${self.error(form, 'prefecture')}
+                  </div>
+                  <div class="form-field">
+                    ${form['city'].label}
+                    ${form['city']}
+                    ${self.error(form, 'city')}
+                  </div>
+                  <div class="form-field">
+                    ${form['address_1'].label}
+                    ${form['address_1'](style="width: 30em")}
+                    ${self.error(form, 'address_1')}
+                  </div>
+                  <div class="form-field">
+                    ${form['address_2'].label}
+                    ${form['address_2'](style="width: 30em")}
+                    ${self.error(form, 'address_2')}
+                  </div>
                 </td>
               </tr>
               <tr>
-                <th><label>生年月日</label></th>
+                <th>生年月日</th>
                 <td>
                   ${form['year']} 年
                 　${form['month']} 月
@@ -258,15 +253,13 @@
                 </td>
               </tr>
               <tr>
-                <th><label>${form['sex'].label}</label></th>
+                <th>${form['sex'].label}</th>
                 <td>
-                  %for subfields in form['sex']:
-                    ${subfields}　${subfields.label}
-                  %endfor
+                  ${form['sex']}
                 </td>
               </tr>
               <tr id="settlementSelectEnd">
-                <th><label>メモ欄</label></th>
+                <th>メモ欄</th>
                 <td>${form['memo'](cols=50, rows=5)} ${self.error(form, 'error')}</td>
               </tr>
             </table>

@@ -1478,10 +1478,6 @@
     background: url(../img/settlement/bg_select_th.gif) no-repeat right bottom;
 }
 
-#settlementSelectBox th label{
-     color: #aa5555;
-}
-
 #settlementSelectBox td {
     padding: 5px 10px;
     background: url(../img/settlement/bg_select_td.gif) repeat-x left bottom;
@@ -1504,13 +1500,8 @@
     padding: 5px 10px;
     font-size: 116.7%;
     background: url(../img/settlement/bg_select_th.gif) no-repeat right bottom;
+    color: #aa5555;
 }
-
-table th label {
-     color: #aa5555;
-}
-
-
 
 .settlementSelectBox td {
     padding: 5px 10px;
@@ -2234,4 +2225,15 @@ table th label {
 
 table.chooser select {
     font-size: 15px;
+}
+
+.form-field label {
+    display: inline-block;
+    font-weight: bold;
+    width: 12em;
+}
+
+.validation-error {
+    color: red;
+    font-weight: bold;
 }
