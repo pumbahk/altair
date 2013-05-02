@@ -269,12 +269,17 @@ class EntryLotView(object):
         except (ValueError, TypeError):
             pass
 
+        validated = True
+
         payment_delivery_pairs = sales_segment.payment_delivery_method_pairs
         if payment_delivery_method_pair_id not in [m.id for m in payment_delivery_pairs]:
             self.request.session.flash(u"お支払／引取方法をお選びください")
-            return self.step4_rendered_value(form=cform)
+            validated = False
         if not cform.validate():
-            return self.step4_rendered_value(cform)
+            validated = False
+
+        if not validated:
+            return self.step4_rendered_value(form=cform)
 
         shipping_address_dict = cform.get_validated_address_data()
         api.new_lot_entry(
