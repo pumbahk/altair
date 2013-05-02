@@ -4,89 +4,89 @@
 ${event.title}<br />
 ${lot.name}
 </div>
+<%mobile:messages messages="${messages}" />
 <%mobile:header>お客様情報の入力</%mobile:header>
 <form method="post" action="${request.url}">
-<%mobile:form_header>申込者氏名(全角)</%mobile:form_header>
+<%mobile:form_header>申込者氏名(全角)${h.mobile_required_mark()}</%mobile:form_header>
 <div>
   ${form['last_name'].label}
-  ${form['last_name']}
+  ${form['last_name'](istyle="1", iprof="name1")}
   ${h.mobile_error_list(request, form, 'last_name')}
 </div>
 <div>
   ${form['first_name'].label}
-  ${form['first_name']}
+  ${form['first_name'](istyle="1", iprof="name2")}
   ${h.mobile_error_list(request, form, 'first_name')}
 <div color="#ff0000">
 
-<%mobile:form_header>申込者氏名(カナ)</%mobile:form_header>
+<%mobile:form_header>申込者氏名(カナ)${h.mobile_required_mark()}</%mobile:form_header>
 <div>
   ${form['last_name_kana'].label}
-  ${form['last_name_kana']}
+  ${form['last_name_kana'](istyle="2", iprod="kana1")}
   ${h.mobile_error_list(request, form, 'last_name_kana')}
 </div>
 <div>
   ${form['first_name_kana'].label}
-  ${form['first_name_kana']}
+  ${form['first_name_kana'](istyle="2", iprod="kana2")}
   ${h.mobile_error_list(request, form, 'first_name_kana')}
 </div>
 
-<%mobile:form_header>${form['sex'].label}</%mobile:form_header>
+<%mobile:form_header>${form['sex'].label}${h.mobile_required_mark()}</%mobile:form_header>
 <div>
   ${form['sex'](_widget=h.mobile_list_widget(request))}
   ${h.mobile_error_list(request, form, 'sex')}
 </div>
 
-<%mobile:form_header>誕生日</%mobile:form_header>
+<%mobile:form_header>誕生日${h.mobile_required_mark()}</%mobile:form_header>
 <div>
-  ${form['year'](istyle="4")}年
-  ${form['month'](istyle="4")}月
-  ${form['day'](istyle="4")}日
+  ${form['year'](widget="input", size="4", maxlength="4", istyle="4")}年
+  ${form['month'](widget="input", size="2", maxlength="2", istyle="4")}月
+  ${form['day'](widget="input", size="2", maxlength="2", istyle="4")}日
   ${h.mobile_error_list(request, form, 'year', with_label=True)}
   ${h.mobile_error_list(request, form, 'month', with_label=True)}
   ${h.mobile_error_list(request, form, 'day', with_label=True)}
 </div>
 
-<%mobile:form_header>${form['email_1'].label}</%mobile:form_header>
+<%mobile:form_header>${form['email_1'].label}${h.mobile_required_mark()}</%mobile:form_header>
 <div>
-  ${form['email_1']}
+  ${form['email_1'](istyle="3", iprof="mail1")}
   ${h.mobile_error_list(request, form, 'email_1')}
 </div>
 
-<%mobile:form_header>${form['email_1_confirm'].label}</%mobile:form_header>
+<%mobile:form_header>${form['email_1_confirm'].label}${h.mobile_required_mark()}</%mobile:form_header>
 <div>
-  ${form['email_1_confirm']}
+  ${form['email_1_confirm'](istyle="3", iprof="mail1")}
   ${h.mobile_error_list(request, form, 'email_1_confirm')}
 </div>
 <p>※ 予約受付完了メール等をメールでご案内します。「ticket.rakuten.co.jp」からのメールを受信できるよう、お申し込み前にドメイン指定の設定を必ずお願いいたします。</p>
 
 <%mobile:form_header>住所</%mobile:form_header>
 <div>
-  ${form['zip'].label}(例:1410022)<br/>
-  ${form['zip'](istyle='4')}
+  ${form['zip'].label}${h.mobile_required_mark()}(例:1410022)<br/>
+  ${form['zip'](istyle="4")}
   ${h.mobile_error_list(request, form, 'zip')}
 </div>
 <div>
-  ${form['prefecture'].label}<br/>
+  ${form['prefecture'].label}${h.mobile_required_mark()}<br/>
   ${form['prefecture']}
   ${h.mobile_error_list(request, form, 'prefecture')}
 </div>
 <div>
-  ${form['city'].label}<br/>
-  ${form['city']}
+  ${form['city'].label}${h.mobile_required_mark()}<br/>
+  ${form['city'](istyle="1", iprof="address2")}
   ${h.mobile_error_list(request, form, 'city')}
 </div>
 <div>
-  住所<br/>
-  ${form['address_1']}<br/>
+  住所${h.mobile_required_mark()}<br/>
+  ${form['address_1'](istyle="1", iprof="address3")}<br/>
   建物名等<br/>
-  ${form['address_2']}
+  ${form['address_2'](istyle="1", iprof="address4")}
   ${h.mobile_error_list(request, form, 'address_1')}
 </div>
 
-<%mobile:form_header>電話番号</%mobile:form_header>
+<%mobile:form_header>${form['tel_1'].label}${h.mobile_required_mark()}</%mobile:form_header>
 <div>
-  ${form['tel_1'].label}<br/>
-  ${form['tel_1']}
+  ${form['tel_1'](istyle="4")}
   ${h.mobile_error_list(request, form, 'tel_1')}
 </div>
 
@@ -103,8 +103,8 @@ ${lot.name}
 </div>
 <% checked_id = request.params.get('payment_delivery_method_pair_id') %>
 
-%if request.session.peek_flash():
-    %for message in request.session.pop_flash():
+%if pdmp_messages:
+    %for message in pdmp_messages:
     <div style="color:red">** ${message} **</div>
     %endfor
 %endif
