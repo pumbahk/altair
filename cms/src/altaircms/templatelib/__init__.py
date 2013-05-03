@@ -108,9 +108,9 @@ class AssetSpecManager(object):
 
     def as_assetspec(self, uri):
         if not self.is_assetspec(uri):
-            return "{0}{1}".format(self.prefix, uri)
-        return uri
-
+            uri =  "{0}{1}".format(self.prefix, uri)
+        module, path = uri.split(":")
+        return "{0}:{1}".format(module, os.path.normpath(path))
 
 @implementer(IFailbackLookup)
 class DefaultFailbackLookup(object):
@@ -128,6 +128,7 @@ class DefaultFailbackLookup(object):
         lookup_url = "{0}/{1}".format(self.host, uri.lstrip("/"))
         res = urllib.urlopen(lookup_url)
         if res.getcode() != 200:
+            logger.warn("failback lookup template is failed: url={0}".format(uri))
             return None
         adjusted = create_adjusted_name(uri)
         srcfile = AssetResolver().resolve(uri).abspath()
@@ -137,25 +138,29 @@ class DefaultFailbackLookup(object):
 
 @implementer(IFailbackLookup)
 class S3FailbackLookup(object):
-    def __init__(self, assetspec, access_key, secret_key, bucket, delimiter):
+    def __init__(self, assetspec, access_key, secret_key, bucket_name, delimiter):
         self.asset_spec_manager = AssetSpecManager(assetspec)
         self.connection = DefaultS3ConnectionFactory(access_key, secret_key)()
         self.retriver_factory = DefaultS3RetrieverFactory()
+        self.delimiter = delimiter
+        self.bucket_name = bucket_name
 
     @classmethod 
     def from_settings(cls, settings, prefix=""):
         return cls(settings[prefix+"directories"][0], 
                    settings[prefix+"access_key"], 
                    settings[prefix+"secret_key"], 
-                   settings[prefix+"bucket"], 
+                   settings[prefix+"bucket_name"], 
                    settings.get(prefix+"delimiter", "/"))
 
     def __call__(self, lookup, uri):
         uri = self.asset_spec_manager.as_assetspec(uri)
-        resolver = S3AssetResolver(self.connection, self.retriver_factory, delimiter=self.delimiter)
-        descriptor = resolver.resolve(uri)
-        if not descriptor.exists():
-            return None
+        resolver = S3AssetResolver(self.connection, self.retriver_factory, 
+                                   delimiter=self.delimiter)
+        descriptor = resolver.resolve("s3://{0}/{1}".format(self.bucket_name, uri.lstrip("/")))
+        # if not descriptor.exists():
+        #     logger.warn("failback lookup template is failed: abspath={0}".format(descriptor.abspath()))
+        #     return None
         adjusted = create_adjusted_name(uri)
         srcfile = AssetResolver().resolve(uri).abspath()
         create_file_from_io(srcfile, descriptor.stream())

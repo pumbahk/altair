@@ -54,7 +54,7 @@ class TemplateFetcher(object):
 
     def _refresh_template_cache(self, template, layout, synced_at):
         resolver = get_frontpage_discriptor_resolver(self.request)
-        refresh_targets = [resolver._resolve(f) for f in layout.dependencies]
+        refresh_targets = [resolver.from_assetspec(self.request, f) for f in layout.dependencies]
         refresh_template_cache_only_needs(template, refresh_targets, synced_at)
 
     def refresh_template_cache(self, template, layout, synced_at):
@@ -96,7 +96,7 @@ class FrontPageRenderer(object):
     def __init__(self, request):
         self.request = request
         self.fetcher = TemplateFetcher(request)
-        self.param_collector = RenderingParamsCollector(request)
+        self.params_collector = RenderingParamsCollector(request)
 
     def render(self, template, page):
         bsettings = self.params_collector.get_bsettings(page)

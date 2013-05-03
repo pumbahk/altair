@@ -39,7 +39,10 @@ class LayoutModelDescriptor(object):
     def absspec(self):
         if ":" in self.filename:
             return self.filename
-        return os.path.join(self.layout_spec, self.filename)
+        path = os.path.join(self.layout_spec, self.filename)
+        module, path = path.split(":")
+        return "{0}:{1}".format(module, os.path.normpath(path))
+        
 
 @implementer(ILayoutModelResolver)
 class LayoutModelResolver(object):
@@ -54,8 +57,8 @@ class LayoutModelResolver(object):
         self.default_prefix = default_prefix
         self.checkskip = checkskip
 
-    def _resolve(self, request, layout, verbose=False):
-        return self.from_layout(request, layout)        
+    def _resolve(self, request, assetspec, verbose=False):
+        return self.from_assetspec(request, assetspec)        
 
     def resolve(self, request, layout, verbose=False):
         descriptor = self.from_layout(request, layout)
@@ -69,18 +72,19 @@ class LayoutModelResolver(object):
             logger.info("default template path %s is" % descriptor.abspath())
         return descriptor
 
-    def from_layout_default(self, request, layout):
-        filename_default = os.path.join(self.default_prefix, layout.template_filename)
-        logger.info("layout template is not found. search %s" % (filename_default))
+    def from_assetspec(self, request, filepath, layout=None):
+        logger.info("layout template is not found. search %s" % (filepath))
         return self.DescriptorDefault(
             self.layout_spec, 
             self.layoutdir, 
-            filename_default, 
+            filepath, 
             checkskip=False, 
             layout=layout
             )
-        
-        return filename_default
+
+    def from_layout_default(self, request, layout):
+        filename_default = os.path.join(self.default_prefix, layout.template_filename)
+        return self.from_assetspec(request, filename_default, layout)
 
     def from_layout(self, request, layout):
         return self.DescriptorBase(

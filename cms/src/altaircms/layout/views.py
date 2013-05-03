@@ -1,6 +1,4 @@
 # coding: utf-8
-import sqlalchemy as sa
-import os.path
 from altairsite.front import helpers as fh
 from pyramid.view import view_config
 
@@ -22,6 +20,8 @@ from ..page.models import PageType
 from ..front.api import get_frontpage_discriptor_resolver
 from ..front.api import get_frontpage_renderer
 from altaircms.helpers.viewhelpers import set_endpoint, get_endpoint
+import logging
+logger = logging.getLogger(__name__)
 
 class AfterInput(Exception):
     def __init__(self, form=None, context=None):
@@ -100,10 +100,18 @@ class LayoutCreateView(object):
             self.request._form = form
             raise AfterInput
 
-        layout_creator = LayoutCreator(self.request, self.request.organization)
-        layout = layout_creator.create(form.data, pagetype_id)
-        FlashMessage.success("create layout %s" % layout.title, request=self.request)
+        try:
+            layout_creator = LayoutCreator(self.request, self.request.organization)
+            layout = layout_creator.create(form.data, pagetype_id)
+        except Exception, e:
+            logger.error(str(e))
+            FlashMessage.error(str(e), request=self.request)            
+            self.request._form = form
+            raise AfterInput
 
+        url = self.request.route_path("layout_detail", layout_id=layout.id)
+        mes = u'%sを作成しました <a href="%s">新しく作成されたデータを編集</a>' % (u"レイアウト", url)
+        FlashMessage.success(mes, request=self.request)
         return HTTPFound(self.request.route_url("layout_list_with_pagetype", pagetype_id=pagetype_id)) ##
 
 @view_defaults(route_name="layout_update", 
@@ -141,10 +149,18 @@ class LayoutUpdateView(object):
         if not form.validate():
             self.request._form = form
             raise AfterInput
-
-        layout_updater = LayoutUpdater(self.request, self.request.organization)
-        layout = layout_updater.update(layout, form.data, pagetype_id)
-        FlashMessage.success("update layout %s" % layout.title, request=self.request)
+        try:
+            layout_updater = LayoutUpdater(self.request, self.request.organization)
+            layout = layout_updater.update(layout, form.data, pagetype_id)
+        except Exception, e:
+            logger.error(str(e))
+            FlashMessage.error(str(e), request=self.request)            
+            self.request._form = form
+            raise AfterInput
+            
+        url = self.request.route_path("layout_detail", layout_id=layout.id)
+        mes = u'%sを編集しました <a href="%s">変更されたデータを編集</a>' % (u"レイアウト", url)
+        FlashMessage.success(mes, request=self.request)
         return HTTPFound(self.request.route_url("layout_list_with_pagetype", pagetype_id=pagetype_id)) ##
 
 

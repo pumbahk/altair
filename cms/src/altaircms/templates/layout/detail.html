@@ -60,9 +60,10 @@
 <h3>操作</h3>
 <div class="btn-group">
   <a class="btn btn-primary" href="${request.route_path("layout_update", id=obj.id, pagetype_id=obj.pagetype_id, action="input", _query=dict(endpoint=request.url))}">
-    <i class="icon-pencil"></i> ページセットの編集
+    <i class="icon-pencil"></i> レイアウトの編集
   </a>
-  <a data-id="${obj.id}" class="layout-sync btn btn-info" href="${request.route_path("layout_sync", layout_id=obj.id, _query=dict(endpoint=request.url))}">
+  <a data-id="${obj.id}" class="layout-sync btn ${"btn-info" if obj.is_synced() else "btn-warning"}" 
+     href="${request.route_path("layout_sync", layout_id=obj.id, _query=dict(endpoint=request.url))}">
     <i class="icon-cog"></i> usersiteに同期
   </a>
   <a class="btn" href="${request.route_path("layout_preview", layout_id=obj.id)}">

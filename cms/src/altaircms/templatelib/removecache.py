@@ -29,14 +29,16 @@ def logical_delete_file(fname):
     d, b = os.path.split(fname)
     dst = os.path.join(d, "."+b)
     logger.info("logical delete file: {0} -> {1}".format(fname, dst))
-    # return os.rename(fname, dst)
+    if os.path.exists(fname):
+        return os.rename(fname, dst)
 
 def del_cache(k, discriptor, uploaded_at, lookup, deletefn=logical_delete_file):
-    if discriptor.exists() and uploaded_at > os.stat(discriptor.abspath()).mtime:
+    if discriptor.exists() and uploaded_at > os.stat(discriptor.abspath()).st_mtime:
         try:
             deletefn(discriptor.abspath())
         except Exception, e:
             logger.exception(str(e))
+
     if k in lookup._collection:
         del lookup._collection[k]
         logger.warn("*debug del collection: {0}".format(k))
