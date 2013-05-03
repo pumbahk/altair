@@ -11,19 +11,21 @@
   <div class="settlementBox">
     <div class="settlementBoxInner">
       <h2 class="title"><img src="${request.static_url('ticketing.lots:static/img/order/title_hope.gif')}" alt="希望選択" width="97" height="30" /></h2>
-      %for wish in entry.wishes:
+      %for wish, total_amount in wishes:
       <div class="settlementSelectBox">
         <div class="settlementSelectBoxInner02">
-          <p><strong>第${wish.wish_order + 1}希望</strong><span>${wish.performance.name}</span></p>
-          <table summary="第${wish.wish_order + 1}希望">
+          <p><strong>第${wish['wish_order'] + 1}希望</strong><span>${wish['performance'].name}</span></p>
+          <table summary="第${wish['wish_order'] + 1}希望">
             <tr>
               <th><label>公演日・会場</label></th>
-              <td>${h.japanese_datetime(wish.performance.open_on)}　${wish.performance.venue.name}</td>
+              <td>${h.japanese_datetime(wish['performance'].open_on)}　${wish['performance'].venue.name}</td>
             </tr>
-            %for product in wish.products:
+            %for i, rec in enumerate(wish['wished_products']):
             <tr>
-              <th><label>席種券種</label></th>
-              <td>${product.product.name}　${product.quantity} 枚</td>
+              %if i == 0:
+              <th rowspan="${len(wish['wished_products'])}"><label>席種券種</label></th>
+              %endif
+              <td>${rec['product'].name} ${h.format_currency(rec['product'].price)}×${rec['quantity']}枚=${h.format_currency(rec['subtotal'])} (税込)</td>
             </tr>
             %endfor
           </table>

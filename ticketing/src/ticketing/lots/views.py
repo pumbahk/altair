@@ -245,7 +245,7 @@ class ConfirmLotEntryView(object):
                     payment_delivery_method_pair_id=entry['payment_delivery_method_pair_id'],
                     payment_delivery_method_pair=payment_delivery_method_pair,
                     token=entry['token'],
-                    wishes=h.add_wished_product_names(entry['wishes']),
+                    wishes=h.add_total_amounts(h.add_subtotals(h.add_wished_product_names(entry['wishes'])), payment_delivery_method_pair),
                     gender=entry['gender'],
                     birthday=entry['birthday'],
                     memo=entry['memo'],
@@ -329,7 +329,13 @@ class CompletionLotEntryView(object):
             self.request.session['lots.magazine_ids'] = None
             self.request.session.persist() # XXX: 完全に念のため
 
-        return dict(event=self.context.event, lot=self.context.lot, sales_segment=self.context.lot.sales_segment, entry=entry)
+        return dict(
+            event=self.context.event,
+            lot=self.context.lot,
+            sales_segment=self.context.lot.sales_segment,
+            entry=entry,
+            wishes=h.add_total_amounts_mobile(h.add_subtotals_mobile(h.build_wishes_dicts_from_entry(entry)), entry.payment_delivery_method_pair)
+            )
 
 @view_defaults(route_name='lots.review.index')
 class LotReviewView(object):

@@ -141,19 +141,7 @@ class EntryLotView(object):
             lot=lot,
             sales_segment=sales_segment,
             option_index=option_index,
-            options=[
-                dict(
-                    performance=Performance.query.filter_by(id=data['performance_id']).one(),
-                    wished_products=[
-                        dict(
-                            product=Product.query.filter_by(id=rec['product_id']).one(),
-                            **rec
-                            )
-                        for rec in data['wished_products']
-                        ]
-                    )
-                for data in api.get_options(self.request, lot.id)
-                ]
+            options=h.decorate_options_mobile(api.get_options(self.request, lot.id))
             )
 
     @view_config(route_name='lots.entry.step3', request_method='GET', renderer=selectable_renderer("mobile/%(membership)s/step3.html"))
