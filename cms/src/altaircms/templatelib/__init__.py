@@ -14,15 +14,14 @@ from pyramid.mako_templating import (
     IMakoLookup
 )
 from pyramid.interfaces import IRendererFactory
-from pyramid.asset import (
-    resolve_asset_spec,
-    abspath_from_asset_spec,
-)
 from pyramid.path import AssetResolver
 import logging
 logger = logging.getLogger()
 from zope.interface import implementer
 from zope.interface import Interface
+from altair.pyramid_boto.s3.assets import DefaultS3RetrieverFactory
+from altair.pyramid_boto.s3.assets import S3AssetResolver
+from altair.pyramid_boto.s3.connection import DefaultS3ConnectionFactory
 
 class IMakoLookupFactory(Interface):
     def __call__(*args, **kwargs):
@@ -49,6 +48,7 @@ def create_file_from_io(name, io):
 def create_adjusted_name(uri):
     return uri.replace(':', '$')
 
+
 class TemplateLookupEvents(object):
     __slots__ = ("events", )
     def __init__(self, **events):
@@ -63,6 +63,7 @@ class TemplateLookupEvents(object):
 
     def fire_if_exists(self, key, *args, **kwargs):
         return self.exists(key) and self.fire(key, *args, **kwargs)
+
 
 @implementer(IMakoLookup)
 class HasFailbackTemplateLookup(PkgResourceTemplateLookup):
@@ -92,10 +93,9 @@ class HasFailbackTemplateLookup(PkgResourceTemplateLookup):
                 logger.exception(sube)
                 raise e
 
-@implementer(IFailbackLookup)
-class DefaultFailbackLookup(object):
-    def __init__(self, host, assetspec):
-        self.host = host.rstrip("/")
+
+class AssetSpecManager(object):
+    def __init__(self, assetspec):
         self.assetspec = assetspec
         self.default_directory = AssetResolver().resolve(assetspec).abspath()        
         if not ":" in assetspec:
@@ -103,26 +103,64 @@ class DefaultFailbackLookup(object):
         else:
             self.prefix = assetspec.rstrip("/")+"/"    
 
+    def is_assetspec(self, uri):
+        return ":" in uri
+
+    def as_assetspec(self, uri):
+        if not self.is_assetspec(uri):
+            return "{0}{1}".format(self.prefix, uri)
+        return uri
+
+
+@implementer(IFailbackLookup)
+class DefaultFailbackLookup(object):
+    def __init__(self, host, assetspec):
+        self.host = host.rstrip("/")
+        self.asset_spec_manager = AssetSpecManager(assetspec)
+
     @classmethod 
     def from_settings(cls, settings, prefix=""):
         return cls(settings[prefix+"lookup.host"], 
                    settings[prefix+"directories"][0])
 
-    def is_assetspec(self, uri):
-        return ":" in uri
-
     def __call__(self, lookup, uri):
-        if not self.is_assetspec(uri):
-            uri = "{0}{1}".format(self.prefix, uri)
+        uri = self.asset_spec_manager.as_assetspec(uri)
         lookup_url = "{0}/{1}".format(self.host, uri.lstrip("/"))
         res = urllib.urlopen(lookup_url)
         if res.getcode() != 200:
             return None
         adjusted = create_adjusted_name(uri)
-        pname, path = resolve_asset_spec(uri)
-        srcfile = abspath_from_asset_spec(path, pname)
+        srcfile = AssetResolver().resolve(uri).abspath()
         create_file_from_io(srcfile, res)
         return lookup._load(srcfile, adjusted)
+
+
+@implementer(IFailbackLookup)
+class S3FailbackLookup(object):
+    def __init__(self, assetspec, access_key, secret_key, bucket, delimiter):
+        self.asset_spec_manager = AssetSpecManager(assetspec)
+        self.connection = DefaultS3ConnectionFactory(access_key, secret_key)()
+        self.retriver_factory = DefaultS3RetrieverFactory()
+
+    @classmethod 
+    def from_settings(cls, settings, prefix=""):
+        return cls(settings[prefix+"directories"][0], 
+                   settings[prefix+"access_key"], 
+                   settings[prefix+"secret_key"], 
+                   settings[prefix+"bucket"], 
+                   settings.get(prefix+"delimiter", "/"))
+
+    def __call__(self, lookup, uri):
+        uri = self.asset_spec_manager.as_assetspec(uri)
+        resolver = S3AssetResolver(self.connection, self.retriver_factory, delimiter=self.delimiter)
+        descriptor = resolver.resolve(uri)
+        if not descriptor.exists():
+            return None
+        adjusted = create_adjusted_name(uri)
+        srcfile = AssetResolver().resolve(uri).abspath()
+        create_file_from_io(srcfile, descriptor.stream())
+        return lookup._load(srcfile, adjusted)
+
 
 @implementer(IMakoLookupFactory)
 class HasFailbackTemplateLookupFactory(object):
@@ -135,6 +173,7 @@ class HasFailbackTemplateLookupFactory(object):
         return self.TemplateLookupClass(
             self.failback_lookup,
             *args, **kwargs)
+
 
 _settings_prefix = "s3.mako."
 
@@ -157,9 +196,9 @@ def _make_lookup(config, package=None, _settings_prefix=_settings_prefix):
     preprocessor = sget('preprocessor', None)
     if not is_nonstr_iter(directories):
         directories = list(filter(None, directories.splitlines()))
-    directories = [ abspath_from_asset_spec(d) for d in directories ]
+    directories = [ AssetResolver().resolve(d).abspath() for d in directories ]
     if module_directory is not None:
-        module_directory = abspath_from_asset_spec(module_directory)
+        module_directory = AssetResolver().resolve(module_directory).abspath()
     if error_handler is not None:
         dotted = DottedNameResolver(package)
         error_handler = dotted.maybe_resolve(error_handler)
@@ -186,6 +225,7 @@ def _make_lookup(config, package=None, _settings_prefix=_settings_prefix):
         strict_undefined=strict_undefined,
         preprocessor=preprocessor
         )
+
 
 def includeme(config, _settings_prefix=_settings_prefix):
     settings = config.registry.settings

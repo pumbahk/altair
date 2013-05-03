@@ -24,14 +24,14 @@ class RefreshCacheFireTests(unittest.TestCase):
     def test_template_is_not_uploaded__not_fire(self):
         target = self._makeOne(None)
         class layout:
-            uploaded_at = None
+            synced_at = None
         target.refresh_template_if_need(None, layout)
         self.assertFalse(target.called)
 
     def test_fresh_template__not_fire(self):        
         target = self._makeOne(None)
         class layout:
-            uploaded_at = datetime(2000, 1, 1)
+            synced_at = datetime(2000, 1, 1)
         class template:
             cache = {}
             last_modified = time.mktime(datetime(2000, 1, 2).timetuple())
@@ -41,7 +41,7 @@ class RefreshCacheFireTests(unittest.TestCase):
     def test_it(self):        
         target = self._makeOne(None)
         class layout:
-            uploaded_at = datetime(2000, 1, 3)
+            synced_at = datetime(2000, 1, 3)
         class template:
             cache = {}
             last_modified = time.mktime(datetime(2000, 1, 2).timetuple())
