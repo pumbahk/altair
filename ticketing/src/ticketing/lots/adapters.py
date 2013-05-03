@@ -207,6 +207,7 @@ class LotEntryStatus(object):
         inner = DBSession.query(
             Performance.id.label('performance_id'),
             StockType.id.label('stock_type_id'),
+            LotEntryWish.wish_order.label('wish_order'),
             LotEntryProduct.quantity.label('entry_quantity'),
             case([
                 (LotEntry.elected_at != None, LotEntryProduct.quantity)
@@ -259,7 +260,42 @@ class LotEntryStatus(object):
         ).filter(
             inner.c.stock_type_id==StockType.id
         ).group_by(inner.c.performance_id, inner.c.stock_type_id).all()
+
+        wishes_results = DBSession.query(
+            Performance,
+            StockType,
+            inner.c.wish_order,
+            sql.func.sum(inner.c.entry_quantity),
+        ).filter(
+            inner.c.performance_id==Performance.id
+        ).filter(
+            inner.c.stock_type_id==StockType.id
+        ).group_by(
+            inner.c.performance_id, inner.c.stock_type_id, inner.c.wish_order
+        ).all()
         
+        wishes_statuses = [LotEntryPerformanceSeatTypesWishStatus(performance,
+                                                                  stock_type,
+                                                                  wish_order,
+                                                                  entry_quantity)
+                           for (performance, stock_type, wish_order,entry_quantity)
+                           in wishes_results]
+
+
+        wishes_statuses_ = {}
+        for w in wishes_statuses:
+            ww = wishes_statuses_.get(w.performance_seat_type, {})
+            ww[w.wish_order] = w
+            wishes_statuses_[w.performance_seat_type] = ww
+
+        for (performance, stock_type), ww in wishes_statuses_.items():
+            for i in range(self.lot.limit_wishes):
+                if i in ww:
+                    continue
+                ww[i] = LotEntryPerformanceSeatTypesWishStatus(performance,
+                                                               stock_type,
+                                                               i, 0)
+
         return [LotEntryPerformanceSeatTypeStatus(performance, 
                                                   stock_type, 
                                                   entry_quantity,
@@ -267,6 +303,7 @@ class LotEntryStatus(object):
                                                   ordered_quantity,
                                                   reserved_quantity,
                                                   canceled_quantity,
+                                                  wishes_statuses_[(performance, stock_type)],
                                               )
                 for (performance, stock_type, entry_quantity, elected_quantity, ordered_quantity,
                      reserved_quantity, canceled_quantity) in results]
@@ -281,7 +318,8 @@ class LotEntryPerformanceSeatTypeStatus(object):
                  entry_quantity, elected_quantity, 
                  ordered_quantity,
                  reserved_quantity,
-                 canceled_quantity):
+                 canceled_quantity,
+                 wish_statuses):
          self.performance = performance
          self.seat_type = seat_type
          self.entry_quantity = entry_quantity
@@ -289,3 +327,15 @@ class LotEntryPerformanceSeatTypeStatus(object):
          self.ordered_quantity = ordered_quantity
          self.reserved_quantity = reserved_quantity
          self.canceled_quantity = canceled_quantity
+         self.wish_statuses = wish_statuses
+
+class LotEntryPerformanceSeatTypesWishStatus(object):
+    """ """
+
+    def __init__(self, performance, seat_type, wish_order, entry_quantity):
+        self.performance = performance
+        self.seat_type = seat_type
+        self.entry_quantity = entry_quantity
+        self.wish_order = wish_order
+
+        self.performance_seat_type = (performance, seat_type)
