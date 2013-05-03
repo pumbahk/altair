@@ -107,6 +107,8 @@ class EntryLotView(object):
                 name=product.name,
                 display_order=product.display_order,
                 stock_type_id=product.seat_stock_type_id,
+                price=float(product.price),
+                formatted_price=h.format_currency(product.price),
                 description=product.description,
             ))
             performance_product_map[performance.id] = products
@@ -308,6 +310,8 @@ class CompletionLotEntryView(object):
         self.request = request
 
     @view_config(request_method="GET", renderer=selectable_renderer("pc/%(membership)s/completion.html"))
+
+
     @mobile_view_config(request_method="GET", renderer=selectable_renderer("mobile/%(membership)s/completion.html"))
     def get(self):
         """ 完了画面 """

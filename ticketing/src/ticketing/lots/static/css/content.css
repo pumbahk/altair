@@ -2201,3 +2201,20 @@
     color: red;
     font-weight: bold;
 }
+
+.settlementSelectBox .product-name-price-quantity {
+    display: block;
+    overflow: hidden;
+}
+
+.settlementSelectBox .product-name-price-quantity .product-name {
+    display: block;
+    float: left;
+    width: 10em;
+}
+
+.settlementSelectBox .product-description {
+    display: block;
+    color: #888;
+}
+
