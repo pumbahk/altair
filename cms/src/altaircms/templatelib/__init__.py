@@ -135,7 +135,6 @@ class DefaultFailbackLookup(object):
         create_file_from_io(srcfile, res)
         return lookup._load(srcfile, adjusted)
 
-
 @implementer(IFailbackLookup)
 class S3FailbackLookup(object):
     def __init__(self, assetspec, access_key, secret_key, bucket_name, delimiter):
@@ -153,11 +152,18 @@ class S3FailbackLookup(object):
                    settings[prefix+"bucket_name"], 
                    settings.get(prefix+"delimiter", "/"))
 
+    def refresh(self, descriptor):
+        cache = descriptor.retriever.object_cache
+        k = descriptor.key_or_prefix
+        if cache.has_key(k):
+            del cache[k]        
+
     def __call__(self, lookup, uri):
         uri = self.asset_spec_manager.as_assetspec(uri)
         resolver = S3AssetResolver(self.connection, self.retriver_factory, 
                                    delimiter=self.delimiter)
         descriptor = resolver.resolve("s3://{0}/{1}".format(self.bucket_name, uri.lstrip("/")))
+        self.refresh(descriptor)
         # if not descriptor.exists():
         #     logger.warn("failback lookup template is failed: abspath={0}".format(descriptor.abspath()))
         #     return None
