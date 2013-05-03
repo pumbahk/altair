@@ -16,9 +16,11 @@ from altair.pyramid_tz.api import get_timezone
 from ticketing.models import DBSession
 from ticketing.core.models import PaymentDeliveryMethodPair
 from ticketing.cart import api as cart_api
+from ticketing.users import api as user_api
 from ticketing.utils import toutc
 from ticketing.payments.payment import Payment
 from ticketing.cart.exceptions import NoCartError
+from ticketing.mailmags.api import get_magazines_to_subscribe, multi_subscribe
 
 from . import api
 from . import helpers as h
@@ -232,6 +234,9 @@ class ConfirmLotEntryView(object):
 
         payment_delivery_method_pair_id = entry['payment_delivery_method_pair_id']
         payment_delivery_method_pair = PaymentDeliveryMethodPair.query.filter(PaymentDeliveryMethodPair.id==payment_delivery_method_pair_id).one()
+
+        magazines_to_subscribe = get_magazines_to_subscribe(self.context.organization, [entry['shipping_address']['email_1']])
+
         return dict(event=event,
                     lot=lot,
                     shipping_address=entry['shipping_address'],
@@ -241,7 +246,8 @@ class ConfirmLotEntryView(object):
                     wishes=h.add_wished_product_names(entry['wishes']),
                     gender=entry['gender'],
                     birthday=entry['birthday'],
-                    memo=entry['memo'])
+                    memo=entry['memo'],
+                    mailmagazines_to_subscribe=magazines_to_subscribe)
 
     def back_to_form(self):
         return HTTPFound(location=urls.entry_index(self.request))
@@ -263,7 +269,14 @@ class ConfirmLotEntryView(object):
         lot = self.context.lot
 
         if not lot.validate_entry(self.request.params):
-            return HTTPFound('lots.entry.index')
+            return HTTPFound(urls.entry_index(self.request))
+
+        try:
+            self.request.session['lots.magazine_ids'] = [long(v) for v in self.request.params.getall('mailmagazine')]
+        except (TypeError, ValueError):
+            raise HTTPBadRequest()
+        logger.info(repr(self.request.session['lots.magazine_ids']))
+
         payment_delivery_method_pair_id = entry['payment_delivery_method_pair_id']
         payment_delivery_method_pair = PaymentDeliveryMethodPair.query.filter(PaymentDeliveryMethodPair.id==payment_delivery_method_pair_id).one()
 
@@ -301,9 +314,16 @@ class CompletionLotEntryView(object):
         entry_no = self.request.session['lots.entry_no']
         entry = DBSession.query(LotEntry).filter(LotEntry.entry_no==entry_no).one()
         try:
-            api.get_options(self.request, lot.id).dispose()
+            api.get_options(self.request, entry.lot.id).dispose()
         except TypeError:
             pass
+
+        magazine_ids = self.request.session.get('lots.magazine_ids')
+        if magazine_ids:
+            user = user_api.get_or_create_user(self.context.authenticated_user())
+            multi_subscribe(user, entry.shipping_address.emails, magazine_ids)
+            self.request.session['lots.magazine_ids'] = None
+            self.request.session.persist() # XXX: 完全に念のため
 
         return dict(event=self.context.event, lot=self.context.lot, sales_segment=self.context.lot.sales_segment, entry=entry)
 

@@ -64,6 +64,20 @@ ${shipping_address['address_2']}
 <div>
 ${memo|h.nl2br}
 </div>
+
+% if mailmagazines_to_subscribe:
+<%mobile:header>メールマガジンの配信</%mobile:header>
+<p>
+ご利用いただいた方には、楽天チケットからのメールマガジンをお送りします。不要な方はチェックをはずしてください。
+</p>
+% for mailmagazine in mailmagazines_to_subscribe:
+<input type="checkbox" checked="checked" name="mailmagazine" id="mailmagazine-${mailmagazine.id}" value="${mailmagazine.id}" />${mailmagazine.name}<br/>
+<div style="font-size:x-small;">
+${mailmagazine.description|n}
+</div>
+% endfor
+% endif
+
 <form method="post" action="${request.path}">
 <input type="hidden" name="token" value="${token}" />
 <div align="center" style="text-align:center">

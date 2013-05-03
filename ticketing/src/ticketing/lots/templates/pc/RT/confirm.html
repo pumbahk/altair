@@ -89,6 +89,42 @@
         </div>
       </div>
     </div>
+    % if mailmagazines_to_subscribe:
+    <div class="settlementBox">
+      <div class="settlementBoxInner">
+        <h2><img src="${request.static_url('ticketing.cart:static/img/settlement/title_magazine.gif')}" alt="メールマガジンの配信" width="177" height="30" /></h2>
+        <div id="mailMagazineBox">
+          <div id="mailMagazineBoxInner">
+            <dl>
+              <dt>
+                お申し込みいただいた方に、楽天チケットからのメールマガジンをお送りします。不要な方はチェックをはずしてください。
+              </dt>
+              <dd>
+                <ul>
+                <%
+                style = ''
+                if len(list(mailmagazines_to_subscribe)) == 1:
+                    style = 'style="width: 100%;"'         
+                %>
+                % for mailmagazine in mailmagazines_to_subscribe:
+                  <li ${style|n}>
+                    <div>
+                      <input type="checkbox" checked="checked" name="mailmagazine" id="mailmagazine-${mailmagazine.id}" value="${mailmagazine.id}" />
+                      <label for="mailmagazine-${mailmagazine.id}">${mailmagazine.name}</label>
+                    </div>
+                    <div>
+                      ${mailmagazine.description|n}
+                    </div>
+                  </li>
+                % endfor
+                </ul>
+              </dd>
+            </dl>
+          </div>
+        </div>
+      </div>
+    </div>
+    % endif
     <p class="align2"><input type="image" name="back" src="${request.static_url('ticketing.lots:static/img/order/btn_back.gif')}" alt="戻る" width="236" height="46" /><input type="image"  src="${request.static_url('ticketing.lots:static/img/order/btn_confirm.gif')}" alt="確定する" width="236" height="46" /></a></p>
   </form>
 </div>

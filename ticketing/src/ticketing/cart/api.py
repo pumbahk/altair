@@ -200,28 +200,6 @@ def get_payment_method_url(request, payment_method_id, route_args={}):
     else:
         return ""
 
-def get_or_create_user(request, auth_identifier, membership='rakuten'):
-    # TODO: 楽天OpenID以外にも対応できるフレームワークを...
-    credential = UserCredential.query.filter(
-        UserCredential.auth_identifier==auth_identifier
-    ).filter(
-        UserCredential.membership_id==Membership.id
-    ).filter(
-        Membership.name==membership
-    ).first()
-    if credential:
-        return credential.user
-    
-    user = User()
-    membership = Membership.query.filter(Membership.name=='rakuten').first()
-    if membership is None:
-        membership = Membership(name='rakuten')
-        DBSession.add(membership)
-    credential = UserCredential(user=user, auth_identifier=auth_identifier, membership=membership)
-    DBSession.add(user)
-    return user
-
-
 @deprecate
 def get_salessegment(request, event_id, salessegment_id, selected_date):
     ## 販売条件は必ず一つに絞られるはず
