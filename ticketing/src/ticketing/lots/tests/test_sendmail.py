@@ -108,6 +108,9 @@ class send_accepted_mailTests(unittest.TestCase):
                 delivery_method=core_models.DeliveryMethod(
                 ),
             ),
+            wishes=[lots_models.LotEntryWish(performance=core_models.Performance(
+                venue=core_models.Venue()),
+                                             products=[])],
         )
 
         result = self._callFUT(request, entry)
