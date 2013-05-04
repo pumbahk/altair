@@ -151,6 +151,31 @@ class Lots(BaseView):
             return HTTPFound(self.request.route_url('lots.show', lot_id=lot.id))
         return dict(form=form, lot=lot)
 
+    @view_config(route_name='lots.product_edit', renderer='ticketing:templates/lots/product_new.html', permission='event_viewer')
+    def product_edit(self):
+        product = self.context.product
+        lot = self.context.lot
+        event = self.context.event
+
+        stock_types = event.stock_types
+        stock_type_choices = [
+            (s.id, s.name)
+            for s in stock_types
+        ]
+        performances = event.performances
+        performance_choices = [
+            (p.id, u"{0.name} {0.open_on}".format(p))
+            for p in performances
+        ]
+        form = ProductForm(obj=product, formdata=self.request.POST)
+        form.seat_stock_type_id.choices = stock_type_choices
+        form.performance_id.choices = performance_choices
+
+        if self.request.POST and form.validate():
+            product = form.apply_product(product)
+            return HTTPFound(self.request.route_url('lots.show', lot_id=lot.id))
+        return dict(form=form, lot=lot)
+
 
 @view_defaults(decorator=with_bootstrap, permission="event_editor")
 class LotEntries(BaseView):

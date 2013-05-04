@@ -180,3 +180,13 @@ class ProductForm(Form):
             performance_id=self.data["performance_id"],
             sales_segment=lot.sales_segment)
         return product
+
+    def apply_product(self, product):
+        product.name = self.data["name"]
+        product.price = self.data["price"]
+        product.display_order = self.data["display_order"]
+        product.description = self.data["description"]
+        product.seat_stock_type_id = self.data["seat_stock_type_id"]
+        product.performance_id = self.data["performance_id"]
+
+        return product
