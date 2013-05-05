@@ -6,6 +6,7 @@ from pyramid_mailer import get_mailer
 from pyramid_mailer.message import Message
 from zope.interface import Interface, Attribute, implementer
 from ticketing.mails.interfaces import ITraverser
+from ticketing.cart.helpers import fee_type
 logger = logging.getLogger(__name__)
 
 
@@ -38,9 +39,10 @@ class MailSender(object):
         return tmpl.render(**vars)
 
     def _body_tmpl_vars(self, request, lot_entry):
-        vars = dict(lot_entry=lot_entry, lot=lot_entry.lot, 
-            shipping_address=lot_entry.shipping_address,
-            entry_review_url=request.route_url('lots.review.index'))
+        vars = dict(fee_type=fee_type,
+                    lot_entry=lot_entry, lot=lot_entry.lot, 
+                    shipping_address=lot_entry.shipping_address,
+                    entry_review_url=request.route_url('lots.review.index'))
         return vars
 
     def send(self, request, lot_entry):
