@@ -56,47 +56,43 @@
   <div class="settlementBox">
     <div class="settlementBoxInner">
       <h2><img src="${request.static_url('ticketing.lots:static/img/order/title_buyer.gif')}" alt="購入者情報" width="97" height="30" /></h2>
-      <div id="settlementSelectBox">
-        <div id="settlementSelectBoxInner02">
+      <div class="settlementSelectBox">
+        <div class="settlementSelectBoxInner02">
           <table summary="お支払・お引取り方法選択">
             <tr>
-              <th><label>購入者氏名（全角）</label></th>
+              <th>購入者氏名（全角）</th>
               <td>${shipping_address.last_name} ${shipping_address.first_name}</td>
             </tr>
             <tr>
-              <th><label>購入者氏名（カナ）</label></th>
+              <th>購入者氏名（カナ）</th>
               <td>${shipping_address.last_name_kana} ${shipping_address.first_name_kana}</td>
             </tr>
             <tr>
-              <th><label>電話番号（自宅）</label></th>
+              <th>電話番号（自宅）</th>
               <td>${shipping_address.tel_1}</td>
             </tr>
             <tr>
-              <th><label>配送先住所</label></th>
-              <td>${shipping_address.zip} ${shipping_address.prefecture}${shipping_address.city} ${shipping_address.address_1}${shipping_address.address_2}</td>
+              <th>配送先住所</th>
+              <td>
+                〒${shipping_address.zip}<br />
+                ${shipping_address.prefecture}${shipping_address.city}${shipping_address.address_1}<br />
+                ${shipping_address.address_2}</td>
             </tr>
             <tr>
-              <th><label>生年月日</label></th>
+              <th>生年月日</th>
               <td>${u"{0.year} 年 {0.month}月 {0.day}日".format(birthday)}</td>
             </tr>
             <tr>
-              <th><label>性別</label></th>
+              <th>性別</th>
               <td>${h.format_gender(request, gender)}</td>
             </tr>
-            <tr id="settlementSelectEnd">
+            <tr class="settlementSelectEnd">
               <th><label>メモ欄</label></th>
               <td>${memo|h.nl2br}</td>
             </tr>
           </table>
         </div>
       </div>
-    </div>
-  </div>
-
-  <div class="confirmBox">
-    <div class="confirmBoxInner">
-      <h2><img src="${request.static_url('ticketing.lots:static/img/order/title_caution.gif')}" alt="注意事項" width="97" height="30" /></h2>
-      <div class="confirmBoxText">${lot.description}</div>
     </div>
   </div>
 </div>
