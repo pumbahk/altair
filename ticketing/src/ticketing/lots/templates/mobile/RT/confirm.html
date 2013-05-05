@@ -14,7 +14,7 @@ ${h.japanese_date(wish[0]['performance'].start_on)}<br />
 会場 ${wish[0]['performance'].venue.name}<br />
 開演 ${h.japanese_time(wish[0]['performance'].start_on)} (予定)
 </div>
-<%mobile:form_header>希望券種と枚数</%mobile:form_header>
+<%mobile:form_header>希望内容と手数料</%mobile:form_header>
 <div><font size="-1">
 % for rec in wish:
 % if rec['quantity'] > 0:

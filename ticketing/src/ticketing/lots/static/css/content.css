@@ -2218,3 +2218,17 @@
     color: #888;
 }
 
+.settlementSelectBox dl.cost-summary dt {
+    clear: left;
+    float: left;
+}
+
+.settlementSelectBox dl.cost-summary dd {
+    text-align: right;
+}
+
+.settlementSelectBox dl.cost-summary dt.total-amount,
+.settlementSelectBox dl.cost-summary dd.total-amount {
+    font-weight: bold;
+}
+

@@ -16,31 +16,29 @@
                 <th><label>公演日・会場</label></th>
                 <td>${h.performance_date_label(wish[0]['performance'])}</td>
               </tr>
-              %for i, w in enumerate(wish):
-              <tr ${u'class="settlementSelectEnd"' if i + 1 == len(wish) else u''|n}>
-                %if i == 0:
-                <th><label>席種</label></th>
-                %else:
-                <th>&nbsp;</th>
-                %endif
-                <td>${w['product'].name} ${h.format_currency(w['product'].price)}×${w['quantity']}枚=${h.format_currency(w['subtotal'])} (税込)</td>
+              <tr class="settlementSelectEnd">
+                <th>希望内容と手数料</th>
+                <td>
+                  <dl class="cost-summary">
+                  %for i, w in enumerate(wish):
+                    <dt class="product-name">${w['product'].name}</dt>
+                    <dd class="product-price-and-quantity">${h.format_currency(w['product'].price)}×${w['quantity']}枚=${h.format_currency(w['subtotal'])} (税込)</dd>
+                  %endfor
+                    <dt class="payment-method">手数料 (${payment_delivery_method_pair.payment_method.name})</dt>
+                    <dd class="payment-fee">${h.format_currency(payment_delivery_method_pair.transaction_fee)}</dd>
+                    <dt class="delivery-method">手数料 (${payment_delivery_method_pair.delivery_method.name})</dt>
+                    <dd class="delivery-fee">${h.format_currency(payment_delivery_method_pair.delivery_fee)}</dd>
+                    <dt class="total-amount">合計</dt>
+                    <dd class="total-amount">${h.format_currency(total_amount)} (税込)</dd>
+                  </dl>
+                </td>
               </tr>
-              %endfor
             </table>
           </div>
         </div>
         %endfor
       </div>
     </div> 
-    <div class="confirmBox">
-      <div class="confirmBoxInner">
-        <h2><img src="${request.static_url('ticketing.lots:static/img/order/title_how.gif')}" alt="お支払・お引取り方法選択" width="208" height="30" /></h2>
-        <div class="confirmBoxText">
-          <p>${payment_delivery_method_pair.payment_method.name}　${h.format_currency(payment_delivery_method_pair.transaction_fee)}</p>
-          <p>${payment_delivery_method_pair.delivery_method.name}　${h.format_currency(payment_delivery_method_pair.delivery_fee)}</p>
-        </div>
-      </div>
-    </div>
     <div class="settlementBox">
       <div class="settlementBoxInner">
         <h2><img src="${request.static_url('ticketing.lots:static/img/order/title_buyer.gif')}" alt="購入者情報" width="97" height="30" /></h2>
