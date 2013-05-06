@@ -45,17 +45,30 @@ ${lot_entry.created_at}
 お申込内容は、「お申込確認ページ」（ ${entry_review_url}  ）からもご確認いただけます。受付番号とご登録時のお電話番号をお手元にご用意の上、ご利用ください。
 ---------------
 <注意事項>
-※ご当選の場合、決済期間内にご登録のクレジットカードにてお支払いとなります。→クレジットカード専用文言。
-※ご当選の場合、入金期間内にセブン-イレブン店内レジにてお支払いとなります。→店頭入金専用文言
-※配送でのお引取りを希望の場合は、ご登録の住所へ宅配便にてお届けいたします。→配送専用の文言。店頭発券などは別文言を差込
-※セブン-イレブン店頭でのお引取りを希望の場合は、ご入金時にレジにてチケットをお渡しいたします。→店頭発券専用文言。
+%if lot_entry.payment_delivery_method_pair.payment_method.payment_plugin_id == plugins.MULTICHECKOUT_PAYMENT_PLUGIN_ID:
+※ご当選の場合、決済期間内にご登録のクレジットカードにてお支払いとなります。
+%endif
+%if lot_entry.payment_delivery_method_pair.payment_method.payment_plugin_id == plugins.SEJ_PAYMENT_PLUGIN_ID:
+※ご当選の場合、入金期間内にセブン-イレブン店内レジにてお支払いとなります。
+%endif
+%if lot_entry.payment_delivery_method_pair.delivery_method.delivery_plugin_id == plugins.SHIPPING_DELIVERY_PLUGIN_ID:
+※配送でのお引取りを希望の場合は、ご登録の住所へ宅配便にてお届けいたします。
+%endif
+%if lot_entry.payment_delivery_method_pair.delivery_method.delivery_plugin_id == plugins.SEJ_DELIVERY_PLUGIN_ID:
+※セブン-イレブン店頭でのお引取りを希望の場合は、ご入金時にレジにてチケットをお渡しいたします。
+%endif
 ※お申込後のキャンセル、変更はできませんのでご注意下さい。
 
 ---------------
 お問い合わせ
-メアドor電話番号
 ---------------
+■お問い合わせ
+  メール：support@ticket.rakuten.co.jp
+　
+■メールマガジン(楽天チケットニュース)の配信をご希望される方はこちら
+　 http://emagazine.rakuten.co.jp/#17
 
-■株式会社チケットスター
-■東京都品川区東五反田5-21-15　メタリオンOSビル7F
+■キャンセル・変更について
+　お申し込み・購入されたチケットは、理由の如何を問わず、
+　取替・変更・キャンセルはお受けできません。予めご了承ください。
 
