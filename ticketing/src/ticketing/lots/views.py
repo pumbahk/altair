@@ -287,7 +287,6 @@ class ConfirmLotEntryView(object):
         entry = api.entry_lot(self.request, lot, shipping_address, wishes, payment_delivery_method_pair, user,
                               entry['gender'], entry['birthday'], entry['memo'])
         self.request.session['lots.entry_no'] = entry.entry_no
-        api.notify_entry_lot(self.request, entry)
 
         cart = api.get_entry_cart(self.request, entry)
 
@@ -317,6 +316,13 @@ class CompletionLotEntryView(object):
         """ 完了画面 """
         entry_no = self.request.session['lots.entry_no']
         entry = DBSession.query(LotEntry).filter(LotEntry.entry_no==entry_no).one()
+
+        try:
+            api.notify_entry_lot(self.request, entry)
+        except Exception as e:
+            logger.warning('error orccured during sending mail. \n{0}'.format(e))
+
+
         try:
             api.get_options(self.request, entry.lot.id).dispose()
         except TypeError:
