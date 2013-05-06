@@ -2210,7 +2210,8 @@
 .settlementSelectBox .product-name-price-quantity .product-name {
     display: block;
     float: left;
-    width: 10em;
+    /* width: 10em; */
+    width: 30em;
 }
 
 .settlementSelectBox .product-description {
