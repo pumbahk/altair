@@ -405,7 +405,7 @@ class LotReviewView(object):
         lot_id = lot_entry.lot.id
         # 当選して、未決済の場合、決済画面に移動可能
         return dict(entry=lot_entry,
-            wishes=h.add_total_amounts_mobile(h.add_subtotals_mobile(h.build_wishes_dicts_from_entry(lot_entry)), lot_entry.payment_delivery_method_pair),
+            wishes=lot_entry.wishes,
             lot=lot_entry.lot,
             shipping_address=lot_entry.shipping_address,
             gender=lot_entry.gender,
