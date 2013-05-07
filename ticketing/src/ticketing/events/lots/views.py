@@ -2,7 +2,7 @@
 
 import logging
 logger = logging.getLogger(__name__)
-
+from sqlalchemy import sql
 from pyramid.view import view_config, view_defaults
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound
 from ticketing.views import BaseView
@@ -11,6 +11,7 @@ from ticketing.core.models import (
     DBSession,
     Product, 
     PaymentDeliveryMethodPair,
+    ShippingAddress,
     )
 from ticketing.lots.models import (
     Lot,
@@ -20,7 +21,7 @@ from ticketing.lots.models import (
     )
 import ticketing.lots.api as lots_api
 from .helpers import Link
-from .forms import ProductForm, LotForm
+from .forms import ProductForm, LotForm, SearchEntryForm
 from . import api
 
 @view_defaults(decorator=with_bootstrap, permission="event_editor")
@@ -225,9 +226,34 @@ class LotEntries(BaseView):
         # とりあえずすべて
         lot_id = self.request.matchdict["lot_id"]
         lot = Lot.query.filter(Lot.id==lot_id).one()
-        entries = lots_api.get_lot_entries_iter(lot.id)
+        form = SearchEntryForm(formdata=self.request.POST)
+        condition = True
+        if form.validate():
+            if form.entry_no.data:
+                condition = sql.and_(condition, LotEntry.entry_no==form.entry_no.data)
+            if form.tel.data:
+                condition = sql.and_(condition, 
+                                     sql.or_(ShippingAddress.tel_1==form.tel.data,
+                                             ShippingAddress.tel_2==form.tel.data))
+            if form.name.data:
+                s_a = ShippingAddress
+                condition = sql.and_(condition, 
+                                     sql.or_(s_a.full_name==form.name.data,
+                                             s_a.last_name==form.name.data,
+                                             s_a.first_name==form.name.data,
+                                             s_a.full_name_kana==form.name.data,
+                                             s_a.last_name_kana==form.name.data,
+                                             s_a.first_name_kana==form.name.data,))
+            if form.email.data:
+                pass
+            if form.entried_from.data:
+                pass
+            if form.entried_to.data:
+                pass
+        entries = lots_api.get_lot_entries_iter(lot.id, condition)
         return dict(data=list(entries),
-                    lot=lot)
+                    lot=lot,
+                    form=form)
 
 
         

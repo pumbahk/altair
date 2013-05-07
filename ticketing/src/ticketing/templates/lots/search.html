@@ -35,8 +35,46 @@ Altair Backend -- ${lot.event.title}[${lot.name}]
   ${h.flash_messages(request)}
 </div>
 ${tabs.tabs(request)}
+<div class="well">
+  ${form}
+  ${request.POST}
+  <form id="search" class="form-horizontal" method="POST">
+    <fieldset>
+      <legend>検索条件</legend>
+      <table>
+	<tbody>
+          <tr>
+            <th><label for="entry_no">${form.entry_no.label.text}</label></th>
+            <td>${form.entry_no(maxlength=12)}</td>
+	  </tr>
+          <tr>
+            <th><label for="tel">${form.tel.label.text}</label></th>
+            <td>${form.tel(maxlength=12)}</td>
+	  </tr>
+          <tr>
+            <th><label for="name">${form.name.label.text}</label></th>
+            <td>${form.name(maxlength=12)}</td>
+	  </tr>
+          <tr>
+            <th><label for="email">${form.email.label.text}</label></th>
+            <td>${form.email(maxlength=12)}</td>
+	  </tr>
+          <tr>
+            <th><label>${form.entried_from.label.text}</label></th>
+            <td>
+              ${form.entried_from()} 〜
+              ${form.entried_to()}
+            </td>
+          </tr>
+	</tbody>
+      </table>
+      <button type="submit" name="search" class="btn">検索</button>
+    </fieldset>
+  </form>
+</div>
 
-
+<div>
+%if data:
 <table border="1">
 <thead>
 <tr>
@@ -56,3 +94,5 @@ ${tabs.tabs(request)}
 %endfor
 </tbody>
 </table>
+%endif
+</div>
