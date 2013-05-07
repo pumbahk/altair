@@ -355,6 +355,7 @@ class CompletionLotEntryView(object):
             sales_segment=self.context.lot.sales_segment,
             entry=entry,
             payment_delivery_method_pair=entry.payment_delivery_method_pair,
+            shipping_address=entry.shipping_address,
             wishes=entry.wishes,
             gender=entry.gender,
             birthday=entry.birthday,
