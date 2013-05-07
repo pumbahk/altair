@@ -18,7 +18,7 @@ ${lot_entry.entry_no}
 抽選結果確認の際などに必要です。必ずお控え下さい。
 
 ■受付日
-${lot_entry.created_at}
+${h.japanese_date(lot_entry.created_at)}
 -----
 ■イベント名：${lot_entry.lot.event.title}
 ■受付名称：${lot_entry.lot.name}
@@ -26,14 +26,14 @@ ${lot_entry.created_at}
 ■抽選結果確認ページ： ${entry_review_url}
 %for wish in lot_entry.wishes:
 第${wish.wish_order+1}希望
-公演日：${wish.performance.open_on}
+公演日：${h.performance_date(wish.performance)}
 会場：${wish.performance.venue.name}
 申込内容
 %for product in wish.products:
 ${product.product.name} ${h.format_currency(product.product.price)} x ${product.quantity}枚
 %endfor
 チケット代金計：${h.format_currency(wish.tickets_amount)}
-システム利用料：{wish.system_fee}円（税込）
+システム利用料：${h.format_currency(wish.system_fee)}円（税込）
 %endfor
 
 ■お支払
