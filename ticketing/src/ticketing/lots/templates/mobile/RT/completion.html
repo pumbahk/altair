@@ -6,41 +6,35 @@ ${lot.name}
 </div>
 <%mobile:header>申込を完了しました</%mobile:header>
 受付番号: ${entry.entry_no}
-%for option_index_zb, (wish, total_amount) in enumerate(wishes):
-<%mobile:band bgcolor="#ffdddd">第${option_index_zb + 1}希望</%mobile:band>
+%for wish in wishes:
+<%mobile:band bgcolor="#ffdddd">第${wish.wish_order + 1}希望</%mobile:band>
 <div>
-${wish['performance'].name}<br />
-${h.japanese_date(wish['performance'].start_on)}<br />
-会場 ${wish['performance'].venue.name}<br />
-開演 ${h.japanese_time(wish['performance'].start_on)} (予定)<br />
+${wish.performance.name}<br />
+${h.japanese_date(wish.performance.start_on)}<br />
+会場 ${wish.performance.venue.name}<br />
+開演 ${h.japanese_time(wish.performance.start_on)} (予定)<br />
 <%mobile:form_header>希望券種と枚数</%mobile:form_header>
 <div><font size="-1">
-% for rec in wish['wished_products']:
-・${rec['product'].name}<br />
-<div align="right" style="text-align:right">${h.format_currency(rec['product'].price)} (税込)×${rec['quantity']}枚=${h.format_currency(rec['subtotal'])}</div>
+% for lot_product in wish.products:
+・${lot_product.product.name}<br />
+<div align="right" style="text-align:right">${h.format_currency(lot_product.product.price)}×${lot_product.quantity}枚=${h.format_currency(lot_product.subtotal)} (税込)</div>
 % endfor
 </div>
-・手数料 (${entry.payment_delivery_method_pair.payment_method.name})<br />
+・決済手数料 (${wish.lot_entry.payment_delivery_method_pair.payment_method.name})<br />
 <div align="right" style="text-align:right">
-${h.format_currency(entry.payment_delivery_method_pair.transaction_fee)}
+${h.format_currency(wish.lot_entry.payment_delivery_method_pair.transaction_fee)}
 </div>
-・手数料 (${entry.payment_delivery_method_pair.delivery_method.name})<br >
+・配送手数料 (${wish.lot_entry.payment_delivery_method_pair.delivery_method.name})<br />
 <div align="right" style="text-align:right">
-${h.format_currency(entry.payment_delivery_method_pair.delivery_fee)}
+${h.format_currency(wish.lot_entry.payment_delivery_method_pair.delivery_fee)}
+</div>
+・システム手数料<br />
+<div align="right" style="text-align:right">
+${h.format_currency(wish.system_fee)}
 </div>
 <div align="right" style="text-align:right">
-合計 ${h.format_currency(total_amount)} (税込)
+合計 ${h.format_currency(wish.total_amount)} (税込)
 </font></div>
 %endfor
-<%mobile:header>お支払方法</%mobile:header>
-<div>
-${entry.payment_delivery_method_pair.payment_method.name}
-${h.format_currency(entry.payment_delivery_method_pair.transaction_fee)}
-</div>
-<%mobile:header>お引取方法</%mobile:header>
-<div>
-${entry.payment_delivery_method_pair.delivery_method.name}
-${h.format_currency(entry.payment_delivery_method_pair.delivery_fee)}
-</div>
 <hr />
 <a href="${request.context.host_base_url}" accesskey="0">トップに戻る</a>

@@ -239,13 +239,18 @@ class ConfirmLotEntryView(object):
 
         magazines_to_subscribe = get_magazines_to_subscribe(self.context.organization, [entry['shipping_address']['email_1']])
 
+        temporary_entry = api.build_temporary_lot_entry(
+            lot=lot,
+            wishes=entry['wishes'],
+            payment_delivery_method_pair=payment_delivery_method_pair)
+
         return dict(event=event,
                     lot=lot,
                     shipping_address=entry['shipping_address'],
                     payment_delivery_method_pair_id=entry['payment_delivery_method_pair_id'],
                     payment_delivery_method_pair=payment_delivery_method_pair,
                     token=entry['token'],
-                    wishes=h.add_total_amounts(h.add_subtotals(h.add_wished_product_names(entry['wishes'])), payment_delivery_method_pair),
+                    wishes=temporary_entry.wishes,
                     gender=entry['gender'],
                     birthday=entry['birthday'],
                     memo=entry['memo'],
@@ -284,8 +289,17 @@ class ConfirmLotEntryView(object):
 
         user = api.get_entry_user(self.request)
 
-        entry = api.entry_lot(self.request, lot, shipping_address, wishes, payment_delivery_method_pair, user,
-                              entry['gender'], entry['birthday'], entry['memo'])
+        entry = api.entry_lot(
+            self.request,
+            lot=lot,
+            shipping_address=shipping_address,
+            wishes=wishes,
+            payment_delivery_method_pair=payment_delivery_method_pair,
+            user=user,
+            gender=entry['gender'],
+            birthday=entry['birthday'],
+            memo=entry['memo']
+            )
         self.request.session['lots.entry_no'] = entry.entry_no
 
         cart = api.get_entry_cart(self.request, entry)
@@ -340,7 +354,11 @@ class CompletionLotEntryView(object):
             lot=self.context.lot,
             sales_segment=self.context.lot.sales_segment,
             entry=entry,
-            wishes=h.add_total_amounts_mobile(h.add_subtotals_mobile(h.build_wishes_dicts_from_entry(entry)), entry.payment_delivery_method_pair)
+            payment_delivery_method_pair=entry.payment_delivery_method_pair,
+            wishes=entry.wishes,
+            gender=entry.gender,
+            birthday=entry.birthday,
+            memo=entry.memo
             )
 
 @view_defaults(route_name='lots.review.index')

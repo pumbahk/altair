@@ -5,35 +5,37 @@ ${event.title}<br />
 ${lot.name}
 </div>
 <%mobile:header>申込内容最終確認</%mobile:header>
-%for option_index_zb, (wish, total_amount) in enumerate(wishes):
-<%mobile:band bgcolor="#ffdddd">第${option_index_zb + 1}希望</%mobile:band>
+%for wish in wishes:
+<%mobile:band bgcolor="#ffdddd">第${wish.wish_order + 1}希望</%mobile:band>
 <%mobile:form_header>公演・試合</%mobile:form_header>
 <div>
-${wish[0]['performance'].name}<br />
-${h.japanese_date(wish[0]['performance'].start_on)}<br />
-会場 ${wish[0]['performance'].venue.name}<br />
-開演 ${h.japanese_time(wish[0]['performance'].start_on)} (予定)
+${wish.performance.name}<br />
+${h.japanese_date(wish.performance.start_on)}<br />
+会場 ${wish.performance.venue.name}<br />
+開演 ${h.japanese_time(wish.performance.start_on)} (予定)
 </div>
 <%mobile:form_header>希望内容と手数料</%mobile:form_header>
 <div><font size="-1">
-% for rec in wish:
-% if rec['quantity'] > 0:
-・${rec['product'].name}<br />
+% for lot_product in wish.products:
+・${lot_product.product.name}<br />
 <div align="right" style="text-align:right">
-${h.format_currency(rec['product'].price)} (税込) ×${rec['quantity']}枚=${h.format_currency(rec['subtotal'])}
+${h.format_currency(lot_product.product.price)}×${lot_product.quantity}枚=${h.format_currency(lot_product.subtotal)} (税込) 
 </div>
-% endif
 % endfor
-・手数料 (${payment_delivery_method_pair.payment_method.name})<br />
+・決済手数料 (${payment_delivery_method_pair.payment_method.name})<br />
 <div align="right" style="text-align:right">
 ${h.format_currency(payment_delivery_method_pair.transaction_fee)}
 </div>
-・手数料 (${payment_delivery_method_pair.delivery_method.name})<br >
+・配送手数料 (${payment_delivery_method_pair.delivery_method.name})<br .>
 <div align="right" style="text-align:right">
 ${h.format_currency(payment_delivery_method_pair.delivery_fee)}
 </div>
+・システム手数料<br />
 <div align="right" style="text-align:right">
-合計 ${h.format_currency(total_amount)} (税込)
+${h.format_currency(wish.system_fee)}
+</div>
+<div align="right" style="text-align:right">
+合計 ${h.format_currency(wish.total_amount)} (税込)
 </div>
 </font></div>
 </div>

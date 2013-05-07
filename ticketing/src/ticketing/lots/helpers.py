@@ -109,45 +109,6 @@ def convert_wishes(params, limit):
         
     return [dict(performance_id=performance_ids[x], wished_products=results[x]) for x in sorted(results)]
 
-def add_wished_product_names(wishes):
-    results = []
-    for wish in wishes:
-        reversed_wish = []
-        performance_id = wish['performance_id']
-        for w in wish['wished_products']:
-            p = Product.query.filter(Product.id==w['product_id']).one()
-            perf = Performance.query.filter(Performance.id==performance_id).one()
-            reversed_wish.append(dict(wish_order=w['wish_order'], quantity=w['quantity'], product=p, performance=perf))
-
-        results.append(reversed_wish)
-    return results
-
-def add_subtotals(wishes):
-    for wish in wishes:
-        for rec in wish:
-            rec['subtotal'] = rec['product'].price * rec['quantity']
-    return wishes
-
-def add_subtotals_mobile(options):
-    for option in options:
-        for wished_product in option['wished_products']:
-            wished_product['subtotal'] = wished_product['product'].price * wished_product['quantity'] 
-    return options
-
-def add_total_amounts(wishes, payment_delivery_method_pair):
-    results = []
-    for wish in wishes:
-        total_amount = sum(rec['product'].price * rec['quantity'] for rec in wish) + payment_delivery_method_pair.transaction_fee + payment_delivery_method_pair.delivery_fee
-        results.append((wish, total_amount))
-    return results    
-
-def add_total_amounts_mobile(wishes, payment_delivery_method_pair):
-    results = []
-    for wish in wishes:
-        total_amount = sum(rec['product'].price * rec['quantity'] for rec in wish['wished_products']) + payment_delivery_method_pair.transaction_fee + payment_delivery_method_pair.delivery_fee
-        results.append((wish, total_amount))
-    return results    
-
 def decorate_options_mobile(options):
     options = [
         dict(
@@ -163,7 +124,10 @@ def decorate_options_mobile(options):
         for data in options
         ]
 
-    options= add_subtotals_mobile(options)
+    for option in options:
+        for wished_product in option['wished_products']:
+            wished_product['subtotal'] = wished_product['product'].price * wished_product['quantity']
+
     for data in options:
         data['total_amount_without_fee'] = sum(rec['product'].price * rec['quantity'] for rec in data['wished_products'])
     return options

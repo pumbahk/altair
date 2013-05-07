@@ -181,10 +181,11 @@ class EntryLotView(object):
                         .filter(Product.id == k[8:]) \
                         .one()
                     quantity = max(int(v), 0) if v else 0
-                    wished_products.append(dict(
-                        wish_order=option_index_zb,
-                        product_id=product.id,
-                        quantity=quantity))
+                    if quantity > 0:
+                        wished_products.append(dict(
+                            wish_order=option_index_zb,
+                            product_id=product.id,
+                            quantity=quantity))
         except (ValueError, KeyError, NoResultFound):
             raise HTTPBadRequest()
 

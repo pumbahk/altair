@@ -331,7 +331,7 @@ class LotEntryWish(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     @property
     def tickets_amount(self):
-        return sum(p.amount for p in self.products)
+        return sum(p.subtotal for p in self.products)
 
     @property
     def total_amount(self):
@@ -374,7 +374,7 @@ class LotEntryProduct(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     performance = orm.relationship('Performance', backref='lot_entry_products')
 
     @property
-    def amount(self):
+    def subtotal(self):
         """ 購入額小計
         """
         return self.product.price * self.quantity
