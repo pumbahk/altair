@@ -13,7 +13,7 @@ from datetime import datetime
 
 from ticketing.qr.utils import build_qr_by_history_id
 from ticketing.qr.utils import build_qr_by_token_id
-
+from .api import safe_get_contact_url
 logger = logging.getLogger(__name__)
 
 DBSession = sqlahelper.get_session()
@@ -68,10 +68,10 @@ def notfound_view(context, request):
     return dict()
 
 @view_config(name="contact")
-@view_config(route_name="contact", renderer=selectable_renderer("ticketing.orderreview:templates/%(membership)s/static/contact.html"))
-@mobile_view_config(route_name="contact", renderer=selectable_renderer("ticketing.orderreview:templates/%(membership)s/static_mobile/contact.html"))
+@view_config(route_name="contact")
+@mobile_view_config(route_name="contact")
 def contact_view(context, request):
-    return dict()
+    return safe_get_contact_url(request, default=request.route_path("order_review.form"))
 
 @mobile_view_config(route_name='order_review.qr_confirm', renderer=selectable_renderer("ticketing.orderreview:templates/%(membership)s/order_review/qr_confirm.html"))
 @view_config(route_name='order_review.qr_confirm', renderer=selectable_renderer("ticketing.orderreview:templates/%(membership)s/order_review/qr_confirm.html"))
