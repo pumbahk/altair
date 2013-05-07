@@ -2,7 +2,7 @@
 import logging
 import sqlahelper
 from pyramid.view import view_config
-from pyramid.httpexceptions import HTTPNotFound
+from pyramid.httpexceptions import HTTPNotFound, HTTPFound
 from ticketing.cart.selectable_renderer import selectable_renderer
 from ticketing.qr.image import qrdata_as_image_response
 from . import schemas
@@ -71,7 +71,7 @@ def notfound_view(context, request):
 @view_config(route_name="contact")
 @mobile_view_config(route_name="contact")
 def contact_view(context, request):
-    return safe_get_contact_url(request, default=request.route_path("order_review.form"))
+    return HTTPFound(safe_get_contact_url(request, default=request.route_path("order_review.form")))
 
 @mobile_view_config(route_name='order_review.qr_confirm', renderer=selectable_renderer("ticketing.orderreview:templates/%(membership)s/order_review/qr_confirm.html"))
 @view_config(route_name='order_review.qr_confirm', renderer=selectable_renderer("ticketing.orderreview:templates/%(membership)s/order_review/qr_confirm.html"))
