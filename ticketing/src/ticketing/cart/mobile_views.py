@@ -10,6 +10,7 @@ from pyramid.view import view_config
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound
 
 import sqlalchemy as sa
+from sqlalchemy.sql import func
 
 from ticketing.core import models as c_models
 from ticketing.core import api as c_api
@@ -175,9 +176,10 @@ class MobileSelectProductView(object):
             raise NoEventError("No such seat_type (%s)" % seat_type_id)
 
         # 商品一覧
-        products = DBSession.query(c_models.Product) \
+        products = DBSession.query(c_models.Product, func.sum(c_models.StockStatus.quantity)) \
             .join(c_models.Product.items) \
             .join(c_models.ProductItem.stock) \
+            .join(c_models.Stock.stock_status) \
             .filter(c_models.Stock.stock_type_id==seat_type_id) \
             .filter(c_models.Product.sales_segment_id==self.context.sales_segment.id) \
             .filter(c_models.Product.public==True) \
@@ -186,13 +188,13 @@ class MobileSelectProductView(object):
         # CSRFトークン発行
         form = schemas.CSRFSecureForm(csrf_context=self.request.session)
 
+        upper_limit = self.context.sales_segment.upper_limit
         return dict(
             event=self.context.event,
             performance=self.context.sales_segment.performance,
             venue=self.context.sales_segment.performance.venue,
             sales_segment=self.context.sales_segment,
             seat_type=seat_type,
-            upper_limit=self.context.sales_segment.upper_limit,
             products=[
                 dict(
                     id=product.id,
@@ -200,8 +202,9 @@ class MobileSelectProductView(object):
                     description=product.description,
                     detail=h.product_name_with_unit(product, self.context.sales_segment.performance.id),
                     price=h.format_number(product.price, ","),
+                    upper_limit=upper_limit if upper_limit < vacant_quantity else int(vacant_quantity),
                 )
-                for product in products
+                for product, vacant_quantity in products
             ],
             form=form,
         )
