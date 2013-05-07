@@ -35,8 +35,8 @@ form = TopPageSidebarSearchForm()
     </div>
 </%def>
 
-<%def name="pagenum()">
-  % if seq and seq.pager_value("$page"):
+<%def name="pagenum(seq)">
+  % if seq.pager_value("$page"):
     (${seq.pager_value("$page")}/${seq.pager_value("$last_page")})
   % endif
 </%def>
@@ -46,6 +46,7 @@ form = TopPageSidebarSearchForm()
   <head>
     % if not result_seq:
       <meta name="robots" content="noindex,follow" />
+      <title>【楽天チケット】${query_params} | 公演・ライブのチケット予約・購入}</title>
     % else:
       <%
         seq = h.paginate(request, result_seq, items_per_page=10, item_count=len(result_seq))
@@ -58,8 +59,8 @@ form = TopPageSidebarSearchForm()
       % if link_prev:
         <link rel="prev" href="${link_prev}"/>
       % endif
+     <title>【楽天チケット】${query_params} | 公演・ライブのチケット予約・購入${pagenum(seq)}</title>
     % endif
-    <title>【楽天チケット】${query_params} | 公演・ライブのチケット予約・購入${pagenum()}</title>
     <meta http-equiv="content-type" content="text/html; charset=utf-8" />
   <%block name="meta">
     <meta name="description" content="チケットの販売、イベントの予約は楽天チケットで！楽天チケットは演劇、バレエ、ミュージカルなどの舞台、クラシック、オペラ、ロックなどのコンサート、野球、サッカー、格闘技などのスポーツ、その他イベントなどのチケットのオンラインショッピングサイトです。"/>
