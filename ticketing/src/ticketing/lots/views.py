@@ -203,7 +203,12 @@ class EntryLotView(object):
         payment_delivery_pairs = sales_segment.payment_delivery_method_pairs
         payment_delivery_method_pair_id = self.request.params.get('payment_delivery_method_pair_id')
         wishes = h.convert_wishes(self.request.params, lot.limit_wishes)
-        
+     
+        # 枚数チェック
+        if not h.check_quantities(wishes, lot.upper_limit):
+            self.request.session.flash(u"各希望ごとの合計枚数は最大{0}枚までにしてください".format(lot.upper_limit))
+            return self.get(form=cform)
+
         # 希望選択
         if not wishes or not lot.validate_entry(self.request.params):
             self.request.session.flash(u"申し込み内容に入力不備があります")

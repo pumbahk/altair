@@ -109,6 +109,15 @@ def convert_wishes(params, limit):
         
     return [dict(performance_id=performance_ids[x], wished_products=results[x]) for x in sorted(results)]
 
+def check_quantities(wishes, upper_limit):
+    result = True
+    for wish in wishes:
+        total_quantity = 0
+        for p in wish['wished_products']:
+            total_quantity += p['quantity']
+        result = result and (total_quantity <= upper_limit)
+    return result
+
 def decorate_options_mobile(options):
     options = [
         dict(
