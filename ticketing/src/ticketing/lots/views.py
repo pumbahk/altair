@@ -149,7 +149,26 @@ class EntryLotView(object):
         sales_segment = lot.sales_segment
         payment_delivery_pairs = sales_segment.payment_delivery_method_pairs
         performance_product_map = self._create_performance_product_map(sales_segment.products)
-        stock_types = sorted(set((product.seat_stock_type_id, product.seat_stock_type.name, product.seat_stock_type.display_order) for product in sales_segment.products), lambda a, b: cmp(a[2], b[2]))
+        stock_types = [
+            dict(
+                id=rec[0],
+                name=rec[1],
+                display_order=rec[2],
+                description=rec[3]
+                )
+            for rec in sorted(
+                set(
+                    (
+                        product.seat_stock_type_id,
+                        product.seat_stock_type.name,
+                        product.seat_stock_type.display_order,
+                        product.seat_stock_type.description
+                        )
+                    for product in sales_segment.products
+                    ),
+                lambda a, b: cmp(a[2], b[2])
+                )
+            ]
 
         return dict(form=form, event=event, sales_segment=sales_segment,
             payment_delivery_pairs=payment_delivery_pairs,
