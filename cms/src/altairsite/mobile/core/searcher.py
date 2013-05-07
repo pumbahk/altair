@@ -175,7 +175,7 @@ class EventSearcher(object):
     # 販売区分別
     def get_events_from_salessegment(self, form, qs=None):
         log_info("get_events_from_salessegment", "start")
-        label = "一般販売"
+        label = "一般発売"
         if form.sales_segment.data == 1:
             label = "一般先行"
         elif form.sales_segment.data == 2:

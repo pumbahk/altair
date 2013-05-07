@@ -6,7 +6,8 @@ import sqlalchemy as sa
 import sqlalchemy.orm as orm
 from pyramid.view import view_config
 from pyramid.view import view_defaults
-from pyramid.httpexceptions import HTTPFound, HTTPBadRequest
+from pyramid.httpexceptions import HTTPFound, HTTPForbidden
+from . import StaticPageNotFound
 from ..plugins.api import get_widget_aggregator_dispatcher
 from altaircms.helpers.viewhelpers import RegisterViewPredicate
 from altaircms.helpers.viewhelpers import FlashMessage
@@ -685,10 +686,13 @@ class StaticPageView(object):
         FlashMessage.success(u"%sが更新されました" % filestorage.filename, request=self.request)
         return HTTPFound(self.request.route_url("static_page", action="detail", static_page_id=static_page.id))
 
-@view_config(route_name="static_page_display")
+@view_config(route_name="static_page_display", permission="authenticated")
 def static_page_display_view(context, request):
     prefix = request.matchdict["path"].lstrip("/").split("/", 1)[0]
     static_page = get_or_404(request.allowable(StaticPage), StaticPage.name==prefix)
-    if request.GET.get("force_original"):
-        return as_static_page_response(request, static_page, request.matchdict["path"], force_original=True)
-    return as_static_page_response(request, static_page, request.matchdict["path"])
+    try:
+        if request.GET.get("force_original"):
+            return as_static_page_response(request, static_page, request.matchdict["path"], force_original=True)
+        return as_static_page_response(request, static_page, request.matchdict["path"])
+    except StaticPageNotFound:
+        raise HTTPForbidden()

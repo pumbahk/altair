@@ -276,7 +276,11 @@ class Seat(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     adjacencies     = relationship("SeatAdjacency",
                                    primaryjoin=lambda:Seat.l0_id==Seat_SeatAdjacency.l0_id,
                                    secondary=Seat_SeatAdjacency.__table__,
-                                   secondaryjoin=lambda:Seat_SeatAdjacency.seat_adjacency_id==SeatAdjacency.id,
+                                   secondaryjoin=lambda: \
+                                     (Seat_SeatAdjacency.seat_adjacency_id==SeatAdjacency.id) & \
+                                     (SeatAdjacency.adjacency_set_id == SeatAdjacencySet.id) & \
+                                     (SeatAdjacencySet.site_id == Venue.site_id) & \
+                                     (Venue.id==Seat.venue_id),
                                    backref="seats")
     status_ = relationship('SeatStatus', uselist=False, backref='seat', cascade='all,delete-orphan') # 1:1
 
@@ -371,9 +375,14 @@ class SeatAdjacency(Base, BaseModel):
     adjacency_set_id = Column(Identifier, ForeignKey('SeatAdjacencySet.id', ondelete='CASCADE'))
 
     def seats_filter_by_venue(self, venue_id):
-        query = Seat.query.filter(Seat.venue_id==venue_id)
-        query = query.join(Seat_SeatAdjacency, Seat.l0_id==Seat_SeatAdjacency.l0_id)
-        query = query.join(SeatAdjacency).filter(Seat_SeatAdjacency.seat_adjacency_id==self.id)
+        query = Seat.query.filter(Seat.venue_id == venue_id) \
+            .join(Seat_SeatAdjacency, Seat.l0_id == Seat_SeatAdjacency.l0_id) \
+            .join(SeatAdjacency, Seat_SeatAdjacency.seat_adjacency_id == SeatAdjacency.id) \
+            .join(SeatAdjacencySet, SeatAdjacencySet.id == SeatAdjacency.adjacency_set_id) \
+            .join(Venue, Venue.id == Seat.venue_id) \
+            .filter(SeatAdjacencySet.site_id == Venue.site_id) \
+            .filter(SeatAdjacency.id == self.id)
+
         return query.all()
 
 class SeatAdjacencySet(Base, BaseModel, WithTimestamp, LogicallyDeleted):
@@ -1210,7 +1219,7 @@ class PaymentDeliveryMethodPair(Base, BaseModel, WithTimestamp, LogicallyDeleted
     issuing_interval_days = Column(Integer, default=1)
     issuing_start_at = Column(DateTime, nullable=True)
     issuing_end_at = Column(DateTime, nullable=True)
-    # 選択不可期間(Performance.start_onの何日前から利用できないか、日数指定)
+    # 選択不可期間 (SalesSegment.start_atの何日前から利用できないか、日数指定)
     unavailable_period_days = Column(Integer, nullable=False, default=0)
     # 一般公開するか
     public = Column(Boolean, nullable=False, default=True)
@@ -1222,10 +1231,8 @@ class PaymentDeliveryMethodPair(Base, BaseModel, WithTimestamp, LogicallyDeleted
     delivery_method_id = Column(Identifier, ForeignKey('DeliveryMethod.id'))
     delivery_method = relationship('DeliveryMethod', backref='payment_delivery_method_pairs')
 
-    def is_available_for(self, performance, on_day):
-        if performance is None or performance.start_on is None:
-            return True
-        border = performance.start_on.date() - timedelta(days=self.unavailable_period_days)
+    def is_available_for(self, sales_segment, on_day):
+        border = sales_segment.end_at.date() - timedelta(days=self.unavailable_period_days)
         return self.public and (todate(on_day) <= border)
 
     @staticmethod
@@ -3203,10 +3210,7 @@ class SalesSegment(Base, BaseModel, LogicallyDeleted, WithTimestamp):
         return stock in self.stocks
 
     def available_payment_delivery_method_pairs(self, now):
-        return [pdmp 
-                for pdmp 
-                in self.payment_delivery_method_pairs
-                if pdmp.is_available_for(self.performance, now)]
+        return [pdmp for pdmp in self.payment_delivery_method_pairs if pdmp.is_available_for(self, now)]
 
     @property
     def event(self):
@@ -3331,7 +3335,8 @@ class SalesSegment(Base, BaseModel, LogicallyDeleted, WithTimestamp):
 class OrganizationSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = "OrganizationSetting"
     id = Column(Identifier, primary_key=True)
-    name = Column(Unicode(255), default=u"default")
+    DEFAULT_NAME = u"default"
+    name = Column(Unicode(255), default=DEFAULT_NAME)
     organization_id = Column(Identifier, ForeignKey('Organization.id'))
     organization = relationship('Organization', backref='settings')
 
@@ -3348,6 +3353,9 @@ class OrganizationSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     multicheckout_auth_password = Column(Unicode(255))
 
     cart_item_name = Column(Unicode(255))
+
+    contact_pc_url = Column(Unicode(255))
+    contact_mobile_url = Column(Unicode(255))
 
 class PerformanceSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = "PerformanceSetting"

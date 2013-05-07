@@ -1,7 +1,11 @@
 # This package may contain traces of nuts
+import logging
 import pika
 from . import consumer
 from .interfaces import IConsumerFactory, ITask, IConsumer
+
+
+logger = logging.getLogger(__name__)
 
 
 class QueueSettings(object):
@@ -51,10 +55,13 @@ def add_task(config, task,
                                        auto_delete=auto_delete)
         if pika_consumer is None:
             return
+
         pika_consumer.add_task(consumer.TaskMapper(task=task,
                                                    name=name,
                                                    root_factory=root_factory,
                                                    queue_settings=queue_settings))
+        logger.info("register task {name} {queue_settings}".format(name=name,
+                                                                   queue_settings=queue_settings))
         reg.registerUtility(task, ITask)
 
     config.action("altair.mq.task-{name}".format(name=name),

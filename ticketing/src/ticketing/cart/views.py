@@ -8,6 +8,7 @@ from datetime import datetime
 
 import sqlalchemy as sa
 from sqlalchemy.orm import joinedload
+from sqlalchemy.sql import func
 
 from markupsafe import Markup
 
@@ -22,11 +23,12 @@ from webob.multidict import MultiDict
 from ticketing.models import DBSession
 from ticketing.core import models as c_models
 from ticketing.core import api as c_api
-from ticketing.mailmags import models as mailmag_models
+from ticketing.mailmags.api import get_magazines_to_subscribe, multi_subscribe
 from ticketing.views import mobile_request
 from ticketing.fanstatic import with_jquery, with_jquery_tools
 from ticketing.payments.payment import Payment
 from ticketing.payments.exceptions import PaymentDeliveryMethodPairNotFound
+from ticketing.users.api import get_or_create_user
 from altair.mobile.interfaces import IMobileRequest
 
 from . import api
@@ -224,9 +226,10 @@ class IndexView(IndexViewMixin):
 
         seat_type = DBSession.query(c_models.StockType).filter_by(id=seat_type_id).one()
 
-        query = DBSession.query(c_models.Product) \
+        query = DBSession.query(c_models.Product, func.sum(c_models.StockStatus.quantity)) \
             .join(c_models.Product.items) \
             .join(c_models.ProductItem.stock) \
+            .join(c_models.Stock.stock_status) \
             .filter(c_models.Stock.stock_type_id==seat_type_id) \
             .filter(c_models.Product.sales_segment_id==self.context.sales_segment.id) \
             .filter(c_models.Product.public==True) \
@@ -240,9 +243,9 @@ class IndexView(IndexViewMixin):
                 price=h.format_number(p.price, ","), 
                 unit_template=h.build_unit_template(p, self.context.sales_segment.performance.id),
                 quantity_power=p.get_quantity_power(seat_type, self.context.sales_segment.performance.id),
-                upper_limit=p.sales_segment.upper_limit,
+                upper_limit=p.sales_segment.upper_limit if p.sales_segment.upper_limit < vacant_quantity else int(vacant_quantity),
                 )
-            for p in query
+            for p, vacant_quantity in query
             ]
 
         return dict(products=products,
@@ -408,7 +411,7 @@ class ReserveView(object):
         if not order_items:
             return dict(result='NG', reason="no products")
 
-        performance = c_models.Performance.query.filter(c_models.Performance.id==self.request.params['performance_id']).with_lockmode('update').one()
+        performance = c_models.Performance.query.filter(c_models.Performance.id==self.request.params['performance_id']).one()
         if not order_items:
             return dict(result='NG', reason="no performance")
 
@@ -516,7 +519,7 @@ class PaymentView(object):
         start_on = cart.performance.start_on
         sales_segment = self.sales_segment
         payment_delivery_methods = sales_segment.available_payment_delivery_method_pairs(getattr(self.context, 'now', datetime.now()))
-        user = self.context.get_or_create_user()
+        user = get_or_create_user(self.context.authenticated_user())
         user_profile = None
         if user is not None:
             user_profile = user.user_profile
@@ -573,7 +576,7 @@ class PaymentView(object):
     def _validate_extras(self, cart, payment_delivery_pair, shipping_address_params):
         if not payment_delivery_pair or shipping_address_params is None:
             if not payment_delivery_pair:
-                self.request.session.flash(u"お支払い方法／受け取り方法をどれかひとつお選びください")
+                self.request.session.flash(u"お支払／引取方法をお選びください")
                 logger.debug("invalid : %s" % 'payment_delivery_method_pair_id')
             else:
                 logger.debug("invalid : %s" % self.form.errors)
@@ -591,7 +594,7 @@ class PaymentView(object):
         """
         api.check_sales_segment_term(self.request)
         cart = api.get_cart_safe(self.request)
-        user = self.context.get_or_create_user()
+        user = get_or_create_user(self.context.authenticated_user())
 
         payment_delivery_method_pair_id = self.request.params.get('payment_delivery_method_pair_id', 0)
         payment_delivery_pair = c_models.PaymentDeliveryMethodPair.query.filter_by(id=payment_delivery_method_pair_id).first()
@@ -662,23 +665,7 @@ class ConfirmView(object):
         form = schemas.CSRFSecureForm(csrf_context=self.request.session)
         cart = api.get_cart_safe(self.request)
 
-        # == MailMagazineに移動 ==
-        magazines_to_subscribe = cart.performance.event.organization.mail_magazines \
-            .filter(
-                ~mailmag_models.MailMagazine.id.in_(
-                    DBSession.query(mailmag_models.MailMagazine.id) \
-                        .join(mailmag_models.MailSubscription.segment) \
-                        .filter(
-                            mailmag_models.MailSubscription.email.in_(cart.shipping_address.emails) & \
-                            (mailmag_models.MailSubscription.status.in_([
-                                mailmag_models.MailSubscriptionStatus.Subscribed.v,
-                                mailmag_models.MailSubscriptionStatus.Reserved.v]) | \
-                             (mailmag_models.MailSubscription.status == None)) \
-                            ) \
-                        .distinct()
-                    )
-                ) \
-            .all()
+        magazines_to_subscribe = get_magazines_to_subscribe(cart.performance.event.organization, cart.shipping_address.emails)
 
         payment = Payment(cart, self.request)
         try:
@@ -733,10 +720,10 @@ class CompleteView(object):
         order = DBSession.query(order.__class__).get(order.id)
 
         # メール購読
-        user = self.context.get_or_create_user()
+        user = get_or_create_user(self.context.authenticated_user())
         emails = cart.shipping_address.emails
         magazine_ids = self.request.params.getall('mailmagazine')
-        mailmag_models.MailMagazine.multi_subscribe(user, emails, magazine_ids)
+        multi_subscribe(user, emails, magazine_ids)
 
         api.remove_cart(self.request)
         api.logout(self.request)

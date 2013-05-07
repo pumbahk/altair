@@ -162,15 +162,20 @@ def generate_entry_no(request, lot_entry):
     return organization_code + sensible_alnum_encode(base_id).zfill(10)
 
 
-def get_lot_entries_iter(lot_id):
+def get_lot_entries_iter(lot_id, condition=None):
     q = DBSession.query(LotEntryWish
     ).filter(
         LotEntry.lot_id==lot_id
     ).filter(
         LotEntryWish.lot_entry_id==LotEntry.id
+    ).filter(
+        ShippingAddress.id==LotEntry.shipping_address_id
     ).order_by(
         LotEntryWish.wish_order
     )
+
+    if condition is not None:
+        q = q.filter(condition)
 
     for entry in q:
         yield _entry_info(entry)
@@ -187,6 +192,7 @@ def format_sex(s):
         return u"未回答"
 
 def _entry_info(wish):
+    # TODO: shipping_addressも全部追加する
     shipping_address = wish.lot_entry.shipping_address
 
     return {
@@ -196,11 +202,42 @@ def _entry_info(wish):
         u"ユーザー種別": wish.lot_entry.membergroup,
         u"席種": u",".join([",".join([i.stock_type.name for i in p.product.items]) for p in wish.products]), # 席種 この時点で席種までちゃんと決まる
         u"枚数": wish.total_quantity, # 枚数(商品関係なし)
+        # u'イベント': event.title,
+        # u'会場': venue.name,
+        # u'公演': performance.name,
+        # u'公演コード': performance.code,
+        # u'公演日': performance.start_on,
+
         u"商品": u",".join([p.product.name for p in wish.products]), # 商品うちわけ(参考情報)
-        u"郵便番号": shipping_address.zip,
-        u"都道府県": shipping_address.prefecture,
-        u"性別": format_sex(shipping_address.sex),
+        # u'決済方法': payment_method.name,
+        # u'引取方法': delivery_method.name,
+
+        ## shipping_address
+        u'配送先姓': shipping_address.last_name,
+        u'配送先名': shipping_address.first_name,
+        u'配送先姓(カナ)': shipping_address.last_name_kana,
+        u'配送先名(カナ)': shipping_address.first_name_kana,
+        u'郵便番号': shipping_address.zip,
+        u'国': shipping_address.country,
+        u'都道府県': shipping_address.prefecture,
+        u'市区町村': shipping_address.city,
+        u'住所1': shipping_address.address_1,
+        u'住所2': shipping_address.address_2,
+        u'電話番号1': shipping_address.tel_1,
+        u'電話番号2': shipping_address.tel_2,
+        u'FAX': shipping_address.fax,
+        u'メールアドレス1': shipping_address.email_1,
+        u'メールアドレス2': shipping_address.email_2,
+
+        ## user_profile
+        # u'姓': user_profile.last_name,
+        # u'名': user_profile.first_name,
+        # u'姓(カナ)': user_profile.last_name_kana,
+        # u'名(カナ)': user_profile.first_name_kana,
+        # u'ニックネーム': user_profile.nick_name,
+        # u'性別': user_profile.sex,
     }
+
 
 
 def submit_lot_entries(lot_id, entries):
@@ -326,18 +363,24 @@ def new_lot_entry(request, wishes, payment_delivery_method_pair_id, shipping_add
 class Options(object):
     OPTIONS_KEY = 'altair.lots.options'
 
-    def __init__(self, request):
+    def __init__(self, request, lot_id):
         self.request = request
-        options = request.session.get(self.OPTIONS_KEY)
+        self.lot_id = lot_id
+        options_map = request.session.get(self.OPTIONS_KEY)
+        if not isinstance(options_map, dict):
+            request.session[self.OPTIONS_KEY] = options_map = {}
+        self.options_map = options_map
+        options = options_map.get(lot_id)
         if options is None:
-            request.session[self.OPTIONS_KEY] = options = []
+            self.options_map[lot_id] = options = []
         self.options = options
 
     def __del__(self):
         self.request.session.persist()
 
-    def clear(self):
-        self.request.session[OPTIONS_KEY] = self.options = []
+    def dispose(self):
+        self.options = None
+        del self.options_map[self.lot_id]
 
     def performance_selected(self, performance_id):
         for data in self.options:
@@ -360,5 +403,5 @@ class Options(object):
     def __iter__(self):
         return iter(self.options)
 
-def get_options(request):
-    return Options(request)
+def get_options(request, lot_id):
+    return Options(request, lot_id)

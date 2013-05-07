@@ -11,10 +11,7 @@ requires = [
 
 points = {
     "console_scripts": [
-        "mserve=altair.mq.app:main",
-    ],
-    "altair.mq.command": [
-        "serve=altair.mq.commands:ServeCommand",
+        "mserve=altair.mq.scripts.mserve:main",
     ],
 }
 

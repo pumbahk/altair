@@ -70,7 +70,7 @@ class ClientForm(OurForm):
         ]
     )
     tel_1 = fields.TextField(
-        label=u"TEL",
+        label=u"電話番号",
         filters=[ignore_space_hyphen], 
         validators=[
             Required(),
@@ -79,7 +79,7 @@ class ClientForm(OurForm):
         ]
     )
     fax = fields.TextField(
-        label=u"FAX",
+        label=u"FAX番号",
         filters=[ignore_space_hyphen], 
         validators=[
             Optional(),
@@ -125,7 +125,7 @@ class ClientForm(OurForm):
         ]
     )
     address_2 = fields.TextField(
-        label=u"住所",
+        label=u"住所 (建物名など)",
         filters=[strip_spaces],
         validators=[
             Length(max=255, message=u'255文字以内で入力してください'),
@@ -141,7 +141,7 @@ class ClientForm(OurForm):
         ]
     )
     email_1_confirm = fields.TextField(
-        label=u"確認用メールアドレス",
+        label=u"メールアドレス (確認)",
         filters=[strip_spaces],
         validators=[
             Required(),
@@ -163,7 +163,7 @@ class ClientForm(OurForm):
     email_2_confirm = Liaison(
         email_1_confirm,
         fields.TextField(
-            label=u"確認用メールアドレス",
+            label=u"メールアドレス (確認)",
             filters=[strip_spaces],
             validators=[
                 SejCompliantEmail(),

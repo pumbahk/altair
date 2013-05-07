@@ -1,3 +1,4 @@
+
 # -*- coding:utf-8 -*-
 import logging 
 logger = logging.getLogger(__name__)
@@ -8,11 +9,12 @@ from wtforms import widgets
 from wtforms import validators
 import sqlalchemy.orm as orm
 import wtforms.ext.sqlalchemy.fields as extfields
+
 import urllib
 
 from altaircms.formhelpers import dynamic_query_select_field_factory
 from altaircms.formhelpers import required_field, append_errors
-
+from altaircms.page.forms import url_not_conflict
 
 from ..event.models import Event
 from altaircms.models import Performance, Genre
@@ -436,8 +438,18 @@ class PageSetForm(Form):
     private_tags_string = fields.TextField(label=u"非公開タグ(区切り文字:\",\")")
     mobile_tags_string = fields.TextField(label=u"モバイル用タグ(区切り文字:\",\")")
     genre_id = MaybeSelectField(label=u"ジャンル", coerce=unicode, choices=[])
-    url = fields.TextField(label=u"URL")
+    url = fields.TextField(label=u"URL", validators=[])
 
+    def object_validate(self, obj=None):
+        data = self.data
+        qs = self.request.allowable(PageSet).filter_by(url=data["url"]).filter(PageSet.id!=obj.id)
+        if qs.count() > 0:
+            append_errors(self.errors, "url", u'URL "%s" は既に登録されてます' % data["url"])
+            return False
+        return True
+            
+    
     def configure(self, request):
         self.genre_id.choices = [(unicode(g.id), unicode(g)) for g in request.allowable(Genre)]
+        self.request = request
     __display_fields__ = ["name", "genre_id", "url", "tags_string", "private_tags_string", "mobile_tags_string"]

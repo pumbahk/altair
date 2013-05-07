@@ -1,5 +1,6 @@
 <%inherit file="../layout_2cols.html" />
 <%namespace file="/common/helpers.html" name="h" />
+<%namespace file="_entries_tabs.html" name="tabs" />
 <%
 from ticketing.cart.helpers import format_currency
 %>
@@ -32,31 +33,83 @@ Altair Backend -- ${lot.event.title}[${lot.name}]
 <div class="content">
   ${h.flash_messages(request)}
 </div>
-
-
+${tabs.tabs(request)}
 <div>
-<h2>抽選申し込み状況</h2>
+  <h3>件数ベース</h3>
+  <table class="table">
+    <tr>
+      <th>申込件数</th>
+      <th>当選件数</th>
+      <th>決済件数</th>
+      <th>予約件数</th>
+      <th>キャンセル・流れ</th>
+    </tr>
+    <tr>
+      <td>${lot_status.total_entries}</td>
+      <td>${lot_status.elected_count}</td>
+      <td>${lot_status.ordered_count}</td>
+      <td>${lot_status.reserved_count}</td>
+      <td>${lot_status.canceled_count}</td>
+    </tr>
+  </table>
 </div>
 <div>
-<table class="table">
-<tr>
-<th>申し込み総数</th>
-<td> ${total_entries}</td>
-</tr>
-<tr>
-<th>希望総数</th>
-<td> ${total_wishes}</td>
-</tr>
-<tr>
-<th>当選予定数(未処理)</th>
-<td> ${electing_count}</td>
-</tr>
-<tr>
-<th>当選数</th>
-<td> ${elected_count}</td>
-</tr>
-</table>
+  <h3>枚数ベース</h3>
+  <table class="table">
+    <tr>
+      <th>&nbsp;</th>
+      <th>&nbsp;</th>
+      <th colspan="${lot_status.lot.limit_wishes}">希望順位別内訳枚数</th>
+    </tr>
+    <tr>
+      <th>&nbsp;</th>
+      <th>申込総枚数</th>
+      %for i in range(lot_status.lot.limit_wishes):
+      <th>第${i + 1}希望</th>
+      %endfor
+    </tr>
+    <tr>
+      <th>枚数</th>
+      <td>${lot_status.total_quantity}</td>
+      %for i in range(lot_status.lot.limit_wishes):
+      <td>${lot_status.wish_statuses[i].quantity}</td>
+      %endfor
+    </tr>
+  </table>
 </div>
+<div>
+  <h3>公演ごと、希望ごと</h3>
+  <table class="table">
+    <tr>
+      <th rowspan="2">公演日時</th>
+      <th rowspan="2">席種</th>
+      <th rowspan="2">申込総枚数</th>
+      <th colspan="${lot_status.lot.limit_wishes}">希望順位内訳枚数</th>
+      <th rowspan="2">当選数</th>
+      <th rowspan="2">決済済</th>
+      <th rowspan="2">予約数</th>
+      <th rowspan="2">キャンセル・流れ</th>
+    </tr>
+    <tr>
+      %for i in range(lot_status.lot.limit_wishes):
+      <th>第${i+1}希望</th>
+      %endfor
+    </tr>
+    %for status in lot_status.performance_seat_type_statuses:
+    <tr>
+      <td>${status.performance.open_on}</td>
+      <td>${status.seat_type.name}</td>
+      <td>${status.entry_quantity}</td>
+      %for i in range(lot_status.lot.limit_wishes):
+      <td>${status.wish_statuses[i].entry_quantity}</td>
+      %endfor
+      <td>${status.elected_quantity}</td>
+      <td>${status.ordered_quantity}</td>
+      <td>${status.reserved_quantity}</td>
+      <td>${status.canceled_quantity}</td>
+    </tr>
+      %endfor
+  </table>
 
 <div>
 <h3>アクション</h3>
@@ -77,28 +130,3 @@ Altair Backend -- ${lot.event.title}[${lot.name}]
     <button class="btn">当選指定</button>
 </form></li>
 </div>
-<div>
-<h3>公演ごと、希望ごと</h3>
-<table class="table">
-<tr>
-  <th>公演名</th>
-  <th>希望順</th>
-  <th>申し込み数</th>
-</tr>
-%for sub in sub_counts:
-<tr>
-  <td>${sub['performance'].name}</td>
-  <td>${sub['wish_order']}</td>
-  <td>${sub['count']}</td>
-</tr>
-%endfor
-</table>
-</div>
-
-<table>
-%for entry in entries:
-<tr>
-<td>${entry}</td>
-</tr>
-%endfor
-</table>

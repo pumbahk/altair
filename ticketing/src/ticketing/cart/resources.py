@@ -19,8 +19,7 @@ from sqlalchemy.orm.exc import NoResultFound
 from zope.interface import implementer
 from .interfaces import ICartPayment, ICartDelivery
 from ticketing.payments.interfaces import IOrderPayment, IOrderDelivery 
-#from ticketing.mails.interfaces import ICompleteMailPayment, ICompleteMailDelivery, IOrderCancelMailPayment, IOrderCancelMailDelivery
-#from ticketing.mails.resources import CompleteMailPayment, CompleteMailDelivery, OrderCancelMailPayment, OrderCancelMailDelivery
+from ticketing.users import api as user_api
 
 from .exceptions import (
     OutTermSalesException,
@@ -230,23 +229,9 @@ class TicketingCartResource(object):
         membership = user['membership']
         return membership
 
-    # TODO: users.api に移動
+    @deprecate('use ticketing.users.api.get_or_create_user')
     def get_or_create_user(self):
-        # TODO: 依存関係がおかしいので確認 なぜrakuten_authがcart.apiを使うのか？
-        from ticketing.rakuten_auth.api import authenticated_user
-        from . import api
-        openid = authenticated_user(self.request)
-        if openid is None or openid.get('is_guest', False):
-            return None
-
-        if 'clamed_id' in openid:
-            auth_identifier = openid['clamed_id']
-            membership = 'rakuten'
-        elif 'username' in openid:
-            auth_identifier = openid['username']
-            membership = openid['membership']
-        user = api.get_or_create_user(self.request, auth_identifier, membership)
-        return user
+        return user_api.get_or_create_user(self.authenticated_user())
 
     @reify
     def host_base_url(self):

@@ -49,6 +49,8 @@ def includeme(config):
     config.add_subscriber(register_globals, 'pyramid.events.BeforeRender')
     config.add_renderer('.html' , 'pyramid.mako_templating.renderer_factory')
     config.add_renderer('json'  , 'ticketing.renderers.json_renderer_factory')
+    config.add_renderer('.txt' , 'pyramid.mako_templating.renderer_factory')
+
     selectable_renderer.register_to(config)
 
     # 申し込みフェーズ
@@ -64,9 +66,9 @@ def includeme(config):
     config.add_route('lots.review.index', 'review')
 
     # 当選フェーズ
-    config.add_route('lots.payment.index', 'events/{event_id}/payment/{lot_id}')
-    config.add_route('lots.payment.confirm', 'events/{event_id}/payment/{lot_id}/confirm')
-    config.add_route('lots.payment.completion', 'events/{event_id}/payment/{lot_id}/completion')
+    #config.add_route('lots.payment.index', 'events/{event_id}/payment/{lot_id}')
+    #config.add_route('lots.payment.confirm', 'events/{event_id}/payment/{lot_id}/confirm')
+    #config.add_route('lots.payment.completion', 'events/{event_id}/payment/{lot_id}/completion')
   
     # 楽天認証コールバック
     config.add_route('rakuten_auth.login', '/login')
@@ -100,17 +102,20 @@ def main(global_config, **local_config):
     settings = dict(global_config)
     settings.update(local_config)
 
-    engine = sa.engine_from_config(settings)
+    from sqlalchemy.pool import NullPool
+    engine = sa.engine_from_config(settings, poolclass=NullPool, isolation_level='READ COMMITTED')
+
     sqlahelper.add_engine(engine)
     session_factory = session_factory_from_settings(settings)
 
     config = Configurator(settings=settings,
-                          root_factory=".resources.LotResource")
+                          root_factory=".resources.lot_resource_factory")
     config.set_session_factory(session_factory)
     config.add_static_view('static', 'static', cache_max_age=3600)
     config.add_static_view('c_static', 'ticketing.cart:static', cache_max_age=3600)
 
     config.include(".")
+    config.include(".sendmail")
 
     ### includes altair.*
     config.include('altair.auth')
@@ -126,6 +131,7 @@ def main(global_config, **local_config):
 
     config.include('altair.pyramid_assets')
     config.include('altair.pyramid_boto')
+    config.include('altair.pyramid_tz')
 
     config.set_authorization_policy(ACLAuthorizationPolicy())
     return config.make_wsgi_app()

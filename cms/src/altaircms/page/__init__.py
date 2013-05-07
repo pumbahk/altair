@@ -2,6 +2,9 @@
 
 import functools
 
+class StaticPageNotFound(Exception):
+    pass
+
 def install_pageset_searcher(config):
     config.include("altaircms.tag.install_page_tagmanager")
     from ..modelmanager.searcher import PublishingModelSearcher

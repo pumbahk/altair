@@ -2,29 +2,26 @@
 
 import logging
 logger = logging.getLogger(__name__)
-
+from sqlalchemy import sql
 from pyramid.view import view_config, view_defaults
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound
-from sqlalchemy import sql
-from webhelpers.containers import correlate_objects
 from ticketing.views import BaseView
 from ticketing.fanstatic import with_bootstrap
 from ticketing.core.models import (
     DBSession,
-    Event, 
     Product, 
     PaymentDeliveryMethodPair,
+    ShippingAddress,
     )
 from ticketing.lots.models import (
     Lot,
     LotEntry,
     LotEntryWish,
     LotElectWork,
-    LotElectedEntry,
     )
 import ticketing.lots.api as lots_api
 from .helpers import Link
-from .forms import ProductForm, LotForm
+from .forms import ProductForm, LotForm, SearchEntryForm
 from . import api
 
 @view_defaults(decorator=with_bootstrap, permission="event_editor")
@@ -86,6 +83,7 @@ class Lots(BaseView):
     def show(self):
         lot = self.context.lot
         if "action-update-pdmp" in self.request.POST:
+            lot.sales_segment.payment_delivery_method_pairs = []
             for pdmp_id in self.request.POST.getall("pdmp_id"):
                 pdmp = PaymentDeliveryMethodPair.query.filter(PaymentDeliveryMethodPair.id==pdmp_id).first()
                 if pdmp and pdmp not in lot.sales_segment.payment_delivery_method_pairs:
@@ -150,6 +148,31 @@ class Lots(BaseView):
             return HTTPFound(self.request.route_url('lots.show', lot_id=lot.id))
         return dict(form=form, lot=lot)
 
+    @view_config(route_name='lots.product_edit', renderer='ticketing:templates/lots/product_new.html', permission='event_viewer')
+    def product_edit(self):
+        product = self.context.product
+        lot = self.context.lot
+        event = self.context.event
+
+        stock_types = event.stock_types
+        stock_type_choices = [
+            (s.id, s.name)
+            for s in stock_types
+        ]
+        performances = event.performances
+        performance_choices = [
+            (p.id, u"{0.name} {0.open_on}".format(p))
+            for p in performances
+        ]
+        form = ProductForm(obj=product, formdata=self.request.POST)
+        form.seat_stock_type_id.choices = stock_type_choices
+        form.performance_id.choices = performance_choices
+
+        if self.request.POST and form.validate():
+            product = form.apply_product(product)
+            return HTTPFound(self.request.route_url('lots.show', lot_id=lot.id))
+        return dict(form=form, lot=lot)
+
 
 @view_defaults(decorator=with_bootstrap, permission="event_editor")
 class LotEntries(BaseView):
@@ -163,20 +186,9 @@ class LotEntries(BaseView):
         return dict(
             lot=lot,
             performances = lot_status.performances,
-            #  メール送信済み
-            #  決済済み
-            # 申し込み状況
-            entries = lot.entries,
-            #  総数
-            total_entries = lot_status.total_entries,
-            #  希望数
-            total_wishes = lot_status.total_wishes,
             #  公演、希望順ごとの数
             sub_counts = lot_status.sub_counts,
-            #  当選予定数
-            electing_count = lot_status.electing_count,
-            #  当選数
-            elected_count = lot_status.elected_count,
+            lot_status=lot_status,
             )
 
 
@@ -202,6 +214,54 @@ class LotEntries(BaseView):
         return dict(data=list(entries),
                     encoding='sjis',
                     filename=filename)
+
+    @view_config(route_name='lots.entries.search',
+                 renderer='ticketing:templates/lots/search.html', permission='event_viewer')
+    def search_entries(self):
+        """ 申し込み内容エクスポート
+
+        - フィルター (すべて、未処理)
+        """
+
+        # とりあえずすべて
+        lot_id = self.request.matchdict["lot_id"]
+        lot = Lot.query.filter(Lot.id==lot_id).one()
+        form = SearchEntryForm(formdata=self.request.POST)
+        condition = (LotEntry.id != None)
+        s_a = ShippingAddress
+
+        if form.validate():
+            if form.entry_no.data:
+                condition = sql.and_(condition, LotEntry.entry_no==form.entry_no.data)
+            if form.tel.data:
+                condition = sql.and_(condition, 
+                                     sql.or_(ShippingAddress.tel_1==form.tel.data,
+                                             ShippingAddress.tel_2==form.tel.data))
+            if form.name.data:
+                condition = sql.and_(condition, 
+                                     sql.or_(s_a.full_name==form.name.data,
+                                             s_a.last_name==form.name.data,
+                                             s_a.first_name==form.name.data,
+                                             s_a.full_name_kana==form.name.data,
+                                             s_a.last_name_kana==form.name.data,
+                                             s_a.first_name_kana==form.name.data,))
+            if form.email.data:
+                condition = sql.and_(condition, 
+                                     sql.or_(s_a.email_1==form.email.data,
+                                             s_a.email_2==form.email.data))
+
+            if form.entried_from.data:
+                condition = sql.and_(condition, 
+                                     LotEntry.created_at>=form.entried_from.data)
+            if form.entried_to.data:
+                condition = sql.and_(condition, 
+                                     LotEntry.created_at<=form.entried_to.data)
+        logger.debug("condition = {0}".format(condition))
+        logger.debug("from = {0}".format(form.entried_from.data))
+        entries = lots_api.get_lot_entries_iter(lot.id, condition)
+        return dict(data=list(entries),
+                    lot=lot,
+                    form=form)
 
 
         
