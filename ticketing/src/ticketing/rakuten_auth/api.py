@@ -19,6 +19,7 @@ from zope.interface import implementer
 import random
 from .. import helpers as cart_helpers
 from ticketing.cart import api as cart_api
+from ticketing.users import api as user_api
 from ticketing.models import DBSession
 from ticketing.users.models import UserProfile
 
@@ -157,7 +158,7 @@ class RakutenOpenID(object):
             return None
 
         logger.debug('user_info : %s' % user_info)
-        user = cart_api.get_or_create_user(None, identity['claimed_id'])
+        user = user_api.get_or_create_user(identity)
         if user.user_profile is None:
             profile = UserProfile(user=user)
         else:

@@ -11,8 +11,8 @@ def get_or_create_user(authenticated_user):
     if authenticated_user is None or authenticated_user.get('is_guest', False):
         return None
 
-    if 'clamed_id' in authenticated_user:
-        auth_identifier = authenticated_user['clamed_id']
+    if 'claimed_id' in authenticated_user:
+        auth_identifier = authenticated_user['claimed_id']
         membership = 'rakuten'
     elif 'username' in authenticated_user:
         auth_identifier = authenticated_user['username']
