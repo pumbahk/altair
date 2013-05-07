@@ -227,7 +227,7 @@ class LotEntries(BaseView):
         lot_id = self.request.matchdict["lot_id"]
         lot = Lot.query.filter(Lot.id==lot_id).one()
         form = SearchEntryForm(formdata=self.request.POST)
-        condition = True
+        condition = (LotEntry.id != None)
         if form.validate():
             if form.entry_no.data:
                 condition = sql.and_(condition, LotEntry.entry_no==form.entry_no.data)
