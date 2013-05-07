@@ -30,7 +30,7 @@ ${lot_entry.created_at}
 会場：${wish.performance.venue.name}
 申込内容
 %for product in wish.products:
-${product.product.name} ${h.format_currency(product.price)} x ${product.quantity}枚
+${product.product.name} ${h.format_currency(product.product.price)} x ${product.quantity}枚
 %endfor
 チケット代金計：${h.format_currency(wish.tickets_amount)}
 システム利用料：{wish.system_fee}円（税込）
@@ -54,7 +54,7 @@ ${product.product.name} ${h.format_currency(product.price)} x ${product.quantity
 お客様のカードによっては、有効性確認時に、カード利用明細メールが配信される場合がありますが、
 決済は当選確定以前には行われませんので、ご安心ください
 
-オーソリ確認金額：{h.format_currency(lot_entry.max_amount)}円（税込）
+オーソリ確認金額：${h.format_currency(lot_entry.max_amount)}円（税込）
 %endif
 %if lot_entry.payment_delivery_method_pair.payment_method.payment_plugin_id == plugins.SEJ_PAYMENT_PLUGIN_ID:
 ※ご当選の場合、入金期間内にセブン-イレブン店内レジにてお支払いとなります。
