@@ -5,13 +5,10 @@ logger = logging.getLogger(__name__)
 
 from pyramid.view import view_config, view_defaults
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound
-from sqlalchemy import sql
-from webhelpers.containers import correlate_objects
 from ticketing.views import BaseView
 from ticketing.fanstatic import with_bootstrap
 from ticketing.core.models import (
     DBSession,
-    Event, 
     Product, 
     PaymentDeliveryMethodPair,
     )
@@ -20,7 +17,6 @@ from ticketing.lots.models import (
     LotEntry,
     LotEntryWish,
     LotElectWork,
-    LotElectedEntry,
     )
 import ticketing.lots.api as lots_api
 from .helpers import Link
@@ -217,6 +213,21 @@ class LotEntries(BaseView):
         return dict(data=list(entries),
                     encoding='sjis',
                     filename=filename)
+
+    @view_config(route_name='lots.entries.search',
+                 renderer='ticketing:templates/lots/search.html', permission='event_viewer')
+    def search_entries(self):
+        """ 申し込み内容エクスポート
+
+        - フィルター (すべて、未処理)
+        """
+
+        # とりあえずすべて
+        lot_id = self.request.matchdict["lot_id"]
+        lot = Lot.query.filter(Lot.id==lot_id).one()
+        entries = lots_api.get_lot_entries_iter(lot.id)
+        return dict(data=list(entries),
+                    lot=lot)
 
 
         

@@ -1,5 +1,6 @@
 <%inherit file="../layout_2cols.html" />
 <%namespace file="/common/helpers.html" name="h" />
+<%namespace file="_entries_tabs.html" name="tabs" />
 <%
 from ticketing.cart.helpers import format_currency
 %>
@@ -32,11 +33,7 @@ Altair Backend -- ${lot.event.title}[${lot.name}]
 <div class="content">
   ${h.flash_messages(request)}
 </div>
-
-
-<div>
-<h2>抽選申し込み状況</h2>
-</div>
+${tabs.tabs(request)}
 <div>
   <h3>件数ベース</h3>
   <table class="table">
