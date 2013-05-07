@@ -1,8 +1,9 @@
+<% from ticketing.orderreview.api import safe_get_contact_url %>
   <div class="footer">
 	  
         <div class="footernav">
           <ul>
-            <li class="first"><a href="${request.route_url('contact')}">お問い合わせ</a></li>
+            <li class="first"><a href="${safe_get_contact_url(request, default='')}">お問い合わせ</a></li>
             <li><a href="http://www.ticketstar.jp/privacy">個人情報保護方針</a></li>
             <li class="last"><a href="http://www.ticketstar.jp/legal">特定商取引法に基づく表示</a></li>
           </ul>
