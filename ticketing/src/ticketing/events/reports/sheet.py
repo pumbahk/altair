@@ -180,7 +180,7 @@ def seat_records_from_seat_sources(seat_sources, report_type, kind, date):
     # block,floor,line,seatの優先順でソートする
     sorted_seat_sources = sorted(
         seat_sources,
-        key=lambda v: (v.block, v.floor, v.line, int(v.seat) if (v.seat!=None and v.seat!='') else None))
+        key=lambda v: (v.block, v.floor, v.line, v.seat if (v.seat!=None and v.seat!='') else None))
     # block,floor,lineでグループ化してSeatRecordを作る
     for key, generator in groupby(sorted_seat_sources, lambda v: (v.block, v.floor, v.line)):
         values = list(generator)

@@ -2,7 +2,7 @@
 
 import logging
 from sqlalchemy.orm.exc import NoResultFound
-from .models import Host, OrderNoSequence, ChannelEnum
+from .models import Host, OrderNoSequence, ChannelEnum, OrganizationSetting
 from datetime import datetime
 
 logger = logging.getLogger(__name__)
@@ -20,6 +20,11 @@ def get_organization(request, override_host=None):
         return host.organization
     except NoResultFound as e:
         raise Exception("Host that named %s is not Found" % host_name)
+
+def get_organization_setting(request, organization, name=OrganizationSetting.DEFAULT_NAME):
+    return OrganizationSetting.query.filter(
+        OrganizationSetting.organization_id==organization.id, 
+        OrganizationSetting.name==name).first()
 
 def is_mobile_request(request):
     return getattr(request, "is_mobile", False)
