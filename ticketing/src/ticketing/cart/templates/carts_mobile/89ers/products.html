@@ -24,7 +24,7 @@ ${event.title}
       % endif
       数量
       <select name="product-${product['id']}">
-        % for num in range(upper_limit + 1):
+        % for num in range(product['upper_limit'] + 1):
         <option value="${num}">${num}</option>
         % endfor
       </select>
