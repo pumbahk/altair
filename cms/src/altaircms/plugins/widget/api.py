@@ -146,10 +146,6 @@ def get_performance_status(request, widget, event, status_impl):
         logger.exception(str(e))
     return _get_performance_status(request, CalcResult(rawdata=data, status_impl=status_impl))
 
-def get_performance_status_from_request(request):
-    request.registry.getUtility
-
-
 def _get_performance_status(request, data):
     for stock in data.rawdata["stocks"]:
         data.add_stock(stock)

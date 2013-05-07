@@ -41,6 +41,7 @@ class PerformancelistWidgetUtilityDefault(object):
         self.rendering.register("fullset", render_fullset)
         self.rendering.register("soundc", render_soundc)
         self.choices = self.rendering.choices
+        self.status_impl = config.maybe_dotted(self.settings["status_impl"])
         return self
 
     def validation(self):
