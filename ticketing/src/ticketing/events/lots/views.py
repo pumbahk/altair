@@ -228,6 +228,8 @@ class LotEntries(BaseView):
         lot = Lot.query.filter(Lot.id==lot_id).one()
         form = SearchEntryForm(formdata=self.request.POST)
         condition = (LotEntry.id != None)
+        s_a = ShippingAddress
+
         if form.validate():
             if form.entry_no.data:
                 condition = sql.and_(condition, LotEntry.entry_no==form.entry_no.data)
@@ -236,7 +238,6 @@ class LotEntries(BaseView):
                                      sql.or_(ShippingAddress.tel_1==form.tel.data,
                                              ShippingAddress.tel_2==form.tel.data))
             if form.name.data:
-                s_a = ShippingAddress
                 condition = sql.and_(condition, 
                                      sql.or_(s_a.full_name==form.name.data,
                                              s_a.last_name==form.name.data,
@@ -245,11 +246,18 @@ class LotEntries(BaseView):
                                              s_a.last_name_kana==form.name.data,
                                              s_a.first_name_kana==form.name.data,))
             if form.email.data:
-                pass
+                condition = sql.and_(condition, 
+                                     sql.or_(s_a.email_1==form.email.data,
+                                             s_a.email_2==form.email.data))
+
             if form.entried_from.data:
-                pass
+                condition = sql.and_(condition, 
+                                     LotEntry.created_at>=form.entried_from.data)
             if form.entried_to.data:
-                pass
+                condition = sql.and_(condition, 
+                                     LotEntry.created_at<=form.entried_to.data)
+        logger.debug("condition = {0}".format(condition))
+        logger.debug("from = {0}".format(form.entried_from.data))
         entries = lots_api.get_lot_entries_iter(lot.id, condition)
         return dict(data=list(entries),
                     lot=lot,
