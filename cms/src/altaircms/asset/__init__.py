@@ -34,6 +34,7 @@ def install_s3sync(config):
     ## s3 upload setting
     ## after s3 upload event
     ## file upload -> s3 upload -> set file url
+    config.add_subscriber(".subscribers.rename_for_s3_upload", "altaircms.filelib.s3.BeforeS3Upload")
     config.add_subscriber(".subscribers.set_file_url", "altaircms.filelib.s3.AfterS3Upload")
     config.add_subscriber(".subscribers.unpublish_deleted_files_on_s3", "altaircms.filelib.s3.AfterS3Delete")
     

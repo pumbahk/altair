@@ -102,5 +102,22 @@ class NullConnectionFactory(object):
         result = event.result #{"create": [], "delete": [], "extra_args": []}
         logger.warn("*debug after upload. result={0}".format(result))
 
+from .core import DummyFile
+
+class Renamer(object):
+    def __init__(self, request, event):
+        self.request = request
+        self.event = event
+
+    def rename(self, rename_fn):
+        updated = []
+        for f, realpath in self.event.files:
+            name = f.name
+            updated_name = rename_fn(self.request, name)
+            updated.append((DummyFile(name=updated_name), realpath))
+            logger.warn("*debug rename_for_s3_upload: change name {0} -> {1}".format(name, updated_name))
+        self.event.files = updated
+
+
 def includeme(config):
     config.add_directive("add_s3utility", add_s3utility)
