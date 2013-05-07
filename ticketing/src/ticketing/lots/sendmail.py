@@ -6,6 +6,7 @@ from pyramid_mailer import get_mailer
 from pyramid_mailer.message import Message
 from zope.interface import Interface, Attribute, implementer
 from ticketing.mails.interfaces import ITraverser
+from ticketing.cart import helpers
 from ticketing.cart.helpers import fee_type
 from ticketing.payments import plugins
 
@@ -45,7 +46,8 @@ class MailSender(object):
                     lot_entry=lot_entry, lot=lot_entry.lot, 
                     shipping_address=lot_entry.shipping_address,
                     entry_review_url=request.route_url('lots.review.index'),
-                    plugins=plugins)
+                    plugins=plugins,
+                    h=helpers)
         return vars
 
     def send(self, request, lot_entry):
