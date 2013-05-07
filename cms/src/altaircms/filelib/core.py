@@ -25,6 +25,10 @@ def write_to_path(path, src):
 def File(name, handler, save=write_to_path):
     return _File(name=name, handler=handler, save=save)
 
+@provider(IUploadFile)
+def DummyFile(name, handler=None):
+    return _File(name=name, handler=handler, save=None)
+
 def rename_file(src, dst):
     try:
         shutil.move(src, dst) #for preventing invalid cross-device link.

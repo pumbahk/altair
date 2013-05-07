@@ -30,3 +30,5 @@ class AdaptsFileSession(object):
 
     def __getattr__(self, k):
         return getattr(self.session, k)
+
+    

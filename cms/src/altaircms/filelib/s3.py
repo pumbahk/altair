@@ -32,8 +32,6 @@ class AfterS3Upload(S3Event):
 class AfterS3Delete(S3Event):
     pass
 
-
-
 @provider(IS3UtilityFactory)
 class S3ConnectionFactory(object):
     def __init__(self, uploader):
@@ -72,7 +70,7 @@ class S3ConnectionFactory(object):
         #delete
         files = result.get("delete", [])
         if files:
-            before_delete_event = BeforeS3Delete(request, session, files, self.deleteer, result.get("extra_args", []))
+            before_delete_event = BeforeS3Delete(request, session, files, self.uploader, result.get("extra_args", []))
             notify(before_delete_event)
             for f, realpath in before_delete_event.files:
                 self.delete(f, realpath, options=options)
