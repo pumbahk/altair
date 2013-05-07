@@ -343,7 +343,8 @@ class LotEntryWish(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     @property
     def system_fee(self):
-        return self.lot_entry.lot.system_fee
+        #return self.lot_entry.lot.system_fee
+        return self.lot_entry.payment_delivery_method_pair.system_fee
 
     def elect(self, now):
         now = now or datetime.now()
