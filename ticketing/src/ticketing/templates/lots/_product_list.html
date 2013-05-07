@@ -15,7 +15,9 @@ from ticketing.cart.helpers import format_currency
             <th>&nbsp;</th>
             <th>公演</th>
             <th>商品名</th>
+            <th>席種</th>
             <th>金額</th>
+            <th>表示順</th>
             <th>&nbsp;</th>
         </tr>
       </thead>
@@ -26,7 +28,9 @@ from ticketing.cart.helpers import format_currency
 
             <td>${product.performance.name}${h.safe_strftime(product.performance.open_on)}</td>
             <td>${product.name}</td>
+            <td>${product.seat_stock_type.name}</td>
             <td style="text-align: right;">${format_currency(product.price)}</td>
+            <td>${product.display_order}</td>
             <td><a class="btn" href="${request.route_url('lots.product_edit', product_id=product.id)}"><i class="icon-edit"></i>編集</a>
         </tr>
         %endfor
