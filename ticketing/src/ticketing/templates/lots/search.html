@@ -79,6 +79,7 @@ ${tabs.tabs(request)}
 %for k in data[0]:
 <th>${k}</th>
 %endfor
+<th>&nbsp;</th>
 </tr>
 </thead>
 <tbody>
@@ -87,7 +88,14 @@ ${tabs.tabs(request)}
 %for k in data[0]:
 <td>${r[k]}</td>
 %endfor
-
+<td>
+<form method="POST" action="${request.route_url('lots.entries.elect_entry_no', lot_id=lot.id)}">
+<input type="hidden" value="${r[u'申し込み番号']}" name="entry_no">
+<input type="hidden" value="${r[u'希望順序'] - 1}" name="wish_order">
+<input type="hidden">
+<button class="btn">当選</button>
+</form>
+</td>
 </tr>
 %endfor
 </tbody>
