@@ -3335,7 +3335,8 @@ class SalesSegment(Base, BaseModel, LogicallyDeleted, WithTimestamp):
 class OrganizationSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = "OrganizationSetting"
     id = Column(Identifier, primary_key=True)
-    name = Column(Unicode(255), default=u"default")
+    DEFAULT_NAME = u"default"
+    name = Column(Unicode(255), default=DEFAULT_NAME)
     organization_id = Column(Identifier, ForeignKey('Organization.id'))
     organization = relationship('Organization', backref='settings')
 
@@ -3352,6 +3353,9 @@ class OrganizationSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     multicheckout_auth_password = Column(Unicode(255))
 
     cart_item_name = Column(Unicode(255))
+
+    contact_pc_url = Column(Unicode(255))
+    contact_mobile_url = Column(Unicode(255))
 
 class PerformanceSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = "PerformanceSetting"
