@@ -68,7 +68,17 @@ def available_ticket_formats_for_ordered_product_item(ordered_product_item_id):
         .filter(DeliveryMethod.id==PaymentDeliveryMethodPair.delivery_method_id)\
         .filter(TicketFormat_DeliveryMethod.delivery_method_id==DeliveryMethod.id)\
         .filter(TicketFormat.id==TicketFormat_DeliveryMethod.ticket_format_id)\
-        .with_entities(TicketFormat.id, TicketFormat.name)\
+        .with_entities(TicketFormat.id, TicketFormat.name)
+
+def encode_to_cp932(data):
+    try:
+        return data.encode('cp932')
+    except UnicodeEncodeError:
+        logger.warn('cannot encode character %s to cp932' % data)
+        if data is not None and len(data) > 1:
+            return ''.join([encode_to_cp932(d) for d in data])
+        else:
+            return '?'
 
 
 @view_defaults(xhr=True, permission='sales_counter') ## todo:適切な位置に移動
@@ -260,7 +270,7 @@ class Orders(BaseView):
         order_csv = OrderCSV(organization_id=self.context.user.organization_id, localized_columns=japanese_columns, **kwargs)
 
         writer = csv.writer(response, delimiter=',', quoting=csv.QUOTE_ALL)
-        writer.writerows([column.encode('cp932') for column in columns] for columns in order_csv(orders))
+        writer.writerows([encode_to_cp932(column) for column in columns] for columns in order_csv(orders))
 
         return response
 
