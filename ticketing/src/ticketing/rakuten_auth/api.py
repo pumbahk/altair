@@ -194,7 +194,7 @@ class RakutenOpenID(object):
 
         if is_valid == "true":
             logger.debug("authentication OK")
-            return {'clamed_id': identity['claimed_id'], "nickname": user_info.get('nickName')}
+            return {'claimed_id': identity['claimed_id'], "nickname": user_info.get('nickName')}
         else:
             logger.debug("authentication NG")
             return None
