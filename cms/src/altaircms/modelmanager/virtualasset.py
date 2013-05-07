@@ -6,7 +6,14 @@ _NOT_FOUND_IMG = "/static/img/not_found.jpg"
 
 def normalize_url(request, url):
     scheme = request.environ.get("wsgi.url_scheme") or urlparse.urlparse(url).scheme
-    return url.replace("s3://", "{0}://s3.amazonaws.com/".format(scheme))
+    return "{0}://{1}".format(scheme, url[5:].replace("/", ".s3.amazonaws.com/", 1))
+    # return url.replace("s3://", "{0}://s3.amazonaws.com/".format(scheme))
+
+"""
+The bucket you are attempting to access must be addressed using the specified endpoint. Please send all future requests to this endpoint.
+http://tstar-dev.s3.amazonaws.com/asset/RT/2013-04-24/90329f574d6e48c5a8e5cd87dad8c7a5.png *ok
+http://s3.amazonaws.com/tstar-dev/asset/RT/2013-04-24/90329f574d6e48c5a8e5cd87dad8c7a5.png *ng
+"""
 
 @implementer(IRenderingObjectFactory)
 class VirtualAssetFactory(object):

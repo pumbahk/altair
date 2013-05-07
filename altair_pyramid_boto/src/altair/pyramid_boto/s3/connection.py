@@ -114,3 +114,11 @@ class DefaultS3Uploader(object):
         elif k.exists():
             k.set_canned_acl("private")
 
+    def publish(self, name, check=True):
+        k = Key(self.bucket)
+        k.key = name
+        if not check:
+            k.set_canned_acl("public-read")
+        elif k.exists():
+            k.set_canned_acl("public-read")
+

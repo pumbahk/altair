@@ -26,7 +26,7 @@ def only_asset(fn):
     return wrapped
 
 @only_asset
-def unpublish_deleted_files_on_s3(after_s3_delete):
+def unpublish_files_on_s3(after_s3_delete):
     event = after_s3_delete
     request = event.request
     assets = event.extra_args
@@ -37,6 +37,20 @@ def unpublish_deleted_files_on_s3(after_s3_delete):
             filename = make_s3_upload_filename(request, filename)
             logger.warn("*debug unpublish key name={0}".format(filename))
             uploader.unpublish(filename, check=True)
+unpublish_deleted_files_on_s3 = unpublish_files_on_s3
+
+@only_asset
+def publish_files_on_s3(after_s3_delete):
+    event = after_s3_delete
+    request = event.request
+    assets = event.extra_args
+    uploader = event.uploader
+    logger.warn("*debug publish_files_on_s3 start. assets={0}".format(assets))
+    for asset in assets:
+        for filename in asset.all_files_candidates():
+            filename = make_s3_upload_filename(request, filename)
+            logger.warn("*debug publish key name={0}".format(filename))
+            uploader.publish(filename, check=True)
 
 @only_asset
 def set_file_url(after_s3_upload):
