@@ -16,9 +16,11 @@ def main(context, request):
     promotions = context.search(request=request, kind="promotion", system_tag_id=None)[0:5]
     topcontents = context.search(request=request, kind="topcontent", system_tag_id=None)[0:5]
     topics = context.search(request=request, kind="topic", system_tag_id=None)[0:5]
+    hotwords = context.getHotword(request=request)[0:5]
 
     return {
          'promotions':promotions
         ,'topcontents':topcontents
         ,'topics':topics
+        ,'hotwords':hotwords
     }

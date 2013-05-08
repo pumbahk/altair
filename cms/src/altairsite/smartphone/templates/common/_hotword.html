@@ -1,0 +1,9 @@
+<%page args="hotwords, helper" />
+<%namespace file="tags_smartphone.html" name="m" />
+
+<b>ホットワード</b><br/>
+% if hotwords:
+    % for word in hotwords:
+        ${word.name}<br/>
+    % endfor
+% endif

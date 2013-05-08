@@ -43,3 +43,9 @@ class SearchResource(object):
             tag = request.allowable(TopicTag).filter_by(label=u"トピックス").first()
         system_tag_label = self.get_system_tag_label(request=request, system_tag_id=system_tag_id)
         return self._search(searcher=searcher, tag=tag, system_tag_label=system_tag_label)
+
+    def getHotword(self, request):
+        today = datetime.now()
+        hotwords = request.allowable(HotWord).filter(HotWord.term_begin <= today).filter(today <= HotWord.term_end) \
+                 .filter_by(enablep=True).order_by(asc("display_order"), asc("term_end"))
+        return hotwords
