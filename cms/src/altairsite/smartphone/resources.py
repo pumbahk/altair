@@ -9,7 +9,7 @@ from altaircms.tag.models import HotWord
 from altairsite.config import usersite_view_config
 from altairsite.mobile.forms import TopForm
 from altairsite.mobile.core.helper import log_info
-
+from altairsite.smartphone.common.const import getRegions
 
 class SearchResource(object):
     def __init__(self, request):
@@ -53,3 +53,6 @@ class SearchResource(object):
     def getGenreTree(self, request):
         genre_searcher = GenreSearcher(request)
         return genre_searcher.root.children
+
+    def getRegion(self):
+        return getRegions()
