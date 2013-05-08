@@ -23,7 +23,6 @@ class StockDataAPI(object):
 
     def fetch_stock_status(self, request, event, salessegment_group=None):
         url = self.get_fetch_stock_status_api_url(event, salessegment_group)
-        logger.warn(url)
         req = urllib2.Request(url)
         req.add_header('X-Altair-Authorization', self.apikey)
         try:
