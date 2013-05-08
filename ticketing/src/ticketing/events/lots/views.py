@@ -3,9 +3,10 @@
 import logging
 logger = logging.getLogger(__name__)
 from sqlalchemy import sql
+from pyramid.decorator import reify
 from pyramid.view import view_config, view_defaults
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound
-from ticketing.views import BaseView
+from ticketing.views import BaseView as _BaseView
 from ticketing.fanstatic import with_bootstrap
 from ticketing.core.models import (
     DBSession,
@@ -24,12 +25,23 @@ from .helpers import Link
 from .forms import ProductForm, LotForm, SearchEntryForm
 from . import api
 
+class BaseView(_BaseView):
+    @reify
+    def user(self):
+        return self.request.context.user
+
+    def check_organization(self, event):
+        if event.organization != self.user.organization:
+            raise HTTPNotFound()
+
+
 @view_defaults(decorator=with_bootstrap, permission="event_editor")
 class Lots(BaseView):
     """ 抽選管理画面：一覧 """
 
     @view_config(route_name='lots.index', renderer='ticketing:templates/lots/index.html', permission='event_viewer')
     def index(self):
+        self.check_organization(self.context.event)
         if "action-delete" in self.request.params:
             for lot_id in self.request.params.getall('lot_id'):
                 lot = Lot.query.filter(Lot.id==lot_id).first()
@@ -54,6 +66,7 @@ class Lots(BaseView):
 
     @view_config(route_name='lots.new', renderer='ticketing:templates/lots/new.html', permission='event_viewer')
     def new(self):
+        self.check_organization(self.context.event)
         event = self.context.event
         if event is None:
             return HTTPNotFound()
@@ -81,6 +94,7 @@ class Lots(BaseView):
     @view_config(route_name='lots.show', renderer='ticketing:templates/lots/show.html', 
                  permission='event_viewer')
     def show(self):
+        self.check_organization(self.context.event)
         lot = self.context.lot
         if "action-update-pdmp" in self.request.POST:
             lot.sales_segment.payment_delivery_method_pairs = []
@@ -100,6 +114,7 @@ class Lots(BaseView):
 
     @view_config(route_name='lots.edit', renderer='ticketing:templates/lots/edit.html', permission='event_viewer')
     def edit(self):
+        self.check_organization(self.context.event)
         lot = self.context.lot
         event = self.context.event
         sales_segment_groups = event.sales_segment_groups
@@ -125,6 +140,7 @@ class Lots(BaseView):
 
     @view_config(route_name='lots.product_new', renderer='ticketing:templates/lots/product_new.html', permission='event_viewer')
     def product_new(self):
+        self.check_organization(self.context.event)
         lot = self.context.lot
         event = self.context.event
 
@@ -150,6 +166,7 @@ class Lots(BaseView):
 
     @view_config(route_name='lots.product_edit', renderer='ticketing:templates/lots/product_new.html', permission='event_viewer')
     def product_edit(self):
+        self.check_organization(self.context.event)
         product = self.context.product
         lot = self.context.lot
         event = self.context.event
@@ -180,6 +197,7 @@ class LotEntries(BaseView):
     def index(self):
         """ 申し込み状況確認画面
         """
+        self.check_organization(self.context.event)
         lot = self.context.lot
         lot_status = api.get_lot_entry_status(lot, self.request)
 
@@ -204,6 +222,7 @@ class LotEntries(BaseView):
 
         # とりあえずすべて
 
+        self.check_organization(self.context.event)
         lot_id = self.request.matchdict["lot_id"]
         lot = Lot.query.filter(Lot.id==lot_id).one()
         entries = lots_api.get_lot_entries_iter(lot.id)
@@ -224,6 +243,7 @@ class LotEntries(BaseView):
         """
 
         # とりあえずすべて
+        self.check_organization(self.context.event)
         lot_id = self.request.matchdict["lot_id"]
         lot = Lot.query.filter(Lot.id==lot_id).one()
         form = SearchEntryForm(formdata=self.request.POST)
@@ -270,6 +290,7 @@ class LotEntries(BaseView):
                  permission='event_viewer')
     def import_accepted_entries(self):
 
+        self.check_organization(self.context.event)
         lot_id = self.request.matchdict["lot_id"]
         lot = Lot.query.filter(Lot.id==lot_id).one()
 
@@ -307,6 +328,7 @@ class LotEntries(BaseView):
     def elect_entries(self):
         """ 当選確定処理
         """
+        self.check_organization(self.context.event)
         lot_id = self.request.matchdict["lot_id"]
         lot = Lot.query.filter(Lot.id==lot_id).one()
 
@@ -325,6 +347,7 @@ class LotEntries(BaseView):
         """
 
 
+        self.check_organization(self.context.event)
         lot_id = self.request.matchdict["lot_id"]
         lot = Lot.query.filter(Lot.id==lot_id).one()
         entries = []

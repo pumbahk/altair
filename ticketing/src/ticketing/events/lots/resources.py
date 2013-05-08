@@ -1,3 +1,5 @@
+# -*- coding:utf-8 -*-
+
 from pyramid.decorator import reify
 from ticketing.core.models import Event, Product
 from ticketing.lots.models import Lot

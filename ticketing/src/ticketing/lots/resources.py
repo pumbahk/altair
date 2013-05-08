@@ -1,4 +1,4 @@
-# encoding: utf-8
+# -*- coding: utf-8 -*-
 
 from pyramid.traversal import DefaultRootFactory
 from pyramid.decorator import reify
