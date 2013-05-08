@@ -33,12 +33,6 @@ var Seat = exports.Seat = Backbone.Model.extend({
     }
 
     function onStockChanged() {
-      var prevModel = self.get('model').previous('stock');
-      if (prevModel)
-        prevModel.off('change:style', onStockChanged);
-      var model = self.get('model').get('stock');
-      if (model)
-        model.on('change:style', onStockChanged);
       self._refreshStyle();
     }
 
@@ -117,7 +111,6 @@ var Seat = exports.Seat = Backbone.Model.extend({
     onModelChange();
     onShapeChange(true);
     onEventsChange();
-    onStockChanged();
   },
 
   _refreshStyle: function Seat__refreshStyle() {

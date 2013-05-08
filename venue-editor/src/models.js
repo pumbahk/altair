@@ -163,10 +163,10 @@ Venue.prototype.initialize = function Venue_initialize(initialData, options) {
         set = perStockSeatSet[stock.id] = new IdentifiableSet();
       set.add(seat);
       seat.on('change:stock', function () {
-        this.set('edited', true);
         var prev = this.previous('stock');
         var new_ = this.get('stock');
         if (prev != new_) {
+          this.set('edited', true);
           if (prev) {
             perStockSeatSet[prev.id].remove(this);
             if (prev.has('assigned')) {
@@ -375,10 +375,16 @@ var Stock = exports.Stock = Backbone.Model.extend({
     var self = this;
 
     _.each(Stock.styleProviderAttributes, function (name) {
-      var stock = self.get(name);
-      if (stock) {
-        stock.on('change:style', function () {
+      var model = self.get(name);
+      if (model) {
+        model.on('change:style', function () {
           self._refreshStyle();
+          var venue = self.get('venue');
+          if (self.id in venue.perStockSeatSet) {
+            venue.perStockSeatSet[self.id].each(function(seat) {
+              seat.trigger('change:stock');
+            });
+          }
         });
       } else {
         console.log(name + ' not found in Stock.id:' + self.id);
