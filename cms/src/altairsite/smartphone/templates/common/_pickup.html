@@ -1,0 +1,9 @@
+<%page args="promotions, helper" />
+<%namespace file="tags_smartphone.html" name="m" />
+
+<b>ピックアップ（プロモーション）</b><br/>
+% if promotions:
+    % for promo in promotions:
+        ${promo.text}<br/>
+    % endfor
+% endif

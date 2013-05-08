@@ -3,6 +3,7 @@ from pyramid.config import Configurator
 from pyramid.tweens import INGRESS
 from sqlalchemy import engine_from_config
 import sqlahelper
+import functools
 
 def includeme(config):
     #tweenはmobile.__init__で登録されているので追加しない
@@ -32,7 +33,9 @@ def main(config, **settings):
     search_utility = settings.get("altaircms.solr.search.utility")
     config.add_fulltext_search(search_utility)
     config.include(install_app)
-    config.add_route("home", "/")
+
+    add_route = functools.partial(config.add_route, factory=".resources.SearchResource")
+    add_route("main", "/")
 
     ## all requests are treated as mobile request
     config._add_tween("altairsite.tweens.smartphone_request_factory", under=INGRESS)
