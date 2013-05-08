@@ -25,7 +25,7 @@ ${h.japanese_date(lot_entry.created_at)}
 ■抽選結果発表日時：${u"{d.year}年{d.month:02}月{d.day:02}日 {d.hour:02}:{d.minute:02}～".format(d=lot_entry.lot.lotting_announce_datetime)}
 ■抽選結果確認ページ： ${entry_review_url}
 %for wish in lot_entry.wishes:
-第${wish.wish_order+1}希望
+【第${wish.wish_order+1}希望】
 公演日：${h.performance_date(wish.performance)}
 会場：${wish.performance.venue.name}
 申込内容
@@ -34,6 +34,7 @@ ${product.product.name} ${h.format_currency(product.product.price)} x ${product.
 %endfor
 チケット代金計：${h.format_currency(wish.tickets_amount)}
 システム利用料：${h.format_currency(wish.system_fee)}円（税込）
+
 %endfor
 
 ■お支払
@@ -60,7 +61,7 @@ ${product.product.name} ${h.format_currency(product.product.price)} x ${product.
 ※ご当選の場合、入金期間内にセブン-イレブン店内レジにてお支払いとなります。
 %endif
 %if lot_entry.payment_delivery_method_pair.delivery_method.delivery_plugin_id == plugins.SHIPPING_DELIVERY_PLUGIN_ID:
-※配送でのお引取りを希望の場合は、ご登録の住所へ宅配便にてお届けいたします。
+※配送でのお引取りを希望の場合には、ご登録の住所へ公演の一週間前頃までに宅配便にてお届けいたします。
 %endif
 %if lot_entry.payment_delivery_method_pair.delivery_method.delivery_plugin_id == plugins.SEJ_DELIVERY_PLUGIN_ID:
 ※セブン-イレブン店頭でのお引取りを希望の場合は、ご入金時にレジにてチケットをお渡しいたします。
@@ -79,4 +80,5 @@ ${product.product.name} ${h.format_currency(product.product.price)} x ${product.
 ■キャンセル・変更について
 　お申し込み・購入されたチケットは、理由の如何を問わず、
 　取替・変更・キャンセルはお受けできません。予めご了承ください。
-
+　また、抽選結果についての事前お問い合わせには一切お答えいたしかねますので、
+　予めご了承のほど、お願いいたします。

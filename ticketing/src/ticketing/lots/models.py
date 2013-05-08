@@ -126,8 +126,9 @@ class Lot(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     def finish_lotting(self):
         self.status = int(LotStatusEnum.Elected)
 
-    def validate_entry(self, entry):
-        return True
+    @hybrid_method
+    def available_on(self, now):
+        return self.start_at <= now <= self.end_at
 
     @classmethod
     def has_product(cls, product):

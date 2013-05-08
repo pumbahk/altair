@@ -203,28 +203,39 @@ class EntryLotView(object):
         payment_delivery_pairs = sales_segment.payment_delivery_method_pairs
         payment_delivery_method_pair_id = self.request.params.get('payment_delivery_method_pair_id')
         wishes = h.convert_wishes(self.request.params, lot.limit_wishes)
-     
-        # 枚数チェック
-        if not h.check_quantities(wishes, lot.upper_limit):
-            self.request.session.flash(u"各希望ごとの合計枚数は最大{0}枚までにしてください".format(lot.upper_limit))
-            return self.get(form=cform)
 
-        # 希望選択
-        if not wishes or not lot.validate_entry(self.request.params):
+        validated = True
+
+        # 枚数チェック
+        if not wishes:
             self.request.session.flash(u"申し込み内容に入力不備があります")
-            return self.get(form=cform)
-        
+            validated = False
+        elif not h.check_quantities(wishes, lot.upper_limit):
+            self.request.session.flash(u"各希望ごとの合計枚数は最大{0}枚までにしてください".format(lot.upper_limit))
+            validated = False
 
         # 決済・引取方法選択
         if payment_delivery_method_pair_id not in [str(m.id) for m in payment_delivery_pairs]:
             self.request.session.flash(u"お支払お引き取り方法を選択してください")
-            return self.get(form=cform)
+            validated = False
+
+        birthday = None
+        try:
+            birthday = datetime(int(cform['year'].data),
+                                int(cform['month'].data),
+                                int(cform['day'].data))
+        except (ValueError, TypeError):
+            pass
 
         # 購入者情報
-        if not cform.validate():
+        if not cform.validate() or not birthday:
             self.request.session.flash(u"購入者情報に入力不備があります")
-            return self.get(form=cform)
+            if not birthday:
+                cform['year'].errors = [u'日付が正しくありません']
+            validated = False
 
+        if not validated:
+            return self.get(form=cform)
 
         shipping_address_dict = cform.get_validated_address_data()
         api.new_lot_entry(
@@ -233,9 +244,7 @@ class EntryLotView(object):
             payment_delivery_method_pair_id=payment_delivery_method_pair_id,
             shipping_address_dict=shipping_address_dict,
             gender=cform['sex'].data,
-            birthday=datetime(int(cform['year'].data),
-                              int(cform['month'].data),
-                              int(cform['day'].data)),
+            birthday=birthday,
             memo=cform['memo'].data)
 
         location = urls.entry_confirm(self.request)
@@ -298,9 +307,6 @@ class ConfirmLotEntryView(object):
         wishes = entry['wishes']
 
         lot = self.context.lot
-
-        if not lot.validate_entry(self.request.params):
-            return HTTPFound(urls.entry_index(self.request))
 
         try:
             self.request.session['lots.magazine_ids'] = [long(v) for v in self.request.params.getall('mailmagazine')]
@@ -435,3 +441,27 @@ class LotReviewView(object):
             gender=lot_entry.gender,
             birthday=lot_entry.birthday,
             memo=lot_entry.memo) 
+
+@view_config(context=".exceptions.OutTermException",
+             renderer=selectable_renderer("pc/%(membership)s/out_term_exception.html"))
+@mobile_view_config(context=".exceptions.OutTermException",
+             renderer=selectable_renderer("mobile/%(membership)s/out_term_exception.html"))
+def out_term_exception(context, request):
+    return dict(lot_name=context.lot_name,
+                from_=context.from_,
+                to_=context.to_,
+                )
+
+
+
+
+@view_config(context="ticketing.payments.exceptions.PaymentPluginException", 
+             renderer=selectable_renderer('pc/%(membership)s/message.html'))
+@mobile_view_config(context="ticketing.payments.exceptions.PaymentPluginException", 
+             renderer=selectable_renderer('mobile/%(membership)s/error.html'))
+def payment_plugin_exception(context, request):
+    if context.back_url is not None:
+        return HTTPFound(location=context.back_url)
+    else:
+        location = request.context.host_base_url
+    return dict(message=Markup(u'決済中にエラーが発生しました。しばらく時間を置いてから<a href="%s">再度お試しください。</a>' % location))

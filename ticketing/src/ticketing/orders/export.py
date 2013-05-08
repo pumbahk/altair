@@ -38,7 +38,7 @@ japanese_columns = {
     u'order.total_amount': u'合計金額',
     u'order.transaction_fee': u'決済手数料',
     u'order.delivery_fee': u'配送手数料',
-    u'order.system_fee': u'システム手数料',
+    u'order.system_fee': u'システム利用料',
     u'order.margin': u'内手数料金額',
     u'order.note': u'メモ',
     u'order.card_brand': u'カードブランド',

@@ -259,7 +259,7 @@ def tojson(obj):
     return json.dumps(obj) 
 
 def performance_date_label(performance):
-    return u'%s %s' % (japanese_date(performance.start_on), performance.venue.name)
+    return u'%s %s' % (japanese_datetime(performance.start_on), performance.venue.name)
 
 def is_required(field):
     required = False

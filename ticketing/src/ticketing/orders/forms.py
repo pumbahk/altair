@@ -604,7 +604,7 @@ class OrderRefundForm(Form):
         widget=CheckboxInput(),
     )
     include_system_fee = IntegerField(
-        label=u'システム手数料を払戻しする',
+        label=u'システム利用料を払戻しする',
         validators=[Required()],
         default=0,
         widget=CheckboxInput(),
