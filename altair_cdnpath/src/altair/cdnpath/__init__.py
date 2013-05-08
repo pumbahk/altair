@@ -1,47 +1,83 @@
 from zope.interface import implementer
 from pyramid.interfaces import (
     IStaticURLInfo, 
-    IRequest, 
     PHASE2_CONFIG
     )
-from .interfaces import (
-    ICDNStaticPathFactory, 
-    ICDNStaticPath
-    )
+from .interfaces import IStaticURLInfoFactory
+from pyramid.config.views import StaticURLInfo
 from pyramid.exceptions import ConfigurationError
+from pyramid.compat import (
+    WIN,
+    url_quote
+    )
+from urlparse import urljoin, urlparse
 
-@implementer(ICDNStaticPath)
-class PrefixedStaticPath(object):
-    def __init__(self, prefix, request):
+def validate_url(url):
+    parsed = urlparse(url)
+    if (not any(p == parsed.scheme for p in ["http", "https"]) or
+        parsed.netloc):
+        raise ConfigurationError("{0} is not valid url")
+
+
+@implementer(IStaticURLInfo)
+class PrefixedStaticURLInfo(StaticURLInfo):
+    def __init__(self, prefix, exclude=None):
         self.prefix = prefix
-        self.request = request
+        self.exclude = exclude
+        if self.exclude:
+            self.generate = self._generate_with_exclude
+        else:
+            self.generate = self._generate
 
-    def static_path(self, path, **kwargs):
-        return self.request.static_path(path, **kwargs)
 
-    def static_url(self, path, **kwargs):
-        if path.startswith("/"):
-            return "{0}{1}".format(self.prefix, path)            
-        return "{0}{1}".format(self.prefix, self.request.static_path(path, **kwargs))
+    def validate(self):
+        class request:
+            environ = {}
+        url = self._after_generate(request, "/foo/bar/txt")
+        validate_url(url)
+        
+    def _after_generate(self, path, request, kwargs):
+        scheme = request.environ.get("wsgi.url_scheme", "http")
+        return "{0}://{1}{2}".format(scheme, self.prefix, path)
 
-@implementer(ICDNStaticPathFactory)
+    def _generate_with_exclude(self, path, request, **kwargs):
+        if self.exclude(path):
+            return StaticURLInfo.generate(self, path, request, **kwargs)
+        else:
+            return self._generate(path, request, **kwargs)
+    
+    def _generate(self, path, request, **kwargs):
+        registry = request.registry
+        for (url, spec, route_name) in self._get_registrations(registry):
+            if path.startswith(spec):
+                subpath = path[len(spec):]
+                if WIN: # pragma: no cover
+                    subpath = subpath.replace('\\', '/') # windows
+                if url is None:
+                    kwargs['subpath'] = subpath
+                    return self._after_generate(request.route_path(route_name, **kwargs), request, kwargs)
+                else:
+                    return self._after_generate(url_quote(subpath), request, kwargs)
+
+        raise ValueError('No static URL definition matching %s' % path)
+
+@implementer(IStaticURLInfoFactory)
 class S3StaticPathFactory(object):
-    default_scheme = "http"
-    def __init__(self, bucket_name):
+    def __init__(self, bucket_name, exclude=None):
         self.bucket_name = bucket_name
+        self.exclude = exclude
 
-    def __call__(self, request):
-        scheme = request.environ.get("wsgi.url_scheme") or self.default_scheme
-        prefix = "{0}://{1}.s3.amazonaws.com".format(scheme, self.bucket_name)
-        return PrefixedStaticPath(prefix, request)
+    def __call__(self):
+        prefix = "{0}.s3.amazonaws.com".format(self.bucket_name)
+        return PrefixedStaticURLInfo(prefix, self.exclude)
 
-def add_cdn_static_path(config, factory):
+def add_cdn_static_path(config, factory=None):
     def register():
-        config.registry.adapters.register(IRequest, ICDNStaticPathFactory, name="", value=factory)
-        config.set_request_property("altair.cdnpath.api.get_cdn_static_path", "cdn", reify=True)
-        if config.registry.queryUtility(IStaticURLInfo) is None:
-            raise ConfigurationError('No static URL definition. (need: config.add_static_view ?)')
-    config.action(ICDNStaticPathFactory, register, order=PHASE2_CONFIG)
+        info = factory()
+        if hasattr(info, "validate"):
+            info.validate
+        config.registry.registerUtility(info, IStaticURLInfo)
+    config.action(IStaticURLInfo, register, order=PHASE2_CONFIG)
 
 def includeme(config):
     config.add_directive("add_cdn_static_path", add_cdn_static_path)
