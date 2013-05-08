@@ -25,7 +25,7 @@ ${h.japanese_date(lot_entry.created_at)}
 ■抽選結果発表日時：${u"{d.year}年{d.month:02}月{d.day:02}日 {d.hour:02}:{d.minute:02}～".format(d=lot_entry.lot.lotting_announce_datetime)}
 ■抽選結果確認ページ： ${entry_review_url}
 %for wish in lot_entry.wishes:
-第${wish.wish_order+1}希望
+【第${wish.wish_order+1}希望】
 公演日：${h.performance_date(wish.performance)}
 会場：${wish.performance.venue.name}
 申込内容
@@ -34,6 +34,7 @@ ${product.product.name} ${h.format_currency(product.product.price)} x ${product.
 %endfor
 チケット代金計：${h.format_currency(wish.tickets_amount)}
 システム利用料：${h.format_currency(wish.system_fee)}円（税込）
+
 %endfor
 
 ■お支払
