@@ -20,7 +20,7 @@ def _convert_response_sjis(response):
 
 def convert_response_if_necessary(request, response):
     response = _convert_response_sjis(response)
-    if request.mobile_ua.carrier.is_docomo():
+    if request.mobile_ua.carrier.is_docomo:
         response = _convert_response_for_docomo(response)
     return response
 

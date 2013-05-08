@@ -122,6 +122,65 @@ def add_wished_product_names(wishes):
         results.append(reversed_wish)
     return results
 
+def add_subtotals(wishes):
+    for wish in wishes:
+        for rec in wish:
+            rec['subtotal'] = rec['product'].price * rec['quantity']
+    return wishes
+
+def add_subtotals_mobile(options):
+    for option in options:
+        for wished_product in option['wished_products']:
+            wished_product['subtotal'] = wished_product['product'].price * wished_product['quantity'] 
+    return options
+
+def add_total_amounts(wishes, payment_delivery_method_pair):
+    results = []
+    for wish in wishes:
+        total_amount = sum(rec['product'].price * rec['quantity'] for rec in wish) + payment_delivery_method_pair.transaction_fee + payment_delivery_method_pair.delivery_fee
+        results.append((wish, total_amount))
+    return results    
+
+def add_total_amounts_mobile(wishes, payment_delivery_method_pair):
+    results = []
+    for wish in wishes:
+        total_amount = sum(rec['product'].price * rec['quantity'] for rec in wish['wished_products']) + payment_delivery_method_pair.transaction_fee + payment_delivery_method_pair.delivery_fee
+        results.append((wish, total_amount))
+    return results    
+
+def decorate_options_mobile(options):
+    options = [
+        dict(
+            performance=Performance.query.filter_by(id=data['performance_id']).one(),
+            wished_products=[
+                dict(
+                    product=Product.query.filter_by(id=rec['product_id']).one(),
+                    **rec
+                    )
+                for rec in data['wished_products']
+                ]
+            )
+        for data in options
+        ]
+
+    options= add_subtotals_mobile(options)
+    for data in options:
+        data['total_amount_without_fee'] = sum(rec['product'].price * rec['quantity'] for rec in data['wished_products'])
+    return options
+
+def build_wishes_dicts_from_entry(entry):
+    result = []
+    for wish in entry.wishes:
+        result.append(dict(
+            performance=wish.performance,
+            wish_order=wish.wish_order,
+            wished_products=[
+                dict(product=rec.product, quantity=rec.quantity)
+                for rec in wish.products
+                ]
+            ))
+    return result
+
 def convert_shipping_address(params):
     shipping_address = ShippingAddress()
     for attr in SHIPPING_ATTRS:

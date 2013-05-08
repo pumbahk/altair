@@ -1,5 +1,6 @@
 # -*- coding:utf-8 -*-
 
+import sys
 import logging
 import transaction
 from datetime import datetime
@@ -7,7 +8,7 @@ from datetime import datetime
 from zope.interface import implementer
 from pyramid.view import view_config
 from pyramid.response import Response
-from pyramid.httpexceptions import HTTPFound
+from pyramid.httpexceptions import HTTPFound, HTTPBadRequest
 from webhelpers.html.builder import literal
 
 from ticketing.models import DBSession
@@ -29,7 +30,8 @@ from ticketing.checkout import helpers
 from ticketing.payments.exceptions import PaymentPluginException
 from ticketing.payments.interfaces import IPaymentPlugin, IOrderPayment
 from ticketing.payments.payment import Payment
-from ticketing.mailmags import models as mailmag_models
+from ticketing.mailmags.api import multi_subscribe
+from ticketing.users.api import get_or_create_user
 
 from . import CHECKOUT_PAYMENT_PLUGIN_ID as PAYMENT_PLUGIN_ID
 
@@ -137,8 +139,11 @@ class CheckoutView(object):
     @view_config(route_name='payment.checkout.login', renderer=selectable_renderer("carts_mobile/%(membership)s/checkout_login_mobile.html"), request_method='POST', request_type='altair.mobile.interfaces.IMobileRequest')
     def login(self):
         cart = a.get_cart_safe(self.request)
-        self.request.session['ticketing.cart.mailmagazine'] = self.request.params.getall('mailmagazine')
-        logger.debug(u'mailmagazine = %s' % self.request.session['ticketing.cart.mailmagazine'])
+        try:
+            self.request.session['ticketing.cart.magazine_ids'] = [long(v) for v in self.request.params.getall('mailmagazine')]
+        except TypeError, ValueError:
+            raise HTTPBadRequest()
+        logger.debug(u'mailmagazine = %s' % self.request.session['ticketing.cart.magazine_ids'])
         return dict(
             form=helpers.checkout_form(self.request, cart)
         )
@@ -217,13 +222,17 @@ class CheckoutCallbackView(object):
             raise NoCartError()
 
         # メール購読
-        user = self.context.get_or_create_user()
-        emails = cart.shipping_address.emails
-        magazine_ids = self.request.session.get('ticketing.cart.mailmagazine')
-        mailmag_models.MailMagazine.multi_subscribe(user, emails, magazine_ids)
-        logger.debug(u'subscribe mags (magazine_ids=%s)' % magazine_ids)
-
-        del self.request.session['ticketing.cart.mailmagazine']
+        try:
+            user = get_or_create_user(self.context.authenticated_user())
+            emails = cart.shipping_address.emails
+            magazine_ids = self.request.session.get('ticketing.cart.magazine_ids')
+            multi_subscribe(user, emails, magazine_ids)
+            logger.debug(u'subscribe mags (magazine_ids=%s)' % magazine_ids)
+        except e:
+            logger.error('Exception ignored', exc_info=sys.exc_info()) 
+        finally:
+            del self.request.session['ticketing.cart.magazine_ids']
+            self.request.session.persist()
         a.remove_cart(self.request)
         a.logout(self.request)
 

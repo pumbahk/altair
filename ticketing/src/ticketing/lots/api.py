@@ -162,15 +162,20 @@ def generate_entry_no(request, lot_entry):
     return organization_code + sensible_alnum_encode(base_id).zfill(10)
 
 
-def get_lot_entries_iter(lot_id):
+def get_lot_entries_iter(lot_id, condition=None):
     q = DBSession.query(LotEntryWish
     ).filter(
         LotEntry.lot_id==lot_id
     ).filter(
         LotEntryWish.lot_entry_id==LotEntry.id
+    ).filter(
+        ShippingAddress.id==LotEntry.shipping_address_id
     ).order_by(
         LotEntryWish.wish_order
     )
+
+    if condition is not None:
+        q = q.filter(condition)
 
     for entry in q:
         yield _entry_info(entry)

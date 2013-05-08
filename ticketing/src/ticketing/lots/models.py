@@ -129,6 +129,12 @@ class Lot(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     def validate_entry(self, entry):
         return True
 
+    @classmethod
+    def has_product(cls, product):
+        return sql.and_(cls.sales_segment_id==Product.sales_segment_id,
+                        Product.id==product.id)
+
+
     @property
     def products(self):
         return self.sales_segment.products

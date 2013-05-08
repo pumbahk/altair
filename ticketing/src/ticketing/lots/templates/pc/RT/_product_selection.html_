@@ -11,20 +11,22 @@
         &nbsp;
         <% } %>
     </th>
-    <td>
-    <span><%= product.name %></span>
-    <% if (product.description) { %>
-    <br/>
-    <span><%= product.description %></span>
-    <% } %>
-</td><td>
-    　<input type="hidden" name="product-id-<%= wishOrder %>-<%= j %>" value="<%= product.id %>" />
-        　<select name="<%= quantityField %>" >
+  <td>
+    <input type="hidden" name="product-id-<%= wishOrder %>-<%= j %>" value="<%= product.id %>" />
+    <div class="product-name-price-quantity">
+      <span class="product-name"><%= product.name %></span>
+      <span class="product-price"><%= product.formatted_price %></span>×
+      <select name="<%= quantityField %>" >
         <option></option>
         <% for (var k=0; k < upperLimit; k++) { %>
-            <option value="<%= k + 1 %>"><%= k + 1 %></option>
+        <option value="<%= k + 1 %>"><%= k + 1 %></option>
         <% } %> 
-  </select>　枚</td>
+      </select>枚
+    </div>
+    <% if (product.description) { %>
+    <span class="product-description"><%= product.description %></span>
+    <% } %>
+  </td>
 </tr>
 <% }); %>
 </%text>

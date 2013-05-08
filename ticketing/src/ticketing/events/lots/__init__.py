@@ -17,11 +17,16 @@ def includeme(config):
     config.add_route('lots.edit', '/edit/{lot_id}',
                      factory=lot_resource_factory)
 
+    # 抽選商品
     config.add_route('lots.product_new', '/product_new/{lot_id}',
+                     factory=lot_resource_factory)
+    config.add_route('lots.product_edit', '/products_edit/{product_id}',
                      factory=lot_resource_factory)
 
     # 抽選申し込み管理
     config.add_route('lots.entries.index', 'entries/{lot_id}',
+                     factory=lot_resource_factory)
+    config.add_route('lots.entries.search', 'entries/search/{lot_id}',
                      factory=lot_resource_factory)
     config.add_route('lots.entries.export.html', 'entries/export/{lot_id}.html',
                      factory=lot_resource_factory)

@@ -16,15 +16,18 @@ from ticketing.cart.helpers import format_currency
             <th>公演</th>
             <th>商品名</th>
             <th>金額</th>
+            <th>&nbsp;</th>
         </tr>
       </thead>
       <tbody>
         %for product in lot.products:
         <tr>
             <td><input type="checkbox" name="product_id" value="${product.id}"></td>
+
             <td>${product.performance.name}${h.safe_strftime(product.performance.open_on)}</td>
             <td>${product.name}</td>
             <td style="text-align: right;">${format_currency(product.price)}</td>
+            <td><a class="btn" href="${request.route_url('lots.product_edit', product_id=product.id)}"><i class="icon-edit"></i>編集</a>
         </tr>
         %endfor
       </tbody>
