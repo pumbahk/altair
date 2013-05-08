@@ -151,7 +151,7 @@ class Lots(BaseView):
         ]
         performances = event.performances
         performance_choices = [
-            (p.id, u"{0.name} {0.open_on}".format(p))
+            (p.id, u"{0.name} {0.start_on}".format(p))
             for p in performances
         ]
         form = ProductForm(formdata=self.request.POST)
