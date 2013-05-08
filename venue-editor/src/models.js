@@ -31,7 +31,6 @@ Venue.prototype.initialize = function Venue_initialize(initialData, options) {
   var stockHolders = new StockHolderCollection(null, { venue: this });
   var stocks = new StockCollection(null, { venue: this });
   var seats = new SeatCollection(null, { venue: this });
-  var perAttributeSeatSet = {};
   var perStockSeatSet = {};
   var perStockHolderStockMap = {};
   var perStockTypeStockMap = {};
@@ -125,9 +124,7 @@ Venue.prototype.initialize = function Venue_initialize(initialData, options) {
       });
     }
   }
-  _.each(Seat.styleProviderAttributes, function (name) {
-    perAttributeSeatSet[name] = {};
-  });
+
   for (var id in initialData.seats) {
     var seatDatum = initialData.seats[id];
     var stock = stocks.get(seatDatum.stock_id);
@@ -138,20 +135,10 @@ Venue.prototype.initialize = function Venue_initialize(initialData, options) {
       seat_no: seatDatum.seat_no,
       status: seatDatum.status,
       stock: stock,
-      attrs: seatDatum.attrs,
       sold: sold,
       selectable: (stock && stock.get('assignable') && !sold) ? true : false
     });
     seats.add(seat);
-    {
-      var attrs = seat.get('attrs');
-      for (name in attrs) {
-        var set = perAttributeSeatSet[name];
-        if (!set)
-          set = perAttributeSeatSet[name] = new IdentifiableSet();
-        set.add(seat);
-      }
-    }
     {
       var set;
       if (stock) {
@@ -194,7 +181,6 @@ Venue.prototype.initialize = function Venue_initialize(initialData, options) {
   this.stockTypes = stockTypes;
   this.stocks = stocks;
   this.seats = seats;
-  this.perAttributeSeatSet = perAttributeSeatSet;
   this.perStockSeatSet = perStockSeatSet;
   this.perStockHolderStockMap = perStockHolderStockMap;
   this.perStockTypeStockMap = perStockTypeStockMap;

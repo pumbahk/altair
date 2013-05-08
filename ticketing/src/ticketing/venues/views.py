@@ -62,23 +62,23 @@ def get_seats(request):
 
     if u'seats' in necessary_params:
         seats_data = {}
-        query = DBSession.query(Seat).options(joinedload('status_')).filter_by(venue=venue)
+        query = DBSession.query(Seat).join(SeatStatus).filter(Seat.venue==venue)
+        query = query.with_entities(Seat.l0_id, Seat.name, Seat.seat_no, Seat.stock_id, SeatStatus.status)
         if sales_segment_id:
             query = query.join(ProductItem, and_(ProductItem.performance_id==venue.performance_id, ProductItem.stock_id==Seat.stock_id))
             query = query.join(Product).join(SalesSegment).filter(SalesSegment.id==sales_segment_id).distinct()
         elif u'sale_only' in filter_params:
             query = query.filter(exists().where(and_(ProductItem.performance_id==venue.performance_id, ProductItem.stock_id==Seat.stock_id)))
         if loaded_at:
-            query = query.join(SeatStatus).filter(or_(Seat.updated_at>loaded_at, SeatStatus.updated_at>loaded_at))
-        for seat in query:
-            seat_datum = {
-                'id': seat.l0_id,
-                'name': seat.name,
-                'seat_no': seat.seat_no,
-                'stock_id': seat.stock_id,
-                'status': seat.status,
-                }
-            seats_data[seat.l0_id] = seat_datum
+            query = query.filter(or_(Seat.updated_at>loaded_at, SeatStatus.updated_at>loaded_at))
+        for l0_id, name, seat_no, stock_id, status in query:
+            seats_data[l0_id] = {
+                'id': l0_id,
+                'name': name,
+                'seat_no': seat_no,
+                'stock_id': stock_id,
+                'status': status,
+            }
         retval[u'seats'] = seats_data
 
     if u'stocks' in necessary_params:
