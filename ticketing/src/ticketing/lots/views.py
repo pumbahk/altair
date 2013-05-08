@@ -435,3 +435,13 @@ class LotReviewView(object):
             gender=lot_entry.gender,
             birthday=lot_entry.birthday,
             memo=lot_entry.memo) 
+
+@view_config(context=".exceptions.OutTermException",
+             renderer=selectable_renderer("pc/%(membership)s/out_term_exception.html"))
+@mobile_view_config(context=".exceptions.OutTermException",
+             renderer=selectable_renderer("mobile/%(membership)s/out_term_exception.html"))
+def out_term_exception(context, request):
+    return dict(lot_name=context.lot_name,
+                from_=context.from_,
+                to_=context.to_,
+                )

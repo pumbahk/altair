@@ -129,6 +129,10 @@ class Lot(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     def validate_entry(self, entry):
         return True
 
+    @hybrid_method
+    def available_on(self, now):
+        return self.start_at <= now <= self.end_at
+
     @classmethod
     def has_product(cls, product):
         return sql.and_(cls.sales_segment_id==Product.sales_segment_id,
