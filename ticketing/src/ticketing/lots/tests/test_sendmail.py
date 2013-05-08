@@ -89,6 +89,7 @@ class send_accepted_mailTests(unittest.TestCase):
         self.config.include('ticketing.lots.sendmail')
 
         entry = lots_models.LotEntry(
+            created_at=datetime.now(),
             entry_no='TEST-LOT-ENTRY-NO',
             shipping_address=core_models.ShippingAddress(
                 email_1=u"testing@example.com",
@@ -101,10 +102,13 @@ class send_accepted_mailTests(unittest.TestCase):
                 name=u"抽選テスト",
                 event=core_models.Event(
                     title=u"抽選テストイベント",
+                    organization=core_models.Organization(short_name='testing', 
+                                              name=u"テスト組織"),
                 ),
                 lotting_announce_datetime=datetime.now(),
             ),
             payment_delivery_method_pair=core_models.PaymentDeliveryMethodPair(
+                system_fee=0,
                 payment_method=core_models.PaymentMethod(
                     fee_type=0,
                 ),
@@ -116,6 +120,8 @@ class send_accepted_mailTests(unittest.TestCase):
             ),
             wishes=[lots_models.LotEntryWish(wish_order=1,
                                              performance=core_models.Performance(
+                                                 start_on=datetime.now(),
+                                                 open_on=datetime.now(),
                                                  venue=core_models.Venue()),
                                              products=[])],
         )
@@ -124,7 +130,7 @@ class send_accepted_mailTests(unittest.TestCase):
 
         mailer = pyramid_mailer.get_mailer(request)
         self.assertEqual(mailer.outbox, [result])
-        self.assertEqual(result.subject, u"抽選テスト")
+        self.assertEqual(result.subject, u"抽選テスト 【テスト組織】")
         self.assertEqual(result.sender, "testing@sender.example.com")
         self.assertEqual(result.recipients, ['testing@example.com'])
         self.assertIn(u'抽選テスト', result.body)
