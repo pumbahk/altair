@@ -73,7 +73,7 @@
 </%def>
 
 <%def name="flash_show(request, asset)">
-	<script type="text/javascript" src="/static/swfobject.js"></script>
+	<script type="text/javascript" src=${request.static_url("altaircms:static/swfobject.js")}></script>
 	<script type="text/javascript">
 	$(document).ready(function(){
 		var flashvars = {};
@@ -89,7 +89,7 @@
 			width,
 			"480",
 			"9.0.0",
-			"/static/expressInstall.swf",
+			${request.static_url("altaircms:static/expressInstall.swf")},
 			flashvars,
 			params,
 			attributes

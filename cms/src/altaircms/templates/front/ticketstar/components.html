@@ -5,7 +5,7 @@
 from altairsite.front import helpers as fh
 %>
 		<p id="tagLine">チケット販売・イベント予約</p>
-		<p id="siteID"><a href="http://www.rakuten.co.jp/"><img src="/static/ticketstar/img/common/header_logo_01.gif" alt="楽天チケット" class="serviceLogo" width="97" height="35" /></a><a href="/"><img src="/static/ticketstar/img/common/header_logo_02.gif" alt="チケット" class="serviceTitle" width="88" height="23" /></a></p>
+		<p id="siteID"><a href="http://www.rakuten.co.jp/"><img src=${request.static_url("altaircms:static/ticketstar/img/common/header_logo_01.gif")} alt="楽天チケット" class="serviceLogo" width="97" height="35" /></a><a href="/"><img src=${request.static_url("altaircms:static/ticketstar/img/common/header_logo_02.gif")} alt="チケット" class="serviceTitle" width="88" height="23" /></a></p>
 		<dl id="remoteNav">
 		  <dt>楽天グループ関連</dt>
 		  <dd class="grpRelation">
@@ -71,7 +71,7 @@ nav_categories = list(fh._get_categories(request, u"top_inner"))
 		  <dt>主なカテゴリー</dt>
 		  <dd class="menuList">
 			<ul>
-				<li class="current"><a href="#"><img src="/static/ticketstar/img/detail/tab_individual_active.gif" alt="チケットトップ" width="120" height="30" /></a></li>
+				<li class="current"><a href="#"><img src=${request.static_url("altaircms:static/ticketstar/img/detail/tab_individual_active.gif")} alt="チケットトップ" width="120" height="30" /></a></li>
 		    </ul>
 		  </dd>
 		</dl>
@@ -82,7 +82,7 @@ nav_categories = list(fh._get_categories(request, u"top_inner"))
 	<div id="headerSearch">
 		
 		<dl>
-			<dt><img src="/static/ticketstar/img/common/header_search_hot.gif" alt="ホットワード" width="50" height="45" /></dt>
+			<dt><img src=${request.static_url("altaircms:static/ticketstar/img/common/header_search_hot.gif")} alt="ホットワード" width="50" height="45" /></dt>
 			<dd>
 			  ${gadgets.hotword_itemize_header()}
 			</dd>
@@ -245,11 +245,11 @@ nav_categories = list(fh._get_categories(request, u"top_inner"))
 <%block name="global_navigation">
 	<div id="globalNav">
 		<ul id="globalNav1">
-			<li><a href="/static/ticketstar/index.html"><img src="/static/ticketstar/img/common/header_nav_top.gif" alt="チケットトップ" width="132" height="40" /></a></li>
-			<li><a href="/static/ticketstar/music/index.html"><img src="/static/ticketstar/img/common/header_nav_music.gif" alt="音楽" width="67" height="40" /></a></li>
-			<li><a href="/static/ticketstar/stage/index.html"><img src="/static/ticketstar/img/common/header_nav_stage.gif" alt="演劇" width="73" height="40" /></a></li>
-			<li><a href="/static/ticketstar/sports/index.html"><img src="/static/ticketstar/img/common/header_nav_sports.gif" alt="スポーツ" width="102" height="40" /></a></li>
-			<li><a href="/static/ticketstar/event/index.html"><img src="/static/ticketstar/img/common/header_nav_event.gif" alt="イベント・その他" width="157" height="40" /></a></li>
+			<li><a href=${request.static_url("altaircms:static/ticketstar/index.html")}><img src=${request.static_url("altaircms:static/ticketstar/img/common/header_nav_top.gif")} alt="チケットトップ" width="132" height="40" /></a></li>
+			<li><a href=${request.static_url("altaircms:static/ticketstar/music/index.html")}><img src=${request.static_url("altaircms:static/ticketstar/img/common/header_nav_music.gif")} alt="音楽" width="67" height="40" /></a></li>
+			<li><a href=${request.static_url("altaircms:static/ticketstar/stage/index.html")}><img src=${request.static_url("altaircms:static/ticketstar/img/common/header_nav_stage.gif")} alt="演劇" width="73" height="40" /></a></li>
+			<li><a href=${request.static_url("altaircms:static/ticketstar/sports/index.html")}><img src=${request.static_url("altaircms:static/ticketstar/img/common/header_nav_sports.gif")} alt="スポーツ" width="102" height="40" /></a></li>
+			<li><a href=${request.static_url("altaircms:static/ticketstar/event/index.html")}><img src=${request.static_url("altaircms:static/ticketstar/img/common/header_nav_event.gif")} alt="イベント・その他" width="157" height="40" /></a></li>
 		</ul>
 		<ul id="globalNav2">
 			<li><a href="#">抽選申込履歴</a></li>

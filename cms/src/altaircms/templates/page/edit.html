@@ -17,15 +17,15 @@ ${nco.breadcrumbs(
 )}
 
 <%block name='style'>
-    <link rel="stylesheet" type="text/css" href="/static/css/overlay-basic.css"/>
-    <link rel="stylesheet" href="/static/css/page/edit.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href=${request.static_url("altaircms:static/css/overlay-basic.css")}/>
+    <link rel="stylesheet" href=${request.static_url("altaircms:static/css/page/edit.css")} type="text/css" />
 
 	### widget追加する度に変更する必要(internal.css.html)
 	${css.widget_css_scripts()}
 
     ${css.container_layout()}
 
-<link href="/static/css/jquery.cleditor.css" rel="stylesheet" type="text/css"></link>
+<link href=${request.static_url("altaircms:static/css/jquery.cleditor.css")} rel="stylesheet" type="text/css"></link>
 
 <style type="text/css">
   .alert{ margin:1%  }
@@ -204,11 +204,11 @@ var NameToJName = ${json.dumps(WIDGET_LABEL_DICT)|n};
 ## jsの読み込み
 ${widget_aggregator.get_widget_jscode(request)|n} 
 
-<script type="text/javascript" src="/static/js/page/backbone_patch.js"></script>
+<script type="text/javascript" src=${request.static_url("altaircms:static/js/page/backbone_patch.js")}></script>
 %if request.GET.get("version") == "2":
-  <script type="text/javascript" src="/static/js/page/edit2.js"></script>
+  <script type="text/javascript" src=${request.static_url("altaircms:static/js/page/edit2.js")}></script>
 %else:
-  <script type="text/javascript" src="/static/js/page/edit.js"></script>
+  <script type="text/javascript" src=${request.static_url("altaircms:static/js/page/edit.js")}></script>
 %endif
 <script type="text/javascript">
 //$.event.add(window, "load", function(){

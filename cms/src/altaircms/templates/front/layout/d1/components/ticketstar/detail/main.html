@@ -1,6 +1,6 @@
 ## component
 <%block name="img0">
-  <h1><img src="/static/ticketstar/img/detail/title_blueman_in_tokyo.gif" alt="ブルーマングループ IN 東京" width="690" height="33" /></h1>
+  <h1><img src=${request.static_url("altaircms:static/ticketstar/img/detail/title_blueman_in_tokyo.gif")} alt="ブルーマングループ IN 東京" width="690" height="33" /></h1>
 </%block>
 
 <%block name="social_buttons">
@@ -16,11 +16,11 @@
 
 <%block name="ticket_icon">
 		<ul id="ticketIcon">
-			<li><img src="/static/ticketstar/img/detail/icon_select.gif" alt="座席選択可" width="80" height="30" /></li>
-			<li><img src="/static/ticketstar/img/detail/icon_keep.gif" alt="おとなりキープ" width="80" height="30" /></li>
-			<li><img src="/static/ticketstar/img/detail/icon_official.gif" alt="公式2次市場" width="80" height="30" /></li>
-			<li><img src="/static/ticketstar/img/detail/icon_goods.gif" alt="先行グッズ予約" width="80" height="30" /></li>
-			<li><img src="/static/ticketstar/img/detail/icon_event.gif" alt="イベントコミュニティ" width="80" height="30" /></li>
+			<li><img src=${request.static_url("altaircms:static/ticketstar/img/detail/icon_select.gif")} alt="座席選択可" width="80" height="30" /></li>
+			<li><img src=${request.static_url("altaircms:static/ticketstar/img/detail/icon_keep.gif")} alt="おとなりキープ" width="80" height="30" /></li>
+			<li><img src=${request.static_url("altaircms:static/ticketstar/img/detail/icon_official.gif")} alt="公式2次市場" width="80" height="30" /></li>
+			<li><img src=${request.static_url("altaircms:static/ticketstar/img/detail/icon_goods.gif")} alt="先行グッズ予約" width="80" height="30" /></li>
+			<li><img src=${request.static_url("altaircms:static/ticketstar/img/detail/icon_event.gif")} alt="イベントコミュニティ" width="80" height="30" /></li>
 		</ul>
 </%block>
 
@@ -33,16 +33,16 @@
 </%block>
 
 <%block name="img1">
-		<img src="/static/ticketstar/img/detail/dummy.jpg" alt="ブルーマンついに千秋楽決定！！これがラストチャンス" width="690" height="390" />
+		<img src=${request.static_url("altaircms:static/ticketstar/img/detail/dummy.jpg")} alt="ブルーマンついに千秋楽決定！！これがラストチャンス" width="690" height="390" />
 </%block>
 
 <%block name="detail_box0">
 		<div class="detailBox">
 			<div class="detailBoxInner">
-				<h2><img src="/static/ticketstar/img/detail/title_blueman.gif" alt="ブルーマングループ IN 東京" width="226" height="30" /></h2>
+				<h2><img src=${request.static_url("altaircms:static/ticketstar/img/detail/title_blueman.gif")} alt="ブルーマングループ IN 東京" width="226" height="30" /></h2>
 				<ul id="serviceIcon">
-					<li><img src="/static/ticketstar/img/detail/icon_fanclub.gif" alt="ファンクラブ限定" width="90" height="20" /></li>
-					<li><img src="/static/ticketstar/img/detail/icon_creche.gif" alt="託児サービス" width="75" height="20" /></li>
+					<li><img src=${request.static_url("altaircms:static/ticketstar/img/detail/icon_fanclub.gif")} alt="ファンクラブ限定" width="90" height="20" /></li>
+					<li><img src=${request.static_url("altaircms:static/ticketstar/img/detail/icon_creche.gif")} alt="託児サービス" width="75" height="20" /></li>
 				</ul>
 				<ul>
 					<li>2011年12月4日(日)　〜　2011年12月4日(日)　幕張メッセイベントホール</li>
@@ -55,7 +55,7 @@
 </%block>
 <%block name="detail_schedule">
 		<div id="detailSchedule">
-			<h2><img src="/static/ticketstar/img/detail/title_schedule.gif" alt="公演日程" width="77" height="30" /></h2>
+			<h2><img src=${request.static_url("altaircms:static/ticketstar/img/detail/title_schedule.gif")} alt="公演日程" width="77" height="30" /></h2>
 			<ul>
 				<li class="active"><a href="#">2011年12月</a></li>
 				<li><a href="#">2012年1月</a></li>
@@ -132,7 +132,7 @@
 					<td><span class="day">31</span>&nbsp;</td>
 				</tr>
 			</table>
-			<script type="text/javascript" src="/static/ticketstar/js/jquery.flatheights.js"></script>
+			<script type="text/javascript" src=${request.static_url("altaircms:static/ticketstar/js/jquery.flatheights.js")}></script>
 			<script type="text/javascript">
 			$(function() {
 				$('#detailSchedule td').flatHeights();
@@ -144,7 +144,7 @@
 <%block name="detail_box1">
 		<div class="detailBox">
 			<div class="detailBoxInner">
-				<h2><img src="/static/ticketstar/img/detail/title_price.gif" alt="チケット価格" width="107" height="30" /></h2>
+				<h2><img src=${request.static_url("altaircms:static/ticketstar/img/detail/title_price.gif")} alt="チケット価格" width="107" height="30" /></h2>
 				<table id="ticketPrice1" summary="チケット価格表">
 					<tr>
 						<th scope="row"><a href="#">SSA席</a></th>
@@ -195,7 +195,7 @@
 <%block name="detail_box2">
 		<div class="detailBox" id="settlementEventDetail">
 			<div class="detailBoxInner">
-				<h2><img src="/static/ticketstar/img/settlement/title_event.gif" alt="イベント詳細" width="106" height="29" /></h2>
+				<h2><img src=${request.static_url("altaircms:static/ticketstar/img/settlement/title_event.gif")} alt="イベント詳細" width="106" height="29" /></h2>
 				<table summary="イベント詳細情報">
 					<tr>
 						<th scope="row">開催期間</th>
