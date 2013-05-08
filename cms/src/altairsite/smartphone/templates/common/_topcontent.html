@@ -1,0 +1,9 @@
+<%page args="topcontents, helper" />
+<%namespace file="tags_smartphone.html" name="m" />
+
+<b>注目のイベント（トップコンテンツ）</b><br/>
+% if topcontents:
+    % for contents in topcontents:
+        ${contents.text}<br/>
+    % endfor
+% endif

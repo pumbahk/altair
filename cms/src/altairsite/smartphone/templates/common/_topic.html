@@ -1,0 +1,10 @@
+<%page args="topics, helper" />
+<%namespace file="tags_smartphone.html" name="m" />
+
+<b>トピックス</b><br/>
+% if topics:
+    % for topic in topics:
+        あああ
+        ${topic.text}<br/>
+    % endfor
+% endif
