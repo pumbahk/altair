@@ -47,7 +47,7 @@ class RakutenOpenIDPlugin(object):
     # IIdentifier
     def identify(self, environ):
         # return_to URLの場合にverifyする
-        # それ以外の場合デシリアライズしてclamed_idを返す
+        # それ以外の場合デシリアライズしてclaimed_idを返す
         logger.debug('identity')
         req = webob.Request(environ)
         if req.path_url == self.return_to:
@@ -78,7 +78,7 @@ class RakutenOpenIDPlugin(object):
     # IAuthenticator
     def authenticate(self, environ, identity):
         logging.debug('authenticate %s' % identity)
-        if 'clamed_id' in identity:
+        if 'claimed_id' in identity:
             return (pickle.dumps(identity)).encode('base64')
 
 
@@ -114,7 +114,7 @@ class RakutenOpenIDPlugin(object):
         # identityをデシリアライズして、nicknameを取得する
         identity = self.get_identity(req)
         userdata = pickle.loads(identity.decode('base64'))
-        identity.update(nickname=userdata['clamed_id'])
+        identity.update(nickname=userdata['claimed_id'])
 
 
     # IChallenger

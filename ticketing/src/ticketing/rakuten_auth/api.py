@@ -326,7 +326,7 @@ def openid_params(request):
                 )
 
 
-def tokenize(request, nonce, short_clamed_id):
+def tokenize(request, nonce, short_claimed_id):
     reg = request.registry
     tokenizer = reg.queryUtility(ITokenizer)
-    return tokenizer.tokenize(nonce, short_clamed_id)
+    return tokenizer.tokenize(nonce, short_claimed_id)
