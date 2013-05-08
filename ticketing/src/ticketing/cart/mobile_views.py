@@ -10,7 +10,6 @@ from pyramid.view import view_config
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound
 
 import sqlalchemy as sa
-from sqlalchemy.sql import func
 
 from ticketing.core import models as c_models
 from ticketing.core import api as c_api
@@ -176,7 +175,7 @@ class MobileSelectProductView(object):
             raise NoEventError("No such seat_type (%s)" % seat_type_id)
 
         # 商品一覧
-        products = DBSession.query(c_models.Product, func.sum(c_models.StockStatus.quantity)) \
+        products = DBSession.query(c_models.Product, c_models.StockStatus.quantity) \
             .join(c_models.Product.items) \
             .join(c_models.ProductItem.stock) \
             .join(c_models.Stock.stock_status) \
