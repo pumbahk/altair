@@ -8,7 +8,6 @@ from datetime import datetime
 
 import sqlalchemy as sa
 from sqlalchemy.orm import joinedload
-from sqlalchemy.sql import func
 
 from markupsafe import Markup
 
@@ -226,7 +225,7 @@ class IndexView(IndexViewMixin):
 
         seat_type = DBSession.query(c_models.StockType).filter_by(id=seat_type_id).one()
 
-        query = DBSession.query(c_models.Product, func.sum(c_models.StockStatus.quantity)) \
+        query = DBSession.query(c_models.Product, c_models.StockStatus.quantity) \
             .join(c_models.Product.items) \
             .join(c_models.ProductItem.stock) \
             .join(c_models.Stock.stock_status) \
