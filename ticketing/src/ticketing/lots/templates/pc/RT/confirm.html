@@ -26,7 +26,7 @@
                   %endfor
                     <dt class="payment-method">決済手数料 (${wish.lot_entry.payment_delivery_method_pair.payment_method.name})</dt>
                     <dd class="payment-fee">${h.format_currency(wish.lot_entry.payment_delivery_method_pair.transaction_fee)}</dd>
-                    <dt class="delivery-method">配送手数料 (${wish.lot_entry.payment_delivery_method_pair.delivery_method.name})</dt>
+                    <dt class="delivery-method">引取手数料 (${wish.lot_entry.payment_delivery_method_pair.delivery_method.name})</dt>
                     <dd class="delivery-fee">${h.format_currency(wish.lot_entry.payment_delivery_method_pair.delivery_fee)}</dd>
                     <dt class="delivery-method">システム手数料</dt>
                     <dd class="delivery-fee">${h.format_currency(wish.system_fee)}</dd>
@@ -48,23 +48,27 @@
           <div class="settlementSelectBoxInner02">
             <table summary="お支払・お引取り方法選択">
               <tr>
-                <th><label>購入者氏名（全角）</label></th>
+                <th>購入者氏名（全角）</th>
                 <td>${shipping_address['last_name']} ${shipping_address['first_name']}</td>
               </tr>
               <tr>
-                <th><label>購入者氏名（カナ）</label></th>
+                <th>購入者氏名（カナ）</th>
                 <td>${shipping_address['last_name_kana']} ${shipping_address['first_name_kana']}</td>
               </tr>
               <tr>
-                <th><label>電話番号（自宅）</label></th>
+                <th>メールアドレス</th>
+                <td>${shipping_address['email_1']}</td>
+              </tr>
+              <tr>
+                <th>電話番号 (自宅)</th>
                 <td>${shipping_address['tel_1']}</td>
               </tr>
               <tr>
-                <th><label>電話番号（携帯電話）</label></th>
+                <th>電話番号 (携帯電話)</th>
                 <td>${shipping_address['tel_2']}</td>
               </tr>
               <tr>
-                <th><label>配送先住所</label></th>
+                <th>配送先住所</th>
                 <td>
                   〒${shipping_address['zip']}<br />
                   ${shipping_address['prefecture']}${shipping_address['city']}${shipping_address['address_1']}<br />
@@ -72,11 +76,11 @@
                 </td>
               </tr>
               <tr>
-                <th><label>生年月日</label></th>
+                <th>生年月日</th>
                 <td>${u"{0.year} 年 {0.month}月 {0.day}日".format(birthday)}</td>
               </tr>
               <tr>
-                <th><label>性別</label></th>
+                <th>性別</th>
                 <td>${h.format_gender(request, gender)}</td>
               </tr>
               <tr class="settlementSelectEnd">
