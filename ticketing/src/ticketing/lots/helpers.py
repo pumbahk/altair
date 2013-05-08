@@ -109,18 +109,50 @@ def convert_wishes(params, limit):
         
     return [dict(performance_id=performance_ids[x], wished_products=results[x]) for x in sorted(results)]
 
-def add_wished_product_names(wishes):
-    results = []
+def check_quantities(wishes, upper_limit):
+    result = True
     for wish in wishes:
-        reversed_wish = []
-        performance_id = wish['performance_id']
-        for w in wish['wished_products']:
-            p = Product.query.filter(Product.id==w['product_id']).one()
-            perf = Performance.query.filter(Performance.id==performance_id).one()
-            reversed_wish.append(dict(wish_order=w['wish_order'], quantity=w['quantity'], product=p, performance=perf))
+        total_quantity = 0
+        for p in wish['wished_products']:
+            total_quantity += p['quantity']
+        result = result and (total_quantity <= upper_limit)
+    return result
 
-        results.append(reversed_wish)
-    return results
+def decorate_options_mobile(options):
+    options = [
+        dict(
+            performance=Performance.query.filter_by(id=data['performance_id']).one(),
+            wished_products=[
+                dict(
+                    product=Product.query.filter_by(id=rec['product_id']).one(),
+                    **rec
+                    )
+                for rec in data['wished_products']
+                ]
+            )
+        for data in options
+        ]
+
+    for option in options:
+        for wished_product in option['wished_products']:
+            wished_product['subtotal'] = wished_product['product'].price * wished_product['quantity']
+
+    for data in options:
+        data['total_amount_without_fee'] = sum(rec['product'].price * rec['quantity'] for rec in data['wished_products'])
+    return options
+
+def build_wishes_dicts_from_entry(entry):
+    result = []
+    for wish in entry.wishes:
+        result.append(dict(
+            performance=wish.performance,
+            wish_order=wish.wish_order,
+            wished_products=[
+                dict(product=rec.product, quantity=rec.quantity)
+                for rec in wish.products
+                ]
+            ))
+    return result
 
 def convert_shipping_address(params):
     shipping_address = ShippingAddress()
@@ -227,7 +259,7 @@ def tojson(obj):
     return json.dumps(obj) 
 
 def performance_date_label(performance):
-    return u'%s %s' % (japanese_date(performance.start_on), performance.venue.name)
+    return u'%s %s' % (japanese_datetime(performance.start_on), performance.venue.name)
 
 def is_required(field):
     required = False

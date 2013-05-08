@@ -126,8 +126,15 @@ class Lot(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     def finish_lotting(self):
         self.status = int(LotStatusEnum.Elected)
 
-    def validate_entry(self, entry):
-        return True
+    @hybrid_method
+    def available_on(self, now):
+        return self.start_at <= now <= self.end_at
+
+    @classmethod
+    def has_product(cls, product):
+        return sql.and_(cls.sales_segment_id==Product.sales_segment_id,
+                        Product.id==product.id)
+
 
     @property
     def products(self):
@@ -325,7 +332,7 @@ class LotEntryWish(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     @property
     def tickets_amount(self):
-        return sum(p.amount for p in self.products)
+        return sum(p.subtotal for p in self.products)
 
     @property
     def total_amount(self):
@@ -337,7 +344,8 @@ class LotEntryWish(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     @property
     def system_fee(self):
-        return self.lot_entry.lot.system_fee
+        #return self.lot_entry.lot.system_fee
+        return self.lot_entry.payment_delivery_method_pair.system_fee
 
     def elect(self, now):
         now = now or datetime.now()
@@ -367,7 +375,7 @@ class LotEntryProduct(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     performance = orm.relationship('Performance', backref='lot_entry_products')
 
     @property
-    def amount(self):
+    def subtotal(self):
         """ 購入額小計
         """
         return self.product.price * self.quantity

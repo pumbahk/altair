@@ -3,6 +3,7 @@ import json
 import re
 from datetime import datetime, date
 from itertools import groupby
+from string import ascii_letters
 
 from ticketing.models import DBSession
 from ticketing.core.models import SeatStatusEnum, VenueArea
@@ -166,9 +167,14 @@ def is_series_seat(seatsource1, seatsource2):
         return False
 
     # 列IDが同じで、席番号の差が1の場合、連続
-    if (seatsource1.source.row_l0_id == seatsource2.source.row_l0_id) and abs(int(seatsource1.seat)-int(seatsource2.seat)) == 1:
-        return True
-
+    if (seatsource1.source.row_l0_id == seatsource2.source.row_l0_id):
+        if seatsource1.seat.isdigit() and seatsource2.seat.isdigit() and abs(int(seatsource1.seat)-int(seatsource2.seat)) == 1:
+            return True
+        if seatsource1.seat.isalpha() and seatsource2.seat.isalpha():
+            index1 = ascii_letters.find(seatsource1.seat)
+            index2 = ascii_letters.find(seatsource2.seat)
+            if index1 > -1 and index2 > -1 and abs(index1 - index2) == 1:
+                return True
     return False
 
 

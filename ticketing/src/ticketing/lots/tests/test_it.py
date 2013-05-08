@@ -519,61 +519,61 @@ class LotReviewViewTests(unittest.TestCase):
         self.assertIn('lots.entry_id', request.session)
 
 
-class PaymentViewTests(unittest.TestCase):
-    @classmethod
-    def setUpClass(cls):
-        cls.config = testing.setUp(settings=testing_settings)
-        cls.config.include('pyramid_layout')
-        cls.config.include('ticketing.lots')
-        cls.session = _setup_db(modules=dependency_modules, echo=False)
+# class PaymentViewTests(unittest.TestCase):
+#     @classmethod
+#     def setUpClass(cls):
+#         cls.config = testing.setUp(settings=testing_settings)
+#         cls.config.include('pyramid_layout')
+#         cls.config.include('ticketing.lots')
+#         cls.session = _setup_db(modules=dependency_modules, echo=False)
     
-    @classmethod
-    def tearDownClass(cls):
-        testing.tearDown()
-        _teardown_db()
+#     @classmethod
+#     def tearDownClass(cls):
+#         testing.tearDown()
+#         _teardown_db()
 
-    def setUp(self):
-        self.session.remove()
+#     def setUp(self):
+#         self.session.remove()
 
-    def tearDown(self):
-        import transaction
-        transaction.abort()
+#     def tearDown(self):
+#         import transaction
+#         transaction.abort()
 
-    def _getTarget(self):
-        from .. import views
-        return views.PaymentView
+#     def _getTarget(self):
+#         from .. import views
+#         return views.PaymentView
 
-    def _makeOne(self, *args, **kwargs):
-        return self._getTarget()(*args, **kwargs)
+#     def _makeOne(self, *args, **kwargs):
+#         return self._getTarget()(*args, **kwargs)
 
-    def test_no_entry(self):
-        from pyramid.httpexceptions import HTTPNotFound
-        request = testing.DummyRequest(
-            matchdict={"event_id": None},
-        )
-        context = testing.DummyResource()
-        context.lot = None
-        target = self._makeOne(context, request)
+#     def test_no_entry(self):
+#         from pyramid.httpexceptions import HTTPNotFound
+#         request = testing.DummyRequest(
+#             matchdict={"event_id": None},
+#         )
+#         context = testing.DummyResource()
+#         context.lot = None
+#         target = self._makeOne(context, request)
 
-        self.assertRaises(HTTPNotFound, target.submit)
+#         self.assertRaises(HTTPNotFound, target.submit)
 
-    def _add_entry(self, entry_id):
-        from ..models import LotEntry
-        entry = LotEntry(id=entry_id)
-        self.session.add(entry)
-        self.session.flush()
-        return entry
+#     def _add_entry(self, entry_id):
+#         from ..models import LotEntry
+#         entry = LotEntry(id=entry_id)
+#         self.session.add(entry)
+#         self.session.flush()
+#         return entry
 
-    def test_not_elected(self):
-        from ..exceptions import NotElectedException
-        request = testing.DummyRequest(
-            matchdict={"event_id": None},
-        )
-        context = testing.DummyResource()
-        entry_id = 999999
-        entry = self._add_entry(entry_id)
-        context.lot = entry.lot
-        request.session['lots.entry_id'] = entry_id
-        target = self._makeOne(context, request)
+#     def test_not_elected(self):
+#         from ..exceptions import NotElectedException
+#         request = testing.DummyRequest(
+#             matchdict={"event_id": None},
+#         )
+#         context = testing.DummyResource()
+#         entry_id = 999999
+#         entry = self._add_entry(entry_id)
+#         context.lot = entry.lot
+#         request.session['lots.entry_id'] = entry_id
+#         target = self._makeOne(context, request)
 
-        self.assertRaises(NotElectedException, target.submit)
+#         self.assertRaises(NotElectedException, target.submit)

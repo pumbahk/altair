@@ -180,7 +180,7 @@ ns:http://specs.openid.net/auth/2.0
         }
         result = target.verify_authentication(request, identity)
 
-        self.assertEqual(result, {"nickname": "this-is-nickname", "clamed_id": "https://myid.rakuten.co.jp/openid/user/9Whpri7C2SulpKTnGlWg="})
+        self.assertEqual(result, {"nickname": "this-is-nickname", "claimed_id": "https://myid.rakuten.co.jp/openid/user/9Whpri7C2SulpKTnGlWg="})
 
         # TODO: 再度検証が必要
         # self.assertEqual(mock_urlopen.mock_calls,

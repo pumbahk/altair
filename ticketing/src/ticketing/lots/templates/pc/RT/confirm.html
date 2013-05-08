@@ -10,37 +10,37 @@
         %for wish in wishes:
         <div class="settlementSelectBox">
           <div class="settlementSelectBoxInner02">
-            <p class="header"><strong>第${wish[0]['wish_order'] + 1}希望</strong>${wish[0]['performance'].name}</p>
+            <p class="header"><strong>第${wish.wish_order + 1}希望</strong>${wish.performance.name}</p>
             <table summary="チケット購入の絞り込み">
               <tr>
                 <th><label>公演日・会場</label></th>
-                <td>${h.performance_date_label(wish[0]['performance'])}</td>
+                <td>${h.performance_date_label(wish.performance)}</td>
               </tr>
-              %for i, w in enumerate(wish):
-              <tr ${u'class="settlementSelectEnd"' if i + 1 == len(wish) else u''|n}>
-                %if i == 0:
-                <th><label>席種</label></th>
-                %else:
-                <th>&nbsp;</th>
-                %endif
-                <td>${w['product'].name}　${w['quantity']}枚</td>
+              <tr class="settlementSelectEnd">
+                <th>希望内容と手数料</th>
+                <td>
+                  <dl class="cost-summary">
+                  %for i, lot_product in enumerate(wish.products):
+                    <dt class="product-name">${lot_product.product.name}</dt>
+                    <dd class="product-price-and-quantity">${h.format_currency(lot_product.product.price)}×${lot_product.quantity}枚=${h.format_currency(lot_product.subtotal)} (税込)</dd>
+                  %endfor
+                    <dt class="payment-method">決済手数料 (${wish.lot_entry.payment_delivery_method_pair.payment_method.name})</dt>
+                    <dd class="payment-fee">${h.format_currency(wish.lot_entry.payment_delivery_method_pair.transaction_fee)}</dd>
+                    <dt class="delivery-method">引取手数料 (${wish.lot_entry.payment_delivery_method_pair.delivery_method.name})</dt>
+                    <dd class="delivery-fee">${h.format_currency(wish.lot_entry.payment_delivery_method_pair.delivery_fee)}</dd>
+                    <dt class="delivery-method">システム手数料</dt>
+                    <dd class="delivery-fee">${h.format_currency(wish.system_fee)}</dd>
+                    <dt class="total-amount">合計</dt>
+                    <dd class="total-amount">${h.format_currency(wish.total_amount)} (税込)</dd>
+                  </dl>
+                </td>
               </tr>
-              %endfor
             </table>
           </div>
         </div>
         %endfor
       </div>
     </div> 
-    <div class="confirmBox">
-      <div class="confirmBoxInner">
-        <h2><img src="${request.static_url('ticketing.lots:static/img/order/title_how.gif')}" alt="お支払・お引取り方法選択" width="208" height="30" /></h2>
-        <div class="confirmBoxText">
-          <p>${payment_delivery_method_pair.payment_method.name}　${h.format_currency(payment_delivery_method_pair.transaction_fee)}</p>
-          <p>${payment_delivery_method_pair.delivery_method.name}　${h.format_currency(payment_delivery_method_pair.delivery_fee)}</p>
-        </div>
-      </div>
-    </div>
     <div class="settlementBox">
       <div class="settlementBoxInner">
         <h2><img src="${request.static_url('ticketing.lots:static/img/order/title_buyer.gif')}" alt="購入者情報" width="97" height="30" /></h2>
@@ -48,36 +48,39 @@
           <div class="settlementSelectBoxInner02">
             <table summary="お支払・お引取り方法選択">
               <tr>
-                <th><label>購入者氏名（全角）</label></th>
+                <th>購入者氏名（全角）</th>
                 <td>${shipping_address['last_name']} ${shipping_address['first_name']}</td>
               </tr>
               <tr>
-                <th><label>購入者氏名（カナ）</label></th>
+                <th>購入者氏名（カナ）</th>
                 <td>${shipping_address['last_name_kana']} ${shipping_address['first_name_kana']}</td>
               </tr>
               <tr>
-                <th><label>電話番号（自宅）</label></th>
+                <th>メールアドレス</th>
+                <td>${shipping_address['email_1']}</td>
+              </tr>
+              <tr>
+                <th>電話番号 (自宅)</th>
                 <td>${shipping_address['tel_1']}</td>
               </tr>
               <tr>
-                <th><label>電話番号（携帯電話）</label></th>
+                <th>電話番号 (携帯電話)</th>
                 <td>${shipping_address['tel_2']}</td>
               </tr>
               <tr>
-                <th><label>配送先住所</label></th>
+                <th>配送先住所</th>
                 <td>
                   〒${shipping_address['zip']}<br />
-                  ${shipping_address['prefecture']}<br />
-                  ${shipping_address['city']} ${shipping_address['address_1']}<br />
+                  ${shipping_address['prefecture']}${shipping_address['city']}${shipping_address['address_1']}<br />
                   ${shipping_address['address_2']}
                 </td>
               </tr>
               <tr>
-                <th><label>生年月日</label></th>
+                <th>生年月日</th>
                 <td>${u"{0.year} 年 {0.month}月 {0.day}日".format(birthday)}</td>
               </tr>
               <tr>
-                <th><label>性別</label></th>
+                <th>性別</th>
                 <td>${h.format_gender(request, gender)}</td>
               </tr>
               <tr class="settlementSelectEnd">
@@ -89,6 +92,42 @@
         </div>
       </div>
     </div>
+    % if mailmagazines_to_subscribe:
+    <div class="settlementBox">
+      <div class="settlementBoxInner">
+        <h2><img src="${request.static_url('ticketing.cart:static/img/settlement/title_magazine.gif')}" alt="メールマガジンの配信" width="177" height="30" /></h2>
+        <div id="mailMagazineBox">
+          <div id="mailMagazineBoxInner">
+            <dl>
+              <dt>
+                お申し込みいただいた方に、楽天チケットからのメールマガジンをお送りします。不要な方はチェックをはずしてください。
+              </dt>
+              <dd>
+                <ul>
+                <%
+                style = ''
+                if len(list(mailmagazines_to_subscribe)) == 1:
+                    style = 'style="width: 100%;"'         
+                %>
+                % for mailmagazine in mailmagazines_to_subscribe:
+                  <li ${style|n}>
+                    <div>
+                      <input type="checkbox" checked="checked" name="mailmagazine" id="mailmagazine-${mailmagazine.id}" value="${mailmagazine.id}" />
+                      <label for="mailmagazine-${mailmagazine.id}">${mailmagazine.name}</label>
+                    </div>
+                    <div>
+                      ${mailmagazine.description|n}
+                    </div>
+                  </li>
+                % endfor
+                </ul>
+              </dd>
+            </dl>
+          </div>
+        </div>
+      </div>
+    </div>
+    % endif
     <p class="align2"><input type="image" name="back" src="${request.static_url('ticketing.lots:static/img/order/btn_back.gif')}" alt="戻る" width="236" height="46" /><input type="image"  src="${request.static_url('ticketing.lots:static/img/order/btn_confirm.gif')}" alt="確定する" width="236" height="46" /></a></p>
   </form>
 </div>

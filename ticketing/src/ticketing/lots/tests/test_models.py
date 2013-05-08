@@ -38,3 +38,17 @@ class LotEntryTests(unittest.TestCase):
         self.assertIsNotNone(target.wishes[2].rejected_at)
         self.assertEqual(result.lot_entry, target)
 
+class LotEntryWishTests(unittest.TestCase):
+    def _getTarget(self):
+        from ..models import LotEntryWish
+        return LotEntryWish
+
+    def _makeOne(self, *args, **kwargs):
+        return self._getTarget()(*args, **kwargs)
+
+    def test_system_fee(self):
+        from ticketing.core.models import PaymentDeliveryMethodPair
+        from ..models import LotEntry
+        target = self._makeOne(lot_entry=LotEntry(payment_delivery_method_pair=PaymentDeliveryMethodPair(system_fee=315)))
+
+        self.assertEqual(target.system_fee, 315)

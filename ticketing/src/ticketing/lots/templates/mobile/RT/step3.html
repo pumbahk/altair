@@ -14,11 +14,16 @@ ${h.japanese_date(option_data['performance'].start_on)}<br />
 開演 ${h.japanese_time(option_data['performance'].start_on)} (予定)<br />
 </div>
 <%mobile:form_header>希望券種と枚数:</%mobile:form_header>
-<div>
+<div><font size="-1">
 % for rec in option_data['wished_products']:
-・${rec['product'].name} ${rec['quantity']}枚<br />
+% if rec['quantity'] > 0:
+・${rec['product'].name}<br />
+<div align="right" style="text-align:right">${h.format_currency(rec['product'].price)} (税込)×${rec['quantity']}枚=${h.format_currency(rec['subtotal'])}</div>
+% endif
 % endfor
-</div>
+計 (手数料を除いた金額)
+<div align="right" style="text-align:right">${h.format_currency(option_data['total_amount_without_fee'])} (税込)</div>
+</font></div>
 <div align="right" style="text-align:right">
 <a href="${request.route_path('lots.entry.step1', event_id=event.id, lot_id=lot.id, option_index=option_index_zb + 1)}">内容を変更する</a><br />
 </div>

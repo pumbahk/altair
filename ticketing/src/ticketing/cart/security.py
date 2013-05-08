@@ -18,7 +18,7 @@ def auth_model_callback(user, request):
         logger.debug('found membergroup')
         principals.append("membergroup:%s" % user['membergroup'])
 
-    if 'clamed_id' in user:
-        logger.debug('found clamed_id')
+    if 'claimed_id' in user:
+        logger.debug('found claimed_id')
         principals.append("rakuten_auth")
     return principals

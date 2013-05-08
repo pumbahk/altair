@@ -13,5 +13,5 @@ class Tokenizer(object):
     def __init__(self, secret):
         self.secret = secret
 
-    def tokenize(self, nonce, short_clamed_id):
-        return hmac.new(key=self.secret, msg=short_clamed_id + nonce).hexdigest()
+    def tokenize(self, nonce, short_claimed_id):
+        return hmac.new(key=self.secret, msg=short_claimed_id + nonce).hexdigest()
