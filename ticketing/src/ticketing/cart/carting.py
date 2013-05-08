@@ -16,7 +16,7 @@ class CartFactory(object):
         logger.debug('create cart for ordered products %s' % ordered_products)
         request = self.request
         # Cart
-        # ここでシステム手数料を確定させるのはおかしいので、後の処理で上書きする
+        # ここでシステム利用料を確定させるのはおかしいので、後の処理で上書きする
         system_fee = get_system_fee(request)
         channel = get_channel(request=request)
         cart = Cart.create(performance_id=performance_id, system_fee=system_fee, channel=channel.v,

@@ -161,7 +161,7 @@ class Checkout(object):
                 itemFee=carted_product.product.price
             ))
 
-        # 商品:システム手数料
+        # 商品:システム利用料
         self._create_checkout_item_xml(itemsInfo, **dict(
             itemId='system_fee',
             itemName=u'システム利用料',
@@ -299,7 +299,7 @@ class Checkout(object):
                         itemNumbers=ordered_product.quantity,
                         itemFee=ordered_product.price,
                     ))
-                # 商品:システム手数料
+                # 商品:システム利用料
                 self._create_checkout_item_xml(items, **dict(
                     itemId='system_fee',
                     itemNumbers='1',
