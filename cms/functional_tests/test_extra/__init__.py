@@ -20,7 +20,7 @@ except ImportError:
 class ExtraAPITests(AppFunctionalTests):
     def test_it(self):
         from altaircms.plugins.widget.performancelist.models import PerformancelistWidget
-        from altaircms.plugins.extra.api import get_performance_status
+        from altaircms.plugins.extra.api import get_stockstatus_summary
         from altaircms.plugins.extra.stockstatus import StockStatus
         class request:
             registry = get_registry()
@@ -32,7 +32,7 @@ class ExtraAPITests(AppFunctionalTests):
             salessegment = None
             class page:
                 organization_id = 1
-        result = get_performance_status(request, widget, event, StockStatus)
+        result = get_stockstatus_summary(request, widget, event, StockStatus)
         self.assertEquals(result.scores,
                           {8: 812, 9: 759, 10: 2119, 6: 861, 7: 2874})
         self.assertEquals(result.counts,

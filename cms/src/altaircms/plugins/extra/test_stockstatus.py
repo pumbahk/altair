@@ -8,8 +8,8 @@ class DummyPerformance(object):
 
 class StockStatusTests(unittest.TestCase):
     def _callFUT(self, *args, **kwargs):
-        from altaircms.plugins.extra.api import _get_performance_status
-        return _get_performance_status(*args, **kwargs)
+        from altaircms.plugins.extra.api import _get_stockstatus_summary
+        return _get_stockstatus_summary(*args, **kwargs)
 
     def test_usually(self):
         jsondata = u"""{

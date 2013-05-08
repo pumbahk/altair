@@ -9,17 +9,17 @@ from .stockstatus import CalcResult
 status :: performance -> stock-status
 """
 dummy_data = {"stocks": []}
-def get_performance_status(request, widget, event, status_impl):
+def get_stockstatus_summary(request, widget, event, status_impl):
     cache_name = "_stock_data"
     data = getattr(request, cache_name, None)
     if data:
         return data
     data = get_stock_data_api(request).fetch_stock_status(request, event, widget.salessegment)
-    result = _get_performance_status(request, CalcResult(rawdata=data, status_impl=status_impl))
+    result = _get_stockstatus_summary(request, CalcResult(rawdata=data, status_impl=status_impl))
     setattr(request, cache_name, result)
     return result
 
-def _get_performance_status(request, data):
+def _get_stockstatus_summary(request, data):
     for stock in data.rawdata["stocks"]:
         data.add_stock(stock)
     return data

@@ -13,7 +13,7 @@ from altaircms.plugins.base.mixins import UpdateDataMixin
 from altaircms.security import RootFactory
 from altaircms.plugins.base.interception import not_support_if_keyerror
 from altaircms.plugins.api import get_widget_utility
-from altaircms.plugins.extra.api import get_performance_status
+from altaircms.plugins.extra.api import get_stockstatus_summary
 
 class CalendarWidget(Widget):
     implements(IWidget)
@@ -59,7 +59,7 @@ class CalendarWidget(Widget):
             utility = get_widget_utility(request, page, self.type)
 
             status_impl = utility.status_impl
-            stock_status = get_performance_status(request, self, event, status_impl)
+            stock_status = get_stockstatus_summary(request, self, event, status_impl)
 
             template_name = utility.get_template_name(request, self)
             render_fn = utility.get_rendering_function(request, self)
