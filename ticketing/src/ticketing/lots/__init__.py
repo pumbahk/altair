@@ -49,6 +49,8 @@ def includeme(config):
     config.add_subscriber(register_globals, 'pyramid.events.BeforeRender')
     config.add_renderer('.html' , 'pyramid.mako_templating.renderer_factory')
     config.add_renderer('json'  , 'ticketing.renderers.json_renderer_factory')
+    config.add_renderer('.txt' , 'pyramid.mako_templating.renderer_factory')
+
     selectable_renderer.register_to(config)
 
     # 申し込みフェーズ
@@ -113,6 +115,7 @@ def main(global_config, **local_config):
     config.add_static_view('c_static', 'ticketing.cart:static', cache_max_age=3600)
 
     config.include(".")
+    config.include(".sendmail")
 
     ### includes altair.*
     config.include('altair.auth')

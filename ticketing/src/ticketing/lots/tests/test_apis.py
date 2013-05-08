@@ -278,15 +278,20 @@ class entry_infoTests(unittest.TestCase):
 
     def test_it(self):
         from datetime import datetime
+        from ticketing.core.models import ShippingAddress
 
         wish = testing.DummyModel(
             lot_entry=testing.DummyModel(
                 entry_no="testENTRYNO",
                 membergroup=testing.DummyModel(),
-                shipping_address=testing.DummyModel(
+                shipping_address=ShippingAddress(
                     zip="1234567",
                     prefecture=u"東京都",
                     sex=1,
+                    last_name=u"らすと",
+                    first_name=u"ふぁーすと",
+                    last_name_kana=u"ふぁーすと",
+                    first_name_kana=u"ふぁーすと",
                     ),
             ),
             wish_order=10,

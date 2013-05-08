@@ -20,7 +20,7 @@ Logged in as ${user_id}：${nickname}
     user = authenticated_user(request)
 
     request.response.text = tmpl.substitute(login=request.route_url('rakuten_auth.login'),
-                                            user_id=user['clamed_id'] if user else '',
+                                            user_id=user['claimed_id'] if user else '',
                                             nickname=user['nickname'] if user else '')
                                   
     return request.response

@@ -16,9 +16,11 @@ from altair.pyramid_tz.api import get_timezone
 from ticketing.models import DBSession
 from ticketing.core.models import PaymentDeliveryMethodPair
 from ticketing.cart import api as cart_api
+from ticketing.users import api as user_api
 from ticketing.utils import toutc
 from ticketing.payments.payment import Payment
 from ticketing.cart.exceptions import NoCartError
+from ticketing.mailmags.api import get_magazines_to_subscribe, multi_subscribe
 
 from . import api
 from . import helpers as h
@@ -105,6 +107,8 @@ class EntryLotView(object):
                 name=product.name,
                 display_order=product.display_order,
                 stock_type_id=product.seat_stock_type_id,
+                price=float(product.price),
+                formatted_price=h.format_currency(product.price),
                 description=product.description,
             ))
             performance_product_map[performance.id] = products
@@ -145,7 +149,26 @@ class EntryLotView(object):
         sales_segment = lot.sales_segment
         payment_delivery_pairs = sales_segment.payment_delivery_method_pairs
         performance_product_map = self._create_performance_product_map(sales_segment.products)
-        stock_types = sorted(set((product.seat_stock_type_id, product.seat_stock_type.name, product.seat_stock_type.display_order) for product in sales_segment.products), lambda a, b: cmp(a[2], b[2]))
+        stock_types = [
+            dict(
+                id=rec[0],
+                name=rec[1],
+                display_order=rec[2],
+                description=rec[3]
+                )
+            for rec in sorted(
+                set(
+                    (
+                        product.seat_stock_type_id,
+                        product.seat_stock_type.name,
+                        product.seat_stock_type.display_order,
+                        product.seat_stock_type.description
+                        )
+                    for product in sales_segment.products
+                    ),
+                lambda a, b: cmp(a[2], b[2])
+                )
+            ]
 
         return dict(form=form, event=event, sales_segment=sales_segment,
             payment_delivery_pairs=payment_delivery_pairs,
@@ -180,7 +203,12 @@ class EntryLotView(object):
         payment_delivery_pairs = sales_segment.payment_delivery_method_pairs
         payment_delivery_method_pair_id = self.request.params.get('payment_delivery_method_pair_id')
         wishes = h.convert_wishes(self.request.params, lot.limit_wishes)
-        
+     
+        # 枚数チェック
+        if not h.check_quantities(wishes, lot.upper_limit):
+            self.request.session.flash(u"各希望ごとの合計枚数は最大{0}枚までにしてください".format(lot.upper_limit))
+            return self.get(form=cform)
+
         # 希望選択
         if not wishes or not lot.validate_entry(self.request.params):
             self.request.session.flash(u"申し込み内容に入力不備があります")
@@ -232,16 +260,25 @@ class ConfirmLotEntryView(object):
 
         payment_delivery_method_pair_id = entry['payment_delivery_method_pair_id']
         payment_delivery_method_pair = PaymentDeliveryMethodPair.query.filter(PaymentDeliveryMethodPair.id==payment_delivery_method_pair_id).one()
+
+        magazines_to_subscribe = get_magazines_to_subscribe(self.context.organization, [entry['shipping_address']['email_1']])
+
+        temporary_entry = api.build_temporary_lot_entry(
+            lot=lot,
+            wishes=entry['wishes'],
+            payment_delivery_method_pair=payment_delivery_method_pair)
+
         return dict(event=event,
                     lot=lot,
                     shipping_address=entry['shipping_address'],
                     payment_delivery_method_pair_id=entry['payment_delivery_method_pair_id'],
                     payment_delivery_method_pair=payment_delivery_method_pair,
                     token=entry['token'],
-                    wishes=h.add_wished_product_names(entry['wishes']),
+                    wishes=temporary_entry.wishes,
                     gender=entry['gender'],
                     birthday=entry['birthday'],
-                    memo=entry['memo'])
+                    memo=entry['memo'],
+                    mailmagazines_to_subscribe=magazines_to_subscribe)
 
     def back_to_form(self):
         return HTTPFound(location=urls.entry_index(self.request))
@@ -263,16 +300,31 @@ class ConfirmLotEntryView(object):
         lot = self.context.lot
 
         if not lot.validate_entry(self.request.params):
-            return HTTPFound('lots.entry.index')
+            return HTTPFound(urls.entry_index(self.request))
+
+        try:
+            self.request.session['lots.magazine_ids'] = [long(v) for v in self.request.params.getall('mailmagazine')]
+        except (TypeError, ValueError):
+            raise HTTPBadRequest()
+        logger.info(repr(self.request.session['lots.magazine_ids']))
+
         payment_delivery_method_pair_id = entry['payment_delivery_method_pair_id']
         payment_delivery_method_pair = PaymentDeliveryMethodPair.query.filter(PaymentDeliveryMethodPair.id==payment_delivery_method_pair_id).one()
 
         user = api.get_entry_user(self.request)
 
-        entry = api.entry_lot(self.request, lot, shipping_address, wishes, payment_delivery_method_pair, user,
-                              entry['gender'], entry['birthday'], entry['memo'])
+        entry = api.entry_lot(
+            self.request,
+            lot=lot,
+            shipping_address=shipping_address,
+            wishes=wishes,
+            payment_delivery_method_pair=payment_delivery_method_pair,
+            user=user,
+            gender=entry['gender'],
+            birthday=entry['birthday'],
+            memo=entry['memo']
+            )
         self.request.session['lots.entry_no'] = entry.entry_no
-        api.notify_entry_lot(self.request, entry)
 
         cart = api.get_entry_cart(self.request, entry)
 
@@ -295,17 +347,44 @@ class CompletionLotEntryView(object):
         self.request = request
 
     @view_config(request_method="GET", renderer=selectable_renderer("pc/%(membership)s/completion.html"))
+
+
     @mobile_view_config(request_method="GET", renderer=selectable_renderer("mobile/%(membership)s/completion.html"))
     def get(self):
         """ 完了画面 """
         entry_no = self.request.session['lots.entry_no']
         entry = DBSession.query(LotEntry).filter(LotEntry.entry_no==entry_no).one()
+
         try:
-            api.get_options(self.request, lot.id).dispose()
+            api.notify_entry_lot(self.request, entry)
+        except Exception as e:
+            logger.warning('error orccured during sending mail. \n{0}'.format(e))
+
+
+        try:
+            api.get_options(self.request, entry.lot.id).dispose()
         except TypeError:
             pass
 
-        return dict(event=self.context.event, lot=self.context.lot, sales_segment=self.context.lot.sales_segment, entry=entry)
+        magazine_ids = self.request.session.get('lots.magazine_ids')
+        if magazine_ids:
+            user = user_api.get_or_create_user(self.context.authenticated_user())
+            multi_subscribe(user, entry.shipping_address.emails, magazine_ids)
+            self.request.session['lots.magazine_ids'] = None
+            self.request.session.persist() # XXX: 完全に念のため
+
+        return dict(
+            event=self.context.event,
+            lot=self.context.lot,
+            sales_segment=self.context.lot.sales_segment,
+            entry=entry,
+            payment_delivery_method_pair=entry.payment_delivery_method_pair,
+            shipping_address=entry.shipping_address,
+            wishes=entry.wishes,
+            gender=entry.gender,
+            birthday=entry.birthday,
+            memo=entry.memo
+            )
 
 @view_defaults(route_name='lots.review.index')
 class LotReviewView(object):
@@ -350,186 +429,9 @@ class LotReviewView(object):
         lot_id = lot_entry.lot.id
         # 当選して、未決済の場合、決済画面に移動可能
         return dict(entry=lot_entry,
+            wishes=lot_entry.wishes,
             lot=lot_entry.lot,
             shipping_address=lot_entry.shipping_address,
             gender=lot_entry.gender,
             birthday=lot_entry.birthday,
-            memo=lot_entry.memo,
-            payment_url=self.request.route_url('lots.payment.index', event_id=event_id, lot_id=lot_id) if lot_entry.is_elected else None) 
-
-# @view_defaults(route_name='lots.payment.index')
-# class PaymentView(object):
-#     """ [当選者のみ]
-#     支払方法選択
-#     セッションに申し込み者の情報を持つ
-#     """
-    
-
-#     def __init__(self, context, request):
-#         self.context = context
-#         self.request = request
-
-#     @view_config(request_method="GET", renderer=selectable_renderer("pc/%(membership)s/index_2.html"))
-#     @mobile_view_config(request_method="GET", renderer=selectable_renderer("mobile/%(membership)s/index_2.html"))
-#     def show_form(self):
-#         """
-#         """
-#         lot_entry = api.entry_session(self.request)
-#         if lot_entry is None:
-#             location = self.request.route_url('lots.review.index')
-#             return HTTPFound(location)
-
-#         # この申し込みは妥当か？
-#         if not lot_entry.is_elected:
-#             # 通常のフローでは到達しない → 400
-#             raise HTTPBadRequest()
-
-#         lot = api.get_requested_lot(self.request)
-#         payment_delivery_method_pairs = lot.sales_segment.payment_delivery_method_pairs
-#         # 当選情報
-#         elected = DBSession.query(LotElectedEntry).filter(
-#             LotElectedEntry.lot_entry_id==lot_entry.id
-#         ).filter(
-#             LotElectedEntry.lot_entry_id==LotEntryWish.lot_entry_id
-#         ).filter(
-#             LotElectedEntry.lot_entry_wish_id==LotEntryWish.id
-#         ).first()
-#         if elected is None:
-#             # 通常のフローでは到達しない → 400
-#             raise HTTPBadRequest()
-#         shipping_address = lot_entry.shipping_address
-#         form_data = h.shipping_address_form_data(shipping_address, lot_entry.gender)
-#         form = schemas.ClientForm(form_data)
-#         wish=elected.lot_entry_wish
-#         payment_delivery_method_pair=lot_entry.payment_delivery_method_pair
-#         total_amount = sum([wp.product.price * wp.quantity for wp in wish.products]) + payment_delivery_method_pair.transaction_fee + payment_delivery_method_pair.delivery_fee + payment_delivery_method_pair.system_fee
-
-#         return dict(form=form, lot=lot, elected=elected, wish=wish, lot_entry=lot_entry, 
-#             total_amount=total_amount,
-#             performance=elected.lot_entry_wish.performance,
-#             payment_delivery_method_pair_id=lot_entry.payment_delivery_method_pair_id,
-#             payment_delivery_method_pair=payment_delivery_method_pair,
-#             payment_delivery_pairs=payment_delivery_method_pairs)
-
-#     @view_config(request_method="POST")
-#     def submit(self):
-#         """
-#         決済
-#         """
-
-#         event_id = self.context.lot
-#         lot_entry = api.entry_session(self.request)
-#         if lot_entry is None:
-#             raise HTTPNotFound
-
-#         if not lot_entry.is_elected:
-#             raise NotElectedException
-
-#         lot = lot_entry.lot
-#         cart = api.create_cart(self.request, lot_entry)
-#         DBSession.add(cart)
-#         DBSession.flush()
-#         cart_api.set_cart(self.request, cart)
-#         client_name = self.request.params.get('last_name', '') + self.request.params.get('first_name', '')
-
-#         cart_api.new_order_session(
-#             self.request,
-#             client_name=client_name,
-#             payment_delivery_method_pair_id=cart.payment_delivery_pair.id,
-#             email_1=cart.shipping_address.email_1,
-#         )
-
-
-#         self.request.session['payment_confirm_url'] = self.request.route_url('lots.payment.confirm', event_id=lot.event_id, lot_id=lot.id)
-#         payment = Payment(cart, self.request)
-#         result = payment.call_prepare()
-#         if callable(result):
-#             return result
-
-#         location = self.request.route_url('lots.payment.confirm', 
-#             event_id=event_id,
-#             lot_id=lot_entry.lot.id,
-#             entry_no=lot_entry.entry_no)
-#         return HTTPFound(location)
-
-# @view_defaults(route_name='lots.payment.confirm')
-# class PaymentConfirm(object):
-#     def __init__(self, request):
-#         self.request = request
-    
-#     @view_config(request_method="GET", renderer=selectable_renderer("pc/%(membership)s/confirm_2.html"))
-#     @mobile_view_config(request_method="GET", renderer=selectable_renderer("mobile/%(membership)s/confirm_2.html"))
-#     def get(self):
-#         """
-#         """
-#         lot_entry = api.entry_session(self.request)
-#         if lot_entry is None:
-#             raise HTTPNotFound
-
-#         if not lot_entry.is_elected:
-#             raise NotElectedException
-#         elected = lot_entry.lot_elected_entries[0]
-#         cart = cart_api.get_cart(self.request)
-#         return dict(
-#             lot_entry=lot_entry,
-#             lot=lot_entry.lot,
-#             elected=elected,
-#             performance=elected.lot_entry_wish.performance,
-#             cart=cart,
-#             payment_delivery_method_pair=cart.payment_delivery_pair,
-#             shipping_address=cart.shipping_address,
-#             total_amount=cart.total_amount
-#             )
-
-#     @view_config(request_method="POST")
-#     def post(self):
-#         lot_entry = api.entry_session(self.request)
-#         if lot_entry is None:
-#             raise HTTPNotFound
-
-#         if not lot_entry.is_elected:
-#             raise NotElectedException
-#         cart = cart_api.get_cart_safe(self.request)
-#         if not cart.is_valid():
-#             raise HTTPNotFound()
-
-#         payment = Payment(cart, self.request)
-#         order = payment.call_payment()
-#         logger.debug("order_no = {0}".format(order.order_no))
-#         cart_api.remove_cart(self.request)
-#         lot_entry = api.entry_session(self.request)
-#         lot_entry.order = order
-#         return HTTPFound(location=urls.payment_completion(self.request))
-
-# @view_defaults(route_name='lots.payment.completion')
-# class PaymentCompleted(object):
-#     """ [当選者のみ]
-#     """
-    
-#     def __init__(self, request):
-#         self.request = request
-
-#     @view_config(request_method="GET", renderer=selectable_renderer("pc/%(membership)s/completion_2.html"))
-#     @mobile_view_config(request_method="GET", renderer=selectable_renderer("mobile/%(membership)s/completion_2.html"))
-#     def __call__(self):
-#         """ 完了画面 (表示のみ)
-#         """
-#         lot_entry = api.entry_session(self.request)
-#         if lot_entry is None:
-#             raise HTTPNotFound
-
-#         order = lot_entry.order
-#         if not order:
-#             raise HTTPNotFound()
-
-#         elected = lot_entry.lot_elected_entries[0]
-#         return dict(
-#             order=order,
-#             entry=lot_entry,
-#             elected=elected,
-#             performance=elected.lot_entry_wish.performance,
-#             lot=lot_entry.lot,
-#             payment_delivery_method_pair=order.payment_delivery_pair,
-#             shipping_address=order.shipping_address,
-#             total_amount=order.total_amount
-#             )
+            memo=lot_entry.memo) 

@@ -104,10 +104,11 @@
                 </th>
                 <td colspan="2">
                   <select name="stockType-${i}" data-wishOrder="${i}" class="stock-type-select">
-                  %for stock_type_id, stock_type_name, _ in stock_types:
-                  <option value="${stock_type_id}">${stock_type_name}</option>
+                  %for rec in stock_types:
+                  <option value="${rec['id']}">${rec['name']}</option>
                   %endfor
                   </select>
+                  <div class="stock-type-description"></div>
                 </td>
               </tr>
             </table>
@@ -296,6 +297,12 @@ var performanceMap = ${h.tojson(performance_map)|n};
         }
         var html = product_select_tmpl({wishOrder: wishOrder, products: products});
         $("#" + wishCellTableId + " tbody").append(html);
+        for (var i = 0; i < stockTypes.length; i++) {
+            var stockType = stockTypes[i];
+            if (stockType.id == stockTypeId) {
+                $(stockTypeSelect.parent().find('.stock-type-description')).html(stockType.description);
+            }
+        }
     }
 
     function refreshStockTypeSelection(dateSelect, stockTypeSelect) {
@@ -306,9 +313,9 @@ var performanceMap = ${h.tojson(performance_map)|n};
             filteredStockTypeIds[products[i].stock_type_id] = true;
         stockTypeSelect.empty();
         for (var i = 0; i < stockTypes.length; i++) {
-            var stockTypeTriplet = stockTypes[i];
-            if (stockTypeTriplet[0] in filteredStockTypeIds)
-                stockTypeSelect.append($('<option></option>').attr('value', stockTypeTriplet[0]).text(stockTypeTriplet[1]));
+            var stockType = stockTypes[i];
+            if (stockType.id in filteredStockTypeIds)
+                stockTypeSelect.append($('<option></option>').attr('value', stockType.id).text(stockType.name));
         }
     }
 

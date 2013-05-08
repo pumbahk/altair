@@ -57,16 +57,6 @@ class MailMagazine(Base, BaseModel, WithTimestamp):
             MailSubscription.segment == self & \
             MailSubscription.email in emails).first() is not None
 
-    @staticmethod
-    def multi_subscribe(user, emails, magazine_ids):
-        logger.debug("magazines: %s" % magazine_ids)
-        for magazine in MailMagazine.query.filter(MailMagazine.id.in_(magazine_ids)).all():
-            for email in emails:
-                if magazine.subscribe(user, email):
-                    logger.debug("User %s starts subscribing %s for <%s>" % (user, magazine.name, email))
-                else:
-                    logger.debug("User %s is already subscribing %s for <%s>" % (user, magazine.name, email))
-
 class MailSubscriptionStatus(StandardEnum):
     Unsubscribed = 0
     Subscribed = 1

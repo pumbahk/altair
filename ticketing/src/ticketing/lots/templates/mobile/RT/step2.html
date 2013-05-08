@@ -16,6 +16,7 @@ ${lot.name}
 %for product in products:
 ${product.name}<br />
 <div align="right" style="text-align:right">
+${h.format_currency(product.price)}×
 <input type="text" name="product-${product.id}" size="2" value="" istyle="4" />枚
 </div>
 %endfor

@@ -255,7 +255,7 @@ class MultiCheckoutViewTests(unittest.TestCase):
         self.config.registry.settings['altair_cart.expire_time'] = 15
         # dummy rakuten user
         self.config.add_route('payment.secure3d', 'secure3d')
-        userdata = {'clamed_id': 'http://example.com/this-is-openid'}
+        userdata = {'claimed_id': 'http://example.com/this-is-openid'}
         import pickle
         userdata = pickle.dumps(userdata).encode('base64')
         self.config.testing_securitypolicy(userid=userdata)
@@ -316,7 +316,7 @@ class MultiCheckoutViewTests(unittest.TestCase):
         self.config.registry.settings['altair_cart.expire_time'] = 15
         # dummy rakuten user
         self.config.add_route('payment.secure3d', 'secure3d')
-        userdata = {'clamed_id': 'http://example.com/this-is-openid'}
+        userdata = {'claimed_id': 'http://example.com/this-is-openid'}
         import pickle
         userdata = pickle.dumps(userdata).encode('base64')
         self.config.testing_securitypolicy(userid=userdata)

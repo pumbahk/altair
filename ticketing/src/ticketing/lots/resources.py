@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 from pyramid.traversal import DefaultRootFactory
 from pyramid.decorator import reify
 from ticketing.core.models import Event, Performance, Organization
@@ -33,6 +35,10 @@ class LotResource(object):
                 .filter(Lot.id==lot_id) \
                 .first()
         self.lot = lot
+
+    def authenticated_user(self):
+        # XXX: とりあえずダミー
+        return { 'is_guest': True }
 
     @reify
     def host_base_url(self):

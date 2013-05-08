@@ -74,6 +74,7 @@ class send_accepted_mailTests(unittest.TestCase):
 
 
     def test_it(self):
+        from datetime import datetime
         import pyramid_mailer
         import ticketing.core.models as core_models
         import ticketing.lots.models as lots_models
@@ -101,13 +102,22 @@ class send_accepted_mailTests(unittest.TestCase):
                 event=core_models.Event(
                     title=u"抽選テストイベント",
                 ),
+                lotting_announce_datetime=datetime.now(),
             ),
             payment_delivery_method_pair=core_models.PaymentDeliveryMethodPair(
                 payment_method=core_models.PaymentMethod(
+                    fee_type=0,
                 ),
                 delivery_method=core_models.DeliveryMethod(
+                    fee_type=1,
                 ),
+                transaction_fee=0,
+                delivery_fee=115,
             ),
+            wishes=[lots_models.LotEntryWish(wish_order=1,
+                                             performance=core_models.Performance(
+                                                 venue=core_models.Venue()),
+                                             products=[])],
         )
 
         result = self._callFUT(request, entry)
@@ -118,3 +128,4 @@ class send_accepted_mailTests(unittest.TestCase):
         self.assertEqual(result.sender, "testing@sender.example.com")
         self.assertEqual(result.recipients, ['testing@example.com'])
         self.assertIn(u'抽選テスト', result.body)
+        print result.body

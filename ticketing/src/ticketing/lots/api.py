@@ -116,6 +116,35 @@ def get_entry_cart(request, entry=None):
         entry = LotEntry.query.filter(LotEntry.id==entry_id).one()
     return LotEntryCart(entry)
 
+def build_lot_entry_wish(wish_order, wish_rec):
+    performance_id = long(wish_rec["performance_id"])
+    wish = LotEntryWish(wish_order=wish_order, performance_id=performance_id)
+    for wished_product_rec in wish_rec["wished_products"]:
+        if wished_product_rec['quantity'] > 0:
+            product = LotEntryProduct(
+                quantity=wished_product_rec["quantity"],
+                product_id=wished_product_rec["product_id"]
+                )
+            wish.products.append(product)
+    return wish
+
+def build_lot_entry(lot, wishes, payment_delivery_method_pair, membergroup=None, shipping_address=None, user=None, gender=None, birthday=None, memo=None):
+    entry = LotEntry(
+        lot=lot,
+        shipping_address=shipping_address,
+        membergroup=membergroup,
+        payment_delivery_method_pair=payment_delivery_method_pair,
+        gender=gender,
+        birthday=birthday,
+        memo=memo)
+    for i, wish_rec in enumerate(wishes):
+        entry.wishes.append(build_lot_entry_wish(i, wish_rec))
+    return entry
+
+def build_temporary_lot_entry(*args, **kwargs):
+    entry = build_lot_entry(*args, **kwargs)
+    DBSession.expunge(entry)
+    return entry
 
 def entry_lot(request, lot, shipping_address, wishes, payment_delivery_method_pair, user, gender, birthday, memo):
     """
@@ -123,16 +152,17 @@ def entry_lot(request, lot, shipping_address, wishes, payment_delivery_method_pa
     {product_id, quantity} の希望順リスト
     :param user: ゲストの場合は None
     """
-    membergroup = get_member_group(request)
-    entry = LotEntry(lot=lot, shipping_address=shipping_address, membergroup=membergroup, payment_delivery_method_pair=payment_delivery_method_pair,
-                     gender=gender, birthday=birthday, memo=memo)
-
-
-    for i, w in enumerate(wishes):
-        performance_id = w["performance_id"]
-        wish = LotEntryWish(lot_entry=entry, wish_order=i, performance_id=performance_id)
-        for wp in w["wished_products"]:
-            LotEntryProduct(lot_wish=wish, quantity=wp["quantity"], product_id=wp["product_id"])
+    entry = build_lot_entry(
+        lot=lot,
+        wishes=wishes,
+        membergroup=get_member_group(request),
+        payment_delivery_method_pair=payment_delivery_method_pair,
+        shipping_address=shipping_address,
+        user=user,
+        gender=gender,
+        birthday=birthday,
+        memo=memo
+        )
 
     DBSession.add(entry)
     DBSession.flush()
@@ -162,15 +192,20 @@ def generate_entry_no(request, lot_entry):
     return organization_code + sensible_alnum_encode(base_id).zfill(10)
 
 
-def get_lot_entries_iter(lot_id):
+def get_lot_entries_iter(lot_id, condition=None):
     q = DBSession.query(LotEntryWish
     ).filter(
         LotEntry.lot_id==lot_id
     ).filter(
         LotEntryWish.lot_entry_id==LotEntry.id
+    ).filter(
+        ShippingAddress.id==LotEntry.shipping_address_id
     ).order_by(
         LotEntryWish.wish_order
     )
+
+    if condition is not None:
+        q = q.filter(condition)
 
     for entry in q:
         yield _entry_info(entry)
@@ -396,7 +431,7 @@ class Options(object):
         return len(self.options)
 
     def __iter__(self):
-        return iter(self.options)
+        return iter(self.options_map[self.lot_id])
 
 def get_options(request, lot_id):
     return Options(request, lot_id)

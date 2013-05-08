@@ -19,6 +19,7 @@ from zope.interface import implementer
 import random
 from .. import helpers as cart_helpers
 from ticketing.cart import api as cart_api
+from ticketing.users import api as user_api
 from ticketing.models import DBSession
 from ticketing.users.models import UserProfile
 
@@ -157,7 +158,7 @@ class RakutenOpenID(object):
             return None
 
         logger.debug('user_info : %s' % user_info)
-        user = cart_api.get_or_create_user(None, identity['claimed_id'])
+        user = user_api.get_or_create_user(identity)
         if user.user_profile is None:
             profile = UserProfile(user=user)
         else:
@@ -193,7 +194,7 @@ class RakutenOpenID(object):
 
         if is_valid == "true":
             logger.debug("authentication OK")
-            return {'clamed_id': identity['claimed_id'], "nickname": user_info.get('nickName')}
+            return {'claimed_id': identity['claimed_id'], "nickname": user_info.get('nickName')}
         else:
             logger.debug("authentication NG")
             return None
@@ -325,7 +326,7 @@ def openid_params(request):
                 )
 
 
-def tokenize(request, nonce, short_clamed_id):
+def tokenize(request, nonce, short_claimed_id):
     reg = request.registry
     tokenizer = reg.queryUtility(ITokenizer)
-    return tokenizer.tokenize(nonce, short_clamed_id)
+    return tokenizer.tokenize(nonce, short_claimed_id)
