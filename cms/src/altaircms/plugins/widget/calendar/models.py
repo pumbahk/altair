@@ -13,7 +13,7 @@ from altaircms.plugins.base.mixins import UpdateDataMixin
 from altaircms.security import RootFactory
 from altaircms.plugins.base.interception import not_support_if_keyerror
 from altaircms.plugins.api import get_widget_utility
-from altaircms.plugins.widget.api import get_performance_status
+from altaircms.plugins.extra.api import get_performance_status
 
 class CalendarWidget(Widget):
     implements(IWidget)
@@ -49,6 +49,7 @@ class CalendarWidget(Widget):
         @not_support_if_keyerror("calendar widget: %(err)s")
         def calendar_render():
             ## todo あとで整理
+          
             performances = bsettings.extra["performances"]
             performances = [p for p in performances if p.start_on]
             event = bsettings.extra["event"]

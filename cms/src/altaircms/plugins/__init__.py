@@ -9,7 +9,7 @@ def includeme(config):
     """
     config.add_directive("add_widgetname", ".helpers.add_widgetname")
 
-    config.include(".widget", route_prefix="api")
+    config.include(".extra")
     config.include(".widget.image", route_prefix="api")
     config.include(".widget.freetext", route_prefix="api")
     config.include(".widget.flash", route_prefix="api")

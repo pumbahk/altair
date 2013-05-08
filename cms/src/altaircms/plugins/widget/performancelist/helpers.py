@@ -3,10 +3,9 @@ from altaircms.helpers.event import WEEK
 import logging
 logger = logging.getLogger(__name__)
 from altaircms.rowspanlib import RowSpanGrid
-from ..api import get_performance_status
 from .models import PerformancelistWidget
-from altaircms.plugins.api import get_widget_utility
 from altaircms.page.models import Page
+
 def performance_describe_date(performance):
     try:
         d = performance.start_on
@@ -31,13 +30,6 @@ def performance_describe_time(performance):
         return p_time
     except Exception, e:
         logger.exception(str(e))
-
-def get_stock_data(request, event, widget):
-    page = widget.page
-    utility = get_widget_utility(request, page, widget.type)
-    status_impl = utility.status_impl
-    stock_status = get_performance_status(request, widget, event, status_impl)
-    return stock_status
 
 def venue_for_grid(data, k, changed):
     if changed:
