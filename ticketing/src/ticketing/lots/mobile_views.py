@@ -117,16 +117,29 @@ class EntryLotView(object):
             logger.debug('performance not found')
             raise HTTPNotFound()
 
+        products = {}
+        for product in DBSession.query(Product) \
+                .join(Product.seat_stock_type) \
+                .filter(Product.sales_segment_id == sales_segment.id) \
+                .filter(Product.performance_id == performance.id) \
+                .order_by(Product.display_order):
+            products_per_stock_type = products.get(product.seat_stock_type_id)
+            if products_per_stock_type is None:
+                products_per_stock_type = products[product.seat_stock_type_id] = []
+            products_per_stock_type.append(product)
 
         return dict(
             event=event,
             lot=lot,
             sales_segment=sales_segment,
             performance=performance,
-            products=DBSession.query(Product) \
-                .filter(Product.sales_segment_id == sales_segment.id) \
-                .filter(Product.performance_id == performance.id) \
-                .order_by(Product.display_order).all(),
+            products=sorted(
+                [
+                    products_per_stock_type
+                    for _, products_per_stock_type in products.items()
+                    ],
+                lambda a, b: cmp(a[0].seat_stock_type.display_order, a[0].seat_stock_type.display_order,)
+                ),
             option_index=self.context.option_index,
             messages=self.request.session.pop_flash()
             )
