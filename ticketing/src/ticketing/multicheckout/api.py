@@ -57,7 +57,7 @@ def save_api_response(request, res):
 
 
 def get_multicheckout_settings(request):
-    return [MulticheckoutSetting(os) for os in core_models.OrganizationSetting.all()]
+    return [MulticheckoutSetting(os) for os in core_models.OrganizationSetting.all() if os.multicheckout_shop_id and os.multicheckout_shop_name]
 
 
 
