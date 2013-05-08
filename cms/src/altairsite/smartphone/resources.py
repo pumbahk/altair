@@ -49,3 +49,7 @@ class SearchResource(object):
         hotwords = request.allowable(HotWord).filter(HotWord.term_begin <= today).filter(today <= HotWord.term_end) \
                  .filter_by(enablep=True).order_by(asc("display_order"), asc("term_end"))
         return hotwords
+
+    def getGenreTree(self, request):
+        genre_searcher = GenreSearcher(request)
+        return genre_searcher.root.children

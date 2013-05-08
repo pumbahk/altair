@@ -1,0 +1,8 @@
+<%page args="genretree, helper" />
+<%namespace file="tags_smartphone.html" name="m" />
+
+<%m:header>ジャンルから探す</%m:header>
+% for i in range(0, len(genretree)):
+<% genre = genretree[i] %>
+    ${genre}<br/>
+% endfor

@@ -17,10 +17,12 @@ def main(context, request):
     topcontents = context.search(request=request, kind="topcontent", system_tag_id=None)[0:5]
     topics = context.search(request=request, kind="topic", system_tag_id=None)[0:5]
     hotwords = context.getHotword(request=request)[0:5]
+    genretree = context.getGenreTree(request=request)
 
     return {
          'promotions':promotions
         ,'topcontents':topcontents
         ,'topics':topics
         ,'hotwords':hotwords
+        ,'genretree':genretree
     }
