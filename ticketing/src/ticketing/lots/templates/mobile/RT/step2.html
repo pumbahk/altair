@@ -13,11 +13,21 @@ ${lot.name}
 <input type="hidden" name="option_index" value="${option_index}" />
 <%mobile:messages messages="${messsages}" />
 <input type="hidden" name="performance_id" value="${performance.id}">
-%for product in products:
-${product.name}<br />
+%for products_per_stock_type in products:
+<%mobile:form_header>${products_per_stock_type[0].seat_stock_type.name}</%mobile:form_header>
+%if products_per_stock_type[0].seat_stock_type.description:
+<div><font size="-1">
+${products_per_stock_type[0].seat_stock_type.description|n}
+</font></div>
+%endif
+<div>
+%for product in products_per_stock_type:
+・${product.name}<br />
 <div align="right" style="text-align:right">
 ${h.format_currency(product.price)}×
 <input type="text" name="product-${product.id}" size="2" value="" istyle="4" />枚
+</div>
+%endfor
 </div>
 %endfor
 <hr />
