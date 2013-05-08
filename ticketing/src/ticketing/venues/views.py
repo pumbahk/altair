@@ -62,7 +62,7 @@ def get_seats(request):
 
     if u'seats' in necessary_params:
         seats_data = {}
-        query = DBSession.query(Seat).options(joinedload('attributes_'), joinedload('areas'), joinedload('status_')).filter_by(venue=venue)
+        query = DBSession.query(Seat).options(joinedload('status_')).filter_by(venue=venue)
         if sales_segment_id:
             query = query.join(ProductItem, and_(ProductItem.performance_id==venue.performance_id, ProductItem.stock_id==Seat.stock_id))
             query = query.join(Product).join(SalesSegment).filter(SalesSegment.id==sales_segment_id).distinct()
@@ -77,10 +77,7 @@ def get_seats(request):
                 'seat_no': seat.seat_no,
                 'stock_id': seat.stock_id,
                 'status': seat.status,
-                'areas': [area.id for area in seat.areas],
                 }
-            for attr in seat.attributes:
-                seat_datum[attr] = seat[attr]
             seats_data[seat.l0_id] = seat_datum
         retval[u'seats'] = seats_data
 

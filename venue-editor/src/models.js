@@ -139,7 +139,6 @@ Venue.prototype.initialize = function Venue_initialize(initialData, options) {
       status: seatDatum.status,
       stock: stock,
       attrs: seatDatum.attrs,
-      areas: seatDatum.areas,
       sold: sold,
       selectable: (stock && stock.get('assignable') && !sold) ? true : false
     });
@@ -404,7 +403,6 @@ var Seat = exports.Seat = Backbone.Model.extend({
     stock: null,
     selectable: true,
     selected: false,
-    areas: [],
     edited: false
   },
 
