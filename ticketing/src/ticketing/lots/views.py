@@ -451,3 +451,17 @@ def out_term_exception(context, request):
                 from_=context.from_,
                 to_=context.to_,
                 )
+
+
+
+
+@view_config(context="ticketing.payments.exceptions.PaymentPluginException", 
+             renderer=selectable_renderer('pc/%(membership)s/message.html'))
+@mobile_view_config(context="ticketing.payments.exceptions.PaymentPluginException", 
+             renderer=selectable_renderer('mobile/%(membership)s/error.html'))
+def payment_plugin_exception(context, request):
+    if context.back_url is not None:
+        return HTTPFound(location=context.back_url)
+    else:
+        location = request.context.host_base_url
+    return dict(message=Markup(u'決済中にエラーが発生しました。しばらく時間を置いてから<a href="%s">再度お試しください。</a>' % location))
