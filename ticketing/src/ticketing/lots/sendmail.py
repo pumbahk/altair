@@ -53,7 +53,7 @@ class MailSender(object):
     def send(self, request, lot_entry):
 
         sender = self.sender
-        subject = self.subject
+        subject = self.subject + u" 【" + lot_entry.lot.event.organization.name + u"】"
         recipients = [lot_entry.shipping_address.email_1]
 
         vars = self._body_tmpl_vars(request, lot_entry)
