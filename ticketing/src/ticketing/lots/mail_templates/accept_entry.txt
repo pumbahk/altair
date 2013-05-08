@@ -61,7 +61,8 @@ ${product.product.name} ${h.format_currency(product.product.price)} x ${product.
 ※ご当選の場合、入金期間内にセブン-イレブン店内レジにてお支払いとなります。
 %endif
 %if lot_entry.payment_delivery_method_pair.delivery_method.delivery_plugin_id == plugins.SHIPPING_DELIVERY_PLUGIN_ID:
-※配送でのお引取りを希望の場合には、ご登録の住所へ公演の一週間前頃までに宅配便にてお届けいたします。%endif
+※配送でのお引取りを希望の場合には、ご登録の住所へ公演の一週間前頃までに宅配便にてお届けいたします。
+%endif
 %if lot_entry.payment_delivery_method_pair.delivery_method.delivery_plugin_id == plugins.SEJ_DELIVERY_PLUGIN_ID:
 ※セブン-イレブン店頭でのお引取りを希望の場合は、ご入金時にレジにてチケットをお渡しいたします。
 %endif
