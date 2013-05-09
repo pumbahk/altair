@@ -10,6 +10,8 @@ def moveSearch(context, request):
     form = SearchForm(request.GET)
     helper = SmartPhoneHelper()
     qs = context.search_freeword(form.data['word'])
+    result = context.create_result(qs=qs, page=int(form.data['page']), query=form.data['word'], per=10)
     return {
-        'helper':helper
+         'result':result
+        ,'helper':helper
     }

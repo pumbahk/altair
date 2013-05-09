@@ -60,21 +60,14 @@ class EventSearcher(object):
         return search_word
 
     # フリーワード、ジャンル検索
-    def get_events_from_freeword(self, form):
-        log_info("get_events_from_freeword", "start")
-        search_word = self.create_search_freeword(form)
-        qs = None
-        if search_word != "":
-            try:
-                log_info("FREEWORD_SEARCH", "SEARCH_WORD=" + search_word)
-                events = helper.searchEvents(self.request, search_word)
-                ids = self._create_ids(events)
-                if len(ids) > 0:
-                    qs = self._create_common_qs(where=Event.id.in_(ids))
-            except Exception as e:
-                log_error("get_events_from_freeword", str(e))
-                qs = None
-        log_info("get_events_from_freeword", "end")
+    def search_freeword(self, word):
+        try:
+            events = helper.searchEvents(self.request, word)
+            ids = self._create_ids(events)
+            if len(ids) > 0:
+                qs = self._create_common_qs(where=Event.id.in_(ids))
+        except Exception as e:
+            qs = None
         return qs
 
     # 取得イベントのIDリスト作成

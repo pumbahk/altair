@@ -1,1 +1,32 @@
-ジャンルリザルト
+<%inherit file="../common/_base.html" />
+<%namespace file="../common/tags_smartphone.html" name="m" />
+<%block name="title">検索結果一覧</%block>
+
+検索条件：${result.query}<br/>
+
+% if result.num:
+    ${result.num}件見つかりました。全${result.num}件中、${result.start}〜${result.end}を表示
+% else:
+    検索条件に該当する公演がありませんでした。
+% endif
+<br/>
+
+% if result.events:
+    % for event in result.events:
+        <hr/>
+        ${event.title}<br/>
+        公演期間：${event.event_open}〜${event.event_close}<br/>
+        会場：${event.performances[0].venue}<br/>
+        販売期間：${event.deal_open}〜${event.deal_close}<br/>
+    % endfor
+% endif
+
+<div id=pager>
+% for count in range(result.page_end):
+    % if result.page == count + 1:
+        ${count + 1}
+    % else:
+        <a href="${request.route_path('search')}?word=${result.query}&page=${count+1}">${count + 1}</a>
+    % endif
+% endfor
+</div>

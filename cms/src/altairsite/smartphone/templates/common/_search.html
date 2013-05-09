@@ -1,9 +1,9 @@
 <div id="search" style="background-color: pink">
     検索フォーム
-    <form action="${request.route_path('search')}" method="GET">
+    <form action="${request.route_path('search')}" method='GET'>
         <fieldset>
             ${form.word}
-            ${form.sale}<br/>
+            ${form.sale}<br/>${form.page}
             % for error in form.word.errors:
                 <font color="red">${error}</font><br/>
             % endfor

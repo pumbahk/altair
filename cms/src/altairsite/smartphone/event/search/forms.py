@@ -17,3 +17,4 @@ class SearchForm(Form):
             (SalesEnum.SOON_ACT.v, u'まもなく開演のチケット'),
         ],
         default=SalesEnum.ON_SALE.v, coerce=int)
+    page = HiddenField(validators=[Optional()],default="1")
