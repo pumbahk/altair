@@ -37,6 +37,7 @@ def main(config, **settings):
     add_route = functools.partial(config.add_route, factory=".resources.TopPageResource")
     add_route("main", "/")
     config.include('altairsite.smartphone.event.genre')
+    config.include('altairsite.smartphone.event.search')
 
     ## all requests are treated as mobile request
     config._add_tween("altairsite.tweens.smartphone_request_factory", under=INGRESS)

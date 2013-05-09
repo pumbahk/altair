@@ -1,16 +1,13 @@
-<div id="s_search" style="background-color: pink">
-検索フォーム
-
-    <form action="" method="POST">
-        <input type="input"/><br/>
-
-    <select name="kind" size="1">
-        <option value="すべてのチケット" selected="selected">すべてのチケット</option>
-        <option value="このジャンルで">このジャンルで</option>
-        <option value="今週発売のチケット">今週発売のチケット</option>
-        <option value="まもなく開演のチケット">まもなく開演のチケット</option>
-    </select>
-        <input type="submit" value="検索"/>　<a href="#">もっと詳しく</a>
+<div id="search" style="background-color: pink">
+    検索フォーム
+    <form action="${request.route_path('search')}" method="GET">
+        <fieldset>
+            ${form.word}
+            ${form.sale}<br/>
+            % for error in form.word.errors:
+                <font color="red">${error}</font><br/>
+            % endfor
+            <input type="submit" value="検索"/><a href="#">もっと詳しく</a>
+        </fieldset>
     </form>
-
 </div>

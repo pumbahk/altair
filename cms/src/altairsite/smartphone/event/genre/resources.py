@@ -1,7 +1,8 @@
 # -*- coding:utf-8 -*-
-from altairsite.mobile.core.helper import log_info
 from altairsite.smartphone.resources import TopPageResource
-from altairsite.smartphone.common.searcher import EventSearcher
+from altaircms.models import Genre
 
 class GenrePageResource(TopPageResource):
-    pass
+    def get_genre(self, id):
+        genre = self.request.allowable(Genre).filter(Genre.id==id).first()
+        return genre

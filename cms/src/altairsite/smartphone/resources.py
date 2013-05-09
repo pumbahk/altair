@@ -31,27 +31,27 @@ class TopPageResource(object):
             results = searcher.query_publishing_topics(datetime.now(), tag)
         return results
 
-    def search(self, request, kind, system_tag_id):
+    def search(self, kind, system_tag_id):
         if kind == "promotion":
-            searcher = get_topic_searcher(request, "promotion")
-            tag = request.allowable(PromotionTag).filter_by(label=u"プロモーション枠").first()
+            searcher = get_topic_searcher(self.request, "promotion")
+            tag = self.request.allowable(PromotionTag).filter_by(label=u"プロモーション枠").first()
         elif kind == "topcontent":
-            searcher = get_topic_searcher(request, "topcontent")
-            tag = request.allowable(TopcontentTag).filter_by(label=u"注目のイベント").first()
+            searcher = get_topic_searcher(self.request, "topcontent")
+            tag = self.request.allowable(TopcontentTag).filter_by(label=u"注目のイベント").first()
         elif kind == "topic":
-            searcher = get_topic_searcher(request, "topic")
-            tag = request.allowable(TopicTag).filter_by(label=u"トピックス").first()
-        system_tag_label = self.get_system_tag_label(request=request, system_tag_id=system_tag_id)
+            searcher = get_topic_searcher(self.request, "topic")
+            tag = self.request.allowable(TopicTag).filter_by(label=u"トピックス").first()
+        system_tag_label = self.get_system_tag_label(request=self.request, system_tag_id=system_tag_id)
         return self._search(searcher=searcher, tag=tag, system_tag_label=system_tag_label)
 
-    def get_hotword(self, request):
+    def get_hotword(self):
         today = datetime.now()
-        hotwords = request.allowable(HotWord).filter(HotWord.term_begin <= today).filter(today <= HotWord.term_end) \
+        hotwords = self.request.allowable(HotWord).filter(HotWord.term_begin <= today).filter(today <= HotWord.term_end) \
                  .filter_by(enablep=True).order_by(asc("display_order"), asc("term_end"))
         return hotwords
 
-    def get_genre_tree(self, request, parent):
-        genre_searcher = GenreSearcher(request)
+    def get_genre_tree(self, parent):
+        genre_searcher = GenreSearcher(self.request)
         tree = genre_searcher.root.children
         if parent:
             tree = genre_searcher.get_children(parent)
@@ -65,7 +65,3 @@ class TopPageResource(object):
 
     def get_region(self):
         return getRegions()
-
-    def get_genre(self, request, id):
-        genre = request.allowable(Genre).filter(Genre.id==id).first()
-        return genre
