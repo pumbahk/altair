@@ -1,63 +1,18 @@
 # -*- coding:utf-8 -*-
-
 import json
-import contextlib
 import urllib2
-import logging
 from collections import defaultdict
 from altaircms.plugins.interfaces import IExternalAPI
 from zope.interface import implementer
-logger = logging.getLogger(__file__)
+import contextlib
 
-"""
-cms calendar:
 
-status :: performance -> calendar-status
- """
-
-def get_calendar_data_api(request):
-    return request.registry.getUtility(IExternalAPI, name=CalendarDataAPI.__name__)
-
-class CalendarStatus(object):
-    circle = {"class": "circle", "string":u"○"}
-    triangle = {"class": "triangle", "string":u"△"}
-    cross = {"class": "cross", "string":u"×"}
-    unknown = {"class": "unknown", "string": u""}
-
-class MaruBatsuSankaku(object):
-    circle = {"class": "maru", "string":u"○"}
-    triangle = {"class": "sankaku", "string":u"△"}
-    cross = {"class": "batsu", "string":u"×"}
-    unknown = {"class": "hatena", "string": u""}
+import logging
+logger = logging.getLogger(__name__)
 
 dummy_data = {"stocks": []}
-def get_performance_status(request, widget, event, status_impl):
-    """
-    call api
-    """
-    data = dummy_data
-    try:
-        data = get_calendar_data_api(request).fetch_stock_status(request, event, widget.salessegment)
-        data = json.loads(data)
-    except urllib2.HTTPError, e:
-        logger.warn("*calendar widget* api call is failed. url=%s" % e.url)
-    except urllib2.URLError, e:
-        logger.warn("*calendar widget* api call is failed (URLError)")
-    except Exception, e:
-        logger.warn("*calendar widget* api call is failed")
-        logger.exception(str(e))
-    return _get_performance_status(request, CalcResult(rawdata=data, status_impl=status_impl))
-
-def _get_performance_status(request, data):
-    for stock in data.rawdata["stocks"]:
-        data.add_stock(stock)
-    return data
-
-### 
-
-
 @implementer(IExternalAPI)
-class CalendarDataAPI(object):
+class StockDataAPI(object):
     def __init__(self, url, apikey):
         self.external_url = url.rstrip("/")
         self.apikey = apikey
@@ -70,18 +25,37 @@ class CalendarDataAPI(object):
         url = self.get_fetch_stock_status_api_url(event, salessegment_group)
         req = urllib2.Request(url)
         req.add_header('X-Altair-Authorization', self.apikey)
-        with contextlib.closing(urllib2.urlopen(req)) as res:
-            data = res.read()
-            logger.debug("*calendar widget api* returned value: %s" % data)
-            return data 
+        try:
+            with contextlib.closing(urllib2.urlopen(req)) as res:
+                data = res.read()
+                logger.debug("*calendar widget api* returned value: %s" % data)
+                data = json.loads(data)
+                return data
+        except urllib2.HTTPError, e:
+            logger.warn("*calendar widget* api call is failed. url=%s" % e.url)
+        except urllib2.URLError, e:
+            logger.warn("*calendar widget* api call is failed (URLError)")
+        except Exception, e:
+            logger.warn("*calendar widget* api call is failed")
+            logger.exception(str(e))
+        return dummy_data
 
-
-class NotFoundMatchResultException(Exception):
-    pass
 
 ## (find-file "api-dummy-data.json")
+class StockStatus(object):
+    circle = {"class": "circle", "string":u"○"}
+    triangle = {"class": "triangle", "string":u"△"}
+    cross = {"class": "cross", "string":u"×"}
+    unknown = {"class": "unknown", "string": u""}
+
+class MaruBatsuSankaku(object):
+    circle = {"class": "maru", "string":u"○"}
+    triangle = {"class": "sankaku", "string":u"△"}
+    cross = {"class": "batsu", "string":u"×"}
+    unknown = {"class": "hatena", "string": u""}
+
 class CalcResult(object): #すごい決め打ち
-    def __init__(self, rawdata=None, status_impl=CalendarStatus):
+    def __init__(self, rawdata=None, status_impl=StockStatus):
         self.status_impl = status_impl
         self.scores = defaultdict(int)
         self.counts = defaultdict(int)

@@ -39,8 +39,8 @@ logger = logging.getLogger(__name__)
           %endif
 
           <td width="25%">${performance.venue}</td>
-          <td width="10%"> 
-            <% 
+          <td width="10%">
+            <%
                end_on_candidates = [s.end_on for s in performance.sales if s.end_on]
                start_on_candidates = [s.start_on for s in performance.sales]
              %>
@@ -49,9 +49,13 @@ logger = logging.getLogger(__name__)
             %elif min(start_on_candidates) >= now:
               <span class="notStartedPerformance">販売前</span>
             %elif max(end_on_candidates) >= now:
-              <a href="${h.link.get_purchase_page_from_performance(request, performance)}">
-                <img width="65px" src="${request.static_url("altaircms:static/RT/img/settlement/btn_buy_small.gif")}" alt="購入"/>
-              </a>
+              % if status.scores.get(int(performance.id),0) <= 0:
+                <img width="65px" src="${request.static_url("altaircms:static/RT/img/settlement/btn_end_small.gif")}" alt="予定枚数終了"/>
+              % else:
+                <a href="${h.link.get_purchase_page_from_performance(request, performance)}">
+                  <img width="65px" src="${request.static_url("altaircms:static/RT/img/settlement/btn_buy_small.gif")}" alt="購入"/>
+                </a>
+              % endif
             %else:
               <span class="endPerformance">販売終了</span>
             %endif

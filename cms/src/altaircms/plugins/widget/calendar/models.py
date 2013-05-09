@@ -13,7 +13,7 @@ from altaircms.plugins.base.mixins import UpdateDataMixin
 from altaircms.security import RootFactory
 from altaircms.plugins.base.interception import not_support_if_keyerror
 from altaircms.plugins.api import get_widget_utility
-from . import api
+from altaircms.plugins.extra.api import get_stockstatus_summary
 
 class CalendarWidget(Widget):
     implements(IWidget)
@@ -49,6 +49,7 @@ class CalendarWidget(Widget):
         @not_support_if_keyerror("calendar widget: %(err)s")
         def calendar_render():
             ## todo あとで整理
+          
             performances = bsettings.extra["performances"]
             performances = [p for p in performances if p.start_on]
             event = bsettings.extra["event"]
@@ -58,11 +59,11 @@ class CalendarWidget(Widget):
             utility = get_widget_utility(request, page, self.type)
 
             status_impl = utility.status_impl
-            calendar_status = api.get_performance_status(request, self, event, status_impl)
+            stock_status = get_stockstatus_summary(request, self, event, status_impl)
 
             template_name = utility.get_template_name(request, self)
             render_fn = utility.get_rendering_function(request, self)
-            return render_fn(self, calendar_status, performances, request, template_name=template_name)
+            return render_fn(self, stock_status, performances, request, template_name=template_name)
         bsettings.add(bname, calendar_render)
         self._if_tab_add_js_script(bsettings)
 

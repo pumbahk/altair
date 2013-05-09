@@ -3,6 +3,8 @@ from altaircms.helpers.event import WEEK
 import logging
 logger = logging.getLogger(__name__)
 from altaircms.rowspanlib import RowSpanGrid
+from .models import PerformancelistWidget
+from altaircms.page.models import Page
 
 def performance_describe_date(performance):
     try:
@@ -28,7 +30,6 @@ def performance_describe_time(performance):
         return p_time
     except Exception, e:
         logger.exception(str(e))
-        
 
 def venue_for_grid(data, k, changed):
     if changed:

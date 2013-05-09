@@ -2,13 +2,14 @@ import unittest
 import json
 
 class DummyPerformance(object):
-    def __init__(self, backend_id=None):
+    def __init__(self, backend_id=None, purchase_link=None):
         self.backend_id = backend_id
+        self.purchase_link = purchase_link
 
-class CalendarStatusTests(unittest.TestCase):
+class StockStatusTests(unittest.TestCase):
     def _callFUT(self, *args, **kwargs):
-        from altaircms.plugins.widget.calendar.api import _get_performance_status
-        return _get_performance_status(*args, **kwargs)
+        from altaircms.plugins.extra.api import _get_stockstatus_summary
+        return _get_stockstatus_summary(*args, **kwargs)
 
     def test_usually(self):
         jsondata = u"""{
@@ -30,14 +31,14 @@ class CalendarStatusTests(unittest.TestCase):
           ]
         }"""
 
-        from altaircms.plugins.widget.calendar.api import CalcResult
-        from altaircms.plugins.widget.calendar.api import CalendarStatus
+        from altaircms.plugins.extra.api import CalcResult
+        from altaircms.plugins.extra.stockstatus import StockStatus
         data = CalcResult(rawdata=json.loads(jsondata))
         request = None
         performance = DummyPerformance(backend_id=1)
 
         result = self._callFUT(request, data)
-        self.assertEquals(result.get_status(performance), CalendarStatus.circle)
+        self.assertEquals(result.get_status(performance), StockStatus.circle)
 
     def test_matched_performance_not_found(self): ## this is illegal case
         jsondata = u"""{
@@ -59,14 +60,14 @@ class CalendarStatusTests(unittest.TestCase):
           ]
         }"""
 
-        from altaircms.plugins.widget.calendar.api import CalcResult
-        from altaircms.plugins.widget.calendar.api import CalendarStatus
+        from altaircms.plugins.extra.api import CalcResult
+        from altaircms.plugins.extra.stockstatus import StockStatus
         data = CalcResult(rawdata=json.loads(jsondata))
         request = None
         performance = DummyPerformance(backend_id=2)
 
         result = self._callFUT(request, data)
-        self.assertEquals(result.get_status(performance), CalendarStatus.cross)
+        self.assertEquals(result.get_status(performance), StockStatus.cross)
 
     def test_soldout(self):
         jsondata = u"""{
@@ -81,14 +82,14 @@ class CalendarStatusTests(unittest.TestCase):
           ]
         }"""
 
-        from altaircms.plugins.widget.calendar.api import CalcResult
-        from altaircms.plugins.widget.calendar.api import CalendarStatus
+        from altaircms.plugins.extra.api import CalcResult
+        from altaircms.plugins.extra.stockstatus import StockStatus
         data = CalcResult(rawdata=json.loads(jsondata))
         request = None
         performance = DummyPerformance(backend_id=1)
 
         result = self._callFUT(request, data)
-        self.assertEquals(result.get_status(performance), CalendarStatus.cross)
+        self.assertEquals(result.get_status(performance), StockStatus.cross)
 
     def test_one_stocktype_is_soldout(self):
         jsondata = u"""{
@@ -110,14 +111,14 @@ class CalendarStatusTests(unittest.TestCase):
           ]
         }"""
 
-        from altaircms.plugins.widget.calendar.api import CalcResult
-        from altaircms.plugins.widget.calendar.api import CalendarStatus
+        from altaircms.plugins.extra.api import CalcResult
+        from altaircms.plugins.extra.stockstatus import StockStatus
         data = CalcResult(rawdata=json.loads(jsondata))
         request = None
         performance = DummyPerformance(backend_id=1)
 
         result = self._callFUT(request, data)
-        self.assertEquals(result.get_status(performance), CalendarStatus.triangle)
+        self.assertEquals(result.get_status(performance), StockStatus.triangle)
 
     def test_less_assigned(self):
         jsondata = u"""{
@@ -139,14 +140,14 @@ class CalendarStatusTests(unittest.TestCase):
           ]
         }"""
 
-        from altaircms.plugins.widget.calendar.api import CalcResult
-        from altaircms.plugins.widget.calendar.api import CalendarStatus
+        from altaircms.plugins.extra.api import CalcResult
+        from altaircms.plugins.extra.stockstatus import StockStatus
         data = CalcResult(rawdata=json.loads(jsondata))
         request = None
         performance = DummyPerformance(backend_id=1)
 
         result = self._callFUT(request, data)
-        self.assertEquals(result.get_status(performance), CalendarStatus.triangle)
+        self.assertEquals(result.get_status(performance), StockStatus.triangle)
         
 
 if __name__ == "__main__":
