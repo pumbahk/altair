@@ -11,12 +11,12 @@
       <font color="red">
         
       </font>
-  <a href="${request.route_path("mobile_index")}"><font size="3" color="#bf0000"><img src=${request.static_url("altaircms:static/mobile/img/logo-small.gif")} width="160" height="26" alt="楽天チケット" /></font></a>
+  <a href="${request.route_path("mobile_index")}"><font size="3" color="#bf0000"><img src="${request.static_url("altaircms:static/mobile/img/logo-small.gif")}" width="160" height="26" alt="楽天チケット" /></font></a>
   <hr size="1" noshade="noshade" color="#bf0000" />
 </div>
 <div>
 <div style="text-align:center" align="center">${event.title}</div>
-<div style="background-image:url(/static/mobile/img/bg_bar.gif);background-color:#bf0000" bgcolor="#bf0000" background=${request.static_url("altaircms:static/mobile/img/bg_bar.gif")}><font color="#ffffff" size="3"><font color="#ffbf00">■</font>公演一覧</font></div>
+<div style="background-image:url(/static/mobile/img/bg_bar.gif);background-color:#bf0000" bgcolor="#bf0000" background="${request.static_url("altaircms:static/mobile/img/bg_bar.gif")}"><font color="#ffffff" size="3"><font color="#ffbf00">■</font>公演一覧</font></div>
 
 %if len(performances) <= 0:
   現在表示できる公演はありません。
@@ -35,7 +35,7 @@
   %endfor
 %endif
 
-<div style="background-image:url(/static/mobile/img/bg_bar.gif);background-color:#bf0000" bgcolor="#bf0000" background=${request.static_url("altaircms:static/mobile/img/bg_bar.gif")}><font color="#ffffff" size="3"><font color="#ffbf00">■</font>公演詳細</font></div>
+<div style="background-image:url(/static/mobile/img/bg_bar.gif);background-color:#bf0000" bgcolor="#bf0000" background="${request.static_url("altaircms:static/mobile/img/bg_bar.gif")}"><font color="#ffffff" size="3"><font color="#ffbf00">■</font>公演詳細</font></div>
 【公演期間】<br />
 ${h.base.jdate_with_hour(event.event_open)}~${h.base.jdate_with_hour(event.event_close)}<br />
 %if event.performers:

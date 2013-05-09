@@ -11,9 +11,9 @@
 <%def name="search_form_on_header(placeholder, query_id)">
 	<form id="form1" name="form1" method="GET" action="${request.route_path("page_search_by_freeword")}">
     <a href="#" class="region fukidashi-btn">開催地</a>
-    <img src=${request.static_url("altaircms:static/ticketstar/img/renewal/header_search_hr.jpg")} alt="区切り線" width="4" height="45" class="headerSearch_border" />
+    <img src="${request.static_url("altaircms:static/ticketstar/img/renewal/header_search_hr.jpg")}" alt="区切り線" width="4" height="45" class="headerSearch_border" />
 		<input name="q" type="text" id="${query_id}" size="30" placeholder="${placeholder}" />
-		<input name="imageField" type="image" id="imageField" src=${request.static_url("altaircms:static/ticketstar/img/renewal/header_search_btn.gif")} alt="検索" />
+		<input name="imageField" type="image" id="imageField" src="${request.static_url("altaircms:static/ticketstar/img/renewal/header_search_btn.gif")}" alt="検索" />
 		<a href="${request.route_path("page_search_input")}">詳細検索</a>
 	</form>
 </%def>
@@ -24,16 +24,16 @@ from altairsite.search.forms import TopPageSidebarSearchForm
 form = TopPageSidebarSearchForm()
 %>
 		<div id="sideSearch">
-			<h2><img src=${request.static_url("altaircms:static/ticketstar/img/index/title_search.gif")} alt="チケットを探す" width="246" height="36" /></h2>
+			<h2><img src="${request.static_url("altaircms:static/ticketstar/img/index/title_search.gif")}" alt="チケットを探す" width="246" height="36" /></h2>
 			<ul>
-				<li><a href="${h.link.get_searchpage(request, page=page, kind="deal_cond", value="early_firstcome")}"><img src=${request.static_url("altaircms:static/ticketstar/img/index/btn_presale.gif")} alt="先行抽選" width="222" height="28" /></a></li>
-				<li><a href="${h.link.get_searchpage(request, page=page, kind="deal_cond", value="normal")}"><img src=${request.static_url("altaircms:static/ticketstar/img/index/btn_release.gif")} alt="一般発売" width="222" height="28" /></a></li>
-				<li><a href="${h.link.get_searchpage(request, page=page, kind="deal_open", value=7)}"><img src=${request.static_url("altaircms:static/ticketstar/img/index/btn_now.gif")} alt="すぐ見たい" width="222" height="28" /></a></li>
-				<li><a href="${request.route_path("page_search_by", kind="pagetag", value=request.get_page_tag(u"お買い得").id)}"><img src=${request.static_url("altaircms:static/ticketstar/img/index/btn_best.gif")} alt="お買い得チケット" width="222" height="28" /></a></li>
+				<li><a href="${h.link.get_searchpage(request, page=page, kind="deal_cond", value="early_firstcome")}"><img src="${request.static_url("altaircms:static/ticketstar/img/index/btn_presale.gif")}" alt="先行抽選" width="222" height="28" /></a></li>
+				<li><a href="${h.link.get_searchpage(request, page=page, kind="deal_cond", value="normal")}"><img src="${request.static_url("altaircms:static/ticketstar/img/index/btn_release.gif")}" alt="一般発売" width="222" height="28" /></a></li>
+				<li><a href="${h.link.get_searchpage(request, page=page, kind="deal_open", value=7)}"><img src="${request.static_url("altaircms:static/ticketstar/img/index/btn_now.gif")}" alt="すぐ見たい" width="222" height="28" /></a></li>
+				<li><a href="${request.route_path("page_search_by", kind="pagetag", value=request.get_page_tag(u"お買い得").id)}"><img src="${request.static_url("altaircms:static/ticketstar/img/index/btn_best.gif")}" alt="お買い得チケット" width="222" height="28" /></a></li>
 			</ul>
 			<form id="form2" name="form2" method="GET" action="${request.route_path("page_search_by_multi")}">
 				<dl>
-					<dt><img src=${request.static_url("altaircms:static/ticketstar/img/index/search_day.gif")} alt="開催日" width="37" height="13" /></dt>
+					<dt><img src="${request.static_url("altaircms:static/ticketstar/img/index/search_day.gif")}" alt="開催日" width="37" height="13" /></dt>
 					<dd>
                        ${form.start_year}
                        ${form.start_month}
@@ -43,12 +43,12 @@ form = TopPageSidebarSearchForm()
                        ${form.end_month}
                        ${form.end_day}
 					</dd>
-					<dt><img src=${request.static_url("altaircms:static/ticketstar/img/index/search_place.gif")} alt="開催場所" width="52" height="13" /></dt>
+					<dt><img src="${request.static_url("altaircms:static/ticketstar/img/index/search_place.gif")}" alt="開催場所" width="52" height="13" /></dt>
 					<dd>
                         ${form.area}
 					</dd>
 				</dl>
-				<p><input name="imageField2" type="image" id="imageField2" src=${request.static_url("altaircms:static/ticketstar/img/index/btn_search.gif")} alt="日程・場所で探す" /></p>
+				<p><input name="imageField2" type="image" id="imageField2" src="${request.static_url("altaircms:static/ticketstar/img/index/btn_search.gif")}" alt="日程・場所で探す" /></p>
 			</form>
 		</div>
 </%def>
@@ -101,12 +101,12 @@ form = TopPageSidebarSearchForm()
     <link href='http://fonts.googleapis.com/css?family=Changa+One' rel='stylesheet' type='text/css'>
       <!--************************************* webフォント使ったら怒られるかな？************************************hiromi****** -->
       
-      <link rel="shortcut icon" href=${request.static_url("altaircms:static/ticketstar/img/common/favicon.ico")} />
-      <link rel="stylesheet" href=${request.static_url("altaircms:static/ticketstar/css/import.css")} type="text/css" media="all" />
-      <script type="text/javascript" src=${request.static_url("altaircms:static/ticketstar/js/jquery.js")}></script>
+      <link rel="shortcut icon" href="${request.static_url("altaircms:static/ticketstar/img/common/favicon.ico")}" />
+      <link rel="stylesheet" href="${request.static_url("altaircms:static/ticketstar/css/import.css")}" type="text/css" media="all" />
+      <script type="text/javascript" src="${request.static_url("altaircms:static/ticketstar/js/jquery.js")}"></script>
     </head>
     <body id="help">
-      <p id="naviSkip"><a href="#main" tabindex="1" title="本文へジャンプ"><img src=${request.static_url("altaircms:static/ticketstar/img/common/skip.gif")} alt="本文へジャンプ" width="1" height="1" /></a></p>
+      <p id="naviSkip"><a href="#main" tabindex="1" title="本文へジャンプ"><img src="${request.static_url("altaircms:static/ticketstar/img/common/skip.gif")}" alt="本文へジャンプ" width="1" height="1" /></a></p>
       <div id="container">
 
         <!-- ========== header ========== -->
@@ -114,7 +114,7 @@ form = TopPageSidebarSearchForm()
           
           <p id="tagLine">チケット販売・イベント予約</p>
           <p id="siteID">
-            <a href="http://ticket.rakuten.co.jp/"><img src=${request.static_url("altaircms:static/ticketstar/img/renewal/logo.gif")} alt="楽天チケット"/></a>
+            <a href="http://ticket.rakuten.co.jp/"><img src="${request.static_url("altaircms:static/ticketstar/img/renewal/logo.gif")}" alt="楽天チケット"/></a>
           </p>
           <dl id="remoteNav">
             <dt>楽天グループ関連</dt>
@@ -166,7 +166,7 @@ form = TopPageSidebarSearchForm()
         <div id="headerSearch">
           ${search_form_on_header(u"アーティスト名、公演名、会場名など", "query_id")}
           <dl>
-            <dt><img src=${request.static_url("altaircms:static/ticketstar/img/renewal/header_search_hot.jpg")} alt="ホットワード" width="53" height="45" class="headerSearch_hotword" /></dt>
+            <dt><img src="${request.static_url("altaircms:static/ticketstar/img/renewal/header_search_hot.jpg")}" alt="ホットワード" width="53" height="45" class="headerSearch_hotword" /></dt>
             <dd>
               <ul>
                 %for w in layout.hotword_list():
@@ -181,7 +181,7 @@ form = TopPageSidebarSearchForm()
         <!-- ========== /header ========== -->
         
         <hr />
-	<!-- InstanceBeginEditable name="cat" --><h1><img width="91" height="60" id="titleImage" src=${request.static_url("altaircms:static/ticketstar/img/help/title_help.gif")} alt="ヘルプ"/></h1><!-- InstanceEndEditable -->
+	<!-- InstanceBeginEditable name="cat" --><h1><img width="91" height="60" id="titleImage" src="${request.static_url("altaircms:static/ticketstar/img/help/title_help.gif")}" alt="ヘルプ"/></h1><!-- InstanceEndEditable -->
         <!-- ========== main ========== -->
 <div id="main">
 <%block name="main">
