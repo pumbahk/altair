@@ -59,7 +59,7 @@ def build_app():
     import altaircms
     here = set_here(os.path.join(altaircms.__path__[0], "../../"))
     _app = loadapp(_config_spec, None,  global_conf={}, relative_to=here)
-    _registry = _app.values()[0].registry
+    _registry = _app.registry
     _app = ComfortableTestApp(_app, relative_to=os.path.join(here, "functional_tests"))
     return _app
 

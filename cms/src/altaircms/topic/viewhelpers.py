@@ -7,6 +7,7 @@ from altaircms.helpers.link import get_link_from_topcontent
 from altaircms.helpers.link import get_link_from_topcontent_in_cms
 from altaircms.helpers.link import get_link_from_promotion
 from altaircms.helpers.link import get_link_from_promotion_in_cms
+from altaircms.helpers.asset import rendering_object as rendering_asset
 
 ## grid
 # data = (pageset, page, promotion widget)
@@ -42,8 +43,8 @@ PromotionGrid.register("widget", mapping=widget_for_grid, keyfn=lambda data : da
 PromotionGrid.register("tag", mapping=tag_for_grid, keyfn=lambda data : data[3].id)
 
 
-def _render_image(request, asset, filepath=None):
-    return image_asset_layout(request, asset, filepath=filepath, 
+def _render_image(request, asset, href=None):
+    return image_asset_layout(request, asset, href=href, 
                               width="", height="")
 
 def _render_genre(topic):
@@ -65,7 +66,7 @@ class PromotionHTMLRenderer(object):
 
     def render_thumbnail_image(self, promotion):
         asset = promotion.main_image
-        return _render_image(self.request, asset, filepath=asset.thumbnail_path)
+        return _render_image(self.request, asset, href=rendering_asset(self.request, asset).thumbnail_path)
 
     def render_link(self, promotion):
         return _render_link(get_link_from_promotion(self.request, promotion))

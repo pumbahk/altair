@@ -6,7 +6,7 @@
       <tr>
     % for t in pair:
         <td class="event">
-          <a href="${h.link.get_link_from_topcontent(request, t)}"><img src="${h.asset.to_show_page(request, t.image_asset,filepath=getattr(t.image_asset, widget.rendering_image_attribute))}" alt="${t.title}" width="80" height="80" /></a>
+          <a href="${h.link.get_link_from_topcontent(request, t)}"><img src="${getattr(h.asset.rendering_object(request, t.image_asset), widget.rendering_image_attribute)}" alt="${t.title}" width="80" height="80" /></a>
           <a href="${h.link.get_link_from_topcontent(request, t)}">${h.truncate(t.title, 35) }</a>
           <p>${h.truncate(t.text, 57)}
           %if t.linked_page and t.linked_page.event:

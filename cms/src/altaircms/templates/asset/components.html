@@ -1,5 +1,5 @@
 <%def name="show_asset(asset)">
-  <img src="${h.asset.to_show_page(request, asset)}" alt="${asset.alt}"/>
+  <img src="${h.asset.rendering_object(request, asset).filepath}" alt="${asset.alt}"/>
 </%def>
 
 <%def name="asset_tr_attr(asset, label, attr)">
@@ -22,7 +22,7 @@
 
 <%def name="asset_show(request, asset)">
 	<div class="span6">
-	  <img src="${h.asset.to_show_page(request, asset)}" alt="${asset.alt}"/>
+	  <img src="${h.asset.rendering_object(request, asset).filepath}" alt="${asset.alt}"/>
 	</div>
 </%def>
 
@@ -48,9 +48,9 @@
 <%def name="movie_asset_describe(request, asset)">
     <div class="movie-widget" style="margin-left:30px; margin-bottom:20px;">
         %if asset.mimetype == 'video/quicktime':
-            <embed src="${h.asset.to_show_page(request,asset)}"></embed>
+            <embed src="${h.asset.rendering_object(request, asset).filepath}"></embed>
         %elif asset.mimetype == 'video/mp4':
-            <embed type="video/quicktime" src="${h.asset.to_show_page(request,asset)}"></embed>
+            <embed type="video/quicktime" src="${h.asset.rendering_object(request, asset).filepath}"></embed>
         %else:
             ${h.asset.not_found_image(request)|n}
         %endif
@@ -84,7 +84,7 @@
 		var height = $('#asset').height(); // @TODO: 高さ情報をどこから取得するか検討する
 
 		swfobject.embedSWF(
-			"${h.asset.to_show_page(request, asset)}",
+			"${h.asset.rendering_object(request, asset).filepath}",
 			"asset",
 			width,
 			"480",

@@ -21,7 +21,8 @@ class Layout(BaseOriginalMixin, WithOrganizationMixin, Base):
     id = Column(Integer(), primary_key=True)
     created_at = Column(DateTime(), default=datetime.now())
     updated_at = Column(DateTime(), default=datetime.now())
-
+    uploaded_at = Column(DateTime())
+    synced_at = Column(DateTime())
     title = Column(String(255))
     template_filename = Column(String(255))
     DEFAULT_BLOCKS = "[]"
@@ -60,4 +61,10 @@ class Layout(BaseOriginalMixin, WithOrganizationMixin, Base):
         except ValueError:
             return False
         return True
-            
+
+    @property
+    def dependencies(self):
+        return [self.prefixed_template_filename]
+
+    def is_synced(self):
+        return self.synced_at and self.synced_at > self.updated_at

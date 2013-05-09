@@ -12,6 +12,9 @@ from sqlalchemy.ext.hybrid import hybrid_property
 from zope.interface import implements
 from altaircms.interfaces import IAsset
 from altaircms.interfaces import IHasMedia
+from altaircms.models import WithOrganizationMixin
+import os
+import itertools
 
 __all__ = [
     'Asset',
@@ -20,8 +23,6 @@ __all__ = [
     'FlashAsset',
     # 'CssAsset'
 ]
-from altaircms.models import WithOrganizationMixin
-import os
 DIR = os.path.dirname(os.path.abspath(__file__))
 # import sqlalchemy.orm as orm
 
@@ -57,6 +58,35 @@ class Asset(BaseOriginalMixin, WithOrganizationMixin, Base):
     def private_tags(self):
         return [tag for tag in self.tags if tag.publicp == False]
 
+    def increment_version(self):
+        if self.version_counter is None:
+            self.version_counter = 0
+        self.version_counter += 1
+        return self.version_counter
+
+    def all_files_candidates(self):
+        """ version conter -> [filepath] + [thumbnail_path]
+        """
+        c = self.version_counter
+        filepath = self.filepath
+        for i in range((c or 0) + 1):
+            yield filename_with_version(filepath, i)
+
+        thumbnail_path = self.thumbnail_path
+        if thumbnail_path:
+            for i in range((c or 0) + 1):
+                yield filename_with_version(thumbnail_path, i)
+
+    def filename_with_version(self, path=None, version=None):
+        path = path or self.filepath
+        return filename_with_version(path, version or self.version_counter)
+
+def filename_with_version(fname, i):
+    if i == 0:
+        return fname
+    base, ext = os.path.splitext(fname)
+    return "{0}.{1}{2}".format(base, i, ext)
+
 class ImageAsset(Asset):
     implements(IAsset, IHasMedia)
     type = "image"
@@ -71,11 +101,19 @@ class ImageAsset(Asset):
     height = sa.Column(sa.Integer)
     filepath = sa.Column(sa.String(255))
     thumbnail_path = sa.Column(sa.String(255))
+    file_url = sa.Column(sa.String(255))
+    thumbnail_url = sa.Column(sa.String(255))
     mimetype = sa.Column(sa.String(255), default="")
+    version_counter = sa.Column(sa.SmallInteger, default=0, nullable=False)
 
     @property
     def image_path(self):
         return self.filepath
+
+    @property
+    def image_url(self):
+        return self.file_url
+
 
 class FlashAsset(Asset):
     implements(IAsset, IHasMedia)
@@ -93,10 +131,17 @@ class FlashAsset(Asset):
     filepath = sa.Column(sa.String(255))
     mimetype = sa.Column(sa.String(255), default='application/x-shockwave-flash')
     thumbnail_path = sa.Column(sa.String(255))
+    file_url = sa.Column(sa.String(255))
+    thumbnail_url = sa.Column(sa.String(255))
+    version_counter = sa.Column(sa.SmallInteger, default=0, nullable=False)
 
     @property
     def image_path(self):
         return self.thumbnail_path
+
+    @property
+    def image_url(self):
+        return self.thumbnail_url
 
 class MovieAsset(Asset):
     implements(IAsset, IHasMedia)
@@ -113,10 +158,17 @@ class MovieAsset(Asset):
     filepath = sa.Column(sa.String(255))
     mimetype = sa.Column(sa.String(255), default="")
     thumbnail_path = sa.Column(sa.String(255))
+    file_url = sa.Column(sa.String(255))
+    thumbnail_url = sa.Column(sa.String(255))
+    version_counter = sa.Column(sa.SmallInteger, default=0, nullable=False)
 
     @property
     def image_path(self):
         return self.thumbnail_path
+
+    @property
+    def image_url(self):
+        return self.thumbnail_url
 
 # class CssAsset(Asset):
 #     pass

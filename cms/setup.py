@@ -50,11 +50,11 @@ tests_require = [
 ]
 
 devtools_require = [
-    "sadisplay",
+    # "sadisplay",
     "alembic",
-    "sphinx",
-    "sphinxcontrib-blockdiag",
-    "sphinxcontrib-seqdiag",
+    # "sphinx",
+    # "sphinxcontrib-blockdiag",
+    # "sphinxcontrib-seqdiag",
 ]
 
 extras_require = {
