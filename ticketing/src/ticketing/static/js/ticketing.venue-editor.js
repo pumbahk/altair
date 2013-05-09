@@ -1,6 +1,6 @@
 (function (jQuery, I18n) {
 var __LIBS__ = {};
-__LIBS__['MG4EUX16MDLB6IJ5'] = (function (exports) { (function () { 
+__LIBS__['FJQ5YF0RJ033GP2D'] = (function (exports) { (function () { 
 
 /************** CONF.js **************/
 exports.DEFAULT = {
@@ -71,7 +71,7 @@ exports.DEFAULT = {
   }
 };
  })(); return exports; })({});
-__LIBS__['pFXSXUXX49WQPV19'] = (function (exports) { (function () { 
+__LIBS__['QM8NKKUWZE60YSI0'] = (function (exports) { (function () { 
 
 /************** util.js **************/
 exports.eventKey = function Util_eventKey(e) {
@@ -122,27 +122,37 @@ exports.allAttributes = function Util_allAttributes(el) {
   return rt;
 };  
 
-exports.makeHitTester = function Util_makeHitTester(a) {
-  var pa = a.position(),
-  sa = a.size(),
-  ax0 = pa.x,
-  ax1 = pa.x + sa.x,
-  ay0 = pa.y,
-  ay1 = pa.y + sa.y;
-
-  return function(b) {
-    var pb = b.position(),
-    sb = b.size();
-    if(b._transform) {
-      pb = b._transform.apply(pb);
-    }
-    bx0 = pb.x,
-    bx1 = pb.x + sb.x,
-    by0 = pb.y,
-    by1 = pb.y + sb.y;
-
-    return ((((ax0 < bx0) && (bx0 < ax1)) || (( ax0 < bx1) && (bx1 < ax1)) || ((bx0 < ax0) && (ax1 < bx1))) && // x
-            (((ay0 < by0) && (by0 < ay1)) || (( ay0 < by1) && (by1 < ay1)) || ((by0 < ay0) && (ay1 < by1))));  // y
+exports.makeHitTester = function Util_makeHitTester(rect) {
+  var rp = rect.position(),
+  rs = rect.size();
+  
+  if(rs.x < 3 && rs.y < 3) {
+    // click mode
+    var rc = { x: rp.x+rs.x/2, y: rp.y+rs.y/2 };
+    return function(obj) {
+      var trc = obj._transform ? obj._transform.invert().apply(rc) : rc;
+      var op = obj.position(),
+      os = obj.size(),
+      ox0 = op.x,
+      ox1 = op.x + os.x,
+      oy0 = op.y,
+      oy1 = op.y + os.y;
+      return ox0 < trc.x && trc.x < ox1 && oy0 < trc.y && trc.y < oy1;
+    };
+  } else {
+    // rect mode
+    var rx0 = rp.x,
+    rx1 = rp.x + rs.x,
+    ry0 = rp.y,
+    ry1 = rp.y + rs.y;
+    return function(obj) {
+      var op = obj.position(),
+      os = obj.size(),
+      oc = { x: op.x+os.x/2, y: op.y+os.y/2 };
+      
+      var toc = obj._transform ? obj._transform.apply(oc) : oc;
+      return rx0 < toc.x && toc.x < rx1 && ry0 < toc.y && toc.y < ry1;
+    };
   }
 };
 
@@ -188,7 +198,7 @@ timer.prototype.lap = function(msg) {
     return lap;
 };
  })(); return exports; })({});
-__LIBS__['pU11FS8_SM4SUAP8'] = (function (exports) { (function () { 
+__LIBS__['JZUZZZC5UBXEQWW_'] = (function (exports) { (function () { 
 
 /************** identifiableset.js **************/
 var IdentifiableSet = exports.IdentifiableSet = function IdentifiableSet(options) {
@@ -237,12 +247,12 @@ IdentifiableSet.prototype.each = function IdentifiableSet_each(f) {
  * vim: sts=2 sw=2 ts=2 et
  */
  })(); return exports; })({});
-__LIBS__['BF178VRC35UBN51D'] = (function (exports) { (function () { 
+__LIBS__['tY4937QCQ4P4J251'] = (function (exports) { (function () { 
 
 /************** models.js **************/
-var util = __LIBS__['pFXSXUXX49WQPV19'];
-var CONF = __LIBS__['MG4EUX16MDLB6IJ5'];
-var IdentifiableSet = __LIBS__['pU11FS8_SM4SUAP8'].IdentifiableSet;
+var util = __LIBS__['QM8NKKUWZE60YSI0'];
+var CONF = __LIBS__['FJQ5YF0RJ033GP2D'];
+var IdentifiableSet = __LIBS__['JZUZZZC5UBXEQWW_'].IdentifiableSet;
 
 var VenueItemCollectionMixin = {
   venue: null,
@@ -729,12 +739,12 @@ console.log(ad2);
  * vim: sts=2 sw=2 ts=2 et
  */
  })(); return exports; })({});
-__LIBS__['lAWLKCBMCO6DXVAK'] = (function (exports) { (function () { 
+__LIBS__['RSPJGA5UBVG6STV5'] = (function (exports) { (function () { 
 
 /************** viewobjects.js **************/
-var util = __LIBS__['pFXSXUXX49WQPV19'];
-var CONF = __LIBS__['MG4EUX16MDLB6IJ5'];
-var models = __LIBS__['BF178VRC35UBN51D'];
+var util = __LIBS__['QM8NKKUWZE60YSI0'];
+var CONF = __LIBS__['FJQ5YF0RJ033GP2D'];
+var models = __LIBS__['tY4937QCQ4P4J251'];
 
 var Seat = exports.Seat = Backbone.Model.extend({
   defaults: {
@@ -911,7 +921,7 @@ var Seat = exports.Seat = Backbone.Model.extend({
  * vim: sts=2 sw=2 ts=2 et
  */
  })(); return exports; })({});
-__LIBS__['qLT2ZG2234O09A4I'] = (function (exports) { (function () { 
+__LIBS__['L6F7795NB7LZ_1AL'] = (function (exports) { (function () { 
 
 /************** translations.js **************/
 
@@ -942,13 +952,13 @@ exports.ja = {
 /************** venue-editor.js **************/
 /* extern */ var jQuery, I18n;
 (function ($) {
-  var CONF = __LIBS__['MG4EUX16MDLB6IJ5'];
-  var models = __LIBS__['BF178VRC35UBN51D'];
-  var util = __LIBS__['pFXSXUXX49WQPV19'];
-  var viewobjects = __LIBS__['lAWLKCBMCO6DXVAK'];
-  var IdentifiableSet = __LIBS__['pU11FS8_SM4SUAP8'].IdentifiableSet;
+  var CONF = __LIBS__['FJQ5YF0RJ033GP2D'];
+  var models = __LIBS__['tY4937QCQ4P4J251'];
+  var util = __LIBS__['QM8NKKUWZE60YSI0'];
+  var viewobjects = __LIBS__['RSPJGA5UBVG6STV5'];
+  var IdentifiableSet = __LIBS__['JZUZZZC5UBXEQWW_'].IdentifiableSet;
   if (I18n)
-    I18n.translations = __LIBS__['qLT2ZG2234O09A4I'];
+    I18n.translations = __LIBS__['L6F7795NB7LZ_1AL'];
 
   var parseCSSStyleText = (function () {
     var regexp_for_styles = /\s*(-?(?:[_a-z\u00a0-\u10ffff]|\\[^\n\r\f#])(?:[\-_A-Za-z\u00a0-\u10ffff]|\\[^\n\r\f])*)\s*:\s*((?:(?:(?:[^;\\ \n\r\t\f"']|\\[0-9A-Fa-f]{1,6}(?:\r\n|[ \n\r\t\f])?|\\[^\n\r\f0-9A-Fa-f])+|"(?:[^\n\r\f\\"]|\\(?:\n|\r\n|\r|\f)|\\[^\n\r\f])*"|'(?:[^\n\r\f\\']|\\(?:\n|\r\n|\r|\f)|\\[^\n\r\f])*')(?:\s+|(?=;|$)))+)(?:;|$)/g;
