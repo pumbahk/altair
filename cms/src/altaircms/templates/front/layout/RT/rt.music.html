@@ -183,7 +183,7 @@ form = TopPageSidebarSearchForm()
 
         <!-- ========== main ========== -->
     %if page and hasattr(page,"pageset") and page.pageset.genre:
-   	<!-- InstanceBeginEditable name="cat" --><h1><img id="titleImage" src="${request.static_url("altaircms:static/RT/img/music/title_${page.pageset.genre.name}.gif")}" alt="${page.pageset.genre.name}"/></h1><!-- InstanceEndEditable -->
+   	<!-- InstanceBeginEditable name="cat" --><h1><img id="titleImage" src="${request.static_url("altaircms:static/RT/img/music/title_{0}.gif".format(page.pageset.genre.name))}" alt="${page.pageset.genre.name}"/></h1><!-- InstanceEndEditable -->
     %else:
    	<!-- InstanceBeginEditable name="cat" --><h1><img id="titleImage" src="${request.static_url("altaircms:static/RT/img/music/title_music.gif")}" alt="音楽"/></h1><!-- InstanceEndEditable -->
     %endif
