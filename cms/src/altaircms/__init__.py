@@ -105,6 +105,9 @@ def install_separation(config):
     config.set_request_property("altaircms.auth.api.get_allowable_query", "allowable", reify=True)
     
 
+def exclude_js(path):
+    return path.endswith(".js")
+
 def main(global_config, **local_config):
     """ apprications main
     """
@@ -139,6 +142,12 @@ def main(global_config, **local_config):
     config.include(install_upload_file)
     config.include(install_pyramidlayout)
     config.include(install_separation)
+    config.include("altair.cdnpath")
+    from altair.cdnpath import S3StaticPathFactory
+    config.add_cdn_static_path(S3StaticPathFactory(
+            settings["s3.bucket_name"], 
+            exclude=config.maybe_dotted(settings.get("s3.static.exclude.function")), 
+            prefix="/usersite"))
     config.include(".")
     
     config.add_static_view('static', 'altaircms:static', cache_max_age=3600)

@@ -18,13 +18,13 @@
 <!--************************************* webフォント使ったら怒られるかな？************************************hiromi****** -->
 
 
-<link rel="shortcut icon" href="/static/RT/img/common/favicon.ico" />
-<link rel="stylesheet" href="/static/RT/css/import.css" type="text/css" media="all" />
-<script type="text/javascript" src="/static/RT/js/jquery.js"></script>
+<link rel="shortcut icon" href="${request.static_url("altaircms:static/RT/img/common/favicon.ico")}" />
+<link rel="stylesheet" href="${request.static_url("altaircms:static/RT/css/import.css")}" type="text/css" media="all" />
+<script type="text/javascript" src="${request.static_url("altaircms:static/RT/js/jquery.js")}"></script>
 </head>
 <body id="index">
 
-<p id="naviSkip"><a href="#main" tabindex="1" title="本文へジャンプ"><img src="/static/RT/img/common/skip.gif" alt="本文へジャンプ" width="1" height="1" /></a></p>
+<p id="naviSkip"><a href="#main" tabindex="1" title="本文へジャンプ"><img src="${request.static_url("altaircms:static/RT/img/common/skip.gif")}" alt="本文へジャンプ" width="1" height="1" /></a></p>
 
 <div id="container">
 
@@ -32,7 +32,7 @@
 	<div id="grpheader">
   	  
 		<p id="tagLine">チケット販売・イベント予約</p>
-		<p id="siteID"><a href="/"><img src="/static/RT/img/common/header_logo_01.gif" alt="楽天チケット" class="serviceLogo" width="97" height="35" /></a><a href="http://ticket.rakuten.co.jp/"><img src="/static/RT/img/common/header_logo_02.gif" alt="チケット" class="serviceTitle" width="88" height="23" /></a></p>
+		<p id="siteID"><a href="/"><img src="${request.static_url("altaircms:static/RT/img/common/header_logo_01.gif")} alt="楽天チケット" class="serviceLogo" width="97" height="35" /></a><a href="http://ticket.rakuten.co.jp/"><img src=${request.static_url("altaircms:static/RT/img/common/header_logo_02.gif")}" alt="チケット" class="serviceTitle" width="88" height="23" /></a></p>
 		<dl id="remoteNav">
 		  <dt>楽天グループ関連</dt>
 		  <dd class="grpRelation">
@@ -64,19 +64,19 @@
 	<div id="globalNav">
 		<ul id="globalNav1">
 		     <li><a href="/">
-				 <img src="/static/RT/img/common/header_nav_top.gif" alt="チケットトップ"/></a>
+				 <img src="${request.static_url("altaircms:static/RT/img/common/header_nav_top.gif")}" alt="チケットトップ"/></a>
 			 </li>
 		     <li><a href="/music">
-				 <img src="/static/RT/img/common/header_nav_music.gif" alt="音楽"/></a>
+				 <img src="${request.static_url("altaircms:static/RT/img/common/header_nav_music.gif")}" alt="音楽"/></a>
 			 </li>
 		     <li><a href="/sports">
-				 <img src="/static/RT/img/common/header_nav_sports.gif" alt="スポーツ"/></a>
+				 <img src="${request.static_url("altaircms:static/RT/img/common/header_nav_sports.gif")}" alt="スポーツ"/></a>
 			 </li>
 		     <li><a href="/stage">
-				 <img src="/static/RT/img/common/header_nav_stage.gif" alt="演劇"/></a>
+				 <img src="${request.static_url("altaircms:static/RT/img/common/header_nav_stage.gif")}" alt="演劇"/></a>
 			 </li>
 		     <li><a href="/other">
-				 <img src="/static/RT/img/common/header_nav_event.gif" alt="イベント・その他"/></a>
+				 <img src="${request.static_url("altaircms:static/RT/img/common/header_nav_event.gif")}" alt="イベント・その他"/></a>
 			 </li>
 		</ul>
 		<ul id="globalNav2">
@@ -90,12 +90,12 @@
 		
 	<form id="form1" name="form1" method="GET" action="/search/result/freeword">
 		<input name="q" type="text" id="textfield" size="40" value="アーティスト名、公演名、会場名など" onblur="if(this.value=='') this.value='アーティスト名、公演名、会場名など';" onfocus="if(this.value=='アーティスト名、公演名、会場名など') this.value='';" />
-		<input name="imageField" type="image" id="imageField" src="/static/RT/img/common/header_search_btn.gif" alt="検索" />
+		<input name="imageField" type="image" id="imageField" src="${request.static_url("altaircms:static/RT/img/common/header_search_btn.gif")}" alt="検索" />
 		<a href="/search/input">詳細検索</a>
 	</form>
 
 		<dl>
-			<dt><img src="/static/RT/img/common/header_search_hot.gif" alt="ホットワード" width="50" height="45" /></dt>
+			<dt><img src="${request.static_url("altaircms:static/RT/img/common/header_search_hot.gif")}" alt="ホットワード" width="50" height="45" /></dt>
 			<dd>
 			  
 
@@ -139,16 +139,16 @@
        
 
 		<div id="sideSearch">
-			<h2><img src="/static/RT/img/index/title_search.gif" alt="チケットを探す" width="246" height="36" /></h2>
+			<h2><img src="${request.static_url("altaircms:static/RT/img/index/title_search.gif")}" alt="チケットを探す" width="246" height="36" /></h2>
 			<ul>
-				<li><a href="/search/result/deal_cond/eary_fisrtcome"><img src="/static/RT/img/index/btn_presale.gif" alt="先行抽選" width="222" height="28" /></a></li>
-				<li><a href="/search/result/deal_cond/normal"><img src="/static/RT/img/index/btn_release.gif" alt="一般発売" width="222" height="28" /></a></li>
-				<li><a href="/search/result/deal_open/7"><img src="/static/RT/img/index/btn_now.gif" alt="すぐ見たい" width="222" height="28" /></a></li>
-				<li><a href="/search/result/freeword?q=%E3%81%8A%E8%B2%B7%E3%81%84%E5%BE%97"><img src="/static/RT/img/index/btn_best.gif" alt="お買い得チケット" width="222" height="28" /></a></li>
+				<li><a href="/search/result/deal_cond/eary_fisrtcome"><img src="${request.static_url("altaircms:static/RT/img/index/btn_presale.gif")}" alt="先行抽選" width="222" height="28" /></a></li>
+				<li><a href="/search/result/deal_cond/normal"><img src="${request.static_url("altaircms:static/RT/img/index/btn_release.gif")}" alt="一般発売" width="222" height="28" /></a></li>
+				<li><a href="/search/result/deal_open/7"><img src="${request.static_url("altaircms:static/RT/img/index/btn_now.gif")}" alt="すぐ見たい" width="222" height="28" /></a></li>
+				<li><a href="/search/result/freeword?q=%E3%81%8A%E8%B2%B7%E3%81%84%E5%BE%97"><img src="${request.static_url("altaircms:static/RT/img/index/btn_best.gif")}" alt="お買い得チケット" width="222" height="28" /></a></li>
 			</ul>
 			<form id="form2" name="form2" method="GET" action="/search/result/multi">
 				<dl>
-					<dt><img src="/static/RT/img/index/search_day.gif" alt="開催日" width="37" height="13" /></dt>
+					<dt><img src="${request.static_url("altaircms:static/RT/img/index/search_day.gif")}" alt="開催日" width="37" height="13" /></dt>
 					<dd>
                        <select id="start_year" name="start_year"><option value="__None">------</option><option value="2010">2010</option><option value="2011">2011</option><option value="2012">2012</option><option value="2013">2013</option><option value="2014">2014</option><option value="2015">2015</option><option value="2016">2016</option><option value="2017">2017</option><option value="2018">2018</option><option value="2019">2019</option></select>
                        <select id="start_month" name="start_month"><option value="__None">------</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option><option value="11">11</option><option value="12">12</option></select>
@@ -158,12 +158,12 @@
                        <select id="end_month" name="end_month"><option value="__None">------</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option><option value="11">11</option><option value="12">12</option></select>
                        <select id="end_day" name="end_day"><option value="__None">------</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option><option value="11">11</option><option value="12">12</option><option value="13">13</option><option value="14">14</option><option value="15">15</option><option value="16">16</option><option value="17">17</option><option value="18">18</option><option value="19">19</option><option value="20">20</option><option value="21">21</option><option value="22">22</option><option value="23">23</option><option value="24">24</option><option value="25">25</option><option value="26">26</option><option value="27">27</option><option value="28">28</option><option value="29">29</option><option value="30">30</option><option value="31">31</option></select>
 					</dd>
-					<dt><img src="/static/RT/img/index/search_place.gif" alt="開催場所" width="52" height="13" /></dt>
+					<dt><img src="${request.static_url("altaircms:static/RT/img/index/search_place.gif")}" alt="開催場所" width="52" height="13" /></dt>
 					<dd>
                         <select id="area" name="area"><option value="">-------</option><option value="hokkaido">北海道</option><option value="tohoku">東北</option><option value="kitakanto">北関東</option><option value="shutoken">首都圏</option><option value="koshinetsu">甲信越</option><option value="hokuriku">北陸</option><option value="tokai">東海</option><option value="kinki">近畿</option><option value="chugoku">中国</option><option value="shikoku">四国</option><option value="kyushu">九州</option><option value="okinawa">沖縄</option></select>
 					</dd>
 				</dl>
-				<p><input name="imageField2" type="image" id="imageField2" src="/static/RT/img/index/btn_search.gif" alt="日程・場所で探す" /></p>
+				<p><input name="imageField2" type="image" id="imageField2" src="${request.static_url("altaircms:static/RT/img/index/btn_search.gif")}" alt="日程・場所で探す" /></p>
 			</form>
 		</div>
 

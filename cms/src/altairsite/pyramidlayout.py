@@ -82,13 +82,13 @@ class MyLayout(object):
     def body_id(self):
         return getattr(self.request, "body_id", None) or self._body_id
 
-    header_images_dict = dict(
-        searchform=Markup(u'<img id="titleImage" src="/static/RT/img/search/title_searchform.gif" alt="絞り込み検索"/>'), 
-        search=Markup(u'<img id="titleImage" src="/static/RT/img/search/title_search.gif" alt="検索結果"/>')
-        )
     @property
     def page_title_image(self):
-        return self.header_images_dict.get(self.body_id, "")
+        header_images_dict = dict(
+            searchform=Markup(u'<img id="titleImage" src="{0}" alt="絞り込み検索"/>'.format(self.request.static_url("altaircms:static/RT/img/search/title_searchform.gif"))), 
+            search=Markup(u'<img id="titleImage" src="{0}" alt="検索結果"/>'.format(self.request.static_url("altaircms:static/RT/img/search/title_search.gif")))
+            )
+        return header_images_dict.get(self.body_id, "")
 
 def get_top_category_genres(request, strict=False):
     root = request.allowable(Genre).filter(Genre.is_root==True).first()
