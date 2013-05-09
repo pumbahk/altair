@@ -32,8 +32,10 @@ def main(global_config, **local_config):
     # config.include("altaircms.templatelib")
     config.include("altair.cdnpath")
     from altair.cdnpath import S3StaticPathFactory
-    config.add_cdn_static_path(S3StaticPathFactory(settings["s3.bucket_name"], 
-                                                   config.maybe_dotted(settings.get("s3.static.exclude.function"))))
+    config.add_cdn_static_path(S3StaticPathFactory(
+            settings["s3.bucket_name"], 
+            exclude=config.maybe_dotted(settings.get("s3.static.exclude.function")), 
+            prefix="/usersite"))
 
     config.include(install_static_page)
     config.include("altaircms.tag:install_tagmanager")

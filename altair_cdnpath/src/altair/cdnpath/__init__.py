@@ -63,12 +63,22 @@ class PrefixedStaticURLInfo(StaticURLInfo):
 
 @implementer(IStaticURLInfoFactory)
 class S3StaticPathFactory(object):
-    def __init__(self, bucket_name, exclude=None):
+    def __init__(self, bucket_name, exclude=None, prefix=None):
         self.bucket_name = bucket_name
         self.exclude = exclude
+        self.prefix = self._get_correct_prefix(prefix)
+
+    def _get_correct_prefix(self, prefix):
+        if prefix is None:
+            return ""
+        elif not prefix.startswith("/"):
+            return "/"+prefix
+        else:
+            return prefix
+        
 
     def __call__(self):
-        prefix = "{0}.s3.amazonaws.com".format(self.bucket_name)
+        prefix = "{0}.s3.amazonaws.com{1}".format(self.bucket_name, self.prefix)
         return PrefixedStaticURLInfo(prefix, self.exclude)
 
 def add_cdn_static_path(config, factory=None):
