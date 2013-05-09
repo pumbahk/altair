@@ -25,7 +25,7 @@ var Seat = exports.Seat = Backbone.Model.extend({
     }
 
     function onSelectedChanged() {
-      if (self.get('selected'))
+      if (self.get('model').get('selected'))
         self.addStyleType('selected');
       else
         self.removeStyleType('selected');
