@@ -1,10 +1,12 @@
 # coding: utf-8
 
+import os
 import csv
 from datetime import datetime
 from urllib2 import urlopen
 import re
 import logging
+from urlparse import urlparse
 
 from pyramid.view import view_config
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound
@@ -34,7 +36,20 @@ def get_drawing(request):
     if venue.site.drawing_url is None:
         return HTTPNotFound("Venue id #%d site has no drawing_url" % venue_id)
 
-    return Response(app_iter=urlopen(venue.site.drawing_url), content_type='text/xml; charset=utf-8')
+    content_encoding = None
+    if re.match('^.+\.(svgz|gz)$', venue.site.drawing_url):
+        content_encoding = 'gzip'
+    resp = Response(
+        app_iter=urlopen(venue.site.drawing_url),
+        content_type='text/xml; charset=utf-8',
+        content_encoding=content_encoding,
+        conditional_response=True
+    )
+    drawing_url = urlparse(venue.site.drawing_url)
+    resp.last_modified = os.path.getmtime(drawing_url.path)
+    if resp.content_encoding is None and request.if_modified_since < resp.last_modified:
+        resp.encode_content()
+    return resp
 
 @view_config(route_name="api.get_seats", request_method="GET", renderer='json', permission='event_viewer')
 def get_seats(request):
