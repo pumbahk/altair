@@ -18,7 +18,7 @@ class LayoutTemplate(object):
         self.layout_spec = layout_spec
         resolved = AssetResolver().resolve(layout_spec)
         if not resolved.exists():
-            os.mkdir(resolved.abspath())
+            os.makedirs(resolved.abspath())
         self.layoutdir = resolved.abspath()
         self.default_prefix = default_prefix
     
