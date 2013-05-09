@@ -17,14 +17,65 @@ class EventSearcher(object):
     def __init__(self, request):
         self.request = request
 
+    # フリーワード、ジャンル検索
+    def search_freeword(self, word):
+        qs = None
+        try:
+            events = helper.searchEvents(self.request, word)
+            ids = self._create_ids(events)
+            if len(ids) > 0:
+                qs = self._create_common_qs(where=Event.id.in_(ids))
+        except Exception as e:
+            qs = None
+        return qs
+
+    # 発売状況
+    def search_sale(self, sale, qs):
+        if sale == int(SalesEnum.ON_SALE):
+            qs = self._get_events_on_sale(qs)
+        elif sale == int(SalesEnum.WEEK_SALE):
+            qs = self.get_events_week_sale(date.today(), None, qs)
+        elif sale == int(SalesEnum.NEAR_SALE_END):
+            qs = self._get_events_near_sale_end(date.today(), 7, qs)
+        elif sale == int(SalesEnum.SOON_ACT):
+            qs = self._get_events_near_act(qs)
+        elif sale == int(SalesEnum.ALL):
+            pass
+        return qs
+
+    # 販売中
+    def _get_events_on_sale(self, form, qs=None):
+        where = (datetime.now() <= Event.deal_close)
+        qs = self._create_common_qs(where=where, qs=qs)
+        return qs
+
+    # 今週発売検索(月曜日を週のはじめとする)
+    def get_events_week_sale(self, today, offset=None, qs=None):
+        start_day  = today + timedelta(days=offset or -today.weekday())
+        where = (Event.deal_open >= start_day) & (Event.deal_open <= start_day+timedelta(days=7))
+        qs = self._create_common_qs(where=where, qs=qs)
+        return qs
+
+    # 販売終了間近
+    def _get_events_near_sale_end(self, today, N=7, qs=None):
+        limit_day = today + timedelta(days=N)
+        where = (today <= Event.deal_close) & (Event.deal_close <= limit_day)
+        qs = self._create_common_qs(where=where, qs=qs)
+        return qs
+
+    # まもなく開演
+    def _get_events_near_act(self, qs=None):
+        qs = self._get_events_near_sale_end(date.today(), 7, qs)
+        where = (date.today() < Performance.start_on) & \
+                (Performance.start_on < date.today() + timedelta(days=7))
+        qs = self._create_common_qs(where=where, qs=qs)
+        return qs
+
     # 共通クエリ部分
     def _create_common_qs(self, where, qs=None):
-        log_info("_create_common_qs", "start")
         if qs: # 絞り込み
-            log_info("_create_common_qs", "and search")
             qs = qs.filter(where)
         else: # 新規検索
-            log_info("_create_common_qs", "new search")
             qs = self.request.allowable(Event) \
                 .join(Performance, Event.id == Performance.event_id) \
                 .join(SalesSegmentGroup, SalesSegmentGroup.event_id == Event.id) \
@@ -35,39 +86,6 @@ class EventSearcher(object):
                 .filter(Page.publish_begin < datetime.now()) \
                 .filter((Page.publish_end==None) | (Page.publish_end > datetime.now())) \
                 .filter(where)
-        log_info("_create_common_qs", "end")
-        return qs
-
-    # 検索文字列作成
-    def create_search_freeword(self, form):
-        log_info("create_search_freeword", "start")
-        search_word = ""
-        if exist_value(form.word.data):
-            search_word = form.word.data
-
-        if hasattr(form, "sub_genre"): # formが2種類入ってくるため
-            if exist_value(form.sub_genre.data):
-                subgenre = self.request.allowable(Genre).filter(Genre.id==form.sub_genre.data).first()
-                search_word = search_word + " " + subgenre.label
-            elif exist_value(form.genre.data):
-                log_info("create_search_freeword", "sub_genre exist")
-                genre = self.request.allowable(Genre).filter(Genre.id==form.genre.data).first()
-                search_word = search_word + " " + genre.label
-        elif exist_value(form.genre.data):
-            subgenre = self.request.allowable(Genre).filter(Genre.id==form.genre.data).first()
-            search_word = search_word + " " + subgenre.label
-        log_info("create_search_freeword", "end")
-        return search_word
-
-    # フリーワード、ジャンル検索
-    def search_freeword(self, word):
-        try:
-            events = helper.searchEvents(self.request, word)
-            ids = self._create_ids(events)
-            if len(ids) > 0:
-                qs = self._create_common_qs(where=Event.id.in_(ids))
-        except Exception as e:
-            qs = None
         return qs
 
     # 取得イベントのIDリスト作成
@@ -92,58 +110,9 @@ class EventSearcher(object):
         log_info("get_events_from_area", "end")
         return qs
 
-    # 発売状況
-    def get_events_from_sale(self, form, qs=None):
-        log_info("get_events_from_sale", "start")
-        if form.sale.data == int(SalesEnum.ON_SALE):
-            log_info("get_events_from_sale", "search start ON_SALE")
-            qs = self._get_events_on_sale(form, qs)
-        elif form.sale.data == int(SalesEnum.WEEK_SALE):
-            log_info("get_events_from_sale", "search start WEEK_SALE")
-            qs = self.get_events_week_sale(date.today(), None, qs)
-        elif form.sale.data == int(SalesEnum.NEAR_SALE_END):
-            log_info("get_events_from_sale", "search start NEAR_SALE_END")
-            qs = self._get_events_near_sale_end(date.today(), 7, qs)
-        elif form.sale.data == int(SalesEnum.SOON_ACT):
-            log_info("get_events_from_sale", "search start SOON_ACT")
-            qs = self._get_events_near_sale_end(date.today(), 7, qs)
-            qs = self._create_common_qs(
-                where=(
-                    (date.today() < Performance.start_on) & \
-                    (Performance.start_on < date.today() + timedelta(days=7))
-                    ),
-                qs=qs
-                )
-        elif form.sale.data == int(SalesEnum.ALL):
-            pass
-        log_info("get_events_from_sale", "end")
-        return qs
 
-    # 販売中
-    def _get_events_on_sale(self, form, qs=None):
-        log_info("_get_events_on_sale", "start")
-        where = (datetime.now() <= Event.deal_close)
-        qs = self._create_common_qs(where=where, qs=qs)
-        log_info("_get_events_on_sale", "end")
-        return qs
 
-    # 今週発売検索(月曜日を週のはじめとする)
-    def get_events_week_sale(self, today, offset=None, qs=None):
-        log_info("get_events_week_sale", "start")
-        start_day  = today + timedelta(days=offset or -today.weekday())
-        where = (Event.deal_open >= start_day) & (Event.deal_open <= start_day+timedelta(days=7))
-        qs = self._create_common_qs(where=where, qs=qs)
-        log_info("get_events_week_sale", "end")
-        return qs
 
-    # 販売終了間近
-    def _get_events_near_sale_end(self, today, N=7, qs=None):
-        log_info("_get_events_near_sale_end", "start")
-        limit_day = today + timedelta(days=N)
-        where = (today <= Event.deal_close) & (Event.deal_close <= limit_day)
-        qs = self._create_common_qs(where=where, qs=qs)
-        log_info("_get_events_near_sale_end", "end")
-        return qs
 
     # 公演日検索
     def get_events_from_start_on(self, form, qs=None):

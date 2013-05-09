@@ -2,7 +2,7 @@
 <%namespace file="../common/tags_smartphone.html" name="m" />
 <%block name="title">検索結果一覧</%block>
 
-検索条件：${result.query}<br/>
+検索条件：${result.query.to_string()}<br/>
 
 % if result.num:
     ${result.num}件見つかりました。全${result.num}件中、${result.start}〜${result.end}を表示
@@ -22,11 +22,13 @@
 % endif
 
 <div id=pager>
-% for count in range(result.page_end):
-    % if result.page == count + 1:
-        ${count + 1}
-    % else:
-        <a href="${request.route_path('search')}?word=${result.query}&page=${count+1}">${count + 1}</a>
-    % endif
-% endfor
+% if result.num:
+    % for count in range(result.page_end):
+        % if result.page == count + 1:
+            ${count + 1}
+        % else:
+            <a href="${request.route_path('search')}?word=${result.query.word}&page=${count+1}">${count + 1}</a>
+        % endif
+    % endfor
+% endif
 </div>
