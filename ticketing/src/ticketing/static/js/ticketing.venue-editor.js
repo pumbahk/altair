@@ -1,6 +1,6 @@
 (function (jQuery, I18n) {
 var __LIBS__ = {};
-__LIBS__['FZ8MTX4YDGXXTGJ7'] = (function (exports) { (function () { 
+__LIBS__['OYO5BILBR1XA79DP'] = (function (exports) { (function () { 
 
 /************** translations.js **************/
 
@@ -26,7 +26,7 @@ exports.ja = {
   } 
 };
  })(); return exports; })({});
-__LIBS__['N5GTN_UE1L489XVH'] = (function (exports) { (function () { 
+__LIBS__['eO3I44__KNX54I1L'] = (function (exports) { (function () { 
 
 /************** CONF.js **************/
 exports.DEFAULT = {
@@ -97,7 +97,7 @@ exports.DEFAULT = {
   }
 };
  })(); return exports; })({});
-__LIBS__['nI662SW60UICU8ET'] = (function (exports) { (function () { 
+__LIBS__['sPCIXVMIPAQ0WF_O'] = (function (exports) { (function () { 
 
 /************** util.js **************/
 exports.eventKey = function Util_eventKey(e) {
@@ -224,7 +224,7 @@ timer.prototype.lap = function(msg) {
     return lap;
 };
  })(); return exports; })({});
-__LIBS__['a61OPI9QI9PEG4YF'] = (function (exports) { (function () { 
+__LIBS__['Q89LIAPLIKS35ARI'] = (function (exports) { (function () { 
 
 /************** identifiableset.js **************/
 var IdentifiableSet = exports.IdentifiableSet = function IdentifiableSet(options) {
@@ -273,12 +273,12 @@ IdentifiableSet.prototype.each = function IdentifiableSet_each(f) {
  * vim: sts=2 sw=2 ts=2 et
  */
  })(); return exports; })({});
-__LIBS__['JWNG4A4EOKSBK8RU'] = (function (exports) { (function () { 
+__LIBS__['S9GQEKS1MDX_V_4_'] = (function (exports) { (function () { 
 
 /************** models.js **************/
-var util = __LIBS__['nI662SW60UICU8ET'];
-var CONF = __LIBS__['N5GTN_UE1L489XVH'];
-var IdentifiableSet = __LIBS__['a61OPI9QI9PEG4YF'].IdentifiableSet;
+var util = __LIBS__['sPCIXVMIPAQ0WF_O'];
+var CONF = __LIBS__['eO3I44__KNX54I1L'];
+var IdentifiableSet = __LIBS__['Q89LIAPLIKS35ARI'].IdentifiableSet;
 
 var VenueItemCollectionMixin = {
   venue: null,
@@ -332,10 +332,7 @@ Venue.prototype.initialize = function Venue_initialize(initialData, options) {
         style: stockTypeDatum.style
       });
       stockTypes.add(stockType);
-      stockType.on('change:name', function () {
-        this.set('edited', true);
-      });
-      stockType.on('change:style', function () {
+      stockType.on('change:name change:style', function () {
         this.set('edited', true);
       });
     }
@@ -543,7 +540,7 @@ var ProvidesStyle = exports.ProvidesStyle = Backbone.Model.extend({
       stroke: {
         color: null,
         width: null,
-        pattern: null,
+        pattern: null
       },
       fill: {
         color: null
@@ -633,22 +630,22 @@ var Stock = exports.Stock = Backbone.Model.extend({
         style = util.mergeStyle(style, styleProvider.get('style'));
     });
     this.set('style', style);
+
+    var venue = this.get('venue');
+    if (venue && self.id in venue.perStockSeatSet) {
+      venue.perStockSeatSet[self.id].each(function(seat) {
+        seat.trigger('change:stock');
+      });
+    }
   },
 
   initialize: function Stock_initialize() {
     var self = this;
-
     _.each(Stock.styleProviderAttributes, function (name) {
-      var model = self.get(name);
-      if (model) {
-        model.on('change:style', function () {
+      var styleProvider = self.get(name);
+      if (styleProvider) {
+        styleProvider.on('change:style', function () {
           self._refreshStyle();
-          var venue = self.get('venue');
-          if (self.id in venue.perStockSeatSet) {
-            venue.perStockSeatSet[self.id].each(function(seat) {
-              seat.trigger('change:stock');
-            });
-          }
         });
       } else {
         console.log(name + ' not found in Stock.id:' + self.id);
@@ -755,12 +752,12 @@ console.log(ad2);
  * vim: sts=2 sw=2 ts=2 et
  */
  })(); return exports; })({});
-__LIBS__['GTP5T0DFHAWJD1MY'] = (function (exports) { (function () { 
+__LIBS__['oRRS5VW2IUGYBW74'] = (function (exports) { (function () { 
 
 /************** viewobjects.js **************/
-var util = __LIBS__['nI662SW60UICU8ET'];
-var CONF = __LIBS__['N5GTN_UE1L489XVH'];
-var models = __LIBS__['JWNG4A4EOKSBK8RU'];
+var util = __LIBS__['sPCIXVMIPAQ0WF_O'];
+var CONF = __LIBS__['eO3I44__KNX54I1L'];
+var models = __LIBS__['S9GQEKS1MDX_V_4_'];
 
 var Seat = exports.Seat = Backbone.Model.extend({
   defaults: {
@@ -774,10 +771,9 @@ var Seat = exports.Seat = Backbone.Model.extend({
 
   initialize: function Seat_initialize(attrs, options) {
     var self = this;
-
     this.styleTypes = [];
 
-    function selectableChanged() {
+    function onSelectableChanged() {
       if (self.get('model').selectable()) {
         self.removeStyleType('unselectable');
       } else if (!self.get('model').get('sold')) {
@@ -785,8 +781,8 @@ var Seat = exports.Seat = Backbone.Model.extend({
       }
     }
 
-    function selectedChanged() {
-      if (this.get('selected'))
+    function onSelectedChanged() {
+      if (self.get('selected'))
         self.addStyleType('selected');
       else
         self.removeStyleType('selected');
@@ -800,18 +796,18 @@ var Seat = exports.Seat = Backbone.Model.extend({
       var prevModel = self.previous('model');
       var model = self.get('model');
       if (prevModel) {
-        model.off('change:selectable', selectableChanged);
-        model.off('change:selected', selectedChanged);
+        model.off('change:selectable', onSelectableChanged);
+        model.off('change:selected', onSelectedChanged);
         model.off('change:stock', onStockChanged);
       }
       if (model) {
-        model.on('change:selectable', selectableChanged);
-        model.on('change:selected', selectedChanged);
+        model.on('change:selectable', onSelectableChanged);
+        model.on('change:selected', onSelectedChanged);
         model.on('change:stock', onStockChanged);
       }
     }
 
-    function onShapeChange(init) {
+    function onShapeChange() {
       var prev = self.previous('shape');
       var events = self.get('events');
       if (events) {
@@ -830,12 +826,11 @@ var Seat = exports.Seat = Backbone.Model.extend({
         var new_ = self.get('shape');
         new_.addEvent(events);
       }
-      if (!init)
-        self._refreshStyle();
+      self._refreshStyle();
     }
 
     function onEventsChange() {
-      var shape = self.get('shape')
+      var shape = self.get('shape');
       if (shape) {
         var prev = self.previous('events');
         var new_ = self.get('events');
@@ -867,10 +862,10 @@ var Seat = exports.Seat = Backbone.Model.extend({
     // ensure change events to get invoked correctly on the
     // initialization.
     this._previousAttributes = {};
-    selectableChanged();
+    onSelectableChanged();
     onModelChange();
-    onShapeChange(true);
     onEventsChange();
+    onShapeChange();
   },
 
   _refreshStyle: function Seat__refreshStyle() {
@@ -935,13 +930,13 @@ var Seat = exports.Seat = Backbone.Model.extend({
 /************** venue-editor.js **************/
 /* extern */ var jQuery, I18n;
 (function ($) {
-  var CONF = __LIBS__['N5GTN_UE1L489XVH'];
-  var models = __LIBS__['JWNG4A4EOKSBK8RU'];
-  var util = __LIBS__['nI662SW60UICU8ET'];
-  var viewobjects = __LIBS__['GTP5T0DFHAWJD1MY'];
-  var IdentifiableSet = __LIBS__['a61OPI9QI9PEG4YF'].IdentifiableSet;
+  var CONF = __LIBS__['eO3I44__KNX54I1L'];
+  var models = __LIBS__['S9GQEKS1MDX_V_4_'];
+  var util = __LIBS__['sPCIXVMIPAQ0WF_O'];
+  var viewobjects = __LIBS__['oRRS5VW2IUGYBW74'];
+  var IdentifiableSet = __LIBS__['Q89LIAPLIKS35ARI'].IdentifiableSet;
   if (I18n)
-    I18n.translations = __LIBS__['FZ8MTX4YDGXXTGJ7'];
+    I18n.translations = __LIBS__['OYO5BILBR1XA79DP'];
 
   var parseCSSStyleText = (function () {
     var regexp_for_styles = /\s*(-?(?:[_a-z\u00a0-\u10ffff]|\\[^\n\r\f#])(?:[\-_A-Za-z\u00a0-\u10ffff]|\\[^\n\r\f])*)\s*:\s*((?:(?:(?:[^;\\ \n\r\t\f"']|\\[0-9A-Fa-f]{1,6}(?:\r\n|[ \n\r\t\f])?|\\[^\n\r\f0-9A-Fa-f])+|"(?:[^\n\r\f\\"]|\\(?:\n|\r\n|\r|\f)|\\[^\n\r\f])*"|'(?:[^\n\r\f\\']|\\(?:\n|\r\n|\r|\f)|\\[^\n\r\f])*')(?:\s+|(?=;|$)))+)(?:;|$)/g;

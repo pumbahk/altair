@@ -14,10 +14,9 @@ var Seat = exports.Seat = Backbone.Model.extend({
 
   initialize: function Seat_initialize(attrs, options) {
     var self = this;
-
     this.styleTypes = [];
 
-    function selectableChanged() {
+    function onSelectableChanged() {
       if (self.get('model').selectable()) {
         self.removeStyleType('unselectable');
       } else if (!self.get('model').get('sold')) {
@@ -25,8 +24,8 @@ var Seat = exports.Seat = Backbone.Model.extend({
       }
     }
 
-    function selectedChanged() {
-      if (this.get('selected'))
+    function onSelectedChanged() {
+      if (self.get('selected'))
         self.addStyleType('selected');
       else
         self.removeStyleType('selected');
@@ -40,18 +39,18 @@ var Seat = exports.Seat = Backbone.Model.extend({
       var prevModel = self.previous('model');
       var model = self.get('model');
       if (prevModel) {
-        model.off('change:selectable', selectableChanged);
-        model.off('change:selected', selectedChanged);
+        model.off('change:selectable', onSelectableChanged);
+        model.off('change:selected', onSelectedChanged);
         model.off('change:stock', onStockChanged);
       }
       if (model) {
-        model.on('change:selectable', selectableChanged);
-        model.on('change:selected', selectedChanged);
+        model.on('change:selectable', onSelectableChanged);
+        model.on('change:selected', onSelectedChanged);
         model.on('change:stock', onStockChanged);
       }
     }
 
-    function onShapeChange(init) {
+    function onShapeChange() {
       var prev = self.previous('shape');
       var events = self.get('events');
       if (events) {
@@ -70,12 +69,11 @@ var Seat = exports.Seat = Backbone.Model.extend({
         var new_ = self.get('shape');
         new_.addEvent(events);
       }
-      if (!init)
-        self._refreshStyle();
+      self._refreshStyle();
     }
 
     function onEventsChange() {
-      var shape = self.get('shape')
+      var shape = self.get('shape');
       if (shape) {
         var prev = self.previous('events');
         var new_ = self.get('events');
@@ -107,10 +105,10 @@ var Seat = exports.Seat = Backbone.Model.extend({
     // ensure change events to get invoked correctly on the
     // initialization.
     this._previousAttributes = {};
-    selectableChanged();
+    onSelectableChanged();
     onModelChange();
-    onShapeChange(true);
     onEventsChange();
+    onShapeChange();
   },
 
   _refreshStyle: function Seat__refreshStyle() {

@@ -54,10 +54,7 @@ Venue.prototype.initialize = function Venue_initialize(initialData, options) {
         style: stockTypeDatum.style
       });
       stockTypes.add(stockType);
-      stockType.on('change:name', function () {
-        this.set('edited', true);
-      });
-      stockType.on('change:style', function () {
+      stockType.on('change:name change:style', function () {
         this.set('edited', true);
       });
     }
@@ -265,7 +262,7 @@ var ProvidesStyle = exports.ProvidesStyle = Backbone.Model.extend({
       stroke: {
         color: null,
         width: null,
-        pattern: null,
+        pattern: null
       },
       fill: {
         color: null
@@ -355,22 +352,22 @@ var Stock = exports.Stock = Backbone.Model.extend({
         style = util.mergeStyle(style, styleProvider.get('style'));
     });
     this.set('style', style);
+
+    var venue = this.get('venue');
+    if (venue && self.id in venue.perStockSeatSet) {
+      venue.perStockSeatSet[self.id].each(function(seat) {
+        seat.trigger('change:stock');
+      });
+    }
   },
 
   initialize: function Stock_initialize() {
     var self = this;
-
     _.each(Stock.styleProviderAttributes, function (name) {
-      var model = self.get(name);
-      if (model) {
-        model.on('change:style', function () {
+      var styleProvider = self.get(name);
+      if (styleProvider) {
+        styleProvider.on('change:style', function () {
           self._refreshStyle();
-          var venue = self.get('venue');
-          if (self.id in venue.perStockSeatSet) {
-            venue.perStockSeatSet[self.id].each(function(seat) {
-              seat.trigger('change:stock');
-            });
-          }
         });
       } else {
         console.log(name + ' not found in Stock.id:' + self.id);
