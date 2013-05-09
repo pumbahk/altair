@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import logging
+from markupsafe import Markup
 
 logger = logging.getLogger(__file__)
 
@@ -66,3 +67,30 @@ class SmartPhoneHelper(object):
             ,'kagoshima':u'鹿児島'
         }
         return areas[keyword]
+
+    def get_week_map(self):
+        return {0:u'月',1:u'火',2:u'水',3:u'木',4:u'金',5:u'土',6:u'日'}
+
+    def disp_date(self, target_date):
+        disp_str = str(target_date.year) + '/' + str(target_date.month).zfill(2) + '/' \
+                       + str(target_date.day).zfill(2)
+        return disp_str
+
+    def disp_date_week(self, target_date):
+        week = self.get_week_map()
+        disp_str = str(target_date.year) + '/' + str(target_date.month).zfill(2) + '/' \
+                       + str(target_date.day).zfill(2) + '(' + week[target_date.weekday()] + ')'
+        return disp_str
+
+    def disp_time(self, target_date):
+        week = self.get_week_map()
+        disp_str = str(target_date.year) + '/' + str(target_date.month).zfill(2) + '/' \
+                   + str(target_date.day).zfill(2) + ' ' + str(target_date.hour).zfill(2) + ':' \
+                   + str(target_date.minute).zfill(2) + '(' + week[target_date.weekday()] + ')'
+        return disp_str
+
+    def nl2br(self, value):
+        return value.replace("\n", "<br />")
+
+    def Markup(self, value):
+        return Markup(value)

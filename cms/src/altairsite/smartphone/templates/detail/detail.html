@@ -1,0 +1,57 @@
+<%inherit file="../common/_base.html" />
+<%namespace file="../common/tags_smartphone.html" name="m" />
+<%block name="title">${event.title}</%block>
+
+
+<div align="center">楽天チケットへようこそ</div>
+
+<%m:header>公演期間</%m:header>
+${helper.disp_date_week(event.event_open)}〜${helper.disp_date_week(event.event_close)}<br/>
+
+<%m:header>販売期間</%m:header>
+% if event.salessegment_groups:
+    % for segment in event.salessegment_groups:
+        ${helper.disp_date(segment.start_on)}〜${helper.disp_date(segment.end_on)}<br/>
+    % endfor
+    <br />
+% endif
+
+<div align="center">
+  &gt;&gt;<a href="#list">購入はこちらから</a>&lt;&lt;<br />
+</div><br />
+
+
+% if event.notice:
+    <%m:header>詳細/注意事項</%m:header>
+    <div>
+        <font size="-1">
+        ${helper.nl2br(event.notice)|n}
+        </font>
+    </div>
+    <br/><br/>
+% endif
+
+% if event.inquiry_for:
+    <%m:header>お問い合わせ</%m:header>
+        ${helper.nl2br(event.inquiry_for)|n}
+    <br /><br />
+% endif
+
+<%m:header><a name="list">公演一覧</a></%m:header>
+% for count in range(len(month_unit_keys)):
+    <% month = month_unit_keys[count] %>
+    ${month}<br/>
+
+    % for i, perf in enumerate(event.performances):
+        % if str(perf.start_on.year) + "/" + str(perf.start_on.month).zfill(2) == month:
+            [${i+1}]${event.title}<br/>
+            開場：${helper.disp_time(perf.open_on)}<br/>
+            開演：${helper.disp_time(perf.start_on)}<br/>
+            会場：${perf.venue}<br/>
+            <a href="${purchase_links[perf.id]}">購入する</a><br/>
+        % endif
+    % endfor
+
+    <br/><br/>
+
+% endfor

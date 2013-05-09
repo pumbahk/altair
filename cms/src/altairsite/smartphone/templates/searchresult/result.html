@@ -14,7 +14,7 @@
 % if result.events:
     % for event in result.events:
         <hr/>
-        ${event.title}<br/>
+        <a href="${request.route_path('detail')}?event_id=${event.id}">${event.title}</a><br/>
         公演期間：${event.event_open}〜${event.event_close}<br/>
         会場：${event.performances[0].venue}<br/>
         販売期間：${event.deal_open}〜${event.deal_close}<br/>

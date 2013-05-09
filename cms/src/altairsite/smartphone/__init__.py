@@ -38,6 +38,7 @@ def main(config, **settings):
     add_route("main", "/")
     config.include('altairsite.smartphone.event.genre')
     config.include('altairsite.smartphone.event.search')
+    config.include('altairsite.smartphone.event.detail')
 
     ## all requests are treated as mobile request
     config._add_tween("altairsite.tweens.smartphone_request_factory", under=INGRESS)
