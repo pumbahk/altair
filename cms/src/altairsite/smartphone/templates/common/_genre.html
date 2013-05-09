@@ -3,6 +3,6 @@
 
 <%m:header>ジャンルから探す</%m:header>
 % for i in range(0, len(genretree)):
-<% genre = genretree[i] %>
-    ${genre}<br/>
+<% genre = genretree[i].genre %>
+    <a href="${request.route_path('genre', genre_id=genre.id)}">${genre}</a><br/>
 % endfor

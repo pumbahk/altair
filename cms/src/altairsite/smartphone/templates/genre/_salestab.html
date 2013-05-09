@@ -1,0 +1,11 @@
+<%page args="genretree, helper" />
+<%namespace file="../common/tags_smartphone.html" name="m" />
+
+<%m:header>今週発売</%m:header>
+% for i in range(0, len(genretree)):
+<% genre = genretree[i].genre %>
+    <a href="${request.route_path('genre', genre_id=genre.id)}">${genre}</a><br/>
+    % for subgenre in genre.children:
+        <a href="${request.route_path('genre', genre_id=subgenre.id)}">${subgenre}</a><br/>
+    % endfor
+% endfor

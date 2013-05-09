@@ -6,21 +6,21 @@ from altaircms.topic.api import get_topic_searcher
 from altaircms.models import Genre
 from altaircms.genre.searcher import GenreSearcher
 from altaircms.tag.models import HotWord
-from altairsite.config import usersite_view_config
-from altairsite.mobile.forms import TopForm
-from altairsite.mobile.core.helper import log_info
 from altairsite.smartphone.common.const import getRegions
 
-class SearchResource(object):
-    def __init__(self, request):
-        self.request = request
+class GenreNode(object):
+    def __init__(self, genre, children):
+        self.genre = genre
+        self.children = children
+
+class TopPageResource(object):
     def __init__(self, request):
         self.request = request
 
     def get_system_tag_label(self, request, system_tag_id):
         if not system_tag_id:
             return None
-        system_tag = request.allowable(Genre).filter(Genre.id==id).first()
+        system_tag = request.allowable(Genre).filter(Genre.id==system_tag_id).first()
         return system_tag.label
 
     def _search(self, searcher, tag, system_tag_label):
@@ -44,15 +44,28 @@ class SearchResource(object):
         system_tag_label = self.get_system_tag_label(request=request, system_tag_id=system_tag_id)
         return self._search(searcher=searcher, tag=tag, system_tag_label=system_tag_label)
 
-    def getHotword(self, request):
+    def get_hotword(self, request):
         today = datetime.now()
         hotwords = request.allowable(HotWord).filter(HotWord.term_begin <= today).filter(today <= HotWord.term_end) \
                  .filter_by(enablep=True).order_by(asc("display_order"), asc("term_end"))
         return hotwords
 
-    def getGenreTree(self, request):
+    def get_genre_tree(self, request, parent):
         genre_searcher = GenreSearcher(request)
-        return genre_searcher.root.children
+        tree = genre_searcher.root.children
+        if parent:
+            tree = genre_searcher.get_children(parent)
 
-    def getRegion(self):
+        genretree = []
+        for genre in tree:
+            subgenre = genre_searcher.get_children(genre)
+            node = GenreNode(genre=genre, children=subgenre)
+            genretree.append(node)
+        return genretree
+
+    def get_region(self):
         return getRegions()
+
+    def get_genre(self, request, id):
+        genre = request.allowable(Genre).filter(Genre.id==id).first()
+        return genre

@@ -8,9 +8,9 @@ def main(context, request):
     promotions = context.search(request=request, kind="promotion", system_tag_id=None)[0:5]
     topcontents = context.search(request=request, kind="topcontent", system_tag_id=None)[0:5]
     topics = context.search(request=request, kind="topic", system_tag_id=None)[0:5]
-    hotwords = context.getHotword(request=request)[0:5]
-    genretree = context.getGenreTree(request=request)
-    regions = context.getRegion()
+    hotwords = context.get_hotword(request=request)[0:5]
+    genretree = context.get_genre_tree(request=request, parent=None)
+    regions = context.get_region()
     helper = SmartPhoneHelper()
 
     return {
