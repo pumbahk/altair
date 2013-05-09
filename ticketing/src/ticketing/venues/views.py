@@ -47,7 +47,7 @@ def get_drawing(request):
     )
     drawing_url = urlparse(venue.site.drawing_url)
     resp.last_modified = os.path.getmtime(drawing_url.path)
-    if resp.content_encoding is None and request.if_modified_since < resp.last_modified:
+    if resp.content_encoding is None and (request.if_modified_since is None or request.if_modified_since < resp.last_modified):
         resp.encode_content()
     return resp
 
