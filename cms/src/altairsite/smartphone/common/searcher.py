@@ -5,7 +5,7 @@ from altaircms.models import Performance, SalesSegmentGroup, SalesSegmentKind
 from altaircms.event.models import Event
 from altaircms.page.models import Page
 from altaircms.models import Genre
-from altairsite.mobile.core.const import get_prefecture
+from .const import get_prefectures
 from altairsite.mobile.core.helper import exist_value
 from altairsite.mobile.core.const import SalesEnum
 from sqlalchemy import or_, and_, asc
@@ -99,15 +99,11 @@ class EventSearcher(object):
         return ids
 
     # 地域検索
-    def get_events_from_area(self, form, qs=None):
-        log_info("get_events_from_area", "start")
-        if exist_value(form.area.data):
-            log_info("get_events_from_area", "search start")
-            prefectures = get_prefecture(form.area.data)
-            log_info("get_events_from_area", "prefecture = " + str(prefectures))
+    def get_events_from_area(self, area, qs=None):
+        if exist_value(area):
+            prefectures = get_prefectures(area)
             where = Performance.prefecture.in_(prefectures)
             qs = self._create_common_qs(where=where, qs=qs)
-        log_info("get_events_from_area", "end")
         return qs
 
 

@@ -1,8 +1,8 @@
 # -*- coding:utf-8 -*-
 from altairsite.config import usersite_view_config
 from altairsite.smartphone.common.helper import SmartPhoneHelper
-from altairsite.smartphone.event.search.forms import TopSearchForm, GenreSearchForm, DetailSearchForm
-from altairsite.smartphone.event.search.resources import SearchQuery
+from altairsite.smartphone.event.search.forms import TopSearchForm, GenreSearchForm, AreaSearchForm, DetailSearchForm
+from altairsite.smartphone.event.search.resources import SearchQuery, AreaSearchQuery
 from altairsite.smartphone.common.const import SalesEnum
 
 @usersite_view_config(route_name='search',request_type="altairsite.tweens.ISmartphoneRequest"
@@ -22,9 +22,9 @@ def search(context, request):
              , renderer='altairsite.smartphone:templates/searchresult/search.html')
 def search(context, request):
     # トップ画面のエリア検索
-    form = TopSearchForm(request.GET)
-    query = SearchQuery(form.data['word'], form.data['sale'])
-    result = context.search(query, int(form.data['page']), 10)
+    form = AreaSearchForm(request.GET)
+    query = AreaSearchQuery(area=form.data['area'], genre_label=None)
+    result = context.search_area(query, int(form.data['page']), 10)
 
     return {
          'result':result

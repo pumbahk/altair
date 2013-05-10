@@ -2,6 +2,7 @@
 from altairsite.smartphone.resources import TopPageResource
 from altairsite.smartphone.common.searcher import EventSearcher
 from altaircms.models import Genre
+from altairsite.smartphone.common.helper import SmartPhoneHelper
 import webhelpers.paginate as paginate
 
 class SearchQuery(object):
@@ -10,6 +11,17 @@ class SearchQuery(object):
         self.sale = sale
     def to_string(self):
         str = u"フリーワード：" + self.word
+        return str
+
+class AreaSearchQuery(object):
+    def __init__(self, area, genre_label):
+        self.area = area
+        self.word = genre_label
+    def to_string(self):
+        helper = SmartPhoneHelper()
+        str = u"地域：" + helper.getRegionJapanese(self.area)
+        if self.word:
+             str = str + ', ジャンル:' + self.word
         return str
 
 class SearchResult(object):
@@ -26,10 +38,20 @@ class SearchPageResource(TopPageResource):
     def __init__(self, request):
         self.request = request
 
+    # トップ画面、ジャンルの検索
     def search(self, query, page, per):
         qs = self.search_freeword(search_query=query)
         if qs:
             qs = self.search_sale(search_query=query, qs=qs)
+        result = self.create_result(qs=qs, page=page, query=query, per=per)
+        return result
+
+    # トップ画面、ジャンルのエリア検索
+    def search_area(self, query, page, per):
+        qs = None
+        if query.word:
+            qs = self.search_freeword(search_query=query)
+        qs = self._search_area(search_query=query, qs=qs)
         result = self.create_result(qs=qs, page=page, query=query, per=per)
         return result
 
@@ -41,6 +63,11 @@ class SearchPageResource(TopPageResource):
     def search_sale(self, search_query, qs):
         searcher = EventSearcher(request=self.request)
         qs = searcher.search_sale(sale=search_query.sale, qs=qs)
+        return qs
+
+    def _search_area(self, search_query, qs):
+        searcher = EventSearcher(request=self.request)
+        qs = searcher.get_events_from_area(area=search_query.area, qs=qs)
         return qs
 
     def create_result(self, qs, page, query, per):

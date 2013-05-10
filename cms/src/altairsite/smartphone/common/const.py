@@ -15,12 +15,18 @@ class Area(object):
         self.prefectures = prefectures
 
 def get_areas():
-    regions = []
-    regions.append(Area('hokkaido', ['hokkaido','aomori','iwate','akita','miyagi','yamagata','fukushima']))
-    regions.append(Area('syutoken', ['chiba','tokyo','kanagawa','ibaraki','tochigi','gunma','saitama','yamanashi']))
-    regions.append(Area('koshinetsu', ['nagano','niigata','gifu','aichi','mie','shizuoka']))
-    regions.append(Area('kinki', ['kyoto','osaka','hyogo','shiga','nara','wakayama','toyama','ishikawa','fukui']))
-    regions.append(Area('chugoku', ['hiroshima','okayama','tottori','shimane','yamaguchi','tokushima','kagawa','ehime','kouchi']))
-    regions.append(Area('kyusyu', ['okinawa', 'fukuoka','saga','nagasaki','kumamoto','oita','miyazaki','kagoshima']))
-    return regions
+    areas = []
+    areas.append(Area('hokkaido', ['hokkaido','aomori','iwate','akita','miyagi','yamagata','fukushima']))
+    areas.append(Area('syutoken', ['chiba','tokyo','kanagawa','ibaraki','tochigi','gunma','saitama','yamanashi']))
+    areas.append(Area('koshinetsu', ['nagano','niigata','gifu','aichi','mie','shizuoka']))
+    areas.append(Area('kinki', ['kyoto','osaka','hyogo','shiga','nara','wakayama','toyama','ishikawa','fukui']))
+    areas.append(Area('chugoku', ['hiroshima','okayama','tottori','shimane','yamaguchi','tokushima','kagawa','ehime','kouchi']))
+    areas.append(Area('kyusyu', ['okinawa', 'fukuoka','saga','nagasaki','kumamoto','oita','miyazaki','kagoshima']))
+    return areas
+
+def get_prefectures(target_area):
+    areas = get_areas()
+    for area in areas:
+        if area.name == target_area:
+            return area.prefectures
 
