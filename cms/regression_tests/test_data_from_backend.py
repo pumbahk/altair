@@ -20,9 +20,7 @@ class DataFromBackendTests(unittest.TestCase):
         from altaircms.event.api import parse_and_save_event
         return parse_and_save_event(*args, **kwargs)
 
-    def test_it(self):
-        import transaction
-        from altaircms.models import SalesSegmentGroup
+    def _getOriginalData(self):
         data = {
             "organization": {
                 "id": 1, 
@@ -66,7 +64,13 @@ class DataFromBackendTests(unittest.TestCase):
                 ], 
             "updated_at": u"2012-06-20T10:33:34"
             }
+        return data
 
+    def test_3744(self):
+        import transaction
+        from altaircms.models import SalesSegmentGroup
+
+        data = self._getOriginalData()
         salessegment_data = data["events"][0]["performances"][0]["sales"][0]
         salessegment_data["kind_label"] = u"最速抽選"
         salessegment_data["kind_name"] = u"first_lottery"
@@ -81,10 +85,29 @@ class DataFromBackendTests(unittest.TestCase):
         salessegment_data["kind_label"] = u"一般先行"
         salessegment_data["kind_name"] = u"early_firstcome"
         salessegment_data["name"] = u"実際には先行販売でした"
+        request = testing.DummyRequest()
         self._postFromBackend(request, data)
         transaction.commit()
         self.assertEquals(SalesSegmentGroup.query.count(), 1)
 
+    def test_3745(self):
+        import transaction
+        from altaircms.models import SalesSegmentGroup
+
+        data = self._getOriginalData()
+        performance_data = data["events"][0]["performances"][0]
+        performance_data["subtitle"] = u"最初は公演あると思ってました"
+        request = testing.DummyRequest()
+        self._postFromBackend(request, data)
+        transaction.commit()
+        self.assertEquals(SalesSegmentGroup.query.count(), 1)
+
+
+        performance_data["subtitle"] = u"いつの間にか中止になっていました"
+        performance_data["delegated"] = "true"
+        self._postFromBackend(request, data)
+        transaction.commit()
+        self.assertEquals(SalesSegmentGroup.query.count(), 0)
 
 if __name__ == "__main__":
     unittest.main()
