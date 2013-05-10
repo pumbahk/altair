@@ -16,6 +16,8 @@ def moveGenre(context, request):
     hotwords = context.get_hotword()[0:5]
     genretree = context.get_genre_tree(parent=genre)
     regions = context.get_region()
+    week_sales = context.search_week(genre.label, 1, 10)
+    near_end_sales = context.search_week(genre.label, 1, 10)
 
     return {
          'genre':genre
@@ -25,6 +27,8 @@ def moveGenre(context, request):
         ,'hotwords':hotwords
         ,'genretree':genretree
         ,'regions':regions
+        ,'week_sales':week_sales
+        ,'near_end_sales':near_end_sales
         ,'helper':SmartPhoneHelper()
         ,'form':form
     }

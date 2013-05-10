@@ -1,11 +1,17 @@
-<%page args="genretree, helper" />
+<%page args="week_sales, near_end_sales, helper" />
 <%namespace file="../common/tags_smartphone.html" name="m" />
 
 <%m:header>今週発売</%m:header>
-% for i in range(0, len(genretree)):
-<% genre = genretree[i].genre %>
-    <a href="${request.route_path('genre', genre_id=genre.id)}">${genre}</a><br/>
-    % for subgenre in genre.children:
-        <a href="${request.route_path('genre', genre_id=subgenre.id)}">${subgenre}</a><br/>
+% if week_sales.events:
+    % for event in week_sales.events:
+        ${event.title}<br/>
     % endfor
-% endfor
+% endif
+<br/><br/>
+
+<%m:header>販売終了間近の公演</%m:header>
+% if near_end_sales.events:
+    % for event in near_end_sales.events:
+        ${event.title}<br/>
+    % endfor
+% endif
