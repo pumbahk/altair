@@ -31,7 +31,7 @@ class VirtualAssetModel(object):
         self.obj = obj
 
     def route_path(self, subpath):
-        subpath = subpath or self.image_path or self.notfound_image
+        subpath = subpath or (self.obj and self.obj.image_url and normalize_url(self.request, self.obj.image_url)) or self.notfound_image
         if subpath.startswith(("/", "http:", "http:")):
             return subpath
         else:
