@@ -58,8 +58,7 @@
 
 /* close button positioned on upper right corner */
 .dropped-widget .close, .simple_overlay .close, .dialog_overlay .close, .item .close{
-	/* background-image:url(/statics/img/overlay/close.png); */
-	background-image:url(/static/img/overlay/close.png);
+	background-image:url(../img/overlay/close.png);
 	position:absolute;
 	right:-10px;
 	top:-10px;
@@ -68,7 +67,7 @@
 	width:35px;
 }
 .dropped-widget .edit{
-	background-image:url(/static/img/overlay/edit.png);
+	background-image:url(../img/overlay/edit.png);
 	position:absolute;
 	right:-10px;
 	bottom:-10px;

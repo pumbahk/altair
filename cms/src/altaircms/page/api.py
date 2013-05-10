@@ -138,7 +138,8 @@ def get_static_page_utility(request):
 
 def set_static_page_utility(config, basedir, tmpdir):
     utility = functools.partial(StaticPageDirectory, basedir, tmpdir=tmpdir)
-    directory_validate(basedir, tmpdir)
+    resolver = AssetResolver()
+    directory_validate(resolver.resolve(basedir).abspath(), resolver.resolve(tmpdir).abspath())
     return config.registry.registerUtility(utility, IDirectoryResource, "static_page")
 
 
