@@ -38,14 +38,11 @@ class TicketingAdminResource(object):
                 acl.append((Allow, role.name, permission.category_name))
         return acl
 
-
-    @reify
     def user_id(self):
-        return authenticated_userid(self.request)
+        return self.user_id
 
-    @reify
     def user(self):
-        return Operator.get_by_login_id(self.user_id) if self.user_id is not None else None
+        return self.user
 
     @reify
     def organization(self):
@@ -80,6 +77,9 @@ class TicketingAdminResource(object):
                         else:
                             route_permission[route.name] = getattr(view_callable, '__permission__', None)
                 registry.route_permission = route_permission
+
+        self.user_id = authenticated_userid(self.request)
+        self.user = Operator.get_by_login_id(self.user_id) if self.user_id is not None else None
 
 def groupfinder(userid, request):
     user = session.query(Operator).join(OperatorAuth).filter(OperatorAuth.login_id == userid).first()
