@@ -45,7 +45,9 @@ ${helper.disp_date_week(event.event_open)}〜${helper.disp_date_week(event.event
     % for i, perf in enumerate(event.performances):
         % if str(perf.start_on.year) + "/" + str(perf.start_on.month).zfill(2) == month:
             [${i+1}]${event.title}<br/>
-            開場：${helper.disp_time(perf.open_on)}<br/>
+            % if perf.open_on:
+                開場：${helper.disp_time(perf.open_on)}<br/>
+            % endif
             開演：${helper.disp_time(perf.start_on)}<br/>
             会場：${perf.venue}<br/>
             <a href="${purchase_links[perf.id]}">購入する</a><br/>
