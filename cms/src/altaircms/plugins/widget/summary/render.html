@@ -8,7 +8,7 @@
 <div class="detailBox describeBox" id="settlementEventDetail">
   <div class="detailBoxInner">
   %if widget.show_label:
-	  <h2><img src="/static/RT/img/settlement/title_event.gif" alt="イベント詳細" width="106" height="29" /></h2>
+	  <h2><img src="${request.static_url("altaircms:static/RT/img/settlement/title_event.gif")}" alt="イベント詳細" width="106" height="29" /></h2>
   %endif
 	<table summary="イベント詳細情報">
 	  % for item in items:

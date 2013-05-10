@@ -6,7 +6,7 @@ logger = logging.getLogger(__name__)
 <div class="calendar detailBox">
   <div id="detailSchedule" class="detailBoxInner">
   %if widget.show_label:
-    <h2><img src="/static/RT/img/detail/schedule_events-games.gif" alt="公演‥開催日程" height="30"/></h2>
+    <h2><img src="${request.static_url("altaircms:static/RT/img/detail/schedule_events-games.gif")}" alt="公演‥開催日程" height="30"/></h2>
   %endif
 	<table>
 	 <thead>

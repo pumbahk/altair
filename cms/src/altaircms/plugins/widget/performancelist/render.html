@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 <div class="detailBox describeBox">
   <div class="detailBoxInner">
 	  ##<h2>公演‥開催一覧</h2>
-    <h2><img src="/static/RT/img/detail/all_events-games.gif" alt="公演‥開催一覧" height="30"/></h2>
+    <h2><img src="${request.static_url("altaircms:static/RT/img/detail/all_events-games.gif")}" alt="公演‥開催一覧" height="30"/></h2>
     <div style="float:right; margin-right:20px;">
       <form>
         <input type="checkbox" id="form-showUnavailablePerformances"><label for="form-showUnavailablePerformances" class="subdescribe">販売終了した公演も表示</label>
