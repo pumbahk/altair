@@ -137,6 +137,7 @@ class EntryLotView(object):
         if not performances:
             logger.debug('lot performances not found')
             raise HTTPNotFound()
+        performances = sorted(performances, key=operator.attrgetter('start_on'))
 
         performance_map = make_performance_map(self.request, performances)
 
