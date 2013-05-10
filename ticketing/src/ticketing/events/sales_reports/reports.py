@@ -481,7 +481,8 @@ class PerformanceReporter(object):
         self.reporters = {}
 
         # 公演合計のレポート
-        self.total = SalesDetailReporter(form)
+        self.form.sales_segment_group_id.data = None
+        self.total = SalesDetailReporter(self.form)
 
         # 販売区分別のレポート
         for sales_segment in performance.sales_segments:
