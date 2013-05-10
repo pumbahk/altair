@@ -1,38 +1,57 @@
 # -*- coding:utf-8 -*-
 from altairsite.config import usersite_view_config
 from altairsite.smartphone.common.helper import SmartPhoneHelper
-from altairsite.smartphone.event.search.forms import SearchForm, DetailSearchForm
+from altairsite.smartphone.event.search.forms import TopSearchForm, GenreSearchForm, DetailSearchForm
 from altairsite.smartphone.event.search.resources import SearchQuery
+from altairsite.smartphone.common.const import SalesEnum
 
 @usersite_view_config(route_name='search',request_type="altairsite.tweens.ISmartphoneRequest"
              , renderer='altairsite.smartphone:templates/searchresult/search.html')
-def moveSearch(context, request):
+def search(context, request):
     # トップ画面の検索
-    form = SearchForm(request.GET)
-    helper = SmartPhoneHelper()
+    form = TopSearchForm(request.GET)
     query = SearchQuery(form.data['word'], form.data['sale'])
-    qs = context.search_freeword(search_query=query)
-    if qs:
-        qs = context.search_sale(search_query=query, qs=qs)
-    result = context.create_result(qs=qs, page=int(form.data['page']), query=query, per=10)
+    result = context.search(query, int(form.data['page']), 10)
 
     return {
          'result':result
-        ,'helper':helper
+        ,'helper':SmartPhoneHelper()
+    }
+
+@usersite_view_config(route_name='genre_search',request_type="altairsite.tweens.ISmartphoneRequest"
+             , renderer='altairsite.smartphone:templates/searchresult/search.html')
+def genre_search(context, request):
+    # ジャンル画面の検索
+    form = GenreSearchForm(request.GET)
+    search_word = form.data['word']
+    if form.data['sale'] == SalesEnum.GENRE.v:
+        genre = context.get_genre(form.data['genre_id'])
+        search_word = search_word + ' ' + genre.label
+
+    query = SearchQuery(search_word, SalesEnum.ON_SALE.v)
+    result = context.search(query, int(form.data['page']), 10)
+
+    return {
+         'result':result
+        ,'helper':SmartPhoneHelper()
     }
 
 @usersite_view_config(route_name='detail_search',request_type="altairsite.tweens.ISmartphoneRequest"
              ,request_method="GET", renderer='altairsite.smartphone:templates/searchresult/detail_search.html')
-def moveDetailSearchInit(context, request):
+def init_detail_search(context, request):
+    # 詳細検索画面表示
     return {
-        'form':DetailSearchForm()
+         'form':DetailSearchForm()
+        ,'helper':SmartPhoneHelper()
     }
 
 @usersite_view_config(route_name='detail_search',request_type="altairsite.tweens.ISmartphoneRequest"
              ,request_method="POST", renderer='altairsite.smartphone:templates/searchresult/detail_search.html')
-def moveDetailSearch(context, request):
+def detail_search(context, request):
+    # 詳細検索
     return {
-        'form':DetailSearchForm()
+         'form':DetailSearchForm()
+        ,'helper':SmartPhoneHelper()
     }
 
 """

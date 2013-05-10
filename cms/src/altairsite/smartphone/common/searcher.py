@@ -44,7 +44,7 @@ class EventSearcher(object):
         return qs
 
     # 販売中
-    def _get_events_on_sale(self, form, qs=None):
+    def _get_events_on_sale(self, qs=None):
         where = (datetime.now() <= Event.deal_close)
         qs = self._create_common_qs(where=where, qs=qs)
         return qs

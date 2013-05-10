@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 from altairsite.config import usersite_view_config
 from altairsite.smartphone.common.helper import SmartPhoneHelper
-from altairsite.smartphone.event.search.forms import SearchForm
+from altairsite.smartphone.event.search.forms import TopSearchForm
 
 @usersite_view_config(route_name='main',request_type="altairsite.tweens.ISmartphoneRequest"
              , renderer='altairsite.smartphone:templates/top.html')
@@ -22,5 +22,5 @@ def main(context, request):
         ,'genretree':genretree
         ,'regions':regions
         ,'helper':helper
-        ,'form':SearchForm()
+        ,'form':TopSearchForm()
     }

@@ -5,7 +5,7 @@ from wtforms.validators import Optional, Length
 from altairsite.smartphone.common.const import SalesEnum
 from datetime import date
 
-class SearchForm(Form):
+class TopSearchForm(Form):
 
     word = TextField(label = '', validators=[Length(max=200, message=u'200文字以内で入力してください')])
     sale = SelectField(
@@ -13,12 +13,23 @@ class SearchForm(Form):
         validators=[Optional()],
         choices=[
             (SalesEnum.ON_SALE.v, u'すべてのチケット'),
-            (SalesEnum.GENRE.v, u'このジャンルで'),
             (SalesEnum.WEEK_SALE.v, u'今週発売のチケット'),
             (SalesEnum.SOON_ACT.v, u'まもなく開演のチケット'),
         ],
         default=SalesEnum.ON_SALE.v, coerce=int)
     page = HiddenField(validators=[Optional()],default="1")
+
+class GenreSearchForm(TopSearchForm):
+
+    genre_id = HiddenField(label='', validators=[Optional()], default="0")
+    sale = SelectField(
+        label='',
+        validators=[Optional()],
+        choices=[
+            (SalesEnum.ON_SALE.v, u'すべてのチケット'),
+            (SalesEnum.GENRE.v, u'このジャンルで'),
+        ],
+        default=SalesEnum.ON_SALE.v, coerce=int)
 
 class DetailSearchForm(Form):
 

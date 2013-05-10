@@ -1,5 +1,5 @@
 # -*- coding:utf-8 -*-
-from altairsite.smartphone.resources import TopPageResource
+from altairsite.smartphone.event.genre.resources import GenrePageResource
 from altairsite.smartphone.common.searcher import EventSearcher
 from altairsite.smartphone.common.const import SalesEnum
 import webhelpers.paginate as paginate
@@ -22,9 +22,16 @@ class SearchResult(object):
         self.page_end = page_end
         self.events = events
 
-class SearchPageResource(TopPageResource):
+class SearchPageResource(GenrePageResource):
     def __init__(self, request):
         self.request = request
+
+    def search(self, query, page, per):
+        qs = self.search_freeword(search_query=query)
+        if qs:
+            qs = self.search_sale(search_query=query, qs=qs)
+        result = self.create_result(qs=qs, page=page, query=query, per=per)
+        return result
 
     def search_freeword(self, search_query):
         searcher = EventSearcher(request=self.request)

@@ -2,7 +2,7 @@
 <%namespace file="../common/tags_smartphone.html" name="m" />
 <%block name="title">楽天チケットトップ</%block>
 
-<%include file="../search/_search.html"/>
+<%include file="../search/genre_search.html"/>
 <div align="center">${genre}</div>
 <%include file="../common/_pickup.html" args="promotions=promotions, helper=helper"/>
 <%include file="_salestab.html" args="weeksales=weeksales, near_end_sales=near_end_sales, helper=helper"/>

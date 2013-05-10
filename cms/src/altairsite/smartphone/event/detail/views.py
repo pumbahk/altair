@@ -3,7 +3,6 @@ from altairsite.config import usersite_view_config
 from altairsite.smartphone.common.helper import SmartPhoneHelper
 from altairsite.mobile.core.helper import get_week_map, get_performances_month_unit, get_purchase_links \
     , get_tickets, exist_value, get_sales_date
-from altairsite.smartphone.event.search.forms import SearchForm
 from .forms import DetailForm
 
 @usersite_view_config(route_name='detail',request_type="altairsite.tweens.ISmartphoneRequest"
