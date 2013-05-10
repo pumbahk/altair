@@ -52,12 +52,18 @@
     <th style="width: 8%;">小計</th>
   % endif
   </tr>
-  <% group_key = None %>
-  % for report in reporter.sort_data():
+  <%
+    group_key = None
+    if ss_idx == 0 and len(sales_segments) > 1:
+      sorted_records = reporter.sort_and_merge_data()
+    else:
+      sorted_records = reporter.sort_data()
+  %>
+  % for report_data in sorted_records:
     <%
-      if group_key == report.group_key():
+      if group_key == report_data.group_key():
         continue
-      group_key = report.group_key()
+      group_key = report_data.group_key()
       count = len(reporter.group_key_to_reports(group_key))
     %>
     % for i, report in enumerate(reporter.group_key_to_reports(group_key)):

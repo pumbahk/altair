@@ -441,6 +441,8 @@ class SalesDetailReporter(object):
                 merged_records[merged_record.product_id] = merged_record
             merged_record = record
             pre_merge_key = merge_key
+        else:
+            merged_records[merged_record.product_id] = merged_record
         self.reports = merged_records
         self.create_group_key_to_reports()
         return self.sort_data()
