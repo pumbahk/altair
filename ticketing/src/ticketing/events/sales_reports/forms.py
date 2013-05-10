@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
-from wtforms import Form
-from wtforms import TextField, SelectField, HiddenField
+from wtforms import Form, TextField, SelectField, HiddenField
 from wtforms.validators import Regexp, Length, Optional, ValidationError, Email
+from wtforms.compat import iteritems
 
 from ticketing.formhelpers import DateTimeField, Translations, Required, after1900, OurBooleanField
 from ticketing.core.models import Operator, ReportSetting
@@ -10,6 +10,12 @@ from ticketing.core.models import ReportFrequencyEnum, ReportPeriodEnum
 
 
 class SalesReportForm(Form):
+
+    def __init__(self, formdata=None, obj=None, prefix='', **kwargs):
+        Form.__init__(self, formdata, obj, prefix, **kwargs)
+        for name, field in iteritems(self._fields):
+            if name in kwargs:
+                field.data = kwargs[name]
 
     def _get_translations(self):
         return Translations()
