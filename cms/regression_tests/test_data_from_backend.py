@@ -10,7 +10,8 @@ class DataFromBackendTests(unittest.TestCase):
                   "altaircms.layout.models", 
                   "altaircms.widget.models", 
                   "altaircms.event.models", 
-                  "altaircms.asset.models"])
+                  "altaircms.asset.models", 
+                  "altaircms.plugins.widget.ticketlist.models"])
 
     def tearDown(self):
         from altaircms.testing import teardown_db
@@ -139,6 +140,28 @@ class DataFromBackendTests(unittest.TestCase):
 
         sg = SalesSegmentGroup.query.first()
         self.assertEquals(sg.backend_id, 1234)
+
+    def test_3756(self): #sqlite is ok?(foreignkey constraint is loose)
+        import transaction
+        from altaircms.models import SalesSegment
+        from altaircms.plugins.widget.ticketlist.models import TicketlistWidget
+        from altaircms.models import DBSession
+
+        data = self._getOriginalData()
+        request = testing.DummyRequest()
+        self._postFromBackend(request, data)
+        self.assertEquals(SalesSegment.query.count(), 1)
+
+        DBSession.add(TicketlistWidget(target_salessegment=SalesSegment.query.one()))
+        transaction.commit()
+
+        salessegment_data = data["events"][0]["performances"][0]["sales"][0]
+        salessegment_data["deleted"] = "true"
+
+        self._postFromBackend(request, data)
+        transaction.commit()
+        self.assertEquals(SalesSegment.query.count(), 0)
+        self.assertEquals(TicketlistWidget.query.all()[0].target_salessegment, None)
 
 if __name__ == "__main__":
     unittest.main()

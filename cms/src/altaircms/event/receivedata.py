@@ -188,7 +188,7 @@ class Scanner(object):
                 performance.title = record['name']
                 performance.venue = record['venue']
                 performance.prefecture = PREFECTURES.get(record['prefecture'])
-                performance.display_order = record.get("display_order")
+                performance.display_order = record.get("display_order", 50)
                 performance.open_on = parse_datetime(record.get('open_on'))
                 performance.start_on = parse_datetime(record['start_on'])
                 performance.end_on = parse_datetime(record.get('end_on'))
