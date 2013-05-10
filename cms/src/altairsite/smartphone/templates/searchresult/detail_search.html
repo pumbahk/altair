@@ -1,0 +1,6 @@
+<%inherit file="../common/_base.html" />
+<%namespace file="../common/tags_smartphone.html" name="m" />
+<%block name="title">検索結果一覧</%block>
+
+<%include file="../search/detail_search.html" args="form=form"/>
+<%include file="_result.html" args="result=result, helper=helper"/>

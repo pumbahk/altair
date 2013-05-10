@@ -5,7 +5,7 @@ from altairsite.smartphone.event.search.forms import SearchForm, DetailSearchFor
 from altairsite.smartphone.event.search.resources import SearchQuery
 
 @usersite_view_config(route_name='search',request_type="altairsite.tweens.ISmartphoneRequest"
-             , renderer='altairsite.smartphone:templates/searchresult/result.html')
+             , renderer='altairsite.smartphone:templates/searchresult/search.html')
 def moveSearch(context, request):
     # トップ画面の検索
     form = SearchForm(request.GET)
@@ -22,14 +22,14 @@ def moveSearch(context, request):
     }
 
 @usersite_view_config(route_name='detail_search',request_type="altairsite.tweens.ISmartphoneRequest"
-             ,request_method="GET", renderer='altairsite.smartphone:templates/searchresult/result.html')
+             ,request_method="GET", renderer='altairsite.smartphone:templates/searchresult/detail_search.html')
 def moveDetailSearchInit(context, request):
     return {
         'form':DetailSearchForm()
     }
 
 @usersite_view_config(route_name='detail_search',request_type="altairsite.tweens.ISmartphoneRequest"
-             ,request_method="POST", renderer='altairsite.smartphone:templates/searchresult/result.html')
+             ,request_method="POST", renderer='altairsite.smartphone:templates/searchresult/detail_search.html')
 def moveDetailSearch(context, request):
     return {
         'form':DetailSearchForm()
