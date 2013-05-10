@@ -19,7 +19,7 @@ def only_layout(fn):
 def set_uploaded_at(after_s3_upload):
     event = after_s3_upload
     layouts = event.extra_args
-    logger.warn("*debug set_uploaded_at start. layouts={0}".format(layouts))
+    logger.info("*debug set_uploaded_at start. layouts={0}".format(layouts))
     now = datetime.now()
     for layout in layouts:
         layout.uploaded_at = now
@@ -42,5 +42,5 @@ def rename_for_s3_upload(before_s3_upload):
             descriptor = resolver.resolve(request, layout)
             updated_name = descriptor.absspec()
             updated.append((SignaturedFile(name=updated_name, handler=f.handler, signature=f.signature), realpath))
-            logger.warn("*debug rename_for_s3_upload: change name {0} -> {1}".format(name, updated_name))
+            logger.info("*debug rename_for_s3_upload: change name {0} -> {1}".format(name, updated_name))
     event.files = updated

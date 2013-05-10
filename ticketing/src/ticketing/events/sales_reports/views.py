@@ -101,23 +101,18 @@ class SalesReports(BaseView):
         event_id = int(self.request.params.get('event_id') or 0)
         performance_id = int(self.request.params.get('performance_id') or 0)
 
+        form = SalesReportForm(self.request.params)
         if performance_id:
             performance = Performance.get(performance_id, organization_id=self.context.user.organization_id)
             if performance is None:
                 raise HTTPNotFound('performance id %d is not found' % performance_id)
-            form = SalesReportForm(self.request.params)
-            render_param = {
-                'performance_reporter':PerformanceReporter(form, performance)
-            }
+            render_param = dict(performance_reporter=PerformanceReporter(form, performance))
             return render_to_response('ticketing:templates/sales_reports/performance_mail.html', render_param, request=self.request)
         elif event_id:
             event = Event.get(event_id, organization_id=self.context.user.organization_id)
             if event is None:
                 raise HTTPNotFound('event id %d is not found' % event_id)
-            form = SalesReportForm(self.request.params)
-            render_param = {
-                'event_reporter':EventReporter(form, event)
-            }
+            render_param = dict(event_reporter=EventReporter(form, event))
             return render_to_response('ticketing:templates/sales_reports/event_mail.html', render_param, request=self.request)
         else:
             raise HTTPNotFound('event and performance id is not found')

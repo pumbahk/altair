@@ -40,7 +40,7 @@ class TemplateFetcher(object):
 
     def refresh_template_if_need(self, template, layout):
         if not hasattr(template, "cache"):
-            logger.warn("*debug validate template: cache is not found")
+            logger.info("*debug validate template: cache is not found")
             return
 
         if layout.synced_at is None:

@@ -79,12 +79,12 @@ class S3ConnectionFactory(object):
             notify(AfterS3Delete(request, session, deleted_files, self.uploader, result.get("extra_args", [])))
 
     def upload(self, f, realpath, options=None):
-        logger.warn("*debug upload: bucket={0} name={1}".format(self.uploader.bucket_name, f.name))
+        logger.info("*debug upload: bucket={0} name={1}".format(self.uploader.bucket_name, f.name))
         with open(realpath) as rf:
             self.uploader.upload(rf, f.name, options)
 
     def delete(self, f, realpath, options=None):
-        logger.warn("*debug delete: bucket={0} name={1}".format(self.uploader.bucket_name, f.name))
+        logger.info("*debug delete: bucket={0} name={1}".format(self.uploader.bucket_name, f.name))
         ## uploadしたファイルは残す.
         # self.uploader.delete(f, f.name, options)
 
@@ -100,7 +100,7 @@ class NullConnectionFactory(object):
 
     def logging_message(self, event):
         result = event.result #{"create": [], "delete": [], "extra_args": []}
-        logger.warn("*debug after upload. result={0}".format(result))
+        logger.info("*debug after upload. result={0}".format(result))
 
 from .core import DummyFile
 
@@ -115,7 +115,7 @@ class Renamer(object):
             name = f.name
             updated_name = rename_fn(self.request, name)
             updated.append((DummyFile(name=updated_name), realpath))
-            logger.warn("*debug rename_for_s3_upload: change name {0} -> {1}".format(name, updated_name))
+            logger.info("*debug rename_for_s3_upload: change name {0} -> {1}".format(name, updated_name))
         self.event.files = updated
 
 

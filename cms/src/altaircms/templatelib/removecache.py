@@ -6,7 +6,7 @@ logger = logging.getLogger()
 from . import create_adjusted_name
 
 def refresh_template_cache(template):
-    logger.warn("*debug *refresh template cache (last_modified={1}, uri={0})".format(template.uri, template.last_modified))
+    logger.info("*debug *refresh template cache (last_modified={1}, uri={0})".format(template.uri, template.last_modified))
     lookup = template.lookup
     return refresh_template_cache_lookup(lookup)
 
@@ -41,13 +41,13 @@ def del_cache(k, discriptor, uploaded_at, lookup, deletefn=logical_delete_file):
 
     if k in lookup._collection:
         del lookup._collection[k]
-        logger.warn("*debug del collection: {0}".format(k))
+        logger.info("*debug del collection: {0}".format(k))
     if k in lookup._uri_cache:
         del lookup._uri_cache[k]
-        logger.warn("*debug del uri_cache: {0}".format(k))
+        logger.info("*debug del uri_cache: {0}".format(k))
 
 def refresh_template_cache_only_needs(template, discriptors, uploaded_at):
-    logger.warn("*debug *refresh template cache_only_needs (last_modified={1}, uri={0}, uploaded_at={2})".format(
+    logger.info("*debug *refresh template cache_only_needs (last_modified={1}, uri={0}, uploaded_at={2})".format(
             template.uri, template.last_modified, uploaded_at))
     lookup = template.lookup
     return refresh_template_cache_only_needs_lookup(lookup, discriptors, uploaded_at)
@@ -62,4 +62,4 @@ def refresh_template_cache_only_needs_lookup(lookup, discriptors, uploaded_at):
 
     for d in discriptors:
         lookup.add_event(d.absspec(), partial(del_cache, create_adjusted_name(d.absspec()), d, uploaded_at))
-    logger.warn("*debug *refresh_template_cache,  discriptors={0}".format(discriptors))
+    logger.info("*debug *refresh_template_cache,  discriptors={0}".format(discriptors))
