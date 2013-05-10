@@ -18,6 +18,19 @@ def search(context, request):
         ,'helper':SmartPhoneHelper()
     }
 
+@usersite_view_config(route_name='search_area',request_type="altairsite.tweens.ISmartphoneRequest"
+             , renderer='altairsite.smartphone:templates/searchresult/search.html')
+def search(context, request):
+    # トップ画面のエリア検索
+    form = TopSearchForm(request.GET)
+    query = SearchQuery(form.data['word'], form.data['sale'])
+    result = context.search(query, int(form.data['page']), 10)
+
+    return {
+         'result':result
+        ,'helper':SmartPhoneHelper()
+    }
+
 @usersite_view_config(route_name='genre_search',request_type="altairsite.tweens.ISmartphoneRequest"
              , renderer='altairsite.smartphone:templates/searchresult/search.html')
 def genre_search(context, request):
@@ -35,6 +48,8 @@ def genre_search(context, request):
          'result':result
         ,'helper':SmartPhoneHelper()
     }
+
+
 
 @usersite_view_config(route_name='detail_search',request_type="altairsite.tweens.ISmartphoneRequest"
              ,request_method="GET", renderer='altairsite.smartphone:templates/searchresult/detail_search.html')

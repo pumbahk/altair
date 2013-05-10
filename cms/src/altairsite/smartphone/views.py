@@ -11,7 +11,7 @@ def main(context, request):
     topics = context.getInfo(kind="topic", system_tag_id=None)[0:5]
     hotwords = context.get_hotword()[0:5]
     genretree = context.get_genre_tree(parent=None)
-    regions = context.get_region()
+    areas = context.get_area()
     helper = SmartPhoneHelper()
 
     return {
@@ -20,7 +20,7 @@ def main(context, request):
         ,'topics':topics
         ,'hotwords':hotwords
         ,'genretree':genretree
-        ,'regions':regions
+        ,'areas':areas
         ,'helper':helper
         ,'form':TopSearchForm()
     }

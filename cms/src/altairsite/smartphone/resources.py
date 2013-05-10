@@ -6,7 +6,7 @@ from altaircms.topic.api import get_topic_searcher
 from altaircms.models import Genre
 from altaircms.genre.searcher import GenreSearcher
 from altaircms.tag.models import HotWord
-from altairsite.smartphone.common.const import getRegions
+from altairsite.smartphone.common.const import get_areas
 
 class GenreNode(object):
     def __init__(self, genre, children):
@@ -63,5 +63,5 @@ class TopPageResource(object):
             genretree.append(node)
         return genretree
 
-    def get_region(self):
-        return getRegions()
+    def get_area(self):
+        return get_areas()
