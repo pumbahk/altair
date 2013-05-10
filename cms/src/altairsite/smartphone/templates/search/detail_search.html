@@ -1,5 +1,16 @@
+<%namespace file="../common/tags_smartphone.html" name="m" />
+
 <div id="detail_search" style="background-color: pink">
-    詳細検索フォーム
+    詳細検索フォーム<br/>
+
+    <%m:header>フリーワード</%m:header><br/>
+    <%m:header>さらに条件を指定する</%m:header><br/>
+    <%m:header>ジャンルで絞り込む</%m:header><br/>
+    <%m:header>開催地で絞り込む</%m:header><br/>
+    <%m:header>公演日で絞り込む</%m:header><br/>
+    <%m:header>販売条件で絞り込む</%m:header><br/>
+
+
     <form action="${request.route_path('search')}" method='GET'>
         <fieldset>
             ${form.word}

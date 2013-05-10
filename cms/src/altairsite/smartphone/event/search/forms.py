@@ -31,9 +31,8 @@ class GenreSearchForm(TopSearchForm):
         ],
         default=SalesEnum.ON_SALE.v, coerce=int)
 
-class DetailSearchForm(Form):
+class DetailSearchForm(TopSearchForm):
 
-    # --- 詳細検索用
     area = SelectField(label='', validators=[Optional()],coerce=int,
         choices=[(0, u'選択なし'),(1, u'首都圏'),(2, u'近畿'),(3, u'東海'),(4, u'北海道'),(5, u'東北'),
                  (6, u'北関東'),(7, u'甲信越'),(8, u'北陸'),(9, u'中国'),(10, u'四国'),(11, u'九州'),(12, u'沖縄')],)
