@@ -6,7 +6,7 @@ if [ $# -ge 1 ]; then
     suffix=".$1"
 fi
 
-host_cfg="$(hostname -f)${suffix}.cfg"
+host_cfg="$(hostname)${suffix}.cfg"
 default_cfg="buildout${suffix}.cfg"
 
 if [ -f $host_cfg ] ; then
