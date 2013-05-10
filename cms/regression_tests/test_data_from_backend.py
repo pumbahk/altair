@@ -104,7 +104,7 @@ class DataFromBackendTests(unittest.TestCase):
 
 
         performance_data["subtitle"] = u"いつの間にか中止になっていました"
-        performance_data["delegated"] = "true"
+        performance_data["deleted"] = "true"
         self._postFromBackend(request, data)
         transaction.commit()
         self.assertEquals(SalesSegmentGroup.query.count(), 0)
