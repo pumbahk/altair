@@ -137,7 +137,7 @@ class AssetFunctionalTests(AppFunctionalTests):
             created_asset = self._get_image_asset_by_title(asset_title)
             created_asset_size = created_asset.size
             created_asset_filepath = created_asset.filepath
-
+            self.assertEquals(created_asset.version_counter, 0)
 
             ### update title
             asset_title = u"update-asset"
@@ -155,11 +155,11 @@ class AssetFunctionalTests(AppFunctionalTests):
             self.assertEqual(self._count_of_image_asset(), 1)
             updated_asset = self._get_image_asset_by_title(asset_title)
             self.assertEqual(updated_asset.title, asset_title)
+            self.assertEquals(updated_asset.version_counter, 1)
 
             ## 画像は変わらない
             self.assertEqual(updated_asset.size,  created_asset.size)            
             self.assertEqual(updated_asset.filepath, created_asset_filepath)
-
 
             ### update image
             created_asset = self._get_image_asset_by_title(asset_title)
@@ -177,10 +177,8 @@ class AssetFunctionalTests(AppFunctionalTests):
             self.assertEqual(self._count_of_image_asset(), 1)
             updated_asset2 = self._get_image_asset_by_title(asset_title)
             
-            ## 画像を変更しても保存先は変わらない
-            self.assertEqual(updated_asset2.filepath, created_asset.filepath)
-            self.assertEqual(updated_asset2.filepath, created_asset_filepath)
-
+            ## 画像を変更しても保存先も変わる
+            self.assertEqual(updated_asset2.filepath, updated_asset.filename_with_version(created_asset_filepath, 2))
             ## ただし保存されているファイルは変わる
             self.assertNotEqual(updated_asset2.size, created_asset_size)
             
@@ -288,7 +286,7 @@ class AssetFunctionalTests(AppFunctionalTests):
             
             ## placeholderを変更しても保存先は変わらない
             self.assertEqual(updated_asset2.filepath, created_asset_filepath)
-            self.assertEqual(updated_asset2.thumbnail_path, created_placeholder_path)
+            self.assertEqual(updated_asset2.thumbnail_path, updated_asset2.filename_with_version(created_placeholder_path, 2))
 
             ## ただし保存されているファイルは変わる
             self.assertNotEqual(app.get(self._get_static_asset_path(updated_asset2.thumbnail_path)).body[:100], 
@@ -432,8 +430,8 @@ class AssetFunctionalTests(AppFunctionalTests):
             updated_asset2 = self._get_flash_asset_by_title(asset_title)
             
             ## placeholderを変更しても保存先は変わらない
-            self.assertEqual(updated_asset2.filepath, created_asset_filepath)
-            self.assertEqual(updated_asset2.thumbnail_path, created_placeholder_path)
+            self.assertEqual(updated_asset2.filepath, updated_asset2.filename_with_version(created_asset_filepath, 2))
+            self.assertEqual(updated_asset2.thumbnail_path, updated_asset2.filename_with_version(created_placeholder_path))
 
             ## ただし保存されているファイルは変わる
             self.assertNotEqual(app.get(self._get_static_asset_path(updated_asset.thumbnail_path)).body[:100], 

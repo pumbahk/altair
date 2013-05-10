@@ -8,7 +8,7 @@
   %for topic in topics:
   <div class="topic" title="<h2>${topic.title}(${h.base.jdate(topic.publish_open_on)})</h2><p>${topic.text or ""|n}</p>">
     ${topic.title}(${h.base.jdate(topic.publish_open_on)})
-    <a href="${h.link.get_link_from_topic(request,topic)}"><img src="${h.asset.to_show_page(request,topic.image_asset)}"/>
+    <a href="${h.link.get_link_from_topic(request,topic)}"><img src="${h.asset.rendering_object(request,topic.image_asset).filepath}"/>
   </div>
   %endfor
 </div>

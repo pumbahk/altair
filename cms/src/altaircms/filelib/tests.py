@@ -109,5 +109,16 @@ class FileSaveTests(unittest.TestCase):
         target.commit()
         self.assertFalse(os.path.exists(outfilename))
 
+    def test_delete_with_not_existfilename(self):
+        import os.path
+        from tempfile import mktemp
+
+        outfilename = mktemp()
+        target = self._makeOne(prefix="")
+        self.assertFalse(os.path.exists(outfilename))
+        target.delete(outfilename)
+        target.commit()
+        self.assertFalse(os.path.exists(outfilename))
+
 if __name__ == "__main__":
     unittest.main()

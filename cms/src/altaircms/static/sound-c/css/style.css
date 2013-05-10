@@ -42,7 +42,7 @@ a:hover img {
 	margin-bottom: 15px;
 }
 .header{
-    background: url(/static/sound-c/img/header.jpg) no-repeat scroll center 0 transparent;
+    background: url(../img/header.jpg) no-repeat scroll center 0 transparent;
     height: 124px;
     width:960px;
 	margin:0 auto;
@@ -67,7 +67,7 @@ a:hover img {
 	text-align: center;	
 	position: relative;
 	line-height: 50%;
-	background: url(/static/sound-c/img/menuBG.gif) repeat-x 0 0 #306782;
+	background: url(../img/menuBG.gif) repeat-x 0 0 #306782;
 	height: 48px;
 }
 
@@ -91,7 +91,7 @@ a:hover img {
 	_float:left;
 }
 .gnavi ul li:hover{
-	background: url(/static/sound-c/img/menuBG2.gif) repeat-x 0 0 #306782;
+	background: url(../img/menuBG2.gif) repeat-x 0 0 #306782;
 }
 
 .gnavi ul li:active{
@@ -148,14 +148,14 @@ a:hover img {
 	font-weight: 700;
 	margin-top: 10px;
 	padding: 0 0 0 50px;
-	background: url(/static/sound-c/img/date.gif) no-repeat 0 2px transparent;
+	background: url(../img/date.gif) no-repeat 0 2px transparent;
 }
 
 .maincol .event .place{
 	font-size: 12px;
 	margin:5px 0 0 0;
 	padding: 0 0 0 50px;
-	background: url(/static/sound-c/img/place.gif) no-repeat 0 2px transparent;
+	background: url(../img/place.gif) no-repeat 0 2px transparent;
 }
 
 .maincol .event .artist a, .maincol .event .date a, .maincol .event .place a {
@@ -209,14 +209,14 @@ a:hover img {
 	font-weight: 700;
 	margin-top: 5px;
 	padding: 0 0 0 50px;
-	background: url(/static/sound-c/img/date.gif) no-repeat 0 2px transparent;
+	background: url(../img/date.gif) no-repeat 0 2px transparent;
 }
 
 .maincol .startsoon .event .place,  .maincol .endsoon .event .place{
 	font-size: 12px;
 	margin:5px 0 0 0;
 	padding: 0 0 0 50px;
-	background: url(/static/sound-c/img/place.gif) no-repeat 0 2px transparent;
+	background: url(../img/place.gif) no-repeat 0 2px transparent;
 }
 
 
@@ -534,7 +534,7 @@ a:hover img {
 }
 
 .faq dl dt{
-	background: url(/static/sound-c/img/q.gif) no-repeat 0 0 transparent;
+	background: url(../img/q.gif) no-repeat 0 0 transparent;
 	padding: 0 0 10px 40px;
 	font-size: 16px;
 	font-weight: 700;
@@ -543,7 +543,7 @@ a:hover img {
 }
 
 .faq dl dd{
-	background: url(/static/sound-c/img/a.gif) no-repeat 10px 16px #eaf8ff;
+	background: url(../img/a.gif) no-repeat 10px 16px #eaf8ff;
 	padding:20px 20px 20px 50px ;
 	font-size: 12px;
 	margin: 0 30px 30px 60px;
@@ -950,21 +950,21 @@ div#performance-calendar table tbody td.holiday .day {
 
 
 div#performance-calendar table td ul li.maru{
-	background: url(/static/89ers/images/maru.png) #f1fbff no-repeat left top;
+	background: url(../images/maru.png) #f1fbff no-repeat left top;
 	padding: 3px;
 	text-align: center;
 	font-size: 11px;
 }
 
 div#performance-calendar table td ul li.sankaku{
-	background: url(/static/89ers/images/sankaku.png) #fffcf0 no-repeat left top;
+	background: url(../images/sankaku.png) #fffcf0 no-repeat left top;
 	padding: 3px;
 	text-align: center;
 	font-size: 11px;
 }
 
 div#performance-calendar table td ul li.batsu{
-	background: url(/static/89ers/images/batsu.png) #eee no-repeat left top;
+	background: url(../images/batsu.png) #eee no-repeat left top;
 	padding: 3px;
 	text-align: center;
 	font-size: 11px;

@@ -1,4 +1,4 @@
-<%page args="cals,now,request,widget,months,visibilities,calendar_status"/>
+<%page args="cals,now,request,widget,months,visibilities,stock_status"/>
 <%
 import logging
 logger = logging.getLogger(__name__)
@@ -28,7 +28,7 @@ logger = logging.getLogger(__name__)
         %endif
         <ul>
         %for p in de["day_performances"]:
-          <% status= calendar_status.get_status(p)%>
+          <% status= stock_status.get_status(p)%>
           <li class="${status["class"]}">
             <% end_on_candidates = [s.end_on for s in p.sales if s.end_on] %>
             %if not end_on_candidates:

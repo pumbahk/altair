@@ -1,5 +1,6 @@
 from .interfaces import IFileSession
 from .core import FileSession, File
+from .adapts import AdaptsFileSession
 
 __all__ = ["File", 
            "FileSession", 
@@ -9,6 +10,9 @@ __all__ = ["File",
 
 def get_filesession(request, name=""):
     return request.registry.getUtility(IFileSession, name=name)
+
+def get_adapts_filesession(request, name=""):
+    return AdaptsFileSession(request, get_filesession(request, name=name))
 
 def add_filesession(config, session, name=""):
     ## todo: introspect, action

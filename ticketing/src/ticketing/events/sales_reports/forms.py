@@ -1,25 +1,22 @@
 # -*- coding: utf-8 -*-
 
-from wtforms import Form
-from wtforms import TextField, SelectField, HiddenField
+from wtforms import Form, TextField, SelectField, HiddenField
 from wtforms.validators import Regexp, Length, Optional, ValidationError, Email
+from wtforms.compat import iteritems
 
-from ticketing.formhelpers import DateTimeField, Translations, Required, after1900
-from ticketing.core.models import Event, Organization, Operator, ReportSetting
-from ticketing.core.models import ReportFrequencyEnum
+from ticketing.formhelpers import DateTimeField, Translations, Required, after1900, OurBooleanField
+from ticketing.core.models import Operator, ReportSetting
+from ticketing.core.models import ReportFrequencyEnum, ReportPeriodEnum
 
 
 class SalesReportForm(Form):
 
     def __init__(self, formdata=None, obj=None, prefix='', **kwargs):
         Form.__init__(self, formdata, obj, prefix, **kwargs)
-
-        if 'event_id' in kwargs:
-            self.event_id.data = kwargs['event_id']
-        if 'performance_id' in kwargs:
-            self.performance_id.data = kwargs['performance_id']
-        if 'sales_segment_group_id' in kwargs:
-            self.sales_segment_group_id.data = kwargs['sales_segment_group_id']
+        for name, field in iteritems(self._fields):
+            if name in kwargs:
+                field.data = kwargs[name]
+        self.need_total.data = True
 
     def _get_translations(self):
         return Translations()
@@ -50,6 +47,10 @@ class SalesReportForm(Form):
     subject = TextField(
         label=u'件名',
         validators=[Required()],
+    )
+    need_total = OurBooleanField(
+        validators=[Optional()],
+        default=True,
     )
 
 
@@ -130,6 +131,12 @@ class SalesReportMailForm(Form):
         label=u'終了日時',
         validators=[Optional(), after1900],
         format='%Y-%m-%d %H:%M',
+    )
+    period = SelectField(
+        label=u'レポート対象期間',
+        validators=[Required()],
+        choices=sorted([(kind.v[0], kind.v[1]) for kind in ReportPeriodEnum]),
+        coerce=int
     )
 
     def validate_operator_id(form, field):

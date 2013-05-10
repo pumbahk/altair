@@ -137,6 +137,7 @@ class EntryLotView(object):
         if not performances:
             logger.debug('lot performances not found')
             raise HTTPNotFound()
+        performances = sorted(performances, key=operator.attrgetter('start_on'))
 
         performance_map = make_performance_map(self.request, performances)
 
@@ -205,6 +206,12 @@ class EntryLotView(object):
         wishes = h.convert_wishes(self.request.params, lot.limit_wishes)
 
         validated = True
+        email = self.request.params['email_1']
+        # 申込回数チェック
+        if not lot.check_entry_limit(email):
+            self.request.session.flash(u"抽選への申込は{0}回までとなっております。".format(lot.entry_limit))
+            validated = False
+
 
         # 枚数チェック
         if not wishes:

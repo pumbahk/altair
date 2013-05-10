@@ -15,6 +15,9 @@ from altaircms.plugins.base.mixins import HandleWidgetMixin
 from altaircms.plugins.base.mixins import UpdateDataMixin
 from altaircms.security import RootFactory
 from altaircms.plugins.base.interception import not_support_if_keyerror
+from altaircms.models import SalesSegmentGroup
+from altaircms.event.models import Event
+from altaircms.page.models import Page
 
 class PerformancelistWidget(Widget):
     implements(IWidget)
@@ -26,6 +29,20 @@ class PerformancelistWidget(Widget):
     id = sa.Column(sa.Integer, sa.ForeignKey("widget.id"), primary_key=True)
     kind = sa.Column(sa.Unicode(32))
     mask_performance_date = sa.Column(sa.Boolean, default=False, nullable=False)
+
+    @property
+    def salessegment(self):
+        return SalesSegmentGroup.query \
+            .join(Event, SalesSegmentGroup.event_id == Event.id) \
+            .join(Page, Page.event_id == Event.id) \
+            .join(Widget, Page.id == Widget.page_id) \
+            .filter(Widget.id == self.id).first()
+
+    @property
+    def page(self):
+        return Page.query \
+            .join(Widget, Page.id == Widget.page_id) \
+            .filter(Widget.id == self.id).first()
 
     def merge_settings(self, bname, bsettings):
         ## lookup utilities.py

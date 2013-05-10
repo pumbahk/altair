@@ -1,4 +1,5 @@
 # -*- coding:utf-8 -*-
+import json
 import sys
 import webtest
 import os.path
@@ -58,7 +59,7 @@ def build_app():
     import altaircms
     here = set_here(os.path.join(altaircms.__path__[0], "../../"))
     _app = loadapp(_config_spec, None,  global_conf={}, relative_to=here)
-    _registry = _app.values()[0].registry
+    _registry = _app.registry
     _app = ComfortableTestApp(_app, relative_to=os.path.join(here, "functional_tests"))
     return _app
 
@@ -115,10 +116,17 @@ def mock_backend_main(global_config, **settings):
 
         return HTTPFound(request.GET["return_to"])
 
+    def stock_statuses(context, request):
+        with open(os.path.join(get_here(), "functional_tests", "stock-status-data-from-backend.json")) as rf:
+            return json.load(rf)
+
+
     config.add_route("auth.access_token", "/api/access_token")
     config.add_view(access_token, route_name="auth.access_token",  renderer="json")
     config.add_route("auth.logout", "/api/forget_loggedin")
     config.add_view(logout_backend, route_name="auth.logout")
+    config.add_route("api.stock_statuses_for_event", '/api/events/{event_id}/stock_statuses')
+    config.add_view(stock_statuses, route_name="api.stock_statuses_for_event", renderer="json")
     return config.make_wsgi_app()
 
 def run_mock_backend_server(data, port=60654):

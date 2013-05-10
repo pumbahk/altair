@@ -1,0 +1,16 @@
+<form id="sync_submit" method="POST">
+</form>
+
+<script type="text/javascript">
+  $(".layout-sync").on("click",function(e){
+    if(window.confirm("usersiteに通知します。よろしいですか？")){
+      var $e = $(e);
+      var form  = $("form#sync_submit");
+      form.remove();
+      form.append($('<input type="hidden" name="layout_id">').val($e.attr("data-id")));
+      form.attr("action", $e.attr("href"));
+      return form.submit();
+    }
+    return false;
+  })
+</script>
