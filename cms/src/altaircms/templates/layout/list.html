@@ -82,6 +82,11 @@ ${layouts.pager()}
           <div class="btn-group">
             <a href="${request.route_path("layout_update",pagetype_id=current_pagetype.id, action="input",id=x.id)}" class="btn btn-primary"><i class="icon-cog"></i> 編集</a>
             <a href="${request.route_path("layout_delete",action="confirm",id=x.id)}" class="btn btn-danger"><i class="icon-trash"></i> 削除</a>
+            %if x.synced_at is None or x.synced_at < x.updated_at:
+              <a data-id="${x.id}" href="${request.route_path("layout_sync",layout_id=x.id)}" class="layout-sync btn btn-warning"><i class="icon-cog"></i> 同期</a>
+            %else:
+              <a data-id="${x.id}" href="${request.route_path("layout_sync",layout_id=x.id)}" class="layout-sync btn btn-info"><i class="icon-cog"></i> 同期</a>
+            %endif
           </div>
               </td>
             </tr>
@@ -90,3 +95,5 @@ ${layouts.pager()}
 </table>
 ${layouts.pager()}
 </div>
+
+<%include file="./_sync.html"/>

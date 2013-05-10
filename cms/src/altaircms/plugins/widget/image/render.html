@@ -3,11 +3,11 @@
 %if widget.href:
 <a href="${widget.href}">
   <img ${widget.html_attributes|n}
-	 src="${h.asset.to_show_page(request,widget.asset)}"/>
+	 src="${h.asset.rendering_object(request,widget.asset).filepath}"/>
 </a>
 %else:
   <img ${widget.html_attributes|n}
-	 src="${h.asset.to_show_page(request,widget.asset)}"/>
+	 src="${h.asset.rendering_object(request,widget.asset).filepath}"/>
 %endif
 ${widget.html_suffix}
 </%def>

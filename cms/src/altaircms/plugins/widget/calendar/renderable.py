@@ -124,7 +124,7 @@ def get_start_date_and_end_date(salessegment_group, performances):
         return _current_month_begin(beg, datetime), _next_month_date(end, datetime)
     return beg, end
 
-def obi(widget, calendar_status, performances, request, template_name=None): 
+def obi(widget, stock_status, performances, request, template_name=None):
     """公演の開始から終了までを縦に表示するカレンダー
     ※ performancesはstart_onでsortされているとする
     """
@@ -136,11 +136,11 @@ def obi(widget, calendar_status, performances, request, template_name=None):
     if performances:
         cal = CalendarOutput.from_performances(performances)
         rows = cal.each_rows(*get_start_date_and_end_date(widget.salessegment, performances))
-        return render(template_name, {"now": now,  "cal":rows, "i":cal.i, "calendar_status": calendar_status, "widget":widget, "request": request}, request)
+        return render(template_name, {"now": now,  "cal":rows, "i":cal.i, "stock_status": stock_status, "widget":widget, "request": request}, request)
     else:
         return u"performance is not found"
 
-def term(widget, calendar_status, performances, request, template_name=None): 
+def term(widget, stock_status, performances, request, template_name=None):
     """開始日／終了日を指定してその範囲のカレンダーを表示
     """
     now = datetime.now()
@@ -149,9 +149,9 @@ def term(widget, calendar_status, performances, request, template_name=None):
 
     cal = CalendarOutput.from_performances(performances)
     rows = cal.each_rows(widget.from_date, widget.to_date)
-    return render(template_name, {"now": now,  "cal":rows, "i":cal.i, "calendar_status":calendar_status, "widget":widget, "request": request}, request)
+    return render(template_name, {"now": now,  "cal":rows, "i":cal.i, "stock_status":stock_status, "widget":widget, "request": request}, request)
 
-def tab(widget, calendar_status, performances, request, template_name=None):
+def tab(widget, stock_status, performances, request, template_name=None):
     """月毎のタブが存在するカレンダーを表示
     ※ performancesはstart_onでsortされているとする
     """
@@ -173,7 +173,7 @@ def tab(widget, calendar_status, performances, request, template_name=None):
                                       "widget":widget, 
                                       "months":months,
                                       "visibilities": visibilities,
-                                      "calendar_status":calendar_status})
+                                      "stock_status":stock_status})
     else:
         today = date.today()
         months = [(today.year, today.month)]
@@ -187,4 +187,4 @@ def tab(widget, calendar_status, performances, request, template_name=None):
                                       "widget":widget, 
                                       "months":months,
                                       "visibilities": visibilities,
-                                      "calendar_status":calendar_status})
+                                      "stock_status":stock_status})

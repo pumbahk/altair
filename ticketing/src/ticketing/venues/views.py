@@ -1,10 +1,12 @@
 # coding: utf-8
 
+import os
 import csv
 from datetime import datetime
 from urllib2 import urlopen
 import re
 import logging
+from urlparse import urlparse
 
 from pyramid.view import view_config
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound
@@ -34,7 +36,20 @@ def get_drawing(request):
     if venue.site.drawing_url is None:
         return HTTPNotFound("Venue id #%d site has no drawing_url" % venue_id)
 
-    return Response(app_iter=urlopen(venue.site.drawing_url), content_type='text/xml; charset=utf-8')
+    content_encoding = None
+    if re.match('^.+\.(svgz|gz)$', venue.site.drawing_url):
+        content_encoding = 'gzip'
+    resp = Response(
+        app_iter=urlopen(venue.site.drawing_url),
+        content_type='text/xml; charset=utf-8',
+        content_encoding=content_encoding,
+        conditional_response=True
+    )
+    drawing_url = urlparse(venue.site.drawing_url)
+    resp.last_modified = os.path.getmtime(drawing_url.path)
+    if resp.content_encoding is None and (request.if_modified_since is None or request.if_modified_since < resp.last_modified):
+        resp.encode_content()
+    return resp
 
 @view_config(route_name="api.get_seats", request_method="GET", renderer='json', permission='event_viewer')
 def get_seats(request):
@@ -62,26 +77,23 @@ def get_seats(request):
 
     if u'seats' in necessary_params:
         seats_data = {}
-        query = DBSession.query(Seat).options(joinedload('attributes_'), joinedload('areas'), joinedload('status_')).filter_by(venue=venue)
+        query = DBSession.query(Seat).join(SeatStatus).filter(Seat.venue==venue)
+        query = query.with_entities(Seat.l0_id, Seat.name, Seat.seat_no, Seat.stock_id, SeatStatus.status)
         if sales_segment_id:
             query = query.join(ProductItem, and_(ProductItem.performance_id==venue.performance_id, ProductItem.stock_id==Seat.stock_id))
             query = query.join(Product).join(SalesSegment).filter(SalesSegment.id==sales_segment_id).distinct()
         elif u'sale_only' in filter_params:
             query = query.filter(exists().where(and_(ProductItem.performance_id==venue.performance_id, ProductItem.stock_id==Seat.stock_id)))
         if loaded_at:
-            query = query.join(SeatStatus).filter(or_(Seat.updated_at>loaded_at, SeatStatus.updated_at>loaded_at))
-        for seat in query:
-            seat_datum = {
-                'id': seat.l0_id,
-                'name': seat.name,
-                'seat_no': seat.seat_no,
-                'stock_id': seat.stock_id,
-                'status': seat.status,
-                'areas': [area.id for area in seat.areas],
-                }
-            for attr in seat.attributes:
-                seat_datum[attr] = seat[attr]
-            seats_data[seat.l0_id] = seat_datum
+            query = query.filter(or_(Seat.updated_at>loaded_at, SeatStatus.updated_at>loaded_at))
+        for l0_id, name, seat_no, stock_id, status in query:
+            seats_data[l0_id] = {
+                'id': l0_id,
+                'name': name,
+                'seat_no': seat_no,
+                'stock_id': stock_id,
+                'status': status,
+            }
         retval[u'seats'] = seats_data
 
     if u'stocks' in necessary_params:

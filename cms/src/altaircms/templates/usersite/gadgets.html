@@ -28,9 +28,9 @@
 <%def name="search_form_on_header(placeholder, query_id)">
 	<form id="form1" name="form1" method="GET" action="${request.route_path("page_search_by_freeword")}">
     <a href="#" class="region fukidashi-btn">開催地</a>
-    <img src="/static/RT/img/renewal/header_search_hr.jpg" alt="区切り線" width="4" height="45" class="headerSearch_border" />
+    <img src="${request.static_url("altaircms:static/RT/img/renewal/header_search_hr.jpg")}" alt="区切り線" width="4" height="45" class="headerSearch_border" />
 		<input name="q" type="text" class="text" id="${query_id}" size="30" placeholder="${placeholder}" />
-		<input name="imageField" type="image" id="imageField" src="/static/RT/img/renewal/header_search_btn.gif" alt="検索" />
+		<input name="imageField" type="image" id="imageField" src="${request.static_url("altaircms:static/RT/img/renewal/header_search_btn.gif")}" alt="検索" />
 		<a href="${request.route_path("page_search_input")}">詳細検索</a>
 	</form>
 </%def>
@@ -38,7 +38,7 @@
 <%def name="search_form_prev(placeholder, query_id)">
 	<form id="form1" name="form1" method="GET" action="${request.route_path("page_search_by_freeword")}">
 		<input name="q" type="text" class="text" id="${query_id}" size="30" placeholder="${placeholder}" />
-		<input name="imageField" type="image" id="imageField" src="/static/RT/img/common/header_search_btn.gif" alt="検索" />
+		<input name="imageField" type="image" id="imageField" src="${request.static_url("altaircms:static/RT/img/common/header_search_btn.gif")}" alt="検索" />
 		<a href="${request.route_path("page_search_input")}">詳細検索</a>
 	</form>
 </%def>

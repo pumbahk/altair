@@ -134,4 +134,4 @@ class send_accepted_mailTests(unittest.TestCase):
         self.assertEqual(result.sender, "testing@sender.example.com")
         self.assertEqual(result.recipients, ['testing@example.com'])
         self.assertIn(u'抽選テスト', result.body)
-        print result.body
+

@@ -33,14 +33,14 @@ def preview_page(context, request):
         logger.warn(control.error_message)
         return HTTPInternalServerError(control.error_message)
   
-    template = control.frontpage_template(page)
-    if template is None:
-        msg = "front pc access template %s is not found" % control.frontpage_template_abspath(page)
+    discriptor = control.frontpage_discriptor(page)
+    if not discriptor.exists():
+        msg = "front pc access template %s is not found" % discriptor.abspath()
         logger.warn(msg)
         raise HTTPInternalServerError(msg)
 
     renderer = control.frontpage_renderer()
-    response = renderer.render(template, page)
+    response = renderer.render(discriptor.absspec(), page)
     ## ugly
     now = datetime.now()
     if not page.published or (page.publish_begin and now < page.publish_begin) or (page.publish_end and now > page.publish_end):
@@ -62,14 +62,14 @@ def preview_pageset(context, request, published=True):
         else:
             return preview_pageset(context, request, published=False)
 
-    template = control.frontpage_template(page)
-    if template is None:
-        msg = "front pc access template %s is not found" % control.frontpage_template_abspath(page)
+    discriptor = control.frontpage_discriptor(page)
+    if not discriptor.exists():
+        msg = "front pc access template %s is not found" % discriptor.abspath()
         logger.warn(msg)
         raise HTTPInternalServerError(msg)
 
     renderer = control.frontpage_renderer()
-    response = renderer.render(template, page)
+    response = renderer.render(discriptor.absspec(), page)
     ## ugly
     if published:
         return _append_preview_message(response, u"<p>これはpreview画面です。</p>", color="green", backgroundcolor="#afa")

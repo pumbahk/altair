@@ -21,11 +21,11 @@
 <br/>
 
 % if form.send.data == "Success":
-    <div class="line" style="background:#FFFFFF"><img src="/static/mobile/clear.gif" alt="" width="1" height="1" /></div>
+    <div class="line" style="background:#FFFFFF"><img src="${request.static_url("altaircms:static/mobile/clear.gif")}" alt="" width="1" height="1" /></div>
     <div style="color:#FF0000;">以下の内容で送信しました。</div>
     <br/>
 % elif form.send.data == "Failed":
-    <div class="line" style="background:#FFFFFF"><img src="/static/mobile/clear.gif" alt="" width="1" height="1" /></div>
+    <div class="line" style="background:#FFFFFF"><img src="${request.static_url("altaircms:static/mobile/clear.gif")}" alt="" width="1" height="1" /></div>
     <div style="color:#FF0000;">送信に失敗しました。</div>
     <br/>
 % endif

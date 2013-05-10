@@ -126,6 +126,20 @@ class Lot(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     def finish_lotting(self):
         self.status = int(LotStatusEnum.Elected)
 
+    def check_entry_limit(self, email):
+        if self.entry_limit <= 0:
+            return True
+
+        return LotEntry.query.filter(
+            LotEntry.lot_id==self.id
+        ).filter(
+            LotEntry.shipping_address_id==c_models.ShippingAddress.id
+        ).filter(
+            sql.or_(c_models.ShippingAddress.email_1==email,
+                    c_models.ShippingAddress.email_2==email)
+        ).count() < self.entry_limit
+
+
     @hybrid_method
     def available_on(self, now):
         return self.start_at <= now <= self.end_at

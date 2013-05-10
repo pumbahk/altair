@@ -1,6 +1,6 @@
 %for t in qs:
   <div class="event">
-		<img src="${h.asset.to_show_page(request, t.image_asset ,filepath=getattr(t.image_asset, widget.rendering_image_attribute))}" alt="${t.title  }" width="157" height="157" />
+		<img src="${getattr(h.asset.rendering_object(request, t.image_asset), widget.rendering_image_attribute)}" alt="${t.title  }" width="157" height="157" />
     <div class="event-meta">
 			<div class="artist"><a href="${h.link.get_link_from_topcontent(request, t)}">${t.title}</a></div>
       ${(t.text or u"")|n}

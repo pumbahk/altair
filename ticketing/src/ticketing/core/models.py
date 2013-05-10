@@ -684,6 +684,10 @@ class ReportFrequencyEnum(StandardEnum):
     Daily = (1, u'毎日')
     Weekly = (2, u'毎週')
 
+class ReportPeriodEnum(StandardEnum):
+    Normal = (1, u'指定期間 (前日分/前週分)')
+    Entire = (2, u'全期間 (販売開始〜送信日時まで)')
+
 class ReportSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__   = 'ReportSetting'
     id = Column(Identifier, primary_key=True)
@@ -695,9 +699,10 @@ class ReportSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     operator = relationship('Operator', backref='report_setting')
     name = Column(String(255), nullable=True)
     email = Column(String(255), nullable=True)
-    frequency = Column(Integer, nullable=True)
+    frequency = Column(Integer, nullable=False)
+    period = Column(Integer, nullable=False)
+    time = Column(String(4), nullable=False)
     day_of_week = Column(Integer, nullable=True, default=None)
-    time = Column(String(4), nullable=True, default=None)
     start_on = Column(DateTime, nullable=True, default=None)
     end_on = Column(DateTime, nullable=True, default=None)
 

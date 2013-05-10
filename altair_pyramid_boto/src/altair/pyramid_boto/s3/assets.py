@@ -109,15 +109,16 @@ class S3Retriever(object):
 
 @implementer(IAssetDescriptor)
 class S3AssetDescriptor(object):
-    def __init__(self, retriever, key_or_prefix):
+    def __init__(self, retriever, key_or_prefix, delimiter):
         self.retriever = retriever
         self.key_or_prefix = key_or_prefix
+        self.delimiter = delimiter
 
     def absspec(self):
         raise NotImplementedError
 
     def abspath(self):
-        return u's3://%s/%s' % (self.retriever.bucket, self.key_or_prefix.replace(self.delimiter, u'/'))
+        return u's3://%s/%s' % (self.retriever.bucket.name, self.key_or_prefix.replace(self.delimiter, u'/'))
 
     def stream(self):
         return StringIO(self.retriever.get_object(self.key_or_prefix))
@@ -162,7 +163,8 @@ class S3AssetResolver(object):
         return S3AssetDescriptor(
             retriever=self.get_retriever(url.netloc),
             key_or_prefix=normalize_prefix(
-                url.path[int(url.path[0:1] == u'/'):].replace(u'/', self.delimiter), self.delimiter)
+                url.path[int(url.path[0:1] == u'/'):].replace(u'/', self.delimiter), self.delimiter), 
+            delimiter=self.delimiter
             )
 
 @implementer(IAssetResolver)

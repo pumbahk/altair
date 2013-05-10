@@ -1,0 +1,272 @@
+{
+	"performances": [
+		{
+			"end_on": "2012-12-25T21:00:00",
+			"start_on": "2012-12-25T19:00:00",
+			"name": "仙台公演",
+			"id": 6
+		},
+		{
+			"end_on": "2012-12-26T21:00:00",
+			"start_on": "2012-12-26T19:00:00",
+			"name": "東京公演",
+			"id": 7
+		},
+		{
+			"end_on": "2012-12-27T21:00:00",
+			"start_on": "2012-12-27T19:00:00",
+			"name": "名古屋公演",
+			"id": 8
+		},
+		{
+			"end_on": "2012-12-28T21:00:00",
+			"start_on": "2012-12-28T19:00:00",
+			"name": "大阪公演",
+			"id": 9
+		},
+		{
+			"end_on": "2012-12-29T21:00:00",
+			"start_on": "2012-12-29T19:00:00",
+			"name": "福岡公演",
+			"id": 10
+		}
+	],
+	"stocks": [
+		{
+			"available": 102,
+			"assigned": 109,
+			"performance_id": 6,
+			"id": 306,
+			"stock_type_id": 7
+		},
+		{
+			"available": 67,
+			"assigned": 71,
+			"performance_id": 6,
+			"id": 316,
+			"stock_type_id": 8
+		},
+		{
+			"available": 106,
+			"assigned": 110,
+			"performance_id": 6,
+			"id": 326,
+			"stock_type_id": 9
+		},
+		{
+			"available": 223,
+			"assigned": 228,
+			"performance_id": 6,
+			"id": 336,
+			"stock_type_id": 10
+		},
+		{
+			"available": 65,
+			"assigned": 71,
+			"performance_id": 6,
+			"id": 346,
+			"stock_type_id": 11
+		},
+		{
+			"available": 298,
+			"assigned": 303,
+			"performance_id": 6,
+			"id": 356,
+			"stock_type_id": 12
+		},
+		{
+			"available": 60,
+			"assigned": 64,
+			"performance_id": 7,
+			"id": 367,
+			"stock_type_id": 7
+		},
+		{
+			"available": 204,
+			"assigned": 207,
+			"performance_id": 7,
+			"id": 377,
+			"stock_type_id": 8
+		},
+		{
+			"available": 360,
+			"assigned": 366,
+			"performance_id": 7,
+			"id": 387,
+			"stock_type_id": 9
+		},
+		{
+			"available": 639,
+			"assigned": 644,
+			"performance_id": 7,
+			"id": 397,
+			"stock_type_id": 10
+		},
+		{
+			"available": 876,
+			"assigned": 882,
+			"performance_id": 7,
+			"id": 407,
+			"stock_type_id": 11
+		},
+		{
+			"available": 735,
+			"assigned": 739,
+			"performance_id": 7,
+			"id": 417,
+			"stock_type_id": 12
+		},
+		{
+			"available": 82,
+			"assigned": 86,
+			"performance_id": 8,
+			"id": 428,
+			"stock_type_id": 7
+		},
+		{
+			"available": 200,
+			"assigned": 206,
+			"performance_id": 8,
+			"id": 438,
+			"stock_type_id": 8
+		},
+		{
+			"available": 120,
+			"assigned": 124,
+			"performance_id": 8,
+			"id": 448,
+			"stock_type_id": 9
+		},
+		{
+			"available": 158,
+			"assigned": 163,
+			"performance_id": 8,
+			"id": 458,
+			"stock_type_id": 10
+		},
+		{
+			"available": 195,
+			"assigned": 197,
+			"performance_id": 8,
+			"id": 468,
+			"stock_type_id": 11
+		},
+		{
+			"available": 57,
+			"assigned": 67,
+			"performance_id": 8,
+			"id": 478,
+			"stock_type_id": 12
+		},
+		{
+			"available": 151,
+			"assigned": 157,
+			"performance_id": 9,
+			"id": 489,
+			"stock_type_id": 7
+		},
+		{
+			"available": 8,
+			"assigned": 10,
+			"performance_id": 9,
+			"id": 499,
+			"stock_type_id": 8
+		},
+		{
+			"available": 11,
+			"assigned": 15,
+			"performance_id": 9,
+			"id": 509,
+			"stock_type_id": 9
+		},
+		{
+			"available": 4,
+			"assigned": 8,
+			"performance_id": 9,
+			"id": 519,
+			"stock_type_id": 10
+		},
+		{
+			"available": 543,
+			"assigned": 550,
+			"performance_id": 9,
+			"id": 529,
+			"stock_type_id": 11
+		},
+		{
+			"available": 42,
+			"assigned": 48,
+			"performance_id": 9,
+			"id": 539,
+			"stock_type_id": 12
+		},
+		{
+			"available": 357,
+			"assigned": 362,
+			"performance_id": 10,
+			"id": 550,
+			"stock_type_id": 7
+		},
+		{
+			"available": 116,
+			"assigned": 122,
+			"performance_id": 10,
+			"id": 560,
+			"stock_type_id": 8
+		},
+		{
+			"available": 244,
+			"assigned": 249,
+			"performance_id": 10,
+			"id": 570,
+			"stock_type_id": 9
+		},
+		{
+			"available": 606,
+			"assigned": 608,
+			"performance_id": 10,
+			"id": 580,
+			"stock_type_id": 10
+		},
+		{
+			"available": 473,
+			"assigned": 475,
+			"performance_id": 10,
+			"id": 590,
+			"stock_type_id": 11
+		},
+		{
+			"available": 323,
+			"assigned": 328,
+			"performance_id": 10,
+			"id": 600,
+			"stock_type_id": 12
+		}
+	],
+	"stock_types": [
+		{
+			"name": "S席",
+			"id": 7
+		},
+		{
+			"name": "A席",
+			"id": 8
+		},
+		{
+			"name": "B席",
+			"id": 9
+		},
+		{
+			"name": "自由席",
+			"id": 10
+		},
+		{
+			"name": "駐車券",
+			"id": 11
+		},
+		{
+			"name": "ノベルティ",
+			"id": 12
+		}
+	]
+}
