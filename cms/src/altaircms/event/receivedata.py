@@ -234,8 +234,10 @@ class Scanner(object):
 
                 ## kind, group
                 kind_name = record.get("kind_name", "unknown")
-                salessegment.group = group_dict.get((event.id, record["name"], kind_name, record.get("group_id")))
+                salessegment.group = group_dict.get((event.id, record["name"], kind_name, record.get("group_id"))) or group_dict.get((event.id, record["name"], kind_name, None))
                 if salessegment.group is None:
+                    if not record.get("group_id"):
+                        logger.warn("group id is not found: {0}".format(record))
                     salessegment.group = group_dict[(event.id, record["name"], kind_name, record.get("group_id"))] = SalesSegmentGroup(name=record["name"], kind=kind_name, event_id=event.id, backend_id=record.get("group_id"))
                 salessegment.kind = kind_name
 

@@ -109,5 +109,36 @@ class DataFromBackendTests(unittest.TestCase):
         transaction.commit()
         self.assertEquals(SalesSegmentGroup.query.count(), 0)
 
+    
+    def test_3744_or_3745(self):
+        """最初cmsで作られたSalesSegmentGroupが上書きされず残るという場合も"""
+        import transaction
+        from altaircms.models import SalesSegmentGroup
+        from altaircms.models import DBSession
+
+        data = self._getOriginalData()
+        request = testing.DummyRequest()
+        self._postFromBackend(request, data)
+        sg = SalesSegmentGroup.query.first()
+        sg.backend_id = None
+        DBSession.add(sg)
+        transaction.commit()
+
+        self.assertEquals(SalesSegmentGroup.query.count(), 1)
+        sg = SalesSegmentGroup.query.first()
+        self.assertEquals(sg.backend_id, None)
+
+
+        data = self._getOriginalData()
+        salessegment_data = data["events"][0]["performances"][0]["sales"][0]
+        salessegment_data["group_id"] = 1234
+        request = testing.DummyRequest()
+        self._postFromBackend(request, data)
+        transaction.commit()
+        self.assertEquals(SalesSegmentGroup.query.count(), 1)        
+
+        sg = SalesSegmentGroup.query.first()
+        self.assertEquals(sg.backend_id, 1234)
+
 if __name__ == "__main__":
     unittest.main()
