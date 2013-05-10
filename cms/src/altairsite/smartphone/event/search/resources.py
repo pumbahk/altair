@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
-from altairsite.smartphone.event.genre.resources import GenrePageResource
+from altairsite.smartphone.resources import TopPageResource
 from altairsite.smartphone.common.searcher import EventSearcher
-from altairsite.smartphone.common.const import SalesEnum
+from altaircms.models import Genre
 import webhelpers.paginate as paginate
 
 class SearchQuery(object):
@@ -22,7 +22,7 @@ class SearchResult(object):
         self.page_end = page_end
         self.events = events
 
-class SearchPageResource(GenrePageResource):
+class SearchPageResource(TopPageResource):
     def __init__(self, request):
         self.request = request
 
@@ -57,6 +57,10 @@ class SearchPageResource(GenrePageResource):
                 events = self.paging(qs=qs, per=per, page=page)
                 result = SearchResult(query=query, num=num, start=start, end=end, page=page, page_end=page_end, events=events)
         return result
+
+    def get_genre(self, id):
+        genre = self.request.allowable(Genre).filter(Genre.id==id).first()
+        return genre
 
     def paging(self, qs, per, page):
         results = paginate.Page(qs.all(), page, per, url=paginate.PageURL_WebOb(self.request))

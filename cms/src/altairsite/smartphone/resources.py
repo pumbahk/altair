@@ -23,7 +23,7 @@ class TopPageResource(object):
         system_tag = request.allowable(Genre).filter(Genre.id==system_tag_id).first()
         return system_tag.label
 
-    def _search(self, searcher, tag, system_tag_label):
+    def _getInfo(self, searcher, tag, system_tag_label):
         if system_tag_label:
             system_tag = searcher.get_tag_from_genre_label(system_tag_label)
             results = searcher.query_publishing_topics(datetime.now(), tag, system_tag)
@@ -31,7 +31,7 @@ class TopPageResource(object):
             results = searcher.query_publishing_topics(datetime.now(), tag)
         return results
 
-    def search(self, kind, system_tag_id):
+    def getInfo(self, kind, system_tag_id):
         if kind == "promotion":
             searcher = get_topic_searcher(self.request, "promotion")
             tag = self.request.allowable(PromotionTag).filter_by(label=u"プロモーション枠").first()
@@ -42,7 +42,7 @@ class TopPageResource(object):
             searcher = get_topic_searcher(self.request, "topic")
             tag = self.request.allowable(TopicTag).filter_by(label=u"トピックス").first()
         system_tag_label = self.get_system_tag_label(request=self.request, system_tag_id=system_tag_id)
-        return self._search(searcher=searcher, tag=tag, system_tag_label=system_tag_label)
+        return self._getInfo(searcher=searcher, tag=tag, system_tag_label=system_tag_label)
 
     def get_hotword(self):
         today = datetime.now()

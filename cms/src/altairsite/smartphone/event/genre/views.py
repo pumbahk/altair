@@ -10,9 +10,9 @@ def moveGenre(context, request):
     genre_id = request.matchdict.get('genre_id')
     form.genre_id.data = genre_id
     genre = context.get_genre(id=genre_id)
-    promotions = context.search(kind="promotion", system_tag_id=genre_id)[0:5]
-    topcontents = context.search(kind="topcontent", system_tag_id=genre_id)[0:5]
-    topics = context.search(kind="topic", system_tag_id=genre_id)[0:5]
+    promotions = context.getInfo(kind="promotion", system_tag_id=genre_id)[0:5]
+    topcontents = context.getInfo(kind="topcontent", system_tag_id=genre_id)[0:5]
+    topics = context.getInfo(kind="topic", system_tag_id=genre_id)[0:5]
     hotwords = context.get_hotword()[0:5]
     genretree = context.get_genre_tree(parent=genre)
     regions = context.get_region()
