@@ -9,6 +9,7 @@ from pyramid.config import Configurator
 from pyramid.interfaces import IDict
 from pyramid.tweens import INGRESS
 from pyramid_beaker import session_factory_from_settings
+from pyramid_beaker import set_cache_regions_from_settings
 
 
 from sqlalchemy import engine_from_config
@@ -90,11 +91,13 @@ def main(global_config, **local_config):
 
     from sqlalchemy.pool import NullPool
     engine = engine_from_config(settings, poolclass=NullPool, isolation_level='READ COMMITTED')
-    my_session_factory = session_factory_from_settings(settings)
+    session_factory = session_factory_from_settings(settings)
+    set_cache_regions_from_settings(settings) 
     sqlahelper.add_engine(engine)
 
-    config = Configurator(settings=settings, session_factory=my_session_factory)
-    config.set_root_factory('.resources.TicketingCartResource')
+    config = Configurator(settings=settings,
+                          root_factory='.resources.TicketingCartResource',
+                          session_factory=session_factory)
     config.registry['sa.engine'] = engine
     config.add_renderer('.html' , 'pyramid.mako_templating.renderer_factory')
     config.add_renderer('json'  , 'ticketing.renderers.json_renderer_factory')
@@ -116,9 +119,9 @@ def main(global_config, **local_config):
     config.include('.')
     config.include("ticketing.qr")
     config.include('ticketing.rakuten_auth')
+    config.include('ticketing.users')
     from authorization import MembershipAuthorizationPolicy
     config.set_authorization_policy(MembershipAuthorizationPolicy())
-    #config.include('ticketing.whotween')
     config.add_tween('.tweens.CacheControlTween')
     config.add_tween('.tweens.OrganizationPathTween')
     config.include('ticketing.organization_settings')

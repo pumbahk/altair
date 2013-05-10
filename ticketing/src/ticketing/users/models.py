@@ -3,6 +3,7 @@ from sqlalchemy import Table, Column, Boolean, BigInteger, Integer, Float, Strin
 from sqlalchemy.sql.expression import case, null
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import join, backref, column_property
+from sqlalchemy.orm.collections import attribute_mapped_collection
 
 from standardenum import StandardEnum
 from ticketing.models import relationship
@@ -21,6 +22,8 @@ class User(Base, BaseModel, LogicallyDeleted, WithTimestamp):
 
     bank_account_id = Column(Identifier, ForeignKey('BankAccount.id'))
     bank_account    = relationship('BankAccount')
+
+    user_point_accounts = relationship('UserPointAccount', backref="user", collection_class=attribute_mapped_collection('type'), cascade='all,delete-orphan')
 
     @staticmethod
     def get(user_id):
@@ -126,7 +129,6 @@ class UserProfile(Base, BaseModel, LogicallyDeleted, WithTimestamp):
             return self.email_2
         return None
 
-
 class UserCredential(Base, BaseModel, LogicallyDeleted, WithTimestamp):
     __tablename__ = 'UserCredential'
     __table_args__= (
@@ -176,16 +178,21 @@ class UserCredential(Base, BaseModel, LogicallyDeleted, WithTimestamp):
                    auth_secret=auth_secret, 
                    membership_id=membership_id, 
                    user=user)
-    
-    
-        
+   
+class UserPointAccountTypeEnum(StandardEnum):
+    Rakuten = 1
+
+class UserPointAccountStatusEnum(StandardEnum):
+    Suspended = -1
+    Invalid = 0
+    Valid = 1
+
 class UserPointAccount(Base, WithTimestamp):
     __tablename__ = 'UserPointAccount'
     query = session.query_property()
     id = Column(Identifier, primary_key=True)
     user_id = Column(Identifier, ForeignKey("User.id"))
-    user = relationship('User', backref="user_point_account", uselist=False)
-    point_type_code = Column(Integer)
+    type = Column(Integer)
     account_number = Column(String(255))
     account_expire = Column(String(255))
     account_owner = Column(String(255))

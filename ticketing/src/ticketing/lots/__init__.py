@@ -6,6 +6,7 @@ import json
 from pyramid.config import Configurator
 from pyramid.interfaces import IRequest, IDict
 from pyramid_beaker import session_factory_from_settings
+from pyramid_beaker import set_cache_regions_from_settings
 from pyramid.authorization import ACLAuthorizationPolicy
 from pyramid.tweens import EXCVIEW
 from pyramid_selectable_renderer import SelectableRendererSetup
@@ -107,10 +108,11 @@ def main(global_config, **local_config):
 
     sqlahelper.add_engine(engine)
     session_factory = session_factory_from_settings(settings)
+    set_cache_regions_from_settings(settings) 
 
     config = Configurator(settings=settings,
-                          root_factory=".resources.lot_resource_factory")
-    config.set_session_factory(session_factory)
+                          root_factory=".resources.lot_resource_factory",
+                          session_factory=session_factory)
     config.add_static_view('static', 'static', cache_max_age=3600)
     config.add_static_view('c_static', 'ticketing.cart:static', cache_max_age=3600)
 
@@ -125,6 +127,7 @@ def main(global_config, **local_config):
     config.include('altair.mobile')
 
     config.include('ticketing.rakuten_auth')
+    config.include('ticketing.users')
     config.include("ticketing.payments")
     config.include("ticketing.payments.plugins")
     config.add_tween('ticketing.tweens.session_cleaner_factory', over=EXCVIEW)

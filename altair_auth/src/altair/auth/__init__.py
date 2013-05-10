@@ -6,12 +6,15 @@ from pyramid.path import AssetResolver
 from pyramid.exceptions import ConfigurationError
 from pyramid.interfaces import IAuthenticationPolicy
 from pyramid.security import Everyone, Authenticated
+from pyramid.tweens import EXCVIEW, INGRESS
 from repoze.who.interfaces import IAPIFactory, IAPI
 from repoze.who.config import make_api_factory_with_config
 from zope.interface import implementer
 from .interfaces import IWHOAPIDecider
 
 logger = logging.getLogger(__name__)
+
+REQUEST_KEY = 'altair.auth.request'
 
 def set_who_api_decider(config, callable):
     callable = config.maybe_dotted(callable)
@@ -58,10 +61,20 @@ def activate_who_api(request):
     api = who_api(request, api_name)
     request.environ['repoze.who.plugins'] = api.name_registry # BBB?
 
+def activate(request):
+    activate_who_api(request)
+    request.environ[REQUEST_KEY] = request
+
+def deactivate(request):
+    del request.environ[REQUEST_KEY]
+
 def activate_who_api_tween(handler, registry):
     def wrap(request):
-        activate_who_api(request)
-        return handler(request)
+        try:
+            activate(request)
+            return handler(request)
+        finally:
+            deactivate(request)
     return wrap
 
 def decide(request):
@@ -198,7 +211,7 @@ def includeme(config):
     else:
         raise ConfigurationError('altair.auth.decider is not found in settings')
 
-    config.add_tween(".activate_who_api_tween")
+    config.add_tween(".activate_who_api_tween", under=INGRESS)
 
     callback = config.registry.settings.get('altair.auth.callback')
     if callback:
