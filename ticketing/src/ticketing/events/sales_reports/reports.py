@@ -178,7 +178,7 @@ class SalesTotalReporter(object):
             record.total_order_amount = order_amount or 0
             record.total_order_quantity = order_quantity or 0
 
-        # 販売金額(全期間)、販売枚数(全期間)
+        # 販売金額(期間指定)、販売枚数(期間指定)
         if self.form.limited_from.data or self.form.limited_to.data:
             if self.form.limited_from.data:
                 query = query.filter(Order.created_at >= self.form.limited_from.data)
@@ -488,7 +488,7 @@ class PerformanceReporter(object):
             if (form.limited_from.data and sales_segment.end_at < todatetime(form.limited_from.data)) or\
                (form.limited_to.data and todatetime(form.limited_to.data) < sales_segment.start_at):
                 continue
-            form.sales_segment_group_id.data = sales_segment.sales_segment_group_id
+            self.form.sales_segment_group_id.data = sales_segment.sales_segment_group_id
             self.reporters[sales_segment] = SalesDetailReporter(form)
 
     def sort_index(self):
@@ -509,9 +509,10 @@ class EventReporter(object):
         for performance in event.performances:
             if not performance.public:
                 continue
-            if (form.limited_from.data and performance.end_on and performance.end_on < todatetime(form.limited_from.data)):
+            end_on = performance.end_on or performance.start_on
+            if form.limited_from.data and end_on < todatetime(form.limited_from.data):
                 continue
-            form.performance_id.data = performance.id
+            self.form.performance_id.data = performance.id
             self.reporters[performance] = PerformanceReporter(form, performance)
 
     def sort_index(self):

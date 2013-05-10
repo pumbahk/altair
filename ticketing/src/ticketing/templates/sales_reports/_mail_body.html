@@ -3,6 +3,7 @@
 <%
   form = performance_reporter.form
   performance = performance_reporter.performance
+  need_total = form.need_total.data
 %>
 
 <h3 style="margin-top: 30px;">${performance.name}　開催日:${h.safe_strftime(performance.start_on)}</h3>
@@ -25,7 +26,9 @@
   % if form.limited_from.data or form.limited_to.data:
   <tr bgcolor="#ddd">
     <th colspan="6"></th>
+    % if need_total:
     <th colspan="4">累計</th>
+    % endif
     <th colspan="4">${h.safe_strftime(form.limited_from.data)} 〜 ${h.safe_strftime(form.limited_to.data)}</th>
   </tr>
   % endif
@@ -36,10 +39,12 @@
     <th style="width: 8%;">価格</th>
     <th style="width: 4%;">配席数</th>
     <th style="width: 4%;">残数</th>
+  % if need_total:
     <th style="width: 4%;">受付数</th>
     <th style="width: 4%;">未入金</th>
     <th style="width: 4%;">入金済</th>
     <th style="width: 8%;">小計</th>
+  % endif
   % if form.limited_from.data or form.limited_to.data:
     <th style="width: 4%;">受付数</th>
     <th style="width: 4%;">未入金</th>
@@ -67,10 +72,12 @@
       <td style="padding: 5px; text-align: right;" rowspan="${count}">${h.price_format(report.stock_quantity) or ''}</td>
       <td style="padding: 5px; text-align: right;" rowspan="${count}">${h.price_format(report.vacant_quantity) or ''}</td>
       % endif
+      % if need_total:
       <td style="padding: 5px; text-align: right;">${h.price_format(report.total_paid_quantity + report.total_unpaid_quantity) or ''}</td>
       <td style="padding: 5px; text-align: right;">${h.price_format(report.total_unpaid_quantity) or ''}</td>
       <td style="padding: 5px; text-align: right;">${h.price_format(report.total_paid_quantity) or ''}</td>
       <td style="padding: 5px; text-align: right;">${h.price_format((report.total_paid_quantity + report.total_unpaid_quantity) * report.product_price)}円</td>
+      % endif
       % if form.limited_from.data or form.limited_to.data:
       <td style="padding: 5px; text-align: right;">${h.price_format(report.paid_quantity + report.unpaid_quantity) or ''}</td>
       <td style="padding: 5px; text-align: right;">${h.price_format(report.unpaid_quantity) or ''}</td>
@@ -85,10 +92,12 @@
     <td style="padding: 5px;" colspan="4">合計</td>
     <td style="padding: 5px; text-align: right;">${h.price_format(total.stock_quantity) or ''}</td>
     <td style="padding: 5px; text-align: right;">${h.price_format(total.vacant_quantity) or ''}</td>
+  % if need_total:
     <td style="padding: 5px; text-align: right;">${h.price_format(total.total_paid_quantity + total.total_unpaid_quantity) or ''}</td>
     <td style="padding: 5px; text-align: right;">${h.price_format(total.total_unpaid_quantity) or ''}</td>
     <td style="padding: 5px; text-align: right;">${h.price_format(total.total_paid_quantity) or ''}</td>
     <td style="padding: 5px; text-align: right;">${h.price_format(total.total_sum_amount) or ''}円</td>
+  % endif
   % if form.limited_from.data or form.limited_to.data:
     <td style="padding: 5px; text-align: right;">${h.price_format(total.paid_quantity + total.unpaid_quantity) or ''}</td>
     <td style="padding: 5px; text-align: right;">${h.price_format(total.unpaid_quantity) or ''}</td>
