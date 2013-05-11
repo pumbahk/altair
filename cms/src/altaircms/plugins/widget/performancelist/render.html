@@ -49,7 +49,7 @@ logger = logging.getLogger(__name__)
             %elif min(start_on_candidates) >= now:
               <span class="notStartedPerformance">販売前</span>
             %elif max(end_on_candidates) >= now:
-              % if status.scores.get(int(performance.backend_id),0) <= 0:
+              % if not performance.purchase_link and status.scores.get(int(performance.backend_id),0) <= 0:
                 <img width="65px" src="${request.static_url("altaircms:static/RT/img/settlement/btn_end_small.gif")}" alt="予定枚数終了"/>
               % else:
                 <a href="${h.link.get_purchase_page_from_performance(request, performance)}">
