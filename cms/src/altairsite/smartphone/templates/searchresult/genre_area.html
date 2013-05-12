@@ -2,8 +2,6 @@
 <%namespace file="../common/tags_smartphone.html" name="m" />
 <%block name="title">検索結果一覧</%block>
 
-<%include file="../search/detail_search.html" args="form=form"/>
-
 % if result:
     ${disp_result(result)}
 %endif
@@ -34,7 +32,7 @@
             % if result.page == count + 1:
                 ${count + 1}
             % else:
-                <a href="${request.route_path('detail_search')}?word=${result.query.word}&page=${count+1}">${count + 1}</a>
+                <a href="${request.route_path('search_genre_area')}?area=${area}&genre_id=${genre.id}&page=${count+1}">${count + 1}</a>
             % endif
         % endfor
     % endif

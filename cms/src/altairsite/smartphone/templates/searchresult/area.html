@@ -1,5 +1,6 @@
-<%page args="result, helper" />
-<%namespace file="tags_smartphone.html" name="m" />
+<%inherit file="../common/_base.html" />
+<%namespace file="../common/tags_smartphone.html" name="m" />
+<%block name="title">検索結果一覧</%block>
 
 % if result:
     ${disp_result(result)}
@@ -31,7 +32,7 @@
             % if result.page == count + 1:
                 ${count + 1}
             % else:
-                <a href="${request.route_path('search')}?word=${result.query.word}&page=${count+1}">${count + 1}</a>
+                <a href="${request.route_path('search_area')}?area=${area}&page=${count+1}">${count + 1}</a>
             % endif
         % endfor
     % endif

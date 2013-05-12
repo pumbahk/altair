@@ -19,20 +19,22 @@ def search(context, request):
     }
 
 @usersite_view_config(route_name='search_area',request_type="altairsite.tweens.ISmartphoneRequest"
-             , renderer='altairsite.smartphone:templates/searchresult/search.html')
+             , renderer='altairsite.smartphone:templates/searchresult/area.html')
 def search_area(context, request):
     # トップ画面のエリア検索
     form = AreaSearchForm(request.GET)
     query = AreaSearchQuery(area=form.data['area'], genre_label=None)
     result = context.search_area(query, int(form.data['page']), 10)
+    print form.data['area']
 
     return {
-         'result':result
+         'area':form.data['area']
+        ,'result':result
         ,'helper':SmartPhoneHelper()
     }
 
 @usersite_view_config(route_name='search_genre_area',request_type="altairsite.tweens.ISmartphoneRequest"
-             , renderer='altairsite.smartphone:templates/searchresult/search.html')
+             , renderer='altairsite.smartphone:templates/searchresult/genre_area.html')
 def search_genre_area(context, request):
     # ジャンル画面のエリア検索
     form = AreaSearchForm(request.GET)
@@ -41,7 +43,9 @@ def search_genre_area(context, request):
     result = context.search_area(query, int(form.data['page']), 10)
 
     return {
-         'result':result
+         'area':form.data['area']
+        ,'genre':genre
+        ,'result':result
         ,'helper':SmartPhoneHelper()
     }
 
