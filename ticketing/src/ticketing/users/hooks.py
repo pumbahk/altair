@@ -1,12 +1,14 @@
 from ticketing.rakuten_auth.events import Authenticated
 from pyramid.events import subscriber
 from .api import get_or_create_user
-from .models import UserPointAccountTypeEnum, UserPointAccountStatusEnum, UserPointAccount
+from .models import UserPointAccountTypeEnum, UserPointAccountStatusEnum, UserPointAccount, UserProfile
 
 @subscriber(Authenticated)
 def hook(event):
     user = get_or_create_user(event.identity)
     identity = event.identity
+    if user.user_profile is None:
+        user.user_profile = UserProfile()
     user.user_profile.email_1 = identity['email_1']
     user.user_profile.nick_name = identity['nick_name']
     user.user_profile.first_name = identity['first_name']
