@@ -7,6 +7,7 @@ from pyramid.exceptions import ConfigurationError
 from pyramid.interfaces import IAuthenticationPolicy
 from pyramid.security import Everyone, Authenticated
 from pyramid.tweens import EXCVIEW, INGRESS
+from repoze.who.api import get_api as get_who_api
 from repoze.who.interfaces import IAPIFactory, IAPI
 from repoze.who.config import make_api_factory_with_config
 from zope.interface import implementer
@@ -98,8 +99,9 @@ class ChallengeView(object):
 
     def __call__(self):
         api_name = decide(self.request)
-        who_api = who_api(self.request.environ, api_name)
-        return self.request.get_response(who_api.challenge())
+        logger.debug('api_name=%s' % api_name)
+        api = who_api(self.request, api_name)
+        return self.request.get_response(api.challenge())
 
 
 @implementer(IAuthenticationPolicy)
@@ -180,7 +182,6 @@ class MultiWhoAuthenticationPolicy(object):
             identity = api.authenticate()
         return identity
 
-
 def includeme(config):
     """
     """
@@ -219,3 +220,5 @@ def includeme(config):
 
     authentication_policy = MultiWhoAuthenticationPolicy('auth_tkt', callback)
     config.set_authentication_policy(authentication_policy)
+    config.add_forbidden_view(ChallengeView)
+
