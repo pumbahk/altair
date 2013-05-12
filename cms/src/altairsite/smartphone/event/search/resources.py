@@ -55,7 +55,8 @@ class SearchPageResource(TopPageResource):
             log_info("search_area", "genre=" + query.word)
             qs = self.search_freeword(search_query=query)
             if qs:
-                qs = self.search_freeword(search_query=query)
+                log_info("search_area", "and search_area")
+                qs = self._search_area(search_query=query, qs=qs)
         else:
             qs = self._search_area(search_query=query, qs=qs)
         result = self.create_result(qs=qs, page=page, query=query, per=per)
