@@ -23,23 +23,28 @@ class ILayoutModelDescriptor(Interface):
 
 @implementer(ILayoutModelDescriptor)
 class LayoutModelDescriptor(object):
-    def __init__(self, layout_spec, layoutdir, filename, checkskip=False, layout=None):
+    def __init__(self, layout_spec, layoutdir, filename, checkskip=False, layout=None, path_name_encoder=None):
         self.layout_spec = layout_spec
         self.layoutdir = layoutdir
         self.filename = filename
         self.checkskip = checkskip
         self.layout = layout
+        self.path_name_encoder = path_name_encoder or (lambda path: path)
 
     def abspath(self):
-        return os.path.join(self.layoutdir, self.filename)
+        return os.path.join(
+            self.path_name_encoder(self.layoutdir),
+            self.path_name_encoder(self.filename))
 
     def exists(self):
         return self.checkskip or os.path.exists(self.abspath())
 
     def absspec(self):
         if ":" in self.filename:
-            return self.filename
-        path = os.path.join(self.layout_spec, self.filename)
+            return self.path_name_encoder(self.filename)
+        path = os.path.join(
+            self.path_name_encoder(self.layout_spec),
+            self.path_name_encoder(self.filename))
         module, path = path.split(":")
         return "{0}:{1}".format(module, os.path.normpath(path))
         
@@ -48,7 +53,7 @@ class LayoutModelDescriptor(object):
 class LayoutModelResolver(object):
     DescriptorBase = LayoutModelDescriptor
     DescriptorDefault = LayoutModelDescriptor
-    def __init__(self, layout_spec, default_prefix="default", checkskip=False):
+    def __init__(self, layout_spec, default_prefix="default", checkskip=False, fs_encoding='utf-8'):
         self.layout_spec = layout_spec
         resolved = AssetResolver().resolve(layout_spec)
         if not resolved.exists():
@@ -56,6 +61,13 @@ class LayoutModelResolver(object):
         self.layoutdir = resolved.abspath()
         self.default_prefix = default_prefix
         self.checkskip = checkskip
+        self.fs_encoding = fs_encoding
+
+    def _encode_path_name(self, unistr_or_str):
+        if isinstance(unistr_or_str, unicode):
+            return unistr_or_str.encode(self.fs_encoding)
+        else:
+            return str(unistr_or_str)
 
     def _resolve(self, request, assetspec, verbose=False):
         return self.from_assetspec(request, assetspec)        
@@ -79,7 +91,8 @@ class LayoutModelResolver(object):
             self.layoutdir, 
             filepath, 
             checkskip=False, 
-            layout=layout
+            layout=layout,
+            path_name_encoder=self._encode_path_name
             )
 
     def from_layout_default(self, request, layout):
@@ -92,5 +105,6 @@ class LayoutModelResolver(object):
             self.layoutdir, 
             layout.prefixed_template_filename, 
             checkskip=self.checkskip, 
-            layout=layout
+            layout=layout,
+            path_name_encoder=self._encode_path_name
             )
