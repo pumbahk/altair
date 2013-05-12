@@ -85,6 +85,9 @@ class SearchPageResource(TopPageResource):
             start = page * per - per + 1
             end = page * per
             page_end = num / per + 1
+            if num % per == 0:
+                page_end = num / per
+
             if num < end:
                 end = num
 
