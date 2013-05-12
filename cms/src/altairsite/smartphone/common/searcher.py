@@ -19,14 +19,17 @@ class EventSearcher(object):
 
     # フリーワード、ジャンル検索
     def search_freeword(self, word):
+        log_info("search_freeword", "start")
         qs = None
         try:
+            log_info("search_freeword", "search_word=" + word)
             events = helper.searchEvents(self.request, word)
             ids = self._create_ids(events)
             if len(ids) > 0:
                 qs = self._create_common_qs(where=Event.id.in_(ids))
         except Exception as e:
             qs = None
+        log_info("search_freeword", "end")
         return qs
 
     # 発売状況

@@ -1,0 +1,9 @@
+<%page args="areas, genre, helper" />
+<%namespace file="tags_smartphone.html" name="m" />
+
+<b>地域で絞り込む</b><br/>
+% if areas:
+    % for area in areas:
+        <a href="${request.route_path('search_genre_area')}?area=${area.name}&genre_id=${genre.id}&page=1">${helper.getRegionJapanese(area.name)}</a><br/>
+    % endfor
+% endif

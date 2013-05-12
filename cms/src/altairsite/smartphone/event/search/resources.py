@@ -3,6 +3,7 @@ from altairsite.smartphone.resources import TopPageResource
 from altairsite.smartphone.common.searcher import EventSearcher
 from altaircms.models import Genre
 from altairsite.smartphone.common.helper import SmartPhoneHelper
+from altairsite.mobile.core.helper import log_debug, log_info, log_warn, log_exception, log_error
 import webhelpers.paginate as paginate
 
 class SearchQuery(object):
@@ -21,7 +22,7 @@ class AreaSearchQuery(object):
         helper = SmartPhoneHelper()
         str = u"地域：" + helper.getRegionJapanese(self.area)
         if self.word:
-             str = str + ', ジャンル:' + self.word
+             str = str + u', ジャンル:' + self.word
         return str
 
 class SearchResult(object):
@@ -48,11 +49,17 @@ class SearchPageResource(TopPageResource):
 
     # トップ画面、ジャンルのエリア検索
     def search_area(self, query, page, per):
+        log_info("search_area", "start")
         qs = None
         if query.word:
+            log_info("search_area", "genre=" + query.word)
             qs = self.search_freeword(search_query=query)
-        qs = self._search_area(search_query=query, qs=qs)
+            if qs:
+                qs = self.search_freeword(search_query=query)
+        else:
+            qs = self._search_area(search_query=query, qs=qs)
         result = self.create_result(qs=qs, page=page, query=query, per=per)
+        log_info("search_area", "end")
         return result
 
     def search_freeword(self, search_query):
