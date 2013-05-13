@@ -39,7 +39,7 @@ class AreaSearchForm(Form):
 
 class DetailSearchForm(TopSearchForm):
 
-    word_option = RadioField(label = '', validators=[Optional()],
+    cond = RadioField(label = '', validators=[Optional()],
         choices=[("intersection", u'全てを含む'), ("union", u'少なくとも１つを含む')], default="intersection", coerce=str)
     area = SelectField(label='', validators=[Optional()],coerce=str,
         choices=[

@@ -4,10 +4,12 @@ from altaircms.event.models import Event
 from altaircms.page.models import PageSet
 from altairsite.mobile.core.helper import log_info
 
-def searchEvents(request, word):
+def searchEvents(request, word, genre_label, cond):
     log_info("searchEvents", "start")
+    search_word = create_search_word(word=word, genre_label=genre_label, cond=cond)
+    log_info("searchEvents", "SEARCH_WORD=" + search_word)
     searcher = solrapi.get_fulltext_search(request)
-    response = searcher.solr.select(word)
+    response = searcher.solr.select(search_word)
     events = getResultEvents(request, response)
     log_info("searchEvents", "end")
     return events
@@ -27,4 +29,24 @@ def getResultEvents(request, response):
                     events.append(event)
     log_info("getResultEvents", "end")
     return events
+
+def create_search_word(word, genre_label, cond):
+
+    while word.find(u'　') != -1:
+        word = word.replace(u"　", " ")
+
+    while word.find('  ') != -1:
+        word = word.replace(u"  ", " ")
+
+    word = word.strip()
+
+    cop = u" AND "
+    if cond == "union":
+        cop = u" OR "
+
+    searh_word = word.replace(' ', cop)
+    if genre_label:
+        searh_word = searh_word + " AND " + genre_label
+
+    return searh_word
 

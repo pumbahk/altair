@@ -80,7 +80,7 @@ def init_detail_search(context, request):
 def detail_search(context, request):
     # 詳細検索
     form = DetailSearchForm(request.GET)
-    query = DetailSearchQuery(word=form.data['word'], word_option=form.data['word_option'])
+    query = DetailSearchQuery(word=form.data['word'], cond=form.data['cond'], genre=None)
     result = context.search_detail(query, int(form.data['page']), 10)
 
     return {

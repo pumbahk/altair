@@ -27,9 +27,10 @@ class AreaSearchQuery(object):
         return str
 
 class DetailSearchQuery(object):
-    def __init__(self, word, word_option):
+    def __init__(self, word, cond, genre):
         self.word = word
-        self.word_option = word_option
+        self.cond = cond
+        self.genre = genre
     def to_string(self):
         return u"フリーワード：" + self.word
 
@@ -49,7 +50,7 @@ class SearchPageResource(TopPageResource):
 
     # トップ画面、ジャンルの検索
     def search(self, query, page, per):
-        qs = self.search_freeword(search_query=query)
+        qs = self.search_freeword(search_query=query, genre_label=None, cond=None)
         if qs:
             qs = self.search_sale(search_query=query, qs=qs)
         result = self.create_result(qs=qs, page=page, query=query, per=per)
@@ -61,7 +62,7 @@ class SearchPageResource(TopPageResource):
         qs = None
         if query.word:
             log_info("search_area", "genre=" + query.word)
-            qs = self.search_freeword(search_query=query)
+            qs = self.search_freeword(search_query=query, genre_label=None, cond=None)
             if qs:
                 log_info("search_area", "and search_area")
                 qs = self._search_area(search_query=query, qs=qs)
@@ -76,17 +77,20 @@ class SearchPageResource(TopPageResource):
         log_info("search_detail", "start")
         qs = None
         if query.word:
-            log_info("search_detail", "word=" + query.word)
-            qs = self.search_freeword(search_query=query)
+            if query.genre:
+                qs = self.search_freeword(search_query=query, genre_label=query.genre.label, cond=query.cond)
+            else:
+                qs = self.search_freeword(search_query=query, genre_label=None, cond=query.cond)
+
 
         result = self.create_result(qs=qs, page=page, query=query, per=per)
         log_info("search_detail", "end")
         return result
 
 
-    def search_freeword(self, search_query):
+    def search_freeword(self, search_query, genre_label, cond):
         searcher = EventSearcher(request=self.request)
-        qs = searcher.search_freeword(word=search_query.word)
+        qs = searcher.search_freeword(word=search_query.word, genre_label=genre_label, cond=cond)
         return qs
 
     def search_sale(self, search_query, qs):

@@ -18,12 +18,11 @@ class EventSearcher(object):
         self.request = request
 
     # フリーワード、ジャンル検索
-    def search_freeword(self, word):
+    def search_freeword(self, word, genre_label, cond):
         log_info("search_freeword", "start")
         qs = None
         try:
-            log_info("search_freeword", "search_word=" + word)
-            events = searchEvents(self.request, word)
+            events = searchEvents(request=self.request, word=word, genre_label=genre_label, cond=cond)
             ids = self._create_ids(events)
             if len(ids) > 0:
                 qs = self._create_common_qs(where=Event.id.in_(ids))
