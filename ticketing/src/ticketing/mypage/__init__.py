@@ -48,7 +48,7 @@ def main(global_config, **local_config):
 
     config.include('.')
     config.include('.errors')
-    config.include('ticketing.rakuten_auth')
+    config.include('altair.rakuten_auth')
     config.include('ticketing.users')
     who_config = settings['pyramid_who.config']
     from ..cart.authorization import MembershipAuthorizationPolicy

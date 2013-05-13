@@ -3,10 +3,10 @@
 import unittest
 import mock
 
-class create_oauth_sigunatureTests(unittest.TestCase):
+class create_oauth_signatureTests(unittest.TestCase):
     def _callFUT(self, *args, **kwargs):
-        from . import api
-        return api.create_oauth_sigunature(*args, **kwargs)
+        from . import oauth
+        return oauth.create_oauth_signature(*args, **kwargs)
 
     def test_it(self):
         oauth_consumer_key = "dpf43f3p2l4k3l03"
@@ -38,10 +38,10 @@ class create_oauth_sigunatureTests(unittest.TestCase):
 
         self.assertEqual(result, "tR3+Ty81lMeYAr/Fid0kMTYa/WM=")
 
-class create_sigunature_baseTests(unittest.TestCase):
+class create_signature_baseTests(unittest.TestCase):
     def _callFUT(self, *args, **kwargs):
-        from . import api
-        return api.create_signature_base(*args, **kwargs)
+        from . import oauth
+        return oauth.create_signature_base(*args, **kwargs)
 
     def test_it(self):
         oauth_consumer_key = "dpf43f3p2l4k3l03"
@@ -77,38 +77,11 @@ class create_sigunature_baseTests(unittest.TestCase):
 class RakutenOpenIDTests(unittest.TestCase):
 
     def _getTarget(self):
-        from .api import RakutenOpenID
+        from .openid import RakutenOpenID
         return RakutenOpenID
 
     def _makeOne(self, *args, **kwargs):
         return self._getTarget()(*args, **kwargs)
-
-
-#     @mock.patch('ticketing.cart.rakuten_auth.api.create_oauth_sigunature')
-#     @mock.patch('urllib2.urlopen')
-#     def test_get_access_token(self, mock_urlopen, mock_signature):
-#         target = self._makeOne('https://api.id.rakuten.co.jp/openid/auth', 
-#             'http://www.example.com/', 'akfjakldjfakldjfkalsdjfklasdjfklajdf', 'secret',
-#             access_token_url='https://api.id.rakuten.co.jp/oauth',
-#             )
-# 
-#         oauth_consumer_key = "consumer"
-#         oauth_token = "token"
-#         secret = "secret"
-# 
-#         mock_signature.return_value = "signature"
-#         mock_response = mock.Mock()
-#         mock_response.read.return_value = """\
-# oauth_token:fafjfdjfjfsdjfslkdjflaksjd
-# oauth_token_secret:fjlkjfajdfkafjalkdjfklsja"""
-#         mock_urlopen.return_value = mock_response
-# 
-#         result = target.get_access_token(oauth_consumer_key, oauth_token, secret)
-#         
-#         self.assertEqual(result,
-#             {"oauth_token": "fafjfdjfjfsdjfslkdjflaksjd",
-#              "oauth_token_secret": "fjlkjfajdfkafjalkdjfklsja",
-#             })
 
 
     @mock.patch('uuid.uuid4')
@@ -118,11 +91,13 @@ class RakutenOpenIDTests(unittest.TestCase):
         import urllib
         from mock import call
 
-        target = self._makeOne('https://api.id.rakuten.co.jp/openid/auth', 
+        target = self._makeOne(
+            'https://api.id.rakuten.co.jp/openid/auth', 
+            'http://www.example.com/', 
             'http://www.example.com/', 
             'http://www.example.com/error', 
-            'akfjakldjfakldjfkalsdjfklasdjfklajdf', 'secret',
-            access_token_url='https://api.id.rakuten.co.jp/oauth',
+            'akfjakldjfakldjfkalsdjfklasdjfklajdf',
+            {}
             )
 
         response = """\
@@ -180,7 +155,7 @@ ns:http://specs.openid.net/auth/2.0
         }
         result = target.verify_authentication(request, identity)
 
-        self.assertEqual(result, {"nickname": "this-is-nickname", "claimed_id": "https://myid.rakuten.co.jp/openid/user/9Whpri7C2SulpKTnGlWg="})
+        self.assertEqual(result, True)
 
         # TODO: 再度検証が必要
         # self.assertEqual(mock_urlopen.mock_calls,
@@ -213,11 +188,14 @@ ns:http://specs.openid.net/auth/2.0
     def test_invalid(self, mock_urlopen, mock_time, mock_uuid):
         from mock import call
 
-        target = self._makeOne('https://api.id.rakuten.co.jp/openid/auth', 
+        target = self._makeOne(
+            'https://api.id.rakuten.co.jp/openid/auth', 
+            'http://www.example.com/', 
             'http://www.example.com/', 
             'http://www.example.com/error', 
-            consumer_key='akfjakldjfakldjfkalsdjfklasdjfklajdf', secret='secret',
-            access_token_url='')
+            'akfjakldjfakldjfkalsdjfklasdjfklajdf',
+            {}
+            )
 
         response = """\
 is_valid:false
@@ -254,7 +232,7 @@ ns:http://specs.openid.net/auth/2.0"""
         }
         result = target.verify_authentication(request, identity)
 
-        self.assertIsNone(result)
+        self.assertFalse(result)
 
         self.assertEqual(mock_urlopen.mock_calls, [
             call("https://api.id.rakuten.co.jp/openid/auth?openid.ns=http%3A%2F%2Fspecs.openid.net%2Fauth%2F2.0"
@@ -270,20 +248,14 @@ ns:http://specs.openid.net/auth/2.0"""
                 "&openid.ns.oauth=http%3A%2F%2Fspecs.openid.net%2Fextenstions%2Foauth%2F1.0"
                 "&openid.oauth.request_token=XXXXXXXXXXXXX"
                 "&openid.oauth.scope=rakutenid_basicinfo%2Crakutenid_contactinfo"
-                "&openid.ns.ax="
-                "&openid.ax.mode="
-                "&openid.ax.type.nickname="
-                "&openid.ax.value.nickname=this-is-nickname"
             ),
-            call().close(),
-            call('?oauth_consumer_key=akfjakldjfakldjfkalsdjfklasdjfklajdf&oauth_token=XXXXXXXXXXXXX&oauth_signature_method=HMAC-SHA1&oauth_timestamp=999999999999&oauth_nonce=nonce-nonce&oauth_version=1.0&oauth_signature=LdA%2BKbPkF6aYkzpDPHpGU2rorAI%3D'),
-            call().close(),])
+            call().close()])
 
 class parse_access_token_responseTests(unittest.TestCase):
 
     def _callFUT(self, *args, **kwargs):
-        from . import api
-        return api.parse_access_token_response(*args, **kwargs)
+        from . import openid
+        return openid.parse_access_token_response(*args, **kwargs)
 
 #    def test_it(self):
 #        data = """\
@@ -315,8 +287,8 @@ class checkdigitTests(unittest.TestCase):
 
 class parse_rakutenid_basicinfoTests(unittest.TestCase):
     def _callFUT(self, *args, **kwargs):
-        from .api import parse_rakutenid_basicinfo
-        return parse_rakutenid_basicinfo(*args, **kwargs)
+        from .oauth import RakutenIDAPI
+        return RakutenIDAPI.parse_rakutenid_basicinfo(*args, **kwargs)
 
     def test_it(self):
         data = """\

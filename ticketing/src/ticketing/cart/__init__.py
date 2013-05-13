@@ -118,7 +118,7 @@ def main(global_config, **local_config):
 
     config.include('.')
     config.include("ticketing.qr")
-    config.include('ticketing.rakuten_auth')
+    config.include('altair.rakuten_auth')
     config.include('ticketing.users')
     from authorization import MembershipAuthorizationPolicy
     config.set_authorization_policy(MembershipAuthorizationPolicy())

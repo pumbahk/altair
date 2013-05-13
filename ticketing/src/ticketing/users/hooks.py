@@ -1,4 +1,4 @@
-from ticketing.rakuten_auth.events import Authenticated
+from altair.rakuten_auth.events import Authenticated
 from pyramid.events import subscriber
 from .api import get_or_create_user
 from .models import UserPointAccountTypeEnum, UserPointAccountStatusEnum, UserPointAccount, UserProfile

@@ -18,11 +18,6 @@ from pyramid.interfaces import IRequest
 from .interfaces import IRakutenOpenID, IRakutenOAuth, IRakutenIDAPIFactory
 
 from .events import Authenticated
-from .. import helpers as cart_helpers
-from ticketing.cart import api as cart_api
-from ticketing.users import api as user_api
-from ticketing.models import DBSession
-from ticketing.users.models import UserProfile
 
 logger = logging.getLogger(__name__)
 

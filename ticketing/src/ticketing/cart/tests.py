@@ -726,7 +726,7 @@ class PaymentViewTests(unittest.TestCase):
         self.assertRaises(NoCartError, lambda: target())
 
     @mock.patch('ticketing.cart.api.get_or_create_user')
-    @mock.patch('ticketing.rakuten_auth.api.authenticated_user')
+    @mock.patch('altair.rakuten_auth.api.authenticated_user')
     def test_it(self, mock_authenticated_user, mock_get_or_create_user):
         mock_authenticated_user.return_value = {
             'claimed_id': 'http://ticketstar.example.com/user/1'
