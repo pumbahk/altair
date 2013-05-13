@@ -77,10 +77,6 @@ class AccessControlPC(object):
             self._error_message.append(u"*fetch page* url=%s page is not found" % url)
             self.access_ok = False
             return page
-
-        if page.event and page.event.is_searchable == False:
-            self._error_message.append(u"*fetch pageset* pageset(id=%s) event(id=%s) is not searcheable" % (page.id, page.event.id))
-            self.access_ok = False
         
         try:
             page.valid_layout()
