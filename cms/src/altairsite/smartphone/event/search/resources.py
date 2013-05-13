@@ -15,8 +15,9 @@ class SearchQuery(object):
         return str
 
 class AreaSearchQuery(object):
-    def __init__(self, area, genre_label):
+    def __init__(self, area, genre_id, genre_label):
         self.area = area
+        self.genre_id = genre_id
         self.word = genre_label
     def to_string(self):
         helper = SmartPhoneHelper()

@@ -2,14 +2,14 @@
 
 <div id="search" style="background-color: pink">
     検索フォーム
-    <form action="${request.route_path('genre_search')}" method='GET'>
+    <form action="${request.route_path('search_genre')}" method='GET'>
         <fieldset>
             ${form.word}
             ${form.sale}<br/>${form.page}${form.genre_id}
             % for error in form.word.errors:
                 <font color="red">${error}</font><br/>
             % endfor
-            <input type="submit" value="検索"/><a href="${request.route_path('detail_search')}">もっと詳しく</a>
+            <input type="submit" value="検索"/><a href="${request.route_path('search_detail')}">もっと詳しく</a>
         </fieldset>
     </form>
 </div>
