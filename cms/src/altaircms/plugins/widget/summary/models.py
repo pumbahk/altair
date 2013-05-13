@@ -18,6 +18,7 @@ from altaircms.plugins.base.mixins import HandleSessionMixin
 from altaircms.plugins.base.mixins import HandleWidgetMixin
 from altaircms.plugins.base.mixins import UpdateDataMixin
 from altaircms.page.models import Page
+from altaircms.event.models import Event
 from altaircms.security import RootFactory
 from .helpers import _items_from_page
 
@@ -104,3 +105,7 @@ class SummaryWidgetResource(HandleSessionMixin,
         page = self._get_page(page_id)
         return self._items_from_page(page) if page.event else "[]"
 
+
+def after_bound_event_deleted(mapper, connection, target):
+    SummaryWidget.query.filter_by(bound_event_id=target.id).update({"bound_event_id": None})
+sa.event.listen(Event, "before_delete", after_bound_event_deleted)

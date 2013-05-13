@@ -14,6 +14,7 @@ from altaircms.security import RootFactory
 from altaircms.plugins.base.interception import not_support_if_keyerror
 from altaircms.plugins.api import get_widget_utility
 from altaircms.plugins.extra.api import get_stockstatus_summary
+from altaircms.models import SalesSegmentGroup
 
 class CalendarWidget(Widget):
     implements(IWidget)
@@ -99,3 +100,7 @@ TAB_CALENDAR_JS = u"""\
     $("#calendar_"+new_selected.attr("month")).removeClass("hidden");
   });
 """
+
+def after_salessegment_group_deleted(mapper, connection, target):
+    CalendarWidget.query.filter_by(salessegment_id=target.id).update({"salessegment_id": None})
+sa.event.listen(SalesSegmentGroup, "before_delete", after_salessegment_group_deleted)

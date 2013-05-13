@@ -607,7 +607,7 @@ class ValidateAPIKeyTests(unittest.TestCase):
         self.session.remove()
 
     def _callFUT(self, *args, **kwargs):
-        from altaircms.event.api import validate_apikey
+        from altaircms.auth.api import validate_apikey
         return validate_apikey(*args, **kwargs)
 
     def test_ok(self):
