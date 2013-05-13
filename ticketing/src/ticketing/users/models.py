@@ -200,18 +200,6 @@ class UserPointAccount(Base, WithTimestamp):
     account_owner = Column(String(255))
     status = Column(Integer)
 
-class UserPointHistory(Base, WithTimestamp):
-    __tablename__ = 'UserPointHistory'
-    query = session.query_property()
-    id = Column(Identifier, primary_key=True)
-    user_point_account_id = Column(Identifier, ForeignKey("UserPointAccount.id"))
-    user_point_account = relationship('UserPointAccount', uselist=False)
-    user_id = Column(Identifier, ForeignKey("User.id"))
-    user = relationship('User', uselist=False)
-    point = Column(Integer)
-    rate = Column(Integer)
-    status = Column(Integer)
-
 class Membership(Base, BaseModel, LogicallyDeleted, WithTimestamp):
     '''
       Membership ex) Rakuten Fanclub ....

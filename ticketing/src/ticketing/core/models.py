@@ -3326,6 +3326,10 @@ class OrganizationSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     contact_pc_url = Column(Unicode(255))
     contact_mobile_url = Column(Unicode(255))
 
+    point_type = Column(Integer, nullable=True)
+    point_fixed = Column(Numeric(precision=16, scale=2), nullable=True)
+    point_rate = Column(Float, nullable=True)
+
 class PerformanceSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = "PerformanceSetting"
     id = Column(Identifier, primary_key=True)
