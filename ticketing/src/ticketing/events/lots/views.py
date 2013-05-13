@@ -121,6 +121,8 @@ class Lots(BaseView):
         stock_holder_options = {"value": ';'.join(options)}
         options = [u":(なし)"] + ["%s:%s" % (tb.id, tb.name) for tb in ticket_bundles]
         ticket_bundle_options = {"value": ';'.join(options)}
+        from altair.grid import altair_grid
+        altair_grid.need()
 
         _query={'sales_segment_id': lot.sales_segment.id}
         product_grid = {

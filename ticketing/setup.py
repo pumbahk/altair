@@ -89,6 +89,7 @@ requires = [
     "altair.pyramid_boto",
     'altair.pyramid_tz',
     "altair.mobile",
+    "altair.grid",
     ]
 
 tests_require = [
