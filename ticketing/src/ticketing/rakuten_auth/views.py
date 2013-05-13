@@ -2,6 +2,7 @@
 import logging
 from pyramid import security
 from .interfaces import IRakutenOpenID
+from pyramid.httpexceptions import HTTPUnauthorized
 
 logger = logging.getLogger(__name__)
 
