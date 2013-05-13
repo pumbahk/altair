@@ -102,6 +102,11 @@ def main(global_config, **local_config):
     config.add_renderer('.html' , 'pyramid.mako_templating.renderer_factory')
     config.add_renderer('json'  , 'ticketing.renderers.json_renderer_factory')
     config.add_renderer('csv'   , 'ticketing.renderers.csv_renderer_factory')
+    config.include("altair.cdnpath")
+    from altair.cdnpath import S3StaticPathFactory
+    config.add_cdn_static_path(S3StaticPathFactory(
+            settings["s3.bucket_name"], 
+            exclude=config.maybe_dotted(settings.get("s3.static.exclude.function"))))
     config.add_static_view('static', 'ticketing.cart:static', cache_max_age=3600)
 
     ### includes altair.*
