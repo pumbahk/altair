@@ -87,4 +87,172 @@ Altair Backend -- ${lot.event.title}[${lot.name}]
 
 </div>
 <%include file="/lots/_product_list.html" args="lot=lot"/>
-<%include file="/products/_list.html" args="form=None, sales_segment=lot.sales_segment"/>
+<%doc><%include file="/products/_list.html" args="form=None, sales_segment=lot.sales_segment"/></%doc>
+<script type="text/javascript">
+  (function($) {
+    $.fn.setRetainChanges = function(cells) {
+      if (this.data('retainedChanges') == undefined) {
+        this.data('retainedChanges', {});
+      }
+      var retainedChanges = this.data('retainedChanges');
+      cells = cells || this.getChangedCells('dirty');
+      for (var i=0; i<cells.length; i++) {
+        if (!retainedChanges[cells[i].id]) {
+          retainedChanges[cells[i].id] = {};
+        }
+        retainedChanges[cells[i].id] = $.extend(retainedChanges[cells[i].id], cells[i]);
+      }
+      this.data('retainedChanges', retainedChanges);
+    };
+    $.fn.getRetainChanges = function(type) {
+      type = type || 'row';
+      if (type == 'row') {
+        var rows = [];
+        if (this.data('retainedChanges') != undefined) {
+          var retainedChanges = this.data('retainedChanges');
+          for (var k in retainedChanges) {
+            rows.push($.extend({id:k}, this.getRowData(k)));
+          }
+        }
+        return rows;
+      }
+      if (type == 'cell') {
+        var cells = []
+        if (this.data('retainedChanges') != undefined) {
+          var retainedChanges = this.data('retainedChanges');
+          for (var k in retainedChanges) {
+            cells.push(retainedChanges[k]);
+          }
+        }
+        return cells;
+      }
+    };
+    $.fn.clearRetainChanges = function() {
+      this.data('retainedChanges', {});
+      this.setGridParam({datatype:'json', treedatatype:'json'}).trigger('reloadGrid');
+      this.setGridParam({treedatatype:'local'});
+    };
+    $.fn.getColumnLabel = function(grid, columnName) {
+      var cm = grid.jqGrid('getGridParam','colModel');
+      for (var i=0; i<cm.length; i++) {
+        if (cm[i].name == columnName) return grid.jqGrid('getGridParam','colNames')[i];
+      }
+    };
+    $.fn.linkFormatter = function(cellvalue, options, rowObject) {
+      var link = '';
+      if (!rowObject.level) {
+        link += '<a href="javascript:addRow(' + "'" + options.gid + "'," + options.rowId + ');"><i class="icon-plus"></i></a>';
+      }
+      if (rowObject.product_item) {
+        link += '<a href="javascript:deleteRow(' + "'" + options.gid + "'," + options.rowId + ');"><i class="icon-trash"></i></a>';
+      }
+      if (rowObject.ticket_bundle && rowObject.ticket_bundle.id) {
+        link += '<a href="javascript:preview_ticket(' + rowObject.product_item.id + ')"><i class="icon-eye-open"></i></a>';
+      }
+      return link;
+    };
+  })(jQuery);
+
+  function addRow(gid, rowId) {
+    var grid = $('#' + gid);
+    var row = grid.getRowData(rowId);
+    if (!row.level) {
+      grid.setCell(rowId, 'parent', 'null');
+      grid.setCell(rowId, 'level', 0);
+      grid.setCell(rowId, 'isLeaf', false);
+      grid.setCell(rowId, 'expanded', true);
+      grid.setCell(rowId, 'loaded', true);
+    }
+
+    var data ={
+      product_id:row.product_id,
+      product_name:'(複数在庫商品)'
+    }
+    grid.addChildNode(undefined, rowId, data);
+  }
+  function deleteRow(gid, rowId) {
+    var grid = $('#' + gid);
+    grid.setCell(rowId, 'stock_holder_id', '', {background:'#BD362F'});
+    grid.setCell(rowId, 'product_item_name', '', {background:'#BD362F'});
+    grid.setCell(rowId, 'product_item_price', '', {background:'#BD362F'});
+    grid.setCell(rowId, 'product_item_quantity', '', {background:'#BD362F'});
+    grid.setCell(rowId, 'stock_quantity', '', {background:'#BD362F'});
+    grid.setCell(rowId, 'stock_status_quantity', '', {background:'#BD362F'});
+    grid.setCell(rowId, 'ticket_bundle_id', '', {background:'#BD362F'});
+    grid.setCell(rowId, 'deleted', true);
+    var row = new Object();
+    row['id'] = rowId;
+    grid.setRetainChanges([row]);
+  }
+</script>
+
+<h3>商品明細</h3>
+<div style="margin: 10px 0 10px 30px;">
+<table id="products-grid"></table>
+<button id="sales-segment-save_button" class="btn">保存</button>
+<button id="sales-segment-clear_button" class="btn">リセット</button>
+</div>
+<%
+import json
+grid = json.dumps(product_grid)
+
+%>
+<script>
+var productGrid = ${grid|n};
+
+$(function() {
+
+  var grid = $('#products-grid')
+  productGrid['afterSaveCell'] = function (id, name, val, iRow, iCol){
+    grid.setCell(id, name, '', {background:'#F89406'});
+    grid.setRetainChanges();
+  };
+
+  grid.jqGrid(productGrid);
+
+  var showDialog = function(title, msg) {
+    var modal = $('#modal-alert');
+    modal.find('.modal-header > h3').text(title);
+    modal.find('#message').html(
+        '<div class="alert alert-success">' + msg + '</div>');
+    modal.modal('show');
+  };
+
+  var showSuccessDialog = function() {
+     var title = '保存完了';
+     var msg = '編集内容を保存しました';
+     showDialog(title, msg);
+  };
+
+  $('#sales-segment-clear_button').click(function(){
+    grid.clearRetainChanges();
+  });
+
+  $('#sales-segment-save_button').click(function(){
+    $.ajax({
+      type: 'POST',
+      url: productGrid.editurl,
+      data: JSON.stringify(grid.getRetainChanges()),
+      dataType: 'json',
+      contentType: 'application/json; charset=utf-8',
+      success: function (response, textStatus, xhr) {
+          showSuccessDialog();
+          grid.clearRetainChanges();
+      },
+      error: function (xhr, textStatus, errorThrown) {
+        var response_text = JSON.parse(xhr.responseText);
+        var message = response_text.message;
+        var rows = '';
+        if (response_text['rows']) {
+          for (col in response_text.rows.errors) {
+            var col_name = grid.getColumnLabel(grid, col);
+            col_name = (col_name ? col_name + ':' : '');
+            rows += '<li>(' + response_text.rows.rowid + '行目) ' + col_name + response_text.rows.errors[col] + '</li>';
+          }
+        }
+        showDialog("エラー", message);
+      }
+    });
+  });
+});
+</script>

@@ -13,11 +13,12 @@ from ticketing.core.models import (
     Product, 
     PaymentDeliveryMethodPair,
     ShippingAddress,
+    StockHolder,
+    Stock,
     )
 from ticketing.lots.models import (
     Lot,
     LotEntry,
-    LotEntryWish,
     LotElectWork,
     )
 import ticketing.lots.api as lots_api
@@ -108,8 +109,135 @@ class Lots(BaseView):
                 if product:
                     product.delete()
                     self.request.session.flash(u"{0}を削除しました。".format(product.name))
+
+        performance_ids = [p.id for p in lot.performances]
+        stock_holders = StockHolder.query.join(Stock).filter(Stock.performance_id.in_(performance_ids)).distinct().all()
+
+        stock_types = lot.event.stock_types
+        ticket_bundles = lot.event.ticket_bundles
+        options = ["%s:%s" % (st.id, st.name) for st in stock_types]
+        stock_type_options = {"value": ';'.join(options)}
+        options = ["%s:%s" % (st.id, st.name) for st in stock_holders]
+        stock_holder_options = {"value": ';'.join(options)}
+        options = [u":(なし)"] + ["%s:%s" % (tb.id, tb.name) for tb in ticket_bundles]
+        ticket_bundle_options = {"value": ';'.join(options)}
+
+        _query={'sales_segment_id': lot.sales_segment.id}
+        product_grid = {
+            "url": self.request.route_url('products.api.get',
+                                          _query=_query),
+            "editurl": self.request.route_url('products.api.set',
+                                              _query=_query),
+            "jsonReader": {"repeatitems": False},
+            "datatype": "json",
+            "cellEdit": True,
+            "cellsubmit": 'clientArray',
+            "colModel" : [ 
+                {"hidden": True,
+                 "jsonmap": "product.id",
+                 "name": "product_id", 
+                 "editable": False},
+                {"label": u"商品名", 
+                 "jsonmap": "product.name",
+                 "name": "product_name", 
+                 "editable": False, 
+                 "width": 150}, 
+                {"label": u"価格", 
+                 "jsonmap": "product.price",
+                 "name" : "product_price", 
+                 "editable": False, 
+                 "width": 60}, 
+                {"label": u"表示順", 
+                 "jsonmap": "product.order",
+                 "name" :"product_order", 
+                 "editable": False, 
+                 "width": 40, 
+                 "align" :'right'}, 
+                {"label": u"一般公開", 
+                 "jsonmap": "product.public",
+                 "name" :'product_public', 
+                 "index" :'tax', 
+                 "width": 60, 
+                 "edittype": "checkbox",
+                 "formatter": "checkbox",
+                 "align":'right'}, 
+                {"label": u"席種", 
+                 "jsonmap": "stock_type.id",
+                 "name" :'stock_type_id', 
+                 "index" :'stock_type_id', 
+                 "width": 150, 
+                 "align":'right',
+                 "formatter": "select",
+                 "edittype": "select",
+                 "editoptions": stock_type_options,
+                 "editable": True}, 
+                {"label": u"配券先", 
+                 "jsonmap": "stock_holder.id",
+                 "name" :'stock_holder_id', 
+                 "index" :'stock_holder_id', 
+                 "width":100, 
+                 "editable": True,
+                 "formatter": 'select',
+                 "edittype": 'select',
+                 "editoptions": stock_holder_options,
+                 "sortable":False},
+                {"label": u"商品明細名", 
+                 "jsonmap": "product_item.name",
+                 "name" :'product_item_name', 
+                 "index" :'product_item_name', 
+                 "width":150, 
+                 "editable": True,
+                 "sortable":False},
+                {"label": u"単価", 
+                 "jsonmap": "product_item.price",
+                 "name" :'product_item_price', 
+                 "index" :'product_item_price', 
+                 "width":60, 
+                 "editable": True,
+                 "sortable":False},
+                {"label": u"販売単位", 
+                 "jsonmap": "product_item.quantity",
+                 "name" :'product_item_quantity', 
+                 "index" :'product_item_quantity', 
+                 "width": 60, 
+                 "editable": True,
+                 "sortable":False},
+                {"label": u"券面", 
+                 "jsonmap": "ticket_bundle.id",
+                 "name" :'ticket_bundle_id', 
+                 "index" :'ticket_bundle_id', 
+                 "width": 80, 
+                 "formatter": 'select',
+                 "edittype": 'select',
+                 "editoptions": ticket_bundle_options,
+                 "editable": True,
+                 "sortable":False},
+                {"label": u"席数", 
+                 "jsonmap": "stock.quantity",
+                 "name" :'stock_quantity', 
+                 "index" :'stock_quantity', 
+                 "editable": True,
+                 "width": 60, 
+                 "sortable":False},
+                {"label": u"残席数", 
+                 "jsonmap": "stock_status.quantity",
+                 "name" :'stock_status_quantity', 
+                 "index" :'stock_status_quantity', 
+                 "width": 60, 
+                 "editable": False,
+                 "sortable":False},
+                {"label": u" ", 
+                 "name" :'note', 
+                 "index" :'note', 
+                 "width": 80, 
+                 "editable": True,
+                 "sortable":False},
+            ],
+        }
+
         return dict(
             lot=lot,
+            product_grid=product_grid,
             )
 
     @view_config(route_name='lots.edit', renderer='ticketing:templates/lots/edit.html', permission='event_viewer')
