@@ -2,7 +2,7 @@
 from altairsite.config import usersite_view_config
 from altairsite.smartphone.common.helper import SmartPhoneHelper
 from altairsite.smartphone.event.search.forms import TopSearchForm, GenreSearchForm, AreaSearchForm, DetailSearchForm
-from altairsite.smartphone.event.search.resources import SearchQuery, AreaSearchQuery
+from altairsite.smartphone.event.search.resources import SearchQuery, AreaSearchQuery, DetailSearchQuery
 from altairsite.smartphone.common.const import SalesEnum
 
 @usersite_view_config(route_name='search',request_type="altairsite.tweens.ISmartphoneRequest"
@@ -66,10 +66,8 @@ def genre_search(context, request):
         ,'helper':SmartPhoneHelper()
     }
 
-
-
-@usersite_view_config(route_name='search_detail',request_type="altairsite.tweens.ISmartphoneRequest"
-             ,request_method="GET", renderer='altairsite.smartphone:templates/searchresult/detail_search.html')
+@usersite_view_config(route_name='init_detail',request_type="altairsite.tweens.ISmartphoneRequest"
+             , renderer='altairsite.smartphone:templates/searchresult/detail_search.html')
 def init_detail_search(context, request):
     # 詳細検索画面表示
     return {
@@ -78,11 +76,16 @@ def init_detail_search(context, request):
     }
 
 @usersite_view_config(route_name='search_detail',request_type="altairsite.tweens.ISmartphoneRequest"
-             ,request_method="POST", renderer='altairsite.smartphone:templates/searchresult/detail_search.html')
+             , renderer='altairsite.smartphone:templates/searchresult/detail_search.html')
 def detail_search(context, request):
     # 詳細検索
+    form = DetailSearchForm(request.GET)
+    query = DetailSearchQuery(word=form.data['word'], word_option=form.data['word_option'])
+    result = context.search_detail(query, int(form.data['page']), 10)
+
     return {
-         'form':DetailSearchForm()
+         'form':form
+        ,'result':result
         ,'helper':SmartPhoneHelper()
     }
 

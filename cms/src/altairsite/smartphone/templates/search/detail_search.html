@@ -3,22 +3,35 @@
 <div id="detail_search" style="background-color: pink">
     詳細検索フォーム<br/>
 
-    <%m:header>フリーワード</%m:header><br/>
-    <%m:header>さらに条件を指定する</%m:header><br/>
-    <%m:header>ジャンルで絞り込む</%m:header><br/>
-    <%m:header>開催地で絞り込む</%m:header><br/>
-    <%m:header>公演日で絞り込む</%m:header><br/>
-    <%m:header>販売条件で絞り込む</%m:header><br/>
-
-
-    <form action="${request.route_path('search')}" method='GET'>
+    <form action="${request.route_path('search_detail')}" method='GET'>
         <fieldset>
-            ${form.word}
-            ${form.sale}<br/>${form.page}
+            <%m:header>フリーワード</%m:header><br/>
+            ${form.word}<br/>
             % for error in form.word.errors:
                 <font color="red">${error}</font><br/>
             % endfor
-            <input type="submit" value="検索"/><a href="${request.route_path('search_detail')}">もっと詳しく</a>
+            ${form.word_option}<br/>
+
+            <%m:header>さらに条件を指定する</%m:header><br/>
+            <%m:header>ジャンルで絞り込む</%m:header><br/>
+            ${form.genre}
+
+            <%m:header>開催地で絞り込む</%m:header><br/>
+            ${form.area}
+
+            <%m:header>販売条件で絞り込む</%m:header><br/>
+            ${form.sales_segment}
+
+            <%m:header>公演日で絞り込む</%m:header><br/>
+            ${form.since_year}年${form.since_month}月${form.since_day}〜${form.year}年${form.month}月${form.day}日
+
+            <%m:header>発売日で絞り込む</%m:header><br/>
+            ${form.sale_day}<br/>
+            ${form.sale_end_day}<br/>
+            ${form.sale_option}
+
+            ${form.page}
+            <input type="submit" value="検索"/>
         </fieldset>
     </form>
 </div>

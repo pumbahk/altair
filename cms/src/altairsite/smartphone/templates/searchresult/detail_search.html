@@ -3,5 +3,8 @@
 <%block name="title">検索結果一覧</%block>
 
 <%include file="../search/detail_search.html" args="form=form"/>
-<% path=request.route_path('search') + "?word=" + result.query.word %>
-<%include file="_result.html" args="result=result, path=path, helper=helper"/>
+
+% if result:
+    <% path=request.route_path('search_detail') + "?word=" %>
+    <%include file="_result.html" args="result=result, path=path, helper=helper"/>
+% endif

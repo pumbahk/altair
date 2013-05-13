@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-from altairsite.mobile.solr import helper
 from pyramid.httpexceptions import HTTPNotFound
 from altaircms.models import Performance, SalesSegmentGroup, SalesSegmentKind
 from altaircms.event.models import Event
@@ -11,6 +10,7 @@ from altairsite.mobile.core.const import SalesEnum
 from sqlalchemy import or_, and_, asc
 from datetime import datetime, date, timedelta
 from altairsite.mobile.core.helper import log_debug, log_info, log_warn, log_exception, log_error
+from altairsite.smartphone.common.solr import searchEvents
 
 class EventSearcher(object):
 
@@ -23,7 +23,7 @@ class EventSearcher(object):
         qs = None
         try:
             log_info("search_freeword", "search_word=" + word)
-            events = helper.searchEvents(self.request, word)
+            events = searchEvents(self.request, word)
             ids = self._create_ids(events)
             if len(ids) > 0:
                 qs = self._create_common_qs(where=Event.id.in_(ids))

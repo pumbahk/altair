@@ -26,6 +26,13 @@ class AreaSearchQuery(object):
              str = str + u', ジャンル:' + self.word
         return str
 
+class DetailSearchQuery(object):
+    def __init__(self, word, word_option):
+        self.word = word
+        self.word_option = word_option
+    def to_string(self):
+        return u"フリーワード：" + self.word
+
 class SearchResult(object):
     def __init__(self, query, num=0, start=0, end=0, page=1, page_end=1, events=None):
         self.query = query
@@ -63,6 +70,19 @@ class SearchPageResource(TopPageResource):
         result = self.create_result(qs=qs, page=page, query=query, per=per)
         log_info("search_area", "end")
         return result
+
+    # 詳細検索
+    def search_detail(self, query, page, per):
+        log_info("search_detail", "start")
+        qs = None
+        if query.word:
+            log_info("search_detail", "word=" + query.word)
+            qs = self.search_freeword(search_query=query)
+
+        result = self.create_result(qs=qs, page=page, query=query, per=per)
+        log_info("search_detail", "end")
+        return result
+
 
     def search_freeword(self, search_query):
         searcher = EventSearcher(request=self.request)
