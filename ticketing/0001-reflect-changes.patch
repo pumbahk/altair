@@ -1,0 +1,44 @@
+From 87ec7452161048d93f7fb3f9032d5bcf8fa22187 Mon Sep 17 00:00:00 2001
+From: podhmo <podhmo+altair@beproud.jp>
+Date: Wed, 24 Apr 2013 16:07:43 +0900
+Subject: [PATCH] reflect changes
+
+---
+ ticketing/src/ticketing/bj89ers/__init__.py     |    3 ---
+ ticketing/src/ticketing/orderreview/__init__.py |    4 ++--
+ 2 files changed, 2 insertions(+), 5 deletions(-)
+
+diff --git a/ticketing/src/ticketing/bj89ers/__init__.py b/ticketing/src/ticketing/bj89ers/__init__.py
+index d464887..b40e77d 100644
+--- a/ticketing/src/ticketing/bj89ers/__init__.py
++++ b/ticketing/src/ticketing/bj89ers/__init__.py
+@@ -31,9 +31,6 @@ def main(global_config, **local_config):
+     config.include("ticketing.cart.selectable_renderer")
+     domain_candidates = json.loads(config.registry.settings["altair.cart.domain.mapping"])
+     config.registry.utilities.register([], IDict, "altair.cart.domain.mapping", domain_candidates)
+-    selector = config.maybe_dotted("ticketing.cart.selectable_renderer.ByDomainMappingSelector")(domain_candidates)
+-    config.add_selectable_renderer_selector(selector)
+-
+ 
+     config.add_route('index', '/')
+     config.add_route('contact', '/contact')
+diff --git a/ticketing/src/ticketing/orderreview/__init__.py b/ticketing/src/ticketing/orderreview/__init__.py
+index 3d7dea9..b5b4818 100644
+--- a/ticketing/src/ticketing/orderreview/__init__.py
++++ b/ticketing/src/ticketing/orderreview/__init__.py
+@@ -54,10 +54,10 @@ def main(global_config, **local_config):
+ 
+ def import_selectable_renderer(config):
+     ### selectable renderer
++    from pyramid.interfaces import IDict
+     config.include("ticketing.cart.selectable_renderer")
+     domain_candidates = json.loads(config.registry.settings["altair.cart.domain.mapping"])
+-    selector = config.maybe_dotted("ticketing.cart.selectable_renderer.ByDomainMappingSelector")(domain_candidates)
+-    config.add_selectable_renderer_selector(selector)
++    config.registry.utilities.register([], IDict, "altair.cart.domain.mapping", domain_candidates)
+ 
+ def import_view(config):
+     ## reivew
+-- 
+1.7.5.4
+

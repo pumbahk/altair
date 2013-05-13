@@ -1,0 +1,25 @@
+From 0a2debb6b22d5753dca1b6929d2b156feca87c1e Mon Sep 17 00:00:00 2001
+From: podhmo <podhmo+altair@beproud.jp>
+Date: Wed, 24 Apr 2013 17:02:12 +0900
+Subject: [PATCH] made a mistake
+
+---
+ cms/src/altaircms/safelogging.py |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/cms/src/altaircms/safelogging.py b/cms/src/altaircms/safelogging.py
+index ea53aca..9fdff9f 100644
+--- a/cms/src/altaircms/safelogging.py
++++ b/cms/src/altaircms/safelogging.py
+@@ -20,7 +20,7 @@ class SafeLoggingWrapper(object):
+         return self.logger.debug(self.coerce(msg), *args, **kwargs)
+     def log(self, msg, *args, **kwargs):
+         return self.logger.log(self.coerce(msg), *args, **kwargs)
+-    def warning(self, msg, *args, **kwargs):
++    def warn(self, msg, *args, **kwargs):
+         return self.logger.warn(self.coerce(msg), *args, **kwargs)
+     def error(self, msg, *args, **kwargs):
+         return self.logger.error(self.coerce(msg), *args, **kwargs)
+-- 
+1.7.5.4
+
