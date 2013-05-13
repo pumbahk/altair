@@ -5,8 +5,11 @@ import urlparse
 _NOT_FOUND_IMG = "/static/img/not_found.jpg"
 
 def normalize_url(request, url):
-    scheme = request.environ.get("wsgi.url_scheme") or urlparse.urlparse(url).scheme
-    return "{0}://{1}".format(scheme, url[5:].replace("/", ".s3.amazonaws.com/", 1))
+    if url.startswith("s3://"):
+        scheme = request.environ.get("wsgi.url_scheme") or urlparse.urlparse(url).scheme
+        return "{0}://{1}".format(scheme, url[5:].replace("/", ".s3.amazonaws.com/", 1))
+    return url
+
     # return url.replace("s3://", "{0}://s3.amazonaws.com/".format(scheme))
 
 """
@@ -31,8 +34,8 @@ class VirtualAssetModel(object):
         self.obj = obj
 
     def route_path(self, subpath):
-        subpath = subpath or (self.obj and self.obj.image_url and normalize_url(self.request, self.obj.image_url)) or self.notfound_image
-        if subpath.startswith(("/", "http:", "http:")):
+        subpath = subpath or (self.obj and self.obj.image_path) or self.env.notfound_image
+        if subpath.startswith(("/", "http://", "https://")):
             return subpath
         else:
             return self.request.route_path(self.env.static_route_name, subpath=subpath)
