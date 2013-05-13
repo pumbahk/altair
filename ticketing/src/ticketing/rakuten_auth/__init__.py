@@ -43,8 +43,6 @@ def includeme(config):
     config.add_view('.views.RootView', attr="verify", route_name="rakuten_auth.verify")
     config.add_view('.views.RootView', attr="verify2", route_name="rakuten_auth.verify2")
     config.add_view('.views.RootView', attr="error", route_name="rakuten_auth.error")
-    config.set_forbidden_view('.views.RootView', attr="login")
-    
     config.add_tween('.tweens.RakutenAuthTween')
 
 def main(global_conf, **settings):
