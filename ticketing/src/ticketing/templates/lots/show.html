@@ -91,12 +91,12 @@ Altair Backend -- ${lot.event.title}[${lot.name}]
 <script type="text/javascript">
 </script>
 
-<h3>商品明細</h3>
-<div style="margin: 10px 0 10px 30px;">
+<h2>商品明細</h2>
+<div style="overflow-x: scroll;">
 <table id="products-grid"></table>
+</div>
 <button id="sales-segment-save_button" class="btn">保存</button>
 <button id="sales-segment-clear_button" class="btn">リセット</button>
-</div>
 <%
 import json
 grid = json.dumps(product_grid)

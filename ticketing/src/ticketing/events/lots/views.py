@@ -134,6 +134,7 @@ class Lots(BaseView):
             "datatype": "json",
             "cellEdit": True,
             "cellsubmit": 'clientArray',
+            "rowNum": 200,
             "colModel" : [ 
                 {"hidden": True,
                  "jsonmap": "product.id",
