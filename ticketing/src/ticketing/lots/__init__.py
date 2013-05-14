@@ -124,6 +124,13 @@ def main(global_config, **local_config):
     config.include('altair.browserid')
     config.include('altair.exclog')
 
+    config.include("altair.cdnpath")
+    from altair.cdnpath import S3StaticPathFactory
+    config.add_cdn_static_path(S3StaticPathFactory(
+            settings["s3.bucket_name"], 
+            exclude=config.maybe_dotted(settings.get("s3.static.exclude.function")), 
+            mapping={"ticketing.cart:static/": "/cart"}))
+
     config.include('altair.mobile')
 
     config.include('altair.rakuten_auth')
