@@ -17,6 +17,9 @@ from repoze.who.api import get_api as get_who_api
 from .interfaces import IRakutenOpenID
 from .events import Authenticated
 
+from markupsafe import Markup
+from altair.mobile.interfaces import IMobileRequest
+
 logger = logging.getLogger(__name__)
 
 @implementer(IRakutenOpenID)
@@ -139,10 +142,14 @@ class RakutenOpenID(object):
         session = self.get_session(request)
 
         if identity:
-            return HTTPFound(
-	    	self.combine_session_id(
-                    self.extra_verify_url,
-                    session))
+            extra_verify_url = self.combine_session_id(self.extra_verify_url, session)
+            if IMobileRequest.providedBy(request) and request.mobile_ua.carrier.is_softbank:
+                return Response(status=200, body=Markup(u'''<html><body><a href="%s">クリックすると購入画面に移動します</a></body></html>''' % Markup.escape(extra_verify_url)))
+            else:
+                return HTTPFound(
+                    self.combine_session_id(
+                        self.extra_verify_url,
+                        session))
         else:
             return HTTPFound(location=self.error_to)
 
