@@ -56,9 +56,7 @@ class PrefixedStaticURLInfo(StaticURLInfo):
 
                 custom_prefix = self.spec_to_path_prefix_mapping.get(spec)
                 if custom_prefix:
-                    kwargs["subpath"] = subpath
-                    kwargs["_app_url"] = custom_prefix
-                    return self._after_generate(request.route_url(route_name, **kwargs), request, kwargs)
+                    return self._after_generate(custom_prefix+subpath, request, kwargs)
                 elif url is None:
                     kwargs['subpath'] = subpath
                     return self._after_generate(request.route_path(route_name, **kwargs), request, kwargs)

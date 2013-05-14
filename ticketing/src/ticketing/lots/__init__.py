@@ -129,7 +129,7 @@ def main(global_config, **local_config):
     config.add_cdn_static_path(S3StaticPathFactory(
             settings["s3.bucket_name"], 
             exclude=config.maybe_dotted(settings.get("s3.static.exclude.function")), 
-            mapping={"ticketing.cart:static/": "/cart"}))
+            mapping={"ticketing.cart:static/": "/cart/static/"}))
 
     config.include('altair.mobile')
 
