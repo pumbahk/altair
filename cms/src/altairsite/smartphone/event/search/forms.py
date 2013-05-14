@@ -3,9 +3,6 @@ from wtforms import Form
 from wtforms import HiddenField, TextField, BooleanField, SelectField, RadioField, SelectMultipleField
 from wtforms.validators import Optional, Length
 from altairsite.smartphone.common.const import SalesEnum
-from altaircms.genre.searcher import GenreSearcher
-from wtforms.widgets.core import HTMLString
-from wtforms.widgets import html_params
 from altaircms.formhelpers import CheckboxListField
 from datetime import date
 
@@ -73,16 +70,6 @@ class DetailSearchForm(TopSearchForm):
         choices=[(0, u'販売中'), (1, u'今週販売開始'), (2, u'販売終了間近'), (3, u'まもなく開演のチケット'), (4, u'販売終了した公演も表示する')],
         default=SalesEnum.ON_SALE, coerce=int)
 
-    def create_genre_selectbox(self, request):
-        genre_searcher = GenreSearcher(request)
-        genres = genre_searcher.root.children
-
-        self.genre_id.choices = []
-        self.genre_id.choices.append([0, u'選択なし'])
-        for genre in genres:
-            self.genre_id.choices.append([genre.id, genre.label])
-            for sub_genre in genre.children:
-                self.genre_id.choices.append([sub_genre.id, u"┗ " + sub_genre.label])
 
     def validate_since_year(form, field):
 

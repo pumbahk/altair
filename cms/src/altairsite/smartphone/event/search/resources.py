@@ -4,6 +4,7 @@ from altairsite.smartphone.common.searcher import EventSearcher
 from altaircms.models import Genre
 from altairsite.smartphone.common.helper import SmartPhoneHelper
 from altairsite.mobile.core.helper import log_debug, log_info, log_warn, log_exception, log_error
+from altaircms.genre.searcher import GenreSearcher
 import webhelpers.paginate as paginate
 
 class SearchQuery(object):
@@ -91,7 +92,6 @@ class SearchPageResource(TopPageResource):
         result = self.create_result(qs=qs, page=page, query=query, per=per)
         return result
 
-
     def search_freeword(self, search_query, genre_label, cond):
         searcher = EventSearcher(request=self.request)
         qs = searcher.search_freeword(word=search_query.word, genre_label=genre_label, cond=cond)
@@ -138,3 +138,21 @@ class SearchPageResource(TopPageResource):
     def paging(self, qs, per, page):
         results = paginate.Page(qs.all(), page, per, url=paginate.PageURL_WebOb(self.request))
         return results
+
+    # 詳細検索フォーム生成
+    def init_detail_search_form(self, form):
+        form.genre_id.choices = self.create_genre_selectbox(self.request)
+
+    def create_genre_selectbox(form, request):
+        genre_searcher = GenreSearcher(request)
+        genres = genre_searcher.root.children
+
+        choices = []
+        choices.append([0, u'選択なし'])
+        for genre in genres:
+            choices.append([genre.id, genre.label])
+            for sub_genre in genre.children:
+                choices.append([sub_genre.id, u"┗ " + sub_genre.label])
+        return choices
+
+

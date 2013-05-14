@@ -71,7 +71,8 @@ def genre_search(context, request):
 def init_detail_search(context, request):
     # 詳細検索画面表示
     form = DetailSearchForm()
-    form.create_genre_selectbox(request=request)
+    context.init_detail_search_form(form=form)
+
     return {
          'form':form
         ,'helper':SmartPhoneHelper()
@@ -82,7 +83,7 @@ def init_detail_search(context, request):
 def detail_search(context, request):
     # 詳細検索
     form = DetailSearchForm(request.GET)
-    form.create_genre_selectbox(request=request)
+    context.init_detail_search_form(form=form)
     genre = context.get_genre(form.data['genre_id'])
     query = DetailSearchQuery(word=form.data['word'], cond=form.data['cond'], genre=genre, prefectures=form.data['prefectures'])
     result = context.search_detail(query, int(form.data['page']), 10)
