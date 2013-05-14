@@ -79,7 +79,10 @@ class RakutenOpenIDPlugin(object):
                     remembered_identity = session.get(self.__class__.__name__ + '.identity')
                     if remembered_identity is not None:
                         logging.debug('got identity from temporary session: %s' % remembered_identity)
-                        identity = remembered_identity 
+                        identity = {
+                            'claimed_id': remembered_identity['claimed_id'],
+                            'oauth_request_token': remembered_identity['oauth_request_token'],
+                            }
 
             if identity is None:
                 remembered_identity = self.get_identity(req)
