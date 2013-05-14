@@ -135,6 +135,8 @@ class Lot(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         ).filter(
             LotEntry.shipping_address_id==c_models.ShippingAddress.id
         ).filter(
+            LotEntry.canceled_at==None
+        ).filter(
             sql.or_(c_models.ShippingAddress.email_1==email,
                     c_models.ShippingAddress.email_2==email)
         ).count() < self.entry_limit
