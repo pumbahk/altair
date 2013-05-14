@@ -6,6 +6,7 @@ from altairsite.smartphone.common.helper import SmartPhoneHelper
 from altairsite.mobile.core.helper import log_debug, log_info, log_warn, log_exception, log_error
 from altaircms.genre.searcher import GenreSearcher
 import webhelpers.paginate as paginate
+from datetime import date
 
 class SearchQuery(object):
     def __init__(self, word, sale):
@@ -28,14 +29,20 @@ class AreaSearchQuery(object):
         return str
 
 class DetailSearchQuery(object):
-    def __init__(self, word, cond, genre, prefectures, sales_segment):
+    def __init__(self, word, cond, genre, prefectures, sales_segment, event_open_info):
         self.word = word
         self.cond = cond
         self.genre = genre
         self.prefectures = prefectures
         self.sales_segment = sales_segment
+        self.event_open_info = event_open_info
     def to_string(self):
         return u"フリーワード：" + self.word
+
+class EventOpenInfo(object):
+    def __init__(self, since_event_open, event_open):
+        self.since_event_open = since_event_open
+        self.event_open = event_open
 
 class SearchResult(object):
     def __init__(self, query, num=0, start=0, end=0, page=1, page_end=1, events=None):
@@ -89,6 +96,7 @@ class SearchPageResource(TopPageResource):
         if qs:
             qs = self._search_prefectures(search_query=query, qs=qs)
             qs = self._search_sales_segment(search_query=query, qs=qs)
+            qs = self._search_event_open(search_query=query, qs=qs)
 
         result = self.create_result(qs=qs, page=page, query=query, per=per)
         return result
@@ -115,8 +123,12 @@ class SearchPageResource(TopPageResource):
 
     def _search_sales_segment(self, search_query, qs):
         searcher = EventSearcher(request=self.request)
-        print type(search_query.sales_segment)
         qs = searcher.get_events_from_salessegment(sales_segment=search_query.sales_segment, qs=qs)
+        return qs
+
+    def _search_event_open(self, search_query, qs):
+        searcher = EventSearcher(request=self.request)
+        qs = searcher.get_events_from_start_on(event_open_info=search_query.event_open_info, qs=qs)
         return qs
 
     def create_result(self, qs, page, query, per):
@@ -148,8 +160,10 @@ class SearchPageResource(TopPageResource):
     # 詳細検索フォーム生成
     def init_detail_search_form(self, form):
         form.genre_id.choices = self.create_genre_selectbox(self.request)
+        form.year.choices, form.month.choices, form.day.choices = self.create_date_selectbox()
+        form.since_year.choices, form.since_month.choices, form.since_day.choices = self.create_date_selectbox()
 
-    def create_genre_selectbox(form, request):
+    def create_genre_selectbox(self, request):
         genre_searcher = GenreSearcher(request)
         genres = genre_searcher.root.children
 
@@ -161,4 +175,25 @@ class SearchPageResource(TopPageResource):
                 choices.append([sub_genre.id, u"┗ " + sub_genre.label])
         return choices
 
+    def create_date_selectbox(self):
+        year_choices = []
+        month_choices = []
+        day_choices = []
+
+        year_choices.append(['0', '-'])
+        month_choices.append(['0', '-'])
+        day_choices.append(['0', '-'])
+
+        today = date.today()
+
+        for year in range(today.year, today.year + 3):
+            year_choices.append([str(year), str(year)])
+
+        for month in range(1, 13):
+            month_choices.append([str(month), str(month)])
+
+        for day in range(1, 32):
+            day_choices.append([str(day), str(day)])
+
+        return year_choices, month_choices, day_choices
 

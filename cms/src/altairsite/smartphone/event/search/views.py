@@ -2,7 +2,7 @@
 from altairsite.config import usersite_view_config
 from altairsite.smartphone.common.helper import SmartPhoneHelper
 from altairsite.smartphone.event.search.forms import TopSearchForm, GenreSearchForm, AreaSearchForm, DetailSearchForm
-from altairsite.smartphone.event.search.resources import SearchQuery, AreaSearchQuery, DetailSearchQuery
+from altairsite.smartphone.event.search.resources import SearchQuery, AreaSearchQuery, DetailSearchQuery, EventOpenInfo
 from altairsite.smartphone.common.const import SalesEnum
 
 @usersite_view_config(route_name='search',request_type="altairsite.tweens.ISmartphoneRequest"
@@ -85,8 +85,9 @@ def detail_search(context, request):
     form = DetailSearchForm(request.GET)
     context.init_detail_search_form(form=form)
     genre = context.get_genre(form.data['genre_id'])
+    info = EventOpenInfo(form.get_since_event_open(), form.get_event_open())
     query = DetailSearchQuery(word=form.data['word'], cond=form.data['cond'], genre=genre
-        , prefectures=form.get_prefectures(), sales_segment=form.data['sales_segment'])
+        , prefectures=form.get_prefectures(), sales_segment=form.data['sales_segment'], event_open_info=info)
     result = context.search_detail(query, int(form.data['page']), 10)
 
     return {

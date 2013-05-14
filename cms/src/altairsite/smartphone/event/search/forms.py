@@ -5,7 +5,7 @@ from altairsite.mobile.core.helper import log_debug, log_info, log_warn, log_exc
 from wtforms.validators import Optional, Length
 from altairsite.smartphone.common.const import SalesEnum
 from altaircms.formhelpers import CheckboxListField
-from datetime import date
+from datetime import date, datetime
 
 class TopSearchForm(Form):
 
@@ -99,6 +99,22 @@ class DetailSearchForm(TopSearchForm):
 
         log_info("get_prefectures", "prefectures=" + ", ".join(prefectures))
         return prefectures
+
+    def get_since_event_open(self):
+        since_event_open = None
+        try:
+            since_event_open = datetime(int(self.since_year.data), int(self.since_month.data), int(self.since_day.data))
+        except Exception as e:
+            pass
+        return since_event_open
+
+    def get_event_open(self):
+        event_open = None
+        try:
+            event_open = datetime(int(self.year.data), int(self.month.data), int(self.day.data))
+        except Exception as e:
+            pass
+        return event_open
 
     def validate_since_year(form, field):
 

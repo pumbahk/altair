@@ -127,25 +127,12 @@ class EventSearcher(object):
         qs = self._create_common_qs(where=where, qs=qs)
         return qs
 
-
-
     # 公演日検索
-    def get_events_from_start_on(self, form, qs=None):
-        log_info("get_events_from_start_on", "start")
-        if form.year.data == "0":
-            # 全部ハイフンの場合
-            log_info("get_events_from_start_on", "all hyphen")
-            return qs
-
-        log_info("get_events_from_start_on", "search start")
-        since_open = datetime(
-            int(form.since_year.data), int(form.since_month.data), int(form.since_day.data))
-        open = datetime(
-            int(form.year.data), int(form.month.data), int(form.day.data))
-        where = (since_open <= Event.event_open) & (open >= Event.event_open)
-        qs = self._create_common_qs(where=where, qs=qs)
-        log_info("get_events_from_start_on", "search end")
-
-        log_info("get_events_from_start_on", "end")
+    def get_events_from_start_on(self, event_open_info, qs=None):
+        info = event_open_info
+        if info.since_event_open and info.event_open:
+            log_info("get_events_from_event_open", unicode(info.since_event_open) + u" 〜 " + unicode(info.event_open))
+            where = (info.since_event_open <= Event.event_open) & (info.event_open >= Event.event_open)
+            qs = self._create_common_qs(where=where, qs=qs)
         return qs
 
