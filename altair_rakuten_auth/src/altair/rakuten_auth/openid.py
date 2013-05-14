@@ -160,6 +160,7 @@ class RakutenOpenID(object):
             headers = identity['identifier'].remember(request.environ, identity)
             return HTTPFound(location=return_url, headers=headers)
         else:
+            logger.error('authentication failure on extra_verify, check that request.path_url (%s) is identical to %s' % (request.path_url, self.extra_verify_url))
             return HTTPFound(location=self.error_to)
 
 def openid_consumer_from_settings(settings, prefix):
