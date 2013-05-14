@@ -154,6 +154,7 @@ class SejPaymentPlugin(object):
                 email               = shipping_address.email_1 or '',
                 total               = order.total_amount,
                 ticket_total        = cart.tickets_amount,
+                # 支払いのみの場合は、ticketing_fee が無視されるので、commission に算入してあげないといけない。
                 commission_fee      = order.system_fee + order.transaction_fee + order.delivery_fee,
                 payment_type        = SejPaymentType.PrepaymentOnly,
                 ticketing_fee       = 0,
