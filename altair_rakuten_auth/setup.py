@@ -36,13 +36,10 @@ setup(name='altair.rakuten_auth',
       install_requires=[
           'setuptools',
           'altair.auth',
-          'altair.mobile',
-          'MarkupSafe',
           # -*- Extra requirements: -*-
       ],
       dependency_links=[
           "file:../altair_auth#egg=altair.auth-1.0", 
-          "file:../altair_mobile#egg=altair.mobile-0.0.1", 
           ],
       test_suite='altair.rakuten_auth',
       entry_points="""
