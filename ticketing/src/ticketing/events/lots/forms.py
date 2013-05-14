@@ -243,6 +243,7 @@ class SearchEntryForm(Form):
         format='%Y-%m-%d %H:%M',
         widget=OurDateWidget()
     )
+
     entried_to = DateTimeField(
         label=u'申込日時',
         validators=[Optional(), after1900],
@@ -256,4 +257,11 @@ class SearchEntryForm(Form):
             second=Max
             ),
         widget=OurDateWidget()
+    )
+
+    include_canceled = BooleanField(
+        label=u"キャンセルした申込を含める",
+        validators=[
+            Required(),
+        ],
     )

@@ -202,6 +202,7 @@ def get_lot_entries_iter(lot_id, condition=None):
     ).filter(
         ShippingAddress.id==LotEntry.shipping_address_id
     ).order_by(
+        LotEntry.entry_no,
         LotEntryWish.wish_order
     )
 

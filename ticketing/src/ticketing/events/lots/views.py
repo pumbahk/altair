@@ -381,6 +381,8 @@ class LotEntries(BaseView):
         condition = (LotEntry.id != None)
         s_a = ShippingAddress
 
+        include_canceled = False
+
         if form.validate():
             if form.entry_no.data:
                 condition = sql.and_(condition, LotEntry.entry_no==form.entry_no.data)
@@ -407,12 +409,21 @@ class LotEntries(BaseView):
             if form.entried_to.data:
                 condition = sql.and_(condition, 
                                      LotEntry.created_at<=form.entried_to.data)
+            include_canceled = form.include_canceled.data
+
+        if not include_canceled:
+            condition = sql.and_(condition, 
+                                 LotEntry.canceled_at == None)
+
+        logger.debug("LotEntry.canceled_at == {0}".format(LotEntry.canceled_at))
         logger.debug("condition = {0}".format(condition))
         logger.debug("from = {0}".format(form.entried_from.data))
         entries = lots_api.get_lot_entries_iter(lot.id, condition)
+        cancel_url = self.request.route_url('lots.entries.cancel', lot_id=lot.id)
         return dict(data=list(entries),
                     lot=lot,
-                    form=form)
+                    form=form,
+                    cancel_url=cancel_url)
 
 
         
@@ -491,3 +502,26 @@ class LotEntries(BaseView):
 
         self.request.session.flash(u"当選確定処理を行いました {0}".format(entry_no))
         return HTTPFound(location=self.request.route_url('lots.entries.index', lot_id=lot.id))
+
+    @view_config(route_name='lots.entries.cancel', 
+                 renderer="json",
+                 request_method="POST",
+                 permission='event_viewer')
+    def cancel_entry(self):
+        """ 申し込み番号指定でのキャンセル処理
+        """
+
+
+        self.check_organization(self.context.event)
+        lot_id = self.request.matchdict["lot_id"]
+        lot = Lot.query.filter(Lot.id==lot_id).one()
+        # TODO: form
+
+        entry_no = self.request.params['entry_no']
+        lot_entry = lot.get_lot_entry(entry_no)
+        if lot_entry is None:
+            return dict(result="NG",
+                        message="not found")
+
+        lot_entry.cancel()
+        return dict(result="OK")
