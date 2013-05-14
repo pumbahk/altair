@@ -3,6 +3,7 @@ from wtforms import Form
 from wtforms import HiddenField, TextField, BooleanField, SelectField, RadioField
 from wtforms.validators import Optional, Length
 from altairsite.smartphone.common.const import SalesEnum
+from altaircms.genre.searcher import GenreSearcher
 from datetime import date
 
 class TopSearchForm(Form):
@@ -49,7 +50,7 @@ class DetailSearchForm(TopSearchForm):
             , ('kyoto', u'京都'), ('osaka', u'大阪'), ('hyogo', u'兵庫'), ('shiga', u'滋賀'), ('nara', u'奈良'), ('wakayama', u'和歌山'), ('toyama', u'富山'), ('ishikawa', u'石川'), ('fukui', u'福井')
             , ('hiroshima', u'広島'), ('okayama', u'岡山'), ('tottori', u'鳥取'), ('shimane', u'島根') ,('yamaguchi', u'山口'), ('tokushima', u'徳島'), ('kagawa', u'香川'), ('ehime', u'愛媛'), ('kouchi', u'高知')
             , ('okinawa', u'沖縄'), ('fukuoka', u'福岡'), ('saga', u'佐賀'), ('nagasaki', u'長崎'), ('kumamoto', u'熊本') ,('oita', u'大分'), ('miyazaki', u'宮崎') ,('kagoshima', u'鹿児島')])
-    genre = SelectField(label='', validators=[Optional()],choices=[(0, u'選択なし')], coerce=str)
+    genre_id = SelectField(label='', validators=[Optional()],choices=[], coerce=str)
     sales_segment = RadioField(label = '',validators=[Optional()]
         ,choices=[(0, u'一般販売'), (1, u'先行販売'), (2, u'先行抽選') ],default=0, coerce=int)
 
@@ -68,6 +69,17 @@ class DetailSearchForm(TopSearchForm):
     sale = RadioField(label = '', validators=[Optional()],
         choices=[(0, u'販売中'), (1, u'今週販売開始'), (2, u'販売終了間近'), (3, u'まもなく開演のチケット'), (4, u'販売終了した公演も表示する')],
         default=SalesEnum.ON_SALE, coerce=int)
+
+    def create_genre_selectbox(self, request):
+        genre_searcher = GenreSearcher(request)
+        genres = genre_searcher.root.children
+
+        self.genre_id.choices = []
+        self.genre_id.choices.append([0, u'選択なし'])
+        for genre in genres:
+            self.genre_id.choices.append([genre.id, genre.label])
+            for sub_genre in genre.children:
+                self.genre_id.choices.append([sub_genre.id, u"┗ " + sub_genre.label])
 
     def validate_since_year(form, field):
 
@@ -109,3 +121,4 @@ def _check_date(year, month, day):
     except TypeError:
         return False
     return True
+

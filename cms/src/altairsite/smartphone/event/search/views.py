@@ -70,8 +70,10 @@ def genre_search(context, request):
              , renderer='altairsite.smartphone:templates/searchresult/detail_search.html')
 def init_detail_search(context, request):
     # 詳細検索画面表示
+    form = DetailSearchForm()
+    form.create_genre_selectbox(request=request)
     return {
-         'form':DetailSearchForm()
+         'form':form
         ,'helper':SmartPhoneHelper()
     }
 
@@ -80,7 +82,9 @@ def init_detail_search(context, request):
 def detail_search(context, request):
     # 詳細検索
     form = DetailSearchForm(request.GET)
-    query = DetailSearchQuery(word=form.data['word'], cond=form.data['cond'], genre=None)
+    form.create_genre_selectbox(request=request)
+    genre = context.get_genre(form.data['genre_id'])
+    query = DetailSearchQuery(word=form.data['word'], cond=form.data['cond'], genre=genre)
     result = context.search_detail(query, int(form.data['page']), 10)
 
     return {
@@ -88,6 +92,7 @@ def detail_search(context, request):
         ,'result':result
         ,'helper':SmartPhoneHelper()
     }
+
 
 """
 @usersite_view_config(route_name='detailsearchinit', request_type="altairsite.tweens.IMobileRequest"

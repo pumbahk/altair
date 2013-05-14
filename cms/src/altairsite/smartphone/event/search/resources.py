@@ -74,7 +74,6 @@ class SearchPageResource(TopPageResource):
 
     # 詳細検索
     def search_detail(self, query, page, per):
-        log_info("search_detail", "start")
         qs = None
         if query.word:
             if query.genre:
@@ -82,9 +81,7 @@ class SearchPageResource(TopPageResource):
             else:
                 qs = self.search_freeword(search_query=query, genre_label=None, cond=query.cond)
 
-
         result = self.create_result(qs=qs, page=page, query=query, per=per)
-        log_info("search_detail", "end")
         return result
 
 
