@@ -115,6 +115,17 @@ class EventSearcher(object):
             qs = self._create_common_qs(where=where, qs=qs)
         return qs
 
+    # 販売区分別
+    def get_events_from_salessegment(self, sales_segment, qs=None):
+        label = "一般発売"
+        if sales_segment == "precedence":
+            label = "一般先行"
+        elif sales_segment == "lottery":
+            label = "先行抽選"
+        log_info("get_events_from_salessegment", "sales_segment = " + label)
+        where = SalesSegmentKind.label == label
+        qs = self._create_common_qs(where=where, qs=qs)
+        return qs
 
 
 
@@ -138,16 +149,3 @@ class EventSearcher(object):
         log_info("get_events_from_start_on", "end")
         return qs
 
-    # 販売区分別
-    def get_events_from_salessegment(self, form, qs=None):
-        log_info("get_events_from_salessegment", "start")
-        label = "一般販売"
-        if form.sales_segment.data == 1:
-            label = "一般先行"
-        elif form.sales_segment.data == 2:
-            label = "先行抽選"
-        log_info("get_events_from_salessegment", "sales_segment = " + label)
-        where = SalesSegmentKind.label == label
-        qs = self._create_common_qs(where=where, qs=qs)
-        log_info("get_events_from_salessegment", "end")
-        return qs

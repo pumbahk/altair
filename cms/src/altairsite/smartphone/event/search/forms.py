@@ -68,8 +68,7 @@ class DetailSearchForm(TopSearchForm):
             ])
     genre_id = SelectField(label='', validators=[Optional()],choices=[], coerce=str)
     sales_segment = RadioField(label = '',validators=[Optional()]
-        ,choices=[(0, u'一般販売'), (1, u'先行販売'), (2, u'先行抽選') ],default=0, coerce=int)
-
+        ,choices=[("normal", u'一般発売'), ("precedence", u'先行販売'), ("lottery", u'先行抽選') ],default="normal", coerce=str)
     since_year = SelectField(label='', validators=[Optional()], choices=[])
     since_month = SelectField(label='', validators=[Optional()], choices=[])
     since_day = SelectField(label='', validators=[Optional()], choices=[])

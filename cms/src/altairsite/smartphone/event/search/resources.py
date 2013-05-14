@@ -28,11 +28,12 @@ class AreaSearchQuery(object):
         return str
 
 class DetailSearchQuery(object):
-    def __init__(self, word, cond, genre, prefectures):
+    def __init__(self, word, cond, genre, prefectures, sales_segment):
         self.word = word
         self.cond = cond
         self.genre = genre
         self.prefectures = prefectures
+        self.sales_segment = sales_segment
     def to_string(self):
         return u"フリーワード：" + self.word
 
@@ -85,9 +86,9 @@ class SearchPageResource(TopPageResource):
             else:
                 qs = self.search_freeword(search_query=query, genre_label=None, cond=query.cond)
 
-        # 地域
         if qs:
             qs = self._search_prefectures(search_query=query, qs=qs)
+            qs = self._search_sales_segment(search_query=query, qs=qs)
 
         result = self.create_result(qs=qs, page=page, query=query, per=per)
         return result
@@ -108,9 +109,14 @@ class SearchPageResource(TopPageResource):
         return qs
 
     def _search_prefectures(self, search_query, qs):
-        log_info("_search_prefectures", "start")
         searcher = EventSearcher(request=self.request)
         qs = searcher.get_events_from_prefectures(prefectures=search_query.prefectures, qs=qs)
+        return qs
+
+    def _search_sales_segment(self, search_query, qs):
+        searcher = EventSearcher(request=self.request)
+        print type(search_query.sales_segment)
+        qs = searcher.get_events_from_salessegment(sales_segment=search_query.sales_segment, qs=qs)
         return qs
 
     def create_result(self, qs, page, query, per):
