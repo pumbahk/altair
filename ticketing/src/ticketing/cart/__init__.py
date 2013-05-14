@@ -106,7 +106,8 @@ def main(global_config, **local_config):
     from altair.cdnpath import S3StaticPathFactory
     config.add_cdn_static_path(S3StaticPathFactory(
             settings["s3.bucket_name"], 
-            exclude=config.maybe_dotted(settings.get("s3.static.exclude.function"))))
+            exclude=config.maybe_dotted(settings.get("s3.static.exclude.function")), 
+            mapping={"ticketing.fc_auth:static/": "/fc_auth/static/"}))
     config.add_static_view('static', 'ticketing.cart:static', cache_max_age=3600)
 
     ### includes altair.*
