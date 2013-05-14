@@ -38,7 +38,7 @@ class EventSearcher(object):
         elif sale == int(SalesEnum.WEEK_SALE):
             qs = self.get_events_week_sale(date.today(), None, qs)
         elif sale == int(SalesEnum.NEAR_SALE_END):
-            qs = self._get_events_near_sale_end(date.today(), 7, qs)
+            qs = self._get_events_near_sale_end(7, qs)
         elif sale == int(SalesEnum.SOON_ACT):
             qs = self._get_events_near_act(qs)
         elif sale == int(SalesEnum.ALL):
@@ -53,15 +53,27 @@ class EventSearcher(object):
 
     # 今週発売検索(月曜日を週のはじめとする)
     def get_events_week_sale(self, today, offset=None, qs=None):
-        start_day  = today + timedelta(days=offset or -today.weekday())
+        start_day = today + timedelta(days=offset or -today.weekday())
         where = (Event.deal_open >= start_day) & (Event.deal_open <= start_day+timedelta(days=7))
         qs = self._create_common_qs(where=where, qs=qs)
         return qs
 
+    # 販売開始まで
+    def get_events_from_near_sale_start(self, N=7, qs=None):
+        if N:
+            log_info("get_events_from_near_sale_start", "near_sale_start = " + N)
+            today = date.today()
+            N = int(N)
+            sale_day = today + timedelta(days=N)
+            where = (Event.deal_open <= sale_day) & (Event.deal_open >= today)
+            qs = self._create_common_qs(where=where, qs=qs)
+        return qs
+
     # 販売終了間近
-    def _get_events_near_sale_end(self, today, N=7, qs=None):
+    def _get_events_near_sale_end(self, N=7, qs=None):
         if N:
             log_info("_get_events_near_sale_end", "near_sale_end = " + N)
+            today = date.today()
             N = int(N)
             limit_day = today + timedelta(days=N)
             where = (today <= Event.deal_close) & (Event.deal_close <= limit_day)

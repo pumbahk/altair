@@ -103,7 +103,8 @@ class SearchPageResource(TopPageResource):
             qs = self._search_prefectures(search_query=query, qs=qs)
             qs = self._search_sales_segment(search_query=query, qs=qs)
             qs = self._search_event_open(search_query=query, qs=qs)
-            qs = self._get_events_near_sale_end(search_query=query, qs=qs)
+            qs = self._search_near_sale_start(search_query=query, qs=qs)
+            qs = self._search_near_sale_end(search_query=query, qs=qs)
 
         result = self.create_result(qs=qs, page=page, query=query, per=per)
         return result
@@ -138,9 +139,14 @@ class SearchPageResource(TopPageResource):
         qs = searcher.get_events_from_start_on(event_open_info=search_query.event_open_info, qs=qs)
         return qs
 
-    def _get_events_near_sale_end(self, search_query, qs):
+    def _search_near_sale_start(self, search_query, qs):
         searcher = EventSearcher(request=self.request)
-        qs = searcher._get_events_near_sale_end(today=date.today(), N=search_query.sale_info.sale_end, qs=qs)
+        qs = searcher.get_events_from_near_sale_start(N=search_query.sale_info.sale_start, qs=qs)
+        return qs
+
+    def _search_near_sale_end(self, search_query, qs):
+        searcher = EventSearcher(request=self.request)
+        qs = searcher._get_events_near_sale_end(N=search_query.sale_info.sale_end, qs=qs)
         return qs
 
     def create_result(self, qs, page, query, per):
