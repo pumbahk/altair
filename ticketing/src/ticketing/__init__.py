@@ -33,6 +33,9 @@ def newRootFactory(klass):
             return klass(request)
     return root_factory
 
+def exclude_js(path):
+    return path.endswith(".js")
+
 def main(global_config, **local_config):
     """ This function returns a Pyramid WSGI application.
     """
