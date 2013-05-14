@@ -19,6 +19,24 @@ def search(context, request):
         ,'helper':SmartPhoneHelper()
     }
 
+@usersite_view_config(route_name='search_genre',request_type="altairsite.tweens.ISmartphoneRequest"
+             , renderer='altairsite.smartphone:templates/searchresult/search.html')
+def genre_search(context, request):
+    # ジャンル画面の検索
+    form = GenreSearchForm(request.GET)
+    search_word = form.data['word']
+    if form.data['sale'] == SalesEnum.GENRE.v:
+        genre = context.get_genre(form.data['genre_id'])
+        search_word = search_word + ' ' + genre.label
+
+    query = SearchQuery(search_word, SalesEnum.ON_SALE.v)
+    result = context.search(query, int(form.data['page']), 10)
+
+    return {
+         'result':result
+        ,'helper':SmartPhoneHelper()
+    }
+
 @usersite_view_config(route_name='search_area',request_type="altairsite.tweens.ISmartphoneRequest"
              , renderer='altairsite.smartphone:templates/searchresult/area.html')
 def search_area(context, request):
@@ -46,24 +64,6 @@ def search_genre_area(context, request):
     return {
          'query':query
         ,'result':result
-        ,'helper':SmartPhoneHelper()
-    }
-
-@usersite_view_config(route_name='search_genre',request_type="altairsite.tweens.ISmartphoneRequest"
-             , renderer='altairsite.smartphone:templates/searchresult/search.html')
-def genre_search(context, request):
-    # ジャンル画面の検索
-    form = GenreSearchForm(request.GET)
-    search_word = form.data['word']
-    if form.data['sale'] == SalesEnum.GENRE.v:
-        genre = context.get_genre(form.data['genre_id'])
-        search_word = search_word + ' ' + genre.label
-
-    query = SearchQuery(search_word, SalesEnum.ON_SALE.v)
-    result = context.search(query, int(form.data['page']), 10)
-
-    return {
-         'result':result
         ,'helper':SmartPhoneHelper()
     }
 

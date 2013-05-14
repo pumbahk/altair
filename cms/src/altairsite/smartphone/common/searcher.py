@@ -1,13 +1,8 @@
 # -*- coding: utf-8 -*-
-from pyramid.httpexceptions import HTTPNotFound
 from altaircms.models import Performance, SalesSegmentGroup, SalesSegmentKind
 from altaircms.event.models import Event
 from altaircms.page.models import Page
-from altaircms.models import Genre
-from .const import get_prefectures
-from altairsite.mobile.core.helper import exist_value
-from altairsite.mobile.core.const import SalesEnum
-from sqlalchemy import or_, and_, asc
+from .const import get_prefectures, SalesEnum
 from datetime import datetime, date, timedelta
 from altairsite.mobile.core.helper import log_debug, log_info, log_warn, log_exception, log_error
 from altairsite.smartphone.common.solr import searchEvents
@@ -34,6 +29,8 @@ class EventSearcher(object):
     # 発売状況
     def search_sale(self, sale, qs):
         if sale == int(SalesEnum.ON_SALE):
+            qs = self._get_events_on_sale(qs)
+        elif sale == int(SalesEnum.GENRE):
             qs = self._get_events_on_sale(qs)
         elif sale == int(SalesEnum.WEEK_SALE):
             qs = self.get_events_week_sale(date.today(), None, qs)
