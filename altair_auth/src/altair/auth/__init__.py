@@ -1,6 +1,7 @@
 # This package may contain traces of nuts
 import os
 import logging
+import sys
 from pyramid.interfaces import IRequest
 from pyramid.path import AssetResolver
 from pyramid.exceptions import ConfigurationError
@@ -67,7 +68,10 @@ def activate(request):
     request.environ[REQUEST_KEY] = request
 
 def deactivate(request):
-    del request.environ[REQUEST_KEY]
+    try:
+        del request.environ[REQUEST_KEY]
+    except KeyError:
+        logger.error('exception ignored', exc_info=sys.exc_info())
 
 def activate_who_api_tween(handler, registry):
     def wrap(request):
