@@ -143,13 +143,10 @@ class RakutenOpenID(object):
 
         if identity:
             extra_verify_url = self.combine_session_id(self.extra_verify_url, session)
-            if IMobileRequest.providedBy(request) and request.mobile_ua.carrier.is_softbank:
-                return Response(status=200, body=Markup(u'''<html><body><a href="%s">クリックすると購入画面に移動します</a></body></html>''' % Markup.escape(extra_verify_url)))
-            else:
-                return HTTPFound(
-                    self.combine_session_id(
-                        self.extra_verify_url,
-                        session))
+            return HTTPFound(
+                self.combine_session_id(
+                    self.extra_verify_url,
+                    session))
         else:
             return HTTPFound(location=self.error_to)
 
@@ -165,7 +162,16 @@ class RakutenOpenID(object):
                 return_url = "/"
             session.clear()
             headers = identity['identifier'].remember(request.environ, identity)
-            return HTTPFound(location=return_url, headers=headers)
+            if IMobileRequest.providedBy(request) and request.mobile_ua.carrier.is_softbank:
+                resp = Response()
+                resp.headers = headers
+                resp.status = 200
+                resp.content_type='text/html'
+                resp.charset = 'UTF-8'
+                resp.text = u'''<html><body><a href="%s">クリックすると購入画面に移動します</a></body></html>''' % Markup.escape(return_url)
+                return resp
+            else:
+                return HTTPFound(location=return_url, headers=headers)
         else:
             logger.error('authentication failure on extra_verify, check that request.path_url (%s) is identical to %s' % (request.path_url, self.extra_verify_url))
             return HTTPFound(location=self.error_to)
