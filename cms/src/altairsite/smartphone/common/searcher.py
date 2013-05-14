@@ -60,9 +60,12 @@ class EventSearcher(object):
 
     # 販売終了間近
     def _get_events_near_sale_end(self, today, N=7, qs=None):
-        limit_day = today + timedelta(days=N)
-        where = (today <= Event.deal_close) & (Event.deal_close <= limit_day)
-        qs = self._create_common_qs(where=where, qs=qs)
+        if N:
+            log_info("_get_events_near_sale_end", "near_sale_end = " + N)
+            N = int(N)
+            limit_day = today + timedelta(days=N)
+            where = (today <= Event.deal_close) & (Event.deal_close <= limit_day)
+            qs = self._create_common_qs(where=where, qs=qs)
         return qs
 
     # まもなく開演

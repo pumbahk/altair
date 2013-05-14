@@ -29,13 +29,14 @@ class AreaSearchQuery(object):
         return str
 
 class DetailSearchQuery(object):
-    def __init__(self, word, cond, genre, prefectures, sales_segment, event_open_info):
+    def __init__(self, word, cond, genre, prefectures, sales_segment, event_open_info, sale_info):
         self.word = word
         self.cond = cond
         self.genre = genre
         self.prefectures = prefectures
         self.sales_segment = sales_segment
         self.event_open_info = event_open_info
+        self.sale_info = sale_info
     def to_string(self):
         return u"フリーワード：" + self.word
 
@@ -43,6 +44,11 @@ class EventOpenInfo(object):
     def __init__(self, since_event_open, event_open):
         self.since_event_open = since_event_open
         self.event_open = event_open
+
+class SaleInfo(object):
+    def __init__(self, sale_start, sale_end):
+        self.sale_start = sale_start
+        self.sale_end = sale_end
 
 class SearchResult(object):
     def __init__(self, query, num=0, start=0, end=0, page=1, page_end=1, events=None):
@@ -97,6 +103,7 @@ class SearchPageResource(TopPageResource):
             qs = self._search_prefectures(search_query=query, qs=qs)
             qs = self._search_sales_segment(search_query=query, qs=qs)
             qs = self._search_event_open(search_query=query, qs=qs)
+            qs = self._get_events_near_sale_end(search_query=query, qs=qs)
 
         result = self.create_result(qs=qs, page=page, query=query, per=per)
         return result
@@ -131,6 +138,11 @@ class SearchPageResource(TopPageResource):
         qs = searcher.get_events_from_start_on(event_open_info=search_query.event_open_info, qs=qs)
         return qs
 
+    def _get_events_near_sale_end(self, search_query, qs):
+        searcher = EventSearcher(request=self.request)
+        qs = searcher._get_events_near_sale_end(today=date.today(), N=search_query.sale_info.sale_end, qs=qs)
+        return qs
+
     def create_result(self, qs, page, query, per):
         result = SearchResult(query)
         if qs:
@@ -162,6 +174,8 @@ class SearchPageResource(TopPageResource):
         form.genre_id.choices = self.create_genre_selectbox(self.request)
         form.year.choices, form.month.choices, form.day.choices = self.create_date_selectbox()
         form.since_year.choices, form.since_month.choices, form.since_day.choices = self.create_date_selectbox()
+        form.sale_start.choices = self.create_choices(1, 32)
+        form.sale_end.choices = self.create_choices(1, 32)
 
     def create_genre_selectbox(self, request):
         genre_searcher = GenreSearcher(request)
@@ -175,25 +189,17 @@ class SearchPageResource(TopPageResource):
                 choices.append([sub_genre.id, u"┗ " + sub_genre.label])
         return choices
 
+    def create_choices(self, start, end):
+        choices = []
+        choices.append(['', '-'])
+        for value in range(start, end):
+            choices.append([str(value), str(value)])
+        return choices
+
     def create_date_selectbox(self):
-        year_choices = []
-        month_choices = []
-        day_choices = []
-
-        year_choices.append(['0', '-'])
-        month_choices.append(['0', '-'])
-        day_choices.append(['0', '-'])
-
         today = date.today()
-
-        for year in range(today.year, today.year + 3):
-            year_choices.append([str(year), str(year)])
-
-        for month in range(1, 13):
-            month_choices.append([str(month), str(month)])
-
-        for day in range(1, 32):
-            day_choices.append([str(day), str(day)])
-
+        year_choices = self.create_choices(today.year, today.year + 3)
+        month_choices = self.create_choices(1, 13)
+        day_choices = self.create_choices(1, 32)
         return year_choices, month_choices, day_choices
 

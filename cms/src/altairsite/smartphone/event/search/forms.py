@@ -75,9 +75,9 @@ class DetailSearchForm(TopSearchForm):
     year = SelectField(label='', validators=[Optional()], choices=[])
     month = SelectField(label='', validators=[Optional()], choices=[])
     day = SelectField(label='', validators=[Optional()], choices=[])
+    sale_start = SelectField(label='', validators=[Optional()], choices=[], coerce=str)
+    sale_end = SelectField(label='', validators=[Optional()], choices=[], coerce=str)
 
-    sale_day = SelectField(label='', validators=[Optional()], choices=[], coerce=int)
-    sale_end_day = SelectField(label='', validators=[Optional()], choices=[], coerce=int)
     sale_option = BooleanField('I accept the site rules', [Optional()])
 
 
