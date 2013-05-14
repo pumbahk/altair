@@ -41,3 +41,31 @@
         </fieldset>
     </form>
 </div>
+
+<script>
+    window.onload = function(){
+        addCheckBoxEventHandler("prefecture_hokkaido")
+        addCheckBoxEventHandler("prefecture_syutoken")
+        addCheckBoxEventHandler("prefecture_koshinetsu")
+        addCheckBoxEventHandler("prefecture_kinki")
+        addCheckBoxEventHandler("prefecture_chugoku")
+        addCheckBoxEventHandler("prefecture_kyusyu")
+    }
+
+    function addCheckBoxEventHandler(name) {
+        checkboxies = document.getElementsByName(name);
+        for (var index = 0; index < checkboxies.length; index++) {
+            if (checkboxies[index].value == "all_check") {
+                checkboxies[index].onClick = checkedAllPrefectures(name, true);
+                break;
+            }
+        }
+    }
+
+    function checkedAllPrefectures(name, check){
+        checkboxies = document.getElementsByName(name);
+        for (var index = 0; index < checkboxies.length; index++) {
+            checkboxies[index].checked = check;
+        }
+    }
+</script>
