@@ -73,7 +73,7 @@ ${tabs.tabs(request)}
 
 <div>
 %if data:
-<table border="1">
+<table border="1" class="table">
 <thead>
 <tr>
 %for k in data[0]:
@@ -86,7 +86,7 @@ ${tabs.tabs(request)}
 %for r in data:
 <tr>
 %for k in data[0]:
-<td>${r[k]}</td>
+<td nowrap="">${r[k]}</td>
 %endfor
 <td>
 <form method="POST" action="${request.route_url('lots.entries.elect_entry_no', lot_id=lot.id)}">

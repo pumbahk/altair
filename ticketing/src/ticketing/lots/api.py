@@ -32,6 +32,7 @@
 
 import transaction
 from datetime import datetime
+from collections import OrderedDict
 from uuid import uuid4
 from sqlalchemy import sql
 from pyramid.interfaces import IRequest
@@ -224,49 +225,58 @@ def format_sex(s):
 def _entry_info(wish):
     # TODO: shipping_addressも全部追加する
     shipping_address = wish.lot_entry.shipping_address
+    event = wish.lot_entry.lot.event
+    performance = wish.performance
+    venue = performance.venue
+    pdmp = wish.lot_entry.payment_delivery_method_pair
+    payment_method = pdmp.payment_method
+    delivery_method = pdmp.delivery_method
+    user_profile = None
+    if shipping_address.user:
+        user_profile = shipping_address.user.profile
 
-    return {
-        u"申し込み番号": wish.lot_entry.entry_no,
-        u"希望順序": wish.wish_order + 1,
-        u"申し込み日": wish.created_at,
-        u"ユーザー種別": wish.lot_entry.membergroup,
-        u"席種": u",".join([",".join([i.stock_type.name for i in p.product.items]) for p in wish.products]), # 席種 この時点で席種までちゃんと決まる
-        u"枚数": wish.total_quantity, # 枚数(商品関係なし)
-        # u'イベント': event.title,
-        # u'会場': venue.name,
-        # u'公演': performance.name,
-        # u'公演コード': performance.code,
-        # u'公演日': performance.start_on,
+    return OrderedDict([
+        (u"申し込み番号", wish.lot_entry.entry_no),
+        (u"希望順序", wish.wish_order + 1),
+        (u"申し込み日", wish.created_at),
+        (u"ユーザー種別", wish.lot_entry.membergroup),
+        (u"席種", u",".join([",".join([i.stock_type.name for i in p.product.items]) for p in wish.products])), # 席種 この時点で席種までちゃんと決まる
+        (u"枚数", wish.total_quantity), # 枚数(商品関係なし)
+        (u'イベント', event.title),
+        (u'会場', venue.name),
+        (u'公演', performance.name),
+        (u'公演コード', performance.code),
+        (u'公演日', performance.start_on),
 
-        u"商品": u",".join([p.product.name for p in wish.products]), # 商品うちわけ(参考情報)
-        # u'決済方法': payment_method.name,
-        # u'引取方法': delivery_method.name,
+        (u"商品", u",".join([p.product.name for p in wish.products])), # 商品うちわけ(参考情報)
+        (u'決済方法', payment_method.name),
+        (u'引取方法', delivery_method.name),
 
         ## shipping_address
-        u'配送先姓': shipping_address.last_name,
-        u'配送先名': shipping_address.first_name,
-        u'配送先姓(カナ)': shipping_address.last_name_kana,
-        u'配送先名(カナ)': shipping_address.first_name_kana,
-        u'郵便番号': shipping_address.zip,
-        u'国': shipping_address.country,
-        u'都道府県': shipping_address.prefecture,
-        u'市区町村': shipping_address.city,
-        u'住所1': shipping_address.address_1,
-        u'住所2': shipping_address.address_2,
-        u'電話番号1': shipping_address.tel_1,
-        u'電話番号2': shipping_address.tel_2,
-        u'FAX': shipping_address.fax,
-        u'メールアドレス1': shipping_address.email_1,
-        u'メールアドレス2': shipping_address.email_2,
+        (u'配送先姓', shipping_address.last_name),
+        (u'配送先名', shipping_address.first_name),
+        (u'配送先姓(カナ)', shipping_address.last_name_kana),
+        (u'配送先名(カナ)', shipping_address.first_name_kana),
+        (u'郵便番号', shipping_address.zip),
+        (u'国', shipping_address.country),
+        (u'都道府県', shipping_address.prefecture),
+        (u'市区町村', shipping_address.city),
+        (u'住所1', shipping_address.address_1),
+        (u'住所2', shipping_address.address_2),
+        (u'電話番号1', shipping_address.tel_1),
+        (u'電話番号2', shipping_address.tel_2),
+        (u'FAX', shipping_address.fax),
+        (u'メールアドレス1', shipping_address.email_1),
+        (u'メールアドレス2', shipping_address.email_2),
 
         ## user_profile
-        # u'姓': user_profile.last_name,
-        # u'名': user_profile.first_name,
-        # u'姓(カナ)': user_profile.last_name_kana,
-        # u'名(カナ)': user_profile.first_name_kana,
-        # u'ニックネーム': user_profile.nick_name,
-        # u'性別': user_profile.sex,
-    }
+        (u'姓', user_profile.last_name if user_profile else u""),
+        (u'名', user_profile.first_name if user_profile else u""),
+        (u'姓(カナ)', user_profile.last_name_kana if user_profile else u""),
+        (u'名(カナ)', user_profile.first_name_kana if user_profile else u""),
+        (u'ニックネーム', user_profile.nick_name if user_profile else u""),
+        (u'性別', user_profile.sex if user_profile else u""),
+    ])
 
 
 
