@@ -84,7 +84,7 @@ def detail_search(context, request):
     form = DetailSearchForm(request.GET)
     form.create_genre_selectbox(request=request)
     genre = context.get_genre(form.data['genre_id'])
-    query = DetailSearchQuery(word=form.data['word'], cond=form.data['cond'], genre=genre)
+    query = DetailSearchQuery(word=form.data['word'], cond=form.data['cond'], genre=genre, prefectures=form.data['prefectures'])
     result = context.search_detail(query, int(form.data['page']), 10)
 
     return {

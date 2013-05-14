@@ -102,12 +102,18 @@ class EventSearcher(object):
 
     # 地域検索
     def get_events_from_area(self, area, qs=None):
-        if exist_value(area):
+        if area:
             prefectures = get_prefectures(area)
             where = Performance.prefecture.in_(prefectures)
             qs = self._create_common_qs(where=where, qs=qs)
         return qs
 
+    # 県名検索
+    def get_events_from_prefectures(self, prefectures, qs=None):
+        if prefectures:
+            where = Performance.prefecture.in_(prefectures)
+            qs = self._create_common_qs(where=where, qs=qs)
+        return qs
 
 
 
