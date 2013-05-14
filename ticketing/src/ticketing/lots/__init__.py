@@ -125,6 +125,7 @@ def main(global_config, **local_config):
     config.include('altair.mobile')
 
     config.include('ticketing.rakuten_auth')
+    config.include("ticketing.multicheckout")
     config.include("ticketing.payments")
     config.include("ticketing.payments.plugins")
     config.add_tween('ticketing.tweens.session_cleaner_factory', over=EXCVIEW)
