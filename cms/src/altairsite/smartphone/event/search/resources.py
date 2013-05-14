@@ -84,6 +84,8 @@ class SearchPageResource(TopPageResource):
                 qs = self._search_area(search_query=query, qs=qs)
         else:
             qs = self._search_area(search_query=query, qs=qs)
+
+        qs = self._search_on_sale(qs=qs)
         result = self.create_result(qs=qs, page=page, query=query, per=per)
         log_info("search_area", "end")
         return result
@@ -147,6 +149,11 @@ class SearchPageResource(TopPageResource):
     def _search_near_sale_end(self, search_query, qs):
         searcher = EventSearcher(request=self.request)
         qs = searcher._get_events_near_sale_end(N=search_query.sale_info.sale_end, qs=qs)
+        return qs
+
+    def _search_on_sale(self, qs):
+        searcher = EventSearcher(request=self.request)
+        qs = searcher._get_events_on_sale(qs=qs)
         return qs
 
     def create_result(self, qs, page, query, per):
