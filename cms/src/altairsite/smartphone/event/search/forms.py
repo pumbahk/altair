@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from wtforms import Form
 from wtforms import HiddenField, TextField, BooleanField, SelectField, RadioField, SelectMultipleField
+from altairsite.mobile.core.helper import log_debug, log_info, log_warn, log_exception, log_error
 from wtforms.validators import Optional, Length
 from altairsite.smartphone.common.const import SalesEnum
 from altaircms.formhelpers import CheckboxListField
@@ -41,15 +42,30 @@ class DetailSearchForm(TopSearchForm):
 
     cond = RadioField(label = '', validators=[Optional()],
         choices=[("intersection", u'全てを含む'), ("union", u'少なくとも１つを含む')], default="intersection", coerce=str)
-
-    prefectures = CheckboxListField('県名', coerce=str, choices=[
-              ('hokkaido', u'北海道'), ('aomori', u'青森'), ('iwate', u'岩手'), ('akita', u'秋田'), ('miyagi', u'宮城'), ('yamagata', u'山形'), ('fukushima', u'福島')
-            , ('chiba', u'千葉'), ('tokyo', u'東京'), ('kanagawa', u'神奈川'), ('ibaraki', u'茨城'), ('tochigi', u'栃木') ,('gunma', u'群馬'), ('saitama', u'埼玉'), ('yamanashi', u'山梨')
-            , ('nagano', u'長野') ,('niigata', u'新潟'), ('gifu', u'岐阜'), ('aichi', u'愛知') ,('mie', u'三重'), ('shizuoka', u'静岡')
-            , ('kyoto', u'京都'), ('osaka', u'大阪'), ('hyogo', u'兵庫'), ('shiga', u'滋賀'), ('nara', u'奈良'), ('wakayama', u'和歌山'), ('toyama', u'富山'), ('ishikawa', u'石川'), ('fukui', u'福井')
-            , ('hiroshima', u'広島'), ('okayama', u'岡山'), ('tottori', u'鳥取'), ('shimane', u'島根') ,('yamaguchi', u'山口'), ('tokushima', u'徳島'), ('kagawa', u'香川'), ('ehime', u'愛媛'), ('kouchi', u'高知')
-            , ('okinawa', u'沖縄'), ('fukuoka', u'福岡'), ('saga', u'佐賀'), ('nagasaki', u'長崎'), ('kumamoto', u'熊本') ,('oita', u'大分'), ('miyazaki', u'宮崎') ,('kagoshima', u'鹿児島')])
-
+    prefecture_hokkaido = CheckboxListField(u'北海道・東海',
+            choices=[
+                ('', u'全て選択'), ('hokkaido', u'北海道'), ('aomori', u'青森'), ('iwate', u'岩手'), ('akita', u'秋田'), ('miyagi', u'宮城'), ('yamagata', u'山形'), ('fukushima', u'福島')
+            ])
+    prefecture_syutoken = CheckboxListField(u'首都圏',
+            choices=[
+                ('', u'全て選択'), ('tokyo', u'東京'),  ('kanagawa', u'神奈川'), ('chiba', u'千葉'), ('saitama', u'埼玉'), ('ibaraki', u'茨城'), ('tochigi', u'栃木') ,('gunma', u'群馬'),  ('yamanashi', u'山梨')
+            ])
+    prefecture_koshinetsu = CheckboxListField(u'',
+            choices=[
+                ('', u'全て選択'), ('nagano', u'長野') ,('niigata', u'新潟'), ('gifu', u'岐阜'), ('aichi', u'愛知') ,('mie', u'三重'), ('shizuoka', u'静岡')
+            ])
+    prefecture_kinki = CheckboxListField(u'',
+            choices=[
+                ('', u'全て選択'), ('kyoto', u'京都'), ('osaka', u'大阪'), ('hyogo', u'兵庫'), ('shiga', u'滋賀'), ('nara', u'奈良'), ('wakayama', u'和歌山'), ('toyama', u'富山'), ('ishikawa', u'石川'), ('fukui', u'福井')
+            ])
+    prefecture_chugoku = CheckboxListField(u'',
+            choices=[
+                ('', u'全て選択'), ('hiroshima', u'広島'), ('okayama', u'岡山'), ('tottori', u'鳥取'), ('shimane', u'島根') ,('yamaguchi', u'山口'), ('tokushima', u'徳島'), ('kagawa', u'香川'), ('ehime', u'愛媛'), ('kouchi', u'高知')
+            ])
+    prefecture_kyusyu = CheckboxListField(u'',
+            choices=[
+                ('', u'全て選択'), ('okinawa', u'沖縄'), ('fukuoka', u'福岡'), ('saga', u'佐賀'), ('nagasaki', u'長崎'), ('kumamoto', u'熊本') ,('oita', u'大分'), ('miyazaki', u'宮崎') ,('kagoshima', u'鹿児島')
+            ])
     genre_id = SelectField(label='', validators=[Optional()],choices=[], coerce=str)
     sales_segment = RadioField(label = '',validators=[Optional()]
         ,choices=[(0, u'一般販売'), (1, u'先行販売'), (2, u'先行抽選') ],default=0, coerce=int)
@@ -70,6 +86,20 @@ class DetailSearchForm(TopSearchForm):
         choices=[(0, u'販売中'), (1, u'今週販売開始'), (2, u'販売終了間近'), (3, u'まもなく開演のチケット'), (4, u'販売終了した公演も表示する')],
         default=SalesEnum.ON_SALE, coerce=int)
 
+    def get_prefectures(self):
+        prefectures = []
+        prefectures.extend(self.prefecture_hokkaido.data)
+        prefectures.extend(self.prefecture_syutoken.data)
+        prefectures.extend(self.prefecture_koshinetsu.data)
+        prefectures.extend(self.prefecture_kinki.data)
+        prefectures.extend(self.prefecture_chugoku.data)
+        prefectures.extend(self.prefecture_kyusyu.data)
+
+        while '' in prefectures:
+            prefectures.remove('')
+
+        log_info("get_prefectures", "prefectures=" + ", ".join(prefectures))
+        return prefectures
 
     def validate_since_year(form, field):
 
