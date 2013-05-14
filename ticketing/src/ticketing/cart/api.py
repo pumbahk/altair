@@ -175,7 +175,7 @@ def get_item_name(request, cart_name):
     return _maybe_encoded(base_item_name) + " " + str(cart_name)
 
 def get_nickname(request, suffix=u'さん'):
-    from ticketing.rakuten_auth.api import authenticated_user
+    from altair.rakuten_auth.api import authenticated_user
     user = authenticated_user(request) or {}
     nickname = user.get('nickname', '')
     if not nickname:

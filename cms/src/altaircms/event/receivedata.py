@@ -136,6 +136,7 @@ class Scanner(object):
                 event = fetcher.cache[backend_id] = Event()
             try:
                 if record.get("deleted"):
+                    del fetcher.cache[backend_id]
                     self.session.delete(event) #need lazy?
                     continue
                 r.append(event)
@@ -169,6 +170,7 @@ class Scanner(object):
             try:
                 if record.get("deleted"):
                     if performance:
+                        del fetcher.cache[backend_id]
                         self.session.delete(performance) #need lazy?
                     continue
                 if performance is None:
@@ -186,7 +188,7 @@ class Scanner(object):
                 performance.title = record['name']
                 performance.venue = record['venue']
                 performance.prefecture = PREFECTURES.get(record['prefecture'])
-                performance.display_order = record.get("display_order")
+                performance.display_order = record.get("display_order", 50)
                 performance.open_on = parse_datetime(record.get('open_on'))
                 performance.start_on = parse_datetime(record['start_on'])
                 performance.end_on = parse_datetime(record.get('end_on'))
@@ -194,7 +196,28 @@ class Scanner(object):
             except KeyError as e:
                 raise InvalidParamaterException("missing property '%s' in the performance record" % e.message)
         return r
-        
+
+    def _retrive_salessegment_group(self, organization, event, salessegment, record, group_dict, group_failback_dict, kind_dict):
+        kind_name = record.get("kind_name", "unknown")
+        salessegment.group = group_dict.get((event.id, record.get("group_id"))) or group_failback_dict.get((event.id, record["name"], kind_name))
+        if salessegment.group is None:
+            if record.get("group_id"):
+                salessegment.group = group_dict[(event.id, record.get("group_id"))] = SalesSegmentGroup(name=record["name"], kind=kind_name, event_id=event.id)
+            else:
+                salessegment.group = group_failback_dict[(event.id, record["name"], kind_name)] = SalesSegmentGroup(name=record["name"], kind=kind_name, event_id=event.id)
+        salessegment.group.backend_id = record.get("group_id")
+        if not record.get("group_dict"):
+            logger.warn("group id is not found: {0}".format(record))
+
+        salessegment.kind = kind_name
+
+        kind = kind_dict.get(kind_name, None)
+        if kind is None:
+            kind = kind_dict[kind_name] =  SalesSegmentKind(name=kind_name, organization_id=organization.id)
+        kind.label = record.get("kind_label", u"<不明>")
+        salessegment.group.master = kind
+        salessegment.group.kind = kind.name #todo:replace
+
     def fetch_salessegments(self, organization):
         fetcher = self.salessegment_fetcher
         ks = fetcher.keys()
@@ -205,7 +228,8 @@ class Scanner(object):
         r = []
 
         salessegment_groups = SalesSegmentGroup.query.filter(SalesSegmentGroup.event_id.in_(self.event_fetcher.cached_keys()))
-        group_dict = {(t.event_id, t.name, t.kind, t.backend_id):t for t in salessegment_groups}
+        group_dict = {(t.event_id, t.backend_id):t for t in salessegment_groups}
+        group_failback_dict = {(t.event_id, t.name, t.kind):t for t in salessegment_groups}
         salessegmen_kinds = SalesSegmentKind.query.filter(SalesSegmentKind.organization_id == organization.id)
         kind_dict = {k.name: k for k in salessegmen_kinds}
 
@@ -215,6 +239,7 @@ class Scanner(object):
                 if record.get("deleted"):
                     if salessegment:
                         self.session.delete(salessegment) #need lazy?
+                        del fetcher.cache[backend_id]
                     continue
                 if salessegment is None:
                     salessegment = fetcher.cache[backend_id] = SalesSegment()
@@ -231,23 +256,13 @@ class Scanner(object):
                 event = self.event_fetcher.cache[env["event"]["id"]]              
                 salessegment.start_on = parse_datetime(record['start_on'])
                 salessegment.end_on = parse_datetime(record['end_on'])
-
                 ## kind, group
-                kind_name = record.get("kind_name", "unknown")
-                salessegment.group = group_dict.get((event.id, record["name"], kind_name, record.get("group_id")))
-                if salessegment.group is None:
-                    salessegment.group = group_dict[(event.id, record["name"], kind_name, record.get("group_id"))] = SalesSegmentGroup(name=record["name"], kind=kind_name, event_id=event.id, backend_id=record.get("group_id"))
-                salessegment.kind = kind_name
-
-                kind = kind_dict.get(kind_name, None)
-                if kind is None:
-                    kind = kind_dict[kind_name] =  SalesSegmentKind(name=kind_name, organization_id=organization.id)
-                kind.label = record.get("kind_label", u"<不明>")
-                salessegment.group.master = kind
-                salessegment.group.kind = kind.name #todo:replace
-
+                self._retrive_salessegment_group(organization, event, salessegment, record, group_dict, group_failback_dict, kind_dict)
             except KeyError as e:
                 raise InvalidParamaterException("missing property '%s' in the salessegment record" % e.message)
+        for g in group_dict.values():
+            if not g.salessegments:
+                self.session.delete(g)
         return r
         
     def fetch_tickets(self, organization):
@@ -263,6 +278,7 @@ class Scanner(object):
             try:
                 if record.get("deleted"):
                     if ticket:
+                        del fetcher.cache[backend_id]
                         self.session.delete(ticket) #need lazy?
                     continue
                 if ticket is None:

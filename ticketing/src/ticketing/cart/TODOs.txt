@@ -1,6 +1,4 @@
 TODOs
 =============
 
-- [ ] ticketing.cart.rakuten_authを ticketing.rakuten_authに移動
-- [ ] ticketing.rakuten_authは cartに依存しないようにする
-- [ ] ticketing.rakuten_authのユーティリティで、fc_authからも使われるものを ticketing.???_authに移動
+none for now

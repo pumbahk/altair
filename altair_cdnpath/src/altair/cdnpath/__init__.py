@@ -21,14 +21,14 @@ def validate_url(url):
 
 @implementer(IStaticURLInfo)
 class PrefixedStaticURLInfo(StaticURLInfo):
-    def __init__(self, prefix, exclude=None):
+    def __init__(self, prefix, exclude=None, mapping=None):
         self.prefix = prefix
         self.exclude = exclude
         if self.exclude:
             self.generate = self._generate_with_exclude
         else:
             self.generate = self._generate
-
+        self.spec_to_path_prefix_mapping = mapping or {}
 
     def validate(self):
         class request:
@@ -53,7 +53,11 @@ class PrefixedStaticURLInfo(StaticURLInfo):
                 subpath = path[len(spec):]
                 if WIN: # pragma: no cover
                     subpath = subpath.replace('\\', '/') # windows
-                if url is None:
+
+                custom_prefix = self.spec_to_path_prefix_mapping.get(spec)
+                if custom_prefix:
+                    return self._after_generate(custom_prefix+subpath, request, kwargs)
+                elif url is None:
                     kwargs['subpath'] = subpath
                     return self._after_generate(request.route_path(route_name, **kwargs), request, kwargs)
                 else:
@@ -63,10 +67,11 @@ class PrefixedStaticURLInfo(StaticURLInfo):
 
 @implementer(IStaticURLInfoFactory)
 class S3StaticPathFactory(object):
-    def __init__(self, bucket_name, exclude=None, prefix=None):
+    def __init__(self, bucket_name, exclude=None, prefix=None, mapping=None):
         self.bucket_name = bucket_name
         self.exclude = exclude
         self.prefix = self._get_correct_prefix(prefix)
+        self.mapping = mapping
 
     def _get_correct_prefix(self, prefix):
         if prefix is None:
@@ -76,10 +81,9 @@ class S3StaticPathFactory(object):
         else:
             return prefix
         
-
     def __call__(self):
         prefix = "{0}.s3.amazonaws.com{1}".format(self.bucket_name, self.prefix)
-        return PrefixedStaticURLInfo(prefix, self.exclude)
+        return PrefixedStaticURLInfo(prefix, self.exclude, mapping=self.mapping)
 
 def add_cdn_static_path(config, factory=None):
     def register():

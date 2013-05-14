@@ -64,6 +64,10 @@ ${tabs.tabs(request)}
               ${form.entried_to()}
             </td>
           </tr>
+          <tr>
+            <th><label for="include_canceled">${form.include_canceled.label.text}</label></th>
+            <td>${form.include_canceled()}</td>
+	  </tr>
 	</tbody>
       </table>
       <button type="submit" name="search" class="btn">検索</button>
@@ -73,32 +77,59 @@ ${tabs.tabs(request)}
 
 <div>
 %if data:
-<table border="1">
+<table border="1" class="table" id="wish-search-results">
 <thead>
 <tr>
+<th>&nbsp;</th>
 %for k in data[0]:
 <th>${k}</th>
 %endfor
-<th>&nbsp;</th>
 </tr>
 </thead>
 <tbody>
 %for r in data:
 <tr>
-%for k in data[0]:
-<td>${r[k]}</td>
-%endfor
-<td>
-<form method="POST" action="${request.route_url('lots.entries.elect_entry_no', lot_id=lot.id)}">
-<input type="hidden" value="${r[u'申し込み番号']}" name="entry_no">
-<input type="hidden" value="${r[u'希望順序'] - 1}" name="wish_order">
-<input type="hidden">
-<button class="btn">当選</button>
-</form>
+<td nowrap="">
+<ul>
+  <li><button class="btn entry-elect-btn" data-entry-no="${r[u'申し込み番号']}" data-wish-order="${r[u'希望順序'] - 1}">当選</button></li>
+  <li><button class="btn entry-cancel-btn" data-entry-no="${r[u'申し込み番号']}">キャンセル</button></li>
+</ul>
 </td>
+%for k in data[0]:
+<td nowrap="">${r[k]}</td>
+%endfor
 </tr>
 %endfor
 </tbody>
 </table>
 %endif
 </div>
+<script>
+var cancelUrl = "${cancel_url}";
+$(function() {
+  // 当選
+  $('#wish-search-results').on('click', '.entry-elect-btn', function(e) {
+     var entryNo = $(this).data("entryNo");
+     var wishOrder = $(this).data("wishOrder");
+     // Yet Not Implemented
+  });
+  // キャンセル
+  $('#wish-search-results').on('click', '.entry-cancel-btn', function(e) {
+     var entryNo = $(this).data("entryNo");
+     if (!confirm("申込番号" + entryNo + "をキャンセルします。")) {
+       return;
+     }
+     $.ajax({
+       url: cancelUrl,
+       data: {"entry_no": entryNo},
+       dataType: "json",
+       type: "POST",
+       success: function(data, textStatus, xhr) {
+           if (data.result == "OK") {
+             alert("申込番号" + entryNo + "をキャンセルしました。");
+           }
+       }
+     });
+  });
+});
+</script>

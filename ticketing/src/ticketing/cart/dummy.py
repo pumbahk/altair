@@ -67,7 +67,7 @@ def _get_mailmagazines_from_organization(organization):
 def confirm_view(request):
     import mock
     from collections import defaultdict
-    with mock.patch("ticketing.cart.rakuten_auth.api.authenticated_user"):
+    with mock.patch("altair.rakuten_auth.api.authenticated_user"):
         form = mock.Mock()
         cart = _dummy_cart()
         request.session["order"] = defaultdict(str)
@@ -78,7 +78,7 @@ def confirm_view(request):
 
 def complete_view(request):
     import mock
-    with mock.patch("ticketing.cart.rakuten_auth.api.authenticated_user"):
+    with mock.patch("altair.rakuten_auth.api.authenticated_user"):
         order = _dummy_order()
         return dict(order=order)
 
@@ -86,7 +86,7 @@ def payment_view(request):
     import mock
     from .schemas import ClientForm
     request.session.flash(u"お支払い方法／受け取り方法をどれかひとつお選びください")
-    with mock.patch("ticketing.cart.rakuten_auth.api.authenticated_user"):
+    with mock.patch("altair.rakuten_auth.api.authenticated_user"):
         params=dict(form=ClientForm(), 
                     payment_delivery_methods=[], 
                     user=mock.Mock(), 

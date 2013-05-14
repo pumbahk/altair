@@ -38,6 +38,8 @@ def includeme(config):
                      factory=lot_resource_factory)
     config.add_route('lots.entries.elect', 'entries/elect/{lot_id}',
                      factory=lot_resource_factory)
+    config.add_route('lots.entries.cancel', 'entries/cancel/{lot_id}',
+                     factory=lot_resource_factory)
 
     # adapters
     reg = config.registry

@@ -129,7 +129,7 @@ class TicketingCartResource(object):
 
     def authenticated_user(self):
         """現在認証中のユーザ"""
-        from ticketing.rakuten_auth.api import authenticated_user
+        from altair.rakuten_auth.api import authenticated_user
         user = authenticated_user(self.request)
         return user or { 'is_guest': True }
 
@@ -219,7 +219,7 @@ class TicketingCartResource(object):
 
     @property
     def membership(self):
-        from ticketing.rakuten_auth.api import authenticated_user
+        from altair.rakuten_auth.api import authenticated_user
         user = authenticated_user(self.request)
         if user is None:
             return None

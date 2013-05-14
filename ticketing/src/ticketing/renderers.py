@@ -24,22 +24,20 @@ def json_renderer_factory(info):
         return json.dumps(value)
     return _render
 
-def safe_encode(s, encoding='utf-8'):
+def safe_encode(s, encoding='utf-8', errors='replace'):
     if s is None:
         return s
     if isinstance(s, str):
         return s
     if isinstance(s, unicode):
-        return s.encode(encoding)
+        return s.encode(encoding, errors=errors)
 
 def csv_renderer_factory(info):
     default_encoding = 'sjis'
 
     def _value(value, encoding):
-        if isinstance(value, list):
-            return unicode(value[1]).encode(encoding)
-        if isinstance(value, tuple):
-            return unicode(value[1]).encode(encoding)
+        if isinstance(value, (list, tuple)):
+            return safe_encode(value[1], encoding)
         return safe_encode(value, encoding)
     
     def _render(value, system):

@@ -6,7 +6,7 @@ from pyramid.httpexceptions import HTTPNotFound, HTTPFound
 from pyramid.response import Response
 from ticketing.core.models import Order, OrderedProduct, OrderedProductItem, ProductItem, Performance, Seat, TicketPrintHistory
 from ticketing.core import models as m
-from ticketing.rakuten_auth.api import authenticated_user, forget
+from altair.rakuten_auth.api import authenticated_user, forget
 from ticketing.cart import api
 from .helpers import make_order_data
 from ticketing.orderreview.views import build_qr_by_token_id, order_review_qr_image

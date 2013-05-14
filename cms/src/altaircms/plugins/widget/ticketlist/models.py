@@ -13,6 +13,7 @@ from altaircms.plugins.base.mixins import UpdateDataMixin
 from altaircms.security import RootFactory
 from altaircms.plugins.widget.api import get_rendering_function_via_page
 
+from altaircms.models import Performance, SalesSegment
 class TicketlistWidget(Widget):
     implements(IWidget)
     type = "ticketlist"
@@ -30,9 +31,9 @@ class TicketlistWidget(Widget):
     display_type = sa.Column(sa.Unicode(255))
     caption = sa.Column(sa.UnicodeText, doc=u"表に対する説明")
     target_performance_id = sa.Column(sa.Integer, sa.ForeignKey("performance.id"))
-    target_performance = orm.relationship("Performance")
+    target_performance = orm.relationship(Performance)
     target_salessegment_id = sa.Column(sa.Integer, sa.ForeignKey("sale.id"))
-    target_salessegment = orm.relationship("SalesSegment")
+    target_salessegment = orm.relationship(SalesSegment)
     id = sa.Column(sa.Integer, sa.ForeignKey("widget.id"), primary_key=True)
     show_label = sa.Column(sa.Boolean, doc=u"見出しを表示するか否かのフラグ", default=True, nullable=False)
 
@@ -51,3 +52,10 @@ class TicketlistWidgetResource(HandleSessionMixin,
 
     def get_widget(self, widget_id):
         return self._get_or_create(TicketlistWidget, widget_id)
+
+def after_target_salessegment_deleted(mapper, connection, target):
+    TicketlistWidget.query.filter_by(target_salessegment_id=target.id).update({"target_salessegment_id": None})
+sa.event.listen(SalesSegment, "before_delete", after_target_salessegment_deleted)
+def after_target_performance_deleted(mapper, connection, target):
+    TicketlistWidget.query.filter_by(target_performance_id=target.id).update({"target_performance_id": None})
+sa.event.listen(Performance, "before_delete", after_target_performance_deleted)

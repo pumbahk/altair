@@ -135,6 +135,8 @@ class Lot(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         ).filter(
             LotEntry.shipping_address_id==c_models.ShippingAddress.id
         ).filter(
+            LotEntry.canceled_at==None
+        ).filter(
             sql.or_(c_models.ShippingAddress.email_1==email,
                     c_models.ShippingAddress.email_2==email)
         ).count() < self.entry_limit
@@ -213,6 +215,13 @@ class Lot(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             LotEntry.rejected_at==None
         ).all()
 
+    def get_lot_entry(self, entry_no):
+        return DBSession.query(LotEntry).filter(
+            LotEntry.lot_id==self.id
+        ).filter(
+                LotEntry.entry_no==entry_no
+        ).first()
+
 
 class LotEntry(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     """ 抽選申し込み """
@@ -252,6 +261,7 @@ class LotEntry(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     birthday = sa.Column(sa.Date)
     memo = sa.Column(sa.UnicodeText)
 
+    canceled_at = sa.Column(sa.DateTime())
 
     @property
     def max_amount(self):
@@ -301,6 +311,14 @@ class LotEntry(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         wish.elect(now)
         return elected
 
+    def cancel(self):
+        now = datetime.now()
+        self.canceled_at = now
+        for wish in self.wishes:
+            wish.cancel(now)
+
+
+
 class LotEntryWish(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     u""" 抽選申し込み希望 """
     __tablename__ = 'LotEntryWish'
@@ -319,6 +337,8 @@ class LotEntryWish(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     order_id = sa.Column(Identifier, sa.ForeignKey('Order.id'))
     order = orm.relationship('Order', backref='lot_wishes')
+
+    canceled_at = sa.Column(sa.DateTime())
 
     @property
     def transaction_fee(self):
@@ -369,6 +389,9 @@ class LotEntryWish(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         now = now or datetime.now()
         self.rejected_at = now
 
+    def cancel(self, now):
+        now = now or datetime.now()
+        self.canceled_at = now
 
 class LotEntryProduct(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     u""" 抽選申し込み商品 """

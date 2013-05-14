@@ -5,7 +5,9 @@ from string import Template
 from pyramid import security
 from pyramid.config import Configurator
 from .interfaces import IRakutenOpenID
-from .api import RakutenOpenID, authenticated_user
+from .api import authenticated_user
+
+CONFIG_PREFIX = 'altair.rakuten_auth.'
 
 logger = logging.getLogger(__name__)
 
@@ -34,14 +36,13 @@ def signout(request):
 def includeme(config):
     # openid設定
     settings = config.registry.settings
-    config.include(".tokenizer")
+    config.include(".openid")
+    config.include(".oauth")
 
     config.add_view('.views.RootView', attr="login", route_name="rakuten_auth.login")
     config.add_view('.views.RootView', attr="verify", route_name="rakuten_auth.verify")
     config.add_view('.views.RootView', attr="verify2", route_name="rakuten_auth.verify2")
     config.add_view('.views.RootView', attr="error", route_name="rakuten_auth.error")
-    config.set_forbidden_view('.views.RootView', attr="login")
-    
     config.add_tween('.tweens.RakutenAuthTween')
 
 def main(global_conf, **settings):
