@@ -57,7 +57,7 @@
 
 #eventRecommend a {
 	padding: 1px 0 1px 17px;
-	background: url(../img/first/icon_arrow.gif) no-repeat 0 50%;
+	background: url(../../img/first/icon_arrow.gif) no-repeat 0 50%;
 }
 
 #index #thisWeek {
@@ -70,12 +70,12 @@
 
 #index #thisWeek p,
 #index #nearTheEnd p {
-	background: url(../img/index/bg_thisweek.gif) no-repeat left bottom;
+	background: url(../../img/index/bg_thisweek.gif) no-repeat left bottom;
 }
 
 #index #checkEvent {
 	width: 708px;
-	background: url(../img/index/bg_check.gif) no-repeat left bottom;
+	background: url(../../img/index/bg_check.gif) no-repeat left bottom;
 }
 
 #index #checkEvent h2 {
@@ -119,7 +119,7 @@
 	left: -2px;
 	width: 246px;
 	margin-bottom: 5px;
-	background: url(../img/index/bg_side.gif) no-repeat left bottom;
+	background: url(../../img/index/bg_side.gif) no-repeat left bottom;
 }
 
 #sideFeature ul {
@@ -130,7 +130,7 @@
 	height: 1%;
 	margin: 0 9px 0 7px;
 	border-bottom: 1px dotted #cccccc;
-	background: url(../img/index/icon_side.gif) no-repeat 0 4px;
+	background: url(../../img/index/icon_side.gif) no-repeat 0 4px;
 }
 
 #sideFeature a {
@@ -145,13 +145,13 @@
 	width: 246px;
 	margin-bottom: 5px;
 	padding-bottom: 12px;
-	background: url(../img/index/bg_side.gif) no-repeat left bottom;
+	background: url(../../img/index/bg_side.gif) no-repeat left bottom;
 }
 
 #sideSearch ul {
 	margin: 0 5px 10px 3px;
 	padding: 5px 0;
-	background: url(../img/index/bg_line.gif) repeat-x left bottom;
+	background: url(../../img/index/bg_line.gif) repeat-x left bottom;
 }
 
 #sideSearch li {
@@ -191,20 +191,20 @@
 	width: 246px;
 	margin-bottom: 5px;
 	padding-bottom: 12px;
-	background: url(../img/index/bg_side.gif) no-repeat left bottom;
+	background: url(../../img/index/bg_side.gif) no-repeat left bottom;
 }
 
 #sideMyMenu li {
 	height: 1%;
 	margin: 0 5px 0 3px;
-	background: url(../img/index/bg_line.gif) repeat-x left bottom;
+	background: url(../../img/index/bg_line.gif) repeat-x left bottom;
 }
 
 #sideMyMenu a {
 	display: block;
 	height: 1%;
 	padding: 7px 10px 7px 21px;
-	background: url(../img/index/icon_side.gif) no-repeat 4px 50%;
+	background: url(../../img/index/icon_side.gif) no-repeat 4px 50%;
 }
 
 #index #sideInfo {
@@ -213,7 +213,7 @@
 	width: 244px;
 	margin-bottom: 10px;
 	font-size: 91.7%;
-	background: url(../img/index/bg_info.gif) no-repeat left bottom;
+	background: url(../../img/index/bg_info.gif) no-repeat left bottom;
 }
 
 #index #sideInfo dt {
@@ -310,7 +310,7 @@
 	height: 24px;
 	padding: 7px 10px 0;
 	color: #ffffff;
-	background: url(../img/search/side_title.gif) no-repeat 0 0;
+	background: url(../../img/search/side_title.gif) no-repeat 0 0;
 }
 
 * html .sideCategoryGenre h2 {
@@ -319,18 +319,18 @@
 
 .sideCategoryGenre ul {
 	padding: 0 1px 5px;
-	background: url(../img/search/side_bg.gif) no-repeat left bottom;
+	background: url(../../img/search/side_bg.gif) no-repeat left bottom;
 }
 
 .sideCategoryGenre li {
-	background: #f7f7ea url(../img/common/side_nav_line.gif) repeat-x left bottom;
+	background: #f7f7ea url(../../img/common/side_nav_line.gif) repeat-x left bottom;
 }
 
 .sideCategoryGenre a {
 	display: block;
 	height: 1%;
 	padding: 3px 10px 5px 18px;
-	background: url(../img/search/side_icon.gif) no-repeat 10px 9px;
+	background: url(../../img/search/side_icon.gif) no-repeat 10px 9px;
 }
 
 #sideRefineSearch {
@@ -353,14 +353,14 @@
 }
 
 #sideRefineSearch li {
-	background: #f7f7ea url(../img/common/side_nav_line.gif) repeat-x left bottom;
+	background: #f7f7ea url(../../img/common/side_nav_line.gif) repeat-x left bottom;
 }
 
 #sideRefineSearch a {
 	display: block;
 	height: 1%;
 	padding: 3px 10px 5px 18px;
-	background: url(../img/search/side_icon.gif) no-repeat 10px 9px;
+	background: url(../../img/search/side_icon.gif) no-repeat 10px 9px;
 }
 
 
@@ -375,7 +375,7 @@
 #attention li {
 	margin-bottom: 2px;
 	padding: 1px 0 1px 20px;
-	background: url(../img/first/icon_arrow.gif) no-repeat 0 0;
+	background: url(../../img/first/icon_arrow.gif) no-repeat 0 0;
 }
 
 #attention a {
@@ -407,7 +407,7 @@
 	margin-bottom: 5px;
 	padding: 1px 0 5px 25px;
 	border-bottom: 1px dotted #e5e5e5;
-	background: url(../img/first/icon_arrow.gif) no-repeat 5px 0;
+	background: url(../../img/first/icon_arrow.gif) no-repeat 5px 0;
 }
 
 #topics a {
@@ -484,7 +484,7 @@
 #nearTheEnd p {
 	margin: 0;
 	padding: 10px 15px;
-	background: url(../img/music/bg_thisweek.gif) no-repeat left bottom;
+	background: url(../../img/music/bg_thisweek.gif) no-repeat left bottom;
 }
 
 #checkEvent {
@@ -493,7 +493,7 @@
 	left: -3px;
 	width: 748px;
 	margin-bottom: 20px;
-	background: url(../img/music/bg_check.gif) no-repeat left bottom;
+	background: url(../../img/music/bg_check.gif) no-repeat left bottom;
 }
 
 #checkEvent h2 {
@@ -542,7 +542,7 @@
 	width: 15px;
 	height: 100px;
 	cursor: pointer;
-	background: url(../img/music/btn_check_next.gif) no-repeat 0 0;
+	background: url(../../img/music/btn_check_next.gif) no-repeat 0 0;
 }
 
 .jcarousel-next-disabled-horizontal {
@@ -557,7 +557,7 @@
 	width: 15px;
 	height: 100px;
 	cursor: pointer;
-	background: url(../img/music/btn_check_prev.gif) no-repeat 0 0;
+	background: url(../../img/music/btn_check_prev.gif) no-repeat 0 0;
 }
 
 .jcarousel-prev-disabled-horizontal {
@@ -637,18 +637,18 @@
 #detailTab li {
 	float: left;
 	margin-right: 1px;
-	background: url(../img/detail/bg_tab_left.gif) no-repeat 0 0;
+	background: url(../../img/detail/bg_tab_left.gif) no-repeat 0 0;
 }
 
 #detailTab li.active {
-	background: url(../img/detail/bg_tab_active_left.gif) no-repeat 0 0;
+	background: url(../../img/detail/bg_tab_active_left.gif) no-repeat 0 0;
 }
 
 #detailTab a {
 	display: block;
 	padding: 6px 10px;
 	color: #ffffff;
-	background: url(../img/detail/bg_tab_right.gif) no-repeat top right;
+	background: url(../../img/detail/bg_tab_right.gif) no-repeat top right;
 }
 
 #detailTab li.active a {
@@ -656,19 +656,19 @@
 	color: #000000;
 	font-weight: bold;
 	text-decoration: none;
-	background: url(../img/detail/bg_tab_active_right.gif) no-repeat top right;
+	background: url(../../img/detail/bg_tab_active_right.gif) no-repeat top right;
 }
 
 .detailBox {
 	margin-bottom: 20px;
-	background: url(../img/detail/bg_box_bottom.gif) no-repeat left bottom;
+	background: url(../../img/detail/bg_box_bottom.gif) no-repeat left bottom;
 }
 
 .detailBoxInner {
 	height: 1%;
 	overflow: hidden;
 	padding: 0 12px 10px;
-	background: url(../img/detail/bg_box_top.gif) no-repeat 0 0;
+	background: url(../../img/detail/bg_box_top.gif) no-repeat 0 0;
 }
 
 .detailBox h2 {
@@ -707,24 +707,24 @@
 #detailSchedule li {
 	float: left;
 	margin-right: 1px;
-	background: url(../img/detail/bg_month_left.gif) no-repeat 0 0;
+	background: url(../../img/detail/bg_month_left.gif) no-repeat 0 0;
 }
 
 #detailSchedule li.active {
-	background: url(../img/detail/bg_month_active_left.gif) no-repeat 0 0;
+	background: url(../../img/detail/bg_month_active_left.gif) no-repeat 0 0;
 }
 
 #detailSchedule li a {
 	display: block;
 	padding: 6px 15px;
-	background: url(../img/detail/bg_month_right.gif) no-repeat top right;
+	background: url(../../img/detail/bg_month_right.gif) no-repeat top right;
 }
 
 #detailSchedule li.active a {
 	color: #000000;
 	font-weight: bold;
 	text-decoration: none;
-	background: url(../img/detail/bg_month_active_right.gif) no-repeat top right;
+	background: url(../../img/detail/bg_month_active_right.gif) no-repeat top right;
 }
 
 #detailSchedule table {
@@ -824,11 +824,11 @@
 	height: 1%;
 	margin-bottom: 20px;
 	font-size: 120%;
-	background: url(../img/detail/bg_user_bottom.gif) no-repeat left bottom;
+	background: url(../../img/detail/bg_user_bottom.gif) no-repeat left bottom;
 }
 
 #userBoxInner {
-	background: url(../img/detail/bg_user_top.gif) no-repeat 0 0;
+	background: url(../../img/detail/bg_user_top.gif) no-repeat 0 0;
 }
 
 #userBox h2 {
@@ -879,7 +879,7 @@
 	color: #7f663f;
 	font-size: 116.7%;
 	font-weight: bold;
-	background: url(../img/detail/bg_count_down.gif) no-repeat 0 0;
+	background: url(../../img/detail/bg_count_down.gif) no-repeat 0 0;
 }
 
 #sideCountDown dt {
@@ -911,7 +911,7 @@
 #mypageHistory form {
 	height: 40px;
 	padding: 5px 15px 0;
-	background: url(../img/mypage/bg_search.gif) no-repeat 0 0;
+	background: url(../../img/mypage/bg_search.gif) no-repeat 0 0;
 }
 
 #mypageHistory form input {
@@ -1067,7 +1067,7 @@
 
 .mypageBox1 div dd a {
 	padding: 2px 0 2px 15px;
-	background: url(../img/mypage/icon_map.gif) no-repeat 0 0;
+	background: url(../../img/mypage/icon_map.gif) no-repeat 0 0;
 }
 
 .mypageBox1 div ul {
@@ -1138,7 +1138,7 @@
 	padding: 10px 15px 0 20px;
 	color: #ffffff;
 	font-size: 116.7%;
-	background: url(../img/change/title_bg.gif) no-repeat 0 0;
+	background: url(../../img/change/title_bg.gif) no-repeat 0 0;
 }
 
 * html .changeDate {
@@ -1175,7 +1175,7 @@
 	padding-left: 17px;
 	color: #5353f2;
 	text-decoration: underline;
-	background: url(../img/first/icon_arrow.gif) no-repeat 0 50%;
+	background: url(../../img/first/icon_arrow.gif) no-repeat 0 50%;
 	cursor: pointer;
 }
 
@@ -1194,18 +1194,18 @@
 
 #changeSideNav dt {
 	padding: 12px 5px 2px 9px;
-	background: url(../img/change/side_nav_bg.png) no-repeat 0 0;
+	background: url(../../img/change/side_nav_bg.png) no-repeat 0 0;
 }
 
 #changeSideNav dt a {
 	display: block;
 	padding: 1px 0 1px 17px;
-	background: url(../img/common/side_nav_icon.gif) no-repeat 0 50%;
+	background: url(../../img/common/side_nav_icon.gif) no-repeat 0 50%;
 }
 
 #changeSideNav dd {
 	padding: 0 15px 15px 26px;
-	background: url(../img/common/side_nav_bg_01.gif) no-repeat left bottom;
+	background: url(../../img/common/side_nav_bg_01.gif) no-repeat left bottom;
 }
 
 
@@ -1223,13 +1223,13 @@
 .firstBox li {
 	padding: 7px 0 7px 15px;
 	border-bottom: 1px dotted #cccccc;
-	background: url(../img/first/icon_circle.gif) no-repeat 0 11px;
+	background: url(../../img/first/icon_circle.gif) no-repeat 0 11px;
 }
 
 .firstBox p {
 	height: 1%;
 	padding-left: 17px;
-	background: url(../img/first/icon_arrow.gif) no-repeat 0 50%;
+	background: url(../../img/first/icon_arrow.gif) no-repeat 0 50%;
 }
 
 
@@ -1247,7 +1247,7 @@
 	color: #5252f2;
 	font-weight: bold;
 	text-decoration: underline;
-	background: url(../img/help/icon_q.gif) no-repeat 0 9px;
+	background: url(../../img/help/icon_q.gif) no-repeat 0 9px;
 }
 
 .helpList dt:hover {
@@ -1283,13 +1283,13 @@
 #sitemapAboutBuy {
 	margin: 10px 0 20px 10px;
 	padding: 1px 0 1px 17px;
-	background: url(../img/first/icon_arrow.gif) no-repeat 0 50%;
+	background: url(../../img/first/icon_arrow.gif) no-repeat 0 50%;
 }
 
 #sitemapSearchGenre {
 	margin: 0 0 10px 10px;
 	padding-left: 15px;
-	background: url(../img/first/icon_circle.gif) no-repeat 0 50%;
+	background: url(../../img/first/icon_circle.gif) no-repeat 0 50%;
 }
 
 #sitemapGenre1 {
@@ -1333,7 +1333,7 @@
 
 #sitemapMusic li {
 	padding-left: 15px;
-	background: url(../img/sitemap/icon_music.gif) no-repeat 0 6px;
+	background: url(../../img/sitemap/icon_music.gif) no-repeat 0 6px;
 }
 
 #sitemapTheater dt {
@@ -1347,7 +1347,7 @@
 
 #sitemapTheater li {
 	padding-left: 15px;
-	background: url(../img/sitemap/icon_theater.gif) no-repeat 0 6px;
+	background: url(../../img/sitemap/icon_theater.gif) no-repeat 0 6px;
 }
 
 #sitemapSports dt {
@@ -1361,7 +1361,7 @@
 
 #sitemapSports li {
 	padding-left: 15px;
-	background: url(../img/sitemap/icon_sports.gif) no-repeat 0 6px;
+	background: url(../../img/sitemap/icon_sports.gif) no-repeat 0 6px;
 }
 
 #sitemapEvent dt {
@@ -1375,7 +1375,7 @@
 
 #sitemapEvent li {
 	padding-left: 15px;
-	background: url(../img/sitemap/icon_event.gif) no-repeat 0 6px;
+	background: url(../../img/sitemap/icon_event.gif) no-repeat 0 6px;
 }
 
 #sitemapGuide {
@@ -1403,7 +1403,7 @@
 
 #sitemapGuide li {
 	padding-left: 15px;
-	background: url(../img/sitemap/icon_guide.gif) no-repeat 0 6px;
+	background: url(../../img/sitemap/icon_guide.gif) no-repeat 0 6px;
 }
 
 #sitemapGuide li ul {
@@ -1424,18 +1424,18 @@
 	margin: 0 8px 10px !important;
 	padding-left: 20px;
 	font-size: 116.7%;
-	background: url(../img/settlement/bg_title.gif) no-repeat 0 0;
+	background: url(../../img/settlement/bg_title.gif) no-repeat 0 0;
 }
 
 #settlementSelectBox {
 	width: 930px;
 	margin: 0 10px 20px;
-	background: url(../img/settlement/bg_select_top.gif) no-repeat 0 0;
+	background: url(../../img/settlement/bg_select_top.gif) no-repeat 0 0;
 }
 
 #settlementSelectBoxInner {
 	padding: 10px 10px 52px 10px;
-	background: url(../img/settlement/bg_select_bottom.gif) no-repeat left bottom;
+	background: url(../../img/settlement/bg_select_bottom.gif) no-repeat left bottom;
 }
 
 #settlementSelectBox table {
@@ -1447,16 +1447,16 @@
 	padding: 5px 10px;
 	color: #bf191f;
 	font-size: 116.7%;
-	background: url(../img/settlement/bg_select_th.gif) no-repeat right bottom;
+	background: url(../../img/settlement/bg_select_th.gif) no-repeat right bottom;
 }
 
 #settlementSelectBox td {
 	padding: 5px 10px;
-	background: url(../img/settlement/bg_select_td.gif) repeat-x left bottom;
+	background: url(../../img/settlement/bg_select_td.gif) repeat-x left bottom;
 }
 
 #settlementSelectEnd th {
-	background: url(../img/settlement/bg_select_th2.gif) repeat-y top right;
+	background: url(../../img/settlement/bg_select_th2.gif) repeat-y top right;
 }
 
 #settlementSelectEnd td {
@@ -1465,25 +1465,25 @@
 
 .settlementBox {
 	margin-bottom: 20px;
-	background: url(../img/settlement/bg_box_bottom.gif) no-repeat left bottom;
+	background: url(../../img/settlement/bg_box_bottom.gif) no-repeat left bottom;
 }
 
 .settlementBoxInner {
 	overflow: hidden;
 	padding-bottom: 10px;
-	background: url(../img/settlement/bg_box_top.gif) no-repeat 0 0;
+	background: url(../../img/settlement/bg_box_top.gif) no-repeat 0 0;
 }
 
 .settlementBox2 {
 	margin: 0 10px 20px;
-	background: url(../img/settlement/bg_box_bottom_02.gif) no-repeat left bottom;
+	background: url(../../img/settlement/bg_box_bottom_02.gif) no-repeat left bottom;
 }
 
 .settlementBoxInner2 {
 	height: 1%;
 	overflow: hidden;
 	padding: 0 12px 10px;
-	background: url(../img/settlement/bg_box_top_02.gif) no-repeat 0 0;
+	background: url(../../img/settlement/bg_box_top_02.gif) no-repeat 0 0;
 }
 
 .settlementBox h2 {
@@ -1520,20 +1520,20 @@
 	top: 0px;
 	width: 395px;
 	z-index: 100;
-	background: url(../img/settlement/bg_seat.gif) repeat-y 0 0;
+	background: url(../../img/settlement/bg_seat.gif) repeat-y 0 0;
 	overflow: hidden;
 }
 
 #selectSeatType.blur h3 {
 	padding: 32px 0 0 0;
-	background: url(../img/settlement/title_select.blur.gif) no-repeat;
+	background: url(../../img/settlement/title_select.blur.gif) no-repeat;
 	height: 0px;
 	overflow: hidden;
 }
 
 #selectSeatType.focused h3 {
 	padding: 32px 0 0 0;
-	background: url(../img/settlement/title_select.focused.gif) no-repeat;
+	background: url(../../img/settlement/title_select.focused.gif) no-repeat;
 	height: 0px;
 	overflow: hidden;
 }
@@ -1542,7 +1542,7 @@
   position: absolute;
 	width: 15px;
 	height: 26px;
-	background: url(../img/settlement/bg_seat_select.png) no-repeat right top;
+	background: url(../../img/settlement/bg_seat_select.png) no-repeat right top;
 	background-position: 0 390;
 	z-index: 200;
 }
@@ -1597,18 +1597,18 @@
 }
 
 #selectSeatType .seatListContainer li.seatEven {
-	background: url(../img/settlement/bg_seat_even.gif) no-repeat 0 0;
+	background: url(../../img/settlement/bg_seat_even.gif) no-repeat 0 0;
 }
 
 #selectSeatType .seatListContainer li.seatOdd {
-	background: url(../img/settlement/bg_seat_even.gif) no-repeat 0 0;
+	background: url(../../img/settlement/bg_seat_even.gif) no-repeat 0 0;
 }
 
 #selectSeatType .seatListContainer li.selected {
 	filter: alpha(opacity=100);
 	-moz-opacity: 1.0;
 	opacity: 1.0;
-	background: url(../img/settlement/bg_seat_select.png) no-repeat 0 0;
+	background: url(../../img/settlement/bg_seat_select.png) no-repeat 0 0;
 }
 
 #selectBuy {
@@ -1624,14 +1624,14 @@
 
 #selectBuy.blur h3 {
 	padding: 32px 0 0 0;
-	background: url(../img/settlement/select.blur.gif) no-repeat;
+	background: url(../../img/settlement/select.blur.gif) no-repeat;
 	height: 0px;
 	overflow: hidden;
 }
 
 #selectBuy.focused h3 {
 	padding: 32px 0 0 0;
-	background: url(../img/settlement/select.focused.gif) no-repeat;
+	background: url(../../img/settlement/select.focused.gif) no-repeat;
 	height: 0px;
 	overflow: hidden;
 }
@@ -1639,7 +1639,7 @@
 #selectBuy dl {
 	width: 492px;
 	margin: 0 0 10px 9px;
-	background: url(../img/settlement/bg_select_buy_top.gif) no-repeat 0 0;
+	background: url(../../img/settlement/bg_select_buy_top.gif) no-repeat 0 0;
 }
 
 #selectBuy dt {
@@ -1649,7 +1649,7 @@
 
 #selectBuy dd {
 	padding: 0 10px 10px;
-	background: url(../img/settlement/bg_select_buy_bottom.gif) no-repeat left bottom;
+	background: url(../../img/settlement/bg_select_buy_bottom.gif) no-repeat left bottom;
 }
 
 #selectBuy table {
@@ -1688,12 +1688,12 @@
 	float: left;
 	width: 610px;
 	margin-bottom: 20px;
-	background: url(../img/settlement/bg_seat_top.png) no-repeat 0 0;
+	background: url(../../img/settlement/bg_seat_top.png) no-repeat 0 0;
 }
 
 #reserveSeatBoxInner {
 	padding: 5px;
-	background: url(../img/settlement/bg_seat_bottom.gif) no-repeat left bottom;
+	background: url(../../img/settlement/bg_seat_bottom.gif) no-repeat left bottom;
 }
 
 #reserveSeatBox table {
@@ -1728,12 +1728,12 @@
 #reserveSeatBox2 {
 	float: right;
 	width: 286px;
-	background: url(../img/settlement/bg_seat_top2.png) no-repeat 0 0;
+	background: url(../../img/settlement/bg_seat_top2.png) no-repeat 0 0;
 }
 
 #reserveSeatBoxInner2 {
 	padding: 15px;
-	background: url(../img/settlement/bg_seat_bottom2.gif) no-repeat left bottom;
+	background: url(../../img/settlement/bg_seat_bottom2.gif) no-repeat left bottom;
 }
 
 #reserveSeatBoxInner2 p {
@@ -1744,7 +1744,7 @@
 	clear: both;
 	overflow: hidden;
 	padding: 20px 0 10px;
-	background: url(../img/common/side_nav_line.gif) repeat-x 0 0;
+	background: url(../../img/common/side_nav_line.gif) repeat-x 0 0;
 }
 
 #seatBtn li {
@@ -1758,11 +1758,11 @@
 .settlementPayBox {
 	width: 934px;
 	margin: 0 0 5px 7px;
-	background: url(../img/settlement/bg_payment_top.png) no-repeat 0 0;
+	background: url(../../img/settlement/bg_payment_top.png) no-repeat 0 0;
 }
 
 .settlementPayBoxInner {
-	background: url(../img/settlement/bg_payment_bottom.gif) no-repeat left bottom;
+	background: url(../../img/settlement/bg_payment_bottom.gif) no-repeat left bottom;
 }
 
 .settlementPayBox table {
@@ -1800,14 +1800,14 @@
 .settlementDeliveryInput {
 	width: 854px;
 	margin: 0 0 10px 5px;
-	background: url(../img/settlement/bg_input_top.gif) no-repeat 0 0;
+	background: url(../../img/settlement/bg_input_top.gif) no-repeat 0 0;
 }
 
 .settlementPayInputInner,
 .settlementDeliveryInputInner {
 	height: 1%;
 	padding: 5px;
-	background: url(../img/settlement/bg_input_bottom.gif) no-repeat left bottom;
+	background: url(../../img/settlement/bg_input_bottom.gif) no-repeat left bottom;
 }
 
 .settlementPayInput dl {
@@ -1883,7 +1883,7 @@
 #settlementEventDetail h2 {
 	margin: 0 3px 5px 2px;
 	padding: 8px 0 10px 10px;
-	background: url(../img/settlement/bg_line.gif) repeat-x left bottom;
+	background: url(../../img/settlement/bg_line.gif) repeat-x left bottom;
 }
 
 #settlementEventDetail table {
@@ -1913,12 +1913,12 @@
 /* 確認画面ボックス */
 .confirmBox {
 	margin-bottom: 20px;
-	background: url(../img/settlement/bg_confirm_top.gif) no-repeat 0 0;
+	background: url(../../img/settlement/bg_confirm_top.gif) no-repeat 0 0;
 }
 
 .confirmBoxInner {
 	padding: 10px 10px 20px;
-	background: url(../img/settlement/bg_confirm_bottom.gif) no-repeat left bottom;
+	background: url(../../img/settlement/bg_confirm_bottom.gif) no-repeat left bottom;
 }
 
 .confirmBox h2 {
@@ -1936,7 +1936,7 @@
 	padding: 10px 10px 10px 15px;
 	border: 1px solid #f2f2e5;
 	border-bottom: 1px solid #cacac9;
-	background: #fdfdfb url(../img/settlement/bg_confirm_line.gif) no-repeat 7px 50%;
+	background: #fdfdfb url(../../img/settlement/bg_confirm_line.gif) no-repeat 7px 50%;
 }
 
 /* お買い物内容 */
@@ -2010,12 +2010,12 @@
 #mailMagazineBox {
 	width: 934px;
 	margin: 0 0 5px 7px;
-	background: url(../img/settlement/bg_payment_top.png) no-repeat 0 0;
+	background: url(../../img/settlement/bg_payment_top.png) no-repeat 0 0;
 }
 
 #mailMagazineBoxInner {
 	padding: 5px;
-	background: url(../img/settlement/bg_payment_bottom.gif) no-repeat left bottom;
+	background: url(../../img/settlement/bg_payment_bottom.gif) no-repeat left bottom;
 }
 
 #mailMagazineBoxInner ul {

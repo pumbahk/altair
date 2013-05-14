@@ -1,48 +1,49 @@
 <%inherit file="../commons/layout.html" />
-<form action="${request.route_path('order_review.show')}" method="post">
-
-	<!-- ========== main ========== -->
-	<div id="main">
-		<h2><img src="${request.static_url('ticketing.orderreview:static/images/RT/title_order.gif')}" alt="予約チケットの確認" width="702" height="43" /></h2>
-		<div class="order_outline">
-
-			<table cellpadding="0" cellspacing="0" class="order_form">
-			  <colgroup>
-			    <col style="width:130px;">
-			    <col style="width:370px;">
-			  </colgroup>
-			  <tbody>
-			    <tr>
-			      <th>受付番号 <span class="red">*</span></th>
-			      <td>
-				${form.order_no}
-				${h.error('order_no')}
-			      </td>
-			    </tr>
-			    <tr>
-			      <th>電話番号 <span class="red">*</span></th>
-			      <td>
-				${form.tel}<br />
-				<small>電話番号は、ご登録時の電話番号をご入力ください（携帯・自宅をどちらもご登録した場合、どちらの番号でも構いません）</small>
-				${h.error('tel')}
-			      </td>
-			    </tr>
-			    <tr>
-			        <td colspan="2" style="text-align:center">
-				        <div class="textRight red" style="font-size:12px;">*は入力必須項目です。<br></div>
-				        <input type="submit" value="次に進む" class="submit" style="width:400px;height:50px;">
-			        </td>
-				</tr>
-			  </tbody>
-			</table>
-			
 
 
-		</div>
-		
-		
-	</div>
-	<!-- ========== /main ========== -->
+<form id="form1" name="form1" action="${request.route_path('order_review.show')}" method="post">
+  <div class="settlementBox">
+    <div class="settlementBoxInner">
+      <h2><img src="${request.static_url('ticketing.cart:static/img/settlement/title_methods.gif')}" alt="お支払い、引き取り方法の指定" width="267" height="30" /></h2>
+      <p style="margin-left:20px;">購入したチケットの受付番号と電話番号を入力してください</p>
+    </div>
+  </div>
 
-
+  <div class="confirmBox">
+    <div class="confirmBoxInner">
+      <h2><img src="http://tstar-dev.s3.amazonaws.com/cart/static/img/settlement/title_customer_info.gif" alt="購入者情報" width="103" height="30" /></h2>
+      <table id="confirmDelivery">
+        <tr>
+          <th scope="row">受付番号 <span class="red">*</span></th>
+          <td>
+            <ul>
+              <li>
+                ${form.order_no}
+                (例: RT00000000AB)
+              </li>
+              <li><span class="red">${h.error('order_no')}</span></li>
+            </ul>
+          </td>
+        </tr>
+        <tr>
+          <th scope="row">電話番号(半角数字) <span class="red">*</span></th>
+          <td>
+            <ul>
+              <li>
+                ${form.tel}
+                (例: 080xxxxyyyy)
+              </li>
+              <li><span class="red">${h.error('tel')}</span></li>
+              <li>
+                電話番号は、ご登録時の電話番号をご入力ください（携帯・自宅をどちらもご登録した場合、どちらの番号でも構いません)
+              </li>
+            </ul>
+          </td>
+        </tr>
+      </table>
+    </div>
+  </div>
+<div style="margin-left:25%">
+  <input type="submit" value="次に進む" class="submit" style="width:400px;height:50px;">
+</div>
 </form>
