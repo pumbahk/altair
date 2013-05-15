@@ -20,7 +20,7 @@ def search(context, request):
     }
 
 @usersite_view_config(route_name='search_genre',request_type="altairsite.tweens.ISmartphoneRequest"
-             , renderer='altairsite.smartphone:templates/searchresult/search.html')
+             , renderer='altairsite.smartphone:templates/searchresult/genre.html')
 def genre_search(context, request):
     # ジャンル画面の検索
     form = GenreSearchForm(request.GET)
@@ -28,7 +28,7 @@ def genre_search(context, request):
 
     if form.data['sale'] == SalesEnum.GENRE.v:
         genre = context.get_genre(form.data['genre_id'])
-        query = SearchQuery(search_word, genre.label, SalesEnum.ON_SALE.v, None)
+        query = SearchQuery(search_word, genre, SalesEnum.GENRE.v, None)
     else:
         query = SearchQuery(search_word, None, SalesEnum.ON_SALE.v, None)
 

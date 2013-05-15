@@ -8,17 +8,17 @@ from altaircms.models import Genre
 from datetime import date
 
 class SearchQuery(object):
-    def __init__(self, word, genre_label, sale, sale_info):
+    def __init__(self, word, genre, sale, sale_info):
         self.word = word
-        self.genre_label = genre_label
+        self.genre = genre
         self.sale = sale
         self.sale_info = sale_info
     def create_query(self):
         helper=SmartPhoneHelper()
         query = []
         query.append(u"フリーワード：" + self.word)
-        if self.genre_label:
-            query.append(u"ジャンル：" + self.genre_label)
+        if self.genre:
+            query.append(u"ジャンル：" + self.genre.label)
         if self.sale:
             query.append(helper.get_sale_japanese(self.sale))
         if self.sale_info:
@@ -28,12 +28,17 @@ class SearchQuery(object):
                 query.append(u"販売終了まで：" + str(self.sale.sale_end) + u"日")
         return u"、".join(query)
 
-    """
-    def create_path(self, path):
-        route_path = path + "?word=" + self.word + "&sale=" + self.sale + "&sale_start=" \
-                     + self.sale_info.sale_start+ "&sale_end=" + self.sale_info.sale_end
+    def create_path(self):
+        route_path = "?word=" + self.word + "&sale=" + str(self.sale)
+        if self.genre:
+            route_path += "&genre_id=" + str(self.genre.id)
+        if self.sale_info:
+            if self.sale_info.sale_start:
+                route_path += "&sale_start="
+                route_path += str(self.sale_info.sale_start)
+            if self.sale_info.sale_end:
+                route_path += "&sale_end=" + str(self.sale_info.sale_end)
         return route_path
-    """
 
 class AreaSearchQuery(object):
     def __init__(self, area, genre_id, genre_label):

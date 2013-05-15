@@ -2,5 +2,5 @@
 <%namespace file="../common/tags_smartphone.html" name="m" />
 <%block name="title">検索結果一覧</%block>
 
-<% path=request.route_path('search') + result.query.create_path() %>
+<% path=request.route_path('search_genre') + result.query.create_path() %>
 <%include file="_result.html" args="result=result, path=path, helper=helper"/>
