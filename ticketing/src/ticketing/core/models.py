@@ -38,13 +38,12 @@ from ticketing.models import (
 )
 from standardenum import StandardEnum
 from ticketing.users.models import User, UserCredential, MemberGroup, MemberGroup_SalesSegment
-from ticketing.sej.models import SejOrder, SejTenant, SejTicket, SejRefundTicket, SejRefundEvent
-from ticketing.sej.exceptions import SejServerError
-from ticketing.sej.payment import request_cancel_order
-from altair.pyramid_assets import get_resolver 
+from ticketing.sej.models import SejOrder
+from altair.pyramid_assets import get_resolver
 from ticketing.utils import myurljoin, tristate, is_nonmobile_email_address, sensible_alnum_decode
 from ticketing.helpers import todate, todatetime
 from ticketing.payments import plugins
+from ticketing.sej import api as sej_api
 from .utils import ApplicableTicketsProducer
 
 logger = logging.getLogger(__name__)
@@ -2178,7 +2177,7 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             return False
 
         '''
-        決済方法ごとに払戻し処理
+        決済方法ごとに払戻処理
         '''
         if payment_method:
             ppid = payment_method.payment_plugin_id
@@ -2268,98 +2267,34 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
         # コンビニ決済 (セブン-イレブン)
         elif ppid == plugins.SEJ_PAYMENT_PLUGIN_ID:
+            sej_order = SejOrder.query.filter_by(order_id=self.order_no).first()
+
             # 未入金ならコンビニ決済のキャンセル通知
             if self.payment_status == 'unpaid':
-                sej_order = SejOrder.query.filter_by(order_id=self.order_no).first()
-                if not sej_order or sej_order.cancel_at:
-                    logger.error(u'コンビニ決済(セブン-イレブン)のキャンセルに失敗しました %s' % self.order_no)
-                    return False
-
-                settings = get_current_registry().settings
-                tenant = SejTenant.filter_by(organization_id=self.organization_id).first()
-
-                inticket_api_url = (tenant and tenant.inticket_api_url) or settings.get('sej.inticket_api_url')
-                shop_id = (tenant and tenant.shop_id) or settings.get('sej.shop_id')
-                api_key = (tenant and tenant.api_key) or settings.get('sej.api_key')
-
-                if sej_order.shop_id != shop_id:
-                    logger.error(u'コンビニ決済(セブン-イレブン)のキャンセルに失敗しました Invalid shop_id : %s' % shop_id)
-                    return False
-
-                try:
-                    request_cancel_order(
-                        order_id=sej_order.order_id,
-                        billing_number=sej_order.billing_number,
-                        exchange_number=sej_order.exchange_number,
-                        shop_id=shop_id,
-                        secret_key=api_key,
-                        hostname=inticket_api_url
-                    )
-                except SejServerError, e:
-                    logger.error(u'コンビニ決済(セブン-イレブン)のキャンセルに失敗しました %s' % e)
+                result = sej_api.cancel_sej_order(sej_order, self.organization_id)
+                if not result:
                     return False
 
             # 入金済み、払戻予約ならコンビニ決済の払戻通知
             elif self.payment_status in ['paid', 'refunding']:
-                sej_order = SejOrder.query.filter_by(order_id=self.order_no).first()
-                if not sej_order or sej_order.cancel_at:
-                    logger.error(u'コンビニ決済(セブン-イレブン)のキャンセルに失敗しました %s' % self.order_no)
+                result = sej_api.refund_sej_order(sej_order, self.organization_id, self, now)
+                if not result:
                     return False
-
-                sej_ticket = SejTicket.query.filter_by(order_id=sej_order.id).first()
-                if not sej_ticket:
-                    logger.error(u'コンビニ決済(セブン-イレブン)のキャンセルに失敗しました %s' % self.order_no)
-                    return False
-
-                tenant = SejTenant.filter_by(organization_id=self.organization_id).first()
-                shop_id = (tenant and tenant.shop_id) or request.registry.settings.get('sej.shop_id')
-
-                # create SejRefundEvent
-                re = SejRefundEvent.filter(and_(
-                    SejRefundEvent.shop_id==shop_id,
-                    SejRefundEvent.event_code_01==self.performance.code
-                )).first()
-                if not re:
-                    re = SejRefundEvent()
-                    DBSession.add(re)
-
-                re.available = 1
-                re.shop_id = shop_id
-                re.event_code_01 = self.performance.code
-                re.title = self.performance.name
-                re.event_at = self.performance.start_on.strftime('%Y%m%d')
-                re.start_at = now.strftime('%Y%m%d')
-                end_at = (self.performance.end_on or self.performance.start_on) + timedelta(days=+14)
-                re.end_at = end_at.strftime('%Y%m%d')
-                re.event_expire_at = end_at.strftime('%Y%m%d')
-                ticket_expire_at = (self.performance.end_on or self.performance.start_on) + timedelta(days=+30)
-                re.ticket_expire_at = ticket_expire_at.strftime('%Y%m%d')
-                re.refund_enabled = 1
-                re.need_stub = 1
-                DBSession.merge(re)
-
-                # create SejRefundTicket
-                rt = SejRefundTicket.filter(and_(
-                    SejRefundTicket.order_id==sej_order.order_id,
-                    SejRefundTicket.ticket_barcode_number==sej_ticket.barcode_number
-                )).first()
-                if not rt:
-                    rt = SejRefundTicket()
-                    DBSession.add(rt)
-
-                prev = self.prev
-                rt.available = 1
-                rt.refund_event_id = re.id
-                rt.event_code_01 = self.performance.code
-                rt.order_id = sej_order.order_id
-                rt.ticket_barcode_number = sej_ticket.barcode_number
-                rt.refund_ticket_amount = prev.refund.item(prev)
-                rt.refund_other_amount = prev.refund.fee(prev)
-                DBSession.merge(rt)
 
         # 窓口支払
         elif ppid == plugins.RESERVE_NUMBER_PAYMENT_PLUGIN_ID:
             pass
+
+        '''
+        配送方法ごとに取消処理
+        '''
+        # コンビニ受取
+        dpid = self.payment_delivery_pair.delivery_method.delivery_plugin_id
+        if dpid == plugins.SEJ_DELIVERY_PLUGIN_ID and ppid != plugins.SEJ_PAYMENT_PLUGIN_ID:
+            sej_order = SejOrder.query.filter_by(order_id=self.order_no).first()
+            result = sej_api.cancel_sej_order(sej_order, self.organization_id)
+            if not result:
+                return False
 
         # 在庫を戻す
         self.release()
@@ -2452,8 +2387,8 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         else:
             return False
 
-    def delete(self):
-        if not self.can_delete():
+    def delete(self, force=False):
+        if not self.can_delete() and not force:
             logger.info('order (%s) cannot delete status (%s)' % (self.id, self.status))
             raise Exception(u'キャンセル以外は非表示にできません')
 
@@ -2478,7 +2413,7 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                 nopi.seats = opi.seats
                 nopi.attributes = opi.attributes
         new_order.add()
-        origin.delete()
+        origin.delete(force=True)
         return Order.get(new_order.id, new_order.organization_id)
 
     @staticmethod
