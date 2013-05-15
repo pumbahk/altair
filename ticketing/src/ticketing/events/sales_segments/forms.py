@@ -4,12 +4,13 @@ from wtforms import Form
 from wtforms import TextField, SelectField, HiddenField, IntegerField, BooleanField, SelectMultipleField
 from wtforms.validators import Regexp, Length, Optional, ValidationError
 from wtforms.widgets import CheckboxInput
-from sqlalchemy.sql import or_, and_
+from sqlalchemy.sql import or_, and_, select
 
 from ticketing.formhelpers import (Translations, Required, RequiredOnUpdate, OurForm, OurDateTimeField,
                                    OurIntegerField, OurBooleanField, OurSelectField, OurDecimalField,
                                    BugFreeSelectField, PHPCompatibleSelectMultipleField, CheckboxMultipleSelect)
 from ticketing.core.models import SalesSegmentGroup, SalesSegment, Account
+from ticketing.loyalty.models import PointGrantSetting, SalesSegment_PointGrantSetting
 
 fee_and_margin_attrs = ('margin_ratio', 'refund_ratio', 'printing_fee', 'registration_fee')
 
@@ -179,3 +180,21 @@ class SalesSegmentForm(OurForm):
                     return False
 
             return True
+
+class PointGrantSettingAssociationForm(OurForm):
+    point_grant_setting_id = OurSelectField(
+        label=u'ポイント付与設定',
+        validators=[Required()],
+        choices=lambda self: [
+            (point_grant_setting.id, point_grant_setting.name)
+            for point_grant_setting \
+            in PointGrantSetting.filter_by(organization_id=self.form.context.organization.id).filter(~PointGrantSetting.id.in_(select([SalesSegment_PointGrantSetting.c.point_grant_setting_id]).where(SalesSegment_PointGrantSetting.c.sales_segment_id == self.form.context.sales_segment.id)))
+            ],
+        coerce=lambda x: long(x) if x else None
+        )
+
+    def __init__(self, formdata=None, obj=None, prefix='', context=None, **kwargs):
+        super(PointGrantSettingAssociationForm, self).__init__(formdata, obj, prefix, **kwargs)
+        self.context = context
+
+

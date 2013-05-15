@@ -1,6 +1,6 @@
 # encoding: utf-8
 
-from datetime import datetime
+from datetime import datetime, date, time
 
 class DefaultDateTimeFormatter(object):
     WEEK =[u"月", u"火", u"水", u"木", u"金", u"土", u"日"]
@@ -16,7 +16,7 @@ class DefaultDateTimeFormatter(object):
         if flavor.get('without_second'):
             format = u'%-H:%M'
         else:
-            format = u'%-H:%M:%-S'
+            format = u'%-H:%M:%S'
         return format
 
     def format_datetime(self, dt, **flavor):
@@ -41,50 +41,43 @@ class DefaultDateTimeFormatter(object):
 class DateTimeHelper(object):
     def __init__(self, formatter):
         self.formatter = formatter
+        self.default_formatters = {
+            datetime: self.datetime,
+            date: self.date,
+            time: self.time
+            }
 
-    def term_datetime(self, beg, end):
+    def term(self, beg, end, none_label=u'指定なし', formatter=None, **flavor):
         """ dateオブジェクトを受け取り期間を表す文字列を返す
         e.g. 2012年3月3日(土)〜7月12日(木) 
         """
+        with_weekday = flavor.pop('with_weekday', True)
+        if formatter is None:
+            formatter = self.default_formatters.get(type(beg or end))
         if beg is None:
             if end is None:
-                return u""
+                return none_label
             else:
-                return u"〜 %s" % (self.formatter.format_datetime(end, with_weekday=True, without_second=True))
+                return u"〜 %s" % (formatter(end, with_weekday=with_weekday, **flavor))
         else:
             if end is None:
-                return u"%s 〜" % self.formatter.format_datetime(beg, with_weekday=True, without_second=True)
+                return u"%s 〜" % formatter(beg, with_weekday=with_weekday, **flavor)
             else:
-                end_flavor = dict(without_year=(beg.year == end.year))
+                end_flavor = dict(without_year=(beg.year == end.year), **flavor)
                 return u'%s 〜 %s' % (
-                    self.formatter.format_datetime(beg, with_weekday=True, without_second=True),
-                    self.formatter.format_datetime(beg, with_weekday=True, without_second=True, **end_flavor)
+                    formatter(beg, with_weekday=with_weekday, **flavor),
+                    formatter(beg, with_weekday=with_weekday, **end_flavor)
                     )
 
-    def term(self, beg, end):
-        """ dateオブジェクトを受け取り期間を表す文字列を返す
-        e.g. 2012年3月3日(土)〜7月12日(木) 
-        """
-        if beg is None:
-            if end is None:
-                return u""
-            else:
-                return u"〜 %s" % (self.formatter.format_date(end, with_weekday=True))
-        else:
-            if end is None:
-                return u"%s 〜" % self.formatter.format_date(beg, with_weekday=True)
-            else:
-                end_flavor = dict(without_year=(beg.year == end.year))
-                return u'%s 〜 %s' % (
-                    self.formatter.format_date(beg, with_weekday=True),
-                    self.formatter.format_date(beg, with_weekday=True, **end_flavor)
-                    )
+    term_datetime = term
 
     def date(self, d, **flavor):
         return self.formatter.format_date(d, **flavor) if d else u'-'
 
     def time(self, t, **flavor):
-        return self.formatter.format_time(t, **flavor) if t else u'-'
+        without_second = flavor.pop('without_second', True)
+        return self.formatter.format_time(t, without_second=without_second, **flavor) if t else u'-'
 
     def datetime(self, dt, **flavor):
-        return self.formatter.format_datetime(dt, **flavor) if dt else u'-'
+        without_second = flavor.pop('without_second', True)
+        return self.formatter.format_datetime(dt, without_second=without_second, **flavor) if dt else u'-'

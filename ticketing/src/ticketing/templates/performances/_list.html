@@ -16,11 +16,6 @@
   });
 </script>
 
-<%
-from datetime import datetime
-nowdate = datetime.now()
-%>
-
 % if performances:
 <div class="row-fluid">
   <div class="span12">
@@ -67,7 +62,7 @@ nowdate = datetime.now()
                 from datetime import timedelta
                 end_on = performance.end_on or (performance.start_on + timedelta(days=1)).replace(hour=0, minute=0, second=0)
               %>
-              %if nowdate > end_on:
+              %if request.now > end_on:
                 <span class="label">終了</span>
               %endif
 					  </a>

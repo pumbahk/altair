@@ -2,7 +2,6 @@
 <%namespace file="/common/helpers.html" name="h" />
 <form action="${action}" method="POST">
   ${h.form_item(form.id)}
-  ${h.form_item(form.performance_id)}
   ${h.form_item(form.name, style='width: 300px;', maxlength=255)}
   ${h.form_item(form.price, style='width: 150px;')}
   ${h.form_item(form.display_order)}
@@ -10,4 +9,7 @@
   ${h.form_item(form.sales_segment_id)}
   ${h.form_item(form.public)}
   ${h.form_item(form.description)}
+% if request.context.organization.point_feature_enabled:
+  ${h.form_item(form.applied_point_grant_settings)}
+% endif
 </form>

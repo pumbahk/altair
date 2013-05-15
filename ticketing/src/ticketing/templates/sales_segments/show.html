@@ -61,3 +61,29 @@ function get_selected_sales_segment_id() {
 <a href="${request.route_path('sales_segments.edit', event_id=sales_segment.sales_segment_group.event_id, sales_segment_id=sales_segment.id)}" class="btn">編集</a>
 <h2>決済・引取方法</h2>
 <%include file="../payment_delivery_method_pairs/_list.html" args="payment_delivery_method_pairs=sales_segment.payment_delivery_method_pairs" />
+% if request.context.organization.point_feature_enabled:
+<h2>ポイント付与設定</h2>
+<p>ポイント付与設定は全パフォーマンス・販売区分で共通です。追加は<a href="${request.route_path('point_grant_settings.index')}">こちら</a></p>
+<form method="post" action="#">
+<%include file="./_action_button_modal_point_grant_setting.html" args="sales_segment=sales_segment" />
+<%include file="../point_grant_settings/_list.html" args="point_grant_settings=sales_segment.point_grant_settings, organization_setting=sales_segment.sales_segment_group.event.organization.setting" />
+<script type="text/javascript">
+var get_selected_point_grant_setting_ids;
+(function (form) {
+  get_selected_point_grant_setting_ids = function get_selected_point_grant_setting_ids() {
+    var retval = [];
+    form.find('input[name="point_grant_setting_id"]:checked').each(function (_, n) {
+      retval.push(n.value);
+    });
+    return retval;
+  };
+})($('script:last').closest('form'));
+</script>
+</form>
+<%include file="./_modal_point_grant_setting.html" args="modal_id='point_grant_setting', sales_segment=sales_segment" />
+% endif
+<h2>商品</h2>
+<%include file="../products/_action_button.html" />
+<%include file="../products/_list.html" args="products=sales_segment.products, sales_segment=sales_segment" />
+<%include file="../products/_modal.html" args="modal_id='modal-product'" />
+<%include file="../product_items/_modal.html" args="modal_id='modal-product-item'" />

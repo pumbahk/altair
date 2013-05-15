@@ -438,6 +438,10 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     redirect_url_mobile = Column(String(1024))
 
     @property
+    def products(self):
+        return self.sale_segment.products if self.sales_segment_id else []
+
+    @property
     def inner_sales_segments(self):
         now = datetime.now()
         sales_segment_sort_key_func = lambda ss: (ss.kind == u'sales_counter', ss.start_at <= now, now <= ss.end_at, ss.id)
@@ -1750,20 +1754,20 @@ class TicketType(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 class Product(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'Product'
 
-    id = Column(Identifier, primary_key=True)
-    name = Column(String(255))
-    price = Column(Numeric(precision=16, scale=2), nullable=False)
-    display_order = Column(Integer, nullable=False, default=1)
+    id = AnnotatedColumn(Identifier, primary_key=True, _a_label=_(u'ID'))
+    name = AnnotatedColumn(String(255), _a_label=_(u'商品名'))
+    price = AnnotatedColumn(Numeric(precision=16, scale=2), nullable=False, _a_label=_(u'価格'))
+    display_order = AnnotatedColumn(Integer, nullable=False, default=1, _a_label=_(u'表示順'))
 
     sales_segment_group_id = Column(Identifier, ForeignKey('SalesSegmentGroup.id'), nullable=True)
     sales_segment_group = relationship('SalesSegmentGroup', uselist=False, backref=backref('product', order_by='Product.display_order'))
 
-    sales_segment_id = Column(Identifier, ForeignKey('SalesSegment.id'), nullable=True)
+    sales_segment_id = AnnotatedColumn(Identifier, ForeignKey('SalesSegment.id'), nullable=True, _a_label=_(u'販売区分'))
     sales_segment = relationship('SalesSegment', backref=backref('products', order_by='Product.display_order'))
 
     ticket_type_id = Column(Identifier, ForeignKey('TicketType.id'), nullable=True)
 
-    seat_stock_type_id = Column(Identifier, ForeignKey('StockType.id'), nullable=True)
+    seat_stock_type_id = AnnotatedColumn(Identifier, ForeignKey('StockType.id'), nullable=True, _a_label=_(u'席種'))
     seat_stock_type = relationship('StockType', uselist=False, backref=backref('product', order_by='Product.display_order'))
 
     event_id = Column(Identifier, ForeignKey('Event.id'))
@@ -1774,7 +1778,7 @@ class Product(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     performances = association_proxy('items', 'performance')
 
     # 一般公開するか
-    public = Column(Boolean, nullable=False, default=True)
+    public = AnnotatedColumn(Boolean, nullable=False, default=True, _a_label=_(u'公開'))
 
     description = Column(Unicode(2000), nullable=True, default=None)
 
@@ -1980,6 +1984,9 @@ class Organization(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     def setting(self):
         return self.get_setting(u'default')
 
+    @property
+    def point_feature_enabled(self):
+        return self.setting.point_type is not None
 
 orders_seat_table = Table("orders_seat", Base.metadata,
     Column("seat_id", Identifier, ForeignKey("Seat.id")),

@@ -13,9 +13,10 @@ from ticketing.views import BaseView
 from ticketing.fanstatic import with_bootstrap
 from ticketing.core.models import Event, Performance, SalesSegment, SalesSegmentGroup, Product, PaymentDeliveryMethodPair, Organization
 from ticketing.events.payment_delivery_method_pairs.forms import PaymentDeliveryMethodPairForm
-from ticketing.events.sales_segments.forms import SalesSegmentForm
+from .forms import SalesSegmentForm, PointGrantSettingAssociationForm
 from ticketing.memberships.forms import MemberGroupForm
 from ticketing.users.models import MemberGroup, Membership
+from ticketing.loyalty.models import PointGrantSetting
 from webob.multidict import MultiDict
 
 from datetime import datetime
@@ -279,3 +280,37 @@ class SalesSegments(BaseView):
         sales_segment_group = SalesSegmentGroup.get(sales_segment_group_id)
         result = [dict(pk=pdmp.id, name='%s - %s' % (pdmp.payment_method.name, pdmp.delivery_method.name)) for pdmp in sales_segment_group.payment_delivery_method_pairs]
         return {"result": result, "status": True}
+
+@view_defaults(decorator=with_bootstrap, permission='event_editor')
+class SalesSegmentPointGrantSettings(BaseView):
+    @view_config(route_name='sales_segments.point_grant_settings.add', request_method='GET', renderer='ticketing:templates/sales_segments/_form_modal_point_grant_setting.html', xhr=True)
+    def point_grant_settings_add(self):
+        return {
+            'form': PointGrantSettingAssociationForm(context=self.context),
+            'action': self.request.path
+            }
+
+    @view_config(route_name='sales_segments.point_grant_settings.add', request_method='POST', renderer='ticketing:templates/sales_segments/_form_modal_point_grant_setting.html', xhr=True)
+    def point_grant_settings_add(self):
+        form = PointGrantSettingAssociationForm(formdata=self.request.POST, context=self.context)
+        if not form.validate():
+            return {
+                'form': PointGrantSettingAssociationForm(context=self.context),
+                'action': self.request.path
+                }
+        self.context.sales_segment.point_grant_settings.append(PointGrantSetting.query.filter_by(id=form.point_grant_setting_id.data).one())
+        return render_to_response('ticketing:templates/refresh.html', {}, request=self.request)
+
+    @view_config(route_name='sales_segments.point_grant_settings.remove', request_method='POST', renderer='ticketing:templates/refresh.html')
+    def point_grant_settings_remove(self):
+        from pyramid.request import Response
+        point_grant_setting_ids = set(long(v) for v in self.request.POST.getall('point_grant_setting_id'))
+
+        for point_grant_setting in PointGrantSetting.query.filter(PointGrantSetting.id.in_(point_grant_setting_ids)):
+            import sys
+            print >>sys.stderr, point_grant_setting
+            self.context.sales_segment.point_grant_settings.remove(point_grant_setting)
+        return_to = self.request.params.get('return_to')
+        if return_to is None:
+            return_to = self.request.route_path('sales_segments.show', event_id=self.context.event.id, sales_segment_id=self.context.sales_segment.id)
+        return HTTPFound(location=return_to)

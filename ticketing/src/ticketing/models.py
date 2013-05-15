@@ -15,6 +15,7 @@ from sqlalchemy.sql.expression import text, desc, asc
 from sqlalchemy.sql import functions as sqlf, and_
 import sqlahelper
 from paste.util.multidict import MultiDict
+from altair.sqla import get_relationship_query
 
 Base = sqlahelper.get_base()
 DBSession = sqlahelper.get_session()
@@ -342,3 +343,67 @@ def asc_or_desc(query, column, direction, default=None):
         query = query.order_by(fn(column))
     return query
 
+class HyphenationCodecMixin(object):
+    _encoder = unicode
+    _decoder = long
+
+    def decoder(self, value):
+        return [self._decoder(v) for v in value.split('-')] if value is not None else None
+
+    def encoder(self, value):
+        return u'-'.join(self._encoder(v) for v in value) if value is not None else None
+
+class CollectionModelBase(object):
+    def __init__(self, relationship, label_builder, id_keys):
+        self.relationship = relationship
+        self.label_builder = label_builder
+        self.id_keys = id_keys
+
+    def __len__(self):
+        return len(self.relationship)
+
+    def __contains__(self, value):
+        return value in self.relationship
+
+    def __iter__(self):
+        if callable(self.id_keys):
+            for item in self.relationship:
+                key = self.id_keys(self, item)
+                yield self.encoder(key), key, self.label_builder(self, item)
+        else:
+            for item in self.relationship:
+                key = tuple(getattr(item, key) for key in self.id_keys)
+                yield self.encoder(key), key, self.label_builder(self, item)
+
+class GroupedCollectionModelBase(object):
+    def __init__(self, relationship, label_builder, id_keys):
+        self.relationship = relationship
+        self.label_builder = label_builder
+        self.id_keys = id_keys
+
+    def __len__(self):
+        return len(self.relationship)
+
+    def __contains__(self, value):
+        return value in self.relationship
+
+    def __iter__(self):
+        if callable(self.id_keys):
+            def iter_inner(group_name, items):
+                for item in items:
+                    key = self.id_keys(self, item)
+                    yield self.encoder(key), key, self.label_builder(self, (group_name, item))
+        else:
+            def iter_inner(group_name, items):
+                for item in items:
+                    key = tuple(getattr(item, key) for key in self.id_keys)
+                    yield self.encoder(key), key, self.label_builder(self, (group_name, item))
+
+        for group_name, items in self.relationship:
+            yield group_name, iter_inner(group_name, items)
+
+class HyphenatedCollectionModel(CollectionModelBase, HyphenationCodecMixin):
+    pass
+
+class HyphenatedGroupedCollectionModel(GroupedCollectionModelBase, HyphenationCodecMixin):
+    pass

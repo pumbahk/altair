@@ -1,0 +1,12 @@
+<%namespace file="/common/helpers.html" name="ch"/>
+<div class="content">
+  ${ch.flash_messages(request)}
+</div>
+<p>以下の設定を削除します</p>
+<form action="${request.route_path('point_grant_settings.delete')}" method="post">
+<ul>
+% for point_grant_setting in point_grant_settings:
+  <li>${point_grant_setting.name}<input type="hidden" name="point_grant_setting_id" value="${point_grant_setting.id}" /></li>
+% endfor
+</ul>
+</form>

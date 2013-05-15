@@ -39,7 +39,8 @@ function build_form_params(form) {
     } else if (v.type == 'select-multiple') {
       value = get_selected_options(v);
     } else {
-      value = v.value;
+      value = $(v).val();
+      console.log(value);
     }
     if (value != null) {
       if (v.name.substr(-2) == '[]') {

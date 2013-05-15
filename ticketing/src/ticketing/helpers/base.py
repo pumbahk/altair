@@ -4,6 +4,7 @@ from wtforms.fields.core import Field, UnboundField
 from sqlalchemy.orm.attributes import QueryableAttribute
 from sqlalchemy.orm.interfaces import MapperProperty
 from sqlalchemy.schema import Column
+from datetime import datetime, date, time
 from altair.viewhelpers.datetime_ import DefaultDateTimeFormatter, DateTimeHelper
 
 date_time_formatter = DefaultDateTimeFormatter()
@@ -15,11 +16,14 @@ __all__ = [
     'jdatetime',
     'label_text_for',
     'column_name_for',
+    'format_period',
+    'format_percentage',
     ]
 
 jdate = date_time_helper.date
 jtime = date_time_helper.time
 jdatetime = date_time_helper.datetime
+format_period = date_time_helper.term
 
 def label_text_for(misc):
     from altair.saannotation import get_annotations_for
@@ -48,3 +52,6 @@ def column_name_for(misc):
     elif isinstance(misc, Column):
         return misc.name
     raise ValueError('no column name for %r' % misc)
+
+def format_percentage(rate, precision=0):
+    return (u'%%.%df%%%%' % precision) % (rate * 100.) if rate is not None else u'-'

@@ -48,6 +48,9 @@
     % if testing:
     <li><a href="${request.route_path('venues.index')}">会場</a></li>
     % endif
+    % if request.context.organization.point_feature_enabled:
+    <li><a href="${request.route_path('point_grant_settings.index')}">ポイント付与</a></li>
+    % endif
     <li><a href="${request.route_path('payment_methods.index')}">決済方法</a></li>
     <li><a href="${request.route_path('delivery_methods.index')}">引取方法</a></li>
     <li><a href="${request.route_path('tickets.index')}">チケット券面</a></li>
@@ -62,7 +65,6 @@
     <li><a href="${request.route_path('mailmags.index')}">メールマガジン管理</a></li>
     % if testing:
     <li><a href="">週報／日報設定</a></li>
-    <li><a href="">ポイント付与履歴</a></li>
     <li class="nav-header">マーケティング</li>
     <li><a href="">メール配信</a></li>
     <li class="nav-header">ブックマーク</li>

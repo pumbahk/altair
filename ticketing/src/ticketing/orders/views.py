@@ -67,6 +67,8 @@ from ticketing.cart.models import Cart
 from ticketing.cart.stocker import NotEnoughStockException
 from ticketing.cart.reserving import InvalidSeatSelectionException, NotEnoughAdjacencyException
 
+from ticketing.loyalty import api as loyalty_api
+
 from . import utils
 from .api import CartSearchQueryBuilder, OrderSummarySearchQueryBuilder, QueryBuilderError
 from .models import OrderSummary
@@ -573,6 +575,7 @@ class OrderDetailView(BaseView):
         return {
             'order_current':order,
             'order_history':order_history,
+            'point_grant_settings': loyalty_api.applicable_point_grant_settings_for_order(order),
             'sej_order':SejOrder.query.filter(SejOrder.order_id==order.order_no).first(),
             'mail_magazines':mail_magazines,
             'form_shipping_address':form_shipping_address,

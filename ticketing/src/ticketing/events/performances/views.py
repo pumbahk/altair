@@ -61,10 +61,7 @@ class PerformanceShowView(BaseView):
             )
 
     def _tab_product(self):
-        return dict(
-            form_product=ProductForm(performance_id=self.performance.id),
-            products=self.performance.products
-            )
+        return dict()
 
     def _tab_order(self):
         slave_session = get_db_session(self.request, name="slave")
