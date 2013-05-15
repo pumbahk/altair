@@ -142,6 +142,18 @@ class Lot(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         ).count() < self.entry_limit
 
 
+
+    def electing_wishes(self, entry_wishes):
+        """ 当選予定申込希望 """
+        affected = 0
+        for entry_no, wish_order in entry_wishes:
+            w = LotElectWork(lot_id=self.id, lot_entry_no=entry_no, wish_order=wish_order,
+                             entry_wish_no="{0}-{1}".format(entry_no, wish_order))
+            DBSession.add(w)
+            affected += 1
+        return affected
+
+
     @hybrid_method
     def available_on(self, now):
         return self.start_at <= now <= self.end_at
@@ -262,6 +274,13 @@ class LotEntry(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     memo = sa.Column(sa.UnicodeText)
 
     canceled_at = sa.Column(sa.DateTime())
+
+
+    def get_wish(self, wish_order):
+        wish_order = int(wish_order)
+        for wish in self.wishes:
+            if wish.wish_order == wish_order:
+                return wish
 
     @property
     def max_amount(self):

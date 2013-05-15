@@ -419,11 +419,13 @@ class LotEntries(BaseView):
         logger.debug("condition = {0}".format(condition))
         logger.debug("from = {0}".format(form.entried_from.data))
         entries = lots_api.get_lot_entries_iter(lot.id, condition)
+        electing_url = self.request.route_url('lots.entries.elect_entry_no', lot_id=lot.id)
         cancel_url = self.request.route_url('lots.entries.cancel', lot_id=lot.id)
         return dict(data=list(entries),
                     lot=lot,
                     form=form,
-                    cancel_url=cancel_url)
+                    cancel_url=cancel_url,
+                    electing_url=electing_url)
 
 
         
@@ -481,27 +483,30 @@ class LotEntries(BaseView):
         return HTTPFound(location=self.request.route_url('lots.entries.index', lot_id=lot.id))
 
     @view_config(route_name='lots.entries.elect_entry_no', 
-                 renderer="string",
                  request_method="POST",
-                 permission='event_viewer')
+                 permission='event_viewer',
+                 renderer="json")
     def elect_entry(self):
-        """ 申し込み番号指定での当選処理
+        """ 申し込み番号指定での当選予定処理
         """
-
-
         self.check_organization(self.context.event)
         lot_id = self.request.matchdict["lot_id"]
         lot = Lot.query.filter(Lot.id==lot_id).one()
-        entries = []
 
-        # TODO: form
         entry_no = self.request.params['entry_no']
         wish_order = self.request.params['wish_order']
-        entries.append((entry_no, wish_order))
-        lots_api.submit_lot_entries(lot.id, entries)
 
-        self.request.session.flash(u"当選確定処理を行いました {0}".format(entry_no))
-        return HTTPFound(location=self.request.route_url('lots.entries.index', lot_id=lot.id))
+        lot_entry = lot.get_lot_entry(entry_no)
+        if lot_entry is None:
+            return dict(result="NG",
+                        message="not found")
+
+        entries = [(entry_no, wish_order)]
+
+        affected = lots_api.submit_lot_entries(lot.id, entries)
+
+        return dict(result="OK",
+                    affected=affected)
 
     @view_config(route_name='lots.entries.cancel', 
                  renderer="json",
