@@ -6,11 +6,22 @@ from altairsite.smartphone.common.searcher import EventSearcher
 
 class GenrePageResource(SearchPageResource):
 
+    # ２回全文検索しない
+    def load_freeword(self, search_query, genre_label):
+        qs = None
+        if getattr(self.request, "genre_freeword", None):
+            qs = self.request.genre_freeword
+        else:
+            searcher = EventSearcher(request=self.request)
+            qs = searcher.search_freeword(search_query=search_query, genre_label=genre_label, cond=None)
+            self.request.genre_freeword = qs
+        return qs
+
     # 今週発売
     def search_week(self, genre_label, page, per):
         searcher = EventSearcher(request=self.request)
         query = SearchQuery(genre_label, SalesEnum.WEEK_SALE.v, None)
-        qs = searcher.search_freeword(search_query=query, genre_label=genre_label, cond=None)
+        qs = self.load_freeword(search_query=query, genre_label=genre_label)
         qs = searcher.search_week_sale(offset=None, qs=qs)
         result = searcher.create_result(qs=qs, page=page, query=query, per=per)
         return result
@@ -20,7 +31,7 @@ class GenrePageResource(SearchPageResource):
         searcher = EventSearcher(request=self.request)
         sale_info = SaleInfo(sale_start=None, sale_end=7)
         query = SearchQuery(genre_label, SalesEnum.NEAR_SALE_END.v, sale_info)
-        qs = searcher.search_freeword(search_query=query, genre_label=genre_label, cond=None)
+        qs = self.load_freeword(search_query=query, genre_label=genre_label)
         qs = searcher.search_near_sale_end(search_query=query, qs=qs)
         result = searcher.create_result(qs=qs, page=page, query=query, per=per)
         return result
