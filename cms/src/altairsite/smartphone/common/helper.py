@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
 import logging
+from .const import SalesEnum
 from markupsafe import Markup
 
 logger = logging.getLogger(__file__)
 
 class SmartPhoneHelper(object):
-    def getRegionJapanese(self, keyword):
+    def get_area_japanese(self, keyword):
         regions = {
              'hokkaido':u'北海道・東北'
             ,'syutoken':u'首都圏・北関東'
@@ -16,7 +17,7 @@ class SmartPhoneHelper(object):
         }
         return regions[keyword]
 
-    def getAreaJapanese(self, keyword):
+    def get_prefecture_japanese(self, keyword):
         areas = {
              'hokkaido':u'北海道'
             ,'aomori':u'青森'
@@ -67,6 +68,25 @@ class SmartPhoneHelper(object):
             ,'kagoshima':u'鹿児島'
         }
         return areas[keyword]
+
+    def get_sale_japanese(self, key):
+        sales = {
+             SalesEnum.ALL.v:u'すべてのチケット'
+            ,SalesEnum.GENRE.v:u'このジャンルで'
+            ,SalesEnum.NEAR_SALE_END.v:u'まもなく終了のチケット'
+            ,SalesEnum.ON_SALE.v:u'販売中'
+            ,SalesEnum.SOON_ACT.v:u'まもなく開演のチケット'
+            ,SalesEnum.WEEK_SALE.v:u'今週発売のチケット'
+        }
+        return sales[key]
+
+    def get_sales_segment_japanese(self, key):
+        segments = {
+             "normal":u"一般発売"
+            ,"precedence":u"先行販売"
+            ,"lottery":u"先行抽選"
+        }
+        return segments[key]
 
     def get_week_map(self):
         return {0:u'月',1:u'火',2:u'水',3:u'木',4:u'金',5:u'土',6:u'日'}

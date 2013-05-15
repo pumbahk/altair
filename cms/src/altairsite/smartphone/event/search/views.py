@@ -11,7 +11,7 @@ from altairsite.smartphone.common.const import SalesEnum
 def search(context, request):
     # トップ画面の検索
     form = TopSearchForm(request.GET)
-    query = SearchQuery(form.data['word'], form.data['sale'], None)
+    query = SearchQuery(form.data['word'], None, form.data['sale'], None)
     result = context.search(query, int(form.data['page']), 10)
 
     return {
@@ -25,11 +25,13 @@ def genre_search(context, request):
     # ジャンル画面の検索
     form = GenreSearchForm(request.GET)
     search_word = form.data['word']
+
     if form.data['sale'] == SalesEnum.GENRE.v:
         genre = context.get_genre(form.data['genre_id'])
-        search_word = search_word + ' ' + genre.label
+        query = SearchQuery(search_word, genre.label, SalesEnum.ON_SALE.v, None)
+    else:
+        query = SearchQuery(search_word, None, SalesEnum.ON_SALE.v, None)
 
-    query = SearchQuery(search_word, SalesEnum.ON_SALE.v, None)
     result = context.search(query, int(form.data['page']), 10)
 
     return {

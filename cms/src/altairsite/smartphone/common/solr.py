@@ -32,19 +32,22 @@ def getResultEvents(request, response):
 
 def create_search_word(word, genre_label, cond):
 
-    while word.find(u'　') != -1:
-        word = word.replace(u"　", " ")
+    searh_word = None
+    if word:
+        while word.find(u'　') != -1:
+            word = word.replace(u"　", " ")
 
-    while word.find('  ') != -1:
-        word = word.replace(u"  ", " ")
+        while word.find('  ') != -1:
+            word = word.replace(u"  ", " ")
 
-    word = word.strip()
+        word = word.strip()
 
-    cop = u" AND "
-    if cond == "union":
-        cop = u" OR "
+        cop = u" AND "
+        if cond == "union":
+            cop = u" OR "
 
-    searh_word = word.replace(' ', cop)
+        searh_word = word.replace(' ', cop)
+
     if genre_label:
         if word:
             searh_word = searh_word + " AND " + genre_label

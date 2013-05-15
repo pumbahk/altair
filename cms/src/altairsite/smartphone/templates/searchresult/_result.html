@@ -6,7 +6,8 @@
 %endif
 
 <%def name="disp_result(result)">
-    検索条件：${result.query.to_string()}<br/>
+    検索条件<br/>
+        ${result.query.create_query()}<br/>
 
     % if result.num:
         ${result.num}件見つかりました。全${result.num}件中、${result.start}〜${result.end}を表示

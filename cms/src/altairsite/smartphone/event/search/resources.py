@@ -8,25 +8,45 @@ from altaircms.models import Genre
 from datetime import date
 
 class SearchQuery(object):
-    def __init__(self, word, sale, sale_info):
+    def __init__(self, word, genre_label, sale, sale_info):
         self.word = word
+        self.genre_label = genre_label
         self.sale = sale
         self.sale_info = sale_info
-    def to_string(self):
-        str = u"フリーワード：" + self.word
-        return str
+    def create_query(self):
+        helper=SmartPhoneHelper()
+        query = []
+        query.append(u"フリーワード：" + self.word)
+        if self.genre_label:
+            query.append(u"ジャンル：" + self.genre_label)
+        if self.sale:
+            query.append(helper.get_sale_japanese(self.sale))
+        if self.sale_info:
+            if self.sale_info.sale_start:
+                query.append(u"販売開始まで：" + str(self.sale.sale_start) + u"日")
+            if self.sale_info.sale_end:
+                query.append(u"販売終了まで：" + str(self.sale.sale_end) + u"日")
+        return u"、".join(query)
+
+    """
+    def create_path(self, path):
+        route_path = path + "?word=" + self.word + "&sale=" + self.sale + "&sale_start=" \
+                     + self.sale_info.sale_start+ "&sale_end=" + self.sale_info.sale_end
+        return route_path
+    """
 
 class AreaSearchQuery(object):
     def __init__(self, area, genre_id, genre_label):
         self.area = area
         self.genre_id = genre_id
         self.word = genre_label
-    def to_string(self):
-        helper = SmartPhoneHelper()
-        str = u"地域：" + helper.getRegionJapanese(self.area)
+    def create_query(self):
+        helper=SmartPhoneHelper()
+        query = []
+        query.append(u"地域：" + helper.get_area_japanese(self.area))
         if self.word:
-             str = str + u', ジャンル:' + self.word
-        return str
+            query.append(u"ジャンル：" + self.word)
+        return u"、".join(query)
 
 class DetailSearchQuery(object):
     def __init__(self, word, cond, genre, prefectures, sales_segment, event_open_info, sale_info, perf_info):
@@ -38,8 +58,40 @@ class DetailSearchQuery(object):
         self.event_open_info = event_open_info
         self.sale_info = sale_info
         self.perf_info = perf_info
-    def to_string(self):
-        return u"フリーワード：" + self.word
+    def create_query(self):
+        helper=SmartPhoneHelper()
+        query = []
+        query.append(u"フリーワード：" + self.word)
+        if self.cond == "union":
+            query.append(u"少なくとも１つを含む")
+        else:
+            query.append(u"全てを含む")
+        if self.genre:
+            query.append(u"ジャンル：" + self.genre.label)
+        if self.sales_segment:
+            query.append(helper.get_sales_segment_japanese(self.sales_segment))
+        if self.event_open_info:
+            if self.event_open_info.since_event_open and self.event_open_info.event_open:
+                query.append(u"公演日：" + unicode(self.event_open_info.since_event_open) + u" 〜 " +  unicode(self.event_open_info.event_open))
+        if self.sale_info:
+            if self.sale_info.sale_start:
+                query.append(u"販売開始まで：" + str(self.sale_info.sale_start) + u"日")
+            if self.sale_info.sale_end:
+                query.append(u"販売終了まで：" + str(self.sale_info.sale_end) + u"日")
+        if self.perf_info:
+            if self.perf_info.canceled:
+                query.append(u"中止した公演")
+            if self.perf_info.closed:
+                query.append(u"販売終了した公演")
+        if self.prefectures:
+            first = False
+            for pref in self.prefectures:
+                if first:
+                    query.append(helper.get_prefecture_japanese(pref))
+                else:
+                    query.append(u"県名：" + helper.get_prefecture_japanese(pref))
+                    first = True
+        return u"、".join(query)
 
 class EventOpenInfo(object):
     def __init__(self, since_event_open, event_open):

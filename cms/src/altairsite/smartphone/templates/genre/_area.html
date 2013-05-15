@@ -4,6 +4,6 @@
 <b>地域で絞り込む</b><br/>
 % if areas:
     % for area in areas:
-        <a href="${request.route_path('search_genre_area')}?area=${area.name}&genre_id=${genre.id}&page=1">${helper.getRegionJapanese(area.name)}</a><br/>
+        <a href="${request.route_path('search_genre_area')}?area=${area.name}&genre_id=${genre.id}&page=1">${helper.get_area_japanese(area.name)}</a><br/>
     % endfor
 % endif
