@@ -1071,6 +1071,7 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
 class SalesSegmentKindEnum(StandardEnum):
     normal          = u'一般発売'
+    same_day        = u'当日券'
     early_firstcome = u'先行先着'
     added_sales     = u'追加発売'
     early_lottery   = u'先行抽選'
@@ -1081,6 +1082,7 @@ class SalesSegmentKindEnum(StandardEnum):
     other           = u'その他'
     order = [
         'normal',
+        'same_day',
         'early_firstcome',
         'added_sales',
         'early_lottery',
