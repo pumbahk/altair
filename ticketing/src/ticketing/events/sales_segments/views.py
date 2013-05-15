@@ -11,7 +11,7 @@ from pyramid.url import route_path
 from ticketing.models import merge_session_with_post, record_to_multidict
 from ticketing.views import BaseView
 from ticketing.fanstatic import with_bootstrap
-from ticketing.core.models import Event, Performance, SalesSegment, SalesSegmentGroup, Product, PaymentDeliveryMethodPair
+from ticketing.core.models import Event, Performance, SalesSegment, SalesSegmentGroup, Product, PaymentDeliveryMethodPair, Organization
 from ticketing.events.payment_delivery_method_pairs.forms import PaymentDeliveryMethodPairForm
 from ticketing.events.sales_segments.forms import SalesSegmentForm
 from ticketing.memberships.forms import MemberGroupForm
@@ -22,60 +22,6 @@ from datetime import datetime
 
 @view_defaults(decorator=with_bootstrap, permission='event_editor')
 class SalesSegments(BaseView):
-    def _form(self, formdata=None):
-        sales_segment_id = int(self.request.matchdict.get('sales_segment_id', 0))
-        sales_segment_group_id = int(self.request.params.get('sales_segment_group_id') or 0)
-        performance_id = int(self.request.params.get('performance_id') or 0)
-
-        if sales_segment_id:
-            _formdata = formdata
-            sales_segment = SalesSegment.get(sales_segment_id)
-            if sales_segment is None:
-                return HTTPNotFound('sales_segment id %d is not found' % sales_segment_id)
-            kwargs = dict(
-                obj=sales_segment,
-                sales_segment_groups=[sales_segment.sales_segment_group],
-                performances=sales_segment.sales_segment_group.event.performances,
-                new_form=False
-            )
-        else:
-            _formdata = MultiDict() if formdata is None else formdata.copy()
-            sales_segment_groups = None
-            if performance_id:
-                _formdata['performance_id'] = performance_id
-                sales_segment_groups = Performance.get(performance_id, self.context.user.organization_id).event.sales_segment_groups
-            if sales_segment_group_id:
-                sales_segment_group = SalesSegmentGroup.get(sales_segment_group_id)
-                _formdata['sales_segment_group_id'] = sales_segment_group_id
-                kwargs = dict(
-                    performances=sales_segment_group.event.performances,
-                    sales_segment_groups=sales_segment_groups,
-                    new_form=True
-                    )
-            else:
-                kwargs = dict(
-                    new_form=True,
-                    sales_segment_groups=sales_segment_groups
-                    )
-
-        return SalesSegmentForm(formdata=_formdata, **kwargs)
-
-    @property
-    def performance(self):
-        if 'performance_id' not in self.request.params:
-            return None
-
-        performance_id = self.request.params['performance_id']
-        return Performance.query.filter(Performance.id==performance_id).first()
-
-    @property
-    def sales_segment_group(self):
-        if 'sales_segment_group_id' not in self.request.params:
-            return None
-
-        performance_id = self.request.params['sales_segment_group_id']
-        return Performance.query.filter(Performance.id==performance_id).first()
-
     def _pdmp_map(self, sales_segment_groups):
         """ 販売区分グループごとのPDMP json
         """
@@ -95,24 +41,114 @@ class SalesSegments(BaseView):
 
     @property
     def sales_segment_groups(self):
-        performance = self.performance
+        performance = self.context.performance
         if performance is None:
             return []
 
         return performance.event.sales_segment_groups
 
-    @view_config(route_name='sales_segments.new', request_method='GET', renderer='ticketing:templates/sales_segments/_form.html', xhr=True)
-    def new_xhr(self):
+    @view_config(route_name='sales_segments.index', renderer='ticketing:templates/sales_segments/index.html', permission='event_viewer')
+    def index(self):
+        event_id = long(self.request.matchdict.get('event_id', 0))
+        event = Event.query.filter_by(id=event_id, organization_id=self.context.user.organization_id).one()
+        performance_id = self.request.params.get('performance_id')
+        if performance_id is not None:
+            performance_id = long(performance_id)
+            performance = Performance.query.filter_by(id=performance_id, event_id=event_id).one()
+        else:
+            performance = None
+
+        sort = self.request.GET.get('sort', 'SalesSegment.start_at')
+        direction = self.request.GET.get('direction', 'asc')
+        if direction not in ['asc', 'desc']:
+            direction = 'asc'
+
+        query = SalesSegment.query \
+            .join(SalesSegment.sales_segment_group) \
+            .join(SalesSegmentGroup.event) \
+            .filter(Organization.id == self.context.user.organization_id)
+        if event is not None:
+            query = query.filter(SalesSegmentGroup.event_id==event.id)
+        if performance is not None:
+            query = query.filter(SalesSegment.performance_id==performance.id)
+        query = query.order_by(sort + ' ' + direction)
+
+        sales_segments = paginate.Page(
+            query,
+            page=int(self.request.params.get('page', 0)),
+            items_per_page=20,
+            url=paginate.PageURL_WebOb(self.request)
+        )
+
         return {
-            'form': self._form(),
+            'event': event,
+            'performance': performance,
+            'sales_segments':sales_segments,
+        }
+
+    @view_config(route_name='sales_segments.show', request_method='GET', renderer='ticketing:templates/sales_segments/show.html')
+    def show(self):
+        if self.context.sales_segment is None:
+            raise HTTPBadRequest(body=json.dumps({
+                'message':u'販売区分が存在しません',
+            }))
+
+        return {
+            'sales_segment': self.context.sales_segment,
+            'form_pdmp':PaymentDeliveryMethodPairForm(),
+            }
+
+    @view_config(route_name='sales_segments.new', request_method='GET', renderer='ticketing:templates/sales_segments/edit.html', xhr=False)
+    def new(self):
+        return {
+            'event': self.context.event,
+            'performance': self.context.performance,
+            'sales_segment_group': self.context.sales_segment_group,
+            'form': SalesSegmentForm(context=self.context),
             'action': self.request.path,
             'pdmp_map': self._pdmp_map(self.sales_segment_groups),
             'account_map':self._account_map(self.sales_segment_groups)
             }
 
-    @view_config(route_name='sales_segments.new', request_method='POST', renderer='ticketing:templates/sales_segments/_form.html', xhr=True)
+    @view_config(route_name='sales_segments.new', request_method='GET', renderer='ticketing:templates/sales_segments/_form.html', xhr=True)
+    def new_xhr(self):
+        return {
+            'form': SalesSegmentForm(context=self.context),
+            'action': self.request.path,
+            'pdmp_map': self._pdmp_map(self.sales_segment_groups),
+            'account_map':self._account_map(self.sales_segment_groups)
+            }
+
+    @view_config(route_name='sales_segments.new', request_method='POST', renderer='ticketing:templates/sales_segments/_form.html', xhr=False)
     def new_post(self):
-        f = self._form(self.request.POST)
+        f = SalesSegmentForm(self.request.POST, context=self.context),
+
+        if f.validate():
+            if f.start_at.data is None:
+                f.start_at.data = datetime.now()
+            if f.end_at.data is None:
+                f.end_at.data = datetime.now()
+            sales_segment = merge_session_with_post(SalesSegment(), f.data)
+            pdmps = PaymentDeliveryMethodPair.query.filter(PaymentDeliveryMethodPair.id.in_(f.payment_delivery_method_pairs.data)).filter(PaymentDeliveryMethodPair.sales_segment_group_id==sales_segment.sales_segment_group_id).all()
+            sales_segment.payment_delivery_method_pairs = pdmps
+            sales_segment.save()
+
+            self.request.session.flash(u'販売区分を作成しました')
+            return HTTPFound(self.request.route_path('sales_segments.index', event_id=sales_segment.sales_segment_group.event_id, sales_segment_group_id=sales_segment.sales_segment_group_id, performance_id=sales_segment.performance_id))
+        else:
+            return {
+                'event': self.context.event,
+                'performance': self.context.performance,
+                'sales_segment_group': self.context.sales_segment_group,
+                'form': f,
+                'action': self.request.path_url,
+                'pdmp_map': self._pdmp_map(self.sales_segment_groups),
+                'account_map':self._account_map(self.sales_segment_groups)
+                }
+
+    @view_config(route_name='sales_segments.new', request_method='POST', renderer='ticketing:templates/sales_segments/_form.html', xhr=True)
+    def new_post_xhr(self):
+        f = SalesSegmentForm(self.request.POST, context=self.context)
 
         if f.validate():
             if f.start_at.data is None:
@@ -134,10 +170,23 @@ class SalesSegments(BaseView):
                 'account_map':self._account_map(self.sales_segment_groups)
                 }
 
+    @view_config(route_name='sales_segments.edit', request_method='GET', renderer='ticketing:templates/sales_segments/edit.html', xhr=False)
+    def edit(self):
+        return {
+            'event': self.context.sales_segment.sales_segment_group.event,
+            'performance': self.context.sales_segment.performance,
+            'sales_segment_group': self.context.sales_segment.sales_segment_group,
+            'sales_segment': self.context.sales_segment,
+            'form': SalesSegmentForm(obj=self.context.sales_segment, context=self.context),
+            'action': self.request.path,
+            'pdmp_map': self._pdmp_map(self.sales_segment_groups),
+            'account_map':self._account_map(self.sales_segment_groups)
+            }
+
     @view_config(route_name='sales_segments.edit', request_method='GET', renderer='ticketing:templates/sales_segments/_form.html', xhr=True)
     def edit_xhr(self):
         return {
-            'form': self._form(),
+            'form': SalesSegmentForm(obj=self.context.sales_segment, context=self.context),
             'action': self.request.path,
             'pdmp_map': self._pdmp_map(self.sales_segment_groups),
             'account_map':self._account_map(self.sales_segment_groups)
@@ -151,7 +200,7 @@ class SalesSegments(BaseView):
                 'message':u'販売区分が存在しません',
             }))
 
-        f = SalesSegmentForm(self.request.POST, performances=sales_segment.sales_segment_group.event.performances)
+        f = SalesSegmentForm(self.request.POST, context=self.context)
         if not f.validate():
             return f
         pdmp_ids = self.request.params.getall('payment_delivery_method_pairs[]')
@@ -174,6 +223,23 @@ class SalesSegments(BaseView):
 
         self.request.session.flash(u'販売区分を保存しました')
         return None
+
+    @view_config(route_name='sales_segments.edit', request_method='POST', renderer='ticketing:templates/sales_segments/edit.html', xhr=False)
+    def edit_post(self):
+        f = self._edit_post()
+        if f is None:
+            return HTTPFound(location=self.request.route_path('sales_segments.edit', sales_segment_id=self.context.sales_segment.id))
+        else:
+            return {
+                'event': self.context.event,
+                'performance': self.context.performance,
+                'sales_segment_group': self.context.sales_segment_group,
+                'sales_segment': self.context.sales_segment,
+                'form':f,
+                'action': self.request.path_url,
+                'pdmp_map': self._pdmp_map(self.sales_segment_groups),
+                'account_map':self._account_map(self.sales_segment_groups)
+                }
 
     @view_config(route_name='sales_segments.edit', request_method='POST', renderer='ticketing:templates/sales_segments/_form.html', xhr=True)
     def edit_post_xhr(self):
