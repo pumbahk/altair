@@ -237,6 +237,7 @@ def _entry_info(wish):
         user_profile = shipping_address.user.profile
 
     return OrderedDict([
+        (u"状態", wish.status),
         (u"申し込み番号", wish.lot_entry.entry_no),
         (u"希望順序", wish.wish_order + 1),
         (u"申し込み日", wish.created_at),

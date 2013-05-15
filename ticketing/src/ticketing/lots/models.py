@@ -353,6 +353,7 @@ class LotEntryWish(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     lot_entry = orm.relationship('LotEntry', backref='wishes')
 
     elected_at = sa.Column(sa.DateTime)
+    rejected_at = sa.Column(sa.DateTime)
 
     order_id = sa.Column(Identifier, sa.ForeignKey('Order.id'))
     order = orm.relationship('Order', backref='lot_wishes')
@@ -399,6 +400,22 @@ class LotEntryWish(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     def system_fee(self):
         #return self.lot_entry.lot.system_fee
         return self.lot_entry.payment_delivery_method_pair.system_fee
+
+
+    @property
+    def status(self):
+        """ """
+        if self.elected_at:
+            return u"当選"
+        if self.works:
+            return u"当選予定"
+        if self.canceled_at:
+            return u"キャンセル"
+        if self.rejected_at:
+            return u"落選"
+        return u"申込"
+
+
 
     def elect(self, now):
         now = now or datetime.now()
@@ -449,6 +466,11 @@ class LotElectWork(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     entry_wish_no = sa.Column(sa.Unicode(30), doc=u"申し込み番号と希望順を合わせたキー項目")
 
 
+    wish = orm.relationship("LotEntryWish",
+                            primaryjoin="and_(LotEntry.entry_no==LotElectWork.lot_entry_no,"
+                            "LotEntry.id==LotEntryWish.lot_entry_id,"
+                            "LotEntryWish.wish_order==LotElectWork.wish_order)",
+                            backref="works")
 
 class LotElectedEntry(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     """ 抽選当選情報 """
