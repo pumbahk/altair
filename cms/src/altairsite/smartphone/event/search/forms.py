@@ -31,7 +31,7 @@ class GenreSearchForm(TopSearchForm):
             (SalesEnum.ON_SALE.v, u'すべてのチケット'),
             (SalesEnum.GENRE.v, u'このジャンルで'),
         ],
-        default=SalesEnum.ON_SALE.v, coerce=int)
+        default=SalesEnum.GENRE.v, coerce=int)
 
 class AreaSearchForm(Form):
     area = HiddenField(label='', validators=[Optional()], default="")
