@@ -2,6 +2,7 @@
 
 import urllib2
 import struct
+import random
 
 import socket
 import httplib
@@ -142,13 +143,15 @@ def nws_data_send(url, terminal_id, password, file_id, data, cert_file=None, key
     header = terminal_id+password+file_id+size+"\0\0\0\0\0\0"
     output = header+data
     mode = modes.get(file_id)
+    thread_id = random.randint(1, 9999)
 
-    req = urllib2.Request('%s?Mode=%d&ThreadID=9' % (url, mode))
+    req = urllib2.Request('%s?Mode=%d&ThreadID=%d' % (url, mode, thread_id))
     req._cert_reqs = ssl.CERT_REQUIRED
     req._cert_file = cert_file
     req._key_file = key_file
     req._ca_certs = ca_certs
     req.add_header('Connection', 'close')
+    req.add_header('Cache-Control', 'no-cache')
 
     try:
         opener = build_opener()
