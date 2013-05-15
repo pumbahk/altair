@@ -8,9 +8,10 @@ from altaircms.models import Genre
 from datetime import date
 
 class SearchQuery(object):
-    def __init__(self, word, sale):
+    def __init__(self, word, sale, sale_info):
         self.word = word
         self.sale = sale
+        self.sale_info = sale_info
     def to_string(self):
         str = u"フリーワード：" + self.word
         return str
@@ -66,10 +67,8 @@ class SearchPageResource(TopPageResource):
     # トップ画面・ジャンル画面検索
     def search(self, query, page, per):
         searcher = EventSearcher(request=self.request)
-
         qs = searcher.search_freeword(search_query=query, genre_label=None, cond=None)
-        if qs:
-            qs = searcher.search_sale(search_query=query, qs=qs)
+        qs = searcher.search_sale(search_query=query, qs=qs)
         result = searcher.create_result(qs=qs, page=page, query=query, per=per)
         return result
 
@@ -80,9 +79,7 @@ class SearchPageResource(TopPageResource):
         if query.word:
             log_info("search_area", "genre=" + query.word)
             qs = searcher.search_freeword(search_query=query, genre_label=None, cond=None)
-            if qs:
-                log_info("search_area", "and search_area")
-                qs = searcher.search_area(search_query=query, qs=qs)
+            qs = searcher.search_area(search_query=query, qs=qs)
         else:
             qs = searcher.search_area(search_query=query, qs=qs)
 
@@ -101,15 +98,12 @@ class SearchPageResource(TopPageResource):
                 qs = searcher.search_freeword(search_query=query, genre_label=query.genre.label, cond=query.cond)
             else:
                 qs = searcher.search_freeword(search_query=query, genre_label=None, cond=query.cond)
-
-        if qs:
-            qs = searcher.search_prefectures(search_query=query, qs=qs)
-            qs = searcher.search_sales_segment(search_query=query, qs=qs)
-            qs = searcher.search_event_open(search_query=query, qs=qs)
-            qs = searcher.search_near_sale_start(search_query=query, qs=qs)
-            qs = searcher.search_near_sale_end(search_query=query, qs=qs)
-            qs = searcher.search_perf(search_query=query, qs=qs)
-
+        qs = searcher.search_prefectures(search_query=query, qs=qs)
+        qs = searcher.search_sales_segment(search_query=query, qs=qs)
+        qs = searcher.search_event_open(search_query=query, qs=qs)
+        qs = searcher.search_near_sale_start(search_query=query, qs=qs)
+        qs = searcher.search_near_sale_end(search_query=query, qs=qs)
+        qs = searcher.search_perf(search_query=query, qs=qs)
         result = searcher.create_result(qs=qs, page=page, query=query, per=per)
         return result
 
