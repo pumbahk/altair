@@ -46,7 +46,10 @@ def create_search_word(word, genre_label, cond):
 
     searh_word = word.replace(' ', cop)
     if genre_label:
-        searh_word = searh_word + " AND " + genre_label
+        if word:
+            searh_word = searh_word + " AND " + genre_label
+        else:
+            searh_word = genre_label
 
     return searh_word
 

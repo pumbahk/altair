@@ -17,7 +17,7 @@ def moveGenre(context, request):
     genretree = context.get_genre_tree(parent=genre)
     areas = context.get_area()
     week_sales = context.search_week(genre.label, 1, 10)
-    near_end_sales = context.search_week(genre.label, 1, 10)
+    near_end_sales = context.search_near_end(genre.label, 1, 10)
 
     return {
          'genre':genre

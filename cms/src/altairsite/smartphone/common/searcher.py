@@ -6,6 +6,18 @@ from .const import get_prefectures, SalesEnum
 from datetime import datetime, date, timedelta
 from altairsite.mobile.core.helper import log_debug, log_info, log_warn, log_exception, log_error
 from altairsite.smartphone.common.solr import searchEvents
+import webhelpers.paginate as paginate
+
+
+class SearchResult(object):
+    def __init__(self, query, num=0, start=0, end=0, page=1, page_end=1, events=None):
+        self.query = query
+        self.num = num
+        self.start = start
+        self.end = end
+        self.page = page
+        self.page_end = page_end
+        self.events = events
 
 class EventSearcher(object):
 
@@ -13,87 +25,144 @@ class EventSearcher(object):
         self.request = request
 
     # フリーワード、ジャンル検索
-    def search_freeword(self, word, genre_label, cond):
-        log_info("search_freeword", "start")
+    def search_freeword(self, search_query, genre_label, cond):
         qs = None
         try:
-            events = searchEvents(request=self.request, word=word, genre_label=genre_label, cond=cond)
+            events = searchEvents(request=self.request, word=search_query.word, genre_label=genre_label, cond=cond)
             ids = self._create_ids(events)
             if len(ids) > 0:
                 qs = self._create_common_qs(where=Event.id.in_(ids))
         except Exception as e:
             qs = None
-        log_info("search_freeword", "end")
         return qs
 
+    def _create_ids(self, events):
+        ids = []
+        for event in events:
+            ids.append(event.id)
+        log_info("_create_ids", "event ID = %s" % str(ids))
+        return ids
+
     # 発売状況
-    def search_sale(self, sale, qs):
+    def search_sale(self, search_query, qs):
+        sale = search_query.sale
         if sale == int(SalesEnum.ON_SALE):
-            qs = self._get_events_on_sale(qs)
+            qs = self.search_on_sale(qs)
         elif sale == int(SalesEnum.GENRE):
-            qs = self._get_events_on_sale(qs)
+            qs = self.search_on_sale(qs)
         elif sale == int(SalesEnum.WEEK_SALE):
-            qs = self.get_events_week_sale(date.today(), None, qs)
+            qs = self.search_week_sale(None, qs)
         elif sale == int(SalesEnum.NEAR_SALE_END):
-            qs = self._get_events_near_sale_end(7, qs)
+            qs = self.search_near_sale_end(N=7, qs=qs)
         elif sale == int(SalesEnum.SOON_ACT):
-            qs = self._get_events_near_act(qs)
+            qs = self.search_near_act(qs)
         elif sale == int(SalesEnum.ALL):
             pass
         return qs
 
-    # 販売中
-    def _get_events_on_sale(self, qs=None):
-        where = (datetime.now() <= Event.deal_close)
-        qs = self._create_common_qs(where=where, qs=qs)
-        return qs
-
-    # 中止した公演
-    def _get_events_from_canceled_perf(self, qs=None):
-        where = (Performance.canceld == True)
-        qs = self._create_common_qs(where=where, qs=qs)
-        return qs
-
-    # 販売終了した公演
-    def _get_events_from_closed_perf(self, qs=None):
-        where = (datetime.now() > Event.deal_close)
-        qs = self._create_common_qs(where=where, qs=qs)
-        return qs
-
     # 今週発売検索(月曜日を週のはじめとする)
-    def get_events_week_sale(self, today, offset=None, qs=None):
+    def search_week_sale(self, offset=None, qs=None):
+        today = date.today()
         start_day = today + timedelta(days=offset or -today.weekday())
         where = (Event.deal_open >= start_day) & (Event.deal_open <= start_day+timedelta(days=7))
         qs = self._create_common_qs(where=where, qs=qs)
         return qs
 
-    # 販売開始まで
-    def get_events_from_near_sale_start(self, N=7, qs=None):
-        if N:
-            log_info("get_events_from_near_sale_start", "near_sale_start = " + N)
-            today = date.today()
-            N = int(N)
-            sale_day = today + timedelta(days=N)
-            where = (Event.deal_open <= sale_day) & (Event.deal_open >= today)
-            qs = self._create_common_qs(where=where, qs=qs)
+    # まもなく開演
+    def search_near_act(self, qs=None):
+        where = (date.today() < Performance.start_on) & \
+                (Performance.start_on < date.today() + timedelta(days=7))
+        qs = self._create_common_qs(where=where, qs=qs)
         return qs
 
     # 販売終了間近
-    def _get_events_near_sale_end(self, N=7, qs=None):
-        if N:
-            log_info("_get_events_near_sale_end", "near_sale_end = " + N)
+    def search_near_sale_end(self, search_query, qs=None):
+        sale_end = search_query.sale_info.sale_end
+        if sale_end:
+            log_info("search_near_sale_end", "near_sale_end = " + str(sale_end))
             today = date.today()
-            N = int(N)
-            limit_day = today + timedelta(days=N)
+            sale_end = int(sale_end)
+            limit_day = today + timedelta(days=sale_end)
             where = (today <= Event.deal_close) & (Event.deal_close <= limit_day)
             qs = self._create_common_qs(where=where, qs=qs)
         return qs
 
-    # まもなく開演
-    def _get_events_near_act(self, qs=None):
-        qs = self._get_events_near_sale_end(date.today(), 7, qs)
-        where = (date.today() < Performance.start_on) & \
-                (Performance.start_on < date.today() + timedelta(days=7))
+    # 地域検索
+    def search_area(self, search_query, qs=None):
+        if search_query.area:
+            prefectures = get_prefectures(search_query.area)
+            where = Performance.prefecture.in_(prefectures)
+            qs = self._create_common_qs(where=where, qs=qs)
+        return qs
+
+    # 県名検索
+    def search_prefectures(self, search_query, qs=None):
+        if search_query.prefectures:
+            log_info("search_prefectures", " ,".join(search_query.prefectures))
+            where = Performance.prefecture.in_(search_query.prefectures)
+            qs = self._create_common_qs(where=where, qs=qs)
+        return qs
+
+    # 販売区分別
+    def search_sales_segment(self, search_query, qs=None):
+        label = "一般発売"
+        if search_query.sales_segment == "precedence":
+            label = "一般先行"
+        elif search_query.sales_segment == "lottery":
+            label = "先行抽選"
+        log_info("search_sales_segment", "sales_segment = " + label)
+        where = SalesSegmentKind.label == label
+        qs = self._create_common_qs(where=where, qs=qs)
+        return qs
+
+    # 公演日検索
+    def search_event_open(self, search_query, qs=None):
+        info = search_query.event_open_info
+        if info.since_event_open and info.event_open:
+            log_info("search_event_open", unicode(info.since_event_open) + u" 〜 " + unicode(info.event_open))
+            where = (info.since_event_open <= Event.event_open) & (info.event_open >= Event.event_open)
+            qs = self._create_common_qs(where=where, qs=qs)
+        return qs
+
+    # 販売開始まで
+    def search_near_sale_start(self, search_query, qs=None):
+        sale_start = search_query.sale_info.sale_start
+        if sale_start:
+            log_info("search_near_sale_start", "near_sale_start = " + str(sale_start))
+            today = date.today()
+            sale_start = int(sale_start)
+            sale_day = today + timedelta(days=sale_start)
+            where = (Event.deal_open <= sale_day) & (Event.deal_open >= today)
+            qs = self._create_common_qs(where=where, qs=qs)
+        return qs
+
+    # 公演状態による検索
+    def search_perf(self, search_query, qs):
+        info = search_query.perf_info
+        if info.canceled:
+            qs = self.search_canceled(qs=qs)
+        if info.closed:
+            qs = self.search_canceled(qs=qs)
+        if not info.canceled:
+            if not info.closed:
+                qs = self.search_on_sale(qs=qs)
+        return qs
+
+    # 販売中
+    def search_on_sale(self, qs=None):
+        where = (datetime.now() <= Event.deal_close)
+        qs = self._create_common_qs(where=where, qs=qs)
+        return qs
+
+    # 中止した公演
+    def search_canceled(self, qs=None):
+        where = (Performance.canceld == True)
+        qs = self._create_common_qs(where=where, qs=qs)
+        return qs
+
+    # 販売終了した公演
+    def search_closed(self, qs=None):
+        where = (datetime.now() > Event.deal_close)
         qs = self._create_common_qs(where=where, qs=qs)
         return qs
 
@@ -114,49 +183,25 @@ class EventSearcher(object):
                 .filter(where)
         return qs
 
-    # 取得イベントのIDリスト作成
-    def _create_ids(self, events):
-        log_info("_create_ids", "start")
-        ids = []
-        for event in events:
-            ids.append(event.id)
-        log_info("_create_ids", "event ID = %s" % str(ids))
-        log_info("_create_ids", "end")
-        return ids
+    # 検索結果の作成
+    def create_result(self, qs, page, query, per):
+        result = SearchResult(query)
+        if qs:
+            num = len(qs.all())
+            start = page * per - per + 1
+            end = page * per
+            page_end = num / per + 1
+            if num % per == 0:
+                page_end = num / per
 
-    # 地域検索
-    def get_events_from_area(self, area, qs=None):
-        if area:
-            prefectures = get_prefectures(area)
-            where = Performance.prefecture.in_(prefectures)
-            qs = self._create_common_qs(where=where, qs=qs)
-        return qs
+            if num < end:
+                end = num
 
-    # 県名検索
-    def get_events_from_prefectures(self, prefectures, qs=None):
-        if prefectures:
-            where = Performance.prefecture.in_(prefectures)
-            qs = self._create_common_qs(where=where, qs=qs)
-        return qs
+            if num:
+                events = self.paging(qs=qs, per=per, page=page)
+                result = SearchResult(query=query, num=num, start=start, end=end, page=page, page_end=page_end, events=events)
+        return result
 
-    # 販売区分別
-    def get_events_from_salessegment(self, sales_segment, qs=None):
-        label = "一般発売"
-        if sales_segment == "precedence":
-            label = "一般先行"
-        elif sales_segment == "lottery":
-            label = "先行抽選"
-        log_info("get_events_from_salessegment", "sales_segment = " + label)
-        where = SalesSegmentKind.label == label
-        qs = self._create_common_qs(where=where, qs=qs)
-        return qs
-
-    # 公演日検索
-    def get_events_from_start_on(self, event_open_info, qs=None):
-        info = event_open_info
-        if info.since_event_open and info.event_open:
-            log_info("get_events_from_event_open", unicode(info.since_event_open) + u" 〜 " + unicode(info.event_open))
-            where = (info.since_event_open <= Event.event_open) & (info.event_open >= Event.event_open)
-            qs = self._create_common_qs(where=where, qs=qs)
-        return qs
-
+    def paging(self, qs, per, page):
+        results = paginate.Page(qs.all(), page, per, url=paginate.PageURL_WebOb(self.request))
+        return results

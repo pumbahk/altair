@@ -1,11 +1,10 @@
 # -*- coding:utf-8 -*-
 from altairsite.smartphone.resources import TopPageResource
-from altairsite.smartphone.common.searcher import EventSearcher
-from altaircms.models import Genre
 from altairsite.smartphone.common.helper import SmartPhoneHelper
 from altairsite.mobile.core.helper import log_debug, log_info, log_warn, log_exception, log_error
 from altaircms.genre.searcher import GenreSearcher
-import webhelpers.paginate as paginate
+from altairsite.smartphone.common.searcher import EventSearcher
+from altaircms.models import Genre
 from datetime import date
 
 class SearchQuery(object):
@@ -56,159 +55,64 @@ class PerformanceInfo(object):
         self.canceled = canceled
         self.closed = closed
 
-class SearchResult(object):
-    def __init__(self, query, num=0, start=0, end=0, page=1, page_end=1, events=None):
-        self.query = query
-        self.num = num
-        self.start = start
-        self.end = end
-        self.page = page
-        self.page_end = page_end
-        self.events = events
-
 class SearchPageResource(TopPageResource):
     def __init__(self, request):
         self.request = request
-
-    # トップ画面、ジャンルの検索
-    def search(self, query, page, per):
-        qs = self.search_freeword(search_query=query, genre_label=None, cond=None)
-        if qs:
-            qs = self.search_sale(search_query=query, qs=qs)
-        result = self.create_result(qs=qs, page=page, query=query, per=per)
-        return result
-
-    # トップ画面、ジャンルのエリア検索
-    def search_area(self, query, page, per):
-        log_info("search_area", "start")
-        qs = None
-        if query.word:
-            log_info("search_area", "genre=" + query.word)
-            qs = self.search_freeword(search_query=query, genre_label=None, cond=None)
-            if qs:
-                log_info("search_area", "and search_area")
-                qs = self._search_area(search_query=query, qs=qs)
-        else:
-            qs = self._search_area(search_query=query, qs=qs)
-
-        qs = self._search_on_sale(qs=qs)
-        result = self.create_result(qs=qs, page=page, query=query, per=per)
-        log_info("search_area", "end")
-        return result
-
-    # 詳細検索
-    def search_detail(self, query, page, per):
-        qs = None
-
-        # フリーワード、ジャンル
-        if query.word:
-            if query.genre:
-                qs = self.search_freeword(search_query=query, genre_label=query.genre.label, cond=query.cond)
-            else:
-                qs = self.search_freeword(search_query=query, genre_label=None, cond=query.cond)
-
-        if qs:
-            qs = self._search_prefectures(search_query=query, qs=qs)
-            qs = self._search_sales_segment(search_query=query, qs=qs)
-            qs = self._search_event_open(search_query=query, qs=qs)
-            qs = self._search_near_sale_start(search_query=query, qs=qs)
-            qs = self._search_near_sale_end(search_query=query, qs=qs)
-            qs = self._search_perf(search_query=query, qs=qs)
-
-        result = self.create_result(qs=qs, page=page, query=query, per=per)
-        return result
-
-    def search_freeword(self, search_query, genre_label, cond):
-        searcher = EventSearcher(request=self.request)
-        qs = searcher.search_freeword(word=search_query.word, genre_label=genre_label, cond=cond)
-        return qs
-
-    def search_sale(self, search_query, qs):
-        searcher = EventSearcher(request=self.request)
-        qs = searcher.search_sale(sale=search_query.sale, qs=qs)
-        return qs
-
-    def _search_area(self, search_query, qs):
-        searcher = EventSearcher(request=self.request)
-        qs = searcher.get_events_from_area(area=search_query.area, qs=qs)
-        return qs
-
-    def _search_prefectures(self, search_query, qs):
-        searcher = EventSearcher(request=self.request)
-        qs = searcher.get_events_from_prefectures(prefectures=search_query.prefectures, qs=qs)
-        return qs
-
-    def _search_sales_segment(self, search_query, qs):
-        searcher = EventSearcher(request=self.request)
-        qs = searcher.get_events_from_salessegment(sales_segment=search_query.sales_segment, qs=qs)
-        return qs
-
-    def _search_event_open(self, search_query, qs):
-        searcher = EventSearcher(request=self.request)
-        qs = searcher.get_events_from_start_on(event_open_info=search_query.event_open_info, qs=qs)
-        return qs
-
-    def _search_near_sale_start(self, search_query, qs):
-        searcher = EventSearcher(request=self.request)
-        qs = searcher.get_events_from_near_sale_start(N=search_query.sale_info.sale_start, qs=qs)
-        return qs
-
-    def _search_near_sale_end(self, search_query, qs):
-        searcher = EventSearcher(request=self.request)
-        qs = searcher._get_events_near_sale_end(N=search_query.sale_info.sale_end, qs=qs)
-        return qs
-
-    def _search_perf(self, search_query, qs):
-        info = search_query.perf_info
-        if info.canceled:
-            qs = self._search_canceled(qs=qs)
-        if info.closed:
-            qs = self._search_canceled(qs=qs)
-        if not info.canceled:
-            if not info.closed:
-                qs = self._search_on_sale(qs=qs)
-        return qs
-
-    def _search_on_sale(self, qs):
-        searcher = EventSearcher(request=self.request)
-        qs = searcher._get_events_on_sale(qs=qs)
-        return qs
-
-    def _search_canceled(self, qs):
-        searcher = EventSearcher(request=self.request)
-        qs = searcher._get_events_from_canceled_perf(qs=qs)
-        return qs
-
-    def _search_closed(self, qs):
-        searcher = EventSearcher(request=self.request)
-        qs = searcher._get_events_from_closed_perf(qs=qs)
-        return qs
-
-    def create_result(self, qs, page, query, per):
-        result = SearchResult(query)
-        if qs:
-            num = len(qs.all())
-            start = page * per - per + 1
-            end = page * per
-            page_end = num / per + 1
-            if num % per == 0:
-                page_end = num / per
-
-            if num < end:
-                end = num
-
-            if num:
-                events = self.paging(qs=qs, per=per, page=page)
-                result = SearchResult(query=query, num=num, start=start, end=end, page=page, page_end=page_end, events=events)
-        return result
 
     def get_genre(self, id):
         genre = self.request.allowable(Genre).filter(Genre.id==id).first()
         return genre
 
-    def paging(self, qs, per, page):
-        results = paginate.Page(qs.all(), page, per, url=paginate.PageURL_WebOb(self.request))
-        return results
+    # トップ画面・ジャンル画面検索
+    def search(self, query, page, per):
+        searcher = EventSearcher(request=self.request)
+
+        qs = searcher.search_freeword(search_query=query, genre_label=None, cond=None)
+        if qs:
+            qs = searcher.search_sale(search_query=query, qs=qs)
+        result = searcher.create_result(qs=qs, page=page, query=query, per=per)
+        return result
+
+    # トップ画面、ジャンルのエリア検索
+    def search_area(self, query, page, per):
+        searcher = EventSearcher(request=self.request)
+        qs = None
+        if query.word:
+            log_info("search_area", "genre=" + query.word)
+            qs = searcher.search_freeword(search_query=query, genre_label=None, cond=None)
+            if qs:
+                log_info("search_area", "and search_area")
+                qs = searcher.search_area(search_query=query, qs=qs)
+        else:
+            qs = searcher.search_area(search_query=query, qs=qs)
+
+        qs = searcher.search_on_sale(qs=qs)
+        result = searcher.create_result(qs=qs, page=page, query=query, per=per)
+        return result
+
+    # 詳細検索
+    def search_detail(self, query, page, per):
+        searcher = EventSearcher(request=self.request)
+        qs = None
+
+        # フリーワード、ジャンル
+        if query.word:
+            if query.genre:
+                qs = searcher.search_freeword(search_query=query, genre_label=query.genre.label, cond=query.cond)
+            else:
+                qs = searcher.search_freeword(search_query=query, genre_label=None, cond=query.cond)
+
+        if qs:
+            qs = searcher.search_prefectures(search_query=query, qs=qs)
+            qs = searcher.search_sales_segment(search_query=query, qs=qs)
+            qs = searcher.search_event_open(search_query=query, qs=qs)
+            qs = searcher.search_near_sale_start(search_query=query, qs=qs)
+            qs = searcher.search_near_sale_end(search_query=query, qs=qs)
+            qs = searcher.search_perf(search_query=query, qs=qs)
+
+        result = searcher.create_result(qs=qs, page=page, query=query, per=per)
+        return result
+
 
     # 詳細検索フォーム生成
     def init_detail_search_form(self, form):
