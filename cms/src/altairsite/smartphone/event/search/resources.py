@@ -28,22 +28,22 @@ class SearchQuery(object):
                 query.append(u"販売終了まで：" + str(self.sale.sale_end) + u"日")
         return u"、".join(query)
 
-    def create_path(self):
-        route_path = "?word=" + self.word + "&sale=" + str(self.sale)
+    def create_parameter(self):
+        parameter = "?word=" + self.word + "&sale=" + str(self.sale)
         if self.genre:
-            route_path += "&genre_id=" + str(self.genre.id)
+            parameter += "&genre_id=" + str(self.genre.id)
         if self.sale_info:
             if self.sale_info.sale_start:
-                route_path += "&sale_start="
-                route_path += str(self.sale_info.sale_start)
+                parameter += "&sale_start="
+                parameter += str(self.sale_info.sale_start)
             if self.sale_info.sale_end:
-                route_path += "&sale_end=" + str(self.sale_info.sale_end)
-        return route_path
+                parameter += "&sale_end=" + str(self.sale_info.sale_end)
+        return parameter
 
 class AreaSearchQuery(object):
-    def __init__(self, area, genre_id, genre_label):
+    def __init__(self, area, genre, genre_label):
         self.area = area
-        self.genre_id = genre_id
+        self.genre = genre
         self.word = genre_label
     def create_query(self):
         helper=SmartPhoneHelper()
@@ -52,6 +52,11 @@ class AreaSearchQuery(object):
         if self.word:
             query.append(u"ジャンル：" + self.word)
         return u"、".join(query)
+    def create_parameter(self):
+        parameter = "?area=" + self.area
+        if self.genre:
+            parameter += "&genre_id=" + str(self.genre.id)
+        return parameter
 
 class DetailSearchQuery(object):
     def __init__(self, word, cond, genre, prefectures, sales_segment, event_open_info, sale_info, perf_info):

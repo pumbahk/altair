@@ -44,7 +44,7 @@ def genre_search(context, request):
 def search_area(context, request):
     # トップ画面のエリア検索
     form = AreaSearchForm(request.GET)
-    query = AreaSearchQuery(area=form.data['area'], genre_id=None, genre_label=None)
+    query = AreaSearchQuery(area=form.data['area'], genre=None, genre_label=None)
     result = context.search_area(query, int(form.data['page']), 10)
     print form.data['area']
 
@@ -60,7 +60,7 @@ def search_genre_area(context, request):
     # ジャンル画面のエリア検索
     form = AreaSearchForm(request.GET)
     genre = context.get_genre(form.data['genre_id'])
-    query = AreaSearchQuery(area=form.data['area'], genre_id=genre.id, genre_label=genre.label)
+    query = AreaSearchQuery(area=form.data['area'], genre=genre, genre_label=genre.label)
     result = context.search_area(query, int(form.data['page']), 10)
 
     return {
