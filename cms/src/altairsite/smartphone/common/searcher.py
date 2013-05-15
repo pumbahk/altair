@@ -47,17 +47,17 @@ class EventSearcher(object):
     def search_sale(self, search_query, qs=None):
         if qs:
             sale = search_query.sale
-            if sale == int(SalesEnum.ON_SALE):
+            if sale == SalesEnum.ON_SALE.v:
                 qs = self.search_on_sale(qs)
-            elif sale == int(SalesEnum.GENRE):
+            elif sale == SalesEnum.GENRE.v:
                 qs = self.search_on_sale(qs)
-            elif sale == int(SalesEnum.WEEK_SALE):
+            elif sale == SalesEnum.WEEK_SALE.v:
                 qs = self.search_week_sale(None, qs)
-            elif sale == int(SalesEnum.NEAR_SALE_END):
+            elif sale == SalesEnum.NEAR_SALE_END.v:
                 qs = self.search_near_sale_end(search_query, qs=qs)
-            elif sale == int(SalesEnum.SOON_ACT):
+            elif sale == SalesEnum.SOON_ACT.v:
                 qs = self.search_near_act(qs)
-            elif sale == int(SalesEnum.ALL):
+            elif sale == SalesEnum.ALL.v:
                 pass
         return qs
 
