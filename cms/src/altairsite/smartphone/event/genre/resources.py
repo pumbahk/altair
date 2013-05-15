@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 from altairsite.smartphone.event.search.resources import SearchPageResource
 from altairsite.smartphone.common.const import SalesEnum
-from altairsite.smartphone.event.search.resources import SearchQuery, SaleInfo
+from altairsite.smartphone.event.search.search_query import SearchQuery, SaleInfo
 from altairsite.smartphone.common.searcher import EventSearcher
 
 class GenrePageResource(SearchPageResource):

@@ -2,7 +2,7 @@
 from altairsite.config import usersite_view_config
 from altairsite.smartphone.common.helper import SmartPhoneHelper
 from altairsite.smartphone.event.search.forms import TopSearchForm, GenreSearchForm, AreaSearchForm, DetailSearchForm
-from altairsite.smartphone.event.search.resources import SearchQuery, AreaSearchQuery, DetailSearchQuery\
+from altairsite.smartphone.event.search.search_query import SearchQuery, AreaSearchQuery, DetailSearchQuery\
     , EventOpenInfo, SaleInfo, PerformanceInfo
 from altairsite.smartphone.common.const import SalesEnum
 
