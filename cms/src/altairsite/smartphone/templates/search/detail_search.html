@@ -33,8 +33,9 @@
 
             <%m:header>発売日で絞り込む</%m:header><br/>
             ${form.sale_start}日以内に受付・販売開始<br/>
-            販売終了まで${form.sale_end}日<br/>
-            ${form.sale_option}
+            販売終了まで${form.sale_end}日<br/><br/>
+            ${form.closed_perf.label}${form.closed_perf}
+            ${form.canceled_perf.label}${form.canceled_perf}<br/>
 
             ${form.page}
             <input type="submit" value="検索"/>

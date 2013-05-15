@@ -48,6 +48,18 @@ class EventSearcher(object):
         qs = self._create_common_qs(where=where, qs=qs)
         return qs
 
+    # 中止した公演
+    def _get_events_from_canceled_perf(self, qs=None):
+        where = (Performance.canceld == True)
+        qs = self._create_common_qs(where=where, qs=qs)
+        return qs
+
+    # 販売終了した公演
+    def _get_events_from_closed_perf(self, qs=None):
+        where = (datetime.now() > Event.deal_close)
+        qs = self._create_common_qs(where=where, qs=qs)
+        return qs
+
     # 今週発売検索(月曜日を週のはじめとする)
     def get_events_week_sale(self, today, offset=None, qs=None):
         start_day = today + timedelta(days=offset or -today.weekday())

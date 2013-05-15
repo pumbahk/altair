@@ -77,13 +77,8 @@ class DetailSearchForm(TopSearchForm):
     day = SelectField(label='', validators=[Optional()], choices=[])
     sale_start = SelectField(label='', validators=[Optional()], choices=[], coerce=str)
     sale_end = SelectField(label='', validators=[Optional()], choices=[], coerce=str)
-
-    sale_option = BooleanField('I accept the site rules', [Optional()])
-
-
-    sale = RadioField(label = '', validators=[Optional()],
-        choices=[(0, u'販売中'), (1, u'今週販売開始'), (2, u'販売終了間近'), (3, u'まもなく開演のチケット'), (4, u'販売終了した公演も表示する')],
-        default=SalesEnum.ON_SALE, coerce=int)
+    closed_perf = BooleanField(u'販売終了した公演', [Optional()])
+    canceled_perf = BooleanField(u'中止した公演', [Optional()])
 
     def get_prefectures(self):
         prefectures = []

@@ -3,7 +3,7 @@ from altairsite.config import usersite_view_config
 from altairsite.smartphone.common.helper import SmartPhoneHelper
 from altairsite.smartphone.event.search.forms import TopSearchForm, GenreSearchForm, AreaSearchForm, DetailSearchForm
 from altairsite.smartphone.event.search.resources import SearchQuery, AreaSearchQuery, DetailSearchQuery\
-    , EventOpenInfo, SaleInfo
+    , EventOpenInfo, SaleInfo, PerformanceInfo
 from altairsite.smartphone.common.const import SalesEnum
 
 @usersite_view_config(route_name='search',request_type="altairsite.tweens.ISmartphoneRequest"
@@ -85,12 +85,15 @@ def detail_search(context, request):
     # 詳細検索
     form = DetailSearchForm(request.GET)
     context.init_detail_search_form(form=form)
+
     genre = context.get_genre(form.data['genre_id'])
-    event_open_info = EventOpenInfo(form.get_since_event_open(), form.get_event_open())
-    sale_info = SaleInfo(form.data['sale_start'], form.data['sale_end'])
+    event_open_info = EventOpenInfo(since_event_open=form.get_since_event_open(), event_open=form.get_event_open())
+    sale_info = SaleInfo(sale_start=form.data['sale_start'], sale_end=form.data['sale_end'])
+    perf_info = PerformanceInfo(canceled=form.data['canceled_perf'], closed=form.data['closed_perf'])
+
     query = DetailSearchQuery(word=form.data['word'], cond=form.data['cond'], genre=genre
         , prefectures=form.get_prefectures(), sales_segment=form.data['sales_segment'], event_open_info=event_open_info
-        , sale_info=sale_info)
+        , sale_info=sale_info, perf_info=perf_info)
     result = context.search_detail(query, int(form.data['page']), 10)
 
     return {

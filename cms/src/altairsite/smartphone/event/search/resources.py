@@ -29,7 +29,7 @@ class AreaSearchQuery(object):
         return str
 
 class DetailSearchQuery(object):
-    def __init__(self, word, cond, genre, prefectures, sales_segment, event_open_info, sale_info):
+    def __init__(self, word, cond, genre, prefectures, sales_segment, event_open_info, sale_info, perf_info):
         self.word = word
         self.cond = cond
         self.genre = genre
@@ -37,6 +37,7 @@ class DetailSearchQuery(object):
         self.sales_segment = sales_segment
         self.event_open_info = event_open_info
         self.sale_info = sale_info
+        self.perf_info = perf_info
     def to_string(self):
         return u"フリーワード：" + self.word
 
@@ -49,6 +50,11 @@ class SaleInfo(object):
     def __init__(self, sale_start, sale_end):
         self.sale_start = sale_start
         self.sale_end = sale_end
+
+class PerformanceInfo(object):
+    def __init__(self, canceled, closed):
+        self.canceled = canceled
+        self.closed = closed
 
 class SearchResult(object):
     def __init__(self, query, num=0, start=0, end=0, page=1, page_end=1, events=None):
@@ -107,6 +113,7 @@ class SearchPageResource(TopPageResource):
             qs = self._search_event_open(search_query=query, qs=qs)
             qs = self._search_near_sale_start(search_query=query, qs=qs)
             qs = self._search_near_sale_end(search_query=query, qs=qs)
+            qs = self._search_perf(search_query=query, qs=qs)
 
         result = self.create_result(qs=qs, page=page, query=query, per=per)
         return result
@@ -151,9 +158,30 @@ class SearchPageResource(TopPageResource):
         qs = searcher._get_events_near_sale_end(N=search_query.sale_info.sale_end, qs=qs)
         return qs
 
+    def _search_perf(self, search_query, qs):
+        info = search_query.perf_info
+        if info.canceled:
+            qs = self._search_canceled(qs=qs)
+        if info.closed:
+            qs = self._search_canceled(qs=qs)
+        if not info.canceled:
+            if not info.closed:
+                qs = self._search_on_sale(qs=qs)
+        return qs
+
     def _search_on_sale(self, qs):
         searcher = EventSearcher(request=self.request)
         qs = searcher._get_events_on_sale(qs=qs)
+        return qs
+
+    def _search_canceled(self, qs):
+        searcher = EventSearcher(request=self.request)
+        qs = searcher._get_events_from_canceled_perf(qs=qs)
+        return qs
+
+    def _search_closed(self, qs):
+        searcher = EventSearcher(request=self.request)
+        qs = searcher._get_events_from_closed_perf(qs=qs)
         return qs
 
     def create_result(self, qs, page, query, per):
