@@ -21,7 +21,6 @@ class SearchQuery(object):
             if self.sale_info.sale_end:
                 query.append(u"販売終了まで：" + str(self.sale.sale_end) + u"日")
         return u"、".join(query)
-
     def create_parameter(self):
         parameter = "?word=" + self.word + "&sale=" + str(self.sale)
         if self.genre:
@@ -96,6 +95,41 @@ class DetailSearchQuery(object):
                     query.append(u"県名：" + helper.get_prefecture_japanese(pref))
                     first = True
         return u"、".join(query)
+    def create_parameter(self):
+        parameter = "?word=" + self.word
+        if self.cond:
+            parameter += "&cond=" + self.cond
+        if self.genre:
+            parameter += "&genre_id=" + str(self.genre.id)
+        else:
+            parameter += "&genre_id="
+        if self.prefectures:
+            parameter += "&prefecture_hokkaido=" + "&prefecture_hokkaido=".join(self.prefectures)
+        if self.sales_segment:
+            parameter += "&sales_segment=" + self.sales_segment
+        if self.event_open_info:
+            if self.event_open_info.since_event_open:
+                if self.event_open_info.event_open:
+                    # smell
+                    parameter += "&since_year=" + str(self.event_open_info.since_event_open.year)
+                    parameter += "&since_month=" + str(self.event_open_info.since_event_open.month)
+                    parameter += "&since_day=" + str(self.event_open_info.since_event_open.day)
+                    parameter += "&year=" + str(self.event_open_info.event_open.year)
+                    parameter += "&month=" + str(self.event_open_info.event_open.month)
+                    parameter += "&day=" + str(self.event_open_info.event_open.day)
+        if self.sale_info:
+            parameter += "&sale_start="
+            if self.sale_info.sale_start:
+                parameter += str(self.sale_info.sale_start)
+            parameter += "&sale_end="
+            if self.sale_info.sale_end:
+                parameter += str(self.sale_info.sale_end)
+        if self.perf_info:
+            if self.perf_info.canceled:
+                parameter += "&canceled_perf=y"
+            if self.perf_info.closed:
+                parameter += "&closed_perf=y"
+        return parameter
 
 class EventOpenInfo(object):
     def __init__(self, since_event_open, event_open):

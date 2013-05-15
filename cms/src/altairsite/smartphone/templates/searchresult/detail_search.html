@@ -5,6 +5,6 @@
 <%include file="../search/detail_search.html" args="form=form"/>
 
 % if result:
-    <% path=request.route_path('search_detail') + "?word=" %>
+    <% path=request.route_path('search_detail') + result.query.create_parameter() %>
     <%include file="_result.html" args="result=result, path=path, helper=helper"/>
 % endif
