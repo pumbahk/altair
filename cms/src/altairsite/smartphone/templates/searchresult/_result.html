@@ -28,6 +28,10 @@
 
     <div id=pager>
     % if result.num:
+        % if result.page > 1:
+            <a href="${path}&page=${result.page - 1}">前へ</a>
+        % endif
+
         % for count in range(result.page_end):
             % if result.page == count + 1:
                 ${count + 1}
@@ -35,6 +39,10 @@
                 <a href="${path}&page=${count+1}">${count + 1}</a>
             % endif
         % endfor
+
+        % if result.page < result.page_end:
+            <a href="${path}&page=${result.page + 1}">次へ</a>
+        % endif
     % endif
     </div>
 </%def>
