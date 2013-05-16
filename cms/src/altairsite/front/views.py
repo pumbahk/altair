@@ -1,7 +1,7 @@
 # coding: utf-8
 from pyramid.httpexceptions import HTTPNotFound
 from altaircms.lib.fanstatic_decorator import with_jquery
-from altaircms.page.api import as_static_page_response, StaticPageNotFound
+from altaircms.page.staticupload.api import as_static_page_response, StaticPageNotFound
 import logging 
 import os.path
 from altairsite.config import usersite_view_config

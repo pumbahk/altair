@@ -108,12 +108,13 @@ class StaticPageCreateViewTests(unittest.TestCase):
                 return testing.DummyResource(name=data["name"], id=1)
 
         postdata = dict(name="this-is-static-page-name", 
-                        zipfile=DummyFileStorage("filename.zip", "content-of-zip"))
+                        zipfile=DummyFileStorage("filename.zip", "content-of-zip"), 
+                        layout=1)
         request = DummyRequest(POST=postdata)
         context = DummyContext(request)
         target = self._makeOne(context, request)
 
-        with mock.patch("altaircms.page.writefile.replace_directory_from_zipfile") as m:
+        with mock.patch("altaircms.filelib.zipupload.replace_directory_from_zipfile") as m:
             with mock.patch("altaircms.page.forms.StaticPageCreateForm") as fm: 
                 fm.validate.return_value = True
                 fm().data = postdata
@@ -154,7 +155,7 @@ class StaticPageViewTests(unittest.TestCase):
 
         with mock.patch("altaircms.page.views.get_or_404") as mFinder:
             mFinder.return_value = obj
-            with mock.patch("altaircms.page.writefile.create_directory_snapshot") as mWriteFile:
+            with mock.patch("altaircms.filelib.zipupload.create_directory_snapshot") as mZipupload:
                 with mock.patch("altaircms.page.resources.StaticPageResource") as mResource:
                     target = self._makeOne(mResource(), request)
                     target.delete()
@@ -163,8 +164,8 @@ class StaticPageViewTests(unittest.TestCase):
                     args, kwargs = mResource().delete_static_page.call_args
                     self.assertEquals(args, (obj,))
 
-                self.assertEquals(mWriteFile.call_count, 1)
-                args, kwargs = mWriteFile.call_args
+                self.assertEquals(mZipupload.call_count, 1)
+                args, kwargs = mZipupload.call_args
                 self.assertEquals(os.path.normpath(args[0]), os.path.join(os.path.abspath(os.path.dirname(__file__)), "dummy/foo"))
             
     def test_update_object(self):
@@ -177,9 +178,9 @@ class StaticPageViewTests(unittest.TestCase):
 
         with mock.patch("altaircms.page.views.get_or_404") as mFinder:
             mFinder.return_value = obj
-            with mock.patch("altaircms.page.views.writefile") as mWriteFile:
-                mWriteFile.create_directory_snapshot = mock.Mock()
-                mWriteFile.is_zipfile = mock.Mock(return_value=True)
+            with mock.patch("altaircms.page.views.zipupload") as mZipupload:
+                mZipupload.create_directory_snapshot = mock.Mock()
+                mZipupload.is_zipfile = mock.Mock(return_value=True)
 
                 with mock.patch("altaircms.page.resources.StaticPageResource") as mResource:
                     target = self._makeOne(mResource(), request)
@@ -190,10 +191,10 @@ class StaticPageViewTests(unittest.TestCase):
                     self.assertEquals(args, (obj,))
 
                 saved_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), ".", "dummy", "foo")
-                args, kwargs = mWriteFile.create_directory_snapshot.call_args
+                args, kwargs = mZipupload.create_directory_snapshot.call_args
                 self.assertEquals(args, (saved_path,))
                 
-                args, kwargs = mWriteFile.replace_directory_from_zipfile.call_args
+                args, kwargs = mZipupload.replace_directory_from_zipfile.call_args
                 self.assertEquals(args, (saved_path, request.POST["zipfile"].file))
 
     def test_update_object_failcase(self):
@@ -208,8 +209,8 @@ class StaticPageViewTests(unittest.TestCase):
 
         with mock.patch("altaircms.page.views.get_or_404") as mFinder:
             mFinder.return_value = obj
-            with mock.patch("altaircms.page.views.writefile") as mWriteFile:
-                mWriteFile.is_zipfile = mock.Mock(return_value=False)
+            with mock.patch("altaircms.page.views.zipupload") as mZipupload:
+                mZipupload.is_zipfile = mock.Mock(return_value=False)
                 with mock.patch("altaircms.page.resources.StaticPageResource") as mResource:
                     target = self._makeOne(mResource(), request)
 

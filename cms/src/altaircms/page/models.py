@@ -215,7 +215,6 @@ class StaticPage(BaseOriginalMixin,
     __tablename__ = "static_pages"
 
     id = sa.Column(sa.Integer, primary_key=True)
-    
     created_at = sa.Column(sa.DateTime, default=datetime.now)
     updated_at = sa.Column(sa.DateTime, default=datetime.now, onupdate=datetime.now)
     name = sa.Column(sa.String(255), doc="directory name(internal)")
@@ -223,9 +222,11 @@ class StaticPage(BaseOriginalMixin,
     publish_begin = Column(DateTime)
     publish_end = Column(DateTime)
     published = Column(sa.Boolean, default=False)    
+    pageset_id = Column(sa.Integer, ForeignKey("pagesets.id"))
     layout_id = Column(Integer, ForeignKey("layout.id"))    
     layout = relationship(Layout, backref='static_pages', uselist=False)
-    interceptive = Column(sa.Boolean, default=True)
+    interceptive = Column(sa.Boolean, default=False)
+    
 
     @property
     def description(self):
