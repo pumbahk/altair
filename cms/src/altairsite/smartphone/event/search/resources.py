@@ -1,12 +1,12 @@
 # -*- coding:utf-8 -*-
-from altairsite.smartphone.resources import TopPageResource
+from altairsite.smartphone.common.resources import CommonResource
 from altairsite.mobile.core.helper import log_debug, log_info, log_warn, log_exception, log_error
 from altaircms.genre.searcher import GenreSearcher
 from altairsite.smartphone.common.searcher import EventSearcher
 from altaircms.models import Genre
 from datetime import date
 
-class SearchPageResource(TopPageResource):
+class SearchPageResource(CommonResource):
     def __init__(self, request):
         self.request = request
 

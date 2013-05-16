@@ -13,14 +13,14 @@ def search(context, request):
     # トップ画面の検索
     form = TopSearchForm(request.GET)
 
-    if form.validate():
-        query = SearchQuery(form.data['word'], None, form.data['sale'], None)
-        page = form.data['page'] if form.data['page'] else 1
-        result = context.search(query, int(page), 10)
-    else:
+    if not form.validate():
         render_param = context.get_top_render_param()
         render_param['form'] = form
         return render_to_response('altairsite.smartphone:templates/top.html', render_param, request=request)
+
+    query = SearchQuery(form.data['word'], None, form.data['sale'], None)
+    page = form.data['page'] if form.data['page'] else 1
+    result = context.search(query, int(page), 10)
 
     return {
          'result':result
@@ -34,6 +34,11 @@ def genre_search(context, request):
     # ジャンル画面の検索
     form = GenreSearchForm(request.GET)
     search_word = form.data['word']
+
+    if not form.validate():
+        render_param = context.get_genre_render_param()
+        render_param['form'] = form
+        return render_to_response('altairsite.smartphone:templates/genre/genre.html', render_param, request=request)
 
     if form.data['sale'] == SalesEnum.GENRE.v:
         genre = context.get_genre(form.data['genre_id'])
@@ -55,7 +60,6 @@ def search_area(context, request):
     form = AreaSearchForm(request.GET)
     query = AreaSearchQuery(area=form.data['area'], genre=None, genre_label=None)
     result = context.search_area(query, int(form.data['page']), 10)
-    print form.data['area']
 
     return {
          'query':query
