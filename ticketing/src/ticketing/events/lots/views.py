@@ -497,7 +497,8 @@ class LotEntries(BaseView):
         wish_order = self.request.params['wish_order']
 
         lot_entry = lot.get_lot_entry(entry_no)
-        if lot_entry is None:
+        wish = lot_entry.get_wish(wish_order)
+        if wish is None:
             return dict(result="NG",
                         message="not found")
 
@@ -506,7 +507,8 @@ class LotEntries(BaseView):
         affected = lots_api.submit_lot_entries(lot.id, entries)
 
         return dict(result="OK",
-                    affected=affected)
+                    affected=affected,
+                    wish=lots_api._entry_info(wish))
 
     @view_config(route_name='lots.entries.cancel', 
                  renderer="json",
