@@ -1403,7 +1403,26 @@ class OrdersReserveView(BaseView):
             'seat_names':seat_names
         }
 
-    @view_config(route_name='orders.reserve.form', request_method='POST', renderer='altair.app.ticketing:templates/orders/_form_reserve.html')
+    @view_config(route_name='orders.api.get_html', renderer='ticketing:templates/orders/_tiny_order.html')
+    def api_get_html(self):
+        l0_id = self.request.params.get('l0_id', 0)
+        performance_id = self.request.params.get('performance_id', 0)
+        logger.debug('call get order api (seat l0_id = %s)' % l0_id)
+        order = Order.filter_by(organization_id=self.context.user.organization_id)\
+            .filter(Order.performance_id==performance_id)\
+            .filter(Order.canceled_at==None)\
+            .join(Order.ordered_products)\
+            .join(OrderedProduct.ordered_product_items)\
+            .join(OrderedProductItem.seats)\
+            .filter(Seat.l0_id==l0_id).first()
+        if order is None:
+            raise HTTPNotFound('order id %d is not found' % order.id)
+
+        return {
+            'order':order,
+        }
+
+    @view_config(route_name='orders.reserve.form', request_method='POST', renderer='ticketing:templates/orders/_form_reserve.html')
     def reserve_form(self):
         post_data = MultiDict(self.request.json_body)
         logger.debug('order reserve post_data=%s' % post_data)
