@@ -213,10 +213,13 @@ def frontend_drawing(request):
     venue_id = int(request.matchdict.get('venue_id', 0))
     venue = Venue.get(venue_id, organization_id=request.context.user.organization_id)
     part = request.matchdict.get('part')
+    drawing = venue.site.get_drawing(part)
+    if drawing is None:
+        return HTTPNotFound()
     content_encoding = None
     if re.match('^.+\.(svgz|gz)$', part):
         content_encoding = 'gzip'
-    return Response(body=venue.site.get_drawing(part).stream().read(), content_type='text/xml; charset=utf-8', content_encoding=content_encoding)
+    return Response(body=drawing.stream().read(), content_type='text/xml; charset=utf-8', content_encoding=content_encoding)
 
 # FIXME: add permission limitation
 @view_config(route_name='venues.show', renderer='ticketing:templates/venues/show.html', decorator=with_bootstrap)
