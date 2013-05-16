@@ -4,6 +4,10 @@ logger = logging.getLogger(__name__)
 
 from altaircms.solr import api as solr
 from altaircms.modelmanager.searcher import IPublishingModelSearcher
+from . import StaticPageNotFound
+from .staticupload.api import get_static_page_utility
+from .staticupload.api import set_static_page_utility
+from .staticupload.api import as_static_page_response
 
 def get_pageset_searcher(request):
     return request.registry.queryUtility(IPublishingModelSearcher, name="page")(request)

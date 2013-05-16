@@ -6,7 +6,7 @@ from altaircms.formhelpers import Form
 from wtforms import fields
 from wtforms import widgets
 from wtforms import validators
-from .models import StaticPage
+from ..models import StaticPage
 from altaircms.formhelpers import dynamic_query_select_field_factory
 from altaircms.formhelpers import append_errors
 from altaircms.formhelpers import MaybeDateTimeField

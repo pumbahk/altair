@@ -101,7 +101,7 @@ def includeme(config):
                     circle_type="circle-page", 
                     bind_actions=["update"], 
                     has_auto_generated_permission=False, 
-                    form="..page.forms.StaticPageForm", mapper=".mappers.staticpage_mapper", 
+                    form="..page.staticupload.forms.StaticPageForm", mapper=".mappers.staticpage_mapper", 
                     events=dict(update_event=config.maybe_dotted(".subscribers.StaticPageUpdate")), 
                     )
 
