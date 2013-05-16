@@ -9,5 +9,5 @@ def includeme(config):
         settings["altaircms.page.static.directory"], 
         settings["altaircms.page.tmp.directory"]
         )
-
+    config.scan(".views")
 

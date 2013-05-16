@@ -1,3 +1,4 @@
+#-*- coding:utf-8 -*-
 import os
 from pyramid.httpexceptions import HTTPFound, HTTPForbidden
 from pyramid.response import FileResponse
@@ -13,6 +14,7 @@ from .api import get_static_page_utility
 from .api import as_static_page_response
 from altaircms.page.models import StaticPage
 from . import forms
+from . import creation
 
 @view_defaults(route_name="static_page_create", permission="authenticated")
 class StaticPageCreateView(object):
@@ -23,25 +25,19 @@ class StaticPageCreateView(object):
     @view_config(match_param="action=input", decorator=with_bootstrap,
                  renderer="altaircms:templates/page/static_page_add.html")
     def input(self):
-        form = forms.StaticPageCreateForm()
+        form = self.context.form(forms.StaticPageCreateForm)
         return {"form": form}
 
     @view_config(match_param="action=create", request_method="POST", 
                  decorator=with_bootstrap,
                  renderer="altaircms:templates/page/static_page_add.html")
     def create(self):
-        form = forms.StaticPageCreateForm(self.request.POST)
-        if not form.validate(self.request):
+        form = self.context.form(forms.StaticPageCreateForm, self.request.POST)
+        if not form.validate():
             return {"form": form}
-
-        static_directory = get_static_page_utility(self.request)
-        filestorage = form.data["zipfile"]
-        static_page = self.context.create_static_page(form.data)
-        src = os.path.join(static_directory.get_base_directory(), static_page.name)
-        zipupload.replace_directory_from_zipfile(src, filestorage.file)
-        self.request.registry.notify(zipupload.AfterZipUpload(self.request, src))
-
-        FlashMessage.success(u"%sが作成されました" % filestorage.filename, request=self.request)
+        creator = self.context.creation(creation.StaticPageCreate, form.data)
+        static_page = creator.create()
+        FlashMessage.success(u"%sが作成されました" % static_page.label, request=self.request)
         return HTTPFound(self.request.route_url("static_page", action="detail", static_page_id=static_page.id))
 
         

@@ -223,6 +223,7 @@ class StaticPage(BaseOriginalMixin,
     publish_end = Column(DateTime)
     published = Column(sa.Boolean, default=False)    
     pageset_id = Column(sa.Integer, ForeignKey("pagesets.id"))
+    pageset = relationship('PageSet', backref=orm.backref('static_pages', order_by=sa.asc("publish_begin")), uselist=False)
     layout_id = Column(Integer, ForeignKey("layout.id"))    
     layout = relationship(Layout, backref='static_pages', uselist=False)
     interceptive = Column(sa.Boolean, default=False)

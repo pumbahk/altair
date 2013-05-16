@@ -335,5 +335,4 @@ if(ua.indexOf("firefox") <= -1 && ua.indexOf("msie") <= -1){
         else:
             raise ValueError("%s is not found in candidates definition" % align)
         
-        
-    
+
