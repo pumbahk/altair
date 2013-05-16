@@ -8,7 +8,6 @@ from altaircms.models import Genre
 from altaircms.genre.searcher import GenreSearcher
 from altaircms.tag.models import HotWord
 from altairsite.smartphone.common.const import get_areas
-from altairsite.smartphone.common.helper import SmartPhoneHelper
 from altairsite.smartphone.event.search.forms import GenreSearchForm
 from altairsite.smartphone.event.search.forms import TopSearchForm
 
@@ -116,3 +115,7 @@ class CommonResource(object):
 
     def get_area(self):
         return get_areas()
+
+    def get_genre(self, id):
+        genre = self.request.allowable(Genre).filter(Genre.id == id).first()
+        return genre

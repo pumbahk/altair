@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
 from wtforms import Form
-from wtforms import HiddenField, TextField, BooleanField, SelectField, RadioField, SelectMultipleField
+from wtforms import HiddenField, TextField, BooleanField, SelectField, RadioField
 from altairsite.mobile.core.helper import log_debug, log_info, log_warn, log_exception, log_error
 from wtforms.validators import Optional, Length
 from altairsite.smartphone.common.const import SalesEnum
 from altaircms.formhelpers import CheckboxListField
-from datetime import date, datetime
+from datetime import datetime
 
 class TopSearchForm(Form):
 
@@ -73,10 +73,10 @@ class DetailSearchForm(TopSearchForm):
             choices=[
                 ('all_check', u'全て選択'), ('okinawa', u'沖縄'), ('fukuoka', u'福岡'), ('saga', u'佐賀'), ('nagasaki', u'長崎'), ('kumamoto', u'熊本') ,('oita', u'大分'), ('miyazaki', u'宮崎') ,('kagoshima', u'鹿児島')
             ])
-    genre_id = SelectField(label='', validators=[Optional()],choices=[], coerce=str)
+    genre_id = SelectField(label='', validators=[Optional()],choices=[], coerce=int)
     sales_segment = RadioField(label = '',validators=[Optional()]
         ,choices=[("normal", u'一般発売'), ("precedence", u'先行販売'), ("lottery", u'先行抽選') ],default="normal", coerce=str)
-    since_year = SelectField(label='', validators=[Optional()], choices=[])
+    since_year = SelectField(label='', validators=[Optional()], choices=[], default=0)
     since_month = SelectField(label='', validators=[Optional()], choices=[])
     since_day = SelectField(label='', validators=[Optional()], choices=[])
     year = SelectField(label='', validators=[Optional()], choices=[])
@@ -119,44 +119,29 @@ class DetailSearchForm(TopSearchForm):
         return event_open
 
     def validate_since_year(form, field):
-
-        if form.since_year.data=="0" and form.since_month.data == "0" and form.since_day.data == "0":
-            return
-
-        if not _check_date(form.since_year.data, form.since_month.data, form.since_day.data):
-            raise ValueError (u'日付が不正です')
-
-        if _check_date(form.year.data, form.month.data, form.day.data):
-            since_perf_date = date(
-                int(form.since_year.data), int(form.since_month.data), int(form.since_day.data))
-            perf_date = date(
-                int(form.year.data), int(form.month.data), int(form.day.data))
-            if (since_perf_date > perf_date):
-                raise ValueError(u'検索範囲が不正です')
+        common_validate_date(form, field)
         return
-
+    def validate_since_month(form, field):
+        common_validate_date(form, field)
+        return
+    def validate_since_day(form, field):
+        common_validate_date(form, field)
+        return
     def validate_year(form, field):
-        if form.year.data=="0" and form.month.data == "0" and form.day.data == "0":
-            return
-
-        if not _check_date(form.year.data, form.month.data, form.day.data):
-            raise ValueError (u'日付が不正です')
+        common_validate_date(form, field)
+        return
+    def validate_month(form, field):
+        common_validate_date(form, field)
+        return
+    def validate_day(form, field):
+        common_validate_date(form, field)
         return
 
-    def validate_word(form, field):
-        if field.data == "":
-            raise ValueError(u'検索文字列を入力してください')
-        if len(field.data) > 200:
-            raise ValueError(u'200文字以内で入力してください')
-        return
-
-def _check_date(year, month, day):
+def common_validate_date(form, field):
     try:
-        perf_date = date(int(year), int(month), int(day))
-    except ValueError:
-        return False
-    except TypeError:
-        return False
-    return True
-
-
+        event_open = datetime(int(form.year.data), int(form.month.data), int(form.day.data))
+        since_event_open = datetime(int(form.since_year.data), int(form.since_month.data), int(form.since_day.data))
+    except Exception as e:
+        raise ValueError(u'日付が不正です。')
+    if since_event_open >= event_open:
+        raise ValueError(u'検索範囲が不正です。')

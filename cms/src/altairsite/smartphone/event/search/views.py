@@ -23,8 +23,8 @@ def search(context, request):
     result = context.search(query, int(page), 10)
 
     return {
-         'result':result
-        ,'form':form
+         'form':form
+        ,'result':result
         ,'helper':SmartPhoneHelper()
     }
 
@@ -46,10 +46,12 @@ def genre_search(context, request):
     else:
         query = SearchQuery(search_word, None, SalesEnum.ON_SALE.v, None)
 
-    result = context.search(query, int(form.data['page']), 10)
+    page = form.data['page'] if form.data['page'] else 1
+    result = context.search(query, int(page), 10)
 
     return {
-         'result':result
+         'form':form
+        ,'result':result
         ,'helper':SmartPhoneHelper()
     }
 
@@ -62,8 +64,7 @@ def search_area(context, request):
     result = context.search_area(query, int(form.data['page']), 10)
 
     return {
-         'query':query
-        ,'result':result
+         'result':result
         ,'helper':SmartPhoneHelper()
     }
 
@@ -77,8 +78,7 @@ def search_genre_area(context, request):
     result = context.search_area(query, int(form.data['page']), 10)
 
     return {
-         'query':query
-        ,'result':result
+         'result':result
         ,'helper':SmartPhoneHelper()
     }
 
@@ -101,6 +101,13 @@ def detail_search(context, request):
     form = DetailSearchForm(request.GET)
     context.init_detail_search_form(form=form)
 
+    if not form.validate():
+        return {
+             'form':form
+            ,'result':None
+            ,'helper':SmartPhoneHelper()
+        }
+
     genre = context.get_genre(form.data['genre_id'])
     event_open_info = EventOpenInfo(since_event_open=form.get_since_event_open(), event_open=form.get_event_open())
     sale_info = SaleInfo(sale_start=form.data['sale_start'], sale_end=form.data['sale_end'])
@@ -109,7 +116,8 @@ def detail_search(context, request):
     query = DetailSearchQuery(word=form.data['word'], cond=form.data['cond'], genre=genre
         , prefectures=form.get_prefectures(), sales_segment=form.data['sales_segment'], event_open_info=event_open_info
         , sale_info=sale_info, perf_info=perf_info)
-    result = context.search_detail(query, int(form.data['page']), 10)
+    page = form.data['page'] if form.data['page'] else 1
+    result = context.search_detail(query, int(page), 10)
 
     return {
          'form':form
