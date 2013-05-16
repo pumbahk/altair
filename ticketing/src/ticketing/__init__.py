@@ -36,6 +36,10 @@ def newRootFactory(klass):
 def exclude_js(path):
     return path.endswith(".js")
 
+def register_globals(event):
+    from . import helpers
+    event.update(HH=helpers)
+
 def main(global_config, **local_config):
     """ This function returns a Pyramid WSGI application.
     """
@@ -129,7 +133,7 @@ def main(global_config, **local_config):
     
         config.add_tween('.tweens.session_cleaner_factory', over=EXCVIEW)
         #config.scan('ticketing') # Bad Code
-        
+
         ## cmsとの通信
         from .api.impl import CMSCommunicationApi
         event_push_communication = CMSCommunicationApi(
@@ -139,7 +143,9 @@ def main(global_config, **local_config):
         event_push_communication.bind_instance(config)
         config.include('altair.pyramid_assets')
         config.include('altair.pyramid_boto')
-    
+
+        config.add_subscriber(register_globals, 'pyramid.events.BeforeRender')
+
         config.scan(".views")
     
         return config.make_wsgi_app()

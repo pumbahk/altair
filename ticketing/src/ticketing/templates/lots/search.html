@@ -91,8 +91,10 @@ ${tabs.tabs(request)}
 <tr>
 <td nowrap="">
 <ul>
+  <!-- TODO: 状態によるボタンの出し分け -->
   <li><button class="btn entry-elect-btn" data-entry-no="${r[u'申し込み番号']}" data-wish-order="${r[u'希望順序'] - 1}">当選</button></li>
   <li><button class="btn entry-cancel-btn" data-entry-no="${r[u'申し込み番号']}">キャンセル</button></li>
+  <li><button class="btn cancel-electing-btn" data-entry-no="${r[u'申し込み番号']}" data-wish-order="${r[u'希望順序'] - 1}">当選予定をキャンセル</button></li>
 </ul>
 </td>
 %for k in data[0]:
@@ -106,16 +108,33 @@ ${tabs.tabs(request)}
 </div>
 <script>
 var cancelUrl = "${cancel_url}";
+var cancelElectingUrl = "${cancel_electing_url}";
+var electingUrl = "${electing_url}";
+
 $(function() {
   // 当選
   $('#wish-search-results').on('click', '.entry-elect-btn', function(e) {
      var entryNo = $(this).data("entryNo");
-     var wishOrder = $(this).data("wishOrder");
-     // Yet Not Implemented
+     var wishOrder = Number($(this).data("wishOrder"));
+     if (!confirm("申込番号" + entryNo + "-" + (wishOrder + 1) + " を当選予定にします。")) {
+       return;
+     }
+     $.ajax({
+       url: electingUrl,
+       data: {"entry_no": entryNo, "wish_order": wishOrder},
+       dataType: "json",
+       type: "POST",
+       success: function(data, textStatus, xhr) {
+           if (data.result == "OK") {
+             alert("申込番号" + entryNo + "-" + (wishOrder + 1) + " を当選予定にしました。");
+           }
+       }
+     });
   });
   // キャンセル
   $('#wish-search-results').on('click', '.entry-cancel-btn', function(e) {
      var entryNo = $(this).data("entryNo");
+     // TODO: modalに変更（ボタンが OK キャンセル で紛らわしい)
      if (!confirm("申込番号" + entryNo + "をキャンセルします。")) {
        return;
      }
@@ -127,6 +146,26 @@ $(function() {
        success: function(data, textStatus, xhr) {
            if (data.result == "OK") {
              alert("申込番号" + entryNo + "をキャンセルしました。");
+           }
+       }
+     });
+  });
+  // 当選予定キャンセル
+  $('#wish-search-results').on('click', '.cancel-electing-btn', function(e) {
+     var entryNo = $(this).data("entryNo");
+     var wishOrder = Number($(this).data("wishOrder"));
+     // TODO: modalに変更（ボタンが OK キャンセル で紛らわしい)
+     if (!confirm("申込番号" + entryNo + "の当選予定をキャンセルします。")) {
+       return;
+     }
+     $.ajax({
+       url: cancelElectingUrl,
+       data: {"entry_no": entryNo, "wish_order": wishOrder},
+       dataType: "json",
+       type: "POST",
+       success: function(data, textStatus, xhr) {
+           if (data.result == "OK") {
+             alert("申込番号" + entryNo + "の当選予定をキャンセルしました。");
            }
        }
      });

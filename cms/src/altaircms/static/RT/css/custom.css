@@ -575,6 +575,9 @@ salessegment icon
 .icon-salessegment.normal{
     background-image: url(../img/search/icon_normal.gif);
 }
+.icon-salessegment.same_day{
+    background-image: url(../img/search/icon_same_day.gif);
+}
 .icon-salessegment.early_firstcome{
     background-image: url(../img/search/icon_firstcome.gif);
 }
@@ -585,8 +588,11 @@ salessegment icon
 .icon-salessegment.early_lottery{
     background-image: url(../img/search/icon_lottery.gif);
 }
-.icon-salessegment.release{
+.icon-salessegment.normal_release{
     background-image: url(../img/search/icon_release.gif);
+}
+.icon-salessegment.same_day_release{
+    background-image: url(../img/search/icon_same_day_release.gif);
 }
 .icon-salessegment.added_sales{
     background-image: url(../img/search/icon_added_sales.gif);

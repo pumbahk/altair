@@ -107,5 +107,7 @@ class SummaryWidgetResource(HandleSessionMixin,
 
 
 def after_bound_event_deleted(mapper, connection, target):
-    SummaryWidget.query.filter_by(bound_event_id=target.id).update({"bound_event_id": None})
+    for widget in SummaryWidget.query.filter(SummaryWidget.bound_event_id == target.id):
+        widget.bound_event_id = None
+
 sa.event.listen(Event, "before_delete", after_bound_event_deleted)

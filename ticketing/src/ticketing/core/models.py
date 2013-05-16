@@ -24,6 +24,8 @@ from sqlalchemy.orm.collections import attribute_mapped_collection
 from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.sql.expression import asc, desc, exists, select, table, column, case, null, alias
 from sqlalchemy.ext.associationproxy import association_proxy
+from altair.saannotation import AnnotatedColumn
+from pyramid.i18n import TranslationString as _
 from pyramid.threadlocal import get_current_registry
 
 from zope.deprecation import deprecation
@@ -38,13 +40,12 @@ from ticketing.models import (
 )
 from standardenum import StandardEnum
 from ticketing.users.models import User, UserCredential, MemberGroup, MemberGroup_SalesSegment
-from ticketing.sej.models import SejOrder, SejTenant, SejTicket, SejRefundTicket, SejRefundEvent
-from ticketing.sej.exceptions import SejServerError
-from ticketing.sej.payment import request_cancel_order
-from altair.pyramid_assets import get_resolver 
+from ticketing.sej.models import SejOrder
+from altair.pyramid_assets import get_resolver
 from ticketing.utils import myurljoin, tristate, is_nonmobile_email_address, sensible_alnum_decode
 from ticketing.helpers import todate, todatetime
 from ticketing.payments import plugins
+from ticketing.sej import api as sej_api
 from .utils import ApplicableTicketsProducer
 
 logger = logging.getLogger(__name__)
@@ -1071,6 +1072,7 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
 class SalesSegmentKindEnum(StandardEnum):
     normal          = u'一般発売'
+    same_day        = u'当日券'
     early_firstcome = u'先行先着'
     added_sales     = u'追加発売'
     early_lottery   = u'先行抽選'
@@ -1081,6 +1083,7 @@ class SalesSegmentKindEnum(StandardEnum):
     other           = u'その他'
     order = [
         'normal',
+        'same_day',
         'early_firstcome',
         'added_sales',
         'early_lottery',
@@ -1093,23 +1096,23 @@ class SalesSegmentKindEnum(StandardEnum):
 
 class SalesSegmentGroup(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'SalesSegmentGroup'
-    id = Column(Identifier, primary_key=True)
-    name = Column(String(255))
-    kind = Column(String(255))
-    start_at = Column(DateTime)
-    end_at = Column(DateTime)
-    upper_limit = Column(Integer)
-    seat_choice = Column(Boolean, default=True)
-    public = Column(Boolean, default=True)
+    id = AnnotatedColumn(Identifier, primary_key=True, _a_label=_(u'ID'))
+    name = AnnotatedColumn(String(255), _a_label=_(u'名前'))
+    kind = AnnotatedColumn(String(255), _a_label=_(u'種別'))
+    start_at = AnnotatedColumn(DateTime, _a_label=_(u'販売開始日時'))
+    end_at = AnnotatedColumn(DateTime, _a_label=_(u'販売終了日時'))
+    upper_limit = AnnotatedColumn(Integer, _a_label=_(u'購入上限枚数'))
+    seat_choice = AnnotatedColumn(Boolean, default=True, _a_label=_(u'座席選択可'))
+    public = AnnotatedColumn(Boolean, default=True, _a_label=_(u'一般公開'))
 
-    margin_ratio = Column(Numeric(precision=16, scale=2), nullable=False, default=0, server_default='0')
-    refund_ratio = Column(Numeric(precision=16, scale=2), nullable=False, default=0, server_default='0')
-    printing_fee = Column(Numeric(precision=16, scale=2), nullable=False, default=0, server_default='0')
-    registration_fee = Column(Numeric(precision=16, scale=2), nullable=False, default=0, server_default='0')
-    account_id = Column(Identifier, ForeignKey('Account.id'))
+    margin_ratio = AnnotatedColumn(Numeric(precision=16, scale=2), nullable=False, default=0, server_default='0', _a_label=_(u'販売手数料率(%)'))
+    refund_ratio = AnnotatedColumn(Numeric(precision=16, scale=2), nullable=False, default=0, server_default='0', _a_label=_(u'払戻手数料率(%)'))
+    printing_fee = AnnotatedColumn(Numeric(precision=16, scale=2), nullable=False, default=0, server_default='0', _a_label=_(u'印刷代金(円/枚)'))
+    registration_fee = AnnotatedColumn(Numeric(precision=16, scale=2), nullable=False, default=0, server_default='0', _a_label=_(u'登録手数料(円/公演)'))
+    account_id = AnnotatedColumn(Identifier, ForeignKey('Account.id'), _a_label=_(u'配券元'))
     account = relationship('Account', backref='sales_segment_groups')
 
-    event_id = Column(Identifier, ForeignKey('Event.id'))
+    event_id = AnnotatedColumn(Identifier, ForeignKey('Event.id'), _a_label=_(u'イベント'))
     event = relationship('Event')
 
     @hybrid_method
@@ -1211,12 +1214,12 @@ SalesSegment_PaymentDeliveryMethodPair = Table(
 class PaymentDeliveryMethodPair(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'PaymentDeliveryMethodPair'
     query = DBSession.query_property()
-    id = Column(Identifier, primary_key=True)
-    system_fee = Column(Numeric(precision=16, scale=2), nullable=False)
-    transaction_fee = Column(Numeric(precision=16, scale=2), nullable=False)
-    delivery_fee = Column(Numeric(precision=16, scale=2), nullable=False)
-    discount = Column(Numeric(precision=16, scale=2), nullable=False)
-    discount_unit = Column(Integer)
+    id = AnnotatedColumn(Identifier, primary_key=True, _a_label=_(u'ID'))
+    system_fee = AnnotatedColumn(Numeric(precision=16, scale=2), nullable=False, _a_label=_(u'システム利用料'))
+    transaction_fee = AnnotatedColumn(Numeric(precision=16, scale=2), nullable=False, _a_label=_(u'決済手数料'))
+    delivery_fee = AnnotatedColumn(Numeric(precision=16, scale=2), nullable=False, _a_label=_(u'引取手数料'))
+    discount = AnnotatedColumn(Numeric(precision=16, scale=2), nullable=False, _a_label=_(u'割引額'))
+    discount_unit = AnnotatedColumn(Integer, _a_label=_(u'割引数'))
 
     # 申込日から計算して入金できる期限、日数指定
     payment_period_days = Column(Integer, default=3)
@@ -1225,15 +1228,15 @@ class PaymentDeliveryMethodPair(Base, BaseModel, WithTimestamp, LogicallyDeleted
     issuing_start_at = Column(DateTime, nullable=True)
     issuing_end_at = Column(DateTime, nullable=True)
     # 選択不可期間 (SalesSegment.start_atの何日前から利用できないか、日数指定)
-    unavailable_period_days = Column(Integer, nullable=False, default=0)
+    unavailable_period_days = AnnotatedColumn(Integer, nullable=False, default=0, _a_label=_(u'選択不可期間'))
     # 一般公開するか
-    public = Column(Boolean, nullable=False, default=True)
+    public = AnnotatedColumn(Boolean, nullable=False, default=True, _a_label=_(u'一般公開'))
 
-    sales_segment_group_id = Column(Identifier, ForeignKey('SalesSegmentGroup.id'))
+    sales_segment_group_id = AnnotatedColumn(Identifier, ForeignKey('SalesSegmentGroup.id'), _a_label=_(u'販売区分グループ'))
     sales_segment_group = relationship('SalesSegmentGroup', backref='payment_delivery_method_pairs')
-    payment_method_id = Column(Identifier, ForeignKey('PaymentMethod.id'))
+    payment_method_id = AnnotatedColumn(Identifier, ForeignKey('PaymentMethod.id'), _a_label=_(u'決済方法'))
     payment_method = relationship('PaymentMethod', backref='payment_delivery_method_pairs')
-    delivery_method_id = Column(Identifier, ForeignKey('DeliveryMethod.id'))
+    delivery_method_id = AnnotatedColumn(Identifier, ForeignKey('DeliveryMethod.id'), _a_label=_(u'引取方法'))
     delivery_method = relationship('DeliveryMethod', backref='payment_delivery_method_pairs')
 
     def is_available_for(self, sales_segment, on_day):
@@ -2176,7 +2179,7 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             return False
 
         '''
-        決済方法ごとに払戻し処理
+        決済方法ごとに払戻処理
         '''
         if payment_method:
             ppid = payment_method.payment_plugin_id
@@ -2266,98 +2269,34 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
         # コンビニ決済 (セブン-イレブン)
         elif ppid == plugins.SEJ_PAYMENT_PLUGIN_ID:
+            sej_order = SejOrder.query.filter_by(order_id=self.order_no).first()
+
             # 未入金ならコンビニ決済のキャンセル通知
             if self.payment_status == 'unpaid':
-                sej_order = SejOrder.query.filter_by(order_id=self.order_no).first()
-                if not sej_order or sej_order.cancel_at:
-                    logger.error(u'コンビニ決済(セブン-イレブン)のキャンセルに失敗しました %s' % self.order_no)
-                    return False
-
-                settings = get_current_registry().settings
-                tenant = SejTenant.filter_by(organization_id=self.organization_id).first()
-
-                inticket_api_url = (tenant and tenant.inticket_api_url) or settings.get('sej.inticket_api_url')
-                shop_id = (tenant and tenant.shop_id) or settings.get('sej.shop_id')
-                api_key = (tenant and tenant.api_key) or settings.get('sej.api_key')
-
-                if sej_order.shop_id != shop_id:
-                    logger.error(u'コンビニ決済(セブン-イレブン)のキャンセルに失敗しました Invalid shop_id : %s' % shop_id)
-                    return False
-
-                try:
-                    request_cancel_order(
-                        order_id=sej_order.order_id,
-                        billing_number=sej_order.billing_number,
-                        exchange_number=sej_order.exchange_number,
-                        shop_id=shop_id,
-                        secret_key=api_key,
-                        hostname=inticket_api_url
-                    )
-                except SejServerError, e:
-                    logger.error(u'コンビニ決済(セブン-イレブン)のキャンセルに失敗しました %s' % e)
+                result = sej_api.cancel_sej_order(sej_order, self.organization_id)
+                if not result:
                     return False
 
             # 入金済み、払戻予約ならコンビニ決済の払戻通知
             elif self.payment_status in ['paid', 'refunding']:
-                sej_order = SejOrder.query.filter_by(order_id=self.order_no).first()
-                if not sej_order or sej_order.cancel_at:
-                    logger.error(u'コンビニ決済(セブン-イレブン)のキャンセルに失敗しました %s' % self.order_no)
+                result = sej_api.refund_sej_order(sej_order, self.organization_id, self, now)
+                if not result:
                     return False
-
-                sej_ticket = SejTicket.query.filter_by(order_id=sej_order.id).first()
-                if not sej_ticket:
-                    logger.error(u'コンビニ決済(セブン-イレブン)のキャンセルに失敗しました %s' % self.order_no)
-                    return False
-
-                tenant = SejTenant.filter_by(organization_id=self.organization_id).first()
-                shop_id = (tenant and tenant.shop_id) or request.registry.settings.get('sej.shop_id')
-
-                # create SejRefundEvent
-                re = SejRefundEvent.filter(and_(
-                    SejRefundEvent.shop_id==shop_id,
-                    SejRefundEvent.event_code_01==self.performance.code
-                )).first()
-                if not re:
-                    re = SejRefundEvent()
-                    DBSession.add(re)
-
-                re.available = 1
-                re.shop_id = shop_id
-                re.event_code_01 = self.performance.code
-                re.title = self.performance.name
-                re.event_at = self.performance.start_on.strftime('%Y%m%d')
-                re.start_at = now.strftime('%Y%m%d')
-                end_at = (self.performance.end_on or self.performance.start_on) + timedelta(days=+14)
-                re.end_at = end_at.strftime('%Y%m%d')
-                re.event_expire_at = end_at.strftime('%Y%m%d')
-                ticket_expire_at = (self.performance.end_on or self.performance.start_on) + timedelta(days=+30)
-                re.ticket_expire_at = ticket_expire_at.strftime('%Y%m%d')
-                re.refund_enabled = 1
-                re.need_stub = 1
-                DBSession.merge(re)
-
-                # create SejRefundTicket
-                rt = SejRefundTicket.filter(and_(
-                    SejRefundTicket.order_id==sej_order.order_id,
-                    SejRefundTicket.ticket_barcode_number==sej_ticket.barcode_number
-                )).first()
-                if not rt:
-                    rt = SejRefundTicket()
-                    DBSession.add(rt)
-
-                prev = self.prev
-                rt.available = 1
-                rt.refund_event_id = re.id
-                rt.event_code_01 = self.performance.code
-                rt.order_id = sej_order.order_id
-                rt.ticket_barcode_number = sej_ticket.barcode_number
-                rt.refund_ticket_amount = prev.refund.item(prev)
-                rt.refund_other_amount = prev.refund.fee(prev)
-                DBSession.merge(rt)
 
         # 窓口支払
         elif ppid == plugins.RESERVE_NUMBER_PAYMENT_PLUGIN_ID:
             pass
+
+        '''
+        配送方法ごとに取消処理
+        '''
+        # コンビニ受取
+        dpid = self.payment_delivery_pair.delivery_method.delivery_plugin_id
+        if dpid == plugins.SEJ_DELIVERY_PLUGIN_ID and ppid != plugins.SEJ_PAYMENT_PLUGIN_ID:
+            sej_order = SejOrder.query.filter_by(order_id=self.order_no).first()
+            result = sej_api.cancel_sej_order(sej_order, self.organization_id)
+            if not result:
+                return False
 
         # 在庫を戻す
         self.release()
@@ -2450,8 +2389,8 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         else:
             return False
 
-    def delete(self):
-        if not self.can_delete():
+    def delete(self, force=False):
+        if not self.can_delete() and not force:
             logger.info('order (%s) cannot delete status (%s)' % (self.id, self.status))
             raise Exception(u'キャンセル以外は非表示にできません')
 
@@ -2476,7 +2415,7 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                 nopi.seats = opi.seats
                 nopi.attributes = opi.attributes
         new_order.add()
-        origin.delete()
+        origin.delete(force=True)
         return Order.get(new_order.id, new_order.organization_id)
 
     @staticmethod

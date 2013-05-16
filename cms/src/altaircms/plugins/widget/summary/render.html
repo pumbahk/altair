@@ -21,6 +21,8 @@
             ${render_sale_image(item["label"], u"一般販売", request.static_url("altaircms:static/RT/img/search/icon_normal.gif"))}
           % elif item["label"].find(u"一般発売") != -1:
             ${render_sale_image(item["label"], u"一般発売", request.static_url("altaircms:static/RT/img/search/icon_release.gif"))}
+          % elif item["label"].find(u"当日券") != -1:
+            ${render_sale_image(item["label"], u"当日券", request.static_url("altaircms:static/RT/img/search/icon_same_day_release.gif"))}
           % else:
             <th scope="row">${item["label"]}</th>
           % endif

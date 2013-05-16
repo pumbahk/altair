@@ -12,7 +12,7 @@ def main(global_conf, **settings):
 def includeme(config):
     config.scan(".example")
 
-@task_config(name="sample1", queue="test-sample1")
+@task_config(name="sample1", queue="test", durable=True, exclusive=False, auto_delete=False)
 def sample_task(context, message):
     from tornado.httpclient import AsyncHTTPClient, HTTPRequest
     logger.debug('got message {body}'.format(body=message.body))
