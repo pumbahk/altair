@@ -1,0 +1,6 @@
+<%inherit file="../common/_base.html" />
+<%namespace file="../common/tags_smartphone.html" name="m" />
+<%block name="title">検索結果一覧</%block>
+
+<% path=request.route_path('search_subsubgenre') + result.query.create_parameter() if result else '' %>
+<%include file="_result.html" args="result=result, path=path, helper=helper"/>

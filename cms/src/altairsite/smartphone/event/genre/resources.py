@@ -3,6 +3,7 @@ from altairsite.smartphone.event.search.search_query import SearchQuery, SaleInf
 from altairsite.smartphone.common.const import SalesEnum
 from altairsite.smartphone.common.searcher import EventSearcher
 from altairsite.smartphone.common.resources import CommonResource
+from altaircms.models import Genre, _GenrePath as GrenPath
 
 class GenrePageResource(CommonResource):
 
@@ -35,3 +36,10 @@ class GenrePageResource(CommonResource):
         qs = searcher.search_near_sale_end(search_query=query, qs=qs)
         result = searcher.create_result(qs=qs, page=page, query=query, per=per)
         return result
+
+    def is_sub_sub_genre(self, genre_id):
+        genre = self.get_genre(genre_id)
+        for path in genre._parents:
+            if path.hop == 3:
+                return True
+        return False

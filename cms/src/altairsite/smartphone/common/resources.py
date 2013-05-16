@@ -10,6 +10,9 @@ from altaircms.tag.models import HotWord
 from altairsite.smartphone.common.const import get_areas
 from altairsite.smartphone.event.search.forms import GenreSearchForm
 from altairsite.smartphone.event.search.forms import TopSearchForm
+from altairsite.smartphone.common.searcher import EventSearcher
+from .const import SalesEnum
+from altairsite.smartphone.event.search.search_query import SearchQuery
 
 class GenreNode(object):
     def __init__(self, genre, children):
@@ -66,6 +69,29 @@ class CommonResource(object):
             ,'helper':SmartPhoneHelper()
             ,'form':form
         }
+
+    def get_subsubgenre_render_param(self, genre_id):
+        form = GenreSearchForm(self.request.GET)
+        genre = self.get_genre(form.data['genre_id'])
+        if not genre:
+            genre = self.get_genre(genre_id)
+        query = SearchQuery(None, genre, SalesEnum.ON_SALE.v, None)
+        page = form.data['page'] if form.data['page'] else 1
+        result = self.search(query, int(page), 10)
+
+        return {
+             'form':form
+            ,'result':result
+            ,'helper':SmartPhoneHelper()
+        }
+
+    # トップ画面・ジャンル画面検索
+    def search(self, query, page, per):
+        searcher = EventSearcher(request=self.request)
+        qs = searcher.search_freeword(search_query=query, genre_label=None, cond=None)
+        qs = searcher.search_sale(search_query=query, qs=qs)
+        result = searcher.create_result(qs=qs, page=page, query=query, per=per)
+        return result
 
     def get_system_tag_label(self, request, system_tag_id):
         if not system_tag_id:

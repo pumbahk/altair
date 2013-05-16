@@ -14,14 +14,6 @@ class SearchPageResource(CommonResource):
         genre = self.request.allowable(Genre).filter(Genre.id==id).first()
         return genre
 
-    # トップ画面・ジャンル画面検索
-    def search(self, query, page, per):
-        searcher = EventSearcher(request=self.request)
-        qs = searcher.search_freeword(search_query=query, genre_label=None, cond=None)
-        qs = searcher.search_sale(search_query=query, qs=qs)
-        result = searcher.create_result(qs=qs, page=page, query=query, per=per)
-        return result
-
     # トップ画面、ジャンルのエリア検索
     def search_area(self, query, page, per):
         searcher = EventSearcher(request=self.request)

@@ -10,7 +10,8 @@ class SearchQuery(object):
     def create_query(self):
         helper=SmartPhoneHelper()
         query = []
-        query.append(u"フリーワード：" + self.word)
+        if self.word:
+            query.append(u"フリーワード：" + self.word)
         if self.genre:
             query.append(u"ジャンル：" + self.genre.label)
         if self.sale:
@@ -22,7 +23,9 @@ class SearchQuery(object):
                 query.append(u"販売終了まで：" + str(self.sale.sale_end) + u"日")
         return u"、".join(query)
     def create_parameter(self):
-        parameter = "?word=" + self.word + "&sale=" + str(self.sale)
+        parameter = "?sale=" + str(self.sale)
+        if self.word:
+            parameter += "&word=" + self.word
         if self.genre:
             parameter += "&genre_id=" + str(self.genre.id)
         if self.sale_info:

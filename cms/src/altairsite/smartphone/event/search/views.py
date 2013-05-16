@@ -55,6 +55,12 @@ def genre_search(context, request):
         ,'helper':SmartPhoneHelper()
     }
 
+@usersite_view_config(route_name='search_subsubgenre',request_type="altairsite.tweens.ISmartphoneRequest"
+             , renderer='altairsite.smartphone:templates/searchresult/subgenre.html')
+def subsubgenre_search(context, request):
+    # サブサブジャンルは検索結果
+    return context.get_subsubgenre_render_param(genre_id=None)
+
 @usersite_view_config(route_name='search_area',request_type="altairsite.tweens.ISmartphoneRequest"
              , renderer='altairsite.smartphone:templates/searchresult/area.html')
 def search_area(context, request):
