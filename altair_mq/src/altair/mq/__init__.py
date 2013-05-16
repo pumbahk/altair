@@ -41,7 +41,8 @@ def add_task(config, task,
              queue="test",
              durable=True, 
              exclusive=False, 
-             auto_delete=False):
+             auto_delete=False,
+             nowait=False):
     if root_factory is None:
         root_factory = 'pyramid.traversal.DefaultRootFactory'
     reg = config.registry
@@ -52,7 +53,8 @@ def add_task(config, task,
         queue_settings = QueueSettings(queue=queue,
                                        durable=durable,
                                        exclusive=exclusive,
-                                       auto_delete=auto_delete)
+                                       auto_delete=auto_delete,
+                                       nowait=nowait)
         if pika_consumer is None:
             return
 

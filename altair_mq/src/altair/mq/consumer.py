@@ -17,6 +17,7 @@ class Message(object):
         self.method = method
         self.header = header
         self.body = body
+        self.matchdict = {}
 
     @property
     def params(self):
@@ -48,18 +49,26 @@ class TaskMapper(object):
                               durable=self.queue_settings.durable, 
                               exclusive=self.queue_settings.exclusive,
                               auto_delete=self.queue_settings.auto_delete,
+                              nowait=self.queue_settings.nowait,
                               callback=self.on_queue_declared)
         self.channel = channel
 
     def on_queue_declared(self, frame):
-        logger.debug('declared')
-        self.channel.basic_consume(self.handle_delivery, 
-                                   queue=self.queue_settings.queue)
+        logger.debug('declared: {0}'.format(self.name))
+        consumer_tag = self.channel.basic_consume(self.handle_delivery,
+                                                  queue=self.queue_settings.queue)
+        logger.debug('consume: {0}'.format(consumer_tag))
 
     def handle_delivery(self, channel, method, header, body):
-        message = self.Message(channel, method, header, body)
-        context = self.root_factory(message)
-        self.task(context, message)
+        try:
+            logger.debug('handle delivery: {0}'.format(self.name))
+            message = self.Message(channel, method, header, body)
+            context = self.root_factory(message)
+            logger.debug('call task')
+            self.task(context, message)
+
+        except Exception as e:
+            logger.exception(e)
 
 
 @implementer(IConsumer)
