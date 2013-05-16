@@ -153,6 +153,16 @@ class Lot(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             affected += 1
         return affected
 
+    def cancel_electing(self, wish):
+        LotElectWork.query.filter(
+            LotElectWork.lot_id==self.id
+        ).filter(
+            LotElectWork.lot_entry_no==wish.lot_entry.entry_no
+        ).filter(
+            LotElectWork.wish_order==wish.wish_order
+        ).delete()
+
+
 
     @hybrid_method
     def available_on(self, now):
@@ -361,6 +371,12 @@ class LotEntryWish(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     canceled_at = sa.Column(sa.DateTime())
 
     @property
+    def works(self):
+        return LotElectWork.query.filter(
+            LotElectWork.entry_wish_no==self.entry_wish_no,
+        ).all()
+
+    @property
     def transaction_fee(self):
         """ 決済手数料 """
         payment_fee = self.lot_entry.payment_delivery_method_pair.transaction_fee
@@ -454,7 +470,8 @@ class LotEntryProduct(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         return self.product.price * self.quantity
 
 
-class LotElectWork(Base, BaseModel, WithTimestamp, LogicallyDeleted):
+#class LotElectWork(Base, BaseModel, WithTimestamp, LogicallyDeleted):
+class LotElectWork(Base, BaseModel, WithTimestamp):
     """ 当選情報取り込みワーク """
     __tablename__ = 'LotElectWork'
 
@@ -462,15 +479,19 @@ class LotElectWork(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     lot_id = sa.Column(Identifier, sa.ForeignKey('Lot.id'))
     lot = orm.relationship("Lot", backref="elect_works")
     lot_entry_no = sa.Column(sa.Unicode(20), sa.ForeignKey('LotEntry.entry_no'), unique=True, doc=u"抽選申し込み番号")
-    wish_order = sa.Column(sa.Integer, sa.ForeignKey('LotEntryWish.wish_order'), doc=u"希望順")
+    #wish_order = sa.Column(sa.Integer, sa.ForeignKey('LotEntryWish.wish_order'), doc=u"希望順")
+    wish_order = sa.Column(sa.Integer, doc=u"希望順")
     entry_wish_no = sa.Column(sa.Unicode(30), doc=u"申し込み番号と希望順を合わせたキー項目")
 
 
-    wish = orm.relationship("LotEntryWish",
-                            primaryjoin="and_(LotEntry.entry_no==LotElectWork.lot_entry_no,"
-                            "LotEntry.id==LotEntryWish.lot_entry_id,"
-                            "LotEntryWish.wish_order==LotElectWork.wish_order)",
-                            backref="works")
+    @property
+    def wish(self):
+        return LotEntryWish.query.filter(
+            LotEntryWish.entry_wish_no==self.entry_wish_no,
+        ).one()
+
+    def __repr__(self):
+        return "LotEntryProduct {self.entry_wish_no}".format(self=self)
 
 class LotElectedEntry(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     """ 抽選当選情報 """
