@@ -75,7 +75,7 @@ class DetailSearchQuery(object):
             query.append(helper.get_sales_segment_japanese(self.sales_segment))
         if self.event_open_info:
             if self.event_open_info.since_event_open and self.event_open_info.event_open:
-                query.append(u"公演日：" + unicode(self.event_open_info.since_event_open) + u" 〜 " +  unicode(self.event_open_info.event_open))
+                query.append(u"公演日：" + self.event_open_info.since_event_open.strftime("%Y-%m-%d") + u" 〜 " + self.event_open_info.event_open.strftime("%Y-%m-%d"))
         if self.sale_info:
             if self.sale_info.sale_start:
                 query.append(u"販売開始まで：" + str(self.sale_info.sale_start) + u"日")
