@@ -77,7 +77,7 @@ class CommonResource(object):
             genre = self.get_genre(genre_id)
         query = SearchQuery(None, genre, SalesEnum.ON_SALE.v, None)
         page = form.data['page'] if form.data['page'] else 1
-        result = self.search(query, int(page), 10)
+        result = self.search_subsubgenre(query, int(page), 10)
 
         return {
              'form':form
@@ -85,10 +85,10 @@ class CommonResource(object):
             ,'helper':SmartPhoneHelper()
         }
 
-    # トップ画面・ジャンル画面検索
-    def search(self, query, page, per):
+    # サブサブジャンル検索
+    def search_subsubgenre(self, query, page, per):
         searcher = EventSearcher(request=self.request)
-        qs = searcher.search_freeword(search_query=query, genre_label=None, cond=None)
+        qs = searcher.search_freeword(search_query=query, genre_label=query.genre.label, cond=None)
         qs = searcher.search_sale(search_query=query, qs=qs)
         result = searcher.create_result(qs=qs, page=page, query=query, per=per)
         return result
