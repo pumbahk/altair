@@ -8,6 +8,7 @@ import json
 
 import sqlalchemy as sa
 import sqlalchemy.orm as orm
+from sqlalchemy.sql.expression import update as sql_update
 from altaircms.plugins.widget.api import get_rendering_function_via_page
 
 
@@ -107,5 +108,7 @@ class SummaryWidgetResource(HandleSessionMixin,
 
 
 def after_bound_event_deleted(mapper, connection, target):
-    SummaryWidget.query.filter_by(bound_event_id=target.id).update({"bound_event_id": None})
+    sql_update(SummaryWidget) \
+        .where(SummaryWidget.bound_event_id == target.id) \
+        .values(bound_event_id=None)
 sa.event.listen(Event, "before_delete", after_bound_event_deleted)

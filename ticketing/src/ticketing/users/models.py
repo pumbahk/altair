@@ -4,6 +4,8 @@ from sqlalchemy.sql.expression import case, null
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import join, backref, column_property
 from sqlalchemy.orm.collections import attribute_mapped_collection
+from pyramid.i18n import TranslationString as _
+from altair.saannotation import AnnotatedColumn
 
 from standardenum import StandardEnum
 from ticketing.models import relationship
@@ -237,10 +239,10 @@ class MemberGroup(Base, BaseModel, LogicallyDeleted, WithTimestamp):
     __tablename__ = 'MemberGroup'
     query = session.query_property()
     id = Column(Identifier, primary_key=True)
-    name = Column(String(255))
-    membership_id = Column(Identifier, ForeignKey('Membership.id'))
+    name = AnnotatedColumn(String(255), _a_label=_(u'会員区分名'))
+    membership_id = AnnotatedColumn(Identifier, ForeignKey('Membership.id'), _a_label=_(u'会員種別'))
     membership = relationship('Membership', backref='membergroups')
-    is_guest = Column(Boolean, default=False, server_default='0', nullable=False)
+    is_guest = AnnotatedColumn(Boolean, default=False, server_default='0', nullable=False, _a_label=_(u'ゲストログイン'))
 
     sales_segment_groups = relationship('SalesSegmentGroup',
         secondary=MemberGroup_SalesSegment,

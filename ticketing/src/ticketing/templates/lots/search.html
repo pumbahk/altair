@@ -106,16 +106,32 @@ ${tabs.tabs(request)}
 </div>
 <script>
 var cancelUrl = "${cancel_url}";
+var electingUrl = "${electing_url}";
+
 $(function() {
   // 当選
   $('#wish-search-results').on('click', '.entry-elect-btn', function(e) {
      var entryNo = $(this).data("entryNo");
-     var wishOrder = $(this).data("wishOrder");
-     // Yet Not Implemented
+     var wishOrder = Number($(this).data("wishOrder"));
+     if (!confirm("申込番号" + entryNo + "-" + (wishOrder + 1) + " を当選予定にします。")) {
+       return;
+     }
+     $.ajax({
+       url: electingUrl,
+       data: {"entry_no": entryNo, "wish_order": wishOrder},
+       dataType: "json",
+       type: "POST",
+       success: function(data, textStatus, xhr) {
+           if (data.result == "OK") {
+             alert("申込番号" + entryNo + "-" + (wishOrder + 1) + " を当選予定にしました。");
+           }
+       }
+     });
   });
   // キャンセル
   $('#wish-search-results').on('click', '.entry-cancel-btn', function(e) {
      var entryNo = $(this).data("entryNo");
+     // TODO: modalに変更（ボタンが OK キャンセル で紛らわしい)
      if (!confirm("申込番号" + entryNo + "をキャンセルします。")) {
        return;
      }

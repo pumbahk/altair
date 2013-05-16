@@ -59,15 +59,12 @@ class SalesSegmentGroups(BaseView):
             return HTTPNotFound('sales_segment_group id %d is not found' % sales_segment_group_id)
 
         member_groups = sales_segment_group.membergroups
-        form_mg = MemberGroupForm()
         form_ss = SalesSegmentGroupForm(obj=sales_segment_group, event_id=sales_segment_group.event_id)
         form_s = SalesSegmentForm(performances=sales_segment_group.event.performances, sales_segment_groups=[sales_segment_group])
 
         return {
             'form_s':form_s,
             'form_ss':form_ss,
-            'form_mg': form_mg,
-            'form_pdmp':PaymentDeliveryMethodPairForm(),
             'member_groups': member_groups, 
             'sales_segment_group':sales_segment_group,
         }

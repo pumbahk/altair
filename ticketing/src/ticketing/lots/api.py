@@ -237,9 +237,10 @@ def _entry_info(wish):
         user_profile = shipping_address.user.profile
 
     return OrderedDict([
+        (u"状態", wish.status),
         (u"申し込み番号", wish.lot_entry.entry_no),
         (u"希望順序", wish.wish_order + 1),
-        (u"申し込み日", wish.created_at),
+        (u"申し込み日", "{0:%Y-%m-%d %H:%M}".format(wish.created_at)),
         (u"ユーザー種別", wish.lot_entry.membergroup),
         (u"席種", u",".join([",".join([i.stock_type.name for i in p.product.items]) for p in wish.products])), # 席種 この時点で席種までちゃんと決まる
         (u"枚数", wish.total_quantity), # 枚数(商品関係なし)
@@ -247,7 +248,7 @@ def _entry_info(wish):
         (u'会場', venue.name),
         (u'公演', performance.name),
         (u'公演コード', performance.code),
-        (u'公演日', performance.start_on),
+        (u'公演日', "{0:%Y-%m-%d %H:%M}".format(performance.start_on)),
 
         (u"商品", u",".join([p.product.name for p in wish.products])), # 商品うちわけ(参考情報)
         (u'決済方法', payment_method.name),
@@ -286,13 +287,8 @@ def submit_lot_entries(lot_id, entries):
     当選リストの取り込み
     entries : (entry_no, wish_order)のリスト
     """
-
-    for entry_no, wish_order in entries:
-        w = LotElectWork(lot_id=lot_id, lot_entry_no=entry_no, wish_order=wish_order,
-            entry_wish_no="{0}-{1}".format(entry_no, wish_order))
-        DBSession.add(w)
-    DBSession.flush()
-
+    lot = Lot.query.filter(Lot.id==lot_id).one()
+    return lot.electing_wishes(entries)
 
 
 def elect_lot_entries(request, lot_id):
