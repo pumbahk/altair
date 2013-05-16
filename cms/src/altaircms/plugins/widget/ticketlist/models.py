@@ -55,7 +55,7 @@ class TicketlistWidgetResource(HandleSessionMixin,
         return self._get_or_create(TicketlistWidget, widget_id)
 
 def after_target_salessegment_deleted(mapper, connection, target):
-    for widget in TicketlistWidget.query.filter(TicketlistWidget.target_salessegment == target.id):
+    for widget in TicketlistWidget.query.filter(TicketlistWidget.target_salessegment_id == target.id):
         widget.target_salessegment_id = None
 
 sa.event.listen(SalesSegment, "before_delete", after_target_salessegment_deleted)
