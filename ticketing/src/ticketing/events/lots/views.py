@@ -421,11 +421,14 @@ class LotEntries(BaseView):
         entries = lots_api.get_lot_entries_iter(lot.id, condition)
         electing_url = self.request.route_url('lots.entries.elect_entry_no', lot_id=lot.id)
         cancel_url = self.request.route_url('lots.entries.cancel', lot_id=lot.id)
+        cancel_electing_url = self.request.route_url('lots.entries.cancel_electing', lot_id=lot.id)
         return dict(data=list(entries),
                     lot=lot,
                     form=form,
                     cancel_url=cancel_url,
-                    electing_url=electing_url)
+                    electing_url=electing_url,
+                    cancel_electing_url=cancel_electing_url,
+        )
 
 
         
@@ -532,3 +535,32 @@ class LotEntries(BaseView):
 
         lot_entry.cancel()
         return dict(result="OK")
+
+
+    @view_config(route_name='lots.entries.cancel_electing',
+                 request_method="POST",
+                 permission='event_viewer',
+                 renderer="json")
+    def cancel_electing_entry(self):
+        """ 申し込み番号指定での当選予定処理
+        """
+        self.check_organization(self.context.event)
+        lot_id = self.request.matchdict["lot_id"]
+        lot = Lot.query.filter(Lot.id==lot_id).one()
+
+        entry_no = self.request.params['entry_no']
+        wish_order = self.request.params['wish_order']
+
+        lot_entry = lot.get_lot_entry(entry_no)
+        wish = lot_entry.get_wish(wish_order)
+
+        logger.debug(wish.works)
+
+        if wish is None:
+            return dict(result="NG",
+                        message="not found")
+
+        lot.cancel_electing(wish)
+
+        return dict(result="OK",
+                    wish=lots_api._entry_info(wish))
