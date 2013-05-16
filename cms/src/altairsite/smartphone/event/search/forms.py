@@ -21,6 +21,13 @@ class TopSearchForm(Form):
         default=SalesEnum.ON_SALE.v, coerce=int)
     page = HiddenField(validators=[Optional()],default="1")
 
+    def validate_word(form, field):
+        if not field.data:
+            raise ValueError(u'検索文字列を入力してください')
+        if len(field.data) > 200:
+            raise ValueError(u'200文字以内で入力してください')
+        return
+
 class GenreSearchForm(TopSearchForm):
 
     genre_id = HiddenField(label='', validators=[Optional()], default="0")

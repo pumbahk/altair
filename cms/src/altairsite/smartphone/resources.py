@@ -7,6 +7,8 @@ from altaircms.models import Genre
 from altaircms.genre.searcher import GenreSearcher
 from altaircms.tag.models import HotWord
 from altairsite.smartphone.common.const import get_areas
+from altairsite.smartphone.common.helper import SmartPhoneHelper
+from altairsite.smartphone.event.search.forms import TopSearchForm
 
 class GenreNode(object):
     def __init__(self, genre, children):
@@ -16,6 +18,27 @@ class GenreNode(object):
 class TopPageResource(object):
     def __init__(self, request):
         self.request = request
+
+    def get_top_render_param(self):
+        promotions = self.getInfo(kind="promotion", system_tag_id=None)[0:5]
+        topcontents = self.getInfo(kind="topcontent", system_tag_id=None)[0:5]
+        topics = self.getInfo(kind="topic", system_tag_id=None)[0:5]
+        hotwords = self.get_hotword()[0:5]
+        genretree = self.get_genre_tree(parent=None)
+        areas = self.get_area()
+
+        render_param = {
+             'promotions':promotions
+            ,'topcontents':topcontents
+            ,'topics':topics
+            ,'hotwords':hotwords
+            ,'genretree':genretree
+            ,'areas':areas
+            ,'helper':SmartPhoneHelper()
+            ,'form':TopSearchForm()
+
+        }
+        return render_param
 
     def get_system_tag_label(self, request, system_tag_id):
         if not system_tag_id:

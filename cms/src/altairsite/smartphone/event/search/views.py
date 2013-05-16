@@ -5,17 +5,26 @@ from altairsite.smartphone.event.search.forms import TopSearchForm, GenreSearchF
 from altairsite.smartphone.event.search.search_query import SearchQuery, AreaSearchQuery, DetailSearchQuery\
     , EventOpenInfo, SaleInfo, PerformanceInfo
 from altairsite.smartphone.common.const import SalesEnum
+from pyramid.renderers import render_to_response
 
 @usersite_view_config(route_name='search',request_type="altairsite.tweens.ISmartphoneRequest"
              , renderer='altairsite.smartphone:templates/searchresult/search.html')
 def search(context, request):
     # トップ画面の検索
     form = TopSearchForm(request.GET)
-    query = SearchQuery(form.data['word'], None, form.data['sale'], None)
-    result = context.search(query, int(form.data['page']), 10)
+
+    if form.validate():
+        query = SearchQuery(form.data['word'], None, form.data['sale'], None)
+        page = form.data['page'] if form.data['page'] else 1
+        result = context.search(query, int(page), 10)
+    else:
+        render_param = context.get_top_render_param()
+        render_param['form'] = form
+        return render_to_response('altairsite.smartphone:templates/top.html', render_param, request=request)
 
     return {
          'result':result
+        ,'form':form
         ,'helper':SmartPhoneHelper()
     }
 
