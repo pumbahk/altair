@@ -4,6 +4,7 @@ from zope.interface import implements
 from altaircms.interfaces import IWidget
 import sqlalchemy as sa
 import sqlalchemy.orm as orm
+from sqlalchemy.sql.expression import update as sql_update
 
 from altaircms.widget.models import Widget
 from altaircms.plugins.base import DBSession
@@ -54,8 +55,13 @@ class TicketlistWidgetResource(HandleSessionMixin,
         return self._get_or_create(TicketlistWidget, widget_id)
 
 def after_target_salessegment_deleted(mapper, connection, target):
-    TicketlistWidget.query.filter_by(target_salessegment_id=target.id).update({"target_salessegment_id": None})
+    for widget in TicketlistWidget.query.filter(TicketlistWidget.target_salessegment == target.id):
+        widget.target_salessegment_id = None
+
 sa.event.listen(SalesSegment, "before_delete", after_target_salessegment_deleted)
+
 def after_target_performance_deleted(mapper, connection, target):
-    TicketlistWidget.query.filter_by(target_performance_id=target.id).update({"target_performance_id": None})
+    for widget in TicketlistWidget.query.filter(TicketlistWidget.target_performance_id == target.id):
+        widget.target_performance_id = None
+
 sa.event.listen(Performance, "before_delete", after_target_performance_deleted)
