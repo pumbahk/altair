@@ -164,14 +164,9 @@
         <div class="venue-editor-main">
           <div class="venue-editor-main-root"></div>
           <div class="venue-editor-main-side">
-            <ul class="nav nav-tabs">
-              <li class="active"><a href="#venue-editor-main-side-tab1" data-toggle="tab">配席</a></li>
-              <li><a href="#venue-editor-main-side-tab2" data-toggle="tab">選択座席<span class="selection-count badge"></span></a></li>
-            </ul>
-            <div class="tab-content" style="overflow: visible;">
-              <div class="tab-pane active" id="venue-editor-main-side-tab1"></div>
-              <div class="tab-pane" id="venue-editor-main-side-tab2"></div>
-            </div>
+            %if hasattr(caller, 'venue_editor_side_extra'):
+              ${caller.venue_editor_side_extra()}
+            %endif
           </div>
         </div>
       </div>
@@ -341,6 +336,7 @@ venueEditorRoot.venueeditor({
       } else {
         tooltip.css('visibility', 'hidden');
       }
+      callbacks.tooltip && callbacks.tooltip(seat);
     }
   }
 }).venueeditor("load");
