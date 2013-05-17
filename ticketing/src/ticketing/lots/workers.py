@@ -70,7 +70,14 @@ class WorkerResource(object):
 
 
 @task_config(root_factory=WorkerResource,
-             queue="")
+             queue="lots")
+def dummy_task(context, message):
+    logger.info("got message")
+    try:
+        print message.params
+    except Exception as e:
+        print e
+
 def elect_lots_task(context, message):
     """ 当選確定処理 """
 

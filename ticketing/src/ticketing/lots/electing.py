@@ -3,11 +3,14 @@
 
 publisher呼び出しをticketing.events.lotsに置いて、こちらにはworkers内の実装をおいてしまうべきか？
 """
-
+import logging
 import json
 from zope.interface import implementer
 from altair.mq.interfaces import IPublisher
 from .interfaces import IElecting
+
+
+logger = logging.getLogger(__name__)
 
 @implementer(IElecting)
 class Electing(object):
@@ -21,8 +24,18 @@ class Electing(object):
 
     def elect_lot_entries(self):
         publisher = self.publisher
-        body = {"lot_id": self.lot.id}
-        publisher.publish(exchange="",
-                          routing_key='',
-                          body=json.dumps(body),
-                          properties=dict(content_type="application/json"))
+        # TODO すでにOrderがあるworkは排除すべき
+        works = self.lot.elect_works
+        logger.info("publish electing lot: lot_id = {0} : count = {1}".format(
+            self.lot.id,
+            len(works),
+        ))
+        for work in works:
+            logger.info("publish entry_wish = {0}".format(work.entry_wish_no))
+            body = {"lot_id": self.lot.id,
+                    "entry_no": work.lot_entry_no,
+                    "wish_order": work.wish_order,
+            }
+            publisher.publish(body=json.dumps(body),
+                              routing_key="lots",
+                              properties=dict(content_type="application/json"))

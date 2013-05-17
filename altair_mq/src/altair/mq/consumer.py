@@ -66,6 +66,7 @@ class TaskMapper(object):
             context = self.root_factory(message)
             logger.debug('call task')
             self.task(context, message)
+            channel.basic_ack(method.delivery_tag)
 
         except Exception as e:
             logger.exception(e)

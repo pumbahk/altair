@@ -22,7 +22,6 @@ class Publisher(object):
 
         try:
             channel = connection.channel()
-            channel.queue_declare(queue=routing_key, durable=True, exclusive=False, auto_delete=False)
 
             channel.basic_publish(exchange=exchange,
                                   routing_key=routing_key,
@@ -32,6 +31,8 @@ class Publisher(object):
                                   properties=pika.BasicProperties(**properties))
             logger.debug("published")
 
+        except Exception as e:
+            logger.exception(e)
         finally:
             pass
             #connection.close()
