@@ -1,4 +1,5 @@
 import logging
+import transaction
 import json
 from pyramid.threadlocal import get_current_request
 from pika.adapters.tornado_connection import TornadoConnection
@@ -70,10 +71,12 @@ class TaskMapper(object):
             context = self.root_factory(message)
             logger.debug('call task')
             self.task(context, message)
+            transaction.commit()
             channel.basic_ack(method.delivery_tag)
-
         except Exception as e:
+            transaction.abort()
             logger.exception(e)
+
 
 
 @implementer(IConsumer)

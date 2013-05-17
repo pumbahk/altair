@@ -121,7 +121,7 @@ def elect_lots_task(context, message):
     if order:
         logger.info("ordered: order_no = {0.order_no}".format(order))
         work.delete()
-
+    DBSession.remove()
 
 
 def elect_lot_wish(request, wish):
