@@ -8,21 +8,32 @@ from ...subscribers import notify_model_create
 from ...models import DBSession
 from altaircms.filelib import zipupload
 
-"""
-memo: 
-<basedir>/<static_page_id>/<name>
 
-となるのでパスは重ならない。ファイル名の重複をチェックする必要はない
-"""
+class StaticPageDelete(object):
+    def __init__(self, request, utility):
+        self.request = request
+        self.utility = utility
 
-def get_rootname(basedir, static_page):
-    assert static_page.id
-    return os.path.join(basedir,
-                        unicode(static_page.id), 
-                        static_page.name
-                        )
-    
+    def delete(self, static_page):
+        self.delete_model(static_page)
+        self.delete_underlying_something(static_page)
 
+    def delete_model(self, static_page):
+        DBSession.delete(static_page)
+
+    def delete_underlying_something(self, static_page):
+        try:
+            ## snapshot取っておく
+            src = self.utility.get_rootname(static_page)
+            zipupload.create_directory_snapshot(src)
+
+            ## 直接のsrcは空で保存できるようになっているはず。
+            if os.path.exists(src):
+                raise Exception("%s exists. after delete" % src)
+        except Exception, e:
+            logger.exception(str(e))
+            raise 
+        
 class StaticPageCreate(object):
     def __init__(self, request, utility, data):
         self.request = request
@@ -44,7 +55,6 @@ class StaticPageCreate(object):
                                  label=data["label"],
                                  publish_begin=data["publish_begin"],
                                  publish_end=data["publish_end"],
-                                 interceptive=data["interceptive"]
                                  )
         DBSession.add(static_page)
         notify_model_create(self.request, static_page, data)

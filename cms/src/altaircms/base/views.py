@@ -1,4 +1,4 @@
-# coding: utf-8
+# -*- coding:utf-8 -*-
 import sqlalchemy as sa
 from datetime import datetime, timedelta
 from pyramid.httpexceptions import HTTPBadRequest, HTTPFound, HTTPForbidden
@@ -11,6 +11,10 @@ from altaircms.event.models import Event
 from altaircms.auth.models import APIKey
 from altaircms.auth.forms import APIKeyForm
 
+
+"""
+TODO:move dashboard, APIKeyView
+"""
 
 @view_config(renderer='altaircms:templates/dashboard.html', permission='authenticated',
              decorator=with_bootstrap, route_name="dashboard")

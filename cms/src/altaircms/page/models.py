@@ -34,6 +34,7 @@ import uuid
 
 class PublishStatusMixin(object):
     def publish_status(self, dt):
+        dt = dt or datetime.now()
         if not self.published:
             return u"非公開(期間:%s)" % h.term_datetime(self.publish_begin, self.publish_end)
         
@@ -246,6 +247,14 @@ class StaticPageSet(Base,
 
     pagetype_id = Column(sa.Integer, ForeignKey("pagetype.id"))
     pagetype = orm.relationship("PageType", backref="static_pagesets", uselist=False)
+
+    def current(self, dt=None, published=True):
+        dt = dt or datetime.now()
+        where = (StaticPage.in_term(dt)) | ((StaticPage.publish_begin==None) & (StaticPage.publish_end==None))
+        if published:
+            where = where & (StaticPage.published == published)
+        qs = StaticPage.query.filter(StaticPage.pageset==self).filter(where)
+        return qs.order_by(sa.desc(StaticPage.publish_begin), StaticPage.publish_end).limit(1).first()
 
     @declared_attr
     def __table_args__(cls):

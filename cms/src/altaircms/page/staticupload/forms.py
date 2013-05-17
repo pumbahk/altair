@@ -25,7 +25,6 @@ class StaticPageCreateForm(Form):
                                                 )
     publish_begin = fields.DateTimeField(label=u"掲載開始", validators=[validators.Optional()])
     publish_end = MaybeDateTimeField(label=u"掲載終了", validators=[validators.Optional()])
-    interceptive = fields.BooleanField(label=u"同一urlのページセットを横取りする", default=True)
 
 
     def configure(self, request):
@@ -46,7 +45,7 @@ class StaticPageCreateForm(Form):
         return super(type(self), self).validate() and queue(self.data, self.errors)
 
 class StaticPageForm(Form):
-    name = fields.TextField(label=u"name", validators=[validators.Optional()])
+    name = fields.TextField(label=u"name", validators=[validators.Required()])
     label = fields.TextField(label=u"タイトル", validators=[validators.Required()])
     layout = dynamic_query_select_field_factory(Layout, allow_blank=True, 
                                                 get_label=lambda obj: u"%s(%s)" % (obj.title, obj.template_filename), 
@@ -54,33 +53,39 @@ class StaticPageForm(Form):
                                                 )
     publish_begin = fields.DateTimeField(label=u"掲載開始", validators=[validators.Optional()])
     publish_end = MaybeDateTimeField(label=u"掲載終了", validators=[validators.Optional()])
-    interceptive = fields.BooleanField(label=u"同一urlのページセットを横取りする", default=True)
 
     def configure(self, request):
         self.request = request
         self.static_directory = get_static_page_utility(request)
 
-    def object_validate(self, obj):
-        self.request._static_page_name = obj.name #too add-hoc        
-        return True
+    __display_fields__ = ["name", "label", "layout", "publish_begin", "publish_end"]
 
     def validate(self):
-        status = super(type(self), self).validate()
-        if not status:
-            return False
+        queue = ValidationQueue()
+        queue.enqueue("publish_begin", validate_term, begin="publish_begin", end="publish_end")
+        return super(type(self), self).validate() and queue(self.data, self.errors)
 
-        data = self.data
-        if data.get("name") and hasattr(self, "static_directory"):
-            path = os.path.join(self.static_directory.get_base_directory(), self.data["name"])
-            if os.path.exists(path):
-                if self.request.allowable(StaticPage).filter(StaticPage.name==self.data["name"], StaticPage.id!=self.request.matchdict["id"]).count() > 0:
-                    append_errors(self.errors, "name", u"%sは既に存在しています。他の名前で登録してください" % self.data["name"])
-                    status = False
 
-        if data.get("publish_end") and data.get("publish_begin"):
-            if data["publish_begin"] > data["publish_end"]:
-                append_errors(self.errors, "publish_begin", u"開始日よりも後に終了日が設定されています")
-        return status
 
-    __display_fields__ = ["name", "label", "layout", "publish_begin", "publish_end", "interceptive"]
+    # def object_validate(self, obj):
+    #     self.request._static_page_name = obj.name #too add-hoc        
+    #     return True
+
+    # def validate(self):
+    #     status = super(type(self), self).validate()
+    #     if not status:
+    #         return False
+
+    #     data = self.data
+    #     if data.get("name") and hasattr(self, "static_directory"):
+    #         path = os.path.join(self.static_directory.get_base_directory(), self.data["name"])
+    #         if os.path.exists(path):
+    #             if self.request.allowable(StaticPage).filter(StaticPage.name==self.data["name"], StaticPage.id!=self.request.matchdict["id"]).count() > 0:
+    #                 append_errors(self.errors, "name", u"%sは既に存在しています。他の名前で登録してください" % self.data["name"])
+    #                 status = False
+
+    #     if data.get("publish_end") and data.get("publish_begin"):
+    #         if data["publish_begin"] > data["publish_end"]:
+    #             append_errors(self.errors, "publish_begin", u"開始日よりも後に終了日が設定されています")
+    #     return status
 

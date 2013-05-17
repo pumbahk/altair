@@ -36,6 +36,9 @@ class StaticPageDirectory(object):
                             unicode(static_page.id), 
                             )
 
+    def get_writename(self, static_page):
+       return os.path.join(self.tmpdir, static_page.name+".zip")
+
     def prepare(self, src):
         logger.info("prepare static pages: %s" % (src))
         os.makedirs(src)

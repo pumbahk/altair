@@ -2,7 +2,6 @@
 import copy
 import os
 from pyramid.httpexceptions import HTTPFound, HTTPForbidden
-from pyramid.response import FileResponse
 from altaircms.filelib import zipupload
 from pyramid.view import view_config
 from pyramid.view import view_defaults
@@ -20,14 +19,11 @@ from . import creation
 from .renderable import StaticPageDirectoryRenderer
 import logging
 logger = logging.getLogger(__name__)
-from altaircms.helpers.viewhelpers import get_endpoint
+from altaircms.viewlib import BaseView, download_response
+from altaircms.datelib import get_now
 
 @view_defaults(route_name="static_page_create", permission="authenticated")
-class StaticPageCreateView(object):
-    def __init__(self, context, request):
-        self.request = request
-        self.context = context
-        
+class StaticPageCreateView(BaseView):
     @view_config(match_param="action=input", decorator=with_bootstrap,
                  renderer="altaircms:templates/page/static_page_add.html")
     def input(self):
@@ -44,27 +40,10 @@ class StaticPageCreateView(object):
         creator = self.context.creation(creation.StaticPageCreate, form.data)
         static_page = creator.create()
         FlashMessage.success(u"%sが作成されました" % static_page.label, request=self.request)
-        return HTTPFound(self.request.route_url("static_pageset", action="detail", static_page_id=static_page.pageset.id))
+        return HTTPFound(self.context.endpoint(static_page))
 
 @view_defaults(route_name="static_pageset", permission="authenticated")
-class StaticPageSetView(object):
-    def __init__(self, context, request):
-        self.request = request
-        self.context = context
-
-    @view_config(match_param="action=toggle_publish")
-    def toggle_publish(self):
-        pk = self.request.matchdict["static_page_id"]
-        static_page = get_or_404(self.request.allowable(StaticPage), StaticPage.id==pk)
-        status = self.request.GET.get("status")
-        if status == "publish":
-            static_page.published = True
-        elif status == "unpublish":
-            static_page.published = False
-        else:
-            static_page.published = not static_page.published
-        FlashMessage.success(u"このページを%sしました" % (u"公開" if static_page.published else u"非公開に"), request=self.request)
-        return HTTPFound(get_endpoint(self.request) or self.request.route_url("static_pageset", action="detail", static_page_id=static_page.id))
+class StaticPageSetView(BaseView):
 
     @view_config(match_param="action=detail", renderer="altaircms:templates/page/static_detail.html", 
                  decorator=with_bootstrap)
@@ -77,71 +56,9 @@ class StaticPageSetView(object):
         return {"static_pageset": static_pageset, 
                 "static_page": static_page,                 
                 "static_directory": static_directory, 
-                "tree_renderer": StaticPageDirectoryRenderer(self.request, static_page, static_directory)}
-
-    @view_config(match_param="action=shallow_copy")
-    def shallow_copy(self):
-        static_pageset_id = self.request.matchdict["static_page_id"]
-        static_page = get_or_404(self.request.allowable(StaticPage), StaticPage.id==self.request.params.get("child_id"))
-        copied = copy.copy(static_page)
-        copied.label += u"のコピー"
-        DBSession.add(copied)
-        DBSession.flush()
-        static_directory = get_static_page_utility(self.request)
-        static_directory.prepare(static_directory.get_rootname(copied))
-        return HTTPFound(get_endpoint(self.request) or self.request.route_url("static_pageset", action="detail", static_page_id=static_pageset_id))
-
-    @view_config(match_param="action=deep_copy")
-    def deep_copy(self):
-        static_pageset_id = self.request.matchdict["static_page_id"]
-        static_page = get_or_404(self.request.allowable(StaticPage), StaticPage.id==self.request.params.get("child_id"))
-        copied = copy.copy(static_page)
-        copied.label += u"のコピー"
-        DBSession.add(copied)
-        DBSession.flush()
-        static_directory = get_static_page_utility(self.request)
-        static_directory.copy(static_directory.get_rootname(static_page), 
-                              static_directory.get_rootname(copied))
-        return HTTPFound(get_endpoint(self.request) or self.request.route_url("static_pageset", action="detail", static_page_id=static_pageset_id))
-
-    
-
-    @view_config(match_param="action=delete", request_method="POST", renderer="json")
-    def delete(self):
-        pk = self.request.matchdict["static_page_id"]
-        static_page = get_or_404(self.request.allowable(StaticPage), StaticPage.id==pk)
-        static_directory = get_static_page_utility(self.request)
-        name = static_page.name
-
-        try:
-            self.context.delete_static_page(static_page)
-
-            ## snapshot取っておく
-            src = os.path.join(static_directory.get_base_directory(), static_page.name)
-            zipupload.create_directory_snapshot(src)
-
-            ## 直接のsrcは空で保存できるようになっているはず。
-            if os.path.exists(src):
-                raise Exception("%s exists. after delete" % src)
-            FlashMessage.success(u"%sが削除されました" % name, request=self.request)
-            return {"redirect_to": self.request.route_url("pageset_list", pagetype="static")}
-        except Exception, e:
-            logger.exception(str(e))
-            raise 
-
-    @view_config(match_param="action=download")
-    def download(self):
-        pk = self.request.matchdict["static_page_id"]
-        static_page = get_or_404(self.request.allowable(StaticPage), StaticPage.id==pk)
-        static_directory = get_static_page_utility(self.request)
-
-        dirname = os.path.join(static_directory.get_base_directory(), static_page.name)
-        writename = os.path.join(static_directory.tmpdir, static_page.name+".zip")
-        with zipupload.current_directory(dirname):
-            zipupload.create_zipfile_from_directory(".", writename)
-        response = FileResponse(path=writename, request=self.request)
-        response.content_disposition = 'attachment; filename="%s.zip"' % static_page.name
-        return response
+                "current_page": static_pageset.current(), 
+                "tree_renderer": StaticPageDirectoryRenderer(self.request, static_page, static_directory), 
+                "now": get_now(self.request)}
 
     @view_config(match_param="action=upload", request_param="zipfile", request_method="POST")
     def upload(self):
@@ -169,6 +86,66 @@ class StaticPageSetView(object):
 
         FlashMessage.success(u"%sが更新されました" % filestorage.filename, request=self.request)
         return HTTPFound(self.request.route_url("static_pageset", action="detail", static_page_id=static_page.id))
+
+@view_defaults(route_name="static_page", permission="authenticated")
+class StaticPageView(BaseView):
+    @view_config(match_param="action=shallow_copy")
+    def shallow_copy(self):
+        static_page = get_or_404(self.request.allowable(StaticPage), StaticPage.id==self.request.matchdict["child_id"])
+        copied = copy.copy(static_page)
+        copied.label += u"のコピー"
+        DBSession.add(copied)
+        DBSession.flush()
+        static_directory = get_static_page_utility(self.request)
+        static_directory.prepare(static_directory.get_rootname(copied))
+        return HTTPFound(self.context.endpoint(static_page))
+
+
+    @view_config(match_param="action=deep_copy")
+    def deep_copy(self):
+        static_page = get_or_404(self.request.allowable(StaticPage), StaticPage.id==self.request.matchdict["child_id"])
+        copied = copy.copy(static_page)
+        copied.label += u"のコピー"
+        DBSession.add(copied)
+        DBSession.flush()
+        static_directory = get_static_page_utility(self.request)
+        static_directory.copy(static_directory.get_rootname(static_page), 
+                              static_directory.get_rootname(copied))
+        return HTTPFound(self.context.endpoint(static_page))
+
+
+    @view_config(match_param="action=toggle_publish")
+    def toggle_publish(self):
+        pk = self.request.matchdict["child_id"]
+        static_page = get_or_404(self.request.allowable(StaticPage), StaticPage.id==pk)
+        status = self.request.GET.get("status")
+        if status == "publish":
+            static_page.published = True
+        elif status == "unpublish":
+            static_page.published = False
+        else:
+            static_page.published = not static_page.published
+        FlashMessage.success(u"このページを%sしました" % (u"公開" if static_page.published else u"非公開に"), request=self.request)
+        return HTTPFound(self.context.endpoint(static_page))
+
+    @view_config(match_param="action=delete", request_method="POST", renderer="json")
+    def delete(self):
+        pk = self.request.matchdict["child_id"]
+        static_page = get_or_404(self.request.allowable(StaticPage), StaticPage.id==pk)
+        deleter = self.context.creation(creation.StaticPageDelete)
+        deleter.delete(static_page)
+        FlashMessage.success(u"%sが削除されました" % static_page.name, request=self.request)
+        return {"redirect_to": self.context.endpoint(static_page)}
+
+    @view_config(match_param="action=download")
+    def download(self):
+        pk = self.request.matchdict["child_id"]
+        static_page = get_or_404(self.request.allowable(StaticPage), StaticPage.id==pk)
+        static_directory = get_static_page_utility(self.request)
+        writename = static_directory.get_writename(static_page)
+        with zipupload.current_directory(static_directory.get_rootname(static_page)):
+            zipupload.create_zipfile_from_directory(".", writename)
+        return download_response(path=writename,request=self.request, filename="{0}.zip".format(static_page.name)) 
 
 @view_config(route_name="static_page_display", permission="authenticated")
 def static_page_display_view(context, request):
