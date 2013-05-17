@@ -53,7 +53,7 @@ seq = h.paginate(request, pages, item_count=page_count, items_per_page=50)
     %for page in seq.paginated():
       <tr>
         <td> 
-		  <a href="${request.route_path("static_page", action="detail", static_page_id=page.id)}">${page.name}</a>
+		  <a href="${request.route_path("static_pageset", action="detail", static_page_id=page.id)}">${page.name}</a>
         </td>
 		<td>${h.base.jdate_with_hour(page.created_at)}</td>
 		<td>${h.base.jdate_with_hour(page.updated_at)}</td>

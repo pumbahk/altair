@@ -31,6 +31,28 @@ from altaircms.models import WithOrganizationMixin
 
 import uuid
 
+
+class PublishStatusMixin(object):
+    def publish_status(self, dt):
+        if not self.published:
+            return u"非公開(期間:%s)" % h.term_datetime(self.publish_begin, self.publish_end)
+        
+        if self.publish_begin and self.publish_begin > dt:
+            return u"公開前(%sに公開)" % h.base.jdate_with_hour(self.publish_begin)
+        elif self.publish_end is None:
+            return u"公開中"
+        elif self.publish_end < dt:
+            return u"公開終了(%sに終了)"% h.base.jdate_with_hour(self.publish_end)
+        else:
+            return u"公開中(期間:%s)" % h.term_datetime(self.publish_begin, self.publish_end)
+
+    ### page access
+    def publish(self):
+        self.published = True
+
+    def unpublish(self):
+        self.published = False
+
 class PageAccesskey(Base, WithOrganizationMixin):
     query = DBSession.query_property()
     __tablename__ = "page_accesskeys"
@@ -232,6 +254,7 @@ class StaticPageSet(Base,
 
 class StaticPage(BaseOriginalMixin, 
                  WithOrganizationMixin, 
+                 PublishStatusMixin, 
                  Base):
     query = DBSession.query_property()
     __tablename__ = "static_pages"
@@ -267,6 +290,7 @@ class StaticPage(BaseOriginalMixin,
 
 class Page(BaseOriginalMixin,
            WithOrganizationMixin, 
+           PublishStatusMixin, 
            Base):
     """
     ページ
@@ -340,26 +364,6 @@ class Page(BaseOriginalMixin,
             return page
         else:
             return cls(name=name)
-
-    def publish_status(self, dt):
-        if not self.published:
-            return u"非公開(期間:%s)" % h.term_datetime(self.publish_begin, self.publish_end)
-        
-        if self.publish_begin and self.publish_begin > dt:
-            return u"公開前(%sに公開)" % h.base.jdate_with_hour(self.publish_begin)
-        elif self.publish_end is None:
-            return u"公開中"
-        elif self.publish_end < dt:
-            return u"公開終了(%sに終了)"% h.base.jdate_with_hour(self.publish_end)
-        else:
-            return u"公開中(期間:%s)" % h.term_datetime(self.publish_begin, self.publish_end)
-
-    ### page access
-    def publish(self):
-        self.published = True
-
-    def unpublish(self):
-        self.published = False
 
     def create_access_key(self, key=None, expire=None, _genkey=None):
         access_key = PageAccesskey(expiredate=expire, page=self)

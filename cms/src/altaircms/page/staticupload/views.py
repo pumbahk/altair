@@ -18,7 +18,7 @@ from . import creation
 from .renderable import StaticPageDirectoryRenderer
 import logging
 logger = logging.getLogger(__name__)
-
+from altaircms.helpers.viewhelpers import get_endpoint
 
 @view_defaults(route_name="static_page_create", permission="authenticated")
 class StaticPageCreateView(object):
@@ -45,7 +45,7 @@ class StaticPageCreateView(object):
         return HTTPFound(self.request.route_url("static_page", action="detail", static_page_id=static_page.id))
 
         
-@view_defaults(route_name="static_page", permission="authenticated")
+@view_defaults(route_name="static_pageset", permission="authenticated")
 class StaticPageSetView(object):
     def __init__(self, context, request):
         self.request = request
@@ -55,9 +55,15 @@ class StaticPageSetView(object):
     def toggle_publish(self):
         pk = self.request.matchdict["static_page_id"]
         static_page = get_or_404(self.request.allowable(StaticPage), StaticPage.id==pk)
-        static_page.published = not static_page.published
+        status = self.request.GET.get("status")
+        if status == "publish":
+            static_page.published = True
+        elif status == "unpublish":
+            static_page.published = False
+        else:
+            static_page.published = not static_page.published
         FlashMessage.success(u"このページを%sしました" % (u"公開" if static_page.published else u"非公開に"), request=self.request)
-        return HTTPFound(self.request.route_url("static_page", action="detail", static_page_id=static_page.id))
+        return HTTPFound(get_endpoint(self.request) or self.request.route_url("static_page", action="detail", static_page_id=static_page.id))
 
     @view_config(match_param="action=detail", renderer="altaircms:templates/page/static_detail.html", 
                  decorator=with_bootstrap)
@@ -65,7 +71,7 @@ class StaticPageSetView(object):
         pk = self.request.matchdict["static_page_id"]
         static_pageset = get_or_404(self.request.allowable(StaticPageSet), StaticPageSet.id==pk)
         static_directory = get_static_page_utility(self.request)
-        static_page = StaticPage.query.filter_by(pageset=static_pageset, id=self.request.matchdict["child_id"]).first()
+        static_page = StaticPage.query.filter_by(pageset=static_pageset, id=self.request.GET.get("child_id")).first()
         static_page = static_page or static_pageset.pages[0]
         return {"static_pageset": static_pageset, 
                 "static_page": static_page,                 

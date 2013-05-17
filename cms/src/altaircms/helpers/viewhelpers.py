@@ -19,6 +19,8 @@ class RegisterViewPredicate(object):
 import logging
 logger = logging.getLogger("altaircms.viewhelpers")
 
+## todo: remove endpoint session.!!!
+
 CMS_ENDPOINT = "cms:endpoint"
 _CMS_ENDPOINT_SENTINEL =  "cms:endpoint:sentinel" #sentinel?
 def set_endpoint(request, endpoint=None):

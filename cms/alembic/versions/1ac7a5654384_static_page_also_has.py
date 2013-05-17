@@ -29,7 +29,7 @@ def upgrade():
                     sa.UniqueConstraint('url', 'organization_id')
                     )
     op.add_column('static_pages', sa.Column('pageset_id', sa.Integer(), nullable=True))
-    for i in range(8): #slack-off
+    for i in range(10): #slack-off
         op.execute('''INSERT INTO static_pagesets (name,version_counter,url,organization_id,created_at,updated_at,pagetype_id) 
   (SELECT name, 0, name, organization_id, now(), now(), (select id from pagetype where organization_id = {0} and name = "static")
   FROM static_pages where organization_id = {0});'''.format(i))
