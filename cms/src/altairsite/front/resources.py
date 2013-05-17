@@ -66,8 +66,11 @@ class AccessControlPC(object):
 
     def fetch_static_page_from_params(self, url,  dt):
         prefix = url.split("/", 1)[0]
-        static_page = self.request.allowable(StaticPage).filter(StaticPage.name==prefix, StaticPage.published==True, StaticPage.interceptive==True).first()
-        return static_page
+        qs = self.request.allowable(StaticPage).filter(PageSet.id==StaticPage.pageset_id)
+        qs = qs.filter(PageSet.url==prefix)
+        qs = qs.filter(StaticPage.in_term(dt))
+        qs = qs.filter(StaticPage.published==True)
+        return qs.order_by(sa.desc("static_pages.publish_begin"), "static_pages.publish_end").first()
 
     def fetch_page_from_params(self, url, dt):
         page = self._fetch_page_from_params(url, dt)
