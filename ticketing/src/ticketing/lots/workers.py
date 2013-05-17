@@ -16,7 +16,8 @@ from ticketing.cart.interfaces import (
 )
 from ticketing.cart.reserving import Reserving
 from ticketing.cart.carting import CartFactory
-from .models import Lot
+
+from .models import Lot, LotElectWork
 
 logger = logging.getLogger(__name__)
 
@@ -58,6 +59,7 @@ def lot_wish_cart(wish):
 class WorkerResource(object):
     def __init__(self, message):
         self.message = message
+        self.request = message.request
 
     @property
     def lot_id(self):
@@ -68,9 +70,18 @@ class WorkerResource(object):
     def lot(self):
         return Lot.query.filter(Lot.id==self.lot_id).first()
 
+    @property
+    def work(self):
+        entry_no = self.message.params.get('entry_no')
+        wish_order = self.message.params.get('wish_order')
+        logger.debug("{entry_no}-{wish_order}".format(entry_no=entry_no,
+                                                      wish_order=wish_order))
+        return LotElectWork.query.filter(
+            LotElectWork.lot_entry_no==entry_no
+        ).filter(
+            LotElectWork.wish_order==wish_order
+        ).one()
 
-@task_config(root_factory=WorkerResource,
-             queue="lots")
 def dummy_task(context, message):
     logger.info("got message")
     try:
@@ -78,57 +89,57 @@ def dummy_task(context, message):
     except Exception as e:
         print e
 
+@task_config(root_factory=WorkerResource,
+             queue="lots")
 def elect_lots_task(context, message):
     """ 当選確定処理 """
 
-    lot = context.lot
+    try:
+        lot = context.lot
+        work = context.work
+    except Exception as e:
+        logger.exception(e)
+        # workにエラー記録
+        return
+
+
     logger.info("start electing lot_id = {lot_id}".format(lot_id=lot.id))
     if lot is None:
         logger.warning("lot is not found: lot_id = {0}".format(context.lot_id))
         return
 
     logger.info('start electing task: lot_id = {0}'.format(lot.id))
-
-    wishes = lot.get_elected_wishes()
-    orders = []
-    for wish in wishes:
-        order = elect_lot_wish(wish)
-        orders.append(order)
-
-    rejected_wishes = lot.get_rejected_wishes()
-    for rw in rejected_wishes:
-        rw.entry.reject()
-
-    lot.finish_lotting()
-
-    return len(orders)
+    request = context.request
+    wish = work.wish
+    order = elect_lot_wish(request, wish)
+    if order:
+        logger.info("ordered: order_no = {0.order_no}".format(order))
+        work.delete()
+    transaction.commit()
 
 
-def elect_lot_wish(wish):
+def elect_lot_wish(request, wish):
     cart = lot_wish_cart(wish)
-    payment = Payment(cart)
-    stocker = Stocker()
+    payment = Payment(cart, request)
+    stocker = Stocker(request)
     try:
         # 在庫処理
         performance = cart.performance
-        product_requires = [(p.product_id, p.quantity)
+        product_requires = [(p.product, p.quantity)
                             for p in cart.products]
-        stocked = stocker.take_stock(performance,
+        stocked = stocker.take_stock(performance.id,
                                      product_requires)
         logger.debug("lot elected: entry_no = {0}, stocks = {1}".format(wish.lot_entry.entry_no, stocked))
         # TODO: 確保数確認
-        wish.entry.elect(wish)
+        wish.lot_entry.elect(wish)
         order = payment.call_payment()
         wish.order_id = order.id
-        transaction.commit()
 
         return order
 
     except Exception as e:
-        logger.warning('lot_id, order_no, wish_no, wish_id')
-            # 売上確定などできないものは別にまわす
+        logger.exception(e)
 
-        # ここでいったんトランザクション
     
 
     # def elect_lot_entries(self):

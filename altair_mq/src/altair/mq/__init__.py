@@ -43,10 +43,14 @@ def add_task(config, task,
              exclusive=False, 
              auto_delete=False,
              nowait=False):
+    _root_factory = root_factory
+    logger.info("{name} root factory = {0}".format(root_factory, name=name))
     if root_factory is None:
+        logger.info("use default root factory")
         root_factory = 'pyramid.traversal.DefaultRootFactory'
     reg = config.registry
     root_factory = config.maybe_dotted(root_factory)
+    logger.info("{name} root factory = {0}".format(root_factory, name=name))
 
     def register():
         pika_consumer = get_consumer(config)
@@ -62,7 +66,9 @@ def add_task(config, task,
                                                    name=name,
                                                    root_factory=root_factory,
                                                    queue_settings=queue_settings))
-        logger.info("register task {name} {queue_settings}".format(name=name,
+        logger.info("_root_factory = {0}".format(_root_factory))
+        logger.info("register task {name} {root_factory} {queue_settings}".format(name=name,
+                                                                   root_factory=root_factory,
                                                                    queue_settings=queue_settings))
         reg.registerUtility(task, ITask)
 
