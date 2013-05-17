@@ -14,6 +14,7 @@ from pyramid.interfaces import IRequest
 from ticketing.cart.interfaces import (
     IStocker, IReserving, ICartFactory,
 )
+from ticketing.models import DBSession
 from ticketing.cart.reserving import Reserving
 from ticketing.cart.carting import CartFactory
 
@@ -93,7 +94,7 @@ def dummy_task(context, message):
              queue="lots")
 def elect_lots_task(context, message):
     """ 当選確定処理 """
-
+    DBSession.remove()
     try:
         lot = context.lot
         work = context.work
@@ -110,12 +111,17 @@ def elect_lots_task(context, message):
 
     logger.info('start electing task: lot_id = {0}'.format(lot.id))
     request = context.request
+    ## XXX: ワーカーがシングルスレッドなので使えるが...
+    request.session['order'] = {'order_no': work.lot_entry_no}
+    request.altair_checkout3d_override_shop_name = lot.event.organization.setting.multicheckout_shop_name
     wish = work.wish
+
+
     order = elect_lot_wish(request, wish)
     if order:
         logger.info("ordered: order_no = {0.order_no}".format(order))
         work.delete()
-    transaction.commit()
+
 
 
 def elect_lot_wish(request, wish):

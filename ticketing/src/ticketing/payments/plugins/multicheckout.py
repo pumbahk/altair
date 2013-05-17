@@ -122,7 +122,10 @@ class MultiCheckoutPlugin(object):
         """ 売り上げ確定(3D認証) """
         order = request.session['order']
         order_no = order['order_no']
-        card_brand = detect_card_brand(request, order['card_number'])
+        card_brand = None
+        card_number = order.get('card_number')
+        if card_number:
+            card_brand = detect_card_brand(request, card_number)
 
         if not cart.has_different_amount:
             checkout_sales_result = multicheckout_api.checkout_sales(
@@ -143,7 +146,7 @@ class MultiCheckoutPlugin(object):
         else:
             ## 金額変更での売上確定
             checkout_sales_result = multicheckout_api.checkout_sales_different_amount(
-                request, get_order_no(request, cart, cart.different_amount),
+                request, get_order_no(request, cart), cart.different_amount,
             )
             if checkout_sales_result.CmnErrorCd != '000000':
                 logger.info(u'finish_secure: 決済エラー order_no = %s, error_code = %s' % (order_no, checkout_sales_result.CmnErrorCd))
