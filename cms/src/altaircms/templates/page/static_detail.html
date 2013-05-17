@@ -27,47 +27,66 @@ h3{
 <hr/>
 <h3>ページ一覧</h3>
 
-<table class="table table-describe table-bordered">
-<thread>
-  <tr>
-  <th>名前</th>
-  <th>表示状況</th>
-  <th>公開期間</th>
-  <th>生成日時</th>
-  <th>更新日時</th>
-  </tr>
-</thead>
-<tbody>
-%for page in static_pageset.pages:
-  <tr>
-    <td><a href="${h.current_route_path_override(request,_query=dict(child_id=page.id))}">${page.label}</a></td>
-    <td>
-      <div class="btn-group">
-        <a class="btn dropdown-toggle" data-toggle="dropdown" href="#">
-          ${page.publish_status(now)}
-          <span class="caret"></span>
-        </a>
-        <ul class="dropdown-menu">
-          <!-- dropdown menu links -->
-          <li><a href="${request.route_path("static_pageset", action="toggle_publish", _query=dict(status="publish", endpoint=request.url), static_page_id=page.id)}" class="publish_status">公開する</a></li>
-          <li><a href="${request.route_path("static_pageset", action="toggle_publish", _query=dict(status="unpublish", endpoint=request.url), static_page_id=page.id)}" class="publish_status">非公開する</a></li>
-        </ul>
-      </div>
-    </td>
-    <td>${h.jterm(page.publish_begin,page.publish_end)}</td>
-    <td>${h.base.jdate(page.created_at)}</td>
-    <td>${h.base.jdate(page.updated_at)}</td>
-  </tr>
-%endfor
-</tbody>
-</table>
+<div class="box">
+  <table class="table table-describe table-bordered">
+  <thread>
+    <tr>
+    <th width="20px"></th>
+    <th>名前</th>
+    <th>表示状況</th>
+    <th>公開期間</th>
+    <th>生成日時</th>
+    <th>更新日時</th>
+    </tr>
+  </thead>
+  <tbody>
+  %for page in static_pageset.pages:
+    <tr>
+      <td><input type="radio" name="object_id" value="${page.id}"/></td>
+      <td><a href="${h.current_route_path_override(request,_query=dict(child_id=page.id))}#internal_link_for_tabs">${page.label}</a></td>
+      <td>
+        <div class="btn-group">
+          <a class="btn dropdown-toggle" data-toggle="dropdown" href="#">
+            ${page.publish_status(now)}
+            <span class="caret"></span>
+          </a>
+          <ul class="dropdown-menu">
+            <!-- dropdown menu links -->
+            <li><a href="${request.route_path("static_pageset", action="toggle_publish", _query=dict(status="publish", endpoint=request.url), static_page_id=page.id)}" class="publish_status">公開する</a></li>
+            <li><a href="${request.route_path("static_pageset", action="toggle_publish", _query=dict(status="unpublish", endpoint=request.url), static_page_id=page.id)}" class="publish_status">非公開する</a></li>
+          </ul>
+        </div>
+      </td>
+      <td>${h.jterm(page.publish_begin,page.publish_end)}</td>
+      <td>${h.base.jdate(page.created_at)}</td>
+      <td>${h.base.jdate(page.updated_at)}</td>
+    </tr>
+  %endfor
+  </tbody>
+  </table>
+
+  ##位置的にinternal_link_for_tabsにするとちょうどよい。
+  <div class="btn-group" id="internal_link_for_tabs"> 
+	  <a class="btn btn-success action submit" href="${request.route_path("static_pageset", action="shallow_copy", _query=dict(endpoint=request.url, child_id="__id__"), static_page_id=static_pageset.id)}"
+       message="新しいページを追加します。よろしいですか？">
+		  <i class="icon-plus"> </i> 新しいページの追加
+    </a>
+	  <a class="btn btn-success action submit" href="${request.route_path("static_pageset", action="deep_copy", _query=dict(endpoint=request.url, child_id="__id__"), static_page_id=static_pageset.id)}"
+       message="新しいページを追加します。アップロードされているファイルもまとめてコピーします。よろしいですか？">
+		  <i class="icon-plus"> </i> 選択したページのコピーを追加
+    </a>
+  </div>
+</div>
+
+<hr/>
+
 
 <ul class="nav nav-tabs">
   %for page in static_pageset.pages:
   %if page.id == static_page.id:
     <li class="active"><a href="#">${page.label}</a></li>
   %else:
-    <li><a href="${h.current_route_path_override(request,_query=dict(child_id=page.id))}">${page.label}</a></li>
+    <li><a href="${h.current_route_path_override(request,_query=dict(child_id=page.id))}#internal_link_for_tabs">${page.label}</a></li>
   %endif
   %endfor
 </ul>
@@ -107,17 +126,28 @@ h3{
   <a href="${request.route_path("static_pageset",action="toggle_publish",static_page_id=static_page.id)}" class="btn btn-inverse">
     <i class="icon-plus icon-white"></i> この静的ページを${u"非公開にする" if static_page.published else u"公開する"}</a>
   <a class="btn btn-primary"
-	   href="${request.route_path("static_page_update",action="input",id=static_page.id, _query=dict(endpoint=request.url,pagetype="static"))}">
+	   href="${request.route_path("static_pageset",action="update",static_page_id=static_page.id, _query=dict(endpoint=request.url, child_id=static_page.id))}">
     <i class="icon-cog"></i> 変更
   </a>
   <a class="do-post btn btn-danger"
-	   href="${request.route_path("static_pageset",action="delete",static_page_id=static_page.id)}">
+	   href="${request.route_path("static_pageset",action="delete",static_page_id=static_page.id, _query=dict(endpoint=request.url, child_id=static_page.id))}">
     <i class="icon-trash"></i> 削除
   </a>
 </div>
-<hr/>
+<hr id="internal_link_for_files" />
 
 <h3>登録されているファイル</h3>
+
+<ul class="nav nav-tabs">
+  %for page in static_pageset.pages:
+  %if page.id == static_page.id:
+    <li class="active"><a href="#">${page.label}</a></li>
+  %else:
+    <li><a href="${h.current_route_path_override(request,_query=dict(child_id=page.id))}#internal_link_for_files">${page.label}</a></li>
+  %endif
+  %endfor
+</ul>
+
 <ul class="nav nav-tabs">
   %if "force_original" in request.GET:
     <li><a href="${h.current_route_path_override(request,_dels=["force_original"])}">レイアウト適用した後</a></li>
@@ -163,8 +193,8 @@ h3{
       if (!$this.data("href-fmt")){
         $this.data("href-fmt", this.href);
       }
-      this.href = $this.data("href-fmt").replace("__id__", pk);
-      return true;;
+      $this.attr("href", $this.data("href-fmt").replace("__id__", pk));
+      return !($this.attr("message")) || window.confirm($this.attr("message"));
     });
   $("a.do-post").click(function(){
     if(window.confirm("本当に登録されたデータを削除しますか?")){

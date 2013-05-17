@@ -1,4 +1,5 @@
 #-*- coding:utf-8 -*-
+import copy
 import os
 from pyramid.httpexceptions import HTTPFound, HTTPForbidden
 from pyramid.response import FileResponse
@@ -12,6 +13,7 @@ from altaircms.auth.api import get_or_404
 from .. import StaticPageNotFound
 from .api import get_static_page_utility
 from .api import as_static_page_response
+from altaircms.models import DBSession
 from altaircms.page.models import StaticPageSet, StaticPage
 from . import forms
 from . import creation
@@ -42,9 +44,8 @@ class StaticPageCreateView(object):
         creator = self.context.creation(creation.StaticPageCreate, form.data)
         static_page = creator.create()
         FlashMessage.success(u"%sが作成されました" % static_page.label, request=self.request)
-        return HTTPFound(self.request.route_url("static_page", action="detail", static_page_id=static_page.id))
+        return HTTPFound(self.request.route_url("static_pageset", action="detail", static_page_id=static_page.id))
 
-        
 @view_defaults(route_name="static_pageset", permission="authenticated")
 class StaticPageSetView(object):
     def __init__(self, context, request):
@@ -63,7 +64,7 @@ class StaticPageSetView(object):
         else:
             static_page.published = not static_page.published
         FlashMessage.success(u"このページを%sしました" % (u"公開" if static_page.published else u"非公開に"), request=self.request)
-        return HTTPFound(get_endpoint(self.request) or self.request.route_url("static_page", action="detail", static_page_id=static_page.id))
+        return HTTPFound(get_endpoint(self.request) or self.request.route_url("static_pageset", action="detail", static_page_id=static_page.id))
 
     @view_config(match_param="action=detail", renderer="altaircms:templates/page/static_detail.html", 
                  decorator=with_bootstrap)
@@ -77,6 +78,32 @@ class StaticPageSetView(object):
                 "static_page": static_page,                 
                 "static_directory": static_directory, 
                 "tree_renderer": StaticPageDirectoryRenderer(self.request, static_page, static_directory)}
+
+    @view_config(match_param="action=shallow_copy")
+    def shallow_copy(self):
+        static_pageset_id = self.request.matchdict["static_page_id"]
+        static_page = get_or_404(self.request.allowable(StaticPage), StaticPage.id==self.request.params.get("child_id"))
+        copied = copy.copy(static_page)
+        copied.label += u"のコピー"
+        DBSession.add(copied)
+        static_directory = get_static_page_utility(self.request)
+        static_directory.prepare(static_directory.get_rootname(copied))
+        return HTTPFound(get_endpoint(self.request) or self.request.route_url("static_pageset", action="detail", static_page_id=static_pageset_id))
+
+    @view_config(match_param="action=deep_copy")
+    def deep_copy(self):
+        static_pageset_id = self.request.matchdict["static_page_id"]
+        static_page = get_or_404(self.request.allowable(StaticPage), StaticPage.id==self.request.params.get("child_id"))
+        copied = copy.copy(static_page)
+        copied.label += u"のコピー"
+        DBSession.add(copied)
+        DBSession.flush()
+        static_directory = get_static_page_utility(self.request)
+        static_directory.copy(static_directory.get_rootname(static_page), 
+                              static_directory.get_rootname(copied))
+        return HTTPFound(get_endpoint(self.request) or self.request.route_url("static_pageset", action="detail", static_page_id=static_pageset_id))
+
+    
 
     @view_config(match_param="action=delete", request_method="POST", renderer="json")
     def delete(self):
@@ -124,11 +151,11 @@ class StaticPageSetView(object):
         filestorage = self.request.POST["zipfile"]
         if filestorage == u"":
             FlashMessage.error(u"投稿されたファイルは、zipファイルではありません", request=self.request)
-            raise HTTPFound(self.request.route_url("static_page", action="detail", static_page_id=static_page.id))
+            raise HTTPFound(self.request.route_url("static_pageset", action="detail", static_page_id=static_page.id))
         uploaded = filestorage.file
         if not zipupload.is_zipfile(uploaded):
             FlashMessage.error(u"投稿されたファイル%sは、zipファイルではありません" % filestorage.filename, request=self.request)
-            raise HTTPFound(self.request.route_url("static_page", action="detail", static_page_id=static_page.id))
+            raise HTTPFound(self.request.route_url("static_pageset", action="detail", static_page_id=static_page.id))
 
         src = os.path.join(static_directory.get_base_directory(), static_page.name)
         snapshot_path = zipupload.create_directory_snapshot(src)
@@ -140,7 +167,7 @@ class StaticPageSetView(object):
             zipupload.snapshot_rollback(src, snapshot_path)
 
         FlashMessage.success(u"%sが更新されました" % filestorage.filename, request=self.request)
-        return HTTPFound(self.request.route_url("static_page", action="detail", static_page_id=static_page.id))
+        return HTTPFound(self.request.route_url("static_pageset", action="detail", static_page_id=static_page.id))
 
 @view_config(route_name="static_page_display", permission="authenticated")
 def static_page_display_view(context, request):

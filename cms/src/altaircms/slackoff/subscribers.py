@@ -162,4 +162,6 @@ def update_after_static_page(self):
         self.obj.name = self.request._static_page_name
 
     if self.obj.name != self.request._static_page_name:
-        get_static_page_utility(self.request).rename(self.request._static_page_name, self.obj.name)
+        utility = get_static_page_utility(self.request)
+        utility.rename(utility.get_rootname(self.obj, name=self.request._static_page_name),
+                       utility.get_rootname(self.obj))

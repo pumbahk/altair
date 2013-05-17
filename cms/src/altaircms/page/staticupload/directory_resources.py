@@ -1,5 +1,6 @@
 # -*- coding:utf-8 -*-
 import os
+import shutil
 from ...interfaces import IDirectoryResource
 from zope.interface import implementer
 from pyramid.path import AssetResolver
@@ -28,14 +29,21 @@ class StaticPageDirectory(object):
     def get_base_directory(self):
         return os.path.join(self.basedir, self.request.organization.short_name)
 
-    def get_rootname(self, static_page):
+    def get_rootname(self, static_page, name=None):
         assert static_page.id
         return os.path.join(self.get_base_directory(), 
                             unicode(static_page.id), 
-                            static_page.name
+                            name or static_page.name
                             )
+
+    def prepare(self, src):
+        logger.info("prepare static pages: %s -> %s" % (src))
+        os.makedirs(src)
+
+    def copy(self, src, dst):
+        logger.info("copy static pages: %s -> %s" % (src, dst))        
+        shutil.copytree(src, dst)
 
     def rename(self, src, dst):
         logger.info("rename static pages: %s -> %s" % (src, dst))
-        return os.rename(os.path.join(self.get_base_directory(), src), 
-                         os.path.join(self.get_base_directory(), dst))
+        return os.rename(src, dst)
