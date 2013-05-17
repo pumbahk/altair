@@ -5,7 +5,7 @@ from pyramid.renderers import render_to_response
 
 @usersite_view_config(route_name='genre',request_type="altairsite.tweens.ISmartphoneRequest"
              , renderer='altairsite.smartphone:templates/genre/genre.html')
-def moveGenre(context, request):
+def move_genre(context, request):
 
     genre_id = request.matchdict.get('genre_id')
     if context.is_sub_sub_genre(genre_id=genre_id):

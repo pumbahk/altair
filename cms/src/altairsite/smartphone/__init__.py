@@ -16,6 +16,7 @@ def install_app(config):
     config.include('altairsite.smartphone.genre')
     config.include('altairsite.smartphone.search')
     config.include('altairsite.smartphone.detail')
+    config.include('altairsite.smartphone.page')
     config.scan(".")
 
 def main(config, **settings):
