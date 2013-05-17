@@ -116,6 +116,9 @@ class CommonResource(object):
         elif kind == "topic":
             searcher = get_topic_searcher(self.request, "topic")
             tag = self.request.allowable(TopicTag).filter_by(label=u"トピックス").first()
+        elif kind == "canceled":
+            searcher = get_topic_searcher(self.request, "topic")
+            tag = self.request.allowable(TopicTag).filter_by(label=u"公演中止情報").first()
         system_tag_label = self.get_system_tag_label(request=self.request, system_tag_id=system_tag_id)
         return self._getInfo(searcher=searcher, tag=tag, system_tag_label=system_tag_label)
 

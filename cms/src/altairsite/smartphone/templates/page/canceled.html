@@ -2,5 +2,22 @@
 <%namespace file="../common/tags_smartphone.html" name="m" />
 <%block name="title">楽天チケットトップ</%block>
 
-
 <div align="center">公演中止</div>
+% if canceled_events:
+    % for count, event in enumerate(canceled_events[0:5]):
+        % if count > 0:
+            <hr/>
+        % endif
+        公演：${helper.nl2br(event.title)|n}<br/>
+        詳細：${helper.nl2br(event.text)|n}<br/>
+        <br/>
+        <a href="#top">▲上へ</a>
+    % endfor
+
+    % if len(canceled_events.all()) > 5:
+        <hr/>
+        <a href="${request.route_path('page', canceled_detail)}">すべてを見る</a>
+    % endif
+% else:
+    公演中止・変更情報はありません。
+% endif

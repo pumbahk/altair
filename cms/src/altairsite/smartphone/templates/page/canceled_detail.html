@@ -1,0 +1,18 @@
+<%inherit file="../common/_base.html" />
+<%namespace file="../common/tags_smartphone.html" name="m" />
+<%block name="title">楽天チケットトップ</%block>
+
+<div align="center">公演中止</div>
+% if canceled_events:
+    % for count, event in enumerate(canceled_events):
+        公演：${helper.nl2br(event.title)|n}<br/>
+        詳細：${helper.nl2br(event.text)|n}<br/><br/>
+        <a href="#top">▲上へ</a>
+        % if count < len(canceled_events.all()) - 1:
+            <hr/>
+        % endif
+    % endfor
+
+% else:
+    公演中止情報はありません。
+% endif

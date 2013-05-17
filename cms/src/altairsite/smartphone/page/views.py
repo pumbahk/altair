@@ -1,4 +1,5 @@
 # -*- coding:utf-8 -*-
+from ..common.helper import SmartPhoneHelper
 from altairsite.config import usersite_view_config
 
 from pyramid.view import view_defaults
@@ -11,11 +12,24 @@ class StaticKindView(object):
 
     @usersite_view_config(match_param="kind=orderreview", renderer='altairsite.smartphone:templates/page/orderreview.html')
     def move_orderreview(self):
-        return {'orderreview_url': self.context.get_orderreview_url()}
+        orderreview_url = self.context.get_orderreview_url()
+        return {
+            'orderreview_url':orderreview_url
+        }
 
     @usersite_view_config(match_param="kind=canceled", renderer='altairsite.smartphone:templates/page/canceled.html')
+    @usersite_view_config(match_param="kind=canceled_detail", renderer='altairsite.smartphone:templates/page/canceled_detail.html')
     def move_canceled(self):
-        return {}
+        canceled_events = self.context.getInfo(kind="canceled", system_tag_id=None)
+
+        return {
+              'helper':SmartPhoneHelper()
+            , 'canceled_events':canceled_events
+        }
+
+
+
+
 
     @usersite_view_config(match_param="kind=help", renderer='altairsite.smartphone:templates/page/help.html')
     def move_help(self):

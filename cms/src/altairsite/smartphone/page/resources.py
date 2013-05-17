@@ -12,3 +12,4 @@ class PageResource(CommonResource):
         altair = self.request.altair_orderreview_url
         getti = self.request.getti_orderreview_url
         return OrderreviewUrl(getti=getti, altair=altair)
+
