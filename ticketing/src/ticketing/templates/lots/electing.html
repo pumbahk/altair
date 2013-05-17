@@ -37,10 +37,14 @@ ${tabs.tabs(request)}
 <div>
 <h3>当選確定処理</h3>
 <p>
-処理が実行できない理由をここに出す
+<ul>
+%for blocker in electing.blockers:
+<li>${blocker}</li>
+%endfor
+</ul>
 </p>
 <form method="POST" action="${request.route_url('lots.entries.elect', lot_id=lot.id)}">
-    <button class="btn">当選確定処理を実行する</button>
+    <button ${"disabled" if electing.blockers else ""} class="btn">当選確定処理を実行する</button>
 </form>
 </div>
 

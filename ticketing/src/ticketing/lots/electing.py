@@ -5,6 +5,7 @@ publisher呼び出しをticketing.events.lotsに置いて、こちらにはworke
 """
 import logging
 import json
+from pyramid.decorator import reify
 from zope.interface import implementer
 from altair.mq.interfaces import IPublisher
 from .interfaces import IElecting
@@ -17,6 +18,27 @@ class Electing(object):
     def __init__(self, lot, request):
         self.request = request
         self.lot = lot
+
+    @reify
+    def blockers(self):
+        """ 当選処理を行えない理由 """
+        blockers = []
+
+        # 商品明細
+        for p in self.check_product_items():
+            blockers.append(u"{0.name} に商品明細がありません。".format(p))
+        # 在庫
+
+        return blockers
+
+    def check_product_items(self):
+        """ 所属する商品すべてが商品明細を持っているか"""
+
+        for product in self.lot.products:
+            if not product.items:
+                yield product
+
+
 
     @property
     def publisher(self):

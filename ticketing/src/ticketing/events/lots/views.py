@@ -22,6 +22,7 @@ from ticketing.lots.models import (
     LotElectWork,
     )
 import ticketing.lots.api as lots_api
+from ticketing.lots.electing import Electing
 from .helpers import Link
 from .forms import ProductForm, LotForm, SearchEntryForm
 from . import api
@@ -477,7 +478,9 @@ class LotEntries(BaseView):
         self.check_organization(self.context.event)
         lot_id = self.request.matchdict["lot_id"]
         lot = Lot.query.filter(Lot.id==lot_id).one()
-        return dict(lot=lot)
+        electing = Electing(lot, self.request)
+        return dict(lot=lot,
+                    electing=electing)
 
     @view_config(route_name='lots.entries.elect', 
                  renderer="string",
