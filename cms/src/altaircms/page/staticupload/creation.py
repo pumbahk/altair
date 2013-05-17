@@ -3,7 +3,7 @@ import os
 import logging
 logger = logging.getLogger(__name__)
 
-from ..models import StaticPage
+from ..models import StaticPage, StaticPageSet
 from ...subscribers import notify_model_create
 from ...models import DBSession
 from altaircms.filelib import zipupload
@@ -31,12 +31,15 @@ class StaticPageCreate(object):
 
     def create(self):
         static_page = self.create_model()
-        self.create_resource(static_page)
+        self.create_underlying_something(static_page)
         return static_page
 
     def create_model(self):
         data = self.data
+        pageset = StaticPageSet(url=data["name"], 
+                          name=data["name"])
         static_page = StaticPage(name=data["name"],
+                                 pageset=pageset, 
                                  layout=data["layout"],
                                  label=data["label"],
                                  publish_begin=data["publish_begin"],
@@ -49,7 +52,7 @@ class StaticPageCreate(object):
         return static_page
 
     
-    def create_resource(self, static_page):
+    def create_underlying_something(self, static_page):
         filestorage = self.data["zipfile"]
         absroot = get_rootname(self.utility.get_base_directory(), static_page)
         if filestorage == u"":

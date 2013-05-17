@@ -65,7 +65,7 @@ class PageSet(Base,
     id = Column(Integer, primary_key=True)
     name = Column(Unicode(255))
     version_counter = Column(Integer, default=0)
-    url = Column(String(255), unique=True)
+    url = Column(String(255))
     event_id = Column(Integer, ForeignKey('event.id'))
     event = relationship('Event', backref='pagesets')
 
@@ -208,6 +208,28 @@ class PageSet(Base,
     #     ## パフォーマンス上げるために本当はここキャッシュしておけたりすると良いのかなと思う
     #     return Page.filter(Page.version==self.version_counter).one()
 
+class StaticPageSet(Base, 
+                    WithOrganizationMixin, 
+                    HasAncestorMixin):
+    __tablename__ = 'static_pagesets'
+
+    query = DBSession.query_property()
+    id = Column(Integer, primary_key=True)
+    name = Column(Unicode(255))
+    version_counter = Column(Integer, default=0)
+    url = Column(String(255), unique=True)
+
+    created_at = sa.Column(sa.DateTime, default=datetime.now)
+    updated_at = sa.Column(sa.DateTime, default=datetime.now, onupdate=datetime.now)
+
+    pagetype_id = Column(sa.Integer, ForeignKey("pagetype.id"))
+    pagetype = orm.relationship("PageType", backref="static_pagesets", uselist=False)
+
+    @declared_attr
+    def __table_args__(cls):
+        return (sa.schema.UniqueConstraint("url", "organization_id"), )
+
+
 class StaticPage(BaseOriginalMixin, 
                  WithOrganizationMixin, 
                  Base):
@@ -222,8 +244,8 @@ class StaticPage(BaseOriginalMixin,
     publish_begin = Column(DateTime)
     publish_end = Column(DateTime)
     published = Column(sa.Boolean, default=False)    
-    pageset_id = Column(sa.Integer, ForeignKey("pagesets.id"))
-    pageset = relationship('PageSet', backref=orm.backref('static_pages', order_by=sa.asc("publish_begin")), uselist=False)
+    pageset_id = Column(sa.Integer, ForeignKey("static_pagesets.id"))
+    pageset = relationship('StaticPageSet', backref=orm.backref('pages', order_by=sa.asc("publish_begin")), uselist=False)
     layout_id = Column(Integer, ForeignKey("layout.id"))    
     layout = relationship(Layout, backref='static_pages', uselist=False)
     interceptive = Column(sa.Boolean, default=False)
