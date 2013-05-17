@@ -34,8 +34,12 @@ setup(name='altair.mobile',
       include_package_data=True,
       zip_safe=False,
       install_requires=[
+          'radix',
           'setuptools',
           'uamobile',
+      ],
+      dependency_links = [
+        'http://py-radix.googlecode.com/files/py-radix-0.5.tar.gz#egg=radix-0.5',
       ],
       entry_points="""
       # -*- Entry points: -*-
