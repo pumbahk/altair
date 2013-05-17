@@ -17,7 +17,7 @@ from ..models import DBSession
 from altaircms.page.models import PageType
 from altaircms.page.models import PageSet
 from altaircms.page.models import Page
-from altaircms.page.models import StaticPage
+from altaircms.page.models import StaticPageSet
 from altaircms.layout.models import Layout
 from altaircms.widget.models import WidgetDisposition
 from altaircms.event.models import Event
@@ -316,8 +316,9 @@ class ListView(object):
     def static_page_list(self):
         pagetype = get_or_404(self.request.allowable(PageType), (PageType.name==self.request.matchdict["pagetype"]))
         static_directory = get_static_page_utility(self.request)
+        pages = self.request.allowable(StaticPageSet).order_by(sa.desc(StaticPageSet.updated_at))
         return {"static_directory": static_directory, 
-                "pages": static_directory.get_managemented_files(self.request).order_by(sa.desc(StaticPage.updated_at)), 
+                "pages": pages, 
                 "pagetype": pagetype}
 
     @view_config(match_param="pagetype=event_detail", renderer="altaircms:templates/pagesets/event_pageset_list.html")

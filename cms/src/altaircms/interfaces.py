@@ -10,6 +10,9 @@ class IDirectoryResource(Interface):
     def get_base_directory():
         """ base directory.
         """
+class IDirectoryResourceFactory(Interface):
+    def __call__(request):
+        pass
 
 class IAfterFormInitialize(Interface):
     request = Attribute("request")

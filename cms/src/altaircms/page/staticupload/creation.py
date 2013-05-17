@@ -48,13 +48,14 @@ class StaticPageCreate(object):
                                  )
         DBSession.add(static_page)
         notify_model_create(self.request, static_page, data)
+        notify_model_create(self.request, pageset, data)
         DBSession.flush()
         return static_page
 
     
     def create_underlying_something(self, static_page):
         filestorage = self.data["zipfile"]
-        absroot = get_rootname(self.utility.get_base_directory(), static_page)
+        absroot = self.utility.get_rootname(static_page)
         if filestorage == u"":
             logger.info("zip file is not found.")
             os.makedirs(absroot)

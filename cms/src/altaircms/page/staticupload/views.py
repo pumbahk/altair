@@ -12,9 +12,13 @@ from altaircms.auth.api import get_or_404
 from .. import StaticPageNotFound
 from .api import get_static_page_utility
 from .api import as_static_page_response
-from altaircms.page.models import StaticPage
+from altaircms.page.models import StaticPageSet, StaticPage
 from . import forms
 from . import creation
+from .renderable import StaticPageDirectoryRenderer
+import logging
+logger = logging.getLogger(__name__)
+
 
 @view_defaults(route_name="static_page_create", permission="authenticated")
 class StaticPageCreateView(object):
@@ -42,7 +46,7 @@ class StaticPageCreateView(object):
 
         
 @view_defaults(route_name="static_page", permission="authenticated")
-class StaticPageView(object):
+class StaticPageSetView(object):
     def __init__(self, context, request):
         self.request = request
         self.context = context
@@ -59,11 +63,14 @@ class StaticPageView(object):
                  decorator=with_bootstrap)
     def detail(self):
         pk = self.request.matchdict["static_page_id"]
-        static_page = get_or_404(self.request.allowable(StaticPage), StaticPage.id==pk)
+        static_pageset = get_or_404(self.request.allowable(StaticPageSet), StaticPageSet.id==pk)
         static_directory = get_static_page_utility(self.request)
-
-        return {"static_page": static_page, 
-                "static_directory": static_directory}
+        static_page = StaticPage.query.filter_by(pageset=static_pageset, id=self.request.matchdict["child_id"]).first()
+        static_page = static_page or static_pageset.pages[0]
+        return {"static_pageset": static_pageset, 
+                "static_page": static_page,                 
+                "static_directory": static_directory, 
+                "tree_renderer": StaticPageDirectoryRenderer(self.request, static_page, static_directory)}
 
     @view_config(match_param="action=delete", request_method="POST", renderer="json")
     def delete(self):
