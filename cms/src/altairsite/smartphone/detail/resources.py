@@ -1,5 +1,4 @@
 # -*- coding:utf-8 -*-
-from altairsite.smartphone.resources import TopPageResource
 from altaircms.event.models import Event
 
 class DetailPageResource(object):

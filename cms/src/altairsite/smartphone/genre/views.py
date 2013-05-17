@@ -1,5 +1,6 @@
 # -*- coding:utf-8 -*-
 from altairsite.config import usersite_view_config
+
 from pyramid.renderers import render_to_response
 
 @usersite_view_config(route_name='genre',request_type="altairsite.tweens.ISmartphoneRequest"

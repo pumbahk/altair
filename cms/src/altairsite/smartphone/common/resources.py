@@ -1,18 +1,17 @@
 # -*- coding:utf-8 -*-
-from altairsite.smartphone.common.helper import SmartPhoneHelper
-from datetime import datetime
+from .searcher import EventSearcher
+from .helper import SmartPhoneHelper
+from .const import get_areas, SalesEnum
+from ..search.search_query import SearchQuery
+from ..search.forms import TopSearchForm, GenreSearchForm
+
 from sqlalchemy import asc
-from altaircms.topic.models import TopicTag, PromotionTag, TopcontentTag
-from altaircms.topic.api import get_topic_searcher
+from datetime import datetime
 from altaircms.models import Genre
-from altaircms.genre.searcher import GenreSearcher
 from altaircms.tag.models import HotWord
-from altairsite.smartphone.common.const import get_areas
-from altairsite.smartphone.event.search.forms import GenreSearchForm
-from altairsite.smartphone.event.search.forms import TopSearchForm
-from altairsite.smartphone.common.searcher import EventSearcher
-from .const import SalesEnum
-from altairsite.smartphone.event.search.search_query import SearchQuery
+from altaircms.topic.api import get_topic_searcher
+from altaircms.genre.searcher import GenreSearcher
+from altaircms.topic.models import TopicTag, PromotionTag, TopcontentTag
 
 class GenreNode(object):
     def __init__(self, genre, children):

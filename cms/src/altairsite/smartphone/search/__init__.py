@@ -2,7 +2,7 @@
 import functools
 
 def includeme(config):
-    add_route = functools.partial(config.add_route, factory="altairsite.smartphone.event.search.resources.SearchPageResource")
+    add_route = functools.partial(config.add_route, factory="altairsite.smartphone.search.resources.SearchPageResource")
     add_route('search', '/search')
     add_route('search_area', '/search_area')
     add_route('search_genre', '/search_genre')

@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
-from altaircms.models import Performance, SalesSegmentGroup, SalesSegmentKind
-from altaircms.event.models import Event
-from altaircms.page.models import Page
+from .solr import searchEvents
 from .const import get_prefectures, SalesEnum
-from datetime import datetime, date, timedelta
-from altairsite.mobile.core.helper import log_debug, log_info, log_warn, log_exception, log_error
-from altairsite.smartphone.common.solr import searchEvents
-import webhelpers.paginate as paginate
+from altaircms.page.models import Page
+from altaircms.event.models import Event
+from altairsite.mobile.core.helper import log_info
+from altaircms.models import Performance, SalesSegmentGroup, SalesSegmentKind
 
+import webhelpers.paginate as paginate
+from datetime import datetime, date, timedelta
 
 class SearchResult(object):
     def __init__(self, query, num=0, start=0, end=0, page=1, page_end=1, events=None):

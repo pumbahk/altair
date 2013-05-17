@@ -1,9 +1,8 @@
 # -*- coding:utf-8 -*-
-from altairsite.smartphone.event.search.search_query import SearchQuery, SaleInfo
-from altairsite.smartphone.common.const import SalesEnum
-from altairsite.smartphone.common.searcher import EventSearcher
-from altairsite.smartphone.common.resources import CommonResource
-from altaircms.models import Genre, _GenrePath as GrenPath
+from ..common.const import SalesEnum
+from ..common.searcher import EventSearcher
+from ..common.resources import CommonResource
+from ..search.search_query import SearchQuery, SaleInfo
 
 class GenrePageResource(CommonResource):
 

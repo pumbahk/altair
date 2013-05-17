@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
-from wtforms import Form
-from wtforms import HiddenField, TextField, BooleanField, SelectField, RadioField
-from altairsite.mobile.core.helper import log_debug, log_info, log_warn, log_exception, log_error
-from wtforms.validators import Optional, Length
-from altairsite.smartphone.common.const import SalesEnum
+from ..common.const import SalesEnum
 from altaircms.formhelpers import CheckboxListField
+from altairsite.mobile.core.helper import log_info
+
+from wtforms import Form
 from datetime import datetime
+from wtforms import HiddenField, TextField, BooleanField, SelectField, RadioField
+from wtforms.validators import Optional, Length
 
 class TopSearchForm(Form):
 

@@ -1,9 +1,10 @@
 # -*- coding:utf-8 -*-
-from altairsite.smartphone.common.resources import CommonResource
-from altairsite.mobile.core.helper import log_debug, log_info, log_warn, log_exception, log_error
-from altaircms.genre.searcher import GenreSearcher
-from altairsite.smartphone.common.searcher import EventSearcher
+from ..common.searcher import EventSearcher
+from ..common.resources import CommonResource
 from altaircms.models import Genre
+from altaircms.genre.searcher import GenreSearcher
+from altairsite.mobile.core.helper import log_info
+
 from datetime import date
 
 class SearchPageResource(CommonResource):

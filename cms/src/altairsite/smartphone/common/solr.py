@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-from altaircms.solr import api as solrapi
 from altaircms.event.models import Event
+from altaircms.solr import api as solrapi
 from altaircms.page.models import PageSet
 from altairsite.mobile.core.helper import log_info
 

@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
-import logging
 from .const import SalesEnum
+
+import logging
 from markupsafe import Markup
 
 logger = logging.getLogger(__file__)

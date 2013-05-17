@@ -1,9 +1,9 @@
 # -*- coding:utf-8 -*-
-from pyramid.config import Configurator
-from pyramid.tweens import INGRESS
-from sqlalchemy import engine_from_config
-import sqlahelper
 import functools
+import sqlahelper
+from pyramid.tweens import INGRESS
+from pyramid.config import Configurator
+from sqlalchemy import engine_from_config
 
 def includeme(config):
     #tweenはmobile.__init__で登録されているので追加しない
@@ -11,6 +11,11 @@ def includeme(config):
 
 def install_app(config):
     ##ここに追加
+    add_route = functools.partial(config.add_route, factory=".resources.TopPageResource")
+    add_route("main", "/")
+    config.include('altairsite.smartphone.genre')
+    config.include('altairsite.smartphone.search')
+    config.include('altairsite.smartphone.detail')
     config.scan(".")
 
 def main(config, **settings):
@@ -33,12 +38,6 @@ def main(config, **settings):
     search_utility = settings.get("altaircms.solr.search.utility")
     config.add_fulltext_search(search_utility)
     config.include(install_app)
-
-    add_route = functools.partial(config.add_route, factory=".resources.TopPageResource")
-    add_route("main", "/")
-    config.include('altairsite.smartphone.event.genre')
-    config.include('altairsite.smartphone.event.search')
-    config.include('altairsite.smartphone.event.detail')
 
     ## all requests are treated as mobile request
     config._add_tween("altairsite.tweens.smartphone_request_factory", under=INGRESS)

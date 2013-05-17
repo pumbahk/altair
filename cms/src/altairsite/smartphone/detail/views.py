@@ -1,9 +1,9 @@
 # -*- coding:utf-8 -*-
-from altairsite.config import usersite_view_config
-from altairsite.smartphone.common.helper import SmartPhoneHelper
-from altairsite.mobile.core.helper import get_week_map, get_performances_month_unit, get_purchase_links \
-    , get_tickets, exist_value, get_sales_date
 from .forms import DetailForm
+from ..common.helper import SmartPhoneHelper
+from altairsite.config import usersite_view_config
+from altairsite.mobile.core.helper import get_performances_month_unit, get_purchase_links \
+    , get_tickets, get_sales_date
 
 @usersite_view_config(route_name='detail',request_type="altairsite.tweens.ISmartphoneRequest"
              , renderer='altairsite.smartphone:templates/detail/detail.html')
