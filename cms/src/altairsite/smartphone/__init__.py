@@ -9,6 +9,30 @@ def includeme(config):
     #tweenはmobile.__init__で登録されているので追加しない
     config.include(install_app)
 
+def install_convinient_request_properties(config):
+    assert config.registry.settings["getti.orderreview.url"]
+    def getti_orderreview_url(request):
+        return config.registry.settings["getti.orderreview.url"]
+
+    assert config.registry.settings["altair.orderreview.url"]
+    def altair_orderreview_url(request):
+        return config.registry.settings["altair.orderreview.url"]
+
+    """
+    assert config.registry.settings["sender.mailaddress"]
+    def sender_mailaddress(request):
+        return config.registry.settings["sender.mailaddress"]
+
+    assert config.registry.settings["inquiry.mailaddress"]
+    def inquiry_mailaddress(request):
+        return config.registry.settings["inquiry.mailaddress"]
+    config.set_request_property(sender_mailaddress, "sender_mailaddress", reify=True)
+    config.set_request_property(inquiry_mailaddress, "inquiry_mailaddress", reify=True)
+    config.set_request_property(".dispatch.views.mobile_route_path", "mobile_route_path", reify=True)
+    """
+    config.set_request_property(altair_orderreview_url, "altair_orderreview_url", reify=True)
+    config.set_request_property(getti_orderreview_url, "getti_orderreview_url", reify=True)
+
 def install_app(config):
     ##ここに追加
     add_route = functools.partial(config.add_route, factory=".resources.TopPageResource")
@@ -17,6 +41,7 @@ def install_app(config):
     config.include('altairsite.smartphone.search')
     config.include('altairsite.smartphone.detail')
     config.include('altairsite.smartphone.page')
+    config.include(install_convinient_request_properties)
     config.scan(".")
 
 def main(config, **settings):

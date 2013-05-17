@@ -11,7 +11,7 @@ class StaticKindView(object):
 
     @usersite_view_config(match_param="kind=orderreview", renderer='altairsite.smartphone:templates/page/orderreview.html')
     def move_orderreview(self):
-        return {}
+        return {'orderreview_url': self.context.get_orderreview_url()}
 
     @usersite_view_config(match_param="kind=canceled", renderer='altairsite.smartphone:templates/page/canceled.html')
     def move_canceled(self):
