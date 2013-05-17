@@ -182,6 +182,8 @@ class MobileSelectProductView(object):
             .filter(c_models.Stock.stock_type_id==seat_type_id) \
             .filter(c_models.Product.sales_segment_id==self.context.sales_segment.id) \
             .filter(c_models.Product.public==True) \
+            .filter(c_models.ProductItem.deleted_at == None) \
+            .filter(c_models.Stock.deleted_at == None) \
             .order_by(sa.desc("Product.display_order, Product.price"))
 
         # CSRFトークン発行
