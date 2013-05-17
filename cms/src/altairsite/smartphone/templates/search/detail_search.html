@@ -43,6 +43,7 @@
 </div>
 
 <script>
+
     window.onload = function(){
         addCheckBoxEventHandler("prefecture_hokkaido")
         addCheckBoxEventHandler("prefecture_syutoken")
@@ -56,14 +57,24 @@
         checkboxies = document.getElementsByName(name);
         for (var index = 0; index < checkboxies.length; index++) {
             if (checkboxies[index].value == "all_check") {
-                checkboxies[index].onClick = checkedAllPrefectures(name, true);
+                checkboxies[index].addEventListener("click", function(){
+                    checkedAllPrefectures(name)
+                })
                 break;
             }
         }
     }
 
-    function checkedAllPrefectures(name, check){
+    function checkedAllPrefectures(name){
+        check = true
         checkboxies = document.getElementsByName(name);
+        for (var index = 0; index < checkboxies.length; index++) {
+            if (checkboxies[index].value == "all_check") {
+                check = checkboxies[index].checked
+                break;
+            }
+        }
+
         for (var index = 0; index < checkboxies.length; index++) {
             checkboxies[index].checked = check;
         }
