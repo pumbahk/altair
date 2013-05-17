@@ -16,6 +16,13 @@ logger = logging.getLogger(__file__)
 def enable_search_function(info, request):
     return request.organization.use_full_usersite if request.organization else False
 
+def convert_getitem(D, k, convert):
+    try:
+        return convert(D[k])
+    except (ValueError, KeyError):
+        raise HTTPNotFound
+
+
 @usersite_view_config(custom_predicates=(enable_search_function, ), 
                       route_name="page_search_input",
                       renderer="altaircms:templates/usersite/search/input.html")
@@ -140,7 +147,7 @@ class SearchByKindView(object):
         """ 公演期間で検索した結果を表示
         **N日以内に公演**
         """
-        n = int(self.request.matchdict["value"])
+        n = convert_getitem(self.request.matchdict, "value", int)
         self.request.body_id = "search"
         query_params = {"ndays": n, 
                         "query_expr_message": u"%d日以内に公演" % n}
@@ -158,7 +165,7 @@ class SearchByKindView(object):
     def search_by_deal_open(self):
         """ 販売条件で検索した結果を表示
         """
-        n = int(self.request.matchdict["value"])
+        n = convert_getitem(self.request.matchdict, "value", int)
         self.request.body_id = "search"
         query_params = {"ndays": n, 
                         "query_expr_message": u"%d日以内に受付・発売開始" % n}
