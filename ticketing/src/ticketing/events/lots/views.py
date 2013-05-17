@@ -20,6 +20,7 @@ from ticketing.lots.models import (
     Lot,
     LotEntry,
     LotElectWork,
+    LotEntryWish,
     )
 import ticketing.lots.api as lots_api
 from ticketing.lots.electing import Electing
@@ -412,6 +413,10 @@ class LotEntries(BaseView):
                                      LotEntry.created_at<=form.entried_to.data)
             include_canceled = form.include_canceled.data
 
+            if form.electing.data:
+                condition = sql.and_(condition, 
+                                     LotEntryWish.entry_wish_no==LotElectWork.entry_wish_no)
+                
         if not include_canceled:
             condition = sql.and_(condition, 
                                  LotEntry.canceled_at == None)

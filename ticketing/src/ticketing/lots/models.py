@@ -142,7 +142,7 @@ class Lot(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         ).count() < self.entry_limit
 
 
-
+    ## gaaaaa! this name must be `elect_wishes`!
     def electing_wishes(self, entry_wishes):
         """ 当選予定申込希望 """
         affected = 0

@@ -5,11 +5,28 @@ publisher呼び出しをticketing.events.lotsに置いて、こちらにはworke
 """
 import logging
 import json
+from sqlalchemy import sql
 from pyramid.decorator import reify
 from zope.interface import implementer
 from altair.mq.interfaces import IPublisher
 from .interfaces import IElecting
+from ticketing.models import (
+    DBSession,
+)
 
+from ticketing.core.models import (
+    Performance,
+    ProductItem,
+    Product,
+    Stock,
+    StockStatus,
+)
+from ticketing.lots.models import (
+    LotEntry,
+    LotEntryWish,
+    LotEntryProduct,
+    LotElectWork,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -28,6 +45,8 @@ class Electing(object):
         for p in self.check_product_items():
             blockers.append(u"{0.name} に商品明細がありません。".format(p))
         # 在庫
+        for p in self.check_stock():
+            blockers.append(u"{0.name} の在庫が不足しています。".format(p))
 
         return blockers
 
@@ -38,6 +57,42 @@ class Electing(object):
             if not product.items:
                 yield product
 
+    def check_stock(self):
+        """ 当選予定の在庫数が現在個数以下になっているか"""
+        for stock, stock_status, product_item, performance, quantity in self.required_stocks:
+            if quantity > stock_status.quantity:
+                yield product_item
+
+    @reify
+    def required_stocks(self):
+        """ 当選予定の在庫数を商品明細ごとに取得 
+        (stock_id, quantity)
+        """
+        s = [Stock, StockStatus, ProductItem, Performance,
+             sql.func.sum(LotEntryProduct.quantity * ProductItem.quantity)]
+        q = DBSession.query(*s).filter(
+            LotEntry.lot_id==self.lot.id
+        ).filter(
+            LotEntryWish.lot_entry_id==LotEntry.id
+        ).filter(
+            LotElectWork.entry_wish_no==LotEntryWish.entry_wish_no
+        ).filter(
+            LotEntryProduct.lot_wish_id==LotEntryWish.id
+        ).filter(
+            LotEntryProduct.product_id==Product.id
+        ).filter(
+            Product.id==ProductItem.product_id
+        ).filter(
+            Stock.id==ProductItem.stock_id
+        ).filter(
+            Stock.id==StockStatus.stock_id
+        ).filter(
+            Performance.id==ProductItem.performance_id
+        ).group_by(Stock.id).order_by(Performance.start_on, Performance.id)
+
+        return q.all()
+
+        
 
 
     @property
