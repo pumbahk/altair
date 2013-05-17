@@ -468,6 +468,17 @@ class LotEntries(BaseView):
         
         return HTTPFound(location=self.request.route_url('lots.entries.index', lot_id=lot.id))
 
+
+    @view_config(route_name='lots.entries.elect',
+                 renderer="lots/electing.html",
+                 request_method="GET",
+                 permission='event_viewer')
+    def elect_entries_form(self):
+        self.check_organization(self.context.event)
+        lot_id = self.request.matchdict["lot_id"]
+        lot = Lot.query.filter(Lot.id==lot_id).one()
+        return dict(lot=lot)
+
     @view_config(route_name='lots.entries.elect', 
                  renderer="string",
                  request_method="POST",

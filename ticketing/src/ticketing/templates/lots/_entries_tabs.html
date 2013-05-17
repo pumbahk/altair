@@ -7,6 +7,9 @@
 <%self:tab_item request="${request}" route_name='lots.entries.search'>
   <a href="${request.route_url('lots.entries.search', lot_id=lot.id)}">検索</a>
 </%self:tab_item>
+<%self:tab_item request="${request}" route_name='lots.entries.elect'>
+  <a href="${request.route_url('lots.entries.elect', lot_id=lot.id)}">当選処理</a>
+</%self:tab_item>
 </div>
 </%def>
 

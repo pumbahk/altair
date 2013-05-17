@@ -1,0 +1,63 @@
+<%inherit file="../layout_2cols.html" />
+<%namespace file="/common/helpers.html" name="h" />
+<%namespace file="_entries_tabs.html" name="tabs" />
+<%
+from ticketing.cart.helpers import format_currency
+%>
+<%block name="style">
+<link rel="stylesheet" type="text/css" href="/static/css/decentcolorpicker.css" />
+<link rel="stylesheet" type="text/css" href="/static/css/performance.css" />
+</%block>
+<%block name="fulltitle">
+Altair Backend -- ${lot.event.title}[${lot.name}]
+</%block>
+<%block name="javascript">
+</%block>
+<div class="breadcrumbs">
+  ${h.breadcrumbs(
+      names=[u'イベント', lot.event.title, u'抽選', lot.name, u'申し込み状況'],
+      urls=[
+        request.route_path('events.index'),
+        request.route_path('events.show', event_id=lot.event.id),
+        request.route_path('lots.index', event_id=lot.event.id),
+        request.route_path('lots.show', lot_id=lot.id),
+      ]
+  )}
+</div>
+<div class="page-header">
+  <h1>
+    ${lot.event.title}<br />
+    <small>${lot.name}</small>
+  </h1>
+</div>
+<div class="content">
+  ${h.flash_messages(request)}
+</div>
+${tabs.tabs(request)}
+<div>
+<h3>当選確定処理</h3>
+<p>
+処理が実行できない理由をここに出す
+</p>
+<form method="POST" action="${request.route_url('lots.entries.elect', lot_id=lot.id)}">
+    <button class="btn">当選確定処理を実行する</button>
+</form>
+</div>
+
+<div>
+<h3>ファイル</h3>
+<fieldset>
+<legend>抽選申込情報のエクスポート</legend>
+<a href="${request.route_url('lots.entries.export', lot_id=lot.id)}" class="btn">エクスポート</a>
+</fieldset>
+
+<form enctype="multipart/form-data" method="POST" action="${request.route_url('lots.entries.import', lot_id=lot.id)}">
+  <fieldset>
+    <legend>当選予定情報のインポート</legend>
+
+    <input type="file" name="entries"/><br/>
+    <button type="submit" class="btn">当選データインポート</button>
+  </fieldset>
+</form>
+
+</div>
