@@ -10,7 +10,7 @@ from ..models import StaticPage
 from altaircms.formhelpers import dynamic_query_select_field_factory
 from altaircms.formhelpers import MaybeDateTimeField
 from altaircms.formhelpers.validations import validate_term, validate_filetype
-from altaircms.formhelpers.validations import with_append_error
+from altaircms.formhelpers.validations import ValidationQueue
 from altaircms.layout.models import Layout
 from altaircms.page.forms import layout_filter
 
@@ -32,13 +32,18 @@ class StaticPageCreateForm(Form):
         self.request = request
         self.static_directory = get_static_page_utility(request)
 
+    def _validate_root_directory(self, data):
+        path = os.path.join(self.static_directory.get_base_directory(), data["name"])
+        if os.path.exists(path):
+            raise validators.ValidationError(u"{0} は既に利用されています".format(data["name"]))
+
     def validate(self):
-        status = super(type(self), self).validate()
-        data = self.data
-        return ( status and \
-                     with_append_error(data, "publish_begin", validate_term, begin="publish_begin", end="publish_end") and \
-                     with_append_error(data, "zipfile", validate_filetype, "zipfile", failfn=lambda v: not zipupload.is_zipfile(v.file), 
-                                       message=u"zipfileではありません。.zipの拡張子が付いたファイルを投稿してください" ))
+        queue = ValidationQueue()
+        queue.enqueue("publish_begin", validate_term, begin="publish_begin", end="publish_end")
+        queue.enqueue("zipfile", validate_filetype, "zipfile", failfn=lambda v: not zipupload.is_zipfile(v.file), 
+                      message=u"zipfileではありません。.zipの拡張子が付いたファイルを投稿してください" )
+        queue.enqueue("name", self._validate_root_directory)
+        return super(type(self), self).validate() and queue(self.data, self.errors)
 
 class StaticPageForm(Form):
     name = fields.TextField(label=u"name", validators=[validators.Optional()])

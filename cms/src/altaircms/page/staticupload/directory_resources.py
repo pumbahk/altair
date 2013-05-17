@@ -32,12 +32,12 @@ class StaticPageDirectory(object):
     def get_rootname(self, static_page, name=None):
         assert static_page.id
         return os.path.join(self.get_base_directory(), 
+                            name or static_page.name, 
                             unicode(static_page.id), 
-                            name or static_page.name
                             )
 
     def prepare(self, src):
-        logger.info("prepare static pages: %s -> %s" % (src))
+        logger.info("prepare static pages: %s" % (src))
         os.makedirs(src)
 
     def copy(self, src, dst):

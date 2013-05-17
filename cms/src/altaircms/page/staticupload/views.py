@@ -44,7 +44,7 @@ class StaticPageCreateView(object):
         creator = self.context.creation(creation.StaticPageCreate, form.data)
         static_page = creator.create()
         FlashMessage.success(u"%sが作成されました" % static_page.label, request=self.request)
-        return HTTPFound(self.request.route_url("static_pageset", action="detail", static_page_id=static_page.id))
+        return HTTPFound(self.request.route_url("static_pageset", action="detail", static_page_id=static_page.pageset.id))
 
 @view_defaults(route_name="static_pageset", permission="authenticated")
 class StaticPageSetView(object):
@@ -86,6 +86,7 @@ class StaticPageSetView(object):
         copied = copy.copy(static_page)
         copied.label += u"のコピー"
         DBSession.add(copied)
+        DBSession.flush()
         static_directory = get_static_page_utility(self.request)
         static_directory.prepare(static_directory.get_rootname(copied))
         return HTTPFound(get_endpoint(self.request) or self.request.route_url("static_pageset", action="detail", static_page_id=static_pageset_id))
