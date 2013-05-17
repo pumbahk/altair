@@ -27,13 +27,18 @@ class StaticKindView(object):
             , 'canceled_events':canceled_events
         }
 
-
-
-
-
     @usersite_view_config(match_param="kind=help", renderer='altairsite.smartphone:templates/page/help.html')
     def move_help(self):
-        return {}
+        helps = self.context.getInfo(kind="help", system_tag_id=None)
+
+        return {
+              'helps':helps
+            , 'helper':SmartPhoneHelper()
+        }
+
+
+
+
 
     @usersite_view_config(match_param="kind=company", renderer='altairsite.smartphone:templates/page/company.html')
     def move_company(self):
