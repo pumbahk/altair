@@ -197,7 +197,9 @@ class LotEntryStatus(object):
             LotEntryWish.wish_order.label('wish_order'),
             LotEntryProduct.quantity.label('entry_quantity'),
             case([
-                (LotEntry.elected_at != None, LotEntryProduct.quantity)
+                (and_(LotEntry.elected_at != None,
+                      LotEntryWish.elected_at != None), 
+                 LotEntryProduct.quantity)
             ],
             else_=0).label('elected_quantity'),
             case([
