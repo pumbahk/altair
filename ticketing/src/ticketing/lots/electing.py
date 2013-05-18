@@ -59,7 +59,7 @@ class Electing(object):
 
     def check_stock(self):
         """ 当選予定の在庫数が現在個数以下になっているか"""
-        for stock, stock_status, product_item, performance, quantity in self.required_stocks:
+        for stock, stock_status, product_item, performance, quantity, count in self.required_stocks:
             if quantity > stock_status.quantity:
                 yield product_item
 
@@ -69,7 +69,8 @@ class Electing(object):
         (stock_id, quantity)
         """
         s = [Stock, StockStatus, ProductItem, Performance,
-             sql.func.sum(LotEntryProduct.quantity * ProductItem.quantity)]
+             sql.func.sum(LotEntryProduct.quantity * ProductItem.quantity),
+             sql.func.count(LotEntryWish.id)]
         q = DBSession.query(*s).filter(
             LotEntry.lot_id==self.lot.id
         ).filter(
@@ -88,6 +89,8 @@ class Electing(object):
             Stock.id==StockStatus.stock_id
         ).filter(
             Performance.id==ProductItem.performance_id
+        ).filter(
+            LotEntryWish.canceled_at==None
         ).group_by(Stock.id).order_by(Performance.start_on, Performance.id)
 
         return q.all()

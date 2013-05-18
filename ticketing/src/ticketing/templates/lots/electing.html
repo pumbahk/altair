@@ -40,16 +40,18 @@ ${tabs.tabs(request)}
 <table class="table">
 <tr>
 <th>公演</th>
-<th>席種/商品/商品明細</th>
+<th>在庫種別(席種)</th>
 <th>当選予定の合計在庫数</th>
 <th>現在庫数</th>
+<th>申込件数</th>
 </tr>
 %for s in electing.required_stocks:
 <tr>
 <td>${s[3].name} ${s[3].start_on}</td>
-<td>${s[2].product.seat_stock_type.name}/${s[2].product.name}/${s[2].name}</td>
+<td>${s[0].stock_type.name}</td>
 <td>${s[4]}</td>
 <td>${s[1].quantity}</td>
+<td>${s[5]}</td>
 </tr>
 %endfor
 </table>
