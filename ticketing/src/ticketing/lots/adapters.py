@@ -63,19 +63,6 @@ class LotEntryStatus(object):
     def entries(self):
         return self.lot.entries
 
-
-
-    ## いらん
-    @property
-    def total_wishes(self):
-        total_wishes = LotEntryWish.query.filter(
-            LotEntry.lot_id==self.lot.id
-        ).filter(
-            LotEntryWish.lot_entry_id==LotEntry.id
-        ).count()
-
-        return total_wishes
-
     @property
     def sub_counts(self):
         sub_counts = [dict(performance=self.performances[r[1]],
