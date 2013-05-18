@@ -1,6 +1,8 @@
 # -*- coding:utf-8 -*-
+from .forms import InquiryForm
 from ..common.helper import SmartPhoneHelper
 from altairsite.config import usersite_view_config
+from altairsite.inquiry.views import create_mail_body, create_mail_body_for_customer, send_mail
 
 from pyramid.view import view_defaults
 
@@ -36,17 +38,30 @@ class StaticKindView(object):
             , 'helper':SmartPhoneHelper()
         }
 
-
-
-
-
     @usersite_view_config(match_param="kind=company", renderer='altairsite.smartphone:templates/page/company.html')
     def move_company(self):
         return {}
 
-    @usersite_view_config(match_param="kind=inquiry", renderer='altairsite.smartphone:templates/page/inquiry.html')
+    @usersite_view_config(match_param="kind=inquiry", request_method="GET", renderer='altairsite.smartphone:templates/page/inquiry.html')
     def move_inquiry(self):
-        return {}
+        return {
+            'form':InquiryForm()
+        }
+
+    @usersite_view_config(match_param="kind=inquiry", request_method="POST", renderer='altairsite.smartphone:templates/page/inquiry.html')
+    def move_inquiry_post(self):
+        form = InquiryForm(self.request.POST)
+
+        if not form.validate():
+            return {"form": form}
+
+        self.context.send_inquiry_mail(title=u"楽天チケット　お問い合わせフォーム", create_body=create_mail_body, form=form, recipients=[self.request.inquiry_mailaddress])
+        ret = self.context.send_inquiry_mail(title=u"楽天チケット　お問い合わせ", create_body=create_mail_body_for_customer, form=form, recipients=[form.mail.data])
+
+        return {
+             'form':form
+            ,'result':ret
+        }
 
     @usersite_view_config(match_param="kind=privacy", renderer='altairsite.smartphone:templates/page/privacy.html')
     def move_privacy(self):

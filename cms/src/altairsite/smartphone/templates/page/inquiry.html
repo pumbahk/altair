@@ -1,6 +1,50 @@
 <%inherit file="../common/_base.html" />
 <%namespace file="../common/tags_smartphone.html" name="m" />
-<%block name="title">楽天チケットトップ</%block>
-
+<%block name="title">お問合せ</%block>
 
 <div align="center">お問い合わせ</div>
+<%def name="disp_error(errors)">
+    % if errors:
+        % for error in errors:
+            <div style="color:#FF0000;">${error}</div>
+        % endfor
+    % endif
+</%def>
+
+お預かりするお客様の個人情報は、『個人情報保護方針』に基いて厳重に管理し、お客様の同意がない限りお問い合わせ・ご相談への対応以外には使用いたしません。<br/>
+<br/>
+個人情報保護方針は<a href="${request.route_path('page', kind='privacy')}">こちら</a>をご確認ください。<br/>
+フォームでお問い合わせ頂いたお客様には、基本的には返信メールにて回答させて頂いております。<br/>
+<br/>
+※携帯電話等の受信設定でドメイン指定受信を設定している方は、「@ticket.rakuten.co.jp」からのメールを受信できるように設定してください。<br/>
+<br/>
+
+% if result:
+    <div class="line" style="background:#FFFFFF"><img src="/static/mobile/clear.gif" alt="" width="1" height="1" /></div>
+    <div style="color:#FF0000;">以下の内容で送信しました。</div>
+    <br/>
+% elif result and form.username.data:
+    <div class="line" style="background:#FFFFFF"><img src="/static/mobile/clear.gif" alt="" width="1" height="1" /></div>
+    <div style="color:#FF0000;">送信に失敗しました。</div>
+    <br/>
+% endif
+
+<form action="${request.route_path('page', kind='inquiry')}" method="POST">
+    ${form.username.label}<br/>${form.username}<br/>
+    ${disp_error(form.username.errors)}
+    ${form.mail.label}<br/>${form.mail}<br/>
+    ${disp_error(form.mail.errors)}
+    ${form.num.label}<br/>
+(ご予約済のチケットの受付番号が不明な場合は、こちらにお申込みの公演名、公演日時を入力してください)<br/>
+    ${form.num}<br/>
+    ${form.category.label}<br/>${form.category}<br/>
+    ${disp_error(form.category.errors)}
+    ${form.title.label}<br/>${form.title}<br/>
+    ${disp_error(form.title.errors)}
+    ${form.body.label}<br/>${form.body}<br/>
+    ${disp_error(form.body.errors)}
+    ※は必ず入力してください。<br/>
+    % if not result:
+        <input type="submit" value="送信"/>
+    % endif
+</form>
