@@ -424,11 +424,23 @@ class LotEntries(BaseView):
         logger.debug("LotEntry.canceled_at == {0}".format(LotEntry.canceled_at))
         logger.debug("condition = {0}".format(condition))
         logger.debug("from = {0}".format(form.entried_from.data))
-        entries = lots_api.get_lot_entries_iter(lot.id, condition)
+
+        q = DBSession.query(LotEntryWish).filter(
+            LotEntry.lot_id==lot_id
+        ).filter(
+            LotEntryWish.lot_entry_id==LotEntry.id
+        ).filter(
+            ShippingAddress.id==LotEntry.shipping_address_id
+        ).order_by(
+            LotEntry.entry_no,
+            LotEntryWish.wish_order
+        )
+        wishes = q.filter(condition)
+
         electing_url = self.request.route_url('lots.entries.elect_entry_no', lot_id=lot.id)
         cancel_url = self.request.route_url('lots.entries.cancel', lot_id=lot.id)
         cancel_electing_url = self.request.route_url('lots.entries.cancel_electing', lot_id=lot.id)
-        return dict(data=list(entries),
+        return dict(wishes=wishes.all(),
                     lot=lot,
                     form=form,
                     cancel_url=cancel_url,

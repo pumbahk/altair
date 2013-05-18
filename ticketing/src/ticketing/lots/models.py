@@ -370,6 +370,10 @@ class LotEntryWish(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     canceled_at = sa.Column(sa.DateTime())
 
+    def is_electing(self):
+        return LotElectWork.query.filter(
+            LotElectWork.entry_wish_no==self.entry_wish_no).count()
+
     @property
     def works(self):
         return LotElectWork.query.filter(
