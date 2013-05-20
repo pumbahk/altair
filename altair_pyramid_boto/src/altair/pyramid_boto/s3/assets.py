@@ -119,8 +119,12 @@ class S3AssetDescriptor(object):
     def absspec(self):
         raise NotImplementedError
 
+    @property
+    def path(self):
+        return self.key_or_prefix.replace(self.delimiter, u'/')
+
     def abspath(self):
-        return u's3://%s/%s' % (self.retriever.bucket.name, self.key_or_prefix.replace(self.delimiter, u'/'))
+        return u's3://%s/%s' % (self.retriever.bucket.name, self.path)
 
     def stream(self):
         return StringIO(self.retriever.get_object(self.key_or_prefix))
