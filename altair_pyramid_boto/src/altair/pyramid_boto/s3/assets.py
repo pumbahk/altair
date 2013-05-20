@@ -11,12 +11,12 @@ from urlparse import urlparse
 import re
 from altair.pyramid_assets.interfaces import IAssetResolver
 from ..interfaces import IS3ConnectionFactory
-from beaker.cache import Cache, CacheManager
+from beaker.cache import Cache, CacheManager, cache_regions
 
 def normalize_prefix(prefix, delimiter):
     return delimiter.join(c for c in prefix.split(delimiter) if c)
 
-cache_manager = CacheManager()
+cache_manager = CacheManager(cache_regions=cache_regions)
 
 class IS3RetrieverFactory(Interface):
     def __call__(bucket, delimiter):
