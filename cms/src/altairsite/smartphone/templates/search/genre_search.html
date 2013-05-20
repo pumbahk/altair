@@ -1,15 +1,39 @@
 <%namespace file="../common/tags_smartphone.html" name="m" />
 
-<div id="search" style="background-color: pink">
-    検索フォーム
-    <form action="${request.route_path('search_genre')}" method='GET'>
-        <fieldset>
-            ${form.word}
-            ${form.sale}<br/>${form.page}${form.genre_id}
-            % for error in form.word.errors:
-                <font color="red">${error}</font><br/>
-            % endfor
-            <input type="submit" value="検索"/><a href="${request.route_path('init_detail')}">もっと詳しく</a>
-        </fieldset>
+<style type="text/css">
+#search input[type="text"] {
+  box-sizing: border-box;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  width: 100%;
+  display: block;
+  height: 34px;
+  font-size: 17px;
+  padding: 0px 2px;
+  margin: 0 0 2px 0;
+}
+
+#search select {
+  height: 30px;
+  font-size: 16px;
+  margin: 1px 0 0 0;
+  background-color: #fff;
+}
+
+#search button {
+  height: 28px;
+  font-weight: bold;
+}
+</style>
+
+<div class="sectionbox inverted" id="search">
+    <form class="sectionbox-inner" action="${request.route_path('search_genre')}" method="GET">
+        ${form.word}
+        ${form.sale}
+        <input type="button" class="btn-secondary" value="検索"/><a href="${request.route_path('init_detail')}">もっと詳しく</a>
+        <br/>
+        % for error in form.word.errors:
+            <font color="red">${error}</font><br/>
+        % endfor
     </form>
 </div>

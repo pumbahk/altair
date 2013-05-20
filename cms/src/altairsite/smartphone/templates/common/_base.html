@@ -12,7 +12,9 @@
 <img src="${request.static_url('altaircms:static/mobile/logo.jpg')}" /><br />
 <div style="background-image:url(${request.static_url('altaircms:static/mobile/bg_bar.gif')});background-color:#cc0000;" bgcolor="#cc0000"><font color="white">${self.title()}</font></div>
 </div>
+<div class="page">
 ${self.body()}
+</div>
 <hr />
 <%block name="fnavi" />
 <%include file="_footer.html"/>

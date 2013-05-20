@@ -1,6 +1,32 @@
 <%namespace file="../common/tags_smartphone.html" name="m" />
 
-<div id="detail_search" style="background-color: pink">
+<style type="text/css">
+#search input[type="text"] {
+  box-sizing: border-box;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  width: 100%;
+  display: block;
+  height: 34px;
+  font-size: 17px;
+  padding: 0px 2px;
+  margin: 0 0 2px 0;
+}
+
+#search select {
+  height: 30px;
+  font-size: 16px;
+  margin: 1px 0 0 0;
+  background-color: #fff;
+}
+
+#search button {
+  height: 28px;
+  font-weight: bold;
+}
+</style>
+
+<div id="detail_search" class="sectionbox inverted">
     詳細検索フォーム<br/>
 
     <form action="${request.route_path('search_detail')}" method='GET'>
@@ -37,7 +63,7 @@
             販売終了まで${form.sale_end}日<br/><br/>
             ${form.closed_perf.label}${form.closed_perf}
             ${form.canceled_perf.label}${form.canceled_perf}<br/>
-            <input type="submit" value="検索"/>
+            <input type="submit" class="btn-secondary" value="検索"/>
         </fieldset>
     </form>
 </div>
