@@ -18,7 +18,7 @@ from sqlalchemy.orm import joinedload, noload, aliased
 
 from ticketing.models import DBSession
 from ticketing.models import merge_session_with_post, record_to_multidict
-from ticketing.core.models import Site, Venue, VenueArea, Seat, SeatAttribute, SeatStatus, SalesSegment, SeatAdjacencySet, Seat_SeatAdjacency, Stock, StockStatus, StockHolder, StockType, ProductItem, Product, Performance, Event
+from ticketing.core.models import Site, Venue, VenueArea, Seat, SeatAttribute, SeatStatus, SalesSegment, SeatAdjacencySet, Seat_SeatAdjacency, Stock, StockStatus, StockHolder, StockType, ProductItem, Product, Performance, Event, SeatIndexType, SeatIndex
 from ticketing.venues.forms import SiteForm
 from ticketing.venues.export import SeatCSV
 from ticketing.fanstatic import with_bootstrap
@@ -237,21 +237,31 @@ def show(request):
             if info.get('root'):
                 root = page
 
+    types = SeatIndexType.filter_by(venue_id=venue_id)
+    type_id = types[0].id
+    if 'index_type' in request.GET:
+        type_id = 2
+        for type in types:
+            if request.GET.get('index_type') == str(type.id):
+                type_id = type.id
+
     class SeatInfo:
-        def __init__(self, seat, venuearea, attr, status):
+        def __init__(self, seat, venuearea, attr, status, index):
             self.seat = seat
             self.venuearea = venuearea
             self.row = attr
             self.status = status
+            self.index = index
 
-    seats = DBSession.query(Seat, VenueArea, SeatAttribute, SeatStatus)\
+    seats = DBSession.query(Seat, VenueArea, SeatAttribute, SeatStatus, SeatIndex)\
         .filter_by(venue_id=venue_id)\
         .outerjoin(VenueArea, Seat.areas)\
         .outerjoin(SeatAttribute, and_(SeatAttribute.seat_id==Seat.id, SeatAttribute.name=="row"))\
-        .outerjoin(SeatStatus, SeatStatus.seat_id==Seat.id)
+        .outerjoin(SeatStatus, SeatStatus.seat_id==Seat.id)\
+        .outerjoin(SeatIndex, and_(SeatIndex.seat_id==Seat.id, SeatIndex.seat_index_type_id==type_id))
     items = []
-    for seat, venuearea, attr, status in seats:
-        items.append(SeatInfo(seat, venuearea, attr, status))
+    for seat, venuearea, attr, status, type in seats:
+        items.append(SeatInfo(seat, venuearea, attr, status, type))
     
     class SeatAdjacencyInfo:
         def __init__(self, adj, count):
@@ -276,6 +286,8 @@ def show(request):
         'venue': venue,
         'site': site,
         'root': root,
+        'type_id': type_id,
+        'types': types,
         'pages': pages,
         'items': items,
         'adjs': adjs,
@@ -350,7 +362,6 @@ def edit_get(request):
 @view_config(route_name='venues.edit', request_method='POST', renderer='ticketing:templates/venues/edit.html',  decorator=with_bootstrap)
 def edit_post(request):
     venue_id = int(request.matchdict.get('venue_id', 0))
-    print venue_id
     venue = Venue.get(venue_id, organization_id=request.context.user.organization_id)
     if venue is None:
         return HTTPNotFound('venue id %d is not found' % venue_id)
