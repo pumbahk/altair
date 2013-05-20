@@ -209,22 +209,22 @@ i.icon {
 
 .icon.rlogo {
   background-position: center center;
-  background-image: url(../images/icon.png);
+  background-image: url(../img/icon.png);
 }
 
 .icon.orderreview {
   background-position: center center;
-  background-image: url(../images/orderreview.png);
+  background-image: url(../img/orderreview.png);
 }
 
 .icon.mailmag {
   background-position: center center;
-  background-image: url(../images/mailmag.png);
+  background-image: url(../img/mailmag.png);
 }
 
 .icon.okng {
   background-position: center center;
-  background-image: url(../images/okng.png);
+  background-image: url(../img/okng.png);
 }
 
 .condensed {
