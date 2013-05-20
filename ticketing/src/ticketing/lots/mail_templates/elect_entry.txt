@@ -6,6 +6,20 @@
 キャンセルが出たため、再度抽選を行い、抽選の結果、お客様はご当選されました。下記内容をご確認ください。
 %endif
 
+-----
+■お名前カナ
+${shipping_address.last_name_kana} ${shipping_address.first_name_kana}
+■電話番号
+${shipping_address.tel_1}
+■メールアドレス
+${shipping_address.email_1}
+-----
+■受付番号
+${lot_entry.entry_no}
+抽選結果確認の際などに必要です。必ずお控え下さい。
+
+■受付日
+${h.japanese_date(lot_entry.created_at)}
 
 ---------------
 【当選内容】
