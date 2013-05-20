@@ -41,22 +41,28 @@ class MailSender(object):
         tmpl = get_renderer(self.tmpl_name).implementation()
         return tmpl.render(**vars)
 
-    def _body_tmpl_vars(self, request, lot_entry):
+    def _body_tmpl_vars(self, request, lot_entry, elected_wish):
+        review_url = None
+        try:
+            review_url = request.route_url('lots.review.index')
+        except:
+            pass
         vars = dict(fee_type=fee_type,
                     lot_entry=lot_entry, lot=lot_entry.lot, 
                     shipping_address=lot_entry.shipping_address,
-                    entry_review_url=request.route_url('lots.review.index'),
+                    entry_review_url=None,
                     plugins=plugins,
-                    h=helpers)
+                    h=helpers,
+                    elected_wish=elected_wish)
         return vars
 
-    def send(self, request, lot_entry):
+    def send(self, request, lot_entry, elected_wish=None):
 
         sender = self.sender
         subject = self.subject + u" 【" + lot_entry.lot.event.organization.name + u"】"
         recipients = [lot_entry.shipping_address.email_1]
 
-        vars = self._body_tmpl_vars(request, lot_entry)
+        vars = self._body_tmpl_vars(request, lot_entry, elected_wish)
         body = self._create_mail_body(request, vars)
 
         return self._send(request, sender=sender,
@@ -107,11 +113,11 @@ def send_accepted_mail(request, lot_entry):
     mailer = get_lotting_mailer(request, name="accepted")
     return mailer.send(request, lot_entry)
 
-def send_elected_mail(request, elected_entry):
+def send_elected_mail(request, lot_entry, elected_wish):
     """ 当選通知メール
     """
     mailer = get_lotting_mailer(request, name="elected")
-    return mailer.send(elected_entry)
+    return mailer.send(request, lot_entry, elected_wish)
 
 def send_rejected_mail(request, rejected_entry):
     """ 落選通知メール
