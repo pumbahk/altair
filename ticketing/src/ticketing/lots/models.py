@@ -380,6 +380,11 @@ class LotEntryWish(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             LotElectWork.entry_wish_no==self.entry_wish_no,
         ).all()
 
+
+    @property
+    def work_errors(self):
+        return [w.error for w in self.works if w.error]
+
     @property
     def transaction_fee(self):
         """ 決済手数料 """
@@ -487,6 +492,7 @@ class LotElectWork(Base, BaseModel, WithTimestamp):
     wish_order = sa.Column(sa.Integer, doc=u"希望順")
     entry_wish_no = sa.Column(sa.Unicode(30), doc=u"申し込み番号と希望順を合わせたキー項目")
 
+    error = sa.Column(sa.UnicodeText)
 
     @property
     def wish(self):
