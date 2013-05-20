@@ -1,9 +1,10 @@
+楽天チケットをご利用いただきまして、誠にありがとうございます。
 %if not revised:
-先日お申込みいただきました「${lot_entry.lot.event.title}～先行」に関しまして、
-抽選の結果、お客様はご当選されました。下記内容をご確認ください。
+先日お申込みいただきました「${lot_entry.lot.name}」に関しまして、
+抽選の結果、下記内容にてチケットをご用意いたしました。
 %else:
-先日お申込みいただきました「${lot_entry.lot.event.title}～先行」に関しまして、
-キャンセルが出たため、再度抽選を行い、抽選の結果、お客様はご当選されました。下記内容をご確認ください。
+先日お申込みいただきました「${lot_entry.lot.name}」に関しまして、
+キャンセルが出たため、再度抽選を行い、下記内容にてチケットをご用意いたしました。
 %endif
 
 -----
@@ -26,6 +27,8 @@ ${h.japanese_date(lot_entry.created_at)}
 ■イベント名：${lot_entry.lot.event.title}
 ■受付名称：${lot_entry.lot.name}
 
+<第${elected_wish.wish_order + 1}希望>
+公演名：${elected_wish.performance.name}
 公演日：${h.performance_date(elected_wish.performance)}
 会場：${elected_wish.performance.venue.name}
 申込内容
@@ -38,9 +41,13 @@ ${product.product.name} ${h.format_currency(product.product.price)} x ${product.
 
 ■お支払
 お支払方法： ${lot_entry.payment_delivery_method_pair.payment_method.name}
-※決済手数料：${h.format_currency(lot_entry.payment_delivery_method_pair.transaction_fee)}円/${fee_type(lot_entry.payment_delivery_method_pair.payment_method.fee_type)}をチケット代金とは別に頂戴いたします。
+※決済手数料：${h.format_currency(lot_entry.payment_delivery_method_pair.transaction_fee)}円/${fee_type(lot_entry.payment_delivery_method_pair.payment_method.fee_type)}
+%if lot_entry.payment_delivery_method_pair.payment_method.payment_plugin_id == plugins.MULTICHECKOUT_PAYMENT_PLUGIN_ID:
+ご指定のクレジットカードで、下記金額の決済を完了しました。
+決済合計金額：${h.format_currency(elected_wish.order.total_amount)}円（税込）
+%endif
 
-■お受取→QR/セブン-イレブン店頭など複数パターンあり
+■お受取
 お受取方法： ${lot_entry.payment_delivery_method_pair.delivery_method.name}
 ※引取手数料：${h.format_currency(lot_entry.payment_delivery_method_pair.delivery_fee)}円/${fee_type(lot_entry.payment_delivery_method_pair.delivery_method.fee_type)}をチケット代金とは別に頂戴いたします。
 
@@ -48,12 +55,6 @@ ${product.product.name} ${h.format_currency(product.product.price)} x ${product.
 <注意事項>
 %if lot_entry.payment_delivery_method_pair.payment_method.payment_plugin_id == plugins.MULTICHECKOUT_PAYMENT_PLUGIN_ID:
 ※ご当選の場合、決済期間内にご登録のクレジットカードにてお支払いとなります。
-当選が確定するまではお支払いは確定いたしません。また、落選時にカード決済は行われません。
-なお、カード番号をご入力いただいた際、カード会社にカード有効性の確認（オーソリ確認）を実施しております。
-お客様のカードによっては、有効性確認時に、カード利用明細メールが配信される場合がありますが、
-決済は当選確定以前には行われませんので、ご安心ください
-
-オーソリ確認金額：${h.format_currency(lot_entry.max_amount)}円（税込）
 %endif
 %if lot_entry.payment_delivery_method_pair.payment_method.payment_plugin_id == plugins.SEJ_PAYMENT_PLUGIN_ID:
 ※ご当選の場合、入金期間内にセブン-イレブン店内レジにてお支払いとなります。
@@ -65,7 +66,6 @@ ${product.product.name} ${h.format_currency(product.product.price)} x ${product.
 ※セブン-イレブン店頭でのお引取りを希望の場合は、ご入金時にレジにてチケットをお渡しいたします。
 %endif
 
-※お申込後のキャンセル、変更はできませんのでご注意下さい。
 ※当選チケットや当選権利の転売は禁止しております。
 
 ---------------
