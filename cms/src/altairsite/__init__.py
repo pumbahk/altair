@@ -14,29 +14,8 @@ def install_static_page(config):
         settings["altaircms.page.tmp.directory"]
         )
 
-def main(global_config, **local_config):
-    """ This function returns a Pyramid WSGI application.
-    """
-    settings = dict(global_config)
-    settings.update(local_config)
-    engine = engine_from_config(settings, 'sqlalchemy.', pool_recycle=3600)
-    sqlahelper.get_session().remove()
-    sqlahelper.set_base(Base)
-    sqlahelper.add_engine(engine)
-
-    config = Configurator(settings=settings)
-    config.include("altair.browserid")
-    config.include("altair.exclog")
-
-    config.add_renderer('.html' , 'pyramid.mako_templating.renderer_factory')
-    # config.include("altaircms.templatelib")
-    config.include("altair.cdnpath")
-    from altair.cdnpath import S3StaticPathFactory
-    config.add_cdn_static_path(S3StaticPathFactory(
-            settings["s3.bucket_name"], 
-            exclude=config.maybe_dotted(settings.get("s3.static.exclude.function")), 
-            prefix="/usersite"))
-
+def install_cms_dependencies(config):
+    settings = config.registry.settings
     config.include(install_static_page)
     config.include("altaircms.tag:install_tagmanager")
     config.include("altaircms.topic:install_topic_searcher")
@@ -52,6 +31,43 @@ def main(global_config, **local_config):
     config.include("altaircms.solr") ## for fulltext search
     search_utility = settings.get("altaircms.solr.search.utility", "altaircms.solr.api.DummySearch")
     config.add_fulltext_search(search_utility)
+
+def install_cache_features(config):
+    settings = config.registry.settings
+    # config.include("altaircms.templatelib")
+    config.include("altair.cdnpath")
+
+    from altair.cdnpath import S3StaticPathFactory
+    config.add_cdn_static_path(S3StaticPathFactory(
+            settings["s3.bucket_name"], 
+            exclude=config.maybe_dotted(settings.get("s3.static.exclude.function")), 
+            prefix="/usersite"))
+
+    ## cache
+    from dogpile.cache import make_region
+    from .cache import set_cache_region
+    cache_region = make_region()
+    cache_region.configure_from_config(settings, "altaircms.dogpile.")
+    set_cache_region(config, cache_region)
+
+
+def main(global_config, **local_config):
+    """ This function returns a Pyramid WSGI application.
+    """
+    settings = dict(global_config)
+    settings.update(local_config)
+    engine = engine_from_config(settings, 'sqlalchemy.', pool_recycle=3600)
+    sqlahelper.get_session().remove()
+    sqlahelper.set_base(Base)
+    sqlahelper.add_engine(engine)
+
+    config = Configurator(settings=settings)
+    config.include("altair.browserid")
+    config.include("altair.exclog")
+
+    config.add_renderer('.html' , 'pyramid.mako_templating.renderer_factory')
+    config.include(install_cache_features)
+    config.include(install_cms_dependencies)
 
     ## first:
     config.include("altairsite.front")
