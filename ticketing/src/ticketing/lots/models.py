@@ -284,7 +284,7 @@ class LotEntry(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     memo = sa.Column(sa.UnicodeText)
 
     canceled_at = sa.Column(sa.DateTime())
-
+    ordered_mail_sent_at = sa.Column(sa.DateTime())
 
     def get_wish(self, wish_order):
         wish_order = int(wish_order)

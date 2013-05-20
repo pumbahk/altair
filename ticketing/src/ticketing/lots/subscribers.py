@@ -1,6 +1,7 @@
 import logging
+from datetime import datetime
 from pyramid.events import subscriber
-from . import api
+#from . import api
 from . import sendmail
 from ticketing.multicheckout.models import MultiCheckoutOrderStatus
 
@@ -12,6 +13,7 @@ def send_lot_accepted_mail(event):
     request = event.request
     sendmail.send_accepted_mail(request, entry)
 
+
 @subscriber('ticketing.lots.events.LotElectedEvent')
 def finish_elected_lot_entry(event):
     try:
@@ -19,8 +21,10 @@ def finish_elected_lot_entry(event):
         wish = event.lot_wish
         request = event.request
         sendmail.send_elected_mail(request, entry, wish)
+        entry.ordered_mail_sent_at = datetime.now()
     except Exception as e:
         logger.exception(e)
+
 
 @subscriber('ticketing.multicheckout.events.CheckoutAuthSecure3DEvent')
 @subscriber('ticketing.multicheckout.events.CheckoutAuthSecureCodeEvent')

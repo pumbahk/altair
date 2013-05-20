@@ -153,7 +153,12 @@ if shipping_address.user:
   %endif
 </ul>
 </td>
-<td nowrap="">${w.status}</td>
+<td nowrap="">
+${w.status}
+%if w.lot_entry.ordered_mail_sent_at:
+<br>当選メール送信済
+%endif
+</td>
 <td nowrap="">${w.lot_entry.entry_no}</td>
 <td nowrap="">${w.wish_order + 1}</td>
 <td nowrap="">${"{0:%Y-%m-%d %H:%M}".format(w.created_at)}</td>

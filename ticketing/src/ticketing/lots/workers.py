@@ -129,6 +129,7 @@ def elect_lots_task(context, message):
 
             wish.lot_entry.elect(wish)
             wish.order_id = order.id
+            wish.lot_entry.order_id = order.id
             wish = LotEntryWish.query.filter(LotEntryWish.id==wish_id).one()
             event = LotElectedEvent(request, wish)
             request.registry.notify(event)
