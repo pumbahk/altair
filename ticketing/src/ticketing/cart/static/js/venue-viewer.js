@@ -1,6 +1,6 @@
 (function () {
 var __LIBS__ = {};
-__LIBS__['H1SUE4BNYINPZUOG'] = (function (exports) { (function () { 
+__LIBS__['uRDCXJVWOQVFTM3M'] = (function (exports) { (function () { 
 
 /************** util.js **************/
 exports.eventKey = function Util_eventKey(e) {
@@ -127,7 +127,7 @@ exports.makeHitTester = function Util_makeHitTester(a) {
   }
 };
  })(); return exports; })({});
-__LIBS__['e_3WY1ESF8TDS7N7'] = (function (exports) { (function () { 
+__LIBS__['pYTEKKUR2E2MGV2L'] = (function (exports) { (function () { 
 
 /************** CONF.js **************/
 exports.DEFAULT = {
@@ -182,11 +182,11 @@ exports.DEFAULT = {
   }
 };
  })(); return exports; })({});
-__LIBS__['hORTKE8F_AKKF2SR'] = (function (exports) { (function () { 
+__LIBS__['D1SFZXUDAV47LTI9'] = (function (exports) { (function () { 
 
 /************** seat.js **************/
-var util = __LIBS__['H1SUE4BNYINPZUOG'];
-var CONF = __LIBS__['e_3WY1ESF8TDS7N7'];
+var util = __LIBS__['uRDCXJVWOQVFTM3M'];
+var CONF = __LIBS__['pYTEKKUR2E2MGV2L'];
 
 function clone(obj) {
   return $.extend({}, obj);
@@ -1030,9 +1030,9 @@ function parseTransform(transform_str) {
     throw new Error('invalid transform function: ' + f);
 }
 
-  var CONF = __LIBS__['e_3WY1ESF8TDS7N7'];
-  var seat = __LIBS__['hORTKE8F_AKKF2SR'];
-  var util = __LIBS__['H1SUE4BNYINPZUOG'];
+  var CONF = __LIBS__['pYTEKKUR2E2MGV2L'];
+  var seat = __LIBS__['D1SFZXUDAV47LTI9'];
+  var util = __LIBS__['uRDCXJVWOQVFTM3M'];
 
   var StoreObject = _class("StoreObject", {
     props: {
@@ -1069,6 +1069,7 @@ function parseTransform(transform_str) {
         selectable: null,
         select: null,
         pageChanging: null,
+        message: null,
         messageBoard: null,
         zoomRatioChanging: null,
         zoomRatioChange: null
@@ -2126,8 +2127,8 @@ function parseTransform(transform_str) {
                     for (var k in _conts)
                       _conts[k].next(data[key]);
                   },
-                  error: function(xhr, text) {
-                    var message = "Failed to load " + key + " (reason: " + text + ")";
+                  error: function(xhr, text, status) {
+                    var message = "Failed to load " + key + " (reason: " + text + " - " + status + ")";
                     var _conts = conts;
                     conts = {};
                     for (var k in _conts)
