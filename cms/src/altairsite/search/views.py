@@ -39,7 +39,9 @@ def page_search_result(context, request):
     """ 詳細検索 検索結果
     """
     request.body_id = "search"
-    logger.debug("search GET params: %s" % request.GET)
+    # logger.debug("search GET params: %s" % request.GET)
+    if not request.GET:
+        raise HTTPNotFound
     query_params = forms.get_search_forms(request, request.GET).make_query_params()
     result_seq = context.get_result_sequence_from_query_params(
         query_params, 
