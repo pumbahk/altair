@@ -91,6 +91,8 @@ class Electing(object):
             Performance.id==ProductItem.performance_id
         ).filter(
             LotEntryWish.canceled_at==None
+        ).filter(
+            LotEntryWish.elected_at==None
         ).group_by(Stock.id).order_by(Performance.start_on, Performance.id)
 
         return q.all()
