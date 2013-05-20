@@ -143,7 +143,7 @@ if shipping_address.user:
 <ul>
   <!-- TODO: 状態によるボタンの出し分け -->
   %if not w.canceled_at and not w.is_electing():
-  <li><button class="btn entry-elect-btn" data-entry-no="${w.lot_entry.entry_no}" data-wish-order="${w.wish_order - 1}">当選</button></li>
+  <li><button class="btn entry-elect-btn" data-entry-no="${w.lot_entry.entry_no}" data-wish-order="${w.wish_order}">当選</button></li>
   %endif
   %if not w.canceled_at and not w.is_electing():
   <li><button class="btn entry-cancel-btn" data-entry-no="${w.lot_entry.entry_no}">キャンセル</button></li>
