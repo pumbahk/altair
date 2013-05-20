@@ -3,9 +3,8 @@
 
 """ mqワーカー
 """
-
-import logging
 import transaction
+import logging
 from ticketing.payments.payment import Payment
 from altair.mq.decorators import task_config
 from ticketing.cart.models import Cart, CartedProduct
@@ -17,8 +16,9 @@ from ticketing.cart.interfaces import (
 from ticketing.models import DBSession
 from ticketing.cart.reserving import Reserving
 from ticketing.cart.carting import CartFactory
+from .events import LotElectedEvent
 
-from .models import Lot, LotElectWork
+from .models import Lot, LotElectWork, LotEntryWish
 
 logger = logging.getLogger(__name__)
 
@@ -31,12 +31,14 @@ def includeme(config):
     config.include('ticketing.payments.plugins.qr')
     # 配送
     config.include('ticketing.payments.plugins.shipping')
+    config.include(".sendmail")
 
     reg = config.registry
     reg.adapters.register([IRequest], IStocker, "", Stocker)
     reg.adapters.register([IRequest], IReserving, "", Reserving)
     reg.adapters.register([IRequest], ICartFactory, "", CartFactory)
     config.scan(".workers")
+    config.scan(".subscribers")
 
 
 def lot_wish_cart(wish):
@@ -115,19 +117,34 @@ def elect_lots_task(context, message):
     request.session['order'] = {'order_no': work.lot_entry_no}
     request.altair_checkout3d_override_shop_name = lot.event.organization.setting.multicheckout_shop_name
     wish = work.wish
+    wish_id = wish.id
+
+    try:
+        order = elect_lot_wish(request, wish)
+        if order:
+            logger.info("ordered: order_no = {0.order_no}".format(order))
+            # トランザクション分離のため、再ロード
+            wish = LotEntryWish.query.filter(LotEntryWish.id==wish_id).one()
+            work.delete()
+
+            wish.lot_entry.elect(wish)
+            wish.order_id = order.id
+            wish = LotEntryWish.query.filter(LotEntryWish.id==wish_id).one()
+            event = LotElectedEvent(request, wish)
+            request.registry.notify(event)
 
 
-    order = elect_lot_wish(request, wish)
-    if order:
-        logger.info("ordered: order_no = {0.order_no}".format(order))
-        work.delete()
-    DBSession.remove()
-
+    except Exception as e:
+        transaction.abort()
+        raise
+    finally:
+        pass
 
 def elect_lot_wish(request, wish):
     cart = lot_wish_cart(wish)
     payment = Payment(cart, request)
     stocker = Stocker(request)
+
     try:
         # 在庫処理
         performance = cart.performance
@@ -137,9 +154,7 @@ def elect_lot_wish(request, wish):
                                      product_requires)
         logger.debug("lot elected: entry_no = {0}, stocks = {1}".format(wish.lot_entry.entry_no, stocked))
         # TODO: 確保数確認
-        wish.lot_entry.elect(wish)
         order = payment.call_payment()
-        wish.order_id = order.id
 
         return order
 

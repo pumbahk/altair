@@ -1,7 +1,10 @@
+import logging
 from pyramid.events import subscriber
 from . import api
 from . import sendmail
 from ticketing.multicheckout.models import MultiCheckoutOrderStatus
+
+logger = logging.getLogger(__name__)
 
 @subscriber('ticketing.lots.events.LotEntriedEvent')
 def send_lot_accepted_mail(event):
@@ -9,13 +12,15 @@ def send_lot_accepted_mail(event):
     request = event.request
     sendmail.send_accepted_mail(request, entry)
 
-@subscriber('ticketing.cart.events.OrderCompleted')
+@subscriber('ticketing.lots.events.LotElectedEvent')
 def finish_elected_lot_entry(event):
-    order = event.order
-    lot_entry = api.get_ordered_lot_entry(order)
-    if lot_entry is None:
-        return
-    lot_entry.order = order
+    try:
+        entry = event.lot_entry
+        wish = event.lot_wish
+        request = event.request
+        sendmail.send_elected_mail(request, entry, wish)
+    except Exception as e:
+        logger.exception(e)
 
 @subscriber('ticketing.multicheckout.events.CheckoutAuthSecure3DEvent')
 @subscriber('ticketing.multicheckout.events.CheckoutAuthSecureCodeEvent')
