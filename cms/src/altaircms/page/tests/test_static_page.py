@@ -114,7 +114,7 @@ class StaticPageCreateViewTests(unittest.TestCase):
         context = DummyContext(request)
         target = self._makeOne(context, request)
 
-        with mock.patch("altaircms.filelib.zipupload.replace_directory_from_zipfile") as m:
+        with mock.patch("altaircms.filelib.zipupload.extract_directory_from_zipfile") as m:
             with mock.patch("altaircms.page.forms.StaticPageCreateForm") as fm: 
                 fm.validate.return_value = True
                 fm().data = postdata
@@ -194,7 +194,7 @@ class StaticPageViewTests(unittest.TestCase):
                 args, kwargs = mZipupload.create_directory_snapshot.call_args
                 self.assertEquals(args, (saved_path,))
                 
-                args, kwargs = mZipupload.replace_directory_from_zipfile.call_args
+                args, kwargs = mZipupload.extract_directory_from_zipfile.call_args
                 self.assertEquals(args, (saved_path, request.POST["zipfile"].file))
 
     def test_update_object_failcase(self):

@@ -6,7 +6,7 @@ logger = logging.getLogger(__name__)
 from ..models import StaticPage, StaticPageSet
 from ...subscribers import notify_model_create
 from ...models import DBSession
-from altaircms.filelib import zipupload
+from altaircms.filelib.zipupload import AfterZipUpload
 
 
 class StaticPageDelete(object):
@@ -25,7 +25,7 @@ class StaticPageDelete(object):
         try:
             ## snapshot取っておく
             src = self.utility.get_rootname(static_page)
-            zipupload.create_directory_snapshot(src)
+            self.utility.backup(src)
 
             ## 直接のsrcは空で保存できるようになっているはず。
             if os.path.exists(src):
@@ -61,7 +61,6 @@ class StaticPageCreate(object):
         notify_model_create(self.request, pageset, data)
         DBSession.flush()
         return static_page
-
     
     def create_underlying_something(self, static_page):
         filestorage = self.data["zipfile"]
@@ -70,5 +69,9 @@ class StaticPageCreate(object):
             logger.info("zip file is not found.")
             os.makedirs(absroot)
             return
-        zipupload.replace_directory_from_zipfile(absroot, filestorage.file)
-        self.request.registry.notify(zipupload.AfterZipUpload(self.request, absroot))
+        self.utility.create(absroot, filestorage.file) and self.request.registry.notify(AfterZipUpload(self.request, absroot))
+
+    def update_underlying_something(self, static_page):
+        filestorage = self.data["zipfile"]
+        absroot = self.utility.get_rootname(static_page)
+        self.utility.update(absroot, filestorage.file) and self.request.registry.notify(AfterZipUpload(self.request, absroot))

@@ -39,7 +39,7 @@ def create_zipfile_from_directory(path, writename):
 def is_zipfile(target):
     return zipfile.is_zipfile(target)
 
-def replace_directory_from_zipfile(path, target):
+def extract_directory_from_zipfile(path, target):
     if not os.path.exists(path):
         os.makedirs(path)
     with zipfile.ZipFile(target, "r") as myzip:
@@ -48,11 +48,11 @@ def replace_directory_from_zipfile(path, target):
 def _default_change_name(path, _now=datetime.now):
     """
     >>> _default_change_name("/foo/bar.txt", lambda : datetime(2012, 1, 1))
-    '/foo/.bar20120101000000.txt'
+    '/foo/.bar.20120101000000.txt'
     """
     dirname, basename, extname = decompose_path(path)
     sym = _now().strftime("%Y%m%d%H%M%S")
-    return os.path.join(dirname, "."+basename+sym+extname)
+    return os.path.join(dirname, "."+basename+"."+sym+extname)
 
 def create_directory_snapshot(path, change_name=_default_change_name):
     if not os.path.isdir(path):

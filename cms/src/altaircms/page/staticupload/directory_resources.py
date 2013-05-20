@@ -2,6 +2,7 @@
 import os
 import shutil
 from ...interfaces import IDirectoryResource
+from ...filelib import zipupload
 from zope.interface import implementer
 from pyramid.path import AssetResolver
 
@@ -40,13 +41,34 @@ class StaticPageDirectory(object):
        return os.path.join(self.tmpdir, static_page.name+".zip")
 
     def prepare(self, src):
-        logger.info("prepare static pages: %s" % (src))
+        logger.info("prepare src: %s" % (src))
         os.makedirs(src)
 
     def copy(self, src, dst):
-        logger.info("copy static pages: %s -> %s" % (src, dst))        
+        logger.info("copy src: %s -> %s" % (src, dst))        
         shutil.copytree(src, dst)
 
     def rename(self, src, dst):
-        logger.info("rename static pages: %s -> %s" % (src, dst))
+        logger.info("rename src: %s -> %s" % (src, dst))
         return os.rename(src, dst)
+
+    def backup(self, src):
+        logger.info("backup src: %s" % (src))        
+        return zipupload.create_directory_snapshot(src)
+
+    def create(self, src, io):
+        logger.info("create src: %s" % (src))                
+        zipupload.extract_directory_from_zipfile(src, io)
+        return True
+
+    def update(self, src, io):
+        backup_path = self.backup(src)
+        try:
+            self.create(src, io)
+            return True
+        except Exception as e:
+            logger.exception(e)
+            zipupload.snapshot_rollback(src, backup_path)
+            raise 
+
+        

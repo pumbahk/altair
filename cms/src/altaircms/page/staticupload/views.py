@@ -44,7 +44,6 @@ class StaticPageCreateView(BaseView):
 
 @view_defaults(route_name="static_pageset", permission="authenticated")
 class StaticPageSetView(BaseView):
-
     @view_config(match_param="action=detail", renderer="altaircms:templates/page/static_detail.html", 
                  decorator=with_bootstrap)
     def detail(self):
@@ -60,41 +59,13 @@ class StaticPageSetView(BaseView):
                 "tree_renderer": StaticPageDirectoryRenderer(self.request, static_page, static_directory), 
                 "now": get_now(self.request)}
 
-    @view_config(match_param="action=upload", request_param="zipfile", request_method="POST")
-    def upload(self):
-        pk = self.request.matchdict["static_page_id"]
-        static_page = get_or_404(self.request.allowable(StaticPage), StaticPage.id==pk)
-        static_directory = get_static_page_utility(self.request)
-
-        filestorage = self.request.POST["zipfile"]
-        if filestorage == u"":
-            FlashMessage.error(u"投稿されたファイルは、zipファイルではありません", request=self.request)
-            raise HTTPFound(self.request.route_url("static_pageset", action="detail", static_page_id=static_page.id))
-        uploaded = filestorage.file
-        if not zipupload.is_zipfile(uploaded):
-            FlashMessage.error(u"投稿されたファイル%sは、zipファイルではありません" % filestorage.filename, request=self.request)
-            raise HTTPFound(self.request.route_url("static_pageset", action="detail", static_page_id=static_page.id))
-
-        src = os.path.join(static_directory.get_base_directory(), static_page.name)
-        snapshot_path = zipupload.create_directory_snapshot(src)
-
-        try:
-            zipupload.replace_directory_from_zipfile(src, filestorage.file)
-            self.context.touch_static_page(static_page)
-        except:
-            zipupload.snapshot_rollback(src, snapshot_path)
-
-        FlashMessage.success(u"%sが更新されました" % filestorage.filename, request=self.request)
-        return HTTPFound(self.request.route_url("static_pageset", action="detail", static_page_id=static_page.id))
-
 @view_defaults(route_name="static_page", permission="authenticated")
 class StaticPageView(BaseView):
     @view_config(match_param="action=shallow_copy")
     def shallow_copy(self):
         static_page = get_or_404(self.request.allowable(StaticPage), StaticPage.id==self.request.matchdict["child_id"])
-        copied = copy.copy(static_page)
+        copied = self.context.touch(copy.copy(static_page))
         copied.label += u"のコピー"
-        DBSession.add(copied)
         DBSession.flush()
         static_directory = get_static_page_utility(self.request)
         static_directory.prepare(static_directory.get_rootname(copied))
@@ -104,7 +75,7 @@ class StaticPageView(BaseView):
     @view_config(match_param="action=deep_copy")
     def deep_copy(self):
         static_page = get_or_404(self.request.allowable(StaticPage), StaticPage.id==self.request.matchdict["child_id"])
-        copied = copy.copy(static_page)
+        copied = self.context.touch(copy.copy(static_page))
         copied.label += u"のコピー"
         DBSession.add(copied)
         DBSession.flush()
@@ -146,6 +117,26 @@ class StaticPageView(BaseView):
         with zipupload.current_directory(static_directory.get_rootname(static_page)):
             zipupload.create_zipfile_from_directory(".", writename)
         return download_response(path=writename,request=self.request, filename="{0}.zip".format(static_page.name)) 
+
+    @view_config(match_param="action=upload", request_param="zipfile", request_method="POST")
+    def upload(self):
+        pk = self.request.matchdict["child_id"]
+        static_page = get_or_404(self.request.allowable(StaticPage), StaticPage.id==pk)
+        form = self.context.form(forms.StaticUploadOnlyForm, self.request.POST)
+        if not form.validate():
+            FlashMessage.error(form.errors["zipfile"][0], request=self.request)
+            raise HTTPFound(self.request.route_url("static_pageset", action="detail", static_page_id=static_page.id))
+
+        creator = self.context.creation(creation.StaticPageCreate, form.data)
+        try:
+            creator.update_underlying_something(static_page)
+        except:
+            FlashMessage.error(u"更新に失敗しました", request=self.request)
+            raise HTTPFound(self.request.route_url("static_pageset", action="detail", static_page_id=static_page.id))
+        self.context.touch(static_page)
+        FlashMessage.success(u"%sが更新されました" % static_page.name, request=self.request)
+        return HTTPFound(self.context.endpoint(static_page))
+
 
 @view_config(route_name="static_page_display", permission="authenticated")
 def static_page_display_view(context, request):

@@ -176,8 +176,8 @@ h3{
   <div class="span6">
 	<div class="well" style="height:120px;">
 	  <h4 style="margin-bottom:10px;">zipファイルでuploadし直す</h4>
-	  <form class="form" action="${request.route_path("static_pageset", action="upload", static_page_id=static_page.id)}" 
-			method="POST" enctype="multipart/form-data">
+	  <form class="form" action="${request.route_path("static_page", action="upload", static_page_id=static_pageset.id, child_id=static_page.id,_query=dict(endpoint=request.url))}" 
+			    method="POST" enctype="multipart/form-data">
 		<label>zipfile: <input id="zipfile" type="file" name="zipfile"/></label>
 		<input class="btn" type="submit" value="zipでupload"/>
 	  </form>

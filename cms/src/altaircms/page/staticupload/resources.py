@@ -17,10 +17,10 @@ class StaticPageResource(security.RootFactory):
         return creation(self.request, static_directory, 
                         *args, **kwargs)
 
-    def touch_static_page(self, static_page, _now=datetime.now):
-        static_page.updated_at = _now()
-        DBSession.add(static_page)
-        return static_page
+    def touch(self, obj, _now=datetime.now):
+        obj.updated_at = _now()
+        DBSession.add(obj)
+        return obj
 
     def endpoint(self, static_page):
         return get_endpoint(self.request) or self.request.route_url("static_pageset", action="detail", static_page_id=static_page.pageset.id)

@@ -44,6 +44,20 @@ class StaticPageCreateForm(Form):
         queue.enqueue("name", self._validate_root_directory)
         return super(type(self), self).validate() and queue(self.data, self.errors)
 
+class StaticUploadOnlyForm(Form):
+    zipfile = fields.FileField(label=u"zipファイルを投稿")
+
+    def configure(self, request):
+        self.request = request
+        self.static_directory = get_static_page_utility(request)
+
+    def validate(self):
+        queue = ValidationQueue()
+        queue.enqueue("zipfile", validate_filetype, "zipfile", failfn=lambda v: not zipupload.is_zipfile(v.file), 
+                      message=u"zipfileではありません。.zipの拡張子が付いたファイルを投稿してください" )
+        return super(type(self), self).validate() and queue(self.data, self.errors)
+
+
 class StaticPageForm(Form):
     name = fields.TextField(label=u"name", validators=[validators.Required()])
     label = fields.TextField(label=u"タイトル", validators=[validators.Required()])
