@@ -34,6 +34,8 @@ class IS3Retriever(Interface):
 
 @implementer(IS3RetrieverFactory)
 class DefaultS3RetrieverFactory(object):
+    cache_manager = cache_manager
+
     def __init__(self, cache_region=None):
         if cache_region is not None:
             self.entry_cache = self.cache_manager.get_cache_region(__name__ + '.entry', cache_region)
@@ -180,7 +182,7 @@ class S3AssetResolverAdapter(object):
         return S3AssetResolver(
             registry.getUtility(IS3ConnectionFactory)(),
             registry.getUtility(IS3RetrieverFactory)
-            ).resolve()
+            ).resolve(spec)
 
 def includeme(config):
     config.registry.registerUtility(
@@ -188,7 +190,7 @@ def includeme(config):
         IS3RetrieverFactory
         )
     config.registry.registerUtility(
-        S3AssetResolverAdapter(),
+        S3AssetResolverAdapter(config.registry),
         IAssetResolver,
         's3'
         )
