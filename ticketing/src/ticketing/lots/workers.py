@@ -47,7 +47,7 @@ def lot_wish_cart(wish):
                 payment_delivery_pair=wish.lot_entry.payment_delivery_method_pair,
                 _order_no=wish.lot_entry.entry_no,
                 sales_segment=wish.lot_entry.lot.sales_segment,
-                system_fee=wish.lot_entry.lot.system_fee,
+                system_fee=wish.system_fee,
                 products=[
                     CartedProduct(product=p.product,
                                   quantity=p.quantity)
@@ -104,7 +104,7 @@ def elect_lots_task(context, message):
         logger.exception(e)
         # workにエラー記録
         return
-
+    work_id = work.id
 
     logger.info("start electing lot_id = {lot_id}".format(lot_id=lot.id))
     if lot is None:
@@ -137,6 +137,9 @@ def elect_lots_task(context, message):
 
     except Exception as e:
         transaction.abort()
+        work = LotElectWork.query.filter(LotElectWork.id==work_id).first()
+        work.error = str(e).decode('utf-8')
+        transaction.commit()
         raise
     finally:
         pass
