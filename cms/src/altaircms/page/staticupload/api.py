@@ -52,17 +52,21 @@ def as_static_page_response(request, static_page, url, force_original=False):
         url_parts = url[1:]
     else:
         url_parts = url
+    url_parts = "/".join(url_parts.split("/")[1:]) #foo/bar -> bar
 
-    fullpath = os.path.join(static_page_utility.get_base_directory(), url_parts)
-    if os.path.exists(fullpath) and os.path.isfile(fullpath):
+    fullpath = os.path.join(static_page_utility.get_rootname(static_page), url_parts)
+    try:
         if force_original:
             return FileResponse(fullpath, request=request, cache_max_age=CACHE_MAX_AGE)
         else:
             return as_wrapped_resource_response(request, static_page, fullpath)
-    else:
+    except (IOError, OSError):
         msg = "%s is not found" % fullpath
         logger.info(msg)
         raise StaticPageNotFound(msg)
+    except Exception as e:
+        logger.exception(e)
+        raise StaticPageNotFound("exception is occured")
 
 def get_static_page_utility(request):
     return request.registry.getUtility(IDirectoryResourceFactory, "static_page")(request=request)
