@@ -20,18 +20,9 @@ todo:
 """
 
 EXCLUDE_EXT_LIST = (".ico", ".js", ".css")
-from ..cache import get_cache_region
-from pyramid.response import Response
 @usersite_view_config(route_name="front", decorator=with_jquery)
 def rendering_page(context, request):
     url = request.matchdict["page_name"]
-
-    region = get_cache_region(request)
-    string = region.get(url.encode("utf-8", errors="replace"), expiration_time=300)
-    if string:
-        return Response(string)
-
-
     dt = context.get_preview_date()
 
     control = context.pc_access_control()
@@ -59,7 +50,6 @@ def rendering_page(context, request):
 
     renderer = control.frontpage_renderer()
     response = renderer.render(descriptor.absspec(), page)
-    region.set(url.encode("utf-8", errors="replace"), response.text)
     return response
 
 from altairsite.mobile.dispatch.views import dispatch_view as mobile_dispatch_view

@@ -36,7 +36,6 @@ requires = [
     'altair.cdnpath', 
     'pyramid_layout',
     'lxml',
-    'dogpile.cache'
     ]
 
 solr_require = [
@@ -104,8 +103,6 @@ setup(name='altair-cms',
       [paste.app_factory]
       main = altaircms:main
 
-      [dogpile.cache]
-      null = altairsite.cache:NullCacheBackend
       [pyramid.scaffold]
       cms_widget = scaffolds:WidgetPluginTemplate
       cms_asset_widget = scaffolds:AssetWidgetPluginTemplate
