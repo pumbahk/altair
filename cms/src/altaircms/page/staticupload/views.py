@@ -151,9 +151,11 @@ class StaticPageView(BaseView):
 def static_page_display_view(context, request):
     prefix = request.matchdict["path"].lstrip("/").split("/", 1)[0]
     static_page = get_or_404(request.allowable(StaticPage), StaticPage.name==prefix)
+    static_directory = get_static_page_utility(request)
     try:
-        if request.GET.get("force_original"):
-            return as_static_page_response(request, static_page, request.matchdict["path"], force_original=True)
-        return as_static_page_response(request, static_page, request.matchdict["path"])
-    except StaticPageNotFound:
+        path = os.path.join(static_directory.get_base_directory(), request.matchdict["path"])
+        return as_static_page_response(request, static_page, path, force_original=request.GET.get("force_original"), 
+                                       path=path, cache_max_age=0)
+    except StaticPageNotFound as e:
+        logger.info(e)
         raise HTTPForbidden()

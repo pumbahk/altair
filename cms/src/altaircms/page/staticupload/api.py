@@ -17,13 +17,13 @@ def has_renderer(request, path):
     return bool(request.registry.queryUtility(IRendererFactory, name=ext))
 
 CACHE_MAX_AGE=60
-def as_wrapped_resource_response(request, static_page, fullpath, body_var_name="inner_body"):
+def as_wrapped_resource_response(request, static_page, fullpath, body_var_name="inner_body", cache_max_age=CACHE_MAX_AGE):
     if not (static_page.layout_id and has_renderer(request, fullpath)):
-        return FileResponse(fullpath, request=request, cache_max_age=CACHE_MAX_AGE)
+        return FileResponse(fullpath, request=request, cache_max_age=cache_max_age)
     resolver = get_frontpage_discriptor_resolver(request)
     discriptor = resolver.resolve(request, static_page.layout, verbose=True)
     if not discriptor.exists():
-        return FileResponse(fullpath, request=request, cache_max_age=CACHE_MAX_AGE)
+        return FileResponse(fullpath, request=request, cache_max_age=cache_max_age)
     try:
         params = {body_var_name: open(fullpath).read().decode("utf-8"), 
                   "static_page": static_page} #ok?
@@ -46,22 +46,22 @@ def directory_validate(basedir, tmpdir):
         raise ConfigurationError("altaircms.page.tmp.directory: %s is not writable" % tmpdir)
     return True
 
-def as_static_page_response(request, static_page, url, force_original=False):
-    static_page_utility = get_static_page_utility(request)
-    if url.startswith("/"):
-        url_parts = url[1:]
-    else:
-        url_parts = url
-    url_parts = "/".join(url_parts.split("/")[1:]) #foo/bar -> bar
-
-    fullpath = os.path.join(static_page_utility.get_rootname(static_page), url_parts)
+def as_static_page_response(request, static_page, url, force_original=False, path=None, cache_max_age=CACHE_MAX_AGE):
+    if path is None:
+        static_page_utility = get_static_page_utility(request)
+        if url.startswith("/"):
+            url_parts = url[1:]
+        else:
+            url_parts = url
+        url_parts = "/".join(url_parts.split("/")[1:]) #foo/bar -> bar
+        path = os.path.join(static_page_utility.get_rootname(static_page), url_parts)
     try:
         if force_original:
-            return FileResponse(fullpath, request=request, cache_max_age=CACHE_MAX_AGE)
+            return FileResponse(path, request=request, cache_max_age=cache_max_age)
         else:
-            return as_wrapped_resource_response(request, static_page, fullpath)
+            return as_wrapped_resource_response(request, static_page, path, cache_max_age=cache_max_age)
     except (IOError, OSError):
-        msg = "%s is not found" % fullpath
+        msg = "%s is not found" % path
         logger.info(msg)
         raise StaticPageNotFound(msg)
     except Exception as e:
