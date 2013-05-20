@@ -320,7 +320,7 @@ class LotEntry(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     @hybrid_property
     def is_ordered(self):
-        return self.is_elected and self.order_id != None
+        return self.is_elected and any([w.order_id != None for w in self.wishes])
 
     def reject(self):
         now = datetime.now()

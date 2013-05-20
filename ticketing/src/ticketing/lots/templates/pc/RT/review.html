@@ -11,12 +11,13 @@
     <div class="confirmBoxInner">
       <h2><img src="${request.static_url('ticketing.lots:static/img/order/title_election_result.gif')}" alt="抽選結果" /></h2>
       <div class="confirmBoxText">
-	%if not entry.lot.is_elected():
+	%if entry.is_ordered:
+抽選の結果、お客様はご当選されました。
+<a href="/orderreview" target="_blank">購入履歴</a>をご確認ください。 注文番号は ${entry.entry_no} です。
+	%elif not entry.lot.is_elected():
 	抽選結果発表は、${h.japanese_datetime(entry.lot.lotting_announce_datetime)}～を予定しております。発表日時以降に再度、当選・落選をご確認ください。
-	%elif entry.is_ordered:
-        当選しました。<a href="/orderreview" target="_blank">購入履歴</a>をご確認ください。 注文番号は ${entry.entry_no} です。
         %elif entry.is_rejected:
-        落選となりました。
+        抽選の結果、お客様は落選となりました。
 	%endif
       </div>
     </div>
