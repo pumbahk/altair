@@ -1,9 +1,17 @@
 <%page args="topcontents, helper" />
 <%namespace file="tags_smartphone.html" name="m" />
 
-<b>注目のイベント（トップコンテンツ）</b><br/>
+<h2 class="glitter red">注目のイベント</h2>
 % if topcontents:
-    % for contents in topcontents:
-        ${contents.text}<br/>
+    <ul class="panellist fullwidth navigable">
+    % for content in topcontents:
+      <li class="panel condensed">
+        <div class="panel-inner">
+          <img class="thematic" src="${request.route_path('__staticasset/', subpath=content.image_asset.thumbnail_path)}" />
+          <h4>${content.title}</h4>
+          <p class="first">${content.text}</p>
+        </div>
+      </li>
     % endfor
+    </ul>
 % endif
