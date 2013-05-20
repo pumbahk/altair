@@ -237,8 +237,8 @@ def show(request):
             if info.get('root'):
                 root = page
 
-    types = SeatIndexType.filter_by(venue_id=venue_id)
-    type_id = types[0].id
+    types = SeatIndexType.filter_by(venue_id=venue_id).all()
+    type_id = types[0].id if 0<len(types) else None
     if 'index_type' in request.GET:
         type_id = 2
         for type in types:
@@ -257,8 +257,9 @@ def show(request):
         .filter_by(venue_id=venue_id)\
         .outerjoin(VenueArea, Seat.areas)\
         .outerjoin(SeatAttribute, and_(SeatAttribute.seat_id==Seat.id, SeatAttribute.name=="row"))\
-        .outerjoin(SeatStatus, SeatStatus.seat_id==Seat.id)\
-        .outerjoin(SeatIndex, and_(SeatIndex.seat_id==Seat.id, SeatIndex.seat_index_type_id==type_id))
+        .outerjoin(SeatStatus, SeatStatus.seat_id==Seat.id)
+    if type_id is not None:
+        seats = seats.outerjoin(SeatIndex, and_(SeatIndex.seat_id==Seat.id, SeatIndex.seat_index_type_id==type_id))
     items = []
     for seat, venuearea, attr, status, type in seats:
         items.append(SeatInfo(seat, venuearea, attr, status, type))
