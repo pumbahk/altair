@@ -5,6 +5,7 @@ import sqlalchemy.orm as orm
 from altaircms.widget.tree.proxy import WidgetTreeProxy
 from .bsettings import BlockSettings
 from .impl import ILayoutModelResolver
+from .fetcher import ICurrentPageFetcher
 
 import logging
 logger = logging.getLogger(__file__)
@@ -21,6 +22,9 @@ def get_frontpage_renderer(request):
 
 def get_frontpage_discriptor_resolver(request):
     return request.registry.getUtility(ILayoutModelResolver)
+
+def get_current_page_fetcher(request):
+    return request.registry.getUtility(ICurrentPageFetcher)
 
 from pyramid.renderers import RendererHelper    
 

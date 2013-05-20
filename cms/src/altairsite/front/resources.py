@@ -3,10 +3,6 @@ import logging
 logger = logging.getLogger(__file__)
 from datetime import datetime
 from altaircms.datelib import get_now
-import sqlalchemy as sa
-from altaircms.page.models import Page
-from altaircms.page.models import PageSet
-from altaircms.page.models import StaticPage, StaticPageSet
 
 from . import api 
 
@@ -58,21 +54,11 @@ class AccessControlPC(object):
         return self.access_ok
 
     def _fetch_page_from_params(self, url, dt):
-        qs = self.request.allowable(Page).filter(PageSet.id==Page.pageset_id)
-        qs = qs.filter(PageSet.url==url)
-        qs = qs.filter(Page.in_term(dt))
-        qs = qs.filter(Page.published==True)
-        qs = qs.order_by(sa.desc("page.publish_begin"), "page.publish_end")
-        return qs.first()
+        return api.get_current_page_fetcher(self.request).front_page(self.request, url, dt)
 
     def fetch_static_page_from_params(self, url,  dt):
         prefix = url.split("/", 1)[0]
-        qs = self.request.allowable(StaticPage).filter(StaticPageSet.id==StaticPage.pageset_id)
-        qs = qs.filter(StaticPageSet.url==prefix)
-        qs = qs.filter(StaticPage.in_term(dt))
-        qs = qs.filter(StaticPage.published==True)
-        qs = qs.order_by(sa.desc("static_pages.publish_begin"), "static_pages.publish_end")
-        return qs.first()
+        return api.get_current_page_fetcher(self.request).pc_static_page(self.request, prefix, dt)
 
     def fetch_page_from_params(self, url, dt):
         page = self._fetch_page_from_params(url, dt)
