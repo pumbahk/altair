@@ -1,3 +1,4 @@
+# -*- coding:utf-8 -*-
 import os
 from altaircms.helpers import url_create_with
 from markupsafe import Markup
@@ -5,15 +6,16 @@ from markupsafe import Markup
 class StaticPageDirectoryRenderer(object):
     def __init__(self, request, static_page, static_directory):
         self.request = request
-        self.static_page = static_page
+        self.page = static_page
+        self.pageset = static_page.pageset
         self.static_directory = static_directory
         self.basedir = static_directory.get_base_directory()
         if not self.basedir.endswith("/"):
             self.basedir += "/"
 
     def __html__(self):
-        root = self.static_directory.get_rootname(self.static_page)
-        return TreeRenderer(self.request, root, self).__html__()
+        self.root = self.static_directory.get_rootname(self.page)
+        return TreeRenderer(self.request, self.root, self).__html__()
 
     def create_url(self, path):
         return self.request.route_path("static_page_display",  path=path.replace(self.basedir, "")).replace("%2F", "/")
@@ -26,6 +28,15 @@ class StaticPageDirectoryRenderer(object):
 
     def join_name(self, dirname, path):
         return os.path.join(dirname, path)
+
+    def parent_action_links(self, path):
+#         part = path.replace(self.root, "")
+#         return u'''
+# <a class="btn btn-mini" href="{0}">新しいファイルを追加</a>
+# <a class="btn btn-mini" href="{1}"><i class="icon-trash">_</i>削除</a>
+# '''.format(self.request.route_path("static_page_part_directory", static_page_id=self.pageset.id, child_id=self.page.id, path=part, action="create"), 
+#            self.request.route_path("static_page_part_directory", static_page_id=self.pageset.id, child_id=self.page.id, path=part, action="delete"))
+        return u""
 
 class TreeRenderer(object):
     def __init__(self, request, root, companion):
@@ -40,6 +51,9 @@ class TreeRenderer(object):
         else:
             return url
 
+    def parent_action_links(self, path, r):
+        r.append(self.companion.parent_action_links(path))
+
     def _url_tree(self, path, r, opened=False):
         if self.companion.has_children(path):
             r.append(u'<ul>')
@@ -48,6 +62,7 @@ class TreeRenderer(object):
                 r.append(u'<li><input type="checkbox" checked="checked" id="{0}"/><label for="{0}">{1}</label>'.format(id_, os.path.basename(path)))
             else:
                 r.append(u'<li><input type="checkbox" id="{0}"/><label for="{0}">{1}</label>'.format(id_, os.path.basename(path)))
+            self.parent_action_links(path, r)
             r.append(u'<ul>')
             for subpath in self.companion.get_children(path):
                 self._url_tree(self.companion.join_name(path, subpath), r, opened=False)

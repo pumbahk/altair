@@ -13,7 +13,7 @@ from .. import StaticPageNotFound
 from .api import get_static_page_utility
 from .api import as_static_page_response
 from altaircms.models import DBSession
-from altaircms.page.models import StaticPageSet, StaticPage
+from altaircms.page.models import StaticPageSet, StaticPage, PageType
 from . import forms
 from . import creation
 from .renderable import StaticPageDirectoryRenderer
@@ -38,7 +38,9 @@ class StaticPageCreateView(BaseView):
         if not form.validate():
             return {"form": form}
         creator = self.context.creation(creation.StaticPageCreate, form.data)
+        pagetype = get_or_404(self.request.allowable(PageType), PageType.name==self.request.matchdict["pagetype"])
         static_page = creator.create()
+        static_page.pageset.pagetype = pagetype
         FlashMessage.success(u"%sが作成されました" % static_page.label, request=self.request)
         return HTTPFound(self.context.endpoint(static_page))
 
@@ -58,6 +60,14 @@ class StaticPageSetView(BaseView):
                 "current_page": static_pageset.current(), 
                 "tree_renderer": StaticPageDirectoryRenderer(self.request, static_page, static_directory), 
                 "now": get_now(self.request)}
+
+@view_defaults(route_name="static_page_part_file", permission="authenticated")
+class StaticPagePartFileView(BaseView):
+    pass
+
+@view_defaults(route_name="static_page_part_directory", permission="authenticated")
+class StaticPagePartDirectoryView(BaseView):
+    pass
 
 @view_defaults(route_name="static_page", permission="authenticated")
 class StaticPageView(BaseView):

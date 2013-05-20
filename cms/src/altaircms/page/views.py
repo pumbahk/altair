@@ -306,25 +306,38 @@ class PagePartialUpdateAPIView(object):
         return {"status": True, "data": {"layout_id": layout_id}}
 
 
+def get_pagetype(request):
+    v =  getattr(request, "_pagetype", None) 
+    if v is None:
+        v = request._pagetype = get_or_404(request.allowable(PageType), PageType.name==request.matchdict["pagetype"])
+    return v
+
+def dispatch_with_pagetype(predicate):
+    def wrapper(info, request):
+        return predicate(get_pagetype(request))
+    return wrapper
+
 @view_defaults(permission="page_read", route_name="pageset_list", decorator=with_bootstrap, request_method="GET")
 class ListView(object):
     def __init__(self, context, request):
         self.context = context
         self.request = request
     
-    @view_config(match_param="pagetype=static", renderer="altaircms:templates/pagesets/static_pageset_list.html")
+    @view_config(renderer="altaircms:templates/pagesets/static_pageset_list.html", 
+                 custom_predicates=(dispatch_with_pagetype(lambda pagetype: pagetype.page_role == "static"), ))
     def static_page_list(self):
-        pagetype = get_or_404(self.request.allowable(PageType), (PageType.name==self.request.matchdict["pagetype"]))
+        pagetype = get_pagetype(self.request)
         static_directory = get_static_page_utility(self.request)
-        pages = self.request.allowable(StaticPageSet).order_by(sa.desc(StaticPageSet.updated_at))
+        pages = self.request.allowable(StaticPageSet).filter(StaticPageSet.pagetype==pagetype).order_by(sa.desc(StaticPageSet.updated_at))
         return {"static_directory": static_directory, 
                 "pages": pages, 
                 "pagetype": pagetype}
 
-    @view_config(match_param="pagetype=event_detail", renderer="altaircms:templates/pagesets/event_pageset_list.html")
+    @view_config(renderer="altaircms:templates/pagesets/event_pageset_list.html", 
+                 custom_predicates=(dispatch_with_pagetype(lambda pagetype: pagetype.page_role == "event_detail"), ))
     def event_bound_page_list(self):
         """ event詳細ページと結びついているpage """
-        pagetype = get_or_404(self.request.allowable(PageType), (PageType.name==self.request.matchdict["pagetype"]))
+        pagetype = get_pagetype(self.request)
         qs = self.request.allowable(PageSet).filter(PageSet.pagetype_id==pagetype.id, 
                                                     PageSet.event_id!=None)
         params = dict(self.request.GET)
@@ -344,7 +357,7 @@ class ListView(object):
     @view_config(renderer="altaircms:templates/pagesets/other_pageset_list.html")
     def other_page_list(self):
         """event詳細ページとは結びついていないページ(e.g. トップ、カテゴリトップ) """
-        pagetype = get_or_404(self.request.allowable(PageType), (PageType.name==self.request.matchdict["pagetype"]))
+        pagetype = get_pagetype(self.request)
         qs = self.request.allowable(PageSet).filter(PageSet.pagetype_id==pagetype.id)
         params = dict(self.request.GET)
         if "page" in params:

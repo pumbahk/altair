@@ -48,7 +48,7 @@ class StaticPageCreate(object):
     def create_model(self):
         data = self.data
         pageset = StaticPageSet(url=data["name"], 
-                          name=data["name"])
+                                name=data["name"])
         static_page = StaticPage(name=data["name"],
                                  pageset=pageset, 
                                  layout=data["layout"],
