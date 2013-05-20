@@ -14,6 +14,14 @@ def install_static_page(config):
         settings["altaircms.page.tmp.directory"]
         )
 
+def install_fetcher(config):
+    settings = config.registry.settings
+    from altairsite.fetcher import ICurrentPageFetcher
+    from altairsite.fetcher import CurrentPageFetcher
+    fetcher = CurrentPageFetcher(settings["altaircms.static.pagetype.pc"], 
+                                 settings["altaircms.static.pagetype.mobile"])
+    config.registry.registerUtility(fetcher, ICurrentPageFetcher)
+
 def main(global_config, **local_config):
     """ This function returns a Pyramid WSGI application.
     """
@@ -43,6 +51,7 @@ def main(global_config, **local_config):
     config.include("altaircms.page:install_pageset_searcher")
     config.include("altaircms.widget:install_has_widget_page_finder")
     config.include("altaircms.asset:install_virtual_asset")
+    config.include(install_fetcher)
 
     ## organization mapping
     OrganizationMapping = config.maybe_dotted("altaircms.auth.api.OrganizationMapping")

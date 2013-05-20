@@ -5,6 +5,7 @@ from datetime import datetime
 from altaircms.datelib import get_now
 
 from . import api 
+from ..fetcher import get_current_page_fetcher
 
 class PageRenderingResource(object):
     def __init__(self, request):
@@ -54,11 +55,11 @@ class AccessControlPC(object):
         return self.access_ok
 
     def _fetch_page_from_params(self, url, dt):
-        return api.get_current_page_fetcher(self.request).front_page(self.request, url, dt)
+        return get_current_page_fetcher(self.request).front_page(self.request, url, dt)
 
     def fetch_static_page_from_params(self, url,  dt):
         prefix = url.split("/", 1)[0]
-        return api.get_current_page_fetcher(self.request).pc_static_page(self.request, prefix, dt)
+        return get_current_page_fetcher(self.request).pc_static_page(self.request, prefix, dt)
 
     def fetch_page_from_params(self, url, dt):
         page = self._fetch_page_from_params(url, dt)

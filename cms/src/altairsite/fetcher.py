@@ -58,3 +58,6 @@ class CurrentPageFetcher(object):
         qs = qs.order_by(sa.desc("static_pages.publish_begin"), "static_pages.publish_end")
         return qs.first()
 
+## api
+def get_current_page_fetcher(request):
+    return request.registry.getUtility(ICurrentPageFetcher)

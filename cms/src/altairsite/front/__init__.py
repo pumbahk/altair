@@ -8,14 +8,7 @@ def install_resolver(config):
                                    checkskip=True)
     config.registry.registerUtility(layout_lookup, ILayoutModelResolver)
 
-def install_fetcher(config):
-    settings = config.registry.settings
-    from altairsite.front.fetcher import ICurrentPageFetcher
-    from altairsite.front.fetcher import CurrentPageFetcher
-    fetcher = CurrentPageFetcher(settings["altaircms.static.pagetype.pc"], 
-                                 settings["altaircms.static.pagetype.mobile"])
-    config.registry.registerUtility(fetcher, ICurrentPageFetcher)
-    
+   
 def includeme(config):
     """
     templateの取得に必要なsettings
@@ -23,5 +16,4 @@ def includeme(config):
     """
     config.add_route('front', '{page_name:.*}', factory=".resources.PageRenderingResource")
     config.include(install_resolver)
-    config.include(install_fetcher)
     config.scan('.views')
