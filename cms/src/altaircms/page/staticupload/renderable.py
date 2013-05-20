@@ -40,19 +40,25 @@ class TreeRenderer(object):
         else:
             return url
 
-    def _url_tree(self, path, r):
+    def _url_tree(self, path, r, opened=False):
         if self.companion.has_children(path):
-            r.append(u"<li>%s</li>" % os.path.basename(path))
-            r.append(u"<ul>")
+            r.append(u'<ul>')
+            id_ = path.replace(self.root, "").replace("/", "-")
+            if opened:
+                r.append(u'<li><input type="checkbox" checked="checked" id="{0}"/><label for="{0}">{1}</label>'.format(id_, os.path.basename(path)))
+            else:
+                r.append(u'<li><input type="checkbox" id="{0}"/><label for="{0}">{1}</label>'.format(id_, os.path.basename(path)))
+            r.append(u'<ul>')
             for subpath in self.companion.get_children(path):
-                self._url_tree(self.companion.join_name(path, subpath), r)
-            r.append(u"</ul>")
+                self._url_tree(self.companion.join_name(path, subpath), r, opened=False)
+            r.append(u'</ul>')
+            r.append(u'</li></ul>')
         else:
-            r.append(u"<li>")
+            r.append(u'<li>')
             r.append(u'<a href="%s">%s</a>' % (self.create_url(path), os.path.basename(path)))            
-            r.append(u"</li>")
+            r.append(u'</li>')
         return r
 
     def __html__(self):
-        r = self._url_tree(self.root, [])
-        return Markup(u"\n".join(r))
+        r = self._url_tree(self.root, [], opened=True)
+        return Markup(u'\n'.join(r))

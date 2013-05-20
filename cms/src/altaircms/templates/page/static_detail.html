@@ -2,6 +2,7 @@
 <%namespace name="nco" file="../navcomponents.html"/>
 
 <%block name="style">
+<link rel="stylesheet" href="/static/treeview/css/style.css" type="text/css" />
 <style type="text/css">
 h3{ 
   margin-top:20px;
@@ -29,7 +30,7 @@ h3{
 
 <div class="box">
   <table class="table table-describe table-bordered">
-  <thread>
+  <thead>
     <tr>
     <th width="20px"></th>
     <th>名前</th>
@@ -160,7 +161,7 @@ h3{
     <li><a href="${h.current_route_path_override(request,_query=dict(force_original=True))}">レイアウト適用する前</a></li>
   %endif
 </ul>
-<div class="well">
+<div class="well css-treeview">
   ${tree_renderer}
 </div>
 
@@ -189,7 +190,7 @@ h3{
   $(function(){
    $(".box .btn-group a.action").click(function(){
       var  pk = $(this).parents(".box").find("input[name='object_id']:checked").val();
-      if(!pk){ console.log("sorry"); return false; }
+      if(!pk){ alert("対象となるページが設定されていません"); return false; }
 
       // initialize
       var $this = $(this);

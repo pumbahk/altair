@@ -1,8 +1,6 @@
 from datetime import datetime
 from altaircms.models import DBSession
 import altaircms.security as security
-from .. import models
-from altaircms.subscribers import notify_model_create
 from .api import get_static_page_utility
 from altaircms.viewlib import get_endpoint
 
