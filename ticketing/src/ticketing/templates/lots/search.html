@@ -142,20 +142,20 @@ if shipping_address.user:
 <td nowrap="">
 <ul>
   <!-- TODO: 状態によるボタンの出し分け -->
-  %if not w.canceled_at and not w.is_electing() and not w.is_rejecting() and not w.rejected_at:
+  %if not w.canceled_at and not w.is_electing() and not w.is_rejecting() and not w.rejected_at and not w.lot_entry.is_electing():
   <li><button class="btn entry-elect-btn" data-entry-no="${w.lot_entry.entry_no}" data-wish-order="${w.wish_order}">当選</button></li>
   %endif
-  %if not w.canceled_at and not w.is_electing() and not w.is_rejecting() and not w.rejected_at:
+  %if not w.canceled_at and not w.is_electing() and not w.is_rejecting() and not w.rejected_at and not w.lot_entry.is_electing():
   <li><button class="btn entry-cancel-btn" data-entry-no="${w.lot_entry.entry_no}">キャンセル</button></li>
   %endif
   %if w.is_electing() and not w.elected_at and not w.rejected_at:
   <li><button class="btn cancel-electing-btn" data-entry-no="${w.lot_entry.entry_no}" data-wish-order="${w.wish_order}">当選予定をキャンセル</button></li>
   %endif
 
-  %if not w.canceled_at and not w.is_electing() and not w.is_rejecting() and not w.rejected_at:
+  %if not w.canceled_at and not w.is_electing() and not w.is_rejecting() and not w.rejected_at and not w.lot_entry.is_electing():
   <li><button class="btn entry-reject-btn" data-entry-no="${w.lot_entry.entry_no}">落選</button></li>
   %endif
-  %if w.is_rejecting() and not w.rejected_at and not w.rejected_at:
+  %if w.is_rejecting() and not w.rejected_at and not w.rejected_at and not w.lot_entry.is_electing():
   <li><button class="btn cancel-reject-btn" data-entry-no="${w.lot_entry.entry_no}">落選予定をキャンセル</button></li>
   %endif
 

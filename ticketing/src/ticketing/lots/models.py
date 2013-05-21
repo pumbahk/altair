@@ -364,6 +364,10 @@ class LotEntry(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         for wish in self.wishes:
             wish.cancel(now)
 
+    def is_electing(self):
+        return LotElectWork.query.filter(
+            LotElectWork.lot_entry_no==self.entry_no
+        ).count()
 
 
 class LotEntryWish(Base, BaseModel, WithTimestamp, LogicallyDeleted):
