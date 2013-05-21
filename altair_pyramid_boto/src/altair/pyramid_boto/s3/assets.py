@@ -11,12 +11,12 @@ from urlparse import urlparse
 import re
 from altair.pyramid_assets.interfaces import IAssetResolver
 from ..interfaces import IS3ConnectionFactory
-from beaker.cache import Cache, CacheManager
+from beaker.cache import Cache, CacheManager, cache_regions
 
 def normalize_prefix(prefix, delimiter):
     return delimiter.join(c for c in prefix.split(delimiter) if c)
 
-cache_manager = CacheManager()
+cache_manager = CacheManager(cache_regions=cache_regions)
 
 class IS3RetrieverFactory(Interface):
     def __call__(bucket, delimiter):
@@ -34,6 +34,8 @@ class IS3Retriever(Interface):
 
 @implementer(IS3RetrieverFactory)
 class DefaultS3RetrieverFactory(object):
+    cache_manager = cache_manager
+
     def __init__(self, cache_region=None):
         if cache_region is not None:
             self.entry_cache = self.cache_manager.get_cache_region(__name__ + '.entry', cache_region)
@@ -117,8 +119,12 @@ class S3AssetDescriptor(object):
     def absspec(self):
         raise NotImplementedError
 
+    @property
+    def path(self):
+        return self.key_or_prefix.replace(self.delimiter, u'/')
+
     def abspath(self):
-        return u's3://%s/%s' % (self.retriever.bucket.name, self.key_or_prefix.replace(self.delimiter, u'/'))
+        return u's3://%s/%s' % (self.retriever.bucket.name, self.path)
 
     def stream(self):
         return StringIO(self.retriever.get_object(self.key_or_prefix))
@@ -180,7 +186,7 @@ class S3AssetResolverAdapter(object):
         return S3AssetResolver(
             registry.getUtility(IS3ConnectionFactory)(),
             registry.getUtility(IS3RetrieverFactory)
-            ).resolve()
+            ).resolve(spec)
 
 def includeme(config):
     config.registry.registerUtility(
@@ -188,7 +194,7 @@ def includeme(config):
         IS3RetrieverFactory
         )
     config.registry.registerUtility(
-        S3AssetResolverAdapter(),
+        S3AssetResolverAdapter(config.registry),
         IAssetResolver,
         's3'
         )

@@ -38,18 +38,11 @@ class FileSchemeAssetDescriptor(object):
  
 @implementer(IAssetResolver)
 class FileSchemeAssetResolver(object):
-    def __init__(self, parent=None):
-        if parent is None:
-            parent = AssetResolver()
-            directlyProvides(parent, IAssetResolver)
-        assert parent is None or verifyObject(IAssetResolver, parent)
-        self.parent = parent
+    def __init__(self):
+        pass
 
     def resolve(self, spec):
         url = urlparse(spec)
         if url.scheme != u'file':
-            if self.parent is not None:
-                return self.parent.resolve(spec)
-            else:
-                return ValueError(spec)
+            raise ValueError(spec)
         return FileSchemeAssetDescriptor(path=url.path)

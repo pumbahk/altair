@@ -9,6 +9,7 @@ from pyramid_beaker import session_factory_from_settings
 from pyramid_beaker import set_cache_regions_from_settings
 from pyramid.authorization import ACLAuthorizationPolicy
 from pyramid.tweens import EXCVIEW
+from pyramid.tweens import INGRESS
 from pyramid_selectable_renderer import SelectableRendererSetup
 from pyramid_selectable_renderer.custom import ReceiveTemplatePathFormat, ReceiveTemplatePathCandidatesDict, SelectByRequestGen
 from ticketing.core.api import get_organization
@@ -138,7 +139,7 @@ def main(global_config, **local_config):
     config.include("ticketing.multicheckout")
     config.include("ticketing.payments")
     config.include("ticketing.payments.plugins")
-    config.add_tween('ticketing.tweens.session_cleaner_factory', over=EXCVIEW)
+    config.add_tween('ticketing.tweens.session_cleaner_factory', under=INGRESS)
 
     config.include('altair.pyramid_assets')
     config.include('altair.pyramid_boto')

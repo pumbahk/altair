@@ -349,7 +349,6 @@ def refund_sej_order(sej_order, organization_id, order, now):
     tenant = SejTenant.filter_by(organization_id=organization_id).first()
     shop_id = (tenant and tenant.shop_id) or settings.get('sej.shop_id')
     performance = order.performance
-    print 'shop_id=%s' % shop_id
 
     # create SejRefundEvent
     re = SejRefundEvent.filter(and_(

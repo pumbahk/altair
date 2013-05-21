@@ -24,6 +24,9 @@ verbose = False
 class FormatError(Exception):
     pass
 
+class LogicalError(Exception):
+    pass
+
 def relativate(a, b):
     a = os.path.normpath(a)
     b = os.path.normpath(b)
@@ -247,6 +250,8 @@ def import_tree(update, organization, tree, file, venue_id=None, max_adjacency=N
     deleted_seat_count = 0
     seats_given = set()
 
+    seat_names_given = set()
+
     if update:
         seats = dict((seat.l0_id, seat) for seat in venue.seats)
         print 'Number of existing seats: %d' % len(seats)
@@ -286,6 +291,9 @@ def import_tree(update, organization, tree, file, venue_id=None, max_adjacency=N
             seats_in_row = []
             for seat_obj in seat_objs:
                 seat_l0_id = seat_obj['_node'].get('id')
+                if seat_l0_id in seats_given:
+                    # id重複
+                    raise LogicalError("Dupliate seat_l0_id: %s" % seat_l0_id)
                 seats_given.add(seat_l0_id)
                 seat = seats.get(seat_l0_id)
                 if seat is None:
@@ -295,6 +303,10 @@ def import_tree(update, organization, tree, file, venue_id=None, max_adjacency=N
                         print '[ADD] Seat(l0_id=%s)' % seat.l0_id
                     new_seat_count += 1
                 name = seat_obj['properties'].get('name')
+                if name in seat_names_given:
+                    # name重複
+                    raise LogicalError("Dupliate seat name: %s" % name)
+                seat_names_given.add(name)
                 seat_no = seat_obj['properties'].get('seat_no')
                 gate = seat_obj['properties'].get('gate')
                 floor = seat_obj['properties'].get('floor')
