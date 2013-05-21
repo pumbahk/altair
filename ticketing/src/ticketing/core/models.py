@@ -91,6 +91,11 @@ class Site(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         else:
             return None
 
+    def get_drawings(self):
+        page_meta = self._metadata[u'pages']
+        resolver = get_resolver(get_current_registry())
+        return dict((name, resolver.resolve(myurljoin(self.metadata_url, name))) for name in page_meta)
+
 class VenueArea_group_l0_id(Base):
     __tablename__   = "VenueArea_group_l0_id"
     venue_id = Column(Identifier, ForeignKey('Venue.id', ondelete='CASCADE'), primary_key=True, nullable=False)
