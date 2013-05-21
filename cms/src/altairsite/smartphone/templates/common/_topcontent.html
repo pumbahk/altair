@@ -10,27 +10,15 @@
         <li class="panel condensed">
             % if content.link:
                 <a href=${content.link}>
-                    <div class="panel-inner">
-                        <img class="thematic" src="${request.route_path('__staticasset/', subpath=content.image_asset.thumbnail_path)}" />
-                        <h4>${content.title}</h4>
-                        <p class="first">${content.text}</p>
-                    </div>
-                </a>
             % elif event:
                 <a href="${request.route_path('detail')}?event_id=${event.id}">
-                    <div class="panel-inner">
-                        <img class="thematic" src="${request.route_path('__staticasset/', subpath=content.image_asset.thumbnail_path)}" />
-                        <h4>${content.title}</h4>
-                        <p class="first">${content.text}</p>
-                    </div>
-                </a>
-            % else:
-                    <div class="panel-inner">
-                        <img class="thematic" src="${request.route_path('__staticasset/', subpath=content.image_asset.thumbnail_path)}" />
-                        <h4>${content.title}</h4>
-                        <p class="first">${content.text}</p>
-                    </div>
             % endif
+                <div class="panel-inner">
+                    <img class="thematic" src="${request.route_path('__staticasset/', subpath=content.image_asset.thumbnail_path)}" />
+                    <h4>${content.title}</h4>
+                    <p class="first">${content.text}</p>
+                </div>
+            </a>
         </li>
     % endfor
     </ul>
