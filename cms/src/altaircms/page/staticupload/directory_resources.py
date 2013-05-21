@@ -35,7 +35,8 @@ class S3StaticPageDirectoryFactory(StaticPageDirectoryFactory):
 
     def setup(self, config):
         config.add_subscriber(".subscribers.refine_html_files_after_staticupload", ".directory_resources.AfterCreate")
-  
+        config.add_subscriber(".subscribers.s3upload_directory", ".directory_resources.AfterCreate")  
+
 @implementer(IDirectoryResource)
 class StaticPageDirectory(object):
     def __init__(self, request, assetspec, basedir, tmpdir):
@@ -104,3 +105,13 @@ class S3StaticPageDirectory(StaticPageDirectory):
     def get_base_url(self, dirname, filename):
         bucket_name = self.s3utility.bucket_name
         return "http://{0}.s3.amazonaws.com/{1}{2}/".format(bucket_name, self.prefix, dirname.replace(self.basedir, ""))
+
+    def get_name(self, dirname, filename):
+        return "{0}{1}/{2}".format(self.prefix, dirname.replace(self.basedir, ""), filename)
+
+    def upload_directory(self, d):
+        uploader = self.s3utility.uploader
+        for root, dirs, files in os.walk(d):
+            for f in files:
+                with open(os.path.join(root, f), "r") as rf:
+                    uploader.upload_file(rf, self.get_name(root, f))

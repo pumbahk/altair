@@ -34,3 +34,7 @@ def refine_html_files_after_staticupload(after_create):
                 os.rename(path, path+".original")
                 with open(path, "w") as wf:
                     wf.write(output)
+
+def s3upload_directory(after_create):
+    event = after_create
+    event.static_directory.upload_directory(event.root)

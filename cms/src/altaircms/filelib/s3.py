@@ -95,7 +95,6 @@ class S3ConnectionFactory(object):
         ## uploadしたファイルは残す.
         # self.uploader.delete(f, f.name, options)
 
-
 @provider(IS3UtilityFactory)
 class NullConnectionFactory(object):
     def __init__(self, bucket_name):
