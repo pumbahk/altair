@@ -549,6 +549,12 @@ class LotRejectWork(Base, BaseModel, WithTimestamp):
     lot_entry_no = sa.Column(sa.Unicode(20), sa.ForeignKey('LotEntry.entry_no'), unique=True, doc=u"抽選申し込み番号")
     error = sa.Column(sa.UnicodeText)
 
+    @property
+    def lot_entry(self):
+        return LotEntry.query.filter(
+            LotEntry.entry_no==self.lot_entry_no,
+        ).one()
+
 
     def __repr__(self):
         return "LotRejectProduct {self.entry_wish_no}".format(self=self)

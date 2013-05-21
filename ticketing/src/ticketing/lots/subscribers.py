@@ -25,6 +25,17 @@ def finish_elected_lot_entry(event):
     except Exception as e:
         logger.exception(e)
 
+@subscriber('ticketing.lots.events.LotRejectedEvent')
+def finish_rejected_lot_entry(event):
+    try:
+        entry = event.lot_entry
+
+        request = event.request
+        sendmail.send_rejected_mail(request, entry)
+        entry.ordered_mail_sent_at = datetime.now()
+    except Exception as e:
+        logger.exception(e)
+
 
 @subscriber('ticketing.multicheckout.events.CheckoutAuthSecure3DEvent')
 @subscriber('ticketing.multicheckout.events.CheckoutAuthSecureCodeEvent')
