@@ -6,8 +6,12 @@ logger = logging.getLogger(__name__)
 from ..models import StaticPage, StaticPageSet
 from ...subscribers import notify_model_create
 from ...models import DBSession
+from ...filelib import get_adapts_filesession
 from altaircms.filelib.zipupload import AfterZipUpload
+from . import SESSION_NAME
 
+def get_staticupload_filesession(request):
+    return get_adapts_filesession(request, name=SESSION_NAME)
 
 class StaticPageDelete(object):
     def __init__(self, request, utility):
@@ -39,6 +43,11 @@ class StaticPageCreate(object):
         self.request = request
         self.utility = utility
         self.data = data
+        self.rollback_functions = []
+
+    def rollback(self):
+        for f in self.rollback_functions:
+            f()
 
     def create(self):
         static_page = self.create_model()
@@ -59,6 +68,12 @@ class StaticPageCreate(object):
         DBSession.add(static_page)
         notify_model_create(self.request, static_page, data)
         notify_model_create(self.request, pageset, data)
+
+        def rollback():
+            DBSession.delete(DBSession.merge(static_page))
+            DBSession.delete(DBSession.merge(pageset))
+        self.rollback_functions.append(rollback)
+
         DBSession.flush()
         return static_page
     
@@ -69,6 +84,11 @@ class StaticPageCreate(object):
             logger.info("zip file is not found.")
             os.makedirs(absroot)
             return
+
+        def rollback():
+            self.utility.delete(os.path.dirname(absroot))
+        self.rollback_functions.append(rollback)
+
         self.utility.create(absroot, filestorage.file) and self.request.registry.notify(AfterZipUpload(self.request, absroot))
 
     def update_underlying_something(self, static_page):

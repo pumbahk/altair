@@ -11,6 +11,16 @@ from ...interfaces import IDirectoryResourceFactory
 from .. import StaticPageNotFound
 from altairsite.front.api import get_frontpage_discriptor_resolver
 from .directory_resources import StaticPageDirectoryFactory
+from .creation import get_staticupload_filesession
+
+def get_static_page_utility(request):
+    return request.registry.getUtility(IDirectoryResourceFactory, "static_page")(request=request)
+
+def set_static_page_utility(config, basedir, tmpdir):
+    factory = StaticPageDirectoryFactory(basedir, tmpdir=tmpdir)
+    directory_validate(factory.basedir, factory.tmpdir)
+    return config.registry.registerUtility(factory, IDirectoryResourceFactory, "static_page")
+
 
 def has_renderer(request, path):
     ext = os.path.splitext(path)[1]
@@ -67,11 +77,3 @@ def as_static_page_response(request, static_page, url, force_original=False, pat
     except Exception as e:
         logger.exception(e)
         raise StaticPageNotFound("exception is occured")
-
-def get_static_page_utility(request):
-    return request.registry.getUtility(IDirectoryResourceFactory, "static_page")(request=request)
-
-def set_static_page_utility(config, basedir, tmpdir):
-    factory = StaticPageDirectoryFactory(basedir, tmpdir=tmpdir)
-    directory_validate(factory.basedir, factory.tmpdir)
-    return config.registry.registerUtility(factory, IDirectoryResourceFactory, "static_page")

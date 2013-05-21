@@ -9,6 +9,13 @@ from pyramid.path import AssetResolver
 import logging
 logger = logging.getLogger(__name__)
 
+class AfterCreate(object):
+    def __init__(self, request, static_directory, root):
+        self.request = request
+        self.static_directory = static_directory
+        self.root = root
+
+
 class StaticPageDirectoryFactory(object):
     def __init__(self, basedir, tmpdir="/tmp"):
         self.assetresolver = AssetResolver()
@@ -56,9 +63,14 @@ class StaticPageDirectory(object):
         logger.info("backup src: %s" % (src))        
         return zipupload.create_directory_snapshot(src)
 
+    def delete(self, src):
+        logger.info("delete src: %s" % (src))        
+        return shutil.rmtree(src)
+
     def create(self, src, io):
         logger.info("create src: %s" % (src))                
         zipupload.extract_directory_from_zipfile(src, io)
+        self.request.registry.notify(AfterCreate(self.request, self, src))
         return True
 
     def update(self, src, io):

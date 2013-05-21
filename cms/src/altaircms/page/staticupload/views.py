@@ -40,9 +40,16 @@ class StaticPageCreateView(BaseView):
         creator = self.context.creation(creation.StaticPageCreate, form.data)
         pagetype = get_or_404(self.request.allowable(PageType), PageType.name==self.request.matchdict["pagetype"])
         static_page = creator.create()
-        static_page.pageset.pagetype = pagetype
-        FlashMessage.success(u"%sが作成されました" % static_page.label, request=self.request)
-        return HTTPFound(self.context.endpoint(static_page))
+
+        try:
+            static_page.pageset.pagetype = pagetype
+            FlashMessage.success(u"%sが作成されました" % static_page.label, request=self.request)
+            return HTTPFound(self.context.endpoint(static_page))
+        except Exception as e:
+            logger.exception(e)
+            FlashMessage.error(str(e), request=self.request)
+            creator.rollback()
+            return {"form": form}
 
 @view_defaults(route_name="static_pageset", permission="authenticated")
 class StaticPageSetView(BaseView):
@@ -56,6 +63,7 @@ class StaticPageSetView(BaseView):
         static_page = static_page or static_pageset.pages[0]
         return {"static_pageset": static_pageset, 
                 "static_page": static_page,                 
+                "pagetype": static_pageset.pagetype, 
                 "static_directory": static_directory, 
                 "current_page": static_pageset.current(), 
                 "tree_renderer": StaticPageDirectoryRenderer(self.request, static_page, static_directory), 

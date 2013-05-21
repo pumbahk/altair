@@ -23,7 +23,8 @@ logger = logging.getLogger(__name__)
 from ..models import Category, Genre
 
 def layout_filter(model, request, query):
-    pagetype = PageType.get_or_create(name=request.GET["pagetype"], organization_id=request.organization.id)
+    name = request.GET.get("pagetype") or request.matchdict.get("pagetype")
+    pagetype = PageType.get_or_create(name=name, organization_id=request.organization.id)
     return request.allowable(Layout).with_transformation(Layout.applicable(pagetype.id))
 
 class PageSetSearchForm(Form):

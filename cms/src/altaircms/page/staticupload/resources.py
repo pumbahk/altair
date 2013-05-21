@@ -21,4 +21,5 @@ class StaticPageResource(security.RootFactory):
         return obj
 
     def endpoint(self, static_page):
-        return get_endpoint(self.request) or self.request.route_url("static_pageset", action="detail", static_page_id=static_page.pageset.id)
+        pageset = static_page.pageset
+        return get_endpoint(self.request) or self.request.route_url("static_pageset", action="detail", static_page_id=pageset.id, pagetype=pageset.pagetype.name)
