@@ -17,23 +17,24 @@ def install_filesession(config):
     filesession.assetspec = assetspec
     config.add_filesession(filesession, name=SESSION_NAME)
 
-def includeme(config):
+def install_static_page_utility(config):
     from .api import set_static_page_utility
+    settings = config.registry.settings
+    FactoryClass = config.maybe_dotted(settings["altaircms.page.static.factoryclass"])
+    set_static_page_utility(config, FactoryClass(settings["altaircms.page.static.directory"], 
+                                                 tmpdir=settings["altaircms.page.tmp.directory"]))
+
+
+def includeme(config):
     config.add_route("static_pageset", "/page/pagetype/{pagetype}/{static_page_id}/{action}",factory=".resources.StaticPageResource") 
     config.add_route("static_page_create", "/page/pagetype/{pagetype}/{action}",factory=".resources.StaticPageResource") 
     config.add_route("static_page", "/page/static/{static_page_id}/unit/{child_id}/{action}",factory=".resources.StaticPageResource") 
     config.add_route("static_page_display", "/page/static/display/{path:.*}",factory=".resources.StaticPageResource")
-    settings = config.registry.settings
-    set_static_page_utility(
-        config, 
-        settings["altaircms.page.static.directory"], 
-        settings["altaircms.page.tmp.directory"]
-        )
-
     config.add_route("static_page_part_file", "/page/static/{static_page_id}/unit/{child_id}/file/{path}/{action}", factory=".resources.StaticPageResource")
     config.add_route("static_page_part_directory", "/page/static/{static_page_id}/unit/{child_id}/file/{path}/{action}", factory=".resources.StaticPageResource")
 
+    ## this is first..
     config.add_subscriber(".subscribers.delete_ignorefile_after_staticupload", ".directory_resources.AfterCreate")
-    config.add_subscriber(".subscribers.refine_html_files_after_staticupload", ".directory_resources.AfterCreate")
+    config.include(install_static_page_utility)
     config.scan(".views")
 

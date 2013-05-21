@@ -29,19 +29,15 @@ class StaticPageDirectoryFactory(object):
     def __call__(self, request):
         return StaticPageDirectory(request, self.assetspec, self.basedir, self.tmpdir)
 
+class S3StaticPageDirectoryFactory(StaticPageDirectoryFactory):
+    def __call__(self, request):
+        return S3StaticPageDirectory(request, self.assetspec, self.basedir, self.tmpdir)
 
-class S3BaseUrlMixin(object):
-    prefix = "static/uploaded"
-    @reify
-    def s3utility(self):
-        return get_s3_utility_factory(self.request)
-
-    def get_base_url(self, dirname, filename):
-        bucket_name = self.s3utility.bucket_name
-        return "http://{0}.s3.amazonaws.com/{1}{2}/".format(bucket_name, self.prefix, dirname.replace(self.basedir, ""))
-
+    def setup(self, config):
+        config.add_subscriber(".subscribers.refine_html_files_after_staticupload", ".directory_resources.AfterCreate")
+  
 @implementer(IDirectoryResource)
-class StaticPageDirectory(S3BaseUrlMixin):
+class StaticPageDirectory(object):
     def __init__(self, request, assetspec, basedir, tmpdir):
         self.request = request
         self.assetspec = basedir
@@ -96,3 +92,15 @@ class StaticPageDirectory(S3BaseUrlMixin):
             logger.exception(e)
             zipupload.snapshot_rollback(src, backup_path)
             raise 
+
+
+@implementer(IDirectoryResource)
+class S3StaticPageDirectory(StaticPageDirectory):
+    prefix = "static/uploaded"
+    @reify
+    def s3utility(self):
+        return get_s3_utility_factory(self.request)
+
+    def get_base_url(self, dirname, filename):
+        bucket_name = self.s3utility.bucket_name
+        return "http://{0}.s3.amazonaws.com/{1}{2}/".format(bucket_name, self.prefix, dirname.replace(self.basedir, ""))

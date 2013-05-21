@@ -16,11 +16,11 @@ from .creation import get_staticupload_filesession
 def get_static_page_utility(request):
     return request.registry.getUtility(IDirectoryResourceFactory, "static_page")(request=request)
 
-def set_static_page_utility(config, basedir, tmpdir):
-    factory = StaticPageDirectoryFactory(basedir, tmpdir=tmpdir)
+def set_static_page_utility(config, factory):
     directory_validate(factory.basedir, factory.tmpdir)
+    if hasattr(factory, "setup"):
+        factory.setup(config)
     return config.registry.registerUtility(factory, IDirectoryResourceFactory, "static_page")
-
 
 def has_renderer(request, path):
     ext = os.path.splitext(path)[1]

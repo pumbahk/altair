@@ -6,14 +6,6 @@ import sqlahelper
 
 from altaircms.models import Base
 
-def install_static_page(config):
-    settings = config.registry.settings
-    config.maybe_dotted("altaircms.page.api.set_static_page_utility")(
-        config, 
-        settings["altaircms.page.static.directory"], 
-        settings["altaircms.page.tmp.directory"]
-        )
-
 def install_fetcher(config):
     settings = config.registry.settings
     from altairsite.fetcher import ICurrentPageFetcher
@@ -45,7 +37,7 @@ def main(global_config, **local_config):
             exclude=config.maybe_dotted(settings.get("s3.static.exclude.function")), 
             prefix="/usersite"))
 
-    config.include(install_static_page)
+    config.include("altaircms.page.staticupload:install_static_page_utility")
     config.include("altaircms.tag:install_tagmanager")
     config.include("altaircms.topic:install_topic_searcher")
     config.include("altaircms.page:install_pageset_searcher")
