@@ -1,12 +1,13 @@
 # -*- coding:utf-8 -*-
-from .forms import TopSearchForm, GenreSearchForm, AreaSearchForm, DetailSearchForm, GenreAreaSearchForm
-from .search_query import SearchQuery, AreaSearchQuery, DetailSearchQuery, EventOpenInfo, SaleInfo\
+from .forms import TopSearchForm, GenreSearchForm, AreaSearchForm, DetailSearchForm, GenreAreaSearchForm, HotwordSearchForm
+from .search_query import SearchQuery, AreaSearchQuery, HotwordSearchQuery, DetailSearchQuery, EventOpenInfo, SaleInfo\
     , PerformanceInfo
 from ..common.const import SalesEnum
 from ..common.helper import SmartPhoneHelper
 from altairsite.config import usersite_view_config
 
 from pyramid.renderers import render_to_response
+from datetime import datetime
 
 @usersite_view_config(route_name='search',request_type="altairsite.tweens.ISmartphoneRequest"
              , renderer='altairsite.smartphone:templates/searchresult/search.html')
@@ -132,3 +133,15 @@ def detail_search(context, request):
         ,'helper':SmartPhoneHelper()
     }
 
+@usersite_view_config(route_name='hotword',request_type="altairsite.tweens.ISmartphoneRequest"
+             , renderer='altairsite.smartphone:templates/searchresult/hotword.html')
+def move_hotword(context, request):
+    form = HotwordSearchForm(request.GET)
+    hotword = context.get_hotword(form.data['hotword_id'])
+    query = HotwordSearchQuery(hotword=hotword)
+    page = form.data['page'] if form.data['page'] else 1
+    result = context.search_hotword(query=query, page=page, per=10)
+
+    return {
+        'result':result
+    }

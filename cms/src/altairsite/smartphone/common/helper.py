@@ -129,3 +129,8 @@ class SmartPhoneHelper(object):
         helper = EventHelper()
         event = helper.get_event_from_linked_page_id(request=request, linked_page_id=linked_page_id)
         return event
+
+    def get_events_from_hotword(self, request, hotword):
+        helper = EventHelper()
+        event = helper.get_events_from_hotword(request=request, hotword=hotword)
+        return event

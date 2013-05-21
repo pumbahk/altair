@@ -46,6 +46,10 @@ class AreaSearchForm(Form):
     genre_id = HiddenField(label='', validators=[Optional()], default="")
     page = HiddenField(validators=[Optional()],default="1")
 
+class HotwordSearchForm(Form):
+    hotword_id = HiddenField(label='', validators=[Optional()], default="")
+    page = HiddenField(validators=[Optional()],default="1")
+
 class GenreAreaSearchForm(Form):
     hokkaido = CheckboxListField(u'北海道・東北',
             choices=[

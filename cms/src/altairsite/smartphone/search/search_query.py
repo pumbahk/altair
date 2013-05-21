@@ -54,6 +54,19 @@ class AreaSearchQuery(object):
             parameter += "&genre_id=" + str(self.genre.id)
         return parameter
 
+class HotwordSearchQuery(object):
+    def __init__(self, hotword):
+        self.hotword = hotword
+    def create_query(self):
+        if self.hotword:
+            return u"ホットワード：" + self.hotword.name
+        return ""
+    def create_parameter(self):
+        parameter = ""
+        if self.hotword:
+            prameter = "?hotword_id=" + str(self.hotword.id)
+        return parameter
+
 class DetailSearchQuery(object):
     def __init__(self, word, cond, genre, prefectures, sales_segment, event_open_info, sale_info, perf_info):
         self.word = word

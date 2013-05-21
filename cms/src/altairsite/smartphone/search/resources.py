@@ -2,10 +2,13 @@
 from ..common.searcher import EventSearcher
 from ..common.resources import CommonResource
 from altaircms.models import Genre
+from altaircms.event.models import Event
+from altaircms.tag.models import HotWord
 from altaircms.genre.searcher import GenreSearcher
+from altaircms.page.models import PageSet, PageTag2Page, PageTag
 from altairsite.mobile.core.helper import log_info
 
-from datetime import date
+from datetime import date, datetime
 
 class SearchPageResource(CommonResource):
     def __init__(self, request):
@@ -61,6 +64,23 @@ class SearchPageResource(CommonResource):
         result = searcher.create_result(qs=qs, page=page, query=query, per=per)
         return result
 
+    # ホットワード検索結果表示
+    def search_hotword(self, query, page, per):
+        searcher = EventSearcher(request=self.request)
+        today = datetime.now()
+        hotword = self.request.allowable(HotWord).filter(HotWord.term_begin <= today) \
+            .filter(today <= HotWord.term_end) \
+            .filter_by(enablep=True).filter(HotWord.id == query.hotword.id).first()
+
+        qs = self.request.allowable(Event) \
+                    .filter(Event.is_searchable == True) \
+                    .join(PageSet, Event.id == PageSet.event_id) \
+                    .join(PageTag2Page, PageSet.id == PageTag2Page.object_id) \
+                    .join(PageTag, PageTag2Page.tag_id == PageTag.id) \
+                    .filter(PageTag.id == hotword.tag_id)
+
+        result = searcher.create_result(qs=qs, page=page, query=query, per=per)
+        return result
 
     # 詳細検索フォーム生成
     def init_detail_search_form(self, form):
@@ -95,4 +115,8 @@ class SearchPageResource(CommonResource):
         month_choices = self.create_choices(1, 13)
         day_choices = self.create_choices(1, 32)
         return year_choices, month_choices, day_choices
+
+    def get_hotword(self, id):
+        genre = self.request.allowable(HotWord).filter(HotWord.id == id).first()
+        return genre
 

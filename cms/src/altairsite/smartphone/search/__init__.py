@@ -10,3 +10,4 @@ def includeme(config):
     add_route('init_detail', '/init_detail')
     add_route('search_detail', '/search_detail')
     add_route('search_subsubgenre', '/subgenre')
+    add_route('hotword', '/hotword')
