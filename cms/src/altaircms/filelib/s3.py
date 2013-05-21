@@ -108,6 +108,7 @@ class NullConnectionFactory(object):
     
     def setup(self, config):
         config.add_subscriber(self.logging_message, "altaircms.filelib.adapts.AfterCommit")
+        config.add_subscriber("altaircms.asset.subscribers.refresh_file_url_when_null_connection", "altaircms.filelib.adapts.AfterCommit")
 
     def logging_message(self, event):
         result = event.result #{"create": [], "delete": [], "extra_args": []}
