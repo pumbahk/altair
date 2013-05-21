@@ -1281,11 +1281,8 @@ function createDataSource(params) {
           return;
         }
         $.ajax({
-          url: params['data_source']['venue_drawings'][page],
+          url: params['data_source']['venue_drawing'].replace('__part__', page),
           dataType: 'xml',
-          headers: {
-            'X-Dummy': true
-          },
           success: function (data) {
             drawingCache[page] = data;
             next(data);
