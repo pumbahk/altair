@@ -23,7 +23,7 @@ ${h.japanese_date(lot_entry.created_at)}
 ■イベント名：${lot_entry.lot.event.title}
 ■受付名称：${lot_entry.lot.name}
 ■抽選結果発表日時：${u"{d.year}年{d.month:02}月{d.day:02}日 {d.hour:02}:{d.minute:02}～".format(d=lot_entry.lot.lotting_announce_datetime)}
-■抽選結果確認ページ： ${entry_review_url}
+■抽選結果確認ページ： https://rt.tstar.jp/lots/review
 %for wish in lot_entry.wishes:
 【第${wish.wish_order+1}希望】
 公演日：${h.performance_date(wish.performance)}
@@ -45,7 +45,7 @@ ${product.product.name} ${h.format_currency(product.product.price)} x ${product.
 お受取方法： ${lot_entry.payment_delivery_method_pair.delivery_method.name}
 ※引取手数料：${h.format_currency(lot_entry.payment_delivery_method_pair.delivery_fee)}円/${fee_type(lot_entry.payment_delivery_method_pair.delivery_method.fee_type)}をチケット代金とは別に頂戴いたします。
 
-お申込内容は、「お申込確認ページ」（ ${entry_review_url}  ）からもご確認いただけます。受付番号とご登録時のお電話番号をお手元にご用意の上、ご利用ください。
+お申込内容は、「お申込確認ページ」（ https://rt.tstar.jp/lots/review  ）からもご確認いただけます。受付番号とご登録時のお電話番号をお手元にご用意の上、ご利用ください。
 ---------------
 <注意事項>
 %if lot_entry.payment_delivery_method_pair.payment_method.payment_plugin_id == plugins.MULTICHECKOUT_PAYMENT_PLUGIN_ID:

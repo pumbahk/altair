@@ -51,6 +51,7 @@ ${product.product.name} ${h.format_currency(product.product.price)} x ${product.
 お受取方法： ${lot_entry.payment_delivery_method_pair.delivery_method.name}
 ※引取手数料：${h.format_currency(lot_entry.payment_delivery_method_pair.delivery_fee)}円/${fee_type(lot_entry.payment_delivery_method_pair.delivery_method.fee_type)}をチケット代金とは別に頂戴いたします。
 
+お申込内容は、「お申込確認ページ」（ https://rt.tstar.jp/lots/review  ）からもご確認いただけます。受付番号とご登録時のお電話番号をお手元にご用意の上、ご利用ください。
 ---------------
 <注意事項>
 %if lot_entry.payment_delivery_method_pair.payment_method.payment_plugin_id == plugins.MULTICHECKOUT_PAYMENT_PLUGIN_ID:
