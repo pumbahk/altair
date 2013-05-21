@@ -3,7 +3,7 @@ from .searcher import EventSearcher
 from .helper import SmartPhoneHelper
 from .const import get_areas, SalesEnum
 from ..search.search_query import SearchQuery
-from ..search.forms import TopSearchForm, GenreSearchForm
+from ..search.forms import TopSearchForm, GenreSearchForm, GenreAreaSearchForm
 
 from sqlalchemy import asc
 from datetime import datetime
@@ -54,6 +54,8 @@ class CommonResource(object):
         areas = self.get_area()
         week_sales = self.search_week(genre, 1, 10)
         near_end_sales = self.search_near_end(genre, 1, 10)
+        area_form = GenreAreaSearchForm()
+        area_form.genre_id.data = genre.id
 
         return {
              'genre':genre
@@ -67,6 +69,7 @@ class CommonResource(object):
             ,'near_end_sales':near_end_sales
             ,'helper':SmartPhoneHelper()
             ,'form':form
+            ,'area_form':area_form
         }
 
     def get_subsubgenre_render_param(self, genre_id):
