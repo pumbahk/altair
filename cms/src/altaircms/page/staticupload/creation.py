@@ -7,8 +7,14 @@ from ..models import StaticPage, StaticPageSet
 from ...subscribers import notify_model_create
 from ...models import DBSession
 from ...filelib import get_adapts_filesession
-from altaircms.filelib.zipupload import AfterZipUpload
 from . import SESSION_NAME
+
+class AfterZipUpload(object):
+    def __init__(self, request, root, static_directory, static_page):
+        self.request = request
+        self.root = root
+        self.static_page = static_page
+        self.static_directory = static_directory
 
 def get_staticupload_filesession(request):
     return get_adapts_filesession(request, name=SESSION_NAME)
@@ -88,10 +94,12 @@ class StaticPageCreate(object):
         def rollback():
             self.utility.delete(os.path.dirname(absroot))
         self.rollback_functions.append(rollback)
+        self.utility.create(absroot, filestorage.file) and self.request.registry.notify(AfterZipUpload(self.request, absroot, self.utility, static_page))
 
-        self.utility.create(absroot, filestorage.file) and self.request.registry.notify(AfterZipUpload(self.request, absroot))
 
     def update_underlying_something(self, static_page):
         filestorage = self.data["zipfile"]
         absroot = self.utility.get_rootname(static_page)
-        self.utility.update(absroot, filestorage.file) and self.request.registry.notify(AfterZipUpload(self.request, absroot))
+        self.utility.update(absroot, filestorage.file) and self.request.registry.notify(AfterZipUpload(self.request, absroot, self.utility, static_page))
+
+

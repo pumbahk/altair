@@ -122,6 +122,9 @@ h3{
         <th>更新日時</th><td>${h.base.jdate_with_hour(static_page.updated_at)}</td>
       </tr>
       <tr>
+        <th>アップロード日時</th><td>${h.base.jdate_with_hour(static_page.uploaded_at)}</td>
+      </tr>
+      <tr>
         <th>公開ステータス</th><td>${u"公開中" if static_page.published else u"非公開"}</td>
       </tr>
     </table>

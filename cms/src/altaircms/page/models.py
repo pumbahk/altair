@@ -271,6 +271,7 @@ class StaticPage(BaseOriginalMixin,
     id = sa.Column(sa.Integer, primary_key=True)
     created_at = sa.Column(sa.DateTime, default=datetime.now)
     updated_at = sa.Column(sa.DateTime, default=datetime.now, onupdate=datetime.now)
+    uploaded_at = sa.Column(sa.DateTime)
     name = sa.Column(sa.String(255), doc="directory name(internal)")
     label = sa.Column(sa.Unicode(255), doc=u"日本語名", default=u"")
     publish_begin = Column(DateTime)
@@ -281,7 +282,6 @@ class StaticPage(BaseOriginalMixin,
     layout_id = Column(Integer, ForeignKey("layout.id"))    
     layout = relationship(Layout, backref='static_pages', uselist=False)
     interceptive = Column(sa.Boolean, default=False)
-    
 
     @property
     def description(self):

@@ -4,12 +4,6 @@ import contextlib
 import shutil
 from datetime import datetime
 
-
-class AfterZipUpload(object):
-    def __init__(self, request, root):
-        self.request = request
-        self.root = root
-
 ## utility
 def decompose_path(path):
     """

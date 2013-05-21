@@ -33,6 +33,7 @@ def upgrade():
         op.execute('''INSERT INTO static_pagesets (name,version_counter,url,organization_id,created_at,updated_at,pagetype_id) 
   (SELECT name, 0, name, organization_id, now(), now(), (select id from pagetype where organization_id = {0} and name = "static")
   FROM static_pages where organization_id = {0});'''.format(i))
+    op.execute('''UPDATE static_pagesets as ps join static_pages as p on ps.organization_id = p.organization_id and ps.name = p.name set p.pageset_id = ps.id;''')
 
 
 def downgrade():

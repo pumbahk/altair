@@ -1,6 +1,8 @@
 import os
 import shutil
+import json
 import functools
+from datetime import datetime
 from fnmatch import fnmatch
 import logging
 logger = logging.getLogger(__name__)
@@ -35,6 +37,12 @@ def refine_html_files_after_staticupload(after_create):
                 with open(path, "w") as wf:
                     wf.write(output)
 
-def s3upload_directory(after_create):
-    event = after_create
-    event.static_directory.upload_directory(event.root)
+## after create -> (s3upload) -> after zipupload
+def s3upload_directory(after_zipupload):
+    event = after_zipupload
+    static_directory = event.static_directory
+    static_page = event.static_page
+    absroot = event.root
+    static_directory.upload_directory(absroot)
+    static_page.uploaded_at = datetime.now()
+
