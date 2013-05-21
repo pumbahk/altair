@@ -109,6 +109,10 @@ class S3StaticPageDirectory(StaticPageDirectory):
     def get_name(self, dirname, filename):
         return "{0}{1}/{2}".format(self.prefix, dirname.replace(self.basedir, ""), filename)
 
+    def get_url(self, path):
+        bucket_name = self.s3utility.bucket_name
+        return "http://{0}.s3.amazonaws.com/{1}{2}".format(bucket_name, self.prefix, path.replace(self.basedir, ""))
+
     def upload_directory(self, d):
         uploader = self.s3utility.uploader
         for root, dirs, files in os.walk(d):
