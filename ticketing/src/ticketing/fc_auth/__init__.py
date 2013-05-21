@@ -1,5 +1,7 @@
 import pyramid.tweens
 
+SESSION_KEY = __name__
+
 def includeme(config):
     config.add_route('fc_auth.login', '/fc/{membership}/login',
         factory='.resources.FCAuthResource')
