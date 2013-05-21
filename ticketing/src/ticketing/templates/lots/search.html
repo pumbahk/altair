@@ -231,6 +231,8 @@ $(function() {
        success: function(data, textStatus, xhr) {
            if (data.result == "OK") {
              alert("申込番号" + entryNo + "-" + (wishOrder + 1) + " を当選予定にしました。");
+           } else if (data.result == "NG" && data.message) {
+             alert(data.message);
            }
        }
      });
@@ -250,6 +252,8 @@ $(function() {
        success: function(data, textStatus, xhr) {
            if (data.result == "OK") {
              alert("申込番号" + entryNo + "をキャンセルしました。");
+           } else if (data.result == "NG" && data.message) {
+             alert(data.message);
            }
        }
      });
@@ -270,6 +274,8 @@ $(function() {
        success: function(data, textStatus, xhr) {
            if (data.result == "OK") {
              alert("申込番号" + entryNo + "の当選予定をキャンセルしました。");
+           } else if (data.result == "NG" && data.message) {
+             alert(data.message);
            }
        }
      });
@@ -290,6 +296,8 @@ $(function() {
        success: function(data, textStatus, xhr) {
            if (data.result == "OK") {
              alert("申込番号" + entryNo + "を落選予定にしました。");
+           } else if (data.result == "NG" && data.message) {
+             alert(data.message);
            }
        }
      });
@@ -310,6 +318,8 @@ $(function() {
        success: function(data, textStatus, xhr) {
            if (data.result == "OK") {
              alert("申込番号" + entryNo + "の落選予定をキャンセルしました。");
+           } else if (data.result == "NG" && data.message) {
+             alert(data.message);
            }
        }
      });

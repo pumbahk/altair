@@ -369,6 +369,11 @@ class LotEntry(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             LotElectWork.lot_entry_no==self.entry_no
         ).count()
 
+    def is_rejecting(self):
+        return LotRejectWork.query.filter(
+            LotRejectWork.lot_entry_no==self.entry_no
+        ).count()
+
 
 class LotEntryWish(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     u""" 抽選申し込み希望 """

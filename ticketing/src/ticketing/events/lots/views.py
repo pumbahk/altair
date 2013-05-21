@@ -556,6 +556,11 @@ class LotEntries(BaseView):
         wish_order = self.request.params['wish_order']
 
         lot_entry = lot.get_lot_entry(entry_no)
+
+        if lot_entry.is_electing():
+            return dict(result="NG",
+                        message=u"すでに、当選予定の希望が存在します。一度、他希望の当選予定をキャンセルの上、再度、ステータス変更をしてください")
+
         wish = lot_entry.get_wish(wish_order)
         if wish is None:
             return dict(result="NG",
@@ -582,8 +587,14 @@ class LotEntries(BaseView):
         lot = Lot.query.filter(Lot.id==lot_id).one()
 
         entry_no = self.request.params['entry_no']
-
         lot_entry = lot.get_lot_entry(entry_no)
+        if lot_entry.is_electing():
+            return dict(result="NG",
+                        message=u"すでに、当選予定の希望が存在します。一度、他希望の当選予定をキャンセルの上、再度、ステータス変更をしてください")
+        if lot_entry.is_rejecting():
+            return dict(result="NG",
+                        message=u"すでに、落選予定となっています。一度、他希望の当選予定をキャンセルの上、再度、ステータス変更をしてください")
+
         entries = [lot_entry]
 
         affected = lots_api.submit_reject_entries(lot.id, entries)
@@ -611,6 +622,14 @@ class LotEntries(BaseView):
         if lot_entry is None:
             return dict(result="NG",
                         message="not found")
+
+
+        # チェック
+        if lot_entry.is_electing():
+            return dict(result="NG",
+                        message=u"「当選予定」ステータスの希望が存在します。一度、他希望の当選予定をキャンセルの上、再度、ステータス変更をしてください")
+
+
 
         lot_entry.cancel()
         return dict(result="OK")
