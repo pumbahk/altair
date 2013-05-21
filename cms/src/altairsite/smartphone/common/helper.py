@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from .const import SalesEnum
+from altairsite.mobile.core.eventhelper import EventHelper
 
 import logging
 from markupsafe import Markup
@@ -123,3 +124,8 @@ class SmartPhoneHelper(object):
 
     def Markup(self, value):
         return Markup(value)
+
+    def get_event_from_linked_page_id(self, request, linked_page_id):
+        helper = EventHelper()
+        event = helper.get_event_from_linked_page_id(request=request, linked_page_id=linked_page_id)
+        return event

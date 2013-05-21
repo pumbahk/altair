@@ -1,17 +1,37 @@
 <%page args="topcontents, helper" />
 <%namespace file="tags_smartphone.html" name="m" />
 
+<% topcontents = [(event, content) for event, content in ((helper.get_event_from_linked_page_id(request, content.linked_page_id), content) for content in topcontents)] %>
+
 <h2 class="glitter red">注目のイベント</h2>
 % if topcontents:
     <ul class="panellist fullwidth navigable">
-    % for content in topcontents:
-      <li class="panel condensed">
-        <div class="panel-inner">
-          <img class="thematic" src="${request.route_path('__staticasset/', subpath=content.image_asset.thumbnail_path)}" />
-          <h4>${content.title}</h4>
-          <p class="first">${content.text}</p>
-        </div>
-      </li>
+    % for event, content in topcontents:
+        <li class="panel condensed">
+            % if content.link:
+                <a href=${content.link}>
+                    <div class="panel-inner">
+                        <img class="thematic" src="${request.route_path('__staticasset/', subpath=content.image_asset.thumbnail_path)}" />
+                        <h4>${content.title}</h4>
+                        <p class="first">${content.text}</p>
+                    </div>
+                </a>
+            % elif event:
+                <a href="${request.route_path('detail')}?event_id=${event.id}">
+                    <div class="panel-inner">
+                        <img class="thematic" src="${request.route_path('__staticasset/', subpath=content.image_asset.thumbnail_path)}" />
+                        <h4>${content.title}</h4>
+                        <p class="first">${content.text}</p>
+                    </div>
+                </a>
+            % else:
+                    <div class="panel-inner">
+                        <img class="thematic" src="${request.route_path('__staticasset/', subpath=content.image_asset.thumbnail_path)}" />
+                        <h4>${content.title}</h4>
+                        <p class="first">${content.text}</p>
+                    </div>
+            % endif
+        </li>
     % endfor
     </ul>
 % endif
