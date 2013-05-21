@@ -6,24 +6,36 @@
 % endif
 
 <%def name="disp_result(result)">
-    検索条件<br/>
-        ${result.query.create_query()}<br/>
-
-    % if result.num:
-        ${result.num}件見つかりました。全${result.num}件中、${result.start}〜${result.end}を表示
-    % else:
-        検索条件に該当する公演がありませんでした。
-    % endif
-    <br/>
-
     % if result.events:
-        % for event in result.events:
-            <hr/>
-            <a href="${request.route_path('detail')}?event_id=${event.id}">${event.title}</a><br/>
-            公演期間：${event.event_open}〜${event.event_close}<br/>
-            会場：${event.performances[0].venue}<br/>
-            販売期間：${event.deal_open}〜${event.deal_close}<br/>
-        % endfor
+        <table class="panellist margined navigable">
+            % if result.num:
+                <caption>検索条件　${result.query.create_query()}　${result.num}件見つかりました。全${result.num}件中、${result.start}〜${result.end}を表示</caption>
+            % endif
+            <tbody>
+            % for event in result.events:
+                <tr>
+                    <td class="panel condensed with-panel-footer">
+                        <a href="${request.route_path('detail')}?event_id=${event.id}">
+                            <div class="panel-inner h_70px">
+                                <h4>${event.title}</h4>
+                                <p class="first">公演期間：${event.event_open}〜${event.event_close}</p>
+                                <p class="first">会場：${event.performances[0].venue}</p>
+                            </div>
+                            <div class="panel-footer">
+                              <span class="label label-salessegment-normal">販売期間</span><b>${helper.disp_date_week(event.deal_open)}〜${helper.disp_date_week(event.deal_close)}</b>
+                            </div>
+                        </a>
+                     </td>
+                </tr>
+            % endfor
+            </tbody>
+        </table>
+    % else:
+        <table class="panellist margined navigable">
+            <caption>検索条件　${result.query.create_query()}　検索条件に該当する公演がありませんでした。</caption>
+            <tbody>
+            </tbody>
+        </table>
     % endif
 
     <div id=pager>
