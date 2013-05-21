@@ -6,6 +6,9 @@ from ...filelib import zipupload
 from zope.interface import implementer
 from pyramid.path import AssetResolver
 
+from altaircms.filelib.s3 import get_s3_utility_factory
+from pyramid.decorator import reify
+
 import logging
 logger = logging.getLogger(__name__)
 
@@ -26,8 +29,19 @@ class StaticPageDirectoryFactory(object):
     def __call__(self, request):
         return StaticPageDirectory(request, self.assetspec, self.basedir, self.tmpdir)
 
+
+class S3BaseUrlMixin(object):
+    prefix = "static/uploaded"
+    @reify
+    def s3utility(self):
+        return get_s3_utility_factory(self.request)
+
+    def get_base_url(self, dirname, filename):
+        bucket_name = self.s3utility.bucket_name
+        return "http://{0}.s3.amazonaws.com/{1}{2}/".format(bucket_name, self.prefix, dirname.replace(self.basedir, ""))
+
 @implementer(IDirectoryResource)
-class StaticPageDirectory(object):
+class StaticPageDirectory(S3BaseUrlMixin):
     def __init__(self, request, assetspec, basedir, tmpdir):
         self.request = request
         self.assetspec = basedir
@@ -82,5 +96,3 @@ class StaticPageDirectory(object):
             logger.exception(e)
             zipupload.snapshot_rollback(src, backup_path)
             raise 
-
-        

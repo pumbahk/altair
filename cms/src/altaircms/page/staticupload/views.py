@@ -150,7 +150,8 @@ class StaticPageView(BaseView):
             creator.update_underlying_something(static_page)
         except:
             FlashMessage.error(u"更新に失敗しました", request=self.request)
-            raise HTTPFound(self.request.route_url("static_pageset", action="detail", static_page_id=static_page.id))
+            raise HTTPFound(self.context.endpoint(static_page))
+
         self.context.touch(static_page)
         FlashMessage.success(u"%sが更新されました" % static_page.name, request=self.request)
         return HTTPFound(self.context.endpoint(static_page))

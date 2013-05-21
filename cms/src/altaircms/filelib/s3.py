@@ -12,6 +12,9 @@ def add_s3utility(config, factory):
     if hasattr(factory, "setup"):
         factory.setup(config)
 
+def get_s3_utility_factory(request):
+    return request.registry.queryUtility(IS3UtilityFactory)
+
 class S3Event(object):
     def __init__(self, request, session, files, uploader, extra_args):
         self.request = request
@@ -37,6 +40,10 @@ class S3ConnectionFactory(object):
     def __init__(self, uploader):
         self.uploader = uploader
 
+    @property
+    def bucket_name(self):
+        return self.uploader.bucket_name
+
     @classmethod
     def from_settings(cls, settings):
         access_key, secret_key = settings["s3.access_key"], settings["s3.secret_key"]
@@ -51,7 +58,7 @@ class S3ConnectionFactory(object):
         request = event.request
         result = event.result #{"create": [], "delete": [], "extra_args": []}
         session = event.session
-        options = event.options
+        options = event.optionsn
 
         uploaded_files = []
         deleted_files = []
@@ -91,9 +98,13 @@ class S3ConnectionFactory(object):
 
 @provider(IS3UtilityFactory)
 class NullConnectionFactory(object):
+    def __init__(self, bucket_name):
+        self.bucket_name = bucket_name
+
     @classmethod
     def from_settings(cls, settings):
-        return cls()
+        bucket_name = settings.get("s3.bucket_name", ":bucket-name:")
+        return cls(bucket_name)
     
     def setup(self, config):
         config.add_subscriber(self.logging_message, "altaircms.filelib.adapts.AfterCommit")

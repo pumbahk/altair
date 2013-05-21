@@ -34,5 +34,6 @@ def includeme(config):
     config.add_route("static_page_part_directory", "/page/static/{static_page_id}/unit/{child_id}/file/{path}/{action}", factory=".resources.StaticPageResource")
 
     config.add_subscriber(".subscribers.delete_ignorefile_after_staticupload", ".directory_resources.AfterCreate")
+    config.add_subscriber(".subscribers.refine_html_files_after_staticupload", ".directory_resources.AfterCreate")
     config.scan(".views")
 

@@ -24,7 +24,7 @@ class StaticPageDirectoryRenderer(object):
         return os.path.isdir(path)
 
     def get_children(self, path):
-        return os.listdir(path)
+        return (f for f in  os.listdir(path) if not f.endswith(".original"))
 
     def join_name(self, dirname, path):
         return os.path.join(dirname, path)
