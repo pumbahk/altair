@@ -20,7 +20,7 @@ ${h.japanese_date(lot_entry.created_at)}
 -----
 ■イベント名：${lot_entry.lot.event.title}
 ■受付名称：${lot_entry.lot.name}
-■抽選結果確認ページ： ${entry_review_url}
+■抽選結果確認ページ： https://rt.tstar.jp/lots/review
 
 
 ---------------
