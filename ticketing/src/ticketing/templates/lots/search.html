@@ -220,9 +220,6 @@ $(function() {
   $('#wish-search-results').on('click', '.entry-elect-btn', function(e) {
      var entryNo = $(this).data("entryNo");
      var wishOrder = Number($(this).data("wishOrder"));
-     if (!confirm("申込番号" + entryNo + "-" + (wishOrder + 1) + " を当選予定にします。")) {
-       return;
-     }
      $.ajax({
        url: electingUrl,
        data: {"entry_no": entryNo, "wish_order": wishOrder},
@@ -240,10 +237,6 @@ $(function() {
   // キャンセル
   $('#wish-search-results').on('click', '.entry-cancel-btn', function(e) {
      var entryNo = $(this).data("entryNo");
-     // TODO: modalに変更（ボタンが OK キャンセル で紛らわしい)
-     if (!confirm("申込番号" + entryNo + "をキャンセルします。")) {
-       return;
-     }
      $.ajax({
        url: cancelUrl,
        data: {"entry_no": entryNo},
@@ -262,10 +255,6 @@ $(function() {
   $('#wish-search-results').on('click', '.cancel-electing-btn', function(e) {
      var entryNo = $(this).data("entryNo");
      var wishOrder = Number($(this).data("wishOrder"));
-     // TODO: modalに変更（ボタンが OK キャンセル で紛らわしい)
-     if (!confirm("申込番号" + entryNo + "の当選予定をキャンセルします。")) {
-       return;
-     }
      $.ajax({
        url: cancelElectingUrl,
        data: {"entry_no": entryNo, "wish_order": wishOrder},
@@ -284,10 +273,6 @@ $(function() {
   $('#wish-search-results').on('click', '.entry-reject-btn', function(e) {
      var entryNo = $(this).data("entryNo");
 
-     // TODO: modalに変更（ボタンが OK キャンセル で紛らわしい)
-     if (!confirm("申込番号" + entryNo + "を落選予定にします。")) {
-       return;
-     }
      $.ajax({
        url: rejectingUrl,
        data: {"entry_no": entryNo},
@@ -306,10 +291,6 @@ $(function() {
   $('#wish-search-results').on('click', '.cancel-reject-btn', function(e) {
      var entryNo = $(this).data("entryNo");
 
-     // TODO: modalに変更（ボタンが OK キャンセル で紛らわしい)
-     if (!confirm("申込番号" + entryNo + "の落選予定をキャンセルします。")) {
-       return;
-     }
      $.ajax({
        url: cancelRejectingUrl,
        data: {"entry_no": entryNo},
