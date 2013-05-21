@@ -3,7 +3,18 @@
 <%block name="title">楽天チケットトップ</%block>
 
 <%include file="../search/genre_search.html"/>
-<div align="center">${genre}</div>
+
+% if genre.name=="music":
+    <h2 class="glitter music">${genre}</h2>
+% elif genre.name=="stage":
+    <h2 class="glitter performance">演劇</h2>
+% elif genre.name=="sports":
+    <h2 class="glitter sports">スポーツ</h2>
+% elif genre.name=="event":
+    <h2 class="glitter event">イベント・その他</h2>
+% endif
+
+
 <%include file="../common/_pickup.html" args="promotions=promotions, helper=helper"/>
 <%include file="_salestab.html" args="week_sales=week_sales, near_end_sales=near_end_sales, helper=helper"/>
 <%include file="../common/_topcontent.html" args="topcontents=topcontents, helper=helper"/>
