@@ -221,17 +221,3 @@ shipping =order.shipping_address
   </div>
 </div>
 
-<div class="settlementBox2 OrderBox">
-  <div class="settlementBoxInner2">
-    <h2>お問い合わせ先</h2>
-    <ul class="markNone font14">
-    <div class="confirmBoxText">
-    <ul>
-      <li>株式会社チケットスター</li>
-      <li>TEL: 050-5830-6860 (平日 10:00〜18:00)</li>
-      <% from ticketing.orderreview.api import safe_get_contact_url %>
-      <li>メール: <a href="${safe_get_contact_url(request, default="")}">${safe_get_contact_url(request, default="")}</a></li>
-    </ul>
-    </div>
-  </div>
-</div>
