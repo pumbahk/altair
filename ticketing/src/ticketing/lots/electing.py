@@ -26,7 +26,10 @@ from ticketing.lots.models import (
     LotEntryWish,
     LotEntryProduct,
     LotElectWork,
+    LotRejectWork,
+    LotRejectedEntry,
 )
+from .events import LotRejectedEvent
 
 logger = logging.getLogger(__name__)
 
@@ -121,3 +124,22 @@ class Electing(object):
             publisher.publish(body=json.dumps(body),
                               routing_key="lots",
                               properties=dict(content_type="application/json"))
+
+    def reject_lot_entries(self):
+
+        works = self.lot.reject_works
+
+        for work in works:
+            try:
+                logger.debug("reject : {0.lot_entry_no}".format(work))
+                lot_entry = work.lot_entry
+                lot_entry.reject()
+                #work.delete()
+                LotRejectWork.delete(work)
+                # TODO: イベント
+                event = LotRejectedEvent(self.request, lot_entry)
+                self.request.registry.notify(event)
+            
+            except Exception as e:
+                logger.error(str(e))
+

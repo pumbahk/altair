@@ -302,11 +302,16 @@ def submit_reject_entries(lot_id, entries):
 def elect_lot_entries(request, lot_id):
     # 当選処理
     lot = DBSession.query(Lot).filter_by(id=lot_id).one()
-    #electing = request.registry.adapters.lookup([Lot, IRequest], IElecting, "")
-    #elector = electing(lot, request)
 
     elector = request.registry.queryMultiAdapter([lot, request], IElecting, "")
     return elector.elect_lot_entries()
+
+def reject_lot_entries(request, lot_id):
+    # 落選
+    lot = DBSession.query(Lot).filter_by(id=lot_id).one()
+
+    elector = request.registry.queryMultiAdapter([lot, request], IElecting, "")
+    return elector.reject_lot_entries()
     
 
 def entry_session(request, lot_entry=None):

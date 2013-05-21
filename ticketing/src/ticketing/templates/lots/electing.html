@@ -56,7 +56,7 @@ ${tabs.tabs(request)}
 %endfor
 </table>
 </div>
-<h3>当選確定処理</h3>
+<h3>当落確定処理</h3>
 <p>
 <ul>
 %for blocker in electing.blockers:
@@ -65,7 +65,10 @@ ${tabs.tabs(request)}
 </ul>
 </p>
 <form method="POST" action="${request.route_url('lots.entries.elect', lot_id=lot.id)}">
-    <button ${"disabled" if electing.blockers else ""} class="btn">当選確定処理を実行する</button>
+    <button ${"disabled" if electing.blockers else ""} class="btn btn-primary btn-large">当選確定処理を実行する</button>
+</form>
+<form method="POST" action="${request.route_url('lots.entries.reject', lot_id=lot.id)}">
+    <button ${"disabled" if electing.blockers else ""} class="btn btn-large btn-danger">落選確定処理を実行する</button>
 </form>
 </div>
 

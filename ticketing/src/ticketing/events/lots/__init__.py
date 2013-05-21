@@ -40,6 +40,8 @@ def includeme(config):
                      factory=lot_resource_factory)
     config.add_route('lots.entries.elect', 'entries/elect/{lot_id}',
                      factory=lot_resource_factory)
+    config.add_route('lots.entries.reject', 'entries/reject/{lot_id}',
+                     factory=lot_resource_factory)
     config.add_route('lots.entries.cancel', 'entries/cancel/{lot_id}',
                      factory=lot_resource_factory)
     config.add_route('lots.entries.cancel_electing', 'entries/cancel_electing/{lot_id}',
@@ -65,3 +67,5 @@ def includeme(config):
     reg.registerUtility(Publisher(settings.get('altair.ticketing.lots.mq.url',
                                                'amqp://guest:guest@localhost:5672/%2F')),
                         IPublisher)
+    config.include("ticketing.lots.sendmail")
+    config.scan('ticketing.lots.subscribers')

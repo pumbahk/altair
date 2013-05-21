@@ -521,6 +521,26 @@ class LotEntries(BaseView):
 
         return HTTPFound(location=self.request.route_url('lots.entries.index', lot_id=lot.id))
 
+    @view_config(route_name='lots.entries.reject',
+                 renderer="string",
+                 request_method="POST",
+                 permission='event_viewer')
+    def reject_entries(self):
+        """ 落選確定処理
+        """
+        self.check_organization(self.context.event)
+
+        lot_id = self.request.matchdict["lot_id"]
+        lot = Lot.query.filter(Lot.id==lot_id).one()
+
+        lots_api.reject_lot_entries(self.request, lot.id)
+
+        self.request.session.flash(u"落選確定処理を行いました")
+
+        return HTTPFound(location=self.request.route_url('lots.entries.index', 
+                                                         lot_id=lot.id))
+
+
     @view_config(route_name='lots.entries.elect_entry_no', 
                  request_method="POST",
                  permission='event_viewer',
