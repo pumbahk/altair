@@ -438,14 +438,19 @@ class LotEntries(BaseView):
         wishes = q.filter(condition)
 
         electing_url = self.request.route_url('lots.entries.elect_entry_no', lot_id=lot.id)
+        rejecting_url = self.request.route_url('lots.entries.reject_entry_no', lot_id=lot.id)
         cancel_url = self.request.route_url('lots.entries.cancel', lot_id=lot.id)
         cancel_electing_url = self.request.route_url('lots.entries.cancel_electing', lot_id=lot.id)
+        cancel_rejecting_url = self.request.route_url('lots.entries.cancel_rejecting',
+                                                      lot_id=lot.id)
         return dict(wishes=wishes.all(),
                     lot=lot,
                     form=form,
                     cancel_url=cancel_url,
+                    rejecting_url=rejecting_url,
                     electing_url=electing_url,
                     cancel_electing_url=cancel_electing_url,
+                    cancel_rejecting_url=cancel_rejecting_url,
         )
 
 
@@ -544,6 +549,29 @@ class LotEntries(BaseView):
                     affected=affected,
                     wish=lots_api._entry_info(wish))
 
+
+    @view_config(route_name='lots.entries.reject_entry_no', 
+                 request_method="POST",
+                 permission='event_viewer',
+                 renderer="json")
+    def reject_entry(self):
+        """ 申し込み番号指定での落選予定処理
+        """
+        self.check_organization(self.context.event)
+        lot_id = self.request.matchdict["lot_id"]
+        lot = Lot.query.filter(Lot.id==lot_id).one()
+
+        entry_no = self.request.params['entry_no']
+
+        lot_entry = lot.get_lot_entry(entry_no)
+        entries = [lot_entry]
+
+        affected = lots_api.submit_reject_entries(lot.id, entries)
+
+        return dict(result="OK",
+                    affected=affected)
+
+
     @view_config(route_name='lots.entries.cancel', 
                  renderer="json",
                  request_method="POST",
@@ -568,12 +596,13 @@ class LotEntries(BaseView):
         return dict(result="OK")
 
 
+
     @view_config(route_name='lots.entries.cancel_electing',
                  request_method="POST",
                  permission='event_viewer',
                  renderer="json")
     def cancel_electing_entry(self):
-        """ 申し込み番号指定での当選予定処理
+        """ 申し込み番号指定での当選予定キャンセル処理
         """
         self.check_organization(self.context.event)
         lot_id = self.request.matchdict["lot_id"]
@@ -595,3 +624,24 @@ class LotEntries(BaseView):
 
         return dict(result="OK",
                     wish=lots_api._entry_info(wish))
+
+    @view_config(route_name='lots.entries.cancel_rejecting',
+                 request_method="POST",
+                 permission='event_viewer',
+                 renderer="json")
+    def cancel_rejecting_entry(self):
+        """ 申し込み番号指定での当選予定処理
+        """
+        self.check_organization(self.context.event)
+        lot_id = self.request.matchdict["lot_id"]
+        lot = Lot.query.filter(Lot.id==lot_id).one()
+
+        entry_no = self.request.params['entry_no']
+
+        lot_entry = lot.get_lot_entry(entry_no)
+
+
+        lot.cancel_rejecting(lot_entry)
+
+        return dict(result="OK",
+                    )

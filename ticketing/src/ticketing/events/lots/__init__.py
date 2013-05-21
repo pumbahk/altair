@@ -36,11 +36,15 @@ def includeme(config):
                      factory=lot_resource_factory)
     config.add_route('lots.entries.elect_entry_no', 'entries/elect_entry_no/{lot_id}',
                      factory=lot_resource_factory)
+    config.add_route('lots.entries.reject_entry_no', 'entries/reject_entry_no/{lot_id}',
+                     factory=lot_resource_factory)
     config.add_route('lots.entries.elect', 'entries/elect/{lot_id}',
                      factory=lot_resource_factory)
     config.add_route('lots.entries.cancel', 'entries/cancel/{lot_id}',
                      factory=lot_resource_factory)
     config.add_route('lots.entries.cancel_electing', 'entries/cancel_electing/{lot_id}',
+                     factory=lot_resource_factory)
+    config.add_route('lots.entries.cancel_rejecting', 'entries/cancel_rejecting/{lot_id}',
                      factory=lot_resource_factory)
 
     # adapters

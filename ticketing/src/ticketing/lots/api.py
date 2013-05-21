@@ -290,6 +290,14 @@ def submit_lot_entries(lot_id, entries):
     lot = Lot.query.filter(Lot.id==lot_id).one()
     return lot.electing_wishes(entries)
 
+def submit_reject_entries(lot_id, entries):
+    """
+    当選リストの取り込み
+    entries : (entry_no, wish_order)のリスト
+    """
+    lot = Lot.query.filter(Lot.id==lot_id).one()
+    return lot.rejecting_entries(entries)
+
 
 def elect_lot_entries(request, lot_id):
     # 当選処理

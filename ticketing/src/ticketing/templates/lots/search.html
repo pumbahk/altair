@@ -142,15 +142,23 @@ if shipping_address.user:
 <td nowrap="">
 <ul>
   <!-- TODO: 状態によるボタンの出し分け -->
-  %if not w.canceled_at and not w.is_electing():
+  %if not w.canceled_at and not w.is_electing() and not w.is_rejecting():
   <li><button class="btn entry-elect-btn" data-entry-no="${w.lot_entry.entry_no}" data-wish-order="${w.wish_order}">当選</button></li>
   %endif
-  %if not w.canceled_at and not w.is_electing():
+  %if not w.canceled_at and not w.is_electing() and not w.is_rejecting():
   <li><button class="btn entry-cancel-btn" data-entry-no="${w.lot_entry.entry_no}">キャンセル</button></li>
   %endif
   %if w.is_electing() and not w.elected_at:
   <li><button class="btn cancel-electing-btn" data-entry-no="${w.lot_entry.entry_no}" data-wish-order="${w.wish_order}">当選予定をキャンセル</button></li>
   %endif
+
+  %if not w.canceled_at and not w.is_electing() and not w.is_rejecting():
+  <li><button class="btn entry-reject-btn" data-entry-no="${w.lot_entry.entry_no}">落選</button></li>
+  %endif
+  %if w.is_rejecting() and not w.rejected_at:
+  <li><button class="btn cancel-reject-btn" data-entry-no="${w.lot_entry.entry_no}">落選予定をキャンセル</button></li>
+  %endif
+
 </ul>
 </td>
 <td nowrap="">
@@ -204,6 +212,8 @@ ${w.status}
 var cancelUrl = "${cancel_url}";
 var cancelElectingUrl = "${cancel_electing_url}";
 var electingUrl = "${electing_url}";
+var rejectingUrl = "${rejecting_url}"
+var cancelRejectingUrl = "${cancel_rejecting_url}"
 
 $(function() {
   // 当選
@@ -260,6 +270,46 @@ $(function() {
        success: function(data, textStatus, xhr) {
            if (data.result == "OK") {
              alert("申込番号" + entryNo + "の当選予定をキャンセルしました。");
+           }
+       }
+     });
+  });
+  // 落選予定
+  $('#wish-search-results').on('click', '.entry-reject-btn', function(e) {
+     var entryNo = $(this).data("entryNo");
+
+     // TODO: modalに変更（ボタンが OK キャンセル で紛らわしい)
+     if (!confirm("申込番号" + entryNo + "を落選予定にします。")) {
+       return;
+     }
+     $.ajax({
+       url: rejectingUrl,
+       data: {"entry_no": entryNo},
+       dataType: "json",
+       type: "POST",
+       success: function(data, textStatus, xhr) {
+           if (data.result == "OK") {
+             alert("申込番号" + entryNo + "を落選予定にしました。");
+           }
+       }
+     });
+  });
+  // 落選予定
+  $('#wish-search-results').on('click', '.cancel-reject-btn', function(e) {
+     var entryNo = $(this).data("entryNo");
+
+     // TODO: modalに変更（ボタンが OK キャンセル で紛らわしい)
+     if (!confirm("申込番号" + entryNo + "の落選予定をキャンセルします。")) {
+       return;
+     }
+     $.ajax({
+       url: cancelRejectingUrl,
+       data: {"entry_no": entryNo},
+       dataType: "json",
+       type: "POST",
+       success: function(data, textStatus, xhr) {
+           if (data.result == "OK") {
+             alert("申込番号" + entryNo + "の落選予定をキャンセルしました。");
            }
        }
      });

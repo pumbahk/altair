@@ -153,6 +153,17 @@ class Lot(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             affected += 1
         return affected
 
+
+    ## gaaaa! look above comments!
+    def rejecting_entries(self, entries):
+        """ 落選予定 """
+        affected = 0
+        for entry in entries:
+            w = LotRejectWork(lot_id=self.id, lot_entry_no=entry.entry_no)
+            DBSession.add(w)
+            affected += 1
+        return affected
+
     def cancel_electing(self, wish):
         LotElectWork.query.filter(
             LotElectWork.lot_id==self.id
@@ -160,6 +171,13 @@ class Lot(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             LotElectWork.lot_entry_no==wish.lot_entry.entry_no
         ).filter(
             LotElectWork.wish_order==wish.wish_order
+        ).delete()
+
+    def cancel_rejecting(self, entry):
+        LotRejectWork.query.filter(
+            LotRejectWork.lot_id==self.id
+        ).filter(
+            LotRejectWork.lot_entry_no==entry.entry_no
         ).delete()
 
 
@@ -374,10 +392,25 @@ class LotEntryWish(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         return LotElectWork.query.filter(
             LotElectWork.entry_wish_no==self.entry_wish_no).count()
 
+    def is_rejecting(self):
+        return LotRejectWork.query.filter(
+            LotRejectWork.lot_entry_no==LotEntry.entry_no
+        ).filter(
+            LotEntry.id==self.lot_entry_id
+        ).count()
+
     @property
     def works(self):
         return LotElectWork.query.filter(
             LotElectWork.entry_wish_no==self.entry_wish_no,
+        ).all()
+
+    @property
+    def reject_works(self):
+        return LotRejectWork.query.filter(
+            LotRejectWork.lot_entry_no==LotEntry.entry_no
+        ).filter(
+            LotEntry.id==self.lot_entry_id
         ).all()
 
 
@@ -436,6 +469,8 @@ class LotEntryWish(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             return u"当選予定"
         if self.canceled_at:
             return u"キャンセル"
+        if self.reject_works:
+            return u"落選予定"
         if self.rejected_at:
             return u"落選"
         return u"申込"
@@ -502,6 +537,22 @@ class LotElectWork(Base, BaseModel, WithTimestamp):
 
     def __repr__(self):
         return "LotEntryProduct {self.entry_wish_no}".format(self=self)
+
+
+class LotRejectWork(Base, BaseModel, WithTimestamp):
+    """ 落選情報取り込みワーク """
+    __tablename__ = 'LotRejectWork'
+
+    id = sa.Column(Identifier, primary_key=True)
+    lot_id = sa.Column(Identifier, sa.ForeignKey('Lot.id'))
+    lot = orm.relationship("Lot", backref="reject_works")
+    lot_entry_no = sa.Column(sa.Unicode(20), sa.ForeignKey('LotEntry.entry_no'), unique=True, doc=u"抽選申し込み番号")
+    error = sa.Column(sa.UnicodeText)
+
+
+    def __repr__(self):
+        return "LotRejectProduct {self.entry_wish_no}".format(self=self)
+
 
 class LotElectedEntry(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     """ 抽選当選情報 """
