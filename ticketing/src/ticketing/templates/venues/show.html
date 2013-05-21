@@ -55,6 +55,19 @@
 </table>
 
 <table class="table table-striped table-bordered">
+<tr><th>優先度タイプ</th></tr>
+% for type in types:
+  <tr><td>
+	% if type_id==type.id:
+      <b>${type.name}</b> (${type.id})
+	% else:
+      <a href="?index_type=${type.id}">${type.name}</a> (${type.id})
+	% endif
+  </td></tr>
+% endfor
+</table>
+
+<table class="table table-striped table-bordered">
 <tr><th># of seats</th><td>${len(items)}</td></tr>
 </table>
 
@@ -83,6 +96,7 @@ table.nowrap td { white-space: nowrap; }
     <th>L0 ID</th>
     <th>席名称</th>
     <th>席番号</th>
+    <th>優先度</th>
     <th>状態</th>
   </tr>
   </thead>
@@ -111,6 +125,11 @@ table.nowrap td { white-space: nowrap; }
       <td>
         % if item.seat.seat_no != None:
 			${item.seat.seat_no}
+		% endif
+	  </td>
+	  <td>
+		% if item.index != None:
+			${item.index.index}
 		% endif
 	  </td>
 	  <td>

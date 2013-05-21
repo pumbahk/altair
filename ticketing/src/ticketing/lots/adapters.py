@@ -63,19 +63,6 @@ class LotEntryStatus(object):
     def entries(self):
         return self.lot.entries
 
-
-
-    ## いらん
-    @property
-    def total_wishes(self):
-        total_wishes = LotEntryWish.query.filter(
-            LotEntry.lot_id==self.lot.id
-        ).filter(
-            LotEntryWish.lot_entry_id==LotEntry.id
-        ).count()
-
-        return total_wishes
-
     @property
     def sub_counts(self):
         sub_counts = [dict(performance=self.performances[r[1]],
@@ -210,7 +197,9 @@ class LotEntryStatus(object):
             LotEntryWish.wish_order.label('wish_order'),
             LotEntryProduct.quantity.label('entry_quantity'),
             case([
-                (LotEntry.elected_at != None, LotEntryProduct.quantity)
+                (and_(LotEntry.elected_at != None,
+                      LotEntryWish.elected_at != None), 
+                 LotEntryProduct.quantity)
             ],
             else_=0).label('elected_quantity'),
             case([

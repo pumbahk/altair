@@ -42,6 +42,7 @@
         selectable: null,
         select: null,
         pageChanging: null,
+        message: null,
         messageBoard: null,
         zoomRatioChanging: null,
         zoomRatioChange: null
@@ -1099,8 +1100,8 @@
                     for (var k in _conts)
                       _conts[k].next(data[key]);
                   },
-                  error: function(xhr, text) {
-                    var message = "Failed to load " + key + " (reason: " + text + ")";
+                  error: function(xhr, text, status) {
+                    var message = "Failed to load " + key + " (reason: " + text + " - " + status + ")";
                     var _conts = conts;
                     conts = {};
                     for (var k in _conts)

@@ -92,34 +92,34 @@ body {
 }
 
 #mypage {
-	background: url(../img/mypage/bg_body.gif) no-repeat 50% 130px;
+	background: url(../../img/mypage/bg_body.gif) no-repeat 50% 130px;
 }
 
 #search {
-	background: url(../img/search/bg_body.gif) no-repeat 50% 130px;
+	background: url(../../img/search/bg_body.gif) no-repeat 50% 130px;
 }
 
 #music {
-	background: url(../img/music/bg_body.gif) no-repeat 50% 130px;
+	background: url(../../img/music/bg_body.gif) no-repeat 50% 130px;
 }
 
 #theater {
-	background: url(../img/theater/bg_body.gif) no-repeat 50% 130px;
+	background: url(../../img/theater/bg_body.gif) no-repeat 50% 130px;
 }
 
 #sports {
-	background: url(../img/sports/bg_body.gif) no-repeat 50% 130px;
+	background: url(../../img/sports/bg_body.gif) no-repeat 50% 130px;
 }
 
 #event {
-	background: url(../img/event/bg_body.gif) no-repeat 50% 130px;
+	background: url(../../img/event/bg_body.gif) no-repeat 50% 130px;
 }
 
 #change,
 #first,
 #help,
 #sitemap {
-	background: url(../img/first/bg_body.gif) no-repeat 50% 130px;
+	background: url(../../img/first/bg_body.gif) no-repeat 50% 130px;
 }
 
 

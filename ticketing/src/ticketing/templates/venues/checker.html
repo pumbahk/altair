@@ -36,18 +36,22 @@ var load = function(url, next) {
 				$('#row').text(row ? (0 < row.childNodes.length ? row.childNodes.item(0).data : '') : '?');
 				$('#row_id').text($(this).parents('g').eq(0).attr('id'));
 				$('#seat').text($('title', this).text());
+				$('#seat_no').text($('si\\:property[name="seat_no"]', this).text());
+				$('#index').text($('metadata si\\:object si\\:collection si\\:object si\\:property[name="index"]', this).text());
 				$('#seat_id').text($(this).attr('id'));
 				var obj = svgfind($('metadata *', this), 'si:object');
 				$('#seat_proto').text(obj.getAttribute('prototype'));
 				$(this).attr('fill-opacity', '0.2');
 			}, function() {
 				var e = $(this).get(0);
-				$('#block').text(' ');
-				$('#row').text(' ');
-				$('#row_id').text(' ');
-				$('#seat').text(' ');
-				$('#seat_id').text(' ');
-				$('#seat_proto').text(' ');
+				$('#block').html('&nbsp;');
+				$('#row').html('&nbsp;');
+				$('#row_id').html('&nbsp;');
+				$('#seat').html('&nbsp;');
+				$('#seat_id').html('&nbsp;');
+				$('#seat_no').html('&nbsp;');
+				$('#index').html('&nbsp;');
+				$('#seat_proto').html('&nbsp;');
 				$(this).attr('fill-opacity', '');
 			});
 			if(next) {
@@ -108,12 +112,20 @@ $(function() {
 </script>
 <style type="text/css">
 * { font-size: 8px; }
-#status span { display: inline-block; width: 120px; overflow: hidden; }
 body { margin: 0; }
 #panel { position: fixed; background-color: #cccccc; width: 100%; }
 #panel form,
 #panel div { padding-left: 10px; padding-right: 10px; }
 #panel-space { height: 80px; }
+
+#status { height: 20px; width: 2000px; }
+#status span { display: inline-block; width: 70px; height: 18px; font-size: 11px; background-color: #ffffff; padding-left: 2px; padding-right: 2px; overflow: visible; white-space: nowrap; }
+#status span#venue { width: 120px; }
+#status span#block { width: 120px; }
+#status span#row { width: 20px; }
+#status span#seat { width: 160px; }
+#status span#seat_no { width: 20px; }
+#status span#index { width: 20px; }
 
 .block { fill: rgb(255, 255, 192); stroke: rgb(0, 0, 0); stroke-width: 1px; vector-effect: non-scaling-stroke; }
 g .seat { fill: rgb(255, 255, 255); stroke: rgb(0, 0, 0); stroke-width: 1px; vector-effect: non-scaling-stroke; }
@@ -132,18 +144,22 @@ g g .seat { fill: rgb(160, 160, 160); stroke: rgb(0, 0, 0); stroke-width: 1px; v
 	<input type="button" value="+" class="zoomup" />
 	</form>
 	<div style="height: 20px; padding-left: 80px; white-space: nowrap;" id="status">
-		Venue: <span id="venue"></span>
-		Block: <span id="block"></span>
-		&nbsp;&nbsp;&nbsp;
-		Row: <span id="row"></span>
-		&nbsp;&nbsp;&nbsp;
-		Row_ID: <span id="row_id"></span>
-		&nbsp;&nbsp;&nbsp;
-		Seat: <span id="seat"></span>
-		&nbsp;&nbsp;&nbsp;
-		Seat_ID: <span id="seat_id"></span>
-		&nbsp;&nbsp;&nbsp;
-		Seat_Prototype: <span id="seat_proto"></span>
+		Venue: <span id="venue">&nbsp;</span>
+		Block: <span id="block">&nbsp;</span>
+		&nbsp;
+		Row: <span id="row">&nbsp;</span>
+		&nbsp;
+		Seat: <span id="seat">&nbsp;</span>
+		&nbsp;
+		Num: <span id="seat_no">&nbsp;</span>
+		&nbsp;
+		Idx: <span id="index">&nbsp;</span>
+		&nbsp;
+		Row_ID: <span id="row_id">&nbsp;</span>
+		&nbsp;
+		Seat_ID: <span id="seat_id">&nbsp;</span>
+		&nbsp;
+		Seat_Prototype: <span id="seat_proto">&nbsp;</span>
 	</div>
 </div>
 

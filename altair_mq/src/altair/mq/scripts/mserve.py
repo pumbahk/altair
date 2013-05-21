@@ -25,7 +25,7 @@ class MServeCommand(object):
         setup_logging(args.config)
 
         request = app['request']
-
+        request.browserid = "mserve worker"
         consumer = get_consumer(request)
 
         logger.info("into loop")

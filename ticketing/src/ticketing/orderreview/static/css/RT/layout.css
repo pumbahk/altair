@@ -141,7 +141,7 @@ dl#sectionNav {
 	clear: both;
 	width: 100%;
 	height: 29px;
-	background: url("../img/tab_line.gif") repeat-x bottom;
+	background: url("../../img/tab_line.gif") repeat-x bottom;
 }
 
 dl#sectionNav dd.menuList {
@@ -267,7 +267,7 @@ dl#topicPath dd {
 	clear: both;
 	height: 40px;
 	font-size: 120%;
-	background: url(../img/common/header_nav_bg.gif) no-repeat 0 0;
+	background: url(../../img/common/header_nav_bg.gif) no-repeat 0 0;
 }
 
 #globalNav1 {
@@ -297,7 +297,7 @@ dl#topicPath dd {
 #headerSearch {
 	height: 45px;
 	font-size: 120%;
-	background: url(../img/common/header_search_bg.gif) no-repeat 0 0;
+	background: url(../../img/common/header_search_bg.gif) no-repeat 0 0;
 }
 
 #index #headerSearch {
@@ -316,7 +316,7 @@ dl#topicPath dd {
 
 #headerSearch form a {
 	padding: 3px 0 3px 17px;
-	background: url(../img/common/header_search_icon.gif) no-repeat 0 50%;
+	background: url(../../img/common/header_search_icon.gif) no-repeat 0 50%;
 }
 
 #headerSearch dl {
@@ -412,7 +412,7 @@ dl#topicPath dd {
 	height: 34px;
 	padding: 10px 10px 0 35px;
 	color: #fff;
-	background: url(../img/mypage/side_name_bg.gif) no-repeat 0 0;
+	background: url(../../img/mypage/side_name_bg.gif) no-repeat 0 0;
 }
 
 #sideNav {
@@ -420,23 +420,23 @@ dl#topicPath dd {
 	left: -3px;
 	margin-bottom: 10px;
 	padding-bottom: 6px;
-	background: url(../img/common/side_nav_bg_01.gif) no-repeat left bottom;
+	background: url(../../img/common/side_nav_bg_01.gif) no-repeat left bottom;
 }
 
 #sideNav li {
-	background: url(../img/common/side_nav_line.gif) no-repeat 4px 0;
+	background: url(../../img/common/side_nav_line.gif) no-repeat 4px 0;
 }
 
 #sideNav #sideNavFirst {
 	padding-top: 3px;
-	background: url(../img/common/side_nav_bg_02.gif) no-repeat 0 0;
+	background: url(../../img/common/side_nav_bg_02.gif) no-repeat 0 0;
 }
 
 #sideNav a {
 	display: block;
 	height: 1%;
 	padding: 10px 16px 8px 26px;
-	background: url(../img/common/side_nav_icon.gif) no-repeat 9px 10px;
+	background: url(../../img/common/side_nav_icon.gif) no-repeat 9px 10px;
 	text-decoration: none;
 }
 
@@ -447,12 +447,12 @@ dl#topicPath dd {
 #sideInfo {
 	width: 200px;
 	margin-bottom: 15px;
-	background: url(../img/common/side_info_bg_01.gif) no-repeat left bottom;
+	background: url(../../img/common/side_info_bg_01.gif) no-repeat left bottom;
 }
 
 #sideInfo dt {
 	padding-top: 7px;
-	background: url(../img/common/side_info_bg_02.gif) no-repeat 0 0;
+	background: url(../../img/common/side_info_bg_02.gif) no-repeat 0 0;
 	text-align: center;
 }
 
@@ -562,7 +562,7 @@ div#grpRakutenLinkArea div#groupServiceFooter dl.title dd.allService {
 div#grpRakutenLinkArea div#groupServiceFooter dl.title dd.allService span {
 	display: block;
 	float: left;
-	background: url(https://jp.rakuten-static.com/1/bu/sitemap/img/bg_allService.gif) no-repeat;
+	background: url(https://jp.rakuten-static.com/1/bu/sitem../../img/bg_allService.gif) no-repeat;
 }
 div#grpRakutenLinkArea div#groupServiceFooter dl.title dd.allService span a {
 	display: table-cell;
@@ -570,7 +570,7 @@ div#grpRakutenLinkArea div#groupServiceFooter dl.title dd.allService span a {
 	vertical-align: middle;
 	padding: 0 10px 0 17px;
 	color: #333333;
-	background: url(https://jp.rakuten-static.com/1/bu/sitemap/img/bg_allServiceRight.gif) no-repeat 100% 0;
+	background: url(https://jp.rakuten-static.com/1/bu/sitem../../img/bg_allServiceRight.gif) no-repeat 100% 0;
 	text-decoration: none;
 }
 * html div#grpRakutenLinkArea div#groupServiceFooter dl.title dd.allService span a {  /* for IE6 */
@@ -610,11 +610,11 @@ div#grpRakutenLinkArea ul#selectedService li {
 	margin-left: -1px;
 	margin-bottom: -32767px;
 	padding-bottom: 32767px;
-	background: url(https://jp.rakuten-static.com/1/bu/sitemap/img/bg_dotted.gif) repeat-y;
+	background: url(https://jp.rakuten-static.com/1/bu/sitem../../img/bg_dotted.gif) repeat-y;
 }
 div#grpRakutenLinkArea ul#selectedService dl {
 	padding: 8px 10px 8px 27px;
-	background: url(https://jp.rakuten-static.com/1/bu/sitemap/img/icon_red_circle_arrow.gif) no-repeat 11px 11px;
+	background: url(https://jp.rakuten-static.com/1/bu/sitem../../img/icon_red_circle_arrow.gif) no-repeat 11px 11px;
 }
 div#grpRakutenLinkArea ul#selectedService dt {
 	margin-bottom: 5px;

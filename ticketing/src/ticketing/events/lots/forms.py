@@ -265,3 +265,10 @@ class SearchEntryForm(Form):
             Required(),
         ],
     )
+
+    electing = BooleanField(
+        label=u"当選予定",
+        validators=[
+            Required(),
+        ],
+    )

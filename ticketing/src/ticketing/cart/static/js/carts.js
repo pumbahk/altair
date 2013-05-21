@@ -1100,6 +1100,9 @@ cart.VenueView = Backbone.View.extend({
                     }
                 }
             },
+            message: function (msg) {
+                console.log(msg);
+            },
             messageBoard: (function() {
                 if (self.tooltip)
                     self.tooltip.hide();
@@ -1193,8 +1196,8 @@ cart.Venue = Backbone.Model.extend({
               url: params.data_source.venue_drawing,
               dataType: 'xml',
               success: function (data) { next(data); },
-              error: function (xhr, text) {
-                error("Failed to load drawing data (" + text + ")");
+              error: function (xhr, text, status) {
+                error("Failed to load drawing data (" + text + " - " + status + ")");
               }
             });
           },
@@ -1213,8 +1216,8 @@ cart.Venue = Backbone.Model.extend({
               url: util.build_route_path(params.data_source.seat_adjacencies._params),
               dataType: 'json',
               success: function (data) { next(data); },
-              error: function (xhr, text) {
-                error("Failed to load adjacency data (" + text + ")");
+              error: function (xhr, text, status) {
+                error("Failed to load adjacency data (" + text + " - " + status + ")");
               }
             });
           },
@@ -1269,7 +1272,6 @@ function newMetadataLoaderFactory(url) {
 function createDataSource(params) {
   var factory = newMetadataLoaderFactory(params['data_source']['seats']);
   var drawingCache = {};
-  function error(msg) { console.log(msg); } // XXX
   return {
     drawing: function (page) {
       return function (next, error) {
@@ -1285,8 +1287,8 @@ function createDataSource(params) {
             drawingCache[page] = data;
             next(data);
           },
-          error: function (xhr, text) {
-            error("Failed to load drawing data (" + text + ")");
+          error: function (xhr, text, status) {
+            error("Failed to load drawing data (" + text + " - " + status + ")");
           }
         });
       }

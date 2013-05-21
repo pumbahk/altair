@@ -226,11 +226,12 @@ def checkout_sales_different_amount(request, order_no, different_amount):
     if res.CmnErrorCd != '000000':
         logger.error(u"差額売上確定中に売上確定でエラーが発生しました")
         return res
-
-    res = checkout_sales_part_cancel(request, order_no, different_amount, 0)
-    if res.CmnErrorCd != '000000':
-        logger.error(u"差額売上確定中に一部払い戻しでエラーが発生しました")
-        return res
+    logger.info("call sales_part_cancel for %d" % different_amount)
+    if different_amount > 0:
+        res = checkout_sales_part_cancel(request, order_no, different_amount, 0)
+        if res.CmnErrorCd != '000000':
+            logger.error(u"差額売上確定中に一部払い戻しでエラーが発生しました")
+            return res
     return res
 
 def checkout_sales_part_cancel(request, order_no, sales_amount_cancellation, tax_carriage_cancellation):

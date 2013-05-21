@@ -85,10 +85,10 @@ ${tabs.tabs(request)}
       <th rowspan="2">席種</th>
       <th rowspan="2">申込総枚数</th>
       <th colspan="${lot_status.lot.limit_wishes}">希望順位内訳枚数</th>
-      <th rowspan="2">当選数</th>
-      <th rowspan="2">決済済</th>
-      <th rowspan="2">予約数</th>
-      <th rowspan="2">キャンセル・流れ</th>
+      <th rowspan="2">当選枚数</th>
+      <th rowspan="2">決済済枚数</th>
+      <th rowspan="2">予約枚数</th>
+      <th rowspan="2">キャンセル・流れ枚数</th>
     </tr>
     <tr>
       %for i in range(lot_status.lot.limit_wishes):
@@ -111,22 +111,3 @@ ${tabs.tabs(request)}
       %endfor
   </table>
 
-<div>
-<h3>アクション</h3>
-<ul>
-<li><a href="${request.route_url('lots.entries.export', lot_id=lot.id)}" class="btn">エクスポート</a></li>
-<li><form enctype="multipart/form-data" method="POST" action="${request.route_url('lots.entries.import', lot_id=lot.id)}">
-    <input type="file" name="entries"/><br/>
-    <button type="submit" class="btn">当選データインポート</button>
-</form></li>
-<li><form method="POST" action="${request.route_url('lots.entries.elect', lot_id=lot.id)}">
-    <button class="btn">当選確定処理</button>
-</form></li>
-<li><form method="POST" action="${request.route_url('lots.entries.elect_entry_no', lot_id=lot.id)}">
-    <label for="s-entry_no">申し込み番号</label>
-    <input type="text" name="entry_no" id="s-entry_no"/>
-    <label for="s-wish_order">希望順</label>
-    <input type="text" name="wish_order" id="s-wish_order"/>
-    <button class="btn">当選指定</button>
-</form></li>
-</div>
