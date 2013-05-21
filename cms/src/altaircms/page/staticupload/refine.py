@@ -3,13 +3,17 @@ from lxml import html
 from urlparse import urljoin
 # utility = IDirectoryResource
 
+
+def is_html_filename(filename):
+    return filename.lower().endswith((".html", ".htm"))
+
 def _make_links_absolute(doc, base_url, resolve_base_href=True):
     if resolve_base_href:
         doc.resolve_base_href()
     def link_repl(href):
         if href.endswith(".js"):
             return href
-        elif href.lower().endswith((".html", ".htm", "/")) or os.path.splitext(href)[1] == "":
+        elif is_html_filename(href) or href.endswith("/") or os.path.splitext(href)[1] == "":
             return href
         else:
             return urljoin(base_url, href)

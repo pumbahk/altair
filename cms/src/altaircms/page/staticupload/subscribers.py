@@ -5,7 +5,7 @@ from fnmatch import fnmatch
 import logging
 logger = logging.getLogger(__name__)
 
-from .refine import refine_link_as_string
+from .refine import refine_link_as_string, is_html_filename
 
 def _delete_ignorefile_after_staticupload(ignore_directories, ignore_files, after_create):
     event = after_create
@@ -28,7 +28,7 @@ def refine_html_files_after_staticupload(after_create):
     event = after_create
     for root, dirs, files in os.walk(event.root):
         for f in files:
-            if f.endswith(".html"):
+            if is_html_filename(f):
                 output = refine_link_as_string(f, root, event.static_directory)
                 path = os.path.join(root, f)
                 os.rename(path, path+".original")
