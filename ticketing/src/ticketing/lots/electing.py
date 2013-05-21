@@ -135,7 +135,7 @@ class Electing(object):
                 lot_entry = work.lot_entry
                 lot_entry.reject()
                 #work.delete()
-                LotRejectWork.delete(work)
+                DBSession.delete(work)
                 # TODO: イベント
                 event = LotRejectedEvent(self.request, lot_entry)
                 self.request.registry.notify(event)
