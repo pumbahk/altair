@@ -1,5 +1,5 @@
 先日お申込みいただきました「${lot_entry.lot.name}」に関しまして、
-抽選の結果、お客様は残念ながら落選されました。
+抽選の結果、お客様は残念ながら落選となりましたのでご連絡いたします。
 
 この度はお申込みいただきありがとうございました。
 またのご利用を、お待ちしております。
@@ -20,20 +20,8 @@ ${h.japanese_date(lot_entry.created_at)}
 -----
 ■イベント名：${lot_entry.lot.event.title}
 ■受付名称：${lot_entry.lot.name}
-■抽選結果発表日時：${u"{d.year}年{d.month:02}月{d.day:02}日 {d.hour:02}:{d.minute:02}～".format(d=lot_entry.lot.lotting_announce_datetime)}
 ■抽選結果確認ページ： ${entry_review_url}
-%for wish in lot_entry.wishes:
-【第${wish.wish_order+1}希望】
-公演日：${h.performance_date(wish.performance)}
-会場：${wish.performance.venue.name}
-申込内容
-%for product in wish.products:
-${product.product.name} ${h.format_currency(product.product.price)} x ${product.quantity}枚
-%endfor
-チケット代金計：${h.format_currency(wish.tickets_amount)}
-システム利用料：${h.format_currency(wish.system_fee)}円（税込）
 
-%endfor
 
 ---------------
 お問い合わせ
@@ -45,8 +33,6 @@ ${product.product.name} ${h.format_currency(product.product.price)} x ${product.
 　 http://emagazine.rakuten.co.jp/#17
 
 ■キャンセル・変更について
-　お申し込み・購入されたチケットは、理由の如何を問わず、
-　取替・変更・キャンセルはお受けできません。予めご了承ください。
-　また、抽選結果についての事前お問い合わせには一切お答えいたしかねますので、
-　予めご了承のほど、お願いいたします。
+　抽選結果についての事前お問い合わせには一切お答えいたしかねますので、
+　ご了承のほど、お願いいたします。
 
