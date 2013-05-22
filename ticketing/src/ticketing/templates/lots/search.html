@@ -8,14 +8,28 @@ from ticketing.cart.helpers import format_currency
 <%def name="multicheckout_auth_status(auth)">
 %if auth is None:
 -
+%elif auth.Status is None:
+-
+%elif auth.Status == '100':
+未オーソリ
+%elif auth.Status == '105':
+オーソリ待ち
 %elif auth.Status == '110':
 オーソリOK
+%elif auth.Status == '109':
+オーソリNG
+%elif auth.Status == '115':
+売上待ち
 %elif auth.Status == '120':
-売上確定済
+売上確定
 %elif auth.Status == '130':
-一部取消済
+売上一部取消
+%elif auth.Status == '210':
+カード有効性チェックOK
+%elif auth.Status == '209':
+カード有効性チェックNG
 %else:
--
+-(${auth.Status})
 %endif
 </%def>
 
