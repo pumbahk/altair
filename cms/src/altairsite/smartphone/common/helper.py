@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 from .const import SalesEnum
+
+from altaircms.asset.models import ImageAsset
 from altairsite.mobile.core.eventhelper import EventHelper
 
 import logging
@@ -134,3 +136,8 @@ class SmartPhoneHelper(object):
         helper = EventHelper()
         event = helper.get_events_from_hotword(request=request, hotword=hotword)
         return event
+
+    def get_image_asset(self, request, id):
+        image_asset = request.allowable(ImageAsset).filter(ImageAsset.id == id).first()
+        return image_asset
+

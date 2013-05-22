@@ -7,3 +7,18 @@
         ${promo.text}<br/>
     % endfor
 % endif
+
+<h2 class="glitter red">ピックアップ</h2>
+% if promotions:
+  <div class="sweet-ass-coverflow-slider">
+    <ul>
+      % for promo in promotions:
+        <li>
+          <div>
+            <img class="thematic" src="${request.route_path('__staticasset/', subpath=helper.get_image_asset(request, promo.id).filepath)}" width="50" />
+          </div>
+        </li>
+      % endfor
+    </ul>
+  </div>
+% endif
