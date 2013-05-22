@@ -143,5 +143,6 @@ def move_hotword(context, request):
     result = context.search_hotword(query=query, page=page, per=10)
 
     return {
-        'result':result
+         'result':result
+        ,'helper':SmartPhoneHelper()
     }
