@@ -55,12 +55,12 @@ class StaticPageDirectory(object):
     def get_rootname(self, static_page, name=None):
         assert static_page.id
         return os.path.join(self.get_base_directory(), 
-                            name or static_page.name, 
+                            name or static_page.prefix, 
                             unicode(static_page.id), 
                             )
 
     def get_writename(self, static_page):
-       return os.path.join(self.tmpdir, static_page.name+".zip")
+       return os.path.join(self.tmpdir, static_page.prefix+".zip")
 
     def prepare(self, src):
         logger.info("prepare src: %s" % (src))

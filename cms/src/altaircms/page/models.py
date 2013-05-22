@@ -290,6 +290,10 @@ class StaticPage(BaseOriginalMixin,
         return json.loads(self.file_structure_text)
     
     @property
+    def prefix(self):
+        return self.pageset.url
+
+    @property
     def description(self):
         return self.label or self.name or u""
 

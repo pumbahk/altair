@@ -82,7 +82,7 @@ class StaticPageForm(Form):
 
 
     # def object_validate(self, obj):
-    #     self.request._static_page_name = obj.name #too add-hoc        
+    #     self.request._static_page.prefix = obj.name #too add-hoc        
     #     return True
 
     # def validate(self):

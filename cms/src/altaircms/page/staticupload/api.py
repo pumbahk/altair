@@ -91,7 +91,7 @@ def _static_page_response_network(request, static_page, url, force_original=Fals
         io = urllib.urlopen(static_page_utility.get_url(path))
     else:
         url_parts = url if url.startswith("/") else "/"+url
-        url_parts = url_parts.replace(static_page.name,"{0}/{1}".format(static_page.name, static_page.id), 1)
+        url_parts = url_parts.replace(static_page.prefix,"{0}/{1}".format(static_page.prefix, static_page.id), 1)
         if not url_parts in static_page.file_structure:
             logger.warn("{0} is not found in {1}".format(url_parts, static_page.file_structure_text))
             raise StaticPageNotFound()
