@@ -9,15 +9,23 @@
         % if count > 0:
             <hr/>
         % endif
-        公演：${helper.nl2br(event.title)|n}<br/>
-        詳細：${helper.nl2br(event.text)|n}<br/>
-        <br/>
-        <a href="#top">▲上へ</a>
+        <div class="sectionbox">
+            <div class="sectionbox-inner">
+                公演：${helper.nl2br(event.title)|n}<br/>
+                詳細：${helper.nl2br(event.text)|n}<br/>
+                <br/>
+                <a href="#top">▲上へ</a>
+            </div>
+        </div>
     % endfor
 
     % if len(canceled_events.all()) > 5:
         <hr/>
-        <a href="${request.route_path('page', canceled_detail)}">すべてを見る</a>
+        <div class="sectionbox">
+            <div class="sectionbox-inner">
+                <a href="${request.route_path('page', canceled_detail)}">すべてを見る</a>
+            </div>
+        </div>
     % endif
 % else:
     公演中止・変更情報はありません。
