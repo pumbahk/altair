@@ -1,8 +1,8 @@
 <%inherit file="../common/_base.html" />
 <%namespace file="../common/tags_smartphone.html" name="m" />
-<%block name="title">楽天チケットトップ</%block>
+<%block name="title">公演中止</%block>
 
-<div align="center">公演中止</div>
+<h2 class="glitter red">公演中止</h2>
 % if canceled_events:
     % for count, event in enumerate(canceled_events):
         公演：${helper.nl2br(event.title)|n}<br/>
