@@ -73,7 +73,7 @@ requires = [
     'beaker-extensions == 0.2.0dev-moriyoshi2',
     'boto',
     'fluent-logger == 0.3.3moriyoshi2',
-    'PIL', # for qrcode.image.pil
+    'Pillow', # for qrcode.image.pil
     'altair.findable_label', 
     'altair.log',
     "jsonrpclib", 
