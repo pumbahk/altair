@@ -58,7 +58,7 @@ class StaticPageDirectoryRendererFromDB(object):
         return ""
 
     def __html__(self):
-        self.root = self.join_name(self.page.name, self.page.id)
+        self.root = "{0}/{1}".format(self.page.name, self.page.id)
         return TreeRenderer(self.request, self.root, self).__html__()
 
 class StaticPageDirectoryRenderer(object):

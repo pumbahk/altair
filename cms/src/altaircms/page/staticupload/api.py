@@ -87,18 +87,21 @@ import urllib
 from altaircms.response import FileLikeResponse
 def _static_page_response_network(request, static_page, url, force_original=False, path=None, cache_max_age=CACHE_MAX_AGE):
     static_page_utility = get_static_page_utility(request)
-    if path is None:
-        if url.startswith("/"):
-            url_parts = url[1:]
-        else:
-            url_parts = url
-        url_parts = "/".join(url_parts.split("/")[1:]) #foo/bar -> bar
-        path = os.path.join(static_page_utility.get_rootname(static_page), url_parts)
-    io = urllib.urlopen(static_page_utility.get_url(path))
+    if path:     
+        io = urllib.urlopen(static_page_utility.get_url(path))
+    else:
+        url_parts = url if url.startswith("/") else "/"+url
+        url_parts = url_parts.replace(static_page.name,"{0}/{1}".format(static_page.name, static_page.id), 1)
+        if not url_parts in static_page.file_structure:
+            raise StaticPageNotFound()
+        io = urllib.urlopen(static_page_utility._get_url("/{0}{1}".format(request.organization.short_name, url_parts)))
     try:
         size = int(io.info().get("Content-Length", "0"))
     except ValueError:
         size = 0
+    if io.getcode() != 200:
+        logger.info("static page response not success: url={0}, code={1}".format(io.geturl(), io.getcode()))
+        raise StaticPageNotFound()
     try:
         if force_original:
             return FileLikeResponse(io, request=request, cache_max_age=cache_max_age, 

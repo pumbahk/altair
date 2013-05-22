@@ -37,6 +37,7 @@ def main(global_config, **local_config):
             exclude=config.maybe_dotted(settings.get("s3.static.exclude.function")), 
             prefix="/usersite"))
 
+    config.include("altaircms:install_upload_file") #xxx:
     config.include("altaircms.page.staticupload:install_static_page_utility")
     config.include("altaircms.tag:install_tagmanager")
     config.include("altaircms.topic:install_topic_searcher")

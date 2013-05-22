@@ -43,7 +43,7 @@ h3{
   <tbody>
   %for page in static_pageset.pages:
     <tr>
-      <td><input type="radio" name="object_id" value="${page.id}"/></td>
+      <td><input type="radio" name="object_id" value="${page.id}"/ ${'checked="checked"' if page.id == static_page.id else "" |n}></td>
       <td>
         <a href="${h.current_route_path_override(request,_query=dict(child_id=page.id))}#internal_link_for_tabs">${page.label}</a>
         ${u'<span class="label">現在表示</span>' if page==current_page else u""|n}
@@ -98,7 +98,7 @@ h3{
 <h3>ページ詳細</h3>
 <table class="table table-striped">
       <tr>
-        <th class="span2">name(urlの一部)</th><td>${static_page.name}</td>
+        <th class="span2">name</th><td>${static_page.name}</td>
       </tr>
       <tr>
         <th class="span2">タイトル</th><td>${static_page.label}</td>

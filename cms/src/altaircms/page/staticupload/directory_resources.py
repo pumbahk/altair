@@ -1,13 +1,13 @@
 # -*- coding:utf-8 -*-
 import os
 import shutil
-from ...interfaces import IDirectoryResource
-from ...filelib import zipupload
 from zope.interface import implementer
 from pyramid.path import AssetResolver
-
-from altaircms.filelib.s3 import get_s3_utility_factory
+from pyramid.exceptions import ConfigurationError
 from pyramid.decorator import reify
+from altaircms.filelib.s3 import get_s3_utility_factory
+from ...interfaces import IDirectoryResource
+from ...filelib import zipupload
 
 import logging
 logger = logging.getLogger(__name__)
@@ -36,7 +36,11 @@ class S3StaticPageDirectoryFactory(StaticPageDirectoryFactory):
     def setup(self, config):
         config.add_subscriber(".subscribers.refine_html_files_after_staticupload", ".directory_resources.AfterCreate")
         config.add_subscriber(".subscribers.s3upload_directory", ".creation.AfterZipUpload")  
-        config.add_subscriber(".subscribers.update_model_html_files", ".creation.AfterZipUpload")  
+        config.add_subscriber(".subscribers.update_model_html_files", ".creation.AfterZipUpload")
+
+        ## validation:
+        if get_s3_utility_factory(config) is None:
+            raise ConfigurationError("s3 utility is not found")
 
 @implementer(IDirectoryResource)
 class StaticPageDirectory(object):
@@ -115,8 +119,11 @@ class S3StaticPageDirectory(StaticPageDirectory):
         return "{0}{1}/{2}".format(self.prefix, dirname.replace(self.basedir, ""), filename)
 
     def get_url(self, path):
-        bucket_name = self.s3utility.bucket_name
-        return "http://{0}.s3.amazonaws.com/{1}{2}".format(bucket_name, self.prefix, path.replace(self.basedir, ""))
+        return self._get_url(path.replace(self.basedir, ""))
+
+    def _get_url(self, urlpart): ##xxxx: this is miss leading
+        bucket_name = self.s3utility.bucket_name    
+        return "http://{0}.s3.amazonaws.com/{1}{2}".format(bucket_name, self.prefix, urlpart)
 
     def upload_directory(self, d):
         uploader = self.s3utility.uploader

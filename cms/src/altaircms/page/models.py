@@ -298,6 +298,12 @@ class StaticPage(BaseOriginalMixin,
         return (((self.publish_begin == None) or (self.publish_begin <= dt))
                 and ((self.publish_end == None) or (self.publish_end > dt)))
 
+    def __copy__(self):
+        copied = super(StaticPage, self).__copy__()
+        copied.uploaded_at = None
+        copied.file_structure_text = ""
+        return copied
+
     @in_term.expression
     def in_term(self, dt):
         return sa.sql.and_(sa.sql.or_((self.publish_begin == None), (self.publish_begin <= dt)), 
