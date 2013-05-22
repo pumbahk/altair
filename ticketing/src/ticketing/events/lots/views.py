@@ -434,7 +434,8 @@ class LotEntries(BaseView):
             ShippingAddress
         ).outerjoin(
             MultiCheckoutOrderStatus,
-            MultiCheckoutOrderStatus.OrderNo.startswith(LotEntry.entry_no)
+            sql.and_(MultiCheckoutOrderStatus.OrderNo.startswith(LotEntry.entry_no),
+                     MultiCheckoutOrderStatus.Status!=None),
         ).order_by(
             LotEntry.entry_no,
             LotEntryWish.wish_order
