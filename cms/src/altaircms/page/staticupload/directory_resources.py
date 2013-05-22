@@ -86,10 +86,14 @@ class StaticPageDirectory(object):
         return True
 
     def update(self, src, io):
+        logger.info("update src: %s" % (src))                
+        if not os.path.exists(src):
+            logger.warn("directory_resource. src={0} is not found. just create.".format(src))
+            return self.create(src, io)
+
         backup_path = self.backup(src)
         try:
-            self.create(src, io)
-            return True
+            return self.create(src, io)
         except Exception as e:
             logger.exception(e)
             zipupload.snapshot_rollback(src, backup_path)
