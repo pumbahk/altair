@@ -2,24 +2,67 @@
 <%namespace file="../common/tags_smartphone.html" name="m" />
 <%block name="title">${event.title}</%block>
 
+<h2 class="glitter red">${event.title}</h2>
 
-<div align="center">楽天チケットへようこそ</div>
+<script type="text/javascript">
+$(function () {
+  $('*[data-toggle]').each(function (_, n) {
+    $(n).on('click', function () {
+      var target = $(document.getElementById(n.getAttribute('data-toggle')));
+      if (target.hasClass('activated')) {
+        target.removeClass('activated');
+        target.animate({ height: target.attr('data-prev-height') + 'px' }, {
+          duration: 100
+        });
+      } else {
+        var h = 0;
+        var targetOffset = target.offset().top;
+        target.children().each(function (_, n) {
+          h += $(n).height();
+        });
+        target.attr('data-prev-height', target.height());
+        target.animate({ height: h + 'px' }, {
+          duration: 100,
+          step: function (h) {
+            var dest = targetOffset + h - $(window).height();
+            if ($(window).scrollTop() < dest) {
+              $(window).scrollTop(dest);
+            }
+          }
+        });
+        target.addClass('activated');
+      }
+      return false;
+    });
+  });
+});
+</script>
 
 <%m:header>公演期間</%m:header>
-${helper.disp_date_week(event.event_open)}〜${helper.disp_date_week(event.event_close)}<br/>
+<div class="sectionbox">
+  <div class="sectionbox-inner">
+    ${helper.disp_date_week(event.event_open)}〜${helper.disp_date_week(event.event_close)}
+  </div>
+</div>
+
+<hr/>
 
 <%m:header>販売期間</%m:header>
 % if event.salessegment_groups:
-    % for segment in event.salessegment_groups:
-        ${helper.disp_date(segment.start_on)}〜${helper.disp_date(segment.end_on)}<br/>
-    % endfor
-    <br />
+    <div class="sectionbox">
+        <div class="sectionbox-inner">
+            % for segment in event.salessegment_groups:
+                ${helper.disp_date(segment.start_on)}〜${helper.disp_date(segment.end_on)}<br/>
+            % endfor
+        </div>
+    </div>
 % endif
 
 <div align="center">
   &gt;&gt;<a href="#list">購入はこちらから</a>&lt;&lt;<br />
 </div><br />
 
+<hr/>
 
 % if event.notice:
     <%m:header>詳細/注意事項</%m:header>
@@ -28,8 +71,9 @@ ${helper.disp_date_week(event.event_open)}〜${helper.disp_date_week(event.event
         ${helper.nl2br(event.notice)|n}
         </font>
     </div>
-    <br/><br/>
 % endif
+
+<hr/>
 
 % if event.inquiry_for:
     <%m:header>お問い合わせ</%m:header>
@@ -37,23 +81,47 @@ ${helper.disp_date_week(event.event_open)}〜${helper.disp_date_week(event.event
     <br /><br />
 % endif
 
+<hr/>
+
 <%m:header><a name="list">公演一覧</a></%m:header>
-% for count in range(len(month_unit_keys)):
+<ul class="panellist fullwidth expandable">
+  % for count in range(len(month_unit_keys)):
     <% month = month_unit_keys[count] %>
-    ${month}<br/>
+    <li class="panelgroup" id=${count}>
+      <span class="panelgroup-label"><a href="#" data-toggle=${count}>${month}</a></span>
+      <ul class="panelgroup-inner">
+        % for i, perf in enumerate(event.performances):
+          % if str(perf.start_on.year) + "/" + str(perf.start_on.month).zfill(2) == month:
+            <li class="panel">
+              <table class="panellist margined with-action-buttons">
+                <caption>[${i+1}]${event.title}</caption>
+                  <tbody>
+                    <tr>
+                      <td class="panel condensed">
+                        <div class="panel-inner h_70px">
+                          <p class="first">
+                            % if perf.open_on:
+                              開場：${helper.disp_time(perf.open_on)}<br/>
+                            % endif
+                            開演：${helper.disp_time(perf.start_on)}<br/>
+                            会場：${perf.venue}<br/>
+                          </p>
+                        </div>
+                        <div class="actions">
+                        <a href="${purchase_links[perf.id]}">
+                          <button class="btn btn-primary"><span class="btn-inner">購入</span></button>
+                        </a>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </li>
+          % endif
+        % endfor
+      </ul>
+    </li>
+  % endfor
+</ul>
 
-    % for i, perf in enumerate(event.performances):
-        % if str(perf.start_on.year) + "/" + str(perf.start_on.month).zfill(2) == month:
-            [${i+1}]${event.title}<br/>
-            % if perf.open_on:
-                開場：${helper.disp_time(perf.open_on)}<br/>
-            % endif
-            開演：${helper.disp_time(perf.start_on)}<br/>
-            会場：${perf.venue}<br/>
-            <a href="${purchase_links[perf.id]}">購入する</a><br/>
-        % endif
-    % endfor
 
-    <br/><br/>
-
-% endfor
