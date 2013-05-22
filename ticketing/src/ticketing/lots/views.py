@@ -33,6 +33,7 @@ from .models import (
     LotEntryWish,
     LotElectedEntry,
 )
+from .adapters import LotSessionCart
 from . import urls
 
 logger = logging.getLogger(__name__)
@@ -244,15 +245,28 @@ class EntryLotView(object):
         if not validated:
             return self.get(form=cform)
 
+        entry_no = api.generate_entry_no(self.request, self.context.organization)
+
         shipping_address_dict = cform.get_validated_address_data()
         api.new_lot_entry(
             self.request,
+            entry_no=entry_no,
             wishes=wishes,
             payment_delivery_method_pair_id=payment_delivery_method_pair_id,
             shipping_address_dict=shipping_address_dict,
             gender=cform['sex'].data,
             birthday=birthday,
             memo=cform['memo'].data)
+
+        entry = self.request.session['lots.entry']
+        cart = LotSessionCart(entry, self.request, self.context.lot)
+
+        payment = Payment(cart, self.request)
+        self.request.session['payment_confirm_url'] = urls.entry_confirm(self.request)
+
+        result = payment.call_prepare()
+        if callable(result):
+            return result
 
         location = urls.entry_confirm(self.request)
         return HTTPFound(location=location)
@@ -309,6 +323,7 @@ class ConfirmLotEntryView(object):
             return self.back_to_form()
 
         entry = self.request.session['lots.entry']
+        entry_no = entry['entry_no']
         shipping_address = entry['shipping_address']
         shipping_address = h.convert_shipping_address(shipping_address)
         wishes = entry['wishes']
@@ -328,6 +343,7 @@ class ConfirmLotEntryView(object):
 
         entry = api.entry_lot(
             self.request,
+            entry_no=entry_no,
             lot=lot,
             shipping_address=shipping_address,
             wishes=wishes,
@@ -339,14 +355,6 @@ class ConfirmLotEntryView(object):
             )
         self.request.session['lots.entry_no'] = entry.entry_no
 
-        cart = api.get_entry_cart(self.request, entry)
-
-        payment = Payment(cart, self.request)
-        self.request.session['payment_confirm_url'] = urls.entry_completion(self.request)
-
-        result = payment.call_prepare()
-        if callable(result):
-            return result
 
 
         return HTTPFound(location=urls.entry_completion(self.request))

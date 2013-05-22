@@ -1,4 +1,5 @@
 # -*- coding:utf-8 -*-
+import logging
 from pyramid.decorator import reify
 from sqlalchemy import sql
 from webhelpers.containers import correlate_objects
@@ -8,10 +9,11 @@ from ticketing.models import (
 from ticketing.core.models import (
     Order,
     Performance,
-    Stock,
+    #Stock,
     StockType,
     Product,
-    ProductItem,
+    #ProductItem,
+    PaymentDeliveryMethodPair,
 )
 from .models import (
     LotEntry,
@@ -23,31 +25,86 @@ from .models import (
 from zope.interface import implementer
 from ticketing.payments.interfaces import IPaymentCart
 
+logger = logging.getLogger(__name__)
+
+# @implementer(IPaymentCart)
+# class LotEntryCart(object):
+#     def __init__(self, entry):
+#         self.entry = entry
+
+#     @property
+#     def sales_segment(self):
+#         return self.entry.lot.sales_segment
+
+#     @property
+#     def payment_delivery_pair(self):
+#         return self.entry.payment_delivery_method_pair
+
+#     @property
+#     def order_no(self):
+#         return self.entry.entry_no
+
+#     @property
+#     def total_amount(self):
+#         # オーソリ時は申し込みの最大金額を使う
+#         return self.entry.max_amount
+
+#     @property
+#     def name(self):
+#         return "LOT" + str(self.entry.lot.id)
+
+
 @implementer(IPaymentCart)
-class LotEntryCart(object):
-    def __init__(self, entry):
-        self.entry = entry
+class LotSessionCart(object):
+    def __init__(self, entry_dict, request, lot):
+        self.entry_no = entry_dict['entry_no']
+        self.wishes = entry_dict['wishes']
+        self.payment_delivery_method_pair_id = entry_dict['payment_delivery_method_pair_id']
+        self.shipping_address_dict=entry_dict['shipping_address']
+        self.gender = entry_dict['gender']
+        self.birthday = entry_dict['birthday']
+        self.memo = entry_dict['memo']
+        self.request = request
+        self.lot = lot
+        logger.debug("{deli}\nLotSessionCart entry_no={0.entry_no}\n{deli}".format(self,
+                                                                                deli="*" * 80))
 
     @property
     def sales_segment(self):
-        return self.entry.lot.sales_segment
+        return self.lot.sales_segment
 
     @property
     def payment_delivery_pair(self):
-        return self.entry.payment_delivery_method_pair
+        return PaymentDeliveryMethodPair.query.filter(
+            PaymentDeliveryMethodPair.id==self.payment_delivery_method_pair_id
+        ).first()
 
     @property
     def order_no(self):
-        return self.entry.entry_no
+        return self.entry_no
 
     @property
     def total_amount(self):
+        ###### !!!!!
         # オーソリ時は申し込みの最大金額を使う
-        return self.entry.max_amount
+        from .api import build_lot_entry
+        
+        entry = build_lot_entry(
+            lot=self.lot,
+            wishes=self.wishes,
+            payment_delivery_method_pair=self.payment_delivery_pair,
+            )
+
+        for wish in entry.wishes:
+            for p in wish.products:
+                p.product = Product.query.filter(Product.id==p.product_id).one()
+        amount = entry.max_amount
+        DBSession.expunge(entry)
+        return amount
 
     @property
     def name(self):
-        return "LOT" + str(self.entry.lot.id)
+        return "LOT" + str(self.lot.id)
 
 
 class LotEntryStatus(object):
