@@ -47,6 +47,7 @@ def s3upload_directory(after_zipupload):
         static_directory.upload_directory(absroot)
     except Exception as e:
         logger.exception(str(e))
+        logger.error("static page: s3upload failure. absroot={0}".format(absroot))
     static_page.uploaded_at = datetime.now()
 
 def update_model_html_files(after_zipupload):

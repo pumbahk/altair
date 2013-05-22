@@ -62,8 +62,8 @@ h3{
         </div>
       </td>
       <td>${h.jterm(page.publish_begin,page.publish_end)}</td>
-      <td>${h.base.jdate(page.created_at)}</td>
-      <td>${h.base.jdate(page.updated_at)}</td>
+      <td>${h.base.jdate_with_hour(page.created_at)}</td>
+      <td>${h.base.jdate_with_hour(page.updated_at)}</td>
     </tr>
   %endfor
   </tbody>
