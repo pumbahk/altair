@@ -93,6 +93,12 @@ def main(global_config, **local_config):
         config.include('altair.browserid')
         config.include('altair.exclog')
         config.include('altair.mobile')
+
+        ### s3 assets
+        config.include('altair.pyramid_assets')
+        config.include('altair.pyramid_boto')
+        config.include('altair.pyramid_boto.s3.assets')
+
         config.include('ticketing.core')
         config.include('ticketing.multicheckout')
         config.include('ticketing.checkout')
