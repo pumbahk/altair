@@ -78,7 +78,7 @@ class Site(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     @property
     def _metadata(self):
         __metadata = getattr(self, '__metadata', None)
-        if not __metadata:
+        if not __metadata and self.metadata_url is not None:
             resolver = get_resolver(get_current_registry())
             self.__metadata = json.load(resolver.resolve(self.metadata_url).stream())
         return self.__metadata
