@@ -296,7 +296,7 @@ class Scanner(object):
                 ticket.name = record['name']
                 ticket.price = record['price']
                 ticket.display_order = record.get("display_order") or 50
-                ticket.seattype = record['seat_type']
+                ticket.seattype = record['seat_type'] or ""
             except KeyError as e:
                 raise InvalidParamaterException("missing property '%s' in the ticket record" % e.message)
         return r
