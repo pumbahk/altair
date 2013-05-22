@@ -2,6 +2,7 @@ from zope.interface import implementer
 from boto.s3.connection import S3Connection
 from ..interfaces import IS3ConnectionFactory
 from ..interfaces import IS3ContentsUploader
+from boto.exception import S3ResponseError
 from pyramid.decorator import reify
 from boto.s3.key import Key
 import logging
@@ -71,6 +72,14 @@ class DefaultS3Uploader(object):
     @reify
     def bucket(self):
         return self.connection.get_bucket(self.bucket_name)
+
+    def is_reacheable(self):
+        """health check"""
+        try:
+           self.bucket
+           return True
+        except S3ResponseError as e:
+            return False
 
     def _treat_options(self, options):
         result = {}

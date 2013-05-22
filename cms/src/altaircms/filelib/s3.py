@@ -3,6 +3,7 @@ from zope.interface import provider
 from .interfaces import IS3UtilityFactory
 from altair.pyramid_boto.s3.connection import DefaultS3ConnectionFactory
 from altair.pyramid_boto.s3.connection import DefaultS3Uploader
+from pyramid.exceptions import ConfigurationError
 
 import logging
 logger = logging.getLogger(__name__)
@@ -53,6 +54,12 @@ class S3ConnectionFactory(object):
 
     def setup(self, config):
         config.add_subscriber(self.sync_s3_after_commit, "altaircms.filelib.adapts.AfterCommit")
+        ## too-heavie
+        # self.validate()
+
+    def validate(self):
+        if not self.uploader.is_reacheable():
+            raise ConfigurationError("S3 access is unreacheable. bucket={0}, access_key={1}".format(self.uploader.bucket_name, self.uploader.connection.aws_access_key_id))
 
     def sync_s3_after_commit(self, event):
         request = event.request
