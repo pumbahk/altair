@@ -13,7 +13,7 @@ requires = [
     'pyramid_tm',
     "pyramid_fanstatic", 
     'sqlahelper',
-    "pil",
+    "Pillow",
     'isodate',
     "solrpy", 
     "WTForms",
