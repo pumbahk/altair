@@ -2,7 +2,45 @@
 <%namespace file="../common/tags_smartphone.html" name="m" />
 <%block name="title">お問合せ</%block>
 
-<div align="center">お問い合わせ</div>
+<style type="text/css">
+#inquiry input[type="text"] {
+  box-sizing: border-box;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  width: 100%;
+  display: block;
+  height: 34px;
+  font-size: 17px;
+  padding: 0px 2px;
+  margin: 0 0 2px 0;
+}
+
+#inquiry textarea {
+  box-sizing: border-box;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  width: 100%;
+  display: block;
+  height: 68px;
+  font-size: 17px;
+  padding: 0px 2px;
+  margin: 0 0 2px 0;
+}
+
+#inquiry select {
+  height: 30px;
+  font-size: 16px;
+  margin: 1px 0 0 0;
+  background-color: #fff;
+}
+
+#inquiry button {
+  height: 28px;
+  font-weight: bold;
+}
+</style>
+
+<h2 class="glitter red">お問い合わせ</h2>
 <%def name="disp_error(errors)">
     % if errors:
         % for error in errors:
@@ -11,25 +49,36 @@
     % endif
 </%def>
 
-お預かりするお客様の個人情報は、『個人情報保護方針』に基いて厳重に管理し、お客様の同意がない限りお問い合わせ・ご相談への対応以外には使用いたしません。<br/>
-<br/>
-個人情報保護方針は<a href="${request.route_path('page', kind='privacy')}">こちら</a>をご確認ください。<br/>
-フォームでお問い合わせ頂いたお客様には、基本的には返信メールにて回答させて頂いております。<br/>
-<br/>
-※携帯電話等の受信設定でドメイン指定受信を設定している方は、「@ticket.rakuten.co.jp」からのメールを受信できるように設定してください。<br/>
-<br/>
-
 % if result:
-    <div class="line" style="background:#FFFFFF"><img src="/static/mobile/clear.gif" alt="" width="1" height="1" /></div>
-    <div style="color:#FF0000;">以下の内容で送信しました。</div>
-    <br/>
+    <div class="sectionbox">
+        <div class="sectionbox-inner">
+            <div class="line" style="background:#FFFFFF"><img src="/static/mobile/clear.gif" alt="" width="1" height="1" /></div>
+            <div style="color:#FF0000;">以下の内容で送信しました。</div>
+        </div>
+    </div>
 % elif result and form.username.data:
-    <div class="line" style="background:#FFFFFF"><img src="/static/mobile/clear.gif" alt="" width="1" height="1" /></div>
-    <div style="color:#FF0000;">送信に失敗しました。</div>
-    <br/>
+    <div class="sectionbox">
+        <div class="sectionbox-inner">
+            <div class="line" style="background:#FFFFFF"><img src="/static/mobile/clear.gif" alt="" width="1" height="1" /></div>
+            <div style="color:#FF0000;">送信に失敗しました。</div>
+        </div>
+    </div>
 % endif
 
-<form action="${request.route_path('page', kind='inquiry')}" method="POST">
+<div class="sectionbox">
+    <div class="sectionbox-inner">
+        下記に、お客様情報や、お問合せ内容をご記入の上、送信ください<br/>
+        (※は入力必須項目となります)<br/><br/>
+
+        <font color=red>
+            ※携帯電話等の受信設定でドメイン指定受信を設定している方は、「@ticket.rakuten.co.jp」からのメールを受信できるように設定してください。
+        </font>
+    </div>
+</div>
+
+<div class="sectionbox inverted" id="inquiry">
+
+<form class="sectionbox-inner" style="background-color: cornsilk;color: #000000" action="${request.route_path('page', kind='inquiry')}" method="POST">
     ${form.username.label}<br/>${form.username}<br/>
     ${disp_error(form.username.errors)}
     ${form.mail.label}<br/>${form.mail}<br/>
@@ -45,6 +94,17 @@
     ${disp_error(form.body.errors)}
     ※は必ず入力してください。<br/>
     % if not result:
-        <input type="submit" value="送信"/>
+        <input type="submit" class="btn-secondary" value="送信"/>
     % endif
 </form>
+</div>
+
+<div class="sectionbox">
+    <div class="sectionbox-inner">
+        お預かりするお客様の個人情報は、『個人情報保護方針』に基いて厳重に管理し、お客様の同意がない限りお問い合わせ・ご相談への対応以外には使用いたしません。<br/>
+        <br/>
+        個人情報保護方針は<a href="${request.route_path('page', kind='privacy')}">こちら</a>をご確認ください。<br/>
+        フォームでお問い合わせ頂いたお客様には、基本的には返信メールにて回答させて頂いております。<br/>
+        <br/>
+    </div>
+</div>
