@@ -5,6 +5,34 @@
 <%
 from ticketing.cart.helpers import format_currency
 %>
+<%def name="multicheckout_auth_status(auth)">
+%if auth is None:
+-
+%elif auth.Status is None:
+-
+%elif auth.Status == '100':
+未オーソリ
+%elif auth.Status == '105':
+オーソリ待ち
+%elif auth.Status == '110':
+オーソリOK
+%elif auth.Status == '109':
+オーソリNG
+%elif auth.Status == '115':
+売上待ち
+%elif auth.Status == '120':
+売上確定
+%elif auth.Status == '130':
+売上一部取消
+%elif auth.Status == '210':
+カード有効性チェックOK
+%elif auth.Status == '209':
+カード有効性チェックNG
+%else:
+-(${auth.Status})
+%endif
+</%def>
+
 <%block name="style">
 <link rel="stylesheet" type="text/css" href="/static/css/decentcolorpicker.css" />
 <link rel="stylesheet" type="text/css" href="/static/css/performance.css" />
@@ -86,6 +114,7 @@ ${tabs.tabs(request)}
 <tr>
 <th>&nbsp;</th>
 <th>状態</th>
+<th>オーソリ状態</th>
 <th>申し込み番号</th>
 <th>希望順序</th>
 <th>申し込み日</th>
@@ -124,7 +153,7 @@ ${tabs.tabs(request)}
 </tr>
 </thead>
 <tbody>
-%for w in wishes:
+%for w,auth in wishes:
 <%
 event = w.lot_entry.lot.event
 performance = w.performance
@@ -167,6 +196,7 @@ ${w.status}
 <br>メール送信済
 %endif
 </td>
+<td nowrap="">${self.multicheckout_auth_status(auth)}</td>
 <td nowrap="">${w.lot_entry.entry_no}</td>
 <td nowrap="">${w.wish_order + 1}</td>
 <td nowrap="">${"{0:%Y-%m-%d %H:%M}".format(w.created_at)}</td>

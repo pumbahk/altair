@@ -38,7 +38,7 @@ def includeme(config):
     reg.adapters.register([IRequest], IReserving, "", Reserving)
     reg.adapters.register([IRequest], ICartFactory, "", CartFactory)
     config.scan(".workers")
-    config.scan(".subscribers")
+    #config.scan(".subscribers")
 
 
 def lot_wish_cart(wish):

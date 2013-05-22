@@ -32,6 +32,10 @@ class IS3Retriever(Interface):
     def get_object(key_or_prefix):
         """returns a file-like object that represents the specified object"""
 
+class IS3KeyProvider(Interface):
+    def get_key():
+        pass
+
 @implementer(IS3RetrieverFactory)
 class DefaultS3RetrieverFactory(object):
     cache_manager = cache_manager
@@ -109,7 +113,7 @@ class S3Retriever(object):
     def get_object(self, key):
         return self.object_cache.get(key, createfunc=lambda:self._fetch_object(key))
 
-@implementer(IAssetDescriptor)
+@implementer(IAssetDescriptor, IS3KeyProvider)
 class S3AssetDescriptor(object):
     def __init__(self, retriever, key_or_prefix, delimiter):
         self.retriever = retriever
@@ -144,6 +148,10 @@ class S3AssetDescriptor(object):
     def exists(self):
         entry = self.retriever.get_entry(self.key_or_prefix)
         return entry['keys_under_prefix'] is not None
+
+    def get_key(self):
+        '''IS3KeyProvider'''
+        return self.retriever.get_key(self.key_or_prefix)
  
 @implementer(IAssetResolver)
 class S3AssetResolver(object):
