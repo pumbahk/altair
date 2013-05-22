@@ -4,7 +4,8 @@ from pyramid.response import _BLOCK_SIZE, FileIter, Response
 class FileLikeResponse(Response):
      def __init__(self, io, request=None, cache_max_age=None,
                  content_type=None, content_encoding=None,
-                 filename=None, content_length=None):
+                 filename=None, content_length=None, app_iter=None, 
+                  _BLOCK_SIZE=_BLOCK_SIZE):
         super(FileLikeResponse, self).__init__(conditional_response=True)
         if content_type is None:
             content_type = 'application/octet-stream'
@@ -15,7 +16,6 @@ class FileLikeResponse(Response):
                 ('Content-Disposition', 'attachment; filename=%s' % filename),
                 ]
         content_length = content_length or io.len
-        app_iter = None
         if request is not None:
             environ = request.environ
             if 'wsgi.file_wrapper' in environ:

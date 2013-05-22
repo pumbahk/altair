@@ -11,9 +11,9 @@ from altaircms.auth.models import Organization
 logger = logging.getLogger(__file__)
 
 def with_log(r):
-    logging.info("========================================")
-    logger.info(r)
-    logging.info("========================================")
+    logging.debug("========================================")
+    logger.debug(r)
+    logging.debug("========================================")
     return r
 
 

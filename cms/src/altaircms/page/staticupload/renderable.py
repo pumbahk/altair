@@ -49,7 +49,7 @@ class StaticPageDirectoryRendererFromDB(object):
         return bool(self.node.D[path].children)
 
     def get_children(self, path):
-        return self.node.D[path].children.keys()
+        return (f for f in  self.node.D[path].children.keys() if not f.endswith(".original"))
 
     def join_name(self, dirname, basename):
         return "{0}/{1}".format(dirname, basename)

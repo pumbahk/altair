@@ -103,7 +103,7 @@ def _static_page_response_network(request, static_page, url, force_original=Fals
         if force_original:
             return FileLikeResponse(io, request=request, cache_max_age=cache_max_age, 
                                     content_type=io.info().typeheader, 
-                                    content_length=size)
+                                    content_length=size, _BLOCK_SIZE=4096)
         else:
             return as_wrapped_resource_response_network(request, static_page, io, path,
                                                         cache_max_age=cache_max_age,
@@ -121,11 +121,13 @@ def _static_page_response_network(request, static_page, url, force_original=Fals
 def as_wrapped_resource_response_network(request, static_page, io, fullpath, body_var_name="inner_body",
                                          cache_max_age=CACHE_MAX_AGE, content_length=None, content_type=None):
     if not (static_page.layout_id and has_renderer(request, fullpath)):
-        return FileLikeResponse(io, request=request, cache_max_age=cache_max_age, content_type=content_type, content_length=content_length)
+        return FileLikeResponse(io, request=request, cache_max_age=cache_max_age, content_type=content_type, content_length=content_length, 
+                                app_iter=None, _BLOCK_SIZE=4096)
     resolver = get_frontpage_discriptor_resolver(request)
     discriptor = resolver.resolve(request, static_page.layout, verbose=True)
     if not discriptor.exists():
-        return FileLikeResponse(io, request=request, cache_max_age=cache_max_age, content_type=content_type, content_length=content_length)
+        return FileLikeResponse(io, request=request, cache_max_age=cache_max_age, content_type=content_type, content_length=content_length, 
+                                app_iter=None, _BLOCK_SIZE=4096)
     try:
         params = {body_var_name: io.read().decode("utf-8"), 
                   "static_page": static_page} #ok?
