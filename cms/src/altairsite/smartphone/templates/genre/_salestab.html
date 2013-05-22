@@ -1,17 +1,54 @@
 <%page args="week_sales, near_end_sales, helper" />
 <%namespace file="../common/tags_smartphone.html" name="m" />
+<script>
+    $(function() {
+        $( "#salestab" ).tabs();
+    });
+</script>
 
-<%m:header>今週発売</%m:header>
-% if week_sales.events:
-    % for event in week_sales.events:
-        ${event.title}<br/>
-    % endfor
-% endif
-<br/><br/>
+<style>
+#salestab.ui-tabs {
+	padding: 0;
+	border-width: 0;
+}
 
-<%m:header>販売終了間近の公演</%m:header>
-% if near_end_sales.events:
-    % for event in near_end_sales.events:
-        ${event.title}<br/>
-    % endfor
-% endif
+#salestab .ui-widget-header {
+    background-color: #ffffff;
+	border: 0;
+}
+
+#salestab .ui-tabs-nav {
+	border-width: 0;
+	padding: 0;
+}
+
+#salestab .ui-tabs-panel {
+	border-width: 5px;
+}
+
+#salestab .ui-tabs-nav li.ui-tabs-selected {
+	border-width: 5px;
+	margin-bottom: -5px;
+}
+</style>
+
+<div style='clear:both;' id="salestab">
+  <ul>
+    <li><a href="#tab_week_sales">今週発売</a></li>
+    <li><a href="#tab_near_end_sales">販売終了間近の公演</a></li>
+  </ul>
+  <div id="tab_week_sales">
+    % if week_sales.events:
+        % for event in week_sales.events:
+            <a href="${request.route_path('detail')}?event_id=${event.id}">${event.title}</a><br/>
+        % endfor
+    % endif
+  </div>
+  <div id="tab_near_end_sales">
+    % if near_end_sales.events:
+        % for event in near_end_sales.events:
+            <a href="${request.route_path('detail')}?event_id=${event.id}">${event.title}</a><br/>
+        % endfor
+    % endif
+  </div>
+</div>
