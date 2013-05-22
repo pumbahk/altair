@@ -18,6 +18,7 @@ from pyramid.threadlocal import get_current_request
 from pyramid import security
 from webob.multidict import MultiDict
 
+from altair.pyramid_boto.s3.assets import IS3KeyProvider
 
 from ticketing.models import DBSession
 from ticketing.core import models as c_models
@@ -96,6 +97,25 @@ class IndexView(IndexViewMixin):
         self.context = request.context
 
         self.prepare()
+
+    def get_drawing_urls(self, venue):
+        retval = {}
+        for name, drawing in venue.site.get_drawings().items():
+            if IS3KeyProvider.providedBy(drawing):
+                key = drawing.get_key()
+                headers = {}
+                if re.match('^.+\.(svgz|gz)$', drawing.path):
+                    headers['response-content-encoding'] = 'gzip'
+                url = key.generate_url(expires_in=1800, response_headers=headers)
+            else:
+                url = venue_drawing=self.request.route_url(
+                    'cart.venue_drawing',
+                    event_id=self.request.context.event_id,
+                    performance_id=sales_segment.performance.id,
+                    venue_id=sales_segment.performance.venue.id,
+                    part=name)
+            retval[name] = url
+        return retval
 
     @view_config(decorator=with_jquery_tools, route_name='cart.index', renderer=selectable_renderer("carts/%(membership)s/index.html"), xhr=False, permission="buy")
     def __call__(self):
@@ -200,6 +220,7 @@ class IndexView(IndexViewMixin):
                     performance_id=sales_segment.performance.id,
                     venue_id=sales_segment.performance.venue.id,
                     part='__part__'),
+                venue_drawings=self.get_drawing_urls(sales_segment.performance.venue),
                 seats=self.request.route_url(
                     'cart.seats',
                     event_id=self.request.context.event_id,
