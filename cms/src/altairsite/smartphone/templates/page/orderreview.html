@@ -9,7 +9,13 @@
         <li><a href="${orderreview_url.altair}" class="btnRT">頭に<strong>「RT」</strong>が <strong>つく</strong> 受付番号のお客様は こちら</a></li>
         <li><a href="${orderreview_url.getti}" class="btnNotRT" target="_blank">頭に<strong>「RT」</strong>が <strong>つかない</strong> 受付番号のお客様は こちら</a></li>
     </ul>
-    <p class="textC">上記どちらの確認フォームからもご予約の確認ができないお客様は<a href="${request.route_path('page', kind='inquiry')}" target="_blank">こちら</a>からお問い合わせください</p>
+    <p class="textC">
+        <div class="sectionbox">
+            <div class="sectionbox-inner">
+                上記どちらの確認フォームからもご予約の確認ができないお客様は<a href="${request.route_path('page', kind='inquiry')}" target="_blank">こちら</a>からお問い合わせください
+            </div>
+        </div>
+    </p>
 </div>
 
 <style type="text/css">
