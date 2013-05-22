@@ -81,25 +81,23 @@ class StaticPageForm(Form):
 
 
 
-    # def object_validate(self, obj):
-    #     self.request._static_page.prefix = obj.name #too add-hoc        
-    #     return True
+class StaticPageSetForm(Form):
+    name = fields.TextField(label=u"name", validators=[validators.Required()])    
+    url = fields.TextField(label=u"url", validators=[validators.Required()])
 
-    # def validate(self):
-    #     status = super(type(self), self).validate()
-    #     if not status:
-    #         return False
+    __display_fields__ = ["name", "url"]    
 
-    #     data = self.data
-    #     if data.get("name") and hasattr(self, "static_directory"):
-    #         path = os.path.join(self.static_directory.get_base_directory(), self.data["name"])
-    #         if os.path.exists(path):
-    #             if self.request.allowable(StaticPage).filter(StaticPage.name==self.data["name"], StaticPage.id!=self.request.matchdict["id"]).count() > 0:
-    #                 append_errors(self.errors, "name", u"%sは既に存在しています。他の名前で登録してください" % self.data["name"])
-    #                 status = False
+    def object_validate(self, obj):
+        data = self.data
+        self.request._static_page_prefix = obj.url #too add-hoc    
+        path = os.path.join(self.static_directory.get_base_directory(), data["url"])
+        if obj.url != data["url"] and os.path.exists(path):
+            self.errors["url"] = [u"{0} は既に利用されています".format(data["url"])]
+            return False
+        return True
 
-    #     if data.get("publish_end") and data.get("publish_begin"):
-    #         if data["publish_begin"] > data["publish_end"]:
-    #             append_errors(self.errors, "publish_begin", u"開始日よりも後に終了日が設定されています")
-    #     return status
+    def configure(self, request):
+        self.request = request
+        self.static_directory = get_static_page_utility(request)
+
 

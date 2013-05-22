@@ -102,11 +102,18 @@ def includeme(config):
                     bind_actions=["update"], 
                     has_auto_generated_permission=False, 
                     form="..page.staticupload.forms.StaticPageForm", mapper=".mappers.staticpage_mapper", 
-                    events=dict(update_event=config.maybe_dotted(".subscribers.StaticPageUpdate")), 
+                    )
+
+    config.add_crud("static_pageset", title="static_pageset", model="..page.models.StaticPageSet", 
+                    circle_type="circle-page", 
+                    bind_actions=["update"], 
+                    has_auto_generated_permission=False, 
+                    form="..page.staticupload.forms.StaticPageSetForm", mapper=".mappers.staticpage_mapper", 
+                    events=dict(update_event=config.maybe_dotted(".subscribers.StaticPageSetUpdate")), 
                     )
 
     ## subscriber
-    # config.add_subscriber(".subscribers.update_after_static_page", ".subscribers.StaticPageUpdate")
+    config.add_subscriber(".subscribers.update_after_static_page", ".subscribers.StaticPageSetUpdate")
     config.add_subscriber(".subscribers.update_pageset_genretag", ".subscribers.PageSetUpdate")
     config.add_subscriber(".subscribers.event_term_bubbling_update", ".subscribers.PerformanceCreate")
     config.add_subscriber(".subscribers.event_term_bubbling_update", ".subscribers.PerformanceUpdate")

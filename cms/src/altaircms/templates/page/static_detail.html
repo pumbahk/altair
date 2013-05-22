@@ -25,6 +25,13 @@ h3{
   </tr>
 </table>
 
+<div class="btn-group">
+  <a class="btn btn-primary"
+	   href="${request.route_path("static_pageset_update", action="input", id=static_pageset.id, _query=dict(endpoint=request.url, pagetype=pagetype.name))}"> <%doc>xxx:</%doc>
+    <i class="icon-cog"></i> 変更
+  </a>
+</div>
+
 <hr/>
 <h3>ページ一覧</h3>
 

@@ -68,7 +68,7 @@ class TicketUpdate(ModelEventBase):
     pass
 
 @implementer(IModelEvent)
-class StaticPageUpdate(ModelEventBase):
+class StaticPageSetUpdate(ModelEventBase):
     pass
 
 
@@ -158,10 +158,11 @@ def event_term_bubbling_update(self):
     EventTermSummalize(self.request).summalize(self.obj).bubble()
 
 def update_after_static_page(self):
-    if not self.obj.name and hasattr(self.request, "_static_page_name"):
-        self.obj.name = self.request._static_page_name
+    if not self.obj.url and hasattr(self.request, "_static_page_prefix"):
+        self.obj.url = self.request._static_page_
 
-    if self.obj.name != self.request._static_page_name:
+    if self.obj.url != self.request._static_page_prefix:
         utility = get_static_page_utility(self.request)
-        utility.rename(utility.get_rootname(self.obj, name=self.request._static_page_name),
-                       utility.get_rootname(self.obj))
+        utility.rename(utility.get_toplevelname(self.obj, name=self.request._static_page_prefix),
+                       utility.get_toplevelname(self.obj))
+    ## todo:s3support

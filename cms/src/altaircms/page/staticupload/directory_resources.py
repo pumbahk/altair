@@ -52,6 +52,11 @@ class StaticPageDirectory(object):
     def get_base_directory(self):
         return os.path.join(self.basedir, self.request.organization.short_name)
 
+    def get_toplevelname(self, static_pageset, name=None):
+        return os.path.join(self.get_base_directory(), 
+                            name or static_pageset.url, 
+                            )
+
     def get_rootname(self, static_page, name=None):
         assert static_page.id
         return os.path.join(self.get_base_directory(), 

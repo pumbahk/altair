@@ -69,6 +69,7 @@ class StaticPageSetView(BaseView):
                 "tree_renderer": static_page_directory_renderer(self.request, static_page, static_directory), 
                 "now": get_now(self.request)}
 
+
 @view_defaults(route_name="static_page_part_file", permission="authenticated")
 class StaticPagePartFileView(BaseView):
     pass
