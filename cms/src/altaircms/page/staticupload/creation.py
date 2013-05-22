@@ -9,7 +9,14 @@ from ...models import DBSession
 from ...filelib import get_adapts_filesession
 from . import SESSION_NAME
 
-class AfterZipUpload(object):
+class AfterModelCreate(object):
+    def __init__(self, request, root, static_directory, static_page):
+        self.request = request
+        self.root = root
+        self.static_page = static_page
+        self.static_directory = static_directory
+
+class AfterModelDelete(object):
     def __init__(self, request, root, static_directory, static_page):
         self.request = request
         self.root = root
@@ -32,18 +39,18 @@ class StaticPageDelete(object):
         DBSession.delete(static_page)
 
     def delete_underlying_something(self, static_page):
+        src = self.utility.get_rootname(static_page)
+        self.request.registry.notify(AfterModelDelete(self.request, src, self.utility, static_page))
         try:
             ## snapshot取っておく
-            src = self.utility.get_rootname(static_page)
             self.utility.backup(src)
-
             ## 直接のsrcは空で保存できるようになっているはず。
             if os.path.exists(src):
                 raise Exception("%s exists. after delete" % src)
         except Exception, e:
             logger.exception(str(e))
             raise 
-        
+
 class StaticPageCreate(object):
     def __init__(self, request, utility, data):
         self.request = request
@@ -94,12 +101,12 @@ class StaticPageCreate(object):
         def rollback():
             self.utility.delete(os.path.dirname(absroot))
         self.rollback_functions.append(rollback)
-        self.utility.create(absroot, filestorage.file) and self.request.registry.notify(AfterZipUpload(self.request, absroot, self.utility, static_page))
+        self.utility.create(absroot, filestorage.file) and self.request.registry.notify(AfterModelCreate(self.request, absroot, self.utility, static_page))
 
 
     def update_underlying_something(self, static_page):
         filestorage = self.data["zipfile"]
         absroot = self.utility.get_rootname(static_page)
-        self.utility.update(absroot, filestorage.file) and self.request.registry.notify(AfterZipUpload(self.request, absroot, self.utility, static_page))
+        self.utility.update(absroot, filestorage.file) and self.request.registry.notify(AfterModelCreate(self.request, absroot, self.utility, static_page))
 
 

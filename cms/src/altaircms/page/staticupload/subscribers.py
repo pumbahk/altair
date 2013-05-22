@@ -50,6 +50,16 @@ def s3upload_directory(after_zipupload):
         logger.error("static page: s3upload failure. absroot={0}".format(absroot))
     static_page.uploaded_at = datetime.now()
 
+def s3clean_directory(after_model_delete):
+    event = after_model_delete
+    static_directory = event.static_directory
+    absroot = event.root
+    try:
+        static_directory.clean_directory(absroot)
+    except Exception as e:
+        logger.exception(str(e))
+        logger.error("static page: s3clean directory failure. absroot={0}".format(absroot))
+
 def update_model_html_files(after_zipupload):
     event = after_zipupload
     static_directory = event.static_directory

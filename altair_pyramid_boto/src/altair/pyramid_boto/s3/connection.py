@@ -101,10 +101,11 @@ class DefaultS3Uploader(object):
                             overwrite=options.get("overwrite", True))
     upload = upload_file
 
-    def delete(self, content, name):
-        k = Key(self.bucket)
-        k.key = name
-        self.bucket.delete_key(k)
+    def delete(self, name):
+        self.bucket.delete_key(name)
+
+    def delete_items(self, names):
+        self.bucket.delete_keys(names)
 
     def unpublish(self, name, check=True):
         k = Key(self.bucket)

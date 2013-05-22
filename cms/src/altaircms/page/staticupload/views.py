@@ -100,6 +100,10 @@ class StaticPageView(BaseView):
         static_directory = get_static_page_utility(self.request)
         static_directory.copy(static_directory.get_rootname(static_page), 
                               static_directory.get_rootname(copied))
+
+        static_directory = get_static_page_utility(self.request)
+        absroot = static_directory.get_rootname(copied)
+        self.request.registry.notify(creation.AfterModelCreate(self.request, absroot, static_directory, copied))
         return HTTPFound(self.context.endpoint(static_page))
 
 

@@ -18,7 +18,6 @@ class AfterCreate(object):
         self.static_directory = static_directory
         self.root = root
 
-
 class StaticPageDirectoryFactory(object):
     def __init__(self, basedir, tmpdir="/tmp"):
         self.assetresolver = AssetResolver()
@@ -35,9 +34,9 @@ class S3StaticPageDirectoryFactory(StaticPageDirectoryFactory):
 
     def setup(self, config):
         config.add_subscriber(".subscribers.refine_html_files_after_staticupload", ".directory_resources.AfterCreate")
-        config.add_subscriber(".subscribers.s3upload_directory", ".creation.AfterZipUpload")  
-        config.add_subscriber(".subscribers.update_model_html_files", ".creation.AfterZipUpload")
-
+        config.add_subscriber(".subscribers.s3clean_directory", ".creation.AfterModelDelete")  
+        config.add_subscriber(".subscribers.s3upload_directory", ".creation.AfterModelCreate")  
+        config.add_subscriber(".subscribers.update_model_html_files", ".creation.AfterModelCreate")
         ## validation:
         if get_s3_utility_factory(config) is None:
             raise ConfigurationError("s3 utility is not found")
@@ -70,6 +69,7 @@ class StaticPageDirectory(object):
     def copy(self, src, dst):
         logger.info("copy src: %s -> %s" % (src, dst))        
         shutil.copytree(src, dst)
+        self.request.registry.notify(AfterCreate(self.request, self, dst))
 
     def rename(self, src, dst):
         logger.info("rename src: %s -> %s" % (src, dst))
@@ -125,10 +125,20 @@ class S3StaticPageDirectory(StaticPageDirectory):
         bucket_name = self.s3utility.bucket_name    
         return "http://{0}.s3.amazonaws.com/{1}{2}".format(bucket_name, self.prefix, urlpart)
 
+    ## todo: move?
     def upload_directory(self, d):
         uploader = self.s3utility.uploader
         for root, dirs, files in os.walk(d):
             for f in files:
                 with open(os.path.join(root, f), "r") as rf:
                     uploader.upload_file(rf, self.get_name(root, f))
-        
+
+    def clean_directory(self, d):
+        uploader = self.s3utility.uploader
+        r = []
+        for root, dirs, files in os.walk(d):
+            for f in files:
+                r.append(self.get_name(root, f))
+        uploader.delete_items(r)
+
+

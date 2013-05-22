@@ -93,7 +93,7 @@ class S3ConnectionFactory(object):
     def delete(self, f, realpath, options=None):
         logger.info("*debug delete: bucket={0} name={1}".format(self.uploader.bucket_name, f.name))
         ## uploadしたファイルは残す.
-        # self.uploader.delete(f, f.name, options)
+        # self.uploader.delete(f.name, options)
 
 @provider(IS3UtilityFactory)
 class NullConnectionFactory(object):
