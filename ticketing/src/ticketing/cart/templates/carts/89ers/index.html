@@ -223,7 +223,7 @@ $(function() {cart.init(salesSegmentsSelection, selected, cartReleaseUrl);});
             </tr>
             <tr>
               <th scope="row">会場</th>
-              <td id="venue"> ${", ".join(set(event['venues']))}</td>
+              <td id="venue"> ${", ".join(event['venues'])}</td>
             </tr>
             <tr>
               <th scope="row">販売期間</th>
