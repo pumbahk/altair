@@ -22,6 +22,9 @@ from ticketing.lots.models import (
     LotElectWork,
     LotEntryWish,
     )
+from ticketing.multicheckout.models import (
+    MultiCheckoutOrderStatus,
+)
 import ticketing.lots.api as lots_api
 from ticketing.lots.electing import Electing
 from .helpers import Link
@@ -425,12 +428,13 @@ class LotEntries(BaseView):
         logger.debug("condition = {0}".format(condition))
         logger.debug("from = {0}".format(form.entried_from.data))
 
-        q = DBSession.query(LotEntryWish).filter(
-            LotEntry.lot_id==lot_id
-        ).filter(
-            LotEntryWish.lot_entry_id==LotEntry.id
-        ).filter(
-            ShippingAddress.id==LotEntry.shipping_address_id
+        q = DBSession.query(LotEntryWish, MultiCheckoutOrderStatus).join(
+            LotEntry
+        ).join(
+            ShippingAddress
+        ).outerjoin(
+            MultiCheckoutOrderStatus,
+            MultiCheckoutOrderStatus.OrderNo.startswith(LotEntry.entry_no)
         ).order_by(
             LotEntry.entry_no,
             LotEntryWish.wish_order
