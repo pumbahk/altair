@@ -16,7 +16,7 @@ from altaircms.models import DBSession
 from altaircms.page.models import StaticPageSet, StaticPage, PageType
 from . import forms
 from . import creation
-from .renderable import StaticPageDirectoryRenderer
+from .renderable import static_page_directory_renderer
 import logging
 logger = logging.getLogger(__name__)
 from altaircms.viewlib import BaseView, download_response
@@ -66,7 +66,7 @@ class StaticPageSetView(BaseView):
                 "pagetype": static_pageset.pagetype, 
                 "static_directory": static_directory, 
                 "current_page": static_pageset.current(), 
-                "tree_renderer": StaticPageDirectoryRenderer(self.request, static_page, static_directory), 
+                "tree_renderer": static_page_directory_renderer(self.request, static_page, static_directory), 
                 "now": get_now(self.request)}
 
 @view_defaults(route_name="static_page_part_file", permission="authenticated")
@@ -143,7 +143,7 @@ class StaticPageView(BaseView):
         form = self.context.form(forms.StaticUploadOnlyForm, self.request.POST)
         if not form.validate():
             FlashMessage.error(form.errors["zipfile"][0], request=self.request)
-            raise HTTPFound(self.request.route_url("static_pageset", action="detail", static_page_id=static_page.id))
+            raise HTTPFound(self.context.endpoint(static_page))
 
         creator = self.context.creation(creation.StaticPageCreate, form.data)
         try:

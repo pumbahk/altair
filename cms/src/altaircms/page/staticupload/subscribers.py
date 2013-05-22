@@ -43,6 +43,20 @@ def s3upload_directory(after_zipupload):
     static_directory = event.static_directory
     static_page = event.static_page
     absroot = event.root
-    static_directory.upload_directory(absroot)
+    try:
+        static_directory.upload_directory(absroot)
+    except Exception as e:
+        logger.exception(str(e))
     static_page.uploaded_at = datetime.now()
 
+def update_model_html_files(after_zipupload):
+    event = after_zipupload
+    static_directory = event.static_directory
+    static_page = event.static_page
+    absroot = event.root
+    ## model update
+    inspection_targets = {}
+    for root, dirs, files in os.walk(absroot):
+        for f in files:
+            inspection_targets[os.path.join(root.replace(static_directory.get_base_directory(), ""), f)] = 1
+    static_page.file_structure_text = json.dumps(inspection_targets)

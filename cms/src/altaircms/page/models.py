@@ -1,6 +1,7 @@
 # coding: utf-8
 import logging
 logger = logging.getLogger(__name__)
+import json
 from sqlalchemy.ext.declarative import declared_attr
 from altaircms.modelmanager.ancestors import HasAncestorMixin
 from datetime import datetime
@@ -271,6 +272,7 @@ class StaticPage(BaseOriginalMixin,
     id = sa.Column(sa.Integer, primary_key=True)
     created_at = sa.Column(sa.DateTime, default=datetime.now)
     updated_at = sa.Column(sa.DateTime, default=datetime.now, onupdate=datetime.now)
+    file_structure_text = orm.deferred(sa.Column(sa.Text, default="", nullable=False))
     uploaded_at = sa.Column(sa.DateTime)
     name = sa.Column(sa.String(255), doc="directory name(internal)")
     label = sa.Column(sa.Unicode(255), doc=u"日本語名", default=u"")
@@ -283,6 +285,10 @@ class StaticPage(BaseOriginalMixin,
     layout = relationship(Layout, backref='static_pages', uselist=False)
     interceptive = Column(sa.Boolean, default=False)
 
+    @reify
+    def file_structure(self):
+        return json.loads(self.file_structure_text)
+    
     @property
     def description(self):
         return self.label or self.name or u""

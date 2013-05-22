@@ -3,6 +3,64 @@ import os
 from altaircms.helpers import url_create_with
 from markupsafe import Markup
 
+def static_page_directory_renderer(request, static_page, static_directory):
+    if static_page.uploaded_at:
+        return StaticPageDirectoryRendererFromDB(request, static_page, static_directory)
+    else:
+        return StaticPageDirectoryRenderer(request, static_page, static_directory)        
+
+## helper structure
+class _Node(object):
+    def __init__(self, root, D):
+        self.root = root
+        self.children = {}
+        self.D = D
+        D[root] = self
+    
+    @classmethod
+    def create_from_dict(cls, D):
+        nodes = [k.split("/") for k in D.keys()]
+        mem = {}
+        root = cls("", mem)
+        for n in nodes:
+            root._add_element(n)
+        return root
+
+    def _add_element(self, n):
+        if isinstance(n,(tuple, list)) and n:
+            if not self.children.get(n[0]):
+                name = "{0}/{1}".format(self.root, n[0]) if self.root else n[0]
+                self.children[n[0]] = _Node(name, self.D)
+            self.children[n[0]]._add_element(n[1:])
+
+
+class StaticPageDirectoryRendererFromDB(object):
+    def __init__(self, request, static_page, static_directory):
+        self.request = request
+        self.page = static_page
+        self.pageset = static_page.pageset
+        self.static_directory = static_directory
+        self.node = _Node.create_from_dict(static_page.file_structure)
+
+    def create_url(self, path):
+        return self.request.route_path("static_page_display",  path=path).replace("%2F", "/")
+
+    def has_children(self, path):
+        return bool(self.node.D[path].children)
+
+    def get_children(self, path):
+        return self.node.D[path].children.keys()
+
+    def join_name(self, dirname, basename):
+        return "{0}/{1}".format(dirname, basename)
+
+    def parent_action_links(self, path):
+        return ""
+
+    def __html__(self):
+        self.root = self.join_name(self.page.name, self.page.id)
+        return TreeRenderer(self.request, self.root, self).__html__()
+
 class StaticPageDirectoryRenderer(object):
     def __init__(self, request, static_page, static_directory):
         self.request = request
@@ -12,10 +70,6 @@ class StaticPageDirectoryRenderer(object):
         self.basedir = static_directory.get_base_directory()
         if not self.basedir.endswith("/"):
             self.basedir += "/"
-
-    def __html__(self):
-        self.root = self.static_directory.get_rootname(self.page)
-        return TreeRenderer(self.request, self.root, self).__html__()
 
     def create_url(self, path):
         return self.request.route_path("static_page_display",  path=path.replace(self.basedir, "")).replace("%2F", "/")
@@ -37,6 +91,10 @@ class StaticPageDirectoryRenderer(object):
 # '''.format(self.request.route_path("static_page_part_directory", static_page_id=self.pageset.id, child_id=self.page.id, path=part, action="create"), 
 #            self.request.route_path("static_page_part_directory", static_page_id=self.pageset.id, child_id=self.page.id, path=part, action="delete"))
         return u""
+
+    def __html__(self):
+        self.root = self.static_directory.get_rootname(self.page)
+        return TreeRenderer(self.request, self.root, self).__html__()
 
 class TreeRenderer(object):
     def __init__(self, request, root, companion):

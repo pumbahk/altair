@@ -16,6 +16,9 @@ from sqlalchemy.dialects import mysql
 
 def upgrade():
     op.add_column('static_pages', sa.Column('uploaded_at', sa.DateTime(), nullable=True))
+    op.add_column('static_pages', sa.Column('file_structure_text', sa.Text, nullable=False))
 
 def downgrade():
     op.drop_column('static_pages', 'uploaded_at')
+    op.drop_column('static_pages', 'file_structure_text')
+

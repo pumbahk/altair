@@ -36,6 +36,7 @@ class S3StaticPageDirectoryFactory(StaticPageDirectoryFactory):
     def setup(self, config):
         config.add_subscriber(".subscribers.refine_html_files_after_staticupload", ".directory_resources.AfterCreate")
         config.add_subscriber(".subscribers.s3upload_directory", ".creation.AfterZipUpload")  
+        config.add_subscriber(".subscribers.update_model_html_files", ".creation.AfterZipUpload")  
 
 @implementer(IDirectoryResource)
 class StaticPageDirectory(object):
