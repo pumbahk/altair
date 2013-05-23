@@ -1,5 +1,5 @@
 # -*- coding:utf-8 -*-
-from .forms import TopSearchForm, GenreSearchForm, AreaSearchForm, DetailSearchForm, GenreAreaSearchForm, HotwordSearchForm
+from .forms import TopSearchForm, GenreSearchForm, AreaSearchForm, DetailSearchForm, HotwordSearchForm
 from .search_query import SearchQuery, AreaSearchQuery, HotwordSearchQuery, DetailSearchQuery, EventOpenInfo, SaleInfo\
     , PerformanceInfo
 from ..common.const import SalesEnum
@@ -80,7 +80,7 @@ def search_area(context, request):
              , renderer='altairsite.smartphone:templates/searchresult/genre_area.html')
 def search_genre_area(context, request):
     # ジャンル画面のエリア検索
-    form = GenreAreaSearchForm(request.GET)
+    form = AreaSearchForm(request.GET)
     genre = context.get_genre(form.data['genre_id'])
     query = AreaSearchQuery(area=form.data['area'], genre=genre, genre_label=genre.label)
     result = context.search_area(query, int(form.data['page']), 10)

@@ -1,56 +1,11 @@
 <%page args="areas, genre, helper" />
 <%namespace file="tags_smartphone.html" name="m" />
 
-<script type="text/javascript">
-$(function () {
-  $('*[data-toggle]').each(function (_, n) {
-    $(n).on('click', function () {
-      var target = $(document.getElementById(n.getAttribute('data-toggle')));
-      if (target.hasClass('activated')) {
-        target.removeClass('activated');
-        target.animate({ height: target.attr('data-prev-height') + 'px' }, {
-          duration: 100
-        });
-      } else {
-        var h = 0;
-        var targetOffset = target.offset().top;
-        target.children().each(function (_, n) {
-          h += $(n).height();
-        });
-        target.attr('data-prev-height', target.height());
-        target.animate({ height: h + 'px' }, {
-          duration: 100,
-          step: function (h) {
-            var dest = targetOffset + h - $(window).height();
-            if ($(window).scrollTop() < dest) {
-              $(window).scrollTop(dest);
-            }
-          }
-        });
-        target.addClass('activated');
-      }
-      return false;
-    });
-  });
-});
-</script>
-
 <h2 class="glitter red">地域で絞り込む</h2>
 % if areas:
-    <form action="${request.route_path('search_genre_area')}" method="GET">
-        <input type="hidden" name="genre_id" value=${genre.id}/>
-        <ul class="panellist fullwidth expandable">
-        % for area in areas:
-            <li class="panelgroup" id=${area.name}>
-                <span class="panelgroup-label"><a href="#" data-toggle="${area.name}">${helper.get_area_japanese(area.name)}</a></span>
-                <ul class="panelgroup-inner">
-                    % for pref in area.prefectures:
-                        <li class="panel"><label><input name=${pref} type="checkbox" />${helper.get_prefecture_japanese(pref)}</label></li>
-                    % endfor
-                </ul>
-            </li>
-        % endfor
-        </ul>
-        <input type="submit" class="btn-secondary" value="検索"/>
-    </form>
+    <ul class="menu">
+    % for area in areas:
+        <a href="${request.route_path('search_genre_area')}?genre_id=${genre.id}&area=${area.name}&page=1"><li class="menuitem"><span class="menuitem-label">${helper.get_area_japanese(area.name)}</span></li></a>
+    % endfor
+    </ul>
 % endif
