@@ -3281,16 +3281,20 @@ class SalesSegment(Base, BaseModel, LogicallyDeleted, WithTimestamp):
             product.delete()
         super(type(self), self).delete()
 
-    def get_amount(self, products):
-        return self.total_fee + self.get_products_amount(products)
+    def get_amount(self, pdmp, product_quantities):
+        return self.total_fee(pdmp) + self.get_products_amount(product_quantities)
 
-    def get_products_amount(self, products):
-        return self.product.price * self.quantity
+    def get_products_amount(self, product_quantities):
+        if len(product_quantities) == 0:
+            return 0
 
+        return sum([product.price * quantity
+                    for product, quantity in product_quantities])
 
-    @property
-    def total_fee(self):
-        return self.system_fee + self.transaction_fee + self.delivery_fee
+    def total_fee(self, pdmp):
+        return (pdmp.system_fee
+                + pdmp.transaction_fee
+                + pdmp.delivery_fee)
 
 
 class OrganizationSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):

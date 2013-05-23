@@ -164,7 +164,10 @@ class Cart(Base):
 
     @property
     def total_amount(self):
-        return self.tickets_amount + self.system_fee + self.transaction_fee + self.delivery_fee
+        #return self.tickets_amount + self.system_fee + self.transaction_fee + self.delivery_fee
+        return self.sales_segment.get_amount(self.payment_delivery_pair,
+                                             [(p.product, p.quantity)
+                                              for p in self.products])
 
     @property
     def tickets_amount(self):

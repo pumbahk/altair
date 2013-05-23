@@ -99,12 +99,14 @@ def convert_wishes(params, limit):
     results = {}
     for key, product_id in product_ids.items():
         wish_order = key[0]
-        performance_id = performance_ids[wish_order]
+        #performance_id = performance_ids[wish_order]
         if key not in wished_quantities:
             continue
         quantity = wished_quantities[key]
         wishset = results.get(wish_order, [])
-        wishset.append(dict(wish_order=wish_order, product_id=product_id, quantity=quantity))
+        wishset.append(dict(wish_order=wish_order,
+                            product_id=product_id,
+                            quantity=quantity))
         results[wish_order] = wishset
         
     return [dict(performance_id=performance_ids[x], wished_products=results[x]) for x in sorted(results)]

@@ -85,22 +85,14 @@ class LotSessionCart(object):
 
     @property
     def total_amount(self):
-        ###### !!!!!
         # オーソリ時は申し込みの最大金額を使う
-        from .api import build_lot_entry
-        
-        entry = build_lot_entry(
-            lot=self.lot,
-            wishes=self.wishes,
-            payment_delivery_method_pair=self.payment_delivery_pair,
-            )
+        def _p(product_id):
+            return Product.query.filter(Product.id==product_id).one()
 
-        for wish in entry.wishes:
-            for p in wish.products:
-                p.product = Product.query.filter(Product.id==p.product_id).one()
-        amount = entry.max_amount
-        DBSession.expunge(entry)
-        return amount
+        return max([self.sales_segment.get_amount(self.payment_delivery_pair,
+                                                  [(_p(wp['product_id']), wp['quantity'])
+                                                   for wp in wish['wished_products']])
+                    for wish in self.wishes])
 
     @property
     def name(self):
