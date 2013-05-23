@@ -18,10 +18,10 @@ class _Node(object):
         D[root] = self
     
     @classmethod
-    def create_from_dict(cls, D):
+    def create_from_dict(cls, D, prefix=""):
         nodes = [k.split("/") for k in D.keys()]
         mem = {}
-        root = cls("", mem)
+        root = cls(prefix, mem)
         for n in nodes:
             root._add_element(n)
         return root
@@ -40,10 +40,13 @@ class StaticPageDirectoryRendererFromDB(object):
         self.page = static_page
         self.pageset = static_page.pageset
         self.static_directory = static_directory
-        self.node = _Node.create_from_dict(static_page.file_structure)
+        self.node = _Node.create_from_dict(static_page.file_structure, prefix=unicode(static_page.id))
 
     def create_url(self, path):
-        return self.request.route_path("static_page_display",  path=path).replace("%2F", "/")
+        return self.request.route_path("static_page_display", 
+                                       static_page_id=self.pageset.id, 
+                                       child_id=self.page.id, 
+                                       path="{0}/{1}".format(self.pageset.url, path)).replace("%2F", "/")
 
     def has_children(self, path):
         return bool(self.node.D[path].children)
@@ -58,7 +61,7 @@ class StaticPageDirectoryRendererFromDB(object):
         return ""
 
     def __html__(self):
-        self.root = "{0}/{1}".format(self.page.prefix, self.page.id)
+        self.root = unicode(self.page.id)
         return TreeRenderer(self.request, self.root, self).__html__()
 
 class StaticPageDirectoryRenderer(object):
@@ -72,7 +75,10 @@ class StaticPageDirectoryRenderer(object):
             self.basedir += "/"
 
     def create_url(self, path):
-        return self.request.route_path("static_page_display",  path=path.replace(self.basedir, "")).replace("%2F", "/")
+        return self.request.route_path("static_page_display", 
+                                       static_page_id=self.pageset.id, 
+                                       child_id=self.page.id, 
+                                       path=path.replace(self.basedir, "")).replace("%2F", "/")
 
     def has_children(self, path):
         return os.path.isdir(path)

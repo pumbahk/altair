@@ -164,8 +164,7 @@ class StaticPageView(BaseView):
 
 @view_config(route_name="static_page_display", permission="authenticated")
 def static_page_display_view(context, request):
-    prefix = request.matchdict["path"].lstrip("/").split("/", 1)[0]
-    static_page = get_or_404(request.allowable(StaticPage), StaticPage.name==prefix)
+    static_page = get_or_404(request.allowable(StaticPage), StaticPage.id==request.matchdict["child_id"])
     static_directory = get_static_page_utility(request)
     try:
         path = os.path.join(static_directory.get_base_directory(), request.matchdict["path"])

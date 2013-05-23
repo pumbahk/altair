@@ -60,16 +60,15 @@ def s3clean_directory(after_model_delete):
         logger.exception(str(e))
         logger.error("static page: s3clean directory failure. absroot={0}".format(absroot))
 
-def update_model_html_files(after_zipupload):
+def update_model_file_structure(after_zipupload):
     event = after_zipupload
-    static_directory = event.static_directory
     static_page = event.static_page
     absroot = event.root
     ## model update
     inspection_targets = {}
     for root, dirs, files in os.walk(absroot):
         for f in files:
-            inspection_targets[os.path.join(root.replace(static_directory.get_base_directory(), ""), f)] = 1
+            inspection_targets[os.path.join(root.replace(absroot, ""), f)] = 1
     static_page.file_structure_text = json.dumps(inspection_targets)
 
 def s3rename_uploaded_files(after_change_directory):

@@ -90,12 +90,13 @@ def _static_page_response_network(request, static_page, url, force_original=Fals
     if path:     
         io = urllib.urlopen(static_page_utility.get_url(path))
     else:
-        url_parts = url if url.startswith("/") else "/"+url
-        url_parts = url_parts.replace(static_page.prefix,"{0}/{1}".format(static_page.prefix, static_page.id), 1)
-        if not url_parts in static_page.file_structure:
-            logger.warn("{0} is not found in {1}".format(url_parts, static_page.file_structure_text))
+        file_path = url[1:] if url.startswith("/") else url
+        prefix, file_path = file_path.split("/", 1)
+        if not file_path in static_page.file_structure:
+            logger.warn("{0} is not found in {1}".format(file_path, static_page.file_structure_text))
             raise StaticPageNotFound()
-        io = urllib.urlopen(static_page_utility._get_url("/{0}{1}".format(request.organization.short_name, url_parts)))
+        url_parts = "/{0}/{1}/{2}/{3}".format(request.organization.short_name, prefix, static_page.id, file_path)
+        io = urllib.urlopen(static_page_utility._get_url(url_parts))
         path = url #xxx:
     try:
         size = int(io.info().get("Content-Length", "0"))

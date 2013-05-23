@@ -44,7 +44,7 @@ class S3StaticPageDirectoryFactory(StaticPageDirectoryFactory):
         config.add_subscriber(".subscribers.s3rename_uploaded_files", ".directory_resources.AfterChangeDirectory")
         config.add_subscriber(".subscribers.s3clean_directory", ".creation.AfterModelDelete")  
         config.add_subscriber(".subscribers.s3upload_directory", ".creation.AfterModelCreate")  
-        config.add_subscriber(".subscribers.update_model_html_files", ".creation.AfterModelCreate")
+        config.add_subscriber(".subscribers.update_model_file_structure", ".creation.AfterModelCreate")
         ## validation:
         if get_s3_utility_factory(config) is None:
             raise ConfigurationError("s3 utility is not found")
