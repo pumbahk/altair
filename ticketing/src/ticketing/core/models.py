@@ -3281,6 +3281,18 @@ class SalesSegment(Base, BaseModel, LogicallyDeleted, WithTimestamp):
             product.delete()
         super(type(self), self).delete()
 
+    def get_amount(self, products):
+        return self.total_fee + self.get_products_amount(products)
+
+    def get_products_amount(self, products):
+        return self.product.price * self.quantity
+
+
+    @property
+    def total_fee(self):
+        return self.system_fee + self.transaction_fee + self.delivery_fee
+
+
 class OrganizationSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = "OrganizationSetting"
     id = Column(Identifier, primary_key=True)
