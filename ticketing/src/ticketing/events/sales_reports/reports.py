@@ -12,7 +12,6 @@ from sqlalchemy.orm import aliased
 from ticketing.core.models import Event, Mailer
 from ticketing.core.models import StockType, StockHolder, StockStatus, Stock, Performance, Product, ProductItem, SalesSegmentGroup, SalesSegment
 from ticketing.core.models import Order, OrderedProduct
-from ticketing.helpers import todatetime
 
 logger = logging.getLogger(__name__)
 
@@ -488,8 +487,8 @@ class PerformanceReporter(object):
         for sales_segment in performance.sales_segments:
             if not sales_segment.public:
                 continue
-            if (form.limited_from.data and sales_segment.end_at < todatetime(form.limited_from.data)) or\
-               (form.limited_to.data and todatetime(form.limited_to.data) < sales_segment.start_at):
+            if (form.limited_from.data and sales_segment.end_at < form.limited_from.data) or\
+               (form.limited_to.data and form.limited_to.data < sales_segment.start_at):
                 continue
             self.form.sales_segment_group_id.data = sales_segment.sales_segment_group_id
             self.reporters[sales_segment] = SalesDetailReporter(form)
@@ -513,7 +512,7 @@ class EventReporter(object):
             if not performance.public:
                 continue
             end_on = performance.end_on or performance.start_on
-            if form.limited_from.data and end_on < todatetime(form.limited_from.data):
+            if form.limited_from.data and end_on < form.limited_from.data:
                 continue
             self.form.performance_id.data = performance.id
             self.reporters[performance] = PerformanceReporter(form, performance)
