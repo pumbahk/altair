@@ -23,6 +23,12 @@ class AfterModelDelete(object):
         self.static_page = static_page
         self.static_directory = static_directory
 
+class AfterDeleteCompletely(object):
+    def __init__(self, request, static_directory, static_pageset):
+        self.request = request
+        self.static_directory = static_directory
+        self.static_pageset = static_pageset
+
 def get_staticupload_filesession(request):
     return get_adapts_filesession(request, name=SESSION_NAME)
 

@@ -44,6 +44,7 @@ class S3StaticPageDirectoryFactory(StaticPageDirectoryFactory):
         config.add_subscriber(".subscribers.s3rename_uploaded_files", ".directory_resources.AfterChangeDirectory")
         config.add_subscriber(".subscribers.s3clean_directory", ".creation.AfterModelDelete")  
         config.add_subscriber(".subscribers.s3upload_directory", ".creation.AfterModelCreate")  
+        config.add_subscriber(".subscribers.s3delete_files_completely", ".creation.AfterDeleteCompletely")  
         config.add_subscriber(".subscribers.update_model_file_structure", ".creation.AfterModelCreate")
         ## validation:
         if get_s3_utility_factory(config) is None:
@@ -94,9 +95,9 @@ class StaticPageDirectory(object):
         return zipupload.create_directory_snapshot(src)
 
     def delete(self, src):
-        logger.info("delete src: %s" % (src))        
+        logger.warn("delete src: %s" % (src))        
         return shutil.rmtree(src)
-
+        
     def create(self, src, io):
         logger.info("create src: %s" % (src))                
         zipupload.extract_directory_from_zipfile(src, io)

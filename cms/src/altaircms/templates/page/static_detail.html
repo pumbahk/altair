@@ -21,14 +21,18 @@ h3{
 
 <table class="table table-striped">
   <tr>
-    <th class="span2">name(urlの一部)</th><td>${static_pageset.name}</td>
+    <th class="span2">name</th><td>${static_pageset.name}</td>
+    <th class="span2">urlの一部</th><td>${static_pageset.url}</td>
   </tr>
 </table>
 
 <div class="btn-group">
   <a class="btn btn-primary"
-	   href="${request.route_path("static_pageset_update", action="input", id=static_pageset.id, _query=dict(endpoint=request.url, pagetype=pagetype.name))}"> <%doc>xxx:</%doc>
+	   href="${request.route_path("static_pageset_update", action="input", id=static_pageset.id, _query=dict(endpoint=request.url, pagetype=pagetype.name))}"> 
     <i class="icon-cog"></i> 変更
+  <a class="btn btn-danger"
+	   href="${request.route_path("static_pageset_delete", action="confirm", id=static_pageset.id, _query=dict(endpoint=request.url, pagetype=pagetype.name))}"> 
+    <i class="icon-trash"></i> 削除(全部消えます。とても危険です)
   </a>
 </div>
 

@@ -60,6 +60,28 @@ def s3clean_directory(after_model_delete):
         logger.exception(str(e))
         logger.error("static page: s3clean directory failure. absroot={0}".format(absroot))
 
+def s3delete_files_completely(after_delete_completely):
+    event = after_delete_completely
+    static_directory = event.static_directory
+    static_pageset = event.static_pageset
+    uploader = static_directory.s3utility.uploader
+    name = "{0}/{1}/{2}".format(static_directory.prefix, event.request.organization.short_name, static_pageset.url)
+    try:
+        logger.warn("delete all completely!! danger danger,  src=%s" % name)
+        delete_candidates = list(uploader.bucket.list(name))
+        uploader.delete_items(delete_candidates)
+    except Exception as e:
+        logger.exception(str(e))
+        logger.error("static page: s3delete files completely. name={0}".format(name))
+
+def s3rename_uploaded_files(after_change_directory):
+    event = after_change_directory
+    static_directory = event.static_directory
+    static_directory.s3utility.uploader.copy_items(
+        static_directory.get_name(*os.path.split(event.src)), 
+        static_directory.get_name(*os.path.split(event.dst)), 
+        recursive=True)
+   
 def update_model_file_structure(after_zipupload):
     event = after_zipupload
     static_page = event.static_page
@@ -70,12 +92,3 @@ def update_model_file_structure(after_zipupload):
         for f in files:
             inspection_targets[os.path.join(root.replace(absroot, ""), f)] = 1
     static_page.file_structure_text = json.dumps(inspection_targets)
-
-def s3rename_uploaded_files(after_change_directory):
-    event = after_change_directory
-    static_directory = event.static_directory
-    static_directory.s3utility.uploader.copy_items(
-        static_directory.get_name(*os.path.split(event.src)), 
-        static_directory.get_name(*os.path.split(event.dst)), 
-        recursive=True)
-    
