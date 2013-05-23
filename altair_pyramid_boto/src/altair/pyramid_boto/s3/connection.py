@@ -132,3 +132,11 @@ class DefaultS3Uploader(object):
         elif k.exists():
             k.set_canned_acl("public-read")
 
+    def copy_items(self, src, dst, recursive=False, src_bucket_name=None):
+        src_bucket_name = src_bucket_name or self.bucket.name
+        bucket = self.bucket
+        if not recursive:
+            return bucket.copy_key(dst, src_bucket_name, src, preserve_acl=True)
+        for k in bucket.list(src):
+            bucket.copy_key(k.name.replace(src, dst, 1), src_bucket_name, k.name, preserve_acl=True)
+        

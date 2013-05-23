@@ -71,3 +71,12 @@ def update_model_html_files(after_zipupload):
         for f in files:
             inspection_targets[os.path.join(root.replace(static_directory.get_base_directory(), ""), f)] = 1
     static_page.file_structure_text = json.dumps(inspection_targets)
+
+def s3rename_uploaded_files(after_change_directory):
+    event = after_change_directory
+    static_directory = event.static_directory
+    static_directory.s3utility.uploader.copy_items(
+        static_directory.get_name(*os.path.split(event.src)), 
+        static_directory.get_name(*os.path.split(event.dst)), 
+        recursive=True)
+    

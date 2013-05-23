@@ -18,6 +18,13 @@ class AfterCreate(object):
         self.static_directory = static_directory
         self.root = root
 
+class AfterChangeDirectory(object):
+    def __init__(self, request, static_directory, src, dst):
+        self.request = request
+        self.static_directory = static_directory
+        self.src = src
+        self.dst = dst
+
 class StaticPageDirectoryFactory(object):
     def __init__(self, basedir, tmpdir="/tmp"):
         self.assetresolver = AssetResolver()
@@ -34,6 +41,7 @@ class S3StaticPageDirectoryFactory(StaticPageDirectoryFactory):
 
     def setup(self, config):
         config.add_subscriber(".subscribers.refine_html_files_after_staticupload", ".directory_resources.AfterCreate")
+        config.add_subscriber(".subscribers.s3rename_uploaded_files", ".directory_resources.AfterChangeDirectory")
         config.add_subscriber(".subscribers.s3clean_directory", ".creation.AfterModelDelete")  
         config.add_subscriber(".subscribers.s3upload_directory", ".creation.AfterModelCreate")  
         config.add_subscriber(".subscribers.update_model_html_files", ".creation.AfterModelCreate")
@@ -78,7 +86,8 @@ class StaticPageDirectory(object):
 
     def rename(self, src, dst):
         logger.info("rename src: %s -> %s" % (src, dst))
-        return os.rename(src, dst)
+        os.rename(src, dst)
+        self.request.registry.notify(AfterChangeDirectory(self.request, self, src, dst))
 
     def backup(self, src):
         logger.info("backup src: %s" % (src))        
@@ -109,6 +118,7 @@ class StaticPageDirectory(object):
             raise 
 
 
+## todo: split
 @implementer(IDirectoryResource)
 class S3StaticPageDirectory(StaticPageDirectory):
     prefix = "static/uploaded"
@@ -133,6 +143,7 @@ class S3StaticPageDirectory(StaticPageDirectory):
     ## todo: move?
     def upload_directory(self, d):
         uploader = self.s3utility.uploader
+        logger.info("upload_directory: {0}".format(d))
         for root, dirs, files in os.walk(d):
             for f in files:
                 with open(os.path.join(root, f), "r") as rf:
@@ -140,10 +151,24 @@ class S3StaticPageDirectory(StaticPageDirectory):
 
     def clean_directory(self, d):
         uploader = self.s3utility.uploader
+        logger.info("clean_directory: {0}".format(d))
         r = []
         for root, dirs, files in os.walk(d):
             for f in files:
                 r.append(self.get_name(root, f))
         uploader.delete_items(r)
 
+    def copy_items(self, src, dst):
+        logger.info("copy_items: {0} -> {1}".format(src, dst))
+        uploader = self.s3utility.uploader
+        try:
+            uploader.copy_items(src, dst, recursive=True)
+        except Exception as e:
+            logger.exception(str(e))
+        else:
+            self.clean_items(self, src)
 
+    def clean_items(self, src):
+        logger.info("clean_items: src = {0}".format(src))
+        uploader = self.s3utility.uploader
+        uploader.delete_items(list(uploader.bucket.list(src)))

@@ -157,7 +157,7 @@ def sales_term_bubbling_update(self):
 def event_term_bubbling_update(self):
     EventTermSummalize(self.request).summalize(self.obj).bubble()
 
-def update_after_static_page(self):
+def update_after_static_pageset(self):
     if not self.obj.url and hasattr(self.request, "_static_page_prefix"):
         self.obj.url = self.request._static_page_
 
@@ -165,4 +165,3 @@ def update_after_static_page(self):
         utility = get_static_page_utility(self.request)
         utility.rename(utility.get_toplevelname(self.obj, name=self.request._static_page_prefix),
                        utility.get_toplevelname(self.obj))
-    ## todo:s3support

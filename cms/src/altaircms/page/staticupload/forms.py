@@ -13,6 +13,7 @@ from altaircms.formhelpers.validations import validate_term, validate_filetype
 from altaircms.formhelpers.validations import ValidationQueue
 from altaircms.layout.models import Layout
 from altaircms.page.forms import layout_filter
+from altaircms.viewlib import FlashMessage
 
 ## static page
 class StaticPageCreateForm(Form):
@@ -91,9 +92,11 @@ class StaticPageSetForm(Form):
         data = self.data
         self.request._static_page_prefix = obj.url #too add-hoc    
         path = os.path.join(self.static_directory.get_base_directory(), data["url"])
-        if obj.url != data["url"] and os.path.exists(path):
-            self.errors["url"] = [u"{0} は既に利用されています".format(data["url"])]
-            return False
+        if obj.url != data["url"]:
+            if os.path.exists(path):
+                self.errors["url"] = [u"{0} は既に利用されています".format(data["url"])]
+                return False
+            FlashMessage.info(u"ファイルの置かれる位置を変更しようとしています。この処理には時間がかかることがあります", request=self.request)
         return True
 
     def configure(self, request):
