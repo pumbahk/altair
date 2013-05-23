@@ -12,7 +12,6 @@ class EventHelper(object):
             .filter(Event.is_searchable == True) \
             .join(PageSet, Event.id == PageSet.event_id) \
             .filter(PageSet.id == linked_page_id).first()
-        print event
         log_info("get_event_from_linked_page_id", "end")
         return event
 

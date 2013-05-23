@@ -20,8 +20,8 @@
 株式会社チケットスター<br/>
 (英名：TicketStar Inc. )<br/>
 
-電話番号：050-5830-6868<br/>
-FAX番号：03-5795-1877<br/>
+電話番号：050-5817-9070<br/>
+FAX番号：03-6420-0354<br/>
 メールアドレス：info@ticketstar.jp<br/>
 URL：http://www.ticketstar.jp/corporate<br/><br/>
 
