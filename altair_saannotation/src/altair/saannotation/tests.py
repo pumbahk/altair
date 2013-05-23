@@ -7,6 +7,7 @@ class AnnotatedColumnTest(TestCase):
         from sqlalchemy.types import Integer, Unicode
         from sqlalchemy.schema import Column, ForeignKey
         from sqlalchemy.orm import sessionmaker, relationship
+        from sqlalchemy.ext.associationproxy import association_proxy
         from sqlalchemy import create_engine
 
         Base = declarative_base()
@@ -14,9 +15,11 @@ class AnnotatedColumnTest(TestCase):
             __tablename__ = 'Test'
             id = AnnotatedColumn(Integer, _annotations={'display_name':'Identifier'}, primary_key=True)
             first_name = AnnotatedColumn(Unicode, _a_display_name='First name')
+            foo_ids = association_proxy('foos', 'id')
 
         class Foo(Base):
             __tablename__ = 'Foo'
+            id = AnnotatedColumn(Integer, primary_key=True, _annotations='Foo #')
             test_id = AnnotatedColumn(Integer, ForeignKey('Test.id'), primary_key=True, _a_display_name='Test #')
             test = relationship('Test', backref='foos')
             extra = Column(Unicode)
@@ -37,7 +40,7 @@ class AnnotatedColumnTest(TestCase):
         self.assertEqual(result[0][1], u'test1')
 
         session = self.Session(bind=self.engine)
-        session.add(self.Test(id=2, first_name=u'test2'))
+        session.add(self.Test(id=2, first_name=u'test2', foos=[self.Foo(id=1, extra=u'1'), self.Foo(id=2, extra=u'2')]))
         session.flush()
 
         result = session.query(self.Test).order_by(asc(self.Test.id)).all()
@@ -46,6 +49,7 @@ class AnnotatedColumnTest(TestCase):
         self.assertEqual(result[0].first_name, u'test1')
         self.assertEqual(result[1].id, 2)
         self.assertEqual(result[1].first_name, u'test2')
+        self.assertEqual([1, 2], result[1].foo_ids)
 
     def test_get_annotations_for(self):
         from . import get_annotations_for
@@ -54,4 +58,5 @@ class AnnotatedColumnTest(TestCase):
         self.assertEqual(get_annotations_for(self.Test.__table__.c.id), {'display_name': 'Identifier'})
         self.assertEqual(get_annotations_for(self.Test.id), {'display_name': 'Identifier'})
         self.assertEqual(get_annotations_for(self.Test.foos), {'display_name': 'Identifier'})
+        self.assertEqual(get_annotations_for(self.Test.foo_ids), {'display_name': 'Foo #'})
         self.assertEqual(get_annotations_for(self.Foo.test), {'display_name': 'Test #'})
