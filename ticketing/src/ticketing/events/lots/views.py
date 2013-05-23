@@ -431,7 +431,11 @@ class LotEntries(BaseView):
         q = DBSession.query(LotEntryWish, MultiCheckoutOrderStatus).join(
             LotEntry
         ).join(
+            Lot
+        ).join(
             ShippingAddress
+        ).filter(
+            Lot.id==lot_id
         ).outerjoin(
             MultiCheckoutOrderStatus,
             sql.and_(MultiCheckoutOrderStatus.OrderNo.startswith(LotEntry.entry_no),
