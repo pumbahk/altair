@@ -23,7 +23,7 @@ class CommonResource(object):
         self.request = request
 
     def get_top_render_param(self):
-        promotions = self.getInfo(kind="promotion", system_tag_id=None)[0:5]
+        promotions = self.getInfo(kind="promotion", system_tag_id=None)[0:15]
         topcontents = self.getInfo(kind="topcontent", system_tag_id=None)[0:5]
         topics = self.getInfo(kind="topic", system_tag_id=None)[0:5]
         hotwords = self.get_hotword()[0:5]

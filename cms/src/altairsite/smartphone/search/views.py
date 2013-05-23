@@ -7,7 +7,6 @@ from ..common.helper import SmartPhoneHelper
 from altairsite.config import usersite_view_config
 
 from pyramid.renderers import render_to_response
-from datetime import datetime
 
 @usersite_view_config(route_name='search',request_type="altairsite.tweens.ISmartphoneRequest"
              , renderer='altairsite.smartphone:templates/searchresult/search.html')

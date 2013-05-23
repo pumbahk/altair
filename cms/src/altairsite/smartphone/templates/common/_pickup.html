@@ -1,24 +1,121 @@
 <%page args="promotions, helper" />
 <%namespace file="tags_smartphone.html" name="m" />
 
-<b>ピックアップ（プロモーション）</b><br/>
-% if promotions:
-    % for promo in promotions:
-        ${promo.text}<br/>
-    % endfor
-% endif
+<script>
+$(function() {
 
-<h2 class="glitter red">ピックアップ</h2>
-% if promotions:
-  <div class="sweet-ass-coverflow-slider">
-    <ul>
-      % for promo in promotions:
-        <li>
-          <div>
-            <img class="thematic" src="${request.route_path('__staticasset/', subpath=helper.get_image_asset(request, promo.id).filepath)}" width="50" />
-          </div>
-        </li>
-      % endfor
-    </ul>
-  </div>
-% endif
+    Flipsnap('.flipsnap');
+
+    (function pointmove() {
+        var $demo = $('#demo-pointmove');
+        var $pointer = $demo.find('.pointer span');
+        var flipsnap = Flipsnap('#demo-pointmove .flipsnap');
+        /*
+        var flipsnap = Flipsnap('#demo-pointmove .flipsnap');
+        var flipsnap = Flipsnap('#demo-pointmove .flipsnap', {
+            distance: 230
+        });
+        */
+        flipsnap.element.addEventListener('fspointmove', function() {
+            $pointer.filter('.current').removeClass('current');
+            $pointer.eq(flipsnap.currentPoint).addClass('current');
+        }, false);
+
+        var $next = $demo.find(".next").click(function() {
+            flipsnap.toNext();
+        });
+        var $prev = $demo.find(".prev").click(function() {
+            flipsnap.toPrev();
+        });
+        flipsnap.element.addEventListener('fspointmove', function() {
+            $next.attr("disabled", !flipsnap.hasNext());
+            $prev.attr("disabled", !flipsnap.hasPrev());
+        }, false);
+    })();
+
+})();
+</script>
+
+<style>
+
+.pointer {
+  text-align: center; }
+
+.pointer span {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 8px;
+  border: 1px solid #000; }
+
+.pointer span.current {
+  background: #FC0; }
+
+.controls {
+  text-align: center;
+  margin: 0 0 15px 0; }
+
+.controls .num {
+  width: 60px; }
+
+.viewport {
+    width: 320px;
+    overflow: hidden;
+    margin: 0 auto;
+}
+
+.flipsnap {
+    width: 2560px; /* 320px(item width) * 3(item count) */
+}
+
+.item {
+    float: left;
+    width: 310px;
+    font-size: 50px;
+    text-align: center;
+    padding: 50px 0;
+    background: #EFEFEF;
+    border: 5px solid #999;
+    color: #666;
+}
+</style>
+
+<% flag = False %>
+<% promotions = [(event, promo) for event, promo in ((helper.get_event_from_linked_page_id(request, promo.linked_page_id), promo) for promo in promotions)] %>
+<section class="demo" id="demo-pointmove">
+    <h2 class="glitter red">ピックアップ</h2>
+        % if promotions:
+            <div class="viewport">
+                <div class="flipsnap">
+                    % for event, promo in promotions:
+                        <% image_path = request.route_path('__staticasset/', subpath=promo.main_image.filepath) %>
+                        % if promo.link:
+                            <a href=${promo.link}>
+                                <div class="item"><img src="${image_path}" alt="img" width="310px" height="280px"/></div>
+                            </a>
+                        % elif event:
+                            <a href="${request.route_path('detail')}?event_id=${event.id}">
+                                <div class="item"><img src="${image_path}" alt="img" width="310px" height="280px"/></div>
+                            </a>
+                        % else:
+                            <div class="item"><img src="${image_path}" alt="img" width="310px" height="280px"/></div>
+                        % endif
+                    % endfor
+                </div>
+            </div>
+            <div class="pointer">
+                % for event, promo in promotions:
+                    % if flag:
+                        <span></span>
+                    % else:
+                        <% flag = True %>
+                        <span class="current"></span>
+                    % endif
+                % endfor
+            </div>
+            <p class="controls">
+                <button class="prev" disabled>prev</button>
+                <button class="next">next</button>
+            </p>
+        % endif
+</section>
