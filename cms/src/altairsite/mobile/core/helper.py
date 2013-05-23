@@ -2,7 +2,7 @@
 import logging
 import webhelpers.paginate as paginate
 from altaircms.helpers.link import get_purchase_page_from_performance
-from altaircms.models import SalesSegmentGroup, SalesSegment
+from altaircms.models import SalesSegmentGroup, SalesSegment, SalesSegmentKind
 from altaircms.event.models import Event
 from altaircms.models import Ticket
 from markupsafe import Markup
@@ -114,7 +114,11 @@ def get_tickets(request, event):
     return tickets
 
 def get_sales_date(request, event):
-    qs = request.allowable(SalesSegmentGroup).filter(SalesSegmentGroup.event_id == event.id).all()
+
+    qs = request.allowable(SalesSegmentGroup)\
+        .join(SalesSegmentKind, SalesSegmentKind.id == SalesSegmentGroup.id)\
+        .filter(SalesSegmentGroup.event_id == event.id)\
+        .filter(SalesSegmentKind.publicp == True).all()
 
     sales_start = None
     sales_end = None
