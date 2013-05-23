@@ -93,7 +93,7 @@ class LayoutUpdateForm(Form):
 class PerformanceForm(Form):
     title = fields.TextField(label=u"公演タイトル")
     display_order = fields.IntegerField(label=u"表示順序")
-    backend_id = fields.IntegerField(validators=[required_field()], label=u"バックエンド管理番号")
+    backend_id = fields.IntegerField(validators=[validators.Optional()], label=u"バックエンド管理番号")
     event = dynamic_query_select_field_factory(Event, allow_blank=False, label=u"イベント", get_label=lambda obj: obj.title)
     prefecture = fields.SelectField(label=u"開催県", choices=import_symbol("altaircms.seeds.prefecture:PREFECTURE_CHOICES"))
     venue = fields.TextField(label=u"開催場所(詳細)")
@@ -122,6 +122,8 @@ class PerformanceForm(Form):
 
     def object_validate(self, obj=None):
         data = self.data
+        if not data["backend_id"]:
+            return not bool(self.errors)
         qs = Performance.query.filter(Performance.backend_id == data["backend_id"])
         if obj:
             qs = qs.filter(Performance.backend_id != obj.backend_id)
@@ -145,7 +147,7 @@ class SalesSegmentForm(Form):
                                                allow_blank=False, label=u"販売区分名", get_label=lambda obj: obj.name)
     start_on = fields.DateTimeField(label=u"開始時間",validators=[])
     end_on = fields.DateTimeField(label=u"終了時間",validators=[])
-    backend_id = fields.IntegerField(validators=[required_field()], label=u"バックエンド管理番号")       
+    backend_id = fields.IntegerField(validators=[validators.Optional()], label=u"バックエンド管理番号")       
     __display_fields__ = [u"performance", u"group", u"start_on", u"end_on", u"backend_id"]
 
     def validate(self, **kwargs):
@@ -158,6 +160,8 @@ class SalesSegmentForm(Form):
 
     def object_validate(self, obj=None):
         data = self.data
+        if not data["backend_id"]:
+            return not bool(self.errors)
         qs = SalesSegment.query.filter(SalesSegment.backend_id == data["backend_id"])
         if obj:
             qs = qs.filter(SalesSegment.backend_id != obj.backend_id)
@@ -174,11 +178,13 @@ class TicketForm(Form):
     name = fields.TextField(validators=[required_field()], label=u"商品名")
     seattype = fields.TextField(validators=[], label=u"席種／グレード")
     price = fields.IntegerField(validators=[required_field()], label=u"料金")
-    backend_id = fields.IntegerField(validators=[required_field()], label=u"バックエンド管理番号")
+    backend_id = fields.IntegerField(validators=[validators.Optional()], label=u"バックエンド管理番号")
     # display_order = fields.TextField(label=u"表示順序(default:50)")
 
     def object_validate(self, obj=None):
         data = self.data
+        if not data["backend_id"]:
+            return not bool(self.errors)
         qs = Ticket.query.filter(Ticket.backend_id == data["backend_id"])
         if obj:
             qs = qs.filter(Ticket.backend_id != obj.backend_id)
