@@ -86,6 +86,9 @@ def update_model_file_structure(after_zipupload):
     event = after_zipupload
     static_page = event.static_page
     absroot = event.root
+    return _update_model_file_structure(static_page, absroot)
+
+def _update_model_file_structure(static_page, absroot):
     ## model update
     inspection_targets = {}
     for root, dirs, files in os.walk(absroot):
