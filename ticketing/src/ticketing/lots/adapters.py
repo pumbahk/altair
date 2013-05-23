@@ -270,11 +270,12 @@ class LotEntryStatus(object):
             ],
             else_=0).label('elected_quantity'),
             case([
-                (Order.paid_at != None, LotEntryProduct.quantity)
+                (and_(LotEntry.order_id != None, Order.paid_at != None),
+                 LotEntryProduct.quantity)
             ],
             else_=0).label('ordered_quantity'),
             case([
-                (and_(LotEntry.order_id != None, Order.paid_at != None),
+                (and_(LotEntry.order_id != None, Order.paid_at == None),
                  LotEntryProduct.quantity)
             ],
             else_=0).label('reserved_quantity'),
