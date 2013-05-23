@@ -2,7 +2,8 @@ from weakref import WeakKeyDictionary
 from sqlalchemy.schema import Column as _Column
 from sqlalchemy.orm.attributes import QueryableAttribute
 from sqlalchemy.orm.properties import ColumnProperty, RelationshipProperty
-from sqlalchemy.orm.relationships import MANYTOMANY
+from sqlalchemy.orm.interfaces import MANYTOMANY
+
 from sqlalchemy.ext.associationproxy import AssociationProxy
 
 __all__ = [
