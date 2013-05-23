@@ -2,6 +2,7 @@ from weakref import WeakKeyDictionary
 from sqlalchemy.schema import Column as _Column
 from sqlalchemy.orm.attributes import QueryableAttribute
 from sqlalchemy.orm.properties import ColumnProperty, RelationshipProperty
+from sqlalchemy.orm.relationships import MANYTOMANY
 from sqlalchemy.ext.associationproxy import AssociationProxy
 
 __all__ = [
@@ -31,14 +32,20 @@ class AnnotatedColumn(_Column):
 def get_annotations_for(misc):
     annotations = annotations_dict.get(misc)
     if annotations is None:
+        if isinstance(misc, AssociationProxy):
+            misc = misc.remote_attr
         if isinstance(misc, QueryableAttribute):
             misc = misc.property
 
         columns = None
+
         if isinstance(misc, ColumnProperty):
             columns = misc.columns
         elif isinstance(misc, RelationshipProperty):
-            columns = [pair[0] for pair in misc.local_remote_pairs]
+            if misc.direction == MANYTOMANY:
+                columns = [pair[0] for pair in misc.secondary_synchronize_pairs]
+            else:
+                columns = [pair[0] for pair in misc.local_remote_pairs]
         if columns is not None:
             annotations_list = []
             for column in columns:
