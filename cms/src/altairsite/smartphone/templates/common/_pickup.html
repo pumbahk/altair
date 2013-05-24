@@ -3,6 +3,12 @@
 
 <script>
 $(function() {
+    var viewWidth = 480;
+    items = $(".item *").length;
+    $('.flipsnap').css('width', viewWidth * items + 'px');
+    $('.viewport').css('width', viewWidth + 'px');
+    $('.item').css('width', (viewWidth + -10) + 'px');
+    $('.flipsnap img').css('width', (viewWidth + -10) + 'px');
 
     Flipsnap('.flipsnap');
 
@@ -59,18 +65,12 @@ $(function() {
   width: 60px; }
 
 .viewport {
-    width: 320px;
     overflow: hidden;
     margin: 0 auto;
 }
 
-.flipsnap {
-    width: 2560px; /* 320px(item width) * 3(item count) */
-}
-
 .item {
     float: left;
-    width: 310px;
     font-size: 50px;
     text-align: center;
     padding: 50px 0;
@@ -78,6 +78,7 @@ $(function() {
     border: 5px solid #999;
     color: #666;
 }
+
 </style>
 
 <% flag = False %>
@@ -91,14 +92,14 @@ $(function() {
                         <% image_path = request.route_path('__staticasset/', subpath=promo.main_image.filepath) %>
                         % if promo.link:
                             <a href=${promo.link}>
-                                <div class="item"><img src="${image_path}" alt="img" width="310px" height="280px"/></div>
+                                <div class="item"><img src="${image_path}" alt="img"/></div>
                             </a>
                         % elif event:
                             <a href="${request.route_path('detail')}?event_id=${event.id}">
-                                <div class="item"><img src="${image_path}" alt="img" width="310px" height="280px"/></div>
+                                <div class="item"><img src="${image_path}" alt="img"/></div>
                             </a>
                         % else:
-                            <div class="item"><img src="${image_path}" alt="img" width="310px" height="280px"/></div>
+                            <div class="item"><img src="${image_path}" alt="img"/></div>
                         % endif
                     % endfor
                 </div>
