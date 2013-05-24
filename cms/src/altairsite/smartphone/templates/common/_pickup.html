@@ -26,15 +26,19 @@ $(function() {
 
     Flipsnap('.flipsnap');
 
+    var promotions = []
+    $(".messages span").each(function (index, element) {
+        promotions.push(element)
+    });
+
+    $('.messages span').remove();
+    $('.messages').css('height', '40px');
+    if (promotions.length) {
+        $('.messages').prepend(promotions[0]);
+    }
+
     (function pointmove() {
-        var promotions = []
         var index = 0;
-        $(".messages span").each(function (index, element) {
-            promotions.push(element)
-        });
-        $('.messages span').remove();
-        $('.messages').css('height', '40px');
-        $('.messages').prepend(promotions[index]);
 
         var $pickup = $('#pickup');
         var $pointer = $pickup.find('.pointer span');
@@ -46,14 +50,12 @@ $(function() {
 
         var $next = $pickup.find(".next").click(function() {
             flipsnap.toNext();
-            ++index;
-            $('.messages span').html(promotions[index]);
+            $('.messages span').html(promotions[flipsnap.currentPoint]);
         });
 
         var $prev = $pickup.find(".prev").click(function() {
             flipsnap.toPrev();
-            --index;
-            $('.messages span').html(promotions[index]);
+            $('.messages span').html(promotions[flipsnap.currentPoint]);
         });
 
         flipsnap.element.addEventListener('fspointmove', function() {
@@ -63,35 +65,8 @@ $(function() {
     })();
 
     (function touchevents() {
-        flipsnap.element.addEventListener('fstouchstart', function(ev) {
-            console.log("START!!!!")
-            /*
-            $event.text('fstouchstart');
-            */
-        }, false);
-
-        flipsnap.element.addEventListener('fstouchmove', function(ev) {
-            console.log("move!!!!")
-            /*
-            $event.text('fstouchmove');
-            $detail.text(JSON.stringify({
-                delta: ev.delta,
-                direction: ev.direction
-            }, null, 2));
-            */
-        }, false);
-
         flipsnap.element.addEventListener('fstouchend', function(ev) {
-            console.log("END!!!!")
-            /*
-            $event.text('fstouchend');
-            $detail.text(JSON.stringify({
-                moved: ev.moved,
-                originalPoint: ev.originalPoint,
-                newPoint: ev.newPoint,
-                cancelled: ev.cancelled
-            }, null, 2));
-            */
+            $('.messages span').html(promotions[flipsnap.currentPoint]);
         }, false);
     })();
 
