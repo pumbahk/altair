@@ -27,6 +27,15 @@ $(function() {
     Flipsnap('.flipsnap');
 
     (function pointmove() {
+        var promotions = []
+        var index = 0;
+        $(".messages span").each(function (index, element) {
+            promotions.push(element)
+        });
+        $('.messages span').remove();
+        $('.messages').css('height', '40px');
+        $('.messages').prepend(promotions[index]);
+
         var $pickup = $('#pickup');
         var $pointer = $pickup.find('.pointer span');
         var flipsnap = Flipsnap('#pickup .flipsnap');
@@ -37,15 +46,55 @@ $(function() {
 
         var $next = $pickup.find(".next").click(function() {
             flipsnap.toNext();
+            ++index;
+            $('.messages span').html(promotions[index]);
         });
+
         var $prev = $pickup.find(".prev").click(function() {
             flipsnap.toPrev();
+            --index;
+            $('.messages span').html(promotions[index]);
         });
+
         flipsnap.element.addEventListener('fspointmove', function() {
             $next.attr("disabled", !flipsnap.hasNext());
             $prev.attr("disabled", !flipsnap.hasPrev());
         }, false);
     })();
+
+    (function touchevents() {
+        flipsnap.element.addEventListener('fstouchstart', function(ev) {
+            console.log("START!!!!")
+            /*
+            $event.text('fstouchstart');
+            */
+        }, false);
+
+        flipsnap.element.addEventListener('fstouchmove', function(ev) {
+            console.log("move!!!!")
+            /*
+            $event.text('fstouchmove');
+            $detail.text(JSON.stringify({
+                delta: ev.delta,
+                direction: ev.direction
+            }, null, 2));
+            */
+        }, false);
+
+        flipsnap.element.addEventListener('fstouchend', function(ev) {
+            console.log("END!!!!")
+            /*
+            $event.text('fstouchend');
+            $detail.text(JSON.stringify({
+                moved: ev.moved,
+                originalPoint: ev.originalPoint,
+                newPoint: ev.newPoint,
+                cancelled: ev.cancelled
+            }, null, 2));
+            */
+        }, false);
+    })();
+
 
 })();
 </script>
@@ -87,6 +136,10 @@ $(function() {
     background: #000000;
 }
 
+.messages {
+    text-align: center;
+}
+
 </style>
 <% promotions = [(event, promo) for event, promo in ((helper.get_event_from_linked_page_id(request, promo.linked_page_id), promo) for promo in promotions)] %>
 <section class="pickup" id="pickup">
@@ -113,6 +166,12 @@ $(function() {
             <div class="pointer">
                 % for event, promo in promotions:
                     <span></span>
+                % endfor
+            </div>
+            <div class="messages">
+
+                % for event, promo in promotions:
+                    <span>${event.title if event else promo.text}</span>
                 % endfor
             </div>
             <p class="controls">
