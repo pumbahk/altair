@@ -20,6 +20,7 @@ from ticketing.lots.models import (
     Lot,
     LotEntry,
     LotElectWork,
+    LotRejectWork,
     LotEntryWish,
     )
 from ticketing.multicheckout.models import (
@@ -417,12 +418,32 @@ class LotEntries(BaseView):
                                      LotEntry.created_at<=form.entried_to.data)
             include_canceled = form.include_canceled.data
 
-            if form.electing.data:
-                condition = sql.and_(condition, 
-                                     LotEntryWish.entry_wish_no==LotElectWork.entry_wish_no)
+            if (form.electing.data
+                or form.elected.data
+                or form.rejecting.data
+                or form.rejected.data):
+                wish_condition = (LotEntry.id == None) ## means False
+
+                if form.electing.data:
+                    wish_condition = sql.or_(wish_condition, 
+                                             sql.and_(LotEntryWish.entry_wish_no==LotElectWork.entry_wish_no,
+                                                      LotEntryWish.elected_at==None))
+                if form.rejecting.data:
+                    wish_condition = sql.or_(wish_condition, 
+                                             sql.and_(LotEntryWish.entry_wish_no==LotRejectWork.entry_wish_no,
+                                                      LotEntryWish.rejected_at==None))
+                if form.elected.data:
+                    wish_condition = sql.or_(wish_condition, 
+                                             LotEntryWish.elected_at!=None)
+                if form.rejected.data:
+                    wish_condition = sql.or_(wish_condition, 
+                                             LotEntryWish.rejected_at!=None)
+
+                condition = sql.and_(condition, wish_condition)
+
             if form.wish_order.data:
-                condition = sql.and_(condition,
-                                     LotEntryWish.wish_order==form.wish_order.data)
+                    wish_condition = sql.and_(condition,
+                                         LotEntryWish.wish_order==form.wish_order.data)
         else:
             print form.errors
 

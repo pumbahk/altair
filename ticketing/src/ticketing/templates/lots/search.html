@@ -97,8 +97,36 @@ ${tabs.tabs(request)}
             <td>${form.include_canceled()}</td>
 	  </tr>
           <tr>
-            <th><label for="electing">${form.electing.label.text}</label></th>
-            <td>${form.electing()}</td>
+	    <th>
+	      <label for="electing">${form.electing.label.text}</label>
+	    </th>
+	    <td>
+		${form.electing()}
+	    </td>
+	  </tr>
+          <tr>
+	    <th>
+	      <label for="electing">${form.elected.label.text}</label>
+	    </th>
+	    <td>
+		${form.elected()}
+	    </td>
+	  </tr>
+          <tr>
+	    <th>
+	      <label for="electing">${form.rejecting.label.text}</label>
+	    </th>
+	    <td>
+		${form.rejecting()}
+	    </td>
+	  </tr>
+          <tr>
+	    <th>
+	      <label for="electing">${form.rejected.label.text}</label>
+	    </th>
+	    <td>
+		${form.rejected()}
+	    </td>
 	  </tr>
           <tr>
             <th><label for="wish_order">${form.wish_order.label.text}</label></th>
