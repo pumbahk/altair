@@ -34,12 +34,10 @@ $(function() {
     $('.messages span').remove();
     $('.messages').css('height', '40px');
     if (promotions.length) {
-        $('.messages').prepend(promotions[0]);
+        $('.messages').append(promotions[flipsnap.currentPoint]);
     }
 
     (function pointmove() {
-        var index = 0;
-
         var $pickup = $('#pickup');
         var $pointer = $pickup.find('.pointer span');
         var flipsnap = Flipsnap('#pickup .flipsnap');
@@ -50,12 +48,14 @@ $(function() {
 
         var $next = $pickup.find(".next").click(function() {
             flipsnap.toNext();
-            $('.messages span').html(promotions[flipsnap.currentPoint]);
+            $('.messages span').remove();
+            $('.messages').append(promotions[flipsnap.currentPoint]);
         });
 
         var $prev = $pickup.find(".prev").click(function() {
             flipsnap.toPrev();
-            $('.messages span').html(promotions[flipsnap.currentPoint]);
+            $('.messages span').remove();
+            $('.messages').append(promotions[flipsnap.currentPoint]);
         });
 
         flipsnap.element.addEventListener('fspointmove', function() {
@@ -66,7 +66,8 @@ $(function() {
 
     (function touchevents() {
         flipsnap.element.addEventListener('fstouchend', function(ev) {
-            $('.messages span').html(promotions[flipsnap.currentPoint]);
+            $('.messages span').remove();
+            $('.messages').append(promotions[flipsnap.currentPoint]);
         }, false);
     })();
 
