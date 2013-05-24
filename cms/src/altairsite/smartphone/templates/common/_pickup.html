@@ -10,27 +10,35 @@ $(function() {
     $('.item').css('width', (viewWidth + -10) + 'px');
     $('.flipsnap img').css('width', (viewWidth + -10) + 'px');
 
+    // リロード対応
+    $('.pointer span:first').attr('class', 'current');
+    var flipsnap = Flipsnap('#pickup .flipsnap');
+    var $pickup = $('#pickup');
+    var $next = $pickup.find(".next").click(function() {
+        flipsnap.toNext();
+    });
+    var $prev = $pickup.find(".prev").click(function() {
+        flipsnap.toPrev();
+    });
+    flipsnap.hasNext()
+    $next.attr("disabled", false);
+    $prev.attr("disabled", true);
+
     Flipsnap('.flipsnap');
 
     (function pointmove() {
-        var $demo = $('#demo-pointmove');
-        var $pointer = $demo.find('.pointer span');
-        var flipsnap = Flipsnap('#demo-pointmove .flipsnap');
-        /*
-        var flipsnap = Flipsnap('#demo-pointmove .flipsnap');
-        var flipsnap = Flipsnap('#demo-pointmove .flipsnap', {
-            distance: 230
-        });
-        */
+        var $pickup = $('#pickup');
+        var $pointer = $pickup.find('.pointer span');
+        var flipsnap = Flipsnap('#pickup .flipsnap');
         flipsnap.element.addEventListener('fspointmove', function() {
             $pointer.filter('.current').removeClass('current');
             $pointer.eq(flipsnap.currentPoint).addClass('current');
         }, false);
 
-        var $next = $demo.find(".next").click(function() {
+        var $next = $pickup.find(".next").click(function() {
             flipsnap.toNext();
         });
-        var $prev = $demo.find(".prev").click(function() {
+        var $prev = $pickup.find(".prev").click(function() {
             flipsnap.toPrev();
         });
         flipsnap.element.addEventListener('fspointmove', function() {
@@ -74,16 +82,14 @@ $(function() {
     font-size: 50px;
     text-align: center;
     padding: 50px 0;
-    background: #EFEFEF;
     border: 5px solid #999;
     color: #666;
+    background: #000000;
 }
 
 </style>
-
-<% flag = False %>
 <% promotions = [(event, promo) for event, promo in ((helper.get_event_from_linked_page_id(request, promo.linked_page_id), promo) for promo in promotions)] %>
-<section class="demo" id="demo-pointmove">
+<section class="pickup" id="pickup">
     <h2 class="glitter red">ピックアップ</h2>
         % if promotions:
             <div class="viewport">
@@ -106,17 +112,12 @@ $(function() {
             </div>
             <div class="pointer">
                 % for event, promo in promotions:
-                    % if flag:
-                        <span></span>
-                    % else:
-                        <% flag = True %>
-                        <span class="current"></span>
-                    % endif
+                    <span></span>
                 % endfor
             </div>
             <p class="controls">
-                <button class="prev" disabled>prev</button>
-                <button class="next">next</button>
+                <button class="prev" disabled>戻る</button>
+                <button class="next">進む</button>
             </p>
         % endif
 </section>
