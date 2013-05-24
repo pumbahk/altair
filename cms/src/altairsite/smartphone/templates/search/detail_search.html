@@ -1,38 +1,5 @@
 <%namespace file="../common/tags_smartphone.html" name="m" />
 
-<style type="text/css">
-#detail_search input[type="text"] {
-  box-sizing: border-box;
-  -webkit-box-sizing: border-box;
-  -moz-box-sizing: border-box;
-  width: 100%;
-  display: block;
-  height: 34px;
-  font-size: 17px;
-  padding: 0px 2px;
-  margin: 0 0 2px 0;
-}
-
-#detail_search select {
-  height: 30px;
-  font-size: 16px;
-  margin: 1px 0 0 0;
-  background-color: #fff;
-}
-
-#detail_search button {
-  height: 28px;
-  font-weight: bold;
-}
-
-#detail_search input[type="submit"] {
-  height: 28px;
-  font-weight: bold;
-}
-</style>
-
-
-
 <script type="text/javascript">
 $(function () {
   $('*[data-toggle]').each(function (_, n) {
@@ -103,7 +70,7 @@ $(function () {
 
 
 
-<div id="detail_search" class="sectionbox inverted">
+<div id="search" class="sectionbox inverted">
     詳細検索フォーム<br/>
 
     <form action="${request.route_path('search_detail')}" method='GET'>

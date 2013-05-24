@@ -796,3 +796,31 @@ h2.glitter.red:after {
   background-image: -moz-linear-gradient(top, #ffffff 0%, #e3e3e3 48%, #cccccc 50%, #e1e1e1);
 }
 
+#search input[type="text"] {
+  box-sizing: border-box;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  width: 100%;
+  display: block;
+  height: 34px;
+  font-size: 17px;
+  padding: 0px 2px;
+  margin: 0 0 2px 0;
+}
+
+#search select {
+  height: 30px;
+  font-size: 16px;
+  margin: 1px 0 0 0;
+  background-color: #fff;
+}
+
+#search button {
+  height: 28px;
+  font-weight: bold;
+}
+
+#search input[type="submit"] {
+  height: 28px;
+  font-weight: bold;
+}
