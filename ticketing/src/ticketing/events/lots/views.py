@@ -383,6 +383,7 @@ class LotEntries(BaseView):
         lot_id = self.request.matchdict["lot_id"]
         lot = Lot.query.filter(Lot.id==lot_id).one()
         form = SearchEntryForm(formdata=self.request.POST)
+        form.wish_order.choices = [("", "")] + [(str(i), i + 1) for i in range(lot.limit_wishes)]
         condition = (LotEntry.id != None)
         s_a = ShippingAddress
 
@@ -419,7 +420,12 @@ class LotEntries(BaseView):
             if form.electing.data:
                 condition = sql.and_(condition, 
                                      LotEntryWish.entry_wish_no==LotElectWork.entry_wish_no)
-                
+            if form.wish_order.data:
+                condition = sql.and_(condition,
+                                     LotEntryWish.wish_order==form.wish_order.data)
+        else:
+            print form.errors
+
         if not include_canceled:
             condition = sql.and_(condition, 
                                  LotEntry.canceled_at == None)
@@ -444,6 +450,8 @@ class LotEntries(BaseView):
             LotEntry.entry_no,
             LotEntryWish.wish_order
         )
+
+
         wishes = q.filter(condition)
 
         electing_url = self.request.route_url('lots.entries.elect_entry_no', lot_id=lot.id)
