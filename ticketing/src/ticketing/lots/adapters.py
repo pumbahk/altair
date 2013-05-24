@@ -270,17 +270,20 @@ class LotEntryStatus(object):
             ],
             else_=0).label('elected_quantity'),
             case([
-                (and_(LotEntry.order_id != None, Order.paid_at != None),
+                (and_(LotEntry.order_id != None, Order.paid_at != None,
+                      LotEntryWish.elected_at != None),
                  LotEntryProduct.quantity)
             ],
             else_=0).label('ordered_quantity'),
             case([
-                (and_(LotEntry.order_id != None, Order.paid_at == None),
+                (and_(LotEntry.order_id != None, Order.paid_at == None,
+                      LotEntryWish.elected_at != None),
                  LotEntryProduct.quantity)
             ],
             else_=0).label('reserved_quantity'),
             case([
-                (and_(LotEntry.order_id != None, Order.canceled_at != None),
+                (and_(LotEntry.order_id != None, Order.canceled_at != None,
+                      LotEntryWish.elected_at != None),
                  LotEntryProduct.quantity)
             ],
             else_=0).label('canceled_quantity'),
