@@ -16,10 +16,6 @@ class BaseView(object):
 @view_defaults(decorator=with_bootstrap)
 class CommonView(BaseView):
 
-    @view_config(route_name='index', renderer='newsletter:templates/index.html')
-    def index(self):
-        return {}
-
     @view_config(context=HTTPForbidden, renderer='newsletter:templates/common/forbidden.html')
     def forbidden_view(self):
         if authenticated_userid(self.request):
