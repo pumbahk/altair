@@ -8,7 +8,7 @@ CHANGES = open(os.path.join(here, 'CHANGES.txt')).read()
 requires = [
     'nose',
     'webtest',
-    'pyramid == 1.3',
+    'pyramid',
     'pyramid_debugtoolbar',
     'pyramid_fanstatic',
     'pyramid_tm',
@@ -38,10 +38,15 @@ requires = [
     'js.backbone',
     'js.bootstrap',
     'simplejson',
-    'waitress'
+    'gunicorn',
+    'altair.findable_label', 
+    'altair.log',
+    'fluent-logger == 0.3.3moriyoshi2',
+    'altair.exclog', 
+    'altair.browserid', 
     ]
 
-setup(name='newsletter',
+setup(name='altair_newsletter',
     version='0.0',
     description='newsletter',
     long_description=README + '\n\n' +  CHANGES,
@@ -59,11 +64,20 @@ setup(name='newsletter',
     include_package_data=True,
     zip_safe=False,
     install_requires=requires,
+    dependency_links = [s.format(**locals()) for s in [
+        'file:{here}/../altair_findable_label#egg=altair.findable_label-0.0',
+        "file:{here}/../altair_log#egg=altair.log-0.0.1", 
+        'file:{here}/../altair_exclog#egg=altair.exclog-0.0', 
+        'file:{here}/../altair_browserid#egg=altair.browserid-1.0', 
+        'https://github.com/moriyoshi/fluent-logger-python/tarball/0.3.3moriyoshi2#egg=fluent-logger-0.3.3moriyoshi2',
+        ]],
     tests_require=requires,
     test_suite='newsletter',
     entry_points = """\
     [paste.app_factory]
     main = newsletter:main
+    [console_scripts]
+    send_newsletter = newsletter.scripts.send_newsletter:main
     """,
     paster_plugins=['pyramid'],
     )

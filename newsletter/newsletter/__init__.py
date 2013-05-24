@@ -12,7 +12,6 @@ import sqlahelper
 try:
     import pymysql_sa
     pymysql_sa.make_default_mysql_dialect()
-    print 'Using PyMySQL'
 except:
     pass
 
@@ -38,12 +37,14 @@ def main(global_config, **local_config):
                           authorization_policy=authz_policy,
                           session_factory=UnencryptedCookieSessionFactoryConfig('altair'))
 
+    config.include('altair.browserid')
+    config.include('altair.exclog')
+
     config.add_static_view('static', 'newsletter:static', cache_max_age=3600)
     config.add_view('pyramid.view.append_slash_notfound_view',
                     context='pyramid.httpexceptions.HTTPNotFound')
     config.add_route('index', '/')
 
-    config.include('pyramid_fanstatic')
     config.include('newsletter.newsletters' , route_prefix='/newsletters')
 
     config.add_renderer('.html' , 'pyramid.mako_templating.renderer_factory')

@@ -6,7 +6,7 @@ import sys
 from os.path import abspath, dirname
 sys.path.append(abspath(dirname(dirname(__file__))))
 
-from paste.deploy import loadapp
+from pyramid.paster import bootstrap, setup_logging
 from newsletter.newsletters.models import Newsletter, Mailer, session
 
 import logging
@@ -31,8 +31,10 @@ def main(argv=sys.argv):
     if config is None:
         print 'You must give a config file'
         return
-    app = loadapp('config:%s' % config, 'main')
-    settings = app.registry.settings
+    setup_logging(config)
+    env = bootstrap(config)
+    request = env['request']
+    settings = request.registry.settings
 
     # send mail magazine
     report = []
