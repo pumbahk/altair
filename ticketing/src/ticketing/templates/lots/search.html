@@ -118,12 +118,9 @@ ${tabs.tabs(request)}
 <th>申し込み番号</th>
 <th>希望順序</th>
 <th>申し込み日</th>
-<th>ユーザー種別</th>
 <th>席種</th>
 <th>枚数</th>
-<th>イベント</th>
 <th>会場</th>
-<th>公演</th>
 <th>公演コード</th>
 <th>公演日</th>
 <th>商品</th>
@@ -133,38 +130,25 @@ ${tabs.tabs(request)}
 <th>配送先名</th>
 <th>配送先姓(カナ)</th>
 <th>配送先名(カナ)</th>
-<th>郵便番号</th>
-<th>国</th>
 <th>都道府県</th>
 <th>市区町村</th>
 <th>住所1</th>
 <th>住所2</th>
 <th>電話番号1</th>
 <th>電話番号2</th>
-<th>FAX</th>
 <th>メールアドレス1</th>
 <th>メールアドレス2</th>
-<th>姓</th>
-<th>名</th>
-<th>姓(カナ)</th>
-<th>名(カナ)</th>
-<th>ニックネーム</th>
-<th>性別</th>
 </tr>
 </thead>
 <tbody>
 %for w,auth in wishes:
 <%
-event = w.lot_entry.lot.event
 performance = w.performance
 venue = performance.venue
 shipping_address = w.lot_entry.shipping_address
 pdmp = w.lot_entry.payment_delivery_method_pair
 payment_method = pdmp.payment_method
 delivery_method = pdmp.delivery_method
-user_profile = None
-if shipping_address.user:
-    user_profile = shipping_address.user.profile
 
 %>
 <tr>
@@ -200,12 +184,9 @@ ${w.status}
 <td nowrap="">${w.lot_entry.entry_no}</td>
 <td nowrap="">${w.wish_order + 1}</td>
 <td nowrap="">${"{0:%Y-%m-%d %H:%M}".format(w.created_at)}</td>
-<td nowrap="">${w.lot_entry.membergroup}</td>
 <td nowrap="">${u",".join([",".join([i.stock_type.name for i in p.product.items]) for p in w.products])}</td>
 <td nowrap="">${w.total_quantity}</td>
-<td nowrap="">${event.title}</td>
 <td nowrap="">${venue.name}</td>
-<td nowrap="">${performance.name}</td>
 <td nowrap="">${performance.code}</td>
 <td nowrap="">${"{0:%Y-%m-%d %H:%M}".format(performance.start_on)}</td>
 <td nowrap="">${u",".join([p.product.name for p in w.products])}</td>
@@ -215,8 +196,6 @@ ${w.status}
 <td nowrap="">${shipping_address.first_name}</td>
 <td nowrap="">${shipping_address.last_name_kana}</td>
 <td nowrap="">${shipping_address.first_name_kana}</td>
-<td nowrap="">${shipping_address.zip}</td>
-<td nowrap="">${shipping_address.country}</td>
 <td nowrap="">${shipping_address.prefecture}</td>
 <td nowrap="">${shipping_address.city}</td>
 <td nowrap="">${shipping_address.address_1}</td>
@@ -226,12 +205,6 @@ ${w.status}
 <td nowrap="">${shipping_address.fax}</td>
 <td nowrap="">${shipping_address.email_1}</td>
 <td nowrap="">${shipping_address.email_2}</td>
-<td nowrap="">${user_profile.last_name if user_profile else u""}</td>
-<td nowrap="">${user_profile.first_name if user_profile else u""}</td>
-<td nowrap="">${user_profile.last_name_kana if user_profile else u""}</td>
-<td nowrap="">${user_profile.first_name_kana if user_profile else u""}</td>
-<td nowrap="">${user_profile.nick_name if user_profile else u""}</td>
-<td nowrap="">${user_profile.sex if user_profile else u""}</td>
 </tr>
 %endfor
 </tbody>
