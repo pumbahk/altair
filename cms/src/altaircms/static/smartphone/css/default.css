@@ -796,6 +796,9 @@ h2.glitter.red:after {
   background-image: -moz-linear-gradient(top, #ffffff 0%, #e3e3e3 48%, #cccccc 50%, #e1e1e1);
 }
 
+
+
+
 #search input[type="text"] {
   box-sizing: border-box;
   -webkit-box-sizing: border-box;
@@ -821,6 +824,11 @@ h2.glitter.red:after {
 }
 
 #search input[type="submit"] {
+  height: 28px;
+  font-weight: bold;
+}
+
+#purchase .btn-primary {
   height: 28px;
   font-weight: bold;
 }

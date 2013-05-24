@@ -95,20 +95,20 @@ $(function () {
             <li class="panel">
               <table class="panellist margined with-action-buttons">
                 <caption>[${i+1}]${event.title}</caption>
-                  <tbody>
-                    <tr>
-                      <td class="panel condensed">
-                        <div class="panel-inner h_70px">
-                          <p class="first">
-                            % if perf.open_on:
-                              開場：${helper.disp_time(perf.open_on)}<br/>
-                            % endif
-                            開演：${helper.disp_time(perf.start_on)}<br/>
-                            会場：${perf.venue}<br/>
-                          </p>
-                        </div>
-                        <div class="actions">
-                        <a href="${purchase_links[perf.id]}">
+                <tbody>
+                  <tr>
+                    <td class="panel condensed">
+                      <div class="panel-inner h_70px">
+                        <p class="first">
+                          % if perf.open_on:
+                            開場：${helper.disp_time(perf.open_on)}<br/>
+                          % endif
+                          開演：${helper.disp_time(perf.start_on)}<br/>
+                          会場：${perf.venue}<br/>
+                        </p>
+                      </div>
+                      <div class="actions">
+                        <a id="purchase" href="${purchase_links[perf.id]}">
                           <button class="btn btn-primary"><span class="btn-inner">購入</span></button>
                         </a>
                       </div>
