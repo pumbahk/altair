@@ -272,3 +272,9 @@ class SearchEntryForm(Form):
             Required(),
         ],
     )
+
+    wish_order = SelectField(
+        label=u'希望順位',
+        validators=[],
+        choices=[],
+    )
