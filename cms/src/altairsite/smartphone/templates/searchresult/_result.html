@@ -38,22 +38,22 @@
         </table>
     % endif
 
-    <div id=pager>
+    <div id=search>
     % if result.num:
         % if result.page > 1:
-            <a href="${path}&page=${result.page - 1}">前へ</a>
+            <a href="${path}&page=${result.page - 1}"><button class="btn-disabled">前へ</button></a>
         % endif
 
         % for count in range(result.page_end):
             % if result.page == count + 1:
-                ${count + 1}
+                <button class="btn-primary">${count + 1}</button>
             % else:
-                <a href="${path}&page=${count+1}">${count + 1}</a>
+                <a href="${path}&page=${count+1}"><button class="btn-disabled">${count + 1}</button></a>
             % endif
         % endfor
 
         % if result.page < result.page_end:
-            <a href="${path}&page=${result.page + 1}">次へ</a>
+            <a href="${path}&page=${result.page + 1}"><button class="btn-disabled">次へ</button></a>
         % endif
     % endif
     </div>
