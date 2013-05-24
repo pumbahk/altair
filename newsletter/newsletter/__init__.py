@@ -43,9 +43,8 @@ def main(global_config, **local_config):
     config.add_static_view('static', 'newsletter:static', cache_max_age=3600)
     config.add_view('pyramid.view.append_slash_notfound_view',
                     context='pyramid.httpexceptions.HTTPNotFound')
-    config.add_route('index', '/')
 
-    config.include('newsletter.newsletters' , route_prefix='/newsletters')
+    config.include('newsletter.newsletters' , route_prefix='/')
 
     config.add_renderer('.html' , 'pyramid.mako_templating.renderer_factory')
     config.add_renderer('json'  , 'newsletter.renderers.json_renderer_factory')
