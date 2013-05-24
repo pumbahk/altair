@@ -12,7 +12,6 @@ import sqlahelper
 try:
     import pymysql_sa
     pymysql_sa.make_default_mysql_dialect()
-    print 'Using PyMySQL'
 except:
     pass
 
