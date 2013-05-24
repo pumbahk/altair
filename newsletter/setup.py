@@ -76,6 +76,8 @@ setup(name='altair_newsletter',
     entry_points = """\
     [paste.app_factory]
     main = newsletter:main
+    [console_scripts]
+    send_newsletter = newsletter.scripts.send_newsletter:main
     """,
     paster_plugins=['pyramid'],
     )
