@@ -166,7 +166,7 @@ shipping =order.shipping_address
           <td class="align1">￥${h.format_number(order.system_fee)}</td>
         </tr>
         <tr id="total">
-          <th scope="row"><img src="http://tstar-dev.s3.amazonaws.com/cart/static/img/settlement/total.gif" alt="合計金額" width="67" height="16" /></th>
+          <th scope="row"><img src="${request.static_url("ticketing.cart:static/img/settlement/total.gif")}" alt="合計金額" width="67" height="16" /></th>
           <td>&nbsp;</td>
           <td>&nbsp;</td>
           <td class="align1">￥${h.format_number(order.total_amount)}</td>

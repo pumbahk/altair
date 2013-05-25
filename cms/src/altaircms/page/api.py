@@ -113,7 +113,7 @@ def has_renderer(request, path):
     ext = os.path.splitext(path)[1]
     return bool(request.registry.queryUtility(IRendererFactory, name=ext))
 
-CACHE_MAX_AGE=60
+CACHE_MAX_AGE=None
 def as_wrapped_resource_response(request, static_page, fullpath, body_var_name="inner_body"):
     if not (static_page.layout_id and has_renderer(request, fullpath)):
         return FileResponse(fullpath, request=request, cache_max_age=CACHE_MAX_AGE)
