@@ -105,7 +105,7 @@ class StaticPagePartFileView(BaseView):
                 return _retry()
             changer = self.context.creation(creation.PartialChange, form.data)
             changer.delete_file(static_page)
-            self.context.toutch(static_page)
+            self.context.touch(static_page)
             return HTTPFound(self.context.endpoint(static_page))
         except Exception as e:
             logger.exception(str(e))
@@ -172,7 +172,7 @@ class StaticPagePartFileView(BaseView):
             if not form.validate():
                 return _retry()
             changer = self.context.creation(creation.PartialChange, form.data)
-            changer.update_file(static_page, form.data["name"])
+            changer.update_file(static_page)
             self.context.touch(static_page)
             return HTTPFound(self.context.endpoint(static_page))
         except Exception as e:

@@ -152,13 +152,13 @@ class PartialChange(object):
         FlashMessage.success(u"ファイル:「%s」を追加しました" % os.path.join(filename, self.data["name"]), request=self.request)
 
     def update_file(self, static_page):
-        filename = self.data["name"]
+        name = self.data["name"]
         absroot = self.utility.get_rootname(static_page)
-        path = os.path.join(absroot, filename)
+        path = os.path.join(absroot, name)
         with open(path, "wb") as wf:
             shutil.copyfileobj(self.data["file"].file, wf)
         self.request.registry.notify(AfterPartialUpdateFile(self.request, path, self.utility, static_page))
-        FlashMessage.success(u"ファイル:「%s」を更新しました" % os.path.join(filename, self.data["name"]), request=self.request)
+        FlashMessage.success(u"ファイル:「%s」を更新しました" % name, request=self.request)
 
     def create_directory(self, static_page):
         absroot = self.utility.get_rootname(static_page)

@@ -60,6 +60,22 @@ def s3clean_directory(after_model_delete):
         logger.exception(str(e))
         logger.error("static page: s3clean directory failure. absroot={0}".format(absroot))
 
+
+from functools import wraps
+def for_event(fn):
+    @wraps(fn)
+    def wrapped(event):
+        return fn(event.request, event.root, event.static_page, event.static_directory)
+    return wrapped
+
+@for_event
+def s3delete_file(request, root, static_page, static_directory):
+    static_directory.delete_file(os.path.dirname(root), os.path.basename(root))
+
+@for_event
+def s3update_file(request, root, static_page, static_directory):
+    static_directory.upload_file(os.path.dirname(root), os.path.basename(root))
+
 def s3delete_files_completely(after_delete_completely):
     event = after_delete_completely
     static_directory = event.static_directory

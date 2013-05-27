@@ -46,6 +46,12 @@ class S3StaticPageDirectoryFactory(StaticPageDirectoryFactory):
         config.add_subscriber(".subscribers.s3upload_directory", ".creation.AfterModelCreate")  
         config.add_subscriber(".subscribers.s3delete_files_completely", ".creation.AfterDeleteCompletely")  
         config.add_subscriber(".subscribers.update_model_file_structure", ".creation.AfterModelCreate")
+
+        config.add_subscriber(".subscribers.s3update_file", ".creation.AfterPartialCreateFile")
+        config.add_subscriber(".subscribers.s3update_file", ".creation.AfterPartialUpdateFile")
+        config.add_subscriber(".subscribers.s3delete_file", ".creation.AfterPartialDeleteFile")
+        config.add_subscriber(".subscribers.s3clean_directory", ".creation.AfterPartialDeleteDirectory")
+
         ## validation:
         if get_s3_utility_factory(config) is None:
             raise ConfigurationError("s3 utility is not found")
@@ -142,13 +148,25 @@ class S3StaticPageDirectory(StaticPageDirectory):
         return "http://{0}.s3.amazonaws.com/{1}{2}".format(bucket_name, self.prefix, urlpart)
 
     ## todo: move?
+    def upload_file(self, root, f, uploader=None):
+        uploader = uploader or self.s3utility.uploader
+        with open(os.path.join(root, f), "r") as rf:
+            keyname = self.get_name(root, f)
+            logger.warn("*debug upload file:{0}".format(keyname))
+            uploader.upload_file(rf, keyname)
+        
     def upload_directory(self, d):
         uploader = self.s3utility.uploader
         logger.info("upload_directory: {0}".format(d))
         for root, dirs, files in os.walk(d):
             for f in files:
-                with open(os.path.join(root, f), "r") as rf:
-                    uploader.upload_file(rf, self.get_name(root, f))
+                self.upload_file(root, f, uploader)
+
+    def delete_file(self, root, f, uploader=None):
+        uploader = uploader or self.s3utility.uploader        
+        keyname = self.get_name(root, f)
+        logger.warn("*debug delete file:{0}".format(keyname))
+        uploader.delete(keyname)
 
     def clean_directory(self, d):
         uploader = self.s3utility.uploader
