@@ -4,10 +4,10 @@ from altaircms.helpers import url_create_with
 from markupsafe import Markup
 
 def static_page_directory_renderer(request, static_page, static_directory):
-    if static_page.uploaded_at:
-        return StaticPageDirectoryRendererFromDB(request, static_page, static_directory)
-    else:
-        return StaticPageDirectoryRenderer(request, static_page, static_directory)        
+    # if static_page.uploaded_at:
+    #     return StaticPageDirectoryRendererFromDB(request, static_page, static_directory)
+    # else:
+    return StaticPageDirectoryRenderer(request, static_page, static_directory)        
 
 ## helper structure
 class _Node(object):

@@ -56,10 +56,10 @@ def as_wrapped_resource_response(request, static_page, fullpath, body_var_name="
     return render_to_response(discriptor.absspec(), params, request)
 
 def as_static_page_response(request, static_page, url, force_original=False, path=None, cache_max_age=CACHE_MAX_AGE):
-    if static_page.uploaded_at:
-        return _static_page_response_network(request, static_page, url, force_original=force_original, path=path, cache_max_age=cache_max_age)
-    else:
-        return _static_page_response_filesystem(request, static_page, url, force_original=force_original, path=path, cache_max_age=cache_max_age)
+    # if static_page.uploaded_at:
+    #     return _static_page_response_network(request, static_page, url, force_original=force_original, path=path, cache_max_age=cache_max_age)
+    # else:
+    return _static_page_response_filesystem(request, static_page, url, force_original=force_original, path=path, cache_max_age=cache_max_age)
 
 def _static_page_response_filesystem(request, static_page, url, force_original=False, path=None, cache_max_age=CACHE_MAX_AGE):
     if path is None:
