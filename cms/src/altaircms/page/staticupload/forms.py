@@ -45,15 +45,21 @@ class StaticPageCreateForm(Form):
         queue.enqueue("name", self._validate_root_directory)
         return super(type(self), self).validate() and queue(self.data, self.errors)
 
+def validate_name_ascii(self, value):
+    try:
+        value.data.decode("ascii")
+    except UnicodeEncodeError:
+        raise validators.ValidationError(u"ファイル名は英数表記してください")
+
+def validate_deletable_filename(self, value):
+    if value.data.startswith("/"):
+        raise validators.ValidationError(u"絶対パスは使えません")
+    if "./" in value.data:
+        raise validators.ValidationError(u"./ ../は使えません")
+
 class StaticFileAddForm(Form):
     file = fields.FileField(label=u"ファイルを追加")
-    name = fields.TextField(label=u"ファイル名")
-
-    def validate_name(self, value):
-        try:
-            value.data.decode("ascii")
-        except UnicodeEncodeError:
-            raise validators.ValidationError(u"ファイル名は英数表記してください")
+    name = fields.TextField(label=u"ファイル名", validators=[validate_name_ascii, validate_deletable_filename])
 
     def validate(self):
         status = super(type(self), self).validate()
@@ -66,20 +72,12 @@ class StaticFileAddForm(Form):
             self.name.data = self.name.data + os.path.splitext(data["file"].filename)[1]
         return status
 
+class StaticFileUpdateForm(Form):
+    file = fields.FileField(label=u"ファイルを更新")
+    name = fields.HiddenField(label=u"", validators=[validate_name_ascii, validate_deletable_filename])
+
 class StaticDirectoryAddForm(Form):
-    name = fields.TextField(label=u"ディレクトリ名")
-
-    def validate_name(self, value):
-        try:
-            value.data.decode("ascii")
-        except UnicodeEncodeError:
-            raise validators.ValidationError(u"ディレクトリ名は英数表記してください")
-
-def validate_deletable_filename(self, value):
-    if value.data.startswith("/"):
-        raise validators.ValidationError(u"絶対パスは使えません")
-    if "./" in value.data:
-        raise validators.ValidatornError(u"./ ../は使えません")
+    name = fields.TextField(label=u"ディレクトリ名", validators=[validate_name_ascii, validate_deletable_filename])
 
 class StaticFileDeleteForm(Form):
     name = fields.HiddenField(label=u"")

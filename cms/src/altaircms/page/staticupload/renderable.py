@@ -84,6 +84,10 @@ class StaticPageDirectoryRenderer(object):
         part = path.replace(self.root, "")
         return self.request.route_path("static_page_part_file", static_page_id=self.pageset.id, child_id=self.page.id, path=part, action="delete", 
                                        _query=dict(endpoint=self.request.url))
+    def update_file_url(self, path):
+        part = path.replace(self.root, "")
+        return self.request.route_path("static_page_part_file", static_page_id=self.pageset.id, child_id=self.page.id, path=part, action="update", 
+                                       _query=dict(endpoint=self.request.url))
 
     def delete_directory_url(self, path):
         part = path.replace(self.root, "")
@@ -158,6 +162,7 @@ class TreeRenderer(object):
             r.append(u'<li>')
             r.append(u'<a href="%s">%s</a>' % (self.normalize_url(self.companion.preview_url(path)), os.path.basename(path)))            
             if self.companion.management:
+                r.append(u'<a href="%s"><i class="icon-cog"></i>%s</a>' % (self.normalize_url(self.companion.update_file_url(path)), u""))            
                 r.append(u'<a href="%s"><i class="icon-trash"></i>%s</a>' % (self.normalize_url(self.companion.delete_file_url(path)), u""))            
             r.append(u'</li>')
         return r

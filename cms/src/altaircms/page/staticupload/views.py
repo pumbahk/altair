@@ -142,6 +142,7 @@ class StaticPagePartFileView(BaseView):
             static_directory = get_static_page_utility(self.request)
             absroot = static_directory.get_rootname(static_page)
             filename = self.request.matchdict["path"].replace("%2F", "/").lstrip("/")
+
             with open(os.path.join(absroot, filename, form.data["name"]), "wb") as wf:
                 shutil.copyfileobj(form.data["file"].file, wf)
             FlashMessage.success(u"ファイル:「%s」を追加しました" % os.path.join(filename, form.data["name"]), request=self.request)
@@ -149,6 +150,45 @@ class StaticPagePartFileView(BaseView):
         except Exception as e:
             logger.exception(str(e))
             return _retry(unicode(e))
+
+    @view_config(match_param="action=update", request_method="GET", renderer="altaircms:templates/page/static_page_part_input.html", 
+                 decorator=with_bootstrap)
+    def update_file_input(self):
+        form = forms.StaticFileUpdateForm(name=self.request.matchdict["path"].lstrip("/"))
+        return {"title": u"ファイルの更新", 
+                "form": form, 
+                "fields": ["name", "file"], 
+                "submit_message": u"ファイルを更新"
+                }
+
+    @view_config(match_param="action=update", request_method="POST", renderer="altaircms:templates/page/static_page_part_input.html", 
+                 decorator=with_bootstrap)
+    def update_file(self):
+        form = forms.StaticFileUpdateForm(self.request.POST)
+        static_page = get_or_404(self.request.allowable(StaticPage), StaticPage.id==self.request.matchdict["child_id"])
+        def _retry(message=None):
+            if message:
+                form.errors["name", "file"] = [message]
+            return {"title": u"ファイルの更新", 
+                    "form": form, 
+                    "fields": ["file"], 
+                    "submit_message": u"ファイルを更新"
+                    }
+        try:
+            if not form.validate():
+                return _retry()
+            static_directory = get_static_page_utility(self.request)
+            absroot = static_directory.get_rootname(static_page)
+            filename = form.data["name"]
+
+            with open(os.path.join(absroot, filename), "wb") as wf:
+                shutil.copyfileobj(form.data["file"].file, wf)
+            FlashMessage.success(u"ファイル:「%s」を更新しました" % os.path.join(filename, form.data["name"]), request=self.request)
+            return HTTPFound(self.context.endpoint(static_page))
+        except Exception as e:
+            logger.exception(str(e))
+            return _retry(unicode(e))
+
 
 @view_defaults(route_name="static_page_part_directory", permission="authenticated")
 class StaticPagePartDirectoryView(BaseView):
