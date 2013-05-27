@@ -3,6 +3,11 @@
 <%block name="title">お問合せ</%block>
 
 <style type="text/css">
+#inquiry {
+    border-color: #000000;
+    border: 2px;
+}
+
 #inquiry input[type="text"] {
   box-sizing: border-box;
   -webkit-box-sizing: border-box;
@@ -79,23 +84,26 @@
 <div class="sectionbox inverted" id="inquiry">
 
 <form class="sectionbox-inner" style="background-color: cornsilk;color: #000000" action="${request.route_path('page', kind='inquiry')}" method="POST">
-    ${form.username.label}<br/>${form.username}<br/>
-    ${disp_error(form.username.errors)}
-    ${form.mail.label}<br/>${form.mail}<br/>
-    ${disp_error(form.mail.errors)}
-    ${form.num.label}<br/>
-(ご予約済のチケットの受付番号が不明な場合は、こちらにお申込みの公演名、公演日時を入力してください)<br/>
-    ${form.num}<br/>
-    ${form.category.label}<br/>${form.category}<br/>
-    ${disp_error(form.category.errors)}
-    ${form.title.label}<br/>${form.title}<br/>
-    ${disp_error(form.title.errors)}
-    ${form.body.label}<br/>${form.body}<br/>
-    ${disp_error(form.body.errors)}
-    ※は必ず入力してください。<br/>
-    % if not result:
-        <input type="submit" class="btn-secondary" value="送信"/>
-    % endif
+    <fieldset>
+        <legend>お問い合わせフォーム</legend>
+        ${form.username.label}<br/>${form.username}<br/>
+        ${disp_error(form.username.errors)}
+        ${form.mail.label}<br/>${form.mail}<br/>
+        ${disp_error(form.mail.errors)}
+        ${form.num.label}<br/>
+    (ご予約済のチケットの受付番号が不明な場合は、こちらにお申込みの公演名、公演日時を入力してください)<br/>
+        ${form.num}<br/>
+        ${form.category.label}<br/>${form.category}<br/>
+        ${disp_error(form.category.errors)}
+        ${form.title.label}<br/>${form.title}<br/>
+        ${disp_error(form.title.errors)}
+        ${form.body.label}<br/>${form.body}<br/>
+        ${disp_error(form.body.errors)}
+        ※は必ず入力してください。<br/>
+        % if not result:
+            <input type="submit" class="btn-secondary" value="送信"/>
+        % endif
+    </fieldset>
 </form>
 </div>
 
