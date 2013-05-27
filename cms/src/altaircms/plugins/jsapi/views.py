@@ -82,7 +82,7 @@ def pageset_addpage(request):
         if created:
             DBSession.add(created)
             DBSession.flush()
-            params = {"tags": "", "private_tags": ""}
+            params = {"tags": "", "private_tags": "", "mobile_tags": ""} #xxx:
             page_subscribers.notify_page_create(request, created, params)
             notify_model_create(request, created, params)
             FlashMessage.success(u"新しいページが作成されました.")

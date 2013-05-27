@@ -163,6 +163,7 @@ class PageSet(Base,
         created.url = base_page.url
         created.layout = base_page.layout
         created.pagetype = base_page.pagetype
+        created.organization_id = base_page.organization_id
         return created
 
     def take_in_event(self, event):

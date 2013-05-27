@@ -102,7 +102,7 @@ class PageResource(security.RootFactory):
 
     def clone_page(self, page):
         cloned = page.clone(DBSession, request=self.request)
-        subscribers.notify_page_create(self.request, cloned, {"tags":"", "private_tags": ""})
+        subscribers.notify_page_create(self.request, cloned, {"tags":"", "private_tags": "",  "mobile_tags": ""}) #xxx:
         return cloned
 
 class StaticPageResource(security.RootFactory):
