@@ -9,6 +9,8 @@ import altaircms.helpers as h
 from altaircms.plugins.interfaces import IWidgetUtility
 from altaircms.plugins.widget.api import DisplayTypeSelectRendering
 from .models import PromotionWidget
+from altaircms.topic.models import Promotion
+from altaircms.asset.models import ImageAsset
 from .api import get_promotion_manager, get_interval_time
 from altaircms.topic.api import get_topic_searcher
 
@@ -26,8 +28,9 @@ class PromotionSheet(object):
             return None
 
         selected = punits[idx]
+        thumbnail_assets_dict = {a.id: a for a in ImageAsset.query.filter(ImageAsset.id.in_([pu.main_image_id for pu in punits])).all()}
         return PromotionInfo(
-            thumbnails=[h.asset.rendering_object(request, pu.main_image).thumbnail_path for pu in punits], 
+            thumbnails=[h.asset.rendering_object(request, thumbnail_assets_dict.get(pu.main_image_id)).thumbnail_path for pu in punits], 
             idx=idx, 
             message=selected.text, 
             main=h.asset.rendering_object(request, selected.main_image).filepath, 
@@ -45,7 +48,7 @@ def promotion_sheet(request, widget):
     searcher = get_topic_searcher(request, widget.type)
 
     qs = searcher.query_publishing_topics(d, widget.tag, widget.system_tag)
-    qs = qs.options(orm.joinedload("linked_page"), orm.joinedload("main_image"))
+    qs = qs.options(orm.joinedload(Promotion.linked_page))
     return PromotionSheet(qs.all()) ##
 
 def render_tstar_top(request, widget):
