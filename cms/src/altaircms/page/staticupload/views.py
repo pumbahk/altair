@@ -1,5 +1,6 @@
 #-*- coding:utf-8 -*-
 import copy
+import shutil
 import os
 from pyramid.httpexceptions import HTTPFound, HTTPForbidden
 from altaircms.filelib import zipupload
@@ -66,17 +67,167 @@ class StaticPageSetView(BaseView):
                 "pagetype": static_pageset.pagetype, 
                 "static_directory": static_directory, 
                 "current_page": static_pageset.current(), 
-                "tree_renderer": static_page_directory_renderer(self.request, static_page, static_directory), 
+                "tree_renderer": static_page_directory_renderer(self.request, static_page, static_directory, self.request.GET.get("management")), 
                 "now": get_now(self.request)}
 
 
 @view_defaults(route_name="static_page_part_file", permission="authenticated")
 class StaticPagePartFileView(BaseView):
-    pass
+    @view_config(match_param="action=delete", request_method="GET", renderer="altaircms:templates/page/static_page_part_input.html", 
+                 decorator=with_bootstrap)
+    def delete_file_input(self):
+        path = self.request.matchdict["path"].lstrip("/")
+        form = forms.StaticFileDeleteForm(name=path)
+        return {"title": u"ファイルの削除", 
+                "form": form, 
+                "fields": ["name"], 
+                "message": u"ファイル「{0}」を削除します".format(path), 
+                "submit_message": u"ファイルを削除"
+                }
+
+    @view_config(match_param="action=delete", request_method="POST", renderer="altaircms:templates/page/static_page_part_input.html", 
+                 decorator=with_bootstrap)
+    def delete_file(self):
+        path = self.request.matchdict["path"]
+        form = forms.StaticFileDeleteForm(self.request.POST)
+        static_page = get_or_404(self.request.allowable(StaticPage), StaticPage.id==self.request.matchdict["child_id"])
+        def _retry(message=None):
+            if message:
+                form.errors["name"] = [message]
+            return {"title": u"ファイルの削除", 
+                    "form": form, 
+                    "fields": ["name"], 
+                    "message": u"ファイル「{0}」を削除します".format(path), 
+                    "submit_message": u"ファイルを削除"
+                    }
+        try:
+            if not form.validate():
+                return _retry()
+            static_directory = get_static_page_utility(self.request)
+            absroot = static_directory.get_rootname(static_page)
+            name = form.data["name"].lstrip("/")
+            os.remove(os.path.join(absroot, name))
+            FlashMessage.success(u"ファイル:「%s」を削除しました" % name, request=self.request)
+            return HTTPFound(self.context.endpoint(static_page))
+        except Exception as e:
+            logger.exception(str(e))
+            return _retry(unicode(e))
+
+    @view_config(match_param="action=create", request_method="GET", renderer="altaircms:templates/page/static_page_part_input.html", 
+                 decorator=with_bootstrap)
+    def add_file_input(self):
+        form = forms.StaticFileAddForm()
+        return {"title": u"ファイルの追加", 
+                "form": form, 
+                "fields": ["name","file"], 
+                "submit_message": u"ファイルを追加"
+                }
+
+    @view_config(match_param="action=create", request_method="POST", renderer="altaircms:templates/page/static_page_part_input.html", 
+                 decorator=with_bootstrap)
+    def add_file(self):
+        form = forms.StaticFileAddForm(self.request.POST)
+        static_page = get_or_404(self.request.allowable(StaticPage), StaticPage.id==self.request.matchdict["child_id"])
+        def _retry(message=None):
+            if message:
+                form.errors["file"] = [message]
+            return {"title": u"ファイルの追加", 
+                    "form": form, 
+                    "fields": ["name","file"], 
+                    "submit_message": u"ファイルを追加"
+                    }
+        try:
+            if not form.validate():
+                return _retry()
+            static_directory = get_static_page_utility(self.request)
+            absroot = static_directory.get_rootname(static_page)
+            filename = self.request.matchdict["path"].replace("%2F", "/").lstrip("/")
+            with open(os.path.join(absroot, filename, form.data["name"]), "wb") as wf:
+                shutil.copyfileobj(form.data["file"].file, wf)
+            FlashMessage.success(u"ファイル:「%s」を追加しました" % os.path.join(filename, form.data["name"]), request=self.request)
+            return HTTPFound(self.context.endpoint(static_page))
+        except Exception as e:
+            logger.exception(str(e))
+            return _retry(unicode(e))
 
 @view_defaults(route_name="static_page_part_directory", permission="authenticated")
 class StaticPagePartDirectoryView(BaseView):
-    pass
+    @view_config(match_param="action=create", request_method="GET", renderer="altaircms:templates/page/static_page_part_input.html", 
+                 decorator=with_bootstrap)
+    def add_directory_input(self):
+        form = forms.StaticDirectoryAddForm()
+        return {"title": u"ディレクトリの追加", 
+                "form": form, 
+                "fields": ["name"], 
+                "submit_message": u"ディレクトリを追加"
+                }
+
+    @view_config(match_param="action=create", request_method="POST", renderer="altaircms:templates/page/static_page_part_input.html", 
+                 decorator=with_bootstrap)
+    def add_directory(self):
+        form = forms.StaticDirectoryAddForm(self.request.POST)
+        static_page = get_or_404(self.request.allowable(StaticPage), StaticPage.id==self.request.matchdict["child_id"])
+        def _retry(message=None):
+            if message:
+                form.errors["name"] = [message]
+            return {"title": u"ディレクトリの追加", 
+                    "form": form, 
+                    "fields": ["name"], 
+                    "submit_message": u"ディレクトリを追加"
+                    }
+        try:
+            if not form.validate():
+                return _retry()
+            static_directory = get_static_page_utility(self.request)
+            absroot = static_directory.get_rootname(static_page)
+            filename = self.request.matchdict["path"].replace("%2F", "/").lstrip("/")
+            os.makedirs(os.path.join(absroot, filename, form.data["name"]))
+            FlashMessage.success(u"ディレクトリ:「%s」を追加しました" % os.path.join(filename, form.data["name"]), request=self.request)
+            return HTTPFound(self.context.endpoint(static_page))
+        except Exception as e:
+            logger.exception(str(e))
+            return _retry(unicode(e))
+
+    @view_config(match_param="action=delete", request_method="GET", renderer="altaircms:templates/page/static_page_part_input.html", 
+                 decorator=with_bootstrap)
+    def delete_directory_input(self):
+        path = self.request.matchdict["path"].lstrip("/")
+        form = forms.StaticDirectoryDeleteForm(name=path)
+        return {"title": u"ディレクトリの削除", 
+                "form": form, 
+                "fields": ["name"], 
+                "message": u"ディレクトリ「{0}」を削除します".format(path), 
+                "submit_message": u"ディレクトリを削除"
+                }
+
+    @view_config(match_param="action=delete", request_method="POST", renderer="altaircms:templates/page/static_page_part_input.html", 
+                 decorator=with_bootstrap)
+    def delete_directory(self):
+        path = self.request.matchdict["path"]
+        form = forms.StaticDirectoryDeleteForm(self.request.POST)
+        static_page = get_or_404(self.request.allowable(StaticPage), StaticPage.id==self.request.matchdict["child_id"])
+        def _retry(message=None):
+            if message:
+                form.errors["file"] = [message]
+            return {"title": u"ディレクトリの削除", 
+                    "form": form, 
+                    "fields": ["name"], 
+                    "message": u"ディレクトリ「{0}」を削除します".format(path), 
+                    "submit_message": u"ディレクトリを削除"
+                    }
+        try:
+            if not form.validate():
+                return _retry()
+            static_directory = get_static_page_utility(self.request)
+            absroot = static_directory.get_rootname(static_page)
+            name = form.data["name"]
+            shutil.rmtree(os.path.join(absroot, name))
+            FlashMessage.success(u"ディレクトリ:「%s」を削除しました" % name, request=self.request)
+            return HTTPFound(self.context.endpoint(static_page))
+        except Exception as e:
+            logger.exception(str(e))
+            return _retry(unicode(e))
+
 
 @view_defaults(route_name="static_page", permission="authenticated")
 class StaticPageView(BaseView):
@@ -88,6 +239,7 @@ class StaticPageView(BaseView):
         DBSession.flush()
         static_directory = get_static_page_utility(self.request)
         static_directory.prepare(static_directory.get_rootname(copied))
+        FlashMessage.success(u"ページをコピーしました", request=self.request)
         return HTTPFound(self.context.endpoint(static_page))
 
 
@@ -105,6 +257,7 @@ class StaticPageView(BaseView):
         static_directory = get_static_page_utility(self.request)
         absroot = static_directory.get_rootname(copied)
         self.request.registry.notify(creation.AfterModelCreate(self.request, absroot, static_directory, copied))
+        FlashMessage.success(u"ページを再帰的にコピーしました", request=self.request)
         return HTTPFound(self.context.endpoint(static_page))
 
 

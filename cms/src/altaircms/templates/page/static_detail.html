@@ -170,9 +170,15 @@ h3{
   %if "force_original" in request.GET:
     <li><a href="${h.current_route_path_override(request,_dels=["force_original"])}#treeview">レイアウト適用した後</a></li>
     <li class="active"><a href="#">レイアウト適用する前</a></li>
+    <li><a href="${h.current_route_path_override(request,_dels=["force_original"], _query=dict(management=True))}#treeview">ファイル管理</a></li>
+  %elif "management" in request.GET:
+    <li><a href="${h.current_route_path_override(request,_dels=["management"])}#treeview">レイアウト適用した後</a></li>
+    <li><a href="${h.current_route_path_override(request,_dels=["management"],_query=dict(force_original=True))}#treeview">レイアウト適用する前</a></li>
+    <li class="active"><a href="#">ファイル管理</a></li>
   %else:
     <li class="active"><a href="#">レイアウト適用した後</a></li>
     <li><a href="${h.current_route_path_override(request,_query=dict(force_original=True))}#treeview">レイアウト適用する前</a></li>
+    <li><a href="${h.current_route_path_override(request,_query=dict(management=True))}#treeview">ファイル管理</a></li>
   %endif
 </ul>
 <div class="well css-treeview" id="treeview">
