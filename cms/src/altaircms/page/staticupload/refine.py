@@ -3,10 +3,10 @@ from lxml import html
 from urlparse import urljoin
 # utility = IDirectoryResource
 
-
 def is_html_filename(filename):
     return filename.lower().endswith((".html", ".htm"))
 
+## todo: support absolute url.
 def _make_links_absolute(doc, base_url, resolve_base_href=True):
     if resolve_base_href:
         doc.resolve_base_href()
@@ -19,14 +19,24 @@ def _make_links_absolute(doc, base_url, resolve_base_href=True):
             return urljoin(base_url, href)
     doc.rewrite_links(link_repl)
 
-def refine_link(filename, dirname, utility):
+_PARSERS = {}
+DEFAULT_ENCODING = "utf-8" #xxx:
+
+def get_html_parser(encoding=DEFAULT_ENCODING):
+    global _PARSERS
+    parser = _PARSERS.get(encoding)
+    if parser is None:
+        parser = _PARSERS[encoding] = html.HTMLParser(encoding=encoding)
+    return parser
+
+def refine_link(filename, dirname, utility, encoding=DEFAULT_ENCODING):
     path = os.path.join(dirname, filename)
     base_url = utility.get_base_url(dirname, filename)
-    doc = html.parse(path, base_url=base_url).getroot()
+    doc = html.parse(path, base_url=base_url, parser=get_html_parser(encoding)).getroot()
     if doc is not None:
         _make_links_absolute(doc, base_url)
     return doc
 
-def refine_link_as_string(filename, dirname, utility):
-    doc = refine_link(filename, dirname, utility)
-    return html.tostring(doc) if doc is not None else ""
+def refine_link_as_string(filename, dirname, utility, encoding=DEFAULT_ENCODING):
+    doc = refine_link(filename, dirname, utility, encoding=encoding)
+    return html.tostring(doc, pretty_print=True, encoding=encoding) if doc is not None else ""
