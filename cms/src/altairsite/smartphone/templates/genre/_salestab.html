@@ -7,7 +7,12 @@
 </script>
 
 <style>
-#salestab.ui-tabs {
+#salestab {
+    background-color: #ffffff;
+    border: 0px;
+}
+
+#salestab .ui-tabs {
 	padding: 0;
 	border-width: 0;
 }
@@ -23,13 +28,24 @@
 }
 
 #salestab .ui-tabs-panel {
-	border-width: 5px;
+    background-color: cornsilk;
+    border: 2px, #000000, solid;
+	border-width: 2px;
 }
 
 #salestab .ui-tabs-nav li.ui-tabs-selected {
 	border-width: 5px;
 	margin-bottom: -5px;
 }
+
+#salestab .ui-tabs-panel A:link {
+    color: #0000cc
+}
+
+#salestab .ui-tabs-panel A:visited {
+  color: #990099;
+}
+
 </style>
 
 <div style='clear:both;' id="salestab">
