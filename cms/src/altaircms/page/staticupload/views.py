@@ -103,11 +103,9 @@ class StaticPagePartFileView(BaseView):
         try:
             if not form.validate():
                 return _retry()
-            static_directory = get_static_page_utility(self.request)
-            absroot = static_directory.get_rootname(static_page)
-            name = form.data["name"].lstrip("/")
-            os.remove(os.path.join(absroot, name))
-            FlashMessage.success(u"ファイル:「%s」を削除しました" % name, request=self.request)
+            changer = self.context.creation(creation.PartialChange, form.data)
+            changer.delete_file(static_page)
+            self.context.toutch(static_page)
             return HTTPFound(self.context.endpoint(static_page))
         except Exception as e:
             logger.exception(str(e))
@@ -139,13 +137,9 @@ class StaticPagePartFileView(BaseView):
         try:
             if not form.validate():
                 return _retry()
-            static_directory = get_static_page_utility(self.request)
-            absroot = static_directory.get_rootname(static_page)
-            filename = self.request.matchdict["path"].replace("%2F", "/").lstrip("/")
-
-            with open(os.path.join(absroot, filename, form.data["name"]), "wb") as wf:
-                shutil.copyfileobj(form.data["file"].file, wf)
-            FlashMessage.success(u"ファイル:「%s」を追加しました" % os.path.join(filename, form.data["name"]), request=self.request)
+            changer = self.context.creation(creation.PartialChange, form.data)
+            changer.create_file(static_page)
+            self.context.touch(static_page)
             return HTTPFound(self.context.endpoint(static_page))
         except Exception as e:
             logger.exception(str(e))
@@ -177,13 +171,9 @@ class StaticPagePartFileView(BaseView):
         try:
             if not form.validate():
                 return _retry()
-            static_directory = get_static_page_utility(self.request)
-            absroot = static_directory.get_rootname(static_page)
-            filename = form.data["name"]
-
-            with open(os.path.join(absroot, filename), "wb") as wf:
-                shutil.copyfileobj(form.data["file"].file, wf)
-            FlashMessage.success(u"ファイル:「%s」を更新しました" % os.path.join(filename, form.data["name"]), request=self.request)
+            changer = self.context.creation(creation.PartialChange, form.data)
+            changer.update_file(static_page, form.data["name"])
+            self.context.touch(static_page)
             return HTTPFound(self.context.endpoint(static_page))
         except Exception as e:
             logger.exception(str(e))
@@ -218,11 +208,9 @@ class StaticPagePartDirectoryView(BaseView):
         try:
             if not form.validate():
                 return _retry()
-            static_directory = get_static_page_utility(self.request)
-            absroot = static_directory.get_rootname(static_page)
-            filename = self.request.matchdict["path"].replace("%2F", "/").lstrip("/")
-            os.makedirs(os.path.join(absroot, filename, form.data["name"]))
-            FlashMessage.success(u"ディレクトリ:「%s」を追加しました" % os.path.join(filename, form.data["name"]), request=self.request)
+            changer = self.context.creation(creation.PartialChange, form.data)
+            changer.create_directory(static_page)
+            self.context.touch(static_page)
             return HTTPFound(self.context.endpoint(static_page))
         except Exception as e:
             logger.exception(str(e))
@@ -258,11 +246,9 @@ class StaticPagePartDirectoryView(BaseView):
         try:
             if not form.validate():
                 return _retry()
-            static_directory = get_static_page_utility(self.request)
-            absroot = static_directory.get_rootname(static_page)
-            name = form.data["name"]
-            shutil.rmtree(os.path.join(absroot, name))
-            FlashMessage.success(u"ディレクトリ:「%s」を削除しました" % name, request=self.request)
+            changer = self.context.creation(creation.PartialChange, form.data)
+            changer.delete_directory(static_page)
+            self.context.touch(static_page)
             return HTTPFound(self.context.endpoint(static_page))
         except Exception as e:
             logger.exception(str(e))
