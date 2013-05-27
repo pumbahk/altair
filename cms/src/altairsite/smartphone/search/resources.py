@@ -116,7 +116,7 @@ class SearchPageResource(CommonResource):
         day_choices = self.create_choices(1, 32)
         return year_choices, month_choices, day_choices
 
-    def get_hotword(self, id):
+    def get_hotword_from_id(self, id):
         genre = self.request.allowable(HotWord).filter(HotWord.id == id).first()
         return genre
 

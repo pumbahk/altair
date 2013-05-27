@@ -136,7 +136,7 @@ def detail_search(context, request):
              , renderer='altairsite.smartphone:templates/searchresult/hotword.html')
 def move_hotword(context, request):
     form = HotwordSearchForm(request.GET)
-    hotword = context.get_hotword(form.data['hotword_id'])
+    hotword = context.get_hotword_from_id(form.data['hotword_id'])
     query = HotwordSearchQuery(hotword=hotword)
     page = form.data['page'] if form.data['page'] else 1
     result = context.search_hotword(query=query, page=page, per=10)
