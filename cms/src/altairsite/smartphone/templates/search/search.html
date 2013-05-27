@@ -2,12 +2,12 @@
 
 <div class="sectionbox inverted" id="search">
     <form class="sectionbox-inner" action="${request.route_path('search')}" method="GET">
-        ${form.word}
+        ${form.word(placeholder=u"アーティスト名、公演名、会場名など")}
         ${form.sale}
-        <input type="submit" class="btn-secondary" value="検索"/><a href="${request.route_path('init_detail')}">もっと詳しく</a>
+        <input type="submit" class="btn-secondary btn-large" value="検索"/><a href="${request.route_path('init_detail')}">もっと詳しく</a>
         <br/>
         % for error in form.word.errors:
-            <font color="red">${error}</font><br/>
+            <font color="yellow">${error}</font><br/>
         % endfor
     </form>
 </div>

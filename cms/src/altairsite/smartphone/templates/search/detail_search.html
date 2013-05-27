@@ -76,7 +76,7 @@ $(function () {
     <form action="${request.route_path('search_detail')}" method='GET'>
         <fieldset>
             <%m:header>フリーワード</%m:header><br/>
-            ${form.word}<br/>
+            ${form.word(placeholder=u"アーティスト名、公演名、会場名など")}<br/>
             % for error in form.word.errors:
                 <font color="red">${error}</font><br/>
             % endfor
@@ -107,7 +107,7 @@ $(function () {
             販売終了まで${form.sale_end}日<br/><br/>
             ${form.closed_perf.label}${form.closed_perf}
             ${form.canceled_perf.label}${form.canceled_perf}<br/>
-            <input type="submit" class="btn-secondary" value="検索"/>
+            <input type="submit" class="btn-secondary btn-large" value="検索"/>
         </fieldset>
     </form>
 </div>
