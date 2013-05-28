@@ -75,6 +75,10 @@ var DataStore = Backbone.Model.extend({
       this.set("print_strategy", "個別に発券");
     }
   }, 
+  cleanBuffer: function(){
+      this.get("ticket_buffers").clean();
+      this.set("print_num", 0);
+  }, 
   isPrintUnitOrder: function(){
     return this.get("print_unit") == "order";
   }, 
@@ -343,10 +347,10 @@ var QRInputView = AppPageViewBase.extend({
     var self = this;
     this.datastore.set("qrcode", qrsigned); //todo: using signal.
     this.datastore.set("auto_trigger",  auto_trigger);
+    this.datastore.cleanBuffer();
 
     return $.getJSON(url, {qrsigned: qrsigned})
       .done(function(data){
-          console.log(data);
         if(data.status == "success"){
           self.messageView.success("QRコードからデータが読み込めました");
           self.datastore.set("qrcode_status", "loaded");
@@ -595,8 +599,7 @@ var AppletView = Backbone.View.extend({
     this.consumed_tokens = [];
   }, 
   clearQRInput: function(){
-    this.datastore.get("ticket_buffers").clean();
-    this.datastore.set("print_num", 0);
+    this.datastore.cleanBuffer();
   }, 
   start: function(){
     this.fetchPinterCandidates();
