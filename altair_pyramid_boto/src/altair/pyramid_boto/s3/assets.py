@@ -1,4 +1,3 @@
-from pyramid.interfaces import IAssetDescriptor
 from pyramid.path import Resolver
 from pyramid.threadlocal import get_current_registry
 from boto.s3.connection import S3Connection
@@ -9,7 +8,7 @@ from zope.interface.verify import verifyObject
 from cStringIO import StringIO
 from urlparse import urlparse
 import re
-from altair.pyramid_assets.interfaces import IAssetResolver
+from altair.pyramid_assets.interfaces import IAssetResolver, IWritableAssetDescriptor
 from ..interfaces import IS3ConnectionFactory
 from beaker.cache import Cache, CacheManager, cache_regions
 
@@ -113,7 +112,7 @@ class S3Retriever(object):
     def get_object(self, key):
         return self.object_cache.get(key, createfunc=lambda:self._fetch_object(key))
 
-@implementer(IAssetDescriptor, IS3KeyProvider)
+@implementer(IWritableAssetDescriptor, IS3KeyProvider)
 class S3AssetDescriptor(object):
     def __init__(self, retriever, key_or_prefix, delimiter):
         self.retriever = retriever
@@ -148,6 +147,10 @@ class S3AssetDescriptor(object):
     def exists(self):
         entry = self.retriever.get_entry(self.key_or_prefix)
         return entry['keys_under_prefix'] is not None
+
+    def write(self, buf):
+        key = self.retriever.get_key(self.key_or_prefix)
+        key.set_contents_from_string(buf)
 
     def get_key(self):
         '''IS3KeyProvider'''
