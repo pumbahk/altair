@@ -33,6 +33,75 @@ from ticketing.cart.helpers import format_currency
 %endif
 </%def>
 
+
+<%def name="lot_wish_row(w, auth)">
+
+<%
+performance = w.performance
+venue = performance.venue
+shipping_address = w.lot_entry.shipping_address
+pdmp = w.lot_entry.payment_delivery_method_pair
+payment_method = pdmp.payment_method
+delivery_method = pdmp.delivery_method
+
+%>
+<td nowrap="">
+<div class="btn-group">
+  <!-- TODO: 状態によるボタンの出し分け -->
+  %if not w.canceled_at and not w.is_electing() and not w.is_rejecting() and not w.rejected_at and not w.lot_entry.is_electing() and not w.lot_entry.elected_at:
+  <button class="btn entry-elect-btn" data-entry-no="${w.lot_entry.entry_no}" data-wish-order="${w.wish_order}">当選</button>
+  %endif
+  %if not w.canceled_at and not w.is_electing() and not w.is_rejecting() and not w.rejected_at and not w.lot_entry.is_electing() and not w.lot_entry.elected_at:
+  <button class="btn entry-cancel-btn" data-entry-no="${w.lot_entry.entry_no}">キャンセル</button>
+  %endif
+  %if w.is_electing() and not w.elected_at and not w.rejected_at:
+  <button class="btn cancel-electing-btn" data-entry-no="${w.lot_entry.entry_no}" data-wish-order="${w.wish_order}">当選予定をキャンセル</button>
+  %endif
+
+  %if not w.canceled_at and not w.is_electing() and not w.is_rejecting() and not w.rejected_at and not w.lot_entry.is_electing() and not w.lot_entry.elected_at:
+  <button class="btn entry-reject-btn" data-entry-no="${w.lot_entry.entry_no}">落選</button>
+  %endif
+  %if w.is_rejecting() and not w.rejected_at and not w.rejected_at and not w.lot_entry.is_electing():
+  <button class="btn cancel-reject-btn" data-entry-no="${w.lot_entry.entry_no}">落選予定をキャンセル</button>
+  %endif
+
+</div>
+</td>
+<td nowrap="">
+${w.status}
+%if w.lot_entry.ordered_mail_sent_at:
+<br>メール送信済
+%endif
+</td>
+<td nowrap="">${self.multicheckout_auth_status(auth)}</td>
+<td nowrap="">${w.lot_entry.entry_no}</td>
+<td nowrap="">${w.wish_order + 1}</td>
+<td nowrap="">${"{0:%Y-%m-%d %H:%M}".format(w.created_at)}</td>
+<td nowrap="">${u",".join([",".join([i.stock_type.name for i in p.product.items]) for p in w.products])}</td>
+<td nowrap="">${w.total_quantity}</td>
+<td nowrap="">${venue.name}</td>
+<td nowrap="">${performance.code}</td>
+<td nowrap="">${"{0:%Y-%m-%d %H:%M}".format(performance.start_on)}</td>
+<td nowrap="">${u",".join([p.product.name for p in w.products])}</td>
+<td nowrap="">${payment_method.name}</td>
+<td nowrap="">${delivery_method.name}</td>
+<td nowrap="">${shipping_address.last_name}</td>
+<td nowrap="">${shipping_address.first_name}</td>
+<td nowrap="">${shipping_address.last_name_kana}</td>
+<td nowrap="">${shipping_address.first_name_kana}</td>
+<td nowrap="">${shipping_address.prefecture}</td>
+<td nowrap="">${shipping_address.city}</td>
+<td nowrap="">${shipping_address.address_1}</td>
+<td nowrap="">${shipping_address.address_2}</td>
+<td nowrap="">${shipping_address.tel_1}</td>
+<td nowrap="">${shipping_address.tel_2}</td>
+<td nowrap="">${shipping_address.fax}</td>
+<td nowrap="">${shipping_address.email_1}</td>
+<td nowrap="">${shipping_address.email_2}</td>
+
+</%def>
+
+
 <%block name="style">
 <link rel="stylesheet" type="text/css" href="/static/css/decentcolorpicker.css" />
 <link rel="stylesheet" type="text/css" href="/static/css/performance.css" />
@@ -174,69 +243,8 @@ ${tabs.tabs(request)}
 </thead>
 <tbody>
 %for w,auth in wishes:
-<%
-performance = w.performance
-venue = performance.venue
-shipping_address = w.lot_entry.shipping_address
-pdmp = w.lot_entry.payment_delivery_method_pair
-payment_method = pdmp.payment_method
-delivery_method = pdmp.delivery_method
-
-%>
-<tr>
-<td nowrap="">
-<ul>
-  <!-- TODO: 状態によるボタンの出し分け -->
-  %if not w.canceled_at and not w.is_electing() and not w.is_rejecting() and not w.rejected_at and not w.lot_entry.is_electing() and not w.lot_entry.elected_at:
-  <li><button class="btn entry-elect-btn" data-entry-no="${w.lot_entry.entry_no}" data-wish-order="${w.wish_order}">当選</button></li>
-  %endif
-  %if not w.canceled_at and not w.is_electing() and not w.is_rejecting() and not w.rejected_at and not w.lot_entry.is_electing() and not w.lot_entry.elected_at:
-  <li><button class="btn entry-cancel-btn" data-entry-no="${w.lot_entry.entry_no}">キャンセル</button></li>
-  %endif
-  %if w.is_electing() and not w.elected_at and not w.rejected_at:
-  <li><button class="btn cancel-electing-btn" data-entry-no="${w.lot_entry.entry_no}" data-wish-order="${w.wish_order}">当選予定をキャンセル</button></li>
-  %endif
-
-  %if not w.canceled_at and not w.is_electing() and not w.is_rejecting() and not w.rejected_at and not w.lot_entry.is_electing() and not w.lot_entry.elected_at:
-  <li><button class="btn entry-reject-btn" data-entry-no="${w.lot_entry.entry_no}">落選</button></li>
-  %endif
-  %if w.is_rejecting() and not w.rejected_at and not w.rejected_at and not w.lot_entry.is_electing():
-  <li><button class="btn cancel-reject-btn" data-entry-no="${w.lot_entry.entry_no}">落選予定をキャンセル</button></li>
-  %endif
-
-</ul>
-</td>
-<td nowrap="">
-${w.status}
-%if w.lot_entry.ordered_mail_sent_at:
-<br>メール送信済
-%endif
-</td>
-<td nowrap="">${self.multicheckout_auth_status(auth)}</td>
-<td nowrap="">${w.lot_entry.entry_no}</td>
-<td nowrap="">${w.wish_order + 1}</td>
-<td nowrap="">${"{0:%Y-%m-%d %H:%M}".format(w.created_at)}</td>
-<td nowrap="">${u",".join([",".join([i.stock_type.name for i in p.product.items]) for p in w.products])}</td>
-<td nowrap="">${w.total_quantity}</td>
-<td nowrap="">${venue.name}</td>
-<td nowrap="">${performance.code}</td>
-<td nowrap="">${"{0:%Y-%m-%d %H:%M}".format(performance.start_on)}</td>
-<td nowrap="">${u",".join([p.product.name for p in w.products])}</td>
-<td nowrap="">${payment_method.name}</td>
-<td nowrap="">${delivery_method.name}</td>
-<td nowrap="">${shipping_address.last_name}</td>
-<td nowrap="">${shipping_address.first_name}</td>
-<td nowrap="">${shipping_address.last_name_kana}</td>
-<td nowrap="">${shipping_address.first_name_kana}</td>
-<td nowrap="">${shipping_address.prefecture}</td>
-<td nowrap="">${shipping_address.city}</td>
-<td nowrap="">${shipping_address.address_1}</td>
-<td nowrap="">${shipping_address.address_2}</td>
-<td nowrap="">${shipping_address.tel_1}</td>
-<td nowrap="">${shipping_address.tel_2}</td>
-<td nowrap="">${shipping_address.fax}</td>
-<td nowrap="">${shipping_address.email_1}</td>
-<td nowrap="">${shipping_address.email_2}</td>
+<tr class="${'lot-wish-' + w.lot_entry.entry_no + '-' + str(w.wish_order)}">
+${self.lot_wish_row(w, auth)}
 </tr>
 %endfor
 </tbody>
@@ -251,6 +259,15 @@ var rejectingUrl = "${rejecting_url}"
 var cancelRejectingUrl = "${cancel_rejecting_url}"
 
 $(function() {
+
+
+  function rewrite_wishes(data) {
+    for (var i = 0; i <  data.html.length; i++) {
+      $("." + data.html[i][0]).html(data.html[i][1]);
+    }
+
+  }
+
   // 当選
   $('#wish-search-results').on('click', '.entry-elect-btn', function(e) {
      var entryNo = $(this).data("entryNo");
@@ -262,7 +279,11 @@ $(function() {
        type: "POST",
        success: function(data, textStatus, xhr) {
            if (data.result == "OK") {
-             alert("申込番号" + entryNo + "-" + (wishOrder + 1) + " を当選予定にしました。");
+             if (data.html) {
+               rewrite_wishes(data);
+             } else {
+                alert("申込番号" + entryNo + "-" + (wishOrder + 1) + " を当選予定にしました。");
+             }
            } else if (data.result == "NG" && data.message) {
              alert(data.message);
            }
@@ -279,7 +300,11 @@ $(function() {
        type: "POST",
        success: function(data, textStatus, xhr) {
            if (data.result == "OK") {
-             alert("申込番号" + entryNo + "をキャンセルしました。");
+             if (data.html) {
+               rewrite_wishes(data);
+             } else {
+               alert("申込番号" + entryNo + "をキャンセルしました。");
+             }
            } else if (data.result == "NG" && data.message) {
              alert(data.message);
            }
@@ -297,7 +322,11 @@ $(function() {
        type: "POST",
        success: function(data, textStatus, xhr) {
            if (data.result == "OK") {
-             alert("申込番号" + entryNo + "の当選予定をキャンセルしました。");
+             if (data.html) {
+               rewrite_wishes(data);
+             } else {
+               alert("申込番号" + entryNo + "の当選予定をキャンセルしました。");
+             }
            } else if (data.result == "NG" && data.message) {
              alert(data.message);
            }
@@ -315,7 +344,11 @@ $(function() {
        type: "POST",
        success: function(data, textStatus, xhr) {
            if (data.result == "OK") {
-             alert("申込番号" + entryNo + "を落選予定にしました。");
+             if (data.html) {
+               rewrite_wishes(data);
+             } else {
+               alert("申込番号" + entryNo + "を落選予定にしました。");
+             }
            } else if (data.result == "NG" && data.message) {
              alert(data.message);
            }
@@ -333,7 +366,11 @@ $(function() {
        type: "POST",
        success: function(data, textStatus, xhr) {
            if (data.result == "OK") {
-             alert("申込番号" + entryNo + "の落選予定をキャンセルしました。");
+             if (data.html) {
+               rewrite_wishes(data);
+             } else {
+               alert("申込番号" + entryNo + "の落選予定をキャンセルしました。");
+             }
            } else if (data.result == "NG" && data.message) {
              alert(data.message);
            }

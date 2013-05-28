@@ -6,6 +6,7 @@ from sqlalchemy import sql
 from pyramid.decorator import reify
 from pyramid.view import view_config, view_defaults
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound
+from pyramid.renderers import get_renderer
 from ticketing.views import BaseView as _BaseView
 from ticketing.fanstatic import with_bootstrap
 from ticketing.core.models import (
@@ -579,6 +580,20 @@ class LotEntries(BaseView):
                                                          lot_id=lot.id))
 
 
+
+    def render_wish_row(self, wish):
+        """ ajaxで当選申込変更後の内容を返す"""
+
+        tmpl = get_renderer("/lots/search.html")
+        auth = MultiCheckoutOrderStatus.by_order_no(wish.lot_entry.entry_no)
+        html = tmpl.implementation().get_def('lot_wish_row').render(
+            w=wish, auth=auth)
+        return html
+
+    def wish_tr_class(self, wish):
+        return 'lot-wish-' + wish.lot_entry.entry_no + '-' + str(wish.wish_order)
+
+
     @view_config(route_name='lots.entries.elect_entry_no', 
                  request_method="POST",
                  permission='event_viewer',
@@ -610,7 +625,8 @@ class LotEntries(BaseView):
 
         return dict(result="OK",
                     affected=affected,
-                    wish=lots_api._entry_info(wish))
+                    html=[(self.wish_tr_class(w), self.render_wish_row(w))
+                          for w in wish.lot_entry.wishes])
 
 
     @view_config(route_name='lots.entries.reject_entry_no', 
@@ -638,7 +654,9 @@ class LotEntries(BaseView):
         affected = lots_api.submit_reject_entries(lot.id, entries)
 
         return dict(result="OK",
-                    affected=affected)
+                    affected=affected,
+                    html=[(self.wish_tr_class(w), self.render_wish_row(w))
+                          for w in lot_entry.wishes])
 
 
     @view_config(route_name='lots.entries.cancel', 
@@ -670,7 +688,10 @@ class LotEntries(BaseView):
 
 
         lot_entry.cancel()
-        return dict(result="OK")
+
+        return dict(result="OK",
+                    html=[(self.wish_tr_class(w), self.render_wish_row(w))
+                          for w in lot_entry.wishes])
 
 
 
@@ -700,7 +721,9 @@ class LotEntries(BaseView):
         lot.cancel_electing(wish)
 
         return dict(result="OK",
-                    wish=lots_api._entry_info(wish))
+                    html=[(self.wish_tr_class(w), self.render_wish_row(w))
+                          for w in lot_entry.wishes])
+
 
     @view_config(route_name='lots.entries.cancel_rejecting',
                  request_method="POST",
@@ -721,4 +744,6 @@ class LotEntries(BaseView):
         lot.cancel_rejecting(lot_entry)
 
         return dict(result="OK",
-                    )
+                    html=[(self.wish_tr_class(w), self.render_wish_row(w))
+                          for w in lot_entry.wishes])
+
