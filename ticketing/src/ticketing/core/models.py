@@ -3320,7 +3320,8 @@ class SalesSegment(Base, BaseModel, LogicallyDeleted, WithTimestamp):
         data = {
             "id": self.id, 
             "kind_name": self.kind, 
-            "kind_label": self.kind_label, 
+            "kind_label": self.kind_label,
+            "publicp": self.sales_segment_group.public,
             "name": self.name, 
             "start_on" : isodate.datetime_isoformat(self.start_at) if self.start_at else '', 
             "end_on" : isodate.datetime_isoformat(self.end_at) if self.end_at else '', 
