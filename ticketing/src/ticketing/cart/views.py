@@ -99,6 +99,7 @@ class IndexView(IndexViewMixin):
         self.prepare()
 
     def get_drawing_urls(self, venue):
+        sales_segment = self.request.context.sales_segment
         retval = {}
         for name, drawing in venue.site.get_drawings().items():
             if IS3KeyProvider.providedBy(drawing):
@@ -108,7 +109,7 @@ class IndexView(IndexViewMixin):
                     headers['response-content-encoding'] = 'gzip'
                 url = key.generate_url(expires_in=1800, response_headers=headers)
             else:
-                url = venue_drawing=self.request.route_url(
+                url = self.request.route_url(
                     'cart.venue_drawing',
                     event_id=self.request.context.event_id,
                     performance_id=sales_segment.performance.id,
