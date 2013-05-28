@@ -9,14 +9,27 @@ logger = logging.getLogger(__name__)
 from .interfaces import ICardBrandDetecter
 from .util import ahead_coms
 
+
+class DBSessionContext(object):
+    def __init__(self, session, name=None):
+        self.session = session
+        self.name = name
+
+    def __enter__(self):
+        pass
+
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        if self.name:
+            logger.debug('remove {0} dbsession'.format(self.name))
+        self.session.remove()
+
+
 def multicheckout_dbsession_tween(handler, registry):
     def tween(request):
-        try:
+        from .models import _session
+        with DBSessionContext(_session, name="multicheckout"):
             return handler(request)
-        finally:
-            from .models import _session
-            logger.debug('remove multicheckout dbsession')
-            _session.remove()
     return tween
             
 def detect_card_brand(request, card_number):
