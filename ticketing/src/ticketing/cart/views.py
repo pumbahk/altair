@@ -98,10 +98,10 @@ class IndexView(IndexViewMixin):
 
         self.prepare()
 
-    def get_drawing_urls(self, venue):
+    def get_frontend_drawing_urls(self, venue):
         sales_segment = self.request.context.sales_segment
         retval = {}
-        for name, drawing in venue.site.get_drawings().items():
+        for name, drawing in venue.site.get_frontend_drawings().items():
             if IS3KeyProvider.providedBy(drawing):
                 key = drawing.get_key()
                 headers = {}
@@ -221,7 +221,7 @@ class IndexView(IndexViewMixin):
                     performance_id=sales_segment.performance.id,
                     venue_id=sales_segment.performance.venue.id,
                     part='__part__'),
-                venue_drawings=self.get_drawing_urls(sales_segment.performance.venue),
+                venue_drawings=self.get_frontend_drawing_urls(sales_segment.performance.venue),
                 seats=self.request.route_url(
                     'cart.seats',
                     event_id=self.request.context.event_id,
@@ -322,7 +322,7 @@ class IndexView(IndexViewMixin):
                         .filter_by(site_id=venue.site_id)
                     ]
                 ),
-            pages=venue.site._metadata and venue.site._metadata.get('pages')
+            pages=venue.site.get_frontend_pages()
             )
 
     @view_config(route_name='cart.seat_adjacencies', renderer="json")
@@ -377,7 +377,7 @@ class IndexView(IndexViewMixin):
             raise HTTPNotFound()
         part = self.request.matchdict.get('part')
         venue = c_models.Venue.get(venue_id)
-        drawing = venue.site.get_drawing(part)
+        drawing = venue.site.get_frontend_drawing(part)
         if not drawing:
             raise HTTPNotFound()
         content_encoding = None

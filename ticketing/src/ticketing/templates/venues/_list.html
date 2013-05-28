@@ -30,7 +30,7 @@
 	% else:
     <td><span class="id">${item['site'].id}</span></td>
 	<td>
-	% if item['site'].prefecture != None:
+	% if item['site'].prefecture is not None:
 		${item['site'].prefecture}
 	% endif
 	</td>
@@ -40,7 +40,7 @@
 	% endif
 	</td>
 	<td style="text-align: center;">
-		% if item['site']._metadata_url != None:
+		% if item['site']._frontend_metadata is not None:
 			◯
 		% else:
 			×

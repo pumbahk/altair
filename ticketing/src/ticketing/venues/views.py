@@ -25,32 +25,6 @@ from ticketing.fanstatic import with_bootstrap
 
 logger = logging.getLogger(__name__)
 
-@view_config(route_name="api.get_drawing", request_method="GET", permission='event_viewer')
-def get_drawing(request):
-    venue_id = int(request.matchdict.get('venue_id', 0))
-    venue = Venue.get(venue_id)
-    if venue is None:
-        return HTTPNotFound("Venue id #%d not found" % venue_id)
-    if venue.site is None:
-        return HTTPNotFound("Venue id #%d has no sites" % venue_id)
-    if venue.site.drawing_url is None:
-        return HTTPNotFound("Venue id #%d site has no drawing_url" % venue_id)
-
-    content_encoding = None
-    if re.match('^.+\.(svgz|gz)$', venue.site.drawing_url):
-        content_encoding = 'gzip'
-    resp = Response(
-        app_iter=urlopen(venue.site.drawing_url),
-        content_type='text/xml; charset=utf-8',
-        content_encoding=content_encoding,
-        conditional_response=True
-    )
-    drawing_url = urlparse(venue.site.drawing_url)
-    resp.last_modified = os.path.getmtime(drawing_url.path)
-    if resp.content_encoding is None and (request.if_modified_since is None or request.if_modified_since < resp.last_modified):
-        resp.encode_content()
-    return resp
-
 @view_config(route_name="api.get_seats", request_method="GET", renderer='json', permission='event_viewer')
 def get_seats(request):
     venue_id = int(request.matchdict.get('venue_id', 0))
@@ -213,7 +187,7 @@ def frontend_drawing(request):
     venue_id = int(request.matchdict.get('venue_id', 0))
     venue = Venue.get(venue_id, organization_id=request.context.user.organization_id)
     part = request.matchdict.get('part')
-    drawing = venue.site.get_drawing(part)
+    drawing = venue.site.get_frontend_drawing(part)
     if drawing is None:
         return HTTPNotFound()
     content_encoding = None
@@ -231,9 +205,10 @@ def show(request):
 
     site = Site.get(venue.site_id)
     root = None
-    if site._metadata != None:
-        pages = site._metadata.get('pages').items()
-        for page, info in site._metadata.get('pages').items():
+    pages = None
+    pages = site.get_frontend_pages()
+    if pages:
+        for page, info in pages.items():
             if info.get('root'):
                 root = page
 
@@ -295,10 +270,10 @@ def show(request):
     }
 
 @view_config(route_name='venues.checker', permission='event_editor', renderer='ticketing:templates/venues/checker.html')
-def show_checker(request):
+def show_checker(context, request):
     venue_id = int(request.matchdict.get('venue_id', 0))
     return {
-        'venue_id': venue_id
+        'venue': Venue.filter_by(id=venue_id, organization_id=context.user.organization.id).one()
     }
 
 @view_config(route_name='venues.new', request_method='GET', renderer='ticketing:templates/venues/edit.html', decorator=with_bootstrap)
@@ -371,14 +346,10 @@ def edit_post(request):
 
     f = SiteForm(request.POST)
     if f.validate():
-        print "**1"
         venue = merge_session_with_post(venue, f.data)
-        print "**2"
         venue.save()
 
-        print "**3"
         site = merge_session_with_post(site, f.data)
-        print "**4"
         site.save()
 
         request.session.flash(u'会場を保存しました')
