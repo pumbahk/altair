@@ -8,6 +8,8 @@ from altaircms.models import Base
 
 def install_fetcher(config):
     settings = config.registry.settings
+    config.include("altaircms:install_upload_file") #xxx:
+    config.include("altaircms.page.staticupload:install_static_page_utility")
     from altairsite.fetcher import ICurrentPageFetcher
     from altairsite.fetcher import CurrentPageFetcher
     fetcher = CurrentPageFetcher(settings["altaircms.static.pagetype.pc"], 
@@ -37,8 +39,6 @@ def main(global_config, **local_config):
             exclude=config.maybe_dotted(settings.get("s3.static.exclude.function")), 
             prefix="/usersite"))
 
-    config.include("altaircms:install_upload_file") #xxx:
-    config.include("altaircms.page.staticupload:install_static_page_utility")
     config.include("altaircms.tag:install_tagmanager")
     config.include("altaircms.topic:install_topic_searcher")
     config.include("altaircms.page:install_pageset_searcher")

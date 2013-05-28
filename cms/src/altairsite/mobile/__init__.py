@@ -41,19 +41,7 @@ def install_convinient_request_properties(config):
 def install_app(config):
     config.include("altair.mobile.install_detector")
     config.include(install_convinient_request_properties)
-
-    config.include('altairsite.mobile.event.company')
-    config.include('altairsite.mobile.event.detailsearch')
-    config.include('altairsite.mobile.event.eventdetail')
-    config.include('altairsite.mobile.event.genre')
-    config.include('altairsite.mobile.event.help')
-    config.include('altairsite.mobile.event.hotword')
-    config.include('altairsite.mobile.event.information')
-    config.include('altairsite.mobile.event.search')
-    config.include('altairsite.mobile.event.orderreview')
-    config.include('altairsite.mobile.event.inquiry')
-    config.include('altairsite.mobile.event.privacy')
-    config.include('altairsite.mobile.event.legal')
+    config.include("altairsite.mobile.event")
     config.add_route("home", "/")
     config.scan(".")
 
@@ -69,7 +57,7 @@ def main(global_config, **settings):
     config.add_static_view('static', 'altaircms:static', cache_max_age=3600)
     config.add_static_view('plugins/static', 'altaircms:plugins/static', cache_max_age=3600)
     config.add_static_view("staticasset", settings["altaircms.asset.storepath"], cache_max_age=3600)
-
+    config.include("altairsite.install_fetcher")
     config.include('altairsite.separation')
     config.include('altaircms.solr')
     config.include('altaircms.tag.install_tagmanager')
