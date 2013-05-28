@@ -101,13 +101,15 @@ def s3rename_uploaded_files(after_change_directory):
 def update_model_file_structure(after_zipupload):
     event = after_zipupload
     static_page = event.static_page
-    absroot = event.root
-    return _update_model_file_structure(static_page, absroot)
+    static_directory = event.static_directory
+    return _update_model_file_structure(static_page, static_directory.get_rootname(static_page))
 
 def _update_model_file_structure(static_page, absroot):
     ## model update
     inspection_targets = {}
     for root, dirs, files in os.walk(absroot):
+        for d in dirs:
+            inspection_targets[os.path.join(root.replace(absroot, ""), d).lstrip("/")+"$"] = 1            
         for f in files:
-            inspection_targets[os.path.join(root.replace(absroot, ""), f)] = 1
+            inspection_targets[os.path.join(root.replace(absroot, ""), f).lstrip("/")] = 1
     static_page.file_structure_text = json.dumps(inspection_targets)

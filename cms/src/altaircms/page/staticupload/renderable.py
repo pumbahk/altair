@@ -4,10 +4,10 @@ from altaircms.helpers import url_create_with
 from markupsafe import Markup
 
 def static_page_directory_renderer(request, static_page, static_directory, management=False):
-    # if static_page.uploaded_at:
-    #     return StaticPageDirectoryRendererFromDB(request, static_page, static_directory, management=management)
-    # else:
-    return StaticPageDirectoryRenderer(request, static_page, static_directory, management=management)        
+    if static_page.uploaded_at:
+        return StaticPageDirectoryRendererFromDB(request, static_page, static_directory, management=management)
+    else:
+        return StaticPageDirectoryRenderer(request, static_page, static_directory, management=management)        
 
 ## helper structure
 class _Node(object):
@@ -29,8 +29,8 @@ class _Node(object):
     def _add_element(self, n):
         if isinstance(n,(tuple, list)) and n:
             if not self.children.get(n[0]):
-                name = "{0}/{1}".format(self.root, n[0]) if self.root else n[0]
-                self.children[n[0]] = _Node(name, self.D)
+                fullname = "{0}/{1}".format(self.root, n[0]) if self.root else n[0]
+                self.children[n[0]] = _Node(fullname, self.D)
             self.children[n[0]]._add_element(n[1:])
 
 
@@ -42,6 +42,7 @@ class StaticPageDirectoryRendererFromDB(object):
         self.static_directory = static_directory
         self.node = _Node.create_from_dict(static_page.file_structure, prefix=unicode(static_page.id))
         self.management = management
+        self.rendered = {}
 
     def preview_url(self, path):
         return self.request.route_path("static_page_display", 
@@ -49,17 +50,51 @@ class StaticPageDirectoryRendererFromDB(object):
                                        child_id=self.page.id, 
                                        path="{0}/{1}".format(self.pageset.url, path)).replace("%2F", "/")
 
+    def delete_file_url(self, path):
+        part = path.replace(self.root, "")
+        return self.request.route_path("static_page_part_file", static_page_id=self.pageset.id, child_id=self.page.id, path=part, action="delete", 
+                                       _query=dict(endpoint=self.request.url))
+    def update_file_url(self, path):
+        part = path.replace(self.root, "")
+        return self.request.route_path("static_page_part_file", static_page_id=self.pageset.id, child_id=self.page.id, path=part, action="update", 
+                                       _query=dict(endpoint=self.request.url))
+
+    def delete_directory_url(self, path):
+        part = path.replace(self.root, "")
+        return self.request.route_path("static_page_part_directory", static_page_id=self.pageset.id, child_id=self.page.id, path=part, action="delete", 
+                                       _query=dict(endpoint=self.request.url))
+
     def has_children(self, path):
-        return bool(self.node.D[path].children)
+        return path.endswith("$") or bool(self.node.D[path].children)
+
+    def unregistered_parent(self, path):
+        return not path.rstrip("$") in self.rendered
+
+    def register_parent(self, path):
+        path = path.rstrip("$")
+        self.rendered[path] = 1
+        return path
 
     def get_children(self, path):
-        return (f for f in  self.node.D[path].children.keys() if not f.endswith(".original"))
+        try:
+            return (f for f in  self.node.D[path].children.keys() if not f.endswith(".original"))
+        except KeyError:
+            return []
 
     def join_name(self, dirname, basename):
         return "{0}/{1}".format(dirname, basename)
 
     def parent_action_links(self, path):
-        return ""
+        part = path.replace(self.root, "")
+        return u'''
+<a class="btn btn-mini" href="{0}">新しいディレクトリを追加</a></li>
+<a class="btn btn-mini" href="{1}">新しいファイルを追加</a></li>
+<a class="btn btn-mini" href="{2}">削除<i class="icon-trash"></i></a>           
+'''.format(self.request.route_path("static_page_part_directory", static_page_id=self.pageset.id, child_id=self.page.id, path=part, action="create", 
+                                   _query=dict(endpoint=self.request.url)), 
+           self.request.route_path("static_page_part_file", static_page_id=self.pageset.id, child_id=self.page.id, path=part, action="create", 
+                                   _query=dict(endpoint=self.request.url)), 
+           self.delete_directory_url(path))
 
     def __html__(self):
         self.root = unicode(self.page.id)
@@ -123,6 +158,11 @@ class StaticPageDirectoryRenderer(object):
                                    _query=dict(endpoint=self.request.url)), 
            self.delete_directory_url(path))
     
+    def unregistered_parent(self, path):
+        return False
+
+    def register_parent(self, path):
+        pass
 
     def __html__(self):
         self.root = self.static_directory.get_rootname(self.page)
@@ -145,6 +185,9 @@ class TreeRenderer(object):
 
     def _url_tree(self, path, r, opened=False):
         if self.companion.has_children(path):
+            if not self.companion.unregistered_parent(path):
+                return r
+            path = self.companion.register_parent(path)
             r.append(u'<ul>')
             id_ = path.replace(self.root, "").replace("/", "-")
             if opened:

@@ -51,8 +51,13 @@ class S3StaticPageDirectoryFactory(StaticPageDirectoryFactory):
         config.add_subscriber(".subscribers.s3update_file", ".creation.AfterPartialUpdateFile")
         config.add_subscriber(".subscribers.s3delete_file", ".creation.AfterPartialDeleteFile")
         config.add_subscriber(".subscribers.s3clean_directory", ".creation.AfterPartialDeleteDirectory")
-
+        config.add_subscriber(".subscribers.update_model_file_structure", ".creation.AfterPartialCreateFile")
+        config.add_subscriber(".subscribers.update_model_file_structure", ".creation.AfterPartialUpdateFile")
+        config.add_subscriber(".subscribers.update_model_file_structure", ".creation.AfterPartialDeleteFile")
+        config.add_subscriber(".subscribers.update_model_file_structure", ".creation.AfterPartialCreateDirectory")
+        config.add_subscriber(".subscribers.update_model_file_structure", ".creation.AfterPartialDeleteDirectory")
         ## validation:
+
         if get_s3_utility_factory(config) is None:
             raise ConfigurationError("s3 utility is not found")
 
