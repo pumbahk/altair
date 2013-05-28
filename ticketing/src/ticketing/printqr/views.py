@@ -233,18 +233,17 @@ def ticket_after_printed_edit_status_order(context, request):
     token_id = request.json_body["ordered_product_item_token_id"]
     order_no = request.json_body["order_no"]
     order_id = request.json_body["order_id"]
-    force_update = request.json_body.get("force_update")
+    consumed_tokens = request.json_body["consumed_tokens"]
 
     tokens = get_matched_token_query_from_order_no(order_no)
-    if not force_update:
-        tokens = tokens.filter(OrderedProductItemToken.printed_at == None)
-
     now_time = datetime.now()
     setter = PrintedAtBubblingSetter(now_time)
+
     for token in tokens:
-        DBSession.add(token)
-        DBSession.add(utils.history_from_token(request, context.operator.id, order_id, token))
-        setter.printed_token(token)
+        if token.id in consumed_tokens:
+            DBSession.add(token)
+            DBSession.add(utils.history_from_token(request, context.operator.id, order_id, token))
+            setter.printed_token(token)
 
     setter.start_bubbling()
     ## log

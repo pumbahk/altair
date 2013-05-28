@@ -478,11 +478,12 @@ var PrintConfirmView = AppPageViewBase.extend({
       this.router.navigate("one", true);
       return false;
     }
-    if(this.datastore.get("ticket_template_id") == null){
-      this.messageView.alert("チケットテンプレートが設定されていません")
-      this.router.navigate("zero", true);
-      return false;
-    }
+    // まとめて注文する際には、printボタン押下後bufferから消費されてticket_template_idが埋められる
+    // if(this.datastore.get("ticket_template_id") == null){
+    //   this.messageView.alert("チケットテンプレートが設定されていません")
+    //   this.router.navigate("zero", true);
+    //   return false;
+    // }
     if(this.datastore.get("page_format_id") == null){
       this.messageView.alert("ページフォーマットが設定されていません");
       this.router.navigate("zero", true);
@@ -590,6 +591,8 @@ var AppletView = Backbone.View.extend({
     this.datastore.bind("change:page_format_id", this.setPageFormat, this);
 
     this.datastore.bind("*qr.print.signal", this.sendPrintSignalIfNeed, this);
+
+    this.consumed_tokens = [];
   }, 
   clearQRInput: function(){
     this.datastore.get("ticket_buffers").clean();
@@ -644,6 +647,7 @@ var AppletView = Backbone.View.extend({
       //変更内容伝搬されるまで時間がかかる？信じるよ？
       _(buf).each(function(ticket){
         self.service.addTicket(self.service.createTicketFromJSObject(ticket));
+        self.consumed_tokens.push(ticket.ordered_product_item_token_id);
       });
       self.service.printAll();
     });
@@ -678,7 +682,8 @@ var AppletView = Backbone.View.extend({
       order_id: this.datastore.get("order_id"), 
       ordered_product_item_token_id: this.datastore.get("ordered_product_item_token_id"), 
       ordered_product_item_id: this.datastore.get("ordered_product_item_id"), 
-      ticket_id: this.datastore.get("ticket_template_id")
+      ticket_id: this.datastore.get("ticket_template_id"), 
+      consumed_tokens: this.consumed_tokens
     };
     var self = this;
     return $.ajax({
@@ -688,7 +693,7 @@ var AppletView = Backbone.View.extend({
       contentType: 'application/json',
       dataType: 'json',
       url: apiUrl
-    }).promise();
+    }).done(function(data){self.consumed_tokens = []; return data;}).promise();
   }, 
   setPrinter: function(){ //liner
     var printer_name = this.datastore.get("printer_name");
