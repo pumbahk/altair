@@ -173,7 +173,7 @@ class S3AssetResolver(object):
     def resolve(self, spec):
         url = urlparse(spec)
         if url.scheme != u's3':
-            return ValueError(spec)
+            raise ValueError(spec)
         return S3AssetDescriptor(
             retriever=self.get_retriever(url.netloc),
             key_or_prefix=normalize_prefix(
