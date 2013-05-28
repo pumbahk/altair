@@ -79,6 +79,7 @@ requires = [
     "jsonrpclib", 
     "poster",
     "radix",
+    "requests",
     "altair.auth",
     "altair.sqla",
     "altair.exclog",
