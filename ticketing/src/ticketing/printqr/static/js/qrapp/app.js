@@ -418,7 +418,6 @@ var TicketInfoView = AppPageViewBase.extend({
 var FormatChoiceView = AppPageViewBase.extend({
   events:{
     "change #printer input": "printerSettingsChanged", 
-    "change #ticket_template input": "ticketTemplateSettingsChanged", 
     "change #page_format input": "pageFormatChanged"
   }, 
   initialize: function(opts){
@@ -433,11 +432,6 @@ var FormatChoiceView = AppPageViewBase.extend({
     var printer_name = this.$printer.find("input:checked").val();
     this.datastore.set("printer_name", printer_name);
   },
-  ticketTemplateSettingsChanged: function(){
-    var ticket_template = this.$ticketTemplate.find("input:checked");
-    this.datastore.set("ticket_template_name", ticket_template.attr("data-name"));
-    this.datastore.set("ticket_template_id", ticket_template.val());
-  }, 
   pageFormatChanged: function(){
     var page_format = this.$pageFormat.find("input:checked");
     this.datastore.set("page_format_name", page_format.attr("data-name"));
@@ -452,19 +446,6 @@ var FormatChoiceView = AppPageViewBase.extend({
       var e = $('<div class="control-group">');
       e.append($('<span>').text(printer.getName()+": "));
       e.append($('<input type="radio" name="printer">').attr("value", printer.getName()));
-      targetArea.append(e);
-    }
-  }, 
-  redrawTicketTemplateArea: function(templates){
-    var targetArea = this.$ticketTemplate;
-    targetArea.empty()
-    for(var i = templates.iterator(); i.hasNext();){
-      var template = i.next();
-      var e = $('<div class="control-group">');
-      e.append($('<span>').text(template.getName()+": "));
-      e.append($('<input type="radio" name="tickettemplate">')
-               .attr("value", template.getId())
-               .attr("data-name", template.getName()));
       targetArea.append(e);
     }
   }, 
@@ -616,7 +597,6 @@ var AppletView = Backbone.View.extend({
   }, 
   start: function(){
     this.fetchPinterCandidates();
-    this.fetchTemplateCandidates();
     this.fetchPageFormatCandidates();
   }, 
   _addTicket: function(ticket){
@@ -811,14 +791,6 @@ var AppletView = Backbone.View.extend({
     try {
       var printers = this.service.getPrintServices();
       this.appviews.zero.redrawPrinterArea(printers);
-    } catch (e) {
-      this.appviews.messageView.error(e);
-    }
-  }, 
-  fetchTemplateCandidates: function(){
-    try {
-      var ticketTemplates = this.service.getTicketTemplates();
-      this.appviews.zero.redrawTicketTemplateArea(ticketTemplates);
     } catch (e) {
       this.appviews.messageView.error(e);
     }

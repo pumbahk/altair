@@ -129,7 +129,7 @@ def svg_data_from_token(ordered_product_item_token):
 def svg_data_from_token_with_descinfo(history, ordered_product_item_token):
     pair = build_dict_from_ordered_product_item_token(ordered_product_item_token)
     if pair is None:
-        logger.info("*printqr avg_data_from_token_with_desc_info pair=None (token_id=%s)" % ordered_product_item_token.id)
+        logger.error("*printqr avg_data_from_token_with_desc_info pair=None (token_id=%s)" % ordered_product_item_token.id)
         return []
 
     seat = ordered_product_item_token.seat
@@ -150,7 +150,7 @@ def svg_data_from_token_with_descinfo(history, ordered_product_item_token):
     ticket_template = producer.qr_only_tickets().next()
 
     if ticket_template is None:
-        logger.info("*printqr avg_data_from_token ticket_template=None (token_id=%s)" % ordered_product_item_token.id)
+        logger.error("*printqr avg_data_from_token ticket_template=None (token_id=%s)" % ordered_product_item_token.id)
     else:
         retval_data[u'ticket_template_name'] = ticket_template.name
         retval_data[u'ticket_template_id'] = ticket_template.id
