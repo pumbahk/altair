@@ -188,7 +188,6 @@ def confirm_viewlet(context, request):
     """
 
     order_session = request.session["order"]
-    logger.debug("order_session %s" % order_session)
     return dict(order=order_session, card_number_mask=card_number_mask)
 
 @view_config(context=IOrderPayment, name="payment-%d" % PAYMENT_ID, renderer="ticketing.payments.plugins:templates/card_complete.html")
