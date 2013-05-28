@@ -2800,6 +2800,10 @@ class OrderedProductItemToken(Base,BaseModel, LogicallyDeleted):
     valid = Column(Boolean, nullable=False, default=False)
     issued_at = Column(DateTime, nullable=True, default=None)
     printed_at = Column(DateTime, nullable=True, default=None)
+    refreshed_at = Column(DateTime, nullable=True, default=None)
+
+    def is_printed(self):
+        return self.printed_at and (self.refreshed_at is None or self.printed_at > self.refreshed_at)
 
 class Ticket_TicketBundle(Base, BaseModel, LogicallyDeleted):
     __tablename__ = 'Ticket_TicketBundle'

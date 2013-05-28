@@ -272,7 +272,6 @@ var QRInputView = AppPageViewBase.extend({
       }
       self.datastore.set("printed", false);
       self.messageView.success("チケットを再発券可能にしました");
-
       // log
       var message = "*qrlog* refresh printed_at order={0} token={1}"
         .replace("{0}", self.datastore.get("order_id"))
@@ -347,6 +346,7 @@ var QRInputView = AppPageViewBase.extend({
 
     return $.getJSON(url, {qrsigned: qrsigned})
       .done(function(data){
+          console.log(data);
         if(data.status == "success"){
           self.messageView.success("QRコードからデータが読み込めました");
           self.datastore.set("qrcode_status", "loaded");
@@ -552,7 +552,7 @@ var PrintableTicketsSelectView = Backbone.View.extend({
     var checkbox = $('<input type="checkbox">').attr('name', i)
     tr.append($('<td>').append(checkbox));
     tr.append($('<td>').text(t.codeno));
-    tr.append($('<td>').text(t.ticket_name).append($('<span class="label">').text("印刷済み:"+t.printed_at)));
+      tr.append($('<td>').text(t.ticket_name).append($('<span class="label">').text(t.refreshed_at ? ("印刷済み:"+t.printed_at+"(再印刷許可:)"+t.refreshed_at) : ("印刷済み"+t.printed_at))));
     return tr
   }, 
   _createRowCheckbox: function(t, i){
