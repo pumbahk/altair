@@ -446,7 +446,7 @@ class ReserveView(object):
             sum_quantity = len(selected_seats)
         else:
             for product, quantity in order_items:
-                sum_quantity += quantity
+                sum_quantity += quantity * product.get_quantity_power(product.seat_stock_type, product.performance_id)
         logger.debug('sum_quantity=%s' % sum_quantity)
 
         self.context.event_id = performance.event_id

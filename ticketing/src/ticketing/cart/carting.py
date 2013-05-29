@@ -44,7 +44,7 @@ class CartFactory(object):
                     continue
 
                 # 席割り当て
-                item_seats = self.pop_seats(ordered_product_item, quantity, seats)
+                item_seats = self.pop_seats(ordered_product_item, subtotal_quantity, seats)
                 cart_product_item.seats = item_seats
     
         assert len(seats) == 0
