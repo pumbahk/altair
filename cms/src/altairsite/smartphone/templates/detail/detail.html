@@ -46,14 +46,42 @@ $(function () {
 </div>
 
 <hr/>
+<%def name="render_sale_image(imagepath)">
+    <img src="${request.static_url(imagepath)}" style="vertical-align: top; margin-top: 1px"/>
+</%def>
+
+<%def name="render_sale(segment)">
+    % if segment.name.find(u"先行抽選") != -1:
+        ${render_sale_image('altaircms:static/RT/img/search/icon_lottery.gif')}
+    % elif segment.name.find(u"先行先着") != -1:
+        ${render_sale_image('altaircms:static/RT/img/search/icon_firstcome.gif')}
+    % elif segment.name.find(u"一般販売") != -1:
+        ${render_sale_image('altaircms:static/RT/img/search/icon_normal.gif')}
+    % elif segment.name.find(u"一般発売") != -1:
+        ${render_sale_image('altaircms:static/RT/img/search/icon_release.gif')}
+    % else:
+        <th scope="row">${item["label"]}</th>
+    % endif
+</%def>
 
 <%m:header>販売期間</%m:header>
 % if event.salessegment_groups:
     <div class="sectionbox">
         <div class="sectionbox-inner">
-            % for segment in event.salessegment_groups:
-                ${helper.disp_date(segment.start_on)}〜${helper.disp_date(segment.end_on)}<br/>
-            % endfor
+            <table>
+                % for segment in event.salessegment_groups:
+                    % if segment.master.publicp:
+                        <tr>
+                            <td>
+                                ${render_sale(segment)}
+                            </td>
+                            <td>
+                                ${helper.disp_date(segment.start_on)}〜${helper.disp_date(segment.end_on)}<br/>
+                            </td>
+                        </tr>
+                    % endif
+                % endfor
+            </table>
         </div>
     </div>
 % endif
@@ -109,7 +137,7 @@ $(function () {
                       </div>
                       <div class="actions">
                         <a id="purchase" href="${purchase_links[perf.id]}">
-                          <button class="btn btn-primary"><span class="btn-inner">購入</span></button>
+                          <button class="btn btn-primary btn-large"><span class="btn-inner">購入</span></button>
                         </a>
                       </div>
                     </td>
