@@ -1,4 +1,5 @@
 # -*- coding:utf-8 -*-
+import sqlalchemy as sa
 import sqlalchemy.orm as orm
 import json
 import webhelpers.paginate as paginate
@@ -9,7 +10,7 @@ from pyramid.view import view_config, view_defaults
 from ticketing.models import merge_session_with_post
 from ticketing.tickets.response import FileLikeResponse ##
 from ticketing.fanstatic import with_bootstrap
-from ticketing.users.models import Member, User, UserCredential
+from ticketing.users.models import Member, User, UserCredential, MemberGroup
 from . import forms
 from . import api
 
@@ -30,7 +31,7 @@ def correct_organization(info, request):
 def members_empty_view(context, request):
     membership = context.memberships.first()
     if membership is None:
-        return HTTPNotFound(u"membershipが登録されていません。")
+        raise HTTPNotFound(u"membershipが登録されていません。")
     url = request.route_url("members.index", membership_id=membership.id)
     return HTTPFound(url)
 
@@ -71,8 +72,12 @@ def members_index_view(context, request):
         items_per_page=50,
         url=paginate.PageURL_WebOb(request)
         )
-    return {"users": users, "choice_form": choice_form, 
-            "membership": membership}
+    membergroups = MemberGroup.query.filter_by(membership_id=membership.id).order_by(sa.asc(MemberGroup.name)).all()
+    return {"users": users,
+            "choice_form": choice_form, 
+            "membership": membership, 
+            "membergroup_id": unicode(membergroup_id), 
+            "membergroups": membergroups}
 
 @view_defaults(route_name="members.member", permission="administrator", decorator=with_bootstrap)
 class MemberView(object):
