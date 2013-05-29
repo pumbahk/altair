@@ -68,20 +68,21 @@ $(function () {
 
 
 
+<h2 class="glitter red">詳細検索</h2>
 
 
 <div id="search" class="sectionbox inverted">
-    詳細検索フォーム<br/>
 
-    <form action="${request.route_path('search_detail')}" method='GET'>
+    <form action="${request.route_path('search_detail')}" class="sectionbox-inner" method='GET'>
         <fieldset>
-            <%m:header>フリーワード</%m:header><br/>
             ${form.word(placeholder=u"アーティスト名、公演名、会場名など")}<br/>
             % for error in form.word.errors:
-                <font color="red">${error}</font><br/>
+                <font color="yellow">${error}</font><br/>
             % endfor
-            ${form.cond}<br/>
+            ${form.cond}<input type="submit" class="btn-secondary btn-large" value="検索"/>
+        </fieldset>
 
+        <fieldset>
             <%m:header>さらに条件を指定する</%m:header><br/>
             <%m:header>ジャンルで絞り込む</%m:header><br/>
             ${form.genre_id}
