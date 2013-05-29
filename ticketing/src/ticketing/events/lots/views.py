@@ -332,6 +332,7 @@ class Lots(BaseView):
 @view_defaults(decorator=with_bootstrap, permission="event_editor")
 class LotEntries(BaseView):
     @view_config(route_name='lots.entries.index', renderer='ticketing:templates/lots/entries.html', permission='event_viewer')
+    @view_config(route_name='lots.entries.index', renderer='ticketing:templates/lots/entries_statuses.html', permission='event_viewer', xhr=True)
     def index(self):
         """ 申し込み状況確認画面
         """
@@ -482,6 +483,10 @@ class LotEntries(BaseView):
         cancel_electing_url = self.request.route_url('lots.entries.cancel_electing', lot_id=lot.id)
         cancel_rejecting_url = self.request.route_url('lots.entries.cancel_rejecting',
                                                       lot_id=lot.id)
+        status_url = self.request.route_url('lots.entries.elect', lot_id=lot.id)
+        electing = Electing(lot, self.request)
+
+        lot_status = api.get_lot_entry_status(lot, self.request)
         return dict(wishes=wishes.all(),
                     lot=lot,
                     form=form,
@@ -490,6 +495,9 @@ class LotEntries(BaseView):
                     electing_url=electing_url,
                     cancel_electing_url=cancel_electing_url,
                     cancel_rejecting_url=cancel_rejecting_url,
+                    lot_status=lot_status,
+                    status_url=status_url,
+                    electing=electing,
         )
 
 
@@ -535,6 +543,11 @@ class LotEntries(BaseView):
                  renderer="lots/electing.html",
                  request_method="GET",
                  permission='event_viewer')
+    @view_config(route_name='lots.entries.elect',
+                 renderer="lots/electing_statuses.html",
+                 request_method="GET",
+                 permission='event_viewer',
+                 xhr=True)
     def elect_entries_form(self):
         self.check_organization(self.context.event)
         lot_id = self.request.matchdict["lot_id"]

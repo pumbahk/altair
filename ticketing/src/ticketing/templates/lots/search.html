@@ -95,7 +95,6 @@ ${w.status}
 <td nowrap="">${shipping_address.address_2}</td>
 <td nowrap="">${shipping_address.tel_1}</td>
 <td nowrap="">${shipping_address.tel_2}</td>
-<td nowrap="">${shipping_address.fax}</td>
 <td nowrap="">${shipping_address.email_1}</td>
 <td nowrap="">${shipping_address.email_2}</td>
 
@@ -132,6 +131,11 @@ Altair Backend -- ${lot.event.title}[${lot.name}]
   ${h.flash_messages(request)}
 </div>
 ${tabs.tabs(request)}
+<div class="lot-entry-statuses">
+<%include file="electing_statuses.html"/>
+
+</div>
+
 <div class="well">
   <form id="search" class="form-horizontal" method="POST">
     <fieldset>
@@ -257,6 +261,7 @@ var cancelElectingUrl = "${cancel_electing_url}";
 var electingUrl = "${electing_url}";
 var rejectingUrl = "${rejecting_url}"
 var cancelRejectingUrl = "${cancel_rejecting_url}"
+var statusUrl = "${status_url}"
 
 $(function() {
 
@@ -266,6 +271,14 @@ $(function() {
       $("." + data.html[i][0]).html(data.html[i][1]);
     }
 
+  }
+
+  function update_status() {
+    $.ajax({
+      url: statusUrl,
+      success: function(data, textStatus, xhr) {
+        $(".lot-entry-statuses").html(data);
+      }});
   }
 
   // 当選
@@ -287,6 +300,7 @@ $(function() {
            } else if (data.result == "NG" && data.message) {
              alert(data.message);
            }
+           update_status();
        }
      });
   });
@@ -308,6 +322,7 @@ $(function() {
            } else if (data.result == "NG" && data.message) {
              alert(data.message);
            }
+           update_status();
        }
      });
   });
@@ -330,6 +345,7 @@ $(function() {
            } else if (data.result == "NG" && data.message) {
              alert(data.message);
            }
+           update_status();
        }
      });
   });
@@ -352,6 +368,7 @@ $(function() {
            } else if (data.result == "NG" && data.message) {
              alert(data.message);
            }
+           update_status();
        }
      });
   });
@@ -374,6 +391,7 @@ $(function() {
            } else if (data.result == "NG" && data.message) {
              alert(data.message);
            }
+           update_status();
        }
      });
   });

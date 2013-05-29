@@ -35,27 +35,7 @@ Altair Backend -- ${lot.event.title}[${lot.name}]
 </div>
 ${tabs.tabs(request)}
 <div>
-<h3>当選予定状況</h3>
-<div>
-<table class="table">
-<tr>
-<th>公演</th>
-<th>在庫種別(席種)</th>
-<th>当選予定の合計在庫数</th>
-<th>現在庫数</th>
-<th>申込件数</th>
-</tr>
-%for s in electing.required_stocks:
-<tr>
-<td>${s[3].name} ${s[3].start_on}</td>
-<td>${s[0].stock_type.name}</td>
-<td>${s[4]}</td>
-<td>${s[1].quantity}</td>
-<td>${s[5]}</td>
-</tr>
-%endfor
-</table>
-</div>
+<%include file="electing_statuses.html"/>
 <h3>当落確定処理</h3>
 <p>
 <ul>
