@@ -23,7 +23,7 @@ from . import api
 from . import helpers as h
 from . import schemas
 from .api import get_seat_type_triplets
-from .view_support import IndexViewMixin
+from .view_support import IndexViewMixin, get_amount_without_pdmp
 from .exceptions import (
     NoEventError,
     NoPerformanceError,
@@ -275,7 +275,7 @@ class MobileReserveView(object):
                                      seats=p.seats,
                                 ) 
                                 for p in cart.products],
-                      total_amount=h.format_number(cart.tickets_amount),
+                      total_amount=h.format_number(get_amount_without_pdmp(cart))
             ))
         return data
 

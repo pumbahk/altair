@@ -39,7 +39,7 @@ from .reserving import InvalidSeatSelectionException, NotEnoughAdjacencyExceptio
 from .stocker import InvalidProductSelectionException, NotEnoughStockException
 from .selectable_renderer import selectable_renderer
 from .api import get_seat_type_triplets
-from .view_support import IndexViewMixin
+from .view_support import IndexViewMixin, get_amount_without_pdmp
 from .exceptions import (
     NoCartError, 
     NoPerformanceError,
@@ -49,9 +49,6 @@ from .exceptions import (
 
 logger = logging.getLogger(__name__)
 
-
-def get_amount_without_pdmp(cart):
-    return sum([cp.product.price * cp.quantity for cp in cart.products])
 
 def back_to_product_list_for_mobile(request):
     cart = api.get_cart_safe(request)
