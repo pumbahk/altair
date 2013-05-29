@@ -161,7 +161,7 @@ class Site(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         if retval is None:
             drawing = self.get_backend_drawing('root.svg')
             if drawing is None:
-                retval = self._drawing_url
+                retval = get_current_request().route_url('api.get_site_drawing', site_id=self.id)
             else:
                 if IS3KeyProvider.providedBy(drawing):
                     key = drawing.get_key()

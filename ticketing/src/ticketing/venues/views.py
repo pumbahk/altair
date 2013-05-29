@@ -16,6 +16,8 @@ from sqlalchemy import and_, distinct
 from sqlalchemy.sql import exists, join, func, or_
 from sqlalchemy.orm import joinedload, noload, aliased
 
+from altair.pyramid_assets import get_resolver
+
 from ticketing.models import DBSession
 from ticketing.models import merge_session_with_post, record_to_multidict
 from ticketing.core.models import Site, Venue, VenueArea, Seat, SeatAttribute, SeatStatus, SalesSegment, SeatAdjacencySet, Seat_SeatAdjacency, Stock, StockStatus, StockHolder, StockType, ProductItem, Product, Performance, Event, SeatIndexType, SeatIndex
@@ -24,6 +26,21 @@ from ticketing.venues.export import SeatCSV
 from ticketing.fanstatic import with_bootstrap
 
 logger = logging.getLogger(__name__)
+
+@view_config(route_name="api.get_site_drawing", request_method="GET", permission='event_viewer')
+def get_site_drawing(context, request):
+    site_id = long(request.matchdict.get('site_id'))
+    return Response(
+        status_code=200,
+        content_type='image/svg',
+        body_file=get_resolver(request.registry).resolve(
+            Site.query \
+                .join(Venue.site) \
+                .filter_by(id=site_id) \
+                .filter(Venue.organization_id==context.user.organization_id) \
+                .distinct().one().drawing_url
+            ).stream()
+        )
 
 @view_config(route_name="api.get_seats", request_method="GET", renderer='json', permission='event_viewer')
 def get_seats(request):
