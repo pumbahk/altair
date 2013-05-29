@@ -102,10 +102,6 @@ class TicketingCartResource(object):
             return []
         return sales_segment.membergroups
 
-    def get_system_fee(self):
-        # 暫定で0に設定
-        return 0
-
     def get_payment_delivery_method_pair(self, start_on=None):
         segment = self.sales_segment
         q = c_models.PaymentDeliveryMethodPair.query.filter(
@@ -201,21 +197,6 @@ class TicketingCartResource(object):
 
     def get_sales_segment(self):
         return self.sales_segment
-
-    def _create_cart(self, seat_statuses, ordered_products, performance_id):
-        cart = m.Cart.create(system_fee=self.get_system_fee())
-        seats = m.DBSession.query(c_models.Seat).filter(c_models.Seat.id.in_(seat_statuses)).all()
-        cart.add_seat(seats, ordered_products)
-        m.DBSession.add(cart)
-        m.DBSession.flush()
-        return cart
-
-    def _create_cart_with_quantity(self, stock_quantity, ordered_products, performance_id):
-        cart = m.Cart.create(performance_id=performance_id, system_fee=self.get_system_fee())
-        cart.add_products(ordered_products)
-        m.DBSession.add(cart)
-        m.DBSession.flush()
-        return cart
 
     @property
     def membership(self):

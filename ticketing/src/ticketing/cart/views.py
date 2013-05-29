@@ -49,6 +49,10 @@ from .exceptions import (
 
 logger = logging.getLogger(__name__)
 
+
+def get_amount_without_pdmp(cart):
+    return sum([cp.product.price * cp.quantity for cp in cart.products])
+
 def back_to_product_list_for_mobile(request):
     cart = api.get_cart_safe(request)
     cart.release()
@@ -493,8 +497,9 @@ class ReserveView(object):
                                              seats=p.seats,
                                         ) 
                                         for p in cart.products],
-                              total_amount=h.format_number(cart.tickets_amount),
-                    ))
+                              total_amount=h.format_number(get_amount_without_pdmp(cart))
+                             )
+                    )
 
 
 
@@ -631,7 +636,6 @@ class PaymentView(object):
             return dict(form=self.form, payment_delivery_methods=payment_delivery_methods)
 
         cart.payment_delivery_pair = payment_delivery_pair
-        cart.system_fee = payment_delivery_pair.system_fee
         cart.shipping_address = self.create_shipping_address(user, shipping_address_params)
         DBSession.add(cart)
 

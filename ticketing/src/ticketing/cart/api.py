@@ -256,11 +256,6 @@ def order_products(request, performance_id, product_requires, selected_seats=[])
 def is_quantity_only(stock):
     return stock.stock_type.quantity_only
 
-
-def get_system_fee(request):
-    return 380
-
-
 def get_valid_sales_url(request, event):
     principals = effective_principals(request)
     logger.debug(principals)
