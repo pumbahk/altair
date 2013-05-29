@@ -60,8 +60,6 @@ class DetailSearchForm(TopSearchForm):
         ],
         default=SalesEnum.ON_SALE.v, coerce=str)
 
-    #cond = RadioField(label = '', validators=[Optional()],
-    #    choices=[("intersection", u'全てを含む'), ("union", u'少なくとも１つを含む')], default="intersection", coerce=str)
     prefecture_hokkaido = CheckboxListField(u'北海道・東北',
             choices=[
                 ('all_check', u'全てON/OFF'), ('hokkaido', u'北海道'), ('aomori', u'青森'), ('iwate', u'岩手'), ('akita', u'秋田'), ('miyagi', u'宮城'), ('yamagata', u'山形'), ('fukushima', u'福島')
@@ -86,7 +84,10 @@ class DetailSearchForm(TopSearchForm):
             choices=[
                 ('all_check', u'全てON/OFF'), ('okinawa', u'沖縄'), ('fukuoka', u'福岡'), ('saga', u'佐賀'), ('nagasaki', u'長崎'), ('kumamoto', u'熊本') ,('oita', u'大分'), ('miyazaki', u'宮崎') ,('kagoshima', u'鹿児島')
             ])
-    genre_id = SelectField(label='', validators=[Optional()],choices=[], coerce=int)
+    genre_music = CheckboxListField(u'音楽', choices=[], validators=[Optional()], coerce=int)
+    genre_sports = CheckboxListField(u'スポーツ', choices=[], validators=[Optional()], coerce=int)
+    genre_stage = CheckboxListField(u'演劇・ステージ・舞台', choices=[], validators=[Optional()], coerce=int)
+    genre_event = CheckboxListField(u'イベント・その他', choices=[], validators=[Optional()], coerce=int)
     sales_segment = RadioField(label = '',validators=[Optional()]
         ,choices=[("normal", u'一般発売'), ("precedence", u'先行販売'), ("lottery", u'先行抽選') ],default="normal", coerce=str)
     since_year = SelectField(label='', validators=[Optional()], choices=[], default=0)

@@ -18,6 +18,27 @@ class SearchPageResource(CommonResource):
         genre = self.request.allowable(Genre).filter(Genre.id==id).first()
         return genre
 
+    def get_genre_ids(self, form):
+        ids = []
+        if form.data['genre_music']:
+            ids += form.data['genre_music']
+        if form.data['genre_sports']:
+            ids += form.data['genre_sports']
+        if form.data['genre_stage']:
+            ids += form.data['genre_stage']
+        if form.data['genre_event']:
+            ids += form.data['genre_event']
+        return ids
+
+    def get_genres_label(self, form):
+        ids = self.get_genre_ids(form)
+        genres_label = []
+        for genre_id in ids:
+            genre = self.get_genre(id=genre_id)
+            if genre:
+                genres_label.append(genre.label)
+        return genres_label
+
     # トップ画面、ジャンル画面の検索
     def search(self, query, page, per):
         searcher = EventSearcher(request=self.request)
@@ -51,8 +72,8 @@ class SearchPageResource(CommonResource):
 
         # フリーワード、ジャンル
         if query.word:
-            if query.genre:
-                qs = searcher.search_freeword(search_query=query, genre_label=query.genre.label, cond=query.cond)
+            if query.get_genre_ids():
+                qs = searcher.search_freeword(search_query=query, genre_label="(" + " OR ".join(query.genres_label) + ")", cond=query.cond)
             else:
                 qs = searcher.search_freeword(search_query=query, genre_label=None, cond=query.cond)
         qs = searcher.search_prefectures(search_query=query, qs=qs)
@@ -84,23 +105,28 @@ class SearchPageResource(CommonResource):
 
     # 詳細検索フォーム生成
     def init_detail_search_form(self, form):
-        form.genre_id.choices = self.create_genre_selectbox(self.request)
+        self.create_genre_selectbox(self.request, form)
         form.year.choices, form.month.choices, form.day.choices = self.create_date_selectbox()
         form.since_year.choices, form.since_month.choices, form.since_day.choices = self.create_date_selectbox()
         form.sale_start.choices = self.create_choices(1, 32)
         form.sale_end.choices = self.create_choices(1, 32)
 
-    def create_genre_selectbox(self, request):
+    def create_genre_selectbox(self, request, form):
         genre_searcher = GenreSearcher(request)
         genres = genre_searcher.root.children
+        form.genre_music.choices = self.create_genre_choices("music", genres)
+        form.genre_sports.choices = self.create_genre_choices("sports", genres)
+        form.genre_stage.choices = self.create_genre_choices("stage", genres)
+        form.genre_event.choices = self.create_genre_choices("event", genres)
 
+    def create_genre_choices(self, genre_name, genres):
         choices = []
-        choices.append([0, u'選択なし'])
         for genre in genres:
-            choices.append([genre.id, genre.label])
-            for sub_genre in genre.children:
-                choices.append([sub_genre.id, u"┗ " + sub_genre.label])
-        return choices
+            if genre.name == genre_name:
+                choices.append([genre.id, genre.label])
+                for sub_genre in genre.children:
+                    choices.append([sub_genre.id, sub_genre.label])
+                return choices
 
     def create_choices(self, start, end):
         choices = []

@@ -115,14 +115,14 @@ def detail_search(context, request):
             ,'helper':SmartPhoneHelper()
         }
 
-    genre = context.get_genre(form.data['genre_id'])
     event_open_info = EventOpenInfo(since_event_open=form.get_since_event_open(), event_open=form.get_event_open())
     sale_info = SaleInfo(sale_start=form.data['sale_start'], sale_end=form.data['sale_end'])
     perf_info = PerformanceInfo(canceled=form.data['canceled_perf'], closed=form.data['closed_perf'])
 
-    query = DetailSearchQuery(word=form.data['word'], cond=form.data['cond'], genre=genre
+    query = DetailSearchQuery(word=form.data['word'], cond=form.data['cond'], genre_music=form.data['genre_music']
+        , genre_sports=form.data['genre_sports'], genre_stage=form.data['genre_stage'], genre_event=form.data['genre_event']
         , prefectures=form.get_prefectures(), sales_segment=form.data['sales_segment'], event_open_info=event_open_info
-        , sale_info=sale_info, perf_info=perf_info)
+        , sale_info=sale_info, perf_info=perf_info, genres_label=context.get_genres_label(form))
     page = form.data['page'] if form.data['page'] else 1
     result = context.search_detail(query, int(page), 10)
 

@@ -83,9 +83,17 @@ $(function () {
         </fieldset>
 
         <fieldset>
-            <%m:header>さらに条件を指定する</%m:header><br/>
-            <%m:header>ジャンルで絞り込む</%m:header><br/>
-            ${form.genre_id}
+            <ul class="panellist fullwidth expandable" style="color: #000000">
+              <li class="panelgroup" id="genre">
+                <span class="panelgroup-label"><a href="#" data-toggle="genre">ジャンルで絞り込む</a></span>
+                <ul class="panelgroup-inner">
+                  <li class="panel">${form.genre_music}</li>
+                  <li class="panel">${form.genre_sports}</li>
+                  <li class="panel">${form.genre_stage}</li>
+                  <li class="panel">${form.genre_event}</li>
+                </ul>
+              </li>
+            </ul>
 
             <%m:header>開催地で絞り込む</%m:header><br/>
             <hr/>

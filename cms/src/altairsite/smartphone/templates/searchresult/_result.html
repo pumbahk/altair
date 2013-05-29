@@ -9,7 +9,7 @@
     % if result.events:
         <table class="panellist margined navigable sectionbox">
             % if result.num:
-                <caption>検索条件　${result.query.create_query()}　${result.num}件見つかりました。全${result.num}件中、${result.start}〜${result.end}を表示</caption>
+                <caption>検索条件　${result.query.create_query()}<br/>${result.num}件見つかりました。全${result.num}件中、${result.start}〜${result.end}を表示</caption>
             % endif
             <tbody>
             % for event in result.events:
@@ -32,7 +32,7 @@
         </table>
     % else:
         <table class="panellist margined navigable">
-            <caption>検索条件　${result.query.create_query()}　検索条件に該当する公演がありませんでした。</caption>
+            <caption>検索条件　${result.query.create_query()}<br/>検索条件に該当する公演がありませんでした。</caption>
             <tbody>
             </tbody>
         </table>

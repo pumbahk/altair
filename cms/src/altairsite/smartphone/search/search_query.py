@@ -1,5 +1,6 @@
 # -*- coding:utf-8 -*-
 from altairsite.smartphone.common.helper import SmartPhoneHelper
+from altaircms.models import Genre
 
 class SearchQuery(object):
     def __init__(self, word, genre, sale, sale_info):
@@ -68,10 +69,14 @@ class HotwordSearchQuery(object):
         return parameter
 
 class DetailSearchQuery(object):
-    def __init__(self, word, cond, genre, prefectures, sales_segment, event_open_info, sale_info, perf_info):
+    def __init__(self, word, cond, genre_music, genre_sports, genre_stage, genre_event, genres_label, prefectures, sales_segment, event_open_info, sale_info, perf_info):
         self.word = word
         self.cond = cond
-        self.genre = genre
+        self.genre_music = genre_music
+        self.genre_sports = genre_sports
+        self.genre_stage = genre_stage
+        self.genre_event = genre_event
+        self.genres_label = genres_label
         self.prefectures = prefectures
         self.sales_segment = sales_segment
         self.event_open_info = event_open_info
@@ -85,8 +90,8 @@ class DetailSearchQuery(object):
             query.append(u"少なくとも１つを含む")
         else:
             query.append(u"全てを含む")
-        if self.genre:
-            query.append(u"ジャンル：" + self.genre.label)
+        if self.genres_label:
+            query.append(u"ジャンル：" + ", ".join(self.genres_label))
         if self.sales_segment:
             query.append(helper.get_sales_segment_japanese(self.sales_segment))
         if self.event_open_info:
@@ -115,10 +120,18 @@ class DetailSearchQuery(object):
         parameter = "?word=" + self.word
         if self.cond:
             parameter += "&cond=" + self.cond
-        if self.genre:
-            parameter += "&genre_id=" + str(self.genre.id)
-        else:
-            parameter += "&genre_id="
+        if self.genre_music:
+            for genre_id in self.genre_music:
+                parameter += "&genre_music=" + str(genre_id)
+        if self.genre_sports:
+            for genre_id in self.genre_sports:
+                parameter += "&genre_sports=" + str(genre_id)
+        if self.genre_stage:
+            for genre_id in self.genre_stage:
+                parameter += "&genre_stage=" + str(genre_id)
+        if self.genre_event:
+            for genre_id in self.genre_event:
+                parameter += "&genre_event=" + str(genre_id)
         if self.prefectures:
             parameter += "&prefecture_hokkaido=" + "&prefecture_hokkaido=".join(self.prefectures)
         if self.sales_segment:
@@ -146,6 +159,18 @@ class DetailSearchQuery(object):
             if self.perf_info.closed:
                 parameter += "&closed_perf=y"
         return parameter
+
+    def get_genre_ids(self):
+        ids = []
+        if self.genre_music:
+            ids += self.genre_music
+        if self.genre_sports:
+            ids += self.genre_sports
+        if self.genre_stage:
+            ids += self.genre_stage
+        if self.genre_event:
+            ids += self.genre_event
+        return ids
 
 class EventOpenInfo(object):
     def __init__(self, since_event_open, event_open):
