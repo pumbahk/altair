@@ -82,6 +82,7 @@ class DetailSearchQuery(object):
         self.event_open_info = event_open_info
         self.sale_info = sale_info
         self.perf_info = perf_info
+
     def create_query(self):
         helper=SmartPhoneHelper()
         query = []

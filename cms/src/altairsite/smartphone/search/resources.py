@@ -121,6 +121,7 @@ class SearchPageResource(CommonResource):
 
     def create_genre_choices(self, genre_name, genres):
         choices = []
+        choices.append([0, u'全てON/OFF'])
         for genre in genres:
             if genre.name == genre_name:
                 choices.append([genre.id, genre.label])
@@ -145,4 +146,3 @@ class SearchPageResource(CommonResource):
     def get_hotword_from_id(self, id):
         genre = self.request.allowable(HotWord).filter(HotWord.id == id).first()
         return genre
-

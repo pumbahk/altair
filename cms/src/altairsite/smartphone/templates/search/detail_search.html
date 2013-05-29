@@ -122,40 +122,17 @@ $(function () {
 </div>
 
 <script>
+    $(function() {
+        function checkAll(checkbox_name) {
+            $("input[type=checkbox][value='0'][name=" + checkbox_name + "]").click(function(event){
+                var checked = $("input[type=checkbox][value='0'][name=" + checkbox_name + "]").is(":checked");
+                $("input[type='checkbox'][name=" + checkbox_name + "]").prop('checked', checked);
+            });
+        };
+        checkAll('genre_music');
+        checkAll('genre_sports');
+        checkAll('genre_stage');
+        checkAll('genre_event');
+    })();
 
-    window.onload = function(){
-        addCheckBoxEventHandler("prefecture_hokkaido")
-        addCheckBoxEventHandler("prefecture_syutoken")
-        addCheckBoxEventHandler("prefecture_koshinetsu")
-        addCheckBoxEventHandler("prefecture_kinki")
-        addCheckBoxEventHandler("prefecture_chugoku")
-        addCheckBoxEventHandler("prefecture_kyusyu")
-    }
-
-    function addCheckBoxEventHandler(name) {
-        checkboxies = document.getElementsByName(name);
-        for (var index = 0; index < checkboxies.length; index++) {
-            if (checkboxies[index].value == "all_check") {
-                checkboxies[index].addEventListener("click", function(){
-                    checkedAllPrefectures(name)
-                })
-                break;
-            }
-        }
-    }
-
-    function checkedAllPrefectures(name){
-        check = true
-        checkboxies = document.getElementsByName(name);
-        for (var index = 0; index < checkboxies.length; index++) {
-            if (checkboxies[index].value == "all_check") {
-                check = checkboxies[index].checked
-                break;
-            }
-        }
-
-        for (var index = 0; index < checkboxies.length; index++) {
-            checkboxies[index].checked = check;
-        }
-    }
 </script>
