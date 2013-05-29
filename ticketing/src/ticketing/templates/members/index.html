@@ -41,7 +41,7 @@ ${breadcrumbs(
 </div>
 
 <div class="page-header">
-  ${membership.name}
+  会員種別:${membership.name}
 </div>
 
 <div class="btn-group">
@@ -57,16 +57,34 @@ ${breadcrumbs(
      class="ajax-modal btn"  data-toggle="modal" data-target="#CSVExportModal">csvエクスポート</a>
 </div>
 
+<div class="btn-group">
+  <a href="${request.route_path("members.member",membership_id=membership.id, action="delete_all_dialog")}?${request.query_string}"
+     id="member_edit"
+     class="ajax-modal btn btn-danger" data-toggle="modal" data-target="#MembershipDeleteAllModal">ユーザの一括削除</a>
+</div>
+
 <div class="tabbable tabs-top">
-  <ul class="nav nav-tabs">
-  %for g in membergroups:
-    %if unicode(g.id) == membergroup_id:
-    	<li class="active"><a href="${request.current_route_path(_query=dict(membergroup_id=g.id))}">${g.name}</a></li>
-    %else:
-    	<li><a href="${request.current_route_path(_query=dict(membergroup_id=g.id))}">${g.name}</a></li>
-    %endif
-  %endfor
-  </ul>
+  ##ここpanel使いたい
+  %if membergroup_id:
+    <ul class="nav nav-tabs">
+    <li><a href="${request.current_route_path()}">すべて</a></li>
+    %for g in membergroups:
+      %if unicode(g.id) == unicode(membergroup_id):
+        <li class="active"><a href="${request.current_route_path(_query=dict(membergroup_id=g.id))}">${g.name}</a></li>
+      %else:
+        <li><a href="${request.current_route_path(_query=dict(membergroup_id=g.id))}">${g.name}</a></li>
+      %endif
+    %endfor
+    </ul>
+  %else:
+    <ul class="nav nav-tabs">
+    <li class="active"><a href="${request.current_route_path()}">すべて</a></li>
+      %for g in membergroups:
+        <li><a href="${request.current_route_path(_query=dict(membergroup_id=g.id))}">${g.name}</a></li>
+      %endfor
+    </ul>
+  %endif
+
   <div class="tab-content">
     <div class="tab-page-active">
 
@@ -101,6 +119,9 @@ ${breadcrumbs(
 </div>
 
 <div class="modal hide" id="MembershipEditModal">
+</div>
+
+<div class="modal hide" id="MembershipDeleteAllModal">
 </div>
 
 <div class="modal hide" id="CSVImportModal">

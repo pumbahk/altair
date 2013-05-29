@@ -26,7 +26,7 @@ def members_import_from_csv(request, io, encoding="cp932"):
             membergroup_name, 
             loginname,
             password)
-    logger.debug("*csv import*: "+str(builder.users))
+    # logger.debug("*csv import*: "+str(builder.users))
     return builder.users
 
 def members_export_as_csv(request, io, users, encoding="cp932"):
@@ -35,7 +35,7 @@ def members_export_as_csv(request, io, users, encoding="cp932"):
     writer = csv.writer(io, quotechar="'", encoding=encoding)
     for row in _member_info_triples(users):
         writer.writerow(row)
-    logger.debug("*csv export*: "+str(users))
+    # logger.debug("*csv export*: "+str(users))
     io.seek(0)
     return io
     

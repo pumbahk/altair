@@ -10,9 +10,10 @@ from pyramid.view import view_config, view_defaults
 from ticketing.models import merge_session_with_post
 from ticketing.tickets.response import FileLikeResponse ##
 from ticketing.fanstatic import with_bootstrap
-from ticketing.users.models import Member, User, UserCredential, MemberGroup
+from ticketing.users.models import Member, User, UserCredential, MemberGroup, Membership
 from . import forms
 from . import api
+from ticketing.views import BaseView
 
 def correct_organization(info, request):
     """ [separation] super userか自身の所属するOrganizationのもののみ表示
@@ -25,15 +26,12 @@ def correct_organization(info, request):
         return info.memberships.filter_by(id = request.matchdict["membership_id"]).first()
     return False
 
-@view_config(route_name="members.empty", 
+@view_config(route_name="members.membership.index", 
              permission="administrator", 
-             decorator=with_bootstrap, renderer="ticketing:templates/members/index.html")
-def members_empty_view(context, request):
-    membership = context.memberships.first()
-    if membership is None:
-        raise HTTPNotFound(u"membershipが登録されていません。")
-    url = request.route_url("members.index", membership_id=membership.id)
-    return HTTPFound(url)
+             decorator=with_bootstrap, renderer="ticketing:templates/members/membership_index.html")
+def members_membership_index_view(context, request):
+    memberships = context.memberships
+    return {"memberships": memberships}
 
 @view_config(route_name="members.index", 
              permission="administrator", 
@@ -76,14 +74,47 @@ def members_index_view(context, request):
     return {"users": users,
             "choice_form": choice_form, 
             "membership": membership, 
-            "membergroup_id": unicode(membergroup_id), 
+            "membergroup_id": membergroup_id, 
             "membergroups": membergroups}
 
 @view_defaults(route_name="members.member", permission="administrator", decorator=with_bootstrap)
-class MemberView(object):
-    def __init__(self, context, request):
-        self.context = context
-        self.request = request
+class MemberView(BaseView):
+    @view_config(match_param="action=delete_all_dialog", 
+                 renderer="ticketing:templates/members/_delete_member_all_dialog.html")
+    def delete_member_all_dialog(self):
+        membership_id = self.request.matchdict["membership_id"]
+        membergroup_id = self.request.GET.get("membergroup_id", "")
+        membership = Membership.query.filter_by(id=membership_id).first()
+        if membership is None:
+            raise HTTPFound("not found")
+        if membergroup_id:
+            membergroup = MemberGroup.query.filter_by(membership_id=membership_id, id=membergroup_id).first()
+        else:
+            membergroup = None
+        return {"membership": membership, 
+                "membergroup": membergroup, 
+                }
+
+    @view_config(match_param="action=delete_all", 
+                 renderer="json")
+    def delete_member_all(self):
+        membergroup_id = self.request.POST["membergroup_id"]
+        membership_id = self.request.matchdict["membership_id"]
+        users = User.query.filter(User.id==Member.user_id,
+                                  Member.membergroup_id==MemberGroup.id,
+                                  MemberGroup.membership_id==membership_id,
+                                  User.id==UserCredential.user_id,
+                                  UserCredential.membership_id==membership_id)\
+                                  .options(orm.joinedload("user_credential"), 
+                                           orm.joinedload("member"), 
+                                           orm.joinedload("member.membergroup"), 
+                                           orm.joinedload("member.membergroup.membership"), 
+                                           )
+        if membergroup_id:
+            users = users.filter(Member.membergroup_id==membergroup_id,)
+        api.delete_loginuser(self.request, users)
+        self.request.session.flash(u"ユーザを一括削除しました")
+        return HTTPFound(self.request.route_url("members.index", membership_id=membership_id))
 
     @view_config(match_param="action=delete_dialog", 
                  renderer="ticketing:templates/members/_delete_member_dialog.html")
