@@ -827,3 +827,48 @@ h2.glitter.red:after {
   height: 28px;
   font-weight: bold;
 }
+
+#inquiry {
+    border-color: #000000;
+    border: 2px;
+}
+
+#inquiry input[type="text"] {
+  box-sizing: border-box;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  width: 100%;
+  display: block;
+  height: 34px;
+  font-size: 17px;
+  padding: 0px 2px;
+  margin: 0 0 2px 0;
+}
+
+#inquiry textarea {
+  box-sizing: border-box;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  width: 100%;
+  display: block;
+  height: 68px;
+  font-size: 17px;
+  padding: 0px 2px;
+  margin: 0 0 2px 0;
+}
+
+#inquiry select {
+  height: 30px;
+  font-size: 16px;
+  margin: 1px 0 0 0;
+  background-color: #fff;
+}
+
+#inquiry button {
+  height: 28px;
+  font-weight: bold;
+}
+
+#inquiry form {
+  background-color: cornsilk;color: #000000
+}

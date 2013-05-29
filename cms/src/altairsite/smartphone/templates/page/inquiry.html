@@ -3,46 +3,6 @@
 <%block name="title">お問合せ</%block>
 
 <style type="text/css">
-#inquiry {
-    border-color: #000000;
-    border: 2px;
-}
-
-#inquiry input[type="text"] {
-  box-sizing: border-box;
-  -webkit-box-sizing: border-box;
-  -moz-box-sizing: border-box;
-  width: 100%;
-  display: block;
-  height: 34px;
-  font-size: 17px;
-  padding: 0px 2px;
-  margin: 0 0 2px 0;
-}
-
-#inquiry textarea {
-  box-sizing: border-box;
-  -webkit-box-sizing: border-box;
-  -moz-box-sizing: border-box;
-  width: 100%;
-  display: block;
-  height: 68px;
-  font-size: 17px;
-  padding: 0px 2px;
-  margin: 0 0 2px 0;
-}
-
-#inquiry select {
-  height: 30px;
-  font-size: 16px;
-  margin: 1px 0 0 0;
-  background-color: #fff;
-}
-
-#inquiry button {
-  height: 28px;
-  font-weight: bold;
-}
 </style>
 
 <%def name="disp_error(errors)">
@@ -87,7 +47,7 @@
 
 <div class="sectionbox inverted" id="inquiry">
 
-<form class="sectionbox-inner" style="background-color: cornsilk;color: #000000" action="${request.route_path('page', kind='inquiry')}" method="POST">
+<form class="sectionbox-inner" action="${request.route_path('page', kind='inquiry')}" method="POST">
     <fieldset>
         <legend>お問い合わせフォーム</legend>
         お名前<font color="red">※</font><br/>${form.username}<br/>
@@ -105,7 +65,7 @@
         ${disp_error(form.body.errors)}
         ※は必ず入力してください。<br/>
         % if not result:
-            <input type="submit" class="btn-secondary" value="送信"/>
+            <input type="submit" class="btn-secondary btn-large" value="送信"/>
         % endif
     </fieldset>
 </form>
