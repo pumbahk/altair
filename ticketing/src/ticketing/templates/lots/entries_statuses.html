@@ -63,7 +63,7 @@
     </tr>
     %for status in lot_status.performance_seat_type_statuses:
     <tr>
-      <td>${status.performance.open_on}</td>
+      <td>${status.performance.start_on}</td>
       <td>${status.seat_type.name}</td>
       <td>${status.entry_quantity}</td>
       %for i in range(lot_status.lot.limit_wishes):
