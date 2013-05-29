@@ -5,7 +5,7 @@
 <script type="text/javascript">
   function delete_membership(baseurl) {
     var modal = $('#modal-delete');
-    modal.find('#message').text('この会員種別を削除します。よろしいですか？');
+    modal.find('#message').text('この会員区分を削除します。よろしいですか？');
     modal.find("#delete").click(function(){
       $("#delet form").append($("<input type='hidden'>").attr("name", "membership_id").attr("value", "${membergroup.membership_id}"));
       $("#delet form").append($("<input type='hidden'>").attr("name", "redirect_to").attr("value", "${request.route_path("memberships",action="show", membership_id="membergroup.membership_id")}"));
@@ -31,7 +31,7 @@
 </%doc>
 
 <div class="page-header">
-  <h3>会員種別詳細</h3>
+  <h3>会員区分詳細</h3>
 </div>
 
 <div class="content">

@@ -6,14 +6,14 @@
   function delete_membership(id) {
     var modal = $('#modal-delete');
     modal.find('#delete').attr('href', '${request.route_path('memberships', action="delete",membership_id="__id__")}'.replace("__id__", id));
-    modal.find('#message').text('選択したMembershipを削除します。よろしいですか？');
+    modal.find('#message').text('選択した会員種別を削除します。よろしいですか？');
     modal.modal('toggle');
   }
 </script>
 
 <form>
   <div>
-    <a href="${request.route_path('memberships',action="new",membership_id="*")}" class="btn">新規Membership</a>
+    <a href="${request.route_path('memberships',action="new",membership_id="*")}" class="btn">新規会員種別</a>
   </div>
   <table class="table fullwidth checkboxed_table">
     <thead>
