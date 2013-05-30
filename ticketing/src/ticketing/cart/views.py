@@ -29,6 +29,7 @@ from ticketing.fanstatic import with_jquery, with_jquery_tools
 from ticketing.payments.payment import Payment
 from ticketing.payments.exceptions import PaymentDeliveryMethodPairNotFound
 from ticketing.users.api import get_or_create_user
+from ticketing.venues.api import get_venue_site_adapter
 from altair.mobile.interfaces import IMobileRequest
 
 from . import api
@@ -102,7 +103,7 @@ class IndexView(IndexViewMixin):
     def get_frontend_drawing_urls(self, venue):
         sales_segment = self.request.context.sales_segment
         retval = {}
-        for name, drawing in venue.site.get_frontend_drawings().items():
+        for name, drawing in get_venue_site_adapter(self.request, venue.site).get_frontend_drawings().items():
             if IS3KeyProvider.providedBy(drawing):
                 key = drawing.get_key()
                 headers = {}
@@ -323,7 +324,7 @@ class IndexView(IndexViewMixin):
                         .filter_by(site_id=venue.site_id)
                     ]
                 ),
-            pages=venue.site.get_frontend_pages()
+            pages=get_venue_site_adapter(self.request, venue.site).get_frontend_pages()
             )
 
     @view_config(route_name='cart.seat_adjacencies', renderer="json")
@@ -378,7 +379,7 @@ class IndexView(IndexViewMixin):
             raise HTTPNotFound()
         part = self.request.matchdict.get('part')
         venue = c_models.Venue.get(venue_id)
-        drawing = venue.site.get_frontend_drawing(part)
+        drawing = get_venue_site_adapter(self.request, venue.site).get_frontend_drawing(part)
         if not drawing:
             raise HTTPNotFound()
         content_encoding = None

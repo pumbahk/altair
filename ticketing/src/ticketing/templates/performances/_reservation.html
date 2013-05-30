@@ -68,13 +68,6 @@
     <div class="tab-pane active" id="map">
       <div class="container-fluid">
         <div class="row-fluid">
-          <%
-            data_source = {
-              'drawing': performance.venue.site.direct_drawing_url,
-              'metadata': request.route_path('api.get_seats', venue_id=performance.venue.id,
-                _query={u'n':u'seats|stock_types|stock_holders|stocks', u'f':u'sale_only'})
-            }
-          %>
           <%vv:venueeditor data_source="${data_source}">
             <%def name="toolbar_extra()">
             <div style="float:right">

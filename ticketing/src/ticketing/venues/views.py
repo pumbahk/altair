@@ -23,6 +23,7 @@ from ticketing.models import merge_session_with_post, record_to_multidict
 from ticketing.core.models import Site, Venue, VenueArea, Seat, SeatAttribute, SeatStatus, SalesSegment, SeatAdjacencySet, Seat_SeatAdjacency, Stock, StockStatus, StockHolder, StockType, ProductItem, Product, Performance, Event, SeatIndexType, SeatIndex
 from ticketing.venues.forms import SiteForm
 from ticketing.venues.export import SeatCSV
+from ticketing.venues.api import get_venue_site_adapter
 from ticketing.fanstatic import with_bootstrap
 
 logger = logging.getLogger(__name__)
@@ -30,15 +31,16 @@ logger = logging.getLogger(__name__)
 @view_config(route_name="api.get_site_drawing", request_method="GET", permission='event_viewer')
 def get_site_drawing(context, request):
     site_id = long(request.matchdict.get('site_id'))
+    site = Site.query \
+        .join(Venue.site) \
+        .filter_by(id=site_id) \
+        .filter(Venue.organization_id==context.user.organization_id) \
+        .distinct().one()
     return Response(
         status_code=200,
         content_type='image/svg',
         body_file=get_resolver(request.registry).resolve(
-            Site.query \
-                .join(Venue.site) \
-                .filter_by(id=site_id) \
-                .filter(Venue.organization_id==context.user.organization_id) \
-                .distinct().one().drawing_url
+            get_venue_site_adapter(request, site).drawing_url
             ).stream()
         )
 
@@ -192,6 +194,7 @@ def index(request):
 
         items.append({ "venue": venue,
                        "site": site,
+                       "drawing": get_venue_site_adapter(request, site),
                        "count": count,
                        "performance": performance })
 
@@ -221,9 +224,9 @@ def show(request):
         return HTTPNotFound("Venue id #%d not found" % venue_id)
 
     site = Site.get(venue.site_id)
+    drawing = get_venue_site_adapter(request, site)
     root = None
-    pages = None
-    pages = site.get_frontend_pages()
+    pages = drawing.get_frontend_pages()
     if pages:
         for page, info in pages.items():
             if info.get('root'):
@@ -278,6 +281,7 @@ def show(request):
     return {
         'venue': venue,
         'site': site,
+        'drawing': drawing,
         'root': root,
         'type_id': type_id,
         'types': types,
@@ -289,8 +293,11 @@ def show(request):
 @view_config(route_name='venues.checker', permission='event_editor', renderer='ticketing:templates/venues/checker.html')
 def show_checker(context, request):
     venue_id = int(request.matchdict.get('venue_id', 0))
+    venue = Venue.filter_by(id=venue_id, organization_id=context.user.organization.id).one()
     return {
-        'venue': Venue.filter_by(id=venue_id, organization_id=context.user.organization.id).one()
+        'venue': venue,
+        'site': venue.site,
+        'drawing': get_venue_site_adapter(request, venue.site),
     }
 
 @view_config(route_name='venues.new', request_method='GET', renderer='ticketing:templates/venues/edit.html', decorator=with_bootstrap)
@@ -350,6 +357,7 @@ def edit_get(request):
         'form':f,
         'venue':venue,
         'site':site,
+        'drawing': get_venue_site_adapter(request, site),
     }
 
 @view_config(route_name='venues.edit', request_method='POST', renderer='ticketing:templates/venues/edit.html',  decorator=with_bootstrap)
@@ -376,4 +384,5 @@ def edit_post(request):
             'form':f,
             'venue':venue,
             'site':site,
+            'drawing': get_venue_site_adapter(request, site),
         }

@@ -26,9 +26,9 @@ from sqlalchemy.orm.collections import attribute_mapped_collection
 from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.sql.expression import asc, desc, exists, select, table, column, case, null, alias
 from sqlalchemy.ext.associationproxy import association_proxy
+from zope.interface import implementer
 from altair.saannotation import AnnotatedColumn
 from pyramid.i18n import TranslationString as _
-from pyramid.threadlocal import get_current_registry, get_current_request
 
 from zope.deprecation import deprecation
 
@@ -43,12 +43,11 @@ from ticketing.models import (
 from standardenum import StandardEnum
 from ticketing.users.models import User, UserCredential, MemberGroup, MemberGroup_SalesSegment
 from ticketing.sej.models import SejOrder
-from altair.pyramid_assets import get_resolver
-from altair.pyramid_boto.s3.assets import IS3KeyProvider
-from ticketing.utils import myurljoin, tristate, is_nonmobile_email_address, sensible_alnum_decode
+from ticketing.utils import tristate, is_nonmobile_email_address, sensible_alnum_decode
 from ticketing.helpers import todate, todatetime
 from ticketing.payments import plugins
 from ticketing.sej import api as sej_api
+from ticketing.venues.interfaces import ITentativeVenueSite
 from .utils import ApplicableTicketsProducer
 
 logger = logging.getLogger(__name__)
@@ -58,6 +57,7 @@ class Seat_SeatAdjacency(Base):
     l0_id = Column(String(255), ForeignKey('Seat.l0_id'), primary_key=True)
     seat_adjacency_id = Column(Identifier, ForeignKey('SeatAdjacency.id', ondelete='CASCADE'), primary_key=True, nullable=False)
 
+@implementer(ITentativeVenueSite)
 class Site(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = "Site"
     id = Column(Identifier, primary_key=True)
@@ -74,105 +74,6 @@ class Site(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     _drawing_url = Column('drawing_url', String(255))
     _frontend_metadata_url = Column('metadata_url', String(255))
     _backend_metadata_url = Column('backend_metadata_url', String(255))
-
-    @property
-    def _absolute_frontend_metadata_url(self):
-        return self._frontend_metadata_url and myurljoin(get_current_registry().settings.get('altair.site_data.base_url', ''), self._frontend_metadata_url)
-
-    @property
-    def _absolute_backend_metadata_url(self):
-        return self._backend_metadata_url and myurljoin(get_current_registry().settings.get('altair.site_data.base_url', '') + '../backend/', self._backend_metadata_url)
-
-    @property
-    def _frontend_metadata(self):
-        frontend_metadata = getattr(self, '__frontend_metadata', None)
-        if not frontend_metadata and self._absolute_frontend_metadata_url is not None:
-            resolver = get_resolver(get_current_registry())
-            try:
-                frontend_metadata = json.load(resolver.resolve(self._absolute_frontend_metadata_url).stream())
-                setattr(self, '__frontend_metadata', frontend_metadata)
-            except:
-                logger.error('failed to fetch frontend metadata from %s' % self._absolute_frontend_metadata_url, exc_info=sys.exc_info())
-        return frontend_metadata
-
-    @property
-    def _backend_metadata(self):
-        backend_metadata = getattr(self, '__backend_metadata', None)
-        if not backend_metadata and self._absolute_backend_metadata_url is not None:
-            resolver = get_resolver(get_current_registry())
-            try:
-                backend_metadata = json.load(resolver.resolve(self._absolute_backend_metadata_url).stream())
-                setattr(self, '__backend_metadata', backend_metadata)
-            except:
-                logger.error('failed to fetch backend metadata from %s' % self._absolute_frontend_metadata_url, exc_info=sys.exc_info())
-        return backend_metadata
-
-    def get_backend_pages(self):
-        return self._backend_metadata and self._backend_metadata.get('pages') or dict(root=dict())
-
-    def get_frontend_pages(self):
-        return self._frontend_metadata and self._frontend_metadata.get('pages')
-
-    def get_frontend_drawing(self, name):
-        try:
-            page_meta = self.get_frontend_pages().get(name)
-        except:
-            page_meta = None
-        if page_meta is not None:
-            resolver = get_resolver(get_current_registry())
-            return resolver.resolve(myurljoin(self._absolute_frontend_metadata_url, name))
-        else:
-            return None
-
-    def get_frontend_drawings(self):
-        page_metas = self.get_frontend_pages()
-        resolver = get_resolver(get_current_registry())
-        return dict((name, resolver.resolve(myurljoin(self._absolute_frontend_metadata_url, name))) for name in page_metas)
-
-    def get_backend_drawing(self, name):
-        try:
-            page_meta = self.get_backend_pages().get(name)
-        except:
-            page_meta = None
-        if page_meta is not None:
-            resolver = get_resolver(get_current_registry())
-            return resolver.resolve(myurljoin(self._absolute_backend_metadata_url, name))
-        else:
-            return None
-
-    def get_backend_drawings(self):
-        page_metas = self.get_backend_pages()
-        resolver = get_resolver(get_current_registry())
-        return dict((name, resolver.resolve(myurljoin(self._absolute_backend_metadata_url, name))) for name in page_metas)
-
-    @property
-    @deprecation.deprecate(u'switch to get_backend_drawings')
-    def drawing_url(self):
-        drawing = self.get_backend_drawing('root.svg')
-        if drawing is None:
-            return self._drawing_url
-        else:
-            return drawing.path
-
-    @property
-    @deprecation.deprecate(u'switch to get_backend_drawings')
-    def direct_drawing_url(self):
-        retval = getattr(self, '_direct_drawing_url', None)
-        if retval is None:
-            drawing = self.get_backend_drawing('root.svg')
-            if drawing is None:
-                retval = get_current_request().route_url('api.get_site_drawing', site_id=self.id)
-            else:
-                if IS3KeyProvider.providedBy(drawing):
-                    key = drawing.get_key()
-                    headers = {}
-                    if re.match('^.+\.(svgz|gz)$', drawing.path):
-                        headers['response-content-encoding'] = 'gzip'
-                    retval = key.generate_url(expires_in=172800, response_headers=headers)
-                else:
-                    retval = get_current_request().static_url(drawing.path)
-            self._direct_drawing_url = retval
-        return retval
 
 class VenueArea_group_l0_id(Base):
     __tablename__   = "VenueArea_group_l0_id"
