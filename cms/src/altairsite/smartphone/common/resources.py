@@ -80,6 +80,7 @@ class CommonResource(object):
 
         return {
              'form':form
+            ,'genre':genre
             ,'result':result
             ,'helper':SmartPhoneHelper()
         }

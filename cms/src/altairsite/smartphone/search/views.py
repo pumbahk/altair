@@ -52,6 +52,7 @@ def genre_search(context, request):
 
     return {
          'form':form
+        ,'genre':genre
         ,'result':result
         ,'helper':SmartPhoneHelper()
     }
@@ -86,6 +87,7 @@ def search_genre_area(context, request):
 
     return {
          'result':result
+        ,'genre':genre
         ,'helper':SmartPhoneHelper()
     }
 

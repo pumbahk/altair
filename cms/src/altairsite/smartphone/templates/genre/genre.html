@@ -1,6 +1,10 @@
 <%inherit file="../common/_base.html" />
 <%namespace file="../common/tags_smartphone.html" name="m" />
 <%block name="title">${genre}</%block>
+<%block name="fnavi">
+<hr/>
+<a href="${request.route_path('main')}"><button class="btn-secondary btn-large">トップへ</button></a><br />
+</%block>
 
 <%include file="../search/genre_search.html"/>
 

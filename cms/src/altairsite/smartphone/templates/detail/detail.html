@@ -1,6 +1,10 @@
 <%inherit file="../common/_base.html" />
 <%namespace file="../common/tags_smartphone.html" name="m" />
 <%block name="title">${event.title}</%block>
+<%block name="fnavi">
+    <hr/>
+    <a href="${request.route_path('main')}"><button class="btn-secondary btn-large">トップへ</button></a>
+</%block>
 
 <h2 class="glitter red">${event.title}</h2>
 
