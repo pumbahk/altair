@@ -12,8 +12,10 @@
 <title>楽天チケット-<%block name="title" /></title>
 </head>
 <body>
-<img src="${request.static_url('altaircms:static/smartphone/img/logo.gif')}" />
-PC版へ
+    <a href="${request.route_path('main')}">
+        <img src="${request.static_url('altaircms:static/smartphone/img/logo.gif')}"/>
+    </a>
+    <button class="btn-primary btn-large" style="float: right">PC版へ</button>
 <div class="page">
 ${self.body()}
 </div><%block name="fnavi" />
