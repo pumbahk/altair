@@ -1,6 +1,5 @@
 # -*- coding:utf-8 -*-
 from altairsite.smartphone.common.helper import SmartPhoneHelper
-from altaircms.models import Genre
 
 class SearchQuery(object):
     def __init__(self, word, genre, sale, sale_info):

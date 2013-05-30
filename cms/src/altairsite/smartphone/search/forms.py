@@ -141,6 +141,6 @@ def common_validate_date(form, field):
         event_open = datetime(int(form.year.data), int(form.month.data), int(form.day.data))
         since_event_open = datetime(int(form.since_year.data), int(form.since_month.data), int(form.since_day.data))
     except Exception as e:
-        raise ValueError(u'日付が不正です。')
+        raise ValueError(u'公演日の指定が不正です。')
     if since_event_open >= event_open:
-        raise ValueError(u'検索範囲が不正です。')
+        raise ValueError(u'公演日の検索範囲が不正です。')

@@ -117,6 +117,11 @@ class SmartPhoneHelper(object):
                    + str(target_date.minute).zfill(2) + '(' + week[target_date.weekday()] + ')'
         return disp_str
 
+    def disp_error(self, form):
+        for error in form.word.errors:
+            return error
+        return ""
+
     def disp_date_error(self, form):
         for field in form:
             if field.name != "word":

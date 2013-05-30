@@ -31,42 +31,25 @@ $(function () {
       return false;
     });
   });
+
+  function checkAll(checkbox_value, checkbox_name) {
+    $("input[type=checkbox][value=" + checkbox_value + "][name=" + checkbox_name + "]").click(function(event){
+      var checked = $("input[type=checkbox][value=" + checkbox_value + "][name=" + checkbox_name + "]").is(":checked");
+      $("input[type='checkbox'][name=" + checkbox_name + "]").prop('checked', checked);
+    });
+  };
+  checkAll('0', 'genre_music');
+  checkAll('0', 'genre_sports');
+  checkAll('0', 'genre_stage');
+  checkAll('0', 'genre_event');
+  checkAll('all', 'pref_hokkaido');
+  checkAll('all', 'pref_syutoken');
+  checkAll('all', 'pref_koshinetsu');
+  checkAll('all', 'pref_kinki');
+  checkAll('all', 'pref_chugoku');
+  checkAll('all', 'pref_kyusyu');
 });
 </script>
-
-<h2 class="glitter red">地域で絞り込む</h2>
-% if areas:
-    <form action="${request.route_path('search_genre_area')}" method="GET">
-        <input type="hidden" name="genre_id" value=${genre.id}/>
-        <ul class="panellist fullwidth expandable">
-        % for area in areas:
-            <li class="panelgroup" id=${area.name}>
-                <span class="panelgroup-label"><a href="#" data-toggle="${area.name}">${helper.get_area_japanese(area.name)}</a></span>
-                <ul class="panelgroup-inner">
-                    % for pref in area.prefectures:
-                        <li class="panel"><label><input name=${pref} type="checkbox" />${helper.get_prefecture_japanese(pref)}</label></li>
-                    % endfor
-                </ul>
-            </li>
-        % endfor
-        </ul>
-        <input type="submit" class="btn-secondary" value="検索"/>
-    </form>
-% endif
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 <h2 class="glitter red">詳細検索</h2>
 
@@ -74,12 +57,17 @@ $(function () {
 <div id="search" class="sectionbox inverted">
 
     <form action="${request.route_path('search_detail')}" class="sectionbox-inner" method='GET'>
+        % if helper.disp_error(form):
+            <font color="yellow">${helper.disp_error(form)}</font><br/>
+        % endif
+
+        % if helper.disp_date_error(form):
+            <font color="yellow">${helper.disp_date_error(form)}</font><br/>
+        % endif
+
         <fieldset>
             ${form.word(placeholder=u"アーティスト名、公演名、会場名など")}<br/>
-            % for error in form.word.errors:
-                <font color="yellow">${error}</font><br/>
-            % endfor
-            ${form.cond}<input type="submit" class="btn-secondary btn-large" value="検索"/>
+            ${form.cond}<input type="submit" class="btn-secondary btn-large" value="検索"/><br/>
         </fieldset>
 
         <fieldset>
@@ -104,43 +92,33 @@ $(function () {
                   <li class="panel">${form.pref_kyusyu}</li>
                 </ul>
               </li>
+              <li class="panelgroup" id="sales_segment">
+                <span class="panelgroup-label"><a href="#" data-toggle="sales_segment">販売条件で絞り込む</a></span>
+                <ul class="panelgroup-inner">
+                  <li class="panel">${form.sales_segment}</li>
+                </ul>
+              </li>
+              <li class="panelgroup" id="start_on">
+                <span class="panelgroup-label"><a href="#" data-toggle="start_on">公演日で絞り込む</a></span>
+                <ul class="panelgroup-inner">
+                  <li class="panel">
+                    ${form.since_year}年${form.since_month}月${form.since_day}日〜${form.year}年${form.month}月${form.day}日
+                  </li>
+                </ul>
+              </li>
+              <li class="panelgroup" id="sales">
+                <span class="panelgroup-label"><a href="#" data-toggle="sales">販売日で絞り込む</a></span>
+                <ul class="panelgroup-inner">
+                  <li class="panel">
+                    ${form.sale_start}日以内に受付・販売開始<br/>
+                    販売終了まで${form.sale_end}日<br/><br/>
+                    ${form.closed_perf.label}${form.closed_perf}
+                    ${form.canceled_perf.label}${form.canceled_perf}
+                  </li>
+                </ul>
+              </li>
             </ul>
-
-            <%m:header>販売条件で絞り込む</%m:header><br/>
-            ${form.sales_segment}
-
-            <%m:header>公演日で絞り込む</%m:header><br/>
-            <font color="red">${helper.disp_date_error(form)}</font><br/>
-            ${form.since_year}年${form.since_month}月${form.since_day}日〜${form.year}年${form.month}月${form.day}日
-
-            <%m:header>発売日で絞り込む</%m:header><br/>
-            ${form.sale_start}日以内に受付・販売開始<br/>
-            販売終了まで${form.sale_end}日<br/><br/>
-            ${form.closed_perf.label}${form.closed_perf}
-            ${form.canceled_perf.label}${form.canceled_perf}<br/>
             <input type="submit" class="btn-secondary btn-large" value="検索"/>
         </fieldset>
     </form>
 </div>
-
-<script>
-    $(function() {
-        function checkAll(checkbox_value, checkbox_name) {
-            $("input[type=checkbox][value=" + checkbox_value + "][name=" + checkbox_name + "]").click(function(event){
-                var checked = $("input[type=checkbox][value=" + checkbox_value + "][name=" + checkbox_name + "]").is(":checked");
-                $("input[type='checkbox'][name=" + checkbox_name + "]").prop('checked', checked);
-            });
-        };
-        checkAll('0', 'genre_music');
-        checkAll('0', 'genre_sports');
-        checkAll('0', 'genre_stage');
-        checkAll('0', 'genre_event');
-        checkAll('all', 'pref_hokkaido');
-        checkAll('all', 'pref_syutoken');
-        checkAll('all', 'pref_koshinetsu');
-        checkAll('all', 'pref_kinki');
-        checkAll('all', 'pref_chugoku');
-        checkAll('all', 'pref_kyusyu');
-    })();
-
-</script>
