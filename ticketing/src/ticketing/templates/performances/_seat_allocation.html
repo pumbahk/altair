@@ -86,8 +86,8 @@ span.editable {
         <div class="row-fluid">
           <%
             data_source = { }
-            if performance.venue.site.drawing_url:
-               data_source['drawing'] = request.route_path('api.get_drawing', venue_id=performance.venue.id)
+            if performance.venue.site.direct_drawing_url:
+               data_source['drawing'] = performance.venue.site.direct_drawing_url
             endif
             data_source['metadata'] = request.route_path('api.get_seats', venue_id=performance.venue.id,
                                              _query={u'n':u'seats|stock_types|stock_holders|stocks'})

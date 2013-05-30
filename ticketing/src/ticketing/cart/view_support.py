@@ -43,3 +43,7 @@ class IndexViewMixin(object):
             else:
                 if specified is not None and specified.redirect_url_pc:
                     raise HTTPFound(specified.redirect_url_pc)
+
+def get_amount_without_pdmp(cart):
+    return sum([cp.product.price * cp.quantity for cp in cart.products])
+

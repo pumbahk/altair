@@ -70,7 +70,7 @@
         <div class="row-fluid">
           <%
             data_source = {
-              'drawing': request.route_path('api.get_drawing', venue_id=performance.venue.id),
+              'drawing': performance.venue.site.direct_drawing_url,
               'metadata': request.route_path('api.get_seats', venue_id=performance.venue.id,
                 _query={u'n':u'seats|stock_types|stock_holders|stocks', u'f':u'sale_only'})
             }

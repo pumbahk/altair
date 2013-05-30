@@ -105,6 +105,7 @@ class SalesSegmentGroup(BaseOriginalMixin, Base):
     name = sa.Column(sa.Unicode(length=255))
     kind_id = sa.Column(sa.Integer, sa.ForeignKey("salessegment_kind.id"))
     kind = sa.Column(sa.String(length=255)) #backward compability
+    publicp = sa.Column(sa.Boolean, default=True)
     master = orm.relationship(SalesSegmentKind, uselist=False)
 
     start_on = sa.Column(sa.DateTime, default=datetime.now)

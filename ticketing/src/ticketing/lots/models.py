@@ -304,6 +304,8 @@ class LotEntry(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     canceled_at = sa.Column(sa.DateTime())
     ordered_mail_sent_at = sa.Column(sa.DateTime())
 
+    browserid = sa.Column(sa.String(40))
+
     def get_wish(self, wish_order):
         wish_order = int(wish_order)
         for wish in self.wishes:

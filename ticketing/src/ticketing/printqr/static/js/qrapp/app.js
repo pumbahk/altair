@@ -75,6 +75,10 @@ var DataStore = Backbone.Model.extend({
       this.set("print_strategy", "個別に発券");
     }
   }, 
+  cleanBuffer: function(){
+      this.get("ticket_buffers").clean();
+      this.set("print_num", 0);
+  }, 
   isPrintUnitOrder: function(){
     return this.get("print_unit") == "order";
   }, 
@@ -272,7 +276,6 @@ var QRInputView = AppPageViewBase.extend({
       }
       self.datastore.set("printed", false);
       self.messageView.success("チケットを再発券可能にしました");
-
       // log
       var message = "*qrlog* refresh printed_at order={0} token={1}"
         .replace("{0}", self.datastore.get("order_id"))
@@ -344,6 +347,7 @@ var QRInputView = AppPageViewBase.extend({
     var self = this;
     this.datastore.set("qrcode", qrsigned); //todo: using signal.
     this.datastore.set("auto_trigger",  auto_trigger);
+    this.datastore.cleanBuffer();
 
     return $.getJSON(url, {qrsigned: qrsigned})
       .done(function(data){
@@ -418,7 +422,6 @@ var TicketInfoView = AppPageViewBase.extend({
 var FormatChoiceView = AppPageViewBase.extend({
   events:{
     "change #printer input": "printerSettingsChanged", 
-    "change #ticket_template input": "ticketTemplateSettingsChanged", 
     "change #page_format input": "pageFormatChanged"
   }, 
   initialize: function(opts){
@@ -433,11 +436,6 @@ var FormatChoiceView = AppPageViewBase.extend({
     var printer_name = this.$printer.find("input:checked").val();
     this.datastore.set("printer_name", printer_name);
   },
-  ticketTemplateSettingsChanged: function(){
-    var ticket_template = this.$ticketTemplate.find("input:checked");
-    this.datastore.set("ticket_template_name", ticket_template.attr("data-name"));
-    this.datastore.set("ticket_template_id", ticket_template.val());
-  }, 
   pageFormatChanged: function(){
     var page_format = this.$pageFormat.find("input:checked");
     this.datastore.set("page_format_name", page_format.attr("data-name"));
@@ -452,19 +450,6 @@ var FormatChoiceView = AppPageViewBase.extend({
       var e = $('<div class="control-group">');
       e.append($('<span>').text(printer.getName()+": "));
       e.append($('<input type="radio" name="printer">').attr("value", printer.getName()));
-      targetArea.append(e);
-    }
-  }, 
-  redrawTicketTemplateArea: function(templates){
-    var targetArea = this.$ticketTemplate;
-    targetArea.empty()
-    for(var i = templates.iterator(); i.hasNext();){
-      var template = i.next();
-      var e = $('<div class="control-group">');
-      e.append($('<span>').text(template.getName()+": "));
-      e.append($('<input type="radio" name="tickettemplate">')
-               .attr("value", template.getId())
-               .attr("data-name", template.getName()));
       targetArea.append(e);
     }
   }, 
@@ -497,11 +482,12 @@ var PrintConfirmView = AppPageViewBase.extend({
       this.router.navigate("one", true);
       return false;
     }
-    if(this.datastore.get("ticket_template_id") == null){
-      this.messageView.alert("チケットテンプレートが設定されていません")
-      this.router.navigate("zero", true);
-      return false;
-    }
+    // まとめて注文する際には、printボタン押下後bufferから消費されてticket_template_idが埋められる
+    // if(this.datastore.get("ticket_template_id") == null){
+    //   this.messageView.alert("チケットテンプレートが設定されていません")
+    //   this.router.navigate("zero", true);
+    //   return false;
+    // }
     if(this.datastore.get("page_format_id") == null){
       this.messageView.alert("ページフォーマットが設定されていません");
       this.router.navigate("zero", true);
@@ -571,7 +557,7 @@ var PrintableTicketsSelectView = Backbone.View.extend({
     var checkbox = $('<input type="checkbox">').attr('name', i)
     tr.append($('<td>').append(checkbox));
     tr.append($('<td>').text(t.codeno));
-    tr.append($('<td>').text(t.ticket_name).append($('<span class="label">').text("印刷済み:"+t.printed_at)));
+      tr.append($('<td>').text(t.ticket_name).append($('<span class="label">').text(t.refreshed_at ? ("印刷済み:"+t.printed_at+"(再印刷許可:)"+t.refreshed_at) : ("印刷済み"+t.printed_at))));
     return tr
   }, 
   _createRowCheckbox: function(t, i){
@@ -609,14 +595,14 @@ var AppletView = Backbone.View.extend({
     this.datastore.bind("change:page_format_id", this.setPageFormat, this);
 
     this.datastore.bind("*qr.print.signal", this.sendPrintSignalIfNeed, this);
+
+    this.consumed_tokens = [];
   }, 
   clearQRInput: function(){
-    this.datastore.get("ticket_buffers").clean();
-    this.datastore.set("print_num", 0);
+    this.datastore.cleanBuffer();
   }, 
   start: function(){
     this.fetchPinterCandidates();
-    this.fetchTemplateCandidates();
     this.fetchPageFormatCandidates();
   }, 
   _addTicket: function(ticket){
@@ -664,6 +650,7 @@ var AppletView = Backbone.View.extend({
       //変更内容伝搬されるまで時間がかかる？信じるよ？
       _(buf).each(function(ticket){
         self.service.addTicket(self.service.createTicketFromJSObject(ticket));
+        self.consumed_tokens.push(ticket.ordered_product_item_token_id);
       });
       self.service.printAll();
     });
@@ -698,7 +685,8 @@ var AppletView = Backbone.View.extend({
       order_id: this.datastore.get("order_id"), 
       ordered_product_item_token_id: this.datastore.get("ordered_product_item_token_id"), 
       ordered_product_item_id: this.datastore.get("ordered_product_item_id"), 
-      ticket_id: this.datastore.get("ticket_template_id")
+      ticket_id: this.datastore.get("ticket_template_id"), 
+      consumed_tokens: this.consumed_tokens
     };
     var self = this;
     return $.ajax({
@@ -708,7 +696,7 @@ var AppletView = Backbone.View.extend({
       contentType: 'application/json',
       dataType: 'json',
       url: apiUrl
-    }).promise();
+    }).done(function(data){self.consumed_tokens = []; return data;}).promise();
   }, 
   setPrinter: function(){ //liner
     var printer_name = this.datastore.get("printer_name");
@@ -811,14 +799,6 @@ var AppletView = Backbone.View.extend({
     try {
       var printers = this.service.getPrintServices();
       this.appviews.zero.redrawPrinterArea(printers);
-    } catch (e) {
-      this.appviews.messageView.error(e);
-    }
-  }, 
-  fetchTemplateCandidates: function(){
-    try {
-      var ticketTemplates = this.service.getTicketTemplates();
-      this.appviews.zero.redrawTicketTemplateArea(ticketTemplates);
     } catch (e) {
       this.appviews.messageView.error(e);
     }

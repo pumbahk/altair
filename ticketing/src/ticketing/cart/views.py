@@ -39,7 +39,7 @@ from .reserving import InvalidSeatSelectionException, NotEnoughAdjacencyExceptio
 from .stocker import InvalidProductSelectionException, NotEnoughStockException
 from .selectable_renderer import selectable_renderer
 from .api import get_seat_type_triplets
-from .view_support import IndexViewMixin
+from .view_support import IndexViewMixin, get_amount_without_pdmp
 from .exceptions import (
     NoCartError, 
     NoPerformanceError,
@@ -48,6 +48,7 @@ from .exceptions import (
 )
 
 logger = logging.getLogger(__name__)
+
 
 def back_to_product_list_for_mobile(request):
     cart = api.get_cart_safe(request)
@@ -98,9 +99,10 @@ class IndexView(IndexViewMixin):
 
         self.prepare()
 
-    def get_drawing_urls(self, venue):
+    def get_frontend_drawing_urls(self, venue):
+        sales_segment = self.request.context.sales_segment
         retval = {}
-        for name, drawing in venue.site.get_drawings().items():
+        for name, drawing in venue.site.get_frontend_drawings().items():
             if IS3KeyProvider.providedBy(drawing):
                 key = drawing.get_key()
                 headers = {}
@@ -108,7 +110,7 @@ class IndexView(IndexViewMixin):
                     headers['response-content-encoding'] = 'gzip'
                 url = key.generate_url(expires_in=1800, response_headers=headers)
             else:
-                url = venue_drawing=self.request.route_url(
+                url = self.request.route_url(
                     'cart.venue_drawing',
                     event_id=self.request.context.event_id,
                     performance_id=sales_segment.performance.id,
@@ -220,7 +222,7 @@ class IndexView(IndexViewMixin):
                     performance_id=sales_segment.performance.id,
                     venue_id=sales_segment.performance.venue.id,
                     part='__part__'),
-                venue_drawings=self.get_drawing_urls(sales_segment.performance.venue),
+                venue_drawings=self.get_frontend_drawing_urls(sales_segment.performance.venue),
                 seats=self.request.route_url(
                     'cart.seats',
                     event_id=self.request.context.event_id,
@@ -321,7 +323,7 @@ class IndexView(IndexViewMixin):
                         .filter_by(site_id=venue.site_id)
                     ]
                 ),
-            pages=venue.site._metadata and venue.site._metadata.get('pages')
+            pages=venue.site.get_frontend_pages()
             )
 
     @view_config(route_name='cart.seat_adjacencies', renderer="json")
@@ -376,7 +378,7 @@ class IndexView(IndexViewMixin):
             raise HTTPNotFound()
         part = self.request.matchdict.get('part')
         venue = c_models.Venue.get(venue_id)
-        drawing = venue.site.get_drawing(part)
+        drawing = venue.site.get_frontend_drawing(part)
         if not drawing:
             raise HTTPNotFound()
         content_encoding = None
@@ -445,7 +447,7 @@ class ReserveView(object):
             sum_quantity = len(selected_seats)
         else:
             for product, quantity in order_items:
-                sum_quantity += quantity
+                sum_quantity += quantity * product.get_quantity_power(product.seat_stock_type, product.performance_id)
         logger.debug('sum_quantity=%s' % sum_quantity)
 
         self.context.event_id = performance.event_id
@@ -492,8 +494,9 @@ class ReserveView(object):
                                              seats=p.seats,
                                         ) 
                                         for p in cart.products],
-                              total_amount=h.format_number(cart.tickets_amount),
-                    ))
+                              total_amount=h.format_number(get_amount_without_pdmp(cart))
+                             )
+                    )
 
 
 
@@ -630,7 +633,6 @@ class PaymentView(object):
             return dict(form=self.form, payment_delivery_methods=payment_delivery_methods)
 
         cart.payment_delivery_pair = payment_delivery_pair
-        cart.system_fee = payment_delivery_pair.system_fee
         cart.shipping_address = self.create_shipping_address(user, shipping_address_params)
         DBSession.add(cart)
 

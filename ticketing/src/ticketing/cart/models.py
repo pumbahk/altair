@@ -73,8 +73,6 @@ class Cart(Base):
 
     performance = orm.relationship('Performance')
 
-    system_fee = sa.Column(sa.Numeric(precision=16, scale=2))
-
     created_at = sa.Column(sa.DateTime, default=datetime.now)
     updated_at = sa.Column(sa.DateTime, nullable=True, onupdate=datetime.now)
     deleted_at = sa.Column(sa.DateTime, nullable=True)
@@ -142,7 +140,6 @@ class Cart(Base):
             raise CartCreationException("Cannot translate the contents of a cart that has already been marked as finished")
         new_cart = cls.create(
             cart_session_id=that.cart_session_id,
-            system_fee=that.system_fee,
             shipping_address_id=that.shipping_address_id,
             payment_delivery_method_pair_id=that.payment_delivery_method_pair_id,
             performance_id=that.performance_id,
@@ -164,42 +161,27 @@ class Cart(Base):
 
     @property
     def total_amount(self):
-        #return self.tickets_amount + self.system_fee + self.transaction_fee + self.delivery_fee
-        return self.sales_segment.get_amount(self.payment_delivery_pair,
-                                             [(p.product, p.quantity)
-                                              for p in self.products])
+        return self.sales_segment.get_amount(
+            self.payment_delivery_pair,
+            [(p.product, p.quantity) for p in self.products])
 
     @property
-    def tickets_amount(self):
-        return sum(cp.amount for cp in self.products)
-
-    @property
-    def total_quantiy(self):
-        return sum(cp.quantity for cp in self.products)
+    def delivery_fee(self):
+        """ 引取手数料 """
+        return self.sales_segment.get_delivery_fee(
+            self.payment_delivery_pair,
+            [(p.product, p.quantity) for p in self.products])
 
     @property
     def transaction_fee(self):
         """ 決済手数料 """
-        payment_fee = self.payment_delivery_pair.transaction_fee
-        payment_method = self.payment_delivery_pair.payment_method
-        if payment_method.fee_type == c_models.FeeTypeEnum.Once.v[0]:
-            return payment_fee
-        elif payment_method.fee_type == c_models.FeeTypeEnum.PerUnit.v[0]:
-            return payment_fee * self.total_quantiy
-        else:
-            return 0
+        return self.sales_segment.get_transaction_fee(
+            self.payment_delivery_pair,
+            [(p.product, p.quantity) for p in self.products])
 
-    @property 
-    def delivery_fee(self):
-        """ 引取手数料 """
-        delivery_fee = self.payment_delivery_pair.delivery_fee
-        delivery_method = self.payment_delivery_pair.delivery_method
-        if delivery_method.fee_type == c_models.FeeTypeEnum.Once.v[0]:
-            return delivery_fee
-        elif delivery_method.fee_type == c_models.FeeTypeEnum.PerUnit.v[0]:
-            return delivery_fee * self.total_quantiy
-        else:
-            return 0
+    @property
+    def system_fee(self):
+        return self.payment_delivery_pair.system_fee
 
     @classmethod
     def get_or_create(cls, performance, cart_session_id):

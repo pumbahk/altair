@@ -2,7 +2,7 @@
 import logging
 from ticketing.core.api import get_channel
 from .models import Cart, CartedProduct, CartedProductItem
-from .api import get_system_fee, is_quantity_only
+from .api import is_quantity_only
 from .exceptions import CartCreationException
 from .stocker import InvalidProductSelectionException
 
@@ -17,9 +17,8 @@ class CartFactory(object):
         request = self.request
         # Cart
         # ここでシステム利用料を確定させるのはおかしいので、後の処理で上書きする
-        system_fee = get_system_fee(request)
         channel = get_channel(request=request)
-        cart = Cart.create(performance_id=performance_id, system_fee=system_fee, channel=channel.v,
+        cart = Cart.create(performance_id=performance_id, channel=channel.v,
                            browserid=getattr(request, 'browserid', None))
         for ordered_product, quantity in ordered_products:
             logger.debug("carted product for product_id=%s" % (ordered_product.id))
@@ -44,7 +43,7 @@ class CartFactory(object):
                     continue
 
                 # 席割り当て
-                item_seats = self.pop_seats(ordered_product_item, quantity, seats)
+                item_seats = self.pop_seats(ordered_product_item, subtotal_quantity, seats)
                 cart_product_item.seats = item_seats
     
         assert len(seats) == 0

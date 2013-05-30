@@ -4,10 +4,12 @@ import itertools
 import operator
 import json
 import re
+import sys
 from math import floor
 import isodate
 from datetime import datetime, date, timedelta
 import smtplib
+from decimal import Decimal
 
 from email.MIMEText import MIMEText
 from email.Header import Header
@@ -26,7 +28,7 @@ from sqlalchemy.sql.expression import asc, desc, exists, select, table, column, 
 from sqlalchemy.ext.associationproxy import association_proxy
 from altair.saannotation import AnnotatedColumn
 from pyramid.i18n import TranslationString as _
-from pyramid.threadlocal import get_current_registry
+from pyramid.threadlocal import get_current_registry, get_current_request
 
 from zope.deprecation import deprecation
 
@@ -42,6 +44,7 @@ from standardenum import StandardEnum
 from ticketing.users.models import User, UserCredential, MemberGroup, MemberGroup_SalesSegment
 from ticketing.sej.models import SejOrder
 from altair.pyramid_assets import get_resolver
+from altair.pyramid_boto.s3.assets import IS3KeyProvider
 from ticketing.utils import myurljoin, tristate, is_nonmobile_email_address, sensible_alnum_decode
 from ticketing.helpers import todate, todatetime
 from ticketing.payments import plugins
@@ -68,33 +71,108 @@ class Site(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     tel_1 = Column(String(32))
     tel_2 = Column(String(32))
     fax = Column(String(32))
-    drawing_url = Column(String(255))
-    _metadata_url = Column('metadata_url', String(255))
+    _drawing_url = Column('drawing_url', String(255))
+    _frontend_metadata_url = Column('metadata_url', String(255))
+    _backend_metadata_url = Column('backend_metadata_url', String(255))
 
     @property
-    def metadata_url(self):
-        return myurljoin(get_current_registry().settings.get('altair.site_data.base_url', ''), self._metadata_url if self._metadata_url else 'dummy/metadata.json')
+    def _absolute_frontend_metadata_url(self):
+        return self._frontend_metadata_url and myurljoin(get_current_registry().settings.get('altair.site_data.base_url', ''), self._frontend_metadata_url)
 
     @property
-    def _metadata(self):
-        __metadata = getattr(self, '__metadata', None)
-        if not __metadata and self.metadata_url is not None:
+    def _absolute_backend_metadata_url(self):
+        return self._backend_metadata_url and myurljoin(get_current_registry().settings.get('altair.site_data.base_url', '') + '../backend/', self._backend_metadata_url)
+
+    @property
+    def _frontend_metadata(self):
+        frontend_metadata = getattr(self, '__frontend_metadata', None)
+        if not frontend_metadata and self._absolute_frontend_metadata_url is not None:
             resolver = get_resolver(get_current_registry())
-            self.__metadata = json.load(resolver.resolve(self.metadata_url).stream())
-        return self.__metadata
+            try:
+                frontend_metadata = json.load(resolver.resolve(self._absolute_frontend_metadata_url).stream())
+                setattr(self, '__frontend_metadata', frontend_metadata)
+            except:
+                logger.error('failed to fetch frontend metadata from %s' % self._absolute_frontend_metadata_url, exc_info=sys.exc_info())
+        return frontend_metadata
 
-    def get_drawing(self, name):
-        page_meta = self._metadata[u'pages'].get(name)
+    @property
+    def _backend_metadata(self):
+        backend_metadata = getattr(self, '__backend_metadata', None)
+        if not backend_metadata and self._absolute_backend_metadata_url is not None:
+            resolver = get_resolver(get_current_registry())
+            try:
+                backend_metadata = json.load(resolver.resolve(self._absolute_backend_metadata_url).stream())
+                setattr(self, '__backend_metadata', backend_metadata)
+            except:
+                logger.error('failed to fetch backend metadata from %s' % self._absolute_frontend_metadata_url, exc_info=sys.exc_info())
+        return backend_metadata
+
+    def get_backend_pages(self):
+        return self._backend_metadata and self._backend_metadata.get('pages') or dict(root=dict())
+
+    def get_frontend_pages(self):
+        return self._frontend_metadata and self._frontend_metadata.get('pages')
+
+    def get_frontend_drawing(self, name):
+        try:
+            page_meta = self.get_frontend_pages().get(name)
+        except:
+            page_meta = None
         if page_meta is not None:
             resolver = get_resolver(get_current_registry())
-            return resolver.resolve(myurljoin(self.metadata_url, name))
+            return resolver.resolve(myurljoin(self._absolute_frontend_metadata_url, name))
         else:
             return None
 
-    def get_drawings(self):
-        page_meta = self._metadata[u'pages']
+    def get_frontend_drawings(self):
+        page_metas = self.get_frontend_pages()
         resolver = get_resolver(get_current_registry())
-        return dict((name, resolver.resolve(myurljoin(self.metadata_url, name))) for name in page_meta)
+        return dict((name, resolver.resolve(myurljoin(self._absolute_frontend_metadata_url, name))) for name in page_metas)
+
+    def get_backend_drawing(self, name):
+        try:
+            page_meta = self.get_backend_pages().get(name)
+        except:
+            page_meta = None
+        if page_meta is not None:
+            resolver = get_resolver(get_current_registry())
+            return resolver.resolve(myurljoin(self._absolute_backend_metadata_url, name))
+        else:
+            return None
+
+    def get_backend_drawings(self):
+        page_metas = self.get_backend_pages()
+        resolver = get_resolver(get_current_registry())
+        return dict((name, resolver.resolve(myurljoin(self._absolute_backend_metadata_url, name))) for name in page_metas)
+
+    @property
+    @deprecation.deprecate(u'switch to get_backend_drawings')
+    def drawing_url(self):
+        drawing = self.get_backend_drawing('root.svg')
+        if drawing is None:
+            return self._drawing_url
+        else:
+            return drawing.path
+
+    @property
+    @deprecation.deprecate(u'switch to get_backend_drawings')
+    def direct_drawing_url(self):
+        retval = getattr(self, '_direct_drawing_url', None)
+        if retval is None:
+            drawing = self.get_backend_drawing('root.svg')
+            if drawing is None:
+                retval = get_current_request().route_url('api.get_site_drawing', site_id=self.id)
+            else:
+                if IS3KeyProvider.providedBy(drawing):
+                    key = drawing.get_key()
+                    headers = {}
+                    if re.match('^.+\.(svgz|gz)$', drawing.path):
+                        headers['response-content-encoding'] = 'gzip'
+                    retval = key.generate_url(expires_in=172800, response_headers=headers)
+                else:
+                    retval = get_current_request().static_url(drawing.path)
+            self._direct_drawing_url = retval
+        return retval
 
 class VenueArea_group_l0_id(Base):
     __tablename__   = "VenueArea_group_l0_id"
@@ -1244,6 +1322,61 @@ class PaymentDeliveryMethodPair(Base, BaseModel, WithTimestamp, LogicallyDeleted
     delivery_method_id = AnnotatedColumn(Identifier, ForeignKey('DeliveryMethod.id'), _a_label=_(u'引取方法'))
     delivery_method = relationship('DeliveryMethod', backref='payment_delivery_method_pairs')
 
+    @property
+    def delivery_fee_per_product(self):
+        """商品ごとの引取手数料"""
+        return Decimal()
+
+    @property
+    def delivery_fee_per_ticket(self):
+        """発券ごとの引取手数料"""
+        if self.delivery_method.fee_type == FeeTypeEnum.PerUnit.v[0]:
+            return self.delivery_fee
+        else:
+            return Decimal()
+
+    @property
+    def delivery_fee_per_order(self):
+        """注文ごとの引取手数料"""
+        if self.delivery_method.fee_type == FeeTypeEnum.Once.v[0]:
+            return self.delivery_fee
+        else:
+            return Decimal()
+
+    @property
+    def transaction_fee_per_product(self):
+        """商品ごとの決済手数料"""
+        return Decimal()
+
+    @property
+    def transaction_fee_per_ticket(self):
+        """発券ごとの決済手数料"""
+        if self.payment_method.fee_type == FeeTypeEnum.PerUnit.v[0]:
+            return self.transaction_fee
+        else:
+            return Decimal()
+
+    @property
+    def transaction_fee_per_order(self):
+        """注文ごとの決済手数料"""
+        if self.payment_method.fee_type == FeeTypeEnum.Once.v[0]:
+            return self.transaction_fee
+        else:
+            return Decimal()
+
+    @property
+    def per_order_fee(self):
+        """注文ごと手数料"""
+        return self.system_fee + self.delivery_fee_per_order + self.transaction_fee_per_order
+
+    @property
+    def per_product_fee(self):
+        return self.delivery_fee_per_product + self.transaction_fee_per_product
+    
+    @property
+    def per_ticket_fee(self):
+        return self.delivery_fee_per_ticket + self.transaction_fee_per_ticket
+
     def is_available_for(self, sales_segment, on_day):
         border = sales_segment.end_at.date() - timedelta(days=self.unavailable_period_days)
         return self.public and (todate(on_day) <= border)
@@ -1871,6 +2004,29 @@ class Product(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
         return {template.id:product.id}
 
+    def num_tickets(self, pdmp):
+        '''この Product に関わるすべての Ticket の数'''
+        return DBSession.query(Ticket_TicketBundle) \
+            .filter(Ticket_TicketBundle.ticket_bundle_id == ProductItem.ticket_bundle_id) \
+            .filter((Ticket.id == Ticket_TicketBundle.ticket_id) & (Ticket.deleted_at == None)) \
+            .filter((ProductItem.product_id == self.id) & (ProductItem.deleted_at == None)) \
+            .filter((Ticket.ticket_format_id == TicketFormat_DeliveryMethod.ticket_format_id) & (TicketFormat_DeliveryMethod.deleted_at == None)) \
+            .filter((TicketFormat.id == TicketFormat_DeliveryMethod.ticket_format_id) & (TicketFormat.deleted_at == None)) \
+            .filter(TicketFormat_DeliveryMethod.delivery_method_id == pdmp.delivery_method_id) \
+            .count()
+
+    def num_priced_tickets(self, pdmp):
+        '''この Product に関わるTicketのうち、発券手数料を取るもの (額面があるもの)'''
+        return DBSession.query(Ticket_TicketBundle) \
+            .filter(Ticket_TicketBundle.ticket_bundle_id == ProductItem.ticket_bundle_id) \
+            .filter((Ticket.id == Ticket_TicketBundle.ticket_id) & (Ticket.deleted_at == None)) \
+            .filter((ProductItem.product_id == self.id) & (ProductItem.deleted_at == None)) \
+            .filter((Ticket.ticket_format_id == TicketFormat_DeliveryMethod.ticket_format_id) & (TicketFormat_DeliveryMethod.deleted_at == None)) \
+            .filter((TicketFormat.id == TicketFormat_DeliveryMethod.ticket_format_id) & (TicketFormat.deleted_at == None)) \
+            .filter(TicketFormat_DeliveryMethod.delivery_method_id == pdmp.delivery_method_id) \
+            .filter(Ticket.priced == True) \
+            .count()
+
 class SeatIndexType(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__  = "SeatIndexType"
     id             = Column(Identifier, primary_key=True)
@@ -2430,19 +2586,19 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     @classmethod
     def create_from_cart(cls, cart):
-        order = cls()
-        order.order_no = cart.order_no
-        order.total_amount = cart.total_amount
-        order.shipping_address = cart.shipping_address
-        order.payment_delivery_pair = cart.payment_delivery_pair
-        order.system_fee = cart.system_fee
-        order.transaction_fee = cart.transaction_fee
-        order.delivery_fee = cart.delivery_fee
-        order.performance = cart.performance
-        order.channel = cart.channel
-        order.operator = cart.operator
-        if cart.shipping_address:
-            order.user = cart.shipping_address.user
+        order = cls(
+            order_no=cart.order_no,
+            total_amount=cart.total_amount,
+            shipping_address=cart.shipping_address,
+            payment_delivery_pair=cart.payment_delivery_pair,
+            system_fee=cart.system_fee,
+            transaction_fee=cart.transaction_fee,
+            delivery_fee=cart.delivery_fee,
+            performance=cart.performance,
+            channel=cart.channel,
+            operator=cart.operator,
+            user=cart.shipping_address and cart.shipping_address.user
+            )
 
         for product in cart.products:
             ordered_product = OrderedProduct(
@@ -2723,6 +2879,10 @@ class OrderedProductItemToken(Base,BaseModel, LogicallyDeleted):
     valid = Column(Boolean, nullable=False, default=False)
     issued_at = Column(DateTime, nullable=True, default=None)
     printed_at = Column(DateTime, nullable=True, default=None)
+    refreshed_at = Column(DateTime, nullable=True, default=None)
+
+    def is_printed(self):
+        return self.printed_at and (self.refreshed_at is None or self.printed_at > self.refreshed_at)
 
 class Ticket_TicketBundle(Base, BaseModel, LogicallyDeleted):
     __tablename__ = 'Ticket_TicketBundle'
@@ -2750,6 +2910,7 @@ class Ticket(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = "Ticket"
 
     FLAG_ALWAYS_REISSUABLE = 1
+    FLAG_PRICED = 2
 
     id = Column(Identifier, primary_key=True)
     organization_id = Column(Identifier, ForeignKey('Organization.id', ondelete='CASCADE'), nullable=True)
@@ -2759,7 +2920,7 @@ class Ticket(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     ticket_format_id = Column(Identifier, ForeignKey('TicketFormat.id', ondelete='CASCADE'), nullable=False)
     ticket_format = relationship('TicketFormat', uselist=False, backref='tickets')
     name = Column(Unicode(255), nullable=False, default=u'')
-    flags = Column(Integer, nullable=False, default=0)
+    flags = Column(Integer, nullable=False, default=FLAG_PRICED)
     original_ticket_id = Column(Identifier, ForeignKey('Ticket.id', ondelete='SET NULL'), nullable=True)
     derived_tickets = relationship('Ticket', backref=backref('original_ticket', remote_side=[id]))
     data = Column(MutationDict.as_mutable(JSONEncodedDict(65536)))
@@ -2790,6 +2951,36 @@ class Ticket(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         ticket.original_ticket_id = template.id
         ticket.save()
         return {template.id:ticket.id}
+
+    @hybrid_property
+    def always_reissuable(self):
+        return (self.flags & self.FLAG_ALWAYS_REISSUABLE) != 0
+
+    @always_reissuable.expression
+    def priced(self):
+        return self.flags.op('&')(self.FLAG_ALWAYS_REISSUABLE) != 0
+
+    @always_reissuable.setter
+    def set_reissuable(self, value):
+        if value:
+            self.flags |= self.FLAG_ALWAYS_REISSUABLE
+        else:
+            self.flags &= ~self.FLAG_ALWAYS_REISSUABLE
+
+    @hybrid_property
+    def priced(self):
+        return (self.flags & self.FLAG_PRICED) != 0
+
+    @priced.expression
+    def priced(self):
+        return self.flags.op('&')(self.FLAG_PRICED) != 0
+
+    @priced.setter
+    def set_priced(self, value):
+        if value:
+            self.flags |= self.FLAG_PRICED
+        else:
+            self.flags &= ~self.FLAG_PRICED
 
 for event_kind in ['before_insert', 'before_update']:
     event.listen(Ticket, event_kind, lambda mapper, conn, target: target.before_insert_or_update())
@@ -2946,12 +3137,11 @@ class TicketBundle(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         relevant_tickets = ApplicableTicketsProducer(self).include_delivery_id_ticket_iter(delivery_plugin_id)
         reissueable = False
         for ticket in relevant_tickets:
-            _reissueable = (ticket.flags & Ticket.FLAG_ALWAYS_REISSUABLE != 0)
             if reissueable:
-                if not _reissueable:
+                if not ticket.always_reissueable:
                     logger.warning("TicketBundle (id=%d) contains tickets whose reissueable flag are inconsistent" % self.id)
             else:
-                reissueable = _reissueable
+                reissueable = ticket.always_reissueable
         return reissueable
 
     def delete(self):
@@ -3239,7 +3429,8 @@ class SalesSegment(Base, BaseModel, LogicallyDeleted, WithTimestamp):
         data = {
             "id": self.id, 
             "kind_name": self.kind, 
-            "kind_label": self.kind_label, 
+            "kind_label": self.kind_label,
+            "publicp": self.sales_segment_group.public,
             "name": self.name, 
             "start_on" : isodate.datetime_isoformat(self.start_at) if self.start_at else '', 
             "end_on" : isodate.datetime_isoformat(self.end_at) if self.end_at else '', 
@@ -3282,19 +3473,26 @@ class SalesSegment(Base, BaseModel, LogicallyDeleted, WithTimestamp):
         super(type(self), self).delete()
 
     def get_amount(self, pdmp, product_quantities):
-        return self.total_fee(pdmp) + self.get_products_amount(product_quantities)
+        return pdmp.per_order_fee + self.get_products_amount(pdmp, product_quantities)
 
-    def get_products_amount(self, product_quantities):
-        if len(product_quantities) == 0:
-            return 0
+    def get_transaction_fee(self, pdmp, product_quantities):
+        return pdmp.transaction_fee_per_order + sum([
+            (pdmp.transaction_fee_per_product + \
+             pdmp.transaction_fee_per_ticket * product.num_priced_tickets(pdmp)) * quantity
+            for product, quantity in product_quantities])
 
-        return sum([product.price * quantity
-                    for product, quantity in product_quantities])
+    def get_delivery_fee(self, pdmp, product_quantities):
+        return pdmp.delivery_fee_per_order + sum([
+            (pdmp.delivery_fee_per_product + \
+             pdmp.delivery_fee_per_ticket * product.num_priced_tickets(pdmp)) * quantity
+            for product, quantity in product_quantities])
 
-    def total_fee(self, pdmp):
-        return (pdmp.system_fee
-                + pdmp.transaction_fee
-                + pdmp.delivery_fee)
+    def get_products_amount(self, pdmp, product_quantities):
+        return sum([
+            (product.price + \
+             pdmp.per_product_fee + \
+             pdmp.per_ticket_fee * product.num_priced_tickets(pdmp)) * quantity
+            for product, quantity in product_quantities])
 
 
 class OrganizationSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
