@@ -442,7 +442,7 @@ class SalesDetailReporter(object):
         merged_record = None
         pre_merge_key = None
         for record in self.sort_data():
-            merge_key = (record.stock_type_id, record.stock_id, record.product_id)
+            merge_key = (record.stock_type_id, record.stock_id, record.product_name, record.product_price)
             if merged_record:
                 if pre_merge_key == merge_key:
                     merged_record.unpaid_quantity += record.unpaid_quantity
