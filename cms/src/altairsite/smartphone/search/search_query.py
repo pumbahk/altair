@@ -200,11 +200,6 @@ class DetailSearchQuery(object):
         prefectures.extend(self.pref_kinki)
         prefectures.extend(self.pref_chugoku)
         prefectures.extend(self.pref_kyusyu)
-
-        """
-        while 'all' in prefectures:
-            prefectures.remove('all')
-        """
         return prefectures
 
 class EventOpenInfo(object):
