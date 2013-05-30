@@ -71,6 +71,10 @@ class SmartPhoneHelper(object):
             ,'miyazaki':u'宮崎'
             ,'kagoshima':u'鹿児島'
         }
+
+        if keyword not in areas:
+            return ""
+
         return areas[keyword]
 
     def get_sale_japanese(self, key):

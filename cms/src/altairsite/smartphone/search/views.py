@@ -120,8 +120,11 @@ def detail_search(context, request):
     perf_info = PerformanceInfo(canceled=form.data['canceled_perf'], closed=form.data['closed_perf'])
     query = DetailSearchQuery(word=form.data['word'], cond=form.data['cond'], genre_music=form.data['genre_music']
         , genre_sports=form.data['genre_sports'], genre_stage=form.data['genre_stage'], genre_event=form.data['genre_event']
-        , prefectures=form.get_prefectures(), sales_segment=form.data['sales_segment'], event_open_info=event_open_info
-        , sale_info=sale_info, perf_info=perf_info, genres_label=context.get_genres_label(form))
+        , pref_hokkaido=form.data['pref_hokkaido'], pref_syutoken=form.data['pref_syutoken'], pref_koshinetsu=form.data['pref_koshinetsu']
+        , pref_kinki=form.data['pref_kinki'], pref_chugoku=form.data['pref_chugoku'], pref_kyusyu=form.data['pref_kyusyu']
+        , sales_segment=form.data['sales_segment'], event_open_info=event_open_info
+        , sale_info=sale_info, perf_info=perf_info, genres_label=context.get_genres_label(form)
+        , prefectures_label=context.get_prefectures_label(form))
     page = form.data['page'] if form.data['page'] else 1
     result = context.search_detail(query, int(page), 10)
 

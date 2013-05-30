@@ -103,9 +103,10 @@ class EventSearcher(object):
     # 県名検索
     def search_prefectures(self, search_query, qs=None):
         if qs:
-            if search_query.prefectures:
-                log_info("search_prefectures", " ,".join(search_query.prefectures))
-                where = Performance.prefecture.in_(search_query.prefectures)
+            prefectures = search_query.get_prefectures()
+            if prefectures:
+                log_info("search_prefectures", " ,".join(prefectures))
+                where = Performance.prefecture.in_(prefectures)
                 qs = self._create_common_qs(where=where, qs=qs)
         return qs
 

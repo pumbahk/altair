@@ -69,7 +69,9 @@ class HotwordSearchQuery(object):
         return parameter
 
 class DetailSearchQuery(object):
-    def __init__(self, word, cond, genre_music, genre_sports, genre_stage, genre_event, genres_label, prefectures, sales_segment, event_open_info, sale_info, perf_info):
+    def __init__(self, word, cond, genre_music, genre_sports, genre_stage, genre_event, genres_label,
+                 pref_hokkaido, pref_syutoken, pref_koshinetsu, pref_kinki, pref_chugoku, pref_kyusyu,
+                 prefectures_label, sales_segment, event_open_info, sale_info, perf_info):
         self.word = word
         self.cond = cond
         self.genre_music = genre_music
@@ -77,7 +79,13 @@ class DetailSearchQuery(object):
         self.genre_stage = genre_stage
         self.genre_event = genre_event
         self.genres_label = genres_label
-        self.prefectures = prefectures
+        self.pref_hokkaido = pref_hokkaido
+        self.pref_syutoken = pref_syutoken
+        self.pref_koshinetsu = pref_koshinetsu
+        self.pref_kinki = pref_kinki
+        self.pref_chugoku = pref_chugoku
+        self.pref_kyusyu = pref_kyusyu
+        self.prefectures_label = prefectures_label
         self.sales_segment = sales_segment
         self.event_open_info = event_open_info
         self.sale_info = sale_info
@@ -108,14 +116,9 @@ class DetailSearchQuery(object):
                 query.append(u"中止した公演")
             if self.perf_info.closed:
                 query.append(u"販売終了した公演")
-        if self.prefectures:
-            first = False
-            for pref in self.prefectures:
-                if first:
-                    query.append(helper.get_prefecture_japanese(pref))
-                else:
-                    query.append(u"県名：" + helper.get_prefecture_japanese(pref))
-                    first = True
+        if self.prefectures_label:
+            query.append(u"県名：" + ", ".join(self.prefectures_label))
+
         return u"、".join(query)
     def create_parameter(self):
         parameter = "?word=" + self.word
@@ -133,8 +136,24 @@ class DetailSearchQuery(object):
         if self.genre_event:
             for genre_id in self.genre_event:
                 parameter += "&genre_event=" + str(genre_id)
-        if self.prefectures:
-            parameter += "&prefecture_hokkaido=" + "&prefecture_hokkaido=".join(self.prefectures)
+        if self.pref_hokkaido:
+            for pref in self.pref_hokkaido:
+                parameter += "&pref_hokkaido=" + pref
+        if self.pref_syutoken:
+            for pref in self.pref_syutoken:
+                parameter += "&pref_syutoken=" + pref
+        if self.pref_koshinetsu:
+            for pref in self.pref_koshinetsu:
+                parameter += "&pref_koshinetsu=" + pref
+        if self.pref_kinki:
+            for pref in self.pref_kinki:
+                parameter += "&pref_kinki=" + pref
+        if self.pref_chugoku:
+            for pref in self.pref_chugoku:
+                parameter += "&pref_chugoku=" + pref
+        if self.pref_kyusyu:
+            for pref in self.pref_kyusyu:
+                parameter += "&pref_kyusyu=" + pref
         if self.sales_segment:
             parameter += "&sales_segment=" + self.sales_segment
         if self.event_open_info:
@@ -172,6 +191,21 @@ class DetailSearchQuery(object):
         if self.genre_event:
             ids += self.genre_event
         return ids
+
+    def get_prefectures(self):
+        prefectures = []
+        prefectures.extend(self.pref_hokkaido)
+        prefectures.extend(self.pref_syutoken)
+        prefectures.extend(self.pref_koshinetsu)
+        prefectures.extend(self.pref_kinki)
+        prefectures.extend(self.pref_chugoku)
+        prefectures.extend(self.pref_kyusyu)
+
+        """
+        while 'all' in prefectures:
+            prefectures.remove('all')
+        """
+        return prefectures
 
 class EventOpenInfo(object):
     def __init__(self, since_event_open, event_open):

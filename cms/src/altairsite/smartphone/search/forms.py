@@ -60,29 +60,29 @@ class DetailSearchForm(TopSearchForm):
         ],
         default=SalesEnum.ON_SALE.v, coerce=str)
 
-    prefecture_hokkaido = CheckboxListField(u'北海道・東北',
+    pref_hokkaido = CheckboxListField(u'北海道・東北',
             choices=[
-                ('all_check', u'全てON/OFF'), ('hokkaido', u'北海道'), ('aomori', u'青森'), ('iwate', u'岩手'), ('akita', u'秋田'), ('miyagi', u'宮城'), ('yamagata', u'山形'), ('fukushima', u'福島')
+                ('all', u'全てON/OFF'), ('hokkaido', u'北海道'), ('aomori', u'青森'), ('iwate', u'岩手'), ('akita', u'秋田'), ('miyagi', u'宮城'), ('yamagata', u'山形'), ('fukushima', u'福島')
             ])
-    prefecture_syutoken = CheckboxListField(u'首都圏・北関東',
+    pref_syutoken = CheckboxListField(u'首都圏・北関東',
             choices=[
-                ('all_check', u'全てON/OFF'), ('tokyo', u'東京'),  ('kanagawa', u'神奈川'), ('chiba', u'千葉'), ('saitama', u'埼玉'), ('ibaraki', u'茨城'), ('tochigi', u'栃木') ,('gunma', u'群馬'),  ('yamanashi', u'山梨')
+                ('all', u'全てON/OFF'), ('tokyo', u'東京'),  ('kanagawa', u'神奈川'), ('chiba', u'千葉'), ('saitama', u'埼玉'), ('ibaraki', u'茨城'), ('tochigi', u'栃木') ,('gunma', u'群馬'),  ('yamanashi', u'山梨')
             ])
-    prefecture_koshinetsu = CheckboxListField(u'甲信越・東海',
+    pref_koshinetsu = CheckboxListField(u'甲信越・東海',
             choices=[
-                ('all_check', u'全てON/OFF'), ('nagano', u'長野') ,('niigata', u'新潟'), ('gifu', u'岐阜'), ('aichi', u'愛知') ,('mie', u'三重'), ('shizuoka', u'静岡')
+                ('all', u'全てON/OFF'), ('nagano', u'長野') ,('niigata', u'新潟'), ('gifu', u'岐阜'), ('aichi', u'愛知') ,('mie', u'三重'), ('shizuoka', u'静岡')
             ])
-    prefecture_kinki = CheckboxListField(u'近畿・北陸',
+    pref_kinki = CheckboxListField(u'近畿・北陸',
             choices=[
-                ('all_check', u'全てON/OFF'), ('kyoto', u'京都'), ('osaka', u'大阪'), ('hyogo', u'兵庫'), ('shiga', u'滋賀'), ('nara', u'奈良'), ('wakayama', u'和歌山'), ('toyama', u'富山'), ('ishikawa', u'石川'), ('fukui', u'福井')
+                ('all', u'全てON/OFF'), ('kyoto', u'京都'), ('osaka', u'大阪'), ('hyogo', u'兵庫'), ('shiga', u'滋賀'), ('nara', u'奈良'), ('wakayama', u'和歌山'), ('toyama', u'富山'), ('ishikawa', u'石川'), ('fukui', u'福井')
             ])
-    prefecture_chugoku = CheckboxListField(u'中国・四国',
+    pref_chugoku = CheckboxListField(u'中国・四国',
             choices=[
-                ('all_check', u'全てON/OFF'), ('hiroshima', u'広島'), ('okayama', u'岡山'), ('tottori', u'鳥取'), ('shimane', u'島根') ,('yamaguchi', u'山口'), ('tokushima', u'徳島'), ('kagawa', u'香川'), ('ehime', u'愛媛'), ('kouchi', u'高知')
+                ('all', u'全てON/OFF'), ('hiroshima', u'広島'), ('okayama', u'岡山'), ('tottori', u'鳥取'), ('shimane', u'島根') ,('yamaguchi', u'山口'), ('tokushima', u'徳島'), ('kagawa', u'香川'), ('ehime', u'愛媛'), ('kouchi', u'高知')
             ])
-    prefecture_kyusyu = CheckboxListField(u'九州・沖縄',
+    pref_kyusyu = CheckboxListField(u'九州・沖縄',
             choices=[
-                ('all_check', u'全てON/OFF'), ('okinawa', u'沖縄'), ('fukuoka', u'福岡'), ('saga', u'佐賀'), ('nagasaki', u'長崎'), ('kumamoto', u'熊本') ,('oita', u'大分'), ('miyazaki', u'宮崎') ,('kagoshima', u'鹿児島')
+                ('all', u'全てON/OFF'), ('okinawa', u'沖縄'), ('fukuoka', u'福岡'), ('saga', u'佐賀'), ('nagasaki', u'長崎'), ('kumamoto', u'熊本') ,('oita', u'大分'), ('miyazaki', u'宮崎') ,('kagoshima', u'鹿児島')
             ])
     genre_music = CheckboxListField(u'音楽', choices=[], validators=[Optional()], coerce=int)
     genre_sports = CheckboxListField(u'スポーツ', choices=[], validators=[Optional()], coerce=int)
@@ -100,21 +100,6 @@ class DetailSearchForm(TopSearchForm):
     sale_end = SelectField(label='', validators=[Optional()], choices=[], coerce=str)
     closed_perf = BooleanField(u'販売終了した公演', [Optional()])
     canceled_perf = BooleanField(u'中止した公演', [Optional()])
-
-    def get_prefectures(self):
-        prefectures = []
-        prefectures.extend(self.prefecture_hokkaido.data)
-        prefectures.extend(self.prefecture_syutoken.data)
-        prefectures.extend(self.prefecture_koshinetsu.data)
-        prefectures.extend(self.prefecture_kinki.data)
-        prefectures.extend(self.prefecture_chugoku.data)
-        prefectures.extend(self.prefecture_kyusyu.data)
-
-        while 'all_check' in prefectures:
-            prefectures.remove('all_check')
-
-        log_info("get_prefectures", "prefectures=" + ", ".join(prefectures))
-        return prefectures
 
     def get_since_event_open(self):
         since_event_open = None

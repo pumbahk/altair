@@ -7,6 +7,7 @@ from altaircms.tag.models import HotWord
 from altaircms.genre.searcher import GenreSearcher
 from altaircms.page.models import PageSet, PageTag2Page, PageTag
 from altairsite.mobile.core.helper import log_info
+from altairsite.smartphone.common.helper import SmartPhoneHelper
 
 from datetime import date, datetime
 
@@ -38,6 +39,32 @@ class SearchPageResource(CommonResource):
             if genre:
                 genres_label.append(genre.label)
         return genres_label
+
+    def get_prefectures_names(self, form):
+        names = []
+        if form.data['pref_hokkaido']:
+            names += form.data['pref_hokkaido']
+        if form.data['pref_syutoken']:
+            names += form.data['pref_syutoken']
+        if form.data['pref_koshinetsu']:
+            names += form.data['pref_koshinetsu']
+        if form.data['pref_kinki']:
+            names += form.data['pref_kinki']
+        if form.data['pref_chugoku']:
+            names += form.data['pref_chugoku']
+        if form.data['pref_kyusyu']:
+            names += form.data['pref_kyusyu']
+        return names
+
+    def get_prefectures_label(self, form):
+        helper = SmartPhoneHelper()
+        names = self.get_prefectures_names(form)
+        prefectures_label = []
+        for pref in names:
+            prefecture_label = helper.get_prefecture_japanese(pref)
+            if prefecture_label:
+                prefectures_label.append(prefecture_label)
+        return prefectures_label
 
     # トップ画面、ジャンル画面の検索
     def search(self, query, page, per):

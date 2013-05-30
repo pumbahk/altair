@@ -93,16 +93,18 @@ $(function () {
                   <li class="panel">${form.genre_event}</li>
                 </ul>
               </li>
+              <li class="panelgroup" id="area">
+                <span class="panelgroup-label"><a href="#" data-toggle="area">開催地で絞り込む</a></span>
+                <ul class="panelgroup-inner">
+                  <li class="panel">${form.pref_hokkaido}</li>
+                  <li class="panel">${form.pref_syutoken}</li>
+                  <li class="panel">${form.pref_koshinetsu}</li>
+                  <li class="panel">${form.pref_kinki}</li>
+                  <li class="panel">${form.pref_chugoku}</li>
+                  <li class="panel">${form.pref_kyusyu}</li>
+                </ul>
+              </li>
             </ul>
-
-            <%m:header>開催地で絞り込む</%m:header><br/>
-            <hr/>
-            ${form.prefecture_hokkaido.label}${form.prefecture_hokkaido}<hr/>
-            ${form.prefecture_syutoken.label}${form.prefecture_syutoken}<hr/>
-            ${form.prefecture_koshinetsu.label}${form.prefecture_koshinetsu}<hr/>
-            ${form.prefecture_kinki.label}${form.prefecture_kinki}<hr/>
-            ${form.prefecture_chugoku.label}${form.prefecture_chugoku}<hr/>
-            ${form.prefecture_kyusyu.label}${form.prefecture_kyusyu}<hr/>
 
             <%m:header>販売条件で絞り込む</%m:header><br/>
             ${form.sales_segment}
@@ -123,16 +125,22 @@ $(function () {
 
 <script>
     $(function() {
-        function checkAll(checkbox_name) {
-            $("input[type=checkbox][value='0'][name=" + checkbox_name + "]").click(function(event){
-                var checked = $("input[type=checkbox][value='0'][name=" + checkbox_name + "]").is(":checked");
+        function checkAll(checkbox_value, checkbox_name) {
+            $("input[type=checkbox][value=" + checkbox_value + "][name=" + checkbox_name + "]").click(function(event){
+                var checked = $("input[type=checkbox][value=" + checkbox_value + "][name=" + checkbox_name + "]").is(":checked");
                 $("input[type='checkbox'][name=" + checkbox_name + "]").prop('checked', checked);
             });
         };
-        checkAll('genre_music');
-        checkAll('genre_sports');
-        checkAll('genre_stage');
-        checkAll('genre_event');
+        checkAll('0', 'genre_music');
+        checkAll('0', 'genre_sports');
+        checkAll('0', 'genre_stage');
+        checkAll('0', 'genre_event');
+        checkAll('all', 'pref_hokkaido');
+        checkAll('all', 'pref_syutoken');
+        checkAll('all', 'pref_koshinetsu');
+        checkAll('all', 'pref_kinki');
+        checkAll('all', 'pref_chugoku');
+        checkAll('all', 'pref_kyusyu');
     })();
 
 </script>
