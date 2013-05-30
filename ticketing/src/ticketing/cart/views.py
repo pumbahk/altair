@@ -103,21 +103,23 @@ class IndexView(IndexViewMixin):
     def get_frontend_drawing_urls(self, venue):
         sales_segment = self.request.context.sales_segment
         retval = {}
-        for name, drawing in get_venue_site_adapter(self.request, venue.site).get_frontend_drawings().items():
-            if IS3KeyProvider.providedBy(drawing):
-                key = drawing.get_key()
-                headers = {}
-                if re.match('^.+\.(svgz|gz)$', drawing.path):
-                    headers['response-content-encoding'] = 'gzip'
-                url = key.generate_url(expires_in=1800, response_headers=headers)
-            else:
-                url = self.request.route_url(
-                    'cart.venue_drawing',
-                    event_id=self.request.context.event_id,
-                    performance_id=sales_segment.performance.id,
-                    venue_id=sales_segment.performance.venue.id,
-                    part=name)
-            retval[name] = url
+        drawings = get_venue_site_adapter(self.request, venue.site).get_frontend_drawings()
+        if drawings:
+            for name, drawing in drawings.items():
+                if IS3KeyProvider.providedBy(drawing):
+                    key = drawing.get_key()
+                    headers = {}
+                    if re.match('^.+\.(svgz|gz)$', drawing.path):
+                        headers['response-content-encoding'] = 'gzip'
+                    url = key.generate_url(expires_in=1800, response_headers=headers)
+                else:
+                    url = self.request.route_url(
+                        'cart.venue_drawing',
+                        event_id=self.request.context.event_id,
+                        performance_id=sales_segment.performance.id,
+                        venue_id=sales_segment.performance.venue.id,
+                        part=name)
+                retval[name] = url
         return retval
 
     @view_config(decorator=with_jquery_tools, route_name='cart.index', renderer=selectable_renderer("carts/%(membership)s/index.html"), xhr=False, permission="buy")
