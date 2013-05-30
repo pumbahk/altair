@@ -16,6 +16,7 @@ from ticketing.cart.interfaces import (
 from ticketing.models import DBSession
 from ticketing.cart.reserving import Reserving
 from ticketing.cart.carting import CartFactory
+from ticketing import multicheckout
 from .events import LotElectedEvent
 
 from .models import Lot, LotElectWork, LotEntryWish
@@ -47,7 +48,6 @@ def lot_wish_cart(wish):
                 payment_delivery_pair=wish.lot_entry.payment_delivery_method_pair,
                 _order_no=wish.lot_entry.entry_no,
                 sales_segment=wish.lot_entry.lot.sales_segment,
-                system_fee=wish.system_fee,
                 products=[
                     CartedProduct(product=p.product,
                                   quantity=p.quantity)
@@ -92,8 +92,10 @@ def dummy_task(context, message):
     except Exception as e:
         print e
 
+
 @task_config(root_factory=WorkerResource,
              queue="lots")
+@multicheckout.multicheckout_session
 def elect_lots_task(context, message):
     """ 当選確定処理 """
     DBSession.remove()
@@ -118,7 +120,10 @@ def elect_lots_task(context, message):
     request.altair_checkout3d_override_shop_name = lot.event.organization.setting.multicheckout_shop_name
     wish = work.wish
     wish_id = wish.id
-
+    if wish.lot_entry.order:
+        lot_entry = wish.lot_entry
+        logger.warning("lot entry {0} is already ordered.".format(lot_entry.entry_no))
+        return
     try:
         order = elect_lot_wish(request, wish)
         if order:
@@ -139,6 +144,7 @@ def elect_lots_task(context, message):
         transaction.abort()
         work = LotElectWork.query.filter(LotElectWork.id==work_id).first()
         work.error = str(e).decode('utf-8')
+        logger.error(work.error)
         transaction.commit()
         raise
     finally:
@@ -164,25 +170,3 @@ def elect_lot_wish(request, wish):
 
     except Exception as e:
         logger.exception(e)
-
-    
-
-    # def elect_lot_entries(self):
-    #     """ 抽選申し込み確定
-    #     申し込み番号と希望順で、当選確定処理を行う
-    #     ワークに入っているものから当選処理をする
-    #     それ以外を落選処理にする
-    #     """
-
-    #     elected_wishes = self.lot.get_elected_wishes()
-
-    #     for ew in elected_wishes:
-    #         ew.entry.elect(ew)
-
-    #     # 落選処理
-    #     rejected_wishes = self.lot.get_rejected_wishes()
-
-    #     for rw in rejected_wishes:
-    #         rw.entry.reject()
-
-    #     self.lot.finish_lotting()

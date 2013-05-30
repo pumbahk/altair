@@ -163,6 +163,9 @@ def entry_lot(request, entry_no, lot, shipping_address, wishes, payment_delivery
         birthday=birthday,
         memo=memo
         )
+    if hasattr(request, "browserid"):
+        entry.browserid = getattr(request, "browserid")
+
     entry.entry_no = entry_no
     DBSession.add(entry)
     DBSession.flush()

@@ -84,7 +84,8 @@ def main(argv=sys.argv):
             subject = u'%s (開催日:%s)' % (performance.name, performance.start_on.strftime('%Y-%m-%d %H:%M'))
         elif event:
             if (form.limited_from.data and event.sales_end_on < form.limited_from.data) or\
-               (form.limited_to.data and form.limited_to.data < event.sales_start_on):
+               (form.limited_to.data and form.limited_to.data < event.sales_start_on) or\
+               (form.limited_from.data and event.final_start_on and event.final_start_on < form.limited_from.data):
                 continue
 
             if form not in reports:

@@ -1,0 +1,22 @@
+<%namespace file="/common/helpers.html" import="form_item"/>
+
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal">×</button>
+    <h3>ログインユーザの一括削除</h3>
+  </div>
+
+ <form method="POST" action="${request.route_path("members.member", membership_id=membership.id, action="delete_all")}?${request.query_string}">
+   <input type="hidden" name="membergroup_id" value="${membergroup.id if membergroup else ""}">
+   <div class="modal-body">
+     会員種別:${membership.name}. 
+     %if membergroup:
+     会員区分:${membergroup.name}.
+     %endif
+     のものを一括で削除します。よろしいですか。
+   </div>
+
+  <div class="modal-footer">
+	<a href="#" class="btn" data-dismiss="modal">キャンセル</a>
+    <input class="btn btn-danger" type="submit" name="submit" value="ユーザの一括削除">
+  </div>
+ </form>

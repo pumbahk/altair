@@ -212,17 +212,23 @@ class SalesDetailReportRecord(object):
                  stock_holder_id=None,
                  stock_holder_name=None,
                  sales_segment_group_name=None,
-                 stock_id=None):
+                 stock_id=None,
+                 stock_type_display_order=None,
+                 product_display_order=None):
         # 席種ID
         self.stock_type_id = stock_type_id
         # 席種名
         self.stock_type_name = stock_type_name
+        # 席種表示順
+        self.stock_type_display_order = stock_type_display_order
         # 商品ID
         self.product_id = product_id
         # 商品名
         self.product_name = product_name
         # 商品単価
         self.product_price = product_price
+        # 商品表示順
+        self.product_display_order = product_display_order
         # 枠ID
         self.stock_holder_id = stock_holder_id
         # 枠名
@@ -329,6 +335,8 @@ class SalesDetailReporter(object):
             StockHolder.name,
             SalesSegmentGroup.name if self.form.sales_segment_group_id.data else 'NULL',
             Stock.id,
+            StockType.display_order,
+            Product.display_order,
         ).group_by(func.ifnull(Product.base_product_id, Product.id))
 
         for row in query.all():
@@ -341,7 +349,9 @@ class SalesDetailReporter(object):
                 stock_holder_id=row[5],
                 stock_holder_name=row[6],
                 sales_segment_group_name=row[7],
-                stock_id=row[8]
+                stock_id=row[8],
+                stock_type_display_order=row[9],
+                product_display_order=row[10]
             )
 
     def get_stock_data(self):
@@ -421,8 +431,11 @@ class SalesDetailReporter(object):
             else:
                 record.unpaid_quantity += unpaid_quantity
 
+    def sort_key(self):
+        return lambda x:(x.stock_type_display_order, x.stock_type_id, x.stock_id, x.product_display_order, x.product_name, x.product_price)
+
     def sort_data(self):
-        return sorted(self.reports.values(), key=lambda x:(x.stock_type_id, x.stock_id, x.product_name, x.product_price))
+        return sorted(self.reports.values(), key=self.sort_key())
 
     def sort_and_merge_data(self):
         merged_records = {}
@@ -447,7 +460,7 @@ class SalesDetailReporter(object):
         return self.sort_data()
 
     def group_key_to_reports(self, key):
-        return sorted(self._group_key_to_reports[key], key=lambda x:(x.stock_type_id, x.stock_id, x.product_name, x.product_price))
+        return sorted(self._group_key_to_reports[key], key=self.sort_key())
 
     def create_group_key_to_reports(self):
         self._group_key_to_reports = {}

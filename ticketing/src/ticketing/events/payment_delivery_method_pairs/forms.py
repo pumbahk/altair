@@ -86,7 +86,7 @@ class PaymentDeliveryMethodPairForm(Form):
         label=u'コンビニ窓口での支払期限日数',
         validators=[
             Required(),
-            NumberRange(min=1, message=u'有効な値を入力してください'),
+            NumberRange(min=1, max=364, message=u'有効な値を入力してください(1〜364)'),
         ],
         default=3,
     )

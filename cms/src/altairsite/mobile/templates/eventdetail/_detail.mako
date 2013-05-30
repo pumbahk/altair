@@ -6,7 +6,7 @@ ${event.event_open.year}/${str(event.event_open.month).zfill(2)}/${str(event.eve
 <%m:header>販売期間</%m:header>
 % if event.salessegment_groups:
     % for segment in event.salessegment_groups:
-        % if segment.master.publicp:
+        % if segment.publicp:
             ${segment.name}:${segment.start_on.year}/${segment.start_on.month}/${segment.start_on.day}〜${segment.end_on.year}/${segment.end_on.month}/${segment.end_on.day}
             <br/>
         % endif

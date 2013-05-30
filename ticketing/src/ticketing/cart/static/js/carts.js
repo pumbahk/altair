@@ -154,9 +154,10 @@ cart.createContentOfShoppingElement = function(product) {
 		return to;
 	};
     var item = $('<tr/>');
-    var name = $('<td/>').text(product.name);;
+    var name = $('<td/>').text(product.name);
     var price = $('<td/>').text("￥ "+comma(product.price));
-    var quantity = $('<td/>').text(product.quantity + " 枚");
+    var quantity = $('<td/>');
+    cart.util.render_template_into(quantity, product.unit_template, {num: product.quantity});
     // TODO: 予約席をProductごとに追加
     var seats_container = $('<td/>');
     var seats = $('<ul/>');

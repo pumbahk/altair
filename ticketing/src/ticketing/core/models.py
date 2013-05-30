@@ -4,10 +4,12 @@ import itertools
 import operator
 import json
 import re
+import sys
 from math import floor
 import isodate
 from datetime import datetime, date, timedelta
 import smtplib
+from decimal import Decimal
 
 from email.MIMEText import MIMEText
 from email.Header import Header
@@ -24,9 +26,9 @@ from sqlalchemy.orm.collections import attribute_mapped_collection
 from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.sql.expression import asc, desc, exists, select, table, column, case, null, alias
 from sqlalchemy.ext.associationproxy import association_proxy
+from zope.interface import implementer
 from altair.saannotation import AnnotatedColumn
 from pyramid.i18n import TranslationString as _
-from pyramid.threadlocal import get_current_registry
 
 from zope.deprecation import deprecation
 
@@ -41,11 +43,11 @@ from ticketing.models import (
 from standardenum import StandardEnum
 from ticketing.users.models import User, UserCredential, MemberGroup, MemberGroup_SalesSegment
 from ticketing.sej.models import SejOrder
-from altair.pyramid_assets import get_resolver
-from ticketing.utils import myurljoin, tristate, is_nonmobile_email_address, sensible_alnum_decode
+from ticketing.utils import tristate, is_nonmobile_email_address, sensible_alnum_decode
 from ticketing.helpers import todate, todatetime
 from ticketing.payments import plugins
 from ticketing.sej import api as sej_api
+from ticketing.venues.interfaces import ITentativeVenueSite
 from .utils import ApplicableTicketsProducer
 
 logger = logging.getLogger(__name__)
@@ -55,6 +57,7 @@ class Seat_SeatAdjacency(Base):
     l0_id = Column(String(255), ForeignKey('Seat.l0_id'), primary_key=True)
     seat_adjacency_id = Column(Identifier, ForeignKey('SeatAdjacency.id', ondelete='CASCADE'), primary_key=True, nullable=False)
 
+@implementer(ITentativeVenueSite)
 class Site(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = "Site"
     id = Column(Identifier, primary_key=True)
@@ -68,33 +71,9 @@ class Site(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     tel_1 = Column(String(32))
     tel_2 = Column(String(32))
     fax = Column(String(32))
-    drawing_url = Column(String(255))
-    _metadata_url = Column('metadata_url', String(255))
-
-    @property
-    def metadata_url(self):
-        return myurljoin(get_current_registry().settings.get('altair.site_data.base_url', ''), self._metadata_url if self._metadata_url else 'dummy/metadata.json')
-
-    @property
-    def _metadata(self):
-        __metadata = getattr(self, '__metadata', None)
-        if not __metadata and self.metadata_url is not None:
-            resolver = get_resolver(get_current_registry())
-            self.__metadata = json.load(resolver.resolve(self.metadata_url).stream())
-        return self.__metadata
-
-    def get_drawing(self, name):
-        page_meta = self._metadata[u'pages'].get(name)
-        if page_meta is not None:
-            resolver = get_resolver(get_current_registry())
-            return resolver.resolve(myurljoin(self.metadata_url, name))
-        else:
-            return None
-
-    def get_drawings(self):
-        page_meta = self._metadata[u'pages']
-        resolver = get_resolver(get_current_registry())
-        return dict((name, resolver.resolve(myurljoin(self.metadata_url, name))) for name in page_meta)
+    _drawing_url = Column('drawing_url', String(255))
+    _frontend_metadata_url = Column('metadata_url', String(255))
+    _backend_metadata_url = Column('backend_metadata_url', String(255))
 
 class VenueArea_group_l0_id(Base):
     __tablename__   = "VenueArea_group_l0_id"
@@ -1244,6 +1223,61 @@ class PaymentDeliveryMethodPair(Base, BaseModel, WithTimestamp, LogicallyDeleted
     delivery_method_id = AnnotatedColumn(Identifier, ForeignKey('DeliveryMethod.id'), _a_label=_(u'引取方法'))
     delivery_method = relationship('DeliveryMethod', backref='payment_delivery_method_pairs')
 
+    @property
+    def delivery_fee_per_product(self):
+        """商品ごとの引取手数料"""
+        return Decimal()
+
+    @property
+    def delivery_fee_per_ticket(self):
+        """発券ごとの引取手数料"""
+        if self.delivery_method.fee_type == FeeTypeEnum.PerUnit.v[0]:
+            return self.delivery_fee
+        else:
+            return Decimal()
+
+    @property
+    def delivery_fee_per_order(self):
+        """注文ごとの引取手数料"""
+        if self.delivery_method.fee_type == FeeTypeEnum.Once.v[0]:
+            return self.delivery_fee
+        else:
+            return Decimal()
+
+    @property
+    def transaction_fee_per_product(self):
+        """商品ごとの決済手数料"""
+        return Decimal()
+
+    @property
+    def transaction_fee_per_ticket(self):
+        """発券ごとの決済手数料"""
+        if self.payment_method.fee_type == FeeTypeEnum.PerUnit.v[0]:
+            return self.transaction_fee
+        else:
+            return Decimal()
+
+    @property
+    def transaction_fee_per_order(self):
+        """注文ごとの決済手数料"""
+        if self.payment_method.fee_type == FeeTypeEnum.Once.v[0]:
+            return self.transaction_fee
+        else:
+            return Decimal()
+
+    @property
+    def per_order_fee(self):
+        """注文ごと手数料"""
+        return self.system_fee + self.delivery_fee_per_order + self.transaction_fee_per_order
+
+    @property
+    def per_product_fee(self):
+        return self.delivery_fee_per_product + self.transaction_fee_per_product
+    
+    @property
+    def per_ticket_fee(self):
+        return self.delivery_fee_per_ticket + self.transaction_fee_per_ticket
+
     def is_available_for(self, sales_segment, on_day):
         border = sales_segment.end_at.date() - timedelta(days=self.unavailable_period_days)
         return self.public and (todate(on_day) <= border)
@@ -1871,6 +1905,29 @@ class Product(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
         return {template.id:product.id}
 
+    def num_tickets(self, pdmp):
+        '''この Product に関わるすべての Ticket の数'''
+        return DBSession.query(func.sum(ProductItem.quantity)) \
+            .filter(Ticket_TicketBundle.ticket_bundle_id == ProductItem.ticket_bundle_id) \
+            .filter((Ticket.id == Ticket_TicketBundle.ticket_id) & (Ticket.deleted_at == None)) \
+            .filter((ProductItem.product_id == self.id) & (ProductItem.deleted_at == None)) \
+            .filter((Ticket.ticket_format_id == TicketFormat_DeliveryMethod.ticket_format_id) & (TicketFormat_DeliveryMethod.deleted_at == None)) \
+            .filter((TicketFormat.id == TicketFormat_DeliveryMethod.ticket_format_id) & (TicketFormat.deleted_at == None)) \
+            .filter(TicketFormat_DeliveryMethod.delivery_method_id == pdmp.delivery_method_id) \
+            .scalar() or 0
+
+    def num_priced_tickets(self, pdmp):
+        '''この Product に関わるTicketのうち、発券手数料を取るもの (額面があるもの)'''
+        return DBSession.query(func.sum(ProductItem.quantity)) \
+            .filter(Ticket_TicketBundle.ticket_bundle_id == ProductItem.ticket_bundle_id) \
+            .filter((Ticket.id == Ticket_TicketBundle.ticket_id) & (Ticket.deleted_at == None)) \
+            .filter((ProductItem.product_id == self.id) & (ProductItem.deleted_at == None)) \
+            .filter((Ticket.ticket_format_id == TicketFormat_DeliveryMethod.ticket_format_id) & (TicketFormat_DeliveryMethod.deleted_at == None)) \
+            .filter((TicketFormat.id == TicketFormat_DeliveryMethod.ticket_format_id) & (TicketFormat.deleted_at == None)) \
+            .filter(TicketFormat_DeliveryMethod.delivery_method_id == pdmp.delivery_method_id) \
+            .filter(Ticket.priced == True) \
+            .scalar() or 0
+
 class SeatIndexType(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__  = "SeatIndexType"
     id             = Column(Identifier, primary_key=True)
@@ -2430,19 +2487,19 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     @classmethod
     def create_from_cart(cls, cart):
-        order = cls()
-        order.order_no = cart.order_no
-        order.total_amount = cart.total_amount
-        order.shipping_address = cart.shipping_address
-        order.payment_delivery_pair = cart.payment_delivery_pair
-        order.system_fee = cart.system_fee
-        order.transaction_fee = cart.transaction_fee
-        order.delivery_fee = cart.delivery_fee
-        order.performance = cart.performance
-        order.channel = cart.channel
-        order.operator = cart.operator
-        if cart.shipping_address:
-            order.user = cart.shipping_address.user
+        order = cls(
+            order_no=cart.order_no,
+            total_amount=cart.total_amount,
+            shipping_address=cart.shipping_address,
+            payment_delivery_pair=cart.payment_delivery_pair,
+            system_fee=cart.system_fee,
+            transaction_fee=cart.transaction_fee,
+            delivery_fee=cart.delivery_fee,
+            performance=cart.performance,
+            channel=cart.channel,
+            operator=cart.operator,
+            user=cart.shipping_address and cart.shipping_address.user
+            )
 
         for product in cart.products:
             ordered_product = OrderedProduct(
@@ -2616,6 +2673,13 @@ class OrderedProduct(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         return sorted(itertools.chain.from_iterable(i.seatdicts for i in self.ordered_product_items),
             key=operator.itemgetter('l0_id'))
 
+    @property
+    def seat_quantity(self):
+        for item in self.ordered_product_items:
+            if item.product_item.stock_type.is_seat:
+                return item.quantity
+        return 0
+
     def release(self):
         # 在庫を解放する
         for item in self.ordered_product_items:
@@ -2723,6 +2787,10 @@ class OrderedProductItemToken(Base,BaseModel, LogicallyDeleted):
     valid = Column(Boolean, nullable=False, default=False)
     issued_at = Column(DateTime, nullable=True, default=None)
     printed_at = Column(DateTime, nullable=True, default=None)
+    refreshed_at = Column(DateTime, nullable=True, default=None)
+
+    def is_printed(self):
+        return self.printed_at and (self.refreshed_at is None or self.printed_at > self.refreshed_at)
 
 class Ticket_TicketBundle(Base, BaseModel, LogicallyDeleted):
     __tablename__ = 'Ticket_TicketBundle'
@@ -2750,6 +2818,7 @@ class Ticket(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = "Ticket"
 
     FLAG_ALWAYS_REISSUABLE = 1
+    FLAG_PRICED = 2
 
     id = Column(Identifier, primary_key=True)
     organization_id = Column(Identifier, ForeignKey('Organization.id', ondelete='CASCADE'), nullable=True)
@@ -2759,7 +2828,7 @@ class Ticket(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     ticket_format_id = Column(Identifier, ForeignKey('TicketFormat.id', ondelete='CASCADE'), nullable=False)
     ticket_format = relationship('TicketFormat', uselist=False, backref='tickets')
     name = Column(Unicode(255), nullable=False, default=u'')
-    flags = Column(Integer, nullable=False, default=0)
+    flags = Column(Integer, nullable=False, default=FLAG_PRICED)
     original_ticket_id = Column(Identifier, ForeignKey('Ticket.id', ondelete='SET NULL'), nullable=True)
     derived_tickets = relationship('Ticket', backref=backref('original_ticket', remote_side=[id]))
     data = Column(MutationDict.as_mutable(JSONEncodedDict(65536)))
@@ -2790,6 +2859,36 @@ class Ticket(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         ticket.original_ticket_id = template.id
         ticket.save()
         return {template.id:ticket.id}
+
+    @hybrid_property
+    def always_reissuable(self):
+        return (self.flags & self.FLAG_ALWAYS_REISSUABLE) != 0
+
+    @always_reissuable.expression
+    def priced(self):
+        return self.flags.op('&')(self.FLAG_ALWAYS_REISSUABLE) != 0
+
+    @always_reissuable.setter
+    def set_reissuable(self, value):
+        if value:
+            self.flags |= self.FLAG_ALWAYS_REISSUABLE
+        else:
+            self.flags &= ~self.FLAG_ALWAYS_REISSUABLE
+
+    @hybrid_property
+    def priced(self):
+        return (self.flags & self.FLAG_PRICED) != 0
+
+    @priced.expression
+    def priced(self):
+        return self.flags.op('&')(self.FLAG_PRICED) != 0
+
+    @priced.setter
+    def set_priced(self, value):
+        if value:
+            self.flags |= self.FLAG_PRICED
+        else:
+            self.flags &= ~self.FLAG_PRICED
 
 for event_kind in ['before_insert', 'before_update']:
     event.listen(Ticket, event_kind, lambda mapper, conn, target: target.before_insert_or_update())
@@ -2946,12 +3045,11 @@ class TicketBundle(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         relevant_tickets = ApplicableTicketsProducer(self).include_delivery_id_ticket_iter(delivery_plugin_id)
         reissueable = False
         for ticket in relevant_tickets:
-            _reissueable = (ticket.flags & Ticket.FLAG_ALWAYS_REISSUABLE != 0)
             if reissueable:
-                if not _reissueable:
+                if not ticket.always_reissueable:
                     logger.warning("TicketBundle (id=%d) contains tickets whose reissueable flag are inconsistent" % self.id)
             else:
-                reissueable = _reissueable
+                reissueable = ticket.always_reissueable
         return reissueable
 
     def delete(self):
@@ -3239,7 +3337,8 @@ class SalesSegment(Base, BaseModel, LogicallyDeleted, WithTimestamp):
         data = {
             "id": self.id, 
             "kind_name": self.kind, 
-            "kind_label": self.kind_label, 
+            "kind_label": self.kind_label,
+            "publicp": self.sales_segment_group.public,
             "name": self.name, 
             "start_on" : isodate.datetime_isoformat(self.start_at) if self.start_at else '', 
             "end_on" : isodate.datetime_isoformat(self.end_at) if self.end_at else '', 
@@ -3282,19 +3381,26 @@ class SalesSegment(Base, BaseModel, LogicallyDeleted, WithTimestamp):
         super(type(self), self).delete()
 
     def get_amount(self, pdmp, product_quantities):
-        return self.total_fee(pdmp) + self.get_products_amount(product_quantities)
+        return pdmp.per_order_fee + self.get_products_amount(pdmp, product_quantities)
 
-    def get_products_amount(self, product_quantities):
-        if len(product_quantities) == 0:
-            return 0
+    def get_transaction_fee(self, pdmp, product_quantities):
+        return pdmp.transaction_fee_per_order + sum([
+            (pdmp.transaction_fee_per_product + \
+             pdmp.transaction_fee_per_ticket * product.num_priced_tickets(pdmp)) * quantity
+            for product, quantity in product_quantities])
 
-        return sum([product.price * quantity
-                    for product, quantity in product_quantities])
+    def get_delivery_fee(self, pdmp, product_quantities):
+        return pdmp.delivery_fee_per_order + sum([
+            (pdmp.delivery_fee_per_product + \
+             pdmp.delivery_fee_per_ticket * product.num_priced_tickets(pdmp)) * quantity
+            for product, quantity in product_quantities])
 
-    def total_fee(self, pdmp):
-        return (pdmp.system_fee
-                + pdmp.transaction_fee
-                + pdmp.delivery_fee)
+    def get_products_amount(self, pdmp, product_quantities):
+        return sum([
+            (product.price + \
+             pdmp.per_product_fee + \
+             pdmp.per_ticket_fee * product.num_priced_tickets(pdmp)) * quantity
+            for product, quantity in product_quantities])
 
 
 class OrganizationSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):

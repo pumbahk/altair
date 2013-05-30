@@ -81,6 +81,9 @@
         sorted_records = reporter.sort_and_merge_data()
       else:
         sorted_records = reporter.sort_data()
+      import itertools
+      stock_type_ids = [r.stock_type_id for r in sorted_records]
+      stock_type_id_count = dict([(k, len(list(g))) for k, g in itertools.groupby(stock_type_ids)])
     %>
     % for record_data in sorted_records:
       <%
@@ -92,7 +95,10 @@
       % for i, record in enumerate(reporter.group_key_to_reports(group_key)):
     <tr>
         % if i == 0:
-      <td rowspan="${count}">${record.stock_type_name}</td>
+          % if record.stock_type_id in stock_type_id_count:
+      <td rowspan="${stock_type_id_count.get(record_data.stock_type_id)}">${record.stock_type_name}</td>
+            <% del stock_type_id_count[record.stock_type_id] %>
+          % endif
       <td rowspan="${count}" style="border-left: 1px solid #ddd;">${record.stock_holder_name}</td>
         % endif
       <td>${record.product_name}</td>
