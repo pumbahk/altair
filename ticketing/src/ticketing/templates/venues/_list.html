@@ -40,7 +40,7 @@
 	% endif
 	</td>
 	<td style="text-align: center;">
-		% if item['site']._frontend_metadata is not None:
+		% if item['drawing'].get_frontend_pages() is not None:
 			◯
 		% else:
 			×
