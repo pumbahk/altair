@@ -432,7 +432,7 @@ class LotEntries(BaseView):
                                                       LotEntryWish.elected_at==None))
                 if form.rejecting.data:
                     wish_condition = sql.or_(wish_condition, 
-                                             sql.and_(LotEntryWish.entry_wish_no==LotRejectWork.entry_wish_no,
+                                             sql.and_(LotEntry.entry_no==LotRejectWork.lot_entry_no,
                                                       LotEntryWish.rejected_at==None))
                 if form.elected.data:
                     wish_condition = sql.or_(wish_condition, 
@@ -444,8 +444,8 @@ class LotEntries(BaseView):
                 condition = sql.and_(condition, wish_condition)
 
             if form.wish_order.data:
-                    wish_condition = sql.and_(condition,
-                                         LotEntryWish.wish_order==form.wish_order.data)
+                condition = sql.and_(condition,
+                                     LotEntryWish.wish_order==form.wish_order.data)
         else:
             print form.errors
 
