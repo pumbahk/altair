@@ -147,5 +147,6 @@ def move_hotword(context, request):
 
     return {
          'result':result
+        ,'genre_id':form.data['genre_id']
         ,'helper':SmartPhoneHelper()
     }

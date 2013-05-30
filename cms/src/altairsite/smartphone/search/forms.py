@@ -48,6 +48,7 @@ class AreaSearchForm(Form):
 
 class HotwordSearchForm(Form):
     hotword_id = HiddenField(label='', validators=[Optional()], default="")
+    genre_id = HiddenField(label='', validators=[Optional()], default="")
     page = HiddenField(validators=[Optional()],default="1")
 
 class DetailSearchForm(TopSearchForm):
