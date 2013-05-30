@@ -46,7 +46,7 @@ class CommonResource(object):
         genre_id = self.request.matchdict.get('genre_id')
         form.genre_id.data = genre_id
         genre = self.get_genre(id=genre_id)
-        promotions = self.getInfo(kind="promotion", system_tag_id=genre_id)[0:5]
+        promotions = self.getInfo(kind="promotion", system_tag_id=genre_id)[0:15]
         topcontents = self.getInfo(kind="topcontent", system_tag_id=genre_id)[0:5]
         topics = self.getInfo(kind="topic", system_tag_id=genre_id)[0:5]
         hotwords = self.get_hotword()[0:5]
