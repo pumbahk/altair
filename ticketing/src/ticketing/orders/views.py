@@ -961,7 +961,6 @@ class OrdersReserveView(BaseView):
             cart.sales_segment = SalesSegment.get(f.sales_segment_id.data)
             pdmp = DBSession.query(PaymentDeliveryMethodPair).filter_by(id=post_data.get('payment_delivery_method_pair_id')).one()
             cart.payment_delivery_pair = pdmp
-            cart.system_fee = pdmp.system_fee
             cart.channel = ChannelEnum.INNER.v
             cart.operator = self.context.user
 
