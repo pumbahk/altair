@@ -2006,18 +2006,18 @@ class Product(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     def num_tickets(self, pdmp):
         '''この Product に関わるすべての Ticket の数'''
-        return DBSession.query(Ticket_TicketBundle) \
+        return DBSession.query(func.sum(ProductItem.quantity)) \
             .filter(Ticket_TicketBundle.ticket_bundle_id == ProductItem.ticket_bundle_id) \
             .filter((Ticket.id == Ticket_TicketBundle.ticket_id) & (Ticket.deleted_at == None)) \
             .filter((ProductItem.product_id == self.id) & (ProductItem.deleted_at == None)) \
             .filter((Ticket.ticket_format_id == TicketFormat_DeliveryMethod.ticket_format_id) & (TicketFormat_DeliveryMethod.deleted_at == None)) \
             .filter((TicketFormat.id == TicketFormat_DeliveryMethod.ticket_format_id) & (TicketFormat.deleted_at == None)) \
             .filter(TicketFormat_DeliveryMethod.delivery_method_id == pdmp.delivery_method_id) \
-            .count()
+            .scalar()
 
     def num_priced_tickets(self, pdmp):
         '''この Product に関わるTicketのうち、発券手数料を取るもの (額面があるもの)'''
-        return DBSession.query(Ticket_TicketBundle) \
+        return DBSession.query(func.sum(ProductItem.quantity)) \
             .filter(Ticket_TicketBundle.ticket_bundle_id == ProductItem.ticket_bundle_id) \
             .filter((Ticket.id == Ticket_TicketBundle.ticket_id) & (Ticket.deleted_at == None)) \
             .filter((ProductItem.product_id == self.id) & (ProductItem.deleted_at == None)) \
@@ -2025,7 +2025,7 @@ class Product(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             .filter((TicketFormat.id == TicketFormat_DeliveryMethod.ticket_format_id) & (TicketFormat.deleted_at == None)) \
             .filter(TicketFormat_DeliveryMethod.delivery_method_id == pdmp.delivery_method_id) \
             .filter(Ticket.priced == True) \
-            .count()
+            .scalar()
 
 class SeatIndexType(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__  = "SeatIndexType"
