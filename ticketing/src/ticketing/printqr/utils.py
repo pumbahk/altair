@@ -89,6 +89,8 @@ def ticketdata_from_qrdata(qrdata, event_id="*"):
         "codeno": codeno, 
         "ordered_product_item_token_id": token.id, 
         "ordered_product_item_id": history.ordered_product_item.id, 
+        "refreshed_at": str(token.refreshed_at) if token.refreshed_at else None, 
+        "printed_at": str(token.printed_at) if token.printed_at else None, 
         "printed": str(token.printed_at) if token.is_printed() else None, 
         "canceled": str(order.canceled_at) if order.is_canceled() else None, ##todo:データ整理
         "orderno": order.order_no, 

@@ -44,10 +44,11 @@ var DataStore = Backbone.Model.extend({
     auto_trigger: true, 
     qrcode: null,    
     canceled: false, 
-
+    confirmed: false, 
     ordered_product_item_token_id:  null, 
     ordered_product_item_id:  null, 
     printed: false, 
+    printed_at: null, 
     orderno: null,
 
     event_id: "*", 
@@ -65,6 +66,17 @@ var DataStore = Backbone.Model.extend({
     print_unit: "token", //token or order
     print_strategy: "個別に発券", 
     print_num: 0
+  }, 
+  confirm: function(){
+    this.set("printed", false);
+    this.set("confirmed", this.get("ordered_product_item_token_id"));
+  }, 
+  refreshAfterPrint: function(printed){
+    this.set("ordered_product_item_token_id", null);
+    this.set("printed", printed);
+    this.set("qrcode_status", "printed");
+    this.set("print_num", 0);
+    this.set("qrcode", "");
   }, 
   setPrintStrategy: function(print_unit){
     if(print_unit=="order"){
@@ -89,6 +101,11 @@ var DataStore = Backbone.Model.extend({
     this.set("printed", false);
     this.set("canceled", false);
 
+    var printed = !!(data.printed) || (!!data.refreshed_at && this.get("confirmed") != data.ordered_product_item_token_id);
+    // console.log(JSON.stringify({data: {"printed": data.printed, token_id: data.ordered_product_item_token_id, refreshed_at: data.refreshed_at}, 
+    //                             prev: {"printed": this.get("printed"), token_id: this.get("ordered_product_item_token_id"),  confirmed: this.get("confirmed")}, 
+    //                             printed: printed}));
+
     // important data
     this.set("ordered_product_item_token_id", data.ordered_product_item_token_id); //order: ordered_product_item_token_id, printed
     this.set("ordered_product_item_id", data.ordered_product_item_id);
@@ -100,8 +117,8 @@ var DataStore = Backbone.Model.extend({
     this.set("orderno", data.orderno);
     this.set("performance", data.performance_name+" -- "+data.performance_date);
     this.set("product", data.product_name+"("+data.seat_name+")");
-
-    if(!!(data.printed)){
+    this.set("printed_at",  data.printed_at);
+    if(printed){
       this.set("qrcode_status", "printed");
       this.set("printed", data.printed);
       this.trigger("*qr.printed.already");
@@ -252,7 +269,7 @@ var QRInputView = AppPageViewBase.extend({
     var fmt = 'そのチケットは既に印刷されてます(前回印刷日時:{0}) -- 強制発券しますか？<a id="{1}" class="btn">強制発券する</a>';
     this.datastore.set("qrcode", "<confirm>");
     this.messageView.refreshCallback = this.refreshPrintedStatus.bind(this);
-    this.messageView.alert(fmt.replace("{0}", this.datastore.get("printed"))
+    this.messageView.alert(fmt.replace("{0}", this.datastore.get("printed_at"))
                               .replace("{1}", "printed_at_force_refresh") //see: messagView.events
                             ,  true);
   }, 
@@ -274,7 +291,7 @@ var QRInputView = AppPageViewBase.extend({
         self.messageView.error(data['message']);
         return;
       }
-      self.datastore.set("printed", false);
+        self.datastore.confirm();
       self.messageView.success("チケットを再発券可能にしました");
       // log
       var message = "*qrlog* refresh printed_at order={0} token={1}"
@@ -626,10 +643,7 @@ var AppletView = Backbone.View.extend({
           self.datastore.set("printed", false);
           return;
         }
-        self.datastore.set("qrcode_status", "printed");
-        self.datastore.set("printed", data.printed);
-        self.datastore.set("print_num", 0);
-        self.datastore.set("qrcode", "");
+        self.datastore.refreshAfterPrint(data.printed);
         self.appviews.messageView.success("チケット印刷できました。");
         self.router.navigate("one", true);
         self.appviews.one.clearQRCodeInput();      
@@ -638,6 +652,7 @@ var AppletView = Backbone.View.extend({
         self.appviews.messageView.error(s.responseText)
       })
       .always(function(){
+        self.datastore.set("confirmed", false);
         self.trigger("*event.qr.printed");
       });
   }, 
