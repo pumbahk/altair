@@ -2772,6 +2772,13 @@ class OrderedProduct(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         return sorted(itertools.chain.from_iterable(i.seatdicts for i in self.ordered_product_items),
             key=operator.itemgetter('l0_id'))
 
+    @property
+    def seat_quantity(self):
+        for item in self.ordered_product_items:
+            if item.product_item.stock_type.is_seat:
+                return item.quantity
+        return 0
+
     def release(self):
         # 在庫を解放する
         for item in self.ordered_product_items:

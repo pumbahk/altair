@@ -154,13 +154,14 @@ cart.createContentOfShoppingElement = function(product) {
 		return to;
 	};
     var item = $('<tr/>');
-    var name = $('<td/>').text(product.name);;
+    var name = $('<td/>').text(product.name);
     var price = $('<td/>').text("￥ "+comma(product.price));
-    var selected_seats = product.seats;
-    var quantity = $('<td/>').text(selected_seats.length + " 枚");
+    var quantity = $('<td/>');
+    cart.util.render_template_into(quantity, product.unit_template, {num: product.quantity});
     // TODO: 予約席をProductごとに追加
     var seats_container = $('<td/>');
     var seats = $('<ul/>');
+    var selected_seats = product.seats;
     for (var i = 0; i < selected_seats.length; i++) {
         var seat_item = $('<li/>');
         seat_item.text(selected_seats[i].name);
