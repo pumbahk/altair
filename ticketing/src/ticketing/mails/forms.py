@@ -42,7 +42,7 @@ class OrderInfoDefault(object):
         return u"\n".join(u"* {0}".format(seat["name"]) for seat in seats)
 
     def get_product_description(order):
-        return u"\n".join((u"{0} {1} x{2}枚".format(op.product.name, 
+        return u"\n".join((u"{0} {1} x{2}".format(op.product.name,
                                                     ch.format_currency(op.product.price),
                                                     op.quantity)
                            for op in order.ordered_products))

@@ -48,7 +48,6 @@ def lot_wish_cart(wish):
                 payment_delivery_pair=wish.lot_entry.payment_delivery_method_pair,
                 _order_no=wish.lot_entry.entry_no,
                 sales_segment=wish.lot_entry.lot.sales_segment,
-                system_fee=wish.system_fee,
                 products=[
                     CartedProduct(product=p.product,
                                   quantity=p.quantity)
@@ -124,6 +123,7 @@ def elect_lots_task(context, message):
     if wish.lot_entry.order:
         lot_entry = wish.lot_entry
         logger.warning("lot entry {0} is already ordered.".format(lot_entry.entry_no))
+        return
     try:
         order = elect_lot_wish(request, wish)
         if order:
@@ -144,6 +144,7 @@ def elect_lots_task(context, message):
         transaction.abort()
         work = LotElectWork.query.filter(LotElectWork.id==work_id).first()
         work.error = str(e).decode('utf-8')
+        logger.error(work.error)
         transaction.commit()
         raise
     finally:

@@ -2025,7 +2025,7 @@ class Product(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             .filter((TicketFormat.id == TicketFormat_DeliveryMethod.ticket_format_id) & (TicketFormat.deleted_at == None)) \
             .filter(TicketFormat_DeliveryMethod.delivery_method_id == pdmp.delivery_method_id) \
             .filter(Ticket.priced == True) \
-            .scalar()
+            .scalar() or 0
 
 class SeatIndexType(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__  = "SeatIndexType"

@@ -226,17 +226,12 @@ class ProductItemForm(Form):
     def validate_product_item_price(form, field):
         if field.data and form.product_id.data:
             product = Product.get(form.product_id.data)
-            conditions = {
-                'performance_id':form.performance_id.data,
-                'product_id':form.product_id.data,
-                }
-            sum_amount = ProductItem.filter(ProductItem.id!=form.product_item_id.data)\
-                         .filter_by(**conditions)\
-                         .with_entities(func.sum(ProductItem.price))\
-                         .scalar() or 0
-            sum_amount = Decimal(field.data) + Decimal(sum_amount)
-            if product and product.price < sum_amount:
-                raise ValidationError(u'商品合計金額以内で入力してください')
+            sum_amount = int(field.data) * int(form.product_item_quantity.data)
+            for item in product.items:
+                if item.id != int(form.product_item_id.data):
+                    sum_amount += item.quantity * item.price
+            if product.price < sum_amount:
+                raise ValidationError(u'単価×販売単位が商品合計金額以内になるように入力してください')
 
     def validate_ticket_bundle_id(form, field):
         # 引取方法にコンビニ発券が含まれていたら必須
