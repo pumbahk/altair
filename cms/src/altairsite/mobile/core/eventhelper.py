@@ -11,7 +11,6 @@ class EventHelper(object):
         event = request.allowable(Event) \
             .join(PageSet, Event.id == PageSet.event_id) \
             .filter(PageSet.id == linked_page_id).first()
-        print event
         log_info("get_event_from_linked_page_id", "end")
         return event
 
