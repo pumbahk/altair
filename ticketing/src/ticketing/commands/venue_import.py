@@ -438,7 +438,7 @@ def main():
         global verbose
         verbose = True
 
-    site_base_url = env['registry'].settings.get('altair.site_data.base_url', '')
+    site_base_url = env['registry'].settings.get('altair.site_data.backend_base_url', '')
     bundle_base_url = myurljoin(site_base_url, parsed_args.base_url)
     if bundle_base_url[-1] != '/':
         bundle_base_url += '/'
