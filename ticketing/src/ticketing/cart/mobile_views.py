@@ -273,7 +273,8 @@ class MobileReserveView(object):
                                      quantity=p.quantity,
                                      price=int(p.product.price),
                                      seats=p.seats,
-                                ) 
+                                     seat_quantity=p.seat_quantity
+                                )
                                 for p in cart.products],
                       total_amount=h.format_number(get_amount_without_pdmp(cart))
             ))
