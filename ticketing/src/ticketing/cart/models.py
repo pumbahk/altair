@@ -274,6 +274,13 @@ class CartedProduct(Base):
         return sorted(itertools.chain.from_iterable(i.seatdicts for i in self.items), 
             key=operator.itemgetter('l0_id'))
 
+    @property
+    def seat_quantity(self):
+        for item in self.items:
+            if item.product_item.stock_type.is_seat:
+                return item.quantity
+        return 0
+
     @deprecate("deprecated method")
     def pop_seats(self, seats, performance_id):
         for product_item in self.product.items:
