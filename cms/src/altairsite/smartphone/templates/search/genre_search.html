@@ -7,8 +7,8 @@
         ${form.genre_id}
         <input type="submit" class="btn-secondary btn-large" value="検索"/><a href="${request.route_path('init_detail')}">もっと詳しく</a>
         <br/>
-        % for error in form.word.errors:
-            <font color="yellow">${error}</font><br/>
-        % endfor
+        % if helper.disp_error(form):
+            <font color="yellow">${helper.disp_error(form)}</font><br/>
+        % endif
     </form>
 </div>
