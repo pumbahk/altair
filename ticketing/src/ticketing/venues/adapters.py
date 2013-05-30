@@ -67,8 +67,11 @@ class VenueSiteDrawingProviderAdapter(object):
 
     def get_frontend_drawings(self):
         page_metas = self.get_frontend_pages()
-        resolver = get_resolver(self.request.registry)
-        return dict((name, resolver.resolve(myurljoin(self._absolute_frontend_metadata_url, name))) for name in page_metas)
+        if page_metas is not None:
+            resolver = get_resolver(self.request.registry)
+            return dict((name, resolver.resolve(myurljoin(self._absolute_frontend_metadata_url, name))) for name in page_metas)
+        else:
+            return None
 
     def get_backend_pages(self):
         return self.backend_metadata and self.backend_metadata.get('pages') or dict(root=dict())
