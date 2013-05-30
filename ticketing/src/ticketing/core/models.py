@@ -2395,11 +2395,11 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
         for ordered_product in self.items:
             for item in ordered_product.ordered_product_items:
-                reissuable = item.product_item.ticket_bundle.reissuable(delivery_plugin_id)
+                reissueable = item.product_item.ticket_bundle.reissueable(delivery_plugin_id)
                 if issued:
                     if self.issued:
-                        if not reissuable:
-                            logger.warning("Trying to reissue a ticket for Order (id=%d) that contains OrderedProductItem (id=%d) associated with a ticket which is not marked reissuable" % (self.id, item.id))
+                        if not reissueable:
+                            logger.warning("Trying to reissue a ticket for Order (id=%d) that contains OrderedProductItem (id=%d) associated with a ticket which is not marked reissueable" % (self.id, item.id))
                     item.issued = True
                     item.issued_at = now
                 if printed:
@@ -2817,7 +2817,7 @@ class Ticket(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     """
     __tablename__ = "Ticket"
 
-    FLAG_ALWAYS_REISSUABLE = 1
+    FLAG_ALWAYS_REISSUEABLE = 1
     FLAG_PRICED = 2
 
     id = Column(Identifier, primary_key=True)
@@ -2861,19 +2861,19 @@ class Ticket(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         return {template.id:ticket.id}
 
     @hybrid_property
-    def always_reissuable(self):
-        return (self.flags & self.FLAG_ALWAYS_REISSUABLE) != 0
+    def always_reissueable(self):
+        return (self.flags & self.FLAG_ALWAYS_REISSUEABLE) != 0
 
-    @always_reissuable.expression
+    @always_reissueable.expression
     def priced(self):
-        return self.flags.op('&')(self.FLAG_ALWAYS_REISSUABLE) != 0
+        return self.flags.op('&')(self.FLAG_ALWAYS_REISSUEABLE) != 0
 
-    @always_reissuable.setter
-    def set_reissuable(self, value):
+    @always_reissueable.setter
+    def set_reissueable(self, value):
         if value:
-            self.flags |= self.FLAG_ALWAYS_REISSUABLE
+            self.flags |= self.FLAG_ALWAYS_REISSUEABLE
         else:
-            self.flags &= ~self.FLAG_ALWAYS_REISSUABLE
+            self.flags &= ~self.FLAG_ALWAYS_REISSUEABLE
 
     @hybrid_property
     def priced(self):
@@ -3039,18 +3039,18 @@ class TicketBundle(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         ticket_bundle.save()
         return {template.id:ticket_bundle.id}
 
-    def reissuable(self, delivery_plugin_id):
+    def reissueable(self, delivery_plugin_id):
         # XXX: このロジックははっきり言ってよろしくないので再実装する
         # (TicketBundleにフラグを持たせるべきか?)
         relevant_tickets = ApplicableTicketsProducer(self).include_delivery_id_ticket_iter(delivery_plugin_id)
-        reissuable = False
+        reissueable = False
         for ticket in relevant_tickets:
-            if reissuable:
-                if not ticket.always_reissuable:
-                    logger.warning("TicketBundle (id=%d) contains tickets whose reissuable flag are inconsistent" % self.id)
+            if reissueable:
+                if not ticket.always_reissueable:
+                    logger.warning("TicketBundle (id=%d) contains tickets whose reissueable flag are inconsistent" % self.id)
             else:
-                reissuable = ticket.always_reissuable
-        return reissuable
+                reissueable = ticket.always_reissueable
+        return reissueable
 
     def delete(self):
         # 既に使用されている場合は削除できない
