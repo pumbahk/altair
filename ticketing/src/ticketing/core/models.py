@@ -1914,7 +1914,7 @@ class Product(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             .filter((Ticket.ticket_format_id == TicketFormat_DeliveryMethod.ticket_format_id) & (TicketFormat_DeliveryMethod.deleted_at == None)) \
             .filter((TicketFormat.id == TicketFormat_DeliveryMethod.ticket_format_id) & (TicketFormat.deleted_at == None)) \
             .filter(TicketFormat_DeliveryMethod.delivery_method_id == pdmp.delivery_method_id) \
-            .scalar()
+            .scalar() or 0
 
     def num_priced_tickets(self, pdmp):
         '''この Product に関わるTicketのうち、発券手数料を取るもの (額面があるもの)'''
