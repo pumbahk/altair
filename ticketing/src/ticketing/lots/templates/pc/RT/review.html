@@ -45,9 +45,9 @@
                   <dd class="product-price-and-quantity">${h.format_currency(lot_product.product.price)}×${lot_product.quantity}枚=${h.format_currency(lot_product.subtotal)} (税込)</dd>
                 %endfor
                   <dt class="payment-method">決済手数料 (${wish.lot_entry.payment_delivery_method_pair.payment_method.name})</dt>
-                  <dd class="payment-fee">${h.format_currency(wish.lot_entry.payment_delivery_method_pair.transaction_fee)}</dd>
+                  <dd class="payment-fee">${h.format_currency(wish.transaction_fee)}</dd>
                   <dt class="delivery-method">配送手数料 (${wish.lot_entry.payment_delivery_method_pair.delivery_method.name})</dt>
-                  <dd class="delivery-fee">${h.format_currency(wish.lot_entry.payment_delivery_method_pair.delivery_fee)}</dd>
+                  <dd class="delivery-fee">${h.format_currency(wish.delivery_fee)}</dd>
                   <dt class="delivery-method">システム利用料</dt>
                   <dd class="delivery-fee">${h.format_currency(wish.system_fee)}</dd>
                   <dt class="total-amount">合計</dt>
