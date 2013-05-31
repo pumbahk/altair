@@ -34,14 +34,13 @@ def install_convinient_request_properties(config):
 def install_app(config):
     ##ここに追加
     add_route = functools.partial(config.add_route, factory=".resources.TopPageResource")
-    add_route("main", "/")
+    add_route("smartphone.main", "/")
     add_route("smartphone.goto_pc_page", "/goto_pc")
     add_route("smartphone.goto_sp_page", "/goto_sp")
     config.include('altairsite.smartphone.genre')
     config.include('altairsite.smartphone.search')
     config.include('altairsite.smartphone.detail')
     config.include('altairsite.smartphone.page')
-    config.include(install_convinient_request_properties)
     config.scan(".")
 
 def main(config, **settings):
@@ -70,7 +69,7 @@ def main(config, **settings):
     search_utility = settings.get("altaircms.solr.search.utility")
     config.add_fulltext_search(search_utility)
     config.include(install_app)
-
+    config.include(install_convinient_request_properties)
     ## all requests are treated as mobile request
     config._add_tween("altairsite.tweens.smartphone_request_factory", under=INGRESS)
     return config.make_wsgi_app()
