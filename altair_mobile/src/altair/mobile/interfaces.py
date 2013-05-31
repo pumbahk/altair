@@ -43,3 +43,7 @@ class IMobileCarrierDetector(Interface):
 class IMobileRequest(Interface):
     """ mobile request interface"""
     mobile_ua = Attribute('''Mobile user agent object''')
+
+class ISmartphoneRequest(Interface):
+    """ smartphone request interface"""
+    pass

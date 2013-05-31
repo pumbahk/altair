@@ -1,4 +1,4 @@
-from .tweens import IMobileRequest
+from ..tweens import IMobileRequest
 from pyramid.path import caller_package
 
 # class MobileConfigWrapper(object):

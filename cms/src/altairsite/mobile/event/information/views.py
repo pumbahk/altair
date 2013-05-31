@@ -11,9 +11,9 @@ from altairsite.mobile.core.disphelper import DispHelper
 class ValidationFailure(Exception):
     pass
 
-@usersite_view_config(route_name='information', request_type="altairsite.mobile.tweens.IMobileRequest"
+@usersite_view_config(route_name='information', request_type="altairsite.tweens.IMobileRequest"
     , renderer='altairsite.mobile:templates/information/information.mako')
-@usersite_view_config(route_name='infodetail', request_type="altairsite.mobile.tweens.IMobileRequest"
+@usersite_view_config(route_name='infodetail', request_type="altairsite.tweens.IMobileRequest"
     , renderer='altairsite.mobile:templates/information/infodetail.mako')
 def move_information(request):
 

@@ -1,0 +1,160 @@
+<%page args="promotions, helper" />
+<%namespace file="tags_smartphone.html" name="m" />
+
+<script>
+$(function() {
+    var viewWidth = 480;
+    items = $(".item *").length;
+    $('.flipsnap').css('width', viewWidth * items + 'px');
+    $('.viewport').css('width', viewWidth + 'px');
+    $('.item').css('width', (viewWidth + -10) + 'px');
+    $('.flipsnap img').css('width', (viewWidth + -10) + 'px');
+
+    // リロード対応
+    $('.pointer span:first').attr('class', 'current');
+    var flipsnap = Flipsnap('#pickup .flipsnap');
+    var $pickup = $('#pickup');
+    var $next = $pickup.find(".next").click(function() {
+        flipsnap.toNext();
+    });
+    var $prev = $pickup.find(".prev").click(function() {
+        flipsnap.toPrev();
+    });
+    flipsnap.hasNext()
+    $next.attr("disabled", false);
+    $prev.attr("disabled", true);
+
+    Flipsnap('.flipsnap');
+
+    var promotions = []
+    $(".messages span").each(function (index, element) {
+        promotions.push(element)
+    });
+
+    $('.messages span').remove();
+    $('.messages').css('height', '40px');
+    if (promotions.length) {
+        $('.messages').append(promotions[flipsnap.currentPoint]);
+    }
+
+    (function pointmove() {
+        var $pickup = $('#pickup');
+        var $pointer = $pickup.find('.pointer span');
+        var flipsnap = Flipsnap('#pickup .flipsnap');
+        flipsnap.element.addEventListener('fspointmove', function() {
+            $pointer.filter('.current').removeClass('current');
+            $pointer.eq(flipsnap.currentPoint).addClass('current');
+        }, false);
+
+        var $next = $pickup.find(".next").click(function() {
+            flipsnap.toNext();
+            $('.messages span').remove();
+            $('.messages').append(promotions[flipsnap.currentPoint]);
+        });
+
+        var $prev = $pickup.find(".prev").click(function() {
+            flipsnap.toPrev();
+            $('.messages span').remove();
+            $('.messages').append(promotions[flipsnap.currentPoint]);
+        });
+
+        flipsnap.element.addEventListener('fspointmove', function() {
+            $next.attr("disabled", !flipsnap.hasNext());
+            $prev.attr("disabled", !flipsnap.hasPrev());
+        }, false);
+    })();
+
+    (function touchevents() {
+        flipsnap.element.addEventListener('fstouchend', function(ev) {
+            $('.messages span').remove();
+            $('.messages').append(promotions[flipsnap.currentPoint]);
+        }, false);
+    })();
+
+
+})();
+</script>
+
+<style>
+
+.pointer {
+  text-align: center; }
+
+.pointer span {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 8px;
+  border: 1px solid #000; }
+
+.pointer span.current {
+  background: #FC0; }
+
+.controls {
+  text-align: center;
+  margin: 0 0 15px 0; }
+
+.controls .num {
+  width: 60px; }
+
+.viewport {
+    overflow: hidden;
+    margin: 0 auto;
+}
+
+.item {
+    float: left;
+    font-size: 50px;
+    text-align: center;
+    padding: 50px 0;
+    border: 5px solid #999;
+    color: #666;
+    background: #000000;
+}
+
+.messages {
+    text-align: center;
+}
+
+</style>
+<% promotions = [(event, promo) for event, promo in ((helper.get_event_from_linked_page_id(request, promo.linked_page_id), promo) for promo in promotions)] %>
+<section class="pickup" id="pickup">
+    <h2 class="glitter red">ピックアップ</h2>
+        % if promotions:
+            <div class="viewport">
+                <div class="flipsnap">
+                    % for event, promo in promotions:
+                        <% image_path = request.route_path('__staticasset/', subpath=promo.main_image.filepath) %>
+                        % if promo.link:
+                            <a href=${promo.link}>
+                                <div class="item"><img src="${image_path}" alt="img"/></div>
+                            </a>
+                        % elif event:
+                            <a href="${request.route_path('detail')}?event_id=${event.id}">
+                                <div class="item"><img src="${image_path}" alt="img"/></div>
+                            </a>
+                        % else:
+                            <div class="item"><img src="${image_path}" alt="img"/></div>
+                        % endif
+                    % endfor
+                </div>
+            </div>
+            <div class="pointer">
+                % for event, promo in promotions:
+                    <span></span>
+                % endfor
+            </div>
+            <div class="messages">
+
+                % for event, promo in promotions:
+                    <span>${event.title if event else promo.text}</span>
+                % endfor
+            </div>
+            <p class="controls">
+                <div class="sectionbox" style="text-align: center" id="search">
+                    <button class="prev btn-secondary btn-large" disabled>戻る</button>
+                    <button class="next btn-secondary btn-large ">進む</button>
+                </div>
+            </p>
+        % endif
+</section>
