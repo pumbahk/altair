@@ -19,7 +19,7 @@ __all__ = ["IMobileRequest",
            "mobile_request_factory", 
            "smartphone_request_factory"]
 
-SMARTPHONE_USER_AGENT_RX = re.compile("iPhone|iPod|Opera Mini|Android.*Mobile|NetFront|PSP|BlackBerry")
+SMARTPHONE_USER_AGENT_RX = re.compile("iPhone|iPod|iPad|Opera Mini|Android.*Mobile|NetFront|PSP|BlackBerry")
 
 def smartphone_request_factory(handler, registry):
     def tween(request):
