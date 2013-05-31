@@ -35,6 +35,10 @@ def includeme(config):
     config.include(".widget.rawhtml", route_prefix="api")
     config.include(".jsapi", route_prefix="api")
 
+    config.include(install_extra_config_features)
+
+## todo:rename
+def install_extra_config_features(config):
     ## settings
     from .api import get_configparsers_from_inifiles
     from .api import get_configparser_from_inifile
@@ -59,4 +63,3 @@ def includeme(config):
         set_extra_resource(config, configparser)
     set_extra_resource_default(config,  configparser_for_default)
     config.set_request_property(".api.get_cart_domain", "cart_domain", reify=True)
-

@@ -53,11 +53,17 @@ def main(config, **settings):
     config.add_static_view('static', 'altaircms:static', cache_max_age=3600)
     config.add_static_view('plugins/static', 'altaircms:plugins/static', cache_max_age=3600)
     config.add_static_view("staticasset", settings["altaircms.asset.storepath"], cache_max_age=3600)
+    OrganizationMapping = config.maybe_dotted("altaircms.auth.api.OrganizationMapping")
+    OrganizationMapping(settings["altaircms.organization.mapping.json"]).register(config)
 
     config.include('altairsite.separation')
     config.include('altaircms.solr')
     config.include('altaircms.tag.install_tagmanager')
     config.include('altaircms.topic.install_topic_searcher')
+    config.include('altaircms.asset.install_virtual_asset')    
+    config.include("altaircms.widget:install_has_widget_page_finder")
+    config.include("altaircms.lib.crud") # todo: remove
+    config.include("altaircms.plugins")
     config.set_request_property("altaircms.auth.api.get_allowable_query", "allowable", reify=True)
     search_utility = settings.get("altaircms.solr.search.utility")
     config.add_fulltext_search(search_utility)
