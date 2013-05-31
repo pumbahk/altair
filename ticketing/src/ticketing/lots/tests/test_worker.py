@@ -13,6 +13,7 @@ class lot_wish_cartTests(unittest.TestCase):
         from ticketing.core.models import (
             Performance, Product, PaymentDeliveryMethodPair,
             PaymentMethod, DeliveryMethod,
+            SalesSegment,
         )
         from ..models import LotEntryWish, LotEntry, Lot, LotEntryProduct
         product1 = Product(price=100)
@@ -20,11 +21,16 @@ class lot_wish_cartTests(unittest.TestCase):
 
         wish = LotEntryWish(
             performance=Performance(),
-            lot_entry=LotEntry(lot=Lot(system_fee=11),
+            lot_entry=LotEntry(lot=Lot(system_fee=9999999999999999999,# not used
+                                       sales_segment=SalesSegment(),
+                                   ), 
                                entry_no='testing-entry',
-                               payment_delivery_method_pair=PaymentDeliveryMethodPair(transaction_fee=111,
+                               payment_delivery_method_pair=PaymentDeliveryMethodPair(system_fee=11,
+                                                                                      transaction_fee=111,
                                                                                       payment_method=PaymentMethod(),
-                                                                                      delivery_method=DeliveryMethod()),
+                                                                                      delivery_method=DeliveryMethod(),
+                                                                                  ),
+                               
                            ),
             products=[LotEntryProduct(quantity=3,
                                       product=product1),
