@@ -25,6 +25,7 @@ from sqlalchemy.ext.hybrid import hybrid_property, hybrid_method
 from sqlalchemy.orm.exc import NoResultFound
 from zope.deprecation import deprecate
 
+logger = logging.getLogger(__name__)
 from ticketing.utils import StandardEnum
 from ticketing.models import (
     Identifier,
@@ -313,6 +314,10 @@ class LotEntry(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                 return wish
 
     @property
+    def sales_segment(self):
+        return self.lot.sales_segment
+
+    @property
     def max_amount(self):
         """" """
         return max([w.total_amount for w in self.wishes])
@@ -430,28 +435,22 @@ class LotEntryWish(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         return [w.error for w in self.works if w.error]
 
     @property
+    def product_quantities(self):
+        """ (product, quantity) """
+        return [(p.product, p.quantity)
+                for p in self.products]
+
+    @property
     def transaction_fee(self):
         """ 決済手数料 """
-        payment_fee = self.lot_entry.payment_delivery_method_pair.transaction_fee
-        payment_method = self.lot_entry.payment_delivery_method_pair.payment_method
-        if payment_method.fee_type == c_models.FeeTypeEnum.Once.v[0]:
-            return payment_fee
-        elif payment_method.fee_type == c_models.FeeTypeEnum.PerUnit.v[0]:
-            return payment_fee * self.total_quantity
-        else:
-            return 0
+        return self.lot_entry.sales_segment.get_transaction_fee(self.lot_entry.payment_delivery_method_pair,
+                                                                self.product_quantities)
 
     @property
     def delivery_fee(self):
         """ 引取手数料 """
-        delivery_fee = self.lot_entry.payment_delivery_method_pair.delivery_fee
-        delivery_method = self.lot_entry.payment_delivery_method_pair.delivery_method
-        if delivery_method.fee_type == c_models.FeeTypeEnum.Once.v[0]:
-            return delivery_fee
-        elif delivery_method.fee_type == c_models.FeeTypeEnum.PerUnit.v[0]:
-            return delivery_fee * self.total_quantity
-        else:
-            return 0
+        return self.lot_entry.sales_segment.get_delivery_fee(self.lot_entry.payment_delivery_method_pair,
+                                                             self.product_quantities)
 
     @property
     def tickets_amount(self):
