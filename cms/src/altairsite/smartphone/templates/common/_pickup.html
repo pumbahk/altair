@@ -3,7 +3,7 @@
 
 <script>
 $(function() {
-    var viewWidth = 480;
+    var viewWidth = 515;
     items = $(".item *").length;
     $('.flipsnap').css('width', viewWidth * items + 'px');
     $('.viewport').css('width', viewWidth + 'px');
@@ -106,7 +106,7 @@ $(function() {
     float: left;
     font-size: 50px;
     text-align: center;
-    padding: 50px 0;
+    padding: 0px 0;
     border: 5px solid #999;
     color: #666;
     background: #000000;
@@ -127,14 +127,14 @@ $(function() {
                         <% image_path = helper.get_asset_rendering_object(request, promo.main_image).filepath %>
                         % if promo.link:
                             <a href=${promo.link}>
-                                <div class="item"><img src="${image_path}" alt="img"/></div>
+                                <div class="item"><img src="${image_path}" alt="img" width="515px" height="300px" /></div>
                             </a>
                         % elif event:
                             <a href="${request.route_path('detail')}?event_id=${event.id}">
-                                <div class="item"><img src="${image_path}" alt="img"/></div>
+                                <div class="item"><img src="${image_path}" alt="img" width="515px" height="300px"/></div>
                             </a>
                         % else:
-                            <div class="item"><img src="${image_path}" alt="img"/></div>
+                            <div class="item"><img src="${image_path}" alt="img" width="515px" height="300px"/></div>
                         % endif
                     % endfor
                 </div>
