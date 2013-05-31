@@ -11,7 +11,7 @@
         % elif event:
             <a href="${request.route_path('smartphone.detail')}?event_id=${event.id}">
         % endif
-        <img src=${request.static_url('altaircms:static/RT/img/common/side_nav_icon.gif')}/>
+        <img src="${request.static_url('altaircms:static/RT/img/common/side_nav_icon.gif')}"/>
         ${topic.text}<br/>
         </a>
     % endfor
