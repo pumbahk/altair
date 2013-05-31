@@ -290,6 +290,14 @@ class IndexView(IndexViewMixin):
 
         sales_segment = c_models.SalesSegment.query.filter(c_models.SalesSegment.id==self.context.sales_segment.id).one()
         sales_stocks = sales_segment.stocks
+        seats = []
+        if sales_segment.seat_choice:
+            seats = c_models.Seat.query_sales_seats(sales_segment)\
+                .options(joinedload('areas'), joinedload('status_'))\
+                .join(c_models.SeatStatus)\
+                .join(c_models.Stock)\
+                .filter(c_models.Seat.venue_id==venue.id)\
+                .filter(c_models.SeatStatus.status==int(c_models.SeatStatusEnum.Vacant))
 
         return dict(
             seats=dict(
@@ -303,15 +311,8 @@ class IndexView(IndexViewMixin):
                         areas=[area.id for area in seat.areas],
                         is_hold=seat.stock in sales_stocks,
                         )
-                    ) 
-                for seat in c_models.Seat.query_sales_seats(sales_segment)\
-                             .options(joinedload('areas'),
-                                      joinedload('status_'))\
-                             .join(c_models.SeatStatus)\
-                             .join(c_models.Stock)\
-                             .filter(c_models.Seat.venue_id==venue.id)\
-                             .filter(c_models.SeatStatus.status==int(c_models.SeatStatusEnum.Vacant))
-                ),
+                    )
+                for seat in seats),
             areas=dict(
                 (area.id, { 'id': area.id, 'name': area.name }) \
                 for area in DBSession.query(c_models.VenueArea) \
@@ -494,7 +495,7 @@ class ReserveView(object):
                     cart=dict(products=[dict(name=p.product.name, 
                                              quantity=p.quantity,
                                              price=int(p.product.price),
-                                             seats=p.seats,
+                                             seats=p.seats if self.context.sales_segment.seat_choice else [],
                                              unit_template=h.build_unit_template(p.product, self.context.sales_segment.performance.id),
                                         )
                                         for p in cart.products],
