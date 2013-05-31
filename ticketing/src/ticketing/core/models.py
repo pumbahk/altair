@@ -1760,6 +1760,24 @@ class StockStatus(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     stock_id = Column(Identifier, ForeignKey('Stock.id'), primary_key=True)
     quantity = Column(Integer)
 
+class TicketType(Base, BaseModel, WithTimestamp, LogicallyDeleted):
+    __tablename__ = 'TicketType'
+
+    id = Column(Identifier, primary_key=True, autoincrement=True, nullable=False)
+    name = Column(Unicode(255), nullable=False)
+    display_name = Column(Unicode(255), nullable=True)
+    display_order = Column(Integer, nullable=False, default=1)
+    public = Column(Boolean, nullable=False, default=True)
+    price = Column(Numeric(precision=16, scale=2), nullable=False)
+    quantity = Column(Integer, nullable=False, default=1)
+    event_id = Column(Identifier, ForeignKey('Event.id'), nullable=False)
+    stock_type_id = Column(Identifier, ForeignKey('StockType.id'), nullable=False)
+    stock_holder_id = Column(Identifier, ForeignKey('StockHolder.id'), nullable=False)
+    ticket_bundle_id = Column(Identifier, ForeignKey('TicketBundle.id'), nullable=True)
+    created_at = Column(TIMESTAMP, nullable=False)
+    updated_at = Column(TIMESTAMP, nullable=False)
+    deleted_at = Column(TIMESTAMP, nullable=True)
+
 class Product(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'Product'
 
@@ -1773,6 +1791,8 @@ class Product(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     sales_segment_id = Column(Identifier, ForeignKey('SalesSegment.id'), nullable=True)
     sales_segment = relationship('SalesSegment', backref=backref('products', order_by='Product.display_order'))
+
+    ticket_type_id = Column(Identifier, ForeignKey('TicketType.id'), nullable=True)
 
     seat_stock_type_id = Column(Identifier, ForeignKey('StockType.id'), nullable=True)
     seat_stock_type = relationship('StockType', uselist=False, backref=backref('product', order_by='Product.display_order'))
