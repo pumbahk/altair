@@ -58,13 +58,13 @@ ${product.product.name} ${h.format_currency(product.product.price)} x ${product.
 オーソリ確認金額：${h.format_currency(lot_entry.max_amount)}円（税込）
 %endif
 %if lot_entry.payment_delivery_method_pair.payment_method.payment_plugin_id == plugins.SEJ_PAYMENT_PLUGIN_ID:
-※ご当選の場合、入金期間内にセブン-イレブン店内レジにてお支払いとなります。
+※【セブン-イレブン支払をご選択の場合】ご当選の場合、入金期間内にセブン-イレブン店頭レジにてお支払いとなります。お支払に必要な支払番号を当選メールにてお知らせいたしますので、そちらをご確認ください。
 %endif
 %if lot_entry.payment_delivery_method_pair.delivery_method.delivery_plugin_id == plugins.SHIPPING_DELIVERY_PLUGIN_ID:
 ※配送でのお引取りを希望の場合には、ご登録の住所へ公演の一週間前頃までに宅配便にてお届けいたします。
 %endif
 %if lot_entry.payment_delivery_method_pair.delivery_method.delivery_plugin_id == plugins.SEJ_DELIVERY_PLUGIN_ID:
-※セブン-イレブン店頭でのお引取りを希望の場合は、ご入金時にレジにてチケットをお渡しいたします。
+※【セブン-イレブン引取をご選択の場合】公演日約1週間前に、セブン-イレブン店頭レジでチケット引取をする際に必要な引換票番号をメールにてお送りいたします（当選メールとは別のメールになります）。詳細は、そちらをご確認ください。
 %endif
 ※お申込後のキャンセル、変更はできませんのでご注意下さい。
 
