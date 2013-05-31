@@ -2,6 +2,7 @@
 from .const import SalesEnum
 
 from altaircms.asset.models import ImageAsset
+from altaircms.helpers.asset import rendering_object as asset_rendering_object
 from altairsite.mobile.core.eventhelper import EventHelper
 
 import logging
@@ -149,4 +150,7 @@ class SmartPhoneHelper(object):
     def get_image_asset(self, request, id):
         image_asset = request.allowable(ImageAsset).filter(ImageAsset.id == id).first()
         return image_asset
+
+    def get_asset_rendering_object(self, request, asset):
+        return asset_rendering_object(request, asset)
 

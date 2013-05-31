@@ -48,7 +48,7 @@ def main(global_config, **local_config):
     ## organization mapping
     OrganizationMapping = config.maybe_dotted("altaircms.auth.api.OrganizationMapping")
     OrganizationMapping(settings["altaircms.organization.mapping.json"]).register(config)
-    config.include("altaircms.lib.crud")    
+    config.include("altaircms.lib.crud") # todo: remove
     config.include("altaircms.plugins")
     config.include("altaircms.solr") ## for fulltext search
     search_utility = settings.get("altaircms.solr.search.utility", "altaircms.solr.api.DummySearch")

@@ -124,7 +124,7 @@ $(function() {
             <div class="viewport">
                 <div class="flipsnap">
                     % for event, promo in promotions:
-                        <% image_path = request.route_path('__staticasset/', subpath=promo.main_image.filepath) %>
+                        <% image_path = helper.get_asset_rendering_object(request, promo.main_image).filepath %>
                         % if promo.link:
                             <a href=${promo.link}>
                                 <div class="item"><img src="${image_path}" alt="img"/></div>

@@ -14,7 +14,7 @@
                 <a href="${request.route_path('detail')}?event_id=${event.id}">
             % endif
                 <div class="panel-inner">
-                    <img class="thematic" src="${request.route_path('__staticasset/', subpath=content.image_asset.thumbnail_path)}" />
+                    <img class="thematic" src="${helper.get_asset_rendering_object(request, content.image_asset).thumbnail_path}" />
                     <h4>${content.title}</h4>
                     <p class="first">${content.text}</p>
                 </div>
