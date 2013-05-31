@@ -272,7 +272,7 @@ class MobileReserveView(object):
             cart=dict(products=[dict(name=p.product.name, 
                                      quantity=p.quantity,
                                      price=int(p.product.price),
-                                     seats=p.seats,
+                                     seats=p.seats if p.product.sales_segment.seat_choice else [],
                                      seat_quantity=p.seat_quantity
                                 )
                                 for p in cart.products],
