@@ -22,11 +22,11 @@ ${h.japanese_date(wish.performance.start_on)}<br />
 </div>
 ・決済手数料 (${wish.lot_entry.payment_delivery_method_pair.payment_method.name})<br />
 <div align="right" style="text-align:right">
-${h.format_currency(wish.lot_entry.payment_delivery_method_pair.transaction_fee)}
+${h.format_currency(wish.transaction_fee)}
 </div>
 ・配送手数料 (${wish.lot_entry.payment_delivery_method_pair.delivery_method.name})<br />
 <div align="right" style="text-align:right">
-${h.format_currency(wish.lot_entry.payment_delivery_method_pair.delivery_fee)}
+${h.format_currency(wish.delivery_fee)}
 </div>
 ・システム利用料<br />
 <div align="right" style="text-align:right">
