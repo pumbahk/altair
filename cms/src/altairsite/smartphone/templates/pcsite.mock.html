@@ -5,14 +5,7 @@
   <body>
     <h1>this is pc site</h1>
     <script>
-  $(function(){
-console.log(document.cookie.indexOf("${cookie_name}"));
-    if(document.cookie.indexOf("${cookie_name}") > -1){
-        var e = $("<a>").text("SPサイトへ").attr("href", "${request.route_path("smartphone.goto_sp_page",_query=dict(next="/"))}");
-        $("body").append(e);
-     }
-});
-  </script>
-
+      $(function(){ ${helper.goto_pcpage_script(request,next="/")}});
+    </script>
   </body>
 </html>

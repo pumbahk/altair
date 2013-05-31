@@ -3,7 +3,7 @@ from altairsite.config import usersite_view_config
 from altairsite.api import set_we_need_pc_access
 from altairsite.api import set_we_invalidate_pc_access
 from pyramid.httpexceptions import HTTPFound
-from altairsite import PC_ACCESS_COOKIE_NAME
+from .common.helper import SmartPhoneHelper
 
 @usersite_view_config(route_name='smartphone.main',request_type="altairsite.tweens.ISmartphoneRequest"
              , renderer='altairsite.smartphone:templates/top.html')
@@ -13,7 +13,7 @@ def main(context, request):
 @usersite_view_config(route_name='smartphone.main',renderer="altairsite.smartphone:templates/pcsite.mock.html")
 def main_pc(context, request):
     ## don't imitate. this.
-    return {"cookie_name": PC_ACCESS_COOKIE_NAME}
+    return {'helper':SmartPhoneHelper()}
 
 @usersite_view_config(route_name="smartphone.goto_pc_page", request_type="altairsite.tweens.ISmartphoneRequest")
 def goto_pc_page(context, request):
