@@ -56,11 +56,16 @@ def make_performance_map(request, performances):
                 )
             )
 
-    for v in performance_map.itervalues():
-        v.sort(lambda a, b: cmp(a['start_on'], b['start_on']))
+    #for v in performance_map.itervalues():
+    #    v.sort(lambda a, b: cmp(a['start_on'], b['start_on']))
+    for k in performance_map:
+        v = performance_map[k]
+        performance_map[k] = sorted(v,
+                                    key=lambda x: (x['start_on'], x['id']))
 
     retval = list(performance_map.iteritems())
-    retval.sort(lambda a, b: cmp(a[1][0]['start_on'], b[1][0]['start_on']))
+    #retval.sort(lambda a, b: cmp(a[1][0]['start_on'], b[1][0]['start_on']))
+    retval = sorted(retval, key=lambda x: (x[1][0]['start_on'], x[1][0]['id']))
 
     return retval
 
