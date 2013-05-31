@@ -1314,6 +1314,9 @@ class PaymentMethod(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     organization_id = Column(Identifier, ForeignKey('Organization.id'))
     organization = relationship('Organization', uselist=False, backref='payment_method_list')
     payment_plugin_id = Column(Identifier, ForeignKey('PaymentMethodPlugin.id'))
+
+    # 払込票を表示しないオプション（SEJ専用）
+    hide_voucher = Column(Boolean, default=False)
     
     _payment_plugin = relationship('PaymentMethodPlugin', uselist=False)
     @hybrid_property
@@ -1352,6 +1355,11 @@ class DeliveryMethod(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     
     delivery_plugin_id = Column(Identifier, ForeignKey('DeliveryMethodPlugin.id'))
     _delivery_plugin = relationship('DeliveryMethodPlugin', uselist=False)
+
+
+    # 引換票を表示しないオプション（SEJ専用）
+    hide_voucher = Column(Boolean, default=False)
+
     @hybrid_property
     def delivery_plugin(self):
         warn_deprecated("deprecated attribute `delivery_plugin' is accessed")

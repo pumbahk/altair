@@ -5,7 +5,7 @@ from wtforms import TextField, HiddenField, SelectField, DecimalField
 from wtforms.validators import Length, Optional, NumberRange
 from wtforms.widgets import TextArea
 
-from ticketing.formhelpers import Translations, Required
+from ticketing.formhelpers import Translations, Required, OurBooleanField
 from ticketing.core.models import PaymentMethodPlugin, FeeTypeEnum
 
 class PaymentMethodForm(Form):
@@ -47,4 +47,7 @@ class PaymentMethodForm(Form):
     description = TextField(
         label=u"説明文(HTML)", 
         widget=TextArea()
+    )
+    hide_voucher = OurBooleanField(
+        label=u'払込票を表示しない',
     )
