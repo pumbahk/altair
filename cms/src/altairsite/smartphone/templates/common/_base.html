@@ -8,15 +8,25 @@
 <script src=${request.static_url('altaircms:static/smartphone/js/flipsnap.min.js')}></script>
 <style type="text/css">
 @import url(${request.static_url('altaircms:static/smartphone/css/default.css')});
+
+.goto-link {
+  text-decoration: none;
+  padding: 6px 6px;
+}
+
+.header-navigation {
+  margin-bottom: 15px;
+}
 </style>
 <title>楽天チケット-<%block name="title" /></title>
 </head>
 <body>
-    <button class="btn-primary btn-large" style="float: right">PC版へ</button>
-    <a href="${request.route_path('main')}">
-        <img src="${request.static_url('altaircms:static/smartphone/img/logo.gif')}"/>
-    </a>
-    <br/>
+
+<div class="header-navigation">
+  <a class="goto-link btn-primary btn-large" style="float: right" href="${request.route_path('smartphone.goto_pc_page')}">PC版へ</a>
+  <a href="/"><img src="${request.static_url('altaircms:static/smartphone/img/logo.gif')}"/></a>
+</div>
+
 ${self.body()}
 <%block name="fnavi" />
 <%include file="_footer.html"/>

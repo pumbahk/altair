@@ -35,6 +35,8 @@ def install_app(config):
     ##ここに追加
     add_route = functools.partial(config.add_route, factory=".resources.TopPageResource")
     add_route("main", "/")
+    add_route("smartphone.goto_pc_page", "/goto_pc")
+    add_route("smartphone.goto_sp_page", "/goto_sp")
     config.include('altairsite.smartphone.genre')
     config.include('altairsite.smartphone.search')
     config.include('altairsite.smartphone.detail')
