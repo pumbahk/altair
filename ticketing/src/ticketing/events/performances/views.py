@@ -16,10 +16,11 @@ from ticketing.models import merge_session_with_post, record_to_multidict
 from ticketing.views import BaseView
 from ticketing.fanstatic import with_bootstrap
 from ticketing.events.performances.forms import PerformanceForm, PerformancePublicForm
-from ticketing.core.models import Event, Performance, Order
+from ticketing.core.models import Event, Performance, Order, Venue
 from ticketing.core.models import PerformanceSetting
 from ticketing.products.forms import ProductForm
 from ticketing.orders.forms import OrderForm, OrderSearchForm
+from ticketing.venues.api import get_venue_site_adapter
 
 from ticketing.mails.forms import MailInfoTemplate
 from ticketing.models import DBSession
@@ -38,8 +39,20 @@ class PerformanceShowView(BaseView):
             raise HTTPNotFound('performance id %d is not found' % performance_id)
         self.performance = performance
 
+    def build_data_source(self):
+        return dict(
+            drawing=get_venue_site_adapter(self.request, self.performance.venue.site).direct_drawing_url,
+            metadata=self.request.route_path(
+                'api.get_seats',
+                venue_id=self.performance.venue.id,
+                _query={u'n':u'seats|stock_types|stock_holders|stocks'}
+                )
+            )
+
     def _tab_seat_allocation(self):
-        return {}
+        return dict(
+            data_source=self.build_data_source()
+            )
 
     def _tab_product(self):
         return dict(
@@ -74,7 +87,9 @@ class PerformanceShowView(BaseView):
             )
 
     def _tab_reservation(self):
-        return {}
+        return dict(
+            data_source=self.build_data_source()
+            )
 
     def _extra_data(self):
         # プリンターAPI
@@ -223,8 +238,14 @@ class Performances(BaseView):
                 performance.create_venue_id = f.data['venue_id']
             else:
                 performance = merge_session_with_post(performance, f.data)
-                if f.data['venue_id'] != performance.venue.id:
-                    performance.delete_venue_id = performance.venue.id
+                venue = Venue.query.filter_by(performance_id=performance_id)\
+                             .populate_existing().with_lockmode('update').first()
+                if not venue:
+                    logger.warn('venue not found (performance_id=%s)' % performance_id)
+                    f.id.errors.append(u'エラーが発生しました。同時に同じ公演が編集された可能性があります。')
+                    return dict(form=f, event=performance.event)
+                if f.data['venue_id'] != venue.id:
+                    performance.delete_venue_id = venue.id
                     performance.create_venue_id = f.data['venue_id']
                 PerformanceSetting.update_from_model(performance, f.data)
 

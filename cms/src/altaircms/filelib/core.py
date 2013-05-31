@@ -25,6 +25,10 @@ def write_to_path(path, src):
 def File(name, handler, save=write_to_path):
     return _File(name=name, handler=handler, save=save)
 
+@provider(IUploadFile)
+def DummyFile(name, handler=None):
+    return _File(name=name, handler=handler, save=None)
+
 def rename_file(src, dst):
     try:
         shutil.move(src, dst) #for preventing invalid cross-device link.
@@ -86,10 +90,13 @@ class FileCreator(object):
             raise
         
     def commit(self):
+        used = []
         while self.pool:
             signatured_file = self.pool.pop(0)
             realpath = self._get_realpath(signatured_file)
             self._commit_one(signatured_file, realpath)
+            used.append((signatured_file, realpath))
+        return used
 
     def _write_to_tmppath(self, uploadfile):
         path = tempfile.mktemp() #suffix?
@@ -110,33 +117,38 @@ class FileDeleter(object):
         if uploadfile.handler:
             raise Exception("Stream file can't delete %s" % uploadfile)
         if not os.path.exists(filepath):
-            raise Exception("%s is not found" % filepath)
+            logger.warn("%s is not found" % filepath)
         self.pool.append(uploadfile)
         
     def commit(self):
+        used = []
         while self.pool:
             deleted_file = self.pool.pop(0)
             filepath = self.root.abspath(deleted_file.name)
             logger.debug("filesession. delete: %s" % (filepath))
             try:
                 os.remove(filepath)
+                used.append((deleted_file, filepath))
             except (OSError, IOError), e:
                 logger.warn("%s is not deleted" % filepath)
                 logger.exception(str(e))
             except Exception, e:
                 logger.exception(str(e))
                 raise
+        return used
 
 @implementer(IFileSession)
 class FileSession(object):
-    def __init__(self, prefix="", make_path=None, on_file_exists=on_file_exists_overwrite):
-        if make_path is None:
-            self.make_path = lambda : os.path.abspath(prefix)
-        else:
-            self.make_path = make_path
+    def __init__(self, prefix="",
+                 make_path=None,
+                 marker=None, 
+                 on_file_exists=on_file_exists_overwrite, 
+                 options=None):
+        self.marker = marker
+        self.make_path = make_path or (lambda : os.path.abspath(prefix))
         self.deleter = FileDeleter(self)
         self.creator = FileCreator(self, on_file_exists=on_file_exists)
-            
+        self.options = options
 
     def abspath(self, part):
         return os.path.join(self.make_path(), part)
@@ -151,6 +163,7 @@ class FileSession(object):
     def delete(self, uploadfile):
         return self.deleter.delete(uploadfile)
 
-    def commit(self):
-        self.deleter.commit()
-        self.creator.commit()
+    def commit(self, extra_args=None):
+        delete_results = self.deleter.commit()
+        create_results = self.creator.commit()
+        return {"create": create_results, "delete": delete_results, "extra_args": extra_args}

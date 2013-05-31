@@ -5,12 +5,13 @@ from zope.interface.verify import verifyObject
 from cStringIO import StringIO
 from urlparse import urlparse
 import re, os
-from .interfaces import IAssetResolver
+from .interfaces import IAssetResolver, IWritableAssetDescriptor
 
 def normalize_prefix(prefix, delimiter):
     return delimiter.join(c for c in prefix.split(delimiter) if c)
 
 @implementer(IAssetDescriptor)
+@implementer(IWritableAssetDescriptor)
 class FileSchemeAssetDescriptor(object):
     def __init__(self, path):
         self.path = path
@@ -35,21 +36,17 @@ class FileSchemeAssetDescriptor(object):
 
     def exists(self):
         return os.path.exist(self.path)
+
+    def write(self, buf):
+        open(self.path, 'wb').write(buf)
  
 @implementer(IAssetResolver)
 class FileSchemeAssetResolver(object):
-    def __init__(self, parent=None):
-        if parent is None:
-            parent = AssetResolver()
-            directlyProvides(parent, IAssetResolver)
-        assert parent is None or verifyObject(IAssetResolver, parent)
-        self.parent = parent
+    def __init__(self):
+        pass
 
     def resolve(self, spec):
         url = urlparse(spec)
         if url.scheme != u'file':
-            if self.parent is not None:
-                return self.parent.resolve(spec)
-            else:
-                return ValueError(spec)
+            raise ValueError(spec)
         return FileSchemeAssetDescriptor(path=url.path)

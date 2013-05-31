@@ -8,11 +8,16 @@ import re
 import argparse
 import locale
 import time
+import json
 
 from pyramid.paster import get_app, bootstrap
 
 from sqlalchemy.orm.exc import MultipleResultsFound, NoResultFound
 
+from altair.pyramid_assets import get_resolver
+from altair.pyramid_assets.interfaces import IWritableAssetDescriptor
+
+from ticketing.utils import myurljoin
 
 io_encoding = locale.getpreferredencoding()
 
@@ -22,6 +27,9 @@ SITE_INFO_NAMESPACE = 'http://xmlns.ticketstar.jp/2012/site-info'
 verbose = False
 
 class FormatError(Exception):
+    pass
+
+class LogicalError(Exception):
     pass
 
 def relativate(a, b):
@@ -137,7 +145,7 @@ class ObjectRetriever(object):
             raise FormatError("No object defined in the root metadata element")
         return self.retrieve_si_objects([self.doc.getroot()])[0]
 
-def import_tree(update, organization, tree, file, venue_id=None, max_adjacency=None):
+def import_tree(registry, update, organization, tree, file, bundle_base_url=None, venue_id=None, max_adjacency=None):
     # 論理削除をインストールする都合でコードの先頭でセッションが初期化
     # されてほしくないので、ここで import する
     from ticketing.models import DBSession
@@ -156,8 +164,10 @@ def import_tree(update, organization, tree, file, venue_id=None, max_adjacency=N
 
     if tree['class'] != 'Venue':
         raise FormatError('The root object is not a Venue')
+
+    backend_metadata_url = myurljoin(bundle_base_url, 'metadata.json')
     if update:
-        site = Site(name=tree['properties']['name'], drawing_url='file:'+file)
+        site = Site(name=tree['properties']['name'], _backend_metadata_url=backend_metadata_url)
         venue_q = DBSession.query(Venue)
         if venue_id is not None:
             venue_q = venue_q.filter_by(organization=organization, id=venue_id)
@@ -174,7 +184,7 @@ def import_tree(update, organization, tree, file, venue_id=None, max_adjacency=N
         venue.site.delete() # 論理削除
         venue.site = site
     else:
-        site = Site(name=tree['properties']['name'], drawing_url='file:'+file)
+        site = Site(name=tree['properties']['name'], _backend_metadata_url=backend_metadata_url)
         venue = Venue(site=site, name=tree['properties']['name'])
         venue.organization = organization
 
@@ -247,6 +257,8 @@ def import_tree(update, organization, tree, file, venue_id=None, max_adjacency=N
     deleted_seat_count = 0
     seats_given = set()
 
+    seat_names_given = set()
+
     if update:
         seats = dict((seat.l0_id, seat) for seat in venue.seats)
         print 'Number of existing seats: %d' % len(seats)
@@ -286,6 +298,9 @@ def import_tree(update, organization, tree, file, venue_id=None, max_adjacency=N
             seats_in_row = []
             for seat_obj in seat_objs:
                 seat_l0_id = seat_obj['_node'].get('id')
+                if seat_l0_id in seats_given:
+                    # id重複
+                    raise LogicalError("Dupliate seat_l0_id: %s" % seat_l0_id)
                 seats_given.add(seat_l0_id)
                 seat = seats.get(seat_l0_id)
                 if seat is None:
@@ -295,6 +310,10 @@ def import_tree(update, organization, tree, file, venue_id=None, max_adjacency=N
                         print '[ADD] Seat(l0_id=%s)' % seat.l0_id
                     new_seat_count += 1
                 name = seat_obj['properties'].get('name')
+                if name in seat_names_given:
+                    # name重複
+                    raise LogicalError("Dupliate seat name: %s" % name)
+                seat_names_given.add(name)
                 seat_no = seat_obj['properties'].get('seat_no')
                 gate = seat_obj['properties'].get('gate')
                 floor = seat_obj['properties'].get('floor')
@@ -360,7 +379,16 @@ def import_tree(update, organization, tree, file, venue_id=None, max_adjacency=N
     DBSession.merge(site)
     DBSession.merge(venue)
 
-def import_or_update_svg(env, update, organization_name, file, venue_id, max_adjacency, dry_run):
+    resolver = get_resolver(registry)
+    metadata = resolver.resolve(backend_metadata_url)
+    drawing = resolver.resolve(myurljoin(bundle_base_url, 'root.svg'))
+    if IWritableAssetDescriptor.providedBy(metadata) and IWritableAssetDescriptor.providedBy(drawing):
+        drawing.write(open(file).read())
+        metadata.write(json.dumps(dict(pages={'root.svg':{}}), encoding='utf-8'))
+    else:
+        print 'WARNING: Drawing was not uploaded automatically'
+
+def import_or_update_svg(env, update, organization_name, file, bundle_base_url, venue_id, max_adjacency, dry_run):
     from ticketing.models import DBSession
     from ticketing.core.models import Organization
     organization = DBSession.query(Organization).filter_by(name=organization_name).one()
@@ -373,7 +401,7 @@ def import_or_update_svg(env, update, organization_name, file, venue_id, max_adj
     print '  Title: %s' % title.text.encode(io_encoding)
     object_tree = ObjectRetriever(xmldoc)()
     try:
-        import_tree(update, organization, object_tree, file, venue_id, max_adjacency)
+        import_tree(env['registry'], update, organization, object_tree, file, bundle_base_url, venue_id, max_adjacency)
         if dry_run:
             transaction.abort()
         else:
@@ -400,6 +428,8 @@ def main():
                         help='verbose mode')
     parser.add_argument('--venue', metavar='venue-id',
                         help='specify venue id (use with -u)')
+    parser.add_argument('-U', '--base-url', metavar='base_url',
+                        help='base url under which the site data will be put')
     parsed_args = parser.parse_args()
 
     env = bootstrap(parsed_args.config_uri[0])
@@ -408,14 +438,17 @@ def main():
         global verbose
         verbose = True
 
-    print parsed_args.max_adjacency
-
+    site_base_url = env['registry'].settings.get('altair.site_data.backend_base_url', '')
+    bundle_base_url = myurljoin(site_base_url, parsed_args.base_url)
+    if bundle_base_url[-1] != '/':
+        bundle_base_url += '/'
     for svg_file in parsed_args.svg_files:
         import_or_update_svg(
             env,
             update=parsed_args.update,
             organization_name=unicode(parsed_args.organization, io_encoding),
             file=svg_file,
+            bundle_base_url=bundle_base_url,
             venue_id=parsed_args.venue,
             max_adjacency=parsed_args.max_adjacency,
             dry_run=parsed_args.dry_run)

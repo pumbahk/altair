@@ -51,6 +51,8 @@ Altair Backend -- ${lot.event.title}[${lot.name}]
         </tr>
        </tbody>
     </table>
+    <a class="btn" href="${request.route_url('lots.edit', lot_id=lot.id)}">編集</a>
+
   </div>
 </div>
 
@@ -85,4 +87,77 @@ Altair Backend -- ${lot.event.title}[${lot.name}]
 
 </div>
 <%include file="/lots/_product_list.html" args="lot=lot"/>
-<%include file="/products/_list.html" args="form=None, sales_segment=lot.sales_segment"/>
+<%doc><%include file="/products/_list.html" args="form=None, sales_segment=lot.sales_segment"/></%doc>
+<script type="text/javascript">
+</script>
+
+<h2>商品明細</h2>
+<div style="overflow-x: scroll;">
+<table id="products-grid"></table>
+</div>
+<button id="sales-segment-save_button" class="btn">保存</button>
+<button id="sales-segment-clear_button" class="btn">リセット</button>
+<%
+import json
+grid = json.dumps(product_grid)
+
+%>
+<script>
+var productGrid = ${grid|n};
+
+$(function() {
+
+  var grid = $('#products-grid')
+  productGrid['afterSaveCell'] = function (id, name, val, iRow, iCol){
+    grid.setCell(id, name, '', {background:'#F89406'});
+    grid.setRetainChanges();
+  };
+
+  grid.jqGrid(productGrid);
+
+  var showDialog = function(title, msg) {
+    var modal = $('#modal-alert');
+    modal.find('.modal-header > h3').text(title);
+    modal.find('#message').html(
+        '<div class="alert alert-success">' + msg + '</div>');
+    modal.modal('show');
+  };
+
+  var showSuccessDialog = function() {
+     var title = '保存完了';
+     var msg = '編集内容を保存しました';
+     showDialog(title, msg);
+  };
+
+  $('#sales-segment-clear_button').click(function(){
+    grid.clearRetainChanges();
+  });
+
+  $('#sales-segment-save_button').click(function(){
+    $.ajax({
+      type: 'POST',
+      url: productGrid.editurl,
+      data: JSON.stringify(grid.getRetainChanges()),
+      dataType: 'json',
+      contentType: 'application/json; charset=utf-8',
+      success: function (response, textStatus, xhr) {
+          showSuccessDialog();
+          grid.clearRetainChanges();
+      },
+      error: function (xhr, textStatus, errorThrown) {
+        var response_text = JSON.parse(xhr.responseText);
+        var message = response_text.message;
+        var rows = '';
+        if (response_text['rows']) {
+          for (col in response_text.rows.errors) {
+            var col_name = grid.getColumnLabel(grid, col);
+            col_name = (col_name ? col_name + ':' : '');
+            rows += '<li>(' + response_text.rows.rowid + '行目) ' + col_name + response_text.rows.errors[col] + '</li>';
+          }
+        }
+        showDialog("エラー", message);
+      }
+    });
+  });
+});
+</script>

@@ -1,10 +1,12 @@
 # coding: utf-8
 
+import os
 import csv
 from datetime import datetime
 from urllib2 import urlopen
 import re
 import logging
+from urlparse import urlparse
 
 from pyramid.view import view_config
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound
@@ -14,27 +16,33 @@ from sqlalchemy import and_, distinct
 from sqlalchemy.sql import exists, join, func, or_
 from sqlalchemy.orm import joinedload, noload, aliased
 
+from altair.pyramid_assets import get_resolver
+
 from ticketing.models import DBSession
 from ticketing.models import merge_session_with_post, record_to_multidict
-from ticketing.core.models import Site, Venue, VenueArea, Seat, SeatAttribute, SeatStatus, SalesSegment, SeatAdjacencySet, Seat_SeatAdjacency, Stock, StockStatus, StockHolder, StockType, ProductItem, Product, Performance, Event
+from ticketing.core.models import Site, Venue, VenueArea, Seat, SeatAttribute, SeatStatus, SalesSegment, SeatAdjacencySet, Seat_SeatAdjacency, Stock, StockStatus, StockHolder, StockType, ProductItem, Product, Performance, Event, SeatIndexType, SeatIndex
 from ticketing.venues.forms import SiteForm
 from ticketing.venues.export import SeatCSV
+from ticketing.venues.api import get_venue_site_adapter
 from ticketing.fanstatic import with_bootstrap
 
 logger = logging.getLogger(__name__)
 
-@view_config(route_name="api.get_drawing", request_method="GET", permission='event_viewer')
-def get_drawing(request):
-    venue_id = int(request.matchdict.get('venue_id', 0))
-    venue = Venue.get(venue_id)
-    if venue is None:
-        return HTTPNotFound("Venue id #%d not found" % venue_id)
-    if venue.site is None:
-        return HTTPNotFound("Venue id #%d has no sites" % venue_id)
-    if venue.site.drawing_url is None:
-        return HTTPNotFound("Venue id #%d site has no drawing_url" % venue_id)
-
-    return Response(app_iter=urlopen(venue.site.drawing_url), content_type='text/xml; charset=utf-8')
+@view_config(route_name="api.get_site_drawing", request_method="GET", permission='event_viewer')
+def get_site_drawing(context, request):
+    site_id = long(request.matchdict.get('site_id'))
+    site = Site.query \
+        .join(Venue.site) \
+        .filter_by(id=site_id) \
+        .filter(Venue.organization_id==context.user.organization_id) \
+        .distinct().one()
+    return Response(
+        status_code=200,
+        content_type='image/svg',
+        body_file=get_resolver(request.registry).resolve(
+            get_venue_site_adapter(request, site).drawing_url
+            ).stream()
+        )
 
 @view_config(route_name="api.get_seats", request_method="GET", renderer='json', permission='event_viewer')
 def get_seats(request):
@@ -62,26 +70,23 @@ def get_seats(request):
 
     if u'seats' in necessary_params:
         seats_data = {}
-        query = DBSession.query(Seat).options(joinedload('attributes_'), joinedload('areas'), joinedload('status_')).filter_by(venue=venue)
+        query = DBSession.query(Seat).join(SeatStatus).filter(Seat.venue==venue)
+        query = query.with_entities(Seat.l0_id, Seat.name, Seat.seat_no, Seat.stock_id, SeatStatus.status)
         if sales_segment_id:
             query = query.join(ProductItem, and_(ProductItem.performance_id==venue.performance_id, ProductItem.stock_id==Seat.stock_id))
             query = query.join(Product).join(SalesSegment).filter(SalesSegment.id==sales_segment_id).distinct()
         elif u'sale_only' in filter_params:
             query = query.filter(exists().where(and_(ProductItem.performance_id==venue.performance_id, ProductItem.stock_id==Seat.stock_id)))
         if loaded_at:
-            query = query.join(SeatStatus).filter(or_(Seat.updated_at>loaded_at, SeatStatus.updated_at>loaded_at))
-        for seat in query:
-            seat_datum = {
-                'id': seat.l0_id,
-                'name': seat.name,
-                'seat_no': seat.seat_no,
-                'stock_id': seat.stock_id,
-                'status': seat.status,
-                'areas': [area.id for area in seat.areas],
-                }
-            for attr in seat.attributes:
-                seat_datum[attr] = seat[attr]
-            seats_data[seat.l0_id] = seat_datum
+            query = query.filter(or_(Seat.updated_at>loaded_at, SeatStatus.updated_at>loaded_at))
+        for l0_id, name, seat_no, stock_id, status in query:
+            seats_data[l0_id] = {
+                'id': l0_id,
+                'name': name,
+                'seat_no': seat_no,
+                'stock_id': stock_id,
+                'status': status,
+            }
         retval[u'seats'] = seats_data
 
     if u'stocks' in necessary_params:
@@ -189,6 +194,7 @@ def index(request):
 
         items.append({ "venue": venue,
                        "site": site,
+                       "drawing": get_venue_site_adapter(request, site),
                        "count": count,
                        "performance": performance })
 
@@ -201,10 +207,13 @@ def frontend_drawing(request):
     venue_id = int(request.matchdict.get('venue_id', 0))
     venue = Venue.get(venue_id, organization_id=request.context.user.organization_id)
     part = request.matchdict.get('part')
+    drawing = venue.site.get_frontend_drawing(part)
+    if drawing is None:
+        return HTTPNotFound()
     content_encoding = None
     if re.match('^.+\.(svgz|gz)$', part):
         content_encoding = 'gzip'
-    return Response(body=venue.site.get_drawing(part).stream().read(), content_type='text/xml; charset=utf-8', content_encoding=content_encoding)
+    return Response(body=drawing.stream().read(), content_type='text/xml; charset=utf-8', content_encoding=content_encoding)
 
 # FIXME: add permission limitation
 @view_config(route_name='venues.show', renderer='ticketing:templates/venues/show.html', decorator=with_bootstrap)
@@ -215,28 +224,40 @@ def show(request):
         return HTTPNotFound("Venue id #%d not found" % venue_id)
 
     site = Site.get(venue.site_id)
+    drawing = get_venue_site_adapter(request, site)
     root = None
-    if site._metadata != None:
-        pages = site._metadata.get('pages').items()
-        for page, info in site._metadata.get('pages').items():
+    pages = drawing.get_frontend_pages()
+    if pages:
+        for page, info in pages.items():
             if info.get('root'):
                 root = page
 
+    types = SeatIndexType.filter_by(venue_id=venue_id).all()
+    type_id = types[0].id if 0<len(types) else None
+    if 'index_type' in request.GET:
+        type_id = 2
+        for type in types:
+            if request.GET.get('index_type') == str(type.id):
+                type_id = type.id
+
     class SeatInfo:
-        def __init__(self, seat, venuearea, attr, status):
+        def __init__(self, seat, venuearea, attr, status, index):
             self.seat = seat
             self.venuearea = venuearea
             self.row = attr
             self.status = status
+            self.index = index
 
-    seats = DBSession.query(Seat, VenueArea, SeatAttribute, SeatStatus)\
+    seats = DBSession.query(Seat, VenueArea, SeatAttribute, SeatStatus, SeatIndex)\
         .filter_by(venue_id=venue_id)\
         .outerjoin(VenueArea, Seat.areas)\
         .outerjoin(SeatAttribute, and_(SeatAttribute.seat_id==Seat.id, SeatAttribute.name=="row"))\
         .outerjoin(SeatStatus, SeatStatus.seat_id==Seat.id)
+    if type_id is not None:
+        seats = seats.outerjoin(SeatIndex, and_(SeatIndex.seat_id==Seat.id, SeatIndex.seat_index_type_id==type_id))
     items = []
-    for seat, venuearea, attr, status in seats:
-        items.append(SeatInfo(seat, venuearea, attr, status))
+    for seat, venuearea, attr, status, type in seats:
+        items.append(SeatInfo(seat, venuearea, attr, status, type))
     
     class SeatAdjacencyInfo:
         def __init__(self, adj, count):
@@ -260,17 +281,23 @@ def show(request):
     return {
         'venue': venue,
         'site': site,
+        'drawing': drawing,
         'root': root,
+        'type_id': type_id,
+        'types': types,
         'pages': pages,
         'items': items,
         'adjs': adjs,
     }
 
 @view_config(route_name='venues.checker', permission='event_editor', renderer='ticketing:templates/venues/checker.html')
-def show_checker(request):
+def show_checker(context, request):
     venue_id = int(request.matchdict.get('venue_id', 0))
+    venue = Venue.filter_by(id=venue_id, organization_id=context.user.organization.id).one()
     return {
-        'venue_id': venue_id
+        'venue': venue,
+        'site': venue.site,
+        'drawing': get_venue_site_adapter(request, venue.site),
     }
 
 @view_config(route_name='venues.new', request_method='GET', renderer='ticketing:templates/venues/edit.html', decorator=with_bootstrap)
@@ -330,12 +357,12 @@ def edit_get(request):
         'form':f,
         'venue':venue,
         'site':site,
+        'drawing': get_venue_site_adapter(request, site),
     }
 
 @view_config(route_name='venues.edit', request_method='POST', renderer='ticketing:templates/venues/edit.html',  decorator=with_bootstrap)
 def edit_post(request):
     venue_id = int(request.matchdict.get('venue_id', 0))
-    print venue_id
     venue = Venue.get(venue_id, organization_id=request.context.user.organization_id)
     if venue is None:
         return HTTPNotFound('venue id %d is not found' % venue_id)
@@ -344,14 +371,10 @@ def edit_post(request):
 
     f = SiteForm(request.POST)
     if f.validate():
-        print "**1"
         venue = merge_session_with_post(venue, f.data)
-        print "**2"
         venue.save()
 
-        print "**3"
         site = merge_session_with_post(site, f.data)
-        print "**4"
         site.save()
 
         request.session.flash(u'会場を保存しました')
@@ -361,4 +384,5 @@ def edit_post(request):
             'form':f,
             'venue':venue,
             'site':site,
+            'drawing': get_venue_site_adapter(request, site),
         }

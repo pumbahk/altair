@@ -1,17 +1,22 @@
 # This package may contain traces of nuts
 import os
 import logging
+import sys
 from pyramid.interfaces import IRequest
 from pyramid.path import AssetResolver
 from pyramid.exceptions import ConfigurationError
 from pyramid.interfaces import IAuthenticationPolicy
 from pyramid.security import Everyone, Authenticated
+from pyramid.tweens import EXCVIEW, INGRESS
+from repoze.who.api import get_api as get_who_api
 from repoze.who.interfaces import IAPIFactory, IAPI
 from repoze.who.config import make_api_factory_with_config
 from zope.interface import implementer
 from .interfaces import IWHOAPIDecider
 
 logger = logging.getLogger(__name__)
+
+REQUEST_KEY = 'altair.auth.request'
 
 def set_who_api_decider(config, callable):
     callable = config.maybe_dotted(callable)
@@ -58,10 +63,23 @@ def activate_who_api(request):
     api = who_api(request, api_name)
     request.environ['repoze.who.plugins'] = api.name_registry # BBB?
 
+def activate(request):
+    activate_who_api(request)
+    request.environ[REQUEST_KEY] = request
+
+def deactivate(request):
+    try:
+        del request.environ[REQUEST_KEY]
+    except KeyError:
+        logger.error('exception ignored', exc_info=sys.exc_info())
+
 def activate_who_api_tween(handler, registry):
     def wrap(request):
-        activate_who_api(request)
-        return handler(request)
+        try:
+            activate(request)
+            return handler(request)
+        finally:
+            deactivate(request)
     return wrap
 
 def decide(request):
@@ -85,8 +103,9 @@ class ChallengeView(object):
 
     def __call__(self):
         api_name = decide(self.request)
-        who_api = who_api(self.request.environ, api_name)
-        return self.request.get_response(who_api.challenge())
+        logger.debug('api_name=%s' % api_name)
+        api = who_api(self.request, api_name)
+        return self.request.get_response(api.challenge())
 
 
 @implementer(IAuthenticationPolicy)
@@ -167,7 +186,6 @@ class MultiWhoAuthenticationPolicy(object):
             identity = api.authenticate()
         return identity
 
-
 def includeme(config):
     """
     """
@@ -198,7 +216,7 @@ def includeme(config):
     else:
         raise ConfigurationError('altair.auth.decider is not found in settings')
 
-    config.add_tween(".activate_who_api_tween")
+    config.add_tween(".activate_who_api_tween", under=INGRESS)
 
     callback = config.registry.settings.get('altair.auth.callback')
     if callback:
@@ -206,3 +224,5 @@ def includeme(config):
 
     authentication_policy = MultiWhoAuthenticationPolicy('auth_tkt', callback)
     config.set_authentication_policy(authentication_policy)
+    config.add_forbidden_view(ChallengeView)
+

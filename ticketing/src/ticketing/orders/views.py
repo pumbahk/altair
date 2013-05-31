@@ -68,7 +68,17 @@ def available_ticket_formats_for_ordered_product_item(ordered_product_item_id):
         .filter(DeliveryMethod.id==PaymentDeliveryMethodPair.delivery_method_id)\
         .filter(TicketFormat_DeliveryMethod.delivery_method_id==DeliveryMethod.id)\
         .filter(TicketFormat.id==TicketFormat_DeliveryMethod.ticket_format_id)\
-        .with_entities(TicketFormat.id, TicketFormat.name)\
+        .with_entities(TicketFormat.id, TicketFormat.name)
+
+def encode_to_cp932(data):
+    try:
+        return data.encode('cp932')
+    except UnicodeEncodeError:
+        logger.warn('cannot encode character %s to cp932' % data)
+        if data is not None and len(data) > 1:
+            return ''.join([encode_to_cp932(d) for d in data])
+        else:
+            return '?'
 
 
 @view_defaults(xhr=True, permission='sales_counter') ## todo:適切な位置に移動
@@ -260,7 +270,7 @@ class Orders(BaseView):
         order_csv = OrderCSV(organization_id=self.context.user.organization_id, localized_columns=japanese_columns, **kwargs)
 
         writer = csv.writer(response, delimiter=',', quoting=csv.QUOTE_ALL)
-        writer.writerows([column.encode('cp932') for column in columns] for columns in order_csv(orders))
+        writer.writerows([encode_to_cp932(column) for column in columns] for columns in order_csv(orders))
 
         return response
 
@@ -483,9 +493,10 @@ class OrderDetailView(BaseView):
         if order.cancel(self.request):
             notify_order_canceled(self.request, order)
             self.request.session.flash(u'受注(%s)をキャンセルしました' % order.order_no)
+            return HTTPFound(location=route_path('orders.show', self.request, order_id=order.id))
         else:
             self.request.session.flash(u'受注(%s)をキャンセルできません' % order.order_no)
-        return HTTPFound(location=route_path('orders.show', self.request, order_id=order.id))
+            raise HTTPFound(location=route_path('orders.show', self.request, order_id=order.id))
 
     @view_config(route_name='orders.delete', permission='administrator')
     def delete(self):
@@ -947,9 +958,9 @@ class OrdersReserveView(BaseView):
 
             # create cart
             cart = api.order_products(self.request, performance_id, order_items, selected_seats=seats)
+            cart.sales_segment = SalesSegment.get(f.sales_segment_id.data)
             pdmp = DBSession.query(PaymentDeliveryMethodPair).filter_by(id=post_data.get('payment_delivery_method_pair_id')).one()
             cart.payment_delivery_pair = pdmp
-            cart.system_fee = pdmp.system_fee
             cart.channel = ChannelEnum.INNER.v
             cart.operator = self.context.user
 
@@ -1077,6 +1088,7 @@ from ticketing.sej.ticket import SejTicketDataXml
 from ticketing.sej.payment import request_update_order, request_cancel_order
 from ticketing.sej.resources import code_from_ticket_type, code_from_update_reason, code_from_payment_type
 from ticketing.sej.exceptions import  SejServerError
+from ticketing.sej import api as sej_api
 
 from sqlalchemy import or_, and_
 from pyramid.threadlocal import get_current_registry
@@ -1263,22 +1275,15 @@ class SejOrderInfoView(object):
     @view_config(route_name='orders.sej.order.cancel', renderer='ticketing:templates/sej/order_info.html')
     def order_cancel(self):
         order_id = int(self.request.matchdict.get('order_id', 0))
-        order = SejOrder.query.get(order_id)
+        sej_order = SejOrder.query.get(order_id)
 
-        try:
-            order = request_cancel_order(
-                order.order_id,
-                order.billing_number,
-                order.exchange_number,
-                shop_id=self.shop_id,
-                secret_key=self.secret_key,
-                hostname=self.sej_hostname
-            )
+        result = sej_api.cancel_sej_order(sej_order, self.request.context.user.organization_id)
+        if result:
             self.request.session.flash(u'オーダーをキャンセルしました。')
-        except SejServerError, e:
-            self.request.session.flash(u'オーダーをキャンセルに失敗しました。 %s' % e)
-
-        return HTTPFound(location=self.request.route_path('orders.sej.order.info', order_id=order_id))
+            return HTTPFound(location=self.request.route_path('orders.sej.order.info', order_id=order_id))
+        else:
+            self.request.session.flash(u'オーダーをキャンセルに失敗しました。')
+            raise HTTPFound(location=self.request.route_path('orders.sej.order.info', order_id=order_id))
 
 
 @view_defaults(decorator=with_bootstrap, permission='administrator')

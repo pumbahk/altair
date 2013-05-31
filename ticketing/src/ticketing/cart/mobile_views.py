@@ -23,7 +23,7 @@ from . import api
 from . import helpers as h
 from . import schemas
 from .api import get_seat_type_triplets
-from .view_support import IndexViewMixin
+from .view_support import IndexViewMixin, get_amount_without_pdmp
 from .exceptions import (
     NoEventError,
     NoPerformanceError,
@@ -175,24 +175,27 @@ class MobileSelectProductView(object):
             raise NoEventError("No such seat_type (%s)" % seat_type_id)
 
         # 商品一覧
-        products = DBSession.query(c_models.Product) \
+        products = DBSession.query(c_models.Product, c_models.StockStatus.quantity) \
             .join(c_models.Product.items) \
             .join(c_models.ProductItem.stock) \
+            .join(c_models.Stock.stock_status) \
             .filter(c_models.Stock.stock_type_id==seat_type_id) \
             .filter(c_models.Product.sales_segment_id==self.context.sales_segment.id) \
             .filter(c_models.Product.public==True) \
+            .filter(c_models.ProductItem.deleted_at == None) \
+            .filter(c_models.Stock.deleted_at == None) \
             .order_by(sa.desc("Product.display_order, Product.price"))
 
         # CSRFトークン発行
         form = schemas.CSRFSecureForm(csrf_context=self.request.session)
 
+        upper_limit = self.context.sales_segment.upper_limit
         return dict(
             event=self.context.event,
             performance=self.context.sales_segment.performance,
             venue=self.context.sales_segment.performance.venue,
             sales_segment=self.context.sales_segment,
             seat_type=seat_type,
-            upper_limit=self.context.sales_segment.upper_limit,
             products=[
                 dict(
                     id=product.id,
@@ -200,8 +203,9 @@ class MobileSelectProductView(object):
                     description=product.description,
                     detail=h.product_name_with_unit(product, self.context.sales_segment.performance.id),
                     price=h.format_number(product.price, ","),
+                    upper_limit=upper_limit if upper_limit < vacant_quantity else int(vacant_quantity),
                 )
-                for product in products
+                for product, vacant_quantity in products
             ],
             form=form,
         )
@@ -269,9 +273,10 @@ class MobileReserveView(object):
                                      quantity=p.quantity,
                                      price=int(p.product.price),
                                      seats=p.seats,
-                                ) 
+                                     seat_quantity=p.seat_quantity
+                                )
                                 for p in cart.products],
-                      total_amount=h.format_number(cart.tickets_amount),
+                      total_amount=h.format_number(get_amount_without_pdmp(cart))
             ))
         return data
 

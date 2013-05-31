@@ -7,21 +7,27 @@ ${lot.name}
 <%mobile:header>第${option_index}希望</%mobile:header>
 席種・券種と希望枚数をお選びください。<br />
 合計で${sales_segment.upper_limit}枚まで入力できます。<br />
+<%mobile:messages messages="${messages}" />
 <br />
 <form action="${request.route_path('lots.entry.step3', event_id=event.id, lot_id=lot.id, option_index=option_index)}" method="post">
 <input type="hidden" name="option_index" value="${option_index}" />
-%if messages:
-<%mobile:band bgcolor="#ffff80">
-%for message in messages:
-<font color="red">・${message}</font><br />
-%endfor
-</%mobile:band>
-%endif
+<%mobile:messages messages="${messsages}" />
 <input type="hidden" name="performance_id" value="${performance.id}">
-%for product in products:
-${product.name}<br />
+%for products_per_stock_type in products:
+<%mobile:form_header>${products_per_stock_type[0].seat_stock_type.name}</%mobile:form_header>
+%if products_per_stock_type[0].seat_stock_type.description:
+<div><font size="-1">
+${products_per_stock_type[0].seat_stock_type.description|n}
+</font></div>
+%endif
+<div>
+%for product in products_per_stock_type:
+・${product.name}<br />
 <div align="right" style="text-align:right">
+${h.format_currency(product.price)}×
 <input type="text" name="product-${product.id}" size="2" value="" istyle="4" />枚
+</div>
+%endfor
 </div>
 %endfor
 <hr />

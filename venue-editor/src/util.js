@@ -46,27 +46,37 @@ exports.allAttributes = function Util_allAttributes(el) {
   return rt;
 };  
 
-exports.makeHitTester = function Util_makeHitTester(a) {
-  var pa = a.position(),
-  sa = a.size(),
-  ax0 = pa.x,
-  ax1 = pa.x + sa.x,
-  ay0 = pa.y,
-  ay1 = pa.y + sa.y;
-
-  return function(b) {
-    var pb = b.position(),
-    sb = b.size();
-    if(b._transform) {
-      pb = b._transform.apply(pb);
-    }
-    bx0 = pb.x,
-    bx1 = pb.x + sb.x,
-    by0 = pb.y,
-    by1 = pb.y + sb.y;
-
-    return ((((ax0 < bx0) && (bx0 < ax1)) || (( ax0 < bx1) && (bx1 < ax1)) || ((bx0 < ax0) && (ax1 < bx1))) && // x
-            (((ay0 < by0) && (by0 < ay1)) || (( ay0 < by1) && (by1 < ay1)) || ((by0 < ay0) && (ay1 < by1))));  // y
+exports.makeHitTester = function Util_makeHitTester(rect) {
+  var rp = rect.position(),
+  rs = rect.size();
+  
+  if(rs.x < 3 && rs.y < 3) {
+    // click mode
+    var rc = { x: rp.x+rs.x/2, y: rp.y+rs.y/2 };
+    return function(obj) {
+      var trc = obj._transform ? obj._transform.invert().apply(rc) : rc;
+      var op = obj.position(),
+      os = obj.size(),
+      ox0 = op.x,
+      ox1 = op.x + os.x,
+      oy0 = op.y,
+      oy1 = op.y + os.y;
+      return ox0 < trc.x && trc.x < ox1 && oy0 < trc.y && trc.y < oy1;
+    };
+  } else {
+    // rect mode
+    var rx0 = rp.x,
+    rx1 = rp.x + rs.x,
+    ry0 = rp.y,
+    ry1 = rp.y + rs.y;
+    return function(obj) {
+      var op = obj.position(),
+      os = obj.size(),
+      oc = { x: op.x+os.x/2, y: op.y+os.y/2 };
+      
+      var toc = obj._transform ? obj._transform.apply(oc) : oc;
+      return rx0 < toc.x && toc.x < rx1 && ry0 < toc.y && toc.y < ry1;
+    };
   }
 };
 

@@ -38,7 +38,7 @@ def includeme(config):
     directlyProvides(resolver, IAssetResolver)
     config.registry.registerUtility(resolver, IAssetResolver, '__default__')
 
-    resolver = FileSchemeAssetResolver(resolver) 
+    resolver = FileSchemeAssetResolver() 
     config.registry.registerUtility(resolver, IAssetResolver, 'file')
 
     resolvers = aslist(config.registry.settings.get('altair.pyramid_assets.resolvers', 'file __default__'))

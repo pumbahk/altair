@@ -12,7 +12,6 @@ from sqlalchemy.orm import aliased
 from ticketing.core.models import Event, Mailer
 from ticketing.core.models import StockType, StockHolder, StockStatus, Stock, Performance, Product, ProductItem, SalesSegmentGroup, SalesSegment
 from ticketing.core.models import Order, OrderedProduct
-from ticketing.helpers import todatetime
 
 logger = logging.getLogger(__name__)
 
@@ -178,7 +177,7 @@ class SalesTotalReporter(object):
             record.total_order_amount = order_amount or 0
             record.total_order_quantity = order_quantity or 0
 
-        # 販売金額(全期間)、販売枚数(全期間)
+        # 販売金額(期間指定)、販売枚数(期間指定)
         if self.form.limited_from.data or self.form.limited_to.data:
             if self.form.limited_from.data:
                 query = query.filter(Order.created_at >= self.form.limited_from.data)
@@ -213,17 +212,23 @@ class SalesDetailReportRecord(object):
                  stock_holder_id=None,
                  stock_holder_name=None,
                  sales_segment_group_name=None,
-                 stock_id=None):
+                 stock_id=None,
+                 stock_type_display_order=None,
+                 product_display_order=None):
         # 席種ID
         self.stock_type_id = stock_type_id
         # 席種名
         self.stock_type_name = stock_type_name
+        # 席種表示順
+        self.stock_type_display_order = stock_type_display_order
         # 商品ID
         self.product_id = product_id
         # 商品名
         self.product_name = product_name
         # 商品単価
         self.product_price = product_price
+        # 商品表示順
+        self.product_display_order = product_display_order
         # 枠ID
         self.stock_holder_id = stock_holder_id
         # 枠名
@@ -330,6 +335,8 @@ class SalesDetailReporter(object):
             StockHolder.name,
             SalesSegmentGroup.name if self.form.sales_segment_group_id.data else 'NULL',
             Stock.id,
+            StockType.display_order,
+            Product.display_order,
         ).group_by(func.ifnull(Product.base_product_id, Product.id))
 
         for row in query.all():
@@ -342,7 +349,9 @@ class SalesDetailReporter(object):
                 stock_holder_id=row[5],
                 stock_holder_name=row[6],
                 sales_segment_group_name=row[7],
-                stock_id=row[8]
+                stock_id=row[8],
+                stock_type_display_order=row[9],
+                product_display_order=row[10]
             )
 
     def get_stock_data(self):
@@ -422,8 +431,11 @@ class SalesDetailReporter(object):
             else:
                 record.unpaid_quantity += unpaid_quantity
 
+    def sort_key(self):
+        return lambda x:(x.stock_type_display_order, x.stock_type_id, x.stock_id, x.product_display_order, x.product_name, x.product_price)
+
     def sort_data(self):
-        return sorted(self.reports.values(), key=lambda x:(x.stock_type_id, x.stock_id, x.product_name, x.product_price))
+        return sorted(self.reports.values(), key=self.sort_key())
 
     def sort_and_merge_data(self):
         merged_records = {}
@@ -441,12 +453,14 @@ class SalesDetailReporter(object):
                 merged_records[merged_record.product_id] = merged_record
             merged_record = record
             pre_merge_key = merge_key
+        else:
+            merged_records[merged_record.product_id] = merged_record
         self.reports = merged_records
         self.create_group_key_to_reports()
         return self.sort_data()
 
     def group_key_to_reports(self, key):
-        return sorted(self._group_key_to_reports[key], key=lambda x:(x.stock_type_id, x.stock_id, x.product_name, x.product_price))
+        return sorted(self._group_key_to_reports[key], key=self.sort_key())
 
     def create_group_key_to_reports(self):
         self._group_key_to_reports = {}
@@ -479,16 +493,17 @@ class PerformanceReporter(object):
         self.reporters = {}
 
         # 公演合計のレポート
-        self.total = SalesDetailReporter(form)
+        self.form.sales_segment_group_id.data = None
+        self.total = SalesDetailReporter(self.form)
 
         # 販売区分別のレポート
         for sales_segment in performance.sales_segments:
             if not sales_segment.public:
                 continue
-            if (form.limited_from.data and sales_segment.end_at < todatetime(form.limited_from.data)) or\
-               (form.limited_to.data and todatetime(form.limited_to.data) < sales_segment.start_at):
+            if (form.limited_from.data and sales_segment.end_at < form.limited_from.data) or\
+               (form.limited_to.data and form.limited_to.data < sales_segment.start_at):
                 continue
-            form.sales_segment_group_id.data = sales_segment.sales_segment_group_id
+            self.form.sales_segment_group_id.data = sales_segment.sales_segment_group_id
             self.reporters[sales_segment] = SalesDetailReporter(form)
 
     def sort_index(self):
@@ -509,9 +524,10 @@ class EventReporter(object):
         for performance in event.performances:
             if not performance.public:
                 continue
-            if (form.limited_from.data and performance.end_on and performance.end_on < todatetime(form.limited_from.data)):
+            end_on = performance.end_on or performance.start_on
+            if form.limited_from.data and end_on < form.limited_from.data:
                 continue
-            form.performance_id.data = performance.id
+            self.form.performance_id.data = performance.id
             self.reporters[performance] = PerformanceReporter(form, performance)
 
     def sort_index(self):

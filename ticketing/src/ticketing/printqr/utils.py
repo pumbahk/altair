@@ -89,7 +89,9 @@ def ticketdata_from_qrdata(qrdata, event_id="*"):
         "codeno": codeno, 
         "ordered_product_item_token_id": token.id, 
         "ordered_product_item_id": history.ordered_product_item.id, 
-        "printed": str(token.printed_at) if token.printed_at else None, ##todo:データ整理
+        "refreshed_at": str(token.refreshed_at) if token.refreshed_at else None, 
+        "printed_at": str(token.printed_at) if token.printed_at else None, 
+        "printed": str(token.printed_at) if token.is_printed() else None, 
         "canceled": str(order.canceled_at) if order.is_canceled() else None, ##todo:データ整理
         "orderno": order.order_no, 
         "order_id": order.id, 
@@ -129,7 +131,7 @@ def svg_data_from_token(ordered_product_item_token):
 def svg_data_from_token_with_descinfo(history, ordered_product_item_token):
     pair = build_dict_from_ordered_product_item_token(ordered_product_item_token)
     if pair is None:
-        logger.info("*printqr avg_data_from_token_with_desc_info pair=None (token_id=%s)" % ordered_product_item_token.id)
+        logger.error("*printqr avg_data_from_token_with_desc_info pair=None (token_id=%s)" % ordered_product_item_token.id)
         return []
 
     seat = ordered_product_item_token.seat
@@ -144,13 +146,14 @@ def svg_data_from_token_with_descinfo(history, ordered_product_item_token):
             u'serial': ordered_product_item_token.serial,
             u"ticket_name": ticket_name, 
             u'data': json_safe_coerce(pair[1]), 
-            u"printed_at": str(ordered_product_item_token.printed_at) if ordered_product_item_token.printed_at else None
+            u"printed_at": str(ordered_product_item_token.printed_at) if ordered_product_item_token.printed_at else None, 
+            u"refreshed_at": str(ordered_product_item_token.refreshed_at) if ordered_product_item_token.refreshed_at else None
             }
     producer = ApplicableTicketsProducer.from_bundle(item.product_item.ticket_bundle)
     ticket_template = producer.qr_only_tickets().next()
 
     if ticket_template is None:
-        logger.info("*printqr avg_data_from_token ticket_template=None (token_id=%s)" % ordered_product_item_token.id)
+        logger.error("*printqr avg_data_from_token ticket_template=None (token_id=%s)" % ordered_product_item_token.id)
     else:
         retval_data[u'ticket_template_name'] = ticket_template.name
         retval_data[u'ticket_template_id'] = ticket_template.id

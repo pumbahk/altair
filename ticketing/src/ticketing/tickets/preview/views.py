@@ -399,6 +399,8 @@ class LoadSVGFromModelApiView(object):
             product_item_id = data["fillvalues_resource"]["model"]
 
             product_item = c_models.ProductItem.query.filter_by(id=product_item_id).first()
+            if product_item is None:
+                return {"status": False, "message": u"商品が見つかりません。"}
             if data.get("sub_resource"):
                 ticket = c_models.Ticket.query.filter(c_models.Ticket.id==data.get("sub_resource")["model"]).first()
             else:

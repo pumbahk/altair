@@ -46,16 +46,16 @@ class TestIt(unittest.TestCase):
     def test_get_or_create_user_create(self):
         from . import api as a
         request = DummyRequest()
-        result = a.get_or_create_user(request, 'http://example.com/clamed_id')
+        result = a.get_or_create_user(request, 'http://example.com/claimed_id')
         self.assertIsNone(result.id)
-        self.assertEqual(result.user_credential[0].auth_identifier, 'http://example.com/clamed_id')
+        self.assertEqual(result.user_credential[0].auth_identifier, 'http://example.com/claimed_id')
         self.assertEqual(result.user_credential[0].membership.name, 'rakuten')
 
-    def _add_user(self, clamed_id):
+    def _add_user(self, claimed_id):
         from ..users.models import User, UserCredential, Membership
         user = User()
         membership = Membership(name="rakuten")
-        credential = UserCredential(user=user, auth_identifier=clamed_id, membership=membership)
+        credential = UserCredential(user=user, auth_identifier=claimed_id, membership=membership)
         self.session.add(user)
         self.session.flush()
         return user
@@ -63,11 +63,11 @@ class TestIt(unittest.TestCase):
     def test_get_or_create_user_get(self):
         from . import api as a
         
-        user = self._add_user('http://example.com/clamed_id')
+        user = self._add_user('http://example.com/claimed_id')
         request = DummyRequest()
-        result = a.get_or_create_user(request, 'http://example.com/clamed_id')
+        result = a.get_or_create_user(request, 'http://example.com/claimed_id')
         self.assertEqual(result.id, user.id)
-        self.assertEqual(result.user_credential[0].auth_identifier, 'http://example.com/clamed_id')
+        self.assertEqual(result.user_credential[0].auth_identifier, 'http://example.com/claimed_id')
         self.assertEqual(result.user_credential[0].membership.name, 'rakuten')
 
 class CartTests(unittest.TestCase):
@@ -726,10 +726,10 @@ class PaymentViewTests(unittest.TestCase):
         self.assertRaises(NoCartError, lambda: target())
 
     @mock.patch('ticketing.cart.api.get_or_create_user')
-    @mock.patch('ticketing.rakuten_auth.api.authenticated_user')
+    @mock.patch('altair.rakuten_auth.api.authenticated_user')
     def test_it(self, mock_authenticated_user, mock_get_or_create_user):
         mock_authenticated_user.return_value = {
-            'clamed_id': 'http://ticketstar.example.com/user/1'
+            'claimed_id': 'http://ticketstar.example.com/user/1'
         }
         mock_get_or_create_user.return_value = testing.DummyModel(
             user_profile=testing.DummyModel(

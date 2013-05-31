@@ -112,7 +112,7 @@
       ${h.form_item(form.discount_unit, class_='span2')}
       ${h.form_item(form.public)}
       ${h.form_item(form.sales_segment_group_id)}
-      ${h.form_item(form.unavailable_period_days, class_='span2', help=h.help(form.unavailable_period_days, u'公演開始日時の何日前から選択できなくなるかを日数指定してください。'))}
+      ${h.form_item(form.unavailable_period_days, class_='span2', help=h.help(form.unavailable_period_days, u'販売終了日時の何日前から、この決済・引取方法を選択できなくなるかを日数指定してください。'))}
       <div id="sej_field">
         ${h.form_item(form.payment_period_days, class_='span2', help=h.help(form.payment_period_days, u'コンビニ決済で、購入後、この日数が経過するまでの間に決済を完了させる必要があります。'))}
         ${h.form_item(form.issuing_interval_days, class_='span2', help=h.help(form.issuing_interval_days, u'コンビニ決済で、この日数が経過すると店舗にて発券できるようになります。(主に不正行為対策として一定日数を設けます)'))}

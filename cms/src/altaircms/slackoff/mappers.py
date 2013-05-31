@@ -35,6 +35,8 @@ class ObjectLike(dict):
 
 def layout_mapper(request, obj):
     objlike = ObjectLike(**model_to_dict(obj))
+    label = u'<span class="label">同期必要</span>' if not obj.is_synced() else u""
+    objlike.title = Markup(u'<a href="%s">%s</a> %s' % (request.route_path("layout_detail", layout_id=obj.id), obj.title, label))
     downloadlink = request.route_path("layout_download", layout_id=obj.id)
     previewlink = request.route_path("layout_preview", layout_id=obj.id)
     objlike.template_filename = Markup(u'%s(<a href="%s">download</a>)<a href="%s"><i class="icon-eye-open"></i></a>' % (obj.template_filename, downloadlink, previewlink))

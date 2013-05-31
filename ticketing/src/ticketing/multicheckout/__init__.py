@@ -4,19 +4,39 @@
 """
 
 import logging
+import functools
 
-logger = logging.getLogger(__name__)
 from .interfaces import ICardBrandDetecter
 from .util import ahead_coms
+logger = logging.getLogger(__name__)
+
+class DBSessionContext(object):
+    def __init__(self, session, name=None):
+        self.session = session
+        self.name = name
+
+    def __enter__(self):
+        pass
+
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        if self.name:
+            logger.debug('remove {0} dbsession'.format(self.name))
+        self.session.remove()
+
+def multicheckout_session(func):
+    from .models import _session
+    @functools.wraps(func)
+    def wrap(*args, **kwargs):
+        with DBSessionContext(_session, name="multicheckout"):
+            return func(*args, **kwargs)
+    return wrap
 
 def multicheckout_dbsession_tween(handler, registry):
     def tween(request):
-        try:
+        from .models import _session
+        with DBSessionContext(_session, name="multicheckout"):
             return handler(request)
-        finally:
-            from .models import _session
-            logger.debug('remove multicheckout dbsession')
-            _session.remove()
     return tween
             
 def detect_card_brand(request, card_number):
@@ -32,7 +52,8 @@ def includeme(config):
     from sqlalchemy import engine_from_config
     from sqlalchemy.pool import NullPool
     from .models import _session
-    engine = engine_from_config(config.registry.settings, poolclass=NullPool)
+    engine = engine_from_config(config.registry.settings, poolclass=NullPool,
+                                pool_recycle=10)
     _session.remove()
     _session.configure(bind=engine)
 

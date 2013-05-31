@@ -17,6 +17,7 @@
   <![endif]-->
   <script type="text/javascript" src="${request.static_url('ticketing.cart:static/js/underscore-min.js')}"></script>
   <script type="text/javascript" src="${request.static_url('ticketing.cart:static/js/backbone-min.js')}"></script>
+  <script type="text/javascript" src="${request.static_url('ticketing.cart:static/js/ajaxhooks.min.js')}"></script>
   <script type="text/javascript" src="${request.static_url('ticketing.cart:static/js/carts.js')}"></script>
   <script type="text/javascript" src="${request.static_url('ticketing.cart:static/js/venue-viewer.js')}"></script>
   <script type="text/javascript" src="${request.static_url('ticketing.cart:static/js/jquery.smihica_vertical_slider.js')}" charset="utf-8"></script>
@@ -223,7 +224,7 @@ $(function() {cart.init(salesSegmentsSelection, selected, cartReleaseUrl);});
             </tr>
             <tr>
               <th scope="row">会場</th>
-              <td id="venue"> ${", ".join(event['venues'])}</td>
+              <td id="venue"> ${", ".join(set(event['venues']))}</td>
             </tr>
             <tr>
               <th scope="row">販売期間</th>

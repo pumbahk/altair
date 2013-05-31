@@ -1,7 +1,7 @@
 body{
 	margin: 0;
 	padding: 0;
-	background: url(/static/images/NH/bg.png) repeat-y 50% #eee;
+	background: url(../../images/NH/bg.png) repeat-y 50% #eee;
 	font-size: 12px;
 }
 

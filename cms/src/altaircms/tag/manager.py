@@ -19,6 +19,17 @@ class QueryParser(object):
         words = re.split(u"[, 　\s]+", self.query.strip())
         return [x for x in words if x]
 
+    def filter_by_manager(self, manager, qs, organization_id):
+        words = self.parse()
+        tags = manager.get_tag_list(words, organization_id=organization_id)
+        word_count = len(tags)
+        if word_count <= 0:
+            return qs
+        elif word_count <= 1:
+            return manager.more_filter_by_tag(qs, tags[0])
+        else:
+            return manager.more_filter_by_tags(qs, tags)
+
     def and_search_by_manager(self, manager, organization_id=None):
         words = self.parse()
         word_count = len(words)

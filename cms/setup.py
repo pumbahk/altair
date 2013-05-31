@@ -13,16 +13,16 @@ requires = [
     'pyramid_tm',
     "pyramid_fanstatic", 
     'sqlahelper',
-    "pil",
+    "Pillow",
     'isodate',
     "solrpy", 
     "WTForms",
-    "js.jquery == 1.7.1", 
-    "js.bootstrap==2.1.1", 
+    "js.jquery", 
+    "js.bootstrap", 
     "js.json2", 
     "js.jqueryui", 
     "js.jquery_tools", 
-    'js.underscore >= 1.3.3',
+    'js.underscore',
     'js.backbone',
     'js.tinymce',
     'pyramid_who',
@@ -33,6 +33,7 @@ requires = [
     'altair.log',
     'altair.encodingfixer', 
     'altair.exclog', 
+    'altair.cdnpath', 
     'pyramid_layout',
     'lxml',
     ]
@@ -50,11 +51,11 @@ tests_require = [
 ]
 
 devtools_require = [
-    "sadisplay",
+    # "sadisplay",
     "alembic",
-    "sphinx",
-    "sphinxcontrib-blockdiag",
-    "sphinxcontrib-seqdiag",
+    # "sphinx",
+    # "sphinxcontrib-blockdiag",
+    # "sphinxcontrib-seqdiag",
 ]
 
 extras_require = {
@@ -93,6 +94,7 @@ setup(name='altair-cms',
         "file:{here}/../altair_log#egg=altair.log-0.0.1", 
         'file:{here}/../altair_encodingfixer#egg=altair.encodingfixer-0.0', 
         'file:{here}/../altair_exclog#egg=altair.exclog-0.0', 
+        'file:{here}/../altair_cdnpath#egg=altair.cdnpath-0.0', 
         'https://github.com/moriyoshi/fluent-logger-python/tarball/0.3.3moriyoshi2#egg=fluent-logger-0.3.3moriyoshi2',
         ]],
       tests_require=tests_require,

@@ -1,7 +1,25 @@
+# -*- coding: utf-8 -*-
+from datetime import datetime
+from pyramid.httpexceptions import HTTPNotFound
+from pyramid.traversal import DefaultRootFactory
 from pyramid.decorator import reify
 from ticketing.core.models import Event, Performance, Organization
 from ticketing.core import api as core_api
+from .exceptions import OutTermException
 from .models import Lot
+
+def lot_resource_factory(request):
+    if request.matchdict is None:
+        return DefaultRootFactory(request)
+
+    context = LotResource(request)
+    if context.lot:
+        if not context.lot.available_on(datetime.now()):
+            raise OutTermException(lot_name=context.lot.name,
+                                   from_=context.lot.start_at,
+                                   to_=context.lot.end_at)
+    return context
+
 
 
 class LotResource(object):
@@ -24,6 +42,10 @@ class LotResource(object):
                 .filter(Lot.id==lot_id) \
                 .first()
         self.lot = lot
+
+    def authenticated_user(self):
+        # XXX: とりあえずダミー
+        return { 'is_guest': True }
 
     @reify
     def host_base_url(self):

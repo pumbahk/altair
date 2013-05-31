@@ -1,6 +1,4 @@
 # coding: utf-8
-import sqlalchemy as sa
-import os.path
 from altairsite.front import helpers as fh
 from pyramid.view import view_config
 
@@ -19,35 +17,33 @@ from collections import defaultdict
 import altaircms.helpers as h
 from ..slackoff.mappers import layout_mapper
 from ..page.models import PageType
-from ..front.api import get_frontpage_template_lookup
-
-
-@view_config(route_name="layout_demo", renderer="altaircms:templates/layout/demo.mako")
-def demo(request):
-    layout = get_or_404(request.allowable(Layout), Layout.id==request.GET["id"])
-    return dict(layout_image=LayoutRender(layout).blocks_image())
-
-@view_config(route_name="layout_preview", decorator="altaircms.lib.fanstatic_decorator.with_jquery", 
-             renderer="dummy.mako")
-def preview(context, request):
-    layout = get_or_404(request.allowable(Layout), Layout.id==request.matchdict["layout_id"])
-    lookup = get_frontpage_template_lookup(request)
-    template = lookup.get_renderable_template(request, layout, verbose=True)
-    if not template:
-        raise HTTPNotFound("template file %s is not found" % lookup.abspath(lookup.from_layout(request, layout))) 
-    request.override_renderer = template
-    blocks = defaultdict(list)
-    class Page(object):
-        title = layout.title
-        keywords = layout.title
-        description = "layout preview"
-    return {"display_blocks": blocks, "page": Page, "myhelper": fh}
+from ..front.api import get_frontpage_discriptor_resolver
+from ..front.api import get_frontpage_renderer
+from altaircms.helpers.viewhelpers import set_endpoint, get_endpoint
+import logging
+logger = logging.getLogger(__name__)
 
 class AfterInput(Exception):
     def __init__(self, form=None, context=None):
         self.form = form
         self.context = context
 
+@view_config(route_name="layout_detail", renderer="altaircms:templates/layout/detail.html", 
+             decorator="altaircms.lib.fanstatic_decorator.with_bootstrap")
+def layout_detail(context, request):
+    obj = get_or_404(request.allowable(Layout), Layout.id==request.matchdict["layout_id"])
+    return {"obj": obj}
+
+from altaircms.models import DBSession
+from datetime import datetime
+@view_config(route_name="layout_sync", renderer="altaircms:templates/layout/sync.html", 
+             decorator="altaircms.lib.fanstatic_decorator.with_bootstrap")
+def layout_sync(context, request):
+    obj = get_or_404(request.allowable(Layout), Layout.id==request.matchdict["layout_id"])
+    obj.synced_at = datetime.now()
+    DBSession.add(obj)
+    FlashMessage.success("sync layout id=%s synced_at=%s" % (obj.id, obj.synced_at), request=request)
+    return HTTPFound(get_endpoint(request) or request.route_path("layout_list"))
 
 @view_config(route_name="layout_list")
 def layout_list(context, request):
@@ -104,10 +100,18 @@ class LayoutCreateView(object):
             self.request._form = form
             raise AfterInput
 
-        layout_creator = LayoutCreator(self.request, self.request.organization)
-        layout = layout_creator.create(form.data, pagetype_id)
-        FlashMessage.success("create layout %s" % layout.title, request=self.request)
+        try:
+            layout_creator = LayoutCreator(self.request, self.request.organization)
+            layout = layout_creator.create(form.data, pagetype_id)
+        except Exception, e:
+            logger.error(str(e))
+            FlashMessage.error(str(e), request=self.request)            
+            self.request._form = form
+            raise AfterInput
 
+        url = self.request.route_path("layout_detail", layout_id=layout.id)
+        mes = u'%sを作成しました <a href="%s">新しく作成されたデータを編集</a>' % (u"レイアウト", url)
+        FlashMessage.success(mes, request=self.request)
         return HTTPFound(self.request.route_url("layout_list_with_pagetype", pagetype_id=pagetype_id)) ##
 
 @view_defaults(route_name="layout_update", 
@@ -145,10 +149,18 @@ class LayoutUpdateView(object):
         if not form.validate():
             self.request._form = form
             raise AfterInput
-
-        layout_updater = LayoutUpdater(self.request, self.request.organization)
-        layout = layout_updater.update(layout, form.data, pagetype_id)
-        FlashMessage.success("update layout %s" % layout.title, request=self.request)
+        try:
+            layout_updater = LayoutUpdater(self.request, self.request.organization)
+            layout = layout_updater.update(layout, form.data, pagetype_id)
+        except Exception, e:
+            logger.error(str(e))
+            FlashMessage.error(str(e), request=self.request)            
+            self.request._form = form
+            raise AfterInput
+            
+        url = self.request.route_path("layout_detail", layout_id=layout.id)
+        mes = u'%sを編集しました <a href="%s">変更されたデータを編集</a>' % (u"レイアウト", url)
+        FlashMessage.success(mes, request=self.request)
         return HTTPFound(self.request.route_url("layout_list_with_pagetype", pagetype_id=pagetype_id)) ##
 
 
@@ -163,14 +175,18 @@ def demo(request):
              renderer="dummy.html")
 def preview(context, request):
     layout = get_or_404(request.allowable(Layout), Layout.id==request.matchdict["layout_id"])
-    template_path = os.path.join(get_layout_filesession(request).assetspec, layout.prefixed_template_filename)
-    request.override_renderer = template_path
+    resolver = get_frontpage_discriptor_resolver(request)
+    discriptor = resolver.resolve(request, layout, verbose=True)
+    if not discriptor.exists():
+        raise HTTPNotFound("template file %s is not found" % discriptor.abspath()) 
     blocks = defaultdict(list)
     class Page(object):
         title = layout.title
         keywords = layout.title
         description = "layout preview"
-    return {"display_blocks": blocks, "page": Page, "myhelper": fh}
+    renderer = get_frontpage_renderer(request)
+    params = {"display_blocks": blocks, "page": Page, "myhelper": fh}
+    return renderer._render(discriptor.absspec(), layout, params)
 
 @view_config(route_name="layout_download")
 def download(request):

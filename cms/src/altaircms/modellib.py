@@ -4,7 +4,9 @@ import sqlalchemy.orm as orm
 from sqlalchemy.ext.mutable import Mutable
 from sqlalchemy.types import TypeDecorator, VARCHAR
 from sqlalchemy.sql.operators import ColumnOperators
-    
+import logging
+
+logger = logging.getLogger()    
 Base = sqlahelper.get_base()
 DBSession = sqlahelper.get_session()
 
@@ -16,7 +18,11 @@ def model_from_dict(modelclass, D):
     instance = modelclass()
     items_fn = D.iteritems if hasattr(D, "iteritems") else D.items
     for k, v in items_fn():
-        setattr(instance, k, v)
+        if v:
+            try:
+                setattr(instance, k, v)
+            except Exception as e:
+                logger.warn("class={0}, k={1}, v={2}, message={3}".format(modelclass, k, v, e))
     return instance
 
 def model_column_items(obj):

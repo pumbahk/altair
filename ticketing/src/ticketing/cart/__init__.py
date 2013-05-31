@@ -9,6 +9,7 @@ from pyramid.config import Configurator
 from pyramid.interfaces import IDict
 from pyramid.tweens import INGRESS
 from pyramid_beaker import session_factory_from_settings
+from pyramid_beaker import set_cache_regions_from_settings
 
 
 from sqlalchemy import engine_from_config
@@ -89,16 +90,26 @@ def main(global_config, **local_config):
     settings.update(local_config)
 
     from sqlalchemy.pool import NullPool
-    engine = engine_from_config(settings, poolclass=NullPool, isolation_level='READ COMMITTED')
-    my_session_factory = session_factory_from_settings(settings)
+    engine = engine_from_config(settings, poolclass=NullPool,
+                                isolation_level='READ COMMITTED',
+                                pool_recycle=60)
+    session_factory = session_factory_from_settings(settings)
+    set_cache_regions_from_settings(settings) 
     sqlahelper.add_engine(engine)
 
-    config = Configurator(settings=settings, session_factory=my_session_factory)
-    config.set_root_factory('.resources.TicketingCartResource')
+    config = Configurator(settings=settings,
+                          root_factory='.resources.TicketingCartResource',
+                          session_factory=session_factory)
     config.registry['sa.engine'] = engine
     config.add_renderer('.html' , 'pyramid.mako_templating.renderer_factory')
     config.add_renderer('json'  , 'ticketing.renderers.json_renderer_factory')
     config.add_renderer('csv'   , 'ticketing.renderers.csv_renderer_factory')
+    config.include("altair.cdnpath")
+    from altair.cdnpath import S3StaticPathFactory
+    config.add_cdn_static_path(S3StaticPathFactory(
+            settings["s3.bucket_name"], 
+            exclude=config.maybe_dotted(settings.get("s3.static.exclude.function")), 
+            mapping={"ticketing.fc_auth:static/": "/fc_auth/static/"}))
     config.add_static_view('static', 'ticketing.cart:static', cache_max_age=3600)
 
     ### includes altair.*
@@ -115,10 +126,10 @@ def main(global_config, **local_config):
 
     config.include('.')
     config.include("ticketing.qr")
-    config.include('ticketing.rakuten_auth')
+    config.include('altair.rakuten_auth')
+    config.include('ticketing.users')
     from authorization import MembershipAuthorizationPolicy
     config.set_authorization_policy(MembershipAuthorizationPolicy())
-    #config.include('ticketing.whotween')
     config.add_tween('.tweens.CacheControlTween')
     config.add_tween('.tweens.OrganizationPathTween')
     config.include('ticketing.organization_settings')
@@ -126,6 +137,7 @@ def main(global_config, **local_config):
     config.include('ticketing.checkout')
     config.include('ticketing.multicheckout')
     config.include('altair.mobile')
+    config.include("ticketing.venues")
     config.include("ticketing.payments")
     config.include('ticketing.payments.plugins')
 
@@ -143,7 +155,9 @@ def main(global_config, **local_config):
                             config.registry.settings["altaircms.apikey"]
                             )
 
+    ### s3 assets
     config.include('altair.pyramid_assets')
     config.include('altair.pyramid_boto')
+    config.include('altair.pyramid_boto.s3.assets')
 
     return config.make_wsgi_app()

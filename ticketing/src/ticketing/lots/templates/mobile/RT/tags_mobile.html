@@ -14,3 +14,12 @@
 <%def name="rakuten_header()">
 <div style="background-image:url(${request.static_url('ticketing.cart:static/img/mobile/bg_bar.gif')});background-color:#bf0000" bgcolor="#bf0000" background="${request.static_url('ticketing.cart:static/img/mobile/bg_bar.gif')}"><font color="#ffffff" size="3"><font color="#990018">■</font>${caller.body()}</font></div>
 </%def>
+<%def name="messages(messages)">
+%if messages:
+<%self:band bgcolor="#ffff80">
+%for message in messages:
+<font color="red">・${message}</font><br />
+%endfor
+</%self:band>
+%endif
+</%def>

@@ -347,8 +347,10 @@ class TicketTemplates(BaseView):
         
         form = forms.TicketTemplateEditForm(
             organization_id=self.request.context.user.organization_id, 
-            name=template.name, 
-            ticket_format=template.ticket_format_id
+            name=template.name,
+            ticket_format=template.ticket_format_id,
+            always_reissueable=template.always_reissueable,
+            priced=template.priced
             )
         return dict(h=helpers, form=form, template=template)
 
@@ -369,6 +371,8 @@ class TicketTemplates(BaseView):
 
         template.name = form.data["name"]
         template.ticket_format_id = form.data["ticket_format"]
+        template.always_reissueable = form.data["always_reissueable"]
+        template.priced = form.data["priced"]
 
         if form.data_value:
             template.data = form.data_value

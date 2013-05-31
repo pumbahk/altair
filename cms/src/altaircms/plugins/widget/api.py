@@ -1,8 +1,10 @@
+# -*- coding:utf-8 -*-
 import logging
-logger = logging.getLogger(__name__)
 from ..api import list_from_setting_value
 from altaircms.plugins.api import get_widget_utility
 
+
+logger = logging.getLogger(__name__)
 
 def get_rendering_function_via_page(widget, bname, bsettings, type_=None):
     bsettings.need_extra_in_scan("request")
@@ -95,3 +97,4 @@ class WidgetRegisterViewProxy(object):
     def create(self, name, params, matchdict=None):
         route_name = self._build_route_name(name, "_widget_create")        
         return self._use_view(route_name, params, matchdict=matchdict)
+

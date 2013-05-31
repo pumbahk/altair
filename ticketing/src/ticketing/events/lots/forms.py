@@ -3,7 +3,13 @@
 from wtforms import Form
 from wtforms import TextField, SelectField, HiddenField, IntegerField, BooleanField, TextAreaField
 from wtforms.validators import Regexp, Length, Optional, ValidationError
-from ticketing.formhelpers import DateTimeField, Translations, Required, NullableTextField
+from wtforms.validators import Optional, AnyOf, Length, Email, Regexp
+
+from ticketing.formhelpers import (
+    DateTimeField, Translations, Required, DateField, Max, OurDateWidget,
+    after1900, CheckboxMultipleSelect, BugFreeSelectMultipleField,
+    NFKC, Zenkaku, Katakana, strip_spaces, ignore_space_hyphen,
+)
 from ticketing.core.models import Product, SalesSegment, SalesSegmentGroup
 from ticketing.lots.models import Lot
 
@@ -146,7 +152,7 @@ class ProductForm(Form):
     description = TextField(
         label=u'詳細',
         validators=[
-            Required(),
+            #Required(),
             Length(max=255, message=u'255文字以内で入力してください'),
         ],
     )
@@ -180,3 +186,116 @@ class ProductForm(Form):
             performance_id=self.data["performance_id"],
             sales_segment=lot.sales_segment)
         return product
+
+    def apply_product(self, product):
+        product.name = self.data["name"]
+        product.price = self.data["price"]
+        product.display_order = self.data["display_order"]
+        product.description = self.data["description"]
+        product.seat_stock_type_id = self.data["seat_stock_type_id"]
+        product.performance_id = self.data["performance_id"]
+
+        return product
+
+
+class SearchEntryForm(Form):
+    """
+    販売区分
+    決済方法
+    引き取り方法
+    ステータス
+    """
+    entry_no = TextField(
+        label=u'予約番号',
+        validators=[
+            Optional(),
+            Length(max=255, message=u'255文字以内で入力してください'),
+        ],
+    )
+
+    tel = TextField(
+        label=u'電話番号',
+        validators=[
+            Optional(),
+            Length(max=255, message=u'255文字以内で入力してください'),
+        ],
+    )
+
+    name = TextField(
+        label=u'氏名',
+        validators=[
+            Optional(),
+            Length(max=255, message=u'255文字以内で入力してください'),
+        ],
+    )
+
+    email = TextField(
+        label=u'メールアドレス',
+        validators=[
+            Optional(),
+            Length(max=255, message=u'255文字以内で入力してください'),
+        ],
+    )
+
+    entried_from = DateTimeField(
+        label=u'申込日時',
+        validators=[Optional(), after1900],
+        format='%Y-%m-%d %H:%M',
+        widget=OurDateWidget()
+    )
+
+    entried_to = DateTimeField(
+        label=u'申込日時',
+        validators=[Optional(), after1900],
+        format='%Y-%m-%d %H:%M',
+        missing_value_defaults=dict(
+            year=u'',
+            month=Max,
+            day=Max,
+            hour=Max,
+            minute=Max,
+            second=Max
+            ),
+        widget=OurDateWidget()
+    )
+
+    include_canceled = BooleanField(
+        label=u"キャンセルした申込を含める",
+        validators=[
+            Required(),
+        ],
+    )
+
+    electing = BooleanField(
+        label=u"当選予定",
+        validators=[
+            Required(),
+        ],
+    )
+
+    elected = BooleanField(
+        label=u"当選",
+        validators=[
+            Required(),
+        ],
+    )
+
+    rejecting = BooleanField(
+        label=u"落選予定",
+        validators=[
+            Required(),
+        ],
+    )
+
+    rejected = BooleanField(
+        label=u"落選",
+        validators=[
+            Required(),
+        ],
+    )
+
+    wish_order = SelectField(
+        label=u'希望順位',
+        validators=[],
+        choices=[],
+    )

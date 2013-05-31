@@ -1,7 +1,0 @@
-mock
-nose
-coverage
-pyramid-debugtoolbar
-sadisplay
-alembic
-webtest

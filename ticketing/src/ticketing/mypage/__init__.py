@@ -6,6 +6,7 @@ from pyramid_who.whov2 import WhoV2AuthenticationPolicy
 from sqlalchemy import engine_from_config
 import sqlahelper
 from pyramid_beaker import session_factory_from_settings
+from pyramid_beaker import set_cache_regions_from_settings
 
 import logging
 
@@ -31,11 +32,13 @@ def main(global_config, **local_config):
     settings.update(local_config)
 
     engine = engine_from_config(settings, pool_recycle=3600)
-    my_session_factory = session_factory_from_settings(settings)
+    session_factory = session_factory_from_settings(settings)
+    set_cache_regions_from_settings(settings) 
     sqlahelper.add_engine(engine)
 
-    config = Configurator(settings=settings, session_factory=my_session_factory)
-    config.set_root_factory('.resources.TicketingMyPageResources')
+    config = Configurator(settings=settings,
+                          root_factory='.resources.TicketingMyPageResources',
+                          session_factory=session_factory)
     config.registry['sa.engine'] = engine
 
     config.add_renderer('.html' , 'pyramid.mako_templating.renderer_factory')
@@ -45,7 +48,8 @@ def main(global_config, **local_config):
 
     config.include('.')
     config.include('.errors')
-    config.include('ticketing.rakuten_auth')
+    config.include('altair.rakuten_auth')
+    config.include('ticketing.users')
     who_config = settings['pyramid_who.config']
     from ..cart.authorization import MembershipAuthorizationPolicy
     config.set_authorization_policy(MembershipAuthorizationPolicy())

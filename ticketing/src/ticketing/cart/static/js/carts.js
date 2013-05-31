@@ -154,9 +154,10 @@ cart.createContentOfShoppingElement = function(product) {
 		return to;
 	};
     var item = $('<tr/>');
-    var name = $('<td/>').text(product.name);;
+    var name = $('<td/>').text(product.name);
     var price = $('<td/>').text("￥ "+comma(product.price));
-    var quantity = $('<td/>').text(product.quantity + " 枚");
+    var quantity = $('<td/>');
+    cart.util.render_template_into(quantity, product.unit_template, {num: product.quantity});
     // TODO: 予約席をProductごとに追加
     var seats_container = $('<td/>');
     var seats = $('<ul/>');
@@ -1100,6 +1101,9 @@ cart.VenueView = Backbone.View.extend({
                     }
                 }
             },
+            message: function (msg) {
+                console.log(msg);
+            },
             messageBoard: (function() {
                 if (self.tooltip)
                     self.tooltip.hide();
@@ -1193,8 +1197,8 @@ cart.Venue = Backbone.Model.extend({
               url: params.data_source.venue_drawing,
               dataType: 'xml',
               success: function (data) { next(data); },
-              error: function (xhr, text) {
-                error("Failed to load drawing data (" + text + ")");
+              error: function (xhr, text, status) {
+                error("Failed to load drawing data (" + text + " - " + status + ")");
               }
             });
           },
@@ -1213,8 +1217,8 @@ cart.Venue = Backbone.Model.extend({
               url: util.build_route_path(params.data_source.seat_adjacencies._params),
               dataType: 'json',
               success: function (data) { next(data); },
-              error: function (xhr, text) {
-                error("Failed to load adjacency data (" + text + ")");
+              error: function (xhr, text, status) {
+                error("Failed to load adjacency data (" + text + " - " + status + ")");
               }
             });
           },
@@ -1269,7 +1273,6 @@ function newMetadataLoaderFactory(url) {
 function createDataSource(params) {
   var factory = newMetadataLoaderFactory(params['data_source']['seats']);
   var drawingCache = {};
-  function error(msg) { console.log(msg); } // XXX
   return {
     drawing: function (page) {
       return function (next, error) {
@@ -1279,14 +1282,17 @@ function createDataSource(params) {
           return;
         }
         $.ajax({
-          url: params['data_source']['venue_drawing'].replace('__part__', page),
+          url: params['data_source']['venue_drawings'][page],
           dataType: 'xml',
+          headers: {
+            'X-Dummy': true
+          },
           success: function (data) {
             drawingCache[page] = data;
             next(data);
           },
-          error: function (xhr, text) {
-            error("Failed to load drawing data (" + text + ")");
+          error: function (xhr, text, status) {
+            error("Failed to load drawing data (" + text + " - " + status + ")");
           }
         });
       }

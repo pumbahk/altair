@@ -42,11 +42,17 @@
 </div>
 <!-- /container -->
 
-<%def name="error(form, field)">
+<%def name="error(form, field, enclose=False)">
 %if form.errors.get(field):
+  %if enclose:
+  <div>
+  %endif
   %for e in form.errors[field]:
-  <span class="validation-error">${form[field].label} ${e}</span>
+  <span class="validation-error">${e}</span>
   %endfor
+  %if enclose:
+  </div>
+  %endif
 %endif
 </%def>
 </body>

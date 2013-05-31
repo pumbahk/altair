@@ -28,9 +28,9 @@
 <%def name="search_form_on_header(placeholder, query_id)">
 	<form id="form1" name="form1" method="GET" action="${request.route_path("page_search_by_freeword")}">
     <a href="#" class="region fukidashi-btn">開催地</a>
-    <img src="/static/RT/img/renewal/header_search_hr.jpg" alt="区切り線" width="4" height="45" class="headerSearch_border" />
+    <img src="${request.static_url("altaircms:static/RT/img/renewal/header_search_hr.jpg")}" alt="区切り線" width="4" height="45" class="headerSearch_border" />
 		<input name="q" type="text" class="text" id="${query_id}" size="30" placeholder="${placeholder}" />
-		<input name="imageField" type="image" id="imageField" src="/static/RT/img/renewal/header_search_btn.gif" alt="検索" />
+		<input name="imageField" type="image" id="imageField" src="${request.static_url("altaircms:static/RT/img/renewal/header_search_btn.gif")}" alt="検索" />
 		<a href="${request.route_path("page_search_input")}">詳細検索</a>
 	</form>
 </%def>
@@ -38,7 +38,7 @@
 <%def name="search_form_prev(placeholder, query_id)">
 	<form id="form1" name="form1" method="GET" action="${request.route_path("page_search_by_freeword")}">
 		<input name="q" type="text" class="text" id="${query_id}" size="30" placeholder="${placeholder}" />
-		<input name="imageField" type="image" id="imageField" src="/static/RT/img/common/header_search_btn.gif" alt="検索" />
+		<input name="imageField" type="image" id="imageField" src="${request.static_url("altaircms:static/RT/img/common/header_search_btn.gif")}" alt="検索" />
 		<a href="${request.route_path("page_search_input")}">詳細検索</a>
 	</form>
 </%def>
@@ -46,7 +46,7 @@
 ## いいねボタンなど
 <%def name="social_buttons(request)">
   <div id="social"  style="float: right; padding-top: 10px">
-     <a href="http://twitter.com/share" class="twitter-share-button" data-count="none" data-via="RakutenTicket" data-lang="ja">ツイート</a><script type="text/javascript" src="http://platform.twitter.com/widgets.js"></script>
+     <a href="http://twitter.com/share" class="twitter-share-button" data-count="none" data-via="RakutenTicket" data-lang="ja">ツイート</a><script type="text/javascript" src="https://platform.twitter.com/widgets.js"></script>
     <iframe src="http://www.facebook.com/plugins/like.php?app_id=233610706676154&amp;href=${h.safe_url_quote("http://ticket.rakuten.co.jp/")}&amp;show_faces=false&amp;action=like&amp;colorscheme=light&amp;font&amp;height=20" scrolling="no" frameborder="0" style="border:none; overflow:hidden; width:100px; height:20px;" allowTransparency="true"></iframe>
   </div>
 </%def>

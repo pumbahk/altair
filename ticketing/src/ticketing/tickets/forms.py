@@ -8,6 +8,8 @@ from wtforms import TextField, IntegerField, HiddenField, SelectField, SelectMul
 from wtforms.validators import Regexp, Length, Optional, ValidationError, StopValidation
 from wtforms.widgets import TextArea
 from ticketing.formhelpers import DateTimeField, Translations, Required
+from ticketing.formhelpers.form import OurForm
+from ticketing.formhelpers.fields import OurBooleanField
 from ticketing.core.models import Event, Account, DeliveryMethod
 from ticketing.core.models import TicketFormat
 from .utils import as_user_unit
@@ -167,12 +169,12 @@ class TicketTemplateForm(Form):
             self.data_value = {}
         return not bool(self.errors)
 
-class TicketTemplateEditForm(Form):
+class TicketTemplateEditForm(OurForm):
     def _get_translations(self):
         return Translations()
 
     def __init__(self, formdata=None, obj=None, prefix='', **kwargs):
-        Form.__init__(self, formdata=formdata, obj=obj, prefix=prefix, **kwargs)
+        super(TicketTemplateEditForm, self).__init__(formdata=formdata, obj=obj, prefix=prefix, **kwargs)
         if 'organization_id' in kwargs:
             self.ticket_format.choices = [
                 (format.id, format.name) for format in TicketFormat.filter_by(organization_id=kwargs['organization_id'])
@@ -193,6 +195,14 @@ class TicketTemplateEditForm(Form):
         coerce=long , 
         validators=[Required()]
     )
+
+    always_reissueable = OurBooleanField(
+        label=u"常に再発券可能"
+        )
+
+    priced = OurBooleanField(
+        label=u"手数料計算に含める"
+        )
 
     drawing = FileField(
         label=u"券面データ", 

@@ -1,6 +1,6 @@
 (function (jQuery, I18n) {
 var __LIBS__ = {};
-__LIBS__['MG4EUX16MDLB6IJ5'] = (function (exports) { (function () { 
+__LIBS__['eHTNCAKW4Y2ALDLG'] = (function (exports) { (function () { 
 
 /************** CONF.js **************/
 exports.DEFAULT = {
@@ -71,7 +71,7 @@ exports.DEFAULT = {
   }
 };
  })(); return exports; })({});
-__LIBS__['pFXSXUXX49WQPV19'] = (function (exports) { (function () { 
+__LIBS__['C7XU1TV1_R2C6P6L'] = (function (exports) { (function () { 
 
 /************** util.js **************/
 exports.eventKey = function Util_eventKey(e) {
@@ -122,27 +122,37 @@ exports.allAttributes = function Util_allAttributes(el) {
   return rt;
 };  
 
-exports.makeHitTester = function Util_makeHitTester(a) {
-  var pa = a.position(),
-  sa = a.size(),
-  ax0 = pa.x,
-  ax1 = pa.x + sa.x,
-  ay0 = pa.y,
-  ay1 = pa.y + sa.y;
-
-  return function(b) {
-    var pb = b.position(),
-    sb = b.size();
-    if(b._transform) {
-      pb = b._transform.apply(pb);
-    }
-    bx0 = pb.x,
-    bx1 = pb.x + sb.x,
-    by0 = pb.y,
-    by1 = pb.y + sb.y;
-
-    return ((((ax0 < bx0) && (bx0 < ax1)) || (( ax0 < bx1) && (bx1 < ax1)) || ((bx0 < ax0) && (ax1 < bx1))) && // x
-            (((ay0 < by0) && (by0 < ay1)) || (( ay0 < by1) && (by1 < ay1)) || ((by0 < ay0) && (ay1 < by1))));  // y
+exports.makeHitTester = function Util_makeHitTester(rect) {
+  var rp = rect.position(),
+  rs = rect.size();
+  
+  if(rs.x < 3 && rs.y < 3) {
+    // click mode
+    var rc = { x: rp.x+rs.x/2, y: rp.y+rs.y/2 };
+    return function(obj) {
+      var trc = obj._transform ? obj._transform.invert().apply(rc) : rc;
+      var op = obj.position(),
+      os = obj.size(),
+      ox0 = op.x,
+      ox1 = op.x + os.x,
+      oy0 = op.y,
+      oy1 = op.y + os.y;
+      return ox0 < trc.x && trc.x < ox1 && oy0 < trc.y && trc.y < oy1;
+    };
+  } else {
+    // rect mode
+    var rx0 = rp.x,
+    rx1 = rp.x + rs.x,
+    ry0 = rp.y,
+    ry1 = rp.y + rs.y;
+    return function(obj) {
+      var op = obj.position(),
+      os = obj.size(),
+      oc = { x: op.x+os.x/2, y: op.y+os.y/2 };
+      
+      var toc = obj._transform ? obj._transform.apply(oc) : oc;
+      return rx0 < toc.x && toc.x < rx1 && ry0 < toc.y && toc.y < ry1;
+    };
   }
 };
 
@@ -188,7 +198,7 @@ timer.prototype.lap = function(msg) {
     return lap;
 };
  })(); return exports; })({});
-__LIBS__['pU11FS8_SM4SUAP8'] = (function (exports) { (function () { 
+__LIBS__['bUUFZRGJAFPAHD7K'] = (function (exports) { (function () { 
 
 /************** identifiableset.js **************/
 var IdentifiableSet = exports.IdentifiableSet = function IdentifiableSet(options) {
@@ -237,12 +247,12 @@ IdentifiableSet.prototype.each = function IdentifiableSet_each(f) {
  * vim: sts=2 sw=2 ts=2 et
  */
  })(); return exports; })({});
-__LIBS__['BF178VRC35UBN51D'] = (function (exports) { (function () { 
+__LIBS__['vCOULM04ZLIGDTRX'] = (function (exports) { (function () { 
 
 /************** models.js **************/
-var util = __LIBS__['pFXSXUXX49WQPV19'];
-var CONF = __LIBS__['MG4EUX16MDLB6IJ5'];
-var IdentifiableSet = __LIBS__['pU11FS8_SM4SUAP8'].IdentifiableSet;
+var util = __LIBS__['C7XU1TV1_R2C6P6L'];
+var CONF = __LIBS__['eHTNCAKW4Y2ALDLG'];
+var IdentifiableSet = __LIBS__['bUUFZRGJAFPAHD7K'].IdentifiableSet;
 
 var VenueItemCollectionMixin = {
   venue: null,
@@ -273,7 +283,6 @@ Venue.prototype.initialize = function Venue_initialize(initialData, options) {
   var stockHolders = new StockHolderCollection(null, { venue: this });
   var stocks = new StockCollection(null, { venue: this });
   var seats = new SeatCollection(null, { venue: this });
-  var perAttributeSeatSet = {};
   var perStockSeatSet = {};
   var perStockHolderStockMap = {};
   var perStockTypeStockMap = {};
@@ -297,10 +306,7 @@ Venue.prototype.initialize = function Venue_initialize(initialData, options) {
         style: stockTypeDatum.style
       });
       stockTypes.add(stockType);
-      stockType.on('change:name', function () {
-        this.set('edited', true);
-      });
-      stockType.on('change:style', function () {
+      stockType.on('change:name change:style', function () {
         this.set('edited', true);
       });
     }
@@ -367,9 +373,7 @@ Venue.prototype.initialize = function Venue_initialize(initialData, options) {
       });
     }
   }
-  _.each(Seat.styleProviderAttributes, function (name) {
-    perAttributeSeatSet[name] = {};
-  });
+
   for (var id in initialData.seats) {
     var seatDatum = initialData.seats[id];
     var stock = stocks.get(seatDatum.stock_id);
@@ -380,21 +384,10 @@ Venue.prototype.initialize = function Venue_initialize(initialData, options) {
       seat_no: seatDatum.seat_no,
       status: seatDatum.status,
       stock: stock,
-      attrs: seatDatum.attrs,
-      areas: seatDatum.areas,
       sold: sold,
       selectable: (stock && stock.get('assignable') && !sold) ? true : false
     });
     seats.add(seat);
-    {
-      var attrs = seat.get('attrs');
-      for (name in attrs) {
-        var set = perAttributeSeatSet[name];
-        if (!set)
-          set = perAttributeSeatSet[name] = new IdentifiableSet();
-        set.add(seat);
-      }
-    }
     {
       var set;
       if (stock) {
@@ -406,10 +399,10 @@ Venue.prototype.initialize = function Venue_initialize(initialData, options) {
         set = perStockSeatSet[stock.id] = new IdentifiableSet();
       set.add(seat);
       seat.on('change:stock', function () {
-        this.set('edited', true);
         var prev = this.previous('stock');
         var new_ = this.get('stock');
         if (prev != new_) {
+          this.set('edited', true);
           if (prev) {
             perStockSeatSet[prev.id].remove(this);
             if (prev.has('assigned')) {
@@ -437,7 +430,6 @@ Venue.prototype.initialize = function Venue_initialize(initialData, options) {
   this.stockTypes = stockTypes;
   this.stocks = stocks;
   this.seats = seats;
-  this.perAttributeSeatSet = perAttributeSeatSet;
   this.perStockSeatSet = perStockSeatSet;
   this.perStockHolderStockMap = perStockHolderStockMap;
   this.perStockTypeStockMap = perStockTypeStockMap;
@@ -522,7 +514,7 @@ var ProvidesStyle = exports.ProvidesStyle = Backbone.Model.extend({
       stroke: {
         color: null,
         width: null,
-        pattern: null,
+        pattern: null
       },
       fill: {
         color: null
@@ -612,15 +604,21 @@ var Stock = exports.Stock = Backbone.Model.extend({
         style = util.mergeStyle(style, styleProvider.get('style'));
     });
     this.set('style', style);
+
+    var venue = this.get('venue');
+    if (venue && self.id in venue.perStockSeatSet) {
+      venue.perStockSeatSet[self.id].each(function(seat) {
+        seat.trigger('change:stock');
+      });
+    }
   },
 
   initialize: function Stock_initialize() {
     var self = this;
-
     _.each(Stock.styleProviderAttributes, function (name) {
-      var stock = self.get(name);
-      if (stock) {
-        stock.on('change:style', function () {
+      var styleProvider = self.get(name);
+      if (styleProvider) {
+        styleProvider.on('change:style', function () {
           self._refreshStyle();
         });
       } else {
@@ -646,7 +644,6 @@ var Seat = exports.Seat = Backbone.Model.extend({
     stock: null,
     selectable: true,
     selected: false,
-    areas: [],
     edited: false
   },
 
@@ -729,12 +726,12 @@ console.log(ad2);
  * vim: sts=2 sw=2 ts=2 et
  */
  })(); return exports; })({});
-__LIBS__['lAWLKCBMCO6DXVAK'] = (function (exports) { (function () { 
+__LIBS__['xPHGOJFCQG5CYC3M'] = (function (exports) { (function () { 
 
 /************** viewobjects.js **************/
-var util = __LIBS__['pFXSXUXX49WQPV19'];
-var CONF = __LIBS__['MG4EUX16MDLB6IJ5'];
-var models = __LIBS__['BF178VRC35UBN51D'];
+var util = __LIBS__['C7XU1TV1_R2C6P6L'];
+var CONF = __LIBS__['eHTNCAKW4Y2ALDLG'];
+var models = __LIBS__['vCOULM04ZLIGDTRX'];
 
 var Seat = exports.Seat = Backbone.Model.extend({
   defaults: {
@@ -748,10 +745,9 @@ var Seat = exports.Seat = Backbone.Model.extend({
 
   initialize: function Seat_initialize(attrs, options) {
     var self = this;
-
     this.styleTypes = [];
 
-    function selectableChanged() {
+    function onSelectableChanged() {
       if (self.get('model').selectable()) {
         self.removeStyleType('unselectable');
       } else if (!self.get('model').get('sold')) {
@@ -759,20 +755,14 @@ var Seat = exports.Seat = Backbone.Model.extend({
       }
     }
 
-    function selectedChanged() {
-      if (this.get('selected'))
+    function onSelectedChanged() {
+      if (self.get('model').get('selected'))
         self.addStyleType('selected');
       else
         self.removeStyleType('selected');
     }
 
     function onStockChanged() {
-      var prevModel = self.get('model').previous('stock');
-      if (prevModel)
-        prevModel.off('change:style', onStockChanged);
-      var model = self.get('model').get('stock');
-      if (model)
-        model.on('change:style', onStockChanged);
       self._refreshStyle();
     }
 
@@ -780,18 +770,18 @@ var Seat = exports.Seat = Backbone.Model.extend({
       var prevModel = self.previous('model');
       var model = self.get('model');
       if (prevModel) {
-        model.off('change:selectable', selectableChanged);
-        model.off('change:selected', selectedChanged);
+        model.off('change:selectable', onSelectableChanged);
+        model.off('change:selected', onSelectedChanged);
         model.off('change:stock', onStockChanged);
       }
       if (model) {
-        model.on('change:selectable', selectableChanged);
-        model.on('change:selected', selectedChanged);
+        model.on('change:selectable', onSelectableChanged);
+        model.on('change:selected', onSelectedChanged);
         model.on('change:stock', onStockChanged);
       }
     }
 
-    function onShapeChange(init) {
+    function onShapeChange() {
       var prev = self.previous('shape');
       var events = self.get('events');
       if (events) {
@@ -810,12 +800,11 @@ var Seat = exports.Seat = Backbone.Model.extend({
         var new_ = self.get('shape');
         new_.addEvent(events);
       }
-      if (!init)
-        self._refreshStyle();
+      self._refreshStyle();
     }
 
     function onEventsChange() {
-      var shape = self.get('shape')
+      var shape = self.get('shape');
       if (shape) {
         var prev = self.previous('events');
         var new_ = self.get('events');
@@ -847,11 +836,10 @@ var Seat = exports.Seat = Backbone.Model.extend({
     // ensure change events to get invoked correctly on the
     // initialization.
     this._previousAttributes = {};
-    selectableChanged();
+    onSelectableChanged();
     onModelChange();
-    onShapeChange(true);
     onEventsChange();
-    onStockChanged();
+    onShapeChange();
   },
 
   _refreshStyle: function Seat__refreshStyle() {
@@ -911,7 +899,7 @@ var Seat = exports.Seat = Backbone.Model.extend({
  * vim: sts=2 sw=2 ts=2 et
  */
  })(); return exports; })({});
-__LIBS__['qLT2ZG2234O09A4I'] = (function (exports) { (function () { 
+__LIBS__['LJ2447LZSLTESQPB'] = (function (exports) { (function () { 
 
 /************** translations.js **************/
 
@@ -942,13 +930,13 @@ exports.ja = {
 /************** venue-editor.js **************/
 /* extern */ var jQuery, I18n;
 (function ($) {
-  var CONF = __LIBS__['MG4EUX16MDLB6IJ5'];
-  var models = __LIBS__['BF178VRC35UBN51D'];
-  var util = __LIBS__['pFXSXUXX49WQPV19'];
-  var viewobjects = __LIBS__['lAWLKCBMCO6DXVAK'];
-  var IdentifiableSet = __LIBS__['pU11FS8_SM4SUAP8'].IdentifiableSet;
+  var CONF = __LIBS__['eHTNCAKW4Y2ALDLG'];
+  var models = __LIBS__['vCOULM04ZLIGDTRX'];
+  var util = __LIBS__['C7XU1TV1_R2C6P6L'];
+  var viewobjects = __LIBS__['xPHGOJFCQG5CYC3M'];
+  var IdentifiableSet = __LIBS__['bUUFZRGJAFPAHD7K'].IdentifiableSet;
   if (I18n)
-    I18n.translations = __LIBS__['qLT2ZG2234O09A4I'];
+    I18n.translations = __LIBS__['LJ2447LZSLTESQPB'];
 
   var parseCSSStyleText = (function () {
     var regexp_for_styles = /\s*(-?(?:[_a-z\u00a0-\u10ffff]|\\[^\n\r\f#])(?:[\-_A-Za-z\u00a0-\u10ffff]|\\[^\n\r\f])*)\s*:\s*((?:(?:(?:[^;\\ \n\r\t\f"']|\\[0-9A-Fa-f]{1,6}(?:\r\n|[ \n\r\t\f])?|\\[^\n\r\f0-9A-Fa-f])+|"(?:[^\n\r\f\\"]|\\(?:\n|\r\n|\r|\f)|\\[^\n\r\f])*"|'(?:[^\n\r\f\\']|\\(?:\n|\r\n|\r|\f)|\\[^\n\r\f])*')(?:\s+|(?=;|$)))+)(?:;|$)/g;
@@ -1306,7 +1294,7 @@ exports.ja = {
       y: ((vb && vb[3]) || h || w)
     } : null);
 
-    var drawable = new Fashion.Drawable(self.canvas[0], { contentSize: {x: size.x, y: size.y}, viewportSize: { x: this.canvas.innerWidth(), y: this.canvas.innerHeight() } });
+    var drawable = new Fashion.Drawable(self.canvas[0], { contentSize: { x: size.x+100, y: size.y+100 }, viewportSize: { x: this.canvas.innerWidth(), y: this.canvas.innerHeight() } });
     var shapes = {};
     var styleClasses = CONF.DEFAULT.STYLES;
 

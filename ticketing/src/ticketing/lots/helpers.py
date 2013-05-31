@@ -7,6 +7,7 @@ import json
 from sqlalchemy.orm.exc import NoResultFound
 from markupsafe import Markup
 from ticketing.formhelpers.widgets.list import OurListWidget
+from wtforms.validators import Required
 from .models import LotEntryStatusEnum
 from ticketing.users.helpers import format_sex
 from cgi import escape
@@ -98,28 +99,62 @@ def convert_wishes(params, limit):
     results = {}
     for key, product_id in product_ids.items():
         wish_order = key[0]
-        performance_id = performance_ids[wish_order]
+        #performance_id = performance_ids[wish_order]
         if key not in wished_quantities:
             continue
         quantity = wished_quantities[key]
         wishset = results.get(wish_order, [])
-        wishset.append(dict(wish_order=wish_order, product_id=product_id, quantity=quantity))
+        wishset.append(dict(wish_order=wish_order,
+                            product_id=product_id,
+                            quantity=quantity))
         results[wish_order] = wishset
         
     return [dict(performance_id=performance_ids[x], wished_products=results[x]) for x in sorted(results)]
 
-def add_wished_product_names(wishes):
-    results = []
+def check_quantities(wishes, upper_limit):
+    result = True
     for wish in wishes:
-        reversed_wish = []
-        performance_id = wish['performance_id']
-        for w in wish['wished_products']:
-            p = Product.query.filter(Product.id==w['product_id']).one()
-            perf = Performance.query.filter(Performance.id==performance_id).one()
-            reversed_wish.append(dict(wish_order=w['wish_order'], quantity=w['quantity'], product=p, performance=perf))
+        total_quantity = 0
+        for p in wish['wished_products']:
+            total_quantity += p['quantity']
+        result = result and (total_quantity <= upper_limit)
+    return result
 
-        results.append(reversed_wish)
-    return results
+def decorate_options_mobile(options):
+    options = [
+        dict(
+            performance=Performance.query.filter_by(id=data['performance_id']).one(),
+            wished_products=[
+                dict(
+                    product=Product.query.filter_by(id=rec['product_id']).one(),
+                    **rec
+                    )
+                for rec in data['wished_products']
+                ]
+            )
+        for data in options
+        ]
+
+    for option in options:
+        for wished_product in option['wished_products']:
+            wished_product['subtotal'] = wished_product['product'].price * wished_product['quantity']
+
+    for data in options:
+        data['total_amount_without_fee'] = sum(rec['product'].price * rec['quantity'] for rec in data['wished_products'])
+    return options
+
+def build_wishes_dicts_from_entry(entry):
+    result = []
+    for wish in entry.wishes:
+        result.append(dict(
+            performance=wish.performance,
+            wish_order=wish.wish_order,
+            wished_products=[
+                dict(product=rec.product, quantity=rec.quantity)
+                for rec in wish.products
+                ]
+            ))
+    return result
 
 def convert_shipping_address(params):
     shipping_address = ShippingAddress()
@@ -166,13 +201,16 @@ def validate_token(request):
 
     return True
 
+def render_mobile_error(msg):
+    return u'<font color="red">・%s</font><br />' % msg
+
 def mobile_error_list(request, form, name, with_label=False):
     errors = form[name].errors
     if not errors:
         return ""
     
     html = u'<div>'
-    html += u"".join([u'<font color="red">・%s%s</font><br />' % ((u'%s:' % form[name].label.text if with_label else u''), e)  for e in errors])
+    html += u"".join([render_mobile_error((u'%s:' % form[name].label.text if with_label else u'') + e)  for e in errors])
     html += u'</div>'
     return Markup(html)
 
@@ -221,3 +259,16 @@ format_gender = format_sex
 
 def tojson(obj):
     return json.dumps(obj) 
+
+def performance_date_label(performance):
+    return u'%s %s' % (japanese_datetime(performance.start_on), performance.venue.name)
+
+def is_required(field):
+    required = False
+    for v in field.validators:
+        if isinstance(v, Required):
+            required = True
+    return required
+
+def mobile_required_mark():
+    return Markup('<sup><font color="#f00">*</font></sup>')

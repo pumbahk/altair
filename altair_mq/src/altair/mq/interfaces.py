@@ -24,6 +24,7 @@ class ITask(Interface):
 
 
 class IMessage(Interface):
+    request = Attribute(u"pyramid request for registry")
     channel = Attribute(u"channel of message")
     method = Attribute(u"method of message")
     header = Attribute(u"header of message")

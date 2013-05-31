@@ -19,8 +19,7 @@ from sqlalchemy.orm.exc import NoResultFound
 from zope.interface import implementer
 from .interfaces import ICartPayment, ICartDelivery
 from ticketing.payments.interfaces import IOrderPayment, IOrderDelivery 
-#from ticketing.mails.interfaces import ICompleteMailPayment, ICompleteMailDelivery, IOrderCancelMailPayment, IOrderCancelMailDelivery
-#from ticketing.mails.resources import CompleteMailPayment, CompleteMailDelivery, OrderCancelMailPayment, OrderCancelMailDelivery
+from ticketing.users import api as user_api
 
 from .exceptions import (
     OutTermSalesException,
@@ -103,10 +102,6 @@ class TicketingCartResource(object):
             return []
         return sales_segment.membergroups
 
-    def get_system_fee(self):
-        # 暫定で0に設定
-        return 0
-
     def get_payment_delivery_method_pair(self, start_on=None):
         segment = self.sales_segment
         q = c_models.PaymentDeliveryMethodPair.query.filter(
@@ -130,7 +125,7 @@ class TicketingCartResource(object):
 
     def authenticated_user(self):
         """現在認証中のユーザ"""
-        from ticketing.rakuten_auth.api import authenticated_user
+        from altair.rakuten_auth.api import authenticated_user
         user = authenticated_user(self.request)
         return user or { 'is_guest': True }
 
@@ -203,24 +198,9 @@ class TicketingCartResource(object):
     def get_sales_segment(self):
         return self.sales_segment
 
-    def _create_cart(self, seat_statuses, ordered_products, performance_id):
-        cart = m.Cart.create(system_fee=self.get_system_fee())
-        seats = m.DBSession.query(c_models.Seat).filter(c_models.Seat.id.in_(seat_statuses)).all()
-        cart.add_seat(seats, ordered_products)
-        m.DBSession.add(cart)
-        m.DBSession.flush()
-        return cart
-
-    def _create_cart_with_quantity(self, stock_quantity, ordered_products, performance_id):
-        cart = m.Cart.create(performance_id=performance_id, system_fee=self.get_system_fee())
-        cart.add_products(ordered_products)
-        m.DBSession.add(cart)
-        m.DBSession.flush()
-        return cart
-
     @property
     def membership(self):
-        from ticketing.rakuten_auth.api import authenticated_user
+        from altair.rakuten_auth.api import authenticated_user
         user = authenticated_user(self.request)
         if user is None:
             return None
@@ -230,23 +210,9 @@ class TicketingCartResource(object):
         membership = user['membership']
         return membership
 
-    # TODO: users.api に移動
+    @deprecate('use ticketing.users.api.get_or_create_user')
     def get_or_create_user(self):
-        # TODO: 依存関係がおかしいので確認 なぜrakuten_authがcart.apiを使うのか？
-        from ticketing.rakuten_auth.api import authenticated_user
-        from . import api
-        openid = authenticated_user(self.request)
-        if openid is None or openid.get('is_guest', False):
-            return None
-
-        if 'clamed_id' in openid:
-            auth_identifier = openid['clamed_id']
-            membership = 'rakuten'
-        elif 'username' in openid:
-            auth_identifier = openid['username']
-            membership = openid['membership']
-        user = api.get_or_create_user(self.request, auth_identifier, membership)
-        return user
+        return user_api.get_or_create_user(self.authenticated_user())
 
     @reify
     def host_base_url(self):

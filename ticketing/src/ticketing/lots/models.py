@@ -126,8 +126,71 @@ class Lot(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     def finish_lotting(self):
         self.status = int(LotStatusEnum.Elected)
 
-    def validate_entry(self, entry):
-        return True
+    def check_entry_limit(self, email):
+        if self.entry_limit <= 0:
+            return True
+
+        return LotEntry.query.filter(
+            LotEntry.lot_id==self.id
+        ).filter(
+            LotEntry.shipping_address_id==c_models.ShippingAddress.id
+        ).filter(
+            LotEntry.canceled_at==None
+        ).filter(
+            sql.or_(c_models.ShippingAddress.email_1==email,
+                    c_models.ShippingAddress.email_2==email)
+        ).count() < self.entry_limit
+
+
+    ## gaaaaa! this name must be `elect_wishes`!
+    def electing_wishes(self, entry_wishes):
+        """ 当選予定申込希望 """
+        affected = 0
+        for entry_no, wish_order in entry_wishes:
+            w = LotElectWork(lot_id=self.id, lot_entry_no=entry_no, wish_order=wish_order,
+                             entry_wish_no="{0}-{1}".format(entry_no, wish_order))
+            DBSession.add(w)
+            affected += 1
+        return affected
+
+
+    ## gaaaa! look above comments!
+    def rejecting_entries(self, entries):
+        """ 落選予定 """
+        affected = 0
+        for entry in entries:
+            w = LotRejectWork(lot_id=self.id, lot_entry_no=entry.entry_no)
+            DBSession.add(w)
+            affected += 1
+        return affected
+
+    def cancel_electing(self, wish):
+        LotElectWork.query.filter(
+            LotElectWork.lot_id==self.id
+        ).filter(
+            LotElectWork.lot_entry_no==wish.lot_entry.entry_no
+        ).filter(
+            LotElectWork.wish_order==wish.wish_order
+        ).delete()
+
+    def cancel_rejecting(self, entry):
+        LotRejectWork.query.filter(
+            LotRejectWork.lot_id==self.id
+        ).filter(
+            LotRejectWork.lot_entry_no==entry.entry_no
+        ).delete()
+
+
+
+    @hybrid_method
+    def available_on(self, now):
+        return self.start_at <= now <= self.end_at
+
+    @classmethod
+    def has_product(cls, product):
+        return sql.and_(cls.sales_segment_id==Product.sales_segment_id,
+                        Product.id==product.id)
+
 
     @property
     def products(self):
@@ -192,6 +255,13 @@ class Lot(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             LotEntry.rejected_at==None
         ).all()
 
+    def get_lot_entry(self, entry_no):
+        return DBSession.query(LotEntry).filter(
+            LotEntry.lot_id==self.id
+        ).filter(
+                LotEntry.entry_no==entry_no
+        ).first()
+
 
 class LotEntry(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     """ 抽選申し込み """
@@ -231,6 +301,16 @@ class LotEntry(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     birthday = sa.Column(sa.Date)
     memo = sa.Column(sa.UnicodeText)
 
+    canceled_at = sa.Column(sa.DateTime())
+    ordered_mail_sent_at = sa.Column(sa.DateTime())
+
+    browserid = sa.Column(sa.String(40))
+
+    def get_wish(self, wish_order):
+        wish_order = int(wish_order)
+        for wish in self.wishes:
+            if wish.wish_order == wish_order:
+                return wish
 
     @property
     def max_amount(self):
@@ -260,7 +340,7 @@ class LotEntry(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     @hybrid_property
     def is_ordered(self):
-        return self.is_elected and self.order_id != None
+        return self.is_elected and any([w.order_id != None for w in self.wishes])
 
     def reject(self):
         now = datetime.now()
@@ -280,6 +360,23 @@ class LotEntry(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         wish.elect(now)
         return elected
 
+    def cancel(self):
+        now = datetime.now()
+        self.canceled_at = now
+        for wish in self.wishes:
+            wish.cancel(now)
+
+    def is_electing(self):
+        return LotElectWork.query.filter(
+            LotElectWork.lot_entry_no==self.entry_no
+        ).count()
+
+    def is_rejecting(self):
+        return LotRejectWork.query.filter(
+            LotRejectWork.lot_entry_no==self.entry_no
+        ).count()
+
+
 class LotEntryWish(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     u""" 抽選申し込み希望 """
     __tablename__ = 'LotEntryWish'
@@ -295,9 +392,42 @@ class LotEntryWish(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     lot_entry = orm.relationship('LotEntry', backref='wishes')
 
     elected_at = sa.Column(sa.DateTime)
+    rejected_at = sa.Column(sa.DateTime)
 
     order_id = sa.Column(Identifier, sa.ForeignKey('Order.id'))
     order = orm.relationship('Order', backref='lot_wishes')
+
+    canceled_at = sa.Column(sa.DateTime())
+
+    def is_electing(self):
+        return LotElectWork.query.filter(
+            LotElectWork.entry_wish_no==self.entry_wish_no).count()
+
+    def is_rejecting(self):
+        return LotRejectWork.query.filter(
+            LotRejectWork.lot_entry_no==LotEntry.entry_no
+        ).filter(
+            LotEntry.id==self.lot_entry_id
+        ).count()
+
+    @property
+    def works(self):
+        return LotElectWork.query.filter(
+            LotElectWork.entry_wish_no==self.entry_wish_no,
+        ).all()
+
+    @property
+    def reject_works(self):
+        return LotRejectWork.query.filter(
+            LotRejectWork.lot_entry_no==LotEntry.entry_no
+        ).filter(
+            LotEntry.id==self.lot_entry_id
+        ).all()
+
+
+    @property
+    def work_errors(self):
+        return [w.error for w in self.works if w.error]
 
     @property
     def transaction_fee(self):
@@ -325,7 +455,7 @@ class LotEntryWish(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     @property
     def tickets_amount(self):
-        return sum(p.amount for p in self.products)
+        return sum(p.subtotal for p in self.products)
 
     @property
     def total_amount(self):
@@ -337,7 +467,26 @@ class LotEntryWish(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     @property
     def system_fee(self):
-        return self.lot_entry.lot.system_fee
+        #return self.lot_entry.lot.system_fee
+        return self.lot_entry.payment_delivery_method_pair.system_fee
+
+
+    @property
+    def status(self):
+        """ """
+        if self.elected_at:
+            return u"当選"
+        if self.works:
+            return u"当選予定"
+        if self.canceled_at:
+            return u"キャンセル"
+        if self.reject_works:
+            return u"落選予定"
+        if self.rejected_at:
+            return u"落選"
+        return u"申込"
+
+
 
     def elect(self, now):
         now = now or datetime.now()
@@ -347,6 +496,9 @@ class LotEntryWish(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         now = now or datetime.now()
         self.rejected_at = now
 
+    def cancel(self, now):
+        now = now or datetime.now()
+        self.canceled_at = now
 
 class LotEntryProduct(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     u""" 抽選申し込み商品 """
@@ -367,13 +519,14 @@ class LotEntryProduct(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     performance = orm.relationship('Performance', backref='lot_entry_products')
 
     @property
-    def amount(self):
+    def subtotal(self):
         """ 購入額小計
         """
         return self.product.price * self.quantity
 
 
-class LotElectWork(Base, BaseModel, WithTimestamp, LogicallyDeleted):
+#class LotElectWork(Base, BaseModel, WithTimestamp, LogicallyDeleted):
+class LotElectWork(Base, BaseModel, WithTimestamp):
     """ 当選情報取り込みワーク """
     __tablename__ = 'LotElectWork'
 
@@ -381,9 +534,41 @@ class LotElectWork(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     lot_id = sa.Column(Identifier, sa.ForeignKey('Lot.id'))
     lot = orm.relationship("Lot", backref="elect_works")
     lot_entry_no = sa.Column(sa.Unicode(20), sa.ForeignKey('LotEntry.entry_no'), unique=True, doc=u"抽選申し込み番号")
-    wish_order = sa.Column(sa.Integer, sa.ForeignKey('LotEntryWish.wish_order'), doc=u"希望順")
+    #wish_order = sa.Column(sa.Integer, sa.ForeignKey('LotEntryWish.wish_order'), doc=u"希望順")
+    wish_order = sa.Column(sa.Integer, doc=u"希望順")
     entry_wish_no = sa.Column(sa.Unicode(30), doc=u"申し込み番号と希望順を合わせたキー項目")
 
+    error = sa.Column(sa.UnicodeText)
+
+    @property
+    def wish(self):
+        return LotEntryWish.query.filter(
+            LotEntryWish.entry_wish_no==self.entry_wish_no,
+        ).one()
+
+    def __repr__(self):
+        return "LotEntryProduct {self.entry_wish_no}".format(self=self)
+
+
+class LotRejectWork(Base, BaseModel, WithTimestamp):
+    """ 落選情報取り込みワーク """
+    __tablename__ = 'LotRejectWork'
+
+    id = sa.Column(Identifier, primary_key=True)
+    lot_id = sa.Column(Identifier, sa.ForeignKey('Lot.id'))
+    lot = orm.relationship("Lot", backref="reject_works")
+    lot_entry_no = sa.Column(sa.Unicode(20), sa.ForeignKey('LotEntry.entry_no'), unique=True, doc=u"抽選申し込み番号")
+    error = sa.Column(sa.UnicodeText)
+
+    @property
+    def lot_entry(self):
+        return LotEntry.query.filter(
+            LotEntry.entry_no==self.lot_entry_no,
+        ).one()
+
+
+    def __repr__(self):
+        return "LotRejectProduct {self.entry_wish_no}".format(self=self)
 
 
 class LotElectedEntry(Base, BaseModel, WithTimestamp, LogicallyDeleted):

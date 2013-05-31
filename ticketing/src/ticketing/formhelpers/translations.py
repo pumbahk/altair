@@ -1,6 +1,7 @@
 # encoding: utf-8
 
 from ticketing.formatter import Japanese_Japan_Formatter
+from datetime import datetime
 
 class Translations(object):
     messages={

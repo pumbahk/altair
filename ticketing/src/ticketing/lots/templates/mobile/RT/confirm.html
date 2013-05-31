@@ -5,33 +5,41 @@ ${event.title}<br />
 ${lot.name}
 </div>
 <%mobile:header>申込内容最終確認</%mobile:header>
-%for option_index_zb, wish in enumerate(wishes):
-<%mobile:band bgcolor="#ffdddd">第${option_index_zb + 1}希望</%mobile:band>
+%for wish in wishes:
+<%mobile:band bgcolor="#ffdddd">第${wish.wish_order + 1}希望</%mobile:band>
 <%mobile:form_header>公演・試合</%mobile:form_header>
 <div>
-${wish[0]['performance'].name}<br />
-${h.japanese_date(wish[0]['performance'].start_on)}<br />
-会場 ${wish[0]['performance'].venue.name}<br />
-開演 ${h.japanese_time(wish[0]['performance'].start_on)} (予定)
+${wish.performance.name}<br />
+${h.japanese_date(wish.performance.start_on)}<br />
+会場 ${wish.performance.venue.name}<br />
+開演 ${h.japanese_time(wish.performance.start_on)} (予定)
 </div>
-<%mobile:form_header>希望券種と枚数</%mobile:form_header>
-% for rec in wish:
-% if rec['quantity'] > 0:
-・${rec['product'].name} ${rec['quantity']}枚<br />
-% endif
+<%mobile:form_header>希望内容と手数料</%mobile:form_header>
+<div><font size="-1">
+% for lot_product in wish.products:
+・${lot_product.product.name}<br />
+<div align="right" style="text-align:right">
+${h.format_currency(lot_product.product.price)}×${lot_product.quantity}枚=${h.format_currency(lot_product.subtotal)} (税込) 
+</div>
 % endfor
-</div>
-%endfor
-<%mobile:header>お支払方法</%mobile:header>
-<div>
-${payment_delivery_method_pair.payment_method.name}
+・決済手数料 (${payment_delivery_method_pair.payment_method.name})<br />
+<div align="right" style="text-align:right">
 ${h.format_currency(payment_delivery_method_pair.transaction_fee)}
 </div>
-<%mobile:header>お引取方法</%mobile:header>
-<div>
-${payment_delivery_method_pair.delivery_method.name}
+・配送手数料 (${payment_delivery_method_pair.delivery_method.name})<br .>
+<div align="right" style="text-align:right">
 ${h.format_currency(payment_delivery_method_pair.delivery_fee)}
 </div>
+・システム利用料<br />
+<div align="right" style="text-align:right">
+${h.format_currency(wish.system_fee)}
+</div>
+<div align="right" style="text-align:right">
+合計 ${h.format_currency(wish.total_amount)} (税込)
+</div>
+</font></div>
+</div>
+%endfor
 <%mobile:header>購入者情報</%mobile:header>
 <%mobile:form_header>氏名(漢字)</%mobile:form_header>
 <div>
@@ -49,18 +57,39 @@ ${h.format_gender(request, gender)}
 <div>
 ${h.japanese_date(birthday)}
 </div>
+<%mobile:form_header>メールアドレス</%mobile:form_header>
+<div>
+${shipping_address['email_1']}
+</div>
 <%mobile:form_header>電話番号</%mobile:form_header>
 <div>
 ${shipping_address['tel_1']}
 </div>
 <%mobile:form_header>配送先住所</%mobile:form_header>
 <div>
-${shipping_address['zip']} ${shipping_address['prefecture']}${shipping_address['city']}${shipping_address['address_1']}${shipping_address['address_2']}
+〒${shipping_address['zip']}<br />
+${shipping_address['prefecture']}${shipping_address['city']}<br />
+${shipping_address['address_1']}<br />
+${shipping_address['address_2']}
 </div>
 <%mobile:form_header>メモ</%mobile:form_header>
 <div>
 ${memo|h.nl2br}
 </div>
+
+% if mailmagazines_to_subscribe:
+<%mobile:header>メールマガジンの配信</%mobile:header>
+<p>
+ご利用いただいた方には、楽天チケットからのメールマガジンをお送りします。不要な方はチェックをはずしてください。
+</p>
+% for mailmagazine in mailmagazines_to_subscribe:
+<input type="checkbox" checked="checked" name="mailmagazine" id="mailmagazine-${mailmagazine.id}" value="${mailmagazine.id}" />${mailmagazine.name}<br/>
+<div style="font-size:x-small;">
+${mailmagazine.description|n}
+</div>
+% endfor
+% endif
+
 <form method="post" action="${request.path}">
 <input type="hidden" name="token" value="${token}" />
 <div align="center" style="text-align:center">

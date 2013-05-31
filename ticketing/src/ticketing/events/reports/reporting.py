@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from datetime import datetime, date
+
 from pyramid.path import AssetResolver
 from sqlalchemy.sql import func, and_
 
@@ -117,8 +118,8 @@ def export_for_sales(event):
                 sales_end=jdatetime(ssg.end_at),
                 margin_ratio=unicode(ssg.margin_ratio),
                 refund_ratio=unicode(ssg.refund_ratio),
-                printing_fee=unicode(int(ssg.printing_fee)),
-                registration_fee=unicode(int(ssg.registration_fee))
+                printing_fee=u'{0:,g}'.format(ssg.printing_fee),
+                registration_fee=u'{0:,g}'.format(ssg.registration_fee)
             )
             data.sales.append(record)
 

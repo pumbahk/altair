@@ -1,5 +1,7 @@
 import logging
+import transaction
 import json
+from pyramid.threadlocal import get_current_request
 from pika.adapters.tornado_connection import TornadoConnection
 from zope.interface import implementer
 from .interfaces import (
@@ -12,11 +14,13 @@ logger = logging.getLogger(__name__)
 
 @implementer(IMessage)
 class Message(object):
-    def __init__(self, channel, method, header, body):
+    def __init__(self, request, channel, method, header, body):
+        self.request = request
         self.channel = channel
         self.method = method
         self.header = header
         self.body = body
+        self.matchdict = {}
 
     @property
     def params(self):
@@ -39,6 +43,7 @@ class TaskMapper(object):
         self.queue_settings = queue_settings
         self.channel = None
         self.root_factory = root_factory
+        logger.debug(self.root_factory)
 
     def declare_queue(self, channel):
         logger.debug("{name} declare queue {settings}".format(name=self.name,
@@ -48,18 +53,30 @@ class TaskMapper(object):
                               durable=self.queue_settings.durable, 
                               exclusive=self.queue_settings.exclusive,
                               auto_delete=self.queue_settings.auto_delete,
+                              nowait=self.queue_settings.nowait,
                               callback=self.on_queue_declared)
         self.channel = channel
 
     def on_queue_declared(self, frame):
-        logger.debug('declared')
-        self.channel.basic_consume(self.handle_delivery, 
-                                   queue=self.queue_settings.queue)
+        logger.debug('declared: {0}'.format(self.name))
+        consumer_tag = self.channel.basic_consume(self.handle_delivery,
+                                                  queue=self.queue_settings.queue)
+        logger.debug('consume: {0}'.format(consumer_tag))
 
     def handle_delivery(self, channel, method, header, body):
-        message = self.Message(channel, method, header, body)
-        context = self.root_factory(message)
-        self.task(context, message)
+        try:
+            logger.debug('handle delivery: {0}'.format(self.name))
+            request = get_current_request()
+            message = self.Message(request, channel, method, header, body)
+            context = self.root_factory(message)
+            logger.debug('call task')
+            self.task(context, message)
+            transaction.commit()
+            channel.basic_ack(method.delivery_tag)
+        except Exception as e:
+            transaction.abort()
+            logger.exception(e)
+
 
 
 @implementer(IConsumer)

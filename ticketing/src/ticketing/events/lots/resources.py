@@ -1,11 +1,29 @@
-from ticketing.core.models import Event
+# -*- coding:utf-8 -*-
+
+from pyramid.decorator import reify
+from ticketing.core.models import Event, Product
 from ticketing.lots.models import Lot
 
 from ticketing.resources import TicketingAdminResource
 
 class LotResource(TicketingAdminResource):
-    @property
+    @reify
+    def product(self):
+        product_id = None
+        try:
+            product_id = long(self.request.matchdict.get('product_id'))
+        except (TypeError, ValueError):
+            pass
+        if not product_id:
+            return None
+
+        return Product.query.filter(Product.id==product_id).first()
+
+    @reify
     def lot(self):
+        product = self.product
+        if product is not None:
+            return Lot.query.filter(Lot.has_product(product)).first()
         lot_id = None
         try:
             lot_id = long(self.request.matchdict.get('lot_id'))
@@ -16,7 +34,7 @@ class LotResource(TicketingAdminResource):
 
         return Lot.query.filter(Lot.id==lot_id).first()
 
-    @property
+    @reify
     def event(self):
         event_id = None
         try:

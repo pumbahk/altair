@@ -13,7 +13,7 @@ html {
 body{
 	margin: 0;
 	padding: 0;
-	background: url(/static/89ers/images/bg.png) repeat-y 50% 0 #FFB900;
+	background: url(../images/bg.png) repeat-y 50% 0 #FFB900;
 	color: #555;
 	font-size: 12px;
 }
@@ -34,7 +34,7 @@ body{
 }
 
 .header{
-	background: url(/static/89ers/images/header.png) no-repeat 50% 0;
+	background: url(../images/header.png) no-repeat 50% 0;
 	width:734px;
 	height:179px;
 	margin:0;
@@ -582,7 +582,7 @@ dl.faq dd{
 }
 
 .function{
-	background: url(/static/89ers/images/functions.png) no-repeat;
+	background: url(../images/functions.png) no-repeat;
 	width:575px;
 	height: 180px;
 	padding: 110px 50px 50px 50px;
@@ -805,21 +805,21 @@ div#performance-calendar table tbody td.holiday .day {
 
 
 div#performance-calendar table td ul li.maru{
-	background: url(/static/89ers/images/maru.png) #f1fbff no-repeat left top;
+	background: url(../images/maru.png) #f1fbff no-repeat left top;
 	padding: 3px;
 	text-align: center;
 	font-size: 11px;
 }
 
 div#performance-calendar table td ul li.sankaku{
-	background: url(/static/89ers/images/sankaku.png) #fffcf0 no-repeat left top;
+	background: url(../images/sankaku.png) #fffcf0 no-repeat left top;
 	padding: 3px;
 	text-align: center;
 	font-size: 11px;
 }
 
 div#performance-calendar table td ul li.batsu{
-	background: url(/static/89ers/images/batsu.png) #eee no-repeat left top;
+	background: url(../images/batsu.png) #eee no-repeat left top;
 	padding: 3px;
 	text-align: center;
 	font-size: 11px;

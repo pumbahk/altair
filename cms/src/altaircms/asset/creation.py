@@ -12,7 +12,7 @@ from . import SESSION_NAME
 from . import ValidationError
 from . import models
 from ..models import DBSession
-from ..filelib import get_filesession
+from ..filelib import get_adapts_filesession
 from ..tag.api import tags_to_string, get_tagmanager, put_tags, tags_from_string
 from ..tag.manager import QueryParser
 from ..subscribers import notify_model_create
@@ -22,7 +22,7 @@ from .detect import FlashInfoDatector
 from ..filelib import File
 from .forms import normalize_filename
 def get_asset_filesession(request):
-    return get_filesession(request, name=SESSION_NAME)
+    return get_adapts_filesession(request, name=SESSION_NAME)
 
 try:
     import Image #PIL?
@@ -108,7 +108,7 @@ class Deleter(object):
         if self.confirm(asset):
             DBSession.delete(asset)
             ## moveit
-            self.filesession.commit()
+            self.filesession.commit([asset])
 
 
 class Display(object):
@@ -191,7 +191,7 @@ class ImageCreator(Creator):
 
         ## add
         DBSession.add(asset)
-        filesession.commit()
+        filesession.commit([asset])
         return asset
 
 class MovieCreator(Creator):
@@ -222,7 +222,7 @@ class MovieCreator(Creator):
 
         ## add
         DBSession.add(asset)
-        filesession.commit()
+        filesession.commit([asset])
         return asset
 
 class FlashCreator(Creator):
@@ -253,7 +253,7 @@ class FlashCreator(Creator):
 
         ## add
         DBSession.add(asset)
-        filesession.commit()
+        filesession.commit([asset])
         return asset
 
 class Committer(object):
@@ -277,6 +277,7 @@ class Updater(object):
             raise ValidationError(u"ファイルの拡張子が異なっています。変更できません。")
 
         def commit():
+            asset.increment_version()
             return self.commit_update(asset, params, form=form)
         return Committer(commit)
 
@@ -297,18 +298,19 @@ class ImageUpdater(Updater):
         if is_filled_filefield(params["filepath"]):
             extra_asset_data = ImageInfoDatector(self.request).detect(params["filepath"].file, params["filepath"].filename)
             datalist.append(extra_asset_data)
-            mainimage_file = filesession.add(File(name=asset.filepath, handler=params["filepath"].file))
+            mainimage_file = filesession.add(File(name=asset.filename_with_version(), handler=params["filepath"].file))
             datalist.append(dict(filepath=mainimage_file.name))
             if not is_filled_filefield(params["thumbnail_path"]):
                 im = thumbnail_image_from_io(params["filepath"].file, self.size)
-                thumbnail_file = filesession.add(File(name=thumbnail_filename_from_mainfile(mainimage_file, ext=".png"), 
+                thumbnail_name = thumbnail_filename_from_mainfile(mainimage_file, ext=".png")
+                thumbnail_file = filesession.add(File(name=thumbnail_name, 
                                                       handler=im,
                                                       save=lambda path, handler: im.save(path, "PNG") #todo: image type
                                                       ))
                 datalist.append(dict(thumbnail_path=thumbnail_file.name))
 
         if is_filled_filefield(params["thumbnail_path"]):
-            thumbnail_file = filesession.add(File(name=asset.thumbnail_path, handler=params["thumbnail_path"].file))
+            thumbnail_file = filesession.add(File(name=asset.filename_with_version(asset.thumbnail_path), handler=params["thumbnail_path"].file))
             datalist.append(dict(thumbnail_path=thumbnail_file.name))
 
         datalist.append({k:v for k, v in params.iteritems() if v})
@@ -318,7 +320,7 @@ class ImageUpdater(Updater):
 
         ## add
         DBSession.add(asset)
-        filesession.commit()
+        filesession.commit([asset])
         return asset
 
 class MovieUpdater(Updater):
@@ -329,12 +331,13 @@ class MovieUpdater(Updater):
         if is_filled_filefield(params["filepath"]):
             extra_asset_data = MovieInfoDatector(self.request).detect(params["filepath"].file, params["filepath"].filename)
             datalist.append(extra_asset_data)
-            mainmovie_file = filesession.add(File(name=asset.filepath, handler=params["filepath"].file))
+            mainmovie_file = filesession.add(File(name=asset.filename_with_version(), handler=params["filepath"].file))
             datalist.append(dict(filepath=mainmovie_file.name))
 
         if is_filled_filefield(params["placeholder"]):
             placeholder = params["placeholder"]
-            name = asset.thumbnail_path or thumbnail_filename_from_mainfile(File(name=asset.filepath, handler=None),  placeholder.filename)
+            name = asset.filename_with_version(asset.thumbnail_path) or \
+                thumbnail_filename_from_mainfile(File(name=asset.filepath, handler=None),  placeholder.filename)
             thumbnail_file = filesession.add(File(name=name, handler=placeholder.file))
             datalist.append(dict(thumbnail_path=thumbnail_file.name))
 
@@ -345,7 +348,7 @@ class MovieUpdater(Updater):
 
         ## add
         DBSession.add(asset)
-        filesession.commit()
+        filesession.commit([asset])
         return asset
 
 class FlashUpdater(Updater):
@@ -357,12 +360,13 @@ class FlashUpdater(Updater):
         if is_filled_filefield(params["filepath"]):
             extra_asset_data = FlashInfoDatector(self.request).detect(params["filepath"].file, params["filepath"].filename)
             datalist.append(extra_asset_data)
-            mainflash_file = filesession.add(File(name=asset.filepath, handler=params["filepath"].file))
+            mainflash_file = filesession.add(File(name=asset.filename_with_version(), handler=params["filepath"].file))
             datalist.append(dict(filepath=mainflash_file.name))
 
         if is_filled_filefield(params["placeholder"]):
             placeholder = params["placeholder"]
-            name = asset.thumbnail_path or thumbnail_filename_from_mainfile(File(name=asset.filepath, handler=None),  placeholder.filename)
+            name = asset.filename_with_version(asset.thumbnail_path) or \
+                thumbnail_filename_from_mainfile(File(name=asset.filepath, handler=None),  placeholder.filename)
             thumbnail_file = filesession.add(File(name=name, handler=placeholder.file))
             datalist.append(dict(thumbnail_path=thumbnail_file.name))
 
@@ -373,7 +377,7 @@ class FlashUpdater(Updater):
 
         ## add
         DBSession.add(asset)
-        filesession.commit()
+        filesession.commit([asset])
         return asset
    
 class ImageSearcher(object):
@@ -386,7 +390,7 @@ class ImageSearcher(object):
             return qs
         
         manager = get_tagmanager("image_asset")
-        return QueryParser(data["tags"]).and_search_by_manager(manager, organization_id=self.request.organization.id)
+        return QueryParser(data["tags"]).filter_by_manager(manager, qs, organization_id=self.request.organization.id)
 
 class MovieSearcher(object):
     def __init__(self, request):
@@ -398,7 +402,7 @@ class MovieSearcher(object):
             return qs
         
         manager = get_tagmanager("movie_asset")
-        return QueryParser(data["tags"]).and_search_by_manager(manager, organization_id=self.request.organization.id)
+        return QueryParser(data["tags"]).filter_by_manager(manager, qs, organization_id=self.request.organization.id)
 
 class FlashSearcher(object):
     def __init__(self, request):
@@ -410,4 +414,4 @@ class FlashSearcher(object):
             return qs
         
         manager = get_tagmanager("flash_asset")
-        return QueryParser(data["tags"]).and_search_by_manager(manager, organization_id=self.request.organization.id)
+        return QueryParser(data["tags"]).filter_by_manager(manager, qs, organization_id=self.request.organization.id)

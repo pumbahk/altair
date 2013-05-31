@@ -87,7 +87,7 @@ class Stocker(object):
             for product_item in DBSession.query(ProductItem).filter(
                         ProductItem.product_id==product.id).filter(
                         ProductItem.performance_id==performance_id).all():
-                yield (product_item, quantity)
+                yield (product_item, quantity * product_item.quantity)
 
     def quantity_for_stock_id(self, performance_id, ordered_products):
         """ Productと個数の組から、stock_id, 個数の組に集約する
@@ -96,6 +96,8 @@ class Stocker(object):
         logger.debug("ordered products: %s" % ordered_products)
         ordered_product_items = self._convert_order_product_items(performance_id, ordered_products=ordered_products)
         ordered_product_items = list(ordered_product_items)
+        logger.debug(u"ordered products: %s" % [(p[0].name, p[1]) 
+                                                for p in ordered_products])
         logger.debug("ordered product items: %s" % ordered_product_items)
         if sum([quantity for p, quantity in ordered_products]) > sum([quantity for p, quantity in ordered_product_items]):
             logger.debug("invalid product selection %s > %s" % (sum([q for p, q in ordered_products]), sum([q for p, q in ordered_product_items])))

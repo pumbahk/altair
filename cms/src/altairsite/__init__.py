@@ -19,8 +19,9 @@ def main(global_config, **local_config):
     """
     settings = dict(global_config)
     settings.update(local_config)
-    engine = engine_from_config(settings, 'sqlalchemy.', pool_recycle=3600)
-    sqlahelper.get_session().remove()
+    from sqlalchemy.pool import NullPool
+    engine = engine_from_config(settings, poolclass=NullPool,
+                                pool_recycle=60)
     sqlahelper.set_base(Base)
     sqlahelper.add_engine(engine)
 
@@ -29,11 +30,20 @@ def main(global_config, **local_config):
     config.include("altair.exclog")
 
     config.add_renderer('.html' , 'pyramid.mako_templating.renderer_factory')
+    # config.include("altaircms.templatelib")
+    config.include("altair.cdnpath")
+    from altair.cdnpath import S3StaticPathFactory
+    config.add_cdn_static_path(S3StaticPathFactory(
+            settings["s3.bucket_name"], 
+            exclude=config.maybe_dotted(settings.get("s3.static.exclude.function")), 
+            prefix="/usersite"))
+
     config.include(install_static_page)
     config.include("altaircms.tag:install_tagmanager")
     config.include("altaircms.topic:install_topic_searcher")
     config.include("altaircms.page:install_pageset_searcher")
     config.include("altaircms.widget:install_has_widget_page_finder")
+    config.include("altaircms.asset:install_virtual_asset")
 
     ## organization mapping
     OrganizationMapping = config.maybe_dotted("altaircms.auth.api.OrganizationMapping")

@@ -43,9 +43,9 @@ class AccessControlPC(object):
     def error_message(self):
         return u"\n".join(self._error_message)
 
-    def frontpage_template(self, page):
-        lookup = api.get_frontpage_template_lookup(self.request)
-        return lookup.get_renderable_template(self.request, page.layout, verbose=True)
+    def frontpage_discriptor(self, page):
+        resolver = api.get_frontpage_discriptor_resolver(self.request)
+        return resolver.resolve(self.request, page.layout, verbose=True)
 
     def frontpage_renderer(self):
         return api.get_frontpage_renderer(self.request)
@@ -53,7 +53,7 @@ class AccessControlPC(object):
     def can_access(self):
         if not self.access_ok:
             fmt = u"*front pc access* url is not found (%s). error=%s"
-            mes = fmt % (self.request.referer, self.error_message)
+            mes = fmt % (self.request.url, self.error_message)
             logger.warn(mes.encode("utf-8"))
         return self.access_ok
 
@@ -77,10 +77,6 @@ class AccessControlPC(object):
             self._error_message.append(u"*fetch page* url=%s page is not found" % url)
             self.access_ok = False
             return page
-
-        if page.event and page.event.is_searchable == False:
-            self._error_message.append(u"*fetch pageset* pageset(id=%s) event(id=%s) is not searcheable" % (page.id, page.event.id))
-            self.access_ok = False
         
         try:
             page.valid_layout()

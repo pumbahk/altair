@@ -31,17 +31,17 @@
 <table class="table table-striped table-bordered">
 <tr><th>site</th><td>${site.name} (site id=${site.id})</td></tr>
 <tr><th>backend</th><td>
-	% if site.drawing_url is not None:
-		<a href="${request.route_path('api.get_drawing', venue_id=venue.id)}" target="_blank">${site.drawing_url}</a>
+	% if drawing.drawing_url is not None:
+		<a href="${drawing.direct_drawing_url}" target="_blank">${drawing.drawing_url}</a>
 		<a href="${request.route_path('venues.checker', venue_id=venue.id)}" target="_blank">[checker]</a>
 	% else:
 		None
 	% endif
 </td></tr>
 <tr><th>frontend</th><td>
-	% if site._metadata_url != None and root:
-      ${site._metadata_url}
-      % for page in sorted(pages, key=lambda x:x[1].get('order')):
+	% if pages and root:
+      ${drawing.frontend_metadata}
+      % for page in sorted(pages.iteritems(), key=lambda x:x[1].get('order')):
        [ <a href="${request.route_path('api.get_frontend', venue_id=venue.id, part=page[0])}" target="_blank">${page[1]['name']}
          % if page[1].get('root'):
            (root)
@@ -49,9 +49,22 @@
        </a> ]
       % endfor
 	% else:
-	${site._metadata_url}
+	${drawing.frontend_metadata}
 	% endif
 </td></tr>
+</table>
+
+<table class="table table-striped table-bordered">
+<tr><th>優先度タイプ</th></tr>
+% for type in types:
+  <tr><td>
+	% if type_id==type.id:
+      <b>${type.name}</b> (${type.id})
+	% else:
+      <a href="?index_type=${type.id}">${type.name}</a> (${type.id})
+	% endif
+  </td></tr>
+% endfor
 </table>
 
 <table class="table table-striped table-bordered">
@@ -83,6 +96,7 @@ table.nowrap td { white-space: nowrap; }
     <th>L0 ID</th>
     <th>席名称</th>
     <th>席番号</th>
+    <th>優先度</th>
     <th>状態</th>
   </tr>
   </thead>
@@ -111,6 +125,11 @@ table.nowrap td { white-space: nowrap; }
       <td>
         % if item.seat.seat_no != None:
 			${item.seat.seat_no}
+		% endif
+	  </td>
+	  <td>
+		% if item.index != None:
+			${item.index.index}
 		% endif
 	  </td>
 	  <td>

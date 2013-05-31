@@ -25,6 +25,7 @@ from .models import (
     LotElectedEntry,
 )
 from . import urls
+from .adapters import LotSessionCart
 
 logger = logging.getLogger(__name__)
 
@@ -78,7 +79,7 @@ class EntryLotView(object):
             event=event,
             lot=lot,
             sales_segment=sales_segment,
-            option_index=len(api.get_options(self.request)) + 1
+            option_index=len(api.get_options(self.request, lot.id)) + 1
             )
 
     @view_config(route_name='lots.entry.step1', renderer=selectable_renderer("mobile/%(membership)s/step1.html"))
@@ -117,13 +118,29 @@ class EntryLotView(object):
             logger.debug('performance not found')
             raise HTTPNotFound()
 
+        products = {}
+        for product in DBSession.query(Product) \
+                .join(Product.seat_stock_type) \
+                .filter(Product.sales_segment_id == sales_segment.id) \
+                .filter(Product.performance_id == performance.id) \
+                .order_by(Product.display_order):
+            products_per_stock_type = products.get(product.seat_stock_type_id)
+            if products_per_stock_type is None:
+                products_per_stock_type = products[product.seat_stock_type_id] = []
+            products_per_stock_type.append(product)
 
         return dict(
             event=event,
             lot=lot,
             sales_segment=sales_segment,
             performance=performance,
-            products=sales_segment.products,
+            products=sorted(
+                [
+                    products_per_stock_type
+                    for _, products_per_stock_type in products.items()
+                    ],
+                lambda a, b: cmp(a[0].seat_stock_type.display_order, a[0].seat_stock_type.display_order,)
+                ),
             option_index=self.context.option_index,
             messages=self.request.session.pop_flash()
             )
@@ -137,26 +154,17 @@ class EntryLotView(object):
             event=event,
             lot=lot,
             sales_segment=sales_segment,
-            products=sales_segment.products,
             option_index=option_index,
-            options=[
-                dict(
-                    performance=Performance.query.filter_by(id=data['performance_id']).one(),
-                    wished_products=[
-                        dict(
-                            product=Product.query.filter_by(id=rec['product_id']).one(),
-                            **rec
-                            )
-                        for rec in data['wished_products']
-                        ]
-                    )
-                for data in api.get_options(self.request)
-                ]
+            options=h.decorate_options_mobile(api.get_options(self.request, lot.id))
             )
 
     @view_config(route_name='lots.entry.step3', request_method='GET', renderer=selectable_renderer("mobile/%(membership)s/step3.html"))
     def step3(self):
-        return self.step3_rendered_value(None)
+        lot = self.context.lot
+        option_index = len(api.get_options(self.request, lot.id))
+        if option_index == 0:
+            return HTTPFound(self.request.route_path('lots.entry.index', event_id=self.context.event.id, lot_id=lot.id))
+        return self.step3_rendered_value(option_index)
 
     @back(mobile=back_to_step1)
     @view_config(route_name='lots.entry.step3', request_method='POST', renderer=selectable_renderer("mobile/%(membership)s/step3.html"))
@@ -187,15 +195,16 @@ class EntryLotView(object):
                         .filter(Product.id == k[8:]) \
                         .one()
                     quantity = max(int(v), 0) if v else 0
-                    wished_products.append(dict(
-                        wish_order=option_index_zb,
-                        product_id=product.id,
-                        quantity=quantity))
+                    if quantity > 0:
+                        wished_products.append(dict(
+                            wish_order=option_index_zb,
+                            product_id=product.id,
+                            quantity=quantity))
         except (ValueError, KeyError, NoResultFound):
             raise HTTPBadRequest()
 
 
-        options = api.get_options(self.request)
+        options = api.get_options(self.request, lot.id)
         if len(options) < option_index_zb:
             raise HTTPBadRequest()
 
@@ -223,7 +232,7 @@ class EntryLotView(object):
 
         return self.step3_rendered_value(option_index_zb + 1)
 
-    def step4_rendered_value(self, form):
+    def step4_rendered_value(self, form, pdmp_messages=None):
         event = self.context.event
         lot = self.context.lot
 
@@ -237,7 +246,9 @@ class EntryLotView(object):
             lot=lot,
             sales_segment=sales_segment,
             payment_delivery_methods=sales_segment.payment_delivery_method_pairs,
-            form=form
+            form=form,
+            pdmp_messages=pdmp_messages,
+            messages=self.request.session.pop_flash()
             )
 
     @view_config(route_name='lots.entry.step4', renderer=selectable_renderer("mobile/%(membership)s/step4.html"))
@@ -263,17 +274,26 @@ class EntryLotView(object):
         except (ValueError, TypeError):
             pass
 
+        validated = True
+        pdmp_messages = None
+
         payment_delivery_pairs = sales_segment.payment_delivery_method_pairs
         if payment_delivery_method_pair_id not in [m.id for m in payment_delivery_pairs]:
-            self.request.session.flash(u"お支払お引き取り方法を選択してください")
-            return self.step4_rendered_value(form=cform)
+            pdmp_messages = [u"お支払／引取方法をお選びください"]
+            validated = False
         if not cform.validate():
-            return self.step4_rendered_value(cform)
+            validated = False
 
+        if not validated:
+            self.request.session.flash(u"入力内容を確認してください")
+            return self.step4_rendered_value(form=cform, pdmp_messages=pdmp_messages)
+
+        entry_no = api.generate_entry_no(self.request, self.context.organization)
         shipping_address_dict = cform.get_validated_address_data()
         api.new_lot_entry(
             self.request,
-            wishes=api.get_options(self.request),
+            entry_no=entry_no,
+            wishes=api.get_options(self.request, lot.id),
             payment_delivery_method_pair_id=payment_delivery_method_pair_id,
             shipping_address_dict=shipping_address_dict,
             gender=cform['sex'].data,
@@ -281,6 +301,15 @@ class EntryLotView(object):
                               int(cform['month'].data),
                               int(cform['day'].data)),
             memo=cform['memo'].data)
+        entry = self.request.session['lots.entry']
+        cart = LotSessionCart(entry, self.request, self.context.lot)
+
+        payment = Payment(cart, self.request)
+        self.request.session['payment_confirm_url'] = urls.entry_confirm(self.request)
+
+        result = payment.call_prepare()
+        if callable(result):
+            return result
 
         location = urls.entry_confirm(self.request)
         return HTTPFound(location=location)

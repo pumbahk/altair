@@ -175,7 +175,7 @@ def get_item_name(request, cart_name):
     return _maybe_encoded(base_item_name) + " " + str(cart_name)
 
 def get_nickname(request, suffix=u'さん'):
-    from ticketing.rakuten_auth.api import authenticated_user
+    from altair.rakuten_auth.api import authenticated_user
     user = authenticated_user(request) or {}
     nickname = user.get('nickname', '')
     if not nickname:
@@ -199,28 +199,6 @@ def get_payment_method_url(request, payment_method_id, route_args={}):
         return request.route_url(route_name, **route_args)
     else:
         return ""
-
-def get_or_create_user(request, auth_identifier, membership='rakuten'):
-    # TODO: 楽天OpenID以外にも対応できるフレームワークを...
-    credential = UserCredential.query.filter(
-        UserCredential.auth_identifier==auth_identifier
-    ).filter(
-        UserCredential.membership_id==Membership.id
-    ).filter(
-        Membership.name==membership
-    ).first()
-    if credential:
-        return credential.user
-    
-    user = User()
-    membership = Membership.query.filter(Membership.name=='rakuten').first()
-    if membership is None:
-        membership = Membership(name='rakuten')
-        DBSession.add(membership)
-    credential = UserCredential(user=user, auth_identifier=auth_identifier, membership=membership)
-    DBSession.add(user)
-    return user
-
 
 @deprecate
 def get_salessegment(request, event_id, salessegment_id, selected_date):
@@ -277,11 +255,6 @@ def order_products(request, performance_id, product_requires, selected_seats=[])
 
 def is_quantity_only(stock):
     return stock.stock_type.quantity_only
-
-
-def get_system_fee(request):
-    return 380
-
 
 def get_valid_sales_url(request, event):
     principals = effective_principals(request)

@@ -6,7 +6,7 @@ from pyramid.renderers import render
 from altaircms.plugins.widget.api import DisplayTypeSelectRendering
 
 from .models import PerformancelistWidget
-
+from .api import get_stock_data
 ## todo refactoring
 WEEK =[u"月", u"火", u"水", u"木", u"金", u"土", u"日"]
 def render_performancelist_with_template(template_name, request,  widget, bsettings):
@@ -17,12 +17,14 @@ def render_performancelist_with_template(template_name, request,  widget, bsetti
     event = bsettings.extra["event"]
     request = bsettings.extra["request"]
     icon_classes = event.service_info_list
+    status = get_stock_data(request, event, widget)
     return render(template_name, 
                   {"performances": performances, 
                    "event": event, 
                    "widget": widget, 
                    "icon_classes": icon_classes, 
-                   "WEEK": WEEK}, 
+                   "WEEK": WEEK, 
+                   "status": status}, 
                   request)
 
 render_fullset = partial(render_performancelist_with_template,  "altaircms.plugins.widget:performancelist/render.html")
@@ -41,6 +43,7 @@ class PerformancelistWidgetUtilityDefault(object):
         self.rendering.register("fullset", render_fullset)
         self.rendering.register("soundc", render_soundc)
         self.choices = self.rendering.choices
+        self.status_impl = config.maybe_dotted(self.settings["status_impl"])
         return self
 
     def validation(self):

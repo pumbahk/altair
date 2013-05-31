@@ -40,7 +40,7 @@ class RealPromotionManager(object):
             p = request.context.Promotion.query.filter_by(id=request.GET["promotion_unit_id"]).one()
             return {"id": p.id, 
                     "link": h.link.get_link_from_promotion(request, p), 
-                    "src": h.asset.to_show_page(request, p.main_image), 
+                    "src": h.asset.rendering_object(request, p.main_image).filepath, 
                     "width": p.main_image.width, 
                     "height": p.main_image.height, 
                     "message": p.text}

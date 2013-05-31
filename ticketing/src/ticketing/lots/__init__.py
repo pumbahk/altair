@@ -6,8 +6,10 @@ import json
 from pyramid.config import Configurator
 from pyramid.interfaces import IRequest, IDict
 from pyramid_beaker import session_factory_from_settings
+from pyramid_beaker import set_cache_regions_from_settings
 from pyramid.authorization import ACLAuthorizationPolicy
 from pyramid.tweens import EXCVIEW
+from pyramid.tweens import INGRESS
 from pyramid_selectable_renderer import SelectableRendererSetup
 from pyramid_selectable_renderer.custom import ReceiveTemplatePathFormat, ReceiveTemplatePathCandidatesDict, SelectByRequestGen
 from ticketing.core.api import get_organization
@@ -49,6 +51,8 @@ def includeme(config):
     config.add_subscriber(register_globals, 'pyramid.events.BeforeRender')
     config.add_renderer('.html' , 'pyramid.mako_templating.renderer_factory')
     config.add_renderer('json'  , 'ticketing.renderers.json_renderer_factory')
+    config.add_renderer('.txt' , 'pyramid.mako_templating.renderer_factory')
+
     selectable_renderer.register_to(config)
 
     # 申し込みフェーズ
@@ -100,29 +104,44 @@ def main(global_config, **local_config):
     settings = dict(global_config)
     settings.update(local_config)
 
-    engine = sa.engine_from_config(settings)
+    from sqlalchemy.pool import NullPool
+    engine = sa.engine_from_config(settings, poolclass=NullPool,
+                                   isolation_level='READ COMMITTED',
+                                   pool_recycle=60)
+
     sqlahelper.add_engine(engine)
     session_factory = session_factory_from_settings(settings)
+    set_cache_regions_from_settings(settings) 
 
     config = Configurator(settings=settings,
-                          root_factory=".resources.LotResource")
-    config.set_session_factory(session_factory)
+                          root_factory=".resources.lot_resource_factory",
+                          session_factory=session_factory)
     config.add_static_view('static', 'static', cache_max_age=3600)
     config.add_static_view('c_static', 'ticketing.cart:static', cache_max_age=3600)
 
     config.include(".")
+    config.include(".sendmail")
 
     ### includes altair.*
     config.include('altair.auth')
     config.include('altair.browserid')
     config.include('altair.exclog')
 
+    config.include("altair.cdnpath")
+    from altair.cdnpath import S3StaticPathFactory
+    config.add_cdn_static_path(S3StaticPathFactory(
+            settings["s3.bucket_name"], 
+            exclude=config.maybe_dotted(settings.get("s3.static.exclude.function")), 
+            mapping={"ticketing.cart:static/": "/cart/static/"}))
+
     config.include('altair.mobile')
 
-    config.include('ticketing.rakuten_auth')
+    config.include('altair.rakuten_auth')
+    config.include('ticketing.users')
+    config.include("ticketing.multicheckout")
     config.include("ticketing.payments")
     config.include("ticketing.payments.plugins")
-    config.add_tween('ticketing.tweens.session_cleaner_factory', over=EXCVIEW)
+    config.add_tween('ticketing.tweens.session_cleaner_factory', under=INGRESS)
 
     config.include('altair.pyramid_assets')
     config.include('altair.pyramid_boto')
