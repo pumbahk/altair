@@ -23,6 +23,6 @@ def goto_pc_page(context, request):
 
 @usersite_view_config(route_name="smartphone.goto_sp_page")
 def goto_sp_page(context, request):
-    response = HTTPFound(request.GET.get("next", "/")) #todo: change
+    response = HTTPFound(request.GET.get("next", request.route_path("smartphone.main"))) #todo: change
     set_we_invalidate_pc_access(response)
     return response
