@@ -289,11 +289,13 @@ def sej_delivery_viewlet(context, request):
     order = context.order
     sej_order = get_sej_order(order)
     payment_id = context.order.payment_delivery_pair.payment_method.payment_plugin_id
+    delivery_method = context.order.payment_delivery_pair.delivery_method
     is_payment_with_sej = int(payment_id or -1) == PAYMENT_PLUGIN_ID
     return dict(
         order=order,
         is_payment_with_sej=is_payment_with_sej, 
-        sej_order=sej_order
+        sej_order=sej_order,
+        delivery_method=delivery_method,
     )
 
 @view_config(context=ICartDelivery, name="delivery-%d" % DELIVERY_PLUGIN_ID, 
@@ -308,9 +310,11 @@ def sej_delivery_confirm_viewlet(context, request):
 def sej_payment_viewlet(context, request):
     order = context.order
     sej_order = get_sej_order(order)
+    payment_method = context.order.payment_delivery_pair.payment_method
     return dict(
         order=order,
-        sej_order=sej_order
+        sej_order=sej_order,
+        payment_method=payment_method,
     )
 
 @view_config(context=ICartPayment, name="payment-%d" % PAYMENT_PLUGIN_ID, renderer='ticketing.payments.plugins:templates/sej_payment_confirm.html')
@@ -324,8 +328,11 @@ def payment_mail_viewlet(context, request):
     :param context: ICompleteMailPayment
     """
     sej_order=context.order.sej_order
+    payment_method = context.order.payment_delivery_pair.payment_method
     return dict(sej_order=sej_order, h=cart_helper, 
-                notice=context.mail_data("notice"))
+                notice=context.mail_data("notice"),
+                payment_method=payment_method,
+    )
 
 @view_config(context=ICompleteMailDelivery, name="delivery-%d" % DELIVERY_PLUGIN_ID, renderer="ticketing.payments.plugins:templates/sej_delivery_mail_complete.html")
 def delivery_mail_viewlet(context, request):
@@ -334,10 +341,12 @@ def delivery_mail_viewlet(context, request):
     """
     sej_order=context.order.sej_order
     payment_id = context.order.payment_delivery_pair.payment_method.payment_plugin_id
+    delivery_method = context.order.payment_delivery_pair.delivery_method
     is_payment_with_sej = int(payment_id or -1) == PAYMENT_PLUGIN_ID
     return dict(sej_order=sej_order, h=cart_helper,
                 is_payment_with_sej=is_payment_with_sej, 
-                notice=context.mail_data("notice"))
+                notice=context.mail_data("notice"),
+                delivery_method=delivery_method)
 
 @view_config(context=IOrderCancelMailPayment, name="payment-%d" % PAYMENT_PLUGIN_ID)
 @view_config(context=IOrderCancelMailDelivery, name="delivery-%d" % DELIVERY_PLUGIN_ID)
