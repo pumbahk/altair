@@ -91,13 +91,10 @@ form = TopPageSidebarSearchForm()
               </ul>
             </dd>
           </dl>
-          <div id="social" style="float: right" class="header-navigation">
+          <div id="social" style="float: right">
             <iframe src="https://www.facebook.com/plugins/like.php?app_id=233610706676154&amp;href=${h.safe_url_quote("http://ticket.rakuten.co.jp/")}&amp;send=false&amp;layout=button_count&amp;width=100&amp;show_faces=false&amp;action=like&amp;colorscheme=light&amp;font&amp;height=20" scrolling="no" frameborder="0" style="border:none; overflow:hidden; width:100px; height:20px;" allowTransparency="true"></iframe>
             <iframe allowtransparency="true" frameborder="0" scrolling="no" src="https://platform.twitter.com/widgets/tweet_button.html?url=${h.safe_url_quote("http://ticket.rakuten.co.jp/")}&amp;via=RakutenTicket&amp;count=none&amp;text=【楽天チケット】 チケット予約・購入&amp;lang=ja&amp;" style="height: 20px; width: 70px;"></iframe>
           </div>
-          <script type="text/javascript">
-            ${layout.goto_sppage_script(".header-navigation", next=request.route_path("smartphone.main"))}
-          </script>
         </div>
 
         <div id="globalNav">
@@ -109,6 +106,13 @@ form = TopPageSidebarSearchForm()
             <li class="right"><a href="${h.link.get_link_from_category(request,c)}"><img src="${c.imgsrc}" alt="${c.label}" ${(c.attributes or "")|n} /></a></li>
             %endfor
           </ul>
+          <script type="text/javascript">
+            <% from altairsite import PC_ACCESS_COOKIE_NAME %>
+            if(document.cookie.indexOf("${PC_ACCESS_COOKIE_NAME}") > -1){
+                var e = $("<a>").text("SP版へ").attr("href", "${request.route_path("smartphone.goto_sp_page", _query=(dict(next=request.route_path("smartphone.main"))))}").attr("class", "goto-link btn-primary");
+                              $('#globalNav1').append($('<li class="right">').append(e));
+             }
+          </script>
           <ul id="globalNav2">
           </ul>
         </div>
