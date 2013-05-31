@@ -7,7 +7,7 @@ import transaction
 import logging
 from ticketing.payments.payment import Payment
 from altair.mq.decorators import task_config
-from ticketing.cart.models import Cart, CartedProduct
+from ticketing.cart.models import Cart, CartedProduct, CartedProductItem
 from ticketing.cart.stocker import Stocker
 from pyramid.interfaces import IRequest
 from ticketing.cart.interfaces import (
@@ -50,7 +50,13 @@ def lot_wish_cart(wish):
                 sales_segment=wish.lot_entry.lot.sales_segment,
                 products=[
                     CartedProduct(product=p.product,
-                                  quantity=p.quantity)
+                                  quantity=p.quantity,
+                                  items=[
+                                      CartedProductItem(
+                                          quantity=p.quantity * ordered_product_item.quantity,
+                                          product_item=ordered_product_item)
+                                      for ordered_product_item in p.product.items
+                                  ])
                     for p in wish.products
                     ],
                 )

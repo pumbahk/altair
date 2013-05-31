@@ -11,13 +11,15 @@ class lot_wish_cartTests(unittest.TestCase):
 
     def test_it(self):
         from ticketing.core.models import (
-            Performance, Product, PaymentDeliveryMethodPair,
+            Performance, Product, PaymentDeliveryMethodPair, ProductItem,
             PaymentMethod, DeliveryMethod,
             SalesSegment,
         )
         from ..models import LotEntryWish, LotEntry, Lot, LotEntryProduct
-        product1 = Product(price=100)
-        product2 = Product(price=150)
+        product1 = Product(price=100,
+                           items=[ProductItem(quantity=1)])
+        product2 = Product(price=150,
+                           items=[ProductItem(quantity=1), ProductItem(quantity=9)])
 
         wish = LotEntryWish(
             performance=Performance(),
@@ -55,8 +57,13 @@ class lot_wish_cartTests(unittest.TestCase):
         self.assertEqual(len(result.products), 2)
         self.assertEqual(result.products[0].quantity, 3)
         self.assertEqual(result.products[0].product, product1)
+        self.assertEqual(len(result.products[0].items), 1)
+        self.assertEqual(result.products[0].items[0].quantity, 3)
         self.assertEqual(result.products[1].quantity, 4)
         self.assertEqual(result.products[1].product, product2)
+        self.assertEqual(len(result.products[1].items), 2)
+        self.assertEqual(result.products[1].items[0].quantity, 4)
+        self.assertEqual(result.products[1].items[1].quantity, 36)
 
 
 class WorkerResourceTests(unittest.TestCase):
