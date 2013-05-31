@@ -45,9 +45,10 @@ def mobile_encoding_convert_factory(handler, registry):
                 return convert_response_if_necessary(request, Response(status=400, body=render("altaircms:templates/mobile/default_notfound.html", dict(), request)))
         else:
             ## for smartphone
-            # if "HTTP_USER_AGENT" in request.environ:
-            #     if SMARTPHONE_USER_AGENT_RX.match(request.environ["HTTP_USER_AGENT"]):
-            #         directlyProvides(request, ISmartphoneRequest)
+            if "HTTP_USER_AGENT" in request.environ and not PC_ACCESS_COOKIE_NAME in request.cookies:
+                if SMARTPHONE_USER_AGENT_RX.match(request.environ["HTTP_USER_AGENT"]):
+                    directlyProvides(request, ISmartphoneRequest)
             request.is_mobile = False
             return handler(request)
     return tween
+PC_ACCESS_COOKIE_NAME = "_pcaccess"
