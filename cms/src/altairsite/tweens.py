@@ -23,7 +23,6 @@ SMARTPHONE_USER_AGENT_RX = re.compile("iPhone|iPod|Opera Mini|Android.*Mobile|Ne
 
 def smartphone_request_factory(handler, registry):
     def tween(request):
-        print request.cookies
         if not PC_ACCESS_COOKIE_NAME in request.cookies:
             directlyProvides(request, ISmartphoneRequest)
         return handler(request)
@@ -32,7 +31,8 @@ def smartphone_request_factory(handler, registry):
 def attach_smartphone_request(request):
     ## for smartphone
     if "HTTP_USER_AGENT" in request.environ and not PC_ACCESS_COOKIE_NAME in request.cookies:
-        if SMARTPHONE_USER_AGENT_RX.match(request.environ["HTTP_USER_AGENT"]):
+        uagent = request.environ["HTTP_USER_AGENT"]
+        if SMARTPHONE_USER_AGENT_RX.search(uagent):
             directlyProvides(request, ISmartphoneRequest)
 
 def mobile_encoding_convert_factory(handler, registry):

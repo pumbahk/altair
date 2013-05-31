@@ -55,7 +55,7 @@ def main(global_config, **local_config):
     config.add_fulltext_search(search_utility)
 
     ## first:
-    config.include("altairsite.front")
+    # config.include("altairsite.front")
 
     ## tween: [encodingfixer, mobile-tween]. the order is important
     # config.include("altair.encodingfixer")
