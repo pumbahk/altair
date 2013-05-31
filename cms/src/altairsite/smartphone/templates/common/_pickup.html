@@ -4,11 +4,12 @@
 <script>
 $(function() {
     var viewWidth = 515;
+    var viewHeight = 300;
     items = $(".item *").length;
     $('.flipsnap').css('width', viewWidth * items + 'px');
     $('.viewport').css('width', viewWidth + 'px');
-    $('.item').css('width', (viewWidth + -10) + 'px');
-    $('.flipsnap img').css('width', (viewWidth + -10) + 'px');
+    $('.item').css('width', viewWidth + 'px');
+    $('.item').css('height', viewHeight + 'px');
 
     // リロード対応
     $('.pointer span:first').attr('class', 'current');
@@ -71,6 +72,48 @@ $(function() {
         }, false);
     })();
 
+    // 画像縮小
+	var disp_width = viewWidth;
+	var disp_height = viewHeight;
+
+	$("img.imgtf").bind("load", function(){
+		true_height = this.height;
+		true_width = this.width;
+
+		if (disp_height >= disp_width) {
+			zoom = disp_height / true_height;
+		} else {
+			zoom = disp_width / true_width;
+		}
+        setZoom($(this), true_height, true_width, zoom);
+
+		if (true_width > disp_width || true_height > disp_height) {
+            console.log("himidashi");
+			if (true_height >= true_width) {
+				zoom = disp_height / true_height;
+			} else {
+				zoom = disp_width / true_width;
+			}
+            setZoom($(this), true_height, true_width, zoom);
+
+			if (true_width > disp_width) {
+				zoom = disp_width / true_width;
+                setZoom($(this), true_height, true_width, zoom);
+			}
+
+			if (true_height > disp_height) {
+				zoom = disp_height / true_height;
+                setZoom($(this), true_height, true_width, zoom);
+			}
+		}
+
+        function setZoom(target, true_height, true_width, zoom) {
+            true_height = true_height * zoom;
+            true_width = true_width * zoom;
+            target.prop('height', true_height);
+            target.prop('width', true_width);
+        }
+	});
 
 })();
 </script>
@@ -107,7 +150,7 @@ $(function() {
     font-size: 50px;
     text-align: center;
     padding: 0px 0;
-    border: 5px solid #999;
+    border: 0px solid #999;
     color: #666;
     background: #000000;
 }
@@ -117,6 +160,13 @@ $(function() {
 }
 
 </style>
+
+<%def name="disp_image(image_path)">
+    <div class="item">
+            <img class="imgtf" src="${image_path}" alt="img" />
+    </div>
+</%def>
+
 <% promotions = [(event, promo) for event, promo in ((helper.get_event_from_linked_page_id(request, promo.linked_page_id), promo) for promo in promotions)] %>
 <section class="pickup" id="pickup">
     <h2 class="glitter red">ピックアップ</h2>
@@ -127,14 +177,16 @@ $(function() {
                         <% image_path = helper.get_asset_rendering_object(request, promo.main_image).filepath %>
                         % if promo.link:
                             <a href=${promo.link}>
-                                <div class="item"><img src="${image_path}" alt="img" width="515px" height="300px" /></div>
+                                ${disp_image(image_path)}
                             </a>
                         % elif event:
                             <a href="${request.route_path('detail')}?event_id=${event.id}">
-                                <div class="item"><img src="${image_path}" alt="img" width="515px" height="300px"/></div>
+                                ${disp_image(image_path)}
                             </a>
                         % else:
-                            <div class="item"><img src="${image_path}" alt="img" width="515px" height="300px"/></div>
+                            <div class="item">
+                                ${disp_image(image_path)}
+                            </div>
                         % endif
                     % endfor
                 </div>
