@@ -60,3 +60,9 @@ class IOrderPayment(Interface):
 class IOrderDelivery(Interface):
     """ 完了画面の配送ビューレットのコンテキスト"""
     order = Attribute(u"注文内容")
+
+
+class IDeliveryErrorEvent(Interface):
+    exception = Attribute(u"error")
+    request = Attribute(u"request")
+    order = Attribute(u"order caused error")

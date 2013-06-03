@@ -11,6 +11,7 @@ from .api import (
     get_payment_plugin, 
     get_delivery_plugin,
 )
+from .events import DeliveryErrorEvent
 
 logger = logging.getLogger(__name__)
 
@@ -84,7 +85,8 @@ class Payment(object):
                 delivery_plugin.finish(self.request, self.cart)
             except Exception as e:
                 self._bind_order(order)
-                on_delivery_error(e, self.request, order)
+                #on_delivery_error(e, self.request, order)
+                request.registry.notify(DeliveryErrorEvent(e, self.request, order))
                 transaction.commit()
                 raise DeliveryFailedException(order_no, event_id)
         else:
@@ -98,17 +100,3 @@ class Payment(object):
         order = DBSession.query(Order).filter(Order.order_no==order_no).one()
         return order
 
-
-def on_delivery_error(e, request, order):
-    import sys
-    import traceback
-    import StringIO
-    exc_info = sys.exc_info()
-    out = StringIO.StringIO()
-    traceback.print_exception(*exc_info, file=out)
-    logger.error(out.getvalue())
-
-    order.cancel(request)
-    order.note = str(e)
-    #order_no = order.order_no
-    #event_id = cart.sales_segment.event_id
