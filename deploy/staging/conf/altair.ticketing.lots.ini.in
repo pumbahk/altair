@@ -78,7 +78,7 @@ propagate = 0
 [handler_console]
 class = altair.log.filters.BrowserIdStreamHandler
 args = (sys.stderr,)
-level = WARN
+level = ${altair:console_loglevel}
 formatter = generic
 
 [handler_sqlalchemy]
