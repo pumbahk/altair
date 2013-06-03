@@ -2,6 +2,46 @@
 <%namespace file="tags_smartphone.html" name="m" />
 
 <script>
+
+function settingFlipSize () {
+    var viewWidth = 515;
+    var viewHeight = 300;
+
+    // phone
+    if (viewWidth > $(window).width()) {
+        viewWidth = 320;
+        viewHeight = 187;
+    }
+
+    items = $(".item *").length;
+    $('.flipsnap').css('width', viewWidth * items + 'px');
+    $('.viewport').css('width', viewWidth + 'px');
+    $('.item').css('width', viewWidth + 'px');
+    $('.item').css('height', viewHeight + 'px');
+}
+
+function settingReload () {
+    // リロード対応
+    $('.pointer span:first').attr('class', 'current');
+    var flipsnap = Flipsnap('#pickup .flipsnap');
+    var $pickup = $('#pickup');
+    var $next = $pickup.find(".next").click(function() {
+        flipsnap.toNext();
+    });
+    var $prev = $pickup.find(".prev").click(function() {
+        flipsnap.toPrev();
+    });
+
+    $next.attr("disabled", false);
+    $prev.attr("disabled", true);
+}
+
+$(window).load(function(){
+    settingFlipSize();
+    settingReload();
+    Flipsnap('.flipsnap');
+});
+
 $(function() {
 
     // tablet
@@ -31,11 +71,9 @@ $(function() {
     var $prev = $pickup.find(".prev").click(function() {
         flipsnap.toPrev();
     });
-    flipsnap.hasNext()
+
     $next.attr("disabled", false);
     $prev.attr("disabled", true);
-
-    Flipsnap('.flipsnap');
 
     var promotions = []
     $(".messages span").each(function (index, element) {
@@ -98,7 +136,6 @@ $(function() {
         setZoom($(this), true_height, true_width, zoom);
 
 		if (true_width > disp_width || true_height > disp_height) {
-            console.log("himidashi");
 			if (true_height >= true_width) {
 				zoom = disp_height / true_height;
 			} else {
@@ -209,12 +246,15 @@ $(function() {
                     <span></span>
                 % endfor
             </div>
+
+            <!--
             <p class="controls">
                 <div class="sectionbox" style="text-align: center" id="search">
                     <button class="prev btn-secondary btn-large" disabled>戻る</button>
                     <button class="next btn-secondary btn-large ">進む</button>
                 </div>
             </p>
+            -->
             <span class="messages">
                 % for event, promo in promotions:
                     <span class="sectionbox-inner">${event.title if event else promo.text}</span>
