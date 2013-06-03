@@ -298,6 +298,7 @@ class IndexView(IndexViewMixin):
                 .join(c_models.Stock)\
                 .filter(c_models.Seat.venue_id==venue.id)\
                 .filter(c_models.SeatStatus.status==int(c_models.SeatStatusEnum.Vacant))
+        stock_map = dict([(s.id, s) for s in sales_stocks])
 
         return dict(
             seats=dict(
@@ -305,11 +306,11 @@ class IndexView(IndexViewMixin):
                     seat.l0_id,
                     dict(
                         id=seat.l0_id,
-                        stock_type_id=seat.stock.stock_type_id,
-                        stock_holder_id=seat.stock.stock_holder_id,
+                        stock_type_id=stock_map[seat.stock_id].stock_type_id,
+                        stock_holder_id=stock_map[seat.stock_id].stock_holder_id,
                         status=seat.status,
                         areas=[area.id for area in seat.areas],
-                        is_hold=seat.stock in sales_stocks,
+                        is_hold=seat.stock_id in stock_map,
                         )
                     )
                 for seat in seats),
