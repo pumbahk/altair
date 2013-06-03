@@ -2252,15 +2252,16 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     def can_refund(self):
         # 入金済または払戻予約のみ払戻可能
-        if self.status == 'ordered' and self.payment_status in ['paid', 'refunding']:
-            return True
-        return False
+        return (self.status == 'ordered' and self.payment_status in ['paid', 'refunding'])
+
+    def can_deliver(self):
+        # 受付済のみ配送済に変更可能
+        # インナー予約は常に、それ以外は入金済のみ変更可能
+        return self.status == 'ordered' and (self.channel == ChannelEnum.INNER.v or self.payment_status == 'paid')
 
     def can_delete(self):
         # キャンセルのみ論理削除可能
-        if self.status == 'canceled':
-            return True
-        return False
+        return self.status == 'canceled'
 
     def cancel(self, request, payment_method=None, now=None):
         now = now or datetime.now()
@@ -2472,7 +2473,7 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     def delivered(self):
         # 入金済みのみ配送済みにステータス変更できる
-        if self.payment_status == 'paid':
+        if self.can_deliver():
             self.mark_delivered()
             self.save()
             return True

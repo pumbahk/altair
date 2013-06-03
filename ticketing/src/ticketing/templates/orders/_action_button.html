@@ -166,7 +166,7 @@ if 'refund' in sort:
   if not order.can_refund():
     sort.remove('refund')
 if 'delivered' in sort:
-  if not order.can_cancel():
+  if not order.can_deliver():
     sort.remove('delivered')
 if 'print' in sort:
   if order.is_canceled():
