@@ -550,7 +550,8 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         if hasattr(self, 'delete_venue_id') and self.delete_venue_id:
             logger.info('[delete] Venue start')
             venue = Venue.get(self.delete_venue_id)
-            venue.delete_cascade()
+            if venue:
+                venue.delete_cascade()
             logger.info('[delete] Venue end')
 
     def delete(self):
