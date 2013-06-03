@@ -3,9 +3,19 @@
 
 <script>
 $(function() {
+
+    // tablet
     var viewWidth = 515;
     var viewHeight = 300;
+
+    // phone
+    if (viewWidth > $(window).width()) {
+        viewWidth = 320;
+        viewHeight = 187;
+    }
+
     items = $(".item *").length;
+
     $('.flipsnap').css('width', viewWidth * items + 'px');
     $('.viewport').css('width', viewWidth + 'px');
     $('.item').css('width', viewWidth + 'px');
@@ -33,7 +43,6 @@ $(function() {
     });
 
     $('.messages span').remove();
-    $('.messages').css('height', '40px');
     if (promotions.length) {
         $('.messages').append(promotions[flipsnap.currentPoint]);
     }
@@ -63,6 +72,7 @@ $(function() {
             $next.attr("disabled", !flipsnap.hasNext());
             $prev.attr("disabled", !flipsnap.hasPrev());
         }, false);
+
     })();
 
     (function touchevents() {
@@ -72,11 +82,11 @@ $(function() {
         }, false);
     })();
 
-    // 画像縮小
-	var disp_width = viewWidth;
-	var disp_height = viewHeight;
-
 	$("img.imgtf").bind("load", function(){
+        // 画像縮小
+        var disp_width = viewWidth;
+        var disp_height = viewHeight;
+
 		true_height = this.height;
 		true_width = this.width;
 
@@ -121,24 +131,29 @@ $(function() {
 <style>
 
 .pointer {
-  text-align: center; }
+  text-align: center;
+}
 
 .pointer span {
   display: inline-block;
   width: 8px;
   height: 8px;
   border-radius: 8px;
-  border: 1px solid #000; }
+  border: 1px solid #000;
+}
 
 .pointer span.current {
-  background: #FC0; }
+  background: #FC0;
+}
 
 .controls {
   text-align: center;
-  margin: 0 0 15px 0; }
+  margin: 0 0 15px 0;
+}
 
 .controls .num {
-  width: 60px; }
+  width: 60px;
+}
 
 .viewport {
     overflow: hidden;
@@ -163,7 +178,7 @@ $(function() {
 
 <%def name="disp_image(image_path)">
     <div class="item">
-            <img class="imgtf" src="${image_path}" alt="img" />
+        <img class="imgtf" src="${image_path}" alt="img" />
     </div>
 </%def>
 
@@ -184,9 +199,7 @@ $(function() {
                                 ${disp_image(image_path)}
                             </a>
                         % else:
-                            <div class="item">
-                                ${disp_image(image_path)}
-                            </div>
+                            ${disp_image(image_path)}
                         % endif
                     % endfor
                 </div>
@@ -196,17 +209,16 @@ $(function() {
                     <span></span>
                 % endfor
             </div>
-            <div class="messages">
-
-                % for event, promo in promotions:
-                    <span>${event.title if event else promo.text}</span>
-                % endfor
-            </div>
             <p class="controls">
                 <div class="sectionbox" style="text-align: center" id="search">
                     <button class="prev btn-secondary btn-large" disabled>戻る</button>
                     <button class="next btn-secondary btn-large ">進む</button>
                 </div>
             </p>
+            <span class="messages">
+                % for event, promo in promotions:
+                    <span class="sectionbox-inner">${event.title if event else promo.text}</span>
+                % endfor
+            </span>
         % endif
 </section>
