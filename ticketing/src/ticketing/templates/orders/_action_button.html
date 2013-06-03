@@ -91,6 +91,12 @@ actions = {
     icon='icon-envelope',
     route_name='orders.mailinfo',
   ),
+  'paid':dict(
+    label=u'入金済みにする',
+    url=request.route_path('orders.change_status', order_id=order.id, action='paid'),
+    icon='icon-ok',
+    route_name='orders.change_status',
+  ),
   'delivered':dict(
     label=u'配送済みにする',
     url=request.route_path('orders.delivered', order_id=order.id),
@@ -159,6 +165,9 @@ sort = sort or ['mailinfo', 'delivered', 'cancel', 'refund']
 if 'mailinfo' in sort:
   if not order.shipping_address:
     sort.remove('mailinfo')
+if 'paid' in sort:
+  if not order.can_pay():
+    sort.remove('paid')
 if 'cancel' in sort:
   if not order.can_cancel():
     sort.remove('cancel')

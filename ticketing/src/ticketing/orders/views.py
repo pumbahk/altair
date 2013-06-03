@@ -540,6 +540,20 @@ class OrderDetailView(BaseView):
         response.status_int = 400
         return response
 
+    @view_config(route_name='orders.change_status', permission='sales_editor')
+    def change_status(self):
+        order_id = int(self.request.matchdict.get('order_id', 0))
+        order = Order.get(order_id, self.context.user.organization_id)
+        if order is None:
+            return HTTPNotFound('order id %d is not found' % order_id)
+
+        action = int(self.request.matchdict.get('action', 0))
+        if order.change_status(action):
+            self.request.session.flash(u'受注(%s)のステータスを変更しました' % order.order_no)
+        else:
+            self.request.session.flash(u'受注(%s)のステータスを変更できません' % order.order_no)
+        return HTTPFound(location=route_path('orders.show', self.request, order_id=order.id))
+
     @view_config(route_name='orders.delivered', permission='sales_editor')
     def delivered(self):
         order_id = int(self.request.matchdict.get('order_id', 0))
