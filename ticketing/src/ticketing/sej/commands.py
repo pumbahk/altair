@@ -65,6 +65,7 @@ def create_and_send_refund_file():
 
     # 払戻対象データをSEJへ送信
     if zip_file:
+        logging.info('zipfile=%s' % zip_file)
         files = {'zipfile': (os.path.basename(zip_file), open(zip_file, 'rb'))}
         r = requests.post(
             url=settings.get('sej.nwts.proxy_url'),
