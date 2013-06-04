@@ -123,8 +123,12 @@ class IndexView(IndexViewMixin):
         return retval
 
     def is_smartphone(context, request):
+        SMARTPHONE_USER_AGENT_RX = re.compile("iPhone|iPod|Opera Mini|Android.*Mobile|NetFront|PSP|BlackBerry")
+        if "HTTP_USER_AGENT" in request.environ:
+            if SMARTPHONE_USER_AGENT_RX.search(request.environ["HTTP_USER_AGENT"]):
 
-        return True
+                return True
+        return False
 
     def is_organization_rs(context, request):
         organization = c_api.get_organization(request)
