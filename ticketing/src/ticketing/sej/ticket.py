@@ -7,6 +7,7 @@ import time
 from datetime import date, datetime, timedelta
 from lxml import etree
 import zipfile
+import transaction
 
 from ticketing.models import DBSession
 from .models import SejTicketTemplateFile, SejRefundTicket, SejRefundEvent
@@ -100,8 +101,8 @@ def package_ticket_template_to_zip(template_id,
 
 def create_refund_zip_file():
     # 0:00-5:59の間なら当日, それ以外は翌日でファイル名を生成する
-    hour = int(date.today().strftime('%H'))
-    if now < 6:
+    hour = int(datetime.now().strftime('%H'))
+    if hour < 6:
         ymd = date.today().strftime('%Y%m%d')
     else:
         ymd = (date.today() + timedelta(days=1)).strftime('%Y%m%d')
@@ -123,6 +124,7 @@ def create_refund_zip_file():
     tsv_writer = csv.writer(refund_ticket_tsv, delimiter='\t', quoting=csv.QUOTE_NONE, lineterminator='\r\n')
     sej_refund_tickets = SejRefundTicket.query.filter(SejRefundTicket.sent_at==None).all()
     if not sej_refund_tickets:
+        transaction.abort()
         return None
 
     refund_event_ids = []
@@ -180,6 +182,8 @@ def create_refund_zip_file():
     zf.close()
 
     DBSession.flush()
+    transaction.commit()
+
     return work_dir + zip_file_name
 
 def encode_to_sjis(row):
