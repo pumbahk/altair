@@ -13,6 +13,7 @@ from sqlalchemy.sql.expression import not_
 import sqlahelper
 
 from ticketing.core.models import DBSession, SeatStatus, SeatStatusEnum, Order
+from ticketing.sej.commands import create_and_send_refund_file
 
 def update_seat_status():
     _keep_to_vacant()
@@ -65,6 +66,7 @@ def refund_order():
 
     logging.info('start refund_order batch')
 
+    # 1件ずつ払戻処理
     orders_to_skip = set()
     while True:
         query = Order.query.filter(Order.refund_id!=None, Order.refunded_at==None)
@@ -88,5 +90,8 @@ def refund_order():
         except Exception as e:
             logging.error('failed to refund orders (%s)' % e.message)
             break
+
+    # SEJ払戻ファイル送信
+    create_and_send_refund_file()
 
     logging.info('end refund_order batch')

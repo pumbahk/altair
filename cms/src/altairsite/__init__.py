@@ -60,7 +60,7 @@ def main(global_config, **local_config):
     ## tween: [encodingfixer, mobile-tween]. the order is important
     # config.include("altair.encodingfixer")
     config.include("altairsite.mobile", route_prefix="/mobile")
-    config.add_tween('altair.encodingfixer.EncodingFixerTween', under='altairsite.mobile.tweens.mobile_encoding_convert_factory')
+    config.add_tween('altair.encodingfixer.EncodingFixerTween', under='altairsite.tweens.mobile_encoding_convert_factory')
 
     config.include("altairsite.feature")
     config.include("altairsite.errors")

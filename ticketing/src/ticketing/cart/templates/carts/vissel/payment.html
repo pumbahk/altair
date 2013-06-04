@@ -22,7 +22,7 @@ ${self.widget.flow_widget(2)}
             <tr>
               <% checked = 'checked' if str(m.id) == checked_id else '' %>
               <td class="settlementPayRadio">
-                <input type="radio" name="payment_delivery_method_pair_id" id="radio2" value="${m.id}" ${checked} />
+                <input type="radio" name="payment_delivery_method_pair_id" id="radio2" value="${m.id}" autocomplete="off" ${checked} />
               </td>
               <td onclick="$(this).parents('tr').find('input').click();">
                 <dl>

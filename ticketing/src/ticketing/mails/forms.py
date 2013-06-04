@@ -38,8 +38,13 @@ class OrderInfoDefault(object):
         return ch.japanese_datetime(order.performance.start_on)
 
     def get_seat_no(order):
-        seats = itertools.chain.from_iterable((p.seats for p in order.ordered_products))
-        return u"\n".join(u"* {0}".format(seat["name"]) for seat in seats)
+        seat_no = []
+        for p in order.ordered_products:
+            if p.product.sales_segment.seat_choice:
+                seat_no += [u"* {0}".format(seat["name"]) for seat in p.seats]
+            elif p.product.seat_stock_type:
+                seat_no += [u"{0} {1}席".format(p.product.seat_stock_type.name, len(p.seats))]
+        return u"\n".join(seat_no)
 
     def get_product_description(order):
         return u"\n".join((u"{0} {1} x{2}".format(op.product.name,

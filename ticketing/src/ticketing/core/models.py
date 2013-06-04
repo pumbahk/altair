@@ -550,7 +550,8 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         if hasattr(self, 'delete_venue_id') and self.delete_venue_id:
             logger.info('[delete] Venue start')
             venue = Venue.get(self.delete_venue_id)
-            venue.delete_cascade()
+            if venue:
+                venue.delete_cascade()
             logger.info('[delete] Venue end')
 
     def delete(self):
@@ -2252,15 +2253,16 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     def can_refund(self):
         # 入金済または払戻予約のみ払戻可能
-        if self.status == 'ordered' and self.payment_status in ['paid', 'refunding']:
-            return True
-        return False
+        return (self.status == 'ordered' and self.payment_status in ['paid', 'refunding'])
+
+    def can_deliver(self):
+        # 受付済のみ配送済に変更可能
+        # インナー予約は常に、それ以外は入金済のみ変更可能
+        return self.status == 'ordered' and (self.channel == ChannelEnum.INNER.v or self.payment_status == 'paid')
 
     def can_delete(self):
         # キャンセルのみ論理削除可能
-        if self.status == 'canceled':
-            return True
-        return False
+        return self.status == 'canceled'
 
     def cancel(self, request, payment_method=None, now=None):
         now = now or datetime.now()
@@ -2423,11 +2425,11 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
         for ordered_product in self.items:
             for item in ordered_product.ordered_product_items:
-                reissuable = item.product_item.ticket_bundle.reissuable(delivery_plugin_id)
+                reissueable = item.product_item.ticket_bundle.reissueable(delivery_plugin_id)
                 if issued:
                     if self.issued:
-                        if not reissuable:
-                            logger.warning("Trying to reissue a ticket for Order (id=%d) that contains OrderedProductItem (id=%d) associated with a ticket which is not marked reissuable" % (self.id, item.id))
+                        if not reissueable:
+                            logger.warning("Trying to reissue a ticket for Order (id=%d) that contains OrderedProductItem (id=%d) associated with a ticket which is not marked reissueable" % (self.id, item.id))
                     item.issued = True
                     item.issued_at = now
                 if printed:
@@ -2472,7 +2474,7 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     def delivered(self):
         # 入金済みのみ配送済みにステータス変更できる
-        if self.payment_status == 'paid':
+        if self.can_deliver():
             self.mark_delivered()
             self.save()
             return True
@@ -2845,7 +2847,7 @@ class Ticket(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     """
     __tablename__ = "Ticket"
 
-    FLAG_ALWAYS_REISSUABLE = 1
+    FLAG_ALWAYS_REISSUEABLE = 1
     FLAG_PRICED = 2
 
     id = Column(Identifier, primary_key=True)
@@ -2889,19 +2891,19 @@ class Ticket(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         return {template.id:ticket.id}
 
     @hybrid_property
-    def always_reissuable(self):
-        return (self.flags & self.FLAG_ALWAYS_REISSUABLE) != 0
+    def always_reissueable(self):
+        return (self.flags & self.FLAG_ALWAYS_REISSUEABLE) != 0
 
-    @always_reissuable.expression
+    @always_reissueable.expression
     def priced(self):
-        return self.flags.op('&')(self.FLAG_ALWAYS_REISSUABLE) != 0
+        return self.flags.op('&')(self.FLAG_ALWAYS_REISSUEABLE) != 0
 
-    @always_reissuable.setter
-    def set_reissuable(self, value):
+    @always_reissueable.setter
+    def set_reissueable(self, value):
         if value:
-            self.flags |= self.FLAG_ALWAYS_REISSUABLE
+            self.flags |= self.FLAG_ALWAYS_REISSUEABLE
         else:
-            self.flags &= ~self.FLAG_ALWAYS_REISSUABLE
+            self.flags &= ~self.FLAG_ALWAYS_REISSUEABLE
 
     @hybrid_property
     def priced(self):
@@ -3067,18 +3069,18 @@ class TicketBundle(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         ticket_bundle.save()
         return {template.id:ticket_bundle.id}
 
-    def reissuable(self, delivery_plugin_id):
+    def reissueable(self, delivery_plugin_id):
         # XXX: このロジックははっきり言ってよろしくないので再実装する
         # (TicketBundleにフラグを持たせるべきか?)
         relevant_tickets = ApplicableTicketsProducer(self).include_delivery_id_ticket_iter(delivery_plugin_id)
-        reissuable = False
+        reissueable = False
         for ticket in relevant_tickets:
-            if reissuable:
-                if not ticket.always_reissuable:
-                    logger.warning("TicketBundle (id=%d) contains tickets whose reissuable flag are inconsistent" % self.id)
+            if reissueable:
+                if not ticket.always_reissueable:
+                    logger.warning("TicketBundle (id=%d) contains tickets whose reissueable flag are inconsistent" % self.id)
             else:
-                reissuable = ticket.always_reissuable
-        return reissuable
+                reissueable = ticket.always_reissueable
+        return reissueable
 
     def delete(self):
         # 既に使用されている場合は削除できない

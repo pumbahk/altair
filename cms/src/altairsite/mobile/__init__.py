@@ -12,7 +12,7 @@ from sqlalchemy import engine_from_config
 from core.helper import log_info
 
 def includeme(config):
-    config._add_tween("altairsite.mobile.tweens.mobile_encoding_convert_factory", under=INGRESS)
+    config._add_tween("altairsite.tweens.mobile_encoding_convert_factory", under=INGRESS)
     config.include(install_app)
 
 def install_convinient_request_properties(config):
@@ -80,7 +80,7 @@ def main(global_config, **settings):
     config.include(install_app)
 
     ## all requests are treated as mobile request
-    config._add_tween("altairsite.mobile.tweens.mobile_request_factory", under=INGRESS)
+    config._add_tween("altairsite.tweens.mobile_request_factory", under=INGRESS)
 
     log_info("main", "initialize end.")
     return config.make_wsgi_app()

@@ -12,9 +12,11 @@ ${order.performance.venue.name}<br />
 合計金額: ￥${h.format_number(order.total_amount)}<br />
 %for product in order.items:
 ・${product.product.name} (${product.seat_quantity}枚)<br />
-% for seat in product.seats:
-　${seat['name']}<br/>
-% endfor
+% if product.product.sales_segment.seat_choice:
+  % for seat in product.seats:
+  　${seat['name']}<br/>
+  % endfor
+% endif
 　￥${h.format_number(product.price * product.quantity)}<br />
 %endfor
 ・ステータス:${h.order_status(order)}<br/>

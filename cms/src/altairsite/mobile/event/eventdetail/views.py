@@ -10,7 +10,7 @@ from altairsite.mobile.core.disphelper import DispHelper
 class ValidationFailure(Exception):
     pass
 
-@usersite_view_config(route_name='eventdetail', request_type="altairsite.mobile.tweens.IMobileRequest"
+@usersite_view_config(route_name='eventdetail', request_type="altairsite.tweens.IMobileRequest"
     , renderer='altairsite.mobile:templates/eventdetail/eventdetail.mako')
 def move_eventdetail(request):
 
@@ -40,6 +40,6 @@ def move_eventdetail(request):
     }
 
 @usersite_view_config(route_name='eventdetail', context=ValidationFailure
-    , request_type="altairsite.mobile.tweens.IMobileRequest", renderer='altairsite.mobile:templates/common/error.mako')
+    , request_type="altairsite.tweens.IMobileRequest", renderer='altairsite.mobile:templates/common/error.mako')
 def failed_validation(request):
     return {}

@@ -56,7 +56,10 @@ def send_refund_file_with_proxy():
     settings = env['registry'].settings
 
     logging.info('start send_refund_file_with_proxy batch')
+    create_and_send_refund_file()
+    logging.info('end send_refund_file_with_proxy batch')
 
+def create_and_send_refund_file():
     # 払戻対象データをファイルに書き出して圧縮
     zip_file = create_refund_zip_file()
 
@@ -72,8 +75,6 @@ def send_refund_file_with_proxy():
             logging.info('success')
         else:
             logging.error('proxy response = %s' % r.status_code)
-
-    logging.info('end send_refund_file_with_proxy batch')
 
 
 if __name__ == '__main__':

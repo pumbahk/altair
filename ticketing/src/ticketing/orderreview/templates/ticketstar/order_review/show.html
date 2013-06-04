@@ -22,9 +22,11 @@
               <th scope="row"><span style="background-color:${getattr(product.product.items[0].stock_type, 'style', {}).get('fill', {}).get('color') or '#000'}; width:12px; height:12px; border: 1px solid #888; border-radius:2px; display:inline-block; margin-right: 0.5em;"></span>${product.product.name}</th>
               <td><strong>${product.seat_quantity}</strong>枚</td>
               <td>
-              % for seat in product.seats:
-                ${seat['name']}<br/>
-              % endfor
+              % if product.product.sales_segment.seat_choice:
+                % for seat in product.seats:
+                  ${seat['name']}<br/>
+                % endfor
+              % endif
               </td>
               <td class="align1">￥${h.format_number(product.price * product.quantity)}</td>
             </tr>
