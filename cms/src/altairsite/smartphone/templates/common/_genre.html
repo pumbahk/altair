@@ -6,13 +6,13 @@
 % for i in range(0, len(genretree)):
 <% genre = genretree[i].genre %>
     % if genre.name == "music":
-        <a href="${request.route_path('genre', genre_id=genre.id)}"><li class="menuitem"><span class="menuitem-label"><font color=#5454f2>●</font>${genre}</span></li></a>
+        <a href="${request.route_path('genre', genre_id=genre.id)}"><li class="menuitem"><span class="menuitem-label"><font color=#5454f2>●</font>${genre.label}</span></li></a>
     % elif genre.name == "sports":
-        <a href="${request.route_path('genre', genre_id=genre.id)}"><li class="menuitem"><span class="menuitem-label"><font color=#f0f296>●</font>${genre}</span></li></a>
+        <a href="${request.route_path('genre', genre_id=genre.id)}"><li class="menuitem"><span class="menuitem-label"><font color=#f0f296>●</font>${genre.label}</span></li></a>
     % elif genre.name == "stage":
-        <a href="${request.route_path('genre', genre_id=genre.id)}"><li class="menuitem"><span class="menuitem-label"><font color=#f0d1d2>●</font>${genre}</span></li></a>
+        <a href="${request.route_path('genre', genre_id=genre.id)}"><li class="menuitem"><span class="menuitem-label"><font color=#f0d1d2>●</font>${genre.label}</span></li></a>
     % elif genre.name == "event":
-        <a href="${request.route_path('genre', genre_id=genre.id)}"><li class="menuitem"><span class="menuitem-label"><font color=#a1deff>●</font>${genre}</span></li></a>
+        <a href="${request.route_path('genre', genre_id=genre.id)}"><li class="menuitem"><span class="menuitem-label"><font color=#a1deff>●</font>${genre.label}</span></li></a>
     % endif
 % endfor
 </ul>
