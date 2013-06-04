@@ -122,16 +122,18 @@ def validate_margin(key, data):
         except Exception as e:
             raise ValidationError("%s[\"%s\"] is bad-formatted (%s)" % (key, k, e.args[0]))
 
-class TicketTemplateForm(Form):
+class TicketTemplateForm(OurForm):
     def _get_translations(self):
         return Translations()
 
     def __init__(self, formdata=None, obj=None, prefix='', **kwargs):
-        Form.__init__(self, formdata=formdata, obj=obj, prefix=prefix, **kwargs)
+        super(TicketTemplateForm, self).__init__(formdata=formdata, obj=obj, prefix=prefix, **kwargs)
         if 'organization_id' in kwargs:
             self.ticket_format.choices = [
                 (format.id, format.name) for format in TicketFormat.filter_by(organization_id=kwargs['organization_id'])
             ]
+        if not formdata and not obj:
+            self.always_reissueable.data = True
         self._cleaner = None
 
     name = TextField(
