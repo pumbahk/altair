@@ -170,7 +170,7 @@ setup(name='ticketing',
       release_carts=ticketing.cart.scripts.release_carts:main
       rakuten_checkout_sales=ticketing.checkout.commands:rakuten_checkout_sales
       refund_order=ticketing.orders.commands:refund_order
-      sej_send_refund_file=ticketing.sej.commands:send_refund_file
+      sej_send_refund_file_with_proxy=ticketing.sej.commands:send_refund_file_with_proxy
       """,
       paster_plugins=['pyramid'],
       )

@@ -37,7 +37,7 @@ def send(fs, filename):
         '-d':'/sdmt',
         '-t':'60022000',
         '-p':'60022a',
-        '-f':'TEST010U',  #'SEIT020U'
+        '-f':'SEIT020U',  #'TEST010U'
         '-e':'tpayback.asp',
     }
     command = ['nwtsUL.exe']

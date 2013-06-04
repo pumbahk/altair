@@ -140,6 +140,8 @@ def main(global_config, **local_config):
     config.include("ticketing.venues")
     config.include("ticketing.payments")
     config.include('ticketing.payments.plugins')
+    config.add_subscriber('ticketing.payments.events.cancel_on_delivery_error',
+                          'ticketing.payments.events.DeliveryErrorEvent')
 
     config.set_cart_getter('.api.get_cart_safe')
     config.include('.errors')

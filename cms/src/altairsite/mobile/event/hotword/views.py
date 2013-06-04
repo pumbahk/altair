@@ -13,7 +13,7 @@ from altairsite.mobile.core.helper import log_info
 class ValidationFailure(Exception):
     pass
 
-@usersite_view_config(route_name='hotword', request_type="altairsite.mobile.tweens.IMobileRequest"
+@usersite_view_config(route_name='hotword', request_type="altairsite.tweens.IMobileRequest"
     , renderer='altairsite.mobile:templates/searchresult/hotword_result.mako')
 def move_hotword(request):
 
@@ -57,6 +57,6 @@ def move_hotword(request):
     return {'form':form}
 
 @usersite_view_config(route_name='hotword', context=ValidationFailure
-    , request_type="altairsite.mobile.tweens.IMobileRequest", renderer='altairsite.mobile:templates/common/error.mako')
+    , request_type="altairsite.tweens.IMobileRequest", renderer='altairsite.mobile:templates/common/error.mako')
 def failed_validation(request):
     return {}

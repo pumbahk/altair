@@ -140,9 +140,11 @@ shipping =order.shipping_address
           </th>
           <td><strong>${product.seat_quantity}</strong>枚</td>
           <td>
-          % for seat in product.seats:
-            ${seat['name']}<br/>
-          % endfor
+          % if product.product.sales_segment.seat_choice:
+            % for seat in product.seats:
+              ${seat['name']}<br/>
+            % endfor
+          % endif
           </td>
           <td class="align1">￥${h.format_number(product.price * product.quantity)}</td>
         </tr>

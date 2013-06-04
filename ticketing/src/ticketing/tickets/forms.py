@@ -196,7 +196,7 @@ class TicketTemplateEditForm(OurForm):
         validators=[Required()]
     )
 
-    always_reissuable = OurBooleanField(
+    always_reissueable = OurBooleanField(
         label=u"常に再発券可能"
         )
 

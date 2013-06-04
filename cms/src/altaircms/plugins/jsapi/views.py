@@ -1,4 +1,5 @@
 # -*- coding:utf-8 -*-
+from pyramid.httpexceptions import HTTPForbidden
 from pyramid.httpexceptions import HTTPBadRequest
 from datetime import datetime
 import sqlalchemy.orm as orm
@@ -69,13 +70,16 @@ def pageset_reset_event(request):
     DBSession.add(pageset)
     return "OK"
 
+from altaircms.page.views import page_editable_from_pagetype
 
 @view_config(permission="page_create",
              route_name="plugins_jsapi_addpage", renderer="json", request_method="POST", 
              custom_predicates=(require_login,))
-def pageset_addpage(request):
+def pageset_addpage(context, request):
     pageset_id = request.matchdict["pageset_id"]
     pageset = get_or_404(request.allowable(PageSet), PageSet.id==pageset_id)
+    if not page_editable_from_pagetype(context, pageset.pagetype):
+        raise HTTPForbidden("not enough permission to edit it")
     try:
         created = pageset.create_page(force=True)
 

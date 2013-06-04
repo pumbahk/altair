@@ -207,7 +207,7 @@ def frontend_drawing(request):
     venue_id = int(request.matchdict.get('venue_id', 0))
     venue = Venue.get(venue_id, organization_id=request.context.user.organization_id)
     part = request.matchdict.get('part')
-    drawing = venue.site.get_frontend_drawing(part)
+    drawing = get_venue_site_adapter(request, venue.site).get_frontend_drawing(part)
     if drawing is None:
         return HTTPNotFound()
     content_encoding = None

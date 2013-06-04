@@ -111,11 +111,10 @@ class MyProxyRequest(proxy.ProxyRequest):
 class MyProxy(proxy.Proxy):
     requestFactory = MyProxyRequest
     rewrite_patterns = [
-        (r'http://backend.stg2.rt.ticketstar.jp(/.*)?', r'http://localhost:7654\1'),
-        (r'http://cms.stg2.rt.ticketstar.jp(/.*)?', r'http://localhost:6543\1'),
-        (r'http://stg2.rt.ticketstar.jp(/89ers/booster(?:/.*)?)', r'http://localhost:7657\1'),
-        (r'http://89ers.stg2.rt.ticketstar.jp(/89ers/booster(?:/.*)?)', r'http://localhost:7657\1'),
-        (r'http://stg2.rt.ticketstar.jp(/mypage(?:/.*)?)', r'http://localhost:7656\1'),
+        (r'http://backend.stg2.rt.ticketstar.jp(/qrreader(?:/.*)?)', r'http://localhost:8030\1'),
+        (r'http://backend.stg2.rt.ticketstar.jp(/.*)?', r'http://localhost:8021\1'),
+        (r'http://cms.stg2.rt.ticketstar.jp(/.*)?', r'http://localhost:8001\1'),
+        (r'http://89ers.stg2.rt.ticketstar.jp(/booster(?:/.*)?)', r'http://localhost:9081\1'),
         ]
 
     def __init__(self, *args, **kwargs):
@@ -123,11 +122,11 @@ class MyProxy(proxy.Proxy):
         self.rewrite_patterns = list(self.rewrite_patterns)
         for subdomain in SUBDOMAINS:
             self.rewrite_patterns.extend([
-                (r'http://%s.stg2.rt.ticketstar.jp(/orderreview(?:/.*)?)' % subdomain, r'http://localhost:7659\1'),
-                (r'http://%s.stg2.rt.ticketstar.jp(/lots(?:/.*)?)' % subdomain, r'http://localhost:7657\1'),
-                (r'http://%s.stg2.rt.ticketstar.jp(/cart(?:/.*)?)' % subdomain, r'http://localhost:7655\1'),
+                (r'http://%s.stg2.rt.ticketstar.jp(/orderreview(?:/.*)?)' % subdomain, r'http://localhost:9061\1'),
+                (r'http://%s.stg2.rt.ticketstar.jp(/lots(?:/.*)?)' % subdomain, r'http://localhost:9121\1'),
+                (r'http://%s.stg2.rt.ticketstar.jp(/cart(?:/.*)?)' % subdomain, r'http://localhost:9021\1'),
                 (r'http://%s.stg2.rt.ticketstar.jp(/maintenance(?:/.*)?)' % subdomain, r'http://localhost:8000\1'),
-                (r'http://%s.stg2.rt.ticketstar.jp(/.*)?' % subdomain, r'http://localhost:5432\1'),
+                (r'http://%s.stg2.rt.ticketstar.jp(/.*)?' % subdomain, r'http://localhost:9001\1'),
                 ])
 
 class ProxyFactory(http.HTTPFactory):

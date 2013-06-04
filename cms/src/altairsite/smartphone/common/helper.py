@@ -1,0 +1,152 @@
+# -*- coding: utf-8 -*-
+from .const import SalesEnum
+
+from altaircms.asset.models import ImageAsset
+from altairsite.mobile.core.eventhelper import EventHelper
+
+import logging
+from markupsafe import Markup
+
+logger = logging.getLogger(__file__)
+
+class SmartPhoneHelper(object):
+    def get_area_japanese(self, keyword):
+        regions = {
+             'hokkaido':u'北海道・東北'
+            ,'syutoken':u'首都圏・北関東'
+            ,'koshinetsu':u'甲信越・東海'
+            ,'kinki':u'近畿・北陸'
+            ,'chugoku':u'中国・四国'
+            ,'kyusyu':u'九州・沖縄'
+        }
+        return regions[keyword]
+
+    def get_prefecture_japanese(self, keyword):
+        areas = {
+             'hokkaido':u'北海道'
+            ,'aomori':u'青森'
+            ,'iwate':u'岩手'
+            ,'akita':u'秋田'
+            ,'miyagi':u'宮城'
+            ,'yamagata':u'山形'
+            ,'fukushima':u'福島'
+            ,'chiba':u'千葉'
+            ,'tokyo':u'東京'
+            ,'kanagawa':u'神奈川'
+            ,'ibaraki':u'茨城'
+            ,'tochigi':u'栃木'
+            ,'gunma':u'群馬'
+            ,'saitama':u'埼玉'
+            ,'yamanashi':u'山梨'
+            ,'nagano':u'長野'
+            ,'niigata':u'新潟'
+            ,'gifu':u'岐阜'
+            ,'aichi':u'愛知'
+            ,'mie':u'三重'
+            ,'shizuoka':u'静岡'
+            ,'kyoto':u'京都'
+            ,'osaka':u'大阪'
+            ,'hyogo':u'兵庫'
+            ,'shiga':u'滋賀'
+            ,'nara':u'奈良'
+            ,'wakayama':u'和歌山'
+            ,'toyama':u'富山'
+            ,'ishikawa':u'石川'
+            ,'fukui':u'福井'
+            ,'hiroshima':u'広島'
+            ,'okayama':u'岡山'
+            ,'tottori':u'鳥取'
+            ,'shimane':u'島根'
+            ,'yamaguchi':u'山口'
+            ,'tokushima':u'徳島'
+            ,'kagawa':u'香川'
+            ,'ehime':u'愛媛'
+            ,'kouchi':u'高知'
+            ,'okinawa':u'沖縄'
+            ,'fukuoka':u'福岡'
+            ,'saga':u'佐賀'
+            ,'nagasaki':u'長崎'
+            ,'kumamoto':u'熊本'
+            ,'oita':u'大分'
+            ,'miyazaki':u'宮崎'
+            ,'kagoshima':u'鹿児島'
+        }
+
+        if keyword not in areas:
+            return ""
+
+        return areas[keyword]
+
+    def get_sale_japanese(self, key):
+        sales = {
+             SalesEnum.ALL.v:u'すべてのチケット'
+            ,SalesEnum.GENRE.v:u'このジャンルで'
+            ,SalesEnum.NEAR_SALE_END.v:u'まもなく終了のチケット'
+            ,SalesEnum.ON_SALE.v:u'販売中'
+            ,SalesEnum.SOON_ACT.v:u'まもなく開演のチケット'
+            ,SalesEnum.WEEK_SALE.v:u'今週発売のチケット'
+        }
+        return sales[key]
+
+    def get_sales_segment_japanese(self, key):
+        segments = {
+             "normal":u"一般発売"
+            ,"precedence":u"先行販売"
+            ,"lottery":u"先行抽選"
+        }
+        return segments[key]
+
+    def get_week_map(self):
+        return {0:u'月',1:u'火',2:u'水',3:u'木',4:u'金',5:u'土',6:u'日'}
+
+    def disp_date(self, target_date):
+        disp_str = str(target_date.year) + '/' + str(target_date.month).zfill(2) + '/' \
+                       + str(target_date.day).zfill(2)
+        return disp_str
+
+    def disp_date_week(self, target_date):
+        week = self.get_week_map()
+        disp_str = str(target_date.year) + '/' + str(target_date.month).zfill(2) + '/' \
+                       + str(target_date.day).zfill(2) + '(' + week[target_date.weekday()] + ')'
+        return disp_str
+
+    def disp_time(self, target_date):
+        week = self.get_week_map()
+        disp_str = str(target_date.year) + '/' + str(target_date.month).zfill(2) + '/' \
+                   + str(target_date.day).zfill(2) + ' ' + str(target_date.hour).zfill(2) + ':' \
+                   + str(target_date.minute).zfill(2) + '(' + week[target_date.weekday()] + ')'
+        return disp_str
+
+    def disp_error(self, form):
+        for error in form.word.errors:
+            return error
+        return ""
+
+    def disp_date_error(self, form):
+        for field in form:
+            if field.name != "word":
+                for error in field.errors:
+                    if error:
+                        return error
+        return ""
+
+    def nl2br(self, value):
+        return value.replace("\n", "<br />")
+
+    def Markup(self, value):
+        return Markup(value)
+
+    def get_event_from_linked_page_id(self, request, linked_page_id):
+        helper = EventHelper()
+        event = helper.get_event_from_linked_page_id(request=request, linked_page_id=linked_page_id)
+        return event
+
+    def get_events_from_hotword(self, request, hotword):
+        helper = EventHelper()
+        event = helper.get_events_from_hotword(request=request, hotword=hotword)
+        return event
+
+    def get_image_asset(self, request, id):
+        image_asset = request.allowable(ImageAsset).filter(ImageAsset.id == id).first()
+        return image_asset
+

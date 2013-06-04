@@ -1,6 +1,18 @@
 altair README
 -------------
 
+ローカル開発環境
+========================
+
+::
+
+  $ cd deploy/dev
+  $ bin/buildout -c buildout.local.cfg 
+
+
+
+これ以下の情報は古いのでだれか精査のこと
+
 Setup
 =====
 ::

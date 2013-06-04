@@ -91,6 +91,18 @@ actions = {
     icon='icon-envelope',
     route_name='orders.mailinfo',
   ),
+  'paid':dict(
+    label=u'入金済みにする',
+    url=request.route_path('orders.change_status', order_id=order.id, status='paid'),
+    icon='icon-ok',
+    route_name='orders.change_status',
+  ),
+  'unpaid':dict(
+    label=u'未入金に戻す',
+    url=request.route_path('orders.change_status', order_id=order.id, status='unpaid'),
+    icon='icon-ok',
+    route_name='orders.change_status',
+  ),
   'delivered':dict(
     label=u'配送済みにする',
     url=request.route_path('orders.delivered', order_id=order.id),
@@ -159,6 +171,12 @@ sort = sort or ['mailinfo', 'delivered', 'cancel', 'refund']
 if 'mailinfo' in sort:
   if not order.shipping_address:
     sort.remove('mailinfo')
+if 'paid' in sort:
+  if not order.can_change_status('paid'):
+    sort.remove('paid')
+if 'unpaid' in sort:
+  if not order.can_change_status('unpaid'):
+    sort.remove('unpaid')
 if 'cancel' in sort:
   if not order.can_cancel():
     sort.remove('cancel')
@@ -166,7 +184,7 @@ if 'refund' in sort:
   if not order.can_refund():
     sort.remove('refund')
 if 'delivered' in sort:
-  if not order.can_cancel():
+  if not order.can_deliver():
     sort.remove('delivered')
 if 'print' in sort:
   if order.is_canceled():
