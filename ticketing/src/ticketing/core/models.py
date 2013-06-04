@@ -2241,9 +2241,14 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         from ticketing.checkout.models import Checkout
         return Cart.query.filter(Cart._order_no==self.order_no).join(Checkout).with_entities(Checkout).first()
 
-    def can_pay(self):
-        # インナー予約のみ変更可能
-        return (self.status == 'ordered' and self.payment_status == 'unpaid' and self.channel == ChannelEnum.INNER.v)
+    def can_change_status(self, status):
+        # 決済ステータスはインナー予約のみ変更可能
+        if status == 'paid':
+            return (self.status == 'ordered' and self.payment_status == 'unpaid' and self.channel == ChannelEnum.INNER.v)
+        elif status == 'unpaid':
+            return (self.status == 'ordered' and self.payment_status == 'paid' and self.channel == ChannelEnum.INNER.v)
+        else:
+            return False
 
     def can_cancel(self):
         # 受付済のみキャンセル可能、払戻時はキャンセル不可
@@ -2476,13 +2481,15 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         for product in self.ordered_products:
             product.release()
 
-    def change_status(self, action):
-        if action == 'paid':
-            if not self.can_pay():
-                return False
-            self.mark_paid()
-        self.save()
-        return True
+    def change_status(self, status):
+        if self.can_change_status(status):
+            if status == 'paid':
+                self.mark_paid()
+            if status == 'unpaid':
+                self.paid_at = None
+            self.save()
+            return True
+        return False
 
     def delivered(self):
         if self.can_deliver():
