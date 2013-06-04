@@ -156,6 +156,14 @@ class TicketTemplateForm(Form):
         ]
      )    
 
+    always_reissueable = OurBooleanField(
+        label=u"常に再発券可能"
+        )
+
+    priced = OurBooleanField(
+        label=u"手数料計算に含める"
+        )
+
     def validate_drawing(form, field):
         svgio = field.data.file
         form._cleaner = get_validated_svg_cleaner(svgio, exc_class=ValidationError)
