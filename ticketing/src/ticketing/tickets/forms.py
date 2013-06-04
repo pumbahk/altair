@@ -133,7 +133,7 @@ class TicketTemplateForm(OurForm):
                 (format.id, format.name) for format in TicketFormat.filter_by(organization_id=kwargs['organization_id'])
             ]
         if not formdata and not obj:
-            self.always_reissueable.data = True
+            self.priced.data = True
         self._cleaner = None
 
     name = TextField(
