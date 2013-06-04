@@ -43,7 +43,7 @@ class OrderInfoDefault(object):
             if p.product.sales_segment.seat_choice:
                 seat_no += [u"* {0}".format(seat["name"]) for seat in p.seats]
             elif p.product.seat_stock_type:
-                seat_no += [u"{0} {1}席".format(p.product.seat_stock_type.name, len(p.seats))]
+                seat_no += [u"{0} {1}席".format(p.product.seat_stock_type.name, p.seat_quantity)]
         return u"\n".join(seat_no)
 
     def get_product_description(order):
