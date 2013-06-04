@@ -2,8 +2,8 @@
 
 ## N個ごとに区切られたitreratorを受け取り、divで区切って出力(scrollのため)
 <%def name="render(assets)">
-  % for g in assets:
-  <div>
+  % for i, g in enumerate(assets):
+  <div class="group" id="group:${i}">
      % for image in g:
        <div class="item">
          <img pk="${image.id}" src="${h.asset.rendering_object(request,image).thumbnail_path}" alt="" class="${"managed" if widget.asset==image else ""}"/>

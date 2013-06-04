@@ -35,7 +35,6 @@ if(!widget){
 
                 selected = $(we.dialog).find(".managed");
                 we.attach_highlight(selected);
-
                 // **scroiing**
                 // horizontal scrollables. each one is circular and has its own navigator instance
                 var root = $(".scrollable").scrollable({circular: true, keyboard: true});
@@ -45,7 +44,10 @@ if(!widget){
                     move(delta < 0 ? 1 : -1, 40); // 50 is speed
                     return false;
                 });
-                // when page loads setup keyboard focus on the first horzontal scrollable
+                if(!!selected.length > 0){
+                    var k = selected.parents(".group").eq(0).attr("id").split(":")[1];
+                    root.data("scrollable").move(k, 1);
+                }
             })();
     };
 

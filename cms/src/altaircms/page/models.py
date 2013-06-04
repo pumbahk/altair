@@ -399,9 +399,10 @@ class PageType(WithOrganizationMixin, Base):
                             ("event_detail", u"イベント詳細ページに利用"), 
                             ("static", u"静的ページに利用"), ]
 
-    page_rendering_type = sa.Column(sa.String(16), doc="pageのレンダリング方法", default="widget")
+    page_rendering_type = sa.Column(sa.String(16), doc=u"pageのレンダリング方法", default="widget")
     page_rendering_type_candidates = [("widget", u"widget利用"), 
                                       ("search", u"検索利用")]
+    is_important = sa.Column(sa.Boolean, default=False, doc=u"重要なページ", nullable=False) #boolean is good?
     @declared_attr
     def __table_args__(cls):
         return (sa.schema.UniqueConstraint("name", "organization_id"), )
