@@ -122,7 +122,18 @@ class IndexView(IndexViewMixin):
                 retval[name] = url
         return retval
 
-    @view_config(decorator=with_jquery_tools, route_name='cart.index', renderer=selectable_renderer("carts/%(membership)s/index.html"), xhr=False, permission="buy")
+    def is_smartphone(context, request):
+
+        return True
+
+    def is_organization_rs(context, request):
+        organization = c_api.get_organization(request)
+        return organization.id == 15
+
+    @view_config(decorator=with_jquery_tools, route_name='cart.index',
+                 custom_predicates=(is_smartphone,is_organization_rs), renderer=selectable_renderer("carts_smartphone/RT/index.html"), xhr=False, permission="buy")
+    @view_config(decorator=with_jquery_tools, route_name='cart.index',
+                  renderer=selectable_renderer("carts/%(membership)s/index.html"), xhr=False, permission="buy")
     def __call__(self):
         self.check_redirect(mobile=False)
         sales_segments = self.context.available_sales_segments
@@ -148,7 +159,7 @@ class IndexView(IndexViewMixin):
             # available_sales_segments に関連するものでなければならない
 
             # 数が少ないのでリニアサーチ
-            for sales_segment in sales_segments: 
+            for sales_segment in sales_segments:
                 if sales_segment.performance.id == performance_id:
                     # 複数個の SalesSegment が該当する可能性があるが
                     # 最初の 1 つを採用することにする。実用上問題ない。

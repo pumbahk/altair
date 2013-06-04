@@ -26,10 +26,10 @@
 var selected = ${selected};
 var salesSegmentsSelection = ${sales_segments_selection};
 var cartReleaseUrl = "${cart_release_url}";
-$(function() {cart.init(salesSegmentsSelection, selected, cartReleaseUrl, true);});
+$(function() {cart.init(salesSegmentsSelection, selected, cartReleaseUrl, false);});
 </script>
 </%block>
-<%block name="extras">  
+<%block name="extras">
   <div class="modal" id="venue-detail" style="display:none; background-image: url(${request.static_url('ticketing.cart:static/site-data/xebio-arena.png')}); width: 833px; height: 637px;">
   </div>
 
@@ -40,7 +40,7 @@ $(function() {cart.init(salesSegmentsSelection, selected, cartReleaseUrl, true);
       <div class="modal-footer"></div>
     </div>
   </div>
-  
+
   <div class="modal payment" id="order-reserved" style="display:none">
     <div class="modal-header"></div>
     <div class="modal-inner">
@@ -183,7 +183,7 @@ $(function() {cart.init(salesSegmentsSelection, selected, cartReleaseUrl, true);
                   <div class="venueViewer"></div>
                   <style type="text/css">
                     .venueViewer .dummy-venue-viewer {
-                      display: none; 
+                      display: none;
                     }
                   </style>
                   <div class="guidanceBackground"></div>

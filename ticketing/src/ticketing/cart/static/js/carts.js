@@ -138,9 +138,10 @@ cart.events = {
     ON_CART_ORDERED: "onCartOredered",
     ON_VENUE_DATASOURCE_UPDATED: "onVenueDataSourceUpdated"
 };
-cart.init = function(salesSegmentsSelection, selected, cartReleaseUrl) {
+cart.init = function(salesSegmentsSelection, selected, cartReleaseUrl, venueEnabled) {
     this.app = new cart.ApplicationController();
-    this.app.init(salesSegmentsSelection, selected, cartReleaseUrl);
+    venueEnabled = venueEnabled && (!$.browser.msie || parseInt($.browser.version) >= 9);
+    this.app.init(salesSegmentsSelection, selected, cartReleaseUrl, venueEnabled);
     $('body').bind('selectstart', function() { return false; });
 };
 
@@ -231,7 +232,7 @@ cart.showErrorDialog = function showErrorDialog(title, message, footer_button_cl
 cart.ApplicationController = function() {
 };
 
-cart.ApplicationController.prototype.init = function(salesSegmentsSelection, selected, cartReleaseUrl) {
+cart.ApplicationController.prototype.init = function(salesSegmentsSelection, selected, cartReleaseUrl, venueEnabled) {
     this.performanceSearch = new cart.PerformanceSearch({
         salesSegmentsSelection: salesSegmentsSelection,
         key: selected[1],
@@ -261,7 +262,6 @@ cart.ApplicationController.prototype.init = function(salesSegmentsSelection, sel
         viewType: cart.StockTypeListView,
         performance: this.performance
     });
-    var venueEnabled = !$.browser.msie || parseInt($.browser.version) >= 9;
     // 会場図
     this.venuePresenter = new cart.VenuePresenter({
         viewType: venueEnabled ? cart.VenueView: cart.DummyVenueView,
