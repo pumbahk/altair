@@ -2241,6 +2241,15 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         from ticketing.checkout.models import Checkout
         return Cart.query.filter(Cart._order_no==self.order_no).join(Checkout).with_entities(Checkout).first()
 
+    def can_change_status(self, status):
+        # 決済ステータスはインナー予約のみ変更可能
+        if status == 'paid':
+            return (self.status == 'ordered' and self.payment_status == 'unpaid' and self.channel == ChannelEnum.INNER.v)
+        elif status == 'unpaid':
+            return (self.status == 'ordered' and self.payment_status == 'paid' and self.channel == ChannelEnum.INNER.v)
+        else:
+            return False
+
     def can_cancel(self):
         # 受付済のみキャンセル可能、払戻時はキャンセル不可
         if self.status == 'ordered' and self.payment_status in ('unpaid', 'paid'):
@@ -2417,7 +2426,7 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             raise ValueError('either issued or printed must be True')
 
         if printed:
-            if not (issued or order.issued):
+            if not (issued or self.issued):
                 raise Exception('trying to mark an order as printed that has not been issued')
 
         now = now or datetime.now()
@@ -2472,8 +2481,17 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         for product in self.ordered_products:
             product.release()
 
+    def change_status(self, status):
+        if self.can_change_status(status):
+            if status == 'paid':
+                self.mark_paid()
+            if status == 'unpaid':
+                self.paid_at = None
+            self.save()
+            return True
+        return False
+
     def delivered(self):
-        # 入金済みのみ配送済みにステータス変更できる
         if self.can_deliver():
             self.mark_delivered()
             self.save()
