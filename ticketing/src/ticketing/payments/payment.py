@@ -86,7 +86,7 @@ class Payment(object):
             except Exception as e:
                 self._bind_order(order)
                 #on_delivery_error(e, self.request, order)
-                request.registry.notify(DeliveryErrorEvent(e, self.request, order))
+                self.request.registry.notify(DeliveryErrorEvent(e, self.request, order))
                 transaction.commit()
                 raise DeliveryFailedException(order_no, event_id)
         else:
