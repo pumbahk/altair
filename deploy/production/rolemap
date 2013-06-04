@@ -5,6 +5,8 @@ ap4.rt.ticketstar.jp	userapp.xl
 ap5.rt.ticketstar.jp	userapp.xl
 ap6.rt.ticketstar.jp	userapp.xl
 ap7.rt.ticketstar.jp	userapp.xl
+apbv1.1b.vpc.altr	adminapp
+apbv1.1c.vpc.altr	adminapp.backup
 wkmv1.1b.vpc.altr	worker
 samv1.1c.vpc.altr	newsletter
 # vim: noet
