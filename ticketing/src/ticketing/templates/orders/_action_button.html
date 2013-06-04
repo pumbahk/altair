@@ -93,13 +93,13 @@ actions = {
   ),
   'paid':dict(
     label=u'入金済みにする',
-    url=request.route_path('orders.change_status', order_id=order.id, action='paid'),
+    url=request.route_path('orders.change_status', order_id=order.id, status='paid'),
     icon='icon-ok',
     route_name='orders.change_status',
   ),
   'unpaid':dict(
     label=u'未入金に戻す',
-    url=request.route_path('orders.change_status', order_id=order.id, action='unpaid'),
+    url=request.route_path('orders.change_status', order_id=order.id, status='unpaid'),
     icon='icon-ok',
     route_name='orders.change_status',
   ),
