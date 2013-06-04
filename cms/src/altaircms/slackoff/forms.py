@@ -451,11 +451,11 @@ class PageTypeForm(Form):
     label = fields.TextField(label=u"日本語表記", validators=[required_field()])
     page_role = MaybeSelectField(choices=PageType.page_role_candidates, label=u"ページの利用方法")
     page_rendering_type = fields.SelectField(choices=PageType.page_rendering_type_candidates, label=u"ページのレンダリング方法")
-
+    is_important = fields.BooleanField(label=u"重要なページ", default=False)
     def validate_page_role(field, data):
         if data is None:
             field.data = PageType.page_default_role
-    __display_fields__ = ["name", "label", "page_role", "page_rendering_type"]
+    __display_fields__ = ["name", "label", "page_role", "is_important", "page_rendering_type"]
 
 class PageSetForm(Form):
     name = fields.TextField(label=u"名前")

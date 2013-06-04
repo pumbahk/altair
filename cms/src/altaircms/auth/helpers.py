@@ -50,6 +50,14 @@ def get_roles_from_role_names(role_names):
     else:
         return []
 
+def get_or_create_roles_from_role_names(role_names):
+    roles = get_roles_from_role_names(role_names)
+    roles_dict = {r.name: r for r in roles}
+    for name in role_names:
+        if name not in roles_dict:
+            roles.append(Role(name=name))
+    return roles
+        
 def get_or_create_organization(source, organization_id, organization_name,  organization_short_name, organization_code):
     organization = Organization.query.filter_by(backend_id=organization_id, auth_source=source).first()
     if organization is None:

@@ -121,7 +121,6 @@ class OAuthToken(Base):
     updated_at = Column(DateTime, default=datetime.now, onupdate=datetime.now)
 
 
-
 operator_role = Table(
     "operator_role", Base.metadata,
     Column("operator_id", Integer, ForeignKey("operator.id")),
@@ -181,11 +180,27 @@ class Operator(WithOrganizationMixin, Base):
             return self.roles[0]
     role = deprecation.deprecated(role, "role is no more, use `Operator.roles`")
 
+    def get_permission(self, perm):
+        return RolePermission.query.filter(
+            RolePermission.id==perm.id, 
+            RolePermission.role_id==Role.id,
+            Role.id==operator_role.c.role_id,
+            operator_role.c.operator_id==self.id,
+            ).first()
+
+    def get_permission_by_name(self, name):
+        return RolePermission.query.filter(
+            RolePermission.name==name, 
+            RolePermission.role_id==Role.id,
+            Role.id==operator_role.c.role_id,
+            operator_role.c.operator_id==self.id,
+            ).first()
+
     def has_permission(self, perm):
-        for role in self.roles:
-            if any(p == perm for p in role.permissions):
-                return True
-        return False
+        return bool(self.get_permission(perm))
+
+    def has_permission_by_name(self, name):
+        return bool(self.get_permission_by_name(name))
 
     UniqueConstraint('auth_source', 'user_id')
 
