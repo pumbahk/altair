@@ -103,7 +103,6 @@ class CartBot(object):
         else:
             raise NotImplementedError(host)
         
-
     def do_payment_with_credit_card(self):
         initial_location = self.m.location
         form = self.m.page.root.find('.//form')
@@ -127,7 +126,6 @@ class CartBot(object):
                     for error_elem in error_list_elem.findall('li'):
                         errors.append((name, error_elem.text.encode('utf-8')))
                 raise CartBotError('Failed to authorize credit card: %s' % ' / '.join('%s: %s' % pair for pair in errors))
-        print self.m.location
 
     def do_open_id_login(self):
         form = self.m.page.root.find('.//form[@name="LoginForm"]')
@@ -153,7 +151,7 @@ class CartBot(object):
         if pdmp_choices_made is None:
             pdmp_choices_made = self.pdmp_choices_map[sales_segment_id] = set()
 
-        choices = dict((pdmp['radio'].get('value'), pdmp) for pdmp in pdmps)
+        choices = dict((pdmp['radio'].get('value'), pdmp) for pdmp in pdmps if u'あんしん' not in pdmp['payment_method']['name'])
         for pdmp_id in pdmp_choices_made:
             choices.pop(pdmp_id, None)
         if not choices:
@@ -211,7 +209,7 @@ class CartBot(object):
         seat_type = self.choose_seat_type(sales_segment_detail)
         if not seat_type:
             print "It looks like we're done with %s" % sales_segment['name']
-            return
+            return None
 
         product_info = json.load(self.m.opener.open(seat_type['products_url']))
         products = product_info['products']
@@ -231,7 +229,7 @@ class CartBot(object):
             print
         else:
             print 'Items could not be bought. Out of stock?'
-            return
+            return None
 
         # 決済フォーム
         payment_url = result['payment_url']
@@ -272,7 +270,7 @@ class CartBot(object):
         pdmp = self.choose_pdmp(sales_segment['id'], pdmps)
         if pdmp is None:
             print "No applicable PDMP for %s" % sales_segment['name']
-            return
+            return None
 
 
         print 'Selected payment-delivery-method-pair'
@@ -302,6 +300,7 @@ class CartBot(object):
 
         order_no = self.m.page.root.find('.//*[@class="confirmBox"][1]//*[@class="confirm-message"]').text_content().strip()
         print 'Checkout successful: order_no=%s' % order_no
+        return order_no
 
     def __init__(self, url, credentials, shipping_address, credit_card_info):
         self.m = Mechanize()
@@ -332,4 +331,5 @@ if __name__ == '__main__':
         shipping_address=dict(config.items('shipping_address')),
         credit_card_info=dict(config.items('credit_card_info')),
         )
-    bot.buy_something()
+    while bot.buy_something():
+        pass
