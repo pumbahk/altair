@@ -435,7 +435,7 @@ class OrderReserveForm(Form):
             self.products.choices = []
             if 'sales_segment_id' in kwargs and kwargs['sales_segment_id']:
                 self.sales_segment_id.default = kwargs['sales_segment_id']
-            else:
+            elif len(self.sales_segment_id.choices) > 0:
                 self.sales_segment_id.default = self.sales_segment_id.choices[0][0]
             query = query.filter(Product.sales_segment_id==self.sales_segment_id.default)
             if 'stocks' in kwargs and kwargs['stocks']:

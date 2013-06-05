@@ -957,9 +957,8 @@ class OrdersReserveView(BaseView):
                 if not quantity.isdigit():
                     raise ValidationError(u'個数が不正です')
                 product_quantity = int(quantity)
-                total_quantity += product_quantity
-
                 product = DBSession.query(Product).filter_by(id=product_id).one()
+                total_quantity += product_quantity * product.get_quantity_power(product.seat_stock_type, performance_id)
                 order_items.append((product, product_quantity))
 
             if not total_quantity:
