@@ -4,7 +4,7 @@ from pyramid.httpexceptions import HTTPNotFound
 from pyramid.traversal import DefaultRootFactory
 from pyramid.decorator import reify
 from ticketing.core.models import Event, Performance, Organization
-from ticketing.core import api as core_api
+from ticketing.cart import api as cart_api
 from .exceptions import OutTermException
 from .models import Lot
 
@@ -26,7 +26,7 @@ class LotResource(object):
     def __init__(self, request):
         self.request = request
 
-        self.organization = core_api.get_organization(self.request)
+        self.organization = self.request.organization
 
         event_id = self.request.matchdict.get('event_id')
         self.event = Event.query \
@@ -49,7 +49,7 @@ class LotResource(object):
 
     @reify
     def host_base_url(self):
-        return core_api.get_host_base_url(self.request)
+        return cart_api.get_host_base_url(self.request)
 
 
 class LotOptionSelectionResource(LotResource):

@@ -12,7 +12,6 @@ from pyramid.tweens import EXCVIEW
 from pyramid.tweens import INGRESS
 from pyramid_selectable_renderer import SelectableRendererSetup
 from pyramid_selectable_renderer.custom import ReceiveTemplatePathFormat, ReceiveTemplatePathCandidatesDict, SelectByRequestGen
-from ticketing.core.api import get_organization
 
 import sqlalchemy as sa
 import sqlahelper
@@ -25,7 +24,7 @@ class WhoDecider(object):
         """ WHO API 選択
         """
         #return self.request.organization.setting.auth_type
-        return get_organization(self.request).setting.auth_type
+        return self.request.organization.setting.auth_type
 
 def register_globals(event):
     from . import helpers
@@ -35,7 +34,7 @@ def register_globals(event):
 @SelectByRequestGen.generate
 def get_template_path_args(request):
     try:
-        return dict(membership=get_organization(request).short_name)
+        return dict(membership=request.organization.short_name)
     except:
         return dict(membership="__default__")
 
@@ -146,6 +145,8 @@ def main(global_config, **local_config):
     config.include('altair.pyramid_assets')
     config.include('altair.pyramid_boto')
     config.include('altair.pyramid_tz')
+
+    config.add_tween('ticketing.cart.tweens.OrganizationPathTween')
 
     config.set_authorization_policy(ACLAuthorizationPolicy())
     return config.make_wsgi_app()

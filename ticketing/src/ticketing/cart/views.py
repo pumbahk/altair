@@ -125,7 +125,7 @@ class IndexView(IndexViewMixin):
     def __call__(self):
         self.check_redirect(mobile=False)
         sales_segments = self.context.available_sales_segments
-        selector_name = c_api.get_organization(self.request).setting.performance_selector
+        selector_name = self.request.organization.setting.performance_selector
 
         performance_selector = api.get_performance_selector(self.request, selector_name)
         sales_segments_selection = performance_selector()
@@ -770,7 +770,7 @@ class OutTermSalesView(object):
 @view_config(decorator=with_jquery.not_when(mobile_request), route_name='cart.logout')
 def logout(request):
     headers = security.forget(request)
-    location = c_api.get_host_base_url(request)
+    location = api.get_host_base_url(request)
     res = HTTPFound(location=location)
     res.headerlist.extend(headers)
     return res

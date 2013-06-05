@@ -17,7 +17,6 @@ from ticketing.api.impl import get_communication_api
 from ticketing.api.impl import CMSCommunicationApi
 from altair.mobile.interfaces import IMobileRequest
 from ticketing.core import models as c_models
-from ticketing.core import api as c_api
 from ticketing.users.models import User, UserCredential, Membership, MemberGroup, MemberGroup_SalesSegment
 
 from .interfaces import IPaymentMethodManager
@@ -170,7 +169,7 @@ def _maybe_encoded(s, encoding='utf-8'):
     return s.decode(encoding)
 
 def get_item_name(request, cart_name):
-    organization = c_api.get_organization(request)
+    organization = request.organization
     base_item_name = organization.setting.cart_item_name
     return _maybe_encoded(base_item_name) + " " + str(cart_name)
 
@@ -295,3 +294,10 @@ def get_performance_selector(request, name):
     reg = request.registry
     performance_selector = reg.adapters.lookup([IRequest], IPerformanceSelector, name)(request)
     return performance_selector
+
+def get_host_base_url(request):
+    if IMobileRequest.providedBy(request):
+        base_url = request.altair_host.mobile_base_url or "/"
+    else:
+        base_url = request.altair_host.base_url or "/"
+    return base_url
