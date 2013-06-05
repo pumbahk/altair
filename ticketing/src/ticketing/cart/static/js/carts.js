@@ -365,25 +365,23 @@ cart.StockTypeListPresenter.prototype = {
     },
     onStockTypeSelected: function(products_url, stock_type) {
         var self = this;
-        $.getJSON(
-            products_url,
-            function(data) {
-                var products = data.products;
-                var productCollection = new cart.ProductQuantityCollection();
-                for (var i=0; i < products.length; i++) {
-                    var product = products[i];
-                    var p = new cart.ProductQuantity(product);
-                    productCollection.push(p);
-                }
-                var selected = self.view.selected;
-                self.orderFormPresenter.showOrderForm(selected, stock_type, productCollection);
-                var sales_segment = data.sales_segment;
-                $('#descSalesTerm').text(
-                  cart.util.datestring_japanize(sales_segment.start_at) + '〜' +
-                  cart.util.datestring_japanize(sales_segment.end_at)
-                );
+        function callback(data) {
+            var products = data.products;
+            var productCollection = new cart.ProductQuantityCollection();
+            for (var i=0; i < products.length; i++) {
+                var product = products[i];
+                var p = new cart.ProductQuantity(product);
+                productCollection.push(p);
             }
-        );
+            var selected = self.view.selected;
+            self.orderFormPresenter.showOrderForm(selected, stock_type, productCollection);
+        }
+
+        var products = stock_type.get('products');
+        if (products)
+            callback({ 'products': products });
+        else
+            $.getJSON(products_url, callback);
     }
 };
 
