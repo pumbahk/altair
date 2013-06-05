@@ -39,7 +39,7 @@ class ClientForm(OurForm):
         validators=[
             Required(),
             Zenkaku,
-            Length(max=13, message=u'13文字以内で入力してください'),
+            Length(max=10, message=u'10文字以内で入力してください'),
         ],
     )
     last_name_kana = fields.TextField(
@@ -48,7 +48,7 @@ class ClientForm(OurForm):
         validators=[
             Required(),
             Katakana,
-            Length(max=13, message=u'13文字以内で入力してください'),
+            Length(max=10, message=u'10文字以内で入力してください'),
         ]
     )
     first_name = fields.TextField(
@@ -57,7 +57,7 @@ class ClientForm(OurForm):
         validators=[
             Required(),
             Zenkaku,
-            Length(max=13, message=u'13文字以内で入力してください'),
+            Length(max=10, message=u'10文字以内で入力してください'),
         ]
     )
     first_name_kana = fields.TextField(
@@ -66,7 +66,7 @@ class ClientForm(OurForm):
         validators=[
             Required(),
             Katakana,
-            Length(max=13, message=u'13文字以内で入力してください'),
+            Length(max=10, message=u'10文字以内で入力してください'),
         ]
     )
     tel_1 = fields.TextField(
