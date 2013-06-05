@@ -3,7 +3,7 @@
 <%block name="title">お問合せ</%block>
 <%block name="fnavi">
     <hr/>
-    <a href="${request.route_path('main')}"><button class="btn-secondary btn-large">トップへ</button></a>
+    <a href="${request.route_path('smartphone.main')}"><button class="btn-secondary btn-large">トップへ</button></a>
 </%block>
 
 <style type="text/css">
@@ -51,7 +51,7 @@
 
 <div class="sectionbox inverted" id="inquiry">
 
-<form class="sectionbox-inner" action="${request.route_path('page', kind='inquiry')}" method="POST">
+<form class="sectionbox-inner" action="${request.route_path('smartphone.page', kind='inquiry')}" method="POST">
     <fieldset>
         <legend>お問い合わせフォーム</legend>
         お名前<font color="red">※</font><br/>${form.username}<br/>
@@ -79,7 +79,7 @@
     <div class="sectionbox-inner">
         お預かりするお客様の個人情報は、『個人情報保護方針』に基いて厳重に管理し、お客様の同意がない限りお問い合わせ・ご相談への対応以外には使用いたしません。<br/>
         <br/>
-        個人情報保護方針は<a href="${request.route_path('page', kind='privacy')}">こちら</a>をご確認ください。<br/>
+        個人情報保護方針は<a href="${request.route_path('smartphone.page', kind='privacy')}">こちら</a>をご確認ください。<br/>
         フォームでお問い合わせ頂いたお客様には、基本的には返信メールにて回答させて頂いております。<br/>
         <br/>
     </div>

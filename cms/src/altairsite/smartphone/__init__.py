@@ -9,37 +9,16 @@ def includeme(config):
     #tweenはmobile.__init__で登録されているので追加しない
     config.include(install_app)
 
-def install_convinient_request_properties(config):
-    assert config.registry.settings["getti.orderreview.url"]
-    def getti_orderreview_url(request):
-        return config.registry.settings["getti.orderreview.url"]
-
-    assert config.registry.settings["altair.orderreview.url"]
-    def altair_orderreview_url(request):
-        return config.registry.settings["altair.orderreview.url"]
-
-    assert config.registry.settings["sender.mailaddress"]
-    def sender_mailaddress(request):
-        return config.registry.settings["sender.mailaddress"]
-
-    assert config.registry.settings["inquiry.mailaddress"]
-    def inquiry_mailaddress(request):
-        return config.registry.settings["inquiry.mailaddress"]
-
-    config.set_request_property(getti_orderreview_url, "getti_orderreview_url", reify=True)
-    config.set_request_property(altair_orderreview_url, "altair_orderreview_url", reify=True)
-    config.set_request_property(sender_mailaddress, "sender_mailaddress", reify=True)
-    config.set_request_property(inquiry_mailaddress, "inquiry_mailaddress", reify=True)
-
 def install_app(config):
     ##ここに追加
     add_route = functools.partial(config.add_route, factory=".resources.TopPageResource")
-    add_route("main", "/")
+    add_route("smartphone.main", "/")
+    add_route("smartphone.goto_pc_page", "/goto_pc")
+    add_route("smartphone.goto_sp_page", "/goto_sp")
     config.include('altairsite.smartphone.genre')
     config.include('altairsite.smartphone.search')
     config.include('altairsite.smartphone.detail')
     config.include('altairsite.smartphone.page')
-    config.include(install_convinient_request_properties)
     config.scan(".")
 
 def main(config, **settings):
@@ -68,7 +47,7 @@ def main(config, **settings):
     search_utility = settings.get("altaircms.solr.search.utility")
     config.add_fulltext_search(search_utility)
     config.include(install_app)
-
+    config.include("altairsite.config.install_convinient_request_properties")
     ## all requests are treated as mobile request
     config._add_tween("altairsite.tweens.smartphone_request_factory", under=INGRESS)
     return config.make_wsgi_app()

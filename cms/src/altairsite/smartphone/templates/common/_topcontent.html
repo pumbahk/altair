@@ -11,7 +11,7 @@
             % if content.link:
                 <a href=${content.link}>
             % elif event:
-                <a href="${request.route_path('detail')}?event_id=${event.id}">
+                <a href="${request.route_path('smartphone.detail')}?event_id=${event.id}">
             % endif
                 <div class="panel-inner">
                     <img class="thematic" src="${helper.get_asset_rendering_object(request, content.image_asset).thumbnail_path}" />

@@ -55,7 +55,7 @@ $(function () {
 
 <div id="search" class="sectionbox inverted">
 
-    <form action="${request.route_path('search_detail')}" class="sectionbox-inner" method='GET'>
+    <form action="${request.route_path('smartphone.search_detail')}" class="sectionbox-inner" method='GET'>
         % if helper.disp_error(form):
             <font color="yellow">${helper.disp_error(form)}</font><br/>
         % endif
