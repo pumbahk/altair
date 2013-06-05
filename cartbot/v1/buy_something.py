@@ -300,7 +300,8 @@ class CartBot(object):
         if path != '/cart/completed':
             raise CartBotError('Checkout failure')
 
-        print 'Checkout successful'
+        order_no = self.m.page.root.find('.//*[@class="confirmBox"][1]//*[@class="confirm-message"]').text_content().strip()
+        print 'Checkout successful: order_no=%s' % order_no
 
     def __init__(self, url, credentials, shipping_address, credit_card_info):
         self.m = Mechanize()
