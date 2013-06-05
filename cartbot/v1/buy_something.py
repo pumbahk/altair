@@ -152,18 +152,15 @@ class CartBot(object):
             pdmp_choices_made = self.pdmp_choices_map[sales_segment_id] = set()
 
         choices = dict((pdmp['radio'].get('value'), pdmp) for pdmp in pdmps if u'あんしん' not in pdmp['payment_method']['name'])
-        for pdmp_id in pdmp_choices_made:
-            choices.pop(pdmp_id, None)
-        if not choices:
-            pdmp = sample(pdmps, 1)[0]
-            pdmp_id = pdmp['radio'].get('value')
+        eligible_choices = set(choices.keys()).difference(pdmp_choices_made)
+        if not eligible_choices:
             pdmp_choices_made.clear()
-            pdmp_choices_made.add(pdmp_id)
-            return pdmp
-        else:
             pdmp_id = sample(choices, 1)[0]
-            pdmp_choices_made.add(pdmp_id)
-            return choices[pdmp_id]
+        else:
+            pdmp_id = sample(eligible_choices, 1)[0]
+
+        pdmp_choices_made.add(pdmp_id)
+        return choices[pdmp_id]
 
     def build_order_post_data(self, sales_segment, products_to_buy):
         data = {
