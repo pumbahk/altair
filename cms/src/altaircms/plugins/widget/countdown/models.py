@@ -39,9 +39,9 @@ class CountdownWidget(Widget):
         return self.KIND_MAPPING[self.kind]
 
 
-    def get_limit(self, event, today_fn=datetime.datetime.now):
+    def get_limit(self, request, event):
         limit_date = getattr(event, self.kind)
-        return h.base.countdown_days_from(request, limit_date, today_fn=today_fn)
+        return h.base.countdown_days_from(request, limit_date)
 
     def merge_settings(self, bname, bsettings):
         bsettings.need_extra_in_scan("request")
@@ -51,7 +51,7 @@ class CountdownWidget(Widget):
         def countdown_render():
             request = bsettings.extra["request"]
             event = bsettings.extra["event"]
-            limit = self.get_limit(event)
+            limit = self.get_limit(request, event)
             return render(self.template_name, {"widget": self, "limit": limit}, request)
         bsettings.add(bname, countdown_render)
 
