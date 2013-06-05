@@ -73,8 +73,8 @@ ${w.status}
 <br>メール送信済
 %endif
 </td>
-<td nowrap="">${self.multicheckout_auth_status(auth)}</td>
-<td nowrap="">${'OK' if sej else '-'}</td>
+<td nowrap="">${payment_method.name}<br>(${self.multicheckout_auth_status(auth)})</td>
+<td nowrap="">${delivery_method.name}<br>(${'SEJ OK' if sej else ' - '})</td>
 <td nowrap="">${w.lot_entry.entry_no}</td>
 <td nowrap="">${w.wish_order + 1}</td>
 <td nowrap="">${"{0:%Y-%m-%d %H:%M}".format(w.created_at)}</td>
@@ -84,8 +84,6 @@ ${w.status}
 <td nowrap="">${performance.code}</td>
 <td nowrap="">${"{0:%Y-%m-%d %H:%M}".format(performance.start_on)}</td>
 <td nowrap="">${u",".join([p.product.name for p in w.products])}</td>
-<td nowrap="">${payment_method.name}</td>
-<td nowrap="">${delivery_method.name}</td>
 <td nowrap="">${shipping_address.last_name}</td>
 <td nowrap="">${shipping_address.first_name}</td>
 <td nowrap="">${shipping_address.last_name_kana}</td>
@@ -220,8 +218,8 @@ ${tabs.tabs(request)}
 <tr>
 <th>&nbsp;</th>
 <th>状態</th>
-<th>オーソリ状態</th>
-<th>SEJ状態</th>
+<th>決済方法</th>
+<th>引取方法</th>
 <th>申し込み番号</th>
 <th>希望順序</th>
 <th>申し込み日</th>
@@ -231,8 +229,6 @@ ${tabs.tabs(request)}
 <th>公演コード</th>
 <th>公演日</th>
 <th>商品</th>
-<th>決済方法</th>
-<th>引取方法</th>
 <th>配送先姓</th>
 <th>配送先名</th>
 <th>配送先姓(カナ)</th>
