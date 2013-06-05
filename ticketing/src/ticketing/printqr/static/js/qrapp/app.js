@@ -573,31 +573,33 @@ var PrintableTicketsSelectView = Backbone.View.extend({
     });
     this.show();
   }, 
-  _createRowCheckboxPrinted: function(t, i){
-    // <td><input type="checkbox" name="0"></input></td><td>コートエンド北(1階 コートエンド北 1列 42番) <span class="label">印刷済み</span></td>
-    var tr = $('<tr>');
-    var checkbox = $('<input type="checkbox">').attr('name', i).attr("id", t.ordered_product_item_token_id)
-    tr.append($('<td>').append(checkbox));
-    tr.append($('<td>').text(t.codeno));
-    tr.append($('<td>').text(t.ticket_name).append($('<span class="label">').text(t.refreshed_at ? ("印刷済み:"+t.printed_at+"(再印刷許可:)"+t.refreshed_at) : ("印刷済み"+t.printed_at))));
-    return tr
-  }, 
-  _createRowCheckbox: function(t, i){
+  _createRowCheckbox: function(t, i, decorate_fn, checked){
     // <td><input type="checkbox" name="0"  checked="checked"></input></td><td>コートエンド北(1階 コートエンド北 1列 42番)</td>
     var tr = $('<tr>');
-    var checkbox = $('<input type="checkbox">').attr('name', i).attr('checked', 'checked').attr("id", t.ordered_product_item_token_id);
+    var checkbox = $('<input type="checkbox">').attr('name', i).attr("id", t.ordered_product_item_token_id);
+    if(checked){
+      checkbox.attr('checked', 'checked');
+    }
     tr.append($('<td>').append(checkbox));
     tr.append($('<td>').text(t.codeno));
-    tr.append($('<td>').text(t.ticket_name));
+    tr.append(decorate_fn($('<td>').text(t.ticket_name), t));
     return tr
   }, 
+  _withPrintedMessage: function($td, t){
+    return $td.append($('<span class="label">').text(t.refreshed_at ? ("印刷済み:"+t.printed_at+"(再印刷許可:)"+t.refreshed_at) : ("印刷済み"+t.printed_at)));
+  }, 
   _createRow: function(t, i, target_id){
-    if(t.printed_at && t.ordered_product_item_token_id != target_id){  //printed
-      return this._createRowCheckboxPrinted(t, i);
+    var is_inputed_ticket = t.ordered_product_item_token_id == target_id;
+    if(t.printed_at && ! is_inputed_ticket){  //printed
+      return this._createRowCheckbox(t, i, this._withPrintedMessage);
     } else{
       this.ticketBuffer.addTicket(t);
       this.datastore.set("print_num",  this.datastore.get("print_num") + 1);
-      return this._createRowCheckbox(t, i);
+      if(t.printed_at && is_inputed_ticket){
+          return this._createRowCheckbox(t, i, this._withPrintedMessage,  true);
+      }else {
+          return this._createRowCheckbox(t, i, function(e){return e;}, true);
+      }
     }
   }
 })
