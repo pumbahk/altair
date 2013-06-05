@@ -1,6 +1,21 @@
 <%inherit file="../layout_2cols.html" />
 <%namespace file="/common/helpers.html" name="h" />
 <%namespace file="_entries_tabs.html" name="tabs" />
+<%!
+
+from ticketing.payments.plugins import (
+logger,
+MULTICHECKOUT_PAYMENT_PLUGIN_ID,
+CHECKOUT_PAYMENT_PLUGIN_ID,
+SEJ_PAYMENT_PLUGIN_ID,
+RESERVE_NUMBER_PAYMENT_PLUGIN_ID,
+
+SHIPPING_DELIVERY_PLUGIN_ID,
+SEJ_DELIVERY_PLUGIN_ID,
+RESERVE_NUMBER_DELIVERY_PLUGIN_ID,
+QR_DELIVERY_PLUGIN_ID,
+)
+%>
 
 <%
 from ticketing.cart.helpers import format_currency
@@ -33,6 +48,39 @@ from ticketing.cart.helpers import format_currency
 %endif
 </%def>
 
+<%def name="sej_billing_status(sej)">
+%if sej and sej.billing_number:
+ 払込番号： ${sej.billing_number}
+%else:
+ ( - )
+%endif
+</%def>
+
+<%def name="sej_exchange_status(sej)">
+%if sej and sej.exchange_number:
+ 引換番号： ${sej.exchange_number}
+%else:
+ ( - )
+%endif
+</%def>
+
+<%def name="payment_status(pdmp, auth, sej)">
+%if pdmp.payment_method.payment_plugin_id == MULTICHECKOUT_PAYMENT_PLUGIN_ID:
+${self.multicheckout_auth_status(auth)}
+%elif pdmp.payment_method.payment_plugin_id == SEJ_PAYMENT_PLUGIN_ID:
+${self.sej_billing_status(sej)}
+%else:
+-
+%endif
+</%def>
+
+<%def name="delivery_status(pdmp, auth, sej)">
+%if pdmp.payment_method.payment_plugin_id == SEJ_DELIVERY_PLUGIN_ID:
+${self.sej_exchange_status(sej)}
+%else:
+-
+%endif
+</%def>
 
 <%def name="lot_wish_row(w, auth, sej)">
 
@@ -73,8 +121,8 @@ ${w.status}
 <br>メール送信済
 %endif
 </td>
-<td nowrap="">${payment_method.name}<br>(${self.multicheckout_auth_status(auth)})</td>
-<td nowrap="">${delivery_method.name}<br>(${'SEJ OK' if sej else ' - '})</td>
+<td nowrap="">${payment_method.name}<br>${self.payment_status(pdmp,auth,sej)}</td>
+<td nowrap="">${delivery_method.name}<br>${self.delivery_status(pdmp,auth,sej)}</td>
 <td nowrap="">${w.lot_entry.entry_no}</td>
 <td nowrap="">${w.wish_order + 1}</td>
 <td nowrap="">${"{0:%Y-%m-%d %H:%M}".format(w.created_at)}</td>
