@@ -16,7 +16,7 @@ def _convert_response_for_docomo(response):
 
 def _convert_response_sjis(response):
     encoding = 'Shift_JIS'
-    if response.content_type is not None and response.content_type.startswith("text"):
+    if response.content_type is not None and response.content_type.startswith("text") and response.charset is not None:
         response.body = response.unicode_body.encode("cp932", "replace")
         response.charset = encoding
     return response
