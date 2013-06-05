@@ -458,7 +458,7 @@ class ReserveView(object):
                                              quantity=p.quantity,
                                              price=int(p.product.price),
                                              seats=p.seats if self.context.sales_segment.seat_choice else [],
-                                             unit_template=h.build_unit_template(p.product, self.context.sales_segment.performance.id),
+                                             unit_template=h.build_unit_template(p.items),
                                         )
                                         for p in cart.products],
                               total_amount=h.format_number(get_amount_without_pdmp(cart))
