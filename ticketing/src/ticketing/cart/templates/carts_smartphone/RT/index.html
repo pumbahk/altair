@@ -69,6 +69,9 @@ $(function() {cart.init(salesSegmentsSelection, selected, cartReleaseUrl, false)
     </div>
   </div>
 </%block>
+    <a href="${request.route_url('cart.switchpc', event_id=event['id'])}">
+      <button class="switch_pc">PCサイトで購入する</button>
+    </a>
     <h2 id="ticketName">${event['title']} (<span class="performanceNameSpace"></span>)</h2>
     <form id="form1" name="form1" method="post" action="">
       <div id="settlementSelectBox">

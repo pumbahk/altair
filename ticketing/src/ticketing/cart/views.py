@@ -35,6 +35,8 @@ from altair.mobile.interfaces import IMobileRequest
 from . import api
 from . import helpers as h
 from . import schemas
+from . import PC_SWITCH_COOKIE_NAME
+from .api import set_we_need_pc_access, set_we_invalidate_pc_access
 from .events import notify_order_completed
 from .reserving import InvalidSeatSelectionException, NotEnoughAdjacencyException
 from .stocker import InvalidProductSelectionException, NotEnoughStockException
@@ -91,6 +93,7 @@ def back(pc=back_to_top, mobile=None):
 
 
 
+
 @view_defaults(decorator=with_jquery.not_when(mobile_request))
 class IndexView(IndexViewMixin):
     """ 座席選択画面 """
@@ -126,8 +129,8 @@ class IndexView(IndexViewMixin):
         SMARTPHONE_USER_AGENT_RX = re.compile("iPhone|iPod|Opera Mini|Android.*Mobile|NetFront|PSP|BlackBerry")
         if "HTTP_USER_AGENT" in request.environ:
             if SMARTPHONE_USER_AGENT_RX.search(request.environ["HTTP_USER_AGENT"]):
-
-                return True
+                if not PC_SWITCH_COOKIE_NAME in request.cookies:
+                    return True
         return False
 
     def is_organization_rs(context, request):
@@ -826,3 +829,19 @@ def logout(request):
     res = HTTPFound(location=location)
     res.headerlist.extend(headers)
     return res
+
+@view_config(route_name='cart.switchpc')
+def switch_pc(context, request):
+    event_id = request.matchdict.get('event_id')
+    ReleaseCartView(request)()
+    response = HTTPFound(event_id and request.route_url('cart.index', event_id=event_id) or '/')
+    set_we_need_pc_access(response)
+    return response
+
+@view_config(route_name='cart.switchsp')
+def switch_sp(context, request):
+    event_id = request.matchdict.get('event_id')
+    ReleaseCartView(request)()
+    response = HTTPFound(event_id and request.route_url('cart.index', event_id=event_id) or '/')
+    set_we_invalidate_pc_access(response)
+    return response

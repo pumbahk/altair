@@ -20,6 +20,8 @@ from ticketing.core import models as c_models
 from ticketing.core import api as c_api
 from ticketing.users.models import User, UserCredential, Membership, MemberGroup, MemberGroup_SalesSegment
 
+from . import PC_SWITCH_COOKIE_NAME
+
 from .interfaces import IPaymentMethodManager
 from .interfaces import IStocker, IReserving, ICartFactory
 from .interfaces import IPerformanceSelector
@@ -312,3 +314,10 @@ def get_performance_selector(request, name):
     reg = request.registry
     performance_selector = reg.adapters.lookup([IRequest], IPerformanceSelector, name)(request)
     return performance_selector
+
+def set_we_need_pc_access(response):
+    response.set_cookie(PC_SWITCH_COOKIE_NAME, str(datetime.now()))
+
+def set_we_invalidate_pc_access(response):
+    response.delete_cookie(PC_SWITCH_COOKIE_NAME)
+
