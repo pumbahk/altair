@@ -24,6 +24,9 @@ from ticketing.lots.models import (
     LotRejectWork,
     LotEntryWish,
     )
+from ticketing.sej.models import (
+    SejOrder,
+)
 from ticketing.multicheckout.models import (
     MultiCheckoutOrderStatus,
 )
@@ -457,7 +460,7 @@ class LotEntries(BaseView):
         logger.debug("condition = {0}".format(condition))
         logger.debug("from = {0}".format(form.entried_from.data))
 
-        q = DBSession.query(LotEntryWish, MultiCheckoutOrderStatus).join(
+        q = DBSession.query(LotEntryWish, MultiCheckoutOrderStatus, SejOrder).join(
             LotEntry
         ).join(
             Lot
@@ -469,6 +472,9 @@ class LotEntries(BaseView):
             MultiCheckoutOrderStatus,
             sql.and_(MultiCheckoutOrderStatus.OrderNo.startswith(LotEntry.entry_no),
                      MultiCheckoutOrderStatus.Status!=None),
+        ).outerjoin(
+            SejOrder,
+            SejOrder.order_id==LotEntry.entry_no,
         ).order_by(
             LotEntry.entry_no,
             LotEntryWish.wish_order

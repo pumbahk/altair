@@ -34,7 +34,7 @@ from ticketing.cart.helpers import format_currency
 </%def>
 
 
-<%def name="lot_wish_row(w, auth)">
+<%def name="lot_wish_row(w, auth, sej)">
 
 <%
 performance = w.performance
@@ -74,6 +74,7 @@ ${w.status}
 %endif
 </td>
 <td nowrap="">${self.multicheckout_auth_status(auth)}</td>
+<td nowrap="">${'OK' if sej else '-'}</td>
 <td nowrap="">${w.lot_entry.entry_no}</td>
 <td nowrap="">${w.wish_order + 1}</td>
 <td nowrap="">${"{0:%Y-%m-%d %H:%M}".format(w.created_at)}</td>
@@ -220,6 +221,7 @@ ${tabs.tabs(request)}
 <th>&nbsp;</th>
 <th>状態</th>
 <th>オーソリ状態</th>
+<th>SEJ状態</th>
 <th>申し込み番号</th>
 <th>希望順序</th>
 <th>申し込み日</th>
@@ -246,9 +248,9 @@ ${tabs.tabs(request)}
 </tr>
 </thead>
 <tbody>
-%for w,auth in wishes:
+%for w,auth,sej in wishes:
 <tr class="${'lot-wish-' + w.lot_entry.entry_no + '-' + str(w.wish_order)}">
-${self.lot_wish_row(w, auth)}
+${self.lot_wish_row(w, auth, sej)}
 </tr>
 %endfor
 </tbody>
