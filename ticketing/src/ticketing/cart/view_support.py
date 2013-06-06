@@ -5,7 +5,7 @@
 import logging
 from pyramid.httpexceptions import HTTPFound
 from sqlalchemy.sql.expression import desc, asc
-from sqlalchemy.orm import joinedload
+from sqlalchemy.orm import joinedload, aliased
 from ticketing.core import models as c_models
 from ticketing.models import DBSession
 from . import helpers as h
@@ -73,7 +73,15 @@ def get_seat_type_dicts(request, sales_segment, seat_type_id=None):
             )
 
     if seat_type_id is not None:
-        q = q.filter(c_models.StockType.id == seat_type_id)
+        _ProductItem = aliased(c_models.ProductItem)
+        _Product = aliased(c_models.Product)
+        _Stock = aliased(c_models.Stock)
+        q = q.filter(c_models.Product.id.in_(
+            DBSession.query(_Product.id) \
+            .filter(_Product.id == _ProductItem.product_id) \
+            .filter(_ProductItem.stock_id == _Stock.id) \
+            .filter(_Stock.stock_type_id == seat_type_id) \
+            .distinct()))
 
     stock_types = OrderedDict()
     products_for_stock_type = dict()
@@ -133,6 +141,7 @@ def get_seat_type_dicts(request, sales_segment, seat_type_id=None):
             products=product_dicts
             ))
 
+    if seat_type_id is not None:
+        retval = [stock_type_dict for stock_type_dict in retval if stock_type_dict['id'] == seat_type_id]
+
     return retval
-
-
