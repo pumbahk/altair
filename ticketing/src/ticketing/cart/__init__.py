@@ -14,7 +14,10 @@ from pyramid_beaker import set_cache_regions_from_settings
 
 from sqlalchemy import engine_from_config
 
+from ticketing.core.api import get_organization
+
 logger = logging.getLogger(__name__)
+
 
 from ..api.impl import bind_communication_api ## cmsとの通信
 
@@ -29,7 +32,8 @@ class WhoDecider(object):
         """ WHO API 選択
         """
         #return self.request.organization.setting.auth_type
-        return self.request.organization.setting.auth_type
+        return get_organization(self.request).setting.auth_type
+
 
 def includeme(config):
     # ディレクティブ

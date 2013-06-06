@@ -7,6 +7,7 @@ from ticketing.cart.resources import TicketingCartResource
 from ticketing.core.models import DBSession, Order
 from ticketing.users.models import User, UserCredential, Membership, UserProfile
 from ticketing.sej.models import SejOrder
+import ticketing.core.api as core_api
 
 from sqlalchemy.orm.exc import NoResultFound
 import logging
@@ -14,7 +15,8 @@ import logging
 logger = logging.getLogger(__name__)
 
 def get_membership_from_request(request):
-    return Membership.query.filter_by(deleted_at=None, organization=request.organization).first()
+    organization = core_api.get_organization(request)
+    return Membership.query.filter_by(deleted_at=None, organization=organization).first()
 
 def get_credential(cart_id, membership_name):
     return UserCredential.query.filter(

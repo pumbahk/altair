@@ -3,7 +3,7 @@ import logging
 from pyramid.view import render_view_to_response
 from pyramid_mailer import get_mailer
 from pyramid_mailer.message import Message
-from altair.mobile.interfaces import IMobileRequest
+from ticketing.core.api import get_organization, get_organization_setting, is_mobile_request
 logger = logging.getLogger(__name__)
 
 def send_qr_mail(request, context, recipient, sender):
@@ -27,11 +27,11 @@ def _send_mail_simple(request, recipient, sender, mail_body, subject=u"QRチケ�
     return get_mailer(request).send(message)
 
 def get_contact_url(request, fail_exc=None):
-    organization = request.organization
+    organization = get_organization(request)
     if organization is None:
         raise fail_exc("organization is not found")
-    setting = organization.setting
-    if IMobileRequest.providedBy(request):
+    setting = get_organization_setting(request, organization)
+    if is_mobile_request(request):
         if setting.contact_mobile_url is None:
             raise fail_exc("contact url is not found. (organization_id = %s)" % (organization.id))
         return setting.contact_mobile_url
