@@ -22,7 +22,7 @@ Base = sqlahelper.get_base()
 
 from pyramid import threadlocal
 import logging
-log = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 class Newsletter(Base):
     __tablename__ = 'Newsletter'
@@ -108,7 +108,8 @@ class Newsletter(Base):
             unique_email = []
             csv_file.writerow(dict([(n, n) for n in csv_file.fieldnames]))
             for row in csv_reader:
-                row['name'] = Newsletter.encode(row['name'])
+                for field in csv_file.fieldnames:
+                    row[field] = Newsletter.encode(row[field])
                 if not ('email' in row and Newsletter.validate_email(row['email'])):
                     if not error_file:
                         error_file = csv.DictWriter(
