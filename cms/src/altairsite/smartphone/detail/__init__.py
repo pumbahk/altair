@@ -3,4 +3,4 @@ import functools
 
 def includeme(config):
     add_route = functools.partial(config.add_route, factory="altairsite.smartphone.detail.resources.DetailPageResource")
-    add_route('detail', '/detail')
+    add_route('smartphone.detail', '/detail')

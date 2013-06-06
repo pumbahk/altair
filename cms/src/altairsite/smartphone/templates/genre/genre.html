@@ -1,15 +1,15 @@
 <%inherit file="../common/_base.html" />
 <%namespace file="../common/tags_smartphone.html" name="m" />
-<%block name="title">${genre}</%block>
+<%block name="title">${genre.label}</%block>
 <%block name="fnavi">
 <hr/>
-<a href="${request.route_path('main')}"><button class="btn-secondary btn-large">トップへ</button></a><br />
+<a href="${request.route_path('smartphone.main')}"><button class="btn-secondary btn-large">トップへ</button></a><br />
 </%block>
 
 <%include file="../search/genre_search.html"/>
 
 % if genre.name=="music":
-    <h2 class="glitter music">${genre}</h2>
+    <h2 class="glitter music">${genre.label}</h2>
 % elif genre.name=="stage":
     <h2 class="glitter performance">演劇</h2>
 % elif genre.name=="sports":

@@ -37,7 +37,7 @@ def findable_label_tween_factory(handler, registry):
     def tween(request):
         response = handler(request)
         content_type = response.content_type
-        if content_type and content_type.lower() in ["text/html"]:
+        if content_type and content_type.lower() in ["text/html"] and response.charset is not None:
             instance = registry.getUtility(IFindableLabelOutput)
             response = instance.rewrite(response)
         return response

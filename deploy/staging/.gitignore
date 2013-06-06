@@ -1,6 +1,8 @@
 bin/*
-var/*
 *.pid
 develop-eggs
 eggs
 parts
+log
+var
+tmp

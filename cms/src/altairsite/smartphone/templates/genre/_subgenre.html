@@ -6,7 +6,7 @@
 % for i in range(0, len(genretree)):
 <% genre = genretree[i].genre %>
     % for subgenre in genre.children:
-        <a href="${request.route_path('genre', genre_id=subgenre.id)}"><li class="menuitem"><span class="menuitem-label">${subgenre}</span></li></a>
+        <a href="${request.route_path('smartphone.genre', genre_id=subgenre.id)}"><li class="menuitem"><span class="menuitem-label">${subgenre.label}</span></li></a>
     % endfor
 % endfor
 </ul>

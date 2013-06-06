@@ -35,12 +35,13 @@ from altair.mobile.interfaces import IMobileRequest
 from . import api
 from . import helpers as h
 from . import schemas
+from . import PC_SWITCH_COOKIE_NAME
+from .api import set_we_need_pc_access, set_we_invalidate_pc_access
 from .events import notify_order_completed
 from .reserving import InvalidSeatSelectionException, NotEnoughAdjacencyException
 from .stocker import InvalidProductSelectionException, NotEnoughStockException
 from .selectable_renderer import selectable_renderer
-from .api import get_seat_type_triplets
-from .view_support import IndexViewMixin, get_amount_without_pdmp
+from .view_support import IndexViewMixin, get_amount_without_pdmp, get_seat_type_dicts
 from .exceptions import (
     NoCartError, 
     NoPerformanceError,
@@ -91,6 +92,7 @@ def back(pc=back_to_top, mobile=None):
 
 
 
+
 @view_defaults(decorator=with_jquery.not_when(mobile_request))
 class IndexView(IndexViewMixin):
     """ 座席選択画面 """
@@ -122,7 +124,22 @@ class IndexView(IndexViewMixin):
                 retval[name] = url
         return retval
 
-    @view_config(decorator=with_jquery_tools, route_name='cart.index', renderer=selectable_renderer("carts/%(membership)s/index.html"), xhr=False, permission="buy")
+    def is_smartphone(context, request):
+        SMARTPHONE_USER_AGENT_RX = re.compile("iPhone|iPod|Opera Mini|Android.*Mobile|NetFront|PSP|BlackBerry")
+        #if "HTTP_USER_AGENT" in request.environ:
+        #    if SMARTPHONE_USER_AGENT_RX.search(request.environ["HTTP_USER_AGENT"]):
+        #        if not PC_SWITCH_COOKIE_NAME in request.cookies:
+        #            return True
+        return False
+
+    def is_organization_rs(context, request):
+        organization = c_api.get_organization(request)
+        return organization.id == 15
+
+    @view_config(decorator=with_jquery_tools, route_name='cart.index',
+                 custom_predicates=(is_smartphone, is_organization_rs), renderer=selectable_renderer("carts_smartphone/RT/index.html"), xhr=False, permission="buy")
+    @view_config(decorator=with_jquery_tools, route_name='cart.index',
+                  renderer=selectable_renderer("carts/%(membership)s/index.html"), xhr=False, permission="buy")
     def __call__(self):
         self.check_redirect(mobile=False)
         sales_segments = self.context.available_sales_segments
@@ -148,7 +165,7 @@ class IndexView(IndexViewMixin):
             # available_sales_segments に関連するものでなければならない
 
             # 数が少ないのでリニアサーチ
-            for sales_segment in sales_segments: 
+            for sales_segment in sales_segments:
                 if sales_segment.performance.id == performance_id:
                     # 複数個の SalesSegment が該当する可能性があるが
                     # 最初の 1 つを採用することにする。実用上問題ない。
@@ -188,25 +205,20 @@ class IndexView(IndexViewMixin):
     def get_seat_types(self):
         sales_segment = self.request.context.sales_segment # XXX: matchdict から取得していることを期待
 
-        seat_type_triplets = get_seat_type_triplets(sales_segment.id)
+        seat_type_dicts = get_seat_type_dicts(self.request, sales_segment)
+
         data = dict(
             seat_types=[
                 dict(
-                    id=s.id,
-                    name=s.name,
-                    description=s.description,
-                    style=s.style,
-                    products_url=self.request.route_url('cart.products',
+                    products_url=self.request.route_url(
+                        'cart.products',
                         event_id=self.request.context.event_id,
                         performance_id=sales_segment.performance.id,
                         sales_segment_id=sales_segment.id,
-                        seat_type_id=s.id),
-                    availability=available > 0,
-                    availability_text=h.get_availability_text(available),
-                    quantity_only=s.quantity_only,
-                    seat_choice=sales_segment.seat_choice
+                        seat_type_id=_dict['id']),
+                    **_dict
                     )
-                for s, total, available in seat_type_triplets
+                for _dict in seat_type_dicts
                 ],
             event_name=sales_segment.performance.event.title,
             performance_name=sales_segment.performance.name,
@@ -246,41 +258,8 @@ class IndexView(IndexViewMixin):
         SeatType -> ProductItem -> Product
         """
         seat_type_id = self.request.matchdict['seat_type_id']
-        logger.debug("seat_typeid = %(seat_type_id)s, sales_segment_id = %(sales_segment_id)s"
-            % dict(seat_type_id=seat_type_id, sales_segment_id=self.context.sales_segment.id))
-
-        seat_type = DBSession.query(c_models.StockType).filter_by(id=seat_type_id).one()
-
-        query = DBSession.query(c_models.Product, c_models.StockStatus.quantity) \
-            .join(c_models.Product.items) \
-            .join(c_models.ProductItem.stock) \
-            .join(c_models.Stock.stock_status) \
-            .filter(c_models.Stock.stock_type_id==seat_type_id) \
-            .filter(c_models.Product.sales_segment_id==self.context.sales_segment.id) \
-            .filter(c_models.Product.public==True) \
-            .filter(c_models.ProductItem.deleted_at == None) \
-            .filter(c_models.Stock.deleted_at == None) \
-            .order_by(sa.desc("Product.display_order, Product.price"))
-
-        products = [
-            dict(
-                id=p.id, 
-                name=p.name,
-                description=p.description,
-                price=h.format_number(p.price, ","), 
-                unit_template=h.build_unit_template(p, self.context.sales_segment.performance.id),
-                quantity_power=p.get_quantity_power(seat_type, self.context.sales_segment.performance.id),
-                upper_limit=p.sales_segment.upper_limit if p.sales_segment.upper_limit < vacant_quantity else int(vacant_quantity),
-                )
-            for p, vacant_quantity in query
-            ]
-
-        return dict(products=products,
-                    seat_type=dict(id=seat_type.id, name=seat_type.name),
-                    sales_segment=dict(
-                        start_at=self.context.sales_segment.start_at.strftime("%Y-%m-%d %H:%M"),
-                        end_at=self.context.sales_segment.end_at.strftime("%Y-%m-%d %H:%M")
-                    ))
+        product_dicts = get_seat_type_dicts(self.request, self.context.sales_segment, seat_type_id)[0]['products']
+        return dict(products=product_dicts)
 
     @view_config(route_name='cart.seats', renderer="json")
     @view_config(route_name='cart.seats.obsolete', renderer="json")
@@ -497,7 +476,7 @@ class ReserveView(object):
                                              quantity=p.quantity,
                                              price=int(p.product.price),
                                              seats=p.seats if self.context.sales_segment.seat_choice else [],
-                                             unit_template=h.build_unit_template(p.product, self.context.sales_segment.performance.id),
+                                             unit_template=h.build_unit_template(p.product.items),
                                         )
                                         for p in cart.products],
                               total_amount=h.format_number(get_amount_without_pdmp(cart))
@@ -813,3 +792,19 @@ def logout(request):
     res = HTTPFound(location=location)
     res.headerlist.extend(headers)
     return res
+
+@view_config(route_name='cart.switchpc')
+def switch_pc(context, request):
+    event_id = request.matchdict.get('event_id')
+    ReleaseCartView(request)()
+    response = HTTPFound(event_id and request.route_url('cart.index', event_id=event_id) or '/')
+    set_we_need_pc_access(response)
+    return response
+
+@view_config(route_name='cart.switchsp')
+def switch_sp(context, request):
+    event_id = request.matchdict.get('event_id')
+    ReleaseCartView(request)()
+    response = HTTPFound(event_id and request.route_url('cart.index', event_id=event_id) or '/')
+    set_we_invalidate_pc_access(response)
+    return response

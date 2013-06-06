@@ -67,7 +67,7 @@ formatter = generic
 
 [handler_sqlalchemy]
 class = altair.log.filters.BrowserIdTimedRotatingFileHandler
-args = ('%(here)s/../var/log/altair.ticketing.sqlalchemy.log', 'D',)
+args = ('%(here)s/../log/altair.ticketing.sqlalchemy.log', 'D',)
 level = INFO
 formatter = generic
 

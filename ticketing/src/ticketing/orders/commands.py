@@ -63,6 +63,7 @@ def refund_order():
     setup_logging(args.config)
     env = bootstrap(args.config)
     request = env['request']
+    registry = env['registry']
 
     logging.info('start refund_order batch')
 
@@ -92,6 +93,6 @@ def refund_order():
             break
 
     # SEJ払戻ファイル送信
-    create_and_send_refund_file()
+    create_and_send_refund_file(registry.settings)
 
     logging.info('end refund_order batch')

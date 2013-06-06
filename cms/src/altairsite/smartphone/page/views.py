@@ -6,7 +6,7 @@ from altairsite.inquiry.views import create_mail_body, create_mail_body_for_cust
 
 from pyramid.view import view_defaults
 
-@view_defaults(route_name="page",request_type="altairsite.tweens.ISmartphoneRequest")
+@view_defaults(route_name="smartphone.page",request_type="altairsite.tweens.ISmartphoneRequest")
 class StaticKindView(object):
     def __init__(self, context, request):
         self.request = request

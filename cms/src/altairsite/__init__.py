@@ -1,10 +1,10 @@
 # -*- encoding:utf-8 -*-
-
 from pyramid.config import Configurator
 from sqlalchemy import engine_from_config
 import sqlahelper
 
 from altaircms.models import Base
+PC_ACCESS_COOKIE_NAME = "_pcaccess"
 
 def install_static_page(config):
     settings = config.registry.settings
@@ -48,7 +48,7 @@ def main(global_config, **local_config):
     ## organization mapping
     OrganizationMapping = config.maybe_dotted("altaircms.auth.api.OrganizationMapping")
     OrganizationMapping(settings["altaircms.organization.mapping.json"]).register(config)
-    config.include("altaircms.lib.crud")    
+    config.include("altaircms.lib.crud") # todo: remove
     config.include("altaircms.plugins")
     config.include("altaircms.solr") ## for fulltext search
     search_utility = settings.get("altaircms.solr.search.utility", "altaircms.solr.api.DummySearch")
@@ -60,6 +60,7 @@ def main(global_config, **local_config):
     ## tween: [encodingfixer, mobile-tween]. the order is important
     # config.include("altair.encodingfixer")
     config.include("altairsite.mobile", route_prefix="/mobile")
+    config.include("altairsite.smartphone", route_prefix="/smartphone")
     config.add_tween('altair.encodingfixer.EncodingFixerTween', under='altairsite.tweens.mobile_encoding_convert_factory')
 
     config.include("altairsite.feature")

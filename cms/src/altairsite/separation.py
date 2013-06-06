@@ -3,16 +3,17 @@ from pyramid.httpexceptions import HTTPNotFound
 from altaircms.auth.models import Organization
 from altaircms.auth.interfaces import IAllowableQuery
 from altaircms.auth.models import Host
-from sqlalchemy.orm.exc import NoResultFound
+
 import logging
 logger = logging.getLogger(__name__)
 
 def get_organization_from_request(request, override_host=None):
     host_name = override_host or request.host
-    try:
-        return Organization.query.filter(Organization.id==Host.organization_id,  Host.host_name==host_name).first()
-    except NoResultFound:
+    organization = Organization.query.filter(Organization.id==Host.organization_id,  Host.host_name==host_name).first()
+    if organization is None:
+        logger.error("Host that named %s is not Found" % host_name)
         raise Exception("Host that named %s is not Found" % host_name)
+    return organization
 
 class AllowableQueryFilterByOrganization(object):
     ExceptionClass = HTTPNotFound

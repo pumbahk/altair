@@ -138,9 +138,10 @@ cart.events = {
     ON_CART_ORDERED: "onCartOredered",
     ON_VENUE_DATASOURCE_UPDATED: "onVenueDataSourceUpdated"
 };
-cart.init = function(salesSegmentsSelection, selected, cartReleaseUrl) {
+cart.init = function(salesSegmentsSelection, selected, cartReleaseUrl, venueEnabled) {
     this.app = new cart.ApplicationController();
-    this.app.init(salesSegmentsSelection, selected, cartReleaseUrl);
+    venueEnabled = venueEnabled && (!$.browser.msie || parseInt($.browser.version) >= 9);
+    this.app.init(salesSegmentsSelection, selected, cartReleaseUrl, venueEnabled);
     $('body').bind('selectstart', function() { return false; });
 };
 
@@ -231,7 +232,7 @@ cart.showErrorDialog = function showErrorDialog(title, message, footer_button_cl
 cart.ApplicationController = function() {
 };
 
-cart.ApplicationController.prototype.init = function(salesSegmentsSelection, selected, cartReleaseUrl) {
+cart.ApplicationController.prototype.init = function(salesSegmentsSelection, selected, cartReleaseUrl, venueEnabled) {
     this.performanceSearch = new cart.PerformanceSearch({
         salesSegmentsSelection: salesSegmentsSelection,
         key: selected[1],
@@ -261,7 +262,6 @@ cart.ApplicationController.prototype.init = function(salesSegmentsSelection, sel
         viewType: cart.StockTypeListView,
         performance: this.performance
     });
-    var venueEnabled = !$.browser.msie || parseInt($.browser.version) >= 9;
     // 会場図
     this.venuePresenter = new cart.VenuePresenter({
         viewType: venueEnabled ? cart.VenueView: cart.DummyVenueView,
@@ -365,25 +365,23 @@ cart.StockTypeListPresenter.prototype = {
     },
     onStockTypeSelected: function(products_url, stock_type) {
         var self = this;
-        $.getJSON(
-            products_url,
-            function(data) {
-                var products = data.products;
-                var productCollection = new cart.ProductQuantityCollection();
-                for (var i=0; i < products.length; i++) {
-                    var product = products[i];
-                    var p = new cart.ProductQuantity(product);
-                    productCollection.push(p);
-                }
-                var selected = self.view.selected;
-                self.orderFormPresenter.showOrderForm(selected, stock_type, productCollection);
-                var sales_segment = data.sales_segment;
-                $('#descSalesTerm').text(
-                  cart.util.datestring_japanize(sales_segment.start_at) + '〜' +
-                  cart.util.datestring_japanize(sales_segment.end_at)
-                );
+        function callback(data) {
+            var products = data.products;
+            var productCollection = new cart.ProductQuantityCollection();
+            for (var i=0; i < products.length; i++) {
+                var product = products[i];
+                var p = new cart.ProductQuantity(product);
+                productCollection.push(p);
             }
-        );
+            var selected = self.view.selected;
+            self.orderFormPresenter.showOrderForm(selected, stock_type, productCollection);
+        }
+
+        var products = stock_type.get('products');
+        if (products)
+            callback({ 'products': products });
+        else
+            $.getJSON(products_url, callback);
     }
 };
 
@@ -732,6 +730,7 @@ cart.OrderFormPresenter.prototype = {
             dataType: 'json',
             data: values,
             type: 'POST',
+            async: false,
             success: function(data, textStatus, jqXHR) {
                 if (data.result == 'OK') {
                     cart.proceedToCheckout(performance, data);
@@ -852,8 +851,16 @@ cart.OrderFormView = Backbone.View.extend({
             btn_buy.parent().css('display', 'none');
         }
         btn_select_seat.click(function () { self.presenter.onSelectSeatPressed(); return false; });
-        btn_entrust.click(function () { self.presenter.onEntrustPressed(); return false; });
-        btn_buy.click(function () { self.presenter.onBuyPressed(); return false; });
+        btn_entrust.one('click', function () {
+            self.presenter.onEntrustPressed();
+            $(this).one('click', arguments.callee);
+            return false;
+        });
+        btn_buy.one('click', function () {
+            self.presenter.onBuyPressed();
+            $(this).one('click', arguments.callee);
+            return false;
+        });
 
         return orderForm;
     },

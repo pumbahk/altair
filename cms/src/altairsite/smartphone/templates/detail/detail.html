@@ -3,7 +3,7 @@
 <%block name="title">${event.title}</%block>
 <%block name="fnavi">
     <hr/>
-    <a href="${request.route_path('main')}"><button class="btn-secondary btn-large">トップへ</button></a>
+    <a href="${request.route_path('smartphone.main')}"><button class="btn-secondary btn-large">トップへ</button></a>
 </%block>
 
 <h2 class="glitter red">${event.title}</h2>
@@ -74,7 +74,7 @@ $(function () {
         <div class="sectionbox-inner">
             <table>
                 % for segment in event.salessegment_groups:
-                    % if segment.master.publicp:
+                    % if segment.publicp:
                         <tr>
                             <td>
                                 ${render_sale(segment)}
