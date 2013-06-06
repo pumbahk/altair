@@ -70,9 +70,11 @@ $(function() {cart.init(salesSegmentsSelection, selected, cartReleaseUrl, true);
   </div>
 </%block>
 
-    <a href="${request.route_url('cart.switchsp', event_id=event['id'])}">
-      <button class="switch_pc">スマホサイトで購入する</button>
-    </a>
+    % if request.cookies.get('_pcswitch'):
+        <a href="${request.route_url('cart.switchsp', event_id=event['id'])}">
+          <button class="switch_pc">スマホサイトで購入する</button>
+        </a>
+    % endif
 
     <h2 id="ticketName">${event['title']} (<span class="performanceNameSpace"></span>)</h2>
     <form id="form1" name="form1" method="post" action="">
