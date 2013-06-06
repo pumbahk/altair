@@ -21,7 +21,9 @@ cache_manager = CacheManager(cache_regions=cache_regions)
 def make_plugin(rememberer_name, cache_region=None):
     return RakutenOpenIDPlugin(rememberer_name, cache_region)
 
-def sex_no(s):
+def sex_no(s, encoding='utf-8'):
+    if isinstance(s, str):
+        s = s.decode(encoding)
     if s == u'男性':
         return 1
     elif s == u'女性':
@@ -189,7 +191,7 @@ class RakutenOpenIDPlugin(object):
                 first_name_kana=user_info.get('firstNameKataKana'),
                 last_name_kana=user_info.get('lastNameKataKana'),
                 birth_day=birth_day,
-                sex=sex_no(user_info.get('sex')),
+                sex=sex_no(user_info.get('sex'), 'utf-8'),
                 zip=contact_info.get('zip'),
                 prefecture=contact_info.get('prefecture'),
                 city=contact_info.get('city'),
