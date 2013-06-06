@@ -100,7 +100,9 @@ class CommonResource(object):
         return system_tag.label
 
     def _getInfo(self, searcher, tag, system_tag_label):
-        if system_tag_label:
+        if tag is None:
+            return []
+        elif system_tag_label:
             system_tag = searcher.get_tag_from_genre_label(system_tag_label)
             results = searcher.query_publishing_topics(datetime.now(), tag, system_tag)
         else:
@@ -134,6 +136,8 @@ class CommonResource(object):
 
     def get_genre_tree(self, parent):
         genre_searcher = GenreSearcher(self.request)
+        if genre_searcher.root is None:
+            return []
         tree = genre_searcher.root.children
         if parent:
             tree = genre_searcher.get_children(parent)

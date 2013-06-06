@@ -18,6 +18,9 @@ logger = logging.getLogger(__name__)
 
 from ..api.impl import bind_communication_api ## cmsとの通信
 
+### pc smartphone switch
+PC_SWITCH_COOKIE_NAME = "_pcswitch"
+
 class WhoDecider(object):
     def __init__(self, request):
         self.request = request
@@ -55,6 +58,10 @@ def includeme(config):
     config.add_route('payment.finish', 'completed')
 
     config.add_subscriber('.subscribers.add_helpers', 'pyramid.events.BeforeRender')
+
+    # PC/Smartphone切替
+    config.add_route('cart.switchpc', 'switchpc/{event_id}')
+    config.add_route('cart.switchsp', 'switchsp/{event_id}')
 
     # 楽天認証URL
     config.add_route('rakuten_auth.login', '/login')

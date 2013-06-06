@@ -2,8 +2,9 @@
 from .const import SalesEnum
 
 from altaircms.asset.models import ImageAsset
+from altaircms.helpers.asset import rendering_object as asset_rendering_object
 from altairsite.mobile.core.eventhelper import EventHelper
-
+from .pcsite_redirect import pcsite_redirect_script
 import logging
 from markupsafe import Markup
 
@@ -150,3 +151,8 @@ class SmartPhoneHelper(object):
         image_asset = request.allowable(ImageAsset).filter(ImageAsset.id == id).first()
         return image_asset
 
+    def get_asset_rendering_object(self, request, asset):
+        return asset_rendering_object(request, asset)
+
+    def goto_pcpage_script(self, request, expr, next="/"):
+        return pcsite_redirect_script(request, expr, next=next)

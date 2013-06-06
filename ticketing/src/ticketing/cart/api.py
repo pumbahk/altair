@@ -19,6 +19,8 @@ from altair.mobile.interfaces import IMobileRequest
 from ticketing.core import models as c_models
 from ticketing.users.models import User, UserCredential, Membership, MemberGroup, MemberGroup_SalesSegment
 
+from . import PC_SWITCH_COOKIE_NAME
+
 from .interfaces import IPaymentMethodManager
 from .interfaces import IStocker, IReserving, ICartFactory
 from .interfaces import IPerformanceSelector
@@ -301,3 +303,9 @@ def get_host_base_url(request):
     else:
         base_url = request.altair_host.base_url or "/"
     return base_url
+
+def set_we_need_pc_access(response):
+    response.set_cookie(PC_SWITCH_COOKIE_NAME, str(datetime.now()))
+
+def set_we_invalidate_pc_access(response):
+    response.delete_cookie(PC_SWITCH_COOKIE_NAME)

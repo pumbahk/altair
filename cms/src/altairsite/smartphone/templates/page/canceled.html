@@ -3,7 +3,7 @@
 <%block name="title">公演中止</%block>
 <%block name="fnavi">
     <hr/>
-    <a href="${request.route_path('main')}"><button class="btn-secondary btn-large">トップへ</button></a>
+    <a href="${request.route_path('smartphone.main')}"><button class="btn-secondary btn-large">トップへ</button></a>
 </%block>
 
 <h2 class="glitter red">公演中止</h2>
@@ -27,7 +27,7 @@
         <hr/>
         <div class="sectionbox">
             <div class="sectionbox-inner">
-                <a href="${request.route_path('page', canceled_detail)}">すべてを見る</a>
+                <a href="${request.route_path('smartphone.page', canceled_detail)}">すべてを見る</a>
             </div>
         </div>
     % endif

@@ -5,7 +5,7 @@ from altairsite.config import usersite_view_config
 from altairsite.mobile.core.helper import get_performances_month_unit, get_purchase_links \
     , get_tickets, get_sales_date
 
-@usersite_view_config(route_name='detail',request_type="altairsite.tweens.ISmartphoneRequest"
+@usersite_view_config(route_name='smartphone.detail',request_type="altairsite.tweens.ISmartphoneRequest"
              , renderer='altairsite.smartphone:templates/detail/detail.html')
 def moveDetail(context, request):
     form = DetailForm(request.GET)

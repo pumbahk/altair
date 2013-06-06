@@ -3,7 +3,7 @@
 <%block name="title">購入履歴</%block>
 <%block name="fnavi">
     <hr/>
-    <a href="${request.route_path('main')}"><button class="btn-secondary btn-large">トップへ</button></a>
+    <a href="${request.route_path('smartphone.main')}"><button class="btn-secondary btn-large">トップへ</button></a>
 </%block>
 
 <h2 class="glitter red">購入履歴</h2>
@@ -16,7 +16,7 @@
     <p class="textC">
         <div class="sectionbox">
             <div class="sectionbox-inner">
-                上記どちらの確認フォームからもご予約の確認ができないお客様は<a href="${request.route_path('page', kind='inquiry')}" target="_blank">こちら</a>からお問い合わせください
+                上記どちらの確認フォームからもご予約の確認ができないお客様は<a href="${request.route_path('smartphone.page', kind='inquiry')}" target="_blank">こちら</a>からお問い合わせください
             </div>
         </div>
     </p>
