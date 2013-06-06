@@ -63,8 +63,10 @@ $(function () {
         ${render_sale_image('altaircms:static/RT/img/search/icon_normal.gif')}
     % elif segment.name.find(u"一般発売") != -1:
         ${render_sale_image('altaircms:static/RT/img/search/icon_release.gif')}
+    % elif segment.name.find(u"先行販売") != -1:
+        ${render_sale_image('altaircms:static/RT/img/search/icon_firstsale.gif')}
     % else:
-        <th scope="row">${item["label"]}</th>
+        ${segment.name}
     % endif
 </%def>
 
