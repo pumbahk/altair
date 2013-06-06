@@ -257,7 +257,7 @@ class IndexView(IndexViewMixin):
         """ 席種別ごとの購入単位
         SeatType -> ProductItem -> Product
         """
-        seat_type_id = self.request.matchdict['seat_type_id']
+        seat_type_id = long(self.request.matchdict['seat_type_id'])
         product_dicts = get_seat_type_dicts(self.request, self.context.sales_segment, seat_type_id)[0]['products']
         return dict(products=product_dicts)
 
