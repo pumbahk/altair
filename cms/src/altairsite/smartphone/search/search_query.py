@@ -64,7 +64,7 @@ class HotwordSearchQuery(object):
     def create_parameter(self):
         parameter = ""
         if self.hotword:
-            prameter = "?hotword_id=" + str(self.hotword.id)
+            parameter = "?hotword_id=" + str(self.hotword.id)
         return parameter
 
 class DetailSearchQuery(object):

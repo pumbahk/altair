@@ -200,6 +200,7 @@ class EventSearcher(object):
     # 検索結果の作成
     def create_result(self, qs, page, query, per):
         result = SearchResult(query)
+        page = int(page)
         if qs:
             num = len(qs.all())
             start = page * per - per + 1
