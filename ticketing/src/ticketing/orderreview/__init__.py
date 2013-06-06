@@ -37,6 +37,7 @@ def main(global_config, **local_config):
             exclude=config.maybe_dotted(settings.get("s3.static.exclude.function")), 
             mapping={"ticketing.cart:static/": "/cart/static/"}))
 
+    config.add_tween('ticketing.cart.tweens.OrganizationPathTween')
 
     config.include('ticketing.checkout')
     config.include('ticketing.multicheckout')

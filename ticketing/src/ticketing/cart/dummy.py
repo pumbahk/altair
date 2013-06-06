@@ -1,6 +1,5 @@
 # -*- coding:utf-8 -*-
 from ticketing.cart.selectable_renderer import selectable_renderer
-from ticketing.core.api import get_organization
 from ticketing.mailmags import models as mailmag_models
 
 def includeme(config):
@@ -71,7 +70,7 @@ def confirm_view(request):
         form = mock.Mock()
         cart = _dummy_cart()
         request.session["order"] = defaultdict(str)
-        magazines = _get_mailmagazines_from_organization(get_organization(request))
+        magazines = _get_mailmagazines_from_organization(request.organization)
         user = mock.Mock()
         return dict(cart=cart, mailmagazines=magazines, user=user, form=form)
 

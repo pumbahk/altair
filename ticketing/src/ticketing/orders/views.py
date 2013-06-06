@@ -19,7 +19,7 @@ from wtforms.validators import Optional
 from sqlalchemy import and_
 from sqlalchemy.sql import exists
 from sqlalchemy.sql.expression import or_
-from sqlalchemy.orm import joinedload
+from sqlalchemy.orm import joinedload, undefer
 
 from ticketing.models import DBSession, merge_session_with_post, record_to_multidict
 from ticketing.core.models import (Order, Performance, PaymentDeliveryMethodPair, ShippingAddress,
@@ -257,6 +257,17 @@ class Orders(BaseView):
                 self.request.session.flash(u'対象件数が多すぎます。(公演を指定すれば制限はありません)')
                 raise HTTPFound(location=route_path('orders.index', self.request))
 
+        query = query.options(
+            joinedload('shipping_address'),
+            joinedload('ordered_products'),
+            joinedload('ordered_products.product'),
+            joinedload('ordered_products.ordered_product_items'),
+            joinedload('ordered_products.ordered_product_items.product_item'),
+            joinedload('ordered_products.ordered_product_items.print_histories'),
+            joinedload('ordered_products.ordered_product_items.seats'),
+            joinedload('ordered_products.ordered_product_items._attributes'),
+            undefer('created_at')
+        )
         orders = query.all()
 
         headers = [
@@ -957,9 +968,8 @@ class OrdersReserveView(BaseView):
                 if not quantity.isdigit():
                     raise ValidationError(u'個数が不正です')
                 product_quantity = int(quantity)
-                total_quantity += product_quantity
-
                 product = DBSession.query(Product).filter_by(id=product_id).one()
+                total_quantity += product_quantity * product.get_quantity_power(product.seat_stock_type, performance_id)
                 order_items.append((product, product_quantity))
 
             if not total_quantity:

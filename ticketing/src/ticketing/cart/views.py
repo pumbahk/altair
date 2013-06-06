@@ -39,8 +39,7 @@ from .events import notify_order_completed
 from .reserving import InvalidSeatSelectionException, NotEnoughAdjacencyException
 from .stocker import InvalidProductSelectionException, NotEnoughStockException
 from .selectable_renderer import selectable_renderer
-from .api import get_seat_type_triplets
-from .view_support import IndexViewMixin, get_amount_without_pdmp
+from .view_support import IndexViewMixin, get_amount_without_pdmp, get_seat_type_dicts
 from .exceptions import (
     NoCartError, 
     NoPerformanceError,
@@ -126,7 +125,7 @@ class IndexView(IndexViewMixin):
     def __call__(self):
         self.check_redirect(mobile=False)
         sales_segments = self.context.available_sales_segments
-        selector_name = c_api.get_organization(self.request).setting.performance_selector
+        selector_name = self.request.organization.setting.performance_selector
 
         performance_selector = api.get_performance_selector(self.request, selector_name)
         sales_segments_selection = performance_selector()
@@ -188,25 +187,20 @@ class IndexView(IndexViewMixin):
     def get_seat_types(self):
         sales_segment = self.request.context.sales_segment # XXX: matchdict から取得していることを期待
 
-        seat_type_triplets = get_seat_type_triplets(sales_segment.id)
+        seat_type_dicts = get_seat_type_dicts(self.request, sales_segment)
+
         data = dict(
             seat_types=[
                 dict(
-                    id=s.id,
-                    name=s.name,
-                    description=s.description,
-                    style=s.style,
-                    products_url=self.request.route_url('cart.products',
+                    products_url=self.request.route_url(
+                        'cart.products',
                         event_id=self.request.context.event_id,
                         performance_id=sales_segment.performance.id,
                         sales_segment_id=sales_segment.id,
-                        seat_type_id=s.id),
-                    availability=available > 0,
-                    availability_text=h.get_availability_text(available),
-                    quantity_only=s.quantity_only,
-                    seat_choice=sales_segment.seat_choice
+                        seat_type_id=_dict['id']),
+                    **_dict
                     )
-                for s, total, available in seat_type_triplets
+                for _dict in seat_type_dicts
                 ],
             event_name=sales_segment.performance.event.title,
             performance_name=sales_segment.performance.name,
@@ -246,41 +240,8 @@ class IndexView(IndexViewMixin):
         SeatType -> ProductItem -> Product
         """
         seat_type_id = self.request.matchdict['seat_type_id']
-        logger.debug("seat_typeid = %(seat_type_id)s, sales_segment_id = %(sales_segment_id)s"
-            % dict(seat_type_id=seat_type_id, sales_segment_id=self.context.sales_segment.id))
-
-        seat_type = DBSession.query(c_models.StockType).filter_by(id=seat_type_id).one()
-
-        query = DBSession.query(c_models.Product, c_models.StockStatus.quantity) \
-            .join(c_models.Product.items) \
-            .join(c_models.ProductItem.stock) \
-            .join(c_models.Stock.stock_status) \
-            .filter(c_models.Stock.stock_type_id==seat_type_id) \
-            .filter(c_models.Product.sales_segment_id==self.context.sales_segment.id) \
-            .filter(c_models.Product.public==True) \
-            .filter(c_models.ProductItem.deleted_at == None) \
-            .filter(c_models.Stock.deleted_at == None) \
-            .order_by(sa.desc("Product.display_order, Product.price"))
-
-        products = [
-            dict(
-                id=p.id, 
-                name=p.name,
-                description=p.description,
-                price=h.format_number(p.price, ","), 
-                unit_template=h.build_unit_template(p, self.context.sales_segment.performance.id),
-                quantity_power=p.get_quantity_power(seat_type, self.context.sales_segment.performance.id),
-                upper_limit=p.sales_segment.upper_limit if p.sales_segment.upper_limit < vacant_quantity else int(vacant_quantity),
-                )
-            for p, vacant_quantity in query
-            ]
-
-        return dict(products=products,
-                    seat_type=dict(id=seat_type.id, name=seat_type.name),
-                    sales_segment=dict(
-                        start_at=self.context.sales_segment.start_at.strftime("%Y-%m-%d %H:%M"),
-                        end_at=self.context.sales_segment.end_at.strftime("%Y-%m-%d %H:%M")
-                    ))
+        product_dicts = get_seat_type_dicts(self.request, self.context.sales_segment, seat_type_id)[0]['products']
+        return dict(products=product_dicts)
 
     @view_config(route_name='cart.seats', renderer="json")
     @view_config(route_name='cart.seats.obsolete', renderer="json")
@@ -497,7 +458,7 @@ class ReserveView(object):
                                              quantity=p.quantity,
                                              price=int(p.product.price),
                                              seats=p.seats if self.context.sales_segment.seat_choice else [],
-                                             unit_template=h.build_unit_template(p.product, self.context.sales_segment.performance.id),
+                                             unit_template=h.build_unit_template(p.items),
                                         )
                                         for p in cart.products],
                               total_amount=h.format_number(get_amount_without_pdmp(cart))
@@ -809,7 +770,7 @@ class OutTermSalesView(object):
 @view_config(decorator=with_jquery.not_when(mobile_request), route_name='cart.logout')
 def logout(request):
     headers = security.forget(request)
-    location = c_api.get_host_base_url(request)
+    location = api.get_host_base_url(request)
     res = HTTPFound(location=location)
     res.headerlist.extend(headers)
     return res
