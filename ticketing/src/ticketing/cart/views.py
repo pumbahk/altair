@@ -126,10 +126,10 @@ class IndexView(IndexViewMixin):
 
     def is_smartphone(context, request):
         SMARTPHONE_USER_AGENT_RX = re.compile("iPhone|iPod|Opera Mini|Android.*Mobile|NetFront|PSP|BlackBerry")
-        #if "HTTP_USER_AGENT" in request.environ:
-        #    if SMARTPHONE_USER_AGENT_RX.search(request.environ["HTTP_USER_AGENT"]):
-        #        if not PC_SWITCH_COOKIE_NAME in request.cookies:
-        #            return True
+        if "HTTP_USER_AGENT" in request.environ:
+            if SMARTPHONE_USER_AGENT_RX.search(request.environ["HTTP_USER_AGENT"]):
+                if not PC_SWITCH_COOKIE_NAME in request.cookies:
+                    return True
         return False
 
     def is_organization_rs(context, request):
