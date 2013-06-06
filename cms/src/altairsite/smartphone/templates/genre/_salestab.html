@@ -58,6 +58,8 @@
         % for event in week_sales.events:
             <a href="${request.route_path('smartphone.detail')}?event_id=${event.id}">${event.title}</a><br/>
         % endfor
+    % else:
+      現在、対象となる公演情報はありません
     % endif
   </div>
   <div id="tab_near_end_sales">
@@ -65,6 +67,8 @@
         % for event in near_end_sales.events:
             <a href="${request.route_path('smartphone.detail')}?event_id=${event.id}">${event.title}</a><br/>
         % endfor
+    % else:
+      現在、対象となる公演情報はありません
     % endif
   </div>
 </div>
