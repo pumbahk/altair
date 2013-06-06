@@ -587,6 +587,7 @@ cart.StockTypeListView = Backbone.View.extend({
         ul.empty();
         var i = 0;
         this.collection.each(function(stockType) {
+            var style = stockType.get("style");
             $('<li></li>')
                 .append($('<div class="seatListItemInner"></div>')
                    .append(
@@ -595,7 +596,7 @@ cart.StockTypeListView = Backbone.View.extend({
                      .data('stockType', stockType))
                    .append(
                      $('<span class="seatColor"></span>')
-                     .css('background-color', stockType.get("style").fill.color))
+                     .css('background-color', style && style.fill && style.fill.color ? style.fill.color: 'white'))
                    .append(
                      $('<span class="seatName"></span>')
                      .text(stockType.get("name")))
