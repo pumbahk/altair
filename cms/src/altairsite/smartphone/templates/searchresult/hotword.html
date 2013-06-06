@@ -4,10 +4,10 @@
 <%block name="fnavi">
     <hr/>
     % if genre_id:
-        <a href="${request.route_path('genre', genre_id=genre_id)}"><button class="btn-secondary btn-large">戻る</button></a>
+        <a href="${request.route_path('smartphone.genre', genre_id=genre_id)}"><button class="btn-secondary btn-large">戻る</button></a>
     % endif
-    <a href="${request.route_path('main')}"><button class="btn-secondary btn-large">トップへ</button></a>
+    <a href="${request.route_path('smartphone.main')}"><button class="btn-secondary btn-large">トップへ</button></a>
 </%block>
 
-<% path=request.route_path('hotword') + result.query.create_parameter() if result else '' %>
+<% path=request.route_path('smartphone.hotword') + result.query.create_parameter() if result else '' %>
 <%include file="_result.html" args="result=result, path=path, helper=helper"/>

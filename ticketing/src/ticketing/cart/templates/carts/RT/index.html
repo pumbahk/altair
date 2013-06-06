@@ -26,7 +26,7 @@
 var selected = ${selected};
 var salesSegmentsSelection = ${sales_segments_selection};
 var cartReleaseUrl = "${cart_release_url}";
-$(function() {cart.init(salesSegmentsSelection, selected, cartReleaseUrl);});
+$(function() {cart.init(salesSegmentsSelection, selected, cartReleaseUrl, true);});
 </script>
 </%block>
 <%block name="extras">  
@@ -69,6 +69,13 @@ $(function() {cart.init(salesSegmentsSelection, selected, cartReleaseUrl);});
     </div>
   </div>
 </%block>
+
+    % if request.cookies.get('_pcswitch'):
+        <a href="${request.route_url('cart.switchsp', event_id=event['id'])}">
+          <button class="switch_pc">スマホサイトで購入する</button>
+        </a>
+    % endif
+
     <h2 id="ticketName">${event['title']} (<span class="performanceNameSpace"></span>)</h2>
     <form id="form1" name="form1" method="post" action="">
       <div id="settlementSelectBox">

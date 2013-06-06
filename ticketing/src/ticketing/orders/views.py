@@ -252,6 +252,7 @@ class Orders(BaseView):
                 raise HTTPFound(location=route_path('orders.index', self.request))
         else:
             form_search = OrderSearchForm(self.request.params, organization_id=organization_id)
+            form_search.sort.data = None
             query = Order.set_search_condition(query, form_search)
             if query.count() > 5000 and not form_search.performance_id.data:
                 self.request.session.flash(u'対象件数が多すぎます。(公演を指定すれば制限はありません)')

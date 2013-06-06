@@ -1,0 +1,11 @@
+<html>
+  <head>
+    <script src=${request.static_url('altaircms:static/smartphone/js/jquery-1.9.1.min.js')}></script>
+  </head>
+  <body>
+    <h1>this is pc site</h1>
+    <script>
+      $(function(){ ${helper.goto_pcpage_script(request, "body", next="/")}});
+    </script>
+  </body>
+</html>

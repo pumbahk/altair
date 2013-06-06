@@ -30,7 +30,6 @@ from ..core import models as c_models
 from ..core import api as core_api
 #from ..users import models as u_models
 from . import models as m
-from . import api
 from zope.deprecation import deprecate
 
 logger = logging.getLogger(__name__)
@@ -76,7 +75,7 @@ class TicketingCartResource(object):
     #     return [m.membership for m in membergroups]
     @property
     def memberships(self):
-        organization = self.request.organization
+        organization = core_api.get_organization(self.request)
         logger.debug('organization %s' % organization.code)
         logger.debug('memberships %s' % organization.memberships)
         return organization.memberships
@@ -85,7 +84,7 @@ class TicketingCartResource(object):
     def event(self):
         if self._event is None:
             # TODO: ドメインで許可されるeventのみを使う
-            organization = self.request.organization
+            organization = core_api.get_organization(self.request)
             try:
                 self._event = c_models.Event.filter(c_models.Event.id==self.event_id).filter(c_models.Event.organization==organization).one()
             except NoResultFound:
@@ -217,7 +216,7 @@ class TicketingCartResource(object):
 
     @reify
     def host_base_url(self):
-        return api.get_host_base_url(self.request)
+        return core_api.get_host_base_url(self.request)
 
 @implementer(IOrderDelivery)
 class OrderDelivery(object):

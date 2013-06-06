@@ -872,3 +872,12 @@ h2.glitter.red:after {
 #inquiry form {
   background-color: cornsilk;color: #000000
 }
+
+.goto-link {
+  text-decoration: none;
+  padding: 6px 6px;
+}
+
+.header-navigation {
+  margin-bottom: 15px;
+}

@@ -7,6 +7,7 @@ from zope.deprecation import deprecate
 from altaircms.tag.models import HotWord
 from altaircms.page.models import PageTag
 from altaircms.models import Category, Genre, SalesSegmentKind, _GenrePath
+from altairsite.smartphone.common.pcsite_redirect import pcsite_redirect_script
 from markupsafe import Markup
 
 
@@ -89,6 +90,10 @@ class MyLayout(object):
             search=Markup(u'<img id="titleImage" src="{0}" alt="検索結果"/>'.format(self.request.static_url("altaircms:static/RT/img/search/title_search.gif")))
             )
         return header_images_dict.get(self.body_id, "")
+
+    def goto_sppage_script(self, expr, next="/"):
+        return pcsite_redirect_script(self.request, expr, next=next)
+
 
 def get_top_category_genres(request, strict=False):
     root = request.allowable(Genre).filter(Genre.is_root==True).first()
