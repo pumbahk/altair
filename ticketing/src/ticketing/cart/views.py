@@ -133,7 +133,7 @@ class IndexView(IndexViewMixin):
         return False
 
     def is_organization_rs(context, request):
-        organization = request.organization
+        organization = c_api.get_organization(request)
         return organization.id == 15
 
     @view_config(decorator=with_jquery_tools, route_name='cart.index',
