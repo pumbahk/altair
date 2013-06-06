@@ -730,6 +730,7 @@ cart.OrderFormPresenter.prototype = {
             dataType: 'json',
             data: values,
             type: 'POST',
+            async: false,
             success: function(data, textStatus, jqXHR) {
                 if (data.result == 'OK') {
                     cart.proceedToCheckout(performance, data);
@@ -850,8 +851,16 @@ cart.OrderFormView = Backbone.View.extend({
             btn_buy.parent().css('display', 'none');
         }
         btn_select_seat.click(function () { self.presenter.onSelectSeatPressed(); return false; });
-        btn_entrust.click(function () { self.presenter.onEntrustPressed(); return false; });
-        btn_buy.click(function () { self.presenter.onBuyPressed(); return false; });
+        btn_entrust.one('click', function () {
+            self.presenter.onEntrustPressed();
+            $(this).one('click', arguments.callee);
+            return false;
+        });
+        btn_buy.one('click', function () {
+            self.presenter.onBuyPressed();
+            $(this).one('click', arguments.callee);
+            return false;
+        });
 
         return orderForm;
     },
