@@ -67,7 +67,7 @@ def mobile_encoding_convert_factory(handler, registry):
                 # XXX: テンプレ大丈夫?
                 return convert_response_if_necessary(request, Response(status=400, body=render("altaircms:templates/mobile/default_notfound.html", dict(), request)))
         else:
-            attach_smartphone_request(request)
+            #attach_smartphone_request(request)
             request.is_mobile = False
             return handler(request)
     return tween
