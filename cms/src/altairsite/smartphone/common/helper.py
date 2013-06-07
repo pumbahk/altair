@@ -114,8 +114,8 @@ class SmartPhoneHelper(object):
     def disp_time(self, target_date):
         week = self.get_week_map()
         disp_str = str(target_date.year) + '/' + str(target_date.month).zfill(2) + '/' \
-                   + str(target_date.day).zfill(2) + ' ' + str(target_date.hour).zfill(2) + ':' \
-                   + str(target_date.minute).zfill(2) + '(' + week[target_date.weekday()] + ')'
+                   + str(target_date.day).zfill(2) + '(' + week[target_date.weekday()] + ')'\
+                   + ' ' + str(target_date.hour).zfill(2) + ':' + str(target_date.minute).zfill(2)
         return disp_str
 
     def disp_error(self, form):
