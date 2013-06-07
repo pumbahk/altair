@@ -1220,7 +1220,7 @@ cart.Venue = Backbone.Model.extend({
             next(stock_types);
           },
           info: factory(function (data) { return data['info']; }),
-          seats: factory(function (data) { return data['seats']; }, 'seats'),
+          seats: factory(function (data) { return data['seats']; }),
           areas: factory(function (data) { return data['areas']; }),
           seatAdjacencies: function (next, error, length) {
             var _params = $.extend(params, { length_or_range: length });
