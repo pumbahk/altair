@@ -64,7 +64,7 @@ ${product.product.name} ${h.format_currency(product.product.price)} x ${product.
 ※配送でのお引取りを希望の場合には、ご登録の住所へ公演の一週間前頃までに宅配便にてお届けいたします。
 %endif
 %if lot_entry.payment_delivery_method_pair.delivery_method.delivery_plugin_id == plugins.SEJ_DELIVERY_PLUGIN_ID:
-※セブン-イレブン店頭でのお引取りを希望の場合は、ご入金時にレジにてチケットをお渡しいたします。
+※【セブン-イレブン引取をご選択の場合】公演日約1週間前に、セブン-イレブン店頭レジでチケット引取をする際に必要な引換票番号をメールにてお送りいたします（本当選メールとは別のメールになります）。詳細はそちらをご確認頂き、指定発券日以降にレジにてチケットをお受取ください。
 %endif
 
 ※当選チケットや当選権利の転売は禁止しております。
