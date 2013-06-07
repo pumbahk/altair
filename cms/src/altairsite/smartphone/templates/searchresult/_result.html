@@ -1,6 +1,19 @@
 <%page args="result, path, helper" />
 <%namespace file="../common/tags_smartphone.html" name="m" />
 
+<script>
+    $(function() {
+        var maxWidth = 0;
+        $('.result-inner').each(function(index){
+            var divWidth = $(this).css('width').replace('px', '');
+            if (divWidth > maxWidth) {
+                maxWidth = divWidth;
+            }
+        });
+        $('.result-inner').css('width', maxWidth.toString() + 'px');
+    })();
+</script>
+
 % if result:
     ${disp_result(result)}
 % endif
@@ -15,7 +28,7 @@
             % for event in result.events:
                 <tr>
                     <td class="panel condensed with-panel-footer">
-                        <div class="panel-inner h_70px">
+                        <div class="panel-inner h_70px result-inner">
                             <a href="${request.route_path('smartphone.detail')}?event_id=${event.id}">
                                 <h4>${event.title}</h4>
                             </a>
@@ -25,7 +38,7 @@
                         <div class="panel-footer">
                             <span class="label label-salessegment-normal">販売期間</span><b>${helper.disp_date_week(event.deal_open)}〜${helper.disp_date_week(event.deal_close)}</b>
                         </div>
-                     </td>
+                    </td>
                 </tr>
             % endfor
             </tbody>
