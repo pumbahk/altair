@@ -52,6 +52,8 @@ class HotwordSearchForm(Form):
     page = HiddenField(validators=[Optional()],default="1")
 
 class DetailSearchForm(TopSearchForm):
+    # 詳細検索のみ非検索文字列は必須ではない
+    word = TextField(label = '', validators=[Optional()])
     cond = SelectField(
         label='',
         validators=[Optional()],
