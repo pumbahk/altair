@@ -4,14 +4,10 @@ from pyramid_mailer import get_mailer
 from altairsite.config import usersite_view_config
 from altairsite.inquiry.forms import InquiryForm
 from altairsite.mobile.core.helper import log_info, log_error
-
-
-##workaround.
-def pc_access(info, request):
-    return hasattr(request, "is_mobile") and request.is_mobile == False
+from altair.mobile.api import is_nonmobile
 
 @usersite_view_config(route_name='usersite.inquiry', request_method="GET",
-             custom_predicates=(pc_access, ), 
+             custom_predicates=(is_nonmobile, ), 
              renderer='altaircms:templates/usersite/inquiry.html')
 def move_inquiry(request):
     log_info("move_inquiry", "start")
@@ -20,7 +16,7 @@ def move_inquiry(request):
     return {'form':form}
 
 @usersite_view_config(route_name='usersite.inquiry', request_method="POST",
-             custom_predicates=(pc_access, ), 
+             custom_predicates=(is_nonmobile, ), 
              renderer='altaircms:templates/usersite/inquiry.html')
 def send_inquiry(request):
     log_info("send_inquiry", "start")

@@ -11,6 +11,8 @@ from wtforms import fields
 from wtforms.ext.csrf.session import SessionSecureForm
 from wtforms.validators import Regexp, Length
 
+from altair.mobile.api import is_mobile
+
 from ticketing.multicheckout import helpers as m_h
 from ticketing.multicheckout import api as multicheckout_api
 from ticketing.multicheckout import detect_card_brand, get_card_ahead_com_name
@@ -35,7 +37,6 @@ from ticketing.cart import api
 from ticketing.cart.exceptions import NoCartError
 from ticketing.cart.selectable_renderer import selectable_renderer
 from ..exceptions import PaymentPluginException
-from ticketing.views import mobile_request
 from ticketing.fanstatic import with_jquery
 from ticketing.payments.api import get_cart
 
@@ -236,7 +237,7 @@ def cancel_payment_mail_viewlet(context, request):
     """
     return Response(context.mail_data("notice"))
 
-@view_defaults(decorator=with_jquery.not_when(mobile_request))
+@view_defaults(decorator=with_jquery.not_when(is_mobile))
 class MultiCheckoutView(object):
     """ マルチ決済API
     """

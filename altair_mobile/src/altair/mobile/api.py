@@ -1,6 +1,7 @@
 from .interfaces import IMobileCarrierDetector
 from . import PC_ACCESS_COOKIE_NAME
 from datetime import datetime #ok?
+from .interfaces import IMobileCarrierDetector, IMobileRequest
 
 def detect(request):
     return detect_from_wsgi_environment(request.registry, request.environ)
@@ -40,3 +41,8 @@ def set_we_need_pc_access(response):
 def set_we_invalidate_pc_access(response):
     response.delete_cookie(PC_ACCESS_COOKIE_NAME)
 
+def is_mobile(request):
+    return IMobileRequest.providedBy(request)
+
+def is_nonmobile(request):
+    return not is_mobile(request)
