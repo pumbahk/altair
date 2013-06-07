@@ -7,4 +7,7 @@
     <% genre = genretree[i].genre %>
     <a href="${request.route_path('smartphone.genre', genre_id=genre.id)}"><li class="menuitem"><span class="menuitem-label">${genre.label}</span></li></a>
 % endfor
+% if len(genretree) == 0:
+    対象となるジャンルはありません
+% endif
 </ul>
