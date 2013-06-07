@@ -1,4 +1,6 @@
 from .interfaces import IMobileCarrierDetector
+from . import PC_ACCESS_COOKIE_NAME
+from datetime import datetime #ok?
 
 def detect(request):
     return detect_from_wsgi_environment(request.registry, request.environ)
@@ -28,3 +30,13 @@ def detect_from_email_address(registry, address):
 def detect_from_ip_address(registry, address):
     detector = registry.queryUtility(IMobileCarrierDetector)
     return detector.detect_from_ip_address(address)
+
+## smartphone <-> pc switching
+
+## for smartphone
+def set_we_need_pc_access(response):
+    response.set_cookie(PC_ACCESS_COOKIE_NAME, str(datetime.now()))
+
+def set_we_invalidate_pc_access(response):
+    response.delete_cookie(PC_ACCESS_COOKIE_NAME)
+

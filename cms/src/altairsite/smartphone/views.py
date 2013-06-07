@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 from altairsite.config import usersite_view_config
-from altairsite.api import set_we_need_pc_access
-from altairsite.api import set_we_invalidate_pc_access
+from altair.mobile.api import set_we_need_pc_access
+from altair.mobile.api import set_we_invalidate_pc_access
 from pyramid.httpexceptions import HTTPFound
 from .common.helper import SmartPhoneHelper
 

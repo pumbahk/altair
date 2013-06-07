@@ -22,7 +22,8 @@ logger = logging.getLogger(__name__)
 from ..api.impl import bind_communication_api ## cmsとの通信
 
 ### pc smartphone switch
-PC_SWITCH_COOKIE_NAME = "_pcswitch"
+from altair.mobile import PC_ACCESS_COOKIE_NAME
+PC_SWITCH_COOKIE_NAME = PC_ACCESS_COOKIE_NAME
 
 class WhoDecider(object):
     def __init__(self, request):

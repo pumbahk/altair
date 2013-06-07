@@ -35,8 +35,7 @@ from altair.mobile.interfaces import IMobileRequest
 from . import api
 from . import helpers as h
 from . import schemas
-from . import PC_SWITCH_COOKIE_NAME
-from .api import set_we_need_pc_access, set_we_invalidate_pc_access
+from altair.mobile.api import set_we_need_pc_access, set_we_invalidate_pc_access
 from .events import notify_order_completed
 from .reserving import InvalidSeatSelectionException, NotEnoughAdjacencyException
 from .stocker import InvalidProductSelectionException, NotEnoughStockException
@@ -124,20 +123,12 @@ class IndexView(IndexViewMixin):
                 retval[name] = url
         return retval
 
-    def is_smartphone(context, request):
-        SMARTPHONE_USER_AGENT_RX = re.compile("iPhone|iPod|Opera Mini|Android.*Mobile|NetFront|PSP|BlackBerry")
-        if "HTTP_USER_AGENT" in request.environ:
-            if SMARTPHONE_USER_AGENT_RX.search(request.environ["HTTP_USER_AGENT"]):
-                if not PC_SWITCH_COOKIE_NAME in request.cookies:
-                    return True
-        return False
-
     def is_organization_rs(context, request):
         organization = c_api.get_organization(request)
         return organization.id == 15
 
-    @view_config(decorator=with_jquery_tools, route_name='cart.index',
-                 custom_predicates=(is_smartphone, is_organization_rs), renderer=selectable_renderer("carts_smartphone/RT/index.html"), xhr=False, permission="buy")
+    @view_config(decorator=with_jquery_tools, route_name='cart.index',request_type="altair.mobile.interfaces.ISmartphoneRequest", 
+                 custom_predicates=(is_organization_rs, ), renderer=selectable_renderer("carts_smartphone/RT/index.html"), xhr=False, permission="buy")
     @view_config(decorator=with_jquery_tools, route_name='cart.index',
                   renderer=selectable_renderer("carts/%(membership)s/index.html"), xhr=False, permission="buy")
     def __call__(self):
