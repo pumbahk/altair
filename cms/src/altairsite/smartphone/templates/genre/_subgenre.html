@@ -4,9 +4,7 @@
 <h2 class="glitter red">サブジャンルで絞り込む</h2>
 <ul class="menu">
 % for i in range(0, len(genretree)):
-<% genre = genretree[i].genre %>
-    % for subgenre in genre.children:
-        <a href="${request.route_path('smartphone.genre', genre_id=subgenre.id)}"><li class="menuitem"><span class="menuitem-label">${subgenre.label}</span></li></a>
-    % endfor
+    <% genre = genretree[i].genre %>
+    <a href="${request.route_path('smartphone.genre', genre_id=genre.id)}"><li class="menuitem"><span class="menuitem-label">${genre.label}</span></li></a>
 % endfor
 </ul>
