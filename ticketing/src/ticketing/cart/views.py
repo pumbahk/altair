@@ -64,7 +64,6 @@ def back_to_product_list_for_mobile(request):
             sales_segment_id=cart.sales_segment_id,
             seat_type_id=cart.products[0].product.items[0].stock.stock_type_id))
 
-
 def back_to_top(request):
     event_id = request.params.get('event_id')
     if event_id is None:
@@ -90,8 +89,9 @@ def back(pc=back_to_top, mobile=None):
         return retval
     return factory
 
-
-
+def gzip_preferred(request, response):
+    if 'gzip' in request.accept_encoding:
+        response.encode_content('gzip')
 
 @view_defaults(decorator=with_jquery.not_when(mobile_request))
 class IndexView(IndexViewMixin):
@@ -278,6 +278,8 @@ class IndexView(IndexViewMixin):
                 .filter(c_models.Seat.venue_id==venue.id)\
                 .filter(c_models.SeatStatus.status==int(c_models.SeatStatusEnum.Vacant))
         stock_map = dict([(s.id, s) for s in sales_stocks])
+
+        self.request.add_response_callback(gzip_preferred)
 
         return dict(
             seats=dict(
