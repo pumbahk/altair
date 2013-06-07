@@ -4,9 +4,12 @@ from altairsite.api import set_we_need_pc_access
 from altairsite.api import set_we_invalidate_pc_access
 from pyramid.httpexceptions import HTTPFound
 from .common.helper import SmartPhoneHelper
+from altairsite import PC_ACCESS_COOKIE_NAME
 
 @usersite_view_config(route_name='smartphone.main',request_type="altairsite.tweens.ISmartphoneRequest"
-             , renderer='altairsite.smartphone:templates/top.html')
+                      , renderer='altairsite.smartphone:templates/top.html')
+@usersite_view_config(route_name='smartphone.main',request_param=PC_ACCESS_COOKIE_NAME
+                      , renderer='altairsite.smartphone:templates/top.html')
 def main(context, request):
     return context.get_top_render_param()
 

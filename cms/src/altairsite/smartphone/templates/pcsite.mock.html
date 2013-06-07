@@ -5,7 +5,14 @@
   <body>
     <h1>this is pc site</h1>
     <script>
-      $(function(){ ${helper.goto_pcpage_script(request, "body", next="/")}});
+<% from altairsite import PC_ACCESS_COOKIE_NAME %>
+      $(function(){
+        if(document.cookie.indexOf("${PC_ACCESS_COOKIE_NAME}") > -1){
+        var e = $("<a>").text("スマートフォン版へ").attr("href", "${request.route_path("smartphone.goto_sp_page", _query=(dict(next="/")))}").attr("class", "goto-link btn-primary btn-social");
+        console.log(e.html());
+        $("body").append(e);
+       }
+     });
     </script>
   </body>
 </html>
