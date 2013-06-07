@@ -14,7 +14,7 @@ from ticketing.mails.interfaces import (
 
 from .. import logger
 from pyramid.threadlocal import get_current_registry
-
+from ticketing.models import DBSession
 from ticketing.core import models as c_models
 
 from ticketing.sej.ticket import SejTicketDataXml
@@ -170,6 +170,16 @@ class SejPaymentPlugin(object):
         return order
 
 
+    def finished(self, request, order):
+        """ 支払番号発行済か判定 """
+        sej_order = DBSession.query(SejOrder).filter(
+            SejOrder.order_id==order.order_no
+        ).first()
+        if sej_order is None:
+            return False
+
+        return bool(sej_order.billing_number)
+
 @implementer(IDeliveryPlugin)
 class SejDeliveryPlugin(object):
     def __init__(self, template=None):
@@ -224,6 +234,16 @@ class SejDeliveryPlugin(object):
                 secret_key = api_key,
                 hostname = api_url
             )
+
+    def finished(self, request, order):
+        """ 支払番号発行済か判定 """
+        sej_order = DBSession.query(SejOrder).filter(
+            SejOrder.order_id==order.order_no
+        ).first()
+        if sej_order is None:
+            return False
+
+        return bool(sej_order.exchange_number)
 
 @implementer(IDeliveryPlugin)
 class SejPaymentDeliveryPlugin(object):
@@ -280,6 +300,16 @@ class SejPaymentDeliveryPlugin(object):
             )
 
         return order
+
+    def finished(self, request, order):
+        """ 支払番号発行済か判定 """
+        sej_order = DBSession.query(SejOrder).filter(
+            SejOrder.order_id==order.order_no
+        ).first()
+        if sej_order is None:
+            return False
+
+        return bool(sej_order.billing_number)
 
 
 @view_config(context=IOrderDelivery, name="delivery-%d" % DELIVERY_PLUGIN_ID, renderer='ticketing.payments.plugins:templates/sej_delivery_complete.html')

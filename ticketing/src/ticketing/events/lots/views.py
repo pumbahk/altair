@@ -30,11 +30,18 @@ from ticketing.sej.models import (
 from ticketing.multicheckout.models import (
     MultiCheckoutOrderStatus,
 )
+from ticketing.payments.api import (
+    is_finished_payment,
+    is_finished_delivery,
+)
 import ticketing.lots.api as lots_api
 from ticketing.lots.electing import Electing
 from .helpers import Link
 from .forms import ProductForm, LotForm, SearchEntryForm
 from . import api
+
+from ticketing.payments import helpers as payment_helpers
+
 
 class BaseView(_BaseView):
     @reify
@@ -376,6 +383,26 @@ class LotEntries(BaseView):
                     encoding='sjis',
                     filename=filename)
 
+
+    def payment_status(self, wish, pdmp, auth, sej):
+        order = wish.lot_entry.order
+        finished = is_finished_payment(self.request, pdmp, order)
+        detail = payment_helpers.payment_status(pdmp, auth, sej)
+        if finished:
+            return u"処理済み( {detail} )".format(detail=detail)
+        else:
+            return u"( {detail} )".format(detail=detail)
+
+    def delivery_status(self, wish, pdmp, auth, sej):
+        order = wish.lot_entry.order
+        finished = is_finished_delivery(self.request, pdmp, order)
+        detail = payment_helpers.delivery_status(pdmp, auth, sej)
+        if finished:
+            return u"処理済み( {detail} )".format(detail=detail)
+        else:
+            return u"( {detail} )".format(detail=detail)
+
+
     @view_config(route_name='lots.entries.search',
                  renderer='ticketing:templates/lots/search.html', permission='event_viewer')
     def search_entries(self):
@@ -608,7 +635,7 @@ class LotEntries(BaseView):
         sej =  DBSession.query(SejOrder).filter(SejOrder.order_id==wish.lot_entry.entry_no).first()
 
         html = tmpl.implementation().get_def('lot_wish_row').render(
-            w=wish, auth=auth, sej=sej)
+            w=wish, auth=auth, sej=sej, view=self)
         return html
 
     def wish_tr_class(self, wish):

@@ -140,6 +140,7 @@ class MultiCheckoutStatusEnum(StandardEnum):
     Rejected        = u'105'
     BeingSettled    = u'115'
     Settled         = u'120'
+    PartCanceled    = u'130'
     ValidCard       = u'210'
     InvalidCard     = u'209'
 

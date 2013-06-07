@@ -102,6 +102,12 @@ class CheckoutPlugin(object):
         checkout.save()
         return
 
+    def finished(self, request, order):
+        """ 売上確定済か判定 """
+        if not order.checkout:
+            return False
+        checkout = order.checkout
+        return bool(checkout.sales_at)
 
 @view_config(context=ICartPayment, name="payment-%d" % PAYMENT_PLUGIN_ID)
 def confirm_viewlet(context, request):

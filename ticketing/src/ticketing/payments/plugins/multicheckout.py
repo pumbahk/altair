@@ -14,6 +14,10 @@ from wtforms.validators import Regexp, Length
 from ticketing.multicheckout import helpers as m_h
 from ticketing.multicheckout import api as multicheckout_api
 from ticketing.multicheckout import detect_card_brand, get_card_ahead_com_name
+from ticketing.multicheckout.models import (
+    MultiCheckoutOrderStatus,
+    MultiCheckoutStatusEnum,
+)
 from ticketing.core import models as c_models
 from ticketing.payments.interfaces import IPaymentPlugin, IOrderPayment
 from ticketing.cart.interfaces import ICartPayment
@@ -24,6 +28,7 @@ from ticketing.formhelpers import (
     ignore_space_hyphen,
     capitalize,
 )
+
 from .models import DBSession
 from .. import logger
 from ticketing.cart import api
@@ -175,6 +180,25 @@ class MultiCheckoutPlugin(object):
         cart.finish()
 
         return order
+
+
+    def finished(self, request, order):
+        """ 売上確定済か判定 """
+
+        status = DBSession.query(MultiCheckoutOrderStatus).filter(
+            MultiCheckoutOrderStatus.OrderNo == order.order_no
+        ).first()
+        if status is None:
+            return False
+
+        if status.Status == str(MultiCheckoutStatusEnum.Settled):
+            return True
+
+        if status.Status == str(MultiCheckoutStatusEnum.PartCanceled):
+            # 金額が０でないことも確認？
+            return True
+        return False
+
 
 def card_number_mask(number):
     """ 下4桁以外をマスク"""
