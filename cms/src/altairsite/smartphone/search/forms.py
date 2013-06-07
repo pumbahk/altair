@@ -101,8 +101,8 @@ class DetailSearchForm(TopSearchForm):
     day = SelectField(label='', validators=[Optional()], choices=[])
     sale_start = SelectField(label='', validators=[Optional()], choices=[], coerce=str)
     sale_end = SelectField(label='', validators=[Optional()], choices=[], coerce=str)
-    closed_perf = BooleanField(u'販売終了した公演', [Optional()])
-    canceled_perf = BooleanField(u'中止した公演', [Optional()])
+    closed_perf = BooleanField(u'販売終了した公演（絞り込み条件）', [Optional()])
+    canceled_perf = BooleanField(u'中止した公演（絞り込み条件）', [Optional()])
 
     def get_since_event_open(self):
         since_event_open = None
