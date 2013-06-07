@@ -4,7 +4,7 @@ from sqlalchemy import engine_from_config
 import sqlahelper
 
 from altaircms.models import Base
-PC_ACCESS_COOKIE_NAME = "_pcaccess"
+from altair.mobile import PC_ACCESS_COOKIE_NAME #dont't delete it
 
 def install_static_page(config):
     settings = config.registry.settings
