@@ -229,6 +229,11 @@ class IndexView(IndexViewMixin):
                     venue_id=sales_segment.performance.venue.id,
                     part='__part__'),
                 venue_drawings=self.get_frontend_drawing_urls(sales_segment.performance.venue),
+                info=self.request.route_url(
+                    'cart.info',
+                    event_id=self.request.context.event_id,
+                    sales_segment_id=sales_segment.id,
+                    ),
                 seats=self.request.route_url(
                     'cart.seats',
                     event_id=self.request.context.event_id,
@@ -251,6 +256,31 @@ class IndexView(IndexViewMixin):
         seat_type_id = long(self.request.matchdict['seat_type_id'])
         product_dicts = get_seat_type_dicts(self.request, self.context.sales_segment, seat_type_id)[0]['products']
         return dict(products=product_dicts)
+
+    @view_config(route_name='cart.info', renderer="json")
+    def get_info(self):
+        """会場情報"""
+        venue = self.context.performance.venue
+
+        self.request.add_response_callback(gzip_preferred)
+
+        return dict(
+            areas=dict(
+                (area.id, { 'id': area.id, 'name': area.name }) \
+                for area in DBSession.query(c_models.VenueArea) \
+                            .join(c_models.VenueArea_group_l0_id) \
+                            .filter(c_models.VenueArea_group_l0_id.venue_id==venue.id)
+                ),
+            info=dict(
+                available_adjacencies=[
+                    adjacency_set.seat_count
+                    for adjacency_set in \
+                        DBSession.query(c_models.SeatAdjacencySet) \
+                        .filter_by(site_id=venue.site_id)
+                    ]
+                ),
+            pages=get_venue_site_adapter(self.request, venue.site).get_frontend_pages()
+            )
 
     @view_config(route_name='cart.seats', renderer="json")
     @view_config(route_name='cart.seats.obsolete', renderer="json")

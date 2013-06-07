@@ -441,8 +441,11 @@ cart.VenuePresenter.prototype = {
     },
     setStockType: function (stock_type) {
         this.selectedStockType = stock_type;
-        this.stockTypeListPresenter.setActivePane(this.selectedStockType ? 'venue': 'stockTypeList');
-        this.view.render();
+        var self = this;
+        this.view.currentViewer.venueviewer('loadSeats', function() {
+          self.stockTypeListPresenter.setActivePane(self.selectedStockType ? 'venue': 'stockTypeList');
+          self.view.render();
+        });
     },
     selectable: function (viewer, seat) {
         if (!this.selectedStockType) {
@@ -1217,7 +1220,7 @@ cart.Venue = Backbone.Model.extend({
             next(stock_types);
           },
           info: factory(function (data) { return data['info']; }),
-          seats: factory(function (data) { return data['seats']; }),
+          seats: factory(function (data) { return data['seats']; }, 'seats'),
           areas: factory(function (data) { return data['areas']; }),
           seatAdjacencies: function (next, error, length) {
             var _params = $.extend(params, { length_or_range: length });
@@ -1279,7 +1282,8 @@ function newMetadataLoaderFactory(url) {
 }
 
 function createDataSource(params) {
-  var factory = newMetadataLoaderFactory(params['data_source']['seats']);
+  var factory_i = newMetadataLoaderFactory(params['data_source']['info']);
+  var factory_s = newMetadataLoaderFactory(params['data_source']['seats']);
   var drawingCache = {};
   return {
     drawing: function (page) {
@@ -1311,9 +1315,9 @@ function createDataSource(params) {
         stock_types[params.seat_types[i].id] = params.seat_types[i];
       next(stock_types);
     },
-    info: factory(function (data) { return data['info']; }),
-    seats: factory(function (data) { return data['seats']; }),
-    areas: factory(function (data) { return data['areas']; }),
+    info: factory_i(function (data) { return data['info']; }),
+    seats: factory_s(function (data) { return data['seats']; }),
+    areas: factory_i(function (data) { return data['areas']; }),
     seatAdjacencies: function (next, error, length) {
       var _params = $.extend(params, { length_or_range: length });
       $.ajax({
@@ -1325,7 +1329,7 @@ function createDataSource(params) {
         }
       });
     },
-    pages: factory(function (data) { return data['pages']; })
+    pages: factory_i(function (data) { return data['pages']; })
   };
 }
 

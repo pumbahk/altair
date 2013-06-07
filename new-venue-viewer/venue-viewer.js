@@ -1,6 +1,6 @@
 (function () {
 var __LIBS__ = {};
-__LIBS__['uRDCXJVWOQVFTM3M'] = (function (exports) { (function () { 
+__LIBS__['pZ6QJR05X6B6MJ3X'] = (function (exports) { (function () { 
 
 /************** util.js **************/
 exports.eventKey = function Util_eventKey(e) {
@@ -127,7 +127,7 @@ exports.makeHitTester = function Util_makeHitTester(a) {
   }
 };
  })(); return exports; })({});
-__LIBS__['pYTEKKUR2E2MGV2L'] = (function (exports) { (function () { 
+__LIBS__['UXJ5R99L70ZWIDT8'] = (function (exports) { (function () { 
 
 /************** CONF.js **************/
 exports.DEFAULT = {
@@ -182,11 +182,11 @@ exports.DEFAULT = {
   }
 };
  })(); return exports; })({});
-__LIBS__['D1SFZXUDAV47LTI9'] = (function (exports) { (function () { 
+__LIBS__['vDSITY3Y0N5WEI7A'] = (function (exports) { (function () { 
 
 /************** seat.js **************/
-var util = __LIBS__['uRDCXJVWOQVFTM3M'];
-var CONF = __LIBS__['pYTEKKUR2E2MGV2L'];
+var util = __LIBS__['pZ6QJR05X6B6MJ3X'];
+var CONF = __LIBS__['UXJ5R99L70ZWIDT8'];
 
 function clone(obj) {
   return $.extend({}, obj);
@@ -1030,9 +1030,9 @@ function parseTransform(transform_str) {
     throw new Error('invalid transform function: ' + f);
 }
 
-  var CONF = __LIBS__['pYTEKKUR2E2MGV2L'];
-  var seat = __LIBS__['D1SFZXUDAV47LTI9'];
-  var util = __LIBS__['uRDCXJVWOQVFTM3M'];
+  var CONF = __LIBS__['UXJ5R99L70ZWIDT8'];
+  var seat = __LIBS__['vDSITY3Y0N5WEI7A'];
+  var util = __LIBS__['pZ6QJR05X6B6MJ3X'];
 
   var StoreObject = _class("StoreObject", {
     props: {
@@ -1197,6 +1197,18 @@ function parseTransform(transform_str) {
               }
               self.availableAdjacencies = data.available_adjacencies;
               self.seatAdjacencies = new seat.SeatAdjacencies(self);
+              if (self.currentPage) {
+                self.loadDrawing(self.currentPage, function () {
+                  self.callbacks.load.call(self, self);
+                  self.zoomAndPan(self.zoomRatioMin, { x: 0., y: 0. });
+                });
+              } else {
+                self.callbacks.load.call(self, self);
+                // 「読込中です」を消すために以下が必要
+                self.callbacks.loadPartEnd.call(self, self, 'drawing');
+              }
+
+              /*
               self.callbacks.loadPartStart.call(self, self, 'seats');
               self.initSeats(self.dataSource.seats, function () {
                 self.loading = false;
@@ -1208,17 +1220,8 @@ function parseTransform(transform_str) {
                 }
                 self.loading = true;
                 self.callbacks.loadPartEnd.call(self, self, 'seats');
-                if (self.currentPage) {
-                  self.loadDrawing(self.currentPage, function () {
-                    self.callbacks.load.call(self, self);
-                    self.zoomAndPan(self.zoomRatioMin, { x: 0., y: 0. });
-                  });
-                } else {
-                  self.callbacks.load.call(self, self);
-                  // 「読込中です」を消すために以下が必要
-                  self.callbacks.loadPartEnd.call(self, self, 'drawing');
-                }
               });
+              */
             }, self.callbacks.message);
           }, self.callbacks.message);
         });
@@ -1494,9 +1497,11 @@ function parseTransform(transform_str) {
               }
               if (attrs.id) {
                 shapes[attrs.id] = shape;
+                /*
                 var seat = self.seats[attrs.id];
                 if (seat)
                   seat.attach(shape);
+                */
               }
               if (xlink)
                 link_pairs.push([shape, xlink])
@@ -1856,6 +1861,31 @@ function parseTransform(transform_str) {
           }
           next.call(self);
         }, self.callbacks.message);
+      },
+
+      loadSeats: function(next) {
+        var self = this;
+              //self.callbacks.loadPartStart.call(self, self, 'seats');
+              self.loading = true;
+              self.initSeats(self.dataSource.seats, function () {
+                self.loading = false;
+                if (self.loadAborted) {
+                  self.loadAborted = false;
+                  self.loadAbortionHandler && self.loadAbortionHandler.call(self, self);
+                  //self.callbacks.loadAbort && self.callbacks.loadAbort.call(self, self);
+                  return;
+                }
+                //self.loading = true;
+                //self.callbacks.loadPartEnd.call(self, self, 'seats');
+
+                for (var id in self.shapes) {
+                  if (self.seats[id])
+                    self.seats[id].attach(self.shapes[id]);
+                }
+
+                if (next)
+                  next();
+              });
       },
 
       initSeats: function VenueViewer_initSeats(dataSource, next) {
@@ -2219,6 +2249,10 @@ function parseTransform(transform_str) {
 
         case 'navigate':
           aux.navigate(arguments[1]);
+          break;
+
+        case 'loadSeats':
+          aux.loadSeats(arguments[1]);
           break;
 
         case 'showSmallTexts':
