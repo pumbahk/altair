@@ -154,6 +154,7 @@ def main(global_config, **local_config):
     config.set_cart_getter('.api.get_cart_safe')
     config.include('.errors')
     config.add_tween('ticketing.tweens.session_cleaner_factory', under=INGRESS)
+    config.add_tween('ticketing.cart.tweens.response_time_tween_factory', under=INGRESS)
     config.scan()
 
 

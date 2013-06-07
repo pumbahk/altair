@@ -3,7 +3,7 @@
 import os
 import logging
 from datetime import datetime
-from time import mktime
+from time import mktime, time
 from email.utils import formatdate
 
 logger = logging.getLogger(__name__)
@@ -65,3 +65,12 @@ class OrganizationPathTween(object):
                 return self.handler(request)
         return self.handler(request)
 
+def response_time_tween_factory(handler, registry):
+    def _tween(request):
+        start = time()
+        try:
+            return handler(request)
+        finally:
+            end = time()
+            logger.info("request handled in %g sec" % (end - start))
+    return _tween
