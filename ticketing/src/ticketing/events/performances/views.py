@@ -39,13 +39,15 @@ class PerformanceShowView(BaseView):
             raise HTTPNotFound('performance id %d is not found' % performance_id)
         self.performance = performance
 
-    def build_data_source(self):
+    def build_data_source(self, query_option=None):
+        query = {u'n':u'seats|stock_types|stock_holders|stocks'}
+        query.update(query_option or dict())
         return dict(
             drawing=get_venue_site_adapter(self.request, self.performance.venue.site).direct_drawing_url,
             metadata=self.request.route_path(
                 'api.get_seats',
                 venue_id=self.performance.venue.id,
-                _query={u'n':u'seats|stock_types|stock_holders|stocks'}
+                _query=query
                 )
             )
 
@@ -88,7 +90,7 @@ class PerformanceShowView(BaseView):
 
     def _tab_reservation(self):
         return dict(
-            data_source=self.build_data_source()
+            data_source=self.build_data_source({u'f':u'sale_only'})
             )
 
     def _extra_data(self):
