@@ -171,17 +171,8 @@ class RakutenOpenIDPlugin(object):
                 # 生年月日未登録
                 pass
 
-            contact_info = {}
-            try:
-                contact_info = idapi.get_contact_info()
-            except:
-                pass
-
-            point_account = {}
-            try:
-                point_account = idapi.get_point_account()
-            except:
-                pass
+            contact_info = idapi.get_contact_info()
+            point_account = idapi.get_point_account()
 
             return dict(
                 email_1=user_info.get('emailAddress'),
@@ -206,6 +197,7 @@ class RakutenOpenIDPlugin(object):
             identity.update(extras)
         except:
             logger.warning('could not access to RakutenID API', exc_info=sys.exc_info())
+            raise
 
     # IChallenger
     def challenge(self, environ, status, app_headers, forget_headers):
