@@ -52,6 +52,8 @@ class HotwordSearchForm(Form):
     page = HiddenField(validators=[Optional()],default="1")
 
 class DetailSearchForm(TopSearchForm):
+    # 詳細検索のみ非検索文字列は必須ではない
+    word = TextField(label = '', validators=[Optional()])
     cond = SelectField(
         label='',
         validators=[Optional()],
@@ -99,8 +101,8 @@ class DetailSearchForm(TopSearchForm):
     day = SelectField(label='', validators=[Optional()], choices=[])
     sale_start = SelectField(label='', validators=[Optional()], choices=[], coerce=str)
     sale_end = SelectField(label='', validators=[Optional()], choices=[], coerce=str)
-    closed_perf = BooleanField(u'販売終了した公演', [Optional()])
-    canceled_perf = BooleanField(u'中止した公演', [Optional()])
+    closed_perf = BooleanField(u'販売終了した公演（絞り込み条件）', [Optional()])
+    canceled_perf = BooleanField(u'中止した公演（絞り込み条件）', [Optional()])
 
     def get_since_event_open(self):
         since_event_open = None

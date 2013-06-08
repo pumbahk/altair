@@ -25,12 +25,16 @@ from datetime import datetime, timedelta
 import itertools
 import operator
 import sqlahelper
+from decimal import Decimal
 import sqlalchemy as sa
 import sqlalchemy.orm as orm
 from sqlalchemy import sql
-from sqlalchemy.ext.hybrid import hybrid_method
+from sqlalchemy.ext.hybrid import hybrid_method, hybrid_property
 from sqlalchemy.orm.exc import NoResultFound
 from zope.deprecation import deprecate
+
+from pyramid.i18n import TranslationString as _
+from altair.saannotation import AnnotatedColumn
 
 from ticketing.utils import sensible_alnum_encode
 #from ticketing.utils import sensible_alnum_decode
@@ -73,17 +77,17 @@ class Cart(Base):
 
     performance = orm.relationship('Performance')
 
-    created_at = sa.Column(sa.DateTime, default=datetime.now)
+    created_at = AnnotatedColumn(sa.DateTime, default=datetime.now, _a_label=_(u'カート生成日時'))
     updated_at = sa.Column(sa.DateTime, nullable=True, onupdate=datetime.now)
     deleted_at = sa.Column(sa.DateTime, nullable=True)
-    finished_at = sa.Column(sa.DateTime)
+    finished_at = AnnotatedColumn(sa.DateTime, _a_label=_(u'カート処理日時'))
 
     shipping_address_id = sa.Column(Identifier, sa.ForeignKey("ShippingAddress.id"))
     shipping_address = orm.relationship('ShippingAddress', backref='cart')
     payment_delivery_method_pair_id = sa.Column(Identifier, sa.ForeignKey("PaymentDeliveryMethodPair.id"))
     payment_delivery_pair = orm.relationship("PaymentDeliveryMethodPair")
 
-    _order_no = sa.Column("order_no", sa.String(255))
+    _order_no = AnnotatedColumn("order_no", sa.String(255), _a_label=_(u'注文番号'))
     order_id = sa.Column(Identifier, sa.ForeignKey("Order.id"))
     order = orm.relationship('Order', backref=orm.backref('cart', uselist=False))
     operator_id = sa.Column(Identifier, sa.ForeignKey("Operator.id"))
@@ -153,14 +157,20 @@ class Cart(Base):
         that.products = []
         return new_cart
 
-    @property
+    @hybrid_property
     def order_no(self):
         if self._order_no is None:
             raise UnassignedOrderNumberError(self.id)
         return self._order_no
 
+    @order_no.expression
+    def order_no_expr(cls):
+        return cls._order_no
+
     @property
     def total_amount(self):
+        if not self.sales_segment:
+            return None
         return self.sales_segment.get_amount(
             self.payment_delivery_pair,
             [(p.product, p.quantity) for p in self.products])

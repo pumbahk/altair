@@ -21,7 +21,9 @@ cache_manager = CacheManager(cache_regions=cache_regions)
 def make_plugin(rememberer_name, cache_region=None):
     return RakutenOpenIDPlugin(rememberer_name, cache_region)
 
-def sex_no(s):
+def sex_no(s, encoding='utf-8'):
+    if isinstance(s, str):
+        s = s.decode(encoding)
     if s == u'男性':
         return 1
     elif s == u'女性':
@@ -169,17 +171,8 @@ class RakutenOpenIDPlugin(object):
                 # 生年月日未登録
                 pass
 
-            contact_info = {}
-            try:
-                contact_info = idapi.get_contact_info()
-            except:
-                pass
-
-            point_account = {}
-            try:
-                point_account = idapi.get_point_account()
-            except:
-                pass
+            contact_info = idapi.get_contact_info()
+            point_account = idapi.get_point_account()
 
             return dict(
                 email_1=user_info.get('emailAddress'),
@@ -189,7 +182,7 @@ class RakutenOpenIDPlugin(object):
                 first_name_kana=user_info.get('firstNameKataKana'),
                 last_name_kana=user_info.get('lastNameKataKana'),
                 birth_day=birth_day,
-                sex=sex_no(user_info.get('sex')),
+                sex=sex_no(user_info.get('sex'), 'utf-8'),
                 zip=contact_info.get('zip'),
                 prefecture=contact_info.get('prefecture'),
                 city=contact_info.get('city'),
@@ -204,6 +197,7 @@ class RakutenOpenIDPlugin(object):
             identity.update(extras)
         except:
             logger.warning('could not access to RakutenID API', exc_info=sys.exc_info())
+            raise
 
     # IChallenger
     def challenge(self, environ, status, app_headers, forget_headers):

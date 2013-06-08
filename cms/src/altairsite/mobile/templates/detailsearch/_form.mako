@@ -12,7 +12,16 @@ ${form.area}<br/>
 <%m:header>ジャンル</%m:header>
 ${form.genre}<br/>
 <input type="submit" value="検索"/><br />
-<%m:header>販売状況</%m:header>
+<%m:header>公演日で絞り込む</%m:header>
+${form.since_year}年${form.since_month}月${form.since_day}日〜<br/>${form.year}年${form.month}月${form.day}日<br />
+% for error in form.since_year.errors:
+    <font color="#ff0000">${error}</font><br/>
+% endfor
+% for error in form.year.errors:
+    <font color="#ff00000">${error}</font><br/>
+% endfor
+<input type="submit" value="検索"><br />
+<%m:header>販売状況（絞り込み条件）</%m:header>
 <div>
 % for count, sale in enumerate(form.sale.choices):
     % if count == form.sale.data:
@@ -22,7 +31,7 @@ ${form.genre}<br/>
     % endif
 % endfor
 </div>
-<%m:header>販売区分</%m:header>
+<%m:header>販売区分（絞り込み条件）</%m:header>
 <div>
 % for count, segment in enumerate(form.sales_segment.choices):
     % if count == form.sales_segment.data:
@@ -33,14 +42,5 @@ ${form.genre}<br/>
 % endfor
 </div>
 <input type="submit" value="検索" /><br />
-<%m:header>公演日で絞り込む</%m:header>
-${form.since_year}年${form.since_month}月${form.since_day}日〜<br/>${form.year}年${form.month}月${form.day}日<br />
-% for error in form.since_year.errors:
-    <font color="#ff0000">${error}</font><br/>
-% endfor
-% for error in form.year.errors:
-    <font color="#ff00000">${error}</font><br/>
-% endfor
-<input type="submit" value="検索"><br />
 ${form.page}
 </form>

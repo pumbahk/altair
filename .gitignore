@@ -21,3 +21,7 @@ coverage.xml
 nosetests.xml
 *.orig
 .idea
+env
+var
+tmp
+log

@@ -6,7 +6,7 @@ import warnings
 from ..utils import atom, days_of_month
 from ..widgets.datetime import OurDateTimeWidget, OurDateWidget
 
-__all__ = (
+__all__ = [
     'Automatic',
     'Max',
     'Min',
@@ -15,7 +15,7 @@ __all__ = (
     'OurDateField',
     'DateTimeField',
     'DateField',
-    )
+    ]
 
 Automatic = atom('Automatic')
 Max = atom('Max')

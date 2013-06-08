@@ -8,7 +8,7 @@ from zope.interface import implementer
 from repoze.who.api import get_api as get_who_api
 from repoze.who.interfaces import IIdentifier, IChallenger, IAuthenticator
 from altair.auth.api import get_current_request
-from .api import login_url
+from .api import login_url, get_memberships
 from . import SESSION_KEY
 
 import ticketing.users.models as u_m
@@ -119,10 +119,8 @@ class FCAuthPlugin(object):
 
         
     def is_auth_required(self, environ):
-        #return environ.get('ticketing.cart.fc_auth.required')
         request = get_current_request(environ)
-        if hasattr(request, 'context') and hasattr(request.context, 'memberships'):
-            return bool(request.context.memberships)
+        return bool(get_memberships(request))
 
     # IChallenger
     def challenge(self, environ, status, app_headers, forget_headers):
@@ -135,7 +133,6 @@ class FCAuthPlugin(object):
         session = request.session.setdefault(SESSION_KEY, {})
         session['return_url'] = wsgiref.util.request_uri(environ)
         request.session.save()
-        #return HTTPFound(location=environ['ticketing.cart.fc_auth.login_url'])
         request = get_current_request(environ)
         return HTTPFound(location=login_url(request))
 

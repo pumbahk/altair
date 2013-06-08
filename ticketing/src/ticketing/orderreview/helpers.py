@@ -4,6 +4,7 @@ from markupsafe import Markup
 from pyramid.threadlocal import get_current_request
 from ticketing.cart.helpers import *
 from ticketing.core.models import OrderCancelReasonEnum
+from altair.mobile.api import is_mobile
 
 __all__ = ["error", "order_desc", "is_include_t_shirts", "sex_value"]
            
@@ -21,7 +22,7 @@ def error(names):
     if not errs:
         return u''
     errs = ", ".join(errs.values())
-    if request.is_mobile:
+    if is_mobile(request):
         return Markup('<font color="red">%s</font><br />' % errs)
     else:
         return Markup('<p class="error">%s</p>' % errs)

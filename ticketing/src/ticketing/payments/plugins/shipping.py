@@ -36,6 +36,10 @@ class ShippingDeliveryPlugin(object):
     def finish(self, request, cart):
         """ 確定処理なし """
 
+    def finished(self, request, order):
+        """ shipping addressがあればOK?"""
+        return bool(order.shipping_address)
+
 @view_config(context=ICompleteMailDelivery, name="delivery-%d" % PLUGIN_ID, renderer="ticketing.payments.plugins:templates/shipping_delivery_mail_complete.html")
 def completion_delivery_mail_viewlet(context, request):
     """ 完了メール表示

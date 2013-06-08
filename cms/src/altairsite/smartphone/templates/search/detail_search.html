@@ -65,14 +65,14 @@ $(function () {
         % endif
 
         <fieldset>
-            ${form.word(placeholder=u"アーティスト名、公演名など")}<br/>
+            ${form.word(placeholder=u"アーティスト名、公演名など")}
             ${form.cond}<input type="submit" class="btn-secondary btn-large" value="検索"/><br/>
         </fieldset>
 
         <fieldset>
             <ul class="panellist fullwidth expandable" style="color: #000000">
               <li class="panelgroup" id="genre">
-                <span class="panelgroup-label"><a href="#" data-toggle="genre">ジャンルで絞り込む</a></span>
+                <span class="panelgroup-label"><a href="#" data-toggle="genre">ジャンルで検索</a></span>
                 <ul class="panelgroup-inner">
                   <li class="panel">${form.genre_music}</li>
                   <li class="panel">${form.genre_sports}</li>
@@ -81,7 +81,7 @@ $(function () {
                 </ul>
               </li>
               <li class="panelgroup" id="area">
-                <span class="panelgroup-label"><a href="#" data-toggle="area">開催地で絞り込む</a></span>
+                <span class="panelgroup-label"><a href="#" data-toggle="area">開催地で検索</a></span>
                 <ul class="panelgroup-inner">
                   <li class="panel">${form.pref_hokkaido}</li>
                   <li class="panel">${form.pref_syutoken}</li>
@@ -98,7 +98,7 @@ $(function () {
                 </ul>
               </li>
               <li class="panelgroup" id="start_on">
-                <span class="panelgroup-label"><a href="#" data-toggle="start_on">公演日で絞り込む</a></span>
+                <span class="panelgroup-label"><a href="#" data-toggle="start_on">公演日で検索</a></span>
                 <ul class="panelgroup-inner">
                   <li class="panel">
                     ${form.since_year}年<br/>
@@ -127,3 +127,36 @@ $(function () {
         </fieldset>
     </form>
 </div>
+
+<style>
+#search input[type="text"] {
+  box-sizing: border-box;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  width: 100%;
+  display: block;
+  height: 34px;
+  font-size: 17px;
+  padding: 0px 2px;
+  margin: 0 0 2px 0;
+}
+
+#search select {
+  height: 30px;
+  font-size: 16px;
+  margin: 3px 0 0 0;
+  background-color: #fff;
+}
+
+#search button {
+  height: 28px;
+  margin: 3px 0 0 0;
+  font-weight: bold;
+}
+
+#search input[type="submit"] {
+  height: 28px;
+  margin: 5px 0 0 0;
+  font-weight: bold;
+}
+</style>

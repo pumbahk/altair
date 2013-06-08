@@ -11,7 +11,10 @@ ${event.title}
 <div>
   <div style="background-color:#c5aedb">商品名(金額)</div>
   <div>
-  ${product['name']}(${product['price']}円)
+  ${product['name']} (${product['price']}円)<br />
+  % if product['detail']:
+    ${product['detail']}<br />
+  % endif
   </div>
   % if product['seats']:
   <font color="#580d9a">■</font>座席番号<br/>

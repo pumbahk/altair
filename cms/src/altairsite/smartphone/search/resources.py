@@ -73,7 +73,8 @@ class SearchPageResource(CommonResource):
             qs = searcher.search_freeword(search_query=query, genre_label=query.genre.label, cond=None)
         else:
             qs = searcher.search_freeword(search_query=query, genre_label=None, cond=None)
-        qs = searcher.search_sale(search_query=query, qs=qs)
+        if qs:
+            qs = searcher.search_sale(search_query=query, qs=qs)
         result = searcher.create_result(qs=qs, page=page, query=query, per=per)
         return result
 
@@ -84,11 +85,13 @@ class SearchPageResource(CommonResource):
         if query.word:
             log_info("search_area", "genre=" + query.word)
             qs = searcher.search_freeword(search_query=query, genre_label=None, cond=None)
-            qs = searcher.search_area(search_query=query, qs=qs)
+            if qs:
+                qs = searcher.search_area(search_query=query, qs=qs)
         else:
             qs = searcher.search_area(search_query=query, qs=qs)
 
-        qs = searcher.search_on_sale(qs=qs)
+        if qs:
+            qs = searcher.search_on_sale(qs=qs)
         result = searcher.create_result(qs=qs, page=page, query=query, per=per)
         return result
 
@@ -104,11 +107,13 @@ class SearchPageResource(CommonResource):
             else:
                 qs = searcher.search_freeword(search_query=query, genre_label=None, cond=query.cond)
         qs = searcher.search_prefectures(search_query=query, qs=qs)
-        qs = searcher.search_sales_segment(search_query=query, qs=qs)
         qs = searcher.search_event_open(search_query=query, qs=qs)
         qs = searcher.search_near_sale_start(search_query=query, qs=qs)
         qs = searcher.search_near_sale_end(search_query=query, qs=qs)
-        qs = searcher.search_perf(search_query=query, qs=qs)
+        if qs:
+            # 以下は絞り込み条件
+            qs = searcher.search_perf(search_query=query, qs=qs)
+            qs = searcher.search_sales_segment(search_query=query, qs=qs)
         result = searcher.create_result(qs=qs, page=page, query=query, per=per)
         return result
 

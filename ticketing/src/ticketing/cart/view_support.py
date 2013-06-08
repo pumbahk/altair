@@ -133,6 +133,7 @@ def get_seat_type_dicts(request, sales_segment, seat_type_id=None):
         retval.append(dict(
             id=stock_type.id,
             name=stock_type.name,
+            description=stock_type.description,
             style=stock_type.style,
             availability=availability_for_stock_type,
             availability_text=h.get_availability_text(availability_for_stock_type),

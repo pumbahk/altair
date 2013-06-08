@@ -48,23 +48,29 @@
 
 </style>
 
-<div style='clear:both;' id="salestab">
-  <ul>
-    <li><a href="#tab_week_sales">今週発売</a></li>
-    <li><a href="#tab_near_end_sales">販売終了間近</a></li>
-  </ul>
-  <div id="tab_week_sales">
-    % if week_sales.events:
-        % for event in week_sales.events:
-            <a href="${request.route_path('smartphone.detail')}?event_id=${event.id}">${event.title}</a><br/>
-        % endfor
-    % endif
-  </div>
-  <div id="tab_near_end_sales">
-    % if near_end_sales.events:
-        % for event in near_end_sales.events:
-            <a href="${request.route_path('smartphone.detail')}?event_id=${event.id}">${event.title}</a><br/>
-        % endfor
-    % endif
-  </div>
-</div>
+% if week_sales.events or near_end_sales.events:
+    <div style='clear:both;' id="salestab">
+      <ul>
+        <li><a href="#tab_week_sales">今週発売</a></li>
+        <li><a href="#tab_near_end_sales">販売終了間近</a></li>
+      </ul>
+      <div id="tab_week_sales">
+        % if week_sales.events:
+            % for event in week_sales.events:
+                <a href="${request.route_path('smartphone.detail')}?event_id=${event.id}">${event.title}</a><br/>
+            % endfor
+        % else:
+          現在、対象となる公演情報はありません
+        % endif
+      </div>
+      <div id="tab_near_end_sales">
+        % if near_end_sales.events:
+            % for event in near_end_sales.events:
+                <a href="${request.route_path('smartphone.detail')}?event_id=${event.id}">${event.title}</a><br/>
+            % endfor
+        % else:
+          現在、対象となる公演情報はありません
+        % endif
+      </div>
+    </div>
+% endif

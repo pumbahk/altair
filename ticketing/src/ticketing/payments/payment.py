@@ -100,3 +100,8 @@ class Payment(object):
         order = DBSession.query(Order).filter(Order.order_no==order_no).one()
         return order
 
+    def call_delivery(self, order):
+        payment_delivery_plugin, payment_plugin, delivery_plugin = self.get_plugins(self.cart.payment_delivery_pair)
+        self.cart.order = order
+        delivery_plugin.finish(self.request, self.cart)
+
