@@ -119,7 +119,6 @@ class FCAuthPlugin(object):
 
         
     def is_auth_required(self, environ):
-        #return environ.get('ticketing.cart.fc_auth.required')
         request = get_current_request(environ)
         if hasattr(request, 'context') and hasattr(request.context, 'memberships'):
             return bool(request.context.memberships)
@@ -135,7 +134,6 @@ class FCAuthPlugin(object):
         session = request.session.setdefault(SESSION_KEY, {})
         session['return_url'] = wsgiref.util.request_uri(environ)
         request.session.save()
-        #return HTTPFound(location=environ['ticketing.cart.fc_auth.login_url'])
         request = get_current_request(environ)
         return HTTPFound(location=login_url(request))
 
