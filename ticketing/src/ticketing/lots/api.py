@@ -40,11 +40,12 @@ import ticketing.cart.api as cart_api
 from ticketing.utils import sensible_alnum_encode
 from altair.rakuten_auth.api import authenticated_user
 from ticketing.core import api as core_api
+from ticketing.models import DBSession
 from ticketing.core.models import (
     Event,
     SalesSegment,
+    Performance,
     ShippingAddress,
-    DBSession,
 )
 
 from ticketing.users.models import (
@@ -143,6 +144,8 @@ def build_lot_entry(lot, wishes, payment_delivery_method_pair, membergroup=None,
 
 def build_temporary_lot_entry(*args, **kwargs):
     entry = build_lot_entry(*args, **kwargs)
+    for wish in entry.wishes:
+        wish.performance = Performance.filter_by(id=wish.performance_id).one()
     DBSession.expunge(entry)
     return entry
 

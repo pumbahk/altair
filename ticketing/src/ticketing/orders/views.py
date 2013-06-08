@@ -21,7 +21,7 @@ from sqlalchemy.sql import exists
 from sqlalchemy.sql.expression import or_
 from sqlalchemy.orm import joinedload, undefer
 
-from ticketing.models import DBSession, merge_session_with_post, record_to_multidict
+from ticketing.models import DBSession, merge_session_with_post, record_to_multidict, asc_or_desc
 from ticketing.core.models import (Order, Performance, PaymentDeliveryMethodPair, ShippingAddress,
                                    Product, ProductItem, OrderedProduct, OrderedProductItem, 
                                    Ticket, TicketBundle, TicketFormat, Ticket_TicketBundle,
@@ -32,7 +32,7 @@ from ticketing.orders.export import OrderCSV, japanese_columns
 from ticketing.orders.forms import (OrderForm, OrderSearchForm, OrderRefundSearchForm, SejOrderForm, SejTicketForm,
                                     SejRefundEventForm,SejRefundOrderForm, SendingMailForm,
                                     PerformanceSearchForm, OrderReserveForm, OrderRefundForm, ClientOptionalForm,
-                                    SalesSegmentGroupSearchForm, SalesSegmentSearchForm, PreviewTicketSelectForm)
+                                    SalesSegmentGroupSearchForm, SalesSegmentSearchForm, PreviewTicketSelectForm, CartSearchForm)
 from ticketing.views import BaseView
 from ticketing.fanstatic import with_bootstrap
 from ticketing.orders.events import notify_order_canceled
@@ -40,10 +40,12 @@ from ticketing.payments.payment import Payment, get_delivery_plugin
 from ticketing.payments import plugins as payment_plugins
 from ticketing.tickets.utils import build_dicts_from_ordered_product_item
 from ticketing.cart import api
+from ticketing.cart.models import Cart
 from ticketing.cart.stocker import NotEnoughStockException
 from ticketing.cart.reserving import InvalidSeatSelectionException, NotEnoughAdjacencyException
 
 from . import utils
+from .api import OrderSearchQueryBuilder, CartSearchQueryBuilder
 
 logger = logging.getLogger(__name__)
 
@@ -90,8 +92,17 @@ class OrdersAPIView(BaseView):
         if not form_search.validate():
             return {"result": [],  "status": False}
 
+        formdata = form_search.data
         query = Performance.query
-        query = Performance.set_search_condition(query, form_search)
+        if formdata['sort']:
+            try:
+                query = asc_or_desc(query, getattr(Performance, formdata['sort']), formdata['direction'], 'asc')
+            except AttributeError:
+                pass
+
+        if formdata['event_id']:
+            query = query.filter(Performance.event_id == formdata['event_id'])
+
         performances = [dict(pk='', name=u'(すべて)')]+[dict(pk=p.id, name='%s (%s)' % (p.name, p.start_on.strftime('%Y-%m-%d %H:%M'))) for p in query]
         return {"result": performances, "status": True}
 
@@ -101,8 +112,19 @@ class OrdersAPIView(BaseView):
         if not form_search.validate():
             return {"result": [],  "status": False}
 
+        formdata = form_search.data
         query = SalesSegmentGroup.query
-        query = SalesSegmentGroup.set_search_condition(query, form_search)
+        if formdata['sort']:
+            try:
+                query = asc_or_desc(query, getattr(SalesSegmentGroup, formdata['sort']), formdata['direction'], 'asc')
+            except AttributeError:
+                pass
+
+        if formdata['event_id']:
+            query = query.filter(SalesSegmentGroup.event_id == formdata['event_id'])
+        if formdata['public']:
+            query = query.filter(SalesSegmentGroup.public == formdata['public'])
+
         sales_segment_groups = [dict(pk='', name=u'(すべて)')] + [dict(pk=p.id, name=p.name) for p in query]
         return {"result": sales_segment_groups, "status": True}
 
@@ -112,8 +134,19 @@ class OrdersAPIView(BaseView):
         if not form_search.validate():
             return {"result": [],  "status": False}
 
+        formdata = form_search.data
         query = SalesSegment.query
-        query = SalesSegment.set_search_condition(query, form_search)
+        if formdata['sort']:
+            try:
+                query = asc_or_desc(query, getattr(SalesSegment, formdata['sort']), formdata['direction'], 'asc')
+            except AttributeError:
+                pass
+
+        if formdata['performance_id']:
+            query = query.filter(SalesSegment.performance_id == formdata['performance_id'])
+        if formdata['public']:
+            query = query.filter(SalesSegment.public == formdata['public'])
+
         sales_segments = [dict(pk='', name=u'(すべて)')] + [dict(pk=p.id, name=p.sales_segment_group.name) for p in query]
         return {"result": sales_segments, "status": True}
 
@@ -221,7 +254,7 @@ class Orders(BaseView):
 
         form_search = OrderSearchForm(self.request.params, organization_id=organization_id)
         if form_search.validate():
-            query = Order.set_search_condition(query, form_search)
+            query = OrderSearchQueryBuilder(form_search.data)(Order.filter(Order.organization_id==organization_id))
 
         page = int(self.request.params.get('page', 0))
         orders = paginate.Page(
@@ -253,7 +286,7 @@ class Orders(BaseView):
         else:
             form_search = OrderSearchForm(self.request.params, organization_id=organization_id)
             form_search.sort.data = None
-            query = Order.set_search_condition(query, form_search)
+            query = OrderSearchQueryBuilder(form_search.data)(Order.filter(Order.organization_id==organization_id))
             if query.count() > 5000 and not form_search.performance_id.data:
                 self.request.session.flash(u'対象件数が多すぎます。(公演を指定すれば制限はありません)')
                 raise HTTPFound(location=route_path('orders.index', self.request))
@@ -321,7 +354,7 @@ class OrdersRefundIndexView(BaseView):
         form_search = OrderRefundSearchForm(refund_condition, organization_id=self.organization_id)
         if form_search.validate():
             query = Order.filter(Order.organization_id==self.organization_id)
-            query = Order.set_search_condition(query, form_search)
+            query = OrderSearchQueryBuilder(form_search.data)(Order.filter(Order.organization_id==self.organization_id))
 
             if self.request.method == 'POST':
                 # 検索結果のOrder.idはデフォルト選択状態にする
@@ -357,8 +390,7 @@ class OrdersRefundIndexView(BaseView):
         refund_condition = MultiDict(self.request.session.get('ticketing.refund.condition', []))
         form_search = OrderRefundSearchForm(refund_condition, organization_id=self.organization_id)
         if form_search.validate():
-            query = Order.filter(Order.organization_id==self.organization_id)
-            query = Order.set_search_condition(query, form_search)
+            query = OrderSearchQueryBuilder(form_search.data)(Order.filter(Order.organization_id==self.organization_id))
 
             checked_orders = [o.lstrip('o:') for o in self.request.session.get('orders', []) if o.startswith('o:')]
             query = query.filter(Order.id.in_(checked_orders))
@@ -1487,3 +1519,28 @@ class MailInfoView(BaseView):
         mails_cancel.send_mail(self.request, order, override=form.data)
         self.request.session.flash(u'メール再送信しました')
         return HTTPFound(self.request.current_route_url(order_id=order_id, action="show"))
+
+@view_defaults(decorator=with_bootstrap, permission='sales_editor')
+class CartView(BaseView):
+    def __init__(self, context, request):
+        self.context = context
+        self.request = request
+
+    @view_config(route_name='cart.search', renderer="ticketing:templates/carts/index.html")
+    def index(self):
+        form = CartSearchForm(self.request.params, organization_id=self.context.user.organization_id)
+        carts = []
+        if not self.request.params:
+            self.request.session.flash(u'検索条件を指定してください')
+        elif not form.validate():
+            self.request.session.flash(u'検索条件に誤りがあります')
+        else:
+            query = CartSearchQueryBuilder(form.data)(Cart.query)
+            carts = paginate.Page(
+                query,
+                items_per_page=40,
+                item_count=query.count(),
+                url=paginate.PageURL_WebOb(self.request)
+            )
+
+        return { 'form_search': form, 'carts': carts, 'url': self.request.path }

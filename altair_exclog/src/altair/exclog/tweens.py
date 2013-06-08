@@ -12,8 +12,6 @@ class ExcLogTween(object):
 
         self.ignored = settings.get('altair.exclog.ignored', 
                                     (WSGIHTTPException,))
-        self.show_traceback = asbool(registry.settings.get('altair.exclog.show_traceback', False))
-
         self.message_builder = registry.queryUtility(IExceptionMessageBuilder)
         self.exc_logger = registry.queryUtility(IExceptionLogger)
         self.response_renderer = registry.queryUtility(IExceptionMessageRenderer)
@@ -27,7 +25,7 @@ class ExcLogTween(object):
         except:
             exc_info, message = self.message_builder(request)
             self.exc_logger(exc_info, message)
-            if self.show_traceback and self.response_renderer:
+            if self.response_renderer:
                 return self.response_renderer(request, exc_info, message)
             return HTTPInternalServerError()
 

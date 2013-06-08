@@ -5,7 +5,6 @@ from pyramid.interfaces import IAuthorizationPolicy
 from pyramid.threadlocal import get_current_request
 from zope.interface import implementer
 from . import api
-from ..core import api as core_api
 from pyramid.httpexceptions import HTTPNotFound
 
 logger = logging.getLogger(__name__)
@@ -35,7 +34,7 @@ class MembershipAuthorizationPolicy(object):
             logger.debug('authorize for buy %s' % (principals,))
 
             event = api.get_event(request)
-            organization = core_api.get_organization(request)
+            organization = request.organization
             if not event:
                 logger.debug('no event')
                 return True

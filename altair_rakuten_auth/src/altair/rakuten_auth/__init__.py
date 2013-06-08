@@ -43,7 +43,7 @@ def includeme(config):
     config.add_view('.views.RootView', attr="verify", route_name="rakuten_auth.verify")
     config.add_view('.views.RootView', attr="verify2", route_name="rakuten_auth.verify2")
     config.add_view('.views.RootView', attr="error", route_name="rakuten_auth.error")
-    config.add_tween('.tweens.RakutenAuthTween')
+    config.add_tween('altair.rakuten_auth.tweens.RakutenAuthTween', under='altair.auth.activate_who_api_tween')
 
 def main(global_conf, **settings):
     """ fot the test """

@@ -18,25 +18,23 @@ from pyramid.threadlocal import get_current_request
 from pyramid import security
 from webob.multidict import MultiDict
 
+from altair.mobile.api import is_mobile
 from altair.pyramid_boto.s3.assets import IS3KeyProvider
 
 from ticketing.models import DBSession
 from ticketing.core import models as c_models
 from ticketing.core import api as c_api
 from ticketing.mailmags.api import get_magazines_to_subscribe, multi_subscribe
-from ticketing.views import mobile_request
 from ticketing.fanstatic import with_jquery, with_jquery_tools
 from ticketing.payments.payment import Payment
 from ticketing.payments.exceptions import PaymentDeliveryMethodPairNotFound
 from ticketing.users.api import get_or_create_user
 from ticketing.venues.api import get_venue_site_adapter
-from altair.mobile.interfaces import IMobileRequest
 
 from . import api
 from . import helpers as h
 from . import schemas
-from . import PC_SWITCH_COOKIE_NAME
-from .api import set_we_need_pc_access, set_we_invalidate_pc_access
+from altair.mobile.api import set_we_need_pc_access, set_we_invalidate_pc_access
 from .events import notify_order_completed
 from .reserving import InvalidSeatSelectionException, NotEnoughAdjacencyException
 from .stocker import InvalidProductSelectionException, NotEnoughStockException
@@ -64,7 +62,6 @@ def back_to_product_list_for_mobile(request):
             sales_segment_id=cart.sales_segment_id,
             seat_type_id=cart.products[0].product.items[0].stock.stock_type_id))
 
-
 def back_to_top(request):
     event_id = request.params.get('event_id')
     if event_id is None:
@@ -82,7 +79,7 @@ def back(pc=back_to_top, mobile=None):
         def retval(*args, **kwargs):
             request = get_current_request()
             if request.params.has_key('back'):
-                if IMobileRequest.providedBy(request):
+                if is_mobile(request):
                     return mobile(request)
                 else:
                     return pc(request)
@@ -90,10 +87,11 @@ def back(pc=back_to_top, mobile=None):
         return retval
     return factory
 
+def gzip_preferred(request, response):
+    if 'gzip' in request.accept_encoding:
+        response.encode_content('gzip')
 
-
-
-@view_defaults(decorator=with_jquery.not_when(mobile_request))
+@view_defaults(decorator=with_jquery.not_when(is_mobile))
 class IndexView(IndexViewMixin):
     """ 座席選択画面 """
     def __init__(self, request):
@@ -124,26 +122,18 @@ class IndexView(IndexViewMixin):
                 retval[name] = url
         return retval
 
-    def is_smartphone(context, request):
-        SMARTPHONE_USER_AGENT_RX = re.compile("iPhone|iPod|Opera Mini|Android.*Mobile|NetFront|PSP|BlackBerry")
-        #if "HTTP_USER_AGENT" in request.environ:
-        #    if SMARTPHONE_USER_AGENT_RX.search(request.environ["HTTP_USER_AGENT"]):
-        #        if not PC_SWITCH_COOKIE_NAME in request.cookies:
-        #            return True
-        return False
-
     def is_organization_rs(context, request):
-        organization = c_api.get_organization(request)
+        organization = request.organization
         return organization.id == 15
 
-    @view_config(decorator=with_jquery_tools, route_name='cart.index',
-                 custom_predicates=(is_smartphone, is_organization_rs), renderer=selectable_renderer("carts_smartphone/RT/index.html"), xhr=False, permission="buy")
+    @view_config(decorator=with_jquery_tools, route_name='cart.index',request_type="altair.mobile.interfaces.ISmartphoneRequest", 
+                 custom_predicates=(is_organization_rs, ), renderer=selectable_renderer("carts_smartphone/RT/index.html"), xhr=False, permission="buy")
     @view_config(decorator=with_jquery_tools, route_name='cart.index',
                   renderer=selectable_renderer("carts/%(membership)s/index.html"), xhr=False, permission="buy")
     def __call__(self):
         self.check_redirect(mobile=False)
         sales_segments = self.context.available_sales_segments
-        selector_name = c_api.get_organization(self.request).setting.performance_selector
+        selector_name = self.request.organization.setting.performance_selector
 
         performance_selector = api.get_performance_selector(self.request, selector_name)
         sales_segments_selection = performance_selector()
@@ -198,6 +188,7 @@ class IndexView(IndexViewMixin):
             event_extra_info=self.event_extra_info.get("event") or [],
             selection_label=performance_selector.label,
             second_selection_label=performance_selector.second_label,
+            performance=performance_id or ""
             )
 
     @view_config(route_name='cart.seat_types', renderer="json")
@@ -238,6 +229,11 @@ class IndexView(IndexViewMixin):
                     venue_id=sales_segment.performance.venue.id,
                     part='__part__'),
                 venue_drawings=self.get_frontend_drawing_urls(sales_segment.performance.venue),
+                info=self.request.route_url(
+                    'cart.info',
+                    event_id=self.request.context.event_id,
+                    sales_segment_id=sales_segment.id,
+                    ),
                 seats=self.request.route_url(
                     'cart.seats',
                     event_id=self.request.context.event_id,
@@ -261,6 +257,31 @@ class IndexView(IndexViewMixin):
         product_dicts = get_seat_type_dicts(self.request, self.context.sales_segment, seat_type_id)[0]['products']
         return dict(products=product_dicts)
 
+    @view_config(route_name='cart.info', renderer="json")
+    def get_info(self):
+        """会場情報"""
+        venue = self.context.performance.venue
+
+        self.request.add_response_callback(gzip_preferred)
+
+        return dict(
+            areas=dict(
+                (area.id, { 'id': area.id, 'name': area.name }) \
+                for area in DBSession.query(c_models.VenueArea) \
+                            .join(c_models.VenueArea_group_l0_id) \
+                            .filter(c_models.VenueArea_group_l0_id.venue_id==venue.id)
+                ),
+            info=dict(
+                available_adjacencies=[
+                    adjacency_set.seat_count
+                    for adjacency_set in \
+                        DBSession.query(c_models.SeatAdjacencySet) \
+                        .filter_by(site_id=venue.site_id)
+                    ]
+                ),
+            pages=get_venue_site_adapter(self.request, venue.site).get_frontend_pages()
+            )
+
     @view_config(route_name='cart.seats', renderer="json")
     @view_config(route_name='cart.seats.obsolete', renderer="json")
     def get_seats(self):
@@ -278,6 +299,8 @@ class IndexView(IndexViewMixin):
                 .filter(c_models.Seat.venue_id==venue.id)\
                 .filter(c_models.SeatStatus.status==int(c_models.SeatStatusEnum.Vacant))
         stock_map = dict([(s.id, s) for s in sales_stocks])
+
+        self.request.add_response_callback(gzip_preferred)
 
         return dict(
             seats=dict(
@@ -485,7 +508,7 @@ class ReserveView(object):
 
 
 
-@view_defaults(decorator=with_jquery.not_when(mobile_request))
+@view_defaults(decorator=with_jquery.not_when(is_mobile))
 class ReleaseCartView(object):
     def __init__(self, request):
         self.request = request
@@ -502,7 +525,7 @@ class ReleaseCartView(object):
         return dict()
 
 
-@view_defaults(decorator=with_jquery.not_when(mobile_request))
+@view_defaults(decorator=with_jquery.not_when(is_mobile))
 class PaymentView(object):
     """ 支払い方法、引き取り方法選択 """
     def __init__(self, request):
@@ -660,7 +683,7 @@ class PaymentView(object):
             user=user
         )
 
-@view_defaults(decorator=with_jquery.not_when(mobile_request))
+@view_defaults(decorator=with_jquery.not_when(is_mobile))
 class ConfirmView(object):
     """ 決済確認画面 """
     def __init__(self, request):
@@ -689,7 +712,7 @@ class ConfirmView(object):
         )
 
 
-@view_defaults(decorator=with_jquery.not_when(mobile_request))
+@view_defaults(decorator=with_jquery.not_when(is_mobile))
 class CompleteView(object):
     """ 決済完了画面"""
     def __init__(self, request):
@@ -740,7 +763,7 @@ class CompleteView(object):
         return dict(order=order)
 
 
-@view_defaults(decorator=with_jquery.not_when(mobile_request))
+@view_defaults(decorator=with_jquery.not_when(is_mobile))
 class InvalidMemberGroupView(object):
     def __init__(self, request):
         self.request = request
@@ -756,7 +779,7 @@ class InvalidMemberGroupView(object):
 
 
 
-@view_defaults(decorator=with_jquery.not_when(mobile_request))
+@view_defaults(decorator=with_jquery.not_when(is_mobile))
 class OutTermSalesView(object):
     def __init__(self, context, request):
         self.request = request
@@ -785,26 +808,53 @@ class OutTermSalesView(object):
             which = 'next'
         return dict(which=which, **datum)
 
-@view_config(decorator=with_jquery.not_when(mobile_request), route_name='cart.logout')
+@view_config(decorator=with_jquery.not_when(is_mobile), route_name='cart.logout')
 def logout(request):
     headers = security.forget(request)
-    location = c_api.get_host_base_url(request)
+    location = api.get_host_base_url(request)
     res = HTTPFound(location=location)
     res.headerlist.extend(headers)
     return res
 
+def _create_response(request, param):
+    event_id = request.matchdict.get('event_id')
+    response = HTTPFound(event_id and request.route_url('cart.index', event_id=event_id) + param or '/')
+    return response
+
 @view_config(route_name='cart.switchpc')
 def switch_pc(context, request):
-    event_id = request.matchdict.get('event_id')
     ReleaseCartView(request)()
-    response = HTTPFound(event_id and request.route_url('cart.index', event_id=event_id) or '/')
+    response = _create_response(request=request, param="")
     set_we_need_pc_access(response)
     return response
 
 @view_config(route_name='cart.switchsp')
 def switch_sp(context, request):
-    event_id = request.matchdict.get('event_id')
     ReleaseCartView(request)()
-    response = HTTPFound(event_id and request.route_url('cart.index', event_id=event_id) or '/')
+    response = _create_response(request=request, param="")
     set_we_invalidate_pc_access(response)
     return response
+
+@view_config(route_name='cart.switchpc.perf')
+def switch_pc_performance(context, request):
+    ReleaseCartView(request)()
+    performance = request.matchdict.get('performance')
+    param = _create_performance_param(performance=performance)
+    response = _create_response(request=request, param=param)
+    set_we_need_pc_access(response)
+    return response
+
+@view_config(route_name='cart.switchsp.perf')
+def switch_sp_performance(context, request):
+    ReleaseCartView(request)()
+    performance = request.matchdict.get('performance')
+    param = _create_performance_param(performance=performance)
+    response = _create_response(request=request, param=param)
+    set_we_invalidate_pc_access(response)
+    return response
+
+def _create_performance_param(performance):
+    param = ""
+    if performance:
+        param = "?performance=" + str(performance)
+    return param

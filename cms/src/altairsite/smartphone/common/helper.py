@@ -4,7 +4,6 @@ from .const import SalesEnum
 from altaircms.asset.models import ImageAsset
 from altaircms.helpers.asset import rendering_object as asset_rendering_object
 from altairsite.mobile.core.eventhelper import EventHelper
-from .pcsite_redirect import pcsite_redirect_script
 import logging
 from markupsafe import Markup
 
@@ -114,8 +113,8 @@ class SmartPhoneHelper(object):
     def disp_time(self, target_date):
         week = self.get_week_map()
         disp_str = str(target_date.year) + '/' + str(target_date.month).zfill(2) + '/' \
-                   + str(target_date.day).zfill(2) + ' ' + str(target_date.hour).zfill(2) + ':' \
-                   + str(target_date.minute).zfill(2) + '(' + week[target_date.weekday()] + ')'
+                   + str(target_date.day).zfill(2) + '(' + week[target_date.weekday()] + ')'\
+                   + ' ' + str(target_date.hour).zfill(2) + ':' + str(target_date.minute).zfill(2)
         return disp_str
 
     def disp_error(self, form):
@@ -153,6 +152,3 @@ class SmartPhoneHelper(object):
 
     def get_asset_rendering_object(self, request, asset):
         return asset_rendering_object(request, asset)
-
-    def goto_pcpage_script(self, request, expr, next="/"):
-        return pcsite_redirect_script(request, expr, next=next)

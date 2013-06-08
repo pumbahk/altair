@@ -34,12 +34,11 @@ def move_detailsearch_post(request):
     if form.validate():
         log_info("move_detailsearch_post", "detail search start")
         qs = searcher.get_events_from_freeword(form)
-        if not qs:
-            log_info("move_detailsearch_post", "free word not result")
-        else:
-            qs = searcher.get_events_from_area(form, qs)
+        qs = searcher.get_events_from_area(form, qs)
+        qs = searcher.get_events_from_start_on(form, qs)
+        if qs:
+            # 以下は絞り込み条件
             qs = searcher.get_events_from_sale(form, qs)
-            qs = searcher.get_events_from_start_on(form, qs)
             qs = searcher.get_events_from_salessegment(form, qs)
 
         log_info("move_detailsearch_post", "detail search end")

@@ -26,6 +26,15 @@ def usersite_view_config(*args, **kwargs):
         _decorator = make_exc_trap_wrapper
     return view_config(*args, decorator=_decorator, **kwargs)
 
+def usersite_add_view(config, *args, **kwargs):
+    decorator = kwargs.pop('decorator', None)
+    if decorator is not None:
+        _decorator = lambda view_callable: make_exc_trap_wrapper(decorator(view_callable))
+    else:
+        _decorator = make_exc_trap_wrapper
+    config.add_view(*args,  decorator=_decorator, **kwargs)
+    
+
 def install_convinient_request_properties(config):
     assert config.registry.settings["altair.orderreview.url"]
     def altair_orderreview_url(request):
@@ -48,3 +57,6 @@ def install_convinient_request_properties(config):
     config.set_request_property(sender_mailaddress, "sender_mailaddress", reify=True)
     config.set_request_property(inquiry_mailaddress, "inquiry_mailaddress", reify=True)
     config.set_request_property("altairsite.mobile.dispatch.views.mobile_route_path", "mobile_route_path", reify=True)
+
+def includeme(config):
+    config.add_directive("usersite_add_view", usersite_add_view)

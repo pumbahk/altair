@@ -12,7 +12,6 @@ from pyramid.httpexceptions import HTTPFound, HTTPNotFound
 import sqlalchemy as sa
 
 from ticketing.core import models as c_models
-from ticketing.core import api as c_api
 #from altair.mobile.interfaces import IMobileRequest
 from ticketing.cart.selectable_renderer import selectable_renderer
 from ticketing.models import DBSession
@@ -79,7 +78,7 @@ class MobileIndexView(IndexViewMixin):
                     sales_segment_id=sales_segment.id))
 
 
-        selector_name = c_api.get_organization(self.request).setting.performance_selector
+        selector_name = self.request.organization.setting.performance_selector
         performance_selector = api.get_performance_selector(self.request, selector_name)
         key_to_formatted_sales_segments_map = performance_selector()
 
@@ -108,7 +107,7 @@ class MobileSelectProductView(object):
 
     @view_config(route_name='cart.seat_types', renderer=selectable_renderer('carts_mobile/%(membership)s/seat_types.html'), xhr=False, request_type='altair.mobile.interfaces.IMobileRequest')
     def __call__(self):
-        selector_name = c_api.get_organization(self.request).setting.performance_selector
+        selector_name = self.request.organization.setting.performance_selector
         performance_selector = api.get_performance_selector(self.request, selector_name)
 
         try:
@@ -256,7 +255,8 @@ class MobileReserveView(object):
             seat_type_id=seat_type_id,
             sales_segment_id=sales_segment_id, 
             payment_url=self.request.route_url("cart.payment", sales_segment_id=sales_segment.id),
-            cart=dict(products=[dict(name=p.product.name, 
+            cart=dict(products=[dict(name=p.product.name,
+                                     detail=h.product_name_with_unit(p.product.items),
                                      quantity=p.quantity,
                                      price=int(p.product.price),
                                      seats=p.seats if p.product.sales_segment.seat_choice else [],

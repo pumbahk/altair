@@ -40,7 +40,7 @@ pipeline =
 use  = egg:gunicorn#main
 host = 0.0.0.0
 port = %(http_port)s
-worker = 1
+workers = 1
 
 # Begin logging configuration
 

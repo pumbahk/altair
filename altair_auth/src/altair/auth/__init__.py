@@ -216,7 +216,7 @@ def includeme(config):
     else:
         raise ConfigurationError('altair.auth.decider is not found in settings')
 
-    config.add_tween(".activate_who_api_tween", under=INGRESS)
+    config.add_tween("altair.auth.activate_who_api_tween", under=INGRESS)
 
     callback = config.registry.settings.get('altair.auth.callback')
     if callback:

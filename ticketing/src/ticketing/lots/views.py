@@ -20,12 +20,12 @@ from ticketing.users import api as user_api
 from ticketing.utils import toutc
 from ticketing.payments.payment import Payment
 from ticketing.cart.exceptions import NoCartError
+from ticketing.cart.selectable_renderer import selectable_renderer
 from ticketing.mailmags.api import get_magazines_to_subscribe, multi_subscribe
 
 from . import api
 from . import helpers as h
 from . import schemas
-from . import selectable_renderer
 from .exceptions import NotElectedException
 from .models import (
     #Lot,
@@ -296,6 +296,7 @@ class ConfirmLotEntryView(object):
         payment_delivery_method_pair_id = entry['payment_delivery_method_pair_id']
         payment_delivery_method_pair = PaymentDeliveryMethodPair.query.filter(PaymentDeliveryMethodPair.id==payment_delivery_method_pair_id).one()
 
+        DBSession.add(self.context.organization)
         magazines_to_subscribe = get_magazines_to_subscribe(self.context.organization, [entry['shipping_address']['email_1']])
 
         temporary_entry = api.build_temporary_lot_entry(

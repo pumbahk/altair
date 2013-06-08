@@ -39,6 +39,8 @@ $(function () {
       return false;
     });
   });
+
+  $('*[data-toggle]:first').trigger("click");
 });
 </script>
 
@@ -63,8 +65,10 @@ $(function () {
         ${render_sale_image('altaircms:static/RT/img/search/icon_normal.gif')}
     % elif segment.name.find(u"一般発売") != -1:
         ${render_sale_image('altaircms:static/RT/img/search/icon_release.gif')}
+    % elif segment.name.find(u"先行販売") != -1:
+        ${render_sale_image('altaircms:static/RT/img/search/icon_firstsale.gif')}
     % else:
-        <th scope="row">${item["label"]}</th>
+        ${segment.name}
     % endif
 </%def>
 
@@ -116,6 +120,11 @@ $(function () {
 <hr/>
 
 <%m:header><a name="list">公演一覧</a></%m:header>
+<div class="sectionbox">
+    <div class="sectionbox-inner" style="color: red">
+        ご購入の方は、ご希望の公演日が含まれる月をクリックしてください（公演一覧が表示されます）
+    </div>
+</div>
 <ul class="panellist fullwidth expandable">
   % for count in range(len(month_unit_keys)):
     <% month = month_unit_keys[count] %>

@@ -91,3 +91,13 @@ class QRTicketDeliveryPlugin(object):
                         valid=True
                         )
                     opi.tokens.append(token)
+
+    def finished(self, request, order):
+        result = True
+        for op in order.ordered_products:
+            for opi in op.ordered_product_items:
+                for seat in _with_serial_and_seat(op, opi):
+                    result = result and opi.tokens
+
+        return result
+        

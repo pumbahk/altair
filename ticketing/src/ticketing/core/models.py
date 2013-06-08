@@ -641,20 +641,6 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         performance.save()
         logger.info('[copy] Performance end')
 
-    @staticmethod
-    def set_search_condition(query, form):
-        """TODO: query を構築するクラスを別に作る等したい"""
-        if form.sort.data:
-            direction = form.direction.data or 'asc'
-            # XXX: injection safe?
-            query = query.order_by('Performance.' + form.sort.data + ' ' + direction)
-
-        condition = form.event_id.data
-        if condition:
-            query = query.filter(Performance.event_id==condition)
-
-        return query
-
     def has_that_delivery(self, delivery_plugin_id):
         qs = DBSession.query(DeliveryMethod)\
             .filter(DeliveryMethod.delivery_plugin_id==delivery_plugin_id)\
@@ -664,7 +650,6 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             .filter(Product.id==ProductItem.product_id)\
             .filter(ProductItem.performance_id==self.id)
         return bool(qs.first())
-
 
 class ReportFrequencyEnum(StandardEnum):
     Daily = (1, u'毎日')
@@ -1142,23 +1127,6 @@ class SalesSegmentGroup(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     def get_products(self, performances):
         """ この販売区分で購入可能な商品一覧 """
         return [product for product in self.product if product.performances in performances]
-
-    @staticmethod
-    def set_search_condition(query, form):
-        """TODO: query を構築するクラスを別に作る等したい"""
-        if form.sort.data:
-            direction = form.direction.data or 'desc'
-            # XXX: injection safe?
-            query = query.order_by(SalesSegmentGroup.__tablename__ + '.' + form.sort.data + ' ' + direction)
-
-        condition = form.event_id.data
-        if condition:
-            query = query.filter(SalesSegmentGroup.event_id==condition)
-        condition = form.public.data
-        if condition:
-            query = query.filter(SalesSegmentGroup.public==True)
-
-        return query
 
     @hybrid_property
     def lot(self):
@@ -2575,119 +2543,6 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             .join(OrderedProductItem.product_item)\
             .filter(ProductItem.performance_id==id)\
             .distinct()
-
-    @staticmethod
-    def set_search_condition(query, form):
-        """TODO: query を構築するクラスを別に作る等したい"""
-        if form.sort.data:
-            direction = form.direction.data or 'desc'
-            # XXX: injection safe?
-            query = query.order_by('Order.' + form.sort.data + ' ' + direction)
-
-        condition = form.order_no.data
-        if condition:
-            query = query.filter(Order.order_no==condition)
-        condition = form.performance_id.data
-        if condition:
-            query = query.filter(Order.performance_id==condition)
-        condition = form.event_id.data
-        if condition:
-            query = query.join(Order.performance).filter(Performance.event_id==condition)
-        condition = form.sales_segment_id.data
-        if condition and '' not in condition:
-            query = query.join(Order.ordered_products).join(OrderedProduct.product).filter(Product.sales_segment_id.in_(condition))
-        condition = form.ordered_from.data
-        if condition:
-            query = query.filter(Order.created_at>=condition)
-        condition = form.ordered_to.data
-        if condition:
-            query = query.filter(Order.created_at<=condition)
-        condition = form.payment_method.data
-        if condition:
-            query = query.join(Order.payment_delivery_pair)
-            query = query.join(PaymentMethod)
-            if isinstance(condition, list):
-                query = query.filter(PaymentMethod.id.in_(condition))
-            else:
-                query = query.filter(PaymentMethod.id==condition)
-        condition = form.delivery_method.data
-        if condition:
-            query = query.join(Order.payment_delivery_pair)
-            query = query.join(DeliveryMethod)
-            query = query.filter(DeliveryMethod.id.in_(condition))
-        condition = form.status.data
-        if condition:
-            status_cond = []
-            if 'ordered' in condition:
-                status_cond.append(and_(Order.canceled_at==None, Order.delivered_at==None))
-            if 'delivered' in condition:
-                status_cond.append(and_(Order.canceled_at==None, Order.delivered_at!=None))
-            if 'canceled' in condition:
-                status_cond.append(and_(Order.canceled_at!=None))
-            if status_cond:
-                query = query.filter(or_(*status_cond))
-        condition = form.issue_status.data
-        if condition:
-            issue_cond = []
-            if 'issued' in condition:
-                issue_cond.append(Order.issued==True)
-            if 'unissued' in condition:
-                issue_cond.append(Order.issued==False)
-            if issue_cond:
-                query = query.filter(or_(*issue_cond))
-        condition = form.payment_status.data
-        if condition:
-            payment_cond = []
-            if 'unpaid' in condition:
-                payment_cond.append(and_(Order.refunded_at==None, Order.refund_id==None, Order.paid_at==None))
-            if 'paid' in condition:
-                payment_cond.append(and_(Order.refunded_at==None, Order.refund_id==None, Order.paid_at!=None))
-            if 'refunding' in condition:
-                payment_cond.append(and_(Order.refunded_at==None, Order.refund_id!=None))
-            if 'refunded' in condition:
-                payment_cond.append(and_(Order.refunded_at!=None))
-            if payment_cond:
-                query = query.filter(or_(*payment_cond))
-        condition = form.tel.data
-        if condition:
-            query = query.join(Order.shipping_address).filter(or_(ShippingAddress.tel_1==condition, ShippingAddress.tel_2==condition))
-        condition = form.name.data
-        if condition:
-            query = query.join(Order.shipping_address)
-            items = re.split(ur'[ 　]', condition)
-            # 前方一致で十分かと
-            for item in items:
-                query = query.filter(
-                    or_(
-                        or_(ShippingAddress.first_name.like('%s%%' % item),
-                            ShippingAddress.last_name.like('%s%%' % item)),
-                        or_(ShippingAddress.first_name_kana.like('%s%%' % item),
-                            ShippingAddress.last_name_kana.like('%s%%' % item))
-                        )
-                    )
-        condition = form.email.data
-        if condition:
-            # 完全一致です
-            query = query \
-                .join(Order.shipping_address) \
-                .filter(or_(ShippingAddress.email_1 == condition,
-                            ShippingAddress.email_2 == condition))
-        condition = form.member_id.data
-        if condition:
-            query = query.join(Order.user).join(User.user_credential).filter(UserCredential.auth_identifier==condition)
-        condition = form.start_on_from.data
-        if condition:
-            query = query.join(Order.performance).filter(Performance.start_on>=condition)
-        condition = form.start_on_to.data
-        if condition:
-            query = query.join(Order.performance).filter(Performance.start_on<=todatetime(condition).replace(hour=23, minute=59, second=59))
-        condition = form.seat_number.data
-        if condition:
-            query = query.join(Order.ordered_products)
-            query = query.join(OrderedProduct.ordered_product_items)
-            query = query.join(OrderedProductItem.seats)
-            query = query.filter(Seat.name.like('%s%%' % condition))
-        return query
 
 def no_filter(value):
     return value

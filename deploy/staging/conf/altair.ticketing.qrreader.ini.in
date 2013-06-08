@@ -22,7 +22,7 @@ pipeline =
 use  = egg:gunicorn#main
 host = 0.0.0.0
 port = %(http_port)s
-worker = 1
+workers = 1
 timeout = 3600
 graceful_timeout = 3600
 
