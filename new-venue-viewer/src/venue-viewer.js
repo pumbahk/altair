@@ -838,27 +838,27 @@
 
       loadSeats: function(next) {
         var self = this;
-              //self.callbacks.loadPartStart.call(self, self, 'seats');
-              self.loading = true;
-              self.initSeats(self.dataSource.seats, function () {
-                self.loading = false;
-                if (self.loadAborted) {
-                  self.loadAborted = false;
-                  self.loadAbortionHandler && self.loadAbortionHandler.call(self, self);
-                  //self.callbacks.loadAbort && self.callbacks.loadAbort.call(self, self);
-                  return;
-                }
-                //self.loading = true;
-                //self.callbacks.loadPartEnd.call(self, self, 'seats');
+        //self.callbacks.loadPartStart.call(self, self, 'seats');
+        self.loading = true;
+        self.initSeats(self.dataSource.seats, function () {
+          self.loading = false;
+          if (self.loadAborted) {
+            self.loadAborted = false;
+            self.loadAbortionHandler && self.loadAbortionHandler.call(self, self);
+            //self.callbacks.loadAbort && self.callbacks.loadAbort.call(self, self);
+            return;
+          }
+          //self.loading = true;
+          //self.callbacks.loadPartEnd.call(self, self, 'seats');
 
-                for (var id in self.shapes) {
-                  if (self.seats[id])
-                    self.seats[id].attach(self.shapes[id]);
-                }
+          for (var id in self.shapes) {
+            if (self.seats[id])
+              self.seats[id].attach(self.shapes[id]);
+          }
 
-                if (next)
-                  next();
-              });
+          if (next)
+            next();
+        });
       },
 
       initSeats: function VenueViewer_initSeats(dataSource, next) {
