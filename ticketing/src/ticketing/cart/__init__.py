@@ -65,6 +65,8 @@ def add_routes(config):
     # PC/Smartphone切替
     config.add_route('cart.switchpc', 'switchpc/{event_id}')
     config.add_route('cart.switchsp', 'switchsp/{event_id}')
+    config.add_route('cart.switchpc.perf', 'switchpc/{event_id}/{performance}')
+    config.add_route('cart.switchsp.perf', 'switchsp/{event_id}/{performance}')
 
 def add_rakuten_auth_routes(config):
     config.add_route('rakuten_auth.login', '/login')

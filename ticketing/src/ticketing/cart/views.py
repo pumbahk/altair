@@ -188,6 +188,7 @@ class IndexView(IndexViewMixin):
             event_extra_info=self.event_extra_info.get("event") or [],
             selection_label=performance_selector.label,
             second_selection_label=performance_selector.second_label,
+            performance=performance_id or ""
             )
 
     @view_config(route_name='cart.seat_types', renderer="json")
@@ -815,18 +816,45 @@ def logout(request):
     res.headerlist.extend(headers)
     return res
 
+def _create_response(request, param):
+    event_id = request.matchdict.get('event_id')
+    response = HTTPFound(event_id and request.route_url('cart.index', event_id=event_id) + param or '/')
+    return response
+
 @view_config(route_name='cart.switchpc')
 def switch_pc(context, request):
-    event_id = request.matchdict.get('event_id')
     ReleaseCartView(request)()
-    response = HTTPFound(event_id and request.route_url('cart.index', event_id=event_id) or '/')
+    response = _create_response(request=request, param="")
     set_we_need_pc_access(response)
     return response
 
 @view_config(route_name='cart.switchsp')
 def switch_sp(context, request):
-    event_id = request.matchdict.get('event_id')
     ReleaseCartView(request)()
-    response = HTTPFound(event_id and request.route_url('cart.index', event_id=event_id) or '/')
+    response = _create_response(request=request, param="")
     set_we_invalidate_pc_access(response)
     return response
+
+@view_config(route_name='cart.switchpc.perf')
+def switch_pc_performance(context, request):
+    ReleaseCartView(request)()
+    performance = request.matchdict.get('performance')
+    param = _create_performance_param(performance=performance)
+    response = _create_response(request=request, param=param)
+    set_we_need_pc_access(response)
+    return response
+
+@view_config(route_name='cart.switchsp.perf')
+def switch_sp_performance(context, request):
+    ReleaseCartView(request)()
+    performance = request.matchdict.get('performance')
+    param = _create_performance_param(performance=performance)
+    response = _create_response(request=request, param=param)
+    set_we_invalidate_pc_access(response)
+    return response
+
+def _create_performance_param(performance):
+    param = ""
+    if performance:
+        param = "?performance=" + str(performance)
+    return param

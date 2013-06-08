@@ -69,9 +69,14 @@ $(function() {cart.init(salesSegmentsSelection, selected, cartReleaseUrl, true);
     </div>
   </div>
 </%block>
-    <% from altair.mobile import PC_ACCESS_COOKIE_NAME %>
+    <%
+        from altair.mobile import PC_ACCESS_COOKIE_NAME
+        link = request.route_url('cart.switchsp', event_id=event['id'])
+        if performance:
+            link = request.route_url('cart.switchsp.perf', event_id=event['id'], performance=performance)
+    %>
     % if request.cookies.get(PC_ACCESS_COOKIE_NAME):
-        <a href="${request.route_url('cart.switchsp', event_id=event['id'])}">
+        <a href="${link}">
           <button class="switch_pc">スマホサイトで購入する</button>
         </a>
     % endif
