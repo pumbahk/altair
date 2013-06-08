@@ -28,13 +28,14 @@ def exception_message_renderer_factory(show_traceback):
     def exception_message_renderer(request, exc_info, message):
         from pyramid.httpexceptions import HTTPInternalServerError
         from pyramid.renderers import render
+        from pyramid import security
         from .selectable_renderer import selectable_renderer
         from altair.mobile.api import is_mobile
         if is_mobile(request):
             renderer = selectable_renderer('carts_mobile/%(membership)s/error.html')
         else:
             renderer = selectable_renderer('carts/%(membership)s/message.html')
-        return HTTPInternalServerError(body=render(renderer, { 'message': u'システムエラーが発生しました。大変お手数ですが、しばらく経ってから再度トップ画面よりアクセスしてください。(このURLに再度アクセスしてもエラーが出続けることがあります)' }, request))
+        return HTTPInternalServerError(body=render(renderer, { 'message': u'システムエラーが発生しました。大変お手数ですが、しばらく経ってから再度トップ画面よりアクセスしてください。(このURLに再度アクセスしてもエラーが出続けることがあります)' }, request), headers=security.forget(request))
     return exception_message_renderer
 
 class WhoDecider(object):
