@@ -1,7 +1,8 @@
-<%page args="form, url='/orders/'" />
-<%namespace file="/common/helpers.html" name="h" />
+<%page args="form" />
+<%namespace file="/common/helpers.html" name="ch" />
 <%
 from ticketing.formhelpers import OurDateWidget
+import json
 %>
 
 <script src="${request.static_url('ticketing:static/js/jquery.chosen.js')}"></script>
@@ -43,30 +44,24 @@ from ticketing.formhelpers import OurDateWidget
 }
 </style>
 <script type="text/javascript">
-  function search_orders(url) {
+  url = '${url|n}';
+
+  function search_carts() {
     $('#search').attr('action', url).submit();
   }
 
-  function sort_orders(sort, direction, url) {
-    url = url || '${url}';
+  function sort_carts(sort, direction) {
     detail = $('#detail_search');
     if (sort) detail.find('#sort').val(sort);
     if (direction) detail.find('#direction').val(direction);
     detail.find('#search').attr('action', url).submit();
-  }
-
-  function download_orders() {
-    var params = $('#modal-download_orders').find('form').serialize();
-    detail = $('#detail_search');
-    detail.find('#search').attr('action', '/orders/download/?' + params).submit();
-    $('#modal-download_orders').modal('hide');
   }
 </script>
 <div id="detail_search">
   <div>
     <h3>検索条件設定</h3>
   </div>
-  <form id="search" class="form-horizontal" method="POST">
+  <form id="search" class="form-horizontal" method="GET">
     <table>
       <tbody>
         <tr>
@@ -81,15 +76,13 @@ from ticketing.formhelpers import OurDateWidget
           <th><label for="name">${form.name.label.text}</label></th>
           <td>${form.name()}</td>
           <th><label for="email">${form.email.label.text}</label></th>
-          <td>${form.email()}</td>
-          <th><label for="member_id">${form.member_id.label.text}</label></th>
-          <td>${form.member_id()}</td>
+          <td colspan="3">${form.email()}</td>
         </tr>
         <tr>
-          <th><label>${form.ordered_from.label.text}</label></th>
+          <th><label>${form.carted_from.label.text}</label></th>
           <td colspan="5">
-            ${form.ordered_from()} 〜
-            ${form.ordered_to()}
+            ${form.carted_from()} 〜
+            ${form.carted_to()}
           </td>
         </tr>
       </tbody>
@@ -125,22 +118,21 @@ from ticketing.formhelpers import OurDateWidget
         </tr>
       </tbody>
     </table>
-    <table class="packed-checkboxes">
+    <table>
       <tbody>
         <tr>
-          <th>
-            <label for="status">${form.status.label.text}</label>
-          </th>
-          <td>
-            ${form.status()}
-            ${form.issue_status()}
-            ${form.payment_status()}
-          </td>
+          <th><label>状態</label></th>
+          <td>${form.status}</label></td>
         </tr>
       </tbody>
     </table>
     <script type="text/javascript">
       $(function(){
+        var endpoints = ${json.dumps(dict(
+          search_sales_segments=request.route_url('orders.api.sales_segments'),
+          search_performances=request.route_url('orders.api.performances'),
+        ))|n};
+
         var update_on_empty = function(){
           var $target = $(this).parents("form").find("select[name='performance_id']").eq(0);
           $target.empty();
@@ -150,7 +142,7 @@ from ticketing.formhelpers import OurDateWidget
         var update_on_hasvalue = function(v){
           var self = this;
           var params = {event_id: v};
-          $.getJSON("${request.route_url('orders.api.performances')}", params).done(function(data){
+          $.getJSON(endpoints.search_performances, params).done(function(data){
             if(data.status){
               var $target = $(self).parents("form").find("select[name='performance_id']").eq(0);
               $target.empty();
@@ -182,7 +174,7 @@ from ticketing.formhelpers import OurDateWidget
         var update_sales_segments_on_hasvalue = function(v){
           var self = this;
           var params = {performance_id: v};
-          $.getJSON("${request.route_url('orders.api.sales_segments')}", params).done(function(data){
+          $.getJSON(endpoints.search_sales_segments, params).done(function(data){
             if(data.status){
               var $target = $(self).parents("form").find("select[name='sales_segment_id']").eq(0);
               $target.empty();
@@ -206,8 +198,8 @@ from ticketing.formhelpers import OurDateWidget
         $("#search select[name='performance_id']").change(update_sales_segments).chosen();
       });
     </script>
-    ${h.form_item(form.sort)}
-    ${h.form_item(form.direction)}
+    ${ch.form_item(form.sort)}
+    ${ch.form_item(form.direction)}
   </form>
 </div>
 
@@ -227,7 +219,7 @@ from ticketing.formhelpers import OurDateWidget
   <ul class="nav nav-pills">
     <li class="dropdown" id="top-search" style="margin-left: 10px;">
       <div class="btn-group">
-        <a href="javascript:search_orders('${request.route_path('orders.index')}');" class="btn">
+        <a href="javascript:search_carts();" class="btn">
           <i class="icon-search"></i> 検索
         </a>
       </div>
@@ -235,48 +227,4 @@ from ticketing.formhelpers import OurDateWidget
   </ul>
 </div>
 
-<div class="btn-group" style="float: left;">
-  <a class="btn btn-inverse" style="margin-left: 10px;" data-toggle="modal" href="#modal-download_orders">
-    <i class="icon-download icon-white"></i> ダウンロード
-  </a>
-</div>
 <div style="clear: left;"></div>
-
-<div id="modal-download_orders" class="modal hide">
-  <div class="modal-header">
-    <a href="#" class="close">&times;</a>
-    <h3>確認</h3>
-  </div>
-
-  <div class="modal-body">
-    <form id="download" class="form-horizontal" action="${request.route_path('orders.download')}" method="POST">
-      <p>購入情報(CSV)をダウンロードします。よろしいですか？<br>
-        % if not form.get_conditions():
-          <div class="alert alert-error">
-            <div style="margin-bottom: 5px;">検索条件がありません。<br>対象が多すぎると時間がかかる可能性があるので条件を指定してください。</div>
-          </div>
-        % endif
-        <%include file="/orders/_search_condition.html" args="form=form" />
-      </p>
-      <fieldset>
-        <div>
-          <input id="export_type_1" name="export_type" type="radio" value="1" style="float: left; margin-right: 5px;" checked>
-          <label for="export_type_1">予約ごとに1行ずつ出力する</label>
-        </div>
-        <div>
-          <input id="export_type_2" name="export_type" type="radio" value="2" style="float: left; margin-right: 5px;">
-          <label for="export_type_2">座席ごとに1行ずつ出力する</label>
-        </div>
-      </fieldset>
-    </form>
-  </div>
-
-  <div class="modal-footer">
-    <a href="javascript:void(0);" onclick="$('#modal-download_orders').modal('hide');" class="btn secondary">キャンセル</a>
-    <a href="javascript:download_orders();" class="btn danger">ダウンロード</a>
-  </div>
-</div>
-
-% if len(orders) == 0:
-  見つかりませんでした
-% endif

@@ -11,7 +11,7 @@ from sqlalchemy.orm.attributes import manager_of_class, QueryableAttribute
 from sqlalchemy.orm.properties import ColumnProperty, RelationshipProperty
 from sqlalchemy.ext.mutable import Mutable
 from sqlalchemy.ext.declarative import declared_attr
-from sqlalchemy.sql.expression import text
+from sqlalchemy.sql.expression import text, desc, asc
 from sqlalchemy.sql import functions as sqlf, and_
 import sqlahelper
 from paste.util.multidict import MultiDict
@@ -335,3 +335,10 @@ def is_any_of(item, collection):
         return item.in_(collection)
     else:
         return item in collection
+
+def asc_or_desc(query, column, direction, default=None):
+    fn = dict(desc=desc, asc=asc).get(direction or default)
+    if fn is not None:
+        query = query.order_by(fn(column))
+    return query
+
