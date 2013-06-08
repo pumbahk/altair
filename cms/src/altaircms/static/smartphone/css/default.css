@@ -43,6 +43,8 @@ ul.menu {
 
 .menuitem > .menuitem-label {
   display: block;
+  text-decoration: none;
+  color: inherit;
   border-right: 1px solid #ccc;
   padding: 6px 0px 6px 10px;
   line-height: 32px;
@@ -52,24 +54,51 @@ ul.menu {
 }
 
 .menuitem-label:before {
+  content: "";
   display: block;
   float: right;
   font-family: Serif;
   color: #888;
   text-shadow: 1px 1px 2px #fff;
-  content: "➤";
-  margin: 0 20px 0 10px;
-  width: 0px;
-  font-size: 12px;
-  line-height: 34px;
-  height: 44px;
+  background: url("../img/rarrow.png") no-repeat center center;
+  margin: 0 8px 0 10px;
+  width: 12px;
+  height: 32px;
   vertical-align: middle;
 }
 
 .menu._2cols .menuitem {
   width: 50%;
-  font-size: 17px;
+  font-size: 14px;
   line-height: 1.5em;
+}
+
+.menuitem i.icon:before {
+  display: inline-block;
+  vertical-align: -2px;
+  content: "";
+  width: 16px;
+  height: 16px;
+}
+
+.menuitem i.icon.music:before {
+  border-radius: 8px;
+  background-color: #5454f2;
+}
+
+.menuitem i.icon.sports:before {
+  border-radius: 8px;
+  background-color: #f0f296;
+}
+
+.menuitem i.icon.stage:before {
+  border-radius: 8px;
+  background-color: #f0d1d2;
+}
+
+.menuitem i.icon.event:before {
+  border-radius: 8px;
+  background-color: #a1deff;
 }
 
 .sectionbox {
@@ -166,13 +195,18 @@ ul.buttonset._4cols li {
   width: 25%;
 }
 
-ul.buttonset._4cols li button.embedded {
+a.button {
+  text-decoration: none;
+}
+
+ul.buttonset._4cols li button.embedded,
+ul.buttonset._4cols li .button.embedded {
   display: block;
   width: auto;
   border: none;
   height: 60px;
   width: 100%;
-  font-size: 12x;
+  font-size: 12px;
   background-image: linear-gradient(top, #fff 0%, #e3e3e3);
   background-image: -webkit-gradient(linear, left top, left bottom, from(#fff), to(#e3e3e3));
   background-image: -webkit-linear-gradient(top, #fff 0%, #e3e3e3);
@@ -185,11 +219,13 @@ ul.buttonset._4cols li button.embedded {
   text-align: center;
 }
 
-ul.buttonset._4cols li button.embedded.first {
+ul.buttonset._4cols li button.embedded.first,
+ul.buttonset._4cols li .button.embedded.first {
   border-left: none;
 }
 
-ul.buttonset._4cols li button.embedded:active {
+ul.buttonset._4cols li button.embedded:active,
+ul.buttonset._4cols li .button.embedded:active {
   background-image: linear-gradient(top, #fff 0%, #ddd);
   background-image: -webkit-gradient(linear, left top, left bottom, from(#fff), to(#ddd));
   background-image: -webkit-linear-gradient(top, #fff 0%, #ddd);
@@ -198,12 +234,13 @@ ul.buttonset._4cols li button.embedded:active {
   margin-bottom: -1px;
 }
 
-ul.buttonset._4cols li button.embedded .icon {
+ul.buttonset._4cols li button.embedded .icon,
+ul.buttonset._4cols li .button.embedded .icon {
   display: block;
   margin: 0 auto;
 }
 
-i.icon {
+ul.buttonset i.icon {
   width: 40px;
   height: 40px;
   background-size: 40px 40px;
@@ -385,16 +422,17 @@ ul.panelgroup-inner > li.panel {
 }
 
 .navigable .panel-inner:before {
+  content: "";
   display: block;
   position: absolute;
-  right: 10px;
+  right: 8px;
   top: 50%;
   font-family: Serif;
   color: #888;
   text-shadow: 1px 1px 2px #fff;
-  content: "➤";
-  font-size: 12px;
-  margin-top: -6px;
+  background: url("../img/rarrow.png") no-repeat center center;
+  width: 12px;
+  margin-top: -8px;
   vertical-align: top;
 }
 
