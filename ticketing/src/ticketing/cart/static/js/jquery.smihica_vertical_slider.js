@@ -62,9 +62,13 @@
         return pos;
       }
 
+      var getPageY = function getPageY(e) {
+        return e.pageY === void(0) ? e.originalEvent.pageY: e.pageY;
+      };
+
       var moveHandler = function moveHandler(e) {
         if (hbarMoving) {
-          var dist = e.pageY - lastMouseY;
+          var dist = getPageY(e) - lastMouseY;
           setPositionHbar(lastHbarPosition + dist);
         }
         return false;
@@ -72,29 +76,31 @@
 
       var upHandler = function upHandler(e) {
         hbarMoving = false;
-        $(document).unbind("mousemove", moveHandler);
-        $(document).unbind("mouseup", upHandler);
+        $(document).unbind("mousemove touchmove", moveHandler);
+        $(document).unbind("mouseup touchend", upHandler);
         return false;
       }
 
-      hbar.mousedown(function(e) {
+      hbar.bind('mousedown touchstart', function(e) {
         hbarMoving = true;
         lastHbarPosition = hbarPosition;
-        lastMouseY = e.pageY;
-        $(document).mousemove(moveHandler);
-        $(document).mouseup(upHandler);
+        lastMouseY =  getPageY(e);
+        $(document).bind('mousemove touchmove', moveHandler);
+        $(document).bind('mouseup touchend', upHandler);
         return false;
       });
-      vbar.click(function(e) {
+      vbar.bind('click', function(e) {
         setPositionHbar(e.offsetY);
         lastMouseY = e.pageY;
       });
       if (options.button) {
-        plus.click(function(e) {
+        plus.bind('click touchstart', function(e) {
           setPositionHbar(hbarPosition - step * hbarPositionMax);
+          return false;
         });
-        minus.click(function(e) {
+        minus.bind('click touchstart', function(e) {
           setPositionHbar(hbarPosition + step * hbarPositionMax);
+          return false;
         });
       }
 
