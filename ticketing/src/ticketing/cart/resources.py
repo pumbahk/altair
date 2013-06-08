@@ -28,7 +28,7 @@ from .exceptions import (
 )
 from ..core import models as c_models
 from ..core import api as core_api
-#from ..users import models as u_models
+from ..users import models as u_models
 from . import models as m
 from . import api
 from zope.deprecation import deprecate
@@ -76,10 +76,16 @@ class TicketingCartResource(object):
     #     return [m.membership for m in membergroups]
     @property
     def memberships(self):
-        organization = self.request.organization
-        logger.debug('organization %s' % organization.code)
-        logger.debug('memberships %s' % organization.memberships)
-        return organization.memberships
+        try:
+            organization = self.request.organization
+            memberships = u_models.Membership.query.filter_by(organization_id=organization.id).all()
+            logger.debug('organization %s' % organization.code)
+            logger.debug('memberships %s' % memberships)
+        except:
+            import sys
+            logger.error('exception ignored', exc_info=sys.exc_info())
+            memberships = []
+        return memberships
 
     @property
     def event(self):
