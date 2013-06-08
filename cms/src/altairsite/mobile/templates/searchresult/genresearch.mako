@@ -32,7 +32,6 @@ ${breadcrumb[1]}
 <br />
 <hr />
 <%block name="fnavi">
-<a href="${self.breadcrumbs[-2][0]}" accesskey="0">[0]${self.breadcrumbs[-2][1]}</a><br />
 [9]<a href="/" accesskey="9">トップへ</a><br />
 </%block>
 <%include file='../common/_search_result.mako' args="events=form.events.data
