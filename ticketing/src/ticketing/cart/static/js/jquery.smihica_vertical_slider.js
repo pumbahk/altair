@@ -14,11 +14,11 @@
 
       var plus, minus, vbar, hbar;
 
-      var cont  = $('<div/>', {class: "smihica-vertical-slider"})
-        .append(plus  = $('<div/>', {class: (options.button) ? "smihica-vertical-slider-plus" : "smihica-vertical-slider-cover-top"}))
-        .append(minus = $('<div/>', {class: (options.button) ? "smihica-vertical-slider-minus" : "smihica-vertical-slider-cover-bottom"}))
-        .append(vbar  = $('<div/>', {class:"smihica-vertical-slider-vbar"}))
-        .append(hbar  = $('<div/>', {class:"smihica-vertical-slider-hbar"}));
+      var cont  = $('<div></div>').addClass("smihica-vertical-slider")
+        .append(plus  = $('<div></div>').addClass(options.button ? "smihica-vertical-slider-plus" : "smihica-vertical-slider-cover-top"))
+        .append(minus = $('<div></div>').addClass(options.button ? "smihica-vertical-slider-minus" : "smihica-vertical-slider-cover-bottom"))
+        .append(vbar  = $('<div></div>').addClass("smihica-vertical-slider-vbar"))
+        .append(hbar  = $('<div></div>').addClass("smihica-vertical-slider-hbar"));
 
       this.append(cont);
 
