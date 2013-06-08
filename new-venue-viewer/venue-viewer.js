@@ -1,6 +1,6 @@
 (function () {
 var __LIBS__ = {};
-__LIBS__['pZ6QJR05X6B6MJ3X'] = (function (exports) { (function () { 
+__LIBS__['F30NHJ2336J_VQY1'] = (function (exports) { (function () { 
 
 /************** util.js **************/
 exports.eventKey = function Util_eventKey(e) {
@@ -127,7 +127,7 @@ exports.makeHitTester = function Util_makeHitTester(a) {
   }
 };
  })(); return exports; })({});
-__LIBS__['UXJ5R99L70ZWIDT8'] = (function (exports) { (function () { 
+__LIBS__['rYQ7TBB4IREFPGHX'] = (function (exports) { (function () { 
 
 /************** CONF.js **************/
 exports.DEFAULT = {
@@ -182,11 +182,11 @@ exports.DEFAULT = {
   }
 };
  })(); return exports; })({});
-__LIBS__['vDSITY3Y0N5WEI7A'] = (function (exports) { (function () { 
+__LIBS__['o4HA4D34OPL2BBZW'] = (function (exports) { (function () { 
 
 /************** seat.js **************/
-var util = __LIBS__['pZ6QJR05X6B6MJ3X'];
-var CONF = __LIBS__['UXJ5R99L70ZWIDT8'];
+var util = __LIBS__['F30NHJ2336J_VQY1'];
+var CONF = __LIBS__['rYQ7TBB4IREFPGHX'];
 
 function clone(obj) {
   return $.extend({}, obj);
@@ -268,10 +268,12 @@ Seat.prototype.defaultStyle = function Seat_defaultStype() {
 }
 
 Seat.prototype.attach = function Seat_attach(shape) {
-  this.shape = shape;
-  this.originalStyle = this.defaultStyle();
-  this.refresh();
-  shape.addEvent(this.events);
+  if (!this.shape) {
+    this.shape = shape;
+    this.originalStyle = this.defaultStyle();
+    this.refresh();
+    shape.addEvent(this.events);
+  }
 };
 
 Seat.prototype.detach = function Seat_detach(shape) {
@@ -1030,9 +1032,9 @@ function parseTransform(transform_str) {
     throw new Error('invalid transform function: ' + f);
 }
 
-  var CONF = __LIBS__['UXJ5R99L70ZWIDT8'];
-  var seat = __LIBS__['vDSITY3Y0N5WEI7A'];
-  var util = __LIBS__['pZ6QJR05X6B6MJ3X'];
+  var CONF = __LIBS__['rYQ7TBB4IREFPGHX'];
+  var seat = __LIBS__['o4HA4D34OPL2BBZW'];
+  var util = __LIBS__['F30NHJ2336J_VQY1'];
 
   var StoreObject = _class("StoreObject", {
     props: {
@@ -1111,7 +1113,8 @@ function parseTransform(transform_str) {
       doubleClickTimeout: 400,
       mouseUpHandler: null,
       onMouseUp: null,
-      onMouseMove: null
+      onMouseMove: null,
+      deferSeatLoading: false
     },
 
     methods: {
@@ -1127,6 +1130,7 @@ function parseTransform(transform_str) {
         this.rubberBand.style(CONF.DEFAULT.MASK_STYLE);
         canvas.empty();
         this.optionalViewportSize = options.viewportSize;
+        this.deferSeatLoading = !!options.deferSeatLoading;
         var self = this;
         this.mouseUpHandler = function() {
           if (self.onMouseUp) {
@@ -1193,35 +1197,37 @@ function parseTransform(transform_str) {
               self.callbacks.loadPartEnd.call(self, self, 'info');
               if (!'available_adjacencies' in data) {
                 self.callbacks.message.call(self, "Invalid data");
+                self.loading = false;
                 return;
               }
               self.availableAdjacencies = data.available_adjacencies;
               self.seatAdjacencies = new seat.SeatAdjacencies(self);
+
+              var onDrawingOrSeatsLoaded;
+              (function() {
+                var status = { drawing: false, seats: false };
+                onDrawingOrSeatsLoaded = function onDrawingOrSeatsLoaded(part) {
+                  status[part] = true;
+                  if (part == 'drawing' && status.seats) {
+                    for (var id in self.seats) {
+                      var shape = self.shapes[id];
+                      if (shape)
+                        self.seats[id].attach(shape);
+                    }
+                  }
+                };
+              })();
               if (self.currentPage) {
                 self.loadDrawing(self.currentPage, function () {
+                  onDrawingOrSeatsLoaded('drawing');
                   self.callbacks.load.call(self, self);
                   self.zoomAndPan(self.zoomRatioMin, { x: 0., y: 0. });
                 });
               } else {
                 self.callbacks.load.call(self, self);
-                // 「読込中です」を消すために以下が必要
-                self.callbacks.loadPartEnd.call(self, self, 'drawing');
               }
-
-              /*
-              self.callbacks.loadPartStart.call(self, self, 'seats');
-              self.initSeats(self.dataSource.seats, function () {
-                self.loading = false;
-                if (self.loadAborted) {
-                  self.loadAborted = false;
-                  self.loadAbortionHandler && self.loadAbortionHandler.call(self, self);
-                  self.callbacks.loadAbort && self.callbacks.loadAbort.call(self, self);
-                  return;
-                }
-                self.loading = true;
-                self.callbacks.loadPartEnd.call(self, self, 'seats');
-              });
-              */
+              if (!self.deferSeatLoading)
+                self.loadSeats(function () { onDrawingOrSeatsLoaded('seats'); });
             }, self.callbacks.message);
           }, self.callbacks.message);
         });
@@ -1497,11 +1503,6 @@ function parseTransform(transform_str) {
               }
               if (attrs.id) {
                 shapes[attrs.id] = shape;
-                /*
-                var seat = self.seats[attrs.id];
-                if (seat)
-                  seat.attach(shape);
-                */
               }
               if (xlink)
                 link_pairs.push([shape, xlink])
@@ -1865,27 +1866,20 @@ function parseTransform(transform_str) {
 
       loadSeats: function(next) {
         var self = this;
-              //self.callbacks.loadPartStart.call(self, self, 'seats');
-              self.loading = true;
-              self.initSeats(self.dataSource.seats, function () {
-                self.loading = false;
-                if (self.loadAborted) {
-                  self.loadAborted = false;
-                  self.loadAbortionHandler && self.loadAbortionHandler.call(self, self);
-                  //self.callbacks.loadAbort && self.callbacks.loadAbort.call(self, self);
-                  return;
-                }
-                //self.loading = true;
-                //self.callbacks.loadPartEnd.call(self, self, 'seats');
-
-                for (var id in self.shapes) {
-                  if (self.seats[id])
-                    self.seats[id].attach(self.shapes[id]);
-                }
-
-                if (next)
-                  next();
-              });
+        self.callbacks.loadPartStart.call(self, self, 'seats');
+        self.loading = true;
+        self.initSeats(self.dataSource.seats, function () {
+          self.loading = false;
+          if (self.loadAborted) {
+            self.loadAborted = false;
+            self.loadAbortionHandler && self.loadAbortionHandler.call(self, self);
+            self.callbacks.loadAbort && self.callbacks.loadAbort.call(self, self);
+            return;
+          }
+          self.callbacks.loadPartEnd.call(self, self, 'seats');
+          if (next)
+            next();
+        });
       },
 
       initSeats: function VenueViewer_initSeats(dataSource, next) {
@@ -1893,7 +1887,7 @@ function parseTransform(transform_str) {
         dataSource(function (seatMeta) {
           var seats = {};
           for (var id in seatMeta) {
-            seats[id] = new seat.Seat(id, seatMeta[id], self, {
+            var seat_ = seats[id] = new seat.Seat(id, seatMeta[id], self, {
               mouseover: function(evt) {
                 self.callbacks.messageBoard.up.call(self, self.seatTitles[this.id]);
                 self.seatAdjacencies.getCandidates(this.id, self.adjacencyLength(), function (candidates) {
@@ -1933,6 +1927,8 @@ function parseTransform(transform_str) {
                 };
               }
             });
+            if (self.shapes[id])
+              seat_.attach(self.shapes[id]);
           }
 
           self.seats = seats;

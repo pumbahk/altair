@@ -84,7 +84,8 @@
       doubleClickTimeout: 400,
       mouseUpHandler: null,
       onMouseUp: null,
-      onMouseMove: null
+      onMouseMove: null,
+      deferSeatLoading: false
     },
 
     methods: {
@@ -100,6 +101,7 @@
         this.rubberBand.style(CONF.DEFAULT.MASK_STYLE);
         canvas.empty();
         this.optionalViewportSize = options.viewportSize;
+        this.deferSeatLoading = !!options.deferSeatLoading;
         var self = this;
         this.mouseUpHandler = function() {
           if (self.onMouseUp) {
@@ -166,35 +168,37 @@
               self.callbacks.loadPartEnd.call(self, self, 'info');
               if (!'available_adjacencies' in data) {
                 self.callbacks.message.call(self, "Invalid data");
+                self.loading = false;
                 return;
               }
               self.availableAdjacencies = data.available_adjacencies;
               self.seatAdjacencies = new seat.SeatAdjacencies(self);
+
+              var onDrawingOrSeatsLoaded;
+              (function() {
+                var status = { drawing: false, seats: false };
+                onDrawingOrSeatsLoaded = function onDrawingOrSeatsLoaded(part) {
+                  status[part] = true;
+                  if (part == 'drawing' && status.seats) {
+                    for (var id in self.seats) {
+                      var shape = self.shapes[id];
+                      if (shape)
+                        self.seats[id].attach(shape);
+                    }
+                  }
+                };
+              })();
               if (self.currentPage) {
                 self.loadDrawing(self.currentPage, function () {
+                  onDrawingOrSeatsLoaded('drawing');
                   self.callbacks.load.call(self, self);
                   self.zoomAndPan(self.zoomRatioMin, { x: 0., y: 0. });
                 });
               } else {
                 self.callbacks.load.call(self, self);
-                // 「読込中です」を消すために以下が必要
-                self.callbacks.loadPartEnd.call(self, self, 'drawing');
               }
-
-              /*
-              self.callbacks.loadPartStart.call(self, self, 'seats');
-              self.initSeats(self.dataSource.seats, function () {
-                self.loading = false;
-                if (self.loadAborted) {
-                  self.loadAborted = false;
-                  self.loadAbortionHandler && self.loadAbortionHandler.call(self, self);
-                  self.callbacks.loadAbort && self.callbacks.loadAbort.call(self, self);
-                  return;
-                }
-                self.loading = true;
-                self.callbacks.loadPartEnd.call(self, self, 'seats');
-              });
-              */
+              if (!self.deferSeatLoading)
+                self.loadSeats(function () { onDrawingOrSeatsLoaded('seats'); });
             }, self.callbacks.message);
           }, self.callbacks.message);
         });
@@ -470,11 +474,6 @@
               }
               if (attrs.id) {
                 shapes[attrs.id] = shape;
-                /*
-                var seat = self.seats[attrs.id];
-                if (seat)
-                  seat.attach(shape);
-                */
               }
               if (xlink)
                 link_pairs.push([shape, xlink])
@@ -838,24 +837,17 @@
 
       loadSeats: function(next) {
         var self = this;
-        //self.callbacks.loadPartStart.call(self, self, 'seats');
+        self.callbacks.loadPartStart.call(self, self, 'seats');
         self.loading = true;
         self.initSeats(self.dataSource.seats, function () {
           self.loading = false;
           if (self.loadAborted) {
             self.loadAborted = false;
             self.loadAbortionHandler && self.loadAbortionHandler.call(self, self);
-            //self.callbacks.loadAbort && self.callbacks.loadAbort.call(self, self);
+            self.callbacks.loadAbort && self.callbacks.loadAbort.call(self, self);
             return;
           }
-          //self.loading = true;
-          //self.callbacks.loadPartEnd.call(self, self, 'seats');
-
-          for (var id in self.shapes) {
-            if (self.seats[id])
-              self.seats[id].attach(self.shapes[id]);
-          }
-
+          self.callbacks.loadPartEnd.call(self, self, 'seats');
           if (next)
             next();
         });
@@ -866,7 +858,7 @@
         dataSource(function (seatMeta) {
           var seats = {};
           for (var id in seatMeta) {
-            seats[id] = new seat.Seat(id, seatMeta[id], self, {
+            var seat_ = seats[id] = new seat.Seat(id, seatMeta[id], self, {
               mouseover: function(evt) {
                 self.callbacks.messageBoard.up.call(self, self.seatTitles[this.id]);
                 self.seatAdjacencies.getCandidates(this.id, self.adjacencyLength(), function (candidates) {
@@ -906,6 +898,8 @@
                 };
               }
             });
+            if (self.shapes[id])
+              seat_.attach(self.shapes[id]);
           }
 
           self.seats = seats;

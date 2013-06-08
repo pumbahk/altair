@@ -442,10 +442,14 @@ cart.VenuePresenter.prototype = {
     setStockType: function (stock_type) {
         this.selectedStockType = stock_type;
         var self = this;
-        this.view.currentViewer.venueviewer('loadSeats', function() {
-          self.stockTypeListPresenter.setActivePane(self.selectedStockType ? 'venue': 'stockTypeList');
-          self.view.render();
-        });
+        if (this.selectedStockType) {
+          self.stockTypeListPresenter.setActivePane('venue');
+          this.view.currentViewer.venueviewer('loadSeats', function() {
+            self.view.render();
+          });
+        } else {
+          self.stockTypeListPresenter.setActivePane('stockTypeList');
+        }
     },
     selectable: function (viewer, seat) {
         if (!this.selectedStockType) {
@@ -998,6 +1002,7 @@ cart.VenueView = Backbone.View.extend({
         this.currentViewer.venueviewer("remove");
 
         var loadingLayer = null;
+        var loadPartCount = 0;
         var _callbacks = $.extend($.extend({}, callbacks), {
             zoomRatioChanging: function (zoomRatio) {
                 return Math.min(Math.max(zoomRatio, self.zoomRatioMin), self.zoomRatioMax);
@@ -1022,12 +1027,12 @@ cart.VenueView = Backbone.View.extend({
             },
             loadPartStart: function (viewer, part) {
                 var self = this;
-                if (!loadingLayer) {
+                if (loadPartCount == 0) {
                     loadingLayer =
                         $('<div></div>')
                         .append(
                             $('<div></div>')
-                            .css({ position: 'absolute', width: '100%', height: '100%', backgroundColor: 'white', opacity: 0.5 })
+                            .css({ position: 'absolute', width: '100%', height: '100%', backgroundColor: 'white', opacity: 0.75 })
                             .append(
                                 $('<img />')
                                 .attr('src', '/cart/static/img/settlement/loading.gif')
@@ -1051,10 +1056,18 @@ cart.VenueView = Backbone.View.extend({
                         });
                     self.canvas.after(loadingLayer);
                 }
+                loadPartCount++;
             },
             loadPartEnd: function (viewer, part) {
                 // part = pages, stockTypes, info, seats, drawing
                 var page = viewer.currentPage;
+
+                if (!--loadPartCount) {
+                    if (loadingLayer) {
+                        loadingLayer.remove();
+                        loadingLayer = null;
+                    }
+                }
 
                 if (part == 'info') {
                     var use_seatmap = $.map(viewer.stockTypes, function(st) {
@@ -1066,13 +1079,6 @@ cart.VenueView = Backbone.View.extend({
                 if (part == 'drawing') {
                     if(page) {
                         self.verticalSlider.css({ visibility: viewer.pages[page].zoomable===false ? 'hidden' : 'visible' });
-                    }
-                }
-
-                if (part == 'drawing') {
-                    if (loadingLayer) {
-                        loadingLayer.remove();
-                        loadingLayer = null;
                     }
                 }
 
@@ -1146,8 +1152,9 @@ cart.VenueView = Backbone.View.extend({
         this.currentViewer.venueviewer({
             dataSource: dataSource,
             callbacks: _callbacks,
-            viewportSize: { x: 490, y: 430 }
-        })
+            viewportSize: { x: 490, y: 430 },
+            deferSeatLoading: true
+        });
         this.currentViewer.venueviewer("load");
     },
     updateUIState: function () {
