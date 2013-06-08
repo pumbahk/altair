@@ -65,7 +65,7 @@ $(function () {
         % endif
 
         <fieldset>
-            ${form.word(placeholder=u"アーティスト名、公演名など")}<br/>
+            ${form.word(placeholder=u"アーティスト名、公演名など")}
             ${form.cond}<input type="submit" class="btn-secondary btn-large" value="検索"/><br/>
         </fieldset>
 
@@ -127,3 +127,36 @@ $(function () {
         </fieldset>
     </form>
 </div>
+
+<style>
+#search input[type="text"] {
+  box-sizing: border-box;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  width: 100%;
+  display: block;
+  height: 34px;
+  font-size: 17px;
+  padding: 0px 2px;
+  margin: 0 0 2px 0;
+}
+
+#search select {
+  height: 30px;
+  font-size: 16px;
+  margin: 3px 0 0 0;
+  background-color: #fff;
+}
+
+#search button {
+  height: 28px;
+  margin: 3px 0 0 0;
+  font-weight: bold;
+}
+
+#search input[type="submit"] {
+  height: 28px;
+  margin: 5px 0 0 0;
+  font-weight: bold;
+}
+</style>
