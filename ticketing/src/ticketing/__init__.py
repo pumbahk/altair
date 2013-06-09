@@ -107,6 +107,7 @@ def main(global_config, **local_config):
         config.include('altair.pyramid_boto.s3.assets')
 
         config.include('ticketing.core')
+        config.include('ticketing.mails')
         config.include('ticketing.multicheckout')
         config.include('ticketing.checkout')
         config.include('ticketing.operators' , route_prefix='/operators')
