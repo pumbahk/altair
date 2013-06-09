@@ -7,7 +7,7 @@ from altairsite.mobile.core.helper import log_info, log_error
 from altair.mobile.api import is_nonmobile
 
 @usersite_view_config(route_name='usersite.inquiry', request_method="GET",
-             custom_predicates=(is_nonmobile, ), 
+             custom_predicates=(lambda _, request: is_nonmobile(request), ), 
              renderer='altaircms:templates/usersite/inquiry.html')
 def move_inquiry(request):
     log_info("move_inquiry", "start")
@@ -16,7 +16,7 @@ def move_inquiry(request):
     return {'form':form}
 
 @usersite_view_config(route_name='usersite.inquiry', request_method="POST",
-             custom_predicates=(is_nonmobile, ), 
+             custom_predicates=(lambda _, request: is_nonmobile(request), ), 
              renderer='altaircms:templates/usersite/inquiry.html')
 def send_inquiry(request):
     log_info("send_inquiry", "start")
