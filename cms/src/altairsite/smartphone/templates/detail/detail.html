@@ -132,6 +132,10 @@ $(function () {
       <span class="panelgroup-label"><a href="#" data-toggle=${count}>${month}</a></span>
       <ul class="panelgroup-inner">
         % for i, perf in enumerate(event.performances):
+          <%
+            start_on_candidates = [salessegment.start_on for salessegment in perf.sales]
+            end_on_candidates = [salessegment.end_on for salessegment in perf.sales if salessegment.end_on]
+          %>
           % if str(perf.start_on.year) + "/" + str(perf.start_on.month).zfill(2) == month:
             <li class="panel">
               <table class="panellist margined with-action-buttons">
@@ -148,11 +152,19 @@ $(function () {
                           会場：${perf.venue}<br/>
                         </p>
                       </div>
-                      <div class="actions">
-                        <a id="purchase" href="${purchase_links[perf.id]}">
-                          <button class="btn btn-primary btn-large"><span class="btn-inner">購入</span></button>
-                        </a>
-                      </div>
+                      % if not start_on_candidates:
+                        準備中
+                      %elif min(start_on_candidates) >= helper.now():
+                        販売前
+                      %elif max(end_on_candidates) >= helper.now():
+                        <div class="actions">
+                          <a id="purchase" href="${purchase_links[perf.id]}">
+                            <button class="btn btn-primary btn-large"><span class="btn-inner">購入</span></button>
+                          </a>
+                        </div>
+                      % else:
+                        販売期間終了
+                      % endif
                     </td>
                   </tr>
                 </tbody>
