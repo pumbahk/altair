@@ -430,7 +430,11 @@ class ReserveView(object):
         if len(controls) == 0:
             return []
 
-        products = dict([(p.id, p) for p in DBSession.query(c_models.Product).filter(c_models.Product.id.in_([c[0] for c in controls]))])
+        products = dict([(p.id, p) for p in DBSession.query(c_models.Product).options(
+            joinedload(c_models.Product.seat_stock_type),
+            joinedload(c_models.Product.items),
+        ).filter(
+            c_models.Product.id.in_([c[0] for c in controls]))])
         logger.debug('order %s' % products)
 
         return [(products.get(int(c[0])), c[1]) for c in controls]
@@ -443,7 +447,9 @@ class ReserveView(object):
         if not order_items:
             return dict(result='NG', reason="no products")
 
-        performance = c_models.Performance.query.filter(c_models.Performance.id==self.request.params['performance_id']).one()
+        performance = c_models.Performance.query.options(
+            joinedload(c_models.Performance.event)
+        ).filter(c_models.Performance.id==self.request.params['performance_id']).one()
         if not order_items:
             return dict(result='NG', reason="no performance")
 
@@ -459,6 +465,7 @@ class ReserveView(object):
         logger.debug('sum_quantity=%s' % sum_quantity)
 
         self.context.event_id = performance.event_id
+        self.context._event = performance.event
         if self.context.sales_segment.upper_limit < sum_quantity:
             logger.debug('upper_limit over')
             return dict(result='NG', reason="upper_limit")
