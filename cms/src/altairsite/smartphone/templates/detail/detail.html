@@ -153,9 +153,13 @@ $(function () {
                         </p>
                       </div>
                       % if not start_on_candidates:
-                        準備中
+                        <div class="actions">
+                            準備中
+                        </div>
                       %elif min(start_on_candidates) >= helper.now():
-                        販売前
+                        <div class="actions">
+                            販売前
+                        </div>
                       %elif max(end_on_candidates) >= helper.now():
                         <div class="actions">
                           <a id="purchase" href="${purchase_links[perf.id]}">
@@ -163,7 +167,9 @@ $(function () {
                           </a>
                         </div>
                       % else:
-                        販売期間終了
+                        <div class="actions">
+                            販売期間終了
+                        </div>
                       % endif
                     </td>
                   </tr>
