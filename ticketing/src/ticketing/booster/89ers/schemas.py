@@ -11,8 +11,8 @@ from ticketing.core import models as c_models
 from datetime import date, datetime
 from ticketing.formhelpers import Translations
 
-from ticketing import fields as my_fields
-from ticketing import widgets as my_widgets
+from .. import fields as my_fields
+from .. import widgets as my_widgets
 from ticketing.formhelpers import text_type_but_none_if_not_given, Zenkaku, Katakana, NFKC, lstrip, strip, strip_hyphen, strip_spaces, SejCompliantEmail, CP932
 
 import re

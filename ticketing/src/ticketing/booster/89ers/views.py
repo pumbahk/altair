@@ -109,7 +109,6 @@ class IndexView(object):
         return form, products
 
     def get(self):
-        print self.context.available_sales_segments
         user_profile = load_user_profile(self.request)
         form, products = self._create_form(MultiDict(user_profile) if user_profile else MultiDict())
         return dict(form=form, products=products)

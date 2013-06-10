@@ -21,7 +21,12 @@ def main(global_config, **local_config):
 
     my_session_factory = session_factory_from_settings(settings)
     config = Configurator(settings=settings, session_factory=my_session_factory)
-    config.set_root_factory('.resources.Bj89erCartResource')
+
+    ## register booster settings
+    config.include("..config")
+    config.add_booster_settings(settings, prefix="89ers.")
+    config.set_root_factory('..resources.BoosterCartResource')
+
     config.add_renderer('.html' , 'pyramid.mako_templating.renderer_factory')
     config.add_renderer('.txt' , 'pyramid.mako_templating.renderer_factory')
     config.add_static_view('static', 'ticketing.booster.89ers:static', cache_max_age=3600)
