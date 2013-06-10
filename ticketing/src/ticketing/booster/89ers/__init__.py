@@ -1,55 +1,15 @@
 from pyramid.config import Configurator
 from pyramid_beaker import session_factory_from_settings
-from pyramid.httpexceptions import HTTPNotFound
 import json
-from ticketing.payments.exceptions import PaymentPluginException
-from ticketing.payments.interfaces import IPaymentPlugin, IOrderPayment
-from ticketing.payments.interfaces import IDeliveryPlugin, IOrderDelivery
-from ticketing.cart.interfaces import ICartDelivery
-from ticketing.cart.interfaces import ICartDelivery
 from pyramid.interfaces import IDict
 from sqlalchemy import engine_from_config
 import sqlahelper
 
-def main(global_config, **local_config):
-    settings = dict(global_config)
-    settings.update(local_config)
 
-    from sqlalchemy.pool import NullPool
-    engine = engine_from_config(settings, poolclass=NullPool)
-    sqlahelper.add_engine(engine)
-
-    my_session_factory = session_factory_from_settings(settings)
-    config = Configurator(settings=settings, session_factory=my_session_factory)
-
-    ## register booster settings
-    config.include("..config")
-    config.add_booster_settings(settings, prefix="89ers.")
-    config.set_root_factory('..resources.BoosterCartResource')
-
-    config.add_renderer('.html' , 'pyramid.mako_templating.renderer_factory')
-    config.add_renderer('.txt' , 'pyramid.mako_templating.renderer_factory')
-    config.add_static_view('static', 'ticketing.booster.89ers:static', cache_max_age=3600)
-    config.add_static_view('static_', 'ticketing.cart:static', cache_max_age=3600)
-
-    ### selectable renderer
-    config.include("ticketing.cart.selectable_renderer")
-    domain_candidates = json.loads(config.registry.settings["altair.cart.domain.mapping"])
-    config.registry.utilities.register([], IDict, "altair.cart.domain.mapping", domain_candidates)
-
+def setup_views(config):
     config.add_route('index', '/')
     config.add_route('contact', '/contact')
     config.add_route('notready', '/notready')
-    config.include('ticketing.checkout')
-    config.include('ticketing.multicheckout')
-    config.include('ticketing.payments')
-    config.include('ticketing.payments.plugins')
-    config.include('ticketing.cart')
-    config.scan('ticketing.cart.views')
-    config.add_subscriber('.api.on_order_completed', 'ticketing.cart.events.OrderCompleted')
-    config.commit()
-
-    config.include('altair.mobile')
 
     config.add_route('order_review.form', '/review')
     config.add_route('order_review.show', '/review/show')
@@ -85,34 +45,44 @@ def main(global_config, **local_config):
 
     config.add_view('.views.contact_view', route_name="contact", renderer="static/contact.html")
     config.add_view('.views.contact_view', route_name="contact", renderer="static_mobile/contact.html", request_type='altair.mobile.interfaces.IMobileRequest')
-    config.add_view('.views.OutTermSalesView', attr='pc', context='ticketing.cart.exceptions.OutTermSalesException', renderer='carts/out_term_sales.html')
-    config.add_view('.views.OutTermSalesView', attr='mobile', context='ticketing.cart.exceptions.OutTermSalesException', renderer='carts_mobile/out_term_sales.html', request_type='altair.mobile.interfaces.IMobileRequest')
-    config.add_view('.views.notfound_view', context=HTTPNotFound, renderer="errors/not_found.html", )
-    config.add_view('.views.notfound_view', context=HTTPNotFound,  renderer="errors_mobile/not_found.html", request_type='altair.mobile.interfaces.IMobileRequest')
-    config.add_view('.views.forbidden_view', context="pyramid.httpexceptions.HTTPForbidden", renderer="errors/not_found.html", )
-    config.add_view('.views.forbidden_view', context="pyramid.httpexceptions.HTTPForbidden", renderer="errors_mobile/not_found.html", request_type='altair.mobile.interfaces.IMobileRequest')
-    config.add_view('.views.cart_creation_exception', context=PaymentPluginException, renderer='ticketing.cart:templates/errors/error.html')
-    config.add_view('.views.cart_creation_exception', context=PaymentPluginException, renderer='ticketing.cart:templates/errors_mobile/error.html', request_type='altair.mobile.interfaces.IMobileRequest')
-    config.add_view('.views.exception_view',  context=StandardError, renderer="errors/error.html")
-    config.add_view('.views.exception_view', context=StandardError,  renderer="errors_mobile/error.html", request_type='altair.mobile.interfaces.IMobileRequest')
-    ## xxxx
-    config.add_view('.views.exception_view', context=Exception, renderer="errors/not_found.html", )
-    config.add_view('.views.exception_view', context=Exception, renderer="errors_mobile/not_found.html", request_type='altair.mobile.interfaces.IMobileRequest')
-    # @view_config()
 
-    PAYMENT_PLUGIN_ID_SEJ = 3
-    PAYMENT_PLUGIN_ID_CARD = 1
+def setup_booster_settings(config):
+    settings = config.registry.settings
+    ## register booster settings
+    config.include("..config")
+    config.add_booster_settings(settings, prefix="89ers.")
+    config.set_root_factory('..resources.BoosterCartResource')
+    
 
-    config.add_view('ticketing.payments.plugins.sej.sej_payment_viewlet', context=IOrderPayment, name="payment-%d" % PAYMENT_PLUGIN_ID_SEJ,
-                    renderer='carts/sej_payment_complete.html')
-    config.add_view('ticketing.payments.plugins.sej.sej_payment_viewlet', context=IOrderPayment, name="payment-%d" % PAYMENT_PLUGIN_ID_SEJ, request_type='altair.mobile.interfaces.IMobileRequest',
-                    renderer="carts_mobile/sej_payment_complete.html")
+def main(global_config, **local_config):
+    settings = dict(global_config)
+    settings.update(local_config)
 
-    config.add_view('ticketing.payments.plugins.multicheckout.completion_viewlet', context=IOrderPayment, name="payment-%d" % PAYMENT_PLUGIN_ID_CARD,
-                    renderer='carts/multicheckout_payment_complete.html')
-    config.add_view('ticketing.payments.plugins.multicheckout.completion_viewlet', context=IOrderPayment, name="payment-%d" % PAYMENT_PLUGIN_ID_CARD, request_type='altair.mobile.interfaces.IMobileRequest',
-                    renderer="carts_mobile/multicheckout_payment_complete.html")
+    from sqlalchemy.pool import NullPool
+    engine = engine_from_config(settings, poolclass=NullPool)
+    sqlahelper.add_engine(engine)
 
-    config.add_subscriber('.subscribers.add_helpers', 'pyramid.events.BeforeRender')
+    my_session_factory = session_factory_from_settings(settings)
+    config = Configurator(settings=settings, session_factory=my_session_factory)
+
+    config.add_renderer('.html' , 'pyramid.mako_templating.renderer_factory')
+    config.add_renderer('.txt' , 'pyramid.mako_templating.renderer_factory')
+    config.add_static_view('static', 'ticketing.booster.89ers:static', cache_max_age=3600)
+    config.add_static_view('static_', 'ticketing.cart:static', cache_max_age=3600)
+
+    ### selectable renderer
+    config.include("ticketing.cart.selectable_renderer")
+    domain_candidates = json.loads(config.registry.settings["altair.cart.domain.mapping"])
+    config.registry.utilities.register([], IDict, "altair.cart.domain.mapping", domain_candidates)
+
+    config.include(setup_booster_settings)
+    config.include("..setup_cart")
+    config.include('altair.mobile')
+    config.include(setup_views)
+    config.include("..setup_excviews")
+    config.include("..setup_plugins_views")
+
+
+    config.add_subscriber('..subscribers.add_helpers', 'pyramid.events.BeforeRender')
     config.add_subscriber('.sendmail.on_order_completed', 'ticketing.cart.events.OrderCompleted')
     return config.make_wsgi_app()

@@ -25,9 +25,10 @@ from ticketing.core import models as c_models
 from ticketing.users.models import User, UserProfile
 
 from . import schemas
-from .api import load_user_profile, store_user_profile, remove_user_profile
+from ..api import load_user_profile, store_user_profile, remove_user_profile
 from .models import DBSession
-from .helpers import sex_value
+from ..helpers import sex_value
+from ticketing.views import BaseView
 
 logger = logging.getLogger(__name__)
 
@@ -35,23 +36,6 @@ logger = logging.getLogger(__name__)
 def no_cart(context, request):
     logger.error("No cart!")
     return HTTPFound(request.route_url('index'))
-
-def cart_creation_exception(context, request):
-    if context.back_url is not None:
-        # カートの救済可能な場合
-        cart_api.recover_cart(request) 
-        transaction.commit()
-        return HTTPFound(location=context.back_url)
-
-    # #以下のコードはまったく動かない
-    # else:
-    #     # カートの救済不可能
-    #     if cart is not None:
-    #         location = request.route_url('cart.index', event_id=cart.performance.event_id)
-    #     else:
-    #         location = request.context.host_base_url
-    # return dict(message=Markup(u'決済中にエラーが発生しました。しばらく時間を置いてから<a href="%s">再度お試しください。</a>' % location))
-
 
 def back(func):
     def retval(*args, **kwargs):
@@ -61,56 +45,16 @@ def back(func):
         return func(*args, **kwargs)
     return retval
 
-class OutTermSalesView(object):
-    def __init__(self, context, request):
-        self.request = request
-        self.context = context
 
-    def pc(self):
-        if self.context.next is None:
-            datum = self.context.last
-            which = 'last'
-        else:
-            datum = self.context.next
-            which = 'next'
-        return dict(which=which, **datum)
-
-    def mobile(self):
-        if self.context.next is None:
-            datum = self.context.last
-            which = 'last'
-        else:
-            datum = self.context.next
-            which = 'next'
-        return dict(which=which, **datum)
-
-
-class IndexView(object):
-    def __init__(self, request):
-        self.request = request
-        self.context = request.context
-
+class IndexView(BaseView):
     def __call__(self):
         return dict()
 
-    def _create_form(self, params):
-        salessegment = self.context.get_sales_segment()
-        query = c_models.Product.query
-        query = query.filter(c_models.Product.event_id == self.context.event_id)
-        query = query.order_by(sa.desc("price"))
-        query = h.products_filter_by_salessegment(query, salessegment)
-        products = dict()
-        for p in query:
-            products[str(p.id)] = p
-
-        form = schemas.OrderFormSchema(params)
-        choices = [(str(p.id), u"%s (%s円)" % (p.name, h.format_number(p.price, ","))) for p in query]
-        form.member_type.choices = choices
-        return form, products
-
     def get(self):
         user_profile = load_user_profile(self.request)
-        form, products = self._create_form(MultiDict(user_profile) if user_profile else MultiDict())
+        params = schemas.OrderFormSchema, MultiDict(user_profile) if user_profile else MultiDict()
+        form = self.context.product_form(params)
+        products =  {str(p.id): p for p in  self.context.product_query}
         return dict(form=form, products=products)
 
     @property
@@ -121,7 +65,8 @@ class IndexView(object):
         return [(product, number)]
 
     def post(self):
-        form,products = self._create_form(self.request.params)
+        form = self.context.product_form(schemas.OrderFormSchema, self.request.params)
+        products =  {str(p.id): p for p in  self.context.product_query}
         if not form.validate():
             self.request.errors = form.errors
             logger.debug("%s" % form.errors)
@@ -243,12 +188,7 @@ class CompleteView(_CompleteView):
         return dict(order=order)
 
 
-class OrderReviewView(object):
-
-    def __init__(self, request):
-        self.request = request
-        self.context = request.context
-
+class OrderReviewView(BaseView):
     def __call__(self):
         return dict()
 
@@ -292,16 +232,6 @@ class OrderReviewView(object):
 def order_review_form_view(form, request):
     return dict(form=form)
 
-def exception_view(context, request):
-    logger.error("The error was: %s" % context, exc_info=request.exc_info)
-    return dict()
-
-def notfound_view(context, request):
-    #logger.error("The error was: %s" % context, exc_info=request.exc_info)
-    return dict()
-def forbidden_view(context, request):
-    #logger.error("The error was: %s" % context, exc_info=request.exc_info)
-    return dict()
 
 @view_config(name="contact")
 def contact_view(context, request):

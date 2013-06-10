@@ -25,10 +25,8 @@ class OrderFormSchema(Form):
 
     # 新規・継続
     cont = fields.RadioField(u"新規／継続", validators=[v.Required()], choices=[('no', u'新規'),('yes', u'継続')], widget=radio_list_widget)
-    old_id_number = fields.TextField(u"会員番号", filters=[strip_spaces], validators=[v.Regexp(r'\d{8}', message=u'半角数字8ケタで入力してください。'), v.Optional()])
     member_type = fields.SelectField(u"会員種別選択", validators=[v.Required()])
-    t_shirts_size = fields.SelectField(u"Tシャツサイズ", choices=[('L', u'L'),('3L', u'3L')], validators=[v.Optional()], coerce=text_type_but_none_if_not_given)
-    #number = fields.IntegerField(u"口数選択", validators=[v.Required()])
+    t_shirts_size = fields.SelectField(u"ブースターシャツサイズ", choices=[('L', u'L'),('3L', u'3L')], validators=[v.Optional()], coerce=text_type_but_none_if_not_given)
     first_name = fields.TextField(u"氏名", filters=[strip_spaces], validators=[v.Required(), Zenkaku])
     last_name = fields.TextField(u"氏名", filters=[strip_spaces], validators=[v.Required(),Zenkaku])
     first_name_kana = fields.TextField(u"氏名(カナ)", filters=[strip_spaces, NFKC], validators=[v.Required(),Katakana])
@@ -45,11 +43,8 @@ class OrderFormSchema(Form):
     address2 = fields.TextField(u"住所", filters=[strip_spaces], validators=[CP932])
     tel_1 = fields.TextField(u"電話番号(携帯)", filters=[strip_spaces], validators=[v.Length(max=11), v.Regexp(r'^\d*$', message=u'-を抜いた数字のみを入力してください')])
     tel_2 = fields.TextField(u"電話番号(自宅)", filters=[strip_spaces], validators=[v.Length(max=11), v.Regexp(r'^\d*$', message=u'-を抜いた数字のみを入力してください')])
+    fax = fields.TextField(u"FAX番号", filters=[strip_spaces], validators=[v.Length(max=11), v.Regexp(r'^\d*$', message=u'-を抜いた数字のみを入力してください')])
     email_1 = fields.TextField(u"メールアドレス", filters=[strip_spaces], validators=[v.Required(), SejCompliantEmail()])
     email_1_confirm = fields.TextField(u"メールアドレス（確認用）", filters=[strip_spaces], validators=[v.Required(), SejCompliantEmail(), v.EqualTo('email_1', u'確認用メールアドレスが一致しません。')])
     publicity = fields.SelectField(u"媒体への掲載希望", validators=[v.Optional()], choices=[('yes', u'希望する'),('no', u'希望しない')], coerce=text_type_but_none_if_not_given)
-    mail_permission = fields.BooleanField(u"メルマガ配信", default=True)
 
-class OrderReviewSchema(Form):
-    order_no = fields.TextField(u"注文番号", filters=[strip_spaces], validators=[v.Required()])
-    tel = fields.TextField(u"電話番号", filters=[strip_spaces, strip_hyphen()], validators=[v.Required()])
