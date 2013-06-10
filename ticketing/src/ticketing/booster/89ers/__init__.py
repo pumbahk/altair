@@ -2,7 +2,7 @@ from pyramid.config import Configurator
 from pyramid_beaker import session_factory_from_settings
 from pyramid.httpexceptions import HTTPNotFound
 import json
-from ..payments.exceptions import PaymentPluginException
+from ticketing.payments.exceptions import PaymentPluginException
 from ticketing.payments.interfaces import IPaymentPlugin, IOrderPayment
 from ticketing.payments.interfaces import IDeliveryPlugin, IOrderDelivery
 from ticketing.cart.interfaces import ICartDelivery

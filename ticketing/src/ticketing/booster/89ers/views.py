@@ -12,17 +12,17 @@ from pyramid.view import view_config, render_view_to_response
 from webob.multidict import MultiDict
 import transaction
 
-from ..cart.events import notify_order_completed
-from ..cart.exceptions import NoCartError
-from ..cart.views import PaymentView as _PaymentView, CompleteView as _CompleteView
-from ..cart import api as cart_api
-#from ..payments import payment as payment_api # XXX: aodag!
-from ..payments import api as payment_api
-from ..cart import helpers as h
-from ..core import models as c_models
+from ticketing.cart.events import notify_order_completed
+from ticketing.cart.exceptions import NoCartError
+from ticketing.cart.views import PaymentView as _PaymentView, CompleteView as _CompleteView
+from ticketing.cart import api as cart_api
+#from ticketing.payments import payment as payment_api # XXX: aodag!
+from ticketing.payments import api as payment_api
+from ticketing.cart import helpers as h
+from ticketing.core import models as c_models
 
-#from ..users.models import SexEnum
-from ..users.models import User, UserProfile
+#from ticketing.users.models import SexEnum
+from ticketing.users.models import User, UserProfile
 
 from . import schemas
 from .api import load_user_profile, store_user_profile, remove_user_profile
