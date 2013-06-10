@@ -1,28 +1,28 @@
 # -*- coding:utf-8 -*-
 import logging
+#from datetime import datetime, date
 from datetime import date
 import sqlalchemy as sa
-from pyramid.httpexceptions import HTTPFound, HTTPNotFound
+#from pyramid.httpexceptions import HTTPFound, HTTPNotFound
+from pyramid.httpexceptions import HTTPFound
+#from pyramid.renderers import render_to_response
 from pyramid.threadlocal import get_current_request
 from pyramid.view import view_config, render_view_to_response
+#from pyramid.view import notfound_view_config
 from webob.multidict import MultiDict
 import transaction
 
-from ticketing.payments.exceptions import PaymentPluginException
-from ticketing.payments import api as payment_api
+from ..cart.events import notify_order_completed
+from ..cart.exceptions import NoCartError
+from ..cart.views import PaymentView as _PaymentView, CompleteView as _CompleteView
+from ..cart import api as cart_api
+#from ..payments import payment as payment_api # XXX: aodag!
+from ..payments import api as payment_api
+from ..cart import helpers as h
+from ..core import models as c_models
 
-from ticketing.cart.events import notify_order_completed
-from ticketing.cart.exceptions import NoCartError
-from ticketing.cart.views import (
-    PaymentView as _PaymentView,
-    ConfirmView,
-    CompleteView as _CompleteView
-    )
-from ticketing.cart import api as cart_api
-from ticketing.cart import helpers as h
-from ticketing.core import models as c_models
-
-from ticketing.users.models import User, UserProfile
+#from ..users.models import SexEnum
+from ..users.models import User, UserProfile
 
 from . import schemas
 from .api import load_user_profile, store_user_profile, remove_user_profile
@@ -31,6 +31,28 @@ from .helpers import sex_value
 
 logger = logging.getLogger(__name__)
 
+@view_config(context=NoCartError)
+def no_cart(context, request):
+    logger.error("No cart!")
+    return HTTPFound(request.route_url('index'))
+
+def cart_creation_exception(context, request):
+    if context.back_url is not None:
+        # カートの救済可能な場合
+        cart_api.recover_cart(request) 
+        transaction.commit()
+        return HTTPFound(location=context.back_url)
+
+    # #以下のコードはまったく動かない
+    # else:
+    #     # カートの救済不可能
+    #     if cart is not None:
+    #         location = request.route_url('cart.index', event_id=cart.performance.event_id)
+    #     else:
+    #         location = request.context.host_base_url
+    # return dict(message=Markup(u'決済中にエラーが発生しました。しばらく時間を置いてから<a href="%s">再度お試しください。</a>' % location))
+
+
 def back(func):
     def retval(*args, **kwargs):
         request = get_current_request()
@@ -38,6 +60,30 @@ def back(func):
             return HTTPFound(request.route_url('index'))
         return func(*args, **kwargs)
     return retval
+
+class OutTermSalesView(object):
+    def __init__(self, context, request):
+        self.request = request
+        self.context = context
+
+    def pc(self):
+        if self.context.next is None:
+            datum = self.context.last
+            which = 'last'
+        else:
+            datum = self.context.next
+            which = 'next'
+        return dict(which=which, **datum)
+
+    def mobile(self):
+        if self.context.next is None:
+            datum = self.context.last
+            which = 'last'
+        else:
+            datum = self.context.next
+            which = 'next'
+        return dict(which=which, **datum)
+
 
 class IndexView(object):
     def __init__(self, request):
@@ -62,8 +108,6 @@ class IndexView(object):
         form.member_type.choices = choices
         return form, products
 
-    @view_config(route_name='index', request_method='GET', renderer='carts/form.html')
-    @view_config(route_name='index', request_type='altair.mobile.interfaces.IMobileRequest', request_method='GET', renderer='carts_mobile/form.html')
     def get(self):
         print self.context.available_sales_segments
         user_profile = load_user_profile(self.request)
@@ -77,8 +121,6 @@ class IndexView(object):
         product = c_models.Product.query.filter_by(id=product_id).one()
         return [(product, number)]
 
-    @view_config(route_name='index', request_method='POST', renderer='carts/form.html')
-    @view_config(route_name='index', request_type='altair.mobile.interfaces.IMobileRequest', request_method='POST', renderer='carts_mobile/form.html')
     def post(self):
         form,products = self._create_form(self.request.params)
         if not form.validate():
@@ -128,15 +170,11 @@ class PaymentView(_PaymentView):
         return user_profile['email_1']
 
     @back
-    @view_config(route_name='cart.payment', request_method="POST", renderer="carts/payment.html")
-    @view_config(route_name='cart.payment', request_method="POST", request_type='altair.mobile.interfaces.IMobileRequest', renderer="carts_mobile/payment.html")
     def post(self):
         return super(self.__class__, self).post()
 
 class CompleteView(_CompleteView):
     @back
-    @view_config(route_name='payment.finish', request_method="POST", renderer="carts/completion.html")
-    @view_config(route_name='payment.finish', request_method="POST", request_type='altair.mobile.interfaces.IMobileRequest', renderer="carts_mobile/completion.html")
     def __call__(self):
         cart = cart_api.get_cart_safe(self.request)
 
@@ -206,19 +244,15 @@ class CompleteView(_CompleteView):
         return dict(order=order)
 
 
-@view_config(name='order_review_form', renderer="order_review/form.html")
-@view_config(name='order_review_form', request_type='altair.mobile.interfaces.IMobileRequest', renderer="order_review_mobile/form.html")
-def order_review_form_view(context, request):
-    request.errors = context.errors
-    return dict(form=context)
-
 class OrderReviewView(object):
+
     def __init__(self, request):
         self.request = request
         self.context = request.context
 
-    @view_config(route_name='order_review.form', request_method="GET", renderer="order_review/form.html")
-    @view_config(route_name='order_review.form', request_method="GET", request_type='altair.mobile.interfaces.IMobileRequest', renderer="order_review_mobile/form.html")
+    def __call__(self):
+        return dict()
+
     def get(self):
         form = schemas.OrderReviewSchema(self.request.params)
         response = render_view_to_response(form, self.request, name="order_review_form")
@@ -230,8 +264,6 @@ class OrderReviewView(object):
     def order_not_found_message(self):
         return [u'受付番号または電話番号が違います。']
 
-    @view_config(route_name='order_review.show', request_method="POST", renderer="order_review/show.html")
-    @view_config(route_name='order_review.show', request_method="POST", request_type='altair.mobile.interfaces.IMobileRequest', renderer="order_review_mobile/show.html")
     def post(self):
         form = schemas.OrderReviewSchema(self.request.params)
         if not form.validate():
@@ -257,48 +289,21 @@ class OrderReviewView(object):
         else:
             return dict(order=order, sej_order=sej_order)
 
-@view_config(context='ticketing.cart.exceptions.OutTermSalesException', renderer='carts/out_term_sales.html')
-@view_config(context='ticketing.cart.exceptions.OutTermSalesException', renderer='carts_mobile/out_term_sales.html', request_type='altair.mobile.interfaces.IMobileRequest')
-def out_term_sales(context, request):
-    if context.next is None:
-        datum = context.last
-        which = 'last'
-    else:
-        datum = context.next
-        which = 'next'
-    return dict(which=which, **datum)
+@view_config(name="order_review_form")
+def order_review_form_view(form, request):
+    return dict(form=form)
 
-@view_config(context=NoCartError)
-def no_cart(context, request):
-    logger.error("No cart!")
-    return HTTPFound(request.route_url('index'))
-
-@view_config(context=PaymentPluginException, renderer='ticketing.cart:templates/errors/error.html')
-@view_config(context=PaymentPluginException, renderer='ticketing.cart:templates/errors_mobile/error.html', request_type='altair.mobile.interfaces.IMobileRequest')
-def cart_creation_exception(context, request):
-    if context.back_url is not None:
-        # カートの救済可能な場合
-        cart_api.recover_cart(request) 
-        transaction.commit()
-        return HTTPFound(location=context.back_url)
-
-@view_config(context=StandardError, renderer="errors/error.html")
-@view_config(context=StandardError, renderer="errors_mobile/error.html", request_type='altair.mobile.interfaces.IMobileRequest')
 def exception_view(context, request):
     logger.error("The error was: %s" % context, exc_info=request.exc_info)
     return dict()
 
-@view_config(context=HTTPNotFound, renderer="errors/not_found.html", )
-@view_config(context=HTTPNotFound, renderer="errors_mobile/not_found.html", request_type='altair.mobile.interfaces.IMobileRequest')
 def notfound_view(context, request):
+    #logger.error("The error was: %s" % context, exc_info=request.exc_info)
     return dict()
-
-@view_config(context="pyramid.httpexceptions.HTTPForbidden", renderer="errors/not_found.html", )
-@view_config(context="pyramid.httpexceptions.HTTPForbidden", renderer="errors_mobile/not_found.html", request_type='altair.mobile.interfaces.IMobileRequest')
 def forbidden_view(context, request):
+    #logger.error("The error was: %s" % context, exc_info=request.exc_info)
     return dict()
 
-@view_config(route_name="contact", renderer="static/contact.html")
-@view_config(route_name="contact", renderer="static_mobile/contact.html", request_type='altair.mobile.interfaces.IMobileRequest')
+@view_config(name="contact")
 def contact_view(context, request):
     return dict()

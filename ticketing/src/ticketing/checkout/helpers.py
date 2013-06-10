@@ -4,10 +4,9 @@ import base64
 from webhelpers.html.builder import literal
 from ticketing.core.api import get_channel
 from . import api
-from altair.mobile.api import is_mobile
 
 def checkout_form(request, cart):
-    if is_mobile(request):
+    if request.is_mobile:
         action = request.registry.settings.get('altair_checkout.mobile_checkin_url')
         submit = u'<input type="submit" value="楽天 お支払い" />'
     else:

@@ -10,7 +10,6 @@ from pyramid.view import view_config
 from pyramid.response import Response
 from pyramid.httpexceptions import HTTPFound, HTTPBadRequest
 from webhelpers.html.builder import literal
-from altair.mobile.api import is_mobile
 
 from ticketing.models import DBSession
 from ticketing.mails.interfaces import ICompleteMailDelivery, ICompleteMailPayment
@@ -63,7 +62,7 @@ class CheckoutPlugin(object):
         """ ここでは何もしない """
 
     def delegator(self, request, cart):
-        if is_mobile(request):
+        if request.is_mobile:
             submit = literal(
                 u'<input type="submit" value="次へ" />'
             )

@@ -2,7 +2,7 @@ from pyramid.view import view_config
 
 def includeme(config):
     config.include(install_detector)
-    config.add_tween("altair.mobile.tweens.mobile_encoding_convert_factory")
+    config.add_tween(".tweens.mobile_encoding_convert_factory")
 
 def install_detector(config):
     from .impl import DefaultCarrierDetector

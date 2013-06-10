@@ -4,7 +4,11 @@ from pyramid_mailer import get_mailer
 from altairsite.config import usersite_view_config
 from altairsite.inquiry.forms import InquiryForm
 from altairsite.mobile.core.helper import log_info, log_error
-from altair.mobile.api import is_nonmobile
+
+
+##workaround.
+def pc_access(info, request):
+    return hasattr(request, "is_mobile") and request.is_mobile == False
 
 @usersite_view_config(route_name='usersite.inquiry', request_method="GET",
              custom_predicates=(lambda _, request: is_nonmobile(request), ), 

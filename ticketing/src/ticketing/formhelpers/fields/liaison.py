@@ -1,9 +1,5 @@
 from wtforms import fields
 
-__all__ = [
-    'Liaison',
-    ]
-
 class Liaison(fields.Field):
     @property
     def errors(self):
