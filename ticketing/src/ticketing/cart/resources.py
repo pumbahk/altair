@@ -10,6 +10,7 @@ import logging
 from datetime import datetime, date
 import itertools
 from sqlalchemy import sql
+from sqlalchemy.orm import joinedload
 from pyramid.security import Everyone, Authenticated
 from pyramid.security import Allow
 from pyramid.decorator import reify
@@ -136,7 +137,15 @@ class TicketingCartResource(object):
             raise HTTPNotFound()
         return self.event.query_sales_segments(
             user=self.authenticated_user(),
-            type='all').all()
+            type='all'
+        ).options(
+            joinedload(c_models.SalesSegment.payment_delivery_method_pairs),
+            joinedload(c_models.SalesSegment.performance),
+            joinedload(c_models.SalesSegment.performance,
+                       c_models.Performance.venue),
+            joinedload(c_models.SalesSegment.performance,
+                       c_models.Performance.event),
+        ).all()
 
     @reify
     def available_sales_segments(self):
