@@ -123,4 +123,4 @@ def send_rejected_mail(request, rejected_entry):
     """ 落選通知メール
     """
     mailer = get_lotting_mailer(request, name="rejected")
-    return mailer.send(rejected_entry)
+    return mailer.send(request, rejected_entry)

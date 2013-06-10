@@ -20,12 +20,12 @@ from ticketing.users import api as user_api
 from ticketing.utils import toutc
 from ticketing.payments.payment import Payment
 from ticketing.cart.exceptions import NoCartError
+from ticketing.cart.selectable_renderer import selectable_renderer
 from ticketing.mailmags.api import get_magazines_to_subscribe, multi_subscribe
 
 from . import api
 from . import helpers as h
 from . import schemas
-from . import selectable_renderer
 from .exceptions import NotElectedException
 from .models import (
     #Lot,
@@ -33,6 +33,7 @@ from .models import (
     LotEntryWish,
     LotElectedEntry,
 )
+from .adapters import LotSessionCart
 from . import urls
 
 logger = logging.getLogger(__name__)
@@ -55,11 +56,16 @@ def make_performance_map(request, performances):
                 )
             )
 
-    for v in performance_map.itervalues():
-        v.sort(lambda a, b: cmp(a['start_on'], b['start_on']))
+    #for v in performance_map.itervalues():
+    #    v.sort(lambda a, b: cmp(a['start_on'], b['start_on']))
+    for k in performance_map:
+        v = performance_map[k]
+        performance_map[k] = sorted(v,
+                                    key=lambda x: (x['start_on'], x['id']))
 
     retval = list(performance_map.iteritems())
-    retval.sort(lambda a, b: cmp(a[1][0]['start_on'], b[1][0]['start_on']))
+    #retval.sort(lambda a, b: cmp(a[1][0]['start_on'], b[1][0]['start_on']))
+    retval = sorted(retval, key=lambda x: (x[1][0]['start_on'], x[1][0]['id']))
 
     return retval
 
@@ -244,15 +250,28 @@ class EntryLotView(object):
         if not validated:
             return self.get(form=cform)
 
+        entry_no = api.generate_entry_no(self.request, self.context.organization)
+
         shipping_address_dict = cform.get_validated_address_data()
         api.new_lot_entry(
             self.request,
+            entry_no=entry_no,
             wishes=wishes,
             payment_delivery_method_pair_id=payment_delivery_method_pair_id,
             shipping_address_dict=shipping_address_dict,
             gender=cform['sex'].data,
             birthday=birthday,
             memo=cform['memo'].data)
+
+        entry = self.request.session['lots.entry']
+        cart = LotSessionCart(entry, self.request, self.context.lot)
+
+        payment = Payment(cart, self.request)
+        self.request.session['payment_confirm_url'] = urls.entry_confirm(self.request)
+
+        result = payment.call_prepare()
+        if callable(result):
+            return result
 
         location = urls.entry_confirm(self.request)
         return HTTPFound(location=location)
@@ -277,6 +296,7 @@ class ConfirmLotEntryView(object):
         payment_delivery_method_pair_id = entry['payment_delivery_method_pair_id']
         payment_delivery_method_pair = PaymentDeliveryMethodPair.query.filter(PaymentDeliveryMethodPair.id==payment_delivery_method_pair_id).one()
 
+        DBSession.add(self.context.organization)
         magazines_to_subscribe = get_magazines_to_subscribe(self.context.organization, [entry['shipping_address']['email_1']])
 
         temporary_entry = api.build_temporary_lot_entry(
@@ -309,6 +329,7 @@ class ConfirmLotEntryView(object):
             return self.back_to_form()
 
         entry = self.request.session['lots.entry']
+        entry_no = entry['entry_no']
         shipping_address = entry['shipping_address']
         shipping_address = h.convert_shipping_address(shipping_address)
         wishes = entry['wishes']
@@ -328,6 +349,7 @@ class ConfirmLotEntryView(object):
 
         entry = api.entry_lot(
             self.request,
+            entry_no=entry_no,
             lot=lot,
             shipping_address=shipping_address,
             wishes=wishes,
@@ -339,14 +361,6 @@ class ConfirmLotEntryView(object):
             )
         self.request.session['lots.entry_no'] = entry.entry_no
 
-        cart = api.get_entry_cart(self.request, entry)
-
-        payment = Payment(cart, self.request)
-        self.request.session['payment_confirm_url'] = urls.entry_completion(self.request)
-
-        result = payment.call_prepare()
-        if callable(result):
-            return result
 
 
         return HTTPFound(location=urls.entry_completion(self.request))

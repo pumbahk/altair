@@ -4,7 +4,7 @@ from altairsite.inquiry.forms import InquiryForm
 from altairsite.mobile.core.helper import log_info, log_error
 from altairsite.inquiry.views import send_mail, create_mail_body, create_mail_body_for_customer
 
-@usersite_view_config(route_name='inquiry', request_method="GET", request_type="altairsite.mobile.tweens.IMobileRequest",
+@usersite_view_config(route_name='inquiry', request_method="GET", request_type="altairsite.tweens.IMobileRequest",
              renderer='altairsite.mobile:templates/inquiry/inquiry.mako')
 def move_inquiry(request):
     log_info("move_inquiry", "start")
@@ -12,7 +12,7 @@ def move_inquiry(request):
     log_info("move_inquiry", "end")
     return {'form':form}
 
-@usersite_view_config(route_name='inquiry', request_method="POST", request_type="altairsite.mobile.tweens.IMobileRequest",
+@usersite_view_config(route_name='inquiry', request_method="POST", request_type="altairsite.tweens.IMobileRequest",
              renderer='altairsite.mobile:templates/inquiry/inquiry.mako')
 def send_inquiry(request):
     log_info("send_inquiry", "start")

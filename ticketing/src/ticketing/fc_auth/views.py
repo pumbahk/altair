@@ -4,7 +4,8 @@ from pyramid.httpexceptions import HTTPFound
 from repoze.who.api import get_api as get_who_api
 from pyramid.view import view_config
 from ticketing.cart import api as cart_api
-from ticketing.core import api as core_api
+from altair.mobile.api import is_mobile
+from . import SESSION_KEY
 
 logger = logging.getLogger(__name__)
 
@@ -18,16 +19,14 @@ class LoginView(object):
 
 
     def select_renderer(self, membership):
-        if cart_api.is_mobile(self.request):
+        if is_mobile(self.request):
             self.request.override_renderer = self.renderer_tmpl_mobile.format(membership=membership)
         else:
             self.request.override_renderer = self.renderer_tmpl.format(membership=membership)
 
     @property
     def return_to_url(self):
-        environ  = self.request.environ
-        session = environ['session.rakuten_openid']
-        return session.get('return_url') or core_api.get_host_base_url(self.request)
+        return self.request.session.get(SESSION_KEY, {}).get('return_url') or cart_api.get_host_base_url(self.request)
 
     @view_config(request_method="GET", route_name='fc_auth.login', renderer='json')
     def login_form(self):

@@ -37,9 +37,9 @@ class AssetAddView(object):
 
 @view_defaults(permission="asset_read", decorator=with_bootstrap)
 class AssetListView(object):
-    def __init__(self, request):
+    def __init__(self, context, request):
         self.request = request
-        self.context = request.context
+        self.context = context
 
     @view_config(route_name="asset_list", renderer="altaircms:templates/asset/list.html", 
                  decorator=with_bootstrap)
@@ -78,7 +78,7 @@ class AssetListView(object):
 
 @view_defaults(permission="asset_read", decorator=with_bootstrap)
 class AssetDetailView(object):
-    def __init__(self, request):
+    def __init__(self, context, request):
         self.request = request
 
     @view_config(route_name="asset_image_detail", renderer="altaircms:templates/asset/image/detail.html")
@@ -101,9 +101,9 @@ class AssetDetailView(object):
 
 @view_defaults(permission="asset_update", decorator=with_bootstrap)
 class AssetInputView(object):
-    def __init__(self, request):
+    def __init__(self, context, request):
         self.request = request
-        self.context = request.context
+        self.context = context
 
     @view_config(route_name="asset_image_input", renderer="altaircms:templates/asset/image/input.html")
     def image_asset_input(self):
@@ -128,9 +128,9 @@ class AssetInputView(object):
 
 @view_defaults(permission="asset_update", decorator=with_bootstrap)
 class AssetUpdateView(object):
-    def __init__(self, request):
+    def __init__(self, context, request):
         self.request = request
-        self.context = request.context
+        self.context = context
 
     @view_config(route_name="asset_image_update", request_method="POST")
     def update_image_asset(self):
@@ -265,9 +265,9 @@ class AssetCreateView(object):
 @view_defaults(route_name="asset_delete", permission="asset_delete",
                decorator=with_bootstrap)
 class AssetDeleteView(object):
-    def __init__(self, request):
+    def __init__(self, context, request):
         self.request = request
-        self.context = request.context
+        self.context = context
 
     @view_config(route_name="asset_image_delete", request_method="GET", renderer="altaircms:templates/asset/image/delete_confirm.html")
     def image_delete_confirm(self):

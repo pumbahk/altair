@@ -1,4 +1,5 @@
 # -*- coding:utf-8 -*-
+import logging
 from pyramid.decorator import reify
 from sqlalchemy import sql
 from webhelpers.containers import correlate_objects
@@ -8,10 +9,11 @@ from ticketing.models import (
 from ticketing.core.models import (
     Order,
     Performance,
-    Stock,
+    #Stock,
     StockType,
     Product,
-    ProductItem,
+    #ProductItem,
+    PaymentDeliveryMethodPair,
 )
 from .models import (
     LotEntry,
@@ -23,31 +25,78 @@ from .models import (
 from zope.interface import implementer
 from ticketing.payments.interfaces import IPaymentCart
 
+logger = logging.getLogger(__name__)
+
+# @implementer(IPaymentCart)
+# class LotEntryCart(object):
+#     def __init__(self, entry):
+#         self.entry = entry
+
+#     @property
+#     def sales_segment(self):
+#         return self.entry.lot.sales_segment
+
+#     @property
+#     def payment_delivery_pair(self):
+#         return self.entry.payment_delivery_method_pair
+
+#     @property
+#     def order_no(self):
+#         return self.entry.entry_no
+
+#     @property
+#     def total_amount(self):
+#         # オーソリ時は申し込みの最大金額を使う
+#         return self.entry.max_amount
+
+#     @property
+#     def name(self):
+#         return "LOT" + str(self.entry.lot.id)
+
+
 @implementer(IPaymentCart)
-class LotEntryCart(object):
-    def __init__(self, entry):
-        self.entry = entry
+class LotSessionCart(object):
+    def __init__(self, entry_dict, request, lot):
+        self.entry_no = entry_dict['entry_no']
+        self.wishes = entry_dict['wishes']
+        self.payment_delivery_method_pair_id = entry_dict['payment_delivery_method_pair_id']
+        self.shipping_address_dict=entry_dict['shipping_address']
+        self.gender = entry_dict['gender']
+        self.birthday = entry_dict['birthday']
+        self.memo = entry_dict['memo']
+        self.request = request
+        self.lot = lot
+        logger.debug("{deli}\nLotSessionCart entry_no={0.entry_no}\n{deli}".format(self,
+                                                                                deli="*" * 80))
 
     @property
     def sales_segment(self):
-        return self.entry.lot.sales_segment
+        return self.lot.sales_segment
 
     @property
     def payment_delivery_pair(self):
-        return self.entry.payment_delivery_method_pair
+        return PaymentDeliveryMethodPair.query.filter(
+            PaymentDeliveryMethodPair.id==self.payment_delivery_method_pair_id
+        ).first()
 
     @property
     def order_no(self):
-        return self.entry.entry_no
+        return self.entry_no
 
     @property
     def total_amount(self):
         # オーソリ時は申し込みの最大金額を使う
-        return self.entry.max_amount
+        def _p(product_id):
+            return Product.query.filter(Product.id==product_id).one()
+
+        return max([self.sales_segment.get_amount(self.payment_delivery_pair,
+                                                  [(_p(wp['product_id']), wp['quantity'])
+                                                   for wp in wish['wished_products']])
+                    for wish in self.wishes])
 
     @property
     def name(self):
-        return "LOT" + str(self.entry.lot.id)
+        return "LOT" + str(self.lot.id)
 
 
 class LotEntryStatus(object):
@@ -70,7 +119,9 @@ class LotEntryStatus(object):
                            count=r[0])
                       for r in sql.select([sql.func.count(LotEntryWish.id), LotEntryWish.performance_id, LotEntryWish.wish_order]
                                           ).where(sql.and_(LotEntryWish.lot_entry_id==LotEntry.id,
-                                                           LotEntry.lot_id==self.lot.id)
+                                                           LotEntry.lot_id==self.lot.id,
+                                                           LotEntry.canceled_at==None,
+                                                           )
                                                   ).group_by(LotEntryWish.performance_id, LotEntryWish.wish_order
                                                              ).execute()]
         return sub_counts
@@ -78,7 +129,11 @@ class LotEntryStatus(object):
     @property
     def total_entries(self):
         """ 申込件数 """
-        total_entries = LotEntry.query.filter(LotEntry.lot_id==self.lot.id).count()
+        total_entries = LotEntry.query.filter(
+            LotEntry.lot_id==self.lot.id
+        ).filter(
+            LotEntry.canceled_at==None
+        ).count()
         return total_entries
 
 
@@ -100,6 +155,8 @@ class LotEntryStatus(object):
         ).filter(
             LotEntry.lot_id==self.lot.id
         ).filter(
+            LotEntry.canceled_at==None
+        ).filter(
             LotEntry.elected_at!=None
         ).count()
 
@@ -114,6 +171,8 @@ class LotEntryStatus(object):
         ).filter(
             LotEntry.lot_id==self.lot.id
         ).filter(
+            LotEntry.canceled_at==None
+        ).filter(
             LotEntry.order_id != None
         ).count()
         return ordered_count
@@ -126,6 +185,8 @@ class LotEntryStatus(object):
             LotElectedEntry.lot_entry_id==LotEntry.id
         ).filter(
             LotEntry.lot_id==self.lot.id
+        ).filter(
+            LotEntry.canceled_at==None
         ).filter(
             LotEntry.order_id==Order.id
         ).filter(
@@ -141,9 +202,11 @@ class LotEntryStatus(object):
         ).filter(
             LotEntry.lot_id==self.lot.id
         ).filter(
+            LotEntry.canceled_at==None
+        ).filter(
             LotEntry.order_id==Order.id
         ).filter(
-            Order.paid_at!=None
+            Order.paid_at==None
         ).count()
         return reserved_count
 
@@ -157,6 +220,8 @@ class LotEntryStatus(object):
             LotEntryWish.lot_entry_id==LotEntry.id
         ).filter(
             LotEntry.lot_id==self.lot.id
+        ).filter(
+            LotEntry.canceled_at==None
         ).scalar()
         return total_quantity
 
@@ -172,6 +237,8 @@ class LotEntryStatus(object):
             LotEntryWish.lot_entry_id==LotEntry.id
         ).filter(
             LotEntry.lot_id==self.lot.id
+        ).filter(
+            LotEntry.canceled_at==None
         ).group_by(LotEntryWish.wish_order).all()
         results = {}
         for wish_order, quantity in wishes:
@@ -203,16 +270,20 @@ class LotEntryStatus(object):
             ],
             else_=0).label('elected_quantity'),
             case([
-                (Order.paid_at != None, LotEntryProduct.quantity)
+                (and_(LotEntry.order_id != None, Order.paid_at != None,
+                      LotEntryWish.elected_at != None),
+                 LotEntryProduct.quantity)
             ],
             else_=0).label('ordered_quantity'),
             case([
-                (and_(LotEntry.order_id != None, Order.paid_at != None),
+                (and_(LotEntry.order_id != None, Order.paid_at == None,
+                      LotEntryWish.elected_at != None),
                  LotEntryProduct.quantity)
             ],
             else_=0).label('reserved_quantity'),
             case([
-                (and_(LotEntry.order_id != None, Order.canceled_at != None),
+                (and_(LotEntry.order_id != None, Order.canceled_at != None,
+                      LotEntryWish.elected_at != None),
                  LotEntryProduct.quantity)
             ],
             else_=0).label('canceled_quantity'),
@@ -234,6 +305,8 @@ class LotEntryStatus(object):
         ).outerjoin(Order, Order.id==LotEntry.order_id
         ).filter(
             LotEntry.lot_id==self.lot.id
+        ).filter(
+            LotEntry.canceled_at==None
         ).subquery()
 
         results = DBSession.query(

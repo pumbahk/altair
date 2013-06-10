@@ -1,0 +1,104 @@
+[app:altaircms]
+use = config:%(here)s/../../baseconf/cms-common.ini#altaircms
+pyramid.includes = pyramid_tm pyramid_fanstatic altair.findable_label
+
+altaircms.page.tmp.directory = %(here)s/../tmp
+altaircms.asset.storepath = %(here)s/../var/altair/cms/asset
+altaircms.s3.utility = ${altair:altaircms.s3.utility}
+altaircms.solr.search.utility  = ${altair:altaircms.solr.search.utility}
+altaircms.usersite.url  = ${altair:altaircms.usersite.url}
+altaircms.backend.url  = ${altair:altaircms.backend.url}
+altaircms.logout.external.url  = ${altair:altaircms.logout.external.url}
+altair.oauth.authorize_url  = ${altair:altair.oauth.authorize_url}
+altair.oauth.access_token_url  = ${altair:altair.oauth.access_token_url}
+
+; Beaker
+session.type = redis
+cache.type = redis
+
+[composite:composite]
+use = egg:Paste#urlmap
+/ = altaircms
+
+[filter:prefix]
+use = egg:PasteDeploy#prefix
+prefix = /
+
+[pipeline:main]
+pipeline = 
+  prefix
+  composite
+
+[server:main]
+use  = egg:gunicorn#main
+host = 0.0.0.0
+port = %(http_port)s
+workers = 1
+timeout = 3600
+graceful_timeout = 300
+
+# begin alembic configuration
+[alembic]
+# path to migration scripts
+script_location = alembic
+
+# template used to generate migration files
+# file_template = %%(rev)s_%%(slug)s
+sqlalchemy.echo = true
+sqlalchemy.url = %(db_url)s
+
+
+# end alembic configuration
+
+# Begin logging configuration
+
+[loggers]
+keys = root, altaircms, sqlalchemy
+
+[pshell]
+setup = altaircms.scripts.pshell.setup
+
+[handlers]
+keys = console, fluent, sqlalchemy
+
+[formatters]
+keys = generic
+
+[logger_root]
+level = INFO
+handlers = console, fluent
+
+[logger_altaircms]
+level = INFO
+handlers = console, fluent
+qualname = altaircms
+propagate = 0
+
+[logger_sqlalchemy]
+level = INFO
+handlers = sqlalchemy
+qualname = sqlalchemy.engine
+propagate = 0
+
+[handler_console]
+class = altair.log.filters.BrowserIdStreamHandler
+args = (sys.stderr,)
+level = ${altair:console_loglevel}
+formatter = generic
+
+[handler_sqlalchemy]
+class = altair.log.filters.BrowserIdTimedRotatingFileHandler
+args = ('%(here)s/../log/altair.cms.admin.sqlalchemy.log', 'D',)
+level = INFO
+formatter = generic
+
+[handler_fluent]
+class = altair.log.filters.BrowserIdFluentHandler
+args = ('altair.cms.admin', '127.0.0.1', 24224)
+level = NOTSET
+formatter = generic
+
+[formatter_generic]
+format = %(asctime)s %(browserid)s %(url)s %(levelname)-5.5s [%(name)s][%(threadName)s] %(message)s
+
+# End logging configuration

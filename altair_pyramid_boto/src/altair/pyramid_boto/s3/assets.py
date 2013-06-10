@@ -1,4 +1,3 @@
-from pyramid.interfaces import IAssetDescriptor
 from pyramid.path import Resolver
 from pyramid.threadlocal import get_current_registry
 from boto.s3.connection import S3Connection
@@ -9,14 +8,14 @@ from zope.interface.verify import verifyObject
 from cStringIO import StringIO
 from urlparse import urlparse
 import re
-from altair.pyramid_assets.interfaces import IAssetResolver
+from altair.pyramid_assets.interfaces import IAssetResolver, IWritableAssetDescriptor
 from ..interfaces import IS3ConnectionFactory
-from beaker.cache import Cache, CacheManager
+from beaker.cache import Cache, CacheManager, cache_regions
 
 def normalize_prefix(prefix, delimiter):
     return delimiter.join(c for c in prefix.split(delimiter) if c)
 
-cache_manager = CacheManager()
+cache_manager = CacheManager(cache_regions=cache_regions)
 
 class IS3RetrieverFactory(Interface):
     def __call__(bucket, delimiter):
@@ -32,8 +31,14 @@ class IS3Retriever(Interface):
     def get_object(key_or_prefix):
         """returns a file-like object that represents the specified object"""
 
+class IS3KeyProvider(Interface):
+    def get_key():
+        pass
+
 @implementer(IS3RetrieverFactory)
 class DefaultS3RetrieverFactory(object):
+    cache_manager = cache_manager
+
     def __init__(self, cache_region=None):
         if cache_region is not None:
             self.entry_cache = self.cache_manager.get_cache_region(__name__ + '.entry', cache_region)
@@ -107,7 +112,7 @@ class S3Retriever(object):
     def get_object(self, key):
         return self.object_cache.get(key, createfunc=lambda:self._fetch_object(key))
 
-@implementer(IAssetDescriptor)
+@implementer(IWritableAssetDescriptor, IS3KeyProvider)
 class S3AssetDescriptor(object):
     def __init__(self, retriever, key_or_prefix, delimiter):
         self.retriever = retriever
@@ -117,8 +122,12 @@ class S3AssetDescriptor(object):
     def absspec(self):
         raise NotImplementedError
 
+    @property
+    def path(self):
+        return self.key_or_prefix.replace(self.delimiter, u'/')
+
     def abspath(self):
-        return u's3://%s/%s' % (self.retriever.bucket.name, self.key_or_prefix.replace(self.delimiter, u'/'))
+        return u's3://%s/%s' % (self.retriever.bucket.name, self.path)
 
     def stream(self):
         return StringIO(self.retriever.get_object(self.key_or_prefix))
@@ -138,6 +147,14 @@ class S3AssetDescriptor(object):
     def exists(self):
         entry = self.retriever.get_entry(self.key_or_prefix)
         return entry['keys_under_prefix'] is not None
+
+    def write(self, buf):
+        key = self.retriever.get_key(self.key_or_prefix)
+        key.set_contents_from_string(buf)
+
+    def get_key(self):
+        '''IS3KeyProvider'''
+        return self.retriever.get_key(self.key_or_prefix)
  
 @implementer(IAssetResolver)
 class S3AssetResolver(object):
@@ -159,7 +176,7 @@ class S3AssetResolver(object):
     def resolve(self, spec):
         url = urlparse(spec)
         if url.scheme != u's3':
-            return ValueError(spec)
+            raise ValueError(spec)
         return S3AssetDescriptor(
             retriever=self.get_retriever(url.netloc),
             key_or_prefix=normalize_prefix(
@@ -180,7 +197,7 @@ class S3AssetResolverAdapter(object):
         return S3AssetResolver(
             registry.getUtility(IS3ConnectionFactory)(),
             registry.getUtility(IS3RetrieverFactory)
-            ).resolve()
+            ).resolve(spec)
 
 def includeme(config):
     config.registry.registerUtility(
@@ -188,7 +205,7 @@ def includeme(config):
         IS3RetrieverFactory
         )
     config.registry.registerUtility(
-        S3AssetResolverAdapter(),
+        S3AssetResolverAdapter(config.registry),
         IAssetResolver,
         's3'
         )

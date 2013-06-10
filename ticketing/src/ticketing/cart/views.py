@@ -18,27 +18,28 @@ from pyramid.threadlocal import get_current_request
 from pyramid import security
 from webob.multidict import MultiDict
 
+from altair.mobile.api import is_mobile
+from altair.pyramid_boto.s3.assets import IS3KeyProvider
 
 from ticketing.models import DBSession
 from ticketing.core import models as c_models
 from ticketing.core import api as c_api
 from ticketing.mailmags.api import get_magazines_to_subscribe, multi_subscribe
-from ticketing.views import mobile_request
 from ticketing.fanstatic import with_jquery, with_jquery_tools
 from ticketing.payments.payment import Payment
 from ticketing.payments.exceptions import PaymentDeliveryMethodPairNotFound
 from ticketing.users.api import get_or_create_user
-from altair.mobile.interfaces import IMobileRequest
+from ticketing.venues.api import get_venue_site_adapter
 
 from . import api
 from . import helpers as h
 from . import schemas
+from altair.mobile.api import set_we_need_pc_access, set_we_invalidate_pc_access
 from .events import notify_order_completed
 from .reserving import InvalidSeatSelectionException, NotEnoughAdjacencyException
 from .stocker import InvalidProductSelectionException, NotEnoughStockException
 from .selectable_renderer import selectable_renderer
-from .api import get_seat_type_triplets
-from .view_support import IndexViewMixin
+from .view_support import IndexViewMixin, get_amount_without_pdmp, get_seat_type_dicts
 from .exceptions import (
     NoCartError, 
     NoPerformanceError,
@@ -47,6 +48,7 @@ from .exceptions import (
 )
 
 logger = logging.getLogger(__name__)
+
 
 def back_to_product_list_for_mobile(request):
     cart = api.get_cart_safe(request)
@@ -59,7 +61,6 @@ def back_to_product_list_for_mobile(request):
             performance_id=cart.performance_id,
             sales_segment_id=cart.sales_segment_id,
             seat_type_id=cart.products[0].product.items[0].stock.stock_type_id))
-
 
 def back_to_top(request):
     event_id = request.params.get('event_id')
@@ -78,7 +79,7 @@ def back(pc=back_to_top, mobile=None):
         def retval(*args, **kwargs):
             request = get_current_request()
             if request.params.has_key('back'):
-                if IMobileRequest.providedBy(request):
+                if is_mobile(request):
                     return mobile(request)
                 else:
                     return pc(request)
@@ -86,9 +87,11 @@ def back(pc=back_to_top, mobile=None):
         return retval
     return factory
 
+def gzip_preferred(request, response):
+    if 'gzip' in request.accept_encoding:
+        response.encode_content('gzip')
 
-
-@view_defaults(decorator=with_jquery.not_when(mobile_request))
+@view_defaults(decorator=with_jquery.not_when(is_mobile))
 class IndexView(IndexViewMixin):
     """ 座席選択画面 """
     def __init__(self, request):
@@ -97,11 +100,40 @@ class IndexView(IndexViewMixin):
 
         self.prepare()
 
-    @view_config(decorator=with_jquery_tools, route_name='cart.index', renderer=selectable_renderer("carts/%(membership)s/index.html"), xhr=False, permission="buy")
+    def get_frontend_drawing_urls(self, venue):
+        sales_segment = self.request.context.sales_segment
+        retval = {}
+        drawings = get_venue_site_adapter(self.request, venue.site).get_frontend_drawings()
+        if drawings:
+            for name, drawing in drawings.items():
+                if IS3KeyProvider.providedBy(drawing):
+                    key = drawing.get_key()
+                    headers = {}
+                    if re.match('^.+\.(svgz|gz)$', drawing.path):
+                        headers['response-content-encoding'] = 'gzip'
+                    url = key.generate_url(expires_in=1800, response_headers=headers)
+                else:
+                    url = self.request.route_url(
+                        'cart.venue_drawing',
+                        event_id=self.request.context.event_id,
+                        performance_id=sales_segment.performance.id,
+                        venue_id=sales_segment.performance.venue.id,
+                        part=name)
+                retval[name] = url
+        return retval
+
+    def is_organization_rs(context, request):
+        organization = request.organization
+        return organization.id == 15
+
+    @view_config(decorator=with_jquery_tools, route_name='cart.index',request_type="altair.mobile.interfaces.ISmartphoneRequest", 
+                 custom_predicates=(is_organization_rs, ), renderer=selectable_renderer("carts_smartphone/RT/index.html"), xhr=False, permission="buy")
+    @view_config(decorator=with_jquery_tools, route_name='cart.index',
+                  renderer=selectable_renderer("carts/%(membership)s/index.html"), xhr=False, permission="buy")
     def __call__(self):
         self.check_redirect(mobile=False)
         sales_segments = self.context.available_sales_segments
-        selector_name = c_api.get_organization(self.request).setting.performance_selector
+        selector_name = self.request.organization.setting.performance_selector
 
         performance_selector = api.get_performance_selector(self.request, selector_name)
         sales_segments_selection = performance_selector()
@@ -123,7 +155,7 @@ class IndexView(IndexViewMixin):
             # available_sales_segments に関連するものでなければならない
 
             # 数が少ないのでリニアサーチ
-            for sales_segment in sales_segments: 
+            for sales_segment in sales_segments:
                 if sales_segment.performance.id == performance_id:
                     # 複数個の SalesSegment が該当する可能性があるが
                     # 最初の 1 つを採用することにする。実用上問題ない。
@@ -156,6 +188,7 @@ class IndexView(IndexViewMixin):
             event_extra_info=self.event_extra_info.get("event") or [],
             selection_label=performance_selector.label,
             second_selection_label=performance_selector.second_label,
+            performance=performance_id or ""
             )
 
     @view_config(route_name='cart.seat_types', renderer="json")
@@ -163,25 +196,20 @@ class IndexView(IndexViewMixin):
     def get_seat_types(self):
         sales_segment = self.request.context.sales_segment # XXX: matchdict から取得していることを期待
 
-        seat_type_triplets = get_seat_type_triplets(sales_segment.id)
+        seat_type_dicts = get_seat_type_dicts(self.request, sales_segment)
+
         data = dict(
             seat_types=[
                 dict(
-                    id=s.id,
-                    name=s.name,
-                    description=s.description,
-                    style=s.style,
-                    products_url=self.request.route_url('cart.products',
+                    products_url=self.request.route_url(
+                        'cart.products',
                         event_id=self.request.context.event_id,
                         performance_id=sales_segment.performance.id,
                         sales_segment_id=sales_segment.id,
-                        seat_type_id=s.id),
-                    availability=available > 0,
-                    availability_text=h.get_availability_text(available),
-                    quantity_only=s.quantity_only,
-                    seat_choice=sales_segment.seat_choice
+                        seat_type_id=_dict['id']),
+                    **_dict
                     )
-                for s, total, available in seat_type_triplets
+                for _dict in seat_type_dicts
                 ],
             event_name=sales_segment.performance.event.title,
             performance_name=sales_segment.performance.name,
@@ -200,6 +228,12 @@ class IndexView(IndexViewMixin):
                     performance_id=sales_segment.performance.id,
                     venue_id=sales_segment.performance.venue.id,
                     part='__part__'),
+                venue_drawings=self.get_frontend_drawing_urls(sales_segment.performance.venue),
+                info=self.request.route_url(
+                    'cart.info',
+                    event_id=self.request.context.event_id,
+                    sales_segment_id=sales_segment.id,
+                    ),
                 seats=self.request.route_url(
                     'cart.seats',
                     event_id=self.request.context.event_id,
@@ -219,73 +253,18 @@ class IndexView(IndexViewMixin):
         """ 席種別ごとの購入単位
         SeatType -> ProductItem -> Product
         """
-        seat_type_id = self.request.matchdict['seat_type_id']
-        logger.debug("seat_typeid = %(seat_type_id)s, sales_segment_id = %(sales_segment_id)s"
-            % dict(seat_type_id=seat_type_id, sales_segment_id=self.context.sales_segment.id))
+        seat_type_id = long(self.request.matchdict['seat_type_id'])
+        product_dicts = get_seat_type_dicts(self.request, self.context.sales_segment, seat_type_id)[0]['products']
+        return dict(products=product_dicts)
 
-        seat_type = DBSession.query(c_models.StockType).filter_by(id=seat_type_id).one()
-
-        query = DBSession.query(c_models.Product, c_models.StockStatus.quantity) \
-            .join(c_models.Product.items) \
-            .join(c_models.ProductItem.stock) \
-            .join(c_models.Stock.stock_status) \
-            .filter(c_models.Stock.stock_type_id==seat_type_id) \
-            .filter(c_models.Product.sales_segment_id==self.context.sales_segment.id) \
-            .filter(c_models.Product.public==True) \
-            .filter(c_models.ProductItem.deleted_at == None) \
-            .filter(c_models.Stock.deleted_at == None) \
-            .order_by(sa.desc("Product.display_order, Product.price"))
-
-        products = [
-            dict(
-                id=p.id, 
-                name=p.name,
-                description=p.description,
-                price=h.format_number(p.price, ","), 
-                unit_template=h.build_unit_template(p, self.context.sales_segment.performance.id),
-                quantity_power=p.get_quantity_power(seat_type, self.context.sales_segment.performance.id),
-                upper_limit=p.sales_segment.upper_limit if p.sales_segment.upper_limit < vacant_quantity else int(vacant_quantity),
-                )
-            for p, vacant_quantity in query
-            ]
-
-        return dict(products=products,
-                    seat_type=dict(id=seat_type.id, name=seat_type.name),
-                    sales_segment=dict(
-                        start_at=self.context.sales_segment.start_at.strftime("%Y-%m-%d %H:%M"),
-                        end_at=self.context.sales_segment.end_at.strftime("%Y-%m-%d %H:%M")
-                    ))
-
-    @view_config(route_name='cart.seats', renderer="json")
-    @view_config(route_name='cart.seats.obsolete', renderer="json")
-    def get_seats(self):
-        """会場&座席情報"""
+    @view_config(route_name='cart.info', renderer="json")
+    def get_info(self):
+        """会場情報"""
         venue = self.context.performance.venue
 
-        sales_segment = c_models.SalesSegment.query.filter(c_models.SalesSegment.id==self.context.sales_segment.id).one()
-        sales_stocks = sales_segment.stocks
+        self.request.add_response_callback(gzip_preferred)
 
         return dict(
-            seats=dict(
-                (
-                    seat.l0_id,
-                    dict(
-                        id=seat.l0_id,
-                        stock_type_id=seat.stock.stock_type_id,
-                        stock_holder_id=seat.stock.stock_holder_id,
-                        status=seat.status,
-                        areas=[area.id for area in seat.areas],
-                        is_hold=seat.stock in sales_stocks,
-                        )
-                    ) 
-                for seat in c_models.Seat.query_sales_seats(sales_segment)\
-                             .options(joinedload('areas'),
-                                      joinedload('status_'))\
-                             .join(c_models.SeatStatus)\
-                             .join(c_models.Stock)\
-                             .filter(c_models.Seat.venue_id==venue.id)\
-                             .filter(c_models.SeatStatus.status==int(c_models.SeatStatusEnum.Vacant))
-                ),
             areas=dict(
                 (area.id, { 'id': area.id, 'name': area.name }) \
                 for area in DBSession.query(c_models.VenueArea) \
@@ -300,7 +279,58 @@ class IndexView(IndexViewMixin):
                         .filter_by(site_id=venue.site_id)
                     ]
                 ),
-            pages=venue.site._metadata and venue.site._metadata.get('pages')
+            pages=get_venue_site_adapter(self.request, venue.site).get_frontend_pages()
+            )
+
+    @view_config(route_name='cart.seats', renderer="json")
+    @view_config(route_name='cart.seats.obsolete', renderer="json")
+    def get_seats(self):
+        """会場&座席情報"""
+        venue = self.context.performance.venue
+
+        sales_segment = c_models.SalesSegment.query.filter(c_models.SalesSegment.id==self.context.sales_segment.id).one()
+        sales_stocks = sales_segment.stocks
+        seats = []
+        if sales_segment.seat_choice:
+            seats = c_models.Seat.query_sales_seats(sales_segment)\
+                .options(joinedload('areas'), joinedload('status_'))\
+                .join(c_models.SeatStatus)\
+                .join(c_models.Stock)\
+                .filter(c_models.Seat.venue_id==venue.id)\
+                .filter(c_models.SeatStatus.status==int(c_models.SeatStatusEnum.Vacant))
+        stock_map = dict([(s.id, s) for s in sales_stocks])
+
+        self.request.add_response_callback(gzip_preferred)
+
+        return dict(
+            seats=dict(
+                (
+                    seat.l0_id,
+                    dict(
+                        id=seat.l0_id,
+                        stock_type_id=stock_map[seat.stock_id].stock_type_id,
+                        stock_holder_id=stock_map[seat.stock_id].stock_holder_id,
+                        status=seat.status,
+                        areas=[area.id for area in seat.areas],
+                        is_hold=seat.stock_id in stock_map,
+                        )
+                    )
+                for seat in seats),
+            areas=dict(
+                (area.id, { 'id': area.id, 'name': area.name }) \
+                for area in DBSession.query(c_models.VenueArea) \
+                            .join(c_models.VenueArea_group_l0_id) \
+                            .filter(c_models.VenueArea_group_l0_id.venue_id==venue.id)
+                ),
+            info=dict(
+                available_adjacencies=[
+                    adjacency_set.seat_count
+                    for adjacency_set in \
+                        DBSession.query(c_models.SeatAdjacencySet) \
+                        .filter_by(site_id=venue.site_id)
+                    ]
+                ),
+            pages=get_venue_site_adapter(self.request, venue.site).get_frontend_pages()
             )
 
     @view_config(route_name='cart.seat_adjacencies', renderer="json")
@@ -355,7 +385,7 @@ class IndexView(IndexViewMixin):
             raise HTTPNotFound()
         part = self.request.matchdict.get('part')
         venue = c_models.Venue.get(venue_id)
-        drawing = venue.site.get_drawing(part)
+        drawing = get_venue_site_adapter(self.request, venue.site).get_frontend_drawing(part)
         if not drawing:
             raise HTTPNotFound()
         content_encoding = None
@@ -424,7 +454,7 @@ class ReserveView(object):
             sum_quantity = len(selected_seats)
         else:
             for product, quantity in order_items:
-                sum_quantity += quantity
+                sum_quantity += quantity * product.get_quantity_power(product.seat_stock_type, product.performance_id)
         logger.debug('sum_quantity=%s' % sum_quantity)
 
         self.context.event_id = performance.event_id
@@ -468,15 +498,17 @@ class ReserveView(object):
                     cart=dict(products=[dict(name=p.product.name, 
                                              quantity=p.quantity,
                                              price=int(p.product.price),
-                                             seats=p.seats,
-                                        ) 
+                                             seats=p.seats if self.context.sales_segment.seat_choice else [],
+                                             unit_template=h.build_unit_template(p.product.items),
+                                        )
                                         for p in cart.products],
-                              total_amount=h.format_number(cart.tickets_amount),
-                    ))
+                              total_amount=h.format_number(get_amount_without_pdmp(cart))
+                             )
+                    )
 
 
 
-@view_defaults(decorator=with_jquery.not_when(mobile_request))
+@view_defaults(decorator=with_jquery.not_when(is_mobile))
 class ReleaseCartView(object):
     def __init__(self, request):
         self.request = request
@@ -493,7 +525,7 @@ class ReleaseCartView(object):
         return dict()
 
 
-@view_defaults(decorator=with_jquery.not_when(mobile_request))
+@view_defaults(decorator=with_jquery.not_when(is_mobile))
 class PaymentView(object):
     """ 支払い方法、引き取り方法選択 """
     def __init__(self, request):
@@ -609,7 +641,6 @@ class PaymentView(object):
             return dict(form=self.form, payment_delivery_methods=payment_delivery_methods)
 
         cart.payment_delivery_pair = payment_delivery_pair
-        cart.system_fee = payment_delivery_pair.system_fee
         cart.shipping_address = self.create_shipping_address(user, shipping_address_params)
         DBSession.add(cart)
 
@@ -652,7 +683,7 @@ class PaymentView(object):
             user=user
         )
 
-@view_defaults(decorator=with_jquery.not_when(mobile_request))
+@view_defaults(decorator=with_jquery.not_when(is_mobile))
 class ConfirmView(object):
     """ 決済確認画面 """
     def __init__(self, request):
@@ -681,7 +712,7 @@ class ConfirmView(object):
         )
 
 
-@view_defaults(decorator=with_jquery.not_when(mobile_request))
+@view_defaults(decorator=with_jquery.not_when(is_mobile))
 class CompleteView(object):
     """ 決済完了画面"""
     def __init__(self, request):
@@ -732,7 +763,7 @@ class CompleteView(object):
         return dict(order=order)
 
 
-@view_defaults(decorator=with_jquery.not_when(mobile_request))
+@view_defaults(decorator=with_jquery.not_when(is_mobile))
 class InvalidMemberGroupView(object):
     def __init__(self, request):
         self.request = request
@@ -748,7 +779,7 @@ class InvalidMemberGroupView(object):
 
 
 
-@view_defaults(decorator=with_jquery.not_when(mobile_request))
+@view_defaults(decorator=with_jquery.not_when(is_mobile))
 class OutTermSalesView(object):
     def __init__(self, context, request):
         self.request = request
@@ -777,10 +808,53 @@ class OutTermSalesView(object):
             which = 'next'
         return dict(which=which, **datum)
 
-@view_config(decorator=with_jquery.not_when(mobile_request), route_name='cart.logout')
+@view_config(decorator=with_jquery.not_when(is_mobile), route_name='cart.logout')
 def logout(request):
     headers = security.forget(request)
-    location = c_api.get_host_base_url(request)
+    location = api.get_host_base_url(request)
     res = HTTPFound(location=location)
     res.headerlist.extend(headers)
     return res
+
+def _create_response(request, param):
+    event_id = request.matchdict.get('event_id')
+    response = HTTPFound(event_id and request.route_url('cart.index', event_id=event_id) + param or '/')
+    return response
+
+@view_config(route_name='cart.switchpc')
+def switch_pc(context, request):
+    ReleaseCartView(request)()
+    response = _create_response(request=request, param="")
+    set_we_need_pc_access(response)
+    return response
+
+@view_config(route_name='cart.switchsp')
+def switch_sp(context, request):
+    ReleaseCartView(request)()
+    response = _create_response(request=request, param="")
+    set_we_invalidate_pc_access(response)
+    return response
+
+@view_config(route_name='cart.switchpc.perf')
+def switch_pc_performance(context, request):
+    ReleaseCartView(request)()
+    performance = request.matchdict.get('performance')
+    param = _create_performance_param(performance=performance)
+    response = _create_response(request=request, param=param)
+    set_we_need_pc_access(response)
+    return response
+
+@view_config(route_name='cart.switchsp.perf')
+def switch_sp_performance(context, request):
+    ReleaseCartView(request)()
+    performance = request.matchdict.get('performance')
+    param = _create_performance_param(performance=performance)
+    response = _create_response(request=request, param=param)
+    set_we_invalidate_pc_access(response)
+    return response
+
+def _create_performance_param(performance):
+    param = ""
+    if performance:
+        param = "?performance=" + str(performance)
+    return param

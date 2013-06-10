@@ -1,6 +1,6 @@
 (function () {
 var __LIBS__ = {};
-__LIBS__['H1SUE4BNYINPZUOG'] = (function (exports) { (function () { 
+__LIBS__['u6AURF8N_EKWNZ2P'] = (function (exports) { (function () { 
 
 /************** util.js **************/
 exports.eventKey = function Util_eventKey(e) {
@@ -127,7 +127,7 @@ exports.makeHitTester = function Util_makeHitTester(a) {
   }
 };
  })(); return exports; })({});
-__LIBS__['e_3WY1ESF8TDS7N7'] = (function (exports) { (function () { 
+__LIBS__['x99S4YFZAYXRGF6H'] = (function (exports) { (function () { 
 
 /************** CONF.js **************/
 exports.DEFAULT = {
@@ -182,11 +182,11 @@ exports.DEFAULT = {
   }
 };
  })(); return exports; })({});
-__LIBS__['hORTKE8F_AKKF2SR'] = (function (exports) { (function () { 
+__LIBS__['uO0E6U6YJJ62MIM3'] = (function (exports) { (function () { 
 
 /************** seat.js **************/
-var util = __LIBS__['H1SUE4BNYINPZUOG'];
-var CONF = __LIBS__['e_3WY1ESF8TDS7N7'];
+var util = __LIBS__['u6AURF8N_EKWNZ2P'];
+var CONF = __LIBS__['x99S4YFZAYXRGF6H'];
 
 function clone(obj) {
   return $.extend({}, obj);
@@ -268,15 +268,19 @@ Seat.prototype.defaultStyle = function Seat_defaultStype() {
 }
 
 Seat.prototype.attach = function Seat_attach(shape) {
-  this.shape = shape;
-  this.originalStyle = this.defaultStyle();
-  this.refresh();
-  shape.addEvent(this.events);
+  if (!this.shape) {
+    this.shape = shape;
+    this.originalStyle = this.defaultStyle();
+    this.refresh();
+    shape.addEvent(this.events);
+  }
 };
 
 Seat.prototype.detach = function Seat_detach(shape) {
-  if (this.shape)
+  if (this.shape) {
     this.shape.removeEvent();
+    this.shape = null;
+  }
 };
 
 Seat.prototype.stylize = function Seat_stylize() {
@@ -1003,25 +1007,35 @@ function parseTransform(transform_str) {
             parseFloat(args[2]), parseFloat(args[3]),
             parseFloat(args[4]), parseFloat(args[5]));
     case 'translate':
-        if (args.length != 2)
+        if (args.length == 1)
+            args[2] = 0;
+        else if (args.length != 2)
             throw new Error("invalid number of arguments for translate()")
         return Fashion.Matrix.translate({ x:parseFloat(args[0]), y:parseFloat(args[1]) });
     case 'scale':
-        if (args.length != 2)
+        if (args.length == 1)
+            args[2] = 0;
+        else if (args.length != 2)
             throw new Error("invalid number of arguments for scale()");
         return new Fashion.Matrix(parseFloat(args[0]), 0, 0, parseFloat(args[1]), 0, 0);
     case 'rotate':
-        if (args.length != 1)
+        if (args.length == 1)
+            args[2] = 0;
+        else if (args.length != 2)
             throw new Error("invalid number of arguments for rotate()");
         return Fashion.Matrix.rotate(parseFloat(args[0]) * Math.PI / 180);
     case 'skewX':
-        if (args.length != 1)
+        if (args.length == 1)
+            args[2] = 0;
+        else if (args.length != 2)
             throw new Error('invalid number of arguments for skewX()');
         var t = parseFloat(args[0]) * Math.PI / 180;
         var ta = Math.tan(t);
         return new Fashion.Matrix(1, 0, ta, 1, 0, 0);
     case 'skewY':
-        if (args.length != 1)
+        if (args.length == 1)
+            args[2] = 0;
+        else if (args.length != 2)
             throw new Error('invalid number of arguments for skewX()');
         var t = parseFloat(args[0]) * Math.PI / 180;
         var ta = Math.tan(t);
@@ -1030,9 +1044,9 @@ function parseTransform(transform_str) {
     throw new Error('invalid transform function: ' + f);
 }
 
-  var CONF = __LIBS__['e_3WY1ESF8TDS7N7'];
-  var seat = __LIBS__['hORTKE8F_AKKF2SR'];
-  var util = __LIBS__['H1SUE4BNYINPZUOG'];
+  var CONF = __LIBS__['x99S4YFZAYXRGF6H'];
+  var seat = __LIBS__['uO0E6U6YJJ62MIM3'];
+  var util = __LIBS__['u6AURF8N_EKWNZ2P'];
 
   var StoreObject = _class("StoreObject", {
     props: {
@@ -1069,6 +1083,7 @@ function parseTransform(transform_str) {
         selectable: null,
         select: null,
         pageChanging: null,
+        message: null,
         messageBoard: null,
         zoomRatioChanging: null,
         zoomRatioChange: null
@@ -1110,7 +1125,8 @@ function parseTransform(transform_str) {
       doubleClickTimeout: 400,
       mouseUpHandler: null,
       onMouseUp: null,
-      onMouseMove: null
+      onMouseMove: null,
+      deferSeatLoading: false
     },
 
     methods: {
@@ -1126,6 +1142,7 @@ function parseTransform(transform_str) {
         this.rubberBand.style(CONF.DEFAULT.MASK_STYLE);
         canvas.empty();
         this.optionalViewportSize = options.viewportSize;
+        this.deferSeatLoading = !!options.deferSeatLoading;
         var self = this;
         this.mouseUpHandler = function() {
           if (self.onMouseUp) {
@@ -1192,32 +1209,37 @@ function parseTransform(transform_str) {
               self.callbacks.loadPartEnd.call(self, self, 'info');
               if (!'available_adjacencies' in data) {
                 self.callbacks.message.call(self, "Invalid data");
+                self.loading = false;
                 return;
               }
               self.availableAdjacencies = data.available_adjacencies;
               self.seatAdjacencies = new seat.SeatAdjacencies(self);
-              self.callbacks.loadPartStart.call(self, self, 'seats');
-              self.initSeats(self.dataSource.seats, function () {
-                self.loading = false;
-                if (self.loadAborted) {
-                  self.loadAborted = false;
-                  self.loadAbortionHandler && self.loadAbortionHandler.call(self, self);
-                  self.callbacks.loadAbort && self.callbacks.loadAbort.call(self, self);
-                  return;
-                }
-                self.loading = true;
-                self.callbacks.loadPartEnd.call(self, self, 'seats');
-                if (self.currentPage) {
-                  self.loadDrawing(self.currentPage, function () {
-                    self.callbacks.load.call(self, self);
-                    self.zoomAndPan(self.zoomRatioMin, { x: 0., y: 0. });
-                  });
-                } else {
+
+              var onDrawingOrSeatsLoaded;
+              (function() {
+                var status = { drawing: false, seats: false };
+                onDrawingOrSeatsLoaded = function onDrawingOrSeatsLoaded(part) {
+                  status[part] = true;
+                  if (part == 'drawing' && status.seats) {
+                    for (var id in self.seats) {
+                      var shape = self.shapes[id];
+                      if (shape)
+                        self.seats[id].attach(shape);
+                    }
+                  }
+                };
+              })();
+              if (self.currentPage) {
+                self.loadDrawing(self.currentPage, function () {
+                  onDrawingOrSeatsLoaded('drawing');
                   self.callbacks.load.call(self, self);
-                  // 「読込中です」を消すために以下が必要
-                  self.callbacks.loadPartEnd.call(self, self, 'drawing');
-                }
-              });
+                  self.zoomAndPan(self.zoomRatioMin, { x: 0., y: 0. });
+                });
+              } else {
+                self.callbacks.load.call(self, self);
+              }
+              if (!self.deferSeatLoading)
+                self.loadSeats(function () { onDrawingOrSeatsLoaded('seats'); });
             }, self.callbacks.message);
           }, self.callbacks.message);
         });
@@ -1493,9 +1515,6 @@ function parseTransform(transform_str) {
               }
               if (attrs.id) {
                 shapes[attrs.id] = shape;
-                var seat = self.seats[attrs.id];
-                if (seat)
-                  seat.attach(shape);
               }
               if (xlink)
                 link_pairs.push([shape, xlink])
@@ -1857,12 +1876,30 @@ function parseTransform(transform_str) {
         }, self.callbacks.message);
       },
 
+      loadSeats: function(next) {
+        var self = this;
+        self.callbacks.loadPartStart.call(self, self, 'seats');
+        self.loading = true;
+        self.initSeats(self.dataSource.seats, function () {
+          self.loading = false;
+          if (self.loadAborted) {
+            self.loadAborted = false;
+            self.loadAbortionHandler && self.loadAbortionHandler.call(self, self);
+            self.callbacks.loadAbort && self.callbacks.loadAbort.call(self, self);
+            return;
+          }
+          self.callbacks.loadPartEnd.call(self, self, 'seats');
+          if (next)
+            next();
+        });
+      },
+
       initSeats: function VenueViewer_initSeats(dataSource, next) {
         var self = this;
         dataSource(function (seatMeta) {
           var seats = {};
           for (var id in seatMeta) {
-            seats[id] = new seat.Seat(id, seatMeta[id], self, {
+            var seat_ = seats[id] = new seat.Seat(id, seatMeta[id], self, {
               mouseover: function(evt) {
                 self.callbacks.messageBoard.up.call(self, self.seatTitles[this.id]);
                 self.seatAdjacencies.getCandidates(this.id, self.adjacencyLength(), function (candidates) {
@@ -1902,6 +1939,8 @@ function parseTransform(transform_str) {
                 };
               }
             });
+            if (self.shapes[id])
+              seat_.attach(self.shapes[id]);
           }
 
           self.seats = seats;
@@ -2126,8 +2165,8 @@ function parseTransform(transform_str) {
                     for (var k in _conts)
                       _conts[k].next(data[key]);
                   },
-                  error: function(xhr, text) {
-                    var message = "Failed to load " + key + " (reason: " + text + ")";
+                  error: function(xhr, text, status) {
+                    var message = "Failed to load " + key + " (reason: " + text + " - " + status + ")";
                     var _conts = conts;
                     conts = {};
                     for (var k in _conts)
@@ -2218,6 +2257,10 @@ function parseTransform(transform_str) {
 
         case 'navigate':
           aux.navigate(arguments[1]);
+          break;
+
+        case 'loadSeats':
+          aux.loadSeats(arguments[1]);
           break;
 
         case 'showSmallTexts':

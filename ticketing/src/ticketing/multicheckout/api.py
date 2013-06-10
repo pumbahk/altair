@@ -70,7 +70,10 @@ def get_multicheckout_setting(request, override_name):
         return MulticheckoutSetting(os)
     else:
         override_host = reg.settings.get('altair_checkout3d.override_host') or request.host
-        organization = core_api.get_organization(request, override_host)
+        if override_host:
+            organization = core_models.Host.query.filter_by(host_name=override_host).one().organization
+        else:
+            organization = self.request.organization
         #return organization.multicheckout_settings[0]
         return MulticheckoutSetting(organization.setting)
 

@@ -25,12 +25,16 @@ from datetime import datetime, timedelta
 import itertools
 import operator
 import sqlahelper
+from decimal import Decimal
 import sqlalchemy as sa
 import sqlalchemy.orm as orm
 from sqlalchemy import sql
-from sqlalchemy.ext.hybrid import hybrid_method
+from sqlalchemy.ext.hybrid import hybrid_method, hybrid_property
 from sqlalchemy.orm.exc import NoResultFound
 from zope.deprecation import deprecate
+
+from pyramid.i18n import TranslationString as _
+from altair.saannotation import AnnotatedColumn
 
 from ticketing.utils import sensible_alnum_encode
 #from ticketing.utils import sensible_alnum_decode
@@ -73,19 +77,17 @@ class Cart(Base):
 
     performance = orm.relationship('Performance')
 
-    system_fee = sa.Column(sa.Numeric(precision=16, scale=2))
-
-    created_at = sa.Column(sa.DateTime, default=datetime.now)
+    created_at = AnnotatedColumn(sa.DateTime, default=datetime.now, _a_label=_(u'カート生成日時'))
     updated_at = sa.Column(sa.DateTime, nullable=True, onupdate=datetime.now)
     deleted_at = sa.Column(sa.DateTime, nullable=True)
-    finished_at = sa.Column(sa.DateTime)
+    finished_at = AnnotatedColumn(sa.DateTime, _a_label=_(u'カート処理日時'))
 
     shipping_address_id = sa.Column(Identifier, sa.ForeignKey("ShippingAddress.id"))
     shipping_address = orm.relationship('ShippingAddress', backref='cart')
     payment_delivery_method_pair_id = sa.Column(Identifier, sa.ForeignKey("PaymentDeliveryMethodPair.id"))
     payment_delivery_pair = orm.relationship("PaymentDeliveryMethodPair")
 
-    _order_no = sa.Column("order_no", sa.String(255))
+    _order_no = AnnotatedColumn("order_no", sa.String(255), _a_label=_(u'注文番号'))
     order_id = sa.Column(Identifier, sa.ForeignKey("Order.id"))
     order = orm.relationship('Order', backref=orm.backref('cart', uselist=False))
     operator_id = sa.Column(Identifier, sa.ForeignKey("Operator.id"))
@@ -142,7 +144,6 @@ class Cart(Base):
             raise CartCreationException("Cannot translate the contents of a cart that has already been marked as finished")
         new_cart = cls.create(
             cart_session_id=that.cart_session_id,
-            system_fee=that.system_fee,
             shipping_address_id=that.shipping_address_id,
             payment_delivery_method_pair_id=that.payment_delivery_method_pair_id,
             performance_id=that.performance_id,
@@ -156,47 +157,41 @@ class Cart(Base):
         that.products = []
         return new_cart
 
-    @property
+    @hybrid_property
     def order_no(self):
         if self._order_no is None:
             raise UnassignedOrderNumberError(self.id)
         return self._order_no
 
+    @order_no.expression
+    def order_no_expr(cls):
+        return cls._order_no
+
     @property
     def total_amount(self):
-        return self.tickets_amount + self.system_fee + self.transaction_fee + self.delivery_fee
+        if not self.sales_segment:
+            return None
+        return self.sales_segment.get_amount(
+            self.payment_delivery_pair,
+            [(p.product, p.quantity) for p in self.products])
 
     @property
-    def tickets_amount(self):
-        return sum(cp.amount for cp in self.products)
-
-    @property
-    def total_quantiy(self):
-        return sum(cp.quantity for cp in self.products)
+    def delivery_fee(self):
+        """ 引取手数料 """
+        return self.sales_segment.get_delivery_fee(
+            self.payment_delivery_pair,
+            [(p.product, p.quantity) for p in self.products])
 
     @property
     def transaction_fee(self):
         """ 決済手数料 """
-        payment_fee = self.payment_delivery_pair.transaction_fee
-        payment_method = self.payment_delivery_pair.payment_method
-        if payment_method.fee_type == c_models.FeeTypeEnum.Once.v[0]:
-            return payment_fee
-        elif payment_method.fee_type == c_models.FeeTypeEnum.PerUnit.v[0]:
-            return payment_fee * self.total_quantiy
-        else:
-            return 0
+        return self.sales_segment.get_transaction_fee(
+            self.payment_delivery_pair,
+            [(p.product, p.quantity) for p in self.products])
 
-    @property 
-    def delivery_fee(self):
-        """ 引取手数料 """
-        delivery_fee = self.payment_delivery_pair.delivery_fee
-        delivery_method = self.payment_delivery_pair.delivery_method
-        if delivery_method.fee_type == c_models.FeeTypeEnum.Once.v[0]:
-            return delivery_fee
-        elif delivery_method.fee_type == c_models.FeeTypeEnum.PerUnit.v[0]:
-            return delivery_fee * self.total_quantiy
-        else:
-            return 0
+    @property
+    def system_fee(self):
+        return self.payment_delivery_pair.system_fee
 
     @classmethod
     def get_or_create(cls, performance, cart_session_id):
@@ -288,6 +283,13 @@ class CartedProduct(Base):
     def seats(self):
         return sorted(itertools.chain.from_iterable(i.seatdicts for i in self.items), 
             key=operator.itemgetter('l0_id'))
+
+    @property
+    def seat_quantity(self):
+        for item in self.items:
+            if item.product_item.stock_type.is_seat:
+                return item.quantity
+        return 0
 
     @deprecate("deprecated method")
     def pop_seats(self, seats, performance_id):

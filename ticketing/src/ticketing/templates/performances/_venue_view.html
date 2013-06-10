@@ -166,9 +166,9 @@
       <script type="text/javascript">
 var dataSource = {
 %if 'drawing' in data_source:
-  drawing: "${data_source['drawing']}",
+  drawing: "${data_source['drawing']|n}",
 %endif
-  metadata: "${data_source['metadata']}"
+  metadata: "${data_source['metadata']|n}"
 };
 
 var venueEditor = $("#venue-editor");

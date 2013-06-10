@@ -10,7 +10,7 @@ from altairsite.mobile.forms import TopForm
 from altairsite.mobile.core.helper import log_info
 from altairsite.mobile.core.eventhelper import EventHelper
 
-@usersite_view_config(route_name='home', request_type="altairsite.mobile.tweens.IMobileRequest"
+@usersite_view_config(route_name='home', request_type="altairsite.tweens.IMobileRequest"
              , renderer='altairsite.mobile:templates/top/top.mako')
 def main(request):
 

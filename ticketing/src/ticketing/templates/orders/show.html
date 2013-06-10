@@ -124,7 +124,8 @@ ${h.breadcrumbs(
           </table>
           % if i == 0:
           <div class="pull-right">
-            <%include file="/orders/_action_button.html" args="order=order, sort=['mailinfo', 'delivered', 'cancel', 'refund', 'print', 'delete']" />
+            <%include file="/orders/_action_button.html"
+              args="order=order, sort=['mailinfo', 'paid', 'unpaid', 'delivered', 'cancel', 'refund', 'print', 'delete']" />
           </div>
           <div id="refund-form">
             <%include file="/orders/refund/_form.html" args="form=form_refund" />
@@ -430,8 +431,8 @@ ${h.breadcrumbs(
                     % endif
                   </td>
                   <td>
-                    %if ordered_product_item.issued_at:
-                      ${ordered_product_item.issued_at}
+                    %if ordered_product_item.issued_at or  ordered_product_item.printed_at:
+                      ${ordered_product_item.issued_at or ordered_product_item.printed_at}
                       <span alt="${ordered_product_item.issued_at}" class="label label-warning">済</span>
                       % for operator_name in list(set([ph.operator.name for ph in ordered_product_item.print_histories if ph.operator])):
                         <div>作業者: ${operator_name}</div>

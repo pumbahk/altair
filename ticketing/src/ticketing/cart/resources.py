@@ -28,8 +28,9 @@ from .exceptions import (
 )
 from ..core import models as c_models
 from ..core import api as core_api
-#from ..users import models as u_models
+from ..users import models as u_models
 from . import models as m
+from . import api
 from zope.deprecation import deprecate
 
 logger = logging.getLogger(__name__)
@@ -75,16 +76,22 @@ class TicketingCartResource(object):
     #     return [m.membership for m in membergroups]
     @property
     def memberships(self):
-        organization = core_api.get_organization(self.request)
-        logger.debug('organization %s' % organization.code)
-        logger.debug('memberships %s' % organization.memberships)
-        return organization.memberships
+        try:
+            organization = self.request.organization
+            memberships = u_models.Membership.query.filter_by(organization_id=organization.id).all()
+            logger.debug('organization %s' % organization.code)
+            logger.debug('memberships %s' % memberships)
+        except:
+            import sys
+            logger.error('exception ignored', exc_info=sys.exc_info())
+            memberships = []
+        return memberships
 
     @property
     def event(self):
         if self._event is None:
             # TODO: ドメインで許可されるeventのみを使う
-            organization = core_api.get_organization(self.request)
+            organization = self.request.organization
             try:
                 self._event = c_models.Event.filter(c_models.Event.id==self.event_id).filter(c_models.Event.organization==organization).one()
             except NoResultFound:
@@ -101,10 +108,6 @@ class TicketingCartResource(object):
         if sales_segment is None:
             return []
         return sales_segment.membergroups
-
-    def get_system_fee(self):
-        # 暫定で0に設定
-        return 0
 
     def get_payment_delivery_method_pair(self, start_on=None):
         segment = self.sales_segment
@@ -202,21 +205,6 @@ class TicketingCartResource(object):
     def get_sales_segment(self):
         return self.sales_segment
 
-    def _create_cart(self, seat_statuses, ordered_products, performance_id):
-        cart = m.Cart.create(system_fee=self.get_system_fee())
-        seats = m.DBSession.query(c_models.Seat).filter(c_models.Seat.id.in_(seat_statuses)).all()
-        cart.add_seat(seats, ordered_products)
-        m.DBSession.add(cart)
-        m.DBSession.flush()
-        return cart
-
-    def _create_cart_with_quantity(self, stock_quantity, ordered_products, performance_id):
-        cart = m.Cart.create(performance_id=performance_id, system_fee=self.get_system_fee())
-        cart.add_products(ordered_products)
-        m.DBSession.add(cart)
-        m.DBSession.flush()
-        return cart
-
     @property
     def membership(self):
         from altair.rakuten_auth.api import authenticated_user
@@ -235,7 +223,7 @@ class TicketingCartResource(object):
 
     @reify
     def host_base_url(self):
-        return core_api.get_host_base_url(self.request)
+        return api.get_host_base_url(self.request)
 
 @implementer(IOrderDelivery)
 class OrderDelivery(object):

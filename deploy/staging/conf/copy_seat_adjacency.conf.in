@@ -19,14 +19,14 @@ propagate = 0
 
 [handler_rotate]
 class = logging.handlers.RotatingFileHandler
-args = ("${buildout:directory}/var/log/copy_seat_adjacency",)
+args = ("${buildout:directory}/log/copy_seat_adjacency",)
 level = NOTSET
 formatter = generic
 
 [handler_stderr]
 class = logging.StreamHandler
 args = (None, )
-level = INFO
+level = ${altair:console_loglevel}
 formatter = generic
 
 [handler_spool]

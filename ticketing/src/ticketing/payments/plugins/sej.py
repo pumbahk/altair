@@ -14,7 +14,7 @@ from ticketing.mails.interfaces import (
 
 from .. import logger
 from pyramid.threadlocal import get_current_registry
-
+from ticketing.models import DBSession
 from ticketing.core import models as c_models
 
 from ticketing.sej.ticket import SejTicketDataXml
@@ -153,7 +153,7 @@ class SejPaymentPlugin(object):
                 zip                 = shipping_address.zip.replace('-', '') if shipping_address.zip else '',
                 email               = shipping_address.email_1 or '',
                 total               = order.total_amount,
-                ticket_total        = cart.tickets_amount,
+                ticket_total        = order.total_amount - (order.system_fee + order.transaction_fee + order.delivery_fee),
                 # 支払いのみの場合は、ticketing_fee が無視されるので、commission に算入してあげないといけない。
                 commission_fee      = order.system_fee + order.transaction_fee + order.delivery_fee,
                 payment_type        = SejPaymentType.PrepaymentOnly,
@@ -169,6 +169,16 @@ class SejPaymentPlugin(object):
 
         return order
 
+
+    def finished(self, request, order):
+        """ 支払番号発行済か判定 """
+        sej_order = DBSession.query(SejOrder).filter(
+            SejOrder.order_id==order.order_no
+        ).first()
+        if sej_order is None:
+            return False
+
+        return bool(sej_order.billing_number)
 
 @implementer(IDeliveryPlugin)
 class SejDeliveryPlugin(object):
@@ -225,6 +235,16 @@ class SejDeliveryPlugin(object):
                 hostname = api_url
             )
 
+    def finished(self, request, order):
+        """ 支払番号発行済か判定 """
+        sej_order = DBSession.query(SejOrder).filter(
+            SejOrder.order_id==order.order_no
+        ).first()
+        if sej_order is None:
+            return False
+
+        return bool(sej_order.exchange_number)
+
 @implementer(IDeliveryPlugin)
 class SejPaymentDeliveryPlugin(object):
     def prepare(self, request, cart):
@@ -266,7 +286,7 @@ class SejPaymentDeliveryPlugin(object):
                 zip                 = shipping_address.zip.replace('-', '') if shipping_address.zip else '',
                 email               = shipping_address.email_1 or '',
                 total               = order.total_amount,
-                ticket_total        = cart.tickets_amount,
+                ticket_total        = order.total_amount - (order.system_fee + order.transaction_fee + order.delivery_fee),
                 commission_fee      = order.system_fee + order.transaction_fee,
                 payment_type        = SejPaymentType.CashOnDelivery,
                 ticketing_fee       = order.delivery_fee,
@@ -281,6 +301,16 @@ class SejPaymentDeliveryPlugin(object):
 
         return order
 
+    def finished(self, request, order):
+        """ 支払番号発行済か判定 """
+        sej_order = DBSession.query(SejOrder).filter(
+            SejOrder.order_id==order.order_no
+        ).first()
+        if sej_order is None:
+            return False
+
+        return bool(sej_order.billing_number)
+
 
 @view_config(context=IOrderDelivery, name="delivery-%d" % DELIVERY_PLUGIN_ID, renderer='ticketing.payments.plugins:templates/sej_delivery_complete.html')
 @view_config(context=IOrderDelivery, request_type='altair.mobile.interfaces.IMobileRequest',
@@ -289,11 +319,13 @@ def sej_delivery_viewlet(context, request):
     order = context.order
     sej_order = get_sej_order(order)
     payment_id = context.order.payment_delivery_pair.payment_method.payment_plugin_id
+    delivery_method = context.order.payment_delivery_pair.delivery_method
     is_payment_with_sej = int(payment_id or -1) == PAYMENT_PLUGIN_ID
     return dict(
         order=order,
         is_payment_with_sej=is_payment_with_sej, 
-        sej_order=sej_order
+        sej_order=sej_order,
+        delivery_method=delivery_method,
     )
 
 @view_config(context=ICartDelivery, name="delivery-%d" % DELIVERY_PLUGIN_ID, 
@@ -308,9 +340,11 @@ def sej_delivery_confirm_viewlet(context, request):
 def sej_payment_viewlet(context, request):
     order = context.order
     sej_order = get_sej_order(order)
+    payment_method = context.order.payment_delivery_pair.payment_method
     return dict(
         order=order,
-        sej_order=sej_order
+        sej_order=sej_order,
+        payment_method=payment_method,
     )
 
 @view_config(context=ICartPayment, name="payment-%d" % PAYMENT_PLUGIN_ID, renderer='ticketing.payments.plugins:templates/sej_payment_confirm.html')
@@ -324,8 +358,11 @@ def payment_mail_viewlet(context, request):
     :param context: ICompleteMailPayment
     """
     sej_order=context.order.sej_order
+    payment_method = context.order.payment_delivery_pair.payment_method
     return dict(sej_order=sej_order, h=cart_helper, 
-                notice=context.mail_data("notice"))
+                notice=context.mail_data("notice"),
+                payment_method=payment_method,
+    )
 
 @view_config(context=ICompleteMailDelivery, name="delivery-%d" % DELIVERY_PLUGIN_ID, renderer="ticketing.payments.plugins:templates/sej_delivery_mail_complete.html")
 def delivery_mail_viewlet(context, request):
@@ -334,10 +371,12 @@ def delivery_mail_viewlet(context, request):
     """
     sej_order=context.order.sej_order
     payment_id = context.order.payment_delivery_pair.payment_method.payment_plugin_id
+    delivery_method = context.order.payment_delivery_pair.delivery_method
     is_payment_with_sej = int(payment_id or -1) == PAYMENT_PLUGIN_ID
     return dict(sej_order=sej_order, h=cart_helper,
                 is_payment_with_sej=is_payment_with_sej, 
-                notice=context.mail_data("notice"))
+                notice=context.mail_data("notice"),
+                delivery_method=delivery_method)
 
 @view_config(context=IOrderCancelMailPayment, name="payment-%d" % PAYMENT_PLUGIN_ID)
 @view_config(context=IOrderCancelMailDelivery, name="delivery-%d" % DELIVERY_PLUGIN_ID)

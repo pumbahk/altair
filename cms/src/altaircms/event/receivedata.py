@@ -199,12 +199,13 @@ class Scanner(object):
 
     def _retrive_salessegment_group(self, organization, event, salessegment, record, group_dict, group_failback_dict, kind_dict):
         kind_name = record.get("kind_name", "unknown")
-        salessegment.group = group_dict.get((event.id, record.get("group_id"))) or group_failback_dict.get((event.id, record["name"], kind_name))
+        publicp = record.get("publicp")
+        salessegment.group = group_dict.get((event.id, record.get("group_id"))) or group_failback_dict.get((event.id, record["name"], kind_name, publicp))
         if salessegment.group is None:
             if record.get("group_id"):
                 salessegment.group = group_dict[(event.id, record.get("group_id"))] = SalesSegmentGroup(name=record["name"], kind=kind_name, event_id=event.id)
             else:
-                salessegment.group = group_failback_dict[(event.id, record["name"], kind_name)] = SalesSegmentGroup(name=record["name"], kind=kind_name, event_id=event.id)
+                salessegment.group = group_failback_dict[(event.id, record["name"], kind_name, publicp)] = SalesSegmentGroup(name=record["name"], kind=kind_name, event_id=event.id, publicp=publicp)
         salessegment.group.backend_id = record.get("group_id")
         if not record.get("group_dict"):
             logger.warn("group id is not found: {0}".format(record))
@@ -217,6 +218,7 @@ class Scanner(object):
         kind.label = record.get("kind_label", u"<不明>")
         salessegment.group.master = kind
         salessegment.group.kind = kind.name #todo:replace
+        salessegment.group.publicp = publicp
 
     def fetch_salessegments(self, organization):
         fetcher = self.salessegment_fetcher
@@ -228,8 +230,9 @@ class Scanner(object):
         r = []
 
         salessegment_groups = SalesSegmentGroup.query.filter(SalesSegmentGroup.event_id.in_(self.event_fetcher.cached_keys()))
+
         group_dict = {(t.event_id, t.backend_id):t for t in salessegment_groups}
-        group_failback_dict = {(t.event_id, t.name, t.kind):t for t in salessegment_groups}
+        group_failback_dict = {(t.event_id, t.name, t.kind, t.publicp):t for t in salessegment_groups}
         salessegmen_kinds = SalesSegmentKind.query.filter(SalesSegmentKind.organization_id == organization.id)
         kind_dict = {k.name: k for k in salessegmen_kinds}
 
@@ -296,7 +299,7 @@ class Scanner(object):
                 ticket.name = record['name']
                 ticket.price = record['price']
                 ticket.display_order = record.get("display_order") or 50
-                ticket.seattype = record['seat_type']
+                ticket.seattype = record['seat_type'] or ""
             except KeyError as e:
                 raise InvalidParamaterException("missing property '%s' in the ticket record" % e.message)
         return r

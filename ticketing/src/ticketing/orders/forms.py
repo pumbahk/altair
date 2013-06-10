@@ -10,9 +10,12 @@ from wtforms import (HiddenField, TextField, SelectField, SelectMultipleField, T
 from wtforms.validators import Optional, AnyOf, Length, Email, Regexp
 from wtforms.widgets import CheckboxInput
 
-from ticketing.formhelpers import (DateTimeField, Translations, Required, DateField, Max, OurDateWidget,
-                                   after1900, CheckboxMultipleSelect, BugFreeSelectMultipleField,
-                                   NFKC, Zenkaku, Katakana, strip_spaces, ignore_space_hyphen)
+from ticketing.formhelpers import (
+    Translations,
+    DateTimeField, DateField, Max, OurDateWidget, OurDateTimeWidget,
+    CheckboxMultipleSelect, BugFreeSelectMultipleField,
+    Required, after1900, NFKC, Zenkaku, Katakana,
+    strip_spaces, ignore_space_hyphen)
 from ticketing.core.models import (Organization, PaymentMethod, DeliveryMethod, SalesSegmentGroup, PaymentDeliveryMethodPair,
                                    SalesSegment, Performance, Product, ProductItem, Event, OrderCancelReasonEnum)
 from ticketing.cart.schemas import ClientForm
@@ -54,7 +57,7 @@ class OrderForm(Form):
         validators=[Required()],
     )
 
-class OrderSearchForm(Form):
+class SearchFormBase(Form):
 
     def __init__(self, formdata=None, obj=None, prefix='', **kwargs):
         Form.__init__(self, formdata, obj, prefix, **kwargs)
@@ -129,26 +132,6 @@ class OrderSearchForm(Form):
         label=u'予約番号',
         validators=[Optional()],
     )
-    ordered_from = DateTimeField(
-        label=u'予約日時',
-        validators=[Optional(), after1900],
-        format='%Y-%m-%d %H:%M',
-        widget=OurDateWidget()
-    )
-    ordered_to = DateTimeField(
-        label=u'予約日時',
-        validators=[Optional(), after1900],
-        format='%Y-%m-%d %H:%M',
-        missing_value_defaults=dict(
-            year=u'',
-            month=Max,
-            day=Max,
-            hour=Max,
-            minute=Max,
-            second=Max
-            ),
-        widget=OurDateWidget()
-    )
     payment_method = SelectMultipleField(
         label=u'決済方法',
         validators=[Optional()],
@@ -160,27 +143,6 @@ class OrderSearchForm(Form):
         validators=[Optional()],
         choices=[],
         coerce=int,
-    )
-    status = BugFreeSelectMultipleField(
-        label=u'ステータス',
-        widget=CheckboxMultipleSelect(multiple=True),
-        validators=[Optional()],
-        choices=[
-            ('ordered', u'受付済み'),
-            ('delivered', u'配送済み'),
-            ('canceled', u'キャンセル'),
-        ],
-        coerce=str,
-    )
-    issue_status = BugFreeSelectMultipleField(
-        label=u'発券ステータス',
-        widget=CheckboxMultipleSelect(multiple=True),
-        validators=[Optional()],
-        choices=[
-            ('issued', u'発券済み'),
-            ('unissued', u'未発券'),
-        ],
-        coerce=str,
     )
     payment_status = BugFreeSelectMultipleField(
         label=u'決済ステータス',
@@ -196,10 +158,6 @@ class OrderSearchForm(Form):
     )
     name = TextField(
         label=u'氏名',
-        validators=[Optional()],
-    )
-    member_id = TextField(
-        label=u'会員番号',
         validators=[Optional()],
     )
     tel = TextField(
@@ -248,6 +206,96 @@ class OrderSearchForm(Form):
             day=Max
             ),
         widget=OurDateWidget()
+    )
+    sort = HiddenField(
+        validators=[Optional()],
+        default='order_no'
+    )
+    direction = HiddenField(
+        validators=[Optional(), AnyOf(['asc', 'desc'], message='')],
+        default='desc',
+    )
+
+    def get_conditions(self):
+        conditions = {}
+        for name, field in self._fields.items():
+            if isinstance(field, HiddenField):
+                continue
+            if not field.data:
+                continue
+
+            if isinstance(field, SelectMultipleField) or isinstance(field, SelectField):
+                data = []
+                for choice in field.choices:
+                    if isinstance(field.data, list) and choice[0] in field.data:
+                        data.append(choice[1])
+                    elif choice[0] == field.data:
+                        data.append(choice[1])
+                data = ', '.join(data)
+            elif isinstance(field, DateTimeField):
+                data = field.data.strftime('%Y-%m-%d %H:%M')
+            else:
+                data = field.data
+            conditions[name] = (field.label.text, data)
+        return conditions
+
+class OrderSearchForm(SearchFormBase):
+    ordered_from = DateTimeField(
+        label=u'予約日時',
+        validators=[Optional(), after1900],
+        format='%Y-%m-%d %H:%M',
+        widget=OurDateWidget()
+    )
+    ordered_to = DateTimeField(
+        label=u'予約日時',
+        validators=[Optional(), after1900],
+        format='%Y-%m-%d %H:%M',
+        missing_value_defaults=dict(
+            year=u'',
+            month=Max,
+            day=Max,
+            hour=Max,
+            minute=Max,
+            second=Max
+            ),
+        widget=OurDateWidget()
+    )
+    status = BugFreeSelectMultipleField(
+        label=u'ステータス',
+        widget=CheckboxMultipleSelect(multiple=True),
+        validators=[Optional()],
+        choices=[
+            ('ordered', u'受付済み'),
+            ('delivered', u'配送済み'),
+            ('canceled', u'キャンセル'),
+        ],
+        coerce=str,
+    )
+    issue_status = BugFreeSelectMultipleField(
+        label=u'発券ステータス',
+        widget=CheckboxMultipleSelect(multiple=True),
+        validators=[Optional()],
+        choices=[
+            ('issued', u'発券済み'),
+            ('unissued', u'未発券'),
+        ],
+        coerce=str,
+    )
+    payment_status = BugFreeSelectMultipleField(
+        label=u'決済ステータス',
+        widget=CheckboxMultipleSelect(multiple=True),
+        validators=[Optional()],
+        choices=[
+            ('unpaid', u'未入金'),
+            ('paid', u'入金済み'),
+            ('refunding', u'払戻予約'),
+            ('refunded', u'払戻済み')
+        ],
+        coerce=str,
+    )
+    member_id = TextField(
+        label=u'会員番号',
+        validators=[Optional()],
     )
     sort = HiddenField(
         validators=[Optional()],
@@ -435,7 +483,7 @@ class OrderReserveForm(Form):
             self.products.choices = []
             if 'sales_segment_id' in kwargs and kwargs['sales_segment_id']:
                 self.sales_segment_id.default = kwargs['sales_segment_id']
-            else:
+            elif len(self.sales_segment_id.choices) > 0:
                 self.sales_segment_id.default = self.sales_segment_id.choices[0][0]
             query = query.filter(Product.sales_segment_id==self.sales_segment_id.default)
             if 'stocks' in kwargs and kwargs['stocks']:
@@ -921,3 +969,33 @@ class CheckedOrderTicketChoiceForm(Form):
         if ticket_formats:
             self.ticket_format_id.choices = [(t.id,  t.name) for t in ticket_formats]
 
+class CartSearchForm(SearchFormBase):
+    carted_from = DateTimeField(
+        label=u'カート生成日時',
+        validators=[Optional(), after1900],
+        format='%Y-%m-%d %H:%M:%S',
+        widget=OurDateTimeWidget()
+    )
+    carted_to = DateTimeField(
+        label=u'カート生成日時',
+        validators=[Optional(), after1900],
+        format='%Y-%m-%d %H:%M:%S',
+        missing_value_defaults=dict(
+            year=u'',
+            month=Max,
+            day=Max,
+            hour=Max,
+            minute=Max,
+            second=Max
+            ),
+        widget=OurDateTimeWidget()
+    )
+    status = SelectField(
+        label=u'状態',
+        validators=[Optional()],
+        choices=[
+            ('', u'すべて'),
+            ('completed', u'注文成立'),
+            ('incomplete', u'注文不成立'),
+        ]
+    )

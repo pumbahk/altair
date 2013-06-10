@@ -2,7 +2,7 @@ from pyramid.exceptions import ConfigurationError
 from .interfaces import IS3ConnectionFactory
 from .s3.connection import DefaultS3ConnectionFactory
 
-CONFIG_PREFIXES = ('altair.s3',)
+CONFIG_PREFIXES = ('altair.s3', 's3',)
 
 def newDefaultS3ConnectionFactory(config):
     options = {}

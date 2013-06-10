@@ -40,8 +40,9 @@ def create_exception_message_builder(registry):
         extra_info=asbool(settings.get('altair.exclog.extra_info', True)),
         includes=aslist(settings.get('altair.exclog.includes', DEFAULT_INCLUDES)))
 
-def create_exception_message_renderer(registry):
-    return BasicExceptionMessageRenderer()
+def create_exception_message_renderer(config):
+    renderer_factory = config.maybe_dotted(config.registry.settings.get('altair.exclog.renderer_factory', '.renderer.BasicExceptionMessageRenderer'))
+    return renderer_factory(show_traceback=asbool(config.registry.settings.get('altair.exclog.show_traceback', 'false')))
 
 def create_exception_logger(registry):
     return ExceptionLogger(logger)
@@ -69,7 +70,7 @@ def _convert_settings(settings):
 def includeme(config):
     _convert_settings(config.registry.settings)
     config.registry.registerUtility(create_exception_message_builder(config.registry), IExceptionMessageBuilder)
-    config.registry.registerUtility(create_exception_message_renderer(config.registry), IExceptionMessageRenderer)
+    config.registry.registerUtility(create_exception_message_renderer(config), IExceptionMessageRenderer)
     config.registry.registerUtility(create_exception_logger(config.registry), IExceptionLogger)
     config.add_tween('.tweens.ExcLogTween', under=INGRESS)
 from pyramid.httpexceptions import HTTPInternalServerError, WSGIHTTPException

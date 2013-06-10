@@ -7,7 +7,7 @@ import transaction
 import logging
 from ticketing.payments.payment import Payment
 from altair.mq.decorators import task_config
-from ticketing.cart.models import Cart, CartedProduct
+from ticketing.cart.models import Cart, CartedProduct, CartedProductItem
 from ticketing.cart.stocker import Stocker
 from pyramid.interfaces import IRequest
 from ticketing.cart.interfaces import (
@@ -16,11 +16,34 @@ from ticketing.cart.interfaces import (
 from ticketing.models import DBSession
 from ticketing.cart.reserving import Reserving
 from ticketing.cart.carting import CartFactory
+from ticketing import multicheckout
 from .events import LotElectedEvent
 
-from .models import Lot, LotElectWork, LotEntryWish
+from .models import Lot, LotElectWork, LotEntryWish, LotEntry
+from ticketing.payments.api import (
+    is_finished_payment,
+    is_finished_delivery,
+)
 
 logger = logging.getLogger(__name__)
+
+def on_delivery_error(event):
+    import sys
+    import traceback
+    import StringIO
+
+    e = event.exception
+    order = event.order
+    exc_info = sys.exc_info()
+    out = StringIO.StringIO()
+    traceback.print_exception(*exc_info, file=out)
+    logger.error(out.getvalue())
+    entry = LotEntry.query.filter(LotEntry.entry_no==order.order_no).first()
+    order.note = str(e)
+    if entry is not None:
+        entry.order = order
+    transaction.commit()
+
 
 def includeme(config):
     # payment
@@ -37,8 +60,11 @@ def includeme(config):
     reg.adapters.register([IRequest], IStocker, "", Stocker)
     reg.adapters.register([IRequest], IReserving, "", Reserving)
     reg.adapters.register([IRequest], ICartFactory, "", CartFactory)
+    config.add_subscriber('.workers.on_delivery_error',
+                          'ticketing.payments.events.DeliveryErrorEvent')
+
     config.scan(".workers")
-    config.scan(".subscribers")
+    #config.scan(".subscribers")
 
 
 def lot_wish_cart(wish):
@@ -47,10 +73,15 @@ def lot_wish_cart(wish):
                 payment_delivery_pair=wish.lot_entry.payment_delivery_method_pair,
                 _order_no=wish.lot_entry.entry_no,
                 sales_segment=wish.lot_entry.lot.sales_segment,
-                system_fee=wish.system_fee,
                 products=[
                     CartedProduct(product=p.product,
-                                  quantity=p.quantity)
+                                  quantity=p.quantity,
+                                  items=[
+                                      CartedProductItem(
+                                          quantity=p.quantity * ordered_product_item.quantity,
+                                          product_item=ordered_product_item)
+                                      for ordered_product_item in p.product.items
+                                  ])
                     for p in wish.products
                     ],
                 )
@@ -92,8 +123,10 @@ def dummy_task(context, message):
     except Exception as e:
         print e
 
+
 @task_config(root_factory=WorkerResource,
              queue="lots")
+@multicheckout.multicheckout_session
 def elect_lots_task(context, message):
     """ 当選確定処理 """
     DBSession.remove()
@@ -118,9 +151,19 @@ def elect_lots_task(context, message):
     request.altair_checkout3d_override_shop_name = lot.event.organization.setting.multicheckout_shop_name
     wish = work.wish
     wish_id = wish.id
+    pdmp = wish.lot_entry.payment_delivery_method_pair
 
+    order = wish.lot_entry.order
+    if order:
+        payment_finished = is_finished_payment(request, pdmp, order)
+        delivery_finished = is_finished_delivery(request, pdmp, order)
+
+        if payment_finished and delivery_finished:
+            lot_entry = wish.lot_entry
+            logger.warning("lot entry {0} is already ordered.".format(lot_entry.entry_no))
+            return
     try:
-        order = elect_lot_wish(request, wish)
+        order = elect_lot_wish(request, wish, order)
         if order:
             logger.info("ordered: order_no = {0.order_no}".format(order))
             # トランザクション分離のため、再ロード
@@ -139,12 +182,13 @@ def elect_lots_task(context, message):
         transaction.abort()
         work = LotElectWork.query.filter(LotElectWork.id==work_id).first()
         work.error = str(e).decode('utf-8')
+        logger.error(work.error)
         transaction.commit()
         raise
     finally:
         pass
 
-def elect_lot_wish(request, wish):
+def elect_lot_wish(request, wish, order=None):
     cart = lot_wish_cart(wish)
     payment = Payment(cart, request)
     stocker = Stocker(request)
@@ -154,35 +198,18 @@ def elect_lot_wish(request, wish):
         performance = cart.performance
         product_requires = [(p.product, p.quantity)
                             for p in cart.products]
+        if order is None:
+            order = payment.call_payment()
+
+        else:
+            payment.call_delivery(order)
         stocked = stocker.take_stock(performance.id,
                                      product_requires)
         logger.debug("lot elected: entry_no = {0}, stocks = {1}".format(wish.lot_entry.entry_no, stocked))
         # TODO: 確保数確認
-        order = payment.call_payment()
+        # TODO: orderにseat割り当て
 
         return order
 
     except Exception as e:
         logger.exception(e)
-
-    
-
-    # def elect_lot_entries(self):
-    #     """ 抽選申し込み確定
-    #     申し込み番号と希望順で、当選確定処理を行う
-    #     ワークに入っているものから当選処理をする
-    #     それ以外を落選処理にする
-    #     """
-
-    #     elected_wishes = self.lot.get_elected_wishes()
-
-    #     for ew in elected_wishes:
-    #         ew.entry.elect(ew)
-
-    #     # 落選処理
-    #     rejected_wishes = self.lot.get_rejected_wishes()
-
-    #     for rw in rejected_wishes:
-    #         rw.entry.reject()
-
-    #     self.lot.finish_lotting()

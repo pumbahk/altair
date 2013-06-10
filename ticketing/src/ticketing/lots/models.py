@@ -25,6 +25,7 @@ from sqlalchemy.ext.hybrid import hybrid_property, hybrid_method
 from sqlalchemy.orm.exc import NoResultFound
 from zope.deprecation import deprecate
 
+logger = logging.getLogger(__name__)
 from ticketing.utils import StandardEnum
 from ticketing.models import (
     Identifier,
@@ -153,6 +154,17 @@ class Lot(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             affected += 1
         return affected
 
+
+    ## gaaaa! look above comments!
+    def rejecting_entries(self, entries):
+        """ 落選予定 """
+        affected = 0
+        for entry in entries:
+            w = LotRejectWork(lot_id=self.id, lot_entry_no=entry.entry_no)
+            DBSession.add(w)
+            affected += 1
+        return affected
+
     def cancel_electing(self, wish):
         LotElectWork.query.filter(
             LotElectWork.lot_id==self.id
@@ -160,6 +172,13 @@ class Lot(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             LotElectWork.lot_entry_no==wish.lot_entry.entry_no
         ).filter(
             LotElectWork.wish_order==wish.wish_order
+        ).delete()
+
+    def cancel_rejecting(self, entry):
+        LotRejectWork.query.filter(
+            LotRejectWork.lot_id==self.id
+        ).filter(
+            LotRejectWork.lot_entry_no==entry.entry_no
         ).delete()
 
 
@@ -286,11 +305,17 @@ class LotEntry(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     canceled_at = sa.Column(sa.DateTime())
     ordered_mail_sent_at = sa.Column(sa.DateTime())
 
+    browserid = sa.Column(sa.String(40))
+
     def get_wish(self, wish_order):
         wish_order = int(wish_order)
         for wish in self.wishes:
             if wish.wish_order == wish_order:
                 return wish
+
+    @property
+    def sales_segment(self):
+        return self.lot.sales_segment
 
     @property
     def max_amount(self):
@@ -346,6 +371,15 @@ class LotEntry(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         for wish in self.wishes:
             wish.cancel(now)
 
+    def is_electing(self):
+        return LotElectWork.query.filter(
+            LotElectWork.lot_entry_no==self.entry_no
+        ).count()
+
+    def is_rejecting(self):
+        return LotRejectWork.query.filter(
+            LotRejectWork.lot_entry_no==self.entry_no
+        ).count()
 
 
 class LotEntryWish(Base, BaseModel, WithTimestamp, LogicallyDeleted):
@@ -374,10 +408,25 @@ class LotEntryWish(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         return LotElectWork.query.filter(
             LotElectWork.entry_wish_no==self.entry_wish_no).count()
 
+    def is_rejecting(self):
+        return LotRejectWork.query.filter(
+            LotRejectWork.lot_entry_no==LotEntry.entry_no
+        ).filter(
+            LotEntry.id==self.lot_entry_id
+        ).count()
+
     @property
     def works(self):
         return LotElectWork.query.filter(
             LotElectWork.entry_wish_no==self.entry_wish_no,
+        ).all()
+
+    @property
+    def reject_works(self):
+        return LotRejectWork.query.filter(
+            LotRejectWork.lot_entry_no==LotEntry.entry_no
+        ).filter(
+            LotEntry.id==self.lot_entry_id
         ).all()
 
 
@@ -386,28 +435,22 @@ class LotEntryWish(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         return [w.error for w in self.works if w.error]
 
     @property
+    def product_quantities(self):
+        """ (product, quantity) """
+        return [(p.product, p.quantity)
+                for p in self.products]
+
+    @property
     def transaction_fee(self):
         """ 決済手数料 """
-        payment_fee = self.lot_entry.payment_delivery_method_pair.transaction_fee
-        payment_method = self.lot_entry.payment_delivery_method_pair.payment_method
-        if payment_method.fee_type == c_models.FeeTypeEnum.Once.v[0]:
-            return payment_fee
-        elif payment_method.fee_type == c_models.FeeTypeEnum.PerUnit.v[0]:
-            return payment_fee * self.total_quantity
-        else:
-            return 0
+        return self.lot_entry.sales_segment.get_transaction_fee(self.lot_entry.payment_delivery_method_pair,
+                                                                self.product_quantities)
 
     @property
     def delivery_fee(self):
         """ 引取手数料 """
-        delivery_fee = self.lot_entry.payment_delivery_method_pair.delivery_fee
-        delivery_method = self.lot_entry.payment_delivery_method_pair.delivery_method
-        if delivery_method.fee_type == c_models.FeeTypeEnum.Once.v[0]:
-            return delivery_fee
-        elif delivery_method.fee_type == c_models.FeeTypeEnum.PerUnit.v[0]:
-            return delivery_fee * self.total_quantity
-        else:
-            return 0
+        return self.lot_entry.sales_segment.get_delivery_fee(self.lot_entry.payment_delivery_method_pair,
+                                                             self.product_quantities)
 
     @property
     def tickets_amount(self):
@@ -436,6 +479,8 @@ class LotEntryWish(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             return u"当選予定"
         if self.canceled_at:
             return u"キャンセル"
+        if self.reject_works:
+            return u"落選予定"
         if self.rejected_at:
             return u"落選"
         return u"申込"
@@ -502,6 +547,28 @@ class LotElectWork(Base, BaseModel, WithTimestamp):
 
     def __repr__(self):
         return "LotEntryProduct {self.entry_wish_no}".format(self=self)
+
+
+class LotRejectWork(Base, BaseModel, WithTimestamp):
+    """ 落選情報取り込みワーク """
+    __tablename__ = 'LotRejectWork'
+
+    id = sa.Column(Identifier, primary_key=True)
+    lot_id = sa.Column(Identifier, sa.ForeignKey('Lot.id'))
+    lot = orm.relationship("Lot", backref="reject_works")
+    lot_entry_no = sa.Column(sa.Unicode(20), sa.ForeignKey('LotEntry.entry_no'), unique=True, doc=u"抽選申し込み番号")
+    error = sa.Column(sa.UnicodeText)
+
+    @property
+    def lot_entry(self):
+        return LotEntry.query.filter(
+            LotEntry.entry_no==self.lot_entry_no,
+        ).one()
+
+
+    def __repr__(self):
+        return "LotRejectProduct {self.entry_wish_no}".format(self=self)
+
 
 class LotElectedEntry(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     """ 抽選当選情報 """

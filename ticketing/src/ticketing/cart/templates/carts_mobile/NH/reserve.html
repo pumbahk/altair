@@ -11,7 +11,10 @@ ${event.title}
 <div>
   <div style="background-color:#ddddff">商品名(金額)</div>
   <div>
-  ${product['name']}(${product['price']}円)
+  ${product['name']} (${product['price']}円)<br />
+  % if product['detail']:
+    ${product['detail']}<br />
+  % endif
   </div>
   % if product['seats']:
   <font color="#F12997">■</font>座席番号<br/>
@@ -20,7 +23,11 @@ ${event.title}
   % endfor
   % endif
   <font color="#F12997">■</font>数量<br/>
-  ${product['quantity']}<br/>
+  ${product['quantity']}
+  % if product['quantity'] != product['seat_quantity']:
+    (${product['seat_quantity']}枚)
+  % endif
+  <br/>
 </div>
 % endfor
 <div style="background-color:#ffdddd">合計金額</div>

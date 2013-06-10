@@ -3,6 +3,7 @@
 from markupsafe import Markup
 from ticketing.cart.helpers import *
 from pyramid.threadlocal import get_current_request
+from altair.mobile.api import is_mobile
 
 def japanese_date(date):
     return u"%d年%d月%d日(%s)" % (date.year, date.month, date.day, u"月火水木金土日"[date.weekday()])
@@ -23,7 +24,7 @@ def error(names):
     if not errs:
         return u''
     errs = ", ".join(errs.values())
-    if request.is_mobile:
+    if is_mobile(request):
         return Markup('<font color="red">%s</font><br />' % errs)
     else:
         return Markup('<p class="error">%s</p>' % errs)

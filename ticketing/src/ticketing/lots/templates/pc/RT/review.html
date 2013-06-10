@@ -14,10 +14,10 @@
 	%if entry.is_ordered:
 抽選の結果、お客様はご当選されました。
 <a href="/orderreview" target="_blank">購入履歴</a>をご確認ください。 注文番号は ${entry.entry_no} です。
+        %elif entry.is_rejected:
+抽選の結果、お客様は残念ながら落選となりました。
 	%elif not entry.lot.is_elected():
 	抽選結果発表は、${h.japanese_datetime(entry.lot.lotting_announce_datetime)}～を予定しております。発表日時以降に再度、当選・落選をご確認ください。
-        %elif entry.is_rejected:
-        抽選の結果、お客様は落選となりました。
 	%endif
       </div>
     </div>
@@ -45,9 +45,9 @@
                   <dd class="product-price-and-quantity">${h.format_currency(lot_product.product.price)}×${lot_product.quantity}枚=${h.format_currency(lot_product.subtotal)} (税込)</dd>
                 %endfor
                   <dt class="payment-method">決済手数料 (${wish.lot_entry.payment_delivery_method_pair.payment_method.name})</dt>
-                  <dd class="payment-fee">${h.format_currency(wish.lot_entry.payment_delivery_method_pair.transaction_fee)}</dd>
+                  <dd class="payment-fee">${h.format_currency(wish.transaction_fee)}</dd>
                   <dt class="delivery-method">配送手数料 (${wish.lot_entry.payment_delivery_method_pair.delivery_method.name})</dt>
-                  <dd class="delivery-fee">${h.format_currency(wish.lot_entry.payment_delivery_method_pair.delivery_fee)}</dd>
+                  <dd class="delivery-fee">${h.format_currency(wish.delivery_fee)}</dd>
                   <dt class="delivery-method">システム利用料</dt>
                   <dd class="delivery-fee">${h.format_currency(wish.system_fee)}</dd>
                   <dt class="total-amount">合計</dt>

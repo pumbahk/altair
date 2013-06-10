@@ -19,14 +19,14 @@ propagate = 0
 
 [handler_rotate]
 class = logging.handlers.RotatingFileHandler
-args = ("${buildout:directory}/var/log/update_seat_status",)
+args = ("${buildout:directory}/log/update_seat_status",)
 level = NOTSET
 formatter = generic
 
 [handler_stderr]
 class = logging.StreamHandler
 args = (None, )
-level = INFO
+level = ${altair:console_loglevel}
 formatter = generic
 
 [handler_spool]

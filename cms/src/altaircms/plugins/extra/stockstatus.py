@@ -66,8 +66,8 @@ class CalcResult(object): #すごい決め打ち
         k = stock["performance_id"]
         self.scores[k] += stock["available"]
         self.counts[k] += stock["assigned"]
-        if stock["available"] <= 0:
-            self.has_soldout[k] = True
+        # if stock["available"] <= 0:
+        #     self.has_soldout[k] = True
 
     def get_status(self, performance):
         if performance.purchase_link:

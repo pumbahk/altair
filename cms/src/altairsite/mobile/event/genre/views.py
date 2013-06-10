@@ -16,7 +16,7 @@ from altairsite.mobile.core.eventhelper import EventHelper
 class ValidationFailure(Exception):
     pass
 
-@usersite_view_config(route_name='genre', request_type="altairsite.mobile.tweens.IMobileRequest"
+@usersite_view_config(route_name='genre', request_type="altairsite.tweens.IMobileRequest"
     , renderer='altairsite.mobile:templates/genre/genre.mako')
 def move_genre(request):
 
@@ -76,7 +76,7 @@ def move_genre(request):
     }
 
 @usersite_view_config(route_name='genre', context=ValidationFailure
-    , request_type="altairsite.mobile.tweens.IMobileRequest", renderer='altairsite.mobile:templates/common/error.mako')
+    , request_type="altairsite.tweens.IMobileRequest", renderer='altairsite.mobile:templates/common/error.mako')
 def failed_validation(request):
     return {}
 

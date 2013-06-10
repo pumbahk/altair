@@ -18,7 +18,7 @@ from altaircms.page.forms import url_not_conflict
 
 from ..event.models import Event
 from altaircms.models import Performance, Genre
-from ..models import Category, SalesSegment, SalesSegmentGroup
+from ..models import Category, SalesSegment, SalesSegmentGroup, Ticket
 from ..asset.models import ImageAsset
 from ..page.models import PageSet, MobileTag
 from ..topic.models import TopicTag, Topcontent,TopcontentTag, PromotionTag, Promotion
@@ -93,7 +93,7 @@ class LayoutUpdateForm(Form):
 class PerformanceForm(Form):
     title = fields.TextField(label=u"公演タイトル")
     display_order = fields.IntegerField(label=u"表示順序")
-    backend_id = fields.IntegerField(validators=[required_field()], label=u"バックエンド管理番号")
+    backend_id = fields.IntegerField(validators=[validators.Optional()], label=u"バックエンド管理番号")
     event = dynamic_query_select_field_factory(Event, allow_blank=False, label=u"イベント", get_label=lambda obj: obj.title)
     prefecture = fields.SelectField(label=u"開催県", choices=import_symbol("altaircms.seeds.prefecture:PREFECTURE_CHOICES"))
     venue = fields.TextField(label=u"開催場所(詳細)")
@@ -122,6 +122,8 @@ class PerformanceForm(Form):
 
     def object_validate(self, obj=None):
         data = self.data
+        if not data["backend_id"]:
+            return not bool(self.errors)
         qs = Performance.query.filter(Performance.backend_id == data["backend_id"])
         if obj:
             qs = qs.filter(Performance.backend_id != obj.backend_id)
@@ -145,8 +147,8 @@ class SalesSegmentForm(Form):
                                                allow_blank=False, label=u"販売区分名", get_label=lambda obj: obj.name)
     start_on = fields.DateTimeField(label=u"開始時間",validators=[])
     end_on = fields.DateTimeField(label=u"終了時間",validators=[])
-       
-    __display_fields__ = [u"performance", u"group", u"start_on", u"end_on"]
+    backend_id = fields.IntegerField(validators=[validators.Optional()], label=u"バックエンド管理番号")       
+    __display_fields__ = [u"performance", u"group", u"start_on", u"end_on", u"backend_id"]
 
     def validate(self, **kwargs):
         if super(SalesSegmentForm, self).validate():
@@ -156,6 +158,16 @@ class SalesSegmentForm(Form):
             #     data["name"] = data["event"].title
         return not bool(self.errors)
 
+    def object_validate(self, obj=None):
+        data = self.data
+        if not data["backend_id"]:
+            return not bool(self.errors)
+        qs = SalesSegment.query.filter(SalesSegment.backend_id == data["backend_id"])
+        if obj:
+            qs = qs.filter(SalesSegment.backend_id != obj.backend_id)
+        if qs.count() >= 1:
+            append_errors(self.errors, "backend_id", u"バックエンドIDが重複しています。(%s)" % data["backend_id"])
+        return not bool(self.errors)
 
 class TicketForm(Form):
     sale = dynamic_query_select_field_factory(SalesSegment, 
@@ -166,12 +178,25 @@ class TicketForm(Form):
     name = fields.TextField(validators=[required_field()], label=u"商品名")
     seattype = fields.TextField(validators=[], label=u"席種／グレード")
     price = fields.IntegerField(validators=[required_field()], label=u"料金")
+    backend_id = fields.IntegerField(validators=[validators.Optional()], label=u"バックエンド管理番号")
     # display_order = fields.TextField(label=u"表示順序(default:50)")
+
+    def object_validate(self, obj=None):
+        data = self.data
+        if not data["backend_id"]:
+            return not bool(self.errors)
+        qs = Ticket.query.filter(Ticket.backend_id == data["backend_id"])
+        if obj:
+            qs = qs.filter(Ticket.backend_id != obj.backend_id)
+        if qs.count() >= 1:
+            append_errors(self.errors, "backend_id", u"バックエンドIDが重複しています。(%s)" % data["backend_id"])
+        return not bool(self.errors)
+
     def validate_display_order(form, field):
         if not field.data:
             field.data = "50"
 
-    __display_fields__ = [u"sale", u"seattype", u"name", u"price"]
+    __display_fields__ = [u"sale", u"seattype", u"name", u"price", u"backend_id"]
     # __display_fields__ = [u"sale", u"name", u"seattype", u"price", u"display_order"]
 
 validate_publish_term = TermValidator("publish_open_on", "publish_close_on",  u"公開開始日よりも後に終了日が設定されています")
@@ -426,11 +451,11 @@ class PageTypeForm(Form):
     label = fields.TextField(label=u"日本語表記", validators=[required_field()])
     page_role = MaybeSelectField(choices=PageType.page_role_candidates, label=u"ページの利用方法")
     page_rendering_type = fields.SelectField(choices=PageType.page_rendering_type_candidates, label=u"ページのレンダリング方法")
-
+    is_important = fields.BooleanField(label=u"重要なページ", default=False)
     def validate_page_role(field, data):
         if data is None:
             field.data = PageType.page_default_role
-    __display_fields__ = ["name", "label", "page_role", "page_rendering_type"]
+    __display_fields__ = ["name", "label", "page_role", "is_important", "page_rendering_type"]
 
 class PageSetForm(Form):
     name = fields.TextField(label=u"名前")

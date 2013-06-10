@@ -73,12 +73,13 @@ requires = [
     'beaker-extensions == 0.2.0dev-moriyoshi2',
     'boto',
     'fluent-logger == 0.3.3moriyoshi2',
-    'PIL', # for qrcode.image.pil
+    'Pillow', # for qrcode.image.pil
     'altair.findable_label', 
     'altair.log',
     "jsonrpclib", 
     "poster",
     "radix",
+    "requests",
     "altair.auth",
     "altair.sqla",
     "altair.exclog",
@@ -169,7 +170,7 @@ setup(name='ticketing',
       release_carts=ticketing.cart.scripts.release_carts:main
       rakuten_checkout_sales=ticketing.checkout.commands:rakuten_checkout_sales
       refund_order=ticketing.orders.commands:refund_order
-      sej_send_refund_file=ticketing.sej.commands:send_refund_file
+      sej_send_refund_file_with_proxy=ticketing.sej.commands:send_refund_file_with_proxy
       """,
       paster_plugins=['pyramid'],
       )

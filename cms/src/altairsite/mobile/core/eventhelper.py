@@ -9,10 +9,8 @@ class EventHelper(object):
     def get_event_from_linked_page_id(cls, request, linked_page_id):
         log_info("get_event_from_linked_page_id", "start")
         event = request.allowable(Event) \
-            .filter(Event.is_searchable == True) \
             .join(PageSet, Event.id == PageSet.event_id) \
             .filter(PageSet.id == linked_page_id).first()
-        print event
         log_info("get_event_from_linked_page_id", "end")
         return event
 

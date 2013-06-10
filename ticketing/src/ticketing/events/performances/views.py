@@ -20,11 +20,13 @@ from ticketing.core.models import Event, Performance, Order, Venue
 from ticketing.core.models import PerformanceSetting
 from ticketing.products.forms import ProductForm
 from ticketing.orders.forms import OrderForm, OrderSearchForm
+from ticketing.venues.api import get_venue_site_adapter
 
 from ticketing.mails.forms import MailInfoTemplate
 from ticketing.models import DBSession
 from ticketing.mails.api import get_mail_utility
 from ticketing.core.models import MailTypeChoices
+from ticketing.orders.api import OrderSearchQueryBuilder
 
 @view_defaults(decorator=with_bootstrap, permission="event_editor")
 class PerformanceShowView(BaseView):
@@ -38,8 +40,22 @@ class PerformanceShowView(BaseView):
             raise HTTPNotFound('performance id %d is not found' % performance_id)
         self.performance = performance
 
+    def build_data_source(self, query_option=None):
+        query = {u'n':u'seats|stock_types|stock_holders|stocks'}
+        query.update(query_option or dict())
+        return dict(
+            drawing=get_venue_site_adapter(self.request, self.performance.venue.site).direct_drawing_url,
+            metadata=self.request.route_path(
+                'api.get_seats',
+                venue_id=self.performance.venue.id,
+                _query=query
+                )
+            )
+
     def _tab_seat_allocation(self):
-        return {}
+        return dict(
+            data_source=self.build_data_source()
+            )
 
     def _tab_product(self):
         return dict(
@@ -54,7 +70,7 @@ class PerformanceShowView(BaseView):
             event_id=self.performance.event_id,
             performance_id=self.performance.id)
         if form_search.validate():
-            query = Order.set_search_condition(query, form_search)
+            query = OrderSearchQueryBuilder(form_search.data)(query)
         else:
             self.request.session.flash(u'検索条件が正しくありません')
         return dict(
@@ -74,7 +90,9 @@ class PerformanceShowView(BaseView):
             )
 
     def _tab_reservation(self):
-        return {}
+        return dict(
+            data_source=self.build_data_source({u'f':u'sale_only'})
+            )
 
     def _extra_data(self):
         # プリンターAPI

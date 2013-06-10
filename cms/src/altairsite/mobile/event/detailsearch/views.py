@@ -7,7 +7,7 @@ from altairsite.mobile.core.helper import get_event_paging, get_week_map
 from altairsite.mobile.core.helper import log_info
 from datetime import date
 
-@usersite_view_config(route_name='detailsearchinit', request_type="altairsite.mobile.tweens.IMobileRequest"
+@usersite_view_config(route_name='detailsearchinit', request_type="altairsite.tweens.IMobileRequest"
     , renderer='altairsite.mobile:templates/detailsearch/detailsearch.mako')
 def move_detailsearch(request):
 
@@ -19,7 +19,7 @@ def move_detailsearch(request):
 
     return {'form':form}
 
-@usersite_view_config(route_name='detailsearch', request_type="altairsite.mobile.tweens.IMobileRequest"
+@usersite_view_config(route_name='detailsearch', request_type="altairsite.tweens.IMobileRequest"
     , renderer='altairsite.mobile:templates/searchresult/detailsearch.mako')
 def move_detailsearch_post(request):
 
@@ -34,12 +34,11 @@ def move_detailsearch_post(request):
     if form.validate():
         log_info("move_detailsearch_post", "detail search start")
         qs = searcher.get_events_from_freeword(form)
-        if not qs:
-            log_info("move_detailsearch_post", "free word not result")
-        else:
-            qs = searcher.get_events_from_area(form, qs)
+        qs = searcher.get_events_from_area(form, qs)
+        qs = searcher.get_events_from_start_on(form, qs)
+        if qs:
+            # 以下は絞り込み条件
             qs = searcher.get_events_from_sale(form, qs)
-            qs = searcher.get_events_from_start_on(form, qs)
             qs = searcher.get_events_from_salessegment(form, qs)
 
         log_info("move_detailsearch_post", "detail search end")

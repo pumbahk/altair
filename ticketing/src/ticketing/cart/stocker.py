@@ -87,7 +87,7 @@ class Stocker(object):
             for product_item in DBSession.query(ProductItem).filter(
                         ProductItem.product_id==product.id).filter(
                         ProductItem.performance_id==performance_id).all():
-                yield (product_item, quantity)
+                yield (product_item, quantity * product_item.quantity)
 
     def quantity_for_stock_id(self, performance_id, ordered_products):
         """ Productと個数の組から、stock_id, 個数の組に集約する

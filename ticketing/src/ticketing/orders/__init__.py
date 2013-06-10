@@ -9,6 +9,7 @@ def includeme(config):
     config.add_route('orders.cancel'                    , '/cancel/{order_id}')
     config.add_route('orders.delete'                    , '/delete/{order_id}')
     config.add_route('orders.delivered'                 , '/delivered/{order_id}')
+    config.add_route('orders.change_status'             , '/change_status/{order_id}/{status}')
     config.add_route('orders.download'                  , '/download/')
     config.add_route('orders.sales_summary'             , '/sales_summary/')
     config.add_route('orders.reserve.form'              , '/reserve/form/')
@@ -52,6 +53,7 @@ def includeme(config):
     config.add_route("orders.api.sales_segments"        , "/api/sales_segments")
     config.add_route("orders.api.checkbox_status"       , "/api/checkbox_status/{action}")
     config.add_route("orders.api.orders"                , "/api/orders/{action}")
+    config.add_route("cart.search",                       "/carts/")
     config.scan(".")
 
     # 団体予約、インナー予約でcartパッケージを使う為の設定

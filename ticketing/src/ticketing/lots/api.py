@@ -40,11 +40,12 @@ import ticketing.cart.api as cart_api
 from ticketing.utils import sensible_alnum_encode
 from altair.rakuten_auth.api import authenticated_user
 from ticketing.core import api as core_api
+from ticketing.models import DBSession
 from ticketing.core.models import (
     Event,
     SalesSegment,
+    Performance,
     ShippingAddress,
-    DBSession,
 )
 
 from ticketing.users.models import (
@@ -69,7 +70,7 @@ from .models import (
 from . import sendmail
 from .events import LotEntriedEvent
 from .interfaces import IElecting
-from .adapters import LotEntryCart
+from .adapters import LotSessionCart
 
 def get_event(request):
     event_id = request.matchdict['event_id']
@@ -111,11 +112,10 @@ def get_requested_lot(request):
     return Lot.query.filter(Lot.id==lot_id).one()
 
 
-def get_entry_cart(request, entry=None):
-    if entry is None:
-        entry_id = request.session['altair.lots.entry_id']
-        entry = LotEntry.query.filter(LotEntry.id==entry_id).one()
-    return LotEntryCart(entry)
+def get_entry_cart(request):
+    entry = request.session['lots.entry']
+    cart = LotSessionCart(entry, request, Lot.query.filter(Lot.id==entry['lot_id']).one())
+    return cart
 
 def build_lot_entry_wish(wish_order, wish_rec):
     performance_id = long(wish_rec["performance_id"])
@@ -144,10 +144,12 @@ def build_lot_entry(lot, wishes, payment_delivery_method_pair, membergroup=None,
 
 def build_temporary_lot_entry(*args, **kwargs):
     entry = build_lot_entry(*args, **kwargs)
+    for wish in entry.wishes:
+        wish.performance = Performance.filter_by(id=wish.performance_id).one()
     DBSession.expunge(entry)
     return entry
 
-def entry_lot(request, lot, shipping_address, wishes, payment_delivery_method_pair, user, gender, birthday, memo):
+def entry_lot(request, entry_no, lot, shipping_address, wishes, payment_delivery_method_pair, user, gender, birthday, memo):
     """
     wishes
     {product_id, quantity} の希望順リスト
@@ -164,10 +166,13 @@ def entry_lot(request, lot, shipping_address, wishes, payment_delivery_method_pa
         birthday=birthday,
         memo=memo
         )
+    if hasattr(request, "browserid"):
+        entry.browserid = getattr(request, "browserid")
 
+    entry.entry_no = entry_no
     DBSession.add(entry)
     DBSession.flush()
-    entry.entry_no = generate_entry_no(request, entry)
+
     for wish in entry.wishes:
         wish.entry_wish_no = "{0}-{1}".format(entry.entry_no, wish.wish_order)
     request.session['altair.lots.entry_id'] = entry.id
@@ -184,12 +189,12 @@ def get_entry(request, entry_no, tel_no):
     ).first()
 
 
-def generate_entry_no(request, lot_entry):
+def generate_entry_no(request, organization):
     """ 引き替え用の抽選申し込み番号生成
     TODO:  ticketing.core.api.get_next_order_no を使う
     """
     base_id = core_api.get_next_order_no()
-    organization_code = lot_entry.lot.event.organization.code
+    organization_code = organization.code
     return organization_code + sensible_alnum_encode(base_id).zfill(10)
 
 
@@ -290,15 +295,28 @@ def submit_lot_entries(lot_id, entries):
     lot = Lot.query.filter(Lot.id==lot_id).one()
     return lot.electing_wishes(entries)
 
+def submit_reject_entries(lot_id, entries):
+    """
+    当選リストの取り込み
+    entries : (entry_no, wish_order)のリスト
+    """
+    lot = Lot.query.filter(Lot.id==lot_id).one()
+    return lot.rejecting_entries(entries)
+
 
 def elect_lot_entries(request, lot_id):
     # 当選処理
     lot = DBSession.query(Lot).filter_by(id=lot_id).one()
-    #electing = request.registry.adapters.lookup([Lot, IRequest], IElecting, "")
-    #elector = electing(lot, request)
 
     elector = request.registry.queryMultiAdapter([lot, request], IElecting, "")
     return elector.elect_lot_entries()
+
+def reject_lot_entries(request, lot_id):
+    # 落選
+    lot = DBSession.query(Lot).filter_by(id=lot_id).one()
+
+    elector = request.registry.queryMultiAdapter([lot, request], IElecting, "")
+    return elector.reject_lot_entries()
     
 
 def entry_session(request, lot_entry=None):
@@ -380,8 +398,10 @@ def send_rejected_mails(request):
 def get_entry_user(request):
     return None
 
-def new_lot_entry(request, wishes, payment_delivery_method_pair_id, shipping_address_dict, gender, birthday, memo):
+def new_lot_entry(request, entry_no, wishes, payment_delivery_method_pair_id, shipping_address_dict, gender, birthday, memo):
     request.session['lots.entry'] = dict(
+        lot_id=request.context.lot.id,
+        entry_no=entry_no,
         token=uuid4().hex,
         wishes=list(wishes),
         payment_delivery_method_pair_id=payment_delivery_method_pair_id,

@@ -110,10 +110,9 @@ class ProductForm(OurForm):
                 raise ValidationError(u'既に在庫が割り当てられているため、席種は変更できません')
 
 
-class ProductItemForm(Form):
-
+class ProductItemForm(OurForm):
     def __init__(self, formdata=None, obj=None, prefix='', **kwargs):
-        Form.__init__(self, formdata, obj, prefix, **kwargs)
+        super(ProductItemForm, self).__init__(formdata, obj, prefix, **kwargs)
         product_id = kwargs.get('product_id')
         performance_id = kwargs.get('performance_id')
 
@@ -161,28 +160,28 @@ class ProductItemForm(Form):
     product_id = HiddenField(
         validators=[Required()]
     )
-    product_item_name = TextField(
+    product_item_name = OurTextField(
         label=u'商品明細名',
         validators=[
             Required(),
             Length(max=255, message=u'255文字以内で入力してください'),
             ]
     )
-    product_item_price = TextField(
+    product_item_price = OurDecimalField(
         label=u'単価',
         validators=[Required()]
     )
-    product_item_quantity = IntegerField(
+    product_item_quantity = OurIntegerField(
         label=u'販売単位 (席数・個数)',
         validators=[Required()]
     )
-    stock_type_id = SelectField(
+    stock_type_id = OurSelectField(
         label=u'席種',
         validators=[Required()],
         choices=[],
         coerce=int
     )
-    stock_holder_id = SelectField(
+    stock_holder_id = OurSelectField(
         label=u'配券先',
         validators=[Required()],
         choices=[],
@@ -192,7 +191,7 @@ class ProductItemForm(Form):
         label=u'席種・その他',
         validators=[Required()],
     )
-    ticket_bundle_id = BugFreeSelectField(
+    ticket_bundle_id = OurSelectField(
         label=u'券面構成',
         validators=[],
         coerce=lambda v: None if not v else int(v)
@@ -224,19 +223,14 @@ class ProductItemForm(Form):
                         raise ValidationError(u'1つの商品に席種を複数登録することはできません')
 
     def validate_product_item_price(form, field):
-        if field.data and form.product_id.data:
+        if field.data and form.product_id.data and form.product_item_id.data:
             product = Product.get(form.product_id.data)
-            conditions = {
-                'performance_id':form.performance_id.data,
-                'product_id':form.product_id.data,
-                }
-            sum_amount = ProductItem.filter(ProductItem.id!=form.product_item_id.data)\
-                         .filter_by(**conditions)\
-                         .with_entities(func.sum(ProductItem.price))\
-                         .scalar() or 0
-            sum_amount = Decimal(field.data) + Decimal(sum_amount)
-            if product and product.price < sum_amount:
-                raise ValidationError(u'商品合計金額以内で入力してください')
+            sum_amount = int(field.data) * int(form.product_item_quantity.data)
+            for item in product.items:
+                if item.id != int(form.product_item_id.data):
+                    sum_amount += item.quantity * item.price
+            if product.price < sum_amount:
+                raise ValidationError(u'単価×販売単位が商品合計金額以内になるように入力してください')
 
     def validate_ticket_bundle_id(form, field):
         # 引取方法にコンビニ発券が含まれていたら必須

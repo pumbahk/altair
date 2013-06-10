@@ -150,7 +150,8 @@ def main(global_config, **local_config):
             exclude=config.maybe_dotted(settings.get("s3.static.exclude.function")), 
             prefix="/usersite"))
     config.include(".")
-    
+    config.add_route("smartphone.main", "/smartphone/main")
+    config.add_route("smartphone.goto_sp_page", "/smartphone/goto_sp")
     config.add_static_view('static', 'altaircms:static', cache_max_age=3600)
     config.add_static_view('plugins/static', 'altaircms:plugins/static', cache_max_age=3600)
     config.add_static_view("staticasset", settings["altaircms.asset.storepath"], cache_max_age=3600)

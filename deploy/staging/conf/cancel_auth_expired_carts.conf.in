@@ -19,14 +19,14 @@ propagate = 0
 
 [handler_rotate]
 class = logging.handlers.RotatingFileHandler
-args = ("${buildout:directory}/var/log/cancel_auth_expired_carts",)
+args = ("${buildout:directory}/log/cancel_auth_expired_carts",)
 level = NOTSET
 formatter = generic
 
 [handler_stderr]
 class = logging.StreamHandler
 args = (None, )
-level = INFO
+level = ${altair:console_loglevel}
 formatter = generic
 
 [handler_spool]

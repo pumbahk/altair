@@ -304,7 +304,7 @@ class SalesScheduleReportExporter(BaseExporter):
         self.remove_sheet(0)
 
     def write_output_datetime(self, sheet, value):
-        self.update_cell_text(sheet, 0, 12, value)
+        self.update_cell_text(sheet, 0, 11, value)
 
     def write_event_title(self, sheet, value):
         self.update_cell_text(sheet, 4, 0, value)

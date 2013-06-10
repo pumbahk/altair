@@ -10,10 +10,12 @@ ${order.performance.event.title} ${order.performance.name}<br />
 ${order.performance.venue.name}<br />
 <%mobile:form_header>購入内容</%mobile:form_header>
 %for product in order.items:
-・${product.product.name} (${product.quantity}枚)<br />
-% for seat in product.seats:
-　${seat['name']}<br/>
-% endfor
+・${product.product.name} (${product.seat_quantity}枚)<br />
+% if product.product.sales_segment.seat_choice:
+  % for seat in product.seats:
+  　${seat['name']}<br/>
+  % endfor
+% endif
 　￥${h.format_number(product.price * product.quantity)}<br />
 %endfor
 ・ステータス:${h.order_status(order)}<br/>

@@ -8,6 +8,8 @@ from wtforms import TextField, IntegerField, HiddenField, SelectField, SelectMul
 from wtforms.validators import Regexp, Length, Optional, ValidationError, StopValidation
 from wtforms.widgets import TextArea
 from ticketing.formhelpers import DateTimeField, Translations, Required
+from ticketing.formhelpers.form import OurForm
+from ticketing.formhelpers.fields import OurBooleanField
 from ticketing.core.models import Event, Account, DeliveryMethod
 from ticketing.core.models import TicketFormat
 from .utils import as_user_unit
@@ -120,16 +122,18 @@ def validate_margin(key, data):
         except Exception as e:
             raise ValidationError("%s[\"%s\"] is bad-formatted (%s)" % (key, k, e.args[0]))
 
-class TicketTemplateForm(Form):
+class TicketTemplateForm(OurForm):
     def _get_translations(self):
         return Translations()
 
     def __init__(self, formdata=None, obj=None, prefix='', **kwargs):
-        Form.__init__(self, formdata=formdata, obj=obj, prefix=prefix, **kwargs)
+        super(TicketTemplateForm, self).__init__(formdata=formdata, obj=obj, prefix=prefix, **kwargs)
         if 'organization_id' in kwargs:
             self.ticket_format.choices = [
                 (format.id, format.name) for format in TicketFormat.filter_by(organization_id=kwargs['organization_id'])
             ]
+        if not formdata and not obj:
+            self.priced.data = True
         self._cleaner = None
 
     name = TextField(
@@ -154,6 +158,14 @@ class TicketTemplateForm(Form):
         ]
      )    
 
+    always_reissueable = OurBooleanField(
+        label=u"常に再発券可能"
+        )
+
+    priced = OurBooleanField(
+        label=u"手数料計算に含める"
+        )
+
     def validate_drawing(form, field):
         svgio = field.data.file
         form._cleaner = get_validated_svg_cleaner(svgio, exc_class=ValidationError)
@@ -167,12 +179,12 @@ class TicketTemplateForm(Form):
             self.data_value = {}
         return not bool(self.errors)
 
-class TicketTemplateEditForm(Form):
+class TicketTemplateEditForm(OurForm):
     def _get_translations(self):
         return Translations()
 
     def __init__(self, formdata=None, obj=None, prefix='', **kwargs):
-        Form.__init__(self, formdata=formdata, obj=obj, prefix=prefix, **kwargs)
+        super(TicketTemplateEditForm, self).__init__(formdata=formdata, obj=obj, prefix=prefix, **kwargs)
         if 'organization_id' in kwargs:
             self.ticket_format.choices = [
                 (format.id, format.name) for format in TicketFormat.filter_by(organization_id=kwargs['organization_id'])
@@ -193,6 +205,14 @@ class TicketTemplateEditForm(Form):
         coerce=long , 
         validators=[Required()]
     )
+
+    always_reissueable = OurBooleanField(
+        label=u"常に再発券可能"
+        )
+
+    priced = OurBooleanField(
+        label=u"手数料計算に含める"
+        )
 
     drawing = FileField(
         label=u"券面データ", 

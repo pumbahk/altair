@@ -3,12 +3,13 @@
 import pickle
 import logging
 import wsgiref.util
-from pyramid.threadlocal import get_current_request
 from webob.exc import HTTPFound
 from zope.interface import implementer
 from repoze.who.api import get_api as get_who_api
 from repoze.who.interfaces import IIdentifier, IChallenger, IAuthenticator
-from .api import login_url
+from altair.auth.api import get_current_request
+from .api import login_url, get_memberships
+from . import SESSION_KEY
 
 import ticketing.users.models as u_m
 
@@ -31,13 +32,9 @@ class FCAuthPlugin(object):
         rememberer = self._get_rememberer(req.environ)
         return rememberer.identify(req.environ)
 
-    @property
-    def request(self):
-        return get_current_request()
-
     # IIdentifier
     def identify(self, environ):
-        req = self.request
+        req = get_current_request(environ)
         identity = self.get_identity(req)
         logging.debug(identity)
 
@@ -122,10 +119,8 @@ class FCAuthPlugin(object):
 
         
     def is_auth_required(self, environ):
-        #return environ.get('ticketing.cart.fc_auth.required')
-        request = get_current_request()
-        if hasattr(request, 'context') and hasattr(request.context, 'memberships'):
-            return bool(request.context.memberships)
+        request = get_current_request(environ)
+        return bool(get_memberships(request))
 
     # IChallenger
     def challenge(self, environ, status, app_headers, forget_headers):
@@ -134,11 +129,11 @@ class FCAuthPlugin(object):
             logger.debug('fc auth is not required')
             return
         logger.debug('fc auth is required')
-        session = environ['session.rakuten_openid']
+        request = get_current_request(environ)
+        session = request.session.setdefault(SESSION_KEY, {})
         session['return_url'] = wsgiref.util.request_uri(environ)
-        session.save()
-        #return HTTPFound(location=environ['ticketing.cart.fc_auth.login_url'])
-        request = get_current_request()
+        request.session.save()
+        request = get_current_request(environ)
         return HTTPFound(location=login_url(request))
 
     # IMetadataProvider

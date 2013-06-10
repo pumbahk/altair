@@ -12,35 +12,12 @@ from sqlalchemy import engine_from_config
 from core.helper import log_info
 
 def includeme(config):
-    config._add_tween("altairsite.mobile.tweens.mobile_encoding_convert_factory", under=INGRESS)
+    config._add_tween("altairsite.tweens.mobile_encoding_convert_factory", under=INGRESS)
     config.include(install_app)
-
-def install_convinient_request_properties(config):
-    assert config.registry.settings["altair.orderreview.url"]
-    def altair_orderreview_url(request):
-        return config.registry.settings["altair.orderreview.url"]
-
-    assert config.registry.settings["getti.orderreview.url"]
-    def getti_orderreview_url(request):
-        return config.registry.settings["getti.orderreview.url"]
-
-    assert config.registry.settings["sender.mailaddress"]
-    def sender_mailaddress(request):
-        return config.registry.settings["sender.mailaddress"]
-
-    assert config.registry.settings["inquiry.mailaddress"]
-    def inquiry_mailaddress(request):
-        return config.registry.settings["inquiry.mailaddress"]
-
-    config.set_request_property(altair_orderreview_url, "altair_orderreview_url", reify=True)
-    config.set_request_property(getti_orderreview_url, "getti_orderreview_url", reify=True)
-    config.set_request_property(sender_mailaddress, "sender_mailaddress", reify=True)
-    config.set_request_property(inquiry_mailaddress, "inquiry_mailaddress", reify=True)
-    config.set_request_property(".dispatch.views.mobile_route_path", "mobile_route_path", reify=True)
 
 def install_app(config):
     config.include("altair.mobile.install_detector")
-    config.include(install_convinient_request_properties)
+    config.include("altairsite.config.install_convinient_request_properties")
     config.include("altairsite.mobile.event")
     config.add_route("home", "/")
     config.scan(".")
@@ -68,7 +45,7 @@ def main(global_config, **settings):
     config.include(install_app)
 
     ## all requests are treated as mobile request
-    config._add_tween("altairsite.mobile.tweens.mobile_request_factory", under=INGRESS)
+    config._add_tween("altairsite.tweens.mobile_request_factory", under=INGRESS)
 
     log_info("main", "initialize end.")
     return config.make_wsgi_app()

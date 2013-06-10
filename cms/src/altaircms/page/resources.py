@@ -11,6 +11,11 @@ from altaircms.tag.api import put_tags
 from . import helpers as h
 from . import models
 from . import subscribers
+from pyramid.decorator import reify
+from .models import PageType
+from altaircms.auth.models import RolePermission
+logger = logging.getLogger()
+
 # from .api import get_static_page_utility
 # from altaircms.auth.api import get_or_404
 
@@ -47,8 +52,34 @@ class WDispositionResource(security.RootFactory):
         self.delete(wdisposition)
 
 
-
 class PageResource(security.RootFactory):
+    @reify
+    def pagetype(self):
+        if "pagetype" in self.request.params:
+            return self.request.allowable(PageType).filter(PageType.name==self.request.params["pagetype"]).first()
+        elif "pagetype" in self.request.matchdict:
+            return self.request.allowable(PageType).filter(PageType.name==self.request.matchdict["pagetype"]).first()
+
+    def get_access_status_from_pagetype(self, pagetype, important_name, name):
+        if pagetype is None:
+            logger.info("pagetype is not found")
+            return False
+        try:
+            if pagetype.is_important:
+                status = self.request.user.has_permission_by_name(important_name)
+            else:
+                status = self.request.user.has_permission_by_name(name)
+            if not status:
+                logger.info("permission is not found. url={0}, pagetype={1}, user={2}".format(self.request.url, self.request.user.id, pagetype.id))
+            return status
+        except Exception as e:
+            logger.exception(str(e))
+            return False
+        
+    def get_access_status(self, important_name, name):
+        return self.get_access_status_from_pagetype(self.pagetype, important_name, name)
+
+    ## todo. obsolute all
     Page = models.Page
     add = add_data
     delete = delete_data
@@ -101,6 +132,6 @@ class PageResource(security.RootFactory):
 
     def clone_page(self, page):
         cloned = page.clone(DBSession, request=self.request)
-        subscribers.notify_page_create(self.request, cloned, {"tags":"", "private_tags": ""})
+        subscribers.notify_page_create(self.request, cloned, {"tags":"", "private_tags": "",  "mobile_tags": ""}) #xxx:
         return cloned
 

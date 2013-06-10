@@ -13,9 +13,9 @@ from .forms import MobileTagSearchForm
 class ValidationFailure(Exception):
     pass
 
-@usersite_view_config(route_name='search', request_type="altairsite.mobile.tweens.IMobileRequest"
+@usersite_view_config(route_name='search', request_type="altairsite.tweens.IMobileRequest"
     , renderer='altairsite.mobile:templates/searchresult/search.mako')
-@usersite_view_config(route_name='genresearch', request_type="altairsite.mobile.tweens.IMobileRequest"
+@usersite_view_config(route_name='genresearch', request_type="altairsite.tweens.IMobileRequest"
     , renderer='altairsite.mobile:templates/searchresult/genresearch.mako')
 def search(request):
 
@@ -63,7 +63,7 @@ def search(request):
     log_info("search", "end")
     return {'form':form}
 
-@usersite_view_config(route_name='mobile_tag_search', request_type="altairsite.mobile.tweens.IMobileRequest"
+@usersite_view_config(route_name='mobile_tag_search', request_type="altairsite.tweens.IMobileRequest"
     , renderer='altairsite.mobile:templates/searchresult/mobile_tag_search_result.mako')
 def mobile_tag_search(request):
 
@@ -88,7 +88,7 @@ def mobile_tag_search(request):
     return {'form':form}
 
 @usersite_view_config(route_name='mobile_tag_search', context=ValidationFailure
-    , request_type="altairsite.mobile.tweens.IMobileRequest"
+    , request_type="altairsite.tweens.IMobileRequest"
     , renderer='altairsite.mobile:templates/common/error.mako')
 def failed_validation(request):
     return {}

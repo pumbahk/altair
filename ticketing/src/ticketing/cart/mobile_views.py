@@ -12,7 +12,6 @@ from pyramid.httpexceptions import HTTPFound, HTTPNotFound
 import sqlalchemy as sa
 
 from ticketing.core import models as c_models
-from ticketing.core import api as c_api
 #from altair.mobile.interfaces import IMobileRequest
 from ticketing.cart.selectable_renderer import selectable_renderer
 from ticketing.models import DBSession
@@ -22,8 +21,7 @@ from .stocker import NotEnoughStockException
 from . import api
 from . import helpers as h
 from . import schemas
-from .api import get_seat_type_triplets
-from .view_support import IndexViewMixin
+from .view_support import IndexViewMixin, get_amount_without_pdmp, get_seat_type_dicts
 from .exceptions import (
     NoEventError,
     NoPerformanceError,
@@ -80,7 +78,7 @@ class MobileIndexView(IndexViewMixin):
                     sales_segment_id=sales_segment.id))
 
 
-        selector_name = c_api.get_organization(self.request).setting.performance_selector
+        selector_name = self.request.organization.setting.performance_selector
         performance_selector = api.get_performance_selector(self.request, selector_name)
         key_to_formatted_sales_segments_map = performance_selector()
 
@@ -109,7 +107,7 @@ class MobileSelectProductView(object):
 
     @view_config(route_name='cart.seat_types', renderer=selectable_renderer('carts_mobile/%(membership)s/seat_types.html'), xhr=False, request_type='altair.mobile.interfaces.IMobileRequest')
     def __call__(self):
-        selector_name = c_api.get_organization(self.request).setting.performance_selector
+        selector_name = self.request.organization.setting.performance_selector
         performance_selector = api.get_performance_selector(self.request, selector_name)
 
         try:
@@ -125,30 +123,27 @@ class MobileSelectProductView(object):
                 sales_segment_id=self.context.sales_segment.id,
                 seat_type_id=seat_type_id))
 
-        seat_type_triplets = get_seat_type_triplets(self.context.sales_segment.id)
+        sales_segment = self.context.sales_segment
+        seat_type_dicts = get_seat_type_dicts(self.request, sales_segment)
 
         data = dict(
             seat_types=[
                 dict(
-                    id=s.id,
-                    name=s.name,
-                    description=s.description,
-                    style=s.style,
-                    products_url=self.request.route_url('cart.products',
-                                                        event_id=self.context.event.id,
-                                                        performance_id=self.context.sales_segment.performance.id,
-                                                        sales_segment_id=self.context.sales_segment.id, seat_type_id=s.id),
-                    availability=available > 0,
-                    availability_text=h.get_availability_text(available),
-                    quantity_only=s.quantity_only,
+                    products_url=self.request.route_url(
+                        'cart.products',
+                        event_id=self.request.context.event_id,
+                        performance_id=sales_segment.performance.id,
+                        sales_segment_id=sales_segment.id,
+                        seat_type_id=_dict['id']),
+                    **_dict
                     )
-                for s, total, available in seat_type_triplets
+                for _dict in seat_type_dicts
                 ],
             event=self.context.event,
-            performance=self.context.sales_segment.performance,
-            venue=self.context.sales_segment.performance.venue,
-            sales_segment=self.context.sales_segment,
-            return_value=performance_selector.select_value(self.context.sales_segment)
+            performance=sales_segment.performance,
+            venue=sales_segment.performance.venue,
+            sales_segment=sales_segment,
+            return_value=performance_selector.select_value(sales_segment)
             )
         return data
 
@@ -189,24 +184,15 @@ class MobileSelectProductView(object):
         # CSRFトークン発行
         form = schemas.CSRFSecureForm(csrf_context=self.request.session)
 
-        upper_limit = self.context.sales_segment.upper_limit
+        product_dicts = get_seat_type_dicts(self.request, self.context.sales_segment, seat_type.id)[0]['products']
+
         return dict(
             event=self.context.event,
             performance=self.context.sales_segment.performance,
             venue=self.context.sales_segment.performance.venue,
             sales_segment=self.context.sales_segment,
             seat_type=seat_type,
-            products=[
-                dict(
-                    id=product.id,
-                    name=product.name,
-                    description=product.description,
-                    detail=h.product_name_with_unit(product, self.context.sales_segment.performance.id),
-                    price=h.format_number(product.price, ","),
-                    upper_limit=upper_limit if upper_limit < vacant_quantity else int(vacant_quantity),
-                )
-                for product, vacant_quantity in products
-            ],
+            products=product_dicts,
             form=form,
         )
 
@@ -269,13 +255,15 @@ class MobileReserveView(object):
             seat_type_id=seat_type_id,
             sales_segment_id=sales_segment_id, 
             payment_url=self.request.route_url("cart.payment", sales_segment_id=sales_segment.id),
-            cart=dict(products=[dict(name=p.product.name, 
+            cart=dict(products=[dict(name=p.product.name,
+                                     detail=h.product_name_with_unit(p.product.items),
                                      quantity=p.quantity,
                                      price=int(p.product.price),
-                                     seats=p.seats,
-                                ) 
+                                     seats=p.seats if p.product.sales_segment.seat_choice else [],
+                                     seat_quantity=p.seat_quantity
+                                )
                                 for p in cart.products],
-                      total_amount=h.format_number(cart.tickets_amount),
+                      total_amount=h.format_number(get_amount_without_pdmp(cart))
             ))
         return data
 

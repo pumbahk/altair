@@ -138,9 +138,10 @@ cart.events = {
     ON_CART_ORDERED: "onCartOredered",
     ON_VENUE_DATASOURCE_UPDATED: "onVenueDataSourceUpdated"
 };
-cart.init = function(salesSegmentsSelection, selected, cartReleaseUrl) {
+cart.init = function(salesSegmentsSelection, selected, cartReleaseUrl, venueEnabled) {
     this.app = new cart.ApplicationController();
-    this.app.init(salesSegmentsSelection, selected, cartReleaseUrl);
+    venueEnabled = venueEnabled && (!$.browser.msie || parseInt($.browser.version) >= 9);
+    this.app.init(salesSegmentsSelection, selected, cartReleaseUrl, venueEnabled);
     $('body').bind('selectstart', function() { return false; });
 };
 
@@ -154,9 +155,10 @@ cart.createContentOfShoppingElement = function(product) {
 		return to;
 	};
     var item = $('<tr/>');
-    var name = $('<td/>').text(product.name);;
+    var name = $('<td/>').text(product.name);
     var price = $('<td/>').text("￥ "+comma(product.price));
-    var quantity = $('<td/>').text(product.quantity + " 枚");
+    var quantity = $('<td/>');
+    cart.util.render_template_into(quantity, product.unit_template, {num: product.quantity});
     // TODO: 予約席をProductごとに追加
     var seats_container = $('<td/>');
     var seats = $('<ul/>');
@@ -230,7 +232,7 @@ cart.showErrorDialog = function showErrorDialog(title, message, footer_button_cl
 cart.ApplicationController = function() {
 };
 
-cart.ApplicationController.prototype.init = function(salesSegmentsSelection, selected, cartReleaseUrl) {
+cart.ApplicationController.prototype.init = function(salesSegmentsSelection, selected, cartReleaseUrl, venueEnabled) {
     this.performanceSearch = new cart.PerformanceSearch({
         salesSegmentsSelection: salesSegmentsSelection,
         key: selected[1],
@@ -260,7 +262,6 @@ cart.ApplicationController.prototype.init = function(salesSegmentsSelection, sel
         viewType: cart.StockTypeListView,
         performance: this.performance
     });
-    var venueEnabled = !$.browser.msie || parseInt($.browser.version) >= 9;
     // 会場図
     this.venuePresenter = new cart.VenuePresenter({
         viewType: venueEnabled ? cart.VenueView: cart.DummyVenueView,
@@ -364,25 +365,23 @@ cart.StockTypeListPresenter.prototype = {
     },
     onStockTypeSelected: function(products_url, stock_type) {
         var self = this;
-        $.getJSON(
-            products_url,
-            function(data) {
-                var products = data.products;
-                var productCollection = new cart.ProductQuantityCollection();
-                for (var i=0; i < products.length; i++) {
-                    var product = products[i];
-                    var p = new cart.ProductQuantity(product);
-                    productCollection.push(p);
-                }
-                var selected = self.view.selected;
-                self.orderFormPresenter.showOrderForm(selected, stock_type, productCollection);
-                var sales_segment = data.sales_segment;
-                $('#descSalesTerm').text(
-                  cart.util.datestring_japanize(sales_segment.start_at) + '〜' +
-                  cart.util.datestring_japanize(sales_segment.end_at)
-                );
+        function callback(data) {
+            var products = data.products;
+            var productCollection = new cart.ProductQuantityCollection();
+            for (var i=0; i < products.length; i++) {
+                var product = products[i];
+                var p = new cart.ProductQuantity(product);
+                productCollection.push(p);
             }
-        );
+            var selected = self.view.selected;
+            self.orderFormPresenter.showOrderForm(selected, stock_type, productCollection);
+        }
+
+        var products = stock_type.get('products');
+        if (products)
+            callback({ 'products': products });
+        else
+            $.getJSON(products_url, callback);
     }
 };
 
@@ -442,8 +441,15 @@ cart.VenuePresenter.prototype = {
     },
     setStockType: function (stock_type) {
         this.selectedStockType = stock_type;
-        this.stockTypeListPresenter.setActivePane(this.selectedStockType ? 'venue': 'stockTypeList');
-        this.view.render();
+        var self = this;
+        if (this.selectedStockType) {
+          self.stockTypeListPresenter.setActivePane('venue');
+          this.view.currentViewer.venueviewer('loadSeats', function() {
+            self.view.render();
+          });
+        } else {
+          self.stockTypeListPresenter.setActivePane('stockTypeList');
+        }
     },
     selectable: function (viewer, seat) {
         if (!this.selectedStockType) {
@@ -588,6 +594,7 @@ cart.StockTypeListView = Backbone.View.extend({
         ul.empty();
         var i = 0;
         this.collection.each(function(stockType) {
+            var style = stockType.get("style");
             $('<li></li>')
                 .append($('<div class="seatListItemInner"></div>')
                    .append(
@@ -596,7 +603,7 @@ cart.StockTypeListView = Backbone.View.extend({
                      .data('stockType', stockType))
                    .append(
                      $('<span class="seatColor"></span>')
-                     .css('background-color', stockType.get("style").fill.color))
+                     .css('background-color', style && style.fill && style.fill.color ? style.fill.color: 'white'))
                    .append(
                      $('<span class="seatName"></span>')
                      .text(stockType.get("name")))
@@ -731,6 +738,7 @@ cart.OrderFormPresenter.prototype = {
             dataType: 'json',
             data: values,
             type: 'POST',
+            async: false,
             success: function(data, textStatus, jqXHR) {
                 if (data.result == 'OK') {
                     cart.proceedToCheckout(performance, data);
@@ -851,8 +859,16 @@ cart.OrderFormView = Backbone.View.extend({
             btn_buy.parent().css('display', 'none');
         }
         btn_select_seat.click(function () { self.presenter.onSelectSeatPressed(); return false; });
-        btn_entrust.click(function () { self.presenter.onEntrustPressed(); return false; });
-        btn_buy.click(function () { self.presenter.onBuyPressed(); return false; });
+        btn_entrust.one('click', function () {
+            self.presenter.onEntrustPressed();
+            $(this).one('click', arguments.callee);
+            return false;
+        });
+        btn_buy.one('click', function () {
+            self.presenter.onBuyPressed();
+            $(this).one('click', arguments.callee);
+            return false;
+        });
 
         return orderForm;
     },
@@ -986,6 +1002,7 @@ cart.VenueView = Backbone.View.extend({
         this.currentViewer.venueviewer("remove");
 
         var loadingLayer = null;
+        var loadPartCount = 0;
         var _callbacks = $.extend($.extend({}, callbacks), {
             zoomRatioChanging: function (zoomRatio) {
                 return Math.min(Math.max(zoomRatio, self.zoomRatioMin), self.zoomRatioMax);
@@ -1010,12 +1027,12 @@ cart.VenueView = Backbone.View.extend({
             },
             loadPartStart: function (viewer, part) {
                 var self = this;
-                if (!loadingLayer) {
+                if (loadPartCount == 0) {
                     loadingLayer =
                         $('<div></div>')
                         .append(
                             $('<div></div>')
-                            .css({ position: 'absolute', width: '100%', height: '100%', backgroundColor: 'white', opacity: 0.5 })
+                            .css({ position: 'absolute', width: '100%', height: '100%', backgroundColor: 'white', opacity: 0.75 })
                             .append(
                                 $('<img />')
                                 .attr('src', '/cart/static/img/settlement/loading.gif')
@@ -1039,10 +1056,18 @@ cart.VenueView = Backbone.View.extend({
                         });
                     self.canvas.after(loadingLayer);
                 }
+                loadPartCount++;
             },
             loadPartEnd: function (viewer, part) {
                 // part = pages, stockTypes, info, seats, drawing
                 var page = viewer.currentPage;
+
+                if (!--loadPartCount) {
+                    if (loadingLayer) {
+                        loadingLayer.remove();
+                        loadingLayer = null;
+                    }
+                }
 
                 if (part == 'info') {
                     var use_seatmap = $.map(viewer.stockTypes, function(st) {
@@ -1054,13 +1079,6 @@ cart.VenueView = Backbone.View.extend({
                 if (part == 'drawing') {
                     if(page) {
                         self.verticalSlider.css({ visibility: viewer.pages[page].zoomable===false ? 'hidden' : 'visible' });
-                    }
-                }
-
-                if (part == 'drawing') {
-                    if (loadingLayer) {
-                        loadingLayer.remove();
-                        loadingLayer = null;
                     }
                 }
 
@@ -1100,6 +1118,9 @@ cart.VenueView = Backbone.View.extend({
                     }
                 }
             },
+            message: function (msg) {
+                console.log(msg);
+            },
             messageBoard: (function() {
                 if (self.tooltip)
                     self.tooltip.hide();
@@ -1131,8 +1152,9 @@ cart.VenueView = Backbone.View.extend({
         this.currentViewer.venueviewer({
             dataSource: dataSource,
             callbacks: _callbacks,
-            viewportSize: { x: 490, y: 430 }
-        })
+            viewportSize: { x: 490, y: 430 },
+            deferSeatLoading: true
+        });
         this.currentViewer.venueviewer("load");
     },
     updateUIState: function () {
@@ -1193,8 +1215,8 @@ cart.Venue = Backbone.Model.extend({
               url: params.data_source.venue_drawing,
               dataType: 'xml',
               success: function (data) { next(data); },
-              error: function (xhr, text) {
-                error("Failed to load drawing data (" + text + ")");
+              error: function (xhr, text, status) {
+                error("Failed to load drawing data (" + text + " - " + status + ")");
               }
             });
           },
@@ -1213,8 +1235,8 @@ cart.Venue = Backbone.Model.extend({
               url: util.build_route_path(params.data_source.seat_adjacencies._params),
               dataType: 'json',
               success: function (data) { next(data); },
-              error: function (xhr, text) {
-                error("Failed to load adjacency data (" + text + ")");
+              error: function (xhr, text, status) {
+                error("Failed to load adjacency data (" + text + " - " + status + ")");
               }
             });
           },
@@ -1267,9 +1289,9 @@ function newMetadataLoaderFactory(url) {
 }
 
 function createDataSource(params) {
-  var factory = newMetadataLoaderFactory(params['data_source']['seats']);
+  var factory_i = newMetadataLoaderFactory(params['data_source']['info']);
+  var factory_s = newMetadataLoaderFactory(params['data_source']['seats']);
   var drawingCache = {};
-  function error(msg) { console.log(msg); } // XXX
   return {
     drawing: function (page) {
       return function (next, error) {
@@ -1279,14 +1301,17 @@ function createDataSource(params) {
           return;
         }
         $.ajax({
-          url: params['data_source']['venue_drawing'].replace('__part__', page),
+          url: params['data_source']['venue_drawings'][page],
           dataType: 'xml',
+          headers: {
+            'X-Dummy': true
+          },
           success: function (data) {
             drawingCache[page] = data;
             next(data);
           },
-          error: function (xhr, text) {
-            error("Failed to load drawing data (" + text + ")");
+          error: function (xhr, text, status) {
+            error("Failed to load drawing data (" + text + " - " + status + ")");
           }
         });
       }
@@ -1297,9 +1322,9 @@ function createDataSource(params) {
         stock_types[params.seat_types[i].id] = params.seat_types[i];
       next(stock_types);
     },
-    info: factory(function (data) { return data['info']; }),
-    seats: factory(function (data) { return data['seats']; }),
-    areas: factory(function (data) { return data['areas']; }),
+    info: factory_i(function (data) { return data['info']; }),
+    seats: factory_s(function (data) { return data['seats']; }),
+    areas: factory_i(function (data) { return data['areas']; }),
     seatAdjacencies: function (next, error, length) {
       var _params = $.extend(params, { length_or_range: length });
       $.ajax({
@@ -1311,7 +1336,7 @@ function createDataSource(params) {
         }
       });
     },
-    pages: factory(function (data) { return data['pages']; })
+    pages: factory_i(function (data) { return data['pages']; })
   };
 }
 

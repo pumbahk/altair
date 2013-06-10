@@ -7,6 +7,19 @@ from .interfaces import IPaymentPreparerFactory, IPaymentPreparer, IPaymentDeliv
 
 logger = logging.getLogger(__name__)
 
+
+def is_finished_payment(request, pdmp, order):
+    if order is None:
+        return False
+    plugin = get_payment_plugin(request, pdmp.payment_method.payment_plugin_id)
+    return plugin.finished(request, order)
+
+def is_finished_delivery(request, pdmp, order):
+    if order is None:
+        return False
+    plugin = get_delivery_plugin(request, pdmp.payment_method.payment_plugin_id)
+    return plugin.finished(request, order)
+
 def get_cart(request):
     getter = request.registry.getUtility(IGetCart)
     return getter(request)

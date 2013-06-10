@@ -140,6 +140,7 @@ class MultiCheckoutStatusEnum(StandardEnum):
     Rejected        = u'105'
     BeingSettled    = u'115'
     Settled         = u'120'
+    PartCanceled    = u'130'
     ValidCard       = u'210'
     InvalidCard     = u'209'
 
@@ -272,3 +273,11 @@ class MultiCheckoutOrderStatus(Base, WithTimestamp):
     def keep_auth(cls, order_no, storecd, name):
         s = cls.get_or_create(order_no, storecd)
         s.KeepAuthFor = name
+
+    @classmethod
+    def by_order_no(cls, order_no):
+        return _session.query(cls).filter(
+                cls.OrderNo==order_no
+            ).filter(
+                cls.Status!=None
+            ).first()

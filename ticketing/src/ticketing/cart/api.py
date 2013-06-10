@@ -15,9 +15,8 @@ from pyramid.httpexceptions import HTTPNotFound
 
 from ticketing.api.impl import get_communication_api
 from ticketing.api.impl import CMSCommunicationApi
-from altair.mobile.interfaces import IMobileRequest
+from altair.mobile.api import is_mobile 
 from ticketing.core import models as c_models
-from ticketing.core import api as c_api
 from ticketing.users.models import User, UserCredential, Membership, MemberGroup, MemberGroup_SalesSegment
 
 from .interfaces import IPaymentMethodManager
@@ -91,9 +90,6 @@ def get_event(request):
     if not event_id:
         return None
     return c_models.Event.query.filter(c_models.Event.id==event_id).first()
-
-def is_mobile(request):
-    return IMobileRequest.providedBy(request)
 
 def get_event_info_from_cms(request, event_id):
     communication_api = get_communication_api(request, CMSCommunicationApi)
@@ -170,7 +166,7 @@ def _maybe_encoded(s, encoding='utf-8'):
     return s.decode(encoding)
 
 def get_item_name(request, cart_name):
-    organization = c_api.get_organization(request)
+    organization = request.organization
     base_item_name = organization.setting.cart_item_name
     return _maybe_encoded(base_item_name) + " " + str(cart_name)
 
@@ -256,11 +252,6 @@ def order_products(request, performance_id, product_requires, selected_seats=[])
 def is_quantity_only(stock):
     return stock.stock_type.quantity_only
 
-
-def get_system_fee(request):
-    return 380
-
-
 def get_valid_sales_url(request, event):
     principals = effective_principals(request)
     logger.debug(principals)
@@ -296,24 +287,20 @@ def update_order_session(request, **kw):
     request.session['order'].update(kw)
     return request.session['order']
 
-def get_seat_type_triplets(sales_segment_id):
-    # TODO: cachable
-    seat_type_triplets = DBSession.query(c_models.StockType, c_models.Stock.quantity, c_models.StockStatus.quantity).filter(
-            c_models.Stock.id==c_models.StockStatus.stock_id).filter(
-            c_models.Performance.id==c_models.SalesSegment.performance_id).filter(
-            c_models.Performance.event_id==c_models.StockHolder.event_id).filter(
-            c_models.StockHolder.id==c_models.Stock.stock_holder_id).filter(
-            c_models.Stock.stock_type_id==c_models.StockType.id).filter(
-            c_models.Product.sales_segment_id==c_models.SalesSegment.id).filter(
-            c_models.ProductItem.product_id==c_models.Product.id).filter(
-            c_models.ProductItem.stock_id==c_models.Stock.id).filter(
-            c_models.ProductItem.performance_id==c_models.SalesSegment.performance_id).filter(
-            c_models.SalesSegment.id == sales_segment_id).order_by(
-            c_models.StockType.display_order).all()
-    return seat_type_triplets
-
-
 def get_performance_selector(request, name):
     reg = request.registry
     performance_selector = reg.adapters.lookup([IRequest], IPerformanceSelector, name)(request)
     return performance_selector
+
+def get_host_base_url(request):
+    if is_mobile(request):
+        base_url = request.altair_host.mobile_base_url or "/"
+    else:
+        base_url = request.altair_host.base_url or "/"
+    return base_url
+
+def set_we_need_pc_access(response):
+    response.set_cookie(PC_SWITCH_COOKIE_NAME, str(datetime.now()))
+
+def set_we_invalidate_pc_access(response):
+    response.delete_cookie(PC_SWITCH_COOKIE_NAME)

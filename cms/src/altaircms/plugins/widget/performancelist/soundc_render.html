@@ -45,7 +45,7 @@ logger = logging.getLogger(__name__)
           %elif max(end_on_candidates) >= now:
             %if status.scores.get(int(performance.id),0) <= 0:
               <a href="${h.link.get_purchase_page_from_performance(request, performance)}" class="purchase-small">予定枚数終了</a>
-            %else
+            %else:
               <a href="${h.link.get_purchase_page_from_performance(request, performance)}" class="purchase-small">購入する</a>
             %endif
           %else:

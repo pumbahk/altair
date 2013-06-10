@@ -83,8 +83,7 @@ def orderno_show_qrsigned(context, request):
     try:
         return orderno_show_qrsigned_after_validated(context, request, form)
     except Exception, e:
-        import traceback
-        traceback.print_exc()
+        logger.exception(str(e))
         raise
 
 def _signed_string_from_history(builder, history):
@@ -169,20 +168,19 @@ def ticketdata_from_qrsigned_string(context, request):
         return {"status": "error", "message": u"異なるイベントのQRチケットです。このページでは発券できません"}
     except Exception as e:
         logger.warn("%s: %s" % (e.__class__.__name__,  str(e)))
-        import traceback
-        traceback.print_exc()
+        logger.exception(str(e))
         return {"status": "error", "message": str(e)}
 
 @view_config(route_name="api.ticket.refresh.printed_status", renderer="json", xhr=True)
 def refresh_printed_status(context, request):
-    logger.info("*api.refresh.printed: force refresh status `printed_at'")
     token_id = request.json_body["ordered_product_item_token_id"]
     order_no = request.json_body["order_no"]
 
     token = get_matched_token_query_from_order_no(order_no).filter(OrderedProductItemToken.id==token_id).first()
-    setter = PrintedAtBubblingSetter(None)
-    setter.printed_token(token)
-    setter.start_refresh_status_bubbling()
+    token.refreshed_at = datetime.now()
+    logger.info("*api.refresh.printed: force refresh status `printed_at' (token_id={0}, printed_at={1}, refreshed_at={2})".format(
+            token.id, token.printed_at, token.refreshed_at
+            ))
     DBSession.add(token)
     return {"status": "success", "data": {}}
     
@@ -201,7 +199,6 @@ def ticket_after_printed_edit_status(context, request):
     token_id = request.json_body["ordered_product_item_token_id"]
     order_no = request.json_body["order_no"]
     force_update = request.json_body.get("force_update")
-
     token = get_matched_token_query_from_order_no(order_no).filter(OrderedProductItemToken.id==token_id).first()
 
     if token is None:
@@ -209,7 +206,7 @@ def ticket_after_printed_edit_status(context, request):
         logger.warn(mes % (token_id, order_no))
         return {"status": "error", "data": {}, "message": "token is not found"}
     
-    if token.printed_at and not force_update:
+    if token.is_printed() and not force_update:
         mes = "*after ticket print: this ticket is already printed (token_id=%s, printed_at=%s)"
         logger.warn(mes % (token.id, token.printed_at))
         return {"status": "error", "data": {}, "message": "token is already printed"}
@@ -228,7 +225,7 @@ def ticket_after_printed_edit_status(context, request):
     DBSession.add(token)
 
     ## log
-    logger.info("*qrlog* print ticket token=%s" % (token_id))
+    logger.info("*qrlog* print ticket token=%s, printed_at=%s" % (token_id, token.printed_at))
     return {"status": "success", "data": {"printed": str(now_time)}}
 
 @view_config(route_name="api.ticket.after_printed_order", renderer="json", xhr=True)
@@ -236,18 +233,17 @@ def ticket_after_printed_edit_status_order(context, request):
     token_id = request.json_body["ordered_product_item_token_id"]
     order_no = request.json_body["order_no"]
     order_id = request.json_body["order_id"]
-    force_update = request.json_body.get("force_update")
+    consumed_tokens = request.json_body["consumed_tokens"]
 
     tokens = get_matched_token_query_from_order_no(order_no)
-    if not force_update:
-        tokens = tokens.filter(OrderedProductItemToken.printed_at == None)
-
     now_time = datetime.now()
     setter = PrintedAtBubblingSetter(now_time)
+
     for token in tokens:
-        DBSession.add(token)
-        DBSession.add(utils.history_from_token(request, context.operator.id, order_id, token))
-        setter.printed_token(token)
+        if token.id in consumed_tokens:
+            DBSession.add(token)
+            DBSession.add(utils.history_from_token(request, context.operator.id, order_id, token))
+            setter.printed_token(token)
 
     setter.start_bubbling()
     ## log

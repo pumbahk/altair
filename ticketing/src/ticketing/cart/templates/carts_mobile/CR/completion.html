@@ -18,11 +18,13 @@ ${order.performance.event.title} ${order.performance.name} ${h.performance_date(
 % for idx, product in enumerate(order.ordered_products):
 <%mobile:form_header>商品${idx + 1}</%mobile:form_header>
 <div>
-${product.product.name} ${product.quantity} 枚<br/>
+${product.product.name} ${product.seat_quantity} 枚<br/>
 ￥${h.format_number(product.product.price * product.quantity)}<br/>
-% for seat in product.seats:
-${seat['name']}<br/>
-% endfor
+% if product.product.sales_segment.seat_choice:
+  % for seat in product.seats:
+  ${seat['name']}<br/>
+  % endfor
+% endif
 </div>
 % endfor
 <%mobile:form_header>決済手数料</%mobile:form_header>

@@ -13,11 +13,11 @@ from ticketing.cart import api as cart_api
 from ticketing.cart.views import back
 from ticketing.payments.payment import Payment
 from ticketing.cart.exceptions import NoCartError
+from ticketing.cart.selectable_renderer import selectable_renderer
 
 from . import api
 from . import helpers as h
 from . import schemas
-from . import selectable_renderer
 from .exceptions import NotElectedException
 from .models import (
     LotEntry,
@@ -25,6 +25,7 @@ from .models import (
     LotElectedEntry,
 )
 from . import urls
+from .adapters import LotSessionCart
 
 logger = logging.getLogger(__name__)
 
@@ -287,9 +288,11 @@ class EntryLotView(object):
             self.request.session.flash(u"入力内容を確認してください")
             return self.step4_rendered_value(form=cform, pdmp_messages=pdmp_messages)
 
+        entry_no = api.generate_entry_no(self.request, self.context.organization)
         shipping_address_dict = cform.get_validated_address_data()
         api.new_lot_entry(
             self.request,
+            entry_no=entry_no,
             wishes=api.get_options(self.request, lot.id),
             payment_delivery_method_pair_id=payment_delivery_method_pair_id,
             shipping_address_dict=shipping_address_dict,
@@ -298,6 +301,15 @@ class EntryLotView(object):
                               int(cform['month'].data),
                               int(cform['day'].data)),
             memo=cform['memo'].data)
+        entry = self.request.session['lots.entry']
+        cart = LotSessionCart(entry, self.request, self.context.lot)
+
+        payment = Payment(cart, self.request)
+        self.request.session['payment_confirm_url'] = urls.entry_confirm(self.request)
+
+        result = payment.call_prepare()
+        if callable(result):
+            return result
 
         location = urls.entry_confirm(self.request)
         return HTTPFound(location=location)

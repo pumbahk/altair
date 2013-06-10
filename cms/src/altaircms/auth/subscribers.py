@@ -15,9 +15,8 @@ class AfterLogin(object):
 
 def touch_operator_after_login(self): ## self is AfterLogin
     data = self.response_data
-
     role_names = data.get("roles")
-    roles = h.get_roles_from_role_names(role_names)
+    roles = h.get_or_create_roles_from_role_names(role_names)
 
     auth_source = "oauth" ## これ本当はResponseでもらわないといけない
     organization = h.get_or_create_organization(auth_source, 

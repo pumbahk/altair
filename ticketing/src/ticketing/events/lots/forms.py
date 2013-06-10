@@ -272,3 +272,30 @@ class SearchEntryForm(Form):
             Required(),
         ],
     )
+
+    elected = BooleanField(
+        label=u"当選",
+        validators=[
+            Required(),
+        ],
+    )
+
+    rejecting = BooleanField(
+        label=u"落選予定",
+        validators=[
+            Required(),
+        ],
+    )
+
+    rejected = BooleanField(
+        label=u"落選",
+        validators=[
+            Required(),
+        ],
+    )
+
+    wish_order = SelectField(
+        label=u'希望順位',
+        validators=[],
+        choices=[],
+    )
