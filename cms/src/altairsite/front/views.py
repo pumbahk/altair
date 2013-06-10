@@ -71,7 +71,11 @@ def mobile_rendering_page(context, request):
         return mobile_dispatch_view(context, request)
     return HTTPFound(request.route_path("eventdetail", _query=dict(event_id=page.event_id or page.pageset.event_id)))
     
-@usersite_view_config(route_name="front", request_type="altairsite.tweens.ISmartphoneRequest")
+
+def is_rakuten_ticket(info, request):
+    return request.organization.short_name == "RT"
+
+@usersite_view_config(route_name="front", request_type="altairsite.tweens.ISmartphoneRequest", custom_predicates=(is_rakuten_ticket, ))
 def smartphone_rendering_page(context, request):
     url = request.matchdict["page_name"]
     dt = context.get_preview_date()
