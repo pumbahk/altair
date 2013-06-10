@@ -1,0 +1,79 @@
+<%inherit file="/layout_mobile.html"/>
+<%namespace file="/tags_mobile.html" name="mobile" />
+<%mobile:header>受付履歴確認 検索結果</%mobile:header>
+<%mobile:form_header>受付番号</%mobile:form_header>
+${order.order_no}
+<%mobile:form_header>購入情報</%mobile:form_header>
+<% pm,t_shirts = h.order_desc(order) %>
+仙台89ERS 2012-2013 ブースタークラブ
+<%mobile:form_header>新規／継続:</%mobile:form_header>
+${u'継続' if pm.get('cont') == 'yes' else u'新規'}
+% if pm.get('cont') == 'yes' and pm.get('old_id_number'):
+<%mobile:form_header>2011-12会員番号</%mobile:form_header>
+${pm.get('old_id_number')}
+% endif
+<%mobile:form_header>会員種別</%mobile:form_header>
+${order.items[0].product.name}
+<% t_shirts_size = order.items[0].ordered_product_items[0].attributes.get('t_shirts_size') %>
+% if t_shirts_size:
+<%mobile:form_header>Tシャツサイズ</%mobile:form_header>
+${t_shirts_size}
+% endif
+<%mobile:form_header>氏名</%mobile:form_header>
+${pm['last_name']} ${pm['first_name']}
+<%mobile:form_header>氏名（フリガナ）</%mobile:form_header>
+${pm['last_name_kana']} ${pm['first_name_kana']}
+<%mobile:form_header>誕生日</%mobile:form_header>
+${pm['year']}年${pm['month']}月${pm['day']}日
+<%mobile:form_header>性別</%mobile:form_header>
+${u'男性' if pm['sex']=='male' else u'女性' }
+<%mobile:form_header>郵便番号</%mobile:form_header>
+${pm['zipcode1']}-${pm['zipcode2']}</td>
+<%mobile:form_header>住所</%mobile:form_header>
+${pm['prefecture']} ${pm['city']} ${pm['address1']} ${pm['address2']}</td>
+<%mobile:form_header>電話番号（携帯）</%mobile:form_header>
+${pm.get('tel_1')}</td>
+<%mobile:form_header>電話番号（自宅）</%mobile:form_header>
+${pm.get('tel_2')}</td>
+<%mobile:form_header>メールアドレス</%mobile:form_header>
+${pm['email_1']}</td>
+<%mobile:form_header>仙台89ERSからのメールマガジンの配信	</%mobile:form_header>
+${u'希望する' if pm.get('mail_permission') else u'希望しない'}</td>
+<%mobile:form_header>メモリアルブックの掲載希望 </%mobile:form_header>
+${u'はい' if pm.get('publicity') == 'yes' else u'いいえ'}</td>
+<%mobile:form_header>お支払い</%mobile:form_header>
+%if order.payment_delivery_pair.payment_method.payment_plugin.id == 3:
+<div>セブン-イレブン</div>
+<%mobile:form_header>払込票番号</%mobile:form_header>
+<div>${sej_order.billing_number}</div>
+<%mobile:form_header>予約有効期限</%mobile:form_header>
+<div>${h.japanese_date(sej_order.payment_due_at)}${h.japanese_time(sej_order.payment_due_at)}</div>
+<form action="${sej_order.exchange_sheet_url}" method="post" target="_blank">
+  <input type="hidden" name="iraihyo_id_00" value="${sej_order.exchange_sheet_number}" />
+  <input type="submit" class="paymentCoupon" value="払込票印刷">
+</form>
+% else:
+<%mobile:form_header>クレジットカード</%mobile:form_header>
+% endif
+<div>
+&#xe737;注意事項<br />
+<font size="-2">
+%if order.payment_delivery_pair.payment_method.payment_plugin.id == 3:
+・セブン-イレブン決済の際には払込票番号が必要です。下記、「払込票印刷」ボタンをクリックし、払込票を印刷してお持ちになるか、上記の払込票番号をお控えいただき、レジでお伝え下さい。<br />
+・予約有効期限までに、払込票または払込票番号をセブン-イレブン店頭レジにてお申し出の上、代金をお支払いください。<br />
+・支払期日までに入金されない場合は、会員登録/入会申込が無効となりますのでご注意ください。<br />
+% endif
+・お申込時に受付内容を記載した確認のメールが、ご登録いただいたメールアドレス宛に送られます。しばらくたっても確認のメールが届かない場合は、入力されたメールアドレスが誤っている可能性があります。<a href="mailto:89ers@ticketstar.jp">89ers@ticketstar.jp</a> までご連絡ください。<br /> 
+（お問い合わせの際は、お申込み時のお名前と電話番号を記載お願いします）<br />
+・入力された個人情報は「個人情報保護方針」に基づき適切に取扱われます。<br />
+・会員証やグッズは、2012年9月15日(土)までに入会された方には開幕戦までにお届けします。9月16日(日)以降に入会された方には、直近のホームゲーム会場にてお渡しいたします。直近のホームゲームに来場されない場合には、後日郵送でお届けいたします。<br />
+・入会者多数の場合には、入会受付を2013年3月末日よりも早めに締切る場合がございます。お早めにご入会ください。<br />
+・入会後の会員プランの変更及び会費の返却には応じかねますのでご注意ください。<br />
+</font>
+</div>
+<%mobile:form_header>お問い合わせ先</%mobile:form_header>
+<div>
+仙台89ERS ブースター事務局<br />
+TEL: 022-215-8138 (平日: 9:00〜18:00)<br />
+メール: <a href="mailto:89ers@ticketstar.jp">89ers@ticketstar.jp</a><br>
+</div>
