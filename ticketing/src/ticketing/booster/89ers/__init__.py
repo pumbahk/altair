@@ -51,7 +51,7 @@ def setup_booster_settings(config):
     ## register booster settings
     config.include("..config")
     config.add_booster_settings(settings, prefix="89ers.")
-    config.set_root_factory('..resources.BoosterCartResource')
+    config.set_root_factory('.resources.Bj89ersCartResource')
     
 
 def main(global_config, **local_config):

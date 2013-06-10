@@ -17,7 +17,7 @@ class Layout(object):
         return self.request.static_url('ticketing.booster.bambitious:static/style.css')
 
     @property
-    def jqeury_js(self):
+    def jquery_js(self):
         return self.request.static_url('ticketing.booster.bambitious:static/js/jquery.js')
 
     @property

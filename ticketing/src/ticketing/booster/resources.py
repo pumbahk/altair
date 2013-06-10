@@ -24,6 +24,16 @@ class BoosterCartResource(TicketingCartResource):
         self._event_id = get_booster_settings(self.request).event_id
         self._sales_segment_id = None
 
+
+    @reify 
+    def product_query(self):
+        query = Product.query
+        query = query.filter(Product.event_id == self.event_id)
+        query = query.order_by(sa.desc("price"))
+
+        salessegment = self.get_sales_segment()
+        return products_filter_by_salessegment(query, salessegment)
+
     @reify
     def sales_segment(self):
         return self.available_sales_segments[0]

@@ -52,8 +52,8 @@ class IndexView(BaseView):
 
     def get(self):
         user_profile = load_user_profile(self.request)
-        params = schemas.OrderFormSchema, MultiDict(user_profile) if user_profile else MultiDict()
-        form = self.context.product_form(params)
+        params = MultiDict(user_profile) if user_profile else MultiDict()
+        form = self.context.product_form(schemas.OrderFormSchema, params)
         products =  {str(p.id): p for p in  self.context.product_query}
         return dict(form=form, products=products)
 

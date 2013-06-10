@@ -31,6 +31,15 @@
               </colgroup>
               <tbody>
                 <tr>
+                  <th>新規／継続</th>
+                    <td>
+                      % for c in form.cont:
+                        ${c.label}${c()}
+                      % endfor
+                      ${h.error(['cont'])}
+                    </td>
+                </tr>
+                <tr>
                   <th>会員種別</th>
                   <td>
                     <select id="member_type" name="member_type" class="">
@@ -39,14 +48,13 @@
                           <option value="${val[0]}" data-selection="${i}" with-shirt="${'true' if len(products.get(val[0]).items)-1 else 'false'}"${" selected=selected" if val[0]==form.member_type.data else ''}>${val[1]}</option>
                         % endfor
                         </select>
-                        <a href="http://www.bambitious.jp/booster/index.html" target=”_blank”><span><small>会員種別についてはこちら</small></span></a>
                         ${h.error('member_type')}
                     </td>
                 </tr>
                 <tr >
                   <th>Tシャツサイズ</th>
                   <td>
-                    ${form.t_shirts_size(id='t_shirts_size',disabled="disabled" )} <span><small>法人/プラチナ/ゴールド会員を選択の方はTシャツサイズをお選びください。</small></span>
+                    ${form.t_shirts_size(id='t_shirts_size',disabled="disabled" )} <span><small>ゴールド会員を選択の方はブースターシャツサイズをお選びください。</small></span>
                     ${h.error('t_shirts_size')}
                   </td>
                 </tr>
@@ -135,6 +143,15 @@
                 </tr>
                 <tr>
                   <th>
+                    FAX番号
+                  </th>
+                  <td>
+                    ${form.fax(size=12)}<span><small>（半角数字)</small></span>
+                    ${h.error(['fax'])}
+                  </td>
+                </tr>
+                <tr>
+                  <th>
                     メールアドレス <span class="red">*</span>
                   </th>
                   <td>
@@ -149,24 +166,6 @@
                   <td>
                    ${form.email_1_confirm}
                     ${h.error('email_1_confirm')}
-                  </td>
-                </tr>
-                <tr>
-                  <th>
-                    バンビシャス奈良からのメールマガジンの配信
-                  </th>
-                  <td>
-                   ${form.mail_permission}
-                    ${h.error('mail_permission')}
-                  </td>
-                </tr>
-                <tr>
-                  <th>
-                  　メモリアルブックへの氏名掲載希望
-                  </th>
-                  <td>
-                    ${form.publicity} <span><small>ライト・ジュニア会員は記載されません</small></span>
-                    ${h.error('publicity')}
                   </td>
                 </tr>
                 <tr>
