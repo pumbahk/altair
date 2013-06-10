@@ -45,7 +45,7 @@ from ticketing.cart.stocker import NotEnoughStockException
 from ticketing.cart.reserving import InvalidSeatSelectionException, NotEnoughAdjacencyException
 
 from . import utils
-from .api import OrderSearchQueryBuilder, CartSearchQueryBuilder
+from .api import OrderSearchQueryBuilder, CartSearchQueryBuilder, QueryBuilderError
 
 logger = logging.getLogger(__name__)
 
@@ -254,7 +254,10 @@ class Orders(BaseView):
 
         form_search = OrderSearchForm(self.request.params, organization_id=organization_id)
         if form_search.validate():
-            query = OrderSearchQueryBuilder(form_search.data)(Order.filter(Order.organization_id==organization_id))
+            try:
+                query = OrderSearchQueryBuilder(form_search.data, lambda key: form_search[key].label.text)(Order.filter(Order.organization_id==organization_id))
+            except QueryBuilderError as e:
+                self.request.session.flash(e.message)
 
         page = int(self.request.params.get('page', 0))
         orders = paginate.Page(
@@ -286,7 +289,11 @@ class Orders(BaseView):
         else:
             form_search = OrderSearchForm(self.request.params, organization_id=organization_id)
             form_search.sort.data = None
-            query = OrderSearchQueryBuilder(form_search.data)(Order.filter(Order.organization_id==organization_id))
+            try:
+                query = OrderSearchQueryBuilder(form_search.data, lambda key: form_search[key].label.text)(Order.filter(Order.organization_id==organization_id))
+            except QueryBuilderError as e:
+                self.request.session.flash(e.message)
+                raise HTTPFound(location=route_path('orders.index', self.request))
             if query.count() > 5000 and not form_search.performance_id.data:
                 self.request.session.flash(u'対象件数が多すぎます。(公演を指定すれば制限はありません)')
                 raise HTTPFound(location=route_path('orders.index', self.request))
@@ -354,7 +361,10 @@ class OrdersRefundIndexView(BaseView):
         form_search = OrderRefundSearchForm(refund_condition, organization_id=self.organization_id)
         if form_search.validate():
             query = Order.filter(Order.organization_id==self.organization_id)
-            query = OrderSearchQueryBuilder(form_search.data)(Order.filter(Order.organization_id==self.organization_id))
+            try:
+                query = OrderSearchQueryBuilder(form_search.data, lambda key: form_search[key].label.text)(Order.filter(Order.organization_id==self.organization_id))
+            except QueryBuilderError as e:
+                self.request.session.flash(e.message)
 
             if self.request.method == 'POST':
                 # 検索結果のOrder.idはデフォルト選択状態にする
@@ -390,7 +400,10 @@ class OrdersRefundIndexView(BaseView):
         refund_condition = MultiDict(self.request.session.get('ticketing.refund.condition', []))
         form_search = OrderRefundSearchForm(refund_condition, organization_id=self.organization_id)
         if form_search.validate():
-            query = OrderSearchQueryBuilder(form_search.data)(Order.filter(Order.organization_id==self.organization_id))
+            try:
+                query = OrderSearchQueryBuilder(form_search.data, lambda key: form_search[key].label.text)(Order.filter(Order.organization_id==self.organization_id))
+            except QueryBuilderError as e:
+                self.request.session.flash(e.message)
 
             checked_orders = [o.lstrip('o:') for o in self.request.session.get('orders', []) if o.startswith('o:')]
             query = query.filter(Order.id.in_(checked_orders))
@@ -1535,7 +1548,10 @@ class CartView(BaseView):
         elif not form.validate():
             self.request.session.flash(u'検索条件に誤りがあります')
         else:
-            query = CartSearchQueryBuilder(form.data)(Cart.query)
+            try:
+                query = CartSearchQueryBuilder(form.data)(Cart.query)
+            except QueryBuilderError as e:
+                self.request.session.flash(e.message)
             carts = paginate.Page(
                 query,
                 items_per_page=40,

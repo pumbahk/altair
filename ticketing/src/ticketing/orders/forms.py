@@ -305,6 +305,10 @@ class OrderSearchForm(SearchFormBase):
         validators=[Optional(), AnyOf(['asc', 'desc'], message='')],
         default='desc',
     )
+    number_of_tickets = IntegerField(
+        label=u'購入枚数',
+        validators=[Optional()]
+        )
 
     def get_conditions(self):
         conditions = {}

@@ -118,9 +118,15 @@ from ticketing.formhelpers import OurDateWidget
         </tr>
         <tr>
           <th><label>${form.start_on_from.label.text}</label></th>
-          <td colspan="5">
+          <td colspan="3">
             ${form.start_on_from()} 〜
             ${form.start_on_to()}
+          </td>
+          <th>
+            <label for="number_of_tickets">${form.number_of_tickets.label.text}</label>
+          </th>
+          <td>
+            ${form.number_of_tickets()}
           </td>
         </tr>
       </tbody>
