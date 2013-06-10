@@ -3,7 +3,7 @@
 import ticketing.core.models as c_models
 from .models import DBSession
 
-SESSION_KEY = 'bj89ers.user_profile'
+SESSION_KEY = 'booster.89ers.user_profile'
 
 def remove_user_profile(request):
     if SESSION_KEY in request.session:

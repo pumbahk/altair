@@ -60,7 +60,7 @@ def main():
     session.add(auth)
 
     operator = o_model.Operator(
-        name = 'bj89ers',
+        name = 'booster.89ers',
         email = 'dev+bj01@ticketstar.jp',
         roles=[role],
         expire_at=None,
@@ -107,7 +107,7 @@ def main():
         account = account,
         code = 'BJ890',
         title = u'仙台89ers FC会員登録',
-        abbreviated_title = 'bj89ers'
+        abbreviated_title = 'booster.89ers'
     )
     session.add(event)
     performance = c_model.Performance(

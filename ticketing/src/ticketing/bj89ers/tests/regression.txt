@@ -11,8 +11,8 @@ Booster リグレッションテスト
 設定
 ----------------------
 
->>> from ticketing.bj89ers import main
->>> from ticketing.bj89ers import testing
+>>> from ticketing.booster.89ers import main
+>>> from ticketing.booster.89ers import testing
 >>> from datetime import datetime, timedelta
 >>> now = datetime.now()
 >>> oneday = timedelta(days=1)
@@ -29,11 +29,11 @@ Booster リグレッションテスト
 ...     'altair.cart.domain.mapping':    "{}",
 ...     'sqlalchemy.url':                'sqlite:///{0}'.format(dbfile),
 ...     'sqlalchemy.echo':               False,
-...     'mako.directories':              'ticketing.bj89ers:templates',
+...     'mako.directories':              'ticketing.booster.89ers:templates',
 ... }
 
 
->>> from ticketing.bj89ers import testing
+>>> from ticketing.booster.89ers import testing
 >>> app = testing.BoosterTestApp(settings)
 >>> testing.setup()
 
@@ -109,7 +109,7 @@ ProductItem
 >>> import transaction
 >>> transaction.commit()
 
-購入画面 :class:`ticketing.bj89ers.views.IndexView`
+購入画面 :class:`ticketing.booster.89ers.views.IndexView`
 --------------------------------------------------------------
 
 >>> res = app.get('/')
@@ -154,7 +154,7 @@ ProductItem
 'http://localhost/payment/sales/1'
 
 
-決済選択画面 :class:`ticketing.bj89ers.views.PaymentView`
+決済選択画面 :class:`ticketing.booster.89ers.views.PaymentView`
 --------------------------------------------------------------
 
 >>> res = res.follow()
@@ -163,10 +163,10 @@ ProductItem
 確認画面
 --------------------------------------------------------------------
 
-完了画面 :class:`ticketing.bj89ers.views.CompleteView`
+完了画面 :class:`ticketing.booster.89ers.views.CompleteView`
 --------------------------------------------------------------------
 
-申し込み確認 :class:`ticketing.bj89ers.views.OrderReviewView`
+申し込み確認 :class:`ticketing.booster.89ers.views.OrderReviewView`
 --------------------------------------------------------------------------
 
 

@@ -67,7 +67,7 @@ class Bj89ersFixtureBuilder(FixtureBuilder):
                 role_seeds=role_seeds,
                 operator_seeds=operator_seeds,
                 sales_segment_kind=['normal'],
-                salt='bj89ers',
+                salt='booster.89ers',
                 num_users=1,
                 Datum=Datum
                 )
