@@ -44,20 +44,20 @@ logger = logging.getLogger(__name__)
 
             %if not start_on_candidates:
               <% logger.warn("performance=%s does not have salessegment. (calendar widget)" % p.id)%>
-              <strong>${status["string"]}</strong>${p.start_on.strftime("%H:%M")}<br/>
+              <br/>
               <span>準備中</span>
             %elif min(start_on_candidates) >= now:
-              <strong>${status["string"]}</strong>${p.start_on.strftime("%H:%M")}<br/>
+              <br/>
               <span>販売前</span>
             %elif max(end_on_candidates) >= now:
               % if status["class"] == "cross":
-                <strong>${status["string"]}</strong>${p.start_on.strftime("%H:%M")}<br/>
-                予定枚数終了
+                <br/>
+                <span>予定枚数終了</span>
               % else:
                 <strong>${status["string"]}</strong><a href="${h.link.get_purchase_page_from_performance(request, p)}">${p.start_on.strftime("%H:%M")}</a>
               % endif
             % else:
-              <strong>${status["string"]}</strong>${p.start_on.strftime("%H:%M")}<br/>
+              <br/>
               <span>販売期間終了</span>
             % endif
              <p>${p.calendar_content or u""}</p>
