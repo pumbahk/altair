@@ -1,8 +1,9 @@
 # encoding: utf-8
 
 import logging
+from sqlalchemy.orm import joinedload
 from sqlalchemy.orm.exc import NoResultFound
-from .models import Host, OrderNoSequence, ChannelEnum, OrganizationSetting
+from .models import Host, Organization, OrderNoSequence, ChannelEnum, OrganizationSetting
 from datetime import datetime
 
 logger = logging.getLogger(__name__)
@@ -16,8 +17,16 @@ def get_organization(request, override_host=None):
 
     host_name = override_host or request.host
     try:
-        host = Host.query.filter(Host.host_name==unicode(host_name)).one()
-        return host.organization
+        host = Host.query.options(
+            joinedload(Host.organization),
+            joinedload(Host.organization,
+                       Organization.settings),
+        ).filter(
+            Host.host_name==unicode(host_name)
+        ).one()
+        request.organization = host.organization
+        request.environ['ticketing.cart.organization_id'] = request.organization.id
+        return request.organization
     except NoResultFound as e:
         raise Exception("Host that named %s is not Found" % host_name)
 
