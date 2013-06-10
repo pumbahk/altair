@@ -26,7 +26,9 @@ def _after_cursor_execute(conn, cursor, stmt, params, context, execmany):
         with lock:
             count = request.environ.get('altair.queryprofile.query_count', 0)
             request.environ['altair.queryprofile.query_count'] = count + 1
-
+            statements = request.environ.get('altair.queryprofile.statements', [])
+            statements.append(str(stmt))
+            request.environ['altair.queryprofile.statements'] = statements
 
 def tween_factory(handler, registry):
     summary_path = registry.settings.get('altair.queryprofile.summary_path')
@@ -95,4 +97,7 @@ class QuerySummarizer(object):
         summary = self.queries.get(route_name, {})
         summary['max'] = max(summary.get('max', count), count)
         summary['min'] = min(summary.get('min', count), count)
+        if summary['max'] == count:
+            statements = request.environ.get('altair.queryprofile.statements', [])
+            summary['statements'] = statements
         self.queries[route_name] = summary
