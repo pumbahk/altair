@@ -13,11 +13,6 @@ def includeme(config):
     config.add_tween('altair.queryprofile.QueryCountTween')
 
 
-@event.listens_for(Engine, "before_cursor_execute")
-def _before_cursor_execute(conn, cursor, stmt, params, context, execmany):
-    pass
-
-
 @event.listens_for(Engine, "after_cursor_execute")
 def _after_cursor_execute(conn, cursor, stmt, params, context, execmany):
     request = get_current_request()
