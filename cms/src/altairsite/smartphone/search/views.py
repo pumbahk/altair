@@ -35,9 +35,10 @@ def genre_search(context, request):
     # ジャンル画面の検索
     form = GenreSearchForm(request.GET)
     search_word = form.data['word']
+    genre_id = form.data['genre_id']
 
     if not form.validate():
-        render_param = context.get_genre_render_param()
+        render_param = context.get_genre_render_param(genre_id)
         render_param['form'] = form
         return render_to_response('altairsite.smartphone:templates/genre/genre.html', render_param, request=request)
 

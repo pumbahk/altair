@@ -12,4 +12,4 @@ def move_genre(context, request):
         render_param = context.get_subsubgenre_render_param(genre_id=genre_id)
         return render_to_response('altairsite.smartphone:templates/searchresult/subgenre.html', render_param, request=request)
 
-    return context.get_genre_render_param()
+    return context.get_genre_render_param(None)
