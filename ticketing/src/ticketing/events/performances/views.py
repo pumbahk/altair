@@ -26,7 +26,7 @@ from ticketing.mails.forms import MailInfoTemplate
 from ticketing.models import DBSession
 from ticketing.mails.api import get_mail_utility
 from ticketing.core.models import MailTypeChoices
-from ticketing.orders.api import OrderSearchQueryBuilder
+from ticketing.orders.api import OrderSearchQueryBuilder, QueryBuilderError
 
 @view_defaults(decorator=with_bootstrap, permission="event_editor")
 class PerformanceShowView(BaseView):
@@ -70,7 +70,10 @@ class PerformanceShowView(BaseView):
             event_id=self.performance.event_id,
             performance_id=self.performance.id)
         if form_search.validate():
-            query = OrderSearchQueryBuilder(form_search.data)(query)
+            try:
+                query = OrderSearchQueryBuilder(form_search.data, lambda key: form_search[key].label.text)(query)
+            except QueryBuilderError as e:
+                self.request.session.flash(e.message)
         else:
             self.request.session.flash(u'検索条件が正しくありません')
         return dict(
