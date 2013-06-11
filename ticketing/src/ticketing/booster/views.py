@@ -25,9 +25,9 @@ from ticketing.core import models as c_models
 from ticketing.users.models import User, UserProfile
 
 from . import schemas
-from ..api import load_user_profile, store_user_profile, remove_user_profile
-from .models import DBSession
-from ..helpers import sex_value
+from .api import load_user_profile, store_user_profile, remove_user_profile
+from ..models import DBSession
+from .helpers import sex_value
 from ticketing.views import BaseView
 
 logger = logging.getLogger(__name__)
@@ -53,7 +53,7 @@ class IndexView(BaseView):
     def get(self):
         user_profile = load_user_profile(self.request)
         params = MultiDict(user_profile) if user_profile else MultiDict()
-        form = self.context.product_form(schemas.OrderFormSchema, params)
+        form = self.context.product_form(params)
         products =  {str(p.id): p for p in  self.context.product_query}
         return dict(form=form, products=products)
 
@@ -65,7 +65,7 @@ class IndexView(BaseView):
         return [(product, number)]
 
     def post(self):
-        form = self.context.product_form(schemas.OrderFormSchema, self.request.params)
+        form = self.context.product_form(self.request.params)
         products =  {str(p.id): p for p in  self.context.product_query}
         if not form.validate():
             self.request.errors = form.errors
@@ -189,7 +189,7 @@ class OrderReviewView(BaseView):
         return dict()
 
     def get(self):
-        form = schemas.OrderReviewSchema(self.request.params)
+        form = self.context.orderreview_form(self.request.params)
         response = render_view_to_response(form, self.request, name="order_review_form")
         if response is None:
             raise ValueError
@@ -200,7 +200,7 @@ class OrderReviewView(BaseView):
         return [u'受付番号または電話番号が違います。']
 
     def post(self):
-        form = schemas.OrderReviewSchema(self.request.params)
+        form = self.context.orderreview_form(self.request.params)
         if not form.validate():
             response = render_view_to_response(form, self.request, name="order_review_form")
             if response is None:

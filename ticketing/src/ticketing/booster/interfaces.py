@@ -24,6 +24,8 @@ class ICartResource(Interface):
         pass
     def _populate_params():
         """initialize attributes. if invalid None is stored"""
+    def get_payment_delivery_method_pair(start_at=None):
+        pass
     
     ## plugin?
     def get_or_create_user():

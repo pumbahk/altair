@@ -27,6 +27,46 @@ def setup_excviews(config):
     config.add_view('.excviews.exception_view', context=Exception, renderer="errors/not_found.html", )
     config.add_view('.excviews.exception_view', context=Exception, renderer="errors_mobile/not_found.html", request_type='altair.mobile.interfaces.IMobileRequest')
 
+def setup_views(config):
+    config.add_route('index', '/')
+    config.add_route('contact', '/contact')
+    config.add_route('notready', '/notready')
+
+    config.add_route('order_review.form', '/review')
+    config.add_route('order_review.show', '/review/show')
+
+    config.add_view('.views.IndexView', attr='notready', route_name='notready', renderer='carts/notready.html')
+    config.add_view('.views.IndexView', attr='notready', request_type='altair.mobile.interfaces.IMobileRequest', route_name='notready', renderer='carts_mobile/notready.html')
+    config.add_view('.views.IndexView', route_name='index', attr="get", request_method='GET', renderer='carts/form.html')
+    config.add_view('.views.IndexView', request_type='altair.mobile.interfaces.IMobileRequest', route_name='index', 
+                    attr="get", request_method='GET', renderer='carts_mobile/form.html')
+
+    config.add_view('.views.IndexView', route_name='index', attr="post", request_method='POST', renderer='carts/form.html')
+    config.add_view('.views.IndexView', request_type='altair.mobile.interfaces.IMobileRequest', route_name='index', 
+                    attr="post", request_method='POST', renderer='carts_mobile/form.html')
+
+    config.add_view('.views.PaymentView', route_name='cart.payment', attr="post", request_method="POST", renderer="carts/payment.html")
+    config.add_view('.views.PaymentView', request_type='altair.mobile.interfaces.IMobileRequest',  route_name='cart.payment', 
+                    attr="post", request_method="POST", renderer="carts_mobile/payment.html")
+
+    config.add_view('.views.CompleteView', route_name='payment.finish', request_method="POST", renderer="carts/completion.html")
+    config.add_view('.views.CompleteView', request_type='altair.mobile.interfaces.IMobileRequest', route_name='payment.finish', 
+                    request_method="POST", renderer="carts_mobile/completion.html")
+
+    config.add_view('.views.OrderReviewView', route_name='order_review.form', attr="get", request_method="GET", renderer="order_review/form.html")
+    config.add_view('.views.OrderReviewView', request_type='altair.mobile.interfaces.IMobileRequest', route_name='order_review.form',
+                    attr="get", request_method="GET", renderer="order_review_mobile/form.html")
+
+    config.add_view('.views.OrderReviewView', route_name='order_review.show', attr="post", request_method="POST", renderer="order_review/show.html")
+    config.add_view('.views.OrderReviewView', request_type='altair.mobile.interfaces.IMobileRequest', route_name='order_review.show',
+                    attr="post", request_method="POST", renderer="order_review_mobile/show.html")
+
+    config.add_view('.views.order_review_form_view', name="order_review_form", renderer="order_review/form.html")
+    config.add_view('.views.order_review_form_view', name="order_review_form", renderer="order_review_mobile/form.html", request_type='altair.mobile.interfaces.IMobileRequest')
+
+    config.add_view('.views.contact_view', route_name="contact", renderer="static/contact.html")
+    config.add_view('.views.contact_view', route_name="contact", renderer="static_mobile/contact.html", request_type='altair.mobile.interfaces.IMobileRequest')
+
 def setup_plugins_views(config):
     PAYMENT_PLUGIN_ID_SEJ = 3
     PAYMENT_PLUGIN_ID_CARD = 1
@@ -42,3 +82,9 @@ def setup_plugins_views(config):
                     renderer="carts_mobile/multicheckout_payment_complete.html")
 
     
+def includeme(config):
+    config.include(setup_cart)
+    config.include('altair.mobile')
+    config.include(setup_views)
+    config.include(setup_excviews)
+    config.include(setup_plugins_views)

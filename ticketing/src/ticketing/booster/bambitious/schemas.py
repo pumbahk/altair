@@ -46,6 +46,10 @@ class OrderFormSchema(Form):
     fax = fields.TextField(u"FAX番号", filters=[strip_spaces], validators=[v.Length(max=11), v.Regexp(r'^\d*$', message=u'-を抜いた数字のみを入力してください')])
     email_1 = fields.TextField(u"メールアドレス", filters=[strip_spaces], validators=[v.Required(), SejCompliantEmail()])
     email_1_confirm = fields.TextField(u"メールアドレス（確認用）", filters=[strip_spaces], validators=[v.Required(), SejCompliantEmail(), v.EqualTo('email_1', u'確認用メールアドレスが一致しません。')])
-    publicity = fields.SelectField(u"媒体への掲載希望", validators=[v.Optional()], choices=[('yes', u'希望する'),('no', u'希望しない')], coerce=text_type_but_none_if_not_given)
+
+    product_delivery_method = fields.SelectField(label=u"会員特典受け取り方法", validators=[v.Required()], choices=[])
     
+class OrderReviewSchema(Form):
+    order_no = fields.TextField(u"注文番号", filters=[strip_spaces], validators=[v.Required()])
+    tel = fields.TextField(u"電話番号", filters=[strip_spaces, strip_hyphen()], validators=[v.Required()])
 
