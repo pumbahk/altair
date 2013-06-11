@@ -66,7 +66,12 @@ def mobile_rendering_page(context, request):
     control = context.pc_access_control()
     page = control.fetch_page_from_params(url, dt)
 
-    if not control.access_ok or page.event_id is None:
+    if not control.access_ok:
+        logger.info(control.error_message)
+        return mobile_dispatch_view(context, request)
+    if page.pageset.genre_id:
+        return HTTPFound(request.route_path("genre") + "?genre=" + str(page.pageset.genre_id))
+    if page.event_id is None:
         logger.info(control.error_message)
         return mobile_dispatch_view(context, request)
     return HTTPFound(request.route_path("eventdetail", _query=dict(event_id=page.event_id or page.pageset.event_id)))
@@ -86,6 +91,8 @@ def smartphone_rendering_page(context, request):
     if not control.access_ok:
         logger.info(control.error_message)
         return smartphone_dispatch_view(context, request)
+    if page.pageset.genre_id:
+        return HTTPFound(request.route_path("smartphone.genre", genre_id=page.pageset.genre_id))
     if page.event_id is None:
         ## TOOOOOOOOOOOOO adhoc.
         if page.url.startswith("special"):
