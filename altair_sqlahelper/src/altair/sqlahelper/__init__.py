@@ -2,28 +2,28 @@
 import re
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from zope.interface import Interface, directlyProvides
+from zope.interface import directlyProvides
 from pyramid.settings import asbool
+from .interfaces import ISessionMaker
 
 url_key_pt = re.compile(r"altair\.sqlahelper\.sessions\.(?P<name>\w+)\.url")
 echo_key_pt = re.compile(r"altair\.sqlahelper\.sessions\.(?P<name>\w+)\.echo")
 
 
+def param_match(key, value, matcher, param_name, results):
+    matched = matcher.match(key)
+    if matched:
+        name = matched.groupdict()['name']
+        c = results.get(name, {})
+        c[param_name] = value
+        results[name] = c
+
+
 def from_settings(settings):
     results = {}
     for key, value in settings.items():
-        url_match = url_key_pt.match(key)
-        if url_match:
-            name = url_match.groupdict()['name']
-            c = results.get(name, {})
-            c['url'] = value
-            results[name] = c
-        echo_match = echo_key_pt.match(key)
-        if echo_match:
-            name = echo_match.groupdict()['name']
-            c = results.get(name, {})
-            c['echo'] = asbool(value)
-            results[name] = c
+        param_match(key, value, url_key_pt, 'url', results)
+        param_match(key, asbool(value), echo_key_pt, 'echo', results)
     return results
 
 
@@ -56,7 +56,3 @@ def get_db_session(request, name=""):
     sessions[name] = session
     request.environ['altair.sqlahelper.sessions'] = sessions
     return session
-
-class ISessionMaker(Interface):
-    def __call__():
-        """ create new session """

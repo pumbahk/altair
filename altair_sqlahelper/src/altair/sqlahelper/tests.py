@@ -55,7 +55,7 @@ class register_sessionmakersTests(unittest.TestCase):
 
 
     def test_empty(self):
-        from . import ISessionMaker
+        from .interfaces import ISessionMaker
         urls = {}
         self._callFUT(self.config, urls)
         registered = self.config.registry.getAllUtilitiesRegisteredFor(ISessionMaker)
@@ -63,7 +63,7 @@ class register_sessionmakersTests(unittest.TestCase):
         self.assertEqual(registered, [])
 
     def test_one(self):
-        from . import ISessionMaker
+        from .interfaces import ISessionMaker
         urls = {'testing': {'url': 'sqlite:///'}}
         self._callFUT(self.config, urls)
         sessionmaker = self.config.registry.queryUtility(ISessionMaker, name='testing')
@@ -86,7 +86,7 @@ class get_db_sessionTests(unittest.TestCase):
 
 
     def test_new_session(self):
-        from . import ISessionMaker
+        from .interfaces import ISessionMaker
         request = testing.DummyRequest()
         marker = testing.DummyResource()
         sessionmaker = DummyMaker(marker)
