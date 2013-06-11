@@ -1,6 +1,7 @@
 # -*- coding:utf-8 -*-
 from ..resources import BoosterCartResource
 from ticketing.cart.helpers import format_number
+from ticketing.core.models import DeliveryMethod
 import logging
 logger = logging.getLogger(__name__)
 from .schemas import OrderFormSchema, OrderReviewSchema
@@ -15,6 +16,11 @@ class BjBambitiousCartResource(BoosterCartResource):
         dms = set(pdmp.delivery_method for pdmp in pdmps)
         form.product_delivery_method.choices = [(str(dm.id), dm.name) for dm in dms]
         return form
+
+    def load_user_profile(self):
+        pm = super(type(self), self).load_user_profile()
+        pm["product_delivery_method"] = DeliveryMethod.query.filter_by(id=pm['product_delivery_method']).first().name()
+        return pm
 
     def orderreview_form(self, params):
         return OrderReviewSchema(params)

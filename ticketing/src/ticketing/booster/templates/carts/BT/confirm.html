@@ -29,18 +29,12 @@
                       ${layout.product_name}
                     </tr>
                     <%
-                      pm = _api.load_user_profile(request)
+                      pm = request.context.load_user_profile(request)
                     %>
                     <tr>
                       <th>新規／継続</th>
                       <td>${u'継続' if pm.get('cont') == 'yes' else u'新規'}</td>
                     </tr>
-                    % if pm.get('old_id_number'):
-                  　<tr>
-                      <th>2011-12会員番号</th>
-                      <td>${pm.get('old_id_number')}</td>
-                    </tr>
-                    % endif
                     <tr>
                       <th>会員種別</th>
                       <td>${cart.products[0].product.name}</td>
@@ -91,16 +85,16 @@
                             <td>${pm['tel_2']}</td>
                         </tr>
                         <tr>
+                            <th>FAX番号</th>
+                            <td>${pm['fax']}</td>
+                        </tr>
+                        <tr>
                             <th>メールアドレス</th>
                             <td>${pm['email_1']}</td>
                         </tr>
                         <tr>
-                            <th>${layout.team_name}からのメールマガジンの配信	</th>
-                            <td>${u'希望する' if pm.get('mail_permission') else u'希望しない'}</td>
-                        </tr>
-                        <tr>
-                            <th>メモリアルブックへの掲載希望</th>
-                            <td>${u'はい' if pm.get('publicity') == 'yes' else u'いいえ'}</td>
+                            <th>会員特典受け取り方法</th>
+                            <td>${pm['product_delively_method']}</td>
                         </tr>
                     </tbody>
                 </table>
