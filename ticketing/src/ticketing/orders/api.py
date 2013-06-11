@@ -11,6 +11,9 @@ from ticketing.core.models import (
     OrderedProduct,
     OrderedProductItem,
     Product,
+    ProductItem,
+    SalesSegment,
+    SalesSegmentGroup,
     PaymentMethod,
     DeliveryMethod,
     ShippingAddress,
@@ -51,18 +54,19 @@ def post(fn):
     return fn
 
 class SearchQueryBuilderBase(object):
-    def __init__(self, formdata, key_name_resolver=None, targets=None, excludes=[]):
+    def __init__(self, formdata, key_name_resolver=None, targets=None, excludes=[], sort=True):
         self.formdata = formdata
         self.key_name_resolver = key_name_resolver
         if targets:
             self.targets = targets
         self.excludes = excludes
+        self.sort = sort
         self.post_queue = None
 
     def handle_sort(self, query):
         if self.formdata['sort']:
             try:
-                query = asc_or_desc(query, getattr(self.target, self.formdata['sort']), self.formdata['direction'], 'asc')
+                query = asc_or_desc(query, getattr(self.targets['subject'], self.formdata['sort']), self.formdata['direction'], 'asc')
             except AttributeError:
                 pass
 
@@ -77,7 +81,8 @@ class SearchQueryBuilderBase(object):
                     query = callable(query, v)
         for fn, value in self.post_queue:
             query = fn(self, queue, value)
-        query = self.handle_sort(query)
+        if self.sort:
+            query = self.handle_sort(query)
         return query
 
 class BaseSearchQueryBuilderMixin(object):
@@ -137,6 +142,13 @@ class BaseSearchQueryBuilderMixin(object):
     def _start_on_to(self, query, value):
         return query.join(self.targets['subject'].performance).filter(Performance.start_on<=todatetime(value).replace(hour=23, minute=59, second=59))
 
+    def handle_sort(self, query):
+        if self.formdata['sort']:
+            query = super(BaseSearchQueryBuilderMixin, self).handle_sort(query)
+        else:
+            query = asc_or_desc(query, self.targets['subject'].order_no, 'desc')
+        return query
+
 class CartSearchQueryBuilder(SearchQueryBuilderBase, BaseSearchQueryBuilderMixin):
     targets = {
         'subject': Cart,
@@ -179,6 +191,9 @@ class OrderSearchQueryBuilder(SearchQueryBuilderBase, BaseSearchQueryBuilderMixi
         'OrderedProduct': OrderedProduct,
         'OrderedProductItem': OrderedProductItem,
         'Product': Product,
+        'ProductItem': ProductItem,
+        'SalesSegment': SalesSegment,
+        'SalesSegmentGroup': SalesSegmentGroup,
         'Seat': Seat,
         }
     
@@ -248,17 +263,35 @@ class OrderSearchQueryBuilder(SearchQueryBuilderBase, BaseSearchQueryBuilderMixi
         aliased_targets = dict(
             (k, aliased(v)) for k, v in self.targets.items()
             )
-        query = query.filter(
-            self.targets['subject'].id.in_(
-                self.__class__(self.formdata, self.key_name_resolver, aliased_targets, excludes=['number_of_tickets'])(
-                    query.session.query(aliased_targets['subject'].id) \
-                        .join(aliased_targets['OrderedProduct']) \
-                        .join(aliased_targets['OrderedProductItem']) \
-                        .distinct()
-                    ) \
-                    .group_by(aliased_targets['subject'].id,
-                              aliased_targets['OrderedProductItem'].product_item_id) \
-                    .having(safunc.sum(aliased_targets['OrderedProductItem'].quantity) >= value) \
+        minimum_price_query = query.session.query(safunc.min(aliased_targets['ProductItem'].price)).filter(aliased_targets['ProductItem'].price != 0)
+        performance_id = self.formdata.get('performance_id')
+        if performance_id:
+            minimum_price_query = minimum_price_query \
+                .join(aliased_targets['Product']) \
+                .join(aliased_targets['SalesSegment']) \
+                .filter(aliased_targets['SalesSegment'].performance_id == performance_id)
+        else:
+            event_id = self.formdata.get('event_id')
+            if event_id:
+                minimum_price_query = minimum_price_query \
+                    .join(aliased_targets['Product']) \
+                    .join(aliased_targets['SalesSegment']) \
+                    .join(aliased_targets['SalesSegmentGroup']) \
+                    .filter(aliased_targets['SalesSegmentGroup'].event_id == event_id)
+        minimum_price = minimum_price_query.scalar()
+        if minimum_price:
+            query = query.filter(
+                self.targets['subject'].id.in_(
+                    self.__class__(self.formdata, self.key_name_resolver, aliased_targets, excludes=['number_of_tickets'], sort=False)(
+                        query.session.query(aliased_targets['subject'].id) \
+                            .join(aliased_targets['OrderedProduct']) \
+                            .join(aliased_targets['OrderedProductItem']) \
+                            .distinct()
+                        ) \
+                        .filter(aliased_targets['subject'].total_amount > minimum_price * value) \
+                        .group_by(aliased_targets['subject'].id,
+                                  aliased_targets['OrderedProductItem'].product_item_id) \
+                        .having(safunc.sum(aliased_targets['OrderedProductItem'].quantity) >= value) \
+                    )
                 )
-            )
         return query
