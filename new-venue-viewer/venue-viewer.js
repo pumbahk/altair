@@ -1,6 +1,6 @@
 (function () {
 var __LIBS__ = {};
-__LIBS__['LRVWIU5NH9QYPDW3'] = (function (exports) { (function () { 
+__LIBS__['OUSZ8PGXADMKZHTU'] = (function (exports) { (function () { 
 
 /************** util.js **************/
 exports.eventKey = function Util_eventKey(e) {
@@ -127,7 +127,7 @@ exports.makeHitTester = function Util_makeHitTester(a) {
   }
 };
  })(); return exports; })({});
-__LIBS__['a1PGH1MH2_SUGS9O'] = (function (exports) { (function () { 
+__LIBS__['q4V8O424B543NI3C'] = (function (exports) { (function () { 
 
 /************** CONF.js **************/
 exports.DEFAULT = {
@@ -182,11 +182,11 @@ exports.DEFAULT = {
   }
 };
  })(); return exports; })({});
-__LIBS__['zM1TCUYS80Q5IAMU'] = (function (exports) { (function () { 
+__LIBS__['ICG7POZLAVV5C7AC'] = (function (exports) { (function () { 
 
 /************** seat.js **************/
-var util = __LIBS__['LRVWIU5NH9QYPDW3'];
-var CONF = __LIBS__['a1PGH1MH2_SUGS9O'];
+var util = __LIBS__['OUSZ8PGXADMKZHTU'];
+var CONF = __LIBS__['q4V8O424B543NI3C'];
 
 function clone(obj) {
   return $.extend({}, obj);
@@ -268,12 +268,15 @@ Seat.prototype.defaultStyle = function Seat_defaultStype() {
 }
 
 Seat.prototype.attach = function Seat_attach(shape) {
-  if (!this.shape) {
-    this.shape = shape;
-    this.originalStyle = this.defaultStyle();
-    this.refresh();
-    shape.addEvent(this.events);
-  }
+  if (this.shape === shape)
+    return;
+  if (this.shape !== shape)
+    this.detach();
+
+  this.shape = shape;
+  this.originalStyle = this.defaultStyle();
+  this.refresh();
+  shape.addEvent(this.events);
 };
 
 Seat.prototype.detach = function Seat_detach(shape) {
@@ -1044,9 +1047,9 @@ function parseTransform(transform_str) {
     throw new Error('invalid transform function: ' + f);
 }
 
-  var CONF = __LIBS__['a1PGH1MH2_SUGS9O'];
-  var seat = __LIBS__['zM1TCUYS80Q5IAMU'];
-  var util = __LIBS__['LRVWIU5NH9QYPDW3'];
+  var CONF = __LIBS__['q4V8O424B543NI3C'];
+  var seat = __LIBS__['ICG7POZLAVV5C7AC'];
+  var util = __LIBS__['OUSZ8PGXADMKZHTU'];
 
   var StoreObject = _class("StoreObject", {
     props: {
@@ -1093,10 +1096,6 @@ function parseTransform(transform_str) {
       contentOriginPosition: {x: 0, y: 0},
       dragging: false,
       startPos: { x: 0, y: 0 },
-      rubberBand: new Fashion.Rect({
-        position: {x: 0, y: 0},
-        size: {x: 0, y: 0}
-      }),
       drawable: null,
       availableAdjacencies: [ 1 ],
       originalStyles: new StoreObject(),
@@ -1118,6 +1117,8 @@ function parseTransform(transform_str) {
       seatTitles: {},
       optionalViewportSize: null,
       loading: false,
+      pageBeingLoaded: false,
+      pagesCoveredBySeatData: null, 
       loadAborted: false,
       loadAbortionHandler: null,
       _smallTextsShown: true,
@@ -1139,7 +1140,6 @@ function parseTransform(transform_str) {
         }
         this.dataSource = options.dataSource;
         if (options.zoomRatio) zoom(options.zoomRatio);
-        this.rubberBand.style(CONF.DEFAULT.MASK_STYLE);
         canvas.empty();
         this.optionalViewportSize = options.viewportSize;
         this.deferSeatLoading = !!options.deferSeatLoading;
@@ -1215,23 +1215,8 @@ function parseTransform(transform_str) {
               self.availableAdjacencies = data.available_adjacencies;
               self.seatAdjacencies = new seat.SeatAdjacencies(self);
 
-              var onDrawingOrSeatsLoaded;
-              (function() {
-                var status = { drawing: false, seats: false };
-                onDrawingOrSeatsLoaded = function onDrawingOrSeatsLoaded(part) {
-                  status[part] = true;
-                  if (part == 'drawing' && status.seats) {
-                    for (var id in self.seats) {
-                      var shape = self.shapes[id];
-                      if (shape)
-                        self.seats[id].attach(shape);
-                    }
-                  }
-                };
-              })();
               if (self.currentPage) {
                 self.loadDrawing(self.currentPage, function () {
-                  onDrawingOrSeatsLoaded('drawing');
                   self.callbacks.load.call(self, self);
                   self.zoomAndPan(self.zoomRatioMin, { x: 0., y: 0. });
                 });
@@ -1249,6 +1234,13 @@ function parseTransform(transform_str) {
         var self = this;
         this.callbacks.loadPartStart.call(self, self, 'drawing');
         this.initDrawable(page, function () {
+          if (self.pagesCoveredBySeatData && (self.pagesCoveredBySeatData === 'all-in-one' || page in self.pagesCoveredBySeatData)) {
+            for (var id in self.seats) {
+              var shape = self.shapes[id];
+              if (shape)
+                self.seats[id].attach(shape);
+            }
+          }
           self.callbacks.pageChanging.call(self, page);
           self.callbacks.loadPartEnd.call(self, self, 'drawing');
           next.call(self);
@@ -1323,9 +1315,10 @@ function parseTransform(transform_str) {
         };
 
         var dataSource = this.dataSource.drawing(page);
-
+        self.pageBeingLoaded = page;
         dataSource(function (drawing) {
           self.loading = false;
+          self.pageBeingLoaded = null;
           if (self.loadAborted) {
             self.loadAborted = false;
             self.loadAbortionHandler && self.loadAbortionHandler.call(self);
@@ -1836,11 +1829,6 @@ function parseTransform(transform_str) {
       _loadPage: function (pageInfo, next) {
         var self = this;
         var afterthings = function () {
-          for (var id in self.seats) {
-            var shape = self.shapes[id];
-            if (shape)
-              self.seats[id].attach(shape);
-          }
           if (pageInfo.zoomRatio && pageInfo.scrollPosition) {
             self.zoomAndPan(pageInfo.zoomRatio,
                             pageInfo.scrollPosition);
@@ -1854,7 +1842,7 @@ function parseTransform(transform_str) {
           return;
         this.canvas.css({ cursor: 'default' });
         this.callbacks.messageBoard.down.call(this);
-        if (this.curentPage != pageInfo.page) {
+        if (this.currentPage != pageInfo.page) {
           this.loadDrawing(pageInfo.page, function () {
             self.callbacks.load.call(self, self);
             afterthings();
@@ -1892,6 +1880,13 @@ function parseTransform(transform_str) {
             self.loadAbortionHandler && self.loadAbortionHandler.call(self, self);
             self.callbacks.loadAbort && self.callbacks.loadAbort.call(self, self);
             return;
+          }
+          if (!self.pageBeingLoaded && self.currentPage && (self.pagesCoveredBySeatData === 'all-in-one' || self.currentPage in self.pagesCoveredBySeatData)) {
+            for (var id in self.seats) {
+              var shape = self.shapes[id];
+              if (shape)
+                self.seats[id].attach(shape);
+            }
           }
           self.callbacks.loadPartEnd.call(self, self, 'seats');
           if (next)
@@ -1944,11 +1939,10 @@ function parseTransform(transform_str) {
                 };
               }
             });
-            if (self.shapes[id])
-              seat_.attach(self.shapes[id]);
           }
 
           self.seats = seats;
+          self.pagesCoveredBySeatData = 'all-in-one'; // XXX
           next.call(self);
         }, self.callbacks.message);
       },
