@@ -108,7 +108,10 @@ class VenueSiteDrawingProviderAdapter(object):
         if retval is None:
             drawing = self.get_backend_drawing('root.svg')
             if drawing is None:
-                retval = self.request.route_url('api.get_site_drawing', site_id=self.site.id)
+                if self.site._drawing_url is not None:
+                    retval = self.request.route_url('api.get_site_drawing', site_id=self.site.id)
+                else:
+                    retval = None
             else:
                 if IS3KeyProvider.providedBy(drawing):
                     key = drawing.get_key()

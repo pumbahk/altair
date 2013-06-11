@@ -36,13 +36,15 @@ def get_site_drawing(context, request):
         .filter_by(id=site_id) \
         .filter(Venue.organization_id==context.user.organization_id) \
         .distinct().one()
-    return Response(
-        status_code=200,
-        content_type='image/svg',
-        body_file=get_resolver(request.registry).resolve(
-            get_venue_site_adapter(request, site).drawing_url
-            ).stream()
-        )
+    drawing_url = get_venue_site_adapter(request, site).drawing_url
+    if drawing_url is None:
+        return Response(status_code=404)
+    else:
+        return Response(
+            status_code=200,
+            content_type='image/svg',
+            body_file=get_resolver(request.registry).resolve(drawing_url).stream()
+            )
 
 @view_config(route_name="api.get_seats", request_method="GET", renderer='json', permission='event_viewer')
 def get_seats(request):
