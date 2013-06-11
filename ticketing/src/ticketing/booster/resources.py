@@ -24,7 +24,6 @@ class BoosterCartResource(TicketingCartResource):
         self._event_id = get_booster_settings(self.request).event_id
         self._sales_segment_id = None
 
-
     @reify 
     def product_query(self):
         query = Product.query

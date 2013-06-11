@@ -109,10 +109,6 @@ class PaymentView(_PaymentView):
         user_profile = load_user_profile(self.request)
         return user_profile['last_name'] + user_profile['first_name']
 
-    def get_mail_address(self):
-        user_profile = load_user_profile(self.request)
-        return user_profile['email_1']
-
     @back
     def post(self):
         return super(self.__class__, self).post()
