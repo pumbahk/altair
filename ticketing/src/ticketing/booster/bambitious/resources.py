@@ -19,7 +19,9 @@ class BjBambitiousCartResource(BoosterCartResource):
 
     def load_user_profile(self):
         pm = super(type(self), self).load_user_profile()
-        pm["product_delivery_method"] = DeliveryMethod.query.filter_by(id=pm['product_delivery_method']).first().name()
+        dm_id = pm.get("product_delivery_method") 
+        if dm_id:
+            pm["product_delivery_method_name"] = DeliveryMethod.query.filter_by(id=dm_id).first().name()
         return pm
 
     def orderreview_form(self, params):
