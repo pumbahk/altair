@@ -260,6 +260,12 @@ class Orders(BaseView):
                 self.request.session.flash(e.message)
 
         page = int(self.request.params.get('page', 0))
+        query = query.options(
+            joinedload(Order.shipping_address),
+            joinedload(Order.performance),
+            joinedload(Order.performance, Performance.event),
+            undefer('created_at'))
+
         orders = paginate.Page(
             query,
             page=page,
