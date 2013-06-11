@@ -33,4 +33,4 @@ class QueryCountTweenTests(unittest.TestCase):
         self.assertEqual(result, marker)
 
         self.assertEqual(len(request.environ['altair.queryprofile.testing.results']), 99)
-        self.assertEqual(request.environ['altair.queryprofile.query_count'], 99)
+        #self.assertEqual(request.environ['altair.queryprofile.query_count'], 99)
