@@ -140,6 +140,7 @@ def main(global_config, **local_config):
     ### includes altair.*
     config.include('altair.exclog')
     config.include('altair.browserid')
+    config.include('altair.sqlahelper')
 
     ### selectable renderer
     config.include(".selectable_renderer")
