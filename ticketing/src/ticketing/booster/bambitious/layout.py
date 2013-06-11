@@ -2,7 +2,8 @@
 from markupsafe import Markup
 
 class Layout(object):
-    def __init__(self, request):
+    def __init__(self, context, request):
+        self.context = context
         self.request = request
 
     title = u"バンビシャス奈良 ブースタークラブ クラブバンビシャス入会申込ページ"
@@ -34,8 +35,5 @@ class Layout(object):
         return self.request.route_url('order_review.form')
 
     def static_url(self, name, *args, **kwargs):
-        return self.request.static_url(self.relative_path(+name), *args, **kwargs)
-
-    def relative_path(self, name):
-        return "ticketing.booster.bambitious:"+name
+        return self.request.static_url("ticketing.booster.bambitious:"+name, *args, **kwargs)
     

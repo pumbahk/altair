@@ -17,10 +17,5 @@ def add_booster_settings(config, settings, prefix="booster."):
     bsettings = BoosterSettings.from_settings(settings, prefix=prefix)
     config.registry.registerUtility(bsettings, IBoosterSettings)
 
-def add_simple_layout(config, dotted):
-    config.set_request_property(dotted, "layout", reify=True)
-    config.add_subscriber("ticketing.booster.subscribers.add_simple_layout", 'pyramid.events.BeforeRender')
-
 def includeme(config):
     config.add_directive("add_booster_settings", add_booster_settings)
-    config.add_directive("add_simple_layout",  add_simple_layout)

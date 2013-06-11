@@ -53,7 +53,10 @@ def setup_booster_settings(config):
     config.add_booster_settings(settings, prefix="89ers.")
     config.set_root_factory('.resources.Bj89ersCartResource')
     
-    config.add_simple_layout(".layout.Layout")
+    config.include("pyramid_layout")
+    config.add_layout(".layout.Layout", "ticketing.booster.89ers:templates/base.html") #xxx:
+    config.add_panel("ticketing.booster.panels.input_form", "input_form", renderer="ticketing.booster.89ers:templates/carts/_form.html")
+    config.scan(".panels")
 
 def main(global_config, **local_config):
     settings = dict(global_config)

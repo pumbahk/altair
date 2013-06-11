@@ -52,8 +52,10 @@ def setup_booster_settings(config):
     config.include("..config")
     config.add_booster_settings(settings, prefix="bambitious.")
     config.set_root_factory('.resources.BjBambitiousCartResource')
-    
-    config.add_simple_layout(".layout.Layout")
+
+    config.include("pyramid_layout")
+    config.add_layout(".layout.Layout", "ticketing.booster.bambitious:templates/base.html") #xxx:
+    config.add_panel("ticketing.booster.panels.input_form", "input_form", renderer="ticketing.booster.bambitious:templates/carts/_form.html")
 
 def main(global_config, **local_config):
     settings = dict(global_config)

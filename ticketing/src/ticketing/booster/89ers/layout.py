@@ -2,7 +2,8 @@
 from markupsafe import Markup
 
 class Layout(object):
-    def __init__(self, request):
+    def __init__(self, context, request):
+        self.context = context
         self.request = request
 
     title = u"仙台89ERS 2012-2013 ブースタークラブ入会申込ページ"
@@ -34,8 +35,6 @@ class Layout(object):
         return self.request.route_url('order_review.form')
 
     def static_url(self, name, *args, **kwargs):
-        return self.request.static_url(self.relative_path(name), *args, **kwargs)
+        return self.request.static_url("ticketing.booster.89ers:"+name, *args, **kwargs)
 
-    def relative_path(self, name):
-        return "ticketing.booster.89ers:"+name
     
