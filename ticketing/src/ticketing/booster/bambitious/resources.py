@@ -19,6 +19,8 @@ class BjBambitiousCartResource(BoosterCartResource):
 
     def load_user_profile(self):
         pm = super(type(self), self).load_user_profile()
+        if pm is None:
+            return pm
         dm_id = pm.get("product_delivery_method") 
         if dm_id:
             pm["product_delivery_method_name"] = DeliveryMethod.query.filter_by(id=dm_id).first().name()
