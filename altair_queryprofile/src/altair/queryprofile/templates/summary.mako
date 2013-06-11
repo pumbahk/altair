@@ -1,7 +1,7 @@
 <html>
   <body>
     ${engines}
-    <table>
+    <table border=1>
       <tr>
 	<th>route</th><th>min</th><th>max</th><th>statements</th>
       </tr>
@@ -12,7 +12,7 @@
 	<td>${summary['max']}</td>
 	<td nowrap="nowrap">
 	  %for engine, statements in summary['statements'].items():
-	  ${engines.get(engine)}
+	  ${engine}:${engines.get(engine)}
 	  <ul>
 	    %for stmt in statements:
 	    <li>${stmt}</li>

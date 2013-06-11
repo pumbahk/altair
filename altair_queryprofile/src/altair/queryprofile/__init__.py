@@ -26,9 +26,9 @@ def _after_cursor_execute(conn, cursor, stmt, params, context, execmany):
     if request is not None:
         with lock:
             engine_id = id(conn.engine)
-            engines = request.environ.get('altair.queryprofile.engines', {})
+            engines = request.registry.get('altair.queryprofile.engines', {})
             engines[engine_id] = str(conn.engine)
-            request.environ['altair.queryprofile.engines'] = engines
+            request.registry['altair.queryprofile.engines'] = engines
             statements = request.environ.get('altair.queryprofile.statements', {})
             stmt_list = statements.get(engine_id, [])
             statements[engine_id] = stmt_list + [str(stmt)]
@@ -72,7 +72,7 @@ class SummarizableQueryCountTween(QueryCountTween):
         logger.debug(request.path)
         if request.path.strip('/') == self.summary_path:
             summarizer = get_summarizer(request)
-            engines = request.environ.get('altair.queryprofile.engines', {})
+            engines = request.registry.get('altair.queryprofile.engines', {})
             request.response.text = render('altair.queryprofile:templates/summary.mako',
                                            dict(summarizer=summarizer,
                                                 engines=engines))
