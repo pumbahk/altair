@@ -562,7 +562,7 @@ class PaymentView(object):
 
         start_on = cart.performance.start_on
         sales_segment = self.sales_segment
-        payment_delivery_methods = sales_segment.available_payment_delivery_method_pairs(getattr(self.context, 'now', datetime.now()))
+        payment_delivery_methods = self.context.available_payment_delivery_method_pairs(sales_segment)
         user = get_or_create_user(self.context.authenticated_user())
         user_profile = None
         if user is not None:

@@ -103,6 +103,10 @@ class TicketingCartResource(object):
             return []
         return sales_segment.membergroups
 
+    ## なぜ２つ?
+    def available_payment_delivery_method_pairs(self, sales_segment):
+        return sales_segment.available_payment_delivery_method_pairs(getattr(self, 'now', datetime.now()))
+    ## 
     def get_payment_delivery_method_pair(self, start_on=None):
         segment = self.sales_segment
         q = c_models.PaymentDeliveryMethodPair.query.filter(
