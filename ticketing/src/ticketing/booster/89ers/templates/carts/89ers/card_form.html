@@ -2,16 +2,16 @@
 <html lang="en">
 <head>
 	<meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
-	<title>仙台89ERS 2012-2013 ブースタークラブ入会申込ページ</title>
-    <link rel="stylesheet" type="text/css" href="${request.static_url('ticketing.booster.89ers:static/style.css')}" media="all" />
+	<title>${layout.title}</title>
+    <link rel="stylesheet" type="text/css" href="${layout.static_url('static/style.css')}" media="all" />
 
 </head>
 <body>
 
-  <h1 class="title">仙台89ERS 2012-2013 ブースタークラブ入会申込ページ</h1>
+  <h1 class="title">${layout.title}</h1>
   <div align="center">
     <div class="header">
-      <img src="${request.static_url('ticketing.booster.89ers:static/images/head_title.png')}" alt="仙台89ers" width="780" height="135" />
+      <img src="${layout.static_url('static/images/head_title.png')}" alt="${layout.team_name}" width="780" height="135" />
     </div>
     <!-- これはdisplay none指定, なぜか... -->
 
@@ -21,11 +21,11 @@
 		<tr>
 			<td>
 
-<h2>仙台89ERS 2012-2013 ブースタークラブ入会申込ページ</h2>
+<h2>${layout.title}</h2>
 
 <div class="formWrapper">
                     <!--
-					<table cellpadding="0" cellspacing="0" class="form89ers">
+					<table cellpadding="0" cellspacing="0" class="${layout.form_class_name}">
 					<tr><td>
 					利用可能なカードブランドの表示が必要。
 					3Dセキュア? セキュリティーコード?
@@ -37,13 +37,13 @@
                     -->
                     % if request.session.peek_flash():
                         % for message in request.session.pop_flash():
-                        <table cellpadding="0" cellspacing="0" class="form89ers">
+                        <table cellpadding="0" cellspacing="0" class="${layout.form_class_name}">
                         <tr><td colspan="2" style="text-align:left;"><div class="error">${message}</div></td></tr>
                         </table>
                         % endfor
                     % endif
 
-					<table cellpadding="0" cellspacing="0" class="form89ers">
+					<table cellpadding="0" cellspacing="0" class="${layout.form_class_name}">
 						<colgroup>
 						<col style="width:180px;">
 						<col style="width:310px;">
@@ -117,7 +117,7 @@
 						</tbody>
 					</table>
 				
-					<table cellpadding="0" cellspacing="0" class="form89ers">
+					<table cellpadding="0" cellspacing="0" class="${layout.form_class_name}">
 						<colgroup>
 						<col style="width:180px;">
 						<col style="width:310px;">
