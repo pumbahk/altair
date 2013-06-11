@@ -53,6 +53,7 @@ def setup_booster_settings(config):
     config.add_booster_settings(settings, prefix="89ers.")
     config.set_root_factory('.resources.Bj89ersCartResource')
     
+    config.add_simple_layout(".layout.Layout")
 
 def main(global_config, **local_config):
     settings = dict(global_config)

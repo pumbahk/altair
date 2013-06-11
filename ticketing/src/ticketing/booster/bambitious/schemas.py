@@ -47,4 +47,5 @@ class OrderFormSchema(Form):
     email_1 = fields.TextField(u"メールアドレス", filters=[strip_spaces], validators=[v.Required(), SejCompliantEmail()])
     email_1_confirm = fields.TextField(u"メールアドレス（確認用）", filters=[strip_spaces], validators=[v.Required(), SejCompliantEmail(), v.EqualTo('email_1', u'確認用メールアドレスが一致しません。')])
     publicity = fields.SelectField(u"媒体への掲載希望", validators=[v.Optional()], choices=[('yes', u'希望する'),('no', u'希望しない')], coerce=text_type_but_none_if_not_given)
+    
 

@@ -12,6 +12,9 @@ class Layout(object):
     def orderreview_url(self):
         return self.request.route_url('order_review.form')
 
+    def static_url(self, name, *args, **kwargs):
+        return self.request.static_url("ticketing.booster.bambitious:"+name, *args, **kwargs)
+
     @property
     def style_css(self):
         return self.request.static_url('ticketing.booster.bambitious:static/style.css')

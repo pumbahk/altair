@@ -9,13 +9,30 @@ class IBoosterSettings(Interface):
 ## for documantation
 class ICartResource(Interface):
     event_id = Attribute("event_id")
+    sales_segment_id = Attribute("sales_segment_id")
+    organization_id = Attribute("organization id")
     now = Attribute("now") #xxx:
     next = Attribute("next salessegment")
     last = Attribute("last salessegment")
-    sales_segment = Attribute("salessegment object")
+    sales_segment = Attribute("Salessegment object")
+
+    def get_salessegment():
+        pass
+    def available_sales_segments():
+        pass
     def authenticated_user():
         pass
-
+    def _populate_params():
+        """initialize attributes. if invalid None is stored"""
+    
+    ## plugin?
+    def get_or_create_user():
+        pass
+    def get_order():
+        pass
+    membership_name = Attribute("membership name")
+    product_query = Attribute("query of Product object")
+    
 
 class ICartView(Interface):
     context = Attribute("context")
@@ -23,7 +40,7 @@ class ICartView(Interface):
 
 class IIndexView(ICartView):
     """ independent of from cart.views.IndexView"""
-    ordered_items = Attribute("a pair of (ordered_item,  number of item)")
+    ordered_items = Attribute("(ordered_item,  number of item)")
     def get():
         pass
     def post():
