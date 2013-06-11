@@ -1,20 +1,16 @@
-from datetime import datetime
-from dateutil import parser
 import sqlalchemy as sa
 from ticketing.cart.resources import TicketingCartResource
 from ticketing.core.models import DBSession, Order, Product
-from ticketing.users.models import User, UserCredential, Membership, UserProfile
+from ticketing.users.models import User, UserCredential, Membership
 from ticketing.sej.models import SejOrder
 from .api import store_user_profile
 from .api import remove_user_profile
 from .api import load_user_profile
-from sqlalchemy.orm.exc import NoResultFound
-from ticketing.core.models import SalesSegment
+from ticketing.core.api import get_organization
 from pyramid.decorator import reify
 import logging
 
 from .api import get_booster_settings
-from .api import store_user_profile
 from ticketing.cart.helpers import products_filter_by_salessegment
 logger = logging.getLogger(__name__)
 
@@ -79,12 +75,13 @@ class BoosterCartResource(TicketingCartResource):
         return user
 
     def get_order(self):
+        organization = get_organization(self.request)
         order_no = self.request.params.get('order_no')
         order = Order.filter_by(
-            organization_id=self.organization_id,
+            organization_id=organization.id,
             order_no=order_no
         ).first()
-        logger.debug("organization_id=%s, order_no=%s, order=%s" % (self.organization_id, order_no, order))
+        logger.debug("organization_id=%s, order_no=%s, order=%s" % (organization.id, order_no, order))
         sej_order = None
         if order:
             payment_method_plugin_id = order.payment_delivery_pair.payment_method.payment_plugin.id
