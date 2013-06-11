@@ -4,7 +4,7 @@
 <form id="form1" action="${request.route_url('payment.finish')}" method="post">
 ${form.csrf_token()}
 <%
-pm = _api.load_user_profile(request)
+pm = request.context.load_user_profile()
 %>
 <%mobile:form_header>新規／継続</%mobile:form_header>
 <div>${u'継続' if pm.get('cont') == 'yes' else u'新規'}</div>
@@ -41,10 +41,8 @@ pm = _api.load_user_profile(request)
 <div>${pm['tel_2']}</div>
 <%mobile:form_header>メールアドレス</%mobile:form_header>
 <div>${pm['email_1']}</div>
-<%mobile:form_header>${layout.team_name}からのメールマガジンの配信</%mobile:form_header>
-<div>${u'希望する' if pm.get('mail_permission') else u'希望しない'}</div>
-<%mobile:form_header>メモリアルブックへの掲載希望</%mobile:form_header>
-<div>${u'はい' if pm.get('publicity') == 'yes' else u'いいえ'}</div>
+<%mobile:form_header>会員特典受け取り方法</%mobile:form_header>
+<div>${pm['product_delivery_method_name']}</div>
 <hr />
 <input type="submit" name="back" value="戻る" />
 <input type="submit" value="申し込む" />
