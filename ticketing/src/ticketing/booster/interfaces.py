@@ -26,11 +26,17 @@ class ICartResource(Interface):
         """initialize attributes. if invalid None is stored"""
     def get_payment_delivery_method_pair(start_at=None):
         pass
-    
-    ## plugin?
     def get_or_create_user():
         pass
     def get_order():
+        pass
+    
+    ## plugin?
+    def store_user_profile(data):
+        """after product form validation,  validation is success,  store data"""
+    def load_user_profile():
+        pass
+    def remove_user_profile():
         pass
     membership_name = Attribute("membership name")
     product_query = Attribute("query of Product object")

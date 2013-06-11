@@ -22,9 +22,13 @@ class BjBambitiousCartResource(BoosterCartResource):
     def available_payment_delivery_method_pairs(self, sales_segment):
         pdmps = super(type(self), self).available_payment_delivery_method_pairs(sales_segment)
         ##xxx:
-        delivery_method_id = self.request.session.get("delivery_method_id", None)
-        if delivery_method_id is None:
-            logger.warn("session,  stored value is not found. (delivery_method_id) ")
+        profile = self.load_user_profile()
+        if profile is None:
+            logger.warn("session,  user profile is none")
             return pdmps
-        return [pdmp for pdmp in pdmps if pdmp.delivery_method_id == delivery_method_id]
+        delivery_method_id = profile.get("product_delivery_method", None)
+        if delivery_method_id is None:
+            logger.warn("session,  stored value is not found. (product_delivery_method) ")
+            return pdmps
+        return [pdmp for pdmp in pdmps if unicode(pdmp.delivery_method_id)== delivery_method_id]
 

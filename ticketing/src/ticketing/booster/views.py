@@ -1,31 +1,19 @@
 # -*- coding:utf-8 -*-
 import logging
-#from datetime import datetime, date
 from datetime import date
-import sqlalchemy as sa
-#from pyramid.httpexceptions import HTTPFound, HTTPNotFound
 from pyramid.httpexceptions import HTTPFound
-#from pyramid.renderers import render_to_response
 from pyramid.threadlocal import get_current_request
 from pyramid.view import view_config, render_view_to_response
-#from pyramid.view import notfound_view_config
 from webob.multidict import MultiDict
-import transaction
 
 from ticketing.cart.events import notify_order_completed
 from ticketing.cart.exceptions import NoCartError
 from ticketing.cart.views import PaymentView as _PaymentView, CompleteView as _CompleteView
 from ticketing.cart import api as cart_api
-#from ticketing.payments import payment as payment_api # XXX: aodag!
 from ticketing.payments import api as payment_api
-from ticketing.cart import helpers as h
 from ticketing.core import models as c_models
-
-#from ticketing.users.models import SexEnum
 from ticketing.users.models import User, UserProfile
 
-from . import schemas
-from .api import load_user_profile, store_user_profile, remove_user_profile
 from ..models import DBSession
 from .helpers import sex_value
 from ticketing.views import BaseView
@@ -51,7 +39,7 @@ class IndexView(BaseView):
         return dict()
 
     def get(self):
-        user_profile = load_user_profile(self.request)
+        user_profile = self.context.load_user_profile()
         params = MultiDict(user_profile) if user_profile else MultiDict()
         form = self.context.product_form(params)
         products =  {str(p.id): p for p in  self.context.product_query}
@@ -78,7 +66,7 @@ class IndexView(BaseView):
             return dict(form=form, products=products)
         logger.debug('cart %s' % cart)
         cart_api.set_cart(self.request, cart)
-        store_user_profile(self.request, form.data)
+        self.context.store_user_profile(form.data)
         logger.debug('OK redirect')
         cart.sales_segment = self.context.sales_segment
         cart.sales_segment_group_id = cart.sales_segment.sales_segment_group.id
@@ -86,7 +74,7 @@ class IndexView(BaseView):
 
 class PaymentView(_PaymentView):
     def get_validated_address_data(self):
-        address_data = load_user_profile(self.request)
+        address_data = self.context.load_user_profile()
         return dict(
             first_name=address_data['first_name'],
             last_name=address_data['last_name'],
@@ -106,7 +94,7 @@ class PaymentView(_PaymentView):
             )
 
     def get_client_name(self):
-        user_profile = load_user_profile(self.request)
+        user_profile = self.context.load_user_profile()
         return user_profile['last_name'] + user_profile['first_name']
 
     @back
@@ -137,7 +125,7 @@ class CompleteView(_CompleteView):
             delivery_plugin = payment_api.get_delivery_plugin(self.request, payment_delivery_pair.delivery_method.delivery_plugin_id)
             delivery_plugin.finish(self.request, cart)
 
-        profile = load_user_profile(self.request)
+        profile = self.context.load_user_profile()
 
         # これ本当にいるの??
         order.user = User(
@@ -179,7 +167,7 @@ class CompleteView(_CompleteView):
 
         notify_order_completed(self.request, order)
 
-        remove_user_profile(self.request)
+        self.context.remove_user_profile()
 
         return dict(order=order)
 
