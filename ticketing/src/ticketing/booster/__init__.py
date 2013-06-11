@@ -10,6 +10,7 @@ def setup_cart(config):
     config.include('ticketing.cart')
     config.scan('ticketing.cart.views')
     config.add_subscriber('.api.on_order_completed', 'ticketing.cart.events.OrderCompleted')
+    config.set_cart_getter('ticketing.cart.api.get_cart_safe')
     config.commit()
 
 def setup_excviews(config):
