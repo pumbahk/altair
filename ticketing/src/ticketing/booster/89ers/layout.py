@@ -28,11 +28,14 @@ class Layout(object):
     @property
     def mobile_form_html_extra_info(self):
         return Markup(u'<a href="http://www.mobile89ers.jp/imode/cgi-bin/pgget.dll?pg=/i/booster/club/cont/club_p01_00">※会員種別についてはこちら</a><br/>')
+
     @property
     def orderreview_url(self):
         return self.request.route_url('order_review.form')
 
     def static_url(self, name, *args, **kwargs):
-        return self.request.static_url("ticketing.booster.89ers:"+name, *args, **kwargs)
+        return self.request.static_url(self.relative_path(name), *args, **kwargs)
 
+    def relative_path(self, name):
+        return "ticketing.booster.89ers:"+name
     
