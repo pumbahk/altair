@@ -33,7 +33,8 @@ def register_sessionmakers(config, urls):
             continue
         url = c['url']
         echo = c.get('echo', False)
-        engine = create_engine(url, echo=echo)
+        engine = create_engine(url, echo=echo,
+                               pool_recycle=0)
 
         Session = sessionmaker(bind=engine)
         directlyProvides(Session, ISessionMaker)
