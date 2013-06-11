@@ -258,7 +258,7 @@ class OrderSearchQueryBuilder(SearchQueryBuilderBase, BaseSearchQueryBuilderMixi
                     ) \
                     .group_by(aliased_targets['subject'].id,
                               aliased_targets['OrderedProductItem'].product_item_id) \
-                    .having(safunc.sum(aliased_targets['OrderedProductItem'].quantity) > value) \
+                    .having(safunc.sum(aliased_targets['OrderedProductItem'].quantity) >= value) \
                 )
             )
         return query
