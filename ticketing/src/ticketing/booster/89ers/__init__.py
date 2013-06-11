@@ -15,6 +15,7 @@ def setup_booster_settings(config):
     config.include("pyramid_layout")
     config.add_layout(".layout.Layout", "ticketing.booster.89ers:templates/base.html") #xxx:
     config.add_panel("ticketing.booster.panels.input_form", "input_form", renderer="ticketing.booster.89ers:templates/carts/_form.html")
+    config.add_panel("ticketing.booster.panels.input_form", "mobile_input_form", renderer="ticketing.booster.89ers:templates/carts_mobile/_form.html")
 
 def main(global_config, **local_config):
     settings = dict(global_config)
