@@ -795,6 +795,11 @@
       _loadPage: function (pageInfo, next) {
         var self = this;
         var afterthings = function () {
+          for (var id in self.seats) {
+            var shape = self.shapes[id];
+            if (shape)
+              self.seats[id].attach(shape);
+          }
           if (pageInfo.zoomRatio && pageInfo.scrollPosition) {
             self.zoomAndPan(pageInfo.zoomRatio,
                             pageInfo.scrollPosition);

@@ -1,6 +1,6 @@
 (function () {
 var __LIBS__ = {};
-__LIBS__['u6AURF8N_EKWNZ2P'] = (function (exports) { (function () { 
+__LIBS__['LRVWIU5NH9QYPDW3'] = (function (exports) { (function () { 
 
 /************** util.js **************/
 exports.eventKey = function Util_eventKey(e) {
@@ -127,7 +127,7 @@ exports.makeHitTester = function Util_makeHitTester(a) {
   }
 };
  })(); return exports; })({});
-__LIBS__['x99S4YFZAYXRGF6H'] = (function (exports) { (function () { 
+__LIBS__['a1PGH1MH2_SUGS9O'] = (function (exports) { (function () { 
 
 /************** CONF.js **************/
 exports.DEFAULT = {
@@ -182,11 +182,11 @@ exports.DEFAULT = {
   }
 };
  })(); return exports; })({});
-__LIBS__['uO0E6U6YJJ62MIM3'] = (function (exports) { (function () { 
+__LIBS__['zM1TCUYS80Q5IAMU'] = (function (exports) { (function () { 
 
 /************** seat.js **************/
-var util = __LIBS__['u6AURF8N_EKWNZ2P'];
-var CONF = __LIBS__['x99S4YFZAYXRGF6H'];
+var util = __LIBS__['LRVWIU5NH9QYPDW3'];
+var CONF = __LIBS__['a1PGH1MH2_SUGS9O'];
 
 function clone(obj) {
   return $.extend({}, obj);
@@ -1044,9 +1044,9 @@ function parseTransform(transform_str) {
     throw new Error('invalid transform function: ' + f);
 }
 
-  var CONF = __LIBS__['x99S4YFZAYXRGF6H'];
-  var seat = __LIBS__['uO0E6U6YJJ62MIM3'];
-  var util = __LIBS__['u6AURF8N_EKWNZ2P'];
+  var CONF = __LIBS__['a1PGH1MH2_SUGS9O'];
+  var seat = __LIBS__['zM1TCUYS80Q5IAMU'];
+  var util = __LIBS__['LRVWIU5NH9QYPDW3'];
 
   var StoreObject = _class("StoreObject", {
     props: {
@@ -1836,6 +1836,11 @@ function parseTransform(transform_str) {
       _loadPage: function (pageInfo, next) {
         var self = this;
         var afterthings = function () {
+          for (var id in self.seats) {
+            var shape = self.shapes[id];
+            if (shape)
+              self.seats[id].attach(shape);
+          }
           if (pageInfo.zoomRatio && pageInfo.scrollPosition) {
             self.zoomAndPan(pageInfo.zoomRatio,
                             pageInfo.scrollPosition);
