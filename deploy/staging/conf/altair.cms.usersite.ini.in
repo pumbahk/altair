@@ -7,8 +7,8 @@ altaircms.s3.utility = ${altair:altaircms.s3.utility}
 altaircms.solr.search.utility  = ${altair:altaircms.solr.search.utility}
 
 ; Beaker
-session.type = redis
-cache.type = redis
+session.type = ${altair:beaker_backend_type}
+cache.type = ${altair:beaker_backend_type}
 
 [filter:prefix]
 use = egg:pastedeploy#prefix
