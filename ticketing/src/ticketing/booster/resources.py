@@ -38,7 +38,7 @@ class BoosterCartResource(TicketingCartResource):
     @reify 
     def product_query(self):
         query = Product.query
-        query = query.filter(Product.event_id == self.event_id)
+        query = query.filter(Product.sales_segment_id == self.sales_segment.id)
         query = query.order_by(sa.desc("price"))
 
         salessegment = self.get_sales_segment()
@@ -47,6 +47,7 @@ class BoosterCartResource(TicketingCartResource):
     @reify
     def sales_segment(self):
         return self.available_sales_segments[0]
+
 
     def get_or_create_user(self):
         from ticketing.cart import api
