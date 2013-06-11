@@ -24,7 +24,7 @@ class CommonResource(object):
         self.request = request
 
     def get_top_render_param(self):
-        promotions = self.getInfo(kind="promotion", system_tag_id=None)[0:15]
+        promotions = self.getInfo(kind="promotion", system_tag_id=None)[0:3]
         topcontents = self.getInfo(kind="topcontent", system_tag_id=None)[0:5]
         topics = self.getInfo(kind="topic", system_tag_id=None)[0:5]
         hotwords = self.get_hotword()[0:5]
@@ -47,7 +47,7 @@ class CommonResource(object):
         genre_id = genre_id or self.request.matchdict.get('genre_id')
         form.genre_id.data = genre_id
         genre = self.get_genre(id=genre_id)
-        promotions = self.getInfo(kind="promotion", system_tag_id=genre_id)[0:15]
+        promotions = self.getInfo(kind="promotion", system_tag_id=genre_id)[0:3]
         topcontents = self.getInfo(kind="topcontent", system_tag_id=genre_id)[0:5]
         topics = self.getInfo(kind="topic", system_tag_id=genre_id)[0:5]
         hotwords = self.get_hotword()[0:5]
