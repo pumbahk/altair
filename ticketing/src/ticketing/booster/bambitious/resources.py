@@ -23,7 +23,7 @@ class BjBambitiousCartResource(BoosterCartResource):
             return pm
         dm_id = pm.get("product_delivery_method") 
         if dm_id:
-            pm["product_delivery_method_name"] = DeliveryMethod.query.filter_by(id=dm_id).first().name()
+            pm["product_delivery_method_name"] = DeliveryMethod.query.filter_by(id=dm_id).first().name
         return pm
 
     def orderreview_form(self, params):
