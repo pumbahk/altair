@@ -52,7 +52,8 @@ ${h.format_currency(order_total_amount)}
 予約成立と同時に、ご登録のクレジットカードにて自動的に決済手続きを行わせて頂きます。
 お申し込みの取消、変更はできませんので、ご注意ください。
 
-■会員得点受取方法：${delivery_method_name}
+
+■会員特典受取方法：${delivery_method_name}
 
 -----
 ■注意事項
