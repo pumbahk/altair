@@ -1,3 +1,5 @@
+# encoding: utf-8
+
 from .interfaces import IBoosterSettings
 
 def get_booster_settings(request):
@@ -77,3 +79,8 @@ def set_user_profile_for_order(request, order, bj89er_user_profile):
             name=attr_name,
             value=bj89er_user_profile.get(attr_name))
 
+def product_item_is_t_shirt(product_item):
+    return product_item.stock.stock_type.name == u'Tシャツ'
+
+def product_includes_t_shirt(product):
+    return any(product_item_is_t_shirt(product_item) for product_item in product.items)

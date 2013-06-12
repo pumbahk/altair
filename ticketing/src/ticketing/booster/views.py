@@ -15,6 +15,7 @@ from ticketing.core import models as c_models
 from ticketing.users.models import User, UserProfile
 
 from ..models import DBSession
+from .api import product_item_is_t_shirt
 from .helpers import sex_value
 from ticketing.views import BaseView
 
@@ -157,7 +158,7 @@ class CompleteView(_CompleteView):
         for ordered_product_item in order_product.ordered_product_items:
             product_item = ordered_product_item.product_item
             # Tシャツ
-            if product_item.stock.stock_type.name == u'Tシャツ':
+            if product_item_is_t_shirt(product_item):
                 ordered_product_item.attributes['t_shirts_size'] = profile.get('t_shirts_size')
             else:
                 # これ本当にいるの??
