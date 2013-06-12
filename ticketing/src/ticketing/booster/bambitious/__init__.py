@@ -16,6 +16,8 @@ def setup_booster_settings(config):
     config.add_layout(".layout.Layout", "ticketing.booster.bambitious:templates/base.html") #xxx:
     config.add_panel("ticketing.booster.panels.input_form", "input_form", renderer="ticketing.booster.bambitious:templates/carts/_form.html")
     config.add_panel("ticketing.booster.panels.input_form", "mobile_input_form", renderer="ticketing.booster.bambitious:templates/carts_mobile/_form.html")
+    config.add_panel("ticketing.booster.panels.review_additional_messages", "review.additional_messags", renderer="ticketing.booster.bambitious:templates/order_review/_additional_messages.html")
+    config.add_panel("ticketing.booster.panels.review_additional_messages", "review_mobile.additional_messags", renderer="ticketing.booster.bambitious:templates/order_review_mobile/_additional_messages.html")
 
 def main(global_config, **local_config):
     settings = dict(global_config)

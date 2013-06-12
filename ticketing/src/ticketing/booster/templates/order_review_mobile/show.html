@@ -28,19 +28,16 @@ ${pm['year']}年${pm['month']}月${pm['day']}日
 <%mobile:form_header>性別</%mobile:form_header>
 ${u'男性' if pm['sex']=='male' else u'女性' }
 <%mobile:form_header>郵便番号</%mobile:form_header>
-${pm['zipcode1']}-${pm['zipcode2']}</td>
+${pm['zipcode1']}-${pm['zipcode2']}
 <%mobile:form_header>住所</%mobile:form_header>
-${pm['prefecture']} ${pm['city']} ${pm['address1']} ${pm['address2']}</td>
+${pm['prefecture']} ${pm['city']} ${pm['address1']} ${pm['address2']}
 <%mobile:form_header>電話番号（携帯）</%mobile:form_header>
-${pm.get('tel_1')}</td>
+${pm.get('tel_1')}
 <%mobile:form_header>電話番号（自宅）</%mobile:form_header>
-${pm.get('tel_2')}</td>
+${pm.get('tel_2')}
 <%mobile:form_header>メールアドレス</%mobile:form_header>
-${pm['email_1']}</td>
-<%mobile:form_header>${layout.team_name}からのメールマガジンの配信	</%mobile:form_header>
-${u'希望する' if pm.get('mail_permission') else u'希望しない'}</td>
-<%mobile:form_header>メモリアルブックの掲載希望 </%mobile:form_header>
-${u'はい' if pm.get('publicity') == 'yes' else u'いいえ'}</td>
+${pm['email_1']}
+${panel("review_mobile.additional_messags", pm)}
 <%mobile:form_header>お支払い</%mobile:form_header>
 %if order.payment_delivery_pair.payment_method.payment_plugin.id == 3:
 <div>セブン-イレブン</div>
