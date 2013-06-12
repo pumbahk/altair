@@ -29,6 +29,9 @@ from ticketing.users.models import (
     User,
     UserCredential,
     )
+from ticketing.sej.models import (
+    SejOrder,
+    )
 
 class QueryBuilderError(Exception):
     pass
@@ -195,6 +198,7 @@ class OrderSearchQueryBuilder(SearchQueryBuilderBase, BaseSearchQueryBuilderMixi
         'SalesSegment': SalesSegment,
         'SalesSegmentGroup': SalesSegmentGroup,
         'Seat': Seat,
+        'SejOrder': SejOrder,
         }
     
     def _ordered_from(self, query, value):
@@ -294,4 +298,16 @@ class OrderSearchQueryBuilder(SearchQueryBuilderBase, BaseSearchQueryBuilderMixi
                         .having(safunc.sum(aliased_targets['OrderedProductItem'].quantity) >= value) \
                     )
                 )
+        return query
+
+    def _billing_or_exchange_number(self, query, value):
+        query = query \
+            .join(
+                self.targets['SejOrder'],
+                self.targets['subject'].order_no == self.targets['SejOrder'].order_id
+                ) \
+            .filter(or_(
+                self.targets['SejOrder'].billing_number == value,
+                self.targets['SejOrder'].exchange_number == value
+                ))
         return query

@@ -240,6 +240,10 @@ class SearchFormBase(Form):
         return conditions
 
 class OrderSearchForm(SearchFormBase):
+    billing_or_exchange_number = TextField(
+        label=u'セブン−イレブン払込票/引換票番号',
+        validators=[Optional()],
+    )
     ordered_from = DateTimeField(
         label=u'予約日時',
         validators=[Optional(), after1900],

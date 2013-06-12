@@ -87,10 +87,12 @@ from ticketing.formhelpers import OurDateWidget
         </tr>
         <tr>
           <th><label>${form.ordered_from.label.text}</label></th>
-          <td colspan="5">
+          <td colspan="3">
             ${form.ordered_from()} 〜
             ${form.ordered_to()}
           </td>
+          <th><label>${form.billing_or_exchange_number.label.text}</label></th>
+          <td>${form.billing_or_exchange_number}</td>
         </tr>
       </tbody>
     </table>
