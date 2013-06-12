@@ -24,6 +24,11 @@ ${order_datetime}
 -----
 ${performance_name}
 
+<% t_shirts_size = order.items[0].ordered_product_items[0].attributes.get('t_shirts_size') %>
+% if t_shirts_size:
+■Tシャツサイズ ${t_shirts_size}
+% endif
+
 ■商品代金
 %for ordered_product in order_items:
 ${ordered_product.product.name} ${h.format_currency(ordered_product.product.price)}
@@ -38,6 +43,16 @@ ${ordered_product.product.name} ${h.format_currency(ordered_product.product.pric
 
 ■合計金額
 ${h.format_currency(order_total_amount)}
+
+-----
+■お支払
+お支払方法：クレジットカード決済
+お支払状況：完了
+
+予約成立と同時に、ご登録のクレジットカードにて自動的に決済手続きを行わせて頂きます。
+お申し込みの取消、変更はできませんので、ご注意ください。
+
+■会員得点受取方法：${delivery_method_name}
 
 -----
 ■注意事項

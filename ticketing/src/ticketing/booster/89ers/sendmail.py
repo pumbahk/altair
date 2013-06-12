@@ -4,7 +4,7 @@ from ticketing.sej.models import SejOrder
 mail_renderer_names = {
     '1': 'mail/89ERS_Completion_EMAIL_NEW_CreditCard.txt',
     '3': 'mail/89ERS_Completion_EMAIL_NEW_SEJ.txt',
-    '4': 'mail/89ERS_Completion_EMAIL_NEW_Combined.txt',
+    '4': 'mail/89ERS_Completion_EMAIL_NEW_Combined.txt', #xxx:?
 }
 
 extra_info_populators = {

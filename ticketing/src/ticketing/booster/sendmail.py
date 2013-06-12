@@ -60,6 +60,7 @@ def create_message(request, order):
         system_fee=order.system_fee,
         delivery_fee=order.delivery_fee,
         transaction_fee=order.transaction_fee,
+        delivery_method_name=order.payment_delivery_pair.delivery_method.name
         )
     populators = getattr(bsettings, "mail_extra_info_populators", extra_info_populators)
     populate_with_extra_info = populators.get(plugin_id)

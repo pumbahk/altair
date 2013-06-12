@@ -26,7 +26,10 @@ class OrderFormSchema(Form):
     # 新規・継続
     cont = fields.RadioField(u"新規／継続", validators=[v.Required()], choices=[('no', u'新規'),('yes', u'継続')], widget=radio_list_widget)
     member_type = fields.SelectField(u"会員種別選択", validators=[v.Required()])
-    t_shirts_size = fields.SelectField(u"ブースターシャツサイズ", choices=[('L', u'L'),('3L', u'3L')], validators=[v.Optional()], coerce=text_type_but_none_if_not_given)
+
+    t_shirts_size_choices = [(x, x) for x in [u"S", u"M", u"L", u"O", u"XO", u"2XO"]]
+    t_shirts_size = fields.SelectField(u"ブースターシャツサイズ", choices=t_shirts_size_choices, validators=[v.Optional()], coerce=text_type_but_none_if_not_given)
+
     first_name = fields.TextField(u"氏名", filters=[strip_spaces], validators=[v.Required(), Zenkaku])
     last_name = fields.TextField(u"氏名", filters=[strip_spaces], validators=[v.Required(),Zenkaku])
     first_name_kana = fields.TextField(u"氏名(カナ)", filters=[strip_spaces, NFKC], validators=[v.Required(),Katakana])
