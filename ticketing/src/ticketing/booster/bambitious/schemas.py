@@ -50,7 +50,7 @@ class OrderFormSchema(Form):
     email_1 = fields.TextField(u"メールアドレス", filters=[strip_spaces], validators=[v.Required(), SejCompliantEmail()])
     email_1_confirm = fields.TextField(u"メールアドレス（確認用）", filters=[strip_spaces], validators=[v.Required(), SejCompliantEmail(), v.EqualTo('email_1', u'確認用メールアドレスが一致しません。')])
 
-    product_delivery_method = fields.SelectField(label=u"会員特典受け取り方法", validators=[v.Required()], choices=[])
+    product_delivery_method = fields.SelectField(label=u"会員特典受取方法", validators=[v.Required()], choices=[])
     
 class OrderReviewSchema(Form):
     order_no = fields.TextField(u"注文番号", filters=[strip_spaces], validators=[v.Required()])
