@@ -71,6 +71,7 @@ class Performance(BaseOriginalMixin, Base):
     purchase_link = sa.Column(sa.UnicodeText)
     mobile_purchase_link = sa.Column(sa.UnicodeText)
     canceld = sa.Column(sa.Boolean, default=False)
+    public = sa.Column(sa.Boolean, default=True)
     event = relationship("Event", backref=orm.backref("performances", order_by=start_on, cascade="all"))
 
     @property

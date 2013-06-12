@@ -66,6 +66,7 @@ ${helper.nl2br(event.inquiry_for)|n}
 </%def>
 <%m:band>公演一覧</%m:band>
 <div>
+<% index = 0 %>
 % for count in range(len(month_unit_keys)):
     <% month = month_unit_keys[count] %>
     <% prev_month = month_unit_keys[count - 1] if count > 0 else None %>
@@ -84,7 +85,8 @@ ${helper.nl2br(event.inquiry_for)|n}
     <%m:line width="2" />
     <% first = True %>
     % for i, perf in enumerate(event.performances):
-        % if str(perf.start_on.year) + "/" + str(perf.start_on.month).zfill(2) == month:
+        % if (str(perf.start_on.year) + "/" + str(perf.start_on.month).zfill(2) == month) and perf.public:
+            <% index += 1 %>
             <%
                 start_on_candidates = [salessegment.start_on for salessegment in perf.sales]
                 end_on_candidates = [salessegment.end_on for salessegment in perf.sales if salessegment.end_on]
@@ -93,9 +95,9 @@ ${helper.nl2br(event.inquiry_for)|n}
                 <hr />
             % endif
             % if event.deal_close < datetime.now():
-            [${i + 1}]<font size="-1">${perf.title}</font><br />
+            [${index}]<font size="-1">${perf.title}</font><br />
             % else:
-            [${i + 1}]<font size="-1"><a href="${purchase_links[perf.id]}">${perf.title}</a></font><br />
+            [${index}]<font size="-1"><a href="${purchase_links[perf.id]}">${perf.title}</a></font><br />
             % endif
             % if perf.open_on:
                 開場:${str(perf.open_on.year)[2:]}/${str(perf.open_on.month).zfill(2)}/${str(perf.open_on.day).zfill(2)}(${week[perf.open_on.weekday()]})
