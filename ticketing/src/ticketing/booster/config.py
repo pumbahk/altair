@@ -18,7 +18,7 @@ class BoosterSettings(object):
         mail_sender = settings[prefix+"sender"]
         mail_render_names = resolver.maybe_resolve(settings[prefix+"mail_render_names"])
         mail_extra_info_populators = resolver.maybe_resolve(settings[prefix+"mail_extra_info_populators"])
-        mail_subject = settings[prefix+"mail_subject"]        
+        mail_subject = settings[prefix+"mail_subject"].decode("utf-8")
         return cls(event_id, membership_name, mail_sender, mail_subject, mail_render_names, mail_extra_info_populators)
 
     def __init__(self, event_id,  membership_name, mail_sender, mail_subject, mail_render_names, mail_extra_info_populators):
