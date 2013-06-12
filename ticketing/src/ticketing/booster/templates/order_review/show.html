@@ -63,12 +63,10 @@
                                 <td class="textR">${order.items[0].product.name}</td>
                             </tr>
                         <% t_shirts_size = order.items[0].ordered_product_items[0].attributes.get('t_shirts_size') %>
-                        % if t_shirts_size:
                            <tr>
                                 <td>Tシャツサイズ</td>
-                                <td class="textR">${t_shirts_size}</td>
+                                <td class="textR">${t_shirts_size or ""}</td>
                             </tr>
-                        % endif
                             <tr>
                                 <td>氏名</td>
                                 <td class="textR">${pm['last_name']} ${pm['first_name']}</td>
@@ -176,12 +174,7 @@
 
 					<div class="kadomaru">
 						<h3>注意事項</h3>
-						<ul>
-              <li>入力された個人情報は「個人情報保護方針」に基づき適切に取扱われます。</li>
-               <li>会員証やグッズは、2012年9月15日(土)までに入会された方には開幕戦までにお届けします。9月16日(日)以降に入会された方には、直近のホームゲーム会場にてお渡しいたします。直近のホームゲームに来場されない場合には、後日郵送でお届けいたします。</li>
-               <li>入会後の会員プランの変更及び会費の返却には応じかねますのでご注意ください。</li>
-            </ul>
-            
+            ${panel("complete_notice",is_show_order_review=False)}
 					</div>
 					<!-- kadomaruおわり -->
 
@@ -190,7 +183,7 @@
 						<h3>お問い合わせ先</h3>
 						<ul class="markNone font14">
 							<li>${layout.contact_name}</li>
-							<li>TEL: 022-215-8138　(平日：9:00〜18:00)</li>
+							<li>${layout.tel}</li>
 						</ul>
 						
 					</div>

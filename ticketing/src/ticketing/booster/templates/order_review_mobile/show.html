@@ -15,10 +15,8 @@ ${pm.get('old_id_number')}
 <%mobile:form_header>会員種別</%mobile:form_header>
 ${order.items[0].product.name}
 <% t_shirts_size = order.items[0].ordered_product_items[0].attributes.get('t_shirts_size') %>
-% if t_shirts_size:
 <%mobile:form_header>Tシャツサイズ</%mobile:form_header>
-${t_shirts_size}
-% endif
+${t_shirts_size or ""}
 <%mobile:form_header>氏名</%mobile:form_header>
 ${pm['last_name']} ${pm['first_name']}
 <%mobile:form_header>氏名（フリガナ）</%mobile:form_header>
@@ -60,17 +58,12 @@ ${panel("review_mobile.additional_messags", pm)}
 ・予約有効期限までに、払込票または払込票番号をセブン-イレブン店頭レジにてお申し出の上、代金をお支払いください。<br />
 ・支払期日までに入金されない場合は、会員登録/入会申込が無効となりますのでご注意ください。<br />
 % endif
-・お申込時に受付内容を記載した確認のメールが、ご登録いただいたメールアドレス宛に送られます。しばらくたっても確認のメールが届かない場合は、入力されたメールアドレスが誤っている可能性があります。<a href="mailto:${layout.mailaddress}">${layout.mailaddress}</a> までご連絡ください。<br /> 
-（お問い合わせの際は、お申込み時のお名前と電話番号を記載お願いします）<br />
-・入力された個人情報は「個人情報保護方針」に基づき適切に取扱われます。<br />
-・会員証やグッズは、2012年9月15日(土)までに入会された方には開幕戦までにお届けします。9月16日(日)以降に入会された方には、直近のホームゲーム会場にてお渡しいたします。直近のホームゲームに来場されない場合には、後日郵送でお届けいたします。<br />
-・入会者多数の場合には、入会受付を2013年3月末日よりも早めに締切る場合がございます。お早めにご入会ください。<br />
-・入会後の会員プランの変更及び会費の返却には応じかねますのでご注意ください。<br />
 </font>
+${panel("mobile_complete_notice",is_show_order_review=False)}
 </div>
 <%mobile:form_header>お問い合わせ先</%mobile:form_header>
 <div>
 ${layout.contact_name}<br />
-TEL: 022-215-8138 (平日: 9:00〜18:00)<br />
+$TEL: ${layout.tel}<br />
 メール: <a href="mailto:${layout.mailaddress}">${layout.mailaddress}</a><br>
 </div>
