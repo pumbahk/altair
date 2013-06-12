@@ -1,45 +1,15 @@
-## twitter widget output template
-## 
-<style type="text/css">
-  .twitter-widget h2 {
-    background: none;
-  }
-  .twitter-widget h3 {
-    background: none;
-  }
-  .twitter-widget h4 {
-    background: none;
-  }
-</style>
-<div class="twitter-widget">
-  <script charset="utf-8" src="https://widgets.twimg.com/j/2/widget.js"></script>
-  <script>
-  window.onload = new TWTR.Widget({
-	version: 2,
-	type: 'search',
-	search: '${widget.search_query}',
-	interval: 30000,
-	title: '${widget.title}',
-	subject: '${widget.subject}',
-	width: 240,
-	height: 300,
-	theme: {
-	  shell: {
-		background: '#8ec1da',
-		color: '#ffffff'
-	  },
-	  tweets: {
-		background: '#ffffff',
-		color: '#444444',
-		links: '#1985b5'
-	  }
-	},
-	features: {
-	  scrollbar: false,
-	  loop: true,
-	  live: true,
-	  behavior: 'default'
-	}
-  }).render().start();
-  </script>
-</div>
+<a width="240px"
+   height="350px"
+   class="twitter-timeline"
+   href="https://twitter.com/search?q='${widget.search_query}'"
+   data-widget-id="${widget.data_widget_id}">${widget.title}
+</a>
+<script>
+    !function(d,s,id){
+        var js,fjs=d.getElementsByTagName(s)[0],p=/^http:/.test(d.location)?'http':'https';
+        if(!d.getElementById(id)){
+            js=d.createElement(s);js.id=id;js.src=p+"://platform.twitter.com/widgets.js";
+            fjs.parentNode.insertBefore(js,fjs);
+        }
+    }(document,"script","twitter-wjs");
+</script>
