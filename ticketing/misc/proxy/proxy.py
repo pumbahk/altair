@@ -15,6 +15,7 @@ SUBDOMAINS = [
     'vissel',
     'c',
     'rt',
+    'bambitious',
     ]
 
 class ProxyConnectClientDecoder(object):
@@ -115,6 +116,7 @@ class MyProxy(proxy.Proxy):
         (r'http://backend.stg2.rt.ticketstar.jp(/.*)?', r'http://localhost:8021\1'),
         (r'http://cms.stg2.rt.ticketstar.jp(/.*)?', r'http://localhost:8001\1'),
         (r'http://89ers.stg2.rt.ticketstar.jp(/booster(?:/.*)?)', r'http://localhost:9081\1'),
+        (r'http://bambitious.stg2.rt.ticketstar.jp(/booster(?:/.*)?)', r'http://localhost:9082\1'),
         ]
 
     def __init__(self, *args, **kwargs):
