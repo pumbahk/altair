@@ -126,16 +126,22 @@ $(function () {
     </div>
 </div>
 <ul class="panellist fullwidth expandable">
+  <% index = 0 %>
   % for count in range(len(month_unit_keys)):
-    <% month = month_unit_keys[count] %>
+    <%month = month_unit_keys[count] %>
     <li class="panelgroup" id=${count}>
       <span class="panelgroup-label"><a href="#" data-toggle=${count}>${month}</a></span>
       <ul class="panelgroup-inner">
         % for i, perf in enumerate(event.performances):
-          % if str(perf.start_on.year) + "/" + str(perf.start_on.month).zfill(2) == month:
+          <%
+            start_on_candidates = [salessegment.start_on for salessegment in perf.sales]
+            end_on_candidates = [salessegment.end_on for salessegment in perf.sales if salessegment.end_on]
+          %>
+          % if (str(perf.start_on.year) + "/" + str(perf.start_on.month).zfill(2) == month) and perf.public:
+            <% index += 1 %>
             <li class="panel">
               <table class="panellist margined with-action-buttons">
-                <caption>[${i+1}]${event.title}</caption>
+                <caption>[${index}]${event.title}</caption>
                 <tbody>
                   <tr>
                     <td class="panel condensed">
