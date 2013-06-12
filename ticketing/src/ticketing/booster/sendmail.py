@@ -32,7 +32,7 @@ def create_message(request, order):
     if plugin_id not in renderer_names:
         logger.warn('mail renderer not found for plugin_id %s' % plugin_id)
         return
-    renderer_name = mail_renderer_names[plugin_id]
+    renderer_name = renderer_names[plugin_id]
     organization = order.ordered_from
     subject = getattr(bsettings, "mail_subject", None) or u"受付完了メール 【{organization.name}】".format(organization=organization)
     #from_ = u"89ers@ticketstar.jp"
