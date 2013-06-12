@@ -14,6 +14,7 @@ from ticketing.core.models import (
     Performance,
     Venue,
     Seat,
+    Refund,
 )
 from ticketing.users.models import (
     User,
@@ -70,7 +71,9 @@ order_summary = sa.select([
     ShippingAddress.email_2,
     PaymentMethod.name.label('payment_method_name'),
     DeliveryMethod.name.label('delivery_method_name'),
+    Event.id.label("event_id"),
     Event.title,
+    Performance.id.label('performance_id'),
     Performance.name.label('performance_name'),
     Performance.code,
     Performance.start_on,
@@ -118,8 +121,19 @@ class SummarizedPaymentDeliveryMethodPair(object):
         self.payment_method = payment_method
         self.delivery_method = delivery_method
 
+class SummarizedEvent(object):
+    def __init__(self, id, title):
+        self.id = id
+        self.title = title
+
+class SummarizedVenue(object):
+    def __init__(self, name):
+        self.name = name
+
 class SummarizedPerformance(object):
-    def __init__(self, event, venue):
+    def __init__(self, id, start_on, event, venue):
+        self.id = id
+        self.start_on = start_on
         self.event = event
         self.venue = venue
 
@@ -142,6 +156,9 @@ class SummarizedShippingAddress(object):
 class OrderSummary(Base):
     __table__ = order_summary
     query = DBSession.query_property()
+
+    ordered_products = orm.relationship('OrderedProduct')
+    refund = orm.relationship('Refund')
 
     @property
     def status(self):
@@ -191,7 +208,12 @@ class OrderSummary(Base):
 
     @property
     def performance(self):
-        return SummarizedPerformance(None, None)
+        return SummarizedPerformance(self.performance_id,
+                                     self.start_on,
+                                     SummarizedEvent(self.event_id, self.title),
+                                     SummarizedVenue(self.venue_name))
 
 
-    ordered_products = orm.relationship('OrderedProduct')
+    @property
+    def cancel_reason(self):
+        return self.refund.cancel_reason if self.refund else None

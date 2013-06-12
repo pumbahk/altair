@@ -7,7 +7,7 @@ from sqlalchemy.orm import aliased
 from ticketing.models import asc_or_desc
 from ticketing.helpers import todatetime
 from ticketing.core.models import (
-    Order,
+    #Order,
     OrderedProduct,
     OrderedProductItem,
     Product,
@@ -32,6 +32,9 @@ from ticketing.users.models import (
 from ticketing.sej.models import (
     SejOrder,
     )
+from .models import (
+    OrderSummary,
+)
 
 class QueryBuilderError(Exception):
     pass
@@ -190,7 +193,7 @@ class CartSearchQueryBuilder(SearchQueryBuilderBase, BaseSearchQueryBuilderMixin
 
 class OrderSearchQueryBuilder(SearchQueryBuilderBase, BaseSearchQueryBuilderMixin):
     targets = {
-        'subject': Order,
+        'subject': OrderSummary,
         'OrderedProduct': OrderedProduct,
         'OrderedProductItem': OrderedProductItem,
         'Product': Product,

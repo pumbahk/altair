@@ -251,21 +251,16 @@ class Orders(BaseView):
 
         if self.request.params.get('action') == 'checked':
             checked_orders = [o.lstrip('o:') for o in self.request.session.get('orders', []) if o.startswith('o:')]
-            query = query.filter(Order.id.in_(checked_orders))
+            query = query.filter(OrderSummary.id.in_(checked_orders))
 
         form_search = OrderSearchForm(self.request.params, organization_id=organization_id)
         if form_search.validate():
             try:
-                query = OrderSearchQueryBuilder(form_search.data, lambda key: form_search[key].label.text)(Order.filter(Order.organization_id==organization_id))
+                query = OrderSearchQueryBuilder(form_search.data, lambda key: form_search[key].label.text)(OrderSummary.query.filter(OrderSummary.organization_id==organization_id))
             except QueryBuilderError as e:
                 self.request.session.flash(e.message)
 
         page = int(self.request.params.get('page', 0))
-        query = query.options(
-            joinedload(Order.shipping_address),
-            joinedload(Order.performance),
-            joinedload(Order.performance, Performance.event),
-            undefer('created_at'))
 
         orders = paginate.Page(
             query,
@@ -285,7 +280,6 @@ class Orders(BaseView):
     @view_config(route_name='orders.download')
     def download(self):
         organization_id = self.context.user.organization_id
-        #query = Order.filter(Order.organization_id==organization_id)
         query = OrderSummary.query.filter(OrderSummary.organization_id==organization_id)
 
         if self.request.params.get('action') == 'checked':
@@ -298,7 +292,6 @@ class Orders(BaseView):
             form_search = OrderSearchForm(self.request.params, organization_id=organization_id)
             form_search.sort.data = None
             try:
-                # query = OrderSearchQueryBuilder(form_search.data, lambda key: form_search[key].label.text, sort=False)(Order.filter(Order.organization_id==organization_id))
                 query = OrderSearchQueryBuilder(form_search.data, lambda key: form_search[key].label.text, sort=False)(OrderSummary.query.filter(OrderSummary.organization_id==organization_id))
             except QueryBuilderError as e:
                 self.request.session.flash(e.message)
