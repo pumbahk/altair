@@ -38,11 +38,13 @@ def setup_views(config):
 
     config.add_view('.views.IndexView', attr='notready', route_name='notready', renderer='carts/notready.html')
     config.add_view('.views.IndexView', attr='notready', request_type='altair.mobile.interfaces.IMobileRequest', route_name='notready', renderer='carts_mobile/notready.html')
-    config.add_view('.views.IndexView', route_name='index', attr="get", request_method='GET', renderer='carts/form.html')
+    config.add_view('.views.IndexView', route_name='index', attr="get", request_method='GET', renderer='carts/form.html', 
+                    decorator="ticketing.fanstatic.with_jquery")
     config.add_view('.views.IndexView', request_type='altair.mobile.interfaces.IMobileRequest', route_name='index', 
                     attr="get", request_method='GET', renderer='carts_mobile/form.html')
 
-    config.add_view('.views.IndexView', route_name='index', attr="post", request_method='POST', renderer='carts/form.html')
+    config.add_view('.views.IndexView', route_name='index', attr="post", request_method='POST', renderer='carts/form.html', 
+                    decorator="ticketing.fanstatic.with_jquery")
     config.add_view('.views.IndexView', request_type='altair.mobile.interfaces.IMobileRequest', route_name='index', 
                     attr="post", request_method='POST', renderer='carts_mobile/form.html')
 
