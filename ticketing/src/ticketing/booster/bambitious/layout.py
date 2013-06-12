@@ -37,3 +37,5 @@ class Layout(object):
     def static_url(self, name, *args, **kwargs):
         return self.request.static_url("ticketing.booster.bambitious:"+name, *args, **kwargs)
     
+    def relative_path(self, name):
+        return "ticketing.booster.bambitious:"+name

@@ -1,5 +1,5 @@
 <%page args="form"/>
-<%namespace file="/tags_mobile.html" name="mobile" />
+<%namespace file="${context['layout'].relative_path('templates/tags_mobile.html')}" name="mobile" />
 <form method="post" action="${request.url}">
 <%mobile:form_header>新規/継続</%mobile:form_header>
 <div>
