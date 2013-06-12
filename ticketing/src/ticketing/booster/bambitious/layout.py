@@ -8,7 +8,7 @@ class Layout(object):
 
     title = u"バンビシャス奈良 ブースタークラブ クラブバンビシャス入会申込ページ"
     mini_title = u"バンビシャス奈良 ブースタークラブ クラブバンビシャス入会申込ページ"
-    orderreview_title = u"バンビシャス奈良 ブースタークラブ クラブバンビシャス入会申込ページ 受付確認ページ"
+    orderreview_title = u"バンビシャス奈良 ブースタークラブ クラブバンビシャス申込受付確認ページ"
     complete_title = u""
     team_name = u"バンビシャス奈良"
     mailaddress = u"bambitious@tstar.jp"
