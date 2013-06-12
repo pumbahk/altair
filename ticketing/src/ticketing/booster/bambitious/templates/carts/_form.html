@@ -9,7 +9,7 @@
       <th>新規／継続</th>
       <td>
         % for c in form.cont:
-        ${c.label}${c()}
+        ${c.label}${c(disabled="disabled") if c.data in form.disabled_conts else c()}
         % endfor
         ${h.error(['cont'])}
       </td>

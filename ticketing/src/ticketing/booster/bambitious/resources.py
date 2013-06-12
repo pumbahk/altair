@@ -15,6 +15,9 @@ class BjBambitiousCartResource(BoosterCartResource):
         pdmps = self.sales_segment.payment_delivery_method_pairs
         dms = set(pdmp.delivery_method for pdmp in pdmps)
         form.product_delivery_method.choices = [(str(dm.id), dm.name) for dm in dms]
+
+        ##too-bad
+        form.disabled_conts = ["yes"] #継続は存在しないので
         return form
 
     def load_user_profile(self):
