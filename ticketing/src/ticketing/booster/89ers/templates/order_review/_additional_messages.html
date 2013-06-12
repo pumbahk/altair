@@ -1,0 +1,9 @@
+<%page args="pm"/>
+<tr>
+  <td>${layout.team_name}からのメールマガジンの配信	</td>
+  <td class="textR">${u'希望する' if pm.get('mail_permission') else u'希望しない'}</td>
+</tr>
+<tr>
+  <td>メモリアルブックへの掲載希望</td>
+  <td class="textR">${u'はい' if pm.get('publicity') == 'yes' else u'いいえ'}</td>
+</tr>

@@ -14,7 +14,7 @@ class Layout(object):
     mailaddress = u"bambitious@tstar.jp"
     contact_name = u"バンビシャス奈良チケット事務局"
     product_name = u"バンビシャス奈良 ブースタークラブ クラブバンビシャス入会申込"
-
+    tel = u"022-215-8138　(平日：9:00〜18:00)"
     ##html
     form_class_name = u"formbambitious"
 

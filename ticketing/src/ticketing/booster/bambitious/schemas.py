@@ -37,7 +37,7 @@ class OrderFormSchema(Form):
     sex = fields.RadioField(u"性別", validators=[v.Required()], choices=[('male', u'男性'),('female', u'女性')], widget=radio_list_widget)
     zipcode1 = fields.TextField(u"郵便番号", validators=[v.Required(), v.Regexp(r'\d{3}')])
     zipcode2 = fields.TextField(u"郵便番号", validators=[v.Required(), v.Regexp(r'\d{4}')])
-    prefecture = fields.SelectField(u"都道府県", validators=[v.Required(), CP932], choices=[(p.name, p.name)for p in Prefecture.all()], default=u'宮城県')
+    prefecture = fields.SelectField(u"都道府県", validators=[v.Required(), CP932], choices=[(p.name, p.name)for p in Prefecture.all()], default=u'奈良県')
     city = fields.TextField(u"市区町村", filters=[strip_spaces], validators=[v.Required(), CP932])
     address1 = fields.TextField(u"住所", filters=[strip_spaces], validators=[v.Required(), CP932])
     address2 = fields.TextField(u"住所", filters=[strip_spaces], validators=[CP932])

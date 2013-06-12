@@ -14,7 +14,7 @@ class Layout(object):
     mailaddress = u"89ers@ticketstar.jp"
     contact_name = u"仙台89ERS　ブースタークラブ事務局"
     product_name = u"仙台89ERS 2012-2013 ブースタークラブ"
-
+    tel = u"022-215-8138　(平日：9:00〜18:00)"
     ##html
     form_class_name = u"form89ers"
 
@@ -39,5 +39,3 @@ class Layout(object):
 
     def relative_path(self, name):
         return "ticketing.booster.89ers:"+name
-
-    

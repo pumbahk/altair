@@ -66,7 +66,7 @@ radio_list_widget = Switcher(
 
 def get_year_choices():
     current_year = datetime.now().year
-    years =  [(str(year), year) for year in range(current_year-100, current_year)]
+    years =  [(str(year), year) for year in range(1980, current_year)]
     return years
 
 def get_year_months():

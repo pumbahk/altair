@@ -18,6 +18,8 @@ def setup_booster_settings(config):
     config.add_panel("ticketing.booster.panels.input_form", "mobile_input_form", renderer="ticketing.booster.89ers:templates/carts_mobile/_form.html")
     config.add_panel("ticketing.booster.panels.review_additional_messages", "review.additional_messags", renderer="ticketing.booster.89ers:templates/order_review/_additional_messages.html")
     config.add_panel("ticketing.booster.panels.review_additional_messages", "review_mobile.additional_messags", renderer="ticketing.booster.89ers:templates/order_review_mobile/_additional_messages.html")
+    config.add_panel("ticketing.booster.panels.complete_notice", "complete_notice", renderer="ticketing.booster.89ers:templates/carts/_complete_notice.html")    
+    config.add_panel("ticketing.booster.panels.complete_notice", "mobile_complete_notice", renderer="ticketing.booster.89ers:templates/carts_mobile/_complete_notice.html")    
 
 def main(global_config, **local_config):
     settings = dict(global_config)
