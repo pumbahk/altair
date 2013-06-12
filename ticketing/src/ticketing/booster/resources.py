@@ -39,10 +39,8 @@ class BoosterCartResource(TicketingCartResource):
     def product_query(self):
         query = Product.query
         query = query.filter(Product.sales_segment_id == self.sales_segment.id, Product.public != False)
-        query = query.order_by(sa.desc("price"))
-
         salessegment = self.get_sales_segment()
-        return products_filter_by_salessegment(query, salessegment)
+        return products_filter_by_salessegment(query, salessegment).order_by(Product.display_order)
 
     @reify
     def sales_segment(self):
