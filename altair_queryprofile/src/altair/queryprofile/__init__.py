@@ -1,5 +1,5 @@
 # -*- coding:utf-8 -*-
-
+import time
 import threading
 import logging
 from pyramid.threadlocal import get_current_request
@@ -19,10 +19,14 @@ def includeme(config):
 def get_summarizer(request):
     return request.registry.queryUtility(IQuerySummarizer)
 
+@event.listens_for(Engine, "before_cursor_execute")
+def _before_cursor_execute(conn, cursor, stmt, params, context, execmany):
+    setattr(conn, 'pdtb_start_timer', time.time())
 
 @event.listens_for(Engine, "after_cursor_execute")
 def _after_cursor_execute(conn, cursor, stmt, params, context, execmany):
     request = get_current_request()
+    stop_timer = time.time()
     if request is not None:
         with lock:
             engine_id = id(conn.engine)
@@ -31,7 +35,9 @@ def _after_cursor_execute(conn, cursor, stmt, params, context, execmany):
             request.registry['altair.queryprofile.engines'] = engines
             statements = request.environ.get('altair.queryprofile.statements', {})
             stmt_list = statements.get(engine_id, [])
-            statements[engine_id] = stmt_list + [str(stmt)]
+            duration = (stop_timer - conn.pdtb_start_timer) * 1000
+            statements[engine_id] = stmt_list + [{'duration':duration,
+                                                  'statement': str(stmt)}]
             request.environ['altair.queryprofile.statements'] = statements
 
 
