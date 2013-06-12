@@ -49,6 +49,9 @@ order_summary = sa.select([
     Order.card_ahead_com_code,
     Order.card_ahead_com_name,
     Order.payment_delivery_method_pair_id,
+    Order.shipping_address_id,
+    Order.issued,
+    Order.performance_id,
     UserProfile.last_name.label('user_profile_last_name'),
     UserProfile.first_name.label('user_profile_first_name'),
     UserProfile.last_name_kana.label('user_profile_last_name_kana'),
@@ -258,3 +261,5 @@ class OrderSummary(Base):
         return self.refund.cancel_reason if self.refund else None
 
     payment_delivery_pair = orm.relationship("PaymentDeliveryMethodPair")
+    shipping_address = orm.relationship("ShippingAddress")
+    performance = orm.relationship("Performance")
