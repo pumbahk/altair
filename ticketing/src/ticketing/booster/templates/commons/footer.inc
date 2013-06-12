@@ -8,7 +8,7 @@
           </ul>
         </div>
         <div class="copyright">
-          Copyright &copy; 2010-2012 TicketStar Inc. All Rights Reserved. 
+          Copyright &copy; 2010-2013 TicketStar Inc. All Rights Reserved. 
         </div>
 
   </div>
