@@ -99,7 +99,7 @@ class BaseSearchQueryBuilderMixin(object):
         return query.filter(self.targets['subject'].performance_id == value)
 
     def _event_id(self, query, value):
-        return query.join(self.targets['subject'].performance).filter(Performance.event_id == value)
+        return query.filter(self.targets['subject'].performance_id==Performance.id).filter(Performance.event_id == value)
 
     def _payment_method(self, query, value):
         query = query.join(self.targets['subject'].payment_delivery_pair)
