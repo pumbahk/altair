@@ -23,6 +23,7 @@ class Layout(object):
     index_page_url = u"https://secure.ticketstar.jp/89ers/booster"
     privacy_url = u"http://privacy.rakuten.co.jp/"
     mobile_index_page_url = u"http://www.nm.89ers.jp/"
+    mail_support_message = u"注文受付完了、確認メール等を本登録メールアドレス宛にご案内します。「tstar.jp」からのメールを受信できるよう、お申し込み前にドメイン指定の設定を必ずお願いいたします。"
 
     @property
     def form_html_extra_info(self):

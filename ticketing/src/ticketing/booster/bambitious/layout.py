@@ -23,6 +23,7 @@ class Layout(object):
     index_page_url = u"http://bambitious.tstar.jp/"
     privacy_url = u"http://www.ticketstar.jp/privacy/"
     mobile_index_page_url = u"bambitious.tstar.jp/"
+    mail_support_message = u"注文受付完了、確認メール等を本登録メールアドレス宛にご案内します。「tstar.jp」からのメールを受信できるよう、お申し込み前にドメイン指定の設定を必ずお願いいたします。"
 
     @property
     def form_html_extra_info(self):

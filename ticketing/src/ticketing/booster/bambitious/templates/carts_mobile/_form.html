@@ -91,8 +91,10 @@ ${h.error(['fax'])}
 </div>
 <%mobile:form_header required="true">メールアドレス</%mobile:form_header>
 <div>
-  ${form.email_1(istyle="3", iprof="mail1")}<br />
-${h.error('email_1')}
+  ${form.email_1(istyle="3", iprof="mail1")}
+${h.error('email_1')} <br />
+<font color="red">${layout.mail_support_message}</font>
+  
 </div>
 <%mobile:form_header required="true">メールアドレス(確認用)</%mobile:form_header>
 <div>
