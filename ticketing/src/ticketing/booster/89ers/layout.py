@@ -21,6 +21,7 @@ class Layout(object):
     team_index_url= u'http://www.89ers.jp/'
     team_index_url_description = u"89ers公式ホームページへ"
     index_page_url = u"https://secure.ticketstar.jp/89ers/booster"
+    privacy_url = u"http://privacy.rakuten.co.jp/"
     mobile_index_page_url = u"http://www.nm.89ers.jp/"
 
     @property

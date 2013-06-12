@@ -21,6 +21,7 @@ class Layout(object):
     team_index_url= u'http://bambitious.jp/'
     team_index_url_description = u"バンビシャス奈良 公式ホームページへ"
     index_page_url = u"http://bambitious.tstar.jp/"
+    privacy_url = u"http://www.ticketstar.jp/privacy/"
     mobile_index_page_url = u"bambitious.tstar.jp/"
 
     @property
