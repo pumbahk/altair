@@ -40,12 +40,10 @@
                       <th>会員種別</th>
                       <td>${cart.products[0].product.name}</td>
                     </tr>
-                    % if h.is_include_t_shirts(cart):
                     <tr>
                       <th>Tシャツサイズ</th>
-                      <td>${pm['t_shirts_size']}</td>
+                      <td>${pm.get('t_shirts_size', u"")}</td>
                     </tr>
-                    % endif
                      <tr>
                         <th>氏名</th>
                         <td>${pm['last_name']} ${pm['first_name']}</td>
