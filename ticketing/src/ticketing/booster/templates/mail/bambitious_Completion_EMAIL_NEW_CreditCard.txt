@@ -31,7 +31,7 @@ ${ordered_product.product.name} ${h.format_currency(ordered_product.product.pric
 
 <% t_shirts_size = order.items[0].ordered_product_items[0].attributes.get('t_shirts_size') %>
 % if t_shirts_size:
-■Tシャツサイズ： ${t_shirts_size}
+■Tシャツサイズ： ${t_shirts_size or u"-"}
 % endif
 
 ■サービス利用料・手数料

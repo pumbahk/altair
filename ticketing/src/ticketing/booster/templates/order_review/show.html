@@ -65,7 +65,7 @@
                         <% t_shirts_size = order.items[0].ordered_product_items[0].attributes.get('t_shirts_size') %>
                            <tr>
                                 <td>Tシャツサイズ</td>
-                                <td class="textR">${t_shirts_size or ""}</td>
+                                <td class="textR">${t_shirts_size or u"-"}</td>
                             </tr>
                             <tr>
                                 <td>氏名</td>
