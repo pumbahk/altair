@@ -98,7 +98,7 @@ class EntryLotView(object):
             event=event,
             lot=lot,
             sales_segment=lot.sales_segment,
-            performances=lot.performances,
+            performances=sorted(lot.performances, lambda a, b: cmp(a.start_on, b.start_on)),
             option_index=self.context.option_index
             )
 
