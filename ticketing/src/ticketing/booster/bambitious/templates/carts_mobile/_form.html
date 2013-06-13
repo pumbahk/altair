@@ -77,29 +77,34 @@ ${h.error('address2')}
 <%mobile:form_header>電話番号(携帯)</%mobile:form_header>
 <div>
   ${form.tel_1(size=12, istyle="4")}<br />
+  <font size="1">${layout.dont_include_hyphen_message}</font>
+  <font size="1">${（携帯・自宅のどちらか一方で構いません）}</font>
 ${h.error(['tel_1'])}
 </div>
 <%mobile:form_header required="true">電話番号(自宅)</%mobile:form_header>
 <div>
   ${form.tel_2(size=12, istyle="4")}<br />
+  <font size="1">${layout.dont_include_hyphen_message}</font>
+  <font size="1">${（携帯・自宅のどちらか一方で構いません）}</font>
 ${h.error(['tel_2'])}
 </div>
 <%mobile:form_header>FAX番号</%mobile:form_header>
 <div>
   ${form.fax(size=12, istyle="4")}<br />
+  <font size="1">${layout.dont_include_hyphen_message}</font>
 ${h.error(['fax'])}
 </div>
 <%mobile:form_header required="true">メールアドレス</%mobile:form_header>
 <div>
   ${form.email_1(istyle="3", iprof="mail1")}
-${h.error('email_1')} <br />
+  ${h.error('email_1')} <br />
 <font color="red">${layout.mail_support_message}</font>
   
 </div>
 <%mobile:form_header required="true">メールアドレス(確認用)</%mobile:form_header>
 <div>
   ${form.email_1_confirm(istyle="3", iprof="mail1")}<br />
-${h.error('email_1_confirm')}
+  ${h.error('email_1_confirm')}
 </div>
 <%mobile:form_header required="true">会員特典受取方法</%mobile:form_header>
 <div>

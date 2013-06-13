@@ -103,16 +103,16 @@
         電話番号（携帯）
       </th>
       <td>
-        ${form.tel_1(size=12)}<span><small>（半角数字）（携帯・自宅のどちらか一方で構いません）</small></span>
+        ${form.tel_1(size=12)}<span><small>${layout.dont_include_hyphen_message}（携帯・自宅のどちらか一方で構いません）</small></span>
         ${h.error(['tel_1'])}
       </td>
     </tr>
     <tr>
       <th>
-        電話番号（自宅）
+        電話番号（自宅） <span class="red">*</span>
       </th>
       <td>
-        ${form.tel_2(size=12)}<span><small>（半角数字）（携帯・自宅のどちらか一方で構いません）</small></span>
+        ${form.tel_2(size=12)}<span><small>${layout.dont_include_hyphen_message}（携帯・自宅のどちらか一方で構いません）</small></span>
         ${h.error(['tel_2'])}
       </td>
     </tr>
@@ -121,7 +121,7 @@
         FAX番号
       </th>
       <td>
-        ${form.fax(size=12)}<span><small>（半角数字)</small></span>
+        ${form.fax(size=12)}<span><small>${layout.dont_include_hyphen_message}</small></span>
         ${h.error(['fax'])}
       </td>
     </tr>

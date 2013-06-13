@@ -107,7 +107,7 @@
         電話番号（携帯）
       </th>
       <td>
-        ${form.tel_1(size=12)}<span><small>（半角数字）（携帯・自宅のどちらか一方で構いません）</small></span>
+        ${form.tel_1(size=12)}<span><small>${layout.dont_include_hyphen_message}（携帯・自宅のどちらか一方で構いません）</small></span>
         ${h.error(['tel_1'])}
       </td>
     </tr>
@@ -116,7 +116,7 @@
         電話番号（自宅）
       </th>
       <td>
-        ${form.tel_2(size=12)}<span><small>（半角数字）（携帯・自宅のどちらか一方で構いません）</small></span>
+        ${form.tel_1(size=12)}<span><small>${layout.dont_include_hyphen_message}（携帯・自宅のどちらか一方で構いません）</small></span>
         ${h.error(['tel_2'])}
       </td>
     </tr>
