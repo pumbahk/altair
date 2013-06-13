@@ -691,6 +691,7 @@ class PaymentView(object):
             tel_1=data['tel_1'],
             tel_2=data['tel_2'],
             fax=data['fax'],
+            sex=data.get("sex"), 
             user=user
         )
 
