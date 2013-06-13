@@ -170,7 +170,8 @@ def doc_from_event(doc, event): ## fixme
 def _doc_from_page(doc, page):
     doc.update(page_description=page.description, 
                page_title=page.title, 
-               page_id=page.id)
+               page_id=page.id,
+               page_keywords=page.keywords)
     if page.pageset:
         doc.update(id=page.pageset.id, 
                    pageset_id=page.pageset.id)
