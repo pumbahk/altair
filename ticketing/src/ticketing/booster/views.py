@@ -134,7 +134,6 @@ class CompleteView(_CompleteView):
         order.organization_id = order.performance.event.organization_id
 
         user_profile = ObjectLike(self.context.load_user_profile())
-        set_user_profile_for_order(self.request, order, user_profile)
         ## todo: api, contextなどにまとめる
         notify_order_completed(self.request, order)
         self.context.remove_user_profile()
