@@ -128,9 +128,10 @@ class CompleteView(_CompleteView):
 
         order.organization_id = order.performance.event.organization_id
         notify_order_completed(self.request, order)
+        user_profile = self.context.load_user_profile()
         self.context.remove_user_profile()
 
-        return dict(order=order)
+        return dict(order=order, user_profile=user_profile)
 
 
 class OrderReviewView(BaseView):
