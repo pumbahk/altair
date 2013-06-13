@@ -260,7 +260,7 @@ class Orders(BaseView):
         form_search = OrderSearchForm(self.request.params, organization_id=organization_id)
         if form_search.validate():
             try:
-                query = OrderSearchQueryBuilder(form_search.data, lambda key: form_search[key].label.text)(Order.filter(Order.organization_id==organization_id))
+                query = OrderSearchQueryBuilder(form_search.data, lambda key: form_search[key].label.text)(slave_session.query(OrderSummary).filter(OrderSummary.organization_id==organization_id))
             except QueryBuilderError as e:
                 self.request.session.flash(e.message)
 
