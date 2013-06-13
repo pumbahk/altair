@@ -127,30 +127,6 @@ class CompleteView(_CompleteView):
             delivery_plugin.finish(self.request, cart)
 
         profile = self.context.load_user_profile()
-
-        # これ本当にいるの??
-        order.user = User(
-            user_profile=UserProfile(
-                email_1=profile['email_1'],
-                first_name=profile['first_name'], 
-                last_name=profile['last_name'],
-                first_name_kana=profile['first_name_kana'],
-                last_name_kana=profile['last_name_kana'],
-                birth_day=date(int(profile['year']), int(profile['month']), int(profile['day'])),
-                sex=sex_value(profile['sex']),
-                zip=profile['zipcode1'] + u'-' + profile['zipcode2'],
-                country='Japan',
-                prefecture=profile['prefecture'],
-                city=profile['city'],
-                address_1=profile['address1'],
-                address_2=profile['address2'],
-                tel_1=profile['tel_1'],
-                tel_2=profile['tel_2'],
-                fax='',
-                status=0
-                )
-            )
-
         order.organization_id = order.performance.event.organization_id
 
         # productは一個しか来ない
@@ -160,11 +136,6 @@ class CompleteView(_CompleteView):
             # Tシャツ
             if product_item_is_t_shirt(product_item):
                 ordered_product_item.attributes['t_shirts_size'] = profile.get('t_shirts_size')
-            else:
-                # これ本当にいるの??
-                for k, v in profile.items():
-                    if k != 't_shirts_size':
-                        ordered_product_item.attributes[k] = v
 
         notify_order_completed(self.request, order)
 
