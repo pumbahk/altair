@@ -59,29 +59,6 @@ def post(fn):
         return query
     return fn
 
-class QueryBuilderError(Exception):
-    pass
-
-def must_be_combined_with(*params):
-    def _(fn):
-        name = fn.func_name[1:]
-        def wrapper(self, *args, **kwargs):
-            if not any(param in self.formdata and self.formdata[param] for param in params):
-                if self.key_name_resolver is None:
-                    raise QueryBuilderError
-                else:
-                    raise QueryBuilderError(u'検索に時間がかかるため、%sは必ず%sと一緒に使ってください' % (self.key_name_resolver(name), u', '.join(self.key_name_resolver(param) for param in params)))
-            return fn(self, *args, **kwargs)
-        wrapper.func_name = fn.func_name
-        return wrapper
-    return _
-
-def post(fn):
-    def wrapper(self, query, value):
-        self.post_queue.append((fn, value))
-        return query
-    return fn
-
 class SearchQueryBuilderBase(object):
     def __init__(self, formdata, key_name_resolver=None, targets=None, excludes=[], sort=True):
         self.formdata = formdata
