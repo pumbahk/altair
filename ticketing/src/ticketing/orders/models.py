@@ -307,17 +307,20 @@ class OrderSummary(Base):
             self.email_1,
             self.email_2,
         )
-    shipping_address = HybridRelation(_shipping_address, orm.relationship("ShippingAddress"))
+    rel_shipping_address = orm.relationship("ShippingAddress")
+    shipping_address = HybridRelation(_shipping_address, rel_shipping_address)
 
     def _payment_delivery_pair(self):
         return SummarizedPaymentDeliveryMethodPair(None, None)
-    payment_delivery_pair = HybridRelation(_payment_delivery_pair, orm.relationship("PaymentDeliveryMethodPair"))
+    rel_payment_delivery_pair = orm.relationship("PaymentDeliveryMethodPair")
+    payment_delivery_pair = HybridRelation(_payment_delivery_pair, rel_payment_delivery_pair)
 
     def _performance(self):
         request = get_current_request()
         return _get_performance(request, self.performance_id, self.organization_id)
 
-    performance = HybridRelation(_performance, orm.relationship("Performance"))
+    rel_performance = orm.relationship("Performance")
+    performance = HybridRelation(_performance, rel_performance)
 
     @property
     def cancel_reason(self):

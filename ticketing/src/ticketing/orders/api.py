@@ -16,6 +16,7 @@ from ticketing.core.models import (
     SalesSegmentGroup,
     PaymentMethod,
     DeliveryMethod,
+    PaymentDeliveryMethodPair,
     ShippingAddress,
     Seat,
     Performance,
@@ -102,8 +103,11 @@ class BaseSearchQueryBuilderMixin(object):
         return query.filter(self.targets['subject'].performance_id==Performance.id).filter(Performance.event_id == value)
 
     def _payment_method(self, query, value):
-        query = query.join(self.targets['subject'].payment_delivery_pair)
-        query = query.join(PaymentMethod)
+        #query = query.join(self.targets['subject'].payment_delivery_pair)
+        #query = query.join(PaymentMethod)
+        query = query.filter(self.targets['subject'].payment_delivery_method_pair_id==PaymentDeliveryMethodPair.id)
+        query = query.filter(PaymentDeliveryMethodPair.payment_method_id==PaymentMethod.id)
+        
         if isinstance(value, list):
             query = query.filter(PaymentMethod.id.in_(value))
         else:
@@ -111,16 +115,20 @@ class BaseSearchQueryBuilderMixin(object):
         return query
 
     def _delivery_method(self, query, value):
-        query = query.join(self.targets['subject'].payment_delivery_pair)
-        query = query.join(DeliveryMethod)
+        #query = query.join(self.targets['subject'].payment_delivery_pair)
+        #query = query.join(DeliveryMethod)
+        query = query.filter(self.targets['subject'].payment_delivery_method_pair_id==PaymentDeliveryMethodPair.id)
+        query = query.filter(PaymentDeliveryMethodPair.delivery_method_id==DeliveryMethod.id)
         query = query.filter(DeliveryMethod.id.in_(value))
         return query
 
     def _tel(self, query, value):
-        return query.join(self.targets['subject'].shipping_address).filter(or_(ShippingAddress.tel_1==value, ShippingAddress.tel_2==value))
+        #return query.join(self.targets['subject'].shipping_address).filter(or_(ShippingAddress.tel_1==value, ShippingAddress.tel_2==value))
+        return query.filter(self.targets['subject'].shipping_address_id==ShippingAddress.id).filter(or_(ShippingAddress.tel_1==value, ShippingAddress.tel_2==value))
 
     def _name(self, query, value):
-        query = query.join(self.targets['subject'].shipping_address)
+        #query = query.join(self.targets['subject'].shipping_address)
+        query = query.filter(self.targets['subject'].shipping_address_id==ShippingAddress.id)
         items = re.split(ur'[ 　]', value)
         # 前方一致で十分かと
         for item in items:
@@ -135,18 +143,21 @@ class BaseSearchQueryBuilderMixin(object):
         return query
 
     def _email(self, query, value): 
-        query = query.join(self.targets['subject'].shipping_address)
+        #query = query.join(self.targets['subject'].shipping_address)
+        query = query.filter(self.targets['subject'].shipping_address_id==ShippingAddress.id)
         # 完全一致です
-        return query \
-            .join(self.targets['subject'].shipping_address) \
-            .filter(or_(ShippingAddress.email_1 == value,
+        return query.filter(
+            #.join(self.targets['subject'].shipping_address) \
+                or_(ShippingAddress.email_1 == value,
                         ShippingAddress.email_2 == value))
 
     def _start_on_from(self, query, value):
-        return query.join(self.targets['subject'].performance).filter(Performance.start_on>=value)
+        #return query.join(self.targets['subject'].performance).filter(Performance.start_on>=value)
+        return query.filter(self.targets['subject'].performance_id==Performance.id).filter(Performance.start_on>=value)
 
     def _start_on_to(self, query, value):
-        return query.join(self.targets['subject'].performance).filter(Performance.start_on<=todatetime(value).replace(hour=23, minute=59, second=59))
+        #return query.join(self.targets['subject'].performance).filter(Performance.start_on<=todatetime(value).replace(hour=23, minute=59, second=59))
+        return query.filter(self.targets['subject'].performance_id==Performance.id).filter(Performance.start_on<=todatetime(value).replace(hour=23, minute=59, second=59))
 
     def handle_sort(self, query):
         if self.formdata['sort']:

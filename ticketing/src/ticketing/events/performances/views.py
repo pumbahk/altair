@@ -27,6 +27,7 @@ from ticketing.models import DBSession
 from ticketing.mails.api import get_mail_utility
 from ticketing.core.models import MailTypeChoices
 from ticketing.orders.api import OrderSearchQueryBuilder, QueryBuilderError
+from ticketing.orders.models import OrderSummary
 
 @view_defaults(decorator=with_bootstrap, permission="event_editor")
 class PerformanceShowView(BaseView):
@@ -64,7 +65,7 @@ class PerformanceShowView(BaseView):
             )
 
     def _tab_order(self):
-        query = Order.filter_by(performance_id=self.performance.id)
+        query = OrderSummary.query.filter_by(performance_id=self.performance.id)
         form_search = OrderSearchForm(
             self.request.params,
             event_id=self.performance.event_id,
