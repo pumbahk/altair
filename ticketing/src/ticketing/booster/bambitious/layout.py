@@ -11,8 +11,8 @@ class Layout(object):
     orderreview_title = u"バンビシャス奈良 ブースタークラブ クラブバンビシャス申込受付確認ページ"
     complete_title = u""
     team_name = u"バンビシャス奈良"
-    mailaddress = u"bambitious@tstar.jp"
-    contact_name = u"バンビシャス奈良チケット事務局"
+    mailaddress = u"club-bambitious@bambitious.jp"
+    contact_name = u"クラブバンビシャス事務局"
     product_name = u"バンビシャス奈良 ブースタークラブ クラブバンビシャス入会申込"
     tel = u"0742-20-1800　(平日：10:00～17:00)"
     ##html
@@ -23,7 +23,7 @@ class Layout(object):
     index_page_url = u"http://bambitious.tstar.jp/"
     privacy_url = u"http://www.ticketstar.jp/privacy/"
     mobile_index_page_url = u"bambitious.tstar.jp/"
-    mail_support_message = u"注文受付完了、確認メール等を本登録メールアドレス宛にご案内します。「tstar.jp」からのメールを受信できるよう、お申し込み前にドメイン指定の設定を必ずお願いいたします。"
+    mail_support_message = u"注文受付完了、確認メール等を本登録メールアドレス宛にご案内します。「bambitious.jp」からのメールを受信できるよう、お申し込み前にドメイン指定の設定を必ずお願いいたします。"
     dont_include_hyphen_message = u"「－」（ハイフン）を抜いてご入力ください（例：09012341234）"
     t_shirts_mesaage = u"ゴールド会員を選択の方はブースターシャツサイズをお選びください。"
 
