@@ -236,6 +236,19 @@ def _get_performance(request, performance_id, organization_id):
     performances = _get_performances(request, organization_id)
     return performances[performance_id]
 
+
+class HybridRelation(object):
+    def __init__(self, instance_property, relationship):
+        self.instance_property = instance_property
+        self.relationship = relationship
+
+    def __get__(self, obj, type=None):
+        if obj:
+            return self.instance_property(obj)
+        else:
+            return self.relationship
+
+
 class OrderSummary(Base):
     __table__ = order_summary
     query = DBSession.query_property()
@@ -278,8 +291,7 @@ class OrderSummary(Base):
                               SummarizedUserCredential(self.auth_identifier, 
                                                        membership))
 
-    @property
-    def shipping_address(self):
+    def _shipping_address(self):
         return SummarizedShippingAddress(
             self.last_name,
             self.first_name,
@@ -295,24 +307,20 @@ class OrderSummary(Base):
             self.email_1,
             self.email_2,
         )
+    shipping_address = HybridRelation(_shipping_address, orm.relationship("ShippingAddress"))
 
-    @property
-    def payment_delivery_pair(self):
+    def _payment_delivery_pair(self):
         return SummarizedPaymentDeliveryMethodPair(None, None)
+    payment_delivery_pair = HybridRelation(_payment_delivery_pair, orm.relationship("PaymentDeliveryMethodPair"))
 
-    @property
-    def performance(self):
-        # return SummarizedPerformance(self.performance_id,
-        #                              self.start_on,
-        #                              SummarizedEvent(self.event_id, self.title),
-        #                              SummarizedVenue(self.venue_name))
+    def _performance(self):
         request = get_current_request()
         return _get_performance(request, self.performance_id, self.organization_id)
+
+    performance = HybridRelation(_performance, orm.relationship("Performance"))
 
     @property
     def cancel_reason(self):
         return self.refund.cancel_reason if self.refund else None
 
-    payment_delivery_pair = orm.relationship("PaymentDeliveryMethodPair")
-    shipping_address = orm.relationship("ShippingAddress")
-    performance = orm.relationship("Performance")
+
