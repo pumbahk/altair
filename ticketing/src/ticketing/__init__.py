@@ -94,6 +94,7 @@ def main(global_config, **local_config):
         config.include('altair.browserid')
         config.include('altair.exclog')
         config.include('altair.mobile')
+        config.include('altair.sqlahelper')
 
         ### s3 assets
         config.include('altair.pyramid_assets')
