@@ -46,33 +46,6 @@ class BoosterCartResource(TicketingCartResource):
     def sales_segment(self):
         return self.available_sales_segments[0]
 
-
-    def get_or_create_user(self):
-        from ticketing.cart import api
-        cart = api.get_cart(self.request)
-        credential = UserCredential.query.filter(
-            UserCredential.auth_identifier==str(cart.id),
-        ).filter(
-            UserCredential.membership_id==Membership.id
-        ).filter(
-            Membership.name==self.membership_name
-        ).first()
-        if credential:
-            user = credential.user
-            return user
-        
-
-        membership = Membership.query.filter(Membership.name==self.membership_name).first()
-        if membership is None:
-            membership = Membership(name=self.membership_name)
-            DBSession.add(membership)
-
-        user = User()
-        credential = UserCredential(user=user, auth_identifier=str(cart.id), membership=membership)
-        credential = user.user_credential
-        DBSession.add(user)
-        return user
-
     def get_order(self):
         organization = get_organization(self.request)
         order_no = self.request.params.get('order_no')
