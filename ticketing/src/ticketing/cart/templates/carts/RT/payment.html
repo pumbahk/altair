@@ -1,15 +1,12 @@
 <%inherit file="./base.html"/>
 
-<%block name="javascript">
-  <script type="text/javascript" src="${request.static_url('ticketing.cart:static/js/ajaxzip3-https.js')}"></script>
-</%block>
-
 %if request.session.peek_flash():
     %for message in request.session.pop_flash():
     <div class="error">${message}</div>
     %endfor
 %endif
 ${h.get_nickname(request)} 
+
 <form id="form1" name="form1" method="post" action="${request.url}">
   <div class="settlementBox">
     <div class="settlementBoxInner">
@@ -125,7 +122,7 @@ ${h.get_nickname(request)}
           <td>
             <ul>
               <li>${form['zip'].label}
-                ${form['zip'](onKeyUp="AjaxZip3.zip2addr('zip','','prefecture','city','', 'address_1');")}
+                ${form['zip']}
                 (例: 1030001)
                 ${h.error_list(request, form, 'zip')}
               </li>
