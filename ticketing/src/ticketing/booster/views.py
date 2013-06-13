@@ -16,6 +16,7 @@ from ticketing.users.models import User, UserProfile
 
 from ..models import DBSession
 from .api import product_item_is_t_shirt
+from .api import ordered_product_attach_tshirts_size
 from .helpers import sex_value
 from ticketing.views import BaseView
 
@@ -130,8 +131,13 @@ class CompleteView(_CompleteView):
             delivery_plugin.finish(self.request, cart)
 
         order.organization_id = order.performance.event.organization_id
-        notify_order_completed(self.request, order)
+
         user_profile = ObjectLike(self.context.load_user_profile())
+        # productは一個しか来ない
+        order_product = order.items[0]
+        ordered_product_attach_tshirts_size(order_product, user_profile.get('t_shirts_size')) #xxx:
+
+        notify_order_completed(self.request, order)
         self.context.remove_user_profile()
 
         return dict(order=order, user_profile=user_profile)

@@ -79,13 +79,20 @@ def set_user_profile_for_order(request, order, bj89er_user_profile):
             name=attr_name,
             value=bj89er_user_profile.get(attr_name))
 
-
 def filtering_data_by_products_and_member_type(data, products):
     k = data.get("member_type")
     product = products.get(str(k))
     if not len(product.items) > 1:
         data["t_shirts_size"] = None
     return data
+
+def ordered_product_attach_tshirts_size(order_product, t_shirts_size):
+    if t_shirts_size:
+        for ordered_product_item in order_product.ordered_product_items:
+            product_item = ordered_product_item.product_item
+            # Tシャツ
+            if product_item_is_t_shirt(product_item):
+                ordered_product_item.attributes['t_shirts_size'] = t_shirts_size
 
 def product_item_is_t_shirt(product_item):
     return product_item.stock.stock_type.name == u'Tシャツ'
