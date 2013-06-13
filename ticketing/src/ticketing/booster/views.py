@@ -102,6 +102,9 @@ class PaymentView(_PaymentView):
     def post(self):
         return super(self.__class__, self).post()
 
+class ObjectLike(dict):
+    __getattr__ = dict.get
+    
 class CompleteView(_CompleteView):
     @back
     def __call__(self):
@@ -128,7 +131,7 @@ class CompleteView(_CompleteView):
 
         order.organization_id = order.performance.event.organization_id
         notify_order_completed(self.request, order)
-        user_profile = self.context.load_user_profile()
+        user_profile = ObjectLike(self.context.load_user_profile())
         self.context.remove_user_profile()
 
         return dict(order=order, user_profile=user_profile)
