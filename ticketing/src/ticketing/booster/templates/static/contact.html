@@ -1,39 +1,14 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
-<html lang="en">
-<head>
-  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
-  <title>${layout.title}</title>
-    <link rel="stylesheet" type="text/css" href="${layout.static_url('static/style.css')}" media="all" />
+<%inherit file="../layout.html" />
 
-  <link rel="shortcut icon" href="${layout.static_url("static/favicon.ico")}" />
-</head>
-<body>
-
-  <h1 class="title">${layout.title}</h1>
-  <div align="center">
-
-    <table class="layout" style="width:760px" class="wrapper">
-      <tr>
-        <td>
-          <div class="purchased">
-            <div class="kadomaru">
-              <h3>お問い合わせ先</h3>
-              <ul class="markNone font14">
-                <li>${layout.contact_name}</li>
-                <li>TEL: ${layout.tel}</li>
-                <li>メール: <a href="mailto:${layout.mailaddress}">${layout.mailaddress}</a></li>
-              </ul>
-
-            </div>
-          </div>
-          <!-- purchased終わり -->
-         <br />
-        </td>
-      </tr>
-    </table>
+<div class="purchased">
+  <a href="${request.route_path("index")}">戻る</a>
+  <div class="kadomaru">
+    <h3>お問い合わせ先</h3>
+    <ul class="markNone font14">
+      <li>${layout.contact_name}</li>
+      <li>TEL: ${layout.tel}</li>
+      <li>メール: <a href="mailto:${layout.mailaddress}">${layout.mailaddress}</a></li>
+    </ul>
   </div>
-
-  <%include file="../commons/footer.inc" />
-</body>
-</html>
-
+</div>
+<!-- purchased終わり -->
