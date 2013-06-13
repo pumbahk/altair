@@ -45,6 +45,7 @@ from ticketing.core.models import (
     SalesSegment,
     ShippingAddress,
     DBSession,
+    Performance,
 )
 
 from ticketing.users.models import (
@@ -143,6 +144,8 @@ def build_lot_entry(lot, wishes, payment_delivery_method_pair, membergroup=None,
 
 def build_temporary_lot_entry(*args, **kwargs):
     entry = build_lot_entry(*args, **kwargs)
+    for wish in entry.wishes:
+        wish.performance = Performance.filter_by(id=wish.performance_id).one()
     DBSession.expunge(entry)
     return entry
 
