@@ -45,7 +45,7 @@ ${shipping.address_2}
 ${shipping.tel_1}<br />
 <%mobile:form_header>メールアドレス</%mobile:form_header>
 ${shipping.email_1}<br />
-${panel("review_mobile.additional_messags", shipping, pm)}
+${panel("review_mobile.additional_messags", order, shipping, pm)}
 <%mobile:form_header>お支払い</%mobile:form_header>
 %if order.payment_delivery_pair.payment_method.payment_plugin.id == 3:
 <div>セブン-イレブン</div>
