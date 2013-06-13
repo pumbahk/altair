@@ -7,9 +7,16 @@
 引換票番号：${sej_order.exchange_number or sej_order.billing_number}<br/>
 
 %if is_payment_with_sej:
-引取受付期間：${h.japanese_datetime(sej_order.ticketing_start_at)} - ${h.japanese_datetime(sej_order.ticketing_due_at)}<br/>
+引取受付期間：${h.japanese_datetime(sej_order.ticketing_start_at)} -
+% if sej_order.ticketing_due_at:
+${h.japanese_datetime(sej_order.ticketing_due_at)}
+% endif
+<br/>
 %else:
-引取受付期間：${h.japanese_datetime(sej_order.ticketing_start_at)} - ${h.japanese_datetime(sej_order.ticketing_due_at)}<br/>
+引取受付期間：${h.japanese_datetime(sej_order.ticketing_start_at)} -
+% if sej_order.ticketing_due_at:
+${h.japanese_datetime(sej_order.ticketing_due_at)}
+% endif
 <br/>
 購入いただいた次の日から引き取りが可能となります。<br/>
 %endif
