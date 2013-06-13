@@ -13,6 +13,7 @@ from pyramid.paster import bootstrap, setup_logging
 
 from ticketing.multicheckout import api
 from ticketing.multicheckout import models as m
+from ticketing.multicheckout.interfaces import ICancelFilter
 
 logger = logging.getLogger(__name__)
 
@@ -44,18 +45,29 @@ def sync_data(request, multicheckout_setting):
                 u"by cancel auth batch")
         m._session.commit()
 
+def get_cancel_filter(request, name):
+    return request.registry.queryUtility(ICancelFilter, name=name)
 
-def get_auth_orders(shop_id):
+def is_cancelable(request, status):
+    order_no = status.OrderNo
+    name = status.KeepAuthFor
+    if name is None:
+        return True
+    cancel_filter = get_cancel_filter(request, name)
+    if cancel_filter is None:
+        return False
+    return cancel_filter.is_cancelable(order_no)
+
+def get_auth_orders(request, shop_id):
     q = m._session.query(m.MultiCheckoutOrderStatus).filter(
             m.MultiCheckoutOrderStatus.Storecd==shop_id
         ).filter(
             m.MultiCheckoutOrderStatus.is_authorized
         ).filter(
             m.MultiCheckoutOrderStatus.past(timedelta(hours=1))
-        ).filter(
-            m.MultiCheckoutOrderStatus.KeepAuthFor==None,
         )
-    return q
+
+    return [s for s in q if is_cancelable(request, s)]
 
 def cancel_auth(request, multicheckout_setting):
     """
@@ -68,7 +80,7 @@ def cancel_auth(request, multicheckout_setting):
     shop_name = multicheckout_setting.shop_name
     logger.debug('search authorization for %s:%s' % (shop_name, shop_id))
 
-    q = get_auth_orders(shop_id)
+    q = get_auth_orders(request, shop_id)
 
     for st in q:
         order_no = st.OrderNo
