@@ -126,19 +126,8 @@ class CompleteView(_CompleteView):
             delivery_plugin = payment_api.get_delivery_plugin(self.request, payment_delivery_pair.delivery_method.delivery_plugin_id)
             delivery_plugin.finish(self.request, cart)
 
-        profile = self.context.load_user_profile()
         order.organization_id = order.performance.event.organization_id
-
-        # productは一個しか来ない
-        order_product = order.items[0]
-        for ordered_product_item in order_product.ordered_product_items:
-            product_item = ordered_product_item.product_item
-            # Tシャツ
-            if product_item_is_t_shirt(product_item):
-                ordered_product_item.attributes['t_shirts_size'] = profile.get('t_shirts_size')
-
         notify_order_completed(self.request, order)
-
         self.context.remove_user_profile()
 
         return dict(order=order)
