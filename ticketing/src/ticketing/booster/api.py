@@ -30,41 +30,31 @@ def on_order_completed(event):
     user_profile = load_user_profile(event.request)
     set_user_profile_for_order(event.request, order, user_profile)
 
+def get_order_desc(order):
+    shipping = order.shipping_address
+    return shipping, get_main_ordered_product_from_order(order).attributes
+
+def get_main_ordered_product_from_order(order):
+    return order.items[0].ordered_product_items[0]
 
 attr_names = [
     u'cont',
     u'old_id_number',
     u'member_type',
     u't_shirts_size',
-    u'first_name',
-    u'last_name',
-    u'first_name_kana',
-    u'last_name_kana',
     u'year',
     u'month',
     u'day',
     u'sex',
-    u'zipcode1',
-    u'zipcode2',
-    u'prefecture',
-    u'city',
-    u'address1',
-    u'address2',
-    u'tel_1',
-    u'tel_2',
-    u'email_1',
-    u'mail_permission',
+    u'mail_permission', ###
+    u'publicity'
+    u'fax', 
+    u'product_delivery_method_name', 
     ]
 
 
 def set_user_profile_for_order(request, order, bj89er_user_profile):
     member_type = bj89er_user_profile['member_type']
-    # ordered_product = c_models.OrderedProduct.query.filter(
-    #     c_models.OrderedProduct.order==order
-    # ).filter(
-    #     c_models.OrderedProduct.product_id==member_type
-    # ).one()
-
     ordered_product_item = c_models.OrderedProductItem.query.filter(
         c_models.OrderedProduct.order==order
     ).filter(
@@ -74,10 +64,11 @@ def set_user_profile_for_order(request, order, bj89er_user_profile):
     ).first()
 
     for attr_name in attr_names:
-        c_models.OrderedProductAttribute(
-            ordered_product_item=ordered_product_item,
-            name=attr_name,
-            value=bj89er_user_profile.get(attr_name))
+        if attr_name in bj89er_user_profile:
+            c_models.OrderedProductAttribute(
+                ordered_product_item=ordered_product_item,
+                name=attr_name,
+                value=bj89er_user_profile.get(attr_name))
 
 def filtering_data_by_products_and_member_type(data, products):
     k = data.get("member_type")
@@ -85,14 +76,6 @@ def filtering_data_by_products_and_member_type(data, products):
     if not len(product.items) > 1:
         data["t_shirts_size"] = None
     return data
-
-def ordered_product_attach_tshirts_size(order_product, t_shirts_size):
-    if t_shirts_size:
-        for ordered_product_item in order_product.ordered_product_items:
-            product_item = ordered_product_item.product_item
-            # Tシャツ
-            if product_item_is_t_shirt(product_item):
-                ordered_product_item.attributes['t_shirts_size'] = t_shirts_size
 
 def product_item_is_t_shirt(product_item):
     return product_item.stock.stock_type.name == u'Tシャツ'

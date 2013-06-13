@@ -16,7 +16,8 @@ from ticketing.users.models import User, UserProfile
 
 from ..models import DBSession
 from .api import product_item_is_t_shirt
-from .api import ordered_product_attach_tshirts_size
+from .api import get_order_desc
+from .api import set_user_profile_for_order
 from .helpers import sex_value
 from ticketing.views import BaseView
 
@@ -133,10 +134,8 @@ class CompleteView(_CompleteView):
         order.organization_id = order.performance.event.organization_id
 
         user_profile = ObjectLike(self.context.load_user_profile())
-        # productは一個しか来ない
-        order_product = order.items[0]
-        ordered_product_attach_tshirts_size(order_product, user_profile.get('t_shirts_size')) #xxx:
-
+        set_user_profile_for_order(self.request, order, user_profile)
+        ## todo: api, contextなどにまとめる
         notify_order_completed(self.request, order)
         self.context.remove_user_profile()
 
@@ -181,7 +180,9 @@ class OrderReviewView(BaseView):
             return response
 
         else:
-            return dict(order=order, sej_order=sej_order)
+            shipping, pm = get_order_desc(order)
+            return dict(order=order, sej_order=sej_order, shipping=shipping, pm=pm)
+
 
 @view_config(name="order_review_form")
 def order_review_form_view(form, request):

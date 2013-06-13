@@ -38,7 +38,6 @@
 					</div>
 					<!-- kadomaruおわり -->
 
-                <% pm,t_shirts = h.order_desc(order) %>
                 <div class="kadomaru">
                 <h3>購入情報</h3>
                 %if order.status == 'canceled' or order.payment_status == 'refunded':
@@ -72,18 +71,17 @@
                                 <td>会員種別</td>
                                 <td class="textR">${order.items[0].product.name}</td>
                             </tr>
-                        <% t_shirts_size = order.items[0].ordered_product_items[0].attributes.get('t_shirts_size') %>
                            <tr>
                                 <td>Tシャツサイズ</td>
-                                <td class="textR">${t_shirts_size or u"-"}</td>
+                                <td class="textR">${pm.get("t_shirts_size") or u"-"}</td>
                             </tr>
                             <tr>
                                 <td>氏名</td>
-                                <td class="textR">${pm['last_name']} ${pm['first_name']}</td>
+                                <td class="textR">${shipping.last_name} ${shipping.first_name}</td>
                             </tr>
                             <tr>
                                 <td>氏名（フリガナ）</td>
-                                <td class="textR">${pm['last_name_kana']} ${pm['first_name_kana']}</td>
+                                <td class="textR">${shipping.last_name_kana} ${shipping.first_name_kana}</td>
                             </tr>
                             <tr>
                                 <td>誕生日</td>
@@ -92,33 +90,24 @@
                             <tr>
                                 <td>性別</td>
                                 <td class="textR">
-                                    %if pm['sex']=='male':
-                                        男性
-                                    %endif
-                                    %if pm['sex']==2:
-                                        女性
-                                    %endif
+                                  ${u'男性' if pm['sex']=='male' else u'女性' }
                                 </td>
                             </tr>
                                <td>郵便番号</td>
-                               <td class="textR">${pm['zipcode1']}-${pm['zipcode2']}</td>
+                               <td class="textR">${shipping.zip}</td>
                             <tr>
                                 <td>住所</td>
-                                <td class="textR">${pm['prefecture']} ${pm['city']} ${pm['address1']} ${pm['address2']}</td>
+                                <td class="textR">${shipping.prefecture}${shipping.city}${shipping.address_1}${shipping.address_2}</td>
                             </tr>
                             <tr>
-                                <td>電話番号（携帯）</td>
-                                <td class="textR">${pm.get('tel_1', '-')}</td>
-                            </tr>
-                            <tr>
-                                <td>電話番号（自宅）</td>
-                                <td class="textR">${pm.get('tel_2', '-')}</td>
+                                <th scope="row">電話番号</th>
+                                <td>${shipping.tel_1}</td>
                             </tr>
                             <tr>
                                 <td>メールアドレス</td>
-                                <td class="textR">${pm['email_1']}</td>
+                                <td class="textR">${shipping.email_1}</td>
                             </tr>
-                            ${panel("review.additional_messags", pm)}
+                            ${panel("review.additional_messags", shipping, pm)}
                         </tbody>
                     </table>
                     </div>

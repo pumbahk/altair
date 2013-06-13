@@ -16,7 +16,6 @@ ${order.order_no}
 <hr/>
 %else:
 <%mobile:form_header>購入情報</%mobile:form_header>
-<% pm,t_shirts = h.order_desc(order) %>
 ${layout.product_name}
 <%mobile:form_header>新規／継続:</%mobile:form_header>
 ${u'継続' if pm.get('cont') == 'yes' else u'新規'}
@@ -30,24 +29,23 @@ ${order.items[0].product.name}
 <%mobile:form_header>Tシャツサイズ</%mobile:form_header>
 ${t_shirts_size or u"-"}
 <%mobile:form_header>氏名</%mobile:form_header>
-${pm['last_name']} ${pm['first_name']}
+${shipping.last_name} ${shipping.first_name}
 <%mobile:form_header>氏名（フリガナ）</%mobile:form_header>
-${pm['last_name_kana']} ${pm['first_name_kana']}
+${shipping.last_name_kana} ${shipping.first_name_kana}
 <%mobile:form_header>誕生日</%mobile:form_header>
 ${pm['year']}年${pm['month']}月${pm['day']}日
 <%mobile:form_header>性別</%mobile:form_header>
 ${u'男性' if pm['sex']=='male' else u'女性' }
 <%mobile:form_header>郵便番号</%mobile:form_header>
-${pm['zipcode1']}-${pm['zipcode2']}
+${shipping.zip}
 <%mobile:form_header>住所</%mobile:form_header>
-${pm['prefecture']} ${pm['city']} ${pm['address1']} ${pm['address2']}
-<%mobile:form_header>電話番号（携帯）</%mobile:form_header>
-${pm.get('tel_1')}
-<%mobile:form_header>電話番号（自宅）</%mobile:form_header>
-${pm.get('tel_2')}
+${shipping.prefecture}${shipping.city}${shipping.address_1}<br />
+${shipping.address_2}
+<%mobile:form_header>電話番号</%mobile:form_header>
+${shipping.tel_1}<br />
 <%mobile:form_header>メールアドレス</%mobile:form_header>
-${pm['email_1']}
-${panel("review_mobile.additional_messags", pm)}
+${shipping.email_1}<br />
+${panel("review_mobile.additional_messags", shipping, pm)}
 <%mobile:form_header>お支払い</%mobile:form_header>
 %if order.payment_delivery_pair.payment_method.payment_plugin.id == 3:
 <div>セブン-イレブン</div>

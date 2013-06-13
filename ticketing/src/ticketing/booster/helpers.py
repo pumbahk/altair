@@ -28,18 +28,14 @@ def error(names):
     else:
         return Markup('<p class="error">%s</p>' % errs)
 
-def order_desc(order):
-    profile = None
-    t_shirts = None
+def is_include_t_shirts(cart):
+    for carted_product in cart.products:
+        product = carted_product.product
+        for item in product.items:
+            if item.stock.stock_type.name == u'Tシャツ':
+                return True
+    return False
 
-    for item in order.items:
-        for ordered_product_item in item.ordered_product_items:
-            if ordered_product_item.product_item.stock.stock_type.name != u'Tシャツ':
-                profile =  ordered_product_item.attributes
-            else:
-                t_shirts = ordered_product_item.attributes
-
-    return profile, t_shirts
 
 def sex_value(value):
     if value == u'male':
