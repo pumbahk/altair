@@ -4,8 +4,10 @@ from pyramid_selectable_renderer.custom import ReceiveTemplatePathFormat, Receiv
 
 @SelectByRequestGen.generate
 def get_template_path_args(request):
+    from ticketing.core.api import get_organization
+    # return dict(membership="bambitious") ##
     try:
-        return dict(membership=request.organization.short_name)
+        return dict(membership=get_organization(request).short_name)
     except:
         return dict(membership="__default__")
 

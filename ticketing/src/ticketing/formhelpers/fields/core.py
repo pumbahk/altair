@@ -1,20 +1,5 @@
 from wtforms import fields
 
-__all__ = [
-    'BugFreeSelectField',
-    'BugFreeSelectMultipleField',
-    'PHPCompatibleSelectMultipleField',
-    'RendererMixin',
-    '_gen_field_init',
-    'OurRadioField',
-    'OurTextField',
-    'OurSelectField',
-    'OurDecimalField',
-    'OurIntegerField',
-    'OurBooleanField',
-    'NullableTextField',
-    ]
-
 class BugFreeSelectField(fields.SelectField):
     def pre_validate(self, form):
         for v, _ in self.choices:
@@ -135,6 +120,10 @@ class OurIntegerField(fields.IntegerField, RendererMixin):
 
 @_gen_field_init
 class OurBooleanField(fields.BooleanField, RendererMixin):
+    pass
+
+@_gen_field_init
+class OurDecimalField(fields.DecimalField, RendererMixin):
     pass
 
 @_gen_field_init

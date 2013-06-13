@@ -13,8 +13,8 @@ altair.oauth.authorize_url  = ${altair:altair.oauth.authorize_url}
 altair.oauth.access_token_url  = ${altair:altair.oauth.access_token_url}
 
 ; Beaker
-session.type = redis
-cache.type = redis
+session.type = ${altair:beaker_backend_type}
+cache.type = ${altair:beaker_backend_type}
 
 [composite:composite]
 use = egg:Paste#urlmap

@@ -18,12 +18,6 @@ import sqlahelper
 
 authn_exemption = re.compile(r'^(/_deform)|(/static)|(/_debug_toolbar)|(/favicon.ico)')
 
-def setup_standard_renderers(config):
-    config.add_renderer('.html' , 'pyramid.mako_templating.renderer_factory')
-    config.add_renderer('.txt'  , 'pyramid.mako_templating.renderer_factory')
-    config.add_renderer('json'  , 'ticketing.renderers.json_renderer_factory')
-    config.add_renderer('csv'   , 'ticketing.renderers.csv_renderer_factory')
-
 def setup_mailtraverser(config):
     from ticketing.mails.traverser import EmailInfoTraverser
     reg = config.registry
@@ -100,6 +94,7 @@ def main(global_config, **local_config):
         config.include('altair.browserid')
         config.include('altair.exclog')
         config.include('altair.mobile')
+        config.include('altair.sqlahelper')
 
         ### s3 assets
         config.include('altair.pyramid_assets')
@@ -135,8 +130,7 @@ def main(global_config, **local_config):
         config.include('ticketing.pkginfo')
         ## TBA
         config.add_route("qr.make", "___________") ##xxx:
-        config.add_subscriber('ticketing.cart.sendmail.on_order_completed', 'ticketing.cart.events.OrderCompleted')
-
+        config.include(config.maybe_dotted("ticketing.cart.import_mail_module"))
         # 上からscanされてしまうためしかたなく追加。scanをinclude先に移動させて、このincludeを削除する。
         #config.include('ticketing.cart' , route_prefix='/cart')
     

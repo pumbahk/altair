@@ -1,0 +1,5 @@
+<%namespace file="${context['layout'].relative_path('templates/tags_mobile.html')}" name="mobile" />
+<%mobile:form_header>${layout.team_name}からのメールマガジンの配信	</%mobile:form_header>
+${u'希望する' if pm.get('mail_permission') else u'希望しない'}
+<%mobile:form_header>メモリアルブックの掲載希望 </%mobile:form_header>
+${u'はい' if pm.get('publicity') == 'yes' else u'いいえ'}

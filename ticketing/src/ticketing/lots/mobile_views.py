@@ -13,11 +13,11 @@ from ticketing.cart import api as cart_api
 from ticketing.cart.views import back
 from ticketing.payments.payment import Payment
 from ticketing.cart.exceptions import NoCartError
-from ticketing.cart.selectable_renderer import selectable_renderer
 
 from . import api
 from . import helpers as h
 from . import schemas
+from . import selectable_renderer
 from .exceptions import NotElectedException
 from .models import (
     LotEntry,
@@ -98,7 +98,7 @@ class EntryLotView(object):
             event=event,
             lot=lot,
             sales_segment=lot.sales_segment,
-            performances=lot.performances,
+            performances=sorted(lot.performances, lambda a, b: cmp(a.start_on, b.start_on)),
             option_index=self.context.option_index
             )
 

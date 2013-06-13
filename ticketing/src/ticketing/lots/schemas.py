@@ -7,8 +7,8 @@ from wtforms import widgets
 
 from ticketing.cart.schemas import ClientForm as _ClientForm
 from ticketing.users.models import SexEnum
-from ticketing.bj89ers import widgets as my_widgets
-from ticketing.bj89ers import fields as my_fields
+from ticketing.booster import widgets as my_widgets
+from ticketing.booster import fields as my_fields
 from ticketing.formhelpers import text_type_but_none_if_not_given, Zenkaku, Katakana, NFKC, lstrip, strip, strip_hyphen, strip_spaces, SejCompliantEmail, CP932, Translations
 from ticketing.formhelpers.form import OurForm 
 from ticketing.formhelpers.fields import OurRadioField

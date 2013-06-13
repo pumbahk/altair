@@ -1831,7 +1831,11 @@ class Product(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     def get_quantity_power(self, stock_type, performance_id):
         """ 数量倍率 """
-        perform_items = ProductItem.query.filter(ProductItem.product==self).filter(ProductItem.performance_id==performance_id).all()
+        perform_items = ProductItem.query.filter(
+            ProductItem.product==self
+        ).options(
+            joinedload(ProductItem.stock)
+        ).filter(ProductItem.performance_id==performance_id).all()
         return sum([pi.quantity for pi in perform_items if pi.stock.stock_type == stock_type])
 
 
@@ -3137,7 +3141,8 @@ class SalesSegment(Base, BaseModel, LogicallyDeleted, WithTimestamp):
     performance_id = Column(Identifier, ForeignKey('Performance.id'))
     performance = relationship("Performance", backref="sales_segments")
     sales_segment_group_id = Column(Identifier, ForeignKey("SalesSegmentGroup.id"))
-    sales_segment_group = relationship("SalesSegmentGroup", backref="sales_segments")
+    sales_segment_group = relationship("SalesSegmentGroup", backref="sales_segments",
+                                       lazy='joined')
     margin_ratio = Column(Numeric(precision=16, scale=2), nullable=False, default=0, server_default='0')
     refund_ratio = Column(Numeric(precision=16, scale=2), nullable=False, default=0, server_default='0')
     printing_fee = Column(Numeric(precision=16, scale=2), nullable=False, default=0, server_default='0')

@@ -10,6 +10,7 @@ import logging
 from datetime import datetime, date
 import itertools
 from sqlalchemy import sql
+from sqlalchemy.orm import joinedload
 from pyramid.security import Everyone, Authenticated
 from pyramid.security import Allow
 from pyramid.decorator import reify
@@ -30,7 +31,6 @@ from ..core import models as c_models
 from ..core import api as core_api
 from ..users import models as u_models
 from . import models as m
-from . import api
 from zope.deprecation import deprecate
 
 logger = logging.getLogger(__name__)
@@ -76,22 +76,16 @@ class TicketingCartResource(object):
     #     return [m.membership for m in membergroups]
     @property
     def memberships(self):
-        try:
-            organization = self.request.organization
-            memberships = u_models.Membership.query.filter_by(organization_id=organization.id).all()
-            logger.debug('organization %s' % organization.code)
-            logger.debug('memberships %s' % memberships)
-        except:
-            import sys
-            logger.error('exception ignored', exc_info=sys.exc_info())
-            memberships = []
-        return memberships
+        organization = core_api.get_organization(self.request)
+        logger.debug('organization %s' % organization.code)
+        logger.debug('memberships %s' % organization.memberships)
+        return organization.memberships
 
     @property
     def event(self):
         if self._event is None:
             # TODO: ドメインで許可されるeventのみを使う
-            organization = self.request.organization
+            organization = core_api.get_organization(self.request)
             try:
                 self._event = c_models.Event.filter(c_models.Event.id==self.event_id).filter(c_models.Event.organization==organization).one()
             except NoResultFound:
@@ -109,6 +103,10 @@ class TicketingCartResource(object):
             return []
         return sales_segment.membergroups
 
+    ## なぜ２つ?
+    def available_payment_delivery_method_pairs(self, sales_segment):
+        return sales_segment.available_payment_delivery_method_pairs(getattr(self, 'now', datetime.now()))
+    ## 
     def get_payment_delivery_method_pair(self, start_on=None):
         segment = self.sales_segment
         q = c_models.PaymentDeliveryMethodPair.query.filter(
@@ -143,7 +141,15 @@ class TicketingCartResource(object):
             raise HTTPNotFound()
         return self.event.query_sales_segments(
             user=self.authenticated_user(),
-            type='all').all()
+            type='all'
+        ).options(
+            joinedload(c_models.SalesSegment.payment_delivery_method_pairs),
+            joinedload(c_models.SalesSegment.performance),
+            joinedload(c_models.SalesSegment.performance,
+                       c_models.Performance.venue),
+            joinedload(c_models.SalesSegment.performance,
+                       c_models.Performance.event),
+        ).all()
 
     @reify
     def available_sales_segments(self):
@@ -223,7 +229,7 @@ class TicketingCartResource(object):
 
     @reify
     def host_base_url(self):
-        return api.get_host_base_url(self.request)
+        return core_api.get_host_base_url(self.request)
 
 @implementer(IOrderDelivery)
 class OrderDelivery(object):

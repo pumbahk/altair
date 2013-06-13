@@ -9,8 +9,7 @@ from pyramid.url import route_path
 
 from ticketing.fanstatic import with_bootstrap
 from ticketing.interfaces import IAPIContext
-
-from altair.mobile.api import is_mobile
+from altair.mobile.interfaces import IMobileRequest
 
 class Predicate(object):
     def __invert__(self):
@@ -21,6 +20,12 @@ class Predicate(object):
 
     def __add__(self, that):
         return lambda *args, **kwargs: self(*args, **kwargs) or that(*args, **kwargs)
+
+class MobileRequestPredicate(Predicate):
+    def __call__(self, request):
+        return IMobileRequest.providedBy(request) 
+
+mobile_request = MobileRequestPredicate()
 
 class BaseView(object):
 

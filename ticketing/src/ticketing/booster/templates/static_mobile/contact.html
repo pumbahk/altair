@@ -1,0 +1,10 @@
+<%inherit file="/layout_mobile.html"/>
+<%namespace file="${context['layout'].relative_path('templates/tags_mobile.html')}" name="mobile" />
+<a href="${request.route_path("index")}">戻る</a>
+<%mobile:header>お問い合わせ先</%mobile:header>
+<div>
+${layout.contact_name}<br />
+TEL: ${layout.tel}<br/ >
+メール: <a href="mailto:${layout.mailaddress}">${layout.mailaddress}</a><br />
+</div>
+<a href="${request.route_path("index")}">戻る</a>

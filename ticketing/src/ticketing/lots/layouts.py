@@ -1,5 +1,5 @@
 from pyramid_layout.layout import layout_config
-from ticketing.cart.selectable_renderer import selectable_renderer
+from . import selectable_renderer
 
 @layout_config(template=selectable_renderer('base.html'))
 class BaseLayout(object):

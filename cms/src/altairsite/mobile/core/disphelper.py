@@ -1,4 +1,5 @@
 from markupsafe import Markup
+from datetime import datetime
 
 class DispHelper(object):
 
@@ -9,3 +10,6 @@ class DispHelper(object):
     @classmethod
     def Markup(cls, value):
         return Markup(value)
+
+    def now(self):
+        return datetime.now()

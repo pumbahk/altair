@@ -40,12 +40,12 @@ import ticketing.cart.api as cart_api
 from ticketing.utils import sensible_alnum_encode
 from altair.rakuten_auth.api import authenticated_user
 from ticketing.core import api as core_api
-from ticketing.models import DBSession
 from ticketing.core.models import (
     Event,
     SalesSegment,
-    Performance,
     ShippingAddress,
+    DBSession,
+    Performance,
 )
 
 from ticketing.users.models import (

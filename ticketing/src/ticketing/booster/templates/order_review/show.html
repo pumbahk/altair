@@ -1,0 +1,205 @@
+<%inherit file="../layout.html" />
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+	<meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
+	<title>${layout.title}</title>
+    <link rel="stylesheet" type="text/css" href="${layout.static_url('static/style.css')}" media="all" />
+    <script language="JavaScript" src="${layout.static_url('static/js/jquery.js')}"></script>
+  <link rel="shortcut icon" href="${layout.static_url("static/favicon.ico")}" />
+</head>
+<body>
+
+  <h1 class="title">${layout.title}</h1>
+  <div align="center">
+      <img src="${layout.static_url('static/images/head_title.png')}" alt="${layout.team_name}" width="780" height="135" />
+	<table class="layout" style="width:760px" class="wrapper">
+		<tr>
+			<td>
+
+			<div class="purchased">
+
+				<h2>受付履歴確認 検索結果</h2>
+
+					<div class="kadomaru">
+						<table class="purchasedContents">
+							<thead>
+								<tr>
+									<th><span>受付番号</span></th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr>
+									<td class="textC font20">${order.order_no}</td>
+								</tr>
+							</tbody>
+						</table>
+						
+					</div>
+					<!-- kadomaruおわり -->
+
+                <div class="kadomaru">
+                <h3>購入情報</h3>
+                %if order.status == 'canceled' or order.payment_status == 'refunded':
+                  <h3><span class="red">この購入/予約はキャンセルされました</span></h3>
+                  <p>
+                  キャンセル処理は、下記のような理由によりおこなっております。<br />
+                  ・お客様からキャンセルのご連絡があったため<br />
+                  ・期限内のご入金がなくキャンセル扱いとしたため<br />
+                  ・二重注文により、ひとつをキャンセル処理したため<br />
+                  </p>
+                </div>
+                %else:
+                <table class="purchasedContents">
+                    <tbody>
+                        <tr>
+                            <thead>
+                            <th colspan="2"><span>${layout.product_name}</span></th>
+                            </thead>
+                        </tr>
+                        <tr>
+                            <td>新規／継続</td>
+                            <td class="textR">${u'継続' if pm.get('cont') == 'yes' else u'新規'}</td>
+                        </tr>
+                        % if pm.get('old_id_number') and pm.get('cont') == 'yes':
+                   　　  <tr>
+                            <td>2011-12会員番号</td>
+                        　　 <td class="textR">${pm.get('old_id_number')}</td>
+                            </tr>
+                        % endif
+                            <tr>
+                                <td>会員種別</td>
+                                <td class="textR">${order.items[0].product.name}</td>
+                            </tr>
+                           <tr>
+                                <td>Tシャツサイズ</td>
+                                <td class="textR">${pm.get("t_shirts_size") or u"-"}</td>
+                            </tr>
+                            <tr>
+                                <td>氏名</td>
+                                <td class="textR">${shipping.last_name} ${shipping.first_name}</td>
+                            </tr>
+                            <tr>
+                                <td>氏名（フリガナ）</td>
+                                <td class="textR">${shipping.last_name_kana} ${shipping.first_name_kana}</td>
+                            </tr>
+                            <tr>
+                                <td>誕生日</td>
+                                <td class="textR">${pm['year']}年${pm['month']}月${pm['day']}日</td>
+                            </tr>
+                            <tr>
+                                <td>性別</td>
+                                <td class="textR">
+                                  ${u'男性' if pm['sex']=='male' else u'女性' }
+                                </td>
+                            </tr>
+                               <td>郵便番号</td>
+                               <td class="textR">${shipping.zip}</td>
+                            <tr>
+                                <td>住所</td>
+                                <td class="textR">${shipping.prefecture}${shipping.city}${shipping.address_1}${shipping.address_2}</td>
+                            </tr>
+                            <tr>
+                                <td>電話番号</td>
+                                <td class="textR">${shipping.tel_1 or shipping.tel_2}</td>
+                            </tr>
+                            <tr>
+                                <td>メールアドレス</td>
+                                <td class="textR">${shipping.email_1}</td>
+                            </tr>
+                            ${panel("review.additional_messags", order, shipping, pm)}
+                        </tbody>
+                    </table>
+                    </div>
+					<div class="kadomaru">
+						<h3>お支払い</h3>
+
+                    %if order.payment_delivery_pair.payment_method.payment_plugin.id == 3:
+						<table class="purchasedContents">
+							<thead>
+								<tr>
+									<th colspan="2"><span>セブン-イレブン</span></th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr>
+									<td>払込票番号</td>
+									<td class="textR">${sej_order.billing_number}</td>
+								</tr>
+								<tr>
+									<td>予約有効期限</td>
+									<td class="textR">${h.japanese_date(sej_order.payment_due_at)}${h.japanese_time(sej_order.payment_due_at)}</td>
+								</tr>
+								<tr>
+									<td colspan="2">
+										注意事項
+										<ul>
+											<li>セブン-イレブン決済の際には払込票番号が必要です。下記、「払込票印刷」ボタンをクリックし、払込票を印刷してお持ちになるか、上記の払込票番号をお控えいただき、レジでお伝え下さい。</li>
+											<li>予約有効期限までに、払込票または払込票番号をセブン-イレブン店頭レジにてお申し出の上、代金をお支払いください。</li>
+											<li>支払期日までに入金されない場合は、会員登録/入会申込が無効となりますのでご注意ください。</li>
+										</ul>
+										
+										
+									</td>
+								</tr>
+							</tbody>
+							<tfoot>
+								<tr>
+									<td colspan="2" class="textC">
+                                        <form action="${sej_order.exchange_sheet_url}" method="post" target="_blank">
+                                        <input type="hidden" name="iraihyo_id_00" value="${sej_order.exchange_sheet_number}" />
+										<input type="submit" class="paymentCoupon" value="払込票印刷">
+                                        </form>
+									</td>
+								</tr>
+							</tfoot>
+						</table>
+				    % else:
+                        <table class="purchasedContents">
+                        <thead>
+                            <tr>
+                                <th colspan="2"><span>クレジットカード</span></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                          </tbody>
+                            <tfoot>
+                            </tfoot>
+                        </table>
+                    % endif
+					</div>
+					<!-- kadomaruおわり -->
+        %endif
+
+					<div class="kadomaru">
+						<h3>注意事項</h3>
+            ${panel("complete_notice",is_show_order_review=False)}
+					</div>
+					<!-- kadomaruおわり -->
+
+
+					<div class="kadomaru">
+						<h3>お問い合わせ先</h3>
+						<ul class="markNone font14">
+							<li>${layout.contact_name}</li>
+							<li>${layout.tel}</li>
+						</ul>
+						
+					</div>
+					<!-- kadomaruおわり -->
+
+				
+				
+			</div>
+			<!-- purchased終わり -->
+
+<br />			
+			</td>
+		</tr>
+    </table>
+
+  </div>
+
+	<%include file="../commons/footer.inc" />
+</body>
+</html>

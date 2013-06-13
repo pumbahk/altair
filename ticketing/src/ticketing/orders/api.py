@@ -7,7 +7,7 @@ from sqlalchemy.orm import aliased
 from ticketing.models import asc_or_desc
 from ticketing.helpers import todatetime
 from ticketing.core.models import (
-    Order,
+    #Order,
     OrderedProduct,
     OrderedProductItem,
     Product,
@@ -29,6 +29,35 @@ from ticketing.users.models import (
     User,
     UserCredential,
     )
+from ticketing.sej.models import (
+    SejOrder,
+    )
+from .models import (
+    OrderSummary,
+)
+
+class QueryBuilderError(Exception):
+    pass
+
+def must_be_combined_with(*params):
+    def _(fn):
+        name = fn.func_name[1:]
+        def wrapper(self, *args, **kwargs):
+            if not any(param in self.formdata and self.formdata[param] for param in params):
+                if self.key_name_resolver is None:
+                    raise QueryBuilderError
+                else:
+                    raise QueryBuilderError(u'検索に時間がかかるため、%sは必ず%sと一緒に使ってください' % (self.key_name_resolver(name), u', '.join(self.key_name_resolver(param) for param in params)))
+            return fn(self, *args, **kwargs)
+        wrapper.func_name = fn.func_name
+        return wrapper
+    return _
+
+def post(fn):
+    def wrapper(self, query, value):
+        self.post_queue.append((fn, value))
+        return query
+    return fn
 
 class QueryBuilderError(Exception):
     pass
@@ -93,7 +122,7 @@ class BaseSearchQueryBuilderMixin(object):
         return query.filter(self.targets['subject'].performance_id == value)
 
     def _event_id(self, query, value):
-        return query.join(self.targets['subject'].performance).filter(Performance.event_id == value)
+        return query.filter(self.targets['subject'].performance_id==Performance.id).filter(Performance.event_id == value)
 
     def _payment_method(self, query, value):
         query = query.join(self.targets['subject'].payment_delivery_pair)
@@ -187,7 +216,7 @@ class CartSearchQueryBuilder(SearchQueryBuilderBase, BaseSearchQueryBuilderMixin
 
 class OrderSearchQueryBuilder(SearchQueryBuilderBase, BaseSearchQueryBuilderMixin):
     targets = {
-        'subject': Order,
+        'subject': OrderSummary,
         'OrderedProduct': OrderedProduct,
         'OrderedProductItem': OrderedProductItem,
         'Product': Product,
@@ -195,6 +224,7 @@ class OrderSearchQueryBuilder(SearchQueryBuilderBase, BaseSearchQueryBuilderMixi
         'SalesSegment': SalesSegment,
         'SalesSegmentGroup': SalesSegmentGroup,
         'Seat': Seat,
+        'SejOrder': SejOrder,
         }
     
     def _ordered_from(self, query, value):
@@ -294,4 +324,16 @@ class OrderSearchQueryBuilder(SearchQueryBuilderBase, BaseSearchQueryBuilderMixi
                         .having(safunc.sum(aliased_targets['OrderedProductItem'].quantity) >= value) \
                     )
                 )
+        return query
+
+    def _billing_or_exchange_number(self, query, value):
+        query = query \
+            .join(
+                self.targets['SejOrder'],
+                self.targets['subject'].order_no == self.targets['SejOrder'].order_id
+                ) \
+            .filter(or_(
+                self.targets['SejOrder'].billing_number == value,
+                self.targets['SejOrder'].exchange_number == value
+                ))
         return query

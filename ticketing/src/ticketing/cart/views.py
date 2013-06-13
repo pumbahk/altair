@@ -18,18 +18,19 @@ from pyramid.threadlocal import get_current_request
 from pyramid import security
 from webob.multidict import MultiDict
 
-from altair.mobile.api import is_mobile
 from altair.pyramid_boto.s3.assets import IS3KeyProvider
 
 from ticketing.models import DBSession
 from ticketing.core import models as c_models
 from ticketing.core import api as c_api
 from ticketing.mailmags.api import get_magazines_to_subscribe, multi_subscribe
+from ticketing.views import mobile_request
 from ticketing.fanstatic import with_jquery, with_jquery_tools
 from ticketing.payments.payment import Payment
 from ticketing.payments.exceptions import PaymentDeliveryMethodPairNotFound
 from ticketing.users.api import get_or_create_user
 from ticketing.venues.api import get_venue_site_adapter
+from altair.mobile.interfaces import IMobileRequest
 
 from . import api
 from . import helpers as h
@@ -79,7 +80,7 @@ def back(pc=back_to_top, mobile=None):
         def retval(*args, **kwargs):
             request = get_current_request()
             if request.params.has_key('back'):
-                if is_mobile(request):
+                if IMobileRequest.providedBy(request):
                     return mobile(request)
                 else:
                     return pc(request)
@@ -91,7 +92,7 @@ def gzip_preferred(request, response):
     if 'gzip' in request.accept_encoding:
         response.encode_content('gzip')
 
-@view_defaults(decorator=with_jquery.not_when(is_mobile))
+@view_defaults(decorator=with_jquery.not_when(mobile_request))
 class IndexView(IndexViewMixin):
     """ 座席選択画面 """
     def __init__(self, request):
@@ -123,7 +124,7 @@ class IndexView(IndexViewMixin):
         return retval
 
     def is_organization_rs(context, request):
-        organization = request.organization
+        organization = c_api.get_organization(request)
         return organization.id == 15
 
     @view_config(decorator=with_jquery_tools, route_name='cart.index',request_type="altair.mobile.interfaces.ISmartphoneRequest", 
@@ -133,7 +134,7 @@ class IndexView(IndexViewMixin):
     def __call__(self):
         self.check_redirect(mobile=False)
         sales_segments = self.context.available_sales_segments
-        selector_name = self.request.organization.setting.performance_selector
+        selector_name = c_api.get_organization(self.request).setting.performance_selector
 
         performance_selector = api.get_performance_selector(self.request, selector_name)
         sales_segments_selection = performance_selector()
@@ -264,10 +265,13 @@ class IndexView(IndexViewMixin):
 
         self.request.add_response_callback(gzip_preferred)
 
+        from altair.sqlahelper import get_db_session
+        slave_session = get_db_session(self.request, name="slave")
+
         return dict(
             areas=dict(
                 (area.id, { 'id': area.id, 'name': area.name }) \
-                for area in DBSession.query(c_models.VenueArea) \
+                for area in slave_session.query(c_models.VenueArea) \
                             .join(c_models.VenueArea_group_l0_id) \
                             .filter(c_models.VenueArea_group_l0_id.venue_id==venue.id)
                 ),
@@ -275,7 +279,7 @@ class IndexView(IndexViewMixin):
                 available_adjacencies=[
                     adjacency_set.seat_count
                     for adjacency_set in \
-                        DBSession.query(c_models.SeatAdjacencySet) \
+                        slave_session.query(c_models.SeatAdjacencySet) \
                         .filter_by(site_id=venue.site_id)
                     ]
                 ),
@@ -429,7 +433,11 @@ class ReserveView(object):
         if len(controls) == 0:
             return []
 
-        products = dict([(p.id, p) for p in DBSession.query(c_models.Product).filter(c_models.Product.id.in_([c[0] for c in controls]))])
+        products = dict([(p.id, p) for p in DBSession.query(c_models.Product).options(
+            joinedload(c_models.Product.seat_stock_type),
+            joinedload(c_models.Product.items),
+        ).filter(
+            c_models.Product.id.in_([c[0] for c in controls]))])
         logger.debug('order %s' % products)
 
         return [(products.get(int(c[0])), c[1]) for c in controls]
@@ -442,7 +450,9 @@ class ReserveView(object):
         if not order_items:
             return dict(result='NG', reason="no products")
 
-        performance = c_models.Performance.query.filter(c_models.Performance.id==self.request.params['performance_id']).one()
+        performance = c_models.Performance.query.options(
+            joinedload(c_models.Performance.event)
+        ).filter(c_models.Performance.id==self.request.params['performance_id']).one()
         if not order_items:
             return dict(result='NG', reason="no performance")
 
@@ -458,6 +468,7 @@ class ReserveView(object):
         logger.debug('sum_quantity=%s' % sum_quantity)
 
         self.context.event_id = performance.event_id
+        self.context._event = performance.event
         if self.context.sales_segment.upper_limit < sum_quantity:
             logger.debug('upper_limit over')
             return dict(result='NG', reason="upper_limit")
@@ -508,7 +519,7 @@ class ReserveView(object):
 
 
 
-@view_defaults(decorator=with_jquery.not_when(is_mobile))
+@view_defaults(decorator=with_jquery.not_when(mobile_request))
 class ReleaseCartView(object):
     def __init__(self, request):
         self.request = request
@@ -525,7 +536,7 @@ class ReleaseCartView(object):
         return dict()
 
 
-@view_defaults(decorator=with_jquery.not_when(is_mobile))
+@view_defaults(decorator=with_jquery.not_when(mobile_request))
 class PaymentView(object):
     """ 支払い方法、引き取り方法選択 """
     def __init__(self, request):
@@ -551,7 +562,7 @@ class PaymentView(object):
 
         start_on = cart.performance.start_on
         sales_segment = self.sales_segment
-        payment_delivery_methods = sales_segment.available_payment_delivery_method_pairs(getattr(self.context, 'now', datetime.now()))
+        payment_delivery_methods = self.context.available_payment_delivery_method_pairs(sales_segment)
         user = get_or_create_user(self.context.authenticated_user())
         user_profile = None
         if user is not None:
@@ -680,10 +691,11 @@ class PaymentView(object):
             tel_1=data['tel_1'],
             tel_2=data['tel_2'],
             fax=data['fax'],
+            sex=data.get("sex"), 
             user=user
         )
 
-@view_defaults(decorator=with_jquery.not_when(is_mobile))
+@view_defaults(decorator=with_jquery.not_when(mobile_request))
 class ConfirmView(object):
     """ 決済確認画面 """
     def __init__(self, request):
@@ -712,7 +724,7 @@ class ConfirmView(object):
         )
 
 
-@view_defaults(decorator=with_jquery.not_when(is_mobile))
+@view_defaults(decorator=with_jquery.not_when(mobile_request))
 class CompleteView(object):
     """ 決済完了画面"""
     def __init__(self, request):
@@ -763,7 +775,7 @@ class CompleteView(object):
         return dict(order=order)
 
 
-@view_defaults(decorator=with_jquery.not_when(is_mobile))
+@view_defaults(decorator=with_jquery.not_when(mobile_request))
 class InvalidMemberGroupView(object):
     def __init__(self, request):
         self.request = request
@@ -779,7 +791,7 @@ class InvalidMemberGroupView(object):
 
 
 
-@view_defaults(decorator=with_jquery.not_when(is_mobile))
+@view_defaults(decorator=with_jquery.not_when(mobile_request))
 class OutTermSalesView(object):
     def __init__(self, context, request):
         self.request = request
@@ -808,10 +820,10 @@ class OutTermSalesView(object):
             which = 'next'
         return dict(which=which, **datum)
 
-@view_config(decorator=with_jquery.not_when(is_mobile), route_name='cart.logout')
+@view_config(decorator=with_jquery.not_when(mobile_request), route_name='cart.logout')
 def logout(request):
     headers = security.forget(request)
-    location = api.get_host_base_url(request)
+    location = c_api.get_host_base_url(request)
     res = HTTPFound(location=location)
     res.headerlist.extend(headers)
     return res

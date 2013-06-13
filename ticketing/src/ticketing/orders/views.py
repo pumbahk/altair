@@ -21,6 +21,8 @@ from sqlalchemy.sql import exists
 from sqlalchemy.sql.expression import or_
 from sqlalchemy.orm import joinedload, undefer
 
+from altair.sqlahelper import get_db_session
+
 from ticketing.models import DBSession, merge_session_with_post, record_to_multidict, asc_or_desc
 from ticketing.core.models import (Order, Performance, PaymentDeliveryMethodPair, ShippingAddress,
                                    Product, ProductItem, OrderedProduct, OrderedProductItem, 
@@ -46,6 +48,7 @@ from ticketing.cart.reserving import InvalidSeatSelectionException, NotEnoughAdj
 
 from . import utils
 from .api import OrderSearchQueryBuilder, CartSearchQueryBuilder, QueryBuilderError
+from .models import OrderSummary
 
 logger = logging.getLogger(__name__)
 
@@ -245,12 +248,14 @@ class Orders(BaseView):
 
     @view_config(route_name='orders.index', renderer='ticketing:templates/orders/index.html', permission='sales_counter')
     def index(self):
+        slave_session = get_db_session(self.request, name="slave")
+
         organization_id = int(self.context.user.organization_id)
-        query = Order.filter(Order.organization_id==organization_id)
+        query = slave_session.query(OrderSummary).filter(OrderSummary.organization_id==organization_id)
 
         if self.request.params.get('action') == 'checked':
             checked_orders = [o.lstrip('o:') for o in self.request.session.get('orders', []) if o.startswith('o:')]
-            query = query.filter(Order.id.in_(checked_orders))
+            query = query.filter(OrderSummary.id.in_(checked_orders))
 
         form_search = OrderSearchForm(self.request.params, organization_id=organization_id)
         if form_search.validate():
@@ -260,6 +265,7 @@ class Orders(BaseView):
                 self.request.session.flash(e.message)
 
         page = int(self.request.params.get('page', 0))
+
         orders = paginate.Page(
             query,
             page=page,
@@ -277,8 +283,10 @@ class Orders(BaseView):
 
     @view_config(route_name='orders.download')
     def download(self):
+        slave_session = get_db_session(self.request, name="slave")
+
         organization_id = self.context.user.organization_id
-        query = Order.filter(Order.organization_id==organization_id)
+        query = slave_session.query(OrderSummary).filter(OrderSummary.organization_id==organization_id)
 
         if self.request.params.get('action') == 'checked':
             checked_orders = [o.lstrip('o:') for o in self.request.session.get('orders', []) if o.startswith('o:')]
@@ -290,7 +298,7 @@ class Orders(BaseView):
             form_search = OrderSearchForm(self.request.params, organization_id=organization_id)
             form_search.sort.data = None
             try:
-                query = OrderSearchQueryBuilder(form_search.data, lambda key: form_search[key].label.text, sort=False)(Order.filter(Order.organization_id==organization_id))
+                query = OrderSearchQueryBuilder(form_search.data, lambda key: form_search[key].label.text, sort=False)(slave_session.query(OrderSummary).filter(OrderSummary.organization_id==organization_id))
             except QueryBuilderError as e:
                 self.request.session.flash(e.message)
                 raise HTTPFound(location=route_path('orders.index', self.request))
@@ -299,15 +307,14 @@ class Orders(BaseView):
                 raise HTTPFound(location=route_path('orders.index', self.request))
 
         query = query.options(
-            joinedload('shipping_address'),
             joinedload('ordered_products'),
             joinedload('ordered_products.product'),
+            joinedload('ordered_products.product.sales_segment'),
             joinedload('ordered_products.ordered_product_items'),
             joinedload('ordered_products.ordered_product_items.product_item'),
             joinedload('ordered_products.ordered_product_items.print_histories'),
             joinedload('ordered_products.ordered_product_items.seats'),
             joinedload('ordered_products.ordered_product_items._attributes'),
-            undefer('created_at')
         )
         orders = query.all()
 

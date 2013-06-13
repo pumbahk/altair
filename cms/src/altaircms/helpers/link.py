@@ -3,7 +3,6 @@ import logging
 logger = logging.getLogger(__file__)
 from markupsafe import Markup
 from altaircms.interfaces import ICMSRequest
-from altair.mobile.api import is_mobile
 
 def get_purchase_page_from_event(request, event):
     if event.backend_id is None:
@@ -11,7 +10,7 @@ def get_purchase_page_from_event(request, event):
     return u"%s/cart/events/%s" % (request.cart_domain, event.backend_id)
 
 def get_purchase_page_from_performance(request, performance):
-    if is_mobile(request):
+    if hasattr(request, "is_mobile") and request.is_mobile:
         if performance.mobile_purchase_link:
             return performance.mobile_purchase_link
     else:

@@ -110,13 +110,23 @@ ${helper.nl2br(event.inquiry_for)|n}
             % if perf.venue:
                 会場:${perf.venue}<br/>
             % endif
-            <div align="center">
-            <%m:band bgcolor="#ffcccc">
-            % if event.deal_close >= datetime.now():
-              <a href="${purchase_links[perf.id]}"><font color="#cc0000">この公演のチケットを購入</font></a>
+
+            % if not start_on_candidates:
+                準備中
+            %elif min(start_on_candidates) >= helper.now():
+                販売前
+            %elif max(end_on_candidates) >= helper.now():
+                <div align="center">
+                <%m:band bgcolor="#ffcccc">
+                % if event.deal_close >= datetime.now():
+                  <a href="${purchase_links[perf.id]}"><font color="#cc0000">この公演のチケットを購入</font></a>
+                % endif
+                </%m:band>
+                </div>
+            % else:
+                販売期間終了
             % endif
-            </%m:band>
-            </div>
+
             <% first = False %>
         % endif
     % endfor

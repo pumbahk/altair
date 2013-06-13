@@ -121,7 +121,14 @@ class Cart(Base):
                 raise Exception('performance or performance_id must be specified')
             performance_id = performance.id
         else:
-            performance = c_models.Performance.query.filter_by(id=performance_id).one()
+            performance = c_models.Performance.query.options(
+                orm.joinedload(c_models.Performance.event),
+                orm.joinedload(c_models.Performance.event,
+                               c_models.Event.organization),
+            ).filter_by(
+                id=performance_id
+            ).one()
+
         organization = performance.event.organization
         logger.debug("organization.id = %d" % organization.id)
         base_id = c_api.get_next_order_no()
