@@ -9,7 +9,7 @@ from .. import fields as my_fields
 from ticketing.formhelpers import text_type_but_none_if_not_given, Zenkaku, Katakana, NFKC, lstrip, strip, strip_hyphen, strip_spaces, SejCompliantEmail, CP932
 from datetime import date
 
-
+from ..schemas import length_limit_for_sej, length_limit_long
 from ..widgets import ymd_widget, radio_list_widget, get_year_choices, get_year_months, get_year_days
 
 class OrderFormSchema(Form):
@@ -30,10 +30,10 @@ class OrderFormSchema(Form):
     t_shirts_size_choices = [(x, x) for x in [u"S", u"M", u"L", u"O", u"XO", u"2XO"]]
     t_shirts_size = fields.SelectField(u"ブースターシャツサイズ", choices=t_shirts_size_choices, validators=[v.Optional()], coerce=text_type_but_none_if_not_given)
 
-    first_name = fields.TextField(u"氏名", filters=[strip_spaces], validators=[v.Required(), Zenkaku])
-    last_name = fields.TextField(u"氏名", filters=[strip_spaces], validators=[v.Required(),Zenkaku])
-    first_name_kana = fields.TextField(u"氏名(カナ)", filters=[strip_spaces, NFKC], validators=[v.Required(),Katakana])
-    last_name_kana = fields.TextField(u"氏名(カナ)", filters=[strip_spaces, NFKC], validators=[v.Required(),Katakana])
+    first_name = fields.TextField(u"氏名", filters=[strip_spaces], validators=[v.Required(), Zenkaku, length_limit_for_sej])
+    last_name = fields.TextField(u"氏名", filters=[strip_spaces], validators=[v.Required(),Zenkaku, length_limit_for_sej])
+    first_name_kana = fields.TextField(u"氏名(カナ)", filters=[strip_spaces, NFKC], validators=[v.Required(),Katakana, length_limit_for_sej])
+    last_name_kana = fields.TextField(u"氏名(カナ)", filters=[strip_spaces, NFKC], validators=[v.Required(),Katakana, length_limit_for_sej])
     year = my_fields.StringFieldWithChoice(u"誕生日", filters=[strip_spaces], choices=get_year_choices(), widget=ymd_widget, default=1980)
     month = my_fields.StringFieldWithChoice(u"誕生日", filters=[strip_spaces, lstrip('0')], validators=[v.Required()], choices=get_year_months(), widget=ymd_widget)
     day = my_fields.StringFieldWithChoice(u"誕生日", filters=[strip_spaces, lstrip('0')], validators=[v.Required()], choices=get_year_days(), widget=ymd_widget)
@@ -41,9 +41,9 @@ class OrderFormSchema(Form):
     zipcode1 = fields.TextField(u"郵便番号", validators=[v.Required(), v.Regexp(r'\d{3}')])
     zipcode2 = fields.TextField(u"郵便番号", validators=[v.Required(), v.Regexp(r'\d{4}')])
     prefecture = fields.SelectField(u"都道府県", validators=[v.Required(), CP932], choices=[(p.name, p.name)for p in Prefecture.all()], default=u'奈良県')
-    city = fields.TextField(u"市区町村", filters=[strip_spaces], validators=[v.Required(), CP932])
-    address1 = fields.TextField(u"住所", filters=[strip_spaces], validators=[v.Required(), CP932])
-    address2 = fields.TextField(u"住所", filters=[strip_spaces], validators=[CP932])
+    city = fields.TextField(u"市区町村", filters=[strip_spaces], validators=[v.Required(), CP932, length_limit_long])
+    address1 = fields.TextField(u"住所", filters=[strip_spaces], validators=[v.Required(), CP932, length_limit_long])
+    address2 = fields.TextField(u"住所", filters=[strip_spaces], validators=[CP932, length_limit_long])
     tel_1 = fields.TextField(u"電話番号(携帯)", filters=[strip_spaces], validators=[v.Length(max=11), v.Regexp(r'^\d*$', message=u'-を抜いた数字のみを入力してください')])
     tel_2 = fields.TextField(u"電話番号(自宅)", filters=[strip_spaces], validators=[v.Length(max=11), v.Regexp(r'^\d*$', message=u'-を抜いた数字のみを入力してください')])
     fax = fields.TextField(u"FAX番号", filters=[strip_spaces], validators=[v.Length(max=11), v.Regexp(r'^\d*$', message=u'-を抜いた数字のみを入力してください')])

@@ -1,6 +1,7 @@
 # -*- coding:utf-8 -*-
 from wtforms import Form as OriginalForm
 from ticketing.formhelpers import Translations
+from wtforms import validators as v
 
 class Form(OriginalForm):
     def _get_translations(self):
@@ -11,4 +12,5 @@ class Form(OriginalForm):
             'Invalid input.' : u'入力が正しくありません',
         })
 
-
+length_limit_for_sej = v.Length(max=10, message=u'10文字以内で入力してください')
+length_limit_long = v.Length(max=255, message=u'255文字以内で入力してください')
