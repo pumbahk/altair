@@ -1,7 +1,7 @@
 <%page args="form"/>
 <%namespace file="${context['layout'].relative_path('templates/tags_mobile.html')}" name="mobile" />
 <form method="post" action="${request.url}">
-<%mobile:form_header>新規/継続</%mobile:form_header>
+<%mobile:form_header required="true">新規/継続</%mobile:form_header>
 <div>
 % for c in form.cont:
   ${c()}${c.label}<br />
@@ -14,7 +14,7 @@ ${h.error('cont')}
 ${form.old_id_number(istyle="4")}<br />
 ${h.error(['cont','old_id_number'])}
 </div>
-<%mobile:form_header>会員種別</%mobile:form_header>
+<%mobile:form_header required="true">会員種別</%mobile:form_header>
 <div>
   <select id="member_type" name="member_type" class="">
     <option value="">選択してください</option>

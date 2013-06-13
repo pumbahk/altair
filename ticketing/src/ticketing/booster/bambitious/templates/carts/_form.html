@@ -6,7 +6,7 @@
   </colgroup>
   <tbody>
     <tr>
-      <th>新規／継続</th>
+      <th>新規／継続 <span class="red">*</span></th>
       <td>
         % for c in form.cont:
         ${c.label}${c(disabled="disabled") if c.data in form.disabled_conts else c()}
@@ -15,7 +15,7 @@
       </td>
     </tr>
     <tr>
-      <th>会員種別</th>
+      <th>会員種別 <span class="red">*</span></th>
       <td>
         <select id="member_type" name="member_type" class="">
           <option value="">選択してください</option>
@@ -100,7 +100,7 @@
     </tr>
     <tr>
       <th rowspan="2">
-        電話番号<br />
+        電話番号 <span class="red">*</span><br />
         <span class="red">（携帯・自宅のどちらか必須）</span>
       </th>
       <td>
