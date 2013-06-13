@@ -26,6 +26,10 @@ class BoosterCartResource(TicketingCartResource):
     def product_form(params):
         raise Exception
 
+    @reify
+    def products_dict(self):
+        return {str(p.id): p for p in  self.product_query}
+
     def store_user_profile(self, data):
         return store_user_profile(self.request, data)
 

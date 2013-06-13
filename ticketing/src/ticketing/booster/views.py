@@ -43,7 +43,7 @@ class IndexView(BaseView):
         user_profile = self.context.load_user_profile()
         params = MultiDict(user_profile) if user_profile else MultiDict()
         form = self.context.product_form(params)
-        products =  {str(p.id): p for p in  self.context.product_query}
+        products =  self.context.products_dict
         return dict(form=form, products=products)
 
     @property
@@ -55,7 +55,7 @@ class IndexView(BaseView):
 
     def post(self):
         form = self.context.product_form(self.request.params)
-        products =  {str(p.id): p for p in  self.context.product_query}
+        products =  self.context.products_dict
         if not form.validate():
             self.request.errors = form.errors
             logger.debug("%s" % form.errors)

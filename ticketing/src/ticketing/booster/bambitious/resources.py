@@ -5,6 +5,7 @@ from ticketing.core.models import DeliveryMethod
 import logging
 logger = logging.getLogger(__name__)
 from .schemas import OrderFormSchema, OrderReviewSchema
+from ..api import filtering_data_by_products_and_member_type
 
 class BjBambitiousCartResource(BoosterCartResource):
     def product_form(self, params):
@@ -28,6 +29,10 @@ class BjBambitiousCartResource(BoosterCartResource):
         if dm_id:
             pm["product_delivery_method_name"] = DeliveryMethod.query.filter_by(id=dm_id).first().name
         return pm
+
+    def store_user_profile(self, data):
+        data = filtering_data_by_products_and_member_type(data, self.products_dict)
+        return super(type(self), self).store_user_profile(data)
 
     def orderreview_form(self, params):
         return OrderReviewSchema(params)
