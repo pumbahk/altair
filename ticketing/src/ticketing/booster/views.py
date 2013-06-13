@@ -91,7 +91,7 @@ class PaymentView(_PaymentView):
             country=u"日本国",
             tel_1=address_data['tel_1'],
             tel_2=address_data['tel_2'],
-            fax=None
+            fax=address_data.get("fax")
             )
 
     def get_client_name(self):
