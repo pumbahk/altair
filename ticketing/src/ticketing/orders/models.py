@@ -122,6 +122,48 @@ order_summary = sa.select([
     MemberGroup.membership_id==Membership.id,
 )]).alias()
 
+class SummarizedUser(object):
+    def __init__(self, user_profile, member, user_credential):
+        self.user_profile = user_profile
+        self.member = member
+        self.user_credential = [user_credential]
+        self.first_user_credential = user_credential
+
+
+class SummarizedUserCredential(object):
+    def __init__(self, auth_identifier, membership):
+        self.auth_identifier = auth_identifier
+        self.membership = membership
+
+class SummarizedMember(object):
+    def __init__(self, membergroup):
+        self.membergroup = membergroup
+
+class SummarizedMemberGroup(object):
+    def __init__(self, name, membership):
+        self.name = name
+        self.membership = membership
+
+class SummarizedMembership(object):
+    def __init__(self, name):
+        self.name = name
+
+class SummarizedUserProfile(object):
+    def __init__(self,
+                 last_name,
+                 first_name,
+                 last_name_kana,
+                 first_name_kana,
+                 nick_name,
+                 sex,):
+        self.last_name = last_name
+        self.first_name = first_name
+        self.last_name_kana = last_name_kana
+        self.first_name_kana = first_name_kana
+        self.nick_name = nick_name
+        self.sex = sex
+
+
 class SummarizedPaymentDeliveryMethodPair(object):
     def __init__(self, payment_method, delivery_method):
         self.payment_method = payment_method
@@ -223,7 +265,18 @@ class OrderSummary(Base):
 
     @property
     def user(self):
-        return None
+        membership = SummarizedMembership(self.membership_name)
+        return SummarizedUser(SummarizedUserProfile(self.user_profile_first_name,
+                                                    self.user_profile_last_name,
+                                                    self.user_profile_first_name_kana,
+                                                    self.user_profile_last_name_kana,
+                                                    self.user_profile_nick_name,
+                                                    self.user_profile_sex),
+                              SummarizedMember(
+                                  SummarizedMemberGroup(self.membergroup_name,
+                                                        membership)),
+                              SummarizedUserCredential(self.auth_identifier, 
+                                                       membership))
 
     @property
     def shipping_address(self):
