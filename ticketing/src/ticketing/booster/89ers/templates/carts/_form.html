@@ -33,7 +33,7 @@
     <tr >
       <th>ブースターシャツサイズ</th>
       <td>
-        ${form.t_shirts_size(id='t_shirts_size',disabled="disabled" )} <span><small>法人/プラチナ/ゴールド会員を選択の方はTシャツサイズをお選びください。</small></span>
+        ${form.t_shirts_size(id='t_shirts_size',disabled="disabled" )} <span><small>${layout.t_shirts_mesaage}</small></span>
         ${h.error('t_shirts_size')}
       </td>
     </tr>
