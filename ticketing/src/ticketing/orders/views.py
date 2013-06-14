@@ -251,16 +251,19 @@ class Orders(BaseView):
         #slave_session = get_db_session(self.request, name="slave")
 
         organization_id = int(self.context.user.organization_id)
-        query = DBSession.query(OrderSummary).filter(OrderSummary.organization_id==organization_id)
+        query = DBSession.query(Order).filter(Order.organization_id==organization_id)
 
         if self.request.params.get('action') == 'checked':
             checked_orders = [o.lstrip('o:') for o in self.request.session.get('orders', []) if o.startswith('o:')]
-            query = query.filter(OrderSummary.id.in_(checked_orders))
+            query = query.filter(Order.id.in_(checked_orders))
 
         form_search = OrderSearchForm(self.request.params, organization_id=organization_id)
         if form_search.validate():
             try:
-                query = OrderSearchQueryBuilder(form_search.data, lambda key: form_search[key].label.text)(DBSession.query(OrderSummary).filter(OrderSummary.organization_id==organization_id))
+                targets = dict(OrderSearchQueryBuilder.targets)
+                targets['subject'] = Order
+                query = OrderSearchQueryBuilder(form_search.data, lambda key: form_search[key].label.text,
+                                                targets=targets)(DBSession.query(Order).filter(Order.organization_id==organization_id))
             except QueryBuilderError as e:
                 self.request.session.flash(e.message)
 
