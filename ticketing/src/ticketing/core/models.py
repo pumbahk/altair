@@ -2843,6 +2843,7 @@ class TicketPrintQueueEntry(Base, BaseModel):
                                       ordered_product_item=ordered_product_item, 
                                       seat=seat)
         DBSession.add(entry)
+        DBSession.flush()
 
     @classmethod
     def peek(self, operator, ticket_format_id, order_id=None):
@@ -2855,6 +2856,8 @@ class TicketPrintQueueEntry(Base, BaseModel):
                 .join(OrderedProduct) \
                 .filter(OrderedProduct.order_id==order_id)
             q = q.order_by(asc(OrderedProduct.id))
+        else:
+            q = q.order_by(TicketPrintQueueEntry.created_at, TicketPrintQueueEntry.id)
         return q.all()
 
     @classmethod
