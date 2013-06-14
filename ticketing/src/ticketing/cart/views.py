@@ -265,13 +265,13 @@ class IndexView(IndexViewMixin):
 
         self.request.add_response_callback(gzip_preferred)
 
-        from altair.sqlahelper import get_db_session
-        slave_session = get_db_session(self.request, name="slave")
+        #from altair.sqlahelper import get_db_session
+        #slave_session = get_db_session(self.request, name="slave")
 
         return dict(
             areas=dict(
                 (area.id, { 'id': area.id, 'name': area.name }) \
-                for area in slave_session.query(c_models.VenueArea) \
+                for area in DBSession.query(c_models.VenueArea) \
                             .join(c_models.VenueArea_group_l0_id) \
                             .filter(c_models.VenueArea_group_l0_id.venue_id==venue.id)
                 ),
@@ -279,7 +279,7 @@ class IndexView(IndexViewMixin):
                 available_adjacencies=[
                     adjacency_set.seat_count
                     for adjacency_set in \
-                        slave_session.query(c_models.SeatAdjacencySet) \
+                        DBSession.query(c_models.SeatAdjacencySet) \
                         .filter_by(site_id=venue.site_id)
                     ]
                 ),
