@@ -179,8 +179,10 @@ class SummarizedVenue(object):
         self.name = name
 
 class SummarizedPerformance(object):
-    def __init__(self, id, start_on, event, venue):
+    def __init__(self, id, name, code, start_on, event, venue):
         self.id = id
+        self.name = name
+        self.code = code
         self.start_on = start_on
         self.event = event
         self.venue = venue
@@ -225,6 +227,8 @@ def _get_performances(request, organization_id):
         performances = {}
         for row in results:
             performances[row.performance_id] = SummarizedPerformance(row.performance_id,
+                                                                     row.performance_name,
+                                                                     row.code,
                                                                      row.start_on,
                                                                      SummarizedEvent(row.event_id,
                                                                                      row.title),
