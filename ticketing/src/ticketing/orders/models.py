@@ -69,6 +69,8 @@ order_summary = sa.select([
     ShippingAddress.country,
     ShippingAddress.prefecture,
     ShippingAddress.city,
+    ShippingAddress.tel_1,
+    ShippingAddress.tel_2,
     ShippingAddress.address_1,
     ShippingAddress.address_2,
     ShippingAddress.fax,
@@ -168,6 +170,13 @@ class SummarizedUserProfile(object):
         self.nick_name = nick_name
         self.sex = sex
 
+class SummarizedPaymentMethod(object):
+    def __init__(self, name):
+        self.name = name
+
+class SummarizedDeliveryMethod(object):
+    def __init__(self, name):
+        self.name = name
 
 class SummarizedPaymentDeliveryMethodPair(object):
     def __init__(self, payment_method, delivery_method):
@@ -193,7 +202,7 @@ class SummarizedPerformance(object):
         self.venue = venue
 
 class SummarizedShippingAddress(object):
-    def __init__(self, last_name, first_name, last_name_kana, first_name_kana, zip, country, prefecture, city, address_1, address_2, fax, email_1, email_2):
+    def __init__(self, last_name, first_name, last_name_kana, first_name_kana, zip, country, prefecture, city, address_1, address_2, tel_1, tel_2, fax, email_1, email_2):
         self.last_name = last_name
         self.first_name = first_name
         self.last_name_kana = last_name_kana
@@ -202,6 +211,8 @@ class SummarizedShippingAddress(object):
         self.country = country
         self.prefecture = prefecture
         self.city = city
+        self.tel_1 = tel_1
+        self.tel_2 = tel_2
         self.address_1 = address_1
         self.address_2 = address_2
         self.fax = fax
@@ -312,6 +323,8 @@ class OrderSummary(Base):
             self.city,
             self.address_1,
             self.address_2,
+            self.tel_1,
+            self.tel_2,
             self.fax,
             self.email_1,
             self.email_2,
@@ -320,7 +333,9 @@ class OrderSummary(Base):
     shipping_address = HybridRelation(_shipping_address, rel_shipping_address)
 
     def _payment_delivery_pair(self):
-        return SummarizedPaymentDeliveryMethodPair(None, None)
+        return SummarizedPaymentDeliveryMethodPair(SummarizedPaymentMethod(self.payment_method_name),
+                                                   SummarizedDeliveryMethod(self.delivery_method_name))
+
     rel_payment_delivery_pair = orm.relationship("PaymentDeliveryMethodPair")
     payment_delivery_pair = HybridRelation(_payment_delivery_pair, rel_payment_delivery_pair)
 
@@ -334,5 +349,3 @@ class OrderSummary(Base):
     @property
     def cancel_reason(self):
         return self.refund.cancel_reason if self.refund else None
-
-
