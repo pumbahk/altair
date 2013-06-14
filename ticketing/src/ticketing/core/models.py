@@ -2855,10 +2855,11 @@ class TicketPrintQueueEntry(Base, BaseModel):
                 .join(OrderedProduct) \
                 .filter(OrderedProduct.order_id==order_id)
             q = q.order_by(asc(OrderedProduct.id))
-        return self.sorted_entries(q.all())
+        return q.all()
 
     @classmethod
     def dequeue(self, ids, now=None):
+        logger.info("TicketPrintQueueEntry dequeue ids: {0}".format(ids))
         now = now or datetime.now() # SAFE TO USE datetime.now() HERE
         entries = DBSession.query(TicketPrintQueueEntry) \
             .with_lockmode("update") \
@@ -2892,18 +2893,8 @@ class TicketPrintQueueEntry(Base, BaseModel):
                 # XXX: this won't work right if multiple entries exist for the
                 # same order.
                 order.mark_issued_or_printed(issued=True, printed=True, now=now)
-        return self.sorted_entries(entries)
+        return entries
 
-    @classmethod
-    def sorted_entries(cls, entries):
-        return list(sorted(entries, key=TicketPrintQueueEntry.entry_key_order))
-
-    DIGIT_RX = re.compile(r"([0-9]+)")
-    @classmethod
-    def entry_key_order(cls, entry): #dorping. using summary instead of seat.name
-        if entry.seat_id is None:
-            return [entry.summary]
-        return [(int(x) if x.isdigit() else x) for x in re.split(cls.DIGIT_RX, entry.seat.name) if x]
 
     
 from ..operators.models import Operator
