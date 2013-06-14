@@ -248,10 +248,10 @@ class Orders(BaseView):
 
     @view_config(route_name='orders.index', renderer='ticketing:templates/orders/index.html', permission='sales_counter')
     def index(self):
-        slave_session = get_db_session(self.request, name="slave")
+        #slave_session = get_db_session(self.request, name="slave")
 
         organization_id = int(self.context.user.organization_id)
-        query = slave_session.query(OrderSummary).filter(OrderSummary.organization_id==organization_id)
+        query = DBSession.query(OrderSummary).filter(OrderSummary.organization_id==organization_id)
 
         if self.request.params.get('action') == 'checked':
             checked_orders = [o.lstrip('o:') for o in self.request.session.get('orders', []) if o.startswith('o:')]
@@ -260,7 +260,7 @@ class Orders(BaseView):
         form_search = OrderSearchForm(self.request.params, organization_id=organization_id)
         if form_search.validate():
             try:
-                query = OrderSearchQueryBuilder(form_search.data, lambda key: form_search[key].label.text)(slave_session.query(OrderSummary).filter(OrderSummary.organization_id==organization_id))
+                query = OrderSearchQueryBuilder(form_search.data, lambda key: form_search[key].label.text)(DBSession.query(OrderSummary).filter(OrderSummary.organization_id==organization_id))
             except QueryBuilderError as e:
                 self.request.session.flash(e.message)
 
