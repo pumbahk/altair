@@ -307,6 +307,11 @@ class LotEntry(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     browserid = sa.Column(sa.String(40))
 
+    closed_at = sa.Column(sa.DateTime())
+
+    def close(self):
+        self.closed_at = datetime.now()
+
     def get_wish(self, wish_order):
         wish_order = int(wish_order)
         for wish in self.wishes:
