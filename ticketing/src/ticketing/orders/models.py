@@ -83,43 +83,48 @@ order_summary = sa.select([
     #Performance.code,
     #Performance.start_on,
     Order.performance_id,
+    Order.deleted_at,
     #Venue.name.label('venue_name'),
-], from_obj=[Order.__table__.join(
+], Order.deleted_at==None,
+from_obj=[Order.__table__.join(
     ShippingAddress.__table__,
-    Order.shipping_address_id==ShippingAddress.id
+    and_(Order.shipping_address_id==ShippingAddress.id,
+         ShippingAddress.deleted_at==None),
     #).join(
     #Performance.__table__,
     #Order.performance_id==Performance.id
 ).join(
     PaymentDeliveryMethodPair.__table__,
-    Order.payment_delivery_method_pair_id==PaymentDeliveryMethodPair.id,
+    and_(Order.payment_delivery_method_pair_id==PaymentDeliveryMethodPair.id,
+         PaymentDeliveryMethodPair.deleted_at==None),
 ).join(
     PaymentMethod.__table__,
-    PaymentDeliveryMethodPair.payment_method_id==PaymentMethod.id,
+    and_(PaymentDeliveryMethodPair.payment_method_id==PaymentMethod.id,
+         PaymentMethod.deleted_at==None),
 ).join(
     DeliveryMethod.__table__,
-    PaymentDeliveryMethodPair.delivery_method_id==DeliveryMethod.id,
-    #).join(
-    #Event.__table__,
-    #Performance.event_id==Event.id,
-    #).join(
-    #Venue.__table__,
-    #Venue.performance_id==Performance.id,
+    and_(PaymentDeliveryMethodPair.delivery_method_id==DeliveryMethod.id,
+         DeliveryMethod.deleted_at==None),
 ).outerjoin(
     User.__table__,
-    Order.user_id==User.id,
+    and_(Order.user_id==User.id,
+         User.deleted_at==None),
 ).outerjoin(
     UserProfile.__table__,
-    User.id==UserProfile.user_id,
+    and_(User.id==UserProfile.user_id,
+         UserProfile.deleted_at),
 ).outerjoin(
     UserCredential.__table__,
-    User.id==UserCredential.user_id,
+    and_(User.id==UserCredential.user_id,
+         UserCredential.deleted_at==None),
 ).outerjoin(
     Membership.__table__,
-    UserCredential.membership_id==Membership.id,
+    and_(UserCredential.membership_id==Membership.id,
+         Membership.deleted_at==None),
 ).outerjoin(
     MemberGroup.__table__,
-    MemberGroup.membership_id==Membership.id,
+    and_(MemberGroup.membership_id==Membership.id,
+         Membership.deleted_at==None),
 )]).alias()
 
 class SummarizedUser(object):
