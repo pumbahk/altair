@@ -41,14 +41,9 @@
       $('#member_type').change(function(){
         var selected = $(this).find('option:selected');
         if (selected.attr('with-shirt') == 'true')
-          $('#t_shirts_size').removeAttr('disabled')
+          $('#t_shirts_size').removeAttr('disabled');
         else
-          $('#t_shirts_size').attr('disabled','disabled')
-
-        if ($.inArray(selected.attr('data-selection'), ['0', '1', '2', '3']) > -1)
-          $('#publicity').removeAttr('disabled')
-        else
-          $('#publicity').attr('disabled','disabled')
+          $('#t_shirts_size').attr('disabled','disabled');
       }).change();
     });
   </script>

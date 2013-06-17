@@ -18,8 +18,17 @@ def error(names):
         names = [names]
     errs = dict()
     for name in names:
-        for err in request.errors.get(name,[]):
-            errs[err] = err
+        comps = name.split('.')
+        ns = request.errors
+        for comp in comps:
+            if ns is None:
+                break
+            if not isinstance(ns, dict):
+                raise TypeError
+            ns = ns.get(comp)
+        if ns:
+            for err in ns:
+                errs[err] = err
     if not errs:
         return u''
     errs = ", ".join(errs.values())
