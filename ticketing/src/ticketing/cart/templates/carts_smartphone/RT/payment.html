@@ -9,7 +9,7 @@
     <div class="error">${message}</div>
     %endfor
 %endif
-${h.get_nickname(request)} 
+${h.get_nickname(request)}
 
 <form id="form1" name="form1" method="post" action="${request.url}">
   <div class="settlementBox">
@@ -126,7 +126,8 @@ ${h.get_nickname(request)}
           <td>
             <ul>
               <li>${form['zip'].label}
-                ${form['zip'](onKeyUp="AjaxZip3.zip2addr('zip','','prefecture','city','', 'address_1');")}
+                <% path = request.static_url('ticketing.cart:static/js/zipdata') %>
+                ${form['zip'](onKeyUp="AjaxZip3.zip2addr('" + path + "', 'zip','','prefecture','city','', 'address_1');")}
                 (例: 1030001)
                 ${h.error_list(request, form, 'zip')}
               </li>
@@ -178,7 +179,7 @@ ${h.get_nickname(request)}
   -->
     </div>
   </div>
-  
+
 </div>
 <p class="align2"><image onclick="$('#form1').submit()" src="${request.static_url('ticketing.cart:static/img/settlement/btn_next.gif')}" alt="次へ" width="226" height="46" /></p>
 </form>

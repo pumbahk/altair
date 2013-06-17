@@ -126,7 +126,8 @@ ${h.get_nickname(request)}
           <td>
             <ul>
               <li>${form['zip'].label}
-                ${form['zip'](onKeyUp="AjaxZip3.zip2addr('zip','','prefecture','city','', 'address_1');")}
+                <% path = request.static_url('ticketing.cart:static/js/zipdata') %>
+                ${form['zip'](onKeyUp="AjaxZip3.zip2addr('" + path + "', 'zip','','prefecture','city','', 'address_1');")}
                 (例: 1030001)
                 ${h.error_list(request, form, 'zip')}
               </li>
