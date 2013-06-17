@@ -1073,7 +1073,13 @@ cart.VenueView = Backbone.View.extend({
                     var use_seatmap = $.map(viewer.stockTypes, function(st) {
                         return (!st.quantity_only && st.seat_choice) ? st : null;
                     });
-                    $('.selectSeatLeftPane .guidance').css({ display: 0 < use_seatmap.length ? '' : 'none' });
+                    var showGuidance = viewer.rootPage && 0 < use_seatmap.length;
+                    $('.selectSeatLeftPane .guidance').css({ display: showGuidance ? '' : 'none' });
+                    $('.selectSeatLeftPane .guidance').each(function() {
+                        if($(this).hasClass('without-venue')) {
+                            $(this).css({ display: showGuidance ? 'none' : '' });
+                        }
+                    });
                 }
 
                 if (part == 'drawing') {
@@ -1181,7 +1187,28 @@ cart.VenueView = Backbone.View.extend({
 
 cart.DummyVenueView = Backbone.View.extend({
     initialize: function() {},
-    updateVenueViewer: function () {},
+    updateVenueViewer: function (dataSource, callbacks) {
+        dataSource.pages(function(pages) {
+            if(0 < $(pages).size()) {
+                $('.venueViewer').append(
+                    $('<div class="dummy-venue-viewer"></div>')
+                    .css({ position: 'relative',
+                           width: '100%',
+                           height: '100%' })
+                    .append(
+                        $('<div style="position: absolute; margin: -8em -40% -8em -40%; top: 50%; left: 50%; width: 80%; height: 15em;"><p>本公演 (試合) でお好みの座席を選択してチケットをお買い求めいただくには、<u>サポート対象のブラウザー</u>をご利用ください。</p><p style="font-weight:bold">※選択の席種から自動的に座席を決定する「おまかせで選択」機能は、全ブラウザーでご利用いただけます。</p><p>サポート対象のブラウザーは以下となっております。</p><ul><li><a href="http://www.google.co.jp/chrome/" target="_blank">Google Chrome</a></li><li><a href="http://www.mozilla.jp/firefox/" target="_blank">Mozilla Firefox 13.0以降</a></li><li><a href="http://windows.microsoft.com/ja-jp/internet-explorer/download-ie" target="_blank">Internet Explorer 9.0以降 (Windows Vista以降)</a></li><li><a href="http://www.apple.com/jp/safari/" target="_blank">Safari 5.0以降</a></li></ul></div>')
+                    )
+                );
+                $('.guidanceBackground').hide();
+            } else {
+                $('.selectSeatLeftPane .guidance').each(function() {
+                    if($(this).hasClass('without-venue')) {
+                        $(this).css({ display: '' });
+                    }
+                });
+            }
+        });
+    },
     updateUIState: function () {
         if (this.readOnly) {
             $('#selectSeat').removeClass('focused');
@@ -1193,15 +1220,6 @@ cart.DummyVenueView = Backbone.View.extend({
     },
     render: function() {
         this.updateUIState();
-        $('.venueViewer').append(
-            $('<div class="dummy-venue-viewer"></div>')
-            .css({ position: 'relative',
-                   width: '100%',
-                   height: '100%' })
-            .append(
-                $('<div style="position: absolute; margin: -8em -40% -8em -40%; top: 50%; left: 50%; width: 80%; height: 15em;"><p>本公演 (試合) でお好みの座席を選択してチケットをお買い求めいただくには、<u>サポート対象のブラウザー</u>をご利用ください。</p><p style="font-weight:bold">※選択の席種から自動的に座席を決定する「おまかせで選択」機能は、全ブラウザーでご利用いただけます。</p><p>サポート対象のブラウザーは以下となっております。</p><ul><li><a href="http://www.google.co.jp/chrome/">Google Chrome</a></li><li><a href="http://www.mozilla.jp/firefox/">Mozilla Firefox 13.0以降</a></li><li><a href="http://windows.microsoft.com/ja-jp/internet-explorer/download-ie">Internet Explorer 9.0以降 (Windows Vista以降)</a></li><li><a href="http://www.apple.com/jp/safari/">Safari 5.0以降</a></li></ul></div>')
-            )
-        );
     },
     reset: function () {}
 });
