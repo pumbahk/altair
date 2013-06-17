@@ -94,7 +94,14 @@ class SearchQueryBuilderBase(object):
 
 class BaseSearchQueryBuilderMixin(object):
     def _order_no(self, query, value):
-        return query.filter(self.targets['subject'].order_no == value)
+        values = [v.strip() for v in value.split(",")]
+        values = [v for v in values if v]
+        if not values:
+            return query
+        elif len(values) == 1:
+            return query.filter(self.targets['subject'].order_no == values[0])
+        else:
+            return query.filter(self.targets['subject'].order_no.in_(values))
 
     def _performance_id(self, query, value):
         return query.filter(self.targets['subject'].performance_id == value)
