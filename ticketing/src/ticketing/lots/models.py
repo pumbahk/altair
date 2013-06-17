@@ -426,6 +426,10 @@ class LotEntryWish(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     canceled_at = sa.Column(sa.DateTime())
 
+    @property
+    def closed(self):
+        return bool(self.lot_entry.closed_at)
+
     def is_electing(self):
         return LotElectWork.query.filter(
             LotElectWork.entry_wish_no==self.entry_wish_no).count()
@@ -495,6 +499,8 @@ class LotEntryWish(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     @property
     def status(self):
         """ """
+        if self.closed:
+            return u"終了"
         if self.elected_at:
             return u"当選"
         if self.works:

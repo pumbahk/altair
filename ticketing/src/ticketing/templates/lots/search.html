@@ -20,7 +20,8 @@ delivery_method = pdmp.delivery_method
 %>
 <td nowrap="">
 <div class="btn-group">
-  <!-- TODO: 状態によるボタンの出し分け -->
+%if not w.lot_entry.closed_at:
+
   %if not w.canceled_at and not w.is_electing() and not w.is_rejecting() and not w.rejected_at and not w.lot_entry.is_electing() and not w.lot_entry.elected_at:
   <button class="btn entry-elect-btn" data-entry-no="${w.lot_entry.entry_no}" data-wish-order="${w.wish_order}">当選</button>
   %endif
@@ -38,6 +39,7 @@ delivery_method = pdmp.delivery_method
   <button class="btn cancel-reject-btn" data-entry-no="${w.lot_entry.entry_no}">落選予定をキャンセル</button>
   %endif
 
+%endif
 </div>
 </td>
 <td nowrap="">
