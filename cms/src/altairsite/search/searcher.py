@@ -331,8 +331,7 @@ def events_by_about_deal(qs, before_deal_start, till_deal_end, closed_only, canc
    
     if before_deal_start:
         ## 販売開始？本当はN日以内に発送らし
-        end_point = today+timedelta(days=int(before_deal_start))
-        qs = qs.filter(today <= Event.deal_open).filter(Event.deal_open <= end_point)
+        qs = events_by_within_n_days_of(qs, Event.deal_open,  int(before_deal_start),  _now_day)
 
     if till_deal_end:
         end_point = today+timedelta(days=int(till_deal_end))
