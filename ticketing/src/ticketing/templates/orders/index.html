@@ -43,18 +43,6 @@
   $("#addall").click(presenter.on_addall.bind(presenter));
   $("#removeall").click(presenter.on_removeall.bind(presenter));
   presenter.on_load();
-
-  // selectable check
-  $("table").selectable({
-  filter: "td.checkbox_status-wrap",
-  distance: 1,
-  stop: function(){
-      $(".ui-selected input[type='checkbox']", this).each(function(_,e){
-          $(e).click();
-       });
-      $(".ui-selected").removeClass("ui-selected");
-    }
-  })
 });
 </script>
 
