@@ -1,5 +1,5 @@
 # -*- coding:utf-8 -*-
-from pyramid.httpexceptions import HTTPNotFound
+from pyramid.httpexceptions import HTTPNotFound, HTTPBadRequest
 from altaircms.auth.models import Organization
 from altaircms.auth.interfaces import IAllowableQuery
 from altaircms.auth.models import Host
@@ -12,7 +12,8 @@ def get_organization_from_request(request, override_host=None):
     organization = Organization.query.filter(Organization.id==Host.organization_id,  Host.host_name==host_name).first()
     if organization is None:
         logger.error("Host that named %s is not Found" % host_name)
-        raise Exception("Host that named %s is not Found" % host_name)
+        #raise Exception("Host that named %s is not Found" % host_name)
+        raise HTTPBadRequest
     return organization
 
 class AllowableQueryFilterByOrganization(object):
