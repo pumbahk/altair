@@ -50,12 +50,15 @@ def get_cancel_filter(request, name):
 
 def is_cancelable(request, status):
     order_no = status.OrderNo
+    logger.debug('check cancelable {0}'.format(order_no))
     name = status.KeepAuthFor
     if name is None:
         return True
     cancel_filter = get_cancel_filter(request, name)
     if cancel_filter is None:
+        logger.debug('no cancel filter for {0}'.format(name))
         return False
+    logger.debug('use cancel filter for {0}'.format(name))
     return cancel_filter.is_cancelable(order_no)
 
 def get_auth_orders(request, shop_id):

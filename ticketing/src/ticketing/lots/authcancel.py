@@ -1,13 +1,18 @@
+import logging
 from zope.interface import implementer
 from ticketing.multicheckout.interfaces import ICancelFilter
 from .models import LotEntry
 
+logger = logging.getLogger(__name__)
+
 def includeme(config):
-    config.registry.registerUtility(CancelFilter())
+    config.registry.registerUtility(CancelFilter(), name="lots")
 
 @implementer(ICancelFilter)
 class CancelFilter(object):
     def is_cancelable(self, order_no):
+        logger.debug('check lot authority order no = {0}'.format(order_no))
+
         return not LotEntry.query.filter(
             LotEntry.entry_no==order_no,
         ).filter(
