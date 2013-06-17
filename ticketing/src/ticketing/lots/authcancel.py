@@ -14,7 +14,7 @@ class CancelFilter(object):
         logger.debug('check lot authority order no = {0}'.format(order_no))
 
         return not LotEntry.query.filter(
-            LotEntry.entry_no==order_no,
+            LotEntry.entry_no.startswith(order_no),
         ).filter(
             LotEntry.closed_at==None
         ).count()

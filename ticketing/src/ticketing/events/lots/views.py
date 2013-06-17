@@ -36,6 +36,7 @@ from ticketing.payments.api import (
 )
 import ticketing.lots.api as lots_api
 from ticketing.lots.electing import Electing
+from ticketing.lots.closing import LotCloser
 from .helpers import Link
 from .forms import ProductForm, LotForm, SearchEntryForm
 from . import api
@@ -588,6 +589,22 @@ class LotEntries(BaseView):
         electing = Electing(lot, self.request)
         return dict(lot=lot,
                     electing=electing)
+
+
+
+    @view_config(route_name='lots.entries.close',
+                 renderer="string",
+                 request_method="POST",
+                 permission='event_viewer')
+    def close_entries(self):
+        self.check_organization(self.context.event)
+        lot_id = self.request.matchdict["lot_id"]
+        lot = Lot.query.filter(Lot.id==lot_id).one()
+        closer = LotCloser(lot, self.request)
+        closer.close()
+        self.request.session.flash(u"オーソリ開放可能にしました。")
+
+        return HTTPFound(location=self.request.route_url('lots.entries.index', lot_id=lot.id))
 
     @view_config(route_name='lots.entries.elect', 
                  renderer="string",

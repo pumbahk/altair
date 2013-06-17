@@ -1,4 +1,7 @@
 # -*- coding:utf-8 -*-
+import logging
+
+logger = logging.getLogger(__name__)
 
 class LotCloser(object):
     def __init__(self, lot, request):
@@ -9,6 +12,7 @@ class LotCloser(object):
     def close(self):
         # オプションで、当選でもDeliveryMethod処理が終わっていないものもクローズする可能性がある
         for entry in self.lot.remained_entries:
+            logger.debug('close {0}'.format(entry.entry_no))
             entry.close()
 
 

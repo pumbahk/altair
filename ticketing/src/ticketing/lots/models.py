@@ -127,9 +127,7 @@ class Lot(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     def remained_entries(self):
         """ 当選以外のエントリ"""
 
-        return LotEntry.query.join(
-            Lot
-        ).filter(
+        return LotEntry.query.filter(
             LotEntry.elected_at==None
         ).filter(
             LotEntry.order_id==None
@@ -137,7 +135,7 @@ class Lot(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             sql.or_(LotEntry.rejected_at!=None,
                     LotEntry.canceled_at!=None)
         ).filter(
-            Lot.id==self.id
+            LotEntry.lot_id==self.id
         ).all()
 
     def is_elected(self):
