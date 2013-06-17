@@ -379,7 +379,9 @@ class CompletionLotEntryView(object):
     @mobile_view_config(request_method="GET", renderer=selectable_renderer("mobile/%(membership)s/completion.html"))
     def get(self):
         """ 完了画面 """
-        entry_no = self.request.session['lots.entry_no']
+        entry_no = self.request.session.get('lots.entry_no')
+        if not entry_no:
+            return HTTPFound(location=self.request.route_url('lots.entry.index', **self.request.matchdict))
         entry = DBSession.query(LotEntry).filter(LotEntry.entry_no==entry_no).one()
 
         try:
