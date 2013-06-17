@@ -94,7 +94,7 @@ class SearchQueryBuilderBase(object):
 
 class BaseSearchQueryBuilderMixin(object):
     def _order_no(self, query, value):
-        values = [v.strip() for v in value.split(",")]
+        values = [v.strip() for v in value.split(" ")]
         values = [v for v in values if v]
         if not values:
             return query

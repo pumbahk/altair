@@ -129,7 +129,7 @@ class SearchFormBase(Form):
                 self.sales_segment_id.choices = [(sales_segment.id, sales_segment.sales_segment_group.name)]
 
     order_no = TextField(
-        label=u'予約番号(, で複数渡せます)',
+        label=u'予約番号(空白区切りで複数渡せます)',
         validators=[Optional()],
     )
     payment_method = SelectMultipleField(
