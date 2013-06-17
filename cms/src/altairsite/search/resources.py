@@ -2,6 +2,7 @@
 
 from copy import deepcopy
 from datetime import datetime
+from altaircms.datelib import get_now
 import logging
 logger = logging.getLogger(__file__)
 
@@ -58,11 +59,11 @@ class SearchPageResource(object):
     def __init__(self, request):
         self.request = request
 
-    def result_sequence_from_query(self, query, _nowday=datetime.now):
+    def result_sequence_from_query(self, query):
         """
         ここでは、検索結果のqueryを表示に適した形式に直す
         """
-        today = _nowday()    
+        today = get_now(self.request)    
         # for pageset in query:
         #     yield SearchResultRender(pageset, today, self.request)
         return [SearchResultRender(pageset, today, self.request) for pageset in query]

@@ -7,7 +7,7 @@ from ..search.forms import TopSearchForm, GenreSearchForm, AreaSearchForm
 from ..search.search_query import SaleInfo
 
 from sqlalchemy import asc
-from datetime import datetime
+from altaircms.datelib import get_now
 from altaircms.models import Genre
 from altaircms.tag.models import HotWord
 from altaircms.topic.api import get_topic_searcher
@@ -135,9 +135,9 @@ class CommonResource(object):
             return []
         elif system_tag_label:
             system_tag = searcher.get_tag_from_genre_label(system_tag_label)
-            results = searcher.query_publishing_topics(datetime.now(), tag, system_tag)
+            results = searcher.query_publishing_topics(get_now(self.request), tag, system_tag)
         else:
-            results = searcher.query_publishing_topics(datetime.now(), tag)
+            results = searcher.query_publishing_topics(get_now(self.request), tag)
         return results
 
     def getInfo(self, kind, system_tag_id):
@@ -160,7 +160,7 @@ class CommonResource(object):
         return self._getInfo(searcher=searcher, tag=tag, system_tag_label=system_tag_label)
 
     def get_hotword(self):
-        today = datetime.now()
+        today = get_now(self.request)
         hotwords = self.request.allowable(HotWord).filter(HotWord.term_begin <= today).filter(today <= HotWord.term_end) \
                  .filter_by(enablep=True).order_by(asc("display_order"), asc("term_end"))
         return hotwords

@@ -4,7 +4,6 @@ from datetime import date
 from pyramid.httpexceptions import HTTPFound
 from pyramid.threadlocal import get_current_request
 from pyramid.view import view_config, render_view_to_response
-from webob.multidict import MultiDict
 
 from ticketing.cart.events import notify_order_completed
 from ticketing.cart.exceptions import NoCartError
@@ -42,9 +41,7 @@ class IndexView(BaseView):
         return dict()
 
     def get(self):
-        user_profile = self.context.load_user_profile()
-        params = MultiDict(user_profile) if user_profile else MultiDict()
-        form = self.context.product_form(params)
+        form = self.context.product_form_from_user_profile(self.context.load_user_profile())
         products =  self.context.products_dict
         return dict(form=form, products=products)
 

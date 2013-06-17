@@ -1,7 +1,7 @@
 <%namespace file="../common/tags_mobile.mako" name="m" />
 <%page args="event, week, month_unit, month_unit_keys, purchase_links, tickets, sales_start, sales_end, helper" />
 <%m:header>公演期間</%m:header>
-<% from datetime import datetime %>
+<% from altaircms.datelib import get_now %>
 ${event.event_open.year}/${str(event.event_open.month).zfill(2)}/${str(event.event_open.day).zfill(2)}(${week[event.event_open.weekday()]})〜${event.event_close.year}/${str(event.event_close.month).zfill(2)}/${str(event.event_close.day).zfill(2)}(${week[event.event_close.weekday()]})<br/>
 <%m:header>販売期間</%m:header>
 % if event.salessegment_groups:
@@ -15,7 +15,7 @@ ${event.event_open.year}/${str(event.event_open.month).zfill(2)}/${str(event.eve
 % endif
 
 <div align="center">
-        % if event.deal_close < datetime.now():
+        % if event.deal_close < get_now(request):
   <a href="#list">公演一覧</a><br />
 　<font color="red">このイベントの販売は終了しました</font><br/>
         % else:
@@ -94,7 +94,7 @@ ${helper.nl2br(event.inquiry_for)|n}
             % if not first:
                 <hr />
             % endif
-            % if event.deal_close < datetime.now():
+            % if event.deal_close <  get_now(request):
             [${index}]<font size="-1">${perf.title}</font><br />
             % else:
             [${index}]<font size="-1"><a href="${purchase_links[perf.id]}">${perf.title}</a></font><br />
@@ -110,12 +110,11 @@ ${helper.nl2br(event.inquiry_for)|n}
             % if perf.venue:
                 会場:${perf.venue}<br/>
             % endif
-
             % if not start_on_candidates:
                 準備中
-            %elif min(start_on_candidates) >= helper.now():
+            %elif min(start_on_candidates) >= get_now(request):
                 販売前
-            %elif max(end_on_candidates) >= helper.now():
+            %elif max(end_on_candidates) >= get_now(request):
                 <div align="center">
                 <%m:band bgcolor="#ffcccc">
                 % if event.deal_close >= datetime.now():
@@ -126,7 +125,6 @@ ${helper.nl2br(event.inquiry_for)|n}
             % else:
                 販売期間終了
             % endif
-
             <% first = False %>
         % endif
     % endfor

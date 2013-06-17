@@ -36,7 +36,7 @@ def get_year_days():
 class ClientForm(_ClientForm):
     sex = OurRadioField(u'性別', choices=[(str(SexEnum.Male), u'男性'), (str(SexEnum.Female), u'女性')])
     tel_2 = fields.TextField(u'電話番号(携帯)')
-    year = my_fields.StringFieldWithChoice(u"年", filters=[strip_spaces], choices=get_year_choices(), widget=ymd_widget)
+    year = my_fields.StringFieldWithChoice(u"年", filters=[strip_spaces], choices=get_year_choices(), default=str(datetime.now().year - 25), widget=ymd_widget)
     month = my_fields.StringFieldWithChoice(u"月", filters=[strip_spaces, lstrip('0')], validators=[v.Required()], choices=get_year_months(), widget=ymd_widget)
     day = my_fields.StringFieldWithChoice(u"日", filters=[strip_spaces, lstrip('0')], validators=[v.Required()], choices=get_year_days(), widget=ymd_widget)
     memo = fields.TextAreaField(u"メモ")

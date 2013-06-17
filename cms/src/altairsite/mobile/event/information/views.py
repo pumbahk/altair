@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from datetime import datetime
+from altaircms.datelib import get_now
 from altaircms.topic.models import TopicTag
 from altaircms.topic.api import get_topic_searcher
 from altairsite.config import usersite_view_config
@@ -24,7 +24,7 @@ def move_information(request):
     topic_searcher = get_topic_searcher(request, "topic")
     tag = TopicTag.query.filter_by(label=u"公演中止情報").first()
     if tag is not None:
-        form.informations.data = topic_searcher.query_publishing_topics(datetime.now(), tag).all()
+        form.informations.data = topic_searcher.query_publishing_topics(get_now(request), tag).all()
         log_info("move_information", "information get")
 
     log_info("move_information", "end")

@@ -26,12 +26,6 @@ ${h.error(['cont','old_id_number'])}
   
 ${h.error('member_type')}
 </div>
-<%mobile:form_header>Tシャツサイズ</%mobile:form_header>
-<div>
-  ${form.t_shirts_size}
-${h.error('t_shirts_size')} <br />
-<font size="1">${layout.t_shirts_mesaage}(それ以外を選択した場合にはこの欄が無視されます)</font>
-</div>
 <div>氏名<font color="red">*</font></div>
 <div>
   姓${form.last_name(size="10", istyle="1", iprof="name1")}<br />
@@ -106,13 +100,23 @@ ${h.error('email_1')}
 ${h.error('email_1_confirm')}
 </div>
 <div>
-  ${form.mail_permission}メルマガ購読を希望<br />
-${h.error('mail_permission')}
+  ${form.extra.mail_permission}メルマガ購読を希望<br />
+${h.error('extra.mail_permission')}
 </div>
 <%mobile:form_header>メモリアルブックへの氏名掲載希望</%mobile:form_header>
 <div>
-  ${form.publicity}<br />
-${h.error('publicity')}
+  ${form.extra.publicity}<br />
+${h.error('extra.publicity')}
+</div>
+<%mobile:form_header required="true">ブースタークラブに入会しようと思ったきっかけは？</%mobile:form_header>
+<div>
+  ${form.extra.motivation}<br />
+${h.error('extra.motivation')}
+</div>
+<%mobile:form_header>昨シーズンの会場での観戦回数</%mobile:form_header>
+<div>
+  ${form.extra.num_times_at_venue(size=2, maxlength=2)} 回<br />
+${h.error('extra.num_times_at_venue')}
 </div>
 <div><font color="red">*は入力必須項目です。電話番号は携帯・自宅のどちらか一方で構いません。</font></div>
 <hr />

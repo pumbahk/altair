@@ -35,12 +35,13 @@ def layout_detail(context, request):
     return {"obj": obj}
 
 from altaircms.models import DBSession
-from datetime import datetime
+from altaircms.datelib import get_now
+
 @view_config(route_name="layout_sync", renderer="altaircms:templates/layout/sync.html", 
              decorator="altaircms.lib.fanstatic_decorator.with_bootstrap")
 def layout_sync(context, request):
     obj = get_or_404(request.allowable(Layout), Layout.id==request.matchdict["layout_id"])
-    obj.synced_at = datetime.now()
+    obj.synced_at = get_now(request)
     DBSession.add(obj)
     FlashMessage.success("sync layout id=%s synced_at=%s" % (obj.id, obj.synced_at), request=request)
     return HTTPFound(get_endpoint(request) or request.route_path("layout_list"))

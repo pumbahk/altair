@@ -329,6 +329,7 @@ class ConfirmLotEntryView(object):
             return self.back_to_form()
 
         entry = self.request.session['lots.entry']
+        entry.pop('token')
         entry_no = entry['entry_no']
         shipping_address = entry['shipping_address']
         shipping_address = h.convert_shipping_address(shipping_address)
@@ -374,12 +375,12 @@ class CompletionLotEntryView(object):
         self.request = request
 
     @view_config(request_method="GET", renderer=selectable_renderer("pc/%(membership)s/completion.html"))
-
-
     @mobile_view_config(request_method="GET", renderer=selectable_renderer("mobile/%(membership)s/completion.html"))
     def get(self):
         """ 完了画面 """
-        entry_no = self.request.session['lots.entry_no']
+        entry_no = self.request.session.get('lots.entry_no')
+        if not entry_no:
+            return HTTPFound(location=self.request.route_url('lots.entry.index', **self.request.matchdict))
         entry = DBSession.query(LotEntry).filter(LotEntry.entry_no==entry_no).one()
 
         try:

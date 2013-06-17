@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 import sqlalchemy as sa
 import sqlalchemy.orm as orm
-from datetime import datetime
+from altaircms.datelib import get_now
 from zope.deprecation import deprecate
 
 from altaircms.tag.models import HotWord
@@ -111,8 +111,8 @@ def get_navigation_links(request, hierarchy):
     return qs.order_by(sa.asc("display_order")).options(orm.joinedload("pageset"))
 _get_categories = get_navigation_links
 
-def get_current_hotwords(request, _nowday=datetime.now):
-    today = _nowday()
+def get_current_hotwords(request, _nowday=lambda r : get_now(r)):
+    today = _nowday(request)
     qs =  HotWord.query.filter(HotWord.term_begin <= today).filter(today <= HotWord.term_end)
     qs = qs.filter_by(enablep=True).order_by(sa.asc("display_order"), sa.asc("term_end"))
     return qs

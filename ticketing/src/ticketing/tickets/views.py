@@ -641,8 +641,7 @@ class TicketPrinter(BaseView):
                 operator_id=entry.operator_id,
                 ordered_product_item_id=entry.ordered_product_item_id,
                 seat_id=entry.seat_id,
-                ticket_id=entry.ticket_id, 
-                created_at=datetime.now())) ## this is correct (for order). maybe.
+                ticket_id=entry.ticket_id))
 
         if entries:
             return { u'status': u'success' }

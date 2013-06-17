@@ -1,4 +1,5 @@
 import sqlalchemy as sa
+from webob.multidict import MultiDict
 from ticketing.cart.resources import TicketingCartResource
 from ticketing.core.models import DBSession, Order, Product
 from ticketing.users.models import User, UserCredential, Membership
@@ -23,8 +24,21 @@ class BoosterCartResource(TicketingCartResource):
         self._event_id = get_booster_settings(self.request).event_id
         self._sales_segment_id = None
 
-    def product_form(params):
+    def product_form(self, params):
         raise Exception
+
+    def product_form_from_user_profile(self, user_profile):
+        params = MultiDict()
+        if user_profile is not None:
+            def _(items, prefix):
+                for k, v in items:
+                    if isinstance(v, dict):
+                        _(v.items(), k + u'-')
+                    else:
+                        if v is not None:
+                            params[prefix + k] = v
+            _(user_profile.items(), u'')
+        return self.product_form(params)
 
     @reify
     def products_dict(self):

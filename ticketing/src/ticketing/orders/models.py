@@ -78,24 +78,10 @@ order_summary = sa.select([
     ShippingAddress.email_2,
     PaymentMethod.name.label('payment_method_name'),
     DeliveryMethod.name.label('delivery_method_name'),
-    #Event.id.label("event_id"),
-    #Event.title,
-    #Performance.id.label('performance_id'),
-    #Performance.name.label('performance_name'),
-    #Performance.code,
-    #Performance.start_on,
     Order.performance_id,
     Order.deleted_at,
-    #Venue.name.label('venue_name'),
 ], Order.deleted_at==None,
 from_obj=[Order.__table__.join(
-    ShippingAddress.__table__,
-    and_(Order.shipping_address_id==ShippingAddress.id,
-         ShippingAddress.deleted_at==None),
-    #).join(
-    #Performance.__table__,
-    #Order.performance_id==Performance.id
-).join(
     PaymentDeliveryMethodPair.__table__,
     and_(Order.payment_delivery_method_pair_id==PaymentDeliveryMethodPair.id,
          PaymentDeliveryMethodPair.deleted_at==None),
@@ -107,6 +93,10 @@ from_obj=[Order.__table__.join(
     DeliveryMethod.__table__,
     and_(PaymentDeliveryMethodPair.delivery_method_id==DeliveryMethod.id,
          DeliveryMethod.deleted_at==None),
+).outerjoin(
+    ShippingAddress.__table__,
+    and_(Order.shipping_address_id==ShippingAddress.id,
+         ShippingAddress.deleted_at==None),
 ).outerjoin(
     User.__table__,
     and_(Order.user_id==User.id,
@@ -312,6 +302,9 @@ class OrderSummary(Base):
                                                        membership))
 
     def _shipping_address(self):
+        if self.shipping_address_id is None:
+            return None
+
         return SummarizedShippingAddress(
             self.last_name,
             self.first_name,

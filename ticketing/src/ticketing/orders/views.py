@@ -20,7 +20,7 @@ from sqlalchemy import and_
 from sqlalchemy.sql import exists
 from sqlalchemy.sql.expression import or_
 from sqlalchemy.orm import joinedload, undefer
-
+from webob.multidict import MultiDict
 from altair.sqlahelper import get_db_session
 
 from ticketing.models import DBSession, merge_session_with_post, record_to_multidict, asc_or_desc
@@ -257,7 +257,10 @@ class Orders(BaseView):
             checked_orders = [o.lstrip('o:') for o in self.request.session.get('orders', []) if o.startswith('o:')]
             query = query.filter(Order.id.in_(checked_orders))
 
-        form_search = OrderSearchForm(self.request.params, organization_id=organization_id)
+        params = MultiDict(self.request.params)
+        params["order_no"] = " ".join(self.request.params.getall("order_no"))
+
+        form_search = OrderSearchForm(params, organization_id=organization_id)
         if form_search.validate():
             try:
                 targets = dict(OrderSearchQueryBuilder.targets)

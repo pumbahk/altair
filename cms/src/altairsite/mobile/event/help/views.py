@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from datetime import datetime
+from altaircms.datelib import get_now
 from altaircms.topic.models import TopicTag
 from altaircms.topic.api import get_topic_searcher
 from altairsite.config import usersite_view_config
@@ -22,7 +22,7 @@ def move_help(request):
     tag = TopicTag.query.filter_by(label=u"質問").first()
 
     if tag is not None:
-        form.helps.data = topic_searcher.query_publishing_topics(datetime.now(), tag).all()
+        form.helps.data = topic_searcher.query_publishing_topics(get_now(request), tag).all()
         log_info("move_help", "helps get")
 
     log_info("move_help", "start")

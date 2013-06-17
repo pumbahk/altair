@@ -7,6 +7,7 @@ from urlparse import urlparse, urlunparse
 import sys
 import re
 import os
+import argparse
 
 SUBDOMAINS = [
     '89ers',
@@ -61,18 +62,28 @@ class MyProxyRequest(proxy.ProxyRequest):
     ports = dict(https=443, **proxy.ProxyRequest.ports)
 
     def rewrite(self):
+        self.override_host = None
         if self.method == 'CONNECT':
             self.target_host, port = self.uri.split(':')
             self.target_port = int(port)
             self.target_parsed = None
         else:
-            new_request_uri_str = request_uri_str = self.uri
+            new_request_uri_str = self.uri
+
+            for regexp, replace in self.channel.prerewrite_patterns:
+                new_request_uri_str = re.sub(regexp, replace, new_request_uri_str)
+
+            if new_request_uri_str != self.uri:
+                self.channel.factory.logFile.write("[prerewrite] %s => %s\n" % (self.uri, new_request_uri_str))
+                self.uri = new_request_uri_str
+                self.override_host = urlparse(self.uri).netloc
+
+            new_request_uri_str = self.uri
             for regexp, replace in self.channel.rewrite_patterns:
-                new_request_uri_str = re.sub(regexp, replace, request_uri_str)
-                if new_request_uri_str != request_uri_str:
-                    self.channel.factory.logFile.write("%s => %s\n" % (request_uri_str, new_request_uri_str))
-                    break
-                request_uri_str = new_request_uri_str
+                new_request_uri_str = re.sub(regexp, replace, new_request_uri_str)
+            if new_request_uri_str != self.uri:
+                self.channel.factory.logFile.write("[rewrite] %s => %s\n" % (self.uri, new_request_uri_str))
+
             self.target_uri = new_request_uri_str
             self.target_parsed = urlparse(new_request_uri_str)
             if ':' in self.target_parsed.netloc:
@@ -81,7 +92,7 @@ class MyProxyRequest(proxy.ProxyRequest):
                 self.target_port = int(port)
             else:
                 self.target_host = self.target_parsed.netloc
-                self.target_port = self.ports[self.target_parsed.scheme]
+                self.target_port = self.ports.get(self.target_parsed.scheme)
 
     def get_connector_class(self):
         if self.method == 'CONNECT':
@@ -101,16 +112,26 @@ class MyProxyRequest(proxy.ProxyRequest):
                 rest = rest + '/'
 
         class_ = self.get_connector_class()
+        if self.override_host:
+            self.target_headers['host'] = self.override_host
         if 'host' not in self.target_headers:
             self.target_headers['host'] = self.parsed.netloc
 
         self.content.seek(0, 0)
         s = self.content.read()
-        client = class_(self.method, rest, self.clientproto, self.target_headers, s, self)
-        self.reactor.connectTCP(self.target_host, self.target_port, client)
+        if self.target_port is None:
+            self.setResponseCode(http.BAD_REQUEST)
+            self.finish()
+        else:
+            client = class_(self.method, rest, self.clientproto, self.target_headers, s, self)
+            self.reactor.connectTCP(self.target_host, self.target_port, client)
 
 class MyProxy(proxy.Proxy):
     requestFactory = MyProxyRequest
+    prerewrite_patterns = [
+        (r'http://ticket.rakuten.co.jp/.api/rc/http/stg/([^/]+)(/.+)?/(verify.*)', r'http://\1.stg2.rt.ticketstar.jp\2/\3'),
+        ]
+
     rewrite_patterns = [
         (r'http://backend.stg2.rt.ticketstar.jp(/qrreader(?:/.*)?)', r'http://localhost:8030\1'),
         (r'http://backend.stg2.rt.ticketstar.jp(/.*)?', r'http://localhost:8021\1'),
@@ -121,6 +142,7 @@ class MyProxy(proxy.Proxy):
 
     def __init__(self, *args, **kwargs):
         proxy.Proxy.__init__(self, *args, **kwargs)
+        self.prerewrite_patterns = list(self.prerewrite_patterns)
         self.rewrite_patterns = list(self.rewrite_patterns)
         for subdomain in SUBDOMAINS:
             self.rewrite_patterns.extend([
@@ -134,12 +156,32 @@ class MyProxy(proxy.Proxy):
 class ProxyFactory(http.HTTPFactory):
     protocol = MyProxy
 
-if __name__ == '__main__':
-    tmpdir = os.path.join(os.path.dirname(__file__), 'tmp')
-    port = 58080
-    if not os.path.exists(tmpdir):
-        os.mkdir(tmpdir)
-    sys.stderr.write("proxy port:%d\n" % port)
-    log.startLogging(open(os.path.join(tmpdir, 'access.log'), 'w'))
-    reactor.listenTCP(port, ProxyFactory())
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-l', '--log', dest='log', type=str, nargs=1,
+                        help='access log')
+    parser.add_argument('address', type=str, nargs=1,
+                        help='the server address to listen on')
+    args = parser.parse_args()
+
+    addr_or_port, semi, port = args.address[0].partition(':')
+    if not semi:
+        addr = None
+        port = int(addr_or_port)
+    else:
+        addr = addr_or_port
+        port = int(port)
+    if not addr:
+        addr = ''
+
+    sys.stderr.write("Listening on %s:%d\n" % (addr, port))
+    if args.log:
+        out = open(args.log[0], 'a')
+    else:
+        out = sys.stderr
+    log.startLogging(out)
+    reactor.listenTCP(port, ProxyFactory(), 10, addr)
     reactor.run()
+
+if __name__ == '__main__':
+    main()

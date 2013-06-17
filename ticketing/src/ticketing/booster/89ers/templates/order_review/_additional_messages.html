@@ -1,9 +1,21 @@
 <%page args="pm"/>
 <tr>
   <td>${layout.team_name}からのメールマガジンの配信	</td>
-  <td class="textR">${u'希望する' if pm.get('mail_permission') else u'希望しない'}</td>
+  <td class="textR">${u'希望する' if pm['extra']['mail_permission'] else u'希望しない'}</td>
 </tr>
 <tr>
   <td>メモリアルブックへの掲載希望</td>
-  <td class="textR">${u'はい' if pm.get('publicity') == 'yes' else u'いいえ'}</td>
+  <td class="textR">${u'はい' if pm['extra']['publicity'] else u'いいえ'}</td>
 </tr>
+% if 'motivation' in pm['extra']:
+<tr>
+  <td>ブースタークラブに入会しようと思ったきっかけは？</td>
+  <td class="textR">${pm['extra']['motivation']}</td>
+</tr>
+% endif
+% if 'num_times_at_venue' in pm['extra']:
+<tr>
+  <td>昨シーズンの会場での観戦回数</td>
+  <td class="textR">${pm['extra']['num_times_at_venue']}回</td>
+</tr>
+% endif
