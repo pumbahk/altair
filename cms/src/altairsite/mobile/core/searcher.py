@@ -9,6 +9,7 @@ from altairsite.mobile.core.const import get_prefecture
 from altairsite.mobile.core.helper import exist_value
 from altairsite.mobile.core.const import SalesEnum
 from sqlalchemy import or_, and_, asc
+from altaircms.datelib import get_now
 from datetime import datetime, date, timedelta
 from altairsite.mobile.core.helper import log_debug, log_info, log_warn, log_exception, log_error
 
@@ -32,8 +33,8 @@ class EventSearcher(object):
                 .join(Page, Page.event_id == Event.id) \
                 .filter(Event.is_searchable == True) \
                 .filter(Page.published == True) \
-                .filter(Page.publish_begin < datetime.now()) \
-                .filter((Page.publish_end==None) | (Page.publish_end > datetime.now())) \
+                .filter(Page.publish_begin < get_now(self.request)) \
+                .filter((Page.publish_end==None) | (Page.publish_end > get_now(self.request))) \
                 .filter(where)
         log_info("_create_common_qs", "end")
         return qs
@@ -129,7 +130,7 @@ class EventSearcher(object):
     # 販売中
     def _get_events_on_sale(self, form, qs=None):
         log_info("_get_events_on_sale", "start")
-        where = (datetime.now() <= Event.deal_close)
+        where = (get_now(self.request) <= Event.deal_close)
         qs = self._create_common_qs(where=where, qs=qs)
         log_info("_get_events_on_sale", "end")
         return qs

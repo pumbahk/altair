@@ -5,7 +5,7 @@ import sqlalchemy.orm as orm
 from altaircms.page.models import Page, PageSet
 from .models import PromotionTag, TopcontentTag, TopicTag
 from .models import Promotion, Topcontent, Topic
-from datetime import datetime
+from altaircms.datelib import get_now
 
 import altaircms.searchlib as sl
 from altaircms.tag.api import get_tagmanager
@@ -71,13 +71,13 @@ TopicListTagOnly = [
     ]
 
 class TopicUnitListSearcher(object):
-    def __init__(self, request, _now=datetime.now):
+    def __init__(self, request, _now=get_now):
         self.request = request 
         self._now = _now
 
     def filter_default(self, qs, params):
         params = params.copy()
-        now = self._now()
+        now = self._now(self.request)
         params["term_end__gte"] = params["term_begin__lte"] = now
         cond_dict = sl.parse_params_using_schemas(TopicUnitListSearchSchemaList, params)
         qs = qs_filter_using_conds_list(qs, cond_dict.itervalues())
@@ -93,7 +93,7 @@ class TopicUnitListSearcher(object):
 
 class TopicPageListSearcher(object):
     def __init__(self, request, finder, 
-                 _now=datetime.now):
+                 _now=get_now):
         self.request = request 
         self.finder = finder
         self._now = _now
@@ -101,7 +101,7 @@ class TopicPageListSearcher(object):
     def filter_default(self, qs, params):
         cond_dict = sl.parse_params_using_schemas(TopicPageListSearchSchemaList, params)
         qs = qs_filter_using_conds_list(qs, cond_dict.itervalues())
-        now = self._now()
+        now = self._now(self.request)
         return qs.filter(Page.in_term(now))
 
     def no_filter_without_tag(self, qs, params):
@@ -131,13 +131,13 @@ class TopicPageDetailSearcher(object):
 
 
 class TopcontentUnitListSearcher(object):
-    def __init__(self, request, _now=datetime.now):
+    def __init__(self, request, _now=get_now):
         self.request = request 
         self._now = _now
 
     def filter_default(self, qs, params):
         params = params.copy()
-        now = self._now()
+        now = self._now(self.request)
         params["term_end__gte"] = params["term_begin__lte"] = now
         cond_dict = sl.parse_params_using_schemas(TopcontentUnitListSearchSchemaList, params)
         qs = qs_filter_using_conds_list(qs, cond_dict.itervalues())
@@ -153,7 +153,7 @@ class TopcontentUnitListSearcher(object):
 
 class TopcontentPageListSearcher(object):
     def __init__(self, request, finder, 
-                 _now=datetime.now):
+                 _now=get_now):
         self.request = request 
         self.finder = finder
         self._now = _now
@@ -161,7 +161,7 @@ class TopcontentPageListSearcher(object):
     def filter_default(self, qs, params):
         cond_dict = sl.parse_params_using_schemas(TopcontentPageListSearchSchemaList, params)
         qs = qs_filter_using_conds_list(qs, cond_dict.itervalues())
-        now = self._now()
+        now = self._now(self.request)
         return qs.filter(Page.in_term(now))
 
     def no_filter_without_tag(self, qs, params):
@@ -190,13 +190,13 @@ class TopcontentPageDetailSearcher(object):
 
 
 class PromotionUnitListSearcher(object):
-    def __init__(self, request, _now=datetime.now):
+    def __init__(self, request, _now=get_now):
         self.request = request 
         self._now = _now
 
     def filter_default(self, qs, params):
         params = params.copy()
-        now = self._now()
+        now = self._now(self.request)
         params["term_end__gte"] = params["term_begin__lte"] = now
         cond_dict = sl.parse_params_using_schemas(PromotionUnitListSearchSchemaList, params)
         qs = qs_filter_using_conds_list(qs, cond_dict.itervalues())
@@ -213,7 +213,7 @@ class PromotionUnitListSearcher(object):
 
 class PromotionPageListSearcher(object):
     def __init__(self, request, finder, 
-                 _now=datetime.now):
+                 _now=get_now):
         self.request = request 
         self.finder = finder
         self._now = _now
@@ -221,7 +221,7 @@ class PromotionPageListSearcher(object):
     def filter_default(self, qs, params):
         cond_dict = sl.parse_params_using_schemas(PromotionPageListSearchSchemaList, params)
         qs = qs_filter_using_conds_list(qs, cond_dict.itervalues())
-        now = self._now()
+        now = self._now(self.request)
         return qs.filter(Page.in_term(now))
 
     def no_filter_without_tag(self, qs, params):

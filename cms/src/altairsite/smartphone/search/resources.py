@@ -10,6 +10,7 @@ from altairsite.mobile.core.helper import log_info
 from altairsite.smartphone.common.helper import SmartPhoneHelper
 
 from datetime import date, datetime
+from altaircms.datelib import get_now
 
 class SearchPageResource(CommonResource):
     def __init__(self, request):
@@ -120,7 +121,7 @@ class SearchPageResource(CommonResource):
     # ホットワード検索結果表示
     def search_hotword(self, query, page, per):
         searcher = EventSearcher(request=self.request)
-        today = datetime.now()
+        today = get_now(self.request)
         hotword = self.request.allowable(HotWord).filter(HotWord.term_begin <= today) \
             .filter(today <= HotWord.term_end) \
             .filter_by(enablep=True).filter(HotWord.id == query.hotword.id).first()

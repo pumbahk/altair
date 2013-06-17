@@ -6,6 +6,7 @@ from calendar_stream import PackedCalendarStream
 from calendar_stream import CalendarStreamGenerator
 from collections import defaultdict
 from pyramid.renderers import render
+from altaircms.datelib import get_now
 from datetime import date, timedelta, datetime
 from . import CalendarTemplatePathStore
 import itertools
@@ -128,7 +129,7 @@ def obi(widget, stock_status, performances, request, template_name=None):
     """公演の開始から終了までを縦に表示するカレンダー
     ※ performancesはstart_onでsortされているとする
     """
-    now = datetime.now()
+    now = get_now(request)
     template_name = template_name or CalendarTemplatePathStore.path("obi")
     logger.debug("calendar template: "+template_name)
 
@@ -143,7 +144,7 @@ def obi(widget, stock_status, performances, request, template_name=None):
 def term(widget, stock_status, performances, request, template_name=None):
     """開始日／終了日を指定してその範囲のカレンダーを表示
     """
-    now = datetime.now()
+    now = get_now(request)
     template_name = template_name or CalendarTemplatePathStore.path("term")
     logger.debug("calendar template: "+template_name)
 
@@ -155,7 +156,7 @@ def tab(widget, stock_status, performances, request, template_name=None):
     """月毎のタブが存在するカレンダーを表示
     ※ performancesはstart_onでsortされているとする
     """
-    now = datetime.now()
+    now = get_now(request)
     template_name = template_name or CalendarTemplatePathStore.path("tab")
     logger.debug("calendar template: "+template_name)
     performances = list(performances)

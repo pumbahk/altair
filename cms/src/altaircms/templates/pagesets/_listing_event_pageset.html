@@ -1,6 +1,6 @@
 <%
-from datetime import datetime
-now = datetime.now()
+from altaircms.datelib import get_now
+now = get_now(request)
 %>
 <div class="box">
   <table class="table table-describe">

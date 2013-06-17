@@ -8,6 +8,7 @@ from altaircms.models import Performance, SalesSegmentGroup, SalesSegmentKind
 
 import webhelpers.paginate as paginate
 from datetime import datetime, date, timedelta
+from altaircms.datelib import get_now, get_today
 
 class SearchResult(object):
     def __init__(self, query, num=0, start=0, end=0, page=1, page_end=1, events=None):
@@ -62,7 +63,7 @@ class EventSearcher(object):
 
     # 今週発売検索(月曜日を週のはじめとする)
     def search_week_sale(self, offset=None, qs=None):
-        today = date.today()
+        today = get_today(self.request)
         start_day = today + timedelta(days=offset or -today.weekday())
         where = (Event.deal_open >= start_day) & (Event.deal_open <= start_day+timedelta(days=7))
         qs = self._create_common_qs(where=where, qs=qs)
@@ -70,8 +71,8 @@ class EventSearcher(object):
 
     # まもなく開演
     def search_near_act(self, qs=None):
-        where = (date.today() < Performance.start_on) & \
-                (Performance.start_on < date.today() + timedelta(days=7))
+        where = (get_today(self.request) < Performance.start_on) & \
+                (Performance.start_on < get_today(self.request) + timedelta(days=7))
         qs = self._create_common_qs(where=where, qs=qs)
         return qs
 
@@ -80,7 +81,7 @@ class EventSearcher(object):
         sale_end = search_query.sale_info.sale_end
         if sale_end:
             log_info("search_near_sale_end", "near_sale_end = " + str(sale_end))
-            today = date.today()
+            today = get_today(self.request)
             sale_end = int(sale_end)
             limit_day = today + timedelta(days=sale_end)
             where = (today <= Event.deal_close) & (Event.deal_close <= limit_day)
@@ -130,7 +131,7 @@ class EventSearcher(object):
         sale_start = search_query.sale_info.sale_start
         if sale_start:
             log_info("search_near_sale_start", "near_sale_start = " + str(sale_start))
-            today = date.today()
+            today = get_today(self.request)
             sale_start = int(sale_start)
             sale_day = today + timedelta(days=sale_start)
             where = (Event.deal_open <= sale_day) & (Event.deal_open >= today)
@@ -151,7 +152,7 @@ class EventSearcher(object):
 
     # 販売中
     def search_on_sale(self, qs=None):
-        where = (datetime.now() <= Event.deal_close)
+        where = (get_now(self.request) <= Event.deal_close)
         qs = self._create_common_qs(where=where, qs=qs)
         return qs
 
@@ -163,7 +164,7 @@ class EventSearcher(object):
 
     # 販売終了した公演
     def search_closed(self, qs=None):
-        where = (datetime.now() > Event.deal_close)
+        where = (get_now(self.request) > Event.deal_close)
         qs = self._create_common_qs(where=where, qs=qs)
         return qs
 
@@ -179,8 +180,8 @@ class EventSearcher(object):
                 .join(Page, Page.event_id == Event.id) \
                 .filter(Event.is_searchable == True) \
                 .filter(Page.published == True) \
-                .filter(Page.publish_begin < datetime.now()) \
-                .filter((Page.publish_end==None) | (Page.publish_end > datetime.now())) \
+                .filter(Page.publish_begin < get_now(self.request)) \
+                .filter((Page.publish_end==None) | (Page.publish_end > get_now(self.request))) \
                 .filter(where)
         return qs
 

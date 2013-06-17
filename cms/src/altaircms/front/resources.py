@@ -5,6 +5,7 @@ import logging
 logger = logging.getLogger(__file__)
 
 from . import api
+from altaircms.datelib import get_now
 from altaircms.security import get_acl_candidates
 from altaircms.page.models import Page
 from altaircms.page.models import PageSet
@@ -67,7 +68,7 @@ class AccessControl(object):
                 fmt = "*fetch page* invalid organization page(%s) != operator(%s)" 
                 self._error_message.append(fmt % (self.request.organization.id, page.organization_id))
                 return page
-        elif not page.can_private_access(key=access_key):
+        elif not page.can_private_access(key=access_key, now=get_now(self.request)):
             self.access_ok = False
             self._error_message.append(u"invalid access key %s.\n 有効期限が切れているかもしれません. (有効期限:%s)" % (access_key.hashkey, access_key.expiredate))
             return page

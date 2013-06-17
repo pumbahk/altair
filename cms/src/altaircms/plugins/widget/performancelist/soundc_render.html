@@ -3,9 +3,9 @@
 
 <%
 from altaircms.plugins.widget.performancelist import helpers as myhelpers
-from datetime import datetime 
+from altaircms.datelib import get_now
 import logging
-now = datetime.now()
+now = get_now(request)
 logger = logging.getLogger(__name__)
 %>
 <div class="detailBox">

@@ -1,5 +1,5 @@
 import sqlalchemy as sa
-from datetime import datetime
+from altaircms.datelib import get_now
 from altaircms.page.models import PageType
 
 def nav_pageset_panel(context, request, pagetype):
@@ -14,7 +14,7 @@ def nav_pageset_panel(context, request, pagetype):
     return {"pagetypes": candidates}
         
 def pageset_page_listing_panel(context, request, pageset):
-    now = datetime.now()
+    now = get_now(request)
     pages = pageset.pages
     current_page = pageset.current(now, published=True)
     return dict(pageset=pageset, 

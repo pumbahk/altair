@@ -41,7 +41,7 @@ class CountdownWidget(Widget):
 
     def get_limit(self, event, today_fn=datetime.datetime.now):
         limit_date = getattr(event, self.kind)
-        return h.base.countdown_days_from(limit_date, today_fn=today_fn)
+        return h.base.countdown_days_from(request, limit_date, today_fn=today_fn)
 
     def merge_settings(self, bname, bsettings):
         bsettings.need_extra_in_scan("request")

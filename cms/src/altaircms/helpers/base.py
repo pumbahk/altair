@@ -1,6 +1,6 @@
 # -*- coding:utf-8 -*-
 import datetime
-
+from altaircms.datelib import get_now
 
 class RawText(object):
     def __init__(self, v):
@@ -16,8 +16,8 @@ def path_in_string(path, string):
     return path.endswith(string)
 
 
-def countdown_days_from(limit_date, today_fn=datetime.datetime.now):
-    today = today_fn()
+def countdown_days_from(request, limit_date, today_fn=get_now):
+    today = today_fn(request)
     if today > limit_date:
         return 0
     else:

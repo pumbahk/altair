@@ -85,7 +85,7 @@ def create_date_selectbox(form):
     form.since_day.choices.append(['0', '-'])
     form.day.choices.append(['0', '-'])
 
-    today = date.today()
+    today = date.today() ##受付formなのでaltair.nowではなくてok
 
     for year in range(today.year, today.year + 3):
         form.since_year.choices.append([str(year), str(year)])

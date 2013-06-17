@@ -2,7 +2,7 @@
 #
 import sqlalchemy.orm as orm
 from pyramid.view import view_config
-from datetime import datetime
+from altaircms.datelib import get_now
 import altaircms.helpers as h
 from altaircms.auth.api import get_or_404
 from altaircms.page.models import Page
@@ -101,7 +101,7 @@ def detail_view(context, request):
         #     topics = searcher.filter_by_system_tag(topics, widget.system_tag)
         topics = context.TargetTopic.order_by_logic(topics)
     else:
-        d = datetime.now()
+        d = get_now(request)
         topics = searcher.query_publishing_topics(d, widget.tag, widget.system_tag)
         topics = topics.options(orm.joinedload(context.TargetTopic.tags))
     return dict(topics=topics, page=page,
