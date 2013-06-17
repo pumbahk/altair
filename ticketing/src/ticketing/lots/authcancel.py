@@ -2,8 +2,8 @@ from zope.interface import implementer
 from ticketing.multicheckout.interfaces import ICancelFilter
 from .models import LotEntry
 
-def include(config):
-    config.registry.registerUtility(CancelFilter)
+def includeme(config):
+    config.registry.registerUtility(CancelFilter())
 
 @implementer(ICancelFilter)
 class CancelFilter(object):

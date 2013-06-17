@@ -121,6 +121,25 @@ class Lot(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     system_fee = sa.Column(sa.Numeric(precision=16, scale=2), default=0,
                            server_default="0")
 
+
+
+    @property
+    def remained_entries(self):
+        """ 当選以外のエントリ"""
+
+        return LotEntry.query.join(
+            Lot
+        ).filter(
+            LotEntry.elected_at==None
+        ).filter(
+            LotEntry.order_id==None
+        ).filter(
+            sql.or_(LotEntry.rejected_at!=None,
+                    LotEntry.canceled_at!=None)
+        ).filter(
+            Lot.id==self.id
+        ).all()
+
     def is_elected(self):
         return self.status == int(LotStatusEnum.Elected)
 
