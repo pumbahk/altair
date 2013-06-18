@@ -182,7 +182,7 @@ def index(request):
     query = query.outerjoin(Seat)
     query = query.options(undefer(Site.created_at), undefer(Performance.created_at))
     query = query.group_by(Venue.id)
-    query = query.order_by(asc(Venue.site_id), desc(Venue.performance_id))
+    query = query.order_by(asc(Venue.site_id), asc(-Venue.performance_id))
 
     items = []
     for venue, site, performance, count in query:
