@@ -7,7 +7,7 @@ from sqlalchemy.orm import aliased
 from ticketing.models import asc_or_desc
 from ticketing.helpers import todatetime
 from ticketing.core.models import (
-    #Order,
+    Order,
     OrderedProduct,
     OrderedProductItem,
     Product,
@@ -107,6 +107,8 @@ class BaseSearchQueryBuilderMixin(object):
         return query.filter(self.targets['subject'].performance_id == value)
 
     def _event_id(self, query, value):
+        if hasattr(self.targets['subject'], 'event_id'):
+            return query.filter(self.targets['subject'].event_id == value)
         return query.filter(self.targets['subject'].performance_id==Performance.id).filter(Performance.event_id == value)
 
     def _payment_method(self, query, value):
@@ -211,7 +213,8 @@ class CartSearchQueryBuilder(SearchQueryBuilderBase, BaseSearchQueryBuilderMixin
 
 class OrderSearchQueryBuilder(SearchQueryBuilderBase, BaseSearchQueryBuilderMixin):
     targets = {
-        'subject': OrderSummary,
+        #'subject': OrderSummary,
+        'subject': Order,
         'OrderedProduct': OrderedProduct,
         'OrderedProductItem': OrderedProductItem,
         'Product': Product,

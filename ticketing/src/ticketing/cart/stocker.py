@@ -11,7 +11,7 @@ from ticketing.core.models import (
     StockStatus,
     ProductItem,
 )
-from sqlalchemy.orm import joinedload
+
 
 logger = logging.getLogger(__name__)
 
@@ -66,9 +66,7 @@ class Stocker(object):
         """
         stock_ids = [s[0] for s in stock_requires]
         require_quantities = dict(stock_requires)
-        statuses = StockStatus.query.options(
-            joinedload(StockStatus.stock),
-        ).filter(StockStatus.stock_id.in_(stock_ids)).with_lockmode('update').all()
+        statuses = StockStatus.query.filter(StockStatus.stock_id.in_(stock_ids)).with_lockmode('update').all()
         
         results = []
         # 在庫数を確認、確保
