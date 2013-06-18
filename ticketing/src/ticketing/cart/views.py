@@ -648,7 +648,7 @@ class PaymentView(object):
         if not self._validate_extras(cart, payment_delivery_pair, shipping_address_params):
             start_on = cart.performance.start_on
             sales_segment = self.sales_segment
-            payment_delivery_methods = sales_segment.available_payment_delivery_method_pairs(getattr(self.context, 'now', datetime.now()))
+            payment_delivery_methods = self.context.available_payment_delivery_method_pairs(sales_segment)
             return dict(form=self.form, payment_delivery_methods=payment_delivery_methods)
 
         cart.payment_delivery_pair = payment_delivery_pair
