@@ -47,5 +47,6 @@ def main(global_config, **local_config):
 
 
     config.add_subscriber('..subscribers.add_helpers', 'pyramid.events.BeforeRender')
+    config.include("ticketing.mails")
     config.add_subscriber('..sendmail.on_order_completed', 'ticketing.cart.events.OrderCompleted')
     return config.make_wsgi_app()
