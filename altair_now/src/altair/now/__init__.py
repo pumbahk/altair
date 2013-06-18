@@ -13,11 +13,10 @@ def get_now(request):
 
 
 def set_now(request, dt):
-    if dt is None and session_key in request.session:
-        del request.session[session_key]
-    else:
+    if dt:
         request.session[session_key] = dt
-
+    elif dt is None and session_key in request.session:
+        del request.session[session_key]
 
 def get_today(request):
     d = get_now(request)
