@@ -36,11 +36,13 @@ function settingReload () {
     $prev.attr("disabled", true);
 }
 
+/*
 $(window).load(function(){
     settingFlipSize();
     settingReload();
     Flipsnap('.flipsnap');
 });
+*/
 
 $(function() {
 
@@ -120,6 +122,26 @@ $(function() {
         }, false);
     })();
 
+
+    var imgPreloader = new Array();
+    $(".imgtf").each(function(index) {
+
+        imgPreloader[index] = new Image();
+
+        var imgTarget = $(this);
+        var imgWidth, imgHeight;
+        var orgSrc = $(this).attr("org_src");
+        imgPreloader[index].src=orgSrc;
+
+        imgPreloader[index].onload=function() {
+            imgWidth = imgPreloader.width;
+            imgHeight = imgPreloader.height;
+            imgTarget.attr({'src':orgSrc});
+        }
+
+    });
+
+    /*
 	$("img.imgtf").bind("load", function(){
         // 画像縮小
         var disp_width = viewWidth;
@@ -161,6 +183,7 @@ $(function() {
             target.prop('width', true_width);
         }
 	});
+	*/
 
 })();
 </script>
@@ -215,7 +238,7 @@ $(function() {
 
 <%def name="disp_image(image_path)">
     <div class="item">
-        <img class="imgtf" src="${image_path}" alt="img" />
+        <img class="imgtf" org_src="${image_path}" alt="img" />
     </div>
 </%def>
 
