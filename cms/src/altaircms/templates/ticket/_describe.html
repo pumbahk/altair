@@ -9,8 +9,8 @@
       <th>backend id</th><td>${ticket.backend_id}</td>
     </tr>
     <tr>
-      <th>作成日時</th><td>${h.base.jdate_with_hour(ticket.created_at)}</td>
-      <th>更新日時</th><td>${h.base.jdate_with_hour(ticket.updated_at)}</td>
+      <th>作成日時</th><td>${h.base.jdatetime(ticket.created_at)}</td>
+      <th>更新日時</th><td>${h.base.jdatetime(ticket.updated_at)}</td>
     </tr>
     <tr>
       <th>名前</th><td colspan="3">${ticket.name}</td>

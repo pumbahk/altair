@@ -63,7 +63,7 @@ def jdate(d):
     else:
         return u"-"
 
-def jdate_with_hour(d):
+def jdatetime(d):
     if d:
         datestr = d.strftime(u"%Y年%-m月%-d日 %2H:%2M".encode("utf-8")).decode("utf-8")
         return u"%s（%s）" % (datestr, unicode(WEEK[d.weekday()]))

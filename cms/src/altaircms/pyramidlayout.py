@@ -3,7 +3,7 @@ from pyramid.decorator import reify
 from .linklib import get_global_link_settings
 from altairsite.pyramidlayout import MyLayout as LayoutBase
 from .datelib import get_now, get_today, has_session_key
-from .helpers.base import jdate_with_hour
+from .helpers.base import jdatetime
         
 class MyLayout(LayoutBase):
     class color:
@@ -33,4 +33,4 @@ class MyLayout(LayoutBase):
             prefix = u"時間指定有効"
         else:
             prefix = u"時間指定無効"
-        return u"{0}: {1}".format(prefix, jdate_with_hour(self.now()))
+        return u"{0}: {1}".format(prefix, jdatetime(self.now()))

@@ -16,8 +16,8 @@
         <td>${ticket.name}</td>
         <td>${ticket.price}</td>
         <td>${ticket.display_order}</td>
-        <td>${h.base.jdate_with_hour(ticket.created_at)}</td>
-        <td>${h.base.jdate_with_hour(ticket.updated_at)}</td>
+        <td>${h.base.jdatetime(ticket.created_at)}</td>
+        <td>${h.base.jdatetime(ticket.updated_at)}</td>
         <td>
 				<div class="btn-group">
 					<a class="btn btn-primary" href="${h.route_path_override(request, "ticket_update",action="input",id=ticket.id, _query=dict(endpoint=request.url, salessegment_id=salessegment.id))}">

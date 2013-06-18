@@ -117,7 +117,7 @@ ${helper.nl2br(event.inquiry_for)|n}
             %elif max(end_on_candidates) >= get_now(request):
                 <div align="center">
                 <%m:band bgcolor="#ffcccc">
-                % if event.deal_close >= datetime.now():
+                % if event.deal_close >= get_now(request):
                   <a href="${purchase_links[perf.id]}"><font color="#cc0000">この公演のチケットを購入</font></a>
                 % endif
                 </%m:band>

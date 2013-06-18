@@ -39,7 +39,7 @@ ${seq.pager()}
 	  <a href="${h.mobilelink.publish_page_from_pageset(request,pageset)}">${pageset.name}</a><br>
 	  ${h.term(event.event_open,event.event_close)}<br>
 	  ${event.title}<br>
-	  一般: ${h.base.jdate_with_hour(event.deal_open)}<br>
+	  一般: ${h.base.jdatetime(event.deal_open)}<br>
 	   <hr color="#bf0000" size="1" noshade="noshade">
 	%endif
   %endfor

@@ -123,7 +123,7 @@ ul.sitemapLists li.list2{
         <h3 class="genre">新着順</h3>
         <ul class="sitemapLists">
           %for p in recently_pages:
-          <li><a href="${h.link.publish_page_from_pageset(request, p)}" target="_blank" >${p.event.title}</a> (${h.base.jdate_with_hour(p.event.deal_open)} 販売開始!)</li>                   
+          <li><a href="${h.link.publish_page_from_pageset(request, p)}" target="_blank" >${p.event.title}</a> (${h.base.jdatetime(p.event.deal_open)} 販売開始!)</li>                   
           %endfor
         </ul>
       </td>
