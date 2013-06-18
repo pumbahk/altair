@@ -24,7 +24,7 @@ tagsize = len(tags)
 ##          <input type="checkbox" name="object_id" value="${tags[0].id}">
 ##		</td>
 		  <td><a class="tag" href="${h.tag.to_search_query(request, "page", tags[0])}">${tags[0].label}</a></td>
-		  <td>${h.base.jdate_with_hour(tags[0].created_at)}</td>
+		  <td>${h.base.jdatetime(tags[0].created_at)}</td>
 		%endif
 	  </tr>
 	  %if tagsize >1:
@@ -34,7 +34,7 @@ tagsize = len(tags)
 ##          <input type="checkbox" name="object_id" value="${tag.id}">
 ##		</td>
 		<td><a class="tag" href="${h.tag.to_search_query(request, "page", tag)}">${tag.label}</a></td>
-		<td>${h.base.jdate_with_hour(tag.created_at)}</td>
+		<td>${h.base.jdatetime(tag.created_at)}</td>
 	  </tr>
 	  %endfor
 	  %endif
@@ -49,7 +49,7 @@ tagsize = len(tags)
 ##			<input type="checkbox" name="object_id" value="${tags[0].id}">
 ##		  </td>
 		  <td><a class="tag" href="${h.tag.to_search_query(request, "page", tags[0])}">${tags[0].label}</a></td>
-		  <td>${h.base.jdate_with_hour(tags[0].created_at)}</td>
+		  <td>${h.base.jdatetime(tags[0].created_at)}</td>
 		%endif
 	  </tr>
 	  %if tagsize >1:
@@ -59,7 +59,7 @@ tagsize = len(tags)
 ##          <input type="checkbox" name="object_id" value="${tag.id}">
 ##		</td>
 		<td><a class="tag" href="${h.tag.to_search_query(request, "page", tag)}">${tag.label}</a></td>
-		<td>${h.base.jdate_with_hour(tag.created_at)}</td>
+		<td>${h.base.jdatetime(tag.created_at)}</td>
 	  </tr>
 	  %endfor
 	  %endif

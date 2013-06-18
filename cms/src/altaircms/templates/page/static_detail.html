@@ -38,10 +38,10 @@ h3{
         </td>
       </tr>
       <tr>
-        <th>作成日時</th><td>${h.base.jdate_with_hour(static_page.created_at)}</td>
+        <th>作成日時</th><td>${h.base.jdatetime(static_page.created_at)}</td>
       </tr>
       <tr>
-        <th>更新日時</th><td>${h.base.jdate_with_hour(static_page.updated_at)}</td>
+        <th>更新日時</th><td>${h.base.jdatetime(static_page.updated_at)}</td>
       </tr>
       <tr>
         <th>公開ステータス</th><td>${u"公開中" if static_page.published else u"非公開"}</td>

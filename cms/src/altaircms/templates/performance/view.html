@@ -73,7 +73,7 @@ performances_size = len(performances)
         <td>${performances[0].title}</td>
         <td>${performances[0].backend_id}</td>
         <td>${performances[0].venue}</td>
-        <td>${h.base.jdate_with_hour(performances[0].start_on)}</td>
+        <td>${h.base.jdatetime(performances[0].start_on)}</td>
         <td>${performances[0].purchase_link or u"-"}</td>
         <td>${performances[0].mobile_purchase_link or u"-"}</td>
       </tr>
@@ -83,7 +83,7 @@ performances_size = len(performances)
         <td>${p.title}</td>
         <td>${p.backend_id}</td>
         <td>${p.venue}</td>
-        <td>${h.base.jdate_with_hour(p.start_on)}</td>
+        <td>${h.base.jdatetime(p.start_on)}</td>
         <td>${p.purchase_link or u"-"}</td>
         <td>${p.mobile_purchase_link or u"-"}</td>
       </tr>
