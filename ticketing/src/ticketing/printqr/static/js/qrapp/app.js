@@ -329,7 +329,7 @@ var QRInputView = AppPageViewBase.extend({
   }, 
   clearQRCodeInput: function(){
     this.$qrcode.val("");
-    this.datastore.trigger("*qr.clear.input");
+    this.datastore.cleanBuffer();
     this.datastore.trigger("*refresh");
   }, 
   readOnEnter: function(e){
@@ -346,9 +346,12 @@ var QRInputView = AppPageViewBase.extend({
     }
     return false;
   }, 
+  _isAlreadyQueued: function(qrsigned){
+      return this.datastore.get("qrcode") == qrsigned && !(this.datastore.get("canceled"))
+  }, 
   loadQRCodeInput: function(){
     var qrsigned = this.$qrcode.val();
-    if(this.datastore.get("qrcode") == qrsigned && !(this.datastore.get("canceled"))){
+    if(this._isAlreadyQueued(qrsigned)){
       this.messageView.alert("既に印刷キューに入っています。")
       return ;
     }
@@ -362,9 +365,11 @@ var QRInputView = AppPageViewBase.extend({
   _loadQRCodeInput: function(qrsigned,  auto_trigger){
     var url = this.apiResource["api.ticket.data"];
     var self = this;
+    if(!this._isAlreadyQueued(qrsigned)){
+        this.datastore.cleanBuffer();
+    }
     this.datastore.set("qrcode", qrsigned); //todo: using signal.
     this.datastore.set("auto_trigger",  auto_trigger);
-    this.datastore.cleanBuffer();
 
     return $.getJSON(url, {qrsigned: qrsigned})
       .done(function(data){
@@ -611,7 +616,6 @@ var AppletView = Backbone.View.extend({
     this.service = opts.service;
     this.router = opts.router;
     this.apiResource = opts.apiResource;
-    this.datastore.bind("*qr.clear.input", this.clearQRInput, this);
     this.datastore.bind("*qr.not.printed", this.createTicket, this);
 
     this.datastore.bind("change:printer_name", this.setPrinter, this);
@@ -621,9 +625,6 @@ var AppletView = Backbone.View.extend({
     this.datastore.bind("*qr.print.signal", this.sendPrintSignalIfNeed, this);
 
     this.consumed_tokens = [];
-  }, 
-  clearQRInput: function(){
-    this.datastore.cleanBuffer();
   }, 
   start: function(){
     this.fetchPinterCandidates();
