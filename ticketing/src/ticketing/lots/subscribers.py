@@ -18,6 +18,8 @@ def send_lot_accepted_mail(event):
 def finish_elected_lot_entry(event):
     try:
         entry = event.lot_entry
+        if entry.ordered_mail_sent_at:
+            return
         wish = event.lot_wish
         request = event.request
         sendmail.send_elected_mail(request, entry, wish)
