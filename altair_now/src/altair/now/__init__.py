@@ -22,3 +22,6 @@ def set_now(request, dt):
 def get_today(request):
     d = get_now(request)
     return date(d.year, d.month, d.day)
+
+def includeme(config):
+    config.set_request_property(get_now, "now", reify=True)
