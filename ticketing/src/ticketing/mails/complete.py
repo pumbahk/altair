@@ -2,6 +2,7 @@
 from .api import get_mailinfo_traverser
 from .api import create_or_update_mailinfo,  create_fake_order
 from .forms import OrderInfoRenderer, OrderInfoDefault, OrderInfo
+from mako.template import Template
 from ticketing.cart import helpers as ch ##
 import logging
 logger = logging.getLogger(__name__)
@@ -19,6 +20,9 @@ def access_data(data, k, default=""):
         return data[str(MailTypeEnum.CompleteMail)][k]
     except KeyError:
         return default
+
+from .forms import PluginInfo
+import itertools
 
 class OrderCompleteInfoDefault(OrderInfoDefault):
     tel = OrderInfo(name="tel", label=u"電話番号", getval=lambda order : order.shipping_address.tel_1 or "")
@@ -44,6 +48,7 @@ class CompleteMail(object):
 
     def get_mail_sender(self, organization, traverser):
         return (traverser.data["sender"] or organization.contact_email)
+
 
     def build_message(self, order):
         organization = order.ordered_from or self.request.organization
@@ -75,9 +80,41 @@ class CompleteMail(object):
                      footer = traverser.data["footer"],
                      notice = traverser.data["notice"],
                      header = traverser.data["header"],
+                     template_body = traverser.data["template_body"] #xxxx:
                      )
         return value
 
     def build_mail_body(self, order):
         value = self._build_mail_body(order)
+        template_body = value.get("template_body")
+        if template_body:
+            value = build_value_with_render_event(self.request, value)
+            return Template(template_body).render(**value)
         return renderers.render(self.mail_template, value, request=self.request)
+
+
+from pyramid.interfaces import IRendererGlobalsFactory
+from pyramid.events import BeforeRender
+def build_value_with_render_event(request, value, system_values=None):
+    if system_values is None:
+        system_values = {
+            'view':None,
+            'renderer_name':"*dummy", # b/c
+            'renderer_info':"*dummy",
+#            'context':getattr(request, 'context', None),
+            'request':request,
+            'req':request,
+            }
+    system_values = BeforeRender(system_values, value)
+    registry = request.registry
+    globals_factory = registry.queryUtility(IRendererGlobalsFactory)
+
+    if globals_factory is not None:
+        renderer_globals = globals_factory(system_values)
+        if renderer_globals:
+            system_values.update(renderer_globals)
+
+    registry.notify(system_values)
+    system_values.update(value)
+    return system_values
+

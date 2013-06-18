@@ -186,6 +186,7 @@ class MailInfoTemplate(object):
                        #("footer", u"フッター"), 
                        ]
     common_choices = [
+        PluginInfo("", "template_body",  u"テンプレート"), 
         PluginInfo("", "header", u"メールヘッダー"),
         PluginInfo("", "notice", u"共通注意事項"), 
         PluginInfo("", "footer", u"メールフッター"),
