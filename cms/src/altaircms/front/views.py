@@ -44,9 +44,10 @@ def preview_page(context, request):
     ## ugly
     now = get_now(request)
     if not page.published or (page.publish_begin and now < page.publish_begin) or (page.publish_end and now > page.publish_end):
-        return _append_preview_message(response, u"これはpreview画面です (%s)" % page.publish_status(now), color="red", backgroundcolor="#faa")
+        return _append_preview_message(response, u"これはpreview画面です ({0}) 現在時刻:{1}".format(page.publish_status(now),  now), color="red", backgroundcolor="#faa")
     else:
-        return _append_preview_message(response, u"これはpreview画面です (%s)" % page.publish_status(now), color="green", backgroundcolor="#afa")
+        return _append_preview_message(response, u"これはpreview画面です ({0}) 現在時刻:{1}".format(page.publish_status(now),  now), color="green", backgroundcolor="#afa")
+
 
 
 @view_config(route_name="preview_pageset", decorator=with_jquery)
@@ -71,13 +72,14 @@ def preview_pageset(context, request, published=True):
     renderer = control.frontpage_renderer()
     response = renderer.render(discriptor.absspec(), page)
     ## ugly
+    now = get_now(request)
     if published:
-        return _append_preview_message(response, u"<p>これはpreview画面です。</p>", color="green", backgroundcolor="#afa")
+        return _append_preview_message(response, u"これはpreview画面です ({0}) 現在時刻:{1}".format(page.publish_status(now),  now), color="green", backgroundcolor="#afa")
     else:
-        now = get_now(request)
         messages = [u'<div>'
-                    u'<p>これはpreview画面です。(注意：ページが全て非公開あるいは掲載期限を過ぎています)</p>', 
-                    u'<ul><li>%s</li></ul>' % u'</li><li>'.join(u'ページ名=%s(公開ステータス: %s)' % (p.name, p.publish_status(now))for p in Page.query.filter_by(pageset_id=pageset_id).all()), 
+                    u"<p>これはpreview画面です ({0}) 現在時刻:{1}</p>".format(page.publish_status(now),  now), 
+                    u'<p>(注意：ページが全て非公開あるいは掲載期限を過ぎています)</p>', 
+                    u'<ul><li>%s</li></ul>' % u'</li><li>'.join(u'ページ名=%s(公開ステータス: %s)' % (p.name, p.publish_status(now)) for p in Page.query.filter_by(pageset_id=pageset_id).all()), 
                     u"</div>"]
         return _append_preview_message(response, u"".join(messages), color="red", backgroundcolor="#faa")
 

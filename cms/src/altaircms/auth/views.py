@@ -2,10 +2,8 @@
 import logging
 logger = logging.getLogger(__file__)
 
-from datetime import datetime
-import urllib
 import urllib2
-
+from altaircms.datelib import set_now
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound
 from pyramid.security import forget, remember, authenticated_userid
 from pyramid.view import view_config
@@ -17,7 +15,7 @@ import json
 
 from altaircms.models import DBSession
 from altaircms.lib.fanstatic_decorator import with_bootstrap
-from altaircms.auth.forms import RoleForm
+from altaircms.auth.forms import RoleForm, NowSettingForm
 from .models import Operator, Role, DEFAULT_ROLE, Organization
 
 from . import api
@@ -228,3 +226,28 @@ class RolePermissionView(object):
             role.permissions.remove(permission)
         
         return HTTPFound(self.request.route_path("role", id=role_id))
+
+
+##
+# get now settings
+@view_config(route_name="nowsetting", request_method="GET", 
+             permission="authenticated", decorator=with_bootstrap, renderer="altaircms:templates/auth/nowsetting/view.html")
+def nowsettings(context, request):
+    form = NowSettingForm()
+    return {"form": form}
+
+@view_config(route_name="nowsetting", request_method="POST", 
+             permission="authenticated", decorator=with_bootstrap, renderer="altaircms:templates/auth/nowsetting/view.html")
+def nowsettings_set_now(context, request):
+    form = NowSettingForm(request.POST)
+    if form.validate():
+        set_now(request, form.data["now"])
+        return HTTPFound("/")
+    return {"form": form}
+
+@view_config(route_name="nowsetting.invalidate", 
+             permission="authenticated")
+def nowsettings_invalidate(context, request):
+    set_now(request, None)
+    return HTTPFound("/")
+    
