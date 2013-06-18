@@ -27,7 +27,7 @@ class MailUtility(object):
         return message
 
     def send_mail(self, request, order, override=None):
-        mailer = get_mailer(self, request)
+        mailer = get_mailer(request)
         message = self.build_message(request, order)
         if message is None:
             logger.warn("message is None: %s", traceback.format_stack(limit=3))

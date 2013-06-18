@@ -1,13 +1,16 @@
 # -*- coding:utf-8 -*-
 from . import logger
 from ..models import DBSession
-import ticketing.mails.complete as api
+from ticketing.core.models import MailTypeEnum
+from ticketing.mails.api import get_mail_utility
 
+Complete = MailTypeEnum.CompleteMail
 def on_order_completed(order_completed):
     try:
         order = order_completed.order
         request = order_completed.request
-        api.send_mail(request, order)
+        mutil = get_mail_utility(request, Complete)
+        mutil.send_mail(request, order)
     except Exception:
         ## id見れないと困る
         #DBSession.flush(order)

@@ -32,8 +32,8 @@ class OrderCancelInfoDefault(OrderInfoDefault):
                       zip = sa.zip, 
                       prefecture = sa.prefecture, 
                       city = sa.city, 
-                      addres_1 = sa.addres_1, 
-                      addres_2 = sa.addres_2)
+                      address_1 = sa.address_1, 
+                      address_2 = sa.address_2)
         return u"""\
 ${last_name} ${first_name} 様
 〒 ${zip}
@@ -42,7 +42,7 @@ ${address_1} ${address_2}""" % params
 
     ordered_from = OrderInfo(name=u"ordered_from", label=u"販売会社", getval=lambda order: order.ordered_from.name)
     payment_method = OrderInfo(name=u"payment_method", label=u"支払方法",  getval=lambda order: order.payment_delivery_pair.payment_method.name)
-    delivery_method = OrderInfo(name=u"delivery_method", label=u"引取方法",  getval=lambda order: order.delivery_delivery_pair.delivery_method.name)
+    delivery_method = OrderInfo(name=u"delivery_method", label=u"引取方法",  getval=lambda order: order.payment_delivery_pair.delivery_method.name)
     address = OrderInfo(name="address", label=u"送付先", getval=get_shipping_address_info)
 
     cancel_reason_default=u"""\
@@ -117,7 +117,7 @@ class CancelMail(object):
         pair = order.payment_delivery_pair
         traverser = get_traverser(self.request, order)
         info_renderder = OrderInfoRenderer(order, traverser.data, default_impl=OrderCancelInfoDefault)
-        title=order.ordered_products[0].product.event.title,
+        title=order.performance.event.title,
         value = dict(h=ch, 
                      order=order,
                      title=title, 

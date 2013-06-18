@@ -1528,7 +1528,8 @@ class MailInfoView(BaseView):
             raise HTTPFound(self.request.current_route_url(order_id=order_id, action="show"))
 
         order = Order.get(order_id, self.context.user.organization_id)
-        mails_complete.send_mail(self.request, order, override=form.data)
+        mutil = get_mail_utility(self.request, MailTypeEnum.CompleteMail)
+        mutil.send_mail(self.request, order, override=form.data)
         self.request.session.flash(u'メール再送信しました')
         return HTTPFound(self.request.current_route_url(order_id=order_id, action="show"))
 
@@ -1547,7 +1548,8 @@ class MailInfoView(BaseView):
             raise HTTPFound(self.request.current_route_url(order_id=order_id, action="show"))
 
         order = Order.get(order_id, self.context.user.organization_id)
-        mails_cancel.send_mail(self.request, order, override=form.data)
+        mutil = get_mail_utility(self.request, MailTypeEnum.PurchaseCancelMail)
+        mutil.send_mail(self.request, order, override=form.data)
         self.request.session.flash(u'メール再送信しました')
         return HTTPFound(self.request.current_route_url(order_id=order_id, action="show"))
 
