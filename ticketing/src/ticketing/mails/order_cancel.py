@@ -1,16 +1,9 @@
 # -*- coding:utf-8 -*-
-from pyramid_mailer import get_mailer
 from pyramid import renderers
 from pyramid_mailer.message import Message
 import functools
-from .api import preview_text_from_message
-from .api import message_settings_override
-from .api import create_or_update_mailinfo
-from .api import create_fake_order
 from .api import get_mailinfo_traverser
 from .api import get_mail_utility
-from .api import get_purchaseinfo_mail
-from . import PURCHASE_MAILS
 from ticketing.core.models import MailTypeEnum
 import logging
 from .forms import OrderInfoRenderer
@@ -19,10 +12,10 @@ from .forms import OrderInfoRenderer, OrderInfoDefault, OrderInfo, OrderInfoWith
 from ticketing.cart import helpers as ch ##
 from .interfaces import ICancelMail
 from zope.interface import implementer
+from .api import create_or_update_mailinfo,  create_fake_order
 
 logger = logging.getLogger(__name__)
 
-__all__ = ["build_message", "send_mail", "preview_text", "create_or_update_mailinfo", "create_fake_order"]
 
 def access_data(data, k, default=""):
     try:
@@ -68,25 +61,6 @@ def get_mailtype_description():
     return u"購入キャンセルメール"
 
 get_traverser = functools.partial(get_mailinfo_traverser, access=access_data, default=u"")
-get_cancel_mail = functools.partial(get_purchaseinfo_mail, name=PURCHASE_MAILS["cancel"])
-
-def build_message(request, order):
-    cancel_mail = get_cancel_mail(request)
-    message = cancel_mail.build_message(order)
-    return message
-
-def send_mail(request, order, override=None):
-    mailer = get_mailer(request)
-    message = build_message(request, order)
-    message_settings_override(message, override)
-    mailer.send(message)
-    logger.info("send cancel mail to %s" % message.recipients)
-
-def preview_text(request, order):
-    message = build_message(request, order)
-    return preview_text_from_message(message)
-
-create_cancel_message = build_message
 
 ## 不要?
 def payment_notice(request, order):

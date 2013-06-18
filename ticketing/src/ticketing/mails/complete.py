@@ -1,7 +1,4 @@
 # -*- coding:utf-8 -*-
-from pyramid_mailer import get_mailer
-from . import PURCHASE_MAILS
-from .api import get_purchaseinfo_mail, preview_text_from_message, message_settings_override
 from .api import get_mailinfo_traverser
 from .api import create_or_update_mailinfo,  create_fake_order
 from .forms import OrderInfoRenderer, OrderInfoDefault, OrderInfo
@@ -16,7 +13,6 @@ from zope.interface import implementer
 from ticketing.core.models import MailTypeEnum
 import functools
 
-__all__ = ["build_message", "send_mail", "preview_text", "create_or_update_mailinfo", "create_fake_order"]
 
 def access_data(data, k, default=""):
     try:
@@ -35,23 +31,6 @@ def get_order_info_default():
     return OrderCompleteInfoDefault
 
 get_traverser = functools.partial(get_mailinfo_traverser, access=access_data, default=u"")
-get_complete_mail = functools.partial(get_purchaseinfo_mail, name=PURCHASE_MAILS["complete"])
-
-def build_message(request, order):
-    complete_mail = get_complete_mail(request)
-    message = complete_mail.build_message(order)
-    return message
-
-def send_mail(request, order, override=None):
-    mailer = get_mailer(request)
-    message = build_message(request, order)
-    message_settings_override(message, override)
-    mailer.send(message)
-    logger.info("send complete mail to %s" % message.recipients)
-
-def preview_text(request, order):
-    message = build_message(request, order)
-    return preview_text_from_message(message)
    
 @implementer(ICompleteMail)
 class CompleteMail(object):

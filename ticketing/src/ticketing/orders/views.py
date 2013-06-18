@@ -28,7 +28,9 @@ from ticketing.core.models import (Order, Performance, PaymentDeliveryMethodPair
                                    Product, ProductItem, OrderedProduct, OrderedProductItem, 
                                    Ticket, TicketBundle, TicketFormat, Ticket_TicketBundle,
                                    DeliveryMethod, TicketFormat_DeliveryMethod, Venue,
-                                   SalesSegmentGroup, SalesSegment, Stock, StockStatus, Seat, SeatStatus, SeatStatusEnum, ChannelEnum)
+                                   SalesSegmentGroup, SalesSegment, Stock, StockStatus, Seat, SeatStatus, SeatStatusEnum, ChannelEnum, 
+                                   MailTypeEnum)
+from ticketing.mails.api import get_mail_utility
 from ticketing.mailmags.models import MailSubscription, MailMagazine, MailSubscriptionStatus
 from ticketing.orders.export import OrderCSV, japanese_columns
 from ticketing.orders.forms import (OrderForm, OrderSearchForm, OrderRefundSearchForm, SejOrderForm, SejTicketForm,
@@ -1503,7 +1505,8 @@ class MailInfoView(BaseView):
     def show(self):
         order_id = int(self.request.matchdict.get('order_id', 0))
         order = Order.get(order_id, self.context.user.organization_id)
-        message = mails_complete.build_message(self.request, order)
+        mutil = get_mail_utility(self.request, MailTypeEnum.PurchaseCancelMail)
+        message = mutil.build_message(self.request, order)
         mail_form = SendingMailForm(subject=message.subject,
                                     recipient=message.recipients[0],
                                     bcc=message.bcc[0] if message.bcc else "")

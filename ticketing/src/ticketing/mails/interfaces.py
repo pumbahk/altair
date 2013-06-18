@@ -16,6 +16,10 @@ class IMailUtility(Interface):
     def preview_text(request, order):
         """ orderから送信されるメールのpreviewを作成"""
 
+class IInfoMailFactory(Interface):
+    def __call__(request):
+        """return IPurchaseInfoMail"""
+
 class IPurchaseInfoMail(Interface):
     request = Attribute("request")
 

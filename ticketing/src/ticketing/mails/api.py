@@ -1,18 +1,46 @@
 # -*- coding:utf-8 -*-
+import traceback 
 from .interfaces import (
-    IPurchaseInfoMail, 
     IMailUtility
 )
 from datetime import datetime
 from .fake import FakeObject
 from .traverser import EmailInfoTraverser
-from pyramid.interfaces import IRequest
 import logging
+from zope.interface import implementer
 from ticketing.core.models import ExtraMailInfo, PaymentMethodPlugin, DeliveryMethodPlugin
+from pyramid_mailer import get_mailer
 
 logger = logging.getLogger(__name__)
 def get_mail_utility(request, mailtype):
     return request.registry.getUtility(IMailUtility, str(mailtype))
+
+@implementer(IMailUtility)
+class MailUtility(object):
+    def __init__(self, module, factory):
+        self.module = module
+        self.factory = factory
+
+    def build_message(self, request, order):
+        mail = self.factory(request)
+        message = mail.build_message(order)
+        return message
+
+    def send_mail(self, request, order, override=None):
+        mailer = get_mailer(self, request)
+        message = self.build_message(request, order)
+        if message is None:
+            logger.warn("message is None: %s", traceback.format_stack(limit=3))
+        message_settings_override(message, override)
+        mailer.send(message)
+        logger.info("send complete mail to %s" % message.recipients)
+
+    def preview_text(self, request, order):
+        message = self.build_message(request, order)
+        return preview_text_from_message(message)
+
+    def __getattr__(self, k, default=None):
+        return getattr(self.module, k)
 
 def get_mailinfo_traverser(request, order, access=None, default=None):
     trv = getattr(order, "_mailinfo_traverser", None)
@@ -51,11 +79,6 @@ def create_or_update_mailinfo(request, data, organization=None, event=None, perf
         return create_mailinfo(target, data, organization, event, performance, kind)
     else:
         return update_mailinfo(target, data, kind)
-
-
-def get_purchaseinfo_mail(request, name):
-    cls = request.registry.adapters.lookup([IRequest], IPurchaseInfoMail, name)
-    return cls(request)
 
 def preview_text_from_message(message):
     params = dict(subject=message.subject, 
