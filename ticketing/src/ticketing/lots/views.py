@@ -1,5 +1,5 @@
 # -*- coding:utf-8 -*-
-from datetime import datetime
+from datetime import datetime, timedelta
 import logging
 import operator
 import json
@@ -264,6 +264,7 @@ class EntryLotView(object):
             memo=cform['memo'].data)
 
         entry = self.request.session['lots.entry']
+        self.request.session['lots.entry.time'] = datetime.now()
         cart = LotSessionCart(entry, self.request, self.context.lot)
 
         payment = Payment(cart, self.request)
@@ -327,6 +328,11 @@ class ConfirmLotEntryView(object):
         if not h.validate_token(self.request):
             self.request.session.flash(u"セッションに問題が発生しました。")
             return self.back_to_form()
+        basetime = self.request.session['lots.entry.time']
+        if basetime + timedelta(minutes=15) < datetime.now():
+            self.request.session.flash(u"セッションに問題が発生しました。")
+            return self.back_to_form()
+
 
         entry = self.request.session['lots.entry']
         entry.pop('token')
