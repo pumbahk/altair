@@ -292,7 +292,8 @@ class Orders(BaseView):
         slave_session = get_db_session(self.request, name="slave")
 
         organization_id = self.context.user.organization_id
-        query = slave_session.query(OrderSummary).filter(OrderSummary.organization_id==organization_id)
+        #query = slave_session.query(OrderSummary).filter(OrderSummary.organization_id==organization_id)
+        query = slave_session.query(Order).filter(Order.organization_id==organization_id)
 
         if self.request.params.get('action') == 'checked':
             checked_orders = [o.lstrip('o:') for o in self.request.session.get('orders', []) if o.startswith('o:')]
@@ -304,7 +305,8 @@ class Orders(BaseView):
             form_search = OrderSearchForm(self.request.params, organization_id=organization_id)
             form_search.sort.data = None
             try:
-                query = OrderSearchQueryBuilder(form_search.data, lambda key: form_search[key].label.text, sort=False)(slave_session.query(OrderSummary).filter(OrderSummary.organization_id==organization_id))
+                #query = OrderSearchQueryBuilder(form_search.data, lambda key: form_search[key].label.text, sort=False)(slave_session.query(OrderSummary).filter(OrderSummary.organization_id==organization_id))
+                query = OrderSearchQueryBuilder(form_search.data, lambda key: form_search[key].label.text, sort=False)(slave_session.query(Order).filter(Order.organization_id==organization_id))
             except QueryBuilderError as e:
                 self.request.session.flash(e.message)
                 raise HTTPFound(location=route_path('orders.index', self.request))
@@ -313,14 +315,14 @@ class Orders(BaseView):
                 raise HTTPFound(location=route_path('orders.index', self.request))
 
         query = query.options(
-            joinedload('ordered_products'),
-            joinedload('ordered_products.product'),
-            joinedload('ordered_products.product.sales_segment'),
-            joinedload('ordered_products.ordered_product_items'),
-            joinedload('ordered_products.ordered_product_items.product_item'),
-            joinedload('ordered_products.ordered_product_items.print_histories'),
-            joinedload('ordered_products.ordered_product_items.seats'),
-            joinedload('ordered_products.ordered_product_items._attributes'),
+            # joinedload('ordered_products'),
+            # joinedload('ordered_products.product'),
+            # joinedload('ordered_products.product.sales_segment'),
+            # joinedload('ordered_products.ordered_product_items'),
+            # joinedload('ordered_products.ordered_product_items.product_item'),
+            # joinedload('ordered_products.ordered_product_items.print_histories'),
+            # joinedload('ordered_products.ordered_product_items.seats'),
+            # joinedload('ordered_products.ordered_product_items._attributes'),
         )
         orders = query.all()
 
