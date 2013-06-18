@@ -21,5 +21,3 @@ def get_today(request=None):
         logger.warn("get current request used. %s" % traceback.format_stack(limit=3))
         request = get_current_request()
     return _get_today(request)
-
-
