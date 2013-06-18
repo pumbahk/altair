@@ -3,6 +3,9 @@ from zope.interface import Interface
 from zope.interface import Attribute
 from pyramid.interfaces import IRequest
 ## 
+class IGlobalLinkSettings(Interface):
+    pass
+
 class ICMSRequest(IRequest):
     pass
 

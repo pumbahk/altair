@@ -298,4 +298,5 @@ class Host(BaseOriginalMixin, WithOrganizationMixin, Base):
 
     id = sa.Column(sa.Integer, primary_key=True)
     host_name = sa.Column(sa.Unicode(255), unique=True, index=True)
+    
 
