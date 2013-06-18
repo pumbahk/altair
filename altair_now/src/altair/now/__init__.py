@@ -2,6 +2,9 @@ from datetime import datetime, date
 
 session_key = "altair.now.use_datetime"
 
+def has_session_key(request):
+    return session_key in request.session
+
 def get_now(request):
     dt = request.session.get(session_key)
     if dt:
