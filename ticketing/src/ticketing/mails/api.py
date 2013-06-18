@@ -88,6 +88,7 @@ def message_settings_override(message, override):
             message.sender = bcc if hasattr(bcc, "length") else [bcc]
     return message
 
+
 ## fake
 def create_fake_order(request, organization, payment_plugin_id, delivery_plugin_id, event=None, performance=None):
     ## must not save models 

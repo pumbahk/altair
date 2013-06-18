@@ -31,15 +31,17 @@
 
 <div class="btn-group" style="margin-bottom:20px;">
   <a class="btn btn-info" href="#PreviewModal" data-toggle="modal"><i class="icon-eye-open"></i> preview</a>
+</div>
+
+<ul class="nav nav-tabs">
   %for i, label in choices:
     %if unicode(mailtype) == unicode(i):
-      <a class="btn btn-inverse">${label}(現在)</a>
+  <li class="active"><a href="#">${label}</a></li>
     %else:
-      <a class="btn"
-       href="${request.current_route_path(organization_id=organization.id, mailtype=i)}">${label}</a>
+  <li><a href="${request.current_route_path(organization_id=organization.id, mailtype=i)}">${label}</a></li>
     %endif
   %endfor
-</div>
+</ul>
 
 <div class="content">
   ${flash_messages(request)}
