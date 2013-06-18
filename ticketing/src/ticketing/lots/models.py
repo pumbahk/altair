@@ -121,6 +121,23 @@ class Lot(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     system_fee = sa.Column(sa.Numeric(precision=16, scale=2), default=0,
                            server_default="0")
 
+
+
+    @property
+    def remained_entries(self):
+        """ 当選以外のエントリ"""
+
+        return LotEntry.query.filter(
+            LotEntry.elected_at==None
+        ).filter(
+            LotEntry.order_id==None
+        ).filter(
+            sql.or_(LotEntry.rejected_at!=None,
+                    LotEntry.canceled_at!=None)
+        ).filter(
+            LotEntry.lot_id==self.id
+        ).all()
+
     def is_elected(self):
         return self.status == int(LotStatusEnum.Elected)
 
@@ -307,6 +324,11 @@ class LotEntry(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     browserid = sa.Column(sa.String(40))
 
+    closed_at = sa.Column(sa.DateTime())
+
+    def close(self):
+        self.closed_at = datetime.now()
+
     def get_wish(self, wish_order):
         wish_order = int(wish_order)
         for wish in self.wishes:
@@ -404,6 +426,10 @@ class LotEntryWish(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     canceled_at = sa.Column(sa.DateTime())
 
+    @property
+    def closed(self):
+        return bool(self.lot_entry.closed_at)
+
     def is_electing(self):
         return LotElectWork.query.filter(
             LotElectWork.entry_wish_no==self.entry_wish_no).count()
@@ -473,6 +499,8 @@ class LotEntryWish(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     @property
     def status(self):
         """ """
+        if self.closed:
+            return u"終了"
         if self.elected_at:
             return u"当選"
         if self.works:

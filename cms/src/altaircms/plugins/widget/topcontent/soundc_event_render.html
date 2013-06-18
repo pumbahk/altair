@@ -6,7 +6,7 @@
       ${(t.text or u"")|n}
       %if t.linked_page and t.linked_page.event:
       <br />
-      <p><a>${t.countdown_type_ja}まであと${h.base.countdown_days_from(t.countdown_limit)}日</a></p>
+      <p><a>${t.countdown_type_ja}まであと${h.base.countdown_days_from(request, t.countdown_limit)}日</a></p>
       %endif
 		</div>
   </div> 

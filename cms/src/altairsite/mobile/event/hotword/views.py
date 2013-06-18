@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from datetime import datetime
+from altaircms.datelib import get_now
 from altaircms.tag.models import HotWord
 from altaircms.page.models import PageSet, PageTag2Page, PageTag
 from altaircms.event.models import Event
@@ -25,7 +25,7 @@ def move_hotword(request):
         log_info("move_hotword", "hotword id not found")
         raise ValidationFailure
 
-    today = datetime.now()
+    today = get_now(request)
     hotword = request.allowable(HotWord).filter(HotWord.term_begin <= today) \
         .filter(today <= HotWord.term_end) \
         .filter_by(enablep=True).filter(HotWord.id == form.id.data).first()

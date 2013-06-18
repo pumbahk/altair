@@ -35,6 +35,7 @@ Altair Backend -- ${lot.event.title}[${lot.name}]
 </div>
 ${tabs.tabs(request)}
 <div>
+
 <%include file="electing_statuses.html"/>
 <h3>当落確定処理</h3>
 <p>
@@ -49,6 +50,9 @@ ${tabs.tabs(request)}
 </form>
 <form method="POST" action="${request.route_url('lots.entries.reject', lot_id=lot.id)}">
     <button ${"disabled" if electing.blockers else ""} class="btn btn-large btn-danger">落選確定処理を実行する</button>
+</form>
+<form method="POST" action="${request.route_url('lots.entries.close', lot_id=lot.id)}">
+    <button ${"disabled" if electing.blockers else ""} class="btn btn-large btn-danger">オーソリ開放処理を実行する</button>
 </form>
 </div>
 

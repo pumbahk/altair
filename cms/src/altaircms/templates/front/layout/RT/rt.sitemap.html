@@ -3,7 +3,7 @@
 import sqlalchemy.orm as orm
 from altaircms.page.models import StaticPage
 from altaircms.seeds.area import AREA_CHOICES
-from datetime import datetime
+from altaircms.datelib import get_now
 from altaircms.page.models import PageSet
 from altaircms.event.models import Event
 from altairsite.search.searcher import get_refined_pageset_qs
@@ -16,7 +16,7 @@ def get_recently_pageset(request):
     return get_refined_pageset_qs(request,request.allowable(PageSet)).options(orm.joinedload(PageSet.event,Event.performances))
 
 recently_pages = list(get_recently_pageset(request).limit(10))
-now = datetime.now()
+now = get_now(request)
 %>
 <style type="text/css">
 #sitemap {
@@ -123,7 +123,7 @@ ul.sitemapLists li.list2{
         <h3 class="genre">新着順</h3>
         <ul class="sitemapLists">
           %for p in recently_pages:
-          <li><a href="${h.link.publish_page_from_pageset(request, p)}" target="_blank" >${p.event.title}</a> (${h.base.jdate_with_hour(p.event.deal_open)} 販売開始!)</li>                   
+          <li><a href="${h.link.publish_page_from_pageset(request, p)}" target="_blank" >${p.event.title}</a> (${h.base.jdatetime(p.event.deal_open)} 販売開始!)</li>                   
           %endfor
         </ul>
       </td>

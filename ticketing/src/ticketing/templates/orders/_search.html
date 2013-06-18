@@ -71,7 +71,7 @@ from ticketing.formhelpers import OurDateWidget
       <tbody>
         <tr>
           <th><label for="order_no">${form.order_no.label.text}</label></th>
-          <td>${form.order_no(maxlength=12)}</td>
+          <td>${form.order_no(minlength=12)}</td>
           <th><label for="seat_number">${form.seat_number.label.text}</label></th>
           <td>${form.seat_number()}</td>
           <th><label for="tel">${form.tel.label.text}</label></th>

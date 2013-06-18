@@ -1,6 +1,7 @@
 from ticketing.payments.exceptions import PaymentPluginException
 from pyramid.httpexceptions import HTTPNotFound
 from ticketing.payments.interfaces import IOrderPayment
+from ticketing.cart.selectable_renderer import selectable_renderer
 
 def setup_cart(config):
     config.include('ticketing.checkout')
@@ -48,9 +49,9 @@ def setup_views(config):
     config.add_view('.views.IndexView', request_type='altair.mobile.interfaces.IMobileRequest', route_name='index', 
                     attr="post", request_method='POST', renderer='carts_mobile/form.html')
 
-    config.add_view('.views.PaymentView', route_name='cart.payment', attr="post", request_method="POST", renderer="carts/payment.html")
+    config.add_view('.views.PaymentView', route_name='cart.payment', attr="post", request_method="POST", renderer=selectable_renderer("carts/%(membership)s/payment.html"))
     config.add_view('.views.PaymentView', request_type='altair.mobile.interfaces.IMobileRequest',  route_name='cart.payment', 
-                    attr="post", request_method="POST", renderer="carts_mobile/payment.html")
+                    attr="post", request_method="POST", renderer=selectable_renderer("carts_mobile/%(membership)s/payment.html"))
 
     config.add_view('.views.CompleteView', route_name='payment.finish', request_method="POST", renderer="carts/completion.html")
     config.add_view('.views.CompleteView', request_type='altair.mobile.interfaces.IMobileRequest', route_name='payment.finish', 

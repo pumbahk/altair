@@ -34,3 +34,7 @@ class ICardBrandDetecter(Interface):
         """
         :return: str of brand symbol
         """
+
+class ICancelFilter(Interface):
+    def is_cancelable(order_no):
+        """ checkf for cancelable """

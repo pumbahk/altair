@@ -12,7 +12,7 @@
         ${c.label}${c()}
         % endfor
         <br>
-        <small>お分かりの場合、下記に2011-12年の会員番号をご入力ください</small><br>
+        <small>お分かりの場合、下記に2012-13年の会員番号をご入力ください</small><br>
         ${form.old_id_number()}<small>(半角数字8ケタ)</small>
         ${h.error(['cont','old_id_number'])}
       </td>
@@ -28,13 +28,6 @@
         </select>
         ${layout.form_html_extra_info}
         ${h.error('member_type')}
-      </td>
-    </tr>
-    <tr >
-      <th>ブースターシャツサイズ</th>
-      <td>
-        ${form.t_shirts_size(id='t_shirts_size',disabled="disabled" )} <span><small>${layout.t_shirts_mesaage}</small></span>
-        ${h.error('t_shirts_size')}
       </td>
     </tr>
     <tr>
@@ -143,17 +136,36 @@
         ${layout.team_name}からのメールマガジンの配信
       </th>
       <td>
-        ${form.mail_permission}
-        ${h.error('mail_permission')}
+        ${form.extra.mail_permission}
+        ${h.error('extra.mail_permission')}
       </td>
     </tr>
     <tr>
       <th>
-        　メモリアルブックへの氏名掲載希望
+        メモリアルブックへの氏名掲載希望
       </th>
       <td>
-        ${form.publicity} <span><small>ライト・ジュニア会員は記載されません</small></span>
-        ${h.error('publicity')}
+        ${form.extra.form.publicity} <span><small>レギュラー・ジュニア会員は記載されません</small></span>
+        ${h.error('extra.publicity')}
+      </td>
+    </tr>
+    <tr>
+      <th>
+        ブースタークラブに入会しようと思ったきっかけは？）<span class="red">*</span>
+      </th>
+      <td>
+        ${form.extra.form.motivation}
+        ${h.error('extra.motivation')}
+      </td>
+    </tr>
+    <tr>
+      <th>
+        昨シーズンの会場での観戦回数
+      </th>
+      <td>
+        ${form.extra.form.num_times_at_venue(size=2, maxlength=2)} 回
+        ${h.error('extra.num_times_at_venue')}
+      </td>
       </td>
     </tr>
     <tr>
@@ -164,3 +176,12 @@
     </tr>
   </tbody>
 </table>
+<script type="text/javascript">
+$('#member_type').change(function() {
+  var selected = $(this).find('option:selected');
+  if ($.inArray(selected.attr('data-selection'), ['0', '1', '2', '3']) > -1)
+    $('#extra-publicity').removeAttr('disabled');
+  else
+    $('#extra-publicity').attr('disabled','disabled');
+});
+</script>

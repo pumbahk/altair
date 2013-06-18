@@ -1,11 +1,12 @@
-from wtforms.fields import StringField, SelectField
+from wtforms.fields import StringField
+from ticketing.formhelpers.fields import OurSelectField
 from wtforms.widgets import TextInput
 
 __all__ = (
-  'TextFieldWithChoice',
+  'StringFieldWithChoice',
   )
 
-class StringFieldWithChoice(StringField, SelectField):
+class StringFieldWithChoice(StringField, OurSelectField):
     widget = TextInput()
 
     def _coerce(self, value):

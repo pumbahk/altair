@@ -3,7 +3,6 @@ import logging
 logger = logging.getLogger(__file__)
 from zope.interface import implements
 from altaircms.interfaces import IWidget
-from datetime import datetime
 import sqlalchemy as sa
 import sqlalchemy.orm as orm
 
@@ -18,9 +17,10 @@ from altaircms.plugins.base.mixins import UpdateDataMixin
 from altaircms.security import RootFactory
 import altaircms.helpers as h
 from .api import get_linklist_candidates_finder
+from altaircms.datelib import get_now
 
 def linklist_render(widget, finder, request=None):
-    qs = finder(request, widget.limit_span or widget.N, widget._today_function())
+    qs = finder(request, widget.limit_span or widget.N, get_now(request))
     if widget.system_tag_id:
         qs = qs.filter(PageTag2Page.object_id==PageSet.id, PageTag2Page.tag_id==widget.system_tag_id)
     if widget.max_items:
@@ -39,7 +39,6 @@ FINDER_KINDS_DICT= {"nearTheEnd": u"販売終了間近" ,
 
 
 class LinklistWidget(Widget):
-    _today_function = datetime.now
     implements(IWidget)
     type = "linklist"
 

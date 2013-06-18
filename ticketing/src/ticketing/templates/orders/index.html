@@ -44,17 +44,10 @@
   $("#removeall").click(presenter.on_removeall.bind(presenter));
   presenter.on_load();
 
-  // selectable check
-  $("table").selectable({
-  filter: "td.checkbox_status-wrap",
-  distance: 1,
-  stop: function(){
-      $(".ui-selected input[type='checkbox']", this).each(function(_,e){
-          $(e).click();
-       });
-      $(".ui-selected").removeClass("ui-selected");
-    }
-  })
+  //add_child
+  var target = $('input[name="order_no"]');
+  var target_parent = target.parent();
+  target_parent.prepend($('<a class="plusone btn">+ 注文番号を追加</a>').click(function(){ target_parent.append(target.clone().val(""));}));
 });
 </script>
 

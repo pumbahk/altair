@@ -4,12 +4,11 @@ from datetime import date
 from pyramid.httpexceptions import HTTPFound
 from pyramid.threadlocal import get_current_request
 from pyramid.view import view_config, render_view_to_response
-from webob.multidict import MultiDict
 
 from ticketing.cart.events import notify_order_completed
-from ticketing.cart.exceptions import NoCartError
+from ticketing.cart.exceptions import NoCartError, InvalidCSRFTokenException
 from ticketing.cart.views import PaymentView as _PaymentView, CompleteView as _CompleteView
-from ticketing.cart import api as cart_api
+from ticketing.cart import api as cart_api, schemas as cart_schemas
 from ticketing.payments import api as payment_api
 from ticketing.core import models as c_models
 from ticketing.users.models import User, UserProfile
@@ -42,9 +41,7 @@ class IndexView(BaseView):
         return dict()
 
     def get(self):
-        user_profile = self.context.load_user_profile()
-        params = MultiDict(user_profile) if user_profile else MultiDict()
-        form = self.context.product_form(params)
+        form = self.context.product_form_from_user_profile(self.context.load_user_profile())
         products =  self.context.products_dict
         return dict(form=form, products=products)
 
@@ -111,6 +108,15 @@ class ObjectLike(dict):
 class CompleteView(_CompleteView):
     @back
     def __call__(self):
+        form = cart_schemas.CSRFSecureForm(formdata=self.request.params, csrf_context=self.request.session)
+        if not form.validate():
+            logger.info('invalid csrf token: %s' % form.errors)
+            raise InvalidCSRFTokenException
+
+        # セッションからCSRFトークンを削除して再利用不可にしておく
+        if 'csrf' in self.request.session:
+            del self.request.session['csrf']
+            self.request.session.persist()
         cart = cart_api.get_cart_safe(self.request)
 
         order_session = self.request.session['order']

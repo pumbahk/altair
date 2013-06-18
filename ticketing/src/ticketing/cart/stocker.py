@@ -87,6 +87,9 @@ class Stocker(object):
             for product_item in DBSession.query(ProductItem).filter(
                         ProductItem.product_id==product.id).filter(
                         ProductItem.performance_id==performance_id).all():
+                if product_item.deleted_at != None:
+                    continue
+
                 yield (product_item, quantity * product_item.quantity)
 
     def quantity_for_stock_id(self, performance_id, ordered_products):

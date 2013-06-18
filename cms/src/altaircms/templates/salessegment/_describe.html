@@ -9,8 +9,8 @@
       <th>backend id</th><td>${salessegment.backend_id}</td>
     </tr>
     <tr>
-      <th>作成日時</th><td>${h.base.jdate_with_hour(salessegment.created_at)}</td>
-      <th>更新日時</th><td>${h.base.jdate_with_hour(salessegment.updated_at)}</td>
+      <th>作成日時</th><td>${h.base.jdatetime(salessegment.created_at)}</td>
+      <th>更新日時</th><td>${h.base.jdatetime(salessegment.updated_at)}</td>
     </tr>
     <tr>
       <th>販売期間</th><td colspan="3">${h.term_datetime(salessegment.start_on, salessegment.end_on)}</td>
