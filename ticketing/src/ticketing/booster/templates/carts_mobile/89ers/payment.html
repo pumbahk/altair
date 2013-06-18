@@ -2,12 +2,12 @@
 <%namespace file="${context['layout'].relative_path('templates/tags_mobile.html')}" name="mobile" />
 <form method="post" action="${request.url}">
 <%mobile:header>支払方法選択</%mobile:header>
-%if form:
-<ul>
-  %for k, v in form.errors.items():
-  <li>${k} ${v[0]}</li>
+%if request.session.peek_flash():
+<div>
+  %for message in request.session.pop_flash():
+  <font color="red">・${message}</font><br />
   %endfor
-</ul>
+</div>
 %endif
 <div>
 代金の支払方法を指定して、「次へ進む」ボタンをクリックして下さい。<br>
