@@ -45,7 +45,7 @@ def upgrade():
     op.add_column('promotion', sa.Column('is_vetoed', sa.Boolean(), nullable=True))
     op.add_column('widget_promotion', sa.Column('kind_id', sa.Integer(), nullable=True))
     op.add_column('widget_promotion', sa.Column('display_type', sa.Unicode(length=255), nullable=True))
-    op.execute("ALTER TABLE widget_promotion DROP FOREIGN KEY fk_widget_promotion_promotion_id_to_promotion_id;")
+    op.drop_constraint("fk_widget_promotion_promotion_id_to_promotion_id", "widget_promotion", type="foreignkey")
     op.drop_column('widget_promotion', u'promotion_id')
     op.drop_column('widget_promotion', u'kind')
 
@@ -54,6 +54,7 @@ def downgrade():
     op.add_column('widget_promotion', sa.Column(u'promotion_id', mysql.INTEGER(display_width=11), nullable=True))
     op.drop_column('widget_promotion', 'display_type')
     op.drop_column('widget_promotion', 'kind_id')
+    op.create_foreign_key("fk_widget_promotion_promotion_id_to_promotion_id", "widget_promotion", "promotion", ["promotion_id"], ["id"])
     op.drop_column('promotion', 'is_vetoed')
     op.drop_column('promotion', 'publish_open_on')
     op.drop_column('promotion', 'orderno')

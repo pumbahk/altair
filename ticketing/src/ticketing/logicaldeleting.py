@@ -1,3 +1,4 @@
+from zope.deprecation import deprecation
 import logging
 import sqlahelper
 import sqlalchemy.orm as orm
@@ -7,6 +8,7 @@ from zope.sqlalchemy import ZopeTransactionExtension as _ZTE
 logger = logging.getLogger(__name__)
 installed = False
 
+@deprecation.deprecate(u'')
 def install():
     global installed
     if installed:

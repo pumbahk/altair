@@ -2,33 +2,23 @@
 
 """ TBA
 """
+from datetime import datetime
 import sqlahelper
 import sqlalchemy as sa
 import sqlalchemy.orm as orm
+from sqlalchemy.ext.hybrid import hybrid_property, hybrid_method
 
-from ..models import Identifier
+from ..models import Identifier, WithTimestamp
 from ..utils import StandardEnum
 
 # for schema dependencies
-import ticketing.core.models
+# import ticketing.core.models
 
 Base = sqlahelper.get_base()
 DBSession = sqlahelper.get_session()
 
-class MulticheckoutSetting(Base):
-    __tablename__ = 'MulticheckoutSetting'
-    
-    query = DBSession.query_property()
-
-    id = sa.Column(Identifier, primary_key=True)
-    
-    shop_name = sa.Column(sa.Unicode(255), unique=True)
-    shop_id = sa.Column(sa.Unicode(255))
-    auth_id = sa.Column(sa.Unicode(255))
-    auth_password = sa.Column(sa.Unicode(255))
-
-    organization_id = sa.Column(Identifier, sa.ForeignKey('Organization.id'))
-    organization = orm.relationship('Organization', backref='multicheckout_settings')
+# 内部トランザクション用
+_session = orm.scoped_session(orm.sessionmaker())
 
 
 class Secure3DReqEnrolRequest(Base):
@@ -150,6 +140,7 @@ class MultiCheckoutStatusEnum(StandardEnum):
     Rejected        = u'105'
     BeingSettled    = u'115'
     Settled         = u'120'
+    PartCanceled    = u'130'
     ValidCard       = u'210'
     InvalidCard     = u'209'
 
@@ -226,3 +217,67 @@ class MultiCheckoutInquiryResponseCard(Base):
     SecureKind = sa.Column(sa.Unicode(1), doc=u"セキュリティ方式")
 
     #履歴情報 : MultiCheckoutInquiryResponseCardHistory
+
+    @hybrid_property
+    def is_authorized(self):
+        return self.Status == str(MultiCheckoutStatusEnum.Authorized)
+
+class MultiCheckoutOrderStatus(Base, WithTimestamp):
+    """ 取引照会レスポンス
+    """
+
+    __tablename__ = 'multicheckout_order_status'
+    id = sa.Column(Identifier, primary_key=True)
+    OrderNo = sa.Column(sa.Unicode(32), doc=u"受注番号")
+    Storecd = sa.Column(sa.Unicode(10), doc=u"店舗コード")
+    Status = sa.Column(sa.Unicode(3), doc=u"決済ステータス")
+    Summary = sa.Column(sa.UnicodeText, doc=u"機能追記メモ")
+    KeepAuthFor = sa.Column(sa.Unicode(20), doc=u"オーソリキャンセル保持を必要とする機能名")
+
+    @classmethod
+    def by_storecd(cls, storecd):
+        return cls.Storecd==storecd
+
+    @hybrid_property
+    def is_authorized(self):
+        return self.Status == unicode(MultiCheckoutStatusEnum.Authorized)
+
+    @hybrid_method
+    def past(self, delta):
+        now = datetime.now()
+        target = now - delta
+        return self.updated_at < target
+
+
+    @classmethod
+    def get_or_create(cls, order_no, storecd):
+        s = _session.query(cls).filter(
+                cls.OrderNo==order_no
+            ).filter(
+                cls.Storecd==storecd
+            ).first()
+        if not s:
+            s = cls(OrderNo=order_no, Storecd=storecd, Summary=u"")
+            _session.add(s)
+        return s
+
+
+    @classmethod
+    def set_status(cls, order_no, storecd, status, summary):
+        s = cls.get_or_create(order_no, storecd)
+        if s.Status != status:
+            s.Status = status
+            s.Summary = (s.Summary or u"") + "\n" + summary
+
+    @classmethod
+    def keep_auth(cls, order_no, storecd, name):
+        s = cls.get_or_create(order_no, storecd)
+        s.KeepAuthFor = name
+
+    @classmethod
+    def by_order_no(cls, order_no):
+        return _session.query(cls).filter(
+                cls.OrderNo==order_no
+            ).filter(
+                cls.Status!=None
+            ).first()

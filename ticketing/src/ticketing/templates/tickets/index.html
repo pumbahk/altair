@@ -15,7 +15,7 @@ ${breadcrumbs(
   $(function(){
     $("#pageformat_menu a.id-action").click(
      function(){
-       var pk = $("input[name='pageformat_id']:checked").val();
+       var pk = $("input[name='format_id']:checked").val();
        if(!pk){ return false; }
        $(this).attr("href", $(this).attr("data-base-url").replace("__id__", pk));
        return true;
@@ -23,7 +23,7 @@ ${breadcrumbs(
 
     $("#pageformat_menu a.id-delegate-action").click(
      function(){
-       var pk = $("input[name='pageformat_id']:checked").val();
+       var pk = $("input[name='format_id']:checked").val();
        if(!pk){ return false; }
        var delegated=$(this).attr("data-delegated");
 // fixme
@@ -97,7 +97,7 @@ ${breadcrumbs(
   $(function(){
     $("#ticketformat_menu a.id-action").click(
      function(){
-       var pk = $("input[name='ticketformat_id']:checked").val();
+       var pk = $("input[name='format_id']:checked").val();
        if(!pk){ return false; }
        $(this).attr("href", $(this).attr("data-base-url").replace("__id__", pk));
        return true;
@@ -105,7 +105,7 @@ ${breadcrumbs(
 
     $("#ticketformat_menu a.id-delegate-action").click(
      function(){
-       var pk = $("input[name='ticketformat_id']:checked").val();
+       var pk = $("input[name='format_id']:checked").val();
        if(!pk){ return false; }
        var delegated=$(this).attr("data-delegated");
 // fixme

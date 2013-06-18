@@ -1,0 +1,24 @@
+## ticketlist widget output template
+## 
+## todo: link
+
+## todo: 見出しwidgetへ移動
+<div class="detailBox">
+  <div class="detailBoxInner">
+    %if widget.show_label:
+      <h2><img src="${request.static_url("altaircms:static/RT/img/detail/title_price.gif")}" alt="チケット価格" width="107" height="30"/></h2>
+    %endif
+	  <table class="ticketPrice0" summary="チケット価格表">
+      %if widget.caption:
+       <tr><th scope="row" colspan="3">${widget.caption}</th></tr>
+      %endif
+	    % for ticket in tickets:
+	    <tr>
+		    <th scope="row">${ ticket.seattype }</th>
+		    <td>${ ticket.name }</td>
+        <td>${ h.event.price_format(ticket.price) }円 (税込)</td>
+		  </tr>
+	    % endfor
+	  </table>
+  </div>
+</div>

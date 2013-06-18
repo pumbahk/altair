@@ -1,0 +1,43 @@
+<%inherit file="/layout_2cols.html"/>
+<%namespace file="/common/helpers.html" name="ch" />
+
+<div class="breadcrumbs">
+  ${ch.breadcrumbs(
+    names=[u'トップ', u'購入情報'],
+    urls=[request.route_path('index')]
+  )}
+</div>
+
+<div class="page-header">
+  <h1>カート追跡</h1>
+</div>
+
+<div class="content">
+  ${ch.flash_messages(request)}
+  ${ch.alert_message(form_search)}
+</div>
+
+<div style="float: left;">
+  <%include file="_search.html" args="form=form_search" />
+</div>
+<div style="clear: both;"></div>
+
+% if carts:
+<p> ${max(carts.items_per_page * (carts.page-1) + 1,0)}～${min(carts.items_per_page * carts.page, carts.item_count)} / ${carts.item_count}件</p>
+<div class="carts">
+  <%include file="_list.html" args="carts=carts" />
+</div>
+% else:
+見つかりませんでした
+% endif
+
+<script type="text/javascript">
+  $(function(){
+    // ajax modal
+    $("a.ajax-modal[data-toggle=modal]").click(function(){
+        var wrap = $($(this).attr("data-target"));
+        wrap.empty();
+        $(wrap).load($(this).attr("href"));
+    });
+  });
+</script>

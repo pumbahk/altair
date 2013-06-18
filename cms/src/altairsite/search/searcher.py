@@ -1,13 +1,14 @@
 # -*- encoding:utf-8 -*-
 import sqlalchemy as sa
 import sqlalchemy.orm as orm
-import datetime
-import logging
+from datetime import datetime, timedelta
+from altaircms.datelib import get_now
+import altaircms.safelogging as logging
 logger = logging.getLogger(__file__)
 from altaircms.models import (
-   Sale, 
-   Category, 
-   Performance
+   SalesSegmentGroup, 
+   Performance, 
+   Genre
 )
 from altaircms.models import DBSession
 from altaircms.page.models import (
@@ -18,10 +19,10 @@ from altaircms.event.models import Event
 from altaircms.tag.models import (
    HotWord, 
    PageTag, 
-   PageTag2Page
 )
-
+import re
 from . import api
+from altaircms.page.api import get_pageset_searcher
 ## todo: datetimeの呼び出し回数減らす
 
 ## for document
@@ -32,115 +33,140 @@ class ISearchFn(Interface):
            :param query_params:  form.pyのmake_query_paramsで作られた辞書
            :return: query set of pageset
        """
-##
-def _refine_pageset_collect_future(qs, _nowday=None):
-   if _nowday is None:
-      _nowday = datetime.datetime.now()
 
-   qs = qs.filter((_nowday <= Event.deal_close )|( Event.deal_close == None))
+def as_empty_query(qs):
+   return qs.filter(sa.sql.false())
+
+##
+def _refine_pageset_collect_future(qs, _now_day=None):
+   if _now_day is None:
+      _now_day = datetime.now()
+
+   qs = qs.filter((_now_day <= Event.deal_close )|( Event.deal_close == None))
    return qs
 
 def _refine_pageset_search_order(qs):
    """  検索結果nの表示順序を変更。最も販売終了が間近なものを先頭にする
    """
-   return qs.order_by(sa.asc("event.deal_close"))
+   return qs.order_by(sa.asc(Event.deal_close))
 
-def _refine_pageset_only_published_term(qs, now=None):
+def _refine_pageset_only_published_term(qs, _now_day=None):
    """ 公開期間中のページのみを集める
    """
-   if now is None:
-      now = datetime.datetime.now()
+   if _now_day is None:
+      _now_day = datetime.now()
    qs = qs.filter(PageSet.id==Page.pageset_id)
-   return qs.filter(Page.in_term(now)).filter(Page.published==True)
-   
+   return qs.filter(Page.in_term(_now_day)).filter(Page.published==True)
 
-def _refine_pageset_qs(qs):
+def _refine_pageset_qs(qs, _now_day=None):
     """optimize"""
     # 検索対象に入っているもののみが検索に引っかかる
     qs = qs.filter(Event.is_searchable==True).filter(Event.id==PageSet.event_id)
 
     qs = _refine_pageset_search_order(qs)
-    qs = _refine_pageset_only_published_term(qs)
-    return qs.options(orm.joinedload("event")).options(orm.joinedload("event.performances"))
+    qs = _refine_pageset_only_published_term(qs, _now_day=_now_day)
+    return qs.options(orm.joinedload("event"), orm.joinedload("event.performances"), orm.joinedload("genre")).distinct(PageSet.id)
 
+def get_refined_pageset_qs(request, qs):
+    now = get_now(request)
+    qs = _refine_pageset_collect_future(qs, _now_day=now)
+    qs = qs.filter(Event.is_searchable==True).filter(Event.id==PageSet.event_id)
+    qs = _refine_pageset_only_published_term(qs, _now_day=now)
+    return qs.options(orm.joinedload("event"), orm.joinedload("event.performances"), orm.joinedload("genre")).distinct(PageSet.id)
 
 ## todo:test
 @provider(ISearchFn)
 def get_pageset_query_from_hotword(request, query_params):
     """ Hotwordの検索"""
+    now = get_now(request)
     qs = request.allowable(PageSet)
-    qs = _refine_pageset_collect_future(qs)
+    qs = _refine_pageset_collect_future(qs, _now_day=now)
     if query_params.get("hotword"):
        qs = request.allowable(PageSet)
        hotword = query_params["hotword"]
-       return _refine_pageset_qs(search_by_hotword(qs, hotword))
+       return _refine_pageset_qs(search_by_hotword(request, qs, hotword), _now_day=now)
     else:
-       return _refine_pageset_qs(qs.filter(PageSet.event_id!=None)) # empty set query is good for that?
+       return as_empty_query(qs)
+
+@provider(ISearchFn)
+def get_pageset_query_from_pagetag(request, query_params):
+    """ Pagetagの検索"""
+    searcher = get_pageset_searcher(request)
+    pagetag = query_params["pagetag"]
+    if not pagetag:
+       return as_empty_query(request.allowable(PageSet))
+    qs = request.allowable(PageSet, searcher.query_publishing(datetime.now(), pagetag))
+    return _refine_pageset_qs(_refine_pageset_collect_future(qs, _now_day=get_now(request)))
 
 @provider(ISearchFn)
 def get_pageset_query_from_freeword(request, query_params):
     """ フリーワード検索のみ"""
+    now = get_now(request)
     qs = request.allowable(PageSet)
-    qs = _refine_pageset_collect_future(qs)
+    qs = _refine_pageset_collect_future(qs, _now_day=now)
     words = _extract_tags(query_params, "query")
     if words and (len(words) > 1 or words[0] != u'""'):
-        qs = search_by_freeword(qs, request, words, query_params.get("query_cond"))
-        return  _refine_pageset_qs(qs)
+        qs = search_by_freeword(request, qs, words, query_params.get("query_cond"))
+        return  _refine_pageset_qs(qs, _now_day=now)
     else:
-       return _refine_pageset_qs(qs.filter(PageSet.event_id!=None)) # empty set query is good for that?
+       return as_empty_query(qs)
 
 @provider(ISearchFn)
 def get_pageset_query_from_genre(request, query_params):
     """ ジャンルのみ"""
+    now = get_now(request)
     qs = request.allowable(PageSet)
-    qs = _refine_pageset_collect_future(qs)
+    qs = _refine_pageset_collect_future(qs, _now_day=now)
     if query_params.get("top_categories") or query_params.get("sub_categories"):
-       qs = search_by_genre(query_params.get("top_categories"), query_params.get("sub_categories"), qs=qs)
-       return  _refine_pageset_qs(qs)
+       qs = search_by_genre(request, qs, query_params.get("top_categories"), query_params.get("sub_categories"))
+       return  _refine_pageset_qs(qs, _now_day=now)
     else:
-       return _refine_pageset_qs(qs.filter(PageSet.event_id!=None)) # empty set query is good for that?
+       return as_empty_query(qs)
 
 @provider(ISearchFn)
 def get_pageset_query_from_area(request, query_params):
     """ エリアのみ"""
     qs = request.allowable(PageSet)
-    qs = _refine_pageset_collect_future(qs)
+    now = get_now(request)
+    qs = _refine_pageset_collect_future(qs, _now_day=now)
     if query_params.get("prefectures"):
        sub_qs = request.allowable(Event).with_entities(Event.id)
        sub_qs = events_by_area(sub_qs, query_params.get("prefectures"))
        sub_qs = sub_qs.filter(Event.is_searchable==True)
        qs = search_by_events(qs, sub_qs)
-       return  _refine_pageset_qs(qs)
+       return  _refine_pageset_qs(qs, _now_day=now)
     else:
-       return _refine_pageset_qs(qs.filter(PageSet.event_id!=None)) # empty set query is good for that?
+       return as_empty_query(qs)
 
 @provider(ISearchFn)
 def get_pageset_query_from_deal_cond(request, query_params):
     """ 販売条件のみ"""
     qs = request.allowable(PageSet)
-    qs = _refine_pageset_collect_future(qs)
+    now = get_now(request)
+    qs = _refine_pageset_collect_future(qs, _now_day=now)
     if query_params.get("deal_cond"):
        sub_qs = request.allowable(Event).with_entities(Event.id)
        sub_qs = events_by_deal_cond_flags(sub_qs, query_params.get("deal_cond", []))
        sub_qs = sub_qs.filter(Event.is_searchable==True)
        qs = search_by_events(qs, sub_qs)
-       return  _refine_pageset_qs(qs)
+       return  _refine_pageset_qs(qs, _now_day=now)
     else:
-       return _refine_pageset_qs(qs.filter(PageSet.event_id!=None)) # empty set query is good for that?
+       return as_empty_query(qs)
 
 @provider(ISearchFn)
 def get_pageset_query_from_deal_open_within(request, query_params):
     """ N日以内の受付販売開始"""
     qs = request.allowable(PageSet)
-    qs = _refine_pageset_collect_future(qs)
+    now = get_now(request)
+    qs = _refine_pageset_collect_future(qs, _now_day=now)
     if query_params.get("ndays"):
        sub_qs = request.allowable(Event).with_entities(Event.id)
-       sub_qs = events_by_within_n_days_of(sub_qs, Event.deal_open, query_params["ndays"])
+       sub_qs = events_by_within_n_days_of(sub_qs, Event.deal_open, query_params["ndays"], _now_day=now)
        sub_qs = sub_qs.filter(Event.is_searchable==True)
        qs = search_by_events(qs, sub_qs)
-       return  _refine_pageset_qs(qs)
+       return  _refine_pageset_qs(qs, _now_day=now)
     else:
-       return _refine_pageset_qs(qs.filter(PageSet.event_id!=None)) # empty set query is good for that?
+       return as_empty_query(qs)
 
 @provider(ISearchFn)
 def get_pageset_query_from_event_open_within(request, query_params):
@@ -149,21 +175,23 @@ def get_pageset_query_from_event_open_within(request, query_params):
 ## todo: 今、N日以内の公演開始のものを集めている。これはおかしいかもしれない。
 ##
     qs = request.allowable(PageSet)
-    qs = _refine_pageset_collect_future(qs)
+    now = get_now(request)
+    qs = _refine_pageset_collect_future(qs, _now_day=now)
     if query_params.get("ndays"):
        sub_qs = request.allowable(Event).with_entities(Event.id)
-       sub_qs = events_by_within_n_days_of(sub_qs, Event.event_open, query_params["ndays"])
+       sub_qs = events_by_within_n_days_of(sub_qs, Event.event_open, query_params["ndays"], _now_day=now)
        sub_qs = sub_qs.filter(Event.is_searchable==True)
        qs = search_by_events(qs, sub_qs)
-       return  _refine_pageset_qs(qs)
+       return  _refine_pageset_qs(qs, _now_day=now)
     else:
-       return _refine_pageset_qs(qs.filter(PageSet.event_id!=None)) # empty set query is good for that?
+       return as_empty_query(qs)
 
 
 @provider(ISearchFn)
 def get_pageset_query_from_multi(request, query_params):
+    now = get_now(request)
     qs = request.allowable(PageSet)
-    qs = _refine_pageset_collect_future(qs)
+    qs = _refine_pageset_collect_future(qs, _now_day=now)
     sub_qs = request.allowable(Event).with_entities(Event.id)
     sub_qs = events_by_area(sub_qs, query_params.get("prefectures"))
     sub_qs = events_by_performance_term(sub_qs, query_params.get("performance_open"), query_params.get("performance_close"))
@@ -171,7 +199,7 @@ def get_pageset_query_from_multi(request, query_params):
     #検索対象に入っているもののみが検索に引っかかる
     sub_qs = sub_qs.filter(Event.is_searchable==True)
     qs = search_by_events(qs, sub_qs)
-    return _refine_pageset_qs(qs)
+    return _refine_pageset_qs(qs, _now_day=now)
 
 
 @provider(ISearchFn)
@@ -182,87 +210,84 @@ def get_pageset_query_fullset(request, query_params):
     1. カテゴリトップページから、対応するページを見つける
     2. イベントデータから、対応するページを見つける(sub_qs)
     """
+    now = get_now(request)
     sub_qs = request.allowable(Event).with_entities(Event.id)
     sub_qs = events_by_area(sub_qs, query_params.get("prefectures"))
     sub_qs = events_by_performance_term(sub_qs, query_params.get("performance_open"), query_params.get("performance_close"))
     sub_qs = events_by_deal_cond_flags(sub_qs, query_params.get("deal_cond", []))
     sub_qs = events_by_added_service(sub_qs, query_params) ## 未実装
     sub_qs = events_by_about_deal(sub_qs, query_params.get("before_deal_start"), query_params.get("till_deal_end"), 
-                                  query_params.get("closed_only"), query_params.get("canceld_only"))
+                                  query_params.get("closed_only"), query_params.get("canceld_only"), 
+                                  _now_day=now)
 
     # 検索対象に入っているもののみが検索に引っかかる
     sub_qs = sub_qs.filter(Event.is_searchable==True)
 
     qs = request.allowable(PageSet)
-    qs = search_by_genre(query_params.get("top_categories"), query_params.get("sub_categories"), qs=qs)
+    qs = search_by_genre(request, qs, query_params.get("top_categories"), query_params.get("sub_categories"))
     qs = search_by_events(qs, sub_qs)
 
 
     if "query" in query_params:
         words = _extract_tags(query_params, "query")
-        qs = search_by_freeword(qs, request, words, query_params.get("query_cond"))
+        qs = search_by_freeword(request, qs, words, query_params.get("query_cond"))
 
-    return  _refine_pageset_qs(qs)
+    return  _refine_pageset_qs(qs, _now_day=now)
 
 
-def search_by_hotword(qs, hotword):
+def search_by_hotword(request, qs, hotword):
    """　hotwordの検索
    """
-   return qs.filter(
-        (HotWord.tag_id==PageTag.id) & (HotWord.enablep == True) & (PageTag.publicp==True) & (HotWord.name==hotword)
-      ).filter(
-        PageTag.id==PageTag2Page.tag_id
-      ).filter(
-         Page.id==PageTag2Page.object_id
-      ).filter(
-         (Page.pageset_id==PageSet.id) & (PageSet.event != None) #そもそもチケット用の検索なのでeventは必須
-      )
+   if hotword is None:
+      return qs
+   searcher = get_pageset_searcher(request)
+   return searcher.filter_by_tag(qs, hotword.tag).filter(PageSet.event != None) #そもそもチケット用の検索なのでeventは必須)
 
-def search_by_freeword(qs, request, words, query_cond):
+def search_by_freeword(request, qs, words, query_cond):
     pageset_ids = api.pageset_id_list_from_words(request, words, query_cond)
     logger.info("pageset_id: %s" % pageset_ids)
+    if not pageset_ids:
+       return as_empty_query(qs)
     return qs.filter(PageSet.id.in_(pageset_ids))
+
+SPLIT_RX = re.compile(r'([^\s+"]+|".+?")')
+EXCLUDE_RX = re.compile(r'^["\'\\]+$')
 
 def _extract_tags(params, k):
     if k not in params:
         return []
     params = params.copy()
-    tags = [e.strip() for e in params.pop(k).split(",")] ##
-    return [k for k in tags if k]
-
+    logger.info(u"extract tag* input{0}".format(params[k]))
+    xs = [e.strip() for e in SPLIT_RX.findall(params.pop(k).replace(u"　", " ").replace("'", '"'))]
+    logger.info("extract tag* return {0}".format(xs))
+    return [x for x in xs if x and not EXCLUDE_RX.match(x)]
 
 
 def search_by_events(qs, event_ids):
    if event_ids:
       return qs.filter(PageSet.event_id.in_(event_ids))
    else:
-      return qs
+      return as_empty_query(qs)
 
-def search_by_genre(top_categories, sub_categories, qs=None):
-    """ジャンルからページセットを取り出す
+def search_by_genre(request, qs, *genre_id_list):
+    """
     :params qs:
     :return: query set of PageSet
     """
-    qs = qs or PageSet.query
-
     ## どのチェックボックスもチェックされていない場合には絞り込みを行わない
-    if not (top_categories or sub_categories):
-        return qs
-
-    where = sa.null()    
-
-    if top_categories:
-        parent_category_ids = DBSession.query(Category.id).filter(Category.name.in_(top_categories))
-        where = Category.parent_id.in_(parent_category_ids)
-
-    if sub_categories:
-        where = where | Category.name.in_(sub_categories)
-
-    ## カテゴリ(ジャンル)に対応するカテゴリトップのページを取り出す
-    category_page_ids = DBSession.query(PageSet.id).join(Category, PageSet.id==Category.pageset_id).filter(where)
-
-    ## サブカテゴリトップのページと紐づいているページを取り出す
-    return qs.filter(PageSet.parent_id.in_(category_page_ids))
+    if not any(genre_id_list):
+       return qs
+    xs = []
+    for ids in genre_id_list:
+       if ids:
+          xs.extend(ids)
+    tags = PageTag.query.filter(PageTag.label==Genre.label, PageTag.organization_id==None, Genre.organization_id==request.organization.id)
+    tag_id_list = tags.filter(Genre.id.in_(xs)).with_entities(PageTag.id).all()
+    tag_id_list = [x for xs in tag_id_list for x in xs]
+    if not tag_id_list:
+       return as_empty_query(qs)
+    searcher = get_pageset_searcher(request)
+    return searcher.filter_by_system_tag_many(qs, tag_id_list)
 
 def events_by_area(qs, prefectures):
     if not prefectures:
@@ -273,9 +298,9 @@ def events_by_area(qs, prefectures):
 
 
 ##日以内に開始系の関数
-def events_by_within_n_days_of(qs, start_from, n, _nowday=datetime.datetime.now):
-   today = _nowday()
-   qs = qs.filter(today+datetime.timedelta(days=-1) <= start_from).filter(start_from <= (today+datetime.timedelta(days=n)))
+def events_by_within_n_days_of(qs, start_from, n, _now_day=None):
+   today = _now_day or datetime.now()
+   qs = qs.filter(today+timedelta(days=-1-n) <= start_from).filter(start_from <= (today+timedelta(days=n)))
    return qs
    
 
@@ -291,7 +316,7 @@ def events_by_performance_term(qs, performance_open, performance_close):
 
 def events_by_deal_cond_flags(qs, flags):
    if flags:
-      return qs.filter(Event.id==Sale.event_id).filter(Sale.kind.in_(flags)).distinct()
+      return qs.filter(Event.id==SalesSegmentGroup.event_id).filter(SalesSegmentGroup.kind_id.in_(flags)).distinct()
    else:
       return qs
 
@@ -301,16 +326,15 @@ def events_by_added_service(qs, flags):
     warnings.warn("not implemented, yet")
     return qs
 
-def events_by_about_deal(qs, before_deal_start, till_deal_end, closed_only, canceld_only, _nowday=datetime.datetime.now):
-    today = _nowday()
-
+def events_by_about_deal(qs, before_deal_start, till_deal_end, closed_only, canceld_only, _now_day=None):
+    today = _now_day or datetime.now()
+   
     if before_deal_start:
         ## 販売開始？本当はN日以内に発送らし
-        end_point = today+datetime.timedelta(days=int(before_deal_start))
-        qs = qs.filter(today <= Event.deal_open).filter(Event.deal_open <= end_point)
+        qs = events_by_within_n_days_of(qs, Event.deal_open,  int(before_deal_start),  _now_day)
 
     if till_deal_end:
-        end_point = today+datetime.timedelta(days=int(till_deal_end))
+        end_point = today+timedelta(days=int(till_deal_end))
         qs = qs.filter(today <= Event.deal_close).filter(Event.deal_close <= end_point)
 
     ## 通常は、現在の日付よりも未来にあるイベント以外見せない

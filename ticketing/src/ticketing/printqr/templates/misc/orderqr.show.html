@@ -36,6 +36,7 @@ body {
         <th>発券番号</th>
         <th>購入した商品</th>
         <th width="200px">受け取り日時/印刷日時</th>
+        <th>token id</th>
         <th>署名付き文字列</th>
       </tr>
     </thead>
@@ -48,8 +49,10 @@ body {
             <ul>
               <li>${history.item_token.issued_at or u"未受け取り"}</li>
               <li>${history.item_token.printed_at or u"未印刷"}</li>
+              <li>${history.item_token.refreshed_at or u"再発券なし"}</li>
             </ul>
           </td>
+          <td>${history.item_token.id}</td>
           <td>${signed}</td>
         </tr>
       %endfor

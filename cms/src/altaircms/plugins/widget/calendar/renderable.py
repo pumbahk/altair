@@ -6,7 +6,8 @@ from calendar_stream import PackedCalendarStream
 from calendar_stream import CalendarStreamGenerator
 from collections import defaultdict
 from pyramid.renderers import render
-from datetime import date, timedelta
+from altaircms.datelib import get_now
+from datetime import date, timedelta, datetime
 from . import CalendarTemplatePathStore
 import itertools
 
@@ -108,23 +109,27 @@ def _collect_months(performances):
 ### render function ##
 # using these functioins in models.CalendarWidget.merge_settings() via getattr
 
+def _current_month_begin(d, convert=date):
+    return convert(d.year, d.month, 1)
 
-def _next_month_date(d):
+def _next_month_date(d, convert=date):
     if d.month == 12:
-        return date(d.year+1, 1, 1)
+        return convert(d.year+1, 1, 1)
     else:
-        return date(d.year, d.month+1, 1)
+        return convert(d.year, d.month+1, 1)
 
-def get_start_date_and_end_date(salessegment, performances):
-    if salessegment:
-        return salessegment.start_on, salessegment.end_on
-    else:
-        return performances[0].start_on, performances[-1].start_on        
+_MIN_MONTH_DAYS = 28
+def get_start_date_and_end_date(salessegment_group, performances):
+    beg, end = performances[0].start_on, performances[-1].start_on
+    if beg.month == end.month and (end-beg).days < _MIN_MONTH_DAYS:
+        return _current_month_begin(beg, datetime), _next_month_date(end, datetime)
+    return beg, end
 
-def obi(widget, calendar_status, performances, request, template_name=None): 
+def obi(widget, stock_status, performances, request, template_name=None):
     """公演の開始から終了までを縦に表示するカレンダー
     ※ performancesはstart_onでsortされているとする
     """
+    now = get_now(request)
     template_name = template_name or CalendarTemplatePathStore.path("obi")
     logger.debug("calendar template: "+template_name)
 
@@ -132,27 +137,28 @@ def obi(widget, calendar_status, performances, request, template_name=None):
     if performances:
         cal = CalendarOutput.from_performances(performances)
         rows = cal.each_rows(*get_start_date_and_end_date(widget.salessegment, performances))
-        return render(template_name, {"cal":rows, "i":cal.i, "calendar_status": calendar_status}, request)
+        return render(template_name, {"now": now,  "cal":rows, "i":cal.i, "stock_status": stock_status, "widget":widget, "request": request}, request)
     else:
         return u"performance is not found"
 
-def term(widget, calendar_status, performances, request, template_name=None): 
+def term(widget, stock_status, performances, request, template_name=None):
     """開始日／終了日を指定してその範囲のカレンダーを表示
     """
+    now = get_now(request)
     template_name = template_name or CalendarTemplatePathStore.path("term")
     logger.debug("calendar template: "+template_name)
 
     cal = CalendarOutput.from_performances(performances)
     rows = cal.each_rows(widget.from_date, widget.to_date)
-    return render(template_name, {"cal":rows, "i":cal.i, "calendar_status":calendar_status}, request)
+    return render(template_name, {"now": now,  "cal":rows, "i":cal.i, "stock_status":stock_status, "widget":widget, "request": request}, request)
 
-def tab(widget, calendar_status, performances, request, template_name=None):
+def tab(widget, stock_status, performances, request, template_name=None):
     """月毎のタブが存在するカレンダーを表示
     ※ performancesはstart_onでsortされているとする
     """
+    now = get_now(request)
     template_name = template_name or CalendarTemplatePathStore.path("tab")
     logger.debug("calendar template: "+template_name)
-
     performances = list(performances)
     if performances:
         start_date, end_date = get_start_date_and_end_date(widget.salessegment, performances)
@@ -163,9 +169,12 @@ def tab(widget, calendar_status, performances, request, template_name=None):
         cals = (CalendarOutput.from_performances(perfs).each_rows(date(y, m, 1), (_next_month_date(date(y, m, 1)) - timedelta(days=1)), this_month=m)\
                     for (y, m), perfs in monthly_performances)
         return render(template_name, {"cals":cals,
+                                      "now": now, 
+                                      "request": request, 
+                                      "widget":widget, 
                                       "months":months,
                                       "visibilities": visibilities,
-                                      "calendar_status":calendar_status})
+                                      "stock_status":stock_status})
     else:
         today = date.today()
         months = [(today.year, today.month)]
@@ -174,6 +183,9 @@ def tab(widget, calendar_status, performances, request, template_name=None):
         visibilities = [True]
         cals = [CalendarOutput().each_rows(start_date, end_date, this_month=today.month)]
         return render(template_name, {"cals":cals,
+                                      "now": now, 
+                                      "request": request, 
+                                      "widget":widget, 
                                       "months":months,
                                       "visibilities": visibilities,
-                                      "calendar_status":calendar_status})
+                                      "stock_status":stock_status})

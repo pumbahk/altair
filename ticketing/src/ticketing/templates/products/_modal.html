@@ -1,0 +1,49 @@
+<%page args="modal_id, performance_id" />
+<script type="text/javascript">
+  var new_product, edit_product, delete_product, preview_ticket;
+  $(function() {
+    (function (modal_product) {
+      new_product = function new_product() {
+        load_modal_form(
+          modal_product,
+          '${request.route_path('products.new', performance_id=performance_id)|n}',
+          null,
+          null
+        );
+      };
+      edit_product = function edit_product(id) {
+        if (!id) return false;
+        load_modal_form(
+          modal_product,
+          '${request.route_path('products.edit', product_id='{id}')|n}'.replace(encodeURIComponent('{id}'), id),
+          null,
+          null
+        );
+      };
+      delete_product = function delete_product(id) {
+        if (!id) return false;
+        var modal = $('#modal-delete');
+        modal.find('#delete').attr('href', '${request.route_path('products.delete', product_id='{id}')}'.replace(encodeURIComponent('{id}'), id));
+        modal.find('#message').text('選択した商品を削除します。よろしいですか？');
+        modal.modal('toggle');
+      };
+      preview_ticket = function preview_ticket(id) {
+        if (!id) return false;
+        $("a#productItem"+id).click();
+      };
+    })($('#${modal_id}'));
+  });
+</script>
+<div id="${modal_id}" class="modal hide">
+  <div class="modal-header">
+    <a class="close" data-dismiss="modal">×</a>
+    <h3>商品</h3>
+  </div>
+
+  <div class="modal-body"></div>
+
+  <div class="modal-footer">
+    <a href="#" class="btn" data-dismiss="modal">閉じる</a>
+    <a href="javascript:void(0);" onclick="$('#${modal_id}').find('form').submit();" class="btn">保存</a>
+  </div>
+</div>

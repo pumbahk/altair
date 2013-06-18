@@ -33,7 +33,7 @@ PREFECTURE_CHOICES = [
     ("hyogo", u'兵庫県'),
     ("nara", u'奈良県'),
     ("wakayama", u'和歌山県'),
-    ("tottori ", u'鳥取県'),
+    ("tottori", u'鳥取県'),
     ("shimane", u'島根県'),
     ("okayama", u'岡山県'),
     ("hiroshima", u'広島県'),

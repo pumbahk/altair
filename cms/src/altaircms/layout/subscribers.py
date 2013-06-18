@@ -1,31 +1,46 @@
+from . import SESSION_NAME
+from datetime import datetime
+import logging
+from functools import wraps
+from altairsite.front.api import get_frontpage_discriptor_resolver
+from altaircms.filelib.core import SignaturedFile
+logger = logging.getLogger(__name__)
 
-from altaircms.subscribers import notify_model_create
-from zope.interface import implementer
-from altaircms.interfaces import IModelEvent
-from .interfaces import ILayoutCreator
-from . import api
-from ..models import DBSession
-from altaircms.helpers.viewhelpers import FlashMessage
+def only_layout(fn):
+    @wraps(fn)
+    def wrapped(event):
+        session = event.session
+        if session.marker != SESSION_NAME:
+            return
+        return fn(event)
+    return wrapped
 
-@implementer(IModelEvent)
-class LayoutCreate(object):
-    def __init__(self, request, obj, params=None):
-        self.request = request
-        self.obj = obj
-        self.params = params
+@only_layout
+def set_uploaded_at(after_s3_upload):
+    event = after_s3_upload
+    layouts = event.extra_args
+    logger.info("*debug set_uploaded_at start. layouts={0}".format(layouts))
+    now = datetime.now()
+    for layout in layouts:
+        layout.uploaded_at = now
 
-def notify_layout_create(request, params=None):
-    registry = request.registry
-    return registry.notify(LayoutCreate(request, None, params))
+@only_layout
+def rename_for_s3_upload(before_s3_upload):
+    event = before_s3_upload
+    request = event.request
+    layouts = event.extra_args
+    layout_dict = {l.prefixed_template_filename:l for l in layouts}
 
-def create_template_layout(self):
-    self.params["prefix"] = self.request.organization.short_name #xxx:(for LayoutCreator.get_filename)
-
-    layout_creator = api.get_layout_creator(self.request)
-    layout_creator = self.request.registry.getUtility(ILayoutCreator)
-    layout_creator.create_file(self.params) ##
-    layout = layout_creator.create_model(self.params)
-    DBSession.add(layout)
-    FlashMessage.success("create layout %s" % layout.title, request=self.request)
-    notify_model_create(self.request, layout, self.params)
-
+    resolver = get_frontpage_discriptor_resolver(request)
+    updated = []
+    for f, realpath in event.files:
+        name = f.name
+        if not name in layout_dict:
+            updated.append((f, realpath))
+        else:
+            layout = layout_dict[name]
+            descriptor = resolver.resolve(request, layout)
+            updated_name = descriptor.absspec()
+            updated.append((SignaturedFile(name=updated_name, handler=f.handler, signature=f.signature), realpath))
+            logger.info("*debug rename_for_s3_upload: change name {0} -> {1}".format(name, updated_name))
+    event.files = updated

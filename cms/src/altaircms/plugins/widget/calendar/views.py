@@ -15,6 +15,8 @@ class CalendarWidgetView(object):
         context = self.request.context
         widget = context.get_widget(self.request.json_body.get("pk"))
         params = self.request.json_body["data"]
+        if not "show_label" in params:
+            params["show_label"] = False
         widget = context.update_data(widget,page_id=page_id, **params)
         context.add(widget, flush=True)
 
@@ -39,18 +41,18 @@ class CalendarWidgetView(object):
 
 
     DEFAULT_CALENDAR_TYPE = "this_month"
-    @view_config(route_name="calendar_widget_dialog", renderer="altaircms.plugins.widget:calendar/dialog.mako", request_method="GET")
+    @view_config(route_name="calendar_widget_dialog", renderer="altaircms.plugins.widget:calendar/dialog.html", request_method="GET")
     def dialog(self):
         context = self.request.context
         widget = context.get_widget(self.request.GET.get("pk"))
         page = get_or_404(self.request.allowable(Page), Page.id==self.request.GET["page"])
         params = widget.to_dict()
-        form = CalendarSelectForm(sale_choice=widget.salessegment, **params)
+        form = CalendarSelectForm(sale_choice=widget.salessegment, **params) #slaessegment group
         form.configure(self.request, page)
         return {"form": form}
 
 
-    @view_config(route_name="calendar_widget_dialog_demo", renderer="altaircms.plugins.widget:calendar/demo.mako", request_method="GET")
+    @view_config(route_name="calendar_widget_dialog_demo", renderer="altaircms.plugins.widget:calendar/demo.html", request_method="GET")
     def demo(self):
         calendar_type = self.request.matchdict["type"]
         D = {"calendar_type": calendar_type}

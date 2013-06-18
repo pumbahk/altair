@@ -7,11 +7,11 @@ import json
 from sqlalchemy import Table, Column, ForeignKey, ForeignKeyConstraint, Index, func
 from sqlalchemy.types import TypeEngine, TypeDecorator, VARCHAR, BigInteger, Integer, String, TIMESTAMP
 from sqlalchemy.orm import column_property, scoped_session, deferred, relationship as _relationship
-from sqlalchemy.orm.attributes import manager_of_class
+from sqlalchemy.orm.attributes import manager_of_class, QueryableAttribute
 from sqlalchemy.orm.properties import ColumnProperty, RelationshipProperty
 from sqlalchemy.ext.mutable import Mutable
 from sqlalchemy.ext.declarative import declared_attr
-from sqlalchemy.sql.expression import text
+from sqlalchemy.sql.expression import text, desc, asc
 from sqlalchemy.sql import functions as sqlf, and_
 import sqlahelper
 from paste.util.multidict import MultiDict
@@ -80,19 +80,23 @@ def merge_session_with_post(session, post, filters={}):
         for key,value in values:
             filter = filters.get(key)
 
-            if filter is not None:
-                value = filter(session, value)
-                setattr(session, key, value)
-            elif isinstance(value, str)\
-                or isinstance(value, unicode)\
-                or isinstance(value, int)\
-                or isinstance(value, Decimal)\
-                or isinstance(value, datetime)\
-                or isinstance(value, date)\
-                or value is None:
-                setattr(session, key, value)
-            else:
-                pass
+            try:
+                if filter is not None:
+                    value = filter(session, value)
+                    setattr(session, key, value)
+                elif isinstance(value, str)\
+                    or isinstance(value, unicode)\
+                    or isinstance(value, int)\
+                    or isinstance(value, long)\
+                    or isinstance(value, Decimal)\
+                    or isinstance(value, datetime)\
+                    or isinstance(value, date)\
+                    or value is None:
+                    setattr(session, key, value)
+                else:
+                    pass
+            except AttributeError:
+                raise AttributeError("can't set attribute \"%s\"" % key)
 
     if type(post) is list:
         _set_attrs(session, post)
@@ -236,7 +240,8 @@ class BaseModel(object):
         if hasattr(self, 'id') and not self.id:
             del self.id
         if isinstance(self, WithTimestamp):
-            self.created_at = datetime.now()
+            if not self.created_at:
+                self.created_at = datetime.now()
             self.updated_at = datetime.now()
         DBSession.add(self)
         DBSession.flush()
@@ -324,3 +329,16 @@ relationship = _relationship
 
 class DomainConstraintError(Exception):
     pass
+
+def is_any_of(item, collection):
+    if isinstance(item, QueryableAttribute):
+        return item.in_(collection)
+    else:
+        return item in collection
+
+def asc_or_desc(query, column, direction, default=None):
+    fn = dict(desc=desc, asc=asc).get(direction or default)
+    if fn is not None:
+        query = query.order_by(fn(column))
+    return query
+

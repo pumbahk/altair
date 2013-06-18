@@ -19,7 +19,7 @@ class ReuseWidget(Widget):
     implements(IWidget)
     type = "reuse"
 
-    template_name = "altaircms.plugins.widget:reuse/render.mako"
+    template_name = "altaircms.plugins.widget:reuse/render.html"
 
     attrs = sa.Column(sa.String(255), default='{"class": "reuse-widget"}') #json'{"class": "foo" "id": "bar"}'
     source_page_id = sa.Column(sa.Integer, sa.ForeignKey("page.id"))

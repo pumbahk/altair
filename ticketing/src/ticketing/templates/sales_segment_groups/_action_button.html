@@ -1,0 +1,38 @@
+<%page args="order=None" />
+<%namespace file="/common/helpers.html" name="h" />
+<%namespace file="/common/modal.html" import="delete_modal" />
+<script type="text/javascript">
+var get_selected_sales_segment_group_id;
+</script>
+<%
+  actions = {
+    'new':dict(
+      label=u'新規',
+      url='javascript:new_sales_segment_group();',
+      icon='icon-plus',
+    ),
+    'copy':dict(
+      label=u'コピーして新規作成',
+      url='javascript:edit_sales_segment_group(get_selected_sales_segment_group_id(), true);',
+      icon='icon-plus',
+    ),
+    'edit':dict(
+      label=u'編集',
+      url='javascript:edit_sales_segment_group(get_selected_sales_segment_group_id(), false);',
+      icon='icon-pencil',
+    ),
+    'delete':dict(
+      label=u'削除',
+      url='javascript:delete_sales_segment_group(get_selected_sales_segment_group_id());',
+      icon='icon-minus',
+    ),
+    'show':dict(
+      label=u'詳細',
+      url='javascript:show_sales_segment_group(get_selected_sales_segment_group_id());',
+      icon='icon-th-list',
+    ),
+  }
+  order = iter(order or ['new', 'edit', 'delete'])
+%>
+${h.action_button(actions, order)}
+${delete_modal()}

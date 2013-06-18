@@ -1,0 +1,71 @@
+<%page args="modal_id, performance=None, sales_segment_group=None" />
+<%namespace file="/common/helpers.html" name="h" />
+<script type="text/javascript">
+  var new_sales_segment, edit_sales_segment, delete_sales_segment;
+  $(function() {
+    (function(modal_sales_segment) {
+      new_sales_segment = function new_sales_segment() {
+        // FIXME: formをsubmitしたらページ遷移が発生する挙動に頼っていて
+        // onchangeイベントハンドラはずしてないの注意
+        load_modal_form(
+          modal_sales_segment,
+          '${request.route_path('sales_segments.new', _query=dict(performance_id=performance.id if performance else u'', sales_segment_group_id=sales_segment_group.id if sales_segment_group else u''))|n}',
+          null,
+          function () {
+            $(this).find('.copy-fields').css('display', 'none');
+            var $kind = $(this).find('#kind');
+            var $name = $(this).find('#name');
+            if (!$name.val()) {
+              var fillDefault = true;
+              function onchange() {
+                if (fillDefault) {
+                  var selected = $kind.val();
+                  $kind.children().each(function (_, n) {
+                    if (selected == n.value || selected == null) {
+                      $name.val(n.firstChild.nodeValue);
+                      return false;
+                    }
+                  });
+                }
+              }
+              $name.change(function () {
+                fillDefault = false;
+              });
+              $kind.change(onchange);
+              onchange();
+            }
+          }
+        );
+      };
+      edit_sales_segment = function edit_sales_segment(id) {
+        if (!id) return false;
+        load_modal_form(
+          modal_sales_segment,
+          '${request.route_path('sales_segments.edit', sales_segment_id='{id}')|n}'.replace(encodeURIComponent('{id}'), id),
+          null,
+          null
+        );
+      };
+      delete_sales_segment = function delete_sales_segment(id) {
+        if (!id) return false;
+        var modal = $('#modal-delete');
+        modal.find('#delete').attr('href', '${request.route_path('sales_segments.delete', sales_segment_id='{id}')}'.replace(encodeURIComponent('{id}'), id));
+        modal.find('#message').text('選択した販売区分を削除します。よろしいですか？');
+        modal.modal('toggle');
+      };
+    })($('#${modal_id}'));
+  });
+</script>
+<div id="${modal_id}" class="modal hide big">
+  <div class="modal-header">
+    <a class="close" data-dismiss="modal">×</a>
+    <h3>販売区分</h3>
+  </div>
+
+  <div class="modal-body"></div>
+
+  <div class="modal-footer">
+    <a href="#" class="btn" data-dismiss="modal">閉じる</a>
+    <a href="javascript:void(0);" onclick="$('#${modal_id}').find('form').submit();" class="btn">保存</a>
+  </div>
+</div>

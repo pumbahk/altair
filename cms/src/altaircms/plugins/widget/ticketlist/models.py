@@ -1,64 +1,48 @@
 # -*- encoding:utf-8 -*-
-from collections import defaultdict
 from zope.interface import implements
-from pyramid.renderers import render
 
 from altaircms.interfaces import IWidget
 import sqlalchemy as sa
 import sqlalchemy.orm as orm
+from sqlalchemy.sql.expression import update as sql_update
 
-import itertools
 from altaircms.widget.models import Widget
-from altaircms.models import Sale, Ticket, Performance
 from altaircms.plugins.base import DBSession
 from altaircms.plugins.base.mixins import HandleSessionMixin
 from altaircms.plugins.base.mixins import HandleWidgetMixin
 from altaircms.plugins.base.mixins import UpdateDataMixin
 from altaircms.security import RootFactory
-from altaircms.plugins.base.interception import not_support_if_keyerror
-from altaircms.seeds.saleskind import SALESKIND_CHOICES
+from altaircms.plugins.widget.api import get_rendering_function_via_page
 
+from altaircms.models import Performance, SalesSegment
 class TicketlistWidget(Widget):
     implements(IWidget)
     type = "ticketlist"
 
-    template_name = "altaircms.plugins.widget:ticketlist/render.mako"
+    def __init__(self, *args, **kwargs):
+        super(TicketlistWidget, self).__init__(*args, **kwargs)
+        if "show_label" not in kwargs:
+            self.show_label = True
+
+    template_name = "altaircms.plugins.widget:ticketlist/render.html"
     __tablename__ = "widget_ticketlist"
     __mapper_args__ = {"polymorphic_identity": type}
     query = DBSession.query_property()
 
-    kind = sa.Column(sa.Unicode(255), default=u"normal")
-    caption = sa.Column(sa.UnicodeText, doc=u"見出し")
+    display_type = sa.Column(sa.Unicode(255))
+    caption = sa.Column(sa.UnicodeText, doc=u"表に対する説明")
     target_performance_id = sa.Column(sa.Integer, sa.ForeignKey("performance.id"))
-    target_performance = orm.relationship("Performance")
-
+    target_performance = orm.relationship(Performance)
+    target_salessegment_id = sa.Column(sa.Integer, sa.ForeignKey("sale.id"))
+    target_salessegment = orm.relationship(SalesSegment)
     id = sa.Column(sa.Integer, sa.ForeignKey("widget.id"), primary_key=True)
+    show_label = sa.Column(sa.Boolean, doc=u"見出しを表示するか否かのフラグ", default=True, nullable=False)
 
     def merge_settings(self, bname, bsettings):
-        bsettings.need_extra_in_scan("request")
-        @not_support_if_keyerror("ticketlist widget: %(err)s")
-        def ticketlist_render():
-            request = bsettings.extra["request"]
-            if self.target_performance is None:
-                raise KeyError("target performance is not found")
-            tickets = Ticket.query.filter(Ticket.performances.any(id=self.target_performance.id))
-            tickets = tickets.filter(Sale.kind==self.kind).filter(Sale.id==Ticket.sale_id)
-            tickets = tickets.order_by(sa.asc("display_order"))
-            # tickets = tickets.order_by(sa.desc("price"))
-            
-            # ## group by seat type
-            # indices = []
-            # grouped = defaultdict(list)
-            # for t in tickets:
-            #     ts = grouped[t.seattype]
-            #     ts.append(t)
-            #     if ts not in indices:
-            #         indices.append(ts)
-            # tickets = itertools.chain.from_iterable(indices)
-
-            params = {"widget":self, "tickets": tickets}
-            return render(self.template_name, params, request)
-        bsettings.add(bname, ticketlist_render)
+        bsettings.need_extra_in_scan("event")
+        ## lookup utilities.py
+        closure = get_rendering_function_via_page(self, bname, bsettings, self.type)
+        bsettings.add(bname, closure)
 
 class TicketlistWidgetResource(HandleSessionMixin,
                                 UpdateDataMixin,
@@ -69,3 +53,15 @@ class TicketlistWidgetResource(HandleSessionMixin,
 
     def get_widget(self, widget_id):
         return self._get_or_create(TicketlistWidget, widget_id)
+
+def after_target_salessegment_deleted(mapper, connection, target):
+    for widget in TicketlistWidget.query.filter(TicketlistWidget.target_salessegment_id == target.id):
+        widget.target_salessegment_id = None
+
+sa.event.listen(SalesSegment, "before_delete", after_target_salessegment_deleted)
+
+def after_target_performance_deleted(mapper, connection, target):
+    for widget in TicketlistWidget.query.filter(TicketlistWidget.target_performance_id == target.id):
+        widget.target_performance_id = None
+
+sa.event.listen(Performance, "before_delete", after_target_performance_deleted)

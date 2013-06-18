@@ -8,7 +8,7 @@ import json
 
 import sqlalchemy as sa
 import sqlalchemy.orm as orm
-from pyramid.renderers import render
+from altaircms.plugins.widget.api import get_rendering_function_via_page
 
 
 from altaircms.interfaces import IWidget
@@ -18,6 +18,7 @@ from altaircms.plugins.base.mixins import HandleSessionMixin
 from altaircms.plugins.base.mixins import HandleWidgetMixin
 from altaircms.plugins.base.mixins import UpdateDataMixin
 from altaircms.page.models import Page
+from altaircms.event.models import Event
 from altaircms.security import RootFactory
 from .helpers import _items_from_page
 
@@ -49,7 +50,12 @@ class SummaryWidget(Widget):
     implements(IWidget)
     type = "summary"
 
-    template_name = "altaircms.plugins.widget:summary/render.mako"
+    def __init__(self, *args, **kwargs):
+        super(SummaryWidget, self).__init__(*args, **kwargs)
+        if "show_label" not in kwargs:
+            self.show_label = True
+
+    template_name = "altaircms.plugins.widget:summary/render.html"
     __tablename__ = "widget_summary"
     __mapper_args__ = {"polymorphic_identity": type}
     query = DBSession.query_property()
@@ -58,6 +64,7 @@ class SummaryWidget(Widget):
     bound_event_id = sa.Column(sa.Integer, sa.ForeignKey("event.id"))
     bound_event = orm.relationship("Event")
     items = sa.Column(sa.UnicodeText) #json string
+    show_label = sa.Column(sa.Boolean, doc=u"見出しを表示するか否かのフラグ", default=True, nullable=False)
     """
     items attribute structure::
 
@@ -66,11 +73,9 @@ class SummaryWidget(Widget):
     """
 
     def merge_settings(self, bname, bsettings):
-        bsettings.need_extra_in_scan("request")
-        items = json.loads(self.items or "[]")
-
-        content = render(self.template_name, {"widget": self,  "items": items}) 
-        bsettings.add(bname, content)
+        ## lookup utilities.py
+        closure = get_rendering_function_via_page(self, bname, bsettings, self.type)
+        bsettings.add(bname, closure)
 
     @classmethod
     def from_page(cls, page):
@@ -99,3 +104,10 @@ class SummaryWidgetResource(HandleSessionMixin,
     def get_items(self, page_id):
         page = self._get_page(page_id)
         return self._items_from_page(page) if page.event else "[]"
+
+
+def after_bound_event_deleted(mapper, connection, target):
+    for widget in SummaryWidget.query.filter(SummaryWidget.bound_event_id == target.id):
+        widget.bound_event_id = None
+
+sa.event.listen(Event, "before_delete", after_bound_event_deleted)

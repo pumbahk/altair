@@ -1,0 +1,54 @@
+<%inherit file="/layout_2cols.html"/>
+<%namespace file="/common/helpers.html" name="h" />
+
+<div class="breadcrumbs">
+  ${h.breadcrumbs(
+    names=[u'トップ', u'購入情報', u'払戻', u'払戻確認'],
+    urls=[request.route_path('index'), request.route_path('orders.index'), request.route_path('orders.refund.search')]
+  )}
+</div>
+
+<div class="page-header">
+  <h1>払戻確認</h1>
+</div>
+
+<div class="content">
+  ${h.flash_messages(request)}
+  ${h.alert_message(form_refund)}
+</div>
+
+<div class="alert alert-info">
+  ${len(orders)}件の予約に払戻条件を設定し、払戻を予約します。
+</div>
+
+<%include file="/orders/_search_condition.html" args="form=form_search" />
+
+<div class="well">
+  <script type="text/javascript">
+    $(function() {
+      $('form').find("input[type='checkbox']").change(function() {
+        if ($(this).attr('checked')) {
+          $(this).val(1);
+        } else {
+          $(this).val(0);
+        }
+      }).change();
+      $('.draggable').draggable({scroll: true, handle:$('.draggable .modal-header')});
+      $('form').disableOnSubmit();
+    });
+  </script>
+
+  <form action="${request.route_path('orders.refund.confirm')}" method="POST">
+    ${h.form_item(form_refund.payment_method_id)}
+    ${h.form_item(form_refund.include_item)}
+    ${h.form_item(form_refund.include_system_fee)}
+    ${h.form_item(form_refund.include_transaction_fee)}
+    ${h.form_item(form_refund.include_delivery_fee)}
+    ${h.form_item(form_refund.cancel_reason)}
+    <a href="${request.route_path('orders.refund.checked')}" class="btn">戻る</a>
+    <a class="btn btn-success" href="${request.route_path('orders.download', _query=dict(action='checked'))}">
+      <i class="icon-file icon-white"></i> 払戻対象をダウンロード
+    </a>
+    <button type="submit" class="btn btn-danger">払戻予約</button>
+  </form>
+</div>

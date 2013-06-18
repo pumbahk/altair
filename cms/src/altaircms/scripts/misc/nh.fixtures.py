@@ -62,13 +62,13 @@ class BjNHFixtureBuilder(FixtureBuilder):
         """
         super(BjNHFixtureBuilder, self).__init__(Datum)
         layout_triples = [
-            (u'NHシンプル', 'NH.base.mako', '[["header"], ["kadomaru"]]'),
-            (u'NHチケットトップ', 'NH.complex.mako', '[["above_kadomaru"],["kadomaru"],["below_kadomaru"]]'),
-            (u'NH.introduction', 'NH.introduction.mako', '[["above_kadomaru"],["card_and_QR"],["card_and_seven"],["card_and_home"],["anshin_and_QR"],["anshin_and_seven"],["anshin_and_home"],["seven_and_seven"]]'),
-            (u'NH:kadomaru2', 'NH.kadomaru2.mako', '[["above_kadomaru"],["kadomaru"],["kadomaru2"],["below_kadomaru"]]'),
-            (u'NH:kadomaru3', 'NH.kadomaru3.mako', '[["above_kadomaru"],["kadomaru"],["kadomaru2"],["kadomaru3"],["below_kadomaru"]]'),
-            (u'NH:kadomaru4', 'NH.kadomaru4.mako', '[["above_kadomaru"],["kadomaru"],["kadomaru2"],["kadomaru3"],["kadomaru4"],["below_kadomaru"]]'),
-            (u'NH:kadomaru5', 'NH.kadomaru5.mako', '[["above_kadomaru"],["kadomaru"],["kadomaru2"],["kadomaru3"],["kadomaru4"],["kadomaru5"],["below_kadomaru"]]')
+            (u'NHシンプル', 'NH.base.html', '[["header"], ["kadomaru"]]'),
+            (u'NHチケットトップ', 'NH.complex.html', '[["above_kadomaru"],["kadomaru"],["below_kadomaru"]]'),
+            (u'NH.introduction', 'NH.introduction.html', '[["above_kadomaru"],["card_and_QR"],["card_and_seven"],["card_and_home"],["anshin_and_QR"],["anshin_and_seven"],["anshin_and_home"],["seven_and_seven"]]'),
+            (u'NH:kadomaru2', 'NH.kadomaru2.html', '[["above_kadomaru"],["kadomaru"],["kadomaru2"],["below_kadomaru"]]'),
+            (u'NH:kadomaru3', 'NH.kadomaru3.html', '[["above_kadomaru"],["kadomaru"],["kadomaru2"],["kadomaru3"],["below_kadomaru"]]'),
+            (u'NH:kadomaru4', 'NH.kadomaru4.html', '[["above_kadomaru"],["kadomaru"],["kadomaru2"],["kadomaru3"],["kadomaru4"],["below_kadomaru"]]'),
+            (u'NH:kadomaru5', 'NH.kadomaru5.html', '[["above_kadomaru"],["kadomaru"],["kadomaru2"],["kadomaru3"],["kadomaru4"],["kadomaru5"],["below_kadomaru"]]')
             ]
         self.layout_triples = layout_triples
 

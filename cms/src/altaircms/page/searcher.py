@@ -1,10 +1,10 @@
 from .helpers import pageset_id_list_from_word
 from ..page.models import PageSet
 from ..models import Category
-from datetime import datetime
+from altaircms.datelib import get_now
 
 def make_pageset_search_query(request, data, qs=None, today=None):
-    today = today or datetime.now()
+    today = today or get_now(request)
     qs = qs or PageSet.query    
     qs = make_pageset_search_by_word(request, qs, data)
     qs = make_pageset_search_by_category(qs, data)
@@ -14,7 +14,6 @@ def make_pageset_search_query(request, data, qs=None, today=None):
     return qs
 
 def make_pageset_search_by_word(request, qs, data):
-    ## search by solr
     if data["freeword"]:
         word = data["freeword"]
         # pagesets = pageset_id_list_from_word(request, word)

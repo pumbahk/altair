@@ -1,0 +1,122 @@
+<%inherit file='../layout_2col.html'/>
+<%namespace name="nco" file="../navcomponents.html"/>
+<%namespace name="fco" file="../formcomponents.html"/>
+<%namespace name="mco" file="../modelcomponents.html"/>
+
+<%block name="style">
+<style type="text/css">
+#appendix h3{ 
+  margin-top:20px;
+}
+</style>
+</%block>
+
+
+<div class="row-fluid">
+    ${nco.breadcrumbs(
+        names=["Top", "Page", "Event", pageset.name],
+        urls=[request.route_path("dashboard"),
+    request.route_path("event",id=pageset.event_id),
+	request.route_path("pageset_list", pagetype=pageset.pagetype.name)]
+    )}
+
+<div class="circle circle-page circle-top"></div>
+<h2>${pageset.name}</h2>
+
+<table class="table table-striped table-describe">
+  <tr>
+    <th>ページ名</th><td>${pageset.name}</td>
+  </tr>
+  <tr>
+    <th>所属イベント名</th><td><a href="${request.route_path("event",id=pageset.event_id)}">${pageset.event.title}</a></td>
+  </tr>
+  <tr>
+    <th>所属ジャンル</th><td>${u", ".join(reversed([g.label for g in pageset.genre.ancestors_include_self])) if pageset.genre_id else u"-"}</td>
+  </tr>
+  <tr>
+    <th>URL</th><td>${pageset.url}</td>
+  </tr>
+  <tr>
+    <th>ページタイプ</th><td>イベント詳細ページ</td>
+  </tr>
+  <tr>
+    <th>公開タグ</th><td>${u", ".join(t.label for t in pageset.public_tags if t.organization_id)}</td>
+  </tr>
+  <tr>
+    <th>非公開タグ</th><td>${u", ".join(t.label for t in pageset.private_tags if t.organization_id)}</td>
+  </tr>
+  <tr>
+    <th>モバイルタグ</th><td>${u", ".join(t.label for t in pageset.mobile_tags if t.organization_id)}</td>
+  </tr>
+</table>
+
+<hr/>
+<h3>操作</h3>
+<div class="btn-group">
+  <a class="btn btn-primary" href="${request.route_path("pageset_update", id=pageset.id, action="input", _query=dict(endpoint=request.url))}" class="btn">
+    <i class="icon-pencil"></i> ページセットの編集
+  </a>
+  <a class="btn"  href="${request.route_path("pageset", pageset_id=pageset.id)}">
+    <i class="icon-plus"> </i> ページセット期間変更
+  </a>
+	<a id="reset_event" class="btn submit" href="${request.route_path("plugins_jsapi_pageset_reset_event", pageset_id=pageset.id)}"
+       message="「${pageset.name}」をイベントと結びつかないページセットにします。よろしいですか？">
+		<i class="icon-plus"> </i> イベントと結びつかないページセットにする
+  </a>
+  <a class="btn btn-danger" href="${request.route_path("pageset_delete", pageset_id=pageset.id)}">
+    <i class="icon-trash"></i> ページセットの削除
+  </a>
+</div>
+
+<hr/>
+
+<h3>ページ一覧</h3>
+  ## 一番下のjsに依存している
+<div class="box">
+  ${panel("pageset_page", pageset)}
+  <div class="btn-group">
+	  <a class="btn btn-success submit" id="pageset_addpage" href="${request.route_path("plugins_jsapi_addpage", pageset_id=pageset.id)}"
+       message="「${pageset.name}」に新しいページを追加します。よろしいですか？">
+		  <i class="icon-plus"> </i> 新しいページの追加
+    </a>
+	  <a class="btn btn-success action-submit" href-fmt="${request.route_path("page_duplicate", id="__id__", endpoint=request.url)}">
+		  <i class="icon-plus"> </i> 選択したページのコピーを追加
+    </a>
+  </div>
+</div>
+<hr/>
+
+<h3>登録しているアセット</h3>
+  ${myhelpers.asset_describe_viewlet(request,pageset)}
+<hr/>
+
+<script type="text/javascript">
+  $(function(){
+   $(".box .btn-group a.action").on("click", function(e){
+      var $this = $(e.currentTarget);
+      var  pk = $this.parents(".box").find("input[name='object_id']:checked").val();
+      if(!pk){ console.log("sorry"); return false; }
+      // initialize
+      $this.attr("href", $this.attr("href-fmt").replace("__id__", pk));
+      return true;;
+  });
+  $("a.action-submit").click(function(e){
+      e.preventDefault();
+      var $this = $(e.currentTarget);
+      var  pk = $this.parents(".box").find("input[name='object_id']:checked").val();
+      if(!pk){ console.log("sorry"); return false; }
+      // initialize
+      $this.attr("href", $this.attr("href-fmt").replace("__id__", pk));
+      if(window.confirm("「${pageset.name}」に新しいページを追加します。よろしいですか？")){
+        $.post($(this).attr("href")).done(function(){location.reload()}).fail(function(e){console.log(e.responseText)});
+      }
+  });
+  $("a.submit").click(function(e){
+      e.preventDefault();
+      if(window.confirm($(this).attr("message"))){
+        $.post($(this).attr("href")).done(function(){location.reload()}).fail(function(e){console.log(e.responseText)});
+      }
+    });
+  })
+</script>
+</div>

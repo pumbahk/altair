@@ -2,28 +2,35 @@
 import os
 import logging
 import re
+import sqlalchemy as sa
 from collections import defaultdict
 from datetime import datetime
 from webob.multidict import MultiDict
-from wtforms.form import Form
+from altaircms.formhelpers import Form
 from wtforms import fields
 from wtforms import widgets
 from wtforms import validators
 from altaircms.layout.models import Layout
-from altaircms.page.models import Page
-from altaircms.page.models import PageSet
+from .models import Page
+from .models import PageSet
+from .models import PageType
+from .models import StaticPage
 from altaircms.event.models import Event
 from altaircms.interfaces import IForm
 from altaircms.interfaces import implementer
-from altaircms.helpers.formhelpers import dynamic_query_select_field_factory
-from altaircms.helpers.formhelpers import append_errors
-from altaircms.helpers.formhelpers import MaybeDateTimeField
+from altaircms.formhelpers import dynamic_query_select_field_factory
+from altaircms.formhelpers import append_errors
+from altaircms.formhelpers import MaybeDateTimeField
 from pyramid.threadlocal import get_current_request
 logger = logging.getLogger(__name__)
 
-from ..models import Category
+from ..models import Category, Genre
 from .api import get_static_page_utility
 from . import writefile
+
+def layout_filter(model, request, query):
+    pagetype = PageType.get_or_create(name=request.GET["pagetype"], organization_id=request.organization.id)
+    return request.allowable(Layout).with_transformation(Layout.applicable(pagetype.id))
 
 class PageSetSearchForm(Form):
     """
@@ -55,41 +62,57 @@ def url_not_conflict(form, field):
     if qs.count() > 0:
         raise validators.ValidationError(u'URL "%s" は既に登録されてます' % field.data)
 
+def pagetype_filter(model, request, query):
+    return query.filter_by(name=request.GET["pagetype"])
 
 class PageInfoSetupForm(Form):
     """ このフォームを使って、PageFormへのデフォルト値を挿入する。
     """
+    pagetype = dynamic_query_select_field_factory(PageType, allow_blank=False, label=u"ページタイプ", 
+                                                  get_label=lambda o: o.label, 
+                                                  dynamic_query=pagetype_filter)
+    genre = dynamic_query_select_field_factory(Genre, allow_blank=True, label=u"ジャンル", 
+                                               get_label=unicode)
     name = fields.TextField(label=u"名前", validators=[validators.Required()])
-    parent = dynamic_query_select_field_factory(
-        PageSet, 
-        query_factory= lambda : PageSet.query.filter(PageSet.category != None).filter(PageSet.default_info != None), 
-        allow_blank=True, label=u"親ページ", 
-        get_label=lambda obj:  u'%s' % obj.name)
 
+class PageInfoSetupWithEventForm(Form):
+    event = dynamic_query_select_field_factory(Event, allow_blank=True, label=u"イベント", 
+                                               get_label=lambda obj:  obj.title)
+    pagetype = dynamic_query_select_field_factory(PageType, allow_blank=False, label=u"ページタイプ", 
+                                                  get_label=lambda o: o.label, 
+                                                  dynamic_query=pagetype_filter)
+    genre = dynamic_query_select_field_factory(Genre, allow_blank=True, label=u"ジャンル", 
+                                               get_label=unicode)
+    name = fields.TextField(label=u"名前", validators=[validators.Required()])
 
 @implementer(IForm)
 class PageForm(Form):
     name = fields.TextField(label=u"名前", validators=[validators.Required()])
-    url = fields.TextField(validators=[url_field_validator,  url_not_conflict],
-                           label=u"URLhttp://stg2.rt.ticketstar.jp/", 
-                           widget=widgets.TextArea())
-
+    url = fields.TextField(validators=[url_field_validator,  url_not_conflict],label=u"URL", )
+    genre = dynamic_query_select_field_factory(Genre, allow_blank=True, label=u"ジャンル", 
+                                               get_label=lambda g: g.label)
     pageset = dynamic_query_select_field_factory(PageSet, allow_blank=True, label=u"ページセット",
                                                  get_label=lambda ps: ps.name)
-
-    title = fields.TextField(label=u"ページタイトル", validators=[validators.Required()], widget=widgets.TextArea())
+    pagetype = dynamic_query_select_field_factory(PageType, allow_blank=False, label=u"ページタイプ", 
+                                                  get_label=lambda o: o.label, 
+                                                  dynamic_query=pagetype_filter)
+    title_prefix = fields.TextField(label=u"ページタイトル（接頭語）")
+    title = fields.TextField(label=u"ページタイトル", validators=[validators.Required()])
+    title_suffix = fields.TextField(label=u"ページタイトル（接尾語）")
 
     description = fields.TextField(label=u"概要", widget=widgets.TextArea())
     keywords = fields.TextField(widget=widgets.TextArea())
     tags = fields.TextField(label=u"タグ(区切り文字:\",\")")
     private_tags = fields.TextField(label=u"非公開タグ(区切り文字:\",\")")
-    layout = dynamic_query_select_field_factory(Layout, allow_blank=False, 
-                                                get_label=lambda obj: u"%s(%s)" % (obj.title, obj.template_filename))
+    mobile_tags = fields.TextField(label=u"モバイルタグ(区切り文字:\",\")")
+    layout = dynamic_query_select_field_factory(Layout, allow_blank=False,
+                                                get_label=lambda obj: u"%s(%s)" % (obj.title, obj.template_filename), 
+                                                dynamic_query=layout_filter
+                                                )
     # event_id = fields.IntegerField(label=u"", widget=widgets.HiddenInput())
     event = dynamic_query_select_field_factory(Event, allow_blank=True, label=u"イベント", 
                                                get_label=lambda obj:  obj.title)
     parent = dynamic_query_select_field_factory(PageSet, 
-                                                query_factory= lambda : PageSet.query.filter(PageSet.category != None), 
                                                 allow_blank=True, label=u"親ページ", 
                                                 get_label=lambda obj:  u'%s' % obj.name)
 
@@ -101,7 +124,8 @@ class PageForm(Form):
 
     def validate(self, **kwargs):
         """ override to form validation"""
-        super(PageForm, self).validate()
+        if not super(PageForm, self).validate():
+            return False
         data = self.data
         if data["publish_end"] and data["publish_begin"]:
             if data["publish_begin"] > data["publish_end"]:
@@ -117,32 +141,23 @@ class PageForm(Form):
 @implementer(IForm)
 class PageUpdateForm(Form):
     name = fields.TextField(label=u"名前", validators=[validators.Required()])
-    url = fields.TextField(validators=[url_field_validator, url_not_conflict],
-                           label=u"URLhttp://stg2.rt.ticketstar.jp/", 
-                           widget=widgets.TextArea())
+    url = fields.TextField(validators=[url_field_validator, url_not_conflict], label=u"URL")
 
     title = fields.TextField(label=u"ページタイトル", validators=[validators.Required()], widget=widgets.TextArea())
     description = fields.TextField(label=u"概要", widget=widgets.TextArea())
     keywords = fields.TextField(widget=widgets.TextArea())
-    tags = fields.TextField(label=u"タグ(区切り文字:\",\")")
-    private_tags = fields.TextField(label=u"非公開タグ(区切り文字:\",\")")
-    layout = dynamic_query_select_field_factory(Layout, allow_blank=False, 
-                                                get_label=lambda obj: u"%s" % obj.title)
-    event = dynamic_query_select_field_factory(Event, allow_blank=True, label=u"イベント", 
-                                               get_label=lambda obj:  obj.title)
+    pagetype = dynamic_query_select_field_factory(PageType, allow_blank=False, 
+                                                  get_label=lambda obj: obj.label)
     pageset = dynamic_query_select_field_factory(PageSet, allow_blank=True, label=u"ページセット",
                                                  get_label=lambda ps: ps.name)
-    parent = dynamic_query_select_field_factory(PageSet, 
-                                                query_factory= lambda : PageSet.query.filter(PageSet.category != None), 
-                                                allow_blank=True, label=u"親ページ", 
-                                                get_label=lambda obj:  u'%s' % obj.name)
-
     publish_begin = MaybeDateTimeField(label=u"掲載開始")
     publish_end = MaybeDateTimeField(label=u"掲載終了")
 
     def validate(self):
         """ override to form validation"""
-        result = super(PageUpdateForm, self).validate()
+        status = super(PageUpdateForm, self).validate()
+        if not bool(status):
+            return status
 
         data = self.data
         if data.get("publish_end"):
@@ -209,7 +224,10 @@ def validate_page_publishings_connected(publishings):
     すべての終了日の次の日に対応する開始日があること
     """
     real_publishings = [p for p in publishings.values() if p["begin"] and p["published"]]
-    last_start = max(p["begin"] for p in real_publishings)
+    begins = [p["begin"] for p in real_publishings]
+    if begins == []:
+        return True
+    last_start = max(begins)
     for publishing in real_publishings:
         if publishing["published"]:
             page_id = publishing['page_id']
@@ -310,18 +328,78 @@ class PageSetFormFactory(object):
 
 
 ## static page
+class StaticPageForm(Form):
+    name = fields.TextField(label=u"name", validators=[validators.Optional()])
+    label = fields.TextField(label=u"タイトル", validators=[validators.Required()])
+    layout = dynamic_query_select_field_factory(Layout, allow_blank=True, 
+                                                get_label=lambda obj: u"%s(%s)" % (obj.title, obj.template_filename), 
+                                                dynamic_query=layout_filter
+                                                )
+    publish_begin = fields.DateTimeField(label=u"掲載開始", validators=[validators.Optional()])
+    publish_end = MaybeDateTimeField(label=u"掲載終了", validators=[validators.Optional()])
+    interceptive = fields.BooleanField(label=u"同一urlのページセットを横取りする", default=True)
+
+    def configure(self, request):
+        self.request = request
+        self.static_directory = get_static_page_utility(request)
+
+    def object_validate(self, obj):
+        self.request._static_page_name = obj.name #too add-hoc        
+        return True
+
+    def validate(self):
+        status = super(type(self), self).validate()
+        if not status:
+            return False
+
+        data = self.data
+        if data.get("name") and hasattr(self, "static_directory"):
+            path = os.path.join(self.static_directory.get_base_directory(), self.data["name"])
+            if os.path.exists(path):
+                if self.request.allowable(StaticPage).filter(StaticPage.name==self.data["name"], StaticPage.id!=self.request.matchdict["id"]).count() > 0:
+                    append_errors(self.errors, "name", u"%sは既に存在しています。他の名前で登録してください" % self.data["name"])
+                    status = False
+
+        if data.get("publish_end") and data.get("publish_begin"):
+            if data["publish_begin"] > data["publish_end"]:
+                append_errors(self.errors, "publish_begin", u"開始日よりも後に終了日が設定されています")
+        return status
+
+    __display_fields__ = ["name", "label", "layout", "publish_begin", "publish_end", "interceptive"]
+
 class StaticPageCreateForm(Form):
     name = fields.TextField(label=u"name", validators=[validators.Required()])
+    label = fields.TextField(label=u"タイトル", validators=[validators.Required()])
     zipfile = fields.FileField(label=u"zipファイルを投稿")
+    layout = dynamic_query_select_field_factory(Layout, allow_blank=True, 
+                                                get_label=lambda obj: u"%s(%s)" % (obj.title, obj.template_filename), 
+                                                dynamic_query=layout_filter
+                                                )
+    publish_begin = fields.DateTimeField(label=u"掲載開始", validators=[validators.Optional()])
+    publish_end = MaybeDateTimeField(label=u"掲載終了", validators=[validators.Optional()])
+    interceptive = fields.BooleanField(label=u"同一urlのページセットを横取りする", default=True)
+
 
     def validate(self, request):
         status = super(type(self), self).validate()
+        if not status:
+            return False
+
+        data = self.data
+        if data.get("publish_end") and data.get("publish_begin"):
+            if data["publish_begin"] > data["publish_end"]:
+                append_errors(self.errors, "publish_begin", u"開始日よりも後に終了日が設定されています")
+
         static_directory = get_static_page_utility(request)
-        path = os.path.join(static_directory.basedir, self.data["name"])
+        path = os.path.join(static_directory.get_base_directory(), self.data["name"])
         if os.path.exists(path):
             append_errors(self.errors, "name", u"%sは既に存在しています。他の名前で登録してください" % self.data["name"])
             status = False
-        if not writefile.is_zipfile(self.data["zipfile"].file):
+        if self.data["zipfile"] == u"":
+            message = u"zipfileではありません。.zipの拡張子が付いたファイルを投稿してください" 
+            append_errors(self.errors, "zipfile", message)
+            status = False
+        elif not writefile.is_zipfile(self.data["zipfile"].file):
             message = u"%sはzipfileではありません。.zipの拡張子が付いたファイルを投稿してください" % (self.data["zipfile"].filename)
             append_errors(self.errors, "zipfile", message)
             status = False

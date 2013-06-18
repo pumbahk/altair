@@ -1,5 +1,8 @@
 import functools
 import logging
+from zope.interface import implementer
+from .interfaces import ITraverser
+
 logger = logging.getLogger(__name__)
 
 class FindStopAccessor(object):
@@ -34,6 +37,7 @@ class FindStopAccessor(object):
             this = this.chained
         return r
 
+@implementer(ITraverser)
 class EmailInfoTraverser(object):
     def __init__(self, accessor_impl=FindStopAccessor, access=None, default=None):
         self.chained = None

@@ -1,5 +1,5 @@
 # coding: utf-8
-from wtforms.form import Form
+from altaircms.formhelpers import Form
 from wtforms import fields, widgets, validators
 from wtforms.ext.sqlalchemy import fields as sa_fields
 
@@ -53,3 +53,8 @@ class RoleForm(Form):
     permission = fields.SelectField(
         choices=[(p, p) for p in PERMISSIONS],
     )
+
+class NowSettingForm(Form):
+    now = fields.DateTimeField(label=u"時間指定現在時刻")
+    
+    __display_fields__ = ["now"]

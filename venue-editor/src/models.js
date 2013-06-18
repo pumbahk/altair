@@ -31,7 +31,6 @@ Venue.prototype.initialize = function Venue_initialize(initialData, options) {
   var stockHolders = new StockHolderCollection(null, { venue: this });
   var stocks = new StockCollection(null, { venue: this });
   var seats = new SeatCollection(null, { venue: this });
-  var perAttributeSeatSet = {};
   var perStockSeatSet = {};
   var perStockHolderStockMap = {};
   var perStockTypeStockMap = {};
@@ -55,10 +54,7 @@ Venue.prototype.initialize = function Venue_initialize(initialData, options) {
         style: stockTypeDatum.style
       });
       stockTypes.add(stockType);
-      stockType.on('change:name', function () {
-        this.set('edited', true);
-      });
-      stockType.on('change:style', function () {
+      stockType.on('change:name change:style', function () {
         this.set('edited', true);
       });
     }
@@ -90,13 +86,17 @@ Venue.prototype.initialize = function Venue_initialize(initialData, options) {
       stockHolder: stockHolder,
       stockType: stockType,
       assigned: stockDatum.assigned,
-      available: stockDatum.available
+      available: stockDatum.available,
+      assignable: stockDatum.assignable
     });
     stocks.add(stock);
     stock.on('change:assigned', function () {
       this.set('edited', true);
       this.get('stockHolder').recalculateQuantity();
       this.get('stockType').recalculateQuantity();
+    });
+    stock.on('change:assignable', function () {
+      this.set('edited', true);
     });
     if (stockHolder && stockType) {
       var map = perStockHolderStockMap[stockHolder.id];
@@ -121,33 +121,22 @@ Venue.prototype.initialize = function Venue_initialize(initialData, options) {
       });
     }
   }
-  _.each(Seat.styleProviderAttributes, function (name) {
-    perAttributeSeatSet[name] = {};
-  });
+
   for (var id in initialData.seats) {
     var seatDatum = initialData.seats[id];
+    var stock = stocks.get(seatDatum.stock_id);
+    var sold = ($.inArray(seatDatum.status, [0, 1]) == -1);
     var seat = new Seat({
       id: seatDatum.id,
       name: seatDatum.name,
       seat_no: seatDatum.seat_no,
       status: seatDatum.status,
-      stock: stocks.get(seatDatum.stock_id),
-      attrs: seatDatum.attrs,
-      areas: seatDatum.areas,
-      selectable: $.inArray(seatDatum.status, [0, 1]) > -1 ? true : false
+      stock: stock,
+      sold: sold,
+      selectable: (stock && stock.get('assignable') && !sold) ? true : false
     });
     seats.add(seat);
     {
-      var attrs = seat.get('attrs');
-      for (name in attrs) {
-        var set = perAttributeSeatSet[name];
-        if (!set)
-          set = perAttributeSeatSet[name] = new IdentifiableSet();
-        set.add(seat);
-      }
-    }
-    {
-      var stock = seat.get('stock');
       var set;
       if (stock) {
         set = perStockSeatSet[stock.id];
@@ -158,14 +147,15 @@ Venue.prototype.initialize = function Venue_initialize(initialData, options) {
         set = perStockSeatSet[stock.id] = new IdentifiableSet();
       set.add(seat);
       seat.on('change:stock', function () {
-        this.set('edited', true);
         var prev = this.previous('stock');
         var new_ = this.get('stock');
         if (prev != new_) {
+          this.set('edited', true);
           if (prev) {
             perStockSeatSet[prev.id].remove(this);
             if (prev.has('assigned')) {
               prev.set('edited', true);
+              if (this.get('selectable')) prev.set('available', prev.get('available') - 1);
               prev.set('assigned', perStockSeatSet[prev.id].length);
             }
           }
@@ -176,6 +166,7 @@ Venue.prototype.initialize = function Venue_initialize(initialData, options) {
             set.add(this);
             if (new_.has('assigned')) {
               new_.set('edited', true);
+              if (this.get('selectable')) new_.set('available', new_.get('available') + 1);
               new_.set('assigned', perStockSeatSet[new_.id].length);
             }
           }
@@ -187,7 +178,6 @@ Venue.prototype.initialize = function Venue_initialize(initialData, options) {
   this.stockTypes = stockTypes;
   this.stocks = stocks;
   this.seats = seats;
-  this.perAttributeSeatSet = perAttributeSeatSet;
   this.perStockSeatSet = perStockSeatSet;
   this.perStockHolderStockMap = perStockHolderStockMap;
   this.perStockTypeStockMap = perStockTypeStockMap;
@@ -220,7 +210,8 @@ Venue.prototype.toJSON = function Venue_toJSON () {
     if (stock.get('edited')) {
       stockData.push({
         id: stock.get('id'),
-        quantity: stock.get('assigned')
+        quantity: stock.get('assigned'),
+        assignable: stock.get('assignable') ? 1 : 0
       });
     }
   });
@@ -271,7 +262,7 @@ var ProvidesStyle = exports.ProvidesStyle = Backbone.Model.extend({
       stroke: {
         color: null,
         width: null,
-        pattern: null,
+        pattern: null
       },
       fill: {
         color: null
@@ -348,6 +339,7 @@ var Stock = exports.Stock = Backbone.Model.extend({
     assigned: 0,
     available: 0,
     style: CONF.DEFAULT.SEAT_STYLE,
+    assignable: true,
     edited: false
   },
 
@@ -360,15 +352,21 @@ var Stock = exports.Stock = Backbone.Model.extend({
         style = util.mergeStyle(style, styleProvider.get('style'));
     });
     this.set('style', style);
+
+    var venue = this.get('venue');
+    if (venue && self.id in venue.perStockSeatSet) {
+      venue.perStockSeatSet[self.id].each(function(seat) {
+        seat.trigger('change:stock');
+      });
+    }
   },
 
   initialize: function Stock_initialize() {
     var self = this;
-
     _.each(Stock.styleProviderAttributes, function (name) {
-      var stock = self.get(name);
-      if (stock) {
-        stock.on('change:style', function () {
+      var styleProvider = self.get(name);
+      if (styleProvider) {
+        styleProvider.on('change:style', function () {
           self._refreshStyle();
         });
       } else {
@@ -394,7 +392,6 @@ var Seat = exports.Seat = Backbone.Model.extend({
     stock: null,
     selectable: true,
     selected: false,
-    areas: [],
     edited: false
   },
 
@@ -405,7 +402,8 @@ var Seat = exports.Seat = Backbone.Model.extend({
 
   selectable: function Seat_selectable() {
     var venue = this.get('venue');
-    return this.get('selectable') && (!venue || venue.isSelectable(this));
+    var stock = this.get('stock');
+    return this.get('selectable') && (!stock || stock.get('assignable')) && (!venue || venue.isSelectable(this));
   }
 });
 

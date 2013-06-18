@@ -1,0 +1,85 @@
+## performancelist widget output template
+## 
+
+<%
+from altaircms.plugins.widget.performancelist import helpers as myhelpers
+from altaircms.datelib import get_now
+import logging
+now = get_now(request)
+logger = logging.getLogger(__name__)
+%>
+<div class="detailBox">
+  <div style="float:right; margin-right:20px;">
+    <form>
+      <input type="checkbox" id="form-showUnavailablePerformances"><label for="form-showUnavailablePerformances" class="subdescribe">販売終了した公演も表示</label>
+    </form>
+  </div>
+  <hr/>
+
+<table id="performanceList" summary="公演‥開催一覧" class="info">
+  <thead>
+    <tr>
+      <th>公演名</th><th>公演日時</th><th>会場</th><th></th>
+    </tr>
+  </thead>
+  <tbody>
+    % for i, performance in enumerate(performances):
+    <tr>
+      <td scope="row"><span class="serial">${i+1}</span> ${performance.title}</td>
+        %if widget.mask_performance_date:
+          <td width="27%"> - </td>
+        %else:
+          <td width="27%">${myhelpers.performance_describe_date(performance)} <br/> ${myhelpers.performance_describe_time(performance)}</td>
+        %endif
+
+        <td width="25%">${performance.venue}</td>
+        <td width="10%" class="last"> 
+          <% 
+             end_on_candidates = [s.end_on for s in performance.sales if s.end_on]
+             start_on_candidates = [s.start_on for s in performance.sales]
+           %>
+          %if not end_on_candidates:
+            <% logger.warn("performance=%s does not have salessegment. ignored (performance list widget)" % performance.id)%>
+          %elif min(start_on_candidates) >= now:
+            <span class="notStartedPerformance">販売前</span>
+          %elif max(end_on_candidates) >= now:
+            %if status.scores.get(int(performance.id),0) <= 0:
+              <a href="${h.link.get_purchase_page_from_performance(request, performance)}" class="purchase-small">予定枚数終了</a>
+            %else:
+              <a href="${h.link.get_purchase_page_from_performance(request, performance)}" class="purchase-small">購入する</a>
+            %endif
+          %else:
+            <span  class="endPerformance">販売終了</span>
+          %endif
+        </td>
+    </tr>
+  % endfor
+  </tbody>
+</table>
+</div>
+
+<script type="text/javascript">
+  var toggleEndPerformance = function toggleEndPerformance(clicked){
+    var root = $("#performanceList");
+    if(clicked){
+      root.find(".endPerformance").parents("tr").show();
+    }else {
+      root.find(".endPerformance").parents("tr").hide();
+    }
+    // re numbering
+    setTimeout(function(){root.find("tr:visible .serial").each(function(i,e){ $(e).text(i+1);});  },0);
+  };
+  if(!$("body").data("togglePerformance")){
+    $("body").data("togglePerformance",true);
+    $("#form-showUnavailablePerformances").on("change", function(){
+      var clicked = $(this).attr("checked") == "checked";
+      toggleEndPerformance(clicked);
+    });
+  }
+  toggleEndPerformance(false);
+  $("#form-showUnavailablePerformances:checked").attr("checked",null);
+  var root = $("#performanceList");
+  if((root.find("tr").length-1) == root.find(".endPerformance").length){
+    root.append($('<tr>').append($('<td colspan="5" align="center">').text("このイベントの販売は終了しました")));
+  }
+</script>

@@ -1,6 +1,7 @@
 # -*- coding:utf-8 -*-
 
 import os
+import time
 import threading
 from zipfile import *
 import zipfile
@@ -131,3 +132,13 @@ class EnhZipFile(ZipFile, object):
             return
         cur_writer.join(timeout)
 
+    def append_file(self, file, filename):
+        zi = ZipInfo(filename, time.localtime()[:6])
+        zi.external_attr = 0666 << 16L
+        w = self.start_entry(zi)
+        data_file = open(file, 'r')
+        data = data_file.read()
+        data_file.close()
+        w.write(data)
+        w.close()
+        self.finish_entry()

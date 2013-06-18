@@ -1,100 +1,9 @@
 <%page args="order=None" />
 <%namespace file="/common/helpers.html" name="h" />
 <%namespace file="/common/modal.html" import="delete_modal" />
-
 <script type="text/javascript">
-  function show_sales_segment() {
-    var id = get_id('sales_segment_id');
-    if (!id) return;
-    $(location).attr('href', '/events/sales_segments/show/' + id);
-  }
-  function new_sales_segment() {
-    var modal = $('#modal-sales_segment');
-    reset_form(modal, '#event_id, #upper_limit', true);
-    modal.find('#seat_choice').val(1).attr('checked', 'checked');
-    modal.find('#public').val(1).attr('checked', 'checked');
-    modal.find('#copy').val(0).removeAttr('checked');
-    modal.find('#copy-fields').css('display', 'none');
-    modal.find('h3').text('販売区分');
-    // FIXME: formをsubmitしたらページ遷移が発生する挙動に頼っていて
-    // onchangeイベントハンドラはずしてないの注意
-    (function() {
-      var $kind = $('#modal-sales_segment #kind');
-      var $name = $('#modal-sales_segment #name');
-      if (!$name.val()) {
-        var fillDefault = true;
-        function onchange() {
-          if (fillDefault) {
-            var selected = $kind.val();
-            $kind.children().each(function (_, n) {
-              if (selected == n.value || selected == null) {
-                $name.val(n.firstChild.nodeValue);
-                return false;
-              }
-            });
-          }
-        }
-        $name.change(function () {
-          fillDefault = false;
-        });
-        $kind.change(onchange);
-        onchange();
-      }
-    })();
-    modal.modal('toggle');
-  }
-  function edit_sales_segment(copy) {
-    var id = get_id('sales_segment_id');
-    if (!id) return;
-    var el = '#sales_segment-' + id;
-    var modal = $('#modal-sales_segment');
-    reset_form(modal, '#event_id, #upper_limit', false);
-    modal.find('#id').val($(el + ' #id').text());
-    modal.find('#kind').val($(el + ' #kind').attr('value'));
-    modal.find('#name').val($(el + ' #name').text());
-    modal.find('#start_at').val($(el + ' #current_start_at').text().trim());
-    modal.find('#end_at').val($(el + ' #current_end_at').text().trim());
-    modal.find('#upper_limit').val($(el + ' #upper_limit').text());
-    if ($(el + ' #seat_choice').attr('value') == 'True') {
-      modal.find('#seat_choice').val(1).attr('checked', 'checked');
-    } else {
-      modal.find('#seat_choice').val(0).removeAttr('checked');
-    }
-    if ($(el + ' #public').attr('value') == 'True') {
-      modal.find('#public').val(1).attr('checked', 'checked');
-    } else {
-      modal.find('#public').val(0).removeAttr('checked');
-    }
-    if (copy) {
-      modal.find('#copy').val(1).attr('checked', 'checked');
-      modal.find('#copy-fields').css('display', 'block');
-      modal.find('h3').text('販売区分のコピー');
-    } else {
-      modal.find('#copy').val(0).removeAttr('checked');
-      modal.find('#copy-fields').css('display', 'none');
-      modal.find('h3').text('販売区分');
-    }
-    modal.modal('toggle');
-  }
-  function delete_sales_segment() {
-    var id = $('input[name=sales_segment_id]:checked').val() || $('#sales_segments-form').find('#sales_segment_id').attr('value');
-    if (!id) return;
-    var modal = $('#modal-delete');
-    modal.find('#delete').attr('href', '/events/sales_segments/delete/' + id);
-    modal.find('#message').text('選択した販売区分を削除します。よろしいですか？');
-    modal.modal('toggle');
-  }
-  function save_sales_segment() {
-    var modal = '#modal-sales_segment';
-    var form = '#sales_segments-form';
-    var id = $(modal).find('#id').val();
-    var url = id
-            ? ($(modal).find('#copy').val() == '1' ? '/events/sales_segments/copy/' : '/events/sales_segments/edit/') + id
-            : '/events/sales_segments/new/' + $(modal).find('#event_id').val();
-    post_modal_form(modal, form, url);
-  }
+var get_selected_sales_segment_id;
 </script>
-
 <%
   actions = {
     'new':dict(
@@ -102,29 +11,18 @@
       url='javascript:new_sales_segment();',
       icon='icon-plus',
     ),
-    'copy':dict(
-      label=u'コピーして新規作成',
-      url='javascript:edit_sales_segment("copy");',
-      icon='icon-plus',
-    ),
     'edit':dict(
       label=u'編集',
-      url='javascript:edit_sales_segment();',
+      url='javascript:edit_sales_segment(get_selected_sales_segment_id());',
       icon='icon-pencil',
     ),
     'delete':dict(
       label=u'削除',
-      url='javascript:delete_sales_segment();',
+      url='javascript:delete_sales_segment(get_selected_sales_segment_id());',
       icon='icon-minus',
     ),
-    'show':dict(
-      label=u'詳細',
-      url='javascript:show_sales_segment();',
-      icon='icon-th-list',
-    ),
   }
-  order = iter(order or ['new', 'copy', 'show', 'edit', 'delete'])
+  order = iter(order or ['new', 'edit', 'delete'])
 %>
 ${h.action_button(actions, order)}
-
 ${delete_modal()}

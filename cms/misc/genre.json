@@ -1,0 +1,390 @@
+{
+  "children": [
+    {
+      "children": [
+        {
+          "children": [
+            {
+              "name": "jpop", 
+              "label": "Jポップ/歌謡曲"
+            }, 
+            {
+              "name": "idle", 
+              "label": "アイドル"
+            }, 
+            {
+              "name": "jrock", 
+              "label": "バンド/ロック"
+            }, 
+            {
+              "name": "visual", 
+              "label": "ヴィジュアル系"
+            }, 
+            {
+              "name": "mjpn-other", 
+              "label": "Jポップ・ロックその他"
+            }
+          ], 
+          "name": "jpop", 
+          "label": "Jポップ・ロック"
+        }, 
+        {
+          "name": "kpop", 
+          "label": "Kポップ・Kロック"
+        }, 
+        {
+          "children": [
+            {
+              "name": "mw-pop", 
+              "label": "ポップス"
+            }, 
+            {
+              "name": "mw-rock", 
+              "label": "バンド/ロック"
+            }, 
+            {
+              "name": "mw-other", 
+              "label": "洋楽その他"
+            }
+          ], 
+          "name": "western", 
+          "label": "洋楽"
+        }, 
+        {
+          "name": "classic", 
+          "label": "クラシック・オペラ"
+        }, 
+        {
+          "name": "jazz", 
+          "label": "ジャズ・フュージョン"
+        }, 
+        {
+          "name": "folk", 
+          "label": "フォーク/カントリー"
+        }, 
+        {
+          "name": "dance", 
+          "label": "ダンス/クラブミュージック"
+        }, 
+        {
+          "name": "hiphop", 
+          "label": "ヒップホップ"
+        }, 
+        {
+          "name": "reggae", 
+          "label": "レゲエ/ボサノバ"
+        }, 
+        {
+          "name": "fes", 
+          "label": "音楽フェスティバル"
+        }, 
+        {
+          "name": "anime", 
+          "label": "アニメ音楽"
+        }, 
+        {
+          "name": "enka", 
+          "label": "演歌・民謡"
+        }, 
+        {
+          "name": "m_other", 
+          "label": "その他音楽"
+        }
+      ], 
+      "name": "music", 
+      "label": "音楽"
+    }, 
+    {
+      "children": [
+        {
+          "children": [
+            {
+              "name": "central", 
+              "label": "セ・リーグ"
+            }, 
+            {
+              "name": "pacific", 
+              "label": "パ・リーグ"
+            }, 
+            {
+              "name": "cmax", 
+              "label": "クライマックス・シリーズ"
+            }, 
+            {
+              "name": "jpnseries", 
+              "label": "日本シリーズ"
+            }, 
+            {
+              "name": "baseball-other", 
+              "label": "野球その他"
+            }
+          ], 
+          "name": "baseball", 
+          "label": "野球"
+        }, 
+        {
+          "children": [
+            {
+              "name": "j1", 
+              "label": "J1"
+            }, 
+            {
+              "name": "j2", 
+              "label": "J2"
+            }, 
+            {
+              "name": "nadeshiko", 
+              "label": "なでしこリーグ"
+            }, 
+            {
+              "name": "nationalteam", 
+              "label": "日本代表"
+            }, 
+            {
+              "name": "worldcup", 
+              "label": "ワールドカップ・その他国際試合"
+            }, 
+            {
+              "name": "soccer-other", 
+              "label": "サッカーその他"
+            }
+          ], 
+          "name": "soccer", 
+          "label": "サッカー"
+        }, 
+        {
+          "children": [
+            {
+              "name": "jgto", 
+              "label": "JGTOツアー（男子ゴルフ）"
+            }, 
+            {
+              "name": "lpga", 
+              "label": "LPGAツアー（女子ゴルフ）"
+            }, 
+            {
+              "name": "senior", 
+              "label": "シニアツアー"
+            }, 
+            {
+              "name": "golf-other", 
+              "label": "ゴルフその他"
+            }
+          ], 
+          "name": "golf", 
+          "label": "ゴルフ"
+        }, 
+        {
+          "children": [
+            {
+              "name": "menstennis", 
+              "label": "男子テニス"
+            }, 
+            {
+              "name": "womenstennis", 
+              "label": "女子テニス"
+            }, 
+            {
+              "name": "tennis-other", 
+              "label": "テニスその他"
+            }
+          ], 
+          "name": "tennis", 
+          "label": "テニス"
+        }, 
+        {
+          "children": [
+            {
+              "name": "sumo", 
+              "label": "相撲"
+            }, 
+            {
+              "name": "fighting-other", 
+              "label": "その他格闘技"
+            }
+          ], 
+          "name": "fighting-sports", 
+          "label": "相撲・格闘技"
+        }, 
+        {
+          "children": [
+            {
+              "name": "fskating", 
+              "label": "フィギュアスケート"
+            }, 
+            {
+              "name": "winter-sports-other", 
+              "label": "その他ウインタースポーツ"
+            }
+          ], 
+          "name": "winter-sports", 
+          "label": "スケート・ウインタースポーツ"
+        }, 
+        {
+          "name": "swim", 
+          "label": "水泳・マリンスポーツ"
+        }, 
+        {
+          "name": "s_other", 
+          "label": "その他スポーツ"
+        }, 
+        {
+          "children": [
+            {
+              "name": "bj-league", 
+              "label": "bjリーグ"
+            }, 
+            {
+              "name": "JBL", 
+              "label": "JBL"
+            }, 
+            {
+              "name": "backetball-other", 
+              "label": "バスケットボールその他"
+            }
+          ], 
+          "name": "basketball", 
+          "label": "バスケットボール"
+        }, 
+        {
+          "children": [
+            {
+              "name": "mensvolleyball", 
+              "label": "Vリーグ（男子）"
+            }, 
+            {
+              "name": "womensvolleyball", 
+              "label": "Vリーグ（女子）"
+            }, 
+            {
+              "name": "volleyball-other", 
+              "label": "バレーボールその他"
+            }
+          ], 
+          "name": "volleyball", 
+          "label": "バレーボール"
+        }
+      ], 
+      "name": "sports", 
+      "label": "スポーツ"
+    }, 
+    {
+      "children": [
+        {
+          "children": [
+            {
+              "name": "stage-jpn", 
+              "label": "演劇（国内）"
+            }, 
+            {
+              "name": "stage-int", 
+              "label": "演劇（来日）"
+            }, 
+            {
+              "name": "stage-other", 
+              "label": "演劇（その他）"
+            }
+          ], 
+          "name": "stage", 
+          "label": "演劇・ステージ"
+        }, 
+        {
+          "name": "musical", 
+          "label": "ミュージカル・ショー"
+        }, 
+        {
+          "name": "ballet", 
+          "label": "バレエ・ダンス"
+        }, 
+        {
+          "name": "performance", 
+          "label": "パフォーマンス"
+        }, 
+        {
+          "name": "comedy", 
+          "label": "お笑い"
+        }, 
+        {
+          "name": "yose", 
+          "label": "寄席・演芸"
+        }, 
+        {
+          "children": [
+            {
+              "name": "nougaku", 
+              "label": "能楽"
+            }, 
+            {
+              "name": "kyogen", 
+              "label": "狂言"
+            }, 
+            {
+              "name": "kabuki", 
+              "label": "歌舞伎"
+            }, 
+            {
+              "name": "jyoruri", 
+              "label": "人形浄瑠璃"
+            }, 
+            {
+              "name": "traditional-other", 
+              "label": "伝統芸能（その他）"
+            }
+          ], 
+          "name": "traditional-arts", 
+          "label": "伝統芸能"
+        }, 
+        {
+          "name": "stage-other", 
+          "label": "その他演劇・ステージ・舞台"
+        }
+      ], 
+      "name": "stage", 
+      "label": "演劇・ステージ・舞台"
+    }, 
+    {
+      "children": [
+        {
+          "name": "circus", 
+          "label": "サーカス"
+        }, 
+        {
+          "name": "show", 
+          "label": "ショー・ファンイベント"
+        }, 
+        {
+          "name": "matsuri", 
+          "label": "祭り・花火大会"
+        }, 
+        {
+          "name": "museum", 
+          "label": "美術館・博物館"
+        }, 
+        {
+          "name": "exhibition", 
+          "label": "博覧会・展示会"
+        }, 
+        {
+          "name": "talkshow", 
+          "label": "講演会・トークショー"
+        }, 
+        {
+          "name": "magic", 
+          "label": "マジック・イリュージョン"
+        }, 
+        {
+          "name": "themepark", 
+          "label": "テーマパーク"
+        }, 
+        {
+          "name": "event-other", 
+          "label": "その他イベント"
+        }
+      ], 
+      "name": "event", 
+      "label": "イベント・その他"
+    }
+  ], 
+  "name": "top", 
+  "label": "トップ"
+}

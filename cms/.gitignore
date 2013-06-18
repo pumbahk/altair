@@ -1,1 +1,4 @@
+*_flymake.py
 build/
+data/
+src/altaircms/templates/front/uploaded

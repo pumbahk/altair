@@ -103,8 +103,6 @@
 
   function parseCSSAsSvgStyle(str, defs) {
     var styles = parseCSSStyleText(str);
-    var textAnchor = null;
-    var textAnchorString = styles['text-anchor'];
     var fill = null;
     var fillString = styles['fill'];
     var fillOpacity = null;
@@ -115,9 +113,10 @@
     var strokeWidthString = styles['stroke-width'];
     var strokeOpacity = null;
     var strokeOpacityString = styles['stroke-opacity'];
-    if (textAnchorString) {
-        textAnchor = textAnchorString[0];
-    }
+    var fontSize = null;
+    var fontSizeString = styles['font-size'];
+    var textAnchor = null;
+    var textAnchorString = styles['text-anchor'];
     if (fillString) {
       if (fillString[0] == 'none') {
         fill = false;
@@ -147,25 +146,38 @@
     if (strokeOpacityString) {
       strokeOpacity = parseFloat(strokeOpacityString[0]);
     }
+    if (fontSizeString) {
+      if (fontSizeString instanceof Array)
+        fontSizeString = fontSizeString[0];
+      fontSize = parseFloat(fontSizeString);
+    }
+    if (textAnchorString) {
+      if (textAnchorString instanceof Array)
+        textAnchorString = textAnchorString[0];
+      textAnchor = textAnchorString;
+    }
     return {
-      textAnchor: textAnchor,
       fill: fill,
       fillOpacity: fillOpacity,
       stroke: stroke,
       strokeWidth: strokeWidth,
-      strokeOpacity: strokeOpacity
+	  strokeOpacity: strokeOpacity,
+      fontSize: fontSize,
+      textAnchor: textAnchor
     };
   }
 
   function mergeSvgStyle(origStyle, newStyle) {
-    return {
-      textAnchor: newStyle.textAnchor !== null ? newStyle.textAnchor: origStyle.textAnchor,
-      fill: newStyle.fill !== null ? newStyle.fill: origStyle.fill,
-      fillOpacity: newStyle.fillOpacity !== null ? newStyle.fillOpacity: origStyle.fillOpacity,
-      stroke: newStyle.stroke !== null ? newStyle.stroke: origStyle.stroke,
-      strokeWidth: newStyle.strokeWidth !== null ? newStyle.strokeWidth: origStyle.strokeWidth,
-      strokeOpacity: newStyle.strokeOpacity !== null ? newStyle.strokeOpacity: origStyle.strokeOpacity
-    };
+    var copied = { };
+    for (var k in origStyle) {
+      copied[k] = origStyle[k];
+    }
+    for (var k in newStyle) {
+      if (newStyle[k] !== null) {
+        copied[k] = newStyle[k];
+      }
+    }
+    return copied;
   }
 
   function buildStyleFromSvgStyle(svgStyle) {
@@ -191,6 +203,47 @@
     };
   }
 
+  function parseTransform(transform_str) {
+      var g = /\s*([A-Za-z_-][0-9A-Za-z_-]*)\s*\(\s*((?:[^\s,]+(?:\s*,\s*|\s+))*[^\s,]+)\s*\)\s*/.exec(transform_str);
+
+      var f = g[1];
+      var args = g[2].replace(/(?:^\s+|\s+$)/, '').split(/\s*,\s*|\s+/);
+
+      switch (f) {
+      case 'matrix':
+          if (args.length != 6)
+              throw new Error("invalid number of arguments for matrix()")
+          return new Fashion.Matrix(
+              parseFloat(args[0]), parseFloat(args[1]),
+              parseFloat(args[2]), parseFloat(args[3]),
+              parseFloat(args[4]), parseFloat(args[5]));
+      case 'translate':
+          if (args.length != 2)
+              throw new Error("invalid number of arguments for translate()")
+          return Fashion.Matrix.translate({ x:parseFloat(args[0]), y:parseFloat(args[1]) });
+      case 'scale':
+          if (args.length != 2)
+              throw new Error("invalid number of arguments for scale()");
+          return new Fashion.Matrix(parseFloat(args[0]), 0, 0, parseFloat(args[1]), 0, 0);
+      case 'rotate':
+          if (args.length != 1)
+              throw new Error("invalid number of arguments for rotate()");
+          return Fashion.Matrix.rotate(parseFloat(args[0]) * Math.PI / 180);
+      case 'skewX':
+          if (args.length != 1)
+              throw new Error('invalid number of arguments for skewX()');
+          var t = parseFloat(args[0]) * Math.PI / 180;
+          var ta = Math.tan(t);
+          return new Fashion.Matrix(1, 0, ta, 1, 0, 0);
+      case 'skewY':
+          if (args.length != 1)
+              throw new Error('invalid number of arguments for skewX()');
+          var t = parseFloat(args[0]) * Math.PI / 180;
+          var ta = Math.tan(t);
+          return new Fashion.Matrix(1, ta, 0, 1, 0, 0);
+      }
+      throw new Error('invalid transform function: ' + f);
+  }
 
   var VenueEditor = function VenueEditor(canvas, options) {
     this.canvas = canvas;
@@ -264,8 +317,13 @@
     if (this.drawable !== null)
       this.drawable.dispose();
     for (var key in data.metadata) {
-      for (var id in data.metadata[key]) {
-        this.metadata[key][id] = data.metadata[key][id];
+      for (var i in data.metadata[key]) {
+        for (var j in this.metadata[key]) {
+          if (this.metadata[key][j].id == data.metadata[key][i].id) {
+            this.metadata[key][j] = data.metadata[key][i];
+            break;
+          }
+        }
       }
     }
     this.initDrawable();
@@ -288,6 +346,9 @@
   VenueEditor.prototype.initDrawable = function VenueEditor_initDrawable() {
     var self = this;
     var drawing = this.drawing;
+    if (!drawing) {
+      return;
+    }
     var attrs = util.allAttributes(drawing.documentElement);
     var w = parseFloat(attrs.width), h = parseFloat(attrs.height);
     var vb = null;
@@ -303,7 +364,7 @@
       y: ((vb && vb[3]) || h || w)
     } : null);
 
-    var drawable = new Fashion.Drawable(self.canvas[0], { contentSize: {x: size.x, y: size.y}, viewportSize: { x: this.canvas.innerWidth(), y: this.canvas.innerHeight() } });
+    var drawable = new Fashion.Drawable(self.canvas[0], { contentSize: { x: size.x+100, y: size.y+100 }, viewportSize: { x: this.canvas.innerWidth(), y: this.canvas.innerHeight() } });
     var shapes = {};
     var styleClasses = CONF.DEFAULT.STYLES;
 
@@ -316,7 +377,7 @@
           var shape = null;
           var attrs = util.allAttributes(n);
 
-          var currentSvgStyle = svgStyle;
+          var currentSvgStyle = _.clone(svgStyle);
           if (attrs['class']) {
             var style = styleClasses[attrs['class']];
             if (style)
@@ -324,6 +385,16 @@
           }
           if (attrs.style)
             currentSvgStyle = mergeSvgStyle(currentSvgStyle, parseCSSAsSvgStyle(attrs.style, defs));
+          if (attrs['transform']) {
+            var matrix = parseTransform(attrs['transform']);
+            if (matrix) {
+              if (currentSvgStyle._transform) {
+                currentSvgStyle._transform = currentSvgStyle._transform.multiply(matrix);
+	  		} else {
+                currentSvgStyle._transform = matrix;
+              }
+            }
+          }
 
           switch (n.nodeName) {
             case 'defs':
@@ -342,19 +413,26 @@
 
             case 'text':
             case 'tspan':
+              var px = parseFloat(attrs.x),
+                  py = parseFloat(attrs.y);
               if (n.childNodes.length==1 && n.firstChild.nodeType == Node.TEXT_NODE) {
                 shape = new Fashion.Text({
-                  fontSize: 10,
                   text: n.firstChild.nodeValue,
                   zIndex: 99
                 });
+                if (isNaN(px) || isNaN(py)) {
+                  shape.position(currentSvgStyle._position);
+                }
                 shape.style(CONF.DEFAULT.TEXT_STYLE);
-                if(currentSvgStyle.textAnchor) {
-				  shape.anchor(currentSvgStyle.textAnchor);
+                if (currentSvgStyle.textAnchor) {
+                  shape.anchor(currentSvgStyle.textAnchor);
                 }
               } else if (n.nodeName == 'text') {
-				  arguments.callee.call(self, currentSvgStyle, defs, n.childNodes);
-                  continue outer;
+                if (!isNaN(px) && !isNaN(py)) {
+                  currentSvgStyle._position = { x: px, y: py };
+                }
+                arguments.callee.call(self, currentSvgStyle, defs, n.childNodes);
+                continue outer;
               }
               break;
 
@@ -381,6 +459,12 @@
 
           }
           if (shape !== null) {
+            if (currentSvgStyle._transform) {
+              shape.transform(currentSvgStyle._transform);
+            }
+            if (shape instanceof Fashion.Text) {
+              shape.fontSize(currentSvgStyle.fontSize);
+            }
             var x = parseFloat(attrs.x),
                 y = parseFloat(attrs.y);
             if (!isNaN(x) && !isNaN(y))
@@ -391,8 +475,10 @@
           shapes[attrs.id] = shape;
         }
     }).call(self,
-      { fill: false, fillOpacity: false,
-        stroke: false, strokeOpacity: false },
+      { _transform: false, fill: false, fillOpacity: false,
+        stroke: false, strokeOpacity: false,
+        fontSize: 10, textAnchor: false
+      },
       {},
       drawing.documentElement.childNodes);
 
@@ -467,6 +553,7 @@
                   seat.addStyleType('tooltip');
                 }
                 self.highlighted[_id] = seat;
+                self.callbacks.tooltip && self.callbacks.tooltip(seat);
               }
             },
             mouseout: function(evt) {
@@ -479,13 +566,13 @@
                 } else {
                   seat.removeStyleType('tooltip');
                 }
+                self.callbacks.tooltip && self.callbacks.tooltip(seat);
               }
             },
             mousedown: function(evt) {
-              if (seats[id].get('model').selectable()) {
-                self.callbacks.click && self.callbacks.click(self, self, self.highlighted);
-              } else {
-                self.callbacks.tooltip && self.callbacks.tooltip(id);
+              var seat = seats[id];
+              if (seat.get('model').get('sold')) {
+                self.callbacks.click && self.callbacks.click(seat.get('model'));
               }
             }
           }
@@ -549,7 +636,7 @@
             }
             self.drawable.erase(self.rubberBand);
             for (var i = 0; i < selection.length; i++) {
-              if (selection[i].get('selected')) {
+              if (selection[i].get('selected') && selection.length == 1) {
                 selection[i].set('selected', false);
               } else {
                 selection[i].set('selected', true);
@@ -654,21 +741,28 @@
         switch (options) {
           case 'load':
             // Ajax Waiter
+            var waiting = [];
+            if (aux.dataSource.drawing) {
+              waiting.push('drawing');
+            }
+            waiting.push('metadata');
             var waiter = new util.AsyncDataWaiter({
-              identifiers: ['drawing', 'metadata'],
+              identifiers: waiting,
               after: function main(data) {
                 aux.loaded_at = Math.ceil((new Date).getTime() / 1000);
                 aux.manager.load(data);
               }
             });
             // Load drawing
-            $.ajax({
-              type: 'get',
-              url: aux.dataSource.drawing,
-              dataType: 'xml',
-              success: function(xml) { waiter.charge('drawing', xml); },
-              error: function(xhr, text) { aux.callbacks.message && aux.callbacks.message("Failed to load drawing data (reason: " + text + ")"); }
-            });
+            if (aux.dataSource.drawing) {
+              $.ajax({
+                type: 'get',
+                url: aux.dataSource.drawing,
+                dataType: 'xml',
+                success: function(xml) { waiter.charge('drawing', xml); },
+                error: function(xhr, text) { aux.callbacks.message && aux.callbacks.message("Failed to load drawing data (reason: " + text + ")"); }
+              });
+            }
 
             // Load metadata
             $.ajax({

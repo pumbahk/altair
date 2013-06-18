@@ -2,55 +2,59 @@
 <%namespace file="/common/helpers.html" name="h" />
 
 <script type="text/javascript">
-  $(function(){
-    $('.datetimefield').datetimepicker({dateFormat:'yy-mm-dd',timeFormat:'hh:mm'});
-  });
-
   function send_report(){
-    var params = $('#form').serialize();
-    $(location).attr('href', '/events/sales_reports/send_mail/${form.event_id.data}?' + params);
+    var params = $('form').serialize();
+    $(location).attr('href', '/events/sales_reports/send_mail/?' + params);
   };
 
   function preview(){
-    var params = $('#form').serialize();
-    $(location).attr('href', '/events/sales_reports/preview/${form.event_id.data}?' + params);
+    var params = $('form').serialize();
+    $(location).attr('href', '/events/sales_reports/preview/?' + params);
   };
 </script>
 
 <div class="breadcrumbs">
+  <%
+    if form.performance_id.data:
+      breadcrumb = u'公演'
+      route_path = request.route_path('sales_reports.performance', performance_id=form.performance_id.data)
+    else:
+      breadcrumb = u'イベント'
+      route_path = request.route_path('sales_reports.event', event_id=form.event_id.data)
+  %>
   ${h.breadcrumbs(
-      names=[u'トップ', u'売上レポート', u'イベント', u'送信確認'],
+      names=[u'トップ', u'売上レポート', breadcrumb, u'送信確認'],
       urls=[
         request.route_path('index'),
         request.route_path('sales_reports.index'),
-        request.route_path('sales_reports.event', event_id=form.event_id.data)
+        route_path
       ]
   )}
 </div>
 
 <div class="page-header">
-  <h2>売上レポート 送信確認</h2>
+  <h2>${u'イベント' if form.event_id.data else u'公演'} 売上レポート 送信確認</h2>
 </div>
 
 <div class="content">
   ${h.flash_messages(request)}
 </div>
 
-<form id="form" action="${request.route_path('sales_reports.preview',event_id=form.event_id.data)}" method="GET">
-  ${h.form_item(form.recipient, class_='span6')}
-  ${h.form_item(form.subject, class_='span8')}
-  <div class="control-group">
-    <label class="control-label">
-      ${form.limited_from.label.text}
-    </label>
-    <div class="controls">
-      <input class="datetimefield" style="width: 140px; vertical-align: middle; margin-bottom: 0px;" id="limited_from" name="limited_from" type="text" value="${h.safe_strftime(form.limited_from.data)}" placeholder="開始日時"> 〜
-      <input class="datetimefield" style="width: 140px; vertical-align: middle; margin-bottom: 0px;" id="limited_to" name="limited_to" type="text" value="${h.safe_strftime(form.limited_to.data)}" placeholder="終了日時">
-      <input class="btn" type="button" value="プレビュー" onclick="javascript:preview();">
-      <input class="btn" type="button" value="送信" onclick="javascript:send_report();">
+<div class="well well-small">
+  <form action="${request.route_path('sales_reports.preview')}" method="GET" style="margin-bottom: 0px;">
+    <div class="control-group">
+      <div class="controls">
+        ${form.limited_from} 〜 ${form.limited_to}
+        <input class="btn" type="button" value="集計期間を絞り込む" onclick="javascript:preview();">
+        <input class="btn btn-warning" type="button" value="送信" onclick="javascript:send_report();">
+      </div>
     </div>
-  </div>
-</form>
-<br>
-<iframe src="${request.route_path('sales_reports.mail_body', event_id=form.event_id.data, _query=request.params, form=form)}" name="sample" width="1000" height="800">
+    ${h.form_item(form.event_id)}
+    ${h.form_item(form.performance_id)}
+    ${h.form_item(form.recipient, class_='span10')}
+    ${h.form_item(form.subject, class_='span10')}
+  </form>
+</div>
+
+<iframe src="${request.route_path('sales_reports.mail_body', _query=request.params, form=form)}" name="sample" width="100%" height="800">
 </iframe>

@@ -1,0 +1,38 @@
+<%inherit file="./base.html"/>
+<%namespace file="./tags_mobile.html" name="mobile" />
+
+<%mobile:header>チケット購入</%mobile:header>
+
+${event.title}
+
+<hr size="1" color="#888888" noshade="noshade" />
+
+<p>
+<font color="#0c4196">■</font>席種をお選びください
+</p>
+  % for seat_type in seat_types:
+  % if seat_type["availability"]:
+    <a href="${request.current_route_url(_query={'stid': seat_type['id']})}">${seat_type['name']}</a>
+  % else:
+    ${seat_type['name']}
+  % endif
+  ${seat_type["availability_text"]}<br />
+  % endfor
+<form action="${request.route_url('cart.index', event_id=event.id)}" method="get">
+  <div style="text-align:center;">
+  <input type="hidden" name="key" value="${return_value}" />
+  <input type="submit" value="戻る">
+  </div>
+</form>
+
+<hr size="1" color="#888888" noshade="noshade" />
+
+<div style="background-color:#fef083">会場</div>
+<div>
+  ${venue.name}
+</div>
+
+<div style="background-color:#fef083">日程</div>
+<div>
+  ${performance.start_on}(予定)
+</div>

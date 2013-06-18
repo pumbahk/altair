@@ -2,10 +2,75 @@
   padding: 8px 8px 8px 8px;
 }
 
+.table thead th {
+  white-space: nowrap;
+}
+
 .table td.price {
   text-align: right;
 }
 
 .table td.numeric {
   text-align: right;
+}
+
+.datetimewidget-container {
+}
+
+.datetimewidget-label {
+}
+
+.datetimewidget-dow {
+  width: 2em;
+  display: inline-block;
+}
+
+.datetimewidget-dow-text {
+  width: 1em;
+  font-weight: bold;
+  display: inline-block;
+}
+
+.datetimewidget-sun .datetimewidget-dow-text {
+  color: #dd1100;
+}
+
+.datetimewidget-sat .datetimewidget-dow-text {
+  color: #0000dd;
+}
+
+.modal.big {
+  width: 75%;
+  margin-left: -37%;
+  margin-right: -37%;
+}
+
+.modal-body {
+  max-height: 366px;
+  overflow: auto;
+}
+
+.checkbox-set {
+  margin-left: 1em;
+}
+
+.checkbox-set-item {
+  display: block;
+}
+
+.checkbox-set-item label {
+  display: inline-block;
+}
+
+label.inline {
+  display: inline-block;
+}
+
+label.required:after {
+  color: #BA0000;
+  padding-left: 5px;
+  padding-right: 5px;
+  font-size: 150%;
+  vertical-align: top;
+  content: "*";
 }

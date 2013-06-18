@@ -1,0 +1,115 @@
+<%page args="cals,now,request,widget,months,visibilities,stock_status"/>
+<%
+import logging
+logger = logging.getLogger(__name__)
+%>
+
+<%def name="calendar_table(cal, id, hidden)">
+      <table id="${id}"${'style="display:none"'if not hidden else ""|n}>
+       <thead>
+         <tr>
+           <th scope="col" class="first">月</th>
+           <th scope="col">火</th>
+           <th scope="col">水</th>
+           <th scope="col">木</th>
+           <th scope="col">金</th>
+           <th scope="col">土</th>
+           <th scope="col" class="last">日</th>
+         </tr>
+       </thead>
+       <tbody>
+        %for week in cal:
+          <tr>
+          %for de in week:
+            <td class="${de["day_class"]}">
+            %if de["this_month"]:
+              <span class="day">${de["day"]}</span>
+            %endif
+              <div class="performances">
+            %for p in de["day_performances"]:
+                <%status= stock_status.get_status(p)%>
+                <div class="performance ${status["class"]}">
+                  <%
+                     start_on_candidates = [s.start_on for s in p.sales]
+                     end_on_candidates = [s.end_on for s in p.sales if s.end_on]
+                  %>
+                  %if not start_on_candidates:
+                    <% logger.warn("performance=%s does not have salessegment. (calendar widget)" % p.id)%>
+                    <br/>
+                    <span>準備中</span>
+                  %elif min(start_on_candidates) >= now:
+                    <br/>
+                    <span>販売前</span>
+                  %elif max(end_on_candidates) >= now:
+                    % if status["class"] == "cross":
+                      <br/>
+                      <span>予定枚数終了</span>
+                    % else:
+                      <strong class="sale">${status["string"]}</strong><a href="${h.link.get_purchase_page_from_performance(request, p)}">${p.start_on.strftime("%H:%M")}</a>
+                    % endif
+                  % else:
+                    <br/>
+                    <span>販売期間終了</span>
+                  % endif
+                  <p>${p.calendar_content or u""}</p>
+                </div>
+            %endfor
+              </div>
+            </td>   
+          %endfor
+          </tr>
+        %endfor
+       </tbody>
+      </table>
+</%def>
+
+<%
+import itertools
+visbs0, visbs1 = itertools.tee(visibilities)
+
+def gen_id(y_and_m):
+   return "calendar_%d%d" % (y_and_m[0], y_and_m[1])
+%>
+
+<div class="calendar detailBox">
+<div id="detailSchedule" class="detailBoxInner">
+  %if widget.show_label:
+    <h2><img src="${request.static_url("altaircms:static/RT/img/detail/schedule_events-games.gif")}" alt="公演‥開催日程" height="30"/></h2>
+  %endif
+  <ul>
+    %for visibility, m in zip(visbs0, months):
+	  <li month="${gen_id(m)}" class="calendar-tab ${"active" if visibility else ""}"><a>${m[0]}年${m[1]}月</a></li> 
+    %endfor
+  </ul>
+
+  %for visibility, m, cal in zip(visbs1, months, cals):
+    ${calendar_table(cal, gen_id(m), visibility)}
+  %endfor
+
+	<script type="text/javascript">
+	$(function() {
+	     // highlight selected month element
+		$(".calendar-tab").click(function(){
+		  var active = $(".calendar-tab.active");
+		  $("#"+active.attr("month")).hide();
+		  active.removeClass("active");
+
+		  var new_active = $(this);
+		  new_active.addClass("active");
+		  $("#"+new_active.attr("month")).show();
+		});
+	});
+
+    $(document).ready(function(){
+        // 販売中の月を最初に開く
+        $(".calendar-tab").each(function(index) {
+            var month = $(this).attr('month')
+            if ($("#" + month + " .sale").size() != 0) {
+                $(this).trigger("click");
+                return false;
+            }
+        });
+    });
+	</script>
+</div>
+</div>

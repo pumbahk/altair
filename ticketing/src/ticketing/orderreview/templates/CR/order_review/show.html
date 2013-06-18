@@ -32,13 +32,15 @@
                   %for product in order.items:
                   <tr>
                     <th scope="row"><img src="${request.static_url('ticketing.cart:static/img/settlement/icon_dummy.gif')}" alt="" width="22" height="21" /> ${product.product.name}</th>
-                    <td><strong>${product.quantity}</strong>枚</td>
+                    <td><strong>${product.seat_quantity}</strong>枚</td>
                     <td>
-                    % for seat in product.seats:
-                      ${seat['name']}<br/>
-                    % endfor
+                    % if product.product.sales_segment.seat_choice:
+                      % for seat in product.seats:
+                        ${seat['name']}<br/>
+                      % endfor
+                    % endif
                     </td>
-                    <td class="align1">￥${h.format_number(product.product.price * product.quantity)}</td>
+                    <td class="align1">￥${h.format_number(product.price * product.quantity)}</td>
                   </tr>
                   %endfor
                   <tr>
@@ -69,7 +71,7 @@
 <%
 shipping =order.shipping_address
 %>
-            % if order.status in ['canceled', 'refunded']:
+            % if order.status == 'canceled' or order.payment_status == 'refunded':
             <div class="kadomaru">
               <h3><span class="red">この購入/予約はキャンセルされました</span></h3>
               <p>
@@ -238,7 +240,7 @@ shipping =order.shipping_address
                     <td colspan="2">
                       注意事項
                       <ul>
-                        <li>セブン-イレブン決済の際には払込番号が必要です。下記、「払込票印刷」ボタンをクリックし、払込票を印刷してお持ちになるか、上記の払込票番号をお控えいただき、レジでお伝え下さい。</li>
+                        <li>セブン-イレブン決済の際には払込票番号が必要です。下記、「払込票印刷」ボタンをクリックし、払込票を印刷してお持ちになるか、上記の払込票番号をお控えいただき、レジでお伝え下さい。</li>
                         <li>予約有効期限までに、払込票または払込票番号をセブン-イレブン店頭レジにてお申し出の上、代金をお支払いください。</li>
                         <li>支払期日までに入金されない場合は、申込が無効となりますのでご注意ください。</li>
                       </ul>

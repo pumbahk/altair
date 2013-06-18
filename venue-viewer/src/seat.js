@@ -225,16 +225,6 @@ SeatAdjacencies.prototype.convertToTable = function SeatAdjacencies_convertToTab
 
   return rt;
 };
-
-/*
-// test code
-// ad == ad2
-
-var ad = new SeatAdjacencies({"3": [["A1", "A2", "A3"], ["A2", "A3", "A4"], ["A3", "A4", "A5"], ["A4", "A5", "A6"]]});
-var ad2 = new SeatAdjacencies({"3": [["A1", "A3", "A2"], ["A2", "A3", "A4"], ["A4", "A3", "A5"], ["A6", "A5", "A4"]]});
-console.log(ad);
-console.log(ad2);
-*/
 /*
  * vim: sts=2 sw=2 ts=2 et
  */

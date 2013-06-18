@@ -28,3 +28,13 @@ class IMultiCheckout(Interface):
     def request_card_inquiry(order_no, card_auth):
         """ 
         """
+
+class ICardBrandDetecter(Interface):
+    def __call__(card_number):
+        """
+        :return: str of brand symbol
+        """
+
+class ICancelFilter(Interface):
+    def is_cancelable(order_no):
+        """ checkf for cancelable """

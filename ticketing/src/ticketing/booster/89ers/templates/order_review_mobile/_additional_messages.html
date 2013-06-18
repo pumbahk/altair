@@ -1,0 +1,13 @@
+<%namespace file="${context['layout'].relative_path('templates/tags_mobile.html')}" name="mobile" />
+<%mobile:form_header>${layout.team_name}からのメールマガジンの配信	</%mobile:form_header>
+${u'希望する' if pm.get('mail_permission') else u'希望しない'}
+<%mobile:form_header>メモリアルブックの掲載希望 </%mobile:form_header>
+${u'はい' if pm.get('publicity') == 'yes' else u'いいえ'}
+% if 'motivation' in pm['extra']:
+<%mobile:form_header>ブースタークラブに入会しようと思ったきっかけは？</%mobile:form_header>
+${pm['extra']['motivation']}
+% endif
+% if 'num_times_at_venue' in pm['extra']:
+<%mobile:form_header>昨シーズンの会場での観戦回数</%mobile:form_header>
+${pm['extra']['num_times_at_venue']}回
+% endif

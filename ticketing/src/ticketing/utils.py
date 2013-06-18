@@ -3,8 +3,31 @@ from standardenum import StandardEnum
 from urlparse import uses_relative, uses_netloc, urlparse
 from decimal import Decimal
 from pyramid.threadlocal import get_current_registry
-from ticketing.mobile.interfaces import IMobileCarrierDetector
-from ticketing.mobile.api import _detect_from_email_address
+from altair.mobile.interfaces import IMobileCarrierDetector
+from altair.mobile.api import _detect_from_email_address
+from datetime import date, timedelta, datetime
+import pytz
+import urllib
+import re
+import sys
+
+__all__ = [
+    'DigitCodec',
+    'encoder',
+    'sensible_alnum_encode',
+    'sensible_alnum_decode',
+    'URLHandler',
+    'urlhandler',
+    'myurljoin',
+    'myurlunparse',
+    'myurlunsplit',
+    'json_safe_coerce',
+    'is_nonmobile_email_address',
+    'dereference',
+    'iterpairs',
+    'is_sequence',
+    'uniurlencode',
+    ]
 
 class DigitCodec(object):
     def __init__(self, digits):
@@ -153,3 +176,169 @@ def is_nonmobile_email_address(mail_address):
         return _detect_from_email_address(detector, mail_address).is_nonmobile
     except ValueError:
         return True
+
+def dereference(object, key, return_none_unless_feasible=False):
+    tokens = re.finditer(ur'([a-zA-Z_][a-zA-Z0-9_]*)|([0-9]+)|([[\].])', key)
+
+    try:
+        token = tokens.next()
+    except StopIteration:
+        raise ValueError('empty expression')
+
+    # state 0: expecting identifier or number
+    identifier_or_number = token and (token.group(1) or (token.group(2) and int(token.group(2))))
+    if identifier_or_number is None:
+        raise ValueError('identifier or number expected')
+
+    try:
+        object = object[identifier_or_number]
+    except KeyError:
+        if return_none_unless_feasible:
+            return None
+        else:
+            raise
+
+    while True:
+        try:
+            token = tokens.next()
+        except StopIteration:
+            break
+
+        # state 1: expecting dot or lbrace
+        delimiter = token.group(3)
+        if delimiter == u'.':
+            try:
+                token = tokens.next()
+            except StopIteration:
+                token = None
+            
+            identifier = token and token.group(1)
+            if identifier is None:
+                raise ValueError('identifier expected')
+
+            try:
+                object = getattr(object, identifier)
+            except AttributeError:
+                if return_none_unless_feasible:
+                    return None
+                else:
+                    raise
+        elif delimiter == u'[':
+            # state 2: expecting identifier or number
+            try:
+                token = tokens.next()
+            except StopIteration:
+                token = None
+
+            identifier_or_number = token and (token.group(1) or (token.group(2) and int(token.group(2))))
+            if identifier_or_number is None:
+                raise ValueError('identifier or number expected')
+
+            try:
+                token = tokens.next()
+            except StopIteration:
+                token = None
+            delimiter = token and token.group(3)
+            if delimiter != u']':
+                raise ValueError('] expected')
+            try:
+                object = object[identifier_or_number]
+            except KeyError:
+                if return_none_unless_feasible:
+                    return None
+                else:
+                    raise
+        else:
+            raise ValueError('. or [ expected')
+
+    return object
+
+def iterpairs(dictlike):
+    if hasattr(dictlike, 'iteritems'):
+        return dictlike.iteritems()
+    elif hasattr(dictlike, 'items'):
+        return dictlike.items()
+    else:
+        return iter(dictlike)
+
+def is_sequence(obj):
+    try:
+        return len(obj)
+    except TypeError:
+        return False
+
+def uniurlencode(dictlike, method='plus', encoding=None):
+    if callable(method):
+        quote = method
+    elif method == 'raw':
+        quote = urllib.quote
+    elif method == 'plus':
+        quote = urllib.quote_plus
+    encoding = encoding or sys.getdefaultencoding()
+    chunks = []
+    first = True
+    for pair in iterpairs(dictlike):
+        try:
+            if len(pair) != 2:
+                raise TypeError
+        except:
+            raise TypeError('not a valid pairs or mapping object')
+        if isinstance(pair[1], basestring):
+            if not first:
+                chunks.append('&')
+            chunks.append(quote(pair[0].encode(encoding)))
+            chunks.append('=')
+            chunks.append(quote(pair[1].encode(encoding)))
+            first = False
+        else:
+            if is_sequence(pair[1]):
+                for v in pair[1]:
+                    if not first:
+                        chunks.append('&')
+                    chunks.append(quote(pair[0].encode(encoding)))
+                    if v is not None:
+                        chunks.append('=')
+                        chunks.append(quote(v.encode(encoding)))
+                    first = False
+            else:
+                if not first:
+                    chunks.append('&')
+                chunks.append(quote(pair[0].encode(encoding)))
+                if pair[1] is not None:
+                    chunks.append('=')
+                    chunks.append(quote(unicode(pair[1]).encode(encoding)))
+                first = False
+    return ''.join(chunks)
+
+def uniurldecode(buf, method='plus', encoding=None):
+    if callable(method):
+        unquote = method
+    elif method == 'raw':
+        unquote = urllib.unquote
+    elif method == 'plus':
+        unquote = urllib.unquote_plus
+    encoding = encoding or sys.getdefaultencoding()
+    retval = []
+    for _pair in buf.split('&'):
+        pair = _pair.split('=', 2)
+        if len(pair) == 2:
+            retval.append((
+                unquote(pair[0]).decode(encoding),
+                unquote(pair[1]).decode(encoding)
+                ))
+        else:
+            retval.append((
+                unquote(pair[0]).decode(encoding),
+                None
+                ))
+    return retval
+
+def tristate(bool_or_none):
+    return bool(bool_or_none) if bool_or_none is not None else None
+
+def toutc(dt, default_tz=None):
+    if dt.tzinfo is None:
+        if default_tz is None:
+            raise ValueError('default_tz is not given')
+        dt = dt.replace(tzinfo=default_tz)
+    return dt.astimezone(pytz.utc)

@@ -145,26 +145,15 @@ $(function(){
 
     <hr />
 
-    <div id="sales_segments">
-      <h3>販売区分</h3>
+    <div id="sales_segment_groups">
+      <h3>販売区分グループ</h3>
       <div style="margin-top: 20px;">
-        <%include file="/sales_segments/_list.html" args="form=form_sales_segment, sales_segments=event.sales_segments, limit=10" />
-        <%include file="/sales_segments/_action_button.html" args="form=form_sales_segment, event=event" />
-        <div id="sales_segments-form">
-          <%include file="/sales_segments/_form.html" args="form=form_sales_segment" />
-        </div>
-      </div>
-    </div>
-
-    <hr />
-
-    <div id="products">
-      <h3>商品</h3>
-      <div style="margin-top: 20px;">
-        <%include file="/products/_list.html" args="form=form_product, products=event.products, sales_segments=event.sales_segments, limit=10" />
-        <%include file="/products/_action_button.html" />
-        <div id="products-form">
-          <%include file="/products/_form.html" args="form=form_product" />
+        <form>
+        <%include file="/sales_segment_groups/_list.html" args="form=form_sales_segment_group, sales_segment_groups=event.sales_segment_groups, limit=10" />
+        <%include file="/sales_segment_groups/_action_button.html" />
+        </form>
+        <div id="sales_segment_groups-form">
+          <%include file="/sales_segment_groups/_modal.html" args="modal_id='modal-sales_segment_group', event=event" />
         </div>
       </div>
     </div>
@@ -175,7 +164,22 @@ $(function(){
       <h3>パフォーマンス</h3>
       <div style="margin-top: 20px;">
         <%include file="/performances/_list.html" args="form=form_performance, performances=event.performances, limit=10" />
-        <%include file="/performances/_action_button.html"  args="event=event" />
+        <%include file="/performances/_action_button.html" args="event=event" />
+        <script type="text/javascript">
+          var is_sending = {};
+          $("#send_event").click(function(e){
+            var $e = $(e.currentTarget);
+            if(is_sending[$e.attr("href")]){ 
+              return false;
+            }
+            is_sending[$e.attr("href")] = true;
+            $('#modal-send_event').modal('hide');
+            setTimeout(function(){
+              is_sending[$e.attr("href")] = false;
+            }, 20000);
+            return true
+          })
+        </script>
       </div>
     </div>
 

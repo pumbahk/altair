@@ -4,26 +4,36 @@ from . import api
 from . import forms
 from altaircms.page.models import Page    
 from altaircms.auth.api import get_or_404
+import logging
+logger = logging.getLogger(__name__)
 
 @view_defaults(custom_predicates=(require_login,))
 class PromotionWidgetView(object):
-    def __init__(self, request):
+    def __init__(self, context, request):
         self.request = request
-        self.context = request.context
+        self.context = context
 
     def _create_or_update(self):
-        data = self.request.json_body["data"]
-        data["kind"] = self.context.Kind.query.filter_by(id=data["kind"]).one()
-        page_id = self.request.json_body["page_id"]
-        context = self.request.context
-        widget = context.get_widget(self.request.json_body.get("pk"))
-        widget = context.update_data(widget,
-                                     page_id=page_id, 
-                                     **data)
-        context.add(widget, flush=True)
-        r = self.request.json_body.copy()
-        r.update(pk=widget.id)
-        return r
+        try:
+            data = self.request.json_body["data"].copy()
+            data["tag"] = self.context.Tag.query.filter_by(id=data["tag"]).one()
+            if data.get("system_tag") and data.get("system_tag") != "__None":
+                data["system_tag"] = self.context.Tag.query.filter_by(id=data["system_tag"]).one()
+            else:
+                data["system_tag"] = None
+            page_id = self.request.json_body["page_id"]
+            context = self.request.context
+            widget = context.get_widget(self.request.json_body.get("pk"))
+            widget = context.update_data(widget,
+                                         page_id=page_id, 
+                                         **data)
+            context.add(widget, flush=True)
+            r = self.request.json_body.copy()
+            r.update(pk=widget.id)
+            return r
+        except Exception, e:
+            logger.exception(str(e))
+            return  self.request.json_body.copy()
 
     @view_config(route_name="promotion_widget_create", renderer="json", request_method="POST")
     def create(self):
@@ -40,7 +50,7 @@ class PromotionWidgetView(object):
         context.delete(widget, flush=True)
         return {"status": "ok"}
 
-    @view_config(route_name="promotion_widget_dialog", renderer="altaircms.plugins.widget:promotion/dialog.mako", request_method="GET")
+    @view_config(route_name="promotion_widget_dialog", renderer="altaircms.plugins.widget:promotion/dialog.html", request_method="GET")
     def dialog(self):
         context = self.request.context
         widget = context.get_widget(self.request.GET.get("pk"))
@@ -53,7 +63,25 @@ def promotion_main_image(context, request):
     pm = api.get_promotion_manager(request)
     return pm.main_image_info(request)
 
-# @view_config(route_name="promotion_slideshow", renderer="altaircms.plugins.widget:promotion/slideshow.mako", request_method="GET", 
+from .api import get_interval_time
+from .api import set_interval_time
+
+@view_defaults(renderer="json", route_name="internal.api.promotion.interval")
+class PromotionIntervalTimeView(object):
+    def _validate(self, request):
+        pass
+
+    @view_config(request_method="GET")
+    def get(self):
+        return {"url": self.request.url, "status": True, "data": get_interval_time()}
+
+    @view_config(request_param="interval_time", request_method="POST")
+    def post(self):
+        prev = get_interval_time()
+        set_interval_time(self.request.POST["interval_time"])
+        return {"url": self.request.url, "status": True, "data": get_interval_time(), "prev": prev}
+
+# @view_config(route_name="promotion_slideshow", renderer="altaircms.plugins.widget:promotion/slideshow.html", request_method="GET", 
 #              decorator="altaircms.lib.fanstatic_decorator.with_jquery")
 # def promotion_slideshow(context, request):
 #     pm = api.get_promotion_manager(request)

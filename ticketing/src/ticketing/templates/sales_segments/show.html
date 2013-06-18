@@ -1,6 +1,10 @@
 <%inherit file="/layout_2cols.html"/>
 <%namespace file="/common/helpers.html" name="h"/>
-
+<script type="text/javascript">
+function get_selected_sales_segment_id() {
+  return ${sales_segment.id};
+}
+</script>
 <div class="breadcrumbs">
   ${h.breadcrumbs(
     names=[u'イベント', sales_segment.event.title, u'販売区分', sales_segment.name],
@@ -21,12 +25,8 @@
 </div>
 
 <%include file="/sales_segments/_detail.html", args="form=form_ss, sales_segment=sales_segment"/>
-
 <%include file="/sales_segments/_action_button.html" args="order=['edit', 'copy', 'delete']" />
-<div id="sales_segments-form">
-  <input type="hidden" id="sales_segment_id" value="${sales_segment.id}" />
-  <%include file="/sales_segments/_form.html" args="form=form_ss" />
-</div>
+<%include file="/sales_segments/_modal.html" args="modal_id='modal-sales_segment', event=sales_segment.event" />
 
 <hr />
 

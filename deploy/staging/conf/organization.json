@@ -1,0 +1,49 @@
+{
+    "comment": "organizationの特定にbackend_idとauth_sourceをkeyにするのが辛くなってきた...重要なのはshort_nameとauth_source", 
+    "data": {
+        "BJ:89ers": {
+            "auth_source": "oauth", 
+            "backend_id": 1, 
+            "short_name": "89ers"
+        }, 
+        "BJ:CR": {
+            "auth_source": "oauth", 
+            "backend_id": 3, 
+            "short_name": "CR"
+        }, 
+        "BJ:NH": {
+            "auth_source": "oauth", 
+            "backend_id": 2, 
+            "short_name": "NH"
+        }, 
+        "demo": {
+            "auth_source": "oauth", 
+            "backend_id": 1111, 
+            "short_name": "demo"
+        }, 
+        "rakuten-baseball": {
+            "auth_source": "oauth", 
+            "backend_id": 12, 
+            "short_name": "rakuten-baseball"
+        }, 
+        "ticketstar": {
+            "auth_source": "oauth", 
+            "backend_id": 11, 
+            "short_name": "ticketstar"
+        }, 
+        "rt": {
+            "auth_source": "oauth", 
+            "backend_id": 11, 
+            "short_name": "rt"
+        }, 
+        "vissel": {
+            "auth_source": "oauth", 
+            "backend_id": 4, 
+            "short_name": "vissel"
+        },
+        "sound-creator": {
+            "auth_source": "oauth",
+            "short_name":  "sound-c"
+        }
+    }
+}

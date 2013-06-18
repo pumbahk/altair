@@ -1,7 +1,9 @@
 # -*- coding:utf-8 -*-
 
-from datetime import datetime
 from dateutil.parser import parse
+from datetime import timedelta
+import logging
+logger = logging.getLogger(__name__)
 
 from sqlalchemy import update
 from sqlalchemy import and_
@@ -10,12 +12,14 @@ from sqlalchemy.orm.exc import NoResultFound
 import sqlahelper
 
 from .utils import JavaHashMap
-from .models import SejNotification, SejOrder, SejTicket
+from .models import SejNotification, SejOrder, SejTicket, SejTenant, SejRefundEvent, SejRefundTicket
 
 from .helpers import make_sej_response, create_hash_from_x_start_params, build_sej_datetime
-from .resources import SejNotificationType, SejPaymentType
+from .resources import SejNotificationType
 from .exceptions import SejResponseError
-
+from ticketing.sej.exceptions import SejServerError
+from ticketing.sej.payment import request_cancel_order
+from pyramid.threadlocal import get_current_registry
 
 DBSession = sqlahelper.get_session()
 
@@ -228,25 +232,27 @@ def create_payment_or_cancel_request_from_record(n):
         'X_shop_order_id':      n.order_id,
         'X_haraikomi_no':       n.billing_number or '',
         'X_hikikae_no':         n.exchange_number or '',
-        'X_goukei_kingaku':     n.total_price,
-        'X_ticket_cnt':         n.total_ticket_count,
-        'X_ticket_hon_cnt':     n.ticket_count,
-        'X_kaishu_cnt':         n.return_ticket_count,
+        'X_goukei_kingaku':     str(n.total_price),
+        'X_ticket_cnt':         str(n.total_ticket_count),
+        'X_ticket_hon_cnt':     str(n.ticket_count),
         'X_pay_mise_no':        n.pay_store_number,
         'pay_mise_name':        n.pay_store_name,
         'X_hakken_mise_no':     n.ticketing_store_number,
         'hakken_mise_name':     n.ticketing_store_name,
-        'X_torikeshi_riyu':     n.cancel_reason,
         'X_shori_time':         build_sej_datetime(n.processed_at),
         }
 
 def create_payment_complete_request_from_record(n):
     params = create_payment_or_cancel_request_from_record(n)
     params['X_tuchi_type'] = str(SejNotificationType.PaymentComplete.v)
+    return params
 
 def create_cancel_request_from_record(n):
     params = create_payment_or_cancel_request_from_record(n)
+    params['X_torikeshi_riyu'] = n.cancel_reason
     params['X_tuchi_type'] = str(SejNotificationType.CancelFromSVC.v)
+    params['X_kaishu_cnt'] = str(n.return_ticket_count)
+    return params
 
 def create_re_grant_request_from_record(n):
     params = {
@@ -295,6 +301,95 @@ def create_sej_notification_data_from_record(n, secret_key):
         SejNotificationType.TicketingExpire.v:
             create_expire_request_from_record,
         }
-    params = processor[n.notification_type](n)
+    params = processor[int(n.notification_type)](n)
     params['xcode'] = create_hash_from_x_start_params(params, secret_key)
     return params
+
+def cancel_sej_order(sej_order, organization_id):
+    if not sej_order or sej_order.cancel_at:
+        logger.error(u'コンビニ決済(セブン-イレブン)のキャンセルに失敗しました %s' % sej_order.order_id if sej_order else None)
+        return False
+
+    settings = get_current_registry().settings
+    tenant = SejTenant.filter_by(organization_id=organization_id).first()
+
+    inticket_api_url = (tenant and tenant.inticket_api_url) or settings.get('sej.inticket_api_url')
+    shop_id = (tenant and tenant.shop_id) or settings.get('sej.shop_id')
+    api_key = (tenant and tenant.api_key) or settings.get('sej.api_key')
+
+    if sej_order.shop_id != shop_id:
+        logger.error(u'コンビニ決済(セブン-イレブン)のキャンセルに失敗しました Invalid shop_id : %s' % shop_id)
+        return False
+
+    try:
+        request_cancel_order(
+            order_id=sej_order.order_id,
+            billing_number=sej_order.billing_number,
+            exchange_number=sej_order.exchange_number,
+            shop_id=shop_id,
+            secret_key=api_key,
+            hostname=inticket_api_url
+        )
+        return True
+    except SejServerError, e:
+        logger.error(u'コンビニ決済(セブン-イレブン)のキャンセルに失敗しました %s' % e)
+        return False
+
+def refund_sej_order(sej_order, organization_id, order, now):
+    if not sej_order or sej_order.cancel_at:
+        logger.error(u'コンビニ決済(セブン-イレブン)の払戻に失敗しました %s' % sej_order.order_id if sej_order else None)
+        return False
+
+    sej_ticket = SejTicket.query.filter_by(order_id=sej_order.id).first()
+    if not sej_ticket:
+        logger.error(u'コンビニ決済(セブン-イレブン)の払戻に失敗しました %s' % sej_order.order_id)
+        return False
+
+    settings = get_current_registry().settings
+    tenant = SejTenant.filter_by(organization_id=organization_id).first()
+    shop_id = (tenant and tenant.shop_id) or settings.get('sej.shop_id')
+    performance = order.performance
+
+    # create SejRefundEvent
+    re = SejRefundEvent.filter(and_(
+        SejRefundEvent.shop_id==shop_id,
+        SejRefundEvent.event_code_01==performance.code
+    )).first()
+    if not re:
+        re = SejRefundEvent()
+        DBSession.add(re)
+
+    re.available = 1
+    re.shop_id = shop_id
+    re.event_code_01 = performance.code
+    re.title = performance.name
+    re.event_at = performance.start_on.strftime('%Y%m%d')
+    re.start_at = now.strftime('%Y%m%d')
+    end_at = (performance.end_on or performance.start_on) + timedelta(days=+14)
+    re.end_at = end_at.strftime('%Y%m%d')
+    re.event_expire_at = end_at.strftime('%Y%m%d')
+    ticket_expire_at = (performance.end_on or performance.start_on) + timedelta(days=+30)
+    re.ticket_expire_at = ticket_expire_at.strftime('%Y%m%d')
+    re.refund_enabled = 1
+    re.need_stub = 1
+    DBSession.merge(re)
+
+    # create SejRefundTicket
+    rt = SejRefundTicket.filter(and_(
+        SejRefundTicket.order_id==sej_order.order_id,
+        SejRefundTicket.ticket_barcode_number==sej_ticket.barcode_number
+    )).first()
+    if not rt:
+        rt = SejRefundTicket()
+        DBSession.add(rt)
+
+    prev = order.prev
+    rt.available = 1
+    rt.refund_event_id = re.id
+    rt.event_code_01 = performance.code
+    rt.order_id = sej_order.order_id
+    rt.ticket_barcode_number = sej_ticket.barcode_number
+    rt.refund_ticket_amount = prev.refund.item(prev)
+    rt.refund_other_amount = prev.refund.fee(prev)
+    DBSession.merge(rt)
+    return True

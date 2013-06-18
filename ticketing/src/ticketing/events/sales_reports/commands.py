@@ -4,19 +4,22 @@ import logging
 import os
 import sys
 from datetime import datetime, timedelta
-
 from paste.util.multidict import MultiDict
+from pyramid.threadlocal import get_current_registry
+from pyramid.renderers import render_to_response
 from pyramid.paster import bootstrap
+from sqlalchemy import or_, and_
+
+from ticketing.events.sales_reports.reports import EventReporter, PerformanceReporter
 
 logger = logging.getLogger(__name__)
 
 def main(argv=sys.argv):
-    from ticketing.core.models import ReportSetting, Mailer, Event, Organization, ReportFrequencyEnum
-    from ticketing.operators.models import Operator
+    from ticketing.core.models import ReportSetting, ReportFrequencyEnum, ReportPeriodEnum
     from ticketing.events.sales_reports.forms import SalesReportForm
-    from ticketing.events.sales_reports.sendmail import sendmail, get_performance_sales_summary
+    from ticketing.events.sales_reports.reports import sendmail
 
-    if len(sys.argv) < 4:
+    if len(sys.argv) < 3:
         print 'ERROR: invalid args %s' % sys.argv
         return
 
@@ -27,41 +30,76 @@ def main(argv=sys.argv):
     logging.config.fileConfig(log_file)
     logger.info('start send_sales_report batch')
 
-    frequency = argv[3]
-    if frequency == ReportFrequencyEnum.Daily.k:
-        frequency_num = ReportFrequencyEnum.Daily.v
-        target = datetime.now() - timedelta(days=1)
-        limited_from = target.strftime('%Y-%m-%d 00:00')
-        limited_to = target.strftime('%Y-%m-%d 23:59')
-    elif frequency == ReportFrequencyEnum.Weekly.k:
-        frequency_num = ReportFrequencyEnum.Weekly.v
-        target = datetime.now() - timedelta(days=7)
-        limited_from = target.strftime('%Y-%m-%d 00:00')
-        limited_to = target.strftime('%Y-%m-%d 23:59')
-    else:
-        logging.error('invalid args %s' % sys.argv)
-        return
+    now = datetime.now().replace(minute=0, second=0)
+    settings = get_current_registry().settings
 
-    report_settings = ReportSetting.query.filter_by(frequency=frequency_num).all()
-    for report_setting in report_settings:
-        event_id = report_setting.event_id
-        event = Event.get(event_id)
-        if event is None:
-            logging.error('event not found (id=%s)' % event_id)
-            continue
+    query = ReportSetting.query.filter(and_(
+        ReportSetting.time==now.hour,
+        or_(ReportSetting.start_on==None, ReportSetting.start_on<now),
+        or_(ReportSetting.end_on==None, ReportSetting.end_on>now),
+        or_(ReportSetting.day_of_week==None, ReportSetting.day_of_week==now.isoweekday())
+    ))
 
+    i = 0
+    reports = {}
+    for report_setting in query.all():
+        logger.info('report_setting_id: %s' % report_setting.id)
+
+        limited_from = None
+        limited_to = None
+        need_total = True
+        if report_setting.period == ReportPeriodEnum.Entire.v[0]:
+            need_total = False
+            limited_to = now.strftime('%Y-%m-%d %H:%M')
+        elif report_setting.period == ReportPeriodEnum.Normal.v[0]:
+            target = now - timedelta(days=1)
+            limited_to = target.strftime('%Y-%m-%d 23:59')
+            if report_setting.frequency == ReportFrequencyEnum.Daily.v[0]:
+                limited_from = target.strftime('%Y-%m-%d 00:00')
+            elif report_setting.frequency == ReportFrequencyEnum.Weekly.v[0]:
+                target = now - timedelta(days=7)
+                limited_from = target.strftime('%Y-%m-%d 00:00')
+
+        event = report_setting.event
+        performance = report_setting.performance
         params = dict(
-            recipient=report_setting.operator.email,
-            limited_from=limited_from,
-            limited_to=limited_to
+            event_id=report_setting.event_id,
+            performance_id=report_setting.performance_id,
         )
-        form = SalesReportForm(MultiDict(params), event_id=event_id)
-        if event.sales_end_on < form.limited_from.data or form.limited_to.data < event.sales_start_on:
+        if limited_from:
+            params.update(dict(limited_from=limited_from))
+        if limited_to:
+            params.update(dict(limited_to=limited_to))
+        form = SalesReportForm(MultiDict(params))
+        form.need_total.data = need_total
+
+        if performance:
+            end_on = performance.end_on or performance.start_on
+            if end_on < now:
+                continue
+
+            if form not in reports:
+                render_param = dict(performance_reporter=PerformanceReporter(form, performance))
+                reports[form] = render_to_response('ticketing:templates/sales_reports/performance_mail.html', render_param)
+            subject = u'%s (開催日:%s)' % (performance.name, performance.start_on.strftime('%Y-%m-%d %H:%M'))
+        elif event:
+            if (form.limited_from.data and event.sales_end_on < form.limited_from.data) or\
+               (form.limited_to.data and form.limited_to.data < event.sales_start_on) or\
+               (form.limited_from.data and event.final_start_on and event.final_start_on < form.limited_from.data):
+                continue
+
+            if form not in reports:
+                render_param = dict(event_reporter=EventReporter(form, event))
+                reports[form] = render_to_response('ticketing:templates/sales_reports/event_mail.html', render_param)
+            subject = event.title
+        else:
+            logging.error('event/performance not found (report_setting_id=%s)' % report_setting.id)
             continue
 
-        sendmail(event, form)
+        sendmail(settings, report_setting.recipient, u'[売上レポート] %s' % subject, reports[form])
+        i += 1
 
-    logger.info('end send_sales_report batch (sent=%s)' % len(report_settings))
+    logger.info('end send_sales_report batch (sent=%s)' % i)
 
 if __name__ == '__main__':
     main()

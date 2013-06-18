@@ -5,35 +5,22 @@
 
 ${event.title}
 
-% if not venues:
+% if not key:
   <hr size="1" color="#9b63c0" noshade="noshade" />
-  <p><font color="#580d9a">■</font>対象試合をお選びください</p>
-  <form action="${request.url}" method="get">
-    <select name="performance_name">
-  % for _performance_name in performances:
-    <option value="${_performance_name}">${_performance_name}</option>
+  <p><font color="#580d9a">■</font>${selector_label_1}をお選びください</p>
+  <form action="${request.path}" method="get">
+  % for _key, _ in key_to_formatted_sales_segments_map:
+  <a href="${request.current_route_path(_query={'key': _key.encode('sjis')})}">${_key}</a><br/>
   % endfor
-    </select>
-    <div style="text-align:center;">
-    <br/>
-    <input type="submit" value="次へ">
-    </div>
-  </form>
 % else:
   <hr size="1" color="#9b63c0" noshade="noshade" />
-  <p><font color="#580d9a">■</font>日時・会場をお選びください</p>
-  <form action="${request.url}" method="get">
-    <select name="pid">
-  % for pid, _venue_name in venues:
-    <option value="${pid}" ${_venue_name == venue_name and u'selected="selected"' or u''}>${_venue_name}</option>
+  <p><font color="#580d9a">■</font>${selector_label_2}をお選びください</p>
+  % for _, sales_segments in key_to_formatted_sales_segments_map:
+  %   for sales_segment_info in sales_segments:
+  <a href="${request.route_path('cart.seat_types', event_id=event.id, sales_segment_id=sales_segment_info['id'])}">${sales_segment_info['name']}</a><br />
+  %   endfor
   % endfor
-    </select>
-    <div style="text-align:center;">
-    <br/>
-    <input type="submit" value="次へ">
-    </div>
-  </form>
-  <form action="${request.route_url('cart.index', event_id=event.id)}" method="get">
+  <form action="${request.route_path('cart.index', event_id=event.id)}" method="get">
     <div style="text-align:center;">
       <input type="submit" value="戻る">
     </div>

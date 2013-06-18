@@ -71,8 +71,7 @@
   <div class="ui-corner-all ui-toolbar">
     <span class="ui-buttonset">
       <input type="radio" name="function" value="select" class="ui-button ui-icon-primary-arrow-4 action-move" id="toolbar-action-move" checked="checked" /><label for="toolbar-action-move">Move</label>
-      <input type="radio" name="function" value="select" class="ui-button ui-icon-primary-arrowthick-1-ne action-select-one" id="toolbar-action-select-one" checked="checked" /><label for="toolbar-action-select-one">Select One</label>
-      <input type="radio" name="function" value="select" class="ui-button ui-icon-primary-calculator action-select-multiple" id="toolbar-action-select-multiple" /><label for="toolbar-action-select-multiple">Select Multiple</label>
+      <input type="radio" name="function" value="select" class="ui-button ui-icon-primary-arrowthick-1-ne action-select" id="toolbar-action-select" checked="checked" /><label for="toolbar-action-select">Select</label>
       <input type="radio" name="function" value="zoomin" class="ui-button ui-icon-primary-zoomin action-zoomin" id="toolbar-action-zoomin" /><label for="toolbar-action-zoomin">Zoom-in</label>
       <input type="radio" name="function" value="zoomout" class="ui-button ui-icon-primary-zoomout action-zoomout" id="toolbar-action-zoomout" /><label for="toolbar-action-zoomout">Zoom-out</label>
     </span>
@@ -89,12 +88,23 @@
   </div>
   <script type="text/javascript">
 var currentStockTypeId = "";
-var venue = $('#venue');
+var venue = null;
 var slider = $('#slider');
-function loadVenue() {
-  var zoomRatioMin = 0;
-  var zoomRatioMax = 2.5;
+var zoomRatioMin = 0.;
+var zoomRatioMax = 2.5;
 
+slider.smihica_vertical_slider({
+  onchange: function (pos) {
+    var level = pos * pos;
+    var zoomRatio = zoomRatioMin + ((zoomRatioMax - zoomRatioMin) * level);
+    if (venue != null)
+      venue.venueviewer("zoom", zoomRatio);
+  }
+});
+
+function loadVenue() {
+  var prefix = 'data/noevia-stadium-kobe';
+  venue = $('#venue');
   venue.venueviewer({
     viewportSize: {
       x: 430, y: 400
@@ -104,7 +114,7 @@ function loadVenue() {
         return function (next, error) {
           $.ajax({
             type: 'get',
-            url: "data/xebio-arena/drawings/" + key,
+            url: prefix + "/drawings/" + key,
             dataType: 'xml',
             success: function(xml) {
               next(xml);
@@ -113,11 +123,10 @@ function loadVenue() {
           });
         }
       },
-      metadata: "data/xebio-arena/data.json",
+      metadata: prefix + "/data.json",
       seats: function (next, error) {
         $.ajax({
-          // url: 'data/seat-data.json',
-          url: 'data/xebio-arena/seat-data.json',
+          url: prefix + '/seat-data.json',
           dataType: 'json',
           success: function(data) {
             next(data['seats']);
@@ -129,7 +138,7 @@ function loadVenue() {
       },
       seatAdjacencies: function (next, error, length) {
         $.ajax({
-          url: 'data/xebio-arena/adjacencies/' + (length|0) + '.json',
+          url: prefix + '/adjacencies/' + (length|0) + '.json',
           dataType: 'json',
           success: function(data) {
             next(data['seat_adjacencies']);
@@ -148,7 +157,7 @@ function loadVenue() {
         var self = this;
         for (var i = 0, l = parentList.length; i < l; i++) {
           (function (parent) {
-            var pageData = self.pages[parent];
+            var pageData = self.pages[parent.page];
             holder.append($("<a href='javascript:void(0)'></a>").text(pageData.name).bind("click", function () {
               self.navigate(parent);
             }));
@@ -223,11 +232,8 @@ function loadVenue() {
 
       with_uimodeselect: function (viewer, mode) {
         switch (mode) {
-        case 'select1':
-          $("#toolbar-action-select-one").attr("checked", "checked");
-          break;
         case 'select':
-          $("#toolbar-action-select-multiple").attr("checked", "checked");
+          $("#toolbar-action-select").attr("checked", "checked");
           break;
         case 'zoomin':
           $("#toolbar-action-select-zoomin").attr("checked", "checked");
@@ -258,19 +264,10 @@ function loadVenue() {
       loadPartEnd: function (viewer, category) {
         if (category == 'drawing') {
           zoomRatioMin = viewer.zoomRatioMin;
-          viewer.zoom(viewer.zoomRatioMin);
         }
       }
     }
   }).venueviewer("load");
-
-  slider.smihica_vertical_slider({
-    onchange: function (pos) {
-      var level = pos * pos;
-      var zoomRatio = zoomRatioMin + ((zoomRatioMax - zoomRatioMin) * level);
-      venue.venueviewer("zoom", zoomRatio);
-    }
-  });
 }
 
 $(".action-zoomin").click(function () {
@@ -288,10 +285,10 @@ $(".action-move").click(function () {
     return;
   venue.venueviewer("uimode", "move");
 });
-$(".action-select-one").click(function () {
+$(".action-select").click(function () {
   if (!venue)
     return;
-  venue.venueviewer("uimode", "select1");
+  venue.venueviewer("uimode", "select");
 });
 $(".action-select-multiple").click(function () {
   if (!venue)
@@ -315,10 +312,6 @@ $(".action-reload").click(function () {
 $("#back-button").click(function() {
   if (!venue) return;
   venue.venueviewer("back");
-});
-
-$(function() {
-
 });
 
 loadVenue();

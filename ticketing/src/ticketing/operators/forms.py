@@ -2,7 +2,7 @@
 
 from wtforms import Form, ValidationError
 from wtforms import TextField, HiddenField, DateField, PasswordField, SelectMultipleField
-from wtforms.validators import Length, Email, Optional
+from wtforms.validators import Length, Email, Optional, Regexp
 from pyramid.security import has_permission, ACLAllowed
 
 from ticketing.formhelpers import DateTimeField, Translations, Required
@@ -89,6 +89,7 @@ class OperatorForm(Form):
         label=u'パスワード',
         validators=[
             Length(4, 32, message=u'4文字以上32文字以内で入力してください'),
+            Regexp("^[a-zA-Z0-9@!#$%&'()*+,\-./_]+$", 0, message=u'英数記号を入力してください。'),
         ]
     )
 
@@ -98,6 +99,12 @@ class OperatorForm(Form):
         choices=[(role.id, role.name) for role in OperatorRole.all()],
         coerce=int,
     )
+
+    def validate_login_id(form, field):
+        operator_auth = OperatorAuth.get_by_login_id(field.data)
+        if operator_auth is not None:
+            if not form.id.data or operator_auth.operator_id != int(form.id.data):
+                raise ValidationError(u'ログインIDが重複しています。')
 
     def validate_id(form, field):
         # administratorロールのオペレータはadministratorロールがないと編集できない

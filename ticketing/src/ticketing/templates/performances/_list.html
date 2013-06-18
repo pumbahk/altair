@@ -60,10 +60,14 @@ nowdate = datetime.now()
             </div>
           </td>
           % endif
-          <td>${performance.open_on.strftime("%Y-%m-%d")if performance.open_on else ''}</td>
+          <td>${performance.start_on.strftime("%Y-%m-%d")if performance.start_on else ''}</td>
           <td><a href="${request.route_path('performances.show', performance_id=performance.id)}">
 					    ${performance.name}
-              %if performance.end_on and nowdate > performance.end_on:
+              <%
+                from datetime import timedelta
+                end_on = performance.end_on or (performance.start_on + timedelta(days=1)).replace(hour=0, minute=0, second=0)
+              %>
+              %if nowdate > end_on:
                 <span class="label">終了</span>
               %endif
 					  </a>

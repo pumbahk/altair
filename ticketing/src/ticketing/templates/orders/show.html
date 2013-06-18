@@ -36,19 +36,7 @@ ${h.breadcrumbs(
             </tr>
             <tr>
               <th>ステータス</th>
-              <td>
-                % if order.status == 'refunded':
-                <span class="label label-important">キャンセル (返金済)</span>
-                % elif order.status == 'canceled':
-                <span class="label label-important">キャンセル</span>
-                % elif order.status == 'delivered':
-                <span class="label label-success">配送済み</span>
-                % elif order.status == 'paid':
-                <span class="label label-warning">入金済み</span>
-                % else:
-                <span class="label label-inverse">未入金</span>
-                % endif
-              </td>
+              <td>${h.order_status(order)}</td>
             </tr>
             <tr>
               <th>予約日時</th>
@@ -59,9 +47,8 @@ ${h.breadcrumbs(
               <td>
                 % if order.paid_at:
                   ${h.safe_strftime(order.paid_at)}
-                % else:
-                  <span class="label label-inverse">未入金</span>
                 % endif
+                ${h.payment_status(order)}
               </td>
             </tr>
             <tr>
@@ -103,9 +90,8 @@ ${h.breadcrumbs(
               <td>
                 % if order.delivered_at:
                   ${h.safe_strftime(order.delivered_at)}
-                % else:
-                  <span class="label label-inverse">未配送</span>
                 % endif
+                ${h.delivery_status(order)}
               </td>
             </tr>
             % if order.status == 'canceled':
@@ -114,10 +100,35 @@ ${h.breadcrumbs(
               <td>${h.safe_strftime(order.canceled_at)}</td>
             </tr>
             % endif
+            <tr>
+              <th>販売チャネル</th>
+              <td>
+                <% from ticketing.core.api import get_channel %>
+                ${get_channel(order.channel).k}
+              </td>
+            </tr>
+            <tr>
+              <th>オペレーター</th>
+              <td>
+                % if order.operator:
+                  ${order.operator.name}
+                % endif
+              </td>
+            </tr>
+            % if order.refund:
+            <tr>
+              <th>払戻方法</th>
+              <td>${order.refund.payment_method.name}</td>
+            </tr>
+            % endif
           </table>
           % if i == 0:
           <div class="pull-right">
-            <%include file="/orders/_action_button.html" args="order=order, sort=['mailinfo', 'delivered', 'cancel', 'print']" />
+            <%include file="/orders/_action_button.html"
+              args="order=order, sort=['mailinfo', 'paid', 'unpaid', 'delivered', 'cancel', 'refund', 'print', 'delete']" />
+          </div>
+          <div id="refund-form">
+            <%include file="/orders/refund/_form.html" args="form=form_refund" />
           </div>
           % endif
         </div>
@@ -235,7 +246,12 @@ ${h.breadcrumbs(
               <th>住所</th>
               <td>
                 % if shipping_address:
-                  ${shipping_address.zip} ${shipping_address.country or ''} ${shipping_address.prefecture} ${shipping_address.city} ${shipping_address.address_1} ${shipping_address.address_2}
+                  ${shipping_address.zip or ''}
+                  ${shipping_address.country or ''}
+                  ${shipping_address.prefecture or ''}
+                  ${shipping_address.city or ''}
+                  ${shipping_address.address_1 or ''}
+                  ${shipping_address.address_2 or ''}
                 % endif
               </td>
             </tr>
@@ -289,22 +305,55 @@ ${h.breadcrumbs(
               <th>マルチ決済受領番号</th>
               <td>${order.multicheckout_approval_no}</td>
             </tr>
+            <tr>
+              <th>カードブランド</th>
+              <td>${order.card_brand or ''}</td>
+            </tr>
+            <tr>
+              <th>仕向け先</th>
+              <td>
+                ${order.card_ahead_com_name or ''} (${order.card_ahead_com_code or ''})
+              </td>
+            </tr>
             % endif
-            % if order.cart and order.cart.checkout:
+            <% checkout = order.checkout %>
+            % if checkout:
             <tr>
-              <th>楽天あんしん決済注文番号</th>
-              <td>${order.cart.checkout.orderId}</td>
+              <th>楽天あんしん支払いサービス 注文番号</th>
+              <td>${checkout.orderId}</td>
             </tr>
             <tr>
-              <th>楽天あんしん決済注文管理番号</th>
-              <td>${order.cart.checkout.orderControlId}</td>
+              <th>楽天あんしん支払いサービス 注文管理番号</th>
+              <td>${checkout.orderControlId}</td>
             </tr>
             <tr>
-              <th>楽天あんしん決済利用ポイント数</th>
-              <td>${h.price_format(int(order.cart.checkout.usedPoint or 0))}</td>
+              <th>楽天あんしん支払いサービス 利用ポイント数</th>
+              <td>${h.price_format(int(checkout.usedPoint or 0))}</td>
+            </tr>
+            <tr>
+              <th>楽天あんしん支払いサービス 売上日時</th>
+              <td>${h.safe_strftime(checkout.sales_at)}</td>
+            </tr>
+            % endif
+            % if sej_order:
+            <tr>
+              <th>支払票番号</th>
+              <td>${sej_order.billing_number or ''}</td>
+            </tr>
+            <tr>
+              <th>引換票番号</th>
+              <td>${sej_order.exchange_number or ''}</td>
             </tr>
             % endif
           </table>
+          % if sej_order:
+          <div class="pull-right">
+            <form action="${sej_order.exchange_sheet_url}" method="POST">
+              <input type="hidden" name="iraihyo_id_00" value="${sej_order.exchange_sheet_number}">
+              <input type="submit" name="submit" value="引換票を表示" class="btn"/>
+            </form>
+          </div>
+          % endif
         </div>
       </div>
 
@@ -382,8 +431,8 @@ ${h.breadcrumbs(
                     % endif
                   </td>
                   <td>
-                    %if ordered_product_item.issued_at:
-                      ${ordered_product_item.issued_at}
+                    %if ordered_product_item.issued_at or  ordered_product_item.printed_at:
+                      ${ordered_product_item.issued_at or ordered_product_item.printed_at}
                       <span alt="${ordered_product_item.issued_at}" class="label label-warning">済</span>
                       % for operator_name in list(set([ph.operator.name for ph in ordered_product_item.print_histories if ph.operator])):
                         <div>作業者: ${operator_name}</div>
@@ -394,8 +443,7 @@ ${h.breadcrumbs(
                     %endif
                   </td>
                   <td style="text-align: right;">${h.price_format(ordered_product_item.price)}円</td>
-                  <% quantity = len(ordered_product_item.seats) if ordered_product_item.seats else ordered_product.quantity %>
-                  <td>${quantity}</td>
+                  <td>${ordered_product_item.quantity}</td>
                   <td></td>
                 </tr>
             % endfor

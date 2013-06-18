@@ -33,8 +33,8 @@ class auth_model_callbackTests(unittest.TestCase):
 
         self.assertEqual(result, ['membergroup:test-membergroup'])
         
-    def test_clamed_id(self):
-        user = {'clamed_id': 'http://example.com'}
+    def test_claimed_id(self):
+        user = {'claimed_id': 'http://example.com'}
         request = testing.DummyRequest()
 
         result = self._callFUT(user, request)

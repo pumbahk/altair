@@ -81,16 +81,18 @@ td{	padding: 5px;
 
 
 #index_artist {
-        background-size: 490px 40px;
+    background-size: 490px 40px;
 	background: url(../../img/artistpage/artistname.png) repeat-x 0 50%;
-        width:490px;
-        height:40px;
-        border:solid 1px transparent;
+    width:490px;
+    height:40px;
+    border:solid 1px transparent;
 	color:#FFFFFF;
 	font-size:1.4em;
 }
 #index_artist p{
+    border:1px solid transparent;
 	margin-left:30px;
+    margin-top:8px;
 }
 
 .rank_title p{
@@ -103,55 +105,64 @@ td{	padding: 5px;
 
 #rank_border {
 	width:238px;
-	}
-.odd{background: #FFF9F1 }
+}
+.odd{
+    background: #FFF9F1 
+}
 
 #notice{
-        background-color:#ffffff;
-        border:1px solid transparent;
-        width:490px;
-        height:500px;
-        float:left;
+    background-color:#ffffff;
+    border:1px solid transparent;
+    width:490px;
+    height:500px;
+    float:left;
 }
 
 
 
 .featured_cd_imgs{
-        background-size: 1000px 300px;
+    background-size: 1000px 300px;
 	width:470px;
 	height:300px;
-        border:1px solid transparent;
-        display:block;
+    border:1px solid transparent;
+    display:block;
 }
 
 .featured_cd_imgs img {
-	 margin-top:10px;
+	margin-top:10px;
 	margin-left:10px;
 	float:left;
 }
 
 	
-#news { width:500px;
-        border: 1px solid transparent;
+#news {
+    width:500px;
+    border: 1px solid transparent;
 	background-color:#FFFFE0;}
 
 #news h2{
 	height:24px;
 	padding:7px 10px 0;
 	color:#0088cc;
-        bakground: url(../img/search/side_title_long.gif) no-repeat 0 50%;
+    bakground: url(../img/search/side_title_long.gif) no-repeat 0 50%;
 }
 .sideCategoryGenre_rank {
-        width: 238px;
-        margin-bottom: 10px;
+    width: 238px;
+    margin-bottom: 10px;
 }
+
 
 .sideCategoryGenre_rank h2 {
 	width:238px;
-        height: 40px;
-        padding: 7px 10px 0;
-       background-size: 238px 40px;
-        color: #ffffff;
-        background: url(../img/search/side_title_orange.gif) no-repeat 0 0;
+    height: 40px;
+    padding: 7px 10px 0;
+    background-size: 238px 40px;
+    color: #ffffff;
+    background: url(../img/search/side_title_orange.gif) no-repeat 0 0;
 }
+#side {
+    border:1px solide transparent;
+    margin-top:5px;
+}
+
 

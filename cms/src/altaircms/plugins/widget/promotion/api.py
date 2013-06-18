@@ -6,9 +6,27 @@ from .interfaces import IPromotionManager
 import logging
 logger = logging.getLogger(__file__)
 
+
+from altaircms.page.models import Page
+from altaircms.widget.models import Widget
+from .models import PromotionWidget
+
+def get_promotion_widget_pages(request):
+    return Page.query.filter(PromotionWidget.id==Widget.id,Widget.page_id==Page.id)
+get_promotion_widget_pages.widget = PromotionWidget
+
 def get_promotion_manager(request):
     return request.registry.getUtility(IPromotionManager)
 
+_INTERVAL_TIME = 5000
+def set_interval_time(n):
+    global _INTERVAL_TIME
+    logger.info("*promotion widget interval time: %s -> %s" % (_INTERVAL_TIME, n))
+    _INTERVAL_TIME = n
+
+def get_interval_time():
+    global _INTERVAL_TIME
+    return _INTERVAL_TIME
 
 @provider(IPromotionManager)
 class RealPromotionManager(object):
@@ -22,19 +40,21 @@ class RealPromotionManager(object):
             p = request.context.Promotion.query.filter_by(id=request.GET["promotion_unit_id"]).one()
             return {"id": p.id, 
                     "link": h.link.get_link_from_promotion(request, p), 
-                    "src": h.asset.to_show_page(request, p.main_image), 
+                    "src": h.asset.rendering_object(request, p.main_image).filepath, 
+                    "width": p.main_image.width, 
+                    "height": p.main_image.height, 
                     "message": p.text}
         except Exception, e:
             logger.exception(e)
             return {}
 
     @classmethod
-    def show_image(cls, image_path, href):
-        return '<a href="%s"><img src="%s"/></a>' % (href, image_path)
+    def show_image(cls, i, image_path, href):
+        return '<a href="%s"><img id="promotion%s" src="%s"/></a>' % (href, i, image_path)
 
 
 ## mock
-from .models import PromotionInfo
+from .utilities import PromotionInfo
 @provider(IPromotionManager)
 class MockPromotionManager(object):
     @classmethod
@@ -59,6 +79,8 @@ class MockPromotionManager(object):
         return {"id": 1, 
                 "link": "http://google.co.jp", 
                 "src": "/static/mock/img/%s.jpg" % i, 
+                "width": 300, 
+                "height": 300, 
                 "message": u"this message from api %f" % random.random()}
 
     @classmethod

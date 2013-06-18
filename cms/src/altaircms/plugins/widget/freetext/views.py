@@ -4,13 +4,25 @@ from altaircms.auth.api import get_or_404
 from . import models
 from . import forms
 
+import lxml.html
+
+def strip_unnecessary_tags(unistr):
+    tree = lxml.html.fromstring(unistr)
+    comment_nodes = []
+    for elem in tree.iter():
+        if isinstance(elem, lxml.html.HtmlComment):
+            comment_nodes.append(elem)
+    for comment_node in comment_nodes:
+        comment_node.getparent().remove(comment_node)
+    return lxml.html.tostring(tree, encoding='unicode')
+
 @view_defaults(custom_predicates=(require_login,))
 class FreetextWidgetView(object):
     def __init__(self, request):
         self.request = request
 
     def _create_or_update(self):
-        freetext = self.request.json_body["data"]["freetext"]
+        freetext = strip_unnecessary_tags(self.request.json_body["data"]["freetext"])
         page_id = self.request.json_body["page_id"]
         context = self.request.context
         widget = context.get_widget(self.request.json_body.get("pk"))
@@ -38,7 +50,7 @@ class FreetextWidgetView(object):
 
 
     ##
-    @view_config(route_name="freetext_widget_dialog", renderer="altaircms.plugins.widget:freetext/dialog.mako", request_method="GET")
+    @view_config(route_name="freetext_widget_dialog", renderer="altaircms.plugins.widget:freetext/dialog.html", request_method="GET")
     def dialog(self):
         context = self.request.context
         pk = self.request.GET.get("pk")

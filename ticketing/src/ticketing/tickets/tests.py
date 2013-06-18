@@ -44,6 +44,7 @@ class TicketsUtilsTest(TestCase):
             SeatStatus,
             SeatStatusEnum,
             SalesSegment,
+            SalesSegmentGroup,
             SalesSegmentKindEnum,
             PaymentDeliveryMethodPair,
             PaymentMethod,
@@ -61,6 +62,11 @@ class TicketsUtilsTest(TestCase):
             TicketBundleAttribute,
             ShippingAddress,
             OrderedProductItemToken,
+            )
+        from ticketing.cart.models import (
+            Cart,
+            CartedProduct,
+            CartedProductItem,
             )
         from ticketing.payments.plugins import (
             MULTICHECKOUT_PAYMENT_PLUGIN_ID,
@@ -110,9 +116,12 @@ class TicketsUtilsTest(TestCase):
                     name=u'コンビニ受取'
                     )
                 )
-            sales_segment = SalesSegment(
+            sales_segment_group = SalesSegmentGroup(
                 name=u'一般販売',
-                kind=SalesSegmentKindEnum.normal.v,
+                kind=SalesSegmentKindEnum.normal.v
+                )
+            sales_segment = SalesSegment(
+                sales_segment_group=sales_segment_group,
                 start_at=datetime(2012, 12, 1, 10, 1, 2),
                 end_at=datetime(2012, 12, 30, 0, 0, 0),
                 upper_limit=10,
@@ -150,7 +159,7 @@ class TicketsUtilsTest(TestCase):
                 title=u'イベント名',
                 abbreviated_title=u'イベント名略称',
                 organization=organization,
-                sales_segments=[sales_segment]
+                sales_segment_groups=[sales_segment_group]
                 )
             performance = Performance(
                 event=event,
@@ -158,7 +167,8 @@ class TicketsUtilsTest(TestCase):
                 code=u'RTTST0000000',
                 open_on=datetime(2012, 12, 31, 10, 1, 2),
                 start_on=datetime(2012, 12, 31, 11, 3, 4),
-                end_on=None, 
+                end_on=None,
+                sales_segments=[sales_segment]
                 )
             stock_type = StockType(
                 name=u'S席',
@@ -244,7 +254,7 @@ class TicketsUtilsTest(TestCase):
                     ]
                 )
             shipping_address = ShippingAddress(
-                email=u'email@example.com',
+                email_1=u'email@example.com',
                 nick_name=u'nickname',
                 first_name=u'姓',
                 last_name=u'名',
@@ -266,6 +276,7 @@ class TicketsUtilsTest(TestCase):
                 shipping_address=shipping_address,
                 total_amount=5000,
                 created_at=datetime(2012, 10, 30, 12, 34, 56),
+                issued_at=datetime(2012, 11, 1, 12, 34, 56),
                 items=[]
                 )
             ordered_product = OrderedProduct(
@@ -288,6 +299,27 @@ class TicketsUtilsTest(TestCase):
                     ]
                 )
             order.items.append(ordered_product)
+            cart = Cart(
+                _order_no='000000000000',
+                payment_delivery_pair=sales_segment.payment_delivery_method_pairs[0],
+                shipping_address=shipping_address,
+                created_at=datetime(2012, 10, 30, 12, 34, 56),
+                system_fee=0.,
+                products=[]
+                )
+            carted_product = CartedProduct(
+                cart=cart,
+                product=product,
+                quantity=1,
+                items=[
+                    CartedProductItem(
+                        product_item=product.items[0],
+                        quantity=1,
+                        seats=[seat]
+                        )
+                    ]
+                )
+            cart.products.append(carted_product)
             for k, v in locals().iteritems():
                 setattr(self, k, v)
         _()
@@ -365,7 +397,7 @@ class TicketsUtilsTest(TestCase):
             u"発券番号": None 
             }
         for k in expected:
-            self.assertEqual(expected[k], out[k], k.encode('utf-8'))
+            self.assertEqual(expected[k], out[k], (u"%s: expected %s, got %s" % (k, expected[k], out[k])).encode('utf-8'))
 
     def test_build_dicts_from_ordered_product_item(self):
         from ticketing.tickets.utils import build_dicts_from_ordered_product_item
@@ -437,13 +469,95 @@ class TicketsUtilsTest(TestCase):
             u"受付番号": u"000000000000",
             u"受付日時": u"2012年 10月 30日 (火) 12時 34分",
             u"受付日時s": u"2012/10/30 (火) 12:34",
+            u"発券日時": u"2012年 11月 01日 (木) 12時 34分",
+            u"発券日時s": u"2012/11/01 (木) 12:34",
             u"発券番号": None,
             }
         out = build_dicts_from_ordered_product_item(self.order.items[0].ordered_product_items[0])
         self.assertEqual(1, len(out))
         self.assertEqual(self.seat, out[0][0])
         for k in expected:
-            self.assertEqual(expected[k], out[0][1][k], k.encode('utf-8'))
+            self.assertEqual(expected[k], out[0][1][k], (u"%s: expected %s, got %s" % (k, expected[k], out[0][1][k])).encode('utf-8'))
+
+    def test_build_dicts_from_carted_product_item(self):
+        from ticketing.tickets.utils import build_dicts_from_carted_product_item
+        expected = {
+            u"organization": {
+                u"name": u"組織名",
+                u"code": u"RT"
+                },
+            u"event": {
+                u"code": u"RTTST",
+                u"title": u"イベント名",
+                u"abbreviated_title": u"イベント名略称"
+                },
+            u"performance": {
+                u"name": u"パフォーマンス名",
+                u"code": u"RTTST0000000",
+                u"open_on": {
+                    u"year": 2012, u"month": 12, u"day": 31,
+                    u"hour": 10, u"minute": 1, u"second": 2, 
+                    u"weekday": 0, 
+                    },
+                u"start_on": {
+                    u"year": 2012, u"month": 12, u"day": 31,
+                    u"hour": 11, u"minute": 3, u"second": 4, 
+                    u"weekday": 0, 
+                    },
+                u"end_on": None, 
+                },
+            u"venue": {
+                u"name": u"会場名",
+                u"sub_name": u"サブ会場名"
+                },
+            u"stock": {
+                u"quantity": 100
+                },
+            u"stockStatus": {
+                u"quantity": 98,
+                },
+            u"stockHolder": {
+                u"name": u"stock_holder"
+                },
+            u"stockType": {
+                u"name": u"S席",
+                u"type": 0,
+                u"display_order": 0,
+                u"quantity_only": 0
+                },
+            u"seat": {
+                u"l0_id": u"l0_id",
+                u"name": u"seat_name",
+                u"seat_no": u"seat_no"
+                },
+            u"イベント名": u"イベント名",
+            u"パフォーマンス名": u"パフォーマンス名",
+            u"対戦名": u"パフォーマンス名",
+            u"会場名": u"会場名",
+            u"公演コード": u"RTTST0000000",
+            u"開催日": u"2012年 12月 31日 (月)",
+            u"開場時刻": u"10時 01分",
+            u"開場時刻s": u"10:01",
+            u"開始時刻": u"11時 03分",
+            u"開始時刻s": u"11:03",
+            u"終了時刻": u"",
+            u"席種名": u"S席",
+            u"席番": u"seat_name",
+            u"注文番号": u"000000000000",
+            u"注文日時": u"2012年 10月 30日 (火) 12時 34分",
+            u"注文日時s": u"2012/10/30 (火) 12:34",
+            u"受付番号": u"000000000000",
+            u"受付日時": u"2012年 10月 30日 (火) 12時 34分",
+            u"受付日時s": u"2012/10/30 (火) 12:34",
+            u"発券日時": u"\ufeff{{発券日時}}\ufeff",
+            u"発券日時s": u"\ufeff{{発券日時s}}\ufeff",
+            u"発券番号": None,
+            }
+        out = build_dicts_from_carted_product_item(self.cart.products[0].items[0], now=datetime(2012, 10, 30, 12, 34, 56))
+        self.assertEqual(1, len(out))
+        self.assertEqual(self.seat, out[0][0])
+        for k in expected:
+            self.assertEqual(expected[k], out[0][1][k], (u"%s: expected %s, got %s" % (k, expected[k], out[0][1][k])).encode('utf-8'))
 
 class TicketsCleanerTest(TestCase):
     def testTransformApplier(self):

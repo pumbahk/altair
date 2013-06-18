@@ -1,4 +1,6 @@
 ## for viewlet
+import logging
+logger = logging.getLogger(__name__)
 from pyramid.view import render_view_to_response
 from markupsafe import Markup
 from ..viewlet import api as va
@@ -9,6 +11,8 @@ from ..tag.api import get_tagmanager
 from ..asset.api import set_taglabel
 from ..topic.models import Topic
 from ..topic.models import Topcontent
+
+from zope.deprecation import deprecate
 
 def _extract_tags(params, k):
     if k not in params:
@@ -21,14 +25,16 @@ def divide_data(params):
     private_tags = _extract_tags(params, "private_tags")
     return tags, private_tags, params
 
+@deprecate("indivisual viewlet is deprecated use panel.")
 def pagetag_describe_viewlet(request, page):
     va.set_page(request, page)
-    va.set_tags(request, page.tags)
+    va.set_tags(request, page.pageset.tags)
     response = render_view_to_response(request.context, request, name="describe_pagetag")
     if response is None:
         raise ValueError
     return Markup(response.text)
 
+@deprecate("indivisual viewlet is deprecated use panel.")
 def hotword_describe_viewlet(request, page):
     va.set_page(request, page)
     hotwords = HotWord.from_page(page)
@@ -38,6 +44,7 @@ def hotword_describe_viewlet(request, page):
         raise ValueError
     return Markup(response.text)
 
+@deprecate("indivisual viewlet is deprecated use panel.")
 def accesskey_describe_viewlet(request, page):
     va.set_page(request, page)
     accesskeys = page.access_keys
@@ -47,23 +54,7 @@ def accesskey_describe_viewlet(request, page):
         raise ValueError
     return Markup(response.text)
 
-def pageset_describe_viewlet(request, pageset):
-    va.set_event(request, None)
-    va.set_pagesets(request, [pageset])
-    response = render_view_to_response(request.context, request, name="describe_pageset")
-    if response is None:
-        raise ValueError
-    return Markup(response.text)
-
-def event_pageset_describe_viewlet(request, pageset):
-    va.set_event(request, pageset.event)
-    va.set_pagesets(request, [pageset])
-    context = request.registry.getUtility(IRootFactory)(request)
-    response = render_view_to_response(context, request, name="describe_pageset")
-    if response is None:
-        raise ValueError
-    return Markup(response.text)
-
+@deprecate("indivisual viewlet is deprecated use panel.")
 def asset_describe_viewlet(request, pageset):
     tmanager = get_tagmanager("asset", request) ##
     assets = tmanager.search_by_tag_label(pageset.taglabel)
@@ -74,8 +65,10 @@ def asset_describe_viewlet(request, pageset):
         raise ValueError
     return Markup(response.text)
 
-
+@deprecate("indivisual viewlet is deprecated use panel.")
 def topic_describe_viewlet(request, pageset):
+    logger.warn("this is bad")
+    return ""
     va.set_pageset(request, pageset)
     event = pageset.event
     va.set_event(request, event)
@@ -86,7 +79,10 @@ def topic_describe_viewlet(request, pageset):
         raise ValueError
     return Markup(response.text)
 
+@deprecate("indivisual viewlet is deprecated use panel.")
 def topcontent_describe_viewlet(request, pageset):
+    logger.warn("this is bad")
+    return ""
     va.set_pageset(request, pageset)
     topcontents = Topcontent.query.filter_by(bound_page=pageset).order_by("topcontent.kind", "topcontent.subkind", "topcontent.display_order")
     va.set_topcontents(request, topcontents)

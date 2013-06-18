@@ -1,0 +1,21 @@
+## performancelist widget dialog
+##  view function is views.PerformancelistWidgetView.dialog
+##
+<%namespace file="../components.html" name="co"/>
+
+<div class="title">
+  <h1>公演リスト</h1>
+</div>
+
+<div class="box">
+  <table class="table">
+    <tbody>
+      ${co.formfield(form, "kind")}
+      ${co.formfield(form, "mask_performance_date")}
+    </tbody>
+  </table>
+  <button type="button" id="performancelist_submit">登録</button>
+</div>
+
+
+

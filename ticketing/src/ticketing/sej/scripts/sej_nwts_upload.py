@@ -6,26 +6,20 @@
 
 import optparse
 import sys
-import sqlahelper
-
-from datetime import datetime
+import logging.config
 from dateutil import parser as date_parser
-from os.path import abspath, dirname
-
+from pyramid.paster import bootstrap
 from ticketing.sej.nwts import nws_data_send
-sys.path.append(abspath(dirname(dirname(__file__))))
 
-from paste.deploy import loadapp
-
-import logging
-
-logging.basicConfig()
-log = logging.getLogger(__file__)
 
 def main(argv=sys.argv):
-
-    session = sqlahelper.get_session()
-    session.configure(autocommit=True, extension=[])
+    '''
+    NWTS アップローダー
+      ex) 払戻ファイル転送
+        python sej_nwts_upload.py payback.zip -c ticketing.ini -t tpayback.asp -f SEIT020U
+      ex) テンプレートファイル転送
+        python sej_nwts_upload.py payback.zip -c ticketing.ini -t tpayback.asp -f SDMT010U
+    '''
 
     parser = optparse.OptionParser(
         description=__doc__,
@@ -35,23 +29,24 @@ def main(argv=sys.argv):
     parser.add_option('-t', '--type',
         dest='type',
         help='tpayback.asp or ttemplate.asp',
-        metavar='FILE'
+        metavar='TYPE'
     )
     parser.add_option('-f', '--file',
         dest='file',
-        help='select',
-        metavar='FILE'
+        help='File ID (SDMT010U|SEIT020U|TEST010U)',
+        metavar='FILEID'
     )
-    options, args = parser.parse_args(argv[1:])
-
     parser.add_option('-c', '--config',
         dest='config',
         help='Path to configuration file (defaults to $CWD/development.ini)',
-        metavar='FILE'
+        metavar='CONFIG'
     )
+
+    options, args = parser.parse_args(argv[1:])
+
     type = options.type
 
-    if type is None or (type != 'tpayback.asp' and type != 'ttemplate.asp'):
+    if type is None or type not in ('tpayback.asp', 'ttemplate.asp'):
         print 'You must set type tpayback.asp or ttemplate.asp'
         return
 
@@ -66,17 +61,26 @@ def main(argv=sys.argv):
         print 'You must set filename'
         return
 
-    data = open(file).read()
+    if file not in ('SDMT010U', 'SEIT020U', 'TEST010U'):
+        print 'File ID must be SDMT010U (template upload), SEIT020U (refund) or TEST010U (test)'
+        return
 
-    app = loadapp('config:%s' % config, 'main')
-    settings = app.registry.settings
+    data = open(args[0]).read()
 
-    nwts_hostname           = settings['sej.nwts.hostname ']
+    env = bootstrap(config)
+    logging.config.fileConfig(config)
+
+    settings = env['registry'].settings
+
+    nwts_url                = settings['sej.nwts.url']
     terminal_id             = settings['sej.terminal_id']
     password                = settings['sej.password']
+    ca_certs                = settings.get('sej.nwts.ca_certs', None)
+    cert_file               = settings.get('sej.nwts.cert_file', None)
+    key_file                = settings.get('sej.nwts.key_file', None)
 
-    url = nwts_hostname + "/" + type
-    nws_data_send(url=url, data=data, file_id='SDMT010U', terminal_id=terminal_id, password=password)
+    url = nwts_url + "/" + type
+    nws_data_send(url=url, data=data, file_id=options.file, terminal_id=terminal_id, password=password, ca_certs=ca_certs, cert_file=cert_file, key_file=key_file)
 
 if __name__ == u"__main__":
     main(sys.argv)

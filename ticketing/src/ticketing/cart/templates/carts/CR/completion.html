@@ -15,7 +15,7 @@ ${h.get_nickname(request)}
 
 <div class="confirmBox">
   <div class="confirmBoxInner">
-    <h2><img src="${request.static_url('ticketing.cart:static/img/settlement/title_order_number.gif')}" alt="予約番号" width="103" height="30" /></h2>
+    <h2><img src="${request.static_url('ticketing.cart:static/img/settlement/title_order_number.gif')}" alt="受付番号" width="103" height="30" /></h2>
     <div class="confirm-message">
       ${order.order_no}
     </div>
@@ -30,11 +30,13 @@ ${h.get_nickname(request)}
       %for product in order.ordered_products:
       <tr>
         <th scope="row"><img src="${request.static_url('ticketing.cart:static/img/settlement/icon_dummy.gif')}" alt="" width="21" height="21" /> ${product.product.name}</th>
-        <td><strong>${product.quantity}</strong>枚</td>
+        <td><strong>${product.seat_quantity}</strong>枚</td>
         <td>
-          % for seat in product.seats:
-            ${seat['name']}<br/>
-          % endfor
+          % if product.product.sales_segment.seat_choice:
+            % for seat in product.seats:
+              ${seat['name']}<br/>
+            % endfor
+          % endif
         </td>
         <td class="align1">￥${h.format_number(product.product.price * product.quantity)}</td>
       </tr>
@@ -77,7 +79,7 @@ ${h.get_nickname(request)}
 </div>
 <div class="confirmBox">
   <div class="confirmBoxInner">
-    <h2><img src="${request.static_url('ticketing.cart:static/img/settlement/title_reception.gif')}" alt="配送情報" width="103" height="30" /></h2>
+    <h2><img src="${request.static_url('ticketing.cart:static/img/settlement/title_reception.gif')}" alt="お引き取り" width="103" height="30" /></h2>
     <div class="confirm-message">
       ${h.render_delivery_finished_viewlet(request, order)}
     </div>

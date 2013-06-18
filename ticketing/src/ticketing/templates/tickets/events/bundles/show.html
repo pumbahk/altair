@@ -99,7 +99,7 @@
 	  <tr>
 		<th></th>
 		<th><a href="${request.route_path("performances.index", event_id=event.id)}">パフォーマンス</a></th>
-		<th><a href="${request.route_path("products.index", event_id=event.id)}">商品名</th>
+		<th>商品名</th>
 		<th>商品明細名</th>
 		<th>更新日時</th>
 		<th>作成日時</th>
@@ -146,9 +146,10 @@
 <script type="text/javascript" src="${request.static_url("ticketing:static/js/altair/spinner.js")}"></script>
 <script type="text/javascript" src="${request.static_url("ticketing:static/js/tickets/modal/api.js")}"></script>
 <script type="text/javascript">
+  // collect candidates info
+  var candidates = ${preview_item_candidates|n};  //[{pk,name}]
+
   $(function(){
-    // collect candidates info
-    var candidates = ${preview_item_candidates|n};  //[{pk,name}]
     var modalView = false;
     var modelname = "ProductItem";
 
@@ -173,7 +174,7 @@
         header: "チケット券面のpreview",
         callback: function(modalview){
          // append select
-          apps["loadsvg"] = new preview.ComboboxSVGFromModelView({el: modalview.$modalArea, model: apps["preview"].models["params"], modelname: modelname});
+          apps["loadsvg"] = new preview.Combobox3SVGFromModelView({el: modalview.$modalArea, model: apps["preview"].models["params"], modelname: modelname});
           apps["loadsvg"].render("商品選択:", candidates);
           apps["loadsvg"].model.changeHolder({pk: pk, name: modelname})
         }

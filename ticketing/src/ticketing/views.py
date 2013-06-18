@@ -9,7 +9,7 @@ from pyramid.url import route_path
 
 from ticketing.fanstatic import with_bootstrap
 from ticketing.interfaces import IAPIContext
-from ticketing.mobile.interfaces import IMobileRequest
+from altair.mobile.interfaces import IMobileRequest
 
 class Predicate(object):
     def __invert__(self):

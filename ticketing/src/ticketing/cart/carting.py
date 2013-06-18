@@ -1,7 +1,10 @@
 # -*- coding:utf-8 -*-
 import logging
-from .models import Cart, CartedProduct, CartedProductItem, DBSession
-from .api import get_system_fee, is_quantity_only
+from ticketing.core.api import get_channel
+from .models import Cart, CartedProduct, CartedProductItem
+from .api import is_quantity_only
+from .exceptions import CartCreationException
+from .stocker import InvalidProductSelectionException
 
 logger = logging.getLogger(__name__)
 
@@ -13,9 +16,10 @@ class CartFactory(object):
         logger.debug('create cart for ordered products %s' % ordered_products)
         request = self.request
         # Cart
-        # ここでシステム手数料を確定させるのはおかしいので、後の処理で上書きする
-        system_fee = get_system_fee(request)
-        cart = Cart.create(performance_id=performance_id, system_fee=system_fee)
+        # ここでシステム利用料を確定させるのはおかしいので、後の処理で上書きする
+        channel = get_channel(request=request)
+        cart = Cart.create(performance_id=performance_id, channel=channel.v,
+                           browserid=getattr(request, 'browserid', None))
         for ordered_product, quantity in ordered_products:
             logger.debug("carted product for product_id=%s" % (ordered_product.id))
             # CartedProduct
@@ -23,7 +27,11 @@ class CartFactory(object):
             for ordered_product_item in ordered_product.items:
                 # CartedProductItem
                 if str(ordered_product_item.performance_id) != str(performance_id):
+                    logger.debug("invalid product selection: performance_id does not match")
+                    raise InvalidProductSelectionException
+                if ordered_product_item.deleted_at != None:
                     continue
+
                 subtotal_quantity = quantity * ordered_product_item.quantity
                 logger.debug("carted product item for product_item_id=%s, performance_id=%s, quantity=%d" % (ordered_product_item.id, ordered_product_item.performance_id, subtotal_quantity))
                 cart_product_item = CartedProductItem(
@@ -38,7 +46,7 @@ class CartFactory(object):
                     continue
 
                 # 席割り当て
-                item_seats = self.pop_seats(ordered_product_item, quantity, seats)
+                item_seats = self.pop_seats(ordered_product_item, subtotal_quantity, seats)
                 cart_product_item.seats = item_seats
     
         assert len(seats) == 0
@@ -53,6 +61,6 @@ class CartFactory(object):
         my_seats = [seat for seat in seats if seat.stock_id == product_item.stock_id][:quantity]
         if len(my_seats) != quantity:
             logger.error("stock %d, quantity error %d != %d" % (product_item.stock_id, len(my_seats), quantity))
-            raise Exception
+            raise CartCreationException
         map(seats.remove, my_seats)
         return my_seats

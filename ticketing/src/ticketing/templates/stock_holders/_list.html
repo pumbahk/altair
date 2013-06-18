@@ -30,7 +30,7 @@
       % for i, stock_holder in enumerate(stock_holders):
       <% if limit and i >= limit: break %>
       <tr id="stock_holder-${stock_holder.id}" name="${stock_holder.name}" data='${h.json(stock_holder.style)}'>
-        <th><input type="radio" name="stock_holder_id" value="${stock_holder.id}" /></th>
+        <td><input type="radio" name="stock_holder_id" value="${stock_holder.id}" /></td>
         <td>${h.seat_style(stock_holder.style)}</td>
         <td><a href="javascript:edit_stock_holder('${stock_holder.id}');"><span id="name">${stock_holder.name}</span></a></td>
         <td><a href="${request.route_path('accounts.show', account_id=stock_holder.account_id)}"><span id="account_id" value="${stock_holder.account_id}">${stock_holder.account.name}</span></a></td>

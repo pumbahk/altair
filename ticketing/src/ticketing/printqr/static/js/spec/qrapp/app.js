@@ -1,4 +1,19 @@
 describe("QRApp (order: add ticket => print ticket)",  function(){
+  var DummyMessageView = {error: console.log.bind(console), 
+                          info: console.log.bind(console)};
+
+  it("call datastore.clearnBuffer() if clear qrcode input button", function(){
+    var dataStore = new DataStore();
+    var inputView = new QRInputView({datastore: dataStore});
+    dataStore.cleanBuffer = jasmine.createSpy("");
+    var service = {}
+    var appletView = new AppletView({service: service,  datastore: dataStore, appviews: {messageView: DummyMessageView}});
+
+    expect(dataStore.cleanBuffer.callCount).toEqual(0);
+    inputView.clearQRCodeInput();
+    expect(dataStore.cleanBuffer.callCount).toEqual(1);
+  });
+
   describe("print unit have 2kind states.",  function(){
     var dataStore;
     beforeEach(function(){
@@ -42,7 +57,7 @@ describe("QRApp (order: add ticket => print ticket)",  function(){
       it("datastore.print_unit is token then add ticket delegating applet method", function(){
         dataStore.setPrintStrategy("token");
         
-        var target = _makeOne({service: service,  datastore: dataStore, appviews: {messageView: {error: console.log}}});
+          var target = _makeOne({service: service,  datastore: dataStore, appviews: {messageView: {error: console.log, info:console.log}}});
         var ticket = {ticket_template_id: 1}
         target._addTicket(ticket);
 
@@ -58,7 +73,7 @@ describe("QRApp (order: add ticket => print ticket)",  function(){
 
         dataStore.setPrintStrategy("order");
 
-        var target = _makeOne({service: service,  datastore: dataStore, appviews: {messageView: {error: console.log}}});
+          var target = _makeOne({service: service,  datastore: dataStore, appviews: {messageView: {error: console.log, info:console.log}}});
         var ticket = {ticket_template_id: 1}
         target._addTicket(ticket);
 
@@ -73,7 +88,7 @@ describe("QRApp (order: add ticket => print ticket)",  function(){
 
         dataStore.setPrintStrategy("order");
 
-        var target = _makeOne({service: service,  datastore: dataStore, appviews: {messageView: {error: console.log}}});
+          var target = _makeOne({service: service,  datastore: dataStore, appviews: {messageView: {error: console.log, info:console.log}}});
 
         var ticket0 =  {ticket_template_id: 1};
         var ticket1 =  {ticket_template_id: 1};
@@ -132,7 +147,7 @@ describe("QRApp (order: add ticket => print ticket)",  function(){
     };
     it("if print unit is token, then,  call applet printAll, directly", function(){
       service.printAll = jasmine.createSpy("")
-      var target = _makeOne({service: service,  datastore: dataStore, appviews: {messageView: {error: console.log, info: console.log}}});
+      var target = _makeOne({service: service,  datastore: dataStore, appviews: {messageView: DummyMessageView}});
       dataStore.set("printed", true);
       dataStore.setPrintStrategy("token");
 
@@ -154,7 +169,7 @@ describe("QRApp (order: add ticket => print ticket)",  function(){
       });
 
       it("if print unit is order, then,  call printWithBuffer", function(){
-        var target = _makeOne({service: service,  datastore: dataStore, appviews: {messageView: {error: console.log, info: console.log}}});
+        var target = _makeOne({service: service,  datastore: dataStore, appviews: {messageView: DummyMessageView}});
         spyOn(target, "_printAllWithBuffer");
         spyOn(target, "_afterPrintAll");
 
@@ -178,7 +193,7 @@ describe("QRApp (order: add ticket => print ticket)",  function(){
           dataStore.get("ticket_buffers").addTicket(ticket);
           
 
-          var target = _makeOne({service: service,  datastore: dataStore, appviews: {messageView: {error: console.log, info: console.log}}});
+          var target = _makeOne({service: service,  datastore: dataStore, appviews: {messageView: DummyMessageView}});
           dataStore.unbind("change:ticket_template_id");
 
           expect(dataStore.get("ticket_template_id")).toBeNull();
@@ -191,7 +206,7 @@ describe("QRApp (order: add ticket => print ticket)",  function(){
           var ticket = {ticket_template_id: 1, ticket_template_name: "FooParty(自由)"};
           dataStore.get("ticket_buffers").addTicket(ticket);
 
-          var target = _makeOne({service: service,  datastore: dataStore, appviews: {messageView: {error: console.log, info: console.log}}});
+          var target = _makeOne({service: service,  datastore: dataStore, appviews: {messageView: DummyMessageView}});
           dataStore.unbind("change:ticket_template_id");
           
           expect(dataStore.get("print_num", 1));
@@ -210,7 +225,7 @@ describe("QRApp (order: add ticket => print ticket)",  function(){
           dataStore.get("ticket_buffers").addTicket(ticket2);
 
 
-          var target = _makeOne({service: service,  datastore: dataStore, appviews: {messageView: {error: console.log, info: console.log}}});
+          var target = _makeOne({service: service,  datastore: dataStore, appviews: {messageView: DummyMessageView}});
           dataStore.unbind("change:ticket_template_id");
           
           expect(dataStore.get("print_num", 3));
@@ -219,6 +234,164 @@ describe("QRApp (order: add ticket => print ticket)",  function(){
           expect(dataStore.get("print_num", 0));
         });
       });
+    });
+  });
+  describe("TicketBuffer",  function(){
+    var makeOne = function(){return TicketBuffer();};
+
+    it("initial state", function(){
+      var target = makeOne();
+      var result = []
+      target.consumeAll(function(buf, tid, name){ result.push(buf)});
+
+      expect(result).toEqual(result, []);
+    });
+
+    it("add one", function(){
+      var target = makeOne();
+      var result = []
+
+      var ticket = {ticket_template_id: 1, ticket_template_name: "ticket"};
+      target.addTicket(ticket);
+      target.consumeAll(function(buf, tid, name){ result.push(buf)});
+
+      expect(result.length).toEqual(1);
+      expect(result).toEqual([[ticket]])
+    });
+    it("add remove add", function(){
+      var target = makeOne();
+      var result = []
+
+      var ticket = {ticket_template_id: 1, ticket_template_name: "ticket"};
+      target.addTicket(ticket);
+      target.removeTicket(ticket);
+      target.addTicket(ticket);
+      target.consumeAll(function(buf, tid, name){ result.push(buf)});
+
+      expect(result.length).toEqual(1);
+      expect(result).toEqual([[ticket]])
+    });
+    it("complex", function(){
+      var target = makeOne();
+      var result = []
+
+      var ticket0 = {ticket_template_id: 1, ticket_template_name: "ticket"};
+      target.addTicket(ticket0);
+      var ticket1 = {ticket_template_id: 1, ticket_template_name: "ticket"};
+      target.addTicket(ticket1);
+
+      target.removeTicket(ticket0);
+      target.consumeAll(function(buf, tid, name){ result.push(buf)});
+
+      expect(result.length).toEqual(1);
+      expect(result).toEqual([[ticket1]])
+    });
+  });
+  describe("select printing ticket (ui)",  function(){
+    var makeOne = function(opts){
+      return new PrintableTicketsSelectView(opts);
+    };
+
+    it("draw printed ticket. this is checked", function(){
+      var datastore = new DataStore();
+      datastore.get("ticket_buffers").addTicket = jasmine.createSpy("");
+
+      var ticket = {
+        printed_at: Date(), 
+        codeno: 1111, 
+        ticket_name: "this-is-printed. not-checked", 
+        ordered_product_item_token_id: 1
+      };
+      var result = makeOne({datastore: datastore})._createRow(ticket, 0)
+
+      expect(result.find(":checked").length).toEqual(0);
+      var ticketBuffer = datastore.get("ticket_buffers");
+      expect(ticketBuffer.addTicket.callCount).toEqual(0);
+    });
+    it("draw unprinted ticket. this is not checked", function(){
+      var datastore = new DataStore();
+      datastore.get("ticket_buffers").addTicket = jasmine.createSpy("");
+
+      var ticket = {
+        printed_at: null, 
+        codeno: 2111, 
+        ticket_name: "this-is-unprinted-ticket", 
+        ordered_product_item_token_id: 2
+      };
+      var result = makeOne({datastore: datastore})._createRow(ticket, 0)
+
+      expect(result.find(":checked").length).toEqual(1);
+      var ticketBuffer = datastore.get("ticket_buffers");
+      expect(ticketBuffer.addTicket.callCount).toEqual(1);
+    })
+    it("after draw checked ticket is added", function(){
+      var datastore = new DataStore();
+      datastore.get("ticket_buffers").addTicket = jasmine.createSpy("");
+
+      var tickets = [
+        {
+          printed_at: Date(), 
+          codeno: 1111, 
+          ticket_name: "printed1", 
+          ordered_product_item_token_id: 1
+        }, 
+        {
+          printed_at: Date(), 
+          codeno: 1112, 
+          ticket_name: "printed2", 
+          ordered_product_item_token_id: 2
+        }, 
+        {
+          codeno: 2111, 
+          printed_at: null, 
+          ticket_name: "unprinted", 
+          ordered_product_item_token_id: 3
+        }
+      ];
+      var doc = $('<div>').append('<div id="printable_tickets_box">');
+      var target = makeOne({el: doc, datastore: datastore});
+      target.draw(tickets);     
+
+      var ticketBuffer = datastore.get("ticket_buffers");
+      expect(ticketBuffer.addTicket.callCount).toEqual(1);
+    });
+    it("after draw. and toggle checkbox, ticket is removed from buffer", function(){
+      var datastore = new DataStore();
+      datastore.get("ticket_buffers").addTicket = jasmine.createSpy("");
+      datastore.get("ticket_buffers").removeTicket = jasmine.createSpy("");
+
+      var tickets = [
+        {
+          printed_at: Date(), 
+          codeno: 1111, 
+          ticket_name: "printed1", 
+          ordered_product_item_token_id: 1
+        }, 
+        {
+          printed_at: Date(), 
+          codeno: 1112, 
+          ticket_name: "printed2", 
+          ordered_product_item_token_id: 2
+        }, 
+        {
+          printed_at: null, 
+          codeno: 2111, 
+          ticket_name: "unprinted", 
+          ordered_product_item_token_id: 3
+        }
+      ];
+      var doc = $('<div>').append('<div id="printable_tickets_box">');
+      var target = makeOne({el: doc, datastore: datastore});
+      target.draw(tickets);     
+
+      var ticketBuffer = datastore.get("ticket_buffers");
+      expect(ticketBuffer.removeTicket.callCount).toEqual(0);
+
+      var checked = target.$el.find('input[type="checkbox"]:checked').eq(0);
+      checked.attr("checked", false);
+      target.onToggleCheckBox(checked);
+
+      expect(ticketBuffer.removeTicket.callCount).toEqual(1);
     });
   });
 });

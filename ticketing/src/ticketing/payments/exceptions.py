@@ -9,3 +9,8 @@ class PaymentPluginException(Exception):
         self.message = message
         self.order_no = order_no
         self.back_url = back_url
+
+class PaymentDeliveryMethodPairNotFound(Exception):
+    """
+    不思議な経路をたどるなどしてPDMPが取得できない.
+    """

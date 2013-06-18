@@ -1499,7 +1499,7 @@
 .settlementBoxInner2 {
 	height: 1%;
 	overflow: hidden;
-	padding: 0 16px 10px 12px;
+	padding: 0 8px 10px 12px;
 	background: url(../img/settlement/bg_box_top_02.gif) no-repeat 0 0;
 }
 
@@ -1527,14 +1527,12 @@
 }
 
 #settlementOperation .settlementOperationPaneInner {
-  width: 906px;
 	height: 500px;
 	overflow: hidden;
 }
 
 #settlementOperation .settlementOperationPaneInner .settlementOperationPaneInnerContent {
 	position: relative;
-	width: 1298px;
 }
 
 #selectSeatType {
@@ -1601,6 +1599,7 @@
 	padding: 0 0;
 	height: 26px;
 	position: relative;
+	cursor: pointer;
 }
 
 #selectSeatType .seatListContainer li .seatListItemInner .seatColor {
@@ -1634,15 +1633,18 @@
 	text-align: center;
 }
 
-#selectSeatType .seatListContainer li.seatEven .seatListItemInner {
-	background: url(../img/settlement/bg_seat_even.gif) no-repeat 0 0;
-}
-
+#selectSeatType .seatListContainer li.seatEven .seatListItemInner,
 #selectSeatType .seatListContainer li.seatOdd .seatListItemInner {
 	background: url(../img/settlement/bg_seat_even.gif) no-repeat 0 0;
 }
 
-#selectSeatType .seatListContainer li.selected .seatListItemInner {
+#selectSeatType .seatListContainer li.seatEven .seatListItemInner:hover,
+#selectSeatType .seatListContainer li.seatOdd .seatListItemInner:hover {
+	background: url(../img/settlement/bg_seat_odd.gif) no-repeat 0 0;
+}
+
+#selectSeatType .seatListContainer li.selected .seatListItemInner,
+#selectSeatType .seatListContainer li.selected .seatListItemInner:hover {
 	filter: alpha(opacity=100);
 	-moz-opacity: 1.0;
 	opacity: 1.0;
@@ -1665,6 +1667,7 @@
 	margin: 0 0;
 	background: url(../img/settlement/btn_select_buy.small.gif) no-repeat 0 0;
 	border: none;
+	cursor: pointer;
 }
 
 #selectSeatType .selectProduct .btn-select-buy:hover {
@@ -1686,6 +1689,7 @@
 	margin: 0 0;
 	background: url(../img/settlement/btn_entrust_buy.small.gif) no-repeat 0 0;
 	border: none;
+	cursor: pointer;
 }
 
 #selectSeatType .selectProduct .btn-entrust-buy:hover {
@@ -1825,7 +1829,7 @@
 	position: absolute;
 	top: 0px;
 	left: 392px;
-	width: 865px;
+	width: 513px;
 	height: 490px;
 	margin-bottom: 10px;
 	border: 1px solid #eee;
@@ -1954,6 +1958,7 @@
 	margin: 0 0;
 	background: url(../img/settlement/btn_select.small.gif) no-repeat 0 0;
 	border: none;
+	cursor: pointer;
 }
 
 #selectSeat.focused .btn-select-seat:hover {
@@ -1984,6 +1989,7 @@
 	margin: 0 0;
 	background: url(../img/settlement/btn_cancel.small.gif) no-repeat 0 0;
 	border: none;
+	cursor: pointer;
 }
 
 #cancelSeat.focused .btn-cancel:hover {
@@ -2353,7 +2359,11 @@
 	width: 100%;
 	padding: 10px;
 	border-bottom: 1px solid #f2f2e5;
+}
+
+#confirmDelivery td label {
 	font-weight: bold;
+	display: inline-block;
 }
 
 /* メールマガジンの配信 */

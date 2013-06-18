@@ -1,0 +1,22 @@
+<h3>${salessegment.group.name}</h3>
+<table class="table table-describe table-bordered">
+  <tbody>
+    <tr>
+      <th rowspan="3">販売区分情報</th>
+      <th>販売区分名</th><td>
+        <a href="#">${salessegment.group.name}</a>
+      </td>
+      <th>backend id</th><td>${salessegment.backend_id}</td>
+    </tr>
+    <tr>
+      <th>作成日時</th><td>${h.base.jdatetime(salessegment.created_at)}</td>
+      <th>更新日時</th><td>${h.base.jdatetime(salessegment.updated_at)}</td>
+    </tr>
+    <tr>
+      <th>販売期間</th><td colspan="3">${h.term_datetime(salessegment.start_on, salessegment.end_on)}</td>
+    </tr>
+  </tbody>
+</table>
+
+${panel("model_action_buttons", salessegment, modeljname=u"販売区分", modelname="salessegment", _query=dict(performance=salessegment.performance.id,performance_id=salessegment.performance.id, endpoint=request.url))}
+

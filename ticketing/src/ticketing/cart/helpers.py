@@ -18,6 +18,19 @@ from .api import get_nickname
 
 logger = logging.getLogger(__name__)
 
+# これはcart以外でも使うのではないだろうか
+def form_log(request, message):
+    """ フォーム内容をログ書き出し
+    """
+    values = request.params.items()
+    from pprint import pprint
+    from StringIO import StringIO
+    buff = StringIO()
+    pprint(values, buff)
+    values = buff.getvalue()
+
+    logger.info("%s: \n%s" % (message, values))
+
 def cart_timeout(request):
     return request.registry.settings['altair_cart.expire_time']
 
@@ -65,17 +78,16 @@ def format_number(num, thousands=","):
 def format_currency(num, thousands=","):
     return u"￥" + format_number(num, thousands)
 
-def build_unit_template(product, performance_id):
-    items = product.items_by_performance_id(performance_id)
-    if len(items) == 1:
-        if items[0].quantity == 1:
+def build_unit_template(product_items):
+    if len(product_items) == 1:
+        if product_items[0].quantity == 1:
             return u"{{num}}枚"
         else:
-            return u"%d×{{num}}枚" % items[0].quantity
+            return u"%d×{{num}}枚" % product_items[0].quantity
     else:
         return u"(%s)×{{num}}" % u" + ".join(
-            u"%s:%d枚" % (escape(item.stock_type.name), item.quantity)
-            for item in items)
+            u"%s:%d枚" % (escape(product_item.stock_type.name), product_item.quantity)
+            for product_item in product_items)
 
 def products_filter_by_salessegment(products, sales_segment):
     if sales_segment is None:
@@ -129,14 +141,13 @@ def render_payment_finished_viewlet(request, order):
     return Markup(response.text)
 
 
-def product_name_with_unit(product, performance_id):
-    items = product.items_by_performance_id(performance_id)
-    if len(items) == 1:
+def product_name_with_unit(product_items):
+    if len(product_items) == 1:
         return None
     else:
         return u"(%s)" % (u" + ".join(
-            u"%s:%d枚" % (escape(item.stock_type.name), item.quantity)
-            for item in items))
+            u"%s:%d枚" % (escape(product_item.stock_type.name), product_item.quantity)
+            for product_item in product_items))
 
 def get_availability_text(quantity):
     if quantity == 0:

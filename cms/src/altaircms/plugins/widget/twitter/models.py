@@ -19,7 +19,7 @@ class TwitterWidget(Widget):
     implements(IWidget)
     type = "twitter"
 
-    template_name = "altaircms.plugins.widget:twitter/render.mako"
+    template_name = "altaircms.plugins.widget:twitter/render.html"
     __tablename__ = "widget_twitter"
     __mapper_args__ = {"polymorphic_identity": type}
     query = DBSession.query_property()
@@ -27,6 +27,7 @@ class TwitterWidget(Widget):
     search_query = sa.Column(sa.Unicode(255), doc=u"検索ワード")
     title = sa.Column(sa.Unicode(255), doc=u"タイトル")
     subject = sa.Column(sa.Unicode(255), doc=u"見出し") ## caption
+    data_widget_id = sa.Column(sa.Unicode(255), doc=u"ツイッターウィジェットID(data-widget-id)")
 
     id = sa.Column(sa.Integer, sa.ForeignKey("widget.id"), primary_key=True)
 

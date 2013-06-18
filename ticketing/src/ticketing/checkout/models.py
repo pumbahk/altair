@@ -9,6 +9,7 @@ import sqlalchemy.orm as orm
 
 from ticketing.models import Base, BaseModel, WithTimestamp, LogicallyDeleted, Identifier
 from ticketing.cart.models import Cart
+from ticketing.utils import StandardEnum
 
 
 class CheckoutItem(Base, BaseModel, WithTimestamp, LogicallyDeleted):
@@ -42,3 +43,16 @@ class Checkout(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     orderDate = sa.Column(sa.DateTime)
     items = orm.relationship('CheckoutItem', backref="checkout")
     cart = orm.relationship('Cart', backref=orm.backref('checkout', uselist=False), uselist=False)
+    sales_at = sa.Column(sa.DateTime, nullable=True)
+
+
+class RakutenCheckoutSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
+    __tablename__ = 'RakutenCheckoutSetting'
+
+    id = sa.Column(Identifier, primary_key=True)
+    organization_id = sa.Column(Identifier, sa.ForeignKey('Organization.id'))
+    organization = orm.relationship('Organization', backref='rakuten_checkout_settings')
+    service_id = sa.Column(sa.Unicode(255))
+    secret = sa.Column(sa.Unicode(255))
+    auth_method = sa.Column(sa.Unicode(255))
+    channel = sa.Column(sa.Integer)

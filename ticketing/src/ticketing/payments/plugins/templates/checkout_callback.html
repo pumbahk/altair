@@ -1,0 +1,21 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="ja" lang="ja">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+  <meta http-equiv="content-style-type" content="text/css" />
+  <meta http-equiv="content-script-type" content="text/javascript" />
+  <script type="text/javascript">
+    window.onload = function() {
+      document.getElementById('checkout-form').submit();
+    };
+  </script>
+</head>
+<body>
+  <form id="checkout-form" action="${request.route_url('payment.finish')}" method="post">
+    <input id="csrf_token" name="csrf_token" type="hidden" value="${csrf_token}">
+    % for id in mailmagazine_ids:
+    <input type="hidden" name="mailmagazine" id="mailmagazine-${id}" value="${id}" />
+    % endfor
+  </form>
+</body>
+</html>

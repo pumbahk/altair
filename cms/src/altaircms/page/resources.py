@@ -12,6 +12,11 @@ from altaircms.tag.api import put_tags
 from . import helpers as h
 from . import models
 from . import subscribers
+from pyramid.decorator import reify
+from .models import PageType
+from altaircms.auth.models import RolePermission
+logger = logging.getLogger()
+
 # from .api import get_static_page_utility
 # from altaircms.auth.api import get_or_404
 
@@ -27,7 +32,6 @@ def delete_data(self, obj, flush=False):
 
 class WDispositionResource(security.RootFactory):
     Page = models.Page
-    Form = wf.WidgetDispositionSaveForm
     add = add_data
     delete = delete_data
 
@@ -49,8 +53,34 @@ class WDispositionResource(security.RootFactory):
         self.delete(wdisposition)
 
 
-
 class PageResource(security.RootFactory):
+    @reify
+    def pagetype(self):
+        if "pagetype" in self.request.params:
+            return self.request.allowable(PageType).filter(PageType.name==self.request.params["pagetype"]).first()
+        elif "pagetype" in self.request.matchdict:
+            return self.request.allowable(PageType).filter(PageType.name==self.request.matchdict["pagetype"]).first()
+
+    def get_access_status_from_pagetype(self, pagetype, important_name, name):
+        if pagetype is None:
+            logger.info("pagetype is not found")
+            return False
+        try:
+            if pagetype.is_important:
+                status = self.request.user.has_permission_by_name(important_name)
+            else:
+                status = self.request.user.has_permission_by_name(name)
+            if not status:
+                logger.info("permission is not found. url={0}, pagetype={1}, user={2}".format(self.request.url, self.request.user.id, pagetype.id))
+            return status
+        except Exception as e:
+            logger.exception(str(e))
+            return False
+        
+    def get_access_status(self, important_name, name):
+        return self.get_access_status_from_pagetype(self.pagetype, important_name, name)
+
+    ## todo. obsolute all
     Page = models.Page
     add = add_data
     delete = delete_data
@@ -63,31 +93,30 @@ class PageResource(security.RootFactory):
         return renderable.LayoutRender(layout)
 
     def create_page(self, form):
-        tags, private_tags, params =  h.divide_data(form.data)
-        page = models.Page.from_dict(params)
-        put_tags(page, "page", tags, private_tags, self.request)
+        page = models.Page.from_dict(form.data)
         pageset = models.PageSet.get_or_create(page)
 
+        page.title = form.data['title_prefix'] + form.data['title'] + form.data['title_suffix']
         if form.data["parent"]:
             pageset.parent = form.data["parent"]
+        if form.data["genre"]:
+            pageset.genre = form.data["genre"]
 
         self.add(page, flush=True)
-        subscribers.notify_page_create(self.request, page, params)
+        subscribers.notify_page_create(self.request, page, form.data)
+
+        if page.layout.disposition_id:
+            page.layout.default_disposition.bind_page(page, DBSession)
+
         notify_model_create(self.request, page, form.data)
         notify_model_create(self.request, pageset, form.data)
         return page
 
     def update_page(self, page, form):
-        tags, private_tags, params =  h.divide_data(form.data)
+        params = form.data
         for k, v in params.iteritems():
             setattr(page, k, v)
-        page.pageset.event = params["event"]
         page.pageset.url = params["url"]
-        put_tags(page, "page", tags, private_tags, self.request)
-
-        if form.data["parent"]:
-            page.pageset.parent = form.data["parent"]
-
         self.add(page, flush=True)
         subscribers.notify_page_update(self.request, page, params)
         return page
@@ -99,16 +128,23 @@ class PageResource(security.RootFactory):
     def delete_pageset(self, pageset):
         for page in pageset.pages:
             subscribers.notify_page_delete(self.request, page)
+        pageset.delete()
         self.delete(pageset)
 
     def clone_page(self, page):
         cloned = page.clone(DBSession, request=self.request)
-        subscribers.notify_page_create(self.request, cloned)
+        subscribers.notify_page_create(self.request, cloned, {"tags":"", "private_tags": "",  "mobile_tags": ""}) #xxx:
         return cloned
 
 class StaticPageResource(security.RootFactory):
     def create_static_page(self, data):
-        static_page = models.StaticPage(name=data["name"])
+        static_page = models.StaticPage(name=data["name"],
+                                        layout=data["layout"],
+                                        label=data["label"],
+                                        publish_begin=data["publish_begin"],
+                                        publish_end=data["publish_end"],
+                                        interceptive=data["interceptive"]
+                                        )
         DBSession.add(static_page)
         notify_model_create(self.request, static_page, data)
         DBSession.flush()

@@ -6,17 +6,11 @@
 
 <script type="text/javascript">
   $(function() {
-    $('#modal-stock_holder').on('shown', function(){
-      $(this).css('max-height', '750px')
-          .css('margin-top', ($(this).outerHeight()/2)*-1)
-          .css('margin-left',($(this).outerWidth()/2)*-1);
-    });
-
     $("#modal-stock_holder #text_color").decentcolorpicker();
   });
 </script>
 
-<div id="modal-stock_holder" class="modal fade">
+<div id="modal-stock_holder" class="modal hide">
   <div class="modal-header">
     <a class="close" data-dismiss="modal">&times;</a>
     <h3>配券先</h3>

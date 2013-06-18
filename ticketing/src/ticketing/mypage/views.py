@@ -6,7 +6,7 @@ from pyramid.httpexceptions import HTTPNotFound, HTTPFound
 from pyramid.response import Response
 from ticketing.core.models import Order, OrderedProduct, OrderedProductItem, ProductItem, Performance, Seat, TicketPrintHistory
 from ticketing.core import models as m
-from ticketing.rakuten_auth.api import authenticated_user, forget
+from altair.rakuten_auth.api import authenticated_user, forget
 from ticketing.cart import api
 from .helpers import make_order_data
 from ticketing.orderreview.views import build_qr_by_token_id, order_review_qr_image
@@ -35,7 +35,7 @@ class MyPageView(object):
     def index(self):
 
         openid = authenticated_user(self.request)
-        user = api.get_or_create_user(self.request, openid['clamed_id'])
+        user = api.get_or_create_user(self.request, openid['claimed_id'])
 
         q = self.request.POST.get('q')
         sort = self.request.GET.get('sort', 'Order.id')
@@ -82,7 +82,7 @@ class MyPageView(object):
     def order(self):
 
         openid = authenticated_user(self.request)
-        user = api.get_or_create_user(self.request, openid['clamed_id'])
+        user = api.get_or_create_user(self.request, openid['claimed_id'])
         order_id = int(self.request.matchdict.get('order_id', 0))
 
         from sqlalchemy.orm.exc import NoResultFound
@@ -124,7 +124,7 @@ class MyPageView(object):
     @view_config(route_name='mypage.qr_print', renderer='mypage/qr.html', xhr=False, permission="view")
     def show_qr_page(self):
         openid = authenticated_user(self.request)
-        user = api.get_or_create_user(self.request, openid['clamed_id'])
+        user = api.get_or_create_user(self.request, openid['claimed_id'])
         
         ticket = build_qr_by_token_id(self.request.params['order_no'], self.request.params['seat'])
         

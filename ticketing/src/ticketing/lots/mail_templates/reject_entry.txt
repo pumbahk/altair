@@ -1,14 +1,38 @@
-先日お申込みいただきました「イベント名～先行」に関しまして、
-抽選の結果、お客様は残念ながら落選されました。
+先日お申込みいただきました「${lot_entry.lot.name}」に関しまして、
+抽選の結果、お客様は残念ながら落選となりましたのでご連絡いたします。
 
 この度はお申込みいただきありがとうございました。
 またのご利用を、お待ちしております。
 
+-----
+■お名前カナ
+${shipping_address.last_name_kana} ${shipping_address.first_name_kana}
+■電話番号
+${shipping_address.tel_1}
+■メールアドレス
+${shipping_address.email_1}
+-----
+■受付番号
+${lot_entry.entry_no}
+
+■受付日
+${h.japanese_date(lot_entry.created_at)}
+-----
+■イベント名：${lot_entry.lot.event.title}
+■受付名称：${lot_entry.lot.name}
+■抽選結果確認ページ： https://rt.tstar.jp/lots/review
+
+
 ---------------
 お問い合わせ
-メアドor電話番号
 ---------------
+■お問い合わせ
+  メール：support@ticket.rakuten.co.jp
+　
+■メールマガジン(楽天チケットニュース)の配信をご希望される方はこちら
+　 http://emagazine.rakuten.co.jp/#17
 
-■株式会社チケットスター
-■東京都品川区東五反田5-21-15　メタリオンOSビル7F
+■キャンセル・変更について
+　抽選結果についての事前お問い合わせには一切お答えいたしかねますので、
+　ご了承のほど、お願いいたします。
 

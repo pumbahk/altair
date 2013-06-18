@@ -1,25 +1,28 @@
 # coding: utf-8
-import wtforms.form as form
+from altaircms.formhelpers import Form
 import wtforms.fields as fields
 import wtforms.validators as validators
 import wtforms.widgets as widgets
-from altaircms.helpers.formhelpers import dynamic_query_select_field_factory
+from altaircms.formhelpers import dynamic_query_select_field_factory
+from ..layout.models import Layout
 from . import models
 
 
 def disposition_query_filter(model, request, query):
     if getattr(request, "organization", None):
         query = query.filter_by(organization_id=request.organization.id)
+        if getattr(request, "page", None):
+            query = query.join(Layout, models.WidgetDisposition.layout_id==Layout.id).filter(Layout.pagetype_id==request.page.pageset.pagetype_id)
     return model.enable_only_query(request.user, qs=query)
 
-class WidgetDispositionSelectForm(form.Form):
+class WidgetDispositionSelectForm(Form):
     disposition = dynamic_query_select_field_factory(
         models.WidgetDisposition, 
         dynamic_query=disposition_query_filter, 
         get_label= lambda obj: u"%s (%s)" % (obj.title, obj.save_type), 
         allow_blank=False)
 
-class WidgetDispositionSaveForm(form.Form):
+class WidgetDispositionSaveForm(Form):
     page = fields.IntegerField(widget=widgets.HiddenInput(), validators=[validators.Required()])
     owner_id = fields.IntegerField(widget=widgets.HiddenInput())
     title = fields.TextField(label=u"保存時のwidget layout名", validators=[validators.Required()])
@@ -27,3 +30,11 @@ class WidgetDispositionSaveForm(form.Form):
                (models.StructureSaveType.deep, u"widgetのデータの内容も保存")]
     save_type = fields.SelectField(label=u"保存方法", choices=choices)
     is_public = fields.BooleanField(label=u"他の人に公開する")
+
+class WidgetDispositionSaveDefaultForm(Form):
+    page = fields.IntegerField(widget=widgets.HiddenInput(), validators=[validators.Required()])
+    title = fields.TextField(label=u"保存時のwidget layout名", validators=[validators.Required()])
+    page = fields.IntegerField(widget=widgets.HiddenInput(), validators=[validators.Required()])
+    choices = [(models.StructureSaveType.shallow, u"widgetの位置のみ保存"),
+               (models.StructureSaveType.deep, u"widgetのデータの内容も保存")]
+    save_type = fields.SelectField(label=u"保存方法", choices=choices)

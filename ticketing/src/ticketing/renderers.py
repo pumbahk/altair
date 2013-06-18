@@ -24,15 +24,24 @@ def json_renderer_factory(info):
         return json.dumps(value)
     return _render
 
+def safe_encode(s, encoding='utf-8', errors='replace'):
+    if s is None:
+        return s
+    if isinstance(s, str):
+        return s
+    if isinstance(s, unicode):
+        return s.encode(encoding, errors=errors)
+
 def csv_renderer_factory(info):
-    def _value(value):
-        if isinstance(value, list):
-            return unicode(value[1]).encode('sjis')
-        if isinstance(value, tuple):
-            return unicode(value[1]).encode('sjis')
-        return value
+    default_encoding = 'sjis'
+
+    def _value(value, encoding):
+        if isinstance(value, (list, tuple)):
+            return safe_encode(value[1], encoding)
+        return safe_encode(value, encoding)
     
     def _render(value, system):
+        encoding = value.get('encoding', default_encoding)
         request = system.get('request')
         if request is not None:
             response = request.response
@@ -41,9 +50,9 @@ def csv_renderer_factory(info):
             row_num = 0
             for line in value['data']:
                 if not row_num:
-                    writer.writerow(line.keys())
+                    writer.writerow([safe_encode(s, encoding) for s in line.keys()])
                 row_num += 1
-                writer.writerow([_value(item) for item in line.items()])
+                writer.writerow([_value(item, encoding) for item in line.items()])
             output = f.getvalue()
             f.close()
             ct = response.content_type

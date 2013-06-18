@@ -16,6 +16,7 @@ requires = [
     'pyramid_mailer',
     'pyramid_beaker',
     'pyramid_layout',
+    'pyramid_selectable_renderer >= 0.0.4',
     'pymysql',
     'mako',
     'stucco_evolution',
@@ -41,6 +42,7 @@ requires = [
     'js.tinymce',
     'js.backbone',
     'js.bootstrap==2.1.1',
+    'js.bootstrap-ts',
     'js.jquery_timepicker_addon',
     'js.jquery_colorpicker',
     'js.i18n',
@@ -58,7 +60,6 @@ requires = [
     'beaker >= 1.6.4',
     'mock',
     'tableau >= 0.0.4pre',
-    'uamobile',
     'alembic >= 0.3.3',
     'xlrd',
     'xlwt',
@@ -71,13 +72,28 @@ requires = [
     'redis',
     'beaker-extensions == 0.2.0dev-moriyoshi2',
     'boto',
-    'fluent-logger == 0.3.3moriyoshi',
-    'PIL', # for qrcode.image.pil
+    'fluent-logger == 0.3.3moriyoshi2',
+    'Pillow', # for qrcode.image.pil
     'altair.findable_label', 
     'altair.log',
     "jsonrpclib", 
     "poster",
     "radix",
+    "requests",
+    "altair.auth",
+    "altair.sqla",
+    "altair.exclog",
+    "altair.now",
+    "altair.logicaldeleting",
+    "altair.mq",
+    "altair.pyramid_assets",
+    "altair.pyramid_boto",
+    'altair.pyramid_tz',
+    "altair.mobile",
+    "altair.grid",
+    'altair.saannotation',
+    'altair.queryprofile',
+    'altair.sqlahelper',
     ]
 
 tests_require = [
@@ -91,6 +107,7 @@ extras_require = {
 
 setup(name='ticketing',
       version='0.0',
+      use_date_versioning=True,
       description='ticketing',
       long_description=README + '\n\n' +  CHANGES,
       classifiers=[
@@ -108,15 +125,31 @@ setup(name='ticketing',
       include_package_data=True,
       zip_safe=False,
       install_requires=requires,
+      setup_requires=["altair.versiontools"],
       dependency_links = [
         'file:../commons#egg=altair-commons-0.0',
+        'file:../altair_versiontools#egg=altair.versiontools-1.0',
         "file:../altair_findable_label#egg=altair.findable_label-0.0", 
-        "file:../altair_log#egg=altair.log-0.0", 
+        "file:../altair_log#egg=altair.log-0.0.1", 
+        "file:../altair_auth#egg=altair.auth-1.0", 
+        "file:../altair_sqla#egg=altair.sqla-1.0", 
+        "file:../altair_exclog#egg=altair.exclog-0.0", 
+        "file:../altair_now#egg=altair.now-0.0", 
+        "file:../altair_logicaldeleting#egg=altair.logicaldeleting-0.0", 
+        "file:../altair_mq#egg=altair.mq-0.0", 
+        "file:../altair_pyramid_assets#egg=altair.pyramid_assets-0.0.1",
+        "file:../altair_pyramid_boto#egg=altair.pyramid_boto-0.0.1",
+        "file:../altair_mobile#egg=altair.mobile-0.0.1",
+        "file:../altair_mq#egg=altair.mq-0.0", 
+        "file:../altair_pyramid_tz#egg=altair.pyramid_tz-0.0.0",
+        "file:../altair_rakuten_auth#egg=altair.rakuten_auth-0.0.0",
+        "file:../altair_saannotation#egg=altair.saannotation-0.0",
+        'file:../bundle/js.bootstrap_ts-2.3.2.dev1-py2.7.egg',
         'https://github.com/moriyoshi/tableau/tarball/master#egg=tableau-0.0.4pre2',
         "https://github.com/numpy/numpy/tarball/v1.6.2#egg=numpy-1.6.2",
         'https://github.com/moriyoshi/beaker_extensions/tarball/0.2.0dev-moriyoshi2#egg=beaker-extensions-0.2.0dev-moriyoshi2',
-        'https://github.com/moriyoshi/fluent-logger-python/tarball/0.3.3moriyoshi#egg=fluent-logger-0.3.3moriyoshi',
-        'http://py-radix.googlecode.com/archive/tip.zip#egg=radix-0.5',
+        'https://github.com/moriyoshi/fluent-logger-python/tarball/0.3.3moriyoshi2#egg=fluent-logger-0.3.3moriyoshi2',
+        'http://py-radix.googlecode.com/files/py-radix-0.5.tar.gz#egg=radix-0.5',
       ],
       tests_require=tests_require,
       extras_require=extras_require, 
@@ -134,6 +167,12 @@ setup(name='ticketing',
       check_multicheckout_orders=ticketing.commands.check_multicheckout_orders:main
       populate_order_no=ticketing.commands.populate_order_no:main
       send_sales_reports=ticketing.events.sales_reports.commands:main
+      cancel_auth=ticketing.multicheckout.scripts.cancelauth:main
+      sej_nwts_upload=ticketing.sej.scripts.sej_nwts_upload:main
+      release_carts=ticketing.cart.scripts.release_carts:main
+      rakuten_checkout_sales=ticketing.checkout.commands:rakuten_checkout_sales
+      refund_order=ticketing.orders.commands:refund_order
+      sej_send_refund_file_with_proxy=ticketing.sej.commands:send_refund_file_with_proxy
       """,
       paster_plugins=['pyramid'],
       )

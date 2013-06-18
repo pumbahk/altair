@@ -1,96 +1,53 @@
 # -*- coding:utf-8 -*-
-from pyramid.view import view_config
-from pyramid.httpexceptions import HTTPNotFound
-from altaircms.models import Category
-from altaircms.page.models import PageSet
-from altaircms.topic.models import Topic, Topcontent
-from datetime import datetime
-from . import helpers as h
-from . import api
-from altairsite.search import api as search_api
+from sqlalchemy import asc
+from altaircms.topic.models import TopicTag, PromotionTag, TopcontentTag
+from altaircms.topic.api import get_topic_searcher
+from altaircms.genre.searcher import GenreSearcher
+from altaircms.tag.models import HotWord
+from altairsite.config import usersite_view_config
+from altairsite.mobile.forms import TopForm
+from altairsite.mobile.core.helper import log_info
+from altairsite.mobile.core.eventhelper import EventHelper
+from altaircms.datelib import get_now
 
-def enable_usersite_function(info, request):
-    return request.organization.use_full_usersite if request.organization else False
+@usersite_view_config(route_name='home', request_type="altairsite.tweens.IMobileRequest"
+             , renderer='altairsite.mobile:templates/top/top.mako')
+def main(request):
 
-@view_config(custom_predicates=(enable_usersite_function, ), 
-             route_name="mobile_index", renderer="altaircms:templates/mobile/index.mako")
-def mobile_index(request):
-    today = datetime.now()
-    pageset = PageSet.query.filter(Category.name=="index").filter(PageSet.id==Category.pageset_id).first()
-    if pageset is None:
-        return {"topics": Topic.query.filter_by(id=-1), "picks": Topcontent.query.filter_by(id=-1)}
-    topics = Topic.matched_qs(d=today, kind=u"トピックス", page=pageset)
-    picks = Topcontent.matched_qs(d=today, kind=u"注目のイベント", page=pageset)
-    return {"page": pageset.current(), "topics": topics, "picks":picks}
+    log_info("main", "start")
 
+    form = TopForm()
 
-@view_config(custom_predicates=(enable_usersite_function, ), 
-             route_name="mobile_detail", renderer="altaircms:templates/mobile/detail.mako")
-def mobile_detail(request):
-    today = datetime.now()
-    pageset = PageSet.query.filter_by(id=request.matchdict["pageset_id"]).first()
-    if pageset is None or pageset.event is None:
-        raise HTTPNotFound
-    
-    return {"page": pageset.current(), "event": pageset.event, "performances": pageset.event.performances, 
-            "today": today}
+    topcontent_searcher = get_topic_searcher(request, "topcontent")
+    tag = request.allowable(TopcontentTag).filter_by(label=u"注目のイベント").first()
+    if tag:
+        form.attentions.data = topcontent_searcher.query_publishing_topics(get_now(request), tag)[0:8]
+        log_info("main", "attensions get")
 
+    promo_searcher = get_topic_searcher(request, "promotion")
+    tag = request.allowable(PromotionTag).filter_by(label=u"プロモーション枠").first()
+    if tag:
+        form.promotions.data = promo_searcher.query_publishing_topics(get_now(request), tag)[0:5]
+        log_info("main", "promotions get")
 
-def enable_categories(info, request):
-    return request.matchdict["category"] in ("music", "sports", "stage", "event")
+    topic_searcher = get_topic_searcher(request, "topic")
+    tag = request.allowable(TopicTag).filter_by(label=u"トピックス").first()
+    if tag:
+        form.topics.data = topic_searcher.query_publishing_topics(get_now(request), tag)[0:5]
+        log_info("main", "topics get")
 
-@view_config(route_name="mobile_category", custom_predicates=(enable_categories, enable_usersite_function), 
-             renderer="altaircms:templates/mobile/category.mako")
-def mobile_category(request):
-    today = datetime.now()
-    category_name = request.matchdict["category"]
-    root = Category.query.filter_by(name=category_name).first()
-    if root is None:
-        raise HTTPNotFound
-    picks = Topcontent.matched_qs(d=today, kind=u"注目のイベント", page=root.pageset)
+    today = get_now(request)
+    form.hotwords.data = request.allowable(HotWord).filter(HotWord.term_begin <= today).filter(today <= HotWord.term_end) \
+            .filter_by(enablep=True).order_by(asc("display_order"), asc("term_end")).all()[0:5]
+    log_info("main", "hotwords get")
 
-    topics = Topic.matched_qs(d=today, kind=u"トピックス", page=root.pageset).filter_by(is_global=False)
-    events_on_sale = api.events_on_sale_this_week(request, category_name, today)
-    return {"synonym": h.CATEGORY_SYNONYM.get(category_name), 
-            "picks": picks, 
-            "events_on_sale": events_on_sale, 
-            "root": root, 
-            "topics": topics, 
-            "subcategories": Category.query.filter_by(parent=root)}
+    genre_searcher = GenreSearcher(request)
+    form.genretree.data = genre_searcher.root.children
+    log_info("main", "genretree get")
 
+    log_info("main", "end")
 
-@view_config(custom_predicates=(enable_usersite_function, ), 
-             request_param="q", route_name="mobile_search", 
-             renderer="altaircms:templates/mobile/search.mako")
-def search_by_freeword(context, request):
-    """ フリーワード検索 + categoryごとの数
-    """
-    freeword = request.params["q"]
-    root_category = request.params.get("r")
-    root = Category.query.filter_by(name=root_category).first() if root_category else None
-
-    children = h.get_children_category_from_root(root)
-
-    qs = search_api.search_by_freeword(request, freeword)
-    qs = h.pageset_query_filter_by_root(qs, root)
-
-    classifieds = [(c, qs.filter(PageSet.category==c)) for c in children]
-
-    top = u'<a href="%s">トップ</a>' % request.route_path("mobile_index")
-    breadcrumbs = api.build_breadcrumbs(request, top, root)
-
-    return {"pagesets": qs, "classifieds": classifieds, "synonym": h.CATEGORY_SYNONYM, 
-            "breadcrumbs": breadcrumbs, "freeword":freeword}
-
-from pyramid.renderers import render_to_response
-import os.path
-
-@view_config(custom_predicates=(enable_usersite_function, ), route_name="mobile_semi_static")
-def mobile_semi_static(request):
-    ## normalize
-    filename = request.matchdict["filename"]
-    template_path = os.path.join("altaircms:templates/mobile/static/", filename)
-    if not template_path.endswith(".mako"):
-        template_path = os.path.splitext(template_path)[0]+".mako"
-
-    return render_to_response(template_path, {}, request)
+    return {
+         'form':form
+        ,'helper':EventHelper()
+    }

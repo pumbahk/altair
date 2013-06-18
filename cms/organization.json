@@ -1,11 +1,41 @@
 {
     "comment": "organizationの特定にbackend_idとauth_sourceをkeyにするのが辛くなってきた...", 
     "data": {
-        "ticketstar": {"backend_id": 11,  "auth_source": "oauth"},
-        "rakuten-baseball": {"backend_id": 12, "auth_source": "oauth"}, 
-        "BJ:89ers": {"backend_id": 1, "auth_source": "oauth"}, 
-        "BJ:NH": {"backend_id": 2, "auth_source": "oauth"},
-        "BJ:CR": {"backend_id": 3, "auth_source": "oauth"},
-        "vissel": {"backend_id": 4, "auth_source": "oauth"}
+        "BJ:89ers": {
+            "auth_source": "oauth", 
+            "short_name": "89ers"
+        }, 
+        "BJ:CR": {
+            "auth_source": "oauth", 
+            "short_name": "CR"
+        }, 
+        "BJ:NH": {
+            "auth_source": "oauth", 
+            "short_name": "NH"
+        }, 
+        "demo": {
+            "auth_source": "oauth", 
+            "short_name": "demo"
+        }, 
+        "rakuten-baseball": {
+            "auth_source": "oauth", 
+            "short_name": "rakuten"
+        }, 
+        "ticketstar": {
+            "auth_source": "oauth", 
+            "short_name": "ticketstar"
+        }, 
+        "vissel": {
+            "auth_source": "oauth", 
+            "short_name": "vissel"
+        },
+        "RT": {
+            "auth_source": "oauth", 
+            "short_name": "RT"
+        },
+        "sound-creator": {
+            "auth_source": "oauth",
+            "short_name":  "sound-c"
+        }
     }
 }

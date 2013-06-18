@@ -1,0 +1,25 @@
+[credentials]
+username = rakuten_id
+password = rakuten_id_password
+
+[shipping_address]
+last_name = テスト
+first_name = テスト
+last_name_kana = テスト
+first_name_kana = テスト
+email_1 = moriyoshi+test@ticketstar.jp
+email_1_confirm = moriyoshi+test@ticketstar.jp
+zip = 141-0031
+prefecture = 東京都
+city = 品川区
+address_1 = 西五反田7-1-9
+address_2 = 五反田HSビル9F
+tel_1 = 0123456789
+       
+[credit_card_info]
+card_number = 
+card_holder_name = 
+exp_month = MM
+exp_year = YY
+secure_code = 
+secure_3d_password = 

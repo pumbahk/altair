@@ -11,6 +11,8 @@ def includeme(config):
     config.add_route("ticketlist_widget_update", "/widget/ticketlist/update", factory=TicketlistWidgetResource)
     config.add_route("ticketlist_widget_dialog", "/widget/ticketlist/dialog", factory=TicketlistWidgetResource)
 
+    config.add_route("api.combobox.salessegment", "/widget/ticketlist/api/combobox/salessegment")
+
     settings = {
         "model": TicketlistWidget, 
         "name": TicketlistWidget.type, 

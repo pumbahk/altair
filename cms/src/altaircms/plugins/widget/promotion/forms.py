@@ -1,18 +1,20 @@
 # -*- coding:utf-8 -*-
-import wtforms.form as form
+from altaircms.formhelpers import Form
 import wtforms.fields as fields
-import wtforms.validators as validators
-from altaircms.helpers.formhelpers import dynamic_query_select_field_factory
+from altaircms.formhelpers import dynamic_query_select_field_factory
 from altaircms.plugins.api import get_widget_utility
 from . import models
-from altaircms.topic.models import Kind
+from altaircms.topic.models import PromotionTag
 
-class PromotionWidgetForm(form.Form):
-    kind = dynamic_query_select_field_factory(
-        Kind, allow_blank=False, label=u"タグ的なもの",
-        get_label=lambda obj: obj.name)
-    _choices = [(x, x)for x in  models.PROMOTION_DISPATH.keys()]
-    display_type = fields.SelectField(label=u"プロモーション表示の種類", id="display_type", choices=_choices)
+class PromotionWidgetForm(Form):
+    tag = dynamic_query_select_field_factory(
+        PromotionTag, allow_blank=False, label=u"表示場所",
+        get_label=lambda obj: obj.label)
+    system_tag = dynamic_query_select_field_factory(
+        PromotionTag, allow_blank=True, label=u"ジャンル", break_separate=True, 
+        dynamic_query=lambda model, request, query: query.filter_by(organization_id=None), 
+        get_label=lambda obj: obj.label)
+    display_type = fields.SelectField(label=u"プロモーション表示の種類", id="display_type", choices=[])
 
     def configure(self, request, page):
         utility = get_widget_utility(request, page, models.PromotionWidget.type)

@@ -50,11 +50,26 @@
         'label-inverse'
       ]
     %>
-    % for i, sales_segment in enumerate(event.sales_segments):
-      <span class="label ${label_classes[i%6]}">${sales_segment.name}</span>
+    % for i, sales_segment_group in enumerate(event.sales_segment_groups):
+      <span class="label ${label_classes[i%6]}">${sales_segment_group.name}</span>
     % endfor
     <%include file="/performances/_list.html" args="form=form_performance, performances=event.performances, limit=5" />
   </div>
   % endfor
   ${pager(events)}
+  <script type="text/javascript">
+    var is_sending = {};
+    $("#send_event").click(function(e){
+      var $e = $(e.currentTarget);
+      if(is_sending[$e.attr("href")]){ 
+        return false;
+      }
+      is_sending[$e.attr("href")] = true;
+      $('#modal-send_event').modal('hide');
+      setTimeout(function(){
+        is_sending[$e.attr("href")] = false;
+      }, 20000);
+      return true
+    })
+  </script>
 </div>

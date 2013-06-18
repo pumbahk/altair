@@ -1,0 +1,188 @@
+<%inherit file="../common/_base.html" />
+<%namespace file="../common/tags_smartphone.html" name="m" />
+<%block name="title">${event.title}</%block>
+<%block name="fnavi">
+    <hr/>
+    <a href="${request.route_path('smartphone.main')}"><button class="btn-secondary btn-large">トップへ</button></a>
+</%block>
+
+<h2 class="glitter red">${event.title}</h2>
+
+<script type="text/javascript">
+$(function () {
+  $('*[data-toggle]').each(function (_, n) {
+    $(n).on('click', function () {
+      var target = $(document.getElementById(n.getAttribute('data-toggle')));
+      if (target.hasClass('activated')) {
+        target.removeClass('activated');
+        target.animate({ height: target.attr('data-prev-height') + 'px' }, {
+          duration: 100
+        });
+      } else {
+        var h = 0;
+        var targetOffset = target.offset().top;
+        target.children().each(function (_, n) {
+          h += $(n).height();
+        });
+        target.attr('data-prev-height', target.height());
+        target.animate({ height: h + 'px' }, {
+          duration: 100,
+          step: function (h) {
+            var dest = targetOffset + h - $(window).height();
+            if ($(window).scrollTop() < dest) {
+              $(window).scrollTop(dest);
+            }
+          }
+        });
+        target.addClass('activated');
+      }
+      return false;
+    });
+  });
+
+  $('*[data-toggle]:first').trigger("click");
+});
+</script>
+
+<%m:header>公演期間</%m:header>
+<div class="sectionbox">
+  <div class="sectionbox-inner">
+    ${helper.disp_date_week(event.event_open)}〜${helper.disp_date_week(event.event_close)}
+  </div>
+</div>
+
+<hr/>
+<%def name="render_sale_image(imagepath)">
+    <img src="${request.static_url(imagepath)}" style="vertical-align: top; margin-top: 1px"/>
+</%def>
+
+<%def name="render_sale(segment)">
+    % if segment.name.find(u"先行抽選") != -1:
+        ${render_sale_image('altaircms:static/RT/img/search/icon_lottery.gif')}
+    % elif segment.name.find(u"先行先着") != -1:
+        ${render_sale_image('altaircms:static/RT/img/search/icon_firstcome.gif')}
+    % elif segment.name.find(u"一般販売") != -1:
+        ${render_sale_image('altaircms:static/RT/img/search/icon_normal.gif')}
+    % elif segment.name.find(u"一般発売") != -1:
+        ${render_sale_image('altaircms:static/RT/img/search/icon_release.gif')}
+    % elif segment.name.find(u"先行販売") != -1:
+        ${render_sale_image('altaircms:static/RT/img/search/icon_firstsale.gif')}
+    % else:
+        <span style="font-size:9px; background-color:#ffffaa; padding-left:9px; padding-right:9px; padding-top:1px; padding-bottom:1px; color:#111;">${segment.name}</span>
+    % endif
+</%def>
+
+<%m:header>販売期間</%m:header>
+% if event.salessegment_groups:
+    <div class="sectionbox">
+        <div class="sectionbox-inner">
+            <table>
+                % for segment in event.salessegment_groups:
+                    % if segment.publicp:
+                        <tr>
+                            <td>
+                                ${render_sale(segment)}
+                            </td>
+                            <td>
+                                ${helper.disp_date(segment.start_on)}〜${helper.disp_date(segment.end_on)}<br/>
+                            </td>
+                        </tr>
+                    % endif
+                % endfor
+            </table>
+        </div>
+    </div>
+% endif
+
+<div align="center">
+  &gt;&gt;<a href="#list">購入はこちらから</a>&lt;&lt;<br />
+</div><br />
+
+<hr/>
+
+% if event.notice:
+    <%m:header>詳細/注意事項</%m:header>
+    <div>
+        <font size="-1">
+        ${helper.nl2br(event.notice)|n}
+        </font>
+    </div>
+% endif
+
+<hr/>
+
+% if event.inquiry_for:
+    <%m:header>お問い合わせ</%m:header>
+        ${helper.nl2br(event.inquiry_for)|n}
+    <br /><br />
+% endif
+
+<hr/>
+
+<%m:header><a name="list">公演一覧</a></%m:header>
+<div class="sectionbox">
+    <div class="sectionbox-inner" style="color: red">
+        ご購入の方は、ご希望の公演日が含まれる月をクリックしてください（公演一覧が表示されます）
+    </div>
+</div>
+<ul class="panellist fullwidth expandable">
+  <% index = 0 %>
+  % for count in range(len(month_unit_keys)):
+    <%month = month_unit_keys[count] %>
+    <li class="panelgroup" id=${count}>
+      <span class="panelgroup-label"><a href="#" data-toggle=${count}>${month}</a></span>
+      <ul class="panelgroup-inner">
+        % for i, perf in enumerate(event.performances):
+          <%
+            start_on_candidates = [salessegment.start_on for salessegment in perf.sales]
+            end_on_candidates = [salessegment.end_on for salessegment in perf.sales if salessegment.end_on]
+          %>
+          % if (str(perf.start_on.year) + "/" + str(perf.start_on.month).zfill(2) == month) and perf.public:
+            <% index += 1 %>
+            <li class="panel">
+              <table class="panellist margined with-action-buttons">
+                <caption>[${index}]${perf.title}</caption>
+                <tbody>
+                  <tr>
+                    <td class="panel condensed">
+                      <div class="panel-inner h_70px">
+                        <p class="first">
+                          % if perf.open_on:
+                            開場：${helper.disp_time(perf.open_on)}<br/>
+                          % endif
+                          開演：${helper.disp_time(perf.start_on)}<br/>
+                          会場：${perf.venue}<br/>
+                        </p>
+                      </div>
+                      % if not start_on_candidates:
+                        <div class="actions">
+                            準備中
+                        </div>
+                      %elif min(start_on_candidates) >= helper.now():
+                        <div class="actions">
+                            販売前
+                        </div>
+                      %elif max(end_on_candidates) >= helper.now():
+                        <div class="actions">
+                          <a id="purchase" href="${purchase_links[perf.id]}">
+                            <button class="btn btn-primary btn-large"><span class="btn-inner">購入</span></button>
+                          </a>
+                        </div>
+                      % else:
+                        <div class="actions">
+                            販売期間終了
+                        </div>
+                      % endif
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </li>
+          % endif
+        % endfor
+      </ul>
+    </li>
+  % endfor
+</ul>
+
+

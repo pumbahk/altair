@@ -1,7 +1,7 @@
 <%page args="form" />
 <%namespace file="/common/helpers.html" name="h" />
 
-<div id="modal-payment_method" class="modal fade">
+<div id="modal-payment_method" class="modal hide">
   <div class="modal-header">
     <a class="close" data-dismiss="modal">×</a>
     <h3>決済方法</h3>
@@ -15,6 +15,7 @@
       ${h.form_item(form.name, maxlength=255)}
       ${h.form_item(form.fee)}
       ${h.form_item(form.fee_type)}
+      ${h.form_item(form.hide_voucher)}
       ${h.form_item(form.description, style='width:500px;height:100px;')}
     </form>
   </div>

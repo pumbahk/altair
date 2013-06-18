@@ -1,57 +1,63 @@
-# -*- encoding:utf-8 -*-
-
+from pyramid.config import Configurator
+from pyramid.tweens import INGRESS
+import altaircms.layout.models
+import altaircms.widget.models
+import altaircms.page.models
+import altaircms.event.models
+import altaircms.asset.models
+import altaircms.tag.models
+import altaircms.auth.models
+import sqlahelper
+from sqlalchemy import engine_from_config
+from core.helper import log_info
 
 def includeme(config):
-    config.add_route("mobile_detail", "/mobile/detail/{pageset_id}")
-    config.add_route("mobile_index", "/mobile/index")
-    config.add_route("mobile_category", "/mobile/genre/{category}")
-    config.add_route("mobile_purchase", "/mobile/purchase/event/{event_id}", static=True)
-    config.add_route("mobile_search", "/mobile/search")
-    config.add_route("mobile_semi_static", "/mobile/static/{filename:.*}")
+    config._add_tween("altairsite.tweens.mobile_encoding_convert_factory", under=INGRESS)
+    config.include(install_app)
 
-    config.scan(".views")
-    
-def main(global_config, **local_config):
-    """ This function returns a Pyramid WSGI application.
-    """
-    settings = dict(global_config)
-    settings.update(local_config)
+def install_app(config):
+    config.include("altair.mobile.install_detector")
+    config.include("altairsite.config.install_convinient_request_properties")
 
-    from pyramid.config import Configurator
-    from sqlalchemy import engine_from_config
-    import sqlahelper
+    config.include('altairsite.mobile.event.company')
+    config.include('altairsite.mobile.event.detailsearch')
+    config.include('altairsite.mobile.event.eventdetail')
+    config.include('altairsite.mobile.event.genre')
+    config.include('altairsite.mobile.event.help')
+    config.include('altairsite.mobile.event.hotword')
+    config.include('altairsite.mobile.event.information')
+    config.include('altairsite.mobile.event.search')
+    config.include('altairsite.mobile.event.orderreview')
+    config.include('altairsite.mobile.event.inquiry')
+    config.include('altairsite.mobile.event.privacy')
+    config.include('altairsite.mobile.event.legal')
+    config.add_route("home", "/")
+    config.scan(".")
 
-    from altaircms.models import Base
-    import altaircms.models as models
-    import altaircms.auth.models
-    import altaircms.asset.models
-    import altaircms.widget.models
-    import altaircms.page.models
-    import altaircms.usersetting.models
-    import altaircms.event.models
-    import altaircms.topic.models
-    import altaircms.layout.models
-
-
-    engine = engine_from_config(settings, 'sqlalchemy.')
+def main(global_config, **settings):
+    """ don't use this on production. this is development app."""
+    engine = engine_from_config(settings, 'sqlalchemy.', pool_recycle=3600)
     sqlahelper.get_session().remove()
-    sqlahelper.set_base(Base)
     sqlahelper.add_engine(engine)
 
+    log_info("main", "initialize start.")
     config = Configurator(settings=settings)
-    config.include("altaircms.solr")
-
-    ##
-    search_utility = settings["altaircms.solr.search.utility"]
-    config.add_fulltext_search(search_utility)
-
-
+    config.add_renderer('.html' , 'pyramid.mako_templating.renderer_factory')
     config.add_static_view('static', 'altaircms:static', cache_max_age=3600)
     config.add_static_view('plugins/static', 'altaircms:plugins/static', cache_max_age=3600)
     config.add_static_view("staticasset", settings["altaircms.asset.storepath"], cache_max_age=3600)
-    config.add_subscriber("altairsite.subscribers.add_renderer_globals", 
-                          "pyramid.events.BeforeRender")
 
-    includeme(config)
+    config.include('altairsite.separation')
+    config.include('altaircms.solr')
+    config.include('altaircms.tag.install_tagmanager')
+    config.include('altaircms.topic.install_topic_searcher')
+    config.set_request_property("altaircms.auth.api.get_allowable_query", "allowable", reify=True)
+    search_utility = settings.get("altaircms.solr.search.utility")
+    config.add_fulltext_search(search_utility)
+    config.include(install_app)
 
+    ## all requests are treated as mobile request
+    config._add_tween("altairsite.tweens.mobile_request_factory", under=INGRESS)
+
+    log_info("main", "initialize end.")
     return config.make_wsgi_app()

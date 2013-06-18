@@ -88,8 +88,8 @@ preview.ComboboxSVGFromModelView = Backbone.View.extend({
         this.vms = opts.vms;
         this.subCandidates = {}
     }, 
-    onChangeRight: function(){
-        var pk = this.$rightSelect.val();
+    onChangeRight: function(e, rightName){
+        var pk = rightName || this.$rightSelect.val();
         this.model.changeHolder({pk: pk, name: this.modelname}); //params
     }, 
     onChangeLeft: function(){
@@ -100,6 +100,9 @@ preview.ComboboxSVGFromModelView = Backbone.View.extend({
         _(candidates).each(function(c){
             $right.append($("<option>").text(c.name).attr("value", c.pk));
         });
+        if(candidates.length == 1){
+            this.onChangeRight(null, candidates[0].pk);
+        }
     }, 
     render: function(label, candidates){
         var subCandidates = this.subCandidates = {};
@@ -118,9 +121,98 @@ preview.ComboboxSVGFromModelView = Backbone.View.extend({
         var root = this.$el.find("#subnav .nav");
         root.append($('<li style="margin-left:20px;">').text(label).append($leftSelect));
         root.append($('<li>').append($rightSelect));
+        if(candidates.length == 1){
+            this.onChangeLeft(null, candidates[0].pk);
+        }
     }
 });
 
+preview.Combobox3SVGFromModelView = Backbone.View.extend({
+    // id, model_name -> svg
+    events: {"change #left_candidates": "onChangeLeft", 
+             "change #middle_candidates": "onChangeMiddle", 
+             "change #right_candidates": "onChangeRight", 
+            }, 
+    initialize: function(opts){
+        this.modelname = opts.modelname;
+        if(!this.modelname) throw "modelname is not found";
+        if(!this.leftIdname) {this.leftIdname = "left_candidates";}
+        if(!this.middleIdname) {this.middleIdname = "middle_candidates";}
+        if(!this.rightIdname) {this.rightIdname = "right_candidates";}
+        this.vms = opts.vms;
+        this.subCandidates = {}
+        this.subsubCandidates = {}
+    }, 
+    onChangeRight: function(e,rigntName){
+        var pk = rigntName || this.$middleSelect.val();
+        var sub_pk = this.$rightSelect.val();
+        this.model.changeHolder({pk: pk, name: this.modelname, sub: {pk: sub_pk,  name: "Sub"}}); //params
+    }, 
+    onChangeLeft: function(e, middleName){
+        var middleName = middleName || this.$leftSelect.val();
+        var candidates = this.subCandidates[middleName];
+        var $right = this.$rightSelect;
+        var $middle = this.$middleSelect;
+        $right.empty();
+        $middle.empty();
+        _(candidates).each(function(c){
+            $middle.append($("<option>").text(c.name).attr("value", c.pk));
+        });
+        if(candidates.length == 1){
+            this.onChangeMiddle(null, candidates[0].pk);
+        }
+    }, 
+    onChangeMiddle: function(e,rightName){
+        var rightName = rightName || this.$middleSelect.val();
+
+        var formatId = this.model.get("ticket_format").pk;
+        var candidates = _(this.subsubCandidates[rightName]).filter(function(c){
+            return !c.format_id || c.format_id == formatId;
+        });
+
+        var $right = this.$rightSelect;
+        $right.empty();
+        _(candidates).each(function(c){
+            $right.append($("<option>").text(c.name).attr("value", c.pk));
+        });
+        if(candidates.length == 1){
+            this.onChangeRight(null, candidates[0].pk);
+        }
+    }, 
+    render: function(label, candidates){
+        var subCandidates = this.subCandidates = {};
+        var subsubCandidates = this.subsubCandidates = {}
+       // [{name: "foo", pk: 1,  candidates:[{name: "bar", pk: 1}, {name: "boo", pk: 2}, ...]}, ...]
+        var $leftSelect = this.$leftSelect = $('<select class="inline input-medium">').attr("id", this.leftIdname);
+        var $middleSelect = this.$middleSelect = $('<select class="inline input-medium">').attr("id", this.middleIdname);
+        var $rightSelect = this.$rightSelect = $('<select class="inline input-medium">').attr("id", this.rightIdname);
+        var formatId = this.model.get("ticket_format").pk;
+
+        _(candidates).each(function(c){
+            subCandidates[c.pk] = c.candidates;
+            _(c.candidates).each(function(cc){
+                subsubCandidates[cc.pk]  = cc.candidates;
+            });
+            $leftSelect.append($("<option>").text(c.name).attr("value", c.pk));
+        });
+        _(candidates[0].candidates).each(function(c){
+            $middleSelect.append($("<option>").text(c.name).attr("value", c.pk));
+        });
+        _(candidates[0].candidates[0].candidates).each(function(c){
+            if(!c.format_id || c.format_id == formatId){
+                $rightSelect.append($("<option>").text(c.name).attr("value", c.pk));
+            }
+        });
+        this.$el.find(".brand").hide();
+        var root = this.$el.find("#subnav .nav");
+        root.append($('<li style="margin-left:20px;">').text(label).append($leftSelect));
+        root.append($('<li>').append($middleSelect));
+        root.append($('<li>').text("対象チケット").append($rightSelect));
+        if(candidates.length == 1){
+            this.onChangeLeft(null, candidates[0].pk);
+        }
+    }
+});
 
 
 preview.DragAndDropSVGSupportView = Backbone.View.extend({

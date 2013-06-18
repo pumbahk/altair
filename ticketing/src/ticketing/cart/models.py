@@ -25,20 +25,24 @@ from datetime import datetime, timedelta
 import itertools
 import operator
 import sqlahelper
+from decimal import Decimal
 import sqlalchemy as sa
 import sqlalchemy.orm as orm
 from sqlalchemy import sql
-from sqlalchemy.ext.hybrid import hybrid_method
+from sqlalchemy.ext.hybrid import hybrid_method, hybrid_property
 from sqlalchemy.orm.exc import NoResultFound
 from zope.deprecation import deprecate
 
-from ticketing.utils import sensible_alnum_encode, sensible_alnum_decode
+from pyramid.i18n import TranslationString as _
+from altair.saannotation import AnnotatedColumn
+
+from ticketing.utils import sensible_alnum_encode
+#from ticketing.utils import sensible_alnum_decode
 from ticketing.models import Identifier
-from ..core import models as c_models
-from ..core import api as c_api
-from ..models import Identifier
+from ticketing.core import models as c_models
+from ticketing.core import api as c_api
 from . import logger
-from .exceptions import NoCartError, UnassignedOrderNumberError
+from .exceptions import NoCartError, UnassignedOrderNumberError, CartCreationException
 
 class PaymentMethodManager(object):
     def __init__(self):
@@ -73,27 +77,40 @@ class Cart(Base):
 
     performance = orm.relationship('Performance')
 
-    system_fee = sa.Column(sa.Numeric(precision=16, scale=2))
-
-    created_at = sa.Column(sa.DateTime, default=datetime.now)
+    created_at = AnnotatedColumn(sa.DateTime, default=datetime.now, _a_label=_(u'カート生成日時'))
     updated_at = sa.Column(sa.DateTime, nullable=True, onupdate=datetime.now)
     deleted_at = sa.Column(sa.DateTime, nullable=True)
-    finished_at = sa.Column(sa.DateTime)
+    finished_at = AnnotatedColumn(sa.DateTime, _a_label=_(u'カート処理日時'))
 
     shipping_address_id = sa.Column(Identifier, sa.ForeignKey("ShippingAddress.id"))
     shipping_address = orm.relationship('ShippingAddress', backref='cart')
-
     payment_delivery_method_pair_id = sa.Column(Identifier, sa.ForeignKey("PaymentDeliveryMethodPair.id"))
     payment_delivery_pair = orm.relationship("PaymentDeliveryMethodPair")
 
-    _order_no = sa.Column("order_no", sa.String(255))
+    _order_no = AnnotatedColumn("order_no", sa.String(255), _a_label=_(u'注文番号'))
     order_id = sa.Column(Identifier, sa.ForeignKey("Order.id"))
     order = orm.relationship('Order', backref=orm.backref('cart', uselist=False))
+    operator_id = sa.Column(Identifier, sa.ForeignKey("Operator.id"))
+    operator = orm.relationship('Operator', backref='orders')
+    channel = sa.Column(sa.Integer, nullable=True)
 
-    sales_segment_id = sa.Column(Identifier, sa.ForeignKey('SalesSegmentGroup.id'))
+    sales_segment_group_id = sa.Column(Identifier, sa.ForeignKey('SalesSegmentGroup.id'))
+    sales_segment_group = orm.relationship('SalesSegmentGroup', backref='carts')
+
+    sales_segment_id = sa.Column(Identifier, sa.ForeignKey('SalesSegment.id'))
     sales_segment = orm.relationship('SalesSegment', backref='carts')
 
     disposed = False
+
+    browserid = sa.Column(sa.String(40))
+
+
+    has_different_amount = False  ## 差額(オーソリ時と売上確定処理で差額がある場合にTrue)
+    different_amount = 0
+
+    @property
+    def name(self):
+        return str(self.performance.id)
 
     @classmethod 
     def create(cls, **kwargs):
@@ -104,7 +121,14 @@ class Cart(Base):
                 raise Exception('performance or performance_id must be specified')
             performance_id = performance.id
         else:
-            performance = c_models.Performance.query.filter_by(id=performance_id).one()
+            performance = c_models.Performance.query.options(
+                orm.joinedload(c_models.Performance.event),
+                orm.joinedload(c_models.Performance.event,
+                               c_models.Event.organization),
+            ).filter_by(
+                id=performance_id
+            ).one()
+
         organization = performance.event.organization
         logger.debug("organization.id = %d" % organization.id)
         base_id = c_api.get_next_order_no()
@@ -127,11 +151,11 @@ class Cart(Base):
             raise CartCreationException("Cannot translate the contents of a cart that has already been marked as finished")
         new_cart = cls.create(
             cart_session_id=that.cart_session_id,
-            system_fee=that.system_fee,
-            shipping_address=that.shipping_address,
-            payment_delivery_pair=that.payment_delivery_pair,
-            performance=that.performance,
-            sales_segment=that.sales_segment
+            shipping_address_id=that.shipping_address_id,
+            payment_delivery_method_pair_id=that.payment_delivery_method_pair_id,
+            performance_id=that.performance_id,
+            sales_segment_id=that.sales_segment_id,
+            sales_segment_group_id=that.sales_segment_group_id
             )
         # translate all the products in the specified cart to the new cart
         for carted_product in that.products:
@@ -140,47 +164,41 @@ class Cart(Base):
         that.products = []
         return new_cart
 
-    @property
+    @hybrid_property
     def order_no(self):
         if self._order_no is None:
             raise UnassignedOrderNumberError(self.id)
         return self._order_no
 
+    @order_no.expression
+    def order_no_expr(cls):
+        return cls._order_no
+
     @property
     def total_amount(self):
-        return self.tickets_amount + self.system_fee + self.transaction_fee + self.delivery_fee
+        if not self.sales_segment:
+            return None
+        return self.sales_segment.get_amount(
+            self.payment_delivery_pair,
+            [(p.product, p.quantity) for p in self.products])
 
     @property
-    def tickets_amount(self):
-        return sum(cp.amount for cp in self.products)
-
-    @property
-    def total_quantiy(self):
-        return sum(cp.quantity for cp in self.products)
+    def delivery_fee(self):
+        """ 引取手数料 """
+        return self.sales_segment.get_delivery_fee(
+            self.payment_delivery_pair,
+            [(p.product, p.quantity) for p in self.products])
 
     @property
     def transaction_fee(self):
         """ 決済手数料 """
-        payment_fee = self.payment_delivery_pair.transaction_fee
-        payment_method = self.payment_delivery_pair.payment_method
-        if payment_method.fee_type == c_models.FeeTypeEnum.Once.v[0]:
-            return payment_fee
-        elif payment_method.fee_type == c_models.FeeTypeEnum.PerUnit.v[0]:
-            return payment_fee * self.total_quantiy
-        else:
-            return 0
+        return self.sales_segment.get_transaction_fee(
+            self.payment_delivery_pair,
+            [(p.product, p.quantity) for p in self.products])
 
-    @property 
-    def delivery_fee(self):
-        """ 引取手数料 """
-        delivery_fee = self.payment_delivery_pair.delivery_fee
-        delivery_method = self.payment_delivery_pair.delivery_method
-        if delivery_method.fee_type == c_models.FeeTypeEnum.Once.v[0]:
-            return delivery_fee
-        elif delivery_method.fee_type == c_models.FeeTypeEnum.PerUnit.v[0]:
-            return delivery_fee * self.total_quantiy
-        else:
-            return 0
+    @property
+    def system_fee(self):
+        return self.payment_delivery_pair.system_fee
 
     @classmethod
     def get_or_create(cls, performance, cart_session_id):
@@ -194,10 +212,11 @@ class Cart(Base):
         return cls.query.filter_by(cart_session_id=cart_session_id).count()
 
     @hybrid_method
-    def is_expired(self, expire_span_minutes):
+    def is_expired(self, expire_span_minutes, now):
         """ 決済完了までの時間制限
         """
-        return self.created_at < datetime.now() - timedelta(minutes=expire_span_minutes)
+        assert isinstance(now, datetime)
+        return self.created_at < now - timedelta(minutes=expire_span_minutes)
 
     @deprecate("deprecated method")
     def add_seat(self, seats, ordered_products):
@@ -225,7 +244,7 @@ class Cart(Base):
         """
         for product in self.products:
             product.finish()
-        self.finished_at = datetime.now()
+        self.finished_at = datetime.now() # SAFE TO USE datetime.now() HERE
 
     def release(self):
         """ カート開放
@@ -272,6 +291,13 @@ class CartedProduct(Base):
         return sorted(itertools.chain.from_iterable(i.seatdicts for i in self.items), 
             key=operator.itemgetter('l0_id'))
 
+    @property
+    def seat_quantity(self):
+        for item in self.items:
+            if item.product_item.stock_type.is_seat:
+                return item.quantity
+        return 0
+
     @deprecate("deprecated method")
     def pop_seats(self, seats, performance_id):
         for product_item in self.product.items:
@@ -292,13 +318,15 @@ class CartedProduct(Base):
     def get_reserved_amount(cls, product_item):
         return DBSession.query(sql.func.sum(cls.amount)).filter(cls.product_item==product_item).filter(cls.state=="reserved").first()[0] or 0
 
+    def _mark_finished(self):
+        self.finished_at = datetime.now() # SAFE TO USE datetime.now() HERE
 
     def finish(self):
         """ 決済処理
         """
         for item in self.items:
             item.finish()
-        self.finished_at = datetime.now()
+        self._mark_finished()
 
     def release(self):
         """ 開放
@@ -309,8 +337,10 @@ class CartedProduct(Base):
                 if not item.release():
                     logger.info('returing False to abort. NO FURTHER SQL EXECUTION IS SUPPOSED!')
                     return False
-            self.finished_at = datetime.now()
+            self._mark_finished()
             logger.info('CartedProduct (id=%d) successfully released' % self.id)
+        else:
+            logger.info('CartedProduct (id=%d) is already marked finished' % self.id)
         return True
 
     def is_valid(self):
@@ -379,6 +409,9 @@ class CartedProductItem(Base):
         else:
             return []
 
+    def _mark_finished(self):
+        self.finished_at = datetime.now() # SAFE TO USE datetime.now() HERE
+
     def finish(self):
         """ 決済処理
         """
@@ -386,7 +419,7 @@ class CartedProductItem(Base):
             if seat_status.status != int(c_models.SeatStatusEnum.InCart):
                 raise NoCartError()
             seat_status.status = int(c_models.SeatStatusEnum.Ordered)
-        self.finished_at = datetime.now()
+        self._mark_finished()
 
     def release(self):
         logger.info('trying to release CartedProductItem (id=%d)' % self.id)
@@ -410,9 +443,10 @@ class CartedProductItem(Base):
             logger.info('restoring the quantity of stock (id=%s, quantity=%d) by +%d' % (stock_status.stock_id, stock_status.quantity, release_quantity))
             stock_status.quantity += release_quantity
             stock_status.save()
+            self._mark_finished()
             logger.info('done for CartedProductItem (id=%d)' % self.id)
-
-            self.finished_at = datetime.now()
+        else:
+            logger.info('CartedProductItem (id=%d) is already marked finished' % self.id)
         return True
 
     def is_valid(self):

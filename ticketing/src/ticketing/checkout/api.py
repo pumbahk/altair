@@ -14,6 +14,8 @@ from datetime import datetime
 from pyramid.threadlocal import get_current_request
 
 from ticketing.core import api as core_api
+from ticketing.cart.models import Cart
+from ticketing.core.models import Order
 from . import interfaces
 from . import models as m
 
@@ -55,15 +57,52 @@ ORDER_ERROR_CODES = {
 
 def generate_requestid():
     """
-    あんしん決済の一意なリクエストIDを生成する
+    楽天あんしん支払いサービスの一意なリクエストIDを生成する
     """
     return uuid.uuid4().hex[:16]  # uuidの前半16桁
 
-def get_checkout_service(request):
-    return request.registry.utilities.lookup([], interfaces.ICheckout)
+def get_checkout_service(request, organization=None, channel=None):
+    settings = request.registry.settings
+    params = dict(
+        success_url=settings.get('altair_checkout.success_url'),
+        fail_url=settings.get('altair_checkout.fail_url'),
+        api_url=settings.get('altair_checkout.api_url'),
+        is_test=settings.get('altair_checkout.is_test', False),
+        service_id=None,
+        auth_method=None,
+        secret=None
+    )
 
-def sign_to_xml(request, xml):
-    signer = request.registry.utilities.lookup([], interfaces.ISigner, 'HMAC')
+    if organization and channel:
+        shop_settings = m.RakutenCheckoutSetting.query.filter_by(
+            organization_id=organization.id,
+            channel=channel.v
+        ).first()
+        if not shop_settings:
+            raise Exception('RakutenCheckoutSetting not found (organization_id=%s, channel=%s)' % (organization.id, channel.v))
+
+        params.update(dict(
+            service_id=shop_settings.service_id,
+            auth_method=shop_settings.auth_method,
+            secret=shop_settings.secret
+        ))
+
+    return Checkout(**params)
+
+def sign_to_xml(request, organization, channel, xml):
+    shop_settings = m.RakutenCheckoutSetting.query.filter_by(
+        organization_id=organization.id,
+        channel=channel.v
+    ).first()
+    if not shop_settings:
+        raise Exception('RakutenCheckoutSetting not found (organization_id=%s, channel=%s)' % (organization.id, channel.v))
+
+    if shop_settings.auth_method == 'HMAC-SHA1':
+        signer = HMAC_SHA1(str(shop_settings.secret))
+    elif shop_settings.auth_method == 'HMAC-MD5':
+        signer = HMAC_MD5(str(shop_settings.secret))
+    else:
+        raise Exception('setting(auth_method) not found')
     return signer(xml)
 
 
@@ -119,23 +158,15 @@ class Checkout(object):
                 itemId=carted_product.product.id,
                 itemName=carted_product.product.name,
                 itemNumbers=carted_product.quantity,
-                itemFee=carted_product.amount
+                itemFee=carted_product.product.price
             ))
 
-        # 商品:システム手数料
+        # 商品:システム利用料
         self._create_checkout_item_xml(itemsInfo, **dict(
             itemId='system_fee',
             itemName=u'システム利用料',
             itemNumbers='1',
             itemFee=str(int(cart.system_fee))
-        ))
-
-        # 商品:決済手数料
-        self._create_checkout_item_xml(itemsInfo, **dict(
-            itemId='transaction_fee',
-            itemName=u'決済手数料',
-            itemNumbers='1',
-            itemFee=str(int(cart.transaction_fee))
         ))
 
         # 商品:引取手数料
@@ -155,7 +186,8 @@ class Checkout(object):
         subelement('itemId').text = str(kwargs.get('itemId'))
         subelement('itemNumbers').text = str(kwargs.get('itemNumbers'))
         subelement('itemFee').text = str(int(kwargs.get('itemFee')))
-        subelement('itemName').text = kwargs.get('itemName')
+        if 'itemName' in kwargs:
+            subelement('itemName').text = kwargs.get('itemName')
 
     def create_order_complete_response_xml(self, result, complete_time):
         root = et.Element('orderCompleteResponse')
@@ -169,7 +201,7 @@ class Checkout(object):
         xml = confirmId.replace(' ', '+').decode('base64')
         checkout = self._parse_order_complete_xml(et.XML(xml))
         checkout.save()
-        return RESULT_FLG_SUCCESS
+        return checkout
 
     def _parse_order_complete_xml(self, root):
         if root.tag != 'orderCompleteRequest':
@@ -193,6 +225,8 @@ class Checkout(object):
                 checkout.usedPoint = e.text.strip()
             elif e.tag == 'items':
                 self._parse_item_xml(e, checkout)
+            elif e.tag == 'openId':
+                checkout.openId = unicode(e.text.strip())
         return checkout
 
     def _parse_item_xml(self, element, checkout):
@@ -240,18 +274,46 @@ class Checkout(object):
         finally:
             res.close()
 
-    def _create_order_control_request_xml(self, order_control_ids, request_id=None):
+    def _create_order_control_request_xml(self, order_control_ids, request_id=None, with_items=False):
         request_id = request_id or generate_requestid()
         root = et.Element('root')
         et.SubElement(root, 'serviceId').text = self.service_id
         et.SubElement(root, 'accessKey').text = self.secret
         et.SubElement(root, 'requestId').text = request_id
         sub_element = et.SubElement(root, 'orders')
+
         for order_control_id in order_control_ids:
             el = et.SubElement(sub_element, 'order')
             id_el = functools.partial(et.SubElement, el)
             id_el('orderControlId').text = order_control_id
 
+            if with_items:
+                # 商品
+                items = et.SubElement(el, 'items')
+                order = Order.query.join(Cart, Order.order_no==Cart._order_no).join(Cart.checkout).filter(m.Checkout.orderControlId==order_control_id).first()
+                if not order:
+                    raise Exception('order (order_control_id=%s) not found' % order_control_id)
+                for ordered_product in order.items:
+                    self._create_checkout_item_xml(items, **dict(
+                        itemId=ordered_product.product.id,
+                        itemNumbers=ordered_product.quantity,
+                        itemFee=ordered_product.price,
+                    ))
+                # 商品:システム利用料
+                self._create_checkout_item_xml(items, **dict(
+                    itemId='system_fee',
+                    itemNumbers='1',
+                    itemFee=str(int(order.system_fee)),
+                ))
+                # 商品:配送手数料
+                self._create_checkout_item_xml(items, **dict(
+                    itemId='delivery_fee',
+                    itemNumbers='1',
+                    itemFee=str(int(order.delivery_fee)),
+                ))
+                id_el('orderShippingFee').text = '0'
+
+        logger.debug(et.tostring(root))
         return et.tostring(root)
 
     def _parse_order_control_response_xml(self, root):
@@ -285,7 +347,7 @@ class Checkout(object):
 
         if 'statusCode' in result and result['statusCode'] != '0':
             error_code = result['apiErrorCode'] if 'apiErrorCode' in result else ''
-            logger.warn(u'あんしん決済の決済確定に失敗しました (%s:%s)' % (error_code, ERROR_CODES.get(error_code)))
+            logger.warn(u'楽天あんしん支払いサービスの決済確定に失敗しました (%s:%s)' % (error_code, ERROR_CODES.get(error_code)))
         return result
 
     def request_cancel_order(self, order_control_ids):
@@ -299,5 +361,19 @@ class Checkout(object):
 
         if 'statusCode' in result and result['statusCode'] != '0':
             error_code = result['apiErrorCode'] if 'apiErrorCode' in result else ''
-            logger.warn(u'あんしん決済のキャンセルに失敗しました (%s:%s)' % (error_code, ERROR_CODES.get(error_code)))
+            logger.warn(u'楽天あんしん支払いサービスのキャンセルに失敗しました (%s:%s)' % (error_code, ERROR_CODES.get(error_code)))
+        return result
+
+    def request_change_order(self, order_control_ids):
+        url = self.api_url + '/odrctla/changepayment/1.0/'
+        message = self._create_order_control_request_xml(order_control_ids, with_items=True)
+        logger.info('checkout change request body = %s' % message)
+
+        res = self._request_order_control(url, 'rparam=%s' % urllib.quote(message.encode('base64')))
+        logger.info('got response %s' % et.tostring(res))
+        result = self._parse_order_control_response_xml(res)
+
+        if 'statusCode' in result and result['statusCode'] != '0':
+            error_code = result['apiErrorCode'] if 'apiErrorCode' in result else ''
+            logger.warn(u'あんしん決済の金額変更に失敗しました (%s:%s)' % (error_code, ERROR_CODES.get(error_code)))
         return result

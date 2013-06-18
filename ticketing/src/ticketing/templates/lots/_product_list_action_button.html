@@ -1,0 +1,15 @@
+<%namespace file="/common/helpers.html" import="action_button" />
+<%namespace file="/common/modal.html" import="delete_modal" />
+<%
+  actions = {
+    'new':dict(
+      label=u'新規',
+      url=request.route_url('lots.product_new', lot_id=lot.id),
+      icon='icon-plus',
+    ),
+  }
+  order = ['new']
+%>
+${action_button(actions, order)}
+
+<div id="product-open-form"></div>

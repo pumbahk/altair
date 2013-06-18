@@ -12,7 +12,7 @@ from ticketing.users import models as umodels
 from ticketing.views import BaseView
 from ticketing.fanstatic import with_bootstrap
 from . import forms
-from ticketing.events.sales_segments.forms import SalesSegmentForm
+from ticketing.events.sales_segment_groups.forms import SalesSegmentGroupForm
 
 ## admin権限を持っている人以外見れない想定。
 
@@ -101,7 +101,7 @@ class MemberGroupView(BaseView):
                 "form": forms.MemberGroupForm(), 
                 "redirect_to": redirect_to, 
                 "salessegments": salessegments, 
-                "form_sg": SalesSegmentForm()}
+                "form_sg": SalesSegmentGroupForm()}
 
     @view_config(match_param="action=new", renderer="ticketing:templates/memberships/groups/new.html", 
                  request_param="membership_id", request_method="GET")
@@ -233,7 +233,7 @@ class SalesSegmentView(BaseView):
                 "salessegments_source": self.request.route_path("membergrups.api.salessegments.candidates", event_id="__id__"), 
                 "membergroup": membergroup, 
                 "form_mg": forms.MemberGroupForm(), 
-                "form_sg": SalesSegmentForm()}
+                "form_sg": SalesSegmentGroupForm()}
 
 
     @view_config(match_param="action=edit", renderer="ticketing:templates/memberships/salessegments/edit.html", 

@@ -1,35 +1,60 @@
 # -*- coding:utf-8 -*-
-import wtforms.form as form
+import sqlalchemy.orm as orm
+from altaircms.formhelpers import Form
+from altaircms.formhelpers import MaybeSelectField
+from .models import TicketlistWidget
 import wtforms.fields as fields
 import wtforms.widgets as widgets
-import wtforms.ext.sqlalchemy.fields as extfields
-
+from altaircms.plugins.api import get_widget_utility
+# from altaircms.formhelpers import dynamic_query_select_field_factory
 import wtforms.validators as validators
 from altaircms.models import Performance
-from altaircms.models import Sale
-from altaircms.page.models import Page
-from altaircms.seeds.saleskind import SALESKIND_CHOICES
+from altaircms.models import SalesSegment
+from altaircms.helpers.event import performance_name
 
-class TicketlistChoiceForm(form.Form):
-    ## todo fix
-    kind = fields.SelectField(id="kind", label=u"表示するチケットの種別", choices=SALESKIND_CHOICES)
-    target_performance = extfields.QuerySelectField(id="target", label=u"価格表を取得するパフォーマンス", 
-                                                    query_factory= lambda : Performance.query, 
-                                                    get_label= lambda obj : u"%s(日時:%s, 場所:%s)" % (obj.title, obj.start_on, obj.venue))
-    caption = fields.TextField(id="caption", label=u"価格表の見出し", widget=widgets.TextArea())
-    def refine_choices(self, request, page_id):
-        if not page_id:
-            return
+_None = "_None"
+class TicketlistChoiceForm(Form):
+    display_type = fields.SelectField(id="display_type", label=u"価格表の表示方法", choices=[], coerce=unicode)
+    target_performance_id = MaybeSelectField(
+        id="target_performance_id", 
+        label=u"価格表を取得するパフォーマンス", 
+        blank_text=u"(指定なし)", 
+        choices=[]
+        )
+    target_salessegment_id = MaybeSelectField(
+        id="target_salessegment_id", 
+        label=u"価格表を取得する商品", 
+        blank_text=u"(指定なし)", 
+        choices=[]
+        )
+    caption = fields.TextField(id="caption", label=u"価格表の説明", widget=widgets.TextArea())
+    show_label = fields.BooleanField(id="show_label", label=u"見出しを表示する？", default=True)
 
-        ## pageで絞り込んでいるから大丈夫なはず。organization的に
-        page = request.allowable(Page).filter_by(id=page_id).first()
-        if page is None:
-            return
-        ## sales choice
-        qs = Sale.query.filter(Sale.event_id==page.event_id)
-        self.kind.choices = [(s.kind, s.jkind) for s in set(qs)]
+    def configure(self, request, page):
+        if page.event_id:
+            ps = Performance.query.filter(Performance.event_id==page.event_id).all()
+            if ps:
+                self.target_performance_id.choices = [(p.id, performance_name(p)) for p in ps]
+            
+                performance_id = self.data.get("target_performance_id")
+                if performance_id:
+                    ss = SalesSegment.query.filter(SalesSegment.performance_id==performance_id).options(orm.joinedload(SalesSegment.group)).all()
+                    if ss:
+                        self.target_salessegment_id.choices =  [(s.id, s.group.name) for s in ss]
+        utility = get_widget_utility(request, page, TicketlistWidget.type)
+        self.display_type.choices = utility.choices
 
-        ## performance choice
-        qs = Performance.query.filter(Performance.event_id==page.event_id)
-        self.target_performance.choices = qs
-        self.target_performance.query_factory = lambda : qs
+
+class TicketChoiceForm(Form):
+    display_type = fields.SelectField(id="display_type", label=u"価格表の表示方法", choices=[], coerce=unicode)
+    target_salessegment_id = MaybeSelectField(
+        id="target_salessegment_id", 
+        label=u"価格表を取得する商品", 
+        blank_text=u"(指定なし)", 
+        choices=[]
+        )
+    def configure(self, request):
+        performance_id = request.params.get("target_performance_id")
+        ss = SalesSegment.query.filter(SalesSegment.performance_id==performance_id).options(orm.joinedload(SalesSegment.group)).all()
+        self.target_salessegment_id.choices =  [(s.id, s.group.name) for s in ss]
+        

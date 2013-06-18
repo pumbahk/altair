@@ -598,7 +598,7 @@ class FixtureBuilder(object):
             kind=self.sales_segment_kind[randint(0, len(self.sales_segment_kind) - 1)],
             payment_delivery_method_pairs=one_to_many(
                 payment_delivery_method_pairs,
-                'sales_segment_id'
+                'sales_segment_group_id'
                 )
             )
 
@@ -741,7 +741,7 @@ class FixtureBuilder(object):
                 'Product',
                 name=name,
                 price=sum(price for stock_type_name, _, price in product_item_seeds),
-                sales_segment=many_to_one(sales_segment, 'sales_segment_id')
+                sales_segment=many_to_one(sales_segment, 'sales_segment_group_id')
                 ) \
             for name, product_item_seeds in self.stock_type_combinations.iteritems()
             ]

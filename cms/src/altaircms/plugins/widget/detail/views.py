@@ -34,7 +34,7 @@ class DetailWidgetView(object):
         context.delete(widget, flush=True)
         return {"status": "ok"}
 
-    @view_config(route_name="detail_widget_dialog", renderer="altaircms.plugins.widget:detail/dialog.mako", request_method="GET")
+    @view_config(route_name="detail_widget_dialog", renderer="altaircms.plugins.widget:detail/dialog.html", request_method="GET")
     def dialog(self):
         context = self.request.context
         D = {"form_class": DetailSelectForm}

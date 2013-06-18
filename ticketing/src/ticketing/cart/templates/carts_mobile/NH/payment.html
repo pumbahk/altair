@@ -47,7 +47,6 @@
 <div>
 <font color="#F12997">■</font>${form['email_1'].label}
 </div>
-<p>※ 予約受付完了メール等をメールでご案内します。「ticketstar.jp」からのメールを受信できるよう、お申し込み前にドメイン指定の設定を必ずお願いいたします。</p>
 <div>
   ${form['email_1']}
   <div style="color:#ff0000">
@@ -64,6 +63,8 @@
     ${h.error_list(request, form, 'email_1_confirm')}
   </div>
 </div>
+<p>※ 予約受付完了メール等をメールでご案内します。「ticketstar.jp」からのメールを受信できるよう、お申し込み前にドメイン指定の設定を必ずお願いいたします。</p>
+
 <div>
 <font color="#F12997">■</font>住所
 </div>
@@ -91,6 +92,7 @@
 <div>
   住所<br/>
   ${form['address_1']}<br/>
+  建物名等<br/>
   ${form['address_2']}
   <div style="color:#ff0000">
     ${h.error_list(request, form, 'address_1')}
@@ -144,6 +146,13 @@
 <img src="${request.static_url('ticketing.cart:static/img/mobile/master.gif')}" height="30px" />
 <img src="${request.static_url('ticketing.cart:static/img/mobile/jcb.gif')}" height="30px" />
 <img src="${request.static_url('ticketing.cart:static/img/mobile/amex_logo.gif')}" height="30px" />
+</font>
+% elif m.payment_method.payment_plugin_id == 2:
+<font size="-2">
+楽天会員IDでお支払いいただけます。<br />
+お支払い額に応じて楽天スーパーポイントが貯まります。<br />
+※ 楽天サイトに移動して、お支払い手続きを行っていただきます。<br />
+<img src='https://checkout.rakuten.co.jp/p/common/img/img_cardface_h4.gif?c9cc8c1b9ae94c18920540a80b95c16a' border='0' width="100%"/>
 </font>
 % elif m.payment_method.payment_plugin_id == 3:
 <font size="-2">

@@ -3,11 +3,12 @@
 from ticketing.models import BaseModel, LogicallyDeleted, WithTimestamp, MutationDict, JSONEncodedDict, relationship, Identifier
 from sqlalchemy import Table, Column, BigInteger, Integer, String, DateTime, Date, ForeignKey, Enum, DECIMAL, Binary
 from sqlalchemy.orm import relationship, join, column_property, mapper, backref
-
 import sqlahelper
+from datetime import datetime
 
 session = sqlahelper.get_session()
 Base = sqlahelper.get_base()
+
 
 class SejTenant(BaseModel,  WithTimestamp, LogicallyDeleted, Base):
     __tablename__           = 'SejTenant'
@@ -32,7 +33,8 @@ class SejTicketTemplateFile(BaseModel,  WithTimestamp, LogicallyDeleted, Base):
     ticket_css              = Column(Binary)
     publish_start_date      = Column(Date)
     publish_end_date        = Column(Date)
-    send_at                 = Column(DateTime)
+    sent_at                 = Column(DateTime)
+
 
 class SejRefundEvent(BaseModel,  WithTimestamp, LogicallyDeleted, Base):
     __tablename__           = 'SejRefundEvent'
@@ -59,6 +61,7 @@ class SejRefundEvent(BaseModel,  WithTimestamp, LogicallyDeleted, Base):
     un_use_05 = Column(String(64))
     sent_at = Column(DateTime, nullable=True)
 
+
 class SejRefundTicket(BaseModel,  WithTimestamp, LogicallyDeleted, Base):
     __tablename__               = 'SejRefundTicket'
     id                          = Column(Identifier, primary_key=True)
@@ -71,6 +74,7 @@ class SejRefundTicket(BaseModel,  WithTimestamp, LogicallyDeleted, Base):
     ticket_barcode_number       = Column(String(13))
     refund_ticket_amount        = Column(DECIMAL)
     refund_other_amount         = Column(DECIMAL)
+    sent_at = Column(DateTime, nullable=True)
 
 
 class SejNotification(BaseModel, WithTimestamp, LogicallyDeleted, Base):
@@ -118,6 +122,7 @@ class SejNotification(BaseModel, WithTimestamp, LogicallyDeleted, Base):
 
     signature               = Column(String(32))
 
+
 class SejFile(BaseModel, WithTimestamp, LogicallyDeleted, Base):
     __tablename__           = 'SejFile'
     id                      = Column(Identifier, primary_key=True)
@@ -125,6 +130,7 @@ class SejFile(BaseModel, WithTimestamp, LogicallyDeleted, Base):
     file_date               = Column(Date, unique=True)
     reflected_at            = Column(DateTime, nullable=True)
     file_url                = Column(String(255))
+
 
 class SejOrder(BaseModel,  WithTimestamp, LogicallyDeleted, Base):
     __tablename__           = 'SejOrder'
@@ -182,6 +188,14 @@ class SejOrder(BaseModel,  WithTimestamp, LogicallyDeleted, Base):
     # キャンセル日時
     cancel_at               = Column(DateTime, nullable=True)
 
+    def mark_canceled(self, now=None):
+        self.cancel_at = now or datetime.now() # SAFE TO USE datetime.now() HERE
+
+    def mark_issued(self, now=None):
+        self.issue_at = now or datetime.now() # SAFE TO USE datetime.now() HERE
+
+    def mark_paid(self, now=None):
+        self.pay_at = now or datetime.now() # SAFE TO USE datetime.now() HERE
 
 class SejTicket(BaseModel,  WithTimestamp, LogicallyDeleted, Base):
     __tablename__           = 'SejTicket'

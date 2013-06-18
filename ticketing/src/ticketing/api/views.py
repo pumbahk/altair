@@ -1,6 +1,6 @@
 import logging
 logger = logging.getLogger(__file__)
-
+import sqlalchemy.orm as orm
 from pyramid.view import view_config, view_defaults
 from ticketing.views import BaseView
 from pyramid.renderers import render_to_response
@@ -37,6 +37,7 @@ def access_token(context, request):
             'roles'         : [role.name for role in operator.roles],
             'organization_id'     : operator.organization.id,
             'organization_name'   : operator.organization.name,
+            'organization_code': operator.organization.code,
             'organization_short_name': operator.organization.short_name,
             'screen_name'   : operator.name,
         }
@@ -90,37 +91,17 @@ class LoginOAuth(BaseView):
 class StockStatus(BaseView):
     @view_config(route_name='api.stock_statuses_for_event', request_method="GET", renderer='json')
     def stock_statuses(self):
-        event_id = self.request.matchdict.get('event_id')
-        stocks = session.query(c_models.Stock) \
-            .options(joinedload(c_models.Stock.stock_status), joinedload(c_models.Stock.stock_type), joinedload(c_models.Stock.performance)) \
-            .join(c_models.ProductItem.stock) \
-            .join(c_models.ProductItem.product) \
-            .join(c_models.Product.event) \
-            .join(c_models.Stock.stock_holder) \
-            .join(c_models.StockHolder.account) \
-            .join(c_models.Event.organization) \
-            .filter(c_models.Product.event_id == event_id) \
-            .filter(c_models.Account.user_id == c_models.Organization.user_id) \
-            .distinct(c_models.Stock.id) \
-            .order_by(c_models.Stock.id) \
-            .all()
+        event_id = self.request.matchdict['event_id']
+        qs = c_models.Stock.query
+        qs = qs.join(c_models.ProductItem, c_models.ProductItem.stock_id==c_models.Stock.id)
+        qs = qs.join(c_models.Performance, c_models.ProductItem.performance_id==c_models.Performance.id)
+        qs = qs.filter(c_models.Performance.event_id==event_id)
+
+        qs = qs.options(orm.joinedload(c_models.Stock.stock_status))
+        qs = qs.distinct(c_models.Stock.id)
+        qs = qs.order_by(c_models.Stock.id)
+        stocks = qs.all()
         return dict(
-            performances=[
-                dict(
-                    id=performance.id,
-                    name=performance.name,
-                    start_on=performance.start_on and performance.start_on.isoformat(),
-                    end_on=performance.end_on and performance.end_on.isoformat()
-                    )
-                    for performance in dict((stock.performance_id, stock.performance) for stock in stocks).values()
-                ],
-            stock_types=[
-                dict(
-                    id=stock_type.id,
-                    name=stock_type.name
-                    )
-                    for stock_type in dict((stock.stock_type.id, stock.stock_type) for stock in stocks).values()
-                ],
             stocks=[
                 dict(
                     id=stock.id,

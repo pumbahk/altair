@@ -49,7 +49,8 @@ widget.configure({
     var collect_data = function(we, choiced_elt){
         var root = $(we.dialog);
         return {"kind": root.find("#kind").val(), 
-                "external_link": root.find("#external_link").val()
+                "external_link": root.find("#external_link").val(), 
+                "align": root.find("#align").val() || ""
                };
     };
     return widget.include("purchase", {

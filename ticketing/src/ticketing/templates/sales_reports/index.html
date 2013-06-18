@@ -2,10 +2,6 @@
 <%namespace file="/common/helpers.html" name="h" />
 
 <script type="text/javascript">
-  $(function(){
-    $('.datetimefield').datetimepicker({dateFormat:'yy-mm-dd',timeFormat:'hh:mm'});
-  });
-
   function event_link(url){
     var params = $('#limitation').serialize();
     $(location).attr('href', url + '?' + params);
@@ -27,53 +23,48 @@
   ${h.flash_messages(request)}
 </div>
 
-<form id="limitation" action="${request.route_path('sales_reports.index')}" method="POST">
-  <div class="control-group">
-    <div class="controls">
-      <input class="datetimefield" style="width: 140px; vertical-align: middle; margin-bottom: 0px;" id="limited_from" name="limited_from" type="text" value="${h.safe_strftime(form.limited_from.data)}" placeholder="開始日時"> 〜
-      <input class="datetimefield" style="width: 140px; vertical-align: middle; margin-bottom: 0px;" id="limited_to" name="limited_to" type="text" value="${h.safe_strftime(form.limited_to.data)}" placeholder="終了日時">
-      <input type="submit" class="btn" value="集計期間を絞り込む" >
-    </div>
-  </div>
-</form>
+<div class="well well-small">
+  <%include file="/sales_reports/_report_settings.html" args="form=form" />
+</div>
 
+<h3>イベント</h3>
 <table class="table table-striped table-bordered table-condensed">
   <tr>
     <th colspan="4"></th>
     <th colspan="2">累計</th>
     <th colspan="2">
-      % if form.limited_from.data or form.limited_to.data:
-      <h5>${h.safe_strftime(form.limited_from.data)} 〜 ${h.safe_strftime(form.limited_to.data)}</h5>
-      % else:
-      <h5>全期間</h5>
-      % endif
+    % if form.limited_from.data or form.limited_to.data:
+      ${h.safe_strftime(form.limited_from.data)} 〜</br>
+      ${h.safe_strftime(form.limited_to.data)}
+    % else:
+      全期間
+    % endif
     </th>
   </tr>
   <tr>
-    <th>イベント名</th>
-    <th>販売期間</th>
-    <th>配席数</th>
-    <th>残席数</th>
-    <th>販売枚数</th>
-    <th>販売金額</th>
-    <th>販売枚数</th>
-    <th>販売金額</th>
+    <th style="width: 40%;">イベント名</th>
+    <th style="width: 24%;">販売期間</th>
+    <th style="width: 6%;">配席数</th>
+    <th style="width: 6%;">残席数</th>
+    <th style="width: 6%;">販売枚数</th>
+    <th style="width: 6%;">販売金額</th>
+    <th style="width: 6%;">販売枚数</th>
+    <th style="width: 6%;">販売金額</th>
   </tr>
-
-  % for event_report, event_total_report in zip(event_reports, event_total_reports):
+  % for record in event_total_reporter.sort_data():
   <tr>
-    <td><a href='javascript:event_link("${request.route_path("sales_reports.event", event_id=event_report["id"])}");'>${event_report['title']}</a></td>
-    % if event_report['sales_start_day'] == event_report['sales_end_day']:
-    <td class="span3">${h.safe_strftime(event_report['sales_start_day'])}</td>
+    <td><a href='javascript:event_link("${request.route_path("sales_reports.event", event_id=record.id)}");'>${record.title}</a></td>
+    % if record.sales_start_day == record.sales_end_day:
+    <td>${h.safe_strftime(record.sales_start_day)}</td>
     % else:
-    <td class="span3">${h.safe_strftime(event_report['sales_start_day'])}〜${h.safe_strftime(event_report['sales_end_day'])}</td>
+    <td>${h.safe_strftime(record.sales_start_day)} 〜 ${h.safe_strftime(record.sales_end_day)}</td>
     % endif
-    <td class="span1 numeric">${h.price_format(event_report['total_quantity'])}</td>
-    <td class="span1 numeric">${h.price_format(event_report['vacant_quantity'])}</td>
-    <td class="span1 numeric">${h.price_format(event_total_report['product_quantity'])}</td>
-    <td class="span1 price">${h.price_format(event_total_report['price_amount'])}</td>
-    <td class="span1 numeric">${h.price_format(event_report['product_quantity'])}</td>
-    <td class="span1 price">${h.price_format(event_report['price_amount'])}</td>
+    <td class="numeric">${h.price_format(record.stock_quantity)}</td>
+    <td class="numeric">${h.price_format(record.vacant_quantity)}</td>
+    <td class="numeric">${h.price_format(record.total_order_quantity)}</td>
+    <td class="price">${h.price_format(record.total_order_amount)}</td>
+    <td class="numeric">${h.price_format(record.order_quantity)}</td>
+    <td class="price">${h.price_format(record.order_amount)}</td>
   </tr>
   % endfor
 </table>

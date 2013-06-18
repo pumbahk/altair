@@ -25,7 +25,7 @@ class Accounts(BaseView):
         if direction not in ['asc', 'desc']:
             direction = 'asc'
 
-        query = Account.filter_by(organization_id=int(self.context.user.organization_id)).order_by(sort + ' ' + direction)
+        query = Account.query.filter_by(organization_id=self.context.user.organization_id).order_by(sort + ' ' + direction)
         accounts = paginate.Page(
             query,
             page=int(self.request.params.get('page', 0)),
@@ -41,16 +41,16 @@ class Accounts(BaseView):
     @view_config(route_name='accounts.show', renderer='ticketing:templates/accounts/show.html')
     def show(self):
         account_id = int(self.request.matchdict.get('account_id', 0))
-        account = Account.get(account_id)
-        if account is None:
-            return HTTPNotFound('account id %d is not found' % account_id)
+        account = Account.query.filter_by(id=account_id).filter_by(organization_id=self.context.user.organization_id).first()
+        if account is None or account.user is None:
+            return HTTPNotFound('account id %d not found' % account_id)
 
         return {
             'form':AccountForm(record_to_multidict(account)),
             'form_organization':OrganizationForm(),
             'account':account,
-            'owner_events':Event.get_owner_event(user_id=account.user.id),
-            'client_events':Event.get_client_event(user_id=account.user.id),
+            'owner_events':Event.get_owner_event(account),
+            'client_events':Event.get_client_event(account),
             'sej_tenants':SejTenant.filter_by(organization_id=account.user.organization.id).all()
         }
 
@@ -76,7 +76,7 @@ class Accounts(BaseView):
     @view_config(route_name='accounts.edit', request_method='POST', renderer='ticketing:templates/accounts/_form.html')
     def edit_post(self):
         account_id = int(self.request.matchdict.get('account_id', 0))
-        account = Account.get(account_id)
+        account = Account.query.filter_by(id=account_id).filter_by(organization_id=self.context.user.organization_id).first()
         if account is None:
             return HTTPNotFound('account id %d is not found' % account_id)
 
@@ -96,7 +96,7 @@ class Accounts(BaseView):
     @view_config(route_name='accounts.delete')
     def delete(self):
         account_id = int(self.request.matchdict.get('account_id', 0))
-        account = Account.get(account_id)
+        account = Account.query.filter_by(id=account_id).filter_by(organization_id=self.context.user.organization_id).first()
         if account is None:
             return HTTPNotFound('account id %d is not found' % account_id)
 

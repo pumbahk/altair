@@ -2,7 +2,7 @@
 
 import unittest
 from pyramid import testing
-from ..testing import _setup_db as _setup_db_
+from ..testing import _setup_db as _setup_db_, _teardown_db
 
 def _setup_db(echo=False):
     return _setup_db_(
@@ -56,14 +56,14 @@ def _setup_performance(session):
     # seat_adjacency_set
     seat_adjacency_sets = {}
     for seat_count in range(2, 5):
-        seat_adjacency_sets[seat_count] = c_m.SeatAdjacencySet(venue=venue, seat_count=seat_count)
+        seat_adjacency_sets[seat_count] = c_m.SeatAdjacencySet(site=venue.site, seat_count=seat_count)
 
     seat_index_type = c_m.SeatIndexType(venue=venue, name='testing')
     for seat_index_index, (row, ss) in enumerate(zip(ROWS, SEAT_STATUSES)):
         seats = []
         for i, s in enumerate(ss):
             # seat
-            seat = c_m.Seat(venue=venue, stock=stock, name=u"%s-%s" % (row, i+1))
+            seat = c_m.Seat(venue=venue, stock=stock, name=u"%s-%s" % (row, i+1), l0_id=u"%s-%s" % (row, i+1))
             # seat_status
             status = int(c_m.SeatStatusEnum.InCart) if s else int(c_m.SeatStatusEnum.Vacant)
             seat_status = c_m.SeatStatus(seat=seat, status=status)
@@ -137,6 +137,7 @@ class ReservingTests(unittest.TestCase):
 
     def test_2seats_without_vacant_seats(self):
         """ 2連席確保 """
+        from ticketing.core.models import SeatStatusEnum
         from ticketing.cart.reserving import NotEnoughAdjacencyException
         self._reserve_all_seats()
 
@@ -147,31 +148,37 @@ class ReservingTests(unittest.TestCase):
 
     def test_2seats(self):
         """ 2連席確保 """
+        from ticketing.core.models import SeatStatusEnum
         request = testing.DummyRequest()
         target = self._makeOne(request)
 
         result = target.get_vacant_seats(self.stock_id, 2)
 
         self.assertEqual(len(result), 2)
+        self.assertTrue(all(seat.status == SeatStatusEnum.Vacant.v for seat in result))
         self.assertEqual(result[0].name, 'B-1')
         self.assertEqual(result[1].name, 'B-2')
 
     def test_3seats(self):
         """ 3連席確保 """
+        from ticketing.core.models import SeatStatusEnum
         request = testing.DummyRequest()
         target = self._makeOne(request)
 
         result = target.get_vacant_seats(self.stock_id, 3)
         self.assertEqual(len(result), 3)
+        self.assertTrue(all(seat.status == SeatStatusEnum.Vacant.v for seat in result))
         self.assertEqual(result[0].name, 'C-1')
 
     def test_4seats(self):
         """ 4連席確保 """
+        from ticketing.core.models import SeatStatusEnum
         request = testing.DummyRequest()
         target = self._makeOne(request)
 
         result = target.get_vacant_seats(self.stock_id, 4)
         self.assertEqual(len(result), 4)
+        self.assertTrue(all(seat.status == SeatStatusEnum.Vacant.v for seat in result))
         self.assertEqual(result[0].name, 'D-1')
 
     def test_reserve(self):
@@ -309,6 +316,15 @@ class StockerTests(unittest.TestCase):
         target = self._makeOne(request)
         stock = self._add_stock(10)
         self.assertRaises(NotEnoughStockException, target._take_stock, [(stock.id, 100)])
+
+    def test__take_stock_invalid_product(self):
+        from ticketing.cart.stocker import InvalidProductSelectionException
+        request = testing.DummyRequest()
+        target = self._makeOne(request)
+        stock = self._add_stock(10)
+        product = stock.product_items[0].product
+        other_performance_id = stock.performance_id + 1
+        self.assertRaises(InvalidProductSelectionException, target.take_stock, other_performance_id, [(product, 1)])
 
     def test_take_stock(self):
         stock = self._add_stock(10)
@@ -455,6 +471,23 @@ class CartFactoryTests(unittest.TestCase):
         self.assertEqual(result.products[2].items[0].seats, [])
         self.assertEqual(result.products[2].quantity, 10)
 
+    def test_create_cart_invalid_product(self):
+        import ticketing.core.models as c_m
+        from ticketing.cart.stocker import InvalidProductSelectionException
+        performance, product1, product2, product3, seats = self._add_seats()
+
+        request = testing.DummyRequest()
+        ordered_products = [
+            (product1, 2),
+            ]
+
+        other_performance = c_m.Performance(event=performance.event)
+        self.session.add(other_performance)
+        self.session.flush()
+
+        target = self._makeOne(request)
+        self.assertRaises(InvalidProductSelectionException, target.create_cart, other_performance.id, seats, ordered_products)
+
     def test_pop_seats(self):
 
         performance, product1, product2, product3, seats = self._add_seats()
@@ -498,6 +531,11 @@ class CartFactoryTests(unittest.TestCase):
 
 class order_productsTests(unittest.TestCase):
     """ 購入処理テスト(ユニット) """
+    def setUp(self):
+        self.session = _setup_db()
+
+    def tearDown(self):
+        _teardown_db() 
 
     def _callFUT(self, *args, **kwargs):
         from .api import order_products
@@ -519,6 +557,101 @@ class order_productsTests(unittest.TestCase):
 
         result = self._callFUT(request, performance_id, product_requires)
         self.assertIsNotNone(result)
+
+    def test_one_order(self):
+        from ..core.models import (
+            Seat,
+            SeatAdjacency,
+            SeatAdjacencySet,
+            SeatStatus,
+            SeatStatusEnum,
+            SeatIndex,
+            SeatIndexType,
+            Stock,
+            StockStatus,
+            StockType,
+            Product,
+            ProductItem,
+            Event,
+            Performance,
+            Organization,
+            Venue
+            )
+        from pyramid.interfaces import IRequest
+        from .interfaces import IStocker, IReserving, ICartFactory
+        from .stocker import Stocker, NotEnoughStockException
+        from .reserving import Reserving
+        from .carting import CartFactory
+        request = testing.DummyRequest()
+        request.registry.adapters.register([IRequest], IStocker, "", Stocker)
+        request.registry.adapters.register([IRequest], IReserving, "", Reserving)
+        request.registry.adapters.register([IRequest], ICartFactory, "", CartFactory)
+
+        # 在庫
+        stock_id = 1
+        venue_id = 2
+        site_id = 3
+        organization_id = 4
+        performance_id = 5
+        event_id = 6
+
+        organization = Organization(id=organization_id, short_name='', code='XX')
+        event = Event(id=event_id, organization=organization)
+        performance = Performance(id=performance_id, event=event)
+        venue = Venue(id=venue_id, organization=organization, site_id=site_id, performance=performance)
+        stock = Stock(id=stock_id, quantity=5, performance=performance, stock_type=StockType())
+        stock_status = StockStatus(stock=stock, quantity=5)
+        seats = [Seat(id=i, l0_id='s%s' % i, stock=stock, venue=venue, status_=SeatStatus(status=int(SeatStatusEnum.Vacant))) for i in range(1, 6)]
+        seat_index_type = SeatIndexType(name=u'', venue=venue)
+        seat_indexes = [SeatIndex(seat=seat, seat_index_type=seat_index_type, index=1) for seat in seats]
+        product_item = ProductItem(stock=stock, price=100, quantity=1, performance=performance)
+        product = Product(id=1, price=100, items=[product_item])
+        self.session.add(stock)
+        self.session.add(product)
+        self.session.add(product_item)
+        self.session.add(stock_status)
+        self.session.add(seat_index_type)
+        [self.session.add(s) for s in seat_indexes]
+        [self.session.add(s) for s in seats]
+
+        # 座席隣接状態
+        for seat_count in range (2, 4):
+            adjacency_set = SeatAdjacencySet(seat_count=seat_count)
+            for i in range(0, len(seats) - 1):
+                adjacency = SeatAdjacency(adjacency_set=adjacency_set)
+                adjacency.seats = seats[i:i+2]
+                self.session.add(adjacency)
+            self.session.add(adjacency_set)
+        self.session.flush()
+
+        # 注文 S席 2枚
+        ordered_products = [(product, 2)]
+        cart1 = self._callFUT(request, performance_id, ordered_products)
+
+        self.assertIsNotNone(cart1)
+        self.assertEqual(len(cart1.products), 1)
+        self.assertEqual(len(cart1.products[0].items), 1)
+        self.assertEqual(cart1.products[0].product, product)
+        self.assertEqual(cart1.products[0].items[0].quantity, 2)
+
+        def assertQuantity(quantity):
+            from sqlalchemy import sql
+            self.assertEqual(self.session.bind.execute(sql.select([StockStatus.quantity]).where(StockStatus.stock_id==stock.id)).first().quantity, quantity)
+
+        assertQuantity(3)
+
+        cart2 = self._callFUT(request, performance_id, ordered_products)
+
+        self.assertIsNotNone(cart2)
+        self.assertEqual(len(cart2.products), 1)
+        self.assertEqual(len(cart2.products[0].items), 1)
+        self.assertEqual(cart2.products[0].product, product)
+        self.assertEqual(cart2.products[0].items[0].quantity, 2)
+
+        assertQuantity(1)
+
+        self.assertRaises(NotEnoughStockException, lambda:self._callFUT(request, performance_id, ordered_products))
+
 
 class DummyStocker(object):
     """ dummy for IStocker"""
@@ -556,8 +689,16 @@ class get_valid_sales_urlTests(unittest.TestCase):
         event = c_m.Event()
         membership = u_m.Membership(name='ms1')
         membergroup = u_m.MemberGroup(name='mg1', membership=membership)
-        sales_segment = c_m.SalesSegment(event=event,
-            membergroups=[membergroup])
+        sales_segment_group = c_m.SalesSegmentGroup(
+            event=event,
+            membergroups=[membergroup],
+            margin_ratio=0.,
+            refund_ratio=0.,
+            printing_fee=0.,
+            registration_fee=0.
+            )
+        sales_segment = c_m.SalesSegment(
+            sales_segment_group=sales_segment_group)
         self.session.add(event)
         self.session.add(membership)
         self.session.flush()
@@ -569,7 +710,7 @@ class get_valid_sales_urlTests(unittest.TestCase):
             ['membership:ms1', 'membergroup:mg1']
         )
         self.config.add_route('cart.index.sales',
-            '{event_id}/{sales_segment_id}')
+            '{event_id}/{sales_segment_group_id}')
         event, membergroup = self._create_data()
         request = testing.DummyRequest()
         result = self._callFUT(request, event)
@@ -582,7 +723,7 @@ class get_valid_sales_urlTests(unittest.TestCase):
             ['membership:ms1', 'membergroup:mg2']
         )
         self.config.add_route('cart.index.sales',
-            '{event_id}/{sales_segment_id}')
+            '{event_id}/{sales_segment_group_id}')
         event, membergroup = self._create_data()
         request = testing.DummyRequest()
         result = self._callFUT(request, event)
@@ -619,152 +760,3 @@ class logout_Tests(unittest.TestCase):
         request = testing.DummyRequest()
         self._callFUT(request)
 
-class query_performance_namesTests(unittest.TestCase):
-    @classmethod
-    def setUpClass(cls):
-        cls.session = _setup_db()
-
-    def setUp(self):
-        self.config = testing.setUp()
-
-    def tearDown(self):
-        import transaction
-        transaction.abort()
-        self.session.remove()
-        testing.tearDown()
-
-    def _callFUT(self, *args, **kwargs):
-        from .api import _query_performance_names
-        return _query_performance_names(*args, **kwargs)
-
-    def test_one(self):
-        from datetime import datetime
-        from ..core.models import Event, SalesSegment, Performance, Venue, Product, ProductItem, Stock, Site, Organization
-        request = testing.DummyRequest()
-        organization = Organization(code="TEST", short_name="testing")
-        event = Event(organization=organization)
-        sales_segment = SalesSegment(event=event)
-        product = Product(sales_segment=sales_segment, price=100)
-        performance = Performance(event=event, name=u"公演1", 
-            open_on=datetime(2012, 8, 31, 10), start_on=datetime(2012, 8, 31, 10, 30),
-            public=True)
-        site = Site()
-        venue = Venue(performance=performance, site=site, organization=organization, name=u"会場1")
-        stock = Stock(performance=performance)
-        product_item = ProductItem(stock=stock, product=product, price=100)
-
-        self.session.add(event)
-        self.session.add(sales_segment)
-        self.session.flush()
-
-        result = self._callFUT(request, event, sales_segment)
-
-        self.assertEqual(result.all(),
-            [(1,
-              u'\u516c\u6f141',
-              datetime(2012, 8, 31, 10, 30),
-              datetime(2012, 8, 31, 10, 0),
-              u'\u4f1a\u58341',
-              False)])
-        
-class performance_namesTests(unittest.TestCase):
-
-    @classmethod
-    def setUpClass(cls):
-        cls.session = _setup_db()
-
-    def setUp(self):
-        self.config = testing.setUp()
-        self.maxDiff = None
-
-    def tearDown(self):
-        import transaction
-        transaction.abort()
-        self.session.remove()
-        testing.tearDown()
-
-    def _callFUT(self, *args, **kwargs):
-        from .api import performance_names
-        return performance_names(*args, **kwargs)
-
-    def test_empty(self):
-        from ..core.models import Event, SalesSegment
-        request = testing.DummyRequest()
-        event = Event()
-        sales_segment = SalesSegment()        
-        self.session.add(event)
-        self.session.add(sales_segment)
-        self.session.flush()
-
-        result = self._callFUT(request, event, sales_segment)
-
-        self.assertEqual(result, [])
-
-    def test_one(self):
-        from datetime import datetime
-        from ..core.models import Event, SalesSegment, Performance, Venue, Product, ProductItem, Stock, Site, Organization
-        request = testing.DummyRequest()
-        organization = Organization(code="TEST", short_name="testing")
-        event = Event(organization=organization)
-        sales_segment = SalesSegment(event=event)        
-        product = Product(sales_segment=sales_segment, price=100)
-        performance = Performance(event=event, name=u"公演1", 
-            open_on=datetime(2012, 8, 31, 10), start_on=datetime(2012, 8, 31, 10, 30),
-            public=True)
-        site = Site()
-        venue = Venue(performance=performance, site=site, organization=organization, name=u"会場1")
-        stock = Stock(performance=performance)
-        product_item = ProductItem(stock=stock, product=product, price=100)
-
-        self.session.add(event)
-        self.session.add(sales_segment)
-        self.session.flush()
-
-        result = self._callFUT(request, event, sales_segment)
-
-        self.assertEqual(result, [
-            (u'公演1', [ {'on_the_day': False, 'vname': u'会場1', 'pid': 1, 'open': datetime(2012, 8, 31, 10), 'start': datetime(2012, 8, 31, 10, 30)}]),
-        ])
-
-    def test_two(self):
-        from datetime import datetime
-        from ..core.models import Event, SalesSegment, Performance, Venue, Product, ProductItem, Stock, Site, Organization
-        request = testing.DummyRequest()
-        organization = Organization(code="TEST", short_name="testing")
-        event = Event(organization=organization)
-        sales_segment = SalesSegment(event=event)        
-        site = Site()
-        for i in range(2):
-            product = Product(sales_segment=sales_segment, price=100)
-            performance = Performance(event=event, name=u"公演1", 
-                open_on=datetime(2012, 8 + i, 10, 10), start_on=datetime(2012, 8 + i, 10, 10, 30),
-                public=True)
-            venue = Venue(performance=performance, site=site, organization=organization, name=u"会場1")
-            stock = Stock(performance=performance)
-            product_item = ProductItem(stock=stock, product=product, price=100)
-
-        for i in range(2):
-            product = Product(sales_segment=sales_segment, price=100)
-            performance = Performance(event=event, name=u"公演2", 
-                open_on=datetime(2012, 10 - i, 10, 10), start_on=datetime(2012, 10 - i, 10, 10, 30),
-                public=True)
-            venue = Venue(performance=performance, site=site, organization=organization, name=u"会場1")
-            stock = Stock(performance=performance)
-            product_item = ProductItem(stock=stock, product=product, price=100)
-
-        self.session.add(event)
-        self.session.add(sales_segment)
-        self.session.flush()
-
-        result = self._callFUT(request, event, sales_segment)
-
-        self.assertEqual(result, [
-            (u'公演1', [
-                {'on_the_day': False, 'vname': u'会場1', 'pid': 1, 'open': datetime(2012, 8, 10, 10), 'start': datetime(2012, 8, 10, 10, 30)},
-                {'on_the_day': False, 'vname': u'会場1', 'pid': 2, 'open': datetime(2012, 9, 10, 10), 'start': datetime(2012, 9, 10, 10, 30)},
-            ]),
-            (u'公演2', [
-                {'on_the_day': False, 'vname': u'会場1', 'pid': 4, 'open': datetime(2012, 9, 10, 10), 'start': datetime(2012, 9, 10, 10, 30)},
-                {'on_the_day': False, 'vname': u'会場1', 'pid': 3, 'open': datetime(2012, 10, 10, 10), 'start': datetime(2012, 10, 10, 10, 30)},
-            ]),
-        ])

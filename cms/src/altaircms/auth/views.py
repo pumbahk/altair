@@ -2,10 +2,8 @@
 import logging
 logger = logging.getLogger(__file__)
 
-from datetime import datetime
-import urllib
 import urllib2
-
+from altaircms.datelib import set_now
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound
 from pyramid.security import forget, remember, authenticated_userid
 from pyramid.view import view_config
@@ -17,7 +15,7 @@ import json
 
 from altaircms.models import DBSession
 from altaircms.lib.fanstatic_decorator import with_bootstrap
-from altaircms.auth.forms import RoleForm
+from altaircms.auth.forms import RoleForm, NowSettingForm
 from .models import Operator, Role, DEFAULT_ROLE, Organization
 
 from . import api
@@ -40,9 +38,9 @@ def set_after_login_redirect(request):
     logger.debug(request.session)
     logger.debug("@@@@@@")
 
-@view_config(route_name='login', renderer='altaircms:templates/auth/login/login.mako', 
+@view_config(route_name='login', renderer='altaircms:templates/auth/login/login.html', 
              decorator=with_bootstrap)
-@view_config(context='pyramid.httpexceptions.HTTPForbidden', renderer='altaircms:templates/auth/login/login.mako',
+@view_config(context='pyramid.httpexceptions.HTTPForbidden', renderer='altaircms:templates/auth/login/login.html',
              decorator=with_bootstrap)
 def login(request):
     logging.info("request user is %s" % request.user)
@@ -61,12 +59,12 @@ class LoginSelfView(object):
         self.context = context
         self.request = request
 
-    @view_config(match_param="action=input", renderer="altaircms:templates/auth/login/login.self.mako")
+    @view_config(match_param="action=input", renderer="altaircms:templates/auth/login/login.self.html")
     def input(self):
         form = forms.SelfLoginForm().configure(Organization.query)
         return {"form": form}
 
-    @view_config(match_param="action=login", renderer="altaircms:templates/auth/login/login.self.mako")
+    @view_config(match_param="action=login", renderer="altaircms:templates/auth/login/login.self.html")
     def login(self):
         form = forms.SelfLoginForm(self.request.POST).configure(Organization.query)
         if not form.validate():
@@ -107,7 +105,8 @@ class OAuthLogin(object):
 
             data = json.loads(self._urllib2.urlopen(url).read())
             logger.info("*login* access token return: %s" % data)
-
+            if not data:
+                raise Exception("access token not returned")
             api.notify_after_oauth_login(self.request, data)
 
         except IOError, e:
@@ -125,7 +124,7 @@ class OperatorView(object):
     def __init__(self, request):
         self.request = request
 
-    @view_config(route_name="operator_list", renderer='altaircms:templates/auth/operator/list.mako', permission="operator_read")
+    @view_config(route_name="operator_list", renderer='altaircms:templates/auth/operator/list.html', permission="operator_read")
     def list(self):
         operators = self.request.allowable(Operator).all()
 
@@ -133,7 +132,7 @@ class OperatorView(object):
             operators=operators
         )
 
-    @view_config(route_name="operator", renderer='altaircms:templates/auth/operator/view.mako', permission="operator_read")
+    @view_config(route_name="operator", renderer='altaircms:templates/auth/operator/view.html', permission="operator_read")
     def read(self):
         operator = get_or_404(self.request.allowable(Operator), Operator.id==self.request.matchdict['id'])
         return dict(operator=operator)
@@ -168,13 +167,13 @@ class RoleView(object):
         except NoResultFound:
             raise HTTPNotFound
 
-    @view_config(route_name="role_list", request_method="GET", renderer="altaircms:templates/auth/role/list.mako")
+    @view_config(route_name="role_list", request_method="GET", renderer="altaircms:templates/auth/role/list.html")
     def list(self):
         return dict(
             roles=Role.query.all(),
         )
 
-    @view_config(route_name="role", request_method="GET", renderer="altaircms:templates/auth/role/view.mako")
+    @view_config(route_name="role", request_method="GET", renderer="altaircms:templates/auth/role/view.html")
     def read(self):
         form = RoleForm()
         return dict(
@@ -182,7 +181,7 @@ class RoleView(object):
             role=self.get_role(),
         )
 
-    @view_config(route_name="role", request_method="POST", renderer="altaircms:templates/auth/role/view.mako")
+    @view_config(route_name="role", request_method="POST", renderer="altaircms:templates/auth/role/view.html")
     def update(self):
         form = RoleForm(self.request.POST)
         if form.validate():
@@ -206,7 +205,7 @@ class RoleView(object):
             raise
         return HTTPFound(self.request.route_path("role_list"))
 
-@view_config(route_name="operator_info", renderer='altaircms:templates/auth/operator/info.mako', 
+@view_config(route_name="operator_info", renderer='altaircms:templates/auth/operator/info.html', 
              permission="authenticated", decorator=with_bootstrap)
 def operator_info(request):
     operator = request.user
@@ -227,3 +226,28 @@ class RolePermissionView(object):
             role.permissions.remove(permission)
         
         return HTTPFound(self.request.route_path("role", id=role_id))
+
+
+##
+# get now settings
+@view_config(route_name="nowsetting", request_method="GET", 
+             permission="authenticated", decorator=with_bootstrap, renderer="altaircms:templates/auth/nowsetting/view.html")
+def nowsettings(context, request):
+    form = NowSettingForm()
+    return {"form": form}
+
+@view_config(route_name="nowsetting", request_method="POST", 
+             permission="authenticated", decorator=with_bootstrap, renderer="altaircms:templates/auth/nowsetting/view.html")
+def nowsettings_set_now(context, request):
+    form = NowSettingForm(request.POST)
+    if form.validate():
+        set_now(request, form.data["now"])
+        return HTTPFound("/")
+    return {"form": form}
+
+@view_config(route_name="nowsetting.invalidate", 
+             permission="authenticated")
+def nowsettings_invalidate(context, request):
+    set_now(request, None)
+    return HTTPFound("/")
+    

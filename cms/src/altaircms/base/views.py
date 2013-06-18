@@ -1,7 +1,8 @@
 # coding: utf-8
 import sqlalchemy as sa
-from datetime import datetime, timedelta
-from pyramid.httpexceptions import HTTPBadRequest, HTTPFound
+from datetime import timedelta
+from altaircms.datelib import get_now
+from pyramid.httpexceptions import HTTPBadRequest, HTTPFound, HTTPForbidden
 from pyramid.view import view_config
 from pyramid.view import view_defaults
 
@@ -12,19 +13,17 @@ from altaircms.auth.models import APIKey
 from altaircms.auth.forms import APIKeyForm
 
 
-@view_config(renderer='altaircms:templates/dashboard.mako', permission='authenticated',
+@view_config(renderer='altaircms:templates/dashboard.html', permission='authenticated',
              decorator=with_bootstrap, route_name="dashboard")
 def dashboard(request):
     """
     ログイン後トップページ
     """
-    if request.user:
-        events = request.allowable(Event).order_by(sa.desc(Event.updated_at)).limit(5)
-        today = datetime.now() - timedelta(days=1)
-        neary_open_events = request.allowable(Event).filter(Event.event_open>=today).order_by(sa.asc(Event.event_open)).limit(5)
-    else:
-        events = []
-        neary_open_events = []
+    if not (request.user and request.organization):
+        raise HTTPForbidden
+    events = request.allowable(Event).order_by(sa.desc(Event.updated_at)).limit(5)
+    today = get_now(request) - timedelta(days=1)
+    neary_open_events = request.allowable(Event).filter(Event.event_open>=today).order_by(sa.asc(Event.event_open)).limit(5)
     return {
         'events'        : events, 
         'neary_open_events'        : neary_open_events
@@ -38,8 +37,8 @@ class APIKeyView(object):
         #self.model_object = APIKeyAPI(self.request).read()
         self.model_object = DBSession.query(APIKey).filter_by(id=self.id).one() if self.id else None
 
-    @view_config(route_name="apikey_list", request_method="POST", renderer="altaircms:templates/auth/apikey/list.mako")
-    @view_config(route_name="apikey_list", request_method="GET", renderer="altaircms:templates/auth/apikey/list.mako")
+    @view_config(route_name="apikey_list", request_method="POST", renderer="altaircms:templates/auth/apikey/list.html")
+    @view_config(route_name="apikey_list", request_method="GET", renderer="altaircms:templates/auth/apikey/list.html")
     def read(self):
         if self.request.method == "POST":
             form = APIKeyForm(self.request.POST)

@@ -21,3 +21,4 @@ def includeme(config):
         }
     widget_plugin_install(config, settings)
     config.scan(".views")
+    config.add_has_widget_pages_finder(".api.get_topic_widget_pages", name="topic")

@@ -3,6 +3,9 @@ from sqlalchemy import Table, Column, Boolean, BigInteger, Integer, Float, Strin
 from sqlalchemy.sql.expression import case, null
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import join, backref, column_property
+from sqlalchemy.orm.collections import attribute_mapped_collection
+from pyramid.i18n import TranslationString as _
+from altair.saannotation import AnnotatedColumn
 
 from standardenum import StandardEnum
 from ticketing.models import relationship
@@ -22,6 +25,8 @@ class User(Base, BaseModel, LogicallyDeleted, WithTimestamp):
     bank_account_id = Column(Identifier, ForeignKey('BankAccount.id'))
     bank_account    = relationship('BankAccount')
 
+    user_point_accounts = relationship('UserPointAccount', backref="user", collection_class=attribute_mapped_collection('type'), cascade='all,delete-orphan')
+
     @staticmethod
     def get(user_id):
         return session.query(User).filter(User.id == user_id).first()
@@ -29,7 +34,7 @@ class User(Base, BaseModel, LogicallyDeleted, WithTimestamp):
     @property
     def first_user_credential(self):
         ## 実態としては、user: user_credentialは1:1だけれど、すでに[0]で取得しているコードなどが存在するので
-        return self.user_credential[0]
+        return self.user_credential[0] if self.user_credential else None
 
 class Member(Base, BaseModel, LogicallyDeleted, WithTimestamp):
     __tablename__ = 'Member'
@@ -79,6 +84,8 @@ class UserProfile(Base, BaseModel, LogicallyDeleted, WithTimestamp):
     fax = Column(String(32))
     status = Column(Integer)
 
+    rakuten_point_account = Column(String(20))
+
     @hybrid_property
     def full_name_kana(self):
         return self.last_name_kana + u' ' + self.first_name_kana
@@ -123,7 +130,6 @@ class UserProfile(Base, BaseModel, LogicallyDeleted, WithTimestamp):
         if self.email_2 and not is_nonmobile_email_address(self.email_2):
             return self.email_2
         return None
-
 
 class UserCredential(Base, BaseModel, LogicallyDeleted, WithTimestamp):
     __tablename__ = 'UserCredential'
@@ -174,16 +180,21 @@ class UserCredential(Base, BaseModel, LogicallyDeleted, WithTimestamp):
                    auth_secret=auth_secret, 
                    membership_id=membership_id, 
                    user=user)
-    
-    
-        
+   
+class UserPointAccountTypeEnum(StandardEnum):
+    Rakuten = 1
+
+class UserPointAccountStatusEnum(StandardEnum):
+    Suspended = -1
+    Invalid = 0
+    Valid = 1
+
 class UserPointAccount(Base, WithTimestamp):
     __tablename__ = 'UserPointAccount'
     query = session.query_property()
     id = Column(Identifier, primary_key=True)
     user_id = Column(Identifier, ForeignKey("User.id"))
-    user = relationship('User', backref="user_point_account", uselist=False)
-    point_type_code = Column(Integer)
+    type = Column(Integer)
     account_number = Column(String(255))
     account_expire = Column(String(255))
     account_owner = Column(String(255))
@@ -219,18 +230,23 @@ class Membership(Base, BaseModel, LogicallyDeleted, WithTimestamp):
 MemberGroup_SalesSegment = Table('MemberGroup_SalesSegment', Base.metadata,
     Column('id', Identifier, primary_key=True),
     Column('membergroup_id', Identifier, ForeignKey('MemberGroup.id')),
-    Column('sales_segment_id', Identifier, ForeignKey('SalesSegmentGroup.id')),
-    UniqueConstraint('membergroup_id', 'sales_segment_id'),
+    Column('sales_segment_group_id', Identifier, ForeignKey('SalesSegmentGroup.id')),
+    Column('sales_segment_id', Identifier, ForeignKey('SalesSegment.id')),
+    UniqueConstraint('membergroup_id', 'sales_segment_group_id'),
 )
 
 class MemberGroup(Base, BaseModel, LogicallyDeleted, WithTimestamp):
     __tablename__ = 'MemberGroup'
     query = session.query_property()
     id = Column(Identifier, primary_key=True)
-    name = Column(String(255))
-    membership_id = Column(Identifier, ForeignKey('Membership.id'))
+    name = AnnotatedColumn(String(255), _a_label=_(u'会員区分名'))
+    membership_id = AnnotatedColumn(Identifier, ForeignKey('Membership.id'), _a_label=_(u'会員種別'))
     membership = relationship('Membership', backref='membergroups')
-    is_guest = Column(Boolean, default=False, server_default='0', nullable=False)
+    is_guest = AnnotatedColumn(Boolean, default=False, server_default='0', nullable=False, _a_label=_(u'ゲストログイン'))
+
+    sales_segment_groups = relationship('SalesSegmentGroup',
+        secondary=MemberGroup_SalesSegment,
+        backref="membergroups")
 
     sales_segments = relationship('SalesSegment',
         secondary=MemberGroup_SalesSegment,
@@ -247,4 +263,4 @@ class MemberGroup(Base, BaseModel, LogicallyDeleted, WithTimestamp):
 #     __tablename__ = 'Membership_SalesSegment'
 #     query = session.query_property()
 #     membership_id = Column(Identifier, ForeignKey('Membership.id'), primary_key=True)
-#     sales_segment_id = Column(Identifier, ForeignKey('SalesSegment.id'), primary_key=True)
+#     sales_segment_group_id = Column(Identifier, ForeignKey('SalesSegment.id'), primary_key=True)

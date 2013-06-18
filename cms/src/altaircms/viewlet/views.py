@@ -9,24 +9,7 @@ from ..asset.api import get_taglabel
 def table_headers(headers):
     return Markup(u"<th>%s</th>" % u"</th></th>".join(headers)) 
 
-@view_config(name="describe_pageset", renderer="altaircms:templates/event/viewlet/pagesets.mako")
-def describe_pageset(request):
-    event = api.get_event(request)
-    pagesets = api.get_pagesets(request)
-    return {
-        "event": event, 
-        "pagesets": pagesets
-        }
-
-@view_config(name="describe_pageset", renderer="altaircms:templates/page/viewlet/pagesets.mako", 
-             context="altaircms.page.resources.PageResource")
-def describe_pageset_without_event(request):
-    pagesets = api.get_pagesets(request)
-    return {
-        "pagesets": pagesets
-        }
-
-@view_config(name="describe_performance", renderer="altaircms:templates/event/viewlet/performances.mako")
+@view_config(name="describe_performance", renderer="altaircms:templates/event/viewlet/performances.html")
 def describe_performance(request):
     performances = api.get_performances(request)
     event = api.get_event(request)
@@ -35,7 +18,7 @@ def describe_performance(request):
         "performances": performances
         }
 
-@view_config(name="describe_sale", renderer="altaircms:templates/event/viewlet/sales.mako")
+@view_config(name="describe_sale", renderer="altaircms:templates/event/viewlet/sales.html")
 def describe_sale(request):
     sales = api.get_sales(request)
     event = api.get_event(request)
@@ -45,7 +28,7 @@ def describe_sale(request):
         }
 
 
-@view_config(name="describe_hotword", renderer="altaircms:templates/page/viewlet/hotwords.mako")
+@view_config(name="describe_hotword", renderer="altaircms:templates/page/viewlet/hotwords.html")
 def describe_hotword(request):
     hotwords = api.get_hotwords(request)
     display_fields = sf.HotWordForm.__display_fields__
@@ -57,7 +40,7 @@ def describe_hotword(request):
         "labels": labels
         }
 
-@view_config(name="describe_accesskey", renderer="altaircms:templates/page/viewlet/accesskeys.mako")
+@view_config(name="describe_accesskey", renderer="altaircms:templates/page/viewlet/accesskeys.html")
 def describe_accesskey(request):
     page = api.get_page(request)
     accesskeys = api.get_accesskeys(request)
@@ -66,7 +49,7 @@ def describe_accesskey(request):
         "accesskeys": accesskeys, 
         }
 
-@view_config(name="describe_pagetag", renderer="altaircms:templates/page/viewlet/tags.mako")
+@view_config(name="describe_pagetag", renderer="altaircms:templates/page/viewlet/tags.html")
 def describe_pagetag(request):
     page = api.get_page(request)
     pagetags = api.get_tags(request)
@@ -85,14 +68,14 @@ def describe_pagetag(request):
         "private_tags": private_tags, 
         }
 
-@view_config(name="describe_asset", renderer="altaircms:templates/page/viewlet/assets.mako")
+@view_config(name="describe_asset", renderer="altaircms:templates/page/viewlet/assets.html")
 def describe_asset(request):
     taglabel = get_taglabel(request)
     assets = api.get_assets(request)
     return {"assets": assets, 
             "taglabel": taglabel}
 
-@view_config(name="describe_topic", renderer="altaircms:templates/page/viewlet/topics.mako")
+@view_config(name="describe_topic", renderer="altaircms:templates/page/viewlet/topics.html")
 def describe_topic(request):
     pageset = api.get_pageset(request)
     event = api.get_event(request)
@@ -101,7 +84,7 @@ def describe_topic(request):
             "event": event, 
             "pageset": pageset}
 
-@view_config(name="describe_topcontent", renderer="altaircms:templates/page/viewlet/topcontents.mako")
+@view_config(name="describe_topcontent", renderer="altaircms:templates/page/viewlet/topcontents.html")
 def describe_topcontent(request):
     pageset = api.get_pageset(request)
     topcontents = api.get_topcontents(request)

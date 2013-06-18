@@ -1,14 +1,19 @@
 # -*- coding:utf-8 -*-
+
 import os
 import sys
 from datetime import datetime, timedelta
 import logging
+import transaction
+import argparse
 
-from pyramid.paster import bootstrap
+from pyramid.paster import bootstrap, setup_logging   
 from sqlalchemy import and_
+from sqlalchemy.sql.expression import not_
 import sqlahelper
 
-from ticketing.core.models import DBSession, SeatStatus, SeatStatusEnum
+from ticketing.core.models import DBSession, SeatStatus, SeatStatusEnum, Order
+from ticketing.sej.commands import create_and_send_refund_file
 
 def update_seat_status():
     _keep_to_vacant()
@@ -47,3 +52,47 @@ def _keep_to_vacant():
         logging.info('success')
 
     logging.info('end update seat_status batch')
+
+def refund_order():
+    ''' 払戻処理
+    '''
+    parser = argparse.ArgumentParser()
+    parser.add_argument('config')
+    args = parser.parse_args()
+
+    setup_logging(args.config)
+    env = bootstrap(args.config)
+    request = env['request']
+    registry = env['registry']
+
+    logging.info('start refund_order batch')
+
+    # 1件ずつ払戻処理
+    orders_to_skip = set()
+    while True:
+        query = Order.query.filter(Order.refund_id!=None, Order.refunded_at==None)
+        if orders_to_skip:
+            query = query.filter(not_(Order.id.in_(orders_to_skip)))
+        order = query.first()
+
+        if not order:
+            logging.info('target order not found')
+            break
+
+        try:
+            logging.info('try to refund order (%s)' % order.id)
+            if order.call_refund(request):
+                logging.info('refund success')
+                transaction.commit()
+            else:
+                logging.error('failed to refund order (%s)' % order.order_no)
+                transaction.abort()
+                orders_to_skip.add(order.id)
+        except Exception as e:
+            logging.error('failed to refund orders (%s)' % e.message)
+            break
+
+    # SEJ払戻ファイル送信
+    create_and_send_refund_file(registry.settings)
+
+    logging.info('end refund_order batch')

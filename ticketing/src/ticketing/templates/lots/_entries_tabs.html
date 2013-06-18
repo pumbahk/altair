@@ -1,0 +1,20 @@
+<%def name="tabs(request)">
+<div>
+<ul class="nav nav-tabs">
+<%self:tab_item request="${request}" route_name='lots.entries.index'>
+  <a href="${request.route_url('lots.entries.index', lot_id=lot.id)}">抽選申し込み状況</a>
+</%self:tab_item>
+<%self:tab_item request="${request}" route_name='lots.entries.search'>
+  <a href="${request.route_url('lots.entries.search', lot_id=lot.id)}">検索</a>
+</%self:tab_item>
+<%self:tab_item request="${request}" route_name='lots.entries.elect'>
+  <a href="${request.route_url('lots.entries.elect', lot_id=lot.id)}">当選処理</a>
+</%self:tab_item>
+</div>
+</%def>
+
+<%def name="tab_item(request, route_name)">
+<li class="${'active' if route_name == request.matched_route.name else ''}">
+  ${caller.body()}
+</li>
+</%def>

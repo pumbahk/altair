@@ -20,7 +20,7 @@ class AnchorlistWidget(Widget):
     implements(IWidget)
     type = "anchorlist"
 
-    template_name = "altaircms.plugins.widget:anchorlist/render.mako"
+    template_name = "altaircms.plugins.widget:anchorlist/render.html"
     __tablename__ = "widget_anchorlist"
     __mapper_args__ = {"polymorphic_identity": type}
     query = DBSession.query_property()

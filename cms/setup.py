@@ -13,22 +13,29 @@ requires = [
     'pyramid_tm',
     "pyramid_fanstatic", 
     'sqlahelper',
-    "pil",
+    "Pillow",
     'isodate',
     "solrpy", 
     "WTForms",
-    "js.jquery == 1.7.1", 
-    "js.bootstrap==2.1.1", 
+    "js.jquery", 
+    "js.bootstrap", 
     "js.json2", 
     "js.jqueryui", 
     "js.jquery_tools", 
-    'js.underscore >= 1.3.3',
+    'js.underscore',
     'js.backbone',
     'js.tinymce',
     'pyramid_who',
     'uamobile', 
-    'fluent-logger == 0.3.3moriyoshi',
-    'pyramid_selectable_renderer'
+    'fluent-logger == 0.3.3moriyoshi2',
+    'pyramid_selectable_renderer >= 0.0.4',
+    'altair.findable_label', 
+    'altair.log',
+    'altair.encodingfixer', 
+    'altair.exclog', 
+    'altair.cdnpath', 
+    'pyramid_layout',
+    'lxml',
     ]
 
 solr_require = [
@@ -40,15 +47,15 @@ tests_require = [
     "coverage",
     "webtest",
     "nosexcover",
-    "mock",
+    "mock", 
 ]
 
 devtools_require = [
-    "sadisplay",
+    # "sadisplay",
     "alembic",
-    "sphinx",
-    "sphinxcontrib-blockdiag",
-    "sphinxcontrib-seqdiag",
+    # "sphinx",
+    # "sphinxcontrib-blockdiag",
+    # "sphinxcontrib-seqdiag",
 ]
 
 extras_require = {
@@ -81,10 +88,15 @@ setup(name='altair-cms',
       zip_safe=False,
       test_suite='altaircms',
       install_requires = requires,
-      dependency_links = [
-        'file:../commons#egg=altair-commons-0.0',
-        'https://github.com/moriyoshi/fluent-logger-python/tarball/0.3.3moriyoshi#egg=fluent-logger-0.3.3moriyoshi',
-        ],
+      dependency_links = [s.format(**locals()) for s in [
+        'file:{here}/../commons#egg=altair-commons-0.0',
+        'file:{here}/../altair_findable_label#egg=altair.findable_label-0.0',
+        "file:{here}/../altair_log#egg=altair.log-0.0.1", 
+        'file:{here}/../altair_encodingfixer#egg=altair.encodingfixer-0.0', 
+        'file:{here}/../altair_exclog#egg=altair.exclog-0.0', 
+        'file:{here}/../altair_cdnpath#egg=altair.cdnpath-0.0', 
+        'https://github.com/moriyoshi/fluent-logger-python/tarball/0.3.3moriyoshi2#egg=fluent-logger-0.3.3moriyoshi2',
+        ]],
       tests_require=tests_require,
       extras_require=extras_require,
       entry_points = """\
@@ -94,7 +106,7 @@ setup(name='altair-cms',
       [pyramid.scaffold]
       cms_widget = scaffolds:WidgetPluginTemplate
       cms_asset_widget = scaffolds:AssetWidgetPluginTemplate
-
+      functional_tests = scaffolds:FunctionalTestTemplate
       [console_scripts]
       loadfromcsv = altaircms.scripts.loadfromcsv:main
       syncsolr = altaircms.scripts.syncsolr:main

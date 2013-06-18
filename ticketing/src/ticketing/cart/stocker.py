@@ -4,11 +4,19 @@
 在庫数管理
 """
 import logging
-from datetime import datetime
+#from datetime import datetime
 import itertools
-from ticketing.core.models import *
+from ticketing.core.models import (
+    DBSession,
+    StockStatus,
+    ProductItem,
+)
+from sqlalchemy.orm import joinedload
 
 logger = logging.getLogger(__name__)
+
+class InvalidProductSelectionException(Exception):
+    """ 選択商品が不正な場合 """
 
 class NotEnoughStockException(Exception):
     """ 必要な在庫数がない場合 """
@@ -35,8 +43,8 @@ class NotEnoughStockException(Exception):
             )).encode('utf-8')
 
 class Stocker(object):
-    def __init__(self, request):
-        self.request = request
+    def __init__(self, request=None):
+        self.request = request  # これ使ってないや...
 
     # TODO: 在庫オブジェクトの取得内容を確認。必要なproductの分がすべて取得できているか？
     def take_stock(self, performance_id, product_requires):
@@ -58,7 +66,9 @@ class Stocker(object):
         """
         stock_ids = [s[0] for s in stock_requires]
         require_quantities = dict(stock_requires)
-        statuses = StockStatus.query.filter(StockStatus.stock_id.in_(stock_ids)).with_lockmode('update').all()
+        statuses = StockStatus.query.options(
+            joinedload(StockStatus.stock),
+        ).filter(StockStatus.stock_id.in_(stock_ids)).with_lockmode('update').all()
         
         results = []
         # 在庫数を確認、確保
@@ -79,50 +89,25 @@ class Stocker(object):
             for product_item in DBSession.query(ProductItem).filter(
                         ProductItem.product_id==product.id).filter(
                         ProductItem.performance_id==performance_id).all():
-                yield (product_item, quantity)
+                if product_item.deleted_at != None:
+                    continue
+
+                yield (product_item, quantity * product_item.quantity)
 
     def quantity_for_stock_id(self, performance_id, ordered_products):
         """ Productと個数の組から、stock_id, 個数の組に集約する
         :param ordered_product: iter of (product, quantity)
-
         """
-
         logger.debug("ordered products: %s" % ordered_products)
         ordered_product_items = self._convert_order_product_items(performance_id, ordered_products=ordered_products)
         ordered_product_items = list(ordered_product_items)
+        logger.debug(u"ordered products: %s" % [(p[0].name, p[1]) 
+                                                for p in ordered_products])
         logger.debug("ordered product items: %s" % ordered_product_items)
+        if sum([quantity for p, quantity in ordered_products]) > sum([quantity for p, quantity in ordered_product_items]):
+            logger.debug("invalid product selection %s > %s" % (sum([q for p, q in ordered_products]), sum([q for p, q in ordered_product_items])))
+            raise InvalidProductSelectionException
         q = sorted(ordered_product_items, key=lambda x: x[0].stock_id)
         q = itertools.groupby(q, key=lambda x: x[0].stock_id)
         return [(stock_id, sum(quantity for _, quantity in ordered_items)) for stock_id, ordered_items in q]
-
-    def get_stock_holder(self, event_id):
-        """ イベントに対する主枠ホルダー """
-
-        now = datetime.now()
-
-        return StockHolder.query.filter(
-            Account.id==StockHolder.account_id
-        ).filter(
-            User.id==Account.user_id
-        ).filter(
-            Organization.user_id==User.id
-        ).filter(
-            StockHolder.event_id==event_id
-        ).filter(
-            Stock.stock_holder_id==StockHolder.id
-        ).filter(
-            ProductItem.stock_id==Stock.id
-        ).filter(
-            Product.id==ProductItem.product_id
-        ).filter(
-            Product.public==True
-        ).filter(
-            SalesSegment.id==Product.sales_segment_id
-        ).filter(
-            SalesSegment.start_at<=now
-        ).filter(
-            SalesSegment.end_at>=now
-        ).filter(
-            SalesSegment.public==True
-        ).distinct('*').one()
 

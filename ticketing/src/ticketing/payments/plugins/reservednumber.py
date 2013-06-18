@@ -64,7 +64,14 @@ class ReservedNumberDeliveryPlugin(object):
         number = hashlib.md5(str(cart.id)).hexdigest()
         reserved_number = m.ReservedNumber(order_no=cart.order_no, number=number)
         m.DBSession.add(reserved_number)
-        logger.debug("引き換え番号: %s" % reserved_number.number)
+        logger.debug(u"引き換え番号: %s" % reserved_number.number)
+
+    def finished(self, request, order):
+        """ 引換番号が発行されていること """
+        reserved_number = m.DBSession.query(m.ReservedNumber).filter(
+            m.ReservedNumber.order_no==order.order_no).first()
+        return bool(reserved_number)
+
 
 @view_config(context=ICompleteMailPayment, name="payment-%d" % PAYMENT_PLUGIN_ID, renderer="ticketing.payments.plugins:templates/reserved_number_payment_mail_complete.html")
 @view_config(context=ICompleteMailDelivery, name="delivery-%d" % PLUGIN_ID, renderer="ticketing.payments.plugins:templates/reserved_number_mail_complete.html")
@@ -100,8 +107,14 @@ class ReservedNumberPaymentPlugin(object):
                 reserved_number = m.PaymentReservedNumber(order_no=cart.order_no, number=number)
                 break
         m.DBSession.add(reserved_number)
-        logger.debug("支払い番号: %s" % reserved_number.number)
+        logger.debug(u"支払い番号: %s" % reserved_number.number)
         order = c_models.Order.create_from_cart(cart)
         cart.finish()
 
         return order
+
+    def finished(self, request, order):
+        """ 支払い番号が発行されていること """
+        reserved_number = m.DBSession.query(m.PaymentReservedNumber).filter(
+            m.PaymentReservedNumber.order_no==order.order_no).first()
+        return bool(reserved_number)

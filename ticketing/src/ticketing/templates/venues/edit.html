@@ -1,0 +1,69 @@
+<%inherit file="/layout_2cols.html" />
+<%namespace file="/common/helpers.html" name="h" />
+
+<%
+  if request.matched_route.name == 'venues.edit':
+    route_name = u'編集'
+    route_path = request.route_path('venues.edit', venue_id=venue.id)
+  else:
+    route_name = u'登録'
+    route_path = request.route_path('venues.new')
+%>
+
+<script type="text/javascript">
+  $(function() {
+    $('form').disableOnSubmit();
+    var code_buf = [];
+    $('#title').keyup(function(e){
+      if ($('#code').val() || code_buf.length >= 3) return;
+      var char = String.fromCharCode(e.which);
+      if (char && char.match(/[a-z]/i) && !char.match(/[aiueo]/i)) {
+        code_buf.push(char);
+      }
+    });
+    $('#title').focusout(function(){
+      if ($('#code').val() || !code_buf) return;
+      $('#code').val('${request.context.user.organization.code}' + code_buf.join(''));
+    });
+    $('#title').focusin(function(){
+      code_buf = [];
+    });
+  });
+</script>
+
+<div class="breadcrumbs">
+${h.breadcrumbs(
+    names=[u'会場', route_name],
+    urls=[request.route_path('events.index')]
+)}
+</div>
+
+<div class="page-header">
+  <h3>会場${route_name}</h3>
+</div>
+
+<div class="content">
+  ${h.flash_messages(request)}
+  ${h.alert_message(form)}
+</div>
+
+<div class="well">
+  <form class="form-horizontal" action="${route_path}" method="POST">
+    <fieldset>
+      ${h.form_item(form.name, class_='span8', maxlength=200)}
+      ${h.form_item(form.sub_name, class_='span8', maxlength=200)}
+      ${h.form_item(form.zip)}
+      ${h.form_item(form.prefecture)}
+      ${h.form_item(form.city)}
+      ${h.form_item(form.street)}
+      ${h.form_item(form.address)}
+      ${h.form_item(form.other_address)}
+      ${h.form_item(form.tel_1)}
+      ${h.form_item(form.tel_2)}
+      ${h.form_item(form.fax)}
+    </fieldset>
+    <div class="form-actions">
+      <input class="btn btn-primary" type="submit" name="submit" value="${route_name}">
+    </div>
+  </form>
+</div>

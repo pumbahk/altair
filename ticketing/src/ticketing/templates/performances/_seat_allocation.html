@@ -44,30 +44,10 @@ span.editable {
   margin: 0 0;
 }
 
-#tooltip {
-  border: solid 3px #05C;
-  -moz-border-radius: 6px;
-  -webkit-border-radius: 6px;
-  border-radius: 6px;
-  position: absolute;
-  text-decoration: none;
-  margin: 10px;
-  padding: 5px 5px;
-  width: 160px;
-  zoom: 1;
-  -webkit-transition-property: opacity;
-  -webkit-transition-duration: 2s;
-  -webkit-transition-timing-function: ease-in-out;
-  background-color: white;
-  visibility: hidden;
-  z-index: 10;
-  opacity: 1;
-}
-
 .swatch {
   display: inline-block;
-  width: 20px;
-  height: 20px;
+  width: 16px;
+  height: 16px;
   -webkit-border-radius: 3px;
   -moz-border-radius: 3px;
   border-radius: 3px;
@@ -76,9 +56,14 @@ span.editable {
   text-align: center;
 }
 
-.reporting {
+.transfer {
   float: right;
-  margin: 8px 18px 8px 5px;
+  margin: 8px 8px 8px 5px;
+}
+
+.rest {
+  float: right;
+  margin: 8px 0px 8px 0px;
 }
 
 #venue-editor .venue-editor-main .venue-editor-main-root {
@@ -91,32 +76,24 @@ span.editable {
 </style>
 
 <script type="text/javascript">
-  $(".collapse").collapse()
+  $(".collapse").collapse();
 </script>
 
-<div id="tooltip"></div>
-<div class="tabbable tabs-below tabs-above" id="seat-allocation-tab">
-  <div class="tab-content"  id="seat-allocation-tab-content">
+<div class="tabbable" id="seat-allocation-tab">
+  <div class="tab-content" id="seat-allocation-tab-content">
     <div class="tab-pane active" id="map">
       <div class="container-fluid">
         <div class="row-fluid">
-          <%
-            data_source = {
-              'drawing': request.route_path('api.get_drawing', venue_id=performance.venue.id),
-              'metadata': request.route_path('api.get_seats', venue_id=performance.venue.id,
-                                             _query={u'n':u'seats|stock_types|stock_holders|stocks'})
-            }
-          %>
           <%vv:venueeditor data_source="${data_source}">
             <%def name="toolbar_extra()">
               <div style="float:right">
-                <a href="javascript:saveStocks();" class="btn btn-primary">保存する</a>
+                <input type="button" class="btn venue-editor-main-side-toggle" value="配席テーブル表示" />
+                <a name="save" href="javascript:saveStocks();" class="btn btn-primary">保存する</a>
               </div>
             </%def>
             <%def name="post()">
 
 <script type="text/javascript">
-var outer = venueEditorSide.children();
 
 function deepClone(o) {
   if (o !== null && typeof o == 'object' && o.constructor == Object) {
@@ -196,6 +173,7 @@ function bind(bindable, model, attr) {
     bindable.set(this.get(attr));
   }
   model.on('change:' + attr, onchange);
+  bindable.bindStock('change:assignable', onchange);
   bindable.bindSave(function (value) {
     return model.set(attr, value, {
       error: function (msg) {
@@ -206,20 +184,51 @@ function bind(bindable, model, attr) {
   onchange.call(model);
 }
 
-function makeAssignable(n, stock) {
-  var assignable = $('<a class="assignable"></a>').appendTo(n);
-  function refresh() {
-    assignable.text(stock.get('assigned'));
+function makeLockHandler(n, stock) {
+  var lockable = $('<i class="icon-lock"></i>').appendTo(n);
+  var venue = venueEditorRoot.venueeditor('model');
+  function onClick() {
+    var status = stock.get('assignable') ? false : true;
+    stock.set('assignable', status);
+    if (venue.perStockSeatSet[stock.id]) {
+      venue.perStockSeatSet[stock.id].each(function(seat){
+        if (!seat.get('sold')) seat.set('selectable', status);
+      })
+    }
+    return false;
   }
-  stock.on('change:assigned', refresh);
-  assignable.click(function () {
+  lockable.bind('click', onClick);
+  function refresh() {
+    if (stock.get('assignable')) {
+      lockable.addClass('icon-white');
+    } else {
+      lockable.removeClass('icon-white');
+    }
+  }
+  stock.on('change:assignable', refresh);
+  refresh();
+}
+
+function makeAssignable(n, stock) {
+  var assignable = $('<span></span>').appendTo(n);
+  function onClick() {
     var selection = venueEditorRoot.venueeditor('selection');
     selection.each(function (seat) {
       seat.set('stock', stock);
     });
     venueEditorRoot.venueeditor('clearSelection');
     return false;
-  });
+  }
+  function refresh() {
+    assignable.text(stock.get('assigned'));
+    if (stock.get('assignable')) {
+      assignable.bind('click', onClick).addClass('assignable');
+    } else {
+      assignable.unbind().removeClass('assignable');
+    }
+  }
+  stock.on('change:assigned', refresh);
+  stock.on('change:assignable', refresh);
   refresh();
 }
 
@@ -227,17 +236,12 @@ var makeEditable = (function () {
   var editing = null;
   var prevDisplayStyleValue = null;
 
-  return function makeEditable(n) {
-    var editable = $('<span class="editable"></span>').appendTo(n);
+  return function makeEditable(n, stock) {
+    var editable = $('<span></span>').appendTo(n);
     var editableIcon = $('<i class="icon-pencil" style="margin-left: 4px;"></i>').appendTo(n);
     var save = function (value) { set(value); };
     var value = '';
-    function set(_value) {
-      if (editing)
-        editing.val(_value)
-      editable.text(_value);
-      value = _value;
-    }
+
     function beginEdit() {
       if (editing)
         return;
@@ -282,11 +286,26 @@ var makeEditable = (function () {
       save();
     }
 
-    n.click(function () {
+    function onClick() {
       if (editing)
         cancel();
       beginEdit();
-    });
+    }
+
+    function set(_value) {
+      if (editing)
+        editing.val(_value)
+      editable.text(_value);
+      value = _value;
+
+      if (stock.get('assignable')) {
+        editable.bind('click', onClick).addClass('editable');
+        editableIcon.css('display', 'inline-block');
+      } else {
+        editable.unbind().removeClass('editable');
+        editableIcon.css('display', 'none');
+      }
+    }
 
     return {
       element: editable,
@@ -296,6 +315,9 @@ var makeEditable = (function () {
       },
       bindSave: function (_save) {
         save = _save;
+      },
+      bindStock: function (event, listener) {
+        stock.on(event, listener);
       }
     }
   }
@@ -308,19 +330,22 @@ function buildStockRow(stock) {
   var stockType = stock.get('stockType');
   if (stockType.id != "") {
     buildColorButton(stockType, 'style').appendTo(legend);
-    bind(makeEditable(name), stockType, 'name');
+    bind(makeEditable(name, stock), stockType, 'name');
   } else {
     name.text(stockType.get('name'));
   }
-  tr.append(legend);
-  tr.append(name);
   var quantity = $('<td class="stock-quantity"></td>');
   if (stockType.get('isSeat') && !stockType.get('quantityOnly')) {
     makeAssignable(quantity, stock);
   } else {
-    bind(makeEditable(quantity), stock, 'assigned');
+    bind(makeEditable(quantity, stock), stock, 'assigned');
   }
+  var lock = $('<td class="stock-lock"></td>');
+  makeLockHandler(lock, stock);
+  tr.append(legend);
+  tr.append(name);
   tr.append(quantity);
+  tr.append(lock);
   return tr;
 }
 
@@ -330,9 +355,14 @@ function buildStockHolderTypeTables(venue) {
     var keyedStocks = stockHolder.keyedStocks();
     var style = stockHolder.get('style');
     var swatch = $('<span class="swatch"></span>').css('text-color', style.text_color).text(style.text||'　');
-    var head = $('<h4 class="ui-header" style="float: left;"></h4>').text(' ' + stockHolder.get('name'));
-    var button = $('<a class="reporting btn btn-mini btn-inverse" data-toggle="modal" href="#modal-report">配券明細</a>');
-    button.attr('onclick', "$('.modal-report-submit').attr('href', '/events/reports/${performance.event_id}/seat_stock_to_stockholder/" + stockHolder.get('id') + "');");
+    var head = $('<h5 class="ui-header" style="float: left;"></h5>').text(' ' + stockHolder.get('name'));
+    var transfer = $('<a class="transfer btn btn-mini btn-inverse" href="javascript:buildTransferModal(' + stockHolder.id + ');">枠移動</a>');
+    var rest = $('<span class="rest label hide"></span>');
+    stockHolder.on('change:available', function () {
+      rest.removeClass('hide');
+      rest.text('残席: ' + stockHolder.get('available') + '席');
+    });
+    stockHolder.recalculateQuantity();
     var div = $('<div></div>').css('display', 'none');
     var table = $('<table class="table table-bordered"></table>');
     var tbody = $('<tbody></tbody>').appendTo(table);
@@ -353,17 +383,110 @@ function buildStockHolderTypeTables(venue) {
     table.appendTo(div);
 
     retval.append(head);
-    if (stockHolder.get('id'))
-      retval.append(button);
+    retval.append(transfer);
+    retval.append(rest);
     retval.append('<div style="clear: both;"></div>');
     retval.append(div);
   });
   return retval;
 }
 
+function buildSeatDetailRow(seat) {
+  var tr = $('<tr></tr>');
+  var count = $('span.selection-count');
+  var checkbox = $('<input type="checkbox" checked="checked" />').attr('name', seat.get('id')).click(function () {
+    if (this.checked)
+      seat.set('selected', true);
+    else
+      seat.set('selected', false);
+    count.text(parseInt(count.text())+(this.checked ? 1 : -1));
+  });
+  var checkbox_td = $('<td></td>').append(checkbox);
+  var seat_id = $('<td></td>').text(seat.get('id'));
+  var name = $('<td></td>').text(seat.get('name'));
+  var stock_type = $('<td></td>').text(seat.get('stock').get('stockType').get('name'));
+  var stock_holder = $('<td></td>').text(seat.get('stock').get('stockHolder').get('name'));
+  tr.append(checkbox_td);
+  tr.append(seat_id);
+  tr.append(name);
+  tr.append(stock_type);
+  tr.append(stock_holder);
+  return tr;
+}
+
+function buildSeatDetailTable(selection) {
+  var table = $('<table class="table table-condensed"></table>');
+  var tbody = $('<tbody></tbody>').appendTo(table);
+  if (selection.length) {
+    var header = $('<th width="8%"></th width="15%"><th>ID</th><th width="30%">座席</th><th width="27%">席種</th><th width="20%">配券先</th>');
+    tbody.append(header);
+    selection.each(function (seat) {
+      tbody.append(buildSeatDetailRow(seat));
+    });
+  }
+  return table;
+}
+
+function buildTransferModal(id) {
+  var id = id || "";
+  var modal = $('#modal-transfer');
+  var body = modal.find('.modal-body');
+  var venue = venueEditorRoot.venueeditor('model');
+  var current = $('<p>選択した枠：' +  + '</p>');
+  var select = $('<p>移動先の枠：</p><select name="to"></select>');
+  venue.stockHolders.each(function (stockHolder) {
+    if (stockHolder.get('id') == id) {
+      current = $('<p>選択した枠：' + stockHolder.get('name') + '</p><input name="from" type="hidden" value="' + stockHolder.get('id') + '" />');
+    } else {
+      select.append($("<option>").text(stockHolder.get('name')).attr("value", stockHolder.get('id')));
+    }
+  });
+  body.empty().append(current).append(select);
+  modal.show();
+}
+
+function transferStocks() {
+  var modal = $('#modal-transfer');
+  var body = modal.find('.modal-body');
+  var venue = venueEditorRoot.venueeditor('model');
+  var from_stock_holder = body.find('input[name="from"]').val();
+  var to_stock_holder = body.find('select[name="to"] option:selected').val();
+
+  for (var i in venue.perStockHolderStockMap[from_stock_holder]) {
+    var from_stock = venue.perStockHolderStockMap[from_stock_holder][i];
+    var to_stock = null;
+
+    var stock_type = from_stock.get('stockType');
+    for (var j in venue.perStockTypeStockMap[stock_type.get('id')]) {
+      to_stock = venue.perStockTypeStockMap[stock_type.get('id')][j];
+      if (to_stock_holder == to_stock.get('stockHolder').get('id')) {
+        break;
+      }
+    }
+
+    if (!to_stock || to_stock.id == from_stock.id) continue;
+    if (stock_type.get('isSeat') && !stock_type.get('quantityOnly')) {
+      if (venue.perStockSeatSet[from_stock.id]) {
+        venue.perStockSeatSet[from_stock.id].each(function(seat){
+          if (seat.get('selectable')) seat.set('stock', to_stock);
+        })
+      }
+    } else {
+      var unavailable = parseInt(from_stock.get('assigned')) - parseInt(from_stock.get('available'));
+      to_stock.set('available', parseInt(to_stock.get('available')) + parseInt(from_stock.get('available')));
+      to_stock.set('assigned', parseInt(to_stock.get('assigned')) + parseInt(from_stock.get('available')));
+      from_stock.set('available', 0);
+      from_stock.set('assigned', unavailable);
+    }
+  }
+  modal.hide();
+}
+
 function saveStocks() {
   var modal = $('#modal-result');
   modal.find('.modal-body .alert').remove();
+  var label = $('a[name="save"]');
+  label.text('保存中').attr('disabled', 'disabled');
   var venue = venueEditorRoot.venueeditor('model');
   $.ajax({
     type: 'post',
@@ -372,8 +495,9 @@ function saveStocks() {
     dataType: 'json',
     data: JSON.stringify(venue.toJSON()),
     success: function(result) {
-      $('.content').prepend('<div class="alert alert-success"><a class="close" data-dismiss="alert">&times;</a><h4 class="alert-heading">' + result.message + '</h4></div>');
+      $('.content').html('<div class="alert alert-success"><a class="close" data-dismiss="alert">&times;</a><h4 class="alert-heading">' + result.message + '</h4></div>');
       modal.modal('hide');
+      label.text('保存する').removeAttr('disabled');
       venueEditorRoot.venueeditor('clearAll');
     },
     error: function(xhr, text) {
@@ -388,13 +512,19 @@ function saveStocks() {
       }
       modal.find('#message').text("保存できませんでした").after('<div class="alert alert-error"><ul>' + errors + '</ul></div>');
       modal.modal('toggle');
+      label.text('保存する').removeAttr('disabled');
     }
   });
 }
 
+var tab1 = venueEditorSide.find("#venue-editor-main-side-tab1");
+var tab2 = venueEditorSide.find("#venue-editor-main-side-tab2");
+
 callbacks.load = function (viewer) {
-  outer.empty();
-  outer.append(buildStockHolderTypeTables(viewer.venue));
+  tab1.empty();
+  tab1.append(buildStockHolderTypeTables(viewer.venue));
+  tab2.empty();
+  tab2.append(buildSeatDetailTable(venueEditorRoot.venueeditor('selection')));
 };
 
 callbacks.select = function (viewer, selection) {
@@ -402,6 +532,26 @@ callbacks.select = function (viewer, selection) {
     $(".assignable").addClass("enabled");
   else
     $(".assignable").removeClass("enabled");
+
+  var selection_set = venueEditorRoot.venueeditor('selection');
+  if (selection.length == 1) {
+    var tbody = $('#venue-editor-main-side-tab2').find('table tbody');
+    // 単一選択なら選択状態を反映
+    var tr = tbody.find('tr input[name="' + selection[0].get('id') + '"]');
+    if (tr.length > 0) {
+      if (selection[0].get('selected'))
+        tr.attr('checked', 'checked');
+      else
+        tr.removeAttr('checked');
+    } else {
+      tbody.append(buildSeatDetailRow(selection[0]));
+    }
+  } else {
+    // 複数選択ならテーブル再生成
+    tab2.empty();
+    tab2.append(buildSeatDetailTable(selection_set));
+  }
+  $('span.selection-count').text(selection_set.length);
 };
 </script>
             </%def>
@@ -422,7 +572,23 @@ callbacks.select = function (viewer, selection) {
   </a>
 </div>
 
-<div id="modal-report" class="modal hide fade">
+<div id="modal-transfer" class="modal hide">
+  <div class="modal-header">
+    <a href="javascript:void(0);" onclick="$('#modal-transfer').hide();" class="close btn-close">&times;</a>
+    <h3>枠移動</h3>
+  </div>
+
+  <div class="modal-body">
+    <p>選択した枠の座席をまとめて他の枠へ移動します。</p>
+  </div>
+
+  <div class="modal-footer">
+    <a href="javascript:void(0);" onclick="$('#modal-transfer').hide();" class="btn secondary btn-close">閉じる</a>
+    <a href="javascript:transferStocks();" class="btn danger">まとめて移動する</a>
+  </div>
+</div>
+
+<div id="modal-report" class="modal hide">
   <div class="modal-header">
     <a href="javascript:void(0);" class="close btn-close">&times;</a>
     <h3>確認</h3>
@@ -438,7 +604,7 @@ callbacks.select = function (viewer, selection) {
   </div>
 </div>
 
-<div id="modal-download_seats" class="modal hide fade">
+<div id="modal-download_seats" class="modal hide">
   <div class="modal-header">
     <a href="#" class="close">&times;</a>
     <h3>確認</h3>

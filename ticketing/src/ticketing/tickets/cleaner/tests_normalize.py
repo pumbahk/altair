@@ -42,7 +42,6 @@ class SVGNormalizeUnitTests(unittest.TestCase):
         self._callFUT(io, result)
         self.assertEquals(u'<doc><flowSpan style="font-weight:bold">{{価格}}</flowSpan></doc>', result.getvalue().decode("utf-8"))
 
-
     def test_cleaned_xml0(self):
         """<a>{{bb}}</a> -> <a>{{bb}}</a>"""
         from StringIO import StringIO
@@ -142,11 +141,57 @@ class SVGNormalizeUnitTests(unittest.TestCase):
         self._callFUT(io, result)
         self.assertEquals("<doc><a><b> x{x}x </b> {{yyy}}</a></doc>", result.getvalue())
 
+    def test_cleaned_xml11(self):
+        """<a><b> {{ </b> {{y</a>yy}}"""
+        from StringIO import StringIO
+        io = StringIO("<doc><a><a> {{ </a> {{yyy}}</a></doc>")
         
+        result = StringIO()
+        self._callFUT(io, result)
+        self.assertEquals("<doc><a><a> {{  {{yyy}}</a></a></doc>", result.getvalue())
+
+    def test_cleaned_xml13(self):
+        """<doc><g><a><b><c>{{</c><c>{{yyy}}</c></b></a><a><x><r/></x><b><c/><c/></b></a></g></doc>"""
+        from StringIO import StringIO
+        io = StringIO("<doc><g><a><b><c>{{</c><c>{{yyy}}</c></b></a><a><x><r/></x><b><c/><c/></b></a></g></doc>")
+        
+        result = StringIO()
+        self._callFUT(io, result)
+        self.assertEquals('<doc><g><a><b><c></c><c>{{{{yyy}}</c></b></a><a><x><r></r></x><b><c></c><c></c></b></a></g></doc>', result.getvalue())
+
+    def test_cleaned_xml14(self):
+        """<doc><g><a><b><c>{{yyy}}</c><c>}</c></b></a><a><x><r/></x><b><c/><c/></b></a></g></doc>"""
+        from StringIO import StringIO
+        io = StringIO("<doc><g><a><b><c>{{yyy}}</c><c>}</c></b></a><a><x><r/></x><b><c/><c/></b></a></g></doc>")
+        
+        result = StringIO()
+        self._callFUT(io, result)
+        self.assertEquals('<doc><g><a><b><c>{{yyy}}</c><c>}</c></b></a><a><x><r></r></x><b><c></c><c></c></b></a></g></doc>', result.getvalue())
+
+    ## simple xml1 and simple xml2 's result are asymnetric. this is support for unmatched parensis character set e.g. (().
+    def test_simple_xml1(self):
+        """<doc>{<a></a></doc>"""
+        from StringIO import StringIO
+        io = StringIO("<doc>{<a></a></doc>")
+        
+        result = StringIO()
+        self._callFUT(io, result)
+        self.assertEquals('<doc><a></a></doc>', result.getvalue())
+
+    def test_simple_xml2(self):
+        """<doc>}}<a></a></doc>"""
+        from StringIO import StringIO
+        io = StringIO("<doc>}}<a></a></doc>")
+        
+        result = StringIO()
+        self._callFUT(io, result)
+        self.assertEquals('<doc>}}<a></a></doc>', result.getvalue())
+
+       
 class EliminatedTagNormalizeUnitTests(unittest.TestCase):
     def _callFUT(self, *args, **kwargs):
-        from ticketing.tickets.cleaner.normalize import _normalize
-        return _normalize(*args, **kwargs)
+        from ticketing.tickets.cleaner.normalize import normalize
+        return normalize(*args, **kwargs)
 
     def test_it(self):
         """<F id=1>{{<F id=2>zz</F><f id=3>}}</F></F> -> <F id=1>{{zz}}</F>"""
@@ -165,6 +210,23 @@ class EliminatedTagNormalizeUnitTests(unittest.TestCase):
         result = StringIO()
         self._callFUT(io, result, eliminate=True)
         self.assertEquals('<doc><F id="2">{{zz}}</F></doc>', result.getvalue())
+
+    def test_it3(self):
+        from StringIO import StringIO
+        """<F id=1><F id=2></F>)</F> => <F id=1><F id=2></F>)</F>"""
+        io = StringIO('<doc><F id="1"><F id="2">x</F>)</F></doc>')
+
+        result = StringIO()
+        self._callFUT(io, result, eliminate=True)
+        self.assertEquals('<doc><F id="1">x</F>)</doc>', result.getvalue())
+
+    def test_it4(self):
+        from StringIO import StringIO
+        io = StringIO('<doc><F id="1">{{<F id="2">aaa}}</F>)</F></doc>')
+
+        result = StringIO()
+        self._callFUT(io, result, eliminate=True)
+        self.assertEquals('<doc><F id="1">{{aaa}}</F>)</doc>', result.getvalue())
 
     def test_complex(self):
         """ そのまま{{}}の中の文字列をmustacheで文字列を埋め込もうとするとxmlとして不正な形式になり失敗する.normalizeした後のものはok
@@ -197,6 +259,17 @@ class EliminatedTagNormalizeUnitTests(unittest.TestCase):
         
         self.assertTrue(lxml.etree.parse(io))
 
-        
+    ## todo: move
+    def test_double(self):
+        """<doc><a>{{xxx}}{{yyy}}</a></doc>
+        {{{xxx}}{{yyy}}} => {{placeholder}} # placeholder={xxx}}{{yyy}
+
+        so. if you want to get {{xxx}}{{yyy}} from {{xxx}}. input {{{xxx}}{{yyy}}} at preview page.
+        """
+        from ticketing.tickets.preview.fillvalues import template_fillvalues
+        result = template_fillvalues("<doc><a>{{xxx}}</a></doc>", {"xxx": "{{{xxx}}{{yyy}}}"})
+        self.assertEquals("<doc><a>{{xxx}}{{yyy}}</a></doc>", result)
+
+
 if __name__ == "__main__":
     unittest.main()

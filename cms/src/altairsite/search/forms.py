@@ -2,16 +2,20 @@
 from datetime import datetime
 from datetime import timedelta
 from collections import namedtuple
-from wtforms import form
+from altaircms.formhelpers import Form
 from wtforms import fields
 from wtforms import widgets
 from wtforms import validators
 
-from .formparts import CheckboxListField
+from altaircms.formhelpers import CheckboxListField as NewCheckboxListField
 from .formparts import PutOnlyWidget
 from .formparts import CheckboxWithLabelInput
-from .formparts import MaybeSelectField
+from altaircms.formhelpers import MaybeSelectField
+from ..pyramidlayout import get_salessegment_kinds
+from ..pyramidlayout import get_top_category_genres
 
+import logging
+logger = logging.getLogger()
 import pkg_resources
 def import_symbol(symbol):
     return pkg_resources.EntryPoint.parse("x=%s" % symbol).load(False)
@@ -28,7 +32,7 @@ convertorはローマ字->日本語の変換などに使われる
 MarkedTree = namedtuple("MarkedTree", "check_all_list, tree, translator")
 
 
-years = [(i, unicode(i)) for i in range(2010, 2020)]
+years = [(i, unicode(i)) for i in range(2013, 2020)]
 months = [(i, unicode(i)) for i in range(1, 13)]
 days = [(i, unicode(i)) for i in range(1, 32)]
 
@@ -73,15 +77,15 @@ def parse_date(y, m, d):
             return None
 
 ### toppage sidebar
-class TopPageSidebarSearchForm(form.Form):
+class TopPageSidebarSearchForm(Form):
     """ top page のsidebarのform"""
-    start_year = MaybeSelectField(choices=years)
-    start_month = MaybeSelectField(choices=months)
-    start_day = MaybeSelectField(choices=days)
+    start_year = MaybeSelectField(blank_text=u'年', blank_value="",choices=years)
+    start_month = MaybeSelectField(blank_text=u'月', choices=months)
+    start_day = MaybeSelectField(blank_text=u'日', choices=days)
 
-    end_year = MaybeSelectField(choices=years)
-    end_month = MaybeSelectField(choices=months)
-    end_day = MaybeSelectField(choices=days)
+    end_year = MaybeSelectField(blank_text=u'年', blank_value="",choices=years)
+    end_month = MaybeSelectField(blank_text=u'月', choices=months)
+    end_day = MaybeSelectField(blank_text=u'日', choices=days)
     choices = import_symbol("altaircms.seeds.area:AREA_CHOICES")
     area = fields.SelectField(choices=[("", "-------")]+choices)
 
@@ -101,9 +105,9 @@ class TopPageSidebarSearchForm(form.Form):
             "performance_close": performance_close, 
             }
         
-        if data["area"]:
+        if data["area"] and data["area"] != u"None":
             areas = params["areas"] = [data["area"]]
-            prefs = params["prefectures"] = [x for x,_ in  PREF_DICT[data["area"]]]
+            prefs = params["prefectures"] = [x for x,_ in  PREF_DICT.get(data["area"], [])]
             params["area_tree"] = MarkedTree(check_all_list=areas, 
                                              translator=PREF_EN_TO_JA, 
                                              tree=zip(areas, prefs))
@@ -113,7 +117,7 @@ class TopPageSidebarSearchForm(form.Form):
 
 ## todo:フリーワード
 ## todo: make query
-class QueryPartForm(form.Form):
+class QueryPartForm(Form):
     query = fields.TextField(id="freeword_query", label=u"",)
     query_cond = fields.RadioField(choices=[("intersection", u"全てを含む"), ("union", u"少なくとも1つを含む")], 
                                    widget=PutOnlyWidget())
@@ -133,72 +137,51 @@ class QueryPartForm(form.Form):
         return params
 
 ## todo:ジャンル
-## todo: make query
-class GenrePartForm(form.Form):
-    music = fields.BooleanField(label=u"音楽", widget=CheckboxWithLabelInput())
-    music_subgenre_choices = import_symbol("altaircms.seeds.categories.music:MUSIC_SUBCATEGORY_CHOICES")
-    music_subgenre = CheckboxListField(choices=music_subgenre_choices)
+class GenrePartForm(Form):
+    top = NewCheckboxListField(choices=[])
+    sub = NewCheckboxListField(choices=[])
 
-    stage = fields.BooleanField(label=u"演劇", widget=CheckboxWithLabelInput())
-    stage_subgenre_choices = import_symbol("altaircms.seeds.categories.stage:STAGE_SUBCATEGORY_CHOICES")
-    stage_subgenre = CheckboxListField(choices=stage_subgenre_choices)
+    def configure(self, request):
+        genres = get_top_category_genres(request)
+        self.top.choices = [(unicode(g.id), g.label) for g in genres]
+        self.for_render_subs = [[(unicode(x.id), x.label) for x in g.children] for g in genres]
+        self.sub.choices = [x for xs in self.for_render_subs for x in xs]
+        return self
 
-    sports = fields.BooleanField(label=u"スポーツ", widget=CheckboxWithLabelInput())
-    sports_subgenre_choices = import_symbol("altaircms.seeds.categories.sports:SPORTS_SUBCATEGORY_CHOICES")
-    sports_subgenre = CheckboxListField(choices=sports_subgenre_choices)
-
-    other = fields.BooleanField(label=u"イベント・その他", widget=CheckboxWithLabelInput())
-    other_subgenre_choices = import_symbol("altaircms.seeds.categories.other:OTHER_SUBCATEGORY_CHOICES")
-    other_subgenre = CheckboxListField(choices=other_subgenre_choices)
-
-    ## 日本語へ変換する辞書
-    en_to_ja = {}
-    en_to_ja.update(music_subgenre_choices)
-    en_to_ja.update(sports_subgenre_choices)
-    en_to_ja.update(stage_subgenre_choices)
-    en_to_ja.update(other_subgenre_choices)
-    en_to_ja.update(music=u"音楽", stage=u"演劇", sports=u"スポーツ", other=u"イベント・その他")
-    ##
+    def ids_from_choices(self, choices):
+        return [p[0] for p in choices]
 
     def make_query_params(self):
-        data = self.data
-        genres = ["music", "stage", "sports", "other"]
-        sub_genres = [data["music_subgenre"], data["stage_subgenre"], data["sports_subgenre"], data["other_subgenre"]]
-        top_categories = [k for k in genres if data[k]]
+        self.validate()
+        subs = self.data["sub"]
+        sub_genre_id_list = [[x for x in subs if x in self.ids_from_choices(cands)] for cands in self.for_render_subs]
 
-        return {"top_categories": top_categories, 
-                "sub_categories": list(set([x for xs in sub_genres if xs for x in xs])), 
-                "category_tree": MarkedTree(check_all_list=top_categories,
-                                            translator=self.en_to_ja, 
-                                            tree=zip(genres, sub_genres)) ## for rendering html
+        label_dict = dict(self.top.choices)
+        label_dict.update(self.sub.choices)
+
+        return {"top_categories": self.data["top"], 
+                "sub_categories": self.data["sub"], 
+                "category_tree": MarkedTree(check_all_list=self.data["top"],
+                                            translator=label_dict, 
+                                            tree=zip(self.ids_from_choices(self.top.choices), sub_genre_id_list)) ## for rendering html
                 }
 
     def __html__(self): ## todo refactoring
-        return u"""
-<tr>
-  <td class="mostleft">%(music)s</td>
-  <td>%(music_subgenre)s</td>
-</tr>
-<tr>
-  <td class="mostleft">%(stage)s</td>
-  <td>%(stage_subgenre)s</td>
-</tr>
-<tr>
-  <td class="mostleft">%(sports)s</td>
-  <td>%(sports_subgenre)s</td>
-</tr>
-<tr>
-  <td class="mostleft">%(other)s</td>
-  <td>%(other_subgenre)s</td>
-</tr>
-""" % self
+        """top と sub NewCheckboxListFieldと合わせて"""
+        html = []
+        prefix = self._prefix or ""
+        for (t_id, t_label), subs in zip(self.top.choices, self.for_render_subs):
+            html.append(u"<tr>")
+            html.append(u'<td class="mostleft"><span class="control-group"><label><input name="%stop" value="%s" type="checkbox"/> %s</label></span></td>' % (prefix, t_id, t_label))
+            html.append(u"<td>")
+            for s_id, s_label in subs:
+                html.append(u'<span class="control-group"><label><input name="%ssub" value="%s" type="checkbox"/> %s</label></span>' % (prefix, s_id, s_label))
+            html.append(u"</td>")
+            html.append(u"</tr>")
+        return u"\n".join(html)
             
-# todo:開催地
-# class AreaPartForm(form.Form):
-#     def __html__(self):
-#         return u"this-is-dummy"
 
-class AreaPartForm(form.Form):
+class AreaPartForm(Form):
     hokkaido = fields.BooleanField(label=u"北海道", widget=CheckboxWithLabelInput()) 
     tohoku = fields.BooleanField(label=u"東北", widget=CheckboxWithLabelInput()) 
     kitakanto = fields.BooleanField(label=u"北関東", widget=CheckboxWithLabelInput()) 
@@ -212,18 +195,18 @@ class AreaPartForm(form.Form):
     kyushu = fields.BooleanField(label=u"九州", widget=CheckboxWithLabelInput()) 
     okinawa = fields.BooleanField(label=u"沖縄", widget=CheckboxWithLabelInput()) 
 
-    pref_hokkaido = CheckboxListField(choices=PREF_DICT["hokkaido"])
-    pref_tohoku = CheckboxListField(choices=PREF_DICT["tohoku"])
-    pref_kitakanto = CheckboxListField(choices=PREF_DICT["kitakanto"])
-    pref_shutoken = CheckboxListField(choices=PREF_DICT["shutoken"])
-    pref_koshinetsu = CheckboxListField(choices=PREF_DICT["koshinetsu"])
-    pref_hokuriku = CheckboxListField(choices=PREF_DICT["hokuriku"])
-    pref_tokai = CheckboxListField(choices=PREF_DICT["tokai"])
-    pref_kinki = CheckboxListField(choices=PREF_DICT["kinki"])
-    pref_chugoku = CheckboxListField(choices=PREF_DICT["chugoku"])
-    pref_shikoku = CheckboxListField(choices=PREF_DICT["shikoku"])
-    pref_kyushu = CheckboxListField(choices=PREF_DICT["kyushu"])
-    pref_okinawa = CheckboxListField(choices=PREF_DICT["okinawa"])
+    pref_hokkaido = NewCheckboxListField(choices=PREF_DICT["hokkaido"])
+    pref_tohoku = NewCheckboxListField(choices=PREF_DICT["tohoku"])
+    pref_kitakanto = NewCheckboxListField(choices=PREF_DICT["kitakanto"])
+    pref_shutoken = NewCheckboxListField(choices=PREF_DICT["shutoken"])
+    pref_koshinetsu = NewCheckboxListField(choices=PREF_DICT["koshinetsu"])
+    pref_hokuriku = NewCheckboxListField(choices=PREF_DICT["hokuriku"])
+    pref_tokai = NewCheckboxListField(choices=PREF_DICT["tokai"])
+    pref_kinki = NewCheckboxListField(choices=PREF_DICT["kinki"])
+    pref_chugoku = NewCheckboxListField(choices=PREF_DICT["chugoku"])
+    pref_shikoku = NewCheckboxListField(choices=PREF_DICT["shikoku"])
+    pref_kyushu = NewCheckboxListField(choices=PREF_DICT["kyushu"])
+    pref_okinawa = NewCheckboxListField(choices=PREF_DICT["okinawa"])
 
     areas = ["hokkaido", "tohoku", "kitakanto", "shutoken", "koshinetsu", "hokuriku", "tokai", "kinki", "chugoku", "shikoku", "kyushu", "okinawa"]
 
@@ -262,12 +245,12 @@ class AreaPartForm(form.Form):
 
 ## todo:公演日
 
-class PerformanceTermPartForm(form.Form):
-    start_year = MaybeSelectField(choices=years)
+class PerformanceTermPartForm(Form):
+    start_year = MaybeSelectField(blank_value="",choices=years)
     start_month = MaybeSelectField(choices=months)
     start_day = MaybeSelectField(choices=days)
 
-    end_year = MaybeSelectField(choices=years)
+    end_year = MaybeSelectField(blank_value="",choices=years)
     end_month = MaybeSelectField(choices=months)
     end_day = MaybeSelectField(choices=days)
 
@@ -291,25 +274,24 @@ class PerformanceTermPartForm(form.Form):
                 "performance_close": performance_close}
 
 ## todo:販売条件
-class DealCondPartForm(form.Form):
-    #deal_cond_choices=[("early", u"先行"), ("normal", u"一般")]
-    deal_cond_choices=import_symbol("altaircms.seeds.saleskind:SALESKIND_CHOICES")
-    DDICT = dict(deal_cond_choices)
-
-    deal_cond = CheckboxListField(choices=deal_cond_choices)
-    # deal_cond = fields.RadioField(choices=deal_cond_choices, 
-    #                                widget=PutOnlyWidget())
+class DealCondPartForm(Form):
+    deal_cond = NewCheckboxListField(choices=[])
+    def configure(self, request):
+        self.deal_cond.choices = [(unicode(k.id), k.label) for k in get_salessegment_kinds(request)]
+        return self
 
     def __html__(self):
         return u"%(deal_cond)s" % self
 
     def make_query_params(self):
+        self.validate()
         return self.data
 
 ## todo:付加サービス
-class AddedServicePartForm(form.Form):
+class AddedServicePartForm(Form):
     choices = [("select-seat", u"座席選択可能"), ("keep-adjust", u"お隣キープ"), ("2d-market", u"2次市場")]
-    added_services = CheckboxListField(choices=choices)
+    choices = []
+    added_services = NewCheckboxListField(choices=choices)
 
     def __html__(self):
         return u"%(added_services)s" % self
@@ -321,7 +303,7 @@ class AddedServicePartForm(form.Form):
 
 
 ## todo:発売日,  rename
-class AboutDealPartForm(form.Form):
+class AboutDealPartForm(Form):
     before_deal_start = MaybeSelectField(choices=days)
     till_deal_end = MaybeSelectField(choices=days)
     
@@ -347,7 +329,8 @@ class AboutDealPartForm(form.Form):
         return self.data
 
 class DetailSearchQueryForm(object):
-    def __init__(self, formdata=None):
+    def __init__(self, request, formdata=None):
+        self.request = request
         self._forms = []
         self.query = self._append_with(QueryPartForm(formdata=formdata, prefix="q-"))
         self.genre = self._append_with(GenrePartForm(formdata=formdata, prefix="g-"))
@@ -359,6 +342,8 @@ class DetailSearchQueryForm(object):
 
     def _append_with(self, form):
         self._forms.append(form)
+        if hasattr(form, "configure"):
+            form.configure(self.request)
         return form
 
     def validate(self):
@@ -370,8 +355,8 @@ class DetailSearchQueryForm(object):
             params.update(form.make_query_params())
         return params
 
-def get_search_forms(formdata=None):
-    return DetailSearchQueryForm(formdata)
+def get_search_forms(request, formdata=None):
+    return DetailSearchQueryForm(request, formdata)
     
 def form_as_filter(qs, form):
     return form.as_filter(qs)

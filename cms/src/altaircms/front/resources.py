@@ -1,10 +1,11 @@
 # -*- coding:utf-8 -*-
 
-
+import sqlalchemy as sa
 import logging
 logger = logging.getLogger(__file__)
 
 from . import api
+from altaircms.datelib import get_now
 from altaircms.security import get_acl_candidates
 from altaircms.page.models import Page
 from altaircms.page.models import PageSet
@@ -21,13 +22,6 @@ class PageRenderingResource(object):
     def access_control(self):
         return AccessControl(self.request)
 
-    def frontpage_renderer(self):
-        return api.get_frontpage_render(self.request)
-
-    def frontpage_template(self, page):
-        filename = page.layout.prefixed_template_filename
-        return api.get_frontpage_template(self.request, filename)
-
 
 class AccessControl(object):
     def __init__(self, request):
@@ -39,18 +33,18 @@ class AccessControl(object):
     def error_message(self):
         return u"\n".join(self._error_message)
 
+    def frontpage_discriptor(self, page):
+        resolver = api.get_frontpage_discriptor_resolver(self.request)
+        return resolver.resolve(self.request, page.layout, verbose=True)
+
+    def frontpage_renderer(self):
+        return api.get_frontpage_renderer(self.request)
+
     def can_access(self):
         if not self.access_ok:
             logger.info("*cms front preview* url is not found (%s)" % self.request.url)
-            logger.warn("*cms front preview* error=%s" % self.error_message)
+            logger.info("*cms front preview* error=%s" % self.error_message)
         return self.access_ok
-
-    def can_rendering(self, template, page):
-        try:
-            return api.is_renderable_template(template, page)
-        except Exception, e:
-            self._error_message.append(str(e))
-            return False
 
     def _check_page_is_accessable(self, page, access_key):
         if page is None:
@@ -74,7 +68,7 @@ class AccessControl(object):
                 fmt = "*fetch page* invalid organization page(%s) != operator(%s)" 
                 self._error_message.append(fmt % (self.request.organization.id, page.organization_id))
                 return page
-        elif not page.can_private_access(key=access_key):
+        elif not page.can_private_access(key=access_key, now=get_now(self.request)):
             self.access_ok = False
             self._error_message.append(u"invalid access key %s.\n 有効期限が切れているかもしれません. (有効期限:%s)" % (access_key.hashkey, access_key.expiredate))
             return page
@@ -94,7 +88,12 @@ class AccessControl(object):
         self.access_ok = True
         return self._check_page_is_accessable(page, access_key)
 
-    def fetch_page_from_pagesetid(self, pageset_id):
+    def _retry_page(self, pageset, published):
+        if published:
+            return None
+        return self.request.allowable(Page).filter(Page.pageset_id==pageset.id).order_by(sa.desc(Page.updated_at)).first()
+
+    def fetch_page_from_pagesetid(self, pageset_id, published=True):
         ## pagesetはクライアントから確認しない。allowableが正しい。
         pageset = self.request.allowable(PageSet).filter_by(id=pageset_id).first()
         self.access_ok = True
@@ -104,16 +103,19 @@ class AccessControl(object):
             self.access_ok = False
             return pageset
 
-        page = pageset.current()
+        page = pageset.current(published=published)
 
         if page is None:
-            self.access_ok = False
-            self._error_message.append("*fetch page* pageset(id=%s) has not accessable children" % pageset.id)
-            return page
+            page = self._retry_page(pageset, published)
+            if page is None:
+                self.access_ok = False
+                self._error_message.append("*fetch page* pageset(id=%s) has not accessable children" % pageset.id)
+                return None
 
         try:
             page.valid_layout()
         except ValueError, e:
             self._error_message.append(str(e))
             self.access_ok = False
+        self._check_page_is_accessable(page, None)
         return page

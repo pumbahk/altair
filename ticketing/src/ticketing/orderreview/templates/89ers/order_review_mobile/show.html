@@ -11,11 +11,13 @@ ${order.performance.venue.name}<br />
 <%mobile:form_header>購入内容</%mobile:form_header>
 合計金額: ￥${h.format_number(order.total_amount)}<br />
 %for product in order.items:
-・${product.product.name} (${product.quantity}枚)<br />
-% for seat in product.seats:
-　${seat['name']}<br/>
-% endfor
-　￥${h.format_number(product.product.price * product.quantity)}<br />
+・${product.product.name} (${product.seat_quantity}枚)<br />
+% if product.product.sales_segment.seat_choice:
+  % for seat in product.seats:
+  　${seat['name']}<br/>
+  % endfor
+% endif
+　￥${h.format_number(product.price * product.quantity)}<br />
 %endfor
 ・ステータス:${h.order_status(order)}<br/>
 ・システム利用料: ￥${h.format_number(order.system_fee)}<br />
@@ -41,7 +43,7 @@ ${shipping.address_2}
 ${shipping.tel_1}<br />
 <%mobile:form_header>メールアドレス</%mobile:form_header>
 ${shipping.email_1}<br />
-% if order.status in ['canceled', 'refunded']:
+% if order.status == 'canceled' or order.payment_status == 'refunded':
 <%mobile:form_header>この購入/予約はキャンセルされました</%mobile:form_header>
 <font size="-2">
 キャンセル処理は、下記のような理由によりおこなっております。<br />
@@ -54,7 +56,7 @@ ${shipping.email_1}<br />
 % if order.payment_delivery_pair.payment_method.payment_plugin.id == 1:
 <div>クレジットカード</div>
 % elif order.payment_delivery_pair.payment_method.payment_plugin.id == 2:
-<div>楽天あんしん決済</div>
+<div>楽天あんしん支払いサービス</div>
 % elif order.payment_delivery_pair.payment_method.payment_plugin.id == 3:
 <div>セブン-イレブン</div>
 <%mobile:form_header>払込票番号</%mobile:form_header>
@@ -109,11 +111,11 @@ ${h.render_delivery_finished_viewlet(request, order)}
 なお、住所変更のご連絡がない場合等に起因する配送遅延等にはご対応いたしかねますのでご注意ください。
 %endif
 %if order.payment_delivery_pair.payment_method.payment_plugin.id == 3:
-・セブン-イレブン決済の際には払込番号が必要です。下記、「払込票印刷」ボタンをクリックし、払込票を印刷してお持ちになるか、上記の払込票番号をお控えいただき、レジでお伝え下さい。<br />
+・セブン-イレブン決済の際には払込票番号が必要です。下記、「払込票印刷」ボタンをクリックし、払込票を印刷してお持ちになるか、上記の払込票番号をお控えいただき、レジでお伝え下さい。<br />
 ・予約有効期限までに、払込票または払込票番号をセブン-イレブン店頭レジにてお申し出の上、代金をお支払いください。<br />
 ・支払期日までに入金されない場合は、会員登録/入会申込が無効となりますのでご注意ください。<br />
 % endif
-・お申込時にを記載した確認のメールが、ご登録いただいたメールアドレス宛に送られます。しばらくたっても確認のメールが届かない場合は、入力されたメールアドレスが誤っている可能性があります。<a href="mailto:89ers@ticketstar.jp">89ers@ticketstar.jp</a> までご連絡ください。<br /> 
+・お申込時に受付内容を記載した確認のメールが、ご登録いただいたメールアドレス宛に送られます。しばらくたっても確認のメールが届かない場合は、入力されたメールアドレスが誤っている可能性があります。<a href="mailto:89ers@ticketstar.jp">89ers@ticketstar.jp</a> までご連絡ください。<br /> 
 （お問い合わせの際は、お申込み時のお名前と電話番号を記載お願いします）<br />
 ・入力された個人情報は「個人情報保護方針」に基づき適切に取扱われます。<br />
 </font>

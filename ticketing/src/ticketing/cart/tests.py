@@ -46,16 +46,16 @@ class TestIt(unittest.TestCase):
     def test_get_or_create_user_create(self):
         from . import api as a
         request = DummyRequest()
-        result = a.get_or_create_user(request, 'http://example.com/clamed_id')
+        result = a.get_or_create_user(request, 'http://example.com/claimed_id')
         self.assertIsNone(result.id)
-        self.assertEqual(result.user_credential[0].auth_identifier, 'http://example.com/clamed_id')
+        self.assertEqual(result.user_credential[0].auth_identifier, 'http://example.com/claimed_id')
         self.assertEqual(result.user_credential[0].membership.name, 'rakuten')
 
-    def _add_user(self, clamed_id):
+    def _add_user(self, claimed_id):
         from ..users.models import User, UserCredential, Membership
         user = User()
         membership = Membership(name="rakuten")
-        credential = UserCredential(user=user, auth_identifier=clamed_id, membership=membership)
+        credential = UserCredential(user=user, auth_identifier=claimed_id, membership=membership)
         self.session.add(user)
         self.session.flush()
         return user
@@ -63,11 +63,11 @@ class TestIt(unittest.TestCase):
     def test_get_or_create_user_get(self):
         from . import api as a
         
-        user = self._add_user('http://example.com/clamed_id')
+        user = self._add_user('http://example.com/claimed_id')
         request = DummyRequest()
-        result = a.get_or_create_user(request, 'http://example.com/clamed_id')
+        result = a.get_or_create_user(request, 'http://example.com/claimed_id')
         self.assertEqual(result.id, user.id)
-        self.assertEqual(result.user_credential[0].auth_identifier, 'http://example.com/clamed_id')
+        self.assertEqual(result.user_credential[0].auth_identifier, 'http://example.com/claimed_id')
         self.assertEqual(result.user_credential[0].membership.name, 'rakuten')
 
 class CartTests(unittest.TestCase):
@@ -317,7 +317,7 @@ class TicketingCartResourceTests(unittest.TestCase):
         event = models.Event(id=event_id)
         self.session.add(event)
 
-    def _add_sales_segement(self, event_id, start_at, end_at):
+    def _add_sales_segment_group(self, event_id, start_at, end_at):
         from ..core import models
         sales_segment = models.SalesSegment(
             event_id=event_id,
@@ -333,9 +333,9 @@ class TicketingCartResourceTests(unittest.TestCase):
         mock_datetime.now.return_value = datetime(2012, 6, 20)
 
         event_id = "99"
-        ss1 = self._add_sales_segement(event_id=event_id, start_at=datetime(2012, 6, 1), end_at=datetime(2012, 6, 30))
-        ss2 = self._add_sales_segement(event_id=event_id, start_at=datetime(2012, 6, 21), end_at=datetime(2012, 6, 30))
-        ss3 = self._add_sales_segement(event_id=event_id, start_at=datetime(2012, 6, 1), end_at=datetime(2012, 6, 19))
+        ss1 = self._add_sales_segment_group(event_id=event_id, start_at=datetime(2012, 6, 1), end_at=datetime(2012, 6, 30))
+        ss2 = self._add_sales_segment_group(event_id=event_id, start_at=datetime(2012, 6, 21), end_at=datetime(2012, 6, 30))
+        ss3 = self._add_sales_segment_group(event_id=event_id, start_at=datetime(2012, 6, 1), end_at=datetime(2012, 6, 19))
         self.session.flush()
 
         request = DummyRequest(matchdict={'event_id': event_id})
@@ -351,9 +351,9 @@ class TicketingCartResourceTests(unittest.TestCase):
         mock_datetime.now.return_value = datetime(2012, 6, 20)
 
         event_id = "99"
-        ss1 = self._add_sales_segement(event_id=event_id, start_at=datetime(2012, 6, 1), end_at=datetime(2012, 6, 30))
-        ss2 = self._add_sales_segement(event_id=event_id, start_at=datetime(2012, 6, 21), end_at=datetime(2012, 6, 30))
-        ss3 = self._add_sales_segement(event_id=event_id, start_at=datetime(2012, 6, 1), end_at=datetime(2012, 6, 19))
+        ss1 = self._add_sales_segment_group(event_id=event_id, start_at=datetime(2012, 6, 1), end_at=datetime(2012, 6, 30))
+        ss2 = self._add_sales_segment_group(event_id=event_id, start_at=datetime(2012, 6, 21), end_at=datetime(2012, 6, 30))
+        ss3 = self._add_sales_segment_group(event_id=event_id, start_at=datetime(2012, 6, 1), end_at=datetime(2012, 6, 19))
         ms = Membership()
         mg = MemberGroup(membership=ms)
         ss1.membergroups.append(mg)
@@ -379,70 +379,17 @@ class TicketingCartResourceTests(unittest.TestCase):
         mock_datetime.now.return_value = datetime(2012, 6, 20)
 
         event_id = "99"
-        ss1 = self._add_sales_segement(event_id=event_id, start_at=datetime(2012, 6, 1), end_at=datetime(2012, 6, 30))
-        ss2 = self._add_sales_segement(event_id=event_id, start_at=datetime(2012, 6, 21), end_at=datetime(2012, 6, 30))
-        ss3 = self._add_sales_segement(event_id=event_id, start_at=datetime(2012, 6, 1), end_at=datetime(2012, 6, 19))
+        ss1 = self._add_sales_segment_group(event_id=event_id, start_at=datetime(2012, 6, 1), end_at=datetime(2012, 6, 30))
+        ss2 = self._add_sales_segment_group(event_id=event_id, start_at=datetime(2012, 6, 21), end_at=datetime(2012, 6, 30))
+        ss3 = self._add_sales_segment_group(event_id=event_id, start_at=datetime(2012, 6, 1), end_at=datetime(2012, 6, 19))
         self.session.flush()
 
         request = DummyRequest(matchdict={'event_id': event_id})
         target = self._makeOne(request)
-        result = target.get_sales_segument()
+        result = target.get_sales_segment()
 
         self.assertIsNotNone(result)
         self.assertEqual(result.id, ss1.id)
-
-    # TODO: ダミーからモデルクラスに変更
-#    def test_convert_order_product_items(self):
-#        request = testing.DummyRequest()
-#        target = self._makeOne(request)
-#
-#        performance_id = 1
-#
-#        products = [(testing.DummyResource(items=[testing.DummyResource() for j in range(2)]), i) for i in range(5)]
-#        result = list(target._convert_order_product_items(performance_id, products))
-#
-#        self.assertEqual(len(result), 10)
-#        self.assertEqual(result[0][1], 0)
-#        self.assertEqual(result[5][1], 2)
-#        self.assertEqual(result[9][1], 4)
-
-    # TODO: ダミーからモデルクラスに変更
-#    def test_quantity_for_stock_id(self):
-#        import random
-#
-#        performance_id = 1
-#
-#        ordered_products = [
-#            # 大人 S席
-#            (testing.DummyResource(items=[testing.DummyResource(stock_id=1)]), 2),
-#            # 子供 S席
-#            (testing.DummyResource(items=[testing.DummyResource(stock_id=1)]), 3),
-#            # 大人 S席 + 駐車場
-#            (testing.DummyResource(items=[testing.DummyResource(stock_id=1),
-#                                          testing.DummyResource(stock_id=2)]), 1),
-#            ]
-#
-#        random.shuffle(ordered_products)
-#        request = testing.DummyRequest()
-#        target = self._makeOne(request)
-#
-#        result = list(target.quantity_for_stock_id(performance_id, ordered_products))
-#
-#        self.assertEqual(len(result), 2)
-#        self.assertEqual(result[0], (1, 6))
-#        self.assertEqual(result[1], (2, 1))
-
-#    def test_order_products_empty(self):
-#        request = testing.DummyRequest()
-#
-#        target = self._makeOne(request)
-#        performance_id = 1
-#
-#        ordered_products = []
-#        cart = target.order_products(performance_id, ordered_products)
-#
-#        self.assertIsNotNone(cart)
-#        self.assertEqual(len(cart.products), 0)
 
     def _add_venue(self, organization_id, site_id, venue_id):
         from ticketing.core.models import Venue, Site
@@ -451,69 +398,6 @@ class TicketingCartResourceTests(unittest.TestCase):
         site = Site(id=site_id)
         venue = Venue(id=venue_id, site=site, organization_id=organization.id)
         return venue
-
-    def test_order_products_one_order(self):
-        from ..core. models import Seat, SeatAdjacency, SeatAdjacencySet, SeatStatus, SeatStatusEnum, Stock, StockStatus, Product, ProductItem, Performance
-
-        # 在庫
-        stock_id = 1
-        product_item_id = 2
-        adjacency_set_id = 3
-        adjacency_id = 4
-        venue_id = 5
-        site_id = 6
-        organization_id = 7
-        performance_id = 8
-
-        venue = self._add_venue(organization_id, site_id, venue_id)
-        stock = Stock(id=stock_id, quantity=100, performance_id=performance_id)
-        stock_status = StockStatus(stock_id=stock.id, quantity=100)
-        seats = [Seat(id=i, stock_id=stock.id, venue=venue) for i in range(5)]
-        seat_statuses = [SeatStatus(seat_id=i, status=int(SeatStatusEnum.Vacant)) for i in range(2)]
-        performance = Performance(id=performance_id)
-        product_item = ProductItem(id=product_item_id, stock_id=stock.id, price=100, quantity=1, performance=performance)
-        product = Product(id=1, price=100, items=[product_item])
-        self.session.add(stock)
-        self.session.add(product)
-        self.session.add(product_item)
-        self.session.add(stock_status)
-        [self.session.add(s) for s in seats]
-        [self.session.add(s) for s in seat_statuses]
-
-        # 座席隣接状態
-        adjacency_set = SeatAdjacencySet(id=adjacency_set_id, seat_count=2)
-        adjacency = SeatAdjacency(adjacency_set=adjacency_set, id=adjacency_id)
-        for seat in seats:
-            seat.adjacencies.append(adjacency)
-        self.session.add(adjacency_set)
-        self.session.add(adjacency)
-        self.session.flush()
-
-
-        # 注文 S席 2枚
-        ordered_products = [(product, 2)]
-
-
-        request = testing.DummyRequest()
-        target = self._makeOne(request)
-        #precondition
-#        result = list(target._convert_order_product_items(ordered_products))[0]
-#        self.assertEqual(result, (product_item, 2))
-#        result = list(target.quantity_for_stock_id(ordered_products))[0]
-#        self.assertEqual(result, (stock.id, 2))
-
-        cart = target.order_products(performance_id, ordered_products)
-
-
-        self.assertIsNotNone(cart)
-        self.assertEqual(len(cart.products), 1)
-        self.assertEqual(len(cart.products[0].items), 1)
-        self.assertEqual(cart.products[0].items[0].quantity, 2)
-
-        from sqlalchemy import sql
-        stock_statuses = self.session.bind.execute(sql.select([StockStatus.quantity]).where(StockStatus.stock_id==stock.id))
-        for stock_status in stock_statuses:
-            self.assertEqual(stock_status.quantity, 98)
 
 class ReserveViewTests(unittest.TestCase):
     def setUp(self):
@@ -605,7 +489,7 @@ class ReserveViewTests(unittest.TestCase):
         venue = self._add_venue(organization_id, site_id, venue_id)
         stock = Stock(id=stock_id, quantity=100, performance_id=performance_id)
         stock_status = StockStatus(stock_id=stock.id, quantity=100)
-        seats = [Seat(id=i, stock_id=stock.id, venue=venue) for i in range(2)]
+        seats = [Seat(id=i, stock_id=stock.id, venue=venue, l0_id='s%s' % i) for i in range(2)]
         seat_statuses = [SeatStatus(seat_id=i, status=int(SeatStatusEnum.Vacant)) for i in range(2)]
         performance = Performance(id=performance_id)
         product_item = ProductItem(id=product_item_id, stock_id=stock.id, price=100, quantity=1, performance=performance)
@@ -680,7 +564,7 @@ class ReserveViewTests(unittest.TestCase):
         venue = self._add_venue(organization_id, site_id, venue_id)
         stock = Stock(id=stock_id, quantity=100, performance_id=performance_id)
         stock_status = StockStatus(stock_id=stock.id, quantity=0)
-        seats = [Seat(id=i, stock_id=stock.id, venue=venue) for i in range(5)]
+        seats = [Seat(id=i, stock_id=stock.id, venue=venue, l0_id='s%s' % i) for i in range(5)]
         seat_statuses = [SeatStatus(seat_id=i, status=int(SeatStatusEnum.InCart)) for i in range(5)]
         performance = Performance(id=performance_id)
         product_item = ProductItem(id=product_item_id, stock_id=stock.id, price=100, quantity=1, performance=performance)
@@ -820,7 +704,7 @@ class PaymentViewTests(unittest.TestCase):
     def _register_starndard_payment_methods(self):
         from ..core import models
         self.session.add(models.PaymentMethod(id=1, name=u"セブン-イレブン", fee=100))
-        self.session.add(models.PaymentMethod(id=2, name=u"楽天あんしん決済", fee=100))
+        self.session.add(models.PaymentMethod(id=2, name=u"楽天あんしん支払いサービス", fee=100))
         self.session.add(models.PaymentMethod(id=3, name=u"クレジットカード", fee=100))
         self.config.add_route('route.1', 'sej')
         self.config.add_route('route.2', 'checkout')
@@ -834,16 +718,18 @@ class PaymentViewTests(unittest.TestCase):
 
     def test_it_no_cart(self):
         from .exceptions import NoCartError
+        from .resources import TicketingCartResource
         request = testing.DummyRequest()
+        request.context = TicketingCartResource(request)
         request.registry.settings['altair_cart.expire_time'] = "15"
         target = self._makeOne(request)
         self.assertRaises(NoCartError, lambda: target())
 
     @mock.patch('ticketing.cart.api.get_or_create_user')
-    @mock.patch('ticketing.cart.rakuten_auth.api.authenticated_user')
+    @mock.patch('altair.rakuten_auth.api.authenticated_user')
     def test_it(self, mock_authenticated_user, mock_get_or_create_user):
         mock_authenticated_user.return_value = {
-            'clamed_id': 'http://ticketstar.example.com/user/1'
+            'claimed_id': 'http://ticketstar.example.com/user/1'
         }
         mock_get_or_create_user.return_value = testing.DummyModel(
             user_profile=testing.DummyModel(
@@ -876,6 +762,7 @@ class PaymentViewTests(unittest.TestCase):
         request.context = testing.DummyResource()
         request.context.get_or_create_user = mock_get_or_create_user
         request.context.get_payment_delivery_method_pair = lambda: None
+        request.context.sales_segment = testing.DummyModel()
         target = self._makeOne(request)
         result = target()
 
@@ -887,7 +774,7 @@ class PaymentViewTests(unittest.TestCase):
         #         {'payments': [
         #             {'name': u'セブン-イレブン',
         #              'url': 'http://example.com/sej'},
-        #             {'name': u'楽天あんしん決済',
+        #             {'name': u'楽天あんしん支払いサービス',
         #              'url': 'http://example.com/checkout'},
         #             {'name': u'クレジットカード',
         #              'url': 'http://example.com/multi'}]}

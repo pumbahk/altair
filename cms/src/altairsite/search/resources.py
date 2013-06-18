@@ -2,11 +2,15 @@
 
 from copy import deepcopy
 from datetime import datetime
+from altaircms.datelib import get_now
 import logging
 logger = logging.getLogger(__file__)
 
 import altaircms.helpers as h
-from . import forms
+from . import searcher
+from altaircms.models import Genre
+from ..pyramidlayout import get_salessegment_kinds
+from altaircms.helpers.base import deal_limit
 
 class SearchResult(dict):
     pass
@@ -55,31 +59,46 @@ class SearchPageResource(object):
     def __init__(self, request):
         self.request = request
 
-    def result_sequence_from_query(self, query, _nowday=datetime.now):
+    def result_sequence_from_query(self, query):
         """
         ここでは、検索結果のqueryを表示に適した形式に直す
         """
-        today = _nowday()    
+        today = get_now(self.request)    
         # for pageset in query:
         #     yield SearchResultRender(pageset, today, self.request)
         return [SearchResultRender(pageset, today, self.request) for pageset in query]
 
     def get_query_params_as_html(self, query_params):
-        return QueryParamsRender(query_params)
+        return QueryParamsRender(self.request, query_params)
+
+    def get_result_sequence_from_query_params_ext(self, query_params, searchfn=_get_mocked_pageset_query):
+        """ ## side effect. update query_params
+        """
+        if not "genre" in self.request.GET:
+            return self.get_result_sequence_from_query_params(query_params, searchfn=searchfn)
+
+        genre_id = self.request.GET["genre"]
+        genre = Genre.query.filter_by(id=genre_id).first()
+        if genre is None:
+            return self.get_result_sequence_from_query_params(query_params, searchfn=searchfn)                
+
+        gs = genre.ancestors_include_self
+        gs.pop()
+        query_params.update(sub_categories=genre_id, 
+                            category_label=u">".join([g.label for g in reversed(gs)]))
+        def with_filter_by_genre(request, query_params):
+            return searcher.search_by_genre(self.request, searchfn(self.request, query_params), [self.request.GET["genre"]])
+        return self.get_result_sequence_from_query_params(query_params, searchfn=with_filter_by_genre)
 
     def get_result_sequence_from_query_params(self, query_params, searchfn=_get_mocked_pageset_query):
-        logger.debug(query_params)
-        qp = deepcopy(query_params)
-        # escape query
-        if 'query' in qp:
-            qp['query'] = '"%s"' % qp['query'].replace('"', '\\"').replace("'", "\\'")
-        query = searchfn(self.request, qp)
+        query = searchfn(self.request, query_params)
         return self.result_sequence_from_query(query)
 
 class QueryParamsRender(object):
     """ 渡された検索式をhtmlとしてレンダリング
     """
-    def __init__(self, query_params):
+    def __init__(self, request, query_params):
+        self.request = request
         self.query_params = query_params
 
     def _listing_from_tree(self, marked_tree):
@@ -106,11 +125,12 @@ class QueryParamsRender(object):
 
     def describe_deal_cond(self, deal_cond_list):
         """最速抽選 or 先行抽選 or 一般発売"""
-        convertor = forms.DealCondPartForm.DDICT
+        kinds = get_salessegment_kinds(self.request)
+        convertor = {unicode(k.id): k.label for k in kinds}
         if len(deal_cond_list) <= 1:
-            return convertor[deal_cond_list[0]]
+            return convertor.get(deal_cond_list[0], "")
         else:
-            return u" or ".join(convertor[k] for k in deal_cond_list)
+            return u" or ".join(convertor.get(k, "") for k in deal_cond_list)
 
     def __unicode__(self):
         u"""\
@@ -130,7 +150,9 @@ class QueryParamsRender(object):
         qp = self.query_params
         if "query" in qp:
             r.append(u"フリーワード: %s" % qp["query"])
-        if qp.get("category_tree") and qp.get("top_categories") or qp.get("sub_categories"):
+        if qp.get("category_label"):
+            r.append(u"ジャンル: %s" % qp.get("category_label"))
+        elif qp.get("category_tree") and qp.get("top_categories") or qp.get("sub_categories"):
             r.append(u"ジャンル: %s " % self.describe_from_tree(qp["category_tree"]))
         if qp.get("area_tree") and qp.get("prefectures"):
             r.append(u"開催地: %s" % self.describe_from_tree(qp["area_tree"]))
@@ -172,8 +194,7 @@ class SearchResultRender(object):
       </dl>
       <ul>
           <li class="searchRemaining">%(deal_limit)s</li>
-          <li>%(deal_info_icons)s</li>
-          <li class="searchDate">%(deal_description)s</li>
+          %(deal_description)s
       </ul>
       <p>%(purchase_link)s</p>
   </div>
@@ -184,15 +205,14 @@ class SearchResultRender(object):
         return SearchResult(
             category_icons = self.category_icons(), 
             page_description = self.page_description(),
-            deal_limit = self.deal_limit(),
-            deal_info_icons = self.deal_info_icons(),
+            deal_limit = deal_limit(self.today, self.pageset.event.deal_open, self.pageset.event.deal_close),
             deal_description = self.deal_description(),
             purchase_link = self.purchase_link()
             )
 
         
     def category_icons(self): ## fixme: too access DB.
-        v = Nullable(self.pageset).parent.category.origin.value
+        v = Nullable(self.pageset).genre.origin.value
         if v is None:
             return u'<div class="icon-category icon-category-other"></div>'
         else:
@@ -202,47 +222,42 @@ class SearchResultRender(object):
         
     def page_description(self):
         fmt =  u"""\
-<p><a href="%s">%s</a></p>
+<p><a href="%s">%s</a> 公演/試合数: %s</p>
 <p class="align1">%s</p>
 <p class="align1">%s</p>
 """
         link = h.link.publish_page_from_pageset(self.request, self.pageset)
-        link_label = u"%s %s" % (self.pageset.event.title, self.pageset.name)
-        description = self.pageset.event.description
-        ## todo. ticketから開催場所の情報を取り出す
-        performances = u"</p><p class='align1'>".join([u"%s %s(%s)" % (p.start_on, p.venue, p.jprefecture) for p in self.pageset.event.performances[:5]])
-        return fmt % (link, link_label, description, performances)
-
-    def deal_limit(self):
-        N = (self.pageset.event.deal_open - self.today).days
-        if N > 0:
-            return u"販売開始まであと%d日" % N
-        elif N == 0:
-            return u"本日販売"
-
-        N = (self.pageset.event.deal_close - self.today).days
-        if N > 0:
-            return u"販売終了まであと%d日" % N
-        else:
-            return u"販売終了"
-
-    def deal_info_icons(self):
+        link_label = self.pageset.event.title #xx?
         event = self.pageset.event
-        kinds = set(s.kind for s in event.sales) 
-        return u"".join(u'<div class="icon-salessegment %s"></div>'% k for k in kinds)
+        performances = [p for p in event.performances if p.start_on >= self.today]
+        performances = performances if len(performances) < 3 else performances[:3]
+        performances = u"</p><p class='align1'>".join([u"%s %s(%s)" %
+            (p.start_on.strftime("%Y-%m-%d %H:%M"), p.venue, p.jprefecture) for p in performances])
+        return fmt % (link, link_label, len(event.performances), event.description, performances)
+
+    # def deal_info_icons(self):
+    #     event = self.pageset.event
+    #     kinds = set(g.kind for g in event.salessegment_groups) 
+    #     return u"".join(u'<div class="icon-salessegment %s"></div>'% k for k in kinds)
 
 
     def deal_description(self):
         event = self.pageset.event
-        label = u'<strong>チケット発売中</strong> ' if event.deal_open <= self.today and self.today <= event.deal_close else ''
-        return u'%s%s' % (label, h.base.term(event.deal_open, event.deal_close))
+        r = []
+        for g in sorted(event.salessegment_groups, key=lambda g: g.start_on):
+            # label = u'<strong>%s</strong> ' % g.name
+            label = u'<div class="icon-salessegment %s"></div>'% g.kind
+            r.append(u'<li class="searchDate">%s%s</li>' % (label, h.term(g.start_on, g.end_on)))
+        return u"\n".join(r)
 
 
     def purchase_link(self):
         fmt = u'''\
-<a href="%s"><img src="/static/ticketstar/img/search/btn_detail.gif" alt="詳細へ" width="86" height="32" /></a>
-<a href="%s"><img src="/static/ticketstar/img/search/btn_buy.gif" alt="購入へ" width="86" height="32" /></a>
+<a href="%s"><img src="%s" alt="詳細へ" width="86" height="32" /></a>
+<!--<a href="%s"><img src="%s" alt="購入へ" width="86" height="32" /></a>-->
 '''
         return fmt % (h.link.publish_page_from_pageset(self.request, self.pageset), 
-                      h.link.get_purchase_page_from_event(self.request, self.pageset.event))
+                      self.request.static_url("altaircms:static/RT/img/search/btn_detail.gif"), 
+                      h.link.get_purchase_page_from_event(self.request, self.pageset.event), 
+                      self.request.static_url("altaircms:static/RT/img/search/btn_buy.gif"))
 

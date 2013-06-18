@@ -1,0 +1,24 @@
+## 画像ウィジェット
+<%def name="render(request,widget)">
+%if widget.href:
+<a href="${widget.href}">
+  <img ${widget.html_attributes|n}
+	 src="${h.asset.rendering_object(request,widget.asset).filepath}"/>
+</a>
+%else:
+  <img ${widget.html_attributes|n}
+	 src="${h.asset.rendering_object(request,widget.asset).filepath}"/>
+%endif
+${widget.html_suffix}
+</%def>
+
+${render(request, widget)}
+<%doc>
+%if widget.nowrap:
+    ${render(request, widget)}
+%else:
+<div class="image-widget">
+    ${render(request, widget)}
+</div>
+%endif
+</%doc>

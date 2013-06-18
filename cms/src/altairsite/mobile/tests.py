@@ -1,24 +1,31 @@
-# -*- encoding:utf-8 -*-
 import unittest
 
-class CustomPredictesTests(unittest.TestCase):
-    def _callFUT(self, *args, **kwargs):
-        from altairsite.mobile.custom_predicates import mobile_access_predicate
-        return mobile_access_predicate(*args, **kwargs)
+#from altairsite.mobile.core.models import DBSession
 
-    def test_mobile_request(self):
-        class request(object):
-            environ = {"HTTP_USER_AGENT": "DoCoMo/2.0 P903i(c100;TB;W24H12)"}
 
-        result = self._callFUT(None, request)
-        self.assertTrue(result)
+class TestMyView(unittest.TestCase):
+    """
+    def setUp(self):
+        self.config = testing.setUp()
+        from sqlalchemy import create_engine
+        engine = create_engine('sqlite://')
+        from .models import (
+            Base,
+            Host,
+            )
+        DBSession.configure(bind=engine)
+        Base.metadata.create_all(engine)
+        with transaction.manager:
+            model = Host()
 
-    def test_pc_request(self):
-        class request(object):
-            environ = {"HTTP_USER_AGENT": "Mozilla/5.0 (X11; Ubuntu; Linux i686; rv:13.0) Gecko/20100101 Firefox/13.0"}
+    def tearDown(self):
+        DBSession.remove()
+        testing.tearDown()
 
-        result = self._callFUT(None, request)
-        self.assertFalse(result)
-
-if __name__ == "__main__":
-    unittest.main()
+    def test_it(self):
+        from .views import my_view
+        request = testing.DummyRequest()
+        info = my_view(request)
+        self.assertEqual(info['one'].name, 'one')
+        self.assertEqual(info['project'], 'altairsite.mobile')
+"""

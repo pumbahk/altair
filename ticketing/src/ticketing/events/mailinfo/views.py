@@ -64,7 +64,6 @@ class MailInfoNewView(BaseView):
             logger.debug("mailinfo.data: %s" % mailinfo.data)
             DBSession.add(mailinfo)
             self.request.session.flash(u"メールの付加情報を登録しました")
-
         return {"event": event, 
                 "form": form, 
                 "choice_form": choice_form, 

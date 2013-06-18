@@ -1,0 +1,21 @@
+<html lang="ja">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+<script src=${request.static_url('altaircms:static/smartphone/js/jquery-1.9.1.min.js')}></script>
+<script src=${request.static_url('altaircms:static/smartphone/js/jquery-ui-1.9.2.custom.min.js')}></script>
+<script src=${request.static_url('altaircms:static/smartphone/js/flipsnap.min.js')}></script>
+<link rel="stylesheet" type="text/css" href=${request.static_url('altaircms:static/smartphone/css/jquery-ui-1.9.2.custom.min.css')} />
+<link rel="stylesheet" type="text/css" href="${request.static_url('altaircms:static/smartphone/css/default.css')}" />
+<title>楽天チケット-<%block name="title" /></title>
+</head>
+<body>
+
+<div class="header-navigation">
+  <a class="goto-link btn-primary" style="float: right" href="${request.route_path('smartphone.goto_pc_page')}">PC版へ</a>
+  <a href="/"><img src="${request.static_url('altaircms:static/smartphone/img/logo.gif')}"/></a>
+</div>
+
+${self.body()}
+<%block name="fnavi" />
+<%include file="_footer.html"/>

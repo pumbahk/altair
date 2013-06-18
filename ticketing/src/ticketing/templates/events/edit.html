@@ -16,20 +16,17 @@
 <script type="text/javascript">
   $(function() {
     $('form').disableOnSubmit();
-    $('#start_on').datetimepicker({dateFormat:'yy-mm-dd', timeFormat:'hh:mm'});
-    $('#end_on').datetimepicker({dateFormat:'yy-mm-dd', timeFormat:'hh:mm'});
-
     var code_buf = [];
     $('#title').keyup(function(e){
-      if ($('#code').val() || code_buf.length >= 3) return;
+      if ($('#code').val().length > 2 || code_buf.length >= 5) return;
       var char = String.fromCharCode(e.which);
       if (char && char.match(/[a-z]/i) && !char.match(/[aiueo]/i)) {
         code_buf.push(char);
       }
     });
     $('#title').focusout(function(){
-      if ($('#code').val() || !code_buf) return;
-      $('#code').val('${request.context.user.organization.code}' + code_buf.join(''));
+      if ($('#code').val().length > 2 || !code_buf) return;
+      $('#code').val("${request.context.user.organization.code}" + code_buf.join(''));
     });
     $('#title').focusin(function(){
       code_buf = [];
@@ -61,7 +58,7 @@ ${h.breadcrumbs(
       ${h.form_item(form.account_id, class_='span5')}
       ${h.form_item(form.title, class_='span8', maxlength=200)}
       ${h.form_item(form.abbreviated_title, class_='span4', maxlength=100)}
-      ${h.form_item(form.code, style='width:100px', maxlength=5, placeholder=request.context.user.organization.code)}
+      ${h.form_item(form.code, style='width:100px', maxlength=7, counter=True)}
     </fieldset>
     <div class="form-actions">
       <input class="btn btn-primary" type="submit" name="submit" value="${route_name}">

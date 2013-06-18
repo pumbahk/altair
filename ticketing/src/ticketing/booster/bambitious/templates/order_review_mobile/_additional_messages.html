@@ -1,0 +1,5 @@
+<%namespace file="${context['layout'].relative_path('templates/tags_mobile.html')}" name="mobile" />
+<%mobile:form_header>FAX番号</%mobile:form_header>
+${shipping.fax}
+<%mobile:form_header>会員特典受取方法</%mobile:form_header>
+${order.payment_delivery_pair.delivery_method.name}

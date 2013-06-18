@@ -1,3 +1,5 @@
 build/
 dist/
+setup.cfg
 *.egg-info
+**/*.egg-info

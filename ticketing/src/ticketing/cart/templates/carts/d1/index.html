@@ -17,19 +17,16 @@
   <![endif]-->
   <script type="text/javascript" src="${request.static_url('ticketing.cart:static/js/underscore-min.js')}"></script>
   <script type="text/javascript" src="${request.static_url('ticketing.cart:static/js/backbone-min.js')}"></script>
+  <script type="text/javascript" src="${request.static_url('ticketing.cart:static/js/ajaxhooks.min.js')}"></script>
   <script type="text/javascript" src="${request.static_url('ticketing.cart:static/js/carts.js')}"></script>
   <script type="text/javascript" src="${request.static_url('ticketing.cart:static/js/venue-viewer.js')}"></script>
   <script type="text/javascript" src="${request.static_url('ticketing.cart:static/js/jquery.smihica_vertical_slider.js')}" charset="utf-8"></script>
   </script>
   <script type="text/javascript">
 var selected = ${selected};
-var venues_selection = ${venues_selection};
-var upper_limit = ${upper_limit};
-var sales_segment = ${sales_segment};
-var order_url = "${order_url}";
-var products_from_selected_date_url = "${products_from_selected_date_url}";
-var cart_release_url = "${cart_release_url}";
-$(function() {cart.init(venues_selection, selected, upper_limit, cart_release_url);});
+var salesSegmentsSelection = ${sales_segments_selection};
+var cartReleaseUrl = "${cart_release_url}";
+$(function() {cart.init(salesSegmentsSelection, selected, cartReleaseUrl, true);});
 </script>
 </%block>
 <%block name="extras">  
@@ -78,14 +75,14 @@ $(function() {cart.init(venues_selection, selected, upper_limit, cart_release_ur
 				<div id="settlementSelectBoxInner">
 					<table summary="チケット購入の絞り込み">
 						<tr>
-							<th>対象試合</th>
+							<th>${selection_label}</th>
 							<td>
 								<select name="select" id="date-select">
 								</select>
 							</td>
 						</tr>
 						<tr id="settlementSelectEnd">
-							<th>日付・会場</th>
+						        <th>${second_selection_label}</th>
 							<td><select name="select2" id="venue-select">
 							</select></td>
 						</tr>
@@ -196,6 +193,13 @@ $(function() {cart.init(venues_selection, selected, upper_limit, cart_release_ur
                       <p>※席種・ブロックを選び直す際は、「キャンセル」ボタンを押してください。</p>
                     </div>
                   </div>
+                  <div class="guidance without-venue" style="display: none;">
+                    <div class="guidanceInner" style="margin-top: 150px; font-size: 18px; text-align: center; color: #999999;">
+                      本公演では座席指定はできません <br />
+                      <br />
+                      席種・券種・枚数を選択の上、ご購入ください <br />
+                    </div>
+                  </div>
                 </div>
                 <div>
                   <a class="btn-select-seat">購入</a>
@@ -222,7 +226,7 @@ $(function() {cart.init(venues_selection, selected, upper_limit, cart_release_ur
 						</tr>
 						<tr>
 							<th scope="row">会場</th>
-							<td id="venue"> ${", ".join(event['venues'])}</td>
+							<td id="venue"> ${", ".join(set(event['venues']))}</td>
 						</tr>
 						<tr>
 							<th scope="row">販売期間</th>

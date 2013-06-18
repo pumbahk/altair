@@ -14,10 +14,14 @@ from altaircms.subscribers import notify_model_create ## too-bad
 
 from sqlalchemy.sql.operators import ColumnOperators
 
+"""
+todo: resourceを登録する形式に変更
+"""
 class AfterInput(Exception):
     def __init__(self, form=None, context=None):
         self.form = form
         self.context = context
+        self.circle_type = context.circle_type
 
 class ModelFaker(object):
     def __init__(self, obj):
@@ -36,7 +40,10 @@ class CRUDResource(RootFactory): ## fixme
     def __init__(self, prefix, title, model, form, mapper, endpoint, filter_form,
                  request,
                  after_input_context=None, 
-                 create_event=None, update_event=None, delete_event=None):
+                 override_templates=None, 
+                 create_event=None, update_event=None, delete_event=None, 
+                 circle_type="circle-master"):
+        self.override_templates = override_templates or {}
         self.prefix = prefix
         self.title = title
         self.model = model
@@ -50,17 +57,18 @@ class CRUDResource(RootFactory): ## fixme
         self.update_event = update_event
         self.delete_event = delete_event
         self.AfterInput = after_input_context
+        self.circle_type = circle_type
 
     def join(self, ac):
         return "%s_%s" % (self.prefix, ac)
 
     ## endpoint
     def set_endpoint(self):
-        set_endpoint(self.request)
+        set_endpoint(self.request, endpoint=self.request.GET.get("endpoint"))
 
     def get_endpoint(self):
         endpoint = get_endpoint(self.request)
-        return endpoint or self.request.route_url(self.endpoint)
+        return endpoint or self.request.route_url(self.endpoint or "dashboard")
 
     ## search
     def query_form(self, params):
@@ -82,7 +90,6 @@ class CRUDResource(RootFactory): ## fixme
         form = self.form(self.request.POST)
         if hasattr(form, "configure"):
             form.configure(self.request)
-
         if form.validate():
             if not hasattr(form, "object_validate") or form.object_validate(obj):
                 return form
@@ -104,11 +111,14 @@ class CRUDResource(RootFactory): ## fixme
         return obj
 
     def get_model_obj(self, id):
+        if hasattr(self, "obj") and self.obj.id == id:
+            return self.obj
         pks = self.model.__mapper__.primary_key
         assert len(pks) == 1
         
         pk = pks[0].name
-        return self.model.query.filter_by(**{pk: id}).one()
+        self.obj = self.model.query.filter_by(**{pk: id}).one()
+        return self.obj
 
     ## listing
     def get_model_query(self):
@@ -119,11 +129,12 @@ class CRUDResource(RootFactory): ## fixme
             return self.model.query
 
     ## update
-    def input_form_from_model(self, obj):
+    def input_form_from_model(self, obj, **kwargs):
         if hasattr(obj, "to_dict"):
             params = obj.to_dict()
         else:
             params = model_to_dict(obj)
+        params.update(kwargs)
         form = self.form(**params)
         if hasattr(form, "configure"):
             form.configure(self.request)
@@ -142,6 +153,8 @@ class CRUDResource(RootFactory): ## fixme
     def delete_model(self, obj):
         if self.delete_event:
             self.request.registry.notify(self.delete_event(self.request, obj, {}))
+        if hasattr(obj, "delete"):
+            obj.delete(session=DBSession)
         DBSession.delete(obj)
 
 class CreateView(object):
@@ -151,7 +164,10 @@ class CreateView(object):
         
     def _after_input(self): ## context is AfterInput
         form = self.context.form
-        return {"master_env": self.context.context,
+        master_env = self.context.context
+        if "create" in getattr(master_env, "override_templates", None):
+            self.request.override_renderer = master_env.override_templates["create"]
+        return {"master_env": master_env,
                 "form": form, 
                 "display_fields": getattr(form,"__display_fields__", None) or form.data.keys()}
 
@@ -164,7 +180,7 @@ class CreateView(object):
         
     def input(self):
         self.context.set_endpoint()
-        form = self.context.input_form(self.request.GET)
+        form = self.context.input_form(**self.request.GET)
         raise self.context.AfterInput(form=form, context=self.context)
 
     def confirm(self):
@@ -191,7 +207,10 @@ class UpdateView(object):
 
     def _after_input(self):
         form = self.context.form
-        return {"master_env": self.context.context,
+        master_env = self.context.context
+        if "update" in getattr(master_env, "override_templates", None):
+            self.request.override_renderer = master_env.override_templates["update"]
+        return {"master_env": master_env,
                 "form": form, 
                 "display_fields": getattr(form,"__display_fields__", None) or form.data.keys()}
 
@@ -199,7 +218,7 @@ class UpdateView(object):
         self.context.set_endpoint()
 
         obj = self.context.get_model_obj(self.request.matchdict["id"])
-        form = self.context.input_form_from_model(obj)
+        form = self.context.input_form_from_model(obj, **self.request.GET)
         raise self.context.AfterInput(form=form, context=self.context)
 
     def confirm(self):
@@ -281,6 +300,8 @@ class SimpleCRUDFactory(object):
              has_auto_generated_permission=True, 
              after_input_context=AfterInput, 
              endpoint=None, 
+             circle_type="circle-master", 
+             override_templates=None, 
              **default_kwargs):
 
         after_input_context = config.maybe_dotted(after_input_context)
@@ -288,7 +309,7 @@ class SimpleCRUDFactory(object):
         self.resource = resource = functools.partial(
             self.Resource, 
             self.prefix, self.title, self.model, self.form, self.mapper, endpoint, self.filter_form, 
-            after_input_context=after_input_context, 
+            after_input_context=after_input_context, circle_type=circle_type, override_templates=override_templates, 
             **(events or {})) #events. e.g create_event, update_event, delete_event
 
         ## individual add view function.
@@ -299,6 +320,8 @@ class SimpleCRUDFactory(object):
             if has_auto_generated_permission:
                 permission = self.prefix+"_read"
                 kwargs["permission"] = permission
+            else:
+                kwargs["permission"] = "authenticated"
             config.add_view(view_fn, **kwargs)
 
 
@@ -306,7 +329,7 @@ class SimpleCRUDFactory(object):
             config.add_route(self._join("list"), "/%s" % self.prefix, factory=resource)
 
             _add_view(list_view, 
-                     route_name=self._join("list"), decorator="altaircms.lib.fanstatic_decorator.with_bootstrap", renderer="altaircms:lib/crud/list.mako")
+                     route_name=self._join("list"), decorator="altaircms.lib.fanstatic_decorator.with_bootstrap", renderer="altaircms:lib/crud/list.html")
 
         if "create" in bind_actions:
 
@@ -314,9 +337,9 @@ class SimpleCRUDFactory(object):
             _add_view(CreateView, match_param="action=copied_input", attr="copied_input", route_name=self._join("create"))
             _add_view(CreateView, match_param="action=input", attr="input", route_name=self._join("create"))
             config.add_view(CreateView, context=AfterInput, attr="_after_input", route_name=self._join("create"), 
-                            decorator="altaircms.lib.fanstatic_decorator.with_bootstrap", renderer="altaircms:lib/crud/create/input.mako")
+                            decorator="altaircms.lib.fanstatic_decorator.with_bootstrap", renderer="altaircms:lib/crud/create/input.html")
             _add_view(CreateView, match_param="action=confirm", attr="confirm",
-                      route_name=self._join("create"), decorator="altaircms.lib.fanstatic_decorator.with_bootstrap", renderer="altaircms:lib/crud/create/confirm.mako")
+                      route_name=self._join("create"), decorator="altaircms.lib.fanstatic_decorator.with_bootstrap", renderer="altaircms:lib/crud/create/confirm.html")
             _add_view(CreateView, match_param="action=create", attr="create_model", route_name=self._join("create"))
 
         if "update" in bind_actions:
@@ -324,11 +347,11 @@ class SimpleCRUDFactory(object):
 
             _add_view(UpdateView, match_param="action=input", attr="input",
                       route_name=self._join("update"), decorator="altaircms.lib.fanstatic_decorator.with_bootstrap",
-                      renderer="altaircms:lib/crud/update/input.mako")
+                      renderer="altaircms:lib/crud/update/input.html")
             config.add_view(UpdateView, context=AfterInput, attr="_after_input", route_name=self._join("update"), 
-                            decorator="altaircms.lib.fanstatic_decorator.with_bootstrap", renderer="altaircms:lib/crud/update/input.mako")
+                            decorator="altaircms.lib.fanstatic_decorator.with_bootstrap", renderer="altaircms:lib/crud/update/input.html")
             _add_view(UpdateView, match_param="action=confirm", attr="confirm",
-                      route_name=self._join("update"), decorator="altaircms.lib.fanstatic_decorator.with_bootstrap", renderer="altaircms:lib/crud/update/confirm.mako")
+                      route_name=self._join("update"), decorator="altaircms.lib.fanstatic_decorator.with_bootstrap", renderer="altaircms:lib/crud/update/confirm.html")
             _add_view(UpdateView, 
                       match_param="action=update", attr="update_model", route_name=self._join("update"), )
 
@@ -336,6 +359,6 @@ class SimpleCRUDFactory(object):
             config.add_route(self._join("delete"), "/%s/delete/{id}/{action}" % self.prefix, factory=resource)
 
             _add_view(DeleteView, match_param="action=confirm", attr="confirm",
-                            route_name=self._join("delete"), decorator="altaircms.lib.fanstatic_decorator.with_bootstrap", renderer="altaircms:lib/crud/delete/confirm.mako")
+                            route_name=self._join("delete"), decorator="altaircms.lib.fanstatic_decorator.with_bootstrap", renderer="altaircms:lib/crud/delete/confirm.html")
             _add_view(DeleteView, 
                             match_param="action=delete", attr="delete_model", route_name=self._join("delete"))

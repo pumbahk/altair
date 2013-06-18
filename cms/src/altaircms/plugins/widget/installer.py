@@ -11,5 +11,5 @@ class WidgetPluginInstaller(BasePluginInstaller):
     def install_fetcher(self):
         model = self.settings["model"]
         widget_name = self.settings["name"]
-        logger.info("widget %s is installed" % widget_name) 
+        logger.debug("widget %s is installed" % widget_name) 
         WidgetFetcher.add_fetch_method(widget_name, model)

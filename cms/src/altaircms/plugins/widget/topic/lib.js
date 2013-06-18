@@ -32,6 +32,7 @@ widget.configure({
         if(!!pk){
             params["pk"] = pk;
         }
+        params["page"] = get_page();
         url += "?" + $.param(params);
         return we.dialog.load(url);
     };
@@ -55,14 +56,10 @@ widget.configure({
 
     var collect_data = function(we, choiced_elt){
         var root = $(we.dialog);
-        return {"kind": root.find("#kind").val(), 
-                "subkind": root.find("#subkind").val(), 
-                "topic_type": root.find("#topic_type").val(), 
+        return {"display_type": root.find("#display_type").val(), 
                 "display_count": root.find("#display_count").val(), 
-                "display_global": !!root.find("#display_global").attr("checked"), 
-                "display_page": !!root.find("#display_page").attr("checked"), 
-                "display_event": !!root.find("#display_event").attr("checked")
-               };
+                "tag": root.find("#tag").val(), 
+                "system_tag": root.find("#system_tag").val()};
     };
     return widget.include("topic", {
         load_page: load_page, 

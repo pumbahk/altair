@@ -7,7 +7,7 @@
 購入を完了いたしました。
 </p>
 
-<%mobile:header>注文番号</%mobile:header>
+<%mobile:header>受付番号</%mobile:header>
 <div>
 ${order.order_no}
 </div>
@@ -18,11 +18,13 @@ ${order.performance.event.title} ${order.performance.name} ${h.performance_date(
 % for idx, product in enumerate(order.ordered_products):
 <%mobile:form_header>商品${idx + 1}</%mobile:form_header>
 <div>
-${product.product.name} ${product.quantity} 枚<br/>
+${product.product.name} ${product.seat_quantity} 枚<br/>
 ￥${h.format_number(product.product.price * product.quantity)}<br/>
-% for seat in product.seats:
-${seat['name']}<br/>
-% endfor
+% if product.product.sales_segment.seat_choice:
+  % for seat in product.seats:
+  ${seat['name']}<br/>
+  % endfor
+% endif
 </div>
 % endfor
 <%mobile:form_header>決済手数料</%mobile:form_header>
@@ -51,6 +53,7 @@ ${h.render_payment_finished_viewlet(request, order)}
 <div>
 ${h.render_delivery_finished_viewlet(request, order)}
 </div>
-
+<br />
+<div>お申込内容は、「<a href="https://tokyo-cr.tstar.jp/orderreview">履歴確認</a>」からもご確認いただけます。受付番号とご登録時のお電話番号をお手元にご用意の上、ご利用ください。</div>
 <a href="${request.context.host_base_url}">チケットTOP</a>
 <a href="${request.route_url("cart.index", event_id=order.performance.event.id)}">他のチケットを購入</a>

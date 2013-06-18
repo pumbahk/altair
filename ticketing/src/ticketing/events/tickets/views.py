@@ -128,17 +128,23 @@ class BundleView(BaseView):
     def delete_post(self):
         event_id = self.request.matchdict["event_id"]
         ## todo: check dangling object
-        self.context.bundle.delete()
-        self.request.session.flash(u'チケット券面構成(TicketBundle)を削除しました')
-        return HTTPFound(self.request.route_path("events.tickets.index", event_id=event_id))
 
+        location = self.request.route_path("events.tickets.index", event_id=event_id)
+        try:
+            self.context.bundle.delete()
+            self.request.session.flash(u'チケット券面構成(TicketBundle)を削除しました')
+        except Exception, e:
+            self.request.session.flash(e.message)
+
+        return HTTPFound(location=location)
 
     @view_config(route_name="events.tickets.bundles.show",
                  renderer="ticketing:templates/tickets/events/bundles/show.html")
     def show(self):
         # {<performance_id>: {<name>: "",  <products>: {}, <product_items> : {}}}
         product_item_dict = {} 
-        for product_item in self.context.bundle.product_items:
+        bundle = self.context.bundle
+        for product_item in bundle.product_items:
             performance = product_item_dict.get(product_item.performance_id)
             if performance is None:
                 performance = product_item_dict[product_item.performance_id] = {
@@ -158,17 +164,16 @@ class BundleView(BaseView):
                 'updated_at': product_item.updated_at,
                 'created_at': product_item.created_at
                 }
-
         ## for ticket-preview
         ## [{name: <performance.name>, pk: <performance.id>,  candidates: [{name: <item.name>, pk: <item.id>}, ...]}, ...]
+        tickets_candidates = [{"name": t.name,  "pk": t.id, "format_id": t.ticket_format_id} for t in bundle.tickets]
         preview_item_candidates = []
         for perf_k, performance_d in product_item_dict.iteritems():
             candidates = []
             p = {"name": performance_d["name"], "pk": perf_k, "candidates": candidates}
-            for item_k, item_d in performance["product_items"].iteritems():
-                candidates.append({"name": item_d["name"], "pk": item_k})
+            for item_k, item_d in performance_d["product_items"].iteritems():
+                candidates.append({"name": item_d["name"], "pk": item_k, "candidates": tickets_candidates})
             preview_item_candidates.append(p)
-
         return dict(bundle=self.context.bundle, 
                     event=self.context.event,
                     product_item_dict=product_item_dict, 

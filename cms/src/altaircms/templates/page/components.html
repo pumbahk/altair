@@ -1,0 +1,72 @@
+<%namespace name="fco" file="../formcomponents.html"/>
+
+<%def name="page_difference(page,params)">
+    <table class="table table-striped">
+      <tr><th width="20px"></th><th>変更前</th><th>変更後</th></tr>
+      <tr><th class="span2">ページ名</th><td>${page.name}</td><td>${params["name"]}</td></tr>
+      <tr><th class="span2">URL</th><td>${page.url}</td><td>${params["url"]}</td></tr>
+      <tr><th class="span2">タイトル</th><td>${page.title}</td><td>${params["title"]}</td></tr>
+      <tr><th class="span2">公開開始日</th><td>${page.publish_begin}</td><td>${params["publish_begin"]}</td></tr>
+      <tr><th class="span2">公開終了日</th><td>${page.publish_end}</td><td>${params["publish_end"]}</td></tr>
+      <tr><th class="span2">description</th><td>${page.description}</td><td>${params["description"]}</td></tr>
+      <tr><th class="span2">keywords</th><td>${page.keywords}</td><td>${params["keywords"]}</td></tr>
+</%def>
+
+<%def name="page_description(page)">
+    <table class="table table-striped">
+      <tr>
+        <th class="span2">ページ名</th><td class="span8">${page.title}</td>
+      </tr>
+      <tr>
+        <th class="span2">関連イベント</th><td class="span8"><a href="${h.page.event_page(request,page)}">${page.event.title if page.event else ""}</a></td>
+      </tr>
+      <tr>
+        <th class="span2">description</th><td>${page.description}</td>
+      </tr>
+      <tr>
+        <th class="span2">keywords</th><td>${page.keywords}</td>
+      </tr>
+      <tr>
+        <th class="span2">url</th><td>${page.url}</td>
+      </tr>
+      <tr>
+        <th class="span2">layout</th><td>${page.layout.title}</td>
+      </tr>
+##      <tr>
+##        <th class="span2">structure</th><td>${page.structure}</td>
+##      </tr>
+      <tr>
+	<th>掲載期間</th>
+	<td>開始: ${page.publish_begin} <br /> 終了: ${page.publish_end}</td>
+      </tr>
+      <tr>
+        <th class="span2">公開ステータス</th><td>${h.page.show_publish_status(page)}</td>
+      </tr>
+      <tr>
+        <th class="span2">親ページ</th>
+		<td>
+		  %for p in reversed(page.pageset.ancestors if page.pageset else []):
+			<a class="parent" href="${request.route_path("pageset", pageset_id=p.id)}">${p.name}</a> &raquo;
+          %endfor
+        </td>
+      </tr>
+    </table>
+</%def>
+
+<%def name="render_blocks(blocks)">
+  <div id="wrapped">
+%for row in blocks.structure:
+    %for name in row:
+      <div class="block noitem size${len(row)} left" id="${name}">
+        ${name}
+      </div>
+    %endfor
+  %if len(row) > 1:
+    <div class="clear"/>
+  %endif
+%endfor
+##    % for name  in blocks:
+##      <div id="${name}" class="block noitem">${name}</div>
+##    % endfor
+  </div>
+</%def>

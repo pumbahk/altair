@@ -3,6 +3,7 @@
 import json
 import logging
 import webhelpers.paginate as paginate
+from datetime import datetime
 
 from pyramid.view import view_config, view_defaults
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound, HTTPBadRequest
@@ -25,7 +26,7 @@ class Stocks(BaseView):
     @view_config(route_name='stocks.allocate', request_method='POST', renderer='json')
     def allocate(self):
         performance_id = int(self.request.matchdict.get('performance_id', 0))
-        performance = Performance.get(performance_id)
+        performance = Performance.get(performance_id, self.context.user.organization_id)
         if performance is None:
             logger.error('performance id %d is not found' % performance_id)
             raise HTTPBadRequest(body=json.dumps({
@@ -53,6 +54,7 @@ class Stocks(BaseView):
                 seat.stock_id = post_seat.get('stock_id')
                 seat.save()
 
+            now = datetime.now()
             for post_stock in post_data.get('stocks'):
                 f = AllocateStockForm(MultiDict(post_stock))
                 if not f.validate():
@@ -60,6 +62,7 @@ class Stocks(BaseView):
 
                 stock = Stock.filter_by(id=post_stock.get('id')).first()
                 stock.quantity = f.quantity.data
+                stock.locked_at = None if f.assignable.data else now
                 stock.save()
 
             for post_stock_type in post_data.get('stock_types'):

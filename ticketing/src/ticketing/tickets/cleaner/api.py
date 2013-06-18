@@ -1,6 +1,9 @@
 # -*- coding:utf-8 -*-
 import re
 import logging
+from tempfile import mktemp
+from shutil import copyfileobj
+
 logger = logging.getLogger(__name__)
 from lxml import etree
 from StringIO import StringIO
@@ -92,18 +95,40 @@ class TicketSVGCleaner(object):
         normalize(io, self.result, encoding="UTF-8")
         return self.result
 
+def invalid_svg_upload_when_save(io, suffix=".svg"):
+    pos = io.tell()
+    io.seek(0)
+    savepath = mktemp(suffix)
+    logger.warn("invalid svg is uploaded. save as %s" % savepath)
+    try:
+        with open(savepath, "wb") as wf:
+            copyfileobj(io, wf)
+    except Exception, e:
+        logger.error(str(e))
+    io.seek(pos)
+    
+
 class TicketSVGValidator(object):
     def __init__(self, exc_class=TicketCleanerValidationError, io_create=StringIO):
         self.exc_class = exc_class
         self.io_create = io_create
 
     def validate(self, svgio, xmltree):
-        io = self._validated_io_on_cleanup_phase(xmltree)
-        io = self._validated_io_on_normalize_phase(io)
-        self._validate_on_converting_to_opcode(etree.parse(io))
-        io.seek(0)
-        return io
+        default_io = None
+        try:
+            default_io = io = self._validated_io_on_cleanup_phase(xmltree)
+            io = self._validated_io_on_normalize_phase(io)
+            self._validate_on_converting_to_opcode(etree.parse(io))
+            io.seek(0)
+            return io
+        except Exception:
+            if default_io is None:
+                default_io = self.io_create()
+                xmltree.write(default_io, encoding="UTF-8")
+            invalid_svg_upload_when_save(default_io, suffix=".svg")
+            raise
 
+        
     def _validated_io_on_cleanup_phase(self, xmltree):
         try:
             cleanup_svg(xmltree)

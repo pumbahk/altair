@@ -27,7 +27,7 @@ def make_config(name, content):
 def dummy_mapping_utility(request_or_config):
     class dummy_mapping(object):
         def __init__(self):
-            self.D = {"my-organization": (1, "oauth")}
+            self.D = {"my-organization": ("demo", "oauth")}
             
         def get_keypair(self, name):
             return self.D[name]
@@ -77,7 +77,7 @@ widgets =
     def test_get_keys(self):
         configparser = make_config("settings.ini", self.INIFILE)
         target = self._makeOne(self.config, configparser, _organization_mapping=dummy_mapping_utility)
-        self.assertEquals(target.get_keys, (1, "oauth"))
+        self.assertEquals(target.get_keys, ("demo", "oauth"))
 
     def test_dispatch_function(self):
         configparser = make_config("settings.ini", self.INIFILE)
@@ -139,15 +139,15 @@ widgets =
         from altaircms.auth.api import set_organization_mapping
         set_organization_mapping(config, dummy_mapping_utility(config))
 
-        from altaircms.plugins.api import _get_configparser_from_inifile
-        configparser = _get_configparser_from_inifile(self.inifile, _open=DummyOpen)
+        from altaircms.plugins.api import _configparser_from_inifile
+        configparser = _configparser_from_inifile(self.inifile, _open=DummyOpen)
         result = self._callFUT(config, [configparser], validator=None)
 
-        self.assertEquals(result.conts.keys(), [(1, "oauth")])
-        self.assertEquals(result.conts[(1, "oauth")]._after_dispatch.keys(), ["event_page", "other_page"])
+        self.assertEquals(result.conts.keys(), [("demo", "oauth")])
+        self.assertEquals(result.conts[("demo", "oauth")]._after_dispatch.keys(), ["event_page", "other_page"])
 
         ## get widget aggregation dispatcher
-        organization = organization=testing.DummyResource(backend_id=1, auth_source="oauth", id=10)
+        organization = organization=testing.DummyResource(backend_id=1, auth_source="oauth", id=10, short_name="demo")
         request = testing.DummyRequest(organization=organization)
 
         ## event id is none
@@ -160,15 +160,5 @@ widgets =
 
 
 if __name__ == "__main__":
-    ## todo delete it
-    # from altaircms.plugins.widget_aggregate import WidgetAggregator
-    # wa = WidgetAggregator(["image", "freetext"])
-
-    # request = testing.DummyRequest()
-    # print wa.get_widget_paletcode(request)
-    # print "--"
-    # print wa.get_widget_jscode(request)
-    # print "--"
-    # # print wa.get_widget_csscode(request)
     unittest.main()
 

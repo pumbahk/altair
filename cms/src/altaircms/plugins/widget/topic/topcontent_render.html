@@ -1,0 +1,14 @@
+## topic widget output template
+## 
+
+## todo:画像を表示
+## todo:カウントダウン表示
+##
+<div class="topic-list">
+  %for topic in topics:
+  <div class="topic" title="<h2>${topic.title}(${h.base.jdate(topic.publish_open_on)})</h2><p>${topic.text or ""|n}</p>">
+    ${topic.title}(${h.base.jdate(topic.publish_open_on)})
+    <a href="${h.link.get_link_from_topic(request,topic)}"><img src="${h.asset.rendering_object(request,topic.image_asset).filepath}"/>
+  </div>
+  %endfor
+</div>

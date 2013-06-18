@@ -6,7 +6,7 @@ from wtforms import fields
 from wtforms.form import Form
 from wtforms.ext.csrf.session import SessionSecureForm
 from wtforms.validators import Regexp, Length, NumberRange, EqualTo, Optional, ValidationError
-from ticketing.formhelpers import OurForm
+from ticketing.formhelpers import OurForm, CP932
 from ticketing.core import models as c_models
 
 from ticketing.formhelpers import (
@@ -38,8 +38,8 @@ class ClientForm(OurForm):
         filters=[strip_spaces],
         validators=[
             Required(),
-            Zenkaku, 
-            Length(max=255, message=u'255文字以内で入力してください'),
+            Zenkaku,
+            Length(max=10, message=u'10文字以内で入力してください'),
         ],
     )
     last_name_kana = fields.TextField(
@@ -47,8 +47,8 @@ class ClientForm(OurForm):
         filters=[strip_spaces, NFKC],
         validators=[
             Required(),
-            Katakana, 
-            Length(max=255, message=u'255文字以内で入力してください'),
+            Katakana,
+            Length(max=10, message=u'10文字以内で入力してください'),
         ]
     )
     first_name = fields.TextField(
@@ -56,8 +56,8 @@ class ClientForm(OurForm):
         filters=[strip_spaces],
         validators=[
             Required(),
-            Zenkaku, 
-            Length(max=255, message=u'255文字以内で入力してください'),
+            Zenkaku,
+            Length(max=10, message=u'10文字以内で入力してください'),
         ]
     )
     first_name_kana = fields.TextField(
@@ -65,12 +65,12 @@ class ClientForm(OurForm):
         filters=[strip_spaces, NFKC], 
         validators=[
             Required(),
-            Katakana, 
-            Length(max=255, message=u'255文字以内で入力してください'),
+            Katakana,
+            Length(max=10, message=u'10文字以内で入力してください'),
         ]
     )
     tel_1 = fields.TextField(
-        label=u"TEL",
+        label=u"電話番号",
         filters=[ignore_space_hyphen], 
         validators=[
             Required(),
@@ -79,7 +79,7 @@ class ClientForm(OurForm):
         ]
     )
     fax = fields.TextField(
-        label=u"FAX",
+        label=u"FAX番号",
         filters=[ignore_space_hyphen], 
         validators=[
             Optional(),
@@ -103,6 +103,7 @@ class ClientForm(OurForm):
         validators=[
             Required(),
             Length(max=255, message=u'255文字以内で入力してください'),
+            CP932,
         ]
     )
     city = fields.TextField(
@@ -111,6 +112,7 @@ class ClientForm(OurForm):
         validators=[
             Required(),
             Length(max=255, message=u'255文字以内で入力してください'),
+            CP932,
         ]
     )
     address_1 = fields.TextField(
@@ -119,13 +121,15 @@ class ClientForm(OurForm):
         validators=[
             Required(),
             Length(max=255, message=u'255文字以内で入力してください'),
+            CP932,
         ]
     )
     address_2 = fields.TextField(
-        label=u"住所",
+        label=u"住所 (建物名など)",
         filters=[strip_spaces],
         validators=[
             Length(max=255, message=u'255文字以内で入力してください'),
+            CP932,
         ]
     )
     email_1 = fields.TextField(
@@ -137,7 +141,7 @@ class ClientForm(OurForm):
         ]
     )
     email_1_confirm = fields.TextField(
-        label=u"確認用メールアドレス",
+        label=u"メールアドレス (確認)",
         filters=[strip_spaces],
         validators=[
             Required(),
@@ -159,7 +163,7 @@ class ClientForm(OurForm):
     email_2_confirm = Liaison(
         email_1_confirm,
         fields.TextField(
-            label=u"確認用メールアドレス",
+            label=u"メールアドレス (確認)",
             filters=[strip_spaces],
             validators=[
                 SejCompliantEmail(),

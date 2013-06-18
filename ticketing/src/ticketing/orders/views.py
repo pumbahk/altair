@@ -5,8 +5,8 @@ import logging
 import csv
 import itertools
 from datetime import datetime
-import sqlalchemy.orm as orm
-from pyramid import testing
+import pystache
+
 from pyramid.view import view_config, view_defaults
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound, HTTPBadRequest
 from pyramid.response import Response
@@ -19,31 +19,36 @@ from wtforms.validators import Optional
 from sqlalchemy import and_
 from sqlalchemy.sql import exists
 from sqlalchemy.sql.expression import or_
-from sqlalchemy.orm import joinedload
+from sqlalchemy.orm import joinedload, undefer
+from webob.multidict import MultiDict
+from altair.sqlahelper import get_db_session
 
-from ticketing.models import merge_session_with_post, record_to_multidict
+from ticketing.models import DBSession, merge_session_with_post, record_to_multidict, asc_or_desc
 from ticketing.core.models import (Order, Performance, PaymentDeliveryMethodPair, ShippingAddress,
                                    Product, ProductItem, OrderedProduct, OrderedProductItem, 
                                    Ticket, TicketBundle, TicketFormat, Ticket_TicketBundle,
-                                   DeliveryMethod, TicketFormat_DeliveryMethod, 
-                                   Stock, StockStatus, Seat, SeatStatus, SeatStatusEnum)
-
+                                   DeliveryMethod, TicketFormat_DeliveryMethod, Venue,
+                                   SalesSegmentGroup, SalesSegment, Stock, StockStatus, Seat, SeatStatus, SeatStatusEnum, ChannelEnum)
 from ticketing.mailmags.models import MailSubscription, MailMagazine, MailSubscriptionStatus
-from ticketing.orders.export import OrderCSV
-from ticketing.orders.forms import (OrderForm, OrderSearchForm, SejOrderForm, SejTicketForm,
+from ticketing.orders.export import OrderCSV, japanese_columns
+from ticketing.orders.forms import (OrderForm, OrderSearchForm, OrderRefundSearchForm, SejOrderForm, SejTicketForm,
                                     SejRefundEventForm,SejRefundOrderForm, SendingMailForm,
-                                    PerformanceSearchForm, OrderReserveForm, ClientOptionalForm,
-                                    PreviewTicketSelectForm, CheckedOrderTicketChoiceForm)
+                                    PerformanceSearchForm, OrderReserveForm, OrderRefundForm, ClientOptionalForm,
+                                    SalesSegmentGroupSearchForm, SalesSegmentSearchForm, PreviewTicketSelectForm, CartSearchForm)
 from ticketing.views import BaseView
 from ticketing.fanstatic import with_bootstrap
 from ticketing.orders.events import notify_order_canceled
+from ticketing.payments.payment import Payment, get_delivery_plugin
+from ticketing.payments import plugins as payment_plugins
 from ticketing.tickets.utils import build_dicts_from_ordered_product_item
 from ticketing.cart import api
+from ticketing.cart.models import Cart
 from ticketing.cart.stocker import NotEnoughStockException
 from ticketing.cart.reserving import InvalidSeatSelectionException, NotEnoughAdjacencyException
 
-import pystache
 from . import utils
+from .api import OrderSearchQueryBuilder, CartSearchQueryBuilder, QueryBuilderError
+from .models import OrderSummary
 
 logger = logging.getLogger(__name__)
 
@@ -68,24 +73,88 @@ def available_ticket_formats_for_ordered_product_item(ordered_product_item_id):
         .filter(DeliveryMethod.id==PaymentDeliveryMethodPair.delivery_method_id)\
         .filter(TicketFormat_DeliveryMethod.delivery_method_id==DeliveryMethod.id)\
         .filter(TicketFormat.id==TicketFormat_DeliveryMethod.ticket_format_id)\
-        .with_entities(TicketFormat.id, TicketFormat.name)\
+        .with_entities(TicketFormat.id, TicketFormat.name)
+
+def encode_to_cp932(data):
+    try:
+        return data.encode('cp932')
+    except UnicodeEncodeError:
+        logger.warn('cannot encode character %s to cp932' % data)
+        if data is not None and len(data) > 1:
+            return ''.join([encode_to_cp932(d) for d in data])
+        else:
+            return '?'
+
 
 @view_defaults(xhr=True, permission='sales_counter') ## todo:適切な位置に移動
 class OrdersAPIView(BaseView):
+
     @view_config(renderer="json", route_name="orders.api.performances")
     def get_performances(self):
         form_search = PerformanceSearchForm(self.request.params)
         if not form_search.validate():
             return {"result": [],  "status": False}
 
-        query = Performance.query.filter(Performance.deleted_at == None)
-        query = Performance.set_search_condition(query, form_search)
-        performances = [dict(pk='', name='')]+[dict(pk=p.id, name='%s (%s)' % (p.name, p.start_on.strftime('%Y-%m-%d %H:%M'))) for p in query]
+        formdata = form_search.data
+        query = Performance.query
+        if formdata['sort']:
+            try:
+                query = asc_or_desc(query, getattr(Performance, formdata['sort']), formdata['direction'], 'asc')
+            except AttributeError:
+                pass
+
+        if formdata['event_id']:
+            query = query.filter(Performance.event_id == formdata['event_id'])
+
+        performances = [dict(pk='', name=u'(すべて)')]+[dict(pk=p.id, name='%s (%s)' % (p.name, p.start_on.strftime('%Y-%m-%d %H:%M'))) for p in query]
         return {"result": performances, "status": True}
 
+    @view_config(renderer="json", route_name="orders.api.sales_segment_groups")
+    def get_sales_segment_groups(self):
+        form_search = SalesSegmentGroupSearchForm(self.request.params)
+        if not form_search.validate():
+            return {"result": [],  "status": False}
 
-    @view_config(renderer="json", route_name="orders.api.printstatus", request_method="POST", match_param="action=add")
-    def add_printstatus(self):
+        formdata = form_search.data
+        query = SalesSegmentGroup.query
+        if formdata['sort']:
+            try:
+                query = asc_or_desc(query, getattr(SalesSegmentGroup, formdata['sort']), formdata['direction'], 'asc')
+            except AttributeError:
+                pass
+
+        if formdata['event_id']:
+            query = query.filter(SalesSegmentGroup.event_id == formdata['event_id'])
+        if formdata['public']:
+            query = query.filter(SalesSegmentGroup.public == formdata['public'])
+
+        sales_segment_groups = [dict(pk='', name=u'(すべて)')] + [dict(pk=p.id, name=p.name) for p in query]
+        return {"result": sales_segment_groups, "status": True}
+
+    @view_config(renderer="json", route_name="orders.api.sales_segments")
+    def get_sales_segments(self):
+        form_search = SalesSegmentSearchForm(self.request.params)
+        if not form_search.validate():
+            return {"result": [],  "status": False}
+
+        formdata = form_search.data
+        query = SalesSegment.query
+        if formdata['sort']:
+            try:
+                query = asc_or_desc(query, getattr(SalesSegment, formdata['sort']), formdata['direction'], 'asc')
+            except AttributeError:
+                pass
+
+        if formdata['performance_id']:
+            query = query.filter(SalesSegment.performance_id == formdata['performance_id'])
+        if formdata['public']:
+            query = query.filter(SalesSegment.public == formdata['public'])
+
+        sales_segments = [dict(pk='', name=u'(すべて)')] + [dict(pk=p.id, name=p.sales_segment_group.name) for p in query]
+        return {"result": sales_segments, "status": True}
+
+    @view_config(renderer="json", route_name="orders.api.checkbox_status", request_method="POST", match_param="action=add")
+    def add_checkbox_status(self):
         """ [o:1, o:2, o:3, o:4, ....]
         """
         oid = self.request.POST["target"]
@@ -97,8 +166,8 @@ class OrdersAPIView(BaseView):
         self.request.session["orders"] = orders
         return {"status": True, "count": len(orders), "result": list(orders)}
 
-    @view_config(renderer="json", route_name="orders.api.printstatus", request_method="POST", match_param="action=addall")
-    def add_all_printstatus(self):
+    @view_config(renderer="json", route_name="orders.api.checkbox_status", request_method="POST", match_param="action=addall")
+    def add_all_checkbox_status(self):
         """ [o:1, o:2, o:3, o:4, ....]
         """
         oids = self.request.POST.getall("targets[]")
@@ -109,8 +178,8 @@ class OrdersAPIView(BaseView):
         self.request.session["orders"] = orders
         return {"status": True, "count": len(orders), "result": list(orders)}
 
-    @view_config(renderer="json", route_name="orders.api.printstatus", request_method="POST", match_param="action=remove")
-    def remove_printstatus(self):
+    @view_config(renderer="json", route_name="orders.api.checkbox_status", request_method="POST", match_param="action=remove")
+    def remove_checkbox_status(self):
         """ [o:1, o:2, o:3, o:4, ....]
         """
         oid = self.request.POST["target"]
@@ -122,8 +191,8 @@ class OrdersAPIView(BaseView):
         self.request.session["orders"] = orders
         return {"status": True, "count": len(orders), "result": list(orders)}
 
-    @view_config(renderer="json", route_name="orders.api.printstatus", request_method="POST", match_param="action=removeall")
-    def remove_all_printstatus(self):
+    @view_config(renderer="json", route_name="orders.api.checkbox_status", request_method="POST", match_param="action=removeall")
+    def remove_all_checkbox_status(self):
         """ [o:1, o:2, o:3, o:4, ....]
         """
         oids = self.request.POST.getall("targets[]")
@@ -134,21 +203,19 @@ class OrdersAPIView(BaseView):
         self.request.session["orders"] = orders
         return {"status": True, "count": len(orders), "result": list(orders)}
 
-    @view_config(renderer="json", route_name="orders.api.printstatus", request_method="GET", match_param="action=load")
-    def load_printstatus(self):
+    @view_config(renderer="json", route_name="orders.api.checkbox_status", request_method="GET", match_param="action=load")
+    def load_checkbox_status(self):
         if not "orders" in self.request.session:
             return {"status": False, "result": [], "count": 0}
         orders = self.request.session["orders"]
         return {"status": True, "result": list(orders), "count": len(orders)}
 
-    @view_config(renderer="json", route_name="orders.api.printstatus", request_method="POST", match_param="action=reset")
-    def reset_printstatus(self):
+    @view_config(renderer="json", route_name="orders.api.checkbox_status", request_method="POST", match_param="action=reset")
+    def reset_checkbox_status(self):
         self.request.session["orders"] = set()
         return {"status": True, "count": 0, "result": []}
 
-
-    @view_config(renderer="json", route_name="orders.api.orders", request_method="GET", match_param="action=matched_by_ticket",
-                 request_param="ticket_format_id")
+    @view_config(renderer="json", route_name="orders.api.orders", request_method="GET", match_param="action=matched_by_ticket", request_param="ticket_format_id")
     def checked_matched_orders(self):
         if not "orders" in self.request.session:
             return {"status": False, "result": []}
@@ -175,54 +242,42 @@ class OrdersAPIView(BaseView):
 def session_has_order_p(context, request):
     return bool(request.session.get("orders"))
 
+
 @view_defaults(decorator=with_bootstrap, permission='sales_editor')
 class Orders(BaseView):
-    @view_config(route_name="orders.checked.index", renderer='ticketing:templates/orders/index.html', permission='sales_counter')
-    def checked_orders_index(self):
-        """後でindexと合成。これはチェックされたOrderだけを表示するview
-        """
-        if not self.request.session.get("orders"):
-            return HTTPFound(self.request.route_url("orders.index"))
-
-        organization_id = int(self.context.user.organization_id)
-        query = Order.filter(Order.organization_id==organization_id)
-        ords = [o.lstrip("o:") for o in self.request.session["orders"] if o.startswith("o:")]
-        query = query.filter(Order.id.in_(ords))
-
-        form_search = OrderSearchForm(self.request.params, organization_id=organization_id)
-        if form_search.validate():
-            query = Order.set_search_condition(query, form_search)
-
-        page = int(self.request.params.get('page', 0))
-        orders = paginate.Page(
-            query,
-            page=page,
-            items_per_page=20,
-            item_count=query.count(),
-            url=paginate.PageURL_WebOb(self.request)
-        )
-
-        return {
-            'form':OrderForm(),
-            'form_search':form_search,
-            'orders':orders,
-            "page": page,
-        }
 
     @view_config(route_name='orders.index', renderer='ticketing:templates/orders/index.html', permission='sales_counter')
     def index(self):
-        organization_id = int(self.context.user.organization_id)
-        query = Order.filter(Order.organization_id==organization_id)
+        #slave_session = get_db_session(self.request, name="slave")
 
-        form_search = OrderSearchForm(self.request.params, organization_id=organization_id)
+        organization_id = int(self.context.user.organization_id)
+        query = DBSession.query(Order).filter(Order.organization_id==organization_id)
+
+        if self.request.params.get('action') == 'checked':
+            checked_orders = [o.lstrip('o:') for o in self.request.session.get('orders', []) if o.startswith('o:')]
+            query = query.filter(Order.id.in_(checked_orders))
+
+        params = self.request.params
+
+        params = MultiDict(self.request.params)
+        params["order_no"] = " ".join(self.request.params.getall("order_no"))
+
+        form_search = OrderSearchForm(params, organization_id=organization_id)
         if form_search.validate():
-            query = Order.set_search_condition(query, form_search)
+            try:
+                targets = dict(OrderSearchQueryBuilder.targets)
+                targets['subject'] = Order
+                query = OrderSearchQueryBuilder(form_search.data, lambda key: form_search[key].label.text,
+                                                targets=targets)(DBSession.query(Order).filter(Order.organization_id==organization_id))
+            except QueryBuilderError as e:
+                self.request.session.flash(e.message)
 
         page = int(self.request.params.get('page', 0))
+
         orders = paginate.Page(
             query,
             page=page,
-            items_per_page=20,
+            items_per_page=40,
             item_count=query.count(),
             url=paginate.PageURL_WebOb(self.request)
         )
@@ -231,10 +286,227 @@ class Orders(BaseView):
             'form':OrderForm(),
             'form_search':form_search,
             'orders':orders,
-            "page": page,
+            'page': page,
         }
 
-    @view_config(route_name='orders.show', renderer='ticketing:templates/orders/show.html', permission='sales_counter')
+    @view_config(route_name='orders.download')
+    def download(self):
+        slave_session = get_db_session(self.request, name="slave")
+
+        organization_id = self.context.user.organization_id
+        query = slave_session.query(OrderSummary).filter(OrderSummary.organization_id==organization_id)
+
+        if self.request.params.get('action') == 'checked':
+            checked_orders = [o.lstrip('o:') for o in self.request.session.get('orders', []) if o.startswith('o:')]
+            if len(checked_orders) > 0:
+                query = query.filter(Order.id.in_(checked_orders))
+            else:
+                raise HTTPFound(location=route_path('orders.index', self.request))
+        else:
+            form_search = OrderSearchForm(self.request.params, organization_id=organization_id)
+            form_search.sort.data = None
+            try:
+                query = OrderSearchQueryBuilder(form_search.data, lambda key: form_search[key].label.text, sort=False)(slave_session.query(OrderSummary).filter(OrderSummary.organization_id==organization_id))
+            except QueryBuilderError as e:
+                self.request.session.flash(e.message)
+                raise HTTPFound(location=route_path('orders.index', self.request))
+            if query.count() > 5000 and not form_search.performance_id.data:
+                self.request.session.flash(u'対象件数が多すぎます。(公演を指定すれば制限はありません)')
+                raise HTTPFound(location=route_path('orders.index', self.request))
+
+        query = query.options(
+            joinedload('ordered_products'),
+            joinedload('ordered_products.product'),
+            joinedload('ordered_products.product.sales_segment'),
+            joinedload('ordered_products.ordered_product_items'),
+            joinedload('ordered_products.ordered_product_items.product_item'),
+            joinedload('ordered_products.ordered_product_items.print_histories'),
+            joinedload('ordered_products.ordered_product_items.seats'),
+            joinedload('ordered_products.ordered_product_items._attributes'),
+        )
+        orders = query.all()
+
+        headers = [
+            ('Content-Type', 'application/octet-stream; charset=cp932'),
+            ('Content-Disposition', 'attachment; filename=orders_{date}.csv'.format(date=datetime.now().strftime('%Y%m%d%H%M%S')))
+        ]
+        response = Response(headers=headers)
+
+        export_type = int(self.request.params.get('export_type', OrderCSV.EXPORT_TYPE_ORDER))
+        kwargs = dict(export_type=export_type) if export_type else {}
+        order_csv = OrderCSV(organization_id=self.context.user.organization_id, localized_columns=japanese_columns, **kwargs)
+
+        writer = csv.writer(response, delimiter=',', quoting=csv.QUOTE_ALL)
+        writer.writerows([encode_to_cp932(column) for column in columns] for columns in order_csv(orders))
+
+        return response
+
+
+@view_defaults(decorator=with_bootstrap, permission='sales_editor', renderer='ticketing:templates/orders/refund/index.html')
+class OrdersRefundIndexView(BaseView):
+
+    def __init__(self, *args, **kwargs):
+        super(type(self), self).__init__(*args, **kwargs)
+        self.organization_id = int(self.context.user.organization_id)
+
+    @view_config(route_name='orders.refund.index')
+    def index(self):
+        if self.request.session.get('orders'):
+            del self.request.session['orders']
+        if self.request.session.get('ticketing.refund.condition'):
+            del self.request.session['ticketing.refund.condition']
+
+        form_search = OrderRefundSearchForm(organization_id=self.organization_id)
+        page = 0
+        orders = []
+
+        return {
+            'form':OrderForm(),
+            'form_search':form_search,
+            'page': page,
+            'orders':orders,
+        }
+
+    @view_config(route_name='orders.refund.search')
+    def search(self):
+        if self.request.method == 'POST':
+            refund_condition = self.request.params
+        else:
+            refund_condition = MultiDict(self.request.session.get('ticketing.refund.condition', []))
+        form_search = OrderRefundSearchForm(refund_condition, organization_id=self.organization_id)
+        if form_search.validate():
+            query = Order.filter(Order.organization_id==self.organization_id)
+            try:
+                query = OrderSearchQueryBuilder(form_search.data, lambda key: form_search[key].label.text)(Order.filter(Order.organization_id==self.organization_id))
+            except QueryBuilderError as e:
+                self.request.session.flash(e.message)
+
+            if self.request.method == 'POST':
+                # 検索結果のOrder.idはデフォルト選択状態にする
+                checked_orders = set()
+                order_ids = query.with_entities(Order.id).all()
+                for order_id in order_ids:
+                    checked_orders.add('o:%s' % order_id)
+
+                self.request.session['orders'] = checked_orders
+                self.request.session['ticketing.refund.condition'] = self.request.params.items()
+
+            page = int(self.request.params.get('page', 0))
+            orders = paginate.Page(
+                query,
+                page=page,
+                items_per_page=40,
+                item_count=query.count(),
+                url=paginate.PageURL_WebOb(self.request)
+            )
+        else:
+            page = 0
+            orders = []
+
+        return {
+            'form':OrderForm(),
+            'form_search':form_search,
+            'page': page,
+            'orders':orders,
+        }
+
+    @view_config(route_name='orders.refund.checked')
+    def checked(self):
+        refund_condition = MultiDict(self.request.session.get('ticketing.refund.condition', []))
+        form_search = OrderRefundSearchForm(refund_condition, organization_id=self.organization_id)
+        if form_search.validate():
+            try:
+                query = OrderSearchQueryBuilder(form_search.data, lambda key: form_search[key].label.text)(Order.filter(Order.organization_id==self.organization_id))
+            except QueryBuilderError as e:
+                self.request.session.flash(e.message)
+
+            checked_orders = [o.lstrip('o:') for o in self.request.session.get('orders', []) if o.startswith('o:')]
+            query = query.filter(Order.id.in_(checked_orders))
+
+            page = int(self.request.params.get('page', 0))
+            orders = paginate.Page(
+                query,
+                page=page,
+                items_per_page=40,
+                item_count=query.count(),
+                url=paginate.PageURL_WebOb(self.request)
+            )
+        else:
+            page = 0
+            orders = []
+
+        return {
+            'form':OrderForm(),
+            'form_search':form_search,
+            'page': page,
+            'orders':orders,
+        }
+
+
+@view_defaults(decorator=with_bootstrap, permission='sales_editor', renderer='ticketing:templates/orders/refund/confirm.html')
+class OrdersRefundConfirmView(BaseView):
+
+    def __init__(self, *args, **kwargs):
+        super(type(self), self).__init__(*args, **kwargs)
+
+        self.checked_orders = [o.lstrip('o:') for o in self.request.session.get('orders', []) if o.startswith('o:')]
+        self.refund_condition = MultiDict(self.request.session.get('ticketing.refund.condition', []))
+        self.organization_id = int(self.context.user.organization_id)
+        self.form_search = OrderRefundSearchForm(self.refund_condition, organization_id=self.organization_id)
+
+    @view_config(route_name='orders.refund.confirm', request_method='GET')
+    def get(self):
+        if not self.checked_orders:
+            self.request.session.flash(u'払戻対象を選択してください')
+            return HTTPFound(location=route_path('orders.refund.checked', self.request))
+
+        form_refund = OrderRefundForm(
+            MultiDict(payment_method_id=self.form_search.payment_method.data),
+            organization_id=self.organization_id
+        )
+        return {
+            'orders':self.checked_orders,
+            'refund_condition':self.refund_condition,
+            'form_search':self.form_search,
+            'form_refund':form_refund,
+        }
+
+    @view_config(route_name='orders.refund.confirm', request_method='POST')
+    def post(self):
+        if not self.checked_orders:
+            self.request.session.flash(u'払戻対象を選択してください')
+            return HTTPFound(location=route_path('orders.refund.checked', self.request))
+
+        form_refund = OrderRefundForm(
+            self.request.POST,
+            organization_id=self.organization_id,
+            settlement_payment_method_id=self.form_search.payment_method.data
+        )
+        if not form_refund.validate():
+            return {
+                'orders':self.checked_orders,
+                'refund_condition':self.refund_condition,
+                'form_search':self.form_search,
+                'form_refund':form_refund,
+            }
+
+        # 払戻予約
+        orders = Order.query.filter(Order.id.in_(self.checked_orders)).all()
+        refund_param = form_refund.data
+        refund_param.update(dict(orders=orders))
+        Order.reserve_refund(refund_param)
+
+        del self.request.session['orders']
+        del self.request.session['ticketing.refund.condition']
+
+        self.request.session.flash(u'払戻予約しました')
+        return HTTPFound(location=route_path('orders.refund.index', self.request))
+
+
+@view_defaults(decorator=with_bootstrap, permission='sales_counter')
+class OrderDetailView(BaseView):
+
+    @view_config(route_name='orders.show', renderer='ticketing:templates/orders/show.html')
     def show(self):
         order_id = int(self.request.matchdict.get('order_id', 0))
         order = Order.get(order_id, self.context.user.organization_id, include_deleted=True)
@@ -260,26 +532,30 @@ class Orders(BaseView):
             form_shipping_address = ClientOptionalForm(record_to_multidict(order.shipping_address))
             form_shipping_address.tel_1.data = order.shipping_address.tel_1
             form_shipping_address.email_1.data = order.shipping_address.email_1
+            form_shipping_address.email_2.data = order.shipping_address.email_2
         else:
             mail_magazines = []
             form_shipping_address = ClientOptionalForm()
 
         if order.user and order.user.mail_subscription:
-            mail_magazines += [ms.segment.name for ms in order.user.mail_subscription if ms.segment.organization_id == order.organization_id]
+            mail_magazines += [ms.segment for ms in order.user.mail_subscription if ms.segment.organization_id == order.organization_id]
 
         form_order = OrderForm(record_to_multidict(order))
         form_order_reserve = OrderReserveForm(performance_id=order.performance_id)
+        form_refund = OrderRefundForm(MultiDict(payment_method_id=order.payment_delivery_pair.payment_method.id), organization_id=order.organization_id)
 
         return {
             'order_current':order,
             'order_history':order_history,
+            'sej_order':SejOrder.query.filter(SejOrder.order_id==order.order_no).first(),
             'mail_magazines':mail_magazines,
             'form_shipping_address':form_shipping_address,
             'form_order':form_order,
             'form_order_reserve':form_order_reserve,
+            'form_refund':form_refund,
         }
 
-    @view_config(route_name='orders.cancel')
+    @view_config(route_name='orders.cancel', permission='sales_editor')
     def cancel(self):
         order_id = int(self.request.matchdict.get('order_id', 0))
         order = Order.get(order_id, self.context.user.organization_id)
@@ -289,11 +565,68 @@ class Orders(BaseView):
         if order.cancel(self.request):
             notify_order_canceled(self.request, order)
             self.request.session.flash(u'受注(%s)をキャンセルしました' % order.order_no)
+            return HTTPFound(location=route_path('orders.show', self.request, order_id=order.id))
         else:
             self.request.session.flash(u'受注(%s)をキャンセルできません' % order.order_no)
+            raise HTTPFound(location=route_path('orders.show', self.request, order_id=order.id))
+
+    @view_config(route_name='orders.delete', permission='administrator')
+    def delete(self):
+        order_id = int(self.request.matchdict.get('order_id', 0))
+        order = Order.get(order_id, self.context.user.organization_id)
+        if order is None:
+            return HTTPNotFound('order id %d is not found' % order_id)
+
+        try:
+            order.delete()
+        except Exception:
+            self.request.session.flash(u'受注(%s)を非表示にできません' % order.order_no)
+            raise HTTPFound(location=route_path('orders.show', self.request, order_id=order.id))
+
+        self.request.session.flash(u'受注(%s)を非表示にしました' % order.order_no)
+        return HTTPFound(location=route_path('orders.index', self.request))
+
+    @view_config(route_name='orders.refund.immediate', permission='sales_editor')
+    def refund_immediate(self):
+        order_id = int(self.request.matchdict.get('order_id', 0))
+        order = Order.get(order_id, self.context.user.organization_id)
+        if order is None:
+            return HTTPNotFound('order id %d is not found' % order_id)
+
+        f = OrderRefundForm(
+            self.request.POST,
+            organization_id=self.context.user.organization_id,
+            settlement_payment_method_id=order.payment_delivery_pair.payment_method_id
+        )
+        if f.validate():
+            refund_param = f.data
+            refund_param.update(dict(orders=[order]))
+            Order.reserve_refund(refund_param)
+            if order.call_refund(self.request):
+                self.request.session.flash(u'受注(%s)を払戻しました' % order.order_no)
+                return render_to_response('ticketing:templates/refresh.html', {}, request=self.request)
+            else:
+                self.request.session.flash(u'受注(%s)を払戻できません' % order.order_no)
+
+        response = render_to_response('ticketing:templates/orders/refund/_form.html', {'form':f}, request=self.request)
+        response.status_int = 400
+        return response
+
+    @view_config(route_name='orders.change_status', permission='sales_editor')
+    def change_status(self):
+        order_id = int(self.request.matchdict.get('order_id', 0))
+        order = Order.get(order_id, self.context.user.organization_id)
+        if order is None:
+            return HTTPNotFound('order id %d is not found' % order_id)
+
+        status = self.request.matchdict.get('status', 0)
+        if order.change_status(status):
+            self.request.session.flash(u'受注(%s)のステータスを変更しました' % order.order_no)
+        else:
+            self.request.session.flash(u'受注(%s)のステータスを変更できません' % order.order_no)
         return HTTPFound(location=route_path('orders.show', self.request, order_id=order.id))
 
-    @view_config(route_name='orders.delivered')
+    @view_config(route_name='orders.delivered', permission='sales_editor')
     def delivered(self):
         order_id = int(self.request.matchdict.get('order_id', 0))
         order = Order.get(order_id, self.context.user.organization_id)
@@ -306,278 +639,7 @@ class Orders(BaseView):
             self.request.session.flash(u'受注(%s)を配送済みにできません' % order.order_no)
         return HTTPFound(location=route_path('orders.show', self.request, order_id=order.id))
 
-    @view_config(route_name='orders.download')
-    def download(self):
-        organization_id = self.context.user.organization_id
-        query = Order.filter(Order.organization_id==organization_id)
-
-        form_search = OrderSearchForm(self.request.params, organization_id=organization_id)
-        if form_search.validate():
-            query = Order.set_search_condition(query, form_search)
-
-        orders = query.all()
-
-        headers = [
-            ('Content-Type', 'application/octet-stream; charset=cp932'),
-            ('Content-Disposition', 'attachment; filename=orders_{date}.csv'.format(date=datetime.now().strftime('%Y%m%d%H%M%S')))
-        ]
-        response = Response(headers=headers)
-
-        order_csv = OrderCSV(orders, self.request.params.get('export_type'), organization_id=self.context.user.organization_id)
-
-        writer = csv.DictWriter(response, order_csv.header, delimiter=',', quoting=csv.QUOTE_ALL)
-        writer.writeheader()
-        writer.writerows(order_csv.rows)
-
-        return response
-
-    def release_seats(self, l0_ids):
-        # 確保座席があるならステータスを戻す
-        logger.info("release seats : %s" % l0_ids)
-        if l0_ids:
-            seat_statuses = SeatStatus.filter(SeatStatus.status.in_([int(SeatStatusEnum.Keep), int(SeatStatusEnum.InCart)]))\
-                                      .join(SeatStatus.seat)\
-                                      .filter(Seat.l0_id.in_(l0_ids))\
-                                      .with_lockmode('update').all()
-            for seat_status in seat_statuses:
-                logger.info("seat(%s) status InCart to Vacant" % seat_status.seat_id)
-                seat_status.status = int(SeatStatusEnum.Vacant)
-                seat_status.save()
-
-    def clear_inner_cart_session(self):
-        inner_cart_session = self.request.session.get('ticketing.inner_cart')
-        logger.info("clear cart session : %s" % inner_cart_session)
-
-        if inner_cart_session:
-            if inner_cart_session.get('seats'):
-                self.release_seats(inner_cart_session.get('seats'))
-            del self.request.session['ticketing.inner_cart']
-
-    @view_config(route_name='orders.reserve.form', request_method='POST',
-                 renderer='ticketing:templates/orders/_form_reserve.html', permission='sales_counter')
-    def reserve_form(self):
-        post_data = MultiDict(self.request.json_body)
-        logger.debug('order reserve post_data=%s' % post_data)
-
-        performance_id = int(post_data.get('performance_id', 0))
-        performance = Performance.get(performance_id, self.context.user.organization_id)
-        if performance is None:
-            raise HTTPBadRequest(body=json.dumps({
-                'message':u'パフォーマンスが存在しません',
-            }))
-
-        # 古いカートがセッションの残っていたら削除
-        old_cart = api.get_cart(self.request)
-        if old_cart:
-            old_cart.release()
-            api.remove_cart(self.request)
-
-        # 古い確保座席がセッションに残っていたら削除
-        self.clear_inner_cart_session()
-
-        stocks = post_data.get('stocks')
-        form_reserve = OrderReserveForm(post_data, performance_id=performance_id, stocks=stocks)
-        form_reserve.payment_delivery_method_pair_id.validators = [Optional()]
-        form_reserve.validate()
-
-        # 選択されたSeatがあるならステータスをKeepにして確保する
-        seats = []
-        if post_data.get('seats'):
-            try:
-                reserving = api.get_reserving(self.request)
-                stock_status = [(stock, 0) for stock in StockStatus.filter(StockStatus.stock_id.in_(stocks))]
-                seats = reserving.reserve_selected_seats(stock_status, performance_id, post_data.get('seats'), reserve_status=SeatStatusEnum.Keep)
-            except InvalidSeatSelectionException:
-                logger.info("seat selection is invalid.")
-                raise HTTPBadRequest(body=json.dumps({'message':u'既に予約済か選択できない座席です。画面を最新の情報に更新した上で再度座席を選択してください。'}))
-            except Exception, e:
-                logger.exception('save error (%s)' % e.message)
-                raise HTTPBadRequest(body=json.dumps({'message':u'エラーが発生しました'}))
-
-        # セッションに保存
-        self.request.session['ticketing.inner_cart'] = {
-            'stocks':post_data.get('stocks'),
-            'seats':post_data.get('seats'),
-        }
-
-        return {
-            'seats':seats,
-            'form':form_reserve, 
-            "performance": performance, 
-        }
-
-    @view_config(route_name='orders.reserve.confirm', request_method='POST',
-                 renderer='ticketing:templates/orders/_form_reserve_confirm.html', permission='sales_counter')
-    def reserve_confirm(self):
-        post_data = MultiDict(self.request.json_body)
-
-        performance_id = int(post_data.get('performance_id', 0))
-        performance = Performance.get(performance_id, self.context.user.organization_id)
-        if performance is None:
-            raise HTTPBadRequest(body=json.dumps({
-                'message':u'パフォーマンスが存在しません',
-            }))
-
-        try:
-            post_data.update(self.request.session.get('ticketing.inner_cart'))
-            logger.debug('order reserve confirm post_data=%s' % post_data)
-
-            # validation
-            f = OrderReserveForm(performance_id=performance_id, stocks=post_data.get('stocks'))
-            f.process(post_data)
-            if not f.validate():
-                raise ValidationError(reduce(lambda a,b: a+b, f.errors.values(), []))
-
-            seats = post_data.get('seats')
-            order_items = []
-            total_quantity = 0
-            for product_id, product_name in f.products.choices:
-                quantity = post_data.get('product_quantity-%d' % product_id)
-                if not quantity:
-                    continue
-                quantity = quantity.encode('utf-8')
-                if not quantity.isdigit():
-                    raise ValidationError(u'個数が不正です')
-                product_quantity = int(quantity)
-                total_quantity += product_quantity
-
-                product = DBSession.query(Product).filter_by(id=product_id).one()
-                order_items.append((product, product_quantity))
-
-            if not total_quantity:
-                raise ValidationError(u'個数を入力してください')
-            elif seats and total_quantity != len(seats):
-                raise ValidationError(u'個数の合計を選択した座席数（%d席）にしてください' % len(seats))
-
-            # 選択されたSeatのステータスをいったん戻してカートデータとして再確保する
-            self.release_seats(seats)
-
-            # create cart
-            cart = api.order_products(self.request, performance_id, order_items, selected_seats=seats)
-            pdmp = DBSession.query(PaymentDeliveryMethodPair).filter_by(id=post_data.get('payment_delivery_method_pair_id')).one()
-            cart.payment_delivery_pair = pdmp
-            cart.system_fee = pdmp.system_fee
-            DBSession.add(cart)
-            DBSession.flush()
-            api.set_cart(self.request, cart)
-
-            return {
-                'form':f,
-                'cart':cart,
-                "performance": performance, 
-            }
-        except ValidationError, e:
-            raise HTTPBadRequest(body=json.dumps({'message':e.message}))
-        except NotEnoughAdjacencyException:
-            logger.info("not enough adjacency")
-            raise HTTPBadRequest(body=json.dumps({'message':u'連席で座席を確保できません。座席を直接指定するか、席数を減らして確保してください。'}))
-        except InvalidSeatSelectionException:
-            logger.info("seat selection is invalid.")
-            raise HTTPBadRequest(body=json.dumps({'message':u'既に予約済か選択できない座席です。画面を最新の情報に更新した上で再度座席を選択してください。'}))
-        except NotEnoughStockException as e:
-            logger.info("not enough stock quantity :%s" % e)
-            raise HTTPBadRequest(body=json.dumps({'message':u'在庫がありません'}))
-        except Exception, e:
-            logger.exception('save error (%s)' % e.message)
-            raise HTTPBadRequest(body=json.dumps({'message':u'エラーが発生しました'}))
-
-    @view_config(route_name='orders.reserve.complete', request_method='POST', renderer='json', permission='sales_counter')
-    def reserve_complete(self):
-        post_data = MultiDict(self.request.json_body)
-        with_enqueue = post_data.get('with_enqueue', False)
-
-        performance_id = int(post_data.get('performance_id', 0))
-        performance = Performance.get(performance_id, self.context.user.organization_id)
-        if performance is None:
-            raise HTTPBadRequest(body=json.dumps({
-                'message':u'パフォーマンスが存在しません',
-            }))
-
-        try:
-            cart = api.get_cart(self.request)
-
-            # create order
-            order = Order.create_from_cart(cart)
-            order.organization_id = order.performance.event.organization_id
-            order.note = post_data.get('note')
-            attr = 'sales_counter_payment_method_id'
-            if int(post_data.get(attr, 0)):
-                order.paid_at = datetime.now()
-                order.attributes[attr] = post_data.get(attr)
-            DBSession.add(order)
-            DBSession.flush()
-            cart.order = order
-            cart.finish()
-
-            if with_enqueue:
-                utils.enqueue_for_order(operator=self.context.user, order=order)
-
-            # clear session
-            api.remove_cart(self.request)
-            if self.request.session.get('ticketing.inner_cart'):
-                del self.request.session['ticketing.inner_cart']
-            logger.debug('order reserve session data=%s' % self.request.session)
-
-            return {
-                'order_id':order.id,
-            }
-        except Exception, e:
-            logger.exception('save error (%s)' % e.message)
-            raise HTTPBadRequest(body=json.dumps({
-                'message':u'エラーが発生しました',
-            }))
-
-    @view_config(route_name='orders.reserve.reselect', request_method='POST', renderer='json', permission='sales_counter')
-    def reserve_reselect(self):
-        try:
-            # release cart
-            cart = api.get_cart(self.request)
-            if cart:
-                cart.release()
-            api.remove_cart(self.request)
-
-            # clear session
-            self.clear_inner_cart_session()
-
-            return {}
-        except Exception, e:
-            logger.exception('save error (%s)' % e.message)
-            raise HTTPBadRequest(body=json.dumps({
-                'message':u'エラーが発生しました',
-            }))
-
-    @view_config(route_name='orders.api.get', renderer='json', permission='sales_counter')
-    def api_get(self):
-        l0_id = self.request.params.get('l0_id', 0)
-        performance_id = self.request.params.get('performance_id', 0)
-        logger.debug('call get order api (seat l0_id = %s)' % l0_id)
-        order = Order.filter_by(organization_id=self.context.user.organization_id)\
-                     .filter(Order.performance_id==performance_id)\
-                     .filter(Order.canceled_at==None)\
-                     .join(Order.ordered_products)\
-                     .join(OrderedProduct.ordered_product_items)\
-                     .join(OrderedProductItem.seats)\
-                     .filter(Seat.l0_id==l0_id).first()
-        if not order:
-            raise HTTPBadRequest(body=json.dumps({'message':u'予約データが見つかりません'}))
-
-        name = order.shipping_address.last_name + order.shipping_address.first_name if order.shipping_address else ''
-        products = [ordered_product.product.name for ordered_product in order.ordered_products]
-        seat_names = []
-        for op in order.ordered_products:
-            for opi in op.ordered_product_items:
-                seat_names += [seat.name for seat in opi.seats]
-
-        return {
-            'order_no':order.order_no,
-            'name':name,
-            'price':int(order.total_amount),
-            'products':products,
-            'seat_names':seat_names
-        }
-
-    @view_config(route_name='orders.edit.shipping_address', request_method='POST',
-                 renderer='ticketing:templates/orders/_form_shipping_address.html', permission='sales_counter')
+    @view_config(route_name='orders.edit.shipping_address', request_method='POST', renderer='ticketing:templates/orders/_form_shipping_address.html')
     def edit_shipping_address_post(self):
         order_id = int(self.request.matchdict.get('order_id', 0))
         order = Order.get(order_id, self.context.user.organization_id)
@@ -585,12 +647,11 @@ class Orders(BaseView):
             return HTTPNotFound('order id %d is not found' % order_id)
 
         f = ClientOptionalForm(self.request.POST)
-        # ここでは確認用メールアドレスはチェック対象外
-
         if f.validate():
             shipping_address = merge_session_with_post(order.shipping_address or ShippingAddress(), f.data)
             shipping_address.tel_1 = f.tel_1.data
             shipping_address.email_1 = f.email_1.data
+            shipping_address.email_2 = f.email_2.data
             order.shipping_address = shipping_address
             order.save()
 
@@ -601,7 +662,7 @@ class Orders(BaseView):
                 'form':f,
             }
 
-    @view_config(route_name='orders.edit.product', request_method='POST', permission='sales_counter')
+    @view_config(route_name='orders.edit.product', request_method='POST')
     def edit_product_post(self):
         order_id = int(self.request.matchdict.get('order_id', 0))
         order = Order.get(order_id, self.context.user.organization_id)
@@ -615,19 +676,15 @@ class Orders(BaseView):
             if not f.validate():
                 raise ValidationError()
 
-            cloned_order = Order.clone(order, deep=True)
-            cloned_order.branch_no = order.branch_no + 1
-            cloned_order.system_fee = f.system_fee.data
-            cloned_order.transaction_fee = f.transaction_fee.data
-            cloned_order.delivery_fee = f.delivery_fee.data
-            cloned_order.attributes = order.attributes
+            new_order = Order.clone(order, deep=True)
+            new_order.system_fee = f.system_fee.data
+            new_order.transaction_fee = f.transaction_fee.data
+            new_order.delivery_fee = f.delivery_fee.data
 
-            for op, cop in itertools.izip(order.items, cloned_order.items):
-                cop.price = int(self.request.params.get('product_price-%d' % op.id) or 0)
-                for opi, copi in itertools.izip(op.ordered_product_items, cop.ordered_product_items):
-                    copi.seats = opi.seats
-                    copi.attributes = opi.attributes
-                    copi.price = int(self.request.params.get('product_item_price-%d' % opi.id) or 0)
+            for op, nop in itertools.izip(order.items, new_order.items):
+                nop.price = int(self.request.params.get('product_price-%d' % op.id) or 0)
+                for opi, nopi in itertools.izip(op.ordered_product_items, nop.ordered_product_items):
+                    nopi.price = int(self.request.params.get('product_item_price-%d' % opi.id) or 0)
                     # 個数が変更できるのは数受けのケースのみ
                     if op.product.seat_stock_type.quantity_only:
                         stock_status = opi.product_item.stock.stock_status
@@ -636,20 +693,19 @@ class Orders(BaseView):
                         if stock_status.quantity < (new_quantity - old_quantity):
                             raise NotEnoughStockException(stock_status.stock, stock_status.quantity, new_quantity)
                         stock_status.quantity -= (new_quantity - old_quantity)
-                        cop.quantity = new_quantity
-                        copi.quantity = new_quantity
-                if sum(copi.price for copi in cop.ordered_product_items) != cop.price:
+                        nop.quantity = new_quantity
+                        nopi.quantity = new_quantity
+                if sum(nopi.price for nopi in nop.ordered_product_items) != nop.price:
                     raise ValidationError(u'小計金額が正しくありません')
 
-            total_amount = sum(cop.price * cop.quantity for cop in cloned_order.items)\
-                           + cloned_order.system_fee + cloned_order.transaction_fee + cloned_order.delivery_fee
-            if cloned_order.status in ('paid', 'delivered'):
-                if total_amount != cloned_order.total_amount:
+            total_amount = sum(nop.price * nop.quantity for nop in new_order.items)\
+                           + new_order.system_fee + new_order.transaction_fee + new_order.delivery_fee
+            if new_order.payment_status != 'unpaid':
+                if total_amount != new_order.total_amount:
                     raise ValidationError(u'入金済みの為、合計金額は変更できません')
-            cloned_order.total_amount = total_amount
+            new_order.total_amount = total_amount
 
-            cloned_order.save()
-            order.delete()
+            new_order.save()
         except ValidationError, e:
             if e.message:
                 self.request.session.flash(e.message)
@@ -671,59 +727,7 @@ class Orders(BaseView):
         self.request.session.flash(u'予約を保存しました')
         return render_to_response('ticketing:templates/refresh.html', {}, request=self.request)
 
-    @view_config(route_name='orders.note', request_method='POST', renderer='json', permission='sales_counter')
-    def note(self):
-        order_id = int(self.request.matchdict.get('order_id', 0))
-        order = Order.get(order_id, self.context.user.organization_id)
-        if order is None:
-            raise HTTPBadRequest(body=json.dumps({
-                'message':u'不正なデータです',
-            }))
-
-        f = OrderReserveForm(MultiDict(self.request.json_body))
-        if not f.note.validate(f):
-            raise HTTPBadRequest(body=json.dumps({
-                'message':f.note.errors,
-            }))
-
-        order.note = f.note.data
-        order.save()
-        return {}
-
-    @view_config(route_name='orders.sales_summary', renderer='ticketing:templates/orders/_sales_summary.html', permission='sales_counter')
-    def sales_summary(self):
-        performance_id = int(self.request.params.get('performance_id', 0))
-        performance = Performance.get(performance_id)
-        if performance is None:
-            return HTTPNotFound('performance id %d is not found' % performance_id)
-
-        now = datetime.now()
-        sales_summary = []
-        for stock_type in performance.event.stock_types:
-            stock_data = []
-            stocks = Stock.filter(Stock.performance_id==performance_id)\
-                          .filter(Stock.stock_type_id==stock_type.id)\
-                          .filter(Stock.quantity>0)\
-                          .filter(exists().where(and_(ProductItem.performance_id==performance_id, ProductItem.stock_id==Stock.id))).all()
-            for stock in stocks:
-                products = Product.find(performance_id=performance.id, stock_id=stock.id)
-                stock_data.append(dict(
-                    stock=stock,
-                    products=[p for p in products if p.sales_segment.start_at <= now and p.sales_segment.end_at >= now ],
-                ))
-            sales_summary.append(dict(
-                stock_type=stock_type,
-                total_quantity=stock_type.num_seats(performance_id=performance.id, sale_only=True) or 0,
-                rest_quantity=stock_type.rest_num_seats(performance_id=performance.id, sale_only=True) or 0,
-                stocks=stock_data
-            ))
-
-        return {
-            'sales_summary':sales_summary
-        }
-
-    @view_config(route_name="orders.item.preview", request_method="GET",
-                 renderer='ticketing:templates/orders/_item_preview_dialog.html', permission='sales_counter')
+    @view_config(route_name="orders.item.preview", request_method="GET", renderer='ticketing:templates/orders/_item_preview_dialog.html')
     def order_item_preview_dialog(self):
         item = OrderedProductItem.query.filter_by(id=self.request.matchdict["item_id"]).first()
         if item is None:
@@ -731,8 +735,7 @@ class Orders(BaseView):
         form = PreviewTicketSelectForm(item_id=item.id, ticket_formats=available_ticket_formats_for_ordered_product_item(item.id))
         return {"form": form, "item": item}
 
-    @view_config(route_name="orders.item.preview.getdata", request_method="GET",
-                 renderer="json", permission='sales_counter')
+    @view_config(route_name="orders.item.preview.getdata", request_method="GET", renderer="json")
     def order_item_get_data_for_preview(self):
         item = OrderedProductItem.query.filter_by(id=self.request.matchdict["item_id"]).one()
         ticket_format = TicketFormat.query.filter_by(id=self.request.matchdict["ticket_format_id"]).one()
@@ -762,18 +765,73 @@ class Orders(BaseView):
                 results.append(r)
         return {"results": results, "names": names}
 
-    @view_config(route_name="orders.issue_status", request_method="POST",
-                 request_param='issued', permission='sales_counter')
+    @view_config(route_name='orders.note', request_method='POST', renderer='json', permission='sales_counter')
+    def note(self):
+        order_id = int(self.request.matchdict.get('order_id', 0))
+        order = Order.get(order_id, self.context.user.organization_id)
+        if order is None:
+            raise HTTPBadRequest(body=json.dumps({
+                'message':u'不正なデータです',
+            }))
+
+        f = OrderReserveForm(MultiDict(self.request.json_body))
+        if not f.note.validate(f):
+            raise HTTPBadRequest(body=json.dumps({
+                'message':f.note.errors,
+            }))
+
+        order.note = f.note.data
+        order.save()
+        return {}
+
+    @view_config(route_name='orders.sales_summary', renderer='ticketing:templates/orders/_sales_summary.html', permission='sales_counter')
+    def sales_summary(self):
+        performance_id = int(self.request.params.get('performance_id') or 0)
+        performance = Performance.get(performance_id, self.context.user.organization_id)
+        if performance is None:
+            return HTTPNotFound('performance id %d is not found' % performance_id)
+
+        sales_segments = performance.inner_sales_segments
+        sales_segment_id = int(self.request.params.get('sales_segment_id') or 0)
+        if sales_segment_id:
+            sales_segments = [ss for ss in sales_segments if ss.id == sales_segment_id]
+
+        sales_summary = []
+        for stock_type in performance.stock_types:
+            stock_data = []
+            stocks = Stock.filter(Stock.performance_id==performance_id)\
+                .filter(Stock.stock_type_id==stock_type.id)\
+                .filter(Stock.quantity>0)\
+                .filter(exists().where(and_(ProductItem.performance_id==performance_id, ProductItem.stock_id==Stock.id))).all()
+            for stock in stocks:
+                products = [p for p in performance.products if stock in p.stocks and p.sales_segment in sales_segments]
+                if products:
+                    stock_data.append(dict(
+                        stock=stock,
+                        products=sorted(products, key=lambda x:(x.sales_segment.order, x.price)),
+                    ))
+            sales_summary.append(dict(
+                stock_type=stock_type,
+                total_quantity=stock_type.num_seats(performance_id=performance.id, sale_only=True) or 0,
+                rest_quantity=stock_type.rest_num_seats(performance_id=performance.id, sale_only=True) or 0,
+                stocks=stock_data
+            ))
+
+        return {
+            'sales_summary':sales_summary
+        }
+
+    @view_config(route_name="orders.issue_status", request_method="POST", request_param='issued')
     def issue_status(self):
         order = Order.query.get(self.request.matchdict["order_id"])
         order.issued = int(self.request.params['issued'])
         return HTTPFound(location=self.request.route_path('orders.show', order_id=order.id))
 
-    @view_config(route_name="orders.print.queue.dialog", request_method="GET",
-                 renderer="ticketing:templates/orders/_print_queue_dialog.html", permission='sales_counter')
+    @view_config(route_name="orders.print.queue.dialog", request_method="GET", renderer="ticketing:templates/orders/_print_queue_dialog.html")
     def print_queue_dialog(self):
         order = Order.query.get(self.request.matchdict["order_id"])
         return {"order": order}
+
 
     @view_config(route_name="orders.checked.queue", request_method="POST", permission='sales_counter')
     def enqueue_checked_order(self):
@@ -782,7 +840,7 @@ class Orders(BaseView):
 
         qs = DBSession.query(Order)\
             .filter(Order.deleted_at==None).filter(Order.id.in_(ords))\
-            .filter(Order.issued==False)\
+            .filter(Order.issued==False)
 
         for order in qs:
             if not order.queued:
@@ -797,11 +855,10 @@ class Orders(BaseView):
         # self.request.add_finished_callback(clean_session_callback)
         self.request.session.flash(u'券面を印刷キューに追加しました. (既に印刷済みの注文は印刷キューに追加されません)')
         if self.request.POST.get("redirect_url"):
-            return HTTPFound(location=self.request.POST.get("redirect_url"))            
+            return HTTPFound(location=self.request.POST.get("redirect_url"))
         return HTTPFound(location=self.request.route_path('orders.index'))
 
-
-    @view_config(route_name='orders.print.queue', permission='sales_counter')
+    @view_config(route_name='orders.print.queue')
     def order_print_queue(self):
         order_id = int(self.request.matchdict.get('order_id', 0))
         order = Order.query.get(order_id)
@@ -809,16 +866,317 @@ class Orders(BaseView):
         self.request.session.flash(u'券面を印刷キューに追加しました')
         return HTTPFound(location=self.request.route_path('orders.show', order_id=order_id))
 
-from ticketing.sej.models import SejOrder, SejTicket, SejTicketTemplateFile, SejRefundEvent, SejRefundTicket
+
+@view_defaults(decorator=with_bootstrap, permission='sales_counter')
+class OrdersReserveView(BaseView):
+
+    def release_seats(self, venue, l0_ids):
+        # 確保座席があるならステータスを戻す
+        logger.info("release seats : %s" % l0_ids)
+        if l0_ids:
+            seat_statuses = SeatStatus.filter(SeatStatus.status.in_([int(SeatStatusEnum.Keep), int(SeatStatusEnum.InCart)]))\
+                .join(SeatStatus.seat)\
+                .filter(and_(Seat.l0_id.in_(l0_ids), Seat.venue_id==venue.id))\
+                .with_lockmode('update').all()
+            for seat_status in seat_statuses:
+                logger.info("seat(%s) status InCart to Vacant" % seat_status.seat_id)
+                seat_status.status = int(SeatStatusEnum.Vacant)
+                seat_status.save()
+
+    def clear_inner_cart_session(self):
+        inner_cart_session = self.request.session.get('ticketing.inner_cart')
+        logger.info("clear cart session : %s" % inner_cart_session)
+
+        if inner_cart_session:
+            if inner_cart_session.get('seats'):
+                venue = Venue.get(inner_cart_session.get('venue_id'))
+                self.release_seats(venue, inner_cart_session.get('seats'))
+            del self.request.session['ticketing.inner_cart']
+
+    @view_config(route_name='orders.api.get', renderer='json')
+    def get_order_by_seat(self):
+        l0_id = self.request.params.get('l0_id', 0)
+        performance_id = self.request.params.get('performance_id', 0)
+        logger.debug('call get order api (seat l0_id = %s)' % l0_id)
+        order = Order.filter_by(organization_id=self.context.user.organization_id)\
+            .filter(Order.performance_id==performance_id)\
+            .filter(Order.canceled_at==None)\
+            .join(Order.ordered_products)\
+            .join(OrderedProduct.ordered_product_items)\
+            .join(OrderedProductItem.seats)\
+            .filter(Seat.l0_id==l0_id).first()
+        if not order:
+            raise HTTPBadRequest(body=json.dumps({'message':u'予約データが見つかりません'}))
+
+        name = order.shipping_address.last_name + order.shipping_address.first_name if order.shipping_address else ''
+        products = [ordered_product.product.name for ordered_product in order.ordered_products]
+        seat_names = []
+        for op in order.ordered_products:
+            for opi in op.ordered_product_items:
+                seat_names += [seat.name for seat in opi.seats]
+
+        return {
+            'order_no':order.order_no,
+            'name':name,
+            'price':int(order.total_amount),
+            'products':products,
+            'seat_names':seat_names
+        }
+
+    @view_config(route_name='orders.reserve.form', request_method='POST', renderer='ticketing:templates/orders/_form_reserve.html')
+    def reserve_form(self):
+        post_data = MultiDict(self.request.json_body)
+        logger.debug('order reserve post_data=%s' % post_data)
+
+        performance_id = int(post_data.get('performance_id', 0))
+        sales_segment_id = int(post_data.get('sales_segment_id', 0))
+        performance = Performance.get(performance_id, self.context.user.organization_id)
+        if performance is None:
+            raise HTTPBadRequest(body=json.dumps({
+                'message':u'パフォーマンスが存在しません',
+            }))
+
+        # 古いカートのセッションが残っていたら削除
+        old_cart = api.get_cart(self.request)
+        if old_cart:
+            old_cart.release()
+            api.remove_cart(self.request)
+
+        # 古い確保座席がセッションに残っていたら削除
+        self.clear_inner_cart_session()
+
+        stocks = post_data.get('stocks')
+        form_reserve = OrderReserveForm(post_data, performance_id=performance_id, stocks=stocks, sales_segment_id=sales_segment_id)
+        form_reserve.sales_segment_id.validators = [Optional()]
+        form_reserve.payment_delivery_method_pair_id.validators = [Optional()]
+        form_reserve.validate()
+
+        # 選択されたSeatがあるならステータスをKeepにして確保する
+        seats = []
+        if post_data.get('seats'):
+            try:
+                reserving = api.get_reserving(self.request)
+                stock_status = [(stock, 0) for stock in StockStatus.filter(StockStatus.stock_id.in_(stocks))]
+                seats = reserving.reserve_selected_seats(stock_status, performance_id, post_data.get('seats'), reserve_status=SeatStatusEnum.Keep)
+            except InvalidSeatSelectionException:
+                logger.info("seat selection is invalid.")
+                raise HTTPBadRequest(body=json.dumps({'message':u'既に予約済か選択できない座席です。画面を最新の情報に更新した上で再度座席を選択してください。'}))
+            except Exception, e:
+                logger.exception('save error (%s)' % e.message)
+                raise HTTPBadRequest(body=json.dumps({'message':u'エラーが発生しました'}))
+
+        # セッションに保存
+        self.request.session['ticketing.inner_cart'] = {
+            'venue_id':performance.venue.id,
+            'stocks':post_data.get('stocks'),
+            'seats':post_data.get('seats'),
+        }
+
+        return {
+            'seats':seats,
+            'form':form_reserve,
+            'performance':performance,
+        }
+
+    @view_config(route_name='orders.reserve.form.reload', request_method='POST', renderer='ticketing:templates/orders/_form_reserve.html')
+    def reserve_form_reload(self):
+        post_data = MultiDict(self.request.json_body)
+        post_data.update(self.request.session.get('ticketing.inner_cart'))
+        performance_id = int(post_data.get('performance_id', 0))
+        performance = Performance.get(performance_id, self.context.user.organization_id)
+
+        f = OrderReserveForm(post_data, performance_id=performance_id, stocks=post_data.get('stocks'), sales_segment_id=post_data.get('sales_segment_id'))
+        selected_seats = Seat.query.filter(and_(
+            Seat.l0_id.in_(post_data.get('seats')),
+            Seat.venue_id==post_data.get('venue_id')
+        )).all()
+
+        return {
+            'seats':selected_seats,
+            'form':f,
+            'performance':performance,
+        }
+
+    @view_config(route_name='orders.reserve.confirm', request_method='POST', renderer='ticketing:templates/orders/_form_reserve_confirm.html')
+    def reserve_confirm(self):
+        post_data = MultiDict(self.request.json_body)
+
+        performance_id = int(post_data.get('performance_id', 0))
+        performance = Performance.get(performance_id, self.context.user.organization_id)
+        if performance is None:
+            raise HTTPBadRequest(body=json.dumps({
+                'message':u'パフォーマンスが存在しません',
+            }))
+
+        try:
+            post_data.update(self.request.session.get('ticketing.inner_cart'))
+            logger.debug('order reserve confirm post_data=%s' % post_data)
+
+            # validation
+            f = OrderReserveForm(performance_id=performance_id, stocks=post_data.get('stocks'), sales_segment_id=post_data.get('sales_segment_id'), request=self.request)
+            f.process(post_data)
+            if not f.validate():
+                raise ValidationError(reduce(lambda a,b: a+b, f.errors.values(), []))
+
+            seats = post_data.get('seats')
+            order_items = []
+            total_quantity = 0
+            for product_id, product_name in f.products.choices:
+                quantity = post_data.get('product_quantity-%d' % product_id)
+                if not quantity:
+                    continue
+                quantity = quantity.encode('utf-8')
+                if not quantity.isdigit():
+                    raise ValidationError(u'個数が不正です')
+                product_quantity = int(quantity)
+                product = DBSession.query(Product).filter_by(id=product_id).one()
+                total_quantity += product_quantity * product.get_quantity_power(product.seat_stock_type, performance_id)
+                order_items.append((product, product_quantity))
+
+            if not total_quantity:
+                raise ValidationError(u'個数を入力してください')
+            elif seats and total_quantity != len(seats):
+                raise ValidationError(u'個数の合計を選択した座席数（%d席）にしてください' % len(seats))
+
+            # 選択されたSeatのステータスをいったん戻してカートデータとして再確保する
+            self.release_seats(performance.venue, seats)
+
+            # create cart
+            cart = api.order_products(self.request, performance_id, order_items, selected_seats=seats)
+            cart.sales_segment = SalesSegment.get(f.sales_segment_id.data)
+            pdmp = DBSession.query(PaymentDeliveryMethodPair).filter_by(id=post_data.get('payment_delivery_method_pair_id')).one()
+            cart.payment_delivery_pair = pdmp
+            cart.channel = ChannelEnum.INNER.v
+            cart.operator = self.context.user
+
+            # コンビニ決済は通知を行うので購入者情報が必要
+            if cart.payment_delivery_pair.id in f.payment_delivery_method_pair_id.sej_plugin_id:
+                cart.shipping_address = ShippingAddress(
+                    first_name=f.first_name.data,
+                    last_name=f.last_name.data,
+                    first_name_kana=f.first_name_kana.data,
+                    last_name_kana=f.last_name_kana.data,
+                    tel_1=f.tel_1.data,
+                )
+
+            DBSession.add(cart)
+            DBSession.flush()
+            api.set_cart(self.request, cart)
+
+            return {
+                'cart':cart,
+                'form':f,
+                'performance': performance,
+            }
+        except ValidationError, e:
+            raise HTTPBadRequest(body=json.dumps({'message':e.message}))
+        except NotEnoughAdjacencyException:
+            logger.info("not enough adjacency")
+            raise HTTPBadRequest(body=json.dumps({'message':u'連席で座席を確保できません。座席を直接指定するか、席数を減らして確保してください。'}))
+        except InvalidSeatSelectionException:
+            logger.info("seat selection is invalid.")
+            raise HTTPBadRequest(body=json.dumps({'message':u'既に予約済か選択できない座席です。画面を最新の情報に更新した上で再度座席を選択してください。'}))
+        except NotEnoughStockException as e:
+            logger.info("not enough stock quantity :%s" % e)
+            raise HTTPBadRequest(body=json.dumps({'message':u'在庫がありません'}))
+        except Exception, e:
+            logger.exception('save error (%s)' % e.message)
+            raise HTTPBadRequest(body=json.dumps({'message':u'エラーが発生しました'}))
+
+    @view_config(route_name='orders.reserve.complete', request_method='POST', renderer='json')
+    def reserve_complete(self):
+        post_data = MultiDict(self.request.json_body)
+        with_enqueue = post_data.get('with_enqueue', False)
+
+        performance_id = int(post_data.get('performance_id', 0))
+        performance = Performance.get(performance_id, self.context.user.organization_id)
+        if performance is None:
+            raise HTTPBadRequest(body=json.dumps({
+                'message':u'パフォーマンスが存在しません',
+            }))
+
+        try:
+            # create order
+            cart = api.get_cart(self.request)
+
+            payment = Payment(cart, self.request)
+            payment_plugin_id = cart.payment_delivery_pair.payment_method.payment_plugin_id
+            need_payment = (payment_plugin_id == payment_plugins.SEJ_PAYMENT_PLUGIN_ID)
+
+            if need_payment:
+                order = payment.call_payment()
+            else:
+                order = Order.create_from_cart(cart)
+                order.organization_id = order.performance.event.organization_id
+                order.save()
+                cart.order = order
+
+                delivery_plugin_id = cart.payment_delivery_pair.delivery_method.delivery_plugin_id
+                delivery_plugin = get_delivery_plugin(self.request, delivery_plugin_id)
+                if delivery_plugin:
+                    try:
+                        delivery_plugin.finish(self.request, cart)
+                    except Exception as e:
+                        logger.error('call delivery plugin error(%s)' % e.message)
+                        raise HTTPBadRequest(body=json.dumps({
+                            'message':u'配送手続でエラーが発生しました',
+                        }))
+                cart.finish()
+
+            order.note = post_data.get('note')
+            attr = 'sales_counter_payment_method_id'
+            if int(post_data.get(attr, 0)):
+                order.attributes[attr] = post_data.get(attr)
+                if not need_payment:
+                    order.paid_at = datetime.now()
+
+            if with_enqueue:
+                utils.enqueue_for_order(operator=self.context.user, order=order)
+
+            # clear session
+            api.remove_cart(self.request)
+            if self.request.session.get('ticketing.inner_cart'):
+                del self.request.session['ticketing.inner_cart']
+            logger.debug('order reserve session data=%s' % self.request.session)
+
+            return {
+                'order_id':order.id,
+            }
+        except Exception, e:
+            logger.exception('save error (%s)' % e.message)
+            raise HTTPBadRequest(body=json.dumps({
+                'message':u'エラーが発生しました',
+            }))
+
+    @view_config(route_name='orders.reserve.reselect', request_method='POST', renderer='json')
+    def reserve_reselect(self):
+        try:
+            # release cart
+            cart = api.get_cart(self.request)
+            if cart:
+                cart.release()
+            api.remove_cart(self.request)
+
+            # clear session
+            self.clear_inner_cart_session()
+
+            return {}
+        except Exception, e:
+            logger.exception('save error (%s)' % e.message)
+            raise HTTPBadRequest(body=json.dumps({
+                'message':u'エラーが発生しました',
+            }))
+
+
+from ticketing.sej.models import SejOrder, SejTicket, SejTicketTemplateFile, SejRefundEvent, SejRefundTicket, SejTenant
 from ticketing.sej.ticket import SejTicketDataXml
 from ticketing.sej.payment import request_update_order, request_cancel_order
 from ticketing.sej.resources import code_from_ticket_type, code_from_update_reason, code_from_payment_type
 from ticketing.sej.exceptions import  SejServerError
+from ticketing.sej import api as sej_api
 
 from sqlalchemy import or_, and_
 from pyramid.threadlocal import get_current_registry
-import sqlahelper
-DBSession = sqlahelper.get_session()
 
 @view_defaults(decorator=with_bootstrap, permission='administrator')
 class SejOrderView(object):
@@ -864,11 +1222,11 @@ class SejOrderView(object):
 class SejOrderInfoView(object):
 
     def __init__(self, request):
-
         settings = get_current_registry().settings
-        self.sej_hostname = settings['sej.inticket_api_url']
-        self.shop_id = settings['sej.shop_id']
-        self.secret_key = settings['sej.api_key']
+        tenant = SejTenant.filter_by(organization_id=request.context.user.organization_id).first()
+        self.sej_hostname = (tenant and tenant.inticket_api_url) or settings.get('sej.inticket_api_url')
+        self.shop_id = (tenant and tenant.shop_id) or settings.get('sej.shop_id')
+        self.secret_key = (tenant and tenant.api_key) or settings.get('sej.api_key')
 
         self.request = request
 
@@ -1002,22 +1360,15 @@ class SejOrderInfoView(object):
     @view_config(route_name='orders.sej.order.cancel', renderer='ticketing:templates/sej/order_info.html')
     def order_cancel(self):
         order_id = int(self.request.matchdict.get('order_id', 0))
-        order = SejOrder.query.get(order_id)
+        sej_order = SejOrder.query.get(order_id)
 
-        try:
-            order = request_cancel_order(
-                order.order_id,
-                order.billing_number,
-                order.exchange_number,
-                shop_id=self.shop_id,
-                secret_key=self.secret_key,
-                hostname=self.sej_hostname
-            )
+        result = sej_api.cancel_sej_order(sej_order, self.request.context.user.organization_id)
+        if result:
             self.request.session.flash(u'オーダーをキャンセルしました。')
-        except SejServerError, e:
-            self.request.session.flash(u'オーダーをキャンセルに失敗しました。 %s' % e)
-
-        return HTTPFound(location=self.request.route_path('orders.sej.order.info', order_id=order_id))
+            return HTTPFound(location=self.request.route_path('orders.sej.order.info', order_id=order_id))
+        else:
+            self.request.session.flash(u'オーダーをキャンセルに失敗しました。')
+            raise HTTPFound(location=self.request.route_path('orders.sej.order.info', order_id=order_id))
 
 
 @view_defaults(decorator=with_bootstrap, permission='administrator')
@@ -1196,3 +1547,31 @@ class MailInfoView(BaseView):
         mails_cancel.send_mail(self.request, order, override=form.data)
         self.request.session.flash(u'メール再送信しました')
         return HTTPFound(self.request.current_route_url(order_id=order_id, action="show"))
+
+@view_defaults(decorator=with_bootstrap, permission='sales_editor')
+class CartView(BaseView):
+    def __init__(self, context, request):
+        self.context = context
+        self.request = request
+
+    @view_config(route_name='cart.search', renderer="ticketing:templates/carts/index.html")
+    def index(self):
+        form = CartSearchForm(self.request.params, organization_id=self.context.user.organization_id)
+        carts = []
+        if not self.request.params:
+            self.request.session.flash(u'検索条件を指定してください')
+        elif not form.validate():
+            self.request.session.flash(u'検索条件に誤りがあります')
+        else:
+            try:
+                query = CartSearchQueryBuilder(form.data)(Cart.query)
+            except QueryBuilderError as e:
+                self.request.session.flash(e.message)
+            carts = paginate.Page(
+                query,
+                items_per_page=40,
+                item_count=query.count(),
+                url=paginate.PageURL_WebOb(self.request)
+            )
+
+        return { 'form_search': form, 'carts': carts, 'url': self.request.path }

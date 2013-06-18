@@ -59,7 +59,7 @@ Altair Backend -- ${performance.event.title}[${performance.name}]
           <th>会場</th>
           <td>
             ${performance.venue.name}
-            %if performance.venue.name != None:
+            %if performance.venue.sub_name != None:
               <div class="sub_name">${performance.venue.sub_name}</div>
             %endif
           </td>
@@ -72,6 +72,14 @@ Altair Backend -- ${performance.event.title}[${performance.name}]
           <th>リダイレクト先URL (モバイル)</th>
           <td colspan="3">${performance.redirect_url_mobile or u'未設定'}</td>
         </tr>
+        %if performance.settings:
+          %for k, v, doc in performance.settings[0].describe_iter():
+            <tr>
+              <th>${doc}</th>
+              <td colspan="3">${v}</td>
+            </tr>
+          %endfor
+        %endif
       </tbody>
     </table>
   </div>
@@ -85,6 +93,7 @@ Altair Backend -- ${performance.event.title}[${performance.name}]
   <ul class="nav nav-tabs">
     % if h.has_permission('event_editor'):
     <li id="seat-allocation-tab"><a href="${route_path}/seat-allocation">席種／配券</a></li>
+    <li id="sales_segment-tab"><a href="${route_path}/sales_segment">販売区分</a></li>
     <li id="product-tab"><a href="${route_path}/product">商品</a></li>
     % endif
     <li id="order-tab"><a href="${route_path}/order">購入情報</a></li>
@@ -93,7 +102,7 @@ Altair Backend -- ${performance.event.title}[${performance.name}]
   <div class="tab-content" id="tabbable-tab-content">
     % if tab == 'product' and h.has_permission('event_editor'):
     <div class="tab-pane" id="product">
-      <%include file="./_product.html" args="performance=performance, sales_segments=performance.event.sales_segments, form_product=form_product, form_product_item=form_product_item, form_product_item_grid=form_product_item_grid" />
+      <%include file="./_product.html" args="performance=performance, sales_segments=performance.sales_segments, form_product=form_product" />
     </div>
     % elif tab == 'order':
     <div class="tab-pane" id="order">
@@ -102,6 +111,10 @@ Altair Backend -- ${performance.event.title}[${performance.name}]
     % elif tab == 'reservation':
     <div class="tab-pane" id="reservation">
       <%include file="./_reservation.html" args="performance=performance" />
+    </div>
+    % elif tab == 'sales_segment':
+    <div class="tab-pane" id="sales_segment">
+      <%include file="./_sales_segment.html" args="sales_segments=sales_segments" />
     </div>
     % elif h.has_permission('event_editor'):
     <div class="tab-pane" id="seat-allocation">

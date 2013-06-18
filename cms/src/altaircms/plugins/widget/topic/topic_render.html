@@ -1,0 +1,15 @@
+<div class="topic-widget">
+  <ul id="topics">
+	%for topic in topics:
+	  <li>
+      <% link  = h.link.get_link_from_topic(request,topic) %>
+      %if link:
+        <a href="${link}">${topic.title}</a>
+      %else:
+        ${topic.title}      
+      %endif
+    </li>
+	%endfor
+  </ul>
+</div>
+<div class="clear"></div>

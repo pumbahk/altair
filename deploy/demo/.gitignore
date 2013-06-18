@@ -1,9 +1,6 @@
 bin/*
 var/*
 *.pid
-conf/data
-cancel_auth_expired_carts.conf
-update_seat_status.conf
 develop-eggs
 eggs
 parts

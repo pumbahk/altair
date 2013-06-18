@@ -14,51 +14,43 @@ var Seat = exports.Seat = Backbone.Model.extend({
 
   initialize: function Seat_initialize(attrs, options) {
     var self = this;
-
     this.styleTypes = [];
 
-    function selectableChanged() {
-      if (self.get('model').selectable())
-        self.addStyleType('unselectable');
-      else
+    function onSelectableChanged() {
+      if (self.get('model').selectable()) {
         self.removeStyleType('unselectable');
-    };
-    
-    function selectedChanged() {
-      if (this.get('selected'))
+      } else if (!self.get('model').get('sold')) {
+        self.addStyleType('unselectable');
+      }
+    }
+
+    function onSelectedChanged() {
+      if (self.get('model').get('selected'))
         self.addStyleType('selected');
       else
         self.removeStyleType('selected');
     }
 
     function onStockChanged() {
-      var prevModel = self.get('model').previous('stock');
-      if (prevModel)
-        prevModel.off('change:style', onStockChanged);
-      var model = self.get('model').get('stock');
-      if (model)
-        model.on('change:style', onStockChanged);
       self._refreshStyle();
-    };
+    }
 
     function onModelChange() {
       var prevModel = self.previous('model');
       var model = self.get('model');
       if (prevModel) {
-        model.off('change:venue', selectableChanged);
-        model.off('change:selectable', selectableChanged);
-        model.off('change:selected', selectedChanged);
+        model.off('change:selectable', onSelectableChanged);
+        model.off('change:selected', onSelectedChanged);
         model.off('change:stock', onStockChanged);
       }
       if (model) {
-        model.on('change:venue', selectableChanged);
-        model.on('change:selectable', selectableChanged);
-        model.on('change:selected', selectedChanged);
+        model.on('change:selectable', onSelectableChanged);
+        model.on('change:selected', onSelectedChanged);
         model.on('change:stock', onStockChanged);
       }
     }
 
-    function onShapeChange(init) {
+    function onShapeChange() {
       var prev = self.previous('shape');
       var events = self.get('events');
       if (events) {
@@ -77,12 +69,11 @@ var Seat = exports.Seat = Backbone.Model.extend({
         var new_ = self.get('shape');
         new_.addEvent(events);
       }
-      if (!init)
-        self._refreshStyle();
+      self._refreshStyle();
     }
 
     function onEventsChange() {
-      var shape = self.get('shape')
+      var shape = self.get('shape');
       if (shape) {
         var prev = self.previous('events');
         var new_ = self.get('events');
@@ -114,10 +105,10 @@ var Seat = exports.Seat = Backbone.Model.extend({
     // ensure change events to get invoked correctly on the
     // initialization.
     this._previousAttributes = {};
+    onSelectableChanged();
     onModelChange();
-    onShapeChange(true);
     onEventsChange();
-    onStockChanged();
+    onShapeChange();
   },
 
   _refreshStyle: function Seat__refreshStyle() {
@@ -133,37 +124,23 @@ var Seat = exports.Seat = Backbone.Model.extend({
     }
     shape.style(util.convertToFashionStyle(style));
     var styleText = style.text || model.get('seat_no');
-    if (style.text && ($.inArray('tooltip', this.styleTypes) != -1 || $.inArray('highlighted', this.styleTypes) != -1)) {
-      var posx = 0;
-      var posy = 0;
-      var e = window.event;
-      if (e.pageX || e.pageY) {
-        posx = e.pageX;
-        posy = e.pageY;
-      }
-      else if (e.clientX || e.clientY) {
-        posx = e.clientX + document.body.scrollLeft + document.documentElement.scrollLeft;
-        posy = e.clientY + document.body.scrollTop + document.documentElement.scrollTop;
-      }
-      $('#tooltip').attr('style', 'visibility: visible; top: ' + posy + 'px; left: ' + posx + 'px;');
-      $('#tooltip').html(model.get('stock').get('stockType').get('name') + "<br>" + model.get('name'));
-    } else {
-      $('#tooltip').attr('style', 'visibility: hidden;');
-    }
     if (!this.label) {
       var p = shape.position(),
+          t = shape.transform(),
           s = shape.size();
-      this.label = shape.drawable.draw(
-        new Fashion.Text({
+      var text = new Fashion.Text({
           position: {
-			x: p.x + (s.x * (0.05 + (styleText.length==1 ? 0.2 : 0.0))),
+			      x: p.x + (s.x * (0.05 + (styleText.length==1 ? 0.2 : 0.0))),
             y: p.y + (s.y * 0.75)
           },
           fontSize: style.text ? s.y * 0.5 : (s.x*1.2/Math.max(2, styleText.length)),
           text: styleText,
           style: { fill: new Fashion.FloodFill(new Fashion.Color(style.text_color)), cursor: 'default' }
-        })
-      );
+      });
+      if (t) {
+        text.transform(t);
+      }
+      this.label = shape.drawable.draw(text);
       this.label.addEvent(this.get('events'));
     } else {
       this.label.text(styleText);

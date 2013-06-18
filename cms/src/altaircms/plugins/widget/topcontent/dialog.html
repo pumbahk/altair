@@ -1,0 +1,18 @@
+## topic widget dialog
+##  view function is views.TopicWidgetView.dialog
+##
+<%namespace file="../components.html" name="co"/>
+
+<div class="title">
+  <h1>トピック(画像)</h1>
+</div>
+<table class="table">
+  <tbody>
+    ${co.formfield(form, "display_type")}
+    ${co.formfield(form, "rendering_image_attribute")}
+    ${co.formfield(form, "tag")}
+    ${co.formfield(form, "system_tag")}
+    ${co.formfield(form, "display_count")}
+  </tbody>
+</table>
+<button type="button" id="topcontent_submit">登録</button>

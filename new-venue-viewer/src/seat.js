@@ -81,6 +81,11 @@ Seat.prototype.defaultStyle = function Seat_defaultStype() {
 }
 
 Seat.prototype.attach = function Seat_attach(shape) {
+  if (this.shape === shape)
+    return;
+  if (this.shape !== shape)
+    this.detach();
+
   this.shape = shape;
   this.originalStyle = this.defaultStyle();
   this.refresh();
@@ -88,8 +93,10 @@ Seat.prototype.attach = function Seat_attach(shape) {
 };
 
 Seat.prototype.detach = function Seat_detach(shape) {
-  if (this.shape)
+  if (this.shape) {
     this.shape.removeEvent();
+    this.shape = null;
+  }
 };
 
 Seat.prototype.stylize = function Seat_stylize() {

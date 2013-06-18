@@ -64,22 +64,54 @@
 </%def>
 
 <%def name="form_item(item, help=None, label=None, **options)">
+  <% from wtforms.widgets import CheckboxInput %>
+  <% from ticketing.formhelpers import CheckboxMultipleSelect %>
   <% hide_on_new = getattr(item, 'hide_on_new', False) %>
   % if not getattr(getattr(item, 'form', None), 'new_form', False) or not hide_on_new:
   <% if hide_on_new: options['data-hide-on-new'] = 'hide-on-new' %>
+  <% classes = [] %>
+  <% if item.flags.required: classes.append('required') %>
   <div class="control-group ${'error' if item.errors else ''}">
-    % if item.type != 'HiddenField':
-      <label class="control-label">
-        % if item.flags.required:
-        <span style="color: #BA0000;padding-left: 5px; padding-right: 5px; font-size: 150%">*</span>
+    % if isinstance(item.widget, CheckboxInput):
+      <div class="controls">
+        ${(help or u'')|n} 
+        ${item(**options)}
+        <label class="${u' '.join(classes + [u'inline'])}" for="${item.id}">${label or item.label.text}</label>
+        ${validate_errors(item)}
+      </div>
+    % elif isinstance(item.widget, CheckboxMultipleSelect):
+      ${(help or u'')|n} 
+      <label class="${u' '.join(classes + [u'control-label'])}" for="${item.id}">${label or item.label.text}</label>
+      <div class="controls">
+        ${item(**options)}
+        ${validate_errors(item)}
+      </div>
+    % else:
+      % if item.type != 'HiddenField':
+        ${(help or u'')|n}
+        <label class="${u' '.join(classes + [u'control-label'])}" for="${item.id}">${label or item.label.text}</label>
+      % endif
+      <% add_on = options.pop('add_on', None) %>
+      <% counter = options.pop('counter', None) %>
+      <div class="controls ${'input-prepend' if add_on else ''}">
+        % if add_on:
+        <span class="add-on">${add_on}</span>
         % endif
-        ${(help or u'')|n} ${label or item.label.text}
-      </label>
+        ${item(**options)}
+        % if counter and 'maxlength' in options:
+        あと<span class="counter"></span>文字
+        <script type="text/javascript">
+          $(function(){
+            $('#${item.id}').keyup(function(){
+              var item = $(this);
+              item.parent().find('.counter').text(item.attr('maxlength') - item.val().length);
+            }).keyup();
+          });
+        </script>
+        % endif
+        ${validate_errors(item)}
+      </div>
     % endif
-    <div class="controls">
-      ${item(**options)}
-      ${validate_errors(item)}
-    </div>
   </div>
   % endif
 </%def>
@@ -120,8 +152,8 @@ ${json.dumps(style)}
   import locale
   locale.setlocale(locale.LC_ALL, "")
 %>
-<%def name="price_format(price)">
-${locale.format("%d", price, grouping=True)}
+<%def name="price_format(price, format='%d')">
+${locale.format(format, price, grouping=True)}
 </%def>
 
 <%def name="breadcrumbs(names=[], urls=[], length=20)">
@@ -132,18 +164,26 @@ ${locale.format("%d", price, grouping=True)}
   <li>${names[-1]}</li>
 </ul>
 </%def>
-
 <%def name="sortable(column, paging=True)">
+<%
+from wtforms.fields.core import UnboundField
+if isinstance(column, UnboundField):
+  column_name = column.kwargs.get('name', '')
+  column_label = column.kwargs.get('label', '')
+else:
+  column_name = column.name
+  column_label = column.label.text
+%>
 % if paging:
 <%
   sort_column = request.GET.get('sort')
   sort_direction = request.GET.get('direction')
-  direction = 'desc' if (column.name == sort_column and sort_direction == 'asc') else 'asc'
-  css_class = 'current ' + sort_direction if (column.name == sort_column) else ''
+  direction = 'desc' if (column_name == sort_column and sort_direction == 'asc') else 'asc'
+  css_class = 'current ' + sort_direction if (column_name == sort_column) else ''
 %>
-  <a href="?sort=${column.name}&direction=${direction}" class="${css_class}">${column.label.text}</a>
+  <a href="?sort=${column_name}&direction=${direction}" class="${css_class}">${column_label}</a>
 % else:
-  ${column.label.text}
+  ${column_label}
 % endif
 </%def>
 
@@ -151,7 +191,7 @@ ${locale.format("%d", price, grouping=True)}
   from webhelpers.util import html_escape
   from pyramid.threadlocal import get_current_registry
 %>
-<%def name="action_button(actions, order=None, vertical=True, options=None)">
+<%def name="action_button(actions, order=None, vertical=True, options=None, dropup=False)">
 <%
   registry = get_current_registry()
   route_permission = registry.route_permission if hasattr(registry, 'route_permission') else None
@@ -195,7 +235,11 @@ ${locale.format("%d", price, grouping=True)}
     <button class="btn dropdown-toggle" data-toggle="dropdown">
       <span class="caret"></span>
     </button>
-    <ul class="dropdown-menu">
+      % if dropup:
+        <ul class="dropdown-menu bottom-up">
+      % else:
+        <ul class="dropdown-menu">
+      % endif
     % endif
     % if vertical and count > 0:
       <li>
@@ -212,6 +256,7 @@ ${locale.format("%d", price, grouping=True)}
     </ul>
   % endif
 </div>
+
 </%def>
 
 <%!
@@ -222,4 +267,59 @@ ${locale.format("%d", price, grouping=True)}
 <%
   return isinstance(security_has_permission(permission, request.context, request), ACLAllowed)
 %>
+</%def>
+
+<%def name="order_status(order)">
+  % if order is None:
+    <span></span>
+  % elif order.status == 'canceled':
+    <span class="label label-important">キャンセル</span>
+  % elif order.status == 'delivered':
+    <span class="label label-success">配送済み</span>
+  % elif order.status == 'ordered':
+    <span class="label label-warning">受付済み</span>
+  % endif
+</%def>
+
+<%def name="payment_status(order)">
+<%
+  from ticketing.core.models import OrderCancelReasonEnum
+%>
+  % if order is None:
+    <span></span>
+  % elif order.payment_status == 'refunded' and order.cancel_reason == str(OrderCancelReasonEnum.CallOff.v[0]):
+    <span class="label label-important">払戻済み(中止)</span>
+  % elif order.payment_status == 'refunded':
+    <span class="label label-important">払戻済み</span>
+  % elif order.payment_status == 'refunding' and order.cancel_reason == str(OrderCancelReasonEnum.CallOff.v[0]):
+    <span class="label label-warning">払戻予約(中止)</span>
+  % elif order.payment_status == 'refunding':
+    <span class="label label-warning">払戻予約</span>
+  % elif order.payment_status == 'paid':
+    <span class="label label-success">入金済み</span>
+  % else:
+    <span class="label label-inverse">未入金</span>
+  % endif
+</%def>
+
+<%def name="delivery_status(order)">
+  % if order is None:
+    <span></span>
+  % elif order.delivered_at:
+    <span class="label label-success">配送済み</span>
+  % else:
+    <span class="label label-inverse">未配送</span>
+  % endif
+</%def>
+
+<%def name="help(field, text)">
+  <%
+    return u'''
+      <span class="help-inline">
+        <a href="#" rel="popover" data-original-title="%s" data-content="%s" >
+          <i class="icon-question-sign"></i>
+        </a>
+      </span>
+    ''' % (field.label.text, text)
+  %>
 </%def>

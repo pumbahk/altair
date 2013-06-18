@@ -131,6 +131,14 @@ class TicketNotationEmitter(object):
         self.emit_scalar_value(unicode(text))
         self.result.append(u'X')
 
+    def emit_show_dom_node(self, width, height, path):
+        self.emit_scalar_value(float(width))
+        self.emit_scalar_value(float(height))
+        self.emit_scalar_value(unicode(path))
+        self.result.append(u'xn')
+        self.result.append(u'sxn')
+        self.result.append(u'X')
+
     def emit_transform(self, a, b, c, d, e, f):
         self.emit_scalar_value(float(a))
         self.emit_scalar_value(float(b))
@@ -242,6 +250,9 @@ class Assembler(object):
     def emit_show_text(self, width, height, text):
         self.result.append(('show_text', [width, height, text]))
 
+    def emit_show_dom_node(self, width, height, path):
+        self.result.append(('show_dom_node', [width, height, path]))
+
     def emit_transform(self, a, b, c, d, e, f):
         self.result.append(('transform', [a, b, c, d, e, f]))
 
@@ -288,7 +299,7 @@ class Optimizer(object):
     def remove_unnecessary_modifiers(self, opcodes):
         for i in reversed(range(0, len(opcodes))):
             op, _ = opcodes[i]
-            if op in ('fill', 'stroke', 'stroke_and_fill', 'show_text'):
+            if op in ('fill', 'stroke', 'stroke_and_fill', 'show_text', 'show_dom_node'):
                 break
         return opcodes[0:i+1]
 
@@ -364,6 +375,12 @@ class ScaleFilter(object):
             int(float(width) / self.base_scale),
             int(float(height) / self.base_scale),
             text)
+
+    def emit_show_dom_node(self, width, height, path):
+        self.outer.emit_show_dom_node(
+            int(float(width) / self.base_scale),
+            int(float(height) / self.base_scale),
+            path)
 
     def emit_transform(self, a, b, c, d, e, f):
         self.outer.emit_transform(a, b, c, d, e, f)
@@ -483,14 +500,17 @@ class Style(object):
             )
 
 def text_and_elements(elem):
-    if elem.text:
-        yield unicode(elem.text)
-        elem.text = None
-    for subelem in elem:
-        yield subelem
-        if subelem.tail:
-            yield unicode(subelem.tail)
-            subelem.tail = None
+    if isinstance(elem, unicode):
+        yield elem
+    else:
+        if elem.text:
+            yield unicode(elem.text)
+            elem.text = None
+        for subelem in elem:
+            yield subelem
+            if subelem.tail:
+                yield unicode(subelem.tail)
+                subelem.tail = None
 
 def namespace(ns):
     def decorator(f):
@@ -520,6 +540,8 @@ class StyleContext(object):
         self.classes_pushed = classes_pushed
 
 class Visitor(object):
+    placeholder_pattern = ur'\ufeff{{((?:[^}]+|}[^}])*)}}\ufeff'
+
     def __init__(self, emitter, global_transform=None):
         self.emitter = emitter
         self.current_style_ctx = StyleContext(
@@ -572,6 +594,10 @@ class Visitor(object):
             u"bold": u"b",
             u"400": None,
             u"normal": None,
+            }
+        self.fixtag_placeholders = {
+            u'発券日時': u'FIXTAG04',
+            u'発券日時s': u'FIXTAG04',
             }
 
     @staticmethod
@@ -648,11 +674,19 @@ class Visitor(object):
                     html_styles.append((u'line-height', unicode(line_height) + u'px'))
                 if self.current_style_ctx.style.fill_color != style.fill_color:
                     html_styles.append((u'color', style.fill_color))
+                if self.current_style_ctx.style.font_weight != style.font_weight:
+                    html_styles.append((u'font-weight', style.font_weight))
                 current_font_family_class = self.font_classes.get(self.current_style_ctx.style.font_family)
+                if current_font_family_class is None:
+                    # silenty falls back to the default font
+                    current_font_family_class = u"f16"
                 new_font_family_class = self.font_classes.get(style.font_family)
+                if new_font_family_class is None:
+                    logger.warning('Unsupported font %s; falling back to "f16"' % style.font_family)
+                    new_font_family_class = u"f16"
                 subelem = self._build_html_from_flow_elements(text_and_elements(elem), tag)
                 if current_font_family_class != new_font_family_class:
-                    subelem.set('class', current_font_family_class)
+                    subelem.set('class', new_font_family_class)
                 if len(html_styles) > 0:
                     subelem.set('style', u';'.join(':'.join(pair) for pair in html_styles))
                 if len(subelem.items()) == 0:
@@ -668,6 +702,71 @@ class Visitor(object):
     def build_html_from_flow_elements(self, elems):
         elems = list(elems)
         result = self._build_html_from_flow_elements(elems)
+        retval = []
+        if result.text:
+            retval.append(unicode(result.text))
+        for n in result:
+            retval.append(etree.tostring(n, encoding=unicode, method='html'))
+        return u''.join(retval)
+
+    def _build_html_from_text_elements(self, elems, container='div'):
+        nodes = []
+        for elem in elems:
+            if isinstance(elem, basestring):
+                elem = unicode(elem)
+                lines = re.split(ur'\r\n|\r|\n', elem)
+                for line in lines:
+                    line = line.strip()
+                    if line:
+                        nodes.append(line)
+            else:
+                if elem.tag == u'{%s}tspan' % SVG_NAMESPACE:
+                    tag = 'span'
+                else:
+                    raise Exception('Unsupported tag: %s' % elem.tag)
+
+                html_styles = []
+
+                line_height = None
+                style = self.fetch_styles_from_element(elem)
+                if self.current_style_ctx.style.line_height != style.line_height:
+                    line_height = style.line_height
+
+                if self.current_style_ctx.style.font_size != style.font_size:
+                    html_styles.append((u'font-size', unicode(style.font_size) + u'px'))
+                    # XXX: workaround to cope with the difference of
+                    # interpretation of line-height between HTML and SVG
+                    if line_height is None:
+                        line_height = style.font_size
+
+                if line_height is not None:
+                    html_styles.append((u'line-height', unicode(line_height) + u'px'))
+                if self.current_style_ctx.style.fill_color != style.fill_color:
+                    html_styles.append((u'color', style.fill_color))
+                if self.current_style_ctx.style.font_weight != style.font_weight:
+                    html_styles.append((u'font-weight', style.font_weight))
+                current_font_family_class = self.font_classes.get(self.current_style_ctx.style.font_family)
+                if current_font_family_class is None:
+                    # silenty falls back to the default font
+                    current_font_family_class = u"f16"
+                new_font_family_class = self.font_classes.get(style.font_family)
+                if new_font_family_class is None:
+                    logger.warning('Unsupported font %s; falling back to "f16"' % style.font_family)
+                    new_font_family_class = u"f16"
+                subelem = self._build_html_from_text_elements(text_and_elements(elem), tag)
+                if current_font_family_class != new_font_family_class:
+                    subelem.set('class', new_font_family_class)
+                if len(html_styles) > 0:
+                    subelem.set('style', u';'.join(':'.join(pair) for pair in html_styles))
+                if len(subelem.items()) == 0:
+                    nodes.extend(text_and_elements(subelem))
+                else:
+                    nodes.append(subelem)
+        return E(container, *nodes)
+
+    def build_html_from_text_elements(self, elems):
+        elems = list(elems)
+        result = self._build_html_from_text_elements(elems)
         retval = []
         if result.text:
             retval.append(unicode(result.text))
@@ -709,15 +808,18 @@ class Visitor(object):
         if new_style.font_family is not None:
             font_family_class = self.font_classes.get(new_style.font_family)
             if font_family_class is None:
-                raise Exception('Unsupported font: %s' % new_style.font_family)
+                logger.warning('Unsupported font %s; falling back to "f16"' % new_style.font_family)
+                font_family_class = u"f16"
             old_font_family_class = self.font_classes.get(self.current_style_ctx.style.font_family)
             if font_family_class != old_font_family_class:
                 classes_pushed['font_family'] = font_family_class
 
         if new_style.font_weight is not None:
             if new_style.font_weight not in self.font_weight_classes:
-                raise Exception('Unsupported font weight: %s' % new_style.font_weight)
-            font_weight_class = self.font_weight_classes[new_style.font_weight]
+                logger.warning('Unsupported font weight %s; falling back to "normal"' % new_style.font_weight)
+                font_weight_class = None
+            else:
+                font_weight_class = self.font_weight_classes[new_style.font_weight]
             if font_weight_class is not None:
                 old_font_weight_class = self.font_weight_classes.get(self.current_style_ctx.style.font_weight)
                 if font_weight_class != old_font_weight_class:
@@ -727,7 +829,8 @@ class Visitor(object):
             text_anchor_class = self.text_anchor_classes.get(new_style.text_anchor)
             old_text_anchor_class = self.text_anchor_classes.get(self.current_style_ctx.style.text_anchor)
             if text_anchor_class is None:
-                raise Exception('Unsupported anchor type: %s' % new_style.text_anchor)
+                logger.warning('Unsupported anchor type %s; falling back to left' % new_style.text_anchor)
+                text_anchor_class = u"l"
             if text_anchor_class != old_text_anchor_class:
                 classes_pushed['text_anchor'] = text_anchor_class
 
@@ -864,6 +967,22 @@ class Visitor(object):
             as_user_unit(rect.get(u'height', u'0'))
             )
 
+    def _strip_placeholders(self, text):
+        return re.sub(self.placeholder_pattern, u'', text)
+
+    def _html_emitter(self, flow_bbox, html): 
+        emission = None
+        g = re.match(self.placeholder_pattern + u'$', html)
+        if g is not None:
+            path = self.fixtag_placeholders.get(g.group(1))
+            if path is not None:
+                def emission():
+                    self.emitter.emit_show_dom_node(flow_bbox[2], flow_bbox[3], path)
+        else:
+            def emission():
+                self.emitter.emit_show_text(flow_bbox[2], flow_bbox[3], self._strip_placeholders(html))
+        return emission
+
     @namespace(SVG_NAMESPACE)
     @stylable
     @transformable
@@ -887,15 +1006,34 @@ class Visitor(object):
             raise Exception('<flowRoot> contains no <flowRegion>')
 
         if contents: 
-            self.emitter.emit_move_to(self.flow_bbox[0], self.flow_bbox[1])
             if len(contents) == 1:
+                emission = self._html_emitter(self.flow_bbox, self.build_html_from_flow_elements(text_and_elements(contents[0])))
                 # Specially treat a sole container element :-p
-                self.apply_styles(contents[0])
-                self.emitter.emit_show_text(self.flow_bbox[2], self.flow_bbox[3], self.build_html_from_flow_elements(text_and_elements(contents[0])))
-                self.unapply_styles()
+                if emission:
+                    self.emitter.emit_move_to(self.flow_bbox[0], self.flow_bbox[1])
+                    self.apply_styles(contents[0])
+                    emission()
+                    self.unapply_styles()
             else:
-                self.emitter.emit_show_text(self.flow_bbox[2], self.flow_bbox[3], self.build_html_from_flow_elements(contents))
+                emission = self._html_emitter(self.flow_bbox, self.build_html_from_flow_elements(contents))
+                if emission:
+                    self.emitter.emit_move_to(self.flow_bbox[0], self.flow_bbox[1])
+                    emission()
 
+    @namespace(SVG_NAMESPACE)
+    @stylable
+    @transformable
+    def visit_text(self, scanner, ns, local_name, elem):
+        bbox = (
+            as_user_unit(elem.get(u'x', u'0')),
+            as_user_unit(elem.get(u'y', u'0')),
+            as_user_unit(elem.get(u'width', u'0')),
+            as_user_unit(elem.get(u'height', u'0')),
+            )
+        emission = self._html_emitter(bbox, self.build_html_from_text_elements(text_and_elements(elem)))
+        if emission:
+            self.emitter.emit_move_to(bbox[0], bbox[1])
+            emission()
 
     @namespace(SVG_NAMESPACE)
     @stylable

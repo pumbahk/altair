@@ -78,4 +78,11 @@ ${h.render_payment_cancel_mail_viewlet(request,order)}
 ${h.render_delivery_cancel_mail_viewlet(request,order)}
 
 ${notice}
+
+%if get("contact").status:
+─────────────${get("contact").label}─────────────────
+${get("contact").body}
+───────────────────────────────────
+%endif
+
 ${footer}

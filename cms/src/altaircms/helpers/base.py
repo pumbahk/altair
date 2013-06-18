@@ -1,6 +1,6 @@
 # -*- coding:utf-8 -*-
 import datetime
-
+from altaircms.datelib import get_now
 
 class RawText(object):
     def __init__(self, v):
@@ -16,20 +16,13 @@ def path_in_string(path, string):
     return path.endswith(string)
 
 
-def countdown_days_from(limit_date, today_fn=datetime.datetime.now):
-    today = today_fn()
+def countdown_days_from(request, limit_date, today_fn=get_now):
+    today = today_fn(request)
     if today > limit_date:
         return 0
     else:
         return (limit_date-today).days
 
-COUNTDOWN_KIND_MAPPING = dict(event_open=u"公演開始", 
-                              event_close=u"公演終了", 
-                              deal_open=u"販売開始", 
-                              deal_close=u"販売終了")
-
-def countdown_kind_ja(kind):
-    return COUNTDOWN_KIND_MAPPING[kind]
 
 def list_to_attibutes(attr_list):
     """
@@ -50,6 +43,13 @@ def make_link(title, url):
 def nl_to_br(string, rawtext=True):
     return RawText(string.replace("\n", "<br/>"))
 
+def text(string):
+    return string if string  else u"-"
+
+def truncated(string, n=142):
+    v = text(string)
+    return v if len(v) <= n else v + u".."
+
 WEEK =[u"月", u"火", u"水", u"木", u"金", u"土", u"日"]
 def jdate(d):
     """ dateオブジェクトを受け取り日本語の日付を返す
@@ -63,34 +63,12 @@ def jdate(d):
     else:
         return u"-"
 
-def jdate_with_hour(d):
+def jdatetime(d):
     if d:
-        datestr = d.strftime(u"%Y年%-m月%-d日 %-H:%-M".encode("utf-8")).decode("utf-8")
+        datestr = d.strftime(u"%Y年%-m月%-d日 %2H:%2M".encode("utf-8")).decode("utf-8")
         return u"%s（%s）" % (datestr, unicode(WEEK[d.weekday()]))
     else:
         return u"-"
-
-def term(beg, end):
-    """ dateオブジェクトを受け取り期間を表す文字列を返す
-    e.g. 2012年3月3日(土)〜7月12日(木) 
-    """
-    if beg is None:
-        if end is None:
-            return u""
-        else:
-            return u"〜 %s(%s)" % (end.strftime(u"%-m月%-d日".encode("utf-8")).decode("utf-8"), WEEK[end.weekday()])
-
-    beg_str = beg.strftime(u"%Y年%-m月%-d日".encode("utf-8")).decode("utf-8")
-    if end is None:
-        return u"%s(%s) 〜" % (beg_str, WEEK[beg.weekday()])
-
-    if beg.year == end.year:
-        end_str = end.strftime(u"%-m月%-d日".encode("utf-8")).decode("utf-8")
-    else:
-        end_str = end.strftime(u"%Y年%-m月%-d日".encode("utf-8")).decode("utf-8")
-    return u"%s(%s) 〜 %s(%s)" % (beg_str, WEEK[beg.weekday()], end_str, WEEK[end.weekday()])
-
-jterm = term
 
 def translate_longtext_to_simple_html(string):
     """
@@ -115,6 +93,31 @@ def confirm_stage():
     return hidden_input("stage", "confirm")
 def execute_stage():
     return hidden_input("stage", "execute")
+
+def deal_limit(today, deal_open, deal_close):
+    today_date = datetime.datetime(today.year, today.month, today.day)
+    deal_open_date = datetime.datetime(deal_open.year, deal_open.month, deal_open.day)
+    deal_close_date = datetime.datetime(deal_close.year, deal_close.month, deal_close.day)
+
+    N = (deal_open_date - today_date).days
+    if N > 0:
+        return u"販売開始まであと%d日" % N
+    elif N == 0:
+        return u"本日販売"
+
+    N = (deal_close_date - today_date).days
+    if N > 0:
+        return u"販売終了まであと%d日" % N
+    elif N == 0:
+        S = (deal_close - today).seconds
+        H = S / 3600 + 1
+        if H > 1:
+            return u"販売終了まであと%d時間" % H
+        elif H == 1:
+            M = S / 60 + 1
+            return u"販売終了まであと%d分" % M
+    else:
+        return u"販売終了"
 
 if __name__ == "__main__":
     import doctest

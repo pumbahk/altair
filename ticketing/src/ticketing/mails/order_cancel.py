@@ -13,6 +13,7 @@ from .api import get_purchaseinfo_mail
 from . import PURCHASE_MAILS
 from ticketing.core.models import MailTypeEnum
 import logging
+from .forms import OrderInfoRenderer
 from . import forms
 from .forms import OrderInfoRenderer, OrderInfoDefault, OrderInfo, OrderInfoWithValue
 from ticketing.cart import helpers as ch ##

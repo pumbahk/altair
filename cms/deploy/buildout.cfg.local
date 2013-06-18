@@ -1,0 +1,77 @@
+[buildout]
+extends =
+    ../../deploy/baseconf/versions.cfg
+
+allow-picked-versions = false
+
+parts = solr-download
+        prepare
+        altaircms
+        solr
+        supervisord
+
+develop = ..
+          ../../altair_findable_label
+versions = versions
+
+[prepare]
+recipe = z3c.recipe.mkdir
+paths = 
+    var/altaircms
+    var/log
+
+[altaircms]
+recipe = zc.recipe.egg
+eggs = 
+    altair-cms
+
+[supervisord]
+recipe = collective.recipe.supervisor
+
+programs = 
+    10 altaircms1 ${buildout:directory}/bin/pserve [${buildout:directory}/production.ini http_port=8001] ${buildout:directory}/var/altaircms
+    10 altaircms2 ${buildout:directory}/bin/pserve [${buildout:directory}/production.ini http_port=8002] ${buildout:directory}/var/altaircms
+
+[solr-download]
+recipe = hexagonit.recipe.download
+strip-top-level-dir = true
+url = http://ftp.kddilabs.jp/infosystems/apache/lucene/solr/3.6.2/apache-solr-3.6.2.zip
+
+[solr]
+recipe = collective.recipe.solrinstance
+solr-location = ${solr-download:location}
+host = 127.0.0.1
+port = 8082
+max-num-results = 500
+section-name = SOLRo
+
+extra-field-types =
+    <fieldType name="text_cjk" class="solr.TextField" positionIncrementGap="100">
+      <analyzer>
+        <tokenizer class="solr.CJKTokenizerFactory"/>
+      </analyzer>
+    </fieldType>
+
+index =
+    name:id                type:string   indexed:true stored:true required:true
+    name:df                type:string   
+    name:searchtext        type:text_cjk indexed:true multivalued:true stored:false
+    name:page_id           type:int      indexed:true
+    name:pageset_id        type:int      indexed:true
+    name:page_title        type:text_cjk indexed:true copyfield:searchtext
+    name:page_description  type:text_cjk indexed:true copyfield:searchtext
+    name:page_tag          type:text_cjk indexed:true multivalued:true copyfield:searchtext
+    name:event_title       type:text_cjk indexed:true stored:true copyfield:searchtext
+    name:event_subtitle    type:text_cjk indexed:true copyfield:searchtext
+    name:event_performer   type:text_cjk indexed:true multivalued:true copyfield:searchtext
+    name:event_description type:text_cjk indexed:true multivalued:true copyfield:searchtext
+    name:performance_venue type:text_cjk indexed:true multivalued:true copyfield:searchtext                           
+
+
+unique-key = id
+
+filter =
+    text solr.LowerCaseFilterFactory
+
+default-search-field = searchtext
+default-operator = and

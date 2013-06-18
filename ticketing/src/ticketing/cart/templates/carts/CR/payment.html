@@ -20,7 +20,7 @@ ${h.get_nickname(request)}
             <tr>
               <% checked = 'checked' if str(m.id) == checked_id else '' %>
               <td class="settlementPayRadio">
-                <input type="radio" name="payment_delivery_method_pair_id" id="radio2" value="${m.id}" ${checked} />
+                <input type="radio" name="payment_delivery_method_pair_id" id="radio2" value="${m.id}" autocomplete="off" ${checked} />
               </td>
               <td onclick="$(this).parents('tr').find('input').click();">
                 <dl>
@@ -101,14 +101,14 @@ ${h.get_nickname(request)}
           <td>
             <ul>
               <li>
-                ${form['email_1'].label}
-                ${form['email_1']}
+                ${form['email_1'].label(style=u'width:10em')}
+                ${form['email_1'](style=u'width:20em')}
                 (例：mail@example.ne.jp)
                 ${h.error_list(request, form, 'email_1')}
               </li>
               <li>
-                ${form['email_1_confirm'].label}
-                ${form['email_1_confirm']}
+                ${form['email_1_confirm'].label(style=u'width:10em')}
+                ${form['email_1_confirm'](style=u'width:20em')}
                 (例：mail@example.ne.jp)
                 ${h.error_list(request, form, 'email_1_confirm')}
               </li>
@@ -122,7 +122,7 @@ ${h.get_nickname(request)}
             <ul>
               <li>${form['zip'].label}
                 ${form['zip']}
-                (例: 1410022)
+                (例: 1030001)
                 ${h.error_list(request, form, 'zip')}
               </li>
               <li>${form['prefecture'].label}
@@ -132,16 +132,20 @@ ${h.get_nickname(request)}
               </li>
               <li>${form['city'].label}
                 ${form['city']}
-                (例: 品川区)
+                (例: 中央区)
                 ${h.error_list(request, form, 'city')}
               </li>
-              <li>町名番地
-                ${form['address_1']}
-                (例: 東五反田x-xx-xx)
-                <br />建物名等
-                ${form['address_2']}
-                (例: yyビルz階)
+              <li>
+                <label for="address_1">町名番地</label>
+                ${form['address_1'](style=u'width:20em')}
+                (例: 日本橋x-xx-xx)
                 ${h.error_list(request, form, 'address_1')}
+              </li>
+              <li>
+                <label for="address_2">建物名等</label>
+                ${form['address_2'](style=u'width:20em')}
+                (例: yyビルz階)
+                ${h.error_list(request, form, 'address_2')}
               </li>
             </ul>
           </td>

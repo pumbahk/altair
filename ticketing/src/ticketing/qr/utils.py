@@ -1,5 +1,6 @@
 # -*- encoding:utf-8 -*-
-
+import logging
+logger = logging.getLogger(__name__)
 import sqlahelper
 from sqlalchemy.orm.exc import NoResultFound
 from ticketing.core.models import Order, OrderedProduct, OrderedProductItem, TicketPrintHistory, OrderedProductItemToken
@@ -46,14 +47,19 @@ def get_matched_token_from_token_id(order_no, token_id, none_exception=HTTPNotFo
         raise none_exception()
     return token
 
+def get_matched_history_from_token(order_no, token):
+    # tokenがあればorder_noを使わずとも検索できる
+    return TicketPrintHistory.filter(TicketPrintHistory.item_token_id==token.id).first()
+        # .filter(TicketPrintHistory.ordered_product_item_id==OrderedProductItem.id)\
+        # .filter(OrderedProductItem.ordered_product_id == OrderedProduct.id)\
+        # .filter(OrderedProduct.order_id == Order.id)\
+        # .filter(Order.order_no == order_no).first()
+    
 def get_or_create_matched_history_from_token(order_no, token):
-    history = TicketPrintHistory.filter(TicketPrintHistory.item_token_id==token.id)\
-        .filter(TicketPrintHistory.ordered_product_item_id==OrderedProductItem.id)\
-        .filter(OrderedProductItem.ordered_product_id == OrderedProduct.id)\
-        .filter(OrderedProduct.order_id == Order.id)\
-        .filter(Order.order_no == order_no).first()
+    history = get_matched_history_from_token(order_no, token)
     # ここでinsertする
     if history is None:
+        logger.info("ticket print histry is not found. create it (orderno=%s,  token=%s)" % (order_no, token.id))
         history = TicketPrintHistory(
             seat_id=token.seat_id, 
             item_token_id=token.id, 

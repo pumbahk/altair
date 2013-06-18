@@ -1,7 +1,8 @@
 # coding: utf-8
 
 #raise Exception, __name__
-
+from uuid import uuid4
+import hashlib
 from datetime import datetime
 import sqlahelper
 from sqlalchemy.orm import relationship, backref
@@ -11,7 +12,7 @@ from sqlalchemy.types import String, DateTime, Integer, Unicode, Enum
 from sqlalchemy.ext.associationproxy import association_proxy
 from zope.deprecation import deprecation
 from altaircms.models import WithOrganizationMixin, BaseOriginalMixin, DBSession
-import hashlib
+
 
 Base = sqlahelper.get_base()
 _session = sqlahelper.get_session()
@@ -120,7 +121,6 @@ class OAuthToken(Base):
     updated_at = Column(DateTime, default=datetime.now, onupdate=datetime.now)
 
 
-
 operator_role = Table(
     "operator_role", Base.metadata,
     Column("operator_id", Integer, ForeignKey("operator.id")),
@@ -180,11 +180,27 @@ class Operator(WithOrganizationMixin, Base):
             return self.roles[0]
     role = deprecation.deprecated(role, "role is no more, use `Operator.roles`")
 
+    def get_permission(self, perm):
+        return RolePermission.query.filter(
+            RolePermission.id==perm.id, 
+            RolePermission.role_id==Role.id,
+            Role.id==operator_role.c.role_id,
+            operator_role.c.operator_id==self.id,
+            ).first()
+
+    def get_permission_by_name(self, name):
+        return RolePermission.query.filter(
+            RolePermission.name==name, 
+            RolePermission.role_id==Role.id,
+            Role.id==operator_role.c.role_id,
+            operator_role.c.operator_id==self.id,
+            ).first()
+
     def has_permission(self, perm):
-        for role in self.roles:
-            if any(p == perm for p in role.permissions):
-                return True
-        return False
+        return bool(self.get_permission(perm))
+
+    def has_permission_by_name(self, name):
+        return bool(self.get_permission_by_name(name))
 
     UniqueConstraint('auth_source', 'user_id')
 
@@ -221,11 +237,12 @@ class Organization(Base):
 
     id = Column(Integer, primary_key=True)
     backend_id = Column(Integer)
-    created_at = Column(DateTime, default=datetime.now())
-    updated_at = Column(DateTime, default=datetime.now())
+    created_at = Column(DateTime, default=datetime.now)
+    updated_at = Column(DateTime, default=datetime.now)
 
     auth_source = Column(String(255)) ##nullable=False?
     short_name = Column(String(32),index=True, nullable=False)
+    code = Column(String(3))  # 2桁英字大文字のみ
     use_full_usersite = Column(sa.Boolean, default=False)
     name = Column(Unicode(255))
     prefecture = Column(Unicode(255))
@@ -264,9 +281,6 @@ class APIKey(Base):
     query = _session.query_property()
 
     def generate_apikey(self):
-        from uuid import uuid4
-        import hashlib
-
         hash = hashlib.new('sha256', str(uuid4()))
         return hash.hexdigest()
 
@@ -274,8 +288,8 @@ class APIKey(Base):
     name = Column(String(255))
     apikey = Column(String(255), default=generate_apikey)
 
-    created_at = Column(DateTime, default=datetime.now())
-    updated_at = Column(DateTime, default=datetime.now())
+    created_at = Column(DateTime, default=datetime.now)
+    updated_at = Column(DateTime, default=datetime.now, onupdate=datetime.now)
 
 class Host(BaseOriginalMixin, WithOrganizationMixin, Base):
     __tablename__ = 'host'
@@ -284,4 +298,5 @@ class Host(BaseOriginalMixin, WithOrganizationMixin, Base):
 
     id = sa.Column(sa.Integer, primary_key=True)
     host_name = sa.Column(sa.Unicode(255), unique=True, index=True)
+    
 

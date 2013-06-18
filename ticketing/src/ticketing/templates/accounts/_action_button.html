@@ -13,7 +13,7 @@
     var el = '#account-' + id;
     var modal = $('#modal-account');
     modal.find('#id').val(id);
-    modal.find('#name').val($(el + ' #name').text());
+    modal.find('#name').val($(el).find('[name="name"]').text());
     modal.modal('toggle');
   }
   function delete_account() {

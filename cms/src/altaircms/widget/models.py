@@ -12,12 +12,9 @@ from altaircms.models import WithOrganizationMixin
 
 from datetime import datetime
 from collections import defaultdict
-from altaircms.page.models import Page
-from altaircms.layout.models import Layout
-
+from zope.deprecation import deprecate
 from altaircms.widget.tree.proxy import WidgetTreeProxy
 import altaircms.widget.tree.clone as wclone
-
 
 __all__ = [
     'Widget',
@@ -57,6 +54,9 @@ class Widget(BaseOriginalMixin, Base):
         session.add(ins)
         return ins
 
+    def delete(self):
+        DBSession.delete(self)
+
 class StructureSaveType(object):
     shallow = "shallow"
     deep = "deep"
@@ -74,111 +74,60 @@ class WidgetDisposition(WithOrganizationMixin, BaseOriginalMixin, Base): #todo: 
     id = sa.Column(sa.Integer, primary_key=True)
     title = sa.Column(sa.Unicode(255))
 
-    structure = sa.Column(sa.Text, default=Page.DEFAULT_STRUCTURE) # same as: Page.structure
-    blocks = sa.Column(sa.String(255), default=Layout.DEFAULT_BLOCKS) # same as: Layout.blocks
-
+    DEFAULT_STRUCTURE="{}"
+    structure = sa.Column(sa.Text, default=DEFAULT_STRUCTURE) # same as: Page.structure
+    blocks = sa.Column(sa.String(255), default="[]") # same as: Layout.blocks #todo.remove
+    layout_id = sa.Column(sa.Integer, sa.ForeignKey("layout.id"))
+    layout = orm.relationship("Layout", uselist=False, primaryjoin="Layout.id==WidgetDisposition.layout_id")
     is_public = sa.Column(sa.Boolean, default=False)
     save_type = sa.Column(sa.String(16), index=True)
     owner_id = sa.Column(sa.Integer, sa.ForeignKey("operator.id"))
     owner = orm.relationship("Operator", backref="widget_dispositions")
     created_at = sa.Column(sa.DateTime, default=datetime.now)
     updated_at = sa.Column(sa.DateTime, default=datetime.now, onupdate=datetime.now)
-    
-    @classmethod
-    def _create_empty_from_page(cls, page, title_fmt=u"%sより"):
-        D = {"title": title_fmt % page.title, 
-             "organization_id": page.organization_id, 
-             "blocks": page.layout.blocks}
-        return cls.from_dict(D)
 
-    @classmethod
-    def shallow_copy_from_page(cls, page, session):
-        instance = cls._create_empty_from_page(page, title_fmt=u"%sより") ##
-        structure = json.loads(page.structure)
-        new_structure = defaultdict(list)
-        for k, vs in structure.iteritems():
-            for v in vs:
-                new_structure[k].append({"name": v["name"]})
-        instance.structure = json.dumps(new_structure)
-        return instance
+    @deprecate("this is obsolute. use WidgetDisopositionLoader")    
+    def bind_page(self, page, session=DBSession):
+        loader = WidgetDispositionLoader(session)
+        return loader.bind_page(self, page)
 
-    @classmethod
-    def deep_copy_from_page(cls, page, session):
-        wtree = WidgetTreeProxy(page)
-        new_wtree = wclone.clone(session, None, wtree)
-        if session:
-            session.flush()
-        new_structure = wclone.to_structure(new_wtree)
+    @deprecate("this is obsolute. use WidgetDisopositionLoader")    
+    def bind_page_shallow(self, page, session=DBSession):
+        loader = WidgetDispositionLoader(session)
+        return loader.bind_page_shallow(self, page)
 
-        instance = cls._create_empty_from_page(page, title_fmt=u"%sより") ##
-        instance.structure = json.dumps(new_structure)
-        for k, ws in new_wtree.blocks.iteritems():
-            for w in ws:
-                w.disposition = instance
-        return instance
-
-    @classmethod
-    def from_page(cls, page, session, save_type):
-        if save_type == StructureSaveType.deep:
-            return cls.deep_copy_from_page(page, session)
-        elif save_type == StructureSaveType.shallow:
-            return cls.shallow_copy_from_page(page, session)
-        else:
-            raise NotImplementedError("save type %s is not implemented yet" % save_type)
-
-    def _bind_page_shallow(self, page):
-        page.structure = self.structure
-        return page
-
-    def _bind_page_deep(self, page, session):
-        ## cleanup
-        wtree = WidgetTreeProxy(self)
-        new_wtree = wclone.clone(session, page, wtree)
-
-        for w in page.widgets:
-            assert w.page
-
-        if session:
-            session.flush()
-        page.structure = json.dumps(wclone.to_structure(new_wtree))
-        return page
-
-    def bind_page(self, page, session):
-        if self.save_type == StructureSaveType.shallow:
-            page = self._bind_page_shallow(page)
-        elif self.save_type == StructureSaveType.deep:
-            page = self._bind_page_deep(page, session)
-        return page
+    @deprecate("this is obsolute. use WidgetDisopositionLoader")    
+    def bind_page_deep(self, page, session=DBSession):
+        loader = WidgetDispositionLoader(session)
+        return loader.bind_page_deep(self, page)
 
     def delete_widgets(self):
         where = (Widget.disposition_id==self.id) & (Widget.page==None)
         for w in Widget.query.filter(where):
             DBSession.delete(w)
 
+    @classmethod
+    @deprecate("this is obsolute. use WidgetDisopositionAllocator")
+    def from_page(cls, page, session, save_type):
+        allocator = WidgetDispositionAllocator(session)
+        return allocator.disposition_from_page(page, save_type)
 
     @classmethod
-    def _snapshot_title(cls):
-        return u"%%s(%s)" % str(datetime.now())
+    @deprecate("this is obsolute. use WidgetDisopositionAllocator")
+    def shallow_copy_from_page(cls, page, session):
+        allocator = WidgetDispositionAllocator(session)
+        return allocator.shallow_copy_from_page(page)
 
     @classmethod
+    @deprecate("this is obsolute. use WidgetDisopositionAllocator")
+    def deep_copy_from_page(cls, page, session):
+        allocator = WidgetDispositionAllocator(session)
+        return allocator.deep_copy_from_page(page)
+
+    @classmethod
+    @deprecate("this is obsolute. use WidgetDisopositionAllocator")
     def snapshot(cls, page, owner, session):
-        """ move widgets page to widget disposition(as tmpstorage)
-        """
-        dispos = cls._create_empty_from_page(page, title_fmt=cls._snapshot_title()) ##
-        dispos.structure = page.structure
-        dispos.owner = owner
-        page.structure = Page.DEFAULT_STRUCTURE
-        if session:
-            session.add(page)
-            session.add(dispos)
-        Widget.query.filter(Widget.page==page).update(
-            {Widget.page: None,  Widget.disposition:dispos}
-            )
-        return dispos
-
-    @classmethod
-    def same_blocks_query(cls, page):
-        return cls.query.filter(cls.blocks==page.layout.blocks)
+        return WidgetDispositionAllocator(session).take_snapshot(page, owner)
 
     @classmethod
     def enable_only_query(cls, operator, qs=None):
@@ -186,6 +135,102 @@ class WidgetDisposition(WithOrganizationMixin, BaseOriginalMixin, Base): #todo: 
 
     def __repr__(self):
         return self.title
+
+## todo rename
+class WidgetDispositionLoader(object):
+    def __init__(self, session=DBSession):
+        self.session = session
+
+    def bind_page(self, dispos, page):
+        if dispos.save_type == StructureSaveType.shallow:
+            return self.bind_page_shallow(dispos, page)
+        elif dispos.save_type == StructureSaveType.deep:
+            return self.bind_page_deep(dispos, page)
+        else:
+            raise NotImplementedError("save type %s is not implemented yet" % dispos.save_type)
+
+    def bind_page_shallow(self, dispos, page):
+        page.structure = dispos.structure
+        return page
+
+    def bind_page_deep(self, dispos, page):
+        ## cleanup
+        wtree = WidgetTreeProxy(dispos)
+        new_wtree = wclone.clone(self.session, page, wtree)
+
+        for w in page.widgets:
+            assert w.page
+
+        self.session.flush()
+        page.structure = json.dumps(wclone.to_structure(new_wtree))
+        return page
+    
+class WidgetDispositionAllocator(object):
+    title_fmt = u"%sより"
+    model = WidgetDisposition
+    def __init__(self, session=DBSession):
+        self.session = session
+
+    def _snapshot_title(self):
+        return u"%%s(%s)" % str(datetime.now())
+
+    def take_snapshot(self, page, owner):
+        """ move widgets page to widget disposition(as tmpstorage)
+        """
+        dispos =self.create_empty_from_page(page, title_fmt=self._snapshot_title()) ##
+        dispos.structure = page.structure
+        dispos.owner = owner
+        page.structure = WidgetDisposition.DEFAULT_STRUCTURE
+        self.session.add(page)
+        self.session.add(dispos)
+        Widget.query.filter(Widget.page==page).update(
+            {Widget.page: None,  Widget.disposition:dispos}
+            )
+        return dispos
+
+    def create_empty_from_page(self, page, title_fmt=u"%sより"):
+        D = {"title": title_fmt % page.title, 
+             "organization_id": page.organization_id, 
+             "blocks": page.layout.blocks}
+        return self.model.from_dict(D)
+
+
+    def disposition_from_page(self, page, save_type):
+        if save_type == StructureSaveType.deep:
+            return self.deep_copy_from_page(page)
+        elif save_type == StructureSaveType.shallow:
+            return self.shallow_copy_from_page(page)
+        else:
+            raise NotImplementedError("save type %s is not implemented yet" % save_type)
+
+    def shallow_copy_from_page(self, page):
+        instance = self.create_empty_from_page(page, title_fmt=u"%sより") ##
+        structure = json.loads(page.structure)
+        new_structure = defaultdict(list)
+        for k, vs in structure.iteritems():
+            for v in vs:
+                new_structure[k].append({"name": v["name"]})
+        instance.structure = json.dumps(new_structure)
+        instance.save_type = StructureSaveType.shallow
+        instance.layout_id = page.layout_id
+        return instance
+
+
+    def deep_copy_from_page(self, page):
+        wtree = WidgetTreeProxy(page)
+        new_wtree = wclone.clone(self.session, None, wtree)
+        self.session.flush()
+        new_structure = wclone.to_structure(new_wtree)
+
+        instance = self.create_empty_from_page(page, title_fmt=u"%sより") ##
+        instance.structure = json.dumps(new_structure)
+        instance.save_type = StructureSaveType.deep
+        for k, ws in new_wtree.blocks.iteritems():
+            for w in ws:
+                w.disposition = instance
+        instance.layout_id = page.layout_id
+        return instance
+
 
 class AssetWidgetResourceMixin(object):
     WidgetClass = None

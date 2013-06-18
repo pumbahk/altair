@@ -952,7 +952,7 @@ table.login td{
 	padding: 5px 10px;
 }
 
-table.login td input{
+table.login td input.text {
 	padding: 5px;
 	border: 1px #ccc solid;
 }

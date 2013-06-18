@@ -1,27 +1,33 @@
 # -*- coding: utf-8 -*-
 
+from datetime import datetime
 import json
-import operator
 import urllib2
 import logging
 import contextlib
-from datetime import datetime, date, timedelta
-from zope.deprecation import deprecate
-import sqlalchemy as sa
 
-logger = logging.getLogger(__name__)
+from zope.deprecation import deprecate
+from sqlalchemy.sql.expression import or_, and_
+
 from pyramid.interfaces import IRoutesMapper, IRequest
 from pyramid.security import effective_principals, forget
-from ..api.impl import get_communication_api
-from ..api.impl import CMSCommunicationApi
+from pyramid.httpexceptions import HTTPNotFound
+
+from ticketing.api.impl import get_communication_api
+from ticketing.api.impl import CMSCommunicationApi
+from altair.mobile.interfaces import IMobileRequest
+from ticketing.core import models as c_models
+from ticketing.core import api as c_api
+from ticketing.users.models import User, UserCredential, Membership, MemberGroup, MemberGroup_SalesSegment
+
 from .interfaces import IPaymentMethodManager
-#from .interfaces import IPaymentPlugin, IDeliveryPlugin, IPaymentDeliveryPlugin
-from ticketing.mobile.interfaces import IMobileRequest
 from .interfaces import IStocker, IReserving, ICartFactory
-from .models import Cart, PaymentMethodManager, DBSession, CartedProductItem, CartedProduct
-from ..users.models import User, UserCredential, Membership, MemberGroup, MemberGroup_SalesSegment
-from ..core.models import Event, Performance, Stock, StockHolder, Seat, Product, ProductItem, SalesSegment, Venue
+from .interfaces import IPerformanceSelector
+
+from .models import Cart, PaymentMethodManager, DBSession
 from .exceptions import OutTermSalesException, NoSalesSegment, NoCartError
+
+logger = logging.getLogger(__name__)
 
 def is_multicheckout_payment(cart):
     if cart is None:
@@ -43,6 +49,9 @@ def is_checkout_payment(cart):
 
 # こいつは users.apiあたりに移動すべきか
 def is_login_required(request, event):
+    if event.organization.setting.auth_type == "rakuten":
+        return True
+
     """ 指定イベントがログイン画面を必要とするか """
     # 終了分もあわせて、このeventからひもづく sales_segment -> membergroupに1つでもguestがあれば True 
     q = MemberGroup.query.filter(
@@ -50,9 +59,9 @@ def is_login_required(request, event):
     ).filter(
         MemberGroup.id==MemberGroup_SalesSegment.c.membergroup_id
     ).filter(
-        SalesSegment.id==MemberGroup_SalesSegment.c.sales_segment_id
+        c_models.SalesSegmentGroup.id==MemberGroup_SalesSegment.c.sales_segment_group_id
     ).filter(
-        SalesSegment.event_id==event.id
+        c_models.SalesSegmentGroup.event_id==event.id
     )
     return bool(q.count())
 
@@ -64,17 +73,24 @@ def check_sales_segment_term(request):
     else:
         sales_segment = request.context.sales_segment
     if not sales_segment:
-        
         raise NoSalesSegment
 
     if not sales_segment.in_term(now):
-        raise OutTermSalesException(sales_segment)
+        data = request.context.event.get_next_and_last_sales_segment_period(
+            now=now, user=request.context.authenticated_user())
+        if any(data):
+            for datum in data:
+                if datum is not None:
+                    datum['event'] = datum['performance'].event
+            raise OutTermSalesException(*data)
+        else:
+            raise HTTPNotFound()
 
 def get_event(request):
     event_id = request.matchdict.get('event_id')
     if not event_id:
         return None
-    return Event.query.filter(Event.id==event_id).first()
+    return c_models.Event.query.filter(c_models.Event.id==event_id).first()
 
 def is_mobile(request):
     return IMobileRequest.providedBy(request)
@@ -101,6 +117,7 @@ def get_route_pattern(registry, name):
 
 def set_cart(request, cart):
     request.session['ticketing.cart_id'] = cart.id
+    request.session.persist()
     request._cart = cart
 
 def get_cart(request):
@@ -129,11 +146,12 @@ def has_cart(request):
         return False
 
 def get_cart_safe(request):
+    now = datetime.now() # XXX
     minutes = max(int(request.registry.settings['altair_cart.expire_time']) - 1, 0)
     cart = get_cart(request)
     if cart is None:
         raise NoCartError('Cart is not associated to the request')
-    expired = cart.is_expired(minutes) or cart.finished_at
+    expired = cart.is_expired(minutes, now) or cart.finished_at
     if expired:
         remove_cart(request)
         raise NoCartError('Cart is expired')
@@ -141,7 +159,9 @@ def get_cart_safe(request):
 
 def recover_cart(request):
     cart = get_cart_safe(request)
-    set_cart(request, Cart.create_from(cart))
+    new_cart = Cart.create_from(cart)
+    DBSession.flush()
+    set_cart(request, new_cart)
     return cart
 
 def _maybe_encoded(s, encoding='utf-8'):
@@ -149,17 +169,18 @@ def _maybe_encoded(s, encoding='utf-8'):
         return s
     return s.decode(encoding)
 
-def get_item_name(request, performance):
-    base_item_name = request.registry.settings['cart.item_name']
-    return _maybe_encoded(base_item_name) + " " + str(performance.id)
+def get_item_name(request, cart_name):
+    organization = c_api.get_organization(request)
+    base_item_name = organization.setting.cart_item_name
+    return _maybe_encoded(base_item_name) + " " + str(cart_name)
 
 def get_nickname(request, suffix=u'さん'):
-    from ticketing.rakuten_auth.api import authenticated_user
+    from altair.rakuten_auth.api import authenticated_user
     user = authenticated_user(request) or {}
     nickname = user.get('nickname', '')
     if not nickname:
         return ""
-    return nickname + suffix
+    return unicode(nickname, 'utf-8') + suffix
 
 def get_payment_method_manager(request=None, registry=None):
     if request is not None:
@@ -179,57 +200,19 @@ def get_payment_method_url(request, payment_method_id, route_args={}):
     else:
         return ""
 
-def get_or_create_user(request, auth_identifier, membership='rakuten'):
-    # TODO: 楽天OpenID以外にも対応できるフレームワークを...
-    credential = UserCredential.query.filter(
-        UserCredential.auth_identifier==auth_identifier
-    ).filter(
-        UserCredential.membership_id==Membership.id
-    ).filter(
-        Membership.name==membership
-    ).first()
-    if credential:
-        return credential.user
-    
-    user = User()
-    membership = Membership.query.filter(Membership.name=='rakuten').first()
-    if membership is None:
-        membership = Membership(name='rakuten')
-        DBSession.add(membership)
-    credential = UserCredential(user=user, auth_identifier=auth_identifier, membership=membership)
-    DBSession.add(user)
-    return user
-
-
 @deprecate
 def get_salessegment(request, event_id, salessegment_id, selected_date):
     ## 販売条件は必ず一つに絞られるはず
     if salessegment_id:
-        return SalesSegment.filter_by(id=salessegment_id).first()
+        return c_models.SalesSegment.filter_by(id=salessegment_id).first()
     elif selected_date:
-        qs = DBSession.query(SalesSegment).filter(SalesSegment.event_id==event_id)
-        qs = qs.filter(SalesSegment.start_at<=selected_date)
-        qs = qs.filter(SalesSegment.end_at >= selected_date)
+        qs = DBSession.query(c_models.SalesSegment).filter(c_models.SalesSegment.event_id==event_id)
+        qs = qs.filter(c_models.SalesSegment.start_at<=selected_date)
+        qs = qs.filter(c_models.SalesSegment.end_at >= selected_date)
         return qs.first()
     else:
         return None
 
-# @deprecation("ticketing.payments.paymentに移動")
-# def get_payment_plugin(request, plugin_id):
-#     logger.debug("get_payment_plugin: %s" % plugin_id)
-#     registry = request.registry
-#     return registry.utilities.lookup([], IPaymentPlugin, name="payment-%s" % plugin_id)
-# 
-# @deprecation("ticketing.payments.paymentに移動")
-# def get_delivery_plugin(request, plugin_id):
-#     registry = request.registry
-#     return registry.utilities.lookup([], IDeliveryPlugin, name="delivery-%s" % plugin_id)
-# 
-# @deprecation("ticketing.payments.paymentに移動")
-# def get_payment_delivery_plugin(request, payment_plugin_id, delivery_plugin_id):
-#     registry = request.registry
-#     return registry.utilities.lookup([], IPaymentDeliveryPlugin, 
-#         "payment-%s:delivery-%s" % (payment_plugin_id, delivery_plugin_id))
 
 def get_stocker(request):
     reg = request.registry
@@ -273,84 +256,22 @@ def order_products(request, performance_id, product_requires, selected_seats=[])
 def is_quantity_only(stock):
     return stock.stock_type.quantity_only
 
-
-def get_system_fee(request):
-    return 380
-
-def get_stock_holder(request, event_id):
-    stocker = get_stocker(request)
-    return stocker.get_stock_holder(event_id)
-
 def get_valid_sales_url(request, event):
     principals = effective_principals(request)
     logger.debug(principals)
-    for salessegment in event.sales_segments:
-        membergroups = salessegment.membergroups
+    for sales_segment_group in event.sales_segment_groups:
+        membergroups = sales_segment_group.membergroups
         for membergroup in membergroups:
-            logger.debug("sales_segment:%s" % salessegment.name)
+            logger.debug("sales_segment:%s" % sales_segment_group.name)
             logger.debug("membergroup:%s" % membergroup.name)
             if "membergroup:%s" % membergroup.name in principals:
-                return request.route_url('cart.index.sales', event_id=event.id, sales_segment_id=salessegment.id)
+                return request.route_url('cart.index.sales', event_id=event.id, sales_segment_group_id=sales_segment_group.id)
 
 def logout(request, response=None):
     headers = forget(request)
     if response is None:
         response = request.response
     response.headerlist.extend(headers)
-
-def _query_performance_names(request, event, sales_segment):
-
-    now = datetime.now()
-    q = DBSession.query(
-        Performance.id,
-        Performance.name,
-        Performance.start_on,
-        Performance.open_on,
-        Venue.name,
-        Performance.on_the_day)
-    q = q.filter(Performance.event_id==event.id)
-    q = q.filter(Venue.performance_id==Performance.id)
-    q = q.filter(SalesSegment.id==sales_segment.id)
-    q = q.filter(Product.sales_segment_id==SalesSegment.id)
-    q = q.filter(ProductItem.product_id==Product.id)
-    q = q.filter(Stock.id==ProductItem.stock_id)
-    q = q.filter(Stock.performance_id==Performance.id)
-    q = q.filter(sa.or_(Performance.end_on>=now, Performance.end_on==None))
-    q = q.filter(Performance.public==True)
-
-    return q
-
-def performance_names(request, event, sales_segment):
-    """
-    公演絞り込み用データ
-    assoc list
-    キー：公演名
-    バリュー：会場、開催日時、のリスト
-
-    キー辞書順でソート
-    バリューリストは開催日順でリスト
-    """
-
-    q = _query_performance_names(request, event, sales_segment)
-    values = q.distinct().all()
-
-    results = dict()
-    for pid, name, start, open, vname, on_the_day in values:
-        results[name] = results.get(name, [])
-        results[name].append(dict(pid=pid, start=start, open=open, vname=vname, on_the_day=on_the_day))
-
-    return [(s[0], s[1]) for s in sorted([(k, sorted(v, key=operator.itemgetter('start')), min([x['start'] for x in v])) 
-                                          for k, v in results.items()], 
-                                         key=operator.itemgetter(2))]
-
-def performance_venue_by_name(request, event, sales_segment, performance_name):
-    q = _query_performance_names(request, event, sales_segment)
-    q = q.filter(Performance.name==performance_name)
-    values = q.distinct().all()
-
-    return sorted([dict(pid=pid, name=name, start=start, open=open, vname=vname, on_the_day=on_the_day) 
-                    for pid, name, start, open, vname, on_the_day in values],
-            key=operator.itemgetter('start'))
 
 class JSONEncoder(json.JSONEncoder):
     def __init__(self, datetime_format, *args, **kwargs):
@@ -369,3 +290,8 @@ def new_order_session(request, **kw):
 def update_order_session(request, **kw):
     request.session['order'].update(kw)
     return request.session['order']
+
+def get_performance_selector(request, name):
+    reg = request.registry
+    performance_selector = reg.adapters.lookup([IRequest], IPerformanceSelector, name)(request)
+    return performance_selector

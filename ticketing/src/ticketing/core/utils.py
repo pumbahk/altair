@@ -2,7 +2,6 @@
 
 ## todo move
 from ticketing.payments.plugins import SEJ_DELIVERY_PLUGIN_ID
-import operator as op
 
 class ApplicableTicketsProducer(object):
     @classmethod
@@ -15,12 +14,20 @@ class ApplicableTicketsProducer(object):
         else:
             self.tickets = bundle.tickets if bundle else  []
 
-    def include_delivery_id_ticket_iter(self, delivery_plugin_id, cmp_fn=op.eq, format_id=None): # ==
+    def include_delivery_id_ticket_iter(self, delivery_plugin_id, format_id=None): # ==
         for ticket in self.tickets:
             if format_id and format_id != ticket.ticket_format_id:
                 continue
             ticket_format = ticket.ticket_format
-            if any(cmp_fn(m.delivery_plugin_id, delivery_plugin_id) for m in ticket_format.delivery_methods):
+            if any(m.delivery_plugin_id == delivery_plugin_id for m in ticket_format.delivery_methods):
+                yield ticket
+
+    def exclude_delivery_id_ticket_iter(self, delivery_plugin_id, format_id=None): # ==
+        for ticket in self.tickets:
+            if format_id and format_id != ticket.ticket_format_id:
+                continue
+            ticket_format = ticket.ticket_format
+            if all(m.delivery_plugin_id != delivery_plugin_id for m in ticket_format.delivery_methods):
                 yield ticket
 
     def sej_only_tickets(self, format_id=None):
@@ -29,7 +36,7 @@ class ApplicableTicketsProducer(object):
 
     def will_issued_by_own_tickets(self, format_id=None):
         """自社発券"""
-        return self.include_delivery_id_ticket_iter(SEJ_DELIVERY_PLUGIN_ID, cmp_fn=op.ne, format_id=format_id)
+        return self.exclude_delivery_id_ticket_iter(SEJ_DELIVERY_PLUGIN_ID, format_id=format_id)
     
     qr_only_tickets = will_issued_by_own_tickets # 今は同じ
 
@@ -60,9 +67,8 @@ class IssuedAtBubblingSetter(object):
     def issued_order(self, order):
         self.orders.add(order)
 
-    def _set_issued_at_iff_none(self, target):
-        if target.issued_at is None:
-            target.issued_at = self.dt
+    def _set_issued_at(self, target):
+        target.issued_at = self.dt
 
     def start_refresh_status_bubbling(self):
         assert self.dt is None
@@ -82,7 +88,7 @@ class IssuedAtBubblingSetter(object):
 
     def bubbling_tokens(self):
         for token in self.tokens:
-            self._set_issued_at_iff_none(token)
+            self._set_issued_at(token)
             item = token.item
             if not item in self.items:
                 self.items.add(item)
@@ -90,7 +96,7 @@ class IssuedAtBubblingSetter(object):
     def bubbling_items(self):
         for item in self.items:
             if item.is_issued():
-                self._set_issued_at_iff_none(item)
+                self._set_issued_at(item)
             order = item.ordered_product.order
             if not order in self.orders:
                 self.orders.add(order)
@@ -98,7 +104,7 @@ class IssuedAtBubblingSetter(object):
     def bubbling_orders(self):
         for order in self.orders:
             if order.is_issued():
-                self._set_issued_at_iff_none(order)
+                self._set_issued_at(order)
 
 class PrintedAtBubblingSetter(object):
     """
@@ -122,9 +128,8 @@ class PrintedAtBubblingSetter(object):
     def printed_order(self, order):
         self.orders.add(order)
 
-    def _set_printed_at_iff_none(self, target):
-        if target.printed_at is None:
-            target.printed_at = self.dt
+    def _set_printed_at(self, target):
+        target.printed_at = self.dt
 
     def start_bubbling(self):
         self.bubbling_tokens()
@@ -144,7 +149,7 @@ class PrintedAtBubblingSetter(object):
 
     def bubbling_tokens(self):
         for token in self.tokens:
-            self._set_printed_at_iff_none(token)
+            self._set_printed_at(token)
             item = token.item
             if not item in self.items:
                 self.items.add(item)
@@ -152,7 +157,7 @@ class PrintedAtBubblingSetter(object):
     def bubbling_items(self):
         for item in self.items:
             if item.is_printed():
-                self._set_printed_at_iff_none(item)
+                self._set_printed_at(item)
             order = item.ordered_product.order
             if not order in self.orders:
                 self.orders.add(order)

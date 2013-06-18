@@ -399,10 +399,15 @@ class LoadSVGFromModelApiView(object):
             product_item_id = data["fillvalues_resource"]["model"]
 
             product_item = c_models.ProductItem.query.filter_by(id=product_item_id).first()
-            ticket = c_models.Ticket.query.filter(c_models.TicketBundle.id==product_item.ticket_bundle_id, 
-                                                  c_models.Ticket_TicketBundle.ticket_bundle_id==c_models.TicketBundle.id, 
-                                                  c_models.Ticket.id==c_models.Ticket_TicketBundle.ticket_id, 
-                                                  c_models.Ticket.ticket_format_id==ticket_format_id).first()
+            if product_item is None:
+                return {"status": False, "message": u"商品が見つかりません。"}
+            if data.get("sub_resource"):
+                ticket = c_models.Ticket.query.filter(c_models.Ticket.id==data.get("sub_resource")["model"]).first()
+            else:
+                ticket = c_models.Ticket.query.filter(c_models.TicketBundle.id==product_item.ticket_bundle_id, 
+                                                      c_models.Ticket_TicketBundle.ticket_bundle_id==c_models.TicketBundle.id, 
+                                                      c_models.Ticket.id==c_models.Ticket_TicketBundle.ticket_id, 
+                                                      c_models.Ticket.ticket_format_id==ticket_format_id).first()
             if ticket is None:
                 return {"status": False, "message": u"チケット券面が見つかりません。チケット様式を変更してpreviewを試すか。指定したチケット様式と結びつくチケット券面を作成してください"}
             try:

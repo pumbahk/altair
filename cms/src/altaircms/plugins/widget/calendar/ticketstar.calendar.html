@@ -1,0 +1,73 @@
+<%
+import logging
+logger = logging.getLogger(__name__)
+%>
+
+<div class="calendar detailBox">
+  <div id="detailSchedule" class="detailBoxInner">
+  %if widget.show_label:
+    <h2><img src="${request.static_url("altaircms:static/RT/img/detail/schedule_events-games.gif")}" alt="公演‥開催日程" height="30"/></h2>
+  %endif
+	<table>
+	 <thead>
+	   <tr>
+		 <td class="month-col empty"/>
+		 <th scope="col"  class="first">月</th>
+		 <th scope="col" >火</th>
+		 <th scope="col" >水</th>
+		 <th scope="col" >木</th>
+		 <th scope="col" >金</th>
+		 <th scope="col" >土</th>
+		 <th scope="col"  class="last">日</th>
+	   </tr>
+	 </thead>
+	 <tbody>
+	  %for week in cal:
+		<tr>
+		%if week.month_changed:
+		  <th class="month-col">
+			<span class="month-main">${week.month}月</span>
+		  </th>
+		%else:
+		  <td class="month-col empty"/>
+		%endif
+		%for de in week:
+		  <td class="${de["day_class"]}">
+            ${de["day"]}
+			%for p in de["day_performances"]:
+            <% status= stock_status.get_status(p)%>
+            <div class="performances">
+            <%
+               start_on_candidates = [s.start_on for s in p.sales]
+               end_on_candidates = [s.end_on for s in p.sales if s.end_on]
+            %>
+
+            %if not start_on_candidates:
+              <% logger.warn("performance=%s does not have salessegment. (calendar widget)" % p.id)%>
+              <br/>
+              <span>準備中</span>
+            %elif min(start_on_candidates) >= now:
+              <br/>
+              <span>販売前</span>
+            %elif max(end_on_candidates) >= now:
+              % if status["class"] == "cross":
+                <br/>
+                <span>予定枚数終了</span>
+              % else:
+                <strong>${status["string"]}</strong><a href="${h.link.get_purchase_page_from_performance(request, p)}">${p.start_on.strftime("%H:%M")}</a>
+              % endif
+            % else:
+              <br/>
+              <span>販売期間終了</span>
+            % endif
+             <p>${p.calendar_content or u""}</p>
+            </div>
+			%endfor
+		  </td>   
+		 %endfor
+		 </tr>
+	  %endfor
+	 </tbody>
+	</table>
+  </div>
+</div>

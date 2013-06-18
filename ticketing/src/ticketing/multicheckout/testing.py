@@ -1,5 +1,57 @@
 from pyramid import testing
-from .api import Checkout3D
+
+class DummyCheckout3D(object):
+    def __init__(self, CmnErrorCd='000000'):
+        self.CmnErrorCd = CmnErrorCd
+
+    def secure3d_enrol(self, order_no, enrol):
+        return testing.DummyModel(
+            OrderNo=order_no,
+            CmnErrorCd=self.CmnErrorCd,
+            )
+
+    def secure3d_auth(self, order_no, auth):
+        return testing.DummyModel(
+            OrderNo=order_no,
+            CmnErrorCd=self.CmnErrorCd,
+            )
+    
+    def request_card_auth(self, order_no, card_auth):
+        return testing.DummyModel(
+            OrderNo=order_no,
+            CmnErrorCd=self.CmnErrorCd,
+            )
+
+    def request_card_sales(self, order_no):
+        return testing.DummyModel(
+            OrderNo=order_no,
+            CmnErrorCd=self.CmnErrorCd,
+            )
+
+    def request_card_cancel_auth(self, order_no):
+        return testing.DummyModel(
+            OrderNo=order_no,
+            CmnErrorCd=self.CmnErrorCd,
+            )
+
+    def request_card_sales_part_cancel(self, order_no, params):
+        return testing.DummyModel(
+            OrderNo=order_no,
+            CmnErrorCd=self.CmnErrorCd,
+            )
+
+    def request_card_cancel_sales(self, order_no):
+        return testing.DummyModel(
+            OrderNo=order_no,
+            CmnErrorCd=self.CmnErrorCd,
+            )
+
+    def request_card_inquiry(self, order_no):
+        return testing.DummyModel(
+            OrderNo=order_no,
+            CmnErrorCd=self.CmnErrorCd,
+            )
+
 
 class DummySecure3D(object):
     def __init__(self, AcsUrl, PaReq, Md, enable_auth_api=True,
@@ -53,6 +105,7 @@ class DummySecure3D(object):
         from ..multicheckout import models
         self.called.append(('request_card_auth', args, kwargs))
         return models.MultiCheckoutResponseCard(ApprovalNo=self.ApprovalNo)
+
 
 class DummyHTTPLib(object):
     def __init__(self, response_body, status=200, reason="OK"):

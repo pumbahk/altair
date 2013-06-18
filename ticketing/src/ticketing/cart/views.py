@@ -1,54 +1,55 @@
 # -*- coding:utf-8 -*-
 import logging
-import json
-from datetime import datetime, timedelta
 import re
+import json
+import transaction
+from datetime import datetime
+#from collections import OrderedDict
+
 import sqlalchemy as sa
 from sqlalchemy.orm import joinedload
-from sqlalchemy.sql.expression import or_
+
 from markupsafe import Markup
+
 from pyramid.httpexceptions import HTTPNotFound, HTTPFound
-from pyramid.exceptions import NotFound
 from pyramid.response import Response
 from pyramid.view import view_config, view_defaults
 from pyramid.threadlocal import get_current_request
 from pyramid import security
-import js.jquery, js.jquery_tools
-from urllib2 import urlopen
-from zope.deprecation import deprecate
-from ..models import DBSession
-from ..core import models as c_models
-from ..users import models as u_models
-from ..mailmags import models as mailmag_models
+from webob.multidict import MultiDict
+
+from altair.pyramid_boto.s3.assets import IS3KeyProvider
+
+from ticketing.models import DBSession
+from ticketing.core import models as c_models
+from ticketing.core import api as c_api
+from ticketing.mailmags.api import get_magazines_to_subscribe, multi_subscribe
 from ticketing.views import mobile_request
 from ticketing.fanstatic import with_jquery, with_jquery_tools
-from .models import Cart
+from ticketing.payments.payment import Payment
+from ticketing.payments.exceptions import PaymentDeliveryMethodPairNotFound
+from ticketing.users.api import get_or_create_user
+from ticketing.venues.api import get_venue_site_adapter
+from altair.mobile.interfaces import IMobileRequest
+
+from . import api
 from . import helpers as h
 from . import schemas
-from .exceptions import (
-    CartException, 
-    NoCartError, 
-    NoEventError,
-    NoPerformanceError,
-    NoSalesSegment,
-    InvalidCSRFTokenException, 
-    OverQuantityLimitError, 
-    ZeroQuantityError, 
-    CartCreationExceptoion,
-    OutTermSalesException,
-    DeliveryFailedException,
-)
-from ticketing.rakuten_auth.api import authenticated_user
+from altair.mobile.api import set_we_need_pc_access, set_we_invalidate_pc_access
 from .events import notify_order_completed
-from webob.multidict import MultiDict
-from . import api
 from .reserving import InvalidSeatSelectionException, NotEnoughAdjacencyException
-from .stocker import NotEnoughStockException
-from ticketing.mobile.interfaces import IMobileRequest
-import transaction
-from ticketing.cart.selectable_renderer import selectable_renderer
+from .stocker import InvalidProductSelectionException, NotEnoughStockException
+from .selectable_renderer import selectable_renderer
+from .view_support import IndexViewMixin, get_amount_without_pdmp, get_seat_type_dicts
+from .exceptions import (
+    NoCartError, 
+    NoPerformanceError,
+    InvalidCSRFTokenException, 
+    CartCreationException,
+)
+
 logger = logging.getLogger(__name__)
-from ticketing.payments.payment import Payment
+
 
 def back_to_product_list_for_mobile(request):
     cart = api.get_cart_safe(request)
@@ -61,7 +62,6 @@ def back_to_product_list_for_mobile(request):
             performance_id=cart.performance_id,
             sales_segment_id=cart.sales_segment_id,
             seat_type_id=cart.products[0].product.items[0].stock.stock_type_id))
-
 
 def back_to_top(request):
     event_id = request.params.get('event_id')
@@ -88,119 +88,85 @@ def back(pc=back_to_top, mobile=None):
         return retval
     return factory
 
-def get_seat_type_triplets(event_id, performance_id, sales_segment_id):
-    segment_stocks = DBSession.query(c_models.ProductItem.stock_id).filter(
-        c_models.ProductItem.product_id==c_models.Product.id).filter(
-        c_models.Product.sales_segment_id==sales_segment_id).filter(
-        c_models.Product.public==True)
-
-    seat_type_triplets = DBSession.query(c_models.StockType, c_models.Stock.quantity, c_models.StockStatus.quantity).filter(
-            c_models.Stock.id==c_models.StockStatus.stock_id).filter(
-            c_models.Performance.event_id==event_id).filter(
-            c_models.Performance.id==performance_id).filter(
-            c_models.Performance.event_id==c_models.StockHolder.event_id).filter(
-            c_models.StockHolder.id==c_models.Stock.stock_holder_id).filter(
-            c_models.Stock.stock_type_id==c_models.StockType.id).filter(
-            c_models.Stock.id.in_(segment_stocks)).filter(
-            c_models.ProductItem.stock_id==c_models.Stock.id).filter(
-            c_models.ProductItem.performance_id==performance_id).order_by(
-            c_models.StockType.display_order).all()
-    return seat_type_triplets
-
-class IndexViewMixin(object):
-    def __init__(self, request):
-        self.request = request
-        self.context = request.context
-
-    def prepare(self):
-        if self.context.event is None:
-            raise NoEventError(self.context.event_id)
-
-        from .api import get_event_info_from_cms
-        self.event_extra_info = get_event_info_from_cms(self.request, self.context.event_id)
-        logger.info(self.event_extra_info)
-
-        if self.context.normal_sales_segment is None:
-            next_sales_segment = self.context.get_next_sales_segment()
-            if next_sales_segment:
-                raise OutTermSalesException(self.context.event, next_sales_segment)
-            else:
-                logger.debug("No matching sales_segment")
-                raise NoSalesSegment("No matching sales_segment")
-
-    def check_redirect(self, mobile):
-        performance_id = self.request.params.get('pid') or self.request.params.get('performance')
-
-        if performance_id:
-            specified = c_models.Performance.query.filter(c_models.Performance.id==performance_id).filter(c_models.Performance.public==True).first()
-            if mobile:
-                if specified is not None and specified.redirect_url_mobile:
-                    raise HTTPFound(specified.redirect_url_mobile)
-            else:
-                if specified is not None and specified.redirect_url_pc:
-                    raise HTTPFound(specified.redirect_url_pc)
+def gzip_preferred(request, response):
+    if 'gzip' in request.accept_encoding:
+        response.encode_content('gzip')
 
 @view_defaults(decorator=with_jquery.not_when(mobile_request))
 class IndexView(IndexViewMixin):
     """ 座席選択画面 """
     def __init__(self, request):
-        super(IndexView, self).__init__(request)
+        self.request = request
+        self.context = request.context
+
         self.prepare()
 
-    @view_config(decorator=with_jquery_tools, route_name='cart.index', renderer=selectable_renderer("carts/%(membership)s/index.html"), xhr=False, permission="buy")
+    def get_frontend_drawing_urls(self, venue):
+        sales_segment = self.request.context.sales_segment
+        retval = {}
+        drawings = get_venue_site_adapter(self.request, venue.site).get_frontend_drawings()
+        if drawings:
+            for name, drawing in drawings.items():
+                if IS3KeyProvider.providedBy(drawing):
+                    key = drawing.get_key()
+                    headers = {}
+                    if re.match('^.+\.(svgz|gz)$', drawing.path):
+                        headers['response-content-encoding'] = 'gzip'
+                    url = key.generate_url(expires_in=1800, response_headers=headers)
+                else:
+                    url = self.request.route_url(
+                        'cart.venue_drawing',
+                        event_id=self.request.context.event_id,
+                        performance_id=sales_segment.performance.id,
+                        venue_id=sales_segment.performance.venue.id,
+                        part=name)
+                retval[name] = url
+        return retval
+
+    def is_organization_rs(context, request):
+        organization = c_api.get_organization(request)
+        return organization.id == 15
+
+    @view_config(decorator=with_jquery_tools, route_name='cart.index',request_type="altair.mobile.interfaces.ISmartphoneRequest", 
+                 custom_predicates=(is_organization_rs, ), renderer=selectable_renderer("carts_smartphone/RT/index.html"), xhr=False, permission="buy")
+    @view_config(decorator=with_jquery_tools, route_name='cart.index',
+                  renderer=selectable_renderer("carts/%(membership)s/index.html"), xhr=False, permission="buy")
     def __call__(self):
         self.check_redirect(mobile=False)
-        # ただ単にパフォーマンスのリストが欲しいだけなので
-        # normal_sales_segment で良い
-        performances = api.performance_names(self.request, self.context.event, self.context.normal_sales_segment)
-        if not performances:
-            logger.error('NoPerformance Error: event_id="%s" sales_segment_id="%s"' % (self.context.event.id, self.context.normal_sales_segment.id))
-            raise NoPerformanceError(event_id=self.context.event.id, sales_segment_id=self.context.normal_sales_segment.id) # NoPerformanceを作る
+        sales_segments = self.context.available_sales_segments
+        selector_name = c_api.get_organization(self.request).setting.performance_selector
 
-        from collections import OrderedDict
-        select_venues = OrderedDict()
-        for pname, pvs in performances:
-            select_venues[pname] = []
-        event = self.request.context.event
-        for pname, pvs in performances:
-            for pv in pvs:
-                #select_venues[pname] = select_venues.get(pname, [])
-                logger.debug("performance %s" % pv)
-                if pv['on_the_day'] and self.context.sales_counter_sales_segment:
-                    sales_segment = self.context.sales_counter_sales_segment
-                else:
-                    sales_segment = self.context.normal_sales_segment
-                select_venues[pname].append(dict(
-                    id=pv['pid'],
-                    name=u'{start:%Y-%m-%d %H:%M}開始 {vname} (当日券)'.format(**pv) 
-                        if pv.get('on_the_day') else u'{start:%Y-%m-%d %H:%M}開始 {vname}'.format(**pv),
-                    order_url=self.request.route_url("cart.order", 
-                        sales_segment_id=sales_segment.id),
-                    seat_types_url=self.request.route_url('cart.seat_types',
-                        performance_id=pv['pid'],
-                        sales_segment_id=sales_segment.id,
-                        event_id=event.id)))
-            
-        logger.debug("venues %s" % select_venues)
+        performance_selector = api.get_performance_selector(self.request, selector_name)
+        sales_segments_selection = performance_selector()
+        logger.debug("sales_segments: %s" % sales_segments_selection)
 
         # 会場
-        venues = set([p.venue.name for p in self.context.event.performances])
+        try:
+            performance_id = long(self.request.params.get('pid') or self.request.params.get('performance'))
+        except (ValueError, TypeError):
+            performance_id = None
 
-        performance_id = self.request.params.get('pid') or self.request.params.get('performance')
-
-        logger.debug('performance selections : %s' % performances)
+        selected_sales_segment = None
         if not performance_id:
             # GETパラメータ指定がなければ、選択肢の1つ目を採用
-            performance_id = performances[0][1][0]['pid']
-        selected_performance = c_models.Performance.query.filter(
-            c_models.Performance.id==performance_id
-        ).filter(
-            c_models.Performance.event_id==self.context.event_id
-        ).filter(
-            c_models.Performance.public == True
-        ).first()
-        if selected_performance is None and performance_id is not None:
-            raise NoPerformanceError(event_id=self.context.event.id)
+            selected_sales_segment = sales_segments[0]
+        else:
+            # パフォーマンスIDから販売区分の解決を試みる
+            # performance_id で指定される Performance は
+            # available_sales_segments に関連するものでなければならない
+
+            # 数が少ないのでリニアサーチ
+            for sales_segment in sales_segments:
+                if sales_segment.performance.id == performance_id:
+                    # 複数個の SalesSegment が該当する可能性があるが
+                    # 最初の 1 つを採用することにする。実用上問題ない。
+                    selected_sales_segment = sales_segment
+                    break
+
+            # performance_id が指定されていて、かつパフォーマンスが見つからない
+            # 場合は例外
+            if selected_sales_segment is None:
+                raise NoPerformanceError(event_id=self.context.event.id)
 
         return dict(
             event=dict(
@@ -210,73 +176,70 @@ class IndexView(IndexViewMixin):
                 abbreviated_title=self.context.event.abbreviated_title,
                 sales_start_on=str(self.context.event.sales_start_on),
                 sales_end_on=str(self.context.event.sales_end_on),
-                venues=venues,
+                venues=set(p.venue.name for p in self.context.event.performances),
                 product=self.context.event.products
                 ),
             dates=sorted(list(set([p.start_on.strftime("%Y-%m-%d %H:%M") for p in self.context.event.performances]))),
             cart_release_url=self.request.route_url('cart.release'),
             selected=Markup(
                 json.dumps([
-                    selected_performance.name,
-                    selected_performance.id])),
-            venues_selection=Markup(json.dumps(select_venues.items())),
-            sales_segment=Markup(
-                json.dumps(
-                    dict(
-                        id=self.context.normal_sales_segment.id,
-                        seat_choice=self.context.normal_sales_segment.seat_choice))),
-            products_from_selected_date_url=self.request.route_url(
-                "cart.date.products",
-                event_id=self.context.event_id), 
-            order_url=self.request.route_url("cart.order", sales_segment_id=self.context.normal_sales_segment.id),
-            upper_limit=self.context.normal_sales_segment.upper_limit,
-            event_extra_info=self.event_extra_info.get("event") or []
+                    performance_selector.select_value(selected_sales_segment),
+                    selected_sales_segment.id])),
+            sales_segments_selection=Markup(json.dumps(sales_segments_selection)),
+            event_extra_info=self.event_extra_info.get("event") or [],
+            selection_label=performance_selector.label,
+            second_selection_label=performance_selector.second_label,
+            performance=performance_id or ""
             )
 
     @view_config(route_name='cart.seat_types', renderer="json")
+    @view_config(route_name='cart.seat_types.obsolete', renderer="json")
     def get_seat_types(self):
-        event_id = self.request.matchdict['event_id']
-        performance_id = self.request.matchdict['performance_id']
-        sales_segment_id = self.request.matchdict['sales_segment_id']
+        sales_segment = self.request.context.sales_segment # XXX: matchdict から取得していることを期待
 
-        seat_type_triplets = get_seat_type_triplets(event_id, performance_id, sales_segment_id)
-        performance = c_models.Performance.query.filter_by(id=performance_id).one()
+        seat_type_dicts = get_seat_type_dicts(self.request, sales_segment)
+
         data = dict(
             seat_types=[
                 dict(
-                    id=s.id,
-                    name=s.name,
-                    description=s.description,
-                    style=s.style,
-                    products_url=self.request.route_url('cart.products',
-                        event_id=event_id, performance_id=performance_id, sales_segment_id=sales_segment_id, seat_type_id=s.id),
-                    availability=available > 0,
-                    availability_text=h.get_availability_text(available),
-                    quantity_only=s.quantity_only,
+                    products_url=self.request.route_url(
+                        'cart.products',
+                        event_id=self.request.context.event_id,
+                        performance_id=sales_segment.performance.id,
+                        sales_segment_id=sales_segment.id,
+                        seat_type_id=_dict['id']),
+                    **_dict
                     )
-                for s, total, available in seat_type_triplets
+                for _dict in seat_type_dicts
                 ],
-            event_name=performance.event.title,
-            performance_name=performance.name,
-            performance_start=h.performance_date(performance),
-            performance_id=performance_id,
+            event_name=sales_segment.performance.event.title,
+            performance_name=sales_segment.performance.name,
+            performance_start=h.performance_date(sales_segment.performance),
+            performance_id=sales_segment.performance.id,
+            sales_segment_id=sales_segment.id,
             order_url=self.request.route_url("cart.order", 
-                    sales_segment_id=sales_segment_id),
-            venue_name=performance.venue.name,
-            event_id=event_id,
-            venue_id=performance.venue.id,
+                    sales_segment_id=sales_segment.id),
+            venue_name=sales_segment.performance.venue.name,
+            event_id=self.request.context.event_id,
+            venue_id=sales_segment.performance.venue.id,
             data_source=dict(
                 venue_drawing=self.request.route_url(
                     'cart.venue_drawing',
-                    event_id=event_id,
-                    performance_id=performance_id,
-                    venue_id=performance.venue.id,
+                    event_id=self.request.context.event_id,
+                    performance_id=sales_segment.performance.id,
+                    venue_id=sales_segment.performance.venue.id,
                     part='__part__'),
+                venue_drawings=self.get_frontend_drawing_urls(sales_segment.performance.venue),
+                info=self.request.route_url(
+                    'cart.info',
+                    event_id=self.request.context.event_id,
+                    sales_segment_id=sales_segment.id,
+                    ),
                 seats=self.request.route_url(
                     'cart.seats',
-                    event_id=event_id,
-                    performance_id=performance_id,
-                    venue_id=performance.venue.id),
+                    event_id=self.request.context.event_id,
+                    sales_segment_id=sales_segment.id,
+                    ),
                 seat_adjacencies=self.request.application_url \
                     + api.get_route_pattern(
                       self.request.registry,
@@ -285,175 +248,157 @@ class IndexView(IndexViewMixin):
             )
         return data
 
-    @view_config(route_name="cart.date.products", renderer="json")
-    def get_products_with_date(self):
-        """ 公演日ごとの購入単位
-        (event_id, venue, date) -> [performance] -> [productitems] -> [product]
-
-        need: request.GET["selected_date"] # e.g. format: 2011-11-11
-        """
-
-        if 'selected_date' not in self.request.GET:
-            return dict()
-
-        selected_date_string = self.request.GET["selected_date"]
-        event_id = self.request.matchdict["event_id"]
-
-        logger.debug("event_id = %(event_id)s, selected_date = %(selected_date)s"
-            % dict(event_id=event_id, selected_date=selected_date_string))
-
-        selected_date = datetime.strptime(selected_date_string, "%Y-%m-%d %H:%M")
-
-        ## selected_dateが==で良いのはself.__call__で指定された候補を元に選択されるから
-        q = DBSession.query(c_models.ProductItem.product_id)
-        q = q.filter(c_models.Performance.event_id==event_id)
-        q = q.filter(c_models.Performance.start_on==selected_date)
-        q = q.filter(c_models.Performance.id == c_models.ProductItem.performance_id)
-
-        query = DBSession.query(c_models.Product)
-        query = query.filter(c_models.Product.public==True)
-        query = query.filter(c_models.Product.id.in_(q)).order_by(sa.desc("display_order, price"))
-        ### filter by salessegment
-        salessegment = self.context.get_sales_segument()
-        query = h.products_filter_by_salessegment(query, salessegment)
-
-        products = [
-            dict(
-                id=p.id,
-                name=p.name,
-                description=p.description,
-                price=h.format_number(p.price, ",")
-                )
-            for p in query
-            ]
-        return dict(selected_date=selected_date_string, 
-                    products=products)
-
     @view_config(route_name='cart.products', renderer="json")
+    @view_config(route_name='cart.products.obsolete', renderer="json")
     def get_products(self):
         """ 席種別ごとの購入単位
         SeatType -> ProductItem -> Product
         """
-        seat_type_id = self.request.matchdict['seat_type_id']
-        performance_id = self.request.matchdict['performance_id']
-        sales_segment_id = self.request.matchdict['sales_segment_id']
-       
-        logger.debug("seat_typeid = %(seat_type_id)s, performance_id = %(performance_id)s"
-            % dict(seat_type_id=seat_type_id, performance_id=performance_id))
+        seat_type_id = long(self.request.matchdict['seat_type_id'])
+        product_dicts = get_seat_type_dicts(self.request, self.context.sales_segment, seat_type_id)[0]['products']
+        return dict(products=product_dicts)
 
-        seat_type = DBSession.query(c_models.StockType).filter_by(id=seat_type_id).one()
+    @view_config(route_name='cart.info', renderer="json")
+    def get_info(self):
+        """会場情報"""
+        venue = self.context.performance.venue
 
-        q = DBSession.query(c_models.ProductItem.product_id)
-        q = q.filter(c_models.ProductItem.stock_id==c_models.Stock.id)
-        q = q.filter(c_models.Stock.stock_type_id==seat_type_id)
-        q = q.filter(c_models.ProductItem.performance_id==performance_id)
+        self.request.add_response_callback(gzip_preferred)
 
-        query = DBSession.query(c_models.Product)
-        query = query.filter(c_models.Product.public==True)
-        query = query.filter(c_models.Product.id.in_(q)).order_by(sa.desc("display_order, price"))
-        ### filter by salessegment
-        salessegment = DBSession.query(c_models.SalesSegment).filter_by(id=sales_segment_id).one()
-        query = h.products_filter_by_salessegment(query, salessegment)
+        #from altair.sqlahelper import get_db_session
+        #slave_session = get_db_session(self.request, name="slave")
 
-        products = [
-            dict(
-                id=p.id, 
-                name=p.name, 
-                description=p.description,
-                price=h.format_number(p.price, ","), 
-                unit_template=h.build_unit_template(p, performance_id),
-                quantity_power=p.get_quantity_power(seat_type, performance_id)
-                )
-            for p in query
-            ]
-
-        return dict(products=products,
-                    seat_type=dict(id=seat_type.id, name=seat_type.name),
-                    sales_segment=dict(
-                        start_at=salessegment.start_at.strftime("%Y-%m-%d %H:%M"),
-                        end_at=salessegment.end_at.strftime("%Y-%m-%d %H:%M")
-                    ))
-
-    @view_config(route_name='cart.seats', renderer="json")
-    def get_seats(self):
-        """会場&座席情報""" 
-        event_id = self.request.matchdict['event_id']
-        performance_id = self.request.matchdict['performance_id']
-        venue_id = self.request.matchdict['venue_id']
-        stock_holder = api.get_stock_holder(self.request, event_id)
-        logger.debug("stock holder is %s:%s" % (stock_holder.id, stock_holder.name))
-        venue = c_models.Venue.get(venue_id)
         return dict(
-            seats=dict(
-                (
-                    seat.l0_id,
-                    dict(
-                        id=seat.l0_id,
-                        stock_type_id=seat.stock.stock_type_id,
-                        stock_holder_id=seat.stock.stock_holder_id,
-                        status=seat.status,
-                        areas=[area.id for area in seat.areas],
-                        is_hold=seat.stock.stock_holder_id==stock_holder.id,
-                        )
-                    ) 
-                for seat in DBSession.query(c_models.Seat)\
-                            .options(joinedload('areas'),
-                                     joinedload('status_'))\
-                            .join(c_models.SeatStatus)\
-                            .join(c_models.Stock)\
-                            .filter(c_models.Seat.venue_id==venue_id)\
-                            .filter(c_models.SeatStatus.status==int(c_models.SeatStatusEnum.Vacant))\
-                            .filter(c_models.Stock.stock_holder_id==stock_holder.id)
-                ),
             areas=dict(
                 (area.id, { 'id': area.id, 'name': area.name }) \
                 for area in DBSession.query(c_models.VenueArea) \
                             .join(c_models.VenueArea_group_l0_id) \
-                            .filter(c_models.VenueArea_group_l0_id.venue_id==venue_id)
+                            .filter(c_models.VenueArea_group_l0_id.venue_id==venue.id)
                 ),
             info=dict(
                 available_adjacencies=[
                     adjacency_set.seat_count
                     for adjacency_set in \
                         DBSession.query(c_models.SeatAdjacencySet) \
-                        .filter_by(venue_id=venue_id)
+                        .filter_by(site_id=venue.site_id)
                     ]
                 ),
-            pages=venue.site._metadata and venue.site._metadata.get('pages')
+            pages=get_venue_site_adapter(self.request, venue.site).get_frontend_pages()
+            )
+
+    @view_config(route_name='cart.seats', renderer="json")
+    @view_config(route_name='cart.seats.obsolete', renderer="json")
+    def get_seats(self):
+        """会場&座席情報"""
+        venue = self.context.performance.venue
+
+        sales_segment = c_models.SalesSegment.query.filter(c_models.SalesSegment.id==self.context.sales_segment.id).one()
+        sales_stocks = sales_segment.stocks
+        seats = []
+        if sales_segment.seat_choice:
+            seats = c_models.Seat.query_sales_seats(sales_segment)\
+                .options(joinedload('areas'), joinedload('status_'))\
+                .join(c_models.SeatStatus)\
+                .join(c_models.Stock)\
+                .filter(c_models.Seat.venue_id==venue.id)\
+                .filter(c_models.SeatStatus.status==int(c_models.SeatStatusEnum.Vacant))
+        stock_map = dict([(s.id, s) for s in sales_stocks])
+
+        self.request.add_response_callback(gzip_preferred)
+
+        return dict(
+            seats=dict(
+                (
+                    seat.l0_id,
+                    dict(
+                        id=seat.l0_id,
+                        stock_type_id=stock_map[seat.stock_id].stock_type_id,
+                        stock_holder_id=stock_map[seat.stock_id].stock_holder_id,
+                        status=seat.status,
+                        areas=[area.id for area in seat.areas],
+                        is_hold=seat.stock_id in stock_map,
+                        )
+                    )
+                for seat in seats),
+            areas=dict(
+                (area.id, { 'id': area.id, 'name': area.name }) \
+                for area in DBSession.query(c_models.VenueArea) \
+                            .join(c_models.VenueArea_group_l0_id) \
+                            .filter(c_models.VenueArea_group_l0_id.venue_id==venue.id)
+                ),
+            info=dict(
+                available_adjacencies=[
+                    adjacency_set.seat_count
+                    for adjacency_set in \
+                        DBSession.query(c_models.SeatAdjacencySet) \
+                        .filter_by(site_id=venue.site_id)
+                    ]
+                ),
+            pages=get_venue_site_adapter(self.request, venue.site).get_frontend_pages()
             )
 
     @view_config(route_name='cart.seat_adjacencies', renderer="json")
     def get_seat_adjacencies(self):
-        """連席情報""" 
-        event_id = self.request.matchdict['event_id']
-        performance_id = self.request.matchdict['performance_id']
-        venue_id = self.request.matchdict['venue_id']
+        """連席情報"""
+        try:
+            venue_id = long(self.request.matchdict.get('venue_id'))
+        except (ValueError, TypeError):
+            venue_id = None
+        try:
+            performance_id = long(self.request.matchdict.get('performance_id'))
+        except (ValueError, TypeError):
+            performance_id = None
+
+        if performance_id is None:
+            raise HTTPNotFound()
+
+        performance = DBSession.query(c_models.Performance).filter_by(id=performance_id).one()
+
+        if performance.venue.id != venue_id:
+            raise HTTPNotFound()
         length_or_range = self.request.matchdict['length_or_range']
         return dict(
             seat_adjacencies={
                 length_or_range: [
-                    [seat.l0_id for seat in seat_adjacency.seats]
+                    [seat.l0_id for seat in seat_adjacency.seats_filter_by_venue(venue_id)]
                     for seat_adjacency_set in \
-                        DBSession.query(c_models.SeatAdjacencySet) \
-                        .options(joinedload("adjacencies"),
-                                 joinedload('adjacencies.seats')) \
-                        .filter_by(venue_id=venue_id,
-                                   seat_count=length_or_range)
-                    for seat_adjacency in seat_adjacency_set.adjacencies 
+                        DBSession.query(c_models.SeatAdjacencySet)\
+                            .filter_by(site_id=performance.venue.site_id, seat_count=length_or_range)
+                    for seat_adjacency in seat_adjacency_set.adjacencies
                     ]
                 }
             )
 
     @view_config(route_name="cart.venue_drawing", request_method="GET")
     def get_venue_drawing(self):
-        event_id = self.request.matchdict['event_id']
-        performance_id = self.request.matchdict['performance_id']
-        venue_id = self.request.matchdict.get('venue_id')
-        if not venue_id:
+        try:
+            venue_id = long(self.request.matchdict.get('venue_id'))
+        except (ValueError, TypeError):
+            venue_id = None
+        try:
+            performance_id = long(self.request.matchdict.get('performance_id'))
+        except (ValueError, TypeError):
+            performance_id = None
+
+        if performance_id is None:
+            raise HTTPNotFound()
+
+        performance = DBSession.query(c_models.Performance).filter_by(id=performance_id).one()
+
+        if performance.venue.id != venue_id:
             raise HTTPNotFound()
         part = self.request.matchdict.get('part')
         venue = c_models.Venue.get(venue_id)
-        return Response(body=venue.site.get_drawing(part).stream().read(), content_type='text/xml; charset=utf-8')
+        drawing = get_venue_site_adapter(self.request, venue.site).get_frontend_drawing(part)
+        if not drawing:
+            raise HTTPNotFound()
+        content_encoding = None
+        if re.match('^.+\.(svgz|gz)$', drawing.path):
+            content_encoding = 'gzip'
+        resp = Response(body=drawing.stream().read(), content_type='text/xml; charset=utf-8', content_encoding=content_encoding)
+        if resp.content_encoding is None:
+            resp.encode_content()
+        return resp
 
 @view_defaults(decorator=with_jquery)
 class ReserveView(object):
@@ -488,18 +433,26 @@ class ReserveView(object):
         if len(controls) == 0:
             return []
 
-        products = dict([(p.id, p) for p in DBSession.query(c_models.Product).filter(c_models.Product.id.in_([c[0] for c in controls]))])
+        products = dict([(p.id, p) for p in DBSession.query(c_models.Product).options(
+            joinedload(c_models.Product.seat_stock_type),
+            joinedload(c_models.Product.items),
+        ).filter(
+            c_models.Product.id.in_([c[0] for c in controls]))])
         logger.debug('order %s' % products)
 
         return [(products.get(int(c[0])), c[1]) for c in controls]
 
+
     @view_config(route_name='cart.order', request_method="POST", renderer='json')
     def reserve(self):
+        h.form_log(self.request, "received order")
         order_items = self.ordered_items
         if not order_items:
             return dict(result='NG', reason="no products")
 
-        performance = c_models.Performance.query.filter(c_models.Performance.id==self.request.params['performance_id']).with_lockmode('update').one()
+        performance = c_models.Performance.query.options(
+            joinedload(c_models.Performance.event)
+        ).filter(c_models.Performance.id==self.request.params['performance_id']).one()
         if not order_items:
             return dict(result='NG', reason="no performance")
 
@@ -511,18 +464,18 @@ class ReserveView(object):
             sum_quantity = len(selected_seats)
         else:
             for product, quantity in order_items:
-                sum_quantity += quantity
+                sum_quantity += quantity * product.get_quantity_power(product.seat_stock_type, product.performance_id)
         logger.debug('sum_quantity=%s' % sum_quantity)
 
         self.context.event_id = performance.event_id
-        sales_segment = self.context.get_sales_segument()
-        if sales_segment.upper_limit < sum_quantity:
+        self.context._event = performance.event
+        if self.context.sales_segment.upper_limit < sum_quantity:
             logger.debug('upper_limit over')
             return dict(result='NG', reason="upper_limit")
 
         try:
             cart = api.order_products(self.request, self.request.params['performance_id'], order_items, selected_seats=selected_seats)
-            cart.sales_segment = sales_segment
+            cart.sales_segment = self.context.sales_segment
             if cart is None:
                 transaction.abort()
                 return dict(result='NG')
@@ -534,172 +487,37 @@ class ReserveView(object):
             transaction.abort()
             logger.debug("seat selection is invalid.")
             return dict(result='NG', reason="invalid seats")
-        except NotEnoughStockException as e:
+        except InvalidProductSelectionException:
             transaction.abort()
-            logger.debug("not enough stock quantity :%s" % e)
+            logger.debug("product selection is invalid.")
+            return dict(result='NG', reason="invalid products")
+        except NotEnoughStockException:
+            transaction.abort()
+            logger.debug("not enough stock quantity.")
             return dict(result='NG', reason="stock")
+        except CartCreationException:
+            transaction.abort()
+            logger.debug("cannot create cart.")
+            return dict(result='NG', reason="unknown")
+
 
         DBSession.add(cart)
         DBSession.flush()
         api.set_cart(self.request, cart)
         return dict(result='OK', 
-                    payment_url=self.request.route_url("cart.payment", sales_segment_id=sales_segment.id),
+                    payment_url=self.request.route_url("cart.payment", sales_segment_id=self.context.sales_segment.id),
                     cart=dict(products=[dict(name=p.product.name, 
                                              quantity=p.quantity,
                                              price=int(p.product.price),
-                                             seats=p.seats,
-                                        ) 
+                                             seats=p.seats if self.context.sales_segment.seat_choice else [],
+                                             unit_template=h.build_unit_template(p.product.items),
+                                        )
                                         for p in cart.products],
-                              total_amount=h.format_number(cart.tickets_amount),
-                    ))
+                              total_amount=h.format_number(get_amount_without_pdmp(cart))
+                             )
+                    )
 
-    @view_config(route_name='cart.order', request_method="GET", renderer=selectable_renderer('carts_mobile/%(membership)s/reserve.html'), request_type='ticketing.mobile.interfaces.IMobileRequest')
-    def reserve_mobile(self):
-        cart = api.get_cart_safe(self.request)
 
-        performance_id = self.request.params.get('performance_id')
-        seat_type_id = self.request.params.get('seat_type_id')
-        sales_segment_id = self.request.matchdict["sales_segment_id"]
-
-        # セールスセグメント必須
-        sales_segment = c_models.SalesSegment.filter_by(id=sales_segment_id).first()
-
-        performance = c_models.Performance.query.filter(
-            c_models.Performance.id==performance_id).first()
-        if performance:
-            event = performance.event
-        else:
-            event = None
-
-        data = dict(
-            event=event,
-            performance=performance, 
-            seat_type_id=seat_type_id,
-            sales_segment_id=sales_segment_id, 
-            payment_url=self.request.route_url("cart.payment", sales_segment_id=sales_segment.id),
-            cart=dict(products=[dict(name=p.product.name, 
-                                     quantity=p.quantity,
-                                     price=int(p.product.price),
-                                     seats=p.seats,
-                                ) 
-                                for p in cart.products],
-                      total_amount=h.format_number(cart.tickets_amount),
-            ))
-        return data
-
-    @view_config(route_name='cart.products', renderer=selectable_renderer('carts_mobile/%(membership)s/products.html'), xhr=False, request_type='ticketing.mobile.interfaces.IMobileRequest', request_method="POST")
-    def products_form(self):
-        """商品の値検証とおまかせ座席確保とカート作成
-        """
-        performance_id = self.request.params.get('performance_id')
-        seat_type_id = self.request.params.get('seat_type_id')
-        sales_segment_id = self.request.matchdict["sales_segment_id"]
-
-        # 古いカートを削除
-        old_cart = api.get_cart(self.request)
-        if old_cart:
-            # !!! ここでトランザクションをコミットする !!!
-            old_cart.release()
-            api.remove_cart(self.request)
-            transaction.commit()
-
-        # セールスセグメント必須
-        sales_segment = c_models.SalesSegment.filter_by(id=sales_segment_id).first()
-        if sales_segment is None:
-            raise NoEventError("No matching sales_segment")
-
-        # パフォーマンス
-        performance = c_models.Performance.query.filter(
-            c_models.Performance.id==performance_id).first()
-        if performance is None:
-            raise NoEventError("No such performance (%d)" % performance_id)
-
-        # CSRFトークンの確認
-        form = schemas.CSRFSecureForm(
-            formdata=self.request.params,
-            csrf_context=self.request.session)
-        if not form.validate():
-            raise InvalidCSRFTokenException
-
-        # セッションからCSRFトークンを削除して再利用不可にしておく
-        if 'csrf' in self.request.session:
-            del self.request.session['csrf']
-            self.request.session.persist()
-
-        order_items = self.ordered_items
-
-        # 購入枚数の制限
-        sum_quantity = sum(num for product, num in order_items)
-        logger.debug('sum_quantity=%s' % sum_quantity)
-        if sum_quantity > sales_segment.upper_limit:
-            raise OverQuantityLimitError(sales_segment.upper_limit)
-
-        if sum_quantity == 0:
-            raise ZeroQuantityError
-
-        try:
-            # カート生成(席はおまかせ)
-            cart = api.order_products(
-                self.request,
-                performance_id,
-                order_items)
-            cart.sales_segment = sales_segment
-            if cart is None:
-                transaction.abort()
-                logger.debug("cart is None. aborted.")
-                raise CartCreationExceptoion
-        except NotEnoughAdjacencyException as e:
-            transaction.abort()
-            logger.debug("not enough adjacency")
-            raise e
-        except InvalidSeatSelectionException as e:
-            # モバイルだとここにはこないかも
-            transaction.abort()
-            logger.debug("seat selection is invalid.")
-            raise e
-        except NotEnoughStockException as e:
-            transaction.abort()
-            logger.debug("not enough stock quantity :%s" % e)
-            raise e
-
-        DBSession.add(cart)
-        DBSession.flush()
-        api.set_cart(self.request, cart)
-        # 購入確認画面へ
-        query = dict(
-            performance_id=performance_id,
-            event_id=performance.event_id,
-            seat_type_id=seat_type_id,
-        )
-        return HTTPFound(self.request.route_url('cart.order', sales_segment_id=sales_segment.id, _query=query))
-
-    def __call__(self):
-        """
-        TODO: 使われていない？
-        座席情報から座席グループを検索する
-        """
-        sales_segment = self.context.get_sales_segument()
-
-        #seat_type_id = self.request.matchdict['seat_type_id']
-        cart = self.context.order_products(self.request.params['performance_id'], self.ordered_items)
-        if cart is None:
-            return dict(result='NG')
-        api.set_cart(self.request, cart)
-        #self.request.session['ticketing.cart_id'] = cart.id
-        #self.cart = cart
-        return dict(result='OK', 
-                    payment_url=self.request.route_url("cart.payment", sales_segment_id=sales_segment.id),
-                    cart=dict(products=[dict(name=p.product.name, 
-                                             quantity=p.quantity,
-                                             price=int(p.product.price),
-                                        ) 
-                                        for p in cart.products],
-                              total_amount=h.format_number(cart.tickets_amount),
-                    ))
-
-    def on_error(self):
-        """ 座席確保できなかった場合
-        """
 
 @view_defaults(decorator=with_jquery.not_when(mobile_request))
 class ReleaseCartView(object):
@@ -708,10 +526,13 @@ class ReleaseCartView(object):
 
     @view_config(route_name='cart.release', request_method="POST", renderer="json")
     def __call__(self):
-        cart = api.get_cart(self.request)
-        cart.release()
-        api.remove_cart(self.request)
-
+        try:
+            cart = api.get_cart_safe(self.request)
+            cart.release()
+            api.remove_cart(self.request)
+        except NoCartError:
+            import sys
+            logger.info('exception ignored', exc_info=sys.exc_info())
         return dict()
 
 
@@ -722,8 +543,14 @@ class PaymentView(object):
         self.request = request
         self.context = request.context
 
+    @property
+    def sales_segment(self):
+        # contextから取れることを期待できないので
+        # XXX: 会員区分からバリデーションしなくていいの?
+        return c_models.SalesSegment.query.filter(c_models.SalesSegment.id==self.request.matchdict['sales_segment_id']).one()
+
     @view_config(route_name='cart.payment', request_method="GET", renderer=selectable_renderer("carts/%(membership)s/payment.html"))
-    @view_config(route_name='cart.payment', request_type='ticketing.mobile.interfaces.IMobileRequest', request_method="GET", renderer=selectable_renderer("carts_mobile/%(membership)s/payment.html"))
+    @view_config(route_name='cart.payment', request_type='altair.mobile.interfaces.IMobileRequest', request_method="GET", renderer=selectable_renderer("carts_mobile/%(membership)s/payment.html"))
     def __call__(self):
         """ 支払い方法、引き取り方法選択
         """
@@ -734,8 +561,9 @@ class PaymentView(object):
         self.context.event_id = cart.performance.event.id
 
         start_on = cart.performance.start_on
-        payment_delivery_methods = self.context.get_payment_delivery_method_pair(start_on=start_on)
-        user = self.context.get_or_create_user()
+        sales_segment = self.sales_segment
+        payment_delivery_methods = self.context.available_payment_delivery_method_pairs(sales_segment)
+        user = get_or_create_user(self.context.authenticated_user())
         user_profile = None
         if user is not None:
             user_profile = user.user_profile
@@ -792,7 +620,7 @@ class PaymentView(object):
     def _validate_extras(self, cart, payment_delivery_pair, shipping_address_params):
         if not payment_delivery_pair or shipping_address_params is None:
             if not payment_delivery_pair:
-                self.request.session.flash(u"お支払い方法／受け取り方法をどれかひとつお選びください")
+                self.request.session.flash(u"お支払／引取方法をお選びください")
                 logger.debug("invalid : %s" % 'payment_delivery_method_pair_id')
             else:
                 logger.debug("invalid : %s" % self.form.errors)
@@ -804,15 +632,13 @@ class PaymentView(object):
 
     @back(back_to_top, back_to_product_list_for_mobile)
     @view_config(route_name='cart.payment', request_method="POST", renderer=selectable_renderer("carts/%(membership)s/payment.html"))
-    @view_config(route_name='cart.payment', request_type='ticketing.mobile.interfaces.IMobileRequest', request_method="POST", renderer=selectable_renderer("carts_mobile/%(membership)s/payment.html"))
+    @view_config(route_name='cart.payment', request_type='altair.mobile.interfaces.IMobileRequest', request_method="POST", renderer=selectable_renderer("carts_mobile/%(membership)s/payment.html"))
     def post(self):
         """ 支払い方法、引き取り方法選択
         """
         api.check_sales_segment_term(self.request)
-
         cart = api.get_cart_safe(self.request)
-
-        user = self.context.get_or_create_user()
+        user = get_or_create_user(self.context.authenticated_user())
 
         payment_delivery_method_pair_id = self.request.params.get('payment_delivery_method_pair_id', 0)
         payment_delivery_pair = c_models.PaymentDeliveryMethodPair.query.filter_by(id=payment_delivery_method_pair_id).first()
@@ -821,31 +647,22 @@ class PaymentView(object):
         shipping_address_params = self.get_validated_address_data()
         if not self._validate_extras(cart, payment_delivery_pair, shipping_address_params):
             start_on = cart.performance.start_on
-            payment_delivery_methods = self.context.get_payment_delivery_method_pair(start_on=start_on)
-            return dict(form=self.form,
-                payment_delivery_methods=payment_delivery_methods,
-                #user=user, user_profile=user.user_profile,
-                )
+            sales_segment = self.sales_segment
+            payment_delivery_methods = self.context.available_payment_delivery_method_pairs(sales_segment)
+            return dict(form=self.form, payment_delivery_methods=payment_delivery_methods)
 
         cart.payment_delivery_pair = payment_delivery_pair
-        cart.system_fee = payment_delivery_pair.system_fee
-
-        shipping_address = self.create_shipping_address(user, shipping_address_params)
-
-        # DBSession.add(shipping_address) # いらない
-        cart.shipping_address = shipping_address
+        cart.shipping_address = self.create_shipping_address(user, shipping_address_params)
         DBSession.add(cart)
-
-        client_name = self.get_client_name()
 
         order = api.new_order_session(
             self.request,
-            client_name=client_name,
+            client_name=self.get_client_name(),
             payment_delivery_method_pair_id=payment_delivery_method_pair_id,
-            email_1=shipping_address.email_1,
+            email_1=cart.shipping_address.email_1,
         )
-        payment_confirm_url = self.request.route_url('payment.confirm')
-        self.request.session['payment_confirm_url'] = payment_confirm_url
+
+        self.request.session['payment_confirm_url'] = self.request.route_url('payment.confirm')
 
         payment = Payment(cart, self.request)
         result = payment.call_prepare()
@@ -874,6 +691,7 @@ class PaymentView(object):
             tel_1=data['tel_1'],
             tel_2=data['tel_2'],
             fax=data['fax'],
+            sex=data.get("sex"), 
             user=user
         )
 
@@ -885,22 +703,25 @@ class ConfirmView(object):
         self.context = request.context
 
     @view_config(route_name='payment.confirm', request_method="GET", renderer=selectable_renderer("carts/%(membership)s/confirm.html"))
-    @view_config(route_name='payment.confirm', request_type='ticketing.mobile.interfaces.IMobileRequest', request_method="GET", renderer=selectable_renderer("carts_mobile/%(membership)s/confirm.html"))
+    @view_config(route_name='payment.confirm', request_type='altair.mobile.interfaces.IMobileRequest', request_method="GET", renderer=selectable_renderer("carts_mobile/%(membership)s/confirm.html"))
     def get(self):
         api.check_sales_segment_term(self.request)
         form = schemas.CSRFSecureForm(csrf_context=self.request.session)
         cart = api.get_cart_safe(self.request)
 
-        # == MailMagazinに移動 ==
-        magazines = mailmag_models.MailMagazine.query.outerjoin(mailmag_models.MailSubscription) \
-            .filter(mailmag_models.MailMagazine.organization==cart.performance.event.organization) \
-            .all()
+        magazines_to_subscribe = get_magazines_to_subscribe(cart.performance.event.organization, cart.shipping_address.emails)
 
-        user = self.context.get_or_create_user()
-        return dict(cart=cart, mailmagazines=magazines, 
-            #user=user, 
+        payment = Payment(cart, self.request)
+        try:
+            delegator = payment.call_delegator()
+        except PaymentDeliveryMethodPairNotFound:
+            raise HTTPFound(self.request.route_path("cart.payment", sales_segment_id=cart.sales_segment_id))
+        return dict(
+            cart=cart,
+            mailmagazines_to_subscribe=magazines_to_subscribe,
             form=form,
-            )
+            delegator=delegator,
+        )
 
 
 @view_defaults(decorator=with_jquery.not_when(mobile_request))
@@ -913,7 +734,7 @@ class CompleteView(object):
 
     @back(back_to_top, back_to_product_list_for_mobile)
     @view_config(route_name='payment.finish', renderer=selectable_renderer("carts/%(membership)s/completion.html"), request_method="POST")
-    @view_config(route_name='payment.finish', request_type='ticketing.mobile.interfaces.IMobileRequest', renderer=selectable_renderer("carts_mobile/%(membership)s/completion.html"), request_method="POST")
+    @view_config(route_name='payment.finish', request_type='altair.mobile.interfaces.IMobileRequest', renderer=selectable_renderer("carts_mobile/%(membership)s/completion.html"), request_method="POST")
     def __call__(self):
         api.check_sales_segment_term(self.request)
         form = schemas.CSRFSecureForm(formdata=self.request.params, csrf_context=self.request.session)
@@ -930,98 +751,28 @@ class CompleteView(object):
         if not cart.is_valid():
             raise NoCartError()
 
-        order_session = self.request.session['order']
-
-        # get_payment_delivery_pair
-        payment_delivery_method_pair_id = order_session['payment_delivery_method_pair_id']
-        payment_delivery_pair = c_models.PaymentDeliveryMethodPair.query.filter(
-            c_models.PaymentDeliveryMethodPair.id==payment_delivery_method_pair_id
-        ).one()
-
         payment = Payment(cart, self.request)
         order = payment.call_payment()
-        # == begin Payment.call_payment ==
-        # payment_delivery_plugin = api.get_payment_delivery_plugin(self.request, 
-        #     payment_delivery_pair.payment_method.payment_plugin_id,
-        #     payment_delivery_pair.delivery_method.delivery_plugin_id,)
-        # if payment_delivery_plugin is not None:
-        #     order = payment_delivery_plugin.finish(self.request, cart)
 
-        #     user = self.context.get_or_create_user()
-        #     order.user = user
-        #     order.organization_id = order.performance.event.organization_id
-        #     cart.order = order
-        # else:
-        #     payment_plugin = api.get_payment_plugin(self.request, payment_delivery_pair.payment_method.payment_plugin_id)
-        #     order = payment_plugin.finish(self.request, cart)
-
-        #     user = self.context.get_or_create_user()
-        #     order.user = user
-        #     order.organization_id = order.performance.event.organization_id
-        #     cart.order = order
-
-        #     DBSession.add(order)
-        #     try:
-        #         delivery_plugin = api.get_delivery_plugin(self.request, payment_delivery_pair.delivery_method.delivery_plugin_id)
-        #         delivery_plugin.finish(self.request, cart)
-        #     except Exception as e:
-        #         import sys
-        #         import traceback
-        #         import StringIO
-        #         exc_info = sys.exc_info()
-        #         out = StringIO.StringIO()
-        #         traceback.print_exception(*exc_info, file=out)
-        #         logger.error(out.getvalue())
-        #         order.cancel(self.request)
-        #         order.note = str(e)
-        #         order_no = order.order_no
-        #         event_id = cart.sales_segment.event_id
-        #         # 追跡用にエラー内容とともにキャンセル状態のorderをコミットする
-        #         transaction.commit()
-        #         raise DeliveryFailedException(order_no, event_id)
-
-        # == end Payment.callPayment ==
         notify_order_completed(self.request, order)
 
         # メール購読でエラーが出てロールバックされても困る
         transaction.commit()
 
-
-        # == begin MailMagazineRegistration ==
         del self.request._cart
         cart = api.get_cart(self.request)
-        order_id = order.id
-        emails = cart.shipping_address.emails
-        plain_user = self.context.get_or_create_user()
-        user_id = None
-        if plain_user is not None:
-            user_id = plain_user.id
-            user_cls = plain_user.__class__
-        user = None
-        if user_id is not None:
-            user = DBSession.query(user_cls).get(user_id)
-        order = DBSession.query(order.__class__).get(order_id)
- 
+        order = DBSession.query(order.__class__).get(order.id)
+
         # メール購読
-        self.save_subscription(user, emails)
-        # == end MailMagazineRegistration ==
-        api.remove_cart(self.request)
-
-        api.logout(self.request)
-        return dict(order=order)
-
-    def save_subscription(self, user, emails):
-        magazines = mailmag_models.MailMagazine.query.all()
-
-        # 購読
+        user = get_or_create_user(self.context.authenticated_user())
+        emails = cart.shipping_address.emails
         magazine_ids = self.request.params.getall('mailmagazine')
-        logger.debug("magazines: %s" % magazine_ids)
-        for subscription in mailmag_models.MailMagazine.query.filter(mailmag_models.MailMagazine.id.in_(magazine_ids)).all():
-            for email in emails:
-                if subscription.subscribe(user, email):
-                    logger.debug("User %s starts subscribing %s for <%s>" % (user, subscription.name, email))
-                else:
-                    logger.debug("User %s is already subscribing %s for <%s>" % (user, subscription.name, email))
+        multi_subscribe(user, emails, magazine_ids)
+
+        api.remove_cart(self.request)
+        api.logout(self.request)
+
+        return dict(order=order)
 
 
 @view_defaults(decorator=with_jquery.not_when(mobile_request))
@@ -1039,198 +790,6 @@ class InvalidMemberGroupView(object):
         return HTTPFound(location=location)
 
 
-class MobileIndexView(IndexViewMixin):
-    """モバイルのパフォーマンス選択
-    """
-    def __init__(self, request):
-        super(MobileIndexView, self).__init__(request)
-        self.prepare()
-
-    @view_config(route_name='cart.index', renderer=selectable_renderer('carts_mobile/%(membership)s/index.html'), xhr=False, permission="buy", request_type='ticketing.mobile.interfaces.IMobileRequest')
-    def __call__(self):
-        self.check_redirect(mobile=True)
-        venue_name = self.request.params.get('v')
-
-        # パフォーマンスIDが確定しているなら商品選択へリダイレクト
-        performance_id = self.request.params.get('pid') or self.request.params.get('performance')
-        if performance_id:
-            performance = c_models.Performance.query.filter(c_models.Performance.id==performance_id).one()
-            if performance.on_the_day:
-                sales_segment = self.context.sales_counter_sales_segment
-            else:
-                sales_segment = self.context.normal_sales_segment
-
-            return HTTPFound(self.request.route_url(
-                "cart.seat_types",
-                event_id=self.context.event.id,
-                performance_id=performance_id,
-                sales_segment_id=sales_segment.id))
-
-        # 公演名リスト
-        # ただ単にパフォーマンスのリストが欲しいだけなので
-        # normal_sales_segment で良い
-        perms = api.performance_names(self.request, self.context.event, self.context.normal_sales_segment)
-        performances = [p[0] for p in perms]
-        logger.debug('performances %s' % performances)
-
-        # 公演名が指定されている場合は、（日時、会場）のリスト
-        performance_name = self.request.params.get('performance_name')
-        venues = []
-        if performance_name:
-            venues = [(x['pid'], u"{start:%Y-%m-%d %H:%M} {vname} 当日券".format(**x) 
-                if x.get('on_the_day') else u"{start:%Y-%m-%d %H:%M} {vname}".format(**x)) 
-                for x in api.performance_venue_by_name(self.request, self.context.event, self.context.normal_sales_segment, performance_name)]
-
-        return dict(
-            event=self.context.event,
-            sales_segment=self.context.normal_sales_segment,
-            venues=venues,
-            venue_name=venue_name,
-            performances=performances,
-            performance_name=performance_name
-            )
-
-
-class MobileSelectProductView(object):
-    """モバイルの商品選択
-    """
-    def __init__(self, request):
-        self.request = request
-        self.context = request.context
-
-    @view_config(route_name='cart.seat_types', renderer=selectable_renderer('carts_mobile/%(membership)s/seat_types.html'), xhr=False, request_type='ticketing.mobile.interfaces.IMobileRequest')
-    def __call__(self):
-        event_id = self.request.matchdict['event_id']
-        performance_id = self.request.matchdict['performance_id']
-        sales_segment_id = self.request.matchdict['sales_segment_id']
-        seat_type_id = self.request.params.get('stid')
-
-        if seat_type_id:
-            return HTTPFound(self.request.route_url(
-                "cart.products",
-                event_id=event_id,
-                performance_id=performance_id,
-                sales_segment_id=sales_segment_id,
-                seat_type_id=seat_type_id))
-
-        # セールスセグメント必須
-        sales_segment = self.context.get_sales_segument()
-        if sales_segment is None:
-            raise NoEventError("No matching sales_segment")
-
-        event = c_models.Event.query.filter(c_models.Event.id==event_id).first()
-        if event is None:
-            raise NoEventError("No such event (%d)" % event_id)
-
-        performance = c_models.Performance.query.filter(
-            c_models.Performance.id==performance_id).filter(
-            c_models.Performance.event_id==event.id).first()
-        if performance is None:
-            raise NoEventError("No such performance (%d)" % performance_id)
-
-        seat_type_triplets = get_seat_type_triplets(event.id, performance.id, sales_segment.id)            
-
-        data = dict(
-            seat_types=[
-                dict(
-                    id=s.id,
-                    name=s.name,
-                    description=s.description,
-                    style=s.style,
-                    products_url=self.request.route_url('cart.products',
-                                                        event_id=event_id, performance_id=performance_id, sales_segment_id=sales_segment.id, seat_type_id=s.id),
-                    availability=available > 0,
-                    availability_text=h.get_availability_text(available),
-                    quantity_only=s.quantity_only,
-                    )
-                for s, total, available in seat_type_triplets
-                ],
-            event=event,
-            performance=performance,
-            venue=performance.venue,
-            sales_segment=sales_segment
-            )
-        return data
-
-    @view_config(route_name='cart.products', renderer=selectable_renderer('carts_mobile/%(membership)s/products.html'), xhr=False, request_type='ticketing.mobile.interfaces.IMobileRequest')
-    def products(self):
-        event_id = self.request.matchdict['event_id']
-        performance_id = self.request.matchdict['performance_id']
-        seat_type_id = self.request.matchdict['seat_type_id']
-        sales_segment_id = self.request.matchdict['sales_segment_id']
-
-        # イベント
-        event = c_models.Event.query.filter(c_models.Event.id==event_id).first()
-        if event is None:
-            raise NoEventError("No such event (%d)" % event_id)
-
-        # パフォーマンス(イベントにひもづいてること)
-        performance = c_models.Performance.query.filter(
-            c_models.Performance.id==performance_id).filter(
-            c_models.Performance.event_id==event.id).first()
-        if performance is None:
-            raise NoEventError("No such performance (%d)" % performance_id)
-
-        sales_segment = c_models.SalesSegment.query.filter(
-            c_models.SalesSegment.id==sales_segment_id,
-            c_models.SalesSegment.event_id==event.id).first()
-        if sales_segment is None:
-            raise NoEventError("No such sales segment (%s)" % sales_segment_id)
-        
-
-        # 席種(イベントとパフォーマンスにひもづいてること)
-        segment_stocks = DBSession.query(c_models.ProductItem.stock_id).filter(
-            c_models.ProductItem.product_id==c_models.Product.id).filter(
-            c_models.Product.sales_segment_id==sales_segment.id).filter(
-            c_models.Product.public==True)
-
-        seat_type = DBSession.query(c_models.StockType).filter(
-            c_models.Performance.event_id==event_id).filter(
-            c_models.Performance.id==performance_id).filter(
-            c_models.Performance.event_id==c_models.StockHolder.event_id).filter(
-            c_models.StockHolder.id==c_models.Stock.stock_holder_id).filter(
-            c_models.Stock.stock_type_id==c_models.StockType.id).filter(
-            c_models.Stock.id.in_(segment_stocks)).filter(
-            c_models.StockType.id==seat_type_id).first()
-
-        if seat_type is None:
-            raise NoEventError("No such seat_type (%s)" % seat_type_id)
-
-        # 商品一覧
-        # サブクエリの部分
-        product_items = DBSession.query(c_models.ProductItem.product_id).filter(
-            c_models.ProductItem.stock_id==c_models.Stock.id).filter(
-            c_models.Stock.stock_type_id==seat_type_id).filter(
-            c_models.ProductItem.performance_id==performance_id)
-
-        products = c_models.Product.query.filter(
-            c_models.Product.public==True).filter(
-            c_models.Product.id.in_(product_items)).order_by(
-            sa.desc("display_order, price")).filter_by(
-            sales_segment=sales_segment)
-
-        # CSRFトークン発行
-        form = schemas.CSRFSecureForm(csrf_context=self.request.session)
-
-        return dict(
-            event=event,
-            performance=performance,
-            venue=performance.venue,
-            sales_segment=sales_segment,
-            seat_type=seat_type,
-            upper_limit=sales_segment.upper_limit,
-            products=[
-                dict(
-                    id=product.id,
-                    name=product.name,
-                    description=product.description,
-                    detail=h.product_name_with_unit(product, performance_id),
-                    price=h.format_number(product.price, ","),
-                )
-                for product in products
-            ],
-            form=form,
-        )
 
 @view_defaults(decorator=with_jquery.not_when(mobile_request))
 class OutTermSalesView(object):
@@ -1241,19 +800,73 @@ class OutTermSalesView(object):
     @view_config(context='.exceptions.OutTermSalesException', renderer=selectable_renderer('ticketing.cart:templates/carts/%(membership)s/out_term_sales.html'))
     def pc(self):
         api.logout(self.request)
-        return dict(event=self.context.event, 
-                    sales_segment=self.context.sales_segment)
+        if self.context.next is None:
+            datum = self.context.last
+            which = 'last'
+        else:
+            datum = self.context.next
+            which = 'next'
+        return dict(which=which, **datum)
 
     @view_config(context='.exceptions.OutTermSalesException', renderer=selectable_renderer('ticketing.cart:templates/carts_mobile/%(membership)s/out_term_sales.html'), 
-        request_type='ticketing.mobile.interfaces.IMobileRequest')
+        request_type='altair.mobile.interfaces.IMobileRequest')
     def mobile(self):
         api.logout(self.request)
-        return dict(event=self.context.event, 
-                    sales_segment=self.context.sales_segment)
+        if self.context.next is None:
+            datum = self.context.last
+            which = 'last'
+        else:
+            datum = self.context.next
+            which = 'next'
+        return dict(which=which, **datum)
 
 @view_config(decorator=with_jquery.not_when(mobile_request), route_name='cart.logout')
 def logout(request):
     headers = security.forget(request)
-    res = HTTPFound(location='/')
+    location = c_api.get_host_base_url(request)
+    res = HTTPFound(location=location)
     res.headerlist.extend(headers)
     return res
+
+def _create_response(request, param):
+    event_id = request.matchdict.get('event_id')
+    response = HTTPFound(event_id and request.route_url('cart.index', event_id=event_id) + param or '/')
+    return response
+
+@view_config(route_name='cart.switchpc')
+def switch_pc(context, request):
+    ReleaseCartView(request)()
+    response = _create_response(request=request, param="")
+    set_we_need_pc_access(response)
+    return response
+
+@view_config(route_name='cart.switchsp')
+def switch_sp(context, request):
+    ReleaseCartView(request)()
+    response = _create_response(request=request, param="")
+    set_we_invalidate_pc_access(response)
+    return response
+
+@view_config(route_name='cart.switchpc.perf')
+def switch_pc_performance(context, request):
+    ReleaseCartView(request)()
+    performance = request.matchdict.get('performance')
+    param = _create_performance_param(performance=performance)
+    response = _create_response(request=request, param=param)
+    set_we_need_pc_access(response)
+    return response
+
+@view_config(route_name='cart.switchsp.perf')
+def switch_sp_performance(context, request):
+    ReleaseCartView(request)()
+    performance = request.matchdict.get('performance')
+    param = _create_performance_param(performance=performance)
+    response = _create_response(request=request, param=param)
+    set_we_invalidate_pc_access(response)
+    return response
+
+def _create_performance_param(performance):
+    param = ""
+    if performance:
+        param = "?performance=" + str(performance)
+    return param

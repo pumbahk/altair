@@ -48,11 +48,16 @@ class OrderInfoDefault(object):
         return ch.japanese_datetime(order.performance.start_on)
 
     def get_seat_no(order):
-        seats = itertools.chain.from_iterable((p.seats for p in order.ordered_products))
-        return u"\n".join(u"* {0}".format(seat["name"]) for seat in seats)
+        seat_no = []
+        for p in order.ordered_products:
+            if p.product.sales_segment.seat_choice:
+                seat_no += [u"* {0}".format(seat["name"]) for seat in p.seats]
+            elif p.product.seat_stock_type:
+                seat_no += [u"{0} {1}席".format(p.product.seat_stock_type.name, p.seat_quantity)]
+        return u"\n".join(seat_no)
 
     def get_product_description(order):
-        return u"\n".join((u"{0} {1} x{2}枚".format(op.product.name, 
+        return u"\n".join((u"{0} {1} x{2}".format(op.product.name,
                                                     ch.format_currency(op.product.price),
                                                     op.quantity)
                            for op in order.ordered_products))
@@ -61,6 +66,14 @@ class OrderInfoDefault(object):
         sa = order.shipping_address
         return u"{0} {1}".format(sa.last_name_kana, sa.first_name_kana)
 
+    def get_contact(order):
+        return u"""\
+%s
+商品、決済・発送に関するお問い合わせ %s""" % (order.ordered_from.name, order.ordered_from.contact_email)
+
+    name_kana = OrderInfo(name="name_kana", label=u"お名前カナ", getval=get_name_kana)
+    tel = OrderInfo(name="tel", label=u"電話番号", getval=lambda order : order.shipping_address.tel_1 or "")
+    mail = OrderInfo(name="mail", label=u"メールアドレス", getval=lambda order : order.shipping_address.email_1)
     order_no = OrderInfo(name="order_no", label=u"受付番号", getval=lambda order : order.order_no)
     name_kana = OrderInfo(name="name_kana", label=u"お名前カナ", getval=get_name_kana)
     event_name = OrderInfo(name="event_name", label=u"公演タイトル", getval=get_event_title)
@@ -73,7 +86,8 @@ class OrderInfoDefault(object):
     delivery_fee = OrderInfo(name=u"delivery_fee", label=u"発券／引取手数料", getval=lambda order: ch.format_currency(order.delivery_fee))
     total_amount = OrderInfo(name=u"total_amount", label=u"合計金額", getval=lambda order: ch.format_currency(order.total_amount))
     order_datetime = OrderInfo(name="order_datetime", label=u"受付日", getval=lambda order: ch.mail_date(order.created_at))
-
+    contact = OrderInfo(name=u"contact", label=u"お問い合わせ", getval=get_contact)
+    
     @classmethod
     def get_form_field_candidates(cls):
         hist = {}
@@ -141,12 +155,12 @@ def MailInfoFormFactory(template, mutil=None):
     attrs["validate"] = validate
 
     def as_mailinfo_data(self):
-        return {k:v for k, v in self.data.iteritems() if v}
+        return {k:v for k, v in self.data.iteritems()}
     attrs["as_mailinfo_data"] = as_mailinfo_data
 
     return type("MailInfoForm", (Form, ), attrs)
 
-PluginInfo = namedtuple("PluginInfo", "method name label") #P0, P0notice, 注意事項(コンビに決済)    
+PluginInfo = namedtuple("PluginInfo", "method name label") #P0, P0notice, 注意事項(コンビニ決済)
 class MailInfoTemplate(object):
     """
     data = {

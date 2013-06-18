@@ -1,0 +1,38 @@
+<h3 id="salessegment">${page_title}(${salessegment.group.name})</h3>
+
+<table class="table table-describe table-bordered">
+  <thead>
+    <tr>
+      <th>席種</th><th>名前</th><th>価格</th><th>表示順序</th><th>作成日時</th><th>更新日時</th><th>操作</th>
+    </tr>
+  </thead>
+  <tbody>
+    %for seattype, ticket_ in grid:
+      <% ticket = ticket_.values %>
+      <tr>
+        %if seattype:
+          <td rowspan="${seattype.rowspan}">${seattype.values}</td>
+        %endif
+        <td>${ticket.name}</td>
+        <td>${ticket.price}</td>
+        <td>${ticket.display_order}</td>
+        <td>${h.base.jdatetime(ticket.created_at)}</td>
+        <td>${h.base.jdatetime(ticket.updated_at)}</td>
+        <td>
+				<div class="btn-group">
+					<a class="btn btn-primary" href="${h.route_path_override(request, "ticket_update",action="input",id=ticket.id, _query=dict(endpoint=request.url, salessegment_id=salessegment.id))}">
+						<i class="icon-cog"> </i> 編集
+					</a>
+					<a class="btn btn-success" href="${h.route_path_override(request, "ticket_create", action="copied_input",_query=dict(id=ticket.id,endpoint=request.url, salessegment_id=salessegment.id))}">
+						<i class="icon-cog"> </i> コピーして新規作成
+					</a>
+					<a class="btn btn-danger" href="${h.route_path_override(request, "ticket_delete",action="confirm",id=ticket.id, _query=dict(endpoint=request.url, salessegment_id=salessegment.id))}">
+						<i class="icon-trash"> </i> 削除
+					</a>
+        </td>
+      </tr>
+    %endfor
+  </tbody>
+</table>
+
+${panel("model_create_only_buttons", modeljname=u"商品", modelname="ticket", _query=dict(salessegment_id=salessegment.id), show_alert=False)}

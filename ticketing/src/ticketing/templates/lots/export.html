@@ -1,0 +1,19 @@
+<table border="1">
+<thead>
+<tr>
+%for k in data[0]:
+<th>${k}</th>
+%endfor
+</tr>
+</thead>
+<tbody>
+%for r in data:
+<tr>
+%for k in data[0]:
+<td>${r[k]}</td>
+%endfor
+
+</tr>
+%endfor
+</tbody>
+</table>

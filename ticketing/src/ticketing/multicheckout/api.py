@@ -3,41 +3,95 @@
 """ TBA
 """
 
-from pyramid.interfaces import IDict
+#from pyramid.interfaces import IDict
 from xml.etree import ElementTree as etree
 import httplib
 import urlparse
 from . import models as m
-from .interfaces import IMultiCheckout
+#from .interfaces import IMultiCheckout
 from datetime import date
 from . import logger
+from . import events
 import ticketing.core.api as core_api
+import ticketing.core.models as core_models
 
-DEFAULT_ITEM_CODE = "120" # 通販
+DEFAULT_ITEM_CODE = "120"  # 通販
+
+class MulticheckoutSetting(object):
+    def __init__(self, organization_setting):
+        self.organization_setting = organization_setting
+
+    @property
+    def shop_name(self):
+        return self.organization_setting.multicheckout_shop_name
+
+    @property
+    def shop_id(self):
+        return self.organization_setting.multicheckout_shop_id
+
+    @property
+    def auth_id(self):
+        return self.organization_setting.multicheckout_auth_id
+
+    @property
+    def auth_password(self):
+        return self.organization_setting.multicheckout_auth_password
+
+
+def maybe_unicode(u, encoding="utf-8"):
+    if u is None:
+        return None
+    elif isinstance(u, unicode):
+        return u
+    elif isinstance(u, (str, bytes)):
+        return u.decode(encoding=encoding)
+    else:
+        raise ValueError, "expect str or unicode, but got %s" % type(u).__name__
+
+
+def save_api_response(request, res):
+    m._session.add(res)
+    if hasattr(res, 'OrderNo'):
+        m.MultiCheckoutOrderStatus.set_status(res.OrderNo, res.Storecd, res.Status, u"call by %s" % request.url)
+    m._session.commit()
+
+
+def get_multicheckout_settings(request):
+    return [MulticheckoutSetting(os) for os in core_models.OrganizationSetting.all() if os.multicheckout_shop_id and os.multicheckout_shop_name]
+
+
 
 def get_multicheckout_setting(request, override_name):
     reg = request.registry
+    logger.info('get_multicheckout_setting override_name = %s, request_host = %s' % (override_name, request.host))
     if override_name:
-        return m.MulticheckoutSetting.query.filter_by(shop_name=override_name).one()
+        #return m.MulticheckoutSetting.query.filter_by(shop_name=override_name).one()
+        os = core_models.OrganizationSetting.query.filter_by(multicheckout_shop_name=override_name).one()
+        return MulticheckoutSetting(os)
     else:
         override_host = reg.settings.get('altair_checkout3d.override_host') or request.host
         organization = core_api.get_organization(request, override_host)
-        return organization.multicheckout_settings[0]
+        #return organization.multicheckout_settings[0]
+        return MulticheckoutSetting(organization.setting)
+
 
 def is_enable_secure3d(request, card_number):
     """ セキュア3D対応のカード会社か判定する """
     # とりあえず
     return len(card_number) == 16
 
+
 def get_pares(request):
     """ get ``PARES`` value from request
     """
     return request.params['PaRes']
 
+
 def get_md(request):
     """ get ``Md`` value from request
     """
     return request.params['MD']
+
 
 def sanitize_card_number(xml_data):
     et = None
@@ -52,22 +106,12 @@ def sanitize_card_number(xml_data):
         logger.warn('credit card number sanitize error: %s' % e.message)
     return etree.tostring(et) if et is not None else xml_data
 
+
 def get_multicheckout_service(request):
     reg = request.registry
-    # domain_candidates = reg.utilities.lookup([], IDict, 'altair.cart.domain.mapping')
-    # host = reg.settings.get('altair_checkout3d.override_host') or request.host
-    # shop_name = None
-    # for k, v in domain_candidates.items():
-    #     if host.startswith(k):
-    #         shop_name = v
-    # shop_name = reg.settings.get('altair_checkout3d.override_shop_name') or shop_name
-
-    # if shop_name is None:
-    #     logger.error('multicheckout setting for shop_name %s is not found' % host)
-
-    # return reg.utilities.lookup([], IMultiCheckout, shop_name)
-
-    orverride_name = reg.settings.get('altair_checkout3d.override_shop_name')
+    orverride_name = None
+    if hasattr(request, 'altair_checkout3d_override_shop_name'):
+        orverride_name = getattr(request, 'altair_checkout3d_override_shop_name')
     setting = get_multicheckout_setting(request, override_name=orverride_name)
     if setting is None:
         raise Exception
@@ -75,7 +119,11 @@ def get_multicheckout_service(request):
     checkout3d = Checkout3D(setting.auth_id, setting.auth_password, shop_code=setting.shop_id, api_base_url=base_url)
     return checkout3d
 
+
 def secure3d_enrol(request, order_no, card_number, exp_year, exp_month, total_amount):
+    """ セキュア3D認証要求 """
+
+    order_no = maybe_unicode(order_no)
     service = get_multicheckout_service(request)
     enrol = m.Secure3DReqEnrolRequest(
         CardNumber=card_number,
@@ -85,54 +133,36 @@ def secure3d_enrol(request, order_no, card_number, exp_year, exp_month, total_am
         Currency="392",
     )
 
-    return service.secure3d_enrol(order_no, enrol)
+    res = service.secure3d_enrol(order_no, enrol)
+    events.Secure3DEnrolEvent.notify(request, order_no, res)
+    save_api_response(request, res)
+    return res
+
 
 def secure3d_auth(request, order_no, pares, md):
+    """ セキュア3D認証結果取得"""
+
+    order_no = maybe_unicode(order_no)
     auth = m.Secure3DAuthRequest(
         Md=md,
         PaRes=pares,
     )
 
     service = get_multicheckout_service(request)
-    return service.secure3d_auth(order_no, auth)
+    res = service.secure3d_auth(order_no, auth)
+    events.Secure3DAuthEvent.notify(request, order_no, res)
+    save_api_response(request, res)
+    return res
+
 
 def checkout_auth_secure3d(request,
                   order_no, item_name, amount, tax, client_name, mail_address,
                   card_no, card_limit, card_holder_name,
                   mvn, xid, ts, eci, cavv, cavv_algorithm,
                   free_data=None, item_cod=DEFAULT_ITEM_CODE, date=date):
-    order_ymd = date.today().strftime('%Y%m%d')
-    params = m.MultiCheckoutRequestCard(
-        ItemCd=item_cod,
-        ItemName=item_name,
-        OrderYMD=order_ymd,
-        SalesAmount=int(amount),
-        TaxCarriage=tax,
-        FreeData=free_data,
-        ClientName=client_name,
-        MailAddress=mail_address,
-        MailSend='0',
-        CardNo=card_no,
-        CardLimit=card_limit,
-        CardHolderName=card_holder_name,
-        PayKindCd='10',
-        PayCount=None,
-        SecureKind='3',
-        Mvn=mvn,
-        Xid=xid,
-        Ts=ts,
-        ECI=eci,
-        CAVV=cavv,
-        CavvAlgorithm=cavv_algorithm,
-    )
-    service = get_multicheckout_service(request)
-    return service.request_card_auth(order_no, params)
+    """ セキュア3D認証オーソリ """
 
-def checkout_sales_secure3d(request,
-                  order_no, item_name, amount, tax, client_name, mail_address,
-                  card_no, card_limit, card_holder_name,
-                  mvn, xid, ts, eci, cavv, cavv_algorithm,
-                  free_data=None, item_cod=DEFAULT_ITEM_CODE, date=date):
+    order_no = maybe_unicode(order_no)
     order_ymd = date.today().strftime('%Y%m%d')
     params = m.MultiCheckoutRequestCard(
         ItemCd=item_cod,
@@ -158,33 +188,95 @@ def checkout_sales_secure3d(request,
         CavvAlgorithm=cavv_algorithm,
     )
     service = get_multicheckout_service(request)
-    return service.request_card_sales(order_no, params)
+    res = service.request_card_auth(order_no, params)
+    events.CheckoutAuthSecure3DEvent.notify(request, order_no, res)
+    save_api_response(request, res)
+    return res
+
+
+def checkout_sales(request,
+                  order_no):
+    """ 売上確定 """
+
+    order_no = maybe_unicode(order_no)
+    service = get_multicheckout_service(request)
+    res = service.request_card_sales(order_no)
+    events.CheckoutSalesSecure3DEvent.notify(request, order_no, res)
+    save_api_response(request, res)
+    return res
+
 
 def checkout_auth_cancel(request, order_no):
+    """ オーソリキャンセル """
+
+    order_no = maybe_unicode(order_no)
     service = get_multicheckout_service(request)
-    return service.request_card_cancel_auth(order_no)
+    res = service.request_card_cancel_auth(order_no)
+    events.CheckoutAuthCancelEvent.notify(request, order_no, res)
+    save_api_response(request, res)
+    return res
+
+
+def checkout_sales_different_amount(request, order_no, different_amount):
+    """ オーソリ差額売上確定
+    オーソリ時金額で確定後に差額を一部キャンセルする
+    """
+
+    res = checkout_sales(request, order_no)
+    if res.CmnErrorCd != '000000':
+        logger.error(u"差額売上確定中に売上確定でエラーが発生しました")
+        return res
+    logger.info("call sales_part_cancel for %d" % different_amount)
+    if different_amount > 0:
+        res = checkout_sales_part_cancel(request, order_no, different_amount, 0)
+        if res.CmnErrorCd != '000000':
+            logger.error(u"差額売上確定中に一部払い戻しでエラーが発生しました")
+            return res
+    return res
 
 def checkout_sales_part_cancel(request, order_no, sales_amount_cancellation, tax_carriage_cancellation):
+    """ 一部払い戻し """
+
+    order_no = maybe_unicode(order_no)
     params = m.MultiCheckoutRequestCardSalesPartCancel(
         SalesAmountCancellation=int(sales_amount_cancellation),
         TaxCarriageCancellation=int(tax_carriage_cancellation),
     )
     service = get_multicheckout_service(request)
-    return service.request_card_sales_part_cancel(order_no, params)
+    res = service.request_card_sales_part_cancel(order_no, params)
+    events.CheckoutSalesPartCancelEvent.notify(request, order_no, res)
+    save_api_response(request, res)
+    return res
+
 
 def checkout_sales_cancel(request, order_no):
+    """ 売上キャンセル"""
+
+    order_no = maybe_unicode(order_no)
     service = get_multicheckout_service(request)
-    return service.request_card_cancel_sales(order_no)
+    res = service.request_card_cancel_sales(order_no)
+    events.CheckoutSalesCancelEvent.notify(request, order_no, res)
+    save_api_response(request, res)
+    return res
+
 
 def checkout_inquiry(request, order_no):
+    """ 取引照会"""
+
+    order_no = maybe_unicode(order_no)
     service = get_multicheckout_service(request)
-    return service.request_card_inquiry(order_no)
+    res = service.request_card_inquiry(order_no)
+    events.CheckoutInquiryEvent.notify(request, order_no, res)
+    save_api_response(request, res)
+    return res
+
 
 def checkout_auth_secure_code(request, order_no, item_name, amount, tax, client_name, mail_address,
                      card_no, card_limit, card_holder_name,
                      secure_code,
                      free_data=None, item_cd=DEFAULT_ITEM_CODE, date=date):
-
+    """ セキュアコードオーソリ """
+    order_no = maybe_unicode(order_no)
     order_ymd = date.today().strftime('%Y%m%d')
     params = m.MultiCheckoutRequestCard(
         ItemCd=item_cd,
@@ -207,40 +299,14 @@ def checkout_auth_secure_code(request, order_no, item_name, amount, tax, client_
         SecureCode=secure_code,
     )
     service = get_multicheckout_service(request)
-    return service.request_card_auth(order_no, params)
-
-
-def checkout_sales_secure_code(request, order_no, item_name, amount, tax, client_name, mail_address,
-                     card_no, card_limit, card_holder_name,
-                     secure_code,
-                     free_data=None, item_cd=DEFAULT_ITEM_CODE, date=date):
-
-    order_ymd = date.today().strftime('%Y%m%d')
-    params = m.MultiCheckoutRequestCard(
-        ItemCd=item_cd,
-        ItemName=item_name,
-        OrderYMD=order_ymd,
-        SalesAmount=int(amount),
-        TaxCarriage=tax,
-        FreeData=free_data,
-        ClientName=client_name,
-        MailAddress=mail_address,
-        MailSend='0',
-
-        CardNo=card_no,
-        CardLimit=card_limit,
-        CardHolderName=card_holder_name,
-
-        PayKindCd='10',
-        PayCount=None,
-        SecureKind='2',
-        SecureCode=secure_code,
-    )
-    service = get_multicheckout_service(request)
-    return service.request_card_sales(order_no, params)
+    res = service.request_card_auth(order_no, params)
+    events.CheckoutAuthSecureCodeEvent.notify(request, order_no, res)
+    save_api_response(request, res)
+    return res
 
 class MultiCheckoutAPIError(Exception):
     pass
+
 
 class Checkout3D(object):
     _httplib = httplib
@@ -316,10 +382,9 @@ class Checkout3D(object):
         logger.debug("got response %s" % etree.tostring(res))
         return self._parse_response_card_xml(res)
 
-    def request_card_sales(self, order_no, card_auth):
-        message = self._create_request_card_xml(card_auth, check=True)
+    def request_card_sales(self, order_no):
         url = self.card_sales_url(order_no)
-        res = self._request(url, message)
+        res = self._request(url)
         logger.debug("got response %s" % etree.tostring(res))
         return self._parse_response_card_xml(res)
 
@@ -341,7 +406,6 @@ class Checkout3D(object):
         res = self._request(url)
         logger.debug("got response %s" % etree.tostring(res))
         return self._parse_inquiry_response_card_xml(res)
-
 
     def _request(self, url, message=None):
         content_type = "application/xhtml+xml;charset=UTF-8"
@@ -404,7 +468,6 @@ class Checkout3D(object):
         self._add_param(message, 'Currency', secure3d_enrol.Currency)
 
         return message
-
 
     def _create_secure3d_auth_xml(self, secure3d_auth):
         message = etree.Element("Message")
@@ -481,29 +544,29 @@ class Checkout3D(object):
             if e.tag == "Request":
                 for sube in e:
                     if sube.tag == "BizClassCd":
-                        card_response.BizClassCd = sube.text
+                        card_response.BizClassCd = maybe_unicode(sube.text)
                     elif sube.tag == "Storecd":
-                        card_response.Storecd = sube.text
+                        card_response.Storecd = maybe_unicode(sube.text)
             if e.tag == "Result":
                 for sube in e:
                     if sube.tag == "SettlementInfo":
                         for ssube in sube:
                             if ssube.tag == "OrderNo":
-                                card_response.OrderNo = ssube.text
+                                card_response.OrderNo = maybe_unicode(ssube.text)
                             elif ssube.tag == "Status":
-                                card_response.Status = ssube.text
+                                card_response.Status = maybe_unicode(ssube.text)
                             elif ssube.tag == "PublicTranId":
-                                card_response.PublicTranId = ssube.text
+                                card_response.PublicTranId = maybe_unicode(ssube.text)
                             elif ssube.tag == "AheadComCd":
-                                card_response.AheadComCd = ssube.text
+                                card_response.AheadComCd = maybe_unicode(ssube.text)
                             elif ssube.tag == "ApprovalNo":
-                                card_response.ApprovalNo = ssube.text
+                                card_response.ApprovalNo = maybe_unicode(ssube.text)
                             elif ssube.tag == "CardErrorCd":
-                                card_response.CardErrorCd = ssube.text
+                                card_response.CardErrorCd = maybe_unicode(ssube.text)
                             elif ssube.tag == "ReqYmd":
-                                card_response.ReqYmd = ssube.text
+                                card_response.ReqYmd = maybe_unicode(ssube.text)
                             elif ssube.tag == "CmnErrorCd":
-                                card_response.CmnErrorCd = ssube.text
+                                card_response.CmnErrorCd = maybe_unicode(ssube.text)
         return card_response
 
     def _parse_inquiry_response_card_xml(self, element):
@@ -513,64 +576,64 @@ class Checkout3D(object):
             if e.tag == "Request":
                 for sube in e:
                     if sube.tag == "Storecd":
-                        inquiry_card_response.Storecd = sube.text
+                        inquiry_card_response.Storecd = maybe_unicode(sube.text)
             if e.tag == "Result":
                 for sube in e:
                     if sube.tag == "Info":
                         for ssube in sube:
                             if ssube.tag == "EventDate":
-                                inquiry_card_response.EventDate = ssube.text
+                                inquiry_card_response.EventDate = maybe_unicode(ssube.text)
                             elif ssube.tag == "Status":
-                                inquiry_card_response.Status = ssube.text
+                                inquiry_card_response.Status = maybe_unicode(ssube.text)
                             elif ssube.tag == "CardErrorCd":
-                                inquiry_card_response.CardErrorCd = ssube.text
+                                inquiry_card_response.CardErrorCd = maybe_unicode(ssube.text)
                             elif ssube.tag == "ApprovalNo":
-                                inquiry_card_response.ApprovalNo = ssube.text
+                                inquiry_card_response.ApprovalNo = maybe_unicode(ssube.text)
                             elif ssube.tag == "CmnErrorCd":
-                                inquiry_card_response.CmnErrorCd = ssube.text
+                                inquiry_card_response.CmnErrorCd = maybe_unicode(ssube.text)
                     elif sube.tag == "Order":
                         for ssube in sube:
                             if ssube.tag == "OrderNo":
-                                inquiry_card_response.OrderNo = ssube.text
+                                inquiry_card_response.OrderNo = maybe_unicode(ssube.text)
                             elif ssube.tag == "ItemName":
-                                inquiry_card_response.ItemName = ssube.text
+                                inquiry_card_response.ItemName = maybe_unicode(ssube.text)
                             elif ssube.tag == "OrderYMD":
-                                inquiry_card_response.OrderYMD = ssube.text
+                                inquiry_card_response.OrderYMD = maybe_unicode(ssube.text)
                             elif ssube.tag == "SalesAmount":
-                                inquiry_card_response.SalesAmount = ssube.text
+                                inquiry_card_response.SalesAmount = maybe_unicode(ssube.text)
                             elif ssube.tag == "FreeData":
-                                inquiry_card_response.FreeData = ssube.text
+                                inquiry_card_response.FreeData = maybe_unicode(ssube.text)
                     elif sube.tag == "ClientInfo":
                         for ssube in sube:
                             if ssube.tag == "ClientName":
-                                inquiry_card_response.ClientName = ssube.text
+                                inquiry_card_response.ClientName = maybe_unicode(ssube.text)
                             elif ssube.tag == "MailAddress":
-                                inquiry_card_response.MailAddress = ssube.text
+                                inquiry_card_response.MailAddress = maybe_unicode(ssube.text)
                             elif ssube.tag == "MailSend":
-                                inquiry_card_response.MailSend = ssube.text
+                                inquiry_card_response.MailSend = maybe_unicode(ssube.text)
                     elif sube.tag == "CardInfo":
                         for ssube in sube:
                             if ssube.tag == "CardNo":
-                                inquiry_card_response.CardNo = ssube.text
+                                inquiry_card_response.CardNo = maybe_unicode(ssube.text)
                             elif ssube.tag == "CardLimit":
-                                inquiry_card_response.CardLimit = ssube.text
+                                inquiry_card_response.CardLimit = maybe_unicode(ssube.text)
                             elif ssube.tag == "CardHolderName":
-                                inquiry_card_response.CardHolderName = ssube.text
+                                inquiry_card_response.CardHolderName = maybe_unicode(ssube.text)
                             elif ssube.tag == "PayKindCd":
-                                inquiry_card_response.PayKindCd = ssube.text
+                                inquiry_card_response.PayKindCd = maybe_unicode(ssube.text)
                             elif ssube.tag == "PayCount":
-                                inquiry_card_response.PayCount = ssube.text
+                                inquiry_card_response.PayCount = maybe_unicode(ssube.text)
                             elif ssube.tag == "SecureKind":
-                                inquiry_card_response.SecureKind = ssube.text
+                                inquiry_card_response.SecureKind = maybe_unicode(ssube.text)
                     elif sube.tag == "History":
                         history = m.MultiCheckoutInquiryResponseCardHistory(inquiry=inquiry_card_response)
                         for ssube in sube:
                             if ssube.tag == "BizClassCd":
-                                history.BizClassCd = ssube.text
+                                history.BizClassCd = maybe_unicode(ssube.text)
                             elif ssube.tag == "EventDate":
-                                history.EventDate = ssube.text
+                                history.EventDate = maybe_unicode(ssube.text)
                             elif ssube.tag == "SalesAmount":
-                                history.SalesAmount = int(ssube.text)
+                                history.SalesAmount = maybe_unicode(ssube.text)
 
         return inquiry_card_response
 
@@ -579,15 +642,15 @@ class Checkout3D(object):
         assert element.tag == "Message"
         for e in element:
             if e.tag == 'Md':
-                enrol_response.Md = e.text
+                enrol_response.Md = maybe_unicode(e.text)
             elif e.tag == 'ErrorCd':
-                enrol_response.ErrorCd = e.text
+                enrol_response.ErrorCd = maybe_unicode(e.text)
             elif e.tag == 'RetCd':
-                enrol_response.RetCd = e.text
+                enrol_response.RetCd = maybe_unicode(e.text)
             elif e.tag == 'AcsUrl':
-                enrol_response.AcsUrl = e.text
+                enrol_response.AcsUrl = maybe_unicode(e.text)
             elif e.tag == 'PaReq':
-                enrol_response.PaReq = e.text
+                enrol_response.PaReq = maybe_unicode(e.text)
         return enrol_response
 
     def _parse_secure3d_auth_response(self, element):
@@ -595,19 +658,19 @@ class Checkout3D(object):
         assert element.tag == "Message"
         for e in element:
             if e.tag == 'ErrorCd':
-                auth_response.ErrorCd = e.text
+                auth_response.ErrorCd = maybe_unicode(e.text)
             elif e.tag == 'RetCd':
-                auth_response.RetCd = e.text
+                auth_response.RetCd = maybe_unicode(e.text)
             elif e.tag == 'Xid':
-                auth_response.Xid = e.text
+                auth_response.Xid = maybe_unicode(e.text)
             elif e.tag == 'Ts':
-                auth_response.Ts = e.text
+                auth_response.Ts = maybe_unicode(e.text)
             elif e.tag == 'Cavva':
-                auth_response.Cavva = e.text
+                auth_response.Cavva = maybe_unicode(e.text)
             elif e.tag == 'Cavv':
-                auth_response.Cavv = e.text
+                auth_response.Cavv = maybe_unicode(e.text)
             elif e.tag == 'Eci':
-                auth_response.Eci = e.text
+                auth_response.Eci = maybe_unicode(e.text)
             elif e.tag == 'Mvn':
-                auth_response.Mvn = e.text
+                auth_response.Mvn = maybe_unicode(e.text)
         return auth_response

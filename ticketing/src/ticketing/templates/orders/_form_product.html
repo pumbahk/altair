@@ -17,7 +17,7 @@
   });
 </script>
 
-<div id="modal-edit-product" class="modal fade">
+<div id="modal-edit-product" class="modal hide">
   <div class="modal-header">
     <a class="close" data-dismiss="modal">&times;</a>
     <h3>購入情報編集</h3>
@@ -86,9 +86,9 @@
             </td>
             <td>
               % if ordered_product.product.seat_stock_type.quantity_only:
-              <span name="product_quantity-${ordered_product.id}">${ordered_product.quantity}</span>
+              <span name="product_quantity-${ordered_product.id}">${ordered_product_item.quantity}</span>
               % else:
-              ${len(ordered_product_item.seats)}
+              ${ordered_product_item.quantity}
               % endif
             </td>
           </tr>

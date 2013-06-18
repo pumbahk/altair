@@ -1,8 +1,9 @@
 # -*- coding:utf-8 -*-
 
 import unittest
+import mock
 from pyramid import testing
-from ticketing.testing import _setup_db, _teardown_db
+from ticketing.testing import _setup_db, _teardown_db, DummyRequest
 
 dependency_modules = [
     'ticketing.core.models',
@@ -11,12 +12,42 @@ dependency_modules = [
     'ticketing.lots.models',
 ]
 
+testing_settings = {
+    'mako.directories': ['ticketing.lots:templates'],
+    'altair.cart.domain.mapping': '{}',
+}
+
+
+class keep_authTests(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.config = testing.setUp(settings=testing_settings)
+        cls.config.include('pyramid_layout')
+        cls.config.include('ticketing.lots')
+
+    @mock.patch('ticketing.multicheckout.api.save_api_response')
+    @mock.patch('ticketing.multicheckout.api.get_multicheckout_service')
+    def test_it(self, mock_service_factory, mock_save_api_response):
+        from ticketing.multicheckout.api import checkout_sales
+        from ticketing.multicheckout.testing import DummyCheckout3D
+
+        mock_service_factory.return_value = DummyCheckout3D()
+        request = DummyRequest()
+        order_no = 'test_order_no'        
+
+        result = checkout_sales(
+            request,
+            order_no,
+            )
+
+        self.assertEqual(result.OrderNo, order_no)
+        mock_save_api_response.assert_called_with(request, result)
+
 
 class EntryLotViewTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.config = testing.setUp()
-        cls.config.registry.settings['mako.directories'] = ['ticketing.lots:templates']
+        cls.config = testing.setUp(settings=testing_settings)
         cls.config.include('pyramid_layout')
         cls.config.include('ticketing.lots')
         cls.session = _setup_db(modules=dependency_modules, echo=False)
@@ -54,10 +85,11 @@ class EntryLotViewTests(unittest.TestCase):
         sales_segment = testing.DummyModel(id=12345)
         lot = _add_lot(self.session, event.id, sales_segment.id, 5, 3, membergroups=[membergroup])
 
-        request = testing.DummyRequest(
+        request = DummyRequest(
             matchdict=dict(event_id=1111, lot_id=lot.id),
         )
-        target = self._makeOne(request)        
+        context = testing.DummyResource(event=event, lot=lot)
+        target = self._makeOne(context, request)
         result = target.get()
 
         self.assertEqual(result['lot'].id, lot.id)
@@ -101,7 +133,7 @@ class EntryLotViewTests(unittest.TestCase):
             first_name_kana=u'イ',
             last_name=u'う',
             last_name_kana=u'エ',
-            tel=u"01234567899",
+            tel_1=u"01234567899",
             fax=u"01234567899",
             zip=u'1234567',
             prefecture=u'東京都',
@@ -110,30 +142,26 @@ class EntryLotViewTests(unittest.TestCase):
             address_2=u"森京ビル",
             email_1=u"test@example.com",
             email_1_confirm=u"test@example.com",
+            email_2=u"test2@example.com",
+            email_2_confirm=u"test2@example.com",
             sex='1',
+            year='1980', month='05', day='03',
             payment_delivery_method_pair_id=str(payment_delivery_method_pair.id),
             **wishes
         )
-        request = testing.DummyRequest(
+        request = DummyRequest(
             matchdict=dict(event_id=lot.event_id, lot_id=lot.id),
             params=data,
         )
-        target = self._makeOne(request)        
+        context = testing.DummyResource(event=lot.event, lot=lot)
+        target = self._makeOne(context, request)
         result = target.post()
-        if isinstance(result, dict):
-            print result['form'].errors
+        for s in request.session.pop_flash():
+            print s
 
-        self.assertEqual(result.location, "http://example.com/lots/events/1111/entry/1/confirm")
+        self.assertEqual(result.location, "http://example.com/lots/events/2/entry/1/confirm")
         self.assertIsNotNone(request.session['lots.entry']['token'])
         self.assertEqual(len(request.session['lots.entry']['token']), 32)
-        self.assertEqual(request.session['lots.entry']['wishes'],  
-            [{"performance_id": str(performances[0].id), 
-              "wished_products": [
-                  {"wish_order": 1, "product_id": '1', "quantity": 10}, 
-                  {"wish_order": 1, "product_id": '2', "quantity": 5}]}, 
-             {"performance_id": str(performances[1].id), 
-              "wished_products": [
-                  {"wish_order": 2, "product_id": '3', "quantity": 5}]}] )
         self.assertEqual(request.session['lots.entry']['shipping_address'],  
             {'address_1': u'代々木１丁目',
              'address_2': u'森京ビル',
@@ -158,8 +186,7 @@ class EntryLotViewTests(unittest.TestCase):
 class ConfirmLotEntryViewTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.config = testing.setUp()
-        cls.config.registry.settings['mako.directories'] = ['ticketing.lots:templates']
+        cls.config = testing.setUp(settings=testing_settings)
         cls.config.include('pyramid_layout')
         cls.config.include('ticketing.lots')
         cls.session = _setup_db(modules=dependency_modules, echo=False)
@@ -195,6 +222,7 @@ class ConfirmLotEntryViewTests(unittest.TestCase):
         return self._getTarget()(*args, **kwargs)
 
     def test_get(self):
+        from datetime import datetime
         lot, products = self._add_datas([
             {'name': u'商品 A', 'price': 100},
             {'name': u'商品 B', 'price': 100},
@@ -202,16 +230,9 @@ class ConfirmLotEntryViewTests(unittest.TestCase):
         ])
         sales_segment = lot.sales_segment
         payment_delivery_method_pair = sales_segment.payment_delivery_method_pairs[0]
-        product1 = products[0]
-        product2 = products[1]
-        product3 = products[2]
         performances = lot.performances
-        performance1 = performances[0]
-        performance2 = performances[1]
-        performance_id1 = str(performance1.id)
-        performance_id2 = str(performance2.id)
-
-        request = testing.DummyRequest(
+        
+        request = DummyRequest(
             session={'lots.entry': 
                 {
                     'shipping_address': 
@@ -229,7 +250,7 @@ class ConfirmLotEntryViewTests(unittest.TestCase):
                          'tel_1': u'01234567899',
                          'tel_2': None,
                          'zip': u'1234567'}, #shipping_address
-                    #'wishes': [[(1, '1', 10, performance_id1), (1, '2', 5, performance_id1)], [(2, '3', 5, performance_id2)]], # wishes
+
                     'wishes': [{"performance_id": str(performances[0].id), 
                                 "wished_products": [
                                     {"wish_order": 1, "product_id": '1', "quantity": 10}, 
@@ -239,19 +260,19 @@ class ConfirmLotEntryViewTests(unittest.TestCase):
                                     {"wish_order": 2, "product_id": '3', "quantity": 5}]}],
                     'payment_delivery_method_pair_id': str(payment_delivery_method_pair.id),
                     'token': 'this-is-session-token',
+                    'gender': u"1",
+                    'birthday': datetime.now(),
+                    'memo': u"",
                 }, #lots.entry
             }, #session
         )
-        context = testing.DummyResource()
+        context = testing.DummyResource(event=testing.DummyModel(), 
+                                        lot=testing.DummyModel())
 
         target = self._makeOne(context, request)
 
         result = target.get()
 
-        self.assertEqual(result['wishes'],
-            [[{'wish_order': 1, 'product': product1, "quantity": 10, "performance": performance1}, 
-              {'wish_order': 1, 'product': product2, "quantity": 5, "performance": performance1}], 
-             [{'wish_order': 2, 'product': product3, "quantity": 5, "performance": performance2}]] )
         self.assertEqual(result['shipping_address'],
                         {'address_1': u'代々木１丁目',
                          'address_2': u'森京ビル',
@@ -272,7 +293,7 @@ class ConfirmLotEntryViewTests(unittest.TestCase):
 
     def test_post_back(self):
         self.config.add_route('lots.entry.index', '/back/to/form')
-        request = testing.DummyRequest(
+        request = DummyRequest(
             session={'lots.entry': {'token': 'test-token'}},
             params={'back': 'Back', 
                     'token': 'test-token'},
@@ -286,7 +307,7 @@ class ConfirmLotEntryViewTests(unittest.TestCase):
 
     def test_post_without_token(self):
         self.config.add_route('lots.entry.index', '/back/to/form')
-        request = testing.DummyRequest(
+        request = DummyRequest(
         )
         request.session['lots.entry'] = {}
         context = testing.DummyResource()
@@ -297,17 +318,25 @@ class ConfirmLotEntryViewTests(unittest.TestCase):
         self.assertEqual(result.location, 'http://example.com/back/to/form')
 
     def test_post(self):
+        from datetime import datetime
+        from ticketing.payments.testing import DummyPreparer
+        from ticketing.payments.directives import add_payment_plugin
+
         lot, products = self._add_datas([
             {'name': u'商品 A', 'price': 100},
             {'name': u'商品 B', 'price': 100},
             {'name': u'商品 C', 'price': 100},
         ])
+        self.session.flush()
         self.config.add_route('lots.entry.index', '/back/to/form')
         self.config.add_renderer('.txt' , 'pyramid.mako_templating.renderer_factory')
         sales_segment = lot.sales_segment
         payment_delivery_method_pair = sales_segment.payment_delivery_method_pairs[0]
+        plugin_id = payment_delivery_method_pair.payment_method.payment_plugin_id = 100
+        add_payment_plugin(self.config, DummyPreparer(None), plugin_id)
+
         event_id = lot.event_id
-        request = testing.DummyRequest(
+        request = DummyRequest(
             session={'lots.entry': 
                 {
                     'shipping_address': 
@@ -316,6 +345,9 @@ class ConfirmLotEntryViewTests(unittest.TestCase):
                          'city': u'渋谷区',
                          'country': u'日本国',
                          'email_1': u'test@example.com',
+                         'email_1_confirm': u'test@example.com',
+                         'email_2': u'test@example.com',
+                         'email_2_confirm': u'test@example.com',
                          'fax': u'01234567899',
                          'first_name': u'あ',
                          'first_name_kana': u'イ',
@@ -334,6 +366,9 @@ class ConfirmLotEntryViewTests(unittest.TestCase):
                                     {"wish_order": 2, "product_id": '3', "quantity": 5}]}],
                     'token': 'test-token', # token
                     'payment_delivery_method_pair_id': payment_delivery_method_pair.id,
+                    'gender': u"1",
+                    'birthday': datetime.now(),
+                    'memo': u"",
                 }, #lots.entry
             }, # session
             params={'token': 'test-token'},
@@ -346,6 +381,8 @@ class ConfirmLotEntryViewTests(unittest.TestCase):
         request.registry.settings['lots.accepted_mail_sender'] = 'testing@sender.example.com'
         request.registry.settings['lots.accepted_mail_template'] = 'ticketing.lots:mail_templates/accept_entry.txt'
         context = testing.DummyResource()
+        context.lot = lot
+        context.event = lot.event
 
         target = self._makeOne(context, request)
 
@@ -367,8 +404,7 @@ class ConfirmLotEntryViewTests(unittest.TestCase):
 class LotReviewViewTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.config = testing.setUp()
-        cls.config.registry.settings['mako.directories'] = ['ticketing.lots:templates']
+        cls.config = testing.setUp(settings=testing_settings)
         cls.config.include('pyramid_layout')
         cls.config.include('ticketing.lots')
         cls.session = _setup_db(modules=dependency_modules, echo=False)
@@ -409,7 +445,7 @@ class LotReviewViewTests(unittest.TestCase):
     def test_post_invalid(self):
         from .. import schemas
 
-        request = testing.DummyRequest(
+        request = DummyRequest(
             params=self._params(),
         )
         context = testing.DummyResource()
@@ -425,7 +461,7 @@ class LotReviewViewTests(unittest.TestCase):
         self.config.add_route('lots.payment.index', '/lots/events/{event_id}/payment/{lot_id}')
         from ticketing.core.models import ShippingAddress, DBSession, Event
         from ticketing.lots.models import LotEntry, Lot
-        request = testing.DummyRequest()
+
         entry_no = u'LOTtest000001'
         tel_no = '0123456789'
         shipping_address = ShippingAddress(tel_1=tel_no)
@@ -435,7 +471,7 @@ class LotReviewViewTests(unittest.TestCase):
         DBSession.add(entry)
         DBSession.flush()
 
-        request = testing.DummyRequest(
+        request = DummyRequest(
             params=self._params(
                 entry_no=entry_no,
                 tel_no=tel_no,
@@ -446,6 +482,7 @@ class LotReviewViewTests(unittest.TestCase):
         target = self._makeOne(context, request)
 
         result = target.post()
+        self.assertIsNotNone(result)
         self.assertIn('entry', result)
         self.assertEqual(result['payment_url'], 'http://example.com/lots/events/1/payment/1')
         self.assertIn('lots.entry_id', request.session)
@@ -455,7 +492,6 @@ class LotReviewViewTests(unittest.TestCase):
         self.config.add_route('lots.payment', '/lots/payment')
         from ticketing.core.models import ShippingAddress, DBSession, Event
         from ticketing.lots.models import LotEntry, Lot
-        request = testing.DummyRequest()
         entry_no = u'LOTtest000001'
         tel_no = '0123456789'
         shipping_address = ShippingAddress(tel_1=tel_no)
@@ -465,7 +501,7 @@ class LotReviewViewTests(unittest.TestCase):
         DBSession.add(entry)
         DBSession.flush()
 
-        request = testing.DummyRequest(
+        request = DummyRequest(
             params=self._params(
                 entry_no=entry_no,
                 tel_no=tel_no,
@@ -476,127 +512,68 @@ class LotReviewViewTests(unittest.TestCase):
         target = self._makeOne(context, request)
 
         result = target.post()
+        self.assertIsNotNone(result)
         self.assertIn('entry', result)
         self.assertEqual(result['entry'], entry)
         self.assertIsNone(result['payment_url'])
         self.assertIn('lots.entry_id', request.session)
 
 
-class PaymentViewTests(unittest.TestCase):
-    @classmethod
-    def setUpClass(cls):
-        cls.config = testing.setUp()
-        cls.config.registry.settings['mako.directories'] = ['ticketing.lots:templates']
-        cls.config.include('pyramid_layout')
-        cls.config.include('ticketing.lots')
-        cls.session = _setup_db(modules=dependency_modules, echo=False)
+# class PaymentViewTests(unittest.TestCase):
+#     @classmethod
+#     def setUpClass(cls):
+#         cls.config = testing.setUp(settings=testing_settings)
+#         cls.config.include('pyramid_layout')
+#         cls.config.include('ticketing.lots')
+#         cls.session = _setup_db(modules=dependency_modules, echo=False)
     
-    @classmethod
-    def tearDownClass(cls):
-        testing.tearDown()
-        _teardown_db()
+#     @classmethod
+#     def tearDownClass(cls):
+#         testing.tearDown()
+#         _teardown_db()
 
-    def setUp(self):
-        self.session.remove()
+#     def setUp(self):
+#         self.session.remove()
 
-    def tearDown(self):
-        import transaction
-        transaction.abort()
+#     def tearDown(self):
+#         import transaction
+#         transaction.abort()
 
-    def _getTarget(self):
-        from .. import views
-        return views.PaymentView
+#     def _getTarget(self):
+#         from .. import views
+#         return views.PaymentView
 
-    def _makeOne(self, *args, **kwargs):
-        return self._getTarget()(*args, **kwargs)
+#     def _makeOne(self, *args, **kwargs):
+#         return self._getTarget()(*args, **kwargs)
 
-    def test_no_entry(self):
-        from pyramid.httpexceptions import HTTPNotFound
-        request = testing.DummyRequest(
-            matchdict={"event_id": None},
-        )
-        target = self._makeOne(request)
+#     def test_no_entry(self):
+#         from pyramid.httpexceptions import HTTPNotFound
+#         request = testing.DummyRequest(
+#             matchdict={"event_id": None},
+#         )
+#         context = testing.DummyResource()
+#         context.lot = None
+#         target = self._makeOne(context, request)
 
-        self.assertRaises(HTTPNotFound, target.submit)
+#         self.assertRaises(HTTPNotFound, target.submit)
 
-    def _add_entry(self, entry_id):
-        from ..models import LotEntry
-        entry = LotEntry(id=entry_id)
-        self.session.add(entry)
-        self.session.flush()
-        return entry
+#     def _add_entry(self, entry_id):
+#         from ..models import LotEntry
+#         entry = LotEntry(id=entry_id)
+#         self.session.add(entry)
+#         self.session.flush()
+#         return entry
 
-    def _add_entry_elected(self, entry_id):
-        from datetime import datetime
-        from ticketing.core.models import (
-            PaymentDeliveryMethodPair,
-            PaymentMethod,
-            DeliveryMethod,
-            Performance,
-            Event,
-            Organization,
-        )
-        from ..models import LotEntry, LotElectedEntry, LotEntryWish, Lot
-        lot = Lot()
-        performance = Performance(event=Event(organization=Organization(short_name="testing", code="TEST")))
-        entry = LotEntry(id=entry_id, elected_at=datetime.now(), lot=lot,
-            payment_delivery_method_pair=PaymentDeliveryMethodPair(system_fee=999, 
-                transaction_fee=100, delivery_fee=234, discount=0,
-                payment_method=PaymentMethod(fee=11),
-                delivery_method=DeliveryMethod(fee=22)))
-        elected = LotElectedEntry(lot_entry=entry,
-            lot_entry_wish=LotEntryWish(performance=performance))
+#     def test_not_elected(self):
+#         from ..exceptions import NotElectedException
+#         request = testing.DummyRequest(
+#             matchdict={"event_id": None},
+#         )
+#         context = testing.DummyResource()
+#         entry_id = 999999
+#         entry = self._add_entry(entry_id)
+#         context.lot = entry.lot
+#         request.session['lots.entry_id'] = entry_id
+#         target = self._makeOne(context, request)
 
-        self.session.add(entry)
-        self.session.flush()
-
-        return entry
-
-
-    def test_not_elected(self):
-        from ..exceptions import NotElectedException
-        request = testing.DummyRequest(
-            matchdict={"event_id": None},
-        )
-        entry_id = 999999
-        entry = self._add_entry(entry_id)
-        request.session['lots.entry_id'] = entry_id
-        target = self._makeOne(request)
-
-        self.assertRaises(NotElectedException, target.submit)
-
-    def test_elected(self):
-        from ..exceptions import NotElectedException
-        from ticketing.payments.interfaces import IPaymentDeliveryPlugin
-        from ticketing.cart.models import Cart
-
-        reg = self.config.registry
-        dummy_preparer = DummyPreperer()
-        reg.utilities.register([], IPaymentDeliveryPlugin,
-            "payment-None:delivery-None", 
-            dummy_preparer,
-            )
-        request = testing.DummyRequest(
-            matchdict={"event_id": None},
-        )
-        entry_id = 999999
-        entry = self._add_entry_elected(entry_id)
-        request.session['lots.entry_id'] = entry_id
-        target = self._makeOne(request)
-
-        result = target.submit()
-
-        self.assertIn('ticketing.cart_id', request.session)
-        cart_id = request.session['ticketing.cart_id']
-        cart = Cart.query.filter(Cart.id==cart_id).one()
-        self.assertIsNotNone(cart.tickets_amount)
-        self.assertIsNotNone(cart.transaction_fee)
-        self.assertEqual(dummy_preparer.called,
-            [('prepare', request, cart)])
-
-class DummyPreperer(object):
-    def __init__(self):
-        self.called = []
-
-    def prepare(self, request, cart):
-        self.called.append(("prepare", request, cart))
+#         self.assertRaises(NotElectedException, target.submit)

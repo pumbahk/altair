@@ -1,0 +1,22 @@
+## sizeがwidth,height固定はひどい
+<div id="notableEvents">
+  <table>
+    <tbody>
+  % for pair in h.chunk(qs, 2):
+      <tr>
+    % for t in pair:
+        <td class="event">
+          <a href="${h.link.get_link_from_topcontent(request, t)}"><img src="${getattr(h.asset.rendering_object(request, t.image_asset), widget.rendering_image_attribute)}" alt="${t.title}" width="80" height="80" /></a>
+          <a href="${h.link.get_link_from_topcontent(request, t)}">${h.truncate(t.title, 35) }</a>
+          <p>${h.truncate(t.text, 57)}
+          %if t.linked_page and t.linked_page.event:
+          <span class="subdescribe">(${t.countdown_type_ja}まであと${h.base.countdown_days_from(request, t.countdown_limit)}日)</span>
+          %endif
+          </p>
+        </td>
+    % endfor
+      </tr>
+  % endfor
+    </tbody>
+  </table>
+</div>

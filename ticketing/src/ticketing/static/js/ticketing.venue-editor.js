@@ -1,6 +1,6 @@
 (function (jQuery, I18n) {
 var __LIBS__ = {};
-__LIBS__['qRUHFHO7UZ2DNSUR'] = (function (exports) { (function () { 
+__LIBS__['eHTNCAKW4Y2ALDLG'] = (function (exports) { (function () { 
 
 /************** CONF.js **************/
 exports.DEFAULT = {
@@ -54,9 +54,7 @@ exports.DEFAULT = {
     tooltip: {
     },
     unselectable: {
-      text_color: "#888",
-      fill:   { color: "#eee" },
-      stroke: { color: "#ccc", width: 1 }
+      stroke: { color: "#ababab", width: 2, pattern: 'solid' }
     }
   },
 
@@ -73,7 +71,7 @@ exports.DEFAULT = {
   }
 };
  })(); return exports; })({});
-__LIBS__['qWEBAXA9CQSK4JTA'] = (function (exports) { (function () { 
+__LIBS__['C7XU1TV1_R2C6P6L'] = (function (exports) { (function () { 
 
 /************** util.js **************/
 exports.eventKey = function Util_eventKey(e) {
@@ -124,24 +122,37 @@ exports.allAttributes = function Util_allAttributes(el) {
   return rt;
 };  
 
-exports.makeHitTester = function Util_makeHitTester(a) {
-  var pa = a.position(),
-  sa = a.size(),
-  ax0 = pa.x,
-  ax1 = pa.x + sa.x,
-  ay0 = pa.y,
-  ay1 = pa.y + sa.y;
-
-  return function(b) {
-    var pb = b.position(),
-    sb = b.size(),
-    bx0 = pb.x,
-    bx1 = pb.x + sb.x,
-    by0 = pb.y,
-    by1 = pb.y + sb.y;
-
-    return ((((ax0 < bx0) && (bx0 < ax1)) || (( ax0 < bx1) && (bx1 < ax1)) || ((bx0 < ax0) && (ax1 < bx1))) && // x
-            (((ay0 < by0) && (by0 < ay1)) || (( ay0 < by1) && (by1 < ay1)) || ((by0 < ay0) && (ay1 < by1))));  // y
+exports.makeHitTester = function Util_makeHitTester(rect) {
+  var rp = rect.position(),
+  rs = rect.size();
+  
+  if(rs.x < 3 && rs.y < 3) {
+    // click mode
+    var rc = { x: rp.x+rs.x/2, y: rp.y+rs.y/2 };
+    return function(obj) {
+      var trc = obj._transform ? obj._transform.invert().apply(rc) : rc;
+      var op = obj.position(),
+      os = obj.size(),
+      ox0 = op.x,
+      ox1 = op.x + os.x,
+      oy0 = op.y,
+      oy1 = op.y + os.y;
+      return ox0 < trc.x && trc.x < ox1 && oy0 < trc.y && trc.y < oy1;
+    };
+  } else {
+    // rect mode
+    var rx0 = rp.x,
+    rx1 = rp.x + rs.x,
+    ry0 = rp.y,
+    ry1 = rp.y + rs.y;
+    return function(obj) {
+      var op = obj.position(),
+      os = obj.size(),
+      oc = { x: op.x+os.x/2, y: op.y+os.y/2 };
+      
+      var toc = obj._transform ? obj._transform.apply(oc) : oc;
+      return rx0 < toc.x && toc.x < rx1 && ry0 < toc.y && toc.y < ry1;
+    };
   }
 };
 
@@ -187,7 +198,7 @@ timer.prototype.lap = function(msg) {
     return lap;
 };
  })(); return exports; })({});
-__LIBS__['L5VVC3DZKL5CLXDD'] = (function (exports) { (function () { 
+__LIBS__['bUUFZRGJAFPAHD7K'] = (function (exports) { (function () { 
 
 /************** identifiableset.js **************/
 var IdentifiableSet = exports.IdentifiableSet = function IdentifiableSet(options) {
@@ -236,12 +247,12 @@ IdentifiableSet.prototype.each = function IdentifiableSet_each(f) {
  * vim: sts=2 sw=2 ts=2 et
  */
  })(); return exports; })({});
-__LIBS__['sLN4FMOPTQEKPAIA'] = (function (exports) { (function () { 
+__LIBS__['vCOULM04ZLIGDTRX'] = (function (exports) { (function () { 
 
 /************** models.js **************/
-var util = __LIBS__['qWEBAXA9CQSK4JTA'];
-var CONF = __LIBS__['qRUHFHO7UZ2DNSUR'];
-var IdentifiableSet = __LIBS__['L5VVC3DZKL5CLXDD'].IdentifiableSet;
+var util = __LIBS__['C7XU1TV1_R2C6P6L'];
+var CONF = __LIBS__['eHTNCAKW4Y2ALDLG'];
+var IdentifiableSet = __LIBS__['bUUFZRGJAFPAHD7K'].IdentifiableSet;
 
 var VenueItemCollectionMixin = {
   venue: null,
@@ -272,7 +283,6 @@ Venue.prototype.initialize = function Venue_initialize(initialData, options) {
   var stockHolders = new StockHolderCollection(null, { venue: this });
   var stocks = new StockCollection(null, { venue: this });
   var seats = new SeatCollection(null, { venue: this });
-  var perAttributeSeatSet = {};
   var perStockSeatSet = {};
   var perStockHolderStockMap = {};
   var perStockTypeStockMap = {};
@@ -296,10 +306,7 @@ Venue.prototype.initialize = function Venue_initialize(initialData, options) {
         style: stockTypeDatum.style
       });
       stockTypes.add(stockType);
-      stockType.on('change:name', function () {
-        this.set('edited', true);
-      });
-      stockType.on('change:style', function () {
+      stockType.on('change:name change:style', function () {
         this.set('edited', true);
       });
     }
@@ -331,13 +338,17 @@ Venue.prototype.initialize = function Venue_initialize(initialData, options) {
       stockHolder: stockHolder,
       stockType: stockType,
       assigned: stockDatum.assigned,
-      available: stockDatum.available
+      available: stockDatum.available,
+      assignable: stockDatum.assignable
     });
     stocks.add(stock);
     stock.on('change:assigned', function () {
       this.set('edited', true);
       this.get('stockHolder').recalculateQuantity();
       this.get('stockType').recalculateQuantity();
+    });
+    stock.on('change:assignable', function () {
+      this.set('edited', true);
     });
     if (stockHolder && stockType) {
       var map = perStockHolderStockMap[stockHolder.id];
@@ -362,33 +373,22 @@ Venue.prototype.initialize = function Venue_initialize(initialData, options) {
       });
     }
   }
-  _.each(Seat.styleProviderAttributes, function (name) {
-    perAttributeSeatSet[name] = {};
-  });
+
   for (var id in initialData.seats) {
     var seatDatum = initialData.seats[id];
+    var stock = stocks.get(seatDatum.stock_id);
+    var sold = ($.inArray(seatDatum.status, [0, 1]) == -1);
     var seat = new Seat({
       id: seatDatum.id,
       name: seatDatum.name,
       seat_no: seatDatum.seat_no,
       status: seatDatum.status,
-      stock: stocks.get(seatDatum.stock_id),
-      attrs: seatDatum.attrs,
-      areas: seatDatum.areas,
-      selectable: $.inArray(seatDatum.status, [0, 1]) > -1 ? true : false
+      stock: stock,
+      sold: sold,
+      selectable: (stock && stock.get('assignable') && !sold) ? true : false
     });
     seats.add(seat);
     {
-      var attrs = seat.get('attrs');
-      for (name in attrs) {
-        var set = perAttributeSeatSet[name];
-        if (!set)
-          set = perAttributeSeatSet[name] = new IdentifiableSet();
-        set.add(seat);
-      }
-    }
-    {
-      var stock = seat.get('stock');
       var set;
       if (stock) {
         set = perStockSeatSet[stock.id];
@@ -399,14 +399,15 @@ Venue.prototype.initialize = function Venue_initialize(initialData, options) {
         set = perStockSeatSet[stock.id] = new IdentifiableSet();
       set.add(seat);
       seat.on('change:stock', function () {
-        this.set('edited', true);
         var prev = this.previous('stock');
         var new_ = this.get('stock');
         if (prev != new_) {
+          this.set('edited', true);
           if (prev) {
             perStockSeatSet[prev.id].remove(this);
             if (prev.has('assigned')) {
               prev.set('edited', true);
+              if (this.get('selectable')) prev.set('available', prev.get('available') - 1);
               prev.set('assigned', perStockSeatSet[prev.id].length);
             }
           }
@@ -417,6 +418,7 @@ Venue.prototype.initialize = function Venue_initialize(initialData, options) {
             set.add(this);
             if (new_.has('assigned')) {
               new_.set('edited', true);
+              if (this.get('selectable')) new_.set('available', new_.get('available') + 1);
               new_.set('assigned', perStockSeatSet[new_.id].length);
             }
           }
@@ -428,7 +430,6 @@ Venue.prototype.initialize = function Venue_initialize(initialData, options) {
   this.stockTypes = stockTypes;
   this.stocks = stocks;
   this.seats = seats;
-  this.perAttributeSeatSet = perAttributeSeatSet;
   this.perStockSeatSet = perStockSeatSet;
   this.perStockHolderStockMap = perStockHolderStockMap;
   this.perStockTypeStockMap = perStockTypeStockMap;
@@ -461,7 +462,8 @@ Venue.prototype.toJSON = function Venue_toJSON () {
     if (stock.get('edited')) {
       stockData.push({
         id: stock.get('id'),
-        quantity: stock.get('assigned')
+        quantity: stock.get('assigned'),
+        assignable: stock.get('assignable') ? 1 : 0
       });
     }
   });
@@ -512,7 +514,7 @@ var ProvidesStyle = exports.ProvidesStyle = Backbone.Model.extend({
       stroke: {
         color: null,
         width: null,
-        pattern: null,
+        pattern: null
       },
       fill: {
         color: null
@@ -589,6 +591,7 @@ var Stock = exports.Stock = Backbone.Model.extend({
     assigned: 0,
     available: 0,
     style: CONF.DEFAULT.SEAT_STYLE,
+    assignable: true,
     edited: false
   },
 
@@ -601,15 +604,21 @@ var Stock = exports.Stock = Backbone.Model.extend({
         style = util.mergeStyle(style, styleProvider.get('style'));
     });
     this.set('style', style);
+
+    var venue = this.get('venue');
+    if (venue && self.id in venue.perStockSeatSet) {
+      venue.perStockSeatSet[self.id].each(function(seat) {
+        seat.trigger('change:stock');
+      });
+    }
   },
 
   initialize: function Stock_initialize() {
     var self = this;
-
     _.each(Stock.styleProviderAttributes, function (name) {
-      var stock = self.get(name);
-      if (stock) {
-        stock.on('change:style', function () {
+      var styleProvider = self.get(name);
+      if (styleProvider) {
+        styleProvider.on('change:style', function () {
           self._refreshStyle();
         });
       } else {
@@ -635,7 +644,6 @@ var Seat = exports.Seat = Backbone.Model.extend({
     stock: null,
     selectable: true,
     selected: false,
-    areas: [],
     edited: false
   },
 
@@ -646,7 +654,8 @@ var Seat = exports.Seat = Backbone.Model.extend({
 
   selectable: function Seat_selectable() {
     var venue = this.get('venue');
-    return this.get('selectable') && (!venue || venue.isSelectable(this));
+    var stock = this.get('stock');
+    return this.get('selectable') && (!stock || stock.get('assignable')) && (!venue || venue.isSelectable(this));
   }
 });
 
@@ -717,12 +726,12 @@ console.log(ad2);
  * vim: sts=2 sw=2 ts=2 et
  */
  })(); return exports; })({});
-__LIBS__['BC7_3OHGZ4_3XTI2'] = (function (exports) { (function () { 
+__LIBS__['xPHGOJFCQG5CYC3M'] = (function (exports) { (function () { 
 
 /************** viewobjects.js **************/
-var util = __LIBS__['qWEBAXA9CQSK4JTA'];
-var CONF = __LIBS__['qRUHFHO7UZ2DNSUR'];
-var models = __LIBS__['sLN4FMOPTQEKPAIA'];
+var util = __LIBS__['C7XU1TV1_R2C6P6L'];
+var CONF = __LIBS__['eHTNCAKW4Y2ALDLG'];
+var models = __LIBS__['vCOULM04ZLIGDTRX'];
 
 var Seat = exports.Seat = Backbone.Model.extend({
   defaults: {
@@ -736,51 +745,43 @@ var Seat = exports.Seat = Backbone.Model.extend({
 
   initialize: function Seat_initialize(attrs, options) {
     var self = this;
-
     this.styleTypes = [];
 
-    function selectableChanged() {
-      if (self.get('model').selectable())
-        self.addStyleType('unselectable');
-      else
+    function onSelectableChanged() {
+      if (self.get('model').selectable()) {
         self.removeStyleType('unselectable');
-    };
-    
-    function selectedChanged() {
-      if (this.get('selected'))
+      } else if (!self.get('model').get('sold')) {
+        self.addStyleType('unselectable');
+      }
+    }
+
+    function onSelectedChanged() {
+      if (self.get('model').get('selected'))
         self.addStyleType('selected');
       else
         self.removeStyleType('selected');
     }
 
     function onStockChanged() {
-      var prevModel = self.get('model').previous('stock');
-      if (prevModel)
-        prevModel.off('change:style', onStockChanged);
-      var model = self.get('model').get('stock');
-      if (model)
-        model.on('change:style', onStockChanged);
       self._refreshStyle();
-    };
+    }
 
     function onModelChange() {
       var prevModel = self.previous('model');
       var model = self.get('model');
       if (prevModel) {
-        model.off('change:venue', selectableChanged);
-        model.off('change:selectable', selectableChanged);
-        model.off('change:selected', selectedChanged);
+        model.off('change:selectable', onSelectableChanged);
+        model.off('change:selected', onSelectedChanged);
         model.off('change:stock', onStockChanged);
       }
       if (model) {
-        model.on('change:venue', selectableChanged);
-        model.on('change:selectable', selectableChanged);
-        model.on('change:selected', selectedChanged);
+        model.on('change:selectable', onSelectableChanged);
+        model.on('change:selected', onSelectedChanged);
         model.on('change:stock', onStockChanged);
       }
     }
 
-    function onShapeChange(init) {
+    function onShapeChange() {
       var prev = self.previous('shape');
       var events = self.get('events');
       if (events) {
@@ -799,12 +800,11 @@ var Seat = exports.Seat = Backbone.Model.extend({
         var new_ = self.get('shape');
         new_.addEvent(events);
       }
-      if (!init)
-        self._refreshStyle();
+      self._refreshStyle();
     }
 
     function onEventsChange() {
-      var shape = self.get('shape')
+      var shape = self.get('shape');
       if (shape) {
         var prev = self.previous('events');
         var new_ = self.get('events');
@@ -836,10 +836,10 @@ var Seat = exports.Seat = Backbone.Model.extend({
     // ensure change events to get invoked correctly on the
     // initialization.
     this._previousAttributes = {};
+    onSelectableChanged();
     onModelChange();
-    onShapeChange(true);
     onEventsChange();
-    onStockChanged();
+    onShapeChange();
   },
 
   _refreshStyle: function Seat__refreshStyle() {
@@ -855,37 +855,23 @@ var Seat = exports.Seat = Backbone.Model.extend({
     }
     shape.style(util.convertToFashionStyle(style));
     var styleText = style.text || model.get('seat_no');
-    if (style.text && ($.inArray('tooltip', this.styleTypes) != -1 || $.inArray('highlighted', this.styleTypes) != -1)) {
-      var posx = 0;
-      var posy = 0;
-      var e = window.event;
-      if (e.pageX || e.pageY) {
-        posx = e.pageX;
-        posy = e.pageY;
-      }
-      else if (e.clientX || e.clientY) {
-        posx = e.clientX + document.body.scrollLeft + document.documentElement.scrollLeft;
-        posy = e.clientY + document.body.scrollTop + document.documentElement.scrollTop;
-      }
-      $('#tooltip').attr('style', 'visibility: visible; top: ' + posy + 'px; left: ' + posx + 'px;');
-      $('#tooltip').html(model.get('stock').get('stockType').get('name') + "<br>" + model.get('name'));
-    } else {
-      $('#tooltip').attr('style', 'visibility: hidden;');
-    }
     if (!this.label) {
       var p = shape.position(),
+          t = shape.transform(),
           s = shape.size();
-      this.label = shape.drawable.draw(
-        new Fashion.Text({
+      var text = new Fashion.Text({
           position: {
-			x: p.x + (s.x * (0.05 + (styleText.length==1 ? 0.2 : 0.0))),
+			      x: p.x + (s.x * (0.05 + (styleText.length==1 ? 0.2 : 0.0))),
             y: p.y + (s.y * 0.75)
           },
           fontSize: style.text ? s.y * 0.5 : (s.x*1.2/Math.max(2, styleText.length)),
           text: styleText,
           style: { fill: new Fashion.FloodFill(new Fashion.Color(style.text_color)), cursor: 'default' }
-        })
-      );
+      });
+      if (t) {
+        text.transform(t);
+      }
+      this.label = shape.drawable.draw(text);
       this.label.addEvent(this.get('events'));
     } else {
       this.label.text(styleText);
@@ -913,7 +899,7 @@ var Seat = exports.Seat = Backbone.Model.extend({
  * vim: sts=2 sw=2 ts=2 et
  */
  })(); return exports; })({});
-__LIBS__['HJZH994QJM1BKQUV'] = (function (exports) { (function () { 
+__LIBS__['LJ2447LZSLTESQPB'] = (function (exports) { (function () { 
 
 /************** translations.js **************/
 
@@ -944,13 +930,13 @@ exports.ja = {
 /************** venue-editor.js **************/
 /* extern */ var jQuery, I18n;
 (function ($) {
-  var CONF = __LIBS__['qRUHFHO7UZ2DNSUR'];
-  var models = __LIBS__['sLN4FMOPTQEKPAIA'];
-  var util = __LIBS__['qWEBAXA9CQSK4JTA'];
-  var viewobjects = __LIBS__['BC7_3OHGZ4_3XTI2'];
-  var IdentifiableSet = __LIBS__['L5VVC3DZKL5CLXDD'].IdentifiableSet;
+  var CONF = __LIBS__['eHTNCAKW4Y2ALDLG'];
+  var models = __LIBS__['vCOULM04ZLIGDTRX'];
+  var util = __LIBS__['C7XU1TV1_R2C6P6L'];
+  var viewobjects = __LIBS__['xPHGOJFCQG5CYC3M'];
+  var IdentifiableSet = __LIBS__['bUUFZRGJAFPAHD7K'].IdentifiableSet;
   if (I18n)
-    I18n.translations = __LIBS__['HJZH994QJM1BKQUV'];
+    I18n.translations = __LIBS__['LJ2447LZSLTESQPB'];
 
   var parseCSSStyleText = (function () {
     var regexp_for_styles = /\s*(-?(?:[_a-z\u00a0-\u10ffff]|\\[^\n\r\f#])(?:[\-_A-Za-z\u00a0-\u10ffff]|\\[^\n\r\f])*)\s*:\s*((?:(?:(?:[^;\\ \n\r\t\f"']|\\[0-9A-Fa-f]{1,6}(?:\r\n|[ \n\r\t\f])?|\\[^\n\r\f0-9A-Fa-f])+|"(?:[^\n\r\f\\"]|\\(?:\n|\r\n|\r|\f)|\\[^\n\r\f])*"|'(?:[^\n\r\f\\']|\\(?:\n|\r\n|\r|\f)|\\[^\n\r\f])*')(?:\s+|(?=;|$)))+)(?:;|$)/g;
@@ -1047,8 +1033,6 @@ exports.ja = {
 
   function parseCSSAsSvgStyle(str, defs) {
     var styles = parseCSSStyleText(str);
-    var textAnchor = null;
-    var textAnchorString = styles['text-anchor'];
     var fill = null;
     var fillString = styles['fill'];
     var fillOpacity = null;
@@ -1059,9 +1043,10 @@ exports.ja = {
     var strokeWidthString = styles['stroke-width'];
     var strokeOpacity = null;
     var strokeOpacityString = styles['stroke-opacity'];
-    if (textAnchorString) {
-        textAnchor = textAnchorString[0];
-    }
+    var fontSize = null;
+    var fontSizeString = styles['font-size'];
+    var textAnchor = null;
+    var textAnchorString = styles['text-anchor'];
     if (fillString) {
       if (fillString[0] == 'none') {
         fill = false;
@@ -1091,25 +1076,38 @@ exports.ja = {
     if (strokeOpacityString) {
       strokeOpacity = parseFloat(strokeOpacityString[0]);
     }
+    if (fontSizeString) {
+      if (fontSizeString instanceof Array)
+        fontSizeString = fontSizeString[0];
+      fontSize = parseFloat(fontSizeString);
+    }
+    if (textAnchorString) {
+      if (textAnchorString instanceof Array)
+        textAnchorString = textAnchorString[0];
+      textAnchor = textAnchorString;
+    }
     return {
-      textAnchor: textAnchor,
       fill: fill,
       fillOpacity: fillOpacity,
       stroke: stroke,
       strokeWidth: strokeWidth,
-      strokeOpacity: strokeOpacity
+	  strokeOpacity: strokeOpacity,
+      fontSize: fontSize,
+      textAnchor: textAnchor
     };
   }
 
   function mergeSvgStyle(origStyle, newStyle) {
-    return {
-      textAnchor: newStyle.textAnchor !== null ? newStyle.textAnchor: origStyle.textAnchor,
-      fill: newStyle.fill !== null ? newStyle.fill: origStyle.fill,
-      fillOpacity: newStyle.fillOpacity !== null ? newStyle.fillOpacity: origStyle.fillOpacity,
-      stroke: newStyle.stroke !== null ? newStyle.stroke: origStyle.stroke,
-      strokeWidth: newStyle.strokeWidth !== null ? newStyle.strokeWidth: origStyle.strokeWidth,
-      strokeOpacity: newStyle.strokeOpacity !== null ? newStyle.strokeOpacity: origStyle.strokeOpacity
-    };
+    var copied = { };
+    for (var k in origStyle) {
+      copied[k] = origStyle[k];
+    }
+    for (var k in newStyle) {
+      if (newStyle[k] !== null) {
+        copied[k] = newStyle[k];
+      }
+    }
+    return copied;
   }
 
   function buildStyleFromSvgStyle(svgStyle) {
@@ -1135,6 +1133,47 @@ exports.ja = {
     };
   }
 
+  function parseTransform(transform_str) {
+      var g = /\s*([A-Za-z_-][0-9A-Za-z_-]*)\s*\(\s*((?:[^\s,]+(?:\s*,\s*|\s+))*[^\s,]+)\s*\)\s*/.exec(transform_str);
+
+      var f = g[1];
+      var args = g[2].replace(/(?:^\s+|\s+$)/, '').split(/\s*,\s*|\s+/);
+
+      switch (f) {
+      case 'matrix':
+          if (args.length != 6)
+              throw new Error("invalid number of arguments for matrix()")
+          return new Fashion.Matrix(
+              parseFloat(args[0]), parseFloat(args[1]),
+              parseFloat(args[2]), parseFloat(args[3]),
+              parseFloat(args[4]), parseFloat(args[5]));
+      case 'translate':
+          if (args.length != 2)
+              throw new Error("invalid number of arguments for translate()")
+          return Fashion.Matrix.translate({ x:parseFloat(args[0]), y:parseFloat(args[1]) });
+      case 'scale':
+          if (args.length != 2)
+              throw new Error("invalid number of arguments for scale()");
+          return new Fashion.Matrix(parseFloat(args[0]), 0, 0, parseFloat(args[1]), 0, 0);
+      case 'rotate':
+          if (args.length != 1)
+              throw new Error("invalid number of arguments for rotate()");
+          return Fashion.Matrix.rotate(parseFloat(args[0]) * Math.PI / 180);
+      case 'skewX':
+          if (args.length != 1)
+              throw new Error('invalid number of arguments for skewX()');
+          var t = parseFloat(args[0]) * Math.PI / 180;
+          var ta = Math.tan(t);
+          return new Fashion.Matrix(1, 0, ta, 1, 0, 0);
+      case 'skewY':
+          if (args.length != 1)
+              throw new Error('invalid number of arguments for skewX()');
+          var t = parseFloat(args[0]) * Math.PI / 180;
+          var ta = Math.tan(t);
+          return new Fashion.Matrix(1, ta, 0, 1, 0, 0);
+      }
+      throw new Error('invalid transform function: ' + f);
+  }
 
   var VenueEditor = function VenueEditor(canvas, options) {
     this.canvas = canvas;
@@ -1208,8 +1247,13 @@ exports.ja = {
     if (this.drawable !== null)
       this.drawable.dispose();
     for (var key in data.metadata) {
-      for (var id in data.metadata[key]) {
-        this.metadata[key][id] = data.metadata[key][id];
+      for (var i in data.metadata[key]) {
+        for (var j in this.metadata[key]) {
+          if (this.metadata[key][j].id == data.metadata[key][i].id) {
+            this.metadata[key][j] = data.metadata[key][i];
+            break;
+          }
+        }
       }
     }
     this.initDrawable();
@@ -1232,6 +1276,9 @@ exports.ja = {
   VenueEditor.prototype.initDrawable = function VenueEditor_initDrawable() {
     var self = this;
     var drawing = this.drawing;
+    if (!drawing) {
+      return;
+    }
     var attrs = util.allAttributes(drawing.documentElement);
     var w = parseFloat(attrs.width), h = parseFloat(attrs.height);
     var vb = null;
@@ -1247,7 +1294,7 @@ exports.ja = {
       y: ((vb && vb[3]) || h || w)
     } : null);
 
-    var drawable = new Fashion.Drawable(self.canvas[0], { contentSize: {x: size.x, y: size.y}, viewportSize: { x: this.canvas.innerWidth(), y: this.canvas.innerHeight() } });
+    var drawable = new Fashion.Drawable(self.canvas[0], { contentSize: { x: size.x+100, y: size.y+100 }, viewportSize: { x: this.canvas.innerWidth(), y: this.canvas.innerHeight() } });
     var shapes = {};
     var styleClasses = CONF.DEFAULT.STYLES;
 
@@ -1260,7 +1307,7 @@ exports.ja = {
           var shape = null;
           var attrs = util.allAttributes(n);
 
-          var currentSvgStyle = svgStyle;
+          var currentSvgStyle = _.clone(svgStyle);
           if (attrs['class']) {
             var style = styleClasses[attrs['class']];
             if (style)
@@ -1268,6 +1315,16 @@ exports.ja = {
           }
           if (attrs.style)
             currentSvgStyle = mergeSvgStyle(currentSvgStyle, parseCSSAsSvgStyle(attrs.style, defs));
+          if (attrs['transform']) {
+            var matrix = parseTransform(attrs['transform']);
+            if (matrix) {
+              if (currentSvgStyle._transform) {
+                currentSvgStyle._transform = currentSvgStyle._transform.multiply(matrix);
+	  		} else {
+                currentSvgStyle._transform = matrix;
+              }
+            }
+          }
 
           switch (n.nodeName) {
             case 'defs':
@@ -1286,19 +1343,26 @@ exports.ja = {
 
             case 'text':
             case 'tspan':
+              var px = parseFloat(attrs.x),
+                  py = parseFloat(attrs.y);
               if (n.childNodes.length==1 && n.firstChild.nodeType == Node.TEXT_NODE) {
                 shape = new Fashion.Text({
-                  fontSize: 10,
                   text: n.firstChild.nodeValue,
                   zIndex: 99
                 });
+                if (isNaN(px) || isNaN(py)) {
+                  shape.position(currentSvgStyle._position);
+                }
                 shape.style(CONF.DEFAULT.TEXT_STYLE);
-                if(currentSvgStyle.textAnchor) {
-				  shape.anchor(currentSvgStyle.textAnchor);
+                if (currentSvgStyle.textAnchor) {
+                  shape.anchor(currentSvgStyle.textAnchor);
                 }
               } else if (n.nodeName == 'text') {
-				  arguments.callee.call(self, currentSvgStyle, defs, n.childNodes);
-                  continue outer;
+                if (!isNaN(px) && !isNaN(py)) {
+                  currentSvgStyle._position = { x: px, y: py };
+                }
+                arguments.callee.call(self, currentSvgStyle, defs, n.childNodes);
+                continue outer;
               }
               break;
 
@@ -1325,6 +1389,12 @@ exports.ja = {
 
           }
           if (shape !== null) {
+            if (currentSvgStyle._transform) {
+              shape.transform(currentSvgStyle._transform);
+            }
+            if (shape instanceof Fashion.Text) {
+              shape.fontSize(currentSvgStyle.fontSize);
+            }
             var x = parseFloat(attrs.x),
                 y = parseFloat(attrs.y);
             if (!isNaN(x) && !isNaN(y))
@@ -1335,8 +1405,10 @@ exports.ja = {
           shapes[attrs.id] = shape;
         }
     }).call(self,
-      { fill: false, fillOpacity: false,
-        stroke: false, strokeOpacity: false },
+      { _transform: false, fill: false, fillOpacity: false,
+        stroke: false, strokeOpacity: false,
+        fontSize: 10, textAnchor: false
+      },
       {},
       drawing.documentElement.childNodes);
 
@@ -1411,6 +1483,7 @@ exports.ja = {
                   seat.addStyleType('tooltip');
                 }
                 self.highlighted[_id] = seat;
+                self.callbacks.tooltip && self.callbacks.tooltip(seat);
               }
             },
             mouseout: function(evt) {
@@ -1423,13 +1496,13 @@ exports.ja = {
                 } else {
                   seat.removeStyleType('tooltip');
                 }
+                self.callbacks.tooltip && self.callbacks.tooltip(seat);
               }
             },
             mousedown: function(evt) {
-              if (seats[id].get('model').selectable()) {
-                self.callbacks.click && self.callbacks.click(self, self, self.highlighted);
-              } else {
-                self.callbacks.tooltip && self.callbacks.tooltip(id);
+              var seat = seats[id];
+              if (seat.get('model').get('sold')) {
+                self.callbacks.click && self.callbacks.click(seat.get('model'));
               }
             }
           }
@@ -1493,7 +1566,7 @@ exports.ja = {
             }
             self.drawable.erase(self.rubberBand);
             for (var i = 0; i < selection.length; i++) {
-              if (selection[i].get('selected')) {
+              if (selection[i].get('selected') && selection.length == 1) {
                 selection[i].set('selected', false);
               } else {
                 selection[i].set('selected', true);
@@ -1598,21 +1671,28 @@ exports.ja = {
         switch (options) {
           case 'load':
             // Ajax Waiter
+            var waiting = [];
+            if (aux.dataSource.drawing) {
+              waiting.push('drawing');
+            }
+            waiting.push('metadata');
             var waiter = new util.AsyncDataWaiter({
-              identifiers: ['drawing', 'metadata'],
+              identifiers: waiting,
               after: function main(data) {
                 aux.loaded_at = Math.ceil((new Date).getTime() / 1000);
                 aux.manager.load(data);
               }
             });
             // Load drawing
-            $.ajax({
-              type: 'get',
-              url: aux.dataSource.drawing,
-              dataType: 'xml',
-              success: function(xml) { waiter.charge('drawing', xml); },
-              error: function(xhr, text) { aux.callbacks.message && aux.callbacks.message("Failed to load drawing data (reason: " + text + ")"); }
-            });
+            if (aux.dataSource.drawing) {
+              $.ajax({
+                type: 'get',
+                url: aux.dataSource.drawing,
+                dataType: 'xml',
+                success: function(xml) { waiter.charge('drawing', xml); },
+                error: function(xhr, text) { aux.callbacks.message && aux.callbacks.message("Failed to load drawing data (reason: " + text + ")"); }
+              });
+            }
 
             // Load metadata
             $.ajax({

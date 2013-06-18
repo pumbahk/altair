@@ -1,18 +1,20 @@
 # -*- coding:utf-8 -*-
-from pyramid.httpexceptions import HTTPNotFound
+from pyramid.httpexceptions import HTTPNotFound, HTTPBadRequest
 from altaircms.auth.models import Organization
 from altaircms.auth.interfaces import IAllowableQuery
 from altaircms.auth.models import Host
-from sqlalchemy.orm.exc import NoResultFound
+
 import logging
 logger = logging.getLogger(__name__)
 
 def get_organization_from_request(request, override_host=None):
     host_name = override_host or request.host
-    try:
-        return Organization.query.filter(Organization.id==Host.organization_id,  Host.host_name==host_name).first()
-    except NoResultFound:
-        raise Exception("Host that named %s is not Found" % host_name)
+    organization = Organization.query.filter(Organization.id==Host.organization_id,  Host.host_name==host_name).first()
+    if organization is None:
+        logger.error("Host that named %s is not Found" % host_name)
+        #raise Exception("Host that named %s is not Found" % host_name)
+        raise HTTPBadRequest
+    return organization
 
 class AllowableQueryFilterByOrganization(object):
     ExceptionClass = HTTPNotFound
@@ -32,6 +34,8 @@ class AllowableQueryFilterByOrganization(object):
         if organization is None:
             logger.warn("*separation host=%s organization is not found",  self.request.host)
             raise self.ExceptionClass("organization is not found")
+        if not hasattr(model, "organization_id"):
+            return query
         return query.with_transformation(organization.inthere("organization_id"))
 
     def allowable_query_with_fetch(self, model, qs=None):
@@ -44,7 +48,7 @@ class AllowableQueryFilterByOrganization(object):
 
 ## selectable renderer
 from pyramid_selectable_renderer import SelectableRendererSetup 
-from pyramid_selectable_renderer.custom import RecieveTemplatePathFormat, RecieveTemplatePathCandidatesDict
+from pyramid_selectable_renderer.custom import ReceiveTemplatePathFormat, ReceiveTemplatePathCandidatesDict
 from pyramid_selectable_renderer.custom import SelectByRequestGen
 
 @SelectByRequestGen.generate
@@ -54,14 +58,14 @@ def get_template_path_args(request):
     except:
         return dict(prefix="__default__")
 
-## use this. view_config(...,  renderer=selectable_renderer="%(prefix)/errors.mako")
+## use this. view_config(...,  renderer=selectable_renderer="%(prefix)/errors.html")
 selectable_renderer = SelectableRendererSetup(
-    RecieveTemplatePathFormat,
+    ReceiveTemplatePathFormat,
     get_template_path_args, 
     renderer_name = "selectable_renderer")
 
 tstar_mobile_or_not_renderer = SelectableRendererSetup(
-    RecieveTemplatePathCandidatesDict, 
+    ReceiveTemplatePathCandidatesDict,
     SelectByRequestGen.generate(lambda r : r.organization.short_name), 
     renderer_name = "tstar_mobile_or_not_renderer"
 )
