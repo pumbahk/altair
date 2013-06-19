@@ -121,6 +121,16 @@ class Lot(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     system_fee = sa.Column(sa.Numeric(precision=16, scale=2), default=0,
                            server_default="0")
 
+    @property
+    def electing_works(self):
+        return LotElectWork.query.filter(
+            LotElectWork.lot_id==self.id
+        ).filter(
+            LotEntry.entry_no==LotElectWork.lot_entry_no
+        ).filter(
+            sql.and_(LotEntry.elected_at==None,
+                     LotEntry.ordered_mail_sent_at==None)
+        ).all()
 
 
     @property
