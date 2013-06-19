@@ -2,7 +2,7 @@
 body{
 	margin: 0;
 	padding: 0;
-	background: #d9a829;
+	background: #fff;
 	font-size: 12px;
 }
 
@@ -110,7 +110,7 @@ table.formbambitious tbody th{
 	background-color: #efefef;
 	border-collapse: collapse;
 	padding: 10px;
-	border-bottom: 1px solid #ffb700;
+	border-bottom: 1px solid #a01e23;
 	text-align: right;
 }
 
@@ -119,7 +119,7 @@ table.formbambitious thead th{
 	background-color: #efefef;
 	border-collapse: collapse;
 	padding: 10px;
-	border-bottom: 1px solid #ffb700;
+	border-bottom: 1px solid #a01e23;
 	text-align: left;
 	font-size: 16px;
 }
@@ -128,20 +128,20 @@ table.formbambitious thead th{
 table.formbambitious td{
 	background-color: #fff;
 	padding: 10px;
-	border-bottom: 1px solid #ffb700;
+	border-bottom: 1px solid #a01e23;
 }
 
 table.formbambitious tfoot td{
 	background-color: #fff;
 	padding: 10px;
-	border-top: 2px solid #ffb700;
+	border-top: 2px solid #a01e23;
 	font-size: 16px;
 }
 
 
 
 .red{
-	color: #970018;
+	color: #a01e23;
 }
 
 .textRight{
@@ -200,7 +200,7 @@ filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#c13b23', end
 text-align: center;
 color: #fff;
 padding: 5px;
-border: 2px solid #970018;
+border: 2px solid #a01e23;
 margin: 10px auto;
 font-size: 20px;
 font-weight: bold;
