@@ -10,16 +10,8 @@ from pyramid import renderers
 from pyramid_mailer.message import Message
 from .interfaces import ICompleteMail
 from zope.interface import implementer
-from ticketing.core.models import MailTypeEnum
 import traceback
 import sys
-
-
-def access_data(data, k, default=""):
-    try:
-        return data[str(MailTypeEnum.PurchaseCompleteMail)][k]
-    except KeyError:
-        return default
 
 class OrderCompleteInfoDefault(OrderInfoDefault):
     tel = OrderInfo(name="tel", label=u"電話番号", getval=lambda order : order.shipping_address.tel_1 or "")
@@ -51,7 +43,7 @@ class OrderCompleteInfoDefault(OrderInfoDefault):
 def get_mailtype_description():
     return u"購入完了メール"
 
-def get_order_info_default():
+def get_subject_info_default():
     return OrderCompleteInfoDefault
    
 @implementer(ICompleteMail)
@@ -85,7 +77,7 @@ class PurchaseCompleteMail(object):
     def _build_mail_body(self, order, traverser):
         sa = order.shipping_address 
         pair = order.payment_delivery_pair
-        info_renderder = OrderInfoRenderer(order, traverser.data, default_impl=get_order_info_default())
+        info_renderder = OrderInfoRenderer(order, traverser.data, default_impl=get_subject_info_default())
         value = dict(h=ch, 
                      order=order,
                      get=info_renderder.get, 

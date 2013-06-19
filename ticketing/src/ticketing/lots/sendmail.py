@@ -12,7 +12,6 @@ from ticketing.payments import plugins
 
 logger = logging.getLogger(__name__)
 
-
 def get_traverser(request):
     reg = request.registry
     return reg.getUtility(ITraverser, name="lots")

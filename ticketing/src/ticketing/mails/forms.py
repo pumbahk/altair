@@ -120,7 +120,7 @@ def MailInfoFormFactory(template, mutil=None, request=None):
     attrs["sender"] = fields.TextField(label=u"メールsender")
 
     try:
-        default = mutil.get_order_info_default()
+        default = mutil.get_subject_info_default()
     except:
         logger.warn("mutil is not found. default is OrderInfoDefault")
         default = OrderInfoDefault

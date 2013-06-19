@@ -15,6 +15,11 @@ def install_mail_utility(config):
     config.add_order_mail_utility(MailTypeEnum.PurchaseCancelMail, 
                                   ".order_cancel", CancelMail, "ticketing:templates/mail/order_cancel.txt")
 
+    ## lots
+    from ticketing.mails.lots_mail import LotsMail
+    config.add_order_mail_utility(MailTypeEnum.LotsAcceptedMail, 
+                                  ".lots_mail", LotsMail, "ticketing:templates/mail/complete.mako")
+
 def includeme(config):
     config.include(install_mail_utility)
     config.add_route("mails.preview.organization", "/mailinfo/preview/organization/{organization_id}/mailtype/{mailtype}")

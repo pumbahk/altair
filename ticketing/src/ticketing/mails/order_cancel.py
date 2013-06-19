@@ -1,9 +1,6 @@
 # -*- coding:utf-8 -*-
 from pyramid import renderers
 from pyramid_mailer.message import Message
-from .api import get_cached_traverser
-from .api import get_mail_utility
-from ticketing.core.models import MailTypeEnum
 import logging
 from .forms import OrderInfoRenderer
 from .forms import OrderInfoDefault, OrderInfo, OrderInfoWithValue
@@ -13,14 +10,6 @@ from zope.interface import implementer
 from .api import create_or_update_mailinfo,  create_fake_order
 
 logger = logging.getLogger(__name__)
-
-
-def access_data(data, k, default=""):
-    try:
-        return data[str(MailTypeEnum.PurchaseCancelMail)][k]
-    except KeyError:
-        return default
-
 
 class OrderCancelInfoDefault(OrderInfoDefault):
     def get_shipping_address_info(order):
@@ -52,7 +41,7 @@ ${address_1} ${address_2}""" % params
     cancel_reason = OrderInfoWithValue(name="cancel_reason", label=u"キャンセル理由", 
                                        getval=lambda order: OrderCancelInfoDefault.cancel_reason_default, value=cancel_reason_default)
     
-def get_order_info_default():
+def get_subject_info_default():
     return OrderCancelInfoDefault()
 
 def get_mailtype_description():
