@@ -24,11 +24,32 @@ from webob.multidict import MultiDict
 from altair.sqlahelper import get_db_session
 
 from ticketing.models import DBSession, merge_session_with_post, record_to_multidict, asc_or_desc
-from ticketing.core.models import (Order, Performance, PaymentDeliveryMethodPair, ShippingAddress,
-                                   Product, ProductItem, OrderedProduct, OrderedProductItem, 
-                                   Ticket, TicketBundle, TicketFormat, Ticket_TicketBundle,
-                                   DeliveryMethod, TicketFormat_DeliveryMethod, Venue,
-                                   SalesSegmentGroup, SalesSegment, Stock, StockStatus, Seat, SeatStatus, SeatStatusEnum, ChannelEnum)
+from ticketing.core.models import (
+    Order,
+    Performance,
+    PaymentDeliveryMethodPair,
+    ShippingAddress,
+    Product,
+    ProductItem,
+    OrderedProduct,
+    OrderedProductItem,
+    OrderedProductAttribute,
+    Ticket,
+    TicketBundle,
+    TicketFormat,
+    Ticket_TicketBundle,
+    DeliveryMethod,
+    TicketFormat_DeliveryMethod,
+    Venue,
+    SalesSegmentGroup,
+    SalesSegment,
+    Stock,
+    StockStatus,
+    Seat,
+    SeatStatus,
+    SeatStatusEnum,
+    ChannelEnum
+    )
 from ticketing.mailmags.models import MailSubscription, MailMagazine, MailSubscriptionStatus
 from ticketing.orders.export import OrderCSV, japanese_columns
 from ticketing.orders.forms import (OrderForm, OrderSearchForm, OrderRefundSearchForm, SejOrderForm, SejTicketForm,
@@ -47,7 +68,7 @@ from ticketing.cart.stocker import NotEnoughStockException
 from ticketing.cart.reserving import InvalidSeatSelectionException, NotEnoughAdjacencyException
 
 from . import utils
-from .api import OrderSearchQueryBuilder, CartSearchQueryBuilder, QueryBuilderError
+from .api import CartSearchQueryBuilder, OrderSummarySearchQueryBuilder, QueryBuilderError
 from .models import OrderSummary
 
 logger = logging.getLogger(__name__)
@@ -248,7 +269,7 @@ class Orders(BaseView):
 
     @view_config(route_name='orders.index', renderer='ticketing:templates/orders/index.html', permission='sales_counter')
     def index(self):
-        #slave_session = get_db_session(self.request, name="slave")
+        slave_session = get_db_session(self.request, name="slave")
 
         organization_id = int(self.context.user.organization_id)
         query = DBSession.query(Order).filter(Order.organization_id==organization_id)
@@ -263,10 +284,7 @@ class Orders(BaseView):
         form_search = OrderSearchForm(params, organization_id=organization_id)
         if form_search.validate():
             try:
-                targets = dict(OrderSearchQueryBuilder.targets)
-                targets['subject'] = Order
-                query = OrderSearchQueryBuilder(form_search.data, lambda key: form_search[key].label.text,
-                                                targets=targets)(DBSession.query(Order).filter(Order.organization_id==organization_id))
+                query = OrderSummarySearchQueryBuilder(form_search.data, lambda key: form_search[key].label.text)(slave_session.query(OrderSummary).filter(OrderSummary.organization_id==organization_id, OrderSummary.deleted_at==None))
             except QueryBuilderError as e:
                 self.request.session.flash(e.message)
 
@@ -292,8 +310,7 @@ class Orders(BaseView):
         slave_session = get_db_session(self.request, name="slave")
 
         organization_id = self.context.user.organization_id
-        #query = slave_session.query(OrderSummary).filter(OrderSummary.organization_id==organization_id)
-        query = slave_session.query(Order).filter(Order.organization_id==organization_id)
+        query = slave_session.query(OrderSummary).filter(OrderSummary.organization_id==organization_id, OrderSummary.deleted_at==None)
 
         if self.request.params.get('action') == 'checked':
             checked_orders = [o.lstrip('o:') for o in self.request.session.get('orders', []) if o.startswith('o:')]
@@ -305,26 +322,33 @@ class Orders(BaseView):
             form_search = OrderSearchForm(self.request.params, organization_id=organization_id)
             form_search.sort.data = None
             try:
-                #query = OrderSearchQueryBuilder(form_search.data, lambda key: form_search[key].label.text, sort=False)(slave_session.query(OrderSummary).filter(OrderSummary.organization_id==organization_id))
-                query = OrderSearchQueryBuilder(form_search.data, lambda key: form_search[key].label.text, sort=False)(slave_session.query(Order).filter(Order.organization_id==organization_id))
+                query = OrderSummarySearchQueryBuilder(form_search.data, lambda key: form_search[key].label.text, sort=False)(slave_session.query(OrderSummary).filter(OrderSummary.organization_id==organization_id, OrderSummary.deleted_at==None))
             except QueryBuilderError as e:
                 self.request.session.flash(e.message)
                 raise HTTPFound(location=route_path('orders.index', self.request))
             if query.count() > 5000 and not form_search.performance_id.data:
                 self.request.session.flash(u'対象件数が多すぎます。(公演を指定すれば制限はありません)')
                 raise HTTPFound(location=route_path('orders.index', self.request))
-
-        query = query.options(
-            # joinedload('ordered_products'),
-            # joinedload('ordered_products.product'),
-            # joinedload('ordered_products.product.sales_segment'),
-            # joinedload('ordered_products.ordered_product_items'),
-            # joinedload('ordered_products.ordered_product_items.product_item'),
-            # joinedload('ordered_products.ordered_product_items.print_histories'),
-            # joinedload('ordered_products.ordered_product_items.seats'),
-            # joinedload('ordered_products.ordered_product_items._attributes'),
-        )
-        orders = query.all()
+    
+        # XXX: JOINしたら逆に遅くなった
+        #query = query.options(
+        #    joinedload('ordered_products'),
+        #    joinedload('ordered_products.product'),
+        #    joinedload('ordered_products.product.sales_segment'),
+        #    joinedload('ordered_products.ordered_product_items'),
+        #    joinedload('ordered_products.ordered_product_items.product_item'),
+        #    joinedload('ordered_products.ordered_product_items.print_histories'),
+        #    joinedload('ordered_products.ordered_product_items.seats'),
+        #    joinedload('ordered_products.ordered_product_items._attributes'),
+        #    ) \
+        #    .filter(SalesSegment.deleted_at == None) \
+        #    .filter(OrderedProduct.deleted_at == None) \
+        #    .filter(OrderedProductItem.deleted_at == None) \
+        #    .filter(Product.deleted_at == None) \
+        #    .filter(ProductItem.deleted_at == None) \
+        #    .filter(Seat.deleted_at == None) \
+        #    .filter(OrderedProductAttribute.deleted_at == None)
+        orders = query
 
         headers = [
             ('Content-Type', 'application/octet-stream; charset=cp932'),
@@ -369,6 +393,7 @@ class OrdersRefundIndexView(BaseView):
 
     @view_config(route_name='orders.refund.search')
     def search(self):
+        slave_session = get_db_session(self.request, name="slave")
         if self.request.method == 'POST':
             refund_condition = self.request.params
         else:
@@ -377,7 +402,7 @@ class OrdersRefundIndexView(BaseView):
         if form_search.validate():
             query = Order.filter(Order.organization_id==self.organization_id)
             try:
-                query = OrderSearchQueryBuilder(form_search.data, lambda key: form_search[key].label.text)(Order.filter(Order.organization_id==self.organization_id))
+                query = OrderSummarySearchQueryBuilder(form_search.data, lambda key: form_search[key].label.text)(slave_session.query(OrderSummary).filter(OrderSummary.organization_id==self.organization_id, OrderSummary.deleted_at==None))
             except QueryBuilderError as e:
                 self.request.session.flash(e.message)
 
@@ -412,11 +437,12 @@ class OrdersRefundIndexView(BaseView):
 
     @view_config(route_name='orders.refund.checked')
     def checked(self):
+        slave_session = get_db_session(self.request, name="slave")
         refund_condition = MultiDict(self.request.session.get('ticketing.refund.condition', []))
         form_search = OrderRefundSearchForm(refund_condition, organization_id=self.organization_id)
         if form_search.validate():
             try:
-                query = OrderSearchQueryBuilder(form_search.data, lambda key: form_search[key].label.text)(Order.filter(Order.organization_id==self.organization_id))
+                query = OrderSummarySearchQueryBuilder(form_search.data, lambda key: form_search[key].label.text)(slave_session.query(OrderSummary).filter(OrderSummary.organization_id==self.organization_id, OrderSummary.deleted_at==None))
             except QueryBuilderError as e:
                 self.request.session.flash(e.message)
 
