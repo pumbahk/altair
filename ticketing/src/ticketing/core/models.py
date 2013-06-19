@@ -3023,12 +3023,12 @@ class ExtraMailInfo(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             return False
 
 class MailTypeEnum(StandardEnum):
-    CompleteMail = 1
+    PurchaseCompleteMail = 1
     PurchaseCancelMail = 2
 
 MailTypeLabels = (u"購入完了メール", u"購入キャンセルメール")
 assert(len(list(MailTypeEnum)) == len(MailTypeLabels))
-MailTypeChoices = [(str(e) , label) for e, label in zip([MailTypeEnum.CompleteMail,  MailTypeEnum.PurchaseCancelMail], MailTypeLabels)]
+MailTypeChoices = [(str(e) , label) for e, label in zip([MailTypeEnum.PurchaseCompleteMail,  MailTypeEnum.PurchaseCancelMail], MailTypeLabels)]
 
 class Host(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'Host'

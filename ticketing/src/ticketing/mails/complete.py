@@ -20,7 +20,7 @@ import sys
 
 def access_data(data, k, default=""):
     try:
-        return data[str(MailTypeEnum.CompleteMail)][k]
+        return data[str(MailTypeEnum.PurchaseCompleteMail)][k]
     except KeyError:
         return default
 
@@ -37,7 +37,7 @@ class OrderCompleteInfoDefault(OrderInfoDefault):
         template_body = data.get("template_body")
         if template_body and template_body.get("use"):
             try:
-                mail = CompleteMail(None, request)
+                mail = PurchaseCompleteMail(None, request)
                 payment_id, delivery_id = 1, 1 #xxx
                 fake_order = create_fake_order(request, request.context.user.organization, payment_id, delivery_id)
                 mail.build_mail_body(fake_order,  template_body=template_body)
@@ -59,7 +59,7 @@ def get_order_info_default():
 get_traverser = functools.partial(get_mailinfo_traverser, access=access_data, default=u"")
    
 @implementer(ICompleteMail)
-class CompleteMail(object):
+class PurchaseCompleteMail(object):
     def __init__(self, mail_template, request):
         self.mail_template = mail_template
         self.request = request

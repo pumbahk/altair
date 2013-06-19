@@ -1528,7 +1528,7 @@ class MailInfoView(BaseView):
             raise HTTPFound(self.request.current_route_url(order_id=order_id, action="show"))
 
         order = Order.get(order_id, self.context.user.organization_id)
-        mutil = get_mail_utility(self.request, MailTypeEnum.CompleteMail)
+        mutil = get_mail_utility(self.request, MailTypeEnum.PurchaseCompleteMail)
         mutil.send_mail(self.request, order, override=form.data)
         self.request.session.flash(u'メール再送信しました')
         return HTTPFound(self.request.current_route_url(order_id=order_id, action="show"))

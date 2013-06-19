@@ -1,5 +1,5 @@
 import functools
-from .resources import CompleteMailDelivery, CompleteMailPayment, OrderCancelMailDelivery, OrderCancelMailPayment
+from .resources import PurchaseCompleteMailDelivery, PurchaseCompleteMailPayment, OrderCancelMailDelivery, OrderCancelMailPayment
 from pyramid.view import render_view_to_response
 from markupsafe import Markup
 import logging
@@ -44,11 +44,11 @@ def as_payment_viewlet(faildefault=None, message=None):
 
 @as_delivery_viewlet(faildefault="", message="*complete mail*: %s is not found")
 def render_delivery_finished_mail_viewlet(request, order):
-    return CompleteMailDelivery(request, order)
+    return PurchaseCompleteMailDelivery(request, order)
 
 @as_payment_viewlet(faildefault="", message="*complete mail*: %s is not found")
 def render_payment_finished_mail_viewlet(request, order):
-    return CompleteMailPayment(request, order)
+    return PurchaseCompleteMailPayment(request, order)
 
 @as_delivery_viewlet(faildefault="", message="*cancel mail*: %s is not found")
 def render_delivery_cancel_mail_viewlet(request, order):

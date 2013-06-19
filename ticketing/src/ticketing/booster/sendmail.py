@@ -4,7 +4,7 @@ logger = logging.getLogger(__name__)
 from ticketing.core.models import MailTypeEnum
 from ticketing.mails.api import get_mail_utility
 
-Complete = MailTypeEnum.CompleteMail
+Complete = MailTypeEnum.PurchaseCompleteMail
 def on_order_completed(order_completed):
     try:
         order = order_completed.order

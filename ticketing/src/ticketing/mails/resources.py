@@ -18,7 +18,7 @@ def delivery_key(order, k):
 
 
 @implementer(ICompleteMailDelivery)
-class CompleteMailDelivery(object):
+class PurchaseCompleteMailDelivery(object):
     """ 完了メール delivery
     """
     def __init__(self, request, order):
@@ -27,14 +27,14 @@ class CompleteMailDelivery(object):
 
     @reify
     def mailinfo_traverser(self):
-        mutil = get_mail_utility(self.request, c_models.MailTypeEnum.CompleteMail)
+        mutil = get_mail_utility(self.request, c_models.MailTypeEnum.PurchaseCompleteMail)
         return mutil.get_traverser(self.request, self.order)
 
     def mail_data(self, k):
         return self.mailinfo_traverser.data[delivery_key(self.order, k)]
 
 @implementer(ICompleteMailPayment)
-class CompleteMailPayment(object):
+class PurchaseCompleteMailPayment(object):
     """ 完了メール payment
     """
     def __init__(self, request, order):
@@ -43,7 +43,7 @@ class CompleteMailPayment(object):
 
     @reify
     def mailinfo_traverser(self):
-        mutil = get_mail_utility(self.request, c_models.MailTypeEnum.CompleteMail)
+        mutil = get_mail_utility(self.request, c_models.MailTypeEnum.PurchaseCompleteMail)
         return mutil.get_traverser(self.request, self.order)
 
     def mail_data(self, k):

@@ -6,11 +6,11 @@ def install_mail_utility(config):
     config.include(".config")
    
     # from ticketing.mails.simple import SimpleMail
-    # config.add_mail_utility(MailTypeEnum.CompleteMail, ".simple", SimpleMail)
+    # config.add_mail_utility(MailTypeEnum.PurchaseCompleteMail, ".simple", SimpleMail)
 
-    from ticketing.mails.complete import CompleteMail
-    config.add_order_mail_utility(MailTypeEnum.CompleteMail, 
-                                  ".complete", CompleteMail, "ticketing:templates/mail/complete.mako")
+    from ticketing.mails.complete import PurchaseCompleteMail
+    config.add_order_mail_utility(MailTypeEnum.PurchaseCompleteMail, 
+                                  ".complete", PurchaseCompleteMail, "ticketing:templates/mail/complete.mako")
 
     from ticketing.mails.order_cancel import CancelMail
     config.add_order_mail_utility(MailTypeEnum.PurchaseCancelMail, 
