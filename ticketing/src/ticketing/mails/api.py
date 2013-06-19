@@ -1,9 +1,7 @@
 # -*- coding:utf-8 -*-
 import traceback 
-import functools
 from .interfaces import (
     IMailUtility, 
-    ITraverser, 
     ITraverserFactory
 )
 from datetime import datetime
@@ -25,18 +23,29 @@ def get_cached_traverser(request, mtype, subject):
         trv = subject._cached_mail_traverser = factory(subject)
     return trv
 
-def access_data_default(data, k, mtype="", default=""):
-    try:
-        return data[mtype][k]
-    except KeyError:
-        return default
+class ExtraMailInfoAccessor(object):
+    def __init__(self, mtype, default):
+        self.mtype = mtype
+        self.default = default
+
+    def __call__(self, data, k, default=None):
+        try:
+            return data[self.mtype][k]
+        except KeyError:
+            return default or self.default
+
+    def touch(self, data):
+        try:
+            return data[self.mtype]
+        except KeyError:
+            return False
 
 @implementer(ITraverserFactory)
 class MailTraverserFromOrder(object):
     def __init__(self, mtype, default=""):
         self.mtype = mtype
         self.default = default
-        self.access = functools.partial(access_data_default, mtype=mtype, default=default)
+        self.access = ExtraMailInfoAccessor(mtype=mtype, default=default)
 
     def __call__(self, order):
         performance = order.performance
@@ -47,7 +56,7 @@ class MailTraverserFromLotsEntry(object):
     def __init__(self, mtype, default=""):
         self.mtype = mtype
         self.default = default
-        self.access = functools.partial(access_data_default, mtype=mtype, default=default)
+        self.access = ExtraMailInfoAccessor(mtype=mtype, default=default)
 
     def __call__(self, lots_entry):
         event = lots_entry.event

@@ -18,24 +18,41 @@ class FindStopAccessor(object):
 
     def _find_next(self, k):
         chained = self.wrapper.chained
-        if chained:
-            return chained.data[k]
-        return self.default
+        while chained:
+            if chained.data:
+                break
+            chained = chained.chained
+        if not chained:
+            return self.default
+        return chained.data[k]
 
     def __getitem__(self, k):
         if self.d is None:
             return self._find_next(k)
         return self.access(self.d, k, default=self.default) or self._find_next(k)
 
-    def getall(self, k):
-        r = []
+    def chained_iter(self):
         this = self.wrapper
         while this:
+            if this.data.d:
+                yield this
+            this = this.chained
+            if not this:
+                break
+
+    def getall(self, k):
+        r = []
+        for this in self.chained_iter():
             v = self.access(this.data.d, k, default=self.default)
             if v:
                 r.append(v)
-            this = this.chained
         return r
+
+    def exists_at_least_one(self):
+        for this in self.chained_iter():
+            if self.access.touch(this.data.d):
+                return True
+        return False
 
 @implementer(ITraverser)
 class EmailInfoTraverser(object):
@@ -47,6 +64,11 @@ class EmailInfoTraverser(object):
             self._accessor_impl = functools.partial(accessor_impl, access=access, default=default)
         else:
             self._accessor_impl = accessor_impl
+
+    def exists_at_least_one(self):
+        if not self._configured:
+            raise Exception("this is not configured. this method be enable after visiting anything.")
+        return self.data.exists_at_least_one()
 
     def visit(self, target):
         if not self._configured:
@@ -70,7 +92,7 @@ class EmailInfoTraverser(object):
         root = self.__class__(accessor_impl=self._accessor_impl)
         self.chained = root 
         root.visit(event)
-        
+
     def visit_Event(self, event):
         organization = event.organization
         self.target = event
