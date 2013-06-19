@@ -9,7 +9,9 @@ TODO: 抽選などオーソリ保持が必要な機能によるものはキャ�
 import argparse
 import logging
 from datetime import timedelta
+
 from pyramid.paster import bootstrap, setup_logging
+import sqlahelper
 
 from ticketing.multicheckout import api
 from ticketing.multicheckout import models as m
@@ -18,7 +20,7 @@ from ticketing.multicheckout.interfaces import ICancelFilter
 logger = logging.getLogger(__name__)
 
 
-def sync_data(request, multicheckout_setting):
+def sync_data(request, statuses):
     """
     前処理（データ訂正）
     
@@ -29,13 +31,7 @@ def sync_data(request, multicheckout_setting):
         売り上げ確定済のものは売り上げ確定済フラグをたてる
 訂正した場合、対応するAPIレスポンスのデータ取得が必要か？
     """
-    q = m._session.query(m.MultiCheckoutOrderStatus).filter(
-            m.MultiCheckoutOrderStatus.is_authorized
-        ).filter(
-            m.MultiCheckoutOrderStatus.past(timedelta(hours=1))
-        )
-
-    for st in q:
+    for st in statuses:
         order_no = st.OrderNo
         logging.debug("sync for %s" % order_no)
         inquiry = api.checkout_inquiry(request, order_no)
@@ -72,25 +68,17 @@ def get_auth_orders(request, shop_id):
 
     return [s for s in q if is_cancelable(request, s)]
 
-def cancel_auth(request, multicheckout_setting):
+def cancel_auth(request, statuses):
     """
     本処理
     
         キャンセル条件にしたがってオーソリ依頼データを取得
     """
-
-    shop_id = multicheckout_setting.shop_id
-    shop_name = multicheckout_setting.shop_name
-    logger.debug('search authorization for %s:%s' % (shop_name, shop_id))
-
-    q = get_auth_orders(request, shop_id)
-
-    for st in q:
+    for st in statuses:
         order_no = st.OrderNo
         logging.debug('call auth cancel api for %s' % order_no)
         api.checkout_auth_cancel(request, order_no)
         m._session.commit()
-
 
 def main():
     """
@@ -106,24 +94,38 @@ def main():
     env = bootstrap(args.config)
     request = env['request']
 
+    # 多重起動防止
+    LOCK_NAME = 'cancelauth'
+    LOCK_TIMEOUT = 10
+    conn = sqlahelper.get_engine().connect()
+    status = conn.scalar("select get_lock(%s,%s)", (LOCK_NAME, LOCK_TIMEOUT))
+    if status != 1:
+        logger.warn('lock timeout: already running process')
+        return
+
     # multicheckoutsettingsごとに行う
     processed_shops = []
     for multicheckout_setting in api.get_multicheckout_settings(request):
-        name = multicheckout_setting.shop_name
+        shop_name = multicheckout_setting.shop_name
         shop_id = multicheckout_setting.shop_id
         if shop_id in processed_shops:
-            logger.info("%s: shop_id = %s is already processed" % (name, shop_id))
+            logger.info("%s: shop_id = %s is already processed" % (shop_name, shop_id))
             continue
 
-        request.altair_checkout3d_override_shop_name = name
+        request.altair_checkout3d_override_shop_name = shop_name
 
-        logger.info("starting sync_data %s" % name)
-        sync_data(request, multicheckout_setting)
-        logger.info("finished sync_data %s" % name)
+        logger.info("starting get_auth_orders %s" % shop_name)
+        statuses = get_auth_orders(request, shop_id)
+        logger.info("finished get_auth_orders %s" % shop_name)
 
-        logger.info("starting cancel_auth %s" % name)
-        cancel_auth(request, multicheckout_setting)
-        logger.info("finished cancel_auth %s" % name)
+        if statuses:
+            logger.info("starting sync_data %s" % shop_name)
+            sync_data(request, statuses)
+            logger.info("finished sync_data %s" % shop_name)
+
+            logger.info("starting cancel_auth %s" % shop_name)
+            cancel_auth(request, statuses)
+            logger.info("finished cancel_auth %s" % shop_name)
         processed_shops.append(shop_id)
 
 if __name__ == '__main__':
