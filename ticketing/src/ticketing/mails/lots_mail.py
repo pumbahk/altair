@@ -1,13 +1,19 @@
 # -*- coding:utf-8 -*-
+from ticketing.payments import plugins
 from pyramid_mailer.message import Message
 from .renderers import render
-from .api import create_or_update_mailinfo,  create_fake_order
+from .api import create_or_update_mailinfo,  create_fake_order as _create_fake_order
 from .forms import SubjectInfoWithValue, SubjectInfo, SubjectInfoDefault
 from .forms import SubjectInfoRenderer
 import logging
 from ticketing.cart import helpers as ch
-
+from .fake import FakeObject
 logger = logging.getLogger(__name__)
+
+def create_fake_order(request, organization, payment_plugin_id, delivery_plugin_id, event=None, performance=None):
+    lot_entry = _create_fake_order(request, organization, payment_plugin_id, delivery_plugin_id, event=event, performance=performance)
+    elected_wish = FakeObject.create(name="elected_wish")
+    return lot_entry, elected_wish
 
 def get_mailtype_description():
     return u"抽選メール"
@@ -53,7 +59,7 @@ class LotsMail(object):
             logger.info('lot_entry has not shipping_address or email id=%s' % lot_entry.id)
         return True
 
-    def build_message(self, lot_entry, traverser):
+    def build_message(self, (lot_entry, elected_wish), traverser):
         if not self.validate(lot_entry):
             logger.warn("validation error")
             return 
@@ -63,7 +69,7 @@ class LotsMail(object):
         mail_from = self.get_mail_sender(organization, traverser)
         bcc = [mail_from]
 
-        mail_body = self.build_mail_body(lot_entry, traverser)
+        mail_body = self.build_mail_body((lot_entry, elected_wish), traverser)
         return Message(
             subject=subject,
             recipients=[lot_entry.shipping_address.email_1],
@@ -72,17 +78,20 @@ class LotsMail(object):
             sender=mail_from)
 
 
-    def _body_tmpl_vars(self, lot_entry, traverser):
+    def _body_tmpl_vars(self, (lot_entry, elected_wish), traverser):
         shipping_address = lot_entry.shipping_address 
         pair = lot_entry.payment_delivery_pair
         info_renderder = SubjectInfoRenderer(lot_entry, traverser.data, default_impl=get_subject_info_default())
         value = dict(h=ch, 
+                     fee_type=ch.fee_type, 
+                     plugins=plugins, 
                      lot_entry=lot_entry,
                      shipping_address=shipping_address,
                      get=info_renderder.get, 
                      name=u"{0} {1}".format(shipping_address.last_name, shipping_address.first_name),
                      payment_method_name=pair.payment_method.name, 
                      delivery_method_name=pair.delivery_method.name, 
+                     elected_wish=elected_wish, 
                      ### mail info
                      footer = traverser.data["footer"],
                      notice = traverser.data["notice"],
@@ -90,13 +99,24 @@ class LotsMail(object):
                      )
         return value
 
-    def build_mail_body(self, order, traverser):
-        value = self._body_tmpl_vars(order, traverser)
+    def build_mail_body(self, subject, traverser):
+        value = self._body_tmpl_vars(subject, traverser)
         return render(self.mail_template, value, request=self.request)
 
 
 class LotsAcceptedMail(LotsMail):
     def get_mail_subject(self, organization, traverser):
         return (traverser.data["subject"] or 
-                u'ご注文キャンセルについて 【{organization}】'.format(organization=organization.name))
+                u'抽選申込受付完了のお知らせ 【{organization}】'.format(organization=organization.name))
+
+class LotsElectedMail(LotsMail):
+    def get_mail_subject(self, organization, traverser):
+        return (traverser.data["subject"] or 
+                u'抽選当選のお知らせ 【{organization}】'.format(organization=organization.name))
+
+class LotsRejectedMail(LotsMail):
+    def get_mail_subject(self, organization, traverser):
+        return (traverser.data["subject"] or 
+                u'抽選予約結果のお知らせ 【{organization}】'.format(organization=organization.name))
+
 

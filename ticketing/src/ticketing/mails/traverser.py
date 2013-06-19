@@ -14,7 +14,7 @@ class FindStopAccessor(object):
         self.access = access or self.default_access
 
     def __repr__(self):
-        return repr(self.d)
+        return "<{0}:{1}>".format(self.__class__, repr(self.d))
 
     def _find_next(self, k):
         chained = self.wrapper.chained

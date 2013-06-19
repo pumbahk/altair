@@ -93,7 +93,7 @@ class PurchaseCompleteMail(object):
     def build_mail_body(self, order, traverser, template_body=None):
         value = self._body_tmpl_vars(order, traverser)
         template_body = template_body or value.get("template_body")
-        if template_body and template_body.get("use"):
+        if template_body and template_body.get("use") and template_body.get("value"):
             value = build_value_with_render_event(self.request, value)
             return Template(template_body["value"]).render(**value)
         return render(self.mail_template, value, request=self.request)

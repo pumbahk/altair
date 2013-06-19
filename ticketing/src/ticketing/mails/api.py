@@ -61,6 +61,8 @@ class MailUtility(object):
         self.mtype = mtype
 
     def get_traverser(self, request, subject):
+        if isinstance(subject, (list, tuple)):
+            return get_cached_traverser(request, self.mtype, subject[0])
         return get_cached_traverser(request, self.mtype, subject)
 
     def build_message(self, request, subject):

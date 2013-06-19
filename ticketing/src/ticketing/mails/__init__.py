@@ -19,6 +19,12 @@ def install_mail_utility(config):
     from ticketing.mails.lots_mail import LotsAcceptedMail
     config.add_order_mail_utility(MailTypeEnum.LotsAcceptedMail, 
                                   ".lots_mail", LotsAcceptedMail, "ticketing:templates/mail/lot_accept_entry.mako")
+    from ticketing.mails.lots_mail import LotsElectedMail
+    config.add_order_mail_utility(MailTypeEnum.LotsElectedMail, 
+                                  ".lots_mail", LotsElectedMail, "ticketing:templates/mail/lot_elect_entry.mako")
+    from ticketing.mails.lots_mail import LotsRejectedMail
+    config.add_order_mail_utility(MailTypeEnum.LotsRejectedMail, 
+                                  ".lots_mail", LotsRejectedMail, "ticketing:templates/mail/lot_reject_entry.mako")
 
 def includeme(config):
     config.include(install_mail_utility)
