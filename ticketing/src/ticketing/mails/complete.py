@@ -1,7 +1,8 @@
 # -*- coding:utf-8 -*-
 from .api import get_mailinfo_traverser
 from .api import create_or_update_mailinfo,  create_fake_order
-from .forms import OrderInfoRenderer, OrderInfoDefault, OrderInfo
+from .api import get_mail_utility
+from .forms import OrderInfoRenderer, OrderInfoDefault, OrderInfo, OrderInfoWithValue
 from mako.template import Template
 from ticketing.cart import helpers as ch ##
 import logging
@@ -13,6 +14,8 @@ from .interfaces import ICompleteMail
 from zope.interface import implementer
 from ticketing.core.models import MailTypeEnum
 import functools
+import traceback
+import sys
 
 
 def access_data(data, k, default=""):
@@ -21,12 +24,31 @@ def access_data(data, k, default=""):
     except KeyError:
         return default
 
-from .forms import PluginInfo
-import itertools
-
 class OrderCompleteInfoDefault(OrderInfoDefault):
     tel = OrderInfo(name="tel", label=u"電話番号", getval=lambda order : order.shipping_address.tel_1 or "")
     mail = OrderInfo(name="mail", label=u"メールアドレス", getval=lambda order : order.shipping_address.email_1)
+    template_body = OrderInfoWithValue(name="template_body",  label=u"テンプレート", value="", getval=(lambda order : ""))
+
+    @classmethod
+    def validate(cls, form, request):
+        data = form.data
+
+        ## template_bodyが渡された場合には実際にレンダリングしてシミュレート
+        template_body = data.get("template_body")
+        if template_body and template_body.get("use"):
+            try:
+                mail = CompleteMail(None, request)
+                payment_id, delivery_id = 1, 1 #xxx
+                fake_order = create_fake_order(request, request.context.user.organization, payment_id, delivery_id)
+                mail.build_mail_body(fake_order,  template_body=template_body)
+                ##xx:
+            except Exception as e:
+                etype, value, tb = sys.exc_info()
+                exc_message = ''.join(traceback.format_exception(etype, value, tb, 10)).replace("\n", "<br/>")
+                form.template_body.errors[exc_message] = [exc_message] ##xxx.
+                logger.exception(str(e))
+                return False
+        return True
 
 def get_mailtype_description():
     return u"購入完了メール"
@@ -84,12 +106,12 @@ class CompleteMail(object):
                      )
         return value
 
-    def build_mail_body(self, order):
+    def build_mail_body(self, order, template_body=None):
         value = self._build_mail_body(order)
-        template_body = value.get("template_body")
-        if template_body:
+        template_body = template_body or value.get("template_body")
+        if template_body and template_body.get("use"):
             value = build_value_with_render_event(self.request, value)
-            return Template(template_body).render(**value)
+            return Template(template_body["value"]).render(**value)
         return renderers.render(self.mail_template, value, request=self.request)
 
 

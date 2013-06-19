@@ -31,7 +31,7 @@ class OrderInfoForm(Form):
 
 class OrderInfoWithValueForm(Form):
     use = fields.BooleanField(u"表示する")
-    kana = fields.TextField(u"ラベル名", validators=[validators.Required()])
+    kana = fields.TextField(u"ラベル名", validators=[validators.Optional()])
     value = fields.TextField(label=u"文言", widget=widgets.TextArea(), 
                              validators=[validators.Optional()])
 
@@ -66,10 +66,10 @@ class OrderInfoDefault(object):
         sa = order.shipping_address
         return u"{0} {1}".format(sa.last_name_kana, sa.first_name_kana)
 
-    def get_contact(order):
-        return u"""\
-%s
-商品、決済・発送に関するお問い合わせ %s""" % (order.ordered_from.name, order.ordered_from.contact_email)
+#     def get_contact(order):
+#         return u"""\
+# %s
+# 商品、決済・発送に関するお問い合わせ %s""" % (order.ordered_from.name, order.ordered_from.contact_email)
 
     name_kana = OrderInfo(name="name_kana", label=u"お名前カナ", getval=get_name_kana)
     tel = OrderInfo(name="tel", label=u"電話番号", getval=lambda order : order.shipping_address.tel_1 or "")
@@ -86,8 +86,8 @@ class OrderInfoDefault(object):
     delivery_fee = OrderInfo(name=u"delivery_fee", label=u"発券／引取手数料", getval=lambda order: ch.format_currency(order.delivery_fee))
     total_amount = OrderInfo(name=u"total_amount", label=u"合計金額", getval=lambda order: ch.format_currency(order.total_amount))
     order_datetime = OrderInfo(name="order_datetime", label=u"受付日", getval=lambda order: ch.mail_date(order.created_at))
-    contact = OrderInfo(name=u"contact", label=u"お問い合わせ", getval=get_contact)
-    
+    # contact = OrderInfo(name=u"contact", label=u"お問い合わせ", getval=get_contact)
+
     @classmethod
     def get_form_field_candidates(cls):
         hist = {}
@@ -114,7 +114,7 @@ class OrderInfoRenderer(object):
                                            body=val.get("value") or getattr(self.default, k).getval(self.order)))
         return getattr(self, k)
 
-def MailInfoFormFactory(template, mutil=None):
+def MailInfoFormFactory(template, mutil=None, request=None):
     attrs = OrderedDict()
     attrs["subject"] = fields.TextField(label=u"メール件名")
     attrs["sender"] = fields.TextField(label=u"メールsender")
@@ -151,6 +151,8 @@ def MailInfoFormFactory(template, mutil=None):
             if k.startswith("D"):
                 if not any(p in k for p in attrs["delivery_types"]):
                     status = False
+        if hasattr(default, "validate"):
+            return status and default.validate(self, request=request)
         return status
     attrs["validate"] = validate
 
@@ -175,7 +177,7 @@ class MailInfoTemplate(object):
         return MethodChoicesFormFactory(self)
 
     def as_formclass(self):
-        return MailInfoFormFactory(self, mutil=self.mutil)
+        return MailInfoFormFactory(self, mutil=self.mutil, request=self.request)
 
     payment_choices = [#("header", u"ヘッダ"), 
                        ("notice", u"決済：注意事項"), 
@@ -186,7 +188,6 @@ class MailInfoTemplate(object):
                        #("footer", u"フッター"), 
                        ]
     common_choices = [
-        PluginInfo("", "template_body",  u"テンプレート"), 
         PluginInfo("", "header", u"メールヘッダー"),
         PluginInfo("", "notice", u"共通注意事項"), 
         PluginInfo("", "footer", u"メールフッター"),
