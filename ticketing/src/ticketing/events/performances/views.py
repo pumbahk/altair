@@ -68,7 +68,7 @@ class PerformanceShowView(BaseView):
 
     def _tab_order(self):
         slave_session = get_db_session(self.request, name="slave")
-        query = slave_session.query(OrderSummary).filter_by(organization_id=self.context.user.organization_id, performance_id=self.performance.id)
+        query = slave_session.query(OrderSummary).filter_by(organization_id=self.context.user.organization_id, performance_id=self.performance.id, deleted_at=None)
         form_search = OrderSearchForm(
             self.request.params,
             event_id=self.performance.event_id,

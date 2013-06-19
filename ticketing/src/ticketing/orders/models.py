@@ -2,6 +2,7 @@ import sqlalchemy as sa
 from sqlalchemy.sql import and_
 from pyramid.threadlocal import get_current_request
 import sqlalchemy.orm as orm
+from altair.sqla import session_partaken_by
 
 from ticketing.core.models import (
     Order,
@@ -20,41 +21,30 @@ from ticketing.core.models import (
 from ticketing.users.models import (
     User,
     UserProfile,
-    Membership,
-    MemberGroup,
+    Member,
     UserCredential,
 )
 from ticketing.models import (
     Base,
-    DBSession,
 )
 
 
 class SummarizedUser(object):
-    def __init__(self, user_profile, member, user_credential):
+    def __init__(self, session, id, user_profile, user_credential):
+        self.session = session
+        self.id = id
         self.user_profile = user_profile
-        self.member = member
         self.user_credential = [user_credential]
         self.first_user_credential = user_credential
 
+    @property
+    def member(self):
+        return self.session.query(Member).filter_by(user_id=self.id).first()
 
 class SummarizedUserCredential(object):
     def __init__(self, auth_identifier, membership):
         self.auth_identifier = auth_identifier
         self.membership = membership
-
-class SummarizedMember(object):
-    def __init__(self, membergroup):
-        self.membergroup = membergroup
-
-class SummarizedMemberGroup(object):
-    def __init__(self, name, membership):
-        self.name = name
-        self.membership = membership
-
-class SummarizedMembership(object):
-    def __init__(self, name):
-        self.name = name
 
 class SummarizedUserProfile(object):
     def __init__(self,
@@ -175,8 +165,6 @@ class HybridRelation(object):
 
 
 class OrderSummary(Base):
-    query = DBSession.query_property()
-
     __mapper_args__ = dict(
         include_properties=[
             Order.__table__.c.id,
@@ -203,6 +191,9 @@ class OrderSummary(Base):
             Order.__table__.c.payment_delivery_method_pair_id,
             Order.__table__.c.shipping_address_id,
             Order.__table__.c.issued,
+            Order.__table__.c.user_id,
+            Order.__table__.c.created_at,
+            Order.__table__.c.deleted_at,
             UserProfile.__table__.c.last_name.label('user_profile_last_name'),
             UserProfile.__table__.c.first_name.label('user_profile_first_name'),
             UserProfile.__table__.c.last_name_kana.label('user_profile_last_name_kana'),
@@ -257,6 +248,9 @@ class OrderSummary(Base):
     payment_delivery_method_pair_id = Order.payment_delivery_method_pair_id
     shipping_address_id = Order.shipping_address_id
     issued = Order.issued
+    user_id = Order.user_id
+    created_at = Order.created_at
+    deleted_at = Order.deleted_at
     user_profile_last_name = UserProfile.last_name
     user_profile_first_name = UserProfile.first_name
     user_profile_last_name_kana = UserProfile.last_name_kana
@@ -352,6 +346,8 @@ class OrderSummary(Base):
     @property
     def user(self):
         return SummarizedUser(
+            session_partaken_by(self),
+            self.user_id,
             SummarizedUserProfile(self.user_profile_first_name,
                 self.user_profile_last_name,
                 self.user_profile_first_name_kana,
