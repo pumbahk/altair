@@ -45,7 +45,7 @@ def _keep_to_vacant():
         if seats:
             query = SeatStatus.__table__.update().values(
                 {'status': int(SeatStatusEnum.Vacant)}
-            ).where(and_(SeatStatus.status==int(SeatStatusEnum.Keep), SeatStatus.updated_at.between(expire_from, expire_to))
+            ).where(and_(SeatStatus.status==int(SeatStatusEnum.Keep), SeatStatus.updated_at.between(expire_from, expire_to)))
             DBSession.bind.execute(query)
     except Exception as e:
         logging.error('failed to update SeatStatus (%s)' % e.message)
