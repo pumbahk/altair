@@ -328,7 +328,11 @@ class ConfirmLotEntryView(object):
         if not h.validate_token(self.request):
             self.request.session.flash(u"セッションに問題が発生しました。")
             return self.back_to_form()
-        basetime = self.request.session['lots.entry.time']
+        basetime = self.request.session.get('lots.entry.time')
+        if basetime is None:
+            self.request.session.flash(u"セッションに問題が発生しました。")
+            return self.back_to_form()
+
         if basetime + timedelta(minutes=15) < datetime.now():
             self.request.session.flash(u"セッションに問題が発生しました。")
             return self.back_to_form()
