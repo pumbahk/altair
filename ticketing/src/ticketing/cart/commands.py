@@ -76,14 +76,14 @@ def cancel_auth_expired_carts():
     settings = registry.settings
     expire_time = int(settings['altair_cart.expire_time'])
 
-    # 多重起動防止 
+    # 多重起動防止
     LOCK_NAME = cancel_auth_expired_carts.__name__
     LOCK_TIMEOUT = 10
     conn = sqlahelper.get_engine().connect()
     status = conn.scalar("select get_lock(%s,%s)", (LOCK_NAME, LOCK_TIMEOUT))
     if status != 1:
         logging.warn('lock timeout: already running process')
-        return;
+        return
 
     carts_to_skip = set()
     logging.info("start auth cancel batch")
