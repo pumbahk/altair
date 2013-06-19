@@ -7,15 +7,9 @@ $(function() {
 
     var windowWidth = $(window).width();
 
-    // tablet
-    var viewWidth = 515;
-    var viewHeight = 300;
-
-    // phone
-    if (viewWidth > windowWidth) {
-        viewWidth = 320;
-        viewHeight = 187;
-    }
+    // TODO tablet size
+    var viewWidth = 320;
+    var viewHeight = 187;
 
     // 描画領域作成
     items = $(".item *").length;
@@ -102,17 +96,14 @@ $(function() {
                 imgTarget.attr({'src':orgSrc});
                 imgWidth = imgPreloader[index].width;
                 imgHeight = imgPreloader[index].height;
-                reduction(imgTarget, imgWidth, imgHeight);
+                reduction(imgTarget, viewWidth, viewHeight, imgWidth, imgHeight);
             }
-            imgPreloader[index].src=orgSrc;
+            imgPreloader[index].src = orgSrc;
         });
     }
 
-    function reduction(img, true_width, true_height) {
+    function reduction(img, disp_width, disp_height, true_width, true_height) {
         // 画像縮小
-        var disp_width = viewWidth;
-        var disp_height = viewHeight;
-
         if (disp_height >= disp_width) {
             zoom = disp_height / true_height;
         } else {
@@ -168,19 +159,7 @@ $(function() {
         $prev.attr("disabled", true);
     }
 
-    $(window).bind("resize",function(){
-        if (windowWidth != $(window).width()) {
-            windowWidth = $(window).width();
-            alert("kaiten!");
-        }
-    });
-
-
-
-
 })();
-
-
 
 </script>
 
