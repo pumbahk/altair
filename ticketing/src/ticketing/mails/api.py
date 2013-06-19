@@ -21,22 +21,22 @@ class MailUtility(object):
         self.module = module
         self.factory = factory
 
-    def build_message(self, request, order):
+    def build_message(self, request, subject):
         mail = self.factory(request)
-        message = mail.build_message(order)
+        message = mail.build_message(subject)
         return message
 
-    def send_mail(self, request, order, override=None):
+    def send_mail(self, request, subject, override=None):
         mailer = get_mailer(request)
-        message = self.build_message(request, order)
+        message = self.build_message(request, subject)
         if message is None:
             logger.warn("message is None: %s", traceback.format_stack(limit=3))
         message_settings_override(message, override)
         mailer.send(message)
         logger.info("send complete mail to %s" % message.recipients)
 
-    def preview_text(self, request, order):
-        message = self.build_message(request, order)
+    def preview_text(self, request, subject):
+        message = self.build_message(request, subject)
         return preview_text_from_message(message)
 
     def __getattr__(self, k, default=None):
