@@ -199,6 +199,8 @@ class LotEntryStatus(object):
         ).filter(
             LotEntry.entry_no != None
         ).filter(
+            Order.id==LotEntry.order_id
+        ).filter(
             Order.canceled_at!=None
         ).count()
         return canceled_count
@@ -216,6 +218,8 @@ class LotEntryStatus(object):
             LotEntry.order_id==Order.id
         ).filter(
             LotEntry.entry_no != None
+        ).filter(
+            Order.id==LotEntry.order_id
         ).filter(
             Order.paid_at==None
         ).count()
