@@ -1,14 +1,12 @@
 # -*- coding:utf-8 -*-
 from pyramid import renderers
 from pyramid_mailer.message import Message
-import functools
-from .api import get_mailinfo_traverser
+from .api import get_cached_traverser
 from .api import get_mail_utility
 from ticketing.core.models import MailTypeEnum
 import logging
 from .forms import OrderInfoRenderer
-from . import forms
-from .forms import OrderInfoRenderer, OrderInfoDefault, OrderInfo, OrderInfoWithValue
+from .forms import OrderInfoDefault, OrderInfo, OrderInfoWithValue
 from ticketing.cart import helpers as ch ##
 from .interfaces import ICancelMail
 from zope.interface import implementer
@@ -60,21 +58,6 @@ def get_order_info_default():
 def get_mailtype_description():
     return u"購入キャンセルメール"
 
-get_traverser = functools.partial(get_mailinfo_traverser, access=access_data, default=u"")
-
-## 不要?
-def payment_notice(request, order):
-    get_mail_utility(request, MailTypeEnum.PurchaseCancelMail)
-    trv = get_traverser(request, order)
-    notice=trv.data[forms.MailInfoTemplate.payment_key(order, "notice")]
-    return notice
-
-def delivery_notice(request, order):
-    get_mail_utility(request, MailTypeEnum.PurchaseCancelMail)
-    trv = get_traverser(request, order)
-    notice=trv.data[forms.MailInfoTemplate.delivery_key(order, "notice")]
-    return notice
-
 @implementer(ICancelMail)    
 class CancelMail(object):
     def __init__(self, mail_template, request):
@@ -93,18 +76,17 @@ class CancelMail(object):
             logger.info('order has not shipping_address or email id=%s' % order.id)
         return True
 
-    def build_message(self, order):
+    def build_message(self, order, traverser):
         if not self.validate(order):
             logger.warn("validation error")
             return 
 
         organization = order.ordered_from or self.request.context.organization
-        traverser = get_traverser(self.request, order)
         subject = self.get_mail_subject(organization, traverser)
         mail_from = self.get_mail_sender(organization, traverser)
         bcc = [mail_from]
 
-        mail_body = self.build_mail_body(order)
+        mail_body = self.build_mail_body(order, traverser)
         return Message(
             subject=subject,
             recipients=[order.shipping_address.email_1],
@@ -112,10 +94,9 @@ class CancelMail(object):
             body=mail_body,
             sender=mail_from)
 
-    def _build_mail_body(self, order):
+    def _build_mail_body(self, order, traverser):
         sa = order.shipping_address 
         pair = order.payment_delivery_pair
-        traverser = get_traverser(self.request, order)
         info_renderder = OrderInfoRenderer(order, traverser.data, default_impl=OrderCancelInfoDefault)
         title=order.performance.event.title,
         value = dict(h=ch, 
@@ -132,6 +113,6 @@ class CancelMail(object):
                      )
         return value
 
-    def build_mail_body(self, order):
-        value = self._build_mail_body(order)
+    def build_mail_body(self, order, traverser):
+        value = self._build_mail_body(order, traverser)
         return renderers.render(self.mail_template, value, request=self.request)

@@ -11,7 +11,6 @@ def install_mail_utility(config):
     from ticketing.mails.complete import PurchaseCompleteMail
     config.add_order_mail_utility(MailTypeEnum.PurchaseCompleteMail, 
                                   ".complete", PurchaseCompleteMail, "ticketing:templates/mail/complete.mako")
-
     from ticketing.mails.order_cancel import CancelMail
     config.add_order_mail_utility(MailTypeEnum.PurchaseCancelMail, 
                                   ".order_cancel", CancelMail, "ticketing:templates/mail/order_cancel.txt")

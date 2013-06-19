@@ -1,7 +1,5 @@
 # -*- coding:utf-8 -*-
-from .api import get_mailinfo_traverser
 from .api import create_or_update_mailinfo,  create_fake_order
-from .api import get_mail_utility
 from .forms import OrderInfoRenderer, OrderInfoDefault, OrderInfo, OrderInfoWithValue
 from mako.template import Template
 from ticketing.cart import helpers as ch ##
@@ -13,7 +11,6 @@ from pyramid_mailer.message import Message
 from .interfaces import ICompleteMail
 from zope.interface import implementer
 from ticketing.core.models import MailTypeEnum
-import functools
 import traceback
 import sys
 
@@ -30,7 +27,7 @@ class OrderCompleteInfoDefault(OrderInfoDefault):
     template_body = OrderInfoWithValue(name="template_body",  label=u"テンプレート", value="", getval=(lambda order : ""))
 
     @classmethod
-    def validate(cls, form, request):
+    def validate(cls, form, request, mutil):
         data = form.data
 
         ## template_bodyが渡された場合には実際にレンダリングしてシミュレート
@@ -40,7 +37,8 @@ class OrderCompleteInfoDefault(OrderInfoDefault):
                 mail = PurchaseCompleteMail(None, request)
                 payment_id, delivery_id = 1, 1 #xxx
                 fake_order = create_fake_order(request, request.context.user.organization, payment_id, delivery_id)
-                mail.build_mail_body(fake_order,  template_body=template_body)
+                traverser = mutil.get_traverser(request, fake_order)
+                mail.build_mail_body(fake_order, traverser, template_body=template_body)
                 ##xx:
             except Exception as e:
                 etype, value, tb = sys.exc_info()
@@ -55,8 +53,6 @@ def get_mailtype_description():
 
 def get_order_info_default():
     return OrderCompleteInfoDefault
-
-get_traverser = functools.partial(get_mailinfo_traverser, access=access_data, default=u"")
    
 @implementer(ICompleteMail)
 class PurchaseCompleteMail(object):
@@ -72,14 +68,13 @@ class PurchaseCompleteMail(object):
         return (traverser.data["sender"] or organization.contact_email)
 
 
-    def build_message(self, order):
+    def build_message(self, order, traverser):
         organization = order.ordered_from or self.request.organization
-        traverser = get_traverser(self.request, order)
         subject = self.get_mail_subject(organization, traverser)
         mail_from = self.get_mail_sender(organization, traverser)
         bcc = [mail_from]
 
-        mail_body = self.build_mail_body(order)
+        mail_body = self.build_mail_body(order, traverser)
         return Message(
             subject=subject,
             recipients=[order.shipping_address.email_1],
@@ -87,10 +82,9 @@ class PurchaseCompleteMail(object):
             body=mail_body,
             sender=mail_from)
 
-    def _build_mail_body(self, order):
+    def _build_mail_body(self, order, traverser):
         sa = order.shipping_address 
         pair = order.payment_delivery_pair
-        traverser = get_traverser(self.request, order)
         info_renderder = OrderInfoRenderer(order, traverser.data, default_impl=get_order_info_default())
         value = dict(h=ch, 
                      order=order,
@@ -106,8 +100,8 @@ class PurchaseCompleteMail(object):
                      )
         return value
 
-    def build_mail_body(self, order, template_body=None):
-        value = self._build_mail_body(order)
+    def build_mail_body(self, order, traverser, template_body=None):
+        value = self._build_mail_body(order, traverser)
         template_body = template_body or value.get("template_body")
         if template_body and template_body.get("use"):
             value = build_value_with_render_event(self.request, value)

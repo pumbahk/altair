@@ -152,7 +152,7 @@ def MailInfoFormFactory(template, mutil=None, request=None):
                 if not any(p in k for p in attrs["delivery_types"]):
                     status = False
         if hasattr(default, "validate"):
-            return status and default.validate(self, request=request)
+            return status and default.validate(self, request=request, mutil=mutil)
         return status
     attrs["validate"] = validate
 

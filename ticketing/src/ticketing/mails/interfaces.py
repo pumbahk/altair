@@ -6,6 +6,10 @@ class ITraverser(Interface):
     def visit(target):
         """ start traverse """
 
+class ITraverserFactory(Interface):
+    def __call__(request, subject):
+        pass
+
 class IMailUtility(Interface):
     def build_message(request, order):
         """orderからメールオブジェクト作成"""

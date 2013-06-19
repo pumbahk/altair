@@ -1,7 +1,10 @@
 # -*- coding:utf-8 -*-
 import traceback 
+import functools
 from .interfaces import (
-    IMailUtility
+    IMailUtility, 
+    ITraverser, 
+    ITraverserFactory
 )
 from datetime import datetime
 from .fake import FakeObject
@@ -10,20 +13,60 @@ import logging
 from zope.interface import implementer
 from ticketing.core.models import ExtraMailInfo, PaymentMethodPlugin, DeliveryMethodPlugin
 from pyramid_mailer import get_mailer
-
 logger = logging.getLogger(__name__)
+
 def get_mail_utility(request, mailtype):
     return request.registry.getUtility(IMailUtility, str(mailtype))
 
+def get_cached_traverser(request, mtype, subject):
+    trv = getattr(subject, "_cached_mail_traverser", None)
+    if trv is None:
+        factory = request.registry.getUtility(ITraverserFactory, name=mtype)
+        trv = subject._cached_mail_traverser = factory(subject)
+    return trv
+
+def access_data_default(data, k, mtype="", default=""):
+    try:
+        return data[mtype][k]
+    except KeyError:
+        return default
+
+@implementer(ITraverserFactory)
+class MailTraverserFromOrder(object):
+    def __init__(self, mtype, default=""):
+        self.mtype = mtype
+        self.default = default
+        self.access = functools.partial(access_data_default, mtype=mtype, default=default)
+
+    def __call__(self, order):
+        performance = order.performance
+        return EmailInfoTraverser(access=self.access, default=self.default).visit(performance)
+
+@implementer(ITraverserFactory)
+class MailTraverserFromLotsEntry(object):
+    def __init__(self, mtype, default=""):
+        self.mtype = mtype
+        self.default = default
+        self.access = functools.partial(access_data_default, mtype=mtype, default=default)
+
+    def __call__(self, lots_entry):
+        event = lots_entry.event
+        return EmailInfoTraverser(access=self.access, default=self.default).visit(event)
+
 @implementer(IMailUtility)
 class MailUtility(object):
-    def __init__(self, module, factory):
+    def __init__(self, module, mtype, factory):
         self.module = module
         self.factory = factory
+        self.mtype = mtype
+
+    def get_traverser(self, request, subject):
+        return get_cached_traverser(request, self.mtype, subject)
 
     def build_message(self, request, subject):
         mail = self.factory(request)
-        message = mail.build_message(subject)
+        traverser = self.get_traverser(request, subject)
+        message = mail.build_message(subject, traverser)
         return message
 
     def send_mail(self, request, subject, override=None):
@@ -41,14 +84,6 @@ class MailUtility(object):
 
     def __getattr__(self, k, default=None):
         return getattr(self.module, k)
-
-def get_mailinfo_traverser(request, order, access=None, default=None):
-    trv = getattr(order, "_mailinfo_traverser", None)
-    if trv is None:
-        # organization = order.ordered_from
-        performance = order.performance
-        trv = order._mailinfo_traverser = EmailInfoTraverser(access=access, default=default).visit(performance)
-    return trv
 
 def create_mailinfo(target, data, organization, event, performance, kind):
     if kind:
@@ -119,7 +154,7 @@ def create_fake_order(request, organization, payment_plugin_id, delivery_plugin_
     order = FakeObject("T")
     order.ordered_from = organization
     order.created_at = now
-    order._mailinfo_traverser = None
+    order._cached_mail_traverser = None
     _fake_order_add_settings(order, payment_plugin_id, delivery_plugin_id, event, performance)
     _fake_order_add_fake_chain(order, organization, event, performance)
     return order
