@@ -16,9 +16,9 @@ def install_mail_utility(config):
                                   ".order_cancel", CancelMail, "ticketing:templates/mail/order_cancel.txt")
 
     ## lots
-    from ticketing.mails.lots_mail import LotsMail
+    from ticketing.mails.lots_mail import LotsAcceptedMail
     config.add_order_mail_utility(MailTypeEnum.LotsAcceptedMail, 
-                                  ".lots_mail", LotsMail, "ticketing:templates/mail/complete.mako")
+                                  ".lots_mail", LotsAcceptedMail, "ticketing:templates/mail/lot_accept_entry.mako")
 
 def includeme(config):
     config.include(install_mail_utility)

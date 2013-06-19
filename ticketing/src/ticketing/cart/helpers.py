@@ -36,7 +36,7 @@ def cart_timeout(request):
 
 def performance_date(performance):
     s = performance.start_on
-    return u'{0.month}月{0.day}日 {0.hour:02}:{0.minute:02}'.format(s)
+    return u'{s.month}月{s.day}日 {s.hour:2}:{s.minute:2}'.format(s=s)
 
 def japanese_date(date):
     return u"%d年%d月%02d日(%s)" % (date.year, date.month, date.day, u"月火水木金土日"[date.weekday()])

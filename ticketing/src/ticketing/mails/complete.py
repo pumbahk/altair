@@ -1,12 +1,12 @@
 # -*- coding:utf-8 -*-
 from .api import create_or_update_mailinfo,  create_fake_order
-from .forms import OrderInfoRenderer, OrderInfoDefault, OrderInfo, OrderInfoWithValue
+from .forms import SubjectInfoRenderer, OrderInfoDefault, SubjectInfoWithValue
 from mako.template import Template
 from ticketing.cart import helpers as ch ##
 import logging
 logger = logging.getLogger(__name__)
 
-from pyramid import renderers
+from .renderers import render
 from pyramid_mailer.message import Message
 from .interfaces import ICompleteMail
 from zope.interface import implementer
@@ -14,9 +14,7 @@ import traceback
 import sys
 
 class OrderCompleteInfoDefault(OrderInfoDefault):
-    tel = OrderInfo(name="tel", label=u"電話番号", getval=lambda order : order.shipping_address.tel_1 or "")
-    mail = OrderInfo(name="mail", label=u"メールアドレス", getval=lambda order : order.shipping_address.email_1)
-    template_body = OrderInfoWithValue(name="template_body",  label=u"テンプレート", value="", getval=(lambda order : ""))
+    template_body = SubjectInfoWithValue(name="template_body",  label=u"テンプレート", value="", getval=(lambda order : ""))
 
     @classmethod
     def validate(cls, form, request, mutil):
@@ -74,10 +72,10 @@ class PurchaseCompleteMail(object):
             body=mail_body,
             sender=mail_from)
 
-    def _build_mail_body(self, order, traverser):
+    def _body_tmpl_vars(self, order, traverser):
         sa = order.shipping_address 
         pair = order.payment_delivery_pair
-        info_renderder = OrderInfoRenderer(order, traverser.data, default_impl=get_subject_info_default())
+        info_renderder = SubjectInfoRenderer(order, traverser.data, default_impl=get_subject_info_default())
         value = dict(h=ch, 
                      order=order,
                      get=info_renderder.get, 
@@ -93,12 +91,12 @@ class PurchaseCompleteMail(object):
         return value
 
     def build_mail_body(self, order, traverser, template_body=None):
-        value = self._build_mail_body(order, traverser)
+        value = self._body_tmpl_vars(order, traverser)
         template_body = template_body or value.get("template_body")
         if template_body and template_body.get("use"):
             value = build_value_with_render_event(self.request, value)
             return Template(template_body["value"]).render(**value)
-        return renderers.render(self.mail_template, value, request=self.request)
+        return render(self.mail_template, value, request=self.request)
 
 
 from pyramid.interfaces import IRendererGlobalsFactory

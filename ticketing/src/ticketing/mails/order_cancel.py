@@ -1,9 +1,9 @@
 # -*- coding:utf-8 -*-
-from pyramid import renderers
+from .renderers import render
 from pyramid_mailer.message import Message
 import logging
-from .forms import OrderInfoRenderer
-from .forms import OrderInfoDefault, OrderInfo, OrderInfoWithValue
+from .forms import SubjectInfoRenderer
+from .forms import OrderInfoDefault, SubjectInfo, SubjectInfoWithValue
 from ticketing.cart import helpers as ch ##
 from .interfaces import ICancelMail
 from zope.interface import implementer
@@ -27,10 +27,15 @@ ${last_name} ${first_name} 様
 ${prefecture} ${city}
 ${address_1} ${address_2}""" % params
 
-    ordered_from = OrderInfo(name=u"ordered_from", label=u"販売会社", getval=lambda order: order.ordered_from.name)
-    payment_method = OrderInfo(name=u"payment_method", label=u"支払方法",  getval=lambda order: order.payment_delivery_pair.payment_method.name)
-    delivery_method = OrderInfo(name=u"delivery_method", label=u"引取方法",  getval=lambda order: order.payment_delivery_pair.delivery_method.name)
-    address = OrderInfo(name="address", label=u"送付先", getval=get_shipping_address_info)
+    ordered_from = SubjectInfo(name=u"ordered_from", label=u"販売会社", getval=lambda order: order.ordered_from.name)
+    payment_method = SubjectInfo(name=u"payment_method", label=u"支払方法",  getval=lambda order: order.payment_delivery_pair.payment_method.name)
+    delivery_method = SubjectInfo(name=u"delivery_method", label=u"引取方法",  getval=lambda order: order.payment_delivery_pair.delivery_method.name)
+    address = SubjectInfo(name="address", label=u"送付先", getval=get_shipping_address_info)
+    def get_contact(order):
+        return u"""\
+%s
+商品、決済・発送に関するお問い合わせ %s""" % (order.ordered_from.name, order.ordered_from.contact_email)
+    contact = SubjectInfo(name=u"contact", label=u"お問い合わせ", getval=get_contact)
 
     cancel_reason_default=u"""\
 　・お客様からキャンセルのご連絡があったため
@@ -38,7 +43,7 @@ ${address_1} ${address_2}""" % params
 　・二重注文により、ひとつをキャンセル処理したため
 """
     ## getvalが文字列の場合は、input formになり文言を変更できる
-    cancel_reason = OrderInfoWithValue(name="cancel_reason", label=u"キャンセル理由", 
+    cancel_reason = SubjectInfoWithValue(name="cancel_reason", label=u"キャンセル理由", 
                                        getval=lambda order: OrderCancelInfoDefault.cancel_reason_default, value=cancel_reason_default)
     
 def get_subject_info_default():
@@ -83,11 +88,11 @@ class CancelMail(object):
             body=mail_body,
             sender=mail_from)
 
-    def _build_mail_body(self, order, traverser):
+    def _body_tmpl_vars(self, order, traverser):
         sa = order.shipping_address 
         pair = order.payment_delivery_pair
-        info_renderder = OrderInfoRenderer(order, traverser.data, default_impl=OrderCancelInfoDefault)
-        title=order.performance.event.title,
+        info_renderder = SubjectInfoRenderer(order, traverser.data, default_impl=OrderCancelInfoDefault)
+        title=order.performance.event.title
         value = dict(h=ch, 
                      order=order,
                      title=title, 
@@ -103,5 +108,5 @@ class CancelMail(object):
         return value
 
     def build_mail_body(self, order, traverser):
-        value = self._build_mail_body(order, traverser)
-        return renderers.render(self.mail_template, value, request=self.request)
+        value = self._body_tmpl_vars(order, traverser)
+        return render(self.mail_template, value, request=self.request)

@@ -10,32 +10,44 @@ from wtforms import validators
 from collections import namedtuple, OrderedDict
 from ticketing.cart import helpers as ch
 
-def MethodChoicesFormFactory(template):
-    attrs = {}
-    choices = [(m.payment_plugin_id, m.name)
-               for m in template.organization.payment_method_list]
-    attrs["payment_methods"] = fields.SelectField(label=u"決済方法", choices=choices, id="payment_methods")    
 
-    choices = [(m.delivery_plugin_id, m.name)
-               for m in template.organization.delivery_method_list]
-    attrs["delivery_methods"] = fields.SelectField(label=u"引取方法", choices=choices, id="delivery_methods")
-    return type("MethodChoiceForm", (Form, ), attrs)
-
-OrderInfo = namedtuple("OrderInfo", "name label getval")
-OrderInfoWithValue = namedtuple("OrderInfoWithValue", "name label getval value")
+SubjectInfo = namedtuple("SubjectInfo", "name label getval")
+SubjectInfoWithValue = namedtuple("SubjectInfoWithValue", "name label getval value")
 RenderVal = namedtuple("RenderVal", "status label, body")
+PluginInfo = namedtuple("PluginInfo", "method name label") #P0, P0notice, 注意事項(コンビニ決済)
 
-class OrderInfoForm(Form):
+class SubjectInfoForm(Form):
     use = fields.BooleanField(u"表示する")
     kana = fields.TextField(u"ラベル名", validators=[validators.Required()])
 
-class OrderInfoWithValueForm(Form):
+class SubjectInfoWithValueForm(Form):
     use = fields.BooleanField(u"表示する")
     kana = fields.TextField(u"ラベル名", validators=[validators.Optional()])
     value = fields.TextField(label=u"文言", widget=widgets.TextArea(), 
                              validators=[validators.Optional()])
 
-class OrderInfoDefault(object):
+class SubjectInfoDefault(object):
+    ## subject = order or lots_entry
+    def get_name_kana(subject):
+        sa = subject.shipping_address
+        return u"{0} {1}".format(sa.last_name_kana, sa.first_name_kana)
+
+    name_kana = SubjectInfo(name="name_kana", label=u"お名前カナ", getval=get_name_kana)
+    tel = SubjectInfo(name="tel", label=u"電話番号", getval=lambda subject : subject.shipping_address.tel_1 or "")
+    mail = SubjectInfo(name="mail", label=u"メールアドレス", getval=lambda subject : subject.shipping_address.email_1)
+    order_no = SubjectInfo(name="order_no", label=u"受付番号", getval=lambda subject : subject.order_no)
+    order_datetime = SubjectInfo(name="order_datetime", label=u"受付日", getval=lambda order: ch.mail_date(order.created_at))
+
+    @classmethod
+    def get_form_field_candidates(cls):
+        hist = {}
+        for c in cls.__mro__:
+            for k, v in c.__dict__.iteritems():
+                if isinstance(v, (SubjectInfo, SubjectInfoWithValue)) and not k in hist:
+                    hist[k] = 1
+                    yield (k, v)
+    
+class OrderInfoDefault(SubjectInfoDefault):
     """ 
     以下の情報のデフォルトの値。ラベル名が変えられ、表示するかしないか選択できる。
     #注文情報 受付番号、受付日時、公演タイトル、商品名、座席番号、商品代金、サービス利用料・手数料、合計金額
@@ -62,43 +74,19 @@ class OrderInfoDefault(object):
                                                     op.quantity)
                            for op in order.ordered_products))
 
-    def get_name_kana(order):
-        sa = order.shipping_address
-        return u"{0} {1}".format(sa.last_name_kana, sa.first_name_kana)
 
-#     def get_contact(order):
-#         return u"""\
-# %s
-# 商品、決済・発送に関するお問い合わせ %s""" % (order.ordered_from.name, order.ordered_from.contact_email)
-
-    name_kana = OrderInfo(name="name_kana", label=u"お名前カナ", getval=get_name_kana)
-    tel = OrderInfo(name="tel", label=u"電話番号", getval=lambda order : order.shipping_address.tel_1 or "")
-    mail = OrderInfo(name="mail", label=u"メールアドレス", getval=lambda order : order.shipping_address.email_1)
-    order_no = OrderInfo(name="order_no", label=u"受付番号", getval=lambda order : order.order_no)
-    name_kana = OrderInfo(name="name_kana", label=u"お名前カナ", getval=get_name_kana)
-    event_name = OrderInfo(name="event_name", label=u"公演タイトル", getval=get_event_title)
-    pdate = OrderInfo(name="pdate", label=u"公演日時", getval=get_performance_date)
-    venue = OrderInfo(name="venue", label=u"会場", getval=lambda order: order.performance.venue.name)
-    for_product =OrderInfo(name="for_product", label=u"商品代金", getval=get_product_description)
-    for_seat = OrderInfo(name=u"for_seat", label=u"ご購入いただいた座席", getval=get_seat_no)
-    system_fee = OrderInfo(name=u"system_fee", label=u"システム利用料", getval=lambda order: ch.format_currency(order.system_fee))
-    transaction_fee = OrderInfo(name=u"transaction_fee", label=u"決済手数料", getval=lambda order: ch.format_currency(order.transaction_fee))
-    delivery_fee = OrderInfo(name=u"delivery_fee", label=u"発券／引取手数料", getval=lambda order: ch.format_currency(order.delivery_fee))
-    total_amount = OrderInfo(name=u"total_amount", label=u"合計金額", getval=lambda order: ch.format_currency(order.total_amount))
-    order_datetime = OrderInfo(name="order_datetime", label=u"受付日", getval=lambda order: ch.mail_date(order.created_at))
-    # contact = OrderInfo(name=u"contact", label=u"お問い合わせ", getval=get_contact)
-
-    @classmethod
-    def get_form_field_candidates(cls):
-        hist = {}
-        for c in cls.__mro__:
-            for k, v in c.__dict__.iteritems():
-                if isinstance(v, (OrderInfo, OrderInfoWithValue)) and not k in hist:
-                    hist[k] = 1
-                    yield (k, v)
+    event_name = SubjectInfo(name=u"event_name", label=u"公演タイトル", getval=get_event_title)
+    pdate = SubjectInfo(name=u"pdate", label=u"公演日時", getval=get_performance_date)
+    venue = SubjectInfo(name=u"venue", label=u"会場", getval=lambda order: order.performance.venue.name)
+    for_product =SubjectInfo(name=u"for_product", label=u"商品代金", getval=get_product_description)
+    for_seat = SubjectInfo(name=u"for_seat", label=u"ご購入いただいた座席", getval=get_seat_no)
+    system_fee = SubjectInfo(name=u"system_fee", label=u"システム利用料", getval=lambda order: ch.format_currency(order.system_fee))
+    transaction_fee = SubjectInfo(name=u"transaction_fee", label=u"決済手数料", getval=lambda order: ch.format_currency(order.transaction_fee))
+    delivery_fee = SubjectInfo(name=u"delivery_fee", label=u"発券／引取手数料", getval=lambda order: ch.format_currency(order.delivery_fee))
+    total_amount = SubjectInfo(name=u"total_amount", label=u"合計金額", getval=lambda order: ch.format_currency(order.total_amount))
     
-class OrderInfoRenderer(object):
-    def __init__(self, order, data, default_impl=OrderInfoDefault):
+class SubjectInfoRenderer(object):
+    def __init__(self, order, data, default_impl=SubjectInfoDefault):
         self.order = order
         self.data = data
         self.default = default_impl
@@ -122,15 +110,15 @@ def MailInfoFormFactory(template, mutil=None, request=None):
     try:
         default = mutil.get_subject_info_default()
     except:
-        logger.warn("mutil is not found. default is OrderInfoDefault")
-        default = OrderInfoDefault
+        logger.warn("mutil is not found. default is SubjectInfoDefault")
+        default = SubjectInfoDefault
 
     for k, v in default.get_form_field_candidates():
         if hasattr(v, "value"):
-            attrs[k] = fields.FormField(OrderInfoWithValueForm, label=v.label, 
+            attrs[k] = fields.FormField(SubjectInfoWithValueForm, label=v.label, 
                                         default=dict(use=True, kana=v.label, doc=v, value=v.value)) ##xxx:
         else:
-            attrs[k] = fields.FormField(OrderInfoForm, label=v.label, 
+            attrs[k] = fields.FormField(SubjectInfoForm, label=v.label, 
                                         default=dict(use=True, kana=v.label, doc=v)) ##xxx:
 
     for e in template.template_keys():
@@ -162,7 +150,18 @@ def MailInfoFormFactory(template, mutil=None, request=None):
 
     return type("MailInfoForm", (Form, ), attrs)
 
-PluginInfo = namedtuple("PluginInfo", "method name label") #P0, P0notice, 注意事項(コンビニ決済)
+def MethodChoicesFormFactory(template):
+    attrs = {}
+    choices = [(m.payment_plugin_id, m.name)
+               for m in template.organization.payment_method_list]
+    attrs["payment_methods"] = fields.SelectField(label=u"決済方法", choices=choices, id="payment_methods")    
+
+    choices = [(m.delivery_plugin_id, m.name)
+               for m in template.organization.delivery_method_list]
+    attrs["delivery_methods"] = fields.SelectField(label=u"引取方法", choices=choices, id="delivery_methods")
+    return type("MethodChoiceForm", (Form, ), attrs)
+
+
 class MailInfoTemplate(object):
     """
     data = {

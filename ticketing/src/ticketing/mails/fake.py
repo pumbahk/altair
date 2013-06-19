@@ -35,10 +35,13 @@ class FakeObject(unicode):
         return v
 
     def __iter__(self):
-        return iter([])
+        return iter([self.__class__()])
 
     def __str__(self):
         return self.name
+
+    def __add__(self, n):
+        return int(self)+n
 
     def __int__(self):
         return 0
