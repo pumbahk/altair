@@ -66,13 +66,11 @@ class ILotsAcceptedMailPayment(Interface):
     """ 抽選申し込み完了メールの配送ビューレットのコンテキスト"""
     request = Attribute("r")
     order = Attribute(u"抽選注文")
-    elected_wish = Attribute(u"当選希望 なければNone")
 
 class ILotsAcceptedMailDelivery(Interface):
     """ 抽選申し込み完了メールの配送ビューレットのコンテキスト"""
     request = Attribute("r")
     order = Attribute(u"抽選注文")
-    elected_wish = Attribute(u"当選希望 なければNone")
 
 class ILotsElectedMailPayment(Interface):
     """ 抽選通知メールの配送ビューレットのコンテキスト"""
