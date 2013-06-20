@@ -80,7 +80,11 @@
               %else:
               <select name="performanceName-${i}" data-wishOrder="${i}" class="performance-name-select">
               %for performance_name, _ in performance_map:
-              <option value="${performance_name}">${performance_name}</option>
+                % if (_[0]['id'] == int(performance_id)) and (i == 0):
+                  <option value="${performance_name}" selected>${performance_name}</option>
+                % else:
+                  <option value="${performance_name}">${performance_name}</option>
+                % endif
               %endfor
               </select>
               %endif
