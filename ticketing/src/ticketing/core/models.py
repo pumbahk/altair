@@ -2159,7 +2159,8 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                         .join(OrderedProductItem.__table__) \
                         .join(OrderedProduct.__table__)) \
                     .where(OrderedProduct.order_id==cls.id) \
-                    .where(TicketPrintQueueEntry.processed_at==None)))
+                    .where(TicketPrintQueueEntry.processed_at==None)),
+                deferred=True)
 
     @property
     def payment_plugin_id(self):
