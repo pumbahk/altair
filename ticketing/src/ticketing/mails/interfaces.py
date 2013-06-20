@@ -20,10 +20,6 @@ class IMailUtility(Interface):
     def preview_text(request, order):
         """ orderから送信されるメールのpreviewを作成"""
 
-class IInfoMailFactory(Interface):
-    def __call__(request):
-        """return IPurchaseInfoMail"""
-
 class IPurchaseInfoMail(Interface):
     request = Attribute("request")
 
@@ -65,3 +61,35 @@ class IOrderCancelMailDelivery(Interface):
     """ 購入キャンセルメールの配送ビューレットのコンテキスト"""
     request = Attribute("r")
     order = Attribute(u"注文内容")
+
+class ILotsAcceptedMailPayment(Interface):
+    """ 抽選申し込み完了メールの配送ビューレットのコンテキスト"""
+    request = Attribute("r")
+    order = Attribute(u"抽選注文")
+    elected_wish = Attribute(u"当選希望 なければNone")
+
+class ILotsAcceptedMailDelivery(Interface):
+    """ 抽選申し込み完了メールの配送ビューレットのコンテキスト"""
+    request = Attribute("r")
+    order = Attribute(u"抽選注文")
+    elected_wish = Attribute(u"当選希望 なければNone")
+
+class ILotsElectedMailPayment(Interface):
+    """ 抽選通知メールの配送ビューレットのコンテキスト"""
+    request = Attribute("r")
+    order = Attribute(u"抽選注文")
+
+class ILotsElectedMailDelivery(Interface):
+    """ 抽選通知メールの配送ビューレットのコンテキスト"""
+    request = Attribute("r")
+    order = Attribute(u"抽選注文")
+
+class ILotsRejectedMailPayment(Interface):
+    """ 抽選落選通知メールの配送ビューレットのコンテキスト"""
+    request = Attribute("r")
+    order = Attribute(u"抽選注文")
+
+class ILotsRejectedMailDelivery(Interface):
+    """ 抽選落選通知メールの配送ビューレットのコンテキスト"""
+    request = Attribute("r")
+    order = Attribute(u"抽選注文")

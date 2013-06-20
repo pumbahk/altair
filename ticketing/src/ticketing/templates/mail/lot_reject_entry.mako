@@ -40,6 +40,9 @@ ${get("order_datetime").body}
 ■${get("announce_date").label}: ${get("announce_date").body}
 %endif
 
+${h.render_payment_lots_rejected_mail_viewlet(request, lot_entry)}
+${h.render_delivery_lots_rejected_mail_viewlet(request, lot_entry)}
+
 ${notice}
 
 ${footer}

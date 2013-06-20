@@ -13,6 +13,9 @@ from .resources import OrderDelivery, CartDelivery, OrderPayment, CartPayment
 from ..core.models import FeeTypeEnum, SalesSegment, StockTypeEnum
 from ticketing.mails.helpers import render_delivery_finished_mail_viewlet, render_payment_finished_mail_viewlet
 from ticketing.mails.helpers import render_delivery_cancel_mail_viewlet, render_payment_cancel_mail_viewlet
+from ticketing.mails.helpers import render_delivery_lots_accepted_mail_viewlet, render_payment_lots_accepted_mail_viewlet
+from ticketing.mails.helpers import render_delivery_lots_elected_mail_viewlet, render_payment_lots_elected_mail_viewlet
+from ticketing.mails.helpers import render_delivery_lots_rejected_mail_viewlet, render_payment_lots_rejected_mail_viewlet
 import logging
 from .api import get_nickname
 

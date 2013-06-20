@@ -1,5 +1,9 @@
 import functools
 from .resources import PurchaseCompleteMailDelivery, PurchaseCompleteMailPayment, OrderCancelMailDelivery, OrderCancelMailPayment
+from .resources import LotsAcceptedMailDelivery, LotsAcceptedMailPayment
+from .resources import LotsElectedMailDelivery, LotsElectedMailPayment
+from .resources import LotsRejectedMailDelivery, LotsRejectedMailPayment
+
 from pyramid.view import render_view_to_response
 from markupsafe import Markup
 import logging
@@ -58,3 +62,28 @@ def render_delivery_cancel_mail_viewlet(request, order):
 def render_payment_cancel_mail_viewlet(request, order):
     return OrderCancelMailPayment(request, order)
 
+## lots
+
+@as_delivery_viewlet(faildefault="", message="*lots_accepted mail*: %s is not found")
+def render_delivery_lots_accepted_mail_viewlet(request, lot_entry):
+    return LotsAcceptedMailDelivery(request, lot_entry)
+
+@as_payment_viewlet(faildefault="", message="*lots_accepted mail*: %s is not found")
+def render_payment_lots_accepted_mail_viewlet(request, lot_entry):
+    return LotsAcceptedMailPayment(request, lot_entry)
+
+@as_delivery_viewlet(faildefault="", message="*lots_elected mail*: %s is not found")
+def render_delivery_lots_elected_mail_viewlet(request, lot_entry):
+    return LotsElectedMailDelivery(request, lot_entry)
+
+@as_payment_viewlet(faildefault="", message="*lots_elected mail*: %s is not found")
+def render_payment_lots_elected_mail_viewlet(request, lot_entry):
+    return LotsElectedMailPayment(request, lot_entry)
+
+@as_delivery_viewlet(faildefault="", message="*lots_rejected mail*: %s is not found")
+def render_delivery_lots_rejected_mail_viewlet(request, lot_entry):
+    return LotsRejectedMailDelivery(request, lot_entry)
+
+@as_payment_viewlet(faildefault="", message="*lots_rejected mail*: %s is not found")
+def render_payment_lots_rejected_mail_viewlet(request, lot_entry):
+    return LotsRejectedMailPayment(request, lot_entry)

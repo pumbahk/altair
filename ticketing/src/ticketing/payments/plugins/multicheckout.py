@@ -22,6 +22,9 @@ from ticketing.core import models as c_models
 from ticketing.payments.interfaces import IPaymentPlugin, IOrderPayment
 from ticketing.cart.interfaces import ICartPayment
 from ticketing.mails.interfaces import ICompleteMailPayment, IOrderCancelMailPayment
+from ticketing.mails.interfaces import ILotsAcceptedMailPayment
+from ticketing.mails.interfaces import ILotsElectedMailPayment
+from ticketing.mails.interfaces import ILotsRejectedMailPayment
 from ticketing.formhelpers import (
     Required,
     Translations,
@@ -222,6 +225,7 @@ def completion_viewlet(context, request):
     return dict()
 
 @view_config(context=ICompleteMailPayment, name="payment-%d" % PAYMENT_ID, renderer="ticketing.payments.plugins:templates/card_mail_complete.html")
+@view_config(context=ILotsElectedMailPayment, name="payment-%d" % PAYMENT_ID, renderer="ticketing.payments.plugins:templates/checkout_mail_complete.html")
 def completion_payment_mail_viewlet(context, request):
     """ 完了メール表示
     :param context: ICompleteMailPayment
@@ -230,6 +234,8 @@ def completion_payment_mail_viewlet(context, request):
     return dict(notice=notice)
 
 @view_config(context=IOrderCancelMailPayment, name="payment-%d" % PAYMENT_ID)
+@view_config(context=ILotsRejectedMailPayment, name="payment-%d" % PAYMENT_ID)
+@view_config(context=ILotsAcceptedMailPayment, name="payment-%d" % PAYMENT_ID)
 def cancel_payment_mail_viewlet(context, request):
     """ 完了メール表示
     :param context: ICompleteMailPayment

@@ -6,6 +6,10 @@ from zope.interface import implementer
 from ticketing.payments.interfaces import IDeliveryPlugin, IOrderDelivery
 from ticketing.cart.interfaces import ICartDelivery
 from ticketing.mails.interfaces import ICompleteMailDelivery, IOrderCancelMailDelivery
+from ticketing.mails.interfaces import ILotsAcceptedMailDelivery
+from ticketing.mails.interfaces import ILotsElectedMailDelivery
+from ticketing.mails.interfaces import ILotsRejectedMailDelivery
+
 from . import models as m
 from . import logger
 from ticketing.cart import helpers as cart_helper
@@ -41,6 +45,7 @@ class ShippingDeliveryPlugin(object):
         return bool(order.shipping_address)
 
 @view_config(context=ICompleteMailDelivery, name="delivery-%d" % PLUGIN_ID, renderer="ticketing.payments.plugins:templates/shipping_delivery_mail_complete.html")
+@view_config(context=ILotsElectedMailDelivery, name="delivery-%d" % PLUGIN_ID, renderer="ticketing.payments.plugins:templates/shipping_delivery_mail_complete.html")
 def completion_delivery_mail_viewlet(context, request):
     """ 完了メール表示
     :param context: ICompleteMailDelivery
@@ -51,8 +56,7 @@ def completion_delivery_mail_viewlet(context, request):
                 )
 
 @view_config(context=IOrderCancelMailDelivery, name="delivery-%d" % PLUGIN_ID)
-def cancel_delivery_mail_viewlet(context, request):
-    """ cancelメール表示
-    :param context: IOrderCancelMailDelivery
-    """
+@view_config(context=ILotsRejectedMailDelivery, name="delivery-%d" % PLUGIN_ID)
+@view_config(context=ILotsAcceptedMailDelivery, name="delivery-%d" % PLUGIN_ID)
+def notice_mail_viewlet(context, request):
     return Response(context.mail_data("notice"))

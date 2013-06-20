@@ -13,6 +13,12 @@ from ticketing.mails.interfaces import (
     ICompleteMailPayment, 
     IOrderCancelMailDelivery, 
     IOrderCancelMailPayment,
+    ILotsAcceptedMailPayment,
+    ILotsAcceptedMailDelivery,
+    ILotsElectedMailPayment,
+    ILotsElectedMailDelivery,
+    ILotsRejectedMailPayment,
+    ILotsRejectedMailDelivery,
 )
 
 from . import models as m
@@ -87,6 +93,15 @@ def completion_delivery_mail_viewlet(context, request):
 def cancel_payment_mail_viewlet(context, request):
     """ cancelメール表示
     """
+    return Response(context.mail_data("notice"))
+
+@view_config(context=ILotsElectedMailPayment, name="payment-%d" % PAYMENT_PLUGIN_ID)
+@view_config(context=ILotsRejectedMailPayment, name="payment-%d" % PAYMENT_PLUGIN_ID)
+@view_config(context=ILotsAcceptedMailPayment, name="payment-%d" % PAYMENT_PLUGIN_ID)
+@view_config(context=ILotsElectedMailDelivery, name="delivery-%d" % PLUGIN_ID)
+@view_config(context=ILotsRejectedMailDelivery, name="delivery-%d" % PLUGIN_ID)
+@view_config(context=ILotsAcceptedMailDelivery, name="delivery-%d" % PLUGIN_ID)
+def notice_viewlet(context, request):
     return Response(context.mail_data("notice"))
 
 def rand_string(seed, length):

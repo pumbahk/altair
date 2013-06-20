@@ -56,29 +56,12 @@ ${product.product.name} ${h.format_currency(product.product.price)} x ${product.
 ■お支払
 お支払方法： ${lot_entry.payment_delivery_method_pair.payment_method.name}
 ※決済手数料：${h.format_currency(lot_entry.payment_delivery_method_pair.transaction_fee)}円/${fee_type(lot_entry.payment_delivery_method_pair.payment_method.fee_type)}
-%if lot_entry.payment_delivery_method_pair.payment_method.payment_plugin_id == plugins.MULTICHECKOUT_PAYMENT_PLUGIN_ID:
-ご指定のクレジットカードで、下記金額の決済を完了しました。
-決済合計金額：${h.format_currency(elected_wish.order.total_amount)}円（税込）
-%elif lot_entry.payment_delivery_method_pair.payment_method.payment_plugin_id == plugins.SEJ_PAYMENT_PLUGIN_ID:
-%if lot_entry.payment_delivery_method_pair.payment_method.hide_voucher:
-当選の場合、お支払期日までにお支払頂きます。
-お支払が確認できた時点で当選申込が確定となります。
-
-各種手数料の他、公演によりシステム利用料がかかります。
-%else:
-払込票番号：${elected_wish.order.sej_order.billing_number}
-支払期日：${h.japanese_datetime(elected_wish.order.sej_order.payment_due_at)}
-
-お支払が確認できた時点で予約確定となります。
-お近くのセブン-イレブン店頭レジにて、払込票番号をお伝えの上、
-支払期日までにお支払をお願いいたします。
-%endif
-%endif
+${h.render_payment_lots_elected_mail_viewlet(request, lot_entry)}
 
 ■お受取
 お受取方法： ${lot_entry.payment_delivery_method_pair.delivery_method.name}
 ※引取手数料：${h.format_currency(lot_entry.payment_delivery_method_pair.delivery_fee)}円/${fee_type(lot_entry.payment_delivery_method_pair.delivery_method.fee_type)}をチケット代金とは別に頂戴いたします。
-
+${h.render_delivery_lots_elected_mail_viewlet(request, lot_entry)}
 
 ---------------
 <注意事項>

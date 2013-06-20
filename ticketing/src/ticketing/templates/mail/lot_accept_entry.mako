@@ -68,12 +68,12 @@ ${get("delivery_fee").label}：${h.format_currency(wish.delivery_fee)}円
 ■お支払
 お支払方法： ${payment_method_name}
 ※決済手数料：${h.format_currency(lot_entry.payment_delivery_method_pair.transaction_fee)}円/${h.fee_type(lot_entry.payment_delivery_method_pair.payment_method.fee_type)}をチケット代金とは別に頂戴いたします。
-${h.render_payment_finished_mail_viewlet(request, lot_entry)}
+${h.render_payment_lots_accepted_mail_viewlet(request, lot_entry)}
 -----
 ■お受取
 お受取方法： ${delivery_method_name}
 ※引取手数料：${h.format_currency(lot_entry.payment_delivery_method_pair.delivery_fee)}円/${h.fee_type(lot_entry.payment_delivery_method_pair.delivery_method.fee_type)}をチケット代金とは別に頂戴いたします。
-${h.render_delivery_finished_mail_viewlet(request, lot_entry)}
+${h.render_delivery_lots_accepted_mail_viewlet(request, lot_entry)}
 
 ${notice}
 
