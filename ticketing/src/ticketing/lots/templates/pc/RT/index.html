@@ -214,9 +214,10 @@
               <tr>
                 <th><label>配送先住所</label></th>
                 <td>
+                  <% path = request.static_url('ticketing.cart:static/js/zipdata') %>
                   <div class="form-field">
                     ${form['zip'].label}
-                    ${form['zip']}
+                    ${form['zip'](onKeyUp="AjaxZip3.zip2addr('" + path + "', 'zip','','prefecture','city','', 'address_1');")}
                     ${self.error(form, 'zip')}
                   </div>
                   <div class="form-field">
