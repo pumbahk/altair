@@ -17,7 +17,6 @@ fileConfig(config.config_file_name)
 # target_metadata = mymodel.Base.metadata
 from ticketing import models
 
-import ticketing.bj89ers.models
 import ticketing.bookmark.models
 import ticketing.cart.models
 import ticketing.payments.plugins.models
