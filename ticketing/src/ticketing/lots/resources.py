@@ -1,6 +1,10 @@
 # -*- coding: utf-8 -*-
 from datetime import datetime
 from pyramid.httpexceptions import HTTPNotFound
+from pyramid.security import (
+    Everyone,
+    Allow,
+)
 from pyramid.traversal import DefaultRootFactory
 from pyramid.decorator import reify
 from ticketing.core.models import Event, Performance, Organization
@@ -51,6 +55,12 @@ class LotResource(object):
     def host_base_url(self):
         return core_api.get_host_base_url(self.request)
 
+    @reify
+    def __acl__(self):
+        # XXX: ひとまずEveryone lots
+        return [
+            (Allow, Everyone, 'lots'),
+        ]
 
 class LotOptionSelectionResource(LotResource):
     def __init__(self, request):

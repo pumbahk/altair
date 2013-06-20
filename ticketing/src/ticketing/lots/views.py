@@ -90,7 +90,7 @@ def no_cart_error(context, request):
     logger.warning(context)
     return HTTPNotFound()
 
-@view_defaults(route_name='lots.entry.index', renderer=selectable_renderer("pc/%(membership)s/index.html"))
+@view_defaults(route_name='lots.entry.index', renderer=selectable_renderer("pc/%(membership)s/index.html"), permission="lots")
 class EntryLotView(object):
     """
     申し込み画面
