@@ -7,6 +7,7 @@ from api import MailTraverserFromLotsEntry
 
 def includeme(config):
     config.add_directive("add_order_mail_utility", register_order_mailutility)
+    config.add_directive("add_lot_entry_mail_utility", register_lot_entry_mailutility)
     config.add_directive("add_mail_utility", register_mailutility)
 
 def _register_order_mailutility(config, util, name):
@@ -18,7 +19,7 @@ def _register_order_mailutility(config, util, name):
     config.registry.registerUtility(traverser_factory, ITraverserFactory, name=name)
     _register_mailutility(config,util, name)
 
-def _register_lots_mailutility(config, util, name):
+def _register_lot_entry_mailutility(config, util, name):
     assert util.get_mailtype_description
     assert util.create_or_update_mailinfo
     assert util.get_subject_info_default
@@ -39,11 +40,11 @@ def register_order_mailutility(config, name, module, mail, *args, **kwargs):
     util = MailUtility(module, name, functools.partial(mail, *args, **kwargs))
     _register_order_mailutility(config, util, name)
 
-def register_lots_mailutility(config, name, module, mail, *args, **kwargs):
+def register_lot_entry_mailutility(config, name, module, mail, *args, **kwargs):
     name = str(name)
     module = config.maybe_dotted(module)
     util = MailUtility(module, name, functools.partial(mail, *args, **kwargs))
-    _register_lots_mailutility(config, util, name)
+    _register_lot_entry_mailutility(config, util, name)
 
 def register_mailutility(config, name, module, mail, *args, **kwargs):
     name = str(name)

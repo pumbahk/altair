@@ -22,9 +22,9 @@ ${get("mail").body}
 %endif
 
 -----
-%if get("order_no").status:
-■${get("order_no").label}
-${get("order_no").body}
+%if get("entry_no").status:
+■${get("entry_no").label}
+${get("entry_no").body}
 %endif
 
 %if get("order_datetime").status:

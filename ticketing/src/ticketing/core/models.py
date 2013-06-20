@@ -3032,6 +3032,8 @@ class MailTypeEnum(StandardEnum):
 MailTypeLabels = (u"購入完了メール", u"購入キャンセルメール", u"抽選申し込み完了メール", u"抽選当選通知メール", u"抽選落選通知メール")
 assert(len(list(MailTypeEnum)) == len(MailTypeLabels))
 MailTypeChoices = [(str(e) , label) for e, label in zip([enum.v for enum in sorted(iter(MailTypeEnum), key=lambda e: e.v)], MailTypeLabels)]
+MailTypeEnum.dict = dict(MailTypeChoices)
+MailTypeEnum.as_string = classmethod(lambda cls, e: cls.dict.get(str(e), ""))
 
 class Host(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'Host'

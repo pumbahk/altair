@@ -314,6 +314,10 @@ class LotEntry(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     payment_delivery_method_pair_id = sa.Column(Identifier, sa.ForeignKey('PaymentDeliveryMethodPair.id'))
     payment_delivery_method_pair = orm.relationship('PaymentDeliveryMethodPair', backref='lot_entries')
 
+    #xxx: for order
+    @property
+    def payment_delivery_pair(self):
+        return self.payment_delivery_method_pair
 
     gender = sa.Column(sa.Integer, default=int(SexEnum.NoAnswer))
     birthday = sa.Column(sa.Date)

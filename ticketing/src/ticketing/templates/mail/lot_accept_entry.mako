@@ -20,16 +20,16 @@ ${get("mail").body}
 %endif
 
 -----
-%if get("order_no").status:
-■${get("order_no").label}
-${get("order_no").body}
+%if get("entry_no").status:
+■${get("entry_no").label}
+${get("entry_no").body}
 抽選結果確認の際などに必要です。必ずお控え下さい。
 %endif
-
 %if get("order_datetime").status:
 ■${get("order_datetime").label}
 ${get("order_datetime").body}
 %endif
+
 -----
 %if get("event_name").status:
 ■${get("event_name").label}: ${get("event_name").body}
@@ -44,6 +44,7 @@ ${get("order_datetime").body}
 ■${get("review_url").label}: ${get("review_url").body}
 %endif
 %for wish in lot_entry.wishes:
+
 【第${wish.wish_order+1}希望】
 公演日：${h.performance_date(wish.performance)}
 会場：${wish.performance.venue.name}

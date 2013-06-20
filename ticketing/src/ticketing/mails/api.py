@@ -59,7 +59,7 @@ class MailTraverserFromLotsEntry(object):
         self.access = ExtraMailInfoAccessor(mtype=mtype, default=default)
 
     def __call__(self, lots_entry):
-        event = lots_entry.event
+        event = lots_entry.lot.event
         return EmailInfoTraverser(access=self.access, default=self.default).visit(event)
 
 @implementer(IMailUtility)

@@ -35,7 +35,6 @@ class SubjectInfoDefault(object):
     name_kana = SubjectInfo(name="name_kana", label=u"お名前カナ", getval=get_name_kana)
     tel = SubjectInfo(name="tel", label=u"電話番号", getval=lambda subject : subject.shipping_address.tel_1 or "")
     mail = SubjectInfo(name="mail", label=u"メールアドレス", getval=lambda subject : subject.shipping_address.email_1)
-    order_no = SubjectInfo(name="order_no", label=u"受付番号", getval=lambda subject : subject.order_no)
     order_datetime = SubjectInfo(name="order_datetime", label=u"受付日", getval=lambda order: ch.mail_date(order.created_at))
 
     @classmethod
@@ -75,6 +74,7 @@ class OrderInfoDefault(SubjectInfoDefault):
                            for op in order.ordered_products))
 
 
+    order_no = SubjectInfo(name="order_no", label=u"受付番号", getval=lambda subject : subject.order_no)
     event_name = SubjectInfo(name=u"event_name", label=u"公演タイトル", getval=get_event_title)
     pdate = SubjectInfo(name=u"pdate", label=u"公演日時", getval=get_performance_date)
     venue = SubjectInfo(name=u"venue", label=u"会場", getval=lambda order: order.performance.venue.name)

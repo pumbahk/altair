@@ -1497,8 +1497,6 @@ class SejTicketTemplate(BaseView):
             templates=templates
         )
 
-import ticketing.mails.complete as mails_complete
-import ticketing.mails.order_cancel as mails_cancel
 @view_defaults(decorator=with_bootstrap, permission="authenticated", route_name="orders.mailinfo")
 class MailInfoView(BaseView):
     @view_config(match_param="action=show", renderer="ticketing:templates/orders/mailinfo/show.html")
@@ -1517,7 +1515,8 @@ class MailInfoView(BaseView):
     def complete_mail_preview(self):
         order_id = int(self.request.matchdict.get('order_id', 0))
         order = Order.get(order_id, self.context.user.organization_id)
-        return mails_complete.preview_text(self.request, order)
+        mutil = get_mail_utility(self.request, MailTypeEnum.PurchaseCompleteMail)
+        return mutil.preview_text(self.request, order)
 
     @view_config(match_param="action=complete_mail_send", renderer="string", request_method="POST")
     def complete_mail_send(self):
@@ -1537,7 +1536,8 @@ class MailInfoView(BaseView):
     def cancel_mail_preview(self):
         order_id = int(self.request.matchdict.get('order_id', 0))
         order = Order.get(order_id, self.context.user.organization_id)
-        return mails_cancel.preview_text(self.request, order)
+        mutil = get_mail_utility(self.request, MailTypeEnum.PurchaseCancelMail)
+        return mutil.preview_text(self.request, order)
 
     @view_config(match_param="action=cancel_mail_send", renderer="string", request_method="POST")
     def cancel_mail_send(self):

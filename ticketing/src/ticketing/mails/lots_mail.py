@@ -23,7 +23,7 @@ def get_subject_info_default():
 
 class LotsInfoDefault(SubjectInfoDefault):
     def get_announce_date(lot_entry):
-        return u"{d.year}年{d.month:2}月{d.day:2}日 {d.hour:2}:{d.minute:2}～".format(d=lot_entry.lot.lotting_announce_datetime)
+        return u"{d.year}年{d.month:02}月{d.day:02}日 {d.hour:02}:{d.minute:02}～".format(d=lot_entry.lot.lotting_announce_datetime)
 
     first_sentence_default = u"""この度は、お申込みいただき、誠にありがとうございました。
 抽選申込が完了いたしましたので、ご連絡させていただきます。
@@ -32,8 +32,8 @@ class LotsInfoDefault(SubjectInfoDefault):
 """
 
     first_sentence = SubjectInfoWithValue(name="first_sentence", label=u"はじめの文章", getval=(lambda _: LotsInfoDefault.first_sentence_default),  value=first_sentence_default)
-    event_name = SubjectInfo(name="event_name", label=u"イベント名", getval=lambda lot_entry: lot_entry.event.title)
-    lot_name = SubjectInfo(name="lot_name", label=u"受付名称", getval=lambda lot_entry: lot_entry.name)
+    event_name = SubjectInfo(name="event_name", label=u"イベント名", getval=lambda lot_entry: lot_entry.lot.event.title)
+    lot_name = SubjectInfo(name="lot_name", label=u"受付名称", getval=lambda lot_entry: lot_entry.lot.name)
     announce_date = SubjectInfo(name="announce_date", label=u"抽選結果発表日時", getval=get_announce_date)
     review_url = SubjectInfo(name="review_url", label=u"抽選結果確認ページ", getval=lambda _ : "https://rt.tstar.jp/lots/review")
 
@@ -41,7 +41,7 @@ class LotsInfoDefault(SubjectInfoDefault):
     transaction_fee = SubjectInfo(name=u"transaction_fee", label=u"決済手数料", getval=lambda _: "") #xxx:
     delivery_fee = SubjectInfo(name=u"delivery_fee", label=u"発券／引取手数料", getval=lambda _: "") #xxx:
     total_amount = SubjectInfo(name=u"total_amount", label=u"合計金額", getval=lambda _: "") #xxx:
-    
+    entry_no = SubjectInfo(name="entry_no", label=u"受付番号", getval=lambda subject : subject.entry_no)
 
 class LotsMail(object):
     def __init__(self, mail_template, request):
@@ -64,7 +64,7 @@ class LotsMail(object):
             logger.warn("validation error")
             return 
 
-        organization = lot_entry.event.organization or self.request.context.organization
+        organization = lot_entry.lot.event.organization or self.request.context.organization
         subject = self.get_mail_subject(organization, traverser)
         mail_from = self.get_mail_sender(organization, traverser)
         bcc = [mail_from]
