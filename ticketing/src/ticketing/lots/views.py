@@ -149,7 +149,7 @@ class EntryLotView(object):
 
         stocks = lot.stock_types
 
-        performance_id = self.request.params.get('performance_id')
+        performance_id = self.request.params.get('performance')
         if not performance_id:
             performance_id = 0
 
