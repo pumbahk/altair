@@ -80,3 +80,7 @@
   </div>
   </form>
 </div>
+
+<script type="text/javascript">
+  $(function(){$('.modal button[type="submit"]').click(function(e){$(e.currentTarget).parents('.modal').data('modal').toggle(); return true;});});
+</script>
