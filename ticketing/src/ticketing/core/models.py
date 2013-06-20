@@ -183,10 +183,6 @@ class Venue(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             DBSession.add(seat)
         logger.info('[copy] Seat - SeatAttribute, SeatStatus, SeatIndex end')
 
-        # defaultのStockに未割当の席数をセット
-        default_stock.quantity = Seat.query.filter_by(stock_id=default_stock.id).count()
-        default_stock.save()
-
     def delete_cascade(self):
         # delete Seat
         for seat in self.seats:
@@ -553,6 +549,11 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             if venue:
                 venue.delete_cascade()
             logger.info('[delete] Venue end')
+
+        # defaultのStockに未割当の席数をセット (Venue削除後にカウントする)
+        default_stock = Stock.get_default(performance_id=self.id)
+        default_stock.quantity = Seat.query.filter(Seat.stock_id==default_stock.id).count()
+        default_stock.save()
 
     def delete(self):
 
@@ -1622,9 +1623,7 @@ class Stock(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         else:
             vacant_quantity = Seat.filter(Seat.stock_id==self.id)\
                 .join(SeatStatus)\
-                .filter(Seat.id==SeatStatus.seat_id)\
-                .filter(SeatStatus.status.in_([SeatStatusEnum.Vacant.v]))\
-                .count()
+                .filter(SeatStatus.status.in_([SeatStatusEnum.Vacant.v])).count()
         return vacant_quantity
 
     def save(self):
