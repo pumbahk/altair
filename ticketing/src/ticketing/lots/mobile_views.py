@@ -302,6 +302,7 @@ class EntryLotView(object):
                               int(cform['day'].data)),
             memo=cform['memo'].data)
         entry = self.request.session['lots.entry']
+        self.request.session['lots.entry.time'] = datetime.now()
         cart = LotSessionCart(entry, self.request, self.context.lot)
 
         payment = Payment(cart, self.request)
