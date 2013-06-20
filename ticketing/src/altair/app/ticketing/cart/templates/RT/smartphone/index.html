@@ -1,12 +1,21 @@
 <%inherit file="./base.html" />
+<%namespace file="tags_smartphone.html" name="m" />
+
 <%block name="css">
   <link rel="stylesheet" href="${request.static_url('altair.app.ticketing.cart:static/js/css/jquery.smihica_vertical_slider/smihica_vertical_slider.css')}" type="text/css" media="all" />
   <style type="text/css">
 .modal {
   font-size: 150%;
 }
+select {
+  height: 30px;
+  font-size: 16px;
+  margin: 3px 0 0 0;
+  background-color: #fff;
+}
 </style>
 </%block>
+
 <%block name="javascript">
   <script type="text/javascript" src="${request.static_url('altair.app.ticketing.cart:static/js/fashion.js')}"></script>
   <![if !(lt IE 9)]>
@@ -29,6 +38,7 @@ var cartReleaseUrl = "${cart_release_url}";
 $(function() {cart.init(salesSegmentsSelection, selected, cartReleaseUrl, false);});
 </script>
 </%block>
+
 <%block name="extras">
   <div class="modal" id="venue-detail" style="display:none; background-image: url(${request.static_url('altair.app.ticketing.cart:static/site-data/xebio-arena.png')}); width: 833px; height: 637px;">
   </div>
@@ -76,10 +86,17 @@ $(function() {cart.init(salesSegmentsSelection, selected, cartReleaseUrl, false)
             link = request.route_url('cart.switchpc.perf', event_id=event['id'], performance=performance)
     %>
     <a href="${link}">
-      <button class="switch_pc">PCサイトで購入する</button>
+        <button class="btn btn-primary btn-large">PCサイトで購入する</button>
     </a>
 
-    <h2 id="ticketName">${event['title']} (<span class="performanceNameSpace"></span>)</h2>
+    <hr/>
+    <%m:header>イベント名称（公演名）</%m:header>
+
+    ${event['title']} <br/>
+    (<span class="performanceNameSpace"></span>)
+
+    <hr/>
+    <%m:header>日時・会場選択</%m:header>
     <form id="form1" name="form1" method="post" action="">
       <div id="settlementSelectBox">
         <div id="settlementSelectBoxInner">
@@ -100,12 +117,16 @@ $(function() {cart.init(salesSegmentsSelection, selected, cartReleaseUrl, false)
         </div>
       </div>
     </form>
+
     <div id="settlementOperation" class="settlementBox2">
       <div class="settlementBoxInner2">
         <h2 id="hallName">
-          <span id="performanceDate">-</span>
+          <span id="performanceDate">-</span><br/>
           <span id="performanceVenue">-</span>
         </h2>
+
+        <hr/>
+        <%m:header>席種選択</%m:header>
         <div class="settlementOperationPaneInner">
           <div class="settlementOperationPaneInnerContent">
             <div id="selectSeatType" class="focused">
@@ -176,11 +197,9 @@ $(function() {cart.init(salesSegmentsSelection, selected, cartReleaseUrl, false)
                       </ul>
                       <fieldset style="display:none;" class="selected-seats">
                       </fieldset>
-                      <ul class="buttonSet">
-                        <li><a class="btn-select-buy">座席を選んで購入</a></li>
-                        <li><a class="btn-entrust-buy">おまかせで購入</a></li>
-                        <li><a class="btn-buy">購入</a></li>
-                      </ul>
+                      <div class="buttonbox">
+                        <button class="btn-entrust-buy btn-secondary btn-large">おまかせで購入する</button>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -199,8 +218,10 @@ $(function() {cart.init(salesSegmentsSelection, selected, cartReleaseUrl, false)
                   <div class="guidanceBackground"></div>
                   <div class="guidance">
                     <div class="guidanceInner">
-                      <h3>チケット購入方法</h3>
-                      <p>1. 左側の席種一覧から希望の席種をクリックしてください。</p>
+
+                      <hr/>
+                      <%m:header>チケット購入方法</%m:header>
+                      <p>1. 希望の席種をクリックしてください。</p>
                       <p>2. 希望の券種と枚数を選択してください。</p>
                       <p>3. 購入方法をお選びください。</p>
                       <p>4. [座席を選んで購入] の場合、右側 (この欄) に会場図が表示されます。選択した席種名の横に記載されたブロックを選択してください。</p>

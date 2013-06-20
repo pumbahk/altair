@@ -205,6 +205,25 @@ cart.proceedToCheckout = function proceedToCheckout(performance, reservationData
     inCartProductList.find("tr").last().addClass("last-child");
     totalAmount.text(cart.util.format_currency(reservationData.cart.total_amount));
 
+    var body = "";
+    for (var product_index=0; product_index<products.length; product_index++) {
+        // 席種
+        body += reservationData.cart.products[product_index].name + " "
+        body += "¥" + reservationData.cart.products[product_index].price + " "
+        body += products[product_index].seats.length + "枚\n"
+
+        // シート
+        for (var seat_index=0; seat_index<products[product_index].seats.length; seat_index ++) {
+            body += reservationData.cart.products[product_index].seats[seat_index].name + "\n";
+        }
+    }
+    body += "合計¥" + reservationData.cart.total_amount
+
+    if(confirm(body)) {
+        window.location.href = reservationData.payment_url;
+    }
+
+    /*
     dialog.header(
         $('<h2>')
             .append(
@@ -215,6 +234,7 @@ cart.proceedToCheckout = function proceedToCheckout(performance, reservationData
                 $('<span id="performance-name"></span>')
                 .text(performance.get('performance_name'))));
     dialog.load();
+    */
 }
 
 cart.showErrorDialog = function showErrorDialog(title, message, footer_button_class) {
@@ -223,10 +243,27 @@ cart.showErrorDialog = function showErrorDialog(title, message, footer_button_cl
             this.close();
         }
     });
+
+    body = "";
+    if (title) {
+        body += title;
+    }
+    if (body != "") {
+        body += "\n";
+    }
+    if (message) {
+        body += message;
+    }
+    if(confirm(body)) {
+        // ダイアログを閉じるのみ
+    }
+
+    /*
     errorDialog.header(title ? $('<h2></h2>').text(title): null);
     errorDialog.body($('<div style="text-align:center"></div>').text(message));
     errorDialog.footer($('<a class="ok-button">閉じる</a>').addClass(footer_button_class));
     errorDialog.load();
+    */
 };
 
 cart.ApplicationController = function() {
