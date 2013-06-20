@@ -88,6 +88,7 @@ class MailUtility(object):
         message_settings_override(message, override)
         mailer.send(message)
         logger.info("send complete mail to %s" % message.recipients)
+        return message
 
     def preview_text(self, request, subject):
         message = self.build_message(request, subject)
