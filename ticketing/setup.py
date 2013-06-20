@@ -94,6 +94,7 @@ requires = [
     'altair.saannotation',
     'altair.queryprofile',
     'altair.sqlahelper',
+    'altair.viewhelpers',
     ]
 
 tests_require = [

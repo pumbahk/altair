@@ -1,15 +1,15 @@
 # -*- coding:utf-8 -*-
 import datetime
 from altaircms.datelib import get_now
+from altair.viewhelpers.string import RawText, nl_to_br, truncate
+from altair.viewhelpers.datetime_ import DefaultDateTimeFormatter, DateTimeHelper
 
-class RawText(object):
-    def __init__(self, v):
-        self.value = v
+date_time_formatter = DefaultDateTimeFormatter()
+date_time_helper = DateTimeHelper(date_time_formatter)
 
-    def __html__(self):
-        return self.value
+jdate = date_time_helper.date
+jdatetime = date_time_helper.datetime
 
-WEEK =[u"月", u"火", u"水", u"木", u"金", u"土", u"日"]
 import urllib
 def path_in_string(path, string):
     path = urllib.unquote_plus(path)
@@ -40,35 +40,11 @@ def make_link(title, url):
     """
     return u'<a href="%s">%s</a>' % (url, title)
 
-def nl_to_br(string, rawtext=True):
-    return RawText(string.replace("\n", "<br/>"))
-
 def text(string):
     return string if string  else u"-"
 
 def truncated(string, n=142):
-    v = text(string)
-    return v if len(v) <= n else v + u".."
-
-WEEK =[u"月", u"火", u"水", u"木", u"金", u"土", u"日"]
-def jdate(d):
-    """ dateオブジェクトを受け取り日本語の日付を返す
-    >>> from datetime import date
-    >>> jdate(date(2011, 1, 1))
-    u'2011\u5e7401\u670801\u65e5'
-    """
-    if d:
-        datestr = d.strftime(u"%Y年%-m月%-d日".encode("utf-8")).decode("utf-8")
-        return u"%s（%s）" % (datestr, unicode(WEEK[d.weekday()]))
-    else:
-        return u"-"
-
-def jdatetime(d):
-    if d:
-        datestr = d.strftime(u"%Y年%-m月%-d日 %2H:%2M".encode("utf-8")).decode("utf-8")
-        return u"%s（%s）" % (datestr, unicode(WEEK[d.weekday()]))
-    else:
-        return u"-"
+    return truncate(text(string), n)
 
 def translate_longtext_to_simple_html(string):
     """
