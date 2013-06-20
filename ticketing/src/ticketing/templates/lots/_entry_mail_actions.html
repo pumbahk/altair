@@ -37,13 +37,57 @@
 		    <a href="#SendingLotsAcceptedMailModal" data-toggle="modal">${u"{0}の再送".format(E.as_string(E.LotsAcceptedMail))}</a>
 		    <a href="${request.route_path("events.mailinfo.edit", event_id=event.id, mailtype=E.LotsAcceptedMail)}">メール付加情報変更</a>
 	    </li>
-	  </ul>
+    </ul>
   </div>
+  %if lot_entry.is_elected:
+  <div class="btn-group" style="margin: 0pt;">
+    <button class="btn dropdown-toggle" data-toggle="dropdown">
+	    <i class="icon-minus"> </i>${E.as_string(E.LotsElectedMail)}
+	    <span class="caret"></span>
+	  </button>
+	  <ul class="dropdown-menu">
+	    <li>
+		    <a href="${request.route_path("tickets.event.lots.mailinfo.preview", entry_id=lot_entry.id, mailtype=E.LotsElectedMail)}">preview</a>
+		    <a href="#SendingLotsElectedMailModal" data-toggle="modal">${u"{0}の再送".format(E.as_string(E.LotsElectedMail))}</a>
+		    <a href="${request.route_path("events.mailinfo.edit", event_id=event.id, mailtype=E.LotsElectedMail)}">メール付加情報変更</a>
+	    </li>
+    </ul>
+  </div>
+  %endif
+  %if lot_entry.is_rejected:
+  <div class="btn-group" style="margin: 0pt;">
+    <button class="btn dropdown-toggle" data-toggle="dropdown">
+	    <i class="icon-minus"> </i>${E.as_string(E.LotsRejectedMail)}
+	    <span class="caret"></span>
+	  </button>
+	  <ul class="dropdown-menu">
+	    <li>
+		    <a href="${request.route_path("tickets.event.lots.mailinfo.preview", entry_id=lot_entry.id, mailtype=E.LotsRejectedMail)}">preview</a>
+		    <a href="#SendingLotsRejectedMailModal" data-toggle="modal">${u"{0}の再送".format(E.as_string(E.LotsRejectedMail))}</a>
+		    <a href="${request.route_path("events.mailinfo.edit", event_id=event.id, mailtype=E.LotsRejectedMail)}">メール付加情報変更</a>
+	    </li>
+    </ul>
+  </div>
+  %endif
 </div>
 
 ${self.send_mail_modal(
   "SendingLotsAcceptedMailModal",
   u"{0}の再送".format(E.as_string(E.LotsAcceptedMail)),
   request.route_path("tickets.event.lots.mailinfo.send", entry_id=lot_entry.id, mailtype=E.LotsAcceptedMail)+"?next_url={0}".format(request.url),
+  mail_form
+)}
+
+${self.send_mail_modal(
+  "SendingLotsElectedMailModal",
+  u"{0}の再送".format(E.as_string(E.LotsElectedMail)),
+  request.route_path("tickets.event.lots.mailinfo.send", entry_id=lot_entry.id, mailtype=E.LotsElectedMail)+"?next_url={0}".format(request.url),
+  mail_form
+)}
+
+${self.send_mail_modal(
+  "SendingLotsRejectedMailModal",
+  u"{0}の再送".format(E.as_string(E.LotsRejectedMail)),
+  request.route_path("tickets.event.lots.mailinfo.send", entry_id=lot_entry.id, mailtype=E.LotsRejectedMail)+"?next_url={0}".format(request.url),
   mail_form
 )}
