@@ -66,7 +66,7 @@ class DateTimeHelper(object):
                 end_flavor = dict(without_year=(beg.year == end.year), **flavor)
                 return u'%s 〜 %s' % (
                     formatter(beg, with_weekday=with_weekday, **flavor),
-                    formatter(beg, with_weekday=with_weekday, **end_flavor)
+                    formatter(end, with_weekday=with_weekday, **end_flavor)
                     )
 
     term_datetime = term
