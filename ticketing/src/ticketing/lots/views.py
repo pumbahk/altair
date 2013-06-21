@@ -295,6 +295,9 @@ class ConfirmLotEntryView(object):
         entry = self.request.session.get('lots.entry')
         if entry is None:
             return self.back_to_form()
+        if not entry.get('token'):
+            self.request.session.flash(u"セッションに問題が発生しました。")
+            return self.back_to_form()
         # wishesを表示内容にする
         event = self.context.event
         lot = self.context.lot
@@ -333,7 +336,9 @@ class ConfirmLotEntryView(object):
         if not h.validate_token(self.request):
             self.request.session.flash(u"セッションに問題が発生しました。")
             return self.back_to_form()
-        basetime = self.request.session['lots.entry.time']
+        basetime = self.request.session.get('lots.entry.time')
+        if not basetime:
+            self.request.session.flash(u"セッションに問題が発生しました。")
         if basetime + timedelta(minutes=15) < datetime.now():
             self.request.session.flash(u"セッションに問題が発生しました。")
             return self.back_to_form()
@@ -394,9 +399,9 @@ class CompletionLotEntryView(object):
     @mobile_view_config(request_method="GET", renderer=selectable_renderer("mobile/%(membership)s/completion.html"))
     def get(self):
         """ 完了画面 """
-        entry_no = self.request.session.get('lots.entry_no')
-        if not entry_no:
+        if 'lots.entry_no' not in self.request.session:
             return HTTPFound(location=self.request.route_url('lots.entry.index', **self.request.matchdict))
+        entry_no = self.request.session.pop('lots.entry_no')
         entry = DBSession.query(LotEntry).filter(LotEntry.entry_no==entry_no).one()
 
 
