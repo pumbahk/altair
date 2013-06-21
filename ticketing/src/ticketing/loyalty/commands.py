@@ -40,9 +40,10 @@ def decode_point_grant_history_entry_id(s):
     except ValueError:
         raise PointGrantHistoryEntryIdDecodeError(s)
 
-def do_import_point_grant_results(registry, file, now, encoding):
+def do_import_point_grant_results(registry, file, now, type, force, encoding):
     from .models import PointGrantHistoryEntry
     from ticketing.models import DBSession
+    from ticketing.core.models import Order
     from ticketing.users.models import UserPointAccount, UserPointAccountTypeEnum
 
     logger.info("start processing %s" % file)
@@ -60,16 +61,41 @@ def do_import_point_grant_results(registry, file, now, encoding):
 
             account_number = cols[1]
             order_no = cols[3]
-            point_grant_history_entry_id = decode_point_grant_history_entry_id(cols[4])
+
             try:
                 points_granted = Decimal(cols[5])
             except ValueError:
                 raise RecordError(u'Invalid point amount', cols[5])
 
-            try:
-                point_grant_history_entry = PointGrantHistoryEntry.query.filter_by(id=point_grant_history_entry_id).one()
-            except NoResultFound:
-                raise RecordError(u'No corresponding point grant history record found for %ld' % point_grant_history_entry_id)
+            point_grant_history_entry = None
+
+            try: 
+                point_grant_history_entry_id = decode_point_grant_history_entry_id(cols[4])
+            except:
+                if not force:
+                    raise
+                if not type:
+                    raise RecordError(u'If you want to use force option, you have to specify point type via -t')
+                try:
+                    point_grant_history_entry = PointGrantHistoryEntry.query \
+                        .join(PointGrantHistoryEntry.order) \
+                        .join(Order.user) \
+                        .join(User.user_point_accounts) \
+                        .filter(Order.order_no == order_no) \
+                        .filter(UserPointAccount.type == type) \
+                        .filter(UserPointAccount.account_number == account_number) \
+                        .one()
+                except:
+                    pass
+
+            if point_grant_history_entry is None:
+                if point_grant_history_entry_id is not None:
+                    try:
+                        point_grant_history_entry = PointGrantHistoryEntry.query.filter_by(id=point_grant_history_entry_id).one()
+                    except NoResultFound:
+                        raise RecordError(u'No corresponding point grant history record found for %ld' % point_grant_history_entry_id)
+                else:
+                    raise RecordError(u'Could not determine point grant history record')
 
             if point_grant_history_entry.user_point_account.type != UserPointAccountTypeEnum.Rakuten.v:
                 raise RecordError(u'UserPointAccount(id=%ld).account_type is not Rakuten' % (point_grant_history_entry.user_point_account.id))
@@ -104,6 +130,8 @@ def import_point_grant_results():
 
     parser = argparse.ArgumentParser()
     parser.add_argument('-e', '--encoding')
+    parser.add_argument('-f', '--force', action='store_true')
+    parser.add_argument('-t', '--type')
     parser.add_argument('config')
     parser.add_argument('file', nargs='+')
 
@@ -111,6 +139,15 @@ def import_point_grant_results():
 
     setup_logging(args.config)
     env = bootstrap(args.config)
+    type = None
+
+    if args.type is not None:
+        try:
+            type = getattr(UserPointAccountTypeEnum, args.type).v
+        except:
+            sys.stderr.write("Invalid point type: %s\n" % args.type)
+            sys.stderr.flush()
+            sys.exit(255)
 
     now = datetime.now()
 
@@ -121,6 +158,8 @@ def import_point_grant_results():
                 env['registry'],
                 file,
                 now,
+                type,
+                args.force,
                 args.encoding or default_encoding
                 )
         transaction.commit()
