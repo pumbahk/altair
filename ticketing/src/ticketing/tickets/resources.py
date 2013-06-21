@@ -1,8 +1,8 @@
 from pyramid.interfaces import IRootFactory
 from pyramid.httpexceptions import HTTPFound
 from ticketing.core.models import Ticket
-
-class TicketsResource(object):
+from ticketing.resources import TicketingAdminResource
+class TicketsResource(TicketingAdminResource):
     __name__ = 'tickets'
 
     ## too-bad
