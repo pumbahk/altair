@@ -88,7 +88,6 @@ def do_import_point_grant_results(registry, file, now, type, force, encoding):
                         .one()
                     point_grant_history_entry_id = point_grant_history_entry.id
                 except:
-                    raise
                     pass
 
             if point_grant_history_entry is None:
