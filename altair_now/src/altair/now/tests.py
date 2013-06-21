@@ -2,7 +2,7 @@ import unittest
 from pyramid import testing
 import mock
 
-class TestIt(unittest.TestCase):
+class Tests(unittest.TestCase):
     def test_has_session_key(self):
         from . import has_session_key, set_now
         from datetime import datetime
@@ -12,6 +12,21 @@ class TestIt(unittest.TestCase):
         set_now(request, datetime(2013, 3, 28, 14, 37))
         self.assertTrue(has_session_key(request))
 
+    def test_invalidate_multiple(self):
+        from . import has_session_key, set_now
+        from datetime import datetime
+        request = testing.DummyRequest(session=dict())
+        set_now(request, datetime(2013, 3, 28, 14, 37))        
+
+        set_now(request, datetime(2013, 3, 28, 14, 37))        
+        self.assertTrue(has_session_key(request))
+
+        set_now(request, None)        
+        self.assertFalse(has_session_key(request))
+        set_now(request, None)        
+        self.assertFalse(has_session_key(request))
+
+class TestIt(unittest.TestCase):
     @mock.patch('altair.now.datetime')
     def test_it(self, mock_dt):
         from datetime import datetime, date

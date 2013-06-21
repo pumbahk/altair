@@ -2,16 +2,16 @@ describe("QRApp (order: add ticket => print ticket)",  function(){
   var DummyMessageView = {error: console.log.bind(console), 
                           info: console.log.bind(console)};
 
-  it("call service.remoteTicketAll() if clear qrcode input button", function(){
+  it("call datastore.clearnBuffer() if clear qrcode input button", function(){
     var dataStore = new DataStore();
     var inputView = new QRInputView({datastore: dataStore});
-    dataStore.get("ticket_buffers").clean = jasmine.createSpy("");
+    dataStore.cleanBuffer = jasmine.createSpy("");
     var service = {}
     var appletView = new AppletView({service: service,  datastore: dataStore, appviews: {messageView: DummyMessageView}});
 
-    expect(dataStore.get("ticket_buffers").clean.callCount).toEqual(0);
+    expect(dataStore.cleanBuffer.callCount).toEqual(0);
     inputView.clearQRCodeInput();
-    expect(dataStore.get("ticket_buffers").clean.callCount).toEqual(1);
+    expect(dataStore.cleanBuffer.callCount).toEqual(1);
   });
 
   describe("print unit have 2kind states.",  function(){
@@ -299,7 +299,8 @@ describe("QRApp (order: add ticket => print ticket)",  function(){
       var ticket = {
         printed_at: Date(), 
         codeno: 1111, 
-        ticket_name: "this-is-printed. not-checked"
+        ticket_name: "this-is-printed. not-checked", 
+        ordered_product_item_token_id: 1
       };
       var result = makeOne({datastore: datastore})._createRow(ticket, 0)
 
@@ -314,7 +315,8 @@ describe("QRApp (order: add ticket => print ticket)",  function(){
       var ticket = {
         printed_at: null, 
         codeno: 2111, 
-        ticket_name: "this-is-unprinted-ticket"
+        ticket_name: "this-is-unprinted-ticket", 
+        ordered_product_item_token_id: 2
       };
       var result = makeOne({datastore: datastore})._createRow(ticket, 0)
 
@@ -330,17 +332,20 @@ describe("QRApp (order: add ticket => print ticket)",  function(){
         {
           printed_at: Date(), 
           codeno: 1111, 
-          ticket_name: "printed1"
+          ticket_name: "printed1", 
+          ordered_product_item_token_id: 1
         }, 
         {
           printed_at: Date(), 
           codeno: 1112, 
-          ticket_name: "printed2"
+          ticket_name: "printed2", 
+          ordered_product_item_token_id: 2
         }, 
         {
           codeno: 2111, 
           printed_at: null, 
-          ticket_name: "unprinted"
+          ticket_name: "unprinted", 
+          ordered_product_item_token_id: 3
         }
       ];
       var doc = $('<div>').append('<div id="printable_tickets_box">');
@@ -359,17 +364,20 @@ describe("QRApp (order: add ticket => print ticket)",  function(){
         {
           printed_at: Date(), 
           codeno: 1111, 
-          ticket_name: "printed1"
+          ticket_name: "printed1", 
+          ordered_product_item_token_id: 1
         }, 
         {
           printed_at: Date(), 
           codeno: 1112, 
-          ticket_name: "printed2"
+          ticket_name: "printed2", 
+          ordered_product_item_token_id: 2
         }, 
         {
           printed_at: null, 
           codeno: 2111, 
-          ticket_name: "unprinted"
+          ticket_name: "unprinted", 
+          ordered_product_item_token_id: 3
         }
       ];
       var doc = $('<div>').append('<div id="printable_tickets_box">');

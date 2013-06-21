@@ -4,7 +4,7 @@ from wtforms import Form
 from wtforms import TextField, HiddenField
 from wtforms.validators import Regexp, Length, Optional, ValidationError
 
-from ticketing.formhelpers import DateTimeField, Translations, Required, NullableTextField, JISX0208, after1900, SelectField
+from ticketing.formhelpers import DateTimeField, Translations, Required, NullableTextField, JISX0208, after1900, OurGroupedSelectField
 from ticketing.formhelpers import replace_ambiguous
 from ticketing.core.models import Venue, Performance, Stock
 from ticketing.payments.plugins.sej import DELIVERY_PLUGIN_ID as SEJ_DELIVERY_PLUGIN_ID
@@ -28,12 +28,13 @@ class PerformanceForm(Form):
                 venue_by_pref[pref].append(
                     (venue.id,venue.name+(' ('+venue.sub_name+')' if (venue.sub_name!=None and venue.sub_name!='') else ''))
                 )
-            self.venue_id.choices = [
+            choices = [
                 (pref, tuple(venue_by_pref[pref])) for pref in sorted(venue_by_pref.keys(), key=lambda x:PREFECTURE_ORDER[x] if PREFECTURE_ORDER.has_key(x) else 99)
             ]
             if 'venue_id' in kwargs:
                 venue = Venue.get(kwargs['venue_id'])
-                self.venue_id.choices.insert(0, (venue.id, u'%s (現在選択されている会場)' % venue.name))
+                choices.insert(0, (None, [(venue.id, u'%s (現在選択されている会場)' % venue.name)]))
+            self.venue_id.choices = choices
 
     def _get_translations(self):
         return Translations()
@@ -76,7 +77,7 @@ class PerformanceForm(Form):
         validators=[Optional(), after1900],
         format='%Y-%m-%d %H:%M',
     )
-    venue_id = SelectField(
+    venue_id = OurGroupedSelectField(
         label=u'会場',
         validators=[Required(u'選択してください')],
         choices=[],

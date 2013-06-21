@@ -80,7 +80,11 @@
               %else:
               <select name="performanceName-${i}" data-wishOrder="${i}" class="performance-name-select">
               %for performance_name, _ in performance_map:
-              <option value="${performance_name}">${performance_name}</option>
+                % if (_[0]['id'] == int(performance_id)) and (i == 0):
+                  <option value="${performance_name}" selected>${performance_name}</option>
+                % else:
+                  <option value="${performance_name}">${performance_name}</option>
+                % endif
               %endfor
               </select>
               %endif
@@ -210,9 +214,10 @@
               <tr>
                 <th><label>配送先住所</label></th>
                 <td>
+                  <% path = request.static_url('ticketing.cart:static/js/zipdata') %>
                   <div class="form-field">
                     ${form['zip'].label}
-                    ${form['zip']}
+                    ${form['zip'](onKeyUp="AjaxZip3.zip2addr('" + path + "', 'zip','','prefecture','city','', 'address_1');")}
                     ${self.error(form, 'zip')}
                   </div>
                   <div class="form-field">

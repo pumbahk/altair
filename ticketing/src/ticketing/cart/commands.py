@@ -102,7 +102,7 @@ def cancel_auth_expired_carts():
         if target_from:
             cart_q = cart_q.filter(m.Cart.created_at > target_from)
 
-        cart = cart_q.first()
+        cart = cart_q.with_lockmode('update').first()
 
         if cart is None:
             logging.info('not found unfinished cart')

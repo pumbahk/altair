@@ -1,6 +1,5 @@
 from wtforms.widgets.core import HTMLString, html_params
 from cgi import escape
-from ..fields import PHPCompatibleSelectMultipleField
 
 __all__ = (
     'CheckboxMultipleSelect',
@@ -11,6 +10,7 @@ class CheckboxMultipleSelect(object):
         self.multiple = multiple
 
     def __call__(self, field, **kwargs):
+        from ..fields import PHPCompatibleSelectMultipleField
         html = []
         if self.multiple:
             input_type = 'checkbox'

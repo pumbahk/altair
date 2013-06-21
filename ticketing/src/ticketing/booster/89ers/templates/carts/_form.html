@@ -151,7 +151,7 @@
     </tr>
     <tr>
       <th>
-        ブースタークラブに入会しようと思ったきっかけは？）<span class="red">*</span>
+        ブースタークラブに入会しようと思ったきっかけは？<span class="red">*</span>
       </th>
       <td>
         ${form.extra.form.motivation}
@@ -179,7 +179,7 @@
 <script type="text/javascript">
 $('#member_type').change(function() {
   var selected = $(this).find('option:selected');
-  if ($.inArray(selected.attr('data-selection'), ['0', '1', '2', '3']) > -1)
+  if ($.inArray(selected.attr('data-selection'), ['0', '1']) > -1)
     $('#extra-publicity').removeAttr('disabled');
   else
     $('#extra-publicity').attr('disabled','disabled');

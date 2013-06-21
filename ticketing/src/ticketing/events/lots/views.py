@@ -38,7 +38,7 @@ import ticketing.lots.api as lots_api
 from ticketing.lots.electing import Electing
 from ticketing.lots.closing import LotCloser
 from .helpers import Link
-from .forms import ProductForm, LotForm, SearchEntryForm
+from .forms import ProductForm, LotForm, SearchEntryForm, SendingMailForm
 from . import api
 
 from ticketing.payments import helpers as payment_helpers
@@ -652,7 +652,7 @@ class LotEntries(BaseView):
         sej =  DBSession.query(SejOrder).filter(SejOrder.order_id==wish.lot_entry.entry_no).first()
 
         html = tmpl.implementation().get_def('lot_wish_row').render(
-            w=wish, auth=auth, sej=sej, view=self)
+            self.request, w=wish, auth=auth, sej=sej, view=self)
         return html
 
     def wish_tr_class(self, wish):
@@ -811,4 +811,21 @@ class LotEntries(BaseView):
         return dict(result="OK",
                     html=[(self.wish_tr_class(w), self.render_wish_row(w))
                           for w in lot_entry.wishes])
+
+
+    @view_config(route_name='lots.entries.show', renderer="lots/entry_show.html")
+    def entry_show(self):
+        self.check_organization(self.context.event)
+        lot_id = self.request.matchdict["lot_id"]
+        lot = Lot.query.filter(Lot.id==lot_id).one()
+
+        entry_no = self.request.matchdict['entry_no']
+        lot_entry = lot.get_lot_entry(entry_no)
+        shipping_address = lot_entry.shipping_address
+        mail_form = SendingMailForm(recipient=shipping_address.email_1, 
+                                    bcc="")
+        return {"lot": lot, 
+                "lot_entry": lot_entry, 
+                "shipping_address": shipping_address, 
+                "mail_form": mail_form}
 

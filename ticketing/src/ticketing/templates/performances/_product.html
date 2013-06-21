@@ -1,7 +1,8 @@
-<%page args="performance, sales_segments, form_product" />
+<%page args="performance" />
 
 <div style="margin-bottom: 20px;">
   <%include file="/products/_action_button.html" />
 </div>
-<%include file="/products/_list.html" args="form=form_product, products=products, performance=performance" />
-<%include file="/products/_modal.html" args="modal_id='modal-product', performance_id=performance.id" />
+<%include file="/products/_list.html" args="products=performance.products, performance=performance" />
+<%include file="/products/_modal.html" args="modal_id='modal-product'" />
+<%include file="/product_items/_modal.html" args="modal_id='modal-product-item'" />

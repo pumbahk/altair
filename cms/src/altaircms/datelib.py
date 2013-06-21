@@ -12,14 +12,12 @@ set_now = _set_now
 
 def get_now(request=None):
     if request is None:
-        logger.warn("get current request used. %s" % traceback.format_stack(limit=3))
+        logger.warn("get current request used. %s", traceback.format_stack(limit=3))
         request = get_current_request()
     return _get_now(request)
 
 def get_today(request=None):
     if request is None:
-        logger.warn("get current request used. %s" % traceback.format_stack(limit=3))
+        logger.warn("get current request used. %s", traceback.format_stack(limit=3))
         request = get_current_request()
     return _get_today(request)
-
-

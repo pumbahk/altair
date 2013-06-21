@@ -1,0 +1,23 @@
+<%page args="order=None" />
+<%namespace file="/common/helpers.html" name="ch" />
+<%namespace file="/common/modal.html" import="delete_modal" />
+<script type="text/javascript">
+var get_selected_point_grant_setting_ids;
+</script>
+<%
+  actions = {
+    'new':dict(
+      label=u'追加',
+      url='javascript:add_point_grant_setting_to_sales_segment();',
+      icon='icon-plus',
+    ),
+    'remove':dict(
+      label=u'削除',
+      url='javascript:remove_point_grant_settings_from_sales_segment(get_selected_point_grant_setting_ids());',
+      icon='icon-minus',
+    ),
+  }
+  order = iter(order or ['new', 'remove'])
+%>
+${ch.action_button(actions, order)}
+${delete_modal()}

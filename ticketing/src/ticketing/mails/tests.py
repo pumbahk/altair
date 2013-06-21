@@ -19,6 +19,13 @@ def tearDownModule():
     from ticketing.testing import _teardown_db
     _teardown_db()
 
+def create_initial_settings():
+    from pyramid.path import AssetResolver
+    sej_template_file = AssetResolver("ticketing").resolve("../../misc/sej/template.html").abspath()
+    return {"altair.mailer": "pyramid_mailer.testing", 
+            'altair_sej.template_file': sej_template_file}    
+
+
 class CompletMailSettingsTest(unittest.TestCase):
     def setUp(self):
         self.config = testing.setUp(settings={"altair.mailer": "pyramid_mailer.testing", "altair_sej.template_file": ""})
@@ -26,7 +33,7 @@ class CompletMailSettingsTest(unittest.TestCase):
         self.config.include("ticketing.cart.import_mail_module")
         ## TBA
         self.config.add_route("qr.make", "__________")
-
+        
         self.config.include("ticketing.payments")
         self.config.include("ticketing.payments.plugins")
         self.config.add_subscriber('ticketing.cart.subscribers.add_helpers', 'pyramid.events.BeforeRender')
@@ -111,16 +118,17 @@ class CreateMailFromFakeOrderTests(unittest.TestCase):
         self.config.include("ticketing.payments.plugins")
 
     def test_it(self):
-        from ticketing.core.models import Organization
+        from ticketing.core.models import Organization, MailTypeEnum
         from ticketing.mails.api import create_fake_order
-        from ticketing.mails.complete import build_message
-        
+        from ticketing.mails.api import get_mail_utility
+
         org = Organization()
         org.extra_mail_info=None
         request = testing.DummyRequest()
         order = create_fake_order(request, org, 2, 1)
 
-        build_message(request, order).body
+        mutil = get_mail_utility(request, MailTypeEnum.PurchaseCompleteMail)
+        mutil.build_message(request, order).body
 
 
 if __name__ == "__main__":

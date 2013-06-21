@@ -94,6 +94,7 @@ requires = [
     'altair.saannotation',
     'altair.queryprofile',
     'altair.sqlahelper',
+    'altair.viewhelpers',
     ]
 
 tests_require = [
@@ -173,6 +174,10 @@ setup(name='ticketing',
       rakuten_checkout_sales=ticketing.checkout.commands:rakuten_checkout_sales
       refund_order=ticketing.orders.commands:refund_order
       sej_send_refund_file_with_proxy=ticketing.sej.commands:send_refund_file_with_proxy
+      import_point_grant_results=ticketing.loyalty.commands:import_point_grant_results
+      import_point_grant_data=ticketing.loyalty.commands:import_point_grant_data
+      export_point_grant_data=ticketing.loyalty.commands:export_point_grant_data
+      make_point_grant_data=ticketing.loyalty.commands:make_point_grant_data
       """,
       paster_plugins=['pyramid'],
       )

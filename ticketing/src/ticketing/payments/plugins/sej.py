@@ -10,6 +10,12 @@ from ticketing.mails.interfaces import (
     IOrderCancelMailPayment,
     ICompleteMailDelivery,
     IOrderCancelMailDelivery,
+    ILotsAcceptedMailPayment,
+    ILotsAcceptedMailDelivery,
+    ILotsElectedMailPayment,
+    ILotsElectedMailDelivery,
+    ILotsRejectedMailPayment,
+    ILotsRejectedMailDelivery,
 )
 
 from .. import logger
@@ -353,6 +359,7 @@ def sej_payment_confirm_viewlet(context, request):
 
 
 @view_config(context=ICompleteMailPayment, name="payment-%d" % PAYMENT_PLUGIN_ID, renderer="ticketing.payments.plugins:templates/sej_payment_mail_complete.html")
+@view_config(context=ILotsElectedMailPayment, name="payment-%d" % PAYMENT_PLUGIN_ID, renderer="ticketing.payments.plugins:templates/sej_payment_mail_complete.html")
 def payment_mail_viewlet(context, request):
     """ 完了メール表示
     :param context: ICompleteMailPayment
@@ -365,6 +372,7 @@ def payment_mail_viewlet(context, request):
     )
 
 @view_config(context=ICompleteMailDelivery, name="delivery-%d" % DELIVERY_PLUGIN_ID, renderer="ticketing.payments.plugins:templates/sej_delivery_mail_complete.html")
+@view_config(context=ILotsElectedMailDelivery, name="delivery-%d" % DELIVERY_PLUGIN_ID, renderer="ticketing.payments.plugins:templates/sej_delivery_mail_complete.html")
 def delivery_mail_viewlet(context, request):
     """ 完了メール表示
     :param context: ICompleteMailDelivery
@@ -380,8 +388,9 @@ def delivery_mail_viewlet(context, request):
 
 @view_config(context=IOrderCancelMailPayment, name="payment-%d" % PAYMENT_PLUGIN_ID)
 @view_config(context=IOrderCancelMailDelivery, name="delivery-%d" % DELIVERY_PLUGIN_ID)
-def cancel_payment_mail_viewlet(context, request):
-    """ cancelメール表示
-    :param context: IOrderCancelMailPayment
-    """
+@view_config(context=ILotsRejectedMailPayment, name="payment-%d" % PAYMENT_PLUGIN_ID)
+@view_config(context=ILotsAcceptedMailPayment, name="payment-%d" % PAYMENT_PLUGIN_ID)
+@view_config(context=ILotsRejectedMailDelivery, name="delivery-%d" % DELIVERY_PLUGIN_ID)
+@view_config(context=ILotsAcceptedMailDelivery, name="delivery-%d" % DELIVERY_PLUGIN_ID)
+def mail_notice_viewlet(context, request):
     return Response(context.mail_data("notice"))

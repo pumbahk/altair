@@ -90,7 +90,7 @@ def no_cart_error(context, request):
     logger.warning(context)
     return HTTPNotFound()
 
-@view_defaults(route_name='lots.entry.index', renderer=selectable_renderer("pc/%(membership)s/index.html"))
+@view_defaults(route_name='lots.entry.index', renderer=selectable_renderer("pc/%(membership)s/index.html"), permission="lots")
 class EntryLotView(object):
     """
     申し込み画面
@@ -149,9 +149,14 @@ class EntryLotView(object):
 
         stocks = lot.stock_types
 
+        performance_id = self.request.params.get('performance')
+        if not performance_id:
+            performance_id = 0
+
         # if not stocks:
         #     logger.debug('lot stocks found')
         #     raise HTTPNotFound()
+
 
         sales_segment = lot.sales_segment
         payment_delivery_pairs = sales_segment.payment_delivery_method_pairs
@@ -181,7 +186,7 @@ class EntryLotView(object):
             payment_delivery_pairs=payment_delivery_pairs,
             posted_values=dict(self.request.POST),
             performance_product_map=performance_product_map,
-            stock_types=stock_types,
+            stock_types=stock_types, performance_id=performance_id,
             payment_delivery_method_pair_id=self.request.params.get('payment_delivery_method_pair_id'),
             lot=lot, performances=performances, performance_map=performance_map, stocks=stocks)
 
@@ -290,6 +295,9 @@ class ConfirmLotEntryView(object):
         entry = self.request.session.get('lots.entry')
         if entry is None:
             return self.back_to_form()
+        if not entry.get('token'):
+            self.request.session.flash(u"セッションに問題が発生しました。")
+            return self.back_to_form()
         # wishesを表示内容にする
         event = self.context.event
         lot = self.context.lot
@@ -373,6 +381,11 @@ class ConfirmLotEntryView(object):
         self.request.session['lots.entry_no'] = entry.entry_no
 
 
+        try:
+            api.notify_entry_lot(self.request, entry)
+        except Exception as e:
+            logger.warning('error orccured during sending mail. \n{0}'.format(e))
+
 
         return HTTPFound(location=urls.entry_completion(self.request))
 
@@ -388,15 +401,10 @@ class CompletionLotEntryView(object):
     @mobile_view_config(request_method="GET", renderer=selectable_renderer("mobile/%(membership)s/completion.html"))
     def get(self):
         """ 完了画面 """
-        entry_no = self.request.session.get('lots.entry_no')
-        if not entry_no:
+        if 'lots.entry_no' not in self.request.session:
             return HTTPFound(location=self.request.route_url('lots.entry.index', **self.request.matchdict))
+        entry_no = self.request.session.pop('lots.entry_no')
         entry = DBSession.query(LotEntry).filter(LotEntry.entry_no==entry_no).one()
-
-        try:
-            api.notify_entry_lot(self.request, entry)
-        except Exception as e:
-            logger.warning('error orccured during sending mail. \n{0}'.format(e))
 
 
         try:

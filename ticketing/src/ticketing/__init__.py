@@ -37,8 +37,10 @@ def exclude_js(path):
     return path.endswith(".js")
 
 def register_globals(event):
-    from . import helpers
-    event.update(HH=helpers)
+    from . import helpers as HH
+    from .loyalty import helpers as lh
+    event.update(HH=HH, lh=lh)
+
 
 def main(global_config, **local_config):
     """ This function returns a Pyramid WSGI application.
@@ -95,6 +97,7 @@ def main(global_config, **local_config):
         config.include('altair.exclog')
         config.include('altair.mobile')
         config.include('altair.sqlahelper')
+        config.include('altair.now')
 
         ### s3 assets
         config.include('altair.pyramid_assets')
@@ -125,6 +128,7 @@ def main(global_config, **local_config):
         config.include("ticketing.qr")
         config.include("ticketing.members", route_prefix='/members')
         config.include("ticketing.memberships", route_prefix="/memberships")
+        config.include('ticketing.loyalty', route_prefix='/loyalty')
         config.include('ticketing.payments')
         config.include('ticketing.payments.plugins')
         config.include('ticketing.pkginfo')
