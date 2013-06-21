@@ -62,7 +62,12 @@ class PurchaseCompleteMail(object):
         organization = order.ordered_from or self.request.organization
         subject = self.get_mail_subject(organization, traverser)
         mail_from = self.get_mail_sender(organization, traverser)
-        bcc = []
+        ## addhoc
+        ## todo add form field
+        if organization.short_name == "RT":
+            bcc = []
+        else:
+            bcc = [mail_from]
 
         mail_body = self.build_mail_body(order, traverser)
         return Message(
