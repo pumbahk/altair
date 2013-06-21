@@ -67,7 +67,7 @@ class LotsMail(object):
         organization = lot_entry.lot.event.organization or self.request.context.organization
         subject = self.get_mail_subject(organization, traverser)
         mail_from = self.get_mail_sender(organization, traverser)
-        bcc = [mail_from]
+        bcc = []
 
         mail_body = self.build_mail_body((lot_entry, elected_wish), traverser)
         return Message(
