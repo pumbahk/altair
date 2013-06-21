@@ -23,7 +23,8 @@ def get_subject_info_default():
 
 class LotsInfoDefault(SubjectInfoDefault):
     def get_announce_date(lot_entry):
-        return u"{d.year}年{d.month:02}月{d.day:02}日 {d.hour:02}:{d.minute:02}～".format(d=lot_entry.lot.lotting_announce_datetime)
+        d = lot_entry.lot.lotting_announce_datetime
+        return u"{d.year}年{d.month:02}月{d.day:02}日 {d.hour:02}:{d.minute:02}～".format(d=d) if d else u"-"
 
     first_sentence_default = u"""この度は、お申込みいただき、誠にありがとうございました。
 抽選申込が完了いたしましたので、ご連絡させていただきます。

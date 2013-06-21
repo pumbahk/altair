@@ -173,11 +173,12 @@ def create_fake_order(request, organization, payment_plugin_id, delivery_plugin_
 
 def _fake_order_add_fake_chain(fake_order, organization, event, performance):
     if performance:
-        return
+        fake_order.lot._fake_root = performance.event
     elif event:
         fake_order.performance._fake_root = event
     else:
         fake_order.performance._fake_root = organization
+        fake_order.lot.event._fake_root = organization
 
 def _fake_order_add_settings(order, payment_plugin_id, delivery_plugin_id, event, performance):
     order.payment_delivery_pair.payment_method.payment_plugin_id = payment_plugin_id
@@ -191,8 +192,9 @@ def _fake_order_add_settings(order, payment_plugin_id, delivery_plugin_id, event
     if delivery_plugin:
         order.payment_delivery_pair.delivery_method.delivery_plugin = delivery_plugin
         order.payment_delivery_pair.delivery_method.name = delivery_plugin.name
-
     if event:
+        order.lot.event = event #lot_entry
         order.performance.event = event
     if performance:
+        order.lot.event = performance.event #lot_entry
         order.performance = performance
