@@ -374,6 +374,11 @@ class ConfirmLotEntryView(object):
         self.request.session['lots.entry_no'] = entry.entry_no
 
 
+        try:
+            api.notify_entry_lot(self.request, entry)
+        except Exception as e:
+            logger.warning('error orccured during sending mail. \n{0}'.format(e))
+
 
         return HTTPFound(location=urls.entry_completion(self.request))
 
@@ -393,11 +398,6 @@ class CompletionLotEntryView(object):
         if not entry_no:
             return HTTPFound(location=self.request.route_url('lots.entry.index', **self.request.matchdict))
         entry = DBSession.query(LotEntry).filter(LotEntry.entry_no==entry_no).one()
-
-        try:
-            api.notify_entry_lot(self.request, entry)
-        except Exception as e:
-            logger.warning('error orccured during sending mail. \n{0}'.format(e))
 
 
         try:
