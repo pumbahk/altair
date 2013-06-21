@@ -5,6 +5,7 @@
   .controls select{width: 80%;}
   .controls input{width: 80%;}
   .controls textarea{width: 80%; min-height:100px;}
+  .controls table{width: 95%;}
 </style>
 
 <div class="breadcrumbs">
@@ -19,26 +20,11 @@
   )}
 </div>
 
-<%
-from ticketing.core.models import MailTypeEnum
-from ticketing.core.models import MailTypeChoices
-if str(MailTypeEnum.CompleteMail) == mailtype:
-    ja_mailtype = u"購入完了メール付加情報"
-elif str(MailTypeEnum.PurchaseCancelMail) == mailtype:
-    ja_mailtype = u"購入キャンセルメール付加情報"
-else:
-    ja_mailtype = u"?????"
-%>
-
 <div class="page-header">
-  <h2>${ja_mailtype} ${performance.name}</h2>
-  <span class="label">取引先</span> &gt
-  <span class="label">イベント</span> &gt
+  <h2>${mutil.get_mailtype_description()}付加情報 ${performance.name}</h2>
+  <span class="label">取引先<a href="${request.route_path("organizations.mails.new", organization_id=performance.event.organization.id, mailtype=mailtype)}">に移動</a></span> &gt
+  <span class="label">イベント<a href="${request.route_path("events.mailinfo.edit", event_id=performance.event.id, mailtype=mailtype)}">に移動</a></span> &gt
   <span class="label label-warning">パフォーマンス</span>
-  <br/>
-  <a style="margin-left:30px;" href="${request.route_path("events.mailinfo.edit", event_id=performance.event.id, mailtype=mailtype)}">
-	${performance.name}が所属するイベントの設定に移動
-  </a>
 </div>
 
 <pre>
@@ -48,18 +34,23 @@ else:
   3. 購入されたチケットの公演が所属しているイベントが所属している取引先に紐づく設定を取得。
 </pre>
 
-<a href="#PreviewModal" data-toggle="modal">preview</a>
-
 <div class="btn-group" style="margin-bottom:20px;">
-  %for i, label in MailTypeChoices:
-    <a class="btn btn-inverse"
-	   href="${request.current_route_path(organization_id=organization.id, mailtype=i)}">${label}</a>
-  %endfor
+  <a class="btn btn-info" href="#PreviewModal" data-toggle="modal"><i class="icon-eye-open"></i> preview</a>
 </div>
+
+<ul class="nav nav-tabs">
+  %for i, label in choices:
+    %if unicode(mailtype) == unicode(i):
+  <li class="active"><a href="#">${label}</a></li>
+    %else:
+  <li><a href="${request.current_route_path(organization_id=organization.id, mailtype=i)}">${label}</a></li>
+    %endif
+  %endfor
+</ul>
 
 <div class="content">
   ${flash_messages(request)}
-  ${alert_message(form)}
+  ${alert_message(form,escape=False)}
 </div>
 
 <div class="well">
@@ -83,7 +74,7 @@ else:
     <h3>メールpreview</h3>
   </div>
 
-  <form class="inline" action="${request.route_path("mails.preview.performance", performance_id=performance.id, mailtype=mailtype)}" method="GET">
+  <form class="inline" action="${request.route_path("mails.preview.performance", performance_id=performance.id, mailtype=mailtype)}" method="GET"  target="_blank">
   <div class="modal-body">
 	${choice_form["payment_methods"].label} ${choice_form["payment_methods"]}
 	${choice_form["delivery_methods"].label} ${choice_form["delivery_methods"]}
@@ -94,3 +85,7 @@ else:
   </div>
   </form>
 </div>
+
+<script type="text/javascript">
+  $(function(){$('.modal button[type="submit"]').click(function(e){$(e.currentTarget).parents('.modal').data('modal').toggle(); return true;});});
+</script>

@@ -35,10 +35,13 @@ class FakeObject(unicode):
         return v
 
     def __iter__(self):
-        return iter([])
+        return iter([self.__class__()])
 
     def __str__(self):
         return self.name
+
+    def __add__(self, n):
+        return int(self)+n
 
     def __int__(self):
         return 0
@@ -49,3 +52,6 @@ class FakeObject(unicode):
     def __call__(self, *args, **kwargs):
         logger.debug("warn call() return self")
         return self
+
+    def __nonzero__(self):
+        return False

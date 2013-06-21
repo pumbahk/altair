@@ -12,8 +12,12 @@ from pyramid.httpexceptions import HTTPFound, HTTPBadRequest
 from webhelpers.html.builder import literal
 
 from ticketing.models import DBSession
-from ticketing.mails.interfaces import ICompleteMailDelivery, ICompleteMailPayment
-from ticketing.mails.interfaces import IOrderCancelMailDelivery, IOrderCancelMailPayment
+from ticketing.mails.interfaces import ICompleteMailPayment
+from ticketing.mails.interfaces import IOrderCancelMailPayment
+from ticketing.mails.interfaces import ILotsAcceptedMailPayment
+from ticketing.mails.interfaces import ILotsElectedMailPayment
+from ticketing.mails.interfaces import ILotsRejectedMailPayment
+
 from ticketing.cart import helpers as h
 from ticketing.cart import api as a
 from ticketing.cart.models import Cart, CartedProduct
@@ -124,13 +128,17 @@ def completion_viewlet(context, request):
     return Response(text=u"楽天あんしん支払いサービス")
 
 @view_config(context=ICompleteMailPayment, name="payment-%d" % PAYMENT_PLUGIN_ID, renderer="ticketing.payments.plugins:templates/checkout_mail_complete.html")
+@view_config(context=ILotsElectedMailPayment, name="payment-%d" % PAYMENT_PLUGIN_ID, renderer="ticketing.payments.plugins:templates/checkout_mail_complete.html")
 def payment_mail_viewlet(context, request):
     notice=context.mail_data("notice")
-    return dict(notice=notice)
+    order=context.order
+    return dict(notice=notice, order=order)
 
 @view_config(context=IOrderCancelMailPayment, name="payment-%d" % PAYMENT_PLUGIN_ID)
-def cancel_mail_viewlet(context, request):
-    return Response(context.mail_data("notice"))
+@view_config(context=ILotsRejectedMailPayment, name="payment-%d" % PAYMENT_PLUGIN_ID)
+@view_config(context=ILotsAcceptedMailPayment, name="payment-%d" % PAYMENT_PLUGIN_ID)
+def notice_viewlet(context, request):
+    return Response(text=u"＜クレジットカードでお支払いの方＞\n{0}".format(context.mail_data("notice")))
 
 
 class CheckoutView(object):

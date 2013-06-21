@@ -79,6 +79,23 @@ class MailMessageStructureTests(unittest.TestCase):
         self.assertEquals(target.data.getall("two"), ["E2", "2"])
         self.assertEquals(target.data.getall("three"), ["O3"])
 
+    def test_getall_jumped(self):
+        class Organization:
+            extra_mailinfo = testing.DummyResource(data=dict(one="1", two="2", three="O3"))
+        class Event:
+            extra_mailinfo = None
+            organization = Organization()
+        class Performance:
+            extra_mailinfo = testing.DummyResource(data=dict(one="P1"))
+            event = Event()
+            
+        target = self._makeOne()
+        target.visit(Performance())
+
+        self.assertEquals(target.data.getall("one"), ["P1", "1"])
+        self.assertEquals(target.data.getall("two"), ["2"])
+        self.assertEquals(target.data.getall("three"), ["O3"])
+
     def test_twochain_with_change_access_function(self):
         class Organization:
             extra_mailinfo = testing.DummyResource(

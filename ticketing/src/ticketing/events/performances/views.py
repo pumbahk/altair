@@ -335,7 +335,8 @@ class MailInfoNewView(BaseView):
         if performance is None:
             raise HTTPNotFound('performance id %s is not found' % self.request.matchdict["performance_id"])
 
-        template = MailInfoTemplate(self.request, performance.event.organization)
+        mutil = get_mail_utility(self.request, self.request.matchdict["mailtype"])
+        template = MailInfoTemplate(self.request, performance.event.organization, mutil=mutil)
         choice_form = template.as_choice_formclass()()
         formclass = template.as_formclass()
         mailtype = self.request.matchdict["mailtype"]
@@ -345,6 +346,7 @@ class MailInfoNewView(BaseView):
                 "organization": performance.event.organization, 
                 "mailtype": self.request.matchdict["mailtype"], 
                 "choices": MailTypeChoices, 
+                "mutil": mutil, 
                 "choice_form": choice_form}
 
     @view_config(request_method="POST")
@@ -356,7 +358,7 @@ class MailInfoNewView(BaseView):
         if performance is None:
             raise HTTPNotFound('performance id %s is not found' % self.request.matchdict["performance_id"])
 
-        template = MailInfoTemplate(self.request, performance.event.organization)
+        template = MailInfoTemplate(self.request, performance.event.organization, mutil=mutil)
         choice_form = template.as_choice_formclass()()
         formclass = template.as_formclass()
         form = formclass(self.request.POST)
@@ -373,5 +375,6 @@ class MailInfoNewView(BaseView):
                 "form": form, 
                 "organization": performance.event.organization, 
                 "mailtype": self.request.matchdict["mailtype"], 
+                "mutil": mutil, 
                 "choices": MailTypeChoices, 
                 "choice_form": choice_form}

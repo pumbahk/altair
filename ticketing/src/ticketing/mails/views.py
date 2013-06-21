@@ -2,18 +2,18 @@
 from pyramid.view import view_config
 from ticketing.fanstatic import with_bootstrap
 from ticketing.mails.api import get_mail_utility
-from ..core.models import Organization, Event, Performance, MailTypeEnum
+from ..core.models import Organization, Event, Performance
 from . import forms
 
-## move
-def jmailtype(mailtype):
-    if str(MailTypeEnum.CompleteMail) == mailtype:
-        return u"購入完了メール付加情報"
-    elif str(MailTypeEnum.PurchaseCancelMail) == mailtype:
-        return u"購入キャンセルメール付加情報"
-    else:
-        return  u"?????"
+class ExtraMailInfoNotInitialized(Exception):
+    def __init__(self, mutil, organization_id):
+        self.mutil = mutil
+        self.organization_id = organization_id
 
+def check_initialized_or_not(request, mutil, fake_order):
+    organization_id = request.context.user.organization_id
+    if not mutil.get_traverser(request, fake_order).exists_at_least_one():
+        raise ExtraMailInfoNotInitialized(mutil, organization_id)
 
 
 @view_config(route_name="mails.preview.organization", 
@@ -23,16 +23,16 @@ def mail_preview_preorder_with_organization(context, request):
     mutil = get_mail_utility(request, request.matchdict["mailtype"])
     payment_id = request.params["payment_methods"]
     delivery_id = request.params["delivery_methods"]
-
     organization_id = int(request.matchdict.get("organization_id", 0))
     organization = Organization.get(organization_id)
     fake_order = mutil.create_fake_order(request, organization, payment_id, delivery_id)
-    form = forms.MailInfoTemplate(request, organization).as_choice_formclass()(
+    check_initialized_or_not(request, mutil, fake_order)
+    form = forms.MailInfoTemplate(request, organization, mutil=mutil).as_choice_formclass()(
         payment_methods=payment_id, 
         delivery_methods=delivery_id, 
         )
     return {"preview_text": mutil.preview_text(request, fake_order), 
-            "form": form, "ja_mailtype": jmailtype(request.matchdict["mailtype"])}
+            "mutil": mutil, "form": form}
 
 @view_config(route_name="mails.preview.event", 
              decorator=with_bootstrap, permission="authenticated", 
@@ -46,13 +46,13 @@ def mail_preview_preorder_with_event(context, request):
     event = Event.get(event_id)
     fake_order = mutil.create_fake_order(request, event.organization, 
                                          payment_id, delivery_id, event=event)
-
-    form = forms.MailInfoTemplate(request, event.organization).as_choice_formclass()(
+    check_initialized_or_not(request, mutil, fake_order)
+    form = forms.MailInfoTemplate(request, event.organization, mutil=mutil).as_choice_formclass()(
         payment_methods=payment_id, 
         delivery_methods=delivery_id, 
         )
     return {"preview_text": mutil.preview_text(request, fake_order), 
-            "form": form, "ja_mailtype": jmailtype(request.matchdict["mailtype"])}
+            "mutil": mutil, "form": form}
 
 @view_config(route_name="mails.preview.performance", 
              decorator=with_bootstrap, permission="authenticated", 
@@ -66,9 +66,24 @@ def mail_preview_preorder_with_performance(context, request):
     performance = Performance.get(performance_id, context.user.organization_id)
     fake_order = mutil.create_fake_order(request, performance.event.organization,
                                          payment_id, delivery_id, performance=performance)
-    form = forms.MailInfoTemplate(request, performance.event.organization).as_choice_formclass()(
+    check_initialized_or_not(request, mutil, fake_order)
+    form = forms.MailInfoTemplate(request, performance.event.organization, mutil=mutil).as_choice_formclass()(
         payment_methods=payment_id, 
         delivery_methods=delivery_id, 
         )
     return {"preview_text": mutil.preview_text(request, fake_order), 
-            "form": form, "ja_mailtype": jmailtype(request.matchdict["mailtype"])}
+            "mutil": mutil, "form": form}
+
+@view_config(route_name="mails.preview.organization", 
+             decorator=with_bootstrap, context=ExtraMailInfoNotInitialized,
+             renderer="ticketing:templates/events/mailinfo/preview_failure.html")
+@view_config(route_name="mails.preview.event", 
+             decorator=with_bootstrap, context=ExtraMailInfoNotInitialized,
+             renderer="ticketing:templates/events/mailinfo/preview_failure.html")
+@view_config(route_name="mails.preview.performance", 
+             decorator=with_bootstrap, context=ExtraMailInfoNotInitialized,
+             renderer="ticketing:templates/events/mailinfo/preview_failure.html")
+def mail_preview_failed(context, request):
+    return {"mutil":context.mutil, 
+            "organization_id": context.organization_id, 
+            "mailtype": context.mutil.mtype}
