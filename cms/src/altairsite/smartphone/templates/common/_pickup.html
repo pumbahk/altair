@@ -5,11 +5,12 @@
 
 $(function() {
 
-    var windowWidth = $(window).width();
-
     // TODO tablet size
     var viewWidth = 320;
     var viewHeight = 187;
+
+    // 画像非同期ロード
+    asyncLoadImg();
 
     // 描画領域作成
     items = $(".item *").length;
@@ -19,10 +20,11 @@ $(function() {
     $('.item').css('width', viewWidth + 'px');
     $('.item').css('height', viewHeight + 'px');
 
-    // リロード対応
-    settingReload();
-    $('.pointer span:first').attr('class', 'current');
-    var flipsnap = Flipsnap('#pickup .flipsnap');
+    //var flipsnap = Flipsnap('#pickup .flipsnap');
+    var flipsnap = Flipsnap('#pickup .flipsnap', {
+        disableTouch: true
+    });
+
     var $pickup = $('#pickup');
     var $next = $pickup.find(".next").click(function() {
         flipsnap.toNext();
@@ -30,6 +32,7 @@ $(function() {
     var $prev = $pickup.find(".prev").click(function() {
         flipsnap.toPrev();
     });
+    var $pointer = $pickup.find('.pointer span');
 
     $next.attr("disabled", false);
     $prev.attr("disabled", true);
@@ -44,28 +47,15 @@ $(function() {
         $('.messages').append(promotions[flipsnap.currentPoint]);
     }
 
-    asyncLoadImg();
+    $pointer.eq(flipsnap.currentPoint).addClass('current');
 
     (function pointmove() {
-        var $pickup = $('#pickup');
-        var $pointer = $pickup.find('.pointer span');
-        var flipsnap = Flipsnap('#pickup .flipsnap');
         flipsnap.element.addEventListener('fspointmove', function() {
             $pointer.filter('.current').removeClass('current');
             $pointer.eq(flipsnap.currentPoint).addClass('current');
+            $('.messages span').remove();
+            $('.messages').append(promotions[flipsnap.currentPoint]);
         }, false);
-
-        var $next = $pickup.find(".next").click(function() {
-            flipsnap.toNext();
-            $('.messages span').remove();
-            $('.messages').append(promotions[flipsnap.currentPoint]);
-        });
-
-        var $prev = $pickup.find(".prev").click(function() {
-            flipsnap.toPrev();
-            $('.messages span').remove();
-            $('.messages').append(promotions[flipsnap.currentPoint]);
-        });
 
         flipsnap.element.addEventListener('fspointmove', function() {
             $next.attr("disabled", !flipsnap.hasNext());
@@ -74,14 +64,8 @@ $(function() {
 
     })();
 
-    (function touchevents() {
-        flipsnap.element.addEventListener('fstouchend', function(ev) {
-            $('.messages span').remove();
-            $('.messages').append(promotions[flipsnap.currentPoint]);
-        }, false);
-    })();
-
     // 画像の非同期読み込み
+    var readCount = 0;
     function asyncLoadImg() {
         var imgPreloader = new Array();
         $(".imgtf").each(function(index) {
@@ -93,10 +77,16 @@ $(function() {
             imgPreloader[index] = new Image();
 
             imgPreloader[index].onload=function() {
+                ++readCount;
                 imgTarget.attr({'src':orgSrc});
                 imgWidth = imgPreloader[index].width;
                 imgHeight = imgPreloader[index].height;
                 reduction(imgTarget, viewWidth, viewHeight, imgWidth, imgHeight);
+
+                if (readCount == items) {
+                    // 全ての画像を読み込んだらフリック可能
+                    flipsnap.disableTouch = false;
+                }
             }
             imgPreloader[index].src = orgSrc;
         });
@@ -138,27 +128,6 @@ $(function() {
         target.prop('height', true_height);
         target.prop('width', true_width);
     }
-
-    $(window).load(function(){
-        settingReload();
-    });
-
-    function settingReload () {
-        // リロード対応（カルーセル移動後に、リロードされると画像とポインタが合わなくなる）
-        $('.pointer span:first').attr('class', 'current');
-        var flipsnap = Flipsnap('#pickup .flipsnap');
-        var $pickup = $('#pickup');
-        var $next = $pickup.find(".next").click(function() {
-            flipsnap.toNext();
-        });
-        var $prev = $pickup.find(".prev").click(function() {
-            flipsnap.toPrev();
-        });
-
-        $next.attr("disabled", false);
-        $prev.attr("disabled", true);
-    }
-
 })();
 
 </script>
