@@ -131,13 +131,14 @@ def completion_viewlet(context, request):
 @view_config(context=ILotsElectedMailPayment, name="payment-%d" % PAYMENT_PLUGIN_ID, renderer="ticketing.payments.plugins:templates/checkout_mail_complete.html")
 def payment_mail_viewlet(context, request):
     notice=context.mail_data("notice")
-    return dict(notice=notice)
+    order=context.order
+    return dict(notice=notice, order=order)
 
 @view_config(context=IOrderCancelMailPayment, name="payment-%d" % PAYMENT_PLUGIN_ID)
 @view_config(context=ILotsRejectedMailPayment, name="payment-%d" % PAYMENT_PLUGIN_ID)
 @view_config(context=ILotsAcceptedMailPayment, name="payment-%d" % PAYMENT_PLUGIN_ID)
 def notice_viewlet(context, request):
-    return Response(context.mail_data("notice"))
+    return Response(text=u"＜クレジットカードでお支払いの方＞\n{0}".format(context.mail_data("notice")))
 
 
 class CheckoutView(object):

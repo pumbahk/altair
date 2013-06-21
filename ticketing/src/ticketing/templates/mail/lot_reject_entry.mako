@@ -29,6 +29,7 @@ ${get("entry_no").body}
 ■${get("order_datetime").label}
 ${get("order_datetime").body}
 %endif
+
 -----
 %if get("event_name").status:
 ■${get("event_name").label}: ${get("event_name").body}
@@ -40,7 +41,9 @@ ${get("order_datetime").body}
 ■${get("announce_date").label}: ${get("announce_date").body}
 %endif
 
+■お支払
 ${h.render_payment_lots_rejected_mail_viewlet(request, lot_entry)}
+■お受取
 ${h.render_delivery_lots_rejected_mail_viewlet(request, lot_entry)}
 
 ${notice}

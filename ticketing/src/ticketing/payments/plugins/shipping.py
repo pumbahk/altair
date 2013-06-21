@@ -59,4 +59,4 @@ def completion_delivery_mail_viewlet(context, request):
 @view_config(context=ILotsRejectedMailDelivery, name="delivery-%d" % PLUGIN_ID)
 @view_config(context=ILotsAcceptedMailDelivery, name="delivery-%d" % PLUGIN_ID)
 def notice_mail_viewlet(context, request):
-    return Response(context.mail_data("notice"))
+    return Response(text=u"＜配送にてお引取りの方＞\n{0}".format(context.mail_data("notice")))

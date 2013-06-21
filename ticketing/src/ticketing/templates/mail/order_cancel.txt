@@ -39,8 +39,8 @@ ${get("delivery_method").label} ${get("delivery_method").body}
 %if get("address").status:
 ${get("address").body}
 %endif
-${title}
 %if get("event_name").status:
+${get("event_name").label}
 ${get("event_name").body}
 %endif
 %if get("pdate").status:

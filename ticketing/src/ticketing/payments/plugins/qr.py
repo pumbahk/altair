@@ -71,7 +71,7 @@ def deliver_completion_mail_viewlet(context, request):
 @view_config(context=ILotsAcceptedMailDelivery, name="delivery-%d" % DELIVERY_PLUGIN_ID)
 @view_config(context=ILotsElectedMailDelivery, name="delivery-%d" % DELIVERY_PLUGIN_ID)
 def delivery_notice_viewlet(context, request):
-    return Response(context.mail_data("notice"))
+    return Response(text=u"＜QRでのお受取りの方＞\n{0}".format(context.mail_data("notice")))
 
 def _with_serial_and_seat(ordered_product,  ordered_product_item):
     if ordered_product_item.seats:

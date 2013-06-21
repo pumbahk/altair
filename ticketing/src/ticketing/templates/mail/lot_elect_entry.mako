@@ -56,12 +56,11 @@ ${product.product.name} ${h.format_currency(product.product.price)} x ${product.
 ■お支払
 お支払方法： ${lot_entry.payment_delivery_method_pair.payment_method.name}
 ※決済手数料：${h.format_currency(lot_entry.payment_delivery_method_pair.transaction_fee)}円/${fee_type(lot_entry.payment_delivery_method_pair.payment_method.fee_type)}
-${h.render_payment_lots_elected_mail_viewlet(request, elected_wish.order)}
-
+${h.render_payment_lots_elected_mail_viewlet(request, lot_entry.order)}
 ■お受取
 お受取方法： ${lot_entry.payment_delivery_method_pair.delivery_method.name}
 ※引取手数料：${h.format_currency(lot_entry.payment_delivery_method_pair.delivery_fee)}円/${fee_type(lot_entry.payment_delivery_method_pair.delivery_method.fee_type)}をチケット代金とは別に頂戴いたします。
-${h.render_delivery_lots_elected_mail_viewlet(request, elected_wish.order)}
+${h.render_delivery_lots_elected_mail_viewlet(request, lot_entry.order)}
 
 
 ${notice}

@@ -231,7 +231,8 @@ def completion_payment_mail_viewlet(context, request):
     :param context: ICompleteMailPayment
     """
     notice=context.mail_data("notice")
-    return dict(notice=notice)
+    order=context.order
+    return dict(notice=notice, order=order)
 
 @view_config(context=IOrderCancelMailPayment, name="payment-%d" % PAYMENT_ID)
 @view_config(context=ILotsRejectedMailPayment, name="payment-%d" % PAYMENT_ID)
@@ -240,7 +241,7 @@ def cancel_payment_mail_viewlet(context, request):
     """ 完了メール表示
     :param context: ICompleteMailPayment
     """
-    return Response(context.mail_data("notice"))
+    return Response(text=u"＜クレジットカードでお支払いの方＞\n{0}".format(context.mail_data("notice")))
 
 @view_defaults(decorator=with_jquery.not_when(mobile_request))
 class MultiCheckoutView(object):
