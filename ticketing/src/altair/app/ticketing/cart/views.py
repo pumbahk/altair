@@ -152,7 +152,7 @@ class IndexView(IndexViewMixin):
         organization = c_api.get_organization(request)
         return organization.id == 15
 
-    @view_config(decorator=with_jquery_tools, route_name='cart.index',request_type="altair.mobile.interfaces.ISmartphoneRequest", 
+    @view_config(decorator=with_jquery_tools, route_name='cart.index',request_type="altair.mobile.interfaces.ISmartphoneRequest",
                  custom_predicates=(is_organization_rs, ), renderer=selectable_renderer("RT/smartphone/index.html"), xhr=False, permission="buy")
     @view_config(decorator=with_jquery_tools, route_name='cart.index',
                   renderer=selectable_renderer("%(membership)s/pc/index.html"), xhr=False, permission="buy")
@@ -565,8 +565,19 @@ class PaymentView(object):
         self.request = request
         self.context = request.context
 
+    @property
+    def sales_segment(self):
+        # contextから取れることを期待できないので
+        # XXX: 会員区分からバリデーションしなくていいの?
+        return c_models.SalesSegment.query.filter(c_models.SalesSegment.id==self.request.matchdict['sales_segment_id']).one()
+
+    def is_organization_rs(context, request):
+        organization = c_api.get_organization(request)
+        return organization.id == 15
+
     @view_config(route_name='cart.payment', request_method="GET", renderer=selectable_renderer("%(membership)s/pc/payment.html"))
-    @view_config(route_name='cart.payment', request_type='altair.mobile.interfaces.IMobileRequest', request_method="GET", renderer=selectable_renderer("%(membership)s/mobile/payment.html"))
+    @view_config(route_name='cart.payment', request_method="GET", request_type='altair.mobile.interfaces.IMobileRequest', renderer=selectable_renderer("%(membership)s/mobile/payment.html"))
+    @view_config(route_name='cart.payment', request_method="GET", request_type="altair.mobile.interfaces.ISmartphoneRequest", renderer=selectable_renderer("RT/smartphone/payment.html"), custom_predicates=(is_organization_rs, ))
     def __call__(self):
         """ 支払い方法、引き取り方法選択
         """
@@ -882,3 +893,4 @@ def _create_performance_param(performance):
     if performance:
         param = "?performance=" + str(performance)
     return param
+

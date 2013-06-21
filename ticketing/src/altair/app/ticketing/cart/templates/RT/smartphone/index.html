@@ -39,47 +39,6 @@ $(function() {cart.init(salesSegmentsSelection, selected, cartReleaseUrl, false)
 </script>
 </%block>
 
-<%block name="extras">
-  <div class="modal" id="venue-detail" style="display:none; background-image: url(${request.static_url('altair.app.ticketing.cart:static/site-data/xebio-arena.png')}); width: 833px; height: 637px;">
-  </div>
-
-  <div class="modal payment" id="order-error-template" style="display:none">
-    <div class="modal-header"></div>
-    <div class="modal-inner">
-      <div class="modal-body"></div>
-      <div class="modal-footer"></div>
-    </div>
-  </div>
-
-  <div class="modal payment" id="order-reserved" style="display:none">
-    <div class="modal-header"></div>
-    <div class="modal-inner">
-      <div class="modal-body">
-        <h3>合計金額</h3>
-        <table>
-          <tbody>
-            <tr class="last-child">
-            <td class="cart-total-amount">￥</td>
-            </tr>
-          </tbody>
-        </table>
-        <h3>内訳</h3>
-        <table>
-          <tbody class="contentsOfShopping">
-          </tbody>
-        </table>
-      </div>
-      <div class="modal-footer">
-        <a class="cancel-button btn-redo">座席・枚数を選びなおす</a>
-        <a class="ok-button btn-buy">購入する</a>
-      </div>
-      <div>
-          <p>上記座席を確保しました。${h.cart_timeout(request)} 分以内に購入を完了してください<br>（完了しない場合は、確保解除となります）</p>
-      </div>
-    </div>
-  </div>
-</%block>
-
     <%
         link = request.route_url('cart.switchpc', event_id=event['id'])
         if performance:
@@ -91,39 +50,35 @@ $(function() {cart.init(salesSegmentsSelection, selected, cartReleaseUrl, false)
 
     <hr/>
     <%m:header>イベント名称（公演名）</%m:header>
-
-    ${event['title']} <br/>
-    (<span class="performanceNameSpace"></span>)
+    <div class="sectionbox">
+      <div class="sectionbox-inner">
+        ${event['title']} <br/>
+        (<span class="performanceNameSpace"></span>)
+      </div>
+    </div>
 
     <hr/>
     <%m:header>日時・会場選択</%m:header>
     <form id="form1" name="form1" method="post" action="">
       <div id="settlementSelectBox">
         <div id="settlementSelectBoxInner">
-          <table summary="チケット購入の絞り込み">
-            <tr>
-              <th>${selection_label}</th>
-              <td>
-                <select name="select" id="date-select">
-                </select>
-              </td>
-            </tr>
-            <tr id="settlementSelectEnd">
-              <th>${second_selection_label}</th>
-              <td><select name="select2" id="venue-select">
-              </select></td>
-            </tr>
-          </table>
+          ${selection_label}<br/>
+          <select name="select" id="date-select">
+          </select>
+          <br/>
+          ${second_selection_label}<br/>
+          <select name="select2" id="venue-select">
+          </select>
+          <br/>
         </div>
       </div>
     </form>
 
+    <br/>
     <div id="settlementOperation" class="settlementBox2">
       <div class="settlementBoxInner2">
-        <h2 id="hallName">
           <span id="performanceDate">-</span><br/>
           <span id="performanceVenue">-</span>
-        </h2>
 
         <hr/>
         <%m:header>席種選択</%m:header>
@@ -223,16 +178,9 @@ $(function() {cart.init(salesSegmentsSelection, selected, cartReleaseUrl, false)
                       <%m:header>チケット購入方法</%m:header>
                       <p>1. 希望の席種をクリックしてください。</p>
                       <p>2. 希望の券種と枚数を選択してください。</p>
-                      <p>3. 購入方法をお選びください。</p>
-                      <p>4. [座席を選んで購入] の場合、右側 (この欄) に会場図が表示されます。選択した席種名の横に記載されたブロックを選択してください。</p>
-                      <p>5. ご希望席を選択/解除してください。</p>
-                      <p>※席種・ブロックを選び直す際は、「キャンセル」ボタンを押してください。</p>
+                      <p>3. おまかせで購入するを選択してください。</p>
                     </div>
                   </div>
-                </div>
-                <div>
-                  <a class="btn-select-seat">購入</a>
-                  <a class="btn-cancel">キャンセル</a>
                 </div>
               </div>
             </div>
@@ -240,36 +188,31 @@ $(function() {cart.init(salesSegmentsSelection, selected, cartReleaseUrl, false)
         </div>
       </div>
     </div>
+
+    <h2 class="glitter red">イベント詳細</h2>
     <div class="settlementBox2" id="settlementEventDetail" style="clear:both">
       <div class="settlementBoxInner2">
-        <h2><img src="${request.static_url('altair.app.ticketing.cart:static/img/settlement/title_event.gif')}" alt="イベント詳細" width="106" height="29" /></h2>
-        <table summary="イベント詳細情報">
-          <tbody>
-            <tr>
-              <th scope="row">イベント名</th>
-              <td>${event["title"]} (<span class="performanceNameSpace"></span>)</td>
-            </tr>
-            <tr>
-              <th scope="row">開催日時</th>
-              <td id="descPerformanceDate"></td>
-            </tr>
-            <tr>
-              <th scope="row">会場</th>
-              <td id="venue"> ${", ".join(set(event['venues']))}</td>
-            </tr>
-            <tr>
-              <th scope="row">販売期間</th>
-              <td id="descSalesTerm">
-                ${event['sales_start_on']} 〜 ${event['sales_end_on']}
-              </td>
-            </tr>
-          %for v in event_extra_info:
-            <tr>
-              <th scope="row">${v['label']}</th>
-              <td>${v['content']|n}</td>
-            </tr>
-          %endfor
-          </tbody>
-        </table>
+
+        <%m:header>イベント名</%m:header>
+        ${event["title"]} (<span class="performanceNameSpace"></span>)
+
+        <hr/>
+        <%m:header>開催日時</%m:header>
+        <span id="descPerformanceDate"></span>
+
+        <hr/>
+        <%m:header>会場</%m:header>
+        ${", ".join(set(event['venues']))}
+
+        <hr/>
+        <%m:header>販売期間</%m:header>
+        ${event['sales_start_on']} 〜 ${event['sales_end_on']}
+
+        <hr/>
+        <%m:header>その他</%m:header>
+        %for v in event_extra_info:
+          ${v['label']}
+          ${v['content']|n}
+        %endfor
       </div>
     </div>

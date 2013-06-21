@@ -217,7 +217,7 @@ cart.proceedToCheckout = function proceedToCheckout(performance, reservationData
             body += reservationData.cart.products[product_index].seats[seat_index].name + "\n";
         }
     }
-    body += "合計¥" + reservationData.cart.total_amount
+    body += "合計金額¥" + reservationData.cart.total_amount
 
     if(confirm(body)) {
         window.location.href = reservationData.payment_url;
