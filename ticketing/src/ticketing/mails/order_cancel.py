@@ -1,122 +1,112 @@
 # -*- coding:utf-8 -*-
-from pyramid_mailer import get_mailer
-from pyramid import renderers
+from .renderers import render
 from pyramid_mailer.message import Message
-import functools
-from .api import preview_text_from_message
-from .api import message_settings_override
-from .api import create_or_update_mailinfo
-from .api import create_fake_order
-from .api import get_mailinfo_traverser
-from .api import get_mail_utility
-from ticketing.cart import helpers as h
-from ticketing.core.models import MailTypeEnum
 import logging
-from .forms import OrderInfoRenderer
-from . import forms
-
+from .forms import SubjectInfoRenderer
+from .forms import OrderInfoDefault, SubjectInfo, SubjectInfoWithValue
+from ticketing.cart import helpers as ch ##
+from .interfaces import ICancelMail
+from zope.interface import implementer
+from .api import create_or_update_mailinfo,  create_fake_order
 
 logger = logging.getLogger(__name__)
 
-__all__ = ["build_message", "send_mail", "preview_text", "create_or_update_mailinfo", "create_fake_order"]
+class OrderCancelInfoDefault(OrderInfoDefault):
+    def get_shipping_address_info(order):
+        sa = order.shipping_address
+        params = dict(last_name = sa.last_name, 
+                      first_name = sa.first_name, 
+                      zip = sa.zip, 
+                      prefecture = sa.prefecture, 
+                      city = sa.city, 
+                      address_1 = sa.address_1, 
+                      address_2 = sa.address_2)
+        return u"""\
+${last_name} ${first_name} 様
+〒 ${zip}
+${prefecture} ${city}
+${address_1} ${address_2}""" % params
 
-empty = {}
-get_traverser = functools.partial(
-    get_mailinfo_traverser, 
-    ## xxx: uggg
-    access=lambda d, k, default="" : d.get(str(MailTypeEnum.PurchaseCancelMail), empty).get(k, default), 
-    default=u"", 
-)
+    ordered_from = SubjectInfo(name=u"ordered_from", label=u"販売会社", getval=lambda order: order.ordered_from.name)
+    payment_method = SubjectInfo(name=u"payment_method", label=u"支払方法",  getval=lambda order: order.payment_delivery_pair.payment_method.name)
+    delivery_method = SubjectInfo(name=u"delivery_method", label=u"引取方法",  getval=lambda order: order.payment_delivery_pair.delivery_method.name)
+    address = SubjectInfo(name="address", label=u"送付先", getval=get_shipping_address_info)
+    def get_contact(order):
+        return u"""\
+%s
+商品、決済・発送に関するお問い合わせ %s""" % (order.ordered_from.name, order.ordered_from.contact_email)
+    contact = SubjectInfo(name=u"contact", label=u"お問い合わせ", getval=get_contact)
 
-def build_message(request, order):
-    return create_cancel_message(request, order)
-
-def preview_text(request, order):
-    message = create_cancel_message(request, order)
-    return preview_text_from_message(message)
-
-def send_mail(request, order, override=None):
-    mailer = get_mailer(request)
-    message = create_cancel_message(request, order)
-    message_settings_override(message, override)
-    mailer.send(message)
-    logger.info("send cancel mail to %s" % message.recipients)
-
-
-mail_renderer_names = {
-    '1': 'ticketing:templates/mail/order_cancel.txt',
-    '2': 'ticketing:templates/mail/order_cancel.txt',
-    '3': 'ticketing:templates/mail/order_cancel.txt',
-    '4': 'ticketing:templates/mail/order_cancel.txt',
-}
-
-def payment_notice(request, order):
-    get_mail_utility(request, MailTypeEnum.PurchaseCancelMail)
-    trv = get_traverser(request, order)
-    notice=trv.data[forms.MailInfoTemplate.payment_key(order, "notice")]
-    return notice
-
-def delivery_notice(request, order):
-    get_mail_utility(request, MailTypeEnum.PurchaseCancelMail)
-    trv = get_traverser(request, order)
-    notice=trv.data[forms.MailInfoTemplate.delivery_key(order, "notice")]
-    return notice
+    cancel_reason_default=u"""\
+　・お客様からキャンセルのご連絡があったため
+　・期限内のご入金がなくキャンセル扱いとしたため
+　・二重注文により、ひとつをキャンセル処理したため
+"""
+    ## getvalが文字列の場合は、input formになり文言を変更できる
+    cancel_reason = SubjectInfoWithValue(name="cancel_reason", label=u"キャンセル理由", 
+                                       getval=lambda order: OrderCancelInfoDefault.cancel_reason_default, value=cancel_reason_default)
     
-def create_cancel_message(request, order):
-    if not order.shipping_address or not order.shipping_address.email_1:
-        logger.info('order has not shipping_address or email id=%s' % order.id)
-        return
+def get_subject_info_default():
+    return OrderCancelInfoDefault()
 
-    plugin_id = str(order.payment_delivery_pair.payment_method.payment_plugin_id)
-    if plugin_id not in mail_renderer_names:
-        logger.warn('mail renderer not found for plugin_id %s' % plugin_id)
-        return
+def get_mailtype_description():
+    return u"購入キャンセルメール"
 
-    traverser = get_traverser(request, order)
-    subject = (traverser.data["subject"] or u'ご注文キャンセルについて 【{organization.name}】'.format(organization=order.ordered_from))
-    from_ = (traverser.data["sender"] or order.ordered_from.contact_email)
-    product_message_format = u'{product}　{price}（円）× {quantity}\r\n'
-    products = ''
-    for ordered_product in order.ordered_products:
-        products += product_message_format.format(
-            product=ordered_product.product.name,
-            price=h.format_currency(ordered_product.price),
-            quantity=ordered_product.quantity,
-        )
+@implementer(ICancelMail)    
+class CancelMail(object):
+    def __init__(self, mail_template, request):
+        self.mail_template = mail_template
+        self.request = request
 
-    performance = order.ordered_products[0].ordered_product_items[0].product_item.performance
-    venue_info = ''
-    if performance.venue.id != 1:  # ダミー会場でないなら
-        venue_info = u'{venue} ({start_on}開演)'.format(venue=performance.venue.name, start_on=performance.start_on)
-    pair = order.payment_delivery_pair
-    info_renderder = OrderInfoRenderer(order, traverser.data)
-    value = dict(
-        h=h, 
-        get=info_renderder.get, 
-        order=order,
-        sa=order.shipping_address,
-        products=products,
-        venue=venue_info,
-        title=order.performance.event.title,
-        system_fee=h.format_currency(order.system_fee),
-        transaction_fee=h.format_currency(order.transaction_fee),
-        delivery_fee=h.format_currency(order.delivery_fee),
-        total_amount=h.format_currency(order.total_amount),
-        contact_email=order.ordered_from.contact_email,
-        payment_method_name=pair.payment_method.name, 
-        delivery_method_name=pair.delivery_method.name, 
+    def get_mail_subject(self, organization, traverser):
+        return (traverser.data["subject"] or 
+                u'ご注文キャンセルについて 【{organization}】'.format(organization=organization.name))
 
-        ### mail info
-        footer = traverser.data["footer"],
-        notice = traverser.data["notice"],
-        header = traverser.data["header"],
-    )
-    mail_body = renderers.render(mail_renderer_names[plugin_id], value, request=request)
+    def get_mail_sender(self, organization, traverser):
+        return (traverser.data["sender"] or organization.contact_email)
 
-    message = Message(
-        subject=subject,
-        recipients=[order.shipping_address.email_1],
-        bcc=[from_], 
-        body=mail_body,
-        sender=from_)
-    return message
+    def validate(self, order):
+        if not order.shipping_address or not order.shipping_address.email_1:
+            logger.info('order has not shipping_address or email id=%s' % order.id)
+        return True
+
+    def build_message(self, order, traverser):
+        if not self.validate(order):
+            logger.warn("validation error")
+            return 
+
+        organization = order.ordered_from or self.request.context.organization
+        subject = self.get_mail_subject(organization, traverser)
+        mail_from = self.get_mail_sender(organization, traverser)
+        bcc = [mail_from]
+
+        mail_body = self.build_mail_body(order, traverser)
+        return Message(
+            subject=subject,
+            recipients=[order.shipping_address.email_1],
+            bcc=bcc,
+            body=mail_body,
+            sender=mail_from)
+
+    def _body_tmpl_vars(self, order, traverser):
+        sa = order.shipping_address 
+        pair = order.payment_delivery_pair
+        info_renderder = SubjectInfoRenderer(order, traverser.data, default_impl=OrderCancelInfoDefault)
+        title=order.performance.event.title
+        value = dict(h=ch, 
+                     order=order,
+                     title=title, 
+                     get=info_renderder.get, 
+                     name=u"{0} {1}".format(sa.last_name, sa.first_name),
+                     payment_method_name=pair.payment_method.name, 
+                     delivery_method_name=pair.delivery_method.name, 
+                     ### mail info
+                     footer = traverser.data["footer"],
+                     notice = traverser.data["notice"],
+                     header = traverser.data["header"],
+                     )
+        return value
+
+    def build_mail_body(self, order, traverser):
+        value = self._body_tmpl_vars(order, traverser)
+        return render(self.mail_template, value, request=self.request)

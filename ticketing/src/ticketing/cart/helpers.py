@@ -13,6 +13,9 @@ from .resources import OrderDelivery, CartDelivery, OrderPayment, CartPayment
 from ..core.models import FeeTypeEnum, SalesSegment, StockTypeEnum
 from ticketing.mails.helpers import render_delivery_finished_mail_viewlet, render_payment_finished_mail_viewlet
 from ticketing.mails.helpers import render_delivery_cancel_mail_viewlet, render_payment_cancel_mail_viewlet
+from ticketing.mails.helpers import render_delivery_lots_accepted_mail_viewlet, render_payment_lots_accepted_mail_viewlet
+from ticketing.mails.helpers import render_delivery_lots_elected_mail_viewlet, render_payment_lots_elected_mail_viewlet
+from ticketing.mails.helpers import render_delivery_lots_rejected_mail_viewlet, render_payment_lots_rejected_mail_viewlet
 import logging
 from .api import get_nickname
 
@@ -36,7 +39,7 @@ def cart_timeout(request):
 
 def performance_date(performance):
     s = performance.start_on
-    return u'{0.month}月{0.day}日 {0.hour:02}:{0.minute:02}'.format(s)
+    return u'{s.month}月{s.day}日 {s.hour:02}:{s.minute:02}'.format(s=s) if s else u"-"
 
 def japanese_date(date):
     return u"%d年%d月%02d日(%s)" % (date.year, date.month, date.day, u"月火水木金土日"[date.weekday()])

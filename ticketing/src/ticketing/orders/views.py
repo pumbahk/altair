@@ -48,8 +48,10 @@ from ticketing.core.models import (
     Seat,
     SeatStatus,
     SeatStatusEnum,
-    ChannelEnum
+    ChannelEnum, 
+    MailTypeEnum
     )
+from ticketing.mails.api import get_mail_utility
 from ticketing.mailmags.models import MailSubscription, MailMagazine, MailSubscriptionStatus
 from ticketing.orders.export import OrderCSV, japanese_columns
 from ticketing.orders.forms import (OrderForm, OrderSearchForm, OrderRefundSearchForm, SejOrderForm, SejTicketForm,
@@ -1524,15 +1526,14 @@ class SejTicketTemplate(BaseView):
             templates=templates
         )
 
-import ticketing.mails.complete as mails_complete
-import ticketing.mails.order_cancel as mails_cancel
 @view_defaults(decorator=with_bootstrap, permission="authenticated", route_name="orders.mailinfo")
 class MailInfoView(BaseView):
     @view_config(match_param="action=show", renderer="ticketing:templates/orders/mailinfo/show.html")
     def show(self):
         order_id = int(self.request.matchdict.get('order_id', 0))
         order = Order.get(order_id, self.context.user.organization_id)
-        message = mails_complete.build_message(self.request, order)
+        mutil = get_mail_utility(self.request, MailTypeEnum.PurchaseCancelMail)
+        message = mutil.build_message(self.request, order)
         mail_form = SendingMailForm(subject=message.subject,
                                     recipient=message.recipients[0],
                                     bcc=message.bcc[0] if message.bcc else "")
@@ -1543,7 +1544,8 @@ class MailInfoView(BaseView):
     def complete_mail_preview(self):
         order_id = int(self.request.matchdict.get('order_id', 0))
         order = Order.get(order_id, self.context.user.organization_id)
-        return mails_complete.preview_text(self.request, order)
+        mutil = get_mail_utility(self.request, MailTypeEnum.PurchaseCompleteMail)
+        return mutil.preview_text(self.request, order)
 
     @view_config(match_param="action=complete_mail_send", renderer="string", request_method="POST")
     def complete_mail_send(self):
@@ -1554,7 +1556,8 @@ class MailInfoView(BaseView):
             raise HTTPFound(self.request.current_route_url(order_id=order_id, action="show"))
 
         order = Order.get(order_id, self.context.user.organization_id)
-        mails_complete.send_mail(self.request, order, override=form.data)
+        mutil = get_mail_utility(self.request, MailTypeEnum.PurchaseCompleteMail)
+        mutil.send_mail(self.request, order, override=form.data)
         self.request.session.flash(u'メール再送信しました')
         return HTTPFound(self.request.current_route_url(order_id=order_id, action="show"))
 
@@ -1562,7 +1565,8 @@ class MailInfoView(BaseView):
     def cancel_mail_preview(self):
         order_id = int(self.request.matchdict.get('order_id', 0))
         order = Order.get(order_id, self.context.user.organization_id)
-        return mails_cancel.preview_text(self.request, order)
+        mutil = get_mail_utility(self.request, MailTypeEnum.PurchaseCancelMail)
+        return mutil.preview_text(self.request, order)
 
     @view_config(match_param="action=cancel_mail_send", renderer="string", request_method="POST")
     def cancel_mail_send(self):
@@ -1573,7 +1577,8 @@ class MailInfoView(BaseView):
             raise HTTPFound(self.request.current_route_url(order_id=order_id, action="show"))
 
         order = Order.get(order_id, self.context.user.organization_id)
-        mails_cancel.send_mail(self.request, order, override=form.data)
+        mutil = get_mail_utility(self.request, MailTypeEnum.PurchaseCancelMail)
+        mutil.send_mail(self.request, order, override=form.data)
         self.request.session.flash(u'メール再送信しました')
         return HTTPFound(self.request.current_route_url(order_id=order_id, action="show"))
 

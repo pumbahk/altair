@@ -299,3 +299,19 @@ class SearchEntryForm(Form):
         validators=[],
         choices=[],
     )
+
+class SendingMailForm(Form):
+    recipient = TextField(
+        label=u"送り先メールアドレス",
+        validators=[
+            Required(),
+            Email(),
+        ]
+    )
+    bcc = TextField(
+        label=u"bcc",
+        validators=[
+            Email(),
+            Optional()
+        ]
+    )

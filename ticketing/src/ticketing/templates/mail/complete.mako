@@ -9,13 +9,13 @@ ${name}　様
 ■${get("name_kana").label}
 ${get("name_kana").body}
 %endif
-%if get("tel_1").status:
-■${get("tel_1").label}
-${get("tel_1").body}
+%if get("tel").status:
+■${get("tel").label}
+${get("tel").body}
 %endif
-%if get("mail_1").status:
-■${get("mail_1").label}
-${get("mail_1").body}
+%if get("mail").status:
+■${get("mail").label}
+${get("mail").body}
 %endif
 
 -----
