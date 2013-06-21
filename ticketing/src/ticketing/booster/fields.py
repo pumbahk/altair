@@ -19,4 +19,4 @@ class StringFieldWithChoice(StringField, OurSelectField):
             self.data = None
 
     def _value(self):
-        return self.data
+        return self.data if self.data is not None else ''
