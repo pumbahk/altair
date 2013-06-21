@@ -22,10 +22,10 @@ class OrderCancelInfoDefault(OrderInfoDefault):
                       address_1 = sa.address_1, 
                       address_2 = sa.address_2)
         return u"""\
-${last_name} ${first_name} 様
-〒 ${zip}
-${prefecture} ${city}
-${address_1} ${address_2}""" % params
+{last_name} {first_name} 様
+〒 {zip}
+{prefecture} {city}
+{address_1} {address_2}""".format(**params)
 
     ordered_from = SubjectInfo(name=u"ordered_from", label=u"販売会社", getval=lambda order: order.ordered_from.name)
     payment_method = SubjectInfo(name=u"payment_method", label=u"支払方法",  getval=lambda order: order.payment_delivery_pair.payment_method.name)
