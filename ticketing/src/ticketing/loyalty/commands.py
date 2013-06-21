@@ -68,6 +68,7 @@ def do_import_point_grant_results(registry, file, now, type, force, encoding):
                 raise RecordError(u'Invalid point amount', cols[5])
 
             point_grant_history_entry = None
+            point_grant_history_entry_id = None
 
             try: 
                 point_grant_history_entry_id = decode_point_grant_history_entry_id(cols[4])
@@ -85,6 +86,7 @@ def do_import_point_grant_results(registry, file, now, type, force, encoding):
                         .filter(UserPointAccount.type == type) \
                         .filter(UserPointAccount.account_number == account_number) \
                         .one()
+                    point_grant_history_entry_id = point_grant_history_entry.id
                 except:
                     pass
 
