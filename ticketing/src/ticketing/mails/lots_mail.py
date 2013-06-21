@@ -2,17 +2,16 @@
 from ticketing.payments import plugins
 from pyramid_mailer.message import Message
 from .renderers import render
-from .api import create_or_update_mailinfo,  create_fake_order as _create_fake_order
+from .api import create_or_update_mailinfo,  create_fake_lot_entry,  create_fake_elected_wish
 from .forms import SubjectInfoWithValue, SubjectInfo, SubjectInfoDefault
 from .forms import SubjectInfoRenderer
 import logging
 from ticketing.cart import helpers as ch
-from .fake import FakeObject
 logger = logging.getLogger(__name__)
 
 def create_fake_order(request, organization, payment_plugin_id, delivery_plugin_id, event=None, performance=None):
-    lot_entry = _create_fake_order(request, organization, payment_plugin_id, delivery_plugin_id, event=event, performance=performance)
-    elected_wish = FakeObject.create(name="elected_wish")
+    lot_entry = create_fake_lot_entry(request, organization, payment_plugin_id, delivery_plugin_id, event=event, performance=performance)
+    elected_wish = create_fake_elected_wish(request, performance)
     return lot_entry, elected_wish
 
 def get_mailtype_description():
@@ -81,7 +80,7 @@ class LotsMail(object):
 
     def _body_tmpl_vars(self, (lot_entry, elected_wish), traverser):
         shipping_address = lot_entry.shipping_address 
-        pair = lot_entry.payment_delivery_pair
+        pair = lot_entry.payment_delivery_method_pair
         info_renderder = SubjectInfoRenderer(lot_entry, traverser.data, default_impl=get_subject_info_default())
         value = dict(h=ch, 
                      fee_type=ch.fee_type, 

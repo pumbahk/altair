@@ -160,6 +160,7 @@ def message_settings_override(message, override):
 
 
 ## fake
+### TODO:refactroing
 def create_fake_order(request, organization, payment_plugin_id, delivery_plugin_id, event=None, performance=None):
     ## must not save models 
     now = datetime.now()
@@ -167,20 +168,12 @@ def create_fake_order(request, organization, payment_plugin_id, delivery_plugin_
     order.ordered_from = organization
     order.created_at = now
     order._cached_mail_traverser = None
-    _fake_order_add_settings(order, payment_plugin_id, delivery_plugin_id, event, performance)
-    _fake_order_add_fake_chain(order, organization, event, performance)
-    return order
 
-def _fake_order_add_fake_chain(fake_order, organization, event, performance):
-    if performance:
-        fake_order.lot._fake_root = performance.event
-    elif event:
-        fake_order.performance._fake_root = event
+    if event:
+        order.performance._fake_root = event
     else:
-        fake_order.performance._fake_root = organization
-        fake_order.lot.event._fake_root = organization
+        order.performance._fake_root = organization
 
-def _fake_order_add_settings(order, payment_plugin_id, delivery_plugin_id, event, performance):
     order.payment_delivery_pair.payment_method.payment_plugin_id = payment_plugin_id
     payment_plugin = PaymentMethodPlugin.query.filter_by(id=payment_plugin_id).first()
     if payment_plugin:
@@ -192,9 +185,49 @@ def _fake_order_add_settings(order, payment_plugin_id, delivery_plugin_id, event
     if delivery_plugin:
         order.payment_delivery_pair.delivery_method.delivery_plugin = delivery_plugin
         order.payment_delivery_pair.delivery_method.name = delivery_plugin.name
+
     if event:
-        order.lot.event = event #lot_entry
         order.performance.event = event
     if performance:
-        order.lot.event = performance.event #lot_entry
         order.performance = performance
+    return order
+
+def create_fake_lot_entry(request, organization, payment_plugin_id, delivery_plugin_id, event=None, performance=None):
+    ## must not save models 
+    now = datetime.now()
+    lot_entry = FakeObject("T")
+    lot_entry.lot_entryed_from = organization
+    lot_entry.created_at = now
+    lot_entry._cached_mail_traverser = None
+
+    if performance:
+        pass
+    elif event:
+        pass
+    else:
+        lot_entry.lot.event._fake_root = organization #lot_entry
+
+    lot_entry.payment_delivery_pair.payment_method.payment_plugin_id = payment_plugin_id
+    payment_plugin = PaymentMethodPlugin.query.filter_by(id=payment_plugin_id).first()
+    if payment_plugin:
+        lot_entry.payment_delivery_method_pair.payment_method.payment_plugin = payment_plugin #l
+        lot_entry.payment_delivery_method_pair.payment_method.name = payment_plugin.name #l
+
+    lot_entry.payment_delivery_pair.delivery_method.delivery_plugin_id = delivery_plugin_id
+    delivery_plugin = DeliveryMethodPlugin.query.filter_by(id=delivery_plugin_id).first()
+    if delivery_plugin:
+        lot_entry.payment_delivery_method_pair.delivery_method.delivery_plugin = delivery_plugin
+        lot_entry.payment_delivery_method_pair.delivery_method.name = delivery_plugin.name
+
+    if event:
+        lot_entry.lot.event = event #lot_entry
+    if performance:
+        lot_entry.lot.event = performance.event #lot_entry
+    return lot_entry
+
+def create_fake_elected_wish(request, performance=None):
+    ## must not save models 
+    elected_wish = FakeObject("ElectedWish")
+    if performance:
+        elected_wish.performance = performance
+    return elected_wish
