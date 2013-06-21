@@ -19,18 +19,18 @@ class SalesSegmentForm(OurForm):
         super(SalesSegmentForm, self).__init__(formdata, obj, prefix, **kwargs)
 
 
-        self.performance_id.choices = [(u'', u'(なし)')]
-        self.sales_segment_group_id.choices = [(u'', u'(なし)')]
+        performance_id_choices = [(u'', u'(なし)')]
+        sales_segment_group_id_choices = [(u'', u'(なし)')]
 
         if context is not None:
-            self.performance_id.choices.extend([(unicode(p.id),
+            performance_id_choices.extend([(unicode(p.id),
               u'%s (%s)' % (p.name, p.start_on.strftime('%Y-%m-%d %H:%M'))) \
              for p in context.event.performances])
             if context.sales_segment_group is not None:
                 sales_segment_groups = [context.sales_segment_group]
             else:
                 sales_segment_groups = context.event.sales_segment_groups
-            self.sales_segment_group_id.choices.extend([(unicode(s.id), s.name) for s in sales_segment_groups])
+            sales_segment_group_id_choices.extend([(unicode(s.id), s.name) for s in sales_segment_groups])
 
             self.account_id.choices = [
                 (a.id, a.name) for a in context.user.organization.accounts
@@ -61,6 +61,9 @@ class SalesSegmentForm(OurForm):
 
         if obj and obj.payment_delivery_method_pairs is not None:
             self.payment_delivery_method_pairs.data = [int(pdmp.id) for pdmp in obj.payment_delivery_method_pairs]
+
+        self.performance_id.choices = performance_id_choices
+        self.sales_segment_group_id.choices = sales_segment_group_id_choices
 
     def _get_translations(self):
         return Translations()
