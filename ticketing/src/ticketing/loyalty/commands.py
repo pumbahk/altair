@@ -142,6 +142,7 @@ def import_point_grant_results():
     type = None
 
     if args.type is not None:
+        from ticketing.users.models import UserPointAccountTypeEnum
         try:
             type = getattr(UserPointAccountTypeEnum, args.type).v
         except:
