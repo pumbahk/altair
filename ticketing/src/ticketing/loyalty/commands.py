@@ -276,7 +276,7 @@ def do_make_point_grant_data(registry, start_date, end_date, submitted_on):
         logger.info('number of orders to process: %d' % len(orders))
         for order in orders:
             point_grant_history_entries_by_type = {}
-            for point_grant_history_entry in order.point_grant_histories:
+            for point_grant_history_entry in order.point_grant_history_entries:
                 point_grant_history_entries = point_grant_history_entries_by_type.get(point_grant_history_entry.user_point_account.type)
                 if point_grant_history_entries is None:
                     point_grant_history_entries = point_grant_history_entries_by_type[point_grant_history_entry.user_point_account.type] = []

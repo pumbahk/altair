@@ -111,7 +111,7 @@ class PointGrantStatusEnum(StandardEnum):
     InvalidReferenceKey       = 'A004'
     InvalidSubKey             = 'A005'
     InvalidPointValue         = 'A006'
-    InvalidShopNmae           = 'A007'
+    InvalidShopName           = 'A007'
     NoSuchPointAccount        = 'B001'
     NoSuchReasonCode          = 'B002'
     KeyAlreadyExists          = 'C001'
@@ -122,7 +122,7 @@ class PointGrantHistoryEntry(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     user_point_account_id = Column(Identifier, ForeignKey('UserPointAccount.id'))
     user_point_account = relationship('UserPointAccount', uselist=False)
     order_id = Column(Identifier, ForeignKey('Order.id'), nullable=True)
-    order = relationship('Order', uselist=False, backref='point_grant_histories')
+    order = relationship('Order', uselist=False, backref='point_grant_history_entries')
     amount = Column(Numeric(precision=16, scale=2), nullable=False)
     submitted_on = Column(Date, nullable=False)
     grant_status = Column(Unicode(4), nullable=True)
