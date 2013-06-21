@@ -99,15 +99,11 @@ class CancelMail(object):
         pair = order.payment_delivery_pair
         info_renderder = SubjectInfoRenderer(order, traverser.data, default_impl=OrderCancelInfoDefault)
         title=order.performance.event.title
-        if sa is None:
-            name = u"inner"
-        else:
-            name=u"{0} {1}".format(sa.last_name, sa.first_name),
         value = dict(h=ch, 
                      order=order,
                      title=title, 
                      get=info_renderder.get, 
-                     name=name, 
+                     name=u"{0} {1}".format(sa.last_name, sa.first_name) if sa else u"inner", 
                      payment_method_name=pair.payment_method.name, 
                      delivery_method_name=pair.delivery_method.name, 
                      ### mail info
