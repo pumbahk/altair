@@ -26,7 +26,7 @@ class RendererMixin(object):
 def _gen_field_init(klass):
     prev_call = klass.__call__
 
-    def __init__(self, label, *args, **kwargs):
+    def __init__(self, label=None, *args, **kwargs):
         _form  = kwargs.pop('_form', None)
         hide_on_new = kwargs.pop('hide_on_new', False)
         if callable(label):
