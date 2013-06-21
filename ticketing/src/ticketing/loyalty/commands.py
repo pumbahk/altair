@@ -170,7 +170,7 @@ def import_point_grant_results():
         transaction.abort()
         raise
 
-def do_import_point_grant_data(registry, type, submitted_on, file, encoding):
+def do_import_point_grant_data(registry, type, submitted_on, file, reason_code, shop_name, encoding):
     from .models import PointGrantHistoryEntry
     from ticketing.models import DBSession
     from ticketing.users.models import UserPointAccount, UserPointAccountTypeEnum
@@ -218,12 +218,14 @@ def do_import_point_grant_data(registry, type, submitted_on, file, encoding):
             if point_grant_history_entry is not None:
                 raise RecordError("PointAcountHistoryEntry(id=%ld) already exists for Order(id=%ld, order_No=%s)" % (point_grant_history_entry.id, order.id, order_no))
 
-            DBSession.add(PointGrantHistoryEntry(
+            point_grant_history_entry = PointGrantHistoryEntry(
                 user_point_account=user_point_account,
                 order=order,
                 amount=points_granted,
                 submitted_on=submitted_on
-                ))
+                )
+            DBSession.add(point_grant_history_entry)
+            DBSession.flush()
 
             logger.info(u'PointAcountHistoryEntry(user_point_account=UserPointAccount(id=%ld, type=%d, account_number=%s), order=Order(id=%ld, order_no=%s), amount=%s, submitted_on=%s) created' % (
                 user_point_account.id,
@@ -233,6 +235,20 @@ def do_import_point_grant_data(registry, type, submitted_on, file, encoding):
                 order.order_no,
                 points_granted,
                 submitted_on))
+
+            if reason_code and shop_name:
+                cols = [
+                    point_grant_history_entry.order.created_at.strftime("%Y-%m-%d %H:%M:%S"),
+                    point_grant_history_entry.user_point_account.account_number,
+                    reason_code,
+                    point_grant_history_entry.order.order_no,
+                    encode_point_grant_history_entry_id(point_grant_history_entry.id),
+                    unicode(point_grant_history_entry.amount.to_integral()),
+                    shop_name,
+                    ''
+                    ]
+                sys.stdout.write(u'\t'.join(cols).encode(encoding))
+                sys.stdout.write("\n")
         except RecordError as e:
             logger.warning("invalid record skipped at line %d (%r)\n" % (line_no + 1, e))
     logger.info('end processing %s' % file)
@@ -249,6 +265,8 @@ def import_point_grant_data():
     parser = argparse.ArgumentParser()
     parser.add_argument('-e', '--encoding')
     parser.add_argument('-t', '--type')
+    parser.add_argument('-R', '--reason-code')
+    parser.add_argument('-S', '--shop-name')
     parser.add_argument('config')
     parser.add_argument('submitted_on')
     parser.add_argument('file', nargs='+')
@@ -270,6 +288,9 @@ def import_point_grant_data():
         sys.stderr.flush()
         sys.exit(255)
 
+    reason_code = args.reason_code and args.reason_code.decode(default_encoding)
+    shop_name = args.shop_name and args.shop_name.decode(default_encoding)
+
     setup_logging(args.config)
     env = bootstrap(args.config)
 
@@ -281,6 +302,8 @@ def import_point_grant_data():
                 type,
                 submitted_on,
                 file,
+                reason_code,
+                shop_name,
                 args.encoding or default_encoding
                 )
         transaction.commit()
@@ -478,9 +501,9 @@ def export_point_grant_data():
     parser.add_argument('-e', '--encoding')
     parser.add_argument('-t', '--type')
     parser.add_argument('-s', '--include-submitted', action='store_true')
+    parser.add_argument('-R', '--reason-code', required=True)
+    parser.add_argument('-S', '--shop-name', required=True)
     parser.add_argument('config')
-    parser.add_argument('reason_code')
-    parser.add_argument('shop_name')
     parser.add_argument('submitted_on')
 
     args = parser.parse_args()
