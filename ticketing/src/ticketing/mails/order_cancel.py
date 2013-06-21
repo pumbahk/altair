@@ -14,6 +14,8 @@ logger = logging.getLogger(__name__)
 class OrderCancelInfoDefault(OrderInfoDefault):
     def get_shipping_address_info(order):
         sa = order.shipping_address
+        if sa is None:
+            return u"inner"
         params = dict(last_name = sa.last_name, 
                       first_name = sa.first_name, 
                       zip = sa.zip, 
@@ -74,7 +76,6 @@ class CancelMail(object):
         if not self.validate(order):
             logger.warn("validation error")
             return 
-
         organization = order.ordered_from or self.request.context.organization
         subject = self.get_mail_subject(organization, traverser)
         mail_from = self.get_mail_sender(organization, traverser)
@@ -83,7 +84,7 @@ class CancelMail(object):
         mail_body = self.build_mail_body(order, traverser)
         return Message(
             subject=subject,
-            recipients=[order.shipping_address.email_1],
+            recipients=[order.shipping_address.email_1 if order.shipping_address else ""],
             bcc=bcc,
             body=mail_body,
             sender=mail_from)
@@ -93,11 +94,15 @@ class CancelMail(object):
         pair = order.payment_delivery_pair
         info_renderder = SubjectInfoRenderer(order, traverser.data, default_impl=OrderCancelInfoDefault)
         title=order.performance.event.title
+        if sa is None:
+            name = u"inner"
+        else:
+            name=u"{0} {1}".format(sa.last_name, sa.first_name),
         value = dict(h=ch, 
                      order=order,
                      title=title, 
                      get=info_renderder.get, 
-                     name=u"{0} {1}".format(sa.last_name, sa.first_name),
+                     name=name, 
                      payment_method_name=pair.payment_method.name, 
                      delivery_method_name=pair.delivery_method.name, 
                      ### mail info
