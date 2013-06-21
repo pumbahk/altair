@@ -9,12 +9,12 @@ __all__ = (
 class StringFieldWithChoice(StringField, OurSelectField):
     widget = TextInput()
 
-    def _coerce(self, value):
+    def __coerce(self, value):
         return self.coerce(value) if value is not None else ''
 
     def process_data(self, value):
         try:
-            self.data = self._coerce(value)
+            self.data = self.__coerce(value)
         except (ValueError, TypeError):
             self.data = None
 
