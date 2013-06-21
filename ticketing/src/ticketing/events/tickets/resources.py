@@ -14,6 +14,7 @@ class EventBoundTicketsResource(object):
         if not hasattr(self, "__acl__") and parent and hasattr(parent, "__acl__"):
             self.__acl__ = parent.__acl__
         self.user = parent.user
+        self.organization = parent.organization
 
     def after_ticket_action_redirect(self, template=None):
         if template is None or not template.derived_tickets:
