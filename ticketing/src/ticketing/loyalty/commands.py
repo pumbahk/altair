@@ -44,7 +44,7 @@ def do_import_point_grant_results(registry, file, now, type, force, encoding):
     from .models import PointGrantHistoryEntry
     from ticketing.models import DBSession
     from ticketing.core.models import Order
-    from ticketing.users.models import UserPointAccount, UserPointAccountTypeEnum
+    from ticketing.users.models import User, UserPointAccount, UserPointAccountTypeEnum
 
     logger.info("start processing %s" % file)
     for line_no, line in enumerate(open(file)):
@@ -88,6 +88,7 @@ def do_import_point_grant_results(registry, file, now, type, force, encoding):
                         .one()
                     point_grant_history_entry_id = point_grant_history_entry.id
                 except:
+                    raise
                     pass
 
             if point_grant_history_entry is None:
