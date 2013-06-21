@@ -12,6 +12,8 @@ from pyramid.renderers import render_to_response
 from pyramid.security import has_permission, ACLAllowed
 from paste.util.multidict import MultiDict
 
+from altair.sqlahelper import get_db_session
+
 from ticketing.models import merge_session_with_post, record_to_multidict
 from ticketing.views import BaseView
 from ticketing.fanstatic import with_bootstrap
@@ -26,7 +28,7 @@ from ticketing.mails.forms import MailInfoTemplate
 from ticketing.models import DBSession
 from ticketing.mails.api import get_mail_utility
 from ticketing.core.models import MailTypeChoices
-from ticketing.orders.api import OrderSearchQueryBuilder, QueryBuilderError
+from ticketing.orders.api import OrderSummarySearchQueryBuilder, QueryBuilderError
 from ticketing.orders.models import OrderSummary
 
 @view_defaults(decorator=with_bootstrap, permission="event_editor")
@@ -59,20 +61,18 @@ class PerformanceShowView(BaseView):
             )
 
     def _tab_product(self):
-        return dict(
-            form_product=ProductForm(performance_id=self.performance.id),
-            products=self.performance.products
-            )
+        return dict()
 
     def _tab_order(self):
-        query = OrderSummary.query.filter_by(performance_id=self.performance.id)
+        slave_session = get_db_session(self.request, name="slave")
+        query = slave_session.query(OrderSummary).filter_by(organization_id=self.context.user.organization_id, performance_id=self.performance.id, deleted_at=None)
         form_search = OrderSearchForm(
             self.request.params,
             event_id=self.performance.event_id,
             performance_id=self.performance.id)
         if form_search.validate():
             try:
-                query = OrderSearchQueryBuilder(form_search.data, lambda key: form_search[key].label.text)(query)
+                query = OrderSummarySearchQueryBuilder(form_search.data, lambda key: form_search[key].label.text)(query)
             except QueryBuilderError as e:
                 self.request.session.flash(e.message)
         else:

@@ -1,0 +1,31 @@
+<%inherit file="/layout_2cols.html"/>
+<%namespace file="/common/helpers.html" name="h"/>
+<%
+names = [u'イベント', event.title]
+urls = [request.route_path('events.index'), request.route_path('events.show', event_id=event.id)]
+
+if performance:
+  names.extend([
+    u'パフォーマンス',
+    performance.name,
+  ])
+  urls.extend([
+    request.route_path('performances.index', event_id=event.id),
+    request.route_path('performances.show', event_id=event.id, performance_id=performance.id),
+  ])
+names.extend([u'販売区分'])
+urls.extend([request.route_path('sales_segments.index', event_id=event.id, _query=dict(performance_id=performance.id))])
+if sales_segment:
+  names.extend([sales_segment.name, u'編集'])
+  urls.extend([request.route_path('sales_segments.show', event_id=event.id, sales_segment_id=sales_segment.id)])
+else:
+  names.extend([u'新規作成'])
+%>
+<div class="breadcrumbs">
+  ${h.breadcrumbs(urls=urls, names=names)}
+</div>
+<div class="content">
+  ${h.flash_messages(request)}
+</div>
+<%include file="./_form.html" />
+<input type="button" onclick="$(this).prev().submit()" value="更新" submit/>

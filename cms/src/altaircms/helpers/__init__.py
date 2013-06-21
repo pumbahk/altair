@@ -11,18 +11,13 @@ from . import mobilelink
 from xml.etree import ElementTree
 __all__ = ["base", "asset", "event", "page", "widget", "tag", "link", "mobilelink"]
 
-WEEK = base.WEEK
 ## pagination
 from webhelpers.paginate import Page
 import urlparse
 import cgi 
 import itertools
 from markupsafe import Markup
-
-def truncate(s, size):
-    if len(s) > size:
-        return s[:size] + u"..."
-    return s
+from altair.viewhelpers import truncate, truncate_eaw, first_and_last
 
 def url_create_with(url, **kwargs):
     """
@@ -54,7 +49,6 @@ def unparse_with_replace_query(parse_result, query):
     if params:
         url = "%s;%s" % (url, params)
     return urlparse.urlunsplit((scheme, netloc, url, query, fragment))
-
 
 def url_generate_default(request, **kwargs):
     """pagination default url generator"""
@@ -114,48 +108,8 @@ class PagerAdapter(object):
 
 paginate = PagerAdapter
 
-## 
-def term_datetime(beg, end):
-    """ dateオブジェクトを受け取り期間を表す文字列を返す
-    e.g. 2012年3月3日(土)〜7月12日(木) 
-    """
-    if beg is None:
-        if end is None:
-            return u""
-        else:
-            return u"〜 %s(%s)" % (end.strftime(u"%-m月%-d日 %-H:%-M".encode("utf-8")).decode("utf-8"), WEEK[end.weekday()])
-
-    beg_str = beg.strftime(u"%Y年%-m月%-d日 %-H:%-M".encode("utf-8")).decode("utf-8")
-    if end is None:
-        return u"%s(%s) 〜" % (beg_str, WEEK[beg.weekday()])
-
-    if beg.year == end.year:
-        end_str = end.strftime(u"%-m月%-d日 %-H:%-M".encode("utf-8")).decode("utf-8")
-    else:
-        end_str = end.strftime(u"%Y年%-m月%-d日 %-H:%-M".encode("utf-8")).decode("utf-8")
-    return u"%s(%s) 〜 %s(%s)" % (beg_str, WEEK[beg.weekday()], end_str, WEEK[end.weekday()])
-
-def term(beg, end):
-    """ dateオブジェクトを受け取り期間を表す文字列を返す
-    e.g. 2012年3月3日(土)〜7月12日(木) 
-    """
-    if beg is None:
-        if end is None:
-            return u""
-        else:
-            return u"〜 %s(%s)" % (end.strftime(u"%-m月%-d日".encode("utf-8")).decode("utf-8"), WEEK[end.weekday()])
-
-    beg_str = beg.strftime(u"%Y年%-m月%-d日".encode("utf-8")).decode("utf-8")
-    if end is None:
-        return u"%s(%s) 〜" % (beg_str, WEEK[beg.weekday()])
-
-    if beg.year == end.year:
-        end_str = end.strftime(u"%-m月%-d日".encode("utf-8")).decode("utf-8")
-    else:
-        end_str = end.strftime(u"%Y年%-m月%-d日".encode("utf-8")).decode("utf-8")
-    return u"%s(%s) 〜 %s(%s)" % (beg_str, WEEK[beg.weekday()], end_str, WEEK[end.weekday()])
-
-jterm = term
+jterm = term = base.date_time_helper.term
+term_datetime = base.date_time_helper.term_datetime
 
 def _merge_dict(base, other=None, dels=None):
     r = {}
@@ -192,30 +146,3 @@ def chunk(i, count, cons=list):
         if not l:
             break
         yield l
-
-def first_and_last(iter, first_class=u'first', last_class=u'last'):
-    first = True
-    last_i = None
-    extra_class = None
-
-    def _(class_=u''):
-        class_ = extra_class + u" " + class_ if extra_class else class_
-        if class_:
-            return Markup(u' class="%s"' % class_)
-        else:
-            return Markup(u'')
-
-    for i in iter:
-        if last_i is not None:
-            yield _, last_i
-        if first:
-            extra_class = first_class
-            first = False
-        else:
-            extra_class = None
-        last_i = i
-
-    extra_class = last_class
-    if last_i is not None:
-        yield _, last_i
-

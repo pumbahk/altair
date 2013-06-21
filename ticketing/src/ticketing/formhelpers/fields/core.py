@@ -1,57 +1,5 @@
 from wtforms import fields
-
-class BugFreeSelectField(fields.SelectField):
-    def pre_validate(self, form):
-        for v, _ in self.choices:
-            if self.data == self.coerce(v):
-                break
-        else:
-            raise ValueError(self.gettext('Not a valid choice'))
-
-class BugFreeSelectMultipleField(fields.SelectMultipleField):
-    def pre_validate(self, form):
-        if self.data is not None:
-            for d in self.data:
-                for v, _ in self.choices:
-                    if d == self.coerce(v):
-                        break
-                else:
-                    raise ValueError(self.gettext('Not a valid choice'))
-
-class PHPCompatibleSelectMultipleField(BugFreeSelectMultipleField):
-    def process(self, formdata, data=fields._unset_value):
-        self.process_errors = []
-        if data is fields._unset_value:
-            try:
-                data = self.default()
-            except TypeError:
-                data = self.default
-
-        self.object_data = data
-
-        try:
-            self.process_data(data)
-        except ValueError as e:
-            self.process_errors.append(e.args[0])
-
-        if formdata:
-            php_styled_collection_key = self.name + '[]'
-            try:
-                if self.name in formdata:
-                    self.raw_data = formdata.getlist(self.name)
-                elif php_styled_collection_key in formdata:
-                    self.raw_data = formdata.getlist(php_styled_collection_key)
-                else:
-                    self.raw_data = []
-                self.process_formdata(self.raw_data)
-            except ValueError as e:
-                self.process_errors.append(e.args[0])
-
-        for filter in self.filters:
-            try:
-                self.data = filter(self.data)
-            except ValueError as e:
-                self.process_errors.append(e.args[0])
+from .select import LazySelectField, LazySelectMultipleField, LazyGroupedSelectField, LazyGroupedSelectMultipleField, PHPCompatibleSelectMultipleField
 
 class RendererMixin(object):
     def __mixin_init__(self, *args, **kwargs):
@@ -75,14 +23,15 @@ class RendererMixin(object):
             if widget_override is not None:
                 self._pop_widget()
 
-
 def _gen_field_init(klass):
     prev_call = klass.__call__
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, label, *args, **kwargs):
         _form  = kwargs.pop('_form', None)
         hide_on_new = kwargs.pop('hide_on_new', False)
-        super(klass, self).__init__(*args, **kwargs)
+        if callable(label):
+            label = label()
+        super(klass, self).__init__(label, *args, **kwargs)
         self.form = _form
         self.hide_on_new = hide_on_new
         for base in self.__class__.__bases__[1:]:
@@ -99,6 +48,10 @@ def _gen_field_init(klass):
     return klass
 
 @_gen_field_init
+class OurField(fields.Field, RendererMixin):
+    pass
+
+@_gen_field_init
 class OurRadioField(fields.RadioField, RendererMixin):
     pass
 
@@ -107,7 +60,23 @@ class OurTextField(fields.TextField, RendererMixin):
     pass
 
 @_gen_field_init
-class OurSelectField(BugFreeSelectField, RendererMixin):
+class OurSelectField(LazySelectField, RendererMixin):
+    pass
+
+@_gen_field_init
+class OurSelectMultipleField(LazySelectMultipleField, RendererMixin):
+    pass
+
+@_gen_field_init
+class OurPHPCompatibleSelectMultipleField(PHPCompatibleSelectMultipleField, RendererMixin):
+    pass
+
+@_gen_field_init
+class OurGroupedSelectField(LazyGroupedSelectField, RendererMixin):
+    pass
+
+@_gen_field_init
+class OurGroupedSelectMultipleField(LazyGroupedSelectMultipleField, RendererMixin):
     pass
 
 @_gen_field_init
@@ -116,6 +85,10 @@ class OurDecimalField(fields.DecimalField, RendererMixin):
 
 @_gen_field_init
 class OurIntegerField(fields.IntegerField, RendererMixin):
+    pass
+
+@_gen_field_init
+class OurFloatField(fields.FloatField, RendererMixin):
     pass
 
 @_gen_field_init

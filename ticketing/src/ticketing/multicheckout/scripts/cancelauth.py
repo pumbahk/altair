@@ -33,7 +33,7 @@ def sync_data(request, statuses):
     """
     for st in statuses:
         order_no = st.OrderNo
-        logging.debug("sync for %s" % order_no)
+        logger.debug("sync for %s" % order_no)
         inquiry = api.checkout_inquiry(request, order_no)
 
         if not inquiry.is_authorized:
@@ -76,7 +76,7 @@ def cancel_auth(request, statuses):
     """
     for st in statuses:
         order_no = st.OrderNo
-        logging.debug('call auth cancel api for %s' % order_no)
+        logger.debug('call auth cancel api for %s' % order_no)
         api.checkout_auth_cancel(request, order_no)
         m._session.commit()
 

@@ -2,7 +2,8 @@
 from ..resources import BoosterCartResource
 from ticketing.cart.helpers import format_number
 from .schemas import OrderFormSchema, OrderReviewSchema
-from ..api import filtering_data_by_products_and_member_type
+
+REGULAR_MEMBER_TYPE_PRICE = 3500 #publicity limit
 
 class Bj89ersCartResource(BoosterCartResource):
     def product_form(self, params):
@@ -16,5 +17,9 @@ class Bj89ersCartResource(BoosterCartResource):
         return OrderReviewSchema(params)
 
     def store_user_profile(self, data):
-        data = filtering_data_by_products_and_member_type(data, self.products_dict)
+        k = data.get("member_type")
+        product = self.products_dict.get(str(k))
+        ## for mobile site
+        if product.price <= REGULAR_MEMBER_TYPE_PRICE: #too-adhoc
+            data["extra"]["publicity"] = None
         return super(type(self), self).store_user_profile(data)

@@ -22,7 +22,7 @@ class MyLayout(LayoutBase):
         return get_global_link_settings(self.request)
 
     def now(self):
-        return get_now(self.request)
+        return self.request.now
 
     def today(self):
         return get_today(self.request)
@@ -33,4 +33,4 @@ class MyLayout(LayoutBase):
             prefix = u"時間指定有効"
         else:
             prefix = u"時間指定無効"
-        return u"{0}: {1}".format(prefix, jdatetime(self.now()))
+        return u"{0}: {1}".format(prefix, jdatetime(self.request.now))

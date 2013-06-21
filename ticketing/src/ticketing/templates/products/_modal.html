@@ -1,12 +1,12 @@
-<%page args="modal_id, performance_id" />
+<%page args="modal_id" />
 <script type="text/javascript">
   var new_product, edit_product, delete_product, preview_ticket;
   $(function() {
     (function (modal_product) {
-      new_product = function new_product() {
+      new_product = function new_product(sales_segment_id) {
         load_modal_form(
           modal_product,
-          '${request.route_path('products.new', performance_id=performance_id)|n}',
+          '${request.route_path('products.new', _query=dict(sales_segment_id='__sales_segment_id__'))}'.replace('__sales_segment_id__', sales_segment_id),
           null,
           null
         );
