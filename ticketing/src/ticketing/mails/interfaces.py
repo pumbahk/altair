@@ -23,15 +23,13 @@ class IMailUtility(Interface):
 class IPurchaseInfoMail(Interface):
     request = Attribute("request")
 
-    def validate():
-        """ validate, all delivery method pair can choice mail template for oneself.
-        """
+    def build_mail_body(order, traverser):
         pass
 
-    def build_mail_body(order):
+    def build_message_from_mail_body(order, traverser, mail_body):
         pass
 
-    def build_message(order):
+    def build_message(order, traverser):
         pass
 
 class ICompleteMail(IPurchaseInfoMail):

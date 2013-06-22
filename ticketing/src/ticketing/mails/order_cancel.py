@@ -1,11 +1,11 @@
 # -*- coding:utf-8 -*-
-from .renderers import render
+from pyramid.renderers import render
 from pyramid_mailer.message import Message
 import logging
 from .forms import SubjectInfoRenderer
 from .forms import OrderInfoDefault, SubjectInfo, SubjectInfoWithValue
 from ticketing.cart import helpers as ch ##
-from .interfaces import ICancelMail
+from .interfaces import IPurchaseInfoMail
 from zope.interface import implementer
 from .api import create_or_update_mailinfo,  create_fake_order
 
@@ -54,7 +54,7 @@ def get_subject_info_default():
 def get_mailtype_description():
     return u"購入キャンセルメール"
 
-@implementer(ICancelMail)    
+@implementer(IPurchaseInfoMail)    
 class CancelMail(object):
     def __init__(self, mail_template, request):
         self.mail_template = mail_template
@@ -72,7 +72,11 @@ class CancelMail(object):
             logger.info('order has not shipping_address or email id=%s' % order.id)
         return True
 
-    def build_message(self, order, traverser):
+    def build_message(self, subject, traverser):
+        mail_body = self.build_mail_body(subject, traverser)
+        return self.build_message_from_mail_body(subject, traverser, mail_body)
+
+    def build_message_from_mail_body(self, order, traverser, mail_body):
         if not self.validate(order):
             logger.warn("validation error")
             return 
@@ -86,7 +90,6 @@ class CancelMail(object):
         else:
             bcc = [mail_from]
 
-        mail_body = self.build_mail_body(order, traverser)
         return Message(
             subject=subject,
             recipients=[order.shipping_address.email_1 if order.shipping_address else ""],

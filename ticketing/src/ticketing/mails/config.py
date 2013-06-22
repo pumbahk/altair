@@ -1,6 +1,8 @@
 import functools
 from .interfaces import IMailUtility
+from .interfaces import IPurchaseInfoMail
 from .interfaces import ITraverserFactory
+from zope.interface.verify import verifyClass
 from api import MailUtility
 from api import MailTraverserFromOrder
 from api import MailTraverserFromLotsEntry
@@ -37,6 +39,7 @@ def _register_mailutility(config, util, name):
 def register_order_mailutility(config, name, module, mail, *args, **kwargs):
     name = str(name)
     module = config.maybe_dotted(module)
+    verifyClass(IPurchaseInfoMail, mail)
     util = MailUtility(module, name, functools.partial(mail, *args, **kwargs))
     _register_order_mailutility(config, util, name)
 

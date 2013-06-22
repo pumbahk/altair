@@ -1,7 +1,9 @@
 # -*- coding:utf-8 -*-
 from ticketing.payments import plugins
 from pyramid_mailer.message import Message
-from .renderers import render
+from zope.interface import implementer
+from .interfaces import IPurchaseInfoMail
+from pyramid.renderers import render
 from .api import create_or_update_mailinfo,  create_fake_lot_entry,  create_fake_elected_wish
 from .forms import SubjectInfoWithValue, SubjectInfo, SubjectInfoDefault
 from .forms import SubjectInfoRenderer
@@ -43,6 +45,7 @@ class LotsInfoDefault(SubjectInfoDefault):
     total_amount = SubjectInfo(name=u"total_amount", label=u"合計金額", getval=lambda _: "") #xxx:
     entry_no = SubjectInfo(name="entry_no", label=u"受付番号", getval=lambda subject : subject.entry_no)
 
+@implementer(IPurchaseInfoMail)
 class LotsMail(object):
     def __init__(self, mail_template, request):
         self.mail_template = mail_template
@@ -59,7 +62,7 @@ class LotsMail(object):
             logger.info('lot_entry has not shipping_address or email id=%s' % lot_entry.id)
         return True
 
-    def build_message(self, (lot_entry, elected_wish), traverser):
+    def build_message_from_mail_body(self, (lot_entry, elected_wish), traverser, mail_body):
         if not self.validate(lot_entry):
             logger.warn("validation error")
             return 
@@ -74,7 +77,7 @@ class LotsMail(object):
         else:
             bcc = [mail_from]
 
-        mail_body = self.build_mail_body((lot_entry, elected_wish), traverser)
+        mail_body = mail_body
         return Message(
             subject=subject,
             recipients=[lot_entry.shipping_address.email_1],
@@ -82,6 +85,9 @@ class LotsMail(object):
             body=mail_body,
             sender=mail_from)
 
+    def build_message(self, subject, traverser):
+        mail_body = self.build_mail_body(subject, traverser)
+        return self.build_message_from_mail_body(subject, traverser, mail_body)
 
     def _body_tmpl_vars(self, (lot_entry, elected_wish), traverser):
         shipping_address = lot_entry.shipping_address 

@@ -38,6 +38,9 @@ class CompletMailSettingsTest(unittest.TestCase):
         self.config.include("ticketing.payments.plugins")
         self.config.add_subscriber('ticketing.cart.subscribers.add_helpers', 'pyramid.events.BeforeRender')
 
+    def tearDown(self):
+        testing.tearDown()
+
     def _getTarget(self):
         from ticketing.mails import api
         return api
@@ -116,6 +119,9 @@ class CreateMailFromFakeOrderTests(unittest.TestCase):
 
         self.config.include("ticketing.payments")
         self.config.include("ticketing.payments.plugins")
+
+    def tearDown(self):
+        testing.tearDown()
 
     def test_it(self):
         from ticketing.core.models import Organization, MailTypeEnum

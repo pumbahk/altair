@@ -1,4 +1,5 @@
 # -*- coding:utf-8 -*-
+import sys
 import traceback 
 from .interfaces import (
     IMailUtility, 
@@ -83,7 +84,7 @@ class MailUtility(object):
     def send_mail(self, request, subject, override=None):
         message = self.build_message(request, subject)
         if message is None:
-            logger.warn("message is None: %s", traceback.format_stack(limit=3))
+            raise Exception("mail message is None")
         message_settings_override(message, override)
 
         message.recipients = [x for x in message.recipients if x]
@@ -96,8 +97,16 @@ class MailUtility(object):
         logger.info("send complete mail to %s" % message.recipients)
         return message
 
-    def preview_text(self, request, subject):
-        message = self.build_message(request, subject)
+    def preview_text(self, request, subject, limit=100):
+        mail = self.factory(request)
+        traverser = self.get_traverser(request, subject)
+        try:
+            mail_body = mail.build_mail_body(subject, traverser)
+        except:
+            etype, value, tb = sys.exc_info()
+            mail_body = u''.join(s.decode("utf-8", errors="replace") for s in traceback.format_exception(etype, value, tb, limit))
+
+        message = mail.build_message_from_mail_body(subject, traverser, mail_body)
         return preview_text_from_message(message)
 
     def __getattr__(self, k, default=None):
