@@ -95,13 +95,18 @@ class SubjectInfoRenderer(object):
 
     def get(self, k):
         if not hasattr(self, k):
-            val = self.data[k]
-            if not (val and val["use"]):
-                setattr(self, k, RenderVal(label="", status=False, body=getattr(val, "body", u"")))
-            else:
-                setattr(self, k, RenderVal(label=val["kana"],
-                                           status=True, 
+            val = self.data and self.data.get(k)
+            if not val:
+                default_val = getattr(self.default, k, None)
+                if default_val:
+                    setattr(self, k, RenderVal(label=default_val.label, status=True, body=default_val.getval(self.order)))
+                else:
+                    setattr(self, k, RenderVal(label="", status=False, body=u""))                    
+            elif val["use"]:
+                setattr(self, k, RenderVal(label=val["kana"], status=True, 
                                            body=val.get("value") or getattr(self.default, k).getval(self.order)))
+            else:
+                setattr(self, k, RenderVal(label="", status=False, body=getattr(val, "body", u"")))
         return getattr(self, k)
 
 def MailInfoFormFactory(template, mutil=None, request=None):
