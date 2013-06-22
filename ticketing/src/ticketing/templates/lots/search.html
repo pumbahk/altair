@@ -7,7 +7,7 @@ from ticketing.cart.helpers import format_currency
 %>
 
 
-<%def name="lot_wish_row(w, auth, sej)">
+<%def name="lot_wish_row(request, w, auth, sej)">
 
 <%
 performance = w.performance
@@ -50,7 +50,7 @@ ${w.status}
 </td>
 <td nowrap="">${payment_method.name}<br>${view.payment_status(w, pdmp,auth,sej)}</td>
 <td nowrap="">${delivery_method.name}<br>${view.delivery_status(w, pdmp,auth,sej)}</td>
-<td nowrap=""><a href="${request.route_path("lots.entries.show", lot_id=lot.id, entry_no=w.lot_entry.entry_no)}">${w.lot_entry.entry_no}</a></td>
+<td nowrap=""><a href="${request.route_path("lots.entries.show", lot_id=w.lot_entry.lot_id, entry_no=w.lot_entry.entry_no)}">${w.lot_entry.entry_no}</a></td>
 <td nowrap="">${w.wish_order + 1}</td>
 <td nowrap="">${"{0:%Y-%m-%d %H:%M}".format(w.created_at)}</td>
 <td nowrap="">${u",".join([",".join([i.stock_type.name for i in p.product.items]) for p in w.products])}</td>
@@ -221,7 +221,7 @@ ${tabs.tabs(request)}
 <tbody>
 %for w,auth,sej in wishes:
 <tr class="${'lot-wish-' + w.lot_entry.entry_no + '-' + str(w.wish_order)}">
-${self.lot_wish_row(w, auth, sej)}
+${self.lot_wish_row(request, w, auth, sej)}
 </tr>
 %endfor
 </tbody>

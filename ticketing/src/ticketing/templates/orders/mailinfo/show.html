@@ -89,7 +89,7 @@ ${h.breadcrumbs(
       </tr>
       <tr>
         <th>メールアドレス</th>
-        <td>${order.shipping_address.email_1}</td>
+        <td>${order.shipping_address.email_1 if order.shipping_address else u"-"}</td>
       </tr>
       <tr>
         <th>購読メールマガジン</th>

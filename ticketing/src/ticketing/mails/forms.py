@@ -30,11 +30,13 @@ class SubjectInfoDefault(object):
     ## subject = order or lots_entry
     def get_name_kana(subject):
         sa = subject.shipping_address
+        if sa is None:
+            return u""
         return u"{0} {1}".format(sa.last_name_kana, sa.first_name_kana)
 
     name_kana = SubjectInfo(name="name_kana", label=u"お名前カナ", getval=get_name_kana)
-    tel = SubjectInfo(name="tel", label=u"電話番号", getval=lambda subject : subject.shipping_address.tel_1 or "")
-    mail = SubjectInfo(name="mail", label=u"メールアドレス", getval=lambda subject : subject.shipping_address.email_1)
+    tel = SubjectInfo(name="tel", label=u"電話番号", getval=lambda subject : subject.shipping_address.tel_1 or "" if subject.shipping_address else u"")
+    mail = SubjectInfo(name="mail", label=u"メールアドレス", getval=lambda subject : subject.shipping_address.email_1 if subject.shipping_address else u"")
     order_datetime = SubjectInfo(name="order_datetime", label=u"受付日", getval=lambda order: ch.mail_date(order.created_at))
 
     @classmethod

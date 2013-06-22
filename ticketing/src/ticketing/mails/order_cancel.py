@@ -14,6 +14,8 @@ logger = logging.getLogger(__name__)
 class OrderCancelInfoDefault(OrderInfoDefault):
     def get_shipping_address_info(order):
         sa = order.shipping_address
+        if sa is None:
+            return u"inner"
         params = dict(last_name = sa.last_name, 
                       first_name = sa.first_name, 
                       zip = sa.zip, 
@@ -22,10 +24,10 @@ class OrderCancelInfoDefault(OrderInfoDefault):
                       address_1 = sa.address_1, 
                       address_2 = sa.address_2)
         return u"""\
-${last_name} ${first_name} 様
-〒 ${zip}
-${prefecture} ${city}
-${address_1} ${address_2}""" % params
+{last_name} {first_name} 様
+〒 {zip}
+{prefecture} {city}
+{address_1} {address_2}""".format(**params)
 
     ordered_from = SubjectInfo(name=u"ordered_from", label=u"販売会社", getval=lambda order: order.ordered_from.name)
     payment_method = SubjectInfo(name=u"payment_method", label=u"支払方法",  getval=lambda order: order.payment_delivery_pair.payment_method.name)
@@ -74,16 +76,20 @@ class CancelMail(object):
         if not self.validate(order):
             logger.warn("validation error")
             return 
-
         organization = order.ordered_from or self.request.context.organization
         subject = self.get_mail_subject(organization, traverser)
         mail_from = self.get_mail_sender(organization, traverser)
-        bcc = [mail_from]
+        ## addhoc
+        ## todo add form field
+        if organization.short_name == "RT":
+            bcc = []
+        else:
+            bcc = [mail_from]
 
         mail_body = self.build_mail_body(order, traverser)
         return Message(
             subject=subject,
-            recipients=[order.shipping_address.email_1],
+            recipients=[order.shipping_address.email_1 if order.shipping_address else ""],
             bcc=bcc,
             body=mail_body,
             sender=mail_from)
@@ -97,7 +103,7 @@ class CancelMail(object):
                      order=order,
                      title=title, 
                      get=info_renderder.get, 
-                     name=u"{0} {1}".format(sa.last_name, sa.first_name),
+                     name=u"{0} {1}".format(sa.last_name, sa.first_name) if sa else u"inner", 
                      payment_method_name=pair.payment_method.name, 
                      delivery_method_name=pair.delivery_method.name, 
                      ### mail info

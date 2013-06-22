@@ -652,7 +652,7 @@ class LotEntries(BaseView):
         sej =  DBSession.query(SejOrder).filter(SejOrder.order_id==wish.lot_entry.entry_no).first()
 
         html = tmpl.implementation().get_def('lot_wish_row').render(
-            w=wish, auth=auth, sej=sej, view=self)
+            self.request, w=wish, auth=auth, sej=sej, view=self)
         return html
 
     def wish_tr_class(self, wish):
