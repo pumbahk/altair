@@ -66,7 +66,7 @@ from ticketing.core.models import MailTypeEnum
     <h3>購入キャンセルメールの再送</h3>
   </div>
 
-  <form class="inline" action="${request.route_path("orders.mailinfo",order_id=order.id, action="complete_mail_send")}" method="POST">
+  <form class="inline" action="${request.route_path("orders.mailinfo",order_id=order.id, action="cancel_mail_send")}" method="POST">
   <div class="modal-body">
 	${mail_form["recipient"].label} 	${mail_form["recipient"]}
 	${mail_form["bcc"].label} 	${mail_form["bcc"]}
