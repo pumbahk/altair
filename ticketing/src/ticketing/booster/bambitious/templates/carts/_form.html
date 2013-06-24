@@ -91,10 +91,13 @@
         都道府県
         ${form.prefecture()}<br>
         市区町村
-        ${form.city(size=20)}<br>
-        町名番地 ${form.address1(size=45)}
+        ${form.city(size=25)}
+        （例：奈良市） <br>
+        町名番地 ${form.address1(size=25)}
+        （例：大宮町99丁目99番99号）
         <br>
-        建物名等 ${form.address2(size=45)}
+        建物名等 ${form.address2(size=25)}
+        （例：XXビル253号）
         ${h.error(['prefecture', 'city', 'address1', 'address2'])}
       </td>
     </tr>

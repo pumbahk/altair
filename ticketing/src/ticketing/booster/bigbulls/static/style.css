@@ -409,3 +409,7 @@ table.purchasedContents tfoot td .paymentCoupon:active {
   font-weight: bold;
   font-size: 12px;
 }
+
+.form-field-message {
+  color: #970018;
+}

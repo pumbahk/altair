@@ -35,8 +35,8 @@
         氏名 <span class="red">*</span>
       </th>
       <td>
-        姓${form.last_name(size="45")}<small>（全角）</small><br>
-        名${form.first_name(size="45")}<small>（全角）</small>
+        姓${form.last_name(size="40")}<small>（全角）</small><br>
+        名${form.first_name(size="40")}<small>（全角）</small>
         ${h.error(['last_name','first_name'])}
       </td>
     </tr>
@@ -45,8 +45,8 @@
         氏名（フリガナ） <span class="red">*</span>
       </th>
       <td>
-        セイ${form.last_name_kana(size="45")}<small>（全角カナ）</small><br>
-        メイ${form.first_name_kana(size="45")}<small>（全角カナ）</small>
+        セイ${form.last_name_kana(size="40")}<small>（全角カナ）</small><br>
+        メイ${form.first_name_kana(size="40")}<small>（全角カナ）</small>
         ${h.error(['last_name_kana','first_name_kana'])}
       </td>
     </tr>
@@ -88,28 +88,29 @@
         都道府県
         ${form.prefecture()}<br>
         市区町村
-        ${form.city(size=20)}<br>
-        町名番地 ${form.address1(size=45)}
+        ${form.city(size=25)}
+        （例：仙台市） <br>
+        町名番地 ${form.address1(size=25)}
+        （例：一番町99丁目99番99号）
         <br>
-        建物名等 ${form.address2(size=45)}
+        建物名等 ${form.address2(size=25)}
+        （例：XXビル253号）
         ${h.error(['prefecture', 'city', 'address1', 'address2'])}
       </td>
     </tr>
     <tr>
-      <th>
-        電話番号（携帯）<span class="red">*</span>
+      <th rowspan="2">
+        電話番号 <span class="red">*</span><br />
+        <span class="red">（携帯・自宅のどちらか必須）</span>
       </th>
       <td>
-        ${form.tel_1(size=12)}<span><small>${layout.dont_include_hyphen_message}（携帯・自宅のどちらか一方で構いません）</small></span>
+        (携帯) ${form.tel_1(size=12)}<span><small>${layout.dont_include_hyphen_message}</small></span>
         ${h.error(['tel_1'])}
       </td>
     </tr>
     <tr>
-      <th>
-        電話番号（自宅）
-      </th>
       <td>
-        ${form.tel_1(size=12)}<span><small>${layout.dont_include_hyphen_message}（携帯・自宅のどちらか一方で構いません）</small></span>
+        (自宅) ${form.tel_1(size=12)}<span><small>${layout.dont_include_hyphen_message}</small></span>
         ${h.error(['tel_2'])}
       </td>
     </tr>

@@ -13,7 +13,7 @@
         % endfor
         <br>
         <small>お分かりの場合、下記に2012-13年の会員番号をご入力ください</small><br>
-        ${form.old_id_number()}<small>(半角数字8ケタ)</small>
+        ${form.old_id_number()}<small>(会員証記載のアルファベットを除いた半角数字)</small>
         ${h.error(['cont','old_id_number'])}
       </td>
     </tr>
@@ -31,12 +31,48 @@
       </td>
     </tr>
     <tr>
+      <th>クラブブルズ限定デザインTシャツ<br>【レッド会員限定特典】</th>
+      <td>
+        <span class="form-field-message">
+          レッド会員にお申込の方のみ入力下さい <br/>
+          ※サイズをお選びいただけます<br/>
+        </span>
+        サイズ${form.extra.t_shirts_size(id='t_shirts_size',disabled="disabled" )}
+        ${h.error(['extra.t_shirts_size'])}
+      </td>
+    </tr>
+    <tr>
+      <th>レプリカユニフォーム<br>【シルバー会員限定特典】</th>
+      <td>
+        <span class="form-field-message">
+          シルバー会員にお申込の方のみ入力下さい<br/>
+          ※サイズをお選びいただけます<br/>
+        </span>
+        サイズ${form.extra.replica_uniform_size(id='replica_uniform_size',disabled="disabled" )}
+        ${h.error(['extra.replica_uniform_size'])}
+      </td>
+    </tr>
+    <tr>
+      <th>オーセンティックユニフォーム<br/>【ゴールド会員限定特典】<br/>【シルバー会員半額購入特典】<br/><br/></th>
+      <td>
+        <span class="form-field-message">
+          ゴールド会員にお申込の方orシルバー会員で半額購入希望の方のみ入力下さい<br/>
+          ※お好きな背番号・名前・サイズ・色(赤または白)をお選びいただけます<br/>
+        </span>
+        背番号${form.extra.authentic_uniform_no(id='authentic_uniform_no',disabled="disabled",size=2 )}<small>(数字2桁)</small>
+        お名前${form.extra.authentic_uniform_name(id='authentic_uniform_name',disabled="disabled", size=16 )}<small>(アルファベット大文字のみ)</small> <br/>
+        サイズ${form.extra.authentic_uniform_size(id='authentic_uniform_size',disabled="disabled" )}
+        色${form.extra.authentic_uniform_color(id='authentic_uniform_color',disabled="disabled" )}
+        ${h.error(['extra.authentic_uniform_no','extra.authentic_uniform_name','extra.authentic_uniform_size','extra.authentic_uniform_color'])}
+      </td>
+    </tr>
+    <tr>
       <th>
         氏名 <span class="red">*</span>
       </th>
       <td>
-        姓${form.last_name(size="45")}<small>（全角）</small><br>
-        名${form.first_name(size="45")}<small>（全角）</small>
+        姓${form.last_name(size="40")}<small>（全角）</small><br>
+        名${form.first_name(size="40")}<small>（全角）</small>
         ${h.error(['last_name','first_name'])}
       </td>
     </tr>
@@ -45,8 +81,8 @@
         氏名（フリガナ） <span class="red">*</span>
       </th>
       <td>
-        セイ${form.last_name_kana(size="45")}<small>（全角カナ）</small><br>
-        メイ${form.first_name_kana(size="45")}<small>（全角カナ）</small>
+        セイ${form.last_name_kana(size="40")}<small>（全角カナ）</small><br>
+        メイ${form.first_name_kana(size="40")}<small>（全角カナ）</small>
         ${h.error(['last_name_kana','first_name_kana'])}
       </td>
     </tr>
@@ -88,28 +124,29 @@
         都道府県
         ${form.prefecture()}<br>
         市区町村
-        ${form.city(size=20)}<br>
-        町名番地 ${form.address1(size=45)}
+        ${form.city(size=25)}
+        （例：盛岡市） <br>
+        町名番地 ${form.address1(size=25)}
+        （例：大沢川原99丁目99番99号）
         <br>
-        建物名等 ${form.address2(size=45)}
+        建物名等 ${form.address2(size=25)}
+        （例：XXビル253号）
         ${h.error(['prefecture', 'city', 'address1', 'address2'])}
       </td>
     </tr>
     <tr>
-      <th>
-        電話番号（携帯）<span class="red">*</span>
+      <th rowspan="2">
+        電話番号 <span class="red">*</span><br />
+        <span class="red">（携帯・自宅のどちらか必須）</span>
       </th>
       <td>
-        ${form.tel_1(size=12)}<span><small>${layout.dont_include_hyphen_message}（携帯・自宅のどちらか一方で構いません）</small></span>
+        (携帯) ${form.tel_1(size=12)}<span><small>${layout.dont_include_hyphen_message}</small></span>
         ${h.error(['tel_1'])}
       </td>
     </tr>
     <tr>
-      <th>
-        電話番号（自宅）
-      </th>
       <td>
-        ${form.tel_1(size=12)}<span><small>${layout.dont_include_hyphen_message}（携帯・自宅のどちらか一方で構いません）</small></span>
+        (自宅) ${form.tel_1(size=12)}<span><small>${layout.dont_include_hyphen_message}</small></span>
         ${h.error(['tel_2'])}
       </td>
     </tr>
@@ -133,7 +170,7 @@
     </tr>
     <tr>
       <th>
-        ${layout.team_name}からのメールマガジンの配信
+        ${form.extra.mail_permission.label}
       </th>
       <td>
         ${form.extra.mail_permission}
@@ -142,30 +179,49 @@
     </tr>
     <tr>
       <th>
-        メモリアルブックへの氏名掲載希望
+        ${form.extra.form.publicity.label}
       </th>
       <td>
-        ${form.extra.form.publicity} <span><small>レギュラー・ジュニア会員は記載されません</small></span>
+        ${form.extra.form.publicity} 
         ${h.error('extra.publicity')}
       </td>
     </tr>
     <tr>
       <th>
-        ブースタークラブに入会しようと思ったきっかけは？<span class="red">*</span>
+        保護者氏名 <br><span class="form-field-message">
+          ※お申込者が18歳未満の場合は必須<br/>
+          18歳以上の方は入力不要<br/>
+        </span>
       </th>
       <td>
-        ${form.extra.form.motivation}
-        ${h.error('extra.motivation')}
+        姓${form.extra.parent_last_name(size="40")}<small>（全角）</small><br>
+        名${form.extra.parent_first_name(size="40")}<small>（全角）</small>
+        ${h.error(['extra.parent_last_name','extra.parent_first_name'])}
       </td>
     </tr>
     <tr>
       <th>
-        昨シーズンの会場での観戦回数
+        保護者氏名 <br><span class="form-field-message">
+          ※お申込者が18歳未満の場合は必須<br/>
+          18歳以上の方は入力不要<br/>
+        </span>
       </th>
       <td>
-        ${form.extra.form.num_times_at_venue(size=2, maxlength=2)} 回
-        ${h.error('extra.num_times_at_venue')}
+        セイ${form.extra.parent_last_name_kana(size="40")}<small>（全角カナ）</small><br>
+        メイ${form.extra.parent_first_name_kana(size="40")}<small>（全角カナ）</small>
+        ${h.error(['extra.parent_last_name_kana','extra.parent_first_name_kana'])}
       </td>
+    </tr>
+    <tr>
+      <th>続柄 <br/>
+        <span class="form-field-message">
+          ※お申込者が18歳未満の場合は必須<br/>
+          18歳以上の方は入力不要<br/>
+        </span>
+      </th>
+      <td>
+        続柄${form.extra.relationship(id='relationship')} 例：父、母、など） 
+        ${h.error(['extra.relationship'])}　
       </td>
     </tr>
     <tr>

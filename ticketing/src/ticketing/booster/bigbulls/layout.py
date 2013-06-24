@@ -6,15 +6,15 @@ class Layout(object):
         self.context = context
         self.request = request
 
-    title = u"仙台89ERS 2013-2014 ブースタークラブ入会申込ページ"
-    mini_title = u"仙台89ERS ブースタークラブ入会申込ページ"
-    orderreview_title = u"仙台89ERS 2013-2014 ブースタークラブ受付確認ページ"
-    complete_title = u"仙台89 ERS 2013-2014 ブースター会員申込"
-    team_name = u"仙台89ERS"
+    title = u"岩手ビッグブルズ　2013-2014　クラブブルズ会員入会申込ページ"
+    mini_title = u"岩手ビッグブルズ　クラブブルズ会員入会申込ページ"
+    orderreview_title = u"岩手ビッグブルズ　クラブブルズ会員入会申込ページ"
+    complete_title = u"岩手ビッグブルズ　クラブブルズ会員入会申込"
+    team_name = u"岩手ビッグブルズ"
     mailaddress = u"bigbulls@tstar.jp"
-    contact_name = u"仙台89ERS　ブースタークラブ事務局"
-    product_name = u"仙台89ERS 2013-2014 ブースタークラブ"
-    tel = u"022-215-8138　(平日：9:00〜18:00)"
+    contact_name = u"(株)岩手スポーツプロモーション"
+    product_name = u"岩手ビッグブルス 2013-2014 ブースタークラブ"
+    tel = u"019-622-6811　(平日 9:30～18:30)"
     ##html
     form_class_name = u"formbulls"
 
@@ -25,14 +25,19 @@ class Layout(object):
     mobile_index_page_url = u"http://www.nm.bigbulls.jp/"
     mail_support_message = u"注文受付完了、確認メール等を本登録メールアドレス宛にご案内します。「tstar.jp」からのメールを受信できるよう、お申し込み前にドメイン指定の設定を必ずお願いいたします。"
     dont_include_hyphen_message = u"「－」（ハイフン）を抜いてご入力ください（例：09012341234）"
-    t_shirts_mesaage = u"法人/プラチナ/ゴールド会員を選択の方はTシャツサイズをお選びください。"
+
+
+    t_shirts_mesaage = u"""\
+""".replace("\n", "<br/>")
+
+
 
     @property
     def form_html_extra_info(self):
-        return Markup(u'<a href="http://www.bigbulls.jp/booster/index.html" target=”_blank”><span><small>会員種別についてはこちら</small></span></a>')
+        return Markup(u'<a href="http://bigbulls.jp/blog/2013/06/cb2013-2014club-bulls.html" target=”_blank”><span><small>会員種別についてはこちら</small></span></a>')
     @property
     def mobile_form_html_extra_info(self):
-        return Markup(u'<a href="http://www.mobilebigbulls.jp/imode/cgi-bin/pgget.dll?pg=/i/booster/club/cont/club_p01_00">※会員種別についてはこちら</a><br/>')
+        return Markup(u'<a href="http://www.bigbulls.jp/booster/index.html">※会員種別についてはこちら</a><br/>')
 
     @property
     def orderreview_url(self):
