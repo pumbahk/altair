@@ -302,7 +302,7 @@ class Products(BaseView):
                 product_id = row_data['product_id']
                 product = Product.query.filter(Product.id==product_id).one()
 
-                f = ProductItemForm(row_data, performance_id=product.performance.id)
+                f = ProductItemForm(row_data, performance_id=product.performance.id, product=product)
                 if not f.validate():
                     logger.info('validation error:%s' % f.errors)
                     raise HTTPBadRequest(body=json.dumps({
@@ -310,12 +310,17 @@ class Products(BaseView):
                         'rows':{'rowid':row_data.get('id'), 'errors':f.errors}
                     }))
 
-                product_item.performance_id = product.performance.id
+                stock = Stock.query.filter_by(
+                    stock_type_id=f.stock_type_id.data,
+                    stock_holder_id=f.stock_holder_id.data,
+                    performance_id=product.sales_segment.performance.id
+                ).one()
+                product_item.performance_id = product.sales_segment.performance.id
                 product_item.product_id = product.id
                 product_item.name = f.product_item_name.data
                 product_item.price = f.product_item_price.data
                 product_item.quantity = f.product_item_quantity.data
-                product_item.stock_id = f.stock_id.data
+                product_item.stock_id = stock.id
                 product_item.ticket_bundle_id = f.ticket_bundle_id.data
                 product_item.save()
 
