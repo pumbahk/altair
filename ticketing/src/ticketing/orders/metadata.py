@@ -21,7 +21,10 @@ class DefaultOrderedProductAttributeMetadataProviderRegistry(object):
             return self.providers[name]
         except KeyError:
             raise OrderedProductAttributeMetadataProviderRegistryError(u"No provider that is named '%s' is registered" % name)
-   
+
+    def getProviders(self):
+        return self.providers.values() 
+
     def registerProvider(self, provider):
         provider_name = provider.name
         keys = list(provider)

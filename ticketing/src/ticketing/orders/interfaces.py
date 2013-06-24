@@ -30,6 +30,9 @@ class IOrderedProductAttributeMetadataProviderRegistry(Interface):
     def queryProviderByKey(key):
         pass
 
+    def getProviders():
+        pass
+
     def registerProvider(provider):
         pass
 

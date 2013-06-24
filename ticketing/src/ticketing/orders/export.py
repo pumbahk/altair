@@ -9,6 +9,7 @@ from ticketing.cart.helpers import format_number as _format_number
 from ticketing.mailmags.models import MailSubscription, MailMagazine, MailSubscriptionStatus
 from ticketing.utils import dereference
 from ticketing.csvutils import CSVRenderer, PlainTextRenderer, CollectionRenderer, AttributeRenderer, SimpleRenderer
+from .api import get_metadata_provider_registry
 
 def format_number(value):
     return _format_number(float(value))
@@ -85,14 +86,17 @@ japanese_columns = {
     u'ordered_product_item.quantity': u'商品明細個数',
     u'ordered_product_item.print_histories': u'発券作業者',
     u'mail_magazine.mail_permission': u'メールマガジン受信可否',
-    u'attribute[t_shirts_size]': u'Tシャツサイズ',
-    u'attribute[mail_permission]': u'メールマガジン受信可否',
-    u'attribute[publicity]': u'公開可否',
-    u'attribute[cont]': u'区分 (継続=yes)',
-    u'attribute[old_id_number]': u'旧会員番号',
     u'seat.name': u'座席名',
     }
 
+def get_japanese_columns(request):
+    retval = dict(japanese_columns)
+    registry = get_metadata_provider_registry(request)
+    for provider in registry.getProviders():
+        for key in provider:
+            metadata = provider[key]
+            retval[u'attribute[%s]' % metadata.key] = metadata.get_display_name('ja_JP')
+    return retval
 
 class MarginRenderer(object):
     def __init__(self, key, column_name):
