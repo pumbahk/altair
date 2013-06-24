@@ -7,7 +7,7 @@ metadata_provider = DefaultOrderedProductAttributeMetadataProvider(
     {
         'cont': {
             'display_name': {
-                'ja_JP': u'新規／継続',
+                'ja_JP': u'区分 (継続=yes)',
                 },
             'type': bool,
             'coercer': lambda x: x == 'yes' if x is not None else False,

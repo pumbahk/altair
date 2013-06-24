@@ -7,7 +7,7 @@ metadata_provider = DefaultOrderedProductAttributeMetadataProvider(
     {
         'extra.mail_permission': {
             'display_name': {
-                'ja_JP': u'メールマガジン',
+                'ja_JP': u'メールマガジン受信可否',
                 },
             'type': bool,
             'coercer': lambda x: bool(int(x)),
