@@ -1,0 +1,187 @@
+<%page args="layout,form,h"/>
+<table cellpadding="0" cellspacing="0" class="${layout.form_class_name}">
+  <colgroup>
+    <col style="width:180px;">
+    <col style="width:310px;">
+  </colgroup>
+  <tbody>
+    <tr>
+      <th>新規／継続 <span class="red">*</span></th>
+      <td>
+        % for c in form.cont:
+        ${c.label}${c()}
+        % endfor
+        <br>
+        <small>お分かりの場合、下記に2012-13年の会員番号をご入力ください</small><br>
+        ${form.old_id_number()}<small>(半角数字8ケタ)</small>
+        ${h.error(['cont','old_id_number'])}
+      </td>
+    </tr>
+    <tr>
+      <th>会員種別 <span class="red">*</span></th>
+      <td>
+        <select id="member_type" name="member_type" class="">
+          <option value="">選択してください</option>
+          % for i, val in enumerate(form.member_type.iter_choices()):
+          <option value="${val[0]}" data-selection="${i}" with-shirt="${'true' if len(products.get(val[0]).items)>1 else 'false'}"${" selected=selected" if val[0]==form.member_type.data else ''}>${val[1]}</option>
+          % endfor
+        </select>
+        ${layout.form_html_extra_info}
+        ${h.error('member_type')}
+      </td>
+    </tr>
+    <tr>
+      <th>
+        氏名 <span class="red">*</span>
+      </th>
+      <td>
+        姓${form.last_name(size="45")}<small>（全角）</small><br>
+        名${form.first_name(size="45")}<small>（全角）</small>
+        ${h.error(['last_name','first_name'])}
+      </td>
+    </tr>
+    <tr>
+      <th>
+        氏名（フリガナ） <span class="red">*</span>
+      </th>
+      <td>
+        セイ${form.last_name_kana(size="45")}<small>（全角カナ）</small><br>
+        メイ${form.first_name_kana(size="45")}<small>（全角カナ）</small>
+        ${h.error(['last_name_kana','first_name_kana'])}
+      </td>
+    </tr>
+    <tr>
+      <th>
+        誕生日 <span class="red">*</span>
+      </th>
+      <td>
+        ${form.year}年${form.month}月${form.day}日
+        ${h.error(['year','month', 'day'])}
+      </td>
+    </tr>
+    <tr>
+      <th>
+        性別 <span class="red">*</span>
+      </th>
+      <td>
+        % for c in form.sex:
+        ${c.label}${c()}
+        % endfor
+        ${h.error('sex')}
+      </td>
+    </tr>
+    <tr>
+      <th>
+        郵便番号 <span class="red">*</span>
+      </th>
+      <td>
+        ${form.zipcode1(size="6", maxlength="3")}-${form.zipcode2(size="6", maxlength="4")}<span><small>（半角英数）</small></span>
+        ${h.error(['zipcode1', 'zipcode2'])}
+      </td>
+    </tr>
+    <tr>
+      <th>
+        住所 <span class="red">*</span>
+      </th>
+      <td>
+        <!-- TODO: 選択 -->
+        都道府県
+        ${form.prefecture()}<br>
+        市区町村
+        ${form.city(size=20)}<br>
+        町名番地 ${form.address1(size=45)}
+        <br>
+        建物名等 ${form.address2(size=45)}
+        ${h.error(['prefecture', 'city', 'address1', 'address2'])}
+      </td>
+    </tr>
+    <tr>
+      <th>
+        電話番号（携帯）<span class="red">*</span>
+      </th>
+      <td>
+        ${form.tel_1(size=12)}<span><small>${layout.dont_include_hyphen_message}（携帯・自宅のどちらか一方で構いません）</small></span>
+        ${h.error(['tel_1'])}
+      </td>
+    </tr>
+    <tr>
+      <th>
+        電話番号（自宅）
+      </th>
+      <td>
+        ${form.tel_1(size=12)}<span><small>${layout.dont_include_hyphen_message}（携帯・自宅のどちらか一方で構いません）</small></span>
+        ${h.error(['tel_2'])}
+      </td>
+    </tr>
+    <tr>
+      <th>
+        メールアドレス <span class="red">*</span>
+      </th>
+      <td>
+        ${form.email_1}<span><small>（半角英数）（PC・携帯のどちらも入力可）</small></span>
+        ${h.error('email_1')}
+      </td>
+    </tr>
+    <tr>
+      <th>
+        メールアドレス（確認用）<span class="red">*</span>
+      </th>
+      <td>
+        ${form.email_1_confirm}
+        ${h.error('email_1_confirm')}
+      </td>
+    </tr>
+    <tr>
+      <th>
+        ${layout.team_name}からのメールマガジンの配信
+      </th>
+      <td>
+        ${form.extra.mail_permission}
+        ${h.error('extra.mail_permission')}
+      </td>
+    </tr>
+    <tr>
+      <th>
+        メモリアルブックへの氏名掲載希望
+      </th>
+      <td>
+        ${form.extra.form.publicity} <span><small>レギュラー・ジュニア会員は記載されません</small></span>
+        ${h.error('extra.publicity')}
+      </td>
+    </tr>
+    <tr>
+      <th>
+        ブースタークラブに入会しようと思ったきっかけは？<span class="red">*</span>
+      </th>
+      <td>
+        ${form.extra.form.motivation}
+        ${h.error('extra.motivation')}
+      </td>
+    </tr>
+    <tr>
+      <th>
+        昨シーズンの会場での観戦回数
+      </th>
+      <td>
+        ${form.extra.form.num_times_at_venue(size=2, maxlength=2)} 回
+        ${h.error('extra.num_times_at_venue')}
+      </td>
+      </td>
+    </tr>
+    <tr>
+      <td colspan="2" style="text-align:center">
+        <div class="textRight red" style="font-size:12px;">*は入力必須項目です。電話番号は携帯・自宅のどちらか一方で構いません。</div>
+        <input type="submit" value="次に進む" class="submit" style="width:400px;height:50px;">
+      </td>
+    </tr>
+  </tbody>
+</table>
+<script type="text/javascript">
+$('#member_type').change(function() {
+  var selected = $(this).find('option:selected');
+  if ($.inArray(selected.attr('data-selection'), ['0', '1']) > -1)
+    $('#extra-publicity').removeAttr('disabled');
+  else
+    $('#extra-publicity').attr('disabled','disabled');
+});
+</script>
