@@ -11,18 +11,12 @@ date_time_formatter = DefaultDateTimeFormatter()
 date_time_helper = DateTimeHelper(date_time_formatter)
 
 __all__ = [
-    'jdate',
-    'jtime',
-    'jdatetime',
     'label_text_for',
     'column_name_for',
     'format_period',
     'format_percentage',
     ]
 
-jdate = date_time_helper.date
-jtime = date_time_helper.time
-jdatetime = date_time_helper.datetime
 format_period = date_time_helper.term
 
 def label_text_for(misc):

@@ -7,7 +7,6 @@ from string import ascii_letters
 
 from ticketing.models import DBSession
 from ticketing.core.models import SeatStatusEnum, VenueArea
-from ticketing.helpers.base import jdate, jtime, jdatetime
 
 import logging
 
@@ -111,19 +110,19 @@ class StockRecord(object):
         return data
 
 
-def process_sheet(exporter, sheet, report_type, event, performance, stock_holder, stock_records, now=None):
+def process_sheet(exporter, formatter, sheet, report_type, event, performance, stock_holder, stock_records, now=None):
     """シートの内容を埋める
     """
-    today_stamp = jdatetime(now or datetime.now())
+    today_stamp = formatter.format_datetime(now or datetime.now())
     exporter.set_id(sheet, performance.code or "")
     exporter.set_report_type(sheet, report_type)
     exporter.set_stock_holder_name(sheet, stock_holder.account.name or "")
     exporter.set_datetime(sheet, today_stamp)
     exporter.set_event_name(sheet, event.title or "")
     exporter.set_performance_name(sheet, performance.name or "")
-    exporter.set_performance_datetime(sheet, jdate(performance.start_on, with_weekday=True))
-    exporter.set_performance_open_at(sheet, jtime(performance.open_on))
-    exporter.set_performance_start_at(sheet, jtime(performance.start_on))
+    exporter.set_performance_datetime(sheet, formatter.format_date(performance.start_on))
+    exporter.set_performance_open_at(sheet, formatter.format_time(performance.open_on))
+    exporter.set_performance_start_at(sheet, formatter.format_time(performance.start_on))
     exporter.set_performance_venue(sheet, performance.venue.name or "")
     for stock_record in stock_records:
         exporter.add_records(sheet, stock_record.get_records())
