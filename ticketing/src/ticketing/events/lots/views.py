@@ -3,6 +3,7 @@
 import logging
 logger = logging.getLogger(__name__)
 from sqlalchemy import sql
+from sqlalchemy import orm
 from pyramid.decorator import reify
 from pyramid.view import view_config, view_defaults
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound
@@ -12,6 +13,7 @@ from ticketing.fanstatic import with_bootstrap
 from ticketing.core.models import (
     DBSession,
     Product, 
+    Performance,
     PaymentDeliveryMethodPair,
     ShippingAddress,
     StockHolder,
@@ -385,19 +387,20 @@ class LotEntries(BaseView):
                     filename=filename)
 
 
-    def payment_status(self, wish, pdmp, auth, sej):
-        order = wish.lot_entry.order
-        finished = is_finished_payment(self.request, pdmp, order)
-        detail = payment_helpers.payment_status(pdmp, auth, sej)
+    def payment_status(self, wish):
+        #order = wish.lot_entry.order
+        #order = wish.order
+        finished = is_finished_payment(self.request, wish, wish)
+        detail = payment_helpers.payment_status(wish, wish.auth, wish.sej)
         if finished:
             return u"処理済み( {detail} )".format(detail=detail)
         else:
             return u"( {detail} )".format(detail=detail)
 
-    def delivery_status(self, wish, pdmp, auth, sej):
-        order = wish.lot_entry.order
-        finished = is_finished_delivery(self.request, pdmp, order)
-        detail = payment_helpers.delivery_status(pdmp, auth, sej)
+    def delivery_status(self, wish):
+        #order = wish.lot_entry.order
+        finished = is_finished_delivery(self.request, wish, wish)
+        detail = payment_helpers.delivery_status(wish, wish.auth, wish.sej)
         if finished:
             return u"処理済み( {detail} )".format(detail=detail)
         else:
@@ -488,28 +491,29 @@ class LotEntries(BaseView):
         logger.debug("condition = {0}".format(condition))
         logger.debug("from = {0}".format(form.entried_from.data))
 
-        q = DBSession.query(LotEntryWish, MultiCheckoutOrderStatus, SejOrder).join(
-            LotEntry
-        ).join(
-            Lot
-        ).join(
-            ShippingAddress
-        ).filter(
-            Lot.id==lot_id
-        ).outerjoin(
-            MultiCheckoutOrderStatus,
-            sql.and_(MultiCheckoutOrderStatus.OrderNo.startswith(LotEntry.entry_no),
-                     MultiCheckoutOrderStatus.Status!=None),
-        ).outerjoin(
-            SejOrder,
-            SejOrder.order_id==LotEntry.entry_no,
+        from .models import LotWishSummary
+        #q = DBSession.query(LotEntryWish, MultiCheckoutOrderStatus, SejOrder).join(
+        q = DBSession.query(LotWishSummary).filter(
+            LotWishSummary.lot_id==lot_id
+        ).options(
+            orm.joinedload('products'),
+            orm.joinedload('products.product'),
         ).order_by(
-            LotEntry.entry_no,
-            LotEntryWish.wish_order
+            LotWishSummary.entry_no,
+            LotWishSummary.wish_order
         )
 
 
         wishes = q.filter(condition)
+        performances = Performance.query.filter(
+            Performance.id==Product.performance_id
+        ).filter(
+            Product.sales_segment_id==Lot.sales_segment_id
+        ).filter(
+            Lot.id==lot.id
+        ).all()
+
+        performances = dict([(p.id, p) for p in performances])
 
         electing_url = self.request.route_url('lots.entries.elect_entry_no', lot_id=lot.id)
         rejecting_url = self.request.route_url('lots.entries.reject_entry_no', lot_id=lot.id)
@@ -532,6 +536,7 @@ class LotEntries(BaseView):
                     lot_status=lot_status,
                     status_url=status_url,
                     electing=electing,
+                    performances=performances,
         )
 
 

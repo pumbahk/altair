@@ -7,36 +7,36 @@ from ticketing.cart.helpers import format_currency
 %>
 
 
-<%def name="lot_wish_row(request, w, auth, sej)">
+<%def name="lot_wish_row(request, w)">
 
 <%
-performance = w.performance
-venue = performance.venue
-shipping_address = w.lot_entry.shipping_address
-pdmp = w.lot_entry.payment_delivery_method_pair
-payment_method = pdmp.payment_method
-delivery_method = pdmp.delivery_method
-
+#performance = w.performance
+#performance = performances[w.performance_id]
+#venue = performance.venue
+#shipping_address = w.lot_entry.shipping_address
+#pdmp = w.lot_entry.payment_delivery_method_pair
+#payment_method = pdmp.payment_method
+#delivery_method = pdmp.delivery_method
 %>
 <td nowrap="">
 <div class="btn-group">
-%if not w.lot_entry.closed_at:
+%if not w.closed_at:
 
-  %if not w.canceled_at and not w.is_electing() and not w.is_rejecting() and not w.rejected_at and not w.lot_entry.is_electing() and not w.lot_entry.elected_at:
-  <button class="btn entry-elect-btn" data-entry-no="${w.lot_entry.entry_no}" data-wish-order="${w.wish_order}">当選</button>
+  %if not w.canceled_at and not w.is_electing() and not w.is_rejecting() and not w.rejected_at and not w.is_electing() and not w.elected_at:
+  <button class="btn entry-elect-btn" data-entry-no="${w.entry_no}" data-wish-order="${w.wish_order}">当選</button>
   %endif
-  %if not w.canceled_at and not w.is_electing() and not w.is_rejecting() and not w.rejected_at and not w.lot_entry.is_electing() and not w.lot_entry.elected_at:
-  <button class="btn entry-cancel-btn" data-entry-no="${w.lot_entry.entry_no}">キャンセル</button>
+  %if not w.canceled_at and not w.is_electing() and not w.is_rejecting() and not w.rejected_at and not w.is_electing() and not w.elected_at:
+  <button class="btn entry-cancel-btn" data-entry-no="${w.entry_no}">キャンセル</button>
   %endif
   %if w.is_electing() and not w.elected_at and not w.rejected_at:
-  <button class="btn cancel-electing-btn" data-entry-no="${w.lot_entry.entry_no}" data-wish-order="${w.wish_order}">当選予定をキャンセル</button>
+  <button class="btn cancel-electing-btn" data-entry-no="${w.entry_no}" data-wish-order="${w.wish_order}">当選予定をキャンセル</button>
   %endif
 
-  %if not w.canceled_at and not w.is_electing() and not w.is_rejecting() and not w.rejected_at and not w.lot_entry.is_electing() and not w.lot_entry.elected_at:
-  <button class="btn entry-reject-btn" data-entry-no="${w.lot_entry.entry_no}">落選</button>
+  %if not w.canceled_at and not w.is_electing() and not w.is_rejecting() and not w.rejected_at and not w.is_electing() and not w.elected_at:
+  <button class="btn entry-reject-btn" data-entry-no="${w.entry_no}">落選</button>
   %endif
-  %if w.is_rejecting() and not w.rejected_at and not w.rejected_at and not w.lot_entry.is_electing():
-  <button class="btn cancel-reject-btn" data-entry-no="${w.lot_entry.entry_no}">落選予定をキャンセル</button>
+  %if w.is_rejecting() and not w.rejected_at and not w.rejected_at and not w.is_electing():
+  <button class="btn cancel-reject-btn" data-entry-no="${w.entry_no}">落選予定をキャンセル</button>
   %endif
 
 %endif
@@ -44,33 +44,33 @@ delivery_method = pdmp.delivery_method
 </td>
 <td nowrap="">
 ${w.status}
-%if w.lot_entry.ordered_mail_sent_at:
+%if w.ordered_mail_sent_at:
 <br>メール送信済
 %endif
 </td>
-<td nowrap="">${payment_method.name}<br>${view.payment_status(w, pdmp,auth,sej)}</td>
-<td nowrap="">${delivery_method.name}<br>${view.delivery_status(w, pdmp,auth,sej)}</td>
-<td nowrap=""><a href="${request.route_path("lots.entries.show", lot_id=w.lot_entry.lot_id, entry_no=w.lot_entry.entry_no)}">${w.lot_entry.entry_no}</a></td>
+<td nowrap="">${w.payment_method_name}<br>${view.payment_status(w)}</td>
+<td nowrap="">${w.delivery_method_name}<br>${view.delivery_status(w)}</td>
+<td nowrap=""><a href="${request.route_path("lots.entries.show", lot_id=w.lot_id, entry_no=w.entry_no)}">${w.entry_no}</a></td>
 <td nowrap="">${w.wish_order + 1}</td>
 <td nowrap="">${"{0:%Y-%m-%d %H:%M}".format(w.created_at)}</td>
 <td nowrap="">${u",".join([",".join([i.stock_type.name for i in p.product.items]) for p in w.products])}</td>
 <td nowrap="">${w.total_quantity}</td>
-<td nowrap="">${venue.name}</td>
-<td nowrap="">${performance.code}</td>
-<td nowrap="">${"{0:%Y-%m-%d %H:%M}".format(performance.start_on)}</td>
+<td nowrap="">${w.venue_name}</td>
+<td nowrap="">${w.performance_code}</td>
+<td nowrap="">${"{0:%Y-%m-%d %H:%M}".format(w.performance_start_on) if w.performance_start_on else 'None'}</td>
 <td nowrap="">${u",".join([p.product.name for p in w.products])}</td>
-<td nowrap="">${shipping_address.last_name}</td>
-<td nowrap="">${shipping_address.first_name}</td>
-<td nowrap="">${shipping_address.last_name_kana}</td>
-<td nowrap="">${shipping_address.first_name_kana}</td>
-<td nowrap="">${shipping_address.prefecture}</td>
-<td nowrap="">${shipping_address.city}</td>
-<td nowrap="">${shipping_address.address_1}</td>
-<td nowrap="">${shipping_address.address_2}</td>
-<td nowrap="">${shipping_address.tel_1}</td>
-<td nowrap="">${shipping_address.tel_2}</td>
-<td nowrap="">${shipping_address.email_1}</td>
-<td nowrap="">${shipping_address.email_2}</td>
+<td nowrap="">${w.shipping_address.last_name}</td>
+<td nowrap="">${w.shipping_address.first_name}</td>
+<td nowrap="">${w.shipping_address.last_name_kana}</td>
+<td nowrap="">${w.shipping_address.first_name_kana}</td>
+<td nowrap="">${w.shipping_address.prefecture}</td>
+<td nowrap="">${w.shipping_address.city}</td>
+<td nowrap="">${w.shipping_address.address_1}</td>
+<td nowrap="">${w.shipping_address.address_2}</td>
+<td nowrap="">${w.shipping_address.tel_1}</td>
+<td nowrap="">${w.shipping_address.tel_2}</td>
+<td nowrap="">${w.shipping_address.email_1}</td>
+<td nowrap="">${w.shipping_address.email_2}</td>
 
 </%def>
 
@@ -219,9 +219,9 @@ ${tabs.tabs(request)}
 </tr>
 </thead>
 <tbody>
-%for w,auth,sej in wishes:
-<tr class="${'lot-wish-' + w.lot_entry.entry_no + '-' + str(w.wish_order)}">
-${self.lot_wish_row(request, w, auth, sej)}
+%for w in wishes:
+<tr class="${'lot-wish-' + str(w.entry_no) + '-' + str(w.wish_order)}">
+${self.lot_wish_row(request, w)}
 </tr>
 %endfor
 </tbody>
