@@ -313,9 +313,9 @@ class Products(BaseView):
                 stock = Stock.query.filter_by(
                     stock_type_id=f.stock_type_id.data,
                     stock_holder_id=f.stock_holder_id.data,
-                    performance_id=product.sales_segment.performance.id
+                    performance_id=product.performance.id
                 ).one()
-                product_item.performance_id = product.sales_segment.performance.id
+                product_item.performance_id = product.performance.id
                 product_item.product_id = product.id
                 product_item.name = f.product_item_name.data
                 product_item.price = f.product_item_price.data
