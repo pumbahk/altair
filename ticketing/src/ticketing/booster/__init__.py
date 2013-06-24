@@ -85,6 +85,10 @@ def setup_plugins_views(config):
     config.add_view('ticketing.payments.plugins.multicheckout.completion_viewlet', context=IOrderPayment, name="payment-%d" % PAYMENT_PLUGIN_ID_CARD, request_type='altair.mobile.interfaces.IMobileRequest',
                     renderer="carts_mobile/multicheckout_payment_complete.html")
 
+def setup_order_product_attribute_metadata(config):
+    from ticketing.orders.api import get_metadata_provider_registry
+    from .metadata import metadata_provider
+    get_metadata_provider_registry(config.registry).registerProvider(metadata_provider)
     
 def includeme(config):
     config.include(setup_cart)
@@ -92,3 +96,9 @@ def includeme(config):
     config.include(setup_views)
     config.include(setup_excviews)
     config.include(setup_plugins_views)
+
+    config.include('ticketing.orders')
+    config.include(setup_order_product_attribute_metadata)
+
+    config.include('.89ers')
+    config.include('.bambitious')

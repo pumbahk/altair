@@ -72,7 +72,7 @@ from ticketing.cart.reserving import InvalidSeatSelectionException, NotEnoughAdj
 from ticketing.loyalty import api as loyalty_api
 
 from . import utils
-from .api import CartSearchQueryBuilder, OrderSummarySearchQueryBuilder, QueryBuilderError
+from .api import CartSearchQueryBuilder, OrderSummarySearchQueryBuilder, QueryBuilderError, get_metadata_provider_registry
 from .models import OrderSummary
 
 logger = logging.getLogger(__name__)
@@ -574,8 +574,30 @@ class OrderDetailView(BaseView):
         form_order_reserve = OrderReserveForm(performance_id=order.performance_id)
         form_refund = OrderRefundForm(MultiDict(payment_method_id=order.payment_delivery_pair.payment_method.id), organization_id=order.organization_id)
 
+        metadata_provider_registry = get_metadata_provider_registry(self.request)
+        ordered_product_attributes = []
+        for key, value in (
+                pair
+                for ordered_product in order.ordered_products
+                for ordered_product_item in ordered_product.ordered_product_items
+                for pair in ordered_product_item.attributes.items()):
+            metadata = None
+            try:
+                metadata = metadata_provider_registry.queryProviderByKey(key)[key]
+            except:
+                pass
+            if metadata is not None:
+                display_name = metadata.get_display_name('ja_JP')
+                coerced_value = metadata.get_coercer()(value)
+            else:
+                display_name = key
+                coerced_value = value
+
+            ordered_product_attributes.append((display_name, key, coerced_value))
+
         return {
             'order_current':order,
+            'ordered_product_attributes': ordered_product_attributes,
             'order_history':order_history,
             'point_grant_settings': loyalty_api.applicable_point_grant_settings_for_order(order),
             'sej_order':SejOrder.query.filter(SejOrder.order_id==order.order_no).first(),

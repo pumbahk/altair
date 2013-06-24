@@ -4,6 +4,7 @@ import re
 from sqlalchemy.sql.expression import and_, or_
 from sqlalchemy.sql import functions as safunc
 from sqlalchemy.orm import aliased
+from pyramid.interfaces import IRequest
 from ticketing.models import asc_or_desc
 from ticketing.helpers import todatetime
 from ticketing.core.models import (
@@ -34,6 +35,7 @@ from ticketing.sej.models import (
     SejOrder,
     )
 from .models import OrderSummary
+from .interfaces import IOrderedProductAttributeMetadataProviderRegistry
 
 class QueryBuilderError(Exception):
     pass
@@ -509,3 +511,10 @@ class OrderSummarySearchQueryBuilder(SearchQueryBuilderBase):
         else:
             query = asc_or_desc(query, self.targets['subject'].order_no, 'desc')
         return query
+
+def get_metadata_provider_registry(request_or_registry):
+    if IRequest.providedBy(request_or_registry):
+        registry = request_or_registry.registry
+    else:
+        registry = request_or_registry
+    return registry.queryUtility(IOrderedProductAttributeMetadataProviderRegistry)
