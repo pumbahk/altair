@@ -874,3 +874,34 @@ h2.glitter.red:after {
 .header-navigation {
   margin-bottom: 15px;
 }
+
+input[type="text"] {
+  box-sizing: border-box;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  width: 100%;
+  display: block;
+  height: 34px;
+  font-size: 17px;
+  padding: 0px 2px;
+  margin: 0 0 2px 0;
+}
+
+select {
+  height: 30px;
+  font-size: 16px;
+  margin: 3px 0 0 0;
+  background-color: #fff;
+}
+
+button {
+  height: 28px;
+  margin: 3px 0 0 0;
+  font-weight: bold;
+}
+
+input[type="submit"] {
+  height: 28px;
+  margin: 5px 0 0 0;
+  font-weight: bold;
+}
