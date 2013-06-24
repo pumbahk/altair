@@ -1,6 +1,6 @@
 <%namespace file="${context['layout'].relative_path('templates/tags_mobile.html')}" name="mobile" />
 <%mobile:form_header>${layout.team_name}からのメールマガジンの配信	</%mobile:form_header>
-${u'希望する' if pm['extra']['mail_permission'] else u'希望しない'}
+${u'希望する' if int(pm['extra']['mail_permission']) else u'希望しない'}
 % if 'publicity' in pm['extra']:
 <%mobile:form_header>メモリアルブックの掲載希望 </%mobile:form_header>
 ${u'はい' if pm['extra']['publicity'] == 'yes' else u'いいえ'}
