@@ -53,7 +53,7 @@ from ticketing.core.models import (
     )
 from ticketing.mails.api import get_mail_utility
 from ticketing.mailmags.models import MailSubscription, MailMagazine, MailSubscriptionStatus
-from ticketing.orders.export import OrderCSV, japanese_columns
+from ticketing.orders.export import OrderCSV, get_japanese_columns
 from ticketing.orders.forms import (OrderForm, OrderSearchForm, OrderRefundSearchForm, SejOrderForm, SejTicketForm,
                                     SejRefundEventForm,SejRefundOrderForm, SendingMailForm,
                                     PerformanceSearchForm, OrderReserveForm, OrderRefundForm, ClientOptionalForm,
@@ -362,7 +362,7 @@ class Orders(BaseView):
 
         export_type = int(self.request.params.get('export_type', OrderCSV.EXPORT_TYPE_ORDER))
         kwargs = dict(export_type=export_type) if export_type else {}
-        order_csv = OrderCSV(organization_id=self.context.user.organization_id, localized_columns=japanese_columns, **kwargs)
+        order_csv = OrderCSV(organization_id=self.context.user.organization_id, localized_columns=get_japanese_columns(self.request), **kwargs)
 
         writer = csv.writer(response, delimiter=',', quoting=csv.QUOTE_ALL)
         writer.writerows([encode_to_cp932(column) for column in columns] for columns in order_csv(orders))
