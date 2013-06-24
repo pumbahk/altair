@@ -43,7 +43,8 @@ def export_for_stock_holder(event, stock_holder, report_type):
 
     for i, performance in enumerate(event.performances):
         sheet_num = i + 1
-        sheet_name = u"%s%d" % (jdatetime(performance.start_on), sheet_num)
+        dt = jdatetime(performance.start_on).replace(' ', '').replace(':', '')
+        sheet_name = u"%s_%d" % (dt, sheet_num)
         # 一つ目のシートは追加せずに取得
         if i == 0:
             sheet = exporter.workbook.get_sheet(0)
