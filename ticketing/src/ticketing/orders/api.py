@@ -94,7 +94,9 @@ class SearchQueryBuilderBase(object):
 
 class BaseSearchQueryBuilderMixin(object):
     def _order_no(self, query, value):
-        return query.filter(self.targets['subject'].order_no == value)
+        if isinstance(value, basestring):
+            value = re.split(ur'[ \t　]+', value)
+        return query.filter(self.targets['subject'].order_no.in_(value))
 
     def _performance_id(self, query, value):
         return query.filter(self.targets['subject'].performance_id == value)
@@ -126,7 +128,7 @@ class BaseSearchQueryBuilderMixin(object):
 
     def _name(self, query, value):
         query = query.join(self.targets['subject'].shipping_address)
-        items = re.split(ur'[ 　]', value)
+        items = re.split(ur'[ \t　]+', value)
         # 前方一致で十分かと
         for item in items:
             query = query.filter(
@@ -345,7 +347,9 @@ class OrderSummarySearchQueryBuilder(SearchQueryBuilderBase):
         }
 
     def _order_no(self, query, value):
-        return query.filter(self.targets['subject'].order_no == value)
+        if isinstance(value, basestring):
+            value = re.split(ur'[ \t　]+', value)
+        return query.filter(self.targets['subject'].order_no.in_(value))
 
     def _performance_id(self, query, value):
         return query.filter(self.targets['subject'].performance_id == value)
@@ -369,7 +373,7 @@ class OrderSummarySearchQueryBuilder(SearchQueryBuilderBase):
                                 self.targets['subject'].tel_2==value))
 
     def _name(self, query, value):
-        items = re.split(ur'[ 　]', value)
+        items = re.split(ur'[ \t　]+', value)
         # 前方一致で十分かと
         for item in items:
             query = query.filter(
