@@ -99,10 +99,14 @@
                   <th>${layout.team_name}からのメールマガジンの配信	</th>
                   <td>${u'希望する' if pm['extra']['mail_permission'] else u'希望しない'}</td>
                 </tr>
+                % if pm['extra'].get('publicity') is not None:
                 <tr>
                   <th>メモリアルブックへの掲載希望</th>
-                  <td>${u'はい' if pm['extra']['publicity'] == 'yes' else u'いいえ'}</td>
+                  <td>
+                    ${u'はい' if pm['extra']['publicity'] == 'yes' else u'いいえ'}
+                  </td>
                 </tr>
+                % endif
                 <tr>
                   <th>ブースタークラブに入会しようと思ったきっかけは？</th>
                   <td>${pm['extra']['motivation']}</td>
