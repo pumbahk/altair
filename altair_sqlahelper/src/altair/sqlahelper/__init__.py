@@ -43,6 +43,7 @@ def register_sessionmakers(config, urls):
 def includeme(config):
     results = from_settings(config.registry.settings)
     register_sessionmakers(config, results)
+    config.add_tween('altair.sqlahelper.CloserTween')
 
 def get_sessionmaker(request, name=""):
     return request.registry.queryUtility(ISessionMaker, name=name)
@@ -57,3 +58,20 @@ def get_db_session(request, name=""):
     sessions[name] = session
     request.environ['altair.sqlahelper.sessions'] = sessions
     return session
+
+class CloserTween(object):
+    def __init__(self, handler, registry):
+        self.handler = handler
+        self.registry = registry
+
+    def __call__(self, request):
+        try:
+            return self.handler(request)
+        finally:
+            self.close_sessions(request)
+
+    def close_sessions(self, request):
+        sessions = request.environ.get('altair.sqlahelper.sessions', {})
+        for name in sessions.keys():
+            session = sessions.pop(name)
+            session.close()
