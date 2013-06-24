@@ -34,12 +34,12 @@ class ExtraForm(Form):
                                                 choices=[('S', u'S'), ('M', u'M'), ('L', u'L'),('LL', u'LL'), ('3L', u'3L'), ('4L', u'4L')],
                                                 validators=[v.Optional()], 
                                                 coerce=text_type_but_none_if_not_given)
+    authentic_uniform_no = fields.IntegerField(u"オーセンティックユニフォーム背番号", validators=[v.Optional(), v.Length(max=2)])
+    authentic_uniform_name = fields.TextField(u"オーセンティックユニフォーム名前", validators=[v.Optional(), v.Regexp(r"^[A-Z]+$", message=u"アルファベット大文字のみで入力してください")])
     authentic_uniform_color = fields.SelectField(u'オーセンティックユニフォーム色',
                                                 choices=[('red', u"赤"), ("white", u"白")],
                                                 validators=[v.Optional()], 
                                                 coerce=text_type_but_none_if_not_given)
-    authentic_uniform_no = fields.IntegerField(u"オーセンティックユニフォーム背番号", validators=[v.Optional(), v.Length(max=2)])
-    authentic_uniform_name = fields.TextField(u"オーセンティックユニフォーム名前", validators=[v.Optional(), v.Regexp(r"^[A-Z]+$", message=u"アルファベット大文字のみで入力してください")])
 
     parent_first_name = fields.TextField(u"氏名", filters=[strip_spaces], validators=[v.Required(), Zenkaku, length_limit_for_sej])
     parent_last_name = fields.TextField(u"氏名", filters=[strip_spaces], validators=[v.Required(),Zenkaku, length_limit_for_sej])

@@ -14,9 +14,7 @@ from ticketing.core import models as c_models
 from ticketing.users.models import User, UserProfile
 
 from ..models import DBSession
-from .api import product_item_is_t_shirt
-from .api import get_order_desc
-from .api import set_user_profile_for_order
+from .api import get_user_profile_from_order
 from .helpers import sex_value
 from ticketing.views import BaseView
 
@@ -186,7 +184,8 @@ class OrderReviewView(BaseView):
             return response
 
         else:
-            shipping, pm = get_order_desc(order)
+            shipping = order.shipping_address
+            pm = get_user_profile_from_order(self.request, order)
             return dict(order=order, sej_order=sej_order, shipping=shipping, pm=pm)
 
 

@@ -25,6 +25,16 @@ def setup_order_product_attribute_metadata(config):
     from ticketing.orders.api import get_metadata_provider_registry
     from .metadata import metadata_provider
     get_metadata_provider_registry(config.registry).registerProvider(metadata_provider)
+
+    from ..persistent_profile import PersistentProfileFactory as Default
+    class PersistentProfileFactory(Default):
+        attr_names = Default.attr_names[:]
+        attr_names.extend([
+                u't_shirts_size',
+                u'product_delivery_method_name', 
+                ])
+    ppf = PersistentProfileFactory()
+    config.add_persistent_profile_factory(ppf)
     
 def includeme(config):
     config.include(setup_order_product_attribute_metadata)

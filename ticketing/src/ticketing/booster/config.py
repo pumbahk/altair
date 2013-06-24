@@ -1,4 +1,6 @@
 from .interfaces import IBoosterSettings
+from .interfaces import IPertistentProfileFactory
+from pyramid.interfaces import IRequest
 from zope.interface import implementer
 
 @implementer(IBoosterSettings)
@@ -18,5 +20,9 @@ def add_booster_settings(config, settings, prefix="booster."):
     bsettings = BoosterSettings.from_settings(settings, prefix=prefix)
     config.registry.registerUtility(bsettings, IBoosterSettings)
 
+def add_persistent_profile_factory(config, factory, name=""):
+    config.registry.adapters.register([IRequest], IPertistentProfileFactory, name, factory)
+
 def includeme(config):
     config.add_directive("add_booster_settings", add_booster_settings)
+    config.add_directive("add_persistent_profile_factory", add_persistent_profile_factory)

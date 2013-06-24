@@ -6,6 +6,26 @@ class IBoosterSettings(Interface):
     membership_name = Attribute("target membership name")
 
 
+class IPertistentProfileFactory(Interface):
+    def __call__(request):
+        pass
+
+class IPertistentProfile(Interface):
+    def get_userprofile(request, subject):
+        pass
+
+    def set_userprofile(request, subject, data):
+        pass
+
+
+
+
+
+
+
+
+
+
 ## for documantation
 class ICartResource(Interface):
     event_id = Attribute("event_id")
