@@ -66,3 +66,8 @@ def includeme(config):
     reg.adapters.register([IRequest], IStocker, "", Stocker)
     reg.adapters.register([IRequest], IReserving, "", Reserving)
     reg.adapters.register([IRequest], ICartFactory, "", CartFactory)
+
+    from .metadata import DefaultOrderedProductAttributeMetadataProviderRegistry
+    metadata_registry = DefaultOrderedProductAttributeMetadataProviderRegistry()
+    from .interfaces import IOrderedProductAttributeMetadataProviderRegistry
+    reg.registerUtility(metadata_registry, IOrderedProductAttributeMetadataProviderRegistry)
