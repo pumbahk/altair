@@ -550,7 +550,8 @@ class LotEntryProduct(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     # 商品
     product_id = sa.Column(Identifier, sa.ForeignKey('Product.id'))
-    product = orm.relationship('Product', backref='lot_entry_products')
+    product = orm.relationship('Product', backref='lot_entry_products',
+                               primaryjoin="and_(Product.id==LotEntryProduct.product_id, Product.deleted_at==None)")
 
     # 抽選申し込み希望
     lot_wish_id = sa.Column(Identifier, sa.ForeignKey('LotEntryWish.id'))
