@@ -61,6 +61,7 @@ from ticketing.orders.forms import (OrderForm, OrderSearchForm, OrderRefundSearc
 from ticketing.views import BaseView
 from ticketing.fanstatic import with_bootstrap
 from ticketing.orders.events import notify_order_canceled
+from ticketing.orders.exceptions import InnerCartSessionException
 from ticketing.payments.payment import Payment, get_delivery_plugin
 from ticketing.payments import plugins as payment_plugins
 from ticketing.tickets.utils import build_dicts_from_ordered_product_item
@@ -68,7 +69,7 @@ from ticketing.cart import api
 from ticketing.cart.models import Cart
 from ticketing.cart.stocker import NotEnoughStockException
 from ticketing.cart.reserving import InvalidSeatSelectionException, NotEnoughAdjacencyException
-
+from ticketing.cart.exceptions import NoCartError
 from ticketing.loyalty import api as loyalty_api
 
 from . import utils
@@ -936,6 +937,13 @@ class OrdersReserveView(BaseView):
                 seat_status.status = int(SeatStatusEnum.Vacant)
                 seat_status.save()
 
+    def get_inner_cart_session(self):
+        inner_cart_session = self.request.session.get('ticketing.inner_cart')
+        logger.info("inner cart session : %s" % inner_cart_session)
+        if inner_cart_session is None:
+            raise InnerCartSessionException('Inner cart session is expired')
+        return inner_cart_session
+
     def clear_inner_cart_session(self):
         inner_cart_session = self.request.session.get('ticketing.inner_cart')
         logger.info("clear cart session : %s" % inner_cart_session)
@@ -1034,7 +1042,7 @@ class OrdersReserveView(BaseView):
     @view_config(route_name='orders.reserve.form.reload', request_method='POST', renderer='ticketing:templates/orders/_form_reserve.html')
     def reserve_form_reload(self):
         post_data = MultiDict(self.request.json_body)
-        post_data.update(self.request.session.get('ticketing.inner_cart'))
+        post_data.update(self.get_inner_cart_session())
         performance_id = int(post_data.get('performance_id', 0))
         performance = Performance.get(performance_id, self.context.user.organization_id)
 
@@ -1062,7 +1070,7 @@ class OrdersReserveView(BaseView):
             }))
 
         try:
-            post_data.update(self.request.session.get('ticketing.inner_cart'))
+            post_data.update(self.get_inner_cart_session())
             logger.debug('order reserve confirm post_data=%s' % post_data)
 
             # validation
@@ -1132,6 +1140,9 @@ class OrdersReserveView(BaseView):
         except NotEnoughStockException as e:
             logger.info("not enough stock quantity :%s" % e)
             raise HTTPBadRequest(body=json.dumps({'message':u'在庫がありません'}))
+        except InnerCartSessionException as e:
+            logger.info("%s" % e.message)
+            raise HTTPBadRequest(body=json.dumps({'message':u'エラーが発生しました。もう一度選択してください。'}))
         except Exception, e:
             logger.exception('save error (%s)' % e.message)
             raise HTTPBadRequest(body=json.dumps({'message':u'エラーが発生しました'}))
@@ -1150,7 +1161,7 @@ class OrdersReserveView(BaseView):
 
         try:
             # create order
-            cart = api.get_cart(self.request)
+            cart = api.get_cart_safe(self.request)
 
             payment = Payment(cart, self.request)
             payment_plugin_id = cart.payment_delivery_pair.payment_method.payment_plugin_id
@@ -1195,6 +1206,9 @@ class OrdersReserveView(BaseView):
             return {
                 'order_id':order.id,
             }
+        except NoCartError, e:
+            logger.info("%s" % e.message)
+            raise HTTPBadRequest(body=json.dumps({'message':u'エラーが発生しました。もう一度選択してください。'}))
         except Exception, e:
             logger.exception('save error (%s)' % e.message)
             raise HTTPBadRequest(body=json.dumps({
