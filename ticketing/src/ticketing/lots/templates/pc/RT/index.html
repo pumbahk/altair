@@ -97,7 +97,11 @@
                 <td colspan="2">
                   <select name="performanceDate-${i}" data-wishOrder="${i}" class="performance-date-select">
                   %for performance in performances:
-                  <option value="${performance.id}">${h.performance_date_label(performance)}</option>
+                    % if (performance.id == int(performance_id)) and (i == 0):
+                    <option value="${performance.id}" selected>${h.performance_date_label(performance)}</option>
+                    % else:
+                    <option value="${performance.id}">${h.performance_date_label(performance)}</option>
+                    % endif
                   %endfor
                   </select>
                 </td>
