@@ -103,7 +103,8 @@ class MarginRenderer(object):
         order = dereference(record, self.key)
         rendered_value = 0
         for ordered_product in order.ordered_products:
-            rendered_value += (ordered_product.price * ordered_product.quantity) * (ordered_product.product.sales_segment.margin_ratio / 100)
+            margin = (ordered_product.product.sales_segment.margin_ratio / 100) if ordered_product.product.sales_segment is not None else 0
+            rendered_value += (ordered_product.price * ordered_product.quantity) * margin
         return [
             ((u"", self.column_name, u""), unicode(rendered_value))
         ]

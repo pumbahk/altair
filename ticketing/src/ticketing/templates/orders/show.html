@@ -406,7 +406,9 @@ ${h.breadcrumbs(
             % endif
                 <tr>
                   <td colspan="2">
-                    <span class="label label-info">${ordered_product.product.sales_segment.name}</span>
+                    % if ordered_product.product.sales_segment:
+                      <span class="label label-info">${ordered_product.product.sales_segment.name}</span>
+                    % endif
                     ${ordered_product.product.name}
                   </td>
                   <td></td>
