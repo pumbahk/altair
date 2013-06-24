@@ -122,23 +122,39 @@ def handle_flowregion(flowregion):
     first_child.set(u'style', u'fill:none; stroke:none;')
     attach_fill_and_stroke_none_if_not_specified(first_child)
 
+def check_if_container_is_empty(n):
+    tags = [tagname % SVG_NAMESPACE for tagname in (u'{%s}flowPara', u'{%s}flowDiv', u'{%s}flowSpan')]
+    for cn in n:
+        if cn.text or cn.tail or cn.tag not in tags or not check_if_container_is_empty(cn):
+            return False
+    else:
+        return True
+
+def check_if_flowroot_is_empty(flowroot):
+    blockelems = []
+    outertags = [tagname % SVG_NAMESPACE for tagname in (u'{%s}flowPara', u'{%s}flowDiv')]
+    return all(check_if_container_is_empty(cn) and not cn.text and not cn.tail for cn in flowroot if cn.tag in outertags)
+
 def cleanup_elem(elem):
     for child_elem in list(elem):
         if child_elem.tag == u'{%s}flowRoot' % SVG_NAMESPACE:
-            retval = [] 
-            collect_flowpara_and_flowdivs(retval, cssutils.css.CSSStyleDeclaration(), child_elem)
-            common_style = strip_common_style_properties(retval)
-            flowdiv = etree.Element(u'{%s}flowDiv' % SVG_NAMESPACE)
-            for _elem in retval:
-                flowdiv.append(_elem)
-            set_or_remove_if_empty(flowdiv, u'style', css_text(common_style))
-            child_elem.append(flowdiv)
-            flowregion = child_elem.find(u'{%s}flowRegion' % SVG_NAMESPACE)
-            if flowregion is not None:
-                handle_flowregion(flowregion)
-            style_str = child_elem.get(u'style')
-            if style_str is not None:
-                set_or_remove_if_empty(child_elem, u'style', css_text(parse_style(style_str, validate=False)))
+            if check_if_flowroot_is_empty(child_elem):
+                elem.remove(child_elem)
+            else:
+                retval = [] 
+                collect_flowpara_and_flowdivs(retval, cssutils.css.CSSStyleDeclaration(), child_elem)
+                common_style = strip_common_style_properties(retval)
+                flowdiv = etree.Element(u'{%s}flowDiv' % SVG_NAMESPACE)
+                for _elem in retval:
+                    flowdiv.append(_elem)
+                set_or_remove_if_empty(flowdiv, u'style', css_text(common_style))
+                child_elem.append(flowdiv)
+                flowregion = child_elem.find(u'{%s}flowRegion' % SVG_NAMESPACE)
+                if flowregion is not None:
+                    handle_flowregion(flowregion)
+                style_str = child_elem.get(u'style')
+                if style_str is not None:
+                    set_or_remove_if_empty(child_elem, u'style', css_text(parse_style(style_str, validate=False)))
         elif child_elem.tag == u'{%s}image' % SVG_NAMESPACE:
             elem.remove(child_elem)
         cleanup_elem(child_elem)

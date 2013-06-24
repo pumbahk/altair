@@ -103,6 +103,7 @@ ${breadcrumbs(
     <ul class="dropdown-menu">
       <li><a href="#deleteModal" data-toggle="modal"><i class="icon-minus"></i> 削除</a></li>
 		  <li><a href="${request.route_path("tickets.templates.download",id=template.id)}"><i class="icon-minus"></i> 登録されている内容をdownload</a></li>
+		  <li><a href="${request.route_path("tickets.templates.download",id=template.id, _query=dict(raw=u'1'))}"><i class="icon-minus"></i> 登録されている内容の元データをdownload</a></li>
       <li><a id="preview_btn"> <i class="icon-eye-open"></i> preview</a></li>
 <%doc>
           <li>

@@ -25,6 +25,9 @@ from . import helpers
 from .utils import SvgPageSetBuilder, FallbackSvgPageSetBuilder, build_dict_from_ordered_product_item_token, _default_builder
 from .response import FileLikeResponse
 from .convert import to_opcodes
+from .cleaner import cleanup_svg
+from .cleaner.normalize import normalize as normalize_svg
+from .cleaner.api import get_xmltree
 
 logger = logging.getLogger(__name__)
 
@@ -436,12 +439,25 @@ class TicketTemplates(BaseView):
 
     @view_config(route_name='tickets.templates.download')
     def download(self):
+        raw = self.request.params.get('raw')
         qs = self.context.tickets_query().filter_by(id=self.request.matchdict['id'])
         template = qs.filter_by(organization_id=self.context.user.organization_id).first()
         if template is None:
             raise HTTPNotFound("this is not found")
-        return FileLikeResponse(StringIO(template.drawing.encode("utf-8")),
-                                request=self.request)
+        if raw:
+            stream = StringIO(template.drawing.encode("utf-8"))
+        else:
+            out = StringIO()
+            normalize_svg(StringIO(template.drawing.encode("utf-8")), out, encoding="utf-8")
+            out.seek(0)
+            xmltree = get_xmltree(out)
+            cleanup_svg(xmltree)
+
+            stream = StringIO()
+            xmltree.write(stream, encoding="utf-8")
+            stream.seek(0)
+
+        return FileLikeResponse(stream, request=self.request)
 
     @view_config(route_name='tickets.templates.data', renderer='json')
     def data(self):

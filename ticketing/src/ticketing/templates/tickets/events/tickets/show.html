@@ -129,6 +129,10 @@ event = request.context.event
 			    <i class="icon-minus"></i> 登録されている内容をdownload
 			  </a>
 		  </li>
+		  <li>
+        <a href="${request.route_path("events.tickets.boundtickets.download",event_id=event_id, id=template.id, _query=dict(raw=u'1'))}">
+        <i class="icon-minus"></i> 登録されている内容の元データをdownload</a>
+      </li>
       <li><a id="preview_btn"> <i class="icon-eye-open"></i> preview</a></li>
     </ul>
   </div>
