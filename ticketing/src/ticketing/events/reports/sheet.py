@@ -121,7 +121,7 @@ def process_sheet(exporter, sheet, report_type, event, performance, stock_holder
     exporter.set_datetime(sheet, today_stamp)
     exporter.set_event_name(sheet, event.title or "")
     exporter.set_performance_name(sheet, performance.name or "")
-    exporter.set_performance_datetime(sheet, jdate(performance.start_on))
+    exporter.set_performance_datetime(sheet, jdate(performance.start_on, with_weekday=True))
     exporter.set_performance_open_at(sheet, jtime(performance.open_on))
     exporter.set_performance_start_at(sheet, jtime(performance.start_on))
     exporter.set_performance_venue(sheet, performance.venue.name or "")

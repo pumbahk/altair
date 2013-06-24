@@ -101,7 +101,7 @@ def export_for_sales(event):
         # Event
         data = report_sheet.SalesScheduleRecord(
             event_title=event.title,
-            output_datetime=jdate(datetime.now()),
+            output_datetime=jdate(datetime.now(), with_weekday=True),
             venue_name=site.name
         )
 
@@ -163,11 +163,11 @@ def export_for_sales(event):
             end_at = SalesSegment.query.filter(and_(SalesSegment.performance_id==p.id, SalesSegment.public==True))\
                                        .with_entities(func.max(SalesSegment.end_at)).scalar()
             record = report_sheet.SalesSchedulePerformanceRecord(
-                datetime_=jdate(p.open_on),
+                datetime_=jdate(p.open_on, with_weekday=True),
                 open_=jtime(p.open_on),
                 start=jtime(p.start_on),
                 price_name=label,
-                sales_end=jdate(end_at),
+                sales_end=jdate(end_at, with_weekday=True),
                 submit_order=None,
                 submit_pay=None,
                 pay_datetime=None
