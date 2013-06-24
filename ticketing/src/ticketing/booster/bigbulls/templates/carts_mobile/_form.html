@@ -99,25 +99,39 @@ ${h.error('email_1')}
   ${form.email_1_confirm(istyle="3", iprof="mail1")}<br />
 ${h.error('email_1_confirm')}
 </div>
+<%mobile:form_header>メルマガ購読を希望</%mobile:form_header>
 <div>
-  ${form.extra.mail_permission}メルマガ購読を希望<br />
+  ${form.extra.mail_permission}<br />
 ${h.error('extra.mail_permission')}
 </div>
-<%mobile:form_header>メモリアルブックへの氏名掲載希望</%mobile:form_header>
+<%mobile:form_header>${form.extra.publicity.label}</%mobile:form_header>
 <div>
   ${form.extra.publicity}<br />
-${h.error('extra.publicity')}
+  ${h.error('extra.publicity')}
 </div>
-<%mobile:form_header required="true">ブースタークラブに入会しようと思ったきっかけは？</%mobile:form_header>
+<%mobile:form_header>保護者氏名</%mobile:form_header>
 <div>
-  ${form.extra.motivation}<br />
-${h.error('extra.motivation')}
+  姓${form.extra.parent_last_name(size="10", istyle="1", iprof="name1")}<br />
+  名${form.extra.parent_first_name(size="10", istyle="1", iprof="name2")}<br />
+${h.error(['last_name','first_name'])}
+<font size="1">(※お申込者が18歳未満の場合は必須. 18歳以上の方は入力不要)</font>
 </div>
-<%mobile:form_header>昨シーズンの会場での観戦回数</%mobile:form_header>
+<%mobile:form_header>保護者フリガナ</%mobile:form_header>
 <div>
-  ${form.extra.num_times_at_venue(size=2, maxlength=2)} 回<br />
-${h.error('extra.num_times_at_venue')}
+  セイ${form.extra.parent_last_name_kana(size="10", istyle="2", iprof="kana1")}<br />
+  メイ${form.extra.parent_first_name_kana(size="10", istyle="2", iprof="kana2")}<br />
+${h.error(['last_name_kana','first_name_kana'])}
+<font size="1">(※お申込者が18歳未満の場合は必須. 18歳以上の方は入力不要)</font>
 </div>
+<%mobile:form_header>続柄</%mobile:form_header>
+<div>
+${form.extra.relationship(size="10", istyle="2", iprof="extra.relationship")}
+<font size="1">(例: 父、母)</font>
+<br />
+${h.error('extra.relationship')}
+<font size="1">(※お申込者が18歳未満の場合は必須. 18歳以上の方は入力不要)</font>
+</div>
+
 <div><font color="red">*は入力必須項目です。電話番号は携帯・自宅のどちらか一方で構いません。</font></div>
 <hr />
 <input type="submit" value="次に進む" />
