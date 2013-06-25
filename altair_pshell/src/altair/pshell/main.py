@@ -74,7 +74,6 @@ class PShellCommand(object):
         self.loaded_objects = {}
         self.object_help = {}
         self.setup = None
-        print items
         for k, v in items:
             if k == 'setup':
                 self.setup = v
