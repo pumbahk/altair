@@ -595,7 +595,7 @@ class OrderDetailView(BaseView):
                 coerced_value = value
 
             ordered_product_attributes.append((display_name, key, coerced_value))
-
+            ordered_product_attributes = sorted(ordered_product_attributes, key=lambda x: x[0])
         return {
             'order_current':order,
             'ordered_product_attributes': ordered_product_attributes,
