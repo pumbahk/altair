@@ -65,7 +65,6 @@ class ExtraForm(Form):
         prepend_validator(self.parent_last_name_kana, v.Required())
         prepend_validator(self.relationship, v.Required())
 
-
     def configure_for_authentic_uniform(self):
         prepend_validator(self.authentic_uniform_no, v.Required())
         prepend_validator(self.authentic_uniform_size, v.Required())
