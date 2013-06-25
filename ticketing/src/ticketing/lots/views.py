@@ -150,8 +150,12 @@ class EntryLotView(object):
         stocks = lot.stock_types
 
         performance_id = self.request.params.get('performance')
-        if not performance_id:
-            performance_id = 0
+        selected_performance = None
+        if performance_id:
+            for p in lot.performances:
+                if str(p.id) == performance_id:
+                    selected_performance = p
+                    break
 
         # if not stocks:
         #     logger.debug('lot stocks found')
@@ -186,7 +190,7 @@ class EntryLotView(object):
             payment_delivery_pairs=payment_delivery_pairs,
             posted_values=dict(self.request.POST),
             performance_product_map=performance_product_map,
-            stock_types=stock_types, performance_id=performance_id,
+            stock_types=stock_types, selected_performance=selected_performance,
             payment_delivery_method_pair_id=self.request.params.get('payment_delivery_method_pair_id'),
             lot=lot, performances=performances, performance_map=performance_map, stocks=stocks)
 
