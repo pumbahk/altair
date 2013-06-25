@@ -29,6 +29,14 @@ pm = _api.load_user_profile(request)
 女性
 %endif
 </div>
+%if pm['extra'].get('parent_first_name'):
+<%mobile:form_header>保護者氏名</%mobile:form_header>
+<div>${pm["extra"]["parent_last_name"]} ${pm["extra"]["parent_first_name"]}</div>
+<%mobile:form_header>保護者氏名（フリガナ）</%mobile:form_header>
+<div>${pm["extra"]["parent_last_name_kana"]} ${pm["extra"]["parent_first_name_kana"]}</div>
+<%mobile:form_header>続柄</%mobile:form_header>
+<div>${pm["extra"]["relationship"]}</div>
+%endif
 <%mobile:form_header>住所</%mobile:form_header>
 <div>${pm['prefecture']} ${pm['city']} ${pm['address1']} ${pm['address2']}</div>
 <%mobile:form_header>電話番号（携帯）</%mobile:form_header>
@@ -40,19 +48,29 @@ pm = _api.load_user_profile(request)
 <%mobile:form_header>${layout.team_name}からのメールマガジンの配信</%mobile:form_header>
 <div>${u'希望する' if pm['extra']['mail_permission'] else u'希望しない'}</div>
 % if pm['extra'].get('publicity') is not None:
-<%mobile:form_header>メモリアルブックへの掲載希望</%mobile:form_header>
+<%mobile:form_header>ゲームプログラムへの掲載希望</%mobile:form_header>
 <div>${u'はい' if pm['extra']['publicity'] == 'yes' else u'いいえ'}</div>
 % endif
-<%mobile:form_header>ブースタークラブに入会しようと思ったきっかけは？</%mobile:form_header>
-<div>${pm['extra']['motivation']}</div>
-<%mobile:form_header>昨シーズンの会場での観戦回数</%mobile:form_header>
-<div>
-% if pm['extra']['num_times_at_venue']:
-  ${pm['extra']['num_times_at_venue']} 回
-% else:
-  -
+% if pm['extra'].get('replica_uniform_size') is not None:
+<%mobile:form_header>レプリカユニフォームサイズ</%mobile:form_header>
+<div> ${pm['extra']['replica_uniform_size']}</div>
 % endif
+% if pm['extra'].get('authentic_uniform_size') is not None:
+<%mobile:form_header>オーセンティックユニフォームサイズ</%mobile:form_header>
+<div>
+  背番号: ${pm['extra']['authentic_uniform_no']}
 </div>
+<div>
+  お名前: ${pm['extra']['authentic_uniform_name']}
+</div>
+<div>
+  サイズ: ${pm['extra']['authentic_uniform_size']}
+</div>
+<div>
+  色: ${{"red": u"赤","white": u"白"}.get(pm['extra']['authentic_uniform_color'])}
+</div>
+% endif
+
 <hr />
 <input type="submit" name="back" value="戻る" />
 <input type="submit" value="申し込む" />

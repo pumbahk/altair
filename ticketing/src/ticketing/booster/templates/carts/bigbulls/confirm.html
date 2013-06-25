@@ -75,6 +75,20 @@
                     %endif
                   </td>
                 </tr>
+                %if pm['extra'].get('parent_first_name'):
+                <tr>
+                  <th>保護者氏名</th>
+                  <td>${pm["extra"]["parent_last_name"]} ${pm["extra"]["parent_first_name"]}</td>
+                </tr>
+                <tr>
+                  <th>保護者氏名(カナ)</th>
+                  <td>${pm["extra"]["parent_last_name_kana"]} ${pm["extra"]["parent_first_name_kana"]}</td>
+                </tr>
+                <tr>
+                  <th>続柄</th>
+                  <td>${pm["extra"]["relationship"]}</td>
+                </tr>
+                %endif
                 <tr>
                   <th>郵便番号</th>
                   <td>${pm['zipcode1']}-${pm['zipcode2']}</td>
@@ -101,26 +115,43 @@
                 </tr>
                 % if pm['extra'].get('publicity') is not None:
                 <tr>
-                  <th>メモリアルブックへの掲載希望</th>
+                  <th>ゲームプログラムへの掲載希望</th>
                   <td>
                     ${u'はい' if pm['extra']['publicity'] == 'yes' else u'いいえ'}
                   </td>
                 </tr>
                 % endif
+                % if pm['extra'].get('replica_uniform_size') is not None:
                 <tr>
-                  <th>ブースタークラブに入会しようと思ったきっかけは？</th>
-                  <td>${pm['extra']['motivation']}</td>
-                </tr>
-                <tr>
-                  <th>昨シーズンの会場での観戦回数</th>
+                  <th>レプリカユニフォームサイズ</th>
                   <td>
-                    % if pm['extra']['num_times_at_venue']:
-                      ${pm['extra']['num_times_at_venue']}回
-                    % else:
-                      -
-                    % endif
+                    ${pm['extra']['replica_uniform_size']}
                   </td>
                 </tr>
+                % endif
+                % if pm['extra'].get('authentic_uniform_size') is not None:
+                <tr>
+                  <th rowspan="4">オーセンティックユニフォーム</th>
+                  <td>
+                    背番号: ${pm['extra']['authentic_uniform_no']}
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    お名前: ${pm['extra']['authentic_uniform_name']}
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    サイズ: ${pm['extra']['authentic_uniform_size']}
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    色: ${{"red": u"赤","white": u"白"}.get(pm['extra']['authentic_uniform_color'])}
+                  </td>
+                </tr>
+                % endif
               </tbody>
             </table>
 

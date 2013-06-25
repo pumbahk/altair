@@ -26,11 +26,62 @@ ${h.error(['cont','old_id_number'])}
   
 ${h.error('member_type')}
 </div>
-<div>氏名<font color="red">*</font></div>
+<%mobile:form_header>クラブブルズ限定デザインTシャツ 【レッド会員限定特典】</%mobile:form_header>
+<div>
+  サイズ<select id="extra.t_shirts_size" name="extra-t_shirts_size" class="">
+    <option value="">選択してください</option>
+  % for val in form.extra.t_shirts_size.iter_choices():
+    <option value="${val[0]}"${" selected=selected" if val[0]==form.extra.t_shirts_size.data else ''}>${val[1]}</option>
+  % endfor
+  </select><br />
+  ${h.error(['extra.t_shirts_size'])}
+  <font size="1">(※ レッド会員にお申込の方のみ入力下さい)</font>
+</div>
+<%mobile:form_header>レプリカユニフォーム【シルバー会員限定特典】</%mobile:form_header>
+<div>
+  サイズ<select id="extra.replica_uniform_size" name="extra-replica_uniform_size" class="">
+    <option value="">選択してください</option>
+  % for val in form.extra.replica_uniform_size.iter_choices():
+    <option value="${val[0]}"${" selected=selected" if val[0]==form.extra.replica_uniform_size.data else ''}>${val[1]}</option>
+  % endfor
+  </select><br />
+  ${h.error(['extra.replica_uniform_size'])}
+  <font size="1">(※ シルバー会員にお申込の方のみ入力下さい)</font>
+</div>
+<%mobile:form_header>レプリカユニフォーム【ゴールド会員限定特典】【シルバー会員半額購入特典】</%mobile:form_header>
+<font size="1">(※ ゴールド会員にお申込の方orシルバー会員で半額購入希望の方のみ入力下さい)</font>
+<div>
+  背番号${form.extra.authentic_uniform_no(id='authentic_uniform_no',size=2)}<small>(数字2桁)</small>
+  ${h.error(['extra.authentic_uniform_no'])}
+</div>
+<div>
+  お名前${form.extra.authentic_uniform_name(id='authentic_uniform_name')}<small>(アルファベット大文字のみ)</small> <br/>
+  ${h.error(['extra.authentic_uniform_name'])}
+</div>
+<div>
+  サイズ<select id="extra.authentic_uniform_size" name="extra-authentic_uniform_size" class="">
+    <option value="">選択してください</option>
+    % for val in form.extra.authentic_uniform_size.iter_choices():
+    <option value="${val[0]}"${" selected=selected" if val[0]==form.extra.authentic_uniform_size.data else ''}>${val[1]}</option>
+    % endfor
+  </select><br />
+  ${h.error(['extra.authentic_uniform_size'])}
+<div>
+  色<select id="extra.authentic_uniform_color" name="extra-authentic_uniform_color" class="">
+    <option value="">選択してください</option>
+    % for val in form.extra.authentic_uniform_color.iter_choices():
+    <option value="${val[0]}"${" selected=selected" if val[0]==form.extra.authentic_uniform_color.data else ''}>${val[1]}</option>
+    % endfor
+  </select><br />
+  ${h.error(['extra.authentic_uniform_color'])}
+</div>
+  <font size="1">(※ ゴールド会員にお申込の方orシルバー会員で半額購入希望の方のみ入力下さい)</font>
+</div>
+<%mobile:form_header required="true">氏名</%mobile:form_header>
 <div>
   姓${form.last_name(size="10", istyle="1", iprof="name1")}<br />
   名${form.first_name(size="10", istyle="1", iprof="name2")}<br />
-${h.error(['last_name','first_name'])}
+  ${h.error(['last_name','first_name'])}
 </div>
 <%mobile:form_header required="true">フリガナ</%mobile:form_header>
 <div>
@@ -113,14 +164,14 @@ ${h.error('extra.mail_permission')}
 <div>
   姓${form.extra.parent_last_name(size="10", istyle="1", iprof="name1")}<br />
   名${form.extra.parent_first_name(size="10", istyle="1", iprof="name2")}<br />
-${h.error(['last_name','first_name'])}
+${h.error(['extra.parent_last_name','extra.parent_first_name'])}
 <font size="1">(※お申込者が18歳未満の場合は必須. 18歳以上の方は入力不要)</font>
 </div>
 <%mobile:form_header>保護者フリガナ</%mobile:form_header>
 <div>
   セイ${form.extra.parent_last_name_kana(size="10", istyle="2", iprof="kana1")}<br />
   メイ${form.extra.parent_first_name_kana(size="10", istyle="2", iprof="kana2")}<br />
-${h.error(['last_name_kana','first_name_kana'])}
+${h.error(['extra.parent_last_name_kana','extra.parent_first_name_kana'])}
 <font size="1">(※お申込者が18歳未満の場合は必須. 18歳以上の方は入力不要)</font>
 </div>
 <%mobile:form_header>続柄</%mobile:form_header>

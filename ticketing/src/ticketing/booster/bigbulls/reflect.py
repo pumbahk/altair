@@ -16,7 +16,7 @@ class SymbolPool(object):
 s = Symbols = SymbolPool(
     "t_shirts_size", 
     "replica_uniform", 
-    "authenticated_uniform", 
+    "authentic_uniform", 
     "for_kids")
 
 ms = MemberTypeSymbols = SymbolPool(
@@ -28,8 +28,8 @@ ms = MemberTypeSymbols = SymbolPool(
     )
 
 product_reflections = {
-    ms.gold: [s.authenticated_uniform], 
-    ms.silver_with_authencated: [s.authenticated_uniform], 
+    ms.gold: [s.authentic_uniform], 
+    ms.silver_with_authencated: [s.authentic_uniform], 
     ms.silver: [s.replica_uniform], 
     ms.red: [s.t_shirts_size], 
     ms.kids: [s.for_kids]

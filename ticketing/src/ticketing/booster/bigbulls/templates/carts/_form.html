@@ -59,10 +59,10 @@
           ゴールド会員にお申込の方orシルバー会員で半額購入希望の方のみ入力下さい<br/>
           ※お好きな背番号・名前・サイズ・色(赤または白)をお選びいただけます<br/>
         </span>
-        背番号${form.extra.authentic_uniform_no(id='authentic_uniform_no',disabled="disabled",size=2, class_=" ".join(["has-permission", layout.symbols.authenticated_uniform]))}<small>(数字2桁)</small>
-        お名前${form.extra.authentic_uniform_name(id='authentic_uniform_name',disabled="disabled", size=16, class_=" ".join(["has-permission", layout.symbols.authenticated_uniform]))}<small>(アルファベット大文字のみ)</small> <br/>
-        サイズ${form.extra.authentic_uniform_size(id='authentic_uniform_size',disabled="disabled", class_=" ".join(["has-permission", layout.symbols.authenticated_uniform]))}
-        色${form.extra.authentic_uniform_color(id='authentic_uniform_color',disabled="disabled", class_=" ".join(["has-permission", layout.symbols.authenticated_uniform]))}
+        背番号${form.extra.authentic_uniform_no(id='authentic_uniform_no',disabled="disabled",size=2, class_=" ".join(["has-permission", layout.symbols.authentic_uniform]))}<small>(数字2桁)</small>
+        お名前${form.extra.authentic_uniform_name(id='authentic_uniform_name',disabled="disabled", size=16, class_=" ".join(["has-permission", layout.symbols.authentic_uniform]))}<small>(アルファベット大文字のみ)</small> <br/>
+        サイズ${form.extra.authentic_uniform_size(id='authentic_uniform_size',disabled="disabled", class_=" ".join(["has-permission", layout.symbols.authentic_uniform]))}
+        色${form.extra.authentic_uniform_color(id='authentic_uniform_color',disabled="disabled", class_=" ".join(["has-permission", layout.symbols.authentic_uniform]))}
         ${h.error(['extra.authentic_uniform_no','extra.authentic_uniform_name','extra.authentic_uniform_size','extra.authentic_uniform_color'])}
       </td>
     </tr>

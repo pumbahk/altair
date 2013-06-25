@@ -52,6 +52,7 @@ metadata_provider = DefaultOrderedProductAttributeMetadataProvider(
                 'ja_JP': u'性別',
                 },
             'type': unicode,
+            'coercer': (lambda x: {"male": u"男", "female": u"女"}.get(x, u"不明")), 
             },
         'fax': {
             'display_name': {

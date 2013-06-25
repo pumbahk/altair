@@ -12,6 +12,14 @@ from datetime import date
 from ..schemas import length_limit_for_sej, length_limit_long
 from ..widgets import ymd_widget, radio_list_widget, get_year_choices, get_year_months, get_year_days
 
+def prepend_list(x, xs):
+    r = [x]
+    r.extend(xs)
+    return r
+
+def prepend_validator(field, x):
+    field.validators = prepend_list(x, field.validators)
+
 class ExtraForm(Form):
     publicity = fields.SelectField(
         u"ゲームプログラムへのお名前掲載",
@@ -34,21 +42,41 @@ class ExtraForm(Form):
                                                 choices=[('S', u'S'), ('M', u'M'), ('L', u'L'),('LL', u'LL'), ('3L', u'3L'), ('4L', u'4L')],
                                                 validators=[v.Optional()], 
                                                 coerce=text_type_but_none_if_not_given)
-    authentic_uniform_no = fields.IntegerField(u"オーセンティックユニフォーム背番号", validators=[v.Optional(), v.Length(max=2)])
+    authentic_uniform_no = fields.TextField(u"オーセンティックユニフォーム背番号", validators=[v.Optional(), v.Length(max=2)])
     authentic_uniform_name = fields.TextField(u"オーセンティックユニフォーム名前", validators=[v.Optional(), v.Regexp(r"^[A-Z]+$", message=u"アルファベット大文字のみで入力してください")])
     authentic_uniform_color = fields.SelectField(u'オーセンティックユニフォーム色',
                                                 choices=[('red', u"赤"), ("white", u"白")],
                                                 validators=[v.Optional()], 
                                                 coerce=text_type_but_none_if_not_given)
 
-    parent_first_name = fields.TextField(u"氏名", filters=[strip_spaces], validators=[v.Required(), Zenkaku, length_limit_for_sej])
-    parent_last_name = fields.TextField(u"氏名", filters=[strip_spaces], validators=[v.Required(),Zenkaku, length_limit_for_sej])
-    parent_first_name_kana = fields.TextField(u"氏名(カナ)", filters=[strip_spaces, NFKC], validators=[v.Required(),Katakana, length_limit_for_sej])
-    parent_last_name_kana = fields.TextField(u"氏名(カナ)", filters=[strip_spaces, NFKC], validators=[v.Required(),Katakana, length_limit_for_sej])
+    parent_first_name = fields.TextField(u"氏名", filters=[strip_spaces], validators=[v.Optional(), Zenkaku, length_limit_for_sej])
+    parent_last_name = fields.TextField(u"氏名", filters=[strip_spaces], validators=[v.Optional(),Zenkaku, length_limit_for_sej])
+    parent_first_name_kana = fields.TextField(u"氏名(カナ)", filters=[strip_spaces, NFKC], validators=[v.Optional(),Katakana, length_limit_for_sej])
+    parent_last_name_kana = fields.TextField(u"氏名(カナ)", filters=[strip_spaces, NFKC], validators=[v.Optional(),Katakana, length_limit_for_sej])
     relationship = fields.TextField(u"続柄", filters=[strip_spaces], validators=[v.Optional()])
     mail_permission = fields.BooleanField(
         u"【クラブブルズ会員限定】 お得な情報をメールで配信",
         default=True)
+
+    def configure_for_kids(self):
+        prepend_validator(self.parent_first_name, v.Required())
+        prepend_validator(self.parent_first_name_kana, v.Required())
+        prepend_validator(self.parent_last_name, v.Required())
+        prepend_validator(self.parent_last_name_kana, v.Required())
+        prepend_validator(self.relationship, v.Required())
+
+
+    def configure_for_authentic_uniform(self):
+        prepend_validator(self.authentic_uniform_no, v.Required())
+        prepend_validator(self.authentic_uniform_size, v.Required())
+        prepend_validator(self.authentic_uniform_name, v.Required())
+        prepend_validator(self.authentic_uniform_color, v.Required())
+
+    def configure_for_replica_uniform(self):
+        prepend_validator(self.replica_uniform_size, v.Required())
+
+    def configure_for_t_shirts_size(self):
+        prepend_validator(self.t_shirts_size, v.Required())
 
 class OrderFormSchema(Form):
     def validate_day(self, field):

@@ -2536,7 +2536,6 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                     quantity=item.product_item.quantity * product.quantity,
                     seats=item.seats
                     )
-
         return order
 
     @staticmethod
