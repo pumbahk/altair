@@ -6,7 +6,7 @@ from pyramid.path import AssetResolver
 from sqlalchemy.sql import func, and_
 
 from ticketing.core.models import Stock, Seat, Site, Performance, Venue, SalesSegment, SalesSegmentGroup
-from ticketing.formatter import Japanese_Japan_Formatter as formatter
+from ticketing.formatter import Japanese_Japan_Formatter
 
 from . import xls_export
 from . import sheet as report_sheet
@@ -150,7 +150,7 @@ def export_for_sales(event):
                     sales_segment=value,
                     seat_type=key[1],
                     ticket_type=key[2],
-                    price=formatter().format_currency(key[3])
+                    price=Japanese_Japan_Formatter().format_currency(key[3])
                 )
                 price_table.records.append(record)
 
