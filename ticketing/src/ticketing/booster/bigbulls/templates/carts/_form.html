@@ -22,8 +22,8 @@
       <td>
         <select id="member_type" name="member_type" class="">
           <option value="">選択してください</option>
-          % for i, val in enumerate(form.member_type.iter_choices()):
-          <option value="${val[0]}" data-selection="${i}" with-shirt="${'true' if len(products.get(val[0]).items)>1 else 'false'}"${" selected=selected" if val[0]==form.member_type.data else ''}>${val[1]}</option>
+          % for i, (k, val, s) in enumerate(form.member_type.iter_choices()):
+          <option value="${k}" data-selection="${i}" data-permission="${" ".join(form.permission_dict.get(k))}" ${"selected=selected" if s else ''}>${val}</option>
           % endfor
         </select>
         ${layout.form_html_extra_info}
@@ -37,7 +37,7 @@
           レッド会員にお申込の方のみ入力下さい <br/>
           ※サイズをお選びいただけます<br/>
         </span>
-        サイズ${form.extra.t_shirts_size(id='t_shirts_size',disabled="disabled" )}
+        サイズ${form.extra.t_shirts_size(id='t_shirts_size',disabled="disabled", class_=" ".join(["has-permission", layout.symbols.t_shirts_size]))}
         ${h.error(['extra.t_shirts_size'])}
       </td>
     </tr>
@@ -48,7 +48,7 @@
           シルバー会員にお申込の方のみ入力下さい<br/>
           ※サイズをお選びいただけます<br/>
         </span>
-        サイズ${form.extra.replica_uniform_size(id='replica_uniform_size',disabled="disabled" )}
+        サイズ${form.extra.replica_uniform_size(id='replica_uniform_size',disabled="disabled", class_=" ".join(["has-permission", layout.symbols.replica_uniform]))}
         ${h.error(['extra.replica_uniform_size'])}
       </td>
     </tr>
@@ -59,10 +59,10 @@
           ゴールド会員にお申込の方orシルバー会員で半額購入希望の方のみ入力下さい<br/>
           ※お好きな背番号・名前・サイズ・色(赤または白)をお選びいただけます<br/>
         </span>
-        背番号${form.extra.authentic_uniform_no(id='authentic_uniform_no',disabled="disabled",size=2 )}<small>(数字2桁)</small>
-        お名前${form.extra.authentic_uniform_name(id='authentic_uniform_name',disabled="disabled", size=16 )}<small>(アルファベット大文字のみ)</small> <br/>
-        サイズ${form.extra.authentic_uniform_size(id='authentic_uniform_size',disabled="disabled" )}
-        色${form.extra.authentic_uniform_color(id='authentic_uniform_color',disabled="disabled" )}
+        背番号${form.extra.authentic_uniform_no(id='authentic_uniform_no',disabled="disabled",size=2, class_=" ".join(["has-permission", layout.symbols.authenticated_uniform]))}<small>(数字2桁)</small>
+        お名前${form.extra.authentic_uniform_name(id='authentic_uniform_name',disabled="disabled", size=16, class_=" ".join(["has-permission", layout.symbols.authenticated_uniform]))}<small>(アルファベット大文字のみ)</small> <br/>
+        サイズ${form.extra.authentic_uniform_size(id='authentic_uniform_size',disabled="disabled", class_=" ".join(["has-permission", layout.symbols.authenticated_uniform]))}
+        色${form.extra.authentic_uniform_color(id='authentic_uniform_color',disabled="disabled", class_=" ".join(["has-permission", layout.symbols.authenticated_uniform]))}
         ${h.error(['extra.authentic_uniform_no','extra.authentic_uniform_name','extra.authentic_uniform_size','extra.authentic_uniform_color'])}
       </td>
     </tr>
@@ -194,8 +194,8 @@
         </span>
       </th>
       <td>
-        姓${form.extra.parent_last_name(size="40")}<small>（全角）</small><br>
-        名${form.extra.parent_first_name(size="40")}<small>（全角）</small>
+        姓${form.extra.parent_last_name(size="40", class_=" ".join(["has-permission", layout.symbols.for_kids]))}<small>（全角）</small><br>
+        名${form.extra.parent_first_name(size="40", class_=" ".join(["has-permission", layout.symbols.for_kids]))}<small>（全角）</small>
         ${h.error(['extra.parent_last_name','extra.parent_first_name'])}
       </td>
     </tr>
@@ -207,8 +207,8 @@
         </span>
       </th>
       <td>
-        セイ${form.extra.parent_last_name_kana(size="40")}<small>（全角カナ）</small><br>
-        メイ${form.extra.parent_first_name_kana(size="40")}<small>（全角カナ）</small>
+        セイ${form.extra.parent_last_name_kana(size="40",class_=" ".join(["has-permission", layout.symbols.for_kids]))}<small>（全角カナ）</small><br>
+        メイ${form.extra.parent_first_name_kana(size="40", class_=" ".join(["has-permission", layout.symbols.for_kids]))}<small>（全角カナ）</small>
         ${h.error(['extra.parent_last_name_kana','extra.parent_first_name_kana'])}
       </td>
     </tr>
@@ -220,7 +220,7 @@
         </span>
       </th>
       <td>
-        続柄${form.extra.relationship(id='relationship')} 例：父、母、など） 
+        続柄${form.extra.relationship(id='relationship', class_=" ".join(["has-permission", layout.symbols.for_kids]))} 例：父、母、など） 
         ${h.error(['extra.relationship'])}　
       </td>
     </tr>
@@ -233,11 +233,16 @@
   </tbody>
 </table>
 <script type="text/javascript">
-$('#member_type').change(function() {
-  var selected = $(this).find('option:selected');
-  if ($.inArray(selected.attr('data-selection'), ['0', '1']) > -1)
-    $('#extra-publicity').removeAttr('disabled');
-  else
-    $('#extra-publicity').attr('disabled','disabled');
+$('#member_type').on("change", function(e) {
+  $("input.has-permission,select.has-permission").attr("disabled","disabled");
+  var $this = $(e.currentTarget)
+  var ks = $this.find('[value='+$this.val()+']').attr("data-permission").split(" ");
+  if(ks.length >= 1 && ks[0] != ""){
+    for(var i=0,j=ks.length; i<j; i++){
+      var $e = $("."+ks[i]);
+      if($e.attr("disabled")){$e.removeAttr("disabled");}
+    }
+  }
 });
+$("#member_type").change();
 </script>

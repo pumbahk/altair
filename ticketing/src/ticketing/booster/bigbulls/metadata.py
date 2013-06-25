@@ -27,6 +27,12 @@ metadata_provider = DefaultOrderedProductAttributeMetadataProvider(
             },
         'extra.replica_uniform_size': {
             'display_name': {
+                'ja_JP': u'レプリカユニフォームサイズ',
+                },
+            'type': unicode,
+            },
+        'extra.authentic_uniform_size': {
+            'display_name': {
                 'ja_JP': u'オーセンティックユニフォームサイズ',
                 },
             'type': unicode,
