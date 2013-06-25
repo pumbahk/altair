@@ -6,8 +6,6 @@
     <a href="${request.route_path('smartphone.main')}"><button class="btn-secondary btn-large">トップへ</button></a>
 </%block>
 
-<h2 class="glitter red">${event.title}</h2>
-
 <script type="text/javascript">
 $(function () {
   $('*[data-toggle]').each(function (_, n) {
@@ -44,6 +42,15 @@ $(function () {
 });
 </script>
 
+<h2 class="glitter red">イベント詳細</h2>
+<%m:header>イベント名称</%m:header>
+<div class="sectionbox">
+  <div class="sectionbox-inner">
+    ${event.title}
+  </div>
+</div>
+
+<hr/>
 <%m:header>公演期間</%m:header>
 <div class="sectionbox">
   <div class="sectionbox-inner">
