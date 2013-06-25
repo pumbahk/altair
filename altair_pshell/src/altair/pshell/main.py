@@ -190,12 +190,41 @@ class PShellCommand(object):
     def make_bpython_shell(self, BPShell=None):
         if BPShell is None: # pragma: no cover
             try:
-                from bpython import embed
-                BPShell = embed
+                from bpython.cli import CLIRepl
             except ImportError:
                 return None
         def shell(env, help):
-            BPShell(locals_=env, banner=help + '\n')
+            import locale
+            from bpython import translations
+            from bpython.cli import curses_wrapper, main_curses
+            import bpython.args
+
+            # pasted from bpython's source.
+            locale.setlocale(locale.LC_ALL, "")
+            translations.init()
+
+
+            config, options, exec_args = bpython.args.parse([])
+
+            config.pastebin_url = 'https://dev.ticketstar.jp/lodgeit/xmlrpc/' # XXX
+            config.pastebin_show_url = 'https://dev.ticketstar.jp/lodgeit/show/$paste_id/' # XXX
+
+            # Save stdin, stdout and stderr for later restoration
+            orig_stdin = sys.stdin
+            orig_stdout = sys.stdout
+            orig_stderr = sys.stderr
+
+            try:
+                o = curses_wrapper(main_curses, exec_args, config,
+                                   True, env, banner=help + '\n')
+            finally:
+                sys.stdin = orig_stdin
+                sys.stderr = orig_stderr
+                sys.stdout = orig_stdout
+
+            if config.flush_output and not options.quiet:
+                sys.stdout.write(o)
+            sys.stdout.flush()
         return shell
 
     def make_ipython_v0_11_shell(self, IPShellFactory=None):
