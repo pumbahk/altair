@@ -14,7 +14,7 @@ class PersistentProfileForOrder(object):
         self.attr_names = attr_names
         self.compat_attr_map = compat_attr_map
     
-    def get_userprofile(self, order):
+    def get_user_profile(self, order):
         retval = {}
         attrs = dict(get_main_ordered_product_from_order(order).attributes)
 
