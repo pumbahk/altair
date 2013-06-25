@@ -21,11 +21,6 @@ def setup_booster_settings(config):
     config.add_panel("ticketing.booster.panels.complete_notice", "complete_notice", renderer="ticketing.booster.bambitious:templates/carts/_complete_notice.html")    
     config.add_panel("ticketing.booster.panels.complete_notice", "mobile_complete_notice", renderer="ticketing.booster.bambitious:templates/carts_mobile/_complete_notice.html")    
 
-def setup_order_product_attribute_metadata(config):
-    from ticketing.orders.api import get_metadata_provider_registry
-    from .metadata import metadata_provider
-    get_metadata_provider_registry(config.registry).registerProvider(metadata_provider)
-
     from ..persistent_profile import PersistentProfileFactory as Default
     class PersistentProfileFactory(Default):
         attr_names = Default.attr_names[:]
@@ -35,6 +30,11 @@ def setup_order_product_attribute_metadata(config):
                 ])
     ppf = PersistentProfileFactory()
     config.add_persistent_profile_factory(ppf)
+
+def setup_order_product_attribute_metadata(config):
+    from ticketing.orders.api import get_metadata_provider_registry
+    from .metadata import metadata_provider
+    get_metadata_provider_registry(config.registry).registerProvider(metadata_provider)
     
 def includeme(config):
     config.include(setup_order_product_attribute_metadata)
