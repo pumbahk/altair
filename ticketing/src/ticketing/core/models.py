@@ -1993,7 +1993,33 @@ orders_seat_table = Table("orders_seat", Base.metadata,
     Column("OrderedProductItem_id", Identifier, ForeignKey("OrderedProductItem.id")),
 )
 
-class ShippingAddress(Base, BaseModel, WithTimestamp, LogicallyDeleted):
+class ShippingAddressMixin(object):
+    @property
+    def emails(self):
+        retval = []
+        if self.email_1:
+            retval.append(self.email_1)
+        if self.email_2:
+            retval.append(self.email_2)
+        return retval
+
+    @property
+    def email_pc(self):
+        if self.email_1 and is_nonmobile_email_address(self.email_1):
+            return self.email_1
+        if self.email_2 and is_nonmobile_email_address(self.email_2):
+            return self.email_2
+        return None
+
+    @property
+    def email_mobile(self):
+        if self.email_1 and not is_nonmobile_email_address(self.email_1):
+            return self.email_1
+        if self.email_2 and not is_nonmobile_email_address(self.email_2):
+            return self.email_2
+        return None
+
+class ShippingAddress(Base, BaseModel, WithTimestamp, LogicallyDeleted, ShippingAddressMixin):
     __tablename__ = 'ShippingAddress'
     __clone_excluded__ = ['user', 'cart']
 
@@ -2037,32 +2063,6 @@ class ShippingAddress(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             (self.email_2 != None, self.email_2)
             ],
             else_=null())
-
-
-    @property
-    def emails(self):
-        retval = []
-        if self.email_1:
-            retval.append(self.email_1)
-        if self.email_2:
-            retval.append(self.email_2)
-        return retval
-
-    @property
-    def email_pc(self):
-        if self.email_1 and is_nonmobile_email_address(self.email_1):
-            return self.email_1
-        if self.email_2 and is_nonmobile_email_address(self.email_2):
-            return self.email_2
-        return None
-
-    @property
-    def email_mobile(self):
-        if self.email_1 and not is_nonmobile_email_address(self.email_1):
-            return self.email_1
-        if self.email_2 and not is_nonmobile_email_address(self.email_2):
-            return self.email_2
-        return None
 
 class OrderCancelReasonEnum(StandardEnum):
     User = (1, u'お客様都合')

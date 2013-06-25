@@ -17,6 +17,7 @@ from ticketing.core.models import (
     Venue,
     Seat,
     Refund,
+    ShippingAddressMixin,
 )
 from ticketing.users.models import (
     User,
@@ -95,7 +96,7 @@ class SummarizedPerformance(object):
         self.event = event
         self.venue = venue
 
-class SummarizedShippingAddress(object):
+class SummarizedShippingAddress(ShippingAddressMixin):
     def __init__(self, last_name, first_name, last_name_kana, first_name_kana, zip, country, prefecture, city, address_1, address_2, tel_1, tel_2, fax, email_1, email_2):
         self.last_name = last_name
         self.first_name = first_name
@@ -112,7 +113,6 @@ class SummarizedShippingAddress(object):
         self.fax = fax
         self.email_1 = email_1
         self.email_2 = email_2
-
 
 def _get_performances(request, organization_id):
     if not hasattr(request, "_performances"):
