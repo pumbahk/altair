@@ -24,6 +24,9 @@ from ticketing.users.models import (
     Member,
     UserCredential,
 )
+from ticketing.sej.models import (
+    SejOrder,
+)
 from ticketing.models import (
     Base,
 )
@@ -360,6 +363,10 @@ class OrderSummary(Base):
                 None
                 )
             )
+
+    @property
+    def sej_order(self):
+        return SejOrder.query.filter_by(order_id=self.order_no).first()
 
     def _shipping_address(self):
         if self.shipping_address_id is None:

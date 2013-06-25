@@ -45,6 +45,8 @@ japanese_columns = {
     u'order.card_brand': u'カードブランド',
     u'order.card_ahead_com_code': u'仕向け先企業コード',
     u'order.card_ahead_com_name': u'仕向け先企業名',
+    u'sej_order.billing_number': u'SEJ払込票番号',
+    u'sej_order.exchange_number': u'SEJ引換票番号',
     u'user_profile.last_name': u'姓',
     u'user_profile.first_name': u'名',
     u'user_profile.last_name_kana': u'姓(カナ)',
@@ -196,6 +198,8 @@ class OrderCSV(object):
         PlainTextRenderer(u'order.card_brand'),
         PlainTextRenderer(u'order.card_ahead_com_code'),
         PlainTextRenderer(u'order.card_ahead_com_name'),
+        PlainTextRenderer(u'sej_order.billing_number'),
+        PlainTextRenderer(u'sej_order.exchange_number'),
         MailMagazineSubscriptionStateRenderer(
             u'shipping_address.emails',
             u'mail_magazine.mail_permission'
@@ -350,6 +354,7 @@ class OrderCSV(object):
         member = order.user.member if order.user and order.user.member else None
         common_record = {
             u'order': order,
+            u'sej_order': order.sej_order if order.sej_order else None,
             u'user_profile': order.user.user_profile if order.user else None,
             u'membership': user_credential.membership if user_credential else None,
             u'membergroup': member.membergroup if member else None,
