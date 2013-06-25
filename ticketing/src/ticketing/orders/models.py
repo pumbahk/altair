@@ -254,12 +254,12 @@ class OrderSummary(Base):
     user_id = Order.user_id
     created_at = Order.created_at
     deleted_at = Order.deleted_at
-    user_profile_last_name = UserProfile.last_name
-    user_profile_first_name = UserProfile.first_name
-    user_profile_last_name_kana = UserProfile.last_name_kana
-    user_profile_first_name_kana = UserProfile.first_name_kana
-    user_profile_nick_name = UserProfile.nick_name
-    user_profile_sex = UserProfile.sex
+    user_profile_last_name = UserProfile.__table__.c.last_name
+    user_profile_first_name = UserProfile.__table__.c.first_name
+    user_profile_last_name_kana = UserProfile.__table__.c.last_name_kana
+    user_profile_first_name_kana = UserProfile.__table__.c.first_name_kana
+    user_profile_nick_name = UserProfile.__table__.c.nick_name
+    user_profile_sex = UserProfile.__table__.c.sex
     auth_identifier = UserCredential.auth_identifier
     last_name = ShippingAddress.last_name
     first_name = ShippingAddress.first_name
@@ -277,9 +277,9 @@ class OrderSummary(Base):
     email_1 = ShippingAddress.email_1
     email_2 = ShippingAddress.email_2
     payment_method_id = PaymentMethod.id
-    payment_method_name = PaymentMethod.name
+    payment_method_name = PaymentMethod.__table__.c.name
     delivery_method_id = DeliveryMethod.id
-    delivery_method_name = DeliveryMethod.name
+    delivery_method_name = DeliveryMethod.__table__.c.name
 
     __table__ = Order.__table__ \
         .join(
@@ -393,8 +393,9 @@ class OrderSummary(Base):
     shipping_address = HybridRelation(_shipping_address, rel_shipping_address)
 
     def _payment_delivery_pair(self):
-        return SummarizedPaymentDeliveryMethodPair(SummarizedPaymentMethod(self.payment_method_name),
-                                                   SummarizedDeliveryMethod(self.delivery_method_name))
+        return SummarizedPaymentDeliveryMethodPair(
+            SummarizedPaymentMethod(self.payment_method_name),
+            SummarizedDeliveryMethod(self.delivery_method_name))
 
     rel_payment_delivery_pair = orm.relationship("PaymentDeliveryMethodPair", primaryjoin=Order.payment_delivery_method_pair_id==PaymentDeliveryMethodPair.id)
     payment_delivery_pair = HybridRelation(_payment_delivery_pair, rel_payment_delivery_pair)
