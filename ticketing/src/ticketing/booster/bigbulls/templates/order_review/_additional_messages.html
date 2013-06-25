@@ -1,23 +1,64 @@
 <%page args="pm"/>
+%if pm['extra'].get('parent_first_name'):
+<tr>
+  <td>保護者氏名</td>
+  <td class="textR">${pm["extra"]["parent_last_name"]} ${pm["extra"]["parent_first_name"]}</td>
+</tr>
+<tr>
+  <td>保護者氏名(カナ)</td>
+  <td class="textR">${pm["extra"]["parent_last_name_kana"]} ${pm["extra"]["parent_first_name_kana"]}</td>
+</tr>
+<tr>
+  <td>続柄</td>
+  <td class="textR">${pm["extra"]["relationship"]}</td>
+</tr>
+%endif
 <tr>
   <td>${layout.team_name}からのメールマガジンの配信	</td>
   <td class="textR">${u'希望する' if int(pm['extra']['mail_permission']) else u'希望しない'}</td>
 </tr>
 % if 'publicity' in pm['extra']:
 <tr>
-  <td>メモリアルブックへの掲載希望</td>
+  <td>ゲームプログラムへの掲載希望</td>
   <td class="textR">${u'はい' if pm['extra']['publicity'] == 'yes' else u'いいえ'}</td>
 </tr>
 % endif
-% if 'motivation' in pm['extra']:
+% if pm['extra'].get('t_shirts_size') is not None:
 <tr>
-  <td>ブースタークラブに入会しようと思ったきっかけは？</td>
-  <td class="textR">${pm['extra']['motivation']}</td>
+  <td>レプリカユニフォームサイズ</td>
+  <td class="textR">
+    ${pm['extra']['t_shirts_size']}
+  </td>
 </tr>
 % endif
-% if 'num_times_at_venue' in pm['extra']:
+% if pm['extra'].get('replica_uniform_size') is not None:
 <tr>
-  <td>昨シーズンの会場での観戦回数</td>
-  <td class="textR">${pm['extra']['num_times_at_venue']}回</td>
+  <td>レプリカユニフォームサイズ</td>
+  <td class="textR">
+    ${pm['extra']['replica_uniform_size']}
+  </td>
+</tr>
+% endif
+% if pm['extra'].get('autdentic_uniform_size') is not None:
+<tr>
+  <td rowspan="4">オーセンティックユニフォーム</td>
+  <td class="textR">
+    背番号: ${pm['extra']['autdentic_uniform_no']}
+  </td>
+</tr>
+<tr>
+  <td class="textR">
+    お名前: ${pm['extra']['autdentic_uniform_name']}
+  </td>
+</tr>
+<tr>
+  <td class="textR">
+    サイズ: ${pm['extra']['autdentic_uniform_size']}
+  </td>
+</tr>
+<tr>
+  <td class="textR">
+    色: ${{"red": u"赤","white": u"白"}.get(pm['extra']['autdentic_uniform_color'])}
+  </td>
 </tr>
 % endif
