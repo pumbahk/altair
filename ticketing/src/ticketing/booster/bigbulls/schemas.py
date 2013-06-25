@@ -78,6 +78,7 @@ class ExtraForm(Form):
         prepend_validator(self.t_shirts_size, v.Required())
 
 class OrderFormSchema(Form):
+    KIDS_AGE_LIMIT = 12 #小学生以下
     def validate_day(self, field):
         try:
             date(int(self.year.data), int(self.month.data), int(self.day.data))
@@ -87,6 +88,12 @@ class OrderFormSchema(Form):
     def validate_tel_2(self, field):
         if not self.tel_1.data and not self.tel_2.data:
             raise ValidationError(u'電話番号は自宅か携帯かどちらかを入力してください')
+
+    def configure_for_kids(self, age):
+        def validate(*args, **kwargs):
+            if age > self.KIDS_AGE_LIMIT:
+                raise ValidationError(u"選べるのは小学生以下の方だけです")
+        prepend_validator(self.member_type, validate)
 
     # 新規・継続
     cont = fields.RadioField(u"新規／継続", validators=[v.Required()], choices=[('no', u'新規'),('yes', u'継続')], widget=radio_list_widget)

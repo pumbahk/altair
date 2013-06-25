@@ -4,6 +4,22 @@ from ticketing.cart.helpers import format_number
 from .schemas import OrderFormSchema, OrderReviewSchema
 from .reflect import form_permissions_from_product, Symbols
 REGULAR_MEMBER_TYPE_PRICE = 3500 #publicity limit
+import logging
+logger = logging.getLogger(__name__)
+
+from datetime import date
+INVALID_AGE = 1900
+def get_age(y, m, d):
+    try:
+        today = date.today()
+        birthday = date(int(y), int(m), int(d))
+        age = today.year - birthday.year
+        if (today.month, today.day) < (birthday.month, birthday.day):
+            return age -1
+        return age
+    except Exception as e:
+        logger.warn(str(e))
+        return INVALID_AGE #?
 
 class BjbigbullsCartResource(BoosterCartResource):
     def product_form(self, params):
@@ -19,6 +35,7 @@ class BjbigbullsCartResource(BoosterCartResource):
             permissions = form.permission_dict.get(data["member_type"], [])
             if Symbols.for_kids in permissions:
                 form.extra.configure_for_kids()
+                form.configure_for_kids(get_age(data["year"], data["month"], data["day"]))
             if Symbols.authentic_uniform in permissions:
                 form.extra.configure_for_authentic_uniform()
             if Symbols.replica_uniform in permissions:
