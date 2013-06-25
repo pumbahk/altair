@@ -132,8 +132,11 @@ class CompleteView(_CompleteView):
         else:
             payment_plugin = payment_api.get_payment_plugin(self.request, payment_delivery_pair.payment_method.payment_plugin_id)
             order = payment_plugin.finish(self.request, cart)
+            cart.order = order #xxxx: see: ticketing.payments.payment:Payment.call_payment, ticketing.payments.plugins.qr:QRTicketDeliveryPlugin.finish
+            assert order
             DBSession.add(order)
             delivery_plugin = payment_api.get_delivery_plugin(self.request, payment_delivery_pair.delivery_method.delivery_plugin_id)
+            assert cart.order
             delivery_plugin.finish(self.request, cart)
 
         order.organization_id = order.performance.event.organization_id
