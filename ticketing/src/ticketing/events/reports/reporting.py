@@ -117,8 +117,8 @@ def export_for_sales(event):
         for ssg in query:
             record = report_sheet.SalesScheduleSalesRecord(
                 sales_seg=ssg.name,
-                sales_start=(ssg.start_at and formatter.datetime(ssg.start_at)),
-                sales_end=(ssg.end_at and formatter.datetime(ssg.end_at)),
+                sales_start=(ssg.start_at and formatter.format_datetime(ssg.start_at)),
+                sales_end=(ssg.end_at and formatter.format_datetime(ssg.end_at)),
                 margin_ratio=unicode(ssg.margin_ratio),
                 refund_ratio=unicode(ssg.refund_ratio),
                 printing_fee=u'{0:,g}'.format(ssg.printing_fee),
