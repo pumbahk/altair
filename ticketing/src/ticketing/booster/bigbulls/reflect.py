@@ -1,5 +1,8 @@
 # -*- coding:utf-8 -*-
 
+"""
+Product.nameでの分岐は脆い。他に手軽で良い方法が見つかっていない
+"""
 def identify_product(product):
     return product.name
 

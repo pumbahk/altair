@@ -5,8 +5,19 @@ from ticketing.core.models import DeliveryMethod
 import logging
 logger = logging.getLogger(__name__)
 from .schemas import OrderFormSchema, OrderReviewSchema
-from ..api import filtering_data_by_products_and_member_type
-from ..api import product_includes_t_shirt
+
+def product_item_is_t_shirt(product_item):
+    return product_item.stock.stock_type.name == u'Tシャツ'
+
+def product_includes_t_shirt(product):
+    return any(product_item_is_t_shirt(product_item) for product_item in product.items)
+
+def filtering_data_by_products_and_member_type(data, products):
+    k = data.get("member_type")
+    product = products.get(str(k))
+    if not len(product.items) > 1:
+        data["t_shirts_size"] = None
+    return data
 
 class BjBambitiousCartResource(BoosterCartResource):
     def product_form(self, params):

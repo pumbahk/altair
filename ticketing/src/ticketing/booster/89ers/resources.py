@@ -3,6 +3,10 @@ from ..resources import BoosterCartResource
 from ticketing.cart.helpers import format_number
 from .schemas import OrderFormSchema, OrderReviewSchema
 
+"""
+メモリアルブックの追加はレギュラー会員より上の人々。値段で分岐するのは筋悪
+"""
+
 REGULAR_MEMBER_TYPE_PRICE = 3500 #publicity limit
 def is_higher_than_regular_member(product):
     return product.price > REGULAR_MEMBER_TYPE_PRICE #too-adhoc
