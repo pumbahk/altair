@@ -762,9 +762,14 @@ class CompleteView(object):
         self.context = request.context
         # TODO: Orderを表示？
 
+    def is_organization_rs(context, request):
+        organization = c_api.get_organization(request)
+        return organization.id == 15
+
     @back(back_to_top, back_to_product_list_for_mobile)
-    @view_config(route_name='payment.finish', renderer=selectable_renderer("%(membership)s/pc/completion.html"), request_method="POST")
-    @view_config(route_name='payment.finish', request_type='altair.mobile.interfaces.IMobileRequest', renderer=selectable_renderer("%(membership)s/mobile/completion.html"), request_method="POST")
+    @view_config(route_name='payment.finish', request_method="POST", renderer=selectable_renderer("%(membership)s/pc/completion.html"))
+    @view_config(route_name='payment.finish', request_method="POST", request_type='altair.mobile.interfaces.IMobileRequest', renderer=selectable_renderer("%(membership)s/mobile/completion.html"))
+    @view_config(route_name='payment.finish', request_method="POST", request_type="altair.mobile.interfaces.ISmartphoneRequest", renderer=selectable_renderer("RT/smartphone/completion.html"), custom_predicates=(is_organization_rs, ))
     def __call__(self):
         form = schemas.CSRFSecureForm(formdata=self.request.params, csrf_context=self.request.session)
         if not form.validate():
