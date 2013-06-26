@@ -100,7 +100,6 @@ class PersistentProfileFactory(object):
         u'cont',
         u'member_type',
         u'old_id_number',
-        u't_shirts_size',
         u'year',
         u'month',
         u'day',
