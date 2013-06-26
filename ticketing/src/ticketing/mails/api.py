@@ -1,8 +1,10 @@
 # -*- coding:utf-8 -*-
+import sys
 import traceback 
 from .interfaces import (
     IMailUtility, 
-    ITraverserFactory
+    ITraverserFactory, 
+    IMailSettingDefault
 )
 from datetime import datetime
 from .fake import FakeObject
@@ -22,6 +24,38 @@ def get_cached_traverser(request, mtype, subject):
         factory = request.registry.getUtility(ITraverserFactory, name=mtype)
         trv = subject._cached_mail_traverser = factory(subject)
     return trv
+
+def get_mail_setting_default(request, name=""):
+    return request.registry.getUtility(IMailSettingDefault, name=name)
+
+@implementer(IMailSettingDefault)
+class MailSettingDefaultGetter(object):
+    def __init__(self, bcc_silent=False, show_flash_message=False):
+        self.bcc_silent = bcc_silent
+        self.show_flash_message = show_flash_message
+
+    def _bcc_by_setting(self, request, bcc):
+        textmessage = "ticketing.mails.bcc.silent = true, bcc = []. (bcc data --- {0})".format(bcc)
+        if not self.bcc_silent:
+            return bcc
+        if self.show_flash_message:
+            request.session.flash(textmessage)
+        logger.info(textmessage)
+        return []
+
+    def get_bcc(self, request, traverser, organization):
+        val = traverser.data and traverser.data["bcc"]
+        if val:
+            if not val["use"]:
+                return self._bcc_by_setting(request, [])
+            elif val["value"]:
+                return self._bcc_by_setting(request, [y for y in [x.strip() for x in val["value"].split("\n")] if y])
+            else:
+                return self._bcc_by_setting(request, [organization.contact_email])
+        return self._bcc_by_setting(request, [organization.contact_email])
+
+    def get_sender(self, request, traverser, organization):
+        return (traverser.data["sender"] or organization.contact_email)
 
 class ExtraMailInfoAccessor(object):
     def __init__(self, mtype, default):
@@ -83,7 +117,7 @@ class MailUtility(object):
     def send_mail(self, request, subject, override=None):
         message = self.build_message(request, subject)
         if message is None:
-            logger.warn("message is None: %s", traceback.format_stack(limit=3))
+            raise Exception("mail message is None")
         message_settings_override(message, override)
 
         message.recipients = [x for x in message.recipients if x]
@@ -96,8 +130,16 @@ class MailUtility(object):
         logger.info("send complete mail to %s" % message.recipients)
         return message
 
-    def preview_text(self, request, subject):
-        message = self.build_message(request, subject)
+    def preview_text(self, request, subject, limit=100):
+        mail = self.factory(request)
+        traverser = self.get_traverser(request, subject)
+        try:
+            mail_body = mail.build_mail_body(subject, traverser)
+        except:
+            etype, value, tb = sys.exc_info()
+            mail_body = u''.join(s.decode("utf-8", errors="replace") for s in traceback.format_exception(etype, value, tb, limit))
+
+        message = mail.build_message_from_mail_body(subject, traverser, mail_body)
         return preview_text_from_message(message)
 
     def __getattr__(self, k, default=None):

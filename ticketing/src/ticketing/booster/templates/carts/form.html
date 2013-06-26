@@ -35,19 +35,6 @@
     </table>
 </form>
   </div>
-
-  <script type="text/javascript">
-    $(function() {
-      $('#member_type').change(function(){
-        var selected = $(this).find('option:selected');
-        if (selected.attr('with-shirt') == 'true')
-          $('#t_shirts_size').removeAttr('disabled');
-        else
-          $('#t_shirts_size').attr('disabled','disabled');
-      }).change();
-    });
-  </script>
-
 	<%include file="/commons/footer.inc" />
 	
 </body>

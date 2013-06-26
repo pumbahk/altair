@@ -1,0 +1,31 @@
+<%page args="pm"/>
+<%namespace file="${context['layout'].relative_path('templates/tags_mobile.html')}" name="mobile" />
+%if pm['extra'].get('parent_first_name'):
+<%mobile:form_header>保護者氏名</%mobile:form_header>
+${pm["extra"]["parent_last_name"]} ${pm["extra"]["parent_first_name"]}
+<%mobile:form_header>保護者氏名(カナ)</%mobile:form_header>
+${pm["extra"]["parent_last_name_kana"]} ${pm["extra"]["parent_first_name_kana"]}
+<%mobile:form_header>続柄</%mobile:form_header>
+${pm["extra"]["relationship"]}
+%endif
+<%mobile:form_header>${layout.team_name}からのメールマガジンの配信	</%mobile:form_header>
+${u'希望する' if int(pm['extra']['mail_permission']) else u'希望しない'}
+%if 'publicity' in pm['extra']:
+<%mobile:form_header>ゲームプログラムの掲載希望 </%mobile:form_header>
+${u'はい' if pm['extra']['publicity'] == 'yes' else u'いいえ'}
+%endif
+%if pm['extra'].get('t_shirts_size') is not None:
+<%mobile:form_header>レプリカユニフォームサイズ</%mobile:form_header>
+${pm['extra']['t_shirts_size']}
+%endif
+%if pm['extra'].get('replica_uniform_size') is not None:
+<%mobile:form_header>レプリカユニフォームサイズ</%mobile:form_header>
+${pm['extra']['replica_uniform_size']}
+%endif
+%if pm['extra'].get('autdentic_uniform_size') is not None:
+<%mobile:form_header>オーセンティックユニフォーム</%mobile:form_header>
+背番号: ${pm['extra']['autdentic_uniform_no']} <br/>
+お名前: ${pm['extra']['autdentic_uniform_name']} <br/>
+サイズ: ${pm['extra']['autdentic_uniform_size']} <br/>
+色: ${{"red": u"赤","white": u"白"}.get(pm['extra']['autdentic_uniform_color'])}
+%endif

@@ -30,6 +30,8 @@ class FindStopAccessor(object):
         if self.d is None:
             return self._find_next(k)
         return self.access(self.d, k, default=self.default) or self._find_next(k)
+    get = __getitem__
+
 
     def chained_iter(self):
         this = self.wrapper

@@ -22,8 +22,8 @@
       <td>
         <select id="member_type" name="member_type" class="">
           <option value="">選択してください</option>
-          % for i, val in enumerate(form.member_type.iter_choices()):
-          <option value="${val[0]}" data-selection="${i}" with-shirt="${'true' if len(products.get(val[0]).items)>1 else 'false'}"${" selected=selected" if val[0]==form.member_type.data else ''}>${val[1]}</option>
+          % for i, (k, val, s) in enumerate(form.member_type.iter_choices()):
+          <option value="${k}" data-selection="${i}" data-permission="${" ".join(form.permission_dict.get(k))}" ${"selected=selected" if s else ''}>${val}</option>
           % endfor
         </select>
         ${layout.form_html_extra_info}
@@ -35,8 +35,8 @@
         氏名 <span class="red">*</span>
       </th>
       <td>
-        姓${form.last_name(size="45")}<small>（全角）</small><br>
-        名${form.first_name(size="45")}<small>（全角）</small>
+        姓${form.last_name(size="40")}<small>（全角）</small><br>
+        名${form.first_name(size="40")}<small>（全角）</small>
         ${h.error(['last_name','first_name'])}
       </td>
     </tr>
@@ -45,8 +45,8 @@
         氏名（フリガナ） <span class="red">*</span>
       </th>
       <td>
-        セイ${form.last_name_kana(size="45")}<small>（全角カナ）</small><br>
-        メイ${form.first_name_kana(size="45")}<small>（全角カナ）</small>
+        セイ${form.last_name_kana(size="40")}<small>（全角カナ）</small><br>
+        メイ${form.first_name_kana(size="40")}<small>（全角カナ）</small>
         ${h.error(['last_name_kana','first_name_kana'])}
       </td>
     </tr>
@@ -88,28 +88,29 @@
         都道府県
         ${form.prefecture()}<br>
         市区町村
-        ${form.city(size=20)}<br>
-        町名番地 ${form.address1(size=45)}
+        ${form.city(size=25)}
+        （例：仙台市） <br>
+        町名番地 ${form.address1(size=25)}
+        （例：一番町99丁目99番99号）
         <br>
-        建物名等 ${form.address2(size=45)}
+        建物名等 ${form.address2(size=25)}
+        （例：XXビル253号）
         ${h.error(['prefecture', 'city', 'address1', 'address2'])}
       </td>
     </tr>
     <tr>
-      <th>
-        電話番号（携帯）<span class="red">*</span>
+      <th rowspan="2">
+        電話番号 <span class="red">*</span><br />
+        <span class="red">（携帯・自宅のどちらか必須）</span>
       </th>
       <td>
-        ${form.tel_1(size=12)}<span><small>${layout.dont_include_hyphen_message}（携帯・自宅のどちらか一方で構いません）</small></span>
+        (携帯) ${form.tel_1(size=12)}<span><small>${layout.dont_include_hyphen_message}</small></span>
         ${h.error(['tel_1'])}
       </td>
     </tr>
     <tr>
-      <th>
-        電話番号（自宅）
-      </th>
       <td>
-        ${form.tel_1(size=12)}<span><small>${layout.dont_include_hyphen_message}（携帯・自宅のどちらか一方で構いません）</small></span>
+        (自宅) ${form.tel_1(size=12)}<span><small>${layout.dont_include_hyphen_message}</small></span>
         ${h.error(['tel_2'])}
       </td>
     </tr>
@@ -145,7 +146,7 @@
         メモリアルブックへの氏名掲載希望
       </th>
       <td>
-        ${form.extra.form.publicity} <span><small>レギュラー・ジュニア会員は記載されません</small></span>
+        ${form.extra.form.publicity(disabled="disabled", class_=" ".join(["has-permission", "publicity"]))} <span><small>レギュラー・ジュニア会員は記載されません</small></span>
         ${h.error('extra.publicity')}
       </td>
     </tr>
@@ -166,7 +167,6 @@
         ${form.extra.form.num_times_at_venue(size=2, maxlength=2)} 回
         ${h.error('extra.num_times_at_venue')}
       </td>
-      </td>
     </tr>
     <tr>
       <td colspan="2" style="text-align:center">
@@ -176,12 +176,21 @@
     </tr>
   </tbody>
 </table>
+
 <script type="text/javascript">
-$('#member_type').change(function() {
-  var selected = $(this).find('option:selected');
-  if ($.inArray(selected.attr('data-selection'), ['0', '1']) > -1)
-    $('#extra-publicity').removeAttr('disabled');
-  else
-    $('#extra-publicity').attr('disabled','disabled');
+$('#member_type').on("change", function(e) {
+  $("input.has-permission,select.has-permission").attr("disabled","disabled");
+  var $this = $(e.currentTarget)
+  var $selected_child = $this.find('option:selected');
+  if($selected_child.length >= 1){
+    var ks = $selected_child.attr("data-permission").split(" ");
+    if(ks.length >= 1 && ks[0] != ""){
+      for(var i=0,j=ks.length; i<j; i++){
+        var $e = $("."+ks[i]);
+        if($e.attr("disabled")){$e.removeAttr("disabled");}
+      }
+    }
+  }
 });
+$("#member_type").change();
 </script>

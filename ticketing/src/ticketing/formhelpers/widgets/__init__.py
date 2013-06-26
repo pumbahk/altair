@@ -1,3 +1,4 @@
+from .input import *
 from .datetime import *
 from .checkbox import *
 from .select import *

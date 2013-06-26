@@ -2,6 +2,23 @@ import unittest
 from pyramid import testing
 from .testing import DummyMaker
 
+class DummySession(object):
+    def __init__(self):
+        self.called = []
+
+    def __call__(self):
+        return self
+
+    def add(self, ob):
+        self.called.append(('add', ob))
+
+    def commit(self):
+        self.called.append(('commit', ()))
+
+    def close(self):
+        self.called.append(('close', ()))
+
+
 class from_settingsTests(unittest.TestCase):
     def _callFUT(self, *args, **kwargs):
         from . import from_settings
@@ -95,3 +112,65 @@ class get_db_sessionTests(unittest.TestCase):
 
         self.assertEqual(result, marker)
         self.assertEqual(request.environ['altair.sqlahelper.sessions'], {'testing': marker})
+
+
+
+class isolated_transactionTests(unittest.TestCase):
+    def _getTarget(self):
+        from . import isolated_transaction
+        return isolated_transaction
+
+    def test_it(self):
+        target = self._getTarget()
+        session = DummySession()
+        with target(session):
+            pass
+
+        self.assertEqual(session.called, [('commit', ()), ('close', ())])
+
+    def test_with_exception(self):
+        target = self._getTarget()
+        session = DummySession()
+        raised = []
+        try:
+            with target(session):
+                raise Exception
+        except Exception as e:
+            raised.append(e)
+
+        self.assertEqual(session.called, [('commit', ()), ('close', ())])
+        self.assertTrue(raised)
+
+class named_transactionTests(unittest.TestCase):
+
+    def _getTarget(self):
+        from . import named_transaction
+        return named_transaction
+
+    def test_it(self):
+        target = self._getTarget()
+        session = DummySession()
+        request = testing.DummyRequest()
+        request.environ['altair.sqlahelper.sessions'] = {'testing': session}
+
+        with target(request, "testing"):
+            pass
+
+        self.assertEqual(session.called, [('commit', ())])
+
+    def test_with_exception(self):
+        target = self._getTarget()
+        session = DummySession()
+        raised = []
+        request = testing.DummyRequest()
+        request.environ['altair.sqlahelper.sessions'] = {'testing': session}
+
+        try:
+            with target(request, "testing"):
+                raise Exception
+        except Exception as e:
+            raised.append(e)
+
+        self.assertEqual(session.called, [('commit', ())])
+        self.assertTrue(raised)
+

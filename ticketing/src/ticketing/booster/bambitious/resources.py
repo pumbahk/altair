@@ -5,20 +5,31 @@ from ticketing.core.models import DeliveryMethod
 import logging
 logger = logging.getLogger(__name__)
 from .schemas import OrderFormSchema, OrderReviewSchema
-from ..api import filtering_data_by_products_and_member_type
+
+def product_item_is_t_shirt(product_item):
+    return product_item.stock.stock_type.name == u'Tシャツ'
+
+def product_includes_t_shirt(product):
+    return any(product_item_is_t_shirt(product_item) for product_item in product.items)
+
+def filtering_data_by_products_and_member_type(data, products):
+    k = data.get("member_type")
+    product = products.get(str(k))
+    if not len(product.items) > 1:
+        data["t_shirts_size"] = None
+    return data
 
 class BjBambitiousCartResource(BoosterCartResource):
     def product_form(self, params):
         form = OrderFormSchema(params)
-        query = self.product_query
-        choices = [(str(p.id), u"%s (%s円)" % (p.name, format_number(p.price, ","))) for p in query]
-        form.member_type.choices = choices
+        products = self.product_query.all()
+        form.member_type.choices = [(str(p.id), u"%s (%s円)" % (p.name, format_number(p.price, ","))) for p in products]
         pdmps = self.sales_segment.payment_delivery_method_pairs
         dms = set(pdmp.delivery_method for pdmp in pdmps)
         form.product_delivery_method.choices = [(str(dm.id), dm.name) for dm in dms]
 
-        ##too-bad
-        form.disabled_conts = ["yes"] #継続は存在しないので
+        form.permission_dict = {str(p.id):(["t_shirts_size"] if product_includes_t_shirt(p) else []) for p in products}
+
         return form
 
     def load_user_profile(self):

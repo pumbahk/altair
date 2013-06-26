@@ -1,9 +1,18 @@
 from ticketing.core.models import MailTypeEnum
-
+from pyramid.settings import asbool
 
 def install_mail_utility(config):
     config.include(config.registry.settings["altair.mailer"])
     config.include(".config")
+
+    from .api import MailSettingDefaultGetter
+    from .interfaces import IMailSettingDefault
+    mail_default_setting = MailSettingDefaultGetter(
+        asbool(config.registry.settings.get("altair.mails.bcc.silent", "false")), 
+        asbool(config.registry.settings.get("altair.mails.bcc.show_flash_message", "false"))
+        )
+    config.registry.registerUtility(mail_default_setting, IMailSettingDefault)
+
    
     # from ticketing.mails.simple import SimpleMail
     # config.add_mail_utility(MailTypeEnum.PurchaseCompleteMail, ".simple", SimpleMail)

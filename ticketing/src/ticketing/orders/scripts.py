@@ -13,7 +13,7 @@ from sqlalchemy.sql.expression import not_
 import sqlahelper
 
 from ticketing.core.models import DBSession, SeatStatus, SeatStatusEnum, Order
-from ticketing.sej.commands import create_and_send_refund_file
+from ticketing.sej.refund import create_and_send_refund_file
 
 def update_seat_status():
     _keep_to_vacant()

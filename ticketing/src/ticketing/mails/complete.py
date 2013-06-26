@@ -1,14 +1,14 @@
 # -*- coding:utf-8 -*-
-from .api import create_or_update_mailinfo,  create_fake_order
+from .api import create_or_update_mailinfo,  create_fake_order, get_mail_setting_default
 from .forms import SubjectInfoRenderer, OrderInfoDefault, SubjectInfoWithValue
 from mako.template import Template
 from ticketing.cart import helpers as ch ##
 import logging
 logger = logging.getLogger(__name__)
 
-from .renderers import render
+from pyramid.renderers import render
 from pyramid_mailer.message import Message
-from .interfaces import ICompleteMail
+from .interfaces import IPurchaseInfoMail
 from zope.interface import implementer
 import traceback
 import sys
@@ -44,7 +44,7 @@ def get_mailtype_description():
 def get_subject_info_default():
     return OrderCompleteInfoDefault
    
-@implementer(ICompleteMail)
+@implementer(IPurchaseInfoMail)
 class PurchaseCompleteMail(object):
     def __init__(self, mail_template, request):
         self.mail_template = mail_template
@@ -53,30 +53,24 @@ class PurchaseCompleteMail(object):
     def get_mail_subject(self, organization, traverser):
         return (traverser.data["subject"] or 
                 u"チケット予約受付完了のお知らせ 【{organization}】".format(organization=organization.name))
-
-    def get_mail_sender(self, organization, traverser):
-        return (traverser.data["sender"] or organization.contact_email)
-
-
-    def build_message(self, order, traverser):
+        
+    def build_message_from_mail_body(self, order, traverser, mail_body):
         organization = order.ordered_from or self.request.organization
+        mail_setting_default = get_mail_setting_default(self.request)
         subject = self.get_mail_subject(organization, traverser)
-        mail_from = self.get_mail_sender(organization, traverser)
-        ## addhoc
-        ## todo add form field
-        if organization.short_name == "RT":
-            bcc = []
-        else:
-            bcc = [mail_from]
-
-        mail_body = self.build_mail_body(order, traverser)
+        sender = mail_setting_default.get_sender(self.request, traverser, organization)
+        bcc = mail_setting_default.get_bcc(self.request, traverser, organization)
         return Message(
             subject=subject,
             recipients=[order.shipping_address.email_1],
             bcc=bcc,
             body=mail_body,
-            sender=mail_from)
+            sender=sender)
 
+    def build_message(self, subject, traverser):
+        mail_body = self.build_mail_body(subject, traverser)
+        return self.build_message_from_mail_body(subject, traverser, mail_body)
+        
     def _body_tmpl_vars(self, order, traverser):
         sa = order.shipping_address 
         pair = order.payment_delivery_pair

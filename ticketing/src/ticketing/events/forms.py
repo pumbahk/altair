@@ -4,12 +4,38 @@ from wtforms import Form
 from wtforms import TextField, IntegerField, HiddenField, SelectField
 from wtforms.validators import Regexp, Length, Optional, ValidationError
 
-from ticketing.formhelpers import DateTimeField, Translations, Required, JISX0208
+from ticketing.formhelpers import Translations, Required, JISX0208, after1900
+from ticketing.formhelpers.form import OurForm
+from ticketing.formhelpers.fields import OurTextField, OurBooleanField, DateField, DateTimeField
+from ticketing.formhelpers.widgets import OurTextInput, OurDateWidget
 from ticketing.formhelpers.filters import replace_ambiguous
 from ticketing.core.models import Event, Account
 
-class EventForm(Form):
+class EventSearchForm(OurForm):
+    def _get_translations(self):
+        return Translations()
 
+    event_name_or_code = OurTextField(
+        label=u'イベント名　または　コード',
+        widget=OurTextInput()
+        )
+
+    performance_name_or_code = OurTextField(
+        label=u'パフォーマンス名　または　コード',
+        widget=OurTextInput()
+        )
+
+    performance_date = DateTimeField(
+        label=u'公演日',
+        validators=[Optional(), after1900],
+        widget=OurDateWidget()
+        )
+
+    lot_only = OurBooleanField(
+        label=u'抽選を含むイベントを選択'
+        )
+
+class EventForm(Form):
     def __init__(self, formdata=None, obj=None, prefix='', **kwargs):
         Form.__init__(self, formdata, obj, prefix, **kwargs)
         if 'organization_id' in kwargs:

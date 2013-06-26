@@ -25,7 +25,6 @@ from ticketing.views import BaseView
 from ticketing.fanstatic import with_bootstrap
 from ticketing.core.models import Event, Performance, StockType, StockTypeEnum
 from ticketing.core import api as core_api
-from ticketing.events.forms import EventForm
 from ticketing.events.performances.forms import PerformanceForm
 from ticketing.events.sales_segment_groups.forms import SalesSegmentGroupForm
 from ticketing.events.stock_types.forms import StockTypeForm
@@ -34,6 +33,7 @@ from ticketing.events.stock_holders.forms import StockHolderForm
 from ..api.impl import get_communication_api
 from ..api.impl import CMSCommunicationApi
 from .api import get_cms_data
+from .forms import EventForm, EventSearchForm
 
 logger = logging.getLogger()
 
@@ -47,27 +47,24 @@ class Events(BaseView):
         if direction not in ['asc', 'desc']:
             direction = 'asc'
 
-        query = Event.filter(Event.organization_id==int(self.context.user.organization_id))
+        query = Event.filter(Event.organization_id==int(self.context.organization.id))
         query = query.order_by(sort + ' ' + direction)
 
-        condition = self.request.params.get('event')
-        if condition:
-            condition = '%' + condition + '%'
-            query = query.filter(or_(Event.code.like(condition), Event.title.like(condition)))
-        condition = self.request.params.get('performance')
-        if condition:
-            condition = '%' + condition + '%'
-            query = query.join(Event.performances)\
-                        .filter(or_(Performance.code.like(condition), Performance.name.like(condition)))
-        condition = self.request.params.get('date')
-        if condition:
-            try:
-                _condition = parsedate(condition)
+        form_search = EventSearchForm(self.request.params)
+        if form_search.validate():
+            if form_search.event_name_or_code.data:
+                pattern = '%' + form_search.event_name_or_code.data + '%'
+                query = query.filter(or_(Event.code.like(pattern), Event.title.like(pattern)))
+            if form_search.performance_name_or_code.data:
+                pattern = '%' + form_search.performance_name_or_code.data + '%'
                 query = query.join(Event.performances)\
-                        .filter(Performance.start_on >= _condition) \
-                        .filter(Performance.end_on < (_condition + timedelta(days=1)))
-            except:
-                pass
+                            .filter(or_(Performance.code.like(pattern), Performance.name.like(pattern)))
+            if form_search.performance_date.data:
+                query = query.join(Event.performances)\
+                        .filter(Performance.start_on >= form_search.performance_date.data) \
+                        .filter(Performance.end_on < (form_search.performance_date.data + timedelta(days=1)))
+            if form_search.lot_only.data:
+                query = query.join(Event.lots)
 
         events = paginate.Page(
             query,
@@ -77,6 +74,7 @@ class Events(BaseView):
         )
 
         return {
+            'form_search': form_search, 
             'form':EventForm(),
             'form_performance':PerformanceForm(organization_id=self.context.user.organization_id),
             'events':events,

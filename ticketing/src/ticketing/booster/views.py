@@ -14,9 +14,7 @@ from ticketing.core import models as c_models
 from ticketing.users.models import User, UserProfile
 
 from ..models import DBSession
-from .api import product_item_is_t_shirt
-from .api import get_order_desc
-from .api import set_user_profile_for_order
+from .api import get_user_profile_from_order
 from .helpers import sex_value
 from ticketing.views import BaseView
 
@@ -134,8 +132,11 @@ class CompleteView(_CompleteView):
         else:
             payment_plugin = payment_api.get_payment_plugin(self.request, payment_delivery_pair.payment_method.payment_plugin_id)
             order = payment_plugin.finish(self.request, cart)
+            cart.order = order #xxxx: see: ticketing.payments.payment:Payment.call_payment, ticketing.payments.plugins.qr:QRTicketDeliveryPlugin.finish
+            assert order
             DBSession.add(order)
             delivery_plugin = payment_api.get_delivery_plugin(self.request, payment_delivery_pair.delivery_method.delivery_plugin_id)
+            assert cart.order
             delivery_plugin.finish(self.request, cart)
 
         order.organization_id = order.performance.event.organization_id
@@ -186,7 +187,8 @@ class OrderReviewView(BaseView):
             return response
 
         else:
-            shipping, pm = get_order_desc(order)
+            shipping = order.shipping_address
+            pm = get_user_profile_from_order(self.request, order)
             return dict(order=order, sej_order=sej_order, shipping=shipping, pm=pm)
 
 

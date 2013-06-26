@@ -13,7 +13,7 @@ from paste.util.multidict import MultiDict
 from ticketing.fanstatic import with_bootstrap
 from ticketing.models import merge_session_with_post, record_to_multidict
 from ticketing.views import BaseView
-from ticketing.core.models import Product, ProductItem, Event, Performance, Stock, SalesSegment, Organization
+from ticketing.core.models import Product, ProductItem, Event, Performance, Stock, SalesSegment, SalesSegmentGroup, Organization
 from ticketing.products.forms import ProductForm, ProductItemForm
 from ticketing.loyalty.models import PointGrantSetting
 
@@ -263,12 +263,17 @@ class Products(BaseView):
     @view_config(route_name='products.api.set', renderer='json')
     def api_set(self):
         performance_id = int(self.request.params.get('performance_id', 0))
-        performance = Performance.get(performance_id, self.context.user.organization_id)
+        performance = Performance.get(performance_id, self.context.organization.id)
         sales_segment_id = int(self.request.params.get('sales_segment_id'), 0)
-        sales_segment = SalesSegment.query.filter(SalesSegment.id==sales_segment_id).first()
+        sales_segment = SalesSegment.query \
+            .join(SalesSegment.sales_segment_group) \
+            .join(SalesSegmentGroup.event) \
+            .filter(SalesSegment.id==sales_segment_id) \
+            .filter(Event.organization_id == self.context.organization.id) \
+            .first()
 
         if performance is None and sales_segment is None:
-            logger.info('performance id %d is not found' % performance_id)
+            logger.warning('performance id %d is not found' % performance_id)
             raise HTTPBadRequest(body=json.dumps({
                 'message':u'パフォーマンスが存在しません',
             }))
