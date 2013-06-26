@@ -7,7 +7,7 @@ from .forms import OrderInfoDefault, SubjectInfo, SubjectInfoWithValue
 from ticketing.cart import helpers as ch ##
 from .interfaces import IPurchaseInfoMail
 from zope.interface import implementer
-from .api import create_or_update_mailinfo,  create_fake_order
+from .api import create_or_update_mailinfo,  create_fake_order, get_mail_setting_default
 
 logger = logging.getLogger(__name__)
 
@@ -81,21 +81,16 @@ class CancelMail(object):
             logger.warn("validation error")
             return 
         organization = order.ordered_from or self.request.context.organization
+        mail_setting_default = get_mail_setting_default(self.request)
         subject = self.get_mail_subject(organization, traverser)
-        mail_from = self.get_mail_sender(organization, traverser)
-        ## addhoc
-        ## todo add form field
-        if organization.short_name == "RT":
-            bcc = []
-        else:
-            bcc = [mail_from]
-
+        sender = mail_setting_default.get_sender(self.request, traverser, organization)
+        bcc = mail_setting_default.get_bcc(self.request, traverser, organization)
         return Message(
             subject=subject,
             recipients=[order.shipping_address.email_1 if order.shipping_address else ""],
             bcc=bcc,
             body=mail_body,
-            sender=mail_from)
+            sender=sender)
 
     def _body_tmpl_vars(self, order, traverser):
         sa = order.shipping_address 

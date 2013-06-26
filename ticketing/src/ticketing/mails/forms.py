@@ -17,13 +17,13 @@ RenderVal = namedtuple("RenderVal", "status label, body")
 PluginInfo = namedtuple("PluginInfo", "method name label") #P0, P0notice, 注意事項(コンビニ決済)
 
 class SubjectInfoForm(Form):
-    use = fields.BooleanField(u"表示する")
+    use = fields.BooleanField(u"使う")
     kana = fields.TextField(u"ラベル名", validators=[validators.Required()])
 
 class SubjectInfoWithValueForm(Form):
-    use = fields.BooleanField(u"表示する")
+    use = fields.BooleanField(u"使う")
     kana = fields.TextField(u"ラベル名", validators=[validators.Optional()])
-    value = fields.TextField(label=u"文言", widget=widgets.TextArea(), 
+    value = fields.TextField(label=u"内容", widget=widgets.TextArea(), 
                              validators=[validators.Optional()])
 
 class SubjectInfoDefault(object):
@@ -38,6 +38,7 @@ class SubjectInfoDefault(object):
     tel = SubjectInfo(name="tel", label=u"電話番号", getval=lambda subject : subject.shipping_address.tel_1 or "" if subject.shipping_address else u"")
     mail = SubjectInfo(name="mail", label=u"メールアドレス", getval=lambda subject : subject.shipping_address.email_1 if subject.shipping_address else u"")
     order_datetime = SubjectInfo(name="order_datetime", label=u"受付日", getval=lambda order: ch.mail_date(order.created_at))
+    bcc = SubjectInfoWithValue(name="bcc", label=u"bcc", getval=lambda order: None, value=None)
 
     @classmethod
     def get_form_field_candidates(cls):
@@ -86,7 +87,8 @@ class OrderInfoDefault(SubjectInfoDefault):
     transaction_fee = SubjectInfo(name=u"transaction_fee", label=u"決済手数料", getval=lambda order: ch.format_currency(order.transaction_fee))
     delivery_fee = SubjectInfo(name=u"delivery_fee", label=u"発券／引取手数料", getval=lambda order: ch.format_currency(order.delivery_fee))
     total_amount = SubjectInfo(name=u"total_amount", label=u"合計金額", getval=lambda order: ch.format_currency(order.total_amount))
-    
+
+
 class SubjectInfoRenderer(object):
     def __init__(self, order, data, default_impl=SubjectInfoDefault):
         self.order = order

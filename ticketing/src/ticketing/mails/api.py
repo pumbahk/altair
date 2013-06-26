@@ -3,7 +3,8 @@ import sys
 import traceback 
 from .interfaces import (
     IMailUtility, 
-    ITraverserFactory
+    ITraverserFactory, 
+    IMailSettingDefault
 )
 from datetime import datetime
 from .fake import FakeObject
@@ -23,6 +24,38 @@ def get_cached_traverser(request, mtype, subject):
         factory = request.registry.getUtility(ITraverserFactory, name=mtype)
         trv = subject._cached_mail_traverser = factory(subject)
     return trv
+
+def get_mail_setting_default(request, name=""):
+    return request.registry.getUtility(IMailSettingDefault, name=name)
+
+@implementer(IMailSettingDefault)
+class MailSettingDefaultGetter(object):
+    def __init__(self, bcc_silent=False, show_flash_message=False):
+        self.bcc_silent = bcc_silent
+        self.show_flash_message = show_flash_message
+
+    def _bcc_by_setting(self, request, bcc):
+        textmessage = "ticketing.mails.bcc.silent = true, bcc = []. (bcc data --- {0})".format(bcc)
+        if not self.bcc_silent:
+            return bcc
+        if self.show_flash_message:
+            request.session.flash(textmessage)
+        logger.info(textmessage)
+        return []
+
+    def get_bcc(self, request, traverser, organization):
+        val = traverser.data and traverser.data["bcc"]
+        if val:
+            if not val["use"]:
+                return self._bcc_by_setting(request, [])
+            elif val["value"]:
+                return self._bcc_by_setting(request, [y for y in [x.strip() for x in val["value"].split("\n")] if y])
+            else:
+                return self._bcc_by_setting(request, [organization.contact_email])
+        return self._bcc_by_setting(request, [organization.contact_email])
+
+    def get_sender(self, request, traverser, organization):
+        return (traverser.data["sender"] or organization.contact_email)
 
 class ExtraMailInfoAccessor(object):
     def __init__(self, mtype, default):

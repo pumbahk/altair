@@ -4,7 +4,7 @@ from pyramid_mailer.message import Message
 from zope.interface import implementer
 from .interfaces import IPurchaseInfoMail
 from pyramid.renderers import render
-from .api import create_or_update_mailinfo,  create_fake_lot_entry,  create_fake_elected_wish
+from .api import create_or_update_mailinfo,  create_fake_lot_entry,  create_fake_elected_wish, get_mail_setting_default
 from .forms import SubjectInfoWithValue, SubjectInfo, SubjectInfoDefault
 from .forms import SubjectInfoRenderer
 import logging
@@ -54,9 +54,6 @@ class LotsMail(object):
     def get_mail_subject(self, organization, traverser):
         raise NotImplementedError
 
-    def get_mail_sender(self, organization, traverser):
-        return (traverser.data["sender"] or organization.contact_email)
-
     def validate(self, lot_entry):
         if not lot_entry.shipping_address or not lot_entry.shipping_address.email_1:
             logger.info('lot_entry has not shipping_address or email id=%s' % lot_entry.id)
@@ -68,22 +65,17 @@ class LotsMail(object):
             return 
 
         organization = lot_entry.lot.event.organization or self.request.context.organization
+        mail_setting_default = get_mail_setting_default(self.request)
         subject = self.get_mail_subject(organization, traverser)
-        mail_from = self.get_mail_sender(organization, traverser)
-        ## addhoc
-        ## todo add form field
-        if organization.short_name == "RT":
-            bcc = []
-        else:
-            bcc = [mail_from]
-
+        sender = mail_setting_default.get_sender(self.request, traverser, organization)
+        bcc = mail_setting_default.get_bcc(self.request, traverser, organization)
         mail_body = mail_body
         return Message(
             subject=subject,
             recipients=[lot_entry.shipping_address.email_1],
             bcc=bcc,
             body=mail_body,
-            sender=mail_from)
+            sender=sender)
 
     def build_message(self, subject, traverser):
         mail_body = self.build_mail_body(subject, traverser)

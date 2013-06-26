@@ -10,6 +10,13 @@ class ITraverserFactory(Interface):
     def __call__(request, subject):
         pass
 
+class IMailSettingDefault(Interface):
+    def get_bcc(request, traverser, organization):
+        pass
+
+    def get_sender(request, traverser, organization):
+        pass
+
 class IMailUtility(Interface):
     def build_message(request, order):
         """orderからメールオブジェクト作成"""
