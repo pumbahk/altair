@@ -42,6 +42,7 @@ from ticketing.lots.closing import LotCloser
 from .helpers import Link
 from .forms import ProductForm, LotForm, SearchEntryForm, SendingMailForm
 from . import api
+from .models import LotWishSummary
 
 from ticketing.payments import helpers as payment_helpers
 
@@ -491,7 +492,6 @@ class LotEntries(BaseView):
         logger.debug("condition = {0}".format(condition))
         logger.debug("from = {0}".format(form.entried_from.data))
 
-        from .models import LotWishSummary
         #q = DBSession.query(LotEntryWish, MultiCheckoutOrderStatus, SejOrder).join(
         q = DBSession.query(LotWishSummary).filter(
             LotWishSummary.lot_id==lot_id
@@ -651,13 +651,17 @@ class LotEntries(BaseView):
 
     def render_wish_row(self, wish):
         """ ajaxで当選申込変更後の内容を返す"""
-
+        w = DBSession.query(LotWishSummary).filter(
+            LotWishSummary.entry_no==wish.lot_entry.entry_no
+        ).filter(
+            LotWishSummary.wish_order==wish.wish_order
+        ).one()
         tmpl = get_renderer("/lots/search.html")
         auth = MultiCheckoutOrderStatus.by_order_no(wish.lot_entry.entry_no)
         sej =  DBSession.query(SejOrder).filter(SejOrder.order_id==wish.lot_entry.entry_no).first()
 
         html = tmpl.implementation().get_def('lot_wish_row').render(
-            self.request, w=wish, auth=auth, sej=sej, view=self)
+            self.request, w=w, auth=auth, sej=sej, view=self)
         return html
 
     def wish_tr_class(self, wish):
