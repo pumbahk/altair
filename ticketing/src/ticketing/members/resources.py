@@ -1,20 +1,11 @@
 from pyramid.interfaces import IRootFactory
 from pyramid.decorator import reify
 from ticketing.users.models import Membership, MemberGroup
+from ticketing.resources import TicketingAdminResource
 
-
-class MembersResource(object):
+class MembersResource(TicketingAdminResource):
     __name__ = 'tickets'
 
-    ## too-bad
-    def __init__(self, request):
-        self.request = request
-        parent = self.request.registry.getUtility(IRootFactory)(self.request)
-
-        if not hasattr(self, "__acl__") and parent and hasattr(parent, "__acl__"):
-            self.__acl__ = parent.__acl__
-        self.user = parent.user
-        
     @property
     def memberships(self):
         return Membership.query.filter_by(organization_id = self.user.organization_id)

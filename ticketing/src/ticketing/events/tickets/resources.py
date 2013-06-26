@@ -2,19 +2,10 @@ from pyramid.interfaces import IRootFactory
 from pyramid.httpexceptions import HTTPNotFound, HTTPFound
 from ticketing.core.models import Event
 from ticketing.core.models import Ticket, TicketBundle, TicketBundleAttribute, ProductItem
+from ticketing.resources import TicketingAdminResource
 
-class EventBoundTicketsResource(object):
+class EventBoundTicketsResource(TicketingAdminResource):
     __name__ = 'events.tickets'
-
-    ## too-bad
-    def __init__(self, request):
-        self.request = request
-        parent = self.request.registry.getUtility(IRootFactory)(self.request)
-
-        if not hasattr(self, "__acl__") and parent and hasattr(parent, "__acl__"):
-            self.__acl__ = parent.__acl__
-        self.user = parent.user
-        self.organization = parent.organization
 
     def after_ticket_action_redirect(self, template=None):
         if template is None or not template.derived_tickets:
