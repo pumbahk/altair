@@ -28,6 +28,7 @@ def setup_booster_settings(config):
                 u't_shirts_size',
                 u'product_delivery_method_name', 
                 ])
+        assert len(set(attr_names)) == len(attr_names)
     ppf = PersistentProfileFactory()
     config.add_persistent_profile_factory(ppf)
 
