@@ -30,6 +30,7 @@ def setup_booster_settings(config):
                 u'extra.motivation',
                 u'extra.num_times_at_venue',
                 ])
+        assert len(set(attr_names)) == len(attr_names)
     ppf = PersistentProfileFactory()
     config.add_persistent_profile_factory(ppf)
 

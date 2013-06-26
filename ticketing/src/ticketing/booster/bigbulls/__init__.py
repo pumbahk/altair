@@ -39,6 +39,7 @@ def setup_booster_settings(config):
                 u'extra.parent_last_name_kana', 
                 u"extra.relationship"
                 ])
+        assert len(set(attr_names)) == len(attr_names)
     ppf = PersistentProfileFactory()
     config.add_persistent_profile_factory(ppf)
 
