@@ -59,8 +59,6 @@ class Events(BaseView):
                 pattern = '%' + form_search.performance_name_or_code.data + '%'
                 query = query.join(Event.performances)\
                             .filter(or_(Performance.code.like(pattern), Performance.name.like(pattern)))
-            import sys
-            print >>sys.stderr, form_search.performance_date.data
             if form_search.performance_date.data:
                 query = query.join(Event.performances)\
                         .filter(Performance.start_on >= form_search.performance_date.data) \
