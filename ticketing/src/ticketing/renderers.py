@@ -26,19 +26,27 @@ def json_renderer_factory(info):
 
 def safe_encode(s, encoding='utf-8', errors='replace'):
     if s is None:
+        return None
+    elif isinstance(s, str):
         return s
-    if isinstance(s, str):
-        return s
-    if isinstance(s, unicode):
+    elif isinstance(s, unicode):
         return s.encode(encoding, errors=errors)
+    else:
+        raise TypeError
+
+def stringize(s):
+    if not isinstance(s, basestring):
+        return unicode(s)
+    else:
+        return s
 
 def csv_renderer_factory(info):
-    default_encoding = 'sjis'
+    default_encoding = 'cp932'
 
     def _value(value, encoding):
         if isinstance(value, (list, tuple)):
-            return safe_encode(value[1], encoding)
-        return safe_encode(value, encoding)
+            return safe_encode(stringize(value[1]), encoding)
+        return safe_encode(stringize(value), encoding)
     
     def _render(value, system):
         encoding = value.get('encoding', default_encoding)
@@ -50,7 +58,7 @@ def csv_renderer_factory(info):
             row_num = 0
             for line in value['data']:
                 if not row_num:
-                    writer.writerow([safe_encode(s, encoding) for s in line.keys()])
+                    writer.writerow([safe_encode(stringize(s), encoding) for s in line.keys()])
                 row_num += 1
                 writer.writerow([_value(item, encoding) for item in line.items()])
             output = f.getvalue()
