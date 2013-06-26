@@ -39,7 +39,9 @@ $(function() {cart.init(salesSegmentsSelection, selected, cartReleaseUrl, false)
             link = request.route_url('cart.switchpc.perf', event_id=event['id'], performance=performance)
     %>
     <a href="${link}">
+      <div class="buttonbox">
         <button class="btn btn-primary btn-large">PCサイトで購入する</button>
+      </div>
     </a>
 
     <hr/>
