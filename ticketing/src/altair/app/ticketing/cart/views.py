@@ -656,7 +656,8 @@ class PaymentView(object):
 
     @back(back_to_top, back_to_product_list_for_mobile)
     @view_config(route_name='cart.payment', request_method="POST", renderer=selectable_renderer("%(membership)s/pc/payment.html"))
-    @view_config(route_name='cart.payment', request_type='altair.mobile.interfaces.IMobileRequest', request_method="POST", renderer=selectable_renderer("%(membership)s/mobile/payment.html"))
+    @view_config(route_name='cart.payment', request_method="POST", request_type='altair.mobile.interfaces.IMobileRequest', renderer=selectable_renderer("%(membership)s/mobile/payment.html"))
+    @view_config(route_name='cart.payment', request_method="POST", request_type="altair.mobile.interfaces.ISmartphoneRequest", renderer=selectable_renderer("RT/smartphone/payment.html"), custom_predicates=(is_organization_rs, ))
     def post(self):
         """ 支払い方法、引き取り方法選択
         """
