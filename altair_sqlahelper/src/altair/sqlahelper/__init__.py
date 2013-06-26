@@ -1,5 +1,7 @@
 # This package may contain traces of nuts
 import re
+import contextlib
+
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from zope.interface import directlyProvides
@@ -75,3 +77,21 @@ class CloserTween(object):
         for name in sessions.keys():
             session = sessions.pop(name)
             session.close()
+
+
+@contextlib.contextmanager
+def isolated_transaction(sessionmaker):
+    session = sessionmaker()
+    try:
+        yield session
+    finally:
+        session.commit()
+        session.close()
+
+@contextlib.contextmanager
+def named_transaction(request, name):
+    session = get_db_session(request, name=name)
+    try:
+        yield session
+    finally:
+        session.commit()
