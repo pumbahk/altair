@@ -40,10 +40,11 @@ class RakutenOAuth(object):
     def parse_access_token_response(response):
         return dict([(key, value[0]) for key, value in urlparse.parse_qs(response).items()])
 
-    def __init__(self, endpoint, consumer_key, secret):
+    def __init__(self, endpoint, consumer_key, secret, timeout=10):
         self.endpoint = endpoint
         self.consumer_key = consumer_key
         self.secret = secret + '&'
+        self.timeout = int(timeout)
 
     def get_access_token(self, oauth_token):
         method = "GET"
@@ -76,7 +77,7 @@ class RakutenOAuth(object):
         
         request_url = self.endpoint + '?' + urllib.urlencode(params)
         logger.debug("getting access token: %s" % request_url)
-        f = urllib2.urlopen(request_url)
+        f = urllib2.urlopen(request_url, timeout=self.timeout)
         try:
             response_body = f.read()
         finally:
@@ -88,11 +89,12 @@ class RakutenOAuth(object):
 
 @implementer(IRakutenIDAPI)
 class RakutenIDAPI(object):
-    def __init__(self, endpoint, consumer_key, secret, access_token):
+    def __init__(self, endpoint, consumer_key, secret, access_token, timeout=10):
         self.endpoint = endpoint
         self.consumer_key = consumer_key
         self.access_token = access_token['oauth_token']
         self.secret = secret + '&' + access_token['oauth_token_secret']
+        self.timeout = int(timeout)
 
     @staticmethod
     def parse_rakutenid_basicinfo(response):
@@ -134,7 +136,7 @@ class RakutenIDAPI(object):
 
         request_url = self.endpoint + '?' + urllib.urlencode(params)
         logger.debug("get user_info: %s" % request_url)
-        f = urllib2.urlopen(request_url)
+        f = urllib2.urlopen(request_url, timeout=self.timeout)
         try:
             response_body = f.read()
         except urllib2.HTTPError, e:
@@ -158,7 +160,8 @@ def rakuten_oauth_from_settings(settings, prefix):
     return RakutenOAuth(
         endpoint=settings[prefix + 'oauth.endpoint.access_token'],
         consumer_key=settings[prefix + 'oauth.consumer_key'],
-        secret=settings[prefix + 'oauth.secret']
+        secret=settings[prefix + 'oauth.secret'],
+        timeout=settings[prefix + 'timeout']
         )
 
 def rakuten_id_api_factory_from_settings(settings, prefix):
@@ -167,7 +170,8 @@ def rakuten_id_api_factory_from_settings(settings, prefix):
             endpoint=settings[prefix + 'oauth.endpoint'],
             consumer_key=settings[prefix + 'oauth.consumer_key'],
             secret=settings[prefix + 'oauth.secret'],
-            access_token=access_token
+            access_token=access_token,
+            timeout=settings[prefix + 'timeout']
             )
     return factory
 
