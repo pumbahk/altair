@@ -1440,7 +1440,10 @@ class ProductItem(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     @staticmethod
     def create_from_template(template, **kwargs):
         if not template.product.performance:
-            # performance_idがないレコードはSalesSegmentGroup追加時の移行用なのでコピーしない
+            # Product.performance_idがないレコードはSalesSegmentGroup追加時の移行用なのでコピーしない
+            return
+        if not template.product.sales_segment.performance:
+            # SalesSegment.performance_idがないレコードは抽選用なのでコピーしない
             return
         product_item = ProductItem.clone(template)
         if 'performance_id' in kwargs:
