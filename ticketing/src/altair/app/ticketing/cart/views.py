@@ -726,8 +726,13 @@ class ConfirmView(object):
         self.request = request
         self.context = request.context
 
+    def is_organization_rs(context, request):
+        organization = c_api.get_organization(request)
+        return organization.id == 15
+
     @view_config(route_name='payment.confirm', request_method="GET", renderer=selectable_renderer("%(membership)s/pc/confirm.html"))
-    @view_config(route_name='payment.confirm', request_type='altair.mobile.interfaces.IMobileRequest', request_method="GET", renderer=selectable_renderer("%(membership)s/mobile/confirm.html"))
+    @view_config(route_name='payment.confirm', request_method="GET", request_type='altair.mobile.interfaces.IMobileRequest', renderer=selectable_renderer("%(membership)s/mobile/confirm.html"))
+    @view_config(route_name='payment.confirm', request_method="GET", request_type="altair.mobile.interfaces.ISmartphoneRequest", renderer=selectable_renderer("RT/smartphone/confirm.html"), custom_predicates=(is_organization_rs, ))
     def get(self):
         form = schemas.CSRFSecureForm(csrf_context=self.request.session)
         cart = api.get_cart_safe(self.request)
