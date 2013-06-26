@@ -154,7 +154,7 @@ class LotWishSummary(Base):
         LotRejectWork.lot_entry_no==LotEntry.entry_no,
     ).outerjoin(
         MultiCheckoutOrderStatus.__table__,
-        and_(MultiCheckoutOrderStatus.OrderNo.startswith(LotEntry.entry_no),
+        and_(MultiCheckoutOrderStatus.OrderNo==LotEntry.entry_no,
                  MultiCheckoutOrderStatus.Status!=None),
     ).outerjoin(
         SejOrder.__table__,
