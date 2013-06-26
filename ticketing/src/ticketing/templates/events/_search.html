@@ -31,12 +31,23 @@
 
   <div class="modal-body">
     <form id="search" action="/events/" method="get">
-      <label>イベント</label>
-      <input name="event" type="text" class="span3" placeholder="イベント名 または コード">
-      <label>パフォーマンス</label>
-      <input name="performance" type="text" class="span3" placeholder="パフォーマンス名 または コード">
-      <label>公演日</label>
-      <input name="date" type="text" class="span3" placeholder="2012/07/01">
+      <div class="control-group">
+        <div class="controls">
+          ${form_search.event_name_or_code.label()}
+          ${form_search.event_name_or_code()}
+        </div>
+        <div class="controls">
+          ${form_search.performance_name_or_code.label()}
+          ${form_search.performance_name_or_code()}
+        </div>
+        <div class="controls">
+          ${form_search.performance_date.label()}
+          ${form_search.performance_date()}
+        </div>
+        <div class="controls">
+          ${form_search.lot_only()} ${form_search.lot_only.label(class_='inline')}
+        </div>
+      </div>
     </form>
   </div>
 
