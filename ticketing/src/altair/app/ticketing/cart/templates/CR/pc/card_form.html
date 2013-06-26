@@ -44,20 +44,14 @@ ${h.get_nickname(request)}
   <div class="settlementBox">
     <div class="settlementBoxInner">
       <!-- カード情報 -->
-      <dl>
         <dt class="cartPayment">クレジットカードでお支払い</dt>
-        <dd>
           <div class="settlementPayInput">
             <div class="settlementPayInputInner">
-              <dl>
                 <%m:header>カード番号(半角数字)</%m:header>
-                <dd>
                   <input name="card_number" type="text" id="textfield" length="16" placeholder="1234123412341234"/>
                   16桁
                   ${h.error_list(request, form, 'card_number')}
-                </dd>
                 <%m:header>有効期限</%m:header>
-                <dd>
                   <select name="exp_month" id="select">
                     <option value="01">1</option>
                     <option value="02">2</option>
@@ -88,18 +82,12 @@ ${h.get_nickname(request)}
                   </select>
                   年
                   ${h.error_list(request, form, 'exp_year')}
-                </dd>
                 <%m:header>名義人(半角ローマ字)</%m:header>
-                <dd>
                   <input name="card_holder_name" type="text" id="textfield5" size="50" placeholder="YAMADA TARO"/>
                   ${h.error_list(request, form, 'card_holder_name')}
-                </dd>
                 <%m:header>セキュリティコード(半角)</%m:header>
-                <dd>
                   <input name="secure_code" type="text" id="textfield6" size="5"/>
                   ${h.error_list(request, form, 'secure_code')}
-                </dd>
-              </dl>
             </div>
           </div>
 
@@ -119,8 +107,6 @@ ${h.get_nickname(request)}
           <p>
             <img src="${request.static_url('altair.app.ticketing.cart:static/img/settlement/cards.gif')}" alt="cards" width="282px" height="40px"><br />
           </p>
-        </dd>
-      </dl>
     </div>
   </div>
   <div class="buttonbox">
