@@ -351,10 +351,11 @@ class OrderSummary(Base):
         return SummarizedUser(
             session_partaken_by(self),
             self.user_id,
-            SummarizedUserProfile(self.user_profile_first_name,
+            SummarizedUserProfile(
                 self.user_profile_last_name,
-                self.user_profile_first_name_kana,
+                self.user_profile_first_name,
                 self.user_profile_last_name_kana,
+                self.user_profile_first_name_kana,
                 self.user_profile_nick_name,
                 self.user_profile_sex
                 ),
