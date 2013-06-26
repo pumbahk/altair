@@ -9,7 +9,7 @@
       <th>新規／継続 <span class="red">*</span></th>
       <td>
         % for c in form.cont:
-        ${c.label}${c(disabled="disabled") if c.data in form.disabled_conts else c()}
+        ${c.label}${c(disabled="disabled", class_="has-permission") if c.data == "yes" else c()}
         % endfor
         ${h.error(['cont'])}
       </td>
@@ -19,8 +19,8 @@
       <td>
         <select id="member_type" name="member_type" class="">
           <option value="">選択してください</option>
-          % for i, val in enumerate(form.member_type.iter_choices()):
-          <option value="${val[0]}" data-selection="${i}" with-shirt="${'true' if len(products.get(val[0]).items)>1 else 'false'}" ${" selected=selected" if val[0]==form.member_type.data else ''}>${val[1]}</option>
+          % for i, (k, val, s) in enumerate(form.member_type.iter_choices()):
+          <option value="${k}" data-selection="${i}" data-permission="${" ".join(form.permission_dict.get(k))}" ${"selected=selected" if s else ''}>${val}</option>
           % endfor
         </select>
         ${h.error('member_type')}
@@ -29,7 +29,7 @@
     <tr >
       <th>ブースターシャツサイズ</th>
       <td>
-        ${form.t_shirts_size(id='t_shirts_size',disabled="disabled" )} <span><small>${layout.t_shirts_mesaage}</small></span>
+        ${form.t_shirts_size(id='t_shirts_size',disabled="disabled",class_=" ".join(["has-permission","t_shirts_size"]))} <span><small>${layout.t_shirts_mesaage}</small></span>
         ${h.error('t_shirts_size')}
       </td>
     </tr>
@@ -163,15 +163,20 @@
   </tbody>
 </table>
 
-
-  <script type="text/javascript">
-    $(function() {
-      $('#member_type').change(function(){
-        var selected = $(this).find('option:selected');
-        if (selected.attr('with-shirt') == 'true')
-          $('#t_shirts_size').removeAttr('disabled');
-        else
-          $('#t_shirts_size').attr('disabled','disabled');
-      }).change();
-    });
-  </script>
+<script type="text/javascript">
+$('#member_type').on("change", function(e) {
+  $("input.has-permission,select.has-permission").attr("disabled","disabled");
+  var $this = $(e.currentTarget)
+  var $selected_child = $this.find('option:selected');
+  if($selected_child.length >= 1){
+    var ks = $selected_child.attr("data-permission").split(" ");
+    if(ks.length >= 1 && ks[0] != ""){
+      for(var i=0,j=ks.length; i<j; i++){
+        var $e = $("."+ks[i]);
+        if($e.attr("disabled")){$e.removeAttr("disabled");}
+      }
+    }
+  }
+});
+$("#member_type").change();
+</script>

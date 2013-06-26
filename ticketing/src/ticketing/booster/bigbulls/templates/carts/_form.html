@@ -232,12 +232,13 @@
     </tr>
   </tbody>
 </table>
+
 <script type="text/javascript">
 $('#member_type').on("change", function(e) {
   $("input.has-permission,select.has-permission").attr("disabled","disabled");
   var $this = $(e.currentTarget)
-  var $selected_child = $this.find('[value='+$this.val()+']');
-  if($selected_child.length>1){
+  var $selected_child = $this.find('option:selected');
+  if($selected_child.length >= 1){
     var ks = $selected_child.attr("data-permission").split(" ");
     if(ks.length >= 1 && ks[0] != ""){
       for(var i=0,j=ks.length; i<j; i++){

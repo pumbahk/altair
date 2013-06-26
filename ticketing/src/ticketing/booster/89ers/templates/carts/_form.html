@@ -22,8 +22,8 @@
       <td>
         <select id="member_type" name="member_type" class="">
           <option value="">選択してください</option>
-          % for i, val in enumerate(form.member_type.iter_choices()):
-          <option value="${val[0]}" data-selection="${i}" with-shirt="${'true' if len(products.get(val[0]).items)>1 else 'false'}"${" selected=selected" if val[0]==form.member_type.data else ''}>${val[1]}</option>
+          % for i, (k, val, s) in enumerate(form.member_type.iter_choices()):
+          <option value="${k}" data-selection="${i}" data-permission="${" ".join(form.permission_dict.get(k))}" ${"selected=selected" if s else ''}>${val}</option>
           % endfor
         </select>
         ${layout.form_html_extra_info}
@@ -146,7 +146,7 @@
         メモリアルブックへの氏名掲載希望
       </th>
       <td>
-        ${form.extra.form.publicity} <span><small>レギュラー・ジュニア会員は記載されません</small></span>
+        ${form.extra.form.publicity(disabled="disabled", class_=" ".join(["has-permission", "publicity"]))} <span><small>レギュラー・ジュニア会員は記載されません</small></span>
         ${h.error('extra.publicity')}
       </td>
     </tr>
@@ -167,7 +167,6 @@
         ${form.extra.form.num_times_at_venue(size=2, maxlength=2)} 回
         ${h.error('extra.num_times_at_venue')}
       </td>
-      </td>
     </tr>
     <tr>
       <td colspan="2" style="text-align:center">
@@ -177,12 +176,21 @@
     </tr>
   </tbody>
 </table>
+
 <script type="text/javascript">
-$('#member_type').change(function() {
-  var selected = $(this).find('option:selected');
-  if ($.inArray(selected.attr('data-selection'), ['0', '1']) > -1)
-    $('#extra-publicity').removeAttr('disabled');
-  else
-    $('#extra-publicity').attr('disabled','disabled');
+$('#member_type').on("change", function(e) {
+  $("input.has-permission,select.has-permission").attr("disabled","disabled");
+  var $this = $(e.currentTarget)
+  var $selected_child = $this.find('option:selected');
+  if($selected_child.length >= 1){
+    var ks = $selected_child.attr("data-permission").split(" ");
+    if(ks.length >= 1 && ks[0] != ""){
+      for(var i=0,j=ks.length; i<j; i++){
+        var $e = $("."+ks[i]);
+        if($e.attr("disabled")){$e.removeAttr("disabled");}
+      }
+    }
+  }
 });
+$("#member_type").change();
 </script>
