@@ -64,13 +64,37 @@ def back_to_product_list_for_mobile(request):
             seat_type_id=cart.products[0].product.items[0].stock.stock_type_id))
 
 def back_to_top(request):
-    event_id = request.params.get('event_id')
+    event_id = None
+    performance_id = None
+
+    try:
+        event_id = long(request.params.get('event_id'))
+    except (ValueError, TypeError):
+        pass
+    try:
+        performance_id = long(request.params.get('pid') or request.params.get('performance'))
+    except (ValueError, TypeError):
+        pass
+
     if event_id is None:
-        cart = api.get_cart(request)
-        if cart is not None:
-            event_id = cart.performance.event_id
+        if performance_id is None:
+            cart = api.get_cart(request)
+            if cart is not None:
+                performance_id = cart.performance.id
+                event_id = cart.performance.event_id
+        else:
+            try:
+                event_id = DBSession.query(Performance).filter_by(id=performance_id).one().event_id
+            except:
+                pass
+  
+    extra = {}
+    if performance_id is not None:
+        extra['_query'] = { 'performance': performance_id }
+
     ReleaseCartView(request)()
-    return HTTPFound(event_id and request.route_url('cart.index', event_id=event_id) or '/')
+
+    return HTTPFound(event_id and request.route_url('cart.index', event_id=event_id, **extra) or '/')
 
 def back(pc=back_to_top, mobile=None):
     if mobile is None:
