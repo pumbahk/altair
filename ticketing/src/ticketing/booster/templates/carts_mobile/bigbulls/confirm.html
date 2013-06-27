@@ -1,0 +1,77 @@
+<%inherit file="/layout_mobile.html"/>
+<%namespace file="${context['layout'].relative_path('templates/tags_mobile.html')}" name="mobile" />
+<%mobile:header>申込内容確認</%mobile:header>
+<form id="form1" action="${request.route_url('payment.finish')}" method="post">
+${form.csrf_token()}
+<%
+pm = _api.load_user_profile(request)
+%>
+<%mobile:form_header>新規／継続</%mobile:form_header>
+<div>${u'継続' if pm.get('cont') == 'yes' else u'新規'}</div>
+% if pm.get('cont') == 'yes' and pm.get('old_id_number'):
+<%mobile:form_header>2011-12会員番号</%mobile:form_header>
+<div>${pm.get('old_id_number')}</div>
+% endif:
+<%mobile:form_header>会員種別</%mobile:form_header>
+<div>${cart.products[0].product.name}</div>
+<%mobile:form_header>氏名</%mobile:form_header>
+<div>${pm['last_name']} ${pm['first_name']}</div>
+<%mobile:form_header>氏名（フリガナ）</%mobile:form_header>
+<div>${pm['last_name_kana']} ${pm['first_name_kana']}</div>
+<%mobile:form_header>誕生日</%mobile:form_header>
+<div>${pm['year']}年${pm['month']}月${pm['day']}日</div>
+<%mobile:form_header>性別</%mobile:form_header>
+<div>
+%if pm['sex']=='male':
+男性
+%endif
+%if pm['sex']=='female':
+女性
+%endif
+</div>
+%if pm['extra'].get('parent_first_name'):
+<%mobile:form_header>保護者氏名</%mobile:form_header>
+<div>${pm["extra"]["parent_last_name"]} ${pm["extra"]["parent_first_name"]}</div>
+<%mobile:form_header>保護者氏名（フリガナ）</%mobile:form_header>
+<div>${pm["extra"]["parent_last_name_kana"]} ${pm["extra"]["parent_first_name_kana"]}</div>
+<%mobile:form_header>続柄</%mobile:form_header>
+<div>${pm["extra"]["relationship"]}</div>
+%endif
+<%mobile:form_header>住所</%mobile:form_header>
+<div>${pm['prefecture']} ${pm['city']} ${pm['address1']} ${pm['address2']}</div>
+<%mobile:form_header>電話番号（携帯）</%mobile:form_header>
+<div>${pm['tel_1']}</div>
+<%mobile:form_header>電話番号（自宅）</%mobile:form_header>
+<div>${pm['tel_2']}</div>
+<%mobile:form_header>メールアドレス</%mobile:form_header>
+<div>${pm['email_1']}</div>
+<%mobile:form_header>${layout.team_name}からのメールマガジンの配信</%mobile:form_header>
+<div>${u'希望する' if pm['extra']['mail_permission'] else u'希望しない'}</div>
+% if pm['extra'].get('publicity') is not None:
+<%mobile:form_header>ゲームプログラムへの掲載希望</%mobile:form_header>
+<div>${u'はい' if pm['extra']['publicity'] == 'yes' else u'いいえ'}</div>
+% endif
+% if pm['extra'].get('replica_uniform_size') is not None:
+<%mobile:form_header>レプリカユニフォームサイズ</%mobile:form_header>
+<div> ${pm['extra']['replica_uniform_size']}</div>
+% endif
+% if pm['extra'].get('authentic_uniform_size') is not None:
+<%mobile:form_header>オーセンティックユニフォームサイズ</%mobile:form_header>
+<div>
+  背番号: ${pm['extra']['authentic_uniform_no']}
+</div>
+<div>
+  お名前: ${pm['extra']['authentic_uniform_name']}
+</div>
+<div>
+  サイズ: ${pm['extra']['authentic_uniform_size']}
+</div>
+<div>
+  色: ${{"red": u"赤","white": u"白"}.get(pm['extra']['authentic_uniform_color'])}
+</div>
+% endif
+
+<hr />
+<input type="submit" name="back" value="戻る" />
+<input type="submit" value="申し込む" />
+</form>

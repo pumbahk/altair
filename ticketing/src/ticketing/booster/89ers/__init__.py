@@ -21,6 +21,19 @@ def setup_booster_settings(config):
     config.add_panel("ticketing.booster.panels.complete_notice", "complete_notice", renderer="ticketing.booster.89ers:templates/carts/_complete_notice.html")    
     config.add_panel("ticketing.booster.panels.complete_notice", "mobile_complete_notice", renderer="ticketing.booster.89ers:templates/carts_mobile/_complete_notice.html")    
 
+    from ..persistent_profile import PersistentProfileFactory as Default
+    class PersistentProfileFactory(Default):
+        attr_names = Default.attr_names[:]
+        attr_names.extend([
+                u'extra.mail_permission', ###
+                u'extra.publicity',
+                u'extra.motivation',
+                u'extra.num_times_at_venue',
+                ])
+        assert len(set(attr_names)) == len(attr_names)
+    ppf = PersistentProfileFactory()
+    config.add_persistent_profile_factory(ppf)
+
 def setup_order_product_attribute_metadata(config):
     from ticketing.orders.api import get_metadata_provider_registry
     from .metadata import metadata_provider

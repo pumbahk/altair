@@ -28,7 +28,8 @@ class RakutenOpenID(object):
             error_to,
             consumer_key,
             session_args,
-            return_to=None):
+            return_to=None,
+            timeout=10):
         self.endpoint = endpoint
         self.verify_url = verify_url
         self.extra_verify_url = extra_verify_url
@@ -36,6 +37,7 @@ class RakutenOpenID(object):
         self.consumer_key = consumer_key
         self.session_args = session_args
         self.return_to = return_to or verify_url
+        self.timeout = int(timeout)
 
     def get_session_id(self, request):
         return request.params.get('ak')
@@ -87,7 +89,7 @@ class RakutenOpenID(object):
             # ('openid.ax.value.nickname', identity['ax_value_nickname'].encode('utf-8')),
         ])
 
-        f = urllib2.urlopen(url)
+        f = urllib2.urlopen(url, timeout=self.timeout)
         try:
             response_body = f.read()
         finally:
@@ -176,7 +178,8 @@ def openid_consumer_from_settings(settings, prefix):
         error_to=settings[prefix + 'error_to'],
         consumer_key=settings[prefix + 'oauth.consumer_key'],
         session_args=session_args,
-        return_to=settings.get(prefix + 'return_to')
+        return_to=settings.get(prefix + 'return_to'),
+        timeout=settings.get(prefix + 'timeout')
         )
 
 def includeme(config):

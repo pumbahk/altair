@@ -20,10 +20,10 @@ class DefaultDateTimeFormatter(object):
         return format
 
     def format_datetime(self, dt, **flavor):
-        format = self._get_date_format(flavor) + u' ' + self._get_time_format(flavor)
-        base = dt.strftime(format.encode("utf-8")).decode("utf-8")
+        base = dt.strftime(self._get_date_format(flavor).encode("utf-8")).decode("utf-8")
         if flavor.get('with_weekday'):
             base += u'(%s)' % self.WEEK[dt.weekday()]
+        base += u' ' + dt.strftime(self._get_time_format(flavor).encode("utf-8")).decode("utf-8")
         return base
 
     def format_date(self, d, **flavor):

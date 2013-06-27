@@ -9,7 +9,7 @@ from .exceptions import SejRequestError
 from .resources import is_ticket, need_ticketing, SejTicketType, SejPaymentType
 from .utils import JavaHashMap
 
-log = logging.getLogger('sej_payment')
+logger = logging.getLogger(__name__)
 ascii_regex = re.compile(r'[^\x20-\x7E]')
 
 def make_sej_response(params):
@@ -35,7 +35,7 @@ def create_sej_request(url, request_params):
     buffer = ["%s=%s" % (name, urllib2.quote(unicode(param).encode('shift_jis', 'xmlcharrefreplace'))) for name, param in request_params.iteritems()]
     data = "&".join(buffer)
 
-    log.info("[request]\n%s" % data)
+    logger.info("[request]\n%s" % data)
     req.add_data(data)
     req.add_header('User-Agent', 'SejPaymentForJava/2.00')
     req.add_header('Connection', 'close')
@@ -51,7 +51,7 @@ def create_md5hash_from_dict(kv, secret_key):
     buffer = [tmp_keys[key.lower()] for key in key_array]
     buffer.append(secret_key)
     buffer = u','.join(buffer)
-    logging.debug('hash:' + buffer)
+    logger.debug('hash:' + buffer)
     return hashlib.md5(buffer.encode(encoding="UTF-8")).hexdigest()
 
 def create_hash_from_x_start_params(params, secret_key):

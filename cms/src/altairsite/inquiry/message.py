@@ -52,7 +52,8 @@ class CustomerMail:
         result = result + u"件名：" + self.title + u"\n"
         result = result + u"内容：" + self.body + u"\n\n"
 
-        result = result + u"お問い合わせ頂いた内容については、弊社カスタマーサポート担当より、3営業日以内にご返答させていただきます。\n"
+        result = result + u"お問い合わせ頂いた内容については、弊社カスタマーサポート担当より、基本的に返信メールにて、3営業日内に回答させていただきます。\n"
+        result = result + u"(土日祝は原則対応いたしかねます)\n"
         result = result + u"また、お預かりするお客様の個人情報は、『個人情報保護方針』に基いて厳重に管理し、お問い合わせ・ご相談への対応以外には使用いたしません。\n"
         result = result + u"よろしくお願いいたします。\n\n"
 

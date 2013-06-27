@@ -245,9 +245,10 @@ class SearchResultRender(object):
         event = self.pageset.event
         r = []
         for g in sorted(event.salessegment_groups, key=lambda g: g.start_on):
-            # label = u'<strong>%s</strong> ' % g.name
-            label = u'<div class="icon-salessegment %s"></div>'% g.kind
-            r.append(u'<li class="searchDate">%s%s</li>' % (label, h.term(g.start_on, g.end_on)))
+            if g.publicp and g.master.publicp:
+                # label = u'<strong>%s</strong> ' % g.name
+                label = u'<div class="icon-salessegment %s"></div>'% g.kind
+                r.append(u'<li class="searchDate">%s%s</li>' % (label, h.term(g.start_on, g.end_on)))
         return u"\n".join(r)
 
 

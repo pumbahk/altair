@@ -10,6 +10,13 @@ class ITraverserFactory(Interface):
     def __call__(request, subject):
         pass
 
+class IMailSettingDefault(Interface):
+    def get_bcc(request, traverser, organization):
+        pass
+
+    def get_sender(request, traverser, organization):
+        pass
+
 class IMailUtility(Interface):
     def build_message(request, order):
         """orderからメールオブジェクト作成"""
@@ -23,15 +30,13 @@ class IMailUtility(Interface):
 class IPurchaseInfoMail(Interface):
     request = Attribute("request")
 
-    def validate():
-        """ validate, all delivery method pair can choice mail template for oneself.
-        """
+    def build_mail_body(order, traverser):
         pass
 
-    def build_mail_body(order):
+    def build_message_from_mail_body(order, traverser, mail_body):
         pass
 
-    def build_message(order):
+    def build_message(order, traverser):
         pass
 
 class ICompleteMail(IPurchaseInfoMail):

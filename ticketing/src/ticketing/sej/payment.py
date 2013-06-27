@@ -20,6 +20,8 @@ import sqlahelper
 DBSession = sqlahelper.get_session()
 
 sej_hostname = u'https://pay.r1test.com/'
+logger = logging.getLogger(__name__)
+
 
 class SejPayment(object):
 
@@ -32,7 +34,6 @@ class SejPayment(object):
 
     response = {}
 
-    log = logging.getLogger('sej_payment')
 
     def __init__(self, secret_key, url, time_out = 120, retry_count = 3, retry_interval = 5):
         self.secret_key = secret_key
@@ -86,14 +87,14 @@ class SejPayment(object):
         except urllib2.HTTPError, e:
             res = e
         except urllib2.URLError, e:
-            self.log.error(e)
+            logger.error(e)
             return
 
         status = res.code
         reason = res.msg
         body = res.read()
 
-        self.log.info("[response]\n%s" % body)
+        logger.info("[response]\n%s" % body)
 
         if status == 200:
             # status == 200 はSyntaxErrorなんだって！

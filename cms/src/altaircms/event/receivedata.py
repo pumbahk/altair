@@ -206,7 +206,7 @@ class Scanner(object):
             if record.get("group_id"):
                 salessegment.group = group_dict[(event.id, record.get("group_id"))] = SalesSegmentGroup(name=record["name"], kind=kind_name, event_id=event.id)
             else:
-                salessegment.group = group_failback_dict[(event.id, record["name"], kind_name, publicp)] = SalesSegmentGroup(name=record["name"], kind=kind_name, event_id=event.id, publicp=publicp)
+                salessegment.group = group_failback_dict[(event.id, record["name"], kind_name)] = SalesSegmentGroup(name=record["name"], kind=kind_name, event_id=event.id, publicp=publicp)
         salessegment.group.backend_id = record.get("group_id")
         if not record.get("group_dict"):
             logger.warn("group id is not found: {0}".format(record))
@@ -233,7 +233,7 @@ class Scanner(object):
         salessegment_groups = SalesSegmentGroup.query.filter(SalesSegmentGroup.event_id.in_(self.event_fetcher.cached_keys()))
 
         group_dict = {(t.event_id, t.backend_id):t for t in salessegment_groups}
-        group_failback_dict = {(t.event_id, t.name, t.kind, t.publicp):t for t in salessegment_groups}
+        group_failback_dict = {(t.event_id, t.name, t.kind):t for t in salessegment_groups}
         salessegmen_kinds = SalesSegmentKind.query.filter(SalesSegmentKind.organization_id == organization.id)
         kind_dict = {k.name: k for k in salessegmen_kinds}
 

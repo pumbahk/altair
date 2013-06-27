@@ -4,7 +4,7 @@
 <%mobile:form_header required="true">新規/継続</%mobile:form_header>
 <div>
 % for c in form.cont:
-  ${c(disabled="disabled") if c.data in form.disabled_conts else c()}${c.label}<br />
+  ${c.label}${c(disabled="disabled", class_="has-permission") if c.data == "yes" else c()} <br />
 % endfor
 ${h.error('cont')}
 </div>

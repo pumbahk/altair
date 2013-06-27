@@ -641,3 +641,16 @@ class LotRejectedEntry(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     lot_entry = orm.relationship('LotEntry', backref="lot_rejected_entries")
 
     mail_sent_at = sa.Column(sa.DateTime)
+
+
+class LotWorkHistory(Base, WithTimestamp):
+    __tablename__ = 'LotWorkHistory'
+
+    id = sa.Column(Identifier, primary_key=True)
+
+    lot_id = sa.Column(Identifier, sa.ForeignKey('Lot.id'))
+    lot = orm.relationship("Lot", backref="work_histories")
+    entry_no = sa.Column(sa.Unicode(20), doc=u"抽選申し込み番号", nullable=False)
+    wish_order = sa.Column(sa.Integer, doc=u"希望順")
+    error = sa.Column(sa.UnicodeText)
+
