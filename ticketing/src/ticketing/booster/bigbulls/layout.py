@@ -15,7 +15,7 @@ class Layout(object):
     team_name = u"岩手ビッグブルズ"
     mailaddress = u"bigbulls@tstar.jp"
     contact_name = u"(株)岩手スポーツプロモーション"
-    product_name = u"岩手ビッグブルス 2013-2014 ブースタークラブ"
+    product_name = u"岩手ビッグブルズ 2013-2014 ブースタークラブ"
     tel = u"019-622-6811　(平日 9:30～18:30)"
     ##html
     form_class_name = u"formbigbulls"
