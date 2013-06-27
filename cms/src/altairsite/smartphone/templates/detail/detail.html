@@ -38,7 +38,12 @@ $(function () {
     });
   });
 
-  $('*[data-toggle]:first').trigger("click");
+  var index = $('#purchase:first').attr("index");
+  if (index) {
+    $('*[data-toggle]:eq(' + index + ')').trigger("click");
+  } else {
+    $('*[data-toggle]').trigger("click");
+  }
 });
 </script>
 
@@ -171,7 +176,7 @@ $(function () {
                         </div>
                       %elif max(end_on_candidates) >= helper.now():
                         <div class="actions">
-                          <a id="purchase" href="${purchase_links[perf.id]}">
+                          <a id="purchase" index="${count}" href="${purchase_links[perf.id]}">
                             <button class="btn btn-primary btn-large"><span class="btn-inner">購入</span></button>
                           </a>
                         </div>

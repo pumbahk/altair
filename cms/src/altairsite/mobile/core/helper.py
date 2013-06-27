@@ -76,7 +76,13 @@ def get_performances_month_unit(event):
     log_info("get_performances_month_unit", "start")
     keys = []
     month_unit = {} # performances
+    perfs = []
+
     for perf in event.performances:
+        if perf.public:
+            perfs.append(perf)
+
+    for perf in perfs:
         key =  str(perf.start_on.year) + "/" + str(perf.start_on.month).zfill(2)
 
         # 新規の月
