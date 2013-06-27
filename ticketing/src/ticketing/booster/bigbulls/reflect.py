@@ -24,7 +24,7 @@ s = Symbols = SymbolPool(
 
 ms = MemberTypeSymbols = SymbolPool(
     gold=u"ゴールド会員", 
-    silver_with_authencated=u"シルバー会員+半額購入特典", 
+    silver_with_authencated=u"シルバー会員（オーセンティックユニフォーム購入希望）", 
     silver=u"シルバー会員", 
     red=u"レッド会員", 
     kids=u"キッズ会員"
