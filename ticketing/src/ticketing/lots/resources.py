@@ -17,6 +17,9 @@ def lot_resource_factory(request):
         return DefaultRootFactory(request)
 
     context = LotResource(request)
+    if not context.lot:
+        raise HTTPNotFound
+
     if context.lot:
         if not context.lot.available_on(datetime.now()):
             raise OutTermException(lot_name=context.lot.name,
