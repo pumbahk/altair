@@ -18,7 +18,7 @@ class Layout(object):
     product_name = u"岩手ビッグブルス 2013-2014 ブースタークラブ"
     tel = u"019-622-6811　(平日 9:30～18:30)"
     ##html
-    form_class_name = u"formbulls"
+    form_class_name = u"formbigbulls"
 
     team_index_url= u'http://www.bigbulls.jp/'
     team_index_url_description = u"bigbulls公式ホームページへ"

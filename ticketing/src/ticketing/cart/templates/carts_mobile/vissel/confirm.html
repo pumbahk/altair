@@ -83,7 +83,7 @@ ${shipping.zip} ${shipping.prefecture}${shipping.city}${shipping.address_1}${shi
 % if mailmagazines_to_subscribe:
 <%mobile:header>メールマガジンの配信</%mobile:header>
 <p>
-ご利用いただいた方には、ヴィッセル神戸からのメールマガジンをお送りします。不要な方はチェックをはずしてください。
+ご利用いただいた方には、ブルズ神戸からのメールマガジンをお送りします。不要な方はチェックをはずしてください。
 </p>
 % for mailmagazine in mailmagazines_to_subscribe:
 <input type="checkbox" checked="checked" name="mailmagazine" id="mailmagazine-${mailmagazine.id}" value="${mailmagazine.id}" />${mailmagazine.name}<br/>

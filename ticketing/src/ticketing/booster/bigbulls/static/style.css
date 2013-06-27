@@ -101,7 +101,7 @@ font-size: 15px;
 }
 
 
-table.formbulls{
+table.formbigbulls{
 	border-collapse: collapse;
 	margin: 0px auto 20px auto;
 	padding: 10px;
@@ -109,7 +109,7 @@ table.formbulls{
 	border: 5px solid #D7000F;
 }
 
-table.formbulls tbody th{
+table.formbigbulls tbody th{
 	background-color: #efefef;
 	border-collapse: collapse;
 	padding: 10px;
@@ -118,7 +118,7 @@ table.formbulls tbody th{
 }
 
 
-table.formbulls thead th{
+table.formbigbulls thead th{
 	background-color: #efefef;
 	border-collapse: collapse;
 	padding: 10px;
@@ -128,13 +128,13 @@ table.formbulls thead th{
 }
 
 
-table.formbulls td{
+table.formbigbulls td{
 	background-color: #fff;
 	padding: 10px;
 	border-bottom: 1px solid #ffb700;
 }
 
-table.formbulls tfoot td{
+table.formbigbulls tfoot td{
 	background-color: #fff;
 	padding: 10px;
 	border-top: 2px solid #ffb700;
