@@ -132,6 +132,7 @@ class Lot(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                      LotEntry.ordered_mail_sent_at==None)
         ).all()
 
+    auth_type = sa.Column(sa.Unicode(255))
 
     @property
     def remained_entries(self):
@@ -339,6 +340,10 @@ class LotEntry(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     browserid = sa.Column(sa.String(40))
 
     closed_at = sa.Column(sa.DateTime())
+
+    user_id = sa.Column(Identifier, sa.ForeignKey('User.id'))
+    user = orm.relationship('User', backref='lot_entries')
+
 
     def close(self):
         self.closed_at = datetime.now()

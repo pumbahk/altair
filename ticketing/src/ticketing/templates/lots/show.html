@@ -49,6 +49,10 @@ Altair Backend -- ${lot.event.title}[${lot.name}]
           <th>抽選結果発表予定日</th>
           <td>${lot.lotting_announce_datetime}</td>
         </tr>
+        <tr>
+          <th>認証方法</th>
+          <td>${lot.auth_type or u'なし'}</td>
+        </tr>
        </tbody>
     </table>
     <a class="btn" href="${request.route_url('lots.edit', lot_id=lot.id)}">編集</a>

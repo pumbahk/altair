@@ -91,6 +91,10 @@ def who_api_factory(request, name):
     reg = request.registry
     return reg.getUtility(IAPIFactory, name=name)
 
+def list_who_api_factory(request):
+    reg = request.registry
+    return list(reg.getUtilitiesFor(IAPIFactory))
+
 
 def who_api(request, name=""):
     factory = who_api_factory(request, name=name)
@@ -142,6 +146,8 @@ class MultiWhoAuthenticationPolicy(object):
         identity = self._get_identity(request)
         groups = self._get_groups(identity, request)
         if len(groups) > 1:
+            if 'auth_type' in identity:
+                groups.insert(0, "auth_type:%s" % identity['auth_type'])
             groups.insert(0, identity['repoze.who.userid'])
         return groups
 
@@ -149,9 +155,11 @@ class MultiWhoAuthenticationPolicy(object):
         """ See IAuthenticationPolicy.
         """
 
+        api_name = decide(request)
         api = self._getAPI(request)
         identity = {'repoze.who.userid': principal,
                     'identifier': api.name_registry[self._identifier_id],
+                    'auth_type': api_name,
                    }
         return api.remember(identity)
 

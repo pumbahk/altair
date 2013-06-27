@@ -57,10 +57,18 @@ class LotResource(object):
 
     @reify
     def __acl__(self):
-        # XXX: ひとまずEveryone lots
+        if not self.lot:
+            return []
+
+        if not self.lot.auth_type:
+            return [
+                (Allow, Everyone, 'lots'),
+            ]
+
         return [
-            (Allow, Everyone, 'lots'),
+            (Allow, "auth_type:%s" % self.lot_auth_type, 'lots'),
         ]
+
 
 class LotOptionSelectionResource(LotResource):
     def __init__(self, request):
