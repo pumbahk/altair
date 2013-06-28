@@ -55,17 +55,24 @@ def includeme(config):
 
     selectable_renderer.register_to(config)
 
+    # static_viewにfactoryを適用したくないので、add_routeで個別指定する
+    factory=".resources.lot_resource_factory"
+    def add_route(*args, **kwargs):
+        if 'factory' not in kwargs:
+            kwargs['factory'] = factory
+        config.add_route(*args, **kwargs)
+
     # 申し込みフェーズ
-    config.add_route('lots.entry.index', 'events/{event_id}/entry/{lot_id}')
-    config.add_route('lots.entry.step1', 'events/{event_id}/entry/{lot_id}/options/{option_index}/step1', factory='.resources.LotOptionSelectionResource')
-    config.add_route('lots.entry.step2', 'events/{event_id}/entry/{lot_id}/options/{option_index}/step2', factory='.resources.LotOptionSelectionResource')
-    config.add_route('lots.entry.step3', 'events/{event_id}/entry/{lot_id}/step3', factory='.resources.LotOptionSelectionResource')
-    config.add_route('lots.entry.step4', 'events/{event_id}/entry/{lot_id}/step4')
-    config.add_route('lots.entry.confirm', 'events/{event_id}/entry/{lot_id}/confirm')
-    config.add_route('lots.entry.completion', 'events/{event_id}/entry/{lot_id}/completion')
+    add_route('lots.entry.index', 'events/{event_id}/entry/{lot_id}')
+    add_route('lots.entry.step1', 'events/{event_id}/entry/{lot_id}/options/{option_index}/step1', factory='.resources.LotOptionSelectionResource')
+    add_route('lots.entry.step2', 'events/{event_id}/entry/{lot_id}/options/{option_index}/step2', factory='.resources.LotOptionSelectionResource')
+    add_route('lots.entry.step3', 'events/{event_id}/entry/{lot_id}/step3', factory='.resources.LotOptionSelectionResource')
+    add_route('lots.entry.step4', 'events/{event_id}/entry/{lot_id}/step4')
+    add_route('lots.entry.confirm', 'events/{event_id}/entry/{lot_id}/confirm')
+    add_route('lots.entry.completion', 'events/{event_id}/entry/{lot_id}/completion')
 
     # 申し込み確認
-    config.add_route('lots.review.index', 'review')
+    add_route('lots.review.index', 'review')
 
     # 当選フェーズ
     #config.add_route('lots.payment.index', 'events/{event_id}/payment/{lot_id}')
@@ -73,10 +80,10 @@ def includeme(config):
     #config.add_route('lots.payment.completion', 'events/{event_id}/payment/{lot_id}/completion')
   
     # 楽天認証コールバック
-    config.add_route('rakuten_auth.login', '/login')
-    config.add_route('rakuten_auth.verify', '/verify')
-    config.add_route('rakuten_auth.verify2', '/verify2')
-    config.add_route('rakuten_auth.error', '/error')
+    add_route('rakuten_auth.login', '/login')
+    add_route('rakuten_auth.verify', '/verify')
+    add_route('rakuten_auth.verify2', '/verify2')
+    add_route('rakuten_auth.error', '/error')
 
     config.scan(".")
 
@@ -114,7 +121,6 @@ def main(global_config, **local_config):
     set_cache_regions_from_settings(settings) 
 
     config = Configurator(settings=settings,
-                          root_factory=".resources.lot_resource_factory",
                           session_factory=session_factory)
     config.add_static_view('static', 'static', cache_max_age=3600)
     config.add_static_view('c_static', 'ticketing.cart:static', cache_max_age=3600)
