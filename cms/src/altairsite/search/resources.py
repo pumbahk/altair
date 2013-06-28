@@ -10,7 +10,7 @@ import altaircms.helpers as h
 from . import searcher
 from altaircms.models import Genre
 from ..pyramidlayout import get_salessegment_kinds
-from altaircms.helpers.base import deal_limit
+from altaircms.helpers.base import deal_limit, deal_limit_class
 
 class SearchResult(dict):
     pass
@@ -192,20 +192,22 @@ class SearchResultRender(object):
             %(page_description)s
           </dd>
       </dl>
-      <div class="searchRemaining">%(deal_limit)s</div>
+      <div class="%(deal_limit_class)s">%(deal_limit)s</div>
       <ul>
           %(deal_description)s
       </ul>
       <p>%(purchase_link)s</p>
   </div>
         """ % self.make_result()
-        
+
     def make_result(self):
         # assert self.pageset.event
+        limit = deal_limit(self.today, self.pageset.event.deal_open, self.pageset.event.deal_close)
         return SearchResult(
             category_icons = self.category_icons(), 
             page_description = self.page_description(),
-            deal_limit = deal_limit(self.today, self.pageset.event.deal_open, self.pageset.event.deal_close),
+            deal_limit = limit,
+            deal_limit_class = deal_limit_class(limit),
             deal_description = self.deal_description(),
             purchase_link = self.purchase_link()
             )
