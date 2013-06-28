@@ -6,8 +6,9 @@ from altairsite.mobile.core.helper import get_week_map, get_performances_month_u
     , get_tickets, exist_value, get_sales_date
 from altairsite.mobile.core.helper import log_info, Markup
 from altairsite.mobile.core.disphelper import DispHelper
+from altairsite.exceptions import UsersiteException
 
-class ValidationFailure(Exception):
+class ValidationFailure(UsersiteException):
     pass
 
 @usersite_view_config(route_name='eventdetail', request_type="altairsite.tweens.IMobileRequest"

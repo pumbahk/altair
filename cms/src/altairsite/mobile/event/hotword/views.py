@@ -9,8 +9,9 @@ from altairsite.mobile.event.hotword.forms import HotwordForm
 from altairsite.mobile.core.helper import exist_value
 from altairsite.mobile.core.helper import get_week_map, get_event_paging
 from altairsite.mobile.core.helper import log_info
+from altairsite.exceptions import UsersiteException
 
-class ValidationFailure(Exception):
+class ValidationFailure(UsersiteException):
     pass
 
 @usersite_view_config(route_name='hotword', request_type="altairsite.tweens.IMobileRequest"

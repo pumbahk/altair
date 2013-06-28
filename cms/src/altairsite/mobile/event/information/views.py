@@ -8,9 +8,6 @@ from altairsite.mobile.event.information.forms import InformationForm
 from altairsite.mobile.core.helper import log_info, Markup
 from altairsite.mobile.core.disphelper import DispHelper
 
-class ValidationFailure(Exception):
-    pass
-
 @usersite_view_config(route_name='information', request_type="altairsite.tweens.IMobileRequest"
     , renderer='altairsite.mobile:templates/information/information.mako')
 @usersite_view_config(route_name='infodetail', request_type="altairsite.tweens.IMobileRequest"
