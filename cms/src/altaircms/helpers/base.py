@@ -95,6 +95,12 @@ def deal_limit(today, deal_open, deal_close):
     else:
         return u"販売終了"
 
+def deal_limit_class(limit):
+    limit_class = "searchRemaining"
+    if limit == u"本日販売":
+        limit_class = "searchRemainingToday"
+    return limit_class
+
 if __name__ == "__main__":
     import doctest
     doctest.testmod()
