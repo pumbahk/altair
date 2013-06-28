@@ -74,9 +74,9 @@ class PointGrantSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             if other is not None and other.start_at is not None:
                 return -1
         if self.end_at is not None:
-            if other is None or other.start_at is None or other.end > self.end:
+            if other is None or other.end_at is None or other.end_at > self.end_at:
                 return 1
-            elif other.end < self.end:
+            elif other.end_at < self.end_at:
                 return -1
         else:
             if other is not None and other.end_at is not None:
