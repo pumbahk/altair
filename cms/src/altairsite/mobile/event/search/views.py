@@ -7,10 +7,11 @@ from altairsite.mobile.core.const import get_prefecture_name
 from altairsite.mobile.core.helper import exist_value, get_week_map, get_event_paging
 from altairsite.mobile.core.helper import log_info
 from altairsite.mobile.core.eventhelper import EventHelper
+from altairsite.exceptions import UsersiteException
 from altaircms.page.models import MobileTag
 from .forms import MobileTagSearchForm
 
-class ValidationFailure(Exception):
+class ValidationFailure(UsersiteException):
     pass
 
 @usersite_view_config(route_name='search', request_type="altairsite.tweens.IMobileRequest"
