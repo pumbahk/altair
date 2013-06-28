@@ -192,8 +192,8 @@ class SearchResultRender(object):
             %(page_description)s
           </dd>
       </dl>
+      <div class="searchRemaining">%(deal_limit)s</div>
       <ul>
-          <li class="searchRemaining">%(deal_limit)s</li>
           %(deal_description)s
       </ul>
       <p>%(purchase_link)s</p>
