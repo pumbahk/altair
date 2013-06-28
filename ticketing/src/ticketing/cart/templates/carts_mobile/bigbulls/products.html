@@ -17,7 +17,7 @@
       % if product['detail']:
         ${product['detail']}<br/>
       % endif
-      金額: ${product['price']}円<br />
+      金額: &yen;${product['price']}<br />
       数量:
       <select name="product-${product['id']}">
         % for num in range(product['upper_limit'] + 1):
