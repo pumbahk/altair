@@ -9,7 +9,7 @@
   % if product['detail']:
     ${product['detail']}<br />
   % endif
-  金額: ${product['price']}円<br />
+  金額: &yen;${product['price']}<br />
   数量: ${product['quantity']}
   % if product['quantity'] != product['seat_quantity']:
     (${product['seat_quantity']}枚)
@@ -24,7 +24,7 @@
 </div>
 % endfor
 <hr />
-合計金額: ${cart['total_amount']}円
+合計金額: &yen;${cart['total_amount']}<br />
 <form action="${request.route_url('cart.payment', sales_segment_id=sales_segment_id)}" method="get">
   <div style="text-align:center;">
   <br/>
