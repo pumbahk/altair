@@ -15,6 +15,10 @@ $(function() {
     // 描画領域作成
     items = $(".item *").length;
 
+    if (items == 0) {
+        return
+    }
+
     $('.flipsnap').css('width', viewWidth * items + 'px');
     $('.viewport').css('width', viewWidth + 'px');
     $('.item').css('width', viewWidth + 'px');
