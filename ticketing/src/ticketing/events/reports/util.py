@@ -7,7 +7,7 @@ class DateTimeFormatter(object):
     def format_datetime(self, dt):
         return dt.strftime(self.DATE_FORMAT.encode("utf-8")).decode("utf-8") +\
             u'(%s)' % self.WEEK[dt.weekday()] + \
-            dt.strftime(self.TIME_FORMAT.encode("utf-8")).decode("utf-8")
+            dt.strftime(self.TIME_FORMAT.encode("utf-8")).decode("utf-8") if dt else u'-'
 
     def format_datetime_for_sheet_name(self, dt):
         format = u"%Y.%m.%d-%H%M%S"
@@ -15,8 +15,8 @@ class DateTimeFormatter(object):
 
     def format_date(self, d):
         format = self.DATE_FORMAT
-        return d.strftime(format.encode("utf-8")).decode("utf-8") + u'(%s)' % self.WEEK[d.weekday()]
+        return d.strftime(format.encode("utf-8")).decode("utf-8") + u'(%s)' % self.WEEK[d.weekday()] if d else u'-'
 
     def format_time(self, t):
         format =self.TIME_FORMAT
-        return t.strftime(format.encode("utf-8")).decode("utf-8")
+        return t.strftime(format.encode("utf-8")).decode("utf-8") if t else u'-'
