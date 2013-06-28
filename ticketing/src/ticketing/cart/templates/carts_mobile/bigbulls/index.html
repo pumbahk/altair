@@ -1,19 +1,14 @@
 <%inherit file="./base.html"/>
 <%namespace file="./tags_mobile.html" name="mobile" />
-
 <%mobile:header>チケット購入</%mobile:header>
-
-${event.title}
-
+<div align="center" style="text-align:center">${event.title}</div><hr size="1" noshade="noshade" />
 % if not key:
-  <hr size="1" color="#960020" noshade="noshade" />
-  <p><font color="#960020">■</font>${selector_label_1}をお選びください</p>
+  <%mobile:form_header>${selector_label_1}をお選びください</%mobile:form_header>
   % for _key, _ in key_to_formatted_sales_segments_map:
   <a href="${request.current_route_path(_query={'key': _key.encode('sjis')})}">${_key}</a><br/>
   % endfor
 % else:
-  <hr size="1" color="#960020" noshade="noshade" />
-  <p><font color="#960020">■</font>${selector_label_2}をお選びください</p>
+  <%mobile:form_header>${selector_label_2}をお選びください</%mobile:form_header>
   % for _, sales_segments in key_to_formatted_sales_segments_map:
   %   for sales_segment_info in sales_segments:
   <a href="${request.route_path('cart.seat_types', event_id=event.id, sales_segment_id=sales_segment_info['id'])}">${sales_segment_info['name']}</a><br />
@@ -24,5 +19,4 @@ ${event.title}
       <input type="submit" value="戻る">
     </div>
   </form>
-  <hr size="1" color="#960020" noshade="noshade" />
 % endif

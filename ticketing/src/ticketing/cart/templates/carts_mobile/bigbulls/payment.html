@@ -1,15 +1,13 @@
 <%inherit file="./base.html"/>
 <%namespace file="./tags_mobile.html" name="mobile" />
-
 <%mobile:header>チケット購入</%mobile:header>
-
 <form method="post" action="${request.url}">
 <div>
 購入者情報を入力して下さい。
 </div>
 
 <div>
-<font color="#960020">■</font>購入者氏名(全角)
+<%mobile:form_header>購入者氏名(全角)</%mobile:form_header>
 </div>
 <div>
   ${form['last_name'].label}
@@ -27,7 +25,7 @@
 <div color="#ff0000">
 
 <div>
-<font color="#960020">■</font>購入者氏名(カナ)
+<%mobile:form_header>購入者氏名(カナ)</%mobile:form_header>
 </div>
 <div>
   ${form['last_name_kana'].label}
@@ -45,7 +43,7 @@
 </div>
 
 <div>
-<font color="#960020">■</font>${form['email_1'].label}
+<%mobile:form_header>${form['email_1'].label}</%mobile:form_header>
 </div>
 <div>
   ${form['email_1']}
@@ -55,7 +53,7 @@
 </div>
 
 <div>
-<font color="#960020">■</font>${form['email_1_confirm'].label}
+<%mobile:form_header>${form['email_1_confirm'].label}</%mobile:form_header>
 </div>
 <div>
   ${form['email_1_confirm']}
@@ -66,7 +64,7 @@
 <p>※ 注文受付完了、確認メール等をメールでご案内します。「tstar.jp」からのメールを受信できるよう、お申し込み前にドメイン指定の設定を必ずお願いいたします。</p>
 
 <div>
-<font color="#960020">■</font>住所
+<%mobile:form_header>住所</%mobile:form_header>
 </div>
 <div>
   ${form['zip'].label}(例:1410022)<br/>
@@ -100,7 +98,7 @@
 </div>
 
 <div>
-<font color="#960020">■</font>電話番号
+<%mobile:form_header>電話番号</%mobile:form_header>
 </div>
 <div>
   ${form['tel_1'].label}<br/>
@@ -109,16 +107,6 @@
     ${h.error_list(request, form, 'tel_1')}
   </div>
 </div>
-<!--
-<div>
-  ${form['fax'].label}<br/>
-  ${form['fax']}
-  <div style="color:#ff0000">
-    ${h.error_list(request, form, 'fax')}
-  </div>
-</div>
--->
-
 <hr />
 <div>
 代金の支払方法を指定して、「次へ進む」ボタンをクリックして下さい。<br>
