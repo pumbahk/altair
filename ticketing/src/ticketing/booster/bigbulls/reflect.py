@@ -24,7 +24,7 @@ s = Symbols = SymbolPool(
 
 ms = MemberTypeSymbols = SymbolPool(
     gold=u"ゴールド会員", 
-    silver_with_authencated=u"シルバー会員（オーセンティックユニフォーム購入希望）", 
+    silver_with_authentic_uniform=u"シルバー会員（オーセンティックユニフォーム購入希望）", 
     silver=u"シルバー会員", 
     red=u"レッド会員", 
     kids=u"キッズ会員"
@@ -32,7 +32,7 @@ ms = MemberTypeSymbols = SymbolPool(
 
 product_reflections = {
     ms.gold: [s.authentic_uniform], 
-    ms.silver_with_authencated: [s.authentic_uniform], 
+    ms.silver_with_authentic_uniform: [s.authentic_uniform, s.replica_uniform], 
     ms.silver: [s.replica_uniform], 
     ms.red: [s.t_shirts_size], 
     ms.kids: [s.for_kids]

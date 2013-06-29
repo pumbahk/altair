@@ -12,8 +12,9 @@ from altaircms.models import Genre
 from altairsite.mobile.core.helper import exist_value
 from altairsite.mobile.core.helper import log_info
 from altairsite.mobile.core.eventhelper import EventHelper
+from altairsite.exceptions import UsersiteException
 
-class ValidationFailure(Exception):
+class ValidationFailure(UsersiteException):
     pass
 
 @usersite_view_config(route_name='genre', request_type="altairsite.tweens.IMobileRequest"

@@ -146,7 +146,7 @@
     </tr>
     <tr>
       <td>
-        (自宅) ${form.tel_1(size=12)}<span><small>${layout.dont_include_hyphen_message}</small></span>
+        (自宅) ${form.tel_2(size=12)}<span><small>${layout.dont_include_hyphen_message}</small></span>
         ${h.error(['tel_2'])}
       </td>
     </tr>
@@ -194,8 +194,8 @@
         </span>
       </th>
       <td>
-        姓${form.extra.parent_last_name(size="40", class_=" ".join(["has-permission", layout.symbols.for_kids]))}<small>（全角）</small><br>
-        名${form.extra.parent_first_name(size="40", class_=" ".join(["has-permission", layout.symbols.for_kids]))}<small>（全角）</small>
+        姓${form.extra.parent_last_name(size="40")}<small>（全角）</small><br>
+        名${form.extra.parent_first_name(size="40")}<small>（全角）</small>
         ${h.error(['extra.parent_last_name','extra.parent_first_name'])}
       </td>
     </tr>
@@ -207,8 +207,8 @@
         </span>
       </th>
       <td>
-        セイ${form.extra.parent_last_name_kana(size="40",class_=" ".join(["has-permission", layout.symbols.for_kids]))}<small>（全角カナ）</small><br>
-        メイ${form.extra.parent_first_name_kana(size="40", class_=" ".join(["has-permission", layout.symbols.for_kids]))}<small>（全角カナ）</small>
+        セイ${form.extra.parent_last_name_kana(size="40")}<small>（全角カナ）</small><br>
+        メイ${form.extra.parent_first_name_kana(size="40")}<small>（全角カナ）</small>
         ${h.error(['extra.parent_last_name_kana','extra.parent_first_name_kana'])}
       </td>
     </tr>
@@ -220,7 +220,7 @@
         </span>
       </th>
       <td>
-        続柄${form.extra.relationship(id='relationship', class_=" ".join(["has-permission", layout.symbols.for_kids]))} 例：父、母、など 
+        続柄${form.extra.relationship(id='relationship')} 例：父、母、など 
         ${h.error(['extra.relationship'])}　
       </td>
     </tr>

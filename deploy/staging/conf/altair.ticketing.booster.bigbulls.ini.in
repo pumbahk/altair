@@ -53,6 +53,7 @@ propagate = 0
 level = INFO
 handlers = sqlalchemy
 qualname = sqlalchemy.engine
+propagate = 0
 
 [handler_console]
 class = altair.log.filters.BrowserIdStreamHandler

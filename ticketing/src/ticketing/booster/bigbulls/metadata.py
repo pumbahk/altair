@@ -5,26 +5,6 @@ from ticketing.orders.metadata import DefaultOrderedProductAttributeMetadataProv
 metadata_provider = DefaultOrderedProductAttributeMetadataProvider(
     'booster.bigbulls',
     {
-        # 'extra.mail_permission': {
-        #     'display_name': {
-        #         'ja_JP': u'メールマガジン',
-        #         },
-        #     'type': bool,
-        #     'coercer': lambda x: bool(int(x)),
-        #     },
-        # 'extra.publicity': {
-        #     'display_name': {
-        #         'ja_JP': u'ゲームプログラムへのお名前掲載',
-        #         },
-        #     'type': bool,
-        #     'coercer': lambda x: (x == 'yes' if x is not None else None),
-        #     },
-        # 'extra.t_shirts_size': {
-        #     'display_name': {
-        #         'ja_JP': u'Tシャツサイズ',
-        #         },
-        #     'type': unicode,
-        #     },
         'extra.replica_uniform_size': {
             'display_name': {
                 'ja_JP': u'レプリカユニフォームサイズ',
