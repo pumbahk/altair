@@ -120,9 +120,9 @@ def process_sheet(exporter, formatter, sheet, report_type, event, performance, s
     exporter.set_datetime(sheet, today_stamp)
     exporter.set_event_name(sheet, event.title or "")
     exporter.set_performance_name(sheet, performance.name or "")
-    exporter.set_performance_datetime(sheet, formatter.format_date(performance.start_on))
-    exporter.set_performance_open_at(sheet, formatter.format_time(performance.open_on))
-    exporter.set_performance_start_at(sheet, formatter.format_time(performance.start_on))
+    exporter.set_performance_datetime(sheet, (formatter.format_date(performance.start_on) if performance.start_on else u'-'))
+    exporter.set_performance_open_at(sheet, (formatter.format_time(performance.open_on) if performance.open_on else u'-'))
+    exporter.set_performance_start_at(sheet, (formatter.format_time(performance.start_on) if performance.start_on else u'-'))
     exporter.set_performance_venue(sheet, performance.venue.name or "")
     for stock_record in stock_records:
         exporter.add_records(sheet, stock_record.get_records())
