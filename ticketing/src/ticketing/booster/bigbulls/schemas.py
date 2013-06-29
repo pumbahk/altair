@@ -43,7 +43,7 @@ class ExtraForm(Form):
                                                 validators=[v.Optional()], 
                                                 coerce=text_type_but_none_if_not_given)
     authentic_uniform_no = fields.TextField(u"オーセンティックユニフォーム背番号", validators=[v.Optional(), v.Length(max=2)])
-    authentic_uniform_name = fields.TextField(u"オーセンティックユニフォーム名前", validators=[v.Optional(), v.Regexp(r"^[A-Z]+$", message=u"アルファベット大文字のみで入力してください")])
+    authentic_uniform_name = fields.TextField(u"オーセンティックユニフォーム名前", filters=[strip_spaces, NFKC], validators=[v.Optional(), v.Regexp(r"^[A-Z ]+$", message=u"アルファベット大文字のみで入力してください")])
     authentic_uniform_color = fields.SelectField(u'オーセンティックユニフォーム色',
                                                 choices=[('red', u"赤"), ("white", u"白")],
                                                 validators=[v.Optional()], 
