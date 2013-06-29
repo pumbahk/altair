@@ -58,12 +58,13 @@ class ExtraForm(Form):
         u"【クラブブルズ会員限定】 お得な情報をメールで配信",
         default=True)
 
-    def configure_for_kids(self):
-        prepend_validator(self.parent_first_name, v.Required())
-        prepend_validator(self.parent_first_name_kana, v.Required())
-        prepend_validator(self.parent_last_name, v.Required())
-        prepend_validator(self.parent_last_name_kana, v.Required())
-        prepend_validator(self.relationship, v.Required())
+    def configure_for_kids(self, age_limit_adjective):
+        message = u'お申込者が%sの場合は必須項目です' % age_limit_adjective
+        prepend_validator(self.parent_first_name, v.Required(message))
+        prepend_validator(self.parent_first_name_kana, v.Required(message))
+        prepend_validator(self.parent_last_name, v.Required(message))
+        prepend_validator(self.parent_last_name_kana, v.Required(message))
+        prepend_validator(self.relationship, v.Required(message))
 
     def configure_for_authentic_uniform(self):
         prepend_validator(self.authentic_uniform_no, v.Required())
@@ -78,7 +79,6 @@ class ExtraForm(Form):
         prepend_validator(self.t_shirts_size, v.Required())
 
 class OrderFormSchema(Form):
-    KIDS_AGE_LIMIT = 12 #小学生以下
     def validate_day(self, field):
         try:
             date(int(self.year.data), int(self.month.data), int(self.day.data))
@@ -88,12 +88,6 @@ class OrderFormSchema(Form):
     def validate_tel_2(self, field):
         if not self.tel_1.data and not self.tel_2.data:
             raise ValidationError(u'電話番号は自宅か携帯かどちらかを入力してください')
-
-    def configure_for_kids(self, age):
-        def validate(*args, **kwargs):
-            if age > self.KIDS_AGE_LIMIT:
-                raise ValidationError(u"選べるのは小学生以下の方だけです")
-        prepend_validator(self.member_type, validate)
 
     # 新規・継続
     cont = fields.RadioField(u"新規／継続", validators=[v.Required()], choices=[('no', u'新規'),('yes', u'継続')], widget=radio_list_widget)
