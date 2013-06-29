@@ -141,6 +141,7 @@ class MyProxy(proxy.Proxy):
         (r'http://cms.stg2.rt.ticketstar.jp(/.*)?', r'http://localhost:8001\1'),
         (r'http://89ers.stg2.rt.ticketstar.jp(/booster(?:/.*)?)', r'http://localhost:9081\1'),
         (r'http://bambitious.stg2.rt.ticketstar.jp(/booster(?:/.*)?)', r'http://localhost:9082\1'),
+        (r'http://bigbulls.stg2.rt.ticketstar.jp(/booster(?:/.*)?)', r'http://localhost:9083\1'),
         ]
 
     def __init__(self, *args, **kwargs):
