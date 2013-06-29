@@ -36,6 +36,7 @@ setup(name='altair.rakuten_auth',
       install_requires=[
           'setuptools',
           'altair.auth',
+          'altair.browserid',
           # -*- Extra requirements: -*-
       ],
       dependency_links=[
