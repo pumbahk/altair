@@ -159,7 +159,7 @@ class RakutenOpenIDPlugin(object):
                 def get_extras():
                     retval = self._get_extras(req, identity)
                     session = impl.get_session(req)
-                    browserid = session and session[__name__ + '.browserid']
+                    browserid = get_browserid(req)
                     retval['browserid'] = browserid
                     return retval
 
@@ -227,8 +227,6 @@ class RakutenOpenIDPlugin(object):
         impl = self._get_impl(environ)
         session = impl.new_session(request)
         impl.set_return_url(session, request.url)
-        browserid = get_browserid(request)
-        session[__name__ + '.browserid'] = browserid
         session.save()
         logger.debug('redirect from %s' % request.url)
         return HTTPFound(location=impl.get_redirect_url(session))
