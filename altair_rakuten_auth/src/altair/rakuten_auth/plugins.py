@@ -8,6 +8,7 @@ from zope.interface import implementer
 from repoze.who.api import get_api as get_who_api
 from repoze.who.interfaces import IIdentifier, IChallenger, IAuthenticator, IMetadataProvider
 from altair.auth.api import get_current_request
+from altair.browserid import get_browserid
 from beaker.cache import Cache, CacheManager, cache_regions
 from .api import get_rakuten_oauth, get_rakuten_id_api_factory
 from .interfaces import IRakutenOpenID
@@ -149,17 +150,24 @@ class RakutenOpenIDPlugin(object):
                 'claimed_id': identity['claimed_id'],
                 'oauth_request_token': identity['oauth_request_token'],
                 }
-
         else:
             if 'claimed_id' in identity:
                 userdata = identity
 
                 cache = self._get_cache()
+
+                def get_extras():
+                    retval = self._get_extras(req, identity)
+                    session = impl.get_session(req)
+                    browserid = session and session[__name__ + '.browserid']
+                    retval['browserid'] = browserid
+                    return retval
+
                 extras = None
                 try:
                     extras = cache.get(
                         key=identity['claimed_id'],
-                        createfunc=lambda: self._get_extras(req, identity)
+                        createfunc=get_extras
                         )
                 except:
                     logger.warning("Failed to retrieve extra information", exc_info=sys.exc_info())
@@ -219,6 +227,8 @@ class RakutenOpenIDPlugin(object):
         impl = self._get_impl(environ)
         session = impl.new_session(request)
         impl.set_return_url(session, request.url)
+        browserid = get_browserid(request)
+        session[__name__ + '.browserid'] = browserid
         session.save()
         logger.debug('redirect from %s' % request.url)
         return HTTPFound(location=impl.get_redirect_url(session))
