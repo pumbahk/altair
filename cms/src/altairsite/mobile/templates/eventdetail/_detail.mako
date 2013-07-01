@@ -66,49 +66,46 @@ ${helper.nl2br(event.inquiry_for)|n}
 </%def>
 <%m:band>公演一覧</%m:band>
 <div>
-<% index = 0 %>
-% for count in range(len(month_unit_keys)):
-    <% month = month_unit_keys[count] %>
-    <% prev_month = month_unit_keys[count - 1] if count > 0 else None %>
-    <% next_month = month_unit_keys[count + 1] if count + 1 < len(month_unit_keys) else None %>
-    <a name="${month}" id="${month}"></a>
-    <%m:line width="2" />
-    <%m:header>${month}
-    % if next_month:
-       <a href="#${next_month}">▼</a>
-    % endif
-    % if prev_month:
-       <a href="#${prev_month}">▲</a>
-    % endif
-    </%m:header>
-    ${month_list(month_unit_keys, month)}
-    <%m:line width="2" />
-    <% first = True %>
-    % for i, perf in enumerate(event.performances):
-        % if (str(perf.start_on.year) + "/" + str(perf.start_on.month).zfill(2) == month) and perf.public:
+  <%
+    index = 0
+
+    perfs = []
+    for perf in event.performances:
+        perfs.append({"perf":perf, "display_order":perf.display_order})
+    perfs = sorted(perfs, key=lambda v: (v['display_order']))
+  %>
+
+% if event.id == 211 or event.id == 219:
+        <%m:line width="2" />
+        <%m:header>
+          楽天オープン
+        </%m:header>
+        <%m:line width="2" />
+        <% first = True %>
+        % for i, perf in enumerate(perfs):
             <% index += 1 %>
             <%
-                start_on_candidates = [salessegment.start_on for salessegment in perf.sales]
-                end_on_candidates = [salessegment.end_on for salessegment in perf.sales if salessegment.end_on]
+                start_on_candidates = [salessegment.start_on for salessegment in perf['perf'].sales]
+                end_on_candidates = [salessegment.end_on for salessegment in perf['perf'].sales if salessegment.end_on]
             %>
             % if not first:
                 <hr />
             % endif
             % if event.deal_close <  get_now(request):
-            [${index}]<font size="-1">${perf.title}</font><br />
+            [${index}]<font size="-1">${perf['perf'].title}</font><br />
             % else:
-            [${index}]<font size="-1"><a href="${purchase_links[perf.id]}">${perf.title}</a></font><br />
+            [${index}]<font size="-1"><a href="${purchase_links[perf['perf'].id]}">${perf['perf'].title}</a></font><br />
             % endif
-            % if perf.open_on:
-                開場:${str(perf.open_on.year)[2:]}/${str(perf.open_on.month).zfill(2)}/${str(perf.open_on.day).zfill(2)}(${week[perf.open_on.weekday()]})
-                ${str(perf.open_on.hour).zfill(2)}:${str(perf.open_on.minute).zfill(2)}<br />
+            % if perf['perf'].open_on:
+                開場:${str(perf['perf'].open_on.year)[2:]}/${str(perf['perf'].open_on.month).zfill(2)}/${str(perf['perf'].open_on.day).zfill(2)}(${week[perf['perf'].open_on.weekday()]})
+                ${str(perf['perf'].open_on.hour).zfill(2)}:${str(perf['perf'].open_on.minute).zfill(2)}<br />
             % endif
-            % if perf.start_on:
-                開演:${str(perf.start_on.year)[2:]}/${str(perf.start_on.month).zfill(2)}/${str(perf.start_on.day).zfill(2)}(${week[perf.start_on.weekday()]})
-                ${str(perf.start_on.hour).zfill(2)}:${str(perf.start_on.minute).zfill(2)}<br />
+            % if perf['perf'].start_on:
+                開演:${str(perf['perf'].start_on.year)[2:]}/${str(perf['perf'].start_on.month).zfill(2)}/${str(perf['perf'].start_on.day).zfill(2)}(${week[perf['perf'].start_on.weekday()]})
+                ${str(perf['perf'].start_on.hour).zfill(2)}:${str(perf['perf'].start_on.minute).zfill(2)}<br />
             % endif
-            % if perf.venue:
-                会場:${perf.venue}<br/>
+            % if perf['perf'].venue:
+                会場:${perf['perf'].venue}<br/>
             % endif
             % if not start_on_candidates:
                 準備中
@@ -118,7 +115,7 @@ ${helper.nl2br(event.inquiry_for)|n}
                 <div align="center">
                 <%m:band bgcolor="#ffcccc">
                 % if event.deal_close >= get_now(request):
-                  <a href="${purchase_links[perf.id]}"><font color="#cc0000">この公演のチケットを購入</font></a>
+                  <a href="${purchase_links[perf['perf'].id]}"><font color="#cc0000">この公演のチケットを購入</font></a>
                 % endif
                 </%m:band>
                 </div>
@@ -126,8 +123,71 @@ ${helper.nl2br(event.inquiry_for)|n}
                 販売期間終了
             % endif
             <% first = False %>
+        % endfor
+        <br />
+% else:
+    % for count in range(len(month_unit_keys)):
+        <% month = month_unit_keys[count] %>
+        <% prev_month = month_unit_keys[count - 1] if count > 0 else None %>
+        <% next_month = month_unit_keys[count + 1] if count + 1 < len(month_unit_keys) else None %>
+        <a name="${month}" id="${month}"></a>
+        <%m:line width="2" />
+        <%m:header>${month}
+        % if next_month:
+           <a href="#${next_month}">▼</a>
         % endif
+        % if prev_month:
+           <a href="#${prev_month}">▲</a>
+        % endif
+        </%m:header>
+        ${month_list(month_unit_keys, month)}
+        <%m:line width="2" />
+        <% first = True %>
+        % for i, perf in enumerate(event.performances):
+            % if (str(perf.start_on.year) + "/" + str(perf.start_on.month).zfill(2) == month) and perf.public:
+                <% index += 1 %>
+                <%
+                    start_on_candidates = [salessegment.start_on for salessegment in perf.sales]
+                    end_on_candidates = [salessegment.end_on for salessegment in perf.sales if salessegment.end_on]
+                %>
+                % if not first:
+                    <hr />
+                % endif
+                % if event.deal_close <  get_now(request):
+                [${index}]<font size="-1">${perf.title}</font><br />
+                % else:
+                [${index}]<font size="-1"><a href="${purchase_links[perf.id]}">${perf.title}</a></font><br />
+                % endif
+                % if perf.open_on:
+                    開場:${str(perf.open_on.year)[2:]}/${str(perf.open_on.month).zfill(2)}/${str(perf.open_on.day).zfill(2)}(${week[perf.open_on.weekday()]})
+                    ${str(perf.open_on.hour).zfill(2)}:${str(perf.open_on.minute).zfill(2)}<br />
+                % endif
+                % if perf.start_on:
+                    開演:${str(perf.start_on.year)[2:]}/${str(perf.start_on.month).zfill(2)}/${str(perf.start_on.day).zfill(2)}(${week[perf.start_on.weekday()]})
+                    ${str(perf.start_on.hour).zfill(2)}:${str(perf.start_on.minute).zfill(2)}<br />
+                % endif
+                % if perf.venue:
+                    会場:${perf.venue}<br/>
+                % endif
+                % if not start_on_candidates:
+                    準備中
+                %elif min(start_on_candidates) >= get_now(request):
+                    販売前
+                %elif max(end_on_candidates) >= get_now(request):
+                    <div align="center">
+                    <%m:band bgcolor="#ffcccc">
+                    % if event.deal_close >= get_now(request):
+                      <a href="${purchase_links[perf.id]}"><font color="#cc0000">この公演のチケットを購入</font></a>
+                    % endif
+                    </%m:band>
+                    </div>
+                % else:
+                    販売期間終了
+                % endif
+                <% first = False %>
+            % endif
+        % endfor
+        <br />
     % endfor
-    <br />
-% endfor
+% endif
 </div>

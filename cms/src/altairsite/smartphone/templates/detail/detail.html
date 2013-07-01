@@ -138,63 +138,125 @@ $(function () {
     </div>
 </div>
 <ul class="panellist fullwidth expandable">
-  <% index = 0 %>
-  % for count in range(len(month_unit_keys)):
-    <%month = month_unit_keys[count] %>
-    <li class="panelgroup" id=${count}>
-      <span class="panelgroup-label"><a href="#" data-toggle=${count}>${month}</a></span>
-      <ul class="panelgroup-inner">
-        % for i, perf in enumerate(event.performances):
-          <%
-            start_on_candidates = [salessegment.start_on for salessegment in perf.sales]
-            end_on_candidates = [salessegment.end_on for salessegment in perf.sales if salessegment.end_on]
-          %>
-          % if (str(perf.start_on.year) + "/" + str(perf.start_on.month).zfill(2) == month) and perf.public:
-            <% index += 1 %>
-            <li class="panel">
-              <table class="panellist margined with-action-buttons">
-                <caption>[${index}]${perf.title}</caption>
-                <tbody>
-                  <tr>
-                    <td class="panel condensed">
-                      <div class="panel-inner h_70px">
-                        <p class="first">
-                          % if perf.open_on:
-                            開場：${helper.disp_time(perf.open_on)}<br/>
+  <%
+    index = 0
+
+    perfs = []
+    for perf in event.performances:
+        perfs.append({"perf":perf, "display_order":perf.display_order})
+    perfs = sorted(perfs, key=lambda v: (v['display_order']))
+  %>
+
+  % if event.id == 211 or event.id == 219:
+        <li class="panelgroup" id="0">
+          <span class="panelgroup-label"><a href="#" data-toggle="0">楽天オープン</a></span>
+          <ul class="panelgroup-inner">
+            % for i, perf in enumerate(perfs):
+              <%
+                start_on_candidates = [salessegment.start_on for salessegment in perf['perf'].sales]
+                end_on_candidates = [salessegment.end_on for salessegment in perf['perf'].sales if salessegment.end_on]
+              %>
+                <% index += 1 %>
+                <li class="panel">
+                  <table class="panellist margined with-action-buttons">
+                    <caption>[${index}]${perf['perf'].title}</caption>
+                    <tbody>
+                      <tr>
+                        <td class="panel condensed">
+                          <div class="panel-inner h_70px">
+                            <p class="first">
+                              % if perf['perf'].open_on:
+                                開場：${helper.disp_time(perf['perf'].open_on)}<br/>
+                              % endif
+                              開演：${helper.disp_time(perf['perf'].start_on)}<br/>
+                              会場：${perf['perf'].venue}<br/>
+                            </p>
+                          </div>
+                          % if not start_on_candidates:
+                            <div class="actions">
+                                準備中
+                            </div>
+                          %elif min(start_on_candidates) >= helper.now():
+                            <div class="actions">
+                                販売前
+                            </div>
+                          %elif max(end_on_candidates) >= helper.now():
+                            <div class="actions">
+                              <a id="purchase" index="0" href="${purchase_links[perf['perf'].id]}">
+                                <button class="btn btn-primary btn-large"><span class="btn-inner">購入</span></button>
+                              </a>
+                            </div>
+                          % else:
+                            <div class="actions">
+                                販売期間終了
+                            </div>
                           % endif
-                          開演：${helper.disp_time(perf.start_on)}<br/>
-                          会場：${perf.venue}<br/>
-                        </p>
-                      </div>
-                      % if not start_on_candidates:
-                        <div class="actions">
-                            準備中
-                        </div>
-                      %elif min(start_on_candidates) >= helper.now():
-                        <div class="actions">
-                            販売前
-                        </div>
-                      %elif max(end_on_candidates) >= helper.now():
-                        <div class="actions">
-                          <a id="purchase" index="${count}" href="${purchase_links[perf.id]}">
-                            <button class="btn btn-primary btn-large"><span class="btn-inner">購入</span></button>
-                          </a>
-                        </div>
-                      % else:
-                        <div class="actions">
-                            販売期間終了
-                        </div>
-                      % endif
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </li>
-          % endif
-        % endfor
-      </ul>
-    </li>
-  % endfor
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </li>
+            % endfor
+          </ul>
+        </li>
+  % else:
+      % for count in range(len(month_unit_keys)):
+        <%month = month_unit_keys[count] %>
+        <li class="panelgroup" id=${count}>
+          <span class="panelgroup-label"><a href="#" data-toggle=${count}>${month}</a></span>
+          <ul class="panelgroup-inner">
+            % for i, perf in enumerate(event.performances):
+              <%
+                start_on_candidates = [salessegment.start_on for salessegment in perf.sales]
+                end_on_candidates = [salessegment.end_on for salessegment in perf.sales if salessegment.end_on]
+              %>
+              % if (str(perf.start_on.year) + "/" + str(perf.start_on.month).zfill(2) == month) and perf.public:
+                <% index += 1 %>
+                <li class="panel">
+                  <table class="panellist margined with-action-buttons">
+                    <caption>[${index}]${perf.title}</caption>
+                    <tbody>
+                      <tr>
+                        <td class="panel condensed">
+                          <div class="panel-inner h_70px">
+                            <p class="first">
+                              % if perf.open_on:
+                                開場：${helper.disp_time(perf.open_on)}<br/>
+                              % endif
+                              開演：${helper.disp_time(perf.start_on)}<br/>
+                              会場：${perf.venue}<br/>
+                            </p>
+                          </div>
+                          % if not start_on_candidates:
+                            <div class="actions">
+                                準備中
+                            </div>
+                          %elif min(start_on_candidates) >= helper.now():
+                            <div class="actions">
+                                販売前
+                            </div>
+                          %elif max(end_on_candidates) >= helper.now():
+                            <div class="actions">
+                              <a id="purchase" index="${count}" href="${purchase_links[perf.id]}">
+                                <button class="btn btn-primary btn-large"><span class="btn-inner">購入</span></button>
+                              </a>
+                            </div>
+                          % else:
+                            <div class="actions">
+                                販売期間終了
+                            </div>
+                          % endif
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </li>
+              % endif
+            % endfor
+          </ul>
+        </li>
+      % endfor
+  % endif
 </ul>
 
 
