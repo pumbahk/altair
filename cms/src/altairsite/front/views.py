@@ -69,13 +69,13 @@ def mobile_rendering_page(context, request):
     if not control.access_ok:
         logger.info(control.error_message)
         return mobile_dispatch_view(context, request)
+    if page.event_id or page.pageset.event_id:
+        return HTTPFound(request.route_path("eventdetail", _query=dict(event_id=page.event_id or page.pageset.event_id)))
     if page.pageset.genre_id:
         return HTTPFound(request.route_path("genre") + "?genre=" + str(page.pageset.genre_id))
-    if page.event_id is None:
-        logger.info(control.error_message)
-        return mobile_dispatch_view(context, request)
-    return HTTPFound(request.route_path("eventdetail", _query=dict(event_id=page.event_id or page.pageset.event_id)))
-    
+    logger.info(control.error_message)
+    return mobile_dispatch_view(context, request)
+
 
 def is_rakuten_ticket(info, request):
     return request.organization.short_name == "RT"
@@ -91,13 +91,12 @@ def smartphone_rendering_page(context, request):
     if not control.access_ok:
         logger.info(control.error_message)
         return smartphone_dispatch_view(context, request)
+    if page.event_id or page.pageset.event_id:
+        return HTTPFound(request.route_path("smartphone.detail", _query=dict(event_id=page.event_id or page.pageset.event_id)))
     if page.pageset.genre_id:
         return HTTPFound(request.route_path("smartphone.genre", genre_id=page.pageset.genre_id))
-    if page.event_id is None:
-        ## TOOOOOOOOOOOOO adhoc.
-        if page.url.startswith("special"):
-            return _rendering_page(context, request, control, page)
-        else:
-            return smartphone_dispatch_view(context, request)
-    return HTTPFound(request.route_path("smartphone.detail", _query=dict(event_id=page.event_id or page.pageset.event_id)))
-    
+    if page.url.startswith("special"):
+        return _rendering_page(context, request, control, page)
+    else:
+        return smartphone_dispatch_view(context, request)
+
