@@ -3344,6 +3344,8 @@ class OrganizationSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     point_fixed = Column(Numeric(precision=16, scale=2), nullable=True)
     point_rate = Column(Float, nullable=True)
 
+    bcc_recipient = Column(Unicode(255), nullable=True)
+
 class PerformanceSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = "PerformanceSetting"
     id = Column(Identifier, primary_key=True)
