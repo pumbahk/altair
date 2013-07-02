@@ -12,10 +12,6 @@
   <h3>オペレーター詳細</h3>
 </div>
 
-<div class="content">
-  ${ch.flash_messages(request)}
-</div>
-
 <%include file="/operators/_action_button.html" args="operator=operator, order=['edit', 'delete']" />
 
 <%include file="/operators/_detail.html" args="form=form, operator=operator" />

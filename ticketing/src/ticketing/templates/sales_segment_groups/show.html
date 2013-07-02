@@ -20,10 +20,6 @@ ${ch.breadcrumbs(
   <h1>販売区分グループ</h1>
 </div>
 
-<div class="content">
-  ${ch.flash_messages(request)}
-</div>
-
 <%include file="/sales_segment_groups/_detail.html", args="form=form_ss, sales_segment_group=sales_segment_group"/>
 
 <%include file="/sales_segment_groups/_action_button.html" args="order=['edit', 'copy', 'delete']" />

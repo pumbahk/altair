@@ -6,11 +6,6 @@
     <h1>ログイン情報の編集</h1>
   </div>
 
-  <div class="content">
-    ${ch.flash_messages(request)}
-    ${ch.alert_message(form)}
-  </div>
-
   <div class="well">
     <div id="login1" style="margin-top: 30px;">
       <form class="form-horizontal" action="${request.route_url('login.info.edit')}" method="POST">

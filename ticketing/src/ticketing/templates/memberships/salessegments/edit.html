@@ -9,11 +9,6 @@
   )}
 </%block>
 </%doc>
-
-<div class="content">
-  ${ch.flash_messages(request)}
-  ${ch.alert_message(form)}
-</div>
 <%
 route_name=u'編集'
 route_path=request.route_path('membergroups.salessegments',action='edit', membergroup_id=membergroup_id)

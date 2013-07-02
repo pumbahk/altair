@@ -17,13 +17,6 @@ ${ch.breadcrumbs(
   <h3>チケットテンプレート登録</h3>
 </div>
 
-<%doc>
-<div class="content">
-  ${ch.flash_messages(request)}
-  ${ch.alert_message(form)}
-</div>
-</%doc>
-
 <%
   if request.matched_route.name == 'tickets.templates.edit':
     route_name = u'編集'

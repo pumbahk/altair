@@ -26,13 +26,6 @@ ${ch.breadcrumbs(
   <h3>チケットテンプレート登録</h3>
 </div>
 
-<%doc>
-<div class="content">
-  ${ch.flash_messages(request)}
-  ${ch.alert_message(form)}
-</div>
-</%doc>
-
 <%
    event_id=request.matchdict["event_id"]
    route_name = u'編集'

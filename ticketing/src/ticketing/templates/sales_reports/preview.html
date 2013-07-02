@@ -36,10 +36,6 @@
   <h2>${u'イベント' if form.event_id.data else u'公演'} 売上レポート 送信確認</h2>
 </div>
 
-<div class="content">
-  ${ch.flash_messages(request)}
-</div>
-
 <div class="well well-small">
   <form action="${request.route_path('sales_reports.preview')}" method="GET" style="margin-bottom: 0px;">
     <div class="control-group">

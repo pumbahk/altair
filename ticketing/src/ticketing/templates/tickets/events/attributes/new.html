@@ -22,13 +22,6 @@ ${ch.breadcrumbs(
   <h3>属性(TicketBundleAttribute)登録</h3>
 </div>
 
-<%doc>
-<div class="content">
-  ${ch.flash_messages(request)}
-  ${ch.alert_message(form)}
-</div>
-</%doc>
-
 <%
   bundle_id = request.matchdict["bundle_id"]
   if request.matched_route.name == 'events.tickets.attributes.edit':

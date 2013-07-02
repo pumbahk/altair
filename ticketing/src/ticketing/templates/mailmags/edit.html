@@ -12,10 +12,6 @@ ${ch.breadcrumbs(
   <h3>メールマガジン</h3>
 </div>
 
-<div class="content">
-  ${ch.flash_messages(request)}
-</div>
-
 <div class="mailmags">
   <%include file="_form.html" args='route_path=request.url, route_name=u"更新"' />
 </div>

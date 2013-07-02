@@ -24,8 +24,5 @@ else:
 <%block name="breadcrumbs">
   ${ch.breadcrumbs(urls=urls, names=names)}
 </%block>
-<div class="content">
-  ${ch.flash_messages(request)}
-</div>
 <%include file="./_form.html" />
 <input type="button" onclick="$(this).prev().submit()" value="更新" submit/>

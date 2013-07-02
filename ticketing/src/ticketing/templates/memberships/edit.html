@@ -11,11 +11,6 @@
 <div class="page-header">
   <h3>会員種別編集</h3>
 </div>
-
-<div class="content">
-  ${ch.flash_messages(request)}
-  ${ch.alert_message(form)}
-</div>
 <%
 route_name=u'編集'
 route_path=request.route_path('memberships',action='edit', membership_id=membership.id)

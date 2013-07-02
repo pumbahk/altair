@@ -12,10 +12,6 @@
   <h3>membership作成</h3>
 </div>
 <a href="${request.route_path("organizations.index")}">新規取引先マスタ登録</a>
-<div class="content">
-  ${ch.flash_messages(request)}
-  ${ch.alert_message(form)}
-</div>
 <%
 route_name=u'登録'
 route_path=request.route_path('memberships',action='new', membership_id='*')

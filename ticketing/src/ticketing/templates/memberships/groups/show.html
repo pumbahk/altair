@@ -34,10 +34,6 @@
   <h3>会員区分詳細</h3>
 </div>
 
-<div class="content">
-  ${ch.flash_messages(request)}
-</div>
-
 <div>
   <a href="${request.route_path('membergroups',action="edit", membergroup_id=membergroup.id, _query=dict(membership_id=membergroup.membership_id,redirect_to=redirect_to))}" class="btn">編集</a>
   <a id="delete_link" href="#" class="btn">削除</a>

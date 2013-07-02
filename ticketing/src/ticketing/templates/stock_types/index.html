@@ -11,10 +11,6 @@ ${ch.breadcrumbs(
   <h1>席種</h1>
 </div>
 
-<div class="content">
-  ${ch.flash_messages(request)}
-</div>
-
 <%include file="/stock_types/_list.html" args="stock_types=stock_types" />
 <%include file="/stock_types/_action_button.html" args="event=event" />
 <div id="stock_types-form">

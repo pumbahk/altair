@@ -12,10 +12,6 @@ ${ch.breadcrumbs(
   <h3>チケットテンプレート登録</h3>
 </div>
 
-<div class="content">
-  ${ch.flash_messages(request)}
-</div>
-
 <p>このテンプレートから派生している以下のテンプレートを更新しますか?</p>
 <% sortable = lambda *args, **kwargs: h.sortable('ticket', *args, **kwargs) %>
 <table class="table fullwidth checkboxed_table">

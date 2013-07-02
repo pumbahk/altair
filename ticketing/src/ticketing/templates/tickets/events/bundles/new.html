@@ -20,13 +20,6 @@ ${ch.breadcrumbs(
   <h3>チケット券面構成(TicketBundle)登録</h3>
 </div>
 
-<%doc>
-<div class="content">
-  ${ch.flash_messages(request)}
-  ${ch.alert_message(form)}
-</div>
-</%doc>
-
 <%
   if request.matched_route.name == 'events.tickets.bundles.edit':
     route_name = u'編集'
