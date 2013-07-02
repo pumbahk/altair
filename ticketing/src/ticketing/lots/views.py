@@ -2,7 +2,9 @@
 from datetime import datetime, timedelta
 import logging
 import operator
-import json
+#import json
+
+from webob.multidict import MultiDict
 
 from pyramid.view import view_config, view_defaults
 #from pyramid.view import render_view_to_response
@@ -15,7 +17,7 @@ from altair.pyramid_tz.api import get_timezone
 
 from ticketing.models import DBSession
 from ticketing.core.models import PaymentDeliveryMethodPair
-from ticketing.cart import api as cart_api
+#from ticketing.cart import api as cart_api
 from ticketing.users import api as user_api
 from ticketing.utils import toutc
 from ticketing.payments.payment import Payment
@@ -30,8 +32,8 @@ from .exceptions import NotElectedException
 from .models import (
     #Lot,
     LotEntry,
-    LotEntryWish,
-    LotElectedEntry,
+    #LotEntryWish,
+    #LotElectedEntry,
 )
 from .adapters import LotSessionCart
 from . import urls
@@ -124,13 +126,40 @@ class EntryLotView(object):
             p.sort(key=key_func)
         return performance_product_map
 
+    def _create_form(self):
+        user = user_api.get_or_create_user(self.context.authenticated_user())
+        user_profile = None
+        if user is not None:
+            user_profile = user.user_profile
+
+        if user_profile is not None:
+            formdata = MultiDict(
+                last_name=user_profile.last_name,
+                last_name_kana=user_profile.last_name_kana,
+                first_name=user_profile.first_name,
+                first_name_kana=user_profile.first_name_kana,
+                tel_1=user_profile.tel_1,
+                fax=getattr(user_profile, "fax", None),
+                zip=user_profile.zip,
+                prefecture=user_profile.prefecture,
+                city=user_profile.city,
+                address_1=user_profile.address_1,
+                address_2=user_profile.address_2,
+                email_1=user_profile.email_1,
+                email_2=user_profile.email_2
+                )
+        else:
+            formdata = None
+
+        return schemas.ClientForm(formdata=formdata)
+
     @view_config(request_method="GET")
     def get(self, form=None):
         """
 
         """
         if form is None:
-            form = schemas.ClientForm()
+            form = self._create_form()
 
         event = self.context.event
         lot = self.context.lot
