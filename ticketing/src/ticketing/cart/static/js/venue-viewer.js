@@ -1,6 +1,6 @@
 (function () {
 var __LIBS__ = {};
-__LIBS__['_K6YL4EHYH1MHY_G'] = (function (exports) { (function () { 
+__LIBS__['jBGHQV64R_Z81V9D'] = (function (exports) { (function () { 
 
 /************** util.js **************/
 exports.eventKey = function Util_eventKey(e) {
@@ -127,7 +127,7 @@ exports.makeHitTester = function Util_makeHitTester(a) {
   }
 };
  })(); return exports; })({});
-__LIBS__['qQNLQP5_Z6JMLIL9'] = (function (exports) { (function () { 
+__LIBS__['RSJPE4TVBYXNMVID'] = (function (exports) { (function () { 
 
 /************** CONF.js **************/
 exports.DEFAULT = {
@@ -182,11 +182,11 @@ exports.DEFAULT = {
   }
 };
  })(); return exports; })({});
-__LIBS__['N6AKTNIUDJ290E6E'] = (function (exports) { (function () { 
+__LIBS__['OCLSDQCQ1F295768'] = (function (exports) { (function () { 
 
 /************** seat.js **************/
-var util = __LIBS__['_K6YL4EHYH1MHY_G'];
-var CONF = __LIBS__['qQNLQP5_Z6JMLIL9'];
+var util = __LIBS__['jBGHQV64R_Z81V9D'];
+var CONF = __LIBS__['RSJPE4TVBYXNMVID'];
 
 function clone(obj) {
   return $.extend({}, obj);
@@ -1063,25 +1063,25 @@ function parseTransform(transform_str) {
             parseFloat(args[4]), parseFloat(args[5]));
     case 'translate':
         if (args.length == 1)
-            args[2] = 0;
+            args[1] = 0;
         else if (args.length != 2)
             throw new Error("invalid number of arguments for translate()")
         return Fashion.Matrix.translate({ x:parseFloat(args[0]), y:parseFloat(args[1]) });
     case 'scale':
         if (args.length == 1)
-            args[2] = 0;
+            args[1] = 0;
         else if (args.length != 2)
             throw new Error("invalid number of arguments for scale()");
         return new Fashion.Matrix(parseFloat(args[0]), 0, 0, parseFloat(args[1]), 0, 0);
     case 'rotate':
         if (args.length == 1)
-            args[2] = 0;
+            args[1] = 0;
         else if (args.length != 2)
             throw new Error("invalid number of arguments for rotate()");
         return Fashion.Matrix.rotate(parseFloat(args[0]) * Math.PI / 180);
     case 'skewX':
         if (args.length == 1)
-            args[2] = 0;
+            args[1] = 0;
         else if (args.length != 2)
             throw new Error('invalid number of arguments for skewX()');
         var t = parseFloat(args[0]) * Math.PI / 180;
@@ -1099,9 +1099,9 @@ function parseTransform(transform_str) {
     throw new Error('invalid transform function: ' + f);
 }
 
-  var CONF = __LIBS__['qQNLQP5_Z6JMLIL9'];
-  var seat = __LIBS__['N6AKTNIUDJ290E6E'];
-  var util = __LIBS__['_K6YL4EHYH1MHY_G'];
+  var CONF = __LIBS__['RSJPE4TVBYXNMVID'];
+  var seat = __LIBS__['OCLSDQCQ1F295768'];
+  var util = __LIBS__['jBGHQV64R_Z81V9D'];
 
   var StoreObject = _class("StoreObject", {
     props: {
