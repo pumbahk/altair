@@ -995,7 +995,7 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             # 直近の販売区分を調べる
             if sales_segment.start_at >= now and (next_sales_segment is None or next_sales_segment.start_at > sales_segment.start_at):
                 next_sales_segment = sales_segment
-            if sales_segment.end_at < now and (last_sales_segment is None or last_sales_segment.end_at < sales_segment.end_at):
+            if sales_segment.end_at is not None and sales_segment.end_at < now and (last_sales_segment is None or last_sales_segment.end_at < sales_segment.end_at):
                 last_sales_segment = sales_segment
             # のと同時に、パフォーマンス毎の販売区分のリストをつくる
             per_performance_datum = per_performance_data.get(sales_segment.performance_id)
@@ -1022,7 +1022,7 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             if per_performance_datum['start_at'] >= now:
                 if next is None or per_performance_datum['start_at'] < next['start_at']:
                     next = per_performance_datum
-            elif per_performance_datum['end_at'] < now:
+            elif per_performance_datum['end_at'] is not None and per_performance_datum['end_at'] < now:
                 if last is None or per_performance_datum['end_at'] > last['end_at']:
                     last = per_performance_datum
 
@@ -1254,8 +1254,11 @@ class PaymentDeliveryMethodPair(Base, BaseModel, WithTimestamp, LogicallyDeleted
         return self.delivery_fee_per_ticket + self.transaction_fee_per_ticket
 
     def is_available_for(self, sales_segment, on_day):
-        border = sales_segment.end_at.date() - timedelta(days=self.unavailable_period_days)
-        return self.public and (todate(on_day) <= border)
+        return self.public and (
+            sales_segment.end_at is None or \
+            (todate(on_day) <= (sales_segment.end_at.date()
+                                - timedelta(days=self.unavailable_period_days)))
+            )
 
     @staticmethod
     def create_from_template(template, **kwargs):
