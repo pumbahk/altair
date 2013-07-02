@@ -4,10 +4,14 @@
 <%block name="css">
   <link rel="stylesheet" href="${request.static_url('altair.app.ticketing.cart:static/js/css/jquery.smihica_vertical_slider/smihica_vertical_slider.css')}" type="text/css" media="all" />
   <style type="text/css">
-.modal {
-  font-size: 150%;
-}
-</style>
+    .modal {
+      font-size: 150%;
+    }
+
+    .dispBox {
+      margin-right: 20px
+    }
+  </style>
 </%block>
 
 <%block name="javascript">
@@ -38,50 +42,69 @@ $(function() {cart.init(salesSegmentsSelection, selected, cartReleaseUrl, false)
         if performance:
             link = request.route_url('cart.switchpc.perf', event_id=event['id'], performance=performance)
     %>
-    <a href="${link}">
-      <div class="buttonbox">
-        <button class="btn btn-primary btn-large">PCサイトで購入する</button>
-      </div>
-    </a>
+    <dl>
+        <dd>
+            <a href="${link}">
+              <div style="margin: 0 auto">
+                <button class="btn-primary btn-large" style="margin: 0 auto">PCサイトで購入する</button>
+              </div>
+            </a>
+        </dd>
+    </dl>
 
     <hr/>
-    <%m:header>イベント名称（公演名）</%m:header>
-    <div class="sectionbox">
-      <div class="sectionbox-inner">
-        ${event['title']} <br/>
-        (<span class="performanceNameSpace"></span>)
-      </div>
-    </div>
+    <dl>
+      <dt>
+        <%m:header>イベント名称</%m:header>
+      </dt>
+      <dd class="dispBox">
+        ${event['title']}
+      </dd>
+    </dl>
 
     <hr/>
-    <%m:header>日時・会場選択</%m:header>
-    <form id="form1" name="form1" method="post" action="">
-      <div id="settlementSelectBox">
-        <div id="settlementSelectBoxInner">
-          ${selection_label}<br/>
-          <select name="select" id="date-select">
-          </select>
-          <br/>
-          ${second_selection_label}<br/>
-          <select name="select2" id="venue-select">
-          </select>
-          <br/>
-        </div>
-      </div>
-    </form>
+    <dl>
+        <dt>
+          <%m:header>日時・会場選択</%m:header>
+        </dt>
+        <dd class="dispBox">
+          <form id="form1" name="form1" method="post" action="">
+            <div id="settlementSelectBox">
+              <div id="settlementSelectBoxInner">
+                ${selection_label}<br/>
+                <select name="select" id="date-select">
+                </select>
+                <br/>
+                ${second_selection_label}<br/>
+                <select name="select2" id="venue-select" style="width: 260px">
+                </select>
+                <br/>
+              </div>
+            </div>
+          </form>
 
-    <br/>
-    <div id="settlementOperation" class="settlementBox2">
-      <div class="settlementBoxInner2">
-          <span id="performanceDate">-</span><br/>
-          <span id="performanceVenue">-</span>
+          <br/>
+          <div id="settlementOperation" class="settlementBox2">
+            <div class="settlementBoxInner2">
+              <span id="performanceDate">-</span><br/>
+              <span id="performanceVenue">-</span>
+            </div>
+          </div>
+        </dd>
+    </dl>
 
-        <hr/>
+
+
+    <hr/>
+    <dl>
+      <dt>
         <%m:header>席種選択</%m:header>
+      </dt>
+      <dd class="dispBox">
+        席種、枚数を選択して下さい。
         <div class="settlementOperationPaneInner">
           <div class="settlementOperationPaneInnerContent">
             <div id="selectSeatType" class="focused">
-              <h3 class="lead">席種をお選びください</h3>
               <form name="form2" method="post" action="" class="main" onsubmit="return false;">
                 <input type="hidden" name="performance_id" id="current-performance-id"/>
                 <div class="seatListContainer main">
@@ -170,11 +193,6 @@ $(function() {cart.init(salesSegmentsSelection, selected, cartReleaseUrl, false)
                   <div class="guidance">
                     <div class="guidanceInner">
 
-                      <hr/>
-                      <%m:header>チケット購入方法</%m:header>
-                      <p>1. 希望の席種をクリックしてください。</p>
-                      <p>2. 希望の券種と枚数を選択してください。</p>
-                      <p>3. おまかせで購入するを選択してください。</p>
                     </div>
                   </div>
                 </div>
@@ -182,33 +200,63 @@ $(function() {cart.init(salesSegmentsSelection, selected, cartReleaseUrl, false)
             </div>
           </div>
         </div>
-      </div>
-    </div>
+      </dd>
+    </dl>
 
     <h2 class="glitter red">イベント詳細</h2>
     <div class="settlementBox2" id="settlementEventDetail" style="clear:both">
       <div class="settlementBoxInner2">
 
-        <%m:header>イベント名称</%m:header>
-        ${event["title"]} (<span class="performanceNameSpace"></span>)
+        <dl>
+          <dt>
+            <%m:header>イベント名称</%m:header>
+          </dt>
+          <dd class="dispBox">
+            ${event["title"]}
+          </dd>
+        </dl>
 
         <hr/>
-        <%m:header>開催日時</%m:header>
-        <span id="descPerformanceDate"></span>
+        <dl>
+          <dt>
+            <%m:header>開催日時</%m:header>
+          </dt>
+          <dd class="dispBox">
+            <span id="descPerformanceDate"></span>
+          </dd>
+        </dl>
 
         <hr/>
-        <%m:header>会場</%m:header>
-        ${", ".join(set(event['venues']))}
+        <dl>
+          <dt>
+            <%m:header>会場</%m:header>
+          </dt>
+          <dd class="dispBox">
+            ${", ".join(set(event['venues']))}
+          </dd>
+        </dl>
 
         <hr/>
-        <%m:header>販売期間</%m:header>
-        ${event['sales_start_on']} 〜 ${event['sales_end_on']}
+        <dl>
+          <dt>
+            <%m:header>販売期間</%m:header>
+          </dt>
+          <dd class="dispBox">
+            ${event['sales_start_on']} 〜 ${event['sales_end_on']}
+          </dd>
+        </dl>
 
         <hr/>
-        <%m:header>その他</%m:header>
-        %for v in event_extra_info:
-          ${v['label']}
-          ${v['content']|n}
-        %endfor
+        <dl>
+          <dt>
+            <%m:header>その他</%m:header>
+          </dt>
+          <dd class="dispBox">
+            %for v in event_extra_info:
+              ${v['label']}
+              ${v['content']|n}
+            %endfor
+          </dd>
+        </dl>
       </div>
     </div>
