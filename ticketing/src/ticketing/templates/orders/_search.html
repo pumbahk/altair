@@ -1,5 +1,5 @@
 <%page args="form, url='/orders/'" />
-<%namespace file="/common/helpers.html" name="h" />
+<%namespace file="/common/helpers.html" name="ch" />
 <%
 from ticketing.formhelpers import OurDateWidget
 %>
@@ -214,8 +214,8 @@ from ticketing.formhelpers import OurDateWidget
         $("#search select[name='performance_id']").change(update_sales_segments).chosen();
       });
     </script>
-    ${h.form_item(form.sort)}
-    ${h.form_item(form.direction)}
+    ${ch.form_item(form.sort)}
+    ${ch.form_item(form.direction)}
   </form>
 </div>
 

@@ -1,7 +1,7 @@
 <%inherit file="/layout_2cols.html"/>
-<%namespace file="/common/helpers.html" name="h" />
+<%namespace file="/common/helpers.html" name="ch" />
 <%block name="breadcrumbs">
-  ${h.breadcrumbs(
+  ${ch.breadcrumbs(
       names=[u'トップ', u'引取方法'],
       urls=[request.route_path('index')]
   )}
@@ -11,7 +11,7 @@
 </div>
 
 <div class="content">
-  ${h.flash_messages(request)}
+  ${ch.flash_messages(request)}
 </div>
 
 <%include file="/delivery_methods/_list.html" args="form=form, delivery_methods=delivery_methods" />

@@ -1,8 +1,8 @@
 <%inherit file="/layout_2cols.html"/>
-<%namespace file="/common/helpers.html" name="h" />
+<%namespace file="/common/helpers.html" name="ch" />
 
 <%block name="breadcrumbs">
-  ${h.breadcrumbs(
+  ${ch.breadcrumbs(
       names=[u'トップ', u'会場', venue.name],
       urls=[request.route_path('index'), request.route_path('venues.index')]
   )}
@@ -25,7 +25,7 @@
 </div>
 
 <div class="content">
-  ${h.flash_messages(request)}
+  ${ch.flash_messages(request)}
 </div>
 
 <table class="table table-striped table-bordered">

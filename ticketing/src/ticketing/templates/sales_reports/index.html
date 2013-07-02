@@ -1,5 +1,5 @@
 <%inherit file="/layout_2cols.html"/>
-<%namespace file="/common/helpers.html" name="h" />
+<%namespace file="/common/helpers.html" name="ch" />
 
 <script type="text/javascript">
   function event_link(url){
@@ -9,7 +9,7 @@
 </script>
 
 <%block name="breadcrumbs">
-  ${h.breadcrumbs(
+  ${ch.breadcrumbs(
       names=[u'トップ', u'売上レポート'],
       urls=[request.route_path('index')]
   )}
@@ -20,7 +20,7 @@
 </div>
 
 <div class="content">
-  ${h.flash_messages(request)}
+  ${ch.flash_messages(request)}
 </div>
 
 <div class="well well-small">
@@ -34,8 +34,8 @@
     <th colspan="2">累計</th>
     <th colspan="2">
     % if form.limited_from.data or form.limited_to.data:
-      ${h.safe_strftime(form.limited_from.data)} 〜</br>
-      ${h.safe_strftime(form.limited_to.data)}
+      ${ch.safe_strftime(form.limited_from.data)} 〜</br>
+      ${ch.safe_strftime(form.limited_to.data)}
     % else:
       全期間
     % endif
@@ -55,16 +55,16 @@
   <tr>
     <td><a href='javascript:event_link("${request.route_path("sales_reports.event", event_id=record.id)}");'>${record.title}</a></td>
     % if record.sales_start_day == record.sales_end_day:
-    <td>${h.safe_strftime(record.sales_start_day)}</td>
+    <td>${ch.safe_strftime(record.sales_start_day)}</td>
     % else:
-    <td>${h.safe_strftime(record.sales_start_day)} 〜 ${h.safe_strftime(record.sales_end_day)}</td>
+    <td>${ch.safe_strftime(record.sales_start_day)} 〜 ${ch.safe_strftime(record.sales_end_day)}</td>
     % endif
-    <td class="numeric">${h.price_format(record.stock_quantity)}</td>
-    <td class="numeric">${h.price_format(record.vacant_quantity)}</td>
-    <td class="numeric">${h.price_format(record.total_order_quantity)}</td>
-    <td class="price">${h.price_format(record.total_order_amount)}</td>
-    <td class="numeric">${h.price_format(record.order_quantity)}</td>
-    <td class="price">${h.price_format(record.order_amount)}</td>
+    <td class="numeric">${ch.price_format(record.stock_quantity)}</td>
+    <td class="numeric">${ch.price_format(record.vacant_quantity)}</td>
+    <td class="numeric">${ch.price_format(record.total_order_quantity)}</td>
+    <td class="price">${ch.price_format(record.total_order_amount)}</td>
+    <td class="numeric">${ch.price_format(record.order_quantity)}</td>
+    <td class="price">${ch.price_format(record.order_amount)}</td>
   </tr>
   % endfor
 </table>

@@ -1,5 +1,5 @@
 <%inherit file="/layout_2cols.html"/>
-<%namespace file="/common/helpers.html" name="h" />
+<%namespace file="/common/helpers.html" name="ch" />
 
 <script type="text/javascript">
   function send_report(){
@@ -22,7 +22,7 @@
       breadcrumb = u'イベント'
       route_path = request.route_path('sales_reports.event', event_id=form.event_id.data)
   %>
-  ${h.breadcrumbs(
+  ${ch.breadcrumbs(
       names=[u'トップ', u'売上レポート', breadcrumb, u'送信確認'],
       urls=[
         request.route_path('index'),
@@ -37,7 +37,7 @@
 </div>
 
 <div class="content">
-  ${h.flash_messages(request)}
+  ${ch.flash_messages(request)}
 </div>
 
 <div class="well well-small">
@@ -49,10 +49,10 @@
         <input class="btn btn-warning" type="button" value="送信" onclick="javascript:send_report();">
       </div>
     </div>
-    ${h.form_item(form.event_id)}
-    ${h.form_item(form.performance_id)}
-    ${h.form_item(form.recipient, class_='span10')}
-    ${h.form_item(form.subject, class_='span10')}
+    ${ch.form_item(form.event_id)}
+    ${ch.form_item(form.performance_id)}
+    ${ch.form_item(form.recipient, class_='span10')}
+    ${ch.form_item(form.subject, class_='span10')}
   </form>
 </div>
 

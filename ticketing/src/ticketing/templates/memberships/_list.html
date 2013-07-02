@@ -1,5 +1,5 @@
 <%page args="form, memberships" />
-<%namespace file="/common/helpers.html" name="h" />
+<%namespace file="/common/helpers.html" name="ch" />
 <%namespace file="/common/modal.html" name="m" />
 
 <script type="text/javascript">
@@ -43,7 +43,7 @@
     % endfor
     </tbody>
   </table>
-##  ${h.pager(memberships)}
+##  ${ch.pager(memberships)}
 </form>
 
 ${m.delete_modal()}

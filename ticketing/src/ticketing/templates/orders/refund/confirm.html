@@ -1,8 +1,8 @@
 <%inherit file="/layout_2cols.html"/>
-<%namespace file="/common/helpers.html" name="h" />
+<%namespace file="/common/helpers.html" name="ch" />
 
 <%block name="breadcrumbs">
-  ${h.breadcrumbs(
+  ${ch.breadcrumbs(
     names=[u'トップ', u'購入情報', u'払戻', u'払戻確認'],
     urls=[request.route_path('index'), request.route_path('orders.index'), request.route_path('orders.refund.search')]
   )}
@@ -13,8 +13,8 @@
 </div>
 
 <div class="content">
-  ${h.flash_messages(request)}
-  ${h.alert_message(form_refund)}
+  ${ch.flash_messages(request)}
+  ${ch.alert_message(form_refund)}
 </div>
 
 <div class="alert alert-info">
@@ -39,12 +39,12 @@
   </script>
 
   <form action="${request.route_path('orders.refund.confirm')}" method="POST">
-    ${h.form_item(form_refund.payment_method_id)}
-    ${h.form_item(form_refund.include_item)}
-    ${h.form_item(form_refund.include_system_fee)}
-    ${h.form_item(form_refund.include_transaction_fee)}
-    ${h.form_item(form_refund.include_delivery_fee)}
-    ${h.form_item(form_refund.cancel_reason)}
+    ${ch.form_item(form_refund.payment_method_id)}
+    ${ch.form_item(form_refund.include_item)}
+    ${ch.form_item(form_refund.include_system_fee)}
+    ${ch.form_item(form_refund.include_transaction_fee)}
+    ${ch.form_item(form_refund.include_delivery_fee)}
+    ${ch.form_item(form_refund.cancel_reason)}
     <a href="${request.route_path('orders.refund.checked')}" class="btn">戻る</a>
     <a class="btn btn-success" href="${request.route_path('orders.download', _query=dict(action='checked'))}">
       <i class="icon-file icon-white"></i> 払戻対象をダウンロード

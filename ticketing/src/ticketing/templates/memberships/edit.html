@@ -1,8 +1,8 @@
 <%inherit file="/layout_2cols.html"/>
-<%namespace file="/common/helpers.html" name="h" />
+<%namespace file="/common/helpers.html" name="ch" />
 
 <%block name="breadcrumbs">
-  ${h.breadcrumbs(
+  ${ch.breadcrumbs(
       names=[u'トップ', u'membership',u"詳細"],
       urls=[request.route_path('index'), request.route_path('memberships',action="index",membership_id="*"),request.route_path('memberships',action="show",membership_id=membership.id),]
   )}
@@ -13,8 +13,8 @@
 </div>
 
 <div class="content">
-  ${h.flash_messages(request)}
-  ${h.alert_message(form)}
+  ${ch.flash_messages(request)}
+  ${ch.alert_message(form)}
 </div>
 <%
 route_name=u'編集'

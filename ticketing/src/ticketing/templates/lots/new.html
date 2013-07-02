@@ -1,8 +1,8 @@
 <%inherit file="/layout_2cols.html" />
-<%namespace file="/common/helpers.html" name="h" />
+<%namespace file="/common/helpers.html" name="ch" />
 
 <%block name="breadcrumbs">
-  ${h.breadcrumbs(
+  ${ch.breadcrumbs(
       names=[u'イベント', event.title, u'抽選'],
       urls=[request.route_path('events.index'), request.route_path('events.show', event_id=event.id)]
   )}
@@ -11,27 +11,27 @@
   <h1>抽選</h1>
 </div>
 <div class="content">
-  ${h.flash_messages(request)}
+  ${ch.flash_messages(request)}
 </div>
 <div class="well">
   <form class="form-horizontal" action="${request.url}" method="POST">
     <fieldset>
         <legend>抽選情報</legend>
-      ${h.form_item(form.name, class_='span8', maxlength=255)}
-      ${h.form_item(form.limit_wishes, help=u"1回の申し込み中で第何希望まで出せるかの設定")}
-      ${h.form_item(form.entry_limit, help=u"同一ユーザーがこの抽選に何回申し込めるかの設定")}
-      ${h.form_item(form.description, help=u"抽選申し込み画面に表示される注意事項など")}
-      ${h.form_item(form.lotting_announce_datetime)}
-      ${h.form_item(form.auth_type)}
+      ${ch.form_item(form.name, class_='span8', maxlength=255)}
+      ${ch.form_item(form.limit_wishes, help=u"1回の申し込み中で第何希望まで出せるかの設定")}
+      ${ch.form_item(form.entry_limit, help=u"同一ユーザーがこの抽選に何回申し込めるかの設定")}
+      ${ch.form_item(form.description, help=u"抽選申し込み画面に表示される注意事項など")}
+      ${ch.form_item(form.lotting_announce_datetime)}
+      ${ch.form_item(form.auth_type)}
     </fieldset>
     <fieldset>
         <legend>販売区分情報</legend>
-        ${h.form_item(form.sales_segment_group_id, 
+        ${ch.form_item(form.sales_segment_group_id, 
                       help=str(manage_sales_segment_group_link))}
-      ${h.form_item(form.start_at)}
-      ${h.form_item(form.end_at)}
-      ${h.form_item(form.upper_limit)}
-      ${h.form_item(form.seat_choice)}
+      ${ch.form_item(form.start_at)}
+      ${ch.form_item(form.end_at)}
+      ${ch.form_item(form.upper_limit)}
+      ${ch.form_item(form.seat_choice)}
     </fieldset>
     <div class="form-actions">
       <input class="btn btn-primary" type="submit" >

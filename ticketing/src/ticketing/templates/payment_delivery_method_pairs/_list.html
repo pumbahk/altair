@@ -1,5 +1,5 @@
 <%page args="payment_delivery_method_pairs" />
-<%namespace file="/common/helpers.html" name="h" />
+<%namespace file="/common/helpers.html" name="ch" />
 <% from ticketing.core.models import PaymentDeliveryMethodPair as PDMP %>
 
 % if payment_delivery_method_pairs:
@@ -21,7 +21,7 @@
     <td><input type="radio" name="payment_delivery_method_pair_id" value=${pdmp.id} /></td>
     <td>${pdmp.payment_method.name}</td>
     <td>${pdmp.delivery_method.name}</td>
-    <td>${h.price_format(pdmp.system_fee)}</td>
+    <td>${ch.price_format(pdmp.system_fee)}</td>
     <%! from ticketing.core.models import FeeTypeEnum %>
     <%
       fee_type = ''
@@ -30,7 +30,7 @@
       if pdmp.payment_method.fee_type == int(FeeTypeEnum.PerUnit.v[0]):
         fee_type = u' / 枚'
     %>
-    <td>${h.price_format(pdmp.transaction_fee)}円${fee_type}</td>
+    <td>${ch.price_format(pdmp.transaction_fee)}円${fee_type}</td>
     <%
       fee_type = ''
       if pdmp.delivery_method.fee_type == int(FeeTypeEnum.Once.v[0]):
@@ -38,8 +38,8 @@
       if pdmp.delivery_method.fee_type == int(FeeTypeEnum.PerUnit.v[0]):
         fee_type = u' / 枚'
     %>
-    <td>${h.price_format(pdmp.delivery_fee)}円${fee_type}</td>
-    <td>${h.price_format(pdmp.discount)}</td>
+    <td>${ch.price_format(pdmp.delivery_fee)}円${fee_type}</td>
+    <td>${ch.price_format(pdmp.discount)}</td>
     <td>${pdmp.discount_unit or ''}</td>
     <td>${u'販売終了%s日前から' % pdmp.unavailable_period_days if pdmp.unavailable_period_days else ''}</td>
     <td>${u'○' if pdmp.public else u'×'}</td>

@@ -1,9 +1,9 @@
 <%inherit file="/layout_2cols.html"/>
-<%namespace file="/common/helpers.html" name="h" />
+<%namespace file="/common/helpers.html" name="ch" />
 
 <div class="content">
-  ${h.flash_messages(request)}
-  ${h.alert_message(form)}
+  ${ch.flash_messages(request)}
+  ${ch.alert_message(form)}
 </div>
 
 <div class="page-header">
@@ -29,7 +29,7 @@ route_path=request.route_path("sales_segment_groups.bind_membergroup", sales_seg
 <div class="well">
   <form id="edit" action="${route_path}" method="POST">
     <input type="hidden" name="redirect_to" value="${redirect_to}">
-    ${h.form_item(form.membergroups, id="membergroups", style="height:%s" % form.membergroups_height)}
+    ${ch.form_item(form.membergroups, id="membergroups", style="height:%s" % form.membergroups_height)}
     <div class="form-actions">
       <input class="btn btn-primary" type="submit" name="submit" value="${route_name}">
     </div>

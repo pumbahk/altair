@@ -1,12 +1,12 @@
 <%inherit file="/layout_2cols.html" />
-<%namespace file="/common/helpers.html" name="h" />
+<%namespace file="/common/helpers.html" name="ch" />
 <%block name="fulltitle">
 Altair Backend -- ${lot.event.title}[${lot.name}]
 </%block>
 <%block name="javascript">
 </%block>
 <%block name="breadcrumbs">
-  ${h.breadcrumbs(
+  ${ch.breadcrumbs(
       names=[u'イベント', lot.event.title, u'抽選', lot.name, u'商品'],
       urls=[
         request.route_path('events.index'),
@@ -23,19 +23,19 @@ Altair Backend -- ${lot.event.title}[${lot.name}]
   </h1>
 </div>
 <div class="content">
-  ${h.flash_messages(request)}
+  ${ch.flash_messages(request)}
 </div>
 
 <div class="row-fluid">
   <div class="span9">
   <form class="form-horizontal" action="${request.url}" method="POST">
     <fieldset>
-      ${h.form_item(form.name)}
-      ${h.form_item(form.price)}
-      ${h.form_item(form.display_order)}
-      ${h.form_item(form.description)}
-      ${h.form_item(form.seat_stock_type_id)}
-      ${h.form_item(form.performance_id)}
+      ${ch.form_item(form.name)}
+      ${ch.form_item(form.price)}
+      ${ch.form_item(form.display_order)}
+      ${ch.form_item(form.description)}
+      ${ch.form_item(form.seat_stock_type_id)}
+      ${ch.form_item(form.performance_id)}
     </fieldset>
     <input type="submit" class="btn btn-primary">
   </form>

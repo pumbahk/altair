@@ -1,9 +1,9 @@
 <%inherit file="/layout_2cols.html"/>
-<%namespace file="/common/helpers.html" name="h" />
+<%namespace file="/common/helpers.html" name="ch" />
 
 <%doc>
 <%block name="breadcrumbs">
-  ${h.breadcrumbs(
+  ${ch.breadcrumbs(
       names=[u'トップ', u'membergroup'],
       urls=[request.route_path('index'), request.route_path('membergroups',action="index",membergroup_id="*")]
   )}
@@ -15,8 +15,8 @@
 </div>
 
 <div class="content">
-  ${h.flash_messages(request)}
-  ${h.alert_message(form)}
+  ${ch.flash_messages(request)}
+  ${ch.alert_message(form)}
 </div>
 <%
 route_name=u'登録'

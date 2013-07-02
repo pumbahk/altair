@@ -1,8 +1,8 @@
 <%inherit file="/layout_2cols.html"/>
-<%namespace file="/common/helpers.html" name="h" />
+<%namespace file="/common/helpers.html" name="ch" />
 
 <%block name="breadcrumbs">
-  ${h.breadcrumbs(
+  ${ch.breadcrumbs(
     names=[u'トップ', u'購入情報'],
     urls=[request.route_path('index')]
   )}
@@ -13,8 +13,8 @@
 </div>
 
 <div class="content">
-  ${h.flash_messages(request)}
-  ${h.alert_message(form_search)}
+  ${ch.flash_messages(request)}
+  ${ch.alert_message(form_search)}
 </div>
 
 <div style="float: left;">

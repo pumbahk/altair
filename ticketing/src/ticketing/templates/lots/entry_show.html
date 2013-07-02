@@ -1,5 +1,5 @@
 <%inherit file="/layout_2cols.html" />
-<%namespace file="/common/helpers.html" name="h" />
+<%namespace file="/common/helpers.html" name="ch" />
 <%namespace file="_entries_tabs.html" name="tabs" />
 
 <%block name="fulltitle">
@@ -8,7 +8,7 @@ Altair Backend -- ${lot.event.title}[${lot.name}]
 <%block name="javascript">
 </%block>
 <%block name="breadcrumbs">
-  ${h.breadcrumbs(
+  ${ch.breadcrumbs(
       names=[u'イベント', lot.event.title, u'抽選', lot.name, u'申し込み状況',u'詳細'],
       urls=[
         request.route_path('events.index'),
@@ -24,7 +24,7 @@ Altair Backend -- ${lot.event.title}[${lot.name}]
 </div>
 
 <div class="content">
-  ${h.flash_messages(request)}
+  ${ch.flash_messages(request)}
 </div>
 
 <div class="tabbable tabs-below" id="tabbable-content">
@@ -62,9 +62,9 @@ Altair Backend -- ${lot.event.title}[${lot.name}]
                 <th>決済日時</th>
                 <td class="span3">
                   % if lot_entry.order.paid_at:
-                  ${h.safe_strftime(lot_entry.order.paid_at)}
+                  ${ch.safe_strftime(lot_entry.order.paid_at)}
                   % endif
-                  ${h.payment_status(lot_entry.order)}
+                  ${ch.payment_status(lot_entry.order)}
                 </td>
               </tr>
               %else:

@@ -1,5 +1,5 @@
 <%inherit file="/layout_2cols.html"/>
-<%namespace file="/common/helpers.html" name="h" />
+<%namespace file="/common/helpers.html" name="ch" />
 <%include file="/memberships/_detail.html" args="form=form, membership=membership" />
 <%namespace file="/common/modal.html" import="delete_modal" />
 
@@ -17,7 +17,7 @@
 </script>
 
 <%block name="breadcrumbs">
-  ${h.breadcrumbs(
+  ${ch.breadcrumbs(
       names=[u'トップ', u'membership'],
       urls=[request.route_path('index'), request.route_path('memberships',action="index",membership_id="*")]
   )}
@@ -28,7 +28,7 @@
 </div>
 
 <div class="content">
-  ${h.flash_messages(request)}
+  ${ch.flash_messages(request)}
 </div>
 
 <div>

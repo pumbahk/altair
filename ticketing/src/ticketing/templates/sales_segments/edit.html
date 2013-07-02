@@ -1,5 +1,5 @@
 <%inherit file="/layout_2cols.html"/>
-<%namespace file="/common/helpers.html" name="h"/>
+<%namespace file="/common/helpers.html" name="ch"/>
 <%
 names = [u'イベント', event.title]
 urls = [request.route_path('events.index'), request.route_path('events.show', event_id=event.id)]
@@ -22,10 +22,10 @@ else:
   names.extend([u'新規作成'])
 %>
 <%block name="breadcrumbs">
-  ${h.breadcrumbs(urls=urls, names=names)}
+  ${ch.breadcrumbs(urls=urls, names=names)}
 </%block>
 <div class="content">
-  ${h.flash_messages(request)}
+  ${ch.flash_messages(request)}
 </div>
 <%include file="./_form.html" />
 <input type="button" onclick="$(this).prev().submit()" value="更新" submit/>

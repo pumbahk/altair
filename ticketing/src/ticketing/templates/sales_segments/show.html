@@ -1,12 +1,12 @@
 <%inherit file="/layout_2cols.html"/>
-<%namespace file="/common/helpers.html" name="h"/>
+<%namespace file="/common/helpers.html" name="ch"/>
 <script type="text/javascript">
 function get_selected_sales_segment_id() {
   return ${sales_segment.id};
 }
 </script>
 <%block name="breadcrumbs">
-  ${h.breadcrumbs(
+  ${ch.breadcrumbs(
     names=[u'イベント', sales_segment.event.title, u'パフォーマンス', sales_segment.performance.name, u'販売区分', sales_segment.name],
     urls=[
       request.route_path('events.index'),
@@ -21,7 +21,7 @@ function get_selected_sales_segment_id() {
   <h1>販売区分</h1>
 </div>
 <div class="content">
-  ${h.flash_messages(request)}
+  ${ch.flash_messages(request)}
 </div>
 <table class="table">
   <tbody>

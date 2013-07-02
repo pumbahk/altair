@@ -1,5 +1,5 @@
 <%inherit file="/layout_2cols.html"/>
-<%namespace file="/common/helpers.html" name="h" />
+<%namespace file="/common/helpers.html" name="ch" />
 
 <%
   if request.matched_route.name == 'payment_delivery_method_pairs.edit':
@@ -75,7 +75,7 @@
 </script>
 
 <%block name="breadcrumbs">
-  ${h.breadcrumbs(
+  ${ch.breadcrumbs(
     names=[u'イベント', sales_segment_group.event.title, u'販売区分', sales_segment_group.name],
     urls=[
       request.route_path('events.index'),
@@ -90,34 +90,34 @@
 </div>
 
 <div class="content">
-  ${h.flash_messages(request)}
-  ${h.alert_message(form)}
+  ${ch.flash_messages(request)}
+  ${ch.alert_message(form)}
 </div>
 
 <div class="well">
   <form class="form-horizontal" action="${route_path}" method="POST">
     <fieldset>
       % if is_edit:
-      ${h.form_item(form.payment_method_id, disabled='disabled')}
-      ${h.form_item(form.delivery_method_id, disabled='disabled')}
+      ${ch.form_item(form.payment_method_id, disabled='disabled')}
+      ${ch.form_item(form.delivery_method_id, disabled='disabled')}
       % else:
-      ${h.form_item(form.payment_method_id)}
-      ${h.form_item(form.delivery_method_id)}
+      ${ch.form_item(form.payment_method_id)}
+      ${ch.form_item(form.delivery_method_id)}
       % endif
 
-      ${h.form_item(form.system_fee, class_='span2')}
-      ${h.form_item(form.transaction_fee, class_='span2')}
-      ${h.form_item(form.delivery_fee, class_='span2')}
-      ${h.form_item(form.discount, class_='span2')}
-      ${h.form_item(form.discount_unit, class_='span2')}
-      ${h.form_item(form.public)}
-      ${h.form_item(form.sales_segment_group_id)}
-      ${h.form_item(form.unavailable_period_days, class_='span2', help=h.help(form.unavailable_period_days, u'販売終了日時の何日前から、この決済・引取方法を選択できなくなるかを日数指定してください。'))}
+      ${ch.form_item(form.system_fee, class_='span2')}
+      ${ch.form_item(form.transaction_fee, class_='span2')}
+      ${ch.form_item(form.delivery_fee, class_='span2')}
+      ${ch.form_item(form.discount, class_='span2')}
+      ${ch.form_item(form.discount_unit, class_='span2')}
+      ${ch.form_item(form.public)}
+      ${ch.form_item(form.sales_segment_group_id)}
+      ${ch.form_item(form.unavailable_period_days, class_='span2', help=ch.help(form.unavailable_period_days, u'販売終了日時の何日前から、この決済・引取方法を選択できなくなるかを日数指定してください。'))}
       <div id="sej_field">
-        ${h.form_item(form.payment_period_days, class_='span2', help=h.help(form.payment_period_days, u'コンビニ決済で、購入後、この日数が経過するまでの間に決済を完了させる必要があります。'))}
-        ${h.form_item(form.issuing_interval_days, class_='span2', help=h.help(form.issuing_interval_days, u'コンビニ決済で、この日数が経過すると店舗にて発券できるようになります。(主に不正行為対策として一定日数を設けます)'))}
-        ${h.form_item(form.issuing_start_at, class_='span2', help=h.help(form.issuing_start_at, u'コンビニ決済で、店舗での発券を開始する日時を指定します。(通常はこの日時指定は使いません)'))}
-        ${h.form_item(form.issuing_end_at, class_='span2', help=h.help(form.issuing_end_at, u'コンビニ決済で、店舗での発券を終了する日時を指定します。(通常はこの日時指定は使いません)'))}
+        ${ch.form_item(form.payment_period_days, class_='span2', help=ch.help(form.payment_period_days, u'コンビニ決済で、購入後、この日数が経過するまでの間に決済を完了させる必要があります。'))}
+        ${ch.form_item(form.issuing_interval_days, class_='span2', help=ch.help(form.issuing_interval_days, u'コンビニ決済で、この日数が経過すると店舗にて発券できるようになります。(主に不正行為対策として一定日数を設けます)'))}
+        ${ch.form_item(form.issuing_start_at, class_='span2', help=ch.help(form.issuing_start_at, u'コンビニ決済で、店舗での発券を開始する日時を指定します。(通常はこの日時指定は使いません)'))}
+        ${ch.form_item(form.issuing_end_at, class_='span2', help=ch.help(form.issuing_end_at, u'コンビニ決済で、店舗での発券を終了する日時を指定します。(通常はこの日時指定は使いません)'))}
       </div>
     </fieldset>
     <div class="form-actions">

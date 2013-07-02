@@ -1,11 +1,11 @@
 <%inherit file="/layout_2cols.html"/>
-<%namespace file="/common/helpers.html" name="h" />
+<%namespace file="/common/helpers.html" name="ch" />
 <%
   performance = performance_reporter.performance
   form = performance_reporter.form
 %>
 <%block name="breadcrumbs">
-  ${h.breadcrumbs(
+  ${ch.breadcrumbs(
       names=[u'トップ', u'売上レポート', u'イベント', u'公演'],
       urls=[
         request.route_path('index'),
@@ -20,7 +20,7 @@
 </div>
 
 <div class="content">
-  ${h.flash_messages(request)}
+  ${ch.flash_messages(request)}
 </div>
 
 <div class="well well-small">
@@ -28,7 +28,7 @@
             args="form=form, form_report_mail=form_report_mail, performance=performance, report_settings=report_settings" />
 </div>
 
-<h3>開催日:${h.safe_strftime(performance.start_on)}　${performance.name}</h3>
+<h3>開催日:${ch.safe_strftime(performance.start_on)}　${performance.name}</h3>
 
 <%
   sales_segments = performance_reporter.sort_index()
@@ -52,8 +52,8 @@
       <th colspan="6"></th>
       <th colspan="4">累計</th>
       <th colspan="4">
-        ${h.safe_strftime(form.limited_from.data)} 〜
-        ${h.safe_strftime(form.limited_to.data)}
+        ${ch.safe_strftime(form.limited_from.data)} 〜
+        ${ch.safe_strftime(form.limited_to.data)}
       </th>
     </tr>
     % endif
@@ -102,20 +102,20 @@
       <td rowspan="${count}" style="border-left: 1px solid #ddd;">${record.stock_holder_name}</td>
         % endif
       <td>${record.product_name}</td>
-      <td class="price">${h.price_format(record.product_price)}円</td>
+      <td class="price">${ch.price_format(record.product_price)}円</td>
         % if i == 0:
-      <td rowspan="${count}" class="numeric">${h.price_format(record.stock_quantity) or ''}</td>
-      <td rowspan="${count}" class="numeric">${h.price_format(record.vacant_quantity) or ''}</td>
+      <td rowspan="${count}" class="numeric">${ch.price_format(record.stock_quantity) or ''}</td>
+      <td rowspan="${count}" class="numeric">${ch.price_format(record.vacant_quantity) or ''}</td>
         % endif
-      <td class="numeric">${h.price_format(record.total_paid_quantity + record.total_unpaid_quantity) or ''}</td>
-      <td class="numeric">${h.price_format(record.total_unpaid_quantity) or ''}</td>
-      <td class="numeric">${h.price_format(record.total_paid_quantity) or ''}</td>
-      <td class="price">${h.price_format((record.total_paid_quantity + record.total_unpaid_quantity) * record.product_price)}円</td>
+      <td class="numeric">${ch.price_format(record.total_paid_quantity + record.total_unpaid_quantity) or ''}</td>
+      <td class="numeric">${ch.price_format(record.total_unpaid_quantity) or ''}</td>
+      <td class="numeric">${ch.price_format(record.total_paid_quantity) or ''}</td>
+      <td class="price">${ch.price_format((record.total_paid_quantity + record.total_unpaid_quantity) * record.product_price)}円</td>
         % if form.limited_from.data or form.limited_to.data:
-      <td class="numeric">${h.price_format(record.paid_quantity + record.unpaid_quantity) or ''}</td>
-      <td class="numeric">${h.price_format(record.unpaid_quantity) or ''}</td>
-      <td class="numeric">${h.price_format(record.paid_quantity) or ''}</td>
-      <td class="price">${h.price_format((record.paid_quantity + record.unpaid_quantity) * record.product_price)}円</td>
+      <td class="numeric">${ch.price_format(record.paid_quantity + record.unpaid_quantity) or ''}</td>
+      <td class="numeric">${ch.price_format(record.unpaid_quantity) or ''}</td>
+      <td class="numeric">${ch.price_format(record.paid_quantity) or ''}</td>
+      <td class="price">${ch.price_format((record.paid_quantity + record.unpaid_quantity) * record.product_price)}円</td>
         % endif
     </tr>
       % endfor
@@ -123,17 +123,17 @@
     <% total = reporter.total %>
     <tr>
       <td colspan="4">合計</td>
-      <td class="numeric">${h.price_format(total.stock_quantity) or ''}</td>
-      <td class="numeric">${h.price_format(total.vacant_quantity) or ''}</td>
-      <td class="numeric">${h.price_format(total.total_paid_quantity + total.total_unpaid_quantity) or ''}</td>
-      <td class="numeric">${h.price_format(total.total_unpaid_quantity) or ''}</td>
-      <td class="numeric">${h.price_format(total.total_paid_quantity) or ''}</td>
-      <td class="price">${h.price_format(total.total_sum_amount) or ''}円</td>
+      <td class="numeric">${ch.price_format(total.stock_quantity) or ''}</td>
+      <td class="numeric">${ch.price_format(total.vacant_quantity) or ''}</td>
+      <td class="numeric">${ch.price_format(total.total_paid_quantity + total.total_unpaid_quantity) or ''}</td>
+      <td class="numeric">${ch.price_format(total.total_unpaid_quantity) or ''}</td>
+      <td class="numeric">${ch.price_format(total.total_paid_quantity) or ''}</td>
+      <td class="price">${ch.price_format(total.total_sum_amount) or ''}円</td>
     % if form.limited_from.data or form.limited_to.data:
-      <td class="numeric">${h.price_format(total.paid_quantity + total.unpaid_quantity) or ''}</td>
-      <td class="numeric">${h.price_format(total.unpaid_quantity) or ''}</td>
-      <td class="numeric">${h.price_format(total.paid_quantity) or ''}</td>
-      <td class="price">${h.price_format(total.sum_amount) or ''}円</td>
+      <td class="numeric">${ch.price_format(total.paid_quantity + total.unpaid_quantity) or ''}</td>
+      <td class="numeric">${ch.price_format(total.unpaid_quantity) or ''}</td>
+      <td class="numeric">${ch.price_format(total.paid_quantity) or ''}</td>
+      <td class="price">${ch.price_format(total.sum_amount) or ''}円</td>
     % endif
     </tr>
   </table>

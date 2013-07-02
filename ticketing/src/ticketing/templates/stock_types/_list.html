@@ -1,5 +1,5 @@
 <%page args="seat_stock_types, non_seat_stock_types, performance=None, limit=None" />
-<%namespace file="/common/helpers.html" name='h' />
+<%namespace file="/common/helpers.html" name="ch" />
 
 <% paging = False if limit else True %>
 
@@ -43,7 +43,7 @@
             <input type="radio" name="stock_type_id" value=${stock_type.id} />
           </td>
           <td>
-            ${h.seat_style(stock_type.style)}
+            ${ch.seat_style(stock_type.style)}
           </td>
           <td style="white-space: nowrap">
             <a href="javascript:edit_stock_type(${stock_type.id});"
@@ -54,7 +54,7 @@
                quantity="${quantity}"
                display_order="${stock_type.display_order}"
                description="${stock_type.description or ''}"
-               data="${h.json(stock_type.style)}">
+               data="${ch.json(stock_type.style)}">
               ${stock_type.name}
             </a>
           </td>
@@ -114,7 +114,7 @@
                quantity="${quantity}"
                display_order="${stock_type.display_order}"
                description="${stock_type.description or ''}"
-               data='${h.json(stock_type.style)}'>
+               data='${ch.json(stock_type.style)}'>
               ${stock_type.name}
             </a>
           </td>
@@ -144,13 +144,13 @@
 % if paging:
   % if seat_stock_types and non_seat_stock_types:
     % if seat_stock_types.item_count >= non_seat_stock_types.item_count:
-      ${h.pager(seat_stock_types)}
+      ${ch.pager(seat_stock_types)}
     % else:
-      ${h.pager(non_seat_stock_types)}
+      ${ch.pager(non_seat_stock_types)}
     % endif
   % elif seat_stock_types:
-    ${h.pager(seat_stock_types)}
+    ${ch.pager(seat_stock_types)}
   % else:
-    ${h.pager(non_seat_stock_types)}
+    ${ch.pager(non_seat_stock_types)}
   % endif
 % endif

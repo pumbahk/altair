@@ -1,8 +1,8 @@
 <%inherit file="/layout_2cols.html" />
-<%namespace file="/common/helpers.html" name="h" />
+<%namespace file="/common/helpers.html" name="ch" />
 
 <%block name="breadcrumbs">
-  ${h.breadcrumbs(
+  ${ch.breadcrumbs(
       names=[u'取引先', account.name],
       urls=[request.route_path('accounts.index')]
   )}
@@ -13,7 +13,7 @@
 </div>
 
 <div class="content">
-  ${h.flash_messages(request)}
+  ${ch.flash_messages(request)}
 </div>
 
 <%include file="/organizations/_detail.html" args="form=form_organization, organization=account.user.organization, sej_tenants=sej_tenants" />

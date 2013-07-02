@@ -1,5 +1,5 @@
 <%inherit file="/layout.html" />
-<%namespace file="/common/helpers.html" name="h"/>
+<%namespace file="/common/helpers.html" name="ch"/>
 <%namespace file="common.html" name="c"/>
 <h2><%block name="title">SEJ Menu</%block></h2>
 
@@ -77,4 +77,4 @@
     % endfor
     </tbody>
   </table>
-  ${h.pager(orders)}
+  ${ch.pager(orders)}

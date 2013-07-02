@@ -1,4 +1,4 @@
-<%namespace file="/common/helpers.html" name="h" />
+<%namespace file="/common/helpers.html" name="ch" />
 <%
 from ticketing.cart.helpers import format_currency
 %>
@@ -26,7 +26,7 @@ from ticketing.cart.helpers import format_currency
         <tr>
             <td><input type="checkbox" name="product_id" value="${product.id}"></td>
 
-            <td>${product.performance.name}${h.safe_strftime(product.performance.open_on)}</td>
+            <td>${product.performance.name}${ch.safe_strftime(product.performance.open_on)}</td>
             <td>${product.name}</td>
             <td>${product.seat_stock_type.name}</td>
             <td style="text-align: right;">${format_currency(product.price)}</td>

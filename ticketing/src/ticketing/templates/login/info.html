@@ -1,5 +1,5 @@
 <%inherit file="/layout.html" />
-<%namespace file="/common/helpers.html" name="h" />
+<%namespace file="/common/helpers.html" name="ch" />
 
 <div class="container" style="width: 600px;">
   <div class="page-header">
@@ -7,7 +7,7 @@
   </div>
 
   <div class="content">
-    ${h.flash_messages(request)}
+    ${ch.flash_messages(request)}
   </div>
 
   <table class="table table-bordered">

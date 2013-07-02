@@ -1,5 +1,5 @@
 <%inherit file="/layout_2cols.html" />
-<%namespace file="/common/helpers.html" name="h" />
+<%namespace file="/common/helpers.html" name="ch" />
 <%namespace file="_entries_tabs.html" name="tabs" />
 
 <%
@@ -85,7 +85,7 @@ Altair Backend -- ${lot.event.title}[${lot.name}]
 <%block name="javascript">
 </%block>
 <%block name="breadcrumbs">
-  ${h.breadcrumbs(
+  ${ch.breadcrumbs(
       names=[u'イベント', lot.event.title, u'抽選', lot.name, u'申し込み状況'],
       urls=[
         request.route_path('events.index'),
@@ -102,7 +102,7 @@ Altair Backend -- ${lot.event.title}[${lot.name}]
   </h1>
 </div>
 <div class="content">
-  ${h.flash_messages(request)}
+  ${ch.flash_messages(request)}
 </div>
 ${tabs.tabs(request)}
 <div class="lot-entry-statuses">

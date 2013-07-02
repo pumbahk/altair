@@ -1,8 +1,8 @@
 <%inherit file="/layout_2cols.html"/>
-<%namespace file="/common/helpers.html" name="h" />
+<%namespace file="/common/helpers.html" name="ch" />
 
 <%block name="breadcrumbs">
-  ${h.breadcrumbs(
+  ${ch.breadcrumbs(
     names=[u'トップ', u'購入情報', u'払戻', u'払戻完了'],
     urls=[request.route_path('index'), request.route_path('orders.index'), request.route_path('orders.refund.index')]
   )}
@@ -13,7 +13,7 @@
 </div>
 
 <div class="content">
-  ${h.flash_messages(request)}
+  ${ch.flash_messages(request)}
 </div>
 
 <!--

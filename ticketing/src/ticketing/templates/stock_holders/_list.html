@@ -1,5 +1,5 @@
 <%page args="form, stock_holders, limit=None" />
-<%namespace file="/common/helpers.html" name="h" />
+<%namespace file="/common/helpers.html" name="ch" />
 
 <% paging = False if limit else True %>
 
@@ -22,16 +22,16 @@
       <tr>
         <th style="width: 30px;"></th>
         <th style="width: 30px;"></th>
-        <th>${h.sortable(form.name, paging)}</th>
+        <th>${ch.sortable(form.name, paging)}</th>
         <th>${form.account_id.label.text}</th>
       </tr>
       </thead>
       <tbody>
       % for i, stock_holder in enumerate(stock_holders):
       <% if limit and i >= limit: break %>
-      <tr id="stock_holder-${stock_holder.id}" name="${stock_holder.name}" data='${h.json(stock_holder.style)}'>
+      <tr id="stock_holder-${stock_holder.id}" name="${stock_holder.name}" data='${ch.json(stock_holder.style)}'>
         <td><input type="radio" name="stock_holder_id" value="${stock_holder.id}" /></td>
-        <td>${h.seat_style(stock_holder.style)}</td>
+        <td>${ch.seat_style(stock_holder.style)}</td>
         <td><a href="javascript:edit_stock_holder('${stock_holder.id}');"><span id="name">${stock_holder.name}</span></a></td>
         <td><a href="${request.route_path('accounts.show', account_id=stock_holder.account_id)}"><span id="account_id" value="${stock_holder.account_id}">${stock_holder.account.name}</span></a></td>
       </tr>
@@ -48,5 +48,5 @@
 </div>
 
 % if paging:
-  ${h.pager(stock_holders)}
+  ${ch.pager(stock_holders)}
 % endif

@@ -1,8 +1,8 @@
 <%inherit file="/layout_2cols.html" />
-<%namespace file="/common/helpers.html" name="h" />
+<%namespace file="/common/helpers.html" name="ch" />
 
 <%block name="breadcrumbs">
-${h.breadcrumbs(
+${ch.breadcrumbs(
   names=[u'トップ', u'購入情報', order.order_no, u'メール情報'],
   urls=[request.route_path('index'), request.route_path('orders.index'), request.route_path('orders.show', order_id=order.id)]
 )}
@@ -12,7 +12,7 @@ ${h.breadcrumbs(
 </div>
 
 <div class="content">
-  ${h.flash_messages(request)}
+  ${ch.flash_messages(request)}
 </div>
 
 <div class="row-fluid">
@@ -28,34 +28,34 @@ ${h.breadcrumbs(
       </tr>
       <tr>
         <th>ステータス</th>
-        <td>${h.order_status(order)}</td>
+        <td>${ch.order_status(order)}</td>
       </tr>
       <tr>
         <th>予約日時</th>
-        <td>${h.safe_strftime(order.created_at)}</td>
+        <td>${ch.safe_strftime(order.created_at)}</td>
       </tr>
       <tr>
         <th>決済日時</th>
         <td>
           % if order.paid_at:
-            ${h.safe_strftime(order.paid_at)}
+            ${ch.safe_strftime(order.paid_at)}
           % endif
-          ${h.payment_status(order)}
+          ${ch.payment_status(order)}
         </td>
       </tr>
       <tr>
         <th>配送日時</th>
         <td>
           % if order.delivered_at:
-            ${h.safe_strftime(order.delivered_at)}
+            ${ch.safe_strftime(order.delivered_at)}
           % endif
-          ${h.delivery_status(order)}
+          ${ch.delivery_status(order)}
         </td>
       </tr>
       % if order.status == 'canceled':
       <tr>
         <th>キャンセル日時</th>
-        <td>${h.safe_strftime(order.canceled_at)}</td>
+        <td>${ch.safe_strftime(order.canceled_at)}</td>
       </tr>
       % endif
     </table>

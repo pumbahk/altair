@@ -1,5 +1,5 @@
 <%inherit file="/layout_2cols.html" />
-<%namespace file="/common/helpers.html" name="h" />
+<%namespace file="/common/helpers.html" name="ch" />
 
 <%
   if request.matched_route.name == 'operator_roles.new':
@@ -11,7 +11,7 @@
 %>
 
 <%block name="breadcrumbs">
-  ${h.breadcrumbs(
+  ${ch.breadcrumbs(
       names=[u'トップ', u'ロール', route_name],
       urls=[
         request.route_path('index'),
@@ -26,16 +26,16 @@
     </div>
 
     <div class="content">
-      ${h.flash_messages(request)}
-      ${h.alert_message(form)}
+      ${ch.flash_messages(request)}
+      ${ch.alert_message(form)}
     </div>
 
     <div class="well">
       <form class="form-horizontal" action="${route_path}" method="POST">
         <fieldset>
-          ${h.form_item(form.id)}
-          ${h.form_item(form.name, class_='span5', maxlength=255)}
-          ${h.form_item(form.permissions)}
+          ${ch.form_item(form.id)}
+          ${ch.form_item(form.name, class_='span5', maxlength=255)}
+          ${ch.form_item(form.permissions)}
         </fieldset>
         <div class="form-actions">
           <input class="btn btn-primary" type="submit" name="submit" value="${route_name}">

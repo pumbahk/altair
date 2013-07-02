@@ -1,5 +1,5 @@
 <%page args="operator=None, order=None" />
-<%namespace file="/common/helpers.html" name="h" />
+<%namespace file="/common/helpers.html" name="ch" />
 <%namespace file="/common/modal.html" import="delete_modal" />
 
 <script type="text/javascript">
@@ -50,14 +50,14 @@
       ),
     })
 
-    if 'administrator' in [(role.name) for role in operator.roles] and not h.has_permission('administrator'):
+    if 'administrator' in [(role.name) for role in operator.roles] and not ch.has_permission('administrator'):
       order.remove('edit')
       order.remove('delete')
 
   order = iter(order)
 %>
 <div style="float: left;">
-  ${h.action_button(actions, order, vertical=False)}
+  ${ch.action_button(actions, order, vertical=False)}
 </div>
 <div style="clear: left;"></div>
 
