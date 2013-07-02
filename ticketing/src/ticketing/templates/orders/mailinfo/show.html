@@ -32,13 +32,13 @@ ${ch.breadcrumbs(
       </tr>
       <tr>
         <th>予約日時</th>
-        <td>${ch.safe_strftime(order.created_at)}</td>
+        <td>${vh.datetime(order.created_at)}</td>
       </tr>
       <tr>
         <th>決済日時</th>
         <td>
           % if order.paid_at:
-            ${ch.safe_strftime(order.paid_at)}
+            ${vh.datetime(order.paid_at)}
           % endif
           ${ch.payment_status(order)}
         </td>
@@ -47,7 +47,7 @@ ${ch.breadcrumbs(
         <th>配送日時</th>
         <td>
           % if order.delivered_at:
-            ${ch.safe_strftime(order.delivered_at)}
+            ${vh.datetime(order.delivered_at)}
           % endif
           ${ch.delivery_status(order)}
         </td>
@@ -55,7 +55,7 @@ ${ch.breadcrumbs(
       % if order.status == 'canceled':
       <tr>
         <th>キャンセル日時</th>
-        <td>${ch.safe_strftime(order.canceled_at)}</td>
+        <td>${vh.datetime(order.canceled_at)}</td>
       </tr>
       % endif
     </table>

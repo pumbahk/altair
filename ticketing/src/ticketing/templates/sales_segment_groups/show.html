@@ -86,8 +86,8 @@ ${ch.breadcrumbs(
             <td>
               <a href="${request.route_path('sales_segments.show', sales_segment_id=sales_segment.id)}">${sales_segment.performance.name}</a>
             </td>
-            <td>${ch.safe_strftime(sales_segment.start_at)}</td>
-            <td>${ch.safe_strftime(sales_segment.end_at)}</td>
+            <td>${vh.datetime(sales_segment.start_at)}</td>
+            <td>${vh.datetime(sales_segment.end_at)}</td>
             <td>${sales_segment.account.name if sales_segment.account else u'(未設定)'}</td>
             <td>${sales_segment.upper_limit or u''}</td>
             <td>${u'○' if sales_segment.seat_choice else u'×'}</td>

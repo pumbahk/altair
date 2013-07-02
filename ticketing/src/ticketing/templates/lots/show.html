@@ -39,7 +39,7 @@ Altair Backend -- ${lot.event.title}[${lot.name}]
       <tbody>
         <tr>
           <th>抽選期間</th>
-          <td>${ch.safe_strftime(lot.start_at)} ${ch.safe_strftime(lot.end_at)}</td>
+          <td>${vh.datetime(lot.start_at)} ${vh.datetime(lot.end_at)}</td>
         </tr>
         <tr>
           <th>申し込み上限数</th>

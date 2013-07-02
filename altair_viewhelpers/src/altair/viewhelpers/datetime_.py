@@ -13,7 +13,9 @@ class DefaultDateTimeFormatter(object):
         return format
 
     def _get_time_format(self, flavor):
-        if flavor.get('without_second'):
+        if flavor.get('without_minute'):
+            format = u'%-H時'
+        elif flavor.get('without_second'):
             format = u'%-H:%M'
         else:
             format = u'%-H:%M:%S'
@@ -36,7 +38,6 @@ class DefaultDateTimeFormatter(object):
     def format_time(self, t, **flavor):
         format = self._get_time_format(flavor)
         return t.strftime(format.encode("utf-8")).decode("utf-8")
-
 
 class DateTimeHelper(object):
     def __init__(self, formatter):
@@ -81,3 +82,6 @@ class DateTimeHelper(object):
     def datetime(self, dt, **flavor):
         without_second = flavor.pop('without_second', True)
         return self.formatter.format_datetime(dt, without_second=without_second, **flavor) if dt else u'-'
+
+def create_date_time_formatter(request):
+    return DefaultDateTimeFormatter()

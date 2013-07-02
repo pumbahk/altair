@@ -32,8 +32,8 @@
             <input type="hidden" id="kind" value="${sales_segment.kind}" />
           </td>
           <td ${rowspan}><a href="${request.route_path('sales_segments.show', sales_segment_id=sales_segment.id)}">${sales_segment.sales_segment_group.name}</a></td>
-          <td ${rowspan}>${ch.safe_strftime(sales_segment.start_at)}</td>
-          <td ${rowspan}>${ch.safe_strftime(sales_segment.end_at)}</td>
+          <td ${rowspan}>${vh.datetime(sales_segment.start_at)}</td>
+          <td ${rowspan}>${vh.datetime(sales_segment.end_at)}</td>
           % if not performance:
           <td ${rowspan}>
             % if sales_segment.performance:

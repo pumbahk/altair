@@ -116,10 +116,6 @@
   % endif
 </%def>
 
-<%def name="safe_strftime(str, format='%Y-%m-%d %H:%M')">
-${str and str.strftime(format) or ''}
-</%def>
-
 <%def name="seat_style(style)">
 <%
   fill_color = '#FFFFFF'

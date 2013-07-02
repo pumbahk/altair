@@ -6,7 +6,7 @@
   need_total = form.need_total.data
 %>
 
-<h3 style="margin-top: 30px;">${performance.name}　開催日:${ch.safe_strftime(performance.start_on)}</h3>
+<h3 style="margin-top: 30px;">${performance.name}　開催日:${vh.datetime(performance.start_on)}</h3>
 <%
   sales_segments = performance_reporter.sort_index()
   if len(sales_segments) > 1:
@@ -29,7 +29,7 @@
     % if need_total:
     <th colspan="4">累計</th>
     % endif
-    <th colspan="4">${ch.safe_strftime(form.limited_from.data)} 〜 ${ch.safe_strftime(form.limited_to.data)}</th>
+    <th colspan="4">${vh.term(form.limited_from.data, form.limited_to.data)}</th>
   </tr>
   % endif
   <tr bgcolor="#ddd">

@@ -62,7 +62,7 @@ Altair Backend -- ${lot.event.title}[${lot.name}]
                 <th>決済日時</th>
                 <td class="span3">
                   % if lot_entry.order.paid_at:
-                  ${ch.safe_strftime(lot_entry.order.paid_at)}
+                  ${vh.datetime(lot_entry.order.paid_at)}
                   % endif
                   ${ch.payment_status(lot_entry.order)}
                 </td>

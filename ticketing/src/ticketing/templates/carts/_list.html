@@ -60,8 +60,8 @@
             ${cart.order_no}
           % endif
           </td>
-        <td>${ch.safe_strftime(cart.created_at)}</td>
-        <td>${ch.safe_strftime(cart.finished_at)}</td>
+        <td>${vh.datetime(cart.created_at)}</td>
+        <td>${vh.datetime(cart.finished_at)}</td>
         <td style="text-align: right;">${ch.price_format(cart.total_amount) + u'円' if cart.sales_segment and cart.payment_delivery_pair else u'-'}</td>
         <td>
           % if cart.shipping_address:

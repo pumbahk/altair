@@ -45,13 +45,13 @@ ${ch.breadcrumbs(
             </tr>
             <tr>
               <th>予約日時</th>
-              <td>${ch.safe_strftime(order.created_at)}</td>
+              <td>${vh.datetime(order.created_at)}</td>
             </tr>
             <tr>
               <th>決済日時</th>
               <td>
                 % if order.paid_at:
-                  ${ch.safe_strftime(order.paid_at)}
+                  ${vh.datetime(order.paid_at)}
                 % endif
                 ${ch.payment_status(order)}
               </td>
@@ -60,7 +60,7 @@ ${ch.breadcrumbs(
               <th>最終発券 (印字) 日時</th>
               <td>
                 % if order.issued_at:
-                  ${ch.safe_strftime(order.issued_at)}
+                  ${vh.datetime(order.issued_at)}
                 % else:
                   % if order.queued:
                     - <span class="label label-info">既に印刷キューに入っています</span>
@@ -94,7 +94,7 @@ ${ch.breadcrumbs(
               <th>配送日時</th>
               <td>
                 % if order.delivered_at:
-                  ${ch.safe_strftime(order.delivered_at)}
+                  ${vh.datetime(order.delivered_at)}
                 % endif
                 ${ch.delivery_status(order)}
               </td>
@@ -102,7 +102,7 @@ ${ch.breadcrumbs(
             % if order.status == 'canceled':
             <tr>
               <th>キャンセル日時</th>
-              <td>${ch.safe_strftime(order.canceled_at)}</td>
+              <td>${vh.datetime(order.canceled_at)}</td>
             </tr>
             % endif
             <tr>
@@ -337,7 +337,7 @@ ${ch.breadcrumbs(
             </tr>
             <tr>
               <th>楽天あんしん支払いサービス 売上日時</th>
-              <td>${ch.safe_strftime(checkout.sales_at)}</td>
+              <td>${vh.datetime(checkout.sales_at)}</td>
             </tr>
             % endif
             % if sej_order:

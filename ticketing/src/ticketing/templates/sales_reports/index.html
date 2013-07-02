@@ -34,8 +34,7 @@
     <th colspan="2">累計</th>
     <th colspan="2">
     % if form.limited_from.data or form.limited_to.data:
-      ${ch.safe_strftime(form.limited_from.data)} 〜</br>
-      ${ch.safe_strftime(form.limited_to.data)}
+      ${vh.term(form.limited_from.data, form.limited_to.data)}
     % else:
       全期間
     % endif
@@ -55,9 +54,9 @@
   <tr>
     <td><a href='javascript:event_link("${request.route_path("sales_reports.event", event_id=record.id)}");'>${record.title}</a></td>
     % if record.sales_start_day == record.sales_end_day:
-    <td>${ch.safe_strftime(record.sales_start_day)}</td>
+    <td>${vh.datetime(record.sales_start_day)}</td>
     % else:
-    <td>${ch.safe_strftime(record.sales_start_day)} 〜 ${ch.safe_strftime(record.sales_end_day)}</td>
+    <td>${vh.datetime(record.sales_start_day)} 〜 ${vh.datetime(record.sales_end_day)}</td>
     % endif
     <td class="numeric">${ch.price_format(record.stock_quantity)}</td>
     <td class="numeric">${ch.price_format(record.vacant_quantity)}</td>

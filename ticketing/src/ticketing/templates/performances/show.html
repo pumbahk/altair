@@ -49,13 +49,13 @@ Altair Backend -- ${performance.event.title}[${performance.name}]
       <tbody>
         <tr>
           <th>開場</th>
-          <td>${ch.safe_strftime(performance.open_on)}</td>
+          <td>${vh.datetime(performance.open_on)}</td>
           <th>公演コード</th>
           <td>${performance.code}</td>
         </tr>
         <tr>
           <th>開演</th>
-          <td>${ch.safe_strftime(performance.start_on)}</td>
+          <td>${vh.datetime(performance.start_on)}</td>
           <th>会場</th>
           <td>
             ${performance.venue.name}

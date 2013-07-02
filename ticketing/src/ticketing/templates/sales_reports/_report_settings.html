@@ -70,9 +70,7 @@
     <td>${''.join([dow[1] for dow in form_report_mail.day_of_week.choices if rs.day_of_week == dow[0]])}</td>
     <td>${u'%s時' % rs.time if rs.time else ''}</td>
     <td>
-      ${ch.safe_strftime(rs.start_on, '%Y-%m-%d %H')}
-      ${u' 〜 ' if rs.start_on or rs.end_on else ''}
-      ${ch.safe_strftime(rs.end_on, '%Y-%m-%d %H')}
+      ${vh.term(rs.start_on, rs.end_on, without_minute=True)}
     </td>
     <td>${u'公演' if rs.performance_id else u'イベント'}</td>
     <td>${''.join([enum.v[1] for enum in ReportPeriodEnum if enum.v[0] == rs.period])}</td>

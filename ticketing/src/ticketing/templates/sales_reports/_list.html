@@ -18,8 +18,7 @@
           <th colspan="2">累計</th>
           <th colspan="2">
           % if form.limited_from.data or form.limited_to.data:
-            ${ch.safe_strftime(form.limited_from.data)} 〜<br>
-            ${ch.safe_strftime(form.limited_to.data)}
+            ${vh.term(form.limited_from.data, form.limited_to.data)}
           % else:
             全期間
           % endif
@@ -38,7 +37,7 @@
       <tbody>
         % for record in reporter.sort_data():
         <tr>
-          <td><a href="javascript:performance_report(${record.id})">${record.title} (${ch.safe_strftime(record.start_on)}開始)</a></td>
+          <td><a href="javascript:performance_report(${record.id})">${record.title} (${vh.datetime(record.start_on)}開始)</a></td>
           <td class="numeric">${ch.price_format(record.stock_quantity)}</td>
           <td class="numeric">${ch.price_format(record.vacant_quantity)}</td>
           <td class="numeric">${ch.price_format(record.total_order_quantity)}</td>

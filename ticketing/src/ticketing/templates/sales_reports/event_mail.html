@@ -17,7 +17,7 @@
       <p>ご査収のほど、宜しくお願いいたします。</p>
       <p>集計期間:
         % if form.limited_from.data or form.limited_to.data:
-          ${ch.safe_strftime(form.limited_from.data)} 〜 ${ch.safe_strftime(form.limited_to.data)}
+          ${vh.term(form.limited_from.data, form.limited_to.data)}
         % else:
           〜本日
         % endif
