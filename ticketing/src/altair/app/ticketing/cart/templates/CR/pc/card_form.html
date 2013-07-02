@@ -27,6 +27,9 @@
   .error {
     color: #ff0000;
   }
+  .dispBox {
+    margin-right: 20px
+  }
 </style>
 </%block>
 
@@ -47,57 +50,83 @@ ${h.get_nickname(request)}
         <dt class="cartPayment">クレジットカードでお支払い</dt>
           <div class="settlementPayInput">
             <div class="settlementPayInputInner">
-                <%m:header>カード番号(半角数字)</%m:header>
-                  <input name="card_number" type="text" id="textfield" length="16" placeholder="1234123412341234"/>
-                  16桁
-                  ${h.error_list(request, form, 'card_number')}
-                <%m:header>有効期限</%m:header>
-                  <select name="exp_month" id="select">
-                    <option value="01">1</option>
-                    <option value="02">2</option>
-                    <option value="03">3</option>
-                    <option value="04">4</option>
-                    <option value="05">5</option>
-                    <option value="06">6</option>
-                    <option value="07">7</option>
-                    <option value="08">8</option>
-                    <option value="09">9</option>
-                    <option value="10">10</option>
-                    <option value="11">11</option>
-                    <option value="12">12</option>
-                  </select>
-                  ${h.error_list(request, form, 'exp_month')}
-                  月　
-                  <!-- TODO: 現在年から算出する-->
-                  <select name="exp_year" id="select2">
-                    <option value="12">2012</option>
-                    <option value="13">2013</option>
-                    <option value="14">2014</option>
-                    <option value="15">2015</option>
-                    <option value="16">2016</option>
-                    <option value="17">2017</option>
-                    <option value="18">2018</option>
-                    <option value="19">2019</option>
-                    <option value="20">2020</option>
-                  </select>
-                  年
-                  ${h.error_list(request, form, 'exp_year')}
-                <%m:header>名義人(半角ローマ字)</%m:header>
-                  <input name="card_holder_name" type="text" id="textfield5" size="50" placeholder="YAMADA TARO"/>
-                  ${h.error_list(request, form, 'card_holder_name')}
-                <%m:header>セキュリティコード(半角)</%m:header>
-                  <input name="secure_code" type="text" id="textfield6" size="5"/>
-                  ${h.error_list(request, form, 'secure_code')}
+                <dl class="dispBox">
+                  <dt>
+                    <%m:header>カード番号(半角数字)</%m:header>
+                  </dt>
+                  <dd>
+                    <input name="card_number" type="text" id="textfield" length="16" placeholder="1234123412341234"/>
+                    16桁
+                    ${h.error_list(request, form, 'card_number')}
+                  </dd>
+                </dl>
+                <dl class="dispBox">
+                  <dt>
+                    <%m:header>有効期限</%m:header>
+                  </dt>
+                  <dd>
+                      <select name="exp_month" id="select">
+                        <option value="01">1</option>
+                        <option value="02">2</option>
+                        <option value="03">3</option>
+                        <option value="04">4</option>
+                        <option value="05">5</option>
+                        <option value="06">6</option>
+                        <option value="07">7</option>
+                        <option value="08">8</option>
+                        <option value="09">9</option>
+                        <option value="10">10</option>
+                        <option value="11">11</option>
+                        <option value="12">12</option>
+                      </select>
+                      ${h.error_list(request, form, 'exp_month')}
+                      月　
+                      <!-- TODO: 現在年から算出する-->
+                      <select name="exp_year" id="select2">
+                        <option value="12">2012</option>
+                        <option value="13">2013</option>
+                        <option value="14">2014</option>
+                        <option value="15">2015</option>
+                        <option value="16">2016</option>
+                        <option value="17">2017</option>
+                        <option value="18">2018</option>
+                        <option value="19">2019</option>
+                        <option value="20">2020</option>
+                      </select>
+                      年
+                      ${h.error_list(request, form, 'exp_year')}
+                  </dd>
+                </dl>
+                <dl class="dispBox">
+                  <dt>
+                    <%m:header>名義人(半角ローマ字)</%m:header>
+                  </dt>
+                  <dd>
+                    <input name="card_holder_name" type="text" id="textfield5" size="50" placeholder="YAMADA TARO"/>
+                    ${h.error_list(request, form, 'card_holder_name')}
+                  </dd>
+                </dl>
+                <dl class="dispBox">
+                  <dt>
+                    <%m:header>セキュリティコード(半角)</%m:header>
+                  </dt>
+                  <dd>
+                    <input name="secure_code" type="text" id="textfield6" size="5"/>
+                    ${h.error_list(request, form, 'secure_code')}
+                  </dd>
+                </dl>
             </div>
           </div>
 
-          <p>セキュリティコードは、MasterCard、VisaまたはJCBでは、カード裏面の署名欄に印刷されている下3桁の数字です。<br/>
-            American Expressでは、カードの表に印刷されている4桁の数字です。
-          </p>
+          <dl class="dispBox">
+           <dd>
+              <p>セキュリティコードは、MasterCard、VisaまたはJCBでは、カード裏面の署名欄に印刷されている下3桁の数字です。<br/>
+                American Expressでは、カードの表に印刷されている4桁の数字です。
+              </p>
 
-          <p>
-            ブラウザの「戻る」ボタンを使用するとエラーになります。前ページに戻る場合は画面内に表示されているボタンを使用して下さい。なお、ページによってはブラウザの「更新」ボタンを使用するとエラーになる場合があります。
-          </p>
+              <p>
+                ブラウザの「戻る」ボタンを使用するとエラーになります。前ページに戻る場合は画面内に表示されているボタンを使用して下さい。なお、ページによってはブラウザの「更新」ボタンを使用するとエラーになる場合があります。
+              </p>
 
           <p>
             予約受付完了と同時に決済され、即時予約確定となります。
