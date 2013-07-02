@@ -5,7 +5,7 @@ function get_selected_sales_segment_group_id() {
   return ${sales_segment_group.id};
 }
 </script>
-<%block class="breadcrumbs">
+<%block name="breadcrumbs">
   ${h.breadcrumbs(
     names=[u'イベント', sales_segment_group.event.title, u'販売区分グループ', sales_segment_group.name],
     urls=[
