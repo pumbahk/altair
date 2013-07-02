@@ -1,6 +1,6 @@
 (function () {
 var __LIBS__ = {};
-__LIBS__['A1P1OLYX_042OJS0'] = (function (exports) { (function () { 
+__LIBS__['_K6YL4EHYH1MHY_G'] = (function (exports) { (function () { 
 
 /************** util.js **************/
 exports.eventKey = function Util_eventKey(e) {
@@ -127,7 +127,7 @@ exports.makeHitTester = function Util_makeHitTester(a) {
   }
 };
  })(); return exports; })({});
-__LIBS__['YOCS6MOUDUIVO0MB'] = (function (exports) { (function () { 
+__LIBS__['qQNLQP5_Z6JMLIL9'] = (function (exports) { (function () { 
 
 /************** CONF.js **************/
 exports.DEFAULT = {
@@ -182,11 +182,11 @@ exports.DEFAULT = {
   }
 };
  })(); return exports; })({});
-__LIBS__['QLMP43MB1GPEV9EB'] = (function (exports) { (function () { 
+__LIBS__['N6AKTNIUDJ290E6E'] = (function (exports) { (function () { 
 
 /************** seat.js **************/
-var util = __LIBS__['A1P1OLYX_042OJS0'];
-var CONF = __LIBS__['YOCS6MOUDUIVO0MB'];
+var util = __LIBS__['_K6YL4EHYH1MHY_G'];
+var CONF = __LIBS__['qQNLQP5_Z6JMLIL9'];
 
 function clone(obj) {
   return $.extend({}, obj);
@@ -831,7 +831,6 @@ function coerceCSSStyleIntoMap(styles) {
     switch (k) {
     case 'font':
       expanded = expandFontProperty(v);
-      console.log(expanded);
       if (expanded) {
         for (var j = 0; j < expanded.length; j++) {
           retval[expanded[j][0]] = expanded[j][1];
@@ -1100,9 +1099,9 @@ function parseTransform(transform_str) {
     throw new Error('invalid transform function: ' + f);
 }
 
-  var CONF = __LIBS__['YOCS6MOUDUIVO0MB'];
-  var seat = __LIBS__['QLMP43MB1GPEV9EB'];
-  var util = __LIBS__['A1P1OLYX_042OJS0'];
+  var CONF = __LIBS__['qQNLQP5_Z6JMLIL9'];
+  var seat = __LIBS__['N6AKTNIUDJ290E6E'];
+  var util = __LIBS__['_K6YL4EHYH1MHY_G'];
 
   var StoreObject = _class("StoreObject", {
     props: {

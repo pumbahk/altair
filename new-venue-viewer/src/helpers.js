@@ -81,7 +81,6 @@ function coerceCSSStyleIntoMap(styles) {
     switch (k) {
     case 'font':
       expanded = expandFontProperty(v);
-      console.log(expanded);
       if (expanded) {
         for (var j = 0; j < expanded.length; j++) {
           retval[expanded[j][0]] = expanded[j][1];
