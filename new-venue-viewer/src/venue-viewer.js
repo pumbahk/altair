@@ -385,6 +385,7 @@
                   shape = new Fashion.Text({
                     text: collectText(n),
                     anchor: currentSvgStyle.textAnchor,
+                    fontSize: currentSvgStyle.fontSize,
                     position: position || null,
                     transform: transform || null
                   });
