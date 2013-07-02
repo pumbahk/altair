@@ -1,6 +1,6 @@
 (function () {
 var __LIBS__ = {};
-__LIBS__['OUSZ8PGXADMKZHTU'] = (function (exports) { (function () { 
+__LIBS__['A1P1OLYX_042OJS0'] = (function (exports) { (function () { 
 
 /************** util.js **************/
 exports.eventKey = function Util_eventKey(e) {
@@ -127,7 +127,7 @@ exports.makeHitTester = function Util_makeHitTester(a) {
   }
 };
  })(); return exports; })({});
-__LIBS__['q4V8O424B543NI3C'] = (function (exports) { (function () { 
+__LIBS__['YOCS6MOUDUIVO0MB'] = (function (exports) { (function () { 
 
 /************** CONF.js **************/
 exports.DEFAULT = {
@@ -182,11 +182,11 @@ exports.DEFAULT = {
   }
 };
  })(); return exports; })({});
-__LIBS__['ICG7POZLAVV5C7AC'] = (function (exports) { (function () { 
+__LIBS__['QLMP43MB1GPEV9EB'] = (function (exports) { (function () { 
 
 /************** seat.js **************/
-var util = __LIBS__['OUSZ8PGXADMKZHTU'];
-var CONF = __LIBS__['q4V8O424B543NI3C'];
+var util = __LIBS__['A1P1OLYX_042OJS0'];
+var CONF = __LIBS__['YOCS6MOUDUIVO0MB'];
 
 function clone(obj) {
   return $.extend({}, obj);
@@ -768,7 +768,7 @@ var parseCSSStyleText = (function () {
   }
 
   return function parseCSSStyleText(str) {
-    var retval = {};
+    var retval = [];
     var r = str.replace(regexp_for_styles, function (_, k, v) {
       var values = [];
       var r = v.replace(regexp_for_values, function (_, a, b, c) {
@@ -783,7 +783,7 @@ var parseCSSStyleText = (function () {
       });
       if (r != '')
         throw new ValueError("Invalid CSS rule string: " + str);
-      retval[k] = values;
+      retval.push([k, values]);
       return '';
     });
     if (r != '')
@@ -791,6 +791,59 @@ var parseCSSStyleText = (function () {
     return retval;
   };
 })();
+
+var expandFontProperty = (function () {
+  var props = [
+    [/normal|italic|oblique|inherit/, function (z) { this.push(['font-style', z]); }],
+    [/normal|small-caps|inherit/, function (z) { this.push(['font-variant', z]); }],
+    [/normal|bold|bolder|lighter|100|200|300|400|500|600|700|800|900|inherit/, function (z) { this.push(['font-weight', z]); }],
+    [/([1-9][0-9]*(?:px|pt|et|ex|%))(?:\/([1-9][0-9]*(?:px|pt|et|ex|%)))?/, function (_, a, b) {
+      this.push(['font-size', a]);
+      if (b) {
+        this.push(['line-height', b]); 
+      }
+    }]
+  ];
+  return function expandFontProperty(values) {
+    var retval = [];
+    var i = 0, j = 0;
+    for (; i < values.length && j < props.length; i++) {
+      for (; j < props.length; j++) {
+        var prop = props[j];
+        var g = prop[0].exec(values[i]);
+        if (g) {
+          prop[1].apply(retval, g);
+          break;
+        }
+      }
+    }
+    retval.push(['font-family', values.slice(i).join(' ')]);
+    return retval;
+  };
+})();
+
+function coerceCSSStyleIntoMap(styles) {
+  var retval = {};
+
+  var props = [];
+  for (var i = 0; i < styles.length; i++) {
+    var k = styles[i][0], v = styles[i][1];
+    switch (k) {
+    case 'font':
+      expanded = expandFontProperty(v);
+      console.log(expanded);
+      if (expanded) {
+        for (var j = 0; j < expanded.length; j++) {
+          retval[expanded[j][0]] = expanded[j][1];
+        }
+        continue;
+      }
+      break;
+    }
+    retval[k] = v;
+  }
+  return retval;
+}
 
 function parseDefs(node, defset) {
   function parseStops(def) {
@@ -810,7 +863,7 @@ function parseDefs(node, defset) {
       if (node.nodeType != 1)
         continue;
       if (node.nodeName == 'stop') {
-        var styles = parseCSSStyleText(node.getAttribute('style'));
+        var styles = coerceCSSStyleIntoMap(parseCSSStyleText(node.getAttribute('style')));
         colors.push([
           parseFloat(node.getAttribute('offset')),
           new Fashion.Color(styles['stop-color'][0])]);
@@ -841,7 +894,7 @@ function parseDefs(node, defset) {
 }
 
 function parseCSSAsSvgStyle(str, defs) {
-  return svgStylesFromMap(parseCSSStyleText(str), defs);
+  return svgStylesFromMap(coerceCSSStyleIntoMap(parseCSSStyleText(str)), defs);
 }
 
 function svgStylesFromMap(styles, defs) {
@@ -1047,9 +1100,9 @@ function parseTransform(transform_str) {
     throw new Error('invalid transform function: ' + f);
 }
 
-  var CONF = __LIBS__['q4V8O424B543NI3C'];
-  var seat = __LIBS__['ICG7POZLAVV5C7AC'];
-  var util = __LIBS__['OUSZ8PGXADMKZHTU'];
+  var CONF = __LIBS__['YOCS6MOUDUIVO0MB'];
+  var seat = __LIBS__['QLMP43MB1GPEV9EB'];
+  var util = __LIBS__['A1P1OLYX_042OJS0'];
 
   var StoreObject = _class("StoreObject", {
     props: {
@@ -1429,6 +1482,7 @@ function parseTransform(transform_str) {
                   shape = new Fashion.Text({
                     text: collectText(n),
                     anchor: currentSvgStyle.textAnchor,
+                    fontSize: currentSvgStyle.fontSize,
                     position: position || null,
                     transform: transform || null
                   });
