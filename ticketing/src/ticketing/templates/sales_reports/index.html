@@ -8,12 +8,12 @@
   };
 </script>
 
-<div class="breadcrumbs">
+<%block name="breadcrumbs">
   ${h.breadcrumbs(
       names=[u'トップ', u'売上レポート'],
       urls=[request.route_path('index')]
   )}
-</div>
+</%block>
 
 <div class="page-header">
   <h2>売上レポート</h2>

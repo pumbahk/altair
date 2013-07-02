@@ -21,6 +21,13 @@ $(function(){
 });
 </script>
 
+<%block name="breadcrumbs">
+  ${h.breadcrumbs(
+      names=[u'イベント', event.title],
+      urls=[request.route_path('events.index')]
+  )}
+</%block>
+
 <div class="row-fluid">
   <div id="left-menu" class="span2" style="${tm.menu_style()}">
     <%include file="/parts/_menu.html" args="event=event" />
@@ -37,13 +44,6 @@ $(function(){
         $('[rel=popover]').popover()
       });
     </script>
-
-    <div class="breadcrumbs">
-      ${h.breadcrumbs(
-          names=[u'イベント', event.title],
-          urls=[request.route_path('events.index')]
-      )}
-    </div>
 
     <div class="page-header">
       <h1 style="word-wrap: break-word;">${event.title}</h1>

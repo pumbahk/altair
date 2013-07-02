@@ -13,7 +13,7 @@
   };
 </script>
 
-<div class="breadcrumbs">
+<%block name="breadcrumbs">
   <%
     if form.performance_id.data:
       breadcrumb = u'公演'
@@ -30,7 +30,7 @@
         route_path
       ]
   )}
-</div>
+</%block>
 
 <div class="page-header">
   <h2>${u'イベント' if form.event_id.data else u'公演'} 売上レポート 送信確認</h2>

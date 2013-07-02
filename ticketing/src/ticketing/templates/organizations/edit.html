@@ -19,7 +19,7 @@
     route_name = u'編集'
     route_path = request.route_path('organizations.edit', organization_id=form.id.data)
 %>
-<div class="breadcrumbs">
+<%block name="breadcrumbs">
   ${h.breadcrumbs(
       names=[u'トップ', u'取引先', route_name],
       urls=[
@@ -27,7 +27,7 @@
         request.route_path('organizations.index'),
       ]
   )}
-</div>
+</%block>
 
 <div class="page-header">
   <h1>取引先 ${route_name}</h1>

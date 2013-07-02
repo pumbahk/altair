@@ -1,12 +1,12 @@
 <%inherit file="/layout_2cols.html"/>
 <%namespace file="/common/helpers.html" name="h" />
 
-<div class="breadcrumbs">
+<%block name="breadcrumbs">
   ${h.breadcrumbs(
       names=[u'トップ', u'membership',u"詳細"],
       urls=[request.route_path('index'), request.route_path('memberships',action="index",membership_id="*"),request.route_path('memberships',action="show",membership_id=membership.id),]
   )}
-</div>
+</%block>
 
 <div class="page-header">
   <h3>会員種別編集</h3>

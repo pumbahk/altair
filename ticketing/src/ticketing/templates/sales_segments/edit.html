@@ -21,9 +21,9 @@ if sales_segment:
 else:
   names.extend([u'新規作成'])
 %>
-<div class="breadcrumbs">
+<%block name="breadcrumbs">
   ${h.breadcrumbs(urls=urls, names=names)}
-</div>
+</%block>
 <div class="content">
   ${h.flash_messages(request)}
 </div>

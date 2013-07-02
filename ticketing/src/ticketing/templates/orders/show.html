@@ -6,7 +6,7 @@
   font-weight: bold;
 }
 </style>
-<div class="breadcrumbs">
+<%block name="breadcrumbs">
 ${h.breadcrumbs(
   names=[u'トップ', u'購入情報', order_current.performance.name, order_current.order_no],
   urls=[
@@ -15,7 +15,7 @@ ${h.breadcrumbs(
     request.route_path('performances.show', performance_id=order_current.performance_id) + '/order'
   ]
 )}
-</div>
+</%block>
 <div class="page-header">
   <h1>購入情報</h1>
 </div>

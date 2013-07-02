@@ -10,17 +10,16 @@
     route_path = request.route_path('operator_roles.edit', operator_role_id=form.id.data)
 %>
 
+<%block name="breadcrumbs">
+  ${h.breadcrumbs(
+      names=[u'トップ', u'ロール', route_name],
+      urls=[
+        request.route_path('index'),
+        request.route_path('operator_roles.index'),
+      ]
+  )}
+</%block>
 <div class="container row">
-  <div class="span12">
-    ${h.breadcrumbs(
-        names=[u'トップ', u'ロール', route_name],
-        urls=[
-          request.route_path('index'),
-          request.route_path('operator_roles.index'),
-        ]
-    )}
-  </div>
-
   <div class="span12">
     <div class="page-header">
       <h3>ロール ${route_name}</h3>

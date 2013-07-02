@@ -22,7 +22,7 @@ Altair Backend -- ${performance.event.title}[${performance.name}]
 <script type="text/javascript" src="/static/js/ticketing.performance.js"></script>
 <script type="text/javascript" src="/static/js/ticketing.venue-editor.js"></script>
 </%block>
-<div class="breadcrumbs">
+<%block name="breadcrumbs">
   ${h.breadcrumbs(
       names=[u'イベント', performance.event.title, u'パフォーマンス', performance.name],
       urls=[
@@ -31,7 +31,7 @@ Altair Backend -- ${performance.event.title}[${performance.name}]
         request.route_path('performances.index', event_id=performance.event.id),
       ]
   )}
-</div>
+</%block>
 <div class="page-header">
   <h1>
     ${performance.event.title}<br />

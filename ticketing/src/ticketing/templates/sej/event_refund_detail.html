@@ -4,7 +4,7 @@
 <%namespace file="common.html" name="c"/>
 <%block name="title">払い戻し公演一覧</%block>
 
-
+<%block name="breadcrumbs">
 ${h.breadcrumbs(
     names=[u'SEJ Order', u'払い戻し公演一覧', u'イベント詳細'],
     urls=[
@@ -12,6 +12,7 @@ ${h.breadcrumbs(
       request.route_path('orders.sej.event.refund')
     ]
 )}
+</%block>
 
 <div class="row">
 <div class="span4">

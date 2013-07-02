@@ -4,7 +4,7 @@
   performance = performance_reporter.performance
   form = performance_reporter.form
 %>
-<div class="breadcrumbs">
+<%block name="breadcrumbs">
   ${h.breadcrumbs(
       names=[u'トップ', u'売上レポート', u'イベント', u'公演'],
       urls=[
@@ -13,7 +13,7 @@
         request.route_path('sales_reports.event', event_id=performance.event_id)
       ]
   )}
-</div>
+</%block>
 
 <div class="page-header">
   <h2>売上レポート 公演</h2>

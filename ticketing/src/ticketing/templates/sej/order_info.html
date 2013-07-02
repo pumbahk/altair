@@ -16,13 +16,15 @@ u'4': u'副券'
 ${ticket_type_name[id]}
 </%def>
 
-
+<%block name="breadcrumbs">
 ${h.breadcrumbs(
     names=[u'SEJ Order', order.billing_number],
     urls=[
       request.route_path('orders.sej')
     ]
 )}
+</%block>
+
 <div class="page-header">
   <h3>${order.id}:${order.order_id}</h3>
 

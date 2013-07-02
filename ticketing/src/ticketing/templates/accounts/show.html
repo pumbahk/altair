@@ -1,12 +1,12 @@
 <%inherit file="/layout_2cols.html" />
 <%namespace file="/common/helpers.html" name="h" />
 
-<div class="breadcrumbs">
+<%block name="breadcrumbs">
   ${h.breadcrumbs(
       names=[u'取引先', account.name],
       urls=[request.route_path('accounts.index')]
   )}
-</div>
+</%block>
 
 <div class="page-header">
   <h3>${account.name}</h3>

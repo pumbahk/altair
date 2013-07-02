@@ -34,12 +34,12 @@
   });
 </script>
 
-<div class="breadcrumbs">
+<%block name="breadcrumbs">
 ${h.breadcrumbs(
     names=[u'イベント', route_name],
     urls=[request.route_path('events.index')]
 )}
-</div>
+</%block>
 
 <div class="page-header">
   <h3>イベント${route_name}</h3>

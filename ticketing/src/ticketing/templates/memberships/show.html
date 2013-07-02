@@ -16,12 +16,12 @@
   $(function(){  $("#delete_link").click(delete_membership);  })
 </script>
 
-<div class="breadcrumbs">
+<%block name="breadcrumbs">
   ${h.breadcrumbs(
       names=[u'トップ', u'membership'],
       urls=[request.route_path('index'), request.route_path('memberships',action="index",membership_id="*")]
   )}
-</div>
+</%block>
 
 <div class="page-header">
   <h3>会員種別詳細</h3>

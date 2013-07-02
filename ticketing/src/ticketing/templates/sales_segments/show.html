@@ -5,7 +5,7 @@ function get_selected_sales_segment_id() {
   return ${sales_segment.id};
 }
 </script>
-<div class="breadcrumbs">
+<%block name="breadcrumbs">
   ${h.breadcrumbs(
     names=[u'イベント', sales_segment.event.title, u'パフォーマンス', sales_segment.performance.name, u'販売区分', sales_segment.name],
     urls=[
@@ -16,7 +16,7 @@ function get_selected_sales_segment_id() {
       request.route_path('sales_segments.index', event_id=sales_segment.event.id, _query=dict(performance_id=sales_segment.performance_id)),
     ]
   )}
-</div>
+</%block>
 <div class="page-header">
   <h1>販売区分</h1>
 </div>

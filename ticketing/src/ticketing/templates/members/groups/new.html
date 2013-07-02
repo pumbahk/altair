@@ -2,12 +2,12 @@
 <%namespace file="/common/helpers.html" name="h" />
 
 <%doc>
-<div class="breadcrumbs">
+<%block name="breadcrumbs">
   ${h.breadcrumbs(
       names=[u'トップ', u'membergroup'],
       urls=[request.route_path('index'), request.route_path('membergroups',action="index",membergroup_id="*")]
   )}
-</div>
+</%block>
 </%doc>
 
 <div class="page-header">

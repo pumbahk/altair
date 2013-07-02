@@ -13,7 +13,7 @@ Altair Backend -- ${lot.event.title}[${lot.name}]
 </%block>
 <%block name="javascript">
 </%block>
-<div class="breadcrumbs">
+<%block name="breadcrumbs">
   ${h.breadcrumbs(
       names=[u'イベント', lot.event.title, u'抽選', lot.name, u'申し込み状況'],
       urls=[
@@ -23,7 +23,7 @@ Altair Backend -- ${lot.event.title}[${lot.name}]
         request.route_path('lots.show', lot_id=lot.id),
       ]
   )}
-</div>
+</%block>
 <div class="page-header">
   <h1>
     ${lot.event.title}<br />

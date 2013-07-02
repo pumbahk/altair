@@ -22,12 +22,12 @@
 
 <%doc>
 ## breadcrumbs are not supported yet
-<div class="breadcrumbs">
+<%block name="breadcrumbs">
   ${h.breadcrumbs(
       names=[u'トップ', u'membership'],
       urls=[request.route_path('index'), request.route_path('memberships',action="index",membership_id="*")]
   )}
-</div>
+</%block>
 </%doc>
 
 <div class="page-header">

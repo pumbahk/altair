@@ -74,7 +74,7 @@
   });
 </script>
 
-<div class="breadcrumbs">
+<%block name="breadcrumbs">
   ${h.breadcrumbs(
     names=[u'イベント', sales_segment_group.event.title, u'販売区分', sales_segment_group.name],
     urls=[
@@ -83,7 +83,7 @@
       request.route_path('sales_segment_groups.index', event_id=sales_segment_group.event.id),
     ]
   )}
-</div>
+</%block>
 
 <div class="page-header">
   <h1>決済・引取方法${route_name}</h1>

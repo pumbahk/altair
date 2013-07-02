@@ -5,7 +5,7 @@ function get_selected_sales_segment_group_id() {
   return ${sales_segment_group.id};
 }
 </script>
-<div class="breadcrumbs">
+<%block class="breadcrumbs">
   ${h.breadcrumbs(
     names=[u'イベント', sales_segment_group.event.title, u'販売区分グループ', sales_segment_group.name],
     urls=[
@@ -14,7 +14,7 @@ function get_selected_sales_segment_group_id() {
       request.route_path('sales_segment_groups.index', event_id=sales_segment_group.event.id),
     ]
   )}
-</div>
+</%block>
 
 <div class="page-header">
   <h1>販売区分グループ</h1>
