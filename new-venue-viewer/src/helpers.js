@@ -313,25 +313,25 @@ function parseTransform(transform_str) {
             parseFloat(args[4]), parseFloat(args[5]));
     case 'translate':
         if (args.length == 1)
-            args[2] = 0;
+            args[1] = 0;
         else if (args.length != 2)
             throw new Error("invalid number of arguments for translate()")
         return Fashion.Matrix.translate({ x:parseFloat(args[0]), y:parseFloat(args[1]) });
     case 'scale':
         if (args.length == 1)
-            args[2] = 0;
+            args[1] = 0;
         else if (args.length != 2)
             throw new Error("invalid number of arguments for scale()");
         return new Fashion.Matrix(parseFloat(args[0]), 0, 0, parseFloat(args[1]), 0, 0);
     case 'rotate':
         if (args.length == 1)
-            args[2] = 0;
+            args[1] = 0;
         else if (args.length != 2)
             throw new Error("invalid number of arguments for rotate()");
         return Fashion.Matrix.rotate(parseFloat(args[0]) * Math.PI / 180);
     case 'skewX':
         if (args.length == 1)
-            args[2] = 0;
+            args[1] = 0;
         else if (args.length != 2)
             throw new Error('invalid number of arguments for skewX()');
         var t = parseFloat(args[0]) * Math.PI / 180;
