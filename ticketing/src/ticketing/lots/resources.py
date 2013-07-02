@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import logging
 from datetime import datetime
 from pyramid.httpexceptions import HTTPNotFound
 from pyramid.security import (
@@ -11,6 +12,9 @@ from ticketing.core.models import Event, Performance, Organization
 from ticketing.core import api as core_api
 from .exceptions import OutTermException
 from .models import Lot
+
+
+logger = logging.getLogger(__name__)
 
 def lot_resource_factory(request):
     if request.matchdict is None:
@@ -60,16 +64,20 @@ class LotResource(object):
 
     @reify
     def __acl__(self):
+        logger.debug('acl: lot %s' % self.lot)
         if not self.lot:
+            logger.debug('acl: lot is not found')
             return []
 
         if not self.lot.auth_type:
+            logger.debug('acl: lot has no auth_type')
             return [
                 (Allow, Everyone, 'lots'),
             ]
 
+        logger.debug('acl: lot has acl to auth_type:%s' % self.lot.auth_type)
         return [
-            (Allow, "auth_type:%s" % self.lot_auth_type, 'lots'),
+            (Allow, "auth_type:%s" % self.lot.auth_type, 'lots'),
         ]
 
 
