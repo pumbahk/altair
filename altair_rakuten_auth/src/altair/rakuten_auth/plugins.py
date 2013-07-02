@@ -55,7 +55,10 @@ class RakutenOpenIDPlugin(object):
         return request.registry.queryUtility(IRakutenOpenID)
 
     def _get_rememberer(self, environ):
-        rememberer = environ['repoze.who.plugins'][self.rememberer_name]
+        
+        #rememberer = environ['repoze.who.plugins'][self.rememberer_name]
+        api = get_who_api(environ)
+        rememberer = api.name_registry[self.rememberer_name]
         return rememberer
 
     def get_identity(self, req):
