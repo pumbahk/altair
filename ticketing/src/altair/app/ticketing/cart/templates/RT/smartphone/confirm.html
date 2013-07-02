@@ -28,6 +28,16 @@
   th {
       text-align: left;
   }
+  .dispBox {
+    margin-right: 20px
+  }
+  .methodArea {
+    border: 1px solid #000000;
+    background-color: cornsilk;
+  }
+  .align1 {
+    text-align: right;
+  }
 </style>
 </%block>
 
@@ -44,53 +54,59 @@
 
   <div class="confirmBox">
 	<div class="confirmBoxInner">
-      <%m:header>お買い物内容</%m:header>
-      <h3 id="name">${cart.performance.event.title}<br/>
-          ${cart.performance.name}<br/>
-          ${h.performance_date(cart.performance)}(予定)<br/>
-          ${cart.performance.venue.name}</h3>
-	  <table id="contentsOfShopping" summary="席種、金額などのお買い物内容">
-        %for product in cart.products:
+      <dl class="dispBox">
+        <dt>
+          <%m:header>お買い物内容</%m:header>
+        </dt>
+        <dd>
+          <div id="name">
+            ${cart.performance.event.title}<br/>
+            ${h.performance_date(cart.performance)}(予定)<br/>
+            ${cart.performance.venue.name}
+          </div>
+          <br/>
+
+          <table id="contentsOfShopping" summary="席種、金額などのお買い物内容" class="methodArea">
+            %for product in cart.products:
+                <tr id="commission">
+                  <th scope="row"><img src="${request.static_url('ticketing.cart:static/img/settlement/icon_dummy.gif')}" alt="" width="21" height="21" />${product.product.name}<strong>${product.seat_quantity}</strong>枚<br/></th>
+                  <td>&nbsp;</td>
+                  <td>&nbsp;</td>
+                  <td class="align1">￥${h.format_number(product.product.price * product.quantity)}</td>
+                </tr>
+                % for seat in product.seats:
+                <tr id="commission">
+                  <th scope="row" colspan="4">　　${seat['name']}</th>
+                </tr>
+                % endfor
+            %endfor
             <tr id="commission">
-              <th scope="row"><img src="${request.static_url('ticketing.cart:static/img/settlement/icon_dummy.gif')}" alt="" width="21" height="21" />${product.product.name}<strong>${product.seat_quantity}</strong>枚<br/></th>
+              <th scope="row">決済手数料</th>
               <td>&nbsp;</td>
               <td>&nbsp;</td>
-              <td class="align1">￥${h.format_number(product.product.price * product.quantity)}</td>
+              <td class="align1">￥${h.format_number(cart.transaction_fee)}</td>
             </tr>
-            % for seat in product.seats:
             <tr id="commission">
-              <th scope="row">${seat['name']}</th>
+              <th scope="row">発券/引取手数料</th>
               <td>&nbsp;</td>
               <td>&nbsp;</td>
-              <td class="align1"></td>
+              <td class="align1">￥${h.format_number(cart.delivery_fee)}</td>
             </tr>
-            % endfor
-        %endfor
-		<tr id="commission">
-		  <th scope="row">決済手数料</th>
-		  <td>&nbsp;</td>
-		  <td>&nbsp;</td>
-		  <td class="align1">￥${h.format_number(cart.transaction_fee)}</td>
-		</tr>
-		<tr id="commission">
-		  <th scope="row">発券/引取手数料</th>
-		  <td>&nbsp;</td>
-		  <td>&nbsp;</td>
-		  <td class="align1">￥${h.format_number(cart.delivery_fee)}</td>
-		</tr>
-		<tr id="commission">
-		  <th scope="row">システム利用料</th>
-		  <td>&nbsp;</td>
-		  <td>&nbsp;</td>
-		  <td class="align1">￥${h.format_number(cart.system_fee)}</td>
-		</tr>
-		<tr id="total">
-          <th scope="row"><img src="${request.static_url('altair.app.ticketing.cart:static/img/settlement/total.gif')}" alt="合計金額" width="67" height="16" /></th>
-		  <td>&nbsp;</td>
-		  <td>&nbsp;</td>
-		  <td class="align1">￥${h.format_number(cart.total_amount)}</td>
-		</tr>
-	  </table>
+            <tr id="commission">
+              <th scope="row">システム利用料</th>
+              <td>&nbsp;</td>
+              <td>&nbsp;</td>
+              <td class="align1">￥${h.format_number(cart.system_fee)}</td>
+            </tr>
+            <tr id="total">
+              <th scope="row">合計金額</th>
+              <td>&nbsp;</td>
+              <td>&nbsp;</td>
+              <td class="align1">￥${h.format_number(cart.total_amount)}</td>
+            </tr>
+          </table>
+        </dd>
+      </dl>
 	</div>
   </div>
 
@@ -100,40 +116,58 @@
 
   <div class="confirmBox">
 	<div class="confirmBoxInner">
-      <%m:header>お支払い</%m:header>
-      ${h.render_payment_confirm_viewlet(request, cart)}
+      <dl class="dispBox">
+        <dt>
+          <%m:header>お支払い</%m:header>
+        </dt>
+        <dd>
+          ${h.render_payment_confirm_viewlet(request, cart)}
+        </dd>
+      </dl>
     </div>
   </div>
 
   <div class="confirmBox">
 	<div class="confirmBoxInner">
-      <%m:header>お引き取り</%m:header>
-      ${h.render_delivery_confirm_viewlet(request, cart)}
+      <dl class="dispBox">
+        <dt>
+          <%m:header>お引き取り</%m:header>
+        </dt>
+        <dd>
+          ${h.render_delivery_confirm_viewlet(request, cart)}
+        </dd>
+      </dl>
     </div>
   </div>
 
   <div class="confirmBox">
 	<div class="confirmBoxInner">
-      <%m:header>購入者情報</%m:header>
-	  <table id="confirmDelivery" summary="配送先情報">
-		<tr>
-		  <th scope="row">氏名(漢字)</th>
-          <td>${shipping.last_name} ${shipping.first_name}</td>
-		</tr>
-		<tr>
-		  <th scope="row">氏名(カナ)</th>
-          <td>${shipping.last_name_kana} ${shipping.first_name_kana}</td>
-		</tr>
-		<tr>
-		  <th scope="row">電話番号</th>
-          <td>${shipping.tel_1}</td>
-		</tr>
-		<tr>
-		  <th scope="row">配送先住所 <br />※配送受取を選択した場合</th>
-          <td>${shipping.zip} ${shipping.prefecture}${shipping.city}${shipping.address_1}${shipping.address_2}
-		  </td>
-		</tr>
-	  </table>
+      <dl class="dispBox">
+        <dt>
+          <%m:header>購入者情報</%m:header>
+        </dt>
+        <dd>
+          <table id="confirmDelivery" summary="配送先情報">
+            <tr>
+              <th scope="row">氏名(漢字)</th>
+              <td>${shipping.last_name} ${shipping.first_name}</td>
+            </tr>
+            <tr>
+              <th scope="row">氏名(カナ)</th>
+              <td>${shipping.last_name_kana} ${shipping.first_name_kana}</td>
+            </tr>
+            <tr>
+              <th scope="row">電話番号</th>
+              <td>${shipping.tel_1}</td>
+            </tr>
+            <tr>
+              <th scope="row">配送先住所 <br />※配送受取を選択した場合</th>
+              <td>${shipping.zip} ${shipping.prefecture}${shipping.city}${shipping.address_1}${shipping.address_2}
+              </td>
+            </tr>
+          </table>
+        </dd>
+      </dl>
 	</div>
   </div>
 
@@ -178,6 +212,13 @@ if len(list(mailmagazines_to_subscribe)) == 1:
     <input id="btn-complete" class="btn btn-primary" type="submit" value="購入する" />
   % endif
   <input id="btn-back" class="btn btn-primary" type="submit" name="back" value="座席選択に戻る" /><br/>
-  ※座席選択に戻るボタンを押すと、ここまでのお申し込みがキャンセルになります。
+  <dl>
+    <dd>
+      <div class="dispBox">
+        ※座席選択に戻るボタンを押すと、ここまでのお申し込みがキャンセルになります。
+      </div>
+
+    </dd>
+  </dl>
 
 </form>
