@@ -28,9 +28,8 @@ def pop_decorator(kwargs):
 
 def pop_custom_predicates(kwargs, predicate):
     _custom_predicates = kwargs.pop("custom_predicates", [])
-    if _custom_predicates:
-        _custom_predicates = list(_custom_predicates)
-        _custom_predicates.insert(0, enable_mobile)
+    _custom_predicates = list(_custom_predicates)
+    _custom_predicates.insert(0, enable_mobile)
     return _custom_predicates
     
 def usersite_view_config(*args, **kwargs):
