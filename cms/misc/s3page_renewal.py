@@ -25,6 +25,7 @@ def renwal_file(request, static_page, src, dst):
         with open(dst, "w") as wf:
             dirname, filename = os.path.split(src)
             def convert(base_href, href):
+                href = urljoin(base_href, href)
                 return href.replace("/{0}/".format(static_page.name), "/{0}/{1}/".format(static_page.name,unicode(static_page.id)), 1)
             wf.write(refine_link_as_string(filename, dirname, static_directory, convert=convert))
 
@@ -63,19 +64,24 @@ def _main(args):
     try:
         env = bootstrap(args.config)
         registry = env["registry"]
-        pages = StaticPage.query.filter_by(organization_id=8).all()
+        pages = StaticPage.query.all()
         for p in pages:
             sys.stderr.write(".")
             request = DummyRequest(registry, p)
             static_directory = get_static_page_utility(request)
-            old_absroot = static_directory.get_obsolute_rootname(p)
+            old_absroot = None
+            try:
+                old_absroot = static_directory.get_obsolute_rootname(p)
+            except:
+                print "skip:", p.name
+                continue
             absroot = static_directory.get_rootname(p)
 
             if os.path.exists(old_absroot):
                 cache_file = os.path.join(old_absroot, ".uploaded")
                 if os.path.exists(cache_file):
                     print "skip:"+absroot
-                    # continue
+                    continue
                 open(cache_file, "w").close()
                 renewal(request, absroot, old_absroot, p)
         transaction.commit()
