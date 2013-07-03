@@ -34,9 +34,19 @@
   .methodArea {
     border: 1px solid #000000;
     background-color: cornsilk;
+    width: 100%;
   }
   .align1 {
     text-align: right;
+  }
+  .dispBox {
+    margin: 10px;
+  }
+  .dispBoxInner {
+    margin-left: 17px;
+  }
+  .titleSpace {
+    width: 90px;
   }
 </style>
 </%block>
@@ -54,11 +64,9 @@
 
   <div class="confirmBox">
 	<div class="confirmBoxInner">
-      <dl class="dispBox">
-        <dt>
-          <%m:header>お買い物内容</%m:header>
-        </dt>
-        <dd>
+      <div class="dispBox">
+        <%m:header>お買い物内容</%m:header>
+        <div class="dispBoxInner">
           <div id="name">
             ${cart.performance.event.title}<br/>
             ${h.performance_date(cart.performance)}(予定)<br/>
@@ -105,8 +113,8 @@
               <td class="align1">￥${h.format_number(cart.total_amount)}</td>
             </tr>
           </table>
-        </dd>
-      </dl>
+        </div>
+      </div>
 	</div>
   </div>
 
@@ -116,40 +124,34 @@
 
   <div class="confirmBox">
 	<div class="confirmBoxInner">
-      <dl class="dispBox">
-        <dt>
-          <%m:header>お支払い</%m:header>
-        </dt>
-        <dd>
+      <div class="dispBox">
+        <%m:header>お支払い</%m:header>
+        <div class="dispBoxInner">
           ${h.render_payment_confirm_viewlet(request, cart)}
-        </dd>
-      </dl>
+        </div>
+      </div>
     </div>
   </div>
 
   <div class="confirmBox">
 	<div class="confirmBoxInner">
-      <dl class="dispBox">
-        <dt>
-          <%m:header>お引き取り</%m:header>
-        </dt>
-        <dd>
+      <div class="dispBox">
+        <%m:header>お引き取り</%m:header>
+        <div class="dispBoxInner">
           ${h.render_delivery_confirm_viewlet(request, cart)}
-        </dd>
-      </dl>
+        </div>
+      </div>
     </div>
   </div>
 
   <div class="confirmBox">
 	<div class="confirmBoxInner">
-      <dl class="dispBox">
-        <dt>
-          <%m:header>購入者情報</%m:header>
-        </dt>
-        <dd>
-          <table id="confirmDelivery" summary="配送先情報">
+      <div class="dispBox">
+        <%m:header>購入者情報</%m:header>
+        <div class="dispBoxInner">
+          <table id="confirmDelivery" summary="配送先情報" class="methodArea">
             <tr>
-              <th scope="row">氏名(漢字)</th>
+              <th scope="row" class="titleSpace">氏名(漢字)</th>
               <td>${shipping.last_name} ${shipping.first_name}</td>
             </tr>
             <tr>
@@ -166,8 +168,8 @@
               </td>
             </tr>
           </table>
-        </dd>
-      </dl>
+        </div>
+      </div>
 	</div>
   </div>
 
@@ -212,13 +214,10 @@ if len(list(mailmagazines_to_subscribe)) == 1:
     <input id="btn-complete" class="btn btn-primary" type="submit" value="購入する" />
   % endif
   <input id="btn-back" class="btn btn-primary" type="submit" name="back" value="座席選択に戻る" /><br/>
-  <dl>
-    <dd>
-      <div class="dispBox">
-        ※座席選択に戻るボタンを押すと、ここまでのお申し込みがキャンセルになります。
-      </div>
-
-    </dd>
-  </dl>
+  <div class="dispBox">
+    <div class="dispBoxInner">
+      ※座席選択に戻るボタンを押すと、ここまでのお申し込みがキャンセルになります。
+    </div>
+  </div>
 
 </form>
