@@ -426,7 +426,7 @@ class LotEntries(BaseView):
         s_a = ShippingAddress
 
         include_canceled = False
-
+        enable_elect_all = False
         if form.validate():
             if form.entry_no.data:
                 condition = sql.and_(condition, LotEntry.entry_no==form.entry_no.data)
@@ -481,6 +481,7 @@ class LotEntries(BaseView):
             if form.wish_order.data:
                 condition = sql.and_(condition,
                                      LotEntryWish.wish_order==form.wish_order.data)
+                enable_elect_all = True
         else:
             print form.errors
 
@@ -539,6 +540,7 @@ class LotEntries(BaseView):
                     status_url=status_url,
                     electing=electing,
                     performances=performances,
+                    enable_elect_all=enable_elect_all,
         )
 
         

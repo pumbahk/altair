@@ -175,9 +175,15 @@ ${tabs.tabs(request)}
 <!-- 一括操作 -->
 %if wishes:
 <div class="well">
+  %if enable_elect_all:
   <button id="all-elect-button" type="button" class="btn">
     一括で当選予定にする
   </button>
+  %else:
+  <span class="btn btn-inverse">
+    一括で当選予定にする<br>(希望順位を絞り込んだ場合のみ利用可能)
+  </span>
+  %endif
 </div>
 %endif
 
