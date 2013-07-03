@@ -4,13 +4,15 @@
 
 <script type="text/javascript">
   function cancel_order(id) {
-    var modal = $('#modal-delete');
-    modal.find('#delete').attr('href', '/orders/cancel/' + id).text('注文をキャンセルする (取消不可)');
+    var modal = $('#modal-confirm');
+    var form = modal.find('form');
+    form.attr('action', '/orders/cancel/' + id);
+    form.find('input[type=submit]').val('注文をキャンセルする (取消不可)');
     var message = '選択した予約をキャンセルします。よろしいですか？';
     % if order.printed_at or order.issued_at or order.issued:
       message += '<br><div class="alert alert-error">この予約は既に発券済み(または発券予約中)です。</div>'
     % endif
-    modal.find('#message').html('<p>' + message + '</p>');
+    modal.find('.message').html('<p>' + message + '</p>');
     modal.modal('toggle');
   }
   function delete_order(id) {
@@ -200,4 +202,5 @@ if sort:
 %>
 ${ch.action_button(actions, sort, vertical=False)}
 
+${m.confirm_modal()}
 ${m.delete_modal(label_cancel=u'戻る')}
