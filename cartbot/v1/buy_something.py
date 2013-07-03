@@ -183,7 +183,7 @@ class CartBot(object):
                 if m:
                     sales_segment_selection = json.loads(m.group(1).rstrip(';'))
         if not sales_segment_selection:
-            raise CartBotError('%s does not contain any sales segment info' % m.location)
+            raise CartBotError('%s does not contain any sales segment info' % self.m.location)
 
         all_sales_segments = self.all_sales_segments
         if not all_sales_segments:
