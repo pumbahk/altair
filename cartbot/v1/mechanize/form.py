@@ -106,4 +106,35 @@ def encode_mime_multipart_form_data(values, encoding, boundary, param_escape_sty
 
     return buf
 
+def find_form_elements(n):
+    retval = []
+    for cn in n:
+        if cn.tag == 'input':
+            retval.append(cn)
+        elif cn.tag == 'select':
+            retval.append(cn)
+        elif cn.tag == 'textarea':
+            retval.append(cn)
+        elif cn.tag != 'form':
+            retval.extend(find_form_elements(cn))
+    return retval
 
+def collect_form_values(result, n, submit):
+    for cn in n:
+        if cn.tag == 'input':
+            type = cn.get('type', '').lower()
+            if type in ('radio', 'checkbox'):
+                if cn.get('checked') is not None:
+                    result.append((cn.get('name'), cn.get('value')))
+            elif type in ('submit', 'image'):
+                if cn == submit:
+                    result.append((cn.get('name'), cn.get('value')))
+            else:
+                result.append((cn.get('name'), cn.get('value')))
+        elif cn.tag == 'select':
+            for n in cn.findall('.//option[@selected]'):
+                result.append((cn.get('name'), n.get('value')))
+        elif cn.tag == 'textarea':
+            result.append((cn.get('name'), cn.text))
+        elif cn.tag != 'form':
+            collect_form_values(result, cn, submit)

@@ -1,14 +1,14 @@
+import re
+import logging
 import urllib2
 from urlparse import urljoin
-import re
-from urllib2ext import KeyChain, KeyChainBackedAuthHandler
 from cookielib import CookieJar
-import logging
 from email.generator import _make_boundary
-from form import encode_mime_multipart_form_data, encode_urlencoded_form_data
-from parser import ParserFactory, OurHTMLElementClassLookup
-from utils import MimeType
 from lxml import etree
+from .form import encode_mime_multipart_form_data, encode_urlencoded_form_data, find_form_elements, collect_form_values
+from .parser import ParserFactory, OurHTMLElementClassLookup
+from .mime import MimeType
+from .urllib2ext import KeyChain, KeyChainBackedAuthHandler
 
 FORM_URLENCODE_MIME_TYPE = u'application/x-www-form-urlencoded'
 FORM_MULTIPART_MIME_TYPE = u'multipart/form-data'
@@ -35,39 +35,6 @@ class HtmlDocument(object):
     @property
     def root(self):
         return self._root
-
-def find_form_elements(n):
-    retval = []
-    for cn in n:
-        if cn.tag == 'input':
-            retval.append(cn)
-        elif cn.tag == 'select':
-            retval.append(cn)
-        elif cn.tag == 'textarea':
-            retval.append(cn)
-        elif cn.tag != 'form':
-            retval.extend(find_form_elements(cn))
-    return retval
-
-def collect_form_values(result, n, submit):
-    for cn in n:
-        if cn.tag == 'input':
-            type = cn.get('type', '').lower()
-            if type in ('radio', 'checkbox'):
-                if cn.get('checked') is not None:
-                    result.append((cn.get('name'), cn.get('value')))
-            elif type in ('submit', 'image'):
-                if cn == submit:
-                    result.append((cn.get('name'), cn.get('value')))
-            else:
-                result.append((cn.get('name'), cn.get('value')))
-        elif cn.tag == 'select':
-            for n in cn.findall('.//option[@selected]'):
-                result.append((cn.get('name'), n.get('value')))
-        elif cn.tag == 'textarea':
-            result.append((cn.get('name'), cn.text))
-        elif cn.tag != 'form':
-            collect_form_values(result, cn, submit)
 
 class Mechanize(object):
     def __init__(self, default_encoding='utf-8', handle_meta_refresh=True, opener=None, parser_factory=None):

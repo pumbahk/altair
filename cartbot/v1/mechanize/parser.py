@@ -1,8 +1,8 @@
 import re
-from lxml import etree, html, sax
-from utils import MimeType
 import logging
-import dtdutil
+from lxml import etree, html, sax
+from .mime import MimeType
+from .html import dtdutil
 
 logger = logging.getLogger(__name__)
 
