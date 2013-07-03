@@ -9,8 +9,8 @@ import urllib2
 import lxml.html
 import json
 from random import shuffle, sample, randint
-from mechanize.form import encode_urlencoded_form_data
-from mechanize.core import Mechanize, FORM_URLENCODE_MIME_TYPE
+from lxmlmechanize.form import encode_urlencoded_form_data
+from lxmlmechanize.core import Mechanize, FORM_URLENCODE_MIME_TYPE
 from ConfigParser import ConfigParser
 
 class CartBotError(Exception):
@@ -308,25 +308,3 @@ class CartBot(object):
         self.all_sales_segments = None
         self.seat_type_choices_map = {}
         self.pdmp_choices_map = {}
-
-if __name__ == '__main__':
-    from argparse import ArgumentParser
-    import sys
-    parser = ArgumentParser()
-    parser.add_argument('-c', '--config', dest='config',
-                        help='config')
-    parser.add_argument('url', nargs=1, help='cart url')
-    options = parser.parse_args()
-    if not options.config:
-        print >>sys.stderr, "configuration file is not specified"
-        sys.exit(255)
-    config = ConfigParser()
-    config.read(options.config)
-    bot = CartBot(
-        url = options.url[0],
-        credentials=dict(config.items('credentials')),
-        shipping_address=dict(config.items('shipping_address')),
-        credit_card_info=dict(config.items('credit_card_info')),
-        )
-    while bot.buy_something():
-        pass
