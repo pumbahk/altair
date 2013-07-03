@@ -73,7 +73,7 @@ class CartBot(object):
         print '  seat_types:'
         for seat_type in sales_segment_detail['seat_types']:
             print '  * %s' % seat_type['name']
-            print '    color: %s' % seat_type['style']['fill']['color']
+            print '    color: %s' % seat_type['style'].get('fill', {}).get('color')
             print '    description: %s' % seat_type['description']
             print '    products_url: %s' % seat_type['products_url']
 
