@@ -24,7 +24,7 @@ ${ch.breadcrumbs(
       </tr>
       <tr>
         <th>ステータス</th>
-        <td>${ch.order_status(order)}</td>
+        <td>${HH.order_status(order)}</td>
       </tr>
       <tr>
         <th>予約日時</th>
@@ -36,7 +36,7 @@ ${ch.breadcrumbs(
           % if order.paid_at:
             ${vh.datetime(order.paid_at)}
           % endif
-          ${ch.payment_status(order)}
+          ${HH.payment_status(order)}
         </td>
       </tr>
       <tr>
@@ -45,7 +45,7 @@ ${ch.breadcrumbs(
           % if order.delivered_at:
             ${vh.datetime(order.delivered_at)}
           % endif
-          ${ch.delivery_status(order)}
+          ${HH.delivery_status(order)}
         </td>
       </tr>
       % if order.status == 'canceled':
