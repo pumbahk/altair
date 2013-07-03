@@ -84,6 +84,11 @@ class StaticPageDirectory(object):
                             unicode(static_page.id), 
                             )
 
+    def get_obsolute_rootname(self, static_page):
+        return os.path.join(self.get_base_directory(), 
+                            static_page.prefix, 
+                            )
+
     def get_writename(self, static_page):
        return os.path.join(self.tmpdir, static_page.prefix+".zip")
 

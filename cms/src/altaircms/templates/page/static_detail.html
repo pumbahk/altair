@@ -30,7 +30,7 @@ h3{
 
 <div class="btn-group">
   <a class="btn btn-primary"
-	   href="${request.route_path("static_pageset_update", action="input", id=static_pageset.id, _query=dict(endpoint=request.url, pagetype=pagetype.name))}"> 
+	   href="${request.route_path("static_pageset_update", action="input", id=static_pageset.id, _query=dict(endpoint=request.route_path("pageset_list", pagetype=pagetype.name), pagetype=pagetype.name))}"> 
     <i class="icon-cog"></i> 変更
   <a class="btn btn-danger"
 	   href="${request.route_path("static_pageset_delete", action="confirm", id=static_pageset.id, _query=dict(endpoint=request.url, pagetype=pagetype.name))}"> 

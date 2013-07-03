@@ -159,10 +159,11 @@ class StaticPageDirectoryRenderer(object):
            self.delete_directory_url(path))
     
     def unregistered_parent(self, path):
-        return False
+        return not path in self.rendered
 
     def register_parent(self, path):
-        pass
+        self.rendered[path] = 1
+        return path
 
     def __html__(self):
         self.root = self.static_directory.get_rootname(self.page)
