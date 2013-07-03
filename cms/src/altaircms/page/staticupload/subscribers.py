@@ -113,3 +113,9 @@ def _update_model_file_structure(static_page, absroot):
         for f in files:
             inspection_targets[os.path.join(root.replace(absroot, ""), f).lstrip("/")] = 1
     static_page.file_structure_text = json.dumps(inspection_targets)
+
+def delete_completely_filesystem(after_delete_completely):
+    event = after_delete_completely
+    static_directory = event.static_directory
+    root = static_directory.get_toplevelname(event.static_pageset)
+    shutil.rmtree(root)

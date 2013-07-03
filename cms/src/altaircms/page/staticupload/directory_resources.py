@@ -45,6 +45,7 @@ class S3StaticPageDirectoryFactory(StaticPageDirectoryFactory):
         config.add_subscriber(".subscribers.s3clean_directory", ".creation.AfterModelDelete")  
         config.add_subscriber(".subscribers.s3upload_directory", ".creation.AfterModelCreate")  
         config.add_subscriber(".subscribers.s3delete_files_completely", ".creation.AfterDeleteCompletely")  
+        config.add_subscriber(".subscribers.delete_completely_filesystem", ".creation.AfterDeleteCompletely")  
         config.add_subscriber(".subscribers.update_model_file_structure", ".creation.AfterModelCreate")
 
         config.add_subscriber(".subscribers.s3update_file", ".creation.AfterPartialCreateFile")
@@ -138,7 +139,7 @@ class StaticPageDirectory(object):
 ## todo: split
 @implementer(IDirectoryResource)
 class S3StaticPageDirectory(StaticPageDirectory):
-    prefix = "static/uploaded"
+    prefix = "usersite/uploaded"
     @reify
     def s3utility(self):
         return get_s3_utility_factory(self.request)
