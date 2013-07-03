@@ -110,6 +110,7 @@ class StaticPageDirectoryRenderer(object):
         if not self.basedir.endswith("/"):
             self.basedir += "/"
         self.management = management
+        self.rendered = {}
 
     def preview_url(self, path):
         part = path.replace(self.basedir, "").replace("%2F", "/")
