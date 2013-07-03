@@ -8,16 +8,6 @@ from ticketing.cart.helpers import format_currency
 
 
 <%def name="lot_wish_row(request, w)">
-
-<%
-#performance = w.performance
-#performance = performances[w.performance_id]
-#venue = performance.venue
-#shipping_address = w.lot_entry.shipping_address
-#pdmp = w.lot_entry.payment_delivery_method_pair
-#payment_method = pdmp.payment_method
-#delivery_method = pdmp.delivery_method
-%>
 <td nowrap="">
 <div class="btn-group">
 %if not w.closed_at:
@@ -182,6 +172,14 @@ ${tabs.tabs(request)}
     </fieldset>
   </form>
 </div>
+<!-- 一括操作 -->
+%if wishes:
+<div class="well">
+  <button id="all-elect-button" type="button" class="btn">
+    一括で当選予定にする
+  </button>
+</div>
+%endif
 
 <div>
 %if wishes:
@@ -217,7 +215,10 @@ ${tabs.tabs(request)}
 </thead>
 <tbody>
 %for w in wishes:
-<tr class="${'lot-wish-' + str(w.entry_no) + '-' + str(w.wish_order)}">
+<tr class="${'lot-wish-' + str(w.entry_no) + '-' + str(w.wish_order)} wish-row"
+    data-entry-no="${str(w.entry_no)}"
+    data-wish-order="${w.wish_order}"
+    data-wish-id="${w.id}">
 ${self.lot_wish_row(request, w)}
 </tr>
 %endfor
@@ -232,10 +233,26 @@ var electingUrl = "${electing_url}";
 var rejectingUrl = "${rejecting_url}"
 var cancelRejectingUrl = "${cancel_rejecting_url}"
 var statusUrl = "${status_url}"
-
+var electingAllUrl = "${electing_all_url}"
 $(function() {
 
+  $('#all-elect-button').on('click', function() {
+    var wishes = $.map($('.wish-row'), function(wish_row) {
+      var wishId = $(wish_row).data('wishId');
+      return wishId;
+    });
+    console.log(wishes);
 
+    $.ajax({
+      url: electingAllUrl,
+      data: JSON.stringify({"wishes": wishes}),
+      dataType: "json",
+      type: "POST",
+      success: function(data, textStatus, xhr) {
+        rewrite_wishes(data);
+      }});
+    
+  });
   function rewrite_wishes(data) {
     for (var i = 0; i <  data.html.length; i++) {
       $("." + data.html[i][0]).html(data.html[i][1]);
