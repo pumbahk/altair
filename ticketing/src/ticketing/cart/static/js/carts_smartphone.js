@@ -208,9 +208,9 @@ cart.proceedToCheckout = function proceedToCheckout(performance, reservationData
     var body = "";
     for (var product_index=0; product_index<products.length; product_index++) {
         // 席種
-        body += reservationData.cart.products[product_index].name + " "
-        body += "¥" + reservationData.cart.products[product_index].price + " "
-        body += products[product_index].seats.length + "枚\n"
+        body += products[product_index].name + " "
+        body += "¥" + products[product_index].price + " "
+        body += products[product_index].quantity + "枚\n"
 
         // シート
         for (var seat_index=0; seat_index<products[product_index].seats.length; seat_index ++) {
@@ -915,7 +915,7 @@ cart.OrderFormView = Backbone.View.extend({
         var name = $('<span class="productName"></span>');
         name.text(product.get("name"));
         var payment = $('<span class="productPrice"></span>');
-        payment.text('￥' + product.get("price"));
+        payment.text(' ￥' + product.get("price") + " ");
         var quantity = $('<span class="productQuantity"></span>');
         var pullDown = $('<select />').attr('name', 'product-' + product.id);
         for (var i = 0; i < upper_limit+1; i++) {
