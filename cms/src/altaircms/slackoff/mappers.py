@@ -145,3 +145,7 @@ def staticpage_mapper(request, obj):
     else:
         objlike.layout = None
     return objlike
+
+def staticpageset_mapper(request, obj):
+    objlike = ObjectLike(**model_to_dict(obj))
+    return objlike

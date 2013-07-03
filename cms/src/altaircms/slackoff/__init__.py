@@ -101,12 +101,21 @@ def includeme(config):
                     circle_type="circle-page", 
                     bind_actions=["update"], 
                     has_auto_generated_permission=False, 
-                    form="..page.forms.StaticPageForm", mapper=".mappers.staticpage_mapper", 
-                    events=dict(update_event=config.maybe_dotted(".subscribers.StaticPageUpdate")), 
+                    form="..page.staticupload.forms.StaticPageForm", mapper=".mappers.staticpage_mapper", 
+                    )
+
+    config.add_crud("static_pageset", title="static_pageset", model="..page.models.StaticPageSet", 
+                    circle_type="circle-page", 
+                    bind_actions=["update", "delete"], 
+                    has_auto_generated_permission=False, 
+                    form="..page.staticupload.forms.StaticPageSetForm", mapper=".mappers.staticpageset_mapper", 
+                    events=dict(update_event=config.maybe_dotted(".subscribers.StaticPageSetUpdate"), 
+                                delete_event=config.maybe_dotted(".subscribers.StaticPageSetDelete")), 
                     )
 
     ## subscriber
-    config.add_subscriber(".subscribers.update_after_static_page", ".subscribers.StaticPageUpdate")
+    config.add_subscriber(".subscribers.after_delete_static_pageset", ".subscribers.StaticPageSetDelete")
+    config.add_subscriber(".subscribers.after_update_static_pageset", ".subscribers.StaticPageSetUpdate")
     config.add_subscriber(".subscribers.update_pageset_genretag", ".subscribers.PageSetUpdate")
     config.add_subscriber(".subscribers.event_term_bubbling_update", ".subscribers.PerformanceCreate")
     config.add_subscriber(".subscribers.event_term_bubbling_update", ".subscribers.PerformanceUpdate")

@@ -37,6 +37,7 @@ requires = [
     'altair.viewhelpers',
     'pyramid_layout',
     'lxml',
+    'waitress'
     ]
 
 solr_require = [

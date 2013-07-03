@@ -208,7 +208,7 @@ def required_field(message=None):
 def append_errors(errors, key, v):
     if key not in errors:
         errors[key] = []
-    errors[key].append(v)
+        errors[key].append(v)
     return errors
 
 class Required(object):
@@ -335,5 +335,4 @@ if(ua.indexOf("firefox") <= -1 && ua.indexOf("msie") <= -1){
         else:
             raise ValueError("%s is not found in candidates definition" % align)
         
-        
-    
+

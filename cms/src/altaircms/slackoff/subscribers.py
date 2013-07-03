@@ -7,6 +7,7 @@ from altaircms.page.api import get_static_page_utility
 from altaircms.models import SalesSegmentGroup, DBSession
 from altaircms.modelmanager import SalesTermSummalize
 from altaircms.modelmanager import EventTermSummalize
+from altaircms.page.staticupload.creation import AfterDeleteCompletely
 
 def notify_topic_create(request, topic, params=None):
     registry = request.registry
@@ -68,7 +69,11 @@ class TicketUpdate(ModelEventBase):
     pass
 
 @implementer(IModelEvent)
-class StaticPageUpdate(ModelEventBase):
+class StaticPageSetUpdate(ModelEventBase):
+    pass
+
+@implementer(IModelEvent)
+class StaticPageSetDelete(ModelEventBase):
     pass
 
 
@@ -157,9 +162,17 @@ def sales_term_bubbling_update(self):
 def event_term_bubbling_update(self):
     EventTermSummalize(self.request).summalize(self.obj).bubble()
 
-def update_after_static_page(self):
-    if not self.obj.name and hasattr(self.request, "_static_page_name"):
-        self.obj.name = self.request._static_page_name
+def after_update_static_pageset(self):
+    if not self.obj.url and hasattr(self.request, "_static_page_prefix"):
+        self.obj.url = self.request._static_page_
 
-    if self.obj.name != self.request._static_page_name:
-        get_static_page_utility(self.request).rename(self.request._static_page_name, self.obj.name)
+    if self.obj.url != self.request._static_page_prefix:
+        utility = get_static_page_utility(self.request)
+        utility.rename(utility.get_toplevelname(self.obj, name=self.request._static_page_prefix),
+                       utility.get_toplevelname(self.obj))
+
+def after_delete_static_pageset(self):
+    for p in self.obj.pages:
+        DBSession.delete(p)
+    utility = get_static_page_utility(self.request)
+    self.request.registry.notify(AfterDeleteCompletely(self.request, utility, self.obj))

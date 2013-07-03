@@ -1,3 +1,4 @@
+from datetime import datetime
 import json
 import sqlahelper
 import sqlalchemy.orm as orm
@@ -44,6 +45,15 @@ def model_clone(obj):
     return cloned
             
 class BaseOriginalMixin(object):
+    def __copy__(self):
+        copied = model_clone(self)
+        now = datetime.now()
+        if hasattr(copied, "created_at"):
+            copied.created_at = now
+        if hasattr(copied, "updated_at"):
+            copied.updated_at = now
+        return copied
+            
     def to_dict(self):
         return model_to_dict(self)
 
