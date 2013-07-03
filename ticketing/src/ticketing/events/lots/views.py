@@ -699,6 +699,14 @@ class LotEntries(BaseView):
         ).filter(
             LotEntryWish.id.in_(wish_ids)
         ).filter(
+            LotEntry.elected_at==None
+        ).filter(
+            LotEntry.rejected_at==None
+        ).filter(
+            LotEntry.canceled_at==None
+        ).filter(
+            LotEntry.closed_at==None
+        ).filter(
             LotElectWork.lot_entry_no==None
         ).all()
 
