@@ -361,8 +361,8 @@ class ListView(object):
         self.context = context
         self.request = request
     
-    @view_config(match_param="pagetype=static", renderer="altaircms:templates/pagesets/static_pageset_list.html", 
-                 custom_predicates=[page_viewable])
+    @view_config(renderer="altaircms:templates/pagesets/static_pageset_list.html", 
+                 custom_predicates=[dispatch_with_pagetype(lambda pagetype: pagetype.page_role=="static"), page_viewable])
     def static_page_list(self):
         pagetype = get_pagetype(self.request)
         static_directory = get_static_page_utility(self.request)
