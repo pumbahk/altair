@@ -75,8 +75,8 @@ h3{
         </div>
       </td>
       <td>${h.jterm(page.publish_begin,page.publish_end)}</td>
-      <td>${h.base.jdate_with_hour(page.created_at)}</td>
-      <td>${h.base.jdate_with_hour(page.updated_at)}</td>
+      <td>${h.base.jdatetime(page.created_at)}</td>
+      <td>${h.base.jdatetime(page.updated_at)}</td>
     </tr>
   %endfor
   </tbody>
@@ -135,7 +135,7 @@ h3{
         <th>更新日時</th><td>${h.base.jdatetime(static_page.updated_at)}</td>
       </tr>
       <tr>
-        <th>アップロード日時</th><td>${h.base.jdate_with_hour(static_page.uploaded_at)}</td>
+        <th>アップロード日時</th><td>${h.base.jdatetime(static_page.uploaded_at)}</td>
       </tr>
       <tr>
         <th>公開ステータス</th><td>${u"公開中" if static_page.published else u"非公開"}</td>
