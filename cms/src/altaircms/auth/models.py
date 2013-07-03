@@ -243,7 +243,7 @@ class Organization(Base):
     auth_source = Column(String(255)) ##nullable=False?
     short_name = Column(String(32),index=True, nullable=False)
     code = Column(String(3))  # 2桁英字大文字のみ
-    use_full_usersite = Column(sa.Boolean, default=False)
+    use_full_usersite = Column(sa.Boolean, default=False) ## todo:細分化
     name = Column(Unicode(255))
     prefecture = Column(Unicode(255))
     address = Column(Unicode(255))

@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
-from altairsite.config import usersite_view_config
+from altairsite.config import mobile_site_view_config
 from altairsite.mobile.event.orderreview.forms import OrderReviewForm
 from altairsite.mobile.core.helper import log_info
 
-@usersite_view_config(route_name='order', request_type="altairsite.tweens.IMobileRequest"
+@mobile_site_view_config(route_name='order', request_type="altairsite.tweens.IMobileRequest"
     , renderer='altairsite.mobile:templates/orderreview/orderreview.mako')
 def move_order(request):
     log_info("move_order", "start")

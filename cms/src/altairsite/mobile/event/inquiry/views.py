@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
-from altairsite.config import usersite_view_config
+from altairsite.config import mobile_site_view_config
 from altairsite.inquiry.forms import InquiryForm
 from altairsite.mobile.core.helper import log_info
 from altairsite.inquiry.api import send_inquiry_mail
 from altairsite.inquiry.message import SupportMail, CustomerMail
 
-@usersite_view_config(route_name='inquiry', request_method="GET", request_type="altairsite.tweens.IMobileRequest",
+@mobile_site_view_config(route_name='inquiry', request_method="GET", request_type="altairsite.tweens.IMobileRequest",
              renderer='altairsite.mobile:templates/inquiry/inquiry.mako')
 def move_inquiry(request):
     log_info("move_inquiry", "start")
@@ -13,7 +13,7 @@ def move_inquiry(request):
     log_info("move_inquiry", "end")
     return {'form':form}
 
-@usersite_view_config(route_name='inquiry', request_method="POST", request_type="altairsite.tweens.IMobileRequest",
+@mobile_site_view_config(route_name='inquiry', request_method="POST", request_type="altairsite.tweens.IMobileRequest",
              renderer='altairsite.mobile:templates/inquiry/inquiry.mako')
 def send_inquiry(request):
     log_info("send_inquiry", "start")

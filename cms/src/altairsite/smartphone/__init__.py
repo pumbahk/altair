@@ -15,9 +15,9 @@ def install_app(config):
     config.include("altairsite.config")
     add_route = functools.partial(config.add_route, factory=".resources.TopPageResource")
     add_route("smartphone.main", "/")
-    config.usersite_add_view(".views.main", route_name='smartphone.main',request_type="altairsite.tweens.ISmartphoneRequest", 
+    config.smartphone_site_add_view(".views.main", route_name='smartphone.main',request_type="altairsite.tweens.ISmartphoneRequest", 
                              renderer='altairsite.smartphone:templates/top.html')
-    config.usersite_add_view(".views.main", route_name='smartphone.main',request_param=PC_ACCESS_COOKIE_NAME, 
+    config.smartphone_site_add_view(".views.main", route_name='smartphone.main',request_param=PC_ACCESS_COOKIE_NAME, 
                              renderer='altairsite.smartphone:templates/top.html')
     add_route("smartphone.goto_pc_page", "/goto_pc")
     add_route("smartphone.goto_sp_page", "/goto_sp")
@@ -53,7 +53,7 @@ def main(config, **settings):
     search_utility = settings.get("altaircms.solr.search.utility")
     config.add_fulltext_search(search_utility)
     config.include(install_app)
-    config.usersite_add_view(".views.main_pc", route_name='smartphone.main',renderer="altairsite.smartphone:templates/pcsite.mock.html")
+    config.smartphone_site_add_view(".views.main_pc", route_name='smartphone.main',renderer="altairsite.smartphone:templates/pcsite.mock.html")
     config.include("altairsite.config.install_convinient_request_properties")
     ## all requests are treated as mobile request
     config._add_tween("altairsite.tweens.smartphone_request_factory", under=INGRESS)

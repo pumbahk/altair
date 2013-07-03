@@ -1,6 +1,7 @@
 from pyramid.view import view_config
 from pyramid.httpexceptions import HTTPException
 from altaircms.page.api import StaticPageNotFound
+from altairsite.separation import enable_mobile, enable_smartphone
 from .exceptions import UsersiteException, IgnorableSystemException
 
 __all__ = [
@@ -18,22 +19,47 @@ def make_exc_trap_wrapper(view_callable):
             raise IgnorableSystemException(u'untrapped system exception')
     return exc_trap_wrapper
 
-def usersite_view_config(*args, **kwargs):
+def pop_decorator(kwargs):
     decorator = kwargs.pop('decorator', None)
     if decorator is not None:
-        _decorator = lambda view_callable: make_exc_trap_wrapper(decorator(view_callable))
+        return lambda view_callable: make_exc_trap_wrapper(decorator(view_callable))
     else:
-        _decorator = make_exc_trap_wrapper
+        return make_exc_trap_wrapper
+
+def pop_custom_predicates(kwargs, predicate):
+    _custom_predicates = kwargs.pop("custom_predicates", [])
+    if _custom_predicates:
+        _custom_predicates = list(_custom_predicates)
+        _custom_predicates.insert(0, enable_mobile)
+    return _custom_predicates
+    
+def usersite_view_config(*args, **kwargs):
+    _decorator = pop_decorator(kwargs)
     return view_config(*args, decorator=_decorator, **kwargs)
 
 def usersite_add_view(config, *args, **kwargs):
-    decorator = kwargs.pop('decorator', None)
-    if decorator is not None:
-        _decorator = lambda view_callable: make_exc_trap_wrapper(decorator(view_callable))
-    else:
-        _decorator = make_exc_trap_wrapper
+    _decorator = pop_decorator(kwargs)
     config.add_view(*args,  decorator=_decorator, **kwargs)
-    
+
+def mobile_site_view_config(*args, **kwargs):
+    _decorator = pop_decorator(kwargs)
+    _custom_predicates = pop_custom_predicates(kwargs, enable_mobile)
+    return view_config(*args, decorator=_decorator, custom_predicates=_custom_predicates, **kwargs)
+
+def mobile_site_add_view(config, *args, **kwargs):
+    _decorator = pop_decorator(kwargs)
+    _custom_predicates = pop_custom_predicates(kwargs, enable_mobile)
+    config.add_view(*args,  decorator=_decorator, custom_predicates=_custom_predicates, **kwargs)
+
+def smartphone_site_view_config(*args, **kwargs):
+    _decorator = pop_decorator(kwargs)
+    _custom_predicates = pop_custom_predicates(kwargs, enable_smartphone)
+    return view_config(*args, decorator=_decorator, custom_predicates=_custom_predicates, **kwargs)
+
+def smartphone_site_add_view(config, *args, **kwargs):
+    _decorator = pop_decorator(kwargs)
+    _custom_predicates = pop_custom_predicates(kwargs, enable_smartphone)
+    config.add_view(*args,  decorator=_decorator, custom_predicates=_custom_predicates, **kwargs)
 
 def install_convinient_request_properties(config):
     assert config.registry.settings["altair.orderreview.url"]
@@ -60,3 +86,5 @@ def install_convinient_request_properties(config):
 
 def includeme(config):
     config.add_directive("usersite_add_view", usersite_add_view)
+    config.add_directive("mobile_site_add_view", mobile_site_add_view)
+    config.add_directive("smartphone_site_add_view", smartphone_site_add_view)

@@ -2,6 +2,7 @@
 from pyramid.httpexceptions import HTTPNotFound
 from altaircms.lib.fanstatic_decorator import with_jquery
 from altaircms.page.api import as_static_page_response, StaticPageNotFound
+from ..separation import enable_smartphone, enable_mobile
 import logging 
 import os.path
 from altairsite.config import usersite_view_config
@@ -58,7 +59,7 @@ from altairsite.mobile.dispatch.views import dispatch_view as mobile_dispatch_vi
 from altairsite.smartphone.dispatch.views import dispatch_view as smartphone_dispatch_view
 from pyramid.httpexceptions import HTTPFound
 
-@usersite_view_config(route_name="front", request_type="altairsite.tweens.IMobileRequest")
+@usersite_view_config(route_name="front", request_type="altairsite.tweens.IMobileRequest", custom_predicates=(enable_mobile, ))
 def mobile_rendering_page(context, request):
     url = request.matchdict["page_name"]
     dt = context.get_preview_date()
@@ -76,11 +77,7 @@ def mobile_rendering_page(context, request):
     logger.info(control.error_message)
     return mobile_dispatch_view(context, request)
 
-
-def is_rakuten_ticket(info, request):
-    return request.organization.short_name == "RT"
-
-@usersite_view_config(route_name="front", request_type="altairsite.tweens.ISmartphoneRequest", custom_predicates=(is_rakuten_ticket, ))
+@usersite_view_config(route_name="front", request_type="altairsite.tweens.ISmartphoneRequest", custom_predicates=(enable_smartphone, ))
 def smartphone_rendering_page(context, request):
     url = request.matchdict["page_name"]
     dt = context.get_preview_date()
