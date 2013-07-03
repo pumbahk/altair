@@ -1,0 +1,55 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+  <head>
+    <title>岩手ビッグブルズ</title>
+    <meta http-equiv="Content-Language" content="ja">
+    <meta http-equiv="content-style-type" content="text/css">
+    <meta http-equiv="content-script-type" content="text/javascript">
+    <meta http-equiv="imagetoolbar" content="no">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <link rel="stylesheet" type="text/css" href="${request.static_url("altaircms:static/bigbulls/css/main.css")}" media="all" />
+  </head>
+  <body>
+    <div class="header">
+      <div class="header-inner">
+        <a href="http://bigbulls.jp/">
+
+            <img src="${request.static_url("altaircms:static/bigbulls/images/logoheader.gif")}" alt="ブルズ・チケット" height="64">
+
+        </a>
+        <div class="gnavi">
+          <a href="https://bigbulls.tstar.jp/orderreview/" class="historySearchBtn">購入履歴の確認</a>
+          <br>
+          <ul>
+            <%block name="header_navigation">
+            </%block>
+          </ul>　　 
+        </div>
+      </div>
+    </div>
+    <!-- wrapper -->    
+    <div class="wrapper">
+			<div class="kadomaru">
+				<div class="textC" style="font-size:28px;font-weight:bold;">
+    ${next.body()}
+        </div>
+			</div>
+      <!-- kadomaru終わり -->
+    </div>
+    <!-- wrapperおわり -->
+
+    <!-- wrapperおわり -->
+	<div class="footer">
+	    <div class="footer-inner">
+	        <div class="footernav">
+          <%block name="footer_navigation">
+         </%block>
+	        </div>
+	        <br class="clear">
+	        <div class="copyright">
+	            Copyright c 2010-2013 TicketStar Inc. All Rights Reserved. 
+	        </div>
+	    </div>
+	</div>
+  </body>
+</html>

@@ -1,5 +1,5 @@
 <%page args="membership,order,redirect_to"/>
-<%namespace file="/common/helpers.html" name="h" />
+<%namespace file="/common/helpers.html" name="ch" />
 <%namespace file="/common/modal.html" import="delete_modal" />
 
 <script type="text/javascript">
@@ -46,7 +46,7 @@
   }
   order = iter(order or ['new', 'edit', 'delete'])
 %>
-${h.action_button(actions, order)}
+${ch.action_button(actions, order)}
 
 ${delete_modal()}
 

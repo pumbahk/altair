@@ -1,5 +1,5 @@
 <%page args="form" />
-<%namespace file="/common/helpers.html" name="h" />
+<%namespace file="/common/helpers.html" name="ch" />
 
 <script type="text/javascript">
   $(function() {
@@ -39,11 +39,11 @@
   <div class="modal-body">
     <form id="search" class="form-horizontal" method="POST" action="${request.route_path('orders.refund.search')}">
       <fieldset>
-        ${h.form_item(form.event_id)}
-        ${h.form_item(form.performance_id, class_='span10')}
-        ${h.form_item(form.sales_segment_id)}
-        ${h.form_item(form.payment_method)}
-        ${h.form_item(form.delivery_method)}
+        ${ch.form_item(form.event_id)}
+        ${ch.form_item(form.performance_id, class_='span10')}
+        ${ch.form_item(form.sales_segment_id)}
+        ${ch.form_item(form.payment_method)}
+        ${ch.form_item(form.delivery_method)}
 
         <div class="control-group ">
           <label class="control-label">

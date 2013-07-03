@@ -1,5 +1,5 @@
 <%inherit file="/layout_2cols.html"/>
-<%namespace file="/common/helpers.html" name="h" />
+<%namespace file="/common/helpers.html" name="ch" />
 <%namespace file="/common/modal.html" import="delete_modal" />
 
 <script type="text/javascript">
@@ -22,20 +22,16 @@
 
 <%doc>
 ## breadcrumbs are not supported yet
-<div class="breadcrumbs">
-  ${h.breadcrumbs(
+<%block name="breadcrumbs">
+  ${ch.breadcrumbs(
       names=[u'トップ', u'membership'],
       urls=[request.route_path('index'), request.route_path('memberships',action="index",membership_id="*")]
   )}
-</div>
+</%block>
 </%doc>
 
 <div class="page-header">
   <h3>会員区分詳細</h3>
-</div>
-
-<div class="content">
-  ${h.flash_messages(request)}
 </div>
 
 <div>

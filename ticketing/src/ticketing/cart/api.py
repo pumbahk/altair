@@ -15,8 +15,9 @@ from pyramid.httpexceptions import HTTPNotFound
 
 from ticketing.api.impl import get_communication_api
 from ticketing.api.impl import CMSCommunicationApi
-from altair.mobile.api import is_mobile 
+from altair.mobile.interfaces import IMobileRequest
 from ticketing.core import models as c_models
+from ticketing.core import api as c_api
 from ticketing.users.models import User, UserCredential, Membership, MemberGroup, MemberGroup_SalesSegment
 
 from .interfaces import IPaymentMethodManager
@@ -90,6 +91,9 @@ def get_event(request):
     if not event_id:
         return None
     return c_models.Event.query.filter(c_models.Event.id==event_id).first()
+
+def is_mobile(request):
+    return IMobileRequest.providedBy(request)
 
 def get_event_info_from_cms(request, event_id):
     communication_api = get_communication_api(request, CMSCommunicationApi)
@@ -166,7 +170,7 @@ def _maybe_encoded(s, encoding='utf-8'):
     return s.decode(encoding)
 
 def get_item_name(request, cart_name):
-    organization = request.organization
+    organization = c_api.get_organization(request)
     base_item_name = organization.setting.cart_item_name
     return _maybe_encoded(base_item_name) + " " + str(cart_name)
 
@@ -291,16 +295,3 @@ def get_performance_selector(request, name):
     reg = request.registry
     performance_selector = reg.adapters.lookup([IRequest], IPerformanceSelector, name)(request)
     return performance_selector
-
-def get_host_base_url(request):
-    if is_mobile(request):
-        base_url = request.altair_host.mobile_base_url or "/"
-    else:
-        base_url = request.altair_host.base_url or "/"
-    return base_url
-
-def set_we_need_pc_access(response):
-    response.set_cookie(PC_SWITCH_COOKIE_NAME, str(datetime.now()))
-
-def set_we_invalidate_pc_access(response):
-    response.delete_cookie(PC_SWITCH_COOKIE_NAME)

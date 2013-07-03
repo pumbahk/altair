@@ -1,0 +1,10 @@
+<%inherit file="/layout_2cols.html"/>
+<%namespace file="/common/helpers.html" name="ch"/>
+<h1>ポイント付与設定</h1>
+<form action="#" method="post">
+<a href="${request.route_path('point_grant_settings.new')}" class="btn"><i class="icn-plus"></i>追加</a>
+<button class="btn" onclick="delete_point_grant_settings($(this).parent()); return false;"><i class="icn-cross"></i>削除</button>
+${ch.pager(point_grant_settings)}
+<%include file="./_list.html" />
+<%include file="./modal_delete_confirm.html" args="modal_id='modal_delete_confirm'" />
+</form>

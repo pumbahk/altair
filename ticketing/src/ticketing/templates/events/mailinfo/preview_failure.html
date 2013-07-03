@@ -1,0 +1,6 @@
+<%inherit file="/layout.html" />
+
+<h2>メールpreview (${mutil.get_mailtype_description()}付加情報)</h2>
+
+メールの設定が見つかりません。
+少なくとも<a href="${request.route_path("organizations.mails.new", organization_id=organization_id, mailtype=mailtype)}">ここで</a>Organizationごとの設定をしてください。

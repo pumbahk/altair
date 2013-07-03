@@ -1,74 +1,73 @@
 <%page args="items" />
-<%namespace file="/common/helpers.html" name="h"/>
+<%namespace file="/common/helpers.html" name="ch"/>
 
 % if items:
 <table class="table table-striped table-bordered">
   <thead>
-  <tr>
-    <th class="span1"></th>
-    <!--<th class="span1">元venue ID</th>-->
-    <th class="span1">site</th>
-    <th>都道府県</th>
-    <th>名称</th>
-    <th>FRONT</th>
-    <th class="span1">venue</th>
-    <th>席数</th>
-    <th>詳細</th>
-    <th>パフォーマンス</th>
-    <th>作成日時</th>
-  </tr>
+    <tr>
+      <th class="span1"></th>
+      <!--<th class="span1">元venue ID</th>-->
+      <th class="span1">site</th>
+      <th>都道府県</th>
+      <th>名称</th>
+      <th>FRONT</th>
+      <th class="span1">venue</th>
+      <th>席数</th>
+      <th>詳細</th>
+      <th>パフォーマンス</th>
+      <th>作成日時</th>
+    </tr>
   </thead>
   <tbody>
   % for item in items:
-  <tr id="venue-${item['venue'].id}">
-    <td>
-      <!--<input name="venue_id" type="radio" value=${item['venue'].id} />-->
-    </td>
-    <!--<td><span class="id">${item['venue'].original_venue_id}</span></td>-->
-	% if item['performance']:
-	<td colspan="4"></td>
-	% else:
-    <td><span class="id">${item['site'].id}</span></td>
-	<td>
-	% if item['site'].prefecture is not None:
-		${item['site'].prefecture}
-	% endif
-	</td>
-    <td><span class="name">${item['site'].name}</span>
-	% if item['venue'].sub_name != None:
-		<div class="sub_name">${item['venue'].sub_name}</div>
-	% endif
-	</td>
-	<td style="text-align: center;">
-		% if item['drawing'].get_frontend_pages() is not None:
-			◯
-		% else:
-			×
-		% endif
-	</td>
-	% endif
-    <td><span class="id">${item['venue'].id}</span></td>
-	<td>${item['count']}</td>
-    <td><a href="${request.route_path('venues.show', venue_id=item['venue'].id)}">詳細</a>
-	<td>
-	% if item['performance']:
-		<a href="${request.route_path('performances.show', performance_id=item['performance'].id)}">
-		% if item['performance'].start_on:
-			${item['performance'].start_on.strftime('%Y/%m/%d')}
-		% endif
-		${item['performance'].name}</a>
-	% else:
-		-
-	% endif
-	</td>
-	<td>
-	% if item['performance']:
-		${item['performance'].created_at}
-	% else:
-		${item['site'].created_at}
-	% endif
-	</td>
-  </tr>
+    <tr id="venue-${item['venue'].id}">
+      <td><!--<input name="venue_id" type="radio" value=${item['venue'].id} />--></td>
+      <!--<td><span class="id">${item['venue'].original_venue_id}</span></td>-->
+    % if item['performance']:
+      <td colspan="4"></td>
+    % else:
+      <td><span class="id">${item['site'].id}</span></td>
+      <td>
+      % if item['site'].prefecture is not None:
+        ${item['site'].prefecture}
+      % endif
+      </td>
+      <td><span class="name">${item['site'].name}</span>
+      % if item['venue'].sub_name != None:
+        <div class="sub_name">${item['venue'].sub_name}</div>
+      % endif
+      </td>
+      <td style="text-align: center;">
+      % if item['site']._frontend_metadata_url is not None:
+        ◯
+      % else:
+        ×
+      % endif
+      </td>
+    % endif
+      <td><span class="id">${item['venue'].id}</span></td>
+    	<td>${item['count']}</td>
+      <td><a href="${request.route_path('venues.show', venue_id=item['venue'].id)}">詳細</a></td>
+    	<td>
+    % if item['performance']:
+        <a href="${request.route_path('performances.show', performance_id=item['performance'].id)}">
+      % if item['performance'].start_on:
+        ${item['performance'].start_on.strftime('%Y/%m/%d')}
+      % endif
+        ${item['performance'].name}
+        </a>
+    % else:
+        -
+    % endif
+      </td>
+      <td>
+      % if item['performance']:
+        ${item['performance'].created_at}
+      % else:
+        ${item['site'].created_at}
+      % endif
+      </td>
+    </tr>
   % endfor
   </tbody>
 </table>

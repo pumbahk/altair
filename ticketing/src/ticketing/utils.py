@@ -225,22 +225,44 @@ def dereference(object, key, return_none_unless_feasible=False):
                     raise
         elif delimiter == u'[':
             # state 2: expecting identifier or number
-            try:
-                token = tokens.next()
-            except StopIteration:
-                token = None
+            identifier_or_number = []
 
-            identifier_or_number = token and (token.group(1) or (token.group(2) and int(token.group(2))))
-            if identifier_or_number is None:
+            while True:
+                try:
+                    token = tokens.next()
+                except StopIteration:
+                    token = None
+                if token is not None:
+                    identifier = token.group(1)
+                    number = token.group(2)
+                    delimiter = token.group(3)
+                else:
+                    identifier = number = None
+                    delimiter = u''
+
+                if identifier is not None:
+                    identifier_or_number.append((1, identifier))
+                elif number is not None:
+                    identifier_or_number.append((2, number))
+                elif delimiter == u'.':
+                    identifier_or_number.append((3, delimiter))
+                elif delimiter == u']':
+                    break
+                else:
+                    raise ValueError('] expected')
+
+            if identifier_or_number:
+                if len(identifier_or_number) == 1:
+                    if identifier_or_number[0][0] == 2:
+                        identifier_or_number = int(identifier_or_number[0][1])
+                    else:
+                        identifier_or_number = identifier_or_number[0][1]
+                else:
+                    identifier_or_number = u''.join(c[1] for c in identifier_or_number)
+                
+            if not identifier_or_number:
                 raise ValueError('identifier or number expected')
 
-            try:
-                token = tokens.next()
-            except StopIteration:
-                token = None
-            delimiter = token and token.group(3)
-            if delimiter != u']':
-                raise ValueError('] expected')
             try:
                 object = object[identifier_or_number]
             except KeyError:

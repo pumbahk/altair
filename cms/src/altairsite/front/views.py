@@ -66,12 +66,21 @@ def mobile_rendering_page(context, request):
     control = context.pc_access_control()
     page = control.fetch_page_from_params(url, dt)
 
-    if not control.access_ok or page.event_id is None:
+    if not control.access_ok:
         logger.info(control.error_message)
         return mobile_dispatch_view(context, request)
-    return HTTPFound(request.route_path("eventdetail", _query=dict(event_id=page.event_id or page.pageset.event_id)))
-    
-@usersite_view_config(route_name="front", request_type="altairsite.tweens.ISmartphoneRequest")
+    if page.event_id or page.pageset.event_id:
+        return HTTPFound(request.route_path("eventdetail", _query=dict(event_id=page.event_id or page.pageset.event_id)))
+    if page.pageset.genre_id:
+        return HTTPFound(request.route_path("genre") + "?genre=" + str(page.pageset.genre_id))
+    logger.info(control.error_message)
+    return mobile_dispatch_view(context, request)
+
+
+def is_rakuten_ticket(info, request):
+    return request.organization.short_name == "RT"
+
+@usersite_view_config(route_name="front", request_type="altairsite.tweens.ISmartphoneRequest", custom_predicates=(is_rakuten_ticket, ))
 def smartphone_rendering_page(context, request):
     url = request.matchdict["page_name"]
     dt = context.get_preview_date()
@@ -82,11 +91,12 @@ def smartphone_rendering_page(context, request):
     if not control.access_ok:
         logger.info(control.error_message)
         return smartphone_dispatch_view(context, request)
-    if page.event_id is None:
-        ## TOOOOOOOOOOOOO adhoc.
-        if page.url.startswith("special"):
-            return _rendering_page(context, request, control, page)
-        else:
-            return smartphone_dispatch_view(context, request)
-    return HTTPFound(request.route_path("smartphone.detail", _query=dict(event_id=page.event_id or page.pageset.event_id)))
-    
+    if page.event_id or page.pageset.event_id:
+        return HTTPFound(request.route_path("smartphone.detail", _query=dict(event_id=page.event_id or page.pageset.event_id)))
+    if page.pageset.genre_id:
+        return HTTPFound(request.route_path("smartphone.genre", genre_id=page.pageset.genre_id))
+    if page.url.startswith("special"):
+        return _rendering_page(context, request, control, page)
+    else:
+        return smartphone_dispatch_view(context, request)
+

@@ -1,5 +1,5 @@
 <%page args="form, seats" />
-<%namespace file="/common/helpers.html" name="h" />
+<%namespace file="/common/helpers.html" name="ch" />
 
 <style type="text/css">
   #modal-reserve .product_quantity {
@@ -47,7 +47,7 @@
   </div>
 
   <div class="modal-body">
-    ${h.alert_message(form)}
+    ${ch.alert_message(form)}
 
     <form class="form-horizontal" action="javascript:confirmOrder();">
       % if form.products.choices:
@@ -89,7 +89,7 @@
         % for product in form.products.choices:
         <tr>
           <td>${product[1]['name']} (${product[1]['sales_segment']})</td>
-          <td>${h.price_format(product[1]['price'])}円</td>
+          <td>${ch.price_format(product[1]['price'])}円</td>
           <td><input id="product_quantity-${product[0]}" name="product_quantity-${product[0]}" type="text" value=""></td>
         </tr>
         % endfor
@@ -136,8 +136,8 @@
           });
         });
       </script>
-      ${h.form_item(form.sales_segment_id, class_='span10')}
-      ${h.form_item(form.payment_delivery_method_pair_id, class_='span10')}
+      ${ch.form_item(form.sales_segment_id, class_='span10')}
+      ${ch.form_item(form.payment_delivery_method_pair_id, class_='span10')}
       <div class="shipping-address">
         <div class="control-group">
           <div class="controls">
@@ -158,17 +158,17 @@
             ${form.first_name_kana}
           </div>
         </div>
-        ${h.form_item(form.tel_1)}
+        ${ch.form_item(form.tel_1)}
       </div>
 
-      ${h.form_item(form.sales_counter_payment_method_id, class_='span10')}
+      ${ch.form_item(form.sales_counter_payment_method_id, class_='span10')}
       <div class="control-group">
         <div class="controls">
           <p>※ 当日窓口決済を選択すると、予約のステータスが「入金済み」になります</p>
         </div>
       </div>
-      ${h.form_item(form.note, rows=3, class_='span10')}
-      ${h.form_item(form.performance_id)}
+      ${ch.form_item(form.note, rows=3, class_='span10')}
+      ${ch.form_item(form.performance_id)}
     </form>
   </div>
 

@@ -53,3 +53,8 @@ class RoleForm(Form):
     permission = fields.SelectField(
         choices=[(p, p) for p in PERMISSIONS],
     )
+
+class NowSettingForm(Form):
+    now = fields.DateTimeField(label=u"時間指定現在時刻")
+    
+    __display_fields__ = ["now"]

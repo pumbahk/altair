@@ -3,6 +3,7 @@
 import logging
 logger = logging.getLogger(__name__)
 from sqlalchemy import sql
+from sqlalchemy import orm
 from pyramid.decorator import reify
 from pyramid.view import view_config, view_defaults
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound
@@ -12,6 +13,7 @@ from ticketing.fanstatic import with_bootstrap
 from ticketing.core.models import (
     DBSession,
     Product, 
+    Performance,
     PaymentDeliveryMethodPair,
     ShippingAddress,
     StockHolder,
@@ -36,9 +38,11 @@ from ticketing.payments.api import (
 )
 import ticketing.lots.api as lots_api
 from ticketing.lots.electing import Electing
+from ticketing.lots.closing import LotCloser
 from .helpers import Link
-from .forms import ProductForm, LotForm, SearchEntryForm
+from .forms import ProductForm, LotForm, SearchEntryForm, SendingMailForm
 from . import api
+from .models import LotWishSummary
 
 from ticketing.payments import helpers as payment_helpers
 
@@ -384,19 +388,20 @@ class LotEntries(BaseView):
                     filename=filename)
 
 
-    def payment_status(self, wish, pdmp, auth, sej):
-        order = wish.lot_entry.order
-        finished = is_finished_payment(self.request, pdmp, order)
-        detail = payment_helpers.payment_status(pdmp, auth, sej)
+    def payment_status(self, wish):
+        #order = wish.lot_entry.order
+        #order = wish.order
+        finished = is_finished_payment(self.request, wish, wish)
+        detail = payment_helpers.payment_status(wish, wish.auth, wish.sej)
         if finished:
             return u"処理済み( {detail} )".format(detail=detail)
         else:
             return u"( {detail} )".format(detail=detail)
 
-    def delivery_status(self, wish, pdmp, auth, sej):
-        order = wish.lot_entry.order
-        finished = is_finished_delivery(self.request, pdmp, order)
-        detail = payment_helpers.delivery_status(pdmp, auth, sej)
+    def delivery_status(self, wish):
+        #order = wish.lot_entry.order
+        finished = is_finished_delivery(self.request, wish, wish)
+        detail = payment_helpers.delivery_status(wish, wish.auth, wish.sej)
         if finished:
             return u"処理済み( {detail} )".format(detail=detail)
         else:
@@ -487,28 +492,28 @@ class LotEntries(BaseView):
         logger.debug("condition = {0}".format(condition))
         logger.debug("from = {0}".format(form.entried_from.data))
 
-        q = DBSession.query(LotEntryWish, MultiCheckoutOrderStatus, SejOrder).join(
-            LotEntry
-        ).join(
-            Lot
-        ).join(
-            ShippingAddress
-        ).filter(
-            Lot.id==lot_id
-        ).outerjoin(
-            MultiCheckoutOrderStatus,
-            sql.and_(MultiCheckoutOrderStatus.OrderNo.startswith(LotEntry.entry_no),
-                     MultiCheckoutOrderStatus.Status!=None),
-        ).outerjoin(
-            SejOrder,
-            SejOrder.order_id==LotEntry.entry_no,
+        #q = DBSession.query(LotEntryWish, MultiCheckoutOrderStatus, SejOrder).join(
+        q = DBSession.query(LotWishSummary).filter(
+            LotWishSummary.lot_id==lot_id
+        ).options(
+            orm.joinedload('products'),
+            orm.joinedload('products.product'),
         ).order_by(
-            LotEntry.entry_no,
-            LotEntryWish.wish_order
+            LotWishSummary.entry_no,
+            LotWishSummary.wish_order
         )
 
 
         wishes = q.filter(condition)
+        performances = Performance.query.filter(
+            Performance.id==Product.performance_id
+        ).filter(
+            Product.sales_segment_id==Lot.sales_segment_id
+        ).filter(
+            Lot.id==lot.id
+        ).all()
+
+        performances = dict([(p.id, p) for p in performances])
 
         electing_url = self.request.route_url('lots.entries.elect_entry_no', lot_id=lot.id)
         rejecting_url = self.request.route_url('lots.entries.reject_entry_no', lot_id=lot.id)
@@ -531,6 +536,7 @@ class LotEntries(BaseView):
                     lot_status=lot_status,
                     status_url=status_url,
                     electing=electing,
+                    performances=performances,
         )
 
 
@@ -589,6 +595,22 @@ class LotEntries(BaseView):
         return dict(lot=lot,
                     electing=electing)
 
+
+
+    @view_config(route_name='lots.entries.close',
+                 renderer="string",
+                 request_method="POST",
+                 permission='event_viewer')
+    def close_entries(self):
+        self.check_organization(self.context.event)
+        lot_id = self.request.matchdict["lot_id"]
+        lot = Lot.query.filter(Lot.id==lot_id).one()
+        closer = LotCloser(lot, self.request)
+        closer.close()
+        self.request.session.flash(u"オーソリ開放可能にしました。")
+
+        return HTTPFound(location=self.request.route_url('lots.entries.index', lot_id=lot.id))
+
     @view_config(route_name='lots.entries.elect', 
                  renderer="string",
                  request_method="POST",
@@ -629,13 +651,17 @@ class LotEntries(BaseView):
 
     def render_wish_row(self, wish):
         """ ajaxで当選申込変更後の内容を返す"""
-
+        w = DBSession.query(LotWishSummary).filter(
+            LotWishSummary.entry_no==wish.lot_entry.entry_no
+        ).filter(
+            LotWishSummary.wish_order==wish.wish_order
+        ).one()
         tmpl = get_renderer("/lots/search.html")
         auth = MultiCheckoutOrderStatus.by_order_no(wish.lot_entry.entry_no)
         sej =  DBSession.query(SejOrder).filter(SejOrder.order_id==wish.lot_entry.entry_no).first()
 
         html = tmpl.implementation().get_def('lot_wish_row').render(
-            w=wish, auth=auth, sej=sej, view=self)
+            self.request, w=w, auth=auth, sej=sej, view=self)
         return html
 
     def wish_tr_class(self, wish):
@@ -794,4 +820,21 @@ class LotEntries(BaseView):
         return dict(result="OK",
                     html=[(self.wish_tr_class(w), self.render_wish_row(w))
                           for w in lot_entry.wishes])
+
+
+    @view_config(route_name='lots.entries.show', renderer="lots/entry_show.html")
+    def entry_show(self):
+        self.check_organization(self.context.event)
+        lot_id = self.request.matchdict["lot_id"]
+        lot = Lot.query.filter(Lot.id==lot_id).one()
+
+        entry_no = self.request.matchdict['entry_no']
+        lot_entry = lot.get_lot_entry(entry_no)
+        shipping_address = lot_entry.shipping_address
+        mail_form = SendingMailForm(recipient=shipping_address.email_1, 
+                                    bcc="")
+        return {"lot": lot, 
+                "lot_entry": lot_entry, 
+                "shipping_address": shipping_address, 
+                "mail_form": mail_form}
 

@@ -1,21 +1,15 @@
 <%inherit file="/layout_2cols.html"/>
-<%namespace file="/common/helpers.html" import="pager"/>
-<%namespace file="/common/helpers.html" import="flash_messages" />
-<%namespace file="/common/helpers.html" import="breadcrumbs" />
+<%namespace file="/common/helpers.html" name="ch" />
 
-<div class="breadcrumbs">
-  ${breadcrumbs(
-      names=[u'トップ', u'メールマガジン'],
-      urls=[request.route_path('index')]
-  )}
-</div>
+<%block name="breadcrumbs">
+${ch.breadcrumbs(
+  names=[u'トップ', u'メールマガジン'],
+  urls=[request.route_path('index')]
+)}
+</%block>
 
 <div class="page-header">
   <h3>メールマガジン</h3>
-</div>
-
-<div class="content">
-  ${flash_messages(request)}
 </div>
 
 <div class="mailmags">
@@ -40,5 +34,5 @@
   % endfor
     </tbody>
   </table>
-  ${pager(mailmags)}
+  ${ch.pager(mailmags)}
 </div>

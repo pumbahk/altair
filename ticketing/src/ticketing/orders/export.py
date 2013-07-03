@@ -9,6 +9,7 @@ from ticketing.cart.helpers import format_number as _format_number
 from ticketing.mailmags.models import MailSubscription, MailMagazine, MailSubscriptionStatus
 from ticketing.utils import dereference
 from ticketing.csvutils import CSVRenderer, PlainTextRenderer, CollectionRenderer, AttributeRenderer, SimpleRenderer
+from .api import get_metadata_provider_registry
 
 def format_number(value):
     return _format_number(float(value))
@@ -44,6 +45,8 @@ japanese_columns = {
     u'order.card_brand': u'カードブランド',
     u'order.card_ahead_com_code': u'仕向け先企業コード',
     u'order.card_ahead_com_name': u'仕向け先企業名',
+    u'sej_order.billing_number': u'SEJ払込票番号',
+    u'sej_order.exchange_number': u'SEJ引換票番号',
     u'user_profile.last_name': u'姓',
     u'user_profile.first_name': u'名',
     u'user_profile.last_name_kana': u'姓(カナ)',
@@ -85,14 +88,17 @@ japanese_columns = {
     u'ordered_product_item.quantity': u'商品明細個数',
     u'ordered_product_item.print_histories': u'発券作業者',
     u'mail_magazine.mail_permission': u'メールマガジン受信可否',
-    u'attribute[t_shirts_size]': u'Tシャツサイズ',
-    u'attribute[mail_permission]': u'メールマガジン受信可否',
-    u'attribute[publicity]': u'公開可否',
-    u'attribute[cont]': u'区分 (継続=yes)',
-    u'attribute[old_id_number]': u'旧会員番号',
     u'seat.name': u'座席名',
     }
 
+def get_japanese_columns(request):
+    retval = dict(japanese_columns)
+    registry = get_metadata_provider_registry(request)
+    for provider in registry.getProviders():
+        for key in provider:
+            metadata = provider[key]
+            retval[u'attribute[%s]' % metadata.key] = metadata.get_display_name('ja_JP')
+    return retval
 
 class MarginRenderer(object):
     def __init__(self, key, column_name):
@@ -103,7 +109,8 @@ class MarginRenderer(object):
         order = dereference(record, self.key)
         rendered_value = 0
         for ordered_product in order.ordered_products:
-            rendered_value += (ordered_product.price * ordered_product.quantity) * (ordered_product.product.sales_segment.margin_ratio / 100)
+            margin = (ordered_product.product.sales_segment.margin_ratio / 100) if ordered_product.product.sales_segment is not None else 0
+            rendered_value += (ordered_product.price * ordered_product.quantity) * margin
         return [
             ((u"", self.column_name, u""), unicode(rendered_value))
         ]
@@ -191,6 +198,8 @@ class OrderCSV(object):
         PlainTextRenderer(u'order.card_brand'),
         PlainTextRenderer(u'order.card_ahead_com_code'),
         PlainTextRenderer(u'order.card_ahead_com_name'),
+        PlainTextRenderer(u'sej_order.billing_number'),
+        PlainTextRenderer(u'sej_order.exchange_number'),
         MailMagazineSubscriptionStateRenderer(
             u'shipping_address.emails',
             u'mail_magazine.mail_permission'
@@ -214,9 +223,9 @@ class OrderCSV(object):
         PlainTextRenderer(u'shipping_address.city'),
         PlainTextRenderer(u'shipping_address.address_1'),
         PlainTextRenderer(u'shipping_address.address_2'),
-        PlainTextRenderer(u'shipping_address.tel_1'),
-        PlainTextRenderer(u'shipping_address.tel_2'),
-        PlainTextRenderer(u'shipping_address.fax'),
+        PlainTextRenderer(u'shipping_address.tel_1', fancy=True),
+        PlainTextRenderer(u'shipping_address.tel_2', fancy=True),
+        PlainTextRenderer(u'shipping_address.fax', fancy=True),
         PlainTextRenderer(u'shipping_address.email_1'),
         PlainTextRenderer(u'shipping_address.email_2'),
         PlainTextRenderer(u'payment_method.name'),
@@ -345,6 +354,7 @@ class OrderCSV(object):
         member = order.user.member if order.user and order.user.member else None
         common_record = {
             u'order': order,
+            u'sej_order': order.sej_order if order.sej_order else None,
             u'user_profile': order.user.user_profile if order.user else None,
             u'membership': user_credential.membership if user_credential else None,
             u'membergroup': member.membergroup if member else None,

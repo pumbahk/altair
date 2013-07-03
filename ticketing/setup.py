@@ -92,6 +92,9 @@ requires = [
     "altair.mobile",
     "altair.grid",
     'altair.saannotation',
+    'altair.queryprofile',
+    'altair.sqlahelper',
+    'altair.viewhelpers',
     ]
 
 tests_require = [
@@ -158,12 +161,12 @@ setup(name='ticketing',
       [console_scripts]
       inquiry_demo=ticketing.cart.commands:inquiry_demo
       cancel_auth_expired_carts=ticketing.cart.commands:cancel_auth_expired_carts
-      venue_import=ticketing.commands.venue_import:main
+      venue_import=ticketing.scripts.venue_import:main
       update_seat_status=ticketing.orders.commands:update_seat_status
       join_cart_and_order=ticketing.cart.commands:join_cart_and_order
       sej_notification=ticketing.sej.scripts.sej_notification:main
-      check_multicheckout_orders=ticketing.commands.check_multicheckout_orders:main
-      populate_order_no=ticketing.commands.populate_order_no:main
+      check_multicheckout_orders=ticketing.scripts.check_multicheckout_orders:main
+      populate_order_no=ticketing.scripts.populate_order_no:main
       send_sales_reports=ticketing.events.sales_reports.commands:main
       cancel_auth=ticketing.multicheckout.scripts.cancelauth:main
       sej_nwts_upload=ticketing.sej.scripts.sej_nwts_upload:main
@@ -171,6 +174,10 @@ setup(name='ticketing',
       rakuten_checkout_sales=ticketing.checkout.commands:rakuten_checkout_sales
       refund_order=ticketing.orders.commands:refund_order
       sej_send_refund_file_with_proxy=ticketing.sej.commands:send_refund_file_with_proxy
+      import_point_grant_results=ticketing.loyalty.commands:import_point_grant_results
+      import_point_grant_data=ticketing.loyalty.commands:import_point_grant_data
+      export_point_grant_data=ticketing.loyalty.commands:export_point_grant_data
+      make_point_grant_data=ticketing.loyalty.commands:make_point_grant_data
       """,
       paster_plugins=['pyramid'],
       )

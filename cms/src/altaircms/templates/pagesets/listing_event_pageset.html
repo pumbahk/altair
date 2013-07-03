@@ -97,8 +97,8 @@ seq = h.paginate(request, pages, item_count=page_count, items_per_page=50)
         <td>
           <a href="${h.link.preview_page_from_pageset(request, page)}" class="btn btn-small"><i class="icon-eye-open"> </i> Preview</a>
         </td>
-		<td>${h.base.jdate_with_hour(page.created_at)}</td>
-		<td>${h.base.jdate_with_hour(page.updated_at)}</td>
+		<td>${h.base.jdatetime(page.created_at)}</td>
+		<td>${h.base.jdatetime(page.updated_at)}</td>
       </tr>
     %endfor
   </tbody>

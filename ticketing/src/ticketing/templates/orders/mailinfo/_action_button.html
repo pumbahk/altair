@@ -1,5 +1,5 @@
 <%page args="order, mail_form, event" />
-<%namespace file="/common/helpers.html" name="h" />
+<%namespace file="/common/helpers.html" name="ch" />
 <%namespace file="/common/modal.html" name="m" />
 
 ## uggg
@@ -22,8 +22,8 @@ from ticketing.core.models import MailTypeEnum
 	<ul class="dropdown-menu">
 	  <li>
 		<a href="${request.route_path("orders.mailinfo", order_id=order.id, action="complete_mail_preview")}">preview</a>
-		<a href="#SendingCompleteMailModal" data-toggle="modal">購入完了メールの再送</a>
-		<a href="${request.route_path("performances.mailinfo.edit", performance_id=performance.id, mailtype=MailTypeEnum.CompleteMail)}">メール付加情報変更</a>
+		<a href="#SendingPurchaseCompleteMailModal" data-toggle="modal">購入完了メールの再送</a>
+		<a href="${request.route_path("performances.mailinfo.edit", performance_id=performance.id, mailtype=MailTypeEnum.PurchaseCompleteMail)}">メール付加情報変更</a>
 	  </li>
 	</ul>
   </div>
@@ -42,7 +42,7 @@ from ticketing.core.models import MailTypeEnum
   </div>
 </div>
 
-<div class="modal hide" id="SendingCompleteMailModal">
+<div class="modal hide" id="SendingPurchaseCompleteMailModal">
   <div class="modal-header">
     <button type="button" class="close" data-dismiss="modal">×</button>
     <h3>購入完了メールの再送</h3>
@@ -66,7 +66,7 @@ from ticketing.core.models import MailTypeEnum
     <h3>購入キャンセルメールの再送</h3>
   </div>
 
-  <form class="inline" action="${request.route_path("orders.mailinfo",order_id=order.id, action="complete_mail_send")}" method="POST">
+  <form class="inline" action="${request.route_path("orders.mailinfo",order_id=order.id, action="cancel_mail_send")}" method="POST">
   <div class="modal-body">
 	${mail_form["recipient"].label} 	${mail_form["recipient"]}
 	${mail_form["bcc"].label} 	${mail_form["bcc"]}

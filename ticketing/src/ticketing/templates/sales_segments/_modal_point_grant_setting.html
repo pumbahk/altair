@@ -1,0 +1,55 @@
+<%page args="modal_id, sales_segment" />
+<%!import json %>
+<%namespace file="/common/helpers.html" name="ch" />
+<script type="text/javascript">
+  var urls = ${json.dumps(dict(
+    add=request.route_path('sales_segments.point_grant_settings.add', sales_segment_id=sales_segment.id),
+    remove=request.route_path('sales_segments.point_grant_settings.remove', sales_segment_id=sales_segment.id)
+  ))|n};
+  var add_point_grant_setting_to_sales_segment, remove_point_grant_settings_from_sales_segment;
+  $(function() {
+    (function(modal_point_grant_setting) {
+      add_point_grant_setting_to_sales_segment = function add_point_grant_setting_to_sales_segment() {
+        // FIXME: formをsubmitしたらページ遷移が発生する挙動に頼っていて
+        // onchangeイベントハンドラはずしてないの注意
+        load_modal_form(
+          modal_point_grant_setting,
+          urls['add'], 
+          null,
+          null
+        );
+      };
+      remove_point_grant_settings_from_sales_segment = function remove_point_grant_settings_from_sales_segment(ids) {
+        if (!ids) return false;
+        var modal = $('#modal-delete');
+        modal.find('#delete').click(function () {
+          var form = $("<form></form").attr({
+            action: urls.remove,
+            method: 'post'
+          });
+          $.each(ids, function (_, id) {
+            form.append($('<input />').attr({ type: 'hidden', name: 'point_grant_setting_id', value: id }));
+          });
+          form.appendTo(document.body);
+          form.submit();
+          return false;
+        });
+        modal.find('#message').text('選択したポイント付与設定を削除します。よろしいですか？');
+        modal.modal('toggle');
+      };
+    })($('#${modal_id}'));
+  });
+</script>
+<div id="${modal_id}" class="modal hide big">
+  <div class="modal-header">
+    <a class="close" data-dismiss="modal">×</a>
+    <h3>ポイント付与設定</h3>
+  </div>
+
+  <div class="modal-body"></div>
+
+  <div class="modal-footer">
+    <a href="#" class="btn" data-dismiss="modal">閉じる</a>
+    <a href="javascript:void(0);" onclick="$('#${modal_id}').find('form').submit();" class="btn">保存</a>
+  </div>
+</div>

@@ -102,5 +102,6 @@ TAB_CALENDAR_JS = u"""\
 """
 
 def after_salessegment_group_deleted(mapper, connection, target):
-    CalendarWidget.query.filter_by(salessegment_id=target.id).update({"salessegment_id": None})
+    for widget in CalendarWidget.query.filter_by(salessegment_id=target.id):
+        widget.salessegment_id = None
 sa.event.listen(SalesSegmentGroup, "before_delete", after_salessegment_group_deleted)

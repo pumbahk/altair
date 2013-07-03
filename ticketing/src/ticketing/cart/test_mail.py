@@ -97,7 +97,7 @@ def _build_sej(*args, **kwargs):
     sqlahelper.get_session().add(sejorder)
     return sejorder
 
-class SendCompleteMailTest(unittest.TestCase):
+class SendPurchaseCompleteMailTest(unittest.TestCase):
     def setUp(self):
         self.config = testing.setUp(settings={"altair.mailer": "pyramid_mailer.testing"})
         self.config.add_renderer('.html' , 'pyramid.mako_templating.renderer_factory')
@@ -128,7 +128,7 @@ class SendCompleteMailTest(unittest.TestCase):
         from pyramid.interfaces import IRequest
         from ticketing.mails.interfaces import ICompleteMail
 
-        class DummyCompleteMail(object):
+        class DummyPurchaseCompleteMail(object):
             def __init__(self, request):
                 self.request = request
 
@@ -137,13 +137,13 @@ class SendCompleteMailTest(unittest.TestCase):
                 self.__class__._order = order
                 return testing.DummyResource(recipients="")
                
-        self.config.registry.adapters.register([IRequest], ICompleteMail, "", DummyCompleteMail)
+        self.config.registry.adapters.register([IRequest], ICompleteMail, "", DummyPurchaseCompleteMail)
         request = testing.DummyRequest()
         order = object()
         self._callFUT(request, order)
 
-        self.assertEquals(DummyCompleteMail._called, "build_message")
-        self.assertEquals(DummyCompleteMail._order, order)
+        self.assertEquals(DummyPurchaseCompleteMail._called, "build_message")
+        self.assertEquals(DummyPurchaseCompleteMail._order, order)
 
         
     def test_exception_in_send_mail_action(self):
@@ -153,7 +153,7 @@ class SendCompleteMailTest(unittest.TestCase):
         from pyramid.interfaces import IRequest
         from ticketing.mails.interfaces import ICompleteMail
 
-        class RaiseExceptionCompleteMail(object):
+        class RaiseExceptionPurchaseCompleteMail(object):
             def __init__(self, request):
                 self.request = request
                 
@@ -161,7 +161,7 @@ class SendCompleteMailTest(unittest.TestCase):
                 raise Exception("wooo-wheee")
 
         with mock.patch("ticketing.cart.sendmail.logger") as m:
-            self.config.registry.adapters.register([IRequest], ICompleteMail, "", RaiseExceptionCompleteMail)
+            self.config.registry.adapters.register([IRequest], ICompleteMail, "", RaiseExceptionPurchaseCompleteMail)
             request = testing.DummyRequest()
             order = testing.DummyResource(id=121212)
             self._callFUT(request, order)
@@ -484,7 +484,7 @@ class SendCompleteMailTest(unittest.TestCase):
 
         order = _build_order()
         order.ordered_from.extra_mailinfo = ExtraMailInfo(
-            data={str(MailTypeEnum.CompleteMail):
+            data={str(MailTypeEnum.PurchaseCompleteMail):
                   {u"footer": u"this-is-footer-message", 
                    u"header": u"this-is-header-message"}
                   }

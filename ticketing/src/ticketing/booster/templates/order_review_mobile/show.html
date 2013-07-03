@@ -1,0 +1,77 @@
+<%inherit file="/layout_mobile.html"/>
+<%namespace file="${context['layout'].relative_path('templates/tags_mobile.html')}" name="mobile" />
+<%mobile:header>受付履歴確認 検索結果</%mobile:header>
+<%mobile:form_header>受付番号</%mobile:form_header>
+${order.order_no}
+% if order.status == 'canceled' or order.payment_status == 'refunded':
+<%mobile:form_header>この購入/予約はキャンセルされました</%mobile:form_header>
+<hr/>
+<font size="-2">
+キャンセル処理は、下記のような理由によりおこなっております。<br />
+・お客様からキャンセルのご連絡があったため<br />
+・期限内のご入金がなくキャンセル扱いとしたため<br />
+・二重注文により、ひとつをキャンセル処理したため
+</font>
+<br/>
+<hr/>
+%else:
+<%mobile:form_header>購入情報</%mobile:form_header>
+${layout.product_name}
+<%mobile:form_header>新規／継続:</%mobile:form_header>
+${u'継続' if pm.get('cont') == 'yes' else u'新規'}
+% if pm.get('cont') == 'yes' and pm.get('old_id_number'):
+<%mobile:form_header>2011-12会員番号</%mobile:form_header>
+${pm.get('old_id_number')}
+% endif
+<%mobile:form_header>会員種別</%mobile:form_header>
+${order.items[0].product.name}
+<%mobile:form_header>氏名</%mobile:form_header>
+${shipping.last_name} ${shipping.first_name}
+<%mobile:form_header>氏名（フリガナ）</%mobile:form_header>
+${shipping.last_name_kana} ${shipping.first_name_kana}
+<%mobile:form_header>誕生日</%mobile:form_header>
+${pm['year']}年${pm['month']}月${pm['day']}日
+<%mobile:form_header>性別</%mobile:form_header>
+${u'男性' if pm['sex']=='male' else u'女性' }
+<%mobile:form_header>郵便番号</%mobile:form_header>
+${shipping.zip}
+<%mobile:form_header>住所</%mobile:form_header>
+${shipping.prefecture}${shipping.city}${shipping.address_1}<br />
+${shipping.address_2}
+<%mobile:form_header>電話番号</%mobile:form_header>
+${shipping.tel_1 or shipping.tel_2}<br />
+<%mobile:form_header>メールアドレス</%mobile:form_header>
+${shipping.email_1}<br />
+${panel("review_mobile.additional_messags", order, shipping, pm)}
+<%mobile:form_header>お支払い</%mobile:form_header>
+%if order.payment_delivery_pair.payment_method.payment_plugin.id == 3:
+<div>セブン-イレブン</div>
+<%mobile:form_header>払込票番号</%mobile:form_header>
+<div>${sej_order.billing_number}</div>
+<%mobile:form_header>予約有効期限</%mobile:form_header>
+<div>${h.japanese_date(sej_order.payment_due_at)}${h.japanese_time(sej_order.payment_due_at)}</div>
+<form action="${sej_order.exchange_sheet_url}" method="post" target="_blank">
+  <input type="hidden" name="iraihyo_id_00" value="${sej_order.exchange_sheet_number}" />
+  <input type="submit" class="paymentCoupon" value="払込票印刷">
+</form>
+% else:
+<%mobile:form_header>クレジットカード</%mobile:form_header>
+% endif
+<div>
+%endif
+&#xe737;注意事項<br />
+<font size="-2">
+%if order.payment_delivery_pair.payment_method.payment_plugin.id == 3:
+・セブン-イレブン決済の際には払込票番号が必要です。下記、「払込票印刷」ボタンをクリックし、払込票を印刷してお持ちになるか、上記の払込票番号をお控えいただき、レジでお伝え下さい。<br />
+・予約有効期限までに、払込票または払込票番号をセブン-イレブン店頭レジにてお申し出の上、代金をお支払いください。<br />
+・支払期日までに入金されない場合は、会員登録/入会申込が無効となりますのでご注意ください。<br />
+%endif
+</font>
+${panel("mobile_complete_notice",is_show_order_review=False)}
+</div>
+<%mobile:form_header>お問い合わせ先</%mobile:form_header>
+<div>
+${layout.contact_name}<br />
+$TEL: ${layout.tel}<br />
+メール: <a href="mailto:${layout.mailaddress}">${layout.mailaddress}</a><br>
+</div>

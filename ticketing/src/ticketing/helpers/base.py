@@ -4,45 +4,20 @@ from wtforms.fields.core import Field, UnboundField
 from sqlalchemy.orm.attributes import QueryableAttribute
 from sqlalchemy.orm.interfaces import MapperProperty
 from sqlalchemy.schema import Column
+from datetime import datetime, date, time
+from altair.viewhelpers.datetime_ import DefaultDateTimeFormatter, DateTimeHelper
+
+date_time_formatter = DefaultDateTimeFormatter()
+date_time_helper = DateTimeHelper(date_time_formatter)
 
 __all__ = [
-    'jdate',
-    'jtime',
-    'jdatetime',
     'label_text_for',
     'column_name_for',
+    'format_period',
+    'format_percentage',
     ]
 
-WEEK = [u"月", u"火", u"水", u"木", u"金", u"土", u"日"]
-def jdate(d):
-    """ dateオブジェクトを受け取り日本語の日付を返す
-    >>> from datetime import date
-    >>> jdate(date(2011, 1, 1))
-    u'2011\u5e7401\u670801\u65e5'
-    """
-    if d:
-        datestr = d.strftime(u"%Y年%m月%d日".encode("utf-8")).decode("utf-8")
-        return u"%s（%s）" % (datestr, unicode(WEEK[d.weekday()]))
-    else:
-        return u"-"
-
-def jtime(d):
-    """datetimeオブジェクトを受け取り日本語の時刻を返す
-    """
-    if d:
-        return d.strftime(u"%H時%M分".encode("utf-8")).decode("utf-8")
-    else:
-        return u"-"
-
-def jdatetime(d):
-    """datetimeオブジェクトを受け取り日本語の日時を返す
-    """
-    if d:
-        datestr = jdate(d)
-        timestr = jtime(d)
-        return u"%s%s" % (datestr, timestr)
-    else:
-        return u"-"
+format_period = date_time_helper.term
 
 def label_text_for(misc):
     from altair.saannotation import get_annotations_for
@@ -71,3 +46,6 @@ def column_name_for(misc):
     elif isinstance(misc, Column):
         return misc.name
     raise ValueError('no column name for %r' % misc)
+
+def format_percentage(rate, precision=0):
+    return (u'%%.%df%%%%' % precision) % (rate * 100.) if rate is not None else u'-'

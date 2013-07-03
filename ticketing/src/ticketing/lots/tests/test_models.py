@@ -23,6 +23,11 @@ class LotTests(unittest.TestCase):
         from ticketing.lots.models import LotEntry
         return LotEntry(shipping_address=ShippingAddress(email_1=email))
 
+
+    def test_remained_entries_empty(self):
+        target = self._makeOne()
+        self.assertEqual(target.remained_entries, [])
+
     def test_check_entry_limit_no_check(self):
         email = 'test@example.com'
         entry = self._entry(email)

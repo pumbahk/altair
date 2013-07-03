@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from datetime import datetime
+from altaircms.datelib import get_now
 from sqlalchemy import asc
 from altairsite.config import usersite_view_config
 from altaircms.topic.models import TopicTag, TopcontentTag
@@ -12,8 +12,9 @@ from altaircms.models import Genre
 from altairsite.mobile.core.helper import exist_value
 from altairsite.mobile.core.helper import log_info
 from altairsite.mobile.core.eventhelper import EventHelper
+from altairsite.exceptions import UsersiteException
 
-class ValidationFailure(Exception):
+class ValidationFailure(UsersiteException):
     pass
 
 @usersite_view_config(route_name='genre', request_type="altairsite.tweens.IMobileRequest"
@@ -52,18 +53,18 @@ def move_genre(request):
     system_tag = topcontent_searcher.get_tag_from_genre_label(genre_tag.label)
     tag = request.allowable(TopcontentTag).filter_by(label=u"注目のイベント").first()
     if tag:
-        form.attentions.data = topcontent_searcher.query_publishing_topics(datetime.now(), tag, system_tag).all()
+        form.attentions.data = topcontent_searcher.query_publishing_topics(get_now(request), tag, system_tag).all()
         log_info("move_genre", "attention get")
 
     # Topic(Tag='トピック', system_tag='ジャンル')
     system_tag = topic_searcher.get_tag_from_genre_label(genre_tag.label)
     tag = request.allowable(TopicTag).filter_by(label=u"トピックス").first()
     if tag:
-        form.topics.data = topic_searcher.query_publishing_topics(datetime.now(), tag, system_tag)
+        form.topics.data = topic_searcher.query_publishing_topics(get_now(request), tag, system_tag)
         log_info("move_genre", "topics get")
 
     # hotword
-    today = datetime.now()
+    today = get_now(request)
     form.hotwords.data = request.allowable(HotWord).filter(HotWord.term_begin <= today).filter(today <= HotWord.term_end) \
              .filter_by(enablep=True).order_by(asc("display_order"), asc("term_end")).all()[0:5]
     log_info("move_genre", "hotwords get")

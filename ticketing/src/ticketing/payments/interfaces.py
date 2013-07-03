@@ -42,6 +42,9 @@ class IDeliveryPlugin(Interface):
     def finished(request, order):
         """ 確定済みか判定する"""
 
+    def cancel(request, order):
+        pass
+
 class IPaymentPlugin(Interface, IPaymentPreparer):
     """ 決済プラグイン"""
     def prepare(request, cart):
@@ -52,6 +55,9 @@ class IPaymentPlugin(Interface, IPaymentPreparer):
 
     def finished(request, order):
         """ 確定済みか判定する"""
+
+    def cancel(request, order):
+        pass
 
 class IPaymentDeliveryPlugin(Interface):
     """ 決済配送を一度に行うプラグイン"""

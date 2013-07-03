@@ -3,67 +3,32 @@
 
 <script>
 
-function settingFlipSize () {
-    var viewWidth = 515;
-    var viewHeight = 300;
-
-    // phone
-    if (viewWidth > $(window).width()) {
-        viewWidth = 320;
-        viewHeight = 187;
-    }
-
-    items = $(".item *").length;
-    $('.flipsnap').css('width', viewWidth * items + 'px');
-    $('.viewport').css('width', viewWidth + 'px');
-    $('.item').css('width', viewWidth + 'px');
-    $('.item').css('height', viewHeight + 'px');
-}
-
-function settingReload () {
-    // リロード対応
-    $('.pointer span:first').attr('class', 'current');
-    var flipsnap = Flipsnap('#pickup .flipsnap');
-    var $pickup = $('#pickup');
-    var $next = $pickup.find(".next").click(function() {
-        flipsnap.toNext();
-    });
-    var $prev = $pickup.find(".prev").click(function() {
-        flipsnap.toPrev();
-    });
-
-    $next.attr("disabled", false);
-    $prev.attr("disabled", true);
-}
-
-$(window).load(function(){
-    settingFlipSize();
-    settingReload();
-    Flipsnap('.flipsnap');
-});
-
 $(function() {
 
-    // tablet
-    var viewWidth = 515;
-    var viewHeight = 300;
+    // TODO tablet size
+    var viewWidth = 320;
+    var viewHeight = 187;
 
-    // phone
-    if (viewWidth > $(window).width()) {
-        viewWidth = 320;
-        viewHeight = 187;
-    }
+    // 画像非同期ロード
+    asyncLoadImg();
 
+    // 描画領域作成
     items = $(".item *").length;
+
+    if (items == 0) {
+        return
+    }
 
     $('.flipsnap').css('width', viewWidth * items + 'px');
     $('.viewport').css('width', viewWidth + 'px');
     $('.item').css('width', viewWidth + 'px');
     $('.item').css('height', viewHeight + 'px');
 
-    // リロード対応
-    $('.pointer span:first').attr('class', 'current');
-    var flipsnap = Flipsnap('#pickup .flipsnap');
+    //var flipsnap = Flipsnap('#pickup .flipsnap');
+    var flipsnap = Flipsnap('#pickup .flipsnap', {
+        disableTouch: true
+    });
+
     var $pickup = $('#pickup');
     var $next = $pickup.find(".next").click(function() {
         flipsnap.toNext();
@@ -71,6 +36,7 @@ $(function() {
     var $prev = $pickup.find(".prev").click(function() {
         flipsnap.toPrev();
     });
+    var $pointer = $pickup.find('.pointer span');
 
     $next.attr("disabled", false);
     $prev.attr("disabled", true);
@@ -85,26 +51,15 @@ $(function() {
         $('.messages').append(promotions[flipsnap.currentPoint]);
     }
 
+    $pointer.eq(flipsnap.currentPoint).addClass('current');
+
     (function pointmove() {
-        var $pickup = $('#pickup');
-        var $pointer = $pickup.find('.pointer span');
-        var flipsnap = Flipsnap('#pickup .flipsnap');
         flipsnap.element.addEventListener('fspointmove', function() {
             $pointer.filter('.current').removeClass('current');
             $pointer.eq(flipsnap.currentPoint).addClass('current');
+            $('.messages span').remove();
+            $('.messages').append(promotions[flipsnap.currentPoint]);
         }, false);
-
-        var $next = $pickup.find(".next").click(function() {
-            flipsnap.toNext();
-            $('.messages span').remove();
-            $('.messages').append(promotions[flipsnap.currentPoint]);
-        });
-
-        var $prev = $pickup.find(".prev").click(function() {
-            flipsnap.toPrev();
-            $('.messages span').remove();
-            $('.messages').append(promotions[flipsnap.currentPoint]);
-        });
 
         flipsnap.element.addEventListener('fspointmove', function() {
             $next.attr("disabled", !flipsnap.hasNext());
@@ -113,56 +68,72 @@ $(function() {
 
     })();
 
-    (function touchevents() {
-        flipsnap.element.addEventListener('fstouchend', function(ev) {
-            $('.messages span').remove();
-            $('.messages').append(promotions[flipsnap.currentPoint]);
-        }, false);
-    })();
+    // 画像の非同期読み込み
+    var readCount = 0;
+    function asyncLoadImg() {
+        var imgPreloader = new Array();
+        $(".imgtf").each(function(index) {
+            var imgTarget = $(this);
+            var imgHeight = 0;
+            var imgWidth = 0;
+            var orgSrc = $(this).attr("org_src");
 
-	$("img.imgtf").bind("load", function(){
+            imgPreloader[index] = new Image();
+
+            imgPreloader[index].onload=function() {
+                ++readCount;
+                imgTarget.attr({'src':orgSrc});
+                imgWidth = imgPreloader[index].width;
+                imgHeight = imgPreloader[index].height;
+                reduction(imgTarget, viewWidth, viewHeight, imgWidth, imgHeight);
+
+                if (readCount == items) {
+                    // 全ての画像を読み込んだらフリック可能
+                    flipsnap.disableTouch = false;
+                }
+            }
+            imgPreloader[index].src = orgSrc;
+        });
+    }
+
+    function reduction(img, disp_width, disp_height, true_width, true_height) {
         // 画像縮小
-        var disp_width = viewWidth;
-        var disp_height = viewHeight;
-
-		true_height = this.height;
-		true_width = this.width;
-
-		if (disp_height >= disp_width) {
-			zoom = disp_height / true_height;
-		} else {
-			zoom = disp_width / true_width;
-		}
-        setZoom($(this), true_height, true_width, zoom);
-
-		if (true_width > disp_width || true_height > disp_height) {
-			if (true_height >= true_width) {
-				zoom = disp_height / true_height;
-			} else {
-				zoom = disp_width / true_width;
-			}
-            setZoom($(this), true_height, true_width, zoom);
-
-			if (true_width > disp_width) {
-				zoom = disp_width / true_width;
-                setZoom($(this), true_height, true_width, zoom);
-			}
-
-			if (true_height > disp_height) {
-				zoom = disp_height / true_height;
-                setZoom($(this), true_height, true_width, zoom);
-			}
-		}
-
-        function setZoom(target, true_height, true_width, zoom) {
-            true_height = true_height * zoom;
-            true_width = true_width * zoom;
-            target.prop('height', true_height);
-            target.prop('width', true_width);
+        if (disp_height >= disp_width) {
+            zoom = disp_height / true_height;
+        } else {
+            zoom = disp_width / true_width;
         }
-	});
+        setZoom(img, true_height, true_width, zoom);
 
+        if (true_width > disp_width || true_height > disp_height) {
+            if (true_height >= true_width) {
+                zoom = disp_height / true_height;
+            } else {
+                zoom = disp_width / true_width;
+            }
+            setZoom(img, true_height, true_width, zoom);
+
+            if (true_width > disp_width) {
+                zoom = disp_width / true_width;
+                setZoom(img, true_height, true_width, zoom);
+            }
+
+            if (true_height > disp_height) {
+                zoom = disp_height / true_height;
+                setZoom(img, true_height, true_width, zoom);
+            }
+        }
+
+    }
+
+    function setZoom(target, true_height, true_width, zoom) {
+        true_height = true_height * zoom;
+        true_width = true_width * zoom;
+        target.prop('height', true_height);
+        target.prop('width', true_width);
+    }
 })();
+
 </script>
 
 <style>
@@ -215,7 +186,7 @@ $(function() {
 
 <%def name="disp_image(image_path)">
     <div class="item">
-        <img class="imgtf" src="${image_path}" alt="img" />
+        <img class="imgtf" org_src="${image_path}" alt="img" />
     </div>
 </%def>
 

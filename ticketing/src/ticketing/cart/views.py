@@ -18,18 +18,19 @@ from pyramid.threadlocal import get_current_request
 from pyramid import security
 from webob.multidict import MultiDict
 
-from altair.mobile.api import is_mobile
 from altair.pyramid_boto.s3.assets import IS3KeyProvider
 
 from ticketing.models import DBSession
 from ticketing.core import models as c_models
 from ticketing.core import api as c_api
 from ticketing.mailmags.api import get_magazines_to_subscribe, multi_subscribe
+from ticketing.views import mobile_request
 from ticketing.fanstatic import with_jquery, with_jquery_tools
 from ticketing.payments.payment import Payment
 from ticketing.payments.exceptions import PaymentDeliveryMethodPairNotFound
 from ticketing.users.api import get_or_create_user
 from ticketing.venues.api import get_venue_site_adapter
+from altair.mobile.interfaces import IMobileRequest
 
 from . import api
 from . import helpers as h
@@ -63,13 +64,37 @@ def back_to_product_list_for_mobile(request):
             seat_type_id=cart.products[0].product.items[0].stock.stock_type_id))
 
 def back_to_top(request):
-    event_id = request.params.get('event_id')
+    event_id = None
+    performance_id = None
+
+    try:
+        event_id = long(request.params.get('event_id'))
+    except (ValueError, TypeError):
+        pass
+    try:
+        performance_id = long(request.params.get('pid') or request.params.get('performance'))
+    except (ValueError, TypeError):
+        pass
+
     if event_id is None:
-        cart = api.get_cart(request)
-        if cart is not None:
-            event_id = cart.performance.event_id
+        if performance_id is None:
+            cart = api.get_cart(request)
+            if cart is not None:
+                performance_id = cart.performance.id
+                event_id = cart.performance.event_id
+        else:
+            try:
+                event_id = DBSession.query(Performance).filter_by(id=performance_id).one().event_id
+            except:
+                pass
+  
+    extra = {}
+    if performance_id is not None:
+        extra['_query'] = { 'performance': performance_id }
+
     ReleaseCartView(request)()
-    return HTTPFound(event_id and request.route_url('cart.index', event_id=event_id) or '/')
+
+    return HTTPFound(event_id and request.route_url('cart.index', event_id=event_id, **extra) or '/')
 
 def back(pc=back_to_top, mobile=None):
     if mobile is None:
@@ -79,7 +104,7 @@ def back(pc=back_to_top, mobile=None):
         def retval(*args, **kwargs):
             request = get_current_request()
             if request.params.has_key('back'):
-                if is_mobile(request):
+                if IMobileRequest.providedBy(request):
                     return mobile(request)
                 else:
                     return pc(request)
@@ -91,7 +116,7 @@ def gzip_preferred(request, response):
     if 'gzip' in request.accept_encoding:
         response.encode_content('gzip')
 
-@view_defaults(decorator=with_jquery.not_when(is_mobile))
+@view_defaults(decorator=with_jquery.not_when(mobile_request))
 class IndexView(IndexViewMixin):
     """ 座席選択画面 """
     def __init__(self, request):
@@ -123,7 +148,7 @@ class IndexView(IndexViewMixin):
         return retval
 
     def is_organization_rs(context, request):
-        organization = request.organization
+        organization = c_api.get_organization(request)
         return organization.id == 15
 
     @view_config(decorator=with_jquery_tools, route_name='cart.index',request_type="altair.mobile.interfaces.ISmartphoneRequest", 
@@ -133,7 +158,7 @@ class IndexView(IndexViewMixin):
     def __call__(self):
         self.check_redirect(mobile=False)
         sales_segments = self.context.available_sales_segments
-        selector_name = self.request.organization.setting.performance_selector
+        selector_name = c_api.get_organization(self.request).setting.performance_selector
 
         performance_selector = api.get_performance_selector(self.request, selector_name)
         sales_segments_selection = performance_selector()
@@ -263,6 +288,9 @@ class IndexView(IndexViewMixin):
         venue = self.context.performance.venue
 
         self.request.add_response_callback(gzip_preferred)
+
+        #from altair.sqlahelper import get_db_session
+        #slave_session = get_db_session(self.request, name="slave")
 
         return dict(
             areas=dict(
@@ -508,7 +536,7 @@ class ReserveView(object):
 
 
 
-@view_defaults(decorator=with_jquery.not_when(is_mobile))
+@view_defaults(decorator=with_jquery.not_when(mobile_request))
 class ReleaseCartView(object):
     def __init__(self, request):
         self.request = request
@@ -525,7 +553,7 @@ class ReleaseCartView(object):
         return dict()
 
 
-@view_defaults(decorator=with_jquery.not_when(is_mobile))
+@view_defaults(decorator=with_jquery.not_when(mobile_request))
 class PaymentView(object):
     """ 支払い方法、引き取り方法選択 """
     def __init__(self, request):
@@ -551,7 +579,7 @@ class PaymentView(object):
 
         start_on = cart.performance.start_on
         sales_segment = self.sales_segment
-        payment_delivery_methods = sales_segment.available_payment_delivery_method_pairs(getattr(self.context, 'now', datetime.now()))
+        payment_delivery_methods = self.context.available_payment_delivery_method_pairs(sales_segment)
         user = get_or_create_user(self.context.authenticated_user())
         user_profile = None
         if user is not None:
@@ -637,7 +665,7 @@ class PaymentView(object):
         if not self._validate_extras(cart, payment_delivery_pair, shipping_address_params):
             start_on = cart.performance.start_on
             sales_segment = self.sales_segment
-            payment_delivery_methods = sales_segment.available_payment_delivery_method_pairs(getattr(self.context, 'now', datetime.now()))
+            payment_delivery_methods = self.context.available_payment_delivery_method_pairs(sales_segment)
             return dict(form=self.form, payment_delivery_methods=payment_delivery_methods)
 
         cart.payment_delivery_pair = payment_delivery_pair
@@ -680,10 +708,11 @@ class PaymentView(object):
             tel_1=data['tel_1'],
             tel_2=data['tel_2'],
             fax=data['fax'],
+            sex=data.get("sex"), 
             user=user
         )
 
-@view_defaults(decorator=with_jquery.not_when(is_mobile))
+@view_defaults(decorator=with_jquery.not_when(mobile_request))
 class ConfirmView(object):
     """ 決済確認画面 """
     def __init__(self, request):
@@ -712,7 +741,7 @@ class ConfirmView(object):
         )
 
 
-@view_defaults(decorator=with_jquery.not_when(is_mobile))
+@view_defaults(decorator=with_jquery.not_when(mobile_request))
 class CompleteView(object):
     """ 決済完了画面"""
     def __init__(self, request):
@@ -763,7 +792,7 @@ class CompleteView(object):
         return dict(order=order)
 
 
-@view_defaults(decorator=with_jquery.not_when(is_mobile))
+@view_defaults(decorator=with_jquery.not_when(mobile_request))
 class InvalidMemberGroupView(object):
     def __init__(self, request):
         self.request = request
@@ -779,7 +808,7 @@ class InvalidMemberGroupView(object):
 
 
 
-@view_defaults(decorator=with_jquery.not_when(is_mobile))
+@view_defaults(decorator=with_jquery.not_when(mobile_request))
 class OutTermSalesView(object):
     def __init__(self, context, request):
         self.request = request
@@ -808,10 +837,10 @@ class OutTermSalesView(object):
             which = 'next'
         return dict(which=which, **datum)
 
-@view_config(decorator=with_jquery.not_when(is_mobile), route_name='cart.logout')
+@view_config(decorator=with_jquery.not_when(mobile_request), route_name='cart.logout')
 def logout(request):
     headers = security.forget(request)
-    location = api.get_host_base_url(request)
+    location = c_api.get_host_base_url(request)
     res = HTTPFound(location=location)
     res.headerlist.extend(headers)
     return res

@@ -45,4 +45,6 @@ def includeme(config):
 
     config.add_route('role_permission', '/role/{role_id}/permission/{id}')
 
+    config.add_route("nowsetting", "/nowsetting")
+    config.add_route("nowsetting.invalidate", "/nowsetting/invalidate")
     config.scan()

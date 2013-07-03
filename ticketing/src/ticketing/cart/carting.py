@@ -29,6 +29,9 @@ class CartFactory(object):
                 if str(ordered_product_item.performance_id) != str(performance_id):
                     logger.debug("invalid product selection: performance_id does not match")
                     raise InvalidProductSelectionException
+                if ordered_product_item.deleted_at != None:
+                    continue
+
                 subtotal_quantity = quantity * ordered_product_item.quantity
                 logger.debug("carted product item for product_item_id=%s, performance_id=%s, quantity=%d" % (ordered_product_item.id, ordered_product_item.performance_id, subtotal_quantity))
                 cart_product_item = CartedProductItem(

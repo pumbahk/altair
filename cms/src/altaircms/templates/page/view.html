@@ -36,6 +36,8 @@
 	  <%
 parent = page.pageset.parent
 event = page.event or page.pageset.event
+from altaircms.datelib import get_now
+now = get_now(request)
 %>
     <table class="table table-striped">
       <tr>
@@ -73,10 +75,6 @@ event = page.event or page.pageset.event
 		<td>${h.term(page.publish_begin, page.publish_end)}</td>
       </tr>
       <tr>
-        <%
-           from datetime import datetime
-           now = datetime.now()
-           %>
         <th class="span2">公開ステータス</th><td>${page.publish_status(now)}</td>
       </tr>
     </table>

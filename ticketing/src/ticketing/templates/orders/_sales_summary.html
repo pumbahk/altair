@@ -1,5 +1,5 @@
 <%page args="sales_summary" />
-<%namespace file="/common/helpers.html" name='h' />
+<%namespace file="/common/helpers.html" name="ch" />
 
 <script type="text/javascript">
   $(function() {
@@ -43,7 +43,7 @@
             rest_quantity = row['rest_quantity']
             stocks = row['stocks']
           %>
-          <td>${h.seat_style(stock_type.style)}</td>
+          <td>${ch.seat_style(stock_type.style)}</td>
           <td colspan="4">${stock_type.name}</td>
           <td ${'bgcolor="#ffeeee"' if rest_quantity == 0 else ""|n}>${rest_quantity}</td>
           <td>${total_quantity}</td>
@@ -61,8 +61,8 @@
           <td rowspan="${rowspan}">${stock.stock_holder.name}</td>
             % if products:
               <% product = products[0] %>
-          <td>${product.name} (${h.price_format(product.price)}円)</td>
-          <td>${product.sales_segment.name} (${h.safe_strftime(product.sales_segment.start_at)} 〜 ${h.safe_strftime(product.sales_segment.end_at)})</td>
+          <td>${product.name} (${ch.price_format(product.price)}円)</td>
+          <td>${product.sales_segment.name} (${vh.term(product.sales_segment.start_at, product.sales_segment.end_at)})</td>
             % else:
           <td rowspan="${rowspan}"></td>
           <td rowspan="${rowspan}"></td>
@@ -78,9 +78,9 @@
             % if products:
               % for product in products[1:]:
         <tr style="display:none;" class="stock-type-inner-${stock_type.id}">
-          <td style="border-left: 1px solid #ddd;">${product.name} (${h.price_format(product.price)}円)</td>
+          <td style="border-left: 1px solid #ddd;">${product.name} (${ch.price_format(product.price)}円)</td>
           <td>${product.sales_segment.name}
-            (${h.safe_strftime(product.sales_segment.start_at)} 〜 ${h.safe_strftime(product.sales_segment.end_at)})
+            (${vh.term(product.sales_segment.start_at, product.sales_segment.end_at)})
           </td>
         </tr>
               % endfor

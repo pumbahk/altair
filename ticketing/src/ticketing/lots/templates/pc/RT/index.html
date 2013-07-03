@@ -80,7 +80,15 @@
               %else:
               <select name="performanceName-${i}" data-wishOrder="${i}" class="performance-name-select">
               %for performance_name, _ in performance_map:
-              <option value="${performance_name}">${performance_name}</option>
+                % if selected_performance:
+                  % if (_[0]['name'] == selected_performance.name) and (i == 0):
+                  <option value="${performance_name}" selected>${performance_name}</option>
+                  % else:
+                  <option value="${performance_name}">${performance_name}</option>
+                  % endif
+                % else:
+                <option value="${performance_name}">${performance_name}</option>
+                % endif
               %endfor
               </select>
               %endif
@@ -93,7 +101,15 @@
                 <td colspan="2">
                   <select name="performanceDate-${i}" data-wishOrder="${i}" class="performance-date-select">
                   %for performance in performances:
-                  <option value="${performance.id}">${h.performance_date_label(performance)}</option>
+                    % if selected_performance:
+                      % if (performance.id == selected_performance.id) and (i == 0):
+                      <option value="${performance.id}" selected>${h.performance_date_label(performance)}</option>
+                      % else:
+                      <option value="${performance.id}">${h.performance_date_label(performance)}</option>
+                      % endif
+                    % else:
+                    <option value="${performance.id}">${h.performance_date_label(performance)}</option>
+                    % endif
                   %endfor
                   </select>
                 </td>
@@ -210,9 +226,10 @@
               <tr>
                 <th><label>配送先住所</label></th>
                 <td>
+                  <% path = request.static_url('ticketing.cart:static/js/zipdata') %>
                   <div class="form-field">
                     ${form['zip'].label}
-                    ${form['zip']}
+                    ${form['zip'](onKeyUp="AjaxZip3.zip2addr('" + path + "', 'zip','','prefecture','city','', 'address_1');")}
                     ${self.error(form, 'zip')}
                   </div>
                   <div class="form-field">
@@ -275,6 +292,10 @@ var performanceProductMap = ${h.tojson(performance_product_map)|n};
 var postedValues = ${h.tojson(posted_values)|n};
 var upperLimit = ${sales_segment.upper_limit};
 var performanceMap = ${h.tojson(performance_map)|n};
+var selected_performance_id = 0;
+% if selected_performance:
+    selected_performance_id = ${selected_performance.id};
+% endif
 
 (function($wishForm) {
     function cellTableId(n) {
@@ -320,7 +341,7 @@ var performanceMap = ${h.tojson(performance_map)|n};
         }
     }
 
-    function refreshDateSelection(performanceNameSelect, dateSelect) {
+    function refreshDateSelection(performanceNameSelect, dateSelect, selected_id) {
         var selectedPerformanceName = performanceNameSelect.val();
         for (var i = 0; i < performanceMap.length; i++) {
             if (performanceMap[i][0] == selectedPerformanceName) {
@@ -330,7 +351,11 @@ var performanceMap = ${h.tojson(performance_map)|n};
         dateSelect.empty();
         for (var i = 0; i < choices.length; i++) {
             var choice = choices[i];
-            dateSelect.append($('<option></option>').attr('value', choice.id).text(choice.label));
+            if (selected_id == choice.id) {
+                dateSelect.append($('<option></option>').attr('value', choice.id).attr({ selected: "selected" }).text(choice.label));
+            } else {
+                dateSelect.append($('<option></option>').attr('value', choice.id).text(choice.label));
+            }
         }
     }
 
@@ -369,7 +394,7 @@ var performanceMap = ${h.tojson(performance_map)|n};
                     }
                     if (performanceName) {
                         performanceNameSelect.val(performanceName);
-                        refreshDateSelection(performanceNameSelect, dateSelect);
+                        refreshDateSelection(performanceNameSelect, dateSelect, 0);
                         stockTypeSelect.empty();
                     }
                 }
@@ -401,7 +426,7 @@ var performanceMap = ${h.tojson(performance_map)|n};
         var wishOrder = performanceNameSelect.data('wishorder');
         var dateSelect = $wishForm.find('select.performance-date-select[data-wishOrder="' + wishOrder + '"]');
         var stockTypeSelect = $wishForm.find('select.stock-type-select[data-wishOrder="' + wishOrder + '"]');
-        refreshDateSelection(performanceNameSelect, dateSelect);
+        refreshDateSelection(performanceNameSelect, dateSelect, 0);
         refreshStockTypeSelection(dateSelect, stockTypeSelect);
         refreshProducts(dateSelect, stockTypeSelect);
     });
@@ -424,7 +449,7 @@ var performanceMap = ${h.tojson(performance_map)|n};
             var performanceNameSelect = $(n);
             var wishOrder = performanceNameSelect.data('wishorder');
             var dateSelect = $wishForm.find('select.performance-date-select[data-wishOrder="' + wishOrder + '"]');
-            refreshDateSelection(performanceNameSelect, dateSelect);
+            refreshDateSelection(performanceNameSelect, dateSelect, selected_performance_id);
         });
         $wishForm.find("select.performance-date-select").each(function(_, n) {
             var dateSelect = $(n); 

@@ -24,7 +24,7 @@
   %for p in performances:
 	&#xe67d;${p.title}<br />
 	　公演日:
-	　${h.base.jdate_with_hour(p.start_on)}
+	　${h.base.jdatetime(p.start_on)}
 	  <br />
 	　会場: ${p.venue}<br/>
     %if today > p.end_on:
@@ -37,7 +37,7 @@
 
 <div style="background-image:url(${request.static_url("altaircms:static/mobile/img/bg_bar.gif")});background-color:#bf0000" bgcolor="#bf0000" background="${request.static_url("altaircms:static/mobile/img/bg_bar.gif")}"><font color="#ffffff" size="3"><font color="#ffbf00">■</font>公演詳細</font></div>
 【公演期間】<br />
-${h.base.jdate_with_hour(event.event_open)}~${h.base.jdate_with_hour(event.event_close)}<br />
+${h.base.jdatetime(event.event_open)}~${h.base.jdatetime(event.event_close)}<br />
 %if event.performers:
 【出演者】<br />
 ${event.performers}

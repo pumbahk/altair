@@ -1,18 +1,14 @@
 <%inherit file="/layout_2cols.html"/>
-<%namespace file="/common/helpers.html" name="h" />
+<%namespace file="/common/helpers.html" name="ch" />
 
-<div class="breadcrumbs">
-  ${h.breadcrumbs(
+<%block name="breadcrumbs">
+  ${ch.breadcrumbs(
       names=[u'イベント', event.title, u'抽選'],
       urls=[request.route_path('events.index'), request.route_path('events.show', event_id=event.id)]
   )}
-</div>
+</%block>
 <div class="page-header">
   <h1>抽選</h1>
 </div>
-<div class="content">
-  ${h.flash_messages(request)}
-</div>
-
 
 <%include file="/lots/_list.html" args="lots=lots" />

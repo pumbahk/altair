@@ -1,18 +1,29 @@
 # -*- coding: utf-8 -*-
+import logging
 from datetime import datetime
 from pyramid.httpexceptions import HTTPNotFound
+from pyramid.security import (
+    Everyone,
+    Allow,
+)
 from pyramid.traversal import DefaultRootFactory
 from pyramid.decorator import reify
 from ticketing.core.models import Event, Performance, Organization
-from ticketing.cart import api as cart_api
+from ticketing.core import api as core_api
 from .exceptions import OutTermException
 from .models import Lot
+
+
+logger = logging.getLogger(__name__)
 
 def lot_resource_factory(request):
     if request.matchdict is None:
         return DefaultRootFactory(request)
 
     context = LotResource(request)
+    if not context.lot:
+        raise HTTPNotFound
+
     if context.lot:
         if not context.lot.available_on(datetime.now()):
             raise OutTermException(lot_name=context.lot.name,
@@ -26,10 +37,7 @@ class LotResource(object):
     def __init__(self, request):
         self.request = request
 
-        self.organization = self.request.organization
-
-        from ticketing.models import DBSession
-        DBSession.merge(self.organization)
+        self.organization = core_api.get_organization(self.request)
 
         event_id = self.request.matchdict.get('event_id')
         self.event = Event.query \
@@ -52,7 +60,25 @@ class LotResource(object):
 
     @reify
     def host_base_url(self):
-        return cart_api.get_host_base_url(self.request)
+        return core_api.get_host_base_url(self.request)
+
+    @reify
+    def __acl__(self):
+        logger.debug('acl: lot %s' % self.lot)
+        if not self.lot:
+            logger.debug('acl: lot is not found')
+            return []
+
+        if not self.lot.auth_type:
+            logger.debug('acl: lot has no auth_type')
+            return [
+                (Allow, Everyone, 'lots'),
+            ]
+
+        logger.debug('acl: lot has acl to auth_type:%s' % self.lot.auth_type)
+        return [
+            (Allow, "auth_type:%s" % self.lot.auth_type, 'lots'),
+        ]
 
 
 class LotOptionSelectionResource(LotResource):

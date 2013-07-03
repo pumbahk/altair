@@ -1,5 +1,5 @@
 <%page args="form, organization" />
-<%namespace file="/common/helpers.html" name="h"/>
+<%namespace file="/common/helpers.html" name="ch"/>
 
 <div class="page-header">
   <h4>基本情報</h4>
@@ -133,7 +133,7 @@ from ticketing.core.models import MailTypeEnum
 %>
 <div class="btn-group">
   <a class="btn"
-	 href="${request.route_path("organizations.mails.new", organization_id=organization.id, mailtype=MailTypeEnum.CompleteMail)}">
+	 href="${request.route_path("organizations.mails.new", organization_id=organization.id, mailtype=MailTypeEnum.PurchaseCompleteMail)}">
     <i class="icon-pencil"></i> 購入完了メール付加情報
   </a>
   <a class="btn"

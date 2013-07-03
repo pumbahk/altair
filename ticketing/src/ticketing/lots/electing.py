@@ -109,8 +109,7 @@ class Electing(object):
 
     def elect_lot_entries(self):
         publisher = self.publisher
-        # TODO すでにOrderがあるworkは排除すべき
-        works = self.lot.elect_works
+        works = self.lot.electing_works
         logger.info("publish electing lot: lot_id = {0} : count = {1}".format(
             self.lot.id,
             len(works),

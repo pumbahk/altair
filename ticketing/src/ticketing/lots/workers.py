@@ -14,6 +14,7 @@ from ticketing.cart.interfaces import (
     IStocker, IReserving, ICartFactory,
 )
 from ticketing.models import DBSession
+from ticketing.core.models import Order
 from ticketing.cart.reserving import Reserving
 from ticketing.cart.carting import CartFactory
 from ticketing import multicheckout
@@ -197,15 +198,16 @@ def elect_lot_wish(request, wish, order=None):
         # 在庫処理
         performance = cart.performance
         product_requires = [(p.product, p.quantity)
-                            for p in cart.products]
+                    for p in cart.products]
         if order is None:
+            order = Order.query.filter(Order.order_no==wish.lot_entry.entry_no).first()
+        if order is None:
+            stocked = stocker.take_stock(performance.id,
+                                         product_requires)
             order = payment.call_payment()
 
         else:
             payment.call_delivery(order)
-        stocked = stocker.take_stock(performance.id,
-                                     product_requires)
-        logger.debug("lot elected: entry_no = {0}, stocks = {1}".format(wish.lot_entry.entry_no, stocked))
         # TODO: 確保数確認
         # TODO: orderにseat割り当て
 

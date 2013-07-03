@@ -14,16 +14,16 @@
       <th>backend id</th><td>${performance.backend_id}</td>
     </tr>
     <tr>
-      <th>作成日時</th><td>${h.base.jdate_with_hour(performance.created_at)}</td>
-      <th>更新日時</th><td>${h.base.jdate_with_hour(performance.updated_at)}</td>
+      <th>作成日時</th><td>${h.base.jdatetime(performance.created_at)}</td>
+      <th>更新日時</th><td>${h.base.jdatetime(performance.updated_at)}</td>
     </tr>
     <tr>
       <th>開催日</th>
       <td>
         <ul class="unstyled">
-          <li>開場時間:${h.base.jdate_with_hour(performance.open_on)}</li>
-          <li>開演時間:${h.base.jdate_with_hour(performance.open_on)}</li>
-          <li>閉演時間:${h.base.jdate_with_hour(performance.open_on)}</li>
+          <li>開場時間:${h.base.jdatetime(performance.open_on)}</li>
+          <li>開演時間:${h.base.jdatetime(performance.open_on)}</li>
+          <li>閉演時間:${h.base.jdatetime(performance.open_on)}</li>
         </ul>
       </td>
       <th>開催県</th><td>${performance.jprefecture}</td>

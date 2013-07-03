@@ -1,5 +1,6 @@
 # -*- encoding:utf-8 -*-
 from pyramid.config import Configurator
+from pyramid.session import UnencryptedCookieSessionFactoryConfig
 from sqlalchemy import engine_from_config
 import sqlahelper
 
@@ -21,17 +22,20 @@ def main(global_config, **local_config):
     """
     settings = dict(global_config)
     settings.update(local_config)
+    session_factory = UnencryptedCookieSessionFactoryConfig(settings.get('session.secret'))
     from sqlalchemy.pool import NullPool
     engine = engine_from_config(settings, poolclass=NullPool,
                                 pool_recycle=60)
     sqlahelper.set_base(Base)
     sqlahelper.add_engine(engine)
 
-    config = Configurator(settings=settings)
+    config = Configurator(settings=settings, session_factory=session_factory)
     config.include("altair.browserid")
     config.include("altair.exclog")
 
     config.add_renderer('.html' , 'pyramid.mako_templating.renderer_factory')
+
+    config.include("altair.now")
     # config.include("altaircms.templatelib")
     config.include("altair.cdnpath")
     from altair.cdnpath import S3StaticPathFactory

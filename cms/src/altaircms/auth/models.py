@@ -237,8 +237,8 @@ class Organization(Base):
 
     id = Column(Integer, primary_key=True)
     backend_id = Column(Integer)
-    created_at = Column(DateTime, default=datetime.now())
-    updated_at = Column(DateTime, default=datetime.now())
+    created_at = Column(DateTime, default=datetime.now)
+    updated_at = Column(DateTime, default=datetime.now)
 
     auth_source = Column(String(255)) ##nullable=False?
     short_name = Column(String(32),index=True, nullable=False)
@@ -288,8 +288,8 @@ class APIKey(Base):
     name = Column(String(255))
     apikey = Column(String(255), default=generate_apikey)
 
-    created_at = Column(DateTime, default=datetime.now())
-    updated_at = Column(DateTime, default=datetime.now())
+    created_at = Column(DateTime, default=datetime.now)
+    updated_at = Column(DateTime, default=datetime.now, onupdate=datetime.now)
 
 class Host(BaseOriginalMixin, WithOrganizationMixin, Base):
     __tablename__ = 'host'
@@ -298,4 +298,5 @@ class Host(BaseOriginalMixin, WithOrganizationMixin, Base):
 
     id = sa.Column(sa.Integer, primary_key=True)
     host_name = sa.Column(sa.Unicode(255), unique=True, index=True)
+    
 

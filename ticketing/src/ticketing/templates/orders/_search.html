@@ -1,5 +1,5 @@
 <%page args="form, url='/orders/'" />
-<%namespace file="/common/helpers.html" name="h" />
+<%namespace file="/common/helpers.html" name="ch" />
 <%
 from ticketing.formhelpers import OurDateWidget
 %>
@@ -71,7 +71,7 @@ from ticketing.formhelpers import OurDateWidget
       <tbody>
         <tr>
           <th><label for="order_no">${form.order_no.label.text}</label></th>
-          <td>${form.order_no(maxlength=12)}</td>
+          <td>${form.order_no(minlength=12)}</td>
           <th><label for="seat_number">${form.seat_number.label.text}</label></th>
           <td>${form.seat_number()}</td>
           <th><label for="tel">${form.tel.label.text}</label></th>
@@ -87,10 +87,12 @@ from ticketing.formhelpers import OurDateWidget
         </tr>
         <tr>
           <th><label>${form.ordered_from.label.text}</label></th>
-          <td colspan="5">
+          <td colspan="3">
             ${form.ordered_from()} 〜
             ${form.ordered_to()}
           </td>
+          <th><label>${form.billing_or_exchange_number.label.text}</label></th>
+          <td>${form.billing_or_exchange_number}</td>
         </tr>
       </tbody>
     </table>
@@ -118,9 +120,15 @@ from ticketing.formhelpers import OurDateWidget
         </tr>
         <tr>
           <th><label>${form.start_on_from.label.text}</label></th>
-          <td colspan="5">
+          <td colspan="3">
             ${form.start_on_from()} 〜
             ${form.start_on_to()}
+          </td>
+          <th>
+            <label for="number_of_tickets">${form.number_of_tickets.label.text}</label>
+          </th>
+          <td>
+            ${form.number_of_tickets()}
           </td>
         </tr>
       </tbody>
@@ -206,8 +214,8 @@ from ticketing.formhelpers import OurDateWidget
         $("#search select[name='performance_id']").change(update_sales_segments).chosen();
       });
     </script>
-    ${h.form_item(form.sort)}
-    ${h.form_item(form.direction)}
+    ${ch.form_item(form.sort)}
+    ${ch.form_item(form.direction)}
   </form>
 </div>
 

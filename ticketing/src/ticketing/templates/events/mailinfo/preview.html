@@ -1,11 +1,7 @@
-<%inherit file="../../layout.html" />
-<%namespace file="/common/helpers.html" import="flash_messages"/>
+<%inherit file="/layout.html" />
+<%namespace file="/common/helpers.html" name="ch" />
 
-<div class="content">
-  ${flash_messages(request)}
-</div>
-
-<h2>メールpreview (${ja_mailtype})</h2>
+<h2>メールpreview (${mutil.get_mailtype_description()}付加情報)</h2>
 
 <form id="method_choice_form" class="form-inline" action="">
   ${form["payment_methods"].label} ${form["payment_methods"]}

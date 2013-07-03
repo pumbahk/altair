@@ -14,7 +14,8 @@ from pyramid.response import Response
 from pyramid.url import route_path
 from sqlalchemy import and_, distinct
 from sqlalchemy.sql import exists, join, func, or_
-from sqlalchemy.orm import joinedload, noload, aliased
+from sqlalchemy.sql.expression import asc, desc
+from sqlalchemy.orm import joinedload, noload, aliased, undefer
 
 from altair.pyramid_assets import get_resolver
 
@@ -36,13 +37,15 @@ def get_site_drawing(context, request):
         .filter_by(id=site_id) \
         .filter(Venue.organization_id==context.user.organization_id) \
         .distinct().one()
-    return Response(
-        status_code=200,
-        content_type='image/svg',
-        body_file=get_resolver(request.registry).resolve(
-            get_venue_site_adapter(request, site).drawing_url
-            ).stream()
-        )
+    drawing_url = get_venue_site_adapter(request, site).drawing_url
+    if drawing_url is None:
+        return Response(status_code=404)
+    else:
+        return Response(
+            status_code=200,
+            content_type='image/svg',
+            body_file=get_resolver(request.registry).resolve(drawing_url).stream()
+            )
 
 @view_config(route_name="api.get_seats", request_method="GET", renderer='json', permission='event_viewer')
 def get_seats(request):
@@ -172,35 +175,20 @@ def download(request):
 
 @view_config(route_name='venues.index', renderer='ticketing:templates/venues/index.html', decorator=with_bootstrap, permission='event_editor')
 def index(request):
-    direction = request.GET.get('direction', 'asc')
-    if direction not in ['asc', 'desc']:
-        direction = 'asc'
-
-    query = DBSession.query(Venue, Site, Site.created_at, func.count(Seat.id), Performance, Performance.created_at)
-    query = query.filter_by(organization_id=request.context.user.organization_id)
+    query = DBSession.query(Venue, Site, Performance, func.count(Seat.id))
+    query = query.filter(Venue.organization_id==request.context.user.organization_id)
     query = query.join((Site, and_(Site.id==Venue.site_id, Site.deleted_at==None)))
     query = query.outerjoin((Performance, and_(Performance.id==Venue.performance_id, Performance.deleted_at==None)))
-#   query = query.outerjoin((Event, and_(Event.id==Performance.event_id, Event.deleted_at==None)))
     query = query.outerjoin(Seat)
+    query = query.options(undefer(Site.created_at), undefer(Performance.created_at))
     query = query.group_by(Venue.id)
-    query = query.order_by('Venue.site_id ASC, -Venue.performance_id ASC')
+    query = query.order_by(asc(Venue.site_id), asc(-Venue.performance_id))
 
     items = []
-    for venue, site, site_created_at, count, performance, performance_created_at in query:
-        if site is not None:
-            site.created_at = site_created_at
-        if performance is not None:
-            performance.created_at = performance_created_at
+    for venue, site, performance, count in query:
+        items.append(dict(venue=venue, site=site, performance=performance, count=count))
 
-        items.append({ "venue": venue,
-                       "site": site,
-                       "drawing": get_venue_site_adapter(request, site),
-                       "count": count,
-                       "performance": performance })
-
-    return {
-        'items': items
-    }
+    return dict(items=items)
 
 @view_config(route_name="api.get_frontend", request_method="GET", permission='event_viewer')
 def frontend_drawing(request):

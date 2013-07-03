@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 import sqlalchemy.orm as orm
 from functools import partial
-from datetime import datetime
+from altaircms.datelib import get_now
 from pyramid.renderers import render
 from zope.interface import implementer
 
@@ -13,7 +13,7 @@ from .models import TopicWidget
 
 
 def render_topics_with_template(template_name, request, widget):
-    d = datetime.now()
+    d = get_now(request)
     searcher = get_topic_searcher(request, widget.type)
 
     qs = searcher.query_publishing_topics(d, widget.tag, widget.system_tag)

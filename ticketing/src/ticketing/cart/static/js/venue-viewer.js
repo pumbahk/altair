@@ -1,2 +1,2335 @@
-(function(){var a={};a.u6AURF8N_EKWNZ2P=function(a){return function(){a.eventKey=function(b){var c,d;return b!=null?(keycode=b.which,d=typeof b.modifiers=="undefined"?b.ctrlKey:b.modifiers&Event.CONTROL_MASK,c=typeof b.modifiers=="undefined"?b.shiftKey:b.modifiers&Event.SHIFT_MASK):(keycode=event.keyCode,d=event.ctrlKey,c=event.shiftKey),keychar=String.fromCharCode(keycode).toUpperCase(),{ctrl:!!d||keycode===17,shift:!!c||keycode===16,keycode:keycode,keychar:keychar}},a.convertToFashionStyle=function(b,c){var d=function(a){switch(a.type){case"flood":default:return c?new Fashion.LinearGradientFill([[0,new Fashion.Color("#fff")],[1,new Fashion.Color(a.color||"#fff")]],.125):a.color?new Fashion.FloodFill(new Fashion.Color(a.color)):null;case"linear":return new Fashion.LinearGradientFill(_map(a.colors,function(a){return new Fashion.Color(a)}),a.angle);case"radial":return new Fashion.LinearGradientFill(_map(a.colors,function(a){return new Fashion.Color(a)}),a.focus);case"tile":return new Fashion.ImageTileFill(a.imageData)}return null},e=function(a){return new Fashion.Stroke([b.stroke.color||"#000",b.stroke.width?b.stroke.width:1,b.stroke.pattern||"solid"].join(" "))};return{fill:b.fill?d(b.fill):null,stroke:b.stroke?e(b.stroke):null}},a.convertFromFashionStyle=function(a){return{text:null,text_color:null,fill:a.fill instanceof Fashion.FloodFill?{type:"flood",color:a.fill.color._toString()}:a.fill instanceof Fashion.LinearGradientFill?{type:"linear",colors:_map(a.fill.colors,function(a){return a._toString()}),angle:a.fill.angle}:a.fill instanceof Fashion.RadialGradientFill?{type:"radial",colors:_map(a.fill.colors,function(a){return a._toString()}),focus:a.fill.focus}:a.fill instanceof Fashion.ImageTileFill?{type:"tile",imageData:a.imageData}:null,stroke:a.stroke?{color:a.stroke.color._toString(),width:a.stroke.width,pattern:a.stroke.pattern}:null}},a.allAttributes=function(b){var c={},d=b.attributes;for(var e=0,f=d.length;e<f;e++){var g=d[e];c[g.namespaceURI?"{"+g.namespaceURI+"}"+g.nodeName.replace(/^[^:]*:/,""):g.nodeName]=g.nodeValue}return c},a.makeHitTester=function(b){var c=b.position(),d=b.size(),e={x:c.x+d.x,y:c.y+d.y};return b.transform()&&(c=b.transform().apply(c),e=b.transform().apply(e)),function(a){var b=a.position(),d=a.size(),f={x:b.x+d.x,y:b.y+d.y};return a.transform()&&(b=a.transform().apply(b),f=a.transform().apply(f)),(c.x<b.x&&b.x<e.x||c.x<f.x&&f.x<e.x||b.x<c.x&&e.x<f.x)&&(c.y<b.y&&b.y<e.y||c.y<f.y&&f.y<e.y||b.y<c.y&&e.y<f.y)}}}(),a}({}),a.x99S4YFZAYXRGF6H=function(a){return function(){a.DEFAULT={ZOOM_RATIO:.8,STYLES:{label:{fill:new Fashion.Color("#000"),stroke:null},seat:{fill:new Fashion.Color("#fff"),stroke:new Fashion.Color("#000")},glayout:{fill:new Fashion.FloodFill(new Fashion.Color("#ccc")),stroke:new Fashion.Stroke(new Fashion.Color("#999"),2)}},MASK_STYLE:{fill:new Fashion.FloodFill(new Fashion.Color("#0064ff80")),stroke:new Fashion.Stroke(new Fashion.Color("#0080FF"),2)},SEAT_STYLE:{text_color:"#000",fill:{color:"#fff"}},OVERLAYS:{highlighted:{fill:null,stroke:{color:"#F63",width:3,pattern:"solid"}},highlighted_block:{fill:null,stroke:{color:"#F44",width:5,pattern:"solid"}}},AUGMENTED_STYLE:{selected:{text_color:"#FFF",fill:{color:"#009BE1"},stroke:{color:"#FFF",width:3}},unselectable:{text_color:"#888",fill:{color:"#eee"},stroke:{color:"#ccc"}}}}}(),a}({}),a.uO0E6U6YJJ62MIM3=function(b){return function(){function e(a){return $.extend({},a)}function f(a,b){return{text:(b.text?b.text:a.text)||null,text_color:(b.text_color?b.text_color:a.text_color)||null,fill:(b.fill?b.fill:a.fill)||null,stroke:(b.stroke?b.stroke:a.stroke)||null}}function g(a){return a instanceof Fashion.Path?new Fashion.Path({points:a.points(),style:a.style(),transform:a.transform()}):a instanceof Fashion.Rect?new Fashion.Rect({position:a.position(),size:a.size(),transform:a.transform()}):null}var c=a.u6AURF8N_EKWNZ2P,d=a.x99S4YFZAYXRGF6H,h=b.Seat=function(){this.id=null,this.editor=null,this.type=null,this.floor=null,this.gate=null,this.block=null,this.events={},this._styleTypes=[],this.mata=null,this.shape=null,this.originalStyle=null,this._highlightedSeats=[],this._selected=!1,this.label=null,this._overlays={},this.init.apply(this,arguments)};h.prototype.init=function(b,c,d,e){var f=this;this.id=b,this.parent=d,this.meta=c,this.type=this.parent.stockTypes[c.stock_type_id],this.originalStyle=this.defaultStyle();if(e)for(var g in e)(function(a){f.events[a]=function(b){if(f.parent.dragging||f.parent.animating)return;e[a].apply(f,arguments)}}).call(this,g);this.refresh()},h.prototype.defaultStyle=function(){var b=d.DEFAULT.SEAT_STYLE;return this.shape&&(b=f(b,c.convertFromFashionStyle(this.shape.style()))),this.type&&(b=f(b,this.type.style)),b},h.prototype.attach=function(b){this.shape||(this.shape=b,this.originalStyle=this.defaultStyle(),this.refresh(),b.addEvent(this.events))},h.prototype.detach=function(b){this.shape&&(this.shape.removeEvent(),this.shape=null)},h.prototype.stylize=function(){if(!this.shape)return;var b=this.originalStyle;for(var e=0;e<this._styleTypes.length;e++){var g=this._styleTypes[e];b=f(b,d.DEFAULT.AUGMENTED_STYLE[g])}this.shape.style(c.convertToFashionStyle(b));if(b.text)if(!this.label){var h=this.shape.position(),i=this.shape.size();this.label=this.parent.drawable.draw(new Fashion.Text({position:{x:h.x,y:h.y+i.y*.75},fontSize:i.y*.75,text:b.text,style:{fill:new Fashion.FloodFill(new Fashion.Color(b.text_color))}})),this.label.addEvent(this.events)}else this.label.text(b.text),this.label.style({fill:new Fashion.FloodFill(new Fashion.Color(b.text_color))});else this.label&&(this.parent.drawable.erase(this.label),this.label=null)},h.prototype.addOverlay=function(b){if(!(b in this._overlays)){var e=g(this.shape);e.style(c.convertToFashionStyle(d.DEFAULT.OVERLAYS[b])),this._overlays[b]=e,this.parent.drawable.draw(e)}},h.prototype.removeOverlay=function(b){var c=this._overlays[b];c!==void 0&&(this.parent.drawable.erase(c),delete this._overlays[b])},h.prototype.addStyleType=function(b){this._styleTypes.push(b),this.stylize()},h.prototype.removeStyleType=function(b){for(var c=0;c<this._styleTypes.length;)this._styleTypes[c]==b?this._styleTypes.splice(c,1):c++;this.stylize()},h.prototype.refreshDynamicStyle=function(){this.selectable()?this.removeStyleType("unselectable"):this.addStyleType("unselectable")},h.prototype.refresh=function(){this.refreshDynamicStyle(),this.stylize()},h.prototype.__selected=function(){this.addStyleType("selected"),this._selected=!0},h.prototype.__unselected=function(){this.removeStyleType("selected"),this._selected=!1},h.prototype.selected=function(b){return b!==void 0&&this.parent._select(this,b),this._selected},h.prototype.selectable=function(){return!this.parent.callbacks.selectable||this.parent.callbacks.selectable(this.parent,this)};var i=b.SeatAdjacencies=function(b){this.tbl=[],this.src=b.dataSource.seatAdjacencies,this.availableAdjacencies=b.availableAdjacencies,this.callbacks=b.callbacks};i.prototype.getCandidates=function(b,c,d,e){if(c==1)return d([[b]]);var f=this.tbl[c];if(f!==void 0){d(f[b]||[]);return}this.callbacks.loadstart&&this.callbacks.loadstart("seatAdjacencies");var g=this;this.src(function(a){var h;if(a===void 0||(h=a[c])===void 0){e("Invalid adjacency data");return}f=g.tbl[c]=g.convertToTable(c,h),d(f[b]||[])},e,c)},i.prototype.convertToTable=function(b,c){var d={};for(var e=0,f=c.length;e<f;e++){c[e]=c[e].sort();for(var g=0;g<b;g++){var h=c[e][g];d[h]||(d[h]=[]),d[h].push(c[e])}}for(var e in d)d[e].sort().reverse();return d}}(),b}({}),function(b){function c(a){var b;return a===null||a===void 0||(b=typeof a)==="number"||b==="string"||b==="boolean"||a.valueOf!==Object.prototype.valueOf&&!(a instanceof Date)}function d(a,b){if(c(a))return a;var e,f;if(a instanceof Date){e=new Date(a.getTime());if(b instanceof Date)for(f in b)b.hasOwnProperty(f)&&(e[f]=d(b[f],e[f]))}else if(typeof a=="function"){e=function(){return a.apply(this,arguments)};if(typeof b=="function")for(f in b)b.hasOwnProperty(f)&&(e[f]=d(b[f],e[f]))}else e=!c(b)&&typeof b!="function"?b:new a.constructor;for(f in a)a.hasOwnProperty(f)&&(e[f]=d(a[f],e[f]));return e}function e(a,b){var c=parseInt(a,b);if(isNaN(c))throw new ValueError("Invalid numeric string: "+a);return c}function f(a,b){var c="";while(b)b&1&&(c+=a),a+=a,b>>=1;return c}function g(a,b,c){return f(c,b-a.length)+a}function h(a,b,c){if(typeof BROWSER=="undefined")return;BROWSER.identifier=="ie"&&BROWSER.version<9?a.attachEvent("on"+b,c):a.addEventListener(b,c,!1)}function i(a,b,c){if(typeof BROWSER=="undefined")return;BROWSER.identifier=="ie"&&BROWSER.version<9?a.detachEvent("on"+b,c):a.removeEventListener(b,c,!1)}function k(a,b,c){return Math.min(Math.max(a,b),c)}function l(a,b,c){return{x:k(a.x,b.x,c.x),y:k(a.y,b.y,c.y)}}function m(a,b){return{x:a.x+b.x,y:a.y+b.y}}function n(a,b){return{x:a.x-b.x,y:a.y-b.y}}function o(a,b,c){if(a instanceof Array&&"indexOf"in Array.prototype)return a.indexOf(b,c);for(var d=Math.max(c||0,0);d<a.length;d++)if(a[d]===b)return d;return-1}function r(a,b){function c(a){var b=typeof a.getAttributeNS=="function"?a.getAttributeNS("http://www.w3.org/1999/xlink","href"):a.getAttribute("xlink:href");b&&(typeof a.ownerDocument.getElementById=="function"?a=a.ownerDocument.getElementById(b.substring(1)):a=a.ownerDocument.selectSingleNode("*//*[@id='"+b.substring(1)+"']"));var c=a.childNodes,d=[];for(var e=0;e<c.length;e++){var f=c[e];if(f.nodeType!=1)continue;if(f.nodeName=="stop"){var g=q(f.getAttribute("style"));d.push([parseFloat(f.getAttribute("offset")),new Fashion.Color(g["stop-color"][0])])}}return d}var d=a.childNodes;for(var e=0;e<d.length;e++){var f=d[e];if(f.nodeType!=1)continue;var g=f.getAttribute("id");switch(f.nodeName){case"linearGradient":var h=parseFloat(f.getAttribute("x1")),i=parseFloat(f.getAttribute("y1")),j=parseFloat(f.getAttribute("x2")),k=parseFloat(f.getAttribute("y2")),l=Math.acos((j-h)/Math.sqrt(Math.pow(j-h,2)+Math.pow(k-i,2)))+(k-i<0?Math.PI:0);b[g]=new Fashion.LinearGradientFill(c(f),l/(Math.PI*2));break;case"radialGradient":b[g]=new Fashion.RadialGradientFill(c(f),{x:f.getAttribute("fx")||"50%",y:f.getAttribute("fy")||"50%"})}}}function s(a,b){return t(q(a),b)}function t(a,b){var c=null,d=a.fill,e=null,f=a["fill-opacity"],g=null,h=a.stroke,i=null,j=a["stroke-width"],k=null,l=a["stroke-opacity"],m=null,n=a["stroke-dasharray"],o=null,p=a["font-size"],q=null,r=a["text-anchor"];if(d){d instanceof Array&&(d=d[0]);if(d=="none")c=!1;else{var s=/url\(#([^)]*)\)/.exec(d);if(s){c=b[s[1]];if(!c)throw new Error}else c=new Fashion.Color(d)}}return f&&(f instanceof Array&&(f=f[0]),e=parseFloat(f)),h&&(h instanceof Array&&(h=h[0]),h=="none"?g=!1:g=new Fashion.Color(h)),j&&(j instanceof Array&&(j=j[0]),i=parseFloat(j)),l&&(l instanceof Array&&(l=l[0]),k=parseFloat(l)),n&&(n instanceof Array&&(n=n[0]),n.indexOf(",")!=-1&&(m=n.split(/,/))),p&&(p instanceof Array&&(p=p[0]),o=parseFloat(p)),r&&(r instanceof Array&&(r=r[0]),q=r),{fill:c,fillOpacity:e,stroke:g,strokeWidth:i,strokeOpacity:k,strokeDashArray:m,fontSize:o,textAnchor:q}}function u(a,b){var c={};for(var d in a)c[d]=a[d];for(var d in b)b[d]!==null&&(c[d]=b[d]);return c}function v(a){return{fill:a.fill?a.fill instanceof Fashion.Color?new Fashion.FloodFill(a.fill.replace(null,null,null,a.fillOpacity?a.fillOpacity*255:255)):a.fill:null,stroke:a.stroke?new Fashion.Stroke(a.stroke.replace(null,null,null,a.fillOpacity?a.fillOpacity*255:255),a.strokeWidth?a.strokeWidth:1,a.strokeDashArray?a.strokeDashArray:a.strokePattern?a.strokePattern:null):null,visibility:!0}}function w(a){var b=a.childNodes;for(var c=0,d=b.length,e="";c<d;c++){var f=b[c],g=f.nodeName;g==="#text"?e+=f.nodeValue:e+=w(f)}return e}function x(a){return a instanceof Fashion.Rect?new Fashion.Rect({position:a.position(),size:a.size(),transform:a.transform()}):a instanceof Fashion.Path?new Fashion.Path({points:a.points(),transform:a.transform()}):null}function y(a,b){var c=new Array(a.length);for(var d=0;d<a.length;d++)c[d]=b(a[d]);return c}function z(a){var b=/\s*([A-Za-z_-][0-9A-Za-z_-]*)\s*\(\s*((?:[^\s,]+(?:\s*,\s*|\s+))*[^\s,]+)\s*\)\s*/.exec(a),c=b[1],d=b[2].replace(/(?:^\s+|\s+$)/,"").split(/\s*,\s*|\s+/);switch(c){case"matrix":if(d.length!=6)throw new Error("invalid number of arguments for matrix()");return new Fashion.Matrix(parseFloat(d[0]),parseFloat(d[1]),parseFloat(d[2]),parseFloat(d[3]),parseFloat(d[4]),parseFloat(d[5]));case"translate":if(d.length==1)d[2]=0;else if(d.length!=2)throw new Error("invalid number of arguments for translate()");return Fashion.Matrix.translate({x:parseFloat(d[0]),y:parseFloat(d[1])});case"scale":if(d.length==1)d[2]=0;else if(d.length!=2)throw new Error("invalid number of arguments for scale()");return new Fashion.Matrix(parseFloat(d[0]),0,0,parseFloat(d[1]),0,0);case"rotate":if(d.length==1)d[2]=0;else if(d.length!=2)throw new Error("invalid number of arguments for rotate()");return Fashion.Matrix.rotate(parseFloat(d[0])*Math.PI/180);case"skewX":if(d.length==1)d[2]=0;else if(d.length!=2)throw new Error("invalid number of arguments for skewX()");var e=parseFloat(d[0])*Math.PI/180,f=Math.tan(e);return new Fashion.Matrix(1,0,f,1,0,0);case"skewY":if(d.length==1)d[2]=0;else if(d.length!=2)throw new Error("invalid number of arguments for skewX()");var e=parseFloat(d[0])*Math.PI/180,f=Math.tan(e);return new Fashion.Matrix(1,f,0,1,0,0)}throw new Error("invalid transform function: "+c)}var j=function(){var a=new RegExp("[<>&'\"]"),b=["","&lt;","&gt;","&amp;","&apos;","&quot;",""];return function(c){return typeof c!="string"&&(c=c.toString()),c.replace(a,function(a){return b[special.source.indexOf(a)]})}}(),p=function(){function a(){return this.constructor.__super__.prototype}function b(b,c){b.__super__=c;var d=function(){};d.prototype=c.prototype,d.prototype.constructor=c,b.prototype=new d,b.prototype.__super__=a;var e=b["%%INIT_INSTANCE_ORIGIN_PROPS"];return b["%%INIT_INSTANCE_ORIGIN_PROPS"]=function(a){var b=c["%%INIT_INSTANCE_ORIGIN_PROPS"];b&&b(a),e(a)},b}function c(a,b,c){c.__class__=a,a.prototype[b]=c}function f(a,b){var c=b.prototype;for(var d in c)d=="init"?a.prototype["init%%"+b["%%CLASSNAME%%"]]=c[d]:d!=="__super__"&&d!=="constructor"&&(a.prototype[d]=c[d]);var e=a["%%INIT_INSTANCE_ORIGIN_PROPS"];a["%%INIT_INSTANCE_ORIGIN_PROPS"]=function(a){var c=b["%%INIT_INSTANCE_ORIGIN_PROPS"];c&&c(a),e(a)}}function g(a,b){for(var c in b.prototype)if(b.prototype.hasOwnProperty(c)&&!a.prototype.hasOwnProperty(c))throw new DeclarationError("The class '"+a["%%CLASSNAME%%"]+"' must provide property or method '"+c+"' imposed by '"+b["%%CLASSNAME%%"]+'".')}var e=function(){var a=0;return function(){var c="%%ANONYMOUS_CLASS_"+a+"%%";return++a,c}}();return function(h,i){var j,k,l,m,n,o,p,q={},r={},s={},t={},u=Object,v=[],w=[];for(k in i)switch(k){case"props":o=i[k];for(l in o)o.hasOwnProperty(l)&&(q[l]=o[l]);break;case"class_props":r=i[k];break;case"methods":s=i[k];break;case"class_methods":t=i[k];break;case"parent":u=i[k];break;case"interfaces":w=i[k];break;case"mixins":v=i[k];break;default:throw new ArgumentError("You gave '"+k+"' as definition, but the _class() excepts"+" only 'props','class_props','methods','class_methods','parent','interfaces','mixins'.")}j=function(b){j["%%INIT_INSTANCE_ORIGIN_PROPS"](this),this.init?this.init.apply(this,arguments):d(b,this)},j["%%INIT_INSTANCE_ORIGIN_PROPS"]=function(a){for(var b in q)a[b]=d(q[b])},b(j,u);for(l=0,m=v.length;l<m;l++)f(j,v[l]);for(k in s)s.hasOwnProperty(k)&&c(j,k,s[k]);j.prototype.constructor=j,j["%%CLASSNAME%%"]=h||e();for(k in t)j[k]=t[k];for(l=0,m=w.length;l<m;l++)g(j,w[l]);for(k in r)j[k]=r[k];return t.init&&t.init.call(j),j}}(),q=function(){function c(a){return a.replace(/(?:\\(0{0,2}d[89ab][0-9A-Fa-f]{2})(?:\r\n|[ \n\r\t\f])?)?\\([0-9A-Fa-f]{1,6})(?:\r\n|[ \n\r\t\f])?|\\([^\n\r\f0-9A-Fa-f])/g,function(a,b,c,d){if(b!==void 0){var e=parseInt(c,16);if(e<56320||e>57343)throw new ValueError("Invalid surrogate pair");return String.fromCharCode(((parseInt(b,16)&1023)<<10|e&1023)+65536)}if(c!==void 0)return String.fromCharCode(parseInt(c,16));if(d!==void 0)return d})}var a=/\s*(-?(?:[_a-z\u00a0-\u10ffff]|\\[^\n\r\f#])(?:[\-_A-Za-z\u00a0-\u10ffff]|\\[^\n\r\f])*)\s*:\s*((?:(?:(?:[^;\\ \n\r\t\f"']|\\[0-9A-Fa-f]{1,6}(?:\r\n|[ \n\r\t\f])?|\\[^\n\r\f0-9A-Fa-f])+|"(?:[^\n\r\f\\"]|\\(?:\n|\r\n|\r|\f)|\\[^\n\r\f])*"|'(?:[^\n\r\f\\']|\\(?:\n|\r\n|\r|\f)|\\[^\n\r\f])*')(?:\s+|(?=;|$)))+)(?:;|$)/g,b=/(?:((?:[^;\\ \n\r\t\f"']|\\[0-9A-Fa-f]{1,6}(?:\r\n|[ \n\r\t\f])?|\\[^\n\r\f0-9A-Fa-f])+)|"((?:[^\n\r\f\\"]|\\(?:\n|\r\n|\r|\f)|\\[^\n\r\f])*)"|'((?:[^\n\r\f\\']|\\(?:\n|\r\n|\r|\f)|\\[^\n\r\f])*)')(?:\s+|$)/g;return function(e){var f={},g=e.replace(a,function(a,d,g){var h=[],i=g.replace(b,function(a,b,d,e){return b!==void 0?h.push(c(b)):d!==void 0?h.push(c(d)):e!==void 0&&h.push(c(e)),""});if(i!="")throw new ValueError("Invalid CSS rule string: "+e);return f[d]=h,""});if(g!="")throw new ValueError("Invalid CSS rule string: "+e);return f}}(),A=a.x99S4YFZAYXRGF6H,B=a.uO0E6U6YJJ62MIM3,C=a.u6AURF8N_EKWNZ2P,D=p("StoreObject",{props:{store:{}},methods:{save:function(a,b){this.store[a]||(this.store[a]=b)},restore:function(a){var b=this.store[a];return delete this.store[a],b},clear:function(){for(var a in this.store)delete this.store[a]}}}),E=p("VenueViewer",{props:{canvas:null,callbacks:{uimodeselect:null,load:null,loadPartStart:null,loadPartEnd:null,loadAbort:null,click:null,selectable:null,select:null,pageChanging:null,message:null,messageBoard:null,zoomRatioChanging:null,zoomRatioChange:null},dataSource:null,zoomRatio:A.DEFAULT.ZOOM_RATIO,contentOriginPosition:{x:0,y:0},dragging:!1,startPos:{x:0,y:0},rubberBand:new Fashion.Rect({position:{x:0,y:0},size:{x:0,y:0}}),drawable:null,availableAdjacencies:[1],originalStyles:new D,overlayShapes:new D,shift:!1,keyEvents:null,uiMode:"select",shapes:null,link_pairs:null,seats:null,selection:{},selectionCount:0,highlighted:{},animating:!1,_adjacencyLength:1,currentPage:null,rootPage:null,_history:[],seatTitles:{},optionalViewportSize:null,loading:!1,loadAborted:!1,loadAbortionHandler:null,_smallTextsShown:!0,nextSingleClickAction:null,doubleClickTimeout:400,mouseUpHandler:null,onMouseUp:null,onMouseMove:null,deferSeatLoading:!1},methods:{init:function(c,d){this.canvas=c,this.stockTypes=null;if(d.callbacks)for(var e in this.callbacks)this.callbacks[e]=d.callbacks[e]||function(){};this.dataSource=d.dataSource,d.zoomRatio&&zoom(d.zoomRatio),this.rubberBand.style(A.DEFAULT.MASK_STYLE),c.empty(),this.optionalViewportSize=d.viewportSize,this.deferSeatLoading=!!d.deferSeatLoading;var f=this;this.mouseUpHandler=function(){f.onMouseUp&&f.onMouseUp.call(f)},b(document.body).bind("mouseup",this.mouseUpHandler),this.mouseMoveHandler=function(a){if(f.onMouseMove){var b=new Fashion.MouseEvt,c={x:a.pageX,y:a.pageY},d=Fashion._lib.subtractPoint(c,f.drawable.impl.getViewportOffset()),e=Fashion._lib.addPoint(f.drawable.impl.convertToPhysicalPoint(f.drawable.impl.scrollPosition()),d);return b.logicalPosition=f.drawable.impl.convertToLogicalPoint(e),f.onMouseMove.call(f,b),a.stopImmediatePropagation(),a.stopPropagation(),a.preventDefault(),!1}},b(document.body).bind("mousemove",this.mouseMoveHandler)},load:function(){this.loading=!0,this.seatAdjacencies=null;var b=this;b.callbacks.loadPartStart.call(b,b,"pages"),b.initBlocks(b.dataSource.pages,function(){b.loading=!1;if(b.loadAborted){b.loadAborted=!1,b.loadAbortionHandler&&b.loadAbortionHandler.call(b),b.callbacks.loadAbort&&b.callbacks.loadAbort.call(b,b);return}b.callbacks.loadPartEnd.call(b,b,"pages"),b.currentPage=b.rootPage,b.loading=!0,b.callbacks.loadPartStart.call(b,b,"stockTypes"),b.dataSource.stockTypes(function(a){b.loading=!1;if(b.loadAborted){b.loadAborted=!1,b.loadAbortionHandler&&b.loadAbortionHandler.call(b),b.callbacks.loadAbort&&b.callbacks.loadAbort.call(b,b);return}b.loading=!0,b.callbacks.loadPartEnd.call(b,b,"stockTypes"),b.stockTypes=a,b.callbacks.loadPartStart.call(b,b,"info"),b.dataSource.info(function(a){b.loading=!1;if(b.loadAborted){b.loadAborted=!1,b.loadAbortionHandler&&b.loadAbortionHandler.call(b),b.callbacks.loadAbort&&b.callbacks.loadAbort.call(b,b);return}b.loading=!0,b.callbacks.loadPartEnd.call(b,b,"info");if(!1 in a){b.callbacks.message.call(b,"Invalid data"),b.loading=!1;return}b.availableAdjacencies=a.available_adjacencies,b.seatAdjacencies=new B.SeatAdjacencies(b);var c;(function(){var a={drawing:!1,seats:!1};c=function(d){a[d]=!0;if(d=="drawing"&&a.seats)for(var e in b.seats){var f=b.shapes[e];f&&b.seats[e].attach(f)}}})(),b.currentPage?b.loadDrawing(b.currentPage,function(){c("drawing"),b.callbacks.load.call(b,b),b.zoomAndPan(b.zoomRatioMin,{x:0,y:0})}):b.callbacks.load.call(b,b),b.deferSeatLoading||b.loadSeats(function(){c("seats")})},b.callbacks.message)},b.callbacks.message)})},loadDrawing:function(a,b){var c=this;this.callbacks.loadPartStart.call(c,c,"drawing"),this.initDrawable(a,function(){c.callbacks.pageChanging.call(c,a),c.callbacks.loadPartEnd.call(c,c,"drawing"),b.call(c)})},cancelLoading:function(b){this.loading?(this.loadAborted=!0,this.loadAbortionHandler=b):b.call(this)},dispose:function(c){var d=this;this.cancelLoading(function(){b(document.body).unbind("mouseup",d.mouseUpHandler),d.removeKeyEvent(),d.drawable&&(d.drawable.dispose(),d.drawable=null),d.seats=null,d.selection=null,d.highlighted=null,d.availableAdjacencies=[1],d.shapes=null,d.small_texts=[],d.link_pairs=null,d.selection={},d.selectionCount=0,d.highlighted={},d.animating=!1,d._adjacencyLength=1,d.currentPage=null,d.rootPage=null,d._history=[],d.seatTitles={},c&&c.call(d)})},initDrawable:function(c,d){if(this.link_pairs)for(var e=this.link_pairs.length;--e>=0;)this.link_pairs[e][0].removeEvent();this.drawable&&this.drawable.dispose(),this.originalStyles.clear(),this.overlayShapes.clear(),this.currentPage=c;var f=this,g=function(){var a={},b=f.pages[c].focused_ids;if(b)for(var d=b.length;--d>=0;)a[b[d]]=!0;return a}(),h=function(b){return g[b]},i=this.dataSource.drawing(c);i(function(a){function M(a){var b=[];for(var c=f.link_pairs.length;--c>=0;){var d=f.link_pairs[c];d[1]==a&&b.push(d[0])}return b}f.loading=!1;if(f.loadAborted){f.loadAborted=!1,f.loadAbortionHandler&&f.loadAbortionHandler.call(f),f.callbacks.loadAbort&&f.callbacks.loadAbort.call(f,f);return}var c=C.allAttributes(a.documentElement),e=parseFloat(c.width),g=parseFloat(c.height),i=null;if(c.viewBox){var j=c.viewBox.split(/\s+/);i=new Array(j.length);for(var k=0;k<j.length;k++)i[k]=parseFloat(j[k])}var l=i||e||g?{x:i&&i[2]||e||g,y:i&&i[3]||g||e}:null,m=new Fashion.Drawable(f.canvas[0],{contentSize:l?{x:l.x,y:l.y}:null,viewportSize:f.optionalViewportSize}),n={},o=[],p=[],q=A.DEFAULT.STYLES,y=null,B=null;(function(b,c){a:for(var d=0;d<c.length;d++){var e=c[d];if(e.nodeType!=1)continue;var g=C.allAttributes(e),i=b.xlink,j=b.focused||g.id&&h(g.id),k=parseFloat(g.x),l=parseFloat(g.y),x=!isNaN(k)&&!isNaN(l)?{x:k,y:l}:b.position,A=g.transform?b.transform.multiply(z(g.transform)):b.transform,D=null,E=b.svgStyle;if(g["class"]){var F=q[g["class"]];F&&(E=u(E,F))}g.style&&(E=u(E,s(g.style,b.defs))),E=u(E,t(g));switch(e.nodeName){case"defs":r(e,b.defs);break;case"a":i=g["{http://www.w3.org/1999/xlink}href"];case"g":arguments.callee.call(f,{svgStyle:E,transform:A,defs:b.defs,focused:j,xlink:i},e.childNodes);continue a;case"path":if(!g.d)throw new Error("Pathdata is not provided for the path element");D=new Fashion.Path({points:new Fashion.PathData(g.d)});break;case"text":case"tspan":if(e.childNodes.length==1&&e.firstChild.nodeType==3)D=new Fashion.Text({text:w(e),anchor:E.textAnchor,position:x||null,transform:A||null});else if(e.nodeName=="text"){arguments.callee.call(f,{svgStyle:E,position:x,transform:A,defs:b.defs,focused:j,xlink:i},e.childNodes);continue a}break;case"symbol":break;case"rect":D=new Fashion.Rect({size:{x:parseFloat(g.width),y:parseFloat(g.height)},corner:{x:parseFloat(g.rx||0),y:parseFloat(g.ry||0)},transform:A||null,zIndex:-10});for(var G=0,H=e.childNodes.length;G<H;G++)if(e.childNodes[G].nodeName=="title"){f.seatTitles[g.id]=e.childNodes[G].childNodes[0].nodeValue;break}break;default:continue a}if(D!==null){var I=parseFloat(g.x),J=parseFloat(g.y);!isNaN(I)&&!isNaN(J)&&(j&&(y=y?{x:Math.min(y.x,I),y:Math.min(y.y,J)}:{x:I,y:J},B=B?{x:Math.max(B.x,I),y:Math.max(B.y,J)}:{x:I,y:J}),D.position({x:I,y:J})),D.style(v(E)),D.transform(A),D instanceof Fashion.Text&&(D.fontSize(E.fontSize),E.fontSize<=10&&(f._smallTextsShown||D.visibility(!1),p.push(D))),m.draw(D)}g.id&&(n[g.id]=D),i&&o.push([D,i])}}).call(f,{svgStyle:{fill:!1,fillOpacity:!1,stroke:!1,strokeOpacity:!1,strokeDashArray:!1,fontSize:10,textAnchor:!1},position:null,transform:new Fashion.Matrix,defs:{},focused:!1,xlink:null},a.documentElement.childNodes),f.drawable=m,f.shapes=n,f.small_texts=p,f.link_pairs=o,y||(y={x:i&&i[0]||0,y:i&&i[1]||0}),B||(B={x:y.x+l.x,y:y.y+l.y});var D={x:(y.x+B.x)/2,y:(y.y+B.y)/2},E={x:B.x-y.x,y:B.y-y.y},F={x:D.x-E.x/2,y:D.y-E.y/2},G={x:20,y:20},H=m.viewportSize();H={x:H.x-G.x,y:H.y-G.y};var I=H.x/E.x*.9,J=H.y/E.y*.9,K=I<J?I:J,L={x:D.x-(H.x/2+G.x)/K,y:D.y-(H.y/2+G.y)/K};f.zoomRatioMin=K,f.contentOriginPosition=L,m.transform(Fashion.Matrix.scale(f.zoomRatioMin).translate({x:-L.x,y:-L.y})),m.contentSize({x:L.x+H.x/K,y:L.y+H.y/K});var N=!1,O=0;for(var k=0;k<f.link_pairs.length;k++)(function(a,b){var c=M(b);a.addEvent({mouseover:function(a){if(f.pages){for(var d=c.length;--d>=0;){var e=x(c[d]);e&&(e.style(C.convertToFashionStyle(A.DEFAULT.OVERLAYS.highlighted_block)),f.drawable.draw(e),f.overlayShapes.save(c[d].id,e))}var g=b.split("#"),h=g[0];h==""&&(h=f.currentPage),f.callbacks.messageBoard.up.call(f,f.pages[h].name),f.canvas.css({cursor:"pointer"})}},mouseout:function(a){if(f.pages){f.canvas.css({cursor:"default"});for(var b=c.length;--b>=0;){var d=f.overlayShapes.restore(c[b].id);d&&f.drawable.erase(d)}f.callbacks.messageBoard.down.call(f)}},mousedown:function(a){},mouseup:function(a){f.pages&&f.navigate(b)}})}).apply(f,f.link_pairs[k]);(function(){function c(){f.onMouseUp=null,f.onMouseMove=null,b(f.canvas[0]).find("div").css({overflow:"scroll"}),N=!1,f.dragging&&(f.drawable.releaseMouse(),f.dragging=!1)}function d(c){O&&e();if(f.animating)return;if(!f.dragging){if(!N)return;f.dragging=!0,f.drawable.captureMouse(),b(f.canvas[0]).find("div").css({overflow:"hidden"}),f.callbacks.messageBoard.down.call(f)}var d=Fashion._lib.subtractPoint(a,Fashion._lib.subtractPoint(c.logicalPosition,f.startPos));return f.drawable.scrollPosition(d),a=d,!1}function e(){clearTimeout(O),O=0;var a=f.nextSingleClickAction;f.nextSingleClickAction=null,a&&a.call(f)}var a=null;f.drawable.addEvent({mousedown:function(b){if(f.animating)return;switch(f.uiMode){case"zoomin":case"zoomout":break;default:N=!0,f.onMouseUp=c,f.onMouseMove=d;if(!O)a=f.drawable.scrollPosition(),f.startPos=b.logicalPosition,O=setTimeout(e,f.doubleClickTimeout);else if(!f.dragging){clearTimeout(O),O=0,f.drawableMouseDown=!1;var g=f.zoomRatio*2;f.zoom(g,b.logicalPosition)}}},mouseup:function(a){c(a);if(f.animating)return;switch(f.uiMode){case"zoomin":f.zoom(f.zoomRatio*1.2,a.logicalPosition);break;case"zoomout":f.zoom(f.zoomRatio/1.2,a.logicalPosition);break;default:}},mouseout:function(a){f.canvas.css({cursor:"default"}),f.callbacks.messageBoard.down.call(f)},mousemove:function(a){d(a)}})})(),f.changeUIMode(f.uiMode),d.call(this)},f.callbacks.message)},zoomOnShape:function(a){if(!this.drawable)return;var b=a.position(),c=a.size(),d=a._transform.apply(b),e=a._transform.apply({x:b.x,y:b.y+c.y}),f=a._transform.apply({x:b.x+c.x,y:b.y}),g=a._transform.apply({x:b.x+c.x,y:b.y+c.y}),h={x:Math.min(d.x,e.x,f.x,g.x),y:Math.min(d.y,e.y,f.y,g.y)},i={x:Math.max(d.x,e.x,f.x,g.x)-h.x,y:Math.max(d.y,e.y,f.y,g.y)-h.y},j=this.drawable.viewportSize(),k=.1,l=Math.min(j.x*(1-k)/i.x,j.y*(1-k)/i.y),m={x:Math.max(h.x-(j.x/l-i.x)/2,0),y:Math.max(h.y-(j.y/l-i.y)/2,0)};this.zoomAndPan(l,m)},navigate:function(a){var b={page:this.currentPage,zoomRatio:this.zoomRatio,scrollPosition:this.drawable?this.drawable.scrollPosition():null},c=this;if(typeof a=="string"||a instanceof String){var d=a.split("#"),e=null;page=d[0],d.length>1&&(e=d[1]),page==""&&(page=this.currentPage);var f=function(){c._history.push(b);if(e=="__FIXED__")c.zoomAndPan(b.zoomRatio,b.scrollPosition);else{var a=c.shapes[e];a!==void 0&&a instanceof Fashion.Rect?c.zoomOnShape(a):c.zoomAndPan(c.zoomRatioMin,{x:0,y:0})}};this._loadPage({page:page},f)}else this._loadPage(a,function(){c._history.push(b)})},_loadPage:function(a,b){var c=this,d=function(){a.zoomRatio&&a.scrollPosition&&c.zoomAndPan(a.zoomRatio,a.scrollPosition),b&&b.call(c,a)};if(!a)return;if(!(a.page in this.pages))return;this.canvas.css({cursor:"default"}),this.callbacks.messageBoard.down.call(this),this.curentPage!=a.page?this.loadDrawing(a.page,function(){c.callbacks.load.call(c,c),d()}):d()},history:function(){return this._history},initBlocks:function(b,c){var d=this;b(function(a){d.pages=a;for(var b in a)a[b].root&&(d.rootPage=b);c.call(d)},d.callbacks.message)},loadSeats:function(a){var b=this;b.callbacks.loadPartStart.call(b,b,"seats"),b.loading=!0,b.initSeats(b.dataSource.seats,function(){b.loading=!1;if(b.loadAborted){b.loadAborted=!1,b.loadAbortionHandler&&b.loadAbortionHandler.call(b,b),b.callbacks.loadAbort&&b.callbacks.loadAbort.call(b,b);return}b.callbacks.loadPartEnd.call(b,b,"seats"),a&&a()})},initSeats:function(b,c){var d=this;b(function(a){var b={};for(var e in a){var f=b[e]=new B.Seat(e,a[e],d,{mouseover:function(a){d.callbacks.messageBoard.up.call(d,d.seatTitles[this.id]),d.seatAdjacencies.getCandidates(this.id,d.adjacencyLength(),function(a){if(a.length==0)return;var c=null;for(var e=0;e<a.length;e++){c=a[e];for(var f=0;f<c.length;f++)if(!b[c[f]].selectable()){c=null;break}if(c)break}if(!c)return;for(var e=0;e<c.length;e++){var g=b[c[e]];g.addOverlay("highlighted"),d.highlighted[g.id]=g}},d.callbacks.message)},mouseout:function(a){var b=d.highlighted;d.highlighted={};for(var c in b)b[c].removeOverlay("highlighted")},mousedown:function(a){d.nextSingleClickAction=function(){d.callbacks.click(d,d,d.highlighted)}}});d.shapes[e]&&f.attach(d.shapes[e])}d.seats=b,c.call(d)},d.callbacks.message)},refresh:function(){for(var b in this.seats)this.seats[b].refresh()},addKeyEvent:function(){if(this.keyEvents)return;var c=this;this.keyEvents={down:function(a){return C.eventKey(a).shift&&(c.shift=!0),!0},up:function(a){return C.eventKey(a).shift&&(c.shift=!1),!0}},b(document).bind("keydown",this.keyEvents.down),b(document).bind("keyup",this.keyEvents.up)},removeKeyEvent:function(){if(!this.keyEvents)return;b(document).unbind("keydown",this.keyEvents.down),b(document).unbind("keyup",this.keyEvents.up)},changeUIMode:function(b){if(this.drawable){var c=this;switch(b){case"select":case"move":case"zoomin":case"zoomout":break;default:throw new Error("Invalid ui mode: "+b)}}this.uiMode=b,this.callbacks.uimodeselect(this,b)},zoom:function(a,b){if(!this.drawable)return;var c=this.drawable.viewportSize(),d=this.drawable.scrollPosition(),e=this.zoomRatio,f={x:c.x/e,y:c.y/e};b||(b={x:d.x+f.x/2,y:d.y+f.y/2});var g={x:(b.x-d.x)*e,y:(b.y-d.y)*e},h={x:c.x/a,y:c.y/a},i={x:b.x-g.x/a,y:b.y-g.y/a};this.zoomAndPan(a,i)},zoomAndPan:function(a,b){if(isNaN(a))return;var c=this.zoomRatio;if(this.callbacks.zoomRatioChanging){var d=this.callbacks.zoomRatioChanging(a);if(d===!1)return;d&&(a=d)}if(!this.drawable){this.zoomRatio=a,this.callbacks.zoomRatioChange&&this.callbacks.zoomRatioChange(a);return}this.drawable.transform(Fashion.Matrix.scale(a).translate({x:-this.contentOriginPosition.x,y:-this.contentOriginPosition.y})),this.drawable.scrollPosition(b),this.zoomRatio=a,this.callbacks.zoomRatioChange&&this.callbacks.zoomRatioChange(a)},unselectAll:function(){var b=this.selection;this.selection={};for(var c in b)this.seats[c].__unselected();this.selectionCount=0},_select:function(b,c){c?b.id in this.selection||(this.selection[b.id]=b,this.selectionCount++,b.__selected()):b.id in this.selection&&(delete this.selection[b.id],this.selectionCount--,b.__unselected())},adjacencyLength:function(b){return b!==void 0&&(this._adjacencyLength=b),this._adjacencyLength},scrollTo:function(b){if(this.animating)return;var c=this.drawable.scrollPosition();b={x:b.x,y:b.y};var d=this.drawable.contentSize(),e=Fashion._lib.addPoint(b,this.drawable._inverse_transform.apply(this.drawable.viewportInnerSize()));e.x>d.x&&(b.x+=d.x-e.x),e.y>d.y&&(b.y+=d.y-e.y),b.x=Math.max(b.x,0),b.y=Math.max(b.y,0),this.animating=!0;var f=this,g=setInterval(function(){var a=Fashion._lib.subtractPoint(b,c);if(Math.sqrt(a.x*a.x+a.y*a.y)<1){clearInterval(g),f.animating=!1;return}a={x:a.x/2,y:a.y/2},c=Fashion._lib.addPoint(c,a),f.drawable.scrollPosition(c)},50)},back:function(){this._history.length>0&&this._loadPage(this._history.pop())},showSmallTexts
-:function(){if(!this._smallTextsShown){for(var b=this.small_texts.length;--b>=0;)this.small_texts[b].visibility(!0);this._smallTextsShown=!0}},hideSmallTexts:function(){if(this._smallTextsShown){for(var b=this.small_texts.length;--b>=0;)this.small_texts[b].visibility(!1);this._smallTextsShown=!1}}}});b.fn.venueviewer=function(a){var c=this.data("venueviewer");if(!a)throw new Error("Options must be given");if(typeof a=="object"){if(!a.dataSource||typeof a.dataSource!="object")throw new Error("Required option missing: dataSource");var d=this;function e(){var e=b.extend({},a),f=function(){var c={},d=null,e=!0;return function(g){return function(h,i){c[g]={next:h,error:i};if(e){b.ajax({url:a.dataSource.metadata,dataType:"json",success:function(a){d=a;var b=c;c={};for(var e in b)b[e].next(a[g])},error:function(a,b,d){var e="Failed to load "+g+" (reason: "+b+" - "+d+")",f=c;c={};for(var h in f)f[h]&&f[h].error(e)}}),e=!1;return}d&&(c[g].next(d[g]),delete c[g])}}}();b.each([["stockTypes","stock_types"],["seats","seats"],["areas","areas"],["info","info"],["seatAdjacencies","seat_adjacencies"],["pages","pages"]],function(b,c){e.dataSource[c[0]]=typeof a.dataSource[c[0]]=="function"?a.dataSource[c[0]]:f(c[1])}),c=new E(d,e),d.data("venueviewer",c),a.uimode&&c.changeUIMode(a.uimode)}c?c.dispose(e):e()}else if(typeof a=="string"||a instanceof String)if(a=="remove")c&&c.dispose(),this.empty(),this.data("venueviewer",null);else{if(!c)throw new Error("Command issued against an uninitialized element");switch(a){case"load":c.load();break;case"uimode":if(!(arguments.length>=2))return c.uiMode;c.changeUIMode(arguments[1]);break;case"selection":return c.selection;case"unselectAll":return c.unselectAll();case"refresh":return c.refresh();case"adjacency":c.adjacencyLength(arguments[1]|0);break;case"root":return c.rootPage;case"back":c.back();break;case"zoom":c.zoom(arguments[1]);break;case"navigate":c.navigate(arguments[1]);break;case"loadSeats":c.loadSeats(arguments[1]);break;case"showSmallTexts":c.showSmallTexts();break;case"hideSmallTexts":c.hideSmallTexts()}}return this}}(jQuery)})();
+(function () {
+var __LIBS__ = {};
+__LIBS__['jBGHQV64R_Z81V9D'] = (function (exports) { (function () { 
+
+/************** util.js **************/
+exports.eventKey = function Util_eventKey(e) {
+  var shift, ctrl;
+  // Mozilla
+  if (e != null) {
+    keycode = e.which;
+    ctrl    = typeof e.modifiers == 'undefined' ? e.ctrlKey : e.modifiers & Event.CONTROL_MASK;
+    shift   = typeof e.modifiers == 'undefined' ? e.shiftKey : e.modifiers & Event.SHIFT_MASK;
+
+  }
+  // ie
+  else {
+    keycode = event.keyCode;
+    ctrl    = event.ctrlKey;
+    shift   = event.shiftKey;
+
+  }
+
+  keychar = String.fromCharCode(keycode).toUpperCase();
+
+  return {
+    ctrl:    (!!ctrl) || keycode === 17,
+    shift:   (!!shift) || keycode === 16,
+    keycode: keycode,
+    keychar: keychar
+  };
+};
+
+exports.convertToFashionStyle = function Util_convertToFashionStyle(style, gradient) {
+  var fill = function(fill) {
+    switch (fill.type) {
+    case 'flood':
+    default:
+      if (gradient) {
+        return new Fashion.LinearGradientFill(
+          [
+            [0, new Fashion.Color("#fff")],
+            [1, new Fashion.Color(fill.color || "#fff")]
+          ], .125);
+      } else if(fill.color) {
+        return new Fashion.FloodFill(new Fashion.Color(fill.color));
+      } else {
+        return null;
+      }
+    case 'linear':
+      return new Fashion.LinearGradientFill(_map(fill.colors, function (c) { return new Fashion.Color(c); }), fill.angle);
+    case 'radial':
+      return new Fashion.LinearGradientFill(_map(fill.colors, function (c) { return new Fashion.Color(c); }), fill.focus);
+    case 'tile':
+      return new Fashion.ImageTileFill(fill.imageData);
+    }
+    return null;
+  };
+
+  var stroke = function(stroke) {
+    return new Fashion.Stroke(
+            [(style.stroke.color || "#000"),
+             (style.stroke.width ? style.stroke.width: 1),
+             (style.stroke.pattern || "solid")].join(' '));
+  };
+
+  return {
+    "fill": style.fill ? fill(style.fill): null,
+    "stroke": style.stroke ? stroke(style.stroke): null
+  };
+};
+
+exports.convertFromFashionStyle = function (style) {
+  return {
+    text: null,
+    text_color: null,
+    fill: 
+      style.fill instanceof Fashion.FloodFill ?
+        { type: 'flood', color: style.fill.color._toString() }:
+      style.fill instanceof Fashion.LinearGradientFill ?
+        { type: 'linear', colors: _map(style.fill.colors, function (c) { return c._toString() }),
+          angle: style.fill.angle }:
+      style.fill instanceof Fashion.RadialGradientFill ?
+        { type: 'radial', colors: _map(style.fill.colors, function (c) { return c._toString() }),
+          focus: style.fill.focus }:
+      style.fill instanceof Fashion.ImageTileFill ?
+        { type: 'tile', imageData: style.imageData }:
+      null,
+    stroke:
+      style.stroke ?
+        { color: style.stroke.color._toString(), width: style.stroke.width,
+          pattern: style.stroke.pattern }:
+        null
+  };
+};
+
+exports.allAttributes = function Util_allAttributes(el) {
+  var rt = {}, attrs = el.attributes;
+  for (var i = 0, l = attrs.length; i < l; i++) {
+    var attr = attrs[i];
+    rt[attr.namespaceURI ? ('{' + attr.namespaceURI + '}') + attr.nodeName.replace(/^[^:]*:/, ''): attr.nodeName] = attr.nodeValue;
+  }
+  return rt;
+};
+
+exports.makeHitTester = function Util_makeHitTester(a) {
+  var leftTop = a.position(), sa = a.size();
+  var rightBottom = { x: leftTop.x + sa.x, y: leftTop.y + sa.y };
+  if (a.transform()) {
+    leftTop = a.transform().apply(leftTop); 
+    rightBottom = a.transform().apply(rightBottom);
+  }
+
+  return function(b) {
+    var targetLeftTop = b.position(), sa = b.size();
+    var targetRightBottom = { x: targetLeftTop.x + sa.x, y: targetLeftTop.y + sa.y };
+    if (b.transform()) {
+      targetLeftTop = b.transform().apply(targetLeftTop); 
+      targetRightBottom = b.transform().apply(targetRightBottom);
+    }
+
+    return ((((leftTop.x < targetLeftTop.x) && (targetLeftTop.x < rightBottom.x)) ||
+             ((leftTop.x < targetRightBottom.x) && (targetRightBottom.x < rightBottom.x)) ||
+             ((targetLeftTop.x < leftTop.x) && (rightBottom.x < targetRightBottom.x))) && // x
+            (((leftTop.y < targetLeftTop.y) && (targetLeftTop.y < rightBottom.y)) ||
+             ((leftTop.y < targetRightBottom.y) && (targetRightBottom.y < rightBottom.y)) ||
+             ((targetLeftTop.y < leftTop.y) && (rightBottom.y < targetRightBottom.y))));  // y
+  }
+};
+ })(); return exports; })({});
+__LIBS__['RSJPE4TVBYXNMVID'] = (function (exports) { (function () { 
+
+/************** CONF.js **************/
+exports.DEFAULT = {
+  ZOOM_RATIO: 0.8,
+  STYLES: {
+    label: {
+      fill: new Fashion.Color('#000'),
+      stroke: null
+    },
+    seat: {
+      fill: new Fashion.Color('#fff'),
+      stroke: new Fashion.Color('#000')
+    },
+    glayout: {
+      fill: new Fashion.FloodFill(new Fashion.Color('#ccc')),
+      stroke: new Fashion.Stroke(new Fashion.Color('#999'), 2)
+    }
+  },
+
+  MASK_STYLE: {
+    fill:   new Fashion.FloodFill(new Fashion.Color("#0064ff80")),
+    stroke: new Fashion.Stroke(new Fashion.Color("#0080FF"), 2)
+  },
+
+  SEAT_STYLE: {
+    text_color: "#000",
+    fill:   { color: "#fff" }
+  },
+
+  OVERLAYS: {
+    highlighted: {
+      fill: null,
+      stroke: { color: "#F63", width: 3, pattern: 'solid' }
+    },
+    highlighted_block: {
+      fill: null,
+      stroke: { color: "#F44", width: 5, pattern: 'solid' }
+    }
+  },
+
+  AUGMENTED_STYLE: {
+    selected: {
+      text_color: "#FFF",
+      fill:   { color: "#009BE1" },
+      stroke: { color: "#FFF", width: 3 }
+    },
+    unselectable: {
+      text_color: "#888",
+      fill:   { color: "#eee" },
+      stroke: { color: "#ccc" }
+    }
+  }
+};
+ })(); return exports; })({});
+__LIBS__['OCLSDQCQ1F295768'] = (function (exports) { (function () { 
+
+/************** seat.js **************/
+var util = __LIBS__['jBGHQV64R_Z81V9D'];
+var CONF = __LIBS__['RSJPE4TVBYXNMVID'];
+
+function clone(obj) {
+  return $.extend({}, obj);
+}
+
+function mergeStyle(a, b) {
+  return {
+    text: (b.text ? b.text: a.text) || null,
+    text_color: (b.text_color ? b.text_color: a.text_color) || null,
+    fill: (b.fill ? b.fill: a.fill) || null,
+    stroke: (b.stroke ? b.stroke: a.stroke) || null
+  };
+}
+
+function copyShape(shape) {
+  if (shape instanceof Fashion.Path) {
+    return new Fashion.Path({ points: shape.points(), style: shape.style(), transform: shape.transform() });
+  } else if (shape instanceof Fashion.Rect) {
+    return new Fashion.Rect({ position: shape.position(), size: shape.size(), transform: shape.transform() });
+  }
+  return null;
+}
+
+var Seat = exports.Seat = function Seat () {
+  this.id = null;
+  this.editor = null;
+  this.type = null;
+  this.floor = null;
+  this.gate = null;
+  this.block = null;
+  this.events = {};
+  this._styleTypes = [];
+  this.mata = null;
+  this.shape = null;
+  this.originalStyle = null;
+  this._highlightedSeats = [];
+  this._selected = false;
+  this.label = null;
+  this._overlays = {};
+
+  this.init.apply(this, arguments);
+};
+
+Seat.prototype.init = function Seat_init(id, meta, parent, events) {
+  var self    = this;
+  this.id     = id;
+  this.parent = parent;
+  this.meta   = meta;
+
+  this.type = this.parent.stockTypes[meta.stock_type_id];
+
+  this.originalStyle = this.defaultStyle();
+
+  if (events) {
+    for (var i in events) {
+      (function(i) {
+        self.events[i] = function(evt) {
+          if (self.parent.dragging || self.parent.animating)
+            return;
+          events[i].apply(self, arguments);
+        };
+      }).call(this, i);
+    }
+  }
+
+  this.refresh();
+};
+
+Seat.prototype.defaultStyle = function Seat_defaultStype() {
+  var style = CONF.DEFAULT.SEAT_STYLE;
+
+  if (this.shape)
+    style = mergeStyle(style, util.convertFromFashionStyle(this.shape.style()));
+
+  if (this.type)
+    style = mergeStyle(style, this.type.style);
+
+  return style;
+}
+
+Seat.prototype.attach = function Seat_attach(shape) {
+  if (this.shape === shape)
+    return;
+  if (this.shape !== shape)
+    this.detach();
+
+  this.shape = shape;
+  this.originalStyle = this.defaultStyle();
+  this.refresh();
+  shape.addEvent(this.events);
+};
+
+Seat.prototype.detach = function Seat_detach(shape) {
+  if (this.shape) {
+    this.shape.removeEvent();
+    this.shape = null;
+  }
+};
+
+Seat.prototype.stylize = function Seat_stylize() {
+  if (!this.shape)
+    return;
+  var style = this.originalStyle;
+  for (var i = 0; i < this._styleTypes.length; i++) {
+    var styleType = this._styleTypes[i];
+    style = mergeStyle(style, CONF.DEFAULT.AUGMENTED_STYLE[styleType]);
+  }
+  this.shape.style(util.convertToFashionStyle(style));
+
+  if (style.text) {
+    if (!this.label) {
+      var p = this.shape.position(),
+          s = this.shape.size();
+      this.label = this.parent.drawable.draw(
+        new Fashion.Text({
+          position: {
+            x: p.x,
+            y: p.y + (s.y * 0.75)
+          },
+          fontSize: (s.y * 0.75),
+          text: style.text,
+          style: { fill: new Fashion.FloodFill(new Fashion.Color(style.text_color)) }
+        })
+      );
+      this.label.addEvent(this.events);
+    } else {
+      this.label.text(style.text);
+      this.label.style({ fill: new Fashion.FloodFill(new Fashion.Color(style.text_color)) });
+    }
+  } else {
+    if (this.label) {
+      this.parent.drawable.erase(this.label);
+      this.label = null;
+    }
+  }
+};
+
+Seat.prototype.addOverlay = function Seat_addOverlay(value) {
+  if (!(value in this._overlays)) {
+    var shape = copyShape(this.shape)
+    shape.style(util.convertToFashionStyle(CONF.DEFAULT.OVERLAYS[value]));
+    this._overlays[value] = shape;
+    this.parent.drawable.draw(shape);
+  }
+};
+
+Seat.prototype.removeOverlay = function Seat_removeOverlay(value) {
+  var shape = this._overlays[value];
+  if (shape !== void(0)) {
+    this.parent.drawable.erase(shape);
+    delete this._overlays[value];
+  }
+};
+
+Seat.prototype.addStyleType = function Seat_addStyleType(value) {
+  this._styleTypes.push(value);
+  this.stylize();
+};
+
+Seat.prototype.removeStyleType = function Seat_removeStyleType(value) {
+  for (var i = 0; i < this._styleTypes.length;) {
+    if (this._styleTypes[i] == value)
+      this._styleTypes.splice(i, 1);
+    else
+      i++;
+  }
+  this.stylize();
+};
+
+Seat.prototype.refreshDynamicStyle = function Seat_refreshDynamicStyle() {
+  if (!this.selectable())
+    this.addStyleType('unselectable');
+  else
+    this.removeStyleType('unselectable');
+};
+
+Seat.prototype.refresh = function Seat_refresh() {
+  this.refreshDynamicStyle();
+  this.stylize();
+};
+
+Seat.prototype.__selected = function Seat___selected() {
+  this.addStyleType('selected');
+  this._selected = true;
+};
+
+Seat.prototype.__unselected = function Seat___unselected() {
+  this.removeStyleType('selected');
+  this._selected = false;
+};
+
+Seat.prototype.selected = function Seat_selected(value) {
+  if (value !== void(0))
+    this.parent._select(this, value);
+  return this._selected;
+};
+
+Seat.prototype.selectable = function Seat_selectable() {
+  return !this.parent.callbacks.selectable ||
+    this.parent.callbacks.selectable(this.parent, this);
+};
+
+var SeatAdjacencies = exports.SeatAdjacencies = function SeatAdjacencies(parent) {
+  this.tbl = [];
+  this.src = parent.dataSource.seatAdjacencies;
+  this.availableAdjacencies = parent.availableAdjacencies;
+  this.callbacks = parent.callbacks;
+};
+
+SeatAdjacencies.prototype.getCandidates = function SeatAdjacencies_getCandidates(id, length, next, error) {
+  if (length == 1)
+    return next([[id]]);
+
+  var tbl = this.tbl[length];
+  if (tbl !== void(0)) {
+    next(tbl[id] || []);
+    return;
+  }
+  this.callbacks.loadstart && this.callbacks.loadstart('seatAdjacencies');
+  var self = this;
+  this.src(function (data) {
+    var _data;
+    if (data === void(0) || (_data = data[length]) === void(0)) {
+      error("Invalid adjacency data");
+      return;
+    }
+    tbl = self.tbl[length] = self.convertToTable(length, _data);
+    next(tbl[id] || []);
+  }, error, length);
+};
+
+SeatAdjacencies.prototype.convertToTable = function SeatAdjacencies_convertToTable(len, src) {
+  var rt = {};
+
+  for (var i = 0, l = src.length; i < l; i++) {
+    // sort by string.
+    src[i] = src[i].sort();
+    for (var j = 0;j < len;j++) {
+      var id  =  src[i][j];
+      if (!rt[id]) rt[id] = [];
+      rt[id].push(src[i]);
+    }
+  }
+
+  // sort by string-array.
+  for (var i in rt) rt[i].sort().reverse();
+
+  return rt;
+};
+
+/*
+// test code
+// ad == ad2
+
+var ad = new SeatAdjacencies({"3": [["A1", "A2", "A3"], ["A2", "A3", "A4"], ["A3", "A4", "A5"], ["A4", "A5", "A6"]]});
+var ad2 = new SeatAdjacencies({"3": [["A1", "A3", "A2"], ["A2", "A3", "A4"], ["A4", "A3", "A5"], ["A6", "A5", "A4"]]});
+console.log(ad);
+console.log(ad2);
+*/
+/*
+ * vim: sts=2 sw=2 ts=2 et
+ */
+ })(); return exports; })({});
+
+
+/************** venue-viewer.js **************/
+(function ($) {
+
+
+
+/************** classify.js **************/
+
+
+/************** misc.js **************/
+// detect atomic or not
+function _atomic_p(obj) {
+  var t;
+  return ( obj === null || obj === void(0) ||
+           (t = typeof obj) === 'number' ||
+           t === 'string' ||
+           t === 'boolean' ||
+           ((obj.valueOf !== Object.prototype.valueOf) &&
+            !(obj instanceof Date)));
+};
+
+
+// make deep clone of the object
+function _clone(obj, target) {
+  if (_atomic_p(obj)) return obj;
+
+  // if target is given. clone obj properties into it.
+  var clone, p;
+  if (obj instanceof Date) {
+    clone = new Date(obj.getTime());
+    if (target instanceof Date) {
+      for (p in target) if (target.hasOwnProperty(p)) clone[p] = _clone(target[p], clone[p]);
+    }
+  } else if (typeof obj === 'function') {
+    clone = function(){return obj.apply(this, arguments);};
+    if (typeof target === 'function') {
+      for (p in target) if (target.hasOwnProperty(p)) clone[p] = _clone(target[p], clone[p]);
+    }
+  } else {
+    clone = (!_atomic_p(target) && typeof target !== 'function') ?
+      target : new obj.constructor();
+  }
+
+  for (p in obj)
+    if (obj.hasOwnProperty(p))
+      clone[p] = _clone(obj[p], clone[p]);
+
+  return clone;
+};
+
+function xparseInt(str, radix) {
+  var retval = parseInt(str, radix);
+  if (isNaN(retval))
+    throw new ValueError("Invalid numeric string: " + str);
+  return retval;
+};
+
+function _repeat(str, length) {
+  var retval = '';
+  while (length) {
+    if (length & 1)
+      retval += str;
+    str += str;
+    length >>= 1;
+  }
+  return retval;
+};
+
+function _lpad(str, length, pad) {
+  return _repeat(pad, length - str.length) + str;
+};
+
+function _bindEvent(target, type, f) {
+  if (typeof BROWSER == 'undefined')
+    return;
+
+  if (BROWSER.identifier == 'ie' && BROWSER.version < 9)
+    target.attachEvent('on' + type, f);
+  else
+    target.addEventListener(type, f, false);
+}
+
+function _unbindEvent(target, type, f) {
+  if (typeof BROWSER == 'undefined')
+    return;
+
+  if (BROWSER.identifier == 'ie' && BROWSER.version < 9)
+    target.detachEvent('on' + type, f);
+  else
+    target.removeEventListener(type, f, false);
+}
+
+var _escapeXMLSpecialChars = (function () {
+  var specials = new RegExp("[<>&'\"]"),
+      map = ['', '&lt;', '&gt;', '&amp;', '&apos;', '&quot;', ''];
+  return function (str) {
+    if (typeof str != 'string')
+      str = str.toString();
+    return str.replace(specials, function(x) { return map[special.source.indexOf(x)] });
+  };
+})();
+
+function _clip(target, min, max) {
+  return Math.min(Math.max(target, min), max);
+}
+
+function _clipPoint(target, min, max) {
+  return { x: _clip(target.x, min.x, max.x),
+           y: _clip(target.y, min.y, max.y) };
+}
+
+function _addPoint(lhs, rhs) {
+  return { x: lhs.x + rhs.x, y: lhs.y + rhs.y };
+}
+
+function _subtractPoint(lhs, rhs) {
+  return { x: lhs.x - rhs.x, y: lhs.y - rhs.y };
+}
+
+function _indexOf(array, elem, fromIndex) {
+  if (array instanceof Array && 'indexOf' in Array.prototype) {
+    return array.indexOf(elem, fromIndex);
+  }
+  for (var i = Math.max(fromIndex || 0, 0); i < array.length; i++) {
+    if (array[i] === elem)
+      return i;
+  }
+  return -1;
+}
+
+var _class = (function() {
+  function __super__() {
+    return this.constructor.__super__.prototype;
+  }
+
+  function inherits(_class, parent) {
+    _class.__super__ = parent;
+
+    var f = function() {};
+    f.prototype = parent.prototype;
+    f.prototype.constructor = parent;
+    _class.prototype = new f();
+    _class.prototype.__super__ = __super__;
+
+    var iiop = _class['%%INIT_INSTANCE_ORIGIN_PROPS'];
+
+    _class['%%INIT_INSTANCE_ORIGIN_PROPS'] = function(inst) {
+      var parent_iiop = parent['%%INIT_INSTANCE_ORIGIN_PROPS'];
+      if (parent_iiop) parent_iiop(inst);
+      iiop(inst);
+    };
+
+    return _class;
+
+  };
+
+  function method(_class, name, func) {
+    func.__class__ = _class;
+    _class.prototype[name] = func;
+  };
+
+  var genclassid = (function() {
+    var id = 0;
+    return function getclassid() {
+      var ret = "%%ANONYMOUS_CLASS_"+id+"%%"; ++id;
+      return ret;
+    };
+  })();
+
+  function mixin(_class, include) {
+    var incproto = include.prototype;
+    for (var i in incproto) {
+      if (i == 'init') {
+        _class.prototype['init%%' + include['%%CLASSNAME%%']] = incproto[i];
+      } else if (i !== "__super__" && i !== "constructor") {
+        _class.prototype[i] = incproto[i];
+      }
+    }
+
+    var iiop = _class['%%INIT_INSTANCE_ORIGIN_PROPS'];
+    _class['%%INIT_INSTANCE_ORIGIN_PROPS'] = function(inst) {
+      var include_iiop = include['%%INIT_INSTANCE_ORIGIN_PROPS'];
+      if (include_iiop) include_iiop(inst);
+      iiop(inst);
+    };
+  };
+
+  function check_interface(_class, impl) {
+    for (var i in impl.prototype) {
+      if (impl.prototype.hasOwnProperty(i)) {
+        if (!_class.prototype.hasOwnProperty(i)) {
+          throw new DeclarationError(
+              'The class \'' + _class['%%CLASSNAME%%'] +
+              '\' must provide property or method \'' + i +
+              '\' imposed by \'' + impl['%%CLASSNAME%%'] +'".');
+        }
+      }
+    }
+  };
+
+  return function _class(name, definition) {
+    var __class__, i, j, l, c, def, type;
+
+    var props = {};
+    var class_props = {};
+    var methods = {};
+    var class_methods = {};
+    var parent = Object;
+    var mixins = [];
+    var interfaces = [];
+
+    for (i in definition) {
+      switch (i) {
+      case "props":
+        def = definition[i];
+        for (j in def) {
+          if (def.hasOwnProperty(j))
+            props[j] = def[j];
+        }
+        break;
+      case "class_props":
+        class_props = definition[i];
+        break;
+      case "methods":
+        methods = definition[i];
+        break;
+      case "class_methods":
+        class_methods = definition[i];
+        break;
+      case "parent":
+        parent = definition[i];
+        break;
+      case "interfaces":
+        interfaces = definition[i];
+        break;
+      case "mixins":
+        mixins = definition[i];
+        break;
+      default:
+        throw new ArgumentError(
+            'You gave \'' + i + '\' as definition, but the _class() excepts' +
+            ' only \'props\',\'class_props\',\'methods\',\'class_methods\',\'parent\',\'interfaces\',\'mixins\'.');
+
+      }
+    }
+
+    __class__ = function __Class__(arg) {
+      __class__['%%INIT_INSTANCE_ORIGIN_PROPS'](this);
+      if (this.init) this.init.apply(this, arguments);
+      else           _clone(arg, this);
+    };
+
+    __class__['%%INIT_INSTANCE_ORIGIN_PROPS'] =
+      function(inst) {
+        for (var p in props) {
+          inst[p] = _clone(props[p]);
+        }
+      };
+
+    inherits(__class__, parent);
+
+    for (j = 0, l = mixins.length; j < l; j++) {
+      mixin(__class__, mixins[j]);
+    }
+
+    for (i in methods) {
+      if (methods.hasOwnProperty(i)) {
+        method(__class__, i, methods[i]);
+      }
+    }
+    __class__.prototype.constructor = __class__;
+
+    __class__['%%CLASSNAME%%'] = name || genclassid();
+    for (i in class_methods) {
+      __class__[i] = class_methods[i];
+    }
+
+    for (j=0, l=interfaces.length; j<l; j++) {
+      check_interface(__class__, interfaces[j]);
+    }
+
+    for (i in class_props) {
+      __class__[i] = class_props[i];
+    }
+
+    class_methods['init'] && class_methods.init.call(__class__);
+
+    return __class__;
+  };
+
+})();
+/*
+ * vim: sts=2 sw=2 ts=2 et
+ */
+
+
+/************** helpers.js **************/
+var parseCSSStyleText = (function () {
+  var regexp_for_styles = /\s*(-?(?:[_a-z\u00a0-\u10ffff]|\\[^\n\r\f#])(?:[\-_A-Za-z\u00a0-\u10ffff]|\\[^\n\r\f])*)\s*:\s*((?:(?:(?:[^;\\ \n\r\t\f"']|\\[0-9A-Fa-f]{1,6}(?:\r\n|[ \n\r\t\f])?|\\[^\n\r\f0-9A-Fa-f])+|"(?:[^\n\r\f\\"]|\\(?:\n|\r\n|\r|\f)|\\[^\n\r\f])*"|'(?:[^\n\r\f\\']|\\(?:\n|\r\n|\r|\f)|\\[^\n\r\f])*')(?:\s+|(?=;|$)))+)(?:;|$)/g;
+  var regexp_for_values = /(?:((?:[^;\\ \n\r\t\f"']|\\[0-9A-Fa-f]{1,6}(?:\r\n|[ \n\r\t\f])?|\\[^\n\r\f0-9A-Fa-f])+)|"((?:[^\n\r\f\\"]|\\(?:\n|\r\n|\r|\f)|\\[^\n\r\f])*)"|'((?:[^\n\r\f\\']|\\(?:\n|\r\n|\r|\f)|\\[^\n\r\f])*)')(?:\s+|$)/g;
+
+  function unescape(escaped) {
+    return escaped.replace(/(?:\\(0{0,2}d[89ab][0-9A-Fa-f]{2})(?:\r\n|[ \n\r\t\f])?)?\\([0-9A-Fa-f]{1,6})(?:\r\n|[ \n\r\t\f])?|\\([^\n\r\f0-9A-Fa-f])/g, function(_, a, b, c) {
+      if (a !== void(0)) {
+        var c2 = parseInt(b, 16) ;
+        if (c2 < 0xdc00 || c2 > 0xdfff)
+          throw new ValueError("Invalid surrogate pair");
+        return String.fromCharCode((((parseInt(a, 16) & 0x3ff) << 10) | (c2 & 0x3ff)) + 0x10000);
+      } else if (b !== void(0)) {
+        return String.fromCharCode(parseInt(b, 16));
+      } else if (c !== void(0)) {
+        return c;
+      }
+    });
+  }
+
+  return function parseCSSStyleText(str) {
+    var retval = [];
+    var r = str.replace(regexp_for_styles, function (_, k, v) {
+      var values = [];
+      var r = v.replace(regexp_for_values, function (_, a, b, c) {
+        if (a !== void(0)) {
+          values.push(unescape(a));
+        } else if (b !== void(0)) {
+          values.push(unescape(b));
+        } else if (c !== void(0)) {
+          values.push(unescape(c));
+        }
+        return '';
+      });
+      if (r != '')
+        throw new ValueError("Invalid CSS rule string: " + str);
+      retval.push([k, values]);
+      return '';
+    });
+    if (r != '')
+      throw new ValueError("Invalid CSS rule string: " + str);
+    return retval;
+  };
+})();
+
+var expandFontProperty = (function () {
+  var props = [
+    [/normal|italic|oblique|inherit/, function (z) { this.push(['font-style', z]); }],
+    [/normal|small-caps|inherit/, function (z) { this.push(['font-variant', z]); }],
+    [/normal|bold|bolder|lighter|100|200|300|400|500|600|700|800|900|inherit/, function (z) { this.push(['font-weight', z]); }],
+    [/([1-9][0-9]*(?:px|pt|et|ex|%))(?:\/([1-9][0-9]*(?:px|pt|et|ex|%)))?/, function (_, a, b) {
+      this.push(['font-size', a]);
+      if (b) {
+        this.push(['line-height', b]); 
+      }
+    }]
+  ];
+  return function expandFontProperty(values) {
+    var retval = [];
+    var i = 0, j = 0;
+    for (; i < values.length && j < props.length; i++) {
+      for (; j < props.length; j++) {
+        var prop = props[j];
+        var g = prop[0].exec(values[i]);
+        if (g) {
+          prop[1].apply(retval, g);
+          break;
+        }
+      }
+    }
+    retval.push(['font-family', values.slice(i).join(' ')]);
+    return retval;
+  };
+})();
+
+function coerceCSSStyleIntoMap(styles) {
+  var retval = {};
+
+  var props = [];
+  for (var i = 0; i < styles.length; i++) {
+    var k = styles[i][0], v = styles[i][1];
+    switch (k) {
+    case 'font':
+      expanded = expandFontProperty(v);
+      if (expanded) {
+        for (var j = 0; j < expanded.length; j++) {
+          retval[expanded[j][0]] = expanded[j][1];
+        }
+        continue;
+      }
+      break;
+    }
+    retval[k] = v;
+  }
+  return retval;
+}
+
+function parseDefs(node, defset) {
+  function parseStops(def) {
+    var ref = typeof def.getAttributeNS == 'function' ?
+      def.getAttributeNS('http://www.w3.org/1999/xlink', 'href'):
+      def.getAttribute("xlink:href");
+    if (ref) {
+      if (typeof def.ownerDocument.getElementById == 'function')
+        def = def.ownerDocument.getElementById(ref.substring(1));
+      else
+        def = def.ownerDocument.selectSingleNode("*//*[@id='" + ref.substring(1) + "']");
+    }
+    var stops = def.childNodes;
+    var colors = [];
+    for (var i = 0; i < stops.length; i++) {
+      var node = stops[i];
+      if (node.nodeType != 1)
+        continue;
+      if (node.nodeName == 'stop') {
+        var styles = coerceCSSStyleIntoMap(parseCSSStyleText(node.getAttribute('style')));
+        colors.push([
+          parseFloat(node.getAttribute('offset')),
+          new Fashion.Color(styles['stop-color'][0])]);
+      }
+    }
+    return colors;
+  }
+
+  var defs = node.childNodes;
+  for (var i = 0; i < defs.length; i++) {
+    var def = defs[i];
+    if (def.nodeType != 1)
+      continue;
+    var id = def.getAttribute('id');
+    switch (def.nodeName) {
+    case 'linearGradient':
+      var x1 = parseFloat(def.getAttribute("x1")), y1 = parseFloat(def.getAttribute("y1")),
+      x2 = parseFloat(def.getAttribute("x2")), y2 = parseFloat(def.getAttribute("y2"));
+      var r = Math.acos((x2 - x1) / Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2))) + (y2 - y1 < 0 ? Math.PI: 0);
+      defset[id] = new Fashion.LinearGradientFill(parseStops(def), r / (Math.PI * 2));
+      break;
+    case 'radialGradient':
+      defset[id] = new Fashion.RadialGradientFill(parseStops(def),
+                                                  { x: def.getAttribute('fx') || '50%', y: def.getAttribute('fy') || '50%' });
+      break;
+    }
+  }
+}
+
+function parseCSSAsSvgStyle(str, defs) {
+  return svgStylesFromMap(coerceCSSStyleIntoMap(parseCSSStyleText(str)), defs);
+}
+
+function svgStylesFromMap(styles, defs) {
+  var fill = null;
+  var fillString = styles['fill'];
+  var fillOpacity = null;
+  var fillOpacityString = styles['fill-opacity'];
+  var stroke = null;
+  var strokeString = styles['stroke'];
+  var strokeWidth = null;
+  var strokeWidthString = styles['stroke-width'];
+  var strokeOpacity = null;
+  var strokeOpacityString = styles['stroke-opacity'];
+  var strokeDashArray = null;
+  var strokeDashArrayString = styles['stroke-dasharray'];
+  var fontSize = null;
+  var fontSizeString = styles['font-size'];
+  var textAnchor = null;
+  var textAnchorString = styles['text-anchor'];
+  if (fillString) {
+    if (fillString instanceof Array)
+      fillString = fillString[0];
+    if (fillString == 'none') {
+      fill = false;
+    } else {
+      var g = /url\(#([^)]*)\)/.exec(fillString);
+      if (g) {
+        fill = defs[g[1]];
+        if (!fill)
+          throw new Error();
+      } else {
+        fill = new Fashion.Color(fillString);
+      }
+    }
+  }
+  if (fillOpacityString) {
+    if (fillOpacityString instanceof Array)
+      fillOpacityString = fillOpacityString[0];
+    fillOpacity = parseFloat(fillOpacityString);
+  }
+  if (strokeString) {
+    if (strokeString instanceof Array)
+      strokeString = strokeString[0];
+    if (strokeString == 'none')
+      stroke = false;
+    else
+      stroke = new Fashion.Color(strokeString);
+  }
+  if (strokeWidthString) {
+    if (strokeWidthString instanceof Array)
+      strokeWidthString = strokeWidthString[0];
+    strokeWidth = parseFloat(strokeWidthString);
+  }
+  if (strokeOpacityString) {
+    if (strokeOpacityString instanceof Array)
+      strokeOpacityString = strokeOpacityString[0];
+    strokeOpacity = parseFloat(strokeOpacityString);
+  }
+  if (strokeDashArrayString) {
+    if (strokeDashArrayString instanceof Array)
+      strokeDashArrayString = strokeDashArrayString[0];
+    if (strokeDashArrayString.indexOf(',') != -1)
+      strokeDashArray = strokeDashArrayString.split(/,/);
+  }
+  if (fontSizeString) {
+    if (fontSizeString instanceof Array)
+      fontSizeString = fontSizeString[0];
+    fontSize = parseFloat(fontSizeString);
+  }
+  if (textAnchorString) {
+    if (textAnchorString instanceof Array)
+      textAnchorString = textAnchorString[0];
+    textAnchor = textAnchorString;
+  }
+  return {
+    fill: fill,
+    fillOpacity: fillOpacity,
+    stroke: stroke,
+    strokeWidth: strokeWidth,
+    strokeOpacity: strokeOpacity,
+    strokeDashArray: strokeDashArray,
+    fontSize: fontSize,
+    textAnchor: textAnchor
+  };
+}
+
+function mergeSvgStyle(origStyle, newStyle) {
+  var copied = { };
+  for (var k in origStyle) {
+    copied[k] = origStyle[k];
+  }
+  for (var k in newStyle) {
+    if (newStyle[k] !== null) {
+      copied[k] = newStyle[k];
+    }
+  }
+  return copied;
+}
+
+function buildStyleFromSvgStyle(svgStyle) {
+  return {
+    fill:
+    svgStyle.fill ?
+      (svgStyle.fill instanceof Fashion.Color ?
+       new Fashion.FloodFill(
+         svgStyle.fill.replace(
+           null, null, null,
+           svgStyle.fillOpacity ? svgStyle.fillOpacity * 255: 255)):
+       svgStyle.fill):
+    null,
+    stroke: 
+    svgStyle.stroke ? new Fashion.Stroke(
+      svgStyle.stroke.replace(
+        null, null, null,
+        svgStyle.fillOpacity ? svgStyle.fillOpacity * 255: 255),
+      svgStyle.strokeWidth ? svgStyle.strokeWidth: 1,
+      svgStyle.strokeDashArray ? svgStyle.strokeDashArray: (svgStyle.strokePattern ? svgStyle.strokePattern: null)):
+    null,
+    visibility: true
+  };
+}
+
+function collectText(node) {
+  var children = node.childNodes;
+  for (var i=0, l=children.length, rt=""; i<l; i++) {
+    var n = children[i];
+    var name = n.nodeName;
+    if (name === '#text'){
+      rt += n.nodeValue;
+    } else {
+      rt += collectText(n);
+    }
+  }
+  return rt;
+}
+
+function copyShape(shape) {
+  if (shape instanceof Fashion.Rect) {
+    return new Fashion.Rect({ position: shape.position(), size: shape.size(), transform: shape.transform() });
+  } else if (shape instanceof Fashion.Path) {
+    return new Fashion.Path({ points: shape.points(),transform: shape.transform() });
+  }
+  return null;
+}
+
+function _map(arr, fn) {
+  var retval = new Array(arr.length);
+  for (var i = 0; i < arr.length; i++) {
+    retval[i] = fn(arr[i]);
+  }
+  return retval;
+}
+
+function parseTransform(transform_str) {
+    var g = /\s*([A-Za-z_-][0-9A-Za-z_-]*)\s*\(\s*((?:[^\s,]+(?:\s*,\s*|\s+))*[^\s,]+)\s*\)\s*/.exec(transform_str);
+
+    var f = g[1];
+    var args = g[2].replace(/(?:^\s+|\s+$)/, '').split(/\s*,\s*|\s+/);
+
+    switch (f) {
+    case 'matrix':
+        if (args.length != 6)
+            throw new Error("invalid number of arguments for matrix()")
+        return new Fashion.Matrix(
+            parseFloat(args[0]), parseFloat(args[1]),
+            parseFloat(args[2]), parseFloat(args[3]),
+            parseFloat(args[4]), parseFloat(args[5]));
+    case 'translate':
+        if (args.length == 1)
+            args[1] = 0;
+        else if (args.length != 2)
+            throw new Error("invalid number of arguments for translate()")
+        return Fashion.Matrix.translate({ x:parseFloat(args[0]), y:parseFloat(args[1]) });
+    case 'scale':
+        if (args.length == 1)
+            args[1] = 0;
+        else if (args.length != 2)
+            throw new Error("invalid number of arguments for scale()");
+        return new Fashion.Matrix(parseFloat(args[0]), 0, 0, parseFloat(args[1]), 0, 0);
+    case 'rotate':
+        if (args.length == 1)
+            args[1] = 0;
+        else if (args.length != 2)
+            throw new Error("invalid number of arguments for rotate()");
+        return Fashion.Matrix.rotate(parseFloat(args[0]) * Math.PI / 180);
+    case 'skewX':
+        if (args.length == 1)
+            args[1] = 0;
+        else if (args.length != 2)
+            throw new Error('invalid number of arguments for skewX()');
+        var t = parseFloat(args[0]) * Math.PI / 180;
+        var ta = Math.tan(t);
+        return new Fashion.Matrix(1, 0, ta, 1, 0, 0);
+    case 'skewY':
+        if (args.length == 1)
+            args[2] = 0;
+        else if (args.length != 2)
+            throw new Error('invalid number of arguments for skewX()');
+        var t = parseFloat(args[0]) * Math.PI / 180;
+        var ta = Math.tan(t);
+        return new Fashion.Matrix(1, ta, 0, 1, 0, 0);
+    }
+    throw new Error('invalid transform function: ' + f);
+}
+
+  var CONF = __LIBS__['RSJPE4TVBYXNMVID'];
+  var seat = __LIBS__['OCLSDQCQ1F295768'];
+  var util = __LIBS__['jBGHQV64R_Z81V9D'];
+
+  var StoreObject = _class("StoreObject", {
+    props: {
+      store: {}
+    },
+    methods: {
+      save: function(id, data) {
+        if (!this.store[id]) this.store[id] = data;
+      },
+      restore: function(id) {
+        var rt = this.store[id];
+        delete this.store[id];
+        return rt;
+      },
+      clear: function() {
+        for (var id in this.store) {
+          delete this.store[id];
+        }
+      }
+    }
+  });
+
+  var VenueViewer = _class("VenueViewer", {
+
+    props: {
+      canvas: null,
+      callbacks: {
+        uimodeselect: null,
+        load: null,
+        loadPartStart: null,
+        loadPartEnd: null,
+        loadAbort: null,
+        click: null,
+        selectable: null,
+        select: null,
+        pageChanging: null,
+        message: null,
+        messageBoard: null,
+        zoomRatioChanging: null,
+        zoomRatioChange: null
+      },
+      dataSource: null,
+      zoomRatio: CONF.DEFAULT.ZOOM_RATIO,
+      contentOriginPosition: {x: 0, y: 0},
+      dragging: false,
+      startPos: { x: 0, y: 0 },
+      drawable: null,
+      availableAdjacencies: [ 1 ],
+      originalStyles: new StoreObject(),
+      overlayShapes: new StoreObject(),
+      shift: false,
+      keyEvents: null,
+      uiMode: 'select',
+      shapes: null,
+      link_pairs: null,
+      seats: null,
+      selection: {},
+      selectionCount: 0,
+      highlighted: {},
+      animating: false,
+      _adjacencyLength: 1,
+      currentPage: null,
+      rootPage: null,
+      _history: [],
+      seatTitles: {},
+      optionalViewportSize: null,
+      loading: false,
+      pageBeingLoaded: false,
+      pagesCoveredBySeatData: null, 
+      loadAborted: false,
+      loadAbortionHandler: null,
+      _smallTextsShown: true,
+      nextSingleClickAction: null,
+      doubleClickTimeout: 400,
+      mouseUpHandler: null,
+      onMouseUp: null,
+      onMouseMove: null,
+      deferSeatLoading: false
+    },
+
+    methods: {
+      init: function VenueViewer_init(canvas, options) {
+        this.canvas = canvas;
+        this.stockTypes = null;
+        if (options.callbacks) {
+          for (var k in this.callbacks)
+            this.callbacks[k] = options.callbacks[k] || function () {};
+        }
+        this.dataSource = options.dataSource;
+        if (options.zoomRatio) zoom(options.zoomRatio);
+        canvas.empty();
+        this.optionalViewportSize = options.viewportSize;
+        this.deferSeatLoading = !!options.deferSeatLoading;
+        var self = this;
+        this.mouseUpHandler = function() {
+          if (self.onMouseUp) {
+            self.onMouseUp.call(self);
+          }
+        };
+        $(document.body).bind('mouseup', this.mouseUpHandler);
+        this.mouseMoveHandler = function(evt) {
+          if (self.onMouseMove) {
+            var fasevt = new Fashion.MouseEvt();
+            var physicalPagePosition = { x: evt.pageX, y: evt.pageY };
+            var screenPosition = Fashion._lib.subtractPoint(physicalPagePosition, self.drawable.impl.getViewportOffset());
+            var physicalPosition = Fashion._lib.addPoint(self.drawable.impl.convertToPhysicalPoint(self.drawable.impl.scrollPosition()), screenPosition);
+            fasevt.logicalPosition = self.drawable.impl.convertToLogicalPoint(physicalPosition);
+            self.onMouseMove.call(self, fasevt);
+            evt.stopImmediatePropagation();
+            evt.stopPropagation();
+            evt.preventDefault();
+            return false;
+          }
+        };
+        $(document.body).bind('mousemove', this.mouseMoveHandler);
+      },
+
+      load: function VenueViewer_load() {
+        this.loading = true;
+        this.seatAdjacencies = null;
+        var self = this;
+
+        self.callbacks.loadPartStart.call(self, self, 'pages');
+        self.initBlocks(self.dataSource.pages, function() {
+          self.loading = false;
+          if (self.loadAborted) {
+            self.loadAborted = false;
+            self.loadAbortionHandler && self.loadAbortionHandler.call(self);
+            self.callbacks.loadAbort && self.callbacks.loadAbort.call(self, self);
+            return;
+          }
+          self.callbacks.loadPartEnd.call(self, self, 'pages');
+          self.currentPage = self.rootPage;
+          self.loading = true;
+          self.callbacks.loadPartStart.call(self, self, 'stockTypes');
+          self.dataSource.stockTypes(function (data) {
+            self.loading = false;
+            if (self.loadAborted) {
+              self.loadAborted = false;
+              self.loadAbortionHandler && self.loadAbortionHandler.call(self);
+              self.callbacks.loadAbort && self.callbacks.loadAbort.call(self, self);
+              return;
+            }
+            self.loading = true;
+            self.callbacks.loadPartEnd.call(self, self, 'stockTypes');
+            self.stockTypes = data;
+            self.callbacks.loadPartStart.call(self, self, 'info');
+            self.dataSource.info(function (data) {
+              self.loading = false;
+              if (self.loadAborted) {
+                self.loadAborted = false;
+                self.loadAbortionHandler && self.loadAbortionHandler.call(self);
+                self.callbacks.loadAbort && self.callbacks.loadAbort.call(self, self);
+                return;
+              }
+              self.loading = true;
+              self.callbacks.loadPartEnd.call(self, self, 'info');
+              if (!'available_adjacencies' in data) {
+                self.callbacks.message.call(self, "Invalid data");
+                self.loading = false;
+                return;
+              }
+              self.availableAdjacencies = data.available_adjacencies;
+              self.seatAdjacencies = new seat.SeatAdjacencies(self);
+
+              if (self.currentPage) {
+                self.loadDrawing(self.currentPage, function () {
+                  self.callbacks.load.call(self, self);
+                  self.zoomAndPan(self.zoomRatioMin, { x: 0., y: 0. });
+                });
+              } else {
+                self.callbacks.load.call(self, self);
+              }
+              if (!self.deferSeatLoading)
+                self.loadSeats(function () { onDrawingOrSeatsLoaded('seats'); });
+            }, self.callbacks.message);
+          }, self.callbacks.message);
+        });
+      },
+
+      loadDrawing: function (page, next) {
+        var self = this;
+        this.callbacks.loadPartStart.call(self, self, 'drawing');
+        this.initDrawable(page, function () {
+          if (self.pagesCoveredBySeatData && (self.pagesCoveredBySeatData === 'all-in-one' || page in self.pagesCoveredBySeatData)) {
+            for (var id in self.seats) {
+              var shape = self.shapes[id];
+              if (shape)
+                self.seats[id].attach(shape);
+            }
+          }
+          self.callbacks.pageChanging.call(self, page);
+          self.callbacks.loadPartEnd.call(self, self, 'drawing');
+          next.call(self);
+        });
+      },
+
+      cancelLoading: function VenueViewer_cancelLoading(next) {
+        if (this.loading) {
+          this.loadAborted = true;
+          this.loadAbortionHandler = next;
+        } else {
+          next.call(this);
+        }
+      },
+
+      dispose: function VenueViewer_dispose(next) {
+        var self = this;
+        this.cancelLoading(function () {
+          $(document.body).unbind('mouseup', self.mouseUpHandler);
+          self.removeKeyEvent();
+          if (self.drawable) {
+            self.drawable.dispose();
+            self.drawable = null;
+          }
+          self.seats = null;
+          self.selection = null;
+          self.highlighted = null;
+          self.availableAdjacencies = [1];
+          self.shapes = null;
+          self.small_texts = [ ];
+          self.link_pairs = null;
+          self.selection = {};
+          self.selectionCount = 0;
+          self.highlighted = {};
+          self.animating = false;
+          self._adjacencyLength = 1;
+          self.currentPage = null;
+          self.rootPage = null;
+          self._history = [];
+          self.seatTitles = {};
+          next && next.call(self);
+        });
+      },
+
+      initDrawable: function VenueViewer_initDrawable(page, next) {
+        if (this.link_pairs) {
+          for (var i = this.link_pairs.length; --i >= 0; )
+            this.link_pairs[i][0].removeEvent();
+        }
+
+        if (this.drawable)
+          this.drawable.dispose();
+
+        this.originalStyles.clear();
+        this.overlayShapes.clear();
+
+        this.currentPage = page;
+
+        var self = this;
+        var currentFocusedIds = (function () {
+          var retval = {};
+          var focused_ids = self.pages[page]['focused_ids'];
+          if (focused_ids) {
+            for (var i = focused_ids.length; --i >= 0; )
+              retval[focused_ids[i]] = true;
+          }
+          return retval;
+        })();
+
+        var isFocused = function isFocused(id){
+          return currentFocusedIds[id];
+        };
+
+        var dataSource = this.dataSource.drawing(page);
+        self.pageBeingLoaded = page;
+        dataSource(function (drawing) {
+          self.loading = false;
+          self.pageBeingLoaded = null;
+          if (self.loadAborted) {
+            self.loadAborted = false;
+            self.loadAbortionHandler && self.loadAbortionHandler.call(self);
+            self.callbacks.loadAbort && self.callbacks.loadAbort.call(self, self);
+            return;
+          }
+          var attrs = util.allAttributes(drawing.documentElement);
+          var w = parseFloat(attrs.width), h = parseFloat(attrs.height);
+          var vb = null;
+          if (attrs['viewBox']) {
+            var comps = attrs['viewBox'].split(/\s+/);
+            vb = new Array(comps.length);
+            for (var i = 0; i < comps.length; i++)
+              vb[i] = parseFloat(comps[i]);
+          }
+
+          var size = ((vb || w || h) ? {
+            x: ((vb && vb[2]) || w || h),
+            y: ((vb && vb[3]) || h || w)
+          } : null);
+
+          var drawable = new Fashion.Drawable( self.canvas[0], {
+            contentSize: size ? {x: size.x, y: size.y}: null,
+            viewportSize: self.optionalViewportSize             // fixed parameter
+          });
+
+          /*
+          var frame = new Fashion.Rect({
+                  size: { x: size.x, y: size.y },
+                  position: { x: (vb && vb[0]) || 0, y: (vb && vb[1]) || 0 },
+                  corner: { x: 0, y: 0 },
+                  transform: null,
+                  zIndex: -10
+              });
+          frame.style({ fill: new Fashion.FloodFill(new Fashion.Color("#ff000080")) });
+          drawable.draw(frame);
+          */
+
+          var shapes = {}, link_pairs = [];
+          var small_texts = [];
+          var styleClasses = CONF.DEFAULT.STYLES;
+
+          var leftTop = null, rightBottom = null;
+
+          (function iter(context, nodeList) {
+            outer:
+            for (var i = 0; i < nodeList.length; i++) {
+              var n = nodeList[i];
+              if (n.nodeType != 1) continue;
+
+              var attrs = util.allAttributes(n);
+              var xlink = context.xlink;
+              var focused = context.focused || (attrs.id && isFocused(attrs.id));
+              var px = parseFloat(attrs.x),
+                  py = parseFloat(attrs.y);
+              var position = (!isNaN(px) && !isNaN(py)) ? { x: px, y: py } : context.position;
+              var transform = attrs["transform"] ?
+                context.transform.multiply(parseTransform(attrs["transform"])):
+                context.transform;
+              var shape = null;
+
+              { // stylize
+                var currentSvgStyle = context.svgStyle;
+                // 1st: find style by class attribute
+                if (attrs['class']) {
+                  var style = styleClasses[attrs['class']];
+                  if (style) currentSvgStyle = mergeSvgStyle(currentSvgStyle, style);
+                }
+                // 2nd: overwrite by style attribute (css like string)
+                if (attrs.style)
+                  currentSvgStyle = mergeSvgStyle(currentSvgStyle, parseCSSAsSvgStyle(attrs.style, context.defs));
+                // 3rd: overwrite by some kinds of attributes
+                currentSvgStyle = mergeSvgStyle(currentSvgStyle, svgStylesFromMap(attrs));
+              }
+
+              switch (n.nodeName) {
+              case 'defs':
+                parseDefs(n, context.defs);
+                break;
+
+              case 'a':
+                xlink = attrs['{http://www.w3.org/1999/xlink}href'];
+                /* fall-through */
+              case 'g': {
+                arguments.callee.call(
+                  self,
+                  {
+                    svgStyle: currentSvgStyle,
+                    transform: transform,
+                    defs: context.defs,
+                    focused: focused,
+                    xlink: xlink
+                  },
+                  n.childNodes);
+                continue outer;
+                }
+
+              case 'path':
+                if (!attrs.d) throw new Error("Pathdata is not provided for the path element");
+                shape = new Fashion.Path({
+                  points: new Fashion.PathData(attrs.d)
+                });
+                break;
+
+              case 'text':
+              case 'tspan':
+                if (n.childNodes.length==1 && n.firstChild.nodeType == /* Node.TEXT_NODE */ 3) {
+                  shape = new Fashion.Text({
+                    text: collectText(n),
+                    anchor: currentSvgStyle.textAnchor,
+                    fontSize: currentSvgStyle.fontSize,
+                    position: position || null,
+                    transform: transform || null
+                  });
+                } else if (n.nodeName == 'text') {
+                  arguments.callee.call(
+                    self,
+                    {
+                      svgStyle: currentSvgStyle,
+                      position: position,
+                      transform: transform,
+                      defs: context.defs,
+                      focused: focused,
+                      xlink: xlink
+                    },
+                    n.childNodes);
+                  continue outer;
+                }
+                break;
+
+              case 'symbol':
+                break;
+
+              case 'rect':
+                shape = new Fashion.Rect({
+                  size: {
+                    x: parseFloat(attrs.width),
+                    y: parseFloat(attrs.height)
+                  },
+                  corner: {
+                    x: parseFloat(attrs.rx || 0),
+                    y: parseFloat(attrs.ry || 0)
+                  },
+                  transform: transform || null,
+                  zIndex: -10
+                });
+                for (var j=0,ll=n.childNodes.length; j<ll; j++) {
+                  if (n.childNodes[j].nodeName == "title") {
+                    self.seatTitles[attrs.id] = n.childNodes[j].childNodes[0].nodeValue;
+                    break;
+                  }
+                }
+                break;
+
+              default:
+                continue outer;
+              }
+
+              if (shape !== null) {
+                var x = parseFloat(attrs.x),
+                    y = parseFloat(attrs.y);
+
+                if (!isNaN(x) && !isNaN(y)) {
+
+                  if (focused) {
+                    leftTop = leftTop ? {
+                      x: Math.min(leftTop.x, x),
+                      y: Math.min(leftTop.y, y)
+                    }: { x: x, y: y };
+                    rightBottom = rightBottom ? {
+                      x: Math.max(rightBottom.x, x),
+                      y: Math.max(rightBottom.y, y)
+                    }: { x: x, y: y };
+                  }
+                  shape.position({ x: x, y: y });
+                }
+                shape.style(buildStyleFromSvgStyle(currentSvgStyle));
+                shape.transform(transform);
+                if (shape instanceof Fashion.Text) {
+                  shape.fontSize(currentSvgStyle.fontSize);
+                  if (currentSvgStyle.fontSize <= 10) {
+                    if (!self._smallTextsShown)
+                      shape.visibility(false);
+                    small_texts.push(shape);
+                  }
+                }
+                drawable.draw(shape);
+              }
+              if (attrs.id) {
+                shapes[attrs.id] = shape;
+              }
+              if (xlink)
+                link_pairs.push([shape, xlink])
+            }
+          }).call(
+            self,
+            {
+              svgStyle: {
+                fill: false, fillOpacity: false,
+                stroke: false, strokeOpacity: false, strokeDashArray: false,
+                fontSize: 10, textAnchor: false
+              },
+              position: null,
+              transform: new Fashion.Matrix(),
+              defs: {},
+              focused: false,
+              xlink: null
+            },
+            drawing.documentElement.childNodes);
+
+          self.drawable = drawable;
+          self.shapes = shapes;
+          self.small_texts = small_texts;
+          self.link_pairs = link_pairs;
+
+          if (!leftTop)
+            leftTop = { x: (vb && vb[0]) || 0, y: (vb && vb[1]) || 0 };
+          if (!rightBottom)
+            rightBottom = { x: leftTop.x + size.x, y: leftTop.y + size.y };
+
+          var center = {
+            x: (leftTop.x + rightBottom.x) / 2,
+            y: (leftTop.y + rightBottom.y) / 2
+          };
+          var focusedRegionSize = {
+            x: (rightBottom.x - leftTop.x),
+            y: (rightBottom.y - leftTop.y)
+          };
+          var focusedRegionOffset = {
+            x: center.x - (focusedRegionSize.x / 2),
+            y: center.y - (focusedRegionSize.y / 2)
+          };
+
+          var margin = { x: 20, y: 20 };  /* width of zoom slider and height of map selector */
+          var vs = drawable.viewportSize();
+          vs = { x: vs.x-margin.x, y: vs.y-margin.y };
+
+          var xr = vs.x / focusedRegionSize.x * 0.9;
+          var yr = vs.y / focusedRegionSize.y * 0.9;
+          var r = (xr < yr) ? xr : yr;
+
+          var origin = {
+            x: center.x - (vs.x/2+margin.x)/r, y: center.y - (vs.y/2+margin.y)/r
+          };
+          self.zoomRatioMin = r;
+          self.contentOriginPosition = origin;
+
+          drawable.transform(
+            Fashion.Matrix.scale(self.zoomRatioMin)
+              .translate({ x: -origin.x, y: -origin.y })
+          );
+          drawable.contentSize({
+            x: origin.x + vs.x/r, y: origin.y + vs.y/r
+          });
+
+          function getSiblings(link) {
+            var rt = [];
+            for (var i = self.link_pairs.length; --i >= 0;) {
+              var shape_and_link = self.link_pairs[i];
+              if (shape_and_link[1] == link)
+                rt.push(shape_and_link[0]);
+            }
+            return rt;
+          }
+
+          var drawableMouseDown = false;
+          var clickTimer = 0;
+
+          for (var i = 0; i < self.link_pairs.length; i++) {
+            (function (shape, link) {
+              var siblings = getSiblings(link);
+              shape.addEvent({
+                mouseover: function(evt) {
+                  if (self.pages) {
+                    for (var i = siblings.length; --i >= 0;) {
+                      var shape = copyShape(siblings[i]);
+                      if (shape) {
+                        shape.style(util.convertToFashionStyle(CONF.DEFAULT.OVERLAYS['highlighted_block']));
+                        self.drawable.draw(shape);
+                        self.overlayShapes.save(siblings[i].id, shape);
+                      }
+                    }
+                    var pageAndAnchor = link.split('#');
+                    var page = pageAndAnchor[0];
+                    if (page == '')
+                      page = self.currentPage;
+                    self.callbacks.messageBoard.up.call(self, self.pages[page].name);
+                    self.canvas.css({ cursor: 'pointer' });
+                  }
+                },
+                mouseout: function(evt) {
+                  if (self.pages) {
+                    self.canvas.css({ cursor: 'default' });
+                    for (var i = siblings.length; --i >= 0;) {
+                      var shape = self.overlayShapes.restore(siblings[i].id);
+                      if (shape)
+                        self.drawable.erase(shape);
+                    }
+                    self.callbacks.messageBoard.down.call(self);
+                  }
+                },
+                mousedown: function(evt) {
+/*
+                  if (self.pages) {
+                    self.nextSingleClickAction = function() {
+                      self.callbacks.messageBoard.down.call(self);
+                      self.navigate(link);
+                    };
+                  }
+*/
+                },
+                mouseup: function(evt) {
+                  if (self.pages) {
+                    self.navigate(link);
+                  }
+                }
+              });
+            }).apply(self, self.link_pairs[i]);
+          }
+
+          (function () {
+            var scrollPos = null;
+
+            function drawableMouseUp() {
+              self.onMouseUp = null;
+              self.onMouseMove = null;
+              $(self.canvas[0]).find('div').css({ overflow: 'scroll' });
+              drawableMouseDown = false;
+              if (self.dragging) {
+                self.drawable.releaseMouse();
+                self.dragging = false;
+              }
+            }
+
+            function drawableMouseMove(evt) {
+                if (clickTimer) {
+                  singleClickFulfilled();
+                }
+                if (self.animating) return;
+                if (!self.dragging) {
+                  if (drawableMouseDown) {
+                    self.dragging = true;
+                    self.drawable.captureMouse();
+                    $(self.canvas[0]).find('div').css({ overflow: 'hidden' });
+                    self.callbacks.messageBoard.down.call(self);
+                  } else {
+                    return;
+                  }
+                }
+                var newScrollPos = Fashion._lib.subtractPoint(
+                  scrollPos,
+                  Fashion._lib.subtractPoint(
+                    evt.logicalPosition,
+                    self.startPos));
+                self.drawable.scrollPosition(newScrollPos);
+                scrollPos = newScrollPos;
+                return false;
+            }
+
+            function singleClickFulfilled() {
+              clearTimeout(clickTimer);
+              clickTimer = 0;
+              var nextSingleClickAction = self.nextSingleClickAction;
+              self.nextSingleClickAction = null;
+              if (nextSingleClickAction)
+                nextSingleClickAction.call(self);
+            }
+
+            self.drawable.addEvent({
+              mousedown: function (evt) {
+                if (self.animating) return;
+                switch (self.uiMode) {
+                case 'zoomin': case 'zoomout':
+                  break;
+                default:
+                  drawableMouseDown = true;
+                  self.onMouseUp = drawableMouseUp;
+                  self.onMouseMove = drawableMouseMove;
+                  if (!clickTimer) {
+                    scrollPos = self.drawable.scrollPosition();
+                    self.startPos = evt.logicalPosition;
+                    clickTimer = setTimeout(singleClickFulfilled,
+                                            self.doubleClickTimeout);
+                  } else {
+                    if (!self.dragging) {
+                      // double click
+                      clearTimeout(clickTimer);
+                      clickTimer = 0;
+                      self.drawableMouseDown = false;
+                      var e = self.zoomRatio * 2;
+                      self.zoom(e, evt.logicalPosition);
+                      /*
+                      self.animating = true;
+                      var t = setInterval(function () {
+                        var newZoomRatio = Math.min(e, self.zoomRatio * 1.2);
+                        if (e - self.zoomRatio < self.zoomRatio * 1e-5 || newZoomRatio - self.zoomRatio > self.zoomRatio * 1e-5) {
+                          self.animating = false;
+                          clearInterval(t);
+                        }
+                      }, 50);
+                      */
+                    }
+                  }
+                  break;
+                }
+              },
+
+              mouseup: function (evt) {
+                drawableMouseUp(evt);
+                if (self.animating) return;
+                switch (self.uiMode) {
+                case 'zoomin':
+                  self.zoom(self.zoomRatio * 1.2, evt.logicalPosition);
+                  break;
+                case 'zoomout':
+                  self.zoom(self.zoomRatio / 1.2, evt.logicalPosition);
+                  break;
+                default:
+                  break;
+                }
+              },
+
+              mouseout: function (evt) {
+/*
+                if (clickTimer) {
+                  singleClickFulfilled();
+                }
+*/
+                self.canvas.css({ cursor: 'default' });
+                self.callbacks.messageBoard.down.call(self);
+              },
+
+              mousemove: function (evt) {
+                drawableMouseMove(evt);
+              }
+            });
+          })();
+
+          self.changeUIMode(self.uiMode);
+          next.call(this);
+
+        }, self.callbacks.message);
+      },
+
+      zoomOnShape: function (shape) {
+        if (!this.drawable)
+          return;
+        var position = shape.position();
+        var size = shape.size();
+        var p0 = shape._transform.apply(position);
+        var p1 = shape._transform.apply({ x: position.x, y: position.y+size.y });
+        var p2 = shape._transform.apply({ x: position.x+size.x, y: position.y });
+        var p3 = shape._transform.apply({ x: position.x+size.x, y: position.y+size.y });
+        var rp = { x: Math.min(p0.x, p1.x, p2.x, p3.x), y: Math.min(p0.y, p1.y, p2.y, p3.y) };
+        var rs = { x: Math.max(p0.x, p1.x, p2.x, p3.x)-rp.x, y: Math.max(p0.y, p1.y, p2.y, p3.y)-rp.y };
+        var vs = this.drawable.viewportSize();
+        var margin = 0.10;
+        var ratio = Math.min(vs.x*(1-margin) / rs.x, vs.y*(1-margin) / rs.y);
+        // FIXME: ratioが上限を超えないようにしないと、対象オブジェクトがセンターにこない
+        var scrollPos = {
+          x: Math.max(rp.x - (vs.x/ratio-rs.x)/2, 0),
+          y: Math.max(rp.y - (vs.y/ratio-rs.y)/2, 0)
+        };
+        this.zoomAndPan(ratio, scrollPos);
+      },
+
+      navigate: function (pageUrlOrPageInfo) {
+        var previousPageInfo = {
+          page: this.currentPage,
+          zoomRatio: this.zoomRatio,
+          scrollPosition: this.drawable ? this.drawable.scrollPosition() : null
+        };
+        var self = this;
+        if (typeof pageUrlOrPageInfo == 'string' || pageUrlOrPageInfo instanceof String) {
+          // page can be
+          // - page.svg
+          // - page.svg#id
+          // - page.svg#__FIXED__
+          // - #id
+          var comps = pageUrlOrPageInfo.split('#');
+          var anchor = null;
+          page = comps[0];
+          if (comps.length > 1)
+            anchor = comps[1];
+          if (page == '')
+            page = this.currentPage;
+          var afterthings = function () {
+            self._history.push(previousPageInfo);
+            if (anchor == '__FIXED__') {
+              self.zoomAndPan(previousPageInfo.zoomRatio,
+                              previousPageInfo.scrollPosition);
+            } else {
+              var shape = self.shapes[anchor];
+              if (shape !== void(0) && shape instanceof Fashion.Rect) {
+                self.zoomOnShape(shape);
+              } else {
+                self.zoomAndPan(self.zoomRatioMin, { x: 0., y: 0. });
+              }
+            }
+          }
+          this._loadPage({ page: page }, afterthings);
+        } else {
+          this._loadPage(pageUrlOrPageInfo, function () {
+            self._history.push(previousPageInfo);
+          });
+        }
+      },
+
+      _loadPage: function (pageInfo, next) {
+        var self = this;
+        var afterthings = function () {
+          if (pageInfo.zoomRatio && pageInfo.scrollPosition) {
+            self.zoomAndPan(pageInfo.zoomRatio,
+                            pageInfo.scrollPosition);
+          }
+          if (next)
+            next.call(self, pageInfo);
+        };
+        if (!pageInfo)
+          return;
+        if (!(pageInfo.page in this.pages))
+          return;
+        this.canvas.css({ cursor: 'default' });
+        this.callbacks.messageBoard.down.call(this);
+        if (this.currentPage != pageInfo.page) {
+          this.loadDrawing(pageInfo.page, function () {
+            self.callbacks.load.call(self, self);
+            afterthings();
+          });
+        } else {
+          afterthings();
+        }
+      },
+
+      history: function () {
+        return this._history;
+      },
+
+      initBlocks: function VenueViewer_initBlocks(dataSource, next) {
+        var self = this;
+
+        dataSource(function (pages) {
+          self.pages = pages;
+          for (var page in pages) {
+            if (pages[page].root)
+              self.rootPage = page;
+          }
+          next.call(self);
+        }, self.callbacks.message);
+      },
+
+      loadSeats: function(next) {
+        var self = this;
+        self.callbacks.loadPartStart.call(self, self, 'seats');
+        self.loading = true;
+        self.initSeats(self.dataSource.seats, function () {
+          self.loading = false;
+          if (self.loadAborted) {
+            self.loadAborted = false;
+            self.loadAbortionHandler && self.loadAbortionHandler.call(self, self);
+            self.callbacks.loadAbort && self.callbacks.loadAbort.call(self, self);
+            return;
+          }
+          if (!self.pageBeingLoaded && self.currentPage && (self.pagesCoveredBySeatData === 'all-in-one' || self.currentPage in self.pagesCoveredBySeatData)) {
+            for (var id in self.seats) {
+              var shape = self.shapes[id];
+              if (shape)
+                self.seats[id].attach(shape);
+            }
+          }
+          self.callbacks.loadPartEnd.call(self, self, 'seats');
+          if (next)
+            next();
+        });
+      },
+
+      initSeats: function VenueViewer_initSeats(dataSource, next) {
+        var self = this;
+        dataSource(function (seatMeta) {
+          var seats = {};
+          for (var id in seatMeta) {
+            var seat_ = seats[id] = new seat.Seat(id, seatMeta[id], self, {
+              mouseover: function(evt) {
+                self.callbacks.messageBoard.up.call(self, self.seatTitles[this.id]);
+                self.seatAdjacencies.getCandidates(this.id, self.adjacencyLength(), function (candidates) {
+                  if (candidates.length == 0)
+                    return;
+                  var candidate = null;
+                  for (var i = 0; i < candidates.length; i++) {
+                    candidate = candidates[i];
+                    for (var j = 0; j < candidate.length; j++) {
+                      if (!seats[candidate[j]].selectable()) {
+                        candidate = null;
+                        break;
+                      }
+                    }
+                    if (candidate) {
+                      break;
+                    }
+                  }
+                  if (!candidate)
+                    return;
+                  for (var i = 0; i < candidate.length; i++) {
+                    var seat = seats[candidate[i]];
+                    seat.addOverlay('highlighted');
+                    self.highlighted[seat.id] = seat;
+                  }
+                }, self.callbacks.message);
+              },
+              mouseout: function(evt) {
+                var highlighted = self.highlighted;
+                self.highlighted = {};
+                for (var i in highlighted)
+                  highlighted[i].removeOverlay('highlighted');
+              },
+              mousedown: function(evt) {
+                self.nextSingleClickAction = function () {
+                  self.callbacks.click(self, self, self.highlighted);
+                };
+              }
+            });
+          }
+
+          self.seats = seats;
+          self.pagesCoveredBySeatData = 'all-in-one'; // XXX
+          next.call(self);
+        }, self.callbacks.message);
+      },
+
+      refresh: function VenueViewer_refresh() {
+        for (var id in this.seats) this.seats[id].refresh();
+      },
+
+      addKeyEvent: function VenueViewer_addKeyEvent() {
+        if (this.keyEvents) return;
+        var self = this;
+        this.keyEvents = {
+          down: function(e) { if (util.eventKey(e).shift) self.shift = true;  return true; },
+          up:   function(e) { if (util.eventKey(e).shift) self.shift = false; return true; }
+        };
+
+        $(document).bind('keydown', this.keyEvents.down);
+        $(document).bind('keyup',   this.keyEvents.up);
+      },
+
+      removeKeyEvent: function VenueViewer_removeKeyEvent() {
+        if (!this.keyEvents) return;
+
+        $(document).unbind('keydown', this.keyEvents.down);
+        $(document).unbind('keyup',   this.keyEvents.up);
+      },
+
+      changeUIMode: function VenueViewer_changeUIMode(type) {
+        if (this.drawable) {
+          var self = this;
+
+          switch(type) {
+          case 'select': case 'move': case 'zoomin': case 'zoomout':
+            break;
+          default:
+            throw new Error("Invalid ui mode: " + type);
+          }
+        }
+        this.uiMode = type;
+        this.callbacks.uimodeselect(this, type);
+      },
+
+      zoom: function(ratio, anchor) {
+        if (!this.drawable)
+          return;
+        var vs = this.drawable.viewportSize();
+        var scrollPos = this.drawable.scrollPosition();
+        var previousRatio = this.zoomRatio;
+
+        var previousLogicalSize = {
+          x: vs.x / previousRatio,
+          y: vs.y / previousRatio
+        };
+
+        if (!anchor) {
+          anchor = {
+            x: scrollPos.x + (previousLogicalSize.x / 2),
+            y: scrollPos.y + (previousLogicalSize.y / 2)
+          }
+        }
+
+        var physicalOffset = {
+          x: (anchor.x - scrollPos.x) * previousRatio,
+          y: (anchor.y - scrollPos.y) * previousRatio 
+        };
+        var logicalSize = {
+          x: vs.x / ratio,
+          y: vs.y / ratio
+        };
+
+        var logicalOrigin = {
+          x: anchor.x - (physicalOffset.x / ratio),
+          y: anchor.y - (physicalOffset.y / ratio)
+        };
+
+        this.zoomAndPan(ratio, logicalOrigin);
+      },
+
+      zoomAndPan: function(ratio, scrollPos) {
+        if (isNaN(ratio))
+          return;
+        var previousRatio = this.zoomRatio;
+        if (this.callbacks.zoomRatioChanging) {
+          var corrected = this.callbacks.zoomRatioChanging(ratio);
+          if (corrected === false)
+            return;
+          if (corrected)
+            ratio = corrected;
+        }
+        if (!this.drawable) {
+          this.zoomRatio = ratio;
+          this.callbacks.zoomRatioChange && this.callbacks.zoomRatioChange(ratio);
+          return;
+        }
+        this.drawable.transform(Fashion.Matrix.scale(ratio)
+                                .translate({x: -this.contentOriginPosition.x,
+                                            y: -this.contentOriginPosition.y}));
+
+        this.drawable.scrollPosition(scrollPos);
+        this.zoomRatio = ratio;
+        this.callbacks.zoomRatioChange && this.callbacks.zoomRatioChange(ratio);
+      },
+
+      unselectAll: function VenueViewer_unselectAll() {
+        var prevSelection = this.selection;
+        this.selection = {};
+        for (var id in prevSelection) {
+          this.seats[id].__unselected();
+        }
+        this.selectionCount = 0;
+      },
+
+      _select: function VenueViewer__select(seat, value) {
+        if (value) {
+          if (!(seat.id in this.selection)) {
+            this.selection[seat.id] = seat;
+            this.selectionCount++;
+            seat.__selected();
+          }
+        } else {
+          if (seat.id in this.selection) {
+            delete this.selection[seat.id];
+            this.selectionCount--;
+            seat.__unselected();
+          }
+        }
+      },
+
+      adjacencyLength: function VenueViewer_adjacencyLength(value) {
+        if (value !== void(0)) {
+          this._adjacencyLength = value;
+        }
+        return this._adjacencyLength;
+      },
+
+      scrollTo: function VenueViewer_scrollTo(leftTopCorner) {
+        if (this.animating) return;
+        var scrollPos = this.drawable.scrollPosition();
+        leftTopCorner = { x: leftTopCorner.x, y: leftTopCorner.y };
+        var contentSize = this.drawable.contentSize();
+        var rightBottomCorner = Fashion._lib.addPoint(
+          leftTopCorner,
+          this.drawable._inverse_transform.apply(
+            this.drawable.viewportInnerSize()));
+        if (rightBottomCorner.x > contentSize.x)
+          leftTopCorner.x += contentSize.x - rightBottomCorner.x;
+        if (rightBottomCorner.y > contentSize.y)
+          leftTopCorner.y += contentSize.y - rightBottomCorner.y;
+        leftTopCorner.x = Math.max(leftTopCorner.x, 0);
+        leftTopCorner.y = Math.max(leftTopCorner.y, 0);
+
+        this.animating = true;
+        var self = this;
+        var t = setInterval(function () {
+          var delta = Fashion._lib.subtractPoint(
+            leftTopCorner,
+            scrollPos);
+          if (Math.sqrt(delta.x * delta.x + delta.y * delta.y) < 1) {
+            clearInterval(t);
+            self.animating = false;
+            return;
+          }
+          delta = { x: delta.x / 2, y: delta.y / 2 };
+          scrollPos = Fashion._lib.addPoint(scrollPos, delta);
+          self.drawable.scrollPosition(scrollPos);
+        }, 50);
+      },
+
+      back: function VenueViewer_back() {
+        if (this._history.length > 0)
+          this._loadPage(this._history.pop());
+      },
+
+      showSmallTexts: function VenueViewer_showSmallTexts() {
+        if (!this._smallTextsShown) {
+          for(var i = this.small_texts.length; --i >= 0;)
+            this.small_texts[i].visibility(true);
+          this._smallTextsShown = true
+        }
+      },
+
+      hideSmallTexts: function VenueViewer_hideSmallTexts() {
+        if (this._smallTextsShown) {
+          for(var i = this.small_texts.length; --i >= 0;)
+            this.small_texts[i].visibility(false);
+          this._smallTextsShown = false;
+        }
+      }
+    }
+  });
+
+  /* main */
+
+  $.fn.venueviewer = function (options) {
+    var aux = this.data('venueviewer');
+
+    if (!options)
+      throw new Error("Options must be given");
+    if (typeof options == 'object') {
+      if (!options.dataSource || typeof options.dataSource != 'object')
+        throw new Error("Required option missing: dataSource");
+      var self = this;
+      function init() {
+        var _options = $.extend({}, options);
+
+        var createMetadataLoader = (function () {
+          var conts = {}, allData = null, first = true;
+          return function createMetadataLoader(key) {
+            return function metadataLoader(next, error) {
+              conts[key] = { next: next, error: error };
+              if (first) {
+                $.ajax({
+                  url: options.dataSource.metadata,
+                  dataType: 'json',
+                  success: function(data) {
+                    allData = data;
+                    var _conts = conts;
+                    conts = {};
+                    for (var k in _conts)
+                      _conts[k].next(data[key]);
+                  },
+                  error: function(xhr, text, status) {
+                    var message = "Failed to load " + key + " (reason: " + text + " - " + status + ")";
+                    var _conts = conts;
+                    conts = {};
+                    for (var k in _conts)
+                      _conts[k] && _conts[k].error(message);
+                  }
+                });
+                first = false;
+                return;
+              } else {
+                if (allData) {
+                  conts[key].next(allData[key]);
+                  delete conts[key];
+                }
+              }
+            };
+          };
+        })();
+
+        $.each(
+          [
+            [ 'stockTypes', 'stock_types' ],
+            [ 'seats', 'seats' ],
+            [ 'areas', 'areas' ],
+            [ 'info', 'info' ],
+            [ 'seatAdjacencies', 'seat_adjacencies' ],
+            [ 'pages', 'pages' ]
+          ],
+          function(n, k) {
+            _options.dataSource[k[0]] =
+              typeof options.dataSource[k[0]] == 'function' ?
+                options.dataSource[k[0]]:
+                createMetadataLoader(k[1]);
+          }
+        );
+        aux = new VenueViewer(self, _options),
+        self.data('venueviewer', aux);
+
+        if (options.uimode) aux.changeUIMode(options.uimode);
+      }
+      if (aux)
+        aux.dispose(init);
+      else
+        init();
+    } else if (typeof options == 'string' || options instanceof String) {
+      if (options == 'remove') {
+        if (aux)
+          aux.dispose();
+        this.empty();
+        this.data('venueviewer', null);
+      } else {
+        if (!aux)
+          throw new Error("Command issued against an uninitialized element");
+        switch (options) {
+        case 'load':
+          aux.load();
+          break;
+
+        case 'uimode':
+          if (arguments.length >= 2)
+            aux.changeUIMode(arguments[1]);
+          else
+            return aux.uiMode;
+          break;
+
+        case 'selection':
+          return aux.selection;
+
+        case 'unselectAll':
+          return aux.unselectAll();
+
+        case 'refresh':
+          return aux.refresh();
+
+        case 'adjacency':
+          aux.adjacencyLength(arguments[1]|0);
+          break;
+
+        case 'root':
+          return aux.rootPage;
+
+        case 'back':
+          aux.back();
+          break;
+
+        case 'zoom':
+          aux.zoom(arguments[1]);
+          break;
+
+        case 'navigate':
+          aux.navigate(arguments[1]);
+          break;
+
+        case 'loadSeats':
+          aux.loadSeats(arguments[1]);
+          break;
+
+        case 'showSmallTexts':
+          aux.showSmallTexts();
+          break;
+        case 'hideSmallTexts':
+          aux.hideSmallTexts();
+          break;
+        }
+      }
+    }
+
+    return this;
+  };
+
+})(jQuery);
+/*
+ * vim: sts=2 sw=2 ts=2 et
+ */
+})();

@@ -4,9 +4,10 @@ from .helper import SmartPhoneHelper
 from .const import get_areas, SalesEnum
 from ..search.search_query import SearchQuery
 from ..search.forms import TopSearchForm, GenreSearchForm, AreaSearchForm
+from ..search.search_query import SaleInfo
 
 from sqlalchemy import asc
-from datetime import datetime
+from altaircms.datelib import get_now
 from altaircms.models import Genre
 from altaircms.tag.models import HotWord
 from altaircms.topic.api import get_topic_searcher
@@ -41,9 +42,9 @@ class CommonResource(object):
             ,'form':TopSearchForm()
         }
 
-    def get_genre_render_param(self):
+    def get_genre_render_param(self, genre_id):
         form = GenreSearchForm()
-        genre_id = self.request.matchdict.get('genre_id')
+        genre_id = genre_id or self.request.matchdict.get('genre_id')
         form.genre_id.data = genre_id
         genre = self.get_genre(id=genre_id)
         promotions = self.getInfo(kind="promotion", system_tag_id=genre_id)[0:15]
@@ -93,6 +94,36 @@ class CommonResource(object):
         result = searcher.create_result(qs=qs, page=page, query=query, per=per)
         return result
 
+    # 今週発売
+    def search_week(self, genre, page, per):
+        searcher = EventSearcher(request=self.request)
+        query = SearchQuery(None, genre, SalesEnum.WEEK_SALE.v, None)
+        qs = self.load_freeword(search_query=query)
+        qs = searcher.search_week_sale(offset=None, qs=qs)
+        result = searcher.create_result(qs=qs, page=page, query=query, per=per)
+        return result
+
+    # 販売終了間近
+    def search_near_end(self, genre, page, per):
+        searcher = EventSearcher(request=self.request)
+        sale_info = SaleInfo(sale_start=None, sale_end=7)
+        query = SearchQuery(None, genre, SalesEnum.NEAR_SALE_END.v, sale_info)
+        qs = self.load_freeword(search_query=query)
+        qs = searcher.search_near_sale_end(search_query=query, qs=qs)
+        result = searcher.create_result(qs=qs, page=page, query=query, per=per)
+        return result
+
+    # ２回全文検索しない
+    def load_freeword(self, search_query):
+        qs = None
+        if getattr(self.request, "genre_freeword", None):
+            qs = self.request.genre_freeword
+        else:
+            searcher = EventSearcher(request=self.request)
+            qs = searcher.search_freeword(search_query=search_query, genre_label=search_query.genre.label, cond=None)
+            self.request.genre_freeword = qs
+        return qs
+
     def get_system_tag_label(self, request, system_tag_id):
         if not system_tag_id:
             return None
@@ -104,9 +135,9 @@ class CommonResource(object):
             return []
         elif system_tag_label:
             system_tag = searcher.get_tag_from_genre_label(system_tag_label)
-            results = searcher.query_publishing_topics(datetime.now(), tag, system_tag)
+            results = searcher.query_publishing_topics(get_now(self.request), tag, system_tag)
         else:
-            results = searcher.query_publishing_topics(datetime.now(), tag)
+            results = searcher.query_publishing_topics(get_now(self.request), tag)
         return results
 
     def getInfo(self, kind, system_tag_id):
@@ -129,7 +160,7 @@ class CommonResource(object):
         return self._getInfo(searcher=searcher, tag=tag, system_tag_label=system_tag_label)
 
     def get_hotword(self):
-        today = datetime.now()
+        today = get_now(self.request)
         hotwords = self.request.allowable(HotWord).filter(HotWord.term_begin <= today).filter(today <= HotWord.term_end) \
                  .filter_by(enablep=True).order_by(asc("display_order"), asc("term_end"))
         return hotwords

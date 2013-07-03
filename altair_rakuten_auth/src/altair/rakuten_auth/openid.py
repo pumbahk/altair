@@ -12,7 +12,7 @@ from pyramid.httpexceptions import HTTPFound, HTTPUnauthorized
 from pyramid.response import Response
 from pyramid import security
 
-from repoze.who.api import get_api as get_who_api
+from altair.auth import who_api as get_who_api
 
 from .interfaces import IRakutenOpenID
 from .events import Authenticated
@@ -28,7 +28,8 @@ class RakutenOpenID(object):
             error_to,
             consumer_key,
             session_args,
-            return_to=None):
+            return_to=None,
+            timeout=10):
         self.endpoint = endpoint
         self.verify_url = verify_url
         self.extra_verify_url = extra_verify_url
@@ -36,6 +37,7 @@ class RakutenOpenID(object):
         self.consumer_key = consumer_key
         self.session_args = session_args
         self.return_to = return_to or verify_url
+        self.timeout = int(timeout)
 
     def get_session_id(self, request):
         return request.params.get('ak')
@@ -87,7 +89,7 @@ class RakutenOpenID(object):
             # ('openid.ax.value.nickname', identity['ax_value_nickname'].encode('utf-8')),
         ])
 
-        f = urllib2.urlopen(url)
+        f = urllib2.urlopen(url, timeout=self.timeout)
         try:
             response_body = f.read()
         finally:
@@ -133,7 +135,7 @@ class RakutenOpenID(object):
         session[self.__class__.__name__ + '.return_url'] = url
 
     def on_verify(self, request):
-        who_api = get_who_api(request.environ)
+        who_api = get_who_api(request, name="rakuten")
         params = self.openid_params(request)
         identity, headers = who_api.login(params)
         session = self.get_session(request)
@@ -147,7 +149,7 @@ class RakutenOpenID(object):
             return HTTPFound(location=self.error_to)
 
     def on_extra_verify(self, request):
-        who_api = get_who_api(request.environ)
+        who_api = get_who_api(request, name="rakuten")
         identity = who_api.authenticate()
         if identity:
             request.registry.notify(Authenticated(request, identity))
@@ -176,7 +178,8 @@ def openid_consumer_from_settings(settings, prefix):
         error_to=settings[prefix + 'error_to'],
         consumer_key=settings[prefix + 'oauth.consumer_key'],
         session_args=session_args,
-        return_to=settings.get(prefix + 'return_to')
+        return_to=settings.get(prefix + 'return_to'),
+        timeout=settings.get(prefix + 'timeout')
         )
 
 def includeme(config):

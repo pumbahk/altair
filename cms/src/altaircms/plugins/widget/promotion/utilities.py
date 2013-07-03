@@ -1,6 +1,6 @@
 # -*- coding:utf-8 -*-
 import sqlalchemy.orm as orm
-from datetime import datetime
+from altaircms.datelib import get_now
 from collections import namedtuple
 from pyramid.renderers import render
 from zope.interface import implementer
@@ -44,7 +44,7 @@ class PromotionSheet(object):
             )
 
 def promotion_sheet(request, widget):
-    d = datetime.now()
+    d = get_now(request)
     searcher = get_topic_searcher(request, widget.type)
 
     qs = searcher.query_publishing_topics(d, widget.tag, widget.system_tag)

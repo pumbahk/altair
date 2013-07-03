@@ -1,12 +1,12 @@
-<%page args="form, products=None, performance=None, sales_segment=None, limit=None" />
-<%namespace file="/common/helpers.html" name="h" />
+<%page args="products=None, performance=None, sales_segment=None, limit=None" />
+<%namespace file="/common/helpers.html" name="ch" />
 <%namespace file="/product_items/_action_button.html" name="b" />
-
+<% from ticketing.core.models import Product %>
 % if performance or sales_segment:
 <%
 from ticketing.core.models import StockHolder, Stock
 
-if performance:
+if performance is not None:
     stock_types = performance.event.stock_types
     stock_holders = StockHolder.query.join(Stock).filter(Stock.performance_id == performance.id).distinct().all()
     ticket_bundles = performance.event.ticket_bundles
@@ -16,13 +16,9 @@ elif sales_segment:
     stock_types = event.stock_types
     ticket_bundles = event.ticket_bundles
     sales_segments = [sales_segment]
-    performance_ids = [p.performance.id for p in sales_segment.products]
+    performance_ids = [p.id for p in sales_segment.sales_segment_group.event.performances]
     stock_holders = StockHolder.query.join(Stock).filter(Stock.performance_id.in_(performance_ids)).distinct().all()
 %>
-%if performance:
-<%include file="/product_items/_modal.html" args="modal_id='modal-product_item', performance_id=performance.id" />
-%endif
-
 <script type="text/javascript">
   $(function() {
     $('#use-grid-editor').change(function() {
@@ -270,7 +266,7 @@ elif sales_segment:
         });
       </script>
 
-      <div style="margin: 10px 0 10px 30px;">
+      <div>
         <table id="sales-segment-${sales_segment.id}-grid"></table>
         <input type="button" id="sales-segment-${sales_segment.id}-save_button" value="保存" class="btn" />
         <input type="button" id="sales-segment-${sales_segment.id}-clear_button" value="取消" class="btn" />
@@ -301,30 +297,29 @@ elif sales_segment:
       st_to_prod.append(product)
 %>
 ## 旧商品登録フォーム
-<form>
-  <div class="tabbable tabs-top product-table">
-    <ul class="nav nav-tabs">
-    % for i, sales_segment in enumerate(sales_segments):
-      <li class="${'active' if i == 0 else ''}"><a href="#sales-segment-${sales_segment.id}" data-toggle="tab">${sales_segment.name}</a></li>
+<div class="tabbable tabs-top product-table">
+  <ul class="nav nav-tabs">
+  % for i, sales_segment in enumerate(sales_segments):
+    <li class="${'active' if i == 0 else ''}"><a href="#sales-segment-${sales_segment.id}" data-toggle="tab">${sales_segment.name}</a></li>
     % endfor
-    </ul>
-    <div class="tab-content" id="tabbable-tab-content">
-      <p>※このアイコン<i class="icon-eye-open"></i>をクリックすると券面のプレビューができます</p>
+  </ul>
+  <div class="tab-content" id="tabbable-tab-content">
+    <p>※このアイコン<i class="icon-eye-open"></i>をクリックすると券面のプレビューができます</p>
     % for i, sales_segment in enumerate(sales_segments):
-      <div class="tab-pane ${'active' if i == 0 else ''}" id="sales-segment-${sales_segment.id}">
+    <div class="tab-pane ${'active' if i == 0 else ''}" id="sales-segment-${sales_segment.id}">
+      <form>
         % if sales_segment in ss_to_st:
-        <div style="margin: 10px 0 50px 30px;">
+        <div>
           <% st_to_prod = ss_to_st[sales_segment] %>
           <table class="table table-striped table-bordered table-condensed" style="margin-bottom: 10px;">
             <thead>
               <tr>
                 <th style="width: 20px;"></th>
                 <th style="width: 100px;">席種</th>
-                <th style="width: 130px;">${form.name.label.text}</th>
-                <th style="width: 100px;">${form.price.label.text}</th>
-                <th style="width: 60px;">${form.display_order.label.text}</th>
-                <th style="width: 60px;">${form.public.label.text}</th>
-                % if performance:
+                <th style="width: 130px;">${HH.label_text_for(Product.name)}</th>
+                <th style="width: 100px;">${HH.label_text_for(Product.price)}</th>
+                <th style="width: 60px;">${HH.label_text_for(Product.display_order)}</th>
+                <th style="width: 60px;">${HH.label_text_for(Product.public)}</th>
                 <th style="width: 100px;">配券先</th>
                 <th style="width: 100px;">商品明細名</th>
                 <th style="width: 80px;">単価</th>
@@ -333,7 +328,6 @@ elif sales_segment:
                 <th style="width: 60px;">在庫ID</th>
                 <th style="width: 100px;">券面</th>
                 <th style="width: 110px;"></th>
-                % endif
               </tr>
             </thead>
 
@@ -341,46 +335,44 @@ elif sales_segment:
             <% row_count = 0 %>
             % for product in sorted(st_to_prod, key=lambda x:x.display_order):
               <% if limit and row_count >= limit: break %>
-              <% count = len(product.items_by_performance_id(performance.id)) if performance else 1 %>
+              <% count = len(product.items) %>
               <% rowspan = 'rowspan=%s' % (count)  if count else '' %>
               <tr>
                 <td ${rowspan}><input type="radio" name="product_id" value="${product.id}" /></td>
                 <td ${rowspan}>${product.seat_type()}</td>
                 <td ${rowspan}><a href="javascript:edit_product('${product.id}');">${product.name}</a></td>
-                <td ${rowspan}>${h.price_format(product.price)}円</td>
+                <td ${rowspan}>${ch.price_format(product.price)}円</td>
                 <td ${rowspan}>${product.display_order}</td>
                 <td ${rowspan}>${u'○' if product.public else u'×'}</td>
-                % if performance:
-                  % for j, item in enumerate(product.items_by_performance_id(performance.id)):
+                  % for j, item in enumerate(product.items):
                     % if j != 0:
               <tr>
                     % endif
                 <td style="border-left-style: dotted;">${item.stock.stock_holder.name}</td>
                 <td>${item.name}</td>
-                <td>${h.price_format(item.price)}円</td>
+                <td>${ch.price_format(item.price)}円</td>
                 <td>${item.quantity}</td>
                 <td>${item.stock.stock_status.quantity} / ${item.stock.quantity}席</td>
                 <td>${item.stock.id}</td>
                 <td>
-                  % if performance and item.ticket_bundle_id:
+                  % if item.ticket_bundle_id:
                     <a id="productItem${item.id}" class="preview-link" data-pk="${item.id}" data-name="${item.name}">${item.ticket_bundle.name}<i class="icon-eye-open"></i></a>
                   % else:
                     -
                   % endif
                 </td>
                   % if row_count == 0:
-                <td><input type="hidden" id="ticket_bundle_id-${item.id}" value="${item.ticket_bundle_id}" />${h.action_button(b.actions(product, item), order=['edit', 'preview', 'new', 'delete'], options='btn-small')}</td>
+                <td><input type="hidden" id="ticket_bundle_id-${item.id}" value="${item.ticket_bundle_id}" />${ch.action_button(b.actions(product, item), order=['edit', 'preview', 'new', 'delete'], options='btn-small')}</td>
                   % else:
-                <td><input type="hidden" id="ticket_bundle_id-${item.id}" value="${item.ticket_bundle_id}" />${h.action_button(b.actions(product, item), order=['edit', 'preview', 'new', 'delete'], options='btn-small', dropup=True)}</td>
+                <td><input type="hidden" id="ticket_bundle_id-${item.id}" value="${item.ticket_bundle_id}" />${ch.action_button(b.actions(product, item), order=['edit', 'preview', 'new', 'delete'], options='btn-small', dropup=True)}</td>
                   % endif
               </tr>
                   % endfor
                   % if count == 0:
                 <td colspan="7"></td>
-                <td>${h.action_button(b.actions(product), options='btn-small')}</td>
+                <td>${ch.action_button(b.actions(product), options='btn-small')}</td>
               </tr>
                   % endif
-                % endif
               </tr>
               <% row_count += 1 %>
             % endfor
@@ -389,25 +381,45 @@ elif sales_segment:
           % if limit and len(st_to_prod) > limit:
           <div class="pull-right">
             ${len(st_to_prod)}件中${limit}件を表示
-            <a href="${request.route_path('products.index', event_id=performance.event_id)}">もっと見る</a>
+            <a href="${request.route_path('products.index', _query=dict(performance_id=(performance and performance.id), sales_segment_id=(sales_segment and sales_segment.id)))}">もっと見る</a>
           </div>
           % endif
         </div>
         % endif
-      </div>
-    % endfor
+        <script type="text/javascript">
+        var add_point_grant_setting, remove_point_grant_settings;
+        (function (form) {  
+          add_point_grant_setting = function add_point_grant_setting() {
+            load_modal_form($('#modal-point-grant-setting-chooser'), '${request.route_path('sales_segments.point_grant_settings.add', sales_segment_id='__sales_segment_id__')}'.replace('__sales_segment_id__', get_selected_sales_segment_id()), null, null);
+          };
+          remove_point_grant_settings = function remove_point_grant_settings() {
+            form.attr({
+              action: '${request.route_path('sales_segments.point_grant_settings.remove', sales_segment_id='__sales_segment_id__', _query=dict(return_to=request.path))}'.replace('__sales_segment_id__', get_selected_sales_segment_id()),
+              method: 'post'
+            });
+            form.submit();
+          };
+        })($('script:last').closest('form'));
+        </script>
+      </form>
     </div>
+    % endfor
+    <script type="text/javascript">
+      (function (tabContent) {
+        function get_active_tab() {
+          return tabContent.find('.tab-pane.active');
+        }
+        get_selected_product_id = function get_selected_product_id() {
+          return get_active_tab().find('form input[name="product_id"]:checked').val();
+        };
+        get_selected_sales_segment_id = function get_selected_sales_segment_id() {
+          m = /^sales-segment-(\d+)$/.exec(get_active_tab().attr('id'));
+              return m ? m[1]: null;
+        };
+      })($('script:last').closest('.tab-content'));
+    </script>
   </div>
-  <script type="text/javascript">
-  (function (form) {
-    console.log(form);
-    get_selected_product_id = function get_selected_product_id() {
-      return form.find('input:radio[name="product_id"]:checked').val();
-    }
-  })($('script:last').closest('form'));
-  </script>
-</form>
-% if performance:
+</div>
 ## パフォーマンス指定あり
   <script type="text/javascript" src="${request.static_url("ticketing:static/js/spin.js")}"></script>
   <script type="text/javascript" src="${request.static_url("ticketing:static/js/altair/spinner.js")}"></script>
@@ -442,8 +454,11 @@ elif sales_segment:
           apps["loadsvg"].model.changeHolder({pk: pk, name: modelname})
           return false;
         }
-
+% if performance:
         var qstring = "event_id="+"${performance.event_id}"+"&performance_id="+"${performance.id}"; //ugly
+% else:
+        var qstring = "sales_segment_id="+"${sales_segment.id}"; //ugly
+% endif
         modalView = new modal.api.AjaxModalView({
           el: $el,
           href: "${request.route_path('tickets.preview.dialog', model="ProductItem")}"+"?"+qstring, 
@@ -463,14 +478,13 @@ elif sales_segment:
     });
   </script>
   <div id="preview_ticket_modal"></div>
-% endif
 % if paging:
-  ${h.pager(products)}
+  ${ch.pager(products)}
 % endif
 ## アラートダイアログ
 <div id="modal-alert" class="modal hide">
   <div class="modal-header">
-    <a href="#" class="close">&times;</a>
+    <a href="#" class="close" data-dismiss="modal">&times;</a>
     <h3></h3>
   </div>
   <div class="modal-body">

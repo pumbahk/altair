@@ -6,14 +6,23 @@
 <h2 class="glitter red">トピックス</h2>
 % if topics:
     % for event, topic in topics:
-        % if topic.link:
-            <a href=${topic.link}>
-        % elif event:
-            <a href="${request.route_path('smartphone.detail')}?event_id=${event.id}">
+        <%
+            link = None
+            if topic.link:
+                link = topic.link
+            elif event:
+                link = request.route_path('smartphone.detail') + "?event_id=" + str(event.id)
+        %>
+
+        % if link:
+            <a href=${link}>
+                <img src="${request.static_url('altaircms:static/RT/img/common/side_nav_icon.gif')}"/>
+                ${topic.text}<br/>
+            </a>
+        % else:
+            <img src="${request.static_url('altaircms:static/RT/img/common/side_nav_icon.gif')}"/>
+            ${topic.text}<br/>
         % endif
-        <img src="${request.static_url('altaircms:static/RT/img/common/side_nav_icon.gif')}"/>
-        ${topic.text}<br/>
-        </a>
     % endfor
 % else:
     現在、対象となる公演情報はありません

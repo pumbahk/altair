@@ -1,5 +1,5 @@
-<%inherit file="../layout_2cols.html" />
-<%namespace file="/common/helpers.html" name="h" />
+<%inherit file="/layout_2cols.html" />
+<%namespace file="/common/helpers.html" name="ch" />
 <%namespace file="_entries_tabs.html" name="tabs" />
 <%
 from ticketing.cart.helpers import format_currency
@@ -13,8 +13,8 @@ Altair Backend -- ${lot.event.title}[${lot.name}]
 </%block>
 <%block name="javascript">
 </%block>
-<div class="breadcrumbs">
-  ${h.breadcrumbs(
+<%block name="breadcrumbs">
+  ${ch.breadcrumbs(
       names=[u'イベント', lot.event.title, u'抽選', lot.name, u'申し込み状況'],
       urls=[
         request.route_path('events.index'),
@@ -23,18 +23,16 @@ Altair Backend -- ${lot.event.title}[${lot.name}]
         request.route_path('lots.show', lot_id=lot.id),
       ]
   )}
-</div>
+</%block>
 <div class="page-header">
   <h1>
     ${lot.event.title}<br />
     <small>${lot.name}</small>
   </h1>
 </div>
-<div class="content">
-  ${h.flash_messages(request)}
-</div>
 ${tabs.tabs(request)}
 <div>
+
 <%include file="electing_statuses.html"/>
 <h3>当落確定処理</h3>
 <p>
@@ -49,6 +47,9 @@ ${tabs.tabs(request)}
 </form>
 <form method="POST" action="${request.route_url('lots.entries.reject', lot_id=lot.id)}">
     <button ${"disabled" if electing.blockers else ""} class="btn btn-large btn-danger">落選確定処理を実行する</button>
+</form>
+<form method="POST" action="${request.route_url('lots.entries.close', lot_id=lot.id)}">
+    <button ${"disabled" if electing.blockers else ""} class="btn btn-large btn-danger">オーソリ開放処理を実行する</button>
 </form>
 </div>
 

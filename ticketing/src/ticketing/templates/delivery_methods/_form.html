@@ -1,5 +1,5 @@
 <%page args="form" />
-<%namespace file="/common/helpers.html" name="h" />
+<%namespace file="/common/helpers.html" name="ch" />
 
 <div id="modal-delivery_method" class="modal hide">
   <div class="modal-header">
@@ -9,14 +9,14 @@
 
   <div class="modal-body">
     <form action="javascript:save_delivery_method();" method="POST">
-      ${h.form_item(form.id)}
-      ${h.form_item(form.organization_id, class_='span6')}
-      ${h.form_item(form.delivery_plugin_id)}
-      ${h.form_item(form.name, maxlength=255)}
-      ${h.form_item(form.fee)}
-      ${h.form_item(form.fee_type)}
-      ${h.form_item(form.hide_voucher)}
-      ${h.form_item(form.description, style='width:500px;height:100px;')}
+      ${ch.form_item(form.id)}
+      ${ch.form_item(form.organization_id, class_='span6')}
+      ${ch.form_item(form.delivery_plugin_id)}
+      ${ch.form_item(form.name, maxlength=255)}
+      ${ch.form_item(form.fee)}
+      ${ch.form_item(form.fee_type)}
+      ${ch.form_item(form.hide_voucher)}
+      ${ch.form_item(form.description, style='width:500px;height:100px;')}
     </form>
   </div>
 

@@ -24,6 +24,7 @@ def render_performancelist_with_template(template_name, request,  widget, bsetti
                    "widget": widget, 
                    "icon_classes": icon_classes, 
                    "WEEK": WEEK, 
+                   "request": request, 
                    "status": status}, 
                   request)
 

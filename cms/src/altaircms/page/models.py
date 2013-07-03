@@ -391,6 +391,26 @@ class Page(BaseOriginalMixin,
         else:
             return cls(name=name)
 
+    def publish_status(self, dt):
+        if not self.published:
+            return u"非公開(期間:%s)" % h.term_datetime(self.publish_begin, self.publish_end)
+        
+        if self.publish_begin and self.publish_begin > dt:
+            return u"公開前(%sに公開)" % h.base.jdatetime(self.publish_begin)
+        elif self.publish_end is None:
+            return u"公開中"
+        elif self.publish_end < dt:
+            return u"公開終了(%sに終了)"% h.base.jdatetime(self.publish_end)
+        else:
+            return u"公開中(期間:%s)" % h.term_datetime(self.publish_begin, self.publish_end)
+
+    ### page access
+    def publish(self):
+        self.published = True
+
+    def unpublish(self):
+        self.published = False
+
     def create_access_key(self, key=None, expire=None, _genkey=None):
         access_key = PageAccesskey(expiredate=expire, page=self)
         access_key.sethashkey(genkey=_genkey, key=key)

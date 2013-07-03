@@ -10,7 +10,7 @@
           <a href="${h.link.get_link_from_topcontent(request, t)}">${h.truncate(t.title, 35) }</a>
           <p>${h.truncate(t.text, 57)}
           %if t.linked_page and t.linked_page.event:
-          <span class="subdescribe">(${t.countdown_type_ja}まであと${h.base.countdown_days_from(t.countdown_limit)}日)</span>
+          <span class="subdescribe">(${t.countdown_type_ja}まであと${h.base.countdown_days_from(request, t.countdown_limit)}日)</span>
           %endif
           </p>
         </td>

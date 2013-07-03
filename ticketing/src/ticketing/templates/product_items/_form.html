@@ -1,5 +1,5 @@
 <%page args="form, form_product, action='#'" />
-<%namespace file="/common/helpers.html" name="h" />
+<%namespace file="/common/helpers.html" name="ch" />
 <form action="${action}" method="POST">
   <fieldset>
     <table class="table table-bordered">
@@ -9,7 +9,7 @@
       </tr>
       <tr>
         <th>${form_product.price.label.text}</th>
-        <td>${h.price_format(form_product.price.data or 0)}</td>
+        <td>${ch.price_format(form_product.price.data or 0)}</td>
       </tr>
       <tr>
         <th>${form_product.sales_segment_id.label.text}</th>
@@ -22,15 +22,13 @@
         </td>
       </tr>
     </table>
-    ${h.form_item(form.stock_id)}
-    ${h.form_item(form.product_item_id)}
-    ${h.form_item(form.performance_id)}
-    ${h.form_item(form.product_id)}
-    ${h.form_item(form.stock_holder_id)}
-    ${h.form_item(form.stock_type_id)}
-    ${h.form_item(form.product_item_name)}
-    ${h.form_item(form.product_item_price)}
-    ${h.form_item(form.product_item_quantity)}
-    ${h.form_item(form.ticket_bundle_id)}
+    ${ch.form_item(form.product_item_id)}
+    ${ch.form_item(form.product_id)}
+    ${ch.form_item(form.stock_holder_id)}
+    ${ch.form_item(form.stock_type_id)}
+    ${ch.form_item(form.product_item_name)}
+    ${ch.form_item(form.product_item_price)}
+    ${ch.form_item(form.product_item_quantity)}
+    ${ch.form_item(form.ticket_bundle_id)}
   </fieldset>
 </form>

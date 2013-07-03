@@ -183,10 +183,6 @@ class Venue(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             DBSession.add(seat)
         logger.info('[copy] Seat - SeatAttribute, SeatStatus, SeatIndex end')
 
-        # defaultのStockに未割当の席数をセット
-        default_stock.quantity = Seat.query.filter_by(stock_id=default_stock.id).count()
-        default_stock.save()
-
     def delete_cascade(self):
         # delete Seat
         for seat in self.seats:
@@ -442,6 +438,10 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     redirect_url_mobile = Column(String(1024))
 
     @property
+    def products(self):
+        return self.sale_segment.products if self.sales_segment_id else []
+
+    @property
     def inner_sales_segments(self):
         now = datetime.now()
         sales_segment_sort_key_func = lambda ss: (ss.kind == u'sales_counter', ss.start_at <= now, now <= ss.end_at, ss.id)
@@ -554,6 +554,11 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                 venue.delete_cascade()
             logger.info('[delete] Venue end')
 
+        # defaultのStockに未割当の席数をセット (Venue削除後にカウントする)
+        default_stock = Stock.get_default(performance_id=self.id)
+        default_stock.quantity = Seat.query.filter(Seat.stock_id==default_stock.id).count()
+        default_stock.save()
+
     def delete(self):
 
         if self.public:
@@ -615,6 +620,7 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             'end_on':end_on,
             "code": self.code or "", 
             'sales':[s.get_cms_data() for s in sales_segments],
+            'public':self.public
         }
         if self.deleted_at:
             data['deleted'] = 'true'
@@ -989,7 +995,7 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             # 直近の販売区分を調べる
             if sales_segment.start_at >= now and (next_sales_segment is None or next_sales_segment.start_at > sales_segment.start_at):
                 next_sales_segment = sales_segment
-            if sales_segment.end_at < now and (last_sales_segment is None or last_sales_segment.end_at < sales_segment.end_at):
+            if sales_segment.end_at is not None and sales_segment.end_at < now and (last_sales_segment is None or last_sales_segment.end_at < sales_segment.end_at):
                 last_sales_segment = sales_segment
             # のと同時に、パフォーマンス毎の販売区分のリストをつくる
             per_performance_datum = per_performance_data.get(sales_segment.performance_id)
@@ -1016,7 +1022,7 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             if per_performance_datum['start_at'] >= now:
                 if next is None or per_performance_datum['start_at'] < next['start_at']:
                     next = per_performance_datum
-            elif per_performance_datum['end_at'] < now:
+            elif per_performance_datum['end_at'] is not None and per_performance_datum['end_at'] < now:
                 if last is None or per_performance_datum['end_at'] > last['end_at']:
                     last = per_performance_datum
 
@@ -1248,8 +1254,11 @@ class PaymentDeliveryMethodPair(Base, BaseModel, WithTimestamp, LogicallyDeleted
         return self.delivery_fee_per_ticket + self.transaction_fee_per_ticket
 
     def is_available_for(self, sales_segment, on_day):
-        border = sales_segment.end_at.date() - timedelta(days=self.unavailable_period_days)
-        return self.public and (todate(on_day) <= border)
+        return self.public and (
+            sales_segment.end_at is None or \
+            (todate(on_day) <= (sales_segment.end_at.date()
+                                - timedelta(days=self.unavailable_period_days)))
+            )
 
     @staticmethod
     def create_from_template(template, **kwargs):
@@ -1434,7 +1443,10 @@ class ProductItem(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     @staticmethod
     def create_from_template(template, **kwargs):
         if not template.product.performance:
-            # performance_idがないレコードはSalesSegmentGroup追加時の移行用なのでコピーしない
+            # Product.performance_idがないレコードはSalesSegmentGroup追加時の移行用なのでコピーしない
+            return
+        if not template.product.sales_segment.performance:
+            # SalesSegment.performance_idがないレコードは抽選用なのでコピーしない
             return
         product_item = ProductItem.clone(template)
         if 'performance_id' in kwargs:
@@ -1621,9 +1633,7 @@ class Stock(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         else:
             vacant_quantity = Seat.filter(Seat.stock_id==self.id)\
                 .join(SeatStatus)\
-                .filter(Seat.id==SeatStatus.seat_id)\
-                .filter(SeatStatus.status.in_([SeatStatusEnum.Vacant.v]))\
-                .count()
+                .filter(SeatStatus.status.in_([SeatStatusEnum.Vacant.v])).count()
         return vacant_quantity
 
     def save(self):
@@ -1750,20 +1760,20 @@ class TicketType(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 class Product(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'Product'
 
-    id = Column(Identifier, primary_key=True)
-    name = Column(String(255))
-    price = Column(Numeric(precision=16, scale=2), nullable=False)
-    display_order = Column(Integer, nullable=False, default=1)
+    id = AnnotatedColumn(Identifier, primary_key=True, _a_label=_(u'ID'))
+    name = AnnotatedColumn(String(255), _a_label=_(u'商品名'))
+    price = AnnotatedColumn(Numeric(precision=16, scale=2), nullable=False, _a_label=_(u'価格'))
+    display_order = AnnotatedColumn(Integer, nullable=False, default=1, _a_label=_(u'表示順'))
 
     sales_segment_group_id = Column(Identifier, ForeignKey('SalesSegmentGroup.id'), nullable=True)
     sales_segment_group = relationship('SalesSegmentGroup', uselist=False, backref=backref('product', order_by='Product.display_order'))
 
-    sales_segment_id = Column(Identifier, ForeignKey('SalesSegment.id'), nullable=True)
+    sales_segment_id = AnnotatedColumn(Identifier, ForeignKey('SalesSegment.id'), nullable=True, _a_label=_(u'販売区分'))
     sales_segment = relationship('SalesSegment', backref=backref('products', order_by='Product.display_order'))
 
     ticket_type_id = Column(Identifier, ForeignKey('TicketType.id'), nullable=True)
 
-    seat_stock_type_id = Column(Identifier, ForeignKey('StockType.id'), nullable=True)
+    seat_stock_type_id = AnnotatedColumn(Identifier, ForeignKey('StockType.id'), nullable=True, _a_label=_(u'席種'))
     seat_stock_type = relationship('StockType', uselist=False, backref=backref('product', order_by='Product.display_order'))
 
     event_id = Column(Identifier, ForeignKey('Event.id'))
@@ -1774,7 +1784,7 @@ class Product(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     performances = association_proxy('items', 'performance')
 
     # 一般公開するか
-    public = Column(Boolean, nullable=False, default=True)
+    public = AnnotatedColumn(Boolean, nullable=False, default=True, _a_label=_(u'公開'))
 
     description = Column(Unicode(2000), nullable=True, default=None)
 
@@ -1980,13 +1990,42 @@ class Organization(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     def setting(self):
         return self.get_setting(u'default')
 
+    @property
+    def point_feature_enabled(self):
+        return self.setting.point_type is not None
 
 orders_seat_table = Table("orders_seat", Base.metadata,
     Column("seat_id", Identifier, ForeignKey("Seat.id")),
     Column("OrderedProductItem_id", Identifier, ForeignKey("OrderedProductItem.id")),
 )
 
-class ShippingAddress(Base, BaseModel, WithTimestamp, LogicallyDeleted):
+class ShippingAddressMixin(object):
+    @property
+    def emails(self):
+        retval = []
+        if self.email_1:
+            retval.append(self.email_1)
+        if self.email_2:
+            retval.append(self.email_2)
+        return retval
+
+    @property
+    def email_pc(self):
+        if self.email_1 and is_nonmobile_email_address(self.email_1):
+            return self.email_1
+        if self.email_2 and is_nonmobile_email_address(self.email_2):
+            return self.email_2
+        return None
+
+    @property
+    def email_mobile(self):
+        if self.email_1 and not is_nonmobile_email_address(self.email_1):
+            return self.email_1
+        if self.email_2 and not is_nonmobile_email_address(self.email_2):
+            return self.email_2
+        return None
+
+class ShippingAddress(Base, BaseModel, WithTimestamp, LogicallyDeleted, ShippingAddressMixin):
     __tablename__ = 'ShippingAddress'
     __clone_excluded__ = ['user', 'cart']
 
@@ -2030,32 +2069,6 @@ class ShippingAddress(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             (self.email_2 != None, self.email_2)
             ],
             else_=null())
-
-
-    @property
-    def emails(self):
-        retval = []
-        if self.email_1:
-            retval.append(self.email_1)
-        if self.email_2:
-            retval.append(self.email_2)
-        return retval
-
-    @property
-    def email_pc(self):
-        if self.email_1 and is_nonmobile_email_address(self.email_1):
-            return self.email_1
-        if self.email_2 and is_nonmobile_email_address(self.email_2):
-            return self.email_2
-        return None
-
-    @property
-    def email_mobile(self):
-        if self.email_1 and not is_nonmobile_email_address(self.email_1):
-            return self.email_1
-        if self.email_2 and not is_nonmobile_email_address(self.email_2):
-            return self.email_2
-        return None
 
 class OrderCancelReasonEnum(StandardEnum):
     User = (1, u'お客様都合')
@@ -2159,7 +2172,8 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                         .join(OrderedProductItem.__table__) \
                         .join(OrderedProduct.__table__)) \
                     .where(OrderedProduct.order_id==cls.id) \
-                    .where(TicketPrintQueueEntry.processed_at==None)))
+                    .where(TicketPrintQueueEntry.processed_at==None)),
+                deferred=True)
 
     @property
     def payment_plugin_id(self):
@@ -2528,7 +2542,6 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                     quantity=item.product_item.quantity * product.quantity,
                     seats=item.seats
                     )
-
         return order
 
     @staticmethod
@@ -2838,6 +2851,7 @@ class TicketPrintQueueEntry(Base, BaseModel):
                                       ordered_product_item=ordered_product_item, 
                                       seat=seat)
         DBSession.add(entry)
+        DBSession.flush()
 
     @classmethod
     def peek(self, operator, ticket_format_id, order_id=None):
@@ -2850,10 +2864,13 @@ class TicketPrintQueueEntry(Base, BaseModel):
                 .join(OrderedProduct) \
                 .filter(OrderedProduct.order_id==order_id)
             q = q.order_by(asc(OrderedProduct.id))
-        return self.sorted_entries(q.all())
+        else:
+            q = q.order_by(TicketPrintQueueEntry.created_at, TicketPrintQueueEntry.id)
+        return q.all()
 
     @classmethod
     def dequeue(self, ids, now=None):
+        logger.info("TicketPrintQueueEntry dequeue ids: {0}".format(ids))
         now = now or datetime.now() # SAFE TO USE datetime.now() HERE
         entries = DBSession.query(TicketPrintQueueEntry) \
             .with_lockmode("update") \
@@ -2887,18 +2904,8 @@ class TicketPrintQueueEntry(Base, BaseModel):
                 # XXX: this won't work right if multiple entries exist for the
                 # same order.
                 order.mark_issued_or_printed(issued=True, printed=True, now=now)
-        return self.sorted_entries(entries)
+        return entries
 
-    @classmethod
-    def sorted_entries(cls, entries):
-        return list(sorted(entries, key=TicketPrintQueueEntry.entry_key_order))
-
-    DIGIT_RX = re.compile(r"([0-9]+)")
-    @classmethod
-    def entry_key_order(cls, entry): #dorping. using summary instead of seat.name
-        if entry.seat_id is None:
-            return [entry.summary]
-        return [(int(x) if x.isdigit() else x) for x in re.split(cls.DIGIT_RX, entry.seat.name) if x]
 
     
 from ..operators.models import Operator
@@ -3024,12 +3031,17 @@ class ExtraMailInfo(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             return False
 
 class MailTypeEnum(StandardEnum):
-    CompleteMail = 1
+    PurchaseCompleteMail = 1
     PurchaseCancelMail = 2
+    LotsAcceptedMail = 11
+    LotsElectedMail = 12
+    LotsRejectedMail = 13
 
-MailTypeLabels = (u"購入完了メール", u"購入キャンセルメール")
+MailTypeLabels = (u"購入完了メール", u"購入キャンセルメール", u"抽選申し込み完了メール", u"抽選当選通知メール", u"抽選落選通知メール")
 assert(len(list(MailTypeEnum)) == len(MailTypeLabels))
-MailTypeChoices = [(str(e) , label) for e, label in zip([MailTypeEnum.CompleteMail,  MailTypeEnum.PurchaseCancelMail], MailTypeLabels)]
+MailTypeChoices = [(str(e) , label) for e, label in zip([enum.v for enum in sorted(iter(MailTypeEnum), key=lambda e: e.v)], MailTypeLabels)]
+MailTypeEnum.dict = dict(MailTypeChoices)
+MailTypeEnum.as_string = classmethod(lambda cls, e: cls.dict.get(str(e), ""))
 
 class Host(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'Host'
@@ -3330,6 +3342,12 @@ class OrganizationSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     contact_pc_url = Column(Unicode(255))
     contact_mobile_url = Column(Unicode(255))
+
+    point_type = Column(Integer, nullable=True)
+    point_fixed = Column(Numeric(precision=16, scale=2), nullable=True)
+    point_rate = Column(Float, nullable=True)
+
+    bcc_recipient = Column(Unicode(255), nullable=True)
 
 class PerformanceSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = "PerformanceSetting"

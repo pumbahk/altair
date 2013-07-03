@@ -1,0 +1,25 @@
+<%inherit file="/layout_mobile.html"/>
+<%namespace file="${context['layout'].relative_path('templates/tags_mobile.html')}" name="mobile" />
+<%mobile:header>お申し込み完了</%mobile:header>
+下記の内容でお申し込みが完了しました。
+<%mobile:header>お申し込み内容</%mobile:header>
+<%mobile:form_header>受付番号</%mobile:form_header>
+<div>${order.order_no}</div>
+<%mobile:form_header>会員種別</%mobile:form_header>
+<div>${order.ordered_products[0].product.name}</div>
+<%mobile:form_header>金額</%mobile:form_header>
+<div>￥${h.format_number(order.ordered_products[0].product.price)}</div>
+<%mobile:form_header>決済手数料</%mobile:form_header>
+<div>￥${h.format_number(order.transaction_fee)}</div>
+<%mobile:form_header>合計</%mobile:form_header>
+<div>￥${h.format_number(order.total_amount)}</div>
+<%mobile:form_header>お名前</%mobile:form_header>
+${user_profile.last_name} ${user_profile.first_name}様
+<%mobile:header>決済情報</%mobile:header>
+${h.render_payment_finished_viewlet(request, order)}
+<%mobile:header>注意事項</%mobile:header>
+<div>
+${panel("mobile_complete_notice",is_show_order_review=True)}
+</div>
+</body>
+</html>

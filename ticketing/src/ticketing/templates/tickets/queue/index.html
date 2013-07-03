@@ -1,15 +1,11 @@
-<%inherit file="../../layout_2cols.html" />
-<%namespace file="/common/helpers.html" import="breadcrumbs,pager,flash_messages"/>
-<div class="breadcrumbs">
-${breadcrumbs(
+<%inherit file="/layout_2cols.html" />
+<%namespace file="/common/helpers.html" name="ch" />
+<%block name="breadcrumbs">
+${ch.breadcrumbs(
   names=[u'トップ', u'印刷キュー'],
   urls=[request.route_path('index')]
 )}
-</div>
-
-<div class="content">
-  ${flash_messages(request)}
-</div>
+</%block>
 
 <script type="text/javascript">
   $(function(){
@@ -63,7 +59,7 @@ ${breadcrumbs(
   <a type="button" class="btn" id="removeall">全部OFF</a>
 </div>
 
-<% sortable = lambda *args, **kwargs: h.sortable('queue_entry', *args, **kwargs) %>
+<% sortable = lambda *args, **kwargs: ch.sortable('queue_entry', *args, **kwargs) %>
 <table class="table fullwidth checkboxed_table">
   <thead>
     <tr>

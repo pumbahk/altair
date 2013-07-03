@@ -65,10 +65,14 @@ class SimpleRenderer(object):
         return '%s(%r, %r)' % (self.__class__.__name__, self.key, self.name)
 
 class PlainTextRenderer(SimpleRenderer):
+    def __init__(self, key, name=None, empty_if_dereference_fails=True, fancy=False):
+        super(PlainTextRenderer, self).__init__(key, name, empty_if_dereference_fails)
+        self.fancy = fancy
+
     def __call__(self, record):
         value = dereference(record, self.key, self.empty_if_dereference_fails)
         return [
-            ((u'', self.name, u''), unicode(value) if value is not None else u'')
+            ((u'', self.name, u''), (u'="%s"' % unicode(value) if self.fancy else unicode(value)) if value is not None else u'')
             ]
 
 class CollectionRenderer(object):
@@ -99,8 +103,8 @@ class AttributeRenderer(object):
         items = dereference(record, self.key)
         retval = []
         for attr_key, attr_value in items.items():
-            renderer = self.renderer_class(attr_key, u'%s[%s]' % (self.variable_name, attr_key))
-            retval.extend(renderer(items))
+            renderer = self.renderer_class(u'_[%s]' % attr_key, u'%s[%s]' % (self.variable_name, attr_key))
+            retval.extend(renderer(dict(_=items)))
         return retval
 
 class CSVRenderer(object):

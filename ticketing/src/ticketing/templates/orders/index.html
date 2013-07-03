@@ -1,20 +1,15 @@
 <%inherit file="/layout_2cols.html"/>
-<%namespace file="/common/helpers.html" name="h" />
+<%namespace file="/common/helpers.html" name="ch" />
 
-<div class="breadcrumbs">
-  ${h.breadcrumbs(
+<%block name="breadcrumbs">
+  ${ch.breadcrumbs(
     names=[u'トップ', u'購入情報'],
     urls=[request.route_path('index')]
   )}
-</div>
+</%block>
 
 <div class="page-header">
   <h1>購入情報</h1>
-</div>
-
-<div class="content">
-  ${h.flash_messages(request)}
-  ${h.alert_message(form_search)}
 </div>
 
 <div style="float: left;">
@@ -44,17 +39,10 @@
   $("#removeall").click(presenter.on_removeall.bind(presenter));
   presenter.on_load();
 
-  // selectable check
-  $("table").selectable({
-  filter: "td.checkbox_status-wrap",
-  distance: 1,
-  stop: function(){
-      $(".ui-selected input[type='checkbox']", this).each(function(_,e){
-          $(e).click();
-       });
-      $(".ui-selected").removeClass("ui-selected");
-    }
-  })
+  //add_child
+  var target = $('input[name="order_no"]');
+  var target_parent = target.parent();
+  target_parent.prepend($('<a class="plusone btn">+ 注文番号を追加</a>').click(function(){ target_parent.append(target.clone().val(""));}));
 });
 </script>
 

@@ -2,6 +2,7 @@
 
 from copy import deepcopy
 from datetime import datetime
+from altaircms.datelib import get_now
 import logging
 logger = logging.getLogger(__file__)
 
@@ -9,7 +10,7 @@ import altaircms.helpers as h
 from . import searcher
 from altaircms.models import Genre
 from ..pyramidlayout import get_salessegment_kinds
-from altaircms.helpers.base import deal_limit
+from altaircms.helpers.base import deal_limit, deal_limit_class
 
 class SearchResult(dict):
     pass
@@ -58,11 +59,11 @@ class SearchPageResource(object):
     def __init__(self, request):
         self.request = request
 
-    def result_sequence_from_query(self, query, _nowday=datetime.now):
+    def result_sequence_from_query(self, query):
         """
         ここでは、検索結果のqueryを表示に適した形式に直す
         """
-        today = _nowday()    
+        today = get_now(self.request)    
         # for pageset in query:
         #     yield SearchResultRender(pageset, today, self.request)
         return [SearchResultRender(pageset, today, self.request) for pageset in query]
@@ -191,20 +192,22 @@ class SearchResultRender(object):
             %(page_description)s
           </dd>
       </dl>
+      <div class="%(deal_limit_class)s">%(deal_limit)s</div>
       <ul>
-          <li class="searchRemaining">%(deal_limit)s</li>
           %(deal_description)s
       </ul>
       <p>%(purchase_link)s</p>
   </div>
         """ % self.make_result()
-        
+
     def make_result(self):
         # assert self.pageset.event
+        limit = deal_limit(self.today, self.pageset.event.deal_open, self.pageset.event.deal_close)
         return SearchResult(
             category_icons = self.category_icons(), 
             page_description = self.page_description(),
-            deal_limit = deal_limit(self.today, self.pageset.event.deal_open, self.pageset.event.deal_close),
+            deal_limit = limit,
+            deal_limit_class = deal_limit_class(limit),
             deal_description = self.deal_description(),
             purchase_link = self.purchase_link()
             )
@@ -244,9 +247,10 @@ class SearchResultRender(object):
         event = self.pageset.event
         r = []
         for g in sorted(event.salessegment_groups, key=lambda g: g.start_on):
-            # label = u'<strong>%s</strong> ' % g.name
-            label = u'<div class="icon-salessegment %s"></div>'% g.kind
-            r.append(u'<li class="searchDate">%s%s</li>' % (label, h.term(g.start_on, g.end_on)))
+            if g.publicp and g.master.publicp:
+                # label = u'<strong>%s</strong> ' % g.name
+                label = u'<div class="icon-salessegment %s"></div>'% g.kind
+                r.append(u'<li class="searchDate">%s%s</li>' % (label, h.term(g.start_on, g.end_on)))
         return u"\n".join(r)
 
 

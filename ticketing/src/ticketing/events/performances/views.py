@@ -12,6 +12,8 @@ from pyramid.renderers import render_to_response
 from pyramid.security import has_permission, ACLAllowed
 from paste.util.multidict import MultiDict
 
+from altair.sqlahelper import get_db_session
+
 from ticketing.models import merge_session_with_post, record_to_multidict
 from ticketing.views import BaseView
 from ticketing.fanstatic import with_bootstrap
@@ -26,7 +28,8 @@ from ticketing.mails.forms import MailInfoTemplate
 from ticketing.models import DBSession
 from ticketing.mails.api import get_mail_utility
 from ticketing.core.models import MailTypeChoices
-from ticketing.orders.api import OrderSearchQueryBuilder
+from ticketing.orders.api import OrderSummarySearchQueryBuilder, QueryBuilderError
+from ticketing.orders.models import OrderSummary
 
 @view_defaults(decorator=with_bootstrap, permission="event_editor")
 class PerformanceShowView(BaseView):
@@ -58,19 +61,20 @@ class PerformanceShowView(BaseView):
             )
 
     def _tab_product(self):
-        return dict(
-            form_product=ProductForm(performance_id=self.performance.id),
-            products=self.performance.products
-            )
+        return dict()
 
     def _tab_order(self):
-        query = Order.filter_by(performance_id=self.performance.id)
+        slave_session = get_db_session(self.request, name="slave")
+        query = slave_session.query(OrderSummary).filter_by(organization_id=self.context.user.organization_id, performance_id=self.performance.id, deleted_at=None)
         form_search = OrderSearchForm(
             self.request.params,
             event_id=self.performance.event_id,
             performance_id=self.performance.id)
         if form_search.validate():
-            query = OrderSearchQueryBuilder(form_search.data)(query)
+            try:
+                query = OrderSummarySearchQueryBuilder(form_search.data, lambda key: form_search[key].label.text)(query)
+            except QueryBuilderError as e:
+                self.request.session.flash(e.message)
         else:
             self.request.session.flash(u'検索条件が正しくありません')
         return dict(
@@ -240,13 +244,15 @@ class Performances(BaseView):
                 performance.event_id = event_id
                 performance.create_venue_id = f.data['venue_id']
             else:
-                performance = merge_session_with_post(performance, f.data)
-                venue = Venue.query.filter_by(performance_id=performance_id)\
-                             .populate_existing().with_lockmode('update').first()
-                if not venue:
-                    logger.warn('venue not found (performance_id=%s)' % performance_id)
-                    f.id.errors.append(u'エラーが発生しました。同時に同じ公演が編集された可能性があります。')
+                try:
+                    Performance.query.filter_by(id=performance_id).with_lockmode('update').one()
+                except Exception, e:
+                    logging.info(e.message)
+                    f.id.errors.append(u'エラーが発生しました。同時に同じ公演を編集することはできません。')
                     return dict(form=f, event=performance.event)
+
+                performance = merge_session_with_post(performance, f.data)
+                venue = performance.venue
                 if f.data['venue_id'] != venue.id:
                     performance.delete_venue_id = venue.id
                     performance.create_venue_id = f.data['venue_id']
@@ -331,7 +337,8 @@ class MailInfoNewView(BaseView):
         if performance is None:
             raise HTTPNotFound('performance id %s is not found' % self.request.matchdict["performance_id"])
 
-        template = MailInfoTemplate(self.request, performance.event.organization)
+        mutil = get_mail_utility(self.request, self.request.matchdict["mailtype"])
+        template = MailInfoTemplate(self.request, performance.event.organization, mutil=mutil)
         choice_form = template.as_choice_formclass()()
         formclass = template.as_formclass()
         mailtype = self.request.matchdict["mailtype"]
@@ -341,6 +348,7 @@ class MailInfoNewView(BaseView):
                 "organization": performance.event.organization, 
                 "mailtype": self.request.matchdict["mailtype"], 
                 "choices": MailTypeChoices, 
+                "mutil": mutil, 
                 "choice_form": choice_form}
 
     @view_config(request_method="POST")
@@ -352,7 +360,7 @@ class MailInfoNewView(BaseView):
         if performance is None:
             raise HTTPNotFound('performance id %s is not found' % self.request.matchdict["performance_id"])
 
-        template = MailInfoTemplate(self.request, performance.event.organization)
+        template = MailInfoTemplate(self.request, performance.event.organization, mutil=mutil)
         choice_form = template.as_choice_formclass()()
         formclass = template.as_formclass()
         form = formclass(self.request.POST)
@@ -369,5 +377,6 @@ class MailInfoNewView(BaseView):
                 "form": form, 
                 "organization": performance.event.organization, 
                 "mailtype": self.request.matchdict["mailtype"], 
+                "mutil": mutil, 
                 "choices": MailTypeChoices, 
                 "choice_form": choice_form}

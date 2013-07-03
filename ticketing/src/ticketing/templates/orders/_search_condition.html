@@ -1,5 +1,5 @@
 <%page args="form_search" />
-<%namespace file="/common/helpers.html" name="h" />
+<%namespace file="/common/helpers.html" name="ch" />
 
 <% conditions = form_search.get_conditions() %>
 % if conditions:
@@ -20,7 +20,7 @@
             (label, ordered_to) = ordered_to
             listed += ['ordered_from', 'ordered_to']
         %>
-        <li>${u'%s : %s 〜 %s' % (label, ordered_from, ordered_to)}</li>
+        <li>${label}: ${vh.term(ordered_from, ordered_to)}</li>
       % else:
         <li>${'%s : %s' % v}</li>
       % endif

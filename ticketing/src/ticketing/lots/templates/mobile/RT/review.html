@@ -12,9 +12,17 @@
 <%self:enclose_if tag="font" color="red" condition="${entry.is_elected}">
 ${h.lot_entry_status_as_string(request, entry.status)}
 </%self:enclose_if>
-%if entry.is_elected:
-<a href="${payment_url}">申込確定へ</a>
+<%mobile:band bgcolor="#ffffdd">
+%if entry.is_ordered:
+抽選の結果、お客様はご当選されました。<br />
+<a href="/orderreview" target="_blank">購入履歴</a>をご確認ください。
+%elif entry.is_rejected:
+抽選の結果、お客様は残念ながら落選となりました。<br />
+%elif not entry.lot.is_elected():
+抽選結果発表は、${h.japanese_datetime(entry.lot.lotting_announce_datetime)}～を予定しております。<br />
+発表日時以降に再度、当選・落選をご確認ください。
 %endif
+</%mobile:band>
 </div>
 <%mobile:form_header>対象公演・試合</%mobile:form_header>
 <div>

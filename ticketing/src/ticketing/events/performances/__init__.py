@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 def includeme(config):
+    config.add_route('products.index', '/products/{performance_id}')
     config.add_route('performances.index', '/{event_id}')
     config.add_route('performances.new', '/new/{event_id}')
     config.add_route('performances.show', '/show/{performance_id}')

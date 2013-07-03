@@ -20,7 +20,6 @@ class DevNullMailer(object):
     def send_immediately(self, message, fail_silently=False):
         logger.info("*mail* send_immediately(fail_silently=%s) %s" % (fail_silently, self._describe_message(message)))
 
-
     def send_to_queue(self, message):
         logger.info("*mail* send to queue %s" % self._describe_message(message))
 

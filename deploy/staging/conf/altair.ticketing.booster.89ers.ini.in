@@ -8,8 +8,8 @@ altair_sej.template_file = %(here)s/../../../ticketing/misc/sej/template.html
 altair.site_data.base_url = s3://tstar-dev/venue-layouts/frontend/
 
 ; Beaker
-session.type = redis
-cache.type = redis
+session.type = ${altair:beaker_backend_type}
+cache.type = ${altair:beaker_backend_type}
 
 [filter:prefix]
 use = egg:PasteDeploy#prefix
@@ -53,6 +53,7 @@ propagate = 0
 level = INFO
 handlers = sqlalchemy
 qualname = sqlalchemy.engine
+propagate = 0
 
 [handler_console]
 class = altair.log.filters.BrowserIdStreamHandler

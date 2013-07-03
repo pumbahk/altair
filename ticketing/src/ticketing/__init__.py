@@ -18,12 +18,6 @@ import sqlahelper
 
 authn_exemption = re.compile(r'^(/_deform)|(/static)|(/_debug_toolbar)|(/favicon.ico)')
 
-def setup_standard_renderers(config):
-    config.add_renderer('.html' , 'pyramid.mako_templating.renderer_factory')
-    config.add_renderer('.txt'  , 'pyramid.mako_templating.renderer_factory')
-    config.add_renderer('json'  , 'ticketing.renderers.json_renderer_factory')
-    config.add_renderer('csv'   , 'ticketing.renderers.csv_renderer_factory')
-
 def setup_mailtraverser(config):
     from ticketing.mails.traverser import EmailInfoTraverser
     reg = config.registry
@@ -43,8 +37,11 @@ def exclude_js(path):
     return path.endswith(".js")
 
 def register_globals(event):
-    from . import helpers
-    event.update(HH=helpers)
+    from . import helpers as HH
+    from .loyalty import helpers as lh
+    from altair.viewhelpers import Namespace
+    event.update(HH=HH, lh=lh, vh=Namespace(event['request']))
+
 
 def main(global_config, **local_config):
     """ This function returns a Pyramid WSGI application.
@@ -60,6 +57,7 @@ def main(global_config, **local_config):
         from sqlalchemy.pool import NullPool
 
         engine = engine_from_config(settings, poolclass=NullPool,
+                                    isolation_level='READ COMMITTED',
                                     pool_recycle=60)
         sqlahelper.add_engine(engine)
 
@@ -100,6 +98,8 @@ def main(global_config, **local_config):
         config.include('altair.browserid')
         config.include('altair.exclog')
         config.include('altair.mobile')
+        config.include('altair.sqlahelper')
+        config.include('altair.now')
 
         ### s3 assets
         config.include('altair.pyramid_assets')
@@ -130,13 +130,19 @@ def main(global_config, **local_config):
         config.include("ticketing.qr")
         config.include("ticketing.members", route_prefix='/members')
         config.include("ticketing.memberships", route_prefix="/memberships")
+        config.include('ticketing.loyalty', route_prefix='/loyalty')
         config.include('ticketing.payments')
         config.include('ticketing.payments.plugins')
         config.include('ticketing.pkginfo')
+        config.include('ticketing.lots.authcancel')
+        config.include('ticketing.booster.setup_order_product_attribute_metadata')
+        config.include('ticketing.booster.89ers.setup_order_product_attribute_metadata')
+        config.include('ticketing.booster.bambitious.setup_order_product_attribute_metadata')
+        config.include('ticketing.booster.bigbulls.setup_order_product_attribute_metadata')
+
         ## TBA
         config.add_route("qr.make", "___________") ##xxx:
-        config.add_subscriber('ticketing.cart.sendmail.on_order_completed', 'ticketing.cart.events.OrderCompleted')
-
+        config.include(config.maybe_dotted("ticketing.cart.import_mail_module"))
         # 上からscanされてしまうためしかたなく追加。scanをinclude先に移動させて、このincludeを削除する。
         #config.include('ticketing.cart' , route_prefix='/cart')
     

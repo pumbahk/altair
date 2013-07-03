@@ -12,7 +12,7 @@
 		<img src="${getattr(h.asset.rendering_object(request, t.image_asset), widget.rendering_image_attribute)}" alt="${t.title  }" width="80" height="80" />
 	  </a><br />
       %if t.linked_page and t.linked_page.event:
-	    <a>${t.countdown_type_ja}まであと${h.base.countdown_days_from(t.countdown_limit)}日</a></p>
+	    <a>${t.countdown_type_ja}まであと${h.base.countdown_days_from(request, t.countdown_limit)}日</a></p>
       %endif
   </div>
   % endfor

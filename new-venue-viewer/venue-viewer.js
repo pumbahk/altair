@@ -1,6 +1,6 @@
 (function () {
 var __LIBS__ = {};
-__LIBS__['u6AURF8N_EKWNZ2P'] = (function (exports) { (function () { 
+__LIBS__['jBGHQV64R_Z81V9D'] = (function (exports) { (function () { 
 
 /************** util.js **************/
 exports.eventKey = function Util_eventKey(e) {
@@ -127,7 +127,7 @@ exports.makeHitTester = function Util_makeHitTester(a) {
   }
 };
  })(); return exports; })({});
-__LIBS__['x99S4YFZAYXRGF6H'] = (function (exports) { (function () { 
+__LIBS__['RSJPE4TVBYXNMVID'] = (function (exports) { (function () { 
 
 /************** CONF.js **************/
 exports.DEFAULT = {
@@ -182,11 +182,11 @@ exports.DEFAULT = {
   }
 };
  })(); return exports; })({});
-__LIBS__['uO0E6U6YJJ62MIM3'] = (function (exports) { (function () { 
+__LIBS__['OCLSDQCQ1F295768'] = (function (exports) { (function () { 
 
 /************** seat.js **************/
-var util = __LIBS__['u6AURF8N_EKWNZ2P'];
-var CONF = __LIBS__['x99S4YFZAYXRGF6H'];
+var util = __LIBS__['jBGHQV64R_Z81V9D'];
+var CONF = __LIBS__['RSJPE4TVBYXNMVID'];
 
 function clone(obj) {
   return $.extend({}, obj);
@@ -268,12 +268,15 @@ Seat.prototype.defaultStyle = function Seat_defaultStype() {
 }
 
 Seat.prototype.attach = function Seat_attach(shape) {
-  if (!this.shape) {
-    this.shape = shape;
-    this.originalStyle = this.defaultStyle();
-    this.refresh();
-    shape.addEvent(this.events);
-  }
+  if (this.shape === shape)
+    return;
+  if (this.shape !== shape)
+    this.detach();
+
+  this.shape = shape;
+  this.originalStyle = this.defaultStyle();
+  this.refresh();
+  shape.addEvent(this.events);
 };
 
 Seat.prototype.detach = function Seat_detach(shape) {
@@ -765,7 +768,7 @@ var parseCSSStyleText = (function () {
   }
 
   return function parseCSSStyleText(str) {
-    var retval = {};
+    var retval = [];
     var r = str.replace(regexp_for_styles, function (_, k, v) {
       var values = [];
       var r = v.replace(regexp_for_values, function (_, a, b, c) {
@@ -780,7 +783,7 @@ var parseCSSStyleText = (function () {
       });
       if (r != '')
         throw new ValueError("Invalid CSS rule string: " + str);
-      retval[k] = values;
+      retval.push([k, values]);
       return '';
     });
     if (r != '')
@@ -788,6 +791,58 @@ var parseCSSStyleText = (function () {
     return retval;
   };
 })();
+
+var expandFontProperty = (function () {
+  var props = [
+    [/normal|italic|oblique|inherit/, function (z) { this.push(['font-style', z]); }],
+    [/normal|small-caps|inherit/, function (z) { this.push(['font-variant', z]); }],
+    [/normal|bold|bolder|lighter|100|200|300|400|500|600|700|800|900|inherit/, function (z) { this.push(['font-weight', z]); }],
+    [/([1-9][0-9]*(?:px|pt|et|ex|%))(?:\/([1-9][0-9]*(?:px|pt|et|ex|%)))?/, function (_, a, b) {
+      this.push(['font-size', a]);
+      if (b) {
+        this.push(['line-height', b]); 
+      }
+    }]
+  ];
+  return function expandFontProperty(values) {
+    var retval = [];
+    var i = 0, j = 0;
+    for (; i < values.length && j < props.length; i++) {
+      for (; j < props.length; j++) {
+        var prop = props[j];
+        var g = prop[0].exec(values[i]);
+        if (g) {
+          prop[1].apply(retval, g);
+          break;
+        }
+      }
+    }
+    retval.push(['font-family', values.slice(i).join(' ')]);
+    return retval;
+  };
+})();
+
+function coerceCSSStyleIntoMap(styles) {
+  var retval = {};
+
+  var props = [];
+  for (var i = 0; i < styles.length; i++) {
+    var k = styles[i][0], v = styles[i][1];
+    switch (k) {
+    case 'font':
+      expanded = expandFontProperty(v);
+      if (expanded) {
+        for (var j = 0; j < expanded.length; j++) {
+          retval[expanded[j][0]] = expanded[j][1];
+        }
+        continue;
+      }
+      break;
+    }
+    retval[k] = v;
+  }
+  return retval;
+}
 
 function parseDefs(node, defset) {
   function parseStops(def) {
@@ -807,7 +862,7 @@ function parseDefs(node, defset) {
       if (node.nodeType != 1)
         continue;
       if (node.nodeName == 'stop') {
-        var styles = parseCSSStyleText(node.getAttribute('style'));
+        var styles = coerceCSSStyleIntoMap(parseCSSStyleText(node.getAttribute('style')));
         colors.push([
           parseFloat(node.getAttribute('offset')),
           new Fashion.Color(styles['stop-color'][0])]);
@@ -838,7 +893,7 @@ function parseDefs(node, defset) {
 }
 
 function parseCSSAsSvgStyle(str, defs) {
-  return svgStylesFromMap(parseCSSStyleText(str), defs);
+  return svgStylesFromMap(coerceCSSStyleIntoMap(parseCSSStyleText(str)), defs);
 }
 
 function svgStylesFromMap(styles, defs) {
@@ -1008,25 +1063,25 @@ function parseTransform(transform_str) {
             parseFloat(args[4]), parseFloat(args[5]));
     case 'translate':
         if (args.length == 1)
-            args[2] = 0;
+            args[1] = 0;
         else if (args.length != 2)
             throw new Error("invalid number of arguments for translate()")
         return Fashion.Matrix.translate({ x:parseFloat(args[0]), y:parseFloat(args[1]) });
     case 'scale':
         if (args.length == 1)
-            args[2] = 0;
+            args[1] = 0;
         else if (args.length != 2)
             throw new Error("invalid number of arguments for scale()");
         return new Fashion.Matrix(parseFloat(args[0]), 0, 0, parseFloat(args[1]), 0, 0);
     case 'rotate':
         if (args.length == 1)
-            args[2] = 0;
+            args[1] = 0;
         else if (args.length != 2)
             throw new Error("invalid number of arguments for rotate()");
         return Fashion.Matrix.rotate(parseFloat(args[0]) * Math.PI / 180);
     case 'skewX':
         if (args.length == 1)
-            args[2] = 0;
+            args[1] = 0;
         else if (args.length != 2)
             throw new Error('invalid number of arguments for skewX()');
         var t = parseFloat(args[0]) * Math.PI / 180;
@@ -1044,9 +1099,9 @@ function parseTransform(transform_str) {
     throw new Error('invalid transform function: ' + f);
 }
 
-  var CONF = __LIBS__['x99S4YFZAYXRGF6H'];
-  var seat = __LIBS__['uO0E6U6YJJ62MIM3'];
-  var util = __LIBS__['u6AURF8N_EKWNZ2P'];
+  var CONF = __LIBS__['RSJPE4TVBYXNMVID'];
+  var seat = __LIBS__['OCLSDQCQ1F295768'];
+  var util = __LIBS__['jBGHQV64R_Z81V9D'];
 
   var StoreObject = _class("StoreObject", {
     props: {
@@ -1093,10 +1148,6 @@ function parseTransform(transform_str) {
       contentOriginPosition: {x: 0, y: 0},
       dragging: false,
       startPos: { x: 0, y: 0 },
-      rubberBand: new Fashion.Rect({
-        position: {x: 0, y: 0},
-        size: {x: 0, y: 0}
-      }),
       drawable: null,
       availableAdjacencies: [ 1 ],
       originalStyles: new StoreObject(),
@@ -1118,6 +1169,8 @@ function parseTransform(transform_str) {
       seatTitles: {},
       optionalViewportSize: null,
       loading: false,
+      pageBeingLoaded: false,
+      pagesCoveredBySeatData: null, 
       loadAborted: false,
       loadAbortionHandler: null,
       _smallTextsShown: true,
@@ -1139,7 +1192,6 @@ function parseTransform(transform_str) {
         }
         this.dataSource = options.dataSource;
         if (options.zoomRatio) zoom(options.zoomRatio);
-        this.rubberBand.style(CONF.DEFAULT.MASK_STYLE);
         canvas.empty();
         this.optionalViewportSize = options.viewportSize;
         this.deferSeatLoading = !!options.deferSeatLoading;
@@ -1215,23 +1267,8 @@ function parseTransform(transform_str) {
               self.availableAdjacencies = data.available_adjacencies;
               self.seatAdjacencies = new seat.SeatAdjacencies(self);
 
-              var onDrawingOrSeatsLoaded;
-              (function() {
-                var status = { drawing: false, seats: false };
-                onDrawingOrSeatsLoaded = function onDrawingOrSeatsLoaded(part) {
-                  status[part] = true;
-                  if (part == 'drawing' && status.seats) {
-                    for (var id in self.seats) {
-                      var shape = self.shapes[id];
-                      if (shape)
-                        self.seats[id].attach(shape);
-                    }
-                  }
-                };
-              })();
               if (self.currentPage) {
                 self.loadDrawing(self.currentPage, function () {
-                  onDrawingOrSeatsLoaded('drawing');
                   self.callbacks.load.call(self, self);
                   self.zoomAndPan(self.zoomRatioMin, { x: 0., y: 0. });
                 });
@@ -1249,6 +1286,13 @@ function parseTransform(transform_str) {
         var self = this;
         this.callbacks.loadPartStart.call(self, self, 'drawing');
         this.initDrawable(page, function () {
+          if (self.pagesCoveredBySeatData && (self.pagesCoveredBySeatData === 'all-in-one' || page in self.pagesCoveredBySeatData)) {
+            for (var id in self.seats) {
+              var shape = self.shapes[id];
+              if (shape)
+                self.seats[id].attach(shape);
+            }
+          }
           self.callbacks.pageChanging.call(self, page);
           self.callbacks.loadPartEnd.call(self, self, 'drawing');
           next.call(self);
@@ -1323,9 +1367,10 @@ function parseTransform(transform_str) {
         };
 
         var dataSource = this.dataSource.drawing(page);
-
+        self.pageBeingLoaded = page;
         dataSource(function (drawing) {
           self.loading = false;
+          self.pageBeingLoaded = null;
           if (self.loadAborted) {
             self.loadAborted = false;
             self.loadAbortionHandler && self.loadAbortionHandler.call(self);
@@ -1436,6 +1481,7 @@ function parseTransform(transform_str) {
                   shape = new Fashion.Text({
                     text: collectText(n),
                     anchor: currentSvgStyle.textAnchor,
+                    fontSize: currentSvgStyle.fontSize,
                     position: position || null,
                     transform: transform || null
                   });
@@ -1849,7 +1895,7 @@ function parseTransform(transform_str) {
           return;
         this.canvas.css({ cursor: 'default' });
         this.callbacks.messageBoard.down.call(this);
-        if (this.curentPage != pageInfo.page) {
+        if (this.currentPage != pageInfo.page) {
           this.loadDrawing(pageInfo.page, function () {
             self.callbacks.load.call(self, self);
             afterthings();
@@ -1887,6 +1933,13 @@ function parseTransform(transform_str) {
             self.loadAbortionHandler && self.loadAbortionHandler.call(self, self);
             self.callbacks.loadAbort && self.callbacks.loadAbort.call(self, self);
             return;
+          }
+          if (!self.pageBeingLoaded && self.currentPage && (self.pagesCoveredBySeatData === 'all-in-one' || self.currentPage in self.pagesCoveredBySeatData)) {
+            for (var id in self.seats) {
+              var shape = self.shapes[id];
+              if (shape)
+                self.seats[id].attach(shape);
+            }
           }
           self.callbacks.loadPartEnd.call(self, self, 'seats');
           if (next)
@@ -1939,11 +1992,10 @@ function parseTransform(transform_str) {
                 };
               }
             });
-            if (self.shapes[id])
-              seat_.attach(self.shapes[id]);
           }
 
           self.seats = seats;
+          self.pagesCoveredBySeatData = 'all-in-one'; // XXX
           next.call(self);
         }, self.callbacks.message);
       },

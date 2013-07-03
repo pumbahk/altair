@@ -5,6 +5,10 @@ from altair.mobile import mobile_view_config
 from ticketing.payments.interfaces import IOrderDelivery
 from ticketing.cart.interfaces import ICartDelivery
 from ticketing.mails.interfaces import ICompleteMailDelivery, IOrderCancelMailDelivery
+from ticketing.mails.interfaces import ILotsAcceptedMailDelivery
+from ticketing.mails.interfaces import ILotsElectedMailDelivery
+from ticketing.mails.interfaces import ILotsRejectedMailDelivery
+
 from . import models as m
 from ticketing.core import models as core_models
 from . import logger
@@ -63,8 +67,11 @@ def deliver_completion_mail_viewlet(context, request):
                 )
 
 @view_config(context=IOrderCancelMailDelivery, name="delivery-%d" % DELIVERY_PLUGIN_ID)
-def delivery_cancel_mail_viewlet(context, request):
-    return Response(context.mail_data("notice"))
+@view_config(context=ILotsRejectedMailDelivery, name="delivery-%d" % DELIVERY_PLUGIN_ID)
+@view_config(context=ILotsAcceptedMailDelivery, name="delivery-%d" % DELIVERY_PLUGIN_ID)
+@view_config(context=ILotsElectedMailDelivery, name="delivery-%d" % DELIVERY_PLUGIN_ID)
+def delivery_notice_viewlet(context, request):
+    return Response(text=u"＜QRでのお受取りの方＞\n{0}".format(context.mail_data("notice")))
 
 def _with_serial_and_seat(ordered_product,  ordered_product_item):
     if ordered_product_item.seats:

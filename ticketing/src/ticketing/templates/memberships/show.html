@@ -1,5 +1,5 @@
 <%inherit file="/layout_2cols.html"/>
-<%namespace file="/common/helpers.html" name="h" />
+<%namespace file="/common/helpers.html" name="ch" />
 <%include file="/memberships/_detail.html" args="form=form, membership=membership" />
 <%namespace file="/common/modal.html" import="delete_modal" />
 
@@ -16,21 +16,16 @@
   $(function(){  $("#delete_link").click(delete_membership);  })
 </script>
 
-<div class="breadcrumbs">
-  ${h.breadcrumbs(
+<%block name="breadcrumbs">
+  ${ch.breadcrumbs(
       names=[u'トップ', u'membership'],
       urls=[request.route_path('index'), request.route_path('memberships',action="index",membership_id="*")]
   )}
-</div>
+</%block>
 
 <div class="page-header">
   <h3>会員種別詳細</h3>
 </div>
-
-<div class="content">
-  ${h.flash_messages(request)}
-</div>
-
 <div>
   <a href="${request.route_path('memberships',action="edit", membership_id=membership.id)}" class="btn">編集</a>
   <a id="delete_link" href="#" class="btn">削除</a>

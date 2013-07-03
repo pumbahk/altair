@@ -52,10 +52,6 @@
       contentOriginPosition: {x: 0, y: 0},
       dragging: false,
       startPos: { x: 0, y: 0 },
-      rubberBand: new Fashion.Rect({
-        position: {x: 0, y: 0},
-        size: {x: 0, y: 0}
-      }),
       drawable: null,
       availableAdjacencies: [ 1 ],
       originalStyles: new StoreObject(),
@@ -77,6 +73,8 @@
       seatTitles: {},
       optionalViewportSize: null,
       loading: false,
+      pageBeingLoaded: false,
+      pagesCoveredBySeatData: null, 
       loadAborted: false,
       loadAbortionHandler: null,
       _smallTextsShown: true,
@@ -98,7 +96,6 @@
         }
         this.dataSource = options.dataSource;
         if (options.zoomRatio) zoom(options.zoomRatio);
-        this.rubberBand.style(CONF.DEFAULT.MASK_STYLE);
         canvas.empty();
         this.optionalViewportSize = options.viewportSize;
         this.deferSeatLoading = !!options.deferSeatLoading;
@@ -174,23 +171,8 @@
               self.availableAdjacencies = data.available_adjacencies;
               self.seatAdjacencies = new seat.SeatAdjacencies(self);
 
-              var onDrawingOrSeatsLoaded;
-              (function() {
-                var status = { drawing: false, seats: false };
-                onDrawingOrSeatsLoaded = function onDrawingOrSeatsLoaded(part) {
-                  status[part] = true;
-                  if (part == 'drawing' && status.seats) {
-                    for (var id in self.seats) {
-                      var shape = self.shapes[id];
-                      if (shape)
-                        self.seats[id].attach(shape);
-                    }
-                  }
-                };
-              })();
               if (self.currentPage) {
                 self.loadDrawing(self.currentPage, function () {
-                  onDrawingOrSeatsLoaded('drawing');
                   self.callbacks.load.call(self, self);
                   self.zoomAndPan(self.zoomRatioMin, { x: 0., y: 0. });
                 });
@@ -208,6 +190,13 @@
         var self = this;
         this.callbacks.loadPartStart.call(self, self, 'drawing');
         this.initDrawable(page, function () {
+          if (self.pagesCoveredBySeatData && (self.pagesCoveredBySeatData === 'all-in-one' || page in self.pagesCoveredBySeatData)) {
+            for (var id in self.seats) {
+              var shape = self.shapes[id];
+              if (shape)
+                self.seats[id].attach(shape);
+            }
+          }
           self.callbacks.pageChanging.call(self, page);
           self.callbacks.loadPartEnd.call(self, self, 'drawing');
           next.call(self);
@@ -282,9 +271,10 @@
         };
 
         var dataSource = this.dataSource.drawing(page);
-
+        self.pageBeingLoaded = page;
         dataSource(function (drawing) {
           self.loading = false;
+          self.pageBeingLoaded = null;
           if (self.loadAborted) {
             self.loadAborted = false;
             self.loadAbortionHandler && self.loadAbortionHandler.call(self);
@@ -395,6 +385,7 @@
                   shape = new Fashion.Text({
                     text: collectText(n),
                     anchor: currentSvgStyle.textAnchor,
+                    fontSize: currentSvgStyle.fontSize,
                     position: position || null,
                     transform: transform || null
                   });
@@ -808,7 +799,7 @@
           return;
         this.canvas.css({ cursor: 'default' });
         this.callbacks.messageBoard.down.call(this);
-        if (this.curentPage != pageInfo.page) {
+        if (this.currentPage != pageInfo.page) {
           this.loadDrawing(pageInfo.page, function () {
             self.callbacks.load.call(self, self);
             afterthings();
@@ -846,6 +837,13 @@
             self.loadAbortionHandler && self.loadAbortionHandler.call(self, self);
             self.callbacks.loadAbort && self.callbacks.loadAbort.call(self, self);
             return;
+          }
+          if (!self.pageBeingLoaded && self.currentPage && (self.pagesCoveredBySeatData === 'all-in-one' || self.currentPage in self.pagesCoveredBySeatData)) {
+            for (var id in self.seats) {
+              var shape = self.shapes[id];
+              if (shape)
+                self.seats[id].attach(shape);
+            }
           }
           self.callbacks.loadPartEnd.call(self, self, 'seats');
           if (next)
@@ -898,11 +896,10 @@
                 };
               }
             });
-            if (self.shapes[id])
-              seat_.attach(self.shapes[id]);
           }
 
           self.seats = seats;
+          self.pagesCoveredBySeatData = 'all-in-one'; // XXX
           next.call(self);
         }, self.callbacks.message);
       },

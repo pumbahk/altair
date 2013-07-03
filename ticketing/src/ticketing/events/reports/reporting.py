@@ -6,11 +6,11 @@ from pyramid.path import AssetResolver
 from sqlalchemy.sql import func, and_
 
 from ticketing.core.models import Stock, Seat, Site, Performance, Venue, SalesSegment, SalesSegmentGroup
-from ticketing.helpers.base import jdatetime, jdate, jtime
-from ticketing.formatter import Japanese_Japan_Formatter as formatter
+from ticketing.formatter import Japanese_Japan_Formatter
 
 from . import xls_export
 from . import sheet as report_sheet
+from .util import DateTimeFormatter
 
 def get_report_kind(report_type):
     # 追券か返券かを明細タイプから判別して返す
@@ -36,6 +36,7 @@ def export_for_stock_holder(event, stock_holder, report_type):
     template_path = assetresolver.resolve(
         "ticketing:/templates/reports/assign_template.xls").abspath()
     exporter = xls_export.SeatAssignExporter(template=template_path)
+    formatter = DateTimeFormatter()
 
     kind = get_report_kind(report_type)
     report_title = get_report_title(report_type)
@@ -43,7 +44,8 @@ def export_for_stock_holder(event, stock_holder, report_type):
 
     for i, performance in enumerate(event.performances):
         sheet_num = i + 1
-        sheet_name = u"%s%d" % (jdatetime(performance.start_on), sheet_num)
+        dt = formatter.format_datetime_for_sheet_name(performance.start_on)
+        sheet_name = u"%s_%d" % (dt, sheet_num)
         # 一つ目のシートは追加せずに取得
         if i == 0:
             sheet = exporter.workbook.get_sheet(0)
@@ -81,7 +83,7 @@ def export_for_stock_holder(event, stock_holder, report_type):
                 for seat_record in seat_records:
                     stock_record.records.append(seat_record)
             stock_records.append(stock_record)
-        report_sheet.process_sheet(exporter, sheet, report_title, event, performance, stock_holder, stock_records)
+        report_sheet.process_sheet(exporter, formatter, sheet, report_title, event, performance, stock_holder, stock_records)
     return exporter
 
 def export_for_sales(event):
@@ -89,6 +91,7 @@ def export_for_sales(event):
     """
     assetresolver = AssetResolver()
     template_path = assetresolver.resolve("ticketing:/templates/reports/sales_schedule_report_template.xls").abspath()
+    formatter = DateTimeFormatter()
     exporter = xls_export.SalesScheduleReportExporter(template=template_path)
 
     # 会場ごとにシートを生成
@@ -101,7 +104,7 @@ def export_for_sales(event):
         # Event
         data = report_sheet.SalesScheduleRecord(
             event_title=event.title,
-            output_datetime=jdate(datetime.now()),
+            output_datetime=formatter.format_date(datetime.now()),
             venue_name=site.name
         )
 
@@ -114,8 +117,8 @@ def export_for_sales(event):
         for ssg in query:
             record = report_sheet.SalesScheduleSalesRecord(
                 sales_seg=ssg.name,
-                sales_start=jdatetime(ssg.start_at),
-                sales_end=jdatetime(ssg.end_at),
+                sales_start=(ssg.start_at and formatter.format_datetime(ssg.start_at)),
+                sales_end=(ssg.end_at and formatter.format_datetime(ssg.end_at)),
                 margin_ratio=unicode(ssg.margin_ratio),
                 refund_ratio=unicode(ssg.refund_ratio),
                 printing_fee=u'{0:,g}'.format(ssg.printing_fee),
@@ -147,7 +150,7 @@ def export_for_sales(event):
                     sales_segment=value,
                     seat_type=key[1],
                     ticket_type=key[2],
-                    price=formatter().format_currency(key[3])
+                    price=Japanese_Japan_Formatter().format_currency(key[3])
                 )
                 price_table.records.append(record)
 
@@ -163,11 +166,11 @@ def export_for_sales(event):
             end_at = SalesSegment.query.filter(and_(SalesSegment.performance_id==p.id, SalesSegment.public==True))\
                                        .with_entities(func.max(SalesSegment.end_at)).scalar()
             record = report_sheet.SalesSchedulePerformanceRecord(
-                datetime_=jdate(p.open_on),
-                open_=jtime(p.open_on),
-                start=jtime(p.start_on),
+                datetime_=(p.open_on and formatter.format_date(p.open_on)),
+                open_=(p.open_on and formatter.format_time(p.open_on)),
+                start=(p.start_on and formatter.format_time(p.start_on)),
                 price_name=label,
-                sales_end=jdate(end_at),
+                sales_end=(end_at and formatter.format_date(end_at)),
                 submit_order=None,
                 submit_pay=None,
                 pay_datetime=None

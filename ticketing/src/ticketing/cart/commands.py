@@ -60,6 +60,9 @@ def cancel_auth_expired_carts():
 
     from . import models as m
     config_file = sys.argv[1]
+    target_from = sys.argv[3] if len(sys.argv) > 3 else None
+    if target_from:
+        target_from = datetime.strptime(target_from, '%Y-%m-%d %H:%M:%S')
 
     app_env = bootstrap(config_file)
     import sqlahelper
@@ -72,6 +75,15 @@ def cancel_auth_expired_carts():
     registry = app_env['registry']
     settings = registry.settings
     expire_time = int(settings['altair_cart.expire_time'])
+
+    # 多重起動防止
+    LOCK_NAME = cancel_auth_expired_carts.__name__
+    LOCK_TIMEOUT = 10
+    conn = sqlahelper.get_engine().connect()
+    status = conn.scalar("select get_lock(%s,%s)", (LOCK_NAME, LOCK_TIMEOUT))
+    if status != 1:
+        logging.warn('lock timeout: already running process')
+        return
 
     carts_to_skip = set()
     logging.info("start auth cancel batch")
@@ -87,8 +99,10 @@ def cancel_auth_expired_carts():
         )
         if carts_to_skip:
             cart_q = cart_q.filter(not_(m.Cart.id.in_(carts_to_skip)))
+        if target_from:
+            cart_q = cart_q.filter(m.Cart.created_at > target_from)
 
-        cart = cart_q.first()
+        cart = cart_q.with_lockmode('update').first()
 
         if cart is None:
             logging.info('not found unfinished cart')
@@ -143,4 +157,5 @@ def cancel_auth_expired_carts():
         logging.info("TRANSACTION IS BEING COMMITTED AGAIN...")
         transaction.commit()
 
+    conn.close()
     logging.info("end auth cancel batch")

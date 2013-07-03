@@ -1,8 +1,10 @@
 # -*- coding:utf-8 -*-
-from datetime import datetime
+from datetime import datetime, timedelta
 import logging
 import operator
-import json
+#import json
+
+from webob.multidict import MultiDict
 
 from pyramid.view import view_config, view_defaults
 #from pyramid.view import render_view_to_response
@@ -15,23 +17,23 @@ from altair.pyramid_tz.api import get_timezone
 
 from ticketing.models import DBSession
 from ticketing.core.models import PaymentDeliveryMethodPair
-from ticketing.cart import api as cart_api
+#from ticketing.cart import api as cart_api
 from ticketing.users import api as user_api
 from ticketing.utils import toutc
 from ticketing.payments.payment import Payment
 from ticketing.cart.exceptions import NoCartError
-from ticketing.cart.selectable_renderer import selectable_renderer
 from ticketing.mailmags.api import get_magazines_to_subscribe, multi_subscribe
 
 from . import api
 from . import helpers as h
 from . import schemas
+from . import selectable_renderer
 from .exceptions import NotElectedException
 from .models import (
     #Lot,
     LotEntry,
-    LotEntryWish,
-    LotElectedEntry,
+    #LotEntryWish,
+    #LotElectedEntry,
 )
 from .adapters import LotSessionCart
 from . import urls
@@ -90,7 +92,7 @@ def no_cart_error(context, request):
     logger.warning(context)
     return HTTPNotFound()
 
-@view_defaults(route_name='lots.entry.index', renderer=selectable_renderer("pc/%(membership)s/index.html"))
+@view_defaults(route_name='lots.entry.index', renderer=selectable_renderer("pc/%(membership)s/index.html"), permission="lots")
 class EntryLotView(object):
     """
     申し込み画面
@@ -124,13 +126,40 @@ class EntryLotView(object):
             p.sort(key=key_func)
         return performance_product_map
 
+    def _create_form(self):
+        user = user_api.get_or_create_user(self.context.authenticated_user())
+        user_profile = None
+        if user is not None:
+            user_profile = user.user_profile
+
+        if user_profile is not None:
+            formdata = MultiDict(
+                last_name=user_profile.last_name,
+                last_name_kana=user_profile.last_name_kana,
+                first_name=user_profile.first_name,
+                first_name_kana=user_profile.first_name_kana,
+                tel_1=user_profile.tel_1,
+                fax=getattr(user_profile, "fax", None),
+                zip=user_profile.zip,
+                prefecture=user_profile.prefecture,
+                city=user_profile.city,
+                address_1=user_profile.address_1,
+                address_2=user_profile.address_2,
+                email_1=user_profile.email_1,
+                email_2=user_profile.email_2
+                )
+        else:
+            formdata = None
+
+        return schemas.ClientForm(formdata=formdata)
+
     @view_config(request_method="GET")
     def get(self, form=None):
         """
 
         """
         if form is None:
-            form = schemas.ClientForm()
+            form = self._create_form()
 
         event = self.context.event
         lot = self.context.lot
@@ -149,9 +178,18 @@ class EntryLotView(object):
 
         stocks = lot.stock_types
 
+        performance_id = self.request.params.get('performance')
+        selected_performance = None
+        if performance_id:
+            for p in lot.performances:
+                if str(p.id) == performance_id:
+                    selected_performance = p
+                    break
+
         # if not stocks:
         #     logger.debug('lot stocks found')
         #     raise HTTPNotFound()
+
 
         sales_segment = lot.sales_segment
         payment_delivery_pairs = sales_segment.payment_delivery_method_pairs
@@ -181,7 +219,7 @@ class EntryLotView(object):
             payment_delivery_pairs=payment_delivery_pairs,
             posted_values=dict(self.request.POST),
             performance_product_map=performance_product_map,
-            stock_types=stock_types,
+            stock_types=stock_types, selected_performance=selected_performance,
             payment_delivery_method_pair_id=self.request.params.get('payment_delivery_method_pair_id'),
             lot=lot, performances=performances, performance_map=performance_map, stocks=stocks)
 
@@ -264,6 +302,7 @@ class EntryLotView(object):
             memo=cform['memo'].data)
 
         entry = self.request.session['lots.entry']
+        self.request.session['lots.entry.time'] = datetime.now()
         cart = LotSessionCart(entry, self.request, self.context.lot)
 
         payment = Payment(cart, self.request)
@@ -288,6 +327,9 @@ class ConfirmLotEntryView(object):
         # セッションから表示
         entry = self.request.session.get('lots.entry')
         if entry is None:
+            return self.back_to_form()
+        if not entry.get('token'):
+            self.request.session.flash(u"セッションに問題が発生しました。")
             return self.back_to_form()
         # wishesを表示内容にする
         event = self.context.event
@@ -327,8 +369,18 @@ class ConfirmLotEntryView(object):
         if not h.validate_token(self.request):
             self.request.session.flash(u"セッションに問題が発生しました。")
             return self.back_to_form()
+        basetime = self.request.session.get('lots.entry.time')
+        if basetime is None:
+            self.request.session.flash(u"セッションに問題が発生しました。")
+            return self.back_to_form()
+
+        if basetime + timedelta(minutes=15) < datetime.now():
+            self.request.session.flash(u"セッションに問題が発生しました。")
+            return self.back_to_form()
+
 
         entry = self.request.session['lots.entry']
+        entry.pop('token')
         entry_no = entry['entry_no']
         shipping_address = entry['shipping_address']
         shipping_address = h.convert_shipping_address(shipping_address)
@@ -362,6 +414,11 @@ class ConfirmLotEntryView(object):
         self.request.session['lots.entry_no'] = entry.entry_no
 
 
+        try:
+            api.notify_entry_lot(self.request, entry)
+        except Exception as e:
+            logger.warning('error orccured during sending mail. \n{0}'.format(e))
+
 
         return HTTPFound(location=urls.entry_completion(self.request))
 
@@ -374,18 +431,13 @@ class CompletionLotEntryView(object):
         self.request = request
 
     @view_config(request_method="GET", renderer=selectable_renderer("pc/%(membership)s/completion.html"))
-
-
     @mobile_view_config(request_method="GET", renderer=selectable_renderer("mobile/%(membership)s/completion.html"))
     def get(self):
         """ 完了画面 """
-        entry_no = self.request.session['lots.entry_no']
+        if 'lots.entry_no' not in self.request.session:
+            return HTTPFound(location=self.request.route_url('lots.entry.index', **self.request.matchdict))
+        entry_no = self.request.session.pop('lots.entry_no')
         entry = DBSession.query(LotEntry).filter(LotEntry.entry_no==entry_no).one()
-
-        try:
-            api.notify_entry_lot(self.request, entry)
-        except Exception as e:
-            logger.warning('error orccured during sending mail. \n{0}'.format(e))
 
 
         try:

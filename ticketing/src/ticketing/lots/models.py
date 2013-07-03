@@ -121,6 +121,34 @@ class Lot(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     system_fee = sa.Column(sa.Numeric(precision=16, scale=2), default=0,
                            server_default="0")
 
+    @property
+    def electing_works(self):
+        return LotElectWork.query.filter(
+            LotElectWork.lot_id==self.id
+        ).filter(
+            LotEntry.entry_no==LotElectWork.lot_entry_no
+        ).filter(
+            sql.and_(LotEntry.elected_at==None,
+                     LotEntry.ordered_mail_sent_at==None)
+        ).all()
+
+    auth_type = sa.Column(sa.Unicode(255))
+
+    @property
+    def remained_entries(self):
+        """ 当選以外のエントリ"""
+
+        return LotEntry.query.filter(
+            LotEntry.elected_at==None
+        ).filter(
+            LotEntry.order_id==None
+        ).filter(
+            sql.or_(LotEntry.rejected_at!=None,
+                    LotEntry.canceled_at!=None)
+        ).filter(
+            LotEntry.lot_id==self.id
+        ).all()
+
     def is_elected(self):
         return self.status == int(LotStatusEnum.Elected)
 
@@ -297,6 +325,10 @@ class LotEntry(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     payment_delivery_method_pair_id = sa.Column(Identifier, sa.ForeignKey('PaymentDeliveryMethodPair.id'))
     payment_delivery_method_pair = orm.relationship('PaymentDeliveryMethodPair', backref='lot_entries')
 
+    #xxx: for order
+    @property
+    def payment_delivery_pair(self):
+        return self.payment_delivery_method_pair
 
     gender = sa.Column(sa.Integer, default=int(SexEnum.NoAnswer))
     birthday = sa.Column(sa.Date)
@@ -306,6 +338,15 @@ class LotEntry(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     ordered_mail_sent_at = sa.Column(sa.DateTime())
 
     browserid = sa.Column(sa.String(40))
+
+    closed_at = sa.Column(sa.DateTime())
+
+    user_id = sa.Column(Identifier, sa.ForeignKey('User.id'))
+    user = orm.relationship('User', backref='lot_entries')
+
+
+    def close(self):
+        self.closed_at = datetime.now()
 
     def get_wish(self, wish_order):
         wish_order = int(wish_order)
@@ -404,6 +445,10 @@ class LotEntryWish(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     canceled_at = sa.Column(sa.DateTime())
 
+    @property
+    def closed(self):
+        return bool(self.lot_entry.closed_at)
+
     def is_electing(self):
         return LotElectWork.query.filter(
             LotElectWork.entry_wish_no==self.entry_wish_no).count()
@@ -473,6 +518,8 @@ class LotEntryWish(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     @property
     def status(self):
         """ """
+        if self.closed:
+            return u"終了"
         if self.elected_at:
             return u"当選"
         if self.works:
@@ -508,7 +555,8 @@ class LotEntryProduct(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     # 商品
     product_id = sa.Column(Identifier, sa.ForeignKey('Product.id'))
-    product = orm.relationship('Product', backref='lot_entry_products')
+    product = orm.relationship('Product', backref='lot_entry_products',
+                               primaryjoin="and_(Product.id==LotEntryProduct.product_id, Product.deleted_at==None)")
 
     # 抽選申し込み希望
     lot_wish_id = sa.Column(Identifier, sa.ForeignKey('LotEntryWish.id'))
@@ -598,3 +646,16 @@ class LotRejectedEntry(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     lot_entry = orm.relationship('LotEntry', backref="lot_rejected_entries")
 
     mail_sent_at = sa.Column(sa.DateTime)
+
+
+class LotWorkHistory(Base, WithTimestamp):
+    __tablename__ = 'LotWorkHistory'
+
+    id = sa.Column(Identifier, primary_key=True)
+
+    lot_id = sa.Column(Identifier, sa.ForeignKey('Lot.id'))
+    lot = orm.relationship("Lot", backref="work_histories")
+    entry_no = sa.Column(sa.Unicode(20), doc=u"抽選申し込み番号", nullable=False)
+    wish_order = sa.Column(sa.Integer, doc=u"希望順")
+    error = sa.Column(sa.UnicodeText)
+

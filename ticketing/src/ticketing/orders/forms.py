@@ -240,6 +240,10 @@ class SearchFormBase(Form):
         return conditions
 
 class OrderSearchForm(SearchFormBase):
+    billing_or_exchange_number = TextField(
+        label=u'セブン−イレブン払込票/引換票番号',
+        validators=[Optional()],
+    )
     ordered_from = DateTimeField(
         label=u'予約日時',
         validators=[Optional(), after1900],
@@ -305,6 +309,10 @@ class OrderSearchForm(SearchFormBase):
         validators=[Optional(), AnyOf(['asc', 'desc'], message='')],
         default='desc',
     )
+    number_of_tickets = IntegerField(
+        label=u'購入枚数',
+        validators=[Optional()]
+        )
 
     def get_conditions(self):
         conditions = {}

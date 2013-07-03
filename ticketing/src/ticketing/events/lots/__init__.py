@@ -28,6 +28,8 @@ def includeme(config):
                      factory=lot_resource_factory)
     config.add_route('lots.entries.search', 'entries/search/{lot_id}',
                      factory=lot_resource_factory)
+    config.add_route('lots.entries.show', 'entries/search/{lot_id}/entry/{entry_no}',
+                     factory=lot_resource_factory)
     config.add_route('lots.entries.export.html', 'entries/export/{lot_id}.html',
                      factory=lot_resource_factory)
     config.add_route('lots.entries.export', 'entries/export/{lot_id}',
@@ -37,6 +39,8 @@ def includeme(config):
     config.add_route('lots.entries.elect_entry_no', 'entries/elect_entry_no/{lot_id}',
                      factory=lot_resource_factory)
     config.add_route('lots.entries.reject_entry_no', 'entries/reject_entry_no/{lot_id}',
+                     factory=lot_resource_factory)
+    config.add_route('lots.entries.close', 'entries/close/{lot_id}',
                      factory=lot_resource_factory)
     config.add_route('lots.entries.elect', 'entries/elect/{lot_id}',
                      factory=lot_resource_factory)
@@ -49,6 +53,7 @@ def includeme(config):
     config.add_route('lots.entries.cancel_rejecting', 'entries/cancel_rejecting/{lot_id}',
                      factory=lot_resource_factory)
 
+    config.include(".mailinfo", route_prefix="/lots/mailinfo/")
     # adapters
     reg = config.registry
     settings = reg.settings
@@ -69,3 +74,4 @@ def includeme(config):
                         IPublisher)
     config.include("ticketing.lots.sendmail")
     config.scan('ticketing.lots.subscribers')
+

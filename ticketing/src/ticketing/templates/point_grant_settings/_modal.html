@@ -1,0 +1,41 @@
+<%page args="modal_id, sales_segment=None" />
+<%namespace file="/common/helpers.html" name="ch" />
+<script type="text/javascript">
+  var new_point_grant_setting, edit_point_grant_setting, delete_point_grant_setting;
+  $(function() {
+    (function(modal_point_grant_setting) {
+      new_point_grant_setting = function new_point_grant_setting() {
+        // FIXME: formをsubmitしたらページ遷移が発生する挙動に頼っていて
+        // onchangeイベントハンドラはずしてないの注意
+        load_modal_form(
+          modal_point_grant_setting,
+          '${request.route_path('point_grant_settings.new', _query=dict(sales_segment_id=(sales_segment and sales_segment.id)))|n}',
+          null,
+          null
+        );
+      };
+      edit_point_grant_setting = function edit_point_grant_setting(id) {
+        if (!id) return false;
+        load_modal_form(
+          modal_point_grant_setting,
+          '${request.route_path('point_grant_settings.edit', point_grant_setting_id='{id}')|n}'.replace(encodeURIComponent('{id}'), id),
+          null,
+          null
+        );
+      };
+    })($('#${modal_id}'));
+  });
+</script>
+<div id="${modal_id}" class="modal hide big">
+  <div class="modal-header">
+    <a class="close" data-dismiss="modal">×</a>
+    <h3>ポイント付与設定</h3>
+  </div>
+
+  <div class="modal-body"></div>
+
+  <div class="modal-footer">
+    <a href="#" class="btn" data-dismiss="modal">閉じる</a>
+    <a href="javascript:void(0);" onclick="$('#${modal_id}').find('form').submit();" class="btn">保存</a>
+  </div>
+</div>

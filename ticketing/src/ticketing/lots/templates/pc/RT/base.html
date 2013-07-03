@@ -12,6 +12,13 @@
 <link rel="stylesheet" href="${request.static_url('ticketing.lots:static/css/import.css')}" type="text/css" media="all" />
 <script type="text/javascript" src="${request.static_url('ticketing.lots:static/js/jquery.js')}"></script>
 <script type="text/javascript" src="${request.static_url('ticketing.lots:static/js/underscore-min.js')}"></script>
+<script type="text/javascript" src="${request.static_url('ticketing.cart:static/js/disable_on_submit.js')}"></script>
+<script type="text/javascript" src="${request.static_url('ticketing.cart:static/js/ajaxzip3-https.js')}"></script>
+<script type="text/javascript">
+  $(function() {
+    $('form').disableOnSubmit('input[type=image][name!="back"]');
+  });
+</script>
 </head>
 <body id="settlement">
 <p id="naviSkip"><a href="#main" tabindex="1" title="本文へジャンプ"><img src="${request.static_url('ticketing.lots:static/img/common/skip.gif')}" alt="本文へジャンプ" width="1" height="1" /></a></p>

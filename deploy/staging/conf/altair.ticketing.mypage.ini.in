@@ -7,14 +7,14 @@ pyramid_who.config = %(here)s/mypage_who.ini
 altair.site_data.base_url = s3://tstar-dev/venue-layouts/frontend/
 
 ; altair.rakuten_auth
-altair.rakuten_auth.return_to = https://ticket.rakuten.co.jp/.api/rc/http/stg/rt/cart/verify
-altair.rakuten_auth.error_to = https://ticket.rakuten.co.jp/.api/rc/http/stg/rt/stg/mypage/error
-altair.rakuten_auth.verify_url = https://rt.stg2.rt.ticketstar.jp/cart/verify
-altair.rakuten_auth.extra_verify_url = https://rt.stg2.rt.ticketstar.jp/cart/verify2
+altair.rakuten_auth.return_to = ${altair:rakuten_auth.return_to}
+altair.rakuten_auth.error_to = ${altair:rakuten_auth.error_to}
+altair.rakuten_auth.verify_url = ${altair:rakuten_auth.verify_url}
+altair.rakuten_auth.extra_verify_url = ${altair:rakuten_auth.extra_verify_url}
 
 ; Beaker
-session.type = redis
-cache.type = redis
+session.type = ${altair:beaker_backend_type}
+cache.type = ${altair:beaker_backend_type}
 
 [filter:prefix]
 use = egg:PasteDeploy#prefix

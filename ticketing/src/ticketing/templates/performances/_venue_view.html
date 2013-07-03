@@ -1,3 +1,4 @@
+<%! import json %>
 <%def name="venueeditor(data_source)">
       <style type="text/css">
 #venue-editor .venue-editor-main {
@@ -164,12 +165,7 @@
         </div>
       </div>
       <script type="text/javascript">
-var dataSource = {
-%if 'drawing' in data_source:
-  drawing: "${data_source['drawing']|n}",
-%endif
-  metadata: "${data_source['metadata']|n}"
-};
+var dataSource = ${json.dumps(data_source)|n};
 
 var venueEditor = $("#venue-editor");
 var venueEditorRoot = venueEditor.find(".venue-editor-main-root");

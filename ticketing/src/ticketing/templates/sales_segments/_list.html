@@ -1,6 +1,6 @@
 <%page args="sales_segments" />
 <% from ticketing.events.sales_segments.forms import SalesSegmentForm %>
-<%namespace file="/common/helpers.html" name="h" />
+<%namespace file="/common/helpers.html" name="ch" />
 % if sales_segments:
 <div class="row-fluid">
   <div class="span12">
@@ -9,12 +9,15 @@
         <tr>
           <th class="minwidth"></th>
           <th>名称</th>
-          <th>${h.sortable(SalesSegmentForm.start_at)}</a></th>
-          <th>${h.sortable(SalesSegmentForm.end_at)}</a></th>
-          <th>${h.sortable(SalesSegmentForm.account_id)}</a></th>
-          <th>${h.sortable(SalesSegmentForm.upper_limit)}</a></th>
-          <th>${h.sortable(SalesSegmentForm.seat_choice)}</a></th>
-          <th>${h.sortable(SalesSegmentForm.public)}</a></th>
+          <th>${ch.sortable(SalesSegmentForm.start_at)}</a></th>
+          <th>${ch.sortable(SalesSegmentForm.end_at)}</a></th>
+          % if not performance:
+          <th>公演名</th>
+          % endif
+          <th>${ch.sortable(SalesSegmentForm.account_id)}</a></th>
+          <th>${ch.sortable(SalesSegmentForm.upper_limit)}</a></th>
+          <th>${ch.sortable(SalesSegmentForm.seat_choice)}</a></th>
+          <th>${ch.sortable(SalesSegmentForm.public)}</a></th>
           <th>決済方法</th>
           <th>引取方法</th>
         </tr>
@@ -28,9 +31,16 @@
             <input type="radio" name="sales_segment_id" value="${sales_segment.id}" />
             <input type="hidden" id="kind" value="${sales_segment.kind}" />
           </td>
-          <td ${rowspan}><a href="${request.route_path('sales_segment_groups.show', sales_segment_group_id=sales_segment.sales_segment_group.id)}">${sales_segment.sales_segment_group.name}</a></td>
-          <td ${rowspan}>${h.safe_strftime(sales_segment.start_at)}</td>
-          <td ${rowspan}>${h.safe_strftime(sales_segment.end_at)}</td>
+          <td ${rowspan}><a href="${request.route_path('sales_segments.show', sales_segment_id=sales_segment.id)}">${sales_segment.sales_segment_group.name}</a></td>
+          <td ${rowspan}>${vh.datetime(sales_segment.start_at)}</td>
+          <td ${rowspan}>${vh.datetime(sales_segment.end_at)}</td>
+          % if not performance:
+          <td ${rowspan}>
+            % if sales_segment.performance:
+              <a href="${request.route_path('performances.show', event_id=sales_segment.performance.event_id, performance_id=sales_segment.performance.id)}">${sales_segment.performance.name}</a>
+            % endif
+          </td>
+          % endif
           <td ${rowspan}>${sales_segment.account.name}</td>
           <td ${rowspan}>${sales_segment.upper_limit or u''}</td>
           <td ${rowspan}>${u'○' if sales_segment.seat_choice else u'×'}</td>

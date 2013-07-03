@@ -8,6 +8,7 @@ from zope.interface import implementer
 from repoze.who.api import get_api as get_who_api
 from repoze.who.interfaces import IIdentifier, IChallenger, IAuthenticator, IMetadataProvider
 from altair.auth.api import get_current_request
+from altair.browserid import get_browserid
 from beaker.cache import Cache, CacheManager, cache_regions
 from .api import get_rakuten_oauth, get_rakuten_id_api_factory
 from .interfaces import IRakutenOpenID
@@ -35,6 +36,7 @@ def sex_no(s, encoding='utf-8'):
 class RakutenOpenIDPlugin(object):
     cache_manager = cache_manager
     AUTHENTICATED_KEY = __name__ + '.authenticated'
+    METADATA_KEY = __name__ + '.metadata'
 
     def __init__(self, rememberer_name, cache_region=None):
         self.rememberer_name = rememberer_name
@@ -53,12 +55,48 @@ class RakutenOpenIDPlugin(object):
         return request.registry.queryUtility(IRakutenOpenID)
 
     def _get_rememberer(self, environ):
-        rememberer = environ['repoze.who.plugins'][self.rememberer_name]
+        
+        #rememberer = environ['repoze.who.plugins'][self.rememberer_name]
+        api = get_who_api(environ)
+        rememberer = api.name_registry[self.rememberer_name]
         return rememberer
 
     def get_identity(self, req):
         rememberer = self._get_rememberer(req.environ)
         return rememberer.identify(req.environ)
+
+    def _get_extras(self, request, identity):
+        access_token = get_rakuten_oauth(request).get_access_token(identity['oauth_request_token'])
+        logger.debug('access token : %s' % access_token)
+
+        idapi = get_rakuten_id_api_factory(request)(access_token)
+        user_info = idapi.get_basic_info()
+        birth_day = None
+        try:
+            datetime.strptime(user_info.get('birthDay'), '%Y/%m/%d')
+        except (ValueError, TypeError):
+            # 生年月日未登録
+            pass
+
+        contact_info = idapi.get_contact_info()
+        point_account = idapi.get_point_account()
+
+        return dict(
+            email_1=user_info.get('emailAddress'),
+            nick_name=user_info.get('nickName'),
+            first_name=user_info.get('firstName'),
+            last_name=user_info.get('lastName'),
+            first_name_kana=user_info.get('firstNameKataKana'),
+            last_name_kana=user_info.get('lastNameKataKana'),
+            birth_day=birth_day,
+            sex=sex_no(user_info.get('sex'), 'utf-8'),
+            zip=contact_info.get('zip'),
+            prefecture=contact_info.get('prefecture'),
+            city=contact_info.get('city'),
+            street=contact_info.get('street'),
+            tel_1=contact_info.get('tel'),
+            rakuten_point_account=point_account.get('pointAccount')
+            )
 
     # IIdentifier
     def identify(self, environ):
@@ -119,6 +157,30 @@ class RakutenOpenIDPlugin(object):
             if 'claimed_id' in identity:
                 userdata = identity
 
+                cache = self._get_cache()
+
+                def get_extras():
+                    retval = self._get_extras(req, identity)
+                    session = impl.get_session(req)
+                    browserid = get_browserid(req)
+                    retval['browserid'] = browserid
+                    return retval
+
+                extras = None
+                try:
+                    extras = cache.get(
+                        key=identity['claimed_id'],
+                        createfunc=get_extras
+                        )
+                except:
+                    logger.warning("Failed to retrieve extra information", exc_info=sys.exc_info())
+                if not extras:
+                    # ユーザ情報が取れない→ポイント口座番号が取れない
+                    # →クリティカルな状況と考えられるので認証失敗
+                    logger.info("Could not retrieve extra information")
+                    return None
+                environ[self.METADATA_KEY] = extras
+
         if userdata:
             environ[self.AUTHENTICATED_KEY] = True
             return (pickle.dumps(userdata)).encode('base64')
@@ -157,47 +219,9 @@ class RakutenOpenIDPlugin(object):
 
     # IMetadataProvider
     def add_metadata(self, environ, identity):
-        request = get_current_request(environ)
-        def get_extras():
-            access_token = get_rakuten_oauth(request).get_access_token(identity['oauth_request_token'])
-            logger.debug('access token : %s' % access_token)
-
-            idapi = get_rakuten_id_api_factory(request)(access_token)
-            user_info = idapi.get_basic_info()
-            birth_day = None
-            try:
-                datetime.strptime(user_info.get('birthDay'), '%Y/%m/%d')
-            except (ValueError, TypeError):
-                # 生年月日未登録
-                pass
-
-            contact_info = idapi.get_contact_info()
-            point_account = idapi.get_point_account()
-
-            return dict(
-                email_1=user_info.get('emailAddress'),
-                nick_name=user_info.get('nickName'),
-                first_name=user_info.get('firstName'),
-                last_name=user_info.get('lastName'),
-                first_name_kana=user_info.get('firstNameKataKana'),
-                last_name_kana=user_info.get('lastNameKataKana'),
-                birth_day=birth_day,
-                sex=sex_no(user_info.get('sex'), 'utf-8'),
-                zip=contact_info.get('zip'),
-                prefecture=contact_info.get('prefecture'),
-                city=contact_info.get('city'),
-                street=contact_info.get('street'),
-                tel_1=contact_info.get('tel'),
-                rakuten_point_account=point_account.get('pointAccount')
-                )
-
-        cache = self._get_cache()
-        try:
-            extras = cache.get(key=identity['claimed_id'], createfunc=get_extras)
-            identity.update(extras)
-        except:
-            logger.warning('could not access to RakutenID API', exc_info=sys.exc_info())
-            raise
+        if self.METADATA_KEY in environ:
+            identity.update(environ[self.METADATA_KEY])
+            del environ[self.METADATA_KEY]
 
     # IChallenger
     def challenge(self, environ, status, app_headers, forget_headers):

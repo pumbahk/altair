@@ -2,10 +2,6 @@ from wtforms import form, fields
 from wtforms.compat import iteritems
 from .fields.liaison import Liaison
 
-__all__ = [
-  'OurForm',
-  ]
-
 class OurForm(form.Form):
     def __init__(self, *args, **kwargs):
         self.new_form = kwargs.pop('new_form', False)

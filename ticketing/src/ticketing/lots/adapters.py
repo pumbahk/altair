@@ -121,6 +121,7 @@ class LotEntryStatus(object):
                                           ).where(sql.and_(LotEntryWish.lot_entry_id==LotEntry.id,
                                                            LotEntry.lot_id==self.lot.id,
                                                            LotEntry.canceled_at==None,
+                                                           LotEntry.entry_no!=None,
                                                            )
                                                   ).group_by(LotEntryWish.performance_id, LotEntryWish.wish_order
                                                              ).execute()]
@@ -133,6 +134,8 @@ class LotEntryStatus(object):
             LotEntry.lot_id==self.lot.id
         ).filter(
             LotEntry.canceled_at==None
+        ).filter(
+            LotEntry.entry_no!=None
         ).count()
         return total_entries
 
@@ -157,6 +160,8 @@ class LotEntryStatus(object):
         ).filter(
             LotEntry.canceled_at==None
         ).filter(
+            LotEntry.entry_no!=None
+        ).filter(
             LotEntry.elected_at!=None
         ).count()
 
@@ -173,6 +178,8 @@ class LotEntryStatus(object):
         ).filter(
             LotEntry.canceled_at==None
         ).filter(
+            LotEntry.entry_no != None
+        ).filter(
             LotEntry.order_id != None
         ).count()
         return ordered_count
@@ -188,7 +195,11 @@ class LotEntryStatus(object):
         ).filter(
             LotEntry.canceled_at==None
         ).filter(
-            LotEntry.order_id==Order.id
+            LotEntry.canceled_at==None
+        ).filter(
+            LotEntry.entry_no != None
+        ).filter(
+            Order.id==LotEntry.order_id
         ).filter(
             Order.canceled_at!=None
         ).count()
@@ -206,6 +217,10 @@ class LotEntryStatus(object):
         ).filter(
             LotEntry.order_id==Order.id
         ).filter(
+            LotEntry.entry_no != None
+        ).filter(
+            Order.id==LotEntry.order_id
+        ).filter(
             Order.paid_at==None
         ).count()
         return reserved_count
@@ -222,6 +237,8 @@ class LotEntryStatus(object):
             LotEntry.lot_id==self.lot.id
         ).filter(
             LotEntry.canceled_at==None
+        ).filter(
+            LotEntry.entry_no != None
         ).scalar()
         return total_quantity
 
@@ -239,6 +256,8 @@ class LotEntryStatus(object):
             LotEntry.lot_id==self.lot.id
         ).filter(
             LotEntry.canceled_at==None
+        ).filter(
+            LotEntry.entry_no != None
         ).group_by(LotEntryWish.wish_order).all()
         results = {}
         for wish_order, quantity in wishes:
@@ -307,6 +326,8 @@ class LotEntryStatus(object):
             LotEntry.lot_id==self.lot.id
         ).filter(
             LotEntry.canceled_at==None
+        ).filter(
+            LotEntry.entry_no != None
         ).subquery()
 
         results = DBSession.query(
