@@ -28,7 +28,10 @@
     color: #ff0000;
   }
   .dispBox {
-    margin-right: 20px
+    margin: 10px;
+  }
+  .dispBoxInner {
+    margin-left: 17px;
   }
 </style>
 </%block>
@@ -50,21 +53,18 @@ ${h.get_nickname(request)}
         <dt class="cartPayment">クレジットカードでお支払い</dt>
           <div class="settlementPayInput">
             <div class="settlementPayInputInner">
-                <dl class="dispBox">
-                  <dt>
-                    <%m:header>カード番号(半角数字)</%m:header>
-                  </dt>
-                  <dd>
+                <div class="dispBox">
+                  <%m:header>カード番号(半角数字)</%m:header>
+                  <div class="dispBoxInner">
                     <input name="card_number" type="text" id="textfield" length="16" placeholder="1234123412341234"/>
                     16桁
                     ${h.error_list(request, form, 'card_number')}
-                  </dd>
-                </dl>
-                <dl class="dispBox">
-                  <dt>
-                    <%m:header>有効期限</%m:header>
-                  </dt>
-                  <dd>
+                  </div>
+                </div>
+
+                <div class="dispBox">
+                  <%m:header>有効期限</%m:header>
+                  <div class="dispBoxInner">
                       <select name="exp_month" id="select">
                         <option value="01">1</option>
                         <option value="02">2</option>
@@ -95,31 +95,29 @@ ${h.get_nickname(request)}
                       </select>
                       年
                       ${h.error_list(request, form, 'exp_year')}
-                  </dd>
-                </dl>
-                <dl class="dispBox">
-                  <dt>
-                    <%m:header>名義人(半角ローマ字)</%m:header>
-                  </dt>
-                  <dd>
+                  </div>
+                </div>
+
+                <div class="dispBox">
+                  <%m:header>名義人(半角ローマ字)</%m:header>
+                  <div class="dispBoxInner">
                     <input name="card_holder_name" type="text" id="textfield5" size="50" placeholder="YAMADA TARO"/>
                     ${h.error_list(request, form, 'card_holder_name')}
-                  </dd>
-                </dl>
-                <dl class="dispBox">
-                  <dt>
-                    <%m:header>セキュリティコード(半角)</%m:header>
-                  </dt>
-                  <dd>
+                  </div>
+                </div>
+
+                <div class="dispBox">
+                  <%m:header>セキュリティコード(半角)</%m:header>
+                  <div class="dispBoxInner">
                     <input name="secure_code" type="text" id="textfield6" size="5"/>
                     ${h.error_list(request, form, 'secure_code')}
-                  </dd>
-                </dl>
+                  </div>
+                </div>
             </div>
           </div>
 
-          <dl class="dispBox">
-           <dd>
+          <div class="dispBox">
+           <div class="dispBoxInner">
               <p>セキュリティコードは、MasterCard、VisaまたはJCBでは、カード裏面の署名欄に印刷されている下3桁の数字です。<br/>
                 American Expressでは、カードの表に印刷されている4桁の数字です。
               </p>
