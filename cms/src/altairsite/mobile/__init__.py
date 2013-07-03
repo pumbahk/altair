@@ -19,6 +19,7 @@ def install_app(config):
     config.include("altair.mobile.install_detector")
     config.include("altairsite.config.install_convinient_request_properties")
     config.include("altairsite.mobile.event")
+    config.include('altairsite.staticpage')
     config.add_route("home", "/")
     config.scan(".")
 
