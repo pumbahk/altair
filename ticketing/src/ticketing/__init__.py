@@ -37,10 +37,14 @@ def exclude_js(path):
     return path.endswith(".js")
 
 def register_globals(event):
-    from . import helpers as HH
+    from .helpers import Namespace as Namespace_HH
     from .loyalty import helpers as lh
-    from altair.viewhelpers import Namespace
-    event.update(HH=HH, lh=lh, vh=Namespace(event['request']))
+    from altair.viewhelpers import Namespace as Namespace_vh
+    event.update(
+        HH=Namespace_HH(event['request']),
+        lh=lh,
+        vh=Namespace_vh(event['request'])
+        )
 
 
 def main(global_config, **local_config):

@@ -6,7 +6,7 @@ from sqlalchemy.sql import functions as safunc
 from sqlalchemy.orm import aliased
 from pyramid.interfaces import IRequest
 from ticketing.models import asc_or_desc
-from ticketing.helpers import todatetime
+from ticketing.utils import todatetime
 from ticketing.core.models import (
     Order,
     OrderedProduct,

@@ -7,7 +7,9 @@ REQUEST_ADAPTERS = [
     ]
 
 class Namespace(object):
-    locals().update(globals())
+    for k, v in globals().items():
+        if callable(v):
+            locals()[k] = staticmethod(v)
 
     def __init__(self, request):
         self.adatpers = []

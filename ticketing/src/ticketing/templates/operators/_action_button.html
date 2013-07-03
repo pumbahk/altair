@@ -50,14 +50,14 @@
       ),
     })
 
-    if 'administrator' in [(role.name) for role in operator.roles] and not ch.has_permission('administrator'):
+    if 'administrator' in [(role.name) for role in operator.roles] and not HH.has_permission('administrator'):
       order.remove('edit')
       order.remove('delete')
 
   order = iter(order)
 %>
 <div style="float: left;">
-  ${ch.action_button(actions, order, vertical=False)}
+  ${HH.action_button(actions, order, vertical=False)}
 </div>
 <div style="clear: left;"></div>
 

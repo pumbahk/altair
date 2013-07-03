@@ -43,8 +43,7 @@ from ticketing.models import (
 from standardenum import StandardEnum
 from ticketing.users.models import User, UserCredential, MemberGroup, MemberGroup_SalesSegment
 from ticketing.sej.models import SejOrder
-from ticketing.utils import tristate, is_nonmobile_email_address, sensible_alnum_decode
-from ticketing.helpers import todate, todatetime
+from ticketing.utils import tristate, is_nonmobile_email_address, sensible_alnum_decode, todate, todatetime
 from ticketing.payments import plugins
 from ticketing.sej import api as sej_api
 from ticketing.venues.interfaces import ITentativeVenueSite

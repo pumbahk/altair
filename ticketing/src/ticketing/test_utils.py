@@ -1,8 +1,8 @@
 import unittest
 
-class HelperTest(unittest.TestCase):
+class UtilsTest(unittest.TestCase):
     def test_todatetime(self):
-        from . import todatetime
+        from .utils import todatetime
         from datetime import datetime, date
         for y in range(1900, 2100):
             for m in range(0, 12):
@@ -12,7 +12,7 @@ class HelperTest(unittest.TestCase):
                         todatetime(date(y, m + 1, d + 1)))
 
     def test_todate(self):
-        from . import todate
+        from .utils import todate
         from datetime import datetime, date
         for y in range(1900, 2100):
             for m in range(0, 12):
