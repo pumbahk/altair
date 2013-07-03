@@ -9,7 +9,10 @@
     }
 
     .dispBox {
-      margin-right: 20px
+      margin: 10px;
+    }
+    .dispBoxInner {
+      margin-left: 17px;
     }
   </style>
 </%block>
@@ -42,32 +45,25 @@ $(function() {cart.init(salesSegmentsSelection, selected, cartReleaseUrl, false)
         if performance:
             link = request.route_url('cart.switchpc.perf', event_id=event['id'], performance=performance)
     %>
-    <dl>
-        <dd>
-            <a href="${link}">
-              <div style="margin: 0 auto">
-                <button class="btn-primary btn-large" style="margin: 0 auto">PCサイトで購入する</button>
-              </div>
-            </a>
-        </dd>
-    </dl>
+    <a href="${link}">
+      <div class="dispBox">
+        <button class="btn-primary btn-large">PCサイトで購入する</button>
+      </div>
+    </a>
 
     <hr/>
-    <dl>
-      <dt>
-        <%m:header>イベント名称</%m:header>
-      </dt>
-      <dd class="dispBox">
+
+    <div class="dispBox">
+      <%m:header>イベント名称</%m:header>
+      <div class="dispBoxInner">
         ${event['title']}
-      </dd>
-    </dl>
+      </div>
+    </div>
 
     <hr/>
-    <dl>
-        <dt>
-          <%m:header>日時・会場選択</%m:header>
-        </dt>
-        <dd class="dispBox">
+    <div class="dispBox">
+        <%m:header>日時・会場選択</%m:header>
+        <div class="dispBoxInner">
           <form id="form1" name="form1" method="post" action="">
             <div id="settlementSelectBox">
               <div id="settlementSelectBoxInner">
@@ -76,7 +72,7 @@ $(function() {cart.init(salesSegmentsSelection, selected, cartReleaseUrl, false)
                 </select>
                 <br/>
                 ${second_selection_label}<br/>
-                <select name="select2" id="venue-select" style="width: 260px">
+                <select name="select2" id="venue-select" style="width: 100%">
                 </select>
                 <br/>
               </div>
@@ -90,17 +86,13 @@ $(function() {cart.init(salesSegmentsSelection, selected, cartReleaseUrl, false)
               <span id="performanceVenue">-</span>
             </div>
           </div>
-        </dd>
-    </dl>
-
-
+        </div>
+    </div>
 
     <hr/>
-    <dl>
-      <dt>
-        <%m:header>席種選択</%m:header>
-      </dt>
-      <dd class="dispBox">
+    <div class="dispBox">
+      <%m:header>席種選択</%m:header>
+      <div class="dispBoxInner">
         席種、枚数を選択して下さい。
         <div class="settlementOperationPaneInner">
           <div class="settlementOperationPaneInnerContent">
@@ -200,63 +192,53 @@ $(function() {cart.init(salesSegmentsSelection, selected, cartReleaseUrl, false)
             </div>
           </div>
         </div>
-      </dd>
-    </dl>
+      </div>
+    </div>
 
     <h2 class="glitter red">イベント詳細</h2>
     <div class="settlementBox2" id="settlementEventDetail" style="clear:both">
       <div class="settlementBoxInner2">
 
-        <dl>
-          <dt>
-            <%m:header>イベント名称</%m:header>
-          </dt>
-          <dd class="dispBox">
+        <div class="dispBox">
+          <%m:header>イベント名称</%m:header>
+          <div class="dispBoxInner">
             ${event["title"]}
-          </dd>
-        </dl>
+          </div>
+        </div>
 
         <hr/>
-        <dl>
-          <dt>
-            <%m:header>開催日時</%m:header>
-          </dt>
-          <dd class="dispBox">
+        <div class="dispBox">
+          <%m:header>開催日時</%m:header>
+          <div class="dispBoxInner">
             <span id="descPerformanceDate"></span>
-          </dd>
-        </dl>
+          </div>
+        </div>
 
         <hr/>
-        <dl>
-          <dt>
-            <%m:header>会場</%m:header>
-          </dt>
-          <dd class="dispBox">
+        <div class="dispBox">
+          <%m:header>会場</%m:header>
+          <div class="dispBoxInner">
             ${", ".join(set(event['venues']))}
-          </dd>
-        </dl>
+          </div>
+        </div>
 
         <hr/>
-        <dl>
-          <dt>
-            <%m:header>販売期間</%m:header>
-          </dt>
-          <dd class="dispBox">
+        <div class="dispBox">
+          <%m:header>販売期間</%m:header>
+          <div class="dispBoxInner">
             ${event['sales_start_on']} 〜 ${event['sales_end_on']}
-          </dd>
-        </dl>
+          </div>
+        </div>
 
         <hr/>
-        <dl>
-          <dt>
-            <%m:header>その他</%m:header>
-          </dt>
-          <dd class="dispBox">
+        <div class="dispBox">
+          <%m:header>その他</%m:header>
+          <div class="dispBoxInner">
             %for v in event_extra_info:
               ${v['label']}
               ${v['content']|n}
             %endfor
-          </dd>
-        </dl>
+          </div>
+        </div>
       </div>
     </div>
