@@ -67,11 +67,7 @@
             ${ch.price_format(carted_product_item.product_item.price)}円
           </td>
           <td style="text-align: right;">
-            % if carted_product.product.seat_stock_type.quantity_only:
-            <span name="product_quantity-${carted_product.id}">${carted_product.quantity}</span>
-            % else:
-            ${len(carted_product_item.seats)}
-            % endif
+            ${carted_product.seat_quantity}
           </td>
         </tr>
           % endfor

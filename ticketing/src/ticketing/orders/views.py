@@ -1098,7 +1098,7 @@ class OrdersReserveView(BaseView):
             if not total_quantity:
                 raise ValidationError(u'個数を入力してください')
             elif seats and total_quantity != len(seats):
-                raise ValidationError(u'個数の合計を選択した座席数（%d席）にしてください' % len(seats))
+                raise ValidationError(u'個数の合計数（%d）が選択した座席数（%d席）と一致しません' % (total_quantity, len(seats)))
 
             # 選択されたSeatのステータスをいったん戻してカートデータとして再確保する
             self.release_seats(performance.venue, seats)
