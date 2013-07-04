@@ -176,18 +176,16 @@
   % if mailmagazines_to_subscribe:
   <div class="settlementBox">
 	<div class="settlementBoxInner">
-      <%m:header>メールマガジンの配信</%m:header>
-	  <div id="mailMagazineBox">
-		<div id="mailMagazineBoxInner">
-		  <dl>
-			<dt>
-			  ご利用いただいた方には、楽天チケットからのメールマガジンをお送りします。不要な方はチェックをはずしてください。
-			</dt>
-            <dd>
+      <div class="dispBoxInner">
+        <div id="mailMagazineBox">
+          <div id="mailMagazineBoxInner">
+            <div class="dispBox">
+              <%m:header>メールマガジンの配信</%m:header>
+              ご利用いただいた方には、楽天チケットからのメールマガジンをお送りします。不要な方はチェックをはずしてください。<br/>
 <%
 style = ''
 if len(list(mailmagazines_to_subscribe)) == 1:
-    style = 'style="width: 100%;"'         
+    style = 'style="width: 100%;"'
 %>
                 % for mailmagazine in mailmagazines_to_subscribe:
                 <div ${style|n}>
@@ -200,10 +198,10 @@ if len(list(mailmagazines_to_subscribe)) == 1:
                   </div>
                 </div>
                 % endfor
-            </dd>
-			</dl>
-		</div>
-	  </div>
+            </div>
+          </div>
+        </div>
+      </div>
 	</div>
   </div>
   % endif
