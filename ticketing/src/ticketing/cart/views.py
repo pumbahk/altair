@@ -152,9 +152,9 @@ class IndexView(IndexViewMixin):
         return organization.id == 15
 
     @view_config(decorator=with_jquery_tools, route_name='cart.index',request_type="altair.mobile.interfaces.ISmartphoneRequest", 
-                 custom_predicates=(is_organization_rs, ), renderer=selectable_renderer("carts_smartphone/RT/index.html"), xhr=False, permission="buy")
+                 custom_predicates=(is_organization_rs, ), renderer=selectable_renderer("RT/smartphone/index.html"), xhr=False, permission="buy")
     @view_config(decorator=with_jquery_tools, route_name='cart.index',
-                  renderer=selectable_renderer("carts/%(membership)s/index.html"), xhr=False, permission="buy")
+                  renderer=selectable_renderer("%(membership)s/pc/index.html"), xhr=False, permission="buy")
     def __call__(self):
         self.check_redirect(mobile=False)
         sales_segments = self.context.available_sales_segments
@@ -566,8 +566,8 @@ class PaymentView(object):
         # XXX: 会員区分からバリデーションしなくていいの?
         return c_models.SalesSegment.query.filter(c_models.SalesSegment.id==self.request.matchdict['sales_segment_id']).one()
 
-    @view_config(route_name='cart.payment', request_method="GET", renderer=selectable_renderer("carts/%(membership)s/payment.html"))
-    @view_config(route_name='cart.payment', request_type='altair.mobile.interfaces.IMobileRequest', request_method="GET", renderer=selectable_renderer("carts_mobile/%(membership)s/payment.html"))
+    @view_config(route_name='cart.payment', request_method="GET", renderer=selectable_renderer("%(membership)s/pc/payment.html"))
+    @view_config(route_name='cart.payment', request_type='altair.mobile.interfaces.IMobileRequest', request_method="GET", renderer=selectable_renderer("%(membership)s/mobile/payment.html"))
     def __call__(self):
         """ 支払い方法、引き取り方法選択
         """
@@ -648,8 +648,8 @@ class PaymentView(object):
         return True
 
     @back(back_to_top, back_to_product_list_for_mobile)
-    @view_config(route_name='cart.payment', request_method="POST", renderer=selectable_renderer("carts/%(membership)s/payment.html"))
-    @view_config(route_name='cart.payment', request_type='altair.mobile.interfaces.IMobileRequest', request_method="POST", renderer=selectable_renderer("carts_mobile/%(membership)s/payment.html"))
+    @view_config(route_name='cart.payment', request_method="POST", renderer=selectable_renderer("%(membership)s/pc/payment.html"))
+    @view_config(route_name='cart.payment', request_type='altair.mobile.interfaces.IMobileRequest', request_method="POST", renderer=selectable_renderer("%(membership)s/mobile/payment.html"))
     def post(self):
         """ 支払い方法、引き取り方法選択
         """
@@ -719,8 +719,8 @@ class ConfirmView(object):
         self.request = request
         self.context = request.context
 
-    @view_config(route_name='payment.confirm', request_method="GET", renderer=selectable_renderer("carts/%(membership)s/confirm.html"))
-    @view_config(route_name='payment.confirm', request_type='altair.mobile.interfaces.IMobileRequest', request_method="GET", renderer=selectable_renderer("carts_mobile/%(membership)s/confirm.html"))
+    @view_config(route_name='payment.confirm', request_method="GET", renderer=selectable_renderer("%(membership)s/pc/confirm.html"))
+    @view_config(route_name='payment.confirm', request_type='altair.mobile.interfaces.IMobileRequest', request_method="GET", renderer=selectable_renderer("%(membership)s/mobile/confirm.html"))
     def get(self):
         api.check_sales_segment_term(self.request)
         form = schemas.CSRFSecureForm(csrf_context=self.request.session)
@@ -750,8 +750,8 @@ class CompleteView(object):
         # TODO: Orderを表示？
 
     @back(back_to_top, back_to_product_list_for_mobile)
-    @view_config(route_name='payment.finish', renderer=selectable_renderer("carts/%(membership)s/completion.html"), request_method="POST")
-    @view_config(route_name='payment.finish', request_type='altair.mobile.interfaces.IMobileRequest', renderer=selectable_renderer("carts_mobile/%(membership)s/completion.html"), request_method="POST")
+    @view_config(route_name='payment.finish', renderer=selectable_renderer("%(membership)s/pc/completion.html"), request_method="POST")
+    @view_config(route_name='payment.finish', request_type='altair.mobile.interfaces.IMobileRequest', renderer=selectable_renderer("%(membership)s/mobile/completion.html"), request_method="POST")
     def __call__(self):
         api.check_sales_segment_term(self.request)
         form = schemas.CSRFSecureForm(formdata=self.request.params, csrf_context=self.request.session)
@@ -814,7 +814,7 @@ class OutTermSalesView(object):
         self.request = request
         self.context = context
 
-    @view_config(context='.exceptions.OutTermSalesException', renderer=selectable_renderer('ticketing.cart:templates/carts/%(membership)s/out_term_sales.html'))
+    @view_config(context='.exceptions.OutTermSalesException', renderer=selectable_renderer('ticketing.cart:templates/%(membership)s/pc/out_term_sales.html'))
     def pc(self):
         api.logout(self.request)
         if self.context.next is None:
@@ -825,7 +825,7 @@ class OutTermSalesView(object):
             which = 'next'
         return dict(which=which, **datum)
 
-    @view_config(context='.exceptions.OutTermSalesException', renderer=selectable_renderer('ticketing.cart:templates/carts_mobile/%(membership)s/out_term_sales.html'), 
+    @view_config(context='.exceptions.OutTermSalesException', renderer=selectable_renderer('ticketing.cart:templates/%(membership)s/mobile/out_term_sales.html'), 
         request_type='altair.mobile.interfaces.IMobileRequest')
     def mobile(self):
         api.logout(self.request)
