@@ -176,3 +176,7 @@ def after_delete_static_pageset(self):
         DBSession.delete(p)
     utility = get_static_page_utility(self.request)
     self.request.registry.notify(AfterDeleteCompletely(self.request, utility, self.obj))
+
+def after_change_ticket(self):
+    if self.obj.seattype is None:
+        self.obj.seattype = u""
