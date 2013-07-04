@@ -27,8 +27,8 @@ logger = logging.getLogger(__name__)
 
 
 
-@mobile_view_config(context=NotFound, renderer=selectable_renderer('ticketing.cart:templates/errors_mobile/%(membership)s/notfound.html'))
-@view_config(context=NotFound, renderer=selectable_renderer('ticketing.cart:templates/errors/%(membership)s/notfound.html'))
+@mobile_view_config(context=NotFound, renderer=selectable_renderer('ticketing.cart:templates/%(membership)s/mobile/errors/notfound.html'))
+@view_config(context=NotFound, renderer=selectable_renderer('ticketing.cart:templates/%(membership)s/pc/errors/notfound.html'))
 def notfound(request):
     event_id = getattr(request.context, 'event_id', None)
     if event_id is not None:
@@ -43,30 +43,30 @@ def handle_nocarterror(request):
     return {}
     # return HTTPFound('/')
 
-@mobile_view_config(context=NoEventError, renderer=selectable_renderer('ticketing.cart:templates/errors_mobile/%(membership)s/notfound.html'))
-@view_config(context=NoEventError, renderer=selectable_renderer('ticketing.cart:templates/errors/%(membership)s/notfound.html'))
+@mobile_view_config(context=NoEventError, renderer=selectable_renderer('ticketing.cart:templates/%(membership)s/mobile/errors/notfound.html'))
+@view_config(context=NoEventError, renderer=selectable_renderer('ticketing.cart:templates/%(membership)s/pc/errors/notfound.html'))
 def handle_noeventerror(context, request):
     logger.debug(repr(context))
     request.response.status = 404
     api.logout(request)
     return {}
 
-@mobile_view_config(context=NoSalesSegment, renderer=selectable_renderer('ticketing.cart:templates/errors_mobile/%(membership)s/notfound.html'))
-@view_config(context=NoSalesSegment, renderer=selectable_renderer('ticketing.cart:templates/errors/%(membership)s/notfound.html'))
+@mobile_view_config(context=NoSalesSegment, renderer=selectable_renderer('ticketing.cart:templates/%(membership)s/mobile/errors/notfound.html'))
+@view_config(context=NoSalesSegment, renderer=selectable_renderer('ticketing.cart:templates/%(membership)s/pc/errors/notfound.html'))
 def handle_nosalessegmenterror(request):
     request.response.status = 404
     api.logout(request)
     return {}
 
-@mobile_view_config(context=NoPerformanceError, renderer=selectable_renderer('ticketing.cart:templates/errors_mobile/%(membership)s/notfound.html'))
-@view_config(context=NoPerformanceError, renderer=selectable_renderer('ticketing.cart:templates/errors/%(membership)s/notfound.html'))
+@mobile_view_config(context=NoPerformanceError, renderer=selectable_renderer('ticketing.cart:templates/%(membership)s/mobile/errors/notfound.html'))
+@view_config(context=NoPerformanceError, renderer=selectable_renderer('ticketing.cart:templates/%(membership)s/pc/errors/notfound.html'))
 def handle_noperformanceerror(request):
     request.response.status = 404
     api.logout(request)
     logger.debug("NoPerformance {0}".format(request.exception))
     return {}
 
-@view_config(context=InvalidCSRFTokenException, renderer=selectable_renderer('ticketing.cart:templates/errors/%(membership)s/forbidden.html'))
+@view_config(context=InvalidCSRFTokenException, renderer=selectable_renderer('ticketing.cart:templates/%(membership)s/pc/errors/forbidden.html'))
 def csrf(request):
     request.response.status = 403
     api.logout(request)
