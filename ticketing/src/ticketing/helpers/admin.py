@@ -106,6 +106,11 @@ class AdminHelperAdapter(object):
             return u'warning'
         return None
 
+    def order_status(self, order):
+        return render_label(
+            self.order_status_string(order),
+            self.order_status_style(order))
+
     def has_permission(self, permission):
         return isinstance(
             security_has_permission(
