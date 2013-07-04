@@ -24,7 +24,7 @@ from altaircms.widget.models import WidgetDisposition
 from altaircms.event.models import Event
 from altaircms.auth.api import get_or_404
 
-from altaircms.helpers.viewhelpers import get_endpoint, set_endpoint
+from altaircms.helpers.viewhelpers import get_endpoint
 
 from altaircms.lib.fanstatic_decorator import with_bootstrap
 from altaircms.lib.fanstatic_decorator import with_jquery
@@ -66,7 +66,6 @@ class PageAddView(object):
 
     @view_config(route_name="page_add", request_method="GET", request_param="pagetype=event_detail", match_param="action=input", permission="page_create")
     def input_form_with_event(self):
-        set_endpoint(self.request)
         event_id = self.request.matchdict["event_id"]
         event = self.request._event = get_or_404(self.request.allowable(Event), (Event.id==event_id))
         self.request._form = forms.PageForm(event=event)
@@ -75,7 +74,6 @@ class PageAddView(object):
 
     @view_config(route_name="page_add_orphan", request_param="pagetype=event_detail", request_method="GET", match_param="action=input", permission="page_create")
     def input_form_orphan_with_event(self):
-        set_endpoint(self.request)
         self.request._form = forms.PageForm()
         self.request._setup_form = forms.PageInfoSetupWithEventForm()
         raise AfterInput
@@ -83,7 +81,6 @@ class PageAddView(object):
     @view_config(route_name="page_add_orphan", request_param="pagetype", request_method="GET", match_param="action=input", permission="page_create", 
                  custom_predicates=[page_editable])
     def input_form(self):
-        set_endpoint(self.request)
         self.request._form = forms.PageForm()
         self.request._setup_form = forms.PageInfoSetupForm()
         raise AfterInput

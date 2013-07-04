@@ -16,7 +16,7 @@ from altaircms.lib.fanstatic_decorator import with_bootstrap
 
 from . import models
 from . import forms
-from altaircms.helpers.viewhelpers import get_endpoint, set_endpoint
+from altaircms.helpers.viewhelpers import get_endpoint
 from altaircms.auth.api import get_or_404
 from . import creation
 from . import ValidationError
@@ -30,7 +30,6 @@ class AssetAddView(object):
     @view_config(match_param="kind=image", renderer="altaircms:templates/asset/image/add.html", 
                  request_method="GET")
     def add_image_asset_input(self):
-        set_endpoint(self.request)
         private_tags = self.request.params.get("private_tags", "")
         form = forms.ImageAssetForm(private_tags=private_tags)
         return {"form": form}

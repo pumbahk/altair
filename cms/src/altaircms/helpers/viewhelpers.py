@@ -5,11 +5,10 @@ from functools import wraps
 logger = logging.getLogger(__name__)
 
 from altaircms.viewlib import FlashMessage
-from altaircms.viewlib import get_endpoint, set_endpoint
+from altaircms.viewlib import get_endpoint
 
 __all__ = ["FlashMessage", 
            "get_endpoint", 
-           "set_endpoint", 
            "RegisterViewPredicate", 
            ""]
 class RegisterViewPredicate(object):
