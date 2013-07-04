@@ -81,7 +81,7 @@ japanese_columns = {
     u'ordered_product.price': u'商品単価',
     u'ordered_product.quantity': u'商品個数',
     u'ordered_product.product.name': u'商品名',
-    u'ordered_product.product.sales_segment_group.name': u'販売区分',
+    u'ordered_product.product.sales_segment.sales_segment_group.name': u'販売区分',
     u'ordered_product.product.sales_segment.margin_ratio': u'販売手数料率',
     u'ordered_product_item.product_item.name': u'商品明細名',
     u'ordered_product_item.price': u'商品明細単価',
@@ -247,7 +247,7 @@ class OrderCSV(object):
                     CurrencyRenderer(u'ordered_product.price'),
                     PlainTextRenderer(u'ordered_product.quantity'),
                     PlainTextRenderer(u'ordered_product.product.name'),
-                    PlainTextRenderer(u'ordered_product.product.sales_segment_group.name'),
+                    PlainTextRenderer(u'ordered_product.product.sales_segment.sales_segment_group.name'),
                     PlainTextRenderer(u'ordered_product.product.sales_segment.margin_ratio'),
                     ]
                 ),
