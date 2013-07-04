@@ -36,7 +36,7 @@
 </td></tr>
 <tr><th>frontend</th><td>
 	% if pages and root:
-      ${drawing.frontend_metadata}
+      ${drawing._frontend_metadata_base_url}
       % for page in sorted(pages.iteritems(), key=lambda x:x[1].get('order')):
        [ <a href="${request.route_path('api.get_frontend', venue_id=venue.id, part=page[0])}" target="_blank">${page[1]['name']}
          % if page[1].get('root'):
