@@ -105,6 +105,9 @@ class EntryLotView(object):
         self.request = request
         self.context = context
 
+    def cr2br(self, t):
+        return h.cr2br(t)
+
     def _create_performance_product_map(self, products):
         performance_product_map = {}
         for product in products:

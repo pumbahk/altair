@@ -39,7 +39,7 @@
         %if lot.description:
         <tr>
           <th scope="row">注意事項</th>
-          <td>${lot.description}</td>
+          <td>${view.cr2br(lot.description)|n}</td>
         </tr>
         %endif
       </table>
