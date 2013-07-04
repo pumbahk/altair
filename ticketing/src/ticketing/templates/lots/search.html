@@ -37,6 +37,9 @@ ${w.status}
 %if w.ordered_mail_sent_at:
 <br>メール送信済
 %endif
+%if w.lot_elect_work_error:
+<br><a href="#" data-toggle="tooltip" title="${w.lot_elect_work_error}">当選処理エラー</a>
+%endif
 </td>
 <td nowrap="">${w.payment_method_name}<br>${view.payment_status(w)}</td>
 <td nowrap="">${w.delivery_method_name}<br>${view.delivery_status(w)}</td>
