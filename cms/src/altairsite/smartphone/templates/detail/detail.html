@@ -38,12 +38,21 @@ $(function () {
     });
   });
 
-  var index = $('#purchase:first').attr("index");
-  if (index) {
-    $('*[data-toggle]:eq(' + index + ')').trigger("click");
-  } else {
+  $(".panelgroup").each(function (index){
+    var onSale = false
+    $(".panelgroup:eq(" + index+ ") .purchase").each(function (index){
+      onSale = true
+    });
+
+    if (onSale) {
+      $('*[data-toggle]:eq(' + index + ')').trigger("click");
+    }
+  });
+
+  if (!$(".purchase").length) {
     $('*[data-toggle]').trigger("click");
   }
+
 });
 </script>
 
@@ -182,7 +191,7 @@ $(function () {
                             </div>
                           %elif max(end_on_candidates) >= helper.now():
                             <div class="actions">
-                              <a id="purchase" index="0" href="${purchase_links[perf['perf'].id]}">
+                              <a class="purchase" index="0" href="${purchase_links[perf['perf'].id]}">
                                 <button class="btn btn-primary btn-large"><span class="btn-inner">購入</span></button>
                               </a>
                             </div>
@@ -237,7 +246,7 @@ $(function () {
                             </div>
                           %elif max(end_on_candidates) >= helper.now():
                             <div class="actions">
-                              <a id="purchase" index="${count}" href="${purchase_links[perf.id]}">
+                              <a class="purchase" index="${count}" href="${purchase_links[perf.id]}">
                                 <button class="btn btn-primary btn-large"><span class="btn-inner">購入</span></button>
                               </a>
                             </div>
