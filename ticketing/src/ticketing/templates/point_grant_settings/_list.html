@@ -44,7 +44,7 @@ tr.highlighted td.name:before {
       <td>&nbsp;</td>
       <td class="name">デフォルトの設定</td>
       <td>${lh.format_point_type(organization_setting.point_type)}</td>
-      <td>${ch.price_format(organization_setting.point_fixed) if organization_setting.point_fixed else u'-'}</td>
+      <td>${vh.price(organization_setting.point_fixed) if organization_setting.point_fixed else u'-'}</td>
       <td>${HH.format_percentage(organization_setting.point_rate)}</td>
       <td colspan="3">-</td>
     </tr>
@@ -55,7 +55,7 @@ tr.highlighted td.name:before {
       <td><input type="checkbox" name="point_grant_setting_id" value="${pgs.id}" /></td>
       <td class="name"><a href="${request.route_path('point_grant_settings.show', point_grant_setting_id=pgs.id)}">${pgs.name}</a></td>
       <td>${lh.format_point_type(pgs.type)}</td>
-      <td>${ch.price_format(pgs.fixed) if pgs.fixed else u'-'}</td>
+      <td>${vh.price(pgs.fixed) if pgs.fixed else u'-'}</td>
       <td>${HH.format_percentage(pgs.rate)}</td>
       <td>${pgs.start_at and pgs.start_at or u'-'}</td>
       <td>${pgs.end_at and pgs.end_at or u'-'}</td>

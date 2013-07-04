@@ -341,7 +341,7 @@ elif sales_segment:
                 <td ${rowspan}><input type="radio" name="product_id" value="${product.id}" /></td>
                 <td ${rowspan}>${product.seat_type()}</td>
                 <td ${rowspan}><a href="javascript:edit_product('${product.id}');">${product.name}</a></td>
-                <td ${rowspan}>${ch.price_format(product.price)}円</td>
+                <td ${rowspan}>${vh.price(product.price)}</td>
                 <td ${rowspan}>${product.display_order}</td>
                 <td ${rowspan}>${u'○' if product.public else u'×'}</td>
                   % for j, item in enumerate(product.items):
@@ -350,7 +350,7 @@ elif sales_segment:
                     % endif
                 <td style="border-left-style: dotted;">${item.stock.stock_holder.name}</td>
                 <td>${item.name}</td>
-                <td>${ch.price_format(item.price)}円</td>
+                <td>${vh.price(item.price)}</td>
                 <td>${item.quantity}</td>
                 <td>${item.stock.stock_status.quantity} / ${item.stock.quantity}席</td>
                 <td>${item.stock.id}</td>

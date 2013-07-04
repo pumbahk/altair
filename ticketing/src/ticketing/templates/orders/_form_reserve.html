@@ -89,7 +89,7 @@
         % for product in form.products.choices:
         <tr>
           <td>${product[1]['name']} (${product[1]['sales_segment']})</td>
-          <td>${ch.price_format(product[1]['price'])}円</td>
+          <td>${vh.price(product[1]['price'])}</td>
           <td><input id="product_quantity-${product[0]}" name="product_quantity-${product[0]}" type="text" value=""></td>
         </tr>
         % endfor

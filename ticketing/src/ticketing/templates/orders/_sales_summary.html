@@ -61,7 +61,7 @@
           <td rowspan="${rowspan}">${stock.stock_holder.name}</td>
             % if products:
               <% product = products[0] %>
-          <td>${product.name} (${ch.price_format(product.price)}円)</td>
+          <td>${product.name} (${vh.price(product.price)})</td>
           <td>${product.sales_segment.name} (${vh.term(product.sales_segment.start_at, product.sales_segment.end_at)})</td>
             % else:
           <td rowspan="${rowspan}"></td>
@@ -78,7 +78,7 @@
             % if products:
               % for product in products[1:]:
         <tr style="display:none;" class="stock-type-inner-${stock_type.id}">
-          <td style="border-left: 1px solid #ddd;">${product.name} (${ch.price_format(product.price)}円)</td>
+          <td style="border-left: 1px solid #ddd;">${product.name} (${vh.price(product.price)})</td>
           <td>${product.sales_segment.name}
             (${vh.term(product.sales_segment.start_at, product.sales_segment.end_at)})
           </td>

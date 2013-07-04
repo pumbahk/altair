@@ -329,7 +329,7 @@ ${ch.breadcrumbs(
             </tr>
             <tr>
               <th>楽天あんしん支払いサービス 利用ポイント数</th>
-              <td>${ch.price_format(int(checkout.usedPoint or 0))}</td>
+              <td>${vh.price(int(checkout.usedPoint or 0))}</td>
             </tr>
             <tr>
               <th>楽天あんしん支払いサービス 売上日時</th>
@@ -408,10 +408,10 @@ ${ch.breadcrumbs(
                     ${ordered_product.product.name}
                   </td>
                   <td></td>
-                  <td style="text-align: right;">${ch.price_format(ordered_product.price)}円</td>
+                  <td style="text-align: right;">${vh.price(ordered_product.price)}</td>
                   <td >${ordered_product.quantity}</td>
                   <td style="text-align: right;">
-                    ${ch.price_format(ordered_product.price * ordered_product.quantity)}円
+                    ${vh.price(ordered_product.price * ordered_product.quantity)}
                   </td>
                 </tr>
             % for ordered_product_item in ordered_product.ordered_product_items:
@@ -445,7 +445,7 @@ ${ch.breadcrumbs(
                       <span class="label label-inverse">未発券</span>
                     %endif
                   </td>
-                  <td style="text-align: right;">${ch.price_format(ordered_product_item.price)}円</td>
+                  <td style="text-align: right;">${vh.price(ordered_product_item.price)}</td>
                   <td>${ordered_product_item.quantity}</td>
                   <td></td>
                 </tr>
@@ -456,28 +456,28 @@ ${ch.breadcrumbs(
                   <td></td>
                   <td></td>
                   <td></td>
-                  <td style="text-align: right;">${ch.price_format(order.transaction_fee)}円</td>
+                  <td style="text-align: right;">${vh.price(order.transaction_fee)}</td>
                 </tr>
                 <tr>
                   <td colspan="2">引取手数料</td>
                   <td></td>
                   <td></td>
                   <td></td>
-                  <td style="text-align: right;">${ch.price_format(order.delivery_fee)}円</td>
+                  <td style="text-align: right;">${vh.price(order.delivery_fee)}</td>
                 </tr>
                 <tr>
                   <td colspan="2">システム利用料</td>
                   <td></td>
                   <td></td>
                   <td></td>
-                  <td style="text-align: right;">${ch.price_format(order.system_fee)}円</td>
+                  <td style="text-align: right;">${vh.price(order.system_fee)}</td>
                 </tr>
                 <tr>
                   <td colspan="2" class="span2"><strong>合計</strong></td>
                   <td></td>
                   <td></td>
                   <td></td>
-                  <td style="text-align: right;"><strong>${ch.price_format(order.total_amount)}円</strong></td>
+                  <td style="text-align: right;"><strong>${vh.price(order.total_amount)}</strong></td>
                 </tr>
               </table>
           % endfor

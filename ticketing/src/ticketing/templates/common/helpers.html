@@ -139,14 +139,6 @@
   <span class="swatch" style="text-color:${text_color}; border: ${stroke_width}px ${stroke_pattern} ${stroke_color}; background-color: ${fill_color}; text-align: center">${text}</span>
 </%def>
 
-<%!
-  import locale
-  locale.setlocale(locale.LC_ALL, "")
-%>
-<%def name="price_format(price, format='%d')">
-${locale.format(format, price, grouping=True)}
-</%def>
-
 <%def name="breadcrumbs(names=[], urls=[], length=20)">
 <ul class="breadcrumb">
   % for i in xrange(len(urls)):

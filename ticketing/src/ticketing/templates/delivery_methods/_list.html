@@ -23,7 +23,7 @@
   	</td>
     <td><span id="id">${delivery_method.id}</span></td>
     <td><a href="javascript:edit_delivery_method(${delivery_method.id});"><span id="name">${delivery_method.name}</span></a></td>
-    <td><span id="fee">${ch.price_format(delivery_method.fee)}</span>円</td>
+    <td><span id="fee">${vh.price(delivery_method.fee)}</span></td>
     <td><span id="fee_type" value="${delivery_method.fee_type}">${delivery_method.fee_type_label}</span></td>
     <td><span id="hide_voucher" value="${'y' if delivery_method.hide_voucher else ''}">${u'隠す' if delivery_method.hide_voucher else u'隠さない' }</span></td>
   </tr>
