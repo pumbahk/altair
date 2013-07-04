@@ -225,7 +225,7 @@ class ProductItemForm(OurForm):
             stock = Stock.query.filter_by(
                 stock_type_id=field.data,
                 stock_holder_id=form.stock_holder_id.data,
-                performance_id=product.sales_segment.performance.id
+                performance_id=product.performance.id
             ).one()
             product_item = ProductItem.query.filter_by(product_id=form.product_id.data, stock_id=stock.id).first()
             if product_item:
