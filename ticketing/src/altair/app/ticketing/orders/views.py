@@ -1373,18 +1373,21 @@ class OrdersReserveView(BaseView):
                 self.release_seats(venue, inner_cart_session.get('seats'))
             del self.request.session['altair.app.ticketing.inner_cart']
 
-    @view_config(route_name='orders.api.get', renderer='json')
-    def get_order_by_seat(self):
-        l0_id = self.request.params.get('l0_id', 0)
-        performance_id = self.request.params.get('performance_id', 0)
+    def _get_order_by_seat(self, performance_id, l0_id):
         logger.debug('call get order api (seat l0_id = %s)' % l0_id)
-        order = Order.filter_by(organization_id=self.context.organization.id)\
+        return Order.filter_by(organization_id=self.context.user.organization_id)\
             .filter(Order.performance_id==performance_id)\
             .filter(Order.canceled_at==None)\
             .join(Order.items)\
             .join(OrderedProduct.elements)\
             .join(OrderedProductItem.seats)\
             .filter(Seat.l0_id==l0_id).first()
+
+    @view_config(route_name='orders.api.get', renderer='json')
+    def api_get(self):
+        l0_id = self.request.params.get('l0_id', 0)
+        performance_id = self.request.params.get('performance_id', 0)
+        order = self._get_order_by_seat(performance_id, l0_id)
         if not order:
             raise HTTPBadRequest(body=json.dumps({'message':u'予約データが見つかりません'}))
 
@@ -1403,21 +1406,13 @@ class OrdersReserveView(BaseView):
             'seat_names':seat_names
         }
 
-    @view_config(route_name='orders.api.get_html', renderer='ticketing:templates/orders/_tiny_order.html')
+    @view_config(route_name='orders.api.get.html', renderer='ticketing:templates/orders/_tiny_order.html')
     def api_get_html(self):
         l0_id = self.request.params.get('l0_id', 0)
         performance_id = self.request.params.get('performance_id', 0)
-        logger.debug('call get order api (seat l0_id = %s)' % l0_id)
-        order = Order.filter_by(organization_id=self.context.user.organization_id)\
-            .filter(Order.performance_id==performance_id)\
-            .filter(Order.canceled_at==None)\
-            .join(Order.ordered_products)\
-            .join(OrderedProduct.ordered_product_items)\
-            .join(OrderedProductItem.seats)\
-            .filter(Seat.l0_id==l0_id).first()
+        order = self._get_order_by_seat(performance_id, l0_id)
         if order is None:
             raise HTTPNotFound('order id %d is not found' % order.id)
-
         return {
             'order':order,
         }
