@@ -54,7 +54,7 @@
                quantity="${quantity}"
                display_order="${stock_type.display_order}"
                description="${stock_type.description or ''}"
-               data="${ch.json(stock_type.style)}">
+               data="${HH.json(stock_type.style)}">
               ${stock_type.name}
             </a>
           </td>
@@ -114,7 +114,7 @@
                quantity="${quantity}"
                display_order="${stock_type.display_order}"
                description="${stock_type.description or ''}"
-               data='${ch.json(stock_type.style)}'>
+               data='${HH.json(stock_type.style)}'>
               ${stock_type.name}
             </a>
           </td>

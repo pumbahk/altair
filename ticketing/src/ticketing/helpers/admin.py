@@ -3,7 +3,7 @@
 from pyramid.security import has_permission as security_has_permission
 from pyramid.security import ACLAllowed
 from markupsafe import Markup
-import json
+from json import dumps
 from ticketing.core.models import OrderCancelReasonEnum
 from webhelpers.util import html_escape
 
@@ -17,7 +17,7 @@ def render_label(label_text, label_type=None):
         u' '.join(classes), label_text))
 
 def json(dict_):
-    return json.dumps(dict_)
+    return dumps(dict_)
 
 class AdminHelperAdapter(object):
     def __init__(self, request):

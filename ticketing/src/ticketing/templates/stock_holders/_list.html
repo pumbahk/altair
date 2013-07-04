@@ -29,7 +29,7 @@
       <tbody>
       % for i, stock_holder in enumerate(stock_holders):
       <% if limit and i >= limit: break %>
-      <tr id="stock_holder-${stock_holder.id}" name="${stock_holder.name}" data='${ch.json(stock_holder.style)}'>
+      <tr id="stock_holder-${stock_holder.id}" name="${stock_holder.name}" data='${HH.json(stock_holder.style)}'>
         <td><input type="radio" name="stock_holder_id" value="${stock_holder.id}" /></td>
         <td>${ch.seat_style(stock_holder.style)}</td>
         <td><a href="javascript:edit_stock_holder('${stock_holder.id}');"><span id="name">${stock_holder.name}</span></a></td>
