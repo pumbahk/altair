@@ -362,7 +362,12 @@ class Orders(BaseView):
         response = Response(headers=headers)
 
         export_type = int(self.request.params.get('export_type', OrderCSV.EXPORT_TYPE_ORDER))
-        kwargs = dict(export_type=export_type) if export_type else {}
+        excel_csv = bool(self.request.params.get('excel_csv'))
+        kwargs = {}
+        if export_type:
+            kwargs['export_type'] = export_type
+        if excel_csv:
+            kwargs['excel_csv'] = True
         order_csv = OrderCSV(organization_id=self.context.user.organization_id, localized_columns=get_japanese_columns(self.request), **kwargs)
 
         writer = csv.writer(response, delimiter=',', quoting=csv.QUOTE_ALL)

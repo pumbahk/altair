@@ -56,7 +56,7 @@ from ticketing.formhelpers import OurDateWidget
   }
 
   function download_orders() {
-    var params = $('#modal-download_orders').find('form').serialize();
+    var params = $('#modal-download_orders').parent('form').serialize();
     detail = $('#detail_search');
     detail.find('#search').attr('action', '/orders/download/?' + params).submit();
     $('#modal-download_orders').modal('hide');
@@ -250,6 +250,7 @@ from ticketing.formhelpers import OurDateWidget
 </div>
 <div style="clear: left;"></div>
 
+<form id="download" class="form-horizontal" action="${request.route_path('orders.download')}" method="POST">
 <div id="modal-download_orders" class="modal hide">
   <div class="modal-header">
     <a href="#" class="close">&times;</a>
@@ -257,33 +258,36 @@ from ticketing.formhelpers import OurDateWidget
   </div>
 
   <div class="modal-body">
-    <form id="download" class="form-horizontal" action="${request.route_path('orders.download')}" method="POST">
-      <p>購入情報(CSV)をダウンロードします。よろしいですか？<br>
-        % if not form.get_conditions():
-          <div class="alert alert-error">
-            <div style="margin-bottom: 5px;">検索条件がありません。<br>対象が多すぎると時間がかかる可能性があるので条件を指定してください。</div>
-          </div>
-        % endif
-        <%include file="/orders/_search_condition.html" args="form=form" />
-      </p>
-      <fieldset>
-        <div>
-          <input id="export_type_1" name="export_type" type="radio" value="1" style="float: left; margin-right: 5px;" checked>
-          <label for="export_type_1">予約ごとに1行ずつ出力する</label>
+    <p>購入情報(CSV)をダウンロードします。よろしいですか？<br>
+      % if not form.get_conditions():
+        <div class="alert alert-error">
+          <div style="margin-bottom: 5px;">検索条件がありません。<br>対象が多すぎると時間がかかる可能性があるので条件を指定してください。</div>
         </div>
-        <div>
-          <input id="export_type_2" name="export_type" type="radio" value="2" style="float: left; margin-right: 5px;">
-          <label for="export_type_2">座席ごとに1行ずつ出力する</label>
-        </div>
-      </fieldset>
-    </form>
+      % endif
+      <%include file="/orders/_search_condition.html" args="form=form" />
+    </p>
+    <fieldset>
+      <div>
+        <input id="export_type_1" name="export_type" type="radio" value="1" style="float: left; margin-right: 5px;" checked>
+        <label for="export_type_1">予約ごとに1行ずつ出力する</label>
+      </div>
+      <div>
+        <input id="export_type_2" name="export_type" type="radio" value="2" style="float: left; margin-right: 5px;">
+        <label for="export_type_2">座席ごとに1行ずつ出力する</label>
+      </div>
+    </fieldset>
   </div>
 
   <div class="modal-footer">
+    <div class="control-group" style="text-align:left; float: left; white-space: nowrap">
+      <input id="excel_csv" name="excel_csv" type="checkbox" value="1" checked="checked" style="float: left; margin-right: 5px;">
+      <label for="excel_csv">Excel形式のCSVを出力する</label>
+    </div>
     <a href="javascript:void(0);" onclick="$('#modal-download_orders').modal('hide');" class="btn secondary">キャンセル</a>
     <a href="javascript:download_orders();" class="btn danger">ダウンロード</a>
   </div>
 </div>
+</form>
 
 % if len(orders) == 0:
   見つかりませんでした
