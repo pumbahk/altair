@@ -17,10 +17,11 @@ from altaircms.interfaces import implementer
 from altaircms.formhelpers import dynamic_query_select_field_factory
 from altaircms.formhelpers import append_errors
 from altaircms.formhelpers import MaybeDateTimeField
+from altair.formhelpers.fields.select import LazySelectField
 from pyramid.threadlocal import get_current_request
 logger = logging.getLogger(__name__)
 
-from ..models import Category, Genre
+from ..models import Category, Genre, _GenrePath
 
 def layout_filter(model, request, query):
     name = request.GET.get("pagetype") or request.matchdict.get("pagetype")
@@ -60,14 +61,95 @@ def url_not_conflict(form, field):
 def pagetype_filter(model, request, query):
     return query.filter_by(name=request.GET["pagetype"])
 
+from pyramid.threadlocal import get_current_request
+
+def build_genre_choices(request):
+    retval = [(None, u'-------')]
+    graph = {}
+    for path in _GenrePath.query.filter(_GenrePath.hop <= 1):
+        entry = graph.get(path.next_id)
+        if entry is None:
+            entry = graph[path.next_id] = dict(id=path.next_id, parent=None, children=[])
+        child_entry = graph.get(path.genre_id)
+        if child_entry is None:
+            child_entry = graph[path.genre_id] = dict(id=path.genre_id, parent=entry, children=[])
+        entry['children'].append(child_entry)
+
+    genres = {}
+    root_genres = []
+    for genre in request.allowable(Genre):
+        genres[genre.id] = genre
+        if genre.is_root:
+            root_genres.append(genre)
+
+    def append_recursively(genre_rec, prepend, last=False):
+        if prepend is not None:
+            if last:
+                prefix = u'┗'
+                child_prefix = u'　'
+            else:
+                prefix = u'┣'
+                child_prefix = u'┃'
+        else:
+            prepend = u''
+            prefix = u''
+            child_prefix = u''
+        genre = genres[genre_rec['id']]
+        label = u'%s%s' % (genre.label, u" -- ページあり" if genre.has_category_toppage() else u"")
+        retval.append((genre, prepend + prefix + label))
+        applicables = [rec for rec in genre_rec['children'] if genre_rec['id'] in genres]
+        for i, child_rec in enumerate(applicables):
+            append_recursively(child_rec, prepend + child_prefix, i + 1 == len(applicables))
+
+    for root_genre in root_genres:
+        append_recursively(graph[root_genre.id], None)
+
+    return retval
+
+class GenreSelectionModel(object):
+    def __init__(self, choices):
+        self.choices = choices
+
+    @property
+    def decoder(self):
+        encoder = self.encoder
+        def _(value):
+            for data, _ in self.choices:
+                if encoder(data) == value:
+                    return data
+        return _
+
+    def encoder(self, data):
+        return unicode(data.id) if data is not None else u''
+
+    def items(self):
+        return ((self.encoder(data), data, value) for data, value in self.choices)
+
+    def group_iter(self):
+        pass
+
+    def __len__(self):
+        return len(self.choices)
+
+    def __contains__(self, value):
+        for data, _ in self.choices:
+            if self.encoder(data) == value or data == value:
+                return True
+        return False
+
+    def __iter__(self):
+        return (self.encoder(data) for data, value in self.choices)
+
 class PageInfoSetupForm(Form):
     """ このフォームを使って、PageFormへのデフォルト値を挿入する。
     """
     pagetype = dynamic_query_select_field_factory(PageType, allow_blank=False, label=u"ページタイプ", 
                                                   get_label=lambda o: o.label, 
                                                   dynamic_query=pagetype_filter)
-    genre = dynamic_query_select_field_factory(Genre, allow_blank=True, label=u"ジャンル", 
-                                               get_label=unicode)
+    genre = LazySelectField(
+        label=u"ジャンル",
+        model=lambda field: GenreSelectionModel(build_genre_choices(get_current_request()))
+        )
     name = fields.TextField(label=u"名前", validators=[validators.Required()])
 
 class PageInfoSetupWithEventForm(Form):
@@ -76,16 +158,20 @@ class PageInfoSetupWithEventForm(Form):
     pagetype = dynamic_query_select_field_factory(PageType, allow_blank=False, label=u"ページタイプ", 
                                                   get_label=lambda o: o.label, 
                                                   dynamic_query=pagetype_filter)
-    genre = dynamic_query_select_field_factory(Genre, allow_blank=True, label=u"ジャンル", 
-                                               get_label=unicode)
+    genre = LazySelectField(
+        label=u"ジャンル",
+        model=lambda field: GenreSelectionModel(build_genre_choices(get_current_request()))
+        )
     name = fields.TextField(label=u"名前", validators=[validators.Required()])
 
 @implementer(IForm)
 class PageForm(Form):
     name = fields.TextField(label=u"名前", validators=[validators.Required()])
     url = fields.TextField(validators=[url_field_validator,  url_not_conflict],label=u"URL", )
-    genre = dynamic_query_select_field_factory(Genre, allow_blank=True, label=u"ジャンル", 
-                                               get_label=lambda g: g.label)
+    genre = LazySelectField(
+        label=u"ジャンル",
+        model=lambda field: GenreSelectionModel(build_genre_choices(get_current_request()))
+        )
     pageset = dynamic_query_select_field_factory(PageSet, allow_blank=True, label=u"ページセット",
                                                  get_label=lambda ps: ps.name)
     pagetype = dynamic_query_select_field_factory(PageType, allow_blank=False, label=u"ページタイプ", 
