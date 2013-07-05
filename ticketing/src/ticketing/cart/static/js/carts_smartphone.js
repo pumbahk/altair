@@ -634,24 +634,26 @@ cart.StockTypeListView = Backbone.View.extend({
         var i = 0;
         this.collection.each(function(stockType) {
             var style = stockType.get("style");
-            $('<li></li>')
-                .append($('<div class="seatListItemInner"></div>')
-                   .append(
-                     $('<input type="radio" name="seat_type" />')
-                     .attr('value', stockType.get("products_url"))
-                     .data('stockType', stockType))
-                   .append(
-                     $('<span class="seatColor"></span>')
-                     .css('background-color', style && style.fill && style.fill.color ? style.fill.color: 'white'))
-                   .append(
-                     $('<span class="seatName"></span>')
-                     .text(stockType.get("name")))
-                   .append(
-                     $('<span class="seatState"></span>')
-                     .text(stockType.get("availability_text"))))
-                .append($('<div class="seatListItemAux"></div>'))
-                .addClass(["seatEven", "seatOdd"][i & 1])
-                .appendTo(ul)
+            var li = $('<li class="panelgroup"></li>')
+                .append($('<div class="seatListItemInner panelgroup-label"></div>')
+                   .append($('<div class="panelgroup-label-inner"></div>')
+                     .append(
+                       $('<input type="radio" name="seat_type"/>')
+                       .attr('value', stockType.get("products_url"))
+                       .data('stockType', stockType))
+                     .append(
+                       $('<span class="seatColor"></span>')
+                       .css('background-color', style && style.fill && style.fill.color ? style.fill.color: 'white'))
+                     .append(
+                       $('<span class="seatName"></span>')
+                       .text(stockType.get("name")))
+                     .append(
+                       $('<span class="seatState"></span>')
+                       .text(stockType.get("availability_text")))))
+                .append($('<div class="seatListItemAux panelgroup-inner"></div>'));
+            if (!stockType.get('availability'))
+                li.addClass("unavailable")
+            li.appendTo(ul)
             i++;
         });
         var self = this;
@@ -696,7 +698,6 @@ cart.OrderFormPresenter.prototype = {
     initialize: function() {
         this.view = new this.viewType({
             el: $('#selectProductTemplate'),
-            updateHandler: $('#seatTypeList').data('updateArrowpos'),
             presenter: this,
             seatSelectionEnabled: this.seatSelectionEnabled
         });
@@ -807,7 +808,6 @@ cart.OrderFormView = Backbone.View.extend({
     },
     initialize: function() {
         this.presenter = this.options.presenter;
-        this.updateHandler = this.options.updateHandler;
         this.seatSelectionEnabled = this.options.seatSelectionEnabled;
     },
     getChoices: function () {
@@ -834,8 +834,7 @@ cart.OrderFormView = Backbone.View.extend({
                 complete: function () {
                     aux.empty();
                     done && done();
-                },
-                step: this.updateHandler
+                }
             }
         );
     },
@@ -859,8 +858,7 @@ cart.OrderFormView = Backbone.View.extend({
                 duration: 300,
                 complete: function () {
                     done && done();
-                },
-                step: this.updateHandler
+                }
             }
         );
         return true;
@@ -928,10 +926,10 @@ cart.OrderFormView = Backbone.View.extend({
             $();
         cart.util.render_template_into(quantity, product.get("unit_template"), { num: pullDown });
         return $('<li class="productListItem"></li>')
-            .append(quantity)
-            .append(payment)
             .append(name)
-            .append(description);
+            .append(payment)
+            .append(description)
+            .append(quantity);
     }
 });
 

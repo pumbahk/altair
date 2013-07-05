@@ -17,20 +17,26 @@
 </head>
 
 <body id="settlement">
-  <p id="naviSkip"><a href="#main" tabindex="1" title="本文へジャンプ"><img src="${request.static_url('altair.app.ticketing.cart:static/img/common/skip.gif')}" alt="本文へジャンプ" width="1" height="1" /></a></p>
-  <div id="container">
+  <div id="container" class="page">
     <!-- ========== header ========== -->
-    <div id="grpheader">
-      <p id="siteID">
-	<a href="http://ticket.rakuten.co.jp/">
-	  <img src="${request.static_url('altair.app.ticketing.cart:static/img/smartphone/logo.gif')}" alt="楽天チケット" class="serviceLogo" /></a>
-      </p>
+    <div class="header">
+      <div class="grpheader">
+        <div class="siteID">
+          <a href="http://ticket.rakuten.co.jp/">
+            <img src="${request.static_url('ticketing.cart:static/img/smartphone/logo.gif')}" alt="楽天チケット" class="serviceLogo" />
+          </a>
+        </div>
+      </div>
+      <div class="side-action-buttons">
+        <a href="${request.route_url('cart.switchpc.perf', event_id=event['id'], performance=performance) if performance else request.route_url('cart.switchpc', event_id=event['id'])}" class="btn btn-supplementary"><span class="btn-inner">PCサイトで購入する</span></a>
+      </div>
+      <div class="band">
+        <h1>チケット購入</h1>
+      </div>
     </div>
     <!-- ========== /header ========== -->
 
     <!-- ========== main ========== -->
-    <h2 class="glitter red">チケット購入</h2>
-
     <div id="main">
       ${self.body()}
     </div>
