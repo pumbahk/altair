@@ -5,16 +5,16 @@ from ticketing.mailmags import models as mailmag_models
 
 def includeme(config):
     config.add_route("dummy.cart.payment", "/dummy/payment")
-    config.add_view(payment_view, route_name='dummy.cart.payment', request_method="GET", renderer=selectable_renderer("carts/%(membership)s/payment.html"))
-    config.add_view(payment_view, route_name='dummy.cart.payment', request_type='altair.mobile.interfaces.IMobileRequest', request_method="GET", renderer=selectable_renderer("carts_mobile/%(membership)s/payment.html"))
+    config.add_view(payment_view, route_name='dummy.cart.payment', request_method="GET", renderer=selectable_renderer("%(membership)s/pc/payment.html"))
+    config.add_view(payment_view, route_name='dummy.cart.payment', request_type='altair.mobile.interfaces.IMobileRequest', request_method="GET", renderer=selectable_renderer("%(membership)s/mobile/payment.html"))
 
     config.add_route("dummy.payment.confirm", "/dummy/confirm")
-    config.add_view(confirm_view, route_name='dummy.payment.confirm', request_method="GET", renderer=selectable_renderer("carts/%(membership)s/confirm.html"))
-    config.add_view(confirm_view, route_name='dummy.payment.confirm', request_type='altair.mobile.interfaces.IMobileRequest', request_method="GET", renderer=selectable_renderer("carts_mobile/%(membership)s/confirm.html"))
+    config.add_view(confirm_view, route_name='dummy.payment.confirm', request_method="GET", renderer=selectable_renderer("%(membership)s/pc/confirm.html"))
+    config.add_view(confirm_view, route_name='dummy.payment.confirm', request_type='altair.mobile.interfaces.IMobileRequest', request_method="GET", renderer=selectable_renderer("%(membership)s/mobile/confirm.html"))
 
     config.add_route("dummy.payment.complete", "/dummy/complete")
-    config.add_view(complete_view, route_name='dummy.payment.complete', request_method="GET", renderer=selectable_renderer("carts/%(membership)s/completion.html"))
-    config.add_view(complete_view, route_name='dummy.payment.complete', request_type='altair.mobile.interfaces.IMobileRequest', request_method="GET", renderer=selectable_renderer("carts_mobile/%(membership)s/completion.html"))
+    config.add_view(complete_view, route_name='dummy.payment.complete', request_method="GET", renderer=selectable_renderer("%(membership)s/pc/completion.html"))
+    config.add_view(complete_view, route_name='dummy.payment.complete', request_type='altair.mobile.interfaces.IMobileRequest', request_method="GET", renderer=selectable_renderer("%(membership)s/mobile/completion.html"))
 
     config.add_route("dummy.timeout", "/dummy/timeout")
     config.add_view(timeout_view, route_name="dummy.timeout", renderer="carts/timeout.html")
