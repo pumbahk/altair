@@ -64,6 +64,8 @@ class Organizations(BaseView):
     def new_get(self):
         return {
             'form':OrganizationForm(),
+            'route_name': u'登録',
+            'route_path': self.request.path,
         }
 
     @view_config(route_name='organizations.new', request_method='POST', renderer='ticketing:templates/organizations/edit.html')
@@ -80,6 +82,8 @@ class Organizations(BaseView):
         else:
             return {
                 'form':f,
+                'route_name': u'登録',
+                'route_path': self.request.path,
             }
 
     @view_config(route_name='organizations.edit', request_method='GET', renderer='ticketing:templates/organizations/edit.html')
@@ -93,6 +97,8 @@ class Organizations(BaseView):
         f.process(record_to_multidict(organization))
         return {
             'form':f,
+            'route_name': u'編集',
+            'route_path': self.request.path,
         }
 
     @view_config(route_name='organizations.edit', request_method='POST', renderer='ticketing:templates/organizations/edit.html')
@@ -112,6 +118,8 @@ class Organizations(BaseView):
         else:
             return {
                 'form':f,
+                'route_name': u'編集',
+                'route_path': self.request.path,
             }
 
     @view_config(route_name='organizations.delete')

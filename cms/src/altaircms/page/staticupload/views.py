@@ -66,9 +66,30 @@ class StaticPageSetView(BaseView):
                 "static_page": static_page,                 
                 "pagetype": static_pageset.pagetype, 
                 "static_directory": static_directory, 
-                "current_page": static_pageset.current(), 
+                "current_page": static_pageset.current(dt=get_now(self.request)), 
                 "tree_renderer": static_page_directory_renderer(self.request, static_page, static_directory, self.request.GET.get("management")), 
                 "now": get_now(self.request)}
+    
+    @view_config(match_param="action=preview", request_param="path", decorator=with_bootstrap)
+    def preview(self):
+        pk = self.request.matchdict["static_page_id"]
+        now = get_now(self.request)
+        static_pageset = get_or_404(self.request.allowable(StaticPageSet), StaticPageSet.id==pk)
+        static_page = static_pageset.current(published=True, dt=now)
+        if static_page is None:
+            from pyramid.response import Response
+            return Response(u"公開期間外です: 現在時刻={0}".format(now))
+        static_directory = get_static_page_utility(self.request)
+        try:
+            path = os.path.join(static_directory.get_rootname(static_page), 
+                                self.request.params["path"])
+            logger.warn("*path: {0}".format(path))
+            return as_static_page_response(self.request, static_page, path, force_original=False, 
+                                           path=path, cache_max_age=0)
+        except StaticPageNotFound as e:
+            logger.info(e)
+            raise HTTPForbidden()
+        
 
 
 @view_defaults(route_name="static_page_part_file", permission="authenticated")
@@ -347,6 +368,7 @@ def static_page_display_view(context, request):
     static_directory = get_static_page_utility(request)
     try:
         path = os.path.join(static_directory.get_base_directory(), request.matchdict["path"])
+        logger.warn("*path: {0}".format(path))
         return as_static_page_response(request, static_page, path, force_original=request.GET.get("force_original"), 
                                        path=path, cache_max_age=0)
     except StaticPageNotFound as e:

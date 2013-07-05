@@ -164,11 +164,11 @@
                     ${layout.information_get_now}
                     <b class="caret"></b></a>
                     <ul class="dropdown-menu">
-                      <li><a href="${request.route_path("nowsetting")}">
+                      <li><a href="${request.route_path("nowsetting", _query=dict(endpoint=request.url))}">
                           <i class="icon-cog"> </i>
                           時間指定設定</a>
                       </li>
-                      <li><a href="${request.route_path("nowsetting.invalidate")}">
+                      <li><a href="${request.route_path("nowsetting.invalidate", _query=dict(endpoint=request.url))}">
                           <i class="icon-off"> </i>
                           時間指定取り消し</a>
                       </li>

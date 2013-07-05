@@ -4,11 +4,12 @@ logger = logging.getLogger(__file__)
 
 import urllib2
 from altaircms.datelib import set_now
+from altaircms.viewlib import get_endpoint
+from altaircms.viewlib import FlashMessage
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound
 from pyramid.security import forget, remember, authenticated_userid
 from pyramid.view import view_config
 from pyramid.view import view_defaults
-
 from sqlalchemy.orm.exc import NoResultFound
 
 import json
@@ -242,12 +243,14 @@ def nowsettings_set_now(context, request):
     form = NowSettingForm(request.POST)
     if form.validate():
         set_now(request, form.data["now"])
-        return HTTPFound("/")
+        FlashMessage.success(u"時間指定を有効にしました。(現在時刻:{0})".format(form.data["now"]), request=request)
+        return HTTPFound(get_endpoint(request))
     return {"form": form}
 
 @view_config(route_name="nowsetting.invalidate", 
              permission="authenticated")
 def nowsettings_invalidate(context, request):
     set_now(request, None)
-    return HTTPFound("/")
+    FlashMessage.success(u"時間指定を取り消しました。", request=request)
+    return HTTPFound(get_endpoint(request))
     

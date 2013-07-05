@@ -10,6 +10,7 @@ from altaircms.security import get_acl_candidates
 from altaircms.page.models import Page
 from altaircms.page.models import PageSet
 from altaircms.auth.api import set_request_organization
+from altaircms.datelib import get_now
 
 class PageRenderingResource(object):
     def __init__(self, request):
@@ -103,7 +104,7 @@ class AccessControl(object):
             self.access_ok = False
             return pageset
 
-        page = pageset.current(published=published)
+        page = pageset.current(published=published, dt=get_now(self.request))
 
         if page is None:
             page = self._retry_page(pageset, published)

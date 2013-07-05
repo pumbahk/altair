@@ -26,6 +26,15 @@ h3{
   <tr>
     <th class="span2">urlの一部</th><td>${static_pageset.url}</td>
   </tr>
+  <tr>
+    <th> preview</th>
+    <td>
+      <form action="${request.route_path("static_pageset", pagetype=pagetype.name, static_page_id=static_pageset.id, action="preview")}" method="GET">
+        <input type="text" name="path" value="index.html"/>
+        <input type="submit" value="preview"/>
+      </form>
+    </td>
+  </tr>
 </table>
 
 <div class="btn-group">

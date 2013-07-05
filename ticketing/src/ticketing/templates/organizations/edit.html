@@ -11,14 +11,6 @@
   }
 </style>
 
-<%
-  if request.matched_route.name == 'organizations.new':
-    route_name = u'登録'
-    route_path = request.route_path('organizations.new')
-  else:
-    route_name = u'編集'
-    route_path = request.route_path('organizations.edit', organization_id=form.id.data)
-%>
 <%block name="breadcrumbs">
   ${ch.breadcrumbs(
       names=[u'トップ', u'取引先', route_name],

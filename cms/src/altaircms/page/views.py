@@ -6,7 +6,6 @@ import sqlalchemy.orm as orm
 from pyramid.view import view_config
 from pyramid.view import view_defaults
 from pyramid.httpexceptions import HTTPFound, HTTPForbidden, HTTPNotFound
-from . import StaticPageNotFound
 from ..plugins.api import get_widget_aggregator_dispatcher
 from altaircms.helpers.viewhelpers import RegisterViewPredicate
 from altaircms.helpers.viewhelpers import FlashMessage

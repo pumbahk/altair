@@ -170,6 +170,8 @@ class OperatorRoles(BaseView):
     def new_get(self):
         return {
             'form':OperatorRoleForm(),
+            'route_name': u'登録',
+            'route_path': self.request.path,
         }
 
     @view_config(route_name='operator_roles.new', request_method='POST', renderer='ticketing:templates/operator_roles/edit.html')
@@ -187,7 +189,9 @@ class OperatorRoles(BaseView):
             return HTTPFound(location=route_path('operator_roles.index', self.request))
         else:
             return {
-                'form':f
+                'form':f,
+                'route_name': u'登録',
+                'route_path': self.request.path,
             }
 
     @view_config(route_name='operator_roles.edit', request_method='GET', renderer='ticketing:templates/operator_roles/edit.html')
@@ -199,6 +203,8 @@ class OperatorRoles(BaseView):
 
         return {
             'form':OperatorRoleForm(obj=operator_role),
+            'route_name': u'編集',
+            'route_path': self.request.path,
         }
 
     @view_config(route_name='operator_roles.edit', request_method='POST', renderer='ticketing:templates/operator_roles/edit.html')
@@ -227,6 +233,8 @@ class OperatorRoles(BaseView):
         else:
             return {
                 'form':f,
+                'route_name': u'編集',
+                'route_path': self.request.path,
             }
 
     @view_config(route_name='operator_roles.delete')
