@@ -3,7 +3,7 @@
 from wtforms import HiddenField
 from wtforms.validators import Regexp, Length, Optional, ValidationError
 from wtforms.widgets import TextArea
-from ticketing.formhelpers import OurForm, OurTextField, OurDateTimeField, Translations, Required
+from altair.formhelpers import OurForm, OurTextField, OurDateTimeField, Translations, Required
 from ticketing.core.models import Event, Account
 
 class MailMagazineForm(OurForm):

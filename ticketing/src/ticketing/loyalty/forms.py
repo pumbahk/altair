@@ -3,10 +3,10 @@
 from wtforms.fields import HiddenField
 from wtforms.validators import Optional
 from ticketing.helpers import label_text_for
-from ticketing.formhelpers import Translations
-from ticketing.formhelpers.form import OurForm
-from ticketing.formhelpers.validators import Required
-from ticketing.formhelpers.fields import OurTextField, OurDecimalField, OurDateTimeField, PercentageField, OurSelectField, OurGroupedSelectMultipleField
+from altair.formhelpers import Translations
+from altair.formhelpers.form import OurForm
+from altair.formhelpers.validators import Required
+from altair.formhelpers.fields import OurTextField, OurDecimalField, OurDateTimeField, PercentageField, OurSelectField, OurGroupedSelectMultipleField
 from ticketing.users import models as user_models
 from wtforms.validators import ValidationError
 from .models import PointGrantSetting

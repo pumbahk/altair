@@ -4,7 +4,7 @@ from wtforms import Form
 from wtforms import SelectField
 
 from ticketing.core.models import StockHolder
-from ticketing.formhelpers import Translations, Required
+from altair.formhelpers import Translations, Required
 
 class ReportStockForm(Form):
 

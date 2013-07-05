@@ -1,5 +1,5 @@
 from wtforms.fields import StringField
-from ticketing.formhelpers.fields import OurSelectField
+from altair.formhelpers.fields import OurSelectField
 from wtforms.widgets import TextInput
 
 __all__ = (

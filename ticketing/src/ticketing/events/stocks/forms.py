@@ -4,7 +4,7 @@ from wtforms import Form
 from wtforms import TextField, IntegerField, ValidationError
 from wtforms.validators import Length, NumberRange, Optional
 
-from ticketing.formhelpers import Translations, Required
+from altair.formhelpers import Translations, Required
 from ticketing.core.models import Seat, Stock
 
 class AllocateSeatForm(Form):

@@ -25,7 +25,7 @@ from ticketing.mails.interfaces import ICompleteMailPayment, IOrderCancelMailPay
 from ticketing.mails.interfaces import ILotsAcceptedMailPayment
 from ticketing.mails.interfaces import ILotsElectedMailPayment
 from ticketing.mails.interfaces import ILotsRejectedMailPayment
-from ticketing.formhelpers import (
+from altair.formhelpers import (
     Required,
     Translations,
     ignore_space_hyphen,

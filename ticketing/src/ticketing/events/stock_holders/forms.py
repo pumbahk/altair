@@ -4,7 +4,7 @@ from wtforms import Form
 from wtforms import HiddenField
 from wtforms.validators import Regexp, Length, Optional, ValidationError
 
-from ticketing.formhelpers import OurForm, DateTimeField, Translations, Required, RequiredOnUpdate, OurTextField, OurSelectField
+from altair.formhelpers import OurForm, DateTimeField, Translations, Required, RequiredOnUpdate, OurTextField, OurSelectField
 from ticketing.core.models import Account
 
 class StockHolderForm(OurForm):

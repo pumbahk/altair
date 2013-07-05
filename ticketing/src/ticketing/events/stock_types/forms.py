@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
 
 from wtforms import Form
-from ticketing.formhelpers import OurForm, OurTextField, OurSelectField, OurIntegerField, OurBooleanField, NullableTextField
+from altair.formhelpers import OurForm, OurTextField, OurSelectField, OurIntegerField, OurBooleanField, NullableTextField
 from wtforms import HiddenField, FieldList
 from wtforms.validators import Length, Optional, ValidationError
 from wtforms.widgets import CheckboxInput, TextArea
 
-from ticketing.formhelpers import Translations, Required
+from altair.formhelpers import Translations, Required
 from ticketing.core.models import StockTypeEnum, StockType
 
 class StockTypeForm(OurForm):

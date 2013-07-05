@@ -3,7 +3,7 @@
 from wtforms import Form
 from wtforms import TextField, HiddenField, DateField, PasswordField, SelectField, BooleanField, SelectMultipleField
 from wtforms.validators import Length, Email, Optional
-from ticketing.formhelpers import DateTimeField, Translations, Required
+from altair.formhelpers import DateTimeField, Translations, Required
 from ticketing.core import models as cmodels
 
 

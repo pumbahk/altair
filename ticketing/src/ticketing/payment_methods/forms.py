@@ -5,7 +5,7 @@ from wtforms import TextField, HiddenField, SelectField, DecimalField
 from wtforms.validators import Length, Optional, NumberRange
 from wtforms.widgets import TextArea
 
-from ticketing.formhelpers import Translations, Required, OurBooleanField
+from altair.formhelpers import Translations, Required, OurBooleanField
 from ticketing.core.models import PaymentMethodPlugin, FeeTypeEnum
 
 class PaymentMethodForm(Form):

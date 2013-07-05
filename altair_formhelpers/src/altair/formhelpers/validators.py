@@ -2,7 +2,6 @@
 
 import re
 from wtforms import validators
-from ticketing.utils import todatetime
 from datetime import date, datetime
 
 __all__ = (
@@ -17,6 +16,11 @@ __all__ = (
     'Zenkaku',
     'after1900',
     )
+
+def todatetime(d):
+    if not isinstance(d, date):
+        raise TypeError()
+    return datetime.fromordinal(d.toordinal())
 
 class Required(validators.Required):
     def __call__(self, form, field):

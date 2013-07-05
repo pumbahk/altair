@@ -6,12 +6,12 @@ from wtforms import validators as v
 from wtforms.ext.i18n.utils import DefaultTranslations
 from wtforms import ValidationError
 
-from ticketing.formhelpers import SejCompliantEmail
+from altair.formhelpers import SejCompliantEmail
 from ticketing.master.models import Prefecture
 from ticketing.core import models as c_models
 from datetime import date, datetime
 import unicodedata
-from ticketing.formhelpers import Translations
+from altair.formhelpers import Translations
 
 from . import fields as my_fields
 from . import widgets as my_widgets

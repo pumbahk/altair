@@ -6,7 +6,7 @@ from wtforms import Form
 from wtforms import TextField, IntegerField, HiddenField, SelectField, SelectMultipleField, FileField
 from wtforms.validators import Regexp, Length, Optional, ValidationError, StopValidation
 from wtforms.widgets import TextArea
-from ticketing.formhelpers import DateTimeField, Translations, Required
+from altair.formhelpers import DateTimeField, Translations, Required
 from ticketing.core.models import Ticket, Product, ProductItem, TicketBundleAttribute
 
 class BoundTicketForm(Form):

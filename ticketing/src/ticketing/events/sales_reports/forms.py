@@ -4,7 +4,7 @@ from wtforms import Form, TextField, SelectField, HiddenField
 from wtforms.validators import Regexp, Length, Optional, ValidationError, Email
 from wtforms.compat import iteritems
 
-from ticketing.formhelpers import DateTimeField, Translations, Required, after1900, OurBooleanField
+from altair.formhelpers import DateTimeField, Translations, Required, after1900, OurBooleanField
 from ticketing.core.models import Operator, ReportSetting
 from ticketing.core.models import ReportFrequencyEnum, ReportPeriodEnum
 
