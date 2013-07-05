@@ -1,6 +1,7 @@
 # encoding: utf-8
 
-from ticketing.formatter import Japanese_Japan_Formatter
+from pyramid.threadlocal import get_current_request
+from altair.viewhelpers.datetime_ import create_date_time_formatter
 from datetime import datetime
 
 class Translations(object):
@@ -26,10 +27,12 @@ class Translations(object):
         'minute': u'分',
         'second': u'秒',
         }
-    def __init__(self, messages = None):
+    def __init__(self, request=None, messages=None):
+        if request is None:
+            request = get_current_request() 
         if messages:
             self.messages = dict(self.messages, **messages)
-        self.formatter = Japanese_Japan_Formatter()
+        self.formatter = create_date_time_formatter(request)
 
     def gettext(self, string):
         return self.messages.get(string, string)
@@ -49,6 +52,6 @@ class Translations(object):
         else:
             return self.formatter.format_date(date)
 
-    def format_date(eslf, date):
+    def format_date(self, date):
         return self.formatter.format_date(date)
 
