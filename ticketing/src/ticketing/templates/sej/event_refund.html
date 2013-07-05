@@ -1,16 +1,17 @@
-<%inherit file="../layout.html" />
-<%namespace file="/common/helpers.html" name="h"/>
+<%inherit file="/layout.html" />
+<%namespace file="/common/helpers.html" name="ch"/>
 <%namespace file="/common/helpers.html" import="form_item" />
 <%namespace file="common.html" name="c"/>
 <%block name="title">払い戻し公演一覧</%block>
 
-
-${h.breadcrumbs(
+<%block name="breadcrumbs">
+${ch.breadcrumbs(
     names=[u'SEJ Order', u'払い戻し公演一覧'],
     urls=[
       request.route_path('orders.sej')
     ]
 )}
+</%block>
 
 <div class="ui-toolbar">
   <a id="refund"  href="#" class="btn">払い戻し公演登録</a>
@@ -59,7 +60,7 @@ ${h.breadcrumbs(
 % endfor
 </tbody>
 </table>
-${h.pager(events)}
+${ch.pager(events)}
 
 
 <div id="modal-refund" class="modal hide">

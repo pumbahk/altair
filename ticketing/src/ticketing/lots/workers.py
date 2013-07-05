@@ -7,6 +7,7 @@ import transaction
 import logging
 from ticketing.payments.payment import Payment
 from altair.mq.decorators import task_config
+from altair.sqlahelper import named_transaction
 from ticketing.cart.models import Cart, CartedProduct, CartedProductItem
 from ticketing.cart.stocker import Stocker
 from pyramid.interfaces import IRequest
@@ -20,7 +21,7 @@ from ticketing.cart.carting import CartFactory
 from ticketing import multicheckout
 from .events import LotElectedEvent
 
-from .models import Lot, LotElectWork, LotEntryWish, LotEntry
+from .models import Lot, LotElectWork, LotEntryWish, LotEntry, LotWorkHistory
 from ticketing.payments.api import (
     is_finished_payment,
     is_finished_delivery,
@@ -129,7 +130,6 @@ def dummy_task(context, message):
              queue="lots")
 @multicheckout.multicheckout_session
 def elect_lots_task(context, message):
-    """ 当選確定処理 """
     DBSession.remove()
     try:
         lot = context.lot
@@ -138,8 +138,17 @@ def elect_lots_task(context, message):
         logger.exception(e)
         # workにエラー記録
         return
-    work_id = work.id
+    with named_transaction(context.request, "lot_work_history") as s:
+        history = LotWorkHistory(lot_id=lot.id, # 別トランザクションなのでID指定
+                                 entry_no=work.lot_entry_no,
+                                 wish_order=work.wish_order)
+        s.add(history)
+        return _elect_lots_task(context, message, lot, work, history)
 
+def _elect_lots_task(context, message, lot, work, history):
+    """ 当選確定処理 """
+
+    work_id = work.id
     logger.info("start electing lot_id = {lot_id}".format(lot_id=lot.id))
     if lot is None:
         logger.warning("lot is not found: lot_id = {0}".format(context.lot_id))
@@ -182,12 +191,11 @@ def elect_lots_task(context, message):
     except Exception as e:
         transaction.abort()
         work = LotElectWork.query.filter(LotElectWork.id==work_id).first()
-        work.error = str(e).decode('utf-8')
+        history.error = work.error = str(e).decode('utf-8')
         logger.error(work.error)
         transaction.commit()
-        raise
-    finally:
-        pass
+
+
 
 def elect_lot_wish(request, wish, order=None):
     cart = lot_wish_cart(wish)
@@ -209,9 +217,9 @@ def elect_lot_wish(request, wish, order=None):
         else:
             payment.call_delivery(order)
         # TODO: 確保数確認
-        # TODO: orderにseat割り当て
 
         return order
 
     except Exception as e:
         logger.exception(e)
+        raise

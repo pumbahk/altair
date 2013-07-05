@@ -1,13 +1,9 @@
 <%inherit file="/layout.html" />
-<%namespace file="/common/helpers.html" name="h" />
+<%namespace file="/common/helpers.html" name="ch" />
 
 <div class="container" style="width: 600px;">
   <div class="page-header">
     <h1>パスワードリセット</h1>
-  </div>
-
-  <div class="content">
-    ${h.flash_messages(request)}
   </div>
 
   <div style="margin-bottom: 20px;">
@@ -18,7 +14,7 @@
     <div style="margin-top: 30px;">
       <form class="form-horizontal" action="${request.route_url('login.reset')}" method="POST">
         <fieldset>
-          ${h.form_item(form.email)}
+          ${ch.form_item(form.email)}
         </fieldset>
         <div class="spacer" style="width:100px; margin:0 auto 0 auto;">
           <input class="btn btn-primary" type="submit" name="submit" value="リセット">

@@ -25,7 +25,7 @@ def main(global_config, **local_config):
     settings = dict(global_config)
     settings.update(local_config)
 
-    engine = engine_from_config(settings, 'sqlalchemy.')
+    engine = engine_from_config(settings, 'sqlalchemy.', pool_recycle=0)
     sqlahelper.add_engine(engine)
 
     authn_policy = AuthTktAuthenticationPolicy('secretstring', callback=groupfinder)

@@ -1,5 +1,5 @@
 <%page args="form, roles" />
-<%namespace file="/common/helpers.html" name="h"/>
+<%namespace file="/common/helpers.html" name="ch"/>
 <%namespace file="/common/modal.html" import="delete_modal" />
 
 <script type="text/javascript">
@@ -44,7 +44,7 @@
     % endfor
     </tbody>
   </table>
-  ${h.pager(roles)}
+  ${ch.pager(roles)}
 </form>
 
 ${delete_modal()}

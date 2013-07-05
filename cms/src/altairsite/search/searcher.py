@@ -146,7 +146,7 @@ def get_pageset_query_from_deal_cond(request, query_params):
     qs = _refine_pageset_collect_future(qs, _now_day=now)
     if query_params.get("deal_cond"):
        sub_qs = request.allowable(Event).with_entities(Event.id)
-       sub_qs = events_by_deal_cond_flags(sub_qs, query_params.get("deal_cond", []))
+       sub_qs = events_by_deal_cond_flags(sub_qs, query_params.get("deal_cond", []), True)
        sub_qs = sub_qs.filter(Event.is_searchable==True)
        qs = search_by_events(qs, sub_qs)
        return  _refine_pageset_qs(qs, _now_day=now)
@@ -214,7 +214,7 @@ def get_pageset_query_fullset(request, query_params):
     sub_qs = request.allowable(Event).with_entities(Event.id)
     sub_qs = events_by_area(sub_qs, query_params.get("prefectures"))
     sub_qs = events_by_performance_term(sub_qs, query_params.get("performance_open"), query_params.get("performance_close"))
-    sub_qs = events_by_deal_cond_flags(sub_qs, query_params.get("deal_cond", []))
+    sub_qs = events_by_deal_cond_flags(sub_qs, query_params.get("deal_cond", []), False)
     sub_qs = events_by_added_service(sub_qs, query_params) ## 未実装
     sub_qs = events_by_about_deal(sub_qs, query_params.get("before_deal_start"), query_params.get("till_deal_end"), 
                                   query_params.get("closed_only"), query_params.get("canceld_only"), 
@@ -314,8 +314,10 @@ def events_by_performance_term(qs, performance_open, performance_close):
         qs = qs.filter(Event.event_close <= performance_close)
     return qs
 
-def events_by_deal_cond_flags(qs, flags):
-   if flags:
+def events_by_deal_cond_flags(qs, flags, sale):
+   if flags and sale:
+      return qs.filter(Event.id==SalesSegmentGroup.event_id).filter(SalesSegmentGroup.kind_id.in_(flags)).filter(SalesSegmentGroup.end_on > datetime.now()).distinct()
+   elif flags:
       return qs.filter(Event.id==SalesSegmentGroup.event_id).filter(SalesSegmentGroup.kind_id.in_(flags)).distinct()
    else:
       return qs

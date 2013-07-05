@@ -64,6 +64,9 @@ class EntryLotView(object):
         self.request = request
         self.context = context
 
+    def cr2br(self, t):
+        return h.cr2br(t)
+
     @view_config(route_name='lots.entry.index', renderer=selectable_renderer("mobile/%(membership)s/index.html"))
     def index(self):
         event = self.context.event

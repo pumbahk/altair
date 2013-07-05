@@ -1,5 +1,5 @@
-<%inherit file="../layout_2cols.html" />
-<%namespace file="/common/helpers.html" name="h" />
+<%inherit file="/layout_2cols.html" />
+<%namespace file="/common/helpers.html" name="ch" />
 <%
 from ticketing.cart.helpers import format_currency
 %>
@@ -12,8 +12,8 @@ Altair Backend -- ${lot.event.title}[${lot.name}]
 </%block>
 <%block name="javascript">
 </%block>
-<div class="breadcrumbs">
-  ${h.breadcrumbs(
+<%block name="breadcrumbs">
+  ${ch.breadcrumbs(
       names=[u'イベント', lot.event.title, u'抽選', lot.name],
       urls=[
         request.route_path('events.index'),
@@ -21,7 +21,7 @@ Altair Backend -- ${lot.event.title}[${lot.name}]
         request.route_path('lots.index', event_id=lot.event.id),
       ]
   )}
-</div>
+</%block>
 <div class="page-header">
   <h1>
     ${lot.event.title}<br />
@@ -29,17 +29,13 @@ Altair Backend -- ${lot.event.title}[${lot.name}]
   </h1>
   <a class="btn" href="${request.route_url('lots.entries.index', lot_id=lot.id)}">申し込み状況</a>
 </div>
-<div class="content">
-  ${h.flash_messages(request)}
-</div>
-
 <div class="row-fluid">
   <div class="span9">
     <table class="table table-bordered table-condensed">
       <tbody>
         <tr>
           <th>抽選期間</th>
-          <td>${h.safe_strftime(lot.start_at)} ${h.safe_strftime(lot.end_at)}</td>
+          <td>${vh.datetime(lot.start_at)} ${vh.datetime(lot.end_at)}</td>
         </tr>
         <tr>
           <th>申し込み上限数</th>
@@ -48,6 +44,10 @@ Altair Backend -- ${lot.event.title}[${lot.name}]
         <tr>
           <th>抽選結果発表予定日</th>
           <td>${lot.lotting_announce_datetime}</td>
+        </tr>
+        <tr>
+          <th>認証方法</th>
+          <td>${lot.auth_type or u'なし'}</td>
         </tr>
        </tbody>
     </table>

@@ -18,6 +18,6 @@ ${panel("describe_salessegment", current_salessegment)}
 %if current_salessegment.tickets:
   ${panel("salessegment_ticket", current_salessegment)}
 %else:
-  ${panel("model_create_only_buttons", modeljname=u"商品", modelname="ticket", _query=dict(salessegment_id=current_salessegment.id))}
+  ${panel("model_create_only_buttons", modeljname=u"商品", modelname="ticket", _query=dict(salessegment_id=current_salessegment.id, endpoint=request.url))}
 %endif
 

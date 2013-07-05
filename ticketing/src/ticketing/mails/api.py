@@ -30,29 +30,25 @@ def get_mail_setting_default(request, name=""):
 
 @implementer(IMailSettingDefault)
 class MailSettingDefaultGetter(object):
-    def __init__(self, bcc_silent=False, show_flash_message=False):
-        self.bcc_silent = bcc_silent
+    def __init__(self, show_flash_message=False):
         self.show_flash_message = show_flash_message
 
-    def _bcc_by_setting(self, request, bcc):
+    def _notify_bcc(self, request, bcc):
         textmessage = "ticketing.mails.bcc.silent = true, bcc = []. (bcc data --- {0})".format(bcc)
-        if not self.bcc_silent:
-            return bcc
         if self.show_flash_message:
             request.session.flash(textmessage)
         logger.info(textmessage)
-        return []
 
     def get_bcc(self, request, traverser, organization):
         val = traverser.data and traverser.data["bcc"]
+        bcc_recipients = []
         if val:
-            if not val["use"]:
-                return self._bcc_by_setting(request, [])
-            elif val["value"]:
-                return self._bcc_by_setting(request, [y for y in [x.strip() for x in val["value"].split("\n")] if y])
-            else:
-                return self._bcc_by_setting(request, [organization.contact_email])
-        return self._bcc_by_setting(request, [organization.contact_email])
+            if val["use"] and val["value"]:
+                bcc_recipients.extend(y for y in [x.strip() for x in val["value"].split("\n")] if y)
+        if organization.setting.bcc_recipient is not None:
+            bcc_recipients.append(organization.setting.bcc_recipient)
+        self._notify_bcc(request, bcc_recipients)
+        return bcc_recipients
 
     def get_sender(self, request, traverser, organization):
         return (traverser.data["sender"] or organization.contact_email)

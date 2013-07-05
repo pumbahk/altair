@@ -1,19 +1,14 @@
 <%inherit file="/layout_2cols.html"/>
-<%namespace file="/common/helpers.html" name="h" />
+<%namespace file="/common/helpers.html" name="ch" />
 
 <%doc>
-<div class="breadcrumbs">
-  ${h.breadcrumbs(
+<%block name="breadcrumbs">
+  ${ch.breadcrumbs(
       names=[u'トップ', u'membergroup'],
       urls=[request.route_path('index'), request.route_path('membergroups',action="index",membergroup_id="*")]
   )}
-</div>
+</%block>
 </%doc>
-
-<div class="content">
-  ${h.flash_messages(request)}
-  ${h.alert_message(form)}
-</div>
 <%
 route_name=u'編集'
 route_path=request.route_path('membergroups.salessegments',action='edit', membergroup_id=membergroup_id)

@@ -1,6 +1,6 @@
 <%page args="modal_id, sales_segment" />
 <%!import json %>
-<%namespace file="/common/helpers.html" name="h" />
+<%namespace file="/common/helpers.html" name="ch" />
 <script type="text/javascript">
   var urls = ${json.dumps(dict(
     add=request.route_path('sales_segments.point_grant_settings.add', sales_segment_id=sales_segment.id),

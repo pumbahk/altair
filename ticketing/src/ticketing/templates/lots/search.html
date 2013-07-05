@@ -1,5 +1,5 @@
-<%inherit file="../layout_2cols.html" />
-<%namespace file="/common/helpers.html" name="h" />
+<%inherit file="/layout_2cols.html" />
+<%namespace file="/common/helpers.html" name="ch" />
 <%namespace file="_entries_tabs.html" name="tabs" />
 
 <%
@@ -8,16 +8,6 @@ from ticketing.cart.helpers import format_currency
 
 
 <%def name="lot_wish_row(request, w)">
-
-<%
-#performance = w.performance
-#performance = performances[w.performance_id]
-#venue = performance.venue
-#shipping_address = w.lot_entry.shipping_address
-#pdmp = w.lot_entry.payment_delivery_method_pair
-#payment_method = pdmp.payment_method
-#delivery_method = pdmp.delivery_method
-%>
 <td nowrap="">
 <div class="btn-group">
 %if not w.closed_at:
@@ -46,6 +36,9 @@ from ticketing.cart.helpers import format_currency
 ${w.status}
 %if w.ordered_mail_sent_at:
 <br>メール送信済
+%endif
+%if w.lot_elect_work_error:
+<br><a href="#" data-toggle="tooltip" title="${w.lot_elect_work_error}">当選処理エラー</a>
 %endif
 </td>
 <td nowrap="">${w.payment_method_name}<br>${view.payment_status(w)}</td>
@@ -84,8 +77,8 @@ Altair Backend -- ${lot.event.title}[${lot.name}]
 </%block>
 <%block name="javascript">
 </%block>
-<div class="breadcrumbs">
-  ${h.breadcrumbs(
+<%block name="breadcrumbs">
+  ${ch.breadcrumbs(
       names=[u'イベント', lot.event.title, u'抽選', lot.name, u'申し込み状況'],
       urls=[
         request.route_path('events.index'),
@@ -94,15 +87,12 @@ Altair Backend -- ${lot.event.title}[${lot.name}]
         request.route_path('lots.show', lot_id=lot.id),
       ]
   )}
-</div>
+</%block>
 <div class="page-header">
   <h1>
     ${lot.event.title}<br />
     <small>${lot.name}</small>
   </h1>
-</div>
-<div class="content">
-  ${h.flash_messages(request)}
 </div>
 ${tabs.tabs(request)}
 <div class="lot-entry-statuses">
@@ -185,6 +175,20 @@ ${tabs.tabs(request)}
     </fieldset>
   </form>
 </div>
+<!-- 一括操作 -->
+%if wishes:
+<div class="well">
+  %if enable_elect_all:
+  <button id="all-elect-button" type="button" class="btn">
+    一括で当選予定にする
+  </button>
+  %else:
+  <span class="btn btn-inverse">
+    一括で当選予定にする<br>(希望順位を絞り込んだ場合のみ利用可能)
+  </span>
+  %endif
+</div>
+%endif
 
 <div>
 %if wishes:
@@ -220,7 +224,10 @@ ${tabs.tabs(request)}
 </thead>
 <tbody>
 %for w in wishes:
-<tr class="${'lot-wish-' + str(w.entry_no) + '-' + str(w.wish_order)}">
+<tr class="${'lot-wish-' + str(w.entry_no) + '-' + str(w.wish_order)} wish-row"
+    data-entry-no="${str(w.entry_no)}"
+    data-wish-order="${w.wish_order}"
+    data-wish-id="${w.id}">
 ${self.lot_wish_row(request, w)}
 </tr>
 %endfor
@@ -235,10 +242,26 @@ var electingUrl = "${electing_url}";
 var rejectingUrl = "${rejecting_url}"
 var cancelRejectingUrl = "${cancel_rejecting_url}"
 var statusUrl = "${status_url}"
-
+var electingAllUrl = "${electing_all_url}"
 $(function() {
 
+  $('#all-elect-button').on('click', function() {
+    var wishes = $.map($('.wish-row'), function(wish_row) {
+      var wishId = $(wish_row).data('wishId');
+      return wishId;
+    });
+    console.log(wishes);
 
+    $.ajax({
+      url: electingAllUrl,
+      data: JSON.stringify({"wishes": wishes}),
+      dataType: "json",
+      type: "POST",
+      success: function(data, textStatus, xhr) {
+        rewrite_wishes(data);
+      }});
+    
+  });
   function rewrite_wishes(data) {
     for (var i = 0; i <  data.html.length; i++) {
       $("." + data.html[i][0]).html(data.html[i][1]);

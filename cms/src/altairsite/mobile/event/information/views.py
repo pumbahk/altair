@@ -3,14 +3,14 @@
 from altaircms.datelib import get_now
 from altaircms.topic.models import TopicTag
 from altaircms.topic.api import get_topic_searcher
-from altairsite.config import usersite_view_config
+from altairsite.config import mobile_site_view_config
 from altairsite.mobile.event.information.forms import InformationForm
 from altairsite.mobile.core.helper import log_info, Markup
 from altairsite.mobile.core.disphelper import DispHelper
 
-@usersite_view_config(route_name='information', request_type="altairsite.tweens.IMobileRequest"
+@mobile_site_view_config(route_name='information', request_type="altairsite.tweens.IMobileRequest"
     , renderer='altairsite.mobile:templates/information/information.mako')
-@usersite_view_config(route_name='infodetail', request_type="altairsite.tweens.IMobileRequest"
+@mobile_site_view_config(route_name='infodetail', request_type="altairsite.tweens.IMobileRequest"
     , renderer='altairsite.mobile:templates/information/infodetail.mako')
 def move_information(request):
 

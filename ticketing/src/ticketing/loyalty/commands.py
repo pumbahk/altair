@@ -15,7 +15,7 @@ from sqlalchemy.orm import joinedload
 from sqlalchemy.orm.exc import NoResultFound
 
 from pyramid.paster import bootstrap, setup_logging
-from ticketing.helpers import todatetime
+from ticketing.utils import todatetime
 
 logger = logging.getLogger(__name__)
 

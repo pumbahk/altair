@@ -8,6 +8,19 @@
   <%include file="/parts/_menu.html" />
   </div>
   <div id="main-container" class="${tm.container_class()}">
+    <%block name="breadcrumbs" />
+    <%block name="messages">
+      <div class="content">
+        % if request.session.peek_flash():
+          <div class="alert ${type}">
+            <a class="close" data-dismiss="alert">&times;</a>
+            % for message in request.session.pop_flash():
+              <h4 class="alert-heading">${message}</h4>
+            % endfor
+          </div>
+        % endif
+      </div>
+    </%block>
     ${next.body()}
   </div>
 </div>

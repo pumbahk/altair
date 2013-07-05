@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from altaircms.event.models import Event
-from altairsite.config import usersite_view_config
+from altairsite.config import mobile_site_view_config
 from altairsite.mobile.event.eventdetail.forms import EventDetailForm
 from altairsite.mobile.core.helper import get_week_map, get_performances_month_unit, get_purchase_links\
     , get_tickets, exist_value, get_sales_date
@@ -11,7 +11,7 @@ from altairsite.exceptions import UsersiteException
 class ValidationFailure(UsersiteException):
     pass
 
-@usersite_view_config(route_name='eventdetail', request_type="altairsite.tweens.IMobileRequest"
+@mobile_site_view_config(route_name='eventdetail', request_type="altairsite.tweens.IMobileRequest"
     , renderer='altairsite.mobile:templates/eventdetail/eventdetail.mako')
 def move_eventdetail(request):
 
@@ -40,7 +40,7 @@ def move_eventdetail(request):
         , 'helper':DispHelper()
     }
 
-@usersite_view_config(route_name='eventdetail', context=ValidationFailure
+@mobile_site_view_config(route_name='eventdetail', context=ValidationFailure
     , request_type="altairsite.tweens.IMobileRequest", renderer='altairsite.mobile:templates/common/error.mako')
 def failed_validation(request):
     return {}

@@ -70,6 +70,14 @@ tstar_mobile_or_not_renderer = SelectableRendererSetup(
     renderer_name = "tstar_mobile_or_not_renderer"
 )
 
+
+## todo: もっと細かく用途制限
+def enable_full_usersite_function(info, request):
+    return request.organization.use_full_usersite if request.organization else False
+enable_smartphone = enable_full_usersite_function
+enable_mobile = enable_full_usersite_function
+
+
 def includeme(config):
     """
     """

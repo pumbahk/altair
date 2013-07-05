@@ -7,13 +7,15 @@ import sqlahelper
 from altaircms.models import Base
 from altair.mobile import PC_ACCESS_COOKIE_NAME #dont't delete it
 
-def install_static_page(config):
+def install_fetcher(config):
     settings = config.registry.settings
-    config.maybe_dotted("altaircms.page.api.set_static_page_utility")(
-        config, 
-        settings["altaircms.page.static.directory"], 
-        settings["altaircms.page.tmp.directory"]
-        )
+    config.include("altaircms:install_upload_file") #xxx:
+    config.include("altaircms.page.staticupload:install_static_page_utility")
+    from altairsite.fetcher import ICurrentPageFetcher
+    from altairsite.fetcher import CurrentPageFetcher
+    fetcher = CurrentPageFetcher(settings["altaircms.static.pagetype.pc"], 
+                                 settings["altaircms.static.pagetype.mobile"])
+    config.registry.registerUtility(fetcher, ICurrentPageFetcher)
 
 def main(global_config, **local_config):
     """ This function returns a Pyramid WSGI application.
@@ -42,12 +44,12 @@ def main(global_config, **local_config):
             exclude=config.maybe_dotted(settings.get("s3.static.exclude.function")), 
             prefix="/usersite"))
 
-    config.include(install_static_page)
     config.include("altaircms.tag:install_tagmanager")
     config.include("altaircms.topic:install_topic_searcher")
     config.include("altaircms.page:install_pageset_searcher")
     config.include("altaircms.widget:install_has_widget_page_finder")
     config.include("altaircms.asset:install_virtual_asset")
+    config.include(install_fetcher)
 
     ## organization mapping
     OrganizationMapping = config.maybe_dotted("altaircms.auth.api.OrganizationMapping")

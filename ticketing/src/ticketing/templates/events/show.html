@@ -1,5 +1,5 @@
 <%inherit file="/layout.html" />
-<%namespace file="/common/helpers.html" name="h" />
+<%namespace file="/common/helpers.html" name="ch" />
 <%namespace file="/parts/_toggle_menu.html" name="tm" />
 
 <%include file="/parts/_toggle_menu.html" />
@@ -21,6 +21,13 @@ $(function(){
 });
 </script>
 
+<%block name="breadcrumbs">
+  ${ch.breadcrumbs(
+      names=[u'イベント', event.title],
+      urls=[request.route_path('events.index')]
+  )}
+</%block>
+
 <div class="row-fluid">
   <div id="left-menu" class="span2" style="${tm.menu_style()}">
     <%include file="/parts/_menu.html" args="event=event" />
@@ -38,19 +45,8 @@ $(function(){
       });
     </script>
 
-    <div class="breadcrumbs">
-      ${h.breadcrumbs(
-          names=[u'イベント', event.title],
-          urls=[request.route_path('events.index')]
-      )}
-    </div>
-
     <div class="page-header">
       <h1 style="word-wrap: break-word;">${event.title}</h1>
-    </div>
-
-    <div class="content">
-      ${h.flash_messages(request)}
     </div>
 
     <table class="table table-bordered fullwidth">
@@ -80,7 +76,7 @@ $(function(){
               </a>
             </span>
           </th>
-          <td>${h.safe_strftime(event.sales_start_on)}</td>
+          <td>${vh.datetime(event.sales_start_on)}</td>
         </tr>
         <tr>
           <th>
@@ -91,12 +87,12 @@ $(function(){
               </a>
             </span>
           </th>
-          <td>${h.safe_strftime(event.sales_end_on)}</td>
+          <td>${vh.datetime(event.sales_end_on)}</td>
         </tr>
         <tr>
           <th>初回公演日時</th>
           <td>
-            ${h.safe_strftime(event.first_start_on)}
+            ${vh.datetime(event.first_start_on)}
             % if event.first_performance:
             (<a href="${request.route_path('performances.show', event_id=event.id, performance_id=event.first_performance.id)}">
              ${event.first_performance.venue.name} 公演 </a>)
@@ -106,7 +102,7 @@ $(function(){
         <tr>
           <th>最終公演日時</th>
           <td>
-            ${h.safe_strftime(event.final_start_on)}
+            ${vh.datetime(event.final_start_on)}
             % if event.final_performance:
             (<a href="${request.route_path('performances.show', event_id=event.id, performance_id=event.final_performance.id)}">
              ${event.final_performance.venue.name} 公演 </a>)

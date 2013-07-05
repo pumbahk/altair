@@ -1,46 +1,32 @@
 <%inherit file="/layout_2cols.html" />
-<%namespace file="/common/helpers.html" name="h" />
-<%
-  if request.matched_route.name == 'operators.new':
-    route_name = u'登録'
-    route_path = request.route_path('operators.new')
-  else:
-    route_name = u'編集'
-    route_path = request.route_path('operators.edit', operator_id=form.id.data)
-%>
+<%namespace file="/common/helpers.html" name="ch" />
+<%block name="breadcrumbs">
+  ${ch.breadcrumbs(
+      names=[u'トップ', u'オペレーター', route_name],
+      urls=[
+        request.route_path('index'),
+        request.route_path('operators.index'),
+      ]
+  )}
+</%block>
 <div class="container row">
-  <div class="span12">
-    ${h.breadcrumbs(
-        names=[u'トップ', u'オペレーター', route_name],
-        urls=[
-          request.route_path('index'),
-          request.route_path('operators.index'),
-        ]
-    )}
-  </div>
-
   <div class="span12">
     <div class="page-header">
       <h3>オペレーター ${route_name}</h3>
     </div>
 
-    <div class="content">
-      ${h.flash_messages(request)}
-      ${h.alert_message(form)}
-    </div>
-
     <div class="well">
-      <form class="form-horizontal" action="${route_path}" method="POST">
+      <form class="form-horizontal" action="${request.path}" method="POST">
         <fieldset>
-          ${h.form_item(form.id)}
-          ${h.form_item(form.organization_id)}
-          ${h.form_item(form.name, class_='span5', maxlength=255)}
-          ${h.form_item(form.login_id)}
+          ${ch.form_item(form.id)}
+          ${ch.form_item(form.organization_id)}
+          ${ch.form_item(form.name, class_='span5', maxlength=255)}
+          ${ch.form_item(form.login_id)}
           % if request.matched_route.name == 'operators.new':
-          ${h.form_item(form.password)}
+          ${ch.form_item(form.password)}
           % endif
-          ${h.form_item(form.email)}
-          ${h.form_item(form.role_ids)}
+          ${ch.form_item(form.email)}
+          ${ch.form_item(form.role_ids)}
         </fieldset>
         <div class="form-actions">
           <input class="btn btn-primary" type="submit" name="submit" value="${route_name}">

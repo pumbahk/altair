@@ -6,7 +6,7 @@ from sqlalchemy.sql import functions as safunc
 from sqlalchemy.orm import aliased
 from pyramid.interfaces import IRequest
 from ticketing.models import asc_or_desc
-from ticketing.helpers import todatetime
+from ticketing.utils import todatetime
 from ticketing.core.models import (
     Order,
     OrderedProduct,
@@ -396,7 +396,7 @@ class OrderSummarySearchQueryBuilder(SearchQueryBuilderBase):
         return query.filter(self.targets['subject'].performance_start_on>=value)
 
     def _start_on_to(self, query, value):
-        return query.filter(self.targets['subject'].performance_end_on<=todatetime(value).replace(hour=23, minute=59, second=59))
+        return query.filter(self.targets['subject'].performance_start_on<=todatetime(value).replace(hour=23, minute=59, second=59))
 
     def _ordered_from(self, query, value):
         return query.filter(self.targets['subject'].created_at >= value)

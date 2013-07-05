@@ -23,6 +23,10 @@ class OrderCompleteInfoDefault(OrderInfoDefault):
         ## template_bodyが渡された場合には実際にレンダリングしてシミュレート
         template_body = data.get("template_body")
         if template_body and template_body.get("use"):
+            if not template_body.get("value"):
+                ## templateが空文字の時はuse = Falseとして扱う
+                form.template_body.use.data = False
+                return True
             try:
                 mail = PurchaseCompleteMail(None, request)
                 payment_id, delivery_id = 1, 1 #xxx

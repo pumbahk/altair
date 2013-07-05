@@ -1,7 +1,8 @@
 # -*- coding:utf-8 -*-
 import logging
 from pyramid.httpexceptions import HTTPFound
-from repoze.who.api import get_api as get_who_api
+#from repoze.who.api import get_api as get_who_api
+from altair.auth import who_api as get_who_api
 from pyramid.view import view_config
 from ticketing.cart import api as cart_api
 from ticketing.core import api as core_api
@@ -37,7 +38,7 @@ class LoginView(object):
 
     @view_config(request_method="POST", route_name='fc_auth.login', renderer='string')
     def login(self):
-        who_api = get_who_api(self.request.environ)
+        who_api = get_who_api(self.request.environ, name="fc_auth")
         membership = self.request.matchdict['membership']
         username = self.request.params['username']
         password = self.request.params['password']
@@ -64,7 +65,7 @@ class LoginView(object):
 
     @view_config(request_method="POST", route_name='fc_auth.guest', renderer='string')
     def guest_login(self):
-        who_api = get_who_api(self.request.environ)
+        who_api = get_who_api(self.request.environ, name="fc_auth")
         membership = self.request.matchdict['membership']
         logger.debug("guest authenticate for membership %s" % membership)
 

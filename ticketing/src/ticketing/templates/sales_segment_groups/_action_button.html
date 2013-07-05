@@ -1,5 +1,5 @@
 <%page args="order=None" />
-<%namespace file="/common/helpers.html" name="h" />
+<%namespace file="/common/helpers.html" name="ch" />
 <%namespace file="/common/modal.html" import="delete_modal" />
 <script type="text/javascript">
 var get_selected_sales_segment_group_id;
@@ -34,5 +34,5 @@ var get_selected_sales_segment_group_id;
   }
   order = iter(order or ['new', 'edit', 'delete'])
 %>
-${h.action_button(actions, order)}
+${HH.action_button(actions, order)}
 ${delete_modal()}

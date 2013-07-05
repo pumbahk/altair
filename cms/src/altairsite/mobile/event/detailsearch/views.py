@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
 from altaircms.genre.searcher import GenreSearcher
-from altairsite.config import usersite_view_config
+from altairsite.config import mobile_site_view_config
 from altairsite.mobile.event.detailsearch.forms import DetailSearchForm
 from altairsite.mobile.core.searcher import EventSearcher
 from altairsite.mobile.core.helper import get_event_paging, get_week_map
 from altairsite.mobile.core.helper import log_info
 from datetime import date
 
-@usersite_view_config(route_name='detailsearchinit', request_type="altairsite.tweens.IMobileRequest"
+@mobile_site_view_config(route_name='detailsearchinit', request_type="altairsite.tweens.IMobileRequest"
     , renderer='altairsite.mobile:templates/detailsearch/detailsearch.mako')
 def move_detailsearch(request):
 
@@ -19,7 +19,7 @@ def move_detailsearch(request):
 
     return {'form':form}
 
-@usersite_view_config(route_name='detailsearch', request_type="altairsite.tweens.IMobileRequest"
+@mobile_site_view_config(route_name='detailsearch', request_type="altairsite.tweens.IMobileRequest"
     , renderer='altairsite.mobile:templates/searchresult/detailsearch.mako')
 def move_detailsearch_post(request):
 

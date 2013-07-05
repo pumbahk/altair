@@ -1,6 +1,7 @@
 # coding: utf-8
 import logging
 logger = logging.getLogger(__name__)
+import json
 from sqlalchemy.ext.declarative import declared_attr
 from altaircms.modelmanager.ancestors import HasAncestorMixin
 from datetime import datetime
@@ -30,6 +31,29 @@ from altaircms.layout.models import Layout
 from altaircms.models import WithOrganizationMixin
 
 import uuid
+
+
+class PublishStatusMixin(object):
+    def publish_status(self, dt):
+        dt = dt or datetime.now()
+        if not self.published:
+            return u"非公開(期間:%s)" % h.term_datetime(self.publish_begin, self.publish_end)
+        
+        if self.publish_begin and self.publish_begin > dt:
+            return u"公開前(%sに公開)" % h.base.jdatetime(self.publish_begin)
+        elif self.publish_end is None:
+            return u"公開中"
+        elif self.publish_end < dt:
+            return u"公開終了(%sに終了)"% h.base.jdatetime(self.publish_end)
+        else:
+            return u"公開中(期間:%s)" % h.term_datetime(self.publish_begin, self.publish_end)
+
+    ### page access
+    def publish(self):
+        self.published = True
+
+    def unpublish(self):
+        self.published = False
 
 class PageAccesskey(Base, WithOrganizationMixin):
     query = DBSession.query_property()
@@ -65,7 +89,7 @@ class PageSet(Base,
     id = Column(Integer, primary_key=True)
     name = Column(Unicode(255))
     version_counter = Column(Integer, default=0)
-    url = Column(String(255), unique=True)
+    url = Column(String(255))
     event_id = Column(Integer, ForeignKey('event.id'))
     event = relationship('Event', backref='pagesets')
 
@@ -209,24 +233,66 @@ class PageSet(Base,
     #     ## パフォーマンス上げるために本当はここキャッシュしておけたりすると良いのかなと思う
     #     return Page.filter(Page.version==self.version_counter).one()
 
+class StaticPageSet(Base, 
+                    WithOrganizationMixin, 
+                    HasAncestorMixin):
+    __tablename__ = 'static_pagesets'
+
+    query = DBSession.query_property()
+    id = Column(Integer, primary_key=True)
+    name = Column(Unicode(255))
+    version_counter = Column(Integer, default=0)
+    url = Column(String(255), unique=True)
+
+    created_at = sa.Column(sa.DateTime, default=datetime.now)
+    updated_at = sa.Column(sa.DateTime, default=datetime.now, onupdate=datetime.now)
+
+    pagetype_id = Column(sa.Integer, ForeignKey("pagetype.id"))
+    pagetype = orm.relationship("PageType", backref="static_pagesets", uselist=False)
+
+    def current(self, dt=None, published=True):
+        dt = dt or datetime.now()
+        where = (StaticPage.in_term(dt)) | ((StaticPage.publish_begin==None) & (StaticPage.publish_end==None))
+        if published:
+            where = where & (StaticPage.published == published)
+        qs = StaticPage.query.filter(StaticPage.pageset==self).filter(where)
+        return qs.order_by(sa.desc(StaticPage.publish_begin), StaticPage.publish_end).limit(1).first()
+
+    @declared_attr
+    def __table_args__(cls):
+        return (sa.schema.UniqueConstraint("url", "organization_id"), )
+
+
 class StaticPage(BaseOriginalMixin, 
                  WithOrganizationMixin, 
+                 PublishStatusMixin, 
                  Base):
     query = DBSession.query_property()
     __tablename__ = "static_pages"
 
     id = sa.Column(sa.Integer, primary_key=True)
-    
     created_at = sa.Column(sa.DateTime, default=datetime.now)
     updated_at = sa.Column(sa.DateTime, default=datetime.now, onupdate=datetime.now)
+    file_structure_text = orm.deferred(sa.Column(sa.Text, default="", nullable=False))
+    uploaded_at = sa.Column(sa.DateTime)
     name = sa.Column(sa.String(255), doc="directory name(internal)")
     label = sa.Column(sa.Unicode(255), doc=u"日本語名", default=u"")
     publish_begin = Column(DateTime)
     publish_end = Column(DateTime)
     published = Column(sa.Boolean, default=False)    
+    pageset_id = Column(sa.Integer, ForeignKey("static_pagesets.id"))
+    pageset = relationship('StaticPageSet', backref=orm.backref('pages', order_by=sa.asc("publish_begin")), uselist=False)
     layout_id = Column(Integer, ForeignKey("layout.id"))    
     layout = relationship(Layout, backref='static_pages', uselist=False)
-    interceptive = Column(sa.Boolean, default=True)
+    interceptive = Column(sa.Boolean, default=False)
+
+    @reify
+    def file_structure(self):
+        return json.loads(self.file_structure_text)
+    
+    @property
+    def prefix(self):
+        return self.pageset.url
 
     @property
     def description(self):
@@ -237,6 +303,12 @@ class StaticPage(BaseOriginalMixin,
         return (((self.publish_begin == None) or (self.publish_begin <= dt))
                 and ((self.publish_end == None) or (self.publish_end > dt)))
 
+    def __copy__(self):
+        copied = super(StaticPage, self).__copy__()
+        copied.uploaded_at = None
+        copied.file_structure_text = ""
+        return copied
+
     @in_term.expression
     def in_term(self, dt):
         return sa.sql.and_(sa.sql.or_((self.publish_begin == None), (self.publish_begin <= dt)), 
@@ -244,6 +316,7 @@ class StaticPage(BaseOriginalMixin,
 
 class Page(BaseOriginalMixin,
            WithOrganizationMixin, 
+           PublishStatusMixin, 
            Base):
     """
     ページ

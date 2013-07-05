@@ -1,18 +1,14 @@
 <%inherit file="/layout_2cols.html"/>
-<%namespace file="/common/helpers.html" name="h" />
-<div class="breadcrumbs">
-  ${h.breadcrumbs(
+<%namespace file="/common/helpers.html" name="ch" />
+<%block name="breadcrumbs">
+  ${ch.breadcrumbs(
       names=[u'トップ', u'取引先 マスタ'],
       urls=[request.route_path('index')]
   )}
-</div>
+</%block>
 
 <div class="page-header">
   <h1>取引先 マスタ</h1>
-</div>
-
-<div class="content">
-  ${h.flash_messages(request)}
 </div>
 
 <%include file="/organizations/_list.html" args="form=form, organizations=organizations" />

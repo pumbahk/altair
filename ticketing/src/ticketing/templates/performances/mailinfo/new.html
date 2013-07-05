@@ -1,5 +1,5 @@
-<%inherit file="../../layout_2cols.html" />
-<%namespace file="/common/helpers.html" import="breadcrumbs,alert_message,flash_messages,form_item"/>
+<%inherit file="/layout_2cols.html" />
+<%namespace file="/common/helpers.html" name="ch" />
 
 <style type="text/css">
   .controls select{width: 80%;}
@@ -8,22 +8,22 @@
   .controls table{width: 95%;}
 </style>
 
-<div class="breadcrumbs">
-  ${breadcrumbs(
-      names=[u'イベント', performance.event.title, u'パフォーマンス', performance.name, u"メール付加情報"] ,
-      urls=[
-        request.route_path('events.index'),
-        request.route_path('events.show', event_id=performance.event.id),
-        request.route_path('performances.index', event_id=performance.event.id),
-        request.route_path('performances.show', performance_id=performance.id),
-      ]
-  )}
-</div>
+<%block name="breadcrumbs">
+${ch.breadcrumbs(
+    names=[u'イベント', performance.event.title, u'パフォーマンス', performance.name, u"メール付加情報"] ,
+    urls=[
+      request.route_path('events.index'),
+      request.route_path('events.show', event_id=performance.event.id),
+      request.route_path('performances.index', event_id=performance.event.id),
+      request.route_path('performances.show', performance_id=performance.id),
+    ]
+)}
+</%block>
 
 <div class="page-header">
   <h2>${mutil.get_mailtype_description()}付加情報 ${performance.name}</h2>
-  <span class="label">取引先<a href="${request.route_path("organizations.mails.new", organization_id=performance.event.organization.id, mailtype=mailtype)}">に移動</a></span> &gt
-  <span class="label">イベント<a href="${request.route_path("events.mailinfo.edit", event_id=performance.event.id, mailtype=mailtype)}">に移動</a></span> &gt
+  <span class="label">取引先<a href="${request.route_path("organizations.mails.new", organization_id=performance.event.organization.id, mailtype=mailtype)}">に移動</a></span> &gt;
+  <span class="label">イベント<a href="${request.route_path("events.mailinfo.edit", event_id=performance.event.id, mailtype=mailtype)}">に移動</a></span> &gt;
   <span class="label label-warning">パフォーマンス</span>
 </div>
 
@@ -47,11 +47,6 @@
     %endif
   %endfor
 </ul>
-
-<div class="content">
-  ${flash_messages(request)}
-  ${alert_message(form,escape=False)}
-</div>
 
 <div class="well">
   <form id="submitForm" class="form-horizontal" action="#" method="POST">

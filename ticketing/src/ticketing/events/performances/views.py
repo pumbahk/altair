@@ -170,9 +170,12 @@ class Performances(BaseView):
             return HTTPNotFound('event id %d is not found' % event_id)
 
         f = PerformanceForm(MultiDict(code=event.code), organization_id=self.context.user.organization_id)
+
         return {
             'form':f,
             'event':event,
+            'route_name': u'登録',
+            'route_path': self.request.path,
         }
 
     @view_config(route_name='performances.new', request_method='POST', renderer='ticketing:templates/performances/edit.html')
@@ -195,11 +198,17 @@ class Performances(BaseView):
         return {
             'form':f,
             'event':event,
+            'route_name': u'登録',
+            'route_path': self.request.path,
         }
 
     @view_config(route_name='performances.edit', request_method='GET', renderer='ticketing:templates/performances/edit.html')
     @view_config(route_name='performances.copy', request_method='GET', renderer='ticketing:templates/performances/edit.html')
     def edit_get(self):
+        if self.request.matched_route.name == 'performances.edit':
+            route_name = u'編集'
+        else:
+            route_name = u'コピー'
         performance_id = int(self.request.matchdict.get('performance_id', 0))
         performance = Performance.get(performance_id, self.context.user.organization_id)
         if performance is None:
@@ -220,11 +229,17 @@ class Performances(BaseView):
         return {
             'form':f,
             'event':performance.event,
+            'route_name': route_name,
+            'route_path': self.request.path,
         }
 
     @view_config(route_name='performances.edit', request_method='POST', renderer='ticketing:templates/performances/edit.html')
     @view_config(route_name='performances.copy', request_method='POST', renderer='ticketing:templates/performances/edit.html')
     def edit_post(self):
+        if self.request.matched_route.name == 'performances.edit':
+            route_name = u'編集'
+        else:
+            route_name = u'コピー'
         performance_id = int(self.request.matchdict.get('performance_id', 0))
         performance = Performance.get(performance_id, self.context.user.organization_id)
         if performance is None:
@@ -244,13 +259,20 @@ class Performances(BaseView):
                 performance.event_id = event_id
                 performance.create_venue_id = f.data['venue_id']
             else:
+                try:
+                    Performance.query.filter_by(id=performance_id).with_lockmode('update').one()
+                except Exception, e:
+                    logging.info(e.message)
+                    f.id.errors.append(u'エラーが発生しました。同時に同じ公演を編集することはできません。')
+                    return {
+                        'form': f,
+                        'event': performance.event,
+                        'route_name': route_name,
+                        'route_path': self.request.path,
+                        }
+
                 performance = merge_session_with_post(performance, f.data)
-                venue = Venue.query.filter_by(performance_id=performance_id)\
-                             .populate_existing().with_lockmode('update').first()
-                if not venue:
-                    logger.warn('venue not found (performance_id=%s)' % performance_id)
-                    f.id.errors.append(u'エラーが発生しました。同時に同じ公演が編集された可能性があります。')
-                    return dict(form=f, event=performance.event)
+                venue = performance.venue
                 if f.data['venue_id'] != venue.id:
                     performance.delete_venue_id = venue.id
                     performance.create_venue_id = f.data['venue_id']
@@ -263,6 +285,8 @@ class Performances(BaseView):
             return {
                 'form':f,
                 'event':performance.event,
+                'route_name': route_name,
+                'route_path': self.request.path,
             }
 
     @view_config(route_name='performances.delete')

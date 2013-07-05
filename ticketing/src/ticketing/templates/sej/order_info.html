@@ -1,5 +1,5 @@
-<%inherit file="../layout.html" />
-<%namespace file="/common/helpers.html" name="h"/>
+<%inherit file="/layout.html" />
+<%namespace file="/common/helpers.html" name="ch"/>
 <%namespace file="/common/helpers.html" import="form_item" />
 
 <%block name="title">SEJ 手動チケット発券</%block>
@@ -16,13 +16,15 @@ u'4': u'副券'
 ${ticket_type_name[id]}
 </%def>
 
-
-${h.breadcrumbs(
+<%block name="breadcrumbs">
+${ch.breadcrumbs(
     names=[u'SEJ Order', order.billing_number],
     urls=[
       request.route_path('orders.sej')
     ]
 )}
+</%block>
+
 <div class="page-header">
   <h3>${order.id}:${order.order_id}</h3>
 
@@ -41,10 +43,6 @@ ${h.breadcrumbs(
 
     </div>
 
-</div>
-
-<div class="content">
-  ${h.flash_messages(request)}
 </div>
 
 <div class="row">

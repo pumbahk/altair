@@ -1,4 +1,5 @@
 # This package may contain traces of nuts
+import logging
 import re
 import contextlib
 
@@ -7,6 +8,8 @@ from sqlalchemy.orm import sessionmaker
 from zope.interface import directlyProvides
 from pyramid.settings import asbool
 from .interfaces import ISessionMaker
+
+logger = logging.getLogger(__name__)
 
 url_key_pt = re.compile(r"altair\.sqlahelper\.sessions\.(?P<name>\w+)\.url")
 echo_key_pt = re.compile(r"altair\.sqlahelper\.sessions\.(?P<name>\w+)\.echo")
@@ -48,7 +51,9 @@ def includeme(config):
     config.add_tween('altair.sqlahelper.CloserTween')
 
 def get_sessionmaker(request, name=""):
-    return request.registry.queryUtility(ISessionMaker, name=name)
+    Session = request.registry.queryUtility(ISessionMaker, name=name)
+    logger.warning("session maker named '{0}' is None".format(name))
+    return Session
 
 def get_db_session(request, name=""):
     sessions = request.environ.get('altair.sqlahelper.sessions', {})

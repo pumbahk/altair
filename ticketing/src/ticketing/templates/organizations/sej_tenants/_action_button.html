@@ -1,5 +1,4 @@
 <%page args="organization, order=None" />
-<%namespace file="/common/helpers.html" import="action_button" />
 <%namespace file="/common/modal.html" import="delete_modal" />
 
 <script type="text/javascript">
@@ -32,7 +31,7 @@
   order = iter(order or ['new', 'edit', 'delete'])
 %>
 <div style="float: left;">
-  ${action_button(actions, order)}
+  ${HH.action_button(actions, order)}
 </div>
 
 ${delete_modal()}

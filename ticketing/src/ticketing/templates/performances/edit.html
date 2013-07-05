@@ -1,17 +1,5 @@
-<%inherit file="../layout_2cols.html" />
-<%namespace file="/common/helpers.html" name="h" />
-
-<%
-  if request.matched_route.name == 'performances.new':
-    route_name = u'登録'
-    route_path = request.route_path('performances.new', event_id=event.id)
-  elif request.matched_route.name == 'performances.copy':
-    route_name = u'コピー'
-    route_path = request.route_path('performances.copy', performance_id=form.original_id.data)
-  else:
-    route_name = u'編集'
-    route_path = request.route_path('performances.edit', performance_id=form.id.data)
-%>
+<%inherit file="/layout_2cols.html" />
+<%namespace file="/common/helpers.html" name="ch" />
 
 <script type="text/javascript">
   $(function() {
@@ -27,8 +15,8 @@
   });
 </script>
 
-<div class="breadcrumbs">
-  ${h.breadcrumbs(
+<%block name="breadcrumbs">
+  ${ch.breadcrumbs(
       names=[u'イベント', event.title, u'パフォーマンス', route_name],
       urls=[
         request.route_path('events.index'),
@@ -36,33 +24,28 @@
         request.route_path('performances.index', event_id=event.id),
       ]
   )}
-</div>
+</%block>
 
 <div class="page-header">
   <h1>パフォーマンス${route_name}</h1>
 </div>
 
-<div class="content">
-  ${h.flash_messages(request)}
-  ${h.alert_message(form)}
-</div>
-
 <div class="well">
   <form class="form-horizontal" action="${route_path}" method="POST">
     <fieldset>
-      ${h.form_item(form.id)}
-      ${h.form_item(form.original_id)}
-      ${h.form_item(form.name, class_='span8', maxlength=255)}
-      ${h.form_item(form.open_on)}
-      ${h.form_item(form.start_on)}
-      ${h.form_item(form.end_on)}
-      ${h.form_item(form.code, class_='span3', maxlength=12, counter=True)}
-      ${h.form_item(form.redirect_url_pc)}
-      ${h.form_item(form.redirect_url_mobile)}
-      ${h.form_item(form.venue_id, class_='span6')}
-      ${h.form_item(form.abbreviated_title)}
-      ${h.form_item(form.subtitle)}
-      ${h.form_item(form.note)}
+      ${ch.form_item(form.id)}
+      ${ch.form_item(form.original_id)}
+      ${ch.form_item(form.name, class_='span8', maxlength=255)}
+      ${ch.form_item(form.open_on)}
+      ${ch.form_item(form.start_on)}
+      ${ch.form_item(form.end_on)}
+      ${ch.form_item(form.code, class_='span3', maxlength=12, counter=True)}
+      ${ch.form_item(form.redirect_url_pc)}
+      ${ch.form_item(form.redirect_url_mobile)}
+      ${ch.form_item(form.venue_id, class_='span6')}
+      ${ch.form_item(form.abbreviated_title)}
+      ${ch.form_item(form.subtitle)}
+      ${ch.form_item(form.note)}
     </fieldset>
     <div class="form-actions">
       <input class="btn btn-primary" type="submit" name="submit" value="${route_name}">

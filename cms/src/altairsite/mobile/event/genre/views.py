@@ -2,7 +2,7 @@
 
 from altaircms.datelib import get_now
 from sqlalchemy import asc
-from altairsite.config import usersite_view_config
+from altairsite.config import mobile_site_view_config
 from altaircms.topic.models import TopicTag, TopcontentTag
 from altaircms.topic.api import get_topic_searcher
 from altairsite.mobile.event.genre.forms import GenreForm
@@ -17,7 +17,7 @@ from altairsite.exceptions import UsersiteException
 class ValidationFailure(UsersiteException):
     pass
 
-@usersite_view_config(route_name='genre', request_type="altairsite.tweens.IMobileRequest"
+@mobile_site_view_config(route_name='genre', request_type="altairsite.tweens.IMobileRequest"
     , renderer='altairsite.mobile:templates/genre/genre.mako')
 def move_genre(request):
 
@@ -76,7 +76,7 @@ def move_genre(request):
         , 'helper':EventHelper()
     }
 
-@usersite_view_config(route_name='genre', context=ValidationFailure
+@mobile_site_view_config(route_name='genre', context=ValidationFailure
     , request_type="altairsite.tweens.IMobileRequest", renderer='altairsite.mobile:templates/common/error.mako')
 def failed_validation(request):
     return {}

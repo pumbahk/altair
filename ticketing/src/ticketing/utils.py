@@ -364,3 +364,16 @@ def toutc(dt, default_tz=None):
             raise ValueError('default_tz is not given')
         dt = dt.replace(tzinfo=default_tz)
     return dt.astimezone(pytz.utc)
+
+def todatetime(d):
+    if not isinstance(d, date):
+        raise TypeError()
+    return datetime.fromordinal(d.toordinal())
+
+def todate(d):
+    if not isinstance(d, date):
+        raise TypeError()
+    if isinstance(d, datetime):
+        return d.date()
+    else:
+        return d

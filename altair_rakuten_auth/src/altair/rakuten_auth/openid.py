@@ -12,7 +12,7 @@ from pyramid.httpexceptions import HTTPFound, HTTPUnauthorized
 from pyramid.response import Response
 from pyramid import security
 
-from repoze.who.api import get_api as get_who_api
+from altair.auth import who_api as get_who_api
 
 from .interfaces import IRakutenOpenID
 from .events import Authenticated
@@ -135,7 +135,7 @@ class RakutenOpenID(object):
         session[self.__class__.__name__ + '.return_url'] = url
 
     def on_verify(self, request):
-        who_api = get_who_api(request.environ)
+        who_api = get_who_api(request, name="rakuten")
         params = self.openid_params(request)
         identity, headers = who_api.login(params)
         session = self.get_session(request)
@@ -149,7 +149,7 @@ class RakutenOpenID(object):
             return HTTPFound(location=self.error_to)
 
     def on_extra_verify(self, request):
-        who_api = get_who_api(request.environ)
+        who_api = get_who_api(request, name="rakuten")
         identity = who_api.authenticate()
         if identity:
             request.registry.notify(Authenticated(request, identity))

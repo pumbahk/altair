@@ -1,5 +1,5 @@
-<%inherit file="../../layout_2cols.html" />
-<%namespace file="/common/helpers.html" import="breadcrumbs,flash_messages,form_item"/>
+<%inherit file="/layout_2cols.html" />
+<%namespace file="/common/helpers.html" name="ch" />
 
 <style type="text/css">
   .controls select{width: 80%;}
@@ -7,23 +7,16 @@
   .controls textarea{width: 80%; min-height:100px;}
 </style>
 
-<div class="breadcrumbs">
-${breadcrumbs(
+<%block name="breadcrumbs">
+${ch.breadcrumbs(
   names=[u'トップ', u'チケット券面', u"出力形式登録"],
   urls=[request.route_path('index'), request.route_path("tickets.index")]
 )}
-</div>
+</%block>
 
 <div class="page-header">
   <h3>出力形式登録</h3>
 </div>
-
-<%doc>
-<div class="content">
-  ${flash_messages(request)}
-  ${alert_message(form)}
-</div>
-</%doc>
 
 <%
   if request.matched_route.name == 'tickets.pageformats.edit':
@@ -39,9 +32,9 @@ ${breadcrumbs(
 <div class="well">
   <form class="form-horizontal" action="${route_path}" method="POST">
 	<fieldset>
-	  ${form_item(form.name)}
-	  ${form_item(form.printer_name)}
-	  ${form_item(form.data_value)}
+	  ${ch.form_item(form.name)}
+	  ${ch.form_item(form.printer_name)}
+	  ${ch.form_item(form.data_value)}
 	</fieldset>
 	<div class="form-actions">
 	  <input class="btn btn-primary" type="submit" name="submit" value="登録">

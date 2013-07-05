@@ -25,7 +25,7 @@ ${u"{0}回".format(lot.entry_limit) if lot.entry_limit else u"無制限"}
 %if lot.description:
 <%mobile:form_header>注意事項</%mobile:form_header>
 <div>
-${lot.description}
+${view.cr2br(lot.description)|n}
 </div>
 %endif
 % if option_index == 1:

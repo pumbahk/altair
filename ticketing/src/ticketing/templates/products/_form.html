@@ -1,15 +1,15 @@
 <%page args="form, action='#'" />
-<%namespace file="/common/helpers.html" name="h" />
+<%namespace file="/common/helpers.html" name="ch" />
 <form action="${action}" method="POST">
-  ${h.form_item(form.id)}
-  ${h.form_item(form.name, style='width: 300px;', maxlength=255)}
-  ${h.form_item(form.price, style='width: 150px;')}
-  ${h.form_item(form.display_order)}
-  ${h.form_item(form.seat_stock_type_id)}
-  ${h.form_item(form.sales_segment_id)}
-  ${h.form_item(form.public)}
-  ${h.form_item(form.description)}
+  ${ch.form_item(form.id)}
+  ${ch.form_item(form.name, style='width: 300px;', maxlength=255)}
+  ${ch.form_item(form.price, style='width: 150px;')}
+  ${ch.form_item(form.display_order)}
+  ${ch.form_item(form.seat_stock_type_id)}
+  ${ch.form_item(form.sales_segment_id)}
+  ${ch.form_item(form.public)}
+  ${ch.form_item(form.description)}
 % if request.context.organization.point_feature_enabled:
-  ${h.form_item(form.applied_point_grant_settings)}
+  ${ch.form_item(form.applied_point_grant_settings)}
 % endif
 </form>

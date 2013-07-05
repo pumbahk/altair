@@ -322,7 +322,7 @@ class OrderCSV(object):
                 ),
             ]
 
-    def __init__(self, export_type=EXPORT_TYPE_ORDER, organization_id=None, localized_columns={}):
+    def __init__(self, export_type=EXPORT_TYPE_ORDER, organization_id=None, localized_columns={}, excel_csv=False):
         self.export_type = export_type
         column_renderers = None
         if export_type == self.EXPORT_TYPE_ORDER:
@@ -336,9 +336,15 @@ class OrderCSV(object):
             if isinstance(column_renderer, MailMagazineSubscriptionStateRenderer):
                 column_renderer = MailMagazineSubscriptionStateRenderer(column_renderer.key, column_renderer.column_name)
                 column_renderer.outer = self
+            elif isinstance(column_renderer, PlainTextRenderer) and column_renderer.fancy and not excel_csv:
+                column_renderer = PlainTextRenderer(
+                    column_renderer.key,
+                    column_renderer.name,
+                    column_renderer.empty_if_dereference_fails
+                    )
             return column_renderer
 
-        self.column_renderers = list(bind(column_renderer) for column_renderer in column_renderers)
+        self.column_renderers = map(bind, column_renderers)
         self.organization_id = organization_id
         self._mailsubscription_cache = None
         self.localized_columns = localized_columns

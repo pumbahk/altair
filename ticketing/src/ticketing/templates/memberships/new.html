@@ -1,21 +1,17 @@
 <%inherit file="/layout_2cols.html"/>
-<%namespace file="/common/helpers.html" name="h" />
+<%namespace file="/common/helpers.html" name="ch" />
 
-<div class="breadcrumbs">
-  ${h.breadcrumbs(
+<%block name="breadcrumbs">
+  ${ch.breadcrumbs(
       names=[u'トップ', u'membership'],
       urls=[request.route_path('index'), request.route_path('memberships',action="index",membership_id="*")]
   )}
-</div>
+</%block>
 
 <div class="page-header">
   <h3>membership作成</h3>
 </div>
 <a href="${request.route_path("organizations.index")}">新規取引先マスタ登録</a>
-<div class="content">
-  ${h.flash_messages(request)}
-  ${h.alert_message(form)}
-</div>
 <%
 route_name=u'登録'
 route_path=request.route_path('memberships',action='new', membership_id='*')

@@ -1,12 +1,12 @@
 <%inherit file="/layout_2cols.html"/>
-<%namespace file="/common/helpers.html" name="h" />
+<%namespace file="/common/helpers.html" name="ch" />
 
-<div class="breadcrumbs">
-  ${h.breadcrumbs(
+<%block name="breadcrumbs">
+  ${ch.breadcrumbs(
       names=[u'トップ', u'会場', venue.name],
       urls=[request.route_path('index'), request.route_path('venues.index')]
   )}
-</div>
+</%block>
 
 <div class="page-header">
   <span style="float: right; margin-right: 20px;">
@@ -24,10 +24,6 @@
   </span>
 </div>
 
-<div class="content">
-  ${h.flash_messages(request)}
-</div>
-
 <table class="table table-striped table-bordered">
 <tr><th>site</th><td>${site.name} (site id=${site.id})</td></tr>
 <tr><th>backend</th><td>
@@ -40,7 +36,7 @@
 </td></tr>
 <tr><th>frontend</th><td>
 	% if pages and root:
-      ${drawing.frontend_metadata}
+      ${drawing._absolute_frontend_metadata_url}
       % for page in sorted(pages.iteritems(), key=lambda x:x[1].get('order')):
        [ <a href="${request.route_path('api.get_frontend', venue_id=venue.id, part=page[0])}" target="_blank">${page[1]['name']}
          % if page[1].get('root'):

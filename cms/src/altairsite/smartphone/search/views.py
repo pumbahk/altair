@@ -4,11 +4,11 @@ from .search_query import SearchQuery, AreaSearchQuery, HotwordSearchQuery, Deta
     , PerformanceInfo
 from ..common.const import SalesEnum
 from ..common.helper import SmartPhoneHelper
-from altairsite.config import usersite_view_config
+from altairsite.config import smartphone_site_view_config
 
 from pyramid.renderers import render_to_response
 
-@usersite_view_config(route_name='smartphone.search',request_type="altairsite.tweens.ISmartphoneRequest"
+@smartphone_site_view_config(route_name='smartphone.search',request_type="altairsite.tweens.ISmartphoneRequest"
              , renderer='altairsite.smartphone:templates/searchresult/search.html')
 def search(context, request):
     # トップ画面の検索
@@ -29,7 +29,7 @@ def search(context, request):
         ,'helper':SmartPhoneHelper()
     }
 
-@usersite_view_config(route_name='smartphone.search_genre',request_type="altairsite.tweens.ISmartphoneRequest"
+@smartphone_site_view_config(route_name='smartphone.search_genre',request_type="altairsite.tweens.ISmartphoneRequest"
              , renderer='altairsite.smartphone:templates/searchresult/genre.html')
 def genre_search(context, request):
     # ジャンル画面の検索
@@ -58,13 +58,13 @@ def genre_search(context, request):
         ,'helper':SmartPhoneHelper()
     }
 
-@usersite_view_config(route_name='smartphone.search_subsubgenre',request_type="altairsite.tweens.ISmartphoneRequest"
+@smartphone_site_view_config(route_name='smartphone.search_subsubgenre',request_type="altairsite.tweens.ISmartphoneRequest"
              , renderer='altairsite.smartphone:templates/searchresult/subgenre.html')
 def subsubgenre_search(context, request):
     # サブサブジャンルは検索結果
     return context.get_subsubgenre_render_param(genre_id=None)
 
-@usersite_view_config(route_name='smartphone.search_area',request_type="altairsite.tweens.ISmartphoneRequest"
+@smartphone_site_view_config(route_name='smartphone.search_area',request_type="altairsite.tweens.ISmartphoneRequest"
              , renderer='altairsite.smartphone:templates/searchresult/area.html')
 def search_area(context, request):
     # トップ画面のエリア検索
@@ -77,7 +77,7 @@ def search_area(context, request):
         ,'helper':SmartPhoneHelper()
     }
 
-@usersite_view_config(route_name='smartphone.search_genre_area',request_type="altairsite.tweens.ISmartphoneRequest"
+@smartphone_site_view_config(route_name='smartphone.search_genre_area',request_type="altairsite.tweens.ISmartphoneRequest"
              , renderer='altairsite.smartphone:templates/searchresult/genre_area.html')
 def search_genre_area(context, request):
     # ジャンル画面のエリア検索
@@ -92,7 +92,7 @@ def search_genre_area(context, request):
         ,'helper':SmartPhoneHelper()
     }
 
-@usersite_view_config(route_name='smartphone.init_detail',request_type="altairsite.tweens.ISmartphoneRequest"
+@smartphone_site_view_config(route_name='smartphone.init_detail',request_type="altairsite.tweens.ISmartphoneRequest"
              , renderer='altairsite.smartphone:templates/searchresult/detail_search.html')
 def init_detail_search(context, request):
     # 詳細検索画面表示
@@ -104,7 +104,7 @@ def init_detail_search(context, request):
         ,'helper':SmartPhoneHelper()
     }
 
-@usersite_view_config(route_name='smartphone.search_detail',request_type="altairsite.tweens.ISmartphoneRequest"
+@smartphone_site_view_config(route_name='smartphone.search_detail',request_type="altairsite.tweens.ISmartphoneRequest"
              , renderer='altairsite.smartphone:templates/searchresult/detail_search.html')
 def detail_search(context, request):
     # 詳細検索
@@ -137,7 +137,7 @@ def detail_search(context, request):
         ,'helper':SmartPhoneHelper()
     }
 
-@usersite_view_config(route_name='smartphone.hotword',request_type="altairsite.tweens.ISmartphoneRequest"
+@smartphone_site_view_config(route_name='smartphone.hotword',request_type="altairsite.tweens.ISmartphoneRequest"
              , renderer='altairsite.smartphone:templates/searchresult/hotword.html')
 def move_hotword(context, request):
     form = HotwordSearchForm(request.GET)

@@ -1,8 +1,5 @@
 <%inherit file="/layout_2cols.html"/>
 <%namespace file="/common/helpers.html" name="ch"/>
-<div class="content">
-  ${ch.flash_messages(request)}
-</div>
 <h1>ポイント付与設定</h1>
 <%include file="./_form.html" />
 <input type="button" onclick="$(this).prev().submit()" value="更新" submit/>

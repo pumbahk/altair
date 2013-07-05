@@ -1,0 +1,18 @@
+<%inherit file='../layout_2col.html'/>
+<%namespace name="nco" file="../navcomponents.html"/>
+<%namespace name="fco" file="../formcomponents.html"/>
+
+<div class="circle circle-page circle-top"></div>
+<h2>${title}</h2>
+
+%if message:
+  <div class="alert">
+    ${message}
+  </div>
+%endif
+<form action="${h.current_route_path_override(request)}" 
+	  method="POST" enctype="multipart/form-data">
+  ${fco.form_as_table_strict(form, fields)}
+  <button type="submit" class="btn">${submit_message}</button>  
+</form>
+

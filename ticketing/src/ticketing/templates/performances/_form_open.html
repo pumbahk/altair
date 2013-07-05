@@ -1,5 +1,5 @@
 <%page args="form, performance" />
-<%namespace file="/common/helpers.html" name="h" />
+<%namespace file="/common/helpers.html" name="ch" />
 
 <div id="modal-performance-open" class="modal hide">
   <div class="modal-header">
@@ -9,8 +9,8 @@
 
   <div class="modal-body">
     <div class="content">
-      ${h.flash_messages(request, type='alert-error')}
-      ${h.alert_message(form, escape=False)}
+      ${ch.flash_messages(request, type='alert-error')}
+      ${ch.alert_message(form, escape=False)}
     </div>
 
     % if not form.errors:
@@ -23,8 +23,8 @@
     </p>
 
     <form action="" method="POST">
-      ${h.form_item(form.id)}
-      ${h.form_item(form.public)}
+      ${ch.form_item(form.id)}
+      ${ch.form_item(form.public)}
     </form>
     % endif
   </div>

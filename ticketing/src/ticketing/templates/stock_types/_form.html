@@ -1,5 +1,5 @@
 <%page args="form" />
-<%namespace file="/common/helpers.html" name="h" />
+<%namespace file="/common/helpers.html" name="ch" />
 
 <link rel="stylesheet" type="text/css" href="/static/css/decentcolorpicker.css" />
 <script type="text/javascript" src="/static/js/jquery.decentcolorpicker.js"></script>
@@ -38,16 +38,16 @@
 
   <div class="modal-body">
     <form action="javascript:save_stock_type();" method="POST">
-      ${h.form_item(form.id)}
-      ${h.form_item(form.event_id)}
-      ${h.form_item(form.name, style='display: block;', maxlength=255)}
-      ${h.form_item(form.quantity_only, style='display: inline;')}
-      ${h.form_item(form.type, style='display: inline;')}
-      ${h.form_item(form.display_order)}
+      ${ch.form_item(form.id)}
+      ${ch.form_item(form.event_id)}
+      ${ch.form_item(form.name, style='display: block;', maxlength=255)}
+      ${ch.form_item(form.quantity_only, style='display: inline;')}
+      ${ch.form_item(form.type, style='display: inline;')}
+      ${ch.form_item(form.display_order)}
       <div id="color-picker">
-        ${h.form_item(form.fill_color, class_='span3')}
+        ${ch.form_item(form.fill_color, class_='span3')}
       </div>
-      ${h.form_item(form.description)}
+      ${ch.form_item(form.description)}
     </form>
   </div>
 
