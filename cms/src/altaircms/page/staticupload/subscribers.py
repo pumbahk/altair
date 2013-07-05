@@ -14,11 +14,11 @@ def _delete_ignorefile_after_staticupload(ignore_directories, ignore_files, afte
     for root, dirs, files in os.walk(event.root):
         for d in dirs:
             if d in ignore_directories:
-                logger.warn("*debug staticupload delete ignore directories: {0}".format(d))
+                logger.info("*debug staticupload delete ignore directories: {0}".format(d))
                 shutil.rmtree(os.path.join(root, d))
         for f in files:
             if any(fnmatch(f, case) for case in ignore_files):
-                logger.warn("*debug staticupload delete ignore files: {0}".format(f))
+                logger.info("*debug staticupload delete ignore files: {0}".format(f))
                 os.remove(os.path.join(root, f))
 
 IGNORE_DIRECTORIES = ["__MACOSX", ".AppleDouble", ".LSOverride", ".svn", ".git", ".hg"]

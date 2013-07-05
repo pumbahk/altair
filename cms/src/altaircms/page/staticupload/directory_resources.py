@@ -163,7 +163,7 @@ class S3StaticPageDirectory(StaticPageDirectory):
         uploader = uploader or self.s3utility.uploader
         with open(os.path.join(root, f), "r") as rf:
             keyname = self.get_name(root, f)
-            logger.warn("*debug upload file:{0}".format(keyname))
+            logger.info("*debug upload file:{0}".format(keyname))
             uploader.upload_file(rf, keyname)
         
     def upload_directory(self, d):
@@ -176,7 +176,7 @@ class S3StaticPageDirectory(StaticPageDirectory):
     def delete_file(self, root, f, uploader=None):
         uploader = uploader or self.s3utility.uploader        
         keyname = self.get_name(root, f)
-        logger.warn("*debug delete file:{0}".format(keyname))
+        logger.info("*debug delete file:{0}".format(keyname))
         uploader.delete(keyname)
 
     def clean_directory(self, d):

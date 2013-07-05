@@ -24,7 +24,7 @@
 
 <div class="row-fluid">
     <h3 class="first">${master_env.title}追加</h3>
-    <a href="${request.route_path(master_env.join("create"), action="input")}"  class="btn btn-success btn-large">新しい${master_env.title}を作成する</a>
+    <a href="${request.route_path(master_env.join("create"), action="input", _query=dict(endpoint=request.url))}"  class="btn btn-success btn-large">新しい${master_env.title}を作成する</a>
 
     %if query_form:
       <h3>絞り込み検索</h3>
@@ -63,13 +63,13 @@ ${xs.pager()}
               %endfor
               <td>
 				<div class="btn-group">
-					<a class="btn btn-primary" href="${request.route_path(master_env.join("update"),action="input",id=x.id)}">
+					<a class="btn btn-primary" href="${request.route_path(master_env.join("update"),action="input",id=x.id, _query=dict(endpoint=request.url))}">
 						<i class="icon-cog"> </i> 編集
 					</a>
-					<a class="btn btn-success" href="${request.route_path(master_env.join("create"), action="copied_input",_query=dict(id=x.id))}">
+					<a class="btn btn-success" href="${request.route_path(master_env.join("create"), action="copied_input",_query=dict(id=x.id, endpoint=request.url))}">
 						<i class="icon-cog"> </i> コピーして新規作成
 					</a>
-					<a class="btn btn-danger" href="${request.route_path(master_env.join("delete"),action="confirm",id=x.id)}">
+					<a class="btn btn-danger" href="${request.route_path(master_env.join("delete"),action="confirm",id=x.id, _query=dict(endpoint=request.url))}">
 						<i class="icon-trash"> </i> 削除
 					</a>
 				</div>
