@@ -85,7 +85,26 @@ $(function() {
                 imgTarget.attr({'src':orgSrc});
                 imgWidth = imgPreloader[index].width;
                 imgHeight = imgPreloader[index].height;
-                reduction(imgTarget, viewWidth, viewHeight, imgWidth, imgHeight);
+                if (imgWidth > viewWidth || imgHeight > viewHeight) {
+                    reduction(imgTarget, viewWidth, viewHeight, imgWidth, imgHeight);
+                }
+                if (imgWidth > viewWidth || imgHeight > viewHeight) {
+                    reduction(imgTarget, viewWidth, viewHeight, imgTarget.width(), imgTarget.height());
+                }
+
+                // 枠より小さい画像を綺麗に並べる
+                var styles = {};
+                var x = imgTarget.width();
+                var y = imgTarget.height();
+
+                if (y < viewHeight && y > 0) {
+                   styles["margin-top"] = 0.5*(viewHeight-y);
+                   styles["margin-left"] = 0;
+                } else if (x < viewWidth && x > 0) {
+                   styles["margin-left"] = 0.5*(viewWidth-x);
+                   styles["margin-top"] = 0;
+                }
+                imgTarget.css(styles);
 
                 if (readCount == items) {
                     // 全ての画像を読み込んだらフリック可能
