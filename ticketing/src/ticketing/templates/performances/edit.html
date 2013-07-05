@@ -1,18 +1,6 @@
 <%inherit file="/layout_2cols.html" />
 <%namespace file="/common/helpers.html" name="ch" />
 
-<%
-  if request.matched_route.name == 'performances.new':
-    route_name = u'登録'
-    route_path = request.route_path('performances.new', event_id=event.id)
-  elif request.matched_route.name == 'performances.copy':
-    route_name = u'コピー'
-    route_path = request.route_path('performances.copy', performance_id=form.original_id.data)
-  else:
-    route_name = u'編集'
-    route_path = request.route_path('performances.edit', performance_id=form.id.data)
-%>
-
 <script type="text/javascript">
   $(function() {
     $('form').disableOnSubmit();
