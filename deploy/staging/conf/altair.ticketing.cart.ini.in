@@ -23,6 +23,10 @@ cache.type = ${altair:beaker_backend_type}
 
 altair.queryprofile.summary_path = cart/__queryprofile
 
+[app:www-check]
+use = egg:Paste#static
+document_root = %(www_check_docroot)s
+
 [filter:prefix]
 use = egg:PasteDeploy#prefix
 prefix = /cart
@@ -32,11 +36,16 @@ use = egg:altair.browserid#browserid
 cookie_name = browserid
 env_key = repoze.browserid
 
-[pipeline:main]
+[pipeline:pipeline]
 pipeline = 
-  prefix
-  browserid
-  payment
+    prefix
+    browserid
+    payment
+
+[composite:main]
+use = egg:Paste#urlmap
+/ = pipeline
+/.www-check = www-check
 
 [server:main]
 use  = egg:gunicorn#main

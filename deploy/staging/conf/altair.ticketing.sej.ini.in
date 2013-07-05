@@ -9,8 +9,23 @@ altair.site_data.base_url = s3://tstar-dev/venue-layouts/frontend/
 session.type = ${altair:beaker_backend_type}
 cache.type = ${altair:beaker_backend_type}
 
-[pipeline:main]
-pipeline = sej
+[app:www-check]
+use = egg:Paste#static
+document_root = %(www_check_docroot)s
+
+[filter:prefix]
+use = egg:PasteDeploy#prefix
+prefix = /
+
+[pipeline:pipeline]
+pipeline =
+    prefix
+    sej
+
+[composite:main]
+use = egg:Paste#urlmap
+/ = pipeline
+/.www-check = www-check
 
 [server:main]
 use  = egg:gunicorn#main
