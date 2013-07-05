@@ -5,6 +5,7 @@ import logging
 from datetime import datetime
 from time import mktime, time
 from email.utils import formatdate
+from sqlalchemy.orm import joinedload
 
 logger = logging.getLogger(__name__)
 
@@ -35,8 +36,13 @@ class OrganizationPathTween(object):
         self.registry = registry
 
     def get_hosts(self, request):
-        from ticketing.core.models import Host
-        hosts = Host.query.filter(Host.host_name==unicode(request.host)).all()
+        from ticketing.core.models import Host, Organization
+        hosts = Host.query \
+            .options(
+                joinedload(Host.organization),
+                joinedload(Host.organization,
+                           Organization.settings)) \
+            .filter(Host.host_name==unicode(request.host)).all()
         return list(reversed(sorted(hosts, key=lambda h: h.path)))
 
     def __call__(self, request):

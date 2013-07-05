@@ -4,6 +4,7 @@ import json
 import logging
 import sqlahelper
 
+from ticketing.models import DBSession
 from pyramid.config import Configurator
 #from pyramid.session import UnencryptedCookieSessionFactoryConfig
 from pyramid.interfaces import IDict
@@ -47,7 +48,9 @@ class WhoDecider(object):
         """ WHO API 選択
         """
         #return self.request.organization.setting.auth_type
-        return get_organization(self.request).setting.auth_type
+        org = get_organization(self.request)
+        DBSession.add(org) # XXX
+        return org.setting.auth_type
 
 
 def includeme(config):
