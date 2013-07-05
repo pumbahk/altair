@@ -35,4 +35,4 @@
   </tbody>
 </table>
 
-${panel("model_create_only_buttons", modeljname=u"商品", modelname="ticket", _query=dict(salessegment_id=salessegment.id), show_alert=False)}
+${panel("model_create_only_buttons", modeljname=u"商品", modelname="ticket", _query=dict(salessegment_id=salessegment.id, endpoint=request.url), show_alert=False)}
