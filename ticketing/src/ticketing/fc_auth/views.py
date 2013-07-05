@@ -38,7 +38,7 @@ class LoginView(object):
 
     @view_config(request_method="POST", route_name='fc_auth.login', renderer='string')
     def login(self):
-        who_api = get_who_api(self.request.environ, name="fc_auth")
+        who_api = get_who_api(self.request, name="fc_auth")
         membership = self.request.matchdict['membership']
         username = self.request.params['username']
         password = self.request.params['password']
@@ -65,7 +65,7 @@ class LoginView(object):
 
     @view_config(request_method="POST", route_name='fc_auth.guest', renderer='string')
     def guest_login(self):
-        who_api = get_who_api(self.request.environ, name="fc_auth")
+        who_api = get_who_api(self.request, name="fc_auth")
         membership = self.request.matchdict['membership']
         logger.debug("guest authenticate for membership %s" % membership)
 
