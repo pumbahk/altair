@@ -29,7 +29,7 @@ def includeme(config):
     config.add_route("static_pageset", "/page/pagetype/{pagetype}/{static_page_id}/{action}",factory=".resources.StaticPageResource") 
     config.add_route("static_page_create", "/page/pagetype/{pagetype}/{action}",factory=".resources.StaticPageResource") 
     config.add_route("static_page", "/page/static/{static_page_id}/unit/{child_id}/{action}",factory=".resources.StaticPageResource") 
-    config.add_route("static_page_display", "/page/static/{static_page_id}/unit/{child_id}display/{path:.*}",factory=".resources.StaticPageResource")
+    config.add_route("static_page_display", "/page/static/{static_page_id}/unit/{child_id}/display/{path:.*}",factory=".resources.StaticPageResource")
     config.add_route("static_page_part_file", "/page/static/{static_page_id}/unit/{child_id}/file/{action}{path:.*}", factory=".resources.StaticPageResource")
     config.add_route("static_page_part_directory", "/page/static/{static_page_id}/unit/{child_id}/directory/{action}{path:.*}", factory=".resources.StaticPageResource")
 
