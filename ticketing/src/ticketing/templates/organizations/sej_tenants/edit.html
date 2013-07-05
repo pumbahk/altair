@@ -1,5 +1,5 @@
 <%inherit file="/layout_2cols.html" />
-<%namespace file="/common/helpers.html" name="h" />
+<%namespace file="/common/helpers.html" name="ch" />
 
 <%
   if request.matched_route.name == 'organizations.sej_tenant.new':
@@ -10,35 +10,30 @@
     route_path = request.route_path('organizations.sej_tenant.edit', organization_id=form.organization_id.data)
 %>
 
-<div class="breadcrumbs">
-  ${h.breadcrumbs(
+<%block name="breadcrumbs">
+  ${ch.breadcrumbs(
       names=[u'トップ', u'コンビニ設定'],
       urls=[
         request.route_path('index'),
         route_path,
       ]
   )}
-</div>
+</%block>
 
 <div class="page-header">
   <h1>コンビニ設定 ${route_name}</h1>
 </div>
 
-<div class="content">
-  ${h.flash_messages(request)}
-  ${h.alert_message(form)}
-</div>
-
 <div class="well">
   <form class="form-horizontal" action="${route_path}" method="POST">
     <fieldset>
-      ${h.form_item(form.id)}
-      ${h.form_item(form.shop_name, class_='span5', maxlength=255)}
-      ${h.form_item(form.shop_id)}
-      ${h.form_item(form.contact_01, class_='span5', maxlength=255)}
-      ${h.form_item(form.contact_02, class_='span5', maxlength=255)}
-      ${h.form_item(form.api_key)}
-      ${h.form_item(form.inticket_api_url, class_='span5')}
+      ${ch.form_item(form.id)}
+      ${ch.form_item(form.shop_name, class_='span5', maxlength=255)}
+      ${ch.form_item(form.shop_id)}
+      ${ch.form_item(form.contact_01, class_='span5', maxlength=255)}
+      ${ch.form_item(form.contact_02, class_='span5', maxlength=255)}
+      ${ch.form_item(form.api_key)}
+      ${ch.form_item(form.inticket_api_url, class_='span5')}
     </fieldset>
     <div class="form-actions">
       <input class="btn btn-primary" type="submit" name="submit" value="${route_name}">

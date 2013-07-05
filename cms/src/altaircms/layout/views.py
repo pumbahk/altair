@@ -19,7 +19,7 @@ from ..slackoff.mappers import layout_mapper
 from ..page.models import PageType
 from ..front.api import get_frontpage_discriptor_resolver
 from ..front.api import get_frontpage_renderer
-from altaircms.helpers.viewhelpers import set_endpoint, get_endpoint
+from altaircms.helpers.viewhelpers import get_endpoint
 import logging
 logger = logging.getLogger(__name__)
 
@@ -80,7 +80,6 @@ class LayoutCreateView(object):
 
     @view_config(match_param="action=input")
     def input(self):
-        # self.context.set_endpoint() ##
         self.request._form = forms.LayoutCreateForm()
         raise AfterInput
 

@@ -426,7 +426,7 @@ class LotEntries(BaseView):
         s_a = ShippingAddress
 
         include_canceled = False
-
+        enable_elect_all = False
         if form.validate():
             if form.entry_no.data:
                 condition = sql.and_(condition, LotEntry.entry_no==form.entry_no.data)
@@ -481,6 +481,7 @@ class LotEntries(BaseView):
             if form.wish_order.data:
                 condition = sql.and_(condition,
                                      LotEntryWish.wish_order==form.wish_order.data)
+                enable_elect_all = True
         else:
             print form.errors
 
@@ -516,6 +517,7 @@ class LotEntries(BaseView):
         performances = dict([(p.id, p) for p in performances])
 
         electing_url = self.request.route_url('lots.entries.elect_entry_no', lot_id=lot.id)
+        electing_all_url = self.request.route_url('lots.entries.elect_all', lot_id=lot.id)
         rejecting_url = self.request.route_url('lots.entries.reject_entry_no', lot_id=lot.id)
         cancel_url = self.request.route_url('lots.entries.cancel', lot_id=lot.id)
         cancel_electing_url = self.request.route_url('lots.entries.cancel_electing', lot_id=lot.id)
@@ -531,14 +533,15 @@ class LotEntries(BaseView):
                     cancel_url=cancel_url,
                     rejecting_url=rejecting_url,
                     electing_url=electing_url,
+                    electing_all_url=electing_all_url,
                     cancel_electing_url=cancel_electing_url,
                     cancel_rejecting_url=cancel_rejecting_url,
                     lot_status=lot_status,
                     status_url=status_url,
                     electing=electing,
                     performances=performances,
+                    enable_elect_all=enable_elect_all,
         )
-
 
         
     @view_config(route_name='lots.entries.import', 
@@ -667,6 +670,69 @@ class LotEntries(BaseView):
     def wish_tr_class(self, wish):
         return 'lot-wish-' + wish.lot_entry.entry_no + '-' + str(wish.wish_order)
 
+
+
+
+    @view_config(route_name="lots.entries.elect_all", 
+                 request_method="POST",
+                 permission='event_viewer',
+                 renderer="json")
+    def elect_all(self):
+        """ 一括当選予定処理 """
+        self.check_organization(self.context.event)
+        lot_id = self.request.matchdict["lot_id"]
+        lot = Lot.query.filter(Lot.id==lot_id).one()
+
+        params = self.request.json_body
+        logger.debug("electing all {0}".format(params))
+        wish_ids = params.get('wishes', [])
+        if not wish_ids:
+            return dict()
+
+        wishes = LotEntryWish.query.join(
+            LotEntryWish.lot_entry,
+        ).join(
+            LotEntry.lot,
+        ).outerjoin(
+            LotElectWork.__table__,
+            LotElectWork.lot_entry_no==LotEntry.entry_no,
+        ).filter(
+            LotEntryWish.id.in_(wish_ids)
+        ).filter(
+            LotEntry.elected_at==None
+        ).filter(
+            LotEntry.rejected_at==None
+        ).filter(
+            LotEntry.canceled_at==None
+        ).filter(
+            LotEntry.closed_at==None
+        ).filter(
+            LotElectWork.lot_entry_no==None
+        ).all()
+
+        results = {}
+        entries = []
+        for w in wishes:
+            lot_entry = w.lot_entry
+            entry_no = lot_entry.entry_no
+            wish_order = w.wish_order
+            logger.debug("electing {0}".format(lot_entry))
+            if lot_entry.is_electing():
+                logger.debug('{0} is already electing'.format(entry_no))
+                results[lot_entry.entry_no] = dict(result="NG")
+            if lot_entry.is_rejecting():
+                logger.debug('{0} is already rejecting'.format(entry_no))
+                results[lot_entry.entry_no] = dict(result="NG")
+
+            entries.append((entry_no, wish_order))
+            
+        affected = lots_api.submit_lot_entries(lot.id, entries)
+
+        logger.debug('elect all: results = {0}'.format(results))
+        return dict(
+            affected=affected,
+            html=[(self.wish_tr_class(w), self.render_wish_row(w))
+                  for w in wishes])
 
     @view_config(route_name='lots.entries.elect_entry_no', 
                  request_method="POST",

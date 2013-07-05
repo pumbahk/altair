@@ -1,22 +1,17 @@
 <%inherit file="/layout_2cols.html"/>
-<%namespace file="/common/helpers.html" name="h" />
+<%namespace file="/common/helpers.html" name="ch" />
 
 <%doc>
-<div class="breadcrumbs">
-  ${h.breadcrumbs(
+<%block name="breadcrumbs">
+  ${ch.breadcrumbs(
       names=[u'トップ', u'会員区分'],
       urls=[request.route_path('index'), request.route_path('membergroups',action="index",membergroup_id="*")]
   )}
-</div>
+</%block>
 </%doc>
 
 <div class="page-header">
   <h3>会員区分作成</h3>
-</div>
-
-<div class="content">
-  ${h.flash_messages(request)}
-  ${h.alert_message(form)}
 </div>
 <%
 route_name=u'登録'

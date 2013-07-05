@@ -1,13 +1,13 @@
 <%inherit file="/layout_2cols.html" />
-<%namespace file="/common/helpers.html" name="h" />
+<%namespace file="/common/helpers.html" name="ch" />
 <style type="text/css">
 .table.point-grant-history span.error {
   color: #f00;
   font-weight: bold;
 }
 </style>
-<div class="breadcrumbs">
-${h.breadcrumbs(
+<%block name="breadcrumbs">
+${ch.breadcrumbs(
   names=[u'トップ', u'購入情報', order_current.performance.name, order_current.order_no],
   urls=[
     request.route_path('index'),
@@ -15,13 +15,9 @@ ${h.breadcrumbs(
     request.route_path('performances.show', performance_id=order_current.performance_id) + '/order'
   ]
 )}
-</div>
+</%block>
 <div class="page-header">
   <h1>購入情報</h1>
-</div>
-
-<div class="content">
-  ${h.flash_messages(request)}
 </div>
 
 <div class="tabbable tabs-below" id="tabbable-content">
@@ -41,26 +37,26 @@ ${h.breadcrumbs(
             </tr>
             <tr>
               <th>ステータス</th>
-              <td>${h.order_status(order)}</td>
+              <td>${HH.order_status(order)}</td>
             </tr>
             <tr>
               <th>予約日時</th>
-              <td>${h.safe_strftime(order.created_at)}</td>
+              <td>${vh.datetime(order.created_at)}</td>
             </tr>
             <tr>
               <th>決済日時</th>
               <td>
                 % if order.paid_at:
-                  ${h.safe_strftime(order.paid_at)}
+                  ${vh.datetime(order.paid_at)}
                 % endif
-                ${h.payment_status(order)}
+                ${HH.payment_status(order)}
               </td>
             </tr>
             <tr>
               <th>最終発券 (印字) 日時</th>
               <td>
                 % if order.issued_at:
-                  ${h.safe_strftime(order.issued_at)}
+                  ${vh.datetime(order.issued_at)}
                 % else:
                   % if order.queued:
                     - <span class="label label-info">既に印刷キューに入っています</span>
@@ -94,15 +90,15 @@ ${h.breadcrumbs(
               <th>配送日時</th>
               <td>
                 % if order.delivered_at:
-                  ${h.safe_strftime(order.delivered_at)}
+                  ${vh.datetime(order.delivered_at)}
                 % endif
-                ${h.delivery_status(order)}
+                ${HH.delivery_status(order)}
               </td>
             </tr>
             % if order.status == 'canceled':
             <tr>
               <th>キャンセル日時</th>
-              <td>${h.safe_strftime(order.canceled_at)}</td>
+              <td>${vh.datetime(order.canceled_at)}</td>
             </tr>
             % endif
             <tr>
@@ -333,11 +329,11 @@ ${h.breadcrumbs(
             </tr>
             <tr>
               <th>楽天あんしん支払いサービス 利用ポイント数</th>
-              <td>${h.price_format(int(checkout.usedPoint or 0))}</td>
+              <td>${vh.price(int(checkout.usedPoint or 0))}</td>
             </tr>
             <tr>
               <th>楽天あんしん支払いサービス 売上日時</th>
-              <td>${h.safe_strftime(checkout.sales_at)}</td>
+              <td>${vh.datetime(checkout.sales_at)}</td>
             </tr>
             % endif
             % if sej_order:
@@ -412,10 +408,10 @@ ${h.breadcrumbs(
                     ${ordered_product.product.name}
                   </td>
                   <td></td>
-                  <td style="text-align: right;">${h.price_format(ordered_product.price)}円</td>
+                  <td style="text-align: right;">${vh.price(ordered_product.price)}</td>
                   <td >${ordered_product.quantity}</td>
                   <td style="text-align: right;">
-                    ${h.price_format(ordered_product.price * ordered_product.quantity)}円
+                    ${vh.price(ordered_product.price * ordered_product.quantity)}
                   </td>
                 </tr>
             % for ordered_product_item in ordered_product.ordered_product_items:
@@ -449,7 +445,7 @@ ${h.breadcrumbs(
                       <span class="label label-inverse">未発券</span>
                     %endif
                   </td>
-                  <td style="text-align: right;">${h.price_format(ordered_product_item.price)}円</td>
+                  <td style="text-align: right;">${vh.price(ordered_product_item.price)}</td>
                   <td>${ordered_product_item.quantity}</td>
                   <td></td>
                 </tr>
@@ -460,28 +456,28 @@ ${h.breadcrumbs(
                   <td></td>
                   <td></td>
                   <td></td>
-                  <td style="text-align: right;">${h.price_format(order.transaction_fee)}円</td>
+                  <td style="text-align: right;">${vh.price(order.transaction_fee)}</td>
                 </tr>
                 <tr>
                   <td colspan="2">引取手数料</td>
                   <td></td>
                   <td></td>
                   <td></td>
-                  <td style="text-align: right;">${h.price_format(order.delivery_fee)}円</td>
+                  <td style="text-align: right;">${vh.price(order.delivery_fee)}</td>
                 </tr>
                 <tr>
                   <td colspan="2">システム利用料</td>
                   <td></td>
                   <td></td>
                   <td></td>
-                  <td style="text-align: right;">${h.price_format(order.system_fee)}円</td>
+                  <td style="text-align: right;">${vh.price(order.system_fee)}</td>
                 </tr>
                 <tr>
                   <td colspan="2" class="span2"><strong>合計</strong></td>
                   <td></td>
                   <td></td>
                   <td></td>
-                  <td style="text-align: right;"><strong>${h.price_format(order.total_amount)}円</strong></td>
+                  <td style="text-align: right;"><strong>${vh.price(order.total_amount)}</strong></td>
                 </tr>
               </table>
           % endfor

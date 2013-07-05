@@ -155,6 +155,7 @@ def entry_lot(request, entry_no, lot, shipping_address, wishes, payment_delivery
     {product_id, quantity} の希望順リスト
     :param user: ゲストの場合は None
     """
+
     entry = build_lot_entry(
         lot=lot,
         wishes=wishes,
@@ -164,7 +165,7 @@ def entry_lot(request, entry_no, lot, shipping_address, wishes, payment_delivery
         user=user,
         gender=gender,
         birthday=birthday,
-        memo=memo
+        memo=memo,
         )
     if hasattr(request, "browserid"):
         entry.browserid = getattr(request, "browserid")
@@ -396,7 +397,9 @@ def send_rejected_mails(request):
         transaction.commit()
 
 def get_entry_user(request):
-    return None
+    from altair.rakuten_auth.api import authenticated_user
+    user = authenticated_user(request)
+    return user
 
 def new_lot_entry(request, entry_no, wishes, payment_delivery_method_pair_id, shipping_address_dict, gender, birthday, memo):
     request.session['lots.entry'] = dict(

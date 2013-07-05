@@ -3,12 +3,9 @@ import logging
 logger = logging.getLogger(__file__)
 from datetime import datetime
 from altaircms.datelib import get_now
-import sqlalchemy as sa
-from altaircms.page.models import Page
-from altaircms.page.models import PageSet
-from altaircms.page.models import StaticPage
 
 from . import api 
+from ..fetcher import get_current_page_fetcher
 
 class PageRenderingResource(object):
     def __init__(self, request):
@@ -58,16 +55,11 @@ class AccessControlPC(object):
         return self.access_ok
 
     def _fetch_page_from_params(self, url, dt):
-        qs = self.request.allowable(Page).filter(PageSet.id==Page.pageset_id)
-        qs = qs.filter(PageSet.url==url)
-        qs = qs.filter(Page.in_term(dt))
-        qs = qs.filter(Page.published==True)
-        return qs.order_by(sa.desc("page.publish_begin"), "page.publish_end").first()
+        return get_current_page_fetcher(self.request).front_page(self.request, url, dt)
 
     def fetch_static_page_from_params(self, url,  dt):
         prefix = url.split("/", 1)[0]
-        static_page = self.request.allowable(StaticPage).filter(StaticPage.name==prefix, StaticPage.published==True, StaticPage.interceptive==True).first()
-        return static_page
+        return get_current_page_fetcher(self.request).pc_static_page(self.request, prefix, dt)
 
     def fetch_page_from_params(self, url, dt):
         page = self._fetch_page_from_params(url, dt)

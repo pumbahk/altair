@@ -1,5 +1,5 @@
 <%page args="form, operator" />
-<%namespace file="/common/helpers.html" name="h" />
+<%namespace file="/common/helpers.html" name="ch" />
 
 <div class="page-header">
   <h4>オペレーター情報</h4>
@@ -16,7 +16,7 @@
   </tr>
   <tr>
     <th class="span3">${form.expire_at.label.text}</th>
-    <td>${h.safe_strftime(operator.expire_at)}</td>
+    <td>${vh.datetime(operator.expire_at)}</td>
   </tr>
   <tr>
     <th class="span3">${form.login_id.label.text}</th>

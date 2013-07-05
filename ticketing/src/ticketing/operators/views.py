@@ -60,6 +60,7 @@ class Operators(BaseView):
     def new_get(self):
         return {
             'form':OperatorForm(organization_id=self.context.user.organization_id),
+            'route_name': u'登録',
         }
 
     @view_config(route_name='operators.new', request_method='POST', renderer='ticketing:templates/operators/edit.html')
@@ -76,7 +77,8 @@ class Operators(BaseView):
             return HTTPFound(location=route_path('operators.show', self.request, operator_id=operator.id))
         else:
             return {
-                'form':f
+                'form': f,
+                'route_name': u'登録',
             }
 
     @view_config(route_name='operators.edit', request_method='GET', renderer='ticketing:templates/operators/edit.html')
@@ -95,6 +97,7 @@ class Operators(BaseView):
 
         return {
             'form':f,
+            'route_name': u'編集',
         }
 
     @view_config(route_name='operators.edit', request_method='POST', renderer='ticketing:templates/operators/edit.html')
@@ -118,6 +121,7 @@ class Operators(BaseView):
         else:
             return {
                 'form':f,
+                'route_name': u'編集',
             }
 
     @view_config(route_name='operators.delete')

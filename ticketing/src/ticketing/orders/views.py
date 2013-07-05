@@ -362,7 +362,12 @@ class Orders(BaseView):
         response = Response(headers=headers)
 
         export_type = int(self.request.params.get('export_type', OrderCSV.EXPORT_TYPE_ORDER))
-        kwargs = dict(export_type=export_type) if export_type else {}
+        excel_csv = bool(self.request.params.get('excel_csv'))
+        kwargs = {}
+        if export_type:
+            kwargs['export_type'] = export_type
+        if excel_csv:
+            kwargs['excel_csv'] = True
         order_csv = OrderCSV(organization_id=self.context.user.organization_id, localized_columns=get_japanese_columns(self.request), **kwargs)
 
         writer = csv.writer(response, delimiter=',', quoting=csv.QUOTE_ALL)
@@ -1098,7 +1103,7 @@ class OrdersReserveView(BaseView):
             if not total_quantity:
                 raise ValidationError(u'個数を入力してください')
             elif seats and total_quantity != len(seats):
-                raise ValidationError(u'個数の合計を選択した座席数（%d席）にしてください' % len(seats))
+                raise ValidationError(u'個数の合計数（%d）が選択した座席数（%d席）と一致しません' % (total_quantity, len(seats)))
 
             # 選択されたSeatのステータスをいったん戻してカートデータとして再確保する
             self.release_seats(performance.venue, seats)

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from altaircms.models import Genre
-from altairsite.config import usersite_view_config
+from altairsite.config import mobile_site_view_config
 from altairsite.mobile.event.search.forms import SearchForm
 from altairsite.mobile.core.searcher import EventSearcher
 from altairsite.mobile.core.const import get_prefecture_name
@@ -14,9 +14,9 @@ from .forms import MobileTagSearchForm
 class ValidationFailure(UsersiteException):
     pass
 
-@usersite_view_config(route_name='search', request_type="altairsite.tweens.IMobileRequest"
+@mobile_site_view_config(route_name='search', request_type="altairsite.tweens.IMobileRequest"
     , renderer='altairsite.mobile:templates/searchresult/search.mako')
-@usersite_view_config(route_name='genresearch', request_type="altairsite.tweens.IMobileRequest"
+@mobile_site_view_config(route_name='genresearch', request_type="altairsite.tweens.IMobileRequest"
     , renderer='altairsite.mobile:templates/searchresult/genresearch.mako')
 def search(request):
 
@@ -64,7 +64,7 @@ def search(request):
     log_info("search", "end")
     return {'form':form}
 
-@usersite_view_config(route_name='mobile_tag_search', request_type="altairsite.tweens.IMobileRequest"
+@mobile_site_view_config(route_name='mobile_tag_search', request_type="altairsite.tweens.IMobileRequest"
     , renderer='altairsite.mobile:templates/searchresult/mobile_tag_search_result.mako')
 def mobile_tag_search(request):
 
@@ -88,7 +88,7 @@ def mobile_tag_search(request):
     log_info("mobile_tag_search", "end")
     return {'form':form}
 
-@usersite_view_config(route_name='mobile_tag_search', context=ValidationFailure
+@mobile_site_view_config(route_name='mobile_tag_search', context=ValidationFailure
     , request_type="altairsite.tweens.IMobileRequest"
     , renderer='altairsite.mobile:templates/common/error.mako')
 def failed_validation(request):

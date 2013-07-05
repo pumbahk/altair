@@ -2,6 +2,7 @@ from zope.interface import implementer
 from boto.s3.connection import S3Connection
 from ..interfaces import IS3ConnectionFactory
 from ..interfaces import IS3ContentsUploader
+from boto.exception import S3ResponseError
 from pyramid.decorator import reify
 from boto.s3.key import Key
 import logging
@@ -72,6 +73,14 @@ class DefaultS3Uploader(object):
     def bucket(self):
         return self.connection.get_bucket(self.bucket_name)
 
+    def is_reacheable(self):
+        """health check"""
+        try:
+           self.bucket
+           return True
+        except S3ResponseError as e:
+            return False
+
     def _treat_options(self, options):
         result = {}
         if options.get("public", False):
@@ -101,10 +110,11 @@ class DefaultS3Uploader(object):
                             overwrite=options.get("overwrite", True))
     upload = upload_file
 
-    def delete(self, content, name):
-        k = Key(self.bucket)
-        k.key = name
-        self.bucket.delete_key(k)
+    def delete(self, name):
+        self.bucket.delete_key(name)
+
+    def delete_items(self, names):
+        self.bucket.delete_keys(names)
 
     def unpublish(self, name, check=True):
         k = Key(self.bucket)
@@ -122,3 +132,11 @@ class DefaultS3Uploader(object):
         elif k.exists():
             k.set_canned_acl("public-read")
 
+    def copy_items(self, src, dst, recursive=False, src_bucket_name=None):
+        src_bucket_name = src_bucket_name or self.bucket.name
+        bucket = self.bucket
+        if not recursive:
+            return bucket.copy_key(dst, src_bucket_name, src, preserve_acl=True)
+        for k in bucket.list(src):
+            bucket.copy_key(k.name.replace(src, dst, 1), src_bucket_name, k.name, preserve_acl=True)
+        

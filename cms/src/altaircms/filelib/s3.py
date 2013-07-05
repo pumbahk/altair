@@ -3,6 +3,7 @@ from zope.interface import provider
 from .interfaces import IS3UtilityFactory
 from altair.pyramid_boto.s3.connection import DefaultS3ConnectionFactory
 from altair.pyramid_boto.s3.connection import DefaultS3Uploader
+from pyramid.exceptions import ConfigurationError
 
 import logging
 logger = logging.getLogger(__name__)
@@ -11,6 +12,9 @@ def add_s3utility(config, factory):
     config.registry.registerUtility(factory, IS3UtilityFactory)
     if hasattr(factory, "setup"):
         factory.setup(config)
+
+def get_s3_utility_factory(request):
+    return request.registry.queryUtility(IS3UtilityFactory)
 
 class S3Event(object):
     def __init__(self, request, session, files, uploader, extra_args):
@@ -37,6 +41,10 @@ class S3ConnectionFactory(object):
     def __init__(self, uploader):
         self.uploader = uploader
 
+    @property
+    def bucket_name(self):
+        return self.uploader.bucket_name
+
     @classmethod
     def from_settings(cls, settings):
         access_key, secret_key = settings["s3.access_key"], settings["s3.secret_key"]
@@ -46,12 +54,18 @@ class S3ConnectionFactory(object):
 
     def setup(self, config):
         config.add_subscriber(self.sync_s3_after_commit, "altaircms.filelib.adapts.AfterCommit")
+        ## too-heavie
+        # self.validate()
+
+    def validate(self):
+        if not self.uploader.is_reacheable():
+            raise ConfigurationError("S3 access is unreacheable. bucket={0}, access_key={1}".format(self.uploader.bucket_name, self.uploader.connection.aws_access_key_id))
 
     def sync_s3_after_commit(self, event):
         request = event.request
         result = event.result #{"create": [], "delete": [], "extra_args": []}
         session = event.session
-        options = event.options
+        options = event.optionsn
 
         uploaded_files = []
         deleted_files = []
@@ -86,17 +100,21 @@ class S3ConnectionFactory(object):
     def delete(self, f, realpath, options=None):
         logger.info("*debug delete: bucket={0} name={1}".format(self.uploader.bucket_name, f.name))
         ## uploadしたファイルは残す.
-        # self.uploader.delete(f, f.name, options)
-
+        # self.uploader.delete(f.name, options)
 
 @provider(IS3UtilityFactory)
 class NullConnectionFactory(object):
+    def __init__(self, bucket_name):
+        self.bucket_name = bucket_name
+
     @classmethod
     def from_settings(cls, settings):
-        return cls()
+        bucket_name = settings.get("s3.bucket_name", ":bucket-name:")
+        return cls(bucket_name)
     
     def setup(self, config):
         config.add_subscriber(self.logging_message, "altaircms.filelib.adapts.AfterCommit")
+        config.add_subscriber("altaircms.asset.subscribers.refresh_file_url_when_null_connection", "altaircms.filelib.adapts.AfterCommit")
 
     def logging_message(self, event):
         result = event.result #{"create": [], "delete": [], "extra_args": []}

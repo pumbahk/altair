@@ -132,7 +132,7 @@ class MyProxyRequest(proxy.ProxyRequest):
 class MyProxy(proxy.Proxy):
     requestFactory = MyProxyRequest
     prerewrite_patterns = [
-        (r'http://ticket.rakuten.co.jp/.api/rc/http/stg/([^/]+)(/.+)?/(verify.*)', r'http://\1.stg2.rt.ticketstar.jp\2/\3'),
+        (r'http://api.ticket.rakuten.co.jp/rid/rc/http/stg/([^/]+)(/.+)?/(verify.*)', r'http://\1.stg2.rt.ticketstar.jp\2/\3'),
         ]
 
     rewrite_patterns = [

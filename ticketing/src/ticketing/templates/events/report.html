@@ -1,5 +1,5 @@
 <%inherit file="/layout_2cols.html" />
-<%namespace file="/common/helpers.html" name="h" />
+<%namespace file="/common/helpers.html" name="ch" />
 
 <script type="text/javascript">
   $(function() {
@@ -24,21 +24,15 @@
   });
 </script>
 
-<div class="breadcrumbs">
-  ${h.breadcrumbs(
+<%block name="breadcrumbs">
+  ${ch.breadcrumbs(
     names=[u'イベント', event.title, u'帳票'],
     urls=[request.route_path('events.index'), request.route_path('events.show', event_id=event.id)]
   )}
-</div>
+</%block>
 
 <div class="page-header">
   <h1>帳票</h1>
-</div>
-
-<div class="content">
-  ${h.flash_messages(request)}
-  ${h.alert_message(form_stock)}
-  ${h.alert_message(form_stock_holder)}
 </div>
 
 <div class="well">
@@ -76,7 +70,7 @@
   <div class="modal-body">
     <p>以下の明細をダウンロードします。</p>
     <form class="form-horizontal" action="${request.route_path('reports.stocks', event_id=event.id)}" method="POST">
-      ${h.form_item(form_stock.report_type)}
+      ${ch.form_item(form_stock.report_type)}
     </form>
   </div>
   <div class="modal-footer">
@@ -93,8 +87,8 @@
   <div class="modal-body">
     <p>配券明細をダウンロードします。対象の枠と明細種別を選択してください。</p>
     <form class="form-horizontal" action="${request.route_path('reports.stocks_by_stockholder', event_id=event.id)}" method="POST">
-      ${h.form_item(form_stock_holder.stock_holder_id)}
-      ${h.form_item(form_stock_holder.report_type)}
+      ${ch.form_item(form_stock_holder.stock_holder_id)}
+      ${ch.form_item(form_stock_holder.report_type)}
     </form>
   </div>
   <div class="modal-footer">

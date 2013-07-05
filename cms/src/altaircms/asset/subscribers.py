@@ -4,6 +4,7 @@ import os.path
 from functools import wraps
 from . import SESSION_NAME
 from altaircms.filelib.s3 import Renamer
+from altaircms.models import DBSession
 import logging
 logger = logging.getLogger(__name__)
 
@@ -24,6 +25,14 @@ def only_asset(fn):
             return
         return fn(event)
     return wrapped
+
+@only_asset
+def refresh_file_url_when_null_connection(after_commit):
+    event = after_commit
+    assets = event.result.get("extra_args", [])
+    for a in assets:
+        a.file_url = None
+        DBSession.add(a)
 
 @only_asset
 def unpublish_files_on_s3(after_s3_delete):

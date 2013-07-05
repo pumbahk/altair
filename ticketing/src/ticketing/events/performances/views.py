@@ -244,13 +244,15 @@ class Performances(BaseView):
                 performance.event_id = event_id
                 performance.create_venue_id = f.data['venue_id']
             else:
-                performance = merge_session_with_post(performance, f.data)
-                venue = Venue.query.filter_by(performance_id=performance_id)\
-                             .populate_existing().with_lockmode('update').first()
-                if not venue:
-                    logger.warn('venue not found (performance_id=%s)' % performance_id)
-                    f.id.errors.append(u'エラーが発生しました。同時に同じ公演が編集された可能性があります。')
+                try:
+                    Performance.query.filter_by(id=performance_id).with_lockmode('update').one()
+                except Exception, e:
+                    logging.info(e.message)
+                    f.id.errors.append(u'エラーが発生しました。同時に同じ公演を編集することはできません。')
                     return dict(form=f, event=performance.event)
+
+                performance = merge_session_with_post(performance, f.data)
+                venue = performance.venue
                 if f.data['venue_id'] != venue.id:
                     performance.delete_venue_id = venue.id
                     performance.create_venue_id = f.data['venue_id']

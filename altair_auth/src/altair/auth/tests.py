@@ -15,11 +15,17 @@ class TestIt(unittest.TestCase):
         assert hasattr(obj, attr_name), u"{0} does'nt have {1}".format(obj, attr_name)
 
     def test_it(self):
-        from altair.auth import who_api, decide
+        from altair.auth import (
+            who_api,
+            who_api_factory,
+            decide,
+            list_who_api_factory,
+        )
 
         self.config.registry.settings.update(
             {'altair.auth.specs': [
-                    ('who1', 'altair.auth:test_conf/who1.ini')
+                    ('who1', 'altair.auth:test_conf/who1.ini'),
+                    ('who2', 'altair.auth:test_conf/who1.ini')
                     ],
              'altair.auth.decider': 'altair.auth.testing:DummyDecider'})
         self.config.testing_securitypolicy()
@@ -31,3 +37,9 @@ class TestIt(unittest.TestCase):
         request.testing_who_api_name = 'testing_who'
         api_name = decide(request)
         self.assertEqual(api_name, 'testing_who')
+
+        factories = list_who_api_factory(request)
+
+        self.assertEqual(factories, 
+                         [(u'who1', who_api_factory(request, 'who1')),
+                          (u'who2', who_api_factory(request, 'who2'))])

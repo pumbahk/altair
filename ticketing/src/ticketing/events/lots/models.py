@@ -50,6 +50,7 @@ class LotWishSummary(Base):
             Event.__table__.c.title.label('event_title'),
             Lot.__table__.c.id.label('lot_id'),
             LotElectWork.__table__.c.id.label('lot_elect_work_id'),
+            LotElectWork.__table__.c.error.label('lot_elect_work_error'),
             LotRejectWork.__table__.c.id.label('lot_reject_work_id'),
             ShippingAddress.__table__.c.id.label('shipping_address_id'),
             ShippingAddress.__table__.c.last_name.label('shipping_address_last_name'),
@@ -90,6 +91,7 @@ class LotWishSummary(Base):
     lot_id = Lot.__table__.c.id
     closed_at = LotEntry.__table__.c.closed_at
     lot_elect_work_id = LotElectWork.__table__.c.id
+    lot_elect_work_error = LotElectWork.__table__.c.error
     lot_reject_work_id = LotRejectWork.__table__.c.id
     shipping_address_id = ShippingAddress.__table__.c.id
     shipping_address_last_name = ShippingAddress.__table__.c.last_name

@@ -1,5 +1,5 @@
-<%inherit file="../../../layout_2cols.html" />
-<%namespace file="/common/helpers.html" import="breadcrumbs,flash_messages,form_item"/>
+<%inherit file="/layout_2cols.html" />
+<%namespace file="/common/helpers.html" name="ch" />
 
 <%
 event_id = request.matchdict["event_id"]
@@ -11,27 +11,20 @@ event = request.context.event
   .controls textarea{width: 80%; min-height:100px;}
 </style>
 
-<div class="breadcrumbs">
-  ${breadcrumbs(
-    names=[u'イベント', event.title, u'券面', u"チケットテンプレート", u"登録"],
-    urls=[request.route_path('events.index'), 
-          request.route_path('events.show', event_id=event.id),
-          request.route_path('events.tickets.index', event_id=event.id),
-          request.route_path('events.tickets.boundtickets.show', event_id=event.id, id=request.matchdict["id"]),
-         ]
-  )}
-</div>
+<%block name="breadcrumbs">
+${ch.breadcrumbs(
+  names=[u'イベント', event.title, u'券面', u"チケットテンプレート", u"登録"],
+  urls=[request.route_path('events.index'), 
+        request.route_path('events.show', event_id=event.id),
+        request.route_path('events.tickets.index', event_id=event.id),
+        request.route_path('events.tickets.boundtickets.show', event_id=event.id, id=request.matchdict["id"]),
+       ]
+)}
+</%block>
 
 <div class="page-header">
   <h3>チケットテンプレート登録</h3>
 </div>
-
-<%doc>
-<div class="content">
-  ${flash_messages(request)}
-  ${alert_message(form)}
-</div>
-</%doc>
 
 <%
    event_id=request.matchdict["event_id"]
@@ -46,11 +39,11 @@ event = request.context.event
   <form class="form-horizontal" action="${route_path}" method="POST"
 		enctype="multipart/form-data">
 	<fieldset>
-	  ${form_item(form.name)}
-	  ${form_item(form.ticket_format)}
-    ${form_item(form.always_reissueable)}
-    ${form_item(form.priced)}
-	  ${form_item(form.drawing, placeholder=place_holder)}
+	  ${ch.form_item(form.name)}
+	  ${ch.form_item(form.ticket_format)}
+    ${ch.form_item(form.always_reissueable)}
+    ${ch.form_item(form.priced)}
+	  ${ch.form_item(form.drawing, placeholder=place_holder)}
 	</fieldset>
 	<div class="form-actions">
 	  <input class="btn btn-primary" type="submit" name="submit" value="登録">

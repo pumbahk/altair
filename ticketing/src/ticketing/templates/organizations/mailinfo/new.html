@@ -1,5 +1,5 @@
-<%inherit file="../../layout_2cols.html" />
-<%namespace file="/common/helpers.html" import="breadcrumbs,alert_message,flash_messages,form_item"/>
+<%inherit file="/layout_2cols.html" />
+<%namespace file="/common/helpers.html" name="ch" />
 
 <style type="text/css">
   .controls select{width: 80%;}
@@ -8,12 +8,12 @@
   .controls table{width: 95%;}
 </style>
 
-<div class="breadcrumbs">
-${breadcrumbs(
+<%block name="breadcrumbs">
+${ch.breadcrumbs(
   names=[u'トップ', u"取引先詳細"],
   urls=[request.route_path('index'), request.route_path("organizations.show",organization_id=organization.id)]
 )}
-</div>
+</%block>
 
 <div class="page-header">
   <h2>${mutil.get_mailtype_description()}付加情報 ${organization.name}</h2>
@@ -44,17 +44,12 @@ ${breadcrumbs(
   %endfor
 </ul>
 
-<div class="content">
-  ${flash_messages(request)}
-  ${alert_message(form,escape=False)}
-</div>
-
 <div class="well">
   <form id="submitForm" class="form-horizontal" action="" method="POST">
 	<fieldset>
 	  %for field in form:
 	  <div class="${field.description}">
-	    ${form_item(field)}
+	    ${ch.form_item(field)}
 	  </div>
 	  %endfor
 	</fieldset>

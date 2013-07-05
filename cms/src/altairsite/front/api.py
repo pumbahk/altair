@@ -4,7 +4,7 @@ import sqlalchemy as sa
 import sqlalchemy.orm as orm
 from altaircms.widget.tree.proxy import WidgetTreeProxy
 from .bsettings import BlockSettings
-from .impl import ILayoutModelResolver
+from .resolver import ILayoutModelResolver
 
 import logging
 logger = logging.getLogger(__file__)

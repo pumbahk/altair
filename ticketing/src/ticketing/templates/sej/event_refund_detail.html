@@ -1,17 +1,18 @@
-<%inherit file="../layout.html" />
-<%namespace file="/common/helpers.html" name="h"/>
+<%inherit file="/layout.html" />
+<%namespace file="/common/helpers.html" name="ch"/>
 <%namespace file="/common/helpers.html" import="form_item" />
 <%namespace file="common.html" name="c"/>
 <%block name="title">払い戻し公演一覧</%block>
 
-
-${h.breadcrumbs(
+<%block name="breadcrumbs">
+${ch.breadcrumbs(
     names=[u'SEJ Order', u'払い戻し公演一覧', u'イベント詳細'],
     urls=[
       request.route_path('orders.sej'),
       request.route_path('orders.sej.event.refund')
     ]
 )}
+</%block>
 
 <div class="row">
 <div class="span4">

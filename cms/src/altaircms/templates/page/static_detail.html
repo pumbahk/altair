@@ -2,6 +2,7 @@
 <%namespace name="nco" file="../navcomponents.html"/>
 
 <%block name="style">
+<link rel="stylesheet" href="/static/treeview/css/style.css" type="text/css" />
 <style type="text/css">
 h3{ 
   margin-top:20px;
@@ -12,15 +13,105 @@ h3{
 <div class="row-fluid">
     ${nco.breadcrumbs(
         names=["Top", "Page", static_page.name],
-        urls=[request.route_path("dashboard"), request.route_path("pageset_list", pagetype="static")]
+        urls=[request.route_path("dashboard"), request.route_path("pageset_list", pagetype=pagetype.name)]
     )}
 
 <div class="circle circle-page circle-top"></div>
 <h2>${static_page.name}</h2>
 
 <table class="table table-striped">
+  <tr>
+    <th class="span2">name</th><td>${static_pageset.name}</td>
+  </tr>
+  <tr>
+    <th class="span2">urlの一部</th><td>${static_pageset.url}</td>
+  </tr>
+</table>
+
+<div class="btn-group">
+  <a class="btn btn-primary"
+	   href="${request.route_path("static_pageset_update", action="input", id=static_pageset.id, _query=dict(endpoint=request.url, pagetype=pagetype.name))}"> 
+    <i class="icon-cog"></i> 変更
+  <a class="btn btn-danger"
+	   href="${request.route_path("static_pageset_delete", action="confirm", id=static_pageset.id, _query=dict(endpoint=request.route_path("pageset_list", pagetype=pagetype.name), pagetype=pagetype.name))}"> 
+    <i class="icon-trash"></i> 削除(全部消えます。とても危険です)
+  </a>
+</div>
+
+<hr/>
+<h3>ページ一覧</h3>
+
+<div class="box">
+  <table class="table table-describe table-bordered">
+  <thead>
+    <tr>
+    <th width="20px"></th>
+    <th>名前</th>
+    <th>表示状況</th>
+    <th>公開期間</th>
+    <th>生成日時</th>
+    <th>更新日時</th>
+    </tr>
+  </thead>
+  <tbody>
+  %for page in static_pageset.pages:
+    <tr>
+      <td><input type="radio" name="object_id" value="${page.id}"/ ${'checked="checked"' if page.id == static_page.id else "" |n}></td>
+      <td>
+        <a href="${h.current_route_path_override(request,_query=dict(child_id=page.id))}#internal_link_for_tabs">${page.label}</a>
+        ${u'<span class="label">現在表示</span>' if page==current_page else u""|n}
+      </td>
+      <td>
+        <div class="btn-group">
+          <a class="btn dropdown-toggle" data-toggle="dropdown" href="#">
+            ${page.publish_status(now)}
+            <span class="caret"></span>
+          </a>
+          <ul class="dropdown-menu">
+            <!-- dropdown menu links -->
+            <li><a class="" href="${request.route_path("static_page", action="toggle_publish", _query=dict(status="publish", endpoint=request.url), static_page_id=static_pageset.id, child_id=page.id)}" class="publish_status">公開する</a></li>
+            <li><a href="${request.route_path("static_page", action="toggle_publish", _query=dict(status="unpublish", endpoint=request.url), static_page_id=static_pageset.id, child_id=page.id)}" class="publish_status">非公開にする</a></li>
+          </ul>
+        </div>
+      </td>
+      <td>${h.jterm(page.publish_begin,page.publish_end)}</td>
+      <td>${h.base.jdatetime(page.created_at)}</td>
+      <td>${h.base.jdatetime(page.updated_at)}</td>
+    </tr>
+  %endfor
+  </tbody>
+  </table>
+
+  ##位置的にinternal_link_for_tabsにするとちょうどよい。
+  <div class="btn-group" id="internal_link_for_tabs"> 
+	  <a class="btn btn-success action submit" href="${request.route_path("static_page", action="shallow_copy", _query=dict(endpoint=request.url), static_page_id=static_pageset.id, child_id="__id__")}"
+       message="新しいページを追加します。よろしいですか？">
+		  <i class="icon-plus"> </i> 新しいページの追加
+    </a>
+	  <a class="btn btn-success action submit" href="${request.route_path("static_page", action="deep_copy", _query=dict(endpoint=request.url), static_page_id=static_pageset.id, child_id="__id__")}"
+       message="新しいページを追加します。アップロードされているファイルもまとめてコピーします。よろしいですか？">
+		  <i class="icon-plus"> </i> 選択したページのコピーを追加
+    </a>
+  </div>
+</div>
+
+<hr/>
+
+
+<ul class="nav nav-tabs">
+  %for page in static_pageset.pages:
+  %if page.id == static_page.id:
+    <li class="active"><a href="#">${page.label}</a></li>
+  %else:
+    <li><a href="${h.current_route_path_override(request,_query=dict(child_id=page.id))}#internal_link_for_tabs">${page.label}</a></li>
+  %endif
+  %endfor
+</ul>
+
+<h3>ページ詳細</h3>
+<table class="table table-striped">
       <tr>
-        <th class="span2">name(urlの一部)</th><td>${static_page.name}</td>
+        <th class="span2">name</th><td>${static_page.name}</td>
       </tr>
       <tr>
         <th class="span2">タイトル</th><td>${static_page.label}</td>
@@ -44,39 +135,56 @@ h3{
         <th>更新日時</th><td>${h.base.jdatetime(static_page.updated_at)}</td>
       </tr>
       <tr>
-        <th>公開ステータス</th><td>${u"公開中" if static_page.published else u"非公開"}</td>
+        <th>アップロード日時</th><td>${h.base.jdatetime(static_page.uploaded_at)}</td>
       </tr>
       <tr>
-        <th>同一urlのページセットを横取りする</th><td>${u"はい" if static_page.interceptive else u"いいえ(特集ページはいいえです)"}</td>
+        <th>公開ステータス</th><td>${u"公開中" if static_page.published else u"非公開"}</td>
       </tr>
     </table>
 
 <div class="btn-group">
-  <a href="${request.route_path("static_page",action="toggle_publish",static_page_id=static_page.id)}" class="btn btn-inverse">
+  <a href="${request.route_path("static_page", action="toggle_publish", _query=dict(endpoint=request.url), static_page_id=static_pageset.id, child_id=static_page.id)}" class="btn btn-inverse">
     <i class="icon-plus icon-white"></i> この静的ページを${u"非公開にする" if static_page.published else u"公開する"}</a>
   <a class="btn btn-primary"
-	   href="${request.route_path("static_page_update",action="input",id=static_page.id, _query=dict(endpoint=request.url,pagetype="static"))}">
+	   href="${request.route_path("static_page_update", action="input", id=static_page.id, _query=dict(endpoint=request.url, pagetype=pagetype.name))}"> <%doc>xxx:</%doc>
     <i class="icon-cog"></i> 変更
   </a>
   <a class="do-post btn btn-danger"
-	   href="${request.route_path("static_page",action="delete",static_page_id=static_page.id)}">
+	   href="${request.route_path("static_page",action="delete",static_page_id=static_page.id, child_id=static_page.id ,_query=dict(endpoint=request.url))}">
     <i class="icon-trash"></i> 削除
   </a>
 </div>
-<hr/>
+<hr id="internal_link_for_files" />
 
 <h3>登録されているファイル</h3>
+
+<ul class="nav nav-tabs">
+  %for page in static_pageset.pages:
+  %if page.id == static_page.id:
+    <li class="active"><a href="#">${page.label}</a></li>
+  %else:
+    <li><a href="${h.current_route_path_override(request,_query=dict(child_id=page.id))}#internal_link_for_files">${page.label}</a></li>
+  %endif
+  %endfor
+</ul>
+
 <ul class="nav nav-tabs">
   %if "force_original" in request.GET:
-    <li><a href="${h.current_route_path_override(request,_dels=["force_original"])}">レイアウト適用した後</a></li>
+    <li><a href="${h.current_route_path_override(request,_dels=["force_original"])}#treeview">レイアウト適用した後</a></li>
     <li class="active"><a href="#">レイアウト適用する前</a></li>
+    <li><a href="${h.current_route_path_override(request,_dels=["force_original"], _query=dict(management=True))}#treeview">ファイル管理</a></li>
+  %elif "management" in request.GET:
+    <li><a href="${h.current_route_path_override(request,_dels=["management"])}#treeview">レイアウト適用した後</a></li>
+    <li><a href="${h.current_route_path_override(request,_dels=["management"],_query=dict(force_original=True))}#treeview">レイアウト適用する前</a></li>
+    <li class="active"><a href="#">ファイル管理</a></li>
   %else:
     <li class="active"><a href="#">レイアウト適用した後</a></li>
-    <li><a href="${h.current_route_path_override(request,_query=dict(force_original=True))}">レイアウト適用する前</a></li>
+    <li><a href="${h.current_route_path_override(request,_query=dict(force_original=True))}#treeview">レイアウト適用する前</a></li>
+    <li><a href="${h.current_route_path_override(request,_query=dict(management=True))}#treeview">ファイル管理</a></li>
   %endif
 </ul>
-<div class="well">
-  ${static_directory.link_tree_from_static_page(request,static_page)}
+<div class="well css-treeview" id="treeview">
+  ${tree_renderer}
 </div>
 
 <h3>操作</h3>
@@ -84,15 +192,15 @@ h3{
   <div class="span5">
 	<div class="well" style="height:120px;">
 	  <h4 style="margin-bottom:10px;">zipファイルにまとめてdownloadする</h4>
-	  <a href="${request.route_path("static_page", action="download", static_page_id=static_page.id)}" class="btn">zipでdownload</a>
+	  <a href="${request.route_path("static_page", action="download", static_page_id=static_pageset.id, child_id=static_page.id)}" class="btn">zipでdownload</a>
 	</div>
   </div>
 
   <div class="span6">
 	<div class="well" style="height:120px;">
 	  <h4 style="margin-bottom:10px;">zipファイルでuploadし直す</h4>
-	  <form class="form" action="${request.route_path("static_page", action="upload", static_page_id=static_page.id)}" 
-			method="POST" enctype="multipart/form-data">
+	  <form class="form" action="${request.route_path("static_page", action="upload", static_page_id=static_pageset.id, child_id=static_page.id,_query=dict(endpoint=request.url))}" 
+			    method="POST" enctype="multipart/form-data">
 		<label>zipfile: <input id="zipfile" type="file" name="zipfile"/></label>
 		<input class="btn" type="submit" value="zipでupload"/>
 	  </form>
@@ -104,21 +212,21 @@ h3{
   $(function(){
    $(".box .btn-group a.action").click(function(){
       var  pk = $(this).parents(".box").find("input[name='object_id']:checked").val();
-      if(!pk){ console.log("sorry"); return false; }
+      if(!pk){ alert("対象となるページが設定されていません"); return false; }
 
       // initialize
       var $this = $(this);
       if (!$this.data("href-fmt")){
         $this.data("href-fmt", this.href);
       }
-      this.href = $this.data("href-fmt").replace("__id__", pk);
-      return true;;
+      $this.attr("href", $this.data("href-fmt").replace("__id__", pk));
+      return !($this.attr("message")) || window.confirm($this.attr("message"));
     });
   $("a.do-post").click(function(){
     if(window.confirm("本当に登録されたデータを削除しますか?")){
 	  $.post($(this).attr("href")).done(function(data){
 		location.href = data["redirect_to"];
-	  });
+	  }).error(function(e){console.log(e.responseText);});
     }
     return false;
   });

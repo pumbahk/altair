@@ -1,5 +1,5 @@
 <%page args="form" />
-<%namespace file="/common/helpers.html" name="h" />
+<%namespace file="/common/helpers.html" name="ch" />
 <%! from ticketing.core.models import ReportFrequencyEnum %>
 
 <script type="text/javascript">
@@ -22,26 +22,26 @@
   </div>
   <div class="modal-body">
     <div class="content">
-      ${h.alert_message(form)}
+      ${ch.alert_message(form)}
     </div>
     <form class="form-horizontal" action="javascript:save_sales_reports_mail();" method="POST">
-      ${h.form_item(form.operator_id)}
-      ${h.form_item(form.name)}
-      ${h.form_item(form.email)}
-      ${h.form_item(form.frequency)}
+      ${ch.form_item(form.operator_id)}
+      ${ch.form_item(form.name)}
+      ${ch.form_item(form.email)}
+      ${ch.form_item(form.frequency)}
       <div class="frequency-weekly">
-      ${h.form_item(form.day_of_week)}
+      ${ch.form_item(form.day_of_week)}
       </div>
-      ${h.form_item(form.period)}
-      ${h.form_item(form.time)}
-      ${h.form_item(form.start_on)}
-      ${h.form_item(form.end_on)}
+      ${ch.form_item(form.period)}
+      ${ch.form_item(form.time)}
+      ${ch.form_item(form.start_on)}
+      ${ch.form_item(form.end_on)}
       <div class="controls">
         * オペレーターの追加は<a href="${request.route_path('operators.index')}">こちら</a>
       </div>
-      ${h.form_item(form.id)}
-      ${h.form_item(form.event_id)}
-      ${h.form_item(form.performance_id)}
+      ${ch.form_item(form.id)}
+      ${ch.form_item(form.event_id)}
+      ${ch.form_item(form.performance_id)}
     </form>
   </div>
 

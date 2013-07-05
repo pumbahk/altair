@@ -42,9 +42,9 @@ def includeme(config):
     config.include(install_salessegment_panels)
     config.include(install_product_panels)
     config.include(install_pageset_panels)
+
     ## action panels
     config.include(install_action_panels)
-
 
     
 

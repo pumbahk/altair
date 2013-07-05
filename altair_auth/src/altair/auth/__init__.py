@@ -63,9 +63,9 @@ def activate_who_api(request):
     api = who_api(request, api_name)
     request.environ['repoze.who.plugins'] = api.name_registry # BBB?
 
-def activate(request):
-    activate_who_api(request)
-    request.environ[REQUEST_KEY] = request
+# def activate(request):
+#     activate_who_api(request)
+#     request.environ[REQUEST_KEY] = request
 
 def deactivate(request):
     try:
@@ -76,7 +76,8 @@ def deactivate(request):
 def activate_who_api_tween(handler, registry):
     def wrap(request):
         try:
-            activate(request)
+            #activate(request)
+            request.environ[REQUEST_KEY] = request
             return handler(request)
         finally:
             deactivate(request)
@@ -89,11 +90,17 @@ def decide(request):
 
 def who_api_factory(request, name):
     reg = request.registry
-    return reg.getUtility(IAPIFactory, name=name)
+    return reg.queryUtility(IAPIFactory, name=name)
+
+def list_who_api_factory(request):
+    reg = request.registry
+    return list(reg.getUtilitiesFor(IAPIFactory))
 
 
 def who_api(request, name=""):
     factory = who_api_factory(request, name=name)
+    if factory is None:
+        return None
     api = factory(request.environ)
     return api
 
@@ -140,8 +147,13 @@ class MultiWhoAuthenticationPolicy(object):
         """
 
         identity = self._get_identity(request)
+        if identity is None:
+            return [Everyone]
+
         groups = self._get_groups(identity, request)
         if len(groups) > 1:
+            if 'auth_type' in identity:
+                groups.insert(0, "auth_type:%s" % identity['auth_type'])
             groups.insert(0, identity['repoze.who.userid'])
         return groups
 
@@ -149,9 +161,11 @@ class MultiWhoAuthenticationPolicy(object):
         """ See IAuthenticationPolicy.
         """
 
+        api_name = decide(request)
         api = self._getAPI(request)
         identity = {'repoze.who.userid': principal,
                     'identifier': api.name_registry[self._identifier_id],
+                    'auth_type': api_name,
                    }
         return api.remember(identity)
 
@@ -183,6 +197,8 @@ class MultiWhoAuthenticationPolicy(object):
         identity = request.environ.get('repoze.who.identity')
         if identity is None:
             api = self._getAPI(request)
+            if api is None:
+                return None
             identity = api.authenticate()
         return identity
 

@@ -1,0 +1,97 @@
+[app:newsletter]
+use = egg:altair_newsletter
+
+pyramid.reload_templates = false
+pyramid.debug_authorization = false
+pyramid.debug_notfound = false
+pyramid.debug_routematch = false
+pyramid.debug_templates = false
+pyramid.default_locale_name = en
+pyramid.includes = pyramid_tm pyramid_fanstatic pyramid_beaker pyramid_mailer
+mako.directories = newsletter:templates
+
+sqlalchemy.url = mysql://newsletter:newsletter@localhost/newsletter?use_unicode=true&charset=utf8
+
+; Beaker
+auth.secret = SDQGxGIhVqSr3zJWV8KvHqHtJujhJj
+session.secret = B7gzHVRUqErB1TFgSeLCHH3Ux6ShtI
+
+fanstatic.base_url = /newsletters
+
+# mail configuration
+mail.host = localhost
+mail.port = 25
+mail.message.encoding = ISO-2022-JP
+mail.message.sender = news@ticket.rakuten.co.jp
+mail.report.sender = dev@ticketstar.jp
+mail.report.recipient = dev@ticketstar.jp
+
+session.type = ${altair:beaker_backend_type}
+cache.type = ${altair:beaker_backend_type}
+
+[filter:prefix]
+use = egg:PasteDeploy#prefix
+prefix = /newsletters
+
+[pipeline:main]
+pipeline = 
+  prefix
+  newsletter
+
+[server:main]
+use = egg:gunicorn#main
+workers = 1
+host = 0.0.0.0
+port = %(http_port)s
+timeout = 3600
+graceful_timeout = 3600
+
+# Begin logging configuration
+
+[loggers]
+keys = root, newsletter, sqlalchemy
+
+[handlers]
+keys = console, fluent, sqlalchemy
+
+[formatters]
+keys = generic
+
+[logger_root]
+level = INFO
+handlers = console, fluent
+
+[logger_newsletter]
+level = DEBUG
+handlers = console, fluent
+qualname = newsletter
+propagate = 0
+
+[logger_sqlalchemy]
+level =  INFO
+handlers = sqlalchemy
+qualname = sqlalchemy.engine
+propagate = 0
+
+[handler_console]
+class = altair.log.filters.BrowserIdStreamHandler
+args = (sys.stderr,)
+level = WARN
+formatter = generic
+
+[handler_sqlalchemy]
+class = altair.log.filters.BrowserIdTimedRotatingFileHandler
+args = ('%(here)s/../log/altair.newsletter.admin.sqlalchemy.log', 'D',)
+level = INFO
+formatter = generic
+
+[handler_fluent]
+class = altair.log.filters.BrowserIdFluentHandler
+args = ('altair.newsletter.admin', '127.0.0.1', 24224)
+level = NOTSET
+formatter = generic
+
+[formatter_generic]
+format = %(asctime)s %(browserid)s %(url)s %(levelname)-5.5s [%(name)s][%(threadName)s] %(message)s
+
+# End logging configuration

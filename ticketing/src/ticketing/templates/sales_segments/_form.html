@@ -1,6 +1,6 @@
 <%page args="form, action='#'" />
 <% from wtforms.widgets import HiddenInput %>
-<%namespace file="/common/helpers.html" name="h" />
+<%namespace file="/common/helpers.html" name="ch" />
 
 <script>
 (function($) {
@@ -35,26 +35,26 @@
 })($);
 </script>
 <form action="${action}" method="POST">
-  ${h.form_item(form.id)}
+  ${ch.form_item(form.id)}
   % if not form.sales_segment_group_id.data:
-    ${h.form_item(form.sales_segment_group_id, class_='span8')}
+    ${ch.form_item(form.sales_segment_group_id, class_='span8')}
   % else:
     <input type="hidden" name="${form.sales_segment_group_id.name}" value="${form.sales_segment_group_id.data}" />
   % endif
   % if not form.performance_id.data:
-    ${h.form_item(form.performance_id, class_='span8')}
+    ${ch.form_item(form.performance_id, class_='span8')}
   % else:
     <input type="hidden" name="${form.performance_id.name}" value="${form.performance_id.data}" />
   % endif
-  ${h.form_item(form.payment_delivery_method_pairs)}
-  ${h.form_item(form.start_at, class_="datefield")}
-  ${h.form_item(form.end_at, class_="datefield")}
-  ${h.form_item(form.account_id)}
-  ${h.form_item(form.margin_ratio)}
-  ${h.form_item(form.refund_ratio)}
-  ${h.form_item(form.printing_fee)}
-  ${h.form_item(form.registration_fee)}
-  ${h.form_item(form.upper_limit)}
-  ${h.form_item(form.seat_choice)}
-  ${h.form_item(form.public)}
+  ${ch.form_item(form.payment_delivery_method_pairs)}
+  ${ch.form_item(form.start_at, class_="datefield")}
+  ${ch.form_item(form.end_at, class_="datefield")}
+  ${ch.form_item(form.account_id)}
+  ${ch.form_item(form.margin_ratio)}
+  ${ch.form_item(form.refund_ratio)}
+  ${ch.form_item(form.printing_fee)}
+  ${ch.form_item(form.registration_fee)}
+  ${ch.form_item(form.upper_limit)}
+  ${ch.form_item(form.seat_choice)}
+  ${ch.form_item(form.public)}
 </form>

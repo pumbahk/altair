@@ -7,14 +7,12 @@ from altaircms.tag.models import HotWord
 from altaircms.models import SalesSegmentKind
 from altaircms.page.models import PageTag
 from altairsite.config import usersite_view_config
+from altairsite.separation import enable_full_usersite_function as enable_search_function
 import sqlalchemy.orm as orm
 from . import forms
 from . import searcher
 
 logger = logging.getLogger(__file__)
-
-def enable_search_function(info, request):
-    return request.organization.use_full_usersite if request.organization else False
 
 def convert_getitem(D, k, convert):
     try:

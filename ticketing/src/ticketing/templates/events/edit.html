@@ -1,5 +1,5 @@
 <%inherit file="/layout_2cols.html" />
-<%namespace file="/common/helpers.html" name="h" />
+<%namespace file="/common/helpers.html" name="ch" />
 
 <%
   if request.matched_route.name == 'events.edit':
@@ -34,31 +34,26 @@
   });
 </script>
 
-<div class="breadcrumbs">
-${h.breadcrumbs(
+<%block name="breadcrumbs">
+${ch.breadcrumbs(
     names=[u'イベント', route_name],
     urls=[request.route_path('events.index')]
 )}
-</div>
+</%block>
 
 <div class="page-header">
   <h3>イベント${route_name}</h3>
 </div>
 
-<div class="content">
-  ${h.flash_messages(request)}
-  ${h.alert_message(form)}
-</div>
-
 <div class="well">
   <form class="form-horizontal" action="${route_path}" method="POST">
     <fieldset>
-      ${h.form_item(form.id)}
-      ${h.form_item(form.original_id)}
-      ${h.form_item(form.account_id, class_='span5')}
-      ${h.form_item(form.title, class_='span8', maxlength=200)}
-      ${h.form_item(form.abbreviated_title, class_='span4', maxlength=100)}
-      ${h.form_item(form.code, style='width:100px', maxlength=7, counter=True)}
+      ${ch.form_item(form.id)}
+      ${ch.form_item(form.original_id)}
+      ${ch.form_item(form.account_id, class_='span5')}
+      ${ch.form_item(form.title, class_='span8', maxlength=200)}
+      ${ch.form_item(form.abbreviated_title, class_='span4', maxlength=100)}
+      ${ch.form_item(form.code, style='width:100px', maxlength=7, counter=True)}
     </fieldset>
     <div class="form-actions">
       <input class="btn btn-primary" type="submit" name="submit" value="${route_name}">

@@ -272,3 +272,8 @@ def is_required(field):
 
 def mobile_required_mark():
     return Markup('<sup><font color="#f00">*</font></sup>')
+
+def cr2br(t):
+    if t is None:
+        return None
+    return t.replace("\n", "<br/>")

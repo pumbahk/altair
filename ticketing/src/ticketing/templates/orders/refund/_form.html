@@ -1,5 +1,5 @@
 <%page args="form" />
-<%namespace file="/common/helpers.html" name="h" />
+<%namespace file="/common/helpers.html" name="ch" />
 
 <script type="text/javascript">
   $(function() {
@@ -21,15 +21,15 @@
   </div>
 
   <div class="modal-body">
-    ${h.flash_messages(request, type='alert-error')}
-    ${h.alert_message(form)}
+    ${ch.flash_messages(request, type='alert-error')}
+    ${ch.alert_message(form)}
     <form action="javascript:refund_order();">
-      ${h.form_item(form.payment_method_id)}
-      ${h.form_item(form.include_item)}
-      ${h.form_item(form.include_system_fee)}
-      ${h.form_item(form.include_transaction_fee)}
-      ${h.form_item(form.include_delivery_fee)}
-      ${h.form_item(form.cancel_reason)}
+      ${ch.form_item(form.payment_method_id)}
+      ${ch.form_item(form.include_item)}
+      ${ch.form_item(form.include_system_fee)}
+      ${ch.form_item(form.include_transaction_fee)}
+      ${ch.form_item(form.include_delivery_fee)}
+      ${ch.form_item(form.cancel_reason)}
     </form>
   </div>
 

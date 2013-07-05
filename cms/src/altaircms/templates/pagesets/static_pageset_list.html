@@ -12,7 +12,7 @@
 </%block>
 
 <div class="circle circle-page circle-top"></div>
-<h2>静的ページ一覧</h2>
+<h2>${pagetype.label}一覧</h2>
 
 <div class="row-fluid">
   <div class="span12">
@@ -24,7 +24,7 @@
 </div>
 
 <h3 style="margin-top:0px;">ページ追加</h3>
-<a href="${request.route_path("static_page_create", action="input", _query=dict(pagetype=pagetype.name))}" class="btn btn-success btn-large">新しい静的ページを追加する</a>
+<a href="${request.route_path("static_page_create", pagetype=pagetype.name, action="input", _query=dict(endpoint=request.url))}" class="btn btn-success btn-large">新しい静的ページを追加する</a>
 
 <h3>ページ一覧</h3>
 
@@ -53,7 +53,7 @@ seq = h.paginate(request, pages, item_count=page_count, items_per_page=50)
     %for page in seq.paginated():
       <tr>
         <td> 
-		  <a href="${request.route_path("static_page", action="detail", static_page_id=page.id)}">${page.name}</a>
+		  <a href="${request.route_path("static_pageset", pagetype=pagetype.name, action="detail", static_page_id=page.id)}">${page.name}</a>
         </td>
 		<td>${h.base.jdatetime(page.created_at)}</td>
 		<td>${h.base.jdatetime(page.updated_at)}</td>

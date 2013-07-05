@@ -24,8 +24,6 @@ def includeme(config):
                      factory=lot_resource_factory)
 
     # 抽選申し込み管理
-    config.add_route('lots.entries.index', 'entries/{lot_id}',
-                     factory=lot_resource_factory)
     config.add_route('lots.entries.search', 'entries/search/{lot_id}',
                      factory=lot_resource_factory)
     config.add_route('lots.entries.show', 'entries/search/{lot_id}/entry/{entry_no}',
@@ -37,6 +35,8 @@ def includeme(config):
     config.add_route('lots.entries.import', 'entries/import/{lot_id}',
                      factory=lot_resource_factory)
     config.add_route('lots.entries.elect_entry_no', 'entries/elect_entry_no/{lot_id}',
+                     factory=lot_resource_factory)
+    config.add_route('lots.entries.elect_all', 'entries/elect_all/{lot_id}',
                      factory=lot_resource_factory)
     config.add_route('lots.entries.reject_entry_no', 'entries/reject_entry_no/{lot_id}',
                      factory=lot_resource_factory)
@@ -51,6 +51,8 @@ def includeme(config):
     config.add_route('lots.entries.cancel_electing', 'entries/cancel_electing/{lot_id}',
                      factory=lot_resource_factory)
     config.add_route('lots.entries.cancel_rejecting', 'entries/cancel_rejecting/{lot_id}',
+                     factory=lot_resource_factory)
+    config.add_route('lots.entries.index', 'entries/{lot_id}',
                      factory=lot_resource_factory)
 
     config.include(".mailinfo", route_prefix="/lots/mailinfo/")

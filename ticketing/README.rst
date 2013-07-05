@@ -11,14 +11,15 @@ Setup
   $ cd altair
   $ git submodule init
   $ git submodule update
-  $ cd ..
   $ easy_install virtualenv
   $ virtualenv env
-  $ env/bin/easy_install pyramid
-  $ source env/bin/activate
-  $ cd altair/ticketing
-  $ python setup.py develop
-  $ ../../env/bin/paster serve development.ini --reload
+  $ cd deploy/dev
+  $ ../../env/bin/python bootstrap.py
+  $ bin/buildout -c buildout.local.cfg
+
+
+deploy/dev/bin/supervisorctl で利用したいインスタンスを起動する.
+
 
 Generating seed data
 ====================
@@ -55,7 +56,7 @@ Cart test how-to
 
 次のコマンドでテスト環境用プロキシを立ち上げる::
 
-  $ misc/proxy/proxy.py
+  $ deploy/dev/bin/supervisorctl devproxy start
 
 ブラウザのプロキシ設定を次の物に変更する::
 

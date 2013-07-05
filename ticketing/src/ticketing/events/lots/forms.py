@@ -49,6 +49,14 @@ class LotForm(Form):
         ],
     )
 
+    auth_type = SelectField(
+        label=u"認証方法",
+        validators=[
+            ## 認証方法一覧にあるかって確認はchocesでやってくれるのだろうか
+        ],
+        choices=[('', ''), ('rakuten', 'rakuten'), ('fc_auth', 'fc_auth')],
+    )
+
     ### 販売区分
 
     sales_segment_group_id = SelectField(
@@ -105,6 +113,7 @@ class LotForm(Form):
             entry_limit=self.data['entry_limit'],
             description=self.data['description'],
             lotting_announce_datetime=self.data['lotting_announce_datetime'],
+            auth_type=self.data['auth_type'],
             )
         return lot
     
@@ -122,6 +131,7 @@ class LotForm(Form):
         lot.entry_limit=self.data['entry_limit']
         lot.description=self.data['description']
         lot.lotting_announce_datetime=self.data['lotting_announce_datetime']
+        lot.auth_type = self.data['auth_type']
 
         return lot
 

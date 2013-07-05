@@ -1,5 +1,5 @@
 <%page args="events, title=None" />
-<%namespace file="/common/helpers.html" name="h" />
+<%namespace file="/common/helpers.html" name="ch" />
 
 % if events:
   <div class="page-header">
@@ -17,8 +17,8 @@
     <tr>
       <td><a href="${request.route_path('events.show', event_id=event.id)}">${event.code}</a></td>
       <td><a href="${request.route_path('events.show', event_id=event.id)}">${event.title}</a></td>
-      <td>${h.safe_strftime(event.first_start_on)}</td>
-      <td>${h.safe_strftime(event.final_start_on)}</td>
+      <td>${vh.datetime(event.first_start_on)}</td>
+      <td>${vh.datetime(event.final_start_on)}</td>
       <td><a href="${request.route_path('accounts.show', account_id=event.account.id)}">${event.account.name}</a></td>
     </tr>
     % endfor

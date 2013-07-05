@@ -1,5 +1,5 @@
 <%page args="form,sales_segment_group"/>
-<%namespace file="/common/helpers.html" name="h"/>
+<%namespace file="/common/helpers.html" name="ch"/>
 
 <table class="table table-striped table-bordered table-condensed" id="sales_segment_group-${sales_segment_group.id}">
   <tr>
@@ -17,11 +17,11 @@
   </tr>
   <tr>
     <th>${form.start_at.label.text}</th>
-    <td id="current_start_at">${h.safe_strftime(sales_segment_group.start_at)}</td>
+    <td id="current_start_at">${vh.datetime(sales_segment_group.start_at)}</td>
   </tr>
   <tr>
     <th>${form.end_at.label.text}</th>
-    <td id="current_end_at">${h.safe_strftime(sales_segment_group.end_at)}</td>
+    <td id="current_end_at">${vh.datetime(sales_segment_group.end_at)}</td>
   </tr>
   <tr>
     <th>${form.account_id.label.text}</th>
@@ -37,11 +37,11 @@
   </tr>
   <tr>
     <th>${form.printing_fee.label.text}</th>
-    <td id="printing_fee">${h.price_format(sales_segment_group.printing_fee, '%g')}円</td>
+    <td id="printing_fee">${vh.price(sales_segment_group.printing_fee, '%g')}</td>
   </tr>
   <tr>
     <th>${form.registration_fee.label.text}</th>
-    <td id="registration_fee">${h.price_format(sales_segment_group.registration_fee, '%g')}円</td>
+    <td id="registration_fee">${vh.price(sales_segment_group.registration_fee, '%g')}</td>
   </tr>
   <tr>
     <th>${form.upper_limit.label.text}</th>

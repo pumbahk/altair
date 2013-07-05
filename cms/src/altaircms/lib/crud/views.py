@@ -9,7 +9,7 @@ import altaircms.helpers as h
 import logging
 logger = logging.getLogger(__file__)
 from altaircms.security import RootFactory
-from altaircms.helpers.viewhelpers import set_endpoint, get_endpoint
+from altaircms.helpers.viewhelpers import get_endpoint
 from altaircms.subscribers import notify_model_create ## too-bad
 
 from sqlalchemy.sql.operators import ColumnOperators
@@ -63,9 +63,6 @@ class CRUDResource(RootFactory): ## fixme
         return "%s_%s" % (self.prefix, ac)
 
     ## endpoint
-    def set_endpoint(self):
-        set_endpoint(self.request, endpoint=self.request.GET.get("endpoint"))
-
     def get_endpoint(self):
         endpoint = get_endpoint(self.request)
         return endpoint or self.request.route_url(self.endpoint or "dashboard")
@@ -172,14 +169,11 @@ class CreateView(object):
                 "display_fields": getattr(form,"__display_fields__", None) or form.data.keys()}
 
     def copied_input(self):
-        self.context.set_endpoint()
-        
         obj = self.context.get_model_obj(self.request.params["id"])
         form = self.context.input_form_from_model(obj)
         raise self.context.AfterInput(form=form, context=self.context)
         
     def input(self):
-        self.context.set_endpoint()
         form = self.context.input_form(**self.request.GET)
         raise self.context.AfterInput(form=form, context=self.context)
 
@@ -215,8 +209,6 @@ class UpdateView(object):
                 "display_fields": getattr(form,"__display_fields__", None) or form.data.keys()}
 
     def input(self):
-        self.context.set_endpoint()
-
         obj = self.context.get_model_obj(self.request.matchdict["id"])
         form = self.context.input_form_from_model(obj, **self.request.GET)
         raise self.context.AfterInput(form=form, context=self.context)
@@ -250,8 +242,6 @@ class DeleteView(object):
         self.request = request
 
     def confirm(self):
-        self.context.set_endpoint()
-
         obj = self.context.get_model_obj(self.request.matchdict["id"])
         form = self.context.input_form()
         return {"master_env": self.context,

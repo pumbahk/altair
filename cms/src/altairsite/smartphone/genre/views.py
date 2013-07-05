@@ -1,9 +1,9 @@
 # -*- coding:utf-8 -*-
-from altairsite.config import usersite_view_config
+from altairsite.config import smartphone_site_view_config
 
 from pyramid.renderers import render_to_response
 
-@usersite_view_config(route_name='smartphone.genre',request_type="altairsite.tweens.ISmartphoneRequest"
+@smartphone_site_view_config(route_name='smartphone.genre',request_type="altairsite.tweens.ISmartphoneRequest"
              , renderer='altairsite.smartphone:templates/genre/genre.html')
 def move_genre(context, request):
 
