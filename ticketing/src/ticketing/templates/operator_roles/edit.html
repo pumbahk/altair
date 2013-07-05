@@ -1,15 +1,6 @@
 <%inherit file="/layout_2cols.html" />
 <%namespace file="/common/helpers.html" name="ch" />
 
-<%
-  if request.matched_route.name == 'operator_roles.new':
-    route_name = u'登録'
-    route_path = request.route_path('operator_roles.new')
-  else:
-    route_name = u'編集'
-    route_path = request.route_path('operator_roles.edit', operator_role_id=form.id.data)
-%>
-
 <%block name="breadcrumbs">
   ${ch.breadcrumbs(
       names=[u'トップ', u'ロール', route_name],

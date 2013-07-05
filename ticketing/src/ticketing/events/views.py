@@ -103,6 +103,8 @@ class Events(BaseView):
         f = EventForm(MultiDict(code=self.context.user.organization.code), organization_id=self.context.user.organization.id)
         return {
             'form':f,
+            'route_name': u'登録',
+            'route_path': self.request.path,
         }
 
     @view_config(route_name='events.new', request_method='POST', renderer='ticketing:templates/events/edit.html')
@@ -118,11 +120,17 @@ class Events(BaseView):
         else:
             return {
                 'form':f,
+                'route_name': u'登録',
+                'route_path': self.request.path,
             }
 
     @view_config(route_name='events.edit', request_method='GET', renderer='ticketing:templates/events/edit.html')
     @view_config(route_name='events.copy', request_method='GET', renderer='ticketing:templates/events/edit.html')
     def edit_get(self):
+        if self.request.matched_route.name == 'events.edit':
+            route_name = u'編集'
+        else:
+            route_name = u'コピー'
         event_id = int(self.request.matchdict.get('event_id', 0))
         event = Event.get(event_id, organization_id=self.context.user.organization_id)
         if event is None:
@@ -138,11 +146,17 @@ class Events(BaseView):
         return {
             'form':f,
             'event':event,
+            'route_name': route_name,
+            'route_path': self.request.path,
         }
 
     @view_config(route_name='events.edit', request_method='POST', renderer='ticketing:templates/events/edit.html')
     @view_config(route_name='events.copy', request_method='POST', renderer='ticketing:templates/events/edit.html')
     def edit_post(self):
+        if self.request.matched_route.name == 'events.edit':
+            route_name = u'編集'
+        else:
+            route_name = u'コピー'
         event_id = int(self.request.matchdict.get('event_id', 0))
         event = Event.get(event_id, organization_id=self.context.user.organization_id)
         if event is None:
@@ -162,6 +176,8 @@ class Events(BaseView):
             return {
                 'form':f,
                 'event':event,
+                'route_name': route_name,
+                'route_path': self.request.path,
             }
 
     @view_config(route_name='events.delete')
