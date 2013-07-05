@@ -137,9 +137,17 @@ ul.menu {
   margin: 0 0;
 }
 
+.btn {
+  text-decoration: none;
+  padding: 0 1em;
+  -webkit-box-align: center;
+  -moz-box-align: center;
+  box-align: center;
+}
+
 .btn-large {
   font-size: 20px;
-  line-height: 1.5em;
+  line-height: 40px;
   height: 44px; 
 }
 
