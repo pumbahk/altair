@@ -65,7 +65,7 @@ class S3ConnectionFactory(object):
         request = event.request
         result = event.result #{"create": [], "delete": [], "extra_args": []}
         session = event.session
-        options = event.optionsn
+        options = event.options
 
         uploaded_files = []
         deleted_files = []
