@@ -1,19 +1,13 @@
 ## almost tickets/templates/show.html
-
-<%
-event_id = request.matchdict["event_id"]
-event = request.context.event
-%>
-
 <%inherit file="../../../layout_2cols.html" />
 <%namespace file="/common/helpers.html" name="ch" />
 
 <%block name="breadcrumbs">
 ${ch.breadcrumbs(
-  names=[u'イベント', event.title, u'券面', u"チケットテンプレート"],
+  names=[u'イベント', request.context.event.title, u'券面', u"チケットテンプレート"],
   urls=[request.route_path('events.index'), 
-        request.route_path('events.show', event_id=event.id),
-        request.route_path('events.tickets.index', event_id=event.id),
+        request.route_path('events.show', event_id=request.context.event.id),
+        request.route_path('events.tickets.index', event_id=request.context.event.id),
        ]
 )}
 </%block>
