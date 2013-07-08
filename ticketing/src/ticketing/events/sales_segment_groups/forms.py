@@ -5,7 +5,7 @@ from wtforms import TextField, SelectField, HiddenField, IntegerField, BooleanFi
 from wtforms.validators import Regexp, Length, Optional, ValidationError
 from wtforms.widgets import CheckboxInput
 
-from ticketing.formhelpers import (OurDateTimeField, Translations, Required, RequiredOnUpdate,
+from altair.formhelpers import (OurDateTimeField, Translations, Required, RequiredOnUpdate,
                                    OurForm, OurIntegerField, OurBooleanField, OurDecimalField, OurSelectField)
 from ticketing.core.models import SalesSegmentKindEnum, Event, StockHolder, Account
 

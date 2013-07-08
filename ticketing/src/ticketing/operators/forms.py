@@ -5,7 +5,7 @@ from wtforms import TextField, HiddenField, DateField, PasswordField, SelectMult
 from wtforms.validators import Length, Email, Optional, Regexp
 from pyramid.security import has_permission, ACLAllowed
 
-from ticketing.formhelpers import DateTimeField, Translations, Required
+from altair.formhelpers import DateTimeField, Translations, Required
 from ticketing.operators.models import Operator, OperatorAuth, OperatorRole, Permission
 from ticketing.models import DBSession
 

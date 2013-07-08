@@ -45,20 +45,24 @@ def main(argv=sys.argv):
     for report_setting in query.all():
         logger.info('report_setting_id: %s' % report_setting.id)
 
+        from_date = now
+        to_date = now
         limited_from = None
         limited_to = None
         need_total = True
         if report_setting.period == ReportPeriodEnum.Entire.v[0]:
             need_total = False
-            limited_to = now.strftime('%Y-%m-%d %H:%M')
+            limited_to = to_date.strftime('%Y-%m-%d %H:%M')
         elif report_setting.period == ReportPeriodEnum.Normal.v[0]:
-            target = now - timedelta(days=1)
-            limited_to = target.strftime('%Y-%m-%d 23:59')
-            if report_setting.frequency == ReportFrequencyEnum.Daily.v[0]:
-                limited_from = target.strftime('%Y-%m-%d 00:00')
-            elif report_setting.frequency == ReportFrequencyEnum.Weekly.v[0]:
-                target = now - timedelta(days=7)
-                limited_from = target.strftime('%Y-%m-%d 00:00')
+            to_date = now - timedelta(days=1)
+            limited_to = to_date.strftime('%Y-%m-%d 23:59')
+
+        if report_setting.frequency == ReportFrequencyEnum.Daily.v[0]:
+            from_date = to_date
+        elif report_setting.frequency == ReportFrequencyEnum.Weekly.v[0]:
+            from_date = now - timedelta(days=7)
+        if report_setting.period == ReportPeriodEnum.Normal.v[0]:
+            limited_from = from_date.strftime('%Y-%m-%d 00:00')
 
         event = report_setting.event
         performance = report_setting.performance
@@ -83,9 +87,9 @@ def main(argv=sys.argv):
                 reports[form] = render_to_response('ticketing:templates/sales_reports/performance_mail.html', render_param)
             subject = u'%s (開催日:%s)' % (performance.name, performance.start_on.strftime('%Y-%m-%d %H:%M'))
         elif event:
-            if (form.limited_from.data and event.sales_end_on < form.limited_from.data) or\
+            if (from_date and event.sales_end_on < from_date) or\
                (form.limited_to.data and form.limited_to.data < event.sales_start_on) or\
-               (form.limited_from.data and event.final_start_on and event.final_start_on < form.limited_from.data):
+               (from_date and event.final_start_on and event.final_start_on < from_date):
                 continue
 
             if form not in reports:

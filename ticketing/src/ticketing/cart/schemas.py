@@ -6,10 +6,10 @@ from wtforms import fields
 from wtforms.form import Form
 from wtforms.ext.csrf.session import SessionSecureForm
 from wtforms.validators import Regexp, Length, NumberRange, EqualTo, Optional, ValidationError
-from ticketing.formhelpers import OurForm, CP932
+from altair.formhelpers import OurForm, CP932
 from ticketing.core import models as c_models
 
-from ticketing.formhelpers import (
+from altair.formhelpers import (
     DateTimeField,
     Translations,
     Required,

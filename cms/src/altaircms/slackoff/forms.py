@@ -12,6 +12,7 @@ import wtforms.ext.sqlalchemy.fields as extfields
 
 import urllib
 
+from altair.formhelpers.fields.select import LazySelectField
 from altaircms.formhelpers import dynamic_query_select_field_factory
 from altaircms.formhelpers import required_field, append_errors
 from altaircms.page.forms import url_not_conflict
@@ -457,12 +458,18 @@ class PageTypeForm(Form):
             field.data = PageType.page_default_role
     __display_fields__ = ["name", "label", "page_role", "is_important", "page_rendering_type"]
 
+from pyramid.threadlocal import get_current_request
+from ..page.forms import build_genre_choices
+
 class PageSetForm(Form):
     name = fields.TextField(label=u"名前")
     tags_string = fields.TextField(label=u"タグ(区切り文字:\",\")")
     private_tags_string = fields.TextField(label=u"非公開タグ(区切り文字:\",\")")
     mobile_tags_string = fields.TextField(label=u"モバイル用タグ(区切り文字:\",\")")
-    genre_id = MaybeSelectField(label=u"ジャンル", coerce=unicode, choices=[])
+    genre_id = LazySelectField(
+        label=u"ジャンル",
+        choices=lambda field: [(unicode(obj.id) if obj is not None else u'', value) for obj, value in build_genre_choices(get_current_request())]
+        )
     url = fields.TextField(label=u"URL", validators=[])
 
     def object_validate(self, obj=None):
@@ -475,6 +482,5 @@ class PageSetForm(Form):
             
     
     def configure(self, request):
-        self.genre_id.choices = [(unicode(g.id), unicode(g)) for g in request.allowable(Genre)]
         self.request = request
     __display_fields__ = ["name", "genre_id", "url", "tags_string", "private_tags_string", "mobile_tags_string"]

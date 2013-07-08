@@ -4,8 +4,8 @@ from wtforms import Form
 from wtforms import fields
 from wtforms import TextField
 from wtforms.validators import Regexp, Length
-from ticketing.formhelpers.filters import NFKC, replace_ambiguous
-from ticketing.formhelpers import Translations, Required, JISX0208
+from altair.formhelpers.filters import NFKC, replace_ambiguous
+from altair.formhelpers import Translations, Required, JISX0208
 from ticketing.core.models import Site, Venue
 
 logger = logging.getLogger(__name__)

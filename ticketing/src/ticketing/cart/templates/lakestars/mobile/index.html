@@ -1,0 +1,22 @@
+<%inherit file="./base.html"/>
+<%namespace file="./tags_mobile.html" name="mobile" />
+<%mobile:header>チケット購入</%mobile:header>
+<div align="center" style="text-align:center">${event.title}</div><hr size="1" noshade="noshade" />
+% if not key:
+  <%mobile:form_header>${selector_label_1}をお選びください</%mobile:form_header>
+  % for _key, _ in key_to_formatted_sales_segments_map:
+  <a href="${request.current_route_path(_query={'key': _key.encode('sjis')})}">${_key}</a><br/>
+  % endfor
+% else:
+  <%mobile:form_header>${selector_label_2}をお選びください</%mobile:form_header>
+  % for _, sales_segments in key_to_formatted_sales_segments_map:
+  %   for sales_segment_info in sales_segments:
+  <a href="${request.route_path('cart.seat_types', event_id=event.id, sales_segment_id=sales_segment_info['id'])}">${sales_segment_info['name']}</a><br />
+  %   endfor
+  % endfor
+  <form action="${request.route_path('cart.index', event_id=event.id)}" method="get">
+    <div style="text-align:center;">
+      <input type="submit" value="戻る">
+    </div>
+  </form>
+% endif

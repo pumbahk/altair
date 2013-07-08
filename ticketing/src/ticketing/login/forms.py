@@ -4,7 +4,7 @@ from wtforms import TextField, PasswordField, HiddenField
 from wtforms.validators import Regexp, Email, Length, EqualTo, Optional, ValidationError
 from wtforms import Form
 
-from ticketing.formhelpers import Translations, Required
+from altair.formhelpers import Translations, Required
 from ticketing.operators.models import Operator, OperatorAuth
 
 class LoginForm(Form):

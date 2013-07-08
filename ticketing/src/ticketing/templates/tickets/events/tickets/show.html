@@ -4,10 +4,10 @@
 
 <%block name="breadcrumbs">
 ${ch.breadcrumbs(
-  names=[u'イベント', request.context.event.title, u'券面', u"チケットテンプレート"],
+  names=[u'イベント', event.title, u'券面', u"チケットテンプレート"],
   urls=[request.route_path('events.index'), 
-        request.route_path('events.show', event_id=request.context.event.id),
-        request.route_path('events.tickets.index', event_id=request.context.event.id),
+        request.route_path('events.show', event_id=event.id),
+        request.route_path('events.tickets.index', event_id=event.id),
        ]
 )}
 </%block>
@@ -81,7 +81,7 @@ ${ch.breadcrumbs(
           apps["loadsvg"].model.changeHolder({pk: pk, name: modelname})
           return true;
         }
-        var qstring = "event_id="+"${event_id}"; //ugly
+        var qstring = "event_id="+"${event.id}"; //ugly
         modalView = new modal.api.AjaxModalView({
           el: $el,
           href: "${request.route_path('tickets.preview.dialog', model="Ticket")}"+"?"+qstring,
@@ -103,7 +103,7 @@ ${ch.breadcrumbs(
 
 <div class="row-fluid well">
   <div class="btn-group">
-    <a href="${request.route_path("events.tickets.boundtickets.edit",event_id=event_id, id=template.id)}" class="btn">
+    <a href="${request.route_path("events.tickets.boundtickets.edit",event_id=event.id, id=template.id)}" class="btn">
       <i class="icon-pencil"></i> 編集
     </a>
     <button class="btn dropdown-toggle" data-toggle="dropdown">
@@ -116,12 +116,12 @@ ${ch.breadcrumbs(
         </a>
       </li>
 		  <li>
-			  <a href="${request.route_path("events.tickets.boundtickets.download",event_id=event_id, id=template.id)}">
+			  <a href="${request.route_path("events.tickets.boundtickets.download",event_id=event.id, id=template.id)}">
 			    <i class="icon-minus"></i> 登録されている内容をdownload
 			  </a>
 		  </li>
 		  <li>
-        <a href="${request.route_path("events.tickets.boundtickets.download",event_id=event_id, id=template.id, _query=dict(raw=u'1'))}">
+        <a href="${request.route_path("events.tickets.boundtickets.download",event_id=event.id, id=template.id, _query=dict(raw=u'1'))}">
         <i class="icon-minus"></i> 登録されている内容の元データをdownload</a>
       </li>
       <li><a id="preview_btn"> <i class="icon-eye-open"></i> preview</a></li>
@@ -139,7 +139,7 @@ ${ch.breadcrumbs(
   </div>
   <div class="modal-footer">
     <a href="#" class="btn" data-dismiss="modal">キャンセル</a>
-    <form action="${request.route_path("events.tickets.boundtickets.delete",event_id=event_id, id=template.id)}" method="POST">
+    <form action="${request.route_path("events.tickets.boundtickets.delete",event_id=event.id, id=template.id)}" method="POST">
       <button type="submit" class="btn">削除する</button>
     </form>
   </div>

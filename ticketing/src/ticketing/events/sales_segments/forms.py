@@ -6,7 +6,7 @@ from wtforms.validators import Regexp, Length, Optional, ValidationError
 from wtforms.widgets import CheckboxInput
 from sqlalchemy.sql import or_, and_, select
 
-from ticketing.formhelpers import (Translations, Required, RequiredOnUpdate, OurForm, OurDateTimeField,
+from altair.formhelpers import (Translations, Required, RequiredOnUpdate, OurForm, OurDateTimeField,
                                    OurIntegerField, OurBooleanField, OurSelectField, OurDecimalField,
                                    BugFreeSelectField, PHPCompatibleSelectMultipleField, CheckboxMultipleSelect)
 from ticketing.core.models import SalesSegmentGroup, SalesSegment, Account

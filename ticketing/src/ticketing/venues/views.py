@@ -305,6 +305,8 @@ def new_get(request):
 
     return {
         'form':f,
+        'route_name': u'登録',
+        'route_path': request.path,
     }
 
 @view_config(route_name='venues.new', request_method='POST', renderer='ticketing:templates/venues/edit.html', decorator=with_bootstrap)
@@ -323,6 +325,8 @@ def new_post(request):
     else:
         return {
             'form':f,
+            'route_name': u'登録',
+            'route_path': request.path,
         }
 
 @view_config(route_name='venues.edit', request_method='GET', renderer='ticketing:templates/venues/edit.html', decorator=with_bootstrap)
@@ -346,6 +350,8 @@ def edit_get(request):
         'venue':venue,
         'site':site,
         'drawing': get_venue_site_adapter(request, site),
+        'route_name': u'編集',
+        'route_path': request.path,
     }
 
 @view_config(route_name='venues.edit', request_method='POST', renderer='ticketing:templates/venues/edit.html',  decorator=with_bootstrap)
@@ -373,4 +379,6 @@ def edit_post(request):
             'venue':venue,
             'site':site,
             'drawing': get_venue_site_adapter(request, site),
+            'route_name': u'編集',
+            'route_path': request.path,
         }

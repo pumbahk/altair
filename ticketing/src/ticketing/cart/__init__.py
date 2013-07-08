@@ -4,6 +4,7 @@ import json
 import logging
 import sqlahelper
 
+from ticketing.models import DBSession
 from pyramid.config import Configurator
 #from pyramid.session import UnencryptedCookieSessionFactoryConfig
 from pyramid.interfaces import IDict
@@ -33,9 +34,9 @@ def exception_message_renderer_factory(show_traceback):
         from .selectable_renderer import selectable_renderer
         from altair.mobile.api import is_mobile
         if is_mobile(request):
-            renderer = selectable_renderer('carts_mobile/%(membership)s/error.html')
+            renderer = selectable_renderer('%(membership)s/mobile/error.html')
         else:
-            renderer = selectable_renderer('carts/%(membership)s/message.html')
+            renderer = selectable_renderer('%(membership)s/pc/message.html')
         return HTTPInternalServerError(body=render(renderer, { 'message': u'システムエラーが発生しました。大変お手数ですが、しばらく経ってから再度トップ画面よりアクセスしてください。(このURLに再度アクセスしてもエラーが出続けることがあります)' }, request), headers=security.forget(request))
     return exception_message_renderer
 
@@ -47,7 +48,9 @@ class WhoDecider(object):
         """ WHO API 選択
         """
         #return self.request.organization.setting.auth_type
-        return get_organization(self.request).setting.auth_type
+        org = get_organization(self.request)
+        DBSession.add(org) # XXX
+        return org.setting.auth_type
 
 
 def includeme(config):
