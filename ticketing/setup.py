@@ -95,6 +95,7 @@ requires = [
     'altair.queryprofile',
     'altair.sqlahelper',
     'altair.viewhelpers',
+    'altair.formhelpers',
     ]
 
 tests_require = [

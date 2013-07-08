@@ -1,6 +1,6 @@
 from datetime import datetime
 from wtforms import widgets
-from ticketing.formhelpers.widgets import Switcher, GenericSerializerWidget
+from altair.formhelpers.widgets import Switcher, GenericSerializerWidget
 
 __all__ = (
     'ymd_widget',

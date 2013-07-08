@@ -7,9 +7,9 @@ from wtforms import Form
 from wtforms import TextField, IntegerField, HiddenField, SelectField, SelectMultipleField, FileField
 from wtforms.validators import Regexp, Length, Optional, ValidationError, StopValidation
 from wtforms.widgets import TextArea
-from ticketing.formhelpers import DateTimeField, Translations, Required
-from ticketing.formhelpers.form import OurForm
-from ticketing.formhelpers.fields import OurBooleanField
+from altair.formhelpers import DateTimeField, Translations, Required
+from altair.formhelpers.form import OurForm
+from altair.formhelpers.fields import OurBooleanField
 from ticketing.core.models import Event, Account, DeliveryMethod
 from ticketing.core.models import TicketFormat
 from .utils import as_user_unit

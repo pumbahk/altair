@@ -5,6 +5,7 @@ send_sales_reports.conf
 update_seat_status.conf
 altair.cms.admin.ini
 altair.cms.usersite.ini
+altair.newsletter.admin.ini
 altair.ticketing.admin.ini
 altair.ticketing.booster.89ers.ini
 altair.ticketing.booster.bambitious.ini

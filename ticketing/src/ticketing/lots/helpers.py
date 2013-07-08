@@ -6,7 +6,7 @@ import itertools
 import json
 from sqlalchemy.orm.exc import NoResultFound
 from markupsafe import Markup
-from ticketing.formhelpers.widgets.list import OurListWidget
+from altair.formhelpers.widgets.list import OurListWidget
 from wtforms.validators import Required
 from .models import LotEntryStatusEnum
 from ticketing.users.helpers import format_sex

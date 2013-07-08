@@ -1,0 +1,13 @@
+＜セブン-イレブンでのお支払いの方＞
+
+%if payment_method.hide_voucher:
+当選の場合、お支払期日までにお支払頂きます。
+お支払が確認できた時点で当選申込が確定となります。
+
+各種手数料の他、公演によりシステム利用料がかかります。
+%else:
+払込票番号：${sej_order.billing_number}
+支払期日：${h.japanese_datetime(sej_order.payment_due_at)}
+　
+${notice}
+%endif

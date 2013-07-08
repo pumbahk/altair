@@ -1,15 +1,6 @@
 <%inherit file="/layout_2cols.html" />
 <%namespace file="/common/helpers.html" name="ch" />
 
-<%
-  if request.matched_route.name == 'venues.edit':
-    route_name = u'編集'
-    route_path = request.route_path('venues.edit', venue_id=venue.id)
-  else:
-    route_name = u'登録'
-    route_path = request.route_path('venues.new')
-%>
-
 <script type="text/javascript">
   $(function() {
     $('form').disableOnSubmit();

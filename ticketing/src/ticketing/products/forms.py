@@ -8,12 +8,12 @@ from wtforms.validators import Length, NumberRange, EqualTo, Optional, Validatio
 from wtforms.widgets import CheckboxInput, TextArea
 from sqlalchemy.sql import func
 
-from ticketing.formhelpers import (
+from altair.formhelpers import (
     Translations,
     Required,
     OurForm,
     )
-from ticketing.formhelpers.fields import (
+from altair.formhelpers.fields import (
     BugFreeSelectField,
     OurTextField,
     OurSelectField,
@@ -23,7 +23,7 @@ from ticketing.formhelpers.fields import (
     NullableTextField,
     OurPHPCompatibleSelectMultipleField,
     )
-from ticketing.formhelpers.widgets import (
+from altair.formhelpers.widgets import (
     CheckboxMultipleSelect,
     )
 from ticketing.core.models import SalesSegment, SalesSegmentGroup, Product, ProductItem, StockHolder, StockType, Stock, Performance, TicketBundle

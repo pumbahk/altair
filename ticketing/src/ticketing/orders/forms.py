@@ -10,7 +10,7 @@ from wtforms import (HiddenField, TextField, SelectField, SelectMultipleField, T
 from wtforms.validators import Optional, AnyOf, Length, Email, Regexp
 from wtforms.widgets import CheckboxInput
 
-from ticketing.formhelpers import (
+from altair.formhelpers import (
     Translations,
     DateTimeField, DateField, Max, OurDateWidget, OurDateTimeWidget,
     CheckboxMultipleSelect, BugFreeSelectMultipleField,

@@ -5,7 +5,7 @@ from wtforms import TextField, SelectField, HiddenField, IntegerField, BooleanFi
 from wtforms.validators import Regexp, Length, Optional, ValidationError
 from wtforms.validators import Optional, AnyOf, Length, Email, Regexp
 
-from ticketing.formhelpers import (
+from altair.formhelpers import (
     DateTimeField, Translations, Required, DateField, Max, OurDateWidget,
     after1900, CheckboxMultipleSelect, BugFreeSelectMultipleField,
     NFKC, Zenkaku, Katakana, strip_spaces, ignore_space_hyphen,

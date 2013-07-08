@@ -4,7 +4,7 @@ from wtforms import Form
 from wtforms import TextField, HiddenField, SelectField
 from wtforms.validators import Length, Optional, ValidationError
 
-from ticketing.formhelpers import Translations, Required
+from altair.formhelpers import Translations, Required
 from ticketing.core.models import Organization, Account, AccountTypeEnum
 
 def my_int_coerce(value):

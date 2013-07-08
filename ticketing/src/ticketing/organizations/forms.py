@@ -4,7 +4,7 @@ from wtforms import Form
 from wtforms import TextField, IntegerField, HiddenField, SelectField, BooleanField
 from wtforms.validators import Length, Regexp, Email, Optional
 
-from ticketing.formhelpers import Translations, Required, Phone
+from altair.formhelpers import Translations, Required, Phone
 from ticketing.master.models import Prefecture
 
 class OrganizationForm(Form):

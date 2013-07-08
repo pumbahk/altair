@@ -6,7 +6,7 @@ from wtforms import ValidationError
 
 from ticketing.master.models import Prefecture
 from .. import fields as my_fields
-from ticketing.formhelpers import text_type_but_none_if_not_given, Zenkaku, Katakana, NFKC, lstrip, strip, strip_hyphen, strip_spaces, SejCompliantEmail, CP932
+from altair.formhelpers import text_type_but_none_if_not_given, Zenkaku, Katakana, NFKC, lstrip, strip, strip_hyphen, strip_spaces, SejCompliantEmail, CP932
 from datetime import date
 
 from ..schemas import length_limit_for_sej, length_limit_long

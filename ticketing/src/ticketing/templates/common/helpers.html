@@ -65,7 +65,7 @@
 
 <%def name="form_item(item, help=None, label=None, **options)">
   <% from wtforms.widgets import CheckboxInput %>
-  <% from ticketing.formhelpers import CheckboxMultipleSelect %>
+  <% from altair.formhelpers import CheckboxMultipleSelect %>
   <% hide_on_new = getattr(item, 'hide_on_new', False) %>
   % if not getattr(getattr(item, 'form', None), 'new_form', False) or not hide_on_new:
   <% if hide_on_new: options['data-hide-on-new'] = 'hide-on-new' %>

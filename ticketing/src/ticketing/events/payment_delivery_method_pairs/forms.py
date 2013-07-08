@@ -5,7 +5,7 @@ from wtforms import TextField, SelectField, DecimalField, IntegerField, HiddenFi
 from wtforms.validators import NumberRange, Regexp, Length, Optional, ValidationError
 from wtforms.widgets import CheckboxInput
 
-from ticketing.formhelpers import DateTimeField, Translations, Required, after1900
+from altair.formhelpers import DateTimeField, Translations, Required, after1900
 from ticketing.core.models import SalesSegment, PaymentMethod, DeliveryMethod, PaymentDeliveryMethodPair
 
 class PaymentDeliveryMethodPairForm(Form):

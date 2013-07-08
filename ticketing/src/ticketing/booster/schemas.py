@@ -1,6 +1,6 @@
 # -*- coding:utf-8 -*-
 from wtforms import Form as OriginalForm
-from ticketing.formhelpers import Translations
+from altair.formhelpers import Translations
 from wtforms import validators as v
 
 class Form(OriginalForm):

@@ -4,11 +4,11 @@ from wtforms import Form
 from wtforms import TextField, IntegerField, HiddenField, SelectField
 from wtforms.validators import Regexp, Length, Optional, ValidationError
 
-from ticketing.formhelpers import Translations, Required, JISX0208, after1900
-from ticketing.formhelpers.form import OurForm
-from ticketing.formhelpers.fields import OurTextField, OurBooleanField, DateField, DateTimeField
-from ticketing.formhelpers.widgets import OurTextInput, OurDateWidget
-from ticketing.formhelpers.filters import replace_ambiguous
+from altair.formhelpers import Translations, Required, JISX0208, after1900
+from altair.formhelpers.form import OurForm
+from altair.formhelpers.fields import OurTextField, OurBooleanField, DateField, DateTimeField
+from altair.formhelpers.widgets import OurTextInput, OurDateWidget
+from altair.formhelpers.filters import replace_ambiguous
 from ticketing.core.models import Event, Account
 
 class EventSearchForm(OurForm):

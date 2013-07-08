@@ -150,7 +150,7 @@ class CheckoutView(object):
 
     @back(back_to_top, back_to_product_list_for_mobile)
     @view_config(route_name='payment.checkout.login', renderer='ticketing.payments.plugins:templates/checkout_login.html', request_method='POST')
-    @view_config(route_name='payment.checkout.login', renderer=selectable_renderer("carts_mobile/%(membership)s/checkout_login_mobile.html"), request_method='POST', request_type='altair.mobile.interfaces.IMobileRequest')
+    @view_config(route_name='payment.checkout.login', renderer=selectable_renderer("%(membership)s/mobile/checkout_login_mobile.html"), request_method='POST', request_type='altair.mobile.interfaces.IMobileRequest')
     def login(self):
         cart = a.get_cart_safe(self.request)
         try:
@@ -228,8 +228,8 @@ class CheckoutCallbackView(object):
         self.context = request.context
 
     @back(back_to_top, back_to_product_list_for_mobile)
-    @view_config(route_name='payment.checkout.callback.success', renderer=selectable_renderer("carts/%(membership)s/completion.html"), request_method='GET')
-    @view_config(route_name='payment.checkout.callback.success', request_type='altair.mobile.interfaces.IMobileRequest', renderer=selectable_renderer("carts_mobile/%(membership)s/completion.html"), request_method='GET')
+    @view_config(route_name='payment.checkout.callback.success', renderer=selectable_renderer("%(membership)s/pc/completion.html"), request_method='GET')
+    @view_config(route_name='payment.checkout.callback.success', request_type='altair.mobile.interfaces.IMobileRequest', renderer=selectable_renderer("%(membership)s/mobile/completion.html"), request_method='GET')
     def success(self):
         cart = a.get_cart(self.request)
         if not cart:

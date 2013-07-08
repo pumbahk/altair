@@ -3,7 +3,7 @@
 from wtforms.form import Form
 from wtforms import fields
 from wtforms import validators
-from ticketing.formhelpers import Translations
+from altair.formhelpers import Translations
 from ticketing.operators.models import Operator
 from ticketing.core.models import Order, Performance
 from . import helpers as h

@@ -35,6 +35,7 @@ requires = [
     'altair.exclog',
     'altair.cdnpath',
     'altair.viewhelpers',
+    'altair.formhelpers',
     'pyramid_layout',
     'lxml',
     'waitress'
