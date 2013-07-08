@@ -150,7 +150,8 @@ class LotWishSummary(Base):
              DeliveryMethod.deleted_at==None),
     ).outerjoin(
         LotElectWork.__table__,
-        LotElectWork.lot_entry_no==LotEntry.entry_no,
+        and_(LotElectWork.lot_entry_no==LotEntry.entry_no,
+             LotElectWork.wish_order==LotEntryWish.wish_order),
     ).outerjoin(
         LotRejectWork.__table__,
         LotRejectWork.lot_entry_no==LotEntry.entry_no,
