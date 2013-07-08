@@ -1,3 +1,6 @@
+[DEFAULT]
+www_check_docroot = %(here)s/../var/www-check/altair.ticketing.admin
+
 [app:ticketing]
 use = config:%(here)s/../../baseconf/common.ini#ticketing
 sqlalchemy.url = ${altair:ticketing.db_url.master}
