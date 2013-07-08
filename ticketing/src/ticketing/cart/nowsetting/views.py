@@ -1,6 +1,7 @@
 # -*- coding:utf-8 -*-
 from pyramid.view import view_config
 from pyramid.httpexceptions import HTTPFound
+from ticketing.core.api import get_organization
 from .forms import NowSettingForm
 from altair.now import (
     get_now, 
@@ -13,14 +14,16 @@ from altair.now import (
 def form_view(context, request):
     now = get_now(request)
     form = NowSettingForm(now=now)
-    return {"form": form, "now": now, "now_found": has_session_key(request)}
+    organization = get_organization(request)
+    return {"form": form, "now": now, "now_found": has_session_key(request), "organization": organization}
 
 @view_config(route_name="cart.nowsetting.set", request_method="POST", request_param="submit")
 def now_set_view(context, request):
     form = NowSettingForm(request.POST)
     if not form.validate():
         now = get_now(request)
-        return {"form": form, "now": now, "has_key": has_session_key(request)}        
+        organization = get_organization(request)
+        return {"form": form, "now": now, "has_key": has_session_key(request), "organization": organization}        
     set_now(request, form.data["now"])
     return HTTPFound(request.GET.get("redirect_to") or request.route_path("cart.nowsetting.form"))
 
