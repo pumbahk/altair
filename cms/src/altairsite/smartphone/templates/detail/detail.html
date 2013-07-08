@@ -6,6 +6,14 @@
     <a href="${request.route_path('smartphone.main')}"><button class="btn-secondary btn-large">トップへ</button></a>
 </%block>
 
+<%
+    perfs = []
+    for perf in event.performances:
+        if perf.public:
+            perfs.append({"perf":perf, "display_order":perf.display_order})
+    perfs = sorted(perfs, key=lambda v: (v['display_order']))
+%>
+
 <script type="text/javascript">
 $(function () {
   $('*[data-toggle]').each(function (_, n) {
@@ -115,9 +123,11 @@ $(function () {
     </div>
 % endif
 
+% if len(perfs):
 <div align="center">
   &gt;&gt;<a href="#list">購入はこちらから</a>&lt;&lt;<br />
 </div><br />
+% endif
 
 <hr/>
 
@@ -141,20 +151,21 @@ $(function () {
 <hr/>
 
 <%m:header><a name="list">公演一覧</a></%m:header>
+% if len(perfs):
 <div class="sectionbox">
     <div class="sectionbox-inner" style="color: red">
         ご購入の方は、ご希望の公演日が含まれる月をクリックしてください（公演一覧が表示されます）
     </div>
 </div>
+% else:
+<div class="sectionbox">
+    <div class="sectionbox-inner">
+        現在、販売中の公演はありません。
+    </div>
+</div>
+% endif
 <ul class="panellist fullwidth expandable">
-  <%
-    index = 0
-
-    perfs = []
-    for perf in event.performances:
-        perfs.append({"perf":perf, "display_order":perf.display_order})
-    perfs = sorted(perfs, key=lambda v: (v['display_order']))
-  %>
+  <% index = 0 %>
 
   % if event.id == 211 or event.id == 219:
         <li class="panelgroup" id="0">
