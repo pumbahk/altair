@@ -43,7 +43,7 @@ def main(global_config, **local_config):
     ## login/logout
     config.include("ticketing.login.internal")
     config.use_internal_login(secret=settings['authtkt.secret'], cookie_name='printqr.auth_tkt', auth_callback=find_group)
-    config.setup_internal_login_views(login_html="ticketing.printqr:templates/login.html")
+    config.setup_internal_login_views(factory=".resources.PrintQRResource", login_html="ticketing.printqr:templates/login.html")
     config.add_forbidden_view("ticketing.login.internal.views.login_view", renderer="ticketing.printqr:templates/login.html")
 
     config.include("ticketing.qr", route_prefix="qr")

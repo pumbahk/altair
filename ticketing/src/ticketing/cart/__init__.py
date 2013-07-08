@@ -112,7 +112,6 @@ def import_mail_module(config):
     config.include("ticketing.mails")
     config.add_subscriber('.sendmail.on_order_completed', '.events.OrderCompleted')
 
-
 def main(global_config, **local_config):
     settings = dict(global_config)
     settings.update(local_config)
