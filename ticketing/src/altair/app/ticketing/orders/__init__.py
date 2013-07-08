@@ -23,7 +23,9 @@ def includeme(config):
     config.add_route('orders.note'                      , '/note/{order_id}')
     config.add_route('orders.issue_status'              , '/issue_status/{order_id}')
     config.add_route('orders.api.get'                   , '/api/get/')
+    config.add_route('orders.api.get2'                  , '/api/get2/{order_id}')
     config.add_route('orders.api.get.html'              , '/api/get/html/')
+    config.add_route('orders.api.product.template'      , '/api/product/template/')
 
     config.add_route('orders.refund.index'              , '/refund/')
     config.add_route('orders.refund.search'             , '/refund/search/')

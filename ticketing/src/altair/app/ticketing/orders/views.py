@@ -1406,6 +1406,49 @@ class OrdersReserveView(BaseView):
             'seat_names':seat_names
         }
 
+    @view_config(route_name='orders.api.get2', renderer='json')
+    def api_get2(self):
+        order_id = self.request.matchdict.get('order_id', 0)
+        order = Order.get(order_id, self.context.user.organization_id)
+        if order is None:
+            raise HTTPNotFound('order id %d is not found' % order.id)
+        ret = dict(
+            id=order.id,
+            order_no=order.order_no,
+            transaction_fee=int(order.transaction_fee),
+            delivery_fee=int(order.delivery_fee),
+            system_fee=int(order.system_fee),
+            total_amount=int(order.total_amount),
+            ordered_products=[
+                dict(
+                    id=op.id,
+                    price=int(op.price),
+                    quantity=op.quantity,
+                    product_name=op.product.name,
+                    sales_segment_name=op.product.sales_segment.name,
+                    ordered_product_items=[
+                        dict(
+                            id=opi.id,
+                            quantity=opi.quantity,
+                            price=int(opi.product_item.price),
+                            stock_holder_name=opi.product_item.stock.stock_holder.name,
+                            seats=[
+                                dict(
+                                    id=seat.l0_id,
+                                    name=seat.name
+                                )
+                                for seat in opi.seats
+                            ],
+                        )
+                        for opi in op.ordered_product_items
+                    ]
+                )
+                for op in order.ordered_products
+            ]
+        )
+        logger.info(ret)
+        return ret
+
     @view_config(route_name='orders.api.get.html', renderer='ticketing:templates/orders/_tiny_order.html')
     def api_get_html(self):
         l0_id = self.request.params.get('l0_id', 0)
