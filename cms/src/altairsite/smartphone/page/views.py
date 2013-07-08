@@ -4,6 +4,7 @@ from ..common.helper import SmartPhoneHelper
 from altairsite.config import smartphone_site_view_config
 from altairsite.inquiry.message import CustomerMail, SupportMail
 from altairsite.inquiry.api import send_inquiry_mail
+from altairsite.inquiry.session import InquirySession
 from pyramid.view import view_defaults
 
 @view_defaults(route_name="smartphone.page",request_type="altairsite.tweens.ISmartphoneRequest")
@@ -44,6 +45,8 @@ class StaticKindView(object):
 
     @smartphone_site_view_config(match_param="kind=inquiry", request_method="GET", renderer='altairsite.smartphone:templates/page/inquiry.html')
     def move_inquiry(self):
+        session = InquirySession(request=self.request)
+        session.put_inquiry_session();
         return {
             'form':InquiryForm()
         }
@@ -51,6 +54,13 @@ class StaticKindView(object):
     @smartphone_site_view_config(match_param="kind=inquiry", request_method="POST", renderer='altairsite.smartphone:templates/page/inquiry.html')
     def move_inquiry_post(self):
         form = InquiryForm(self.request.POST)
+
+        session = InquirySession(request=self.request)
+        if not session.exist_inquiry_session():
+            return {
+                "form": form,
+                "result": True
+            }
 
         if not form.validate():
             return {"form": form}
@@ -62,6 +72,8 @@ class StaticKindView(object):
 
         send_inquiry_mail(request=self.request, title=u"楽天チケット　お問い合わせフォーム[スマホ]", body=support_mail.create_mail(), recipients=[self.request.inquiry_mailaddress])
         ret = send_inquiry_mail(request=self.request, title=u"楽天チケット　お問い合わせ", body=customer_mail.create_mail(), recipients=[form.mail.data])
+
+        session.delete_inquiry_session()
 
         return {
              'form':form
