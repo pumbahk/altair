@@ -54,7 +54,7 @@ class DateTimeHelper(object):
         """
         with_weekday = flavor.pop('with_weekday', True)
         if formatter is None:
-            formatter = self.default_formatters.get(type(beg or end))
+            formatter = self.default_formatters.get(type(beg or end), self.datetime)
         if beg is None:
             if end is None:
                 return none_label
