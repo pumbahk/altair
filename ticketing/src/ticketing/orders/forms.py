@@ -232,8 +232,6 @@ class SearchFormBase(Form):
                     elif choice[0] == field.data:
                         data.append(choice[1])
                 data = ', '.join(data)
-            elif isinstance(field, DateTimeField):
-                data = field.data.strftime('%Y-%m-%d %H:%M')
             else:
                 data = field.data
             conditions[name] = (field.label.text, data)
@@ -330,8 +328,6 @@ class OrderSearchForm(SearchFormBase):
                     elif choice[0] == field.data:
                         data.append(choice[1])
                 data = ', '.join(data)
-            elif isinstance(field, DateTimeField):
-                data = field.data.strftime('%Y-%m-%d %H:%M')
             else:
                 data = field.data
             conditions[name] = (field.label.text, data)
