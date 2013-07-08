@@ -319,14 +319,26 @@ class TicketTemplates(BaseView):
                  request_method="GET")
     def new(self):
         form = forms.TicketTemplateForm(organization_id=self.context.user.organization_id)
-        return dict(h=helpers, form=form)
+        return dict(
+            h=helpers,
+            form=form,
+            event=getattr(self.request.context, 'event', None),
+            route_path=self.request.path,
+            route_name=u'登録',
+            )
 
     @view_config(route_name='tickets.templates.new', renderer='ticketing:templates/tickets/templates/new.html', request_method="POST")
     def new_post(self):
         form = forms.TicketTemplateForm(organization_id=self.context.user.organization_id, 
                                       formdata=self.request.POST)
         if not form.validate():
-            return dict(h=helpers, form=form)
+            return dict(
+                h=helpers,
+                form=form,
+                event=getattr(self.request.context, 'event', None),
+                route_path=self.request.path,
+                route_name=u'登録',
+                )
 
         ticket_template = Ticket(name=form.data["name"], 
                                  ticket_format_id=form.data["ticket_format"], 
@@ -355,7 +367,14 @@ class TicketTemplates(BaseView):
             always_reissueable=template.always_reissueable,
             priced=template.priced
             )
-        return dict(h=helpers, form=form, template=template)
+        return dict(
+            h=helpers,
+            form=form,
+            template=template,
+            event=getattr(self.request.context, 'event', None),
+            route_name=u'編集',
+            route_path=self.request.path
+            )
 
     @view_config(route_name='tickets.templates.edit', renderer='ticketing:templates/tickets/templates/new.html',
                  request_method="POST")
@@ -370,7 +389,14 @@ class TicketTemplates(BaseView):
         form = forms.TicketTemplateEditForm(organization_id=self.context.user.organization_id, 
                                         formdata=self.request.POST)
         if not form.validate():
-            return dict(h=helpers, form=form, template=template)
+            return dict(
+                h=helpers,
+                form=form,
+                template=template,
+                event=getattr(self.request.context, 'event', None),
+                route_name=u'編集',
+                route_path=self.request.path,
+                )
 
         template.name = form.data["name"]
         template.ticket_format_id = form.data["ticket_format"]
