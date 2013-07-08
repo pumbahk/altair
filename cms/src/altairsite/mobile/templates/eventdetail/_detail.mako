@@ -1,5 +1,13 @@
 <%namespace file="../common/tags_mobile.mako" name="m" />
 <%page args="event, week, month_unit, month_unit_keys, purchase_links, tickets, sales_start, sales_end, helper" />
+<%
+    perfs = []
+    for perf in event.performances:
+        if perf.public:
+            perfs.append({"perf":perf, "display_order":perf.display_order})
+    perfs = sorted(perfs, key=lambda v: (v['display_order']))
+%>
+
 <%m:header>公演期間</%m:header>
 <% from altaircms.datelib import get_now %>
 ${event.event_open.year}/${str(event.event_open.month).zfill(2)}/${str(event.event_open.day).zfill(2)}(${week[event.event_open.weekday()]})〜${event.event_close.year}/${str(event.event_close.month).zfill(2)}/${str(event.event_close.day).zfill(2)}(${week[event.event_close.weekday()]})<br/>
@@ -15,12 +23,14 @@ ${event.event_open.year}/${str(event.event_open.month).zfill(2)}/${str(event.eve
 % endif
 
 <div align="center">
+    % if len(perfs):
         % if event.deal_close < get_now(request):
   <a href="#list">公演一覧</a><br />
 　<font color="red">このイベントの販売は終了しました</font><br/>
         % else:
   &gt;&gt;<a href="#list">購入はこちらから</a>&lt;&lt;<br />
         % endif
+    % endif
 </div><br />
 <% text = self.template.get_def('render_info').render(event=event, helper=helper) %>
 <%def name="render_info(event)">
@@ -65,16 +75,11 @@ ${helper.nl2br(event.inquiry_for)|n}
 % endif
 </%def>
 <%m:band>公演一覧</%m:band>
+% if not len(perfs):
+    現在、販売中の公演はありません。
+% endif
 <div>
-  <%
-    index = 0
-
-    perfs = []
-    for perf in event.performances:
-        perfs.append({"perf":perf, "display_order":perf.display_order})
-    perfs = sorted(perfs, key=lambda v: (v['display_order']))
-  %>
-
+  <% index = 0 %>
 % if event.id == 211 or event.id == 219:
         <%m:line width="2" />
         <%m:header>
