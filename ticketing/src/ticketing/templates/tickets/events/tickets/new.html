@@ -1,11 +1,6 @@
 <%inherit file="/layout_2cols.html" />
 <%namespace file="/common/helpers.html" name="ch" />
 
-<%
-event_id = request.matchdict["event_id"]
-event = request.context.event
-%>
-
 <style type="text/css">
   .controls select{width: 80%;}
   .controls textarea{width: 80%; min-height:100px;}
@@ -27,7 +22,6 @@ ${ch.breadcrumbs(
 </div>
 
 <%
-   event_id=request.matchdict["event_id"]
    route_name = u'編集'
    route_path = request.route_path('events.tickets.boundtickets.edit', id=template.id, event_id=event.id)
    place_holder = u"この欄が空の場合には、現在登録されているファイルが使われます"
