@@ -435,7 +435,7 @@ class TicketTemplates(BaseView):
         if template is None:
             raise HTTPNotFound("this is not found")
 
-        return dict(h=helpers, template=template, ticket_format_id=template.ticket_format_id)
+        return dict(h=helpers, template=template, event=getattr(self.request.context, 'event', None), ticket_format_id=template.ticket_format_id)
 
     @view_config(route_name='tickets.templates.download')
     def download(self):
