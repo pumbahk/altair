@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from . api import send_inquiry_mail
 from . message import SupportMail, CustomerMail
+from . session import InquirySession
 
 from altairsite.config import usersite_view_config
 from altairsite.inquiry.forms import InquiryForm
@@ -16,6 +17,8 @@ def pc_access(info, request):
 def move_inquiry(request):
     log_info("move_inquiry", "start")
     form = InquiryForm()
+    session = InquirySession(request=request)
+    session.put_inquiry_session();
     log_info("move_inquiry", "end")
     return {'form':form}
 
@@ -27,11 +30,15 @@ def send_inquiry(request):
 
     form = InquiryForm(request.POST)
 
+    session = InquirySession(request=request)
+    form.send.data = "Success"
+    if not session.exist_inquiry_session():
+        return {"form": form}
+
     if not form.validate():
         return {"form": form}
 
     log_info("send_inquiry", "send mail start")
-    form.send.data = "Success"
     customer_mail = CustomerMail(form.data['username'], form.data['mail'], form.data['num'], form.data['category']
         , form.data['title'], form.data['body'])
     support_mail = SupportMail(form.data['username'], form.data['mail'], form.data['num'], form.data['category']
@@ -43,5 +50,6 @@ def send_inquiry(request):
     if not ret:
         form.send.data = "Failed"
 
+    session.delete_inquiry_session()
     log_info("send_inquiry", "end")
     return {'form':form}
