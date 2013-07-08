@@ -8,5 +8,6 @@
 
 <form action="${request.route_path("cart.nowsetting.set",_query=dict(redirect_to=request.GET.get("redirect_to","")))}" method="POST">
   ${ch.form_item(form.now)}
-  <input type="submit" value="変更"/>
+  <input type="submit" name="invalidate" value="取り消し"/>
+  <input type="submit" name="submit" value="変更"/>
 </form>

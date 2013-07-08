@@ -66,7 +66,7 @@ def is_login_required(request, event):
     return bool(q.count())
 
 def check_sales_segment_term(request):
-    now = datetime.now()
+    now = get_now_from_request(request)
     cart = get_cart(request)
     if cart is not None:
         sales_segment = cart.sales_segment
@@ -145,8 +145,14 @@ def has_cart(request):
     except NoCartError:
         return False
 
+def get_now_from_request(request):
+    if hasattr(request.context, "now"):
+        return request.context.now
+    else:
+        return datetime.now() # XXX
+
 def get_cart_safe(request):
-    now = datetime.now() # XXX
+    now = get_now_from_request(request) # XXX
     minutes = max(int(request.registry.settings['altair_cart.expire_time']) - 1, 0)
     cart = get_cart(request)
     if cart is None:

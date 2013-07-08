@@ -15,11 +15,16 @@ def form_view(context, request):
     form = NowSettingForm(now=now)
     return {"form": form, "now": now, "now_found": has_session_key(request)}
 
-@view_config(route_name="cart.nowsetting.set", request_method="POST")
-def set_view(context, request):
+@view_config(route_name="cart.nowsetting.set", request_method="POST", request_param="submit")
+def now_set_view(context, request):
     form = NowSettingForm(request.POST)
     if not form.validate():
         now = get_now(request)
         return {"form": form, "now": now, "has_key": has_session_key(request)}        
     set_now(request, form.data["now"])
+    return HTTPFound(request.GET.get("redirect_to") or request.route_path("cart.nowsetting.form"))
+
+@view_config(route_name="cart.nowsetting.set", request_method="POST", request_param="invalidate")
+def now_invalidate_view(context, request):
+    set_now(request, None)
     return HTTPFound(request.GET.get("redirect_to") or request.route_path("cart.nowsetting.form"))
