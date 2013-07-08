@@ -81,19 +81,19 @@
       <td style="padding: 5px;">${report.product_name}</td>
       <td style="padding: 5px; text-align: right;">${vh.price(report.product_price)}</td>
       % if i == 0:
-      <td style="padding: 5px; text-align: right;" rowspan="${count}">${vh.price(report.stock_quantity) or ''}</td>
-      <td style="padding: 5px; text-align: right;" rowspan="${count}">${vh.price(report.vacant_quantity) or ''}</td>
+      <td style="padding: 5px; text-align: right;" rowspan="${count}">${vh.number(report.stock_quantity) or ''}</td>
+      <td style="padding: 5px; text-align: right;" rowspan="${count}">${vh.number(report.vacant_quantity) or ''}</td>
       % endif
       % if need_total:
-      <td style="padding: 5px; text-align: right;">${vh.price(report.total_paid_quantity + report.total_unpaid_quantity) or ''}</td>
-      <td style="padding: 5px; text-align: right;">${vh.price(report.total_unpaid_quantity) or ''}</td>
-      <td style="padding: 5px; text-align: right;">${vh.price(report.total_paid_quantity) or ''}</td>
+      <td style="padding: 5px; text-align: right;">${vh.number(report.total_paid_quantity + report.total_unpaid_quantity) or ''}</td>
+      <td style="padding: 5px; text-align: right;">${vh.number(report.total_unpaid_quantity) or ''}</td>
+      <td style="padding: 5px; text-align: right;">${vh.number(report.total_paid_quantity) or ''}</td>
       <td style="padding: 5px; text-align: right;">${vh.price((report.total_paid_quantity + report.total_unpaid_quantity) * report.product_price)}</td>
       % endif
       % if form.limited_from.data or form.limited_to.data:
-      <td style="padding: 5px; text-align: right;">${vh.price(report.paid_quantity + report.unpaid_quantity) or ''}</td>
-      <td style="padding: 5px; text-align: right;">${vh.price(report.unpaid_quantity) or ''}</td>
-      <td style="padding: 5px; text-align: right;">${vh.price(report.paid_quantity) or ''}</td>
+      <td style="padding: 5px; text-align: right;">${vh.number(report.paid_quantity + report.unpaid_quantity) or ''}</td>
+      <td style="padding: 5px; text-align: right;">${vh.number(report.unpaid_quantity) or ''}</td>
+      <td style="padding: 5px; text-align: right;">${vh.number(report.paid_quantity) or ''}</td>
       <td style="padding: 5px; text-align: right;">${vh.price((report.paid_quantity + report.unpaid_quantity) * report.product_price)}</td>
       % endif
     </tr>
@@ -102,18 +102,18 @@
   <% total = reporter.total %>
   <tr>
     <td style="padding: 5px;" colspan="4">合計</td>
-    <td style="padding: 5px; text-align: right;">${vh.price(total.stock_quantity) or ''}</td>
-    <td style="padding: 5px; text-align: right;">${vh.price(total.vacant_quantity) or ''}</td>
+    <td style="padding: 5px; text-align: right;">${vh.number(total.stock_quantity) or ''}</td>
+    <td style="padding: 5px; text-align: right;">${vh.number(total.vacant_quantity) or ''}</td>
   % if need_total:
-    <td style="padding: 5px; text-align: right;">${vh.price(total.total_paid_quantity + total.total_unpaid_quantity) or ''}</td>
-    <td style="padding: 5px; text-align: right;">${vh.price(total.total_unpaid_quantity) or ''}</td>
-    <td style="padding: 5px; text-align: right;">${vh.price(total.total_paid_quantity) or ''}</td>
+    <td style="padding: 5px; text-align: right;">${vh.number(total.total_paid_quantity + total.total_unpaid_quantity) or ''}</td>
+    <td style="padding: 5px; text-align: right;">${vh.number(total.total_unpaid_quantity) or ''}</td>
+    <td style="padding: 5px; text-align: right;">${vh.number(total.total_paid_quantity) or ''}</td>
     <td style="padding: 5px; text-align: right;">${vh.price(total.total_sum_amount) or ''}</td>
   % endif
   % if form.limited_from.data or form.limited_to.data:
-    <td style="padding: 5px; text-align: right;">${vh.price(total.paid_quantity + total.unpaid_quantity) or ''}</td>
-    <td style="padding: 5px; text-align: right;">${vh.price(total.unpaid_quantity) or ''}</td>
-    <td style="padding: 5px; text-align: right;">${vh.price(total.paid_quantity) or ''}</td>
+    <td style="padding: 5px; text-align: right;">${vh.number(total.paid_quantity + total.unpaid_quantity) or ''}</td>
+    <td style="padding: 5px; text-align: right;">${vh.number(total.unpaid_quantity) or ''}</td>
+    <td style="padding: 5px; text-align: right;">${vh.number(total.paid_quantity) or ''}</td>
     <td style="padding: 5px; text-align: right;">${vh.price(total.sum_amount) or ''}</td>
   % endif
   </tr>

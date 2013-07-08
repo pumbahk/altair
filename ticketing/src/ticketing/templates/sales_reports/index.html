@@ -54,11 +54,11 @@
     % else:
     <td>${vh.datetime(record.sales_start_day)} 〜 ${vh.datetime(record.sales_end_day)}</td>
     % endif
-    <td class="numeric">${vh.price(record.stock_quantity)}</td>
-    <td class="numeric">${vh.price(record.vacant_quantity)}</td>
-    <td class="numeric">${vh.price(record.total_order_quantity)}</td>
+    <td class="numeric">${vh.number(record.stock_quantity)}</td>
+    <td class="numeric">${vh.number(record.vacant_quantity)}</td>
+    <td class="numeric">${vh.number(record.total_order_quantity)}</td>
     <td class="price">${vh.price(record.total_order_amount)}</td>
-    <td class="numeric">${vh.price(record.order_quantity)}</td>
+    <td class="numeric">${vh.number(record.order_quantity)}</td>
     <td class="price">${vh.price(record.order_amount)}</td>
   </tr>
   % endfor

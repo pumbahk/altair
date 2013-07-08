@@ -38,12 +38,12 @@
         % for record in reporter.sort_data():
         <tr>
           <td><a href="javascript:performance_report(${record.id})">${record.title} (${vh.datetime(record.start_on)}開始)</a></td>
-          <td class="numeric">${vh.price(record.stock_quantity)}</td>
-          <td class="numeric">${vh.price(record.vacant_quantity)}</td>
-          <td class="numeric">${vh.price(record.total_order_quantity)}</td>
+          <td class="numeric">${vh.number(record.stock_quantity)}</td>
+          <td class="numeric">${vh.number(record.vacant_quantity)}</td>
+          <td class="numeric">${vh.number(record.total_order_quantity)}</td>
           <td class="price">${vh.price(record.total_order_amount)}</td>
-          <td class="numeric">${vh.price(record.order_quantity)}</td>
-          <td class="price">${vh.price(record.order_amount)}</td>
+          <td class="numeric">${vh.number(record.order_quantity)}</td>
+          <td class="price">${vh.number(record.order_amount)}</td>
         </tr>
         % endfor
       </tbody>
