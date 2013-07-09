@@ -50,6 +50,8 @@ def as_wrapped_resource_response(request, static_page, fullpath, body_var_name="
     try:
         params = {body_var_name: open(fullpath).read().decode("utf-8"), 
                   "static_page": static_page} #ok?
+    except (IOError, OSError):
+        raise
     except Exception, e:
         logger.exception(str(e))
         params = {body_var_name: ""}
