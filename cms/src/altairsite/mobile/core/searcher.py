@@ -186,3 +186,42 @@ class EventSearcher(object):
         qs = self._create_common_qs(where=where, qs=qs)
         log_info("get_events_from_salessegment", "end")
         return qs
+
+class SimpleEventSearcher(EventSearcher):
+    # 共通クエリ部分
+    def _create_common_qs(self, where, qs=None):
+        log_info("_create_common_qs", "start")
+        if qs: # 絞り込み
+            log_info("_create_common_qs", "and search")
+            qs = qs.filter(where)
+        else: # 新規検索
+            log_info("_create_common_qs", "new search")
+            qs = self.request.allowable(Event) \
+                .join(Page, Page.event_id == Event.id) \
+                .filter(Event.is_searchable == True) \
+                .filter(Page.published == True) \
+                .filter(Page.publish_begin < get_now(self.request)) \
+                .filter((Page.publish_end==None) | (Page.publish_end > get_now(self.request))) \
+                .filter(where)
+        log_info("_create_common_qs", "end")
+        return qs
+
+class PrefectureEventSearcher(EventSearcher):
+    # 共通クエリ部分
+    def _create_common_qs(self, where, qs=None):
+        log_info("_create_common_qs", "start")
+        if qs: # 絞り込み
+            log_info("_create_common_qs", "and search")
+            qs = qs.filter(where)
+        else: # 新規検索
+            log_info("_create_common_qs", "new search")
+            qs = self.request.allowable(Event) \
+                .join(Performance, Event.id == Performance.event_id) \
+                .join(Page, Page.event_id == Event.id) \
+                .filter(Event.is_searchable == True) \
+                .filter(Page.published == True) \
+                .filter(Page.publish_begin < get_now(self.request)) \
+                .filter((Page.publish_end==None) | (Page.publish_end > get_now(self.request))) \
+                .filter(where)
+        log_info("_create_common_qs", "end")
+        return qs
