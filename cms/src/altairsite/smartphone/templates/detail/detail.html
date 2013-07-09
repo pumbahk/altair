@@ -244,7 +244,9 @@ $(function () {
                                 開場：${helper.disp_time(perf.open_on)}<br/>
                               % endif
                               開演：${helper.disp_time(perf.start_on)}<br/>
-                              会場：${perf.venue}<br/>
+                              % if perf.venue:
+                                会場：${perf.venue}<br/>
+                              % endif
                             </p>
                           </div>
                           % if not start_on_candidates:
