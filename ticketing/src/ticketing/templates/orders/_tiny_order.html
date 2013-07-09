@@ -151,16 +151,22 @@
 </table>
 
 <div style="text-align: center; margin-bottom: 12px;">
-  <a href="javascript:edit_order();" class="btn">
+  <a href="javascript:edit_order();" class="btn btn-edit-order">
     <i class="icon-edit"></i> 商品・座席の変更
+  </a>
+  <a href="javascript:void(0)" class="btn btn-save-order hide">
+    <i class="icon-edit"></i> 変更を保存
+  </a>
+  <a href="javascript:void(0)" class="btn btn-cancel hide">
+    <i class="icon-edit"></i> 変更しない
   </a>
 </div>
 
 <script type="text/javascript">
   function edit_order() {
-    $(function() {
-      order.init(${order.id});
-    });
+    order.init(${order.id});
+    $('.btn-edit-order').hide();
+    $('.btn-save-order, .btn-cancel').show();
   }
 </script>
 

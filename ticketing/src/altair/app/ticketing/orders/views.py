@@ -1406,13 +1406,8 @@ class OrdersReserveView(BaseView):
             'seat_names':seat_names
         }
 
-    @view_config(route_name='orders.api.get2', renderer='json')
-    def api_get2(self):
-        order_id = self.request.matchdict.get('order_id', 0)
-        order = Order.get(order_id, self.context.user.organization_id)
-        if order is None:
-            raise HTTPNotFound('order id %d is not found' % order.id)
-        ret = dict(
+    def _format_edit_order(self, order):
+        return dict(
             id=order.id,
             order_no=order.order_no,
             transaction_fee=int(order.transaction_fee),
@@ -1420,34 +1415,109 @@ class OrdersReserveView(BaseView):
             system_fee=int(order.system_fee),
             total_amount=int(order.total_amount),
             ordered_products=[
+            dict(
+                id=op.id,
+                price=int(op.price),
+                quantity=op.quantity,
+                product_name=op.product.name,
+                sales_segment_name=op.product.sales_segment.name,
+                ordered_product_items=[
                 dict(
-                    id=op.id,
-                    price=int(op.price),
-                    quantity=op.quantity,
-                    product_name=op.product.name,
-                    sales_segment_name=op.product.sales_segment.name,
-                    ordered_product_items=[
-                        dict(
-                            id=opi.id,
-                            quantity=opi.quantity,
-                            price=int(opi.product_item.price),
-                            stock_holder_name=opi.product_item.stock.stock_holder.name,
-                            seats=[
-                                dict(
-                                    id=seat.l0_id,
-                                    name=seat.name
-                                )
-                                for seat in opi.seats
-                            ],
-                        )
-                        for opi in op.ordered_product_items
-                    ]
+                    id=opi.id,
+                    quantity=opi.quantity,
+                    product_item=dict(
+                        price=int(opi.product_item.price),
+                        quantity=opi.product_item.quantity,
+                        stock_holder_name=opi.product_item.stock.stock_holder.name,
+                        is_seat=opi.product_item.stock.stock_type.is_seat,
+                    ),
+                    seats=[
+                    dict(
+                        id=seat.l0_id,
+                        name=seat.name
+                    )
+                    for seat in opi.seats
+                    ],
                 )
-                for op in order.ordered_products
+                for opi in op.ordered_product_items
+                ]
+            )
+            for op in order.ordered_products
             ]
         )
-        logger.info(ret)
-        return ret
+
+    @view_config(route_name='orders.api.edit', request_method='GET', renderer='json')
+    def api_edit_get(self):
+        order_id = self.request.matchdict.get('order_id', 0)
+        order = Order.get(order_id, self.context.user.organization_id)
+        if order is None:
+            raise HTTPNotFound('order id %d is not found' % order.id)
+        return self._format_edit_order(order)
+
+    @view_config(route_name='orders.api.edit', request_method='PUT', renderer='json')
+    def api_edit_put(self):
+        order_id = self.request.matchdict.get('order_id', 0)
+        order = Order.get(order_id, self.context.user.organization_id)
+        order_data = MultiDict(self.request.json_body)
+        logger.info(order_data)
+
+        edit_order = Order.clone(order, deep=True)
+        edit_order.system_fee = order_data.get('system_fee')
+        edit_order.transaction_fee = order_data.get('transaction_fee')
+        edit_order.delivery_fee = order_data.get('delivery_fee')
+
+        from ticketing.cart import api as cart_api
+        reserving = cart_api.get_reserving(self.request)
+        stocker = cart_api.get_stocker(self.request)
+
+        for op, eop in itertools.izip(order.items, edit_order.items):
+            op_data = None
+            for op_data in order_data.get('ordered_products'):
+                if op_data.get('id') == op.id: break
+            logger.info('op_data %s' % op_data)
+            eop.quantity = int(op_data.get('quantity'))
+            for opi, eopi in itertools.izip(op.ordered_product_items, eop.ordered_product_items):
+                opi_data = None
+                for opi_data in op_data.get('ordered_product_items'):
+                    if opi_data.get('id') == opi.id: break
+                logger.info('opi_data %s' % opi_data)
+                eopi.quantity = int(opi_data.get('quantity'))
+
+                current_seats = [s.l0_id for s in opi.seats]
+                logger.info('current_seats %s' % current_seats)
+
+                # 座席追加
+                add_seats = []
+                for seat in opi_data.get('seats'):
+                    if seat.get('id') not in current_seats:
+                        add_seats.append(seat.get('id'))
+                logger.info('add_seats %s' % add_seats)
+
+                # product_requires = [(Product, quantity), ..]
+                product_requires = [(eop.product, len(add_seats))]
+                logger.info("product_requires %s" % product_requires)
+                stock_statuses = stocker.take_stock(order.performance_id, product_requires)
+                logger.info("stock_statuses %s" % stock_statuses)
+                seats = reserving.reserve_selected_seats(stock_statuses, order.performance_id, add_seats, SeatStatusEnum.Keep)
+                logger.info('seats %s' % seats)
+                eopi.seats += seats
+                for seat in seats:
+                    seat.status = int(SeatStatusEnum.Ordered)
+
+                # 座席削除
+                delete_seats = []
+                for l0_id in current_seats:
+                    if l0_id not in opi_data.get('seats'):
+                        delete_seats.append(l0_id)
+                logger.info('delete_seats %s' % delete_seats)
+                for i, seat in enumerate(eopi.seats):
+                    if seat.l0_id in delete_seats:
+                        eopi.seats.pop(i)
+                        seat.status = int(SeatStatusEnum.Vacant)
+
+        edit_order.save()
+
+        return self._format_edit_order(order)
 
     @view_config(route_name='orders.api.get.html', renderer='ticketing:templates/orders/_tiny_order.html')
     def api_get_html(self):
