@@ -14,5 +14,3 @@ def login(request, login_id, password):
 def logout(request):
     return forget(request)
 
-def find_group(user_id, request):
-    return ["group:sales_counter"]

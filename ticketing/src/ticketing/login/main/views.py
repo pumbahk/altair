@@ -14,7 +14,7 @@ from ticketing.views import BaseView
 from ticketing.fanstatic import with_bootstrap
 from ticketing.core.models import *
 from ticketing.operators.models import Operator
-from ticketing.login.forms import LoginForm, OperatorForm, ResetForm
+from .forms import LoginForm, OperatorForm, ResetForm
 
 @view_defaults(decorator=with_bootstrap)
 class Login(BaseView):

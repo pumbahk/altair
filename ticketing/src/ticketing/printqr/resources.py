@@ -1,9 +1,12 @@
+from zope.interface import implementer
+from ticketing.login.internal.interfaces import IInternalAuthResource
 from pyramid.decorator import reify
 from pyramid.security import Allow, Everyone, authenticated_userid
 from ticketing.operators.models import Operator, OperatorAuth
 import logging
 logger = logging.getLogger(__name__)
 
+@implementer(IInternalAuthResource)
 class PrintQRResource(object):
     def __init__(self, request):
         self.request = request
@@ -12,6 +15,9 @@ class PrintQRResource(object):
         (Allow, 'group:sales_counter', 'event_editor'), 
         (Allow, Everyone, 'everybody'),
     ]
+
+    def get_after_login_url(self):
+        return self.request.route_url("eventlist")
 
     @reify
     def operator(self):
