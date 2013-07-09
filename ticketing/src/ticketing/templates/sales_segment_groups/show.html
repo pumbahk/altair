@@ -80,7 +80,11 @@ ${ch.breadcrumbs(
             <td><input type="radio" name="sales_segment_id" value="${sales_segment.id}" /></td>
             <td>${sales_segment.id}</td>
             <td>
-              <a href="${request.route_path('sales_segments.show', sales_segment_id=sales_segment.id)}">${sales_segment.performance.name}</a>
+              % if sales_segment.performance is not None:
+                <a href="${request.route_path('sales_segments.show', sales_segment_id=sales_segment.id)}">${sales_segment.performance.name}</a>
+              % else:
+                -
+              % endif
             </td>
             <td>${vh.datetime(sales_segment.start_at)}</td>
             <td>${vh.datetime(sales_segment.end_at)}</td>
