@@ -175,7 +175,6 @@ def main(global_config, **local_config):
     config.include('.errors')
     config.add_tween('ticketing.tweens.session_cleaner_factory', under=INGRESS)
     config.add_tween('ticketing.cart.tweens.response_time_tween_factory', under=INGRESS)
-    config.include(".nowsetting", route_prefix="_nowsetting")
     config.scan()
 
 
