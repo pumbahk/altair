@@ -18,9 +18,12 @@ from altaircms.security import RootFactory
 import altaircms.helpers as h
 from .api import get_linklist_candidates_finder
 from altaircms.datelib import get_now
+from datetime import datetime
 
 def linklist_render(widget, finder, request=None):
-    qs = finder(request, widget.limit_span or widget.N, get_now(request))
+    now = get_now(request)
+    today = datetime(now.year, now.month, now.day)
+    qs = finder(request, widget.limit_span or widget.N, today)
     if widget.system_tag_id:
         qs = qs.filter(PageTag2Page.object_id==PageSet.id, PageTag2Page.tag_id==widget.system_tag_id)
     if widget.max_items:
