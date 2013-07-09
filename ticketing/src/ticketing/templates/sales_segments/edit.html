@@ -1,5 +1,6 @@
 <%inherit file="/layout_2cols.html"/>
 <%namespace file="/common/helpers.html" name="ch"/>
+<%block name="breadcrumbs">
 <%
 names = [u'イベント', event.title]
 urls = [request.route_path('events.index'), request.route_path('events.show', event_id=event.id)]
@@ -21,7 +22,6 @@ if sales_segment:
 else:
   names.extend([u'新規作成'])
 %>
-<%block name="breadcrumbs">
   ${ch.breadcrumbs(urls=urls, names=names)}
 </%block>
 <%include file="./_form.html" />
