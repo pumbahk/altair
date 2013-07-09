@@ -75,7 +75,7 @@ def includeme(config):
     add_route('lots.entry.completion', 'events/{event_id}/entry/{lot_id}/completion')
 
     # 申し込み確認
-    add_route('lots.review.index', 'review')
+    config.add_route('lots.review.index', 'review')
 
     # 当選フェーズ
     #config.add_route('lots.payment.index', 'events/{event_id}/payment/{lot_id}')
