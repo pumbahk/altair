@@ -85,7 +85,7 @@ class AccessToken(Base, BaseModel, WithTimestamp):
     mac_key         = Column(String(MAC_KEY_LENGTH), index=True, unique=True, nullable=True)
 
     issue = Column(Integer, default=TimestampGenerator())
-    expire = Column(DateTime, default=TimestampGenerator(ACCESS_TOKEN_EXPIRATION))
+    expire = Column(DateTime, default=lambda: datetime.fromordinal(TimestampGenerator(ACCESS_TOKEN_EXPIRATION)))
     refreshable = Column(Boolean, default=REFRESHABLE)
     status = Column(Integer, default=1)
 
