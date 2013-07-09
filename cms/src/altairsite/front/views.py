@@ -90,10 +90,10 @@ def smartphone_rendering_page(context, request):
         return smartphone_dispatch_view(context, request)
     if page.event_id or page.pageset.event_id:
         return HTTPFound(request.route_path("smartphone.detail", _query=dict(event_id=page.event_id or page.pageset.event_id)))
-    if page.pageset.genre_id:
-        return HTTPFound(request.route_path("smartphone.genre", genre_id=page.pageset.genre_id))
     if page.url.startswith("special"):
         return _rendering_page(context, request, control, page)
+    if page.pageset.genre_id:
+        return HTTPFound(request.route_path("smartphone.genre", genre_id=page.pageset.genre_id))
     else:
         return smartphone_dispatch_view(context, request)
 
