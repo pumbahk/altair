@@ -38,7 +38,7 @@ class TimestampGenerator(object):
         self.seconds = seconds
 
     def __call__(self):
-        return datetime.fromtimestamp(int(time.time()) + self.seconds)
+        return datetime.fromtimestamp(int(time.time()) + self.seconds).toordinal()
 
 
 class KeyGenerator(object):
