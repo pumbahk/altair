@@ -208,3 +208,34 @@ class EventSearcher(object):
     def paging(self, qs, per, page):
         results = paginate.Page(qs.all(), page, per, url=paginate.PageURL_WebOb(self.request))
         return results
+
+class SimpleEventSearcher(EventSearcher):
+    # 共通クエリ部分
+    def _create_common_qs(self, where, qs=None):
+        if qs: # 絞り込み
+            qs = qs.filter(where)
+        else: # 新規検索
+            qs = self.request.allowable(Event) \
+                .join(Page, Page.event_id == Event.id) \
+                .filter(Event.is_searchable == True) \
+                .filter(Page.published == True) \
+                .filter(Page.publish_begin < get_now(self.request)) \
+                .filter((Page.publish_end==None) | (Page.publish_end > get_now(self.request))) \
+                .filter(where)
+        return qs
+
+class PrefectureEventSearcher(EventSearcher):
+    # 共通クエリ部分
+    def _create_common_qs(self, where, qs=None):
+        if qs: # 絞り込み
+            qs = qs.filter(where)
+        else: # 新規検索
+            qs = self.request.allowable(Event) \
+                .join(Performance, Event.id == Performance.event_id) \
+                .join(Page, Page.event_id == Event.id) \
+                .filter(Event.is_searchable == True) \
+                .filter(Page.published == True) \
+                .filter(Page.publish_begin < get_now(self.request)) \
+                .filter((Page.publish_end==None) | (Page.publish_end > get_now(self.request))) \
+                .filter(where)
+        return qs
