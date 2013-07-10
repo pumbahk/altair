@@ -87,7 +87,8 @@ order.OrderFormPresenter.prototype = {
   },
   addProduct: function() {
     var self = this;
-    self.order.get('ordered_products').push(new order.OrderedProduct());
+    var op = new order.OrderedProduct({'ordered_product_items': [{id:null}]});
+    self.order.get('ordered_products').push(op);
     self.view.show(self.order);
   }
 };
@@ -131,8 +132,10 @@ order.OrderedProduct = Backbone.Model.extend({
     id: null,
     price: 0,
     quantity: 0,
-    product_name: 0,
-    sales_segment_name: 0,
+    product_id: 0,
+    product_name: null,
+    sales_segment_id: 0,
+    sales_segment_name: null,
     ordered_product_items: null
   },
   initialize: function() {
@@ -165,6 +168,7 @@ order.OrderedProductItem = Backbone.Model.extend({
     seats: null
   },
   initialize: function() {
+    var self = this;
     var pi = new order.ProductItem(this.get('product_item'));
     this.set('product_item', pi);
 
@@ -179,6 +183,9 @@ order.OrderedProductItem = Backbone.Model.extend({
 
     this.on('change:seats', function() {
       this.set('quantity', this.get('seats').length);
+    });
+    s.on('remove', function() {
+      self.set('quantity', self.get('seats').length);
     });
   }
 });
@@ -429,7 +436,7 @@ order.OrderProductItemFormView = Backbone.View.extend({
       chk_select.data('seat', seat);
       seats.append($('<li/>').text(seat.get('name')).append(chk_select));
     });
-    var product_item_price = $('<td style="text-align: right;" />').text(pi.get('price'));
+    var product_item_price = $('<td style="text-align: right;" />').text(pi.get('price') || '');
     var product_item_quantity = $('<td/>').text(opi.get('quantity'));
     var btn_add_td = $('<td/>');
     var div_right = $('<div class="pull-right" />');
