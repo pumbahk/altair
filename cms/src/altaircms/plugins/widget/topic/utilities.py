@@ -59,6 +59,9 @@ jnames = 注目のイベント
         self.rendering.register("89ers_faq", render_89ers_faq)
         self.rendering.register("89ers_info", render_89ers_info_render)
         self.rendering.register("vissel_faq", render_vissel_faq)
+        ## xxx:
+        self.rendering.register("faq", render_89ers_faq)
+
         self.rendering.register("topic", render_tstar_topics_faq)
         self.rendering.register("information", render_tstar_information_faq)
         self.rendering.register("feature", render_tstar_feature_faq)
