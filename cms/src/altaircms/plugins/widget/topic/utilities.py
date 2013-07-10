@@ -69,7 +69,7 @@ jnames = 注目のイベント
         self.rendering.register("vissel_faq", render_vissel_faq)
         ## xxx:
         self.rendering.register("faq", render_89ers_faq)
-        self.rendering.register("news", render_text_only)
+        self.rendering.register("textonly", render_text_only)
 
         self.rendering.register("topic", render_tstar_topics_faq)
         self.rendering.register("information", render_tstar_information_faq)
