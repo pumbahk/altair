@@ -1,16 +1,18 @@
-.. altair documentation master file, created by
-   sphinx-quickstart on Wed Jul 10 11:07:53 2013.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
+.. -*- coding: utf-8 -*-
 
-Welcome to altair's documentation!
-==================================
+****************************************
+altair documentation
+****************************************
+
+altairとはチケットスター社が制作する票券管理のためのシステムです。
 
 Contents:
 
 .. toctree::
    :maxdepth: 2
+   :glob:
 
+   *
 
 
 Indices and tables
