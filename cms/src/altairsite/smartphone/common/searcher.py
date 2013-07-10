@@ -107,14 +107,19 @@ class EventSearcher(object):
 
     # 販売区分別
     def search_sales_segment(self, search_query, qs=None):
-        label = "一般発売"
-        if search_query.sales_segment == "precedence":
-            label = "一般先行"
-        elif search_query.sales_segment == "lottery":
-            label = "先行抽選"
-        log_info("search_sales_segment", "sales_segment = " + label)
-        where = SalesSegmentKind.label == label
-        qs = self._create_common_qs(where=where, qs=qs)
+        labels = []
+        for segment in search_query.sales_segment:
+            if segment == "normal":
+                labels.append("一般発売")
+            elif segment == "precedence":
+                labels.append("一般発売")
+            elif segment == "lottery":
+                labels.append("先行抽選")
+
+        if labels:
+            log_info("search_sales_segment", "sales_segment = " + ", ".join(labels))
+            where=SalesSegmentKind.label.in_(labels)
+            qs = self._create_common_qs(where=where, qs=qs)
         return qs
 
     # 公演日検索
@@ -145,8 +150,7 @@ class EventSearcher(object):
             qs = self.search_canceled(qs=qs)
         if info.closed:
             qs = self.search_closed(qs=qs)
-        if not info.canceled:
-            if not info.closed:
+        if not info.canceled and not info.closed:
                 qs = self.search_on_sale(qs=qs)
         return qs
 

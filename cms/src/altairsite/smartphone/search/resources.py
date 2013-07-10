@@ -96,9 +96,21 @@ class SearchPageResource(CommonResource):
         result = searcher.create_result(qs=qs, page=page, query=query, per=per)
         return result
 
+    def create_event_searcher(self, query):
+        searcher = SimpleEventSearcher(request=self.request)
+        prefectures = query.get_prefectures()
+        info = query.perf_info
+        if prefectures:
+            searcher = PrefectureEventSearcher(request=self.request)
+        if info.canceled:
+            searcher = PrefectureEventSearcher(request=self.request)
+        if query.sales_segment:
+            searcher = EventSearcher(request=self.request)
+        return searcher
+
     # 詳細検索
     def search_detail(self, query, page, per):
-        searcher = EventSearcher(request=self.request)
+        searcher = self.create_event_searcher(query)
         qs = None
 
         # フリーワード、ジャンル

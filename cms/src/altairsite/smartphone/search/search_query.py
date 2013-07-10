@@ -101,7 +101,8 @@ class DetailSearchQuery(object):
         if self.genres_label:
             query.append(u"ジャンル：" + ", ".join(self.genres_label))
         if self.sales_segment:
-            query.append(helper.get_sales_segment_japanese(self.sales_segment))
+            for segment in self.sales_segment:
+                query.append(helper.get_sales_segment_japanese(segment))
         if self.event_open_info:
             if self.event_open_info.since_event_open and self.event_open_info.event_open:
                 query.append(u"公演日：" + self.event_open_info.since_event_open.strftime("%Y-%m-%d") + u" 〜 " + self.event_open_info.event_open.strftime("%Y-%m-%d"))
@@ -154,7 +155,8 @@ class DetailSearchQuery(object):
             for pref in self.pref_kyusyu:
                 parameter += "&pref_kyusyu=" + pref
         if self.sales_segment:
-            parameter += "&sales_segment=" + self.sales_segment
+            for segment in self.sales_segment:
+                parameter += "&sales_segment=" + segment
         if self.event_open_info:
             if self.event_open_info.since_event_open:
                 if self.event_open_info.event_open:
