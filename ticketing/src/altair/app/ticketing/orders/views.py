@@ -1406,10 +1406,39 @@ class OrdersReserveView(BaseView):
             'seat_names':seat_names
         }
 
-    def _format_edit_order(self, order):
+    @view_config(route_name='orders.api.performance', request_method='GET', renderer='json')
+    def api_performance(self):
+        performance_id = self.request.matchdict.get('performance_id', 0)
+        performance = Performance.get(performance_id, self.context.user.organization_id)
+        if performance is None:
+            raise HTTPNotFound('performance id %d is not found' % performance_id)
+
+        return dict(
+            id=performance_id,
+            sales_segments=[
+            dict(
+                id=ss.id,
+                name=ss.name,
+                products=[
+                dict(
+                    id=p.id,
+                    name=p.name,
+                    price=int(p.price),
+                    stock_type_id=p.seat_stock_type.id,
+                    stock_type_name=p.seat_stock_type.name
+                )
+                for p in ss.products
+                ]
+            )
+            for ss in performance.sales_segments
+            ]
+        )
+
+    def _get_order_dicts(self, order):
         return dict(
             id=order.id,
             order_no=order.order_no,
+            performance_id=order.performance_id,
             transaction_fee=int(order.transaction_fee),
             delivery_fee=int(order.delivery_fee),
             system_fee=int(order.system_fee),
@@ -1419,8 +1448,10 @@ class OrdersReserveView(BaseView):
                 id=op.id,
                 price=int(op.price),
                 quantity=op.quantity,
-                product_name=op.product.name,
+                sales_segment_id=op.product.sales_segment.id,
                 sales_segment_name=op.product.sales_segment.name,
+                product_id=op.product.id,
+                product_name=op.product.name,
                 ordered_product_items=[
                 dict(
                     id=opi.id,
@@ -1452,7 +1483,7 @@ class OrdersReserveView(BaseView):
         order = Order.get(order_id, self.context.user.organization_id)
         if order is None:
             raise HTTPNotFound('order id %d is not found' % order.id)
-        return self._format_edit_order(order)
+        return self._get_order_dicts(order)
 
     @view_config(route_name='orders.api.edit', request_method='PUT', renderer='json')
     def api_edit_put(self):
@@ -1517,7 +1548,7 @@ class OrdersReserveView(BaseView):
 
         edit_order.save()
 
-        return self._format_edit_order(order)
+        return self._get_order_dicts(order)
 
     @view_config(route_name='orders.api.get.html', renderer='ticketing:templates/orders/_tiny_order.html')
     def api_get_html(self):

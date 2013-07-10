@@ -13,7 +13,7 @@ order.ApplicationController = function() {
 order.ApplicationController.prototype.init = function(order_id) {
   this.orderFormPresenter = new order.OrderFormPresenter({viewType: order.OrderFormView});
   this.orderFormPresenter.initialize(order_id);
-  this.orderFormPresenter.showForm();
+  this.orderFormPresenter.fetchAndShow();
 };
 
 
@@ -33,6 +33,8 @@ order.OrderFormPresenter.prototype = {
       presenter: this
     });
     this.order = new order.Order({id: order_id});
+    this.performance = new order.Performance();
+
     $('.btn-save-order').on('click', function() {
       self.order.save();
     });
@@ -43,31 +45,36 @@ order.OrderFormPresenter.prototype = {
     });
   },
   showForm: function() {
+    this.view.show(this.order);
+  },
+  fetchAndShow: function() {
     var self = this;
     this.order.fetch({
       success: function() {
-        self.view.show(self.order);
+        self.performance.set('id', self.order.get('performance_id'));
+        self.performance.fetch({
+          success: function() {
+            self.showForm();
+          }
+        });
       }
     });
   },
-  addSeat: function(ordered_product) {
+  addSeat: function(ordered_product_item) {
     var self = this;
     var selection = venueEditorRoot.venueeditor('selection');
-    ordered_product.get('ordered_product_items').each(function(opi) {
-      if (opi.get('product_item').get('is_seat')) {
-        var seats = opi.get('seats');
-        selection.each(function(seat) {
-          if (!seats.get(seat)) {
-            seats.push(new order.Seat({
-              'id':seat.get('id'),
-              'name':seat.get('name')
-            }));
-          }
-        });
-        opi.trigger('change:seats');
-        self.view.show(self.order);
+    var opi = ordered_product_item;
+    var seats = opi.get('seats');
+    selection.each(function(seat) {
+      if (!seats.get(seat)) {
+        seats.push(new order.Seat({
+          'id':seat.get('id'),
+          'name':seat.get('name')
+        }));
       }
     });
+    opi.trigger('change:seats');
+    self.view.show(self.order);
   },
   deleteSeat: function(seat) {
     var self = this;
@@ -76,6 +83,11 @@ order.OrderFormPresenter.prototype = {
       if (s.get('id') == seat.get('id')) s.set('selected', false);
     });
     seat.collection.remove(seat);
+    self.view.show(self.order);
+  },
+  addProduct: function() {
+    var self = this;
+    self.order.get('ordered_products').push(new order.OrderedProduct());
     self.view.show(self.order);
   }
 };
@@ -89,6 +101,7 @@ order.Order = Backbone.Model.extend({
   defaults: {
     id: null,
     order_no: null,
+    performance_id: null,
     transaction_fee: 0,
     delivery_fee: 0,
     system_fee: 0,
@@ -96,10 +109,18 @@ order.Order = Backbone.Model.extend({
     ordered_products: null
   },
   parse: function (response) {
+    var self = this;
     var opc = new order.OrderedProductCollection();
     for (var i = 0; i < response.ordered_products.length; i++) {
       opc.push(new order.OrderedProduct(response.ordered_products[i]));
     }
+    opc.on('change', function() {
+      var total_amount = self.get('transaction_fee') + self.get('delivery_fee') + self.get('system_fee');
+      this.each(function(op) {
+        total_amount += op.get('price') * op.get('quantity');
+      })
+      self.set('total_amount', total_amount);
+    });
     response.ordered_products = opc;
     return response;
   }
@@ -118,8 +139,10 @@ order.OrderedProduct = Backbone.Model.extend({
     var self = this;
     var opic = new order.OrderedProductItemCollection();
     var items = this.get('ordered_product_items');
-    for (var i = 0; i < items.length; i++) {
-      opic.push(new order.OrderedProductItem(items[i]));
+    if (items) {
+      for (var i = 0; i < items.length; i++) {
+        opic.push(new order.OrderedProductItem(items[i]));
+      }
     }
     opic.on('change', function() {
       this.each(function(item) {
@@ -175,6 +198,65 @@ order.Seat = Backbone.Model.extend({
   }
 });
 
+order.Performance = Backbone.Model.extend({
+  urlRoot: '/orders/api/performance',
+  defaults: {
+    id: null,
+    sales_segments: null
+  },
+  parse: function (response) {
+    var ssc = new order.SalesSegmentCollection();
+    for (var i = 0; i < response.sales_segments.length; i++) {
+      ssc.push(new order.SalesSegment(response.sales_segments[i]));
+    }
+    response.sales_segments = ssc;
+    return response;
+  }
+});
+
+order.SalesSegment = Backbone.Model.extend({
+  defaults: {
+    id: null,
+    name: null,
+    products: null,
+    stock_types: null
+  },
+  initialize: function() {
+    var pc = new order.ProductCollection();
+    var stc = new order.StockTypeCollection();
+    var products = this.get('products');
+    if (products) {
+      for (var i = 0; i < products.length; i++) {
+        pc.push(new order.Product(products[i]));
+        var stock_type = new order.StockType({
+          'id':products[i].stock_type_id,
+          'name':products[i].stock_type_name
+        });
+        if (!pc.get(stock_type)) stc.push(stock_type);
+      }
+    }
+    this.set('products', pc);
+    this.set('stock_types', stc);
+  }
+});
+
+order.StockType = Backbone.Model.extend({
+  defaults: {
+    id: null,
+    name: null
+  }
+});
+
+order.Product = Backbone.Model.extend({
+  defaults: {
+    id: null,
+    name: null,
+    price: 0,
+    stock_type_id: null,
+    stock_type_name: null
+  }
+});
+
 order.OrderedProductCollection = Backbone.Collection.extend({
   model: order.OrderedProduct
 });
@@ -185,6 +267,18 @@ order.OrderedProductItemCollection = Backbone.Collection.extend({
 
 order.SeatCollection = Backbone.Collection.extend({
   model: order.Seat
+});
+
+order.SalesSegmentCollection = Backbone.Collection.extend({
+  model: order.SalesSegment
+});
+
+order.StockTypeCollection = Backbone.Collection.extend({
+  model: order.StockType
+});
+
+order.ProductCollection = Backbone.Collection.extend({
+  model: order.Product
 });
 
 
@@ -229,35 +323,79 @@ order.OrderProductFormView = Backbone.View.extend({
     this.presenter = this.options.presenter;
   },
   events: {
-    'click .btn-add-product': 'addProduct'
+    'click .btn-add-product': 'addProduct',
   },
   addProduct: function(e) {
     e.preventDefault();
+    this.presenter.addProduct();
   },
   render: function(op) {
     var self = this;
 
     var product = $('<tr/>');
-    var product_name = $('<td colspan="2" />').text(op.get('product_name'));
-    var sales_segment_name = $('<span class="label label-info" /> ').text(op.get('sales_segment_name'));
-    var product_price = $('<td style="text-align: right;" />').text(op.get('price'));
-    var product_quantity = $('<td/>').text(op.get('quantity'));
-    var sum_amount = $('<td style="text-align: right;" />').text(op.get('price') * op.get('quantity'));
+    var product_name = $('<td colspan="2" />');
 
-    product_name.prepend(sales_segment_name);
+    /*
+     var sales_segment = $('<span class="label label-info" /> ').text(op.get('sales_segment_name'));
+     var product_name = $('<td colspan="2" />').text(op.get('product_name'));
+    */
+    var sales_segment_id = op.get('sales_segment_id');
+    var sales_segment = $('<select id="sales_segment_id" name="sales_segment_id"></select>');
+    var ssc = self.presenter.performance.get('sales_segments');
+    ssc.each(function(ss) {
+      var option = $('<option/>').text(ss.get('name')).attr('value', ss.get('id'));
+      if (ss.get('id') == sales_segment_id) option.attr('selected', 'selected');
+      sales_segment.append(option);
+    });
+    sales_segment.on('change', function() {
+      op.set('sales_segment_id', $(this).val());
+      self.presenter.showForm();
+    });
+    product_name.append(sales_segment);
+
+    var product_list = $('<select id="product_id" name="product_id" />');
+    if (sales_segment_id) {
+      var product_id = op.get('product_id');
+      var ss = ssc.get(sales_segment_id);
+      ss.get('products').each(function(p) {
+        var option = $('<option/>').text(p.get('name')).attr('value', p.get('id'));
+        if (p.get('id') == product_id) option.attr('selected', 'selected');
+        product_list.append(option);
+      });
+      product_list.on('change', function() {
+        var p = ss.get('products').get($(this).val());
+        op.set('product_id', p.get('id'));
+        op.set('price', p.get('price'));
+        //op.set('quantity', $(this).val());
+        self.presenter.showForm();
+      });
+      product_name.append(product_list);
+    }
+
+    var product_price = $('<td style="text-align: right;" />');
+    var product_quantity = $('<td/>');
+    var sum_amount = $('<td style="text-align: right;" />');
+    if (product_id) {
+      product_price.text(op.get('price'));
+      product_quantity.text(op.get('quantity'));
+      sum_amount.text(op.get('price') * op.get('quantity'));
+    }
+
     product.append(product_name);
     product.append(product_price);
     product.append(product_quantity);
     product.append(sum_amount);
     this.$el.find('.add-product').before(product);
 
+    var item_view = null;
     op.get('ordered_product_items').each(function(opi) {
-      var item_view = new order.OrderProductItemFormView({
+      item_view = new order.OrderProductItemFormView({
         el: self.el,
-        presenter: self.presenter
+        presenter: self.presenter,
+        model: opi
       });
-      item_view.render(op, opi);
-    })
+      item_view.render();
+    });
   }
 });
 
@@ -271,14 +409,16 @@ order.OrderProductItemFormView = Backbone.View.extend({
   },
   addSeat: function(e) {
     e.preventDefault();
-    this.presenter.addSeat($(e.target).data('ordered_product'));
+    this.presenter.addSeat($(e.target).data('ordered_product_item'));
   },
   deleteSeat: function(e) {
     this.presenter.deleteSeat($(e.target).data('seat'));
   },
-  render: function(op, opi) {
-    var pi = opi.get('product_item');
+  render: function() {
+    var self = this;
+    var opi = self.model;
 
+    var pi = opi.get('product_item');
     var item = $('<tr/>');
     var stock_holder_name = $('<td style="text-align: right;" />');
     var span = $('<span class="label label-info" />').text(pi.get('stock_holder_name'));
@@ -294,7 +434,7 @@ order.OrderProductItemFormView = Backbone.View.extend({
     var btn_add_td = $('<td/>');
     var div_right = $('<div class="pull-right" />');
     var btn_add = $('<a href="#" class="btn btn-primary btn-mini btn-add-seat" />').text('選択座席を追加');
-    btn_add.data('ordered_product', op);
+    btn_add.data('ordered_product_item', opi);
 
     stock_holder_name.prepend(span);
     item.append(stock_holder_name);

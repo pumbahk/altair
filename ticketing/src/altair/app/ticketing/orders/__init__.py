@@ -26,6 +26,7 @@ def includeme(config):
     config.add_route('orders.api.get.html'              , '/api/get/html/')
     config.add_route('orders.api.product.template'      , '/api/product/template/')
     config.add_route('orders.api.edit'                  , '/api/edit/{order_id}')
+    config.add_route('orders.api.performance'           , '/api/performance/{performance_id}')
 
     config.add_route('orders.refund.index'              , '/refund/')
     config.add_route('orders.refund.search'             , '/refund/search/')
