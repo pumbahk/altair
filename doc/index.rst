@@ -9,7 +9,7 @@ altairとはチケットスター社が制作する票券管理のためのシ�
 Contents:
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
    :glob:
 
    *
