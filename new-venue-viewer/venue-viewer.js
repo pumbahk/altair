@@ -1,6 +1,6 @@
 (function () {
 var __LIBS__ = {};
-__LIBS__['jBGHQV64R_Z81V9D'] = (function (exports) { (function () { 
+__LIBS__['YM5FU9NRFDOO5EY9'] = (function (exports) { (function () { 
 
 /************** util.js **************/
 exports.eventKey = function Util_eventKey(e) {
@@ -127,7 +127,7 @@ exports.makeHitTester = function Util_makeHitTester(a) {
   }
 };
  })(); return exports; })({});
-__LIBS__['RSJPE4TVBYXNMVID'] = (function (exports) { (function () { 
+__LIBS__['r9KUO84IAV4J3_XU'] = (function (exports) { (function () { 
 
 /************** CONF.js **************/
 exports.DEFAULT = {
@@ -182,11 +182,11 @@ exports.DEFAULT = {
   }
 };
  })(); return exports; })({});
-__LIBS__['OCLSDQCQ1F295768'] = (function (exports) { (function () { 
+__LIBS__['u11ZA5ZHHZ1DGIJ2'] = (function (exports) { (function () { 
 
 /************** seat.js **************/
-var util = __LIBS__['jBGHQV64R_Z81V9D'];
-var CONF = __LIBS__['RSJPE4TVBYXNMVID'];
+var util = __LIBS__['YM5FU9NRFDOO5EY9'];
+var CONF = __LIBS__['r9KUO84IAV4J3_XU'];
 
 function clone(obj) {
   return $.extend({}, obj);
@@ -797,7 +797,7 @@ var expandFontProperty = (function () {
     [/normal|italic|oblique|inherit/, function (z) { this.push(['font-style', z]); }],
     [/normal|small-caps|inherit/, function (z) { this.push(['font-variant', z]); }],
     [/normal|bold|bolder|lighter|100|200|300|400|500|600|700|800|900|inherit/, function (z) { this.push(['font-weight', z]); }],
-    [/([1-9][0-9]*(?:px|pt|et|ex|%))(?:\/([1-9][0-9]*(?:px|pt|et|ex|%)))?/, function (_, a, b) {
+    [/((?:(?:(?:[1-9][0-9]*|0)(?:\.[0-9]*)?)|(?:\.[0-9]+))(?:px|pt|et|ex|%))(?:\/((?:(?:(?:[1-9][0-9]*|0)(?:\.[0-9]*)?)|(?:\.[0-9]+))(?:px|pt|et|ex|%)))?/, function (_, a, b) {
       this.push(['font-size', a]);
       if (b) {
         this.push(['line-height', b]); 
@@ -1099,9 +1099,9 @@ function parseTransform(transform_str) {
     throw new Error('invalid transform function: ' + f);
 }
 
-  var CONF = __LIBS__['RSJPE4TVBYXNMVID'];
-  var seat = __LIBS__['OCLSDQCQ1F295768'];
-  var util = __LIBS__['jBGHQV64R_Z81V9D'];
+  var CONF = __LIBS__['r9KUO84IAV4J3_XU'];
+  var seat = __LIBS__['u11ZA5ZHHZ1DGIJ2'];
+  var util = __LIBS__['YM5FU9NRFDOO5EY9'];
 
   var StoreObject = _class("StoreObject", {
     props: {
