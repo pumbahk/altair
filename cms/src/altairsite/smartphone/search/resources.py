@@ -122,18 +122,21 @@ class SearchPageResource(CommonResource):
     def search_hotword(self, query, page, per):
         searcher = EventSearcher(request=self.request)
         today = get_now(self.request)
-        hotword = self.request.allowable(HotWord).filter(HotWord.term_begin <= today) \
-            .filter(today <= HotWord.term_end) \
-            .filter_by(enablep=True).filter(HotWord.id == query.hotword.id).first()
 
-        qs = self.request.allowable(Event) \
-                    .filter(Event.is_searchable == True) \
-                    .join(PageSet, Event.id == PageSet.event_id) \
-                    .join(PageTag2Page, PageSet.id == PageTag2Page.object_id) \
-                    .join(PageTag, PageTag2Page.tag_id == PageTag.id) \
-                    .filter(PageTag.id == hotword.tag_id)
+        result = None
+        if query.hotword:
+            hotword = self.request.allowable(HotWord).filter(HotWord.term_begin <= today) \
+                .filter(today <= HotWord.term_end) \
+                .filter_by(enablep=True).filter(HotWord.id == query.hotword.id).first()
 
-        result = searcher.create_result(qs=qs, page=page, query=query, per=per)
+            qs = self.request.allowable(Event) \
+                        .filter(Event.is_searchable == True) \
+                        .join(PageSet, Event.id == PageSet.event_id) \
+                        .join(PageTag2Page, PageSet.id == PageTag2Page.object_id) \
+                        .join(PageTag, PageTag2Page.tag_id == PageTag.id) \
+                        .filter(PageTag.id == hotword.tag_id)
+
+            result = searcher.create_result(qs=qs, page=page, query=query, per=per)
         return result
 
     # 詳細検索フォーム生成
