@@ -6,6 +6,7 @@ from altairsite.mobile.core.const import SalesEnum
 from altairsite.mobile.event.search.forms import SearchForm
 from datetime import date
 from altairsite.mobile.core.helper import log_info
+from altaircms.formhelpers import CheckboxListField
 
 class DetailSearchForm(SearchForm):
 
@@ -18,8 +19,10 @@ class DetailSearchForm(SearchForm):
     sale = RadioField(label = '', validators=[Optional()],
         choices=[(0, u'販売中'), (1, u'今週販売開始'), (2, u'販売終了間近'), (3, u'まもなく開演のチケット'), (4, u'販売終了した公演も表示する')],
         default=SalesEnum.ON_SALE, coerce=int)
-    sales_segment = RadioField(label = '',validators=[Optional()]
-        ,choices=[(0, u'一般発売'), (1, u'先行販売'), (2, u'先行抽選') ],default=0, coerce=int)
+    sales_segment = CheckboxListField(u'販売区分',
+        choices=[
+            ("normal", u'一般発売'), ("precedence", u'先行販売'), ("lottery", u'先行抽選')
+        ])
     since_year = SelectField(label='', validators=[Optional()], choices=[])
     since_month = SelectField(label='', validators=[Optional()], choices=[])
     since_day = SelectField(label='', validators=[Optional()], choices=[])

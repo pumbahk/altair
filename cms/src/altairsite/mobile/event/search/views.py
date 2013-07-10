@@ -2,7 +2,7 @@
 from altaircms.models import Genre
 from altairsite.config import mobile_site_view_config
 from altairsite.mobile.event.search.forms import SearchForm
-from altairsite.mobile.core.searcher import SimpleEventSearcher, PrefectureEventSearcher
+from altairsite.mobile.core.searcher import create_event_searcher
 from altairsite.mobile.core.const import get_prefecture_name
 from altairsite.mobile.core.helper import exist_value, get_week_map, get_event_paging
 from altairsite.mobile.core.helper import log_info
@@ -24,18 +24,17 @@ def search(request):
     form = SearchForm(request.GET)
     form.num.data = 0
     form.week.data = get_week_map()
-    searcher = SimpleEventSearcher(request)
-    psearcher = PrefectureEventSearcher(request)
+    searcher = create_event_searcher(request=request, form=form)
 
     if (form.area.data and int(form.area.data) > 0) and (form.word.data is None or form.word.data == ""): # 地域検索
         log_info("search", "search event start(area)")
         if exist_value(form.genre.data): # ジャンル画面からの地域検索
             qs = searcher.get_events_from_freeword(form)
             if qs:
-                qs = psearcher.get_events_from_area(form, qs)
+                qs = searcher.get_events_from_area(form, qs)
                 qs = searcher.get_events_from_sale(form, qs)
         else: # トップ画面からの地域検索
-            qs = psearcher.get_events_from_area(form)
+            qs = searcher.get_events_from_area(form)
             qs = searcher.get_events_from_sale(form, qs)
 
         log_info("search", "search event end(area)")
@@ -45,7 +44,7 @@ def search(request):
             log_info("search", "search event start")
             qs = searcher.get_events_from_freeword(form)
             if qs:
-                qs = psearcher.get_events_from_area(form, qs)
+                qs = searcher.get_events_from_area(form, qs)
                 qs = searcher.get_events_from_sale(form, qs)
             log_info("search", "search event end")
             form = get_event_paging(request=request, form=form, qs=qs)
