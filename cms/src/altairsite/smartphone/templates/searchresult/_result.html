@@ -25,7 +25,11 @@ $(window).bind("load resize",function() {
                                 <span>${event.title}</span>
                             </a>
                             <p class="first">公演期間：${event.event_open}〜${event.event_close}</p>
-                            <p class="first">会場：${event.performances[0].venue}</p>
+                            % if event.performances:
+                              % if event.performances[0].venue:
+                                <p class="first">会場：${event.performances[0].venue}</p>
+                              % endif
+                            % endif
                         </div>
                         <div class="panel-footer">
                             <span class="label label-salessegment-normal">販売期間</span><b>${helper.disp_date_week(event.deal_open)}〜${helper.disp_date_week(event.deal_close)}</b>

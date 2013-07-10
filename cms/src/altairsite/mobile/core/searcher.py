@@ -114,7 +114,6 @@ class EventSearcher(object):
             qs = self._get_events_near_sale_end(date.today(), 7, qs)
         elif form.sale.data == int(SalesEnum.SOON_ACT):
             log_info("get_events_from_sale", "search start SOON_ACT")
-            qs = self._get_events_near_sale_end(date.today(), 7, qs)
             qs = self._create_common_qs(
                 where=(
                     (date.today() < Performance.start_on) & \
@@ -176,13 +175,68 @@ class EventSearcher(object):
     # 販売区分別
     def get_events_from_salessegment(self, form, qs=None):
         log_info("get_events_from_salessegment", "start")
-        label = "一般発売"
-        if form.sales_segment.data == 1:
-            label = "一般先行"
-        elif form.sales_segment.data == 2:
-            label = "先行抽選"
-        log_info("get_events_from_salessegment", "sales_segment = " + label)
-        where = SalesSegmentKind.label == label
-        qs = self._create_common_qs(where=where, qs=qs)
-        log_info("get_events_from_salessegment", "end")
+        labels = []
+        for segment in form.sales_segment.data:
+            if segment == "normal":
+                labels.append("一般発売")
+            elif segment == "precedence":
+                labels.append("一般先行")
+            elif segment == "lottery":
+                labels.append("先行抽選")
+
+        if labels:
+            log_info("get_events_from_salessegment", "sales_segment = " + ", ".join(labels))
+            where=SalesSegmentKind.label.in_(labels)
+            qs = self._create_common_qs(where=where, qs=qs)
+            log_info("get_events_from_salessegment", "end")
         return qs
+
+class SimpleEventSearcher(EventSearcher):
+    # 共通クエリ部分
+    def _create_common_qs(self, where, qs=None):
+        log_info("_create_common_qs", "start")
+        if qs: # 絞り込み
+            log_info("_create_common_qs", "and search")
+            qs = qs.filter(where)
+        else: # 新規検索
+            log_info("_create_common_qs", "new search")
+            qs = self.request.allowable(Event) \
+                .join(Page, Page.event_id == Event.id) \
+                .filter(Event.is_searchable == True) \
+                .filter(Page.published == True) \
+                .filter(Page.publish_begin < get_now(self.request)) \
+                .filter((Page.publish_end==None) | (Page.publish_end > get_now(self.request))) \
+                .filter(where)
+        log_info("_create_common_qs", "end")
+        return qs
+
+class PrefectureEventSearcher(EventSearcher):
+    # 共通クエリ部分
+    def _create_common_qs(self, where, qs=None):
+        log_info("_create_common_qs", "start")
+        if qs: # 絞り込み
+            log_info("_create_common_qs", "and search")
+            qs = qs.filter(where)
+        else: # 新規検索
+            log_info("_create_common_qs", "new search")
+            qs = self.request.allowable(Event) \
+                .join(Performance, Event.id == Performance.event_id) \
+                .join(Page, Page.event_id == Event.id) \
+                .filter(Event.is_searchable == True) \
+                .filter(Page.published == True) \
+                .filter(Page.publish_begin < get_now(self.request)) \
+                .filter((Page.publish_end==None) | (Page.publish_end > get_now(self.request))) \
+                .filter(where)
+        log_info("_create_common_qs", "end")
+        return qs
+
+def create_event_searcher(request, form):
+    searcher = SimpleEventSearcher(request=request)
+    if form.sale.data == int(SalesEnum.SOON_ACT):
+        searcher = PrefectureEventSearcher(request=request)
+    if exist_value(form.area.data):
+        searcher = PrefectureEventSearcher(request=request)
+    if hasattr(form, "sales_segment"):
+        if form.sales_segment:
+            searcher = EventSearcher(request=request)
+    return searcher

@@ -1,5 +1,5 @@
 # -*- coding:utf-8 -*-
-from .searcher import EventSearcher
+from .searcher import EventSearcher, SimpleEventSearcher, PrefectureEventSearcher
 from .helper import SmartPhoneHelper
 from .const import get_areas, SalesEnum
 from ..search.search_query import SearchQuery
@@ -88,7 +88,7 @@ class CommonResource(object):
 
     # サブサブジャンル検索
     def search_subsubgenre(self, query, page, per):
-        searcher = EventSearcher(request=self.request)
+        searcher = SimpleEventSearcher(request=self.request)
         qs = searcher.search_freeword(search_query=query, genre_label=query.genre.label, cond=None)
         qs = searcher.search_sale(search_query=query, qs=qs)
         result = searcher.create_result(qs=qs, page=page, query=query, per=per)
@@ -96,7 +96,7 @@ class CommonResource(object):
 
     # 今週発売
     def search_week(self, genre, page, per):
-        searcher = EventSearcher(request=self.request)
+        searcher = SimpleEventSearcher(request=self.request)
         query = SearchQuery(None, genre, SalesEnum.WEEK_SALE.v, None)
         qs = self.load_freeword(search_query=query)
         qs = searcher.search_week_sale(offset=None, qs=qs)
@@ -105,7 +105,7 @@ class CommonResource(object):
 
     # 販売終了間近
     def search_near_end(self, genre, page, per):
-        searcher = EventSearcher(request=self.request)
+        searcher = SimpleEventSearcher(request=self.request)
         sale_info = SaleInfo(sale_start=None, sale_end=7)
         query = SearchQuery(None, genre, SalesEnum.NEAR_SALE_END.v, sale_info)
         qs = self.load_freeword(search_query=query)
@@ -119,7 +119,7 @@ class CommonResource(object):
         if getattr(self.request, "genre_freeword", None):
             qs = self.request.genre_freeword
         else:
-            searcher = EventSearcher(request=self.request)
+            searcher = SimpleEventSearcher(request=self.request)
             qs = searcher.search_freeword(search_query=search_query, genre_label=search_query.genre.label, cond=None)
             self.request.genre_freeword = qs
         return qs
