@@ -21,6 +21,14 @@ def render_topics_with_template(template_name, request, widget):
     result = render(template_name, {"widget": widget, "topics": qs}, request)
     return result
 
+def render_text_only(request, widget):
+    d = get_now(request)
+    searcher = get_topic_searcher(request, widget.type)
+
+    qs = searcher.query_publishing_topics(d, widget.tag, widget.system_tag)
+    qs = qs.options(orm.joinedload("linked_page")).limit(widget.display_count)
+    return u"\n".join(qs)
+    
 ## todo: refactoring
 
 render_cr_faq = partial(render_topics_with_template, "altaircms.plugins.widget:topic/CR_faq_render.html")
@@ -61,6 +69,7 @@ jnames = 注目のイベント
         self.rendering.register("vissel_faq", render_vissel_faq)
         ## xxx:
         self.rendering.register("faq", render_89ers_faq)
+        self.rendering.register("news", render_text_only)
 
         self.rendering.register("topic", render_tstar_topics_faq)
         self.rendering.register("information", render_tstar_information_faq)
