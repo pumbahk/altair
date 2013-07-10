@@ -47,7 +47,7 @@ var expandFontProperty = (function () {
     [/normal|italic|oblique|inherit/, function (z) { this.push(['font-style', z]); }],
     [/normal|small-caps|inherit/, function (z) { this.push(['font-variant', z]); }],
     [/normal|bold|bolder|lighter|100|200|300|400|500|600|700|800|900|inherit/, function (z) { this.push(['font-weight', z]); }],
-    [/([1-9][0-9]*(?:px|pt|et|ex|%))(?:\/([1-9][0-9]*(?:px|pt|et|ex|%)))?/, function (_, a, b) {
+    [/((?:(?:(?:[1-9][0-9]*|0)(?:\.[0-9]*)?)|(?:\.[0-9]+))(?:px|pt|et|ex|%))(?:\/((?:(?:(?:[1-9][0-9]*|0)(?:\.[0-9]*)?)|(?:\.[0-9]+))(?:px|pt|et|ex|%)))?/, function (_, a, b) {
       this.push(['font-size', a]);
       if (b) {
         this.push(['line-height', b]); 
