@@ -124,9 +124,10 @@ $(function () {
 % else:
     <div class="sectionbox">
         <div class="sectionbox-inner">
-            ${helper.disp_date(event.deal_open)}〜${helper.disp_date(event.deal_close)}<br/>
+            ${helper.disp_date(event.deal_open)}〜${helper.disp_date(event.deal_close)}
         </div>
     </div>
+    <hr/>
 % endif
 
 % if len(perfs):
@@ -154,7 +155,6 @@ $(function () {
     <br /><br />
 % endif
 
-<hr/>
 
 <%m:header><a name="list">公演一覧</a></%m:header>
 % if len(perfs):
