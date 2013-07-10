@@ -116,7 +116,7 @@ class DefaultS3Uploader(object):
     def delete_items(self, names):
         self.bucket.delete_keys(names)
 
-    def unpublish(self, name, check=True):
+    def unpublish(self, name, check=False):
         k = Key(self.bucket)
         k.key = name
         if not check:
@@ -124,7 +124,11 @@ class DefaultS3Uploader(object):
         elif k.exists():
             k.set_canned_acl("private")
 
-    def publish(self, name, check=True):
+    def unpublish_items(self, names, check=False):
+        for name in names:
+            self.unpublish(name, check=check)
+
+    def publish(self, name, check=False):
         k = Key(self.bucket)
         k.key = name
         if not check:
