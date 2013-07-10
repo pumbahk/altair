@@ -19,7 +19,7 @@
 </div>
 
 <div class="row">
-  <form action="${request.route_path("asset_movie_delete",asset_id=asset.id)}" method="post">
+  <form action="${request.route_path("asset_movie_delete",asset_id=asset.id,_query=dict(endpoint=request.GET.get("endpoint"))}" method="post">
     <button class="btn btn-danger" type="submit"><i class="icon-trash"> </i> Delete</button>
   </form>
 </div>
