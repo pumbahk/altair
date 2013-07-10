@@ -27,7 +27,7 @@ def render_text_only(request, widget):
 
     qs = searcher.query_publishing_topics(d, widget.tag, widget.system_tag)
     qs = qs.options(orm.joinedload("linked_page")).limit(widget.display_count)
-    return u"\n".join(qs)
+    return u"\n".join([topic.text for topic in qs])
     
 ## todo: refactoring
 
