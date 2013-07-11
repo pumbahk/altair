@@ -134,4 +134,5 @@ def check_pc_page(url):
     urls = []
     urls.append("howto")
     urls.append("terms")
+    urls.append("sitemap")
     return url in urls
