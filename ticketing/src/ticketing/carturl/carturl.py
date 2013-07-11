@@ -22,7 +22,7 @@ def guess_host_name_from_request(request, organization=None):
     ## too-addhoc
     qs = Host.query.filter(Host.organization_id==organization.id)
     if "service" in url:
-        host = qs.filter(Host.host_name.like("%tstar.jp")).first()       
+        host = qs.filter(Host.host_name.like("%.tstar.jp")).first()
     elif "stg2" in url:
         host = qs.filter(Host.host_name.like("%stg2%")).first()
     elif "dev" in url:
