@@ -76,7 +76,8 @@ order.OrderFormPresenter.prototype = {
       if (!seats.get(seat)) {
         seats.push(new order.Seat({
           'id':seat.get('id'),
-          'name':seat.get('name')
+          'name':seat.get('name'),
+          'stock_type_id':seat.get('stock').get('stockType').get('id')
         }));
       }
     });
@@ -208,7 +209,8 @@ order.ProductItem = Backbone.Model.extend({
 order.Seat = Backbone.Model.extend({
   defaults: {
     id: null,
-    name: null
+    name: null,
+    stock_type_id: null
   }
 });
 
@@ -359,10 +361,6 @@ order.OrderProductFormView = Backbone.View.extend({
     var product = $('<tr/>');
     var product_name = $('<td colspan="2" />');
 
-    /*
-     var sales_segment = $('<span class="label label-info" /> ').text(op.get('sales_segment_name'));
-     var product_name = $('<td colspan="2" />').text(op.get('product_name'));
-    */
     var sales_segment_id = op.get('sales_segment_id');
     var sales_segment = $('<select id="sales_segment_id" name="sales_segment_id"></select>');
     var ssc = self.presenter.performance.get('sales_segments');
@@ -380,17 +378,25 @@ order.OrderProductFormView = Backbone.View.extend({
     var product_list = $('<select id="product_id" name="product_id" />');
     if (sales_segment_id) {
       var product_id = op.get('product_id');
+      var stock_type_id = null;
+      op.get('ordered_product_items').each(function(opi) {
+        opi.get('seats').each(function(seat) {
+          stock_type_id = seat.get('stock_type_id');
+          return false;
+        });
+      });
       var ss = ssc.get(sales_segment_id);
       ss.get('products').each(function(p) {
-        var option = $('<option/>').text(p.get('name')).attr('value', p.get('id'));
-        if (p.get('id') == product_id) option.attr('selected', 'selected');
-        product_list.append(option);
+        if (!stock_type_id || stock_type_id == p.get('stock_type_id')) {
+          var option = $('<option/>').text(p.get('name')).attr('value', p.get('id'));
+          if (p.get('id') == product_id) option.attr('selected', 'selected');
+          product_list.append(option);
+        }
       });
       product_list.on('change', function() {
         var p = ss.get('products').get($(this).val());
         op.set('product_id', p.get('id'));
         op.set('price', p.get('price'));
-        //op.set('quantity', $(this).val());
         self.presenter.showForm();
       });
       product_name.append(product_list);

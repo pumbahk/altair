@@ -1465,7 +1465,8 @@ class OrdersReserveView(BaseView):
                     seats=[
                     dict(
                         id=seat.l0_id,
-                        name=seat.name
+                        name=seat.name,
+                        stock_type_id=seat.stock.stock_type_id
                     )
                     for seat in opi.seats
                     ],
