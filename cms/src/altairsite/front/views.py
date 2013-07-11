@@ -64,9 +64,15 @@ def mobile_rendering_page(context, request):
     url = request.matchdict["page_name"]
     dt = context.get_preview_date()
 
+    path = get_mobile_route_path(request=request, pcurl=url)
+    if path:
+        return HTTPFound(path)
+
     control = context.pc_access_control()
     page = control.fetch_page_from_params(url, dt)
 
+    if check_pc_page(url):
+        return _rendering_page(context, request, control, page)
     if not control.access_ok:
         logger.info(control.error_message)
         return mobile_dispatch_view(context, request)
@@ -82,9 +88,15 @@ def smartphone_rendering_page(context, request):
     url = request.matchdict["page_name"]
     dt = context.get_preview_date()
 
+    path = get_smartphone_route_path(request=request, pcurl=url)
+    if path:
+        return HTTPFound(path)
+
     control = context.pc_access_control()
     page = control.fetch_page_from_params(url, dt)
 
+    if check_pc_page(url):
+        return _rendering_page(context, request, control, page)
     if not control.access_ok:
         logger.info(control.error_message)
         return smartphone_dispatch_view(context, request)
@@ -97,3 +109,29 @@ def smartphone_rendering_page(context, request):
     else:
         return smartphone_dispatch_view(context, request)
 
+def get_mobile_route_path(request, pcurl):
+    urls = dict({
+        'faq':request.route_path('help'),
+        'change':request.route_path('information'),
+    })
+    ret = None
+    if pcurl in urls:
+        ret = urls[pcurl]
+    return ret
+
+def get_smartphone_route_path(request, pcurl):
+    urls = dict({
+        'faq':request.route_path('smartphone.page', kind='help'),
+        'change':request.route_path('smartphone.page', kind='canceled'),
+        'smartphone/inquiry':request.route_path('smartphone.page', kind='inquiry')
+    })
+    ret = None
+    if pcurl in urls:
+        ret = urls[pcurl]
+    return ret
+
+def check_pc_page(url):
+    urls = []
+    urls.append("howto")
+    urls.append("terms")
+    return url in urls
