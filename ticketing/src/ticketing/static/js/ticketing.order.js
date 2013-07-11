@@ -37,15 +37,19 @@ order.OrderFormPresenter.prototype = {
     });
 
     $('.btn-save-order').on('click', function() {
-      self.order.save();
+      self.save();
     });
-    $('.btn-cancel').on('click', function() {
-      self.view.close();
-      $('.btn-edit-order').show();
-      $('.btn-save-order, .btn-cancel').hide();
+    $('.btn-close').on('click', function() {
+      self.close();
     });
   },
+  showMessage: function(message, option) {
+    this.view.alert(message, option);
+  },
   showForm: function() {
+    $('.btn-edit-order, #orderProduct').hide();
+    $('.btn-save-order, .btn-close').show();
+
     this.view.close();
     this.view = new this.viewType({
       el: $('#orderProductForm'),
@@ -99,6 +103,25 @@ order.OrderFormPresenter.prototype = {
     var op = new order.OrderedProduct({'ordered_product_items': [{id:null}]});
     self.order.get('ordered_products').push(op);
     self.showForm();
+  },
+  close: function() {
+    var self = this;
+    self.view.close();
+    $('.btn-edit-order, #orderProduct').show();
+    $('.btn-save-order, .btn-close').hide();
+  },
+  save: function() {
+    var self = this;
+    self.order.save(null, {
+      success: function(model, res) {
+        self.showMessage('保存しました', 'alert-success');
+        // Todo: reload #orderProduct and venue
+      },
+      error: function(model, res) {
+        var response = JSON.parse(res.responseText);
+        self.showMessage(response.message, 'alert-error');
+      }
+    });
   }
 };
 _.extend(order.OrderFormPresenter.prototype, Backbone.Event);
@@ -315,6 +338,11 @@ order.OrderFormView = Backbone.View.extend({
     this.order = this.options.order;
     this.template = new orderProductTemplate();
     this.template.get();
+  },
+  alert: function(message, option) {
+    var alert = $('<div class="alert" style="margin: 8px;" />').addClass(option);
+    alert.append($('<ul/>').append($('<li/>').text(message)));
+    this.$el.append(alert);
   },
   show: function() {
     this.render();

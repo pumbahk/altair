@@ -84,90 +84,85 @@
   % endif
 </table>
 
-<table class="table table-striped table-bordered table-condensed">
-  <tr>
-    <th colspan="2" class="span6">商品</th>
-    <th class="span1">単価</th>
-    <th class="span1">個数</th>
-    <th class="span2">小計</th>
-  </tr>
-  % for ordered_product in order.ordered_products:
-  <tr>
-    <td colspan="2">
-      <span class="label label-info">${ordered_product.product.sales_segment.name}</span>
-      ${ordered_product.product.name}
-    </td>
-    <td style="text-align: right;">${vh.price(ordered_product.price)}円</td>
-    <td >${ordered_product.quantity}</td>
-    <td style="text-align: right;">
-      ${vh.price(ordered_product.price * ordered_product.quantity)}円
-    </td>
-  </tr>
-    % for ordered_product_item in ordered_product.ordered_product_items:
-  <tr>
-    <td class="span2" style="text-align: right;">
-      <span class="label label-info">${ordered_product_item.product_item.stock.stock_holder.name}</span>
-    </td>
-    <% attr = ordered_product_item.attributes.get('t_shirts_size') or '' %>
-    <td class="span4">
-      % if ordered_product_item.seats:
-        <ul>
-        % for seat in ordered_product_item.seats:
-          <li>${seat.name}</li>
-        % endfor
-        </ul>
-      % endif
-    </td>
-    <td style="text-align: right;">${vh.price(ordered_product_item.price)}円</td>
-    <td>${ordered_product_item.quantity}</td>
-    <td></td>
-  </tr>
+<div id="orderProduct">
+  <table class="table table-striped table-bordered table-condensed">
+    <tr>
+      <th colspan="2" class="span6">商品</th>
+      <th class="span1">単価</th>
+      <th class="span1">個数</th>
+      <th class="span2">小計</th>
+    </tr>
+    % for ordered_product in order.ordered_products:
+    <tr>
+      <td colspan="2">
+        <span class="label label-info">${ordered_product.product.sales_segment.name}</span>
+        ${ordered_product.product.name}
+      </td>
+      <td style="text-align: right;">${vh.price(ordered_product.price)}円</td>
+      <td >${ordered_product.quantity}</td>
+      <td style="text-align: right;">
+        ${vh.price(ordered_product.price * ordered_product.quantity)}円
+      </td>
+    </tr>
+      % for ordered_product_item in ordered_product.ordered_product_items:
+    <tr>
+      <td class="span2" style="text-align: right;">
+        <span class="label label-info">${ordered_product_item.product_item.stock.stock_holder.name}</span>
+      </td>
+      <% attr = ordered_product_item.attributes.get('t_shirts_size') or '' %>
+      <td class="span4">
+        % if ordered_product_item.seats:
+          <ul>
+          % for seat in ordered_product_item.seats:
+            <li>${seat.name}</li>
+          % endfor
+          </ul>
+        % endif
+      </td>
+      <td style="text-align: right;">${vh.price(ordered_product_item.price)}円</td>
+      <td>${ordered_product_item.quantity}</td>
+      <td></td>
+    </tr>
+      % endfor
     % endfor
-  % endfor
-  <tr>
-    <td colspan="2">決済手数料</td>
-    <td></td>
-    <td></td>
-    <td style="text-align: right;">${vh.price(order.transaction_fee)}円</td>
-  </tr>
-  <tr>
-    <td colspan="2">引取手数料</td>
-    <td></td>
-    <td></td>
-    <td style="text-align: right;">${vh.price(order.delivery_fee)}円</td>
-  </tr>
-  <tr>
-    <td colspan="2">システム利用料</td>
-    <td></td>
-    <td></td>
-    <td style="text-align: right;">${vh.price(order.system_fee)}円</td>
-  </tr>
-  <tr>
-    <td colspan="2" class="span2"><strong>合計</strong></td>
-    <td></td>
-    <td></td>
-    <td style="text-align: right;"><strong>${vh.price(order.total_amount)}円</strong></td>
-  </tr>
-</table>
+    <tr>
+      <td colspan="2">決済手数料</td>
+      <td></td>
+      <td></td>
+      <td style="text-align: right;">${vh.price(order.transaction_fee)}円</td>
+    </tr>
+    <tr>
+      <td colspan="2">引取手数料</td>
+      <td></td>
+      <td></td>
+      <td style="text-align: right;">${vh.price(order.delivery_fee)}円</td>
+    </tr>
+    <tr>
+      <td colspan="2">システム利用料</td>
+      <td></td>
+      <td></td>
+      <td style="text-align: right;">${vh.price(order.system_fee)}円</td>
+    </tr>
+    <tr>
+      <td colspan="2" class="span2"><strong>合計</strong></td>
+      <td></td>
+      <td></td>
+      <td style="text-align: right;"><strong>${vh.price(order.total_amount)}円</strong></td>
+    </tr>
+  </table>
+</div>
+
+<div id="orderProductForm">
+</div>
 
 <div style="text-align: center; margin-bottom: 12px;">
-  <a href="javascript:edit_order();" class="btn btn-edit-order">
+  <a href="javascript:order.init(${order.id});" class="btn btn-edit-order">
     <i class="icon-edit"></i> 商品・座席の変更
   </a>
   <a href="javascript:void(0)" class="btn btn-save-order hide">
-    <i class="icon-edit"></i> 変更を保存
+    <i class="icon-ok"></i> 保存する
   </a>
-  <a href="javascript:void(0)" class="btn btn-cancel hide">
-    <i class="icon-edit"></i> 変更しない
+  <a href="javascript:void(0)" class="btn btn-close hide">
+    <i class="icon-remove"></i> 変更しない
   </a>
 </div>
-
-<script type="text/javascript">
-  function edit_order() {
-    order.init(${order.id});
-    $('.btn-edit-order').hide();
-    $('.btn-save-order, .btn-cancel').show();
-  }
-</script>
-
-<div id="orderProductForm"></div>
