@@ -1493,60 +1493,66 @@ class OrdersReserveView(BaseView):
         order_data = MultiDict(self.request.json_body)
         logger.info(order_data)
 
+        reserving = api.get_reserving(self.request)
+        stocker = api.get_stocker(self.request)
         edit_order = Order.clone(order, deep=True)
-        edit_order.system_fee = order_data.get('system_fee')
-        edit_order.transaction_fee = order_data.get('transaction_fee')
-        edit_order.delivery_fee = order_data.get('delivery_fee')
-
-        from ticketing.cart import api as cart_api
-        reserving = cart_api.get_reserving(self.request)
-        stocker = cart_api.get_stocker(self.request)
 
         for op, eop in itertools.izip(order.items, edit_order.items):
             op_data = None
             for op_data in order_data.get('ordered_products'):
                 if op_data.get('id') == op.id: break
             logger.info('op_data %s' % op_data)
+
+            # 商品変更
+            product = Product.get(int(op_data.get('product_id')))
+            eop.price = int(op_data.get('price'))
             eop.quantity = int(op_data.get('quantity'))
-            for opi, eopi in itertools.izip(op.ordered_product_items, eop.ordered_product_items):
+            eop.product_id = product.id
+            eop.sales_segment_id = product.sales_segment_id
+
+            opi_zip = itertools.izip(op.ordered_product_items, eop.ordered_product_items)
+            for i, (opi, eopi) in enumerate(opi_zip):
                 opi_data = None
                 for opi_data in op_data.get('ordered_product_items'):
                     if opi_data.get('id') == opi.id: break
                 logger.info('opi_data %s' % opi_data)
-                eopi.quantity = int(opi_data.get('quantity'))
 
-                current_seats = [s.l0_id for s in opi.seats]
-                logger.info('current_seats %s' % current_seats)
+                # 座席開放
+                eopi.release()
 
-                # 座席追加
-                add_seats = []
-                for seat in opi_data.get('seats'):
-                    if seat.get('id') not in current_seats:
-                        add_seats.append(seat.get('id'))
-                logger.info('add_seats %s' % add_seats)
+                # 座席がないなら商品削除
+                if opi_data.get('quantity') == 0:
+                    logger.info('delete ordered_product_item %s' % opi_data.get('id'))
+                    opi.ordered_product_items.pop(i)
+                    continue
 
-                # product_requires = [(Product, quantity), ..]
-                product_requires = [(eop.product, len(add_seats))]
-                logger.info("product_requires %s" % product_requires)
+                # 座席確保
+                seats_data = opi_data.get('seats')
+                product_requires = [(eop.product, len(seats_data))]
                 stock_statuses = stocker.take_stock(order.performance_id, product_requires)
-                logger.info("stock_statuses %s" % stock_statuses)
-                seats = reserving.reserve_selected_seats(stock_statuses, order.performance_id, add_seats, SeatStatusEnum.Keep)
-                logger.info('seats %s' % seats)
+                seats = reserving.reserve_selected_seats(
+                    stock_statuses,
+                    order.performance_id,
+                    [s.get('id') for s in seats_data],
+                    SeatStatusEnum.Ordered
+                )
                 eopi.seats += seats
-                for seat in seats:
-                    seat.status = int(SeatStatusEnum.Ordered)
+                logger.info('seats_data %s' % seats_data)
+                logger.info("product_requires %s" % product_requires)
+                logger.info("stock_statuses %s" % stock_statuses)
+                logger.info('seats %s' % seats)
 
-                # 座席削除
-                delete_seats = []
-                for l0_id in current_seats:
-                    if l0_id not in opi_data.get('seats'):
-                        delete_seats.append(l0_id)
-                logger.info('delete_seats %s' % delete_seats)
-                for i, seat in enumerate(eopi.seats):
-                    if seat.l0_id in delete_seats:
-                        eopi.seats.pop(i)
-                        seat.status = int(SeatStatusEnum.Vacant)
+                eopi.quantity = int(opi_data.get('quantity'))
+                eopi.price = int(opi_data.get('product_item').get('price'))
+                #product_item = ProductItem
+                #eopi.product_item_id = product_item.id
 
+            # 商品追加
+
+        edit_order.system_fee = order_data.get('system_fee')
+        edit_order.transaction_fee = order_data.get('transaction_fee')
+        edit_order.delivery_fee = order_data.get('delivery_fee')
+        edit_order.total_amount = order_data.get('total_amount')
         edit_order.save()
 
         return self._get_order_dicts(order)

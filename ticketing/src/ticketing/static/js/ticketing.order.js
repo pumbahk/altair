@@ -79,6 +79,7 @@ order.OrderFormPresenter.prototype = {
           'name':seat.get('name'),
           'stock_type_id':seat.get('stock').get('stockType').get('id')
         }));
+        seat.set('selected', false);
       }
     });
     opi.trigger('change:seats');
