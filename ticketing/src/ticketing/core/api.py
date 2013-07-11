@@ -5,8 +5,6 @@ from sqlalchemy.orm import joinedload
 from sqlalchemy.orm.exc import NoResultFound
 from .models import Host, Organization, OrderNoSequence, ChannelEnum, OrganizationSetting
 from datetime import datetime
-import urllib
-from urlparse import ParseResult, urlparse
 
 logger = logging.getLogger(__name__)
 
@@ -70,46 +68,4 @@ def delete_event(event):
     if event.sales_start_on and event.sales_start_on < datetime.now():
         raise Exception(u'既に販売開始日時を経過している為、削除できません')
     event.delete()
-
-
-## 場所がおかしい気がしている
-def url_builder(scheme, host_name, path, query_dict):
-    query = urllib.urlencode(query_dict, True)
-    url_builder = ParseResult(scheme=scheme, netloc=host_name, path=path, params="", query=query, fragment="")
-    return url_builder.geturl()
-
-def guess_cart_url(request, event, performance=None):
-    # scheme = "https" if request.url.startswith("https") else "http"
-    host_name = guess_cart_host_name(request)
-    path = "/cart/events/{0}".format(event.id)
-    query = {}
-    if performance:
-        query["performance"] = performance.id
-    return url_builder(scheme, host_name, path, query)
-
-def guess_cart_host_name(request):
-    organization = request.context.organization
-    url = request.url
-    ## too-addhoc
-    qs = Host.query.filter(Host.organization_id==organization.id)
-    if "service" in url:
-        host = qs.filter(Host.host_name.like("%tstar.jp")).first()       
-    elif "stg2" in url:
-        host = qs.filter(Host.host_name.like("%stg2%")).first()
-    elif "dev" in url:
-        host = qs.filter(Host.host_name.like("%dev%")).first()
-    else:
-        host = qs.filter(Host.host_name.like("%stg2%")).first()
-    if host is None:
-        logger.warn("host is not found. organization={0}".format(organization))
-        return ""
-    return host.host_name
-
-def guess_cart_now_cart_url(request, cart_url):
-    parsed = urlparse(cart_url)
-    query = {"redirect_to": cart_url}
-    path = "/whattime/login"
-    scheme = parsed.scheme
-    hostname = parsed.netloc
-    return url_builder(scheme, hostname, path, query)
-    
+   
