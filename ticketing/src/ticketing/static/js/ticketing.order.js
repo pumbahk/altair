@@ -28,24 +28,31 @@ order.OrderFormPresenter.prototype = {
   },
   initialize: function(order_id) {
     var self = this;
-    this.view = new this.viewType({
-      el: $('#orderProductForm'),
-      presenter: this
-    });
     this.order = new order.Order({id: order_id});
     this.performance = new order.Performance();
+    this.view = new this.viewType({
+      el: $('#orderProductForm'),
+      presenter: this,
+      order: this.order
+    });
 
     $('.btn-save-order').on('click', function() {
       self.order.save();
     });
     $('.btn-cancel').on('click', function() {
-      self.view.hide();
+      self.view.close();
       $('.btn-edit-order').show();
       $('.btn-save-order, .btn-cancel').hide();
     });
   },
   showForm: function() {
-    this.view.show(this.order);
+    this.view.close();
+    this.view = new this.viewType({
+      el: $('#orderProductForm'),
+      presenter: this,
+      order: this.order
+    });
+    this.view.show();
   },
   fetchAndShow: function() {
     var self = this;
@@ -74,7 +81,7 @@ order.OrderFormPresenter.prototype = {
       }
     });
     opi.trigger('change:seats');
-    self.view.show(self.order);
+    self.showForm();
   },
   deleteSeat: function(seat) {
     var self = this;
@@ -83,13 +90,13 @@ order.OrderFormPresenter.prototype = {
       if (s.get('id') == seat.get('id')) s.set('selected', false);
     });
     seat.collection.remove(seat);
-    self.view.show(self.order);
+    self.showForm();
   },
   addProduct: function() {
     var self = this;
     var op = new order.OrderedProduct({'ordered_product_items': [{id:null}]});
     self.order.get('ordered_products').push(op);
-    self.view.show(self.order);
+    self.showForm();
   }
 };
 _.extend(order.OrderFormPresenter.prototype, Backbone.Event);
@@ -295,24 +302,32 @@ order.OrderFormView = Backbone.View.extend({
   defaults: {
     el: $('#orderProductForm')
   },
+  events: {
+    'click .btn-add-product': 'addProduct'
+  },
   initialize: function() {
     this.presenter = this.options.presenter;
+    this.order = this.options.order;
     this.template = new orderProductTemplate();
     this.template.get();
   },
-  show: function(order) {
-    this.render(order);
+  show: function() {
+    this.render();
     this.$el.show();
   },
-  hide: function() {
+  close: function() {
+    this.$el.off();
     this.$el.hide();
   },
-  render: function(_order) {
+  addProduct: function(e) {
+    e.preventDefault();
+    this.presenter.addProduct();
+  },
+  render: function() {
     var self = this;
-    this.$el.off();
-    self.$el.html(_.template(self.template.template, _order.attributes));
+    self.$el.html(_.template(self.template.template, this.order.attributes));
 
-    _order.get('ordered_products').each(function(op) {
+    this.order.get('ordered_products').each(function(op) {
       var product_view = new order.OrderProductFormView({
         el: self.el,
         presenter: self.presenter
@@ -328,13 +343,6 @@ order.OrderProductFormView = Backbone.View.extend({
   },
   initialize: function() {
     this.presenter = this.options.presenter;
-  },
-  events: {
-    'click .btn-add-product': 'addProduct',
-  },
-  addProduct: function(e) {
-    e.preventDefault();
-    this.presenter.addProduct();
   },
   render: function(op) {
     var self = this;
