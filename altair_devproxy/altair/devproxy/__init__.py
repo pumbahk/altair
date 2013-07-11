@@ -153,6 +153,7 @@ class MyProxy(proxy.Proxy):
                 (r'http://%s.stg2.rt.ticketstar.jp(/orderreview(?:/.*)?)' % subdomain, r'http://localhost:9061\1'),
                 (r'http://%s.stg2.rt.ticketstar.jp(/lots(?:/.*)?)' % subdomain, r'http://localhost:9121\1'),
                 (r'http://%s.stg2.rt.ticketstar.jp(/cart(?:/.*)?)' % subdomain, r'http://localhost:9021\1'),
+                (r'http://%s.stg2.rt.ticketstar.jp(/whattime(?:/.*)?)' % subdomain, r'http://localhost:9071\1'),
                 (r'http://%s.stg2.rt.ticketstar.jp(/maintenance(?:/.*)?)' % subdomain, r'http://localhost:8000\1'),
                 (r'http://%s.stg2.rt.ticketstar.jp(/.*)?' % subdomain, r'http://localhost:9001\1'),
                 ])

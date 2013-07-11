@@ -68,4 +68,4 @@ def delete_event(event):
     if event.sales_start_on and event.sales_start_on < datetime.now():
         raise Exception(u'既に販売開始日時を経過している為、削除できません')
     event.delete()
-
+   

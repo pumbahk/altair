@@ -14,15 +14,15 @@ except ImportError:
 import webtest
 
 ## here. asset
-class AssetFunctionalTests(AppFunctionalTests):
+class AssetFunctionalImageTests(AppFunctionalTests):
     def test_goto_login_page_if_not_login(self):
         app = self._getTarget()
         with logout(app):
             app.get("/asset/").mustcontain(u"ログインしていません")
 
     def tearDown(self):
-        from altaircms.asset.models import ImageAsset, MovieAsset, FlashAsset
-        delete_models([ImageAsset, MovieAsset, FlashAsset])
+        from altaircms.asset.models import ImageAsset, ImageAssetTag
+        delete_models([ImageAsset, ImageAssetTag])
 
 
     def _count_of_image_asset(self):
@@ -183,7 +183,15 @@ class AssetFunctionalTests(AppFunctionalTests):
             self.assertNotEqual(updated_asset2.size, created_asset_size)
             
 
+class AssetFunctionalMovieTests(AppFunctionalTests):
     ## movie asset
+    def tearDown(self):
+        from altaircms.asset.models import MovieAsset, MovieAssetTag
+        delete_models([MovieAsset, MovieAssetTag])
+
+    def _get_static_asset_path(self, path):
+        return "/staticasset/"+path
+
     def _count_of_movie_asset(self):
         from altaircms.asset.models import MovieAsset
         return MovieAsset.query.count()
@@ -324,6 +332,14 @@ class AssetFunctionalTests(AppFunctionalTests):
                 app.get(self._get_static_asset_path(created_asset.filepath))
                 app.get(self._get_static_asset_path(created_asset.thumbnail_path))
 
+
+class AssetFunctionalFlashTests(AppFunctionalTests):
+    def tearDown(self):
+        from altaircms.asset.models import FlashAsset, FlashAssetTag
+        delete_models([FlashAsset, FlashAssetTag])
+
+    def _get_static_asset_path(self, path):
+        return "/staticasset/"+path
 
     ## flash asset
     def _count_of_flash_asset(self):

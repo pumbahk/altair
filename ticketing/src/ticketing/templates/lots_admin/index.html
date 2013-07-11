@@ -1,0 +1,52 @@
+<%inherit file="/layout_2cols.html" />
+<%namespace file="/common/helpers.html" name="ch" />
+
+<%
+from ticketing.cart.helpers import format_currency
+%>
+<div class="page-header">
+<h1>抽選一覧</h1>
+</div>
+
+<%def name="lots_table(lots)">
+%if lots:
+<table class="table">
+<tr>
+<th style="width: 20em">当選結果発表予定日</th>
+<th style="width: 20em">申込期間</th>
+<th style="width: 30em">抽選名</th>
+<th style="width: 5em">状態</th>
+<th>イベント名</th>
+</tr>
+%for lot in lots:
+<tr>
+<td nowrap="">${lot.lotting_announce_datetime}</td>
+<td nowrap="">${lot.sales_segment.start_at} - ${lot.sales_segment.end_at}</td>
+<td><a href="${request.route_url('lots.show', lot_id=lot.id)}">${lot.name}</a></td>
+<td>${view.lot_status(lot)}</td>
+<td>${lot.event.title}</td>
+</tr>
+%endfor
+</table>
+%else:
+なし
+%endif
+</%def>
+
+<div>
+<h2>公開中の抽選</h2>
+<div class="container">
+${self.lots_table(lots)}
+</div>
+</div>
+<hr/>
+<div>
+<h2>今後公開される抽選</h2>
+${self.lots_table(post_lots)}
+</div>
+<hr/>
+
+<div>
+<h2>公開終了した抽選</h2>
+${self.lots_table(past_lots)}
+</div>

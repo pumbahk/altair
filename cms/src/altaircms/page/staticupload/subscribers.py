@@ -85,7 +85,7 @@ def s3delete_files_completely(after_delete_completely):
     try:
         logger.warn("delete all completely!! danger danger,  src=%s" % name)
         delete_candidates = list(uploader.bucket.list(name))
-        uploader.delete_items(delete_candidates)
+        uploader.unpublish_items(delete_candidates)
     except Exception as e:
         logger.exception(str(e))
         logger.error("static page: s3delete files completely. name={0}".format(name))

@@ -10,7 +10,6 @@ from ticketing.printqr import utils
 logger = logging.getLogger(__name__)
 
 from . import forms
-from . import security
 from . import helpers as h
 from ticketing.models import DBSession
 from ticketing.core.models import Event
@@ -37,31 +36,6 @@ def _accepted_object(request, obj):
         request.session.flash(u"ログインしたアカウントとは異なるorganizationです")
         raise HTTPForbidden
     return obj
-
-
-## login
-@view_config(route_name="login", request_method="GET", renderer="ticketing.printqr:templates/login.html")
-@view_config(context="pyramid.httpexceptions.HTTPForbidden", renderer="ticketing.printqr:templates/login.html")
-def login_view(request):
-    logger.debug("login")
-    form = forms.LoginForm()
-    return {"form": form}
-
-@view_config(route_name="login", request_method="POST", renderer="ticketing.printqr:templates/login.html")
-def login_post_view(request):
-    form = forms.LoginForm(request.POST)
-    if not form.validate():
-        return {"form": form}
-    else:
-        headers = security.login(request, form.data["login_id"], form.data["password"])
-        return HTTPFound(location=request.route_url("eventlist"), headers=headers)
-
-@view_config(route_name="logout", request_method="POST")
-def logout_view(request):
-    headers = security.logout(request)
-    request.session.flash(u"ログアウトしました")
-    return HTTPFound(location=request.route_url("login"), headers=headers)
-
 
 ## misc
 @view_config(permission="sales_counter", route_name="misc.order.qr", 

@@ -18,6 +18,9 @@ def path_in_string(path, string):
 
 def countdown_days_from(request, limit_date, today_fn=get_now):
     today = today_fn(request)
+    today = datetime.date(today.year, today.month, today.day)
+    limit_date = datetime.date(limit_date.year, limit_date.month, limit_date.day)
+
     if today > limit_date:
         return 0
     else:

@@ -1,5 +1,5 @@
 # -*- coding:utf-8 -*-
-from ..common.searcher import EventSearcher
+from ..common.searcher import EventSearcher, SimpleEventSearcher, PrefectureEventSearcher
 from ..common.resources import CommonResource
 from altaircms.models import Genre
 from altaircms.event.models import Event
@@ -69,7 +69,7 @@ class SearchPageResource(CommonResource):
 
     # トップ画面、ジャンル画面の検索
     def search(self, query, page, per):
-        searcher = EventSearcher(request=self.request)
+        searcher = SimpleEventSearcher(request=self.request)
         if query.genre:
             qs = searcher.search_freeword(search_query=query, genre_label=query.genre.label, cond=None)
         else:
@@ -81,7 +81,7 @@ class SearchPageResource(CommonResource):
 
     # トップ画面、ジャンルのエリア検索
     def search_area(self, query, page, per):
-        searcher = EventSearcher(request=self.request)
+        searcher = PrefectureEventSearcher(request=self.request)
         qs = None
         if query.word:
             log_info("search_area", "genre=" + query.word)
@@ -96,9 +96,21 @@ class SearchPageResource(CommonResource):
         result = searcher.create_result(qs=qs, page=page, query=query, per=per)
         return result
 
+    def create_event_searcher(self, query):
+        searcher = SimpleEventSearcher(request=self.request)
+        prefectures = query.get_prefectures()
+        info = query.perf_info
+        if prefectures:
+            searcher = PrefectureEventSearcher(request=self.request)
+        if info.canceled:
+            searcher = PrefectureEventSearcher(request=self.request)
+        if query.sales_segment:
+            searcher = EventSearcher(request=self.request)
+        return searcher
+
     # 詳細検索
     def search_detail(self, query, page, per):
-        searcher = EventSearcher(request=self.request)
+        searcher = self.create_event_searcher(query)
         qs = None
 
         # フリーワード、ジャンル
@@ -122,18 +134,21 @@ class SearchPageResource(CommonResource):
     def search_hotword(self, query, page, per):
         searcher = EventSearcher(request=self.request)
         today = get_now(self.request)
-        hotword = self.request.allowable(HotWord).filter(HotWord.term_begin <= today) \
-            .filter(today <= HotWord.term_end) \
-            .filter_by(enablep=True).filter(HotWord.id == query.hotword.id).first()
 
-        qs = self.request.allowable(Event) \
-                    .filter(Event.is_searchable == True) \
-                    .join(PageSet, Event.id == PageSet.event_id) \
-                    .join(PageTag2Page, PageSet.id == PageTag2Page.object_id) \
-                    .join(PageTag, PageTag2Page.tag_id == PageTag.id) \
-                    .filter(PageTag.id == hotword.tag_id)
+        result = None
+        if query.hotword:
+            hotword = self.request.allowable(HotWord).filter(HotWord.term_begin <= today) \
+                .filter(today <= HotWord.term_end) \
+                .filter_by(enablep=True).filter(HotWord.id == query.hotword.id).first()
 
-        result = searcher.create_result(qs=qs, page=page, query=query, per=per)
+            qs = self.request.allowable(Event) \
+                        .filter(Event.is_searchable == True) \
+                        .join(PageSet, Event.id == PageSet.event_id) \
+                        .join(PageTag2Page, PageSet.id == PageTag2Page.object_id) \
+                        .join(PageTag, PageTag2Page.tag_id == PageTag.id) \
+                        .filter(PageTag.id == hotword.tag_id)
+
+            result = searcher.create_result(qs=qs, page=page, query=query, per=per)
         return result
 
     # 詳細検索フォーム生成

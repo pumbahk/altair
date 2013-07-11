@@ -91,8 +91,10 @@ class DetailSearchForm(TopSearchForm):
     genre_sports = CheckboxListField(u'スポーツ', choices=[], validators=[Optional()], coerce=int)
     genre_stage = CheckboxListField(u'演劇・ステージ・舞台', choices=[], validators=[Optional()], coerce=int)
     genre_event = CheckboxListField(u'イベント・その他', choices=[], validators=[Optional()], coerce=int)
-    sales_segment = RadioField(label = '',validators=[Optional()]
-        ,choices=[("normal", u'一般発売'), ("precedence", u'先行販売'), ("lottery", u'先行抽選') ],default="normal", coerce=str)
+    sales_segment = CheckboxListField(u'販売区分',
+        choices=[
+            ("normal", u'一般発売'), ("precedence", u'先行販売'), ("lottery", u'先行抽選')
+        ])
     since_year = SelectField(label='', validators=[Optional()], choices=[], default=0)
     since_month = SelectField(label='', validators=[Optional()], choices=[])
     since_day = SelectField(label='', validators=[Optional()], choices=[])

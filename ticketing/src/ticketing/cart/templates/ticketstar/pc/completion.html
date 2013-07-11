@@ -1,4 +1,4 @@
-<%inherit file="./base.html"/>
+><%inherit file="./base.html"/>
 <%block name="css">
 <style type="text/css">
   .confirm-message{
@@ -104,6 +104,6 @@ ${h.get_nickname(request)}
 
 <div style="width: 800px; text-align: center; margin-left: auto; margin-right: auto;">
   <div class="next-action">
-    <a href="${request.route_url("cart.index", event_id=order.performance.event.id)}"><img src="${request.static_url('ticketing.cart:static/img/settlement/btn_other_ticket.gif')}"/></a>
+    <a href="${request.route_url("cart.index", event_id=order.performance.event.id, _query={'performance': order.performance_id})}"><img src="${request.static_url('ticketing.cart:static/img/settlement/btn_other_ticket.gif')}"/></a>
   </div>
 </div>

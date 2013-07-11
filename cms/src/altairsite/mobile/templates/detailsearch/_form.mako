@@ -34,10 +34,10 @@ ${form.since_year}年${form.since_month}月${form.since_day}日〜<br/>${form.ye
 <%m:header>販売区分（絞り込み条件）</%m:header>
 <div>
 % for count, segment in enumerate(form.sales_segment.choices):
-    % if count == form.sales_segment.data:
-        <input type="radio" name="sales_segment" value="${segment[0]}" checked="true">${segment[1]}<br/>
+    % if segment[0] in form.sales_segment.data:
+        <input type="checkbox" name="sales_segment" value="${segment[0]}" checked="true">${segment[1]}<br/>
     % else:
-        <input type="radio" name="sales_segment" value="${segment[0]}">${segment[1]}<br/>
+        <input type="checkbox" name="sales_segment" value="${segment[0]}">${segment[1]}<br/>
     % endif
 % endfor
 </div>

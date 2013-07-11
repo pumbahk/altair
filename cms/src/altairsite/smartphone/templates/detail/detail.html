@@ -121,6 +121,13 @@ $(function () {
             </table>
         </div>
     </div>
+% else:
+    <div class="sectionbox">
+        <div class="sectionbox-inner">
+            ${helper.disp_date(event.deal_open)}〜${helper.disp_date(event.deal_close)}
+        </div>
+    </div>
+    <hr/>
 % endif
 
 % if len(perfs):
@@ -130,6 +137,7 @@ $(function () {
 % endif
 
 <hr/>
+% endif
 
 % if event.notice:
     <%m:header>詳細/注意事項</%m:header>
@@ -138,9 +146,9 @@ $(function () {
         ${helper.nl2br(event.notice)|n}
         </font>
     </div>
-% endif
 
 <hr/>
+% endif
 
 % if event.inquiry_for:
     <%m:header>お問い合わせ</%m:header>
@@ -148,7 +156,6 @@ $(function () {
     <br /><br />
 % endif
 
-<hr/>
 
 <%m:header><a name="list">公演一覧</a></%m:header>
 % if len(perfs):
@@ -244,7 +251,9 @@ $(function () {
                                 開場：${helper.disp_time(perf.open_on)}<br/>
                               % endif
                               開演：${helper.disp_time(perf.start_on)}<br/>
-                              会場：${perf.venue}<br/>
+                              % if perf.venue:
+                                会場：${perf.venue}<br/>
+                              % endif
                             </p>
                           </div>
                           % if not start_on_candidates:

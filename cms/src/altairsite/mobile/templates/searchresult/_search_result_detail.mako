@@ -16,11 +16,13 @@
     % for count, event in enumerate(events):
 <a href="/eventdetail?event_id=${event.id}&genre=${genre}&sub_genre=${sub_genre}">${event.title}</a><br />
 　販売期間：${event.deal_open.year}/${str(event.deal_open.month).zfill(2)}/${str(event.deal_open.day).zfill(2)}(${week[event.deal_open.weekday()]})〜${event.deal_close.year}/${str(event.deal_close.month).zfill(2)}/${str(event.deal_close.day).zfill(2)}(${week[event.deal_close.weekday()]})<br />
-        % if event.performances[0]:
+      % if event.performances:
+        % if event.performances[0].venue:
 　会場：${event.performances[0].venue}<br />
         % if event.deal_close < get_now(request):
 　<font color="red">このイベントの販売は終了しました</font><br/>
         % endif
+      % endif
             % if count < len(events) - 1:
                 <hr/>
             % endif

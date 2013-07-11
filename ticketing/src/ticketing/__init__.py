@@ -143,6 +143,9 @@ def main(global_config, **local_config):
         config.include('ticketing.booster.89ers.setup_order_product_attribute_metadata')
         config.include('ticketing.booster.bambitious.setup_order_product_attribute_metadata')
         config.include('ticketing.booster.bigbulls.setup_order_product_attribute_metadata')
+        config.include('ticketing.lots_admin')
+
+        config.include("ticketing.carturl")
 
         ## TBA
         config.add_route("qr.make", "___________") ##xxx:

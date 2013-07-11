@@ -31,6 +31,7 @@ from ..core import api as core_api
 from ..users import models as u_models
 from . import models as m
 from zope.deprecation import deprecate
+from altair.now import get_now
 
 logger = logging.getLogger(__name__)
 
@@ -41,7 +42,7 @@ class TicketingCartResource(object):
 
     def __init__(self, request):
         self.request = request
-        self.now = datetime.now()
+        self.now = get_now(request)
         self._event_id = None
         self._event = None
         self._sales_segment_id = None
@@ -104,7 +105,7 @@ class TicketingCartResource(object):
 
     ## なぜ２つ?
     def available_payment_delivery_method_pairs(self, sales_segment):
-        return sales_segment.available_payment_delivery_method_pairs(getattr(self, 'now', datetime.now()))
+        return sales_segment.available_payment_delivery_method_pairs(self.now) #xxx?
     ## 
     def get_payment_delivery_method_pair(self, start_on=None):
         segment = self.sales_segment
