@@ -1490,14 +1490,16 @@ class OrdersReserveView(BaseView):
     def api_edit_put(self):
         order_id = self.request.matchdict.get('order_id', 0)
         order = Order.get(order_id, self.context.user.organization_id)
-        order_data = MultiDict(self.request.json_body)
-        logger.info(order_data)
 
         reserving = api.get_reserving(self.request)
         stocker = api.get_stocker(self.request)
         edit_order = Order.clone(order, deep=True)
 
-        for op, eop in itertools.izip(order.items, edit_order.items):
+        order_data = MultiDict(self.request.json_body)
+        logger.info(order_data)
+
+        op_zip = itertools.izip(order.items, edit_order.items)
+        for i, (op, eop) in enumerate(op_zip):
             op_data = None
             for op_data in order_data.get('ordered_products'):
                 if op_data.get('id') == op.id: break
@@ -1511,7 +1513,7 @@ class OrdersReserveView(BaseView):
             eop.sales_segment_id = product.sales_segment_id
 
             opi_zip = itertools.izip(op.ordered_product_items, eop.ordered_product_items)
-            for i, (opi, eopi) in enumerate(opi_zip):
+            for j, (opi, eopi) in enumerate(opi_zip):
                 opi_data = None
                 for opi_data in op_data.get('ordered_product_items'):
                     if opi_data.get('id') == opi.id: break
@@ -1519,11 +1521,13 @@ class OrdersReserveView(BaseView):
 
                 # 座席開放
                 eopi.release()
+                eopi.seats = []
 
-                # 座席がないなら商品削除
+                # 座席がないなら商品明細削除
                 if opi_data.get('quantity') == 0:
                     logger.info('delete ordered_product_item %s' % opi_data.get('id'))
-                    opi.ordered_product_items.pop(i)
+                    del_item = eop.ordered_product_items.pop(j)
+                    del_item.delete()
                     continue
 
                 # 座席確保
@@ -1547,14 +1551,65 @@ class OrdersReserveView(BaseView):
                 #product_item = ProductItem
                 #eopi.product_item_id = product_item.id
 
-            # 商品追加
+            # 座席がないなら商品削除
+            if op_data.get('quantity') == 0:
+                logger.info('delete ordered_product %s' % op_data.get('id'))
+                del_product = edit_order.items.pop(i)
+                del_product.delete()
+                continue
+
+        # 商品追加
+        for op_data in order_data.get('ordered_products'):
+            if not op_data.get('id'):
+                logger.info('add ordered_product %s' % op_data)
+                product = Product.get(int(op_data.get('product_id')))
+                quantity = int(op_data.get('quantity'))
+                ordered_product = OrderedProduct(
+                    order=edit_order, product=product, price=product.price, quantity=quantity)
+                for product_item in product.items:
+                    seats = []
+                    if product_item.stock.stock_type.is_seat:
+                        seats_data = []
+                        for opi_data in op_data.get('ordered_product_items'):
+                            if opi_data.get('seats'):
+                                seats_data = opi_data.get('seats')
+                                break
+                        product_requires = [(product, len(seats_data))]
+                        stock_statuses = stocker.take_stock(order.performance_id, product_requires)
+                        seats = reserving.reserve_selected_seats(
+                            stock_statuses,
+                            order.performance_id,
+                            [s.get('id') for s in seats_data],
+                            SeatStatusEnum.Ordered
+                        )
+                        logger.info('seats_data %s' % seats_data)
+                        logger.info("product_requires %s" % product_requires)
+                        logger.info("stock_statuses %s" % stock_statuses)
+                        logger.info('seats %s' % seats)
+                    ordered_product_item = OrderedProductItem(
+                        ordered_product=ordered_product,
+                        product_item=product_item,
+                        price=product_item.price,
+                        quantity=product_item.quantity * quantity,
+                        seats=seats
+                    )
+                    ordered_product.ordered_product_items.append(ordered_product_item)
+                edit_order.items.append(ordered_product)
 
         edit_order.system_fee = order_data.get('system_fee')
         edit_order.transaction_fee = order_data.get('transaction_fee')
         edit_order.delivery_fee = order_data.get('delivery_fee')
         edit_order.total_amount = order_data.get('total_amount')
-        edit_order.save()
 
+        total_amount = sum(eop.price * eop.quantity for eop in edit_order.items)
+        total_amount += edit_order.system_fee + edit_order.transaction_fee + edit_order.delivery_fee
+        logger.info('total_amount %s == %s' % (total_amount, edit_order.total_amount))
+        if total_amount != edit_order.total_amount:
+            raise HTTPBadRequest(body=json.dumps({
+                'message':u'合計金額を確認してください'
+            }))
+
+        edit_order.save()
         return self._get_order_dicts(order)
 
     @view_config(route_name='orders.api.get.html', renderer='ticketing:templates/orders/_tiny_order.html')
@@ -1563,7 +1618,7 @@ class OrdersReserveView(BaseView):
         performance_id = self.request.params.get('performance_id', 0)
         order = self._get_order_by_seat(performance_id, l0_id)
         if order is None:
-            raise HTTPNotFound('order id %d is not found' % order.id)
+            raise HTTPNotFound('order (performance_id=%s, l0_id=%s) is not found' % (performance_id, l0_id))
         return {
             'order':order,
         }
