@@ -4,9 +4,6 @@ from pyramid.config import Configurator
 from sqlalchemy import engine_from_config
 import sqlahelper
 
-from pyramid.authentication import AuthTktAuthenticationPolicy
-from pyramid.authorization import ACLAuthorizationPolicy
-
 import logging
 logger = logging.getLogger(__name__)
 
@@ -25,13 +22,11 @@ def includeme(config):
 
     config.add_route("progress", "/progress/{event_id}")
     config.add_route('api.progress.total_result_data', '/api/progress/total_result/{event_id}')
-
-    config.add_route("login", "/login")
-    config.add_route("logout", "/logout")
-
     config.add_route("misc.order.qr", "/_misc/order/qr")
     config.scan(".views")
 
+def find_group(user_id, request):
+    return ["group:sales_counter"]
 
 def main(global_config, **local_config):
     settings = dict(global_config)
@@ -42,18 +37,18 @@ def main(global_config, **local_config):
 
     config = Configurator(settings=settings, 
                           root_factory=".resources.PrintQRResource")
-    authorization_policy = ACLAuthorizationPolicy()
-    config.set_authorization_policy(authorization_policy)
-    authentication_policy = AuthTktAuthenticationPolicy(secret=settings['authtkt.secret'],cookie_name='printqr.auth_tkt',
-                                                        callback=config.maybe_dotted('.security.find_group'))
-    config.set_authentication_policy(authentication_policy)
     config.add_renderer('.html' , 'pyramid.mako_templating.renderer_factory')
     config.add_renderer('lxml'  , 'ticketing.renderers.lxml_renderer_factory')
+
+    ## login/logout
+    config.include("ticketing.login.internal")
+    config.use_internal_login(secret=settings['authtkt.secret'], cookie_name='printqr.auth_tkt', auth_callback=find_group)
+    config.setup_internal_login_views(factory=".resources.PrintQRResource", login_html="ticketing.printqr:templates/login.html")
+    config.add_forbidden_view("ticketing.login.internal.views.login_view", renderer="ticketing.printqr:templates/login.html")
 
     config.include("ticketing.qr", route_prefix="qr")
     config.include(".")
     config.include(".jasmine")
-    config.add_forbidden_view(".views.login_view", renderer="ticketing.printqr:templates/login.html")
     config.add_static_view('static', 'ticketing.printqr:static', cache_max_age=3600)
     config.add_static_view('_static', 'ticketing:static', cache_max_age=10800)
     return config.make_wsgi_app()

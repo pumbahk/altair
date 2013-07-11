@@ -20,6 +20,8 @@ ${event.event_open.year}/${str(event.event_open.month).zfill(2)}/${str(event.eve
         % endif
     % endfor
     <br />
+% else:
+    ${event.deal_open.year}/${event.deal_open.month}/${event.deal_open.day}〜${event.deal_close.year}/${event.deal_close.month}/${event.deal_close.day}
 % endif
 
 <div align="center">
@@ -158,7 +160,7 @@ ${helper.nl2br(event.inquiry_for)|n}
                 % if not first:
                     <hr />
                 % endif
-                % if event.deal_close <  get_now(request):
+                % if event.deal_close <  get_now(request) or not start_on_candidates:
                 [${index}]<font size="-1">${perf.title}</font><br />
                 % else:
                 [${index}]<font size="-1"><a href="${purchase_links[perf.id]}">${perf.title}</a></font><br />

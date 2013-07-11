@@ -177,7 +177,7 @@ class S3StaticPageDirectory(StaticPageDirectory):
         uploader = uploader or self.s3utility.uploader        
         keyname = self.get_name(root, f)
         logger.info("*debug delete file:{0}".format(keyname))
-        uploader.delete(keyname)
+        uploader.unpublish(keyname)
 
     def clean_directory(self, d):
         uploader = self.s3utility.uploader
@@ -186,7 +186,7 @@ class S3StaticPageDirectory(StaticPageDirectory):
         for root, dirs, files in os.walk(d):
             for f in files:
                 r.append(self.get_name(root, f))
-        uploader.delete_items(r)
+        uploader.unpublish_items(r)
 
     def copy_items(self, src, dst):
         logger.info("copy_items: {0} -> {1}".format(src, dst))
@@ -201,4 +201,4 @@ class S3StaticPageDirectory(StaticPageDirectory):
     def clean_items(self, src):
         logger.info("clean_items: src = {0}".format(src))
         uploader = self.s3utility.uploader
-        uploader.delete_items(list(uploader.bucket.list(src)))
+        uploader.unpublish_items(list(uploader.bucket.list(src)))

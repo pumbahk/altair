@@ -29,6 +29,8 @@ from ticketing.multicheckout.models import (
     MultiCheckoutOrderStatus,
 )
 
+other_electing = LotElectWork.__table__.alias()
+
 class LotWishSummary(Base):
     __mapper_args__ = dict(
         include_properties=[
@@ -51,6 +53,7 @@ class LotWishSummary(Base):
             Lot.__table__.c.id.label('lot_id'),
             LotElectWork.__table__.c.id.label('lot_elect_work_id'),
             LotElectWork.__table__.c.error.label('lot_elect_work_error'),
+            other_electing.c.id.label('lot_other_elect_work_id'),
             LotRejectWork.__table__.c.id.label('lot_reject_work_id'),
             ShippingAddress.__table__.c.id.label('shipping_address_id'),
             ShippingAddress.__table__.c.last_name.label('shipping_address_last_name'),
@@ -92,6 +95,7 @@ class LotWishSummary(Base):
     closed_at = LotEntry.__table__.c.closed_at
     lot_elect_work_id = LotElectWork.__table__.c.id
     lot_elect_work_error = LotElectWork.__table__.c.error
+    lot_other_elect_work_id = other_electing.c.id
     lot_reject_work_id = LotRejectWork.__table__.c.id
     shipping_address_id = ShippingAddress.__table__.c.id
     shipping_address_last_name = ShippingAddress.__table__.c.last_name
@@ -153,6 +157,10 @@ class LotWishSummary(Base):
         and_(LotElectWork.lot_entry_no==LotEntry.entry_no,
              LotElectWork.wish_order==LotEntryWish.wish_order),
     ).outerjoin(
+        other_electing,
+        and_(other_electing.c.lot_entry_no==LotEntry.entry_no,
+             other_electing.c.wish_order!=LotEntryWish.wish_order),
+    ).outerjoin(
         LotRejectWork.__table__,
         LotRejectWork.lot_entry_no==LotEntry.entry_no,
     ).outerjoin(
@@ -172,6 +180,9 @@ class LotWishSummary(Base):
 
     def is_electing(self):
         return bool(self.lot_elect_work_id)
+
+    def is_other_electing(self):
+        return bool(self.lot_other_elect_work_id)
 
     def is_rejecting(self):
         return bool(self.lot_reject_work_id)
@@ -196,6 +207,8 @@ class LotWishSummary(Base):
     @property
     def status(self):
         """ """
+        if self.is_other_electing():
+            return u"他の希望が当選予定"
         if self.closed_at:
             return u"終了"
         if self.elected_at:

@@ -2,9 +2,8 @@
 from altaircms.genre.searcher import GenreSearcher
 from altairsite.config import mobile_site_view_config
 from altairsite.mobile.event.detailsearch.forms import DetailSearchForm
-from altairsite.mobile.core.searcher import EventSearcher
-from altairsite.mobile.core.helper import get_event_paging, get_week_map
-from altairsite.mobile.core.helper import log_info
+from altairsite.mobile.core.helper import get_event_paging, get_week_map, log_info
+from altairsite.mobile.core.searcher import create_event_searcher
 from datetime import date
 
 @mobile_site_view_config(route_name='detailsearchinit', request_type="altairsite.tweens.IMobileRequest"
@@ -24,7 +23,6 @@ def move_detailsearch(request):
 def move_detailsearch_post(request):
 
     log_info("move_detailsearch_post", "start")
-    searcher = EventSearcher(request)
 
     form = DetailSearchForm(request.GET)
     form = create_genre_selectbox(request, form)
@@ -33,6 +31,7 @@ def move_detailsearch_post(request):
 
     if form.validate():
         log_info("move_detailsearch_post", "detail search start")
+        searcher = create_event_searcher(request, form)
         qs = searcher.get_events_from_freeword(form)
         qs = searcher.get_events_from_area(form, qs)
         qs = searcher.get_events_from_start_on(form, qs)
@@ -64,7 +63,6 @@ def create_genre_selectbox(request, form):
     log_info("create_genre_selectbox", "end")
     return form
 
-# 2100年まで設定可能にした
 def create_date_selectbox(form):
     log_info("create_date_selectbox", "start")
 

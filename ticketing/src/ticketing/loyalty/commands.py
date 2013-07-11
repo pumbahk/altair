@@ -432,7 +432,7 @@ def make_point_grant_data():
             sys.stderr.flush()
             sys.exit(255)
     else:
-        if start_date is not None or end_date is not None:
+        if start_date is None and end_date is None:
             date = todatetime(submitted_on - timedelta(days=3))
 
     if start_date is None and end_date is None:

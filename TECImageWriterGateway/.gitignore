@@ -1,3 +1,7 @@
 *.suo
 .DS_Store
 *.swp
+Backup*/
+UpgradeLog.XML
+UpgradeLog*.XML
+_UpgradeReport_Files/

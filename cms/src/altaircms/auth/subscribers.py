@@ -27,7 +27,7 @@ def touch_operator_after_login(self): ## self is AfterLogin
     DBSession.add(organization)
     if DBSession.is_modified(organization):
         DBSession.flush()
-        after_organization_modified(organization)
+    after_organization_modified(organization)
 
     operator = h.get_or_create_operator(auth_source, data["user_id"], data["screen_name"])
     operator = h.update_operator_with_data(operator, roles, data)

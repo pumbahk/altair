@@ -10,7 +10,7 @@ from ticketing.cart.helpers import format_currency
 <%def name="lot_wish_row(request, w)">
 <td nowrap="">
 <div class="btn-group">
-%if not w.closed_at:
+%if not (w.closed_at or w.is_other_electing()):
 
   %if not w.canceled_at and not w.is_electing() and not w.is_rejecting() and not w.rejected_at and not w.is_electing() and not w.elected_at:
   <button class="btn entry-elect-btn" data-entry-no="${w.entry_no}" data-wish-order="${w.wish_order}">当選</button>

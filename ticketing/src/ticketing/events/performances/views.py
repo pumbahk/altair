@@ -30,6 +30,7 @@ from ticketing.mails.api import get_mail_utility
 from ticketing.core.models import MailTypeChoices
 from ticketing.orders.api import OrderSummarySearchQueryBuilder, QueryBuilderError
 from ticketing.orders.models import OrderSummary
+from ticketing.carturl.api import get_cart_url_builder, get_cart_now_url_builder
 
 @view_defaults(decorator=with_bootstrap, permission="event_editor")
 class PerformanceShowView(BaseView):
@@ -127,6 +128,10 @@ class PerformanceShowView(BaseView):
         data.update(getattr(self, tab_method)())
         data.update(self._extra_data())
 
+        ## cart url
+        cart_url = get_cart_url_builder(self.request).build(self.request, self.performance.event, self.performance)
+        data["cart_url"] = cart_url
+        data["cart_now_cart_url"] = get_cart_now_url_builder(self.request).build(self.request, cart_url)
         return data
 
 

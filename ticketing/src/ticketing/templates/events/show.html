@@ -109,6 +109,17 @@ $(function(){
             % endif
           </td>
         </tr>
+        <tr>
+          <th>カートURL</th>
+          <span class="help-inline">
+            <a rel="popover" data-original-title="カートURL",data-content="購入カートのURL">
+              <i class="icon-question-sign"></i>
+            </a>
+          </span>
+          <td>
+            <a href="${cart_url}">${cart_url}</a>  (<a href="${cart_now_cart_url}">時間指定してカート購入</a>)
+          </td>
+        </tr>
       </tbody>
     </table>
     <%include file="/events/_action_button.html" args="event=event, order=['edit', 'delete', 'copy']" />

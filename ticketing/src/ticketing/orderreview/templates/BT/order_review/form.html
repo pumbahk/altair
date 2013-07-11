@@ -1,0 +1,33 @@
+<%inherit file="/BT/commons/layout.html" />
+<h2>バンビシャス奈良 バンビシャスチケット 購入確認ページ</h2>
+<form action="${request.route_path('order_review.show')}" method="post">
+  <table class="form-table fancy">
+    <colgroup>
+      <col style="width:20%" />
+      <col style="width:80%" />
+    </colgroup>
+    <tbody>
+      <tr>
+        <th>受付番号 <span class="red">*</span></th>
+        <td>
+          ${form.order_no}
+          ${h.error('order_no')}
+        </td>
+      </tr>
+      <tr>
+        <th>電話番号 <span class="red">*</span></th>
+        <td>
+          ${form.tel}
+          ${h.error('tel')}
+          <p class="notice">電話番号は、ご登録時の電話番号をご入力ください<br />（携帯・自宅をどちらもご登録した場合、どちらの番号でも構いません）</p>
+        </td>
+      </tr>
+      <tr>
+        <td colspan="2" style="text-align:center">
+          <div class="textRight red" style="font-size:12px;">*は入力必須項目です。<br></div>
+         <input type="submit" value="次に進む" class="btn_red submit" style="width:400px;height:50px;">
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</form>
