@@ -24,7 +24,11 @@ def now_set_view(context, request):
         organization = get_organization(request)
         return {"form": form, "now": now, "has_key": has_session_key(request), "organization": organization}        
     set_now(request, form.data["now"])
-    return HTTPFound(form.data.get("redirect_to") or request.route_path("whattime.nowsetting.form"))
+    return HTTPFound(request.route_path("whattime.nowsetting.form", _query=dict(request.GET)))
+
+@view_config(route_name="whattime.nowsetting.set", permission="cart_admin", request_method="POST", request_param="goto")
+def now_gotot_view(context, request):
+    return HTTPFound(request.params.get("redirect_to") or request.route_path("whattime.nowsetting.form"))
 
 @view_config(route_name="whattime.nowsetting.set", permission="cart_admin", request_method="POST", request_param="invalidate")
 def now_invalidate_view(context, request):
