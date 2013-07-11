@@ -62,21 +62,27 @@
                             <tbody>
                               <tr>
                                 <td>
-                                  ID
-                                  <br><span class="small red">※ 半角英数</span>
+                                  会員ID(8桁)
+                                  <br /><span class="small red">※ 半角英数</span>
                                 </td>
                                 <td>
-                                  <input type="text" class="text" name="username" style="width:120px" value="">
+                                  <input type="text" class="text" name="username" size="20" maxlength="8" value="${username}">
                                   %if message:
-                                  <br/><span class="small red">IDが一致しません</span>
+                                  <br/><span class="small red">${message}</span>
                                   %endif
                                 </td>
                               </tr>
                               <tr>
-                                <td colspan="2" class="textC"> <input type="submit" class="btn_red" name="login" value="ログイン"></td>
+                                <td>
+                                  パスワード(8桁)
+                                  <br /><span class="small red">※ 半角英数</span>
+                                </td>
+                                <td>
+                                  <input type="password" class="text" name="password" size="20" maxlength="8" value="">
+                                </td>
                               </tr>
                               <tr>
-                                <td colspan="2" class="textC"><small>モバイルファンクラブ会員のIDを忘れてしまった方は<br /><a href="mailto:vmfc@m.msgs.jp?body=※ご注意※モバイルファンクラブに登録頂いた携帯アドレスから本アドレスにメールを送信してください。">こちら</a>からお問い合わせください。</small></td>
+                                <td colspan="2" class="textC"> <input type="submit" class="btn_red" name="login" value="ログイン"></td>
                               </tr>
                             </tbody>
                           </table>              
