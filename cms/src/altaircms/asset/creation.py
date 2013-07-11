@@ -107,9 +107,9 @@ class Deleter(object):
 
     def delete(self, asset):
         if self.confirm(asset):
-            DBSession.delete(asset)
             ## moveit
             self.filesession.commit([asset])
+            DBSession.delete(asset)
 
 
 class Display(object):
