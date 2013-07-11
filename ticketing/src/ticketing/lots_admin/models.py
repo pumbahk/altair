@@ -1,3 +1,5 @@
+# -*- coding:utf-8 -*-
+
 from ticketing.models import (
     Base,
     DBSession,
@@ -62,6 +64,8 @@ class LotEntrySearch(Base):
     event_id = Event.__table__.c.id
     event_title = Event.__table__.c.title
     shipping_address_id = ShippingAddress.__table__.c.id
+    shipping_address_full_name = ShippingAddress.__table__.c.last_name + u'　' + ShippingAddress.__table__.c.first_name
+    shipping_address_full_name_kana = ShippingAddress.__table__.c.last_name_kana + u'　' + ShippingAddress.__table__.c.first_name_kana
     shipping_address_last_name = ShippingAddress.__table__.c.last_name
     shipping_address_first_name = ShippingAddress.__table__.c.first_name
     shipping_address_last_name_kana = ShippingAddress.__table__.c.last_name_kana
