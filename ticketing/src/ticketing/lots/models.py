@@ -26,6 +26,7 @@ from sqlalchemy.orm.exc import NoResultFound
 from zope.deprecation import deprecate
 
 logger = logging.getLogger(__name__)
+
 from ticketing.utils import StandardEnum
 from ticketing.models import (
     Identifier,
@@ -121,6 +122,7 @@ class Lot(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     system_fee = sa.Column(sa.Numeric(precision=16, scale=2), default=0,
                            server_default="0")
 
+
     @property
     def electing_works(self):
         return LotElectWork.query.filter(
@@ -149,11 +151,34 @@ class Lot(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             LotEntry.lot_id==self.id
         ).all()
 
+    @property
+    def query_receipt_entries(self):
+        """ 申込状態のエントリ """
+
+        return LotEntry.query.filter(
+            LotEntry.lot_id==self.id
+        ).filter(
+            LotEntry.entry_no!=None,
+        ).filter(
+            LotEntry.order_id==None, # 当選していない
+            LotEntry.elected_at==None, # 当選していない
+            LotEntry.rejected_at==None, # 落選していない
+            LotEntry.canceled_at==None, # キャンセルされていない
+        )
+
     def is_elected(self):
         return self.status == int(LotStatusEnum.Elected)
 
     def finish_lotting(self):
         self.status = int(LotStatusEnum.Elected)
+
+    def start_electing(self):
+        logger.info("start electing lot id={lot.id}".format(lot=self))
+        self.status = int(LotStatusEnum.Electing)
+
+    @hybrid_method
+    def is_finished(self):
+        return self.status == int(LotStatusEnum.Elected)
 
     def check_entry_limit(self, email):
         if self.entry_limit <= 0:

@@ -595,7 +595,9 @@ class LotEntries(BaseView):
         lot_id = self.request.matchdict["lot_id"]
         lot = Lot.query.filter(Lot.id==lot_id).one()
         electing = Electing(lot, self.request)
+        closer = LotCloser(lot, self.request)
         return dict(lot=lot,
+                    closer=closer,
                     electing=electing)
 
 
@@ -611,6 +613,7 @@ class LotEntries(BaseView):
         closer = LotCloser(lot, self.request)
         closer.close()
         self.request.session.flash(u"オーソリ開放可能にしました。")
+        lot.finish_lotting()
 
         return HTTPFound(location=self.request.route_url('lots.entries.index', lot_id=lot.id))
 
@@ -628,6 +631,7 @@ class LotEntries(BaseView):
         lots_api.elect_lot_entries(self.request, lot.id)
 
         self.request.session.flash(u"当選確定処理を行いました")
+        lot.start_electing()
 
         return HTTPFound(location=self.request.route_url('lots.entries.index', lot_id=lot.id))
 
@@ -647,6 +651,7 @@ class LotEntries(BaseView):
 
         self.request.session.flash(u"落選確定処理を行いました")
 
+        lot.start_electing()
         return HTTPFound(location=self.request.route_url('lots.entries.index', 
                                                          lot_id=lot.id))
 
@@ -729,6 +734,7 @@ class LotEntries(BaseView):
         affected = lots_api.submit_lot_entries(lot.id, entries)
 
         logger.debug('elect all: results = {0}'.format(results))
+        lot.start_electing()
         return dict(
             affected=affected,
             html=[(self.wish_tr_class(w), self.render_wish_row(w))
@@ -763,6 +769,7 @@ class LotEntries(BaseView):
 
         affected = lots_api.submit_lot_entries(lot.id, entries)
 
+        lot.start_electing()
         return dict(result="OK",
                     affected=affected,
                     html=[(self.wish_tr_class(w), self.render_wish_row(w))
@@ -793,6 +800,7 @@ class LotEntries(BaseView):
 
         affected = lots_api.submit_reject_entries(lot.id, entries)
 
+        lot.start_electing()
         return dict(result="OK",
                     affected=affected,
                     html=[(self.wish_tr_class(w), self.render_wish_row(w))

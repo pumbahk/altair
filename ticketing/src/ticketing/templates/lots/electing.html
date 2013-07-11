@@ -35,6 +35,9 @@ ${tabs.tabs(request)}
 
 <%include file="electing_statuses.html"/>
 <h3>当落確定処理</h3>
+%if lot.is_finished():
+この抽選は終了済みです。
+%else:
 <p>
 <ul>
 %for blocker in electing.blockers:
@@ -48,9 +51,15 @@ ${tabs.tabs(request)}
 <form method="POST" action="${request.route_url('lots.entries.reject', lot_id=lot.id)}">
     <button ${"disabled" if electing.blockers else ""} class="btn btn-large btn-danger">落選確定処理を実行する</button>
 </form>
+%if closer.can_close():
 <form method="POST" action="${request.route_url('lots.entries.close', lot_id=lot.id)}">
-    <button ${"disabled" if electing.blockers else ""} class="btn btn-large btn-danger">オーソリ開放処理を実行する</button>
+    <button class="btn btn-large btn-danger">オーソリ開放処理を実行する</button>
 </form>
+%else:
+    <span class="btn btn-large btn-inverse">オーソリ開放処理を実行する<br>当落の確定していない申込があります。</span>
+
+%endif
+%endif
 </div>
 
 <div>

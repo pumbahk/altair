@@ -6,7 +6,9 @@ from sqlalchemy import (
     sql,
     and_,
 )
-
+from sqlalchemy.orm import (
+    joinedload,
+)
 from pyramid.view import view_config, view_defaults
 from ticketing.models import (
     DBSession,
@@ -20,6 +22,7 @@ from ticketing.core.models import (
 from ticketing.lots.models import (
     Lot,
     LotEntry,
+    LotStatusEnum,
 )
 
 from .models import (
@@ -36,40 +39,61 @@ class IndexView(object):
         self.context = context
         self.request = request
 
+    def lot_status(self, lot):
+        if lot.status == int(LotStatusEnum.New):
+            return u"当選処理前"
+        elif lot.status == int(LotStatusEnum.Lotting):
+            return u"当落選択中"
+        elif lot.status == int(LotStatusEnum.Electing):
+            return u"当選処理実行中"
+        elif lot.status == int(LotStatusEnum.Elected):
+            return u"当選処理済み"
+        elif lot.status == int(LotStatusEnum.Sent):
+            # この状態は使ってない
+            return u"当選処理前"
+        return str(lot.status)
+
     @view_config(renderer='lots_admin/index.html')
     def __call__(self):
         """ 公開中、今後公開、終了した抽選 
         公演、販売区分
         """
 
-        # 申込状況のクエリ
-
-        DBSession.query(
-            LotEntry.closed_at
-        )
-
         now = datetime.now()
-        lots = Lot.query.join(
+        # 公開中
+        lots = Lot.query.options(
+            joinedload(Lot.event),
+        ).join(
             Lot.sales_segment
         ).filter(
             SalesSegment.start_at<=now
         ).filter(
             SalesSegment.end_at>=now
-        ).order_by(SalesSegment.start_at).all()
+        ).filter(
+            ~Lot.is_finished(),
+        ).order_by(Lot.lotting_announce_datetime).all()
 
-        post_lots = Lot.query.join(
+        # 公開前
+        post_lots = Lot.query.options(
+            joinedload(Lot.event),
+        ).join(
             Lot.sales_segment
         ).filter(
             SalesSegment.start_at>now
-        ).order_by(SalesSegment.start_at).all()
+        ).filter(
+            ~Lot.is_finished(),
+        ).order_by(Lot.lotting_announce_datetime).all()
 
-        past_lots = Lot.query.join(
+        # 公開終了
+        past_lots = Lot.query.options(
+            joinedload(Lot.event),
+        ).join(
             Lot.sales_segment
         ).filter(
             SalesSegment.end_at<now
         ).filter(
-            SalesSegment.end_at>now-timedelta(days=30)
-        ).order_by(SalesSegment.start_at).all()
+            ~Lot.is_finished(),
+        ).order_by(Lot.lotting_announce_datetime).all()
 
         return dict(lots=lots,
                     post_lots=post_lots,

@@ -15,6 +15,7 @@ from ticketing.cart.helpers import format_currency
 <th style="width: 20em">当選結果発表予定日</th>
 <th style="width: 20em">申込期間</th>
 <th style="width: 30em">抽選名</th>
+<th style="width: 5em">状態</th>
 <th>イベント名</th>
 </tr>
 %for lot in lots:
@@ -22,6 +23,7 @@ from ticketing.cart.helpers import format_currency
 <td nowrap="">${lot.lotting_announce_datetime}</td>
 <td nowrap="">${lot.sales_segment.start_at} - ${lot.sales_segment.end_at}</td>
 <td><a href="${request.route_url('lots.show', lot_id=lot.id)}">${lot.name}</a></td>
+<td>${view.lot_status(lot)}</td>
 <td>${lot.event.title}</td>
 </tr>
 %endfor
@@ -45,6 +47,6 @@ ${self.lots_table(post_lots)}
 <hr/>
 
 <div>
-<h2>過去30日以内に終了した抽選</h2>
+<h2>公開終了した抽選</h2>
 ${self.lots_table(past_lots)}
 </div>
