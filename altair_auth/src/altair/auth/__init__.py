@@ -8,6 +8,7 @@ from pyramid.exceptions import ConfigurationError
 from pyramid.interfaces import IAuthenticationPolicy
 from pyramid.security import Everyone, Authenticated
 from pyramid.tweens import EXCVIEW, INGRESS
+from pyramid.response import Response
 from repoze.who.api import get_api as get_who_api
 from repoze.who.interfaces import IAPIFactory, IAPI
 from repoze.who.config import make_api_factory_with_config
@@ -112,7 +113,13 @@ class ChallengeView(object):
         api_name = decide(self.request)
         logger.debug('api_name=%s' % api_name)
         api = who_api(self.request, api_name)
-        return self.request.get_response(api.challenge())
+        wsgi_resp = api.challenge()
+        if wsgi_resp is None:
+            msg = u'authentication failed where no challenge mechanism is provided'
+            logger.warning(msg)
+            return Response(status=403, body=u'We are experiencing a system error that you cannot work around at the moment. Sorry for the inconvenience... (guru meditation: {0})'.format(msg), content_type='text/plain')
+        else:
+            return self.request.get_response(wsgi_resp)
 
 
 @implementer(IAuthenticationPolicy)
