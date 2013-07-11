@@ -199,8 +199,8 @@ order.OrderedProductItem = Backbone.Model.extend({
 
 order.ProductItem = Backbone.Model.extend({
   defaults: {
-    quantity: 0,
-    stock_holder_name: 0,
+    quantity: 1,
+    stock_holder_name: null,
     is_seat: false
   }
 });
@@ -303,7 +303,9 @@ order.OrderFormView = Backbone.View.extend({
     el: $('#orderProductForm')
   },
   events: {
-    'click .btn-add-product': 'addProduct'
+    'click .btn-add-product': 'addProduct',
+    'click .btn-add-seat': 'addSeat',
+    'click .chk-select-seat': 'deleteSeat'
   },
   initialize: function() {
     this.presenter = this.options.presenter;
@@ -322,6 +324,13 @@ order.OrderFormView = Backbone.View.extend({
   addProduct: function(e) {
     e.preventDefault();
     this.presenter.addProduct();
+  },
+  addSeat: function(e) {
+    e.preventDefault();
+    this.presenter.addSeat($(e.target).data('ordered_product_item'));
+  },
+  deleteSeat: function(e) {
+    this.presenter.deleteSeat($(e.target).data('seat'));
   },
   render: function() {
     var self = this;
@@ -417,17 +426,6 @@ order.OrderProductFormView = Backbone.View.extend({
 order.OrderProductItemFormView = Backbone.View.extend({
   initialize: function() {
     this.presenter = this.options.presenter;
-  },
-  events: {
-    'click .btn-add-seat': 'addSeat',
-    'click .chk-select-seat': 'deleteSeat'
-  },
-  addSeat: function(e) {
-    e.preventDefault();
-    this.presenter.addSeat($(e.target).data('ordered_product_item'));
-  },
-  deleteSeat: function(e) {
-    this.presenter.deleteSeat($(e.target).data('seat'));
   },
   render: function() {
     var self = this;
