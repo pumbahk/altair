@@ -116,8 +116,8 @@ class ChallengeView(object):
         wsgi_resp = api.challenge()
         if wsgi_resp is None:
             msg = u'authentication failed where no challenge mechanism is provided'
-            logger.warning(msg)
-            return Response(status=403, body=u'We are experiencing a system error that you cannot work around at the moment. Sorry for the inconvenience... (guru meditation: {0})'.format(msg), content_type='text/plain')
+            logger.error(msg)
+            return Response(status=403, body=u'We are experiencing a system error that you cannot get around at the moment. Sorry for the inconvenience... (guru meditation: {0})'.format(msg), content_type='text/plain')
         else:
             return self.request.get_response(wsgi_resp)
 
