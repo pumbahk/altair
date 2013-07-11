@@ -12,11 +12,11 @@ def login_view(context, request):
 
 def login_post_view(context, request):
     form = LoginForm(request.POST)
-    if not form.validate():
-        return {"form": form}
-    else:
+    if  context.login_validate(form):
         headers = security.login(request, form.data["login_id"], form.data["password"])
         return HTTPFound(location=context.get_after_login_url( _query=request.GET), headers=headers)
+    else:
+        return {"form": form}
 
 def logout_view(context, request):
     headers = security.logout(request)

@@ -19,6 +19,9 @@ class PrintQRResource(object):
     def get_after_login_url(self, *args, **kwargs):
         return self.request.route_url("eventlist", *args, **kwargs)
 
+    def login_validate(self, form):
+        return form.validate()
+
     @reify
     def operator(self):
         login_id = authenticated_userid(self.request)
