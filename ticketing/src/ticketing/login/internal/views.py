@@ -16,7 +16,7 @@ def login_post_view(context, request):
         return {"form": form}
     else:
         headers = security.login(request, form.data["login_id"], form.data["password"])
-        return HTTPFound(location=context.get_after_login_url(), headers=headers)
+        return HTTPFound(location=context.get_after_login_url( _query=request.GET), headers=headers)
 
 def logout_view(context, request):
     headers = security.logout(request)

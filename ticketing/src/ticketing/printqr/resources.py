@@ -16,8 +16,8 @@ class PrintQRResource(object):
         (Allow, Everyone, 'everybody'),
     ]
 
-    def get_after_login_url(self):
-        return self.request.route_url("eventlist")
+    def get_after_login_url(self, *args, **kwargs):
+        return self.request.route_url("eventlist", *args, **kwargs)
 
     @reify
     def operator(self):

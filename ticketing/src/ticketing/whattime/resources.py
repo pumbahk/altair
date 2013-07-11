@@ -11,5 +11,5 @@ class CartAdminResource(object):
         (Allow, 'group:cart_admin', 'cart_admin'), 
         (Allow, Everyone, 'everybody'),]
 
-    def get_after_login_url(self):
-        return self.request.route_path("whattime.nowsetting.form")
+    def get_after_login_url(self, *args, **kwargs):
+        return self.request.route_path("whattime.nowsetting.form", *args, **kwargs)

@@ -21,7 +21,8 @@
 
 <form class="form well" action="${request.route_path("whattime.nowsetting.set",_query=dict(redirect_to=request.GET.get("redirect_to","")))}" method="POST">
   ${ch.form_item(form.now)}
-  <input class="btn" type="submit" name="invalidate" value="取り消し"/>
+  ${ch.form_item(form.redirect_to)}
   <input class="btn btn-primary" type="submit" name="submit" value="変更"/>
+  <input class="btn" type="submit" name="invalidate" value="取り消し"/>
 </form>
 </div>

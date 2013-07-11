@@ -34,7 +34,7 @@ from ..api.impl import get_communication_api
 from ..api.impl import CMSCommunicationApi
 from .api import get_cms_data
 from .forms import EventForm, EventSearchForm
-
+from ticketing.core.api import guess_cart_url, guess_cart_now_cart_url
 logger = logging.getLogger()
 
 @view_defaults(decorator=with_bootstrap, permission='event_editor')
@@ -86,11 +86,14 @@ class Events(BaseView):
         event = Event.get(event_id, organization_id=self.context.user.organization_id)
         if event is None:
             return HTTPNotFound('event id %d is not found' % event_id)
+        cart_url = guess_cart_url(self.request, event)
 
         return {
             'event':event,
             'seat_stock_types':StockType.filter_by(event_id=event_id, type=StockTypeEnum.Seat.v).order_by(StockType.display_order).all(),
             'non_seat_stock_types':StockType.filter_by(event_id=event_id, type=StockTypeEnum.Other.v).order_by(StockType.display_order).all(),
+            'cart_url': cart_url, 
+            "cart_now_cart_url": guess_cart_now_cart_url(self.request, cart_url), 
             'form':EventForm(),
             'form_performance':PerformanceForm(organization_id=self.context.user.organization_id),
             'form_stock_type':StockTypeForm(event_id=event_id),

@@ -12,7 +12,7 @@ from altair.now import (
 @view_config(route_name="whattime.nowsetting.form", permission="cart_admin", renderer="ticketing.whattime:templates/nowsetting/form.html")
 def form_view(context, request):
     now = get_now(request)
-    form = NowSettingForm(now=now)
+    form = NowSettingForm(now=now, redirect_to=request.GET.get("redirect_to", ""))
     organization = get_organization(request)
     return {"form": form, "now": now, "now_found": has_session_key(request), "organization": organization}
 
@@ -24,9 +24,9 @@ def now_set_view(context, request):
         organization = get_organization(request)
         return {"form": form, "now": now, "has_key": has_session_key(request), "organization": organization}        
     set_now(request, form.data["now"])
-    return HTTPFound(request.GET.get("redirect_to") or request.route_path("whattime.nowsetting.form"))
+    return HTTPFound(form.data.get("redirect_to") or request.route_path("whattime.nowsetting.form"))
 
 @view_config(route_name="whattime.nowsetting.set", permission="cart_admin", request_method="POST", request_param="invalidate")
 def now_invalidate_view(context, request):
     set_now(request, None)
-    return HTTPFound(request.GET.get("redirect_to") or request.route_path("whattime.nowsetting.form"))
+    return HTTPFound(request.params.get("redirect_to") or request.route_path("whattime.nowsetting.form"))
