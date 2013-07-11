@@ -29,4 +29,4 @@ def now_set_view(context, request):
 @view_config(route_name="whattime.nowsetting.set", permission="cart_admin", request_method="POST", request_param="invalidate")
 def now_invalidate_view(context, request):
     set_now(request, None)
-    return HTTPFound(request.params.get("redirect_to") or request.route_path("whattime.nowsetting.form"))
+    return HTTPFound(request.route_path("whattime.nowsetting.form", _query=dict(request.GET)))
