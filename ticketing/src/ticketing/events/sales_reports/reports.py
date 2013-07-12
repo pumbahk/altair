@@ -12,6 +12,7 @@ from sqlalchemy.orm import aliased
 from ticketing.core.models import Event, Mailer
 from ticketing.core.models import StockType, StockHolder, Stock, Performance, Product, ProductItem, SalesSegmentGroup, SalesSegment
 from ticketing.core.models import Order, OrderedProduct
+from ticketing.events.sales_reports.forms import SalesReportForm
 
 logger = logging.getLogger(__name__)
 
@@ -288,22 +289,23 @@ class SalesDetailReporter(object):
         self.create_group_key_to_reports()
         self.calculate_total()
 
-    def add_sales_segment_filter(self, query):
+    def add_sales_segment_filter(self, query, form=None):
         # performance_idがないSalesSegmentは[SalesSegmentGroupのデータ移行以前のレコード]なので、publicがFalseでも含める
         # ただし、対象performance_idのSalesSegment.publicがTrueであること
+        form = form or self.form
         query = query.join(SalesSegment, SalesSegment.id==Product.sales_segment_id).filter(
             or_(SalesSegment.performance_id==None, SalesSegment.public==True)
         )
-        if self.form.sales_segment_group_id.data:
+        if form.sales_segment_group_id.data:
             query = query.join(SalesSegmentGroup).filter(and_(
-                SalesSegmentGroup.id==self.form.sales_segment_group_id.data,
+                SalesSegmentGroup.id==form.sales_segment_group_id.data,
                 SalesSegmentGroup.deleted_at==None
             ))
-        if self.form.performance_id.data:
+        if form.performance_id.data:
             ss = aliased(SalesSegment, name='SalesSegment_alias')
             query = query.outerjoin(ss, and_(
                 ss.sales_segment_group_id==SalesSegment.sales_segment_group_id,
-                ss.performance_id==self.form.performance_id.data,
+                ss.performance_id==form.performance_id.data,
                 ss.deleted_at==None
             )).filter(or_(SalesSegment.public==True, ss.public==True))
         return query
@@ -350,13 +352,32 @@ class SalesDetailReporter(object):
                 product_display_order=row[10]
             )
 
+    def _get_order_quantity(self):
+        # Stock単位の予約数
+        query = OrderedProduct.query\
+            .join(Order).filter(Order.canceled_at==None)\
+            .join(Product).filter(Product.id==OrderedProduct.product_id)\
+            .join(ProductItem).filter(ProductItem.deleted_at==None)\
+            .join(Stock).filter(Stock.deleted_at==None)
+        form = SalesReportForm(performance_id=self.form.performance_id.data)
+        query = self.add_sales_segment_filter(query, form)
+        if self.form.performance_id.data:
+            query = query.filter(Stock.performance_id==self.form.performance_id.data)
+        elif self.form.event_id.data:
+            query = query.join(StockType).filter(StockType.event_id==self.form.event_id.data)
+
+        query = query.with_entities(
+            Stock.id,
+            func.sum(OrderedProduct.quantity)
+        ).group_by(Stock.id)
+
+        self.vacant_quantity = dict()
+        for id, quantity in query.all():
+            self.vacant_quantity[id] = quantity
+
     def get_stock_data(self):
-        # stock_idごとの予約数
-        order_quantity = dict()
-        for report in self.reports.values():
-            sum = report.total_paid_quantity + report.total_unpaid_quantity
-            if report.stock_id not in order_quantity or sum > order_quantity[report.stock_id]:
-                order_quantity[report.stock_id] = sum
+        # 残席数を算出するためのStock単位の予約数
+        self._get_order_quantity()
 
         # 配席数、残席数
         query = Stock.query.filter(Stock.stock_holder_id.in_(self.stock_holder_ids))\
@@ -380,7 +401,7 @@ class SalesDetailReporter(object):
             report = self.reports[id]
             report.stock_quantity = stock_quantity or 0
             # 残席数 = 配席数 - 予約数 にする (StockStatus.quantityは販売中のものが含まれない為)
-            report.vacant_quantity = stock_quantity - order_quantity[report.stock_id]
+            report.vacant_quantity = stock_quantity - self.vacant_quantity.get(report.stock_id, 0)
 
     def get_order_data(self, all_period=True):
         # 購入件数クエリ
