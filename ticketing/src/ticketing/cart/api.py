@@ -120,7 +120,7 @@ def set_cart(request, cart):
     request.session.persist()
     request._cart = cart
 
-def get_cart(request):
+def get_cart(request, for_update=False):
     if hasattr(request, '_cart'):
         return request._cart
 
@@ -128,7 +128,10 @@ def get_cart(request):
     if cart_id is None:
         return None
 
-    request._cart = Cart.query.filter(Cart.id==cart_id).first()
+    q = Cart.query.filter(Cart.id==cart_id)
+    if for_update:
+        q = q.with_lockmode('update')
+    request._cart = q.first()
     return request._cart
 
 def remove_cart(request):
@@ -151,10 +154,10 @@ def get_now_from_request(request):
     else:
         return datetime.now() # XXX
 
-def get_cart_safe(request):
+def get_cart_safe(request, for_update=False):
     now = get_now_from_request(request) # XXX
     minutes = max(int(request.registry.settings['altair_cart.expire_time']) - 1, 0)
-    cart = get_cart(request)
+    cart = get_cart(request, for_update)
     if cart is None:
         raise NoCartError('Cart is not associated to the request')
     expired = cart.is_expired(minutes, now) or cart.finished_at
@@ -164,7 +167,7 @@ def get_cart_safe(request):
     return cart
 
 def recover_cart(request):
-    cart = get_cart_safe(request)
+    cart = get_cart_safe(request, True)
     new_cart = Cart.create_from(cart)
     DBSession.flush()
     set_cart(request, new_cart)

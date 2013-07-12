@@ -764,7 +764,7 @@ class CompleteView(object):
             del self.request.session['csrf']
             self.request.session.persist()
 
-        cart = api.get_cart_safe(self.request)
+        cart = api.get_cart_safe(self.request, for_update=True)
         if not cart.is_valid():
             raise NoCartError()
 

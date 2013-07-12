@@ -115,7 +115,7 @@ class CompleteView(_CompleteView):
         if 'csrf' in self.request.session:
             del self.request.session['csrf']
             self.request.session.persist()
-        cart = cart_api.get_cart_safe(self.request)
+        cart = cart_api.get_cart_safe(self.request, for_update=True)
 
         order_session = self.request.session['order']
 
