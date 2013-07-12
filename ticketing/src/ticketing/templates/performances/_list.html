@@ -33,6 +33,7 @@
             </span>
           </th>
           % endif
+          <th>表示順</th>
           <th>公演日</th>
           <th>${ch.sortable(form.name, paging)}</th>
           <th>会場</th>
@@ -55,6 +56,7 @@
             </div>
           </td>
           % endif
+          <td>${performance.display_order}</td>
           <td>${performance.start_on.strftime("%Y-%m-%d")if performance.start_on else ''}</td>
           <td><a href="${request.route_path('performances.show', performance_id=performance.id)}">
 					    ${performance.name}

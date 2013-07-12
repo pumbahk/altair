@@ -436,6 +436,8 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     redirect_url_pc = Column(String(1024))
     redirect_url_mobile = Column(String(1024))
 
+    display_order = AnnotatedColumn(Integer, nullable=False, default=1, _a_label=_(u'表示順'))
+
     @property
     def products(self):
         return self.sale_segment.products if self.sales_segment_id else []

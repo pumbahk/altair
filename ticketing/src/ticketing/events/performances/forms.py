@@ -4,17 +4,20 @@ from wtforms import Form
 from wtforms import TextField, HiddenField
 from wtforms.validators import Regexp, Length, Optional, ValidationError
 
-from altair.formhelpers import DateTimeField, Translations, Required, NullableTextField, JISX0208, after1900, OurGroupedSelectField
+from altair.formhelpers import Translations, Required, NullableTextField, JISX0208, after1900
+from altair.formhelpers.form import OurForm
+from altair.formhelpers.fields import OurIntegerField, DateTimeField, OurGroupedSelectField 
 from altair.formhelpers import replace_ambiguous
 from ticketing.core.models import Venue, Performance, Stock
 from ticketing.payments.plugins.sej import DELIVERY_PLUGIN_ID as SEJ_DELIVERY_PLUGIN_ID
 from ticketing.core.utils import ApplicableTicketsProducer
+from ticketing.helpers import label_text_for
 
 PREFECTURE_ORDER = { u'北海道': 1, u'青森県': 2, u'岩手県': 3, u'宮城県': 4, u'秋田県': 5, u'山形県': 6, u'福島県': 7, u'茨城県': 8, u'栃木県': 9, u'群馬県': 10, u'埼玉県': 11, u'千葉県': 12, u'東京都': -10, u'神奈川県': 14, u'新潟県': 15, u'富山県': 16, u'石川県': 17, u'福井県': 18, u'山梨県': 19, u'長野県': 20, u'岐阜県': 21, u'静岡県': 22, u'愛知県': -8, u'三重県': 24, u'滋賀県': 25, u'京都府': 26, u'大阪府': -9, u'兵庫県': 28, u'奈良県': 29, u'和歌山県': 30, u'鳥取県': 31, u'島根県': 32, u'岡山県': 33, u'広島県': 34, u'山口県': 35, u'徳島県': 36, u'香川県': 37, u'愛媛県': 38, u'高知県': 39, u'福岡県': 40, u'佐賀県': 41, u'長崎県': 42, u'熊本県': 43, u'大分県': 44, u'宮崎県': 45, u'鹿児島県': 46, u'沖縄県': 47 }
 
-class PerformanceForm(Form):
+class PerformanceForm(OurForm):
     def __init__(self, formdata=None, obj=None, prefix='', **kwargs):
-        Form.__init__(self, formdata, obj, prefix, **kwargs)
+        super(PerformanceForm, self).__init__(formdata, obj, prefix, **kwargs)
         if 'organization_id' in kwargs:
             conditions = {
                 'organization_id':kwargs['organization_id'],
@@ -116,6 +119,12 @@ class PerformanceForm(Form):
     note = NullableTextField(
         label=u'公演名備考',
     )
+
+    display_order = OurIntegerField(
+        label=label_text_for(Performance.display_order),
+        default=1,
+        hide_on_new=True,
+        )
 
     def validate_start_on(form, field):
         if field.data and form.open_on.data and field.data < form.open_on.data:

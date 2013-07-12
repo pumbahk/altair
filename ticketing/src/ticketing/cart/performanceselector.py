@@ -19,7 +19,9 @@ class _PerformanceSelector(object):
         """
         販売区分をソートするための関数。
         """
-        return cmp(a.performance.start_on,
+        return cmp(a.performance.display_order,
+                   b.performance.display_order) or \
+               cmp(a.performance.start_on,
                    b.performance.start_on) or \
                cmp(a.start_at,
                    b.start_at) or \
