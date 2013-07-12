@@ -23,9 +23,9 @@ def get_sej_order(notification):
     if notification.exchange_number and notification.billing_number:
         return SejOrder.filter(
             and_(
-                SejOrder.order_id       == notification.order_id,
-                SejOrder.exchange_number== notification.exchange_number,
-                SejOrder.billing_number == notification.billing_number
+                SejOrder.order_id        == notification.order_id,
+                SejOrder.exchange_number == (notification.exchange_number or None),
+                SejOrder.billing_number  == (notification.billing_number or None)
                 )
             ).first()
     elif notification.exchange_number:
