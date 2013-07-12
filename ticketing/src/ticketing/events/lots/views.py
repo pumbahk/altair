@@ -907,7 +907,14 @@ class LotEntries(BaseView):
         shipping_address = lot_entry.shipping_address
         mail_form = SendingMailForm(recipient=shipping_address.email_1, 
                                     bcc="")
+        summaries = DBSession.query(LotWishSummary).filter(LotWishSummary.entry_no==entry_no).order_by(LotWishSummary.wish_order).all()
+        wishes = sorted(lot_entry.wishes, lambda w: w.wish_order)
+        wishes = zip(summaries, wishes)
+        for w, ww in wishes:
+            assert w.wish_order == ww.wish_order
+
         return {"lot": lot, 
+                "wishes": wishes,
                 "lot_entry": lot_entry, 
                 "shipping_address": shipping_address, 
                 "mail_form": mail_form}
