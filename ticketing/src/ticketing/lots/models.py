@@ -122,6 +122,9 @@ class Lot(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     system_fee = sa.Column(sa.Numeric(precision=16, scale=2), default=0,
                            server_default="0")
 
+    organization_id = sa.Column(Identifier,
+                                sa.ForeignKey('Organization.id'))
+    organization = orm.relationship('Organization', backref='lots')
 
     @property
     def electing_works(self):
@@ -350,6 +353,10 @@ class LotEntry(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     payment_delivery_method_pair_id = sa.Column(Identifier, sa.ForeignKey('PaymentDeliveryMethodPair.id'))
     payment_delivery_method_pair = orm.relationship('PaymentDeliveryMethodPair', backref='lot_entries')
 
+    organization_id = sa.Column(Identifier,
+                                sa.ForeignKey('Organization.id'))
+    organization = orm.relationship('Organization', backref='lot_entries')
+
     #xxx: for order
     @property
     def payment_delivery_pair(self):
@@ -469,6 +476,10 @@ class LotEntryWish(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     order = orm.relationship('Order', backref='lot_wishes')
 
     canceled_at = sa.Column(sa.DateTime())
+    organization_id = sa.Column(Identifier,
+                                sa.ForeignKey('Organization.id'))
+    organization = orm.relationship('Organization', backref='lot_entry_wishes')
+
 
     @property
     def closed(self):
@@ -590,6 +601,10 @@ class LotEntryProduct(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     performance_id = sa.Column(Identifier, sa.ForeignKey('Performance.id'))
     performance = orm.relationship('Performance', backref='lot_entry_products')
 
+    organization_id = sa.Column(Identifier,
+                                sa.ForeignKey('Organization.id'))
+    organization = orm.relationship('Organization', backref='lot_entry_products')
+
     @property
     def subtotal(self):
         """ 購入額小計
@@ -684,3 +699,6 @@ class LotWorkHistory(Base, WithTimestamp):
     wish_order = sa.Column(sa.Integer, doc=u"希望順")
     error = sa.Column(sa.UnicodeText)
 
+    organization_id = sa.Column(Identifier,
+                                sa.ForeignKey('Organization.id'))
+    organization = orm.relationship('Organization', backref='lot_work_histories')

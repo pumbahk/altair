@@ -104,6 +104,9 @@ class Cart(Base):
 
     browserid = sa.Column(sa.String(40))
 
+    organization_id = sa.Column(Identifier,
+                                sa.ForeignKey('Organization.id'))
+    organization = orm.relationship('Organization', backref='carts')
 
     has_different_amount = False  ## 差額(オーソリ時と売上確定処理で差額がある場合にTrue)
     different_amount = 0
@@ -273,6 +276,10 @@ class CartedProduct(Base):
     deleted_at = sa.Column(sa.DateTime, nullable=True)
     finished_at = sa.Column(sa.DateTime)
 
+    organization_id = sa.Column(Identifier,
+                                sa.ForeignKey('Organization.id'))
+    organization = orm.relationship('Organization', backref='carted_products')
+
     @property
     def amount(self):
         """ 購入額小計
@@ -365,6 +372,9 @@ class CartedProductItem(Base):
     updated_at = sa.Column(sa.DateTime, nullable=True, onupdate=datetime.now)
     deleted_at = sa.Column(sa.DateTime, nullable=True)
     finished_at = sa.Column(sa.DateTime)
+    organization_id = sa.Column(Identifier,
+                                sa.ForeignKey('Organization.id'))
+    organization = orm.relationship('Organization', backref='carted_product_items')
 
     @property
     def seatdicts(self):
