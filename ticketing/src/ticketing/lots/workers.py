@@ -70,16 +70,20 @@ def includeme(config):
 
 
 def lot_wish_cart(wish):
+    organization_id = wish.performance.event.organization_id
     cart = Cart(performance=wish.performance,
+                organization_id=organization_id,
                 shipping_address=wish.lot_entry.shipping_address,
                 payment_delivery_pair=wish.lot_entry.payment_delivery_method_pair,
                 _order_no=wish.lot_entry.entry_no,
                 sales_segment=wish.lot_entry.lot.sales_segment,
                 products=[
                     CartedProduct(product=p.product,
+                                  organization_id=organization_id,
                                   quantity=p.quantity,
                                   items=[
                                       CartedProductItem(
+                                          organization_id=organization_id,
                                           quantity=p.quantity * ordered_product_item.quantity,
                                           product_item=ordered_product_item)
                                       for ordered_product_item in p.product.items

@@ -129,6 +129,10 @@ class Cart(Base):
         logger.debug("organization.id = %d" % organization.id)
         base_id = c_api.get_next_order_no()
         order_no = organization.code + sensible_alnum_encode(base_id).zfill(10)
+
+        if 'organization' not in kwargs and 'organization_id' not in kwargs:
+            kwargs['organization_id'] = performance.event.organization_id
+
         new_cart = cls(
             _order_no=order_no,
             performance=performance,

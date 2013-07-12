@@ -23,7 +23,7 @@ class CartFactory(object):
         for ordered_product, quantity in ordered_products:
             logger.debug("carted product for product_id=%s" % (ordered_product.id))
             # CartedProduct
-            cart_product = CartedProduct(cart=cart, product=ordered_product, quantity=quantity)
+            cart_product = CartedProduct(cart=cart, product=ordered_product, quantity=quantity, organization_id=cart.organization_id)
             for ordered_product_item in ordered_product.items:
                 # CartedProductItem
                 if str(ordered_product_item.performance_id) != str(performance_id):
@@ -36,6 +36,7 @@ class CartFactory(object):
                 logger.debug("carted product item for product_item_id=%s, performance_id=%s, quantity=%d" % (ordered_product_item.id, ordered_product_item.performance_id, subtotal_quantity))
                 cart_product_item = CartedProductItem(
                     carted_product=cart_product,
+                    organization_id=cart_product.organization_id,
                     quantity=subtotal_quantity,
                     product_item=ordered_product_item)
 
