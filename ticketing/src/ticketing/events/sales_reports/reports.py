@@ -10,7 +10,7 @@ from sqlalchemy.sql import func, and_, or_
 from sqlalchemy.orm import aliased
 
 from ticketing.core.models import Event, Mailer
-from ticketing.core.models import StockType, StockHolder, StockStatus, Stock, Performance, Product, ProductItem, SalesSegmentGroup, SalesSegment
+from ticketing.core.models import StockType, StockHolder, Stock, Performance, Product, ProductItem, SalesSegmentGroup, SalesSegment
 from ticketing.core.models import Order, OrderedProduct
 
 logger = logging.getLogger(__name__)
@@ -65,8 +65,8 @@ class SalesTotalReporter(object):
         # 自社分のみが対象
         self.stock_holder_ids = [sh.id for sh in StockHolder.get_own_stock_holders(user_id=self.organization.user_id)]
         self.get_event_data()
-        self.get_stock_data()
         self.get_order_data()
+        self.get_stock_data()
 
     def add_form_filter(self, query):
         query = query.filter(Performance.public==True)
@@ -96,7 +96,6 @@ class SalesTotalReporter(object):
         query = Event.query.filter(Event.organization_id==self.organization.id)\
             .outerjoin(Performance).filter(Performance.deleted_at==None)\
             .outerjoin(Stock).filter(Stock.deleted_at==None, Stock.stock_holder_id.in_(self.stock_holder_ids))\
-            .outerjoin(StockStatus).filter(StockStatus.deleted_at==None)\
             .outerjoin(SalesSegment, SalesSegment.performance_id==Performance.id).filter(SalesSegment.public==True)
         query = self.add_form_filter(query)
 
@@ -126,7 +125,6 @@ class SalesTotalReporter(object):
     def get_stock_data(self):
         # 配席数、残席数
         query = Stock.query.filter(Stock.stock_holder_id.in_(self.stock_holder_ids))\
-            .join(StockStatus).filter(StockStatus.deleted_at==None)\
             .join(ProductItem).filter(ProductItem.deleted_at==None)\
             .join(Product).filter(Product.seat_stock_type_id==Stock.stock_type_id)\
             .join(Performance).filter(Performance.id==Stock.performance_id)\
@@ -136,23 +134,22 @@ class SalesTotalReporter(object):
         stock_ids = [s.id for s in query.with_entities(Stock.id).distinct()]
 
         query = Stock.query.filter(Stock.id.in_(stock_ids))\
-            .join(StockStatus)\
             .join(Performance).filter(Performance.id==Stock.performance_id)\
             .join(Event).filter(Event.organization_id==self.organization.id)
         query = self.add_form_filter(query)
         query = query.with_entities(
             self.group_by,
-            func.sum(Stock.quantity),
-            func.sum(StockStatus.quantity)
+            func.sum(Stock.quantity)
         ).group_by(self.group_by)
 
-        for id, stock_quantity, vacant_quantity in query.all():
+        for id, stock_quantity in query.all():
             if id not in self.reports:
                 logger.warn('invalid key (%s:%s) get_stock_data' % (self.group_by, id))
                 continue
             record = self.reports[id]
             record.stock_quantity = stock_quantity or 0
-            record.vacant_quantity = vacant_quantity or 0
+            # 残席数 = 配席数 - 予約数 にする (StockStatus.quantityは販売中のものが含まれない為)
+            record.vacant_quantity = stock_quantity - record.total_order_quantity
 
     def get_order_data(self):
         # 販売金額、販売枚数
@@ -284,10 +281,10 @@ class SalesDetailReporter(object):
             return
         self.stock_holder_ids = [sh.id for sh in StockHolder.get_own_stock_holders(event=event)]
         self.get_performance_data()
-        self.get_stock_data()
         self.get_order_data()
         if self.form.limited_from.data or self.form.limited_to.data:
             self.get_order_data(all_period=False)
+        self.get_stock_data()
         self.create_group_key_to_reports()
         self.calculate_total()
 
@@ -316,7 +313,6 @@ class SalesDetailReporter(object):
         query = StockType.query\
             .outerjoin(Stock).filter(Stock.stock_holder_id.in_(self.stock_holder_ids))\
             .outerjoin(StockHolder)\
-            .outerjoin(StockStatus)\
             .outerjoin(ProductItem)\
             .outerjoin(Product).filter(Product.seat_stock_type_id==Stock.stock_type_id)
         query = self.add_sales_segment_filter(query)
@@ -355,9 +351,15 @@ class SalesDetailReporter(object):
             )
 
     def get_stock_data(self):
+        # stock_idごとの予約数
+        order_quantity = dict()
+        for report in self.reports.values():
+            sum = report.total_paid_quantity + report.total_unpaid_quantity
+            if report.stock_id not in order_quantity or sum > order_quantity[report.stock_id]:
+                order_quantity[report.stock_id] = sum
+
         # 配席数、残席数
         query = Stock.query.filter(Stock.stock_holder_id.in_(self.stock_holder_ids))\
-            .join(StockStatus).filter(StockStatus.deleted_at==None)\
             .join(ProductItem).filter(ProductItem.deleted_at==None)\
             .join(Product).filter(and_(Product.seat_stock_type_id==Stock.stock_type_id, Product.base_product_id==None))
         query = self.add_sales_segment_filter(query)
@@ -368,17 +370,17 @@ class SalesDetailReporter(object):
 
         query = query.with_entities(
             func.ifnull(Product.base_product_id, Product.id),
-            func.sum(Stock.quantity),
-            func.sum(StockStatus.quantity)
+            func.sum(Stock.quantity)
         ).group_by(func.ifnull(Product.base_product_id, Product.id))
 
-        for id, stock_quantity, vacant_quantity in query.all():
+        for id, stock_quantity in query.all():
             if id not in self.reports:
                 logger.warn('invalid key (product_id:%s) total_quantity query' % id)
                 continue
             report = self.reports[id]
             report.stock_quantity = stock_quantity or 0
-            report.vacant_quantity = vacant_quantity or 0
+            # 残席数 = 配席数 - 予約数 にする (StockStatus.quantityは販売中のものが含まれない為)
+            report.vacant_quantity = stock_quantity - order_quantity[report.stock_id]
 
     def get_order_data(self, all_period=True):
         # 購入件数クエリ
