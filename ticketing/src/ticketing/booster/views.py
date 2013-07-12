@@ -146,6 +146,8 @@ class CompleteView(_CompleteView):
         notify_order_completed(self.request, order)
         self.context.remove_user_profile()
 
+        cart_api.remove_cart(self.request)
+
         return dict(order=order, user_profile=user_profile)
 
 
