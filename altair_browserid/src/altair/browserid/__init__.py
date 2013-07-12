@@ -28,7 +28,12 @@ class BrowserIDMiddleware(object):
     def __call__(self, request):
         cookies = request.cookies
 
-        browser.id = browser_id = cookies.get(self.cookie_name)
+        browser_id_cookie = cookies.get(self.cookie_name)
+        if browser_id_cookie:
+            browser_id = str(browser_id_cookie).partition('!')[0]
+        else:
+            browser_id = None
+        browser.id = browser_id
         browser.url = request.url
         request.environ[self.env_key] = browser_id
         request.environ['altair.browserid.env_key'] = self.env_key

@@ -34,8 +34,7 @@ class BrowserIDMiddlewareTests(unittest.TestCase):
 
 
         testapp = webtest.TestApp(target)
-        testapp.cookies['browserid'] = 'this-is-browser-id'
 
-        result = testapp.get('/')
+        result = testapp.get('/', headers={ "Cookie": "browserid=this-is-browser-id!HMAC" })
 
         self.assertEqual(result.body, 'environ browserid = this-is-browser-id local browserid = this-is-browser-id')
