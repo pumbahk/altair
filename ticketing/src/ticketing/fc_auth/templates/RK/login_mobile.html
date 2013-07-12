@@ -25,18 +25,18 @@
 </form>
 </p>
 <div id="login_form">
-<font color="#cbae55">■</font>ブースタークラブ会員・その他特別販売
+<font color="#cbae55">■</font>クラブキングス会員先行販売
 </div>
 <form action="${request.url}" method="post">
 <div>
-  ID<br/>
+  会員番号 (半角数字6桁)<br/>
   <input type="text" name="username" size="22" value="${username}">
 %if message:
 <font color="red">IDが一致しません</font>
 %endif
 </div>
 <div>
-  パスワード(半角英数8桁)<br/>
+  パスワード<br/>
   <input type="password" name="password" size="22" maxlength="8" value="">
 </div>
 <input type="submit" value="ログイン" />
