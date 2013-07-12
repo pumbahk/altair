@@ -6,6 +6,6 @@ class IInternalAuthResource(Interface):
         """ arguments is same for 'pyramid.request.add_route_path' """
 
     def login_validate(form):
-        "pass"
+        pass
 
     __acl__ = Attribute("__acl__")

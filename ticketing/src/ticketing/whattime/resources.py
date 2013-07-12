@@ -1,4 +1,4 @@
-from pyramid.decorators import reify
+from pyramid.decorator import reify
 from pyramid.security import Allow, Everyone
 from zope.interface import implementer
 from ticketing.login.internal.interfaces import IInternalAuthResource
@@ -21,4 +21,4 @@ class CartAdminResource(object):
         return self.request.route_path("whattime.nowsetting.form", *args, **kwargs)
 
     def login_validate(self, form):
-        return form.validat() and unicode(form.operator.organization_id) == unicode(self.organization.id)
+        return form.validate() and unicode(form.operator.organization_id) == unicode(self.organization.id)
