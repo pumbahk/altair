@@ -107,6 +107,7 @@ class LotForm(Form):
             )
         lot = Lot(
             event=event,
+            organization_id=event.organization_id,
             sales_segment=sales_segment,
             name=self.data['name'],
             limit_wishes=self.data['limit_wishes'],

@@ -132,6 +132,7 @@ def build_lot_entry_wish(wish_order, wish_rec):
 def build_lot_entry(lot, wishes, payment_delivery_method_pair, membergroup=None, shipping_address=None, user=None, gender=None, birthday=None, memo=None):
     entry = LotEntry(
         lot=lot,
+        organization_id=lot.organization_id,
         shipping_address=shipping_address,
         membergroup=membergroup,
         payment_delivery_method_pair=payment_delivery_method_pair,
@@ -139,7 +140,11 @@ def build_lot_entry(lot, wishes, payment_delivery_method_pair, membergroup=None,
         birthday=birthday,
         memo=memo)
     for i, wish_rec in enumerate(wishes):
-        entry.wishes.append(build_lot_entry_wish(i, wish_rec))
+        wish = build_lot_entry_wish(i, wish_rec)
+        wish.organization_id = lot.organization_id
+        for p in wish.products:
+            p.organization_id = lot.organization_id
+        entry.wishes.append(wish)
     return entry
 
 def build_temporary_lot_entry(*args, **kwargs):
