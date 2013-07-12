@@ -46,7 +46,7 @@ prefix = str(random.random())[2:]
       }  
     }
 
-    var normalize_factory = function(X,Y, force){
+    var normalize_factory = function(X,Y, move_pos){
       return function normalize_size(e,x,y){
          var $e = $(e).eq(0);
          var x = x || $e.width();
@@ -57,16 +57,20 @@ prefix = str(random.random())[2:]
          }
 
          if (x<=X && y<=Y) {
+            // 小さい画像のプロモーションのみ位置合わせが必要
+            if (!move_pos) {
+                return;
+            }
             var styles = {};
+            styles["margin-left"] = 0;
+            styles["margin-top"] = 0;
             if (y<Y && y>0) {
                styles["margin-top"] = 0.5*(Y-y);
-               styles["margin-left"] = 0;
-               $e.css(styles);
-            } else if (x<X && x>0) {
-               styles["margin-left"] = 0.5*(X-x);
-               styles["margin-top"] = 0;
-               $e.css(styles);
             }
+            if (x<X && x>0) {
+               styles["margin-left"] = 0.5*(X-x);
+            }
+            $e.css(styles);
             return;
          }
 
@@ -89,7 +93,7 @@ prefix = str(random.random())[2:]
       };
     }
 
-    var mainImageNormalize = normalize_factory(515,300,true);
+    var mainImageNormalize = normalize_factory(515,300,false);
 
     $(function(){
       var collectData = function collectData(){
@@ -114,7 +118,7 @@ prefix = str(random.random())[2:]
 
     // some magic numbers;
     var normalize = normalize_factory(58,58,true);
-    normalize_factory(515,300,true)($(".mainImage img"), ${info.width}, ${info.height});
+    normalize_factory(515,300,false)($(".mainImage img"), ${info.width}, ${info.height});
     $(".thumbnail").append($(".thumbnailBox").eq(0).clone());
     $(".thumbnailBox").eq(0).remove();
     $("#slideShow #slideShowRight .thumbnail img").each(function(i,e){normalize(e);});
