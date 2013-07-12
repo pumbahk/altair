@@ -1,7 +1,6 @@
 from pyramid.view import view_config, view_defaults
 from pyramid.response import Response
 from pyramid.httpexceptions import HTTPClientError
-from pyramid.threadlocal import get_current_registry
 
 from .exceptions import SejResponseError
 from .api import callback_notification
@@ -30,7 +29,7 @@ class SejCallback(object):
     def callback(self):
         try:
 
-            settings = get_current_registry().settings
+            settings = self.request.registry.settings
             api_key = settings['sej.api_key']
 
             self.log_sej.info('[callback] %s' % self.request.body)
