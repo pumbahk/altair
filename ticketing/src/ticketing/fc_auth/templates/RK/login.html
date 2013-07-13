@@ -45,6 +45,7 @@
             </td>
             <td>
               <form action="${request.url}" method="post">
+                <input type="hidden" name="password" value="kings">
                 <table class="login" style="height: 200px;">
                   <thead>
                     <tr>
@@ -68,15 +69,6 @@
                                 %if message:
                                 <br/><span class="small red">${message}</span>
                                 %endif
-                              </td>
-                            </tr>
-                            <tr>
-                              <td>
-                                パスワード
-                                <br /><span class="small red">※ 半角英数</span>
-                              </td>
-                              <td>
-                                <input type="password" class="text" name="password" size="20" maxlength="8" value="">
                               </td>
                             </tr>
                             <tr>
