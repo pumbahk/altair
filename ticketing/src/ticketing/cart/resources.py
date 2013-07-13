@@ -30,6 +30,8 @@ from ..core import models as c_models
 from ..core import api as core_api
 from ..users import models as u_models
 from . import models as m
+from .api import get_cart_safe
+from .exceptions import NoCartError
 from zope.deprecation import deprecate
 from altair.now import get_now
 
@@ -68,12 +70,6 @@ class TicketingCartResource(object):
 
     event_id = property(_get_event_id, _set_event_id)
 
-    # @property
-    # def memberships(self):
-    #     membergroups = self.membergroups
-    #     if not membergroups:
-    #         return []
-    #     return [m.membership for m in membergroups]
     @property
     def memberships(self):
         organization = core_api.get_organization(self.request)
@@ -147,9 +143,17 @@ class TicketingCartResource(object):
     def available_sales_segments(self):
         """現在認証済みのユーザが今買える全販売区分"""
         per_performance_sales_segments_dict = {}
+        cart = None
+        try:
+            cart = get_cart_safe(self.request)
+        except NoCartError:
+            import sys
+            logger.info('cart is not created', exc_info=sys.exc_info())
+
         for sales_segment in self.sales_segments:
-            if sales_segment.available_payment_delivery_method_pairs(self.now) and \
-               sales_segment.in_term(self.now):
+            if (cart and cart.sales_segment_id == sales_segment.id) \
+               or (sales_segment.available_payment_delivery_method_pairs(self.now) and \
+                   sales_segment.in_term(self.now)):
                 per_performance_sales_segments = \
                     per_performance_sales_segments_dict.get(sales_segment.performance_id)
                 if per_performance_sales_segments is None:

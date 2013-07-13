@@ -571,9 +571,6 @@ class PaymentView(object):
     def __call__(self):
         """ 支払い方法、引き取り方法選択
         """
-
-        api.check_sales_segment_term(self.request)
-
         cart = api.get_cart_safe(self.request)
         self.context.event_id = cart.performance.event.id
 
@@ -653,7 +650,6 @@ class PaymentView(object):
     def post(self):
         """ 支払い方法、引き取り方法選択
         """
-        api.check_sales_segment_term(self.request)
         cart = api.get_cart_safe(self.request)
         user = get_or_create_user(self.context.authenticated_user())
 
@@ -722,7 +718,6 @@ class ConfirmView(object):
     @view_config(route_name='payment.confirm', request_method="GET", renderer=selectable_renderer("%(membership)s/pc/confirm.html"))
     @view_config(route_name='payment.confirm', request_type='altair.mobile.interfaces.IMobileRequest', request_method="GET", renderer=selectable_renderer("%(membership)s/mobile/confirm.html"))
     def get(self):
-        api.check_sales_segment_term(self.request)
         form = schemas.CSRFSecureForm(csrf_context=self.request.session)
         cart = api.get_cart_safe(self.request)
 
@@ -753,7 +748,6 @@ class CompleteView(object):
     @view_config(route_name='payment.finish', renderer=selectable_renderer("%(membership)s/pc/completion.html"), request_method="POST")
     @view_config(route_name='payment.finish', request_type='altair.mobile.interfaces.IMobileRequest', renderer=selectable_renderer("%(membership)s/mobile/completion.html"), request_method="POST")
     def __call__(self):
-        api.check_sales_segment_term(self.request)
         form = schemas.CSRFSecureForm(formdata=self.request.params, csrf_context=self.request.session)
         if not form.validate():
             logger.info('invalid csrf token: %s' % form.errors)

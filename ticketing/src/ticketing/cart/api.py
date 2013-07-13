@@ -65,27 +65,6 @@ def is_login_required(request, event):
     )
     return bool(q.count())
 
-def check_sales_segment_term(request):
-    now = get_now_from_request(request)
-    cart = get_cart(request)
-    if cart is not None:
-        sales_segment = cart.sales_segment
-    else:
-        sales_segment = request.context.sales_segment
-    if not sales_segment:
-        raise NoSalesSegment
-
-    if not sales_segment.in_term(now):
-        data = sales_segment.sales_segment_group.event.get_next_and_last_sales_segment_period(
-            now=now, user=request.context.authenticated_user())
-        if any(data):
-            for datum in data:
-                if datum is not None:
-                    datum['event'] = datum['performance'].event
-            raise OutTermSalesException(*data)
-        else:
-            raise HTTPNotFound()
-
 def get_event(request):
     event_id = request.matchdict.get('event_id')
     if not event_id:
