@@ -76,7 +76,7 @@ def check_sales_segment_term(request):
         raise NoSalesSegment
 
     if not sales_segment.in_term(now):
-        data = request.context.event.get_next_and_last_sales_segment_period(
+        data = sales_segment.sales_segment_group.event.get_next_and_last_sales_segment_period(
             now=now, user=request.context.authenticated_user())
         if any(data):
             for datum in data:
