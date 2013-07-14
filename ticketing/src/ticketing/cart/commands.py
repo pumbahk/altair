@@ -96,7 +96,7 @@ def cancel_auth_expired_carts():
             m.Cart.finished_at == None
         ).filter(
             m.Cart.deleted_at == None
-        )
+        ).with_lockmode('read')
         if carts_to_skip:
             cart_q = cart_q.filter(not_(m.Cart.id.in_(carts_to_skip)))
         if target_from:
