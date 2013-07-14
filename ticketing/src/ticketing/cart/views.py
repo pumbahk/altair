@@ -571,7 +571,7 @@ class PaymentView(object):
     def __call__(self):
         """ 支払い方法、引き取り方法選択
         """
-        cart = api.get_cart_safe(self.request)
+        cart = api.get_cart_safe(self.request, for_update=False)
         self.context.event_id = cart.performance.event.id
 
         start_on = cart.performance.start_on
