@@ -818,7 +818,7 @@ class PathDataScanner(object):
         if len(operand) == 0:
             raise Exception('verticalline takes at least 1 argument')
         for oper in operand:
-            y = self.current_position[0] + float(oper)
+            y = self.current_position[1] + float(oper)
             self.handler.line_to(self.current_position[0], y)
             self.current_position = (self.current_position[0], y)
         self.last_qb_control_point = None
@@ -1064,12 +1064,12 @@ class PathDataScanner(object):
 
     def scan_a(self, operand):
         if operand == 0 or len(operand) % 7 != 0:
-            raise Exception('curvetoqb takes 7 * n arguments')
+            raise Exception('arc takes 7 * n arguments')
         i = iter(operand)
         try:
             while True:
-                rx = self.current_position[0] + float(i.next())
-                ry = self.current_position[1] + float(i.next())
+                rx = float(i.next())
+                ry = float(i.next())
                 phi = float(i.next())
                 largearc = bool(i.next())
                 sweep = bool(i.next())
@@ -1084,7 +1084,7 @@ class PathDataScanner(object):
 
     def scan_A(self, operand):
         if operand == 0 or len(operand) % 7 != 0:
-            raise Exception('curvetoqb takes 7 * n arguments')
+            raise Exception('arc takes 7 * n arguments')
         i = iter(operand)
         try:
             while True:
