@@ -99,7 +99,7 @@ def set_cart(request, cart):
     request.session.persist()
     request._cart = cart
 
-def get_cart(request, for_update=False):
+def get_cart(request, for_update=True):
     if hasattr(request, '_cart'):
         return request._cart
 
@@ -133,7 +133,7 @@ def get_now_from_request(request):
     else:
         return datetime.now() # XXX
 
-def get_cart_safe(request, for_update=False):
+def get_cart_safe(request, for_update=True):
     now = get_now_from_request(request) # XXX
     minutes = max(int(request.registry.settings['altair_cart.expire_time']) - 1, 0)
     cart = get_cart(request, for_update)
