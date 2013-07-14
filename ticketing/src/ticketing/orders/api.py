@@ -450,7 +450,7 @@ class OrderSummarySearchQueryBuilder(SearchQueryBuilderBase):
         return query
 
     def _member_id(self, query, value):
-        return query.join(self.targets['subject'].user).join(User.user_credential).filter(UserCredential.auth_identifier==value)
+        return query.filter(self.targets['subject'].auth_identifier==value)
 
     def _seat_number(self, query, value):
         query = query.join(self.targets['subject'].ordered_products)
