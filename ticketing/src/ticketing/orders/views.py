@@ -276,7 +276,7 @@ class Orders(BaseView):
     def index(self):
         slave_session = get_db_session(self.request, name="slave")
 
-        organization_id = int(self.context.user.organization_id)
+        organization_id = self.context.organization.id
         query = DBSession.query(Order).filter(Order.organization_id==organization_id)
 
         if self.request.params.get('action') == 'checked':
@@ -314,7 +314,7 @@ class Orders(BaseView):
     def download(self):
         slave_session = get_db_session(self.request, name="slave")
 
-        organization_id = self.context.user.organization_id
+        organization_id = self.context.organization.id
         query = slave_session.query(OrderSummary).filter(OrderSummary.organization_id==organization_id, OrderSummary.deleted_at==None)
 
         if self.request.params.get('action') == 'checked':
@@ -368,7 +368,7 @@ class Orders(BaseView):
             kwargs['export_type'] = export_type
         if excel_csv:
             kwargs['excel_csv'] = True
-        order_csv = OrderCSV(organization_id=self.context.user.organization_id, localized_columns=get_japanese_columns(self.request), **kwargs)
+        order_csv = OrderCSV(organization_id=self.context.organization.id, localized_columns=get_japanese_columns(self.request), **kwargs)
 
         writer = csv.writer(response, delimiter=',', quoting=csv.QUOTE_ALL)
         writer.writerows([encode_to_cp932(column) for column in columns] for columns in order_csv(orders))
@@ -381,7 +381,7 @@ class OrdersRefundIndexView(BaseView):
 
     def __init__(self, *args, **kwargs):
         super(type(self), self).__init__(*args, **kwargs)
-        self.organization_id = int(self.context.user.organization_id)
+        self.organization_id = int(self.context.organization.id)
 
     @view_config(route_name='orders.refund.index')
     def index(self):
@@ -487,7 +487,7 @@ class OrdersRefundConfirmView(BaseView):
 
         self.checked_orders = [o.lstrip('o:') for o in self.request.session.get('orders', []) if o.startswith('o:')]
         self.refund_condition = MultiDict(self.request.session.get('ticketing.refund.condition', []))
-        self.organization_id = int(self.context.user.organization_id)
+        self.organization_id = int(self.context.organization.id)
         self.form_search = OrderRefundSearchForm(self.refund_condition, organization_id=self.organization_id)
 
     @view_config(route_name='orders.refund.confirm', request_method='GET')
@@ -545,7 +545,7 @@ class OrderDetailView(BaseView):
     @view_config(route_name='orders.show', renderer='ticketing:templates/orders/show.html')
     def show(self):
         order_id = int(self.request.matchdict.get('order_id', 0))
-        order = Order.get(order_id, self.context.user.organization_id, include_deleted=True)
+        order = Order.get(order_id, self.context.organization.id, include_deleted=True)
         if order and order.deleted_at:
             order = Order.filter_by(order_no=order.order_no).first()
             if order:
@@ -618,7 +618,7 @@ class OrderDetailView(BaseView):
     @view_config(route_name='orders.cancel', permission='sales_editor')
     def cancel(self):
         order_id = int(self.request.matchdict.get('order_id', 0))
-        order = Order.get(order_id, self.context.user.organization_id)
+        order = Order.get(order_id, self.context.organization.id)
         if order is None:
             return HTTPNotFound('order id %d is not found' % order_id)
 
@@ -633,7 +633,7 @@ class OrderDetailView(BaseView):
     @view_config(route_name='orders.delete', permission='administrator')
     def delete(self):
         order_id = int(self.request.matchdict.get('order_id', 0))
-        order = Order.get(order_id, self.context.user.organization_id)
+        order = Order.get(order_id, self.context.organization.id)
         if order is None:
             return HTTPNotFound('order id %d is not found' % order_id)
 
@@ -649,13 +649,13 @@ class OrderDetailView(BaseView):
     @view_config(route_name='orders.refund.immediate', permission='sales_editor')
     def refund_immediate(self):
         order_id = int(self.request.matchdict.get('order_id', 0))
-        order = Order.get(order_id, self.context.user.organization_id)
+        order = Order.get(order_id, self.context.organization.id)
         if order is None:
             return HTTPNotFound('order id %d is not found' % order_id)
 
         f = OrderRefundForm(
             self.request.POST,
-            organization_id=self.context.user.organization_id,
+            organization_id=self.context.organization.id,
             settlement_payment_method_id=order.payment_delivery_pair.payment_method_id
         )
         if f.validate():
@@ -675,7 +675,7 @@ class OrderDetailView(BaseView):
     @view_config(route_name='orders.change_status', permission='sales_editor')
     def change_status(self):
         order_id = int(self.request.matchdict.get('order_id', 0))
-        order = Order.get(order_id, self.context.user.organization_id)
+        order = Order.get(order_id, self.context.organization.id)
         if order is None:
             return HTTPNotFound('order id %d is not found' % order_id)
 
@@ -689,7 +689,7 @@ class OrderDetailView(BaseView):
     @view_config(route_name='orders.delivered', permission='sales_editor')
     def delivered(self):
         order_id = int(self.request.matchdict.get('order_id', 0))
-        order = Order.get(order_id, self.context.user.organization_id)
+        order = Order.get(order_id, self.context.organization.id)
         if order is None:
             return HTTPNotFound('order id %d is not found' % order_id)
 
@@ -702,7 +702,7 @@ class OrderDetailView(BaseView):
     @view_config(route_name='orders.edit.shipping_address', request_method='POST', renderer='ticketing:templates/orders/_form_shipping_address.html')
     def edit_shipping_address_post(self):
         order_id = int(self.request.matchdict.get('order_id', 0))
-        order = Order.get(order_id, self.context.user.organization_id)
+        order = Order.get(order_id, self.context.organization.id)
         if order is None:
             return HTTPNotFound('order id %d is not found' % order_id)
 
@@ -725,7 +725,7 @@ class OrderDetailView(BaseView):
     @view_config(route_name='orders.edit.product', request_method='POST')
     def edit_product_post(self):
         order_id = int(self.request.matchdict.get('order_id', 0))
-        order = Order.get(order_id, self.context.user.organization_id)
+        order = Order.get(order_id, self.context.organization.id)
         if order is None:
             return HTTPNotFound('order id %d is not found' % order_id)
 
@@ -828,7 +828,7 @@ class OrderDetailView(BaseView):
     @view_config(route_name='orders.note', request_method='POST', renderer='json', permission='sales_counter')
     def note(self):
         order_id = int(self.request.matchdict.get('order_id', 0))
-        order = Order.get(order_id, self.context.user.organization_id)
+        order = Order.get(order_id, self.context.organization.id)
         if order is None:
             raise HTTPBadRequest(body=json.dumps({
                 'message':u'不正なデータです',
@@ -847,7 +847,7 @@ class OrderDetailView(BaseView):
     @view_config(route_name='orders.sales_summary', renderer='ticketing:templates/orders/_sales_summary.html', permission='sales_counter')
     def sales_summary(self):
         performance_id = int(self.request.params.get('performance_id') or 0)
-        performance = Performance.get(performance_id, self.context.user.organization_id)
+        performance = Performance.get(performance_id, self.context.organization.id)
         if performance is None:
             return HTTPNotFound('performance id %d is not found' % performance_id)
 
@@ -965,7 +965,7 @@ class OrdersReserveView(BaseView):
         l0_id = self.request.params.get('l0_id', 0)
         performance_id = self.request.params.get('performance_id', 0)
         logger.debug('call get order api (seat l0_id = %s)' % l0_id)
-        order = Order.filter_by(organization_id=self.context.user.organization_id)\
+        order = Order.filter_by(organization_id=self.context.organization.id)\
             .filter(Order.performance_id==performance_id)\
             .filter(Order.canceled_at==None)\
             .join(Order.ordered_products)\
@@ -997,7 +997,7 @@ class OrdersReserveView(BaseView):
 
         performance_id = int(post_data.get('performance_id', 0))
         sales_segment_id = int(post_data.get('sales_segment_id', 0))
-        performance = Performance.get(performance_id, self.context.user.organization_id)
+        performance = Performance.get(performance_id, self.context.organization.id)
         if performance is None:
             raise HTTPBadRequest(body=json.dumps({
                 'message':u'パフォーマンスが存在しません',
@@ -1050,7 +1050,7 @@ class OrdersReserveView(BaseView):
         post_data = MultiDict(self.request.json_body)
         post_data.update(self.get_inner_cart_session())
         performance_id = int(post_data.get('performance_id', 0))
-        performance = Performance.get(performance_id, self.context.user.organization_id)
+        performance = Performance.get(performance_id, self.context.organization.id)
 
         f = OrderReserveForm(post_data, performance_id=performance_id, stocks=post_data.get('stocks'), sales_segment_id=post_data.get('sales_segment_id'))
         selected_seats = Seat.query.filter(and_(
@@ -1069,7 +1069,7 @@ class OrdersReserveView(BaseView):
         post_data = MultiDict(self.request.json_body)
 
         performance_id = int(post_data.get('performance_id', 0))
-        performance = Performance.get(performance_id, self.context.user.organization_id)
+        performance = Performance.get(performance_id, self.context.organization.id)
         if performance is None:
             raise HTTPBadRequest(body=json.dumps({
                 'message':u'パフォーマンスが存在しません',
@@ -1159,7 +1159,7 @@ class OrdersReserveView(BaseView):
         with_enqueue = post_data.get('with_enqueue', False)
 
         performance_id = int(post_data.get('performance_id', 0))
-        performance = Performance.get(performance_id, self.context.user.organization_id)
+        performance = Performance.get(performance_id, self.context.organization.id)
         if performance is None:
             raise HTTPBadRequest(body=json.dumps({
                 'message':u'パフォーマンスが存在しません',
@@ -1296,7 +1296,7 @@ class SejOrderInfoView(object):
 
     def __init__(self, request):
         settings = get_current_registry().settings
-        tenant = SejTenant.filter_by(organization_id=request.context.user.organization_id).first()
+        tenant = SejTenant.filter_by(organization_id=request.context.organization.id).first()
         self.sej_hostname = (tenant and tenant.inticket_api_url) or settings.get('sej.inticket_api_url')
         self.shop_id = (tenant and tenant.shop_id) or settings.get('sej.shop_id')
         self.secret_key = (tenant and tenant.api_key) or settings.get('sej.api_key')
@@ -1435,7 +1435,7 @@ class SejOrderInfoView(object):
         order_id = int(self.request.matchdict.get('order_id', 0))
         sej_order = SejOrder.query.get(order_id)
 
-        result = sej_api.cancel_sej_order(sej_order, self.request.context.user.organization_id)
+        result = sej_api.cancel_sej_order(sej_order, self.request.context.organization.id)
         if result:
             self.request.session.flash(u'オーダーをキャンセルしました。')
             return HTTPFound(location=self.request.route_path('orders.sej.order.info', order_id=order_id))
@@ -1573,7 +1573,7 @@ class MailInfoView(BaseView):
     @view_config(match_param="action=show", renderer="ticketing:templates/orders/mailinfo/show.html")
     def show(self):
         order_id = int(self.request.matchdict.get('order_id', 0))
-        order = Order.get(order_id, self.context.user.organization_id)
+        order = Order.get(order_id, self.context.organization.id)
         mutil = get_mail_utility(self.request, MailTypeEnum.PurchaseCancelMail)
         message = mutil.build_message(self.request, order)
         mail_form = SendingMailForm(subject=message.subject,
@@ -1585,7 +1585,7 @@ class MailInfoView(BaseView):
     @view_config(match_param="action=complete_mail_preview", renderer="string")
     def complete_mail_preview(self):
         order_id = int(self.request.matchdict.get('order_id', 0))
-        order = Order.get(order_id, self.context.user.organization_id)
+        order = Order.get(order_id, self.context.organization.id)
         mutil = get_mail_utility(self.request, MailTypeEnum.PurchaseCompleteMail)
         return mutil.preview_text(self.request, order)
 
@@ -1597,7 +1597,7 @@ class MailInfoView(BaseView):
             self.request.session.flash(u'失敗しました: %s' % form.errors)
             raise HTTPFound(self.request.current_route_url(order_id=order_id, action="show"))
 
-        order = Order.get(order_id, self.context.user.organization_id)
+        order = Order.get(order_id, self.context.organization.id)
         mutil = get_mail_utility(self.request, MailTypeEnum.PurchaseCompleteMail)
         mutil.send_mail(self.request, order, override=form.data)
         self.request.session.flash(u'メール再送信しました')
@@ -1606,7 +1606,7 @@ class MailInfoView(BaseView):
     @view_config(match_param="action=cancel_mail_preview", renderer="string")
     def cancel_mail_preview(self):
         order_id = int(self.request.matchdict.get('order_id', 0))
-        order = Order.get(order_id, self.context.user.organization_id)
+        order = Order.get(order_id, self.context.organization.id)
         mutil = get_mail_utility(self.request, MailTypeEnum.PurchaseCancelMail)
         return mutil.preview_text(self.request, order)
 
@@ -1618,7 +1618,7 @@ class MailInfoView(BaseView):
             self.request.session.flash(u'失敗しました: %s' % form.errors)
             raise HTTPFound(self.request.current_route_url(order_id=order_id, action="show"))
 
-        order = Order.get(order_id, self.context.user.organization_id)
+        order = Order.get(order_id, self.context.organization.id)
         mutil = get_mail_utility(self.request, MailTypeEnum.PurchaseCancelMail)
         mutil.send_mail(self.request, order, override=form.data)
         self.request.session.flash(u'メール再送信しました')
@@ -1632,15 +1632,17 @@ class CartView(BaseView):
 
     @view_config(route_name='cart.search', renderer="ticketing:templates/carts/index.html")
     def index(self):
-        form = CartSearchForm(self.request.params, organization_id=self.context.user.organization_id)
+        form = CartSearchForm(self.request.params, organization_id=self.context.organization.id)
         carts = []
+        organization_id = self.context.organization.id
         if not self.request.params:
             self.request.session.flash(u'検索条件を指定してください')
         elif not form.validate():
             self.request.session.flash(u'検索条件に誤りがあります')
         else:
             try:
-                query = CartSearchQueryBuilder(form.data)(Cart.query)
+                query = Cart.query.filter(Cart.organization_id == organization_id).filter(Cart.deleted_at == None)
+                query = CartSearchQueryBuilder(form.data)(query)
             except QueryBuilderError as e:
                 self.request.session.flash(e.message)
             carts = paginate.Page(
