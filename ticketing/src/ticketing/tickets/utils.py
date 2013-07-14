@@ -798,19 +798,19 @@ class PathDataScanner(object):
         if len(operand) == 0:
             raise Exception('horizontalline takes at least 1 argument')
         for oper in operand:
-            y = self.current_position[0] + float(oper)
-            self.handler.horizontal_line_to(self.current_position[0], y)
-            self.current_position = (self.current_position[0], y)
+            x = self.current_position[0] + float(oper)
+            self.handler.line_to(x, self.current_position[1])
+            self.current_position = (x, self.current_position[1])
         self.last_qb_control_point = None
         self.last_cb_control_point = None
 
     def scan_H(self, operand):
-        if len(operand) == 0:
+        if operand == 0:
             raise Exception('horizontalline takes at least 1 argument')
         for oper in operand:
-            y = float(oper)
-            self.handler.horizontal_line_to(self.current_position[0], y)
-            self.current_position = (self.current_position[0], y)
+            x = float(oper)
+            self.handler.line_to(x, self.current_position[1])
+            self.current_position = (x, self.current_position[1])
         self.last_qb_control_point = None
         self.last_cb_control_point = None
 
@@ -818,19 +818,19 @@ class PathDataScanner(object):
         if len(operand) == 0:
             raise Exception('verticalline takes at least 1 argument')
         for oper in operand:
-            x = self.current_position[0] + float(oper)
-            self.handler.vertical_line_to(x, self.current_position[1])
-            self.current_position = (x, self.current_position[1])
+            y = self.current_position[0] + float(oper)
+            self.handler.line_to(self.current_position[0], y)
+            self.current_position = (self.current_position[0], y)
         self.last_qb_control_point = None
         self.last_cb_control_point = None
 
     def scan_V(self, operand):
-        if operand == 0:
+        if len(operand) == 0:
             raise Exception('verticalline takes at least 1 argument')
         for oper in operand:
-            x = float(oper)
-            self.handler.vertical_line_to(x, self.current_position[1])
-            self.current_position = (x, self.current_position[1])
+            y = float(oper)
+            self.handler.line_to(self.current_position[0], y)
+            self.current_position = (self.current_position[0], y)
         self.last_qb_control_point = None
         self.last_cb_control_point = None
 

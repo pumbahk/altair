@@ -469,6 +469,9 @@ class EmittingPathDataHandler(object):
     def curve_to_qb(self, x1, y1, x, y):
         self.emitter.emit_quadratic_curve_to(x1, y1, x, y)
 
+    def arc(self, rx, ry, phi, largearc, sweep, x, y):
+        self.emitter.emit_arc(rx, ry, phi, largearc, sweep, x, y)
+
 class StyleNoneType(object):
     pass
 
