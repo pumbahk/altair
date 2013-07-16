@@ -1079,6 +1079,8 @@ class SalesSegmentGroup(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     start_at = AnnotatedColumn(DateTime, _a_label=_(u'販売開始日時'))
     end_at = AnnotatedColumn(DateTime, _a_label=_(u'販売終了日時'))
     upper_limit = AnnotatedColumn(Integer, _a_label=_(u'購入上限枚数'))
+    order_limit = AnnotatedColumn(Integer, _a_label=_(u'購入回数制限'))
+
     seat_choice = AnnotatedColumn(Boolean, default=True, _a_label=_(u'座席選択可'))
     public = AnnotatedColumn(Boolean, default=True, _a_label=_(u'一般公開'))
 
@@ -3144,6 +3146,9 @@ class SalesSegment(Base, BaseModel, LogicallyDeleted, WithTimestamp):
     start_at = Column(DateTime)
     end_at = Column(DateTime)
     upper_limit = Column(Integer)
+    order_limit = AnnotatedColumn(Integer, default=0,
+                                  _a_label=_(u'購入回数制限'))
+
     _seat_choice = Column('seat_choice', Boolean, nullable=True, default=None)
     public = Column(Boolean, default=True)
     performance_id = Column(Identifier, ForeignKey('Performance.id'))

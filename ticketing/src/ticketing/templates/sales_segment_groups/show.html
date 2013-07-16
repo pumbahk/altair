@@ -70,6 +70,7 @@ ${ch.breadcrumbs(
             <th>販売終了日時</th>
             <th>配券元</th>
             <th>上限枚数</th>
+            <th>購入回数制限</th>
             <th>座席選択可</th>
             <th>公開</th>
           </tr>
@@ -90,6 +91,7 @@ ${ch.breadcrumbs(
             <td>${vh.datetime(sales_segment.end_at)}</td>
             <td>${sales_segment.account.name if sales_segment.account else u'(未設定)'}</td>
             <td>${sales_segment.upper_limit or u''}</td>
+            <td>${sales_segment.order_limit or u''}</td>
             <td>${u'○' if sales_segment.seat_choice else u'×'}</td>
             <td>${u'○' if sales_segment.public else u'×'}</td>
           </tr>

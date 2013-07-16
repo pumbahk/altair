@@ -116,6 +116,11 @@ class SalesSegmentForm(OurForm):
         default=10,
         validators=[RequiredOnUpdate()]
     )
+    order_limit = OurIntegerField(
+        label=u'購入回数制限',
+        default=0,
+        validators=[RequiredOnUpdate()]
+    )
     account_id = OurSelectField(
         label=u'配券元',
         validators=[Required(u'選択してください')],
