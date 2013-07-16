@@ -74,8 +74,6 @@ $(function() {
         var imgPreloader = new Array();
         $(".imgtf").each(function(index) {
             var imgTarget = $(this);
-            var imgHeight = 0;
-            var imgWidth = 0;
             var orgSrc = $(this).attr("org_src");
 
             imgPreloader[index] = new Image();
@@ -83,8 +81,6 @@ $(function() {
             imgPreloader[index].onload=function() {
                 ++readCount;
                 imgTarget.attr({'src':orgSrc});
-                imgWidth = imgPreloader[index].width;
-                imgHeight = imgPreloader[index].height;
                 while (imgPreloader[index].width > viewWidth || imgPreloader[index].height > viewHeight) {
                     reduction(imgTarget, viewWidth, viewHeight, imgPreloader[index].width, imgPreloader[index].height);
                     imgPreloader[index].width = imgTarget.width()
@@ -93,12 +89,9 @@ $(function() {
 
                 // 枠より小さい画像を綺麗に並べる
                 var styles = {};
-                var x = imgTarget.width();
-                var y = imgTarget.height();
-
-                if (y < viewHeight && y > 0) {
+                if (imgTarget.height() < viewHeight && imgTarget.height() > 0) {
                     styles["margin-left"] = 0;
-                    styles["margin-top"] = 0.5*(viewHeight-y);
+                    styles["margin-top"] = 0.5*(viewHeight - imgTarget.height());
                 }
                 imgTarget.css(styles);
 
