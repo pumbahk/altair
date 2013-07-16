@@ -4,7 +4,6 @@ import re
 import json
 import transaction
 from datetime import datetime
-#from collections import OrderedDict
 
 import sqlalchemy as sa
 from sqlalchemy.orm import joinedload
@@ -46,6 +45,7 @@ from .exceptions import (
     NoPerformanceError,
     InvalidCSRFTokenException, 
     CartCreationException,
+    InvalidCartStatusError
 )
 
 logger = logging.getLogger(__name__)
@@ -720,6 +720,8 @@ class ConfirmView(object):
     def get(self):
         form = schemas.CSRFSecureForm(csrf_context=self.request.session)
         cart = api.get_cart_safe(self.request)
+        if cart.shipping_address is None:
+            raise InvalidCartStatusError(cart.id)
 
         magazines_to_subscribe = get_magazines_to_subscribe(cart.performance.event.organization, cart.shipping_address.emails)
 

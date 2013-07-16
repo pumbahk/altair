@@ -47,4 +47,5 @@ class UnassignedOrderNumberError(CartException):
         self.cart_id = cart_id
 
 class InvalidCartStatusError(CartException):
-    pass
+    def __init__(self, cart_id=None):
+        self.cart_id = cart_id

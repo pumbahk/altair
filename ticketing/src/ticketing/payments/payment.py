@@ -1,9 +1,8 @@
 # -*- coding:utf-8 -*-
 import logging
 import transaction
-#from zope.deprecation.deprecation import deprecate
 from ticketing.models import DBSession
-from ticketing.cart.exceptions import DeliveryFailedException
+from ticketing.cart.exceptions import DeliveryFailedException, InvalidCartStatusError
 from ticketing.core.models import Order
 from .api import (
     get_payment_delivery_plugin, 
@@ -60,7 +59,9 @@ class Payment(object):
         return order
 
     def get_plugins(self, payment_delivery_pair):
-        payment_delivery_plugin = get_payment_delivery_plugin(self.request, 
+        if payment_delivery_pair is None:
+            raise InvalidCartStatusError()
+        payment_delivery_plugin = get_payment_delivery_plugin(self.request,
             payment_delivery_pair.payment_method.payment_plugin_id,
             payment_delivery_pair.delivery_method.delivery_plugin_id,)
         payment_plugin = get_payment_plugin(self.request, payment_delivery_pair.payment_method.payment_plugin_id)
