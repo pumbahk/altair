@@ -5,6 +5,7 @@ version = '1.0'
 
 requires = [
     "webob",
+    "altair.request",
     ]
 
 tests_require = [

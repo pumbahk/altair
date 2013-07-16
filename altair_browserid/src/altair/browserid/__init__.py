@@ -1,6 +1,7 @@
 import logging
 import threading
 from webob.dec import wsgify
+from altair.request import raw_cookies
 
 browser = threading.local()
 logger = logging.getLogger(__name__)
@@ -26,7 +27,7 @@ class BrowserIDMiddleware(object):
 
     @wsgify
     def __call__(self, request):
-        cookies = request.cookies
+        cookies = raw_cookies(request)
 
         browser_id_cookie = cookies.get(self.cookie_name)
         if browser_id_cookie:
