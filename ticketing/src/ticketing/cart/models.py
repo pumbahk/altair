@@ -42,7 +42,7 @@ from ticketing.models import Identifier
 from ticketing.core import models as c_models
 from ticketing.core import api as c_api
 from . import logger
-from .exceptions import NoCartError, UnassignedOrderNumberError, CartCreationException
+from .exceptions import NoCartError, UnassignedOrderNumberError, CartCreationException, InvalidCartStatusError
 
 class PaymentMethodManager(object):
     def __init__(self):
@@ -178,6 +178,8 @@ class Cart(Base):
     def total_amount(self):
         if not self.sales_segment:
             return None
+        if self.payment_delivery_pair is None:
+            raise InvalidCartStatusError(self.id)
         return self.sales_segment.get_amount(
             self.payment_delivery_pair,
             [(p.product, p.quantity) for p in self.products])

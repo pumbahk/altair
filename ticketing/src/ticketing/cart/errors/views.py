@@ -13,6 +13,7 @@ from ..exceptions import (
     ZeroQuantityError,
     CartCreationException,
     DeliveryFailedException,
+    InvalidCartStatusError
 )
 from ..reserving import InvalidSeatSelectionException, NotEnoughAdjacencyException
 from ..stocker import InvalidProductSelectionException, NotEnoughStockException
@@ -115,7 +116,7 @@ def invalid_csrf_token_exception(request):
 def delivery_failed_exception(context, request):
     event_id = context.event_id
     location = request.route_url('cart.index', event_id=event_id)
-    return dict(message=Markup(u'決済中にエラーが発生しました。しばらく時間を置いてから<a href="%s">再度お試しください。</a>' % location))
+    return dict(title=u'決済エラー', message=Markup(u'決済中にエラーが発生しました。しばらく時間を置いてから<a href="%s">再度お試しください。</a>' % location))
 
 @view_config(context=PaymentPluginException, renderer=selectable_renderer('ticketing.cart:templates/%(membership)s/pc/message.html'))
 @view_config(context=PaymentPluginException, renderer=selectable_renderer('ticketing.cart:templates/%(membership)s/mobile/error.html'), request_type='altair.mobile.interfaces.IMobileRequest')
@@ -132,5 +133,10 @@ def payment_plugin_exception(context, request):
         # else:
         #    location = request.context.host_base_url
         location = request.context.host_base_url
-    return dict(message=Markup(u'決済中にエラーが発生しました。しばらく時間を置いてから<a href="%s">再度お試しください。</a>' % location))
+    return dict(title=u'決済エラー', message=Markup(u'決済中にエラーが発生しました。しばらく時間を置いてから<a href="%s">再度お試しください。</a>' % location))
 
+@view_config(context=InvalidCartStatusError, renderer=selectable_renderer('ticketing.cart:templates/%(membership)s/pc/message.html'))
+@view_config(context=InvalidCartStatusError, renderer=selectable_renderer('ticketing.cart:templates/%(membership)s/mobile/error.html'), request_type='altair.mobile.interfaces.IMobileRequest')
+def invalid_cart_status_error(request):
+    return dict(message=Markup(u'大変申し訳ございません。ブラウザの複数ウィンドウからの操作や、戻るボタン等の操作により、予約を継続することができません。<br>'
+                               u'ご予約の際は複数ウィンドウや戻るボタンを使わずにご予約ください。'))
