@@ -1,33 +1,81 @@
 altair README
 -------------
 
-ローカル開発環境
-========================
+local (dev)
+===========
+
+mac
+---
+
+* Xcode + Command Line Tools をインストール
+* homebrew をインストール
+
+  * xz
+  * redis
+
+* MySQL をインストール
+
+  * `MySQL Community Server 5.5.x / 5.6.x <http://dev.mysql.com/downloads/>`_
+  * dmg からインストールするのが良いかも
+
+* S3 からデータを取得して解凍
+
+  * s3://ticketstar-dev-snapshots/yyyy-MM-DD/snapshot-*
+
+* MySQL にユーザを作成して dump を import
+
+  * import に時間がかかるので、事前にパラメータ調整しておくと早い
+
+    * binlog や slowlog を出力しない設定にする
+    * my.cnf で "skip_innodb_doublewrite" を設定
+    * "innodb_flush_log_at_trx_commit = 0" にする
 
 ::
 
-  $ cd deploy/dev
-  $ bin/buildout -c buildout.local.cfg 
+  mysql> CREATE DATABASE `altaircms` DEFAULT CHARSET utf8;
+  mysql> CREATE DATABASE `ticketing` DEFAULT CHARSET utf8;
+  mysql> GRANT ALL ON `altaircms`.* TO `altaircms`@'127.0.0.1' IDENTIFIED BY 'altaircms';
+  mysql> GRANT ALL ON `ticketing`.* TO `ticketing`@'127.0.0.1' IDENTIFIED BY 'ticketing';
+
+::
+
+  $ xz -d snapshot-*.xz
+  $ cat snapshot-altaircms*.sql | mysql -u altaircms -paltaircms altaircms
+  $ cat snapshot-ticketing*.sql | mysql -u ticketing -pticketing ticketing
 
 
+* 適当なディレクトリにソースを clone して buildout
 
-これ以下の情報は古いのでだれか精査のこと
-
-Setup
-=====
 ::
 
   $ mkdir altair-devel
   $ cd altair-devel
   $ git clone git@github.com:ticketstar/altair
-  $ git submodule init 
+  $ git submodule init
   $ git submodule update
   $ easy_install virtualenv
-  $ virtualenv env
-  $ env/bin/easy_install pyramid
-  $ cd vega
-  $ ../env/bin/python setup.py develop
-  $ ../env/bin/paster serve development.ini --reload
+  $ virtualenv --setuptools --no-site-packages env
+  $ env/bin/pip install --upgrade setuptools
+  $ cd deploy/dev
+  $ python bootstrap.py -d
+  $ bin/buildout -c buildout.local.cfg
+
+* supervisor で起動
+
+  * devproxy 以外は自動起動しないので、supervisorctl 経由で起動させる
+
+::
+
+  $ ./bin/supervisord
+
+* devproxy 経由で動作確認
+
+  * Firefox に `Proxy Selector <https://addons.mozilla.org/ja/firefox/addon/proxy-selector/>`_ をインストール
+  * localhost:58080 経由で接続するように設定
+  * stg2 のアドレスで確認
+
+    * http://rt.stg2.rt.ticketstar.jp/
+    * http://vissel.stg2.rt.ticketstar.jp/
 
 Useful Resources
 ================
@@ -36,8 +84,8 @@ Useful Resources
 * `Pyramid Migration Guide <http://bytebucket.org/sluggo/pyramid-docs/wiki/html/migration.html>`_
 
 
-ステージングたちあげ
-================================
+staging
+=======
 
 buildout環境の確認
 ::
