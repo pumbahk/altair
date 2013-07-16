@@ -141,6 +141,8 @@ class SearchLotsEntryView(object):
             if form.name.data:
                 condition = sql.and_(condition, 
                                      sql.or_(LotEntrySearch.shipping_address_full_name==form.name.data,
+                                             LotEntrySearch.shipping_address_last_name+LotEntrySearch.shipping_address_first_name==form.name.data,
+                                             LotEntrySearch.shipping_address_last_name+" "+LotEntrySearch.shipping_address_first_name==form.name.data,
                                              LotEntrySearch.shipping_address_last_name==form.name.data,
                                              LotEntrySearch.shipping_address_first_name==form.name.data,
                                              LotEntrySearch.shipping_address_full_name_kana==form.name.data,
