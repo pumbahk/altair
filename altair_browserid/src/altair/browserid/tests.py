@@ -35,6 +35,8 @@ class BrowserIDMiddlewareTests(unittest.TestCase):
 
         testapp = webtest.TestApp(target)
 
-        result = testapp.get('/', headers={ "Cookie": "browserid=this-is-browser-id!HMAC" })
+        # make sure that altair.browserid can deal with the situation where
+        # any cookie contains a byte sequence that is not UTF-8 valid.
+        result = testapp.get('/', headers={ "Cookie": "browserid=this-is-browser-id!HMAC; dummy=%fe%fe%fe" })
 
         self.assertEqual(result.body, 'environ browserid = this-is-browser-id local browserid = this-is-browser-id')
