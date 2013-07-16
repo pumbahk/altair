@@ -511,7 +511,7 @@ class SalesDetailReporter(object):
 class PerformanceReporter(object):
 
     def __init__(self, form, performance):
-        self.form = form
+        self.form = SalesReportForm(**form.data)
         self.performance = performance
         self.reporters = {}
 
@@ -523,11 +523,11 @@ class PerformanceReporter(object):
         for sales_segment in performance.sales_segments:
             if not sales_segment.public:
                 continue
-            if (form.limited_from.data and sales_segment.end_at < form.limited_from.data) or\
-               (form.limited_to.data and form.limited_to.data < sales_segment.start_at):
+            if (self.form.limited_from.data and sales_segment.end_at < self.form.limited_from.data) or\
+               (self.form.limited_to.data and self.form.limited_to.data < sales_segment.start_at):
                 continue
             self.form.sales_segment_group_id.data = sales_segment.sales_segment_group_id
-            self.reporters[sales_segment] = SalesDetailReporter(form)
+            self.reporters[sales_segment] = SalesDetailReporter(self.form)
 
     def sort_index(self):
         return sorted(self.reporters.keys(), key=lambda x:(x.order, x.name))
@@ -539,7 +539,7 @@ class PerformanceReporter(object):
 class EventReporter(object):
 
     def __init__(self, form, event):
-        self.form = form
+        self.form = SalesReportForm(**form.data)
         self.event = event
         self.reporters = {}
 
@@ -548,10 +548,10 @@ class EventReporter(object):
             if not performance.public:
                 continue
             end_on = performance.end_on or performance.start_on
-            if form.limited_from.data and end_on < form.limited_from.data:
+            if self.form.limited_from.data and end_on < self.form.limited_from.data:
                 continue
             self.form.performance_id.data = performance.id
-            self.reporters[performance] = PerformanceReporter(form, performance)
+            self.reporters[performance] = PerformanceReporter(self.form, performance)
 
     def sort_index(self):
         return sorted(self.reporters.keys(), key=lambda x:(x.start_on, x.name))
