@@ -127,7 +127,11 @@ class EventSearcher(object):
         info = search_query.event_open_info
         if info.since_event_open and info.event_open:
             log_info("search_event_open", unicode(info.since_event_open) + u" 〜 " + unicode(info.event_open))
-            where = (info.since_event_open <= Event.event_open) & (info.event_open >= Event.event_open)
+            where = (
+                (info.since_event_open <= Event.event_open) & (info.event_open >= Event.event_open) |
+                (info.since_event_open <= Event.event_close) & (info.event_open >= Event.event_close) |
+                (Event.event_open <= info.since_event_open) & (Event.event_close >= info.event_open)
+            )
             qs = self._create_common_qs(where=where, qs=qs)
         return qs
 

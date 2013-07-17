@@ -117,7 +117,7 @@ class DetailSearchForm(TopSearchForm):
     def get_event_open(self):
         event_open = None
         try:
-            event_open = datetime(int(self.year.data), int(self.month.data), int(self.day.data))
+            event_open = datetime(int(self.year.data), int(self.month.data), int(self.day.data), 23, 59, 59)
         except Exception as e:
             pass
         return event_open
@@ -147,5 +147,5 @@ def common_validate_date(form, field):
         since_event_open = datetime(int(form.since_year.data), int(form.since_month.data), int(form.since_day.data))
     except Exception as e:
         raise ValueError(u'公演日の指定が不正です。')
-    if since_event_open >= event_open:
+    if since_event_open > event_open:
         raise ValueError(u'公演日の検索範囲が不正です。')

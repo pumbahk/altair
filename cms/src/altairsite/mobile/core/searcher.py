@@ -164,8 +164,12 @@ class EventSearcher(object):
         since_open = datetime(
             int(form.since_year.data), int(form.since_month.data), int(form.since_day.data))
         open = datetime(
-            int(form.year.data), int(form.month.data), int(form.day.data))
-        where = (since_open <= Event.event_open) & (open >= Event.event_open)
+            int(form.year.data), int(form.month.data), int(form.day.data), 23, 59, 59)
+        where = (
+            (since_open <= Event.event_open) & (open >= Event.event_open) |
+            (since_open <= Event.event_close) & (open >= Event.event_close) |
+            (Event.event_open <= since_open) & (Event.event_close >= open )
+        )
         qs = self._create_common_qs(where=where, qs=qs)
         log_info("get_events_from_start_on", "search end")
 
@@ -232,11 +236,12 @@ class PrefectureEventSearcher(EventSearcher):
 
 def create_event_searcher(request, form):
     searcher = SimpleEventSearcher(request=request)
+
     if form.sale.data == int(SalesEnum.SOON_ACT):
         searcher = PrefectureEventSearcher(request=request)
     if exist_value(form.area.data):
         searcher = PrefectureEventSearcher(request=request)
     if hasattr(form, "sales_segment"):
-        if form.sales_segment:
+        if form.sales_segment.data:
             searcher = EventSearcher(request=request)
     return searcher
