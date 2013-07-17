@@ -181,7 +181,7 @@ def do_import_point_grant_data(registry, type, submitted_on, file, reason_code, 
         try:
             line = line.rstrip('\r\n').decode(encoding)
             cols = line.split('\t')
-            if len(cols) < 7 or len(cols) > 8:
+            if len(cols) < 7 or len(cols) > 9:
                 raise ColumnNumberMismatchError(len(cols))
 
             if len(cols) == 7:
