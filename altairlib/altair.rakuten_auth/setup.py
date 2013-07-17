@@ -35,6 +35,7 @@ setup(name='altair.rakuten_auth',
       zip_safe=False,
       install_requires=[
           'setuptools',
+          'repoze.who',
           'altair.auth',
           'altair.browserid',
           # -*- Extra requirements: -*-

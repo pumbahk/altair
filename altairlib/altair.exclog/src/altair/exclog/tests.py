@@ -50,7 +50,7 @@ class ExcLogTweenTests(unittest.TestCase):
         from . import create_exception_message_builder, create_exception_message_renderer, create_exception_logger
         from .interfaces import IExceptionMessageBuilder, IExceptionMessageRenderer, IExceptionLogger
         registry.registerUtility(create_exception_message_builder(registry), IExceptionMessageBuilder)
-        registry.registerUtility(create_exception_message_renderer(registry), IExceptionMessageRenderer)
+        registry.registerUtility(create_exception_message_renderer(self.config), IExceptionMessageRenderer)
         registry.registerUtility(create_exception_logger(registry), IExceptionLogger)
         handler = testing.DummyResource()
         result = self._makeOne(handler, registry)
@@ -69,7 +69,7 @@ class ExcLogTweenTests(unittest.TestCase):
         from . import create_exception_message_builder, create_exception_message_renderer, create_exception_logger
         from .interfaces import IExceptionMessageBuilder, IExceptionMessageRenderer, IExceptionLogger
         registry.registerUtility(create_exception_message_builder(registry), IExceptionMessageBuilder)
-        registry.registerUtility(create_exception_message_renderer(registry), IExceptionMessageRenderer)
+        registry.registerUtility(create_exception_message_renderer(self.config), IExceptionMessageRenderer)
         registry.registerUtility(create_exception_logger(registry), IExceptionLogger)
 
         handler = mock.Mock()
@@ -125,7 +125,7 @@ class ExcLogTweenTests(unittest.TestCase):
         from . import create_exception_message_builder, create_exception_message_renderer, create_exception_logger
         from .interfaces import IExceptionMessageBuilder, IExceptionMessageRenderer, IExceptionLogger
         registry.registerUtility(create_exception_message_builder(registry), IExceptionMessageBuilder)
-        registry.registerUtility(create_exception_message_renderer(registry), IExceptionMessageRenderer)
+        registry.registerUtility(create_exception_message_renderer(self.config), IExceptionMessageRenderer)
         registry.registerUtility(create_exception_logger(registry), IExceptionLogger)
 
         handler = mock.Mock()
@@ -146,7 +146,7 @@ class ExcLogTweenTests(unittest.TestCase):
         from . import create_exception_message_builder, create_exception_message_renderer, create_exception_logger
         from .interfaces import IExceptionMessageBuilder, IExceptionMessageRenderer, IExceptionLogger
         registry.registerUtility(create_exception_message_builder(registry), IExceptionMessageBuilder)
-        registry.registerUtility(create_exception_message_renderer(registry), IExceptionMessageRenderer)
+        registry.registerUtility(create_exception_message_renderer(self.config), IExceptionMessageRenderer)
         registry.registerUtility(create_exception_logger(registry), IExceptionLogger)
 
         handler = mock.Mock()

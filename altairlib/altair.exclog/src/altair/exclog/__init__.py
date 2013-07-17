@@ -41,7 +41,7 @@ def create_exception_message_builder(registry):
         includes=aslist(settings.get('altair.exclog.includes', DEFAULT_INCLUDES)))
 
 def create_exception_message_renderer(config):
-    renderer_factory = config.maybe_dotted(config.registry.settings.get('altair.exclog.renderer_factory', '.renderer.BasicExceptionMessageRenderer'))
+    renderer_factory = config.maybe_dotted(config.registry.settings.get('altair.exclog.renderer_factory', 'altair.exclog.renderer.BasicExceptionMessageRenderer'))
     return renderer_factory(show_traceback=asbool(config.registry.settings.get('altair.exclog.show_traceback', 'false')))
 
 def create_exception_logger(registry):

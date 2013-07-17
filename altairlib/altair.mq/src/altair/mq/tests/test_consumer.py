@@ -17,6 +17,7 @@ class TaskMapperTests(unittest.TestCase):
             durable=True,
             exclusive=False,
             auto_delete=True,
+            nowait=False,
         )
         target = self._makeOne("testing", None, settings)
         mock_channel = mock.Mock()
@@ -28,6 +29,7 @@ class TaskMapperTests(unittest.TestCase):
             durable=True,
             exclusive=False,
             auto_delete=True,
+            nowait=False,
         )
         self.assertEqual(target.channel, mock_channel)
 
@@ -132,7 +134,9 @@ class MessageTests(unittest.TestCase):
         return self._getTarget()(*args, **kwargs)
 
     def test_it(self):
-        target = self._makeOne(channel="testing-channel",
+        request = testing.DummyRequest()
+        target = self._makeOne(request,
+                               channel="testing-channel",
                                method="testing-method",
                                header=["testing-header"],
                                body='"testing-body"')
@@ -143,7 +147,9 @@ class MessageTests(unittest.TestCase):
         self.assertEqual(target.body, '"testing-body"')
 
     def test_params(self):
-        target = self._makeOne(channel="testing-channel",
+        request = testing.DummyRequest()
+        target = self._makeOne(request,
+                               channel="testing-channel",
                                method="testing-method",
                                header=["testing-header"],
                                body='{"value": "testing-body"}')
