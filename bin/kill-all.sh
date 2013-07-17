@@ -1,1 +1,0 @@
-for i in *.pid; do kill `cat $i`; done
