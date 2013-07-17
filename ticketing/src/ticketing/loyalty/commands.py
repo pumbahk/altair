@@ -170,7 +170,7 @@ def import_point_grant_results():
         transaction.abort()
         raise
 
-def do_import_point_grant_data(registry, type, submitted_on, file, reason_code, shop_name, encoding):
+def do_import_point_grant_data(registry, type, submitted_on, file, reason_code, shop_name, trust_sub_key, encoding):
     from .models import PointGrantHistoryEntry
     from ticketing.models import DBSession
     from ticketing.users.models import UserPointAccount, UserPointAccountTypeEnum
@@ -210,10 +210,20 @@ def do_import_point_grant_data(registry, type, submitted_on, file, reason_code, 
             except NoResultFound:
                 raise RecordError("UserPointAccount(type=%d, account_number=%s) does not exist" % (type, account_number))
 
-            point_grant_history_entry = PointGrantHistoryEntry.query \
-                .filter(PointGrantHistoryEntry.order_id == order.id) \
-                .filter(PointGrantHistoryEntry.user_point_account_id == user_point_account.id) \
-                .first()
+            point_grant_history_entry = None
+            point_grant_history_entry_id = None
+            if trust_sub_key:
+                try:
+                    point_grant_history_entry_id = decode_point_grant_history_entry_id(cols[4])
+                    point_grant_history_entry = PointGrantHistoryEntry.query.filter_by(id=point_grant_history_entry_id).first()
+                except:
+                    pass
+
+            if point_grant_history_entry is None:
+                point_grant_history_entry = PointGrantHistoryEntry.query \
+                    .filter(PointGrantHistoryEntry.id == order.id) \
+                    .filter(PointGrantHistoryEntry.user_point_account_id == user_point_account.id) \
+                    .first()
 
             if point_grant_history_entry is not None:
                 raise RecordError("PointAcountHistoryEntry(id=%ld) already exists for Order(id=%ld, order_No=%s)" % (point_grant_history_entry.id, order.id, order_no))
@@ -224,6 +234,10 @@ def do_import_point_grant_data(registry, type, submitted_on, file, reason_code, 
                 amount=points_granted,
                 submitted_on=submitted_on
                 )
+
+            if trust_sub_key is not None and point_grant_history_entry_id is not None:
+                point_grant_history_entry.id = point_grant_history_entry_id
+
             DBSession.add(point_grant_history_entry)
             DBSession.flush()
 
@@ -267,6 +281,7 @@ def import_point_grant_data():
     parser.add_argument('-t', '--type')
     parser.add_argument('-R', '--reason-code')
     parser.add_argument('-S', '--shop-name')
+    parser.add_argument('--trust-sub-key', action='store_true')
     parser.add_argument('config')
     parser.add_argument('submitted_on')
     parser.add_argument('file', nargs='+')
@@ -304,6 +319,7 @@ def import_point_grant_data():
                 file,
                 reason_code,
                 shop_name,
+                args.trust_sub_key,
                 args.encoding or default_encoding
                 )
         transaction.commit()
