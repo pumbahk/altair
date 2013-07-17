@@ -20,7 +20,7 @@ def hook(event):
     user.user_profile.zip = identity['zip']
     user.user_profile.prefecture = identity['prefecture']
     user.user_profile.city = identity['city']
-    user.user_profile.street = identity['street']
+    user.user_profile.address_1 = identity['street']
     user.user_profile.tel_1 = identity['tel_1']
     rakuten_point_account = identity.get('rakuten_point_account')
     if rakuten_point_account:
