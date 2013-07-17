@@ -2380,17 +2380,25 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         dpid = self.payment_delivery_pair.delivery_method.delivery_plugin_id
         if dpid == plugins.SEJ_DELIVERY_PLUGIN_ID and ppid != plugins.SEJ_PAYMENT_PLUGIN_ID:
             sej_order = SejOrder.query.filter_by(order_id=self.order_no).first()
-            result = sej_api.cancel_sej_order(sej_order, self.organization_id)
-            if not result:
-                return False
+            # SejAPIでエラーのケースではSejOrderはつくられないのでスキップ
+            if sej_order:
+                result = sej_api.cancel_sej_order(sej_order, self.organization_id)
+                if not result:
+                    logger.info('SejOrder (order_id=%s) cancel error' % self.order_no)
+                    return False
+            else:
+                logger.info('skip cancel delivery method. SejOrder not found (order_id=%s)' % self.order_no)
 
         # 在庫を戻す
+        logger.info('try release stock (order_no=%s)' % self.order_no)
         self.release()
         if self.payment_status != 'refunding':
             self.mark_canceled()
         if self.payment_status in ['paid', 'refunding']:
             self.mark_refunded()
+
         self.save()
+        logger.info('success order cancel (order_no=%s)' % self.order_no)
 
         return True
 

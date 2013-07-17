@@ -24,5 +24,3 @@ def cancel_on_delivery_error(event):
 
     order.cancel(request)
     order.note = str(e)
-    #order_no = order.order_no
-    #event_id = cart.sales_segment.event_id
