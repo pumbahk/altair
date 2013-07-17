@@ -1,0 +1,194 @@
+<%page args="apis,ticket_formats"/>
+<% import json %>
+
+<style type="text/css">
+  .droparea{
+    margin-left:5%;
+    margin-right:5%;
+  }
+  .droparea.empty{
+    height: 200px;
+    background-color: #ccc;
+    text-align: center;
+    margin: 0 auto;
+  }
+  .droparea.touched{
+    background-color: #cfc;
+  }
+  input {
+      width:90%;
+  }
+  #preview_area img{
+    margin-top: 20px;
+    margin-bottom: 20px;
+  }
+  #loading_area {
+    z-index: 1;
+    position:absolute;
+    top:0px;
+  }
+
+  #subnav a.brand{
+    color: #777
+  }
+
+  #subnav.navbar .nav > li > a:hover {
+    background-color: transparent;
+    color: #faf;
+    text-decoration: none;
+  }
+</style>
+
+<div class="row">
+  <div id="message_box" class="span6" style="">
+    <div id="alert_message" class="message hide alert"></div>
+    <div id="info_message" class="message hide alert alert-info"></div>
+    <div id="error_message" class="message hide alert alert-error"></div>
+    <div id="success_message" class="message hide alert alert-success"></div>
+  </div>
+</div>
+
+<div id="preview_block" class="well">
+  <div id="subnav" class="navbar">
+    <div class="navbar-inner">
+      <a class="brand" href="#">preview画像表示</a>
+      <ul class="nav" id="params_settings_nav">
+        <li>
+          <div class="btn-group">
+            <a id="redraw_btn" class="btn" href="#"><i class="icon-pencil icon-black"></i> preview画像を再描画</a>
+            <a class="btn dropdown-toggle" data-toggle="dropdown">
+              <span class="caret"></span>
+            </a>
+            <ul class="dropdown-menu">
+              <li><a id="combobox_btn" href="#"><i class="icon-plus"></i> 入力補助ダイアログ</a></li>
+              <li><a id="download_btn" href="#"><i class="icon-download"></i> 現在のsvgをdownload</a></li>
+              <li><a id="enqueue_btn" href="#"><i class="icon-print"></i> 印刷キューに追加</a></li>
+            </ul>
+          </div>
+        </li>
+        <li style="margin-left:50px;">チケット様式の選択
+            <select id="ticket_format" class="inline input-medium">
+              %for tf in ticket_formats:
+                <option value="${tf["pk"]}">${tf["name"]}${tf["type"]}</option>
+              %endfor
+            </select>
+        </li>
+        <li style="margin-left:20px;">縮尺の設定
+          <form class="" id="transform_form" style="display:inline;">　 
+            x: <input class="inline input-mini" type="number" name="sx" min="0" max="10.0" step="0.1" value="1.0"></input>
+            y: <input class="inline input-mini" type="number" name="sy" min="0" max="10.0" step="0.1" value="1.0"></input>
+          </form>
+        </li>
+      </ul>
+    </div>
+  </div>
+  <form id="svg_download_form" action="${request.route_path("tickets.preview.download")}" method="POST">
+    <input type="hidden" name="svg" value=""></input>
+  </form>
+  <div class="droparea empty" id="svg_droparea" style="margin-top:40px;">
+    <div id="preview_area">
+      Drag and Drop
+    </div>
+    <div id="loading_area">
+    </div>
+  </div>
+</div>
+
+<table id="template_vars_table" class="table" style="margin-left:20px; margin-top:20px">
+  <thead>
+  </thead>
+  <tbody>
+  </tbody>
+</table>
+
+<div id="combobox_modal"></div>
+
+
+<script type="text/javascript" src="${request.static_url("altair.app.ticketing:static/js/spin.js")}"></script>
+<script type="text/javascript" src="${request.static_url("altair.app.ticketing:static/js/altair/spinner.js")}"></script>
+<script type="text/javascript" src="${request.static_url("altair.app.ticketing:static/js/tickets/modal/api.js")}"></script>
+<script type="text/javascript" src="${request.static_url("altair.app.ticketing:static/js/tickets/core/gateway.js")}"></script>
+<script type="text/javascript" src="${request.static_url("altair.app.ticketing:static/js/tickets/core/viewmodel.js")}"></script>
+<script type="text/javascript" src="${request.static_url("altair.app.ticketing:static/js/tickets/core/services.js")}"></script>
+<script type="text/javascript" src="${request.static_url("altair.app.ticketing:static/js/tickets/core/message.js")}"></script>
+<script type="text/javascript" src="${request.static_url("altair.app.ticketing:static/js/tickets/preview/models.js")}"></script>
+<script type="text/javascript" src="${request.static_url("altair.app.ticketing:static/js/tickets/preview/gateway.js")}"></script>
+<script type="text/javascript" src="${request.static_url("altair.app.ticketing:static/js/tickets/preview/services.js")}"></script>
+<script type="text/javascript" src="${request.static_url("altair.app.ticketing:static/js/tickets/preview/viewmodels.js")}"></script>
+<script type="text/javascript" src="${request.static_url("altair.app.ticketing:static/js/tickets/preview/views.js")}"></script>
+<script type="text/javascript" src="${request.static_url("altair.app.ticketing:static/js/tickets/preview/app.js")}"></script>
+
+<script type="text/javascript">
+  $(function(){
+    if(!window.apps)
+       window.apps = {}; 
+
+  // download svg
+  $("#download_btn").on("click", function(e){
+    var form = $('#svg_download_form'), v = apps["preview"].models.svg.get("data");
+    if(!!v){
+      form.find('input[name="svg"]').val(v);
+      form.submit();
+    } else {
+      apps["preview"].views.message_view.alert("券面テンプレートが設定されていません。downloadできるsvgがありません");
+    }
+  });
+  // enqueue svg
+  $("#enqueue_btn").on("click", function(e){
+    var previewApp = apps["preview"];
+    var form = $('#svg_enqueue_form'), v = previewApp.models.svg.get("data");
+    if(!!v){
+      var params = {svg: v, ticket_format_id: previewApp.models.params.get("ticket_format").pk};
+      $.post("${request.route_path("tickets.preview.enqueue")}",params).done(function(data){
+        if(data.status){
+           previewApp.views.message_view.success("印刷キューに追加しました");
+        }
+      });
+    } else {
+      previewApp.views.message_view.alert("券面テンプレートが設定されていません。enqueueできるsvgがありません");
+    }
+  });
+
+  // application viewは作成と同時にwindow.appsに入れる。(comboboxも同様)
+    window.apis = ${json.dumps(apis)|n};
+    window.apps["preview"] = window.appView = preview.ApplicationViewFactory(apis,
+      preview.ApiCommunicationGateway,
+      $("#preview_block"), 
+      $("#preview_block #preview_area"),
+      $("#preview_block #svg_droparea"), 
+      $("#preview_block #ticket_format"),
+      $("#template_vars_table"),
+      $("#params_settings_nav"),
+      $("#message_box")
+    );
+
+    window.apps["modal"] = new modal.api.AjaxModalView({
+      el: $("#combobox_btn"),
+      href:'${apis["combobox"]}',
+      modalArea: $("#combobox_modal"),
+      option: {backdrop: false},
+      callback: function(modalview){
+        apps["combobox"].setFinishBack(function(result){
+          apis["fillvalues_with_models"]({data: JSON.stringify(result)})
+            .pipe(core.ApiService.rejectIfStatusFail(function(data){
+            apps["preview"].fillsVarsWithParams(data.data);
+            apps["preview"].reDrawImage(); // 文字列の挿入が終わった後redrawされる
+            }))
+            .fail(function(s,err){console.warn(s.responseText, arguments);});
+        });
+
+        // append button
+        var btn = $("<a>").attr("class", "btn").text("プレースホルダーに値を挿入");
+        modalview.$modalArea.find(".modal-footer").append(btn);
+        btn.click(function(){
+          apps["combobox"].getFinishBack()(); 
+          modalview.hide();
+        });
+   }});
+
+%if svg:
+   var svg = '${svg|n}';
+   apis["preview"].loadSVG(svg);
+%endif
+  });
+</script>

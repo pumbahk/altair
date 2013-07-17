@@ -70,6 +70,8 @@ class PShellCommand(object):
         except configparser.NoSectionError:
             return
 
+        globals = dict(config.items('DEFAULT'))
+
         resolver = DottedNameResolver(None)
         self.loaded_objects = {}
         self.object_help = {}
@@ -78,7 +80,7 @@ class PShellCommand(object):
             if k == 'setup':
                 self.setup = v
             else:
-                if k not in defaults:
+                if k not in globals:
                     self.loaded_objects[k] = resolver.maybe_resolve(v)
                 self.object_help[k] = v
 

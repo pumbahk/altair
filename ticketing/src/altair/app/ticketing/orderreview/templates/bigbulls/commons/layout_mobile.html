@@ -1,0 +1,19 @@
+<html>
+<% from altair.app.ticketing.orderreview.api import safe_get_contact_url %>
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
+  <title>岩手ビッグブルズ ブルズチケット 購入履歴確認ページ</title>
+</head>
+<body>
+  <img src="${request.static_url('altair.app.ticketing.orderreview:static/images_m/bigbulls/head_title.jpg')}" alt="岩手ビッグブルズ" width="100%" height="108" />
+<%block name="header">
+<div align="center" bgcolor="#0a1232" style="background-color:#0a1232"><font color="#ffffff" size="+1">購入確認ページ</font></div>
+</%block>
+  ${next.body()}
+  <hr />
+  <a href="${safe_get_contact_url(request, default="")}">お問い合わせ</a> / <a href="http://www.ticketstar.jp/privacy">個人情報保護方針</a> / <a href="http://www.ticketstar.jp/legal">特定商取引法に基づく表示</a>
+  <div>
+    Copyright (C) 2010-2013 TicketStar, Inc. All Rights Reserved. 
+  </div>
+</body>
+</html>

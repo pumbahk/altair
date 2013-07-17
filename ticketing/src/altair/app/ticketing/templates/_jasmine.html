@@ -1,0 +1,76 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+  "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<%
+from js.jquery import jquery
+jquery.need()
+
+from js.underscore import underscore
+from js.backbone import backbone
+underscore.need()
+backbone.need()
+%>
+<head>
+  <title>QRReader Spec Runner</title>
+
+  ##<link rel="shortcut icon" type="image/png" href="${request.static_url("altair.app.ticketing:static/js/jasmine/lib/jasmine-1.2.0/jasmine_favicon.png")}">
+  <link rel="stylesheet" type="text/css" href="${request.static_url("altair.app.ticketing:static/js/jasmine/lib/jasmine-1.2.0/jasmine.css")}">
+  <script type="text/javascript" src="${request.static_url("altair.app.ticketing:static/js/jasmine/lib/jasmine-1.2.0/jasmine.js")}"></script>
+  <script type="text/javascript" src="${request.static_url("altair.app.ticketing:static/js/jasmine/lib/jasmine-1.2.0/jasmine-html.js")}"></script>
+
+  <!-- include source files here... -->
+  <script type="text/javascript" src="${request.static_url("altair.app.ticketing:static/js/tickets/core/gateway.js")}"></script>
+  <script type="text/javascript" src="${request.static_url("altair.app.ticketing:static/js/tickets/core/viewmodel.js")}"></script>
+  <script type="text/javascript" src="${request.static_url("altair.app.ticketing:static/js/tickets/core/services.js")}"></script>
+  <script type="text/javascript" src="${request.static_url("altair.app.ticketing:static/js/tickets/core/message.js")}"></script>
+
+
+  <script type="text/javascript" src="${request.static_url("altair.app.ticketing:static/js/tickets/preview/viewmodels.js")}"></script>
+  <script type="text/javascript" src="${request.static_url("altair.app.ticketing:static/js/tickets/preview/views.js")}"></script>
+  <script type="text/javascript" src="${request.static_url("altair.app.ticketing:static/js/tickets/preview/gateway.js")}"></script>
+  <script type="text/javascript" src="${request.static_url("altair.app.ticketing:static/js/tickets/preview/models.js")}"></script>
+  <script type="text/javascript" src="${request.static_url("altair.app.ticketing:static/js/tickets/preview/app.js")}"></script>
+
+  <script type="text/javascript" src="${request.static_url("altair.app.ticketing:static/js/tickets/combobox/viewmodels.js")}"></script>
+  <script type="text/javascript" src="${request.static_url("altair.app.ticketing:static/js/tickets/combobox/views.js")}"></script>
+  <script type="text/javascript" src="${request.static_url("altair.app.ticketing:static/js/tickets/combobox/gateway.js")}"></script>
+  <script type="text/javascript" src="${request.static_url("altair.app.ticketing:static/js/tickets/combobox/models.js")}"></script>
+  <script type="text/javascript" src="${request.static_url("altair.app.ticketing:static/js/tickets/combobox/app.js")}"></script>
+
+  <!-- include spec files here... -->
+  <script type="text/javascript" src="${request.static_url("altair.app.ticketing:static/js/jasmine/spec/tickets/preview/app.js")}"></script>
+  <script type="text/javascript" src="${request.static_url("altair.app.ticketing:static/js/jasmine/spec/tickets/combobox/app.js")}"></script>
+  
+  <script type="text/javascript">
+    (function() {
+      var jasmineEnv = jasmine.getEnv();
+      jasmineEnv.updateInterval = 1000;
+
+      var htmlReporter = new jasmine.HtmlReporter();
+
+      jasmineEnv.addReporter(htmlReporter);
+
+      jasmineEnv.specFilter = function(spec) {
+        return htmlReporter.specFilter(spec);
+      };
+
+      var currentWindowOnload = window.onload;
+
+      window.onload = function() {
+        if (currentWindowOnload) {
+          currentWindowOnload();
+        }
+        execJasmine();
+      };
+
+      function execJasmine() {
+        jasmineEnv.execute();
+      }
+    })();
+  </script>
+
+</head>
+
+<body>
+</body>
+</html>

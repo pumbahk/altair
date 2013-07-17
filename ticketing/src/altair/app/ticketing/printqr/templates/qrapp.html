@@ -1,0 +1,335 @@
+<%inherit file="./base.html"/>
+
+<% is_enable_applet = True %>
+
+<%block name="extra_button">
+## <a target="_blank" class="btn" href="${request.route_url("progress", event_id=request.matchdict["event_id"])}">進捗状況確認</a>
+</%block>
+
+<%
+import json, random
+endpoints_json = json.dumps(endpoints, ensure_ascii=False)
+callback_name = '%' + ''.join(random.choice("abcdefghjijklmnopqrstuvwxyz") for _ in range(0, 10))
+%>
+
+<style type="text/css">
+#wrapper{
+  margin-top: 100px; 
+}
+body {
+  font: 17px "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+
+#screen {
+  position: absolute;
+  left: 0px;
+  top: 0px;
+  width: 100%;
+  height: 100%;
+  margin: 0 0;
+  padding: 0 0;
+  z-index: 10000;
+  background-color: #000;
+  filter: alpha(opacity=50);
+  opacity: .5;
+}
+
+#screen .splash {
+  position: absolute;
+  width: 30%;
+  height: 100px;
+  left: 50%;
+  top: 50%;
+  margin: -50px 0 0 -15%;
+  background-color: #eee;
+  color: #000;
+  font-size: 20px;
+  text-align: center;
+  line-height: 100px;
+}
+
+td.progress-shortcut{
+  background-color: #ddf5dd;
+  color: #468847;
+}
+</style>
+
+<div id="wrapper" class="container">
+  <h2>QR発券 (${event.title})</h2>
+  
+  ${request.context.organization.name}  担当:${request.context.operator.name}
+  <div id="message_box">
+    <div id="alert_message" class="message hide alert"></div>
+    <div id="info_message" class="message hide alert alert-info"></div>
+    <div id="error_message" class="message hide alert alert-error"></div>
+    <div id="success_message" class="message hide alert alert-success"></div>
+  </div>
+  <div id="tabbar">
+    <ul class="nav nav-tabs">
+      <li><a id="tab_zero" href="#zero" data-toggle="tab">フォーマット選択</a></li>
+      <li><a id="tab_one" href="#one" data-toggle="tab" class="active">QRコード読み込み</a></li>
+      <li><a id="tab_two" href="#two" data-toggle="tab">チケット情報(発券確認)</a></li>
+      <li><a id="tab_three" href="#three" data-toggle="tab">発券進捗状況確認</a></li>
+    </ul>
+  </div>
+
+  <div id="zero" class="onepage well hide">
+    <h2 class="header" id="zero:header">フォーマット選択</h2>
+    <p>
+      印刷に利用するフォーマットを選んでください
+    </p>
+
+    <div class="row-fluid">
+      <div class="span4">
+        <h3>プリンタ設定</h3>
+        <div id="printer">
+        </div>
+      </div>
+    </div>
+    <div class="row-fluid">
+      <div class="span4">
+        <h3>ページフォーマット設定</h3>
+        <div id="page_format">
+        </div>
+      </div>
+    </div>
+    <a class="btn" href="#one"><i class="icon-arrow-right"> </i>フォーマットを選択</a>
+  </div>
+
+  <div id="one" class="onepage well hide">
+    <h2 class="header" id="one:header">QRコード読み込み</h2>
+    <p>
+      qrコードを読み込ませてください。
+    </p>
+
+    <div class="form-inline">
+##      <label>qrcode: <input type="password" name="qrcode" value="J1CH40PMHH3RSNHKTN1210131QSNH000000031ZSK0SADTI9GU1O1F $72$7B$5SH 4*H. 12*2O"/></label>
+      <label>qrcode: <input type="text" name="qrcode" value=""/></label>
+      <a class="btn" id="load_button">読み込み</a>
+      <a class="btn" id="clear_button">入力値のクリア</a>
+      <label>　※ 同一注文のQR全て発券する<input type="checkbox" name="print_unit_is_order" value=""/></label>
+    </div>
+
+    <div id="one:status-box">
+      status:
+      <span id="status">preload</span>
+    </div>
+    <a class="btn btn-inverse" href="#zero"><i class="icon-arrow-left icon-white"> </i>戻る</a>
+    <a class="btn" href="#two"><i class="icon-arrow-right"> </i>次へ</a>
+  </div>
+
+  <div id="two" class="onepage well hide">
+    <div class="row-fluid">
+      <div class="span6" id="printable_tickets_area">
+        <h2 class="header">印刷予定のチケット</h2>
+        <p>
+          印刷予定のチケットは以下です。
+        </p>
+        <table class="table">
+          <thead>
+            <tr>
+              <th width="40px">印刷予定</th><th>発券番号</th><th>商品名</th>
+            </tr>
+          </thead>
+          <tbody id="printable_tickets_box">
+          </tbody>
+        </table>
+      </div>
+      <div class="span6">
+        <h2 class="header" id="two:header">チケット情報</h2>
+        <p>
+          購入されたチケット情報は以下のとおりです。
+        </p>
+        <table class="table">
+          <tbody>
+            <tr>
+              <td>購入者</td><td id="user"></td>
+            </tr>
+            <tr>
+              <td>発券番号</td><td id="codeno"></td>
+            </tr>
+            <tr>
+              <td>注文番号</td><td id="orderno"></td>
+            </tr>
+            <tr>
+              <td>公演</td><td id="performance_name"></td>
+            </tr>
+            <tr>
+              <td>公演日時</td><td id="performance_date"></td>
+            </tr>
+            <tr>
+              <td>商品名</td><td id="product_name"></td>
+            </tr>
+            <tr>
+              <td>席番号</td><td id="seatno"></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div id="note-container" class="span4">
+        <div class="alert alert-info">
+          <div>メモ:</div>
+          <div id="note"></div>
+        </div>
+      </div>
+    </div>
+
+    <p>
+      印刷します。よろしいですか？
+    </p>
+
+    <a class="btn btn-inverse" href="#one"><i class="icon-arrow-left icon-white"> </i>戻る</a>    
+    <a class="btn" href="#" id="print_button">印刷する</a>
+  </div>
+
+  <div id="three" class="onepage hide well">
+    <h2 class="header" id="three:header">発券進捗状況確認</h2>
+    <%include file="_progress.html" args="form=form"/>
+    
+  </div>
+
+  <div id="description">
+    <table class="table">
+      <tbody>
+        <tr>
+          <td colspan="2" width="200px">印刷方法</td><td colspan="2"> <span id="desc_print_strategy">個別に発券</span><span  style="color:gray">　　　印刷キューに入っている券面:<span id="desc_print_num">0</span>枚</span></td>
+        </tr>
+        <tr>
+          <td colspan="2" width="200px">QRコードステータス</td><td colspan="2" id="desc_qrcode_status"></td>
+        </tr>
+        <tr>
+          <td colspan="2" width="200px">注文番号</td><td colspan="2" id="desc_orderno"></td>
+        </tr>
+        <tr>
+          <td colspan="2" width="200px">公演</td><td colspan="2" id="desc_performance"></td>
+        </tr>
+        <tr>
+          <td colspan="2" width="200px">商品名(席番号)</td><td colspan="2" id="desc_product"></td>
+        </tr>
+        <tr>
+          <td width="200px">プリンタ設定</td><td id="desc_printer"></td>
+          <td colspan="2" style="text-align: center;" class="progress-shortcut">進捗状況</td>
+        </tr>
+        <tr>
+          <td width="200px">券面テンプレート設定</td><td width="25%" id="desc_ticket_template"></td>
+          <td width="200px" class="progress-shortcut">未印刷</td><td id="desc_qr_unprinted_shortcut" class="progress-shortcut"></td>
+        </tr>
+        <tr>
+          <td width="200px">ページフォーマット</td><td width="25%" id="desc_page_format"></td>
+          <td width="200px" class="progress-shortcut">印刷済み</td><td id="desc_qr_printed_shortcut" class="progress-shortcut"></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div id="applet">
+</div>
+
+<div id="screen">
+  <div class="splash">
+    Now loading...
+  </div>
+</div>
+
+<script type="text/javascript" src="${request.static_url("altair.app.ticketing.printqr:static/js/message.js")}"></script>
+<script type="text/javascript" src="${request.static_url("altair.app.ticketing.printqr:static/js/qrapp/app.js")}"></script>
+<script type="text/javascript" src="${request.static_url("altair.app.ticketing.printqr:static/js/qrapp/applet.js")}"></script>
+<script type="text/javascript" src="${request.static_url("altair.app.ticketing.printqr:static/js/qrapp/keycodeMapping.js")}"></script>
+<script type="text/javascript" src="${request.static_url("altair.app.ticketing.printqr:static/js/progress/app.js")}"></script>
+
+<script type="text/javascript">
+$(function(){
+  var apiResource = ${json.dumps(api_resource)|n}
+  var appRouter = new AppRouter();
+  var datastore = new DataStore({qrcodeStatus: "preload", qrcode: null});
+
+  var messageView = new MessageView({el: $("#message_box")});
+  var descriptionView = new DataStoreDescriptionView({model: datastore, el: $("#description")});
+  var zero = new FormatChoiceView({datastore: datastore, router: appRouter, messageView: messageView, apiResource: apiResource, el: $("#zero")});
+  var one = new QRInputView({datastore: datastore, router: appRouter, messageView: messageView, apiResource: apiResource, el: $("#one")});
+  var two = new TicketInfoView({datastore: datastore, router: appRouter, messageView: messageView, apiResource: apiResource, el: $("#two")});
+  var selectTicketView = new PrintableTicketsSelectView({el: $("#printable_tickets_area"), datastore: datastore});
+  var print = new PrintConfirmView({datastore: datastore, router: appRouter, messageView: messageView, apiResource: apiResource, el: $("#two")});
+  // progress view
+  var progressDatastore = new ProgressDataStore({performance: new Performance(), total_result: new TotalResult()});
+  var apiService = new ApiService({apiResource: apiResource});
+  var performanceChoiceView = new PerformanceChoiceView({datastore: progressDatastore, el: $("#performance_input"), messageView: messageView, apiService: apiService});
+
+  var describeTotalResultView = new DescribeTotalResultView({datastore: progressDatastore, el: $("#describe_total_result"), messageView: messageView, apiService: apiService});
+  var describeTimeView = new DescribeTimeView({datastore: progressDatastore, el: $("#describe_time"), messageView: messageView, apiService: apiService});
+
+  // configure
+  zero.nextView = one;
+  one.nextView = two;
+  performanceChoiceView.onPerformanceChange();
+  one.bind("*event.qr.loaded", performanceChoiceView.onPerformanceChange, performanceChoiceView);
+  describeTimeView.bind("*event.progress.currenttime.changed", descriptionView.onCurrenttimeChanged, descriptionView);
+  var appletViewConfigureAfterCreate = function(appletView){
+    appletView.bind("*event.qr.printed", function(){
+      setTimeout(function(){
+        performanceChoiceView.onPerformanceChange();
+      }, 1000);
+    });
+    appletView.start();
+    $('#screen').hide();
+  };
+
+  //Backbone.history.start({pushState: true,  root: "/"})
+  Backbone.history.start({root: "/"})
+  appRouter.start.call(appRouter);
+
+  // create callback
+  window[${json.dumps(callback_name)|n}] = function (applet) {
+    var appviews = {
+      zero: zero,
+      one: one,
+      two: two,
+      messageView: messageView,
+      descriptionView: descriptionView,
+      selectTicketView: selectTicketView
+    };
+    var service = applet.getService();
+    var createProxy = function () { return applet.createPropertyChangeListenerProxy.apply(applet, arguments); };
+    //service.addListenerForPages(createProxy(refreshPages));
+    var appletView = new AppletView({el: $("#applet"), appviews: appviews, datastore: datastore, service: service, router: appRouter, apiResource: apiResource})
+    appletViewConfigureAfterCreate(appletView);
+  };
+
+%if is_enable_applet:
+  writeAppletTag({
+    version: '1.6.0.35',
+    width: 1, height: 1,
+    code: 'jp.ticketstar.ticketing.qrreader.gui.AppApplet',
+    codebase: ${json.dumps(request.application_url)|n},
+    archive: ${json.dumps(request.static_url('altair.app.ticketing:static/qrreader-0.0.0-jar-with-dependencies.jar'))|n},
+    scriptable: true,
+    id: 'applet',
+    params: {
+      endpoints: ${json.dumps(endpoints_json)|n}
+      ,cookie: ${json.dumps(request.headers.get('cookie'))|n}
+      ,embedded: true
+      ,callback: ${json.dumps(callback_name)|n}
+##      ,cache_option: "no"
+    }
+  });
+%else:
+    $('#screen').hide(); //uggg.
+%endif
+
+  // QRReaderの日本語／英語の対応
+  document.onkeydown = function (e) {
+    if(e.ctrlKey && e.keyCode==74) { 
+      one.loadQRCodeInput();
+      e.preventDefault();
+    } 
+    return true;
+  };
+
+  //QRの読み込みページのときqrコードのinputにフォーカスをあてる
+  setInterval(function(){
+   $("#one.active input[name='qrcode']").focus();
+  },500);
+});
+
+</script>

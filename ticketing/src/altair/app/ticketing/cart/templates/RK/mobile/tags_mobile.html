@@ -1,0 +1,25 @@
+<%def name="band(bgcolor, align=None)">
+<div style="background-color:${bgcolor}" bgcolor="${bgcolor}"${u' align="%(align)s" style="text-align:%(align)s"' % dict(align=align) if align is not None else u''|n}>${caller.body()}</div>
+</%def>
+<%def name="header(bgcolor='#cbae55', align=None)">
+<%self:band bgcolor="${bgcolor}" align="${align}"><font color="white">${caller.body()}</font></%self:band>
+</%def>
+<%def name="form_header(markercolor='#cbae55', requiredmarkcolor='#ff0000', required=False)">
+<div><font color="${markercolor}">■</font>${caller.body()}</font>
+%if required:
+<font color="${requiredmarkcolor}">*</font>
+%endif
+</div>
+</%def>
+<%def name="header2()">
+<div style="background-image:url(${request.static_url('altair.app.ticketing.cart:static/img/mobile/bg_bar.gif')});background-color:#cbae55" bgcolor="#cbae55" background="${request.static_url('altair.app.ticketing.cart:static/img/mobile/bg_bar.gif')}"><font color="#ffffff" size="3"><font color="#cbae55">■</font>${caller.body()}</font></div>
+</%def>
+<%def name="messages(messages)">
+%if messages:
+<%self:band bgcolor="#cbae55">
+%for message in messages:
+<font color="red">・${message}</font><br />
+%endfor
+</%self:band>
+%endif
+</%def>

@@ -1,0 +1,86 @@
+<%page args="carts, limit=None, detail=True, selectable=True" />
+<%namespace file="/common/helpers.html" name="ch" />
+<% paging = False if limit else True %>
+<% from altair.app.ticketing.cart.models import Cart %>
+<%def name="search_and_sort(column, paging=True)">
+% if paging:
+<%
+  from altair.app.ticketing.helpers import column_name_for, label_text_for
+  sort_column = request.params.get('sort')
+  sort_direction = request.params.get('direction')
+  column_name = column_name_for(column)
+  direction = 'desc' if (column_name == sort_column and sort_direction == 'asc') else 'asc'
+  css_class = 'current ' + sort_direction if (column_name == sort_column) else ''
+%>
+<a href="javascript:sort_carts('${column_name}', '${direction}');" class="${css_class}">${label_text_for(column)}</a>
+% else:
+  ${label_text_for(column)}
+% endif
+</%def>
+
+% if paging:
+  ${ch.pager(carts, "javascript:sort_carts('', '', '$partial_url')")}
+% endif
+
+% if carts:
+  <div style="margin-top: 20px;"></div>
+  <% i = 0 %>
+  % for i, cart in enumerate(carts):
+    <% if limit and i >= limit: break %>
+    % if i == 0:
+    <table class="table table-striped table-bordered">
+      <thead>
+      <tr>
+        % if selectable:
+        <th style="width: 30px;"></th>
+        % endif
+        <th style="width: 100px;">${search_and_sort(Cart.order_no)}</th>
+        <th style="width: 120px;">${search_and_sort(Cart.created_at)}</th>
+        <th style="width: 120px;">${search_and_sort(Cart.finished_at)}</th>
+        <th style="width: 70px;">金額</th>
+        <th style="width: 120px;">配送先氏名</th>
+        % if detail:
+        <th>イベント</th>
+        <th style="width: 70px;">開演日時</th>
+        % endif
+      </tr>
+      </thead>
+      <tbody>
+    % endif
+      <tr>
+        % if selectable:
+        <td class="checkbox_status-wrap">
+          <input class="checkbox_status" type="checkbox" name="o:${cart.id}"/>
+        </td>
+        % endif
+        <td>
+          % if cart.order_id:
+            <a href="${request.route_path('orders.show', order_id=cart.order_id)}">${cart.order_no}</a>
+          % else:
+            ${cart.order_no}
+          % endif
+          </td>
+        <td>${vh.datetime(cart.created_at)}</td>
+        <td>${vh.datetime(cart.finished_at)}</td>
+        <td style="text-align: right;">${vh.price(cart.total_amount) if cart.sales_segment and cart.payment_delivery_pair else u'-'}</td>
+        <td>
+          % if cart.shipping_address:
+            ${cart.shipping_address.last_name} ${cart.shipping_address.first_name}
+          % endif
+        </td>
+        % if detail:
+        <% performance = cart.performance %>
+        <td><a href="${request.route_path('events.show', event_id=performance.event.id)}">${performance.event.title}</a></td>
+        <td><a href="${request.route_path('performances.show', performance_id=performance.id)}/reservation">${performance.start_on or ''}</a></td>
+        % endif
+      </tr>
+  % else:
+      </tbody>
+    </table>
+  % endfor
+% endif
+
+% if paging:
+  ${ch.pager(carts, "javascript:sort_carts('', '', '$partial_url')")}
+% endif
+

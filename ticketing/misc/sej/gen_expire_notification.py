@@ -1,11 +1,11 @@
 # encoding: utf-8
 
-from ticketing.sej.api import create_sej_notification_data_from_record
-from ticketing.sej import models as sej_models, resources as sej_resources
+from altair.app.ticketing.sej.api import create_sej_notification_data_from_record
+from altair.app.ticketing.sej import models as sej_models, resources as sej_resources
 from pyramid.paster import bootstrap
-from ticketing.models import DBSession
-from ticketing.core import models as c_models
-from ticketing.utils import uniurlencode
+from altair.app.ticketing.models import DBSession
+from altair.app.ticketing.core import models as c_models
+from altair.app.ticketing.utils import uniurlencode
 from urllib import urlencode
 from datetime import datetime
 import sys

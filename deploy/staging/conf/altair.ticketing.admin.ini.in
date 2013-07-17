@@ -49,7 +49,7 @@ timeout = 3600
 graceful_timeout = 300
 
 [pshell]
-setup = ticketing.scripts.pshell.setup
+setup = altair.app.ticketing.scripts.pshell.setup
 
 [alembic]
 script_location = %(here)s/../../../ticketing/alembic
@@ -81,7 +81,7 @@ propagate = 0
 [logger_ticketing]
 level = DEBUG
 handlers = console, fluent
-qualname = ticketing
+qualname = altair.app.ticketing
 propagate = 0
 
 [logger_sqlalchemy]

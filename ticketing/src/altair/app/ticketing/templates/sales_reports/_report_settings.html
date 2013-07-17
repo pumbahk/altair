@@ -1,0 +1,81 @@
+<%page args="form, form_report_mail=None, event=None, performance=None, report_settings=None" />
+<%namespace file="/common/helpers.html" name="ch" />
+
+<script type="text/javascript">
+  function preview(email){
+    var params = $('#limitation').serialize();
+    if (email) params += '&recipient=' + encodeURIComponent(email);
+    $(location).attr('href', '/events/sales_reports/preview/?' + params);
+  };
+</script>
+
+<%
+  event_id = ''
+  performance_id = ''
+  if event:
+    event_id = event.id
+    route_path = request.route_path('sales_reports.event', event_id=event_id)
+  elif performance:
+    performance_id = performance.id
+    route_path = request.route_path('sales_reports.performance', performance_id=performance_id)
+  else:
+    route_path = request.route_path('sales_reports.index')
+%>
+<form id="limitation" action="${route_path}" method="POST" style="margin-bottom: 0;">
+  <div class="control-group">
+    <div class="controls">
+      ${form.limited_from} 〜 ${form.limited_to}
+      <input type="submit" class="btn" value="集計期間を絞り込む" >
+    </div>
+    <input name="event_id" type="hidden" value="${event_id}">
+    <input name="performance_id" type="hidden" value="${performance_id}">
+  </div>
+</form>
+
+% if form_report_mail:
+<h4>レポート送信設定</h4>
+
+<%include file="/sales_reports/_action_button.html" args="event=event, performance=performance" />
+<a href="javascript:preview();" class="btn">全送信先に送信 プレビュー</a>
+<div id="sales_reports_mail-form" style="margin-bottom:10px;">
+  <%include file="/sales_reports/_form.html" args="form=form_report_mail" />
+</div>
+% endif
+
+% if report_settings and form_report_mail:
+<table class="table table-striped table-bordered table-condensed" style="margin-bottom: 0px;">
+  <tr>
+    <th></th>
+    <th>名前</th>
+    <th>メールアドレス</th>
+    <th>メール通知頻度</th>
+    <th>送信曜日</th>
+    <th>送信時間</th>
+    <th>送信期間</th>
+    <th>対象</th>
+    <th>レポート対象期間</th>
+    <th></th>
+  </tr>
+  <%! from altair.app.ticketing.core.models import ReportFrequencyEnum, ReportPeriodEnum %>
+  % for rs in report_settings:
+    <%
+      name = rs.operator.name if rs.operator else rs.name
+      email = rs.operator.email if rs.operator else rs.email
+    %>
+  <tr>
+    <td><input type="radio" name="sales_reports_mail_id" value=${rs.id}></td>
+    <td>${name or ''}</td>
+    <td>${email}</td>
+    <td>${''.join([enum.v[1] for enum in ReportFrequencyEnum if enum.v[0] == rs.frequency])}</td>
+    <td>${''.join([dow[1] for dow in form_report_mail.day_of_week.choices if rs.day_of_week == dow[0]])}</td>
+    <td>${u'%s時' % rs.time if rs.time else ''}</td>
+    <td>
+      ${vh.term(rs.start_on, rs.end_on, without_minute=True)}
+    </td>
+    <td>${u'公演' if rs.performance_id else u'イベント'}</td>
+    <td>${''.join([enum.v[1] for enum in ReportPeriodEnum if enum.v[0] == rs.period])}</td>
+    <td><input class="btn btn-mini" type="button" value="メール送信 プレビュー" onclick="javascript:preview('${email}');"></td>
+  </tr>
+  % endfor
+</table>
+% endif
