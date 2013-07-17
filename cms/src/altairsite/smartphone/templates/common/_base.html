@@ -7,7 +7,7 @@
 <script src=${request.static_url('altaircms:static/smartphone/js/flipsnap.min.js')}></script>
 <link rel="stylesheet" type="text/css" href=${request.static_url('altaircms:static/smartphone/css/jquery-ui-1.9.2.custom.min.css')} />
 <link rel="stylesheet" type="text/css" href="${request.static_url('altaircms:static/smartphone/css/default.css')}" />
-<title>楽天チケット-<%block name="pagetitle"><%block name="title"/></%block></title>
+<title>楽天チケット-<%block name="title"/></title>
 </head>
 <body>
 
@@ -27,7 +27,7 @@
 <iframe
     allowtransparency="true" frameborder="0" scrolling="no"
     src="https://platform.twitter.com/widgets/tweet_button.html?url=${request.url}&amp;
-    via=RakutenTicket&amp;count=none&amp;lang=ja&amp;text=${pagetitle()}&amp;"
+    via=RakutenTicket&amp;count=none&amp;lang=ja&amp;text=<%block name='sns_title'/>&amp;"
     style="height: 20px; width: 70px;">
 </iframe>
 
