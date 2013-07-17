@@ -58,8 +58,10 @@ prefix = str(random.random())[2:]
 
          if (x<=X && y<=Y) {
             var styles = {};
-            styles["width"] = x;
-            styles["height"] = y;
+            if (x > 0 && y > 0) {
+                styles["width"] = x;
+                styles["height"] = y;
+            }
             styles["margin-left"] = 0;
             styles["margin-top"] = 0;
             if (y<Y && y>0) {
