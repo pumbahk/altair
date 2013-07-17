@@ -11,6 +11,13 @@ class TaskMapperTests(unittest.TestCase):
     def _makeOne(self, *args, **kwargs):
         return self._getTarget()(*args, **kwargs)
 
+    def setUp(self):
+        self.request = testing.DummyRequest()
+        self.config = testing.setUp(request=self.request)
+
+    def tearDown(self):
+        testing.tearDown()
+
     def test_declare_queue(self):
         settings = testing.DummyResource(
             queue="",
@@ -58,7 +65,8 @@ class TaskMapperTests(unittest.TestCase):
 
         task.assert_called_with(root_factory.return_value,
                                 target.Message.return_value)
-        target.Message.assert_called_with(channel,
+        target.Message.assert_called_with(self.request,
+                                          channel,
                                           method,
                                           header,
                                           body)

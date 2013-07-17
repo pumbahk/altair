@@ -248,7 +248,7 @@ ns:http://specs.openid.net/auth/2.0"""
                 "&openid.ns.oauth=http%3A%2F%2Fspecs.openid.net%2Fextenstions%2Foauth%2F1.0"
                 "&openid.oauth.request_token=XXXXXXXXXXXXX"
                 "&openid.oauth.scope=rakutenid_basicinfo%2Crakutenid_contactinfo"
-            ),
+                 , timeout=10),
             call().close()])
 
 class parse_access_token_responseTests(unittest.TestCase):

@@ -85,10 +85,12 @@ class ExcLogTweenTests(unittest.TestCase):
 
         self.assertEqual(result.status_int, 500)
         self.assertEqual(result.text, u'')
-        mock_logger.exception.assert_called_with('\n\nhttp://example.com\n\n'
-                                                 'ENVIRONMENT\n\n'
-                                                 '{\'testing\': \'testing\'}\n\n'
-                                                 '\n\n')
+        self.assertEqual(mock_logger.error.call_args[0][0],
+                         '\n\nhttp://example.com\n\n'
+                         'ENVIRONMENT\n\n'
+                         '{\'testing\': \'testing\'}\n\n'
+                         '\n\n',)
+
 
     def test_call_with_handler(self):
         registry = self.config.registry
@@ -137,7 +139,7 @@ class ExcLogTweenTests(unittest.TestCase):
         result = tween(request)
 
         self.assertEqual(result.status_int, 500)
-        mock_logger.exception.assert_called_with('http://example.com')
+        self.assertEqual(mock_logger.error.call_args[0][0], 'http://example.com')
         self.assertEqual(result.text, u'')
 
     @mock.patch('altair.exclog.logger')
@@ -146,7 +148,8 @@ class ExcLogTweenTests(unittest.TestCase):
         from . import create_exception_message_builder, create_exception_message_renderer, create_exception_logger
         from .interfaces import IExceptionMessageBuilder, IExceptionMessageRenderer, IExceptionLogger
         registry.registerUtility(create_exception_message_builder(registry), IExceptionMessageBuilder)
-        registry.registerUtility(create_exception_message_renderer(self.config), IExceptionMessageRenderer)
+        renderer = create_exception_message_renderer(self.config)
+        registry.registerUtility(renderer, IExceptionMessageRenderer)
         registry.registerUtility(create_exception_logger(registry), IExceptionLogger)
 
         handler = mock.Mock()
@@ -154,12 +157,13 @@ class ExcLogTweenTests(unittest.TestCase):
         handler.side_effect = DummyException()
 
         tween = self._makeOne(handler, registry)
-        tween.show_traceback = True
+        renderer.show_traceback = True
         tween.message_builder.extra_info = False
         result = tween(request)
 
         self.assertEqual(result.status_int, 500)
-        mock_logger.exception.assert_called_with('http://example.com')
+        self.assertEqual(mock_logger.error.call_args[0][0], 'http://example.com')
+        self.assertTrue(result.text)
         self.assertEqual(result.text.split()[0], "http://example.com")
         self.assertIn('Traceback (most recent call last):', result.text)
         self.assertTrue(result.text.split()[-1], "DummyException")
