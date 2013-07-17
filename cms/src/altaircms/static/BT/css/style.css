@@ -335,16 +335,30 @@ body{
 	font-size: 12px;
 }
 
-.header_r .news{
+.header_r .news {
 	padding:10px 0 5px 0;
+    margin: 0 0;
 }
 
-.header_r .news:before{
-	content: "[News]　";
+.header_r div.news:before {
+	content: "[News]";
 	color: #e8ba41;
 	font-weight: 900;
+    margin-right: 1em;
 }
 
+.header_r dl.news dt,
+.header_r dl.news dd {
+    padding: 0 0;
+    margin: 0 0;
+}
+
+.header_r dl.news dt {
+	color: #e8ba41;
+	font-weight: 900;
+    margin-right: 1em;
+    float: left;
+}
 
 .wrapper{
 	width: 860px;

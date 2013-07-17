@@ -28,11 +28,14 @@
 				</ul>
 				<div class="clear"></div>
 			</div>
-			<div class="news">
-        <%block name="news">
-          ${widgets("news")}
-        </%block>
-			</div>
+			<dl class="news">
+        <dt>[News]</dt>
+        <dd>
+          <%block name="news">
+            ${widgets("news")}
+          </%block>
+        </dd>
+			</dl>
 		</div>
 		<div class="clear">&nbsp;</div>
 	</div>
