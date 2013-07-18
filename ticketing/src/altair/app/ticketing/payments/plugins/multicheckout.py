@@ -139,7 +139,7 @@ class MultiCheckoutPlugin(object):
             checkout_sales_result = multicheckout_api.checkout_sales(
                 request, get_order_no(request, cart),
             )
-        
+
             if checkout_sales_result.CmnErrorCd != '000000':
                 logger.info(u'finish_secure: 決済エラー order_no = %s, error_code = %s' % (order_no, checkout_sales_result.CmnErrorCd))
                 multicheckout_api.checkout_auth_cancel(request, get_order_no(request, cart))

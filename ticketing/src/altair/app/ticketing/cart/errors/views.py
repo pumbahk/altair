@@ -122,9 +122,12 @@ def delivery_failed_exception(context, request):
 @view_config(context=PaymentPluginException, renderer=selectable_renderer('altair.app.ticketing.cart:templates/%(membership)s/mobile/error.html'), request_type='altair.mobile.interfaces.IMobileRequest')
 def payment_plugin_exception(context, request):
     if context.back_url is not None:
-        # カートの救済可能な場合
-        api.recover_cart(request) 
-        transaction.commit()
+        try:
+            # カートの救済可能な場合
+            api.recover_cart(request)
+            transaction.commit()
+        except Exception, e:
+            logger.info(e.message)
         return HTTPFound(location=context.back_url)
     else:
         # カートの救済不可能
