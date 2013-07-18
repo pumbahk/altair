@@ -10,6 +10,8 @@ reverse_map = None
 def _populate_reverse_map():
     import pytz
     from datetime import datetime
+    global reverse_map
+
     if reverse_map is not None:
         return
 
@@ -23,7 +25,6 @@ def _populate_reverse_map():
         except TypeError:
             pass
 
-    global reverse_map
     reverse_map = _reverse_map
     
 
