@@ -1,6 +1,6 @@
 [app:main]
 use = config:altair.ticketing.admin.ini#ticketing
-pyramid.includes = altair.mq ticketing.lots.workers
+pyramid.includes = altair.mq altair.app.ticketing.lots.workers
 altair.mq.url = amqp://guest:guest@localhost:5672/%2F
 
 ; altair:site-data
