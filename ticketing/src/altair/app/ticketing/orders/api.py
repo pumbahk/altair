@@ -369,7 +369,7 @@ class OrderSummarySearchQueryBuilder(SearchQueryBuilderBase):
         if isinstance(value, list):
             query = query.filter(self.targets['subject'].payment_method_id.in_(value))
         else:
-            query = query.filter(self.targets['subject'].payment_methoid_id == value)
+            query = query.filter(self.targets['subject'].payment_method_id == value)
         return query
 
     def _delivery_method(self, query, value):
