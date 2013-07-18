@@ -65,7 +65,7 @@ class SearchFormBase(Form):
         organization = None
         event = None
         performance = None
-        sales_segment = None
+        sales_segment_group = None
 
         if 'organization_id' in kwargs:
             organization_id = kwargs.pop('organization_id')
@@ -79,11 +79,9 @@ class SearchFormBase(Form):
             performance_id = kwargs.pop('performance_id')
             performance = Performance.get(performance_id)
 
-        if 'sales_segment_id' in kwargs:
-            sales_segment_id = kwargs.pop('sales_segment_id')
-            sales_segment = SalesSegment.get(sales_segment_id)
-            if performance is None:
-                performance = sales_segment.performance
+        if 'sales_segment_group_id' in kwargs:
+            sales_segment_group_id = kwargs.pop('sales_segment_group_id')
+            sales_segment_group = SalesSegmentGroup.get(sales_segment_group_id)
 
         if event is None and performance is not None:
             event = performance.event
@@ -110,6 +108,11 @@ class SearchFormBase(Form):
                 self.performance_id.choices = [('', u'(すべて)')]+[(p.id, '%s (%s)' % (p.name, p.start_on.strftime('%Y-%m-%d %H:%M'))) for p in performances]
             else:
                 self.performance_id.choices = [(performance.id, '%s (%s)' % (performance.name, performance.start_on.strftime('%Y-%m-%d %H:%M')))]
+            if sales_segment_group is None:
+                sales_segment_groups = SalesSegmentGroup.query.filter(SalesSegmentGroup.event_id == event.id)
+                self.sales_segment_group_id.choices = [('', u'(すべて)')] + [(sales_segment_group.id, sales_segment_group.name) for sales_segment_group in sales_segment_groups]
+            else:
+                self.sales_segment_group_id.choices = [(sales_segment_group.id, sales_segment_group.name)]
         else:
             if organization is not None:
                 performances = Performance.query.join(Event).filter(Event.organization_id == organization.id)
@@ -120,13 +123,6 @@ class SearchFormBase(Form):
         # Performance が指定されていなかったらフォームから取得を試みる
         if performance is None and self.performance_id.data:
             performance = Performance.get(self.performance_id.data)
-
-        if performance is not None:
-            if sales_segment is None:
-                sales_segments = SalesSegment.query.filter(SalesSegment.performance_id == performance.id)
-                self.sales_segment_id.choices = [('', u'(すべて)')] + [(sales_segment.id, sales_segment.sales_segment_group.name) for sales_segment in sales_segments]
-            else:
-                self.sales_segment_id.choices = [(sales_segment.id, sales_segment.sales_segment_group.name)]
 
     order_no = TextField(
         label=u'予約番号',
@@ -184,7 +180,7 @@ class SearchFormBase(Form):
         choices=[],
         validators=[Optional()],
     )
-    sales_segment_id = SelectMultipleField(
+    sales_segment_group_id = SelectMultipleField(
         label=u'販売区分',
         coerce=lambda x : int(x) if x else u"",
         choices=[],

@@ -182,6 +182,14 @@ class CartSearchQueryBuilder(SearchQueryBuilderBase, BaseSearchQueryBuilderMixin
     def _carted_to(self, query, value):
         return query.filter(self.targets['subject'].created_at <= value)
 
+    def _sales_segment_group_id(self, query, value):
+        if value and '' not in value:
+            query = query.join(self.targets['subject'].products)
+            query = query.join(self.targets['CartedProduct'].product)
+            query = query.join(self.targets['Product'].sales_segment)
+            query = query.filter(self.targets['SalesSegment'].sales_segment_group_id.in_(value))
+        return query
+
     def _sales_segment_id(self, query, value):
         if value and '' not in value:
             query = query.join(self.targets['subject'].products)
@@ -426,6 +434,14 @@ class OrderSummarySearchQueryBuilder(SearchQueryBuilderBase):
 
         if issue_cond:
             query = query.filter(or_(*issue_cond))
+        return query
+
+    def _sales_segment_group_id(self, query, value):
+        if value and '' not in value:
+            query = query.join(self.targets['subject'].ordered_products)
+            query = query.join(self.targets['OrderedProduct'].product)
+            query = query.join(self.targets['Product'].sales_segment)
+            query = query.filter(self.targets['SalesSegment'].sales_segment_group_id.in_(value))
         return query
 
     def _sales_segment_id(self, query, value):
