@@ -16,7 +16,7 @@ class SchemaTests(unittest.TestCase):
 
     def test_validate_false_for_kids(self):
         target = self._makeOne(MultiDict())
-        target.configure_for_kids()
+        target.configure_for_kids(u'18歳未満')
         self.assertFalse(target.validate())
 
     def test_validate_true_for_kids(self):
@@ -27,7 +27,7 @@ class SchemaTests(unittest.TestCase):
                       parent_last_name_kana=u"セイ", 
                       relationship=u"父"
                       ))
-        target.configure_for_kids()
+        target.configure_for_kids(u'18歳未満')
         self.assertTrue(target.validate())
 
     def test_validate_false_for_authentic_uniform(self):
