@@ -11,6 +11,10 @@ altair.site_data.base_url = s3://tstar-dev/venue-layouts/frontend/
 session.type = ${altair:beaker_backend_type}
 cache.type = ${altair:beaker_backend_type}
 
+; makeo
+makotxt.default_filters = unicode
+
+
 [app:www-check]
 use = egg:Paste#static
 document_root = %(www_check_docroot)s

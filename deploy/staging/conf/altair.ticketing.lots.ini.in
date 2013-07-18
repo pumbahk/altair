@@ -21,6 +21,10 @@ altair.rakuten_auth.extra_verify_url = ${altair:rakuten_auth.extra_verify_url}
 session.type = ${altair:beaker_backend_type}
 cache.type = ${altair:beaker_backend_type}
 
+; mako
+makotxt.default_filters = unicode
+
+
 [app:www-check]
 use = egg:Paste#static
 document_root = %(www_check_docroot)s
