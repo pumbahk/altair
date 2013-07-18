@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+from altair.app.ticketing.payments.exceptions import PaymentPluginException
+
 class SejRequestError(Exception):
 
     def __init__(self, message):
@@ -8,20 +10,19 @@ class SejRequestError(Exception):
     def __str__(self):
         return self.message
 
-class SejError(Exception):
-
+class SejError(PaymentPluginException):
     error_type  = 0
     error_msg   = ''
     error_field = ''
 
-    def __init__(self, error_type, error_msg, error_field, error_body):
-
-        self.error_type = error_type
+    def __init__(self, message, order_no, back_url, error_code=None, error_field=None):
+        super(SejError, self).__init__(message, order_no, back_url)
+        self.error_type = error_code
         self.error_field = error_field
-        self.error_msg = error_msg
+        self.error_msg = message
 
     def __str__(self):
-        return u"Error_Type=%d&Error_Msg=%s&Error_Field=%s" % (self.error_type, self.error_type, self.error_field)
+        return u"Error_Type=%d&Error_Msg=%s&Error_Field=%s" % (self.error_type, self.error_msg, self.error_field)
 
 class SejServerError(Exception):
 

@@ -189,11 +189,15 @@ def request_order(
 
     error_type = ret.get('Error_Type', None)
     if error_type:
-        raise SejError(
-            error_type=int(error_type),
-            error_msg=ret.get('Error_Msg', None),
-            error_field=ret.get('Error_Field', None),
-        error_body='')
+        sej_error = SejError(
+            message=ret.get('Error_Msg', None),
+            order_no=order_id,
+            back_url=None,
+            error_code=int(error_type),
+            error_field=ret.get('Error_Field', None)
+        )
+        logger.warn(sej_error)
+        raise sej_error
 
     sej_order = SejOrder()
     sej_order.shop_id                   = shop_id
@@ -274,12 +278,15 @@ def request_cancel_order(
 
     error_type = ret.get('Error_Type', None)
     if error_type:
-        raise SejError(
-            error_type=int(error_type),
-            error_msg=ret.get('Error_Msg', None),
-            error_field=ret.get('Error_Field', None),
-            error_body=u''
+        sej_error = SejError(
+            message=ret.get('Error_Msg', None),
+            order_no=order_id,
+            back_url=None,
+            error_code=int(error_type),
+            error_field=ret.get('Error_Field', None)
         )
+        logger.warn(sej_error)
+        raise sej_error
 
     sej_order = SejOrder.query.filter_by(order_id = order_id, billing_number = billing_number, exchange_number=exchange_number).one()
     sej_order.cancel_at = datetime.now()
@@ -361,10 +368,15 @@ def request_update_order(
 
     error_type = ret.get('Error_Type', None)
     if error_type:
-        raise SejError(
-            error_type=int(error_type),
-            error_msg=ret.get('Error_Msg', None),
-            error_field=ret.get('Error_Field', None))
+        sej_error = SejError(
+            message=ret.get('Error_Msg', None),
+            order_no=condition.get('order_id'),
+            back_url=None,
+            error_code=int(error_type),
+            error_field=ret.get('Error_Field', None)
+        )
+        logger.warn(sej_error)
+        raise sej_error
 
     sej_order.payment_type              = '%d' % payment_type.v
     sej_order.billing_number            = ret.get('X_haraikomi_no')
