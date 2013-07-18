@@ -38,7 +38,7 @@ class FormTests(unittest.TestCase):
 
         self.assertTrue(target.validate())
         result = target.data_value["drawing"]
-        self.assertIn(u'<flowDiv/>', result)
+        self.assertIn(u'<flowDiv></flowDiv>', result)
 
 
 

@@ -85,6 +85,7 @@ class TemplateValidateTests(unittest.TestCase):
     <flowDiv><flowPara>{{発券番号}}</flowPara></flowDiv>
   </flowRoot>
 """)
+        from altair.app.ticketing.tickets.cleaner.api import TicketCleanerValidationError
         with self.assertRaises(TicketCleanerValidationError):
             self._callFUT(target)
 

@@ -3,6 +3,7 @@
 from unittest import TestCase
 from datetime import datetime
 from lxml import etree
+from ..testing import _setup_db, _teardown_db
 
 class TicketsUtilsTest(TestCase):
     def __init__(self, *args, **kwargs):
@@ -130,27 +131,33 @@ class TicketsUtilsTest(TestCase):
                 payment_delivery_method_pairs=[
                     PaymentDeliveryMethodPair(
                         payment_method=payment_method_multicheckout,
-                        delivery_method=delivery_method_shipping
+                        delivery_method=delivery_method_shipping,
+                        system_fee=0
                         ),
                     PaymentDeliveryMethodPair(
                         payment_method=payment_method_multicheckout,
-                        delivery_method=delivery_method_qr
+                        delivery_method=delivery_method_qr,
+                        system_fee=0
                         ),
                     PaymentDeliveryMethodPair(
                         payment_method=payment_method_multicheckout,
-                        delivery_method=delivery_method_cvs
+                        delivery_method=delivery_method_cvs,
+                        system_fee=0
                         ),
                     PaymentDeliveryMethodPair(
                         payment_method=payment_method_cvs,
-                        delivery_method=delivery_method_shipping
+                        delivery_method=delivery_method_shipping,
+                        system_fee=0
                         ),
                     PaymentDeliveryMethodPair(
                         payment_method=payment_method_cvs,
-                        delivery_method=delivery_method_qr
+                        delivery_method=delivery_method_qr,
+                        system_fee=0
                         ),
                     PaymentDeliveryMethodPair(
                         payment_method=payment_method_cvs,
-                        delivery_method=delivery_method_cvs
+                        delivery_method=delivery_method_cvs,
+                        system_fee=0
                         ),
                     ]
                 )
@@ -304,7 +311,7 @@ class TicketsUtilsTest(TestCase):
                 payment_delivery_pair=sales_segment.payment_delivery_method_pairs[0],
                 shipping_address=shipping_address,
                 created_at=datetime(2012, 10, 30, 12, 34, 56),
-                system_fee=0.,
+                sales_segment=sales_segment,
                 products=[]
                 )
             carted_product = CartedProduct(
@@ -325,7 +332,11 @@ class TicketsUtilsTest(TestCase):
         _()
 
     def setUp(self):
+        _setup_db()
         self.build_fixture()
+
+    def tearDown(self):
+        _teardown_db()
 
     def test_build_dict_from_seat(self):
         from altair.app.ticketing.tickets.utils import build_dict_from_seat
