@@ -5,14 +5,11 @@ from pyramid import testing
 from altair.app.ticketing.testing import _setup_db, _teardown_db
 
 class SejTest(unittest.TestCase):
-
-    def _getTarget(self):
-        from . import webapi
-        return webapi.DummyServer
-
     def _makeServer(self, *args, **kwargs):
-        if self.server is None:
-            self.server = self._getTarget()(*args, **kwargs)
+        from webapi import DummyServer
+        assert self.server is None
+        self.server = DummyServer(*args, **kwargs)
+        self.server.start()
         return self.server
 
     def setUp(self):
@@ -24,8 +21,7 @@ class SejTest(unittest.TestCase):
 
     def tearDown(self):
         if self.server is not None:
-            self.server.httpd.socket.close()
-            self.server.th.join()
+            self.server.stop()
         testing.tearDown()
         _teardown_db()
 
@@ -202,7 +198,6 @@ class SejTest(unittest.TestCase):
         webob.util.status_reasons[800] = 'OK'
 
         target = self._makeServer(lambda environ: '<SENBDATA>DATA=END</SENBDATA>', host='127.0.0.1', port=38002, status=800)
-        target.start()
 
         sej_order = SejOrder()
 
@@ -228,8 +223,10 @@ class SejTest(unittest.TestCase):
             hostname=u"http://127.0.0.1:38002"
         )
 
-        target.assert_method('POST')
-        target.assert_url('http://127.0.0.1:38002/order/cancelorder.do')
+        self.server.poll()
+
+        self.assertEqual(self.server.request.method, 'POST')
+        self.assertEqual(self.server.request.url, 'http://127.0.0.1:38002/order/cancelorder.do')
 
         sej_order = SejOrder.query.filter_by(order_id = u'orderid00001', billing_number=u'00000001').one()
 
@@ -269,7 +266,6 @@ class SejTest(unittest.TestCase):
 
         webob.util.status_reasons[800] = 'OK'
         target = self._makeServer(sej_dummy_response, host='127.0.0.1', port=38001, status=800)
-        target.start()
 
         request_order(
             shop_name       = u'楽天チケット',
@@ -354,8 +350,10 @@ class SejTest(unittest.TestCase):
             ]
         )
 
-        target.assert_method('POST')
-        target.assert_url('http://127.0.0.1:38001/order/order.do')
+        self.server.poll()
+
+        self.assertEqual(self.server.request.method, 'POST')
+        self.assertEqual(self.server.request.url, 'http://127.0.0.1:38001/order/order.do')
 
         order = SejOrder.query.filter_by(order_id = u'orderid00001', billing_number=u'0000000001').one()
 
@@ -419,7 +417,6 @@ class SejTest(unittest.TestCase):
 
         webob.util.status_reasons[800] = 'OK'
         target = self._makeServer(sej_dummy_response, host='127.0.0.1', port=38001, status=800)
-        target.start()
 
         sejTicketOrder = request_order(
              shop_name       = u'楽天チケット',
@@ -504,8 +501,10 @@ class SejTest(unittest.TestCase):
              ]
          )
 
-        target.assert_method('POST')
-        target.assert_url('http://127.0.0.1:38001/order/order.do')
+        self.server.poll()
+
+        self.assertEqual(self.server.request.method, 'POST')
+        self.assertEqual(self.server.request.url, 'http://127.0.0.1:38001/order/order.do')
 
         sej_order = SejOrder.query.filter_by(order_id = u'orderid00001', billing_number=u'0000000001').one()
 
@@ -546,7 +545,6 @@ class SejTest(unittest.TestCase):
         webob.util.status_reasons[800] = 'OK'
 
         target = self._makeServer(lambda environ: '<SENBDATA>DATA=END</SENBDATA>', host='127.0.0.1', port=38002, status=800)
-        target.start()
 
         sej_order = SejOrder()
 
@@ -571,9 +569,11 @@ class SejTest(unittest.TestCase):
             hostname=u"http://127.0.0.1:38002"
         )
 
-        target.assert_body('X_shop_id=30520&xcode=cf0fe9fc34300dd1f946e6c9c33fc020&X_hikikae_no=00001111&X_haraikomi_no=00000001&X_shop_order_id=orderid00001')
-        target.assert_method('POST')
-        target.assert_url('http://127.0.0.1:38002/order/cancelorder.do')
+        self.server.poll()
+
+        self.assertEqual(self.server.request.body, 'X_shop_id=30520&xcode=cf0fe9fc34300dd1f946e6c9c33fc020&X_hikikae_no=00001111&X_haraikomi_no=00000001&X_shop_order_id=orderid00001')
+        self.assertEqual(self.server.request.method, 'POST')
+        self.assertEqual(self.server.request.url, 'http://127.0.0.1:38002/order/cancelorder.do')
 
         sej_order = SejOrder.query.filter_by(order_id = u'orderid00001', billing_number=u'00000001').one()
         assert sej_order.cancel_at is not None

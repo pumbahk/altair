@@ -9,6 +9,7 @@ class DummyServer(object):
         self.host = host
         self.port = port
         self.status = status
+        self.th = None
 
     def handler(self, environ, start_response):
         self.request = webob.Request(environ)
@@ -16,29 +17,19 @@ class DummyServer(object):
         response.status = self.status
         return response(environ, start_response)
 
-    @property
-    def called(self):
-        return hasattr(self, 'th') and not self.th.is_alive
-
     def start(self):
-        self.th = threading.Thread(target=self._run)
+        self.httpd = make_server(self.host, self.port, self.handler)
+        self.th = threading.Thread(target=self.httpd.handle_request)
         self.th.start()
 
-    def _run(self):
-        self.httpd = make_server(self.host, self.port, self.handler)
-        self.httpd.handle_request()
+    def stop(self):
+        if self.th is not None and self.th.is_alive():
+            import httplib
+            conn = httplib.HTTPConnection(self.httpd.server_address[0], self.httpd.server_address[1])
+            conn.request('GET', '/')
+            self.poll()
 
-    def assert_called(self):
-        assert self.called
+    def poll(self):
+        self.httpd.server_close()
+        self.th.join()
 
-    def assert_body(self, expected):
-        assert self.request.body == expected
-
-    def assert_content_type(self, expected):
-        assert self.request.content_type == expected
-
-    def assert_url(self, expected):
-        assert self.request.url == expected
-
-    def assert_method(self, expected):
-        assert self.request.method == expected

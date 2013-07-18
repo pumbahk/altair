@@ -50,7 +50,7 @@ class SejPayment(object):
         except urllib2.HTTPError, e:
             res = e
         except urllib2.URLError, e:
-            return
+            raise
 
         status = res.code
         reason = res.msg

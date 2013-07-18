@@ -5,20 +5,15 @@ import datetime
 from altair.app.ticketing.sej.nwts import nws_data_send
 
 class SejTestNwts(unittest.TestCase):
-
-    def _getTarget(self):
-        import webapi
-        return webapi.DummyServer
-
-    def _makeOne(self, *args, **kwargs):
-        return self._getTarget()(*args, **kwargs)
-
-
     def setUp(self):
-        pass
+        def sej_dummy_response(environ):
+            return ''
+        from .webapi import DummyServer
+        self.dummy_server = DummyServer(sej_dummy_response, host='127.0.0.1', port=48080, status=200)
+        self.dummy_server.start()
 
     def tearDown(self):
-        pass
+        self.dummy_server.stop()
 
     def test_nwts_template(self):
         '''
@@ -26,20 +21,17 @@ class SejTestNwts(unittest.TestCase):
         '''
         import webob.util
 
-        def sej_dummy_response(environ):
-            return ''
-
         webob.util.status_reasons[800] = 'OK'
-        target = self._makeOne(sej_dummy_response, host='127.0.0.1', port=48080, status=200)
-        target.start()
 
         nws_data_send('http://localhost:48080/', '60022000', '60022a', 'SEIT020U', '1234567890')
 
-        target.assert_body("6002200060022aSEIT020U\x0a\0\0\0\0\0\0\0" + "1234567890")
+        self.dummy_server.poll()
 
-        target.assert_content_type('text/plain')
-        target.assert_method('POST')
-        target.assert_url('http://localhost:48080/?Mode=1&ThreadID=9')
+        self.assertEqual(self.dummy_server.request.body, "6002200060022aSEIT020U\x0a\0\0\0\0\0\0\0" "1234567890")
+
+        self.assertEqual(self.dummy_server.request.content_type, 'text/plain')
+        self.assertEqual(self.dummy_server.request.method, 'POST')
+        self.assertRegexpMatches(self.dummy_server.request.url, r'^http://localhost:48080/\?Mode=1&ThreadID=\d+')
 
     def test_nwts_refund(self):
         '''
@@ -50,19 +42,16 @@ class SejTestNwts(unittest.TestCase):
         '''
         import webob.util
 
-        def sej_dummy_response(environ):
-            return ''
-
         webob.util.status_reasons[800] = 'OK'
-        target = self._makeOne(sej_dummy_response, host='127.0.0.1', port=48081, status=200)
-        target.start()
 
-        nws_data_send('http://localhost:48081/', '60022000', '60022a', 'SDMT010U', '1234567890')
+        nws_data_send('http://localhost:48080/', '60022000', '60022a', 'SDMT010U', '1234567890')
 
-        target.assert_body("6002200060022aSDMT010U\x0a\0\0\0\0\0\0\0" + "1234567890")
-        target.assert_content_type('text/plain')
-        target.assert_method('POST')
-        target.assert_url('http://localhost:48081/?Mode=2&ThreadID=9')
+        self.dummy_server.poll()
+
+        self.assertEqual(self.dummy_server.request.body, "6002200060022aSDMT010U\x0a\0\0\0\0\0\0\0" "1234567890")
+        self.assertEqual(self.dummy_server.request.content_type, 'text/plain')
+        self.assertEqual(self.dummy_server.request.method, 'POST')
+        self.assertRegexpMatches(self.dummy_server.request.url, r'http://localhost:48080/\?Mode=2&ThreadID=\d+')
 
 
 if __name__ == u"__main__":

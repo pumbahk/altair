@@ -7,14 +7,6 @@ from altair.app.ticketing.sej.ticket import SejTicketDataXml
 from altair.app.ticketing.sej.utils import JavaHashMap
 
 class SejTestFile(unittest.TestCase):
-
-    def _getTarget(self):
-        import webapi
-        return webapi.DummyServer
-
-    def _makeOne(self, *args, **kwargs):
-        return self._getTarget()(*args, **kwargs)
-
     def setUp(self):
         import sqlahelper
         from sqlalchemy import create_engine
@@ -31,28 +23,33 @@ class SejTestFile(unittest.TestCase):
     def test_get_file_payment_request(self):
         import webob.util
         from zlib import compress, decompress
+        from .webapi import DummyServer
 
         def sej_dummy_response(environ):
-
             return compress(open(os.path.dirname(__file__)+ '/data/files/SEITIS91_30516_20110912', 'r').read())
 
-        webob.util.status_reasons[800] = 'OK'
-        target = self._makeOne(sej_dummy_response, host='127.0.0.1', port=18090, status=800)
-        target.start()
+        dummy_server = DummyServer(sej_dummy_response, host='127.0.0.1', port=18090, status=800)
+        dummy_server.start()
+        try:
 
-        from altair.app.ticketing.sej.payment import request_fileget
-        from altair.app.ticketing.sej.resources import SejNotificationType
-        from altair.app.ticketing.sej.file import SejInstantPaymentFileParser
-        file = request_fileget(
-            date=datetime.datetime(2011,9,12),
-            notification_type=SejNotificationType.InstantPaymentInfo,
-            hostname=u"http://127.0.0.1:18090")
-        target.assert_body("X_shop_id=30520&xcode=71493542957ed71cc35e0f8810e018a9&X_data_type=91&X_date=20110912")
-        target.assert_method("POST")
+            webob.util.status_reasons[800] = 'OK'
 
-        parser = SejInstantPaymentFileParser()
-        data = parser.parse(file)
-        assert len(data) == 27
+            from altair.app.ticketing.sej.payment import request_fileget
+            from altair.app.ticketing.sej.resources import SejNotificationType
+            from altair.app.ticketing.sej.file import SejInstantPaymentFileParser
+            file = request_fileget(
+                date=datetime.datetime(2011,9,12),
+                notification_type=SejNotificationType.InstantPaymentInfo,
+                hostname=u"http://127.0.0.1:18090")
+            dummy_server.poll()
+            self.assertEqual(dummy_server.request.body, "X_shop_id=30520&xcode=71493542957ed71cc35e0f8810e018a9&X_data_type=91&X_date=20110912")
+            self.assertEqual(dummy_server.request.method, "POST")
+
+            parser = SejInstantPaymentFileParser()
+            data = parser.parse(file)
+            assert len(data) == 27
+        finally:
+            dummy_server.stop()
 
     def test_file_payment(self):
         ''' 入金速報:SEITIS91_30516_20110912
