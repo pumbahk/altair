@@ -310,7 +310,9 @@ class MobileReserveView(object):
         order_items = self.ordered_items
 
         # 購入枚数の制限
-        sum_quantity = sum(num for product, num in order_items)
+        sum_quantity = 0
+        for product, quantity in order_items:
+            sum_quantity += quantity * product.get_quantity_power(product.seat_stock_type, product.performance_id)
         logger.debug('sum_quantity=%s' % sum_quantity)
         if sum_quantity > sales_segment.upper_limit:
             raise OverQuantityLimitError(sales_segment.upper_limit)

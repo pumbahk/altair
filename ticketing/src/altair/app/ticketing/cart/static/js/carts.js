@@ -675,7 +675,12 @@ cart.OrderFormPresenter.prototype = {
     showOrderForm: function(selected_stock_type_el, stock_type, products) {
         this.stock_type = stock_type;
         this.products = products;
-        this.upper_limit = products.at(0).get('upper_limit');
+        var upper_limit = 0;
+        this.products.each(function(product) {
+            var ul = product.get('upper_limit') * product.get('quantity_power');
+            upper_limit = (ul > upper_limit ? ul : upper_limit);
+        })
+        this.upper_limit = upper_limit;
         this.view.showForm(selected_stock_type_el, stock_type, products);
     },
     calculateQuantityToSelect: function () {
@@ -686,7 +691,7 @@ cart.OrderFormPresenter.prototype = {
             var product = this.products.get(product_id);
             quantity_to_select += product.get('quantity_power') * multiple;
         }
-        this.quantity_to_select = quantity_to_select; 
+        this.quantity_to_select = quantity_to_select;
     },
     onSelectSeatPressed: function () {
         this.calculateQuantityToSelect();
@@ -694,7 +699,7 @@ cart.OrderFormPresenter.prototype = {
             return this.showNoSelectProductMessage();
         }
         if (this.upper_limit < this.quantity_to_select) {
-            return this.showOverUpperLimitMessage()
+            return this.showOverUpperLimitMessage();
         }
         this.venuePresenter.setStockType(this.stock_type);
     },
@@ -704,7 +709,7 @@ cart.OrderFormPresenter.prototype = {
             return this.showNoSelectProductMessage();
         }
         if (this.upper_limit < this.quantity_to_select) {
-            return this.showOverUpperLimitMessage()
+            return this.showOverUpperLimitMessage();
         }
         this.setSeats([]);
         this.doOrder();
