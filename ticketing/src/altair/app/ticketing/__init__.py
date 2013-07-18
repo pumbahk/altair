@@ -69,6 +69,7 @@ def main(global_config, **local_config):
 
         session_factory = session_factory_from_settings(settings)
         set_cache_regions_from_settings(settings) 
+        
         config = Configurator(settings=settings,
                               root_factory=newRootFactory(TicketingAdminResource),
                               session_factory=session_factory)
@@ -155,8 +156,9 @@ def main(global_config, **local_config):
         # 上からscanされてしまうためしかたなく追加。scanをinclude先に移動させて、このincludeを削除する。
         #config.include('altair.app.ticketing.cart' , route_prefix='/cart')
         
+
+        config.add_renderer('.html' , 'pyramid.mako_templating.renderer_factory')
         config.add_renderer('.txt' , txt_renderer_factory)
-        config.add_renderer('.txt' , 'pyramid.mako_templating.renderer_factory')
         config.add_renderer('json'  , 'altair.app.ticketing.renderers.json_renderer_factory')
         config.add_renderer('csv'   , 'altair.app.ticketing.renderers.csv_renderer_factory')
         config.add_renderer('lxml'  , 'altair.app.ticketing.renderers.lxml_renderer_factory')
