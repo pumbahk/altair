@@ -52,7 +52,7 @@ def includeme(config):
     # 決済系(マルチ決済)
     settings = config.registry.settings
     config.add_payment_plugin(SejPaymentPlugin(), PAYMENT_PLUGIN_ID)
-    config.add_delivery_plugin(SejDeliveryPlugin(template=settings["altair_sej.template_file"]), DELIVERY_PLUGIN_ID)
+    config.add_delivery_plugin(SejDeliveryPlugin(template=settings["altair.sej.template_file"]), DELIVERY_PLUGIN_ID)
     config.add_payment_delivery_plugin(SejPaymentDeliveryPlugin(), PAYMENT_PLUGIN_ID, DELIVERY_PLUGIN_ID)
     config.scan(__name__)
 

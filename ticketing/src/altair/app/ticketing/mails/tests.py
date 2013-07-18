@@ -23,12 +23,12 @@ def create_initial_settings():
     from pyramid.path import AssetResolver
     sej_template_file = AssetResolver("altair.app.ticketing").resolve("../../misc/sej/template.html").abspath()
     return {"altair.mailer": "pyramid_mailer.testing", 
-            'altair_sej.template_file': sej_template_file}    
+            'altair.sej.template_file': sej_template_file}    
 
 
 class CompletMailSettingsTest(unittest.TestCase):
     def setUp(self):
-        self.config = testing.setUp(settings={"altair.mailer": "pyramid_mailer.testing", "altair_sej.template_file": ""})
+        self.config = testing.setUp(settings={"altair.mailer": "pyramid_mailer.testing", "altair.sej.template_file": ""})
         self.config.add_renderer('.html' , 'pyramid.mako_templating.renderer_factory')
         self.config.include('altair.app.ticketing.cart.import_mail_module')
         ## TBA
@@ -110,7 +110,7 @@ class CompletMailSettingsTest(unittest.TestCase):
 
 class CreateMailFromFakeOrderTests(unittest.TestCase):
     def setUp(self):
-        self.config = testing.setUp(settings={"altair.mailer": "pyramid_mailer.testing", "altair_sej.template_file": ""})
+        self.config = testing.setUp(settings={"altair.mailer": "pyramid_mailer.testing", "altair.sej.template_file": ""})
         self.config.add_renderer('.html' , 'pyramid.mako_templating.renderer_factory')
         self.config.add_renderer('.txt' , 'pyramid.mako_templating.renderer_factory')
         self.config.include('altair.app.ticketing.mails.install_mail_utility')

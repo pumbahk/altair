@@ -6,7 +6,7 @@ altair.auth.specs =
     fc_auth=%(here)s/fc_who.ini
 altair.auth.decider = altair.app.ticketing.cart:WhoDecider
 altair.auth.callback = altair.app.ticketing.cart.security:auth_model_callback
-altair_sej.template_file = %(here)s/../../../ticketing/misc/sej/template.html
+altair.sej.template_file = %(here)s/../../../ticketing/misc/sej/template.html
 
 ; altair:site-data
 altair.site_data.base_url = s3://tstar-dev/venue-layouts/frontend/
