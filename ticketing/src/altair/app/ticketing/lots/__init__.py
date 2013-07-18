@@ -54,7 +54,6 @@ def includeme(config):
     config.add_subscriber(register_globals, 'pyramid.events.BeforeRender')
     config.add_renderer('.html' , 'pyramid.mako_templating.renderer_factory')
     config.add_renderer('json'  , 'altair.app.ticketing.renderers.json_renderer_factory')
-    config.add_renderer('.txt' , 'pyramid.mako_templating.renderer_factory')
 
     selectable_renderer.register_to(config)
 

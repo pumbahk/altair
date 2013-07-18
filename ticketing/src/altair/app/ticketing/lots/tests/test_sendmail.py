@@ -22,8 +22,9 @@ class send_accepted_mailTests(unittest.TestCase):
         import pyramid_mailer
         import altair.app.ticketing.core.models as core_models
         import altair.app.ticketing.lots.models as lots_models
+        from altair.app.ticketing import txt_renderer_factory
         self.config.add_route('lots.review.index', 'review')
-        self.config.add_renderer('.txt' , 'pyramid.mako_templating.renderer_factory')
+        self.config.add_renderer('.txt' , txt_renderer_factory)        
         self.config.add_renderer('.html' , 'pyramid.mako_templating.renderer_factory')
 
         request = testing.DummyRequest()

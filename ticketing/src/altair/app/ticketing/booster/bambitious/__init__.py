@@ -1,3 +1,4 @@
+from altair.app.ticketing import txt_renderer_factory
 from pyramid.config import Configurator
 from pyramid_beaker import session_factory_from_settings
 import json
@@ -52,7 +53,7 @@ def main(global_config, **local_config):
     config = Configurator(settings=settings, session_factory=my_session_factory)
 
     config.add_renderer('.html' , 'pyramid.mako_templating.renderer_factory')
-    config.add_renderer('.txt' , 'pyramid.mako_templating.renderer_factory')
+    config.add_renderer('.txt' , txt_renderer_factory)
     config.add_static_view('static', 'altair.app.ticketing.booster.bambitious:static', cache_max_age=3600)
     config.add_static_view('static_', 'altair.app.ticketing.cart:static', cache_max_age=3600)
 

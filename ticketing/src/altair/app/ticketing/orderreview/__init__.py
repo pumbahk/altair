@@ -6,6 +6,7 @@ from pyramid.httpexceptions import HTTPNotFound
 from pyramid.exceptions import PredicateMismatch
 # from altair.app.ticketing.cart.interfaces import IPaymentPlugin, ICartPayment, IOrderPayment
 # from altair.app.ticketing.cart.interfaces import IDeliveryPlugin, ICartDelivery, IOrderDelivery
+from altair.app.ticketing import txt_renderer_factory
 
 from sqlalchemy import engine_from_config
 import sqlahelper
@@ -21,7 +22,7 @@ def main(global_config, **local_config):
     config = Configurator(settings=settings, session_factory=my_session_factory)
     config.set_root_factory('.resources.OrderReviewResource')
     config.add_renderer('.html' , 'pyramid.mako_templating.renderer_factory')
-    config.add_renderer('.txt' , 'pyramid.mako_templating.renderer_factory')
+    config.add_renderer('.txt' , txt_renderer_factory)    
     config.add_static_view('static', 'altair.app.ticketing.orderreview:static', cache_max_age=3600)
     config.add_static_view('static_', 'altair.app.ticketing.cart:static', cache_max_age=3600)
     config.add_static_view('img', 'altair.app.ticketing.cart:static', cache_max_age=3600)
