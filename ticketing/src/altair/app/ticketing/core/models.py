@@ -1083,6 +1083,7 @@ class SalesSegmentGroup(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     seat_choice = AnnotatedColumn(Boolean, default=True, _a_label=_(u'座席選択可'))
     public = AnnotatedColumn(Boolean, default=True, _a_label=_(u'一般公開'))
+    reporting = AnnotatedColumn(Boolean, nullable=False, default=True, server_default='1', _a_label=_(u'レポート対象'))
 
     margin_ratio = AnnotatedColumn(Numeric(precision=16, scale=2), nullable=False, default=0, server_default='0', _a_label=_(u'販売手数料率(%)'))
     refund_ratio = AnnotatedColumn(Numeric(precision=16, scale=2), nullable=False, default=0, server_default='0', _a_label=_(u'払戻手数料率(%)'))
@@ -3159,6 +3160,7 @@ class SalesSegment(Base, BaseModel, LogicallyDeleted, WithTimestamp):
 
     _seat_choice = Column('seat_choice', Boolean, nullable=True, default=None)
     public = Column(Boolean, default=True)
+    reporting = Column(Boolean, nullable=False, default=True, server_default='1')
     performance_id = Column(Identifier, ForeignKey('Performance.id'))
     performance = relationship("Performance", backref="sales_segments")
     sales_segment_group_id = Column(Identifier, ForeignKey("SalesSegmentGroup.id"))

@@ -93,6 +93,11 @@ class SalesSegmentForm(OurForm):
         default=True,
         widget=CheckboxInput()
     )
+    reporting = OurBooleanField(
+        label=u'レポート対象',
+        default=True,
+        widget=CheckboxInput()
+    )
     payment_delivery_method_pairs = PHPCompatibleSelectMultipleField(
         label=u'決済・引取方法',
         validators=[Required()],

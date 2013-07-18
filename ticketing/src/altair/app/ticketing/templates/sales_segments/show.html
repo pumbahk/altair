@@ -57,6 +57,10 @@ function get_selected_sales_segment_id() {
       <th>公開／非公開</th>
       <td>${u'○' if sales_segment.public else u'×'}</td>
     </tr>
+    <tr>
+      <th>レポート対象</th>
+      <td>${u'○' if sales_segment.reporting else u'×'}</td>
+    </tr>
   </tbody>
 </table>
 <a href="${request.route_path('sales_segments.edit', event_id=sales_segment.sales_segment_group.event_id, sales_segment_id=sales_segment.id)}" class="btn">編集</a>

@@ -19,6 +19,7 @@ class SalesSegmentGroupForm(OurForm):
     def __init__(self, formdata=None, obj=None, prefix='', **kwargs):
         fix_boolean(formdata, 'seat_choice')
         fix_boolean(formdata, 'public')
+        fix_boolean(formdata, 'reporting')
         super(SalesSegmentGroupForm, self).__init__(formdata, obj, prefix, **kwargs)
         if 'event_id' in kwargs:
             event = Event.get(kwargs['event_id'])
@@ -87,6 +88,10 @@ class SalesSegmentGroupForm(OurForm):
     )
     public = OurBooleanField(
         label=u'一般公開',
+        hide_on_new=True
+    )
+    reporting = OurBooleanField(
+        label=u'レポート対象',
         hide_on_new=True
     )
     account_id = OurSelectField(
