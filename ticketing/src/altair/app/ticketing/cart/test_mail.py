@@ -22,15 +22,17 @@ def tearDownModule():
 
 def _build_order(*args, **kwargs):
     from altair.app.ticketing.core.models import (
-        Order, 
-        OrderedProduct, 
-        OrderedProductItem, 
-        Seat, 
-        Product, 
-        Organization, 
-        ShippingAddress, 
-        Performance, 
-        Event, 
+        Order,
+        OrderedProduct,
+        OrderedProductItem,
+        Seat,
+        Product,
+        SalesSegment,
+        Organization,
+        OrganizationSetting,
+        ShippingAddress,
+        Performance,
+        Event,
         Venue
      )
     shipping_address = ShippingAddress(
@@ -38,7 +40,7 @@ def _build_order(*args, **kwargs):
         last_name=kwargs.get("shipping_address__last_name", u"last-name"), 
         first_name_kana=kwargs.get("shipping_address__first_name_kana", u"first-name_kana"), 
         last_name_kana=kwargs.get("shipping_address__last_name_kana", u"last-name_kana"), 
-        email_1=kwargs.get("shipping_address__email_1"),
+        email_1=kwargs.get("shipping_address__email_1", u"dummy@example.com"),
         tel_1=kwargs.get("shipping_address__tel1"), 
         tel_2=kwargs.get("shipping_address__tel2"), 
         zip=kwargs.get("shipping_address__zip"),
@@ -49,7 +51,13 @@ def _build_order(*args, **kwargs):
         )
 
     ordered_from = Organization(name=kwargs.get("ordered_from__name", u"ordered-from-name"), 
-                                contact_email=kwargs.get("ordered_from__contact_email"))
+                                contact_email=kwargs.get("ordered_from__contact_email"),
+                                settings=[
+                                    OrganizationSetting(
+                                        name='default', 
+                                        bcc_recipient=kwargs.get("bcc_recipient")
+                                        )
+                                    ])
 
     performance = Performance(name=kwargs.get("performance__name"),
                               start_on=kwargs.get("performance__start_on", datetime(1900, 1, 1)),  #xxx:
@@ -64,7 +72,7 @@ def _build_order(*args, **kwargs):
                   order_no=kwargs.get("order__order_no"), 
                   system_fee=kwargs.get("order__system_fee", 200.00), 
                   transaction_fee=kwargs.get("order__transaction_fee", 300.00), 
-                  delivery_fee=kwargs.get("order__delivery_fee"), 
+                  delivery_fee=kwargs.get("order__delivery_fee", 0.), 
                   total_amount=kwargs.get("order__total_amount", 9999), 
                   created_at=kwargs.get("order__created_at", datetime.now()) ## xxx:
                       )
@@ -73,7 +81,8 @@ def _build_order(*args, **kwargs):
         quantity=kwargs.get("product0__quantity", "product-quantity"), 
         product=Product(
             name=kwargs.get("product0__name", "product-name"), 
-            price=kwargs.get("product0__price", 400.00)))
+            price=kwargs.get("product0__price", 400.00),
+            sales_segment=SalesSegment(seat_choice=kwargs.get("product0__seat_choice", True))))
     ordered_product_item0 = OrderedProductItem()
     ordered_product_item0.seats.append(Seat(name=kwargs.get("seat0__name")))
     ordererd_product0.ordered_product_items.append(ordered_product_item0)
@@ -83,7 +92,8 @@ def _build_order(*args, **kwargs):
         quantity=kwargs.get("product1__quantity", "product-quantity"), 
         product=Product(
             name=kwargs.get("product1__name", "product-name"), 
-            price=kwargs.get("product1__price", 400.00)))
+            price=kwargs.get("product1__price", 400.00),
+            sales_segment=SalesSegment(seat_choice=kwargs.get("product1__seat_choice", True))))
     ordered_product_item1 = OrderedProductItem()
     ordered_product_item1.seats.append(Seat(name=kwargs.get("seat1__name")))
     ordererd_product1.ordered_product_items.append(ordered_product_item1)
@@ -99,7 +109,7 @@ def _build_sej(*args, **kwargs):
 
 class SendPurchaseCompleteMailTest(unittest.TestCase):
     def setUp(self):
-        self.config = testing.setUp(settings={"altair.mailer": "pyramid_mailer.testing"})
+        self.config = testing.setUp(settings={"altair.mailer": "pyramid_mailer.testing", "altair.sej.template_file": "xxx"})
         self.config.add_renderer('.html' , 'pyramid.mako_templating.renderer_factory')
         self.config.include('altair.app.ticketing.cart.import_mail_module')
 
@@ -126,20 +136,44 @@ class SendPurchaseCompleteMailTest(unittest.TestCase):
         
     def test_notify_success(self):
         from pyramid.interfaces import IRequest
-        from altair.app.ticketing.mails.interfaces import ICompleteMail
+        from altair.app.ticketing.mails.interfaces import ICompleteMail, IPurchaseInfoMail
+        from zope.interface import implementer
 
+        class DummyMailUtilityModule(object):
+            from altair.app.ticketing.mails.api import create_or_update_mailinfo
+
+            def get_mailtype_description():
+                return u''
+
+            def get_subject_info_default():
+                return 
+
+        @implementer(IPurchaseInfoMail)
         class DummyPurchaseCompleteMail(object):
-            def __init__(self, request):
+            request = None
+            _called = None
+            _order = None
+
+            def __init__(self, mail_template, request):
                 self.request = request
 
-            def build_message(self, order):
+            def build_mail_body(self, order, traverser):
+                pass
+
+            def build_message_from_mail_body(self, order, traverser, mail_body):
+                pass
+
+            def build_message(self, order, traverser):
                 self.__class__._called = "build_message"
                 self.__class__._order = order
                 return testing.DummyResource(recipients="")
                
-        self.config.registry.adapters.register([IRequest], ICompleteMail, "", DummyPurchaseCompleteMail)
+        from altair.app.ticketing.mails.config import register_order_mailutility
+        from altair.app.ticketing.core.models import MailTypeEnum
+        register_order_mailutility(self.config, MailTypeEnum.PurchaseCompleteMail, DummyMailUtilityModule, DummyPurchaseCompleteMail, None)
         request = testing.DummyRequest()
-        order = object()
+
+        order = _build_order()
         self._callFUT(request, order)
 
         self.assertEquals(DummyPurchaseCompleteMail._called, "build_message")
@@ -183,7 +217,8 @@ class SendPurchaseCompleteMailTest(unittest.TestCase):
         order = _build_order(
             shipping_address__email_1="purchase@user.ne.jp", 
             ordered_from__name = u"ordered-from-name",
-            ordered_from__contact_email="from@organization.ne.jp"
+            ordered_from__contact_email="from@organization.ne.jp",
+            bcc_recipient="bcc@organization.ne.jp"
             )
         
         payment_method = PaymentMethod(payment_plugin_id=1)
@@ -197,7 +232,7 @@ class SendPurchaseCompleteMailTest(unittest.TestCase):
 
         self.assertIn(u"ordered-from-name", result.subject)
         self.assertEquals(result.recipients, ["purchase@user.ne.jp"])
-        self.assertEquals(result.bcc, ["from@organization.ne.jp"])
+        self.assertEquals(result.bcc, ["bcc@organization.ne.jp"])
         self.assertEquals(result.sender, "from@organization.ne.jp")
 
     def test_normal_success_check_body(self):
@@ -225,7 +260,8 @@ class SendPurchaseCompleteMailTest(unittest.TestCase):
             order__delivery_fee=40.0, 
             order__total_amount=99999, ##
             ordered_from__name = u"ordered-from-name",
-            ordered_from__contact_email="from@organization.ne.jp", 
+            ordered_from__contact_email="from@organization.ne.jp",
+            bcc_recipient="bcc@organization.ne.jp", 
             performance__name = u"何かパフォーマンス名", 
             performance__start_on = datetime(2000, 1, 1), 
             event__title = u"何かイベント名", 
@@ -314,7 +350,7 @@ class SendPurchaseCompleteMailTest(unittest.TestCase):
         result = self._get_mailer().outbox.pop()
 
         body = result.body
-        self.assertIn(u"＜クレジットカードでのお支払いの方＞", body)
+        self.assertIn(u"＜クレジットカードでお支払いの方＞", body)
         # self.assertIn(u"＜試合当日窓口受取の方＞", body)
 
 
@@ -351,7 +387,7 @@ class SendPurchaseCompleteMailTest(unittest.TestCase):
         result = self._get_mailer().outbox.pop()
 
         body = result.body
-        self.assertIn(u"＜クレジットカードでのお支払いの方＞", body)
+        self.assertIn(u"＜クレジットカードでお支払いの方＞", body)
 
         self.assertIn(u"＜セブン-イレブンでお引取りの方＞", body)
         # self.assertIn(u"次の日から", body)
@@ -397,7 +433,7 @@ class SendPurchaseCompleteMailTest(unittest.TestCase):
         result = self._get_mailer().outbox.pop()
 
         body = result.body
-        self.assertIn(u"＜クレジットカードでのお支払いの方＞", body)
+        self.assertIn(u"＜クレジットカードでお支払いの方＞", body)
         self.assertIn(u"＜配送にてお引取りの方＞", body)
 
         self.assertIn(u"苗字 名前", body)
@@ -440,7 +476,7 @@ class SendPurchaseCompleteMailTest(unittest.TestCase):
         result = self._get_mailer().outbox.pop()
 
         body = result.body
-        self.assertIn(u"＜コンビニでのお支払いの方＞", body)
+        self.assertIn(u"＜セブン-イレブンでのお支払いの方＞", body)
         self.assertIn(u"909090", body)
         self.assertIn(h.japanese_date(datetime(2000, 1, 1)), body)
 
