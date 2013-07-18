@@ -34,7 +34,7 @@ class MailSettingDefaultGetter(object):
         self.show_flash_message = show_flash_message
 
     def _notify_bcc(self, request, bcc):
-        textmessage = "altair.app.ticketing.mails.bcc.silent = true, bcc = []. (bcc data --- {0})".format(bcc)
+        textmessage = "bcc recipients => {0}".format(bcc)
         if self.show_flash_message:
             request.session.flash(textmessage)
         logger.info(textmessage)
