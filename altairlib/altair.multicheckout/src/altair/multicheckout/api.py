@@ -3,39 +3,16 @@
 """ TBA
 """
 
-#from pyramid.interfaces import IDict
 from xml.etree import ElementTree as etree
 import httplib
 import urlparse
 from . import models as m
-#from .interfaces import IMultiCheckout
 from datetime import date
 from . import logger
 from . import events
-import altair.app.ticketing.core.api as core_api
-import altair.app.ticketing.core.models as core_models
+from .interfaces import  IMulticheckoutSettingFactory
 
 DEFAULT_ITEM_CODE = "120"  # 通販
-
-class MulticheckoutSetting(object):
-    def __init__(self, organization_setting):
-        self.organization_setting = organization_setting
-
-    @property
-    def shop_name(self):
-        return self.organization_setting.multicheckout_shop_name
-
-    @property
-    def shop_id(self):
-        return self.organization_setting.multicheckout_shop_id
-
-    @property
-    def auth_id(self):
-        return self.organization_setting.multicheckout_auth_id
-
-    @property
-    def auth_password(self):
-        return self.organization_setting.multicheckout_auth_password
 
 
 def maybe_unicode(u, encoding="utf-8"):
@@ -56,23 +33,9 @@ def save_api_response(request, res):
     m._session.commit()
 
 
-def get_multicheckout_settings(request):
-    return [MulticheckoutSetting(os) for os in core_models.OrganizationSetting.all() if os.multicheckout_shop_id and os.multicheckout_shop_name]
-
-
-
 def get_multicheckout_setting(request, override_name):
     reg = request.registry
-    logger.info('get_multicheckout_setting override_name = %s, request_host = %s' % (override_name, request.host))
-    if override_name:
-        #return m.MulticheckoutSetting.query.filter_by(shop_name=override_name).one()
-        os = core_models.OrganizationSetting.query.filter_by(multicheckout_shop_name=override_name).one()
-        return MulticheckoutSetting(os)
-    else:
-        override_host = reg.settings.get('altair_checkout3d.override_host') or request.host
-        organization = core_api.get_organization(request, override_host)
-        #return organization.multicheckout_settings[0]
-        return MulticheckoutSetting(organization.setting)
+    return reg.getUtility(IMulticheckoutSettingFactory)(request, override_name)
 
 
 def is_enable_secure3d(request, card_number):

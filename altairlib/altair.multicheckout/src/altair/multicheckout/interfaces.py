@@ -2,7 +2,7 @@
 
 """ TBA
 """
-from zope.interface import Interface
+from zope.interface import Interface, Attribute
 
 class IMultiCheckout(Interface):
     def request_card_check(order_no, card_auth):
@@ -38,3 +38,14 @@ class ICardBrandDetecter(Interface):
 class ICancelFilter(Interface):
     def is_cancelable(order_no):
         """ checkf for cancelable """
+
+
+class IMulticheckoutSetting(Interface):
+    shop_name = Attribute(u"マルチチェックアウト店舗名")
+    shop_id = Attribute(u"店舗コード")
+    auth_id = Attribute(u"API 認証ID")
+    auth_password = Attribute(u"API 認証パスワード")
+
+class IMulticheckoutSettingFactory(Interface):
+    def __call__(request, override_name):
+        """ get IMultiChekoutSetting """

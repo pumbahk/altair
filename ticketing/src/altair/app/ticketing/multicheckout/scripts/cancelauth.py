@@ -13,9 +13,9 @@ from datetime import timedelta
 from pyramid.paster import bootstrap, setup_logging
 import sqlahelper
 
-from altair.app.ticketing.multicheckout import api
-from altair.app.ticketing.multicheckout import models as m
-from altair.app.ticketing.multicheckout.interfaces import ICancelFilter
+from .. import get_multicheckout_settings
+from altair.multicheckout import models as m
+from altair.multicheckout.interfaces import ICancelFilter
 
 logger = logging.getLogger(__name__)
 
@@ -105,7 +105,7 @@ def main():
 
     # multicheckoutsettingsごとに行う
     processed_shops = []
-    for multicheckout_setting in api.get_multicheckout_settings(request):
+    for multicheckout_setting in get_multicheckout_settings(request):
         shop_name = multicheckout_setting.shop_name
         shop_id = multicheckout_setting.shop_id
         if shop_id in processed_shops:

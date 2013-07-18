@@ -2,7 +2,7 @@
 
 import unittest
 from pyramid import testing
-from ..multicheckout.testing import DummySecure3D
+from altair.multicheckout.testing import DummySecure3D
 from ..testing import _setup_db as _setup_db_, _teardown_db, DummyRequest
 import mock
 
@@ -11,9 +11,8 @@ def _setup_db(echo=False):
         modules=[
             'altair.app.ticketing.models',
             'altair.app.ticketing.cart.models',
-            #'altair.app.ticketing.orders.models', 
             'altair.app.ticketing.users.models',
-            'altair.app.ticketing.multicheckout.models',
+            'altair.multicheckout.models',
             ],
         echo=echo
         )

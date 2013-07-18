@@ -4,20 +4,8 @@ import unittest
 from xml.etree import ElementTree as etree
 from pyramid import testing
 
-from altair.app.ticketing.testing import _setup_db as _setup_db_, _teardown_db
 from ..testing import DummyHTTPLib
 from .. import api, models
-
-def _setup_db(echo=False):
-    return _setup_db_(
-        modules=[
-            'altair.app.ticketing.models',
-            'altair.app.ticketing.cart.models',
-            'altair.app.ticketing.users.models',
-            'altair.app.ticketing.multicheckout.models',
-            ],
-        echo=echo
-    )
 
 def compare_xml(str1, str2):
     import lxml.etree as ET
@@ -58,20 +46,20 @@ class secure3d_acs_form_Tests(unittest.TestCase):
 class get_multicheckout_service_Tests(unittest.TestCase):
     def setUp(self):
         self.config = testing.setUp()
-        self.session = _setup_db()
+        #self.session = _setup_db()
 
-        from altair.app.ticketing.core.models import Organization, Host
-        organization = Organization(id=1, name=u'organization_name', short_name=u'org')
-        self.session.add(organization)
+        #from altair.app.ticketing.core.models import Organization, Host
+        #organization = Organization(id=1, name=u'organization_name', short_name=u'org')
+        #self.session.add(organization)
 
-        host = Host(host_name=u'example.com', organization_id=1)
-        self.session.add(host)
+        #host = Host(host_name=u'example.com', organization_id=1)
+        #self.session.add(host)
 
-        self.session.flush()
+        #self.session.flush()
 
     def tearDown(self):
         testing.tearDown()
-        _teardown_db()
+        #_teardown_db()
 
     def _callFUT(self, request, *args, **kwargs):
         settings = {
@@ -84,17 +72,17 @@ class get_multicheckout_service_Tests(unittest.TestCase):
         return api.get_multicheckout_service(request)
 
     def test_it(self):
-        from altair.app.ticketing.core.models import OrganizationSetting
-        multicheckout_setting = OrganizationSetting(
-            multicheckout_shop_name=u'SHOP',
-            multicheckout_shop_id=1,
-            multicheckout_auth_id=u'AUTHID',
-            multicheckout_auth_password=u'AUTHPASS',
-            organization_id=1
-        )
-        self.session.add(multicheckout_setting)
-        self.session.flush()
-
+        from ..interfaces import IMulticheckoutSettingFactory
+        dummy_setting = testing.DummyResource(
+            shop_name=u'SHOP',
+            shop_id=1,
+            auth_id=u'AUTHID',
+            auth_password=u'AUTHPASS',
+            )
+        self.config.registry.registerUtility(
+            lambda request, name: dummy_setting,
+            IMulticheckoutSettingFactory,
+            )
         request = testing.DummyRequest()
         service = self._callFUT(request)
 

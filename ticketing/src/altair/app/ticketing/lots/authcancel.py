@@ -1,6 +1,6 @@
 import logging
 from zope.interface import implementer
-from altair.app.ticketing.multicheckout.interfaces import ICancelFilter
+from altair.multicheckout.interfaces import ICancelFilter
 from .models import LotEntry
 
 logger = logging.getLogger(__name__)

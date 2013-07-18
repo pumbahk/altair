@@ -89,7 +89,7 @@ class DummySecure3D(object):
         return self
 
     def secure3d_auth(self, *args, **kwargs):
-        from ..multicheckout import models
+        from altair.multicheckout import models
         self.called.append(('secure3d_auth', args, kwargs))
         return models.Secure3DAuthResponse(ErrorCd=self.ErrorCd, RetCd=self.RetCd, Xid=self.Xid, Ts=self.Ts, Cavva=self.Cavva, Cavv=self.Cavv, Eci=self.Eci, Mvn=self.Mvn)
 
@@ -102,7 +102,7 @@ class DummySecure3D(object):
         return True
 
     def request_card_auth(self, *args, **kwargs):
-        from ..multicheckout import models
+        from altair.multicheckout import models
         self.called.append(('request_card_auth', args, kwargs))
         return models.MultiCheckoutResponseCard(ApprovalNo=self.ApprovalNo)
 

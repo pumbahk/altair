@@ -6,7 +6,7 @@ from pyramid.testing import DummySession
 from altair.app.ticketing.testing import _setup_db, _teardown_db
 from altair.app.ticketing.testing import DummyRequest
 #from ...multicheckout.testing import DummySecure3D
-from altair.app.ticketing.multicheckout.api import Checkout3D
+from altair.multicheckout.api import Checkout3D
 import mock
 
 def _setup_test_db():
@@ -40,7 +40,7 @@ class MultiCheckoutViewTests(unittest.TestCase):
         return self._getTarget()(*args, **kwargs)
 
     def _register_dummy_card_brand_detector(self):
-        from altair.app.ticketing.multicheckout.interfaces import ICardBrandDetecter
+        from altair.multicheckout.interfaces import ICardBrandDetecter
         self.config.registry.utilities.register([], ICardBrandDetecter, "", lambda card_number: "TEST")
 
     def _register_cart_getter(self):
@@ -49,9 +49,9 @@ class MultiCheckoutViewTests(unittest.TestCase):
                                                 lambda request: request._cart)
 
     @mock.patch('wtforms.ext.csrf.SecureForm.validate')
-    @mock.patch('altair.app.ticketing.multicheckout.api.Checkout3D.secure3d_enrol')
-    @mock.patch('altair.app.ticketing.multicheckout.api.get_multicheckout_service')
-    @mock.patch('altair.app.ticketing.multicheckout.api.save_api_response')
+    @mock.patch('altair.multicheckout.api.Checkout3D.secure3d_enrol')
+    @mock.patch('altair.multicheckout.api.get_multicheckout_service')
+    @mock.patch('altair.multicheckout.api.save_api_response')
     def test_card_info_secure3d_enable_api(self, save_api_response, get_multicheckout_service, secure3d_enrol, validate):
         from ...multicheckout import models as mc_models
         get_multicheckout_service.return_value = Checkout3D(
@@ -111,10 +111,10 @@ class MultiCheckoutViewTests(unittest.TestCase):
         self.assertEqual(session_order['card_holder_name'], u'RAKUTEN TAROU')
 
     @mock.patch('wtforms.ext.csrf.SecureForm.validate')
-    @mock.patch('altair.app.ticketing.multicheckout.api.Checkout3D.request_card_auth')
-    @mock.patch('altair.app.ticketing.multicheckout.api.Checkout3D.secure3d_enrol')
-    @mock.patch('altair.app.ticketing.multicheckout.api.get_multicheckout_service')
-    @mock.patch('altair.app.ticketing.multicheckout.api.save_api_response')
+    @mock.patch('altair.multicheckout.api.Checkout3D.request_card_auth')
+    @mock.patch('altair.multicheckout.api.Checkout3D.secure3d_enrol')
+    @mock.patch('altair.multicheckout.api.get_multicheckout_service')
+    @mock.patch('altair.multicheckout.api.save_api_response')
     def test_card_info_secure3d_disabled_api(self, save_api_response, get_multicheckout_service, secure3d_enrol, request_card_auth, validate):
         from ...multicheckout import models as mc_models
         get_multicheckout_service.return_value = Checkout3D(
@@ -171,10 +171,10 @@ class MultiCheckoutViewTests(unittest.TestCase):
         self.assertTrue(request_card_auth.called)
 
     @mock.patch('wtforms.ext.csrf.SecureForm.validate')
-    @mock.patch('altair.app.ticketing.multicheckout.api.Checkout3D.request_card_auth')
-    @mock.patch('altair.app.ticketing.multicheckout.api.Checkout3D.secure3d_enrol')
-    @mock.patch('altair.app.ticketing.multicheckout.api.get_multicheckout_service')
-    @mock.patch('altair.app.ticketing.multicheckout.api.save_api_response')
+    @mock.patch('altair.multicheckout.api.Checkout3D.request_card_auth')
+    @mock.patch('altair.multicheckout.api.Checkout3D.secure3d_enrol')
+    @mock.patch('altair.multicheckout.api.get_multicheckout_service')
+    @mock.patch('altair.multicheckout.api.save_api_response')
     def test_card_info_secure3d_disabled_api_fail(self, save_api_response, get_multicheckout_service, secure3d_enrol, request_card_auth, validate):
         from ...multicheckout import models as mc_models
         get_multicheckout_service.return_value = Checkout3D(
@@ -233,10 +233,10 @@ class MultiCheckoutViewTests(unittest.TestCase):
         self.assertEqual(m.exception.error_code, '000001')
 
 
-    @mock.patch('altair.app.ticketing.multicheckout.api.Checkout3D.request_card_auth')
-    @mock.patch('altair.app.ticketing.multicheckout.api.Checkout3D.secure3d_auth')
-    @mock.patch('altair.app.ticketing.multicheckout.api.get_multicheckout_service')
-    @mock.patch('altair.app.ticketing.multicheckout.api.save_api_response')
+    @mock.patch('altair.multicheckout.api.Checkout3D.request_card_auth')
+    @mock.patch('altair.multicheckout.api.Checkout3D.secure3d_auth')
+    @mock.patch('altair.multicheckout.api.get_multicheckout_service')
+    @mock.patch('altair.multicheckout.api.save_api_response')
     def test_card_info_secure3d_callback(self, save_api_response, get_multicheckout_service, secure3d_auth, request_card_auth):
         from ...multicheckout import models as mc_models
         get_multicheckout_service.return_value = Checkout3D(
@@ -298,10 +298,10 @@ class MultiCheckoutViewTests(unittest.TestCase):
 
         self.assertEqual(result.location, 'http://example.com/payment_confirm')
 
-    @mock.patch('altair.app.ticketing.multicheckout.api.Checkout3D.request_card_auth')
-    @mock.patch('altair.app.ticketing.multicheckout.api.Checkout3D.secure3d_auth')
-    @mock.patch('altair.app.ticketing.multicheckout.api.get_multicheckout_service')
-    @mock.patch('altair.app.ticketing.multicheckout.api.save_api_response')
+    @mock.patch('altair.multicheckout.api.Checkout3D.request_card_auth')
+    @mock.patch('altair.multicheckout.api.Checkout3D.secure3d_auth')
+    @mock.patch('altair.multicheckout.api.get_multicheckout_service')
+    @mock.patch('altair.multicheckout.api.save_api_response')
     def test_card_info_secure3d_callback_fail(self, save_api_response, get_multicheckout_service, secure3d_auth, request_card_auth):
         from ...multicheckout import models as mc_models
         get_multicheckout_service.return_value = Checkout3D(
@@ -392,13 +392,13 @@ class MultiCheckoutPluginTests(unittest.TestCase):
         return self._getTarget()(*args, **kwargs)
 
     def _register_dummy_card_brand_detector(self):
-        from altair.app.ticketing.multicheckout.interfaces import ICardBrandDetecter
+        from altair.multicheckout.interfaces import ICardBrandDetecter
         self.config.registry.utilities.register([], ICardBrandDetecter, "", lambda card_number: "TEST")
 
     @mock.patch('altair.app.ticketing.core.models.Order.create_from_cart')
-    @mock.patch('altair.app.ticketing.multicheckout.api.Checkout3D.request_card_sales')
-    @mock.patch('altair.app.ticketing.multicheckout.api.get_multicheckout_service')
-    @mock.patch('altair.app.ticketing.multicheckout.api.save_api_response')
+    @mock.patch('altair.multicheckout.api.Checkout3D.request_card_sales')
+    @mock.patch('altair.multicheckout.api.get_multicheckout_service')
+    @mock.patch('altair.multicheckout.api.save_api_response')
     def test_finish(self, save_api_response, get_multicheckout_service, request_card_sales, create_from_cart):
         from ...multicheckout import models as mc_models
         get_multicheckout_service.return_value = Checkout3D(
@@ -465,10 +465,10 @@ class MultiCheckoutPluginTests(unittest.TestCase):
 
     @mock.patch('transaction._transaction.Transaction.commit')
     @mock.patch('altair.app.ticketing.core.models.Order.create_from_cart')
-    @mock.patch('altair.app.ticketing.multicheckout.api.Checkout3D.request_card_cancel_auth')
-    @mock.patch('altair.app.ticketing.multicheckout.api.Checkout3D.request_card_sales')
-    @mock.patch('altair.app.ticketing.multicheckout.api.get_multicheckout_service')
-    @mock.patch('altair.app.ticketing.multicheckout.api.save_api_response')
+    @mock.patch('altair.multicheckout.api.Checkout3D.request_card_cancel_auth')
+    @mock.patch('altair.multicheckout.api.Checkout3D.request_card_sales')
+    @mock.patch('altair.multicheckout.api.get_multicheckout_service')
+    @mock.patch('altair.multicheckout.api.save_api_response')
     def test_finish(self, save_api_response, get_multicheckout_service, request_card_sales, request_card_cancel_auth, create_from_cart, commit):
         from ...multicheckout import models as mc_models
         get_multicheckout_service.return_value = Checkout3D(

@@ -11,6 +11,7 @@ from altair.sqlahelper import named_transaction
 from altair.app.ticketing.cart.models import Cart, CartedProduct, CartedProductItem
 from altair.app.ticketing.cart.stocker import Stocker
 from pyramid.interfaces import IRequest
+from altair import multicheckout
 from altair.app.ticketing.cart.interfaces import (
     IStocker, IReserving, ICartFactory,
 )
@@ -18,7 +19,6 @@ from altair.app.ticketing.models import DBSession
 from altair.app.ticketing.core.models import Order
 from altair.app.ticketing.cart.reserving import Reserving
 from altair.app.ticketing.cart.carting import CartFactory
-from altair.app.ticketing import multicheckout
 from .events import LotElectedEvent
 
 from .models import Lot, LotElectWork, LotEntryWish, LotEntry, LotWorkHistory

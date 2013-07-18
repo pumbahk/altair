@@ -25,7 +25,7 @@ from altair.app.ticketing.lots.models import (
 from altair.app.ticketing.sej.models import (
     SejOrder,
 )
-from altair.app.ticketing.multicheckout.models import (
+from altair.multicheckout.models import (
     MultiCheckoutOrderStatus,
 )
 

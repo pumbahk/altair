@@ -37,7 +37,7 @@ from altair.app.ticketing.bookmark.models import Bookmark
 from altair.app.ticketing.sej.models import SejOrder, SejTicket, SejFile, SejNotification
 from altair.app.ticketing.cart.models import Cart, CartedProduct, CartedProductItem
 from altair.app.ticketing.payments.plugins.models import ReservedNumber
-from altair.app.ticketing.multicheckout.models import MultiCheckoutRequestCard, MultiCheckoutResponseCard
+from altair.multicheckout.models import MultiCheckoutRequestCard, MultiCheckoutResponseCard
 from altair.app.ticketing.checkout.models import Checkout, CheckoutItem
 
 def import_seed_data():

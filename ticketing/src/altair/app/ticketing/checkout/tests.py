@@ -630,7 +630,7 @@ class CheckoutTests(unittest.TestCase):
 
     def test_request_cancel_order_normal(self):
         import xml.etree.ElementTree as et
-        from altair.app.ticketing.multicheckout.testing import DummyHTTPLib
+        from altair.multicheckout.testing import DummyHTTPLib
 
         res_data = et.XML(
             '<root>'
@@ -656,7 +656,7 @@ class CheckoutTests(unittest.TestCase):
 
     def test_request_cancel_order_with_error(self):
         import xml.etree.ElementTree as et
-        from altair.app.ticketing.multicheckout.testing import DummyHTTPLib
+        from altair.multicheckout.testing import DummyHTTPLib
 
         res_data = et.XML(
             '<root>'
@@ -691,7 +691,7 @@ class CheckoutTests(unittest.TestCase):
 
     def test_request_fixation_order_normal(self):
         import xml.etree.ElementTree as et
-        from altair.app.ticketing.multicheckout.testing import DummyHTTPLib
+        from altair.multicheckout.testing import DummyHTTPLib
 
         res_data = et.XML(
             '<root>'
@@ -717,7 +717,7 @@ class CheckoutTests(unittest.TestCase):
 
     def test_request_fixation_order_with_error(self):
         import xml.etree.ElementTree as et
-        from altair.app.ticketing.multicheckout.testing import DummyHTTPLib
+        from altair.multicheckout.testing import DummyHTTPLib
 
         res_data = et.XML(
             '<root>'
@@ -752,7 +752,7 @@ class CheckoutTests(unittest.TestCase):
 
     def test_request_change_order_normal(self):
         import xml.etree.ElementTree as et
-        from altair.app.ticketing.multicheckout.testing import DummyHTTPLib
+        from altair.multicheckout.testing import DummyHTTPLib
 
         self.create_order_test_data()
 
@@ -785,7 +785,7 @@ class CheckoutTests(unittest.TestCase):
 
     def test_request_change_order_with_error(self):
         import xml.etree.ElementTree as et
-        from altair.app.ticketing.multicheckout.testing import DummyHTTPLib
+        from altair.multicheckout.testing import DummyHTTPLib
 
         self.create_order_test_data()
 

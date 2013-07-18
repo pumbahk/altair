@@ -8,7 +8,7 @@ from pyramid.paster import bootstrap
 import transaction
 from altair.app.ticketing.core import models as o_m
 from altair.app.ticketing.core.api import get_channel
-from altair.app.ticketing.multicheckout import api as multicheckout_api
+from altair.multicheckout import api as multicheckout_api
 from altair.app.ticketing.checkout import api as checkout_api
 from . import api
 from altair.app.ticketing.cart.exceptions import UnassignedOrderNumberError

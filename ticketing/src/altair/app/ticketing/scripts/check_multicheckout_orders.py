@@ -1,28 +1,31 @@
 #!/usr/bin/env python
 # encoding: utf-8
-from lxml import etree
-import os
+# from lxml import etree
+# import os
 import sys
-import transaction
-import re
+# import transaction
+# import re
 import argparse
 import locale
 import logging
 
-from pyramid.paster import get_app, bootstrap
+#from pyramid.paster import get_app
+from pyramid.paster import bootstrap
 
 from sqlalchemy.orm.exc import MultipleResultsFound, NoResultFound
 from sqlalchemy.orm.attributes import manager_of_class
-from sqlalchemy.orm.properties import ColumnProperty, RelationshipProperty
+from sqlalchemy.orm.properties import ColumnProperty
+#from sqlalchemy.orm.properties import RelationshipProperty
 
-from datetime import datetime
+#from datetime import datetime
 from dateutil.parser import parse as parsedate
+
+from altair.multicheckout import models as mc_models
+from altair.multicheckout.api import checkout_inquiry
 
 from altair.app.ticketing.models import DBSession
 from altair.app.ticketing.core import models as c_models
-from altair.app.ticketing.multicheckout import models as mc_models
 from altair.app.ticketing.cart import models as cart_models
-from altair.app.ticketing.multicheckout.api import checkout_inquiry
 
 logger = logging.getLogger(__name__)
 

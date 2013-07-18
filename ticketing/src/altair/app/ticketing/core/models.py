@@ -2284,7 +2284,7 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             # 入金済みなら決済をキャンセル
             if self.payment_status in ['paid', 'refunding']:
                 # 売り上げキャンセル
-                from altair.app.ticketing.multicheckout import api as multicheckout_api
+                from altair.multicheckout import api as multicheckout_api
 
                 order_no = self.order_no
                 if request.registry.settings.get('multicheckout.testing', False):

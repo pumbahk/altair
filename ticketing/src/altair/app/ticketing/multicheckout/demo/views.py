@@ -1,9 +1,11 @@
 # -*- coding:utf-8 -*-
-
+import logging
 from datetime import datetime, date
 from pyramid.view import view_config
-from altair.app.ticketing.multicheckout import api, logger
-from altair.app.ticketing.multicheckout import helpers as h
+from altair.multicheckout import api
+from altair.multicheckout import helpers as h
+
+logger = logging.getLogger(__name__)
 
 class IndexView(object):
     def __init__(self, request):

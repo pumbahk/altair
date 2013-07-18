@@ -3,7 +3,7 @@ from datetime import datetime
 from pyramid.events import subscriber
 #from . import api
 from . import sendmail
-from altair.app.ticketing.multicheckout.models import MultiCheckoutOrderStatus
+from altair.multicheckout.models import MultiCheckoutOrderStatus
 
 logger = logging.getLogger(__name__)
 
@@ -39,8 +39,8 @@ def finish_rejected_lot_entry(event):
         logger.exception(e)
 
 
-@subscriber('altair.app.ticketing.multicheckout.events.CheckoutAuthSecure3DEvent')
-@subscriber('altair.app.ticketing.multicheckout.events.CheckoutAuthSecureCodeEvent')
+@subscriber('altair.multicheckout.events.CheckoutAuthSecure3DEvent')
+@subscriber('altair.multicheckout.events.CheckoutAuthSecureCodeEvent')
 def keep_auth(event):
     order_no = event.order_no
     storecd = event.result.Storecd

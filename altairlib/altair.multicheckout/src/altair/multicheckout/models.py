@@ -8,11 +8,8 @@ import sqlalchemy as sa
 import sqlalchemy.orm as orm
 from sqlalchemy.ext.hybrid import hybrid_property, hybrid_method
 
-from ..models import Identifier, WithTimestamp
-from ..utils import StandardEnum
-
-# for schema dependencies
-# import altair.app.ticketing.core.models
+from altair.models import Identifier, WithTimestamp
+from standardenum import StandardEnum
 
 Base = sqlahelper.get_base()
 DBSession = sqlahelper.get_session()

@@ -11,10 +11,10 @@ from wtforms import fields
 from wtforms.ext.csrf.session import SessionSecureForm
 from wtforms.validators import Regexp, Length
 
-from altair.app.ticketing.multicheckout import helpers as m_h
-from altair.app.ticketing.multicheckout import api as multicheckout_api
-from altair.app.ticketing.multicheckout import detect_card_brand, get_card_ahead_com_name
-from altair.app.ticketing.multicheckout.models import (
+from altair.multicheckout import helpers as m_h
+from altair.multicheckout import api as multicheckout_api
+from altair.multicheckout import detect_card_brand, get_card_ahead_com_name
+from altair.multicheckout.models import (
     MultiCheckoutOrderStatus,
     MultiCheckoutStatusEnum,
 )

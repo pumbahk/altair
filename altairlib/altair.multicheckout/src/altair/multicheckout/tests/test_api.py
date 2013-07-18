@@ -17,13 +17,13 @@ class secure3d_enrolTests(unittest.TestCase):
         from ..api import secure3d_enrol
         return secure3d_enrol(*args, **kwargs)
 
-    @mock.patch('altair.app.ticketing.multicheckout.api.save_api_response')
-    @mock.patch('altair.app.ticketing.multicheckout.api.get_multicheckout_service')
+    @mock.patch('altair.multicheckout.api.save_api_response')
+    @mock.patch('altair.multicheckout.api.get_multicheckout_service')
     def test_it(self, mock_service_factory, mock_save_api_response):
         mock_service_factory.return_value = DummyCheckout3D()
         mock_handler = mock.Mock()
         self.config.add_subscriber(mock_handler,
-                                   'altair.app.ticketing.multicheckout.events.Secure3DEnrolEvent')
+                                   'altair.multicheckout.events.Secure3DEnrolEvent')
         request = testing.DummyRequest()
         order_no = 'test_order_no'
         card_number = 'x' * 16
@@ -56,13 +56,13 @@ class secure3d_authTests(unittest.TestCase):
         from ..api import secure3d_auth
         return secure3d_auth(*args, **kwargs)
 
-    @mock.patch('altair.app.ticketing.multicheckout.api.save_api_response')
-    @mock.patch('altair.app.ticketing.multicheckout.api.get_multicheckout_service')
+    @mock.patch('altair.multicheckout.api.save_api_response')
+    @mock.patch('altair.multicheckout.api.get_multicheckout_service')
     def test_it(self, mock_service_factory, mock_save_api_response):
         mock_service_factory.return_value = DummyCheckout3D()
         mock_handler = mock.Mock()
         self.config.add_subscriber(mock_handler,
-                                   'altair.app.ticketing.multicheckout.events.Secure3DAuthEvent')
+                                   'altair.multicheckout.events.Secure3DAuthEvent')
         request = testing.DummyRequest()
         order_no = 'test_order_no'
         pares = 'pares' * 30
@@ -92,13 +92,13 @@ class checkout_auth_secure3dTests(unittest.TestCase):
         from ..api import checkout_auth_secure3d
         return checkout_auth_secure3d(*args, **kwargs)
 
-    @mock.patch('altair.app.ticketing.multicheckout.api.save_api_response')
-    @mock.patch('altair.app.ticketing.multicheckout.api.get_multicheckout_service')
+    @mock.patch('altair.multicheckout.api.save_api_response')
+    @mock.patch('altair.multicheckout.api.get_multicheckout_service')
     def test_it(self, mock_service_factory, mock_save_api_response):
         mock_service_factory.return_value = DummyCheckout3D()
         mock_handler = mock.Mock()
         self.config.add_subscriber(mock_handler,
-                                   'altair.app.ticketing.multicheckout.events.CheckoutAuthSecure3DEvent')
+                                   'altair.multicheckout.events.CheckoutAuthSecure3DEvent')
         request = testing.DummyRequest()
         order_no = 'test_order_no'
         item_name = 'testing item'
@@ -154,13 +154,13 @@ class checkout_salesTests(unittest.TestCase):
         from ..api import checkout_sales
         return checkout_sales(*args, **kwargs)
 
-    @mock.patch('altair.app.ticketing.multicheckout.api.save_api_response')
-    @mock.patch('altair.app.ticketing.multicheckout.api.get_multicheckout_service')
+    @mock.patch('altair.multicheckout.api.save_api_response')
+    @mock.patch('altair.multicheckout.api.get_multicheckout_service')
     def test_it(self, mock_service_factory, mock_save_api_response):
         mock_service_factory.return_value = DummyCheckout3D()
         mock_handler = mock.Mock()
         self.config.add_subscriber(mock_handler,
-                                   'altair.app.ticketing.multicheckout.events.CheckoutSalesSecure3DEvent')
+                                   'altair.multicheckout.events.CheckoutSalesSecure3DEvent')
         request = testing.DummyRequest()
         order_no = 'test_order_no'        
 
@@ -187,13 +187,13 @@ class checkout_auth_cancelTests(unittest.TestCase):
         from ..api import checkout_auth_cancel
         return checkout_auth_cancel(*args, **kwargs)
 
-    @mock.patch('altair.app.ticketing.multicheckout.api.save_api_response')
-    @mock.patch('altair.app.ticketing.multicheckout.api.get_multicheckout_service')
+    @mock.patch('altair.multicheckout.api.save_api_response')
+    @mock.patch('altair.multicheckout.api.get_multicheckout_service')
     def test_it(self, mock_service_factory, mock_save_api_response):
         mock_service_factory.return_value = DummyCheckout3D()
         mock_handler = mock.Mock()
         self.config.add_subscriber(mock_handler,
-                                   'altair.app.ticketing.multicheckout.events.CheckoutAuthCancelEvent')
+                                   'altair.multicheckout.events.CheckoutAuthCancelEvent')
         request = testing.DummyRequest()
         order_no = 'test_order_no'        
 
@@ -221,13 +221,13 @@ class checkout_sales_part_cancelTests(unittest.TestCase):
         from ..api import checkout_sales_part_cancel
         return checkout_sales_part_cancel(*args, **kwargs)
 
-    @mock.patch('altair.app.ticketing.multicheckout.api.save_api_response')
-    @mock.patch('altair.app.ticketing.multicheckout.api.get_multicheckout_service')
+    @mock.patch('altair.multicheckout.api.save_api_response')
+    @mock.patch('altair.multicheckout.api.get_multicheckout_service')
     def test_it(self, mock_service_factory, mock_save_api_response):
         mock_service_factory.return_value = DummyCheckout3D()
         mock_handler = mock.Mock()
         self.config.add_subscriber(mock_handler,
-                                   'altair.app.ticketing.multicheckout.events.CheckoutSalesPartCancelEvent')
+                                   'altair.multicheckout.events.CheckoutSalesPartCancelEvent')
         request = testing.DummyRequest()
         order_no = 'test_order_no'        
         sales_amount_cancellation = 999
@@ -258,13 +258,13 @@ class checkout_sales_cancelTests(unittest.TestCase):
         from ..api import checkout_sales_cancel
         return checkout_sales_cancel(*args, **kwargs)
 
-    @mock.patch('altair.app.ticketing.multicheckout.api.save_api_response')
-    @mock.patch('altair.app.ticketing.multicheckout.api.get_multicheckout_service')
+    @mock.patch('altair.multicheckout.api.save_api_response')
+    @mock.patch('altair.multicheckout.api.get_multicheckout_service')
     def test_it(self, mock_service_factory, mock_save_api_response):
         mock_service_factory.return_value = DummyCheckout3D()
         mock_handler = mock.Mock()
         self.config.add_subscriber(mock_handler,
-                                   'altair.app.ticketing.multicheckout.events.CheckoutSalesCancelEvent')
+                                   'altair.multicheckout.events.CheckoutSalesCancelEvent')
         request = testing.DummyRequest()
         order_no = 'test_order_no'        
         result = self._callFUT(
@@ -291,13 +291,13 @@ class checkout_inquiryTests(unittest.TestCase):
         from ..api import checkout_inquiry
         return checkout_inquiry(*args, **kwargs)
 
-    @mock.patch('altair.app.ticketing.multicheckout.api.save_api_response')
-    @mock.patch('altair.app.ticketing.multicheckout.api.get_multicheckout_service')
+    @mock.patch('altair.multicheckout.api.save_api_response')
+    @mock.patch('altair.multicheckout.api.get_multicheckout_service')
     def test_it(self, mock_service_factory, mock_save_api_response):
         mock_service_factory.return_value = DummyCheckout3D()
         mock_handler = mock.Mock()
         self.config.add_subscriber(mock_handler,
-                                   'altair.app.ticketing.multicheckout.events.CheckoutInquiryEvent')
+                                   'altair.multicheckout.events.CheckoutInquiryEvent')
         request = testing.DummyRequest()
         order_no = 'test_order_no'        
         result = self._callFUT(
@@ -324,13 +324,13 @@ class checkout_auth_secure_codeTests(unittest.TestCase):
         from ..api import checkout_auth_secure_code
         return checkout_auth_secure_code(*args, **kwargs)
 
-    @mock.patch('altair.app.ticketing.multicheckout.api.save_api_response')
-    @mock.patch('altair.app.ticketing.multicheckout.api.get_multicheckout_service')
+    @mock.patch('altair.multicheckout.api.save_api_response')
+    @mock.patch('altair.multicheckout.api.get_multicheckout_service')
     def test_it(self, mock_service_factory, mock_save_api_response):
         mock_service_factory.return_value = DummyCheckout3D()
         mock_handler = mock.Mock()
         self.config.add_subscriber(mock_handler,
-                                   'altair.app.ticketing.multicheckout.events.CheckoutAuthSecureCodeEvent')
+                                   'altair.multicheckout.events.CheckoutAuthSecureCodeEvent')
         request = testing.DummyRequest()
         order_no = 'test_order_no'
         item_name = 'testing item'
@@ -377,16 +377,16 @@ class checkout_sales_different_amountTests(unittest.TestCase):
         from ..api import checkout_sales_different_amount
         return checkout_sales_different_amount(*args, **kwargs)
 
-    @mock.patch('altair.app.ticketing.multicheckout.api.save_api_response')
-    @mock.patch('altair.app.ticketing.multicheckout.api.get_multicheckout_service')
+    @mock.patch('altair.multicheckout.api.save_api_response')
+    @mock.patch('altair.multicheckout.api.get_multicheckout_service')
     def test_it(self, mock_service_factory, mock_save_api_response):
         mock_service_factory.return_value = DummyCheckout3D()
         mock_handler1 = mock.Mock()
         self.config.add_subscriber(mock_handler1,
-                                   'altair.app.ticketing.multicheckout.events.CheckoutSalesSecure3DEvent')
+                                   'altair.multicheckout.events.CheckoutSalesSecure3DEvent')
         mock_handler2 = mock.Mock()
         self.config.add_subscriber(mock_handler2,
-                                   'altair.app.ticketing.multicheckout.events.CheckoutSalesPartCancelEvent')
+                                   'altair.multicheckout.events.CheckoutSalesPartCancelEvent')
         request = testing.DummyRequest()
         order_no = 'test_order_no'
         different_amount = 999
@@ -410,16 +410,16 @@ class checkout_sales_different_amountTests(unittest.TestCase):
         self.assertEqual(mock_handler2.call_args[0][0].order_no, 'test_order_no')
         self.assertEqual(mock_handler2.call_args[0][0].api, 'checkout_sales_part_cancel')
 
-    @mock.patch('altair.app.ticketing.multicheckout.api.save_api_response')
-    @mock.patch('altair.app.ticketing.multicheckout.api.get_multicheckout_service')
+    @mock.patch('altair.multicheckout.api.save_api_response')
+    @mock.patch('altair.multicheckout.api.get_multicheckout_service')
     def test_with_sales_error(self, mock_service_factory, mock_save_api_response):
         mock_service_factory.return_value = DummyCheckout3D(CmnErrorCd='999999')
         mock_handler1 = mock.Mock()
         self.config.add_subscriber(mock_handler1,
-                                   'altair.app.ticketing.multicheckout.events.CheckoutSalesSecure3DEvent')
+                                   'altair.multicheckout.events.CheckoutSalesSecure3DEvent')
         mock_handler2 = mock.Mock()
         self.config.add_subscriber(mock_handler2,
-                                   'altair.app.ticketing.multicheckout.events.CheckoutSalesPartCancelEvent')
+                                   'altair.multicheckout.events.CheckoutSalesPartCancelEvent')
         request = testing.DummyRequest()
         order_no = 'test_order_no'
         different_amount = 999
