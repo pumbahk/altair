@@ -24,7 +24,7 @@ import altair.app.ticketing.checkout.models
 import altair.app.ticketing.core.models
 import altair.app.ticketing.master.models
 import altair.app.ticketing.models
-import altair.app.ticketing.multicheckout.models
+import altair.multicheckout.models
 import altair.app.ticketing.mypage.models
 import altair.app.ticketing.oauth2.models
 import altair.app.ticketing.operators.models
