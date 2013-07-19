@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import logging
 from wtforms import Form
 from wtforms import TextField, SelectField, HiddenField, IntegerField, BooleanField, SelectMultipleField
 from wtforms.validators import Regexp, Length, Optional, ValidationError
@@ -8,6 +9,8 @@ from wtforms.widgets import CheckboxInput
 from altair.formhelpers import (OurDateTimeField, Translations, Required, RequiredOnUpdate,
                                    OurForm, OurIntegerField, OurBooleanField, OurDecimalField, OurSelectField)
 from altair.app.ticketing.core.models import SalesSegmentKindEnum, Event, StockHolder, Account
+
+logger = logging.getLogger(__name__)
 
 def fix_boolean(formdata, name):
     if formdata:
@@ -34,6 +37,8 @@ class SalesSegmentGroupForm(OurForm):
                 field = getattr(self, field_name)
                 field.default = getattr(event.organization.setting, field_name)
             self.process(formdata, obj, **kwargs)
+        if 'new_form' in kwargs:
+            self.reporting.data = True
 
     def _get_translations(self):
         return Translations()

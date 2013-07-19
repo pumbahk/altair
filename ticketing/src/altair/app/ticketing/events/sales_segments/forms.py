@@ -12,12 +12,11 @@ from altair.formhelpers import (Translations, Required, RequiredOnUpdate, OurFor
 from altair.app.ticketing.core.models import SalesSegmentGroup, SalesSegment, Account
 from altair.app.ticketing.loyalty.models import PointGrantSetting, SalesSegment_PointGrantSetting
 
-fee_and_margin_attrs = ('margin_ratio', 'refund_ratio', 'printing_fee', 'registration_fee')
+propagation_attrs = ('margin_ratio', 'refund_ratio', 'printing_fee', 'registration_fee', 'reporting')
 
 class SalesSegmentForm(OurForm):
     def __init__(self, formdata=None, obj=None, prefix='', context=None, **kwargs):
         super(SalesSegmentForm, self).__init__(formdata, obj, prefix, **kwargs)
-
 
         performance_id_choices = [(u'', u'(なし)')]
         sales_segment_group_id_choices = [(u'', u'(なし)')]
@@ -50,14 +49,15 @@ class SalesSegmentForm(OurForm):
                 if formdata is None:
                     self.payment_delivery_method_pairs.data = [int(pdmp.id) for pdmp in context.sales_segment_group.payment_delivery_method_pairs]
 
-                for field_name in fee_and_margin_attrs:
+                for field_name in propagation_attrs:
                     field = getattr(self, field_name)
                     field.default = getattr(context.sales_segment_group, field_name)
                 self.sales_segment_group_id.data = context.sales_segment_group.id
             else:
-                for field_name in fee_and_margin_attrs:
+                for field_name in propagation_attrs:
                     field = getattr(self, field_name)
                     field.default = getattr(context.user.organization.setting, field_name)
+            self.process(formdata, obj, **kwargs)
 
         if obj and obj.payment_delivery_method_pairs is not None:
             self.payment_delivery_method_pairs.data = [int(pdmp.id) for pdmp in obj.payment_delivery_method_pairs]
