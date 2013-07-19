@@ -44,6 +44,7 @@ requires = [
     'fluent-logger == 0.3.3moriyoshi2',
     'altair.exclog', 
     'altair.browserid', 
+    'altair.formhelpers',
     ]
 
 setup(name='altair_newsletter',
