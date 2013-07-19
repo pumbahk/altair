@@ -56,6 +56,5 @@ class IPerformanceSelector(Interface):
         """ 絞り込みキーの値取得
         """
 
-    selection = Attribute(u"最初の絞り込み")
     label = Attribute(u"絞り込みの項目名")
     second_label = Attribute(u"公演決定の項目名")

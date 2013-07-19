@@ -46,56 +46,67 @@ class MatchUpPerformanceSelectorTests(unittest.TestCase):
         self.config.add_route('cart.order', '/testing/order/{sales_segment_id}')
         from datetime import datetime
         request = testing.DummyRequest()
-        request.context = testing.DummyResource(request=request,
-                                                event=DummyEvent(id=123),
-                                                available_sales_segments=[
-                                                    DummySalesSegment(
-                                                        performance=DummyPerformance(name=u'testing performance1',
-                                                                                     id=1,
-                                                                                     start_on=datetime(2013, 3, 31),
-                                                                                     venue=testing.DummyModel(name=u"テスト会場")),
-                                                        name=u"前売券",
-                                                        id=2,
-                                                        upper_limit=3,
-                                                    ),
-                                                    DummySalesSegment(
-                                                        performance=DummyPerformance(name=u'testing performance1',
-                                                                                     id=4,
-                                                                                     start_on=datetime(2013, 4, 1),
-                                                                                     venue=testing.DummyModel(name=u"テスト会場")),
-                                                        name=u"前売券",
-                                                        id=5,
-                                                        upper_limit=10,
-                                                    ),
-                                                    DummySalesSegment(
-                                                        performance=DummyPerformance(name=u'testing performance2',
-                                                                                     id=6,
-                                                                                     start_on=datetime(2013, 4, 1),
-                                                                                     venue=testing.DummyModel(name=u"テスト会場")),
-                                                        name=u"前売券",
-                                                        id=7,
-                                                        upper_limit=10,
-                                                    ),
-                                                ])
+        request.context = testing.DummyResource(
+            request=request,
+            event=DummyEvent(id=123),
+            available_sales_segments=[
+                DummySalesSegment(
+                    performance=DummyPerformance(
+                        name=u'testing performance1',
+                        id=1,
+                        start_on=datetime(2013, 3, 31),
+                        venue=testing.DummyModel(name=u"テスト会場"),
+                        display_order=1,
+                        ),
+                    name=u"前売券",
+                    id=2,
+                    upper_limit=3
+                    ),
+                DummySalesSegment(
+                    performance=DummyPerformance(
+                        name=u'testing performance1',
+                        id=4,
+                        start_on=datetime(2013, 4, 1),
+                        venue=testing.DummyModel(name=u"テスト会場"),
+                        display_order=3
+                        ),
+                    name=u"前売券",
+                    id=5,
+                    upper_limit=10
+                    ),
+                DummySalesSegment(
+                    performance=DummyPerformance(
+                        name=u'testing performance2',
+                        id=6,
+                        start_on=datetime(2013, 4, 1),
+                        venue=testing.DummyModel(name=u"テスト会場"),
+                        display_order=2
+                        ),
+                    name=u"前売券",
+                    id=7,
+                    upper_limit=10
+                    ),
+                ]
+            )
 
         target = self._makeOne(request)
         result = target()
 
         self.assertEqual(len(result), 2)
-        self.assertEqual(result.keys(), [u'testing performance1', u'testing performance2'])
-        self.assertEqual(result[u'testing performance1'][0], 
-                         {'seat_types_url': 'http://example.com/testing/seat_types/1/2/123',
-                          'upper_limit': 3, 
-                          'order_url': 'http://example.com/testing/order/2', 
-                          'id': 1, 
-                          'name': u'2013-03-31 00:00\u958b\u59cb \u30c6\u30b9\u30c8\u4f1a\u5834 \u524d\u58f2\u5238'})
-        self.assertEqual(result[u'testing performance1'][1],
+        self.assertEqual([pair[0] for pair in result], [u'testing performance1', u'testing performance2'])
+        self.assertEqual(result[0][1][0],
                          {'seat_types_url': 'http://example.com/testing/seat_types/4/5/123', 
                           'upper_limit': 10, 
                           'order_url': 'http://example.com/testing/order/5', 
                           'name': u'2013-04-01 00:00\u958b\u59cb \u30c6\u30b9\u30c8\u4f1a\u5834 \u524d\u58f2\u5238', 
                           'id': 4})
-        self.assertEqual(result[u'testing performance2'][0],
+        self.assertEqual(result[0][1][1], 
+                         {'seat_types_url': 'http://example.com/testing/seat_types/1/2/123',
+                          'upper_limit': 3, 
+                          'order_url': 'http://example.com/testing/order/2', 
+                          'id': 2, 
+                          'name': u'2013-03-31 00:00\u958b\u59cb \u30c6\u30b9\u30c8\u4f1a\u5834 \u524d\u58f2\u5238'})
+        self.assertEqual(result[1][1][0],
                          {'id': 6,
                           'name': u'2013-04-01 00:00\u958b\u59cb \u30c6\u30b9\u30c8\u4f1a\u5834 \u524d\u58f2\u5238',
                           'order_url': 'http://example.com/testing/order/7',
@@ -145,57 +156,68 @@ class DatePerformanceSelectorTests(unittest.TestCase):
         self.config.add_route('cart.order', '/testing/order/{sales_segment_id}')
         from datetime import datetime
         request = testing.DummyRequest()
-        request.context = testing.DummyResource(request=request,
-                                                event=DummyEvent(id=123),
-                                                available_sales_segments=[
-                                                    DummySalesSegment(
-                                                        performance=DummyPerformance(name=u'testing performance1',
-                                                                                     id=1,
-                                                                                     start_on=datetime(2013, 3, 31),
-                                                                                     venue=testing.DummyModel(name=u"テスト会場")),
-                                                        name=u"前売券",
-                                                        id=2,
-                                                        upper_limit=3,
-                                                    ),
-                                                    DummySalesSegment(
-                                                        performance=DummyPerformance(name=u'testing performance1',
-                                                                                     id=4,
-                                                                                     start_on=datetime(2013, 4, 1),
-                                                                                     venue=testing.DummyModel(name=u"テスト会場")),
-                                                        name=u"前売券",
-                                                        id=5,
-                                                        upper_limit=10,
-                                                    ),
-                                                    DummySalesSegment(
-                                                        performance=DummyPerformance(name=u'testing performance2',
-                                                                                     id=6,
-                                                                                     start_on=datetime(2013, 4, 1),
-                                                                                     venue=testing.DummyModel(name=u"テスト会場")),
-                                                        name=u"前売券",
-                                                        id=7,
-                                                        upper_limit=10,
-                                                    ),
-                                                ])
+        request.context = testing.DummyResource(
+            request=request,
+            event=DummyEvent(id=123),
+            available_sales_segments=[
+                DummySalesSegment(
+                    performance=DummyPerformance(
+                        name=u'testing performance1',
+                        id=1,
+                        start_on=datetime(2013, 3, 31),
+                        venue=testing.DummyModel(name=u"テスト会場"),
+                        display_order=1
+                        ),
+                    name=u"前売券",
+                    id=2,
+                    upper_limit=3,
+                    ),
+                DummySalesSegment(
+                    performance=DummyPerformance(
+                        name=u'testing performance1',
+                        id=4,
+                        start_on=datetime(2013, 4, 1),
+                        venue=testing.DummyModel(name=u"テスト会場"),
+                        display_order=2
+                        ),
+                    name=u"前売券",
+                    id=5,
+                    upper_limit=10,
+                    ),
+                DummySalesSegment(
+                    performance=DummyPerformance(
+                        name=u'testing performance2',
+                        id=6,
+                        start_on=datetime(2013, 4, 1),
+                        venue=testing.DummyModel(name=u"テスト会場"),
+                        display_order=3
+                        ),
+                    name=u"前売券",
+                    id=7,
+                    upper_limit=10,
+                    ),
+                ]
+            )
 
         target = self._makeOne(request)
         result = target()
 
         self.assertEqual(len(result), 2)
-        self.assertEqual(result.keys(), [u'2013年03月31日', u'2013年04月01日'])
+        self.assertEqual([pair[0] for pair in result], [u'2013年03月31日', u'2013年04月01日'])
 
-        self.assertEqual(result[u'2013年03月31日'][0], 
+        self.assertEqual(result[0][1][0], 
                          {'seat_types_url': 'http://example.com/testing/seat_types/1/2/123',
                           'upper_limit': 3, 
                           'order_url': 'http://example.com/testing/order/2', 
                           'id': 1, 
                           'name': u'2013-03-31 00:00\u958b\u59cb \u30c6\u30b9\u30c8\u4f1a\u5834 \u524d\u58f2\u5238'})
-        self.assertEqual(result[u'2013年04月01日'][0],
+        self.assertEqual(result[1][1][0],
                          {'seat_types_url': 'http://example.com/testing/seat_types/4/5/123', 
                           'upper_limit': 10, 
                           'order_url': 'http://example.com/testing/order/5', 
                           'name': u'2013-04-01 00:00\u958b\u59cb \u30c6\u30b9\u30c8\u4f1a\u5834 \u524d\u58f2\u5238', 
                           'id': 4})
-        self.assertEqual(result[u'2013年04月01日'][1],
+        self.assertEqual(result[1][1][1],
                          {'id': 6,
                           'name': u'2013-04-01 00:00\u958b\u59cb \u30c6\u30b9\u30c8\u4f1a\u5834 \u524d\u58f2\u5238',
                           'order_url': 'http://example.com/testing/order/7',

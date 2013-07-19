@@ -20,6 +20,6 @@ def auth_model_callback(user, request):
 
     if 'claimed_id' in user:
         logger.debug('found claimed_id')
-        principals.append("rakuten_auth")
+        principals.append("rakuten_auth") # rakuten_auth という名前の principal を使っている箇所がまだあるのを考慮
         principals.append("auth_type:rakuten")
     return principals

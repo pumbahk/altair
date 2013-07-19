@@ -560,12 +560,6 @@ class PaymentView(object):
         self.request = request
         self.context = request.context
 
-    @property
-    def sales_segment(self):
-        # contextから取れることを期待できないので
-        # XXX: 会員区分からバリデーションしなくていいの?
-        return c_models.SalesSegment.query.filter(c_models.SalesSegment.id==self.request.matchdict['sales_segment_id']).one()
-
     @view_config(route_name='cart.payment', request_method="GET", renderer=selectable_renderer("%(membership)s/pc/payment.html"))
     @view_config(route_name='cart.payment', request_type='altair.mobile.interfaces.IMobileRequest', request_method="GET", renderer=selectable_renderer("%(membership)s/mobile/payment.html"))
     def __call__(self):
@@ -575,7 +569,7 @@ class PaymentView(object):
         self.context.event_id = cart.performance.event.id
 
         start_on = cart.performance.start_on
-        sales_segment = self.sales_segment
+        sales_segment = self.request.context.sales_segment
         payment_delivery_methods = self.context.available_payment_delivery_method_pairs(sales_segment)
         user = get_or_create_user(self.context.authenticated_user())
         user_profile = None
@@ -660,7 +654,7 @@ class PaymentView(object):
         shipping_address_params = self.get_validated_address_data()
         if not self._validate_extras(cart, payment_delivery_pair, shipping_address_params):
             start_on = cart.performance.start_on
-            sales_segment = self.sales_segment
+            sales_segment = self.request.context.sales_segment
             payment_delivery_methods = self.context.available_payment_delivery_method_pairs(sales_segment)
             return dict(form=self.form, payment_delivery_methods=payment_delivery_methods)
 

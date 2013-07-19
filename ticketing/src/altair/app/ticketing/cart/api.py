@@ -96,7 +96,9 @@ def get_route_pattern(registry, name):
 
 def set_cart(request, cart):
     request.session['altair.app.ticketing.cart_id'] = cart.id
-    request.session.persist()
+    # pyramid.testing.DummySession には persist がない
+    if hasattr(request.session, 'persist'):
+        request.session.persist()
     request._cart = cart
 
 def get_cart(request, for_update=True):

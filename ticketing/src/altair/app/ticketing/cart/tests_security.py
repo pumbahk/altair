@@ -39,4 +39,4 @@ class auth_model_callbackTests(unittest.TestCase):
 
         result = self._callFUT(user, request)
 
-        self.assertEqual(result, ['rakuten_auth'])
+        self.assertEqual(result, ['rakuten_auth', 'auth_type:rakuten'])

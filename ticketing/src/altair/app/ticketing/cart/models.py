@@ -218,7 +218,7 @@ class Cart(Base):
         """ 決済完了までの時間制限
         """
         assert isinstance(now, datetime)
-        return self.created_at < now - timedelta(minutes=expire_span_minutes)
+        return self.created_at < (now - timedelta(minutes=expire_span_minutes))
 
     @deprecate("deprecated method")
     def add_seat(self, seats, ordered_products):
@@ -313,12 +313,13 @@ class CartedProduct(Base):
             seats = cart_product_item.pop_seats(seats)
         return seats
 
-    @deprecate("deprecated method")
+    # @deprecate("deprecated method")
+    # used by Cart.add_products
     def adjust_items(self, performance_id):
         for product_item in self.product.items:
             if product_item.performance_id != performance_id:
                 continue
-            cart_product_item = CartedProductItem(carted_product=self, quantity=self.quantity, product_item=product_item)
+            cart_product_item = CartedProductItem(carted_product=self, quantity=product_item.quantity * self.quantity, product_item=product_item)
 
     @classmethod
     def get_reserved_amount(cls, product_item):
