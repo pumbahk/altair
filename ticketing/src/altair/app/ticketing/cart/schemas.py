@@ -1,16 +1,17 @@
 # -*- coding:utf-8 -*-
 
-import re
-import unicodedata
+#import re
+#import unicodedata
 from wtforms import fields
-from wtforms.form import Form
+#from wtforms.form import Form
 from wtforms.ext.csrf.session import SessionSecureForm
-from wtforms.validators import Regexp, Length, NumberRange, EqualTo, Optional, ValidationError
+#from wtforms.validators import Regexp, Length, NumberRange, EqualTo, Optional, ValidationError
+from wtforms.validators import Regexp, Length, Optional
 from altair.formhelpers import OurForm, CP932
-from altair.app.ticketing.core import models as c_models
+#from altair.app.ticketing.core import models as c_models
 
 from altair.formhelpers import (
-    DateTimeField,
+    #DateTimeField,
     Translations,
     Required,
     Phone,
@@ -19,10 +20,10 @@ from altair.formhelpers import (
     Katakana,
     SejCompliantEmail,
     Liaison,
-    strip,
+    #strip,
     strip_spaces,
-    capitalize,
-    ignore_regexp,
+    #capitalize,
+    #ignore_regexp,
     ignore_space_hyphen
     )
 

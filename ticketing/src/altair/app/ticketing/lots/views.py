@@ -2,12 +2,10 @@
 from datetime import datetime, timedelta
 import logging
 import operator
-#import json
 
 from webob.multidict import MultiDict
 from markupsafe import Markup
 from pyramid.view import view_config, view_defaults
-#from pyramid.view import render_view_to_response
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound, HTTPBadRequest
 from sqlalchemy.orm.exc import NoResultFound
 
@@ -17,7 +15,6 @@ from altair.pyramid_tz.api import get_timezone
 
 from altair.app.ticketing.models import DBSession
 from altair.app.ticketing.core.models import PaymentDeliveryMethodPair
-#from altair.app.ticketing.cart import api as cart_api
 from altair.app.ticketing.users import api as user_api
 from altair.app.ticketing.utils import toutc
 from altair.app.ticketing.payments.payment import Payment
@@ -30,10 +27,7 @@ from . import schemas
 from . import selectable_renderer
 from .exceptions import NotElectedException
 from .models import (
-    #Lot,
     LotEntry,
-    #LotEntryWish,
-    #LotElectedEntry,
 )
 from .adapters import LotSessionCart
 from . import urls
@@ -58,15 +52,12 @@ def make_performance_map(request, performances):
                 )
             )
 
-    #for v in performance_map.itervalues():
-    #    v.sort(lambda a, b: cmp(a['start_on'], b['start_on']))
     for k in performance_map:
         v = performance_map[k]
         performance_map[k] = sorted(v,
                                     key=lambda x: (x['start_on'], x['id']))
 
     retval = list(performance_map.iteritems())
-    #retval.sort(lambda a, b: cmp(a[1][0]['start_on'], b[1][0]['start_on']))
     retval = sorted(retval, key=lambda x: (x[1][0]['start_on'], x[1][0]['id']))
 
     return retval
@@ -189,10 +180,6 @@ class EntryLotView(object):
                     selected_performance = p
                     break
 
-        # if not stocks:
-        #     logger.debug('lot stocks found')
-        #     raise HTTPNotFound()
-
 
         sales_segment = lot.sales_segment
         payment_delivery_pairs = sales_segment.payment_delivery_method_pairs
@@ -222,7 +209,8 @@ class EntryLotView(object):
             payment_delivery_pairs=payment_delivery_pairs,
             posted_values=dict(self.request.POST),
             performance_product_map=performance_product_map,
-            stock_types=stock_types, selected_performance=selected_performance,
+            stock_types=stock_types, 
+            selected_performance=selected_performance,
             payment_delivery_method_pair_id=self.request.params.get('payment_delivery_method_pair_id'),
             lot=lot, performances=performances, performance_map=performance_map, stocks=stocks)
 
