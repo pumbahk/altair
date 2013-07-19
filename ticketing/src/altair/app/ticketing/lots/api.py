@@ -35,7 +35,9 @@ from datetime import datetime
 from collections import OrderedDict
 from uuid import uuid4
 from sqlalchemy import sql
-from pyramid.interfaces import IRequest
+#from pyramid.interfaces import IRequest
+from webob.multidict import MultiDict
+
 import altair.app.ticketing.cart.api as cart_api
 from altair.app.ticketing.utils import sensible_alnum_encode
 from altair.rakuten_auth.api import authenticated_user
@@ -66,11 +68,13 @@ from .models import (
     LotRejectedEntry,
     LotElectWork,
 )
+from altair.app.ticketing.users import api as user_api
 
 from . import sendmail
 from .events import LotEntriedEvent
 from .interfaces import IElecting
 from .adapters import LotSessionCart
+from . import schemas
 
 def get_event(request):
     event_id = request.matchdict['event_id']
@@ -132,6 +136,7 @@ def build_lot_entry_wish(wish_order, wish_rec):
 def build_lot_entry(lot, wishes, payment_delivery_method_pair, membergroup=None, shipping_address=None, user=None, gender=None, birthday=None, memo=None):
     entry = LotEntry(
         lot=lot,
+        user=user,
         organization_id=lot.organization_id,
         shipping_address=shipping_address,
         membergroup=membergroup,
@@ -470,3 +475,30 @@ class Options(object):
 
 def get_options(request, lot_id):
     return Options(request, lot_id)
+
+def create_client_form(context):
+        user = user_api.get_or_create_user(context.authenticated_user())
+        user_profile = None
+        if user is not None:
+            user_profile = user.user_profile
+
+        if user_profile is not None:
+            formdata = MultiDict(
+                last_name=user_profile.last_name,
+                last_name_kana=user_profile.last_name_kana,
+                first_name=user_profile.first_name,
+                first_name_kana=user_profile.first_name_kana,
+                tel_1=user_profile.tel_1,
+                fax=getattr(user_profile, "fax", None),
+                zip=user_profile.zip,
+                prefecture=user_profile.prefecture,
+                city=user_profile.city,
+                address_1=user_profile.address_1,
+                address_2=user_profile.address_2,
+                email_1=user_profile.email_1,
+                email_2=user_profile.email_2
+                )
+        else:
+            formdata = None
+
+        return schemas.ClientForm(formdata=formdata)

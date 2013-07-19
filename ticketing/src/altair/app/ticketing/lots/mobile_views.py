@@ -51,7 +51,8 @@ def back_to_step3(request):
     context = request.context
     return HTTPFound(request.route_path('lots.entry.step3', event_id=context.event.id, lot_id=context.lot.id))
 
-@view_defaults(request_type='altair.mobile.interfaces.IMobileRequest')
+@view_defaults(request_type='altair.mobile.interfaces.IMobileRequest',
+               permission="lots")
 class EntryLotView(object):
     """
     申し込み画面
@@ -256,7 +257,8 @@ class EntryLotView(object):
 
     @view_config(route_name='lots.entry.step4', renderer=selectable_renderer("mobile/%(membership)s/step4.html"))
     def step4(self):
-        return self.step4_rendered_value(schemas.ClientForm())
+        cform = api.create_client_form(self.request)
+        return self.step4_rendered_value(cform)
 
     @back(mobile=back_to_step3)
     @view_config(route_name='lots.entry.step4', request_method='POST', renderer=selectable_renderer("mobile/%(membership)s/step4.html"))

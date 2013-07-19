@@ -3,7 +3,6 @@ from datetime import datetime, timedelta
 import logging
 import operator
 
-from webob.multidict import MultiDict
 from markupsafe import Markup
 from pyramid.view import view_config, view_defaults
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound, HTTPBadRequest
@@ -121,31 +120,7 @@ class EntryLotView(object):
         return performance_product_map
 
     def _create_form(self):
-        user = user_api.get_or_create_user(self.context.authenticated_user())
-        user_profile = None
-        if user is not None:
-            user_profile = user.user_profile
-
-        if user_profile is not None:
-            formdata = MultiDict(
-                last_name=user_profile.last_name,
-                last_name_kana=user_profile.last_name_kana,
-                first_name=user_profile.first_name,
-                first_name_kana=user_profile.first_name_kana,
-                tel_1=user_profile.tel_1,
-                fax=getattr(user_profile, "fax", None),
-                zip=user_profile.zip,
-                prefecture=user_profile.prefecture,
-                city=user_profile.city,
-                address_1=user_profile.address_1,
-                address_2=user_profile.address_2,
-                email_1=user_profile.email_1,
-                email_2=user_profile.email_2
-                )
-        else:
-            formdata = None
-
-        return schemas.ClientForm(formdata=formdata)
+        return api.create_client_form(self.context)
 
     @view_config(request_method="GET")
     def get(self, form=None):
@@ -375,6 +350,8 @@ class ConfirmLotEntryView(object):
         entry_no = entry['entry_no']
         shipping_address = entry['shipping_address']
         shipping_address = h.convert_shipping_address(shipping_address)
+        user = api.get_entry_user(self.request)
+        shipping_address.user = user
         wishes = entry['wishes']
 
         lot = self.context.lot
@@ -388,7 +365,6 @@ class ConfirmLotEntryView(object):
         payment_delivery_method_pair_id = entry['payment_delivery_method_pair_id']
         payment_delivery_method_pair = PaymentDeliveryMethodPair.query.filter(PaymentDeliveryMethodPair.id==payment_delivery_method_pair_id).one()
 
-        user = api.get_entry_user(self.request)
 
         entry = api.entry_lot(
             self.request,
