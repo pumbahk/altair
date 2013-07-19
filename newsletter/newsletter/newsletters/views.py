@@ -177,7 +177,13 @@ class Newsletters(BaseView):
 
         newsletter = Newsletter.get(id)
 
-        csv_file = os.path.join(Newsletter.subscriber_dir(), newsletter.subscriber_file())
+        dirname = Newsletter.subscriber_dir()
+        filename = newsletter.subscriber_file()
+        if not filename:
+            self.request.session.flash(u'送信先リストが指定されていないため送信できませんでした')
+            raise HTTPFound(location=route_path('newsletters.show', self.request, id=id))
+            
+        csv_file = os.path.join(dirname, filename)
         row = csv.DictReader(open(csv_file)).next()
         newsletter.test_mail(recipient=recipient, **row)
 
