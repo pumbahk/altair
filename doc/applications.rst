@@ -14,6 +14,10 @@ altair.cms.usersite
 
 altair.newsletter.admin
 
+    メーリングリスト用のシステムです。
+    ローカル環境へのアクセスは *0.0.0.0:8040* でアクセスできます。
+    使用にはデータベースに *newsletter@localhost* というユーザが必要です。
+
 altair.ticketing.admin
 
 altair.ticketing.booster.89ers
