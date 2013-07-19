@@ -79,7 +79,14 @@ def get_multicheckout_service(request):
     if setting is None:
         raise Exception
     base_url = reg.settings['altair_checkout3d.base_url']
-    checkout3d = Checkout3D(setting.auth_id, setting.auth_password, shop_code=setting.shop_id, api_base_url=base_url)
+    timeout = reg.settings['altair_checkout3d.timeout']
+    checkout3d = Checkout3D(
+        setting.auth_id,
+        setting.auth_password,
+        shop_code=setting.shop_id,
+        api_base_url=base_url,
+        api_timeout=timeout
+    )
     return checkout3d
 
 
@@ -274,11 +281,12 @@ class MultiCheckoutAPIError(Exception):
 class Checkout3D(object):
     _httplib = httplib
 
-    def __init__(self, auth_id, auth_password, shop_code, api_base_url):
+    def __init__(self, auth_id, auth_password, shop_code, api_base_url, api_timeout):
         self.auth_id = auth_id
         self.auth_password = auth_password
         self.shop_code = shop_code
         self.api_base_url = api_base_url
+        self.api_timeout = float(api_timeout)
 
     @property
     def auth_header(self):
@@ -377,9 +385,9 @@ class Checkout3D(object):
         url_parts = urlparse.urlparse(url)
 
         if url_parts.scheme == "http":
-            http = self._httplib.HTTPConnection(host=url_parts.hostname, port=url_parts.port)
+            http = self._httplib.HTTPConnection(host=url_parts.hostname, port=url_parts.port, timeout=self.api_timeout)
         elif url_parts.scheme == "https":
-            http = self._httplib.HTTPSConnection(host=url_parts.hostname, port=url_parts.port)
+            http = self._httplib.HTTPSConnection(host=url_parts.hostname, port=url_parts.port, timeout=self.api_timeout)
         else:
             raise ValueError, "unknown scheme %s" % (url_parts.scheme)
 
@@ -390,9 +398,12 @@ class Checkout3D(object):
         headers.update(self.auth_header)
 
         logger.debug("request %s body = %s" % (url, sanitize_card_number(body)))
-        http.request(
-            "POST", url_parts.path, body=body,
-            headers=headers)
+        try:
+            http.request("POST", url_parts.path, body=body,headers=headers)
+        except Exception, e:
+            logger.error('multicheckout api request error: %s' % e.message)
+            raise MultiCheckoutAPIError
+
         res = http.getresponse()
         try:
             logger.debug('%(url)s %(status)s %(reason)s' % dict(
