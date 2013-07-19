@@ -350,7 +350,7 @@ class ConfirmLotEntryView(object):
         entry_no = entry['entry_no']
         shipping_address = entry['shipping_address']
         shipping_address = h.convert_shipping_address(shipping_address)
-        user = api.get_entry_user(self.request)
+        user = user_api.get_or_create_user(self.context.authenticated_user())
         shipping_address.user = user
         wishes = entry['wishes']
 
