@@ -11,7 +11,7 @@ from sqlalchemy.orm import aliased
 
 from altair.app.ticketing.core.models import Event, Mailer
 from altair.app.ticketing.core.models import StockType, StockHolder, Stock, Performance, Product, ProductItem, SalesSegmentGroup, SalesSegment
-from altair.app.ticketing.core.models import Order, OrderedProduct
+from altair.app.ticketing.core.models import Order, OrderedProduct, OrderedProductItem
 from altair.app.ticketing.events.sales_reports.forms import SalesReportForm
 
 logger = logging.getLogger(__name__)
@@ -158,13 +158,20 @@ class SalesTotalReporter(object):
             .outerjoin(Performance).filter(Performance.deleted_at==None)\
             .outerjoin(Order).filter(Order.canceled_at==None, Order.deleted_at==None)\
             .outerjoin(OrderedProduct).filter(OrderedProduct.deleted_at==None)\
-            .outerjoin(Product).filter(Product.deleted_at==None)
+            .outerjoin(OrderedProductItem).filter(OrderedProductItem.deleted_at==None)\
+            .outerjoin(ProductItem).filter(ProductItem.deleted_at==None)\
+            .outerjoin(Stock).filter(Stock.deleted_at==None)\
+            .outerjoin(Product, and_(
+                Product.id==OrderedProduct.product_id,
+                Product.id==ProductItem.product_id,
+                Product.seat_stock_type_id==Stock.stock_type_id
+            ))
         query = self.add_sales_segment_filter(query)
         query = self.add_form_filter(query)
         query = query.with_entities(
             self.group_by,
-            func.sum(OrderedProduct.price * OrderedProduct.quantity),
-            func.sum(OrderedProduct.quantity)
+            func.sum(OrderedProductItem.price * OrderedProductItem.quantity),
+            func.sum(OrderedProductItem.quantity)
         ).group_by(self.group_by)
 
         for id, order_amount, order_quantity in query.all():
@@ -354,11 +361,16 @@ class SalesDetailReporter(object):
 
     def _get_order_quantity(self):
         # Stock単位の予約数
-        query = OrderedProduct.query\
+        query = OrderedProductItem.query\
+            .join(OrderedProduct).filter(OrderedProduct.deleted_at==None)\
             .join(Order).filter(Order.canceled_at==None)\
-            .join(Product).filter(Product.id==OrderedProduct.product_id)\
-            .join(ProductItem).filter(ProductItem.deleted_at==None)\
-            .join(Stock).filter(Stock.deleted_at==None)
+            .join(ProductItem, ProductItem.id==OrderedProductItem.product_item_id)\
+            .join(Stock).filter(Stock.deleted_at==None)\
+            .join(Product, and_(
+                Product.id==OrderedProduct.product_id,
+                Product.id==ProductItem.product_id,
+                Product.seat_stock_type_id==Stock.stock_type_id
+            ))
         form = SalesReportForm(performance_id=self.form.performance_id.data)
         query = self.add_sales_segment_filter(query, form)
         if self.form.performance_id.data:
@@ -368,7 +380,7 @@ class SalesDetailReporter(object):
 
         query = query.with_entities(
             Stock.id,
-            func.sum(OrderedProduct.quantity)
+            func.sum(OrderedProductItem.quantity)
         ).group_by(Stock.id)
 
         self.vacant_quantity = dict()
@@ -405,9 +417,16 @@ class SalesDetailReporter(object):
 
     def get_order_data(self, all_period=True):
         # 購入件数クエリ
-        query = OrderedProduct.query\
+        query = OrderedProductItem.query\
+            .join(OrderedProduct).filter(OrderedProduct.deleted_at==None)\
             .join(Order).filter(Order.canceled_at==None)\
-            .join(Product).filter(Product.id==OrderedProduct.product_id)
+            .join(ProductItem, ProductItem.id==OrderedProductItem.product_item_id)\
+            .join(Stock).filter(Stock.deleted_at==None)\
+            .join(Product, and_(
+                Product.id==OrderedProduct.product_id,
+                Product.id==ProductItem.product_id,
+                Product.seat_stock_type_id==Stock.stock_type_id
+            ))
         query = self.add_sales_segment_filter(query)
         if self.form.performance_id.data:
             query = query.filter(Order.performance_id==self.form.performance_id.data)
@@ -424,7 +443,7 @@ class SalesDetailReporter(object):
         paid_query = query.filter(Order.paid_at!=None)
         paid_query = paid_query.with_entities(
             func.ifnull(Product.base_product_id, Product.id),
-            func.sum(OrderedProduct.quantity)
+            func.sum(OrderedProductItem.quantity)
         ).group_by(func.ifnull(Product.base_product_id, Product.id))
 
         for id, paid_quantity in paid_query.all():
@@ -441,7 +460,7 @@ class SalesDetailReporter(object):
         unpaid_query = query.filter(Order.paid_at==None)
         unpaid_query = unpaid_query.with_entities(
             func.ifnull(Product.base_product_id, Product.id),
-            func.sum(OrderedProduct.quantity)
+            func.sum(OrderedProductItem.quantity)
         ).group_by(func.ifnull(Product.base_product_id, Product.id))
 
         for id, unpaid_quantity in unpaid_query.all():
