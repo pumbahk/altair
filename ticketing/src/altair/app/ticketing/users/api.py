@@ -17,6 +17,8 @@ def get_or_create_user(authenticated_user):
     elif 'username' in authenticated_user:
         auth_identifier = authenticated_user['username']
         membership = authenticated_user['membership']
+    else:
+        raise ValueError('clamed_id, username not in %s' % authenticated_user)
 
     # TODO: 楽天OpenID以外にも対応できるフレームワークを...
     credential = user_models.UserCredential.query.filter(
