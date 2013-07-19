@@ -55,8 +55,9 @@ class LotResource(object):
         self.lot = lot
 
     def authenticated_user(self):
-        # XXX: とりあえずダミー
-        return { 'is_guest': True }
+        from altair.rakuten_auth.api import authenticated_user
+        user = authenticated_user(self.request)
+        return user or { 'is_guest': True }
 
     @reify
     def host_base_url(self):
