@@ -107,15 +107,27 @@ class DetailSearchForm(TopSearchForm):
     canceled_perf = BooleanField(u'中止した公演（絞り込み条件）', [Optional()])
 
     def get_event_open(self):
-        event_open = self._create_get_event_open()
-        since_event_open = self._create_since_event_open()
+        event_open = self.create_get_event_open()
+        since_event_open = self.create_since_event_open()
 
         if event_open and since_event_open and event_open < since_event_open:
-            event_open = self._create_since_event_open()
-            since_event_open = self._create_get_event_open()
+            event_open = self.create_since_event_open()
+            since_event_open = self.create_get_event_open()
 
         event_open = create_close_date(event_open)
         return since_event_open, event_open
+
+    def get_datetime(self, year, month, day):
+        date = None
+        if year and month and day:
+            date = parse_date(int(year), int(month), int(day))
+        return date
+
+    def create_since_event_open(self):
+        return self.get_datetime(self.since_year.data, self.since_month.data, self.since_day.data)
+
+    def create_get_event_open(self):
+        return self.get_datetime(self.year.data, self.month.data, self.day.data)
 
     def update_form(self, since_event_open, event_open):
         if since_event_open:
@@ -126,15 +138,3 @@ class DetailSearchForm(TopSearchForm):
             self.year.data = str(event_open.year)
             self.month.data = str(event_open.month)
             self.day.data = str(event_open.day)
-
-    def _create_since_event_open(self):
-        since_event_open = None
-        if self.since_year.data and self.since_month.data and self.since_day.data:
-            since_event_open = parse_date(int(self.since_year.data), int(self.since_month.data), int(self.since_day.data))
-        return since_event_open
-
-    def _create_get_event_open(self):
-        event_open = None
-        if self.year.data and self.month.data and self.day.data:
-            event_open = parse_date(int(self.year.data), int(self.month.data), int(self.day.data))
-        return event_open
