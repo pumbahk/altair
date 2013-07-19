@@ -439,6 +439,10 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     display_order = AnnotatedColumn(Integer, nullable=False, default=1, _a_label=_(u'表示順'))
 
     @property
+    def setting(self):
+        return self.settings[0] if self.settings else None
+
+    @property
     def products(self):
         return self.sale_segment.products if self.sales_segment_id else []
 
@@ -3386,10 +3390,7 @@ class PerformanceSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     @classmethod
     def update_from_model(cls, obj, params):
-        if obj.settings:
-            setting = obj.settings[0]
-        else:
-            setting = cls()
+        setting = obj.settings or cls()
 
         for k in cls.KEYS:
             setattr(setting, k, params.get(k))

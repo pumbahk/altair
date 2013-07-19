@@ -226,7 +226,11 @@ class Performances(BaseView):
         )
 
         f = PerformanceForm(**kwargs)
-        f.process(record_to_multidict(performance))
+        D = record_to_multidict(performance)
+        setting = performance.setting
+        if setting:
+            D.update((k, getattr(setting, k)) for k in setting.KEYS)
+        f.process(D)
         if is_copy:
             f.original_id.data = f.id.data
             f.id.data = None
