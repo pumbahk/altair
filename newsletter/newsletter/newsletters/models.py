@@ -21,8 +21,11 @@ session = sqlahelper.get_session()
 Base = sqlahelper.get_base()
 
 from pyramid import threadlocal
+from altair.formhelpers.filters import replace_ambiguous
 import logging
 logger = logging.getLogger(__name__)
+
+
 
 class Newsletter(Base):
     __tablename__ = 'Newsletter'
@@ -160,6 +163,9 @@ class Newsletter(Base):
                 return True
         return False
 
+    def get_clean_description(self):
+        return replace_ambiguous(self.description)
+
     def test_mail(self, recipient=None, **options):
         options['subject'] = u'【テスト送信】' + self.subject
         # 文字化けのチェックのためにcsvファイルの1行目のデータを使う
@@ -192,7 +198,7 @@ class Newsletter(Base):
 
         # replacement subject, body, html
         subject = options['subject'] if 'subject' in options else self.subject
-        description = self.description
+        description = self.get_clean_description()
         for k, v in options.items():
             if not isinstance(v, unicode):
                 v = unicode(v, 'utf-8')
@@ -219,7 +225,6 @@ class Newsletter(Base):
         except:
             return False
         return True
-
 
 class Mailer(object):
     def __init__(self, settings):

@@ -188,7 +188,6 @@ class Newsletters(BaseView):
     def html_mail(self):
         id = int(self.request.matchdict.get('id', 0)) 
         newsletter = Newsletter.get(id)
-
-        response = Response(newsletter.description)
+        response = Response(newsletter.get_clean_description())
         return response
 
