@@ -496,7 +496,8 @@ def create_client_form(context):
                 address_1=user_profile.address_1,
                 address_2=user_profile.address_2,
                 email_1=user_profile.email_1,
-                email_2=user_profile.email_2
+                email_2=user_profile.email_2,
+                sex=user_profile.sex,
                 )
         else:
             formdata = None
