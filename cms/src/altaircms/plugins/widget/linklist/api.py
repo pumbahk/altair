@@ -14,6 +14,7 @@ def near_the_end_events(request, N, today):
     qs = request.allowable(PageSet).filter(PageSet.event_id==Event.id, PageSet.id==Page.pageset_id, Page.in_term(today))
     qs = qs.join(Page, Page.pageset_id == PageSet.id)
     qs = qs.filter(Page.published == True)
+    # XXX: この条件だと、当日の 0:00:00 以降に公開になったページが対象に含まれなくなってしまうので、today より now がほしい
     qs = qs.filter(Page.publish_begin < today)
     qs = qs.filter((Page.publish_end==None) | (Page.publish_end > today))
     qs = qs.filter(Event.is_searchable==True)
@@ -26,6 +27,7 @@ def deal_start_this_week_events(request, N, today):
     qs = request.allowable(PageSet).filter(PageSet.event_id==Event.id, PageSet.id==Page.pageset_id, Page.in_term(today))
     qs = qs.join(Page, Page.pageset_id == PageSet.id)
     qs = qs.filter(Page.published == True)
+    # XXX: この条件だと、当日の 0:00:00 以降に公開になったページが対象に含まれなくなってしまうので、today より now がほしい
     qs = qs.filter(Page.publish_begin < today)
     qs = qs.filter((Page.publish_end==None) | (Page.publish_end > today))
     qs = qs.filter(Event.is_searchable==True)
