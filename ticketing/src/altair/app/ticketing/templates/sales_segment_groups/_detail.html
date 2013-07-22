@@ -47,10 +47,12 @@
     <th>${form.upper_limit.label.text}</th>
     <td id="upper_limit">${sales_segment_group.upper_limit or u''}</td>
   </tr>
+  <%doc>
   <tr>
     <th>${form.order_limit.label.text}</th>
     <td id="order_limit">${sales_segment_group.order_limit or u''}</td>
   </tr>
+  </%doc>
   <tr>
     <th>${form.seat_choice.label.text}</th>
     <td id="seat_choice" value="${sales_segment_group.seat_choice}">${u'○' if sales_segment_group.seat_choice else u'×'}</td>
