@@ -118,7 +118,9 @@ def detail_search(context, request):
             ,'helper':SmartPhoneHelper()
         }
 
-    event_open_info = EventOpenInfo(since_event_open=form.get_since_event_open(), event_open=form.get_event_open())
+    since_event_open, event_open = form.get_event_open()
+    form.update_form(since_event_open, event_open)
+    event_open_info = EventOpenInfo(since_event_open=since_event_open, event_open=event_open)
     sale_info = SaleInfo(sale_start=form.data['sale_start'], sale_end=form.data['sale_end'])
     perf_info = PerformanceInfo(canceled=form.data['canceled_perf'], closed=form.data['closed_perf'])
     query = DetailSearchQuery(word=form.data['word'], cond=form.data['cond'], genre_music=form.data['genre_music']

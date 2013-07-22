@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from ..common.const import SalesEnum
 from altaircms.formhelpers import CheckboxListField
-from altairsite.mobile.core.helper import log_info
+from altairsite.search.forms import parse_date, create_close_date
 
 from wtforms import Form
 from datetime import datetime
@@ -106,46 +106,35 @@ class DetailSearchForm(TopSearchForm):
     closed_perf = BooleanField(u'販売終了した公演（絞り込み条件）', [Optional()])
     canceled_perf = BooleanField(u'中止した公演（絞り込み条件）', [Optional()])
 
-    def get_since_event_open(self):
-        since_event_open = None
-        try:
-            since_event_open = datetime(int(self.since_year.data), int(self.since_month.data), int(self.since_day.data))
-        except Exception as e:
-            pass
-        return since_event_open
-
     def get_event_open(self):
-        event_open = None
-        try:
-            event_open = datetime(int(self.year.data), int(self.month.data), int(self.day.data))
-        except Exception as e:
-            pass
-        return event_open
+        event_open = self.create_get_event_open()
+        since_event_open = self.create_since_event_open()
 
-    def validate_since_year(form, field):
-        common_validate_date(form, field)
-        return
-    def validate_since_month(form, field):
-        common_validate_date(form, field)
-        return
-    def validate_since_day(form, field):
-        common_validate_date(form, field)
-        return
-    def validate_year(form, field):
-        common_validate_date(form, field)
-        return
-    def validate_month(form, field):
-        common_validate_date(form, field)
-        return
-    def validate_day(form, field):
-        common_validate_date(form, field)
-        return
+        if event_open and since_event_open and event_open < since_event_open:
+            event_open = self.create_since_event_open()
+            since_event_open = self.create_get_event_open()
 
-def common_validate_date(form, field):
-    try:
-        event_open = datetime(int(form.year.data), int(form.month.data), int(form.day.data))
-        since_event_open = datetime(int(form.since_year.data), int(form.since_month.data), int(form.since_day.data))
-    except Exception as e:
-        raise ValueError(u'公演日の指定が不正です。')
-    if since_event_open >= event_open:
-        raise ValueError(u'公演日の検索範囲が不正です。')
+        event_open = create_close_date(event_open)
+        return since_event_open, event_open
+
+    def get_datetime(self, year, month, day):
+        date = None
+        if year and month and day:
+            date = parse_date(int(year), int(month), int(day))
+        return date
+
+    def create_since_event_open(self):
+        return self.get_datetime(self.since_year.data, self.since_month.data, self.since_day.data)
+
+    def create_get_event_open(self):
+        return self.get_datetime(self.year.data, self.month.data, self.day.data)
+
+    def update_form(self, since_event_open, event_open):
+        if since_event_open:
+            self.since_year.data = str(since_event_open.year)
+            self.since_month.data = str(since_event_open.month)
+            self.since_day.data = str(since_event_open.day)
+        if event_open:
+            self.year.data = str(event_open.year)
+            self.month.data = str(event_open.month)
+            self.day.data = str(event_open.day)

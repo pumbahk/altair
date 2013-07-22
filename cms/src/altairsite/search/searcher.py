@@ -308,10 +308,22 @@ def events_by_performance_term(qs, performance_open, performance_close):
     if not (performance_open or performance_close):
         return qs
 
-    if performance_open:
-        qs = qs.filter(Event.event_open >= performance_open)
-    if performance_close:
-        qs = qs.filter(Event.event_close <= performance_close)
+    if performance_open and performance_close:
+        qs = qs.filter(
+            (performance_open <= Event.event_open) & (performance_close >= Event.event_open) |
+            (performance_open <= Event.event_close) & (performance_close >= Event.event_close) |
+            (Event.event_open <= performance_open) & (Event.event_close  >= performance_close)
+        )
+    elif performance_open:
+        qs = qs.filter(
+            (Event.event_open <= performance_open) & (Event.event_close  >= performance_open) |
+            (Event.event_open >= performance_open)
+        )
+    elif performance_close:
+        qs = qs.filter(
+            (Event.event_open <= performance_close) & (Event.event_close  >= performance_close) |
+            (Event.event_close <= performance_close)
+        )
     return qs
 
 def events_by_deal_cond_flags(qs, flags, sale):

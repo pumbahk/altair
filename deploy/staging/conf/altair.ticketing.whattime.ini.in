@@ -62,13 +62,13 @@ propagate = 0
 [logger_ticketing]
 level = DEBUG
 handlers = console, fluent
-qualname = ticketing
+qualname = altair.app.ticketing
 propagate = 0
 
 [logger_whattime]
 level = DEBUG
 handlers = console, fluent
-qualname = ticketing.whattime
+qualname = altair.app.ticketing.whattime
 propagate = 0
 
 [logger_sqlalchemy]

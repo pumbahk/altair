@@ -76,6 +76,12 @@ def parse_date(y, m, d):
         except ValueError:
             return None
 
+def create_close_date(close_date):
+    if close_date:
+        close_date = close_date + timedelta(days=1)
+        close_date = close_date - timedelta(minutes=1)
+    return close_date
+
 ### toppage sidebar
 class TopPageSidebarSearchForm(Form):
     """ top page のsidebarのform"""
@@ -96,9 +102,9 @@ class TopPageSidebarSearchForm(Form):
             performance_open = parse_date(data["start_year"], data["start_month"], data["start_day"])
         if all((data["end_year"], data["end_month"], data["end_day"])):
             performance_close = parse_date(data["end_year"], data["end_month"], data["end_day"])
-
         if performance_open and performance_close and performance_open > performance_close:
             performance_open, performance_close = performance_close, performance_open
+        performance_close = create_close_date(performance_close)
 
         params =  {
             "performance_open": performance_open, 
@@ -266,11 +272,11 @@ class PerformanceTermPartForm(Form):
             performance_open = parse_date(data["start_year"], data["start_month"], data["start_day"])
         if all((data["end_year"], data["end_month"], data["end_day"])):
             performance_close = parse_date(data["end_year"], data["end_month"], data["end_day"])
-
         if performance_open and performance_close and performance_open > performance_close:
             performance_open, performance_close = performance_close, performance_open
 
-        return {"performance_open": performance_open, 
+        performance_close = create_close_date(performance_close)
+        return {"performance_open": performance_open,
                 "performance_close": performance_close}
 
 ## todo:販売条件

@@ -3,16 +3,16 @@ import sqlahelper
 from paste.deploy.loadwsgi import appconfig
 import argparse
 
-from ticketing.oauth2.models import *
-from ticketing.master.models import *
-from ticketing.operators.models import *
-from ticketing.users.models import *
-from ticketing.core.models import *
-from ticketing.sej.models import *
-from ticketing.bookmark.models import *
-from ticketing.cart.models import *
-from ticketing.payments.plugins.models import *
-from ticketing.multicheckout.models import *
+from altair.app.ticketing.oauth2.models import *
+from altair.app.ticketing.master.models import *
+from altair.app.ticketing.operators.models import *
+from altair.app.ticketing.users.models import *
+from altair.app.ticketing.core.models import *
+from altair.app.ticketing.sej.models import *
+from altair.app.ticketing.bookmark.models import *
+from altair.app.ticketing.cart.models import *
+from altair.app.ticketing.payments.plugins.models import *
+from altair.app.ticketing.multicheckout.models import *
 from inspect import getfile, currentframe
 import os
 import re

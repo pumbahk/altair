@@ -19,15 +19,17 @@
       % if event.performances:
         % if event.performances[0].venue:
 　会場：${event.performances[0].venue}<br />
-        % if event.deal_close < get_now(request):
+          % if event.deal_close < get_now(request):
 　<font color="red">このイベントの販売は終了しました</font><br/>
+          % endif
         % endif
       % endif
-            % if count < len(events) - 1:
-                <hr/>
-            % endif
-        % endif
+
+      % if count < len(events):
+        <hr/>
+      % endif
     % endfor
+
     % if int(page_num) > 1:
     <div align="center">
         % if int(page) > 1:

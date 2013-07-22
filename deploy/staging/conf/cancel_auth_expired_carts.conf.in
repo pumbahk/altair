@@ -14,7 +14,7 @@ handlers = rotate, spool
 [logger_ticketing]
 level = DEBUG
 handlers = rotate, spool
-qualname = ticketing
+qualname = altair.app.ticketing
 propagate = 0
 
 [handler_rotate]

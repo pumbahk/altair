@@ -1,0 +1,49 @@
+<%page args="form, action='#'" />
+<%namespace file="/common/helpers.html" name="ch" />
+<form class="form-horizontal" action="${action}" method="POST">
+  ${ch.form_item(form.id)}
+  ${ch.form_item(form.event_id)}
+  ${ch.form_item(form.kind)}
+  ${ch.form_item(form.name, maxlength=255)}
+  ${ch.form_item(form.start_at)}
+  ${ch.form_item(form.end_at)}
+  ${ch.form_item(form.account_id)}
+  ${ch.form_item(form.margin_ratio)}
+  ${ch.form_item(form.refund_ratio)}
+  ${ch.form_item(form.printing_fee)}
+  ${ch.form_item(form.registration_fee)}
+  ${ch.form_item(form.upper_limit)}
+  ${ch.form_item(form.order_limit)}
+  ${ch.form_item(form.seat_choice)}
+  ${ch.form_item(form.public)}
+  ${ch.form_item(form.reporting)}
+  <div class="copy-fields">
+    <hr />
+    ${ch.form_item(form.copy, style="display: none;")}
+    ${ch.form_item(form.copy_payment_delivery_method_pairs)}
+    ${ch.form_item(form.copy_products)}
+    <span class="copy-products-fields" style="display: none;">
+      ${ch.form_item(form.copy_to_stock_holder)}
+    </span>
+  </div>
+  <p>※セブン-イレブン発券では発券日を指定した場合「前払い後日発券」になります。</p>
+  <script type="text/javascript">
+    (function(form) {
+      form.find("input[type='checkbox']").change(function() {
+        if ($(this).attr('checked')) {
+          $(this).val(1);
+        } else {
+          $(this).val(0);
+        }
+      }).change();
+
+      form.find('#copy_products').change(function() {
+        if ($(this).attr('checked')) {
+          $('#copy-products-fields').css('display', 'block');
+        } else {
+          $('#copy-products-fields').css('display', 'none');
+        }
+      }).change();
+    })($('script:last').parent());
+  </script>
+</form>

@@ -6,7 +6,7 @@ from altaircms.helpers.asset import rendering_object as asset_rendering_object
 from altairsite.mobile.core.eventhelper import EventHelper
 import logging
 from markupsafe import Markup
-from datetime import datetime
+from altaircms.datelib import get_now
 
 logger = logging.getLogger(__file__)
 
@@ -154,5 +154,5 @@ class SmartPhoneHelper(object):
     def get_asset_rendering_object(self, request, asset):
         return asset_rendering_object(request, asset)
 
-    def now(self):
-        return datetime.now()
+    def now(self, request):
+        return get_now(request)

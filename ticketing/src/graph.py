@@ -3,7 +3,7 @@ import os
 import sadisplay
 import inspect
 
-from ticketing.models import Base
+from altair.app.ticketing.models import Base
 
 def add(r, m, cands):
     for k in cands:
@@ -15,21 +15,21 @@ def add(r, m, cands):
 
 model_instances = {}
 
-import ticketing.models as models
+import altair.app.ticketing.models as models
 add(model_instances, models, dir(models))
-import ticketing.oauth2.models as models
+import altair.app.ticketing.oauth2.models as models
 add(model_instances, models, dir(models))
-import ticketing.master.models as models
+import altair.app.ticketing.master.models as models
 add(model_instances, models, dir(models))
-import ticketing.oauth2.models as models
+import altair.app.ticketing.oauth2.models as models
 add(model_instances, models, dir(models))
-import ticketing.operators.models as models
+import altair.app.ticketing.operators.models as models
 add(model_instances, models, dir(models))
-import ticketing.orders.models as models
+import altair.app.ticketing.orders.models as models
 add(model_instances, models, dir(models))
-import ticketing.users.models as models
+import altair.app.ticketing.users.models as models
 add(model_instances, models, dir(models))
-import ticketing.core.models as models
+import altair.app.ticketing.core.models as models
 add(model_instances, models, dir(models))
 
 

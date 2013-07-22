@@ -12,7 +12,7 @@ from wtforms import Form
 
 from paste.util.multidict import MultiDict
 from newsletter.newsletters.models import Newsletter
-
+from altair.formhelpers.filters import replace_ambiguous
 import logging
 log = logging.getLogger(__name__)
 
@@ -25,7 +25,7 @@ class NewslettersForm(Form):
     description = TextAreaField(u'本文', validators=[
         Required(u'入力してください'),
         Length(max=50000, message=u'50000文字以内で入力してください'),
-        ])
+        ], filters=[replace_ambiguous])
     type = SelectField(u'メール種別', validators=[], choices=[
         ('text', u'テキスト'),
         ('html', u'HTML'),

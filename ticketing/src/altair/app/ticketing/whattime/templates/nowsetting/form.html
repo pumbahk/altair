@@ -1,0 +1,29 @@
+<%inherit file="../base.html"/>
+<%namespace file="altair.app.ticketing:templates/common/helpers.html" name="ch" />
+
+<div class="container">
+  <div class="page-header">
+    <h2>${organization.name}</h2>
+  </div>
+
+  <div class="content">
+    ${ch.flash_messages(request)}
+    ${ch.alert_message(form)}
+  </div>
+
+<div>
+%if now_found:
+  設定済み 時刻:${now}
+%else:
+  未設定 時刻:${now}
+%endif
+</div>
+
+<form class="form well" action="${request.route_path("whattime.nowsetting.set",_query=dict(request.GET))}" method="POST">
+  ${ch.form_item(form.now)}
+  ${ch.form_item(form.redirect_to)}
+  <input class="btn btn" type="submit" name="submit" value="現在時刻を設定する"/>
+  <input class="btn" type="submit" name="invalidate" value="現在時刻を取り消す"/>
+  <input class="btn btn-inverse" type="submit" name="goto" value="移動"/>
+</form>
+</div>

@@ -1,0 +1,280 @@
+<%page args="form, url='/orders/'" />
+<%namespace file="/common/helpers.html" name="ch" />
+<%
+from altair.formhelpers import OurDateWidget
+%>
+
+<script src="${request.static_url('altair.app.ticketing:static/js/jquery.chosen.js')}"></script>
+<link rel="stylesheet" type="text/css" href="${request.static_url('altair.app.ticketing:static/css/chosen.css')}" />
+
+<style type="text/css">
+.form-horizontal .control-label {
+  width: 120px;
+}
+.form-horizontal .controls {
+  margin-left: 140px;
+}
+#search table {
+  border-collapse: separate;
+  width: 100%;
+  border-spacing: 4px;
+  margin-left: -4px;
+  margin-bottom: -4px;
+}
+#search table tbody td,
+#search table tbody th {
+  padding: 4px 4px;
+}
+#search table tbody th {
+  width: 7em;
+  text-align: left;
+  vertical-align: middle;
+  background-color: #eee;
+  border-radius: 4px;
+  text-align: nowrap;
+}
+#search .packed-checkboxes .checkbox-set {
+  overflow: hidden;
+  width: 40em;
+}
+#search .packed-checkboxes .checkbox-set .checkbox-set-item {
+  float: left;
+  width: 10em;
+}
+</style>
+<script type="text/javascript">
+  function search_orders(url) {
+    $('#search').attr('action', url).submit();
+  }
+
+  function sort_orders(sort, direction, url) {
+    url = url || '${url}';
+    detail = $('#detail_search');
+    if (sort) detail.find('#sort').val(sort);
+    if (direction) detail.find('#direction').val(direction);
+    detail.find('#search').attr('action', url).submit();
+  }
+
+  function download_orders() {
+    var params = $('#modal-download_orders').parent('form').serialize();
+    detail = $('#detail_search');
+    detail.find('#search').attr('action', '/orders/download/?' + params).submit();
+    $('#modal-download_orders').modal('hide');
+  }
+</script>
+<div id="detail_search">
+  <div>
+    <h3>検索条件設定</h3>
+  </div>
+  <form id="search" class="form-horizontal" method="POST">
+    <table>
+      <tbody>
+        <tr>
+          <th><label for="order_no">${form.order_no.label.text}</label></th>
+          <td>${form.order_no(minlength=12)}</td>
+          <th><label for="seat_number">${form.seat_number.label.text}</label></th>
+          <td>${form.seat_number()}</td>
+          <th><label for="tel">${form.tel.label.text}</label></th>
+          <td>${form.tel()}</td>
+        </tr>
+        <tr>
+          <th><label for="name">${form.name.label.text}</label></th>
+          <td>${form.name()}</td>
+          <th><label for="email">${form.email.label.text}</label></th>
+          <td>${form.email()}</td>
+          <th><label for="member_id">${form.member_id.label.text}</label></th>
+          <td>${form.member_id()}</td>
+        </tr>
+        <tr>
+          <th><label>${form.ordered_from.label.text}</label></th>
+          <td colspan="3">
+            ${form.ordered_from()} 〜
+            ${form.ordered_to()}
+          </td>
+          <th><label>${form.billing_or_exchange_number.label.text}</label></th>
+          <td>${form.billing_or_exchange_number}</td>
+        </tr>
+      </tbody>
+    </table>
+    <table>
+      <tbody>
+        <tr>
+          <th><label for="event_id">${form.event_id.label.text}</label></th>
+          <td>${form.event_id(style="width:750px", size=4)}</td>
+        </tr>
+        <tr>
+          <th><label for="performance_id">${form.performance_id.label.text}</label></th>
+          <td>${form.performance_id(style="width:750px", size=4)}</td>
+        </tr>
+      </tbody>
+    </table>
+    <table>
+      <tbody>
+        <tr>
+          <th><label for="sales_segment_group_id">${form.sales_segment_group_id.label.text}</label></th>
+          <td>${form.sales_segment_group_id(size=4)}</td>
+          <th><label for="payment_method">${form.payment_method.label.text}</label></th>
+          <td>${form.payment_method(size=4)}
+            <th><label for="delivery_method">${form.delivery_method.label.text}</label></th>
+          <td>${form.delivery_method(size=4)}</td>
+        </tr>
+        <tr>
+          <th><label>${form.start_on_from.label.text}</label></th>
+          <td colspan="3">
+            ${form.start_on_from()} 〜
+            ${form.start_on_to()}
+          </td>
+          <th>
+            <label for="number_of_tickets">${form.number_of_tickets.label.text}</label>
+          </th>
+          <td>
+            ${form.number_of_tickets()}
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <table class="packed-checkboxes">
+      <tbody>
+        <tr>
+          <th>
+            <label for="status">${form.status.label.text}</label>
+          </th>
+          <td>
+            ${form.status()}
+            ${form.issue_status()}
+            ${form.payment_status()}
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <script type="text/javascript">
+      $(function(){
+        var update_on_empty = function(){
+          var $target = $(this).parents("form").find("select[name='performance_id']").eq(0);
+          $target.empty();
+          $target.chosen().trigger("liszt:updated");
+
+          var $ssg = $(this).parents("form").find("select[name='sales_segment_group_id']").eq(0);
+          $ssg.empty();
+
+          return;
+        };
+        var update_on_hasvalue = function(v){
+          var self = this;
+          var params = {event_id: v};
+          $.getJSON("${request.route_url('orders.api.performances')}", params).done(function(data){
+            if(data.status){
+              var $target = $(self).parents("form").find("select[name='performance_id']").eq(0);
+              $target.empty();
+              // optimize if slow.
+              for(var i=0, j=data.result.length; i<j; i++){
+                var e = data.result[i];
+                $target.append($("<option>").attr("value", e.pk).text(e.name))
+              }
+              $target.chosen().trigger("liszt:updated");
+            }
+          });
+          $.getJSON("${request.route_url('orders.api.sales_segment_groups')}", params).done(function(data){
+            if(data.status){
+              var $target = $(self).parents("form").find("select[name='sales_segment_group_id']").eq(0);
+              $target.empty();
+              // optimize if slow.
+              for(var i=0, j=data.result.length; i<j; i++){
+                var e = data.result[i];
+                $target.append($("<option>").attr("value", e.pk).text(e.name))
+              }
+            }
+          });
+        };
+        var update_performances_and_ssgroups = function(){
+          var self = this;
+          var v = $(this).val();
+          if(!v){
+            return update_on_empty.call(self);
+          } else {
+            return update_on_hasvalue.call(self, v);
+          }
+        };
+        $("#search select[name='event_id']").change(update_performances_and_ssgroups).chosen();
+
+        $("#search select[name='performance_id']").chosen();
+      });
+    </script>
+    ${ch.form_item(form.sort)}
+    ${ch.form_item(form.direction)}
+  </form>
+</div>
+
+<div style="float: left;">
+  <ul class="nav nav-pills">
+    <li class="dropdown" style="margin-left: 10px;">
+      <div class="btn-group">
+        <a href="${url}" class="btn">
+			</i> リセット
+        </a>
+      </div>
+    </li>
+  </ul>
+</div>
+
+<div style="float: left;">
+  <ul class="nav nav-pills">
+    <li class="dropdown" id="top-search" style="margin-left: 10px;">
+      <div class="btn-group">
+        <a href="javascript:search_orders('${request.route_path('orders.index')}');" class="btn">
+          <i class="icon-search"></i> 検索
+        </a>
+      </div>
+    </li>
+  </ul>
+</div>
+
+<div class="btn-group" style="float: left;">
+  <a class="btn btn-inverse" style="margin-left: 10px;" data-toggle="modal" href="#modal-download_orders">
+    <i class="icon-download icon-white"></i> ダウンロード
+  </a>
+</div>
+<div style="clear: left;"></div>
+
+<form id="download" class="form-horizontal" action="${request.route_path('orders.download')}" method="POST">
+<div id="modal-download_orders" class="modal hide">
+  <div class="modal-header">
+    <a href="#" class="close">&times;</a>
+    <h3>確認</h3>
+  </div>
+
+  <div class="modal-body">
+    <p>購入情報(CSV)をダウンロードします。よろしいですか？<br>
+      % if not form.get_conditions():
+        <div class="alert alert-error">
+          <div style="margin-bottom: 5px;">検索条件がありません。<br>対象が多すぎると時間がかかる可能性があるので条件を指定してください。</div>
+        </div>
+      % endif
+      <%include file="/orders/_search_condition.html" args="form=form" />
+    </p>
+    <fieldset>
+      <div>
+        <input id="export_type_1" name="export_type" type="radio" value="1" style="float: left; margin-right: 5px;" checked>
+        <label for="export_type_1">予約ごとに1行ずつ出力する</label>
+      </div>
+      <div>
+        <input id="export_type_2" name="export_type" type="radio" value="2" style="float: left; margin-right: 5px;">
+        <label for="export_type_2">座席ごとに1行ずつ出力する</label>
+      </div>
+    </fieldset>
+  </div>
+
+  <div class="modal-footer">
+    <div class="control-group" style="text-align:left; float: left; white-space: nowrap">
+      <input id="excel_csv" name="excel_csv" type="checkbox" value="1" checked="checked" style="float: left; margin-right: 5px;">
+      <label for="excel_csv">Excel形式のCSVを出力する</label>
+    </div>
+    <a href="javascript:void(0);" onclick="$('#modal-download_orders').modal('hide');" class="btn secondary">キャンセル</a>
+    <a href="javascript:download_orders();" class="btn danger">ダウンロード</a>
+  </div>
+</div>
+</form>
+
+% if len(orders) == 0:
+  見つかりませんでした
+% endif
