@@ -1,5 +1,5 @@
-
 # -*- coding:utf-8 -*-
+
 import logging
 import pystache
 from altair.app.ticketing.tickets.utils import build_dicts_from_ordered_product_item
