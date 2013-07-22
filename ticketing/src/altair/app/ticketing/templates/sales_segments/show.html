@@ -45,10 +45,12 @@ function get_selected_sales_segment_id() {
       <th>購入上限枚数</th>
       <td>${sales_segment.upper_limit}</td>
     </tr>
+    <%doc>
     <tr>
       <th>購入回数制限</th>
       <td>${sales_segment.order_limit}</td>
     </tr>
+    </%doc>
     <tr>
       <th>座席選択</th>
       <td>${u'○' if sales_segment.seat_choice else u'×'}</td>

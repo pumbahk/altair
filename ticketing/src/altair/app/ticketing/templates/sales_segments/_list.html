@@ -16,7 +16,7 @@
           % endif
           <th>${ch.sortable(SalesSegmentForm.account_id)}</a></th>
           <th>${ch.sortable(SalesSegmentForm.upper_limit)}</a></th>
-          <th>${ch.sortable(SalesSegmentForm.order_limit)}</a></th>
+          <%doc><th>${ch.sortable(SalesSegmentForm.order_limit)}</a></th></%doc>
           <th>${ch.sortable(SalesSegmentForm.seat_choice)}</a></th>
           <th>${ch.sortable(SalesSegmentForm.public)}</a></th>
           <th>${ch.sortable(SalesSegmentForm.reporting)}</a></th>
@@ -45,7 +45,7 @@
           % endif
           <td ${rowspan}>${sales_segment.account.name}</td>
           <td ${rowspan}>${sales_segment.upper_limit or u''}</td>
-          <td ${rowspan}>${sales_segment.order_limit or u''}</td>
+          <%doc><td ${rowspan}>${sales_segment.order_limit or u''}</td></%doc>
           <td ${rowspan}>${u'○' if sales_segment.seat_choice else u'×'}</td>
           <td ${rowspan}>${u'○' if sales_segment.public else u'×'}</td>
           <td ${rowspan}>${u'○' if sales_segment.reporting else u'×'}</td>
