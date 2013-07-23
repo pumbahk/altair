@@ -32,6 +32,13 @@ Altair Backend -- ${performance.event.title}[${performance.name}]
       ]
   )}
 </%block>
+
+<script>
+  $(function() {
+    $('[rel=popover]').popover();
+  });
+</script>
+
 <div class="page-header">
   <h1>
     ${performance.event.title}<br />
@@ -69,14 +76,17 @@ Altair Backend -- ${performance.event.title}[${performance.name}]
           <td colspan="3">${performance.redirect_url_mobile or u'未設定'}</td>
         </tr>
         <tr>
-          <th>カートURL</th>
-          <span class="help-inline">
-            <a rel="popover" data-original-title="カートURL",data-content="購入カートのURL">
-              <i class="icon-question-sign"></i>
-            </a>
-          </span>
+          <th>
+            カートURL
+            <span class="help-inline">
+              <a rel="popover" data-original-title="カートURL" data-content="購入ページのURL">
+                <i class="icon-question-sign"></i>
+              </a>
+            </span>
+          </th>
           <td colspan="3">
-            <a href="${cart_url}">${cart_url}</a>  (<a href="${cart_now_cart_url}">時間指定してカート購入</a>)
+            <a href="${cart_url}">${cart_url}</a>  
+            <!--(<a href="${cart_now_cart_url}">時間指定してカート購入</a>)-->
           </td>
         </tr>
         %if performance.settings:
