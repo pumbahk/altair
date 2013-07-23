@@ -56,7 +56,7 @@ class SalesSegmentForm(OurForm):
             else:
                 for field_name in propagation_attrs:
                     field = getattr(self, field_name)
-                    field.default = getattr(context.user.organization.setting, field_name)
+                    field.default = getattr(context.user.organization.setting, field_name, None)
             self.process(formdata, obj, **kwargs)
 
         if obj and obj.payment_delivery_method_pairs is not None:
