@@ -33,11 +33,11 @@ ${form.since_year}年${form.since_month}月${form.since_day}日〜<br/>${form.ye
 </div>
 <%m:header>販売区分（絞り込み条件）</%m:header>
 <div>
-% for count, segment in enumerate(form.sales_segment.choices):
-    % if segment[0] in form.sales_segment.data:
-        <input type="checkbox" name="sales_segment" value="${segment[0]}" checked="true">${segment[1]}<br/>
+% for value,label, checked in form.sales_segment.iter_choices():
+    % if checked:
+        <input type="checkbox" name="sales_segment" value="${value}" checked="true">${label}<br/>
     % else:
-        <input type="checkbox" name="sales_segment" value="${segment[0]}">${segment[1]}<br/>
+        <input type="checkbox" name="sales_segment" value="${value}">${label}<br/>
     % endif
 % endfor
 </div>

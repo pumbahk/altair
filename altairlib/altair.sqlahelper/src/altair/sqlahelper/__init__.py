@@ -52,7 +52,10 @@ def includeme(config):
 
 def get_sessionmaker(request, name=""):
     Session = request.registry.queryUtility(ISessionMaker, name=name)
-    logger.warning("session maker named '{0}' is None".format(name))
+    if Session is None:
+        message = "session maker named '{0}' is None".format(name)
+        logger.warning(message)
+        raise Exception(message)
     return Session
 
 def get_db_session(request, name=""):
