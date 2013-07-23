@@ -1,4 +1,4 @@
-@charset "utf-8";
+g@charset "utf-8";
 
 
 /* normalize */
@@ -546,3 +546,8 @@ table.login > tbody > tr > td {
 .red{
     color: red;
 }
+
+.browser-list-style{
+    list-style-type: disc;
+}
+
