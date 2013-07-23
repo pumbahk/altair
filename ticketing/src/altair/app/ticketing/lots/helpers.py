@@ -55,20 +55,11 @@ wished_performance_id_re = re.compile(wished_performance_id_pt)
 wished_product_id_re = re.compile(wished_product_id_pt)
 wished_product_quantity_re = re.compile(wished_product_quantity_pt)
 
-# def convert_wishes(params, limit):
-#     """ wish_order, product_id, quantity
-#     """
-# 
-#     q = ((wished_product_re.match(p), params[p]) for p in params)
-#     aggregated = itertools.groupby(sorted(((int(m.groupdict()['wish_order']), m.groupdict()['product_id'], int(v)) for m, v in q if m is not None)), 
-#         key=lambda r: r[0])
-#     return [list(v) for _, v in aggregated][:limit]
 
 def convert_wishes(params, limit):
     performances  = ((wished_performance_id_re.match(p), params[p]) for p in params)
     products  = ((wished_product_id_re.match(p), params[p]) for p in params)
     quantities = ((wished_product_quantity_re.match(p), params[p]) for p in params)
-
     performance_ids = {}
     for m, param_value in performances:
         if m is None:
@@ -108,8 +99,9 @@ def convert_wishes(params, limit):
                             product_id=product_id,
                             quantity=quantity))
         results[wish_order] = wishset
-        
-    return [dict(performance_id=performance_ids[x], wished_products=results[x]) for x in sorted(results)]
+
+    return [dict(performance_id=performance_ids[x], wished_products=results[x])
+            for x in sorted(results)]
 
 def check_quantities(wishes, upper_limit):
     result = True
@@ -119,6 +111,19 @@ def check_quantities(wishes, upper_limit):
             total_quantity += p['quantity']
         result = result and (total_quantity <= upper_limit)
     return result
+
+def check_duplicated_products(wishes):
+    """ 各商品が複数の希望に含まれていないか確認 """
+
+    products = set()
+    for wish in wishes:
+        for p in wish['wished_products']:
+            product_id = p['product_id']
+            if product_id in products:
+                return False
+            products.add(product_id)
+    return True
+
 
 def decorate_options_mobile(options):
     options = [
