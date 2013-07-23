@@ -36,7 +36,7 @@ class SalesSegmentForm(OurForm):
             ]
 
             if context.performance is not None:
-                self.performance_id.data = context.performance.id
+                self.performance_id.data = self.performance_id.default = context.performance.id
 
             if context.sales_segment_group is not None:
                 self.payment_delivery_method_pairs.choices = \
@@ -46,13 +46,13 @@ class SalesSegmentForm(OurForm):
                     ]
                 self.account_id.default = context.sales_segment_group.account_id
 
-                if formdata is None:
-                    self.payment_delivery_method_pairs.data = [int(pdmp.id) for pdmp in context.sales_segment_group.payment_delivery_method_pairs]
+                self.payment_delivery_method_pairs.default = [int(pdmp.id) for pdmp in context.sales_segment_group.payment_delivery_method_pairs]
 
                 for field_name in propagation_attrs:
                     field = getattr(self, field_name)
                     field.default = getattr(context.sales_segment_group, field_name)
-                self.sales_segment_group_id.data = context.sales_segment_group.id
+
+                self.sales_segment_group_id.data = self.sales_segment_group_id.default = context.sales_segment_group.id
             else:
                 for field_name in propagation_attrs:
                     field = getattr(self, field_name)
