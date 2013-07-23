@@ -17,3 +17,5 @@ def includeme(config):
     config.add_route('front', '{page_name:.*}', factory=".resources.PageRenderingResource")
     config.include(install_resolver)
     config.scan('.views')
+    config.add_view("altairsite.mobile.staticpage.views.staticpage_view", route_name="front", request_type="altairsite.tweens.IMobileRequest")
+

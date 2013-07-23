@@ -12,10 +12,10 @@ from datetime import datetime
 
 @usersite_view_config(route_name="staticpage", request_type="altairsite.tweens.IMobileRequest")
 def staticpage_view(context, request):
-    path = request.matchdict["path"]
+    path = request.matchdict["page_name"]
     if os.path.splitext(path)[1] == "":
         path=os.path.join(path.rstrip("/"), "index.html")
-        redirect_url = urljoin(request.route_path("staticpage", path=path).replace("%2F", "/"), '?' + request.query_string)
+        redirect_url = urljoin(request.current_route_path(page_name=path).replace("%2F", "/"), '?' + request.query_string)
         return HTTPFound(redirect_url)
 
     prefix = path.split("/", 1)[0]

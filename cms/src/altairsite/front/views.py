@@ -60,7 +60,7 @@ from altairsite.smartphone.dispatch.views import dispatch_view as smartphone_dis
 from pyramid.httpexceptions import HTTPFound
 
 @usersite_view_config(route_name="front", request_type="altairsite.tweens.IMobileRequest", custom_predicates=(enable_mobile, ))
-def mobile_rendering_page(context, request):
+def mobile_rendering_page__rakuten(context, request):
     url = request.matchdict["page_name"]
     dt = context.get_preview_date()
 
