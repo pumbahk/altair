@@ -33,7 +33,7 @@ def install_mail_utility(config):
                                   ".lots_mail", LotsElectedMail, "altair.app.ticketing:templates/mail/lot_elect_entry.txt")
     from altair.app.ticketing.mails.lots_mail import LotsRejectedMail
     config.add_lot_entry_mail_utility(MailTypeEnum.LotsRejectedMail, 
-                                  ".lots_mail", LotsRejectedMail, "altair.app.ticketing:templates/mail/lot_reject_entry.mako")
+                                  ".lots_mail", LotsRejectedMail, "altair.app.ticketing:templates/mail/lot_reject_entry.txt")
 
 def includeme(config):
     config.include(install_mail_utility)
