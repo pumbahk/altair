@@ -90,7 +90,8 @@ class CommonResource(object):
     def search_subsubgenre(self, query, page, per):
         searcher = SimpleEventSearcher(request=self.request)
         qs = searcher.search_freeword(search_query=query, genre_label=query.genre.label, cond=None)
-        qs = searcher.search_sale(search_query=query, qs=qs)
+        if qs:
+            qs = searcher.search_sale(search_query=query, qs=qs)
         result = searcher.create_result(qs=qs, page=page, query=query, per=per)
         return result
 
