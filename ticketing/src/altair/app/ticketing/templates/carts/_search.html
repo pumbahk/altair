@@ -102,8 +102,8 @@ import json
     <table>
       <tbody>
         <tr>
-          <th><label for="sales_segment_id">${form.sales_segment_id.label.text}</label></th>
-          <td>${form.sales_segment_id(size=4)}</td>
+          <th><label for="sales_segment_group_id">${form.sales_segment_group_id.label.text}</label></th>
+          <td>${form.sales_segment_group_id(size=4)}</td>
           <th><label for="payment_method">${form.payment_method.label.text}</label></th>
           <td>${form.payment_method(size=4)}
             <th><label for="delivery_method">${form.delivery_method.label.text}</label></th>
@@ -129,7 +129,7 @@ import json
     <script type="text/javascript">
       $(function(){
         var endpoints = ${json.dumps(dict(
-          search_sales_segments=request.route_url('orders.api.sales_segments'),
+          search_sales_segment_groups=request.route_url('orders.api.sales_segment_groups'),
           search_performances=request.route_url('orders.api.performances'),
         ))|n};
 
@@ -137,6 +137,10 @@ import json
           var $target = $(this).parents("form").find("select[name='performance_id']").eq(0);
           $target.empty();
           $target.chosen().trigger("liszt:updated");
+
+          var $ssg = $(this).parents("form").find("select[name='sales_segment_group_id']").eq(0);
+          $ssg.empty();
+
           return;
         };
         var update_on_hasvalue = function(v){
@@ -154,29 +158,9 @@ import json
               $target.chosen().trigger("liszt:updated");
             }
           });
-        };
-        var update_performances = function(){
-          var self = this;
-          var v = $(this).val();
-          if(!v){
-            return update_on_empty.call(self);
-          } else {
-            return update_on_hasvalue.call(self, v);
-          }
-        };
-        $("#search select[name='event_id']").change(update_performances).chosen();
-
-        var update_sales_segments_on_empty = function(){
-          var $target = $(this).parents("form").find("select[name='sales_segment_id']").eq(0);
-          $target.empty();
-          return;
-        };
-        var update_sales_segments_on_hasvalue = function(v){
-          var self = this;
-          var params = {performance_id: v};
-          $.getJSON(endpoints.search_sales_segments, params).done(function(data){
+          $.getJSON(endpoints.search_sales_segment_groups, params).done(function(data){
             if(data.status){
-              var $target = $(self).parents("form").find("select[name='sales_segment_id']").eq(0);
+              var $target = $(self).parents("form").find("select[name='sales_segment_group_id']").eq(0);
               $target.empty();
               // optimize if slow.
               for(var i=0, j=data.result.length; i<j; i++){
@@ -186,16 +170,18 @@ import json
             }
           });
         };
-        var update_sales_segments = function(){
+        var update_performances_and_ssgroups = function(){
           var self = this;
           var v = $(this).val();
           if(!v){
-            return update_sales_segments_on_empty.call(self);
+            return update_on_empty.call(self);
           } else {
-            return update_sales_segments_on_hasvalue.call(self, v);
+            return update_on_hasvalue.call(self, v);
           }
         };
-        $("#search select[name='performance_id']").change(update_sales_segments).chosen();
+        $("#search select[name='event_id']").change(update_performances_and_ssgroups).chosen();
+
+        $("#search select[name='performance_id']").chosen();
       });
     </script>
     ${ch.form_item(form.sort)}
