@@ -1,0 +1,496 @@
+<%page args="products=None, performance=None, sales_segment=None, limit=None" />
+<%namespace file="/common/helpers.html" name="ch" />
+<%namespace file="/product_items/_action_button.html" name="b" />
+<% from altair.app.ticketing.core.models import Product %>
+% if performance or sales_segment:
+<%
+from altair.app.ticketing.core.models import StockHolder, Stock
+
+if performance is not None:
+    stock_types = performance.event.stock_types
+    stock_holders = StockHolder.query.join(Stock).filter(Stock.performance_id == performance.id).distinct().all()
+    ticket_bundles = performance.event.ticket_bundles
+    sales_segments = sorted(performance.sales_segments, key=lambda x:(x.order, x.name))
+elif sales_segment:
+    event = sales_segment.event
+    stock_types = event.stock_types
+    ticket_bundles = event.ticket_bundles
+    sales_segments = [sales_segment]
+    performance_ids = [p.id for p in sales_segment.sales_segment_group.event.performances]
+    stock_holders = StockHolder.query.join(Stock).filter(Stock.performance_id.in_(performance_ids)).distinct().all()
+%>
+<script type="text/javascript">
+  $(function() {
+    $('#use-grid-editor').change(function() {
+      if ($.cookie('grid-editor')) {
+        $('.product-table').hide();
+        $('.grid-editor').show();
+        $(this).text('旧商品登録フォームを使う');
+      } else {
+        $('.product-table').show();
+        $('.grid-editor').hide();
+        $(this).text('新商品登録フォームを使う');
+      }
+    }).change();
+    $('#use-grid-editor').click(function() {
+      if ($.cookie('grid-editor')) {
+        $.cookie('grid-editor', null, {path:'/', expires:7});
+      } else {
+        $.cookie('grid-editor', 'hide', {path:'/', expires:7});
+      }
+      $(this).change();
+    });
+  });
+</script>
+<div id="use-grid-editor" class="label label-warning pull-right" style="width: 200px; margin-bottom: 5px; text-align: center;"></div>
+## 新商品登録フォーム
+<script type="text/javascript">
+  (function($) {
+    $.fn.setRetainChanges = function(cells) {
+      if (this.data('retainedChanges') == undefined) {
+        this.data('retainedChanges', {});
+      }
+      var retainedChanges = this.data('retainedChanges');
+      cells = cells || this.getChangedCells('dirty');
+      for (var i=0; i<cells.length; i++) {
+        if (!retainedChanges[cells[i].id]) {
+          retainedChanges[cells[i].id] = {};
+        }
+        retainedChanges[cells[i].id] = $.extend(retainedChanges[cells[i].id], cells[i]);
+      }
+      this.data('retainedChanges', retainedChanges);
+    };
+    $.fn.getRetainChanges = function(type) {
+      type = type || 'row';
+      if (type == 'row') {
+        var rows = [];
+        if (this.data('retainedChanges') != undefined) {
+          var retainedChanges = this.data('retainedChanges');
+          for (var k in retainedChanges) {
+            rows.push($.extend({id:k}, this.getRowData(k)));
+          }
+        }
+        return rows;
+      }
+      if (type == 'cell') {
+        var cells = []
+        if (this.data('retainedChanges') != undefined) {
+          var retainedChanges = this.data('retainedChanges');
+          for (var k in retainedChanges) {
+            cells.push(retainedChanges[k]);
+          }
+        }
+        return cells;
+      }
+    };
+    $.fn.clearRetainChanges = function() {
+      this.data('retainedChanges', {});
+      this.setGridParam({datatype:'json', treedatatype:'json'}).trigger('reloadGrid');
+      this.setGridParam({treedatatype:'local'});
+    };
+    $.fn.getColumnLabel = function(grid, columnName) {
+      var cm = grid.jqGrid('getGridParam','colModel');
+      for (var i=0; i<cm.length; i++) {
+        if (cm[i].name == columnName) return grid.jqGrid('getGridParam','colNames')[i];
+      }
+    };
+    $.fn.linkFormatter = function(cellvalue, options, rowObject) {
+      var link = '';
+      if (!rowObject.level) {
+        link += '<a href="javascript:addRow(' + "'" + options.gid + "'," + options.rowId + ');"><i class="icon-plus"></i></a>';
+      }
+      if (rowObject.product_item) {
+        link += '<a href="javascript:deleteRow(' + "'" + options.gid + "'," + options.rowId + ');"><i class="icon-trash"></i></a>';
+      }
+      if (rowObject.ticket_bundle && rowObject.ticket_bundle.id) {
+        link += '<a href="javascript:preview_ticket(' + rowObject.product_item.id + ')"><i class="icon-eye-open"></i></a>';
+      }
+      return link;
+    };
+  })(jQuery);
+
+  function addRow(gid, rowId) {
+    var grid = $('#' + gid);
+    var row = grid.getRowData(rowId);
+    if (!row.level) {
+      grid.setCell(rowId, 'parent', 'null');
+      grid.setCell(rowId, 'level', 0);
+      grid.setCell(rowId, 'isLeaf', false);
+      grid.setCell(rowId, 'expanded', true);
+      grid.setCell(rowId, 'loaded', true);
+    }
+
+    var data ={
+      product_id:row.product_id,
+      product_name:'(複数在庫商品)'
+    }
+    grid.addChildNode(undefined, rowId, data);
+  }
+  function deleteRow(gid, rowId) {
+    var grid = $('#' + gid);
+    grid.setCell(rowId, 'stock_holder_id', '', {background:'#BD362F'});
+    grid.setCell(rowId, 'product_item_name', '', {background:'#BD362F'});
+    grid.setCell(rowId, 'product_item_price', '', {background:'#BD362F'});
+    grid.setCell(rowId, 'product_item_quantity', '', {background:'#BD362F'});
+    grid.setCell(rowId, 'stock_quantity', '', {background:'#BD362F'});
+    grid.setCell(rowId, 'stock_status_quantity', '', {background:'#BD362F'});
+    grid.setCell(rowId, 'ticket_bundle_id', '', {background:'#BD362F'});
+    grid.setCell(rowId, 'deleted', true);
+    var row = new Object();
+    row['id'] = rowId;
+    grid.setRetainChanges([row]);
+  }
+</script>
+
+<div class="tabbable tabs-top grid-editor">
+  <ul class="nav nav-tabs">
+    % for i, sales_segment in enumerate(sales_segments):
+    <li class="${'active' if i == 0 else ''}"><a href="#sales-segment-tab-${sales_segment.id}" data-toggle="tab">${sales_segment.name}</a></li>
+    % endfor
+  </ul>
+
+  <div class="tab-content">
+    <p>※このアイコン<i class="icon-eye-open"></i>をクリックすると券面のプレビューができます</p>
+    % for i, sales_segment in enumerate(sales_segments):
+    <div class="tab-pane ${'active' if i == 0 else ''}" id="sales-segment-tab-${sales_segment.id}">
+      <script type="text/javascript">
+        $(function() {
+          <% options = ["%s:%s" % (st.id, st.name) for st in stock_types] %>
+          var stock_type_options = {value:"${';'.join(options)|n}"};
+          <% options = ["%s:%s" % (sh.id, sh.name) for sh in stock_holders] %>
+          var stock_holder_options = {value:"${';'.join(options)|n}"};
+          <% options = [u":(なし)"] + ["%s:%s" % (tb.id, tb.name) for tb in ticket_bundles] %>
+          var ticket_bundle_options = {value:"${';'.join(options)|n}"};
+
+          <%
+            query_string = 'sales_segment_id=%d' % sales_segment.id
+            if performance:
+              query_string += '&performance_id=%d' % performance.id
+          %>
+          var grid = $('#sales-segment-${sales_segment.id}-grid');
+          grid.jqGrid({
+            url: '/products/api/get/?${query_string|n}',  //表示したいデータ
+            editurl: '/products/api/set/?${query_string|n}',  // 保存先
+            datatype: 'json',  //データの種別
+            jsonReader : {repeatitems: false},
+            mtype: 'GET',
+            colModel:[
+              {hidden: true, jsonmap:'product.id', name:'product_id', editable:false},
+              {label:'商品名', jsonmap:'product.name', name:'product_name', index:'product_name', width:150, editable:false},
+              {label:'価格', jsonmap:'product.price', name:'product_price', index:'product_price', sorttype:'int', width:60, align:'right', editable:false},
+              {label:'表示順', jsonmap:'product.order', name:'product_order', index:'product_order', sorttype:'int', width:40, align:'right', editable:false},
+              {label:'一般公開', jsonmap:'product.public', name:'product_public', index:'product_public', width:60, align:'right', editable:false},
+              {label:'席種', jsonmap:'stock_type.id', name:'stock_type_id', index:'stock_type_id', width:150, formatter:'select', editable:true, edittype:'select', editoptions:stock_type_options},
+              {label:'配券先', jsonmap:'stock_holder.id', name:'stock_holder_id', index:'stock_holder_id', width:100, formatter:'select', editable:true, edittype:'select', editoptions:stock_holder_options},
+              {hidden: true, jsonmap:'product_item.id', name:'product_item_id', editable:false},
+              {label:'商品明細名', jsonmap:'product_item.name', name:'product_item_name', index:'product_item_name', width:150, editable:true},
+              {label:'単価', jsonmap:'product_item.price', name:'product_item_price', index:'product_item_price', sorttype:'int', width:60, align:'right', editable:true},
+              {label:'販売単位', jsonmap:'product_item.quantity', name:'product_item_quantity', index:'product_item_quantity', sorttype:'int', width:60, align:'right', editable:true},
+              {label:'券面', jsonmap:'ticket_bundle.id', name:'ticket_bundle_id', index:'ticket_bundle_id', width:80, formatter:'select', editable:true, edittype:'select', editoptions:ticket_bundle_options},
+              {label:'席数', jsonmap:'stock.quantity', name:'stock_quantity', index:'stock_quantity', sorttype:'int',  width:60, align:'right', editable:false},
+              {label:'残席数', jsonmap:'stock_status.quantity', name:'stock_status_quantity', index:'stock_status_quantity', sorttype:'int', width:60, align:'right', editable:false},
+              {label:' ', name:'link', width:80, formatter:grid.linkFormatter},
+              {hidden: true, jsonmap:'product_item', name:'product_item', editable:false},
+              {hidden: true, jsonmap:'ticket_bundle', name:'ticket_bundle', editable:false},
+              {hidden: true, name:'deleted', editable:false}
+            ],  //列ごとの設定
+            forceFit : true,
+            cellEdit: true,
+            cellsubmit: 'clientArray',
+            afterSaveCell: function (id, name, val, iRow, iCol){
+              grid.setCell(id, name, '', {background:'#F89406'});
+              grid.setRetainChanges();
+            },
+            loadComplete: function (){
+              var cells = grid.getRetainChanges('cell');
+              for (var i=0; i<cells.length; i++) {
+                for (var name in cells[i]) {
+                  grid.setCell(cells[i].id, name, '', {background:'#F89406'});
+                }
+              }
+            },  // sort時にセルの状態を維持
+            //pager: '',  //footerのページャー要素のid
+            rowNum:200,  //1ページに表示する行数
+            //rowList:[40, 100, 200],  //変更可能な1ページ当たりの行数
+            sortname: 'product_order',
+            sortorder: 'asc',
+            loadonce: true,
+            //caption: '',  //ヘッダーのキャプション
+            height: '100%',  //高さ
+            width: '100%',  //幅
+            shrinkToFit: false,  //画面サイズに依存せず固定の大きさを表示する設定
+            viewrecords: true,  //footerの右下に表示する
+            treeGrid: true,
+            treeGridModel: 'adjacency',
+            treedatatype: 'local',
+            ExpandColumn: 'product_name'
+          });
+
+          $('#sales-segment-${sales_segment.id}-save_button').click(function(){
+            $.ajax({
+              type: 'POST',
+              url: '/products/api/set/?${query_string|n}',
+              data: JSON.stringify(grid.getRetainChanges()),
+              dataType: 'json',
+              contentType: 'application/json; charset=utf-8',
+              success: function (response, textStatus, xhr) {
+                var grid = $('#sales-segment-${sales_segment.id}-grid');
+                var modal = $('#modal-alert');
+                modal.find('.modal-header > h3').text('保存完了');
+                modal.find('#message').html('<div class="alert alert-success">編集内容を保存しました</div>');
+                modal.modal('show');
+                grid.clearRetainChanges();
+              },
+              error: function (xhr, textStatus, errorThrown) {
+                var response_text = JSON.parse(xhr.responseText);
+                var message = response_text.message;
+                var rows = '';
+                if (response_text['rows']) {
+                  for (col in response_text.rows.errors) {
+                    var col_name = grid.getColumnLabel(grid, col);
+                    col_name = (col_name ? col_name + ':' : '');
+                    rows += '<li>(' + response_text.rows.rowid + '行目) ' + col_name + response_text.rows.errors[col] + '</li>';
+                  }
+                }
+                var modal = $('#modal-alert');
+                modal.find('.modal-header > h3').text('エラー');
+                modal.find('#message').html('<div class="alert alert-error">' + message + '<ul>' + rows + '</ul></div>');
+                modal.modal('show');
+              }
+            });
+          });
+          $('#sales-segment-${sales_segment.id}-clear_button').click(function(){
+            var grid = $('#sales-segment-${sales_segment.id}-grid');
+            grid.clearRetainChanges();
+          });
+        });
+      </script>
+
+      <div>
+        <table id="sales-segment-${sales_segment.id}-grid"></table>
+        <input type="button" id="sales-segment-${sales_segment.id}-save_button" value="保存" class="btn" />
+        <input type="button" id="sales-segment-${sales_segment.id}-clear_button" value="取消" class="btn" />
+      </div>
+    </div>
+    % endfor
+  </div>
+</div>
+% endif
+
+<%
+  label_classes = [
+    'label-important',
+    'label-warning',
+    'label-default',
+    'label-success',
+    'label-info',
+    'label-inverse'
+  ]
+
+  ss_to_st = {}
+  if products:
+    for product in products:
+      sales_segment = product.sales_segment
+      if sales_segment not in ss_to_st:
+        ss_to_st[sales_segment] = []
+      st_to_prod = ss_to_st[sales_segment]
+      st_to_prod.append(product)
+%>
+## 旧商品登録フォーム
+<div class="tabbable tabs-top product-table">
+  <ul class="nav nav-tabs">
+  % for i, sales_segment in enumerate(sales_segments):
+    <li class="${'active' if i == 0 else ''}"><a href="#sales-segment-${sales_segment.id}" data-toggle="tab">${sales_segment.name}</a></li>
+    % endfor
+  </ul>
+  <div class="tab-content" id="tabbable-tab-content">
+    <p>※このアイコン<i class="icon-eye-open"></i>をクリックすると券面のプレビューができます</p>
+    % for i, sales_segment in enumerate(sales_segments):
+    <div class="tab-pane ${'active' if i == 0 else ''}" id="sales-segment-${sales_segment.id}">
+      <form>
+        % if sales_segment in ss_to_st:
+        <div>
+          <% st_to_prod = ss_to_st[sales_segment] %>
+          <table class="table table-striped table-bordered table-condensed" style="margin-bottom: 10px;">
+            <thead>
+              <tr>
+                <th style="width: 20px;"></th>
+                <th style="width: 100px;">席種</th>
+                <th style="width: 130px;">${HH.label_text_for(Product.name)}</th>
+                <th style="width: 100px;">${HH.label_text_for(Product.price)}</th>
+                <th style="width: 60px;">${HH.label_text_for(Product.display_order)}</th>
+                <th style="width: 60px;">${HH.label_text_for(Product.public)}</th>
+                <th style="width: 100px;">配券先</th>
+                <th style="width: 100px;">商品明細名</th>
+                <th style="width: 80px;">単価</th>
+                <th style="width: 80px;">販売単位</th>
+                <th style="width: 100px;">席数</th>
+                <th style="width: 60px;">在庫ID</th>
+                <th style="width: 100px;">券面</th>
+                <th style="width: 110px;"></th>
+              </tr>
+            </thead>
+
+            <tbody>
+            <% row_count = 0 %>
+            % for product in sorted(st_to_prod, key=lambda x:x.display_order):
+              <% if limit and row_count >= limit: break %>
+              <% count = len(product.items) %>
+              <% rowspan = 'rowspan=%s' % (count)  if count else '' %>
+              <tr>
+                <td ${rowspan}><input type="radio" name="product_id" value="${product.id}" /></td>
+                <td ${rowspan}>${product.seat_type()}</td>
+                <td ${rowspan}><a href="javascript:edit_product('${product.id}');">${product.name}</a></td>
+                <td ${rowspan}>${vh.price(product.price)}</td>
+                <td ${rowspan}>${product.display_order}</td>
+                <td ${rowspan}>${u'○' if product.public else u'×'}</td>
+                  % for j, item in enumerate(product.items):
+                    % if j != 0:
+              <tr>
+                    % endif
+                <td style="border-left-style: dotted;">${item.stock.stock_holder.name}</td>
+                <td>${item.name}</td>
+                <td>${vh.price(item.price)}</td>
+                <td>${item.quantity}</td>
+                <td>${item.stock.stock_status.quantity} / ${item.stock.quantity}席</td>
+                <td>${item.stock.id}</td>
+                <td>
+                  % if item.ticket_bundle_id:
+                    <a id="productItem${item.id}" class="preview-link" data-pk="${item.id}" data-name="${item.name}">${item.ticket_bundle.name}<i class="icon-eye-open"></i></a>
+                  % else:
+                    -
+                  % endif
+                </td>
+                  % if row_count == 0:
+                <td><input type="hidden" id="ticket_bundle_id-${item.id}" value="${item.ticket_bundle_id}" />${HH.action_button(b.actions(product, item), order=['edit', 'preview', 'new', 'delete'], options='btn-small')}</td>
+                  % else:
+                <td><input type="hidden" id="ticket_bundle_id-${item.id}" value="${item.ticket_bundle_id}" />${HH.action_button(b.actions(product, item), order=['edit', 'preview', 'new', 'delete'], options='btn-small', dropup=True)}</td>
+                  % endif
+              </tr>
+                  % endfor
+                  % if count == 0:
+                <td colspan="7"></td>
+                <td>${HH.action_button(b.actions(product), options='btn-small')}</td>
+              </tr>
+                  % endif
+              </tr>
+              <% row_count += 1 %>
+            % endfor
+            </tbody>
+          </table>
+          % if limit and len(st_to_prod) > limit:
+          <div class="pull-right">
+            ${len(st_to_prod)}件中${limit}件を表示
+            <a href="${request.route_path('products.index', _query=dict(performance_id=(performance and performance.id), sales_segment_id=(sales_segment and sales_segment.id)))}">もっと見る</a>
+          </div>
+          % endif
+        </div>
+        % endif
+        <script type="text/javascript">
+        var add_point_grant_setting, remove_point_grant_settings;
+        (function (form) {  
+          add_point_grant_setting = function add_point_grant_setting() {
+            load_modal_form($('#modal-point-grant-setting-chooser'), '${request.route_path('sales_segments.point_grant_settings.add', sales_segment_id='__sales_segment_id__')}'.replace('__sales_segment_id__', get_selected_sales_segment_id()), null, null);
+          };
+          remove_point_grant_settings = function remove_point_grant_settings() {
+            form.attr({
+              action: '${request.route_path('sales_segments.point_grant_settings.remove', sales_segment_id='__sales_segment_id__', _query=dict(return_to=request.path))}'.replace('__sales_segment_id__', get_selected_sales_segment_id()),
+              method: 'post'
+            });
+            form.submit();
+          };
+        })($('script:last').closest('form'));
+        </script>
+      </form>
+    </div>
+    % endfor
+    <script type="text/javascript">
+      (function (tabContent) {
+        function get_active_tab() {
+          return tabContent.find('.tab-pane.active');
+        }
+        get_selected_product_id = function get_selected_product_id() {
+          return get_active_tab().find('form input[name="product_id"]:checked').val();
+        };
+        get_selected_sales_segment_id = function get_selected_sales_segment_id() {
+          m = /^sales-segment-(\d+)$/.exec(get_active_tab().attr('id'));
+              return m ? m[1]: null;
+        };
+      })($('script:last').closest('.tab-content'));
+    </script>
+  </div>
+</div>
+## パフォーマンス指定あり
+  <script type="text/javascript" src="${request.static_url("altair.app.ticketing:static/js/spin.js")}"></script>
+  <script type="text/javascript" src="${request.static_url("altair.app.ticketing:static/js/altair/spinner.js")}"></script>
+  <script type="text/javascript" src="${request.static_url("altair.app.ticketing:static/js/tickets/modal/api.js")}"></script>
+  <script type="text/javascript">
+    $(function(){
+      var modalView = false;
+      var modelname = "ProductItem";
+
+      // collect candidates info
+      var candidates = [];
+      $(".tab-pane.active .preview-link").each(function(_,e){
+        var $e = $(e); 
+        candidates.push({pk: $e.attr("data-pk"), name: $e.attr("data-name")}); 
+　    });
+      $(".nav-tabs a").on("click", function(){
+        candidates = [];
+        $(".tab-pane.active .preview-link").each(function(_,e){
+          var $e = $(e); 
+          candidates.push({pk: $e.attr("data-pk"), name: $e.attr("data-name")}); 
+  　    });
+      });
+
+      // preview component
+      $("a.preview-link").on("click", function(){
+
+        var $el = $(this);
+        var pk = $el.attr("data-pk");
+
+        if(!!modalView){
+          modalView.onClick();
+          apps["loadsvg"].model.changeHolder({pk: pk, name: modelname})
+          return false;
+        }
+% if performance:
+        var qstring = "event_id="+"${performance.event_id}"+"&performance_id="+"${performance.id}"; //ugly
+% else:
+        var qstring = "sales_segment_id="+"${sales_segment.id}"; //ugly
+% endif
+        modalView = new modal.api.AjaxModalView({
+          el: $el,
+          href: "${request.route_path('tickets.preview.dialog', model="ProductItem")}"+"?"+qstring, 
+          modalArea: $("#preview_ticket_modal"), 
+          option: {backdrop: false, stretch: true}, 
+          header: "チケット券面のpreview",
+          callback: function(modalview){
+           // append select
+            apps["loadsvg"] = new preview.SVGFromModelView({el: modalview.$modalArea, model: apps["preview"].models["params"], modelname: modelname});
+            apps["loadsvg"].render("商品選択:", candidates);
+            apps["loadsvg"].model.changeHolder({pk: pk, name: modelname})
+          }
+        });
+        modalView.onClick();
+        return false;
+      });
+    });
+  </script>
+  <div id="preview_ticket_modal"></div>
+% if paging:
+  ${ch.pager(products)}
+% endif
+## アラートダイアログ
+<div id="modal-alert" class="modal hide">
+  <div class="modal-header">
+    <a href="#" class="close" data-dismiss="modal">&times;</a>
+    <h3></h3>
+  </div>
+  <div class="modal-body">
+    <p id="message"></p>
+  </div>
+  <div class="modal-footer">
+    <a href="javascript:void(0);" onclick="$('#modal-alert').modal('hide');" class="btn secondary">閉じる</a>
+  </div>
+</div>

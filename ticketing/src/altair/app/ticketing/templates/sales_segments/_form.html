@@ -1,0 +1,62 @@
+<%page args="form, action='#'" />
+<% from wtforms.widgets import HiddenInput %>
+<%namespace file="/common/helpers.html" name="ch" />
+
+<script>
+(function($) {
+  var pdmp_map = ${pdmp_map|n};
+  var account_map = ${account_map|n};
+  $(function() {
+    $('#sales_segment_group_id').change(function() {
+      var sales_segment_group_id = $(this).val();
+      $('#payment_delivery_method_pairs').empty();
+      var pdmps = pdmp_map[sales_segment_group_id];
+      for (var i=0; i < pdmps.length; i++) {
+        var pdmp = pdmps[i];
+        var id = 'payment_delivery_method_pair_id.' + pdmp[0];
+        $('#payment_delivery_method_pairs').append(
+          $('<span class="checkbox-set-item"></span>')
+            .append(
+              $('<input />')
+              .attr('type', 'checkbox')
+              .attr('name', 'payment_delivery_method_pairs[]')
+              .attr('value', pdmp[0])
+              .attr('id', id))
+            .append(' ')
+            .append(
+              $('<label class="inline"></label>')
+              .text(pdmp[1])
+              .attr('for', id))
+        );
+      }
+      $('#account_id').val(account_map[sales_segment_group_id]);
+    });
+  });
+})($);
+</script>
+<form action="${action}" method="POST">
+  ${ch.form_item(form.id)}
+  % if not form.sales_segment_group_id.data:
+    ${ch.form_item(form.sales_segment_group_id, class_='span8')}
+  % else:
+    <input type="hidden" name="${form.sales_segment_group_id.name}" value="${form.sales_segment_group_id.data}" />
+  % endif
+  % if not form.performance_id.data:
+    ${ch.form_item(form.performance_id, class_='span8')}
+  % else:
+    <input type="hidden" name="${form.performance_id.name}" value="${form.performance_id.data}" />
+  % endif
+  ${ch.form_item(form.payment_delivery_method_pairs)}
+  ${ch.form_item(form.start_at, class_="datefield")}
+  ${ch.form_item(form.end_at, class_="datefield")}
+  ${ch.form_item(form.account_id)}
+  ${ch.form_item(form.margin_ratio)}
+  ${ch.form_item(form.refund_ratio)}
+  ${ch.form_item(form.printing_fee)}
+  ${ch.form_item(form.registration_fee)}
+  ${ch.form_item(form.upper_limit)}
+<%doc>${ch.form_item(form.order_limit)}</%doc>
+  ${ch.form_item(form.seat_choice)}
+  ${ch.form_item(form.public)}
+  ${ch.form_item(form.reporting)}
+</form>

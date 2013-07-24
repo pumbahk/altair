@@ -1,0 +1,122 @@
+<%inherit file="/layout_2cols.html"/>
+<%namespace file="/common/helpers.html" name="ch" />
+
+<%
+  if request.matched_route.name == 'payment_delivery_method_pairs.edit':
+    is_edit = True
+    route_name = u'編集'
+    route_path = request.route_path('payment_delivery_method_pairs.edit', payment_delivery_method_pair_id=form.id.data)
+  else:
+    is_edit = False
+    route_name = u'登録'
+    route_path = request.route_path('payment_delivery_method_pairs.new', sales_segment_group_id=sales_segment_group.id)
+%>
+
+<style type="text/css">
+  .form-horizontal .control-label {
+    width: 180px;
+  }
+  .form-horizontal .controls {
+    margin-left: 200px;
+  }
+</style>
+
+<script type="text/javascript">
+  $(function() {
+    <% from altair.app.ticketing.payments import plugins %>
+    var sej_payment_method_ids = ${[int(pm.id) for pm in payment_methods if pm.payment_plugin_id == plugins.SEJ_PAYMENT_PLUGIN_ID]};
+    var sej_delivery_method_ids = ${[int(dm.id) for dm in delivery_methods if dm.delivery_plugin_id == plugins.SEJ_DELIVERY_PLUGIN_ID]};
+
+    var display_sej_field = function(){
+      var sej_field = $('form').find('#sej_field');
+      var pm_id = parseInt($('#payment_method_id').val());
+      var dm_id = parseInt($('#delivery_method_id').val());
+      if ($.inArray(pm_id, sej_payment_method_ids) >= 0 || $.inArray(dm_id, sej_delivery_method_ids) >= 0) {
+        sej_field.css('display', 'block');
+        sej_field.find('input').removeAttr('disabled');
+      } else {
+        sej_field.css('display', 'none');
+        sej_field.find('input').attr('disabled', 'disabled');
+      }
+    };
+
+    var payment_method_data = ${dict([(int(pm.id), int(pm.fee)) for pm in payment_methods])};
+    var delivery_method_data = ${dict([(int(dm.id), int(dm.fee)) for dm in delivery_methods])};
+
+    $('#payment_method_id').change(function() {
+      % if not is_edit:
+      var default_fee = payment_method_data[parseInt($(this).val())];
+      $('#transaction_fee').val(default_fee);
+      % endif
+      display_sej_field.call()
+    }).change();
+    $('#delivery_method_id').change(function() {
+      % if not is_edit:
+      var default_fee = delivery_method_data[parseInt($(this).val())];
+      $('#delivery_fee').val(default_fee);
+      % endif
+      display_sej_field.call()
+    }).change();
+
+    $('#system_fee, #transaction_fee, #delivery_fee, #discount').load(function(){
+      $(this).val(Math.floor($(this).val()));
+    }).load();
+
+    $('#public').change(function() {
+      if ($(this).attr('checked')) {
+        $(this).val(1);
+      } else {
+        $(this).val(0);
+      }
+    }).change();
+
+    $('[rel=popover]').popover();
+  });
+</script>
+
+<%block name="breadcrumbs">
+  ${ch.breadcrumbs(
+    names=[u'イベント', sales_segment_group.event.title, u'販売区分', sales_segment_group.name],
+    urls=[
+      request.route_path('events.index'),
+      request.route_path('events.show', event_id=sales_segment_group.event.id),
+      request.route_path('sales_segment_groups.index', event_id=sales_segment_group.event.id),
+    ]
+  )}
+</%block>
+
+<div class="page-header">
+  <h1>決済・引取方法${route_name}</h1>
+</div>
+
+<div class="well">
+  <form class="form-horizontal" action="${route_path}" method="POST">
+    <fieldset>
+      % if is_edit:
+      ${ch.form_item(form.payment_method_id, disabled='disabled')}
+      ${ch.form_item(form.delivery_method_id, disabled='disabled')}
+      % else:
+      ${ch.form_item(form.payment_method_id)}
+      ${ch.form_item(form.delivery_method_id)}
+      % endif
+
+      ${ch.form_item(form.system_fee, class_='span2')}
+      ${ch.form_item(form.transaction_fee, class_='span2')}
+      ${ch.form_item(form.delivery_fee, class_='span2')}
+      ${ch.form_item(form.discount, class_='span2')}
+      ${ch.form_item(form.discount_unit, class_='span2')}
+      ${ch.form_item(form.public)}
+      ${ch.form_item(form.sales_segment_group_id)}
+      ${ch.form_item(form.unavailable_period_days, class_='span2', help=ch.help(form.unavailable_period_days, u'販売終了日時の何日前から、この決済・引取方法を選択できなくなるかを日数指定してください。'))}
+      <div id="sej_field">
+        ${ch.form_item(form.payment_period_days, class_='span2', help=ch.help(form.payment_period_days, u'コンビニ決済で、購入後、この日数が経過するまでの間に決済を完了させる必要があります。'))}
+        ${ch.form_item(form.issuing_interval_days, class_='span2', help=ch.help(form.issuing_interval_days, u'コンビニ決済で、この日数が経過すると店舗にて発券できるようになります。(主に不正行為対策として一定日数を設けます)'))}
+        ${ch.form_item(form.issuing_start_at, class_='span2', help=ch.help(form.issuing_start_at, u'コンビニ決済で、店舗での発券を開始する日時を指定します。(通常はこの日時指定は使いません)'))}
+        ${ch.form_item(form.issuing_end_at, class_='span2', help=ch.help(form.issuing_end_at, u'コンビニ決済で、店舗での発券を終了する日時を指定します。(通常はこの日時指定は使いません)'))}
+      </div>
+    </fieldset>
+    <div class="form-actions">
+      <input class="btn btn-primary" type="submit" name="submit" value="保存">
+    </div>
+  </form>
+</div>

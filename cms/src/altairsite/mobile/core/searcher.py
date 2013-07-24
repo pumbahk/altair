@@ -5,6 +5,7 @@ from altaircms.models import Performance, SalesSegmentGroup, SalesSegmentKind
 from altaircms.event.models import Event
 from altaircms.page.models import Page
 from altaircms.models import Genre
+from altairsite.search.forms import parse_date, create_close_date
 from altairsite.mobile.core.const import get_prefecture
 from altairsite.mobile.core.helper import exist_value
 from altairsite.mobile.core.const import SalesEnum
@@ -155,22 +156,79 @@ class EventSearcher(object):
     # 公演日検索
     def get_events_from_start_on(self, form, qs=None):
         log_info("get_events_from_start_on", "start")
-        if form.year.data == "0":
-            # 全部ハイフンの場合
-            log_info("get_events_from_start_on", "all hyphen")
-            return qs
 
         log_info("get_events_from_start_on", "search start")
-        since_open = datetime(
-            int(form.since_year.data), int(form.since_month.data), int(form.since_day.data))
-        open = datetime(
-            int(form.year.data), int(form.month.data), int(form.day.data))
-        where = (since_open <= Event.event_open) & (open >= Event.event_open)
-        qs = self._create_common_qs(where=where, qs=qs)
+
+        since_open, open = self.get_open(form)
+
+        where = None
+        if since_open and open:
+            where = (
+                (since_open <= Event.event_open) & (open >= Event.event_open) |
+                (since_open <= Event.event_close) & (open >= Event.event_close) |
+                (Event.event_open <= since_open) & (Event.event_close >= open )
+            )
+        elif since_open:
+            where = (
+                (Event.event_open <= since_open) & (Event.event_close  >= since_open) |
+                (Event.event_open >= since_open)
+            )
+        elif open:
+            where = (
+                (Event.event_open <= open) & (Event.event_close  >= open) |
+                (Event.event_close <= open)
+            )
+
+        if since_open or open:
+            qs = self._create_common_qs(where=where, qs=qs)
         log_info("get_events_from_start_on", "search end")
 
+        form = self.update_form(form, since_open, open)
+
         log_info("get_events_from_start_on", "end")
-        return qs
+        return qs, form
+
+    def update_form(self, form, since_open, open):
+        if since_open:
+            form.since_year.data = str(since_open.year)
+            form.since_month.data = str(since_open.month)
+            form.since_day.data = str(since_open.day)
+        else:
+            form.since_year.data = "-"
+            form.since_month.data = "-"
+            form.since_day.data = "-"
+        if open:
+            form.year.data = str(open.year)
+            form.month.data = str(open.month)
+            form.day.data = str(open.day)
+        else:
+            form.year.data = "-"
+            form.month.data = "-"
+            form.day.data = "-"
+        return form
+
+    def get_open(self, form):
+        open = self.create_open(form)
+        since_open = self.create_since_open(form)
+
+        if open and since_open and open < since_open:
+            open = self.create_since_open(form)
+            since_open = self.create_open(form)
+
+        open = create_close_date(open)
+        return since_open, open
+
+    def get_datetime(self, year, month, day):
+        date = None
+        if year.isdigit() and month.isdigit() and day.isdigit():
+            date = parse_date(int(year), int(month), int(day))
+        return date
+
+    def create_since_open(self, form):
+        return self.get_datetime(form.since_year.data, form.since_month.data, form.since_day.data)
+
+    def create_open(self, form):
+        return self.get_datetime(form.year.data, form.month.data, form.day.data)
 
     # 販売区分別
     def get_events_from_salessegment(self, form, qs=None):
@@ -232,11 +290,12 @@ class PrefectureEventSearcher(EventSearcher):
 
 def create_event_searcher(request, form):
     searcher = SimpleEventSearcher(request=request)
+
     if form.sale.data == int(SalesEnum.SOON_ACT):
         searcher = PrefectureEventSearcher(request=request)
     if exist_value(form.area.data):
         searcher = PrefectureEventSearcher(request=request)
     if hasattr(form, "sales_segment"):
-        if form.sales_segment:
+        if form.sales_segment.data:
             searcher = EventSearcher(request=request)
     return searcher

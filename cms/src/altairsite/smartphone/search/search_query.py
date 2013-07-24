@@ -106,6 +106,10 @@ class DetailSearchQuery(object):
         if self.event_open_info:
             if self.event_open_info.since_event_open and self.event_open_info.event_open:
                 query.append(u"公演日：" + self.event_open_info.since_event_open.strftime("%Y-%m-%d") + u" 〜 " + self.event_open_info.event_open.strftime("%Y-%m-%d"))
+            elif self.event_open_info.since_event_open:
+                query.append(u"公演日：" + self.event_open_info.since_event_open.strftime("%Y-%m-%d") + u" 〜 ")
+            elif self.event_open_info.event_open:
+                query.append(u"公演日：〜 " + self.event_open_info.event_open.strftime("%Y-%m-%d"))
         if self.sale_info:
             if self.sale_info.sale_start:
                 query.append(u"販売開始まで：" + str(self.sale_info.sale_start) + u"日")
@@ -158,15 +162,21 @@ class DetailSearchQuery(object):
             for segment in self.sales_segment:
                 parameter += "&sales_segment=" + segment
         if self.event_open_info:
-            if self.event_open_info.since_event_open:
-                if self.event_open_info.event_open:
-                    # smell
-                    parameter += "&since_year=" + str(self.event_open_info.since_event_open.year)
-                    parameter += "&since_month=" + str(self.event_open_info.since_event_open.month)
-                    parameter += "&since_day=" + str(self.event_open_info.since_event_open.day)
-                    parameter += "&year=" + str(self.event_open_info.event_open.year)
-                    parameter += "&month=" + str(self.event_open_info.event_open.month)
-                    parameter += "&day=" + str(self.event_open_info.event_open.day)
+            if self.event_open_info.since_event_open and self.event_open_info.event_open:
+                parameter += "&since_year=" + str(self.event_open_info.since_event_open.year)
+                parameter += "&since_month=" + str(self.event_open_info.since_event_open.month)
+                parameter += "&since_day=" + str(self.event_open_info.since_event_open.day)
+                parameter += "&year=" + str(self.event_open_info.event_open.year)
+                parameter += "&month=" + str(self.event_open_info.event_open.month)
+                parameter += "&day=" + str(self.event_open_info.event_open.day)
+            elif self.event_open_info.since_event_open:
+                parameter += "&since_year=" + str(self.event_open_info.since_event_open.year)
+                parameter += "&since_month=" + str(self.event_open_info.since_event_open.month)
+                parameter += "&since_day=" + str(self.event_open_info.since_event_open.day)
+            elif self.event_open_info.event_open:
+                parameter += "&year=" + str(self.event_open_info.event_open.year)
+                parameter += "&month=" + str(self.event_open_info.event_open.month)
+                parameter += "&day=" + str(self.event_open_info.event_open.day)
         if self.sale_info:
             parameter += "&sale_start="
             if self.sale_info.sale_start:

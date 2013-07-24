@@ -1,5 +1,5 @@
-from ticketing.payments.plugins.qr import QRTicketDeliveryPlugin
-from ticketing.core.models import *
+from altair.app.ticketing.payments.plugins.qr import QRTicketDeliveryPlugin
+from altair.app.ticketing.core.models import *
 # order = Order.query.filter(Order.order_no=="NH000000031K").one()
 #08020933640 
 order = Order.query.filter(Order.order_no=="NH000000040S").one()
@@ -10,7 +10,7 @@ class cart:
 
 QRTicketDeliveryPlugin().finish(request, cart)
 
-from ticketing.models import DBSession
+from altair.app.ticketing.models import DBSession
 DBSession.bind.echo = True
 DBSession.add(order)
 

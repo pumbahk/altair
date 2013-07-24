@@ -15,22 +15,22 @@ fileConfig(config.config_file_name)
 # for 'autogenerate' support
 # from myapp import mymodel
 # target_metadata = mymodel.Base.metadata
-from ticketing import models
+from altair.app.ticketing import models
 
-import ticketing.bookmark.models
-import ticketing.cart.models
-import ticketing.payments.plugins.models
-import ticketing.checkout.models
-import ticketing.core.models
-import ticketing.master.models
-import ticketing.models
-import ticketing.multicheckout.models
-import ticketing.mypage.models
-import ticketing.oauth2.models
-import ticketing.operators.models
-import ticketing.sej.models
-import ticketing.users.models
-import ticketing.lots.models
+import altair.app.ticketing.bookmark.models
+import altair.app.ticketing.cart.models
+import altair.app.ticketing.payments.plugins.models
+import altair.app.ticketing.checkout.models
+import altair.app.ticketing.core.models
+import altair.app.ticketing.master.models
+import altair.app.ticketing.models
+import altair.multicheckout.models
+import altair.app.ticketing.mypage.models
+import altair.app.ticketing.oauth2.models
+import altair.app.ticketing.operators.models
+import altair.app.ticketing.sej.models
+import altair.app.ticketing.users.models
+import altair.app.ticketing.lots.models
 
 target_metadata = models.Base.metadata
 # target_metadata = None

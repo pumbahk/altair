@@ -1,0 +1,143 @@
+<%page args="form, organization" />
+<%namespace file="/common/helpers.html" name="ch"/>
+
+<div class="page-header">
+  <h4>基本情報</h4>
+</div>
+<table class="table table-bordered fullwidth">
+  <tbody>
+  <tr>
+    <th class="span3">${form.name.label.text}</th>
+    <td>${organization.name or ''}</td>
+  </tr>
+  <tr>
+    <th class="span3">${form.short_name.label.text}</th>
+    <td>${organization.short_name or ''}</td>
+  </tr>
+  <tr>
+    <th class="span3">${form.code.label.text}</th>
+    <td>${organization.code or ''}</td>
+  </tr>
+  <tr>
+    <th class="span3">${form.client_type.label.text}</th>
+    <td>${organization.client_type or ''}</td>
+  </tr>
+  </tbody>
+</table>
+
+<div class="page-header">
+  <h4>連絡先</h4>
+</div>
+<table class="table table-bordered fullwidth">
+  <tbody>
+  <tr>
+    <th class="span3">${form.contact_email.label.text}</th>
+    <td>${organization.contact_email or ''}</td>
+  </tr>
+  <tr>
+    <th class="span3">${form.prefecture_id.label.text}</th>
+    <td>${organization.prefecture or ''}</td>
+  </tr>
+  <tr>
+    <th class="span3">${form.city.label.text}</th>
+    <td>${organization.city or ''}</td>
+  </tr>
+  <tr>
+    <th class="span3">${form.address.label.text}</th>
+    <td>${organization.address or ''}</td>
+  </tr>
+  <tr>
+    <th class="span3">${form.street.label.text}</th>
+    <td>${organization.street or ''}</td>
+  </tr>
+  <tr>
+    <th class="span3">${form.other_address.label.text}</th>
+    <td>${organization.other_address or ''}</td>
+  </tr>
+  <tr>
+    <th class="span3">${form.tel_1.label.text}</th>
+    <td>${organization.tel_1 or ''}</td>
+  </tr>
+  <tr>
+    <th class="span3">${form.tel_2.label.text}</th>
+    <td>${organization.tel_2 or ''}</td>
+  </tr>
+  <tr>
+    <th class="span3">${form.fax.label.text}</th>
+    <td>${organization.fax or ''}</td>
+  </tr>
+  </tbody>
+</table>
+
+% if organization.user and organization.user.bank_account:
+<div class="page-header">
+  <h4>振込先</h4>
+</div>
+<table class="table table-bordered fullwidth">
+  <tbody>
+  <tr>
+    <th class="span3">銀行名</th>
+    <td>${organization.user.bank_account.bank_id or ''}</td>
+  </tr>
+  <tr>
+    <th class="span3">口座種別</th>
+    <td>${organization.user.bank_account.account_type or ''}</td>
+  </tr>
+  <tr>
+    <th class="span3">口座番号</th>
+    <td>${organization.user.bank_account.account_number or ''}</td>
+  </tr>
+  <tr>
+    <th class="span3">口座名義</th>
+    <td>${organization.user.bank_account.account_owner or ''}</td>
+  </tr>
+  </tbody>
+</table>
+% endif
+
+<div class="page-header">
+  <h4>コンビニ設定</h4>
+</div>
+<%include file="sej_tenants/_action_button.html" args="organization=organization, order=['new', 'edit', 'delete']" />
+
+<table class="table table-bordered fullwidth" style="margin-top: 10px;">
+  <thead>
+    <tr>
+        <th>ショップ名</th>
+        <th>ショップID</th>
+        <th>連絡先１</th>
+        <th>連絡先２</th>
+    </tr>
+  </thead>
+  <tbody>
+% if sej_tenants:
+  % for tenant in sej_tenants:
+  <tr>
+    <td class="span3">${tenant.shop_name}</td>
+    <td class="span3">${tenant.shop_id}</td>
+    <td>${tenant.contact_01}</td>
+    <td>${tenant.contact_02}</td>
+  </tr>
+  % endfor
+% endif
+  <tbody>
+</table>
+
+<hr/>
+<div class="page-header">
+  <h4>メール付加情報設定</h4>
+</div>
+
+<%
+from altair.app.ticketing.core.models import MailTypeEnum
+%>
+<div class="btn-group">
+  <a class="btn"
+	 href="${request.route_path("organizations.mails.new", organization_id=organization.id, mailtype=MailTypeEnum.PurchaseCompleteMail)}">
+    <i class="icon-pencil"></i> 購入完了メール付加情報
+  </a>
+  <a class="btn"
+	 href="${request.route_path("organizations.mails.new", organization_id=organization.id, mailtype=MailTypeEnum.PurchaseCancelMail)}">
+    <i class="icon-pencil"></i> 購入キャンセルメール付加情報
+  </a>
+</div>

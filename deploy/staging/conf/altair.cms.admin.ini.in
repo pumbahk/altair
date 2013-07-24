@@ -10,6 +10,7 @@ altaircms.page.tmp.directory = %(here)s/../tmp
 altaircms.asset.storepath = %(here)s/../var/altair/cms/asset
 altaircms.s3.utility = ${altair:altaircms.s3.utility}
 altaircms.solr.search.utility  = ${altair:altaircms.solr.search.utility}
+altaircms.page.static.factoryclass = ${altair:altaircms.page.static.factoryclass}
 altaircms.usersite.url  = ${altair:altaircms.usersite.url}
 altaircms.backend.url  = ${altair:altaircms.backend.url}
 altaircms.logout.external.url  = ${altair:altaircms.logout.external.url}

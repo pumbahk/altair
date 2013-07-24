@@ -107,10 +107,10 @@ extras_require = {
     "testing": tests_require
 }
 
-setup(name='ticketing',
+setup(name='altair.app.ticketing',
       version='0.0',
       use_date_versioning=True,
-      description='ticketing',
+      description='altair.app.ticketing',
       long_description=README + '\n\n' +  CHANGES,
       classifiers=[
         "Programming Language :: Python",
@@ -130,23 +130,23 @@ setup(name='ticketing',
       setup_requires=["altair.versiontools"],
       dependency_links = [
         'file:../commons#egg=altair-commons-0.0',
-        'file:../altair_versiontools#egg=altair.versiontools-1.0',
-        "file:../altair_findable_label#egg=altair.findable_label-0.0", 
-        "file:../altair_log#egg=altair.log-0.0.1", 
-        "file:../altair_auth#egg=altair.auth-1.0", 
-        "file:../altair_sqla#egg=altair.sqla-1.0", 
-        "file:../altair_exclog#egg=altair.exclog-0.0", 
-        "file:../altair_now#egg=altair.now-0.0", 
-        "file:../altair_logicaldeleting#egg=altair.logicaldeleting-0.0", 
-        "file:../altair_mq#egg=altair.mq-0.0", 
-        "file:../altair_pyramid_assets#egg=altair.pyramid_assets-0.0.1",
-        "file:../altair_pyramid_boto#egg=altair.pyramid_boto-0.0.1",
-        "file:../altair_mobile#egg=altair.mobile-0.0.1",
-        "file:../altair_mq#egg=altair.mq-0.0", 
-        "file:../altair_pyramid_tz#egg=altair.pyramid_tz-0.0.0",
-        "file:../altair_rakuten_auth#egg=altair.rakuten_auth-0.0.0",
-        "file:../altair_saannotation#egg=altair.saannotation-0.0",
-        'file:../bundle/js.bootstrap_ts-2.3.2.dev1-py2.7.egg',
+        'file:../altairlib/altair.versiontools#egg=altair.versiontools-1.0',
+        "file:../altairlib/altair.findable_label#egg=altair.findable_label-0.0", 
+        "file:../altairlib/altair.log#egg=altair.log-0.0.1", 
+        "file:../altairlib/altair.auth#egg=altair.auth-1.0", 
+        "file:../altairlib/altair.sqla#egg=altair.sqla-1.0", 
+        "file:../altairlib/altair.exclog#egg=altair.exclog-0.0", 
+        "file:../altairlib/altair.now#egg=altair.now-0.0", 
+        "file:../altairlib/altair.logicaldeleting#egg=altair.logicaldeleting-0.0", 
+        "file:../altairlib/altair.mq#egg=altair.mq-0.0", 
+        "file:../altairlib/altair.pyramid_assets#egg=altair.pyramid_assets-0.0.1",
+        "file:../altairlib/altair.pyramid_boto#egg=altair.pyramid_boto-0.0.1",
+        "file:../altairlib/altair.mobile#egg=altair.mobile-0.0.1",
+        "file:../altairlib/altair.mq#egg=altair.mq-0.0", 
+        "file:../altairlib/altair.pyramid_tz#egg=altair.pyramid_tz-0.0.0",
+        "file:../altairlib/altair.rakuten_auth#egg=altair.rakuten_auth-0.0.0",
+        "file:../altairlib/altair.saannotation#egg=altair.saannotation-0.0",
+        'file:../bundle/js.bootstrap_ts-2.3.2.dev2-py2.7.egg',
         'https://github.com/moriyoshi/tableau/tarball/master#egg=tableau-0.0.4pre2',
         "https://github.com/numpy/numpy/tarball/v1.6.2#egg=numpy-1.6.2",
         'https://github.com/moriyoshi/beaker_extensions/tarball/0.2.0dev-moriyoshi2#egg=beaker-extensions-0.2.0dev-moriyoshi2',
@@ -155,30 +155,30 @@ setup(name='ticketing',
       ],
       tests_require=tests_require,
       extras_require=extras_require, 
-      test_suite="ticketing",
+      test_suite="altair.app.ticketing",
       entry_points = """\
       [paste.app_factory]
-      main = ticketing:main
+      main = altair.app.ticketing:main
       [console_scripts]
-      inquiry_demo=ticketing.cart.commands:inquiry_demo
-      cancel_auth_expired_carts=ticketing.cart.commands:cancel_auth_expired_carts
-      venue_import=ticketing.scripts.venue_import:main
-      update_seat_status=ticketing.orders.commands:update_seat_status
-      join_cart_and_order=ticketing.cart.commands:join_cart_and_order
+      inquiry_demo=altair.app.ticketing.cart.commands:inquiry_demo
+      cancel_auth_expired_carts=altair.app.ticketing.cart.commands:cancel_auth_expired_carts
+      venue_import=altair.app.ticketing.scripts.venue_import:main
+      update_seat_status=altair.app.ticketing.orders.commands:update_seat_status
+      join_cart_and_order=altair.app.ticketing.cart.commands:join_cart_and_order
       sej_notification=ticketing.sej.scripts.sej_notification:main
-      check_multicheckout_orders=ticketing.scripts.check_multicheckout_orders:main
-      populate_order_no=ticketing.scripts.populate_order_no:main
-      send_sales_reports=ticketing.events.sales_reports.commands:main
-      cancel_auth=ticketing.multicheckout.scripts.cancelauth:main
-      sej_nwts_upload=ticketing.sej.scripts.sej_nwts_upload:main
-      release_carts=ticketing.cart.scripts.release_carts:main
-      rakuten_checkout_sales=ticketing.checkout.commands:rakuten_checkout_sales
-      refund_order=ticketing.orders.commands:refund_order
-      sej_send_refund_file_with_proxy=ticketing.sej.commands:send_refund_file_with_proxy
-      import_point_grant_results=ticketing.loyalty.commands:import_point_grant_results
-      import_point_grant_data=ticketing.loyalty.commands:import_point_grant_data
-      export_point_grant_data=ticketing.loyalty.commands:export_point_grant_data
-      make_point_grant_data=ticketing.loyalty.commands:make_point_grant_data
+      check_multicheckout_orders=altair.app.ticketing.scripts.check_multicheckout_orders:main
+      populate_order_no=altair.app.ticketing.scripts.populate_order_no:main
+      send_sales_reports=altair.app.ticketing.events.sales_reports.commands:main
+      cancel_auth=altair.app.ticketing.multicheckout.scripts.cancelauth:main
+      sej_nwts_upload=altair.app.ticketing.sej.scripts.sej_nwts_upload:main
+      release_carts=altair.app.ticketing.cart.scripts.release_carts:main
+      rakuten_checkout_sales=altair.app.ticketing.checkout.commands:rakuten_checkout_sales
+      refund_order=altair.app.ticketing.orders.commands:refund_order
+      sej_send_refund_file_with_proxy=altair.app.ticketing.sej.commands:send_refund_file_with_proxy
+      import_point_grant_results=altair.app.ticketing.loyalty.commands:import_point_grant_results
+      import_point_grant_data=altair.app.ticketing.loyalty.commands:import_point_grant_data
+      export_point_grant_data=altair.app.ticketing.loyalty.commands:export_point_grant_data
+      make_point_grant_data=altair.app.ticketing.loyalty.commands:make_point_grant_data
       """,
       paster_plugins=['pyramid'],
       )

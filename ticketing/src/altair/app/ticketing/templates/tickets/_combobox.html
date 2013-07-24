@@ -1,0 +1,46 @@
+<%page args="apis"/>
+<% import json %>
+
+<h1 class="page">
+  券面入力補助ダイアログ
+</h1>
+
+<style type="text/css">
+  #combobox_candidates select{
+    width:80%;
+  }
+</style>
+
+<div class="well" id="combobox_candidates">
+  <div id="organization_select"></div>
+  <div id="event_select"></div>
+  <div id="performance_select"></div>
+  <div id="product_select"></div>
+</div>
+<script type="text/javascript" src="${request.static_url("altair.app.ticketing:static/js/spin.js")}"></script>
+<script type="text/javascript" src="${request.static_url("altair.app.ticketing:static/js/altair/spinner.js")}"></script>
+<script type="text/javascript" src="${request.static_url("altair.app.ticketing:static/js/tickets/core/gateway.js")}"></script>
+<script type="text/javascript" src="${request.static_url("altair.app.ticketing:static/js/tickets/core/viewmodel.js")}"></script>
+<script type="text/javascript" src="${request.static_url("altair.app.ticketing:static/js/tickets/core/services.js")}"></script>
+<script type="text/javascript" src="${request.static_url("altair.app.ticketing:static/js/tickets/combobox/viewmodels.js")}"></script>
+<script type="text/javascript" src="${request.static_url("altair.app.ticketing:static/js/tickets/combobox/views.js")}"></script>
+<script type="text/javascript" src="${request.static_url("altair.app.ticketing:static/js/tickets/combobox/gateway.js")}"></script>
+<script type="text/javascript" src="${request.static_url("altair.app.ticketing:static/js/tickets/combobox/models.js")}"></script>
+<script type="text/javascript" src="${request.static_url("altair.app.ticketing:static/js/tickets/combobox/app.js")}"></script>
+
+<script type="text/javascript">
+  $(function(){
+    if(!window.apps)
+       window.apps = {}; 
+
+    var apis = ${json.dumps(apis)|n};
+    var afterAllSelect = function(data){};
+    window.apps["combobox"] = window.appView = combobox.ApplicationViewFactory(apis, combobox.ForTicketPreviewComboboxGateway,
+      $("#organization_select"),
+      $("#event_select"),
+      $("#performance_select"),
+      $("#product_select"),
+      afterAllSelect
+    ).start();
+  });
+</script>

@@ -202,11 +202,11 @@ $(function () {
                             <div class="actions">
                                 準備中
                             </div>
-                          %elif min(start_on_candidates) >= helper.now():
+                          %elif min(start_on_candidates) >= helper.now(request):
                             <div class="actions">
                                 販売前
                             </div>
-                          %elif max(end_on_candidates) >= helper.now():
+                          %elif max(end_on_candidates) >= helper.now(request):
                             <div class="actions">
                               <a class="purchase" index="0" href="${purchase_links[perf['perf'].id]}">
                                 <button class="btn btn-primary btn-large"><span class="btn-inner">購入</span></button>
@@ -259,11 +259,11 @@ $(function () {
                             <div class="actions">
                                 準備中
                             </div>
-                          %elif min(start_on_candidates) >= helper.now():
+                          %elif min(start_on_candidates) >= helper.now(request):
                             <div class="actions">
                                 販売前
                             </div>
-                          %elif max(end_on_candidates) >= helper.now():
+                          %elif max(end_on_candidates) >= helper.now(request):
                             <div class="actions">
                               <a class="purchase" index="${count}" href="${purchase_links[perf.id]}">
                                 <button class="btn btn-primary btn-large"><span class="btn-inner">購入</span></button>

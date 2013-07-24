@@ -1,9 +1,0 @@
-#!/bin/bash
-
-pushd ../cms/ 
-python setup.py dev
-popd
-
-pushd ../ticketing/src/
-python setup.py develop
-popd

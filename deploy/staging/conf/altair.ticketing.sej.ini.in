@@ -62,7 +62,7 @@ propagate = 0
 [logger_ticketing]
 level = DEBUG
 handlers = console, fluent
-qualname = ticketing
+qualname = altair.app.ticketing
 propagate = 0
 
 [logger_sej]

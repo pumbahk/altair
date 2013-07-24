@@ -4,6 +4,7 @@ from wtforms import SelectField, RadioField, TextField
 from wtforms.validators import Optional
 from altairsite.mobile.core.const import SalesEnum
 from altairsite.mobile.event.search.forms import SearchForm
+from altairsite.search.forms import parse_date, create_close_date
 from datetime import date
 from altairsite.mobile.core.helper import log_info
 from altaircms.formhelpers import CheckboxListField
@@ -23,37 +24,12 @@ class DetailSearchForm(SearchForm):
         choices=[
             ("normal", u'一般発売'), ("precedence", u'先行販売'), ("lottery", u'先行抽選')
         ])
-    since_year = SelectField(label='', validators=[Optional()], choices=[])
-    since_month = SelectField(label='', validators=[Optional()], choices=[])
-    since_day = SelectField(label='', validators=[Optional()], choices=[])
-    year = SelectField(label='', validators=[Optional()], choices=[])
-    month = SelectField(label='', validators=[Optional()], choices=[])
-    day = SelectField(label='', validators=[Optional()], choices=[])
-
-    def validate_since_year(form, field):
-
-        if form.since_year.data=="0" and form.since_month.data == "0" and form.since_day.data == "0":
-            return
-
-        if not _check_date(form.since_year.data, form.since_month.data, form.since_day.data):
-            raise ValueError (u'日付が不正です')
-
-        if _check_date(form.year.data, form.month.data, form.day.data):
-            since_perf_date = date(
-                int(form.since_year.data), int(form.since_month.data), int(form.since_day.data))
-            perf_date = date(
-                int(form.year.data), int(form.month.data), int(form.day.data))
-            if (since_perf_date > perf_date):
-                raise ValueError(u'検索範囲が不正です')
-        return
-
-    def validate_year(form, field):
-        if form.year.data=="0" and form.month.data == "0" and form.day.data == "0":
-            return
-
-        if not _check_date(form.year.data, form.month.data, form.day.data):
-            raise ValueError (u'日付が不正です')
-        return
+    since_year = SelectField(label='', validators=[Optional()], choices=[], coerce=str)
+    since_month = SelectField(label='', validators=[Optional()], choices=[], coerce=str)
+    since_day = SelectField(label='', validators=[Optional()], choices=[], coerce=str)
+    year = SelectField(label='', validators=[Optional()], choices=[], coerce=str)
+    month = SelectField(label='', validators=[Optional()], choices=[], coerce=str)
+    day = SelectField(label='', validators=[Optional()], choices=[], coerce=str)
 
     def validate_word(form, field):
         if field.data == "":
@@ -62,14 +38,36 @@ class DetailSearchForm(SearchForm):
             raise ValueError(u'200文字以内で入力してください')
         return
 
-def _check_date(year, month, day):
-    log_info("_check_date", "start")
-    try:
-        perf_date = date(int(year), int(month), int(day))
-        log_info("_check_date", str(perf_date))
-    except ValueError:
-        return False
-    except TypeError:
-        return False
-    log_info("_check_date", "end")
-    return True
+    def get_event_open(self):
+        event_open = self.create_get_event_open()
+        since_event_open = self.create_since_event_open()
+
+        if event_open and since_event_open and event_open < since_event_open:
+            event_open = self.create_since_event_open()
+            since_event_open = self.create_get_event_open()
+
+        event_open = create_close_date(event_open)
+        return since_event_open, event_open
+
+    def get_datetime(self, year, month, day):
+        date = None
+        if year and month and day:
+            date = parse_date(int(year), int(month), int(day))
+        return date
+
+    def create_since_event_open(self):
+        return self.get_datetime(self.since_year.data, self.since_month.data, self.since_day.data)
+
+    def create_get_event_open(self):
+        return self.get_datetime(self.year.data, self.month.data, self.day.data)
+
+    def update_form(self, since_event_open, event_open):
+        if since_event_open:
+            self.since_year.data = str(since_event_open.year)
+            self.since_month.data = str(since_event_open.month)
+            self.since_day.data = str(since_event_open.day)
+        if event_open:
+            self.year.data = str(event_open.year)
+            self.month.data = str(event_open.month)
+            self.day.data = str(event_open.day)
+

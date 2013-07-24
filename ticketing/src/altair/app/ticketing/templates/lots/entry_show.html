@@ -1,0 +1,182 @@
+<%inherit file="/layout_2cols.html" />
+<%namespace file="/common/helpers.html" name="ch" />
+<%namespace file="_entries_tabs.html" name="tabs" />
+<%
+from altair.app.ticketing.lots.helpers import format_currency
+%>
+<%block name="fulltitle">
+Altair Backend -- ${lot.event.title}[${lot.name}]
+</%block>
+<%block name="javascript">
+</%block>
+<%block name="breadcrumbs">
+  ${ch.breadcrumbs(
+      names=[u'イベント', lot.event.title, u'抽選', lot.name, u'申し込み状況',u'詳細'],
+      urls=[
+        request.route_path('events.index'),
+        request.route_path('events.show', event_id=lot.event.id),
+        request.route_path('lots.index', event_id=lot.event.id),
+        request.route_path('lots.show', lot_id=lot.id),
+        request.route_path('lots.entries.search', lot_id=lot.id),
+      ]
+  )}
+</%block>
+<div class="page-header">
+  <h1>抽選情報</h1>
+</div>
+
+<div class="tabbable tabs-below" id="tabbable-content">
+  <div class="tab-content" id="tabbable-tab-content">
+    <div class="row-fluid">
+      <div class="span6">
+        <div class="page-header">
+          <h3>抽選情報</h3>
+        </div>
+          <table class="table table-striped table-bordered">
+            <tr>
+              <th class="span2">申込番号</th>
+              <td class="span3">${lot_entry.entry_no}</td>
+            </tr>
+            <tr>
+              <th class="span2">申込日</th>
+              <td class="span3">${"{0:%Y-%m-%d %H:%M}".format(lot_entry.created_at)}</td>
+            </tr>
+          </table>
+	  申込内容
+          <table class="table table-striped table-bordered">
+	    <tr>
+	      <th>希望</th>
+	      <th>商品</th>
+	      <th>合計枚数</th>
+	      <th>システム手数料</th>
+	      <th>決済手数料</th>
+	      <th>引取手数料</th>
+	      <th>合計金額</th>
+	      <th>状態</th>
+	    </tr>
+	    %for wish, w in wishes:
+	    <tr>
+	      <td>第${wish.wish_order + 1}希望</td>
+	      <td>
+		<ul>
+		%for p in wish.products:
+		<li>
+		  ${wish.performance_name} /
+		  ${p.product.name}　${format_currency(p.product.price)} x
+		  ${p.quantity} 枚
+		</li>
+		%endfor
+		</ul>
+	      </td>
+	      <td>${wish.total_quantity}</td>
+	      <td>${format_currency(w.system_fee)}</td>
+	      <td>${format_currency(w.transaction_fee)} <br> ${wish.payment_method_name}</td>
+	      <td>${format_currency(w.delivery_fee)} <br> ${wish.delivery_method_name}</td>
+	      <td>${format_currency(w.total_amount)}</td>
+	      <td>${wish.status}</td>
+	    </tr>
+	    %endfor
+	  </table>
+          <div class="pull-right">
+            <%include file="./_entry_mail_actions.html" args="lot_entry=lot_entry,event=lot.event"/>
+          </div>
+      </div>
+      <div class="span6">
+        <div class="page-header">
+          <h3>購入情報</h3>
+        </div>
+          <table class="table table-striped table-bordered">
+              %if lot_entry.order_id:
+              <tr>
+                <th class="span2">注文番号</th>
+                <td class="span3"><a href="${request.route_path("orders.show",order_id=lot_entry.order.id)}">${lot_entry.order.order_no}</a></td>
+              </tr>
+              <tr>
+                <th>決済日時</th>
+                <td class="span3">
+                  % if lot_entry.order.paid_at:
+                  ${vh.datetime(lot_entry.order.paid_at)}
+                  % endif
+                  ${HH.payment_status(lot_entry.order)}
+                </td>
+              </tr>
+              %else:
+              <tr>
+                <th class="span2">注文番号</th>
+                <td class="span3">未確定</td>
+              </tr>
+              <tr>
+                <th>決済日時</th>
+                <td class="span3"></td>
+              </tr>
+              %endif
+            <tr>
+              <th class="span2">決済方法</th>
+              <td class="span3">${lot_entry.payment_delivery_method_pair.payment_method.name}</td>
+            </tr>
+          </table>
+      </div>
+    </div>
+    <div class="row-fluid">
+      <div class="span6">
+        <div class="page-header">
+          <h3>配送情報</h3>
+        </div>
+          <table class="table table-striped table-bordered">
+            <tr>
+              <th class="span2">引取方法</th>
+              <td class="span3">${lot_entry.payment_delivery_method_pair.delivery_method.name}</td>
+            </tr>
+            <tr>
+              <th>氏名</th>
+              <td>
+                % if shipping_address:
+                  ${shipping_address.last_name} ${shipping_address.first_name}
+                  % if shipping_address.last_name_kana or shipping_address.first_name_kana:
+                    (${shipping_address.last_name_kana} ${shipping_address.first_name_kana})
+                  % endif
+                % endif
+              </td>
+            </tr>
+            <tr>
+              <th>住所</th>
+              <td>
+                % if shipping_address:
+                  ${shipping_address.zip or ''}
+                  ${shipping_address.country or ''}
+                  ${shipping_address.prefecture or ''}
+                  ${shipping_address.city or ''}
+                  ${shipping_address.address_1 or ''}
+                  ${shipping_address.address_2 or ''}
+                % endif
+              </td>
+            </tr>
+            <tr>
+              <th>Tel</th>
+              <td>
+                % if shipping_address:
+                  ${shipping_address.tel_1}
+                % endif
+              </td>
+            </tr>
+            <tr>
+              <th>メールアドレス (PC)</th>
+              <td>
+                % if shipping_address:
+                  ${shipping_address.email_pc or ''}
+                % endif
+              </td>
+            </tr>
+            <tr>
+              <th>メールアドレス (携帯)</th>
+              <td>
+                % if shipping_address:
+                  ${shipping_address.email_mobile or ''}
+                % endif
+              </td>
+            </tr>
+          </table>
+      </div>
+    </div>
+  </div>
+</div>

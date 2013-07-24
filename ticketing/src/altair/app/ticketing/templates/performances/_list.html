@@ -1,0 +1,108 @@
+<%page args="form, performances, limit=None" />
+<%namespace file="/common/helpers.html" name="ch" />
+
+<% paging = False if limit else True %>
+<% display_only = True if request.matched_route.name == 'events.index' else False %>
+
+<style>
+  .checkboxed_table tr th, .checkboxed_table tr td {
+    vertical-align: middle;
+  }
+</style>
+
+<script>
+  $(function() {
+    $('[rel=popover]').popover()
+  });
+</script>
+
+% if performances:
+<div class="row-fluid">
+  <div class="span12">
+    <table class="table fullwidth checkboxed_table" style="margin-bottom: 10px;">
+      <thead>
+        <tr>
+          % if not display_only:
+          <th class="minwidth"></th>
+          <th>
+            状態
+            <span class="help-inline">
+              <a rel="popover" data-original-title="状態" data-content="現在の公開状態です。<br>ボタン押下で公開または非公開状態に変更できます。">
+                <i class="icon-question-sign"></i>
+              </a>
+            </span>
+          </th>
+          % endif
+          <th>表示順</th>
+          <th>公演日</th>
+          <th>${ch.sortable(form.name, paging)}</th>
+          <th>会場</th>
+          <th style="width:6em">-<th>
+        </tr>
+      </thead>
+      <tbody>
+      % for i, performance in enumerate(performances):
+        <% if limit and i >= limit: break %>
+        <tr>
+          % if not display_only:
+          <td><input type="radio" name="performance_id" value="${performance.id}" /></td>
+          <td>
+            <div>
+              % if performance.public:
+              <button class="btn btn-info btn-mini" type="button" onclick="javascript:confirm_open_performance(${performance.id});">公　開</button>
+              % else:
+              <button class="btn btn-warning btn-mini" type="button" onclick="javascript:confirm_open_performance(${performance.id});">未公開</button>
+              % endif
+            </div>
+          </td>
+          % endif
+          <td>${performance.display_order}</td>
+          <td>${performance.start_on.strftime("%Y-%m-%d")if performance.start_on else ''}</td>
+          <td><a href="${request.route_path('performances.show', performance_id=performance.id)}">
+					    ${performance.name}
+              <%
+                from datetime import timedelta
+                end_on = performance.end_on or (performance.start_on + timedelta(days=1)).replace(hour=0, minute=0, second=0)
+              %>
+              %if request.now > end_on:
+                <span class="label">終了</span>
+              %endif
+					  </a>
+					</td>			
+          <td>
+            ${performance.venue.name if performance.venue else u'(なし)'}
+			% if performance.venue.sub_name != None:
+				<div class="sub_name">${performance.venue.sub_name}</div>
+			% endif
+		  </td>
+          <td style="white-space: nowrap; font-size: 10px; line-height: 12px">
+            <div>
+              <span>${form.open_on.label.text}</span>
+              <span>${performance.open_on.strftime("%H:%M") if performance.open_on else ''}</span>
+            </div>
+            <div>
+              <span>${form.start_on.label.text}</span>
+              <span>${performance.start_on.strftime("%H:%M") if performance.start_on else ''}</span>
+            </div>
+            <div>
+              <span>${form.end_on.label.text}</span>
+              <span style="white-space: nowrap">${performance.end_on.strftime("%H:%M") if performance.end_on else ''}</span>
+            </div>
+          </td>
+        </tr>
+      % endfor
+      </tbody>
+    </table>
+    % if limit and len(performances) > limit:
+    <div class="pull-right">
+      ${len(performances)}件中${limit}件を表示
+      <a href="${request.route_path('performances.index', event_id=performances[0].event.id)}">もっと見る</a>
+    </div>
+    % endif
+  </div>
+</div>
+% endif
+
+% if paging:
+  ${ch.pager(performances)}
+% endif

@@ -1,0 +1,49 @@
+<%page args="payment_delivery_method_pairs" />
+<%namespace file="/common/helpers.html" name="ch" />
+<% from altair.app.ticketing.core.models import PaymentDeliveryMethodPair as PDMP %>
+
+% if payment_delivery_method_pairs:
+<table class="table table-striped table-bordered table-condensed">
+  <tr>
+    <th></th>
+    <th>${HH.label_text_for(PDMP.payment_method_id)}</th>
+    <th>${HH.label_text_for(PDMP.delivery_method_id)}</th>
+    <th>${HH.label_text_for(PDMP.system_fee)}</th>
+    <th>${HH.label_text_for(PDMP.transaction_fee)}</th>
+    <th>${HH.label_text_for(PDMP.delivery_fee)}</th>
+    <th>${HH.label_text_for(PDMP.discount)}</th>
+    <th>${HH.label_text_for(PDMP.discount_unit)}</th>
+    <th>${HH.label_text_for(PDMP.unavailable_period_days)}</th>
+    <th>${HH.label_text_for(PDMP.public)}</th>
+  </tr>
+  % for i, pdmp in enumerate(payment_delivery_method_pairs):
+  <tr>
+    <td><input type="radio" name="payment_delivery_method_pair_id" value=${pdmp.id} /></td>
+    <td>${pdmp.payment_method.name}</td>
+    <td>${pdmp.delivery_method.name}</td>
+    <td>${vh.price(pdmp.system_fee)}</td>
+    <%! from altair.app.ticketing.core.models import FeeTypeEnum %>
+    <%
+      fee_type = ''
+      if pdmp.payment_method.fee_type == int(FeeTypeEnum.Once.v[0]):
+        fee_type = u' / 件'
+      if pdmp.payment_method.fee_type == int(FeeTypeEnum.PerUnit.v[0]):
+        fee_type = u' / 枚'
+    %>
+    <td>${vh.price(pdmp.transaction_fee)}${fee_type}</td>
+    <%
+      fee_type = ''
+      if pdmp.delivery_method.fee_type == int(FeeTypeEnum.Once.v[0]):
+        fee_type = u' / 件'
+      if pdmp.delivery_method.fee_type == int(FeeTypeEnum.PerUnit.v[0]):
+        fee_type = u' / 枚'
+    %>
+    <td>${vh.price(pdmp.delivery_fee)}${fee_type}</td>
+    <td>${vh.price(pdmp.discount)}</td>
+    <td>${pdmp.discount_unit or ''}</td>
+    <td>${u'販売終了%s日前から' % pdmp.unavailable_period_days if pdmp.unavailable_period_days else ''}</td>
+    <td>${u'○' if pdmp.public else u'×'}</td>
+  </tr>
+  % endfor
+</table>
+% endif

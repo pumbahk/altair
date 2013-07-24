@@ -34,7 +34,7 @@ def move_detailsearch_post(request):
         searcher = create_event_searcher(request, form)
         qs = searcher.get_events_from_freeword(form)
         qs = searcher.get_events_from_area(form, qs)
-        qs = searcher.get_events_from_start_on(form, qs)
+        qs, form = searcher.get_events_from_start_on(form, qs)
         if qs:
             # 以下は絞り込み条件
             qs = searcher.get_events_from_sale(form, qs)
@@ -76,12 +76,12 @@ def create_date_selectbox(form):
     log_info("create_date_selectbox", "selectbox delete end")
 
     log_info("create_date_selectbox", "input start")
-    form.since_year.choices.append(['0', '-'])
-    form.year.choices.append(['0', '-'])
-    form.since_month.choices.append(['0', '-'])
-    form.month.choices.append(['0', '-'])
-    form.since_day.choices.append(['0', '-'])
-    form.day.choices.append(['0', '-'])
+    form.since_year.choices.append(['-', '-'])
+    form.year.choices.append(['-', '-'])
+    form.since_month.choices.append(['-', '-'])
+    form.month.choices.append(['-', '-'])
+    form.since_day.choices.append(['-', '-'])
+    form.day.choices.append(['-', '-'])
 
     today = date.today() ##受付formなのでaltair.nowではなくてok
 
