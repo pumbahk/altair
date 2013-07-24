@@ -34,8 +34,8 @@ setup(name='altair.mobile',
       include_package_data=True,
       zip_safe=False,
       install_requires=[
+          "setuptools>0.7",
           'radix',
-          'setuptools',
           'uamobile',
       ],
       dependency_links = [

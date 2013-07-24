@@ -4,6 +4,7 @@ import os
 version = '1.0'
 
 requires = [
+    "setuptools>0.7",
     'pyramid',
     'zope.interface',
     'repoze.who',

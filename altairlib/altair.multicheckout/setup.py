@@ -15,6 +15,7 @@ long_description = (
     + '\n')
 
 requires = [
+    "setuptools>0.7",
     "sqlalchemy",
     "standardenum",
     "altair.models",

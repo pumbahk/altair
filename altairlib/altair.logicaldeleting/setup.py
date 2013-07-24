@@ -4,6 +4,7 @@ import os
 version = '0.0'
 
 requires = [
+    "setuptools>0.7",
     "sqlahelper",
     "zope.sqlalchemy",
 ]
