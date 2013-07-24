@@ -18,7 +18,7 @@ class FormTests(unittest.TestCase):
         from lxml.etree import fromstring
         from .constants import SVG_NAMESPACE
 
-        svg = """\
+        svg = u"""\
 <?xml version="1.0" encoding="UTF-8" ?>
 <!-- Created with Inkscape (http://www.inkscape.org/) --><svg xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:svg="http://www.w3.org/2000/svg" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd" width="628.93701" height="230.31496" version="1.2" id="svg2" >
 
@@ -27,12 +27,12 @@ class FormTests(unittest.TestCase):
  </g>
 </svg>
 """
-        self.assertIn('<flowDiv id="xxxx-this-is-deleted-after-converted-xxxxxx"></flowDiv>', 
+        self.assertIn(u'<flowDiv id="xxxx-this-is-deleted-after-converted-xxxxxx"></flowDiv>', 
                       svg)
 
         class DummyFileStrage(object):
             filename="this-is-svg-file-name.svg"
-            file=StringIO(svg)
+            file=StringIO(svg.encode("utf-8"))
 
         target = self._makeOne(self._getPostData(ticket_format=1, name="this-is-ticket-format-name", 
                                                  drawing=DummyFileStrage))
