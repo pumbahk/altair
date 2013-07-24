@@ -15,6 +15,7 @@ import sqlahelper
 
 from .. import get_multicheckout_settings
 from altair.multicheckout import models as m
+from altair.multicheckout import api
 from altair.multicheckout.interfaces import ICancelFilter
 
 logger = logging.getLogger(__name__)
