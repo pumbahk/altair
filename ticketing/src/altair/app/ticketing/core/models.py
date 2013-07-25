@@ -3393,7 +3393,7 @@ class PerformanceSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         setting = obj.setting or cls()
 
         for k in cls.KEYS:
-            setattr(setting, k, params.get(k, ""))
+            setattr(setting, k, params.get(k) or "")
         setting.performance = obj
         return setting
 
