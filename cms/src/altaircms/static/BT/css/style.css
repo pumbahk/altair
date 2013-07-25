@@ -348,26 +348,28 @@ body{
     font-size: 12px;
 }
 
-.header_r .news{
+.header_r .news {
     padding:10px 0 5px 0;
 }
 
-.header_r .news:before{
-    content: "[News]　";
+.header_r div.news:before {
+    content: "[News] ";
     color: #e8ba41;
     font-weight: 900;
 }
 
 .header_r .news dt{
-    font-weight: 700;
+    content: "[News] ";
+    color: #e8ba41;
+    font-weight: 900;
     display: inline-block;
 }
 
-.header_r .news dd{
+.header_r .news dd {
     display: inline-block;
 }
 
-.wrapper{
+.wrapper {
     width: 860px;
     margin: 0 auto;
     background: #fff;
