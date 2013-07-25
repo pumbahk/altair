@@ -3375,9 +3375,9 @@ class PerformanceSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     performance_id = Column(Identifier, ForeignKey('Performance.id'))
     performance = relationship('Performance', backref='settings')
     
-    abbreviated_title = Column(Unicode(255), doc=u"公演名略称")
-    subtitle = Column(Unicode(255), doc=u"公演名副題")
-    note = Column(UnicodeText, doc=u"公演名備考")
+    abbreviated_title = Column(Unicode(255), doc=u"公演名略称", default="")
+    subtitle = Column(Unicode(255), doc=u"公演名副題", default="")
+    note = Column(UnicodeText, doc=u"公演名備考", default="")
 
     KEYS = ["abbreviated_title", "subtitle", "note"]
 
@@ -3393,7 +3393,7 @@ class PerformanceSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         setting = obj.setting or cls()
 
         for k in cls.KEYS:
-            setattr(setting, k, params.get(k))
+            setattr(setting, k, params.get(k, ""))
         setting.performance = obj
         return setting
 
