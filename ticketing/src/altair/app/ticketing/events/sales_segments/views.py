@@ -120,9 +120,9 @@ class SalesSegments(BaseView):
             'account_map':self._account_map(self.sales_segment_groups)
             }
 
-    @view_config(route_name='sales_segments.new', request_method='POST', renderer='altair.app.ticketing:templates/sales_segments/_form.html', xhr=False)
+    @view_config(route_name='sales_segments.new', request_method='POST', renderer='altair.app.ticketing:templates/sales_segments/edit.html', xhr=False)
     def new_post(self):
-        f = SalesSegmentForm(self.request.POST, context=self.context),
+        f = SalesSegmentForm(self.request.POST, context=self.context)
 
         if f.validate():
             if f.start_at.data is None:
@@ -135,7 +135,11 @@ class SalesSegments(BaseView):
             sales_segment.save()
 
             self.request.session.flash(u'販売区分を作成しました')
-            return HTTPFound(self.request.route_path('sales_segments.index', event_id=sales_segment.sales_segment_group.event_id, sales_segment_group_id=sales_segment.sales_segment_group_id, performance_id=sales_segment.performance_id))
+            return HTTPFound(self.request.route_path(
+                'sales_segments.index',
+                event_id=sales_segment.sales_segment_group.event_id,
+                sales_segment_group_id=sales_segment.sales_segment_group_id,
+                _query={'performance_id': sales_segment.performance_id}))
         else:
             return {
                 'event': self.context.event,
