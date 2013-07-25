@@ -3390,7 +3390,7 @@ class PerformanceSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     @classmethod
     def update_from_model(cls, obj, params):
-        setting = obj.settings or cls()
+        setting = obj.setting or cls()
 
         for k in cls.KEYS:
             setattr(setting, k, params.get(k))
