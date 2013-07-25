@@ -54,7 +54,7 @@ class LoginView(object):
         if authenticated is None:
             self.select_renderer(membership)
             return {'username': username,
-                    'message': u'会員番号かパスワードが一致しません'}
+                    'message': u'IDかパスワードが一致しません'}
 
 
         return_to_url = self.return_to_url 
