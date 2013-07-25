@@ -398,25 +398,25 @@ class Checkout3D(object):
         headers.update(self.auth_header)
 
         logger.debug("request %s body = %s" % (url, sanitize_card_number(body)))
+        res = None
         try:
             http.request("POST", url_parts.path, body=body,headers=headers)
-        except Exception, e:
-            logger.error('multicheckout api request error: %s' % e.message)
-            raise MultiCheckoutAPIError
-
-        res = http.getresponse()
-        try:
+            res = http.getresponse()
             logger.debug('%(url)s %(status)s %(reason)s' % dict(
                 url=url,
                 status=res.status,
                 reason=res.reason,
             ))
             if res.status != 200:
-                raise MultiCheckoutAPIError, res.reason
+                raise Exception(res.reason)
 
             return etree.parse(res).getroot()
+        except Exception, e:
+            logger.error('multicheckout api request error: %s' % e.message)
+            raise MultiCheckoutAPIError(e)
         finally:
-            res.close()
+            if res:
+                res.close()
 
     @property
     def api_url(self):
