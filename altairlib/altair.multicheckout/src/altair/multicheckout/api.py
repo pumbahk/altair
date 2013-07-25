@@ -10,7 +10,8 @@ from . import models as m
 from datetime import date
 from . import logger
 from . import events
-from .interfaces import  IMulticheckoutSettingFactory
+from .interfaces import IMulticheckoutSettingFactory
+from .exceptions import MultiCheckoutAPIError
 
 DEFAULT_ITEM_CODE = "120"  # 通販
 
@@ -273,9 +274,6 @@ def checkout_auth_secure_code(request, order_no, item_name, amount, tax, client_
     events.CheckoutAuthSecureCodeEvent.notify(request, order_no, res)
     save_api_response(request, res)
     return res
-
-class MultiCheckoutAPIError(Exception):
-    pass
 
 
 class Checkout3D(object):

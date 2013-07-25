@@ -699,7 +699,7 @@ class Checkout3DTests(unittest.TestCase):
         )
 
     def test_request_with_error(self):
-        from ..api import MultiCheckoutAPIError
+        from ..exceptions import MultiCheckoutAPIError
         target = self._makeOne("user", "pass", api_base_url="http://example.com/", shop_code="SHOP")
         target._httplib = DummyHTTPLib("<Message />", status="401")
         element = etree.XML('<root />')

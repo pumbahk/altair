@@ -21,11 +21,11 @@ from .. import api
 from altair.mobile import mobile_view_config
 from altair.app.ticketing.cart.selectable_renderer import selectable_renderer
 from altair.app.ticketing.payments.exceptions import PaymentPluginException
+from altair.multicheckout.exceptions import MultiCheckoutAPIError
 import logging
 import transaction
 
 logger = logging.getLogger(__name__)
-
 
 
 @mobile_view_config(context=NotFound, renderer=selectable_renderer('altair.app.ticketing.cart:templates/%(membership)s/mobile/errors/notfound.html'))
@@ -111,17 +111,19 @@ def cart_creation_exception(request):
 def invalid_csrf_token_exception(request):
     return dict(message=u"ウェブブラウザの戻るボタンは使用できません。画面上の戻るボタンから操作して下さい。")
 
+@mobile_view_config(context=DeliveryFailedException, renderer=selectable_renderer('altair.app.ticketing.cart:templates/%(membership)s/mobile/error.html'))
 @view_config(context=DeliveryFailedException, renderer=selectable_renderer('altair.app.ticketing.cart:templates/%(membership)s/pc/message.html'))
-@view_config(context=DeliveryFailedException, renderer=selectable_renderer('altair.app.ticketing.cart:templates/%(membership)s/mobile/error.html'), request_type='altair.mobile.interfaces.IMobileRequest')
 def delivery_failed_exception(context, request):
     event_id = context.event_id
     location = request.route_url('cart.index', event_id=event_id)
     return dict(title=u'決済エラー', message=Markup(u'決済中にエラーが発生しました。しばらく時間を置いてから<a href="%s">再度お試しください。</a>' % location))
 
+@mobile_view_config(context=MultiCheckoutAPIError, renderer=selectable_renderer('altair.app.ticketing.cart:templates/%(membership)s/mobile/error.html'))
+@view_config(context=MultiCheckoutAPIError, renderer=selectable_renderer('altair.app.ticketing.cart:templates/%(membership)s/pc/message.html'))
+@mobile_view_config(context=PaymentPluginException, renderer=selectable_renderer('altair.app.ticketing.cart:templates/%(membership)s/mobile/error.html'))
 @view_config(context=PaymentPluginException, renderer=selectable_renderer('altair.app.ticketing.cart:templates/%(membership)s/pc/message.html'))
-@view_config(context=PaymentPluginException, renderer=selectable_renderer('altair.app.ticketing.cart:templates/%(membership)s/mobile/error.html'), request_type='altair.mobile.interfaces.IMobileRequest')
 def payment_plugin_exception(context, request):
-    if context.back_url is not None:
+    if hasattr(context, 'back_url') and context.back_url is not None:
         try:
             # カートの救済可能な場合
             api.recover_cart(request)
@@ -138,8 +140,8 @@ def payment_plugin_exception(context, request):
         location = request.context.host_base_url
     return dict(title=u'決済エラー', message=Markup(u'決済中にエラーが発生しました。しばらく時間を置いてから<a href="%s">再度お試しください。</a>' % location))
 
+@mobile_view_config(context=InvalidCartStatusError, renderer=selectable_renderer('altair.app.ticketing.cart:templates/%(membership)s/mobile/error.html'))
 @view_config(context=InvalidCartStatusError, renderer=selectable_renderer('altair.app.ticketing.cart:templates/%(membership)s/pc/message.html'))
-@view_config(context=InvalidCartStatusError, renderer=selectable_renderer('altair.app.ticketing.cart:templates/%(membership)s/mobile/error.html'), request_type='altair.mobile.interfaces.IMobileRequest')
 def invalid_cart_status_error(request):
     return dict(message=Markup(u'大変申し訳ございません。ブラウザの複数ウィンドウからの操作や、戻るボタン等の操作により、予約を継続することができません。<br>'
                                u'ご予約の際は複数ウィンドウや戻るボタンを使わずにご予約ください。'))
