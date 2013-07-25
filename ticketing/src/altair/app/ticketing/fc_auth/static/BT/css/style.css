@@ -549,5 +549,6 @@ table.login > tbody > tr > td {
 
 .browser-list-style{
     list-style-type: disc;
+    padding-left: 30px;
 }
 
