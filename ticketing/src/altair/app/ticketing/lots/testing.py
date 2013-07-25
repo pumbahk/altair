@@ -28,19 +28,24 @@ class DummyStockerFactory(object):
 
 def _add_lots(session, product_data, membergroups):
 
-    from altair.app.ticketing.core.models import Organization, Event, SalesSegment, Performance
+    from altair.app.ticketing.core.models import Organization, Event, SalesSegment, Performance, Venue, Site
     
     #event = Event(id=1111)
+    organization = Organization(code="test", short_name="test")
     event = Event()
-    performance = Performance(event=event, id=123)
+    venue = Venue(name="testing-venue", site=Site(),
+                  organization=organization)
+    performance = Performance(event=event, id=123, venue=venue)
     session.add(performance)
     sales_segment = SalesSegment(id=12345)
-    lot = _add_lot(session, event.id, sales_segment.id, 5, 3, membergroups=membergroups)
-    lot.event.organization = Organization(code="test", short_name="test")
+    lot = _add_lot(session, event.id, sales_segment.id, 5, 3, membergroups=membergroups,
+                   venue=venue)
+    lot.event.organization = organization
     lot.limit_wishes =3 
     products = _create_products(session, product_data)
     for p in products:
-        session.add(p)
+        p.performance = performance
+        #session.add(p)
     session.flush()
     return lot, products
 
@@ -60,7 +65,7 @@ def _create_products(session, values):
     session.flush()
     return products
 
-def _add_lot(session, event_id, sales_segment_group_id, num_performances, num_stok_types, membergroups=[], num_products=3):
+def _add_lot(session, event_id, sales_segment_group_id, num_performances, num_stok_types, membergroups=[], num_products=3, venue=None):
     from . import models as m
     from altair.app.ticketing.core.models import (
         Event, Performance, SalesSegment, StockType,
@@ -88,14 +93,17 @@ def _add_lot(session, event_id, sales_segment_group_id, num_performances, num_st
     performances = []
     products = []
     for i in range(num_performances):
-        p = Performance(name=u"パフォーマンス {0}".format(i))
+        p = Performance(name=u"パフォーマンス {0}".format(i),
+                        venue=venue)
         session.add(p)
         performances.append(p)
 
         for j in range(num_products):
+            seat_stock_type = StockType()
             product = Product(sales_segment=sales_segment,
                               performance=p,
-                              price=i * 100 + j * 10)
+                              price=i * 100 + j * 10,
+                              seat_stock_type=seat_stock_type)
             products.append(product)
 
     # stock_types
@@ -111,3 +119,12 @@ def _add_lot(session, event_id, sales_segment_group_id, num_performances, num_st
     session.add(lot)
     session.flush()
     return lot
+    
+class DummyAuthenticatedResource(testing.DummyResource):
+    def __init__(self, *args, **kwargs):
+        testing.DummyResource.__init__(self, *args, **kwargs)
+        if 'user' not in kwargs:
+            self.user = None
+            
+    def authenticated_user(self):
+        return self.user

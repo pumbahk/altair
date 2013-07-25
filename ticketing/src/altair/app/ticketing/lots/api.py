@@ -343,32 +343,32 @@ def entry_session(request, lot_entry=None):
             request.session['lots.entry_id'] = lot_entry.id
     return lot_entry
     
-def create_cart(request, lot_entry):
-    """
-    """
-    elected = lot_entry.lot_elected_entries
-    assert elected # TODO: 例外クラス作成
-    elected = elected[0]
-    wish = elected.lot_entry_wish
-    performance_id = wish.performance_id
-    payment_delivery_method_pair = lot_entry.payment_delivery_method_pair
-    cart = Cart.create(lot_entries=[lot_entry], 
-        system_fee=payment_delivery_method_pair.system_fee,
-        payment_delivery_pair=payment_delivery_method_pair, 
-        shipping_address=lot_entry.shipping_address,
-        performance=wish.performance,
-        sales_segment=lot_entry.lot.sales_segment)
-    wished_products = [(p.product, p.quantity) for p in wish.products]
+# def create_cart(request, lot_entry):
+#     """
+#     """
+#     elected = lot_entry.lot_elected_entries
+#     assert elected # TODO: 例外クラス作成
+#     elected = elected[0]
+#     wish = elected.lot_entry_wish
+#     performance_id = wish.performance_id
+#     payment_delivery_method_pair = lot_entry.payment_delivery_method_pair
+#     cart = Cart.create(lot_entries=[lot_entry], 
+#         system_fee=payment_delivery_method_pair.system_fee,
+#         payment_delivery_pair=payment_delivery_method_pair, 
+#         shipping_address=lot_entry.shipping_address,
+#         performance=wish.performance,
+#         sales_segment=lot_entry.lot.sales_segment)
+#     wished_products = [(p.product, p.quantity) for p in wish.products]
 
-    # 在庫処理
-    stocker = cart_api.get_stocker(request)
-    taked_stocks = stocker.take_stock(performance_id, wished_products)
+#     # 在庫処理
+#     stocker = cart_api.get_stocker(request)
+#     taked_stocks = stocker.take_stock(performance_id, wished_products)
 
-    # TODO: 取得した在庫内容チェック
+#     # TODO: 取得した在庫内容チェック
     
-    # 当選した希望の商品追加
-    cart.add_products(wished_products)
-    return cart
+#     # 当選した希望の商品追加
+#     cart.add_products(wished_products)
+#     return cart
 
 def get_ordered_lot_entry(order):
     """

@@ -47,9 +47,13 @@ class send_accepted_mailTests(unittest.TestCase):
                     title=u"抽選テストイベント",
                     organization=core_models.Organization(short_name='testing', 
                                               contact_email="testing@sender.example.com", 
-                                              name=u"テスト組織"),
+                                                          name=u"テスト組織",
+                                                          settings=[
+                                                              core_models.OrganizationSetting(name="default"),
+                                                          ]),
                 ),
                 lotting_announce_datetime=datetime.now(),
+                sales_segment=core_models.SalesSegment(),
             ),
             payment_delivery_method_pair=core_models.PaymentDeliveryMethodPair(
                 system_fee=0,
