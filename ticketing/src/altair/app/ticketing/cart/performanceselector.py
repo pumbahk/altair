@@ -110,7 +110,7 @@ class DatePerformanceSelector(_PerformanceSelector):
         for k, sales_segments in key_to_sales_segments_map:
             selection.append((k, [
                 self.sales_segment_to_dict(sales_segment)
-                for sales_segment in sales_segments
+                for sales_segment in sorted(sales_segments, key=lambda s: s.id)
                 ]))
         return selection
 
