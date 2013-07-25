@@ -122,7 +122,7 @@ class SalesSegments(BaseView):
 
     @view_config(route_name='sales_segments.new', request_method='POST', renderer='altair.app.ticketing:templates/sales_segments/_form.html', xhr=False)
     def new_post(self):
-        f = SalesSegmentForm(self.request.POST, context=self.context),
+        f = SalesSegmentForm(self.request.POST, context=self.context)
 
         if f.validate():
             if f.start_at.data is None:
