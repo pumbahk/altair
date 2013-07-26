@@ -8,6 +8,7 @@ __all__ = (
     'Required',
     'RequiredOnUpdate',
     'Phone',
+    'DateTimeFormat',
     'DateTimeInRange',
     'Katakana',
     'JISX0208',
@@ -44,6 +45,20 @@ class Phone(validators.Regexp):
         if self.message is None:
             self.message = field.gettext(u'電話番号を確認してください')
         super(Phone, self).__call__(form, field)
+
+class DateTimeFormat(object):
+    def __init__(self, message=u''):
+        self.message = message
+
+    def __call__(self, form, field):
+        try:
+            data = todatetime(field.data)
+        except:
+            if not field.errors and not self.message: # input data is emputy
+                message = field.gettext('This field is required.')
+            else:
+                message = self.message                
+            raise validators.ValidationError(message)
 
 class DateTimeInRange(object):
     def __init__(self, from_=None, to=None):
