@@ -20,6 +20,7 @@ from altair.sqla import get_relationship_query
 Base = sqlahelper.get_base()
 DBSession = sqlahelper.get_session()
 
+#altair.models
 class Identifier(Integer):
     def __init__(self, *args, **kwargs):
         self._inner = None
@@ -116,6 +117,7 @@ def merge_and_flush(session):
     DBSession.merge(session)
     DBSession.flush()
 
+# altair.models
 class WithTimestamp(object):
     __clone_excluded__ = ['created_at', 'updated_at']
 
@@ -132,6 +134,7 @@ class WithTimestamp(object):
                                onupdate=datetime.now,
                                server_onupdate=sqlf.current_timestamp()))
 
+# altair.models
 class LogicallyDeleted(object):
     __clone_excluded__ = ['deleted_at']
 
