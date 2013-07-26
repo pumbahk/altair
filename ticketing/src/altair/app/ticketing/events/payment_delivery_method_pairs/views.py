@@ -102,7 +102,12 @@ class PaymentDeliveryMethodPairs(BaseView):
         if pdmp is None:
             return HTTPNotFound('payment_delivery_method_pair id %d is not found' % id)
 
-        pdmp.delete()
+        location = route_path('sales_segment_groups.show', self.request, sales_segment_group_id=pdmp.sales_segment_group_id)
+        try:
+            pdmp.delete()
+            self.request.session.flash(u'決済・引取方法を削除しました')
+        except Exception, e:
+            self.request.session.flash(e.message)
+            raise HTTPFound(location=location)
 
-        self.request.session.flash(u'決済・引取方法を削除しました')
-        return HTTPFound(location=route_path('sales_segment_groups.show', self.request, sales_segment_group_id=pdmp.sales_segment_group_id))
+        return HTTPFound(location=location)

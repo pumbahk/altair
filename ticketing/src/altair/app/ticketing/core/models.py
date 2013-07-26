@@ -1275,6 +1275,15 @@ class PaymentDeliveryMethodPair(Base, BaseModel, WithTimestamp, LogicallyDeleted
             pdmp.sales_segment_group_id = kwargs['sales_segment_group_id']
         pdmp.save()
 
+    def delete(self):
+        # 既に予約がある場合は削除できない
+        if self.orders:
+            raise Exception(u'予約がある為、削除できません')
+        # 既に抽選申込がある場合は削除できない
+        if self.lot_entries:
+            raise Exception(u'抽選申込がある為、削除できません')
+        super(PaymentDeliveryMethodPair, self).delete()
+
 class PaymentMethodPlugin(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'PaymentMethodPlugin'
     id = Column(Identifier, primary_key=True)
@@ -2114,7 +2123,7 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     multicheckout_approval_no = Column(Unicode(255), doc=u"マルチ決済受領番号")
 
     payment_delivery_method_pair_id = Column(Identifier, ForeignKey("PaymentDeliveryMethodPair.id"))
-    payment_delivery_pair = relationship("PaymentDeliveryMethodPair")
+    payment_delivery_pair = relationship("PaymentDeliveryMethodPair", backref='orders')
 
     paid_at = Column(DateTime, nullable=True, default=None)
     delivered_at = Column(DateTime, nullable=True, default=None)
