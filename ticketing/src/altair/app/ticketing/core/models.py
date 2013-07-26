@@ -1840,6 +1840,10 @@ class Product(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         #ProductItem.create_default(product=self)
 
     def delete(self):
+        # 既に抽選申込されている場合は削除できない
+        if self.lot_entry_products:
+            raise Exception(u'抽選申込がある為、削除できません')
+
         # delete ProductItem
         for product_item in self.items:
             product_item.delete()

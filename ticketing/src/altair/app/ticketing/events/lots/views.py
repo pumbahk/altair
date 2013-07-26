@@ -128,8 +128,12 @@ class Lots(BaseView):
             for product_id in self.request.POST.getall("product_id"):
                 product = Product.query.filter(Product.id==product_id).first()
                 if product:
-                    product.delete()
-                    self.request.session.flash(u"{0}を削除しました。".format(product.name))
+                    try:
+                        product.delete()
+                        self.request.session.flash(u"{0}を削除しました。".format(product.name))
+                    except Exception, e:
+                        self.request.session.flash(e.message)
+                        raise HTTPFound(location=self.request.route_url("lots.show", lot_id=lot.id))
 
         performance_ids = [p.id for p in lot.performances]
         stock_holders = StockHolder.query.join(Stock).filter(Stock.performance_id.in_(performance_ids)).distinct().all()
