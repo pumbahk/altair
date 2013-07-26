@@ -201,7 +201,7 @@ class TicketingCartResource(object):
         # ここで performance の情報を捨ててしまうのがちょっともったいない。
 
         retval = list(itertools.chain(*((pair[0] or pair[1]) for pair in per_performance_sales_segments_dict.itervalues())))
-        if not retval:
+        if not retval or (self.performance_id and self.performance.id not in per_performance_sales_segments_dict):
             # 公演が指定されてるなら販売区分を絞る
             sales_segments = self.sales_segments
             if self.performance_id:
