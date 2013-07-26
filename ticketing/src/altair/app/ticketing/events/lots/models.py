@@ -22,6 +22,7 @@ from altair.app.ticketing.models import (
     LogicallyDeleted,
     DBSession,
 )
+
 from altair.app.ticketing.core.models import (
     Event,
     Performance,
@@ -31,6 +32,10 @@ from altair.app.ticketing.core.models import (
     DeliveryMethod,
     Order,
     ShippingAddress,
+)
+from altair.app.ticketing.core.models import (
+    ReportFrequencyEnum,
+    #ReportPeriodEnum,
 )
 from altair.app.ticketing.lots.models import (
     Lot,
@@ -332,5 +337,18 @@ class LotEntryReportSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         return cls.query_in_term(now).all()
 
     @classmethod
-    def query_reporting_about(cls, event_id, lot_id, time):
-        pass
+    def query_reporting_about(cls, time, frequency, 
+                              event_id=None, lot_id=None,
+                              day_of_week=None):
+        query = cls.query.filter(
+            cls.frequency==frequency,
+            cls.time==time,
+        )
+        if event_id:
+            query = query.filter(cls.event_id==event_id)
+        if lot_id:
+            query = query.filter(cls.lot_id==lot_id)
+        if frequency == ReportFrequencyEnum.Weekly.v[0]:
+            query = query.filter(cls.day_of_week==day_of_week)
+        return query
+
