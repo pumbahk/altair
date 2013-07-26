@@ -136,7 +136,7 @@ class Lots(BaseView):
 
         stock_types = lot.event.stock_types
         ticket_bundles = lot.event.ticket_bundles
-        options = ["%s:%s" % (st.id, st.name) for st in stock_types]
+        options = ["%s:%s%s" % (st.id, st.name, u'(数受け)' if st.quantity_only else u'') for st in stock_types]
         stock_type_options = {"value": ';'.join(options)}
         options = ["%s:%s" % (st.id, st.name) for st in stock_holders]
         stock_holder_options = {"value": ';'.join(options)}
