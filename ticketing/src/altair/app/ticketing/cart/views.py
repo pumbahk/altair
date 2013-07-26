@@ -157,18 +157,20 @@ class IndexView(IndexViewMixin):
                   renderer=selectable_renderer("%(membership)s/pc/index.html"), xhr=False, permission="buy")
     def __call__(self):
         self.check_redirect(mobile=False)
-        sales_segments = self.context.available_sales_segments
-        selector_name = c_api.get_organization(self.request).setting.performance_selector
-
-        performance_selector = api.get_performance_selector(self.request, selector_name)
-        sales_segments_selection = performance_selector()
-        logger.debug("sales_segments: %s" % sales_segments_selection)
 
         # 会場
         try:
             performance_id = long(self.request.params.get('pid') or self.request.params.get('performance'))
         except (ValueError, TypeError):
             performance_id = None
+
+        self.context.performance_id = performance_id
+        sales_segments = self.context.available_sales_segments
+        selector_name = c_api.get_organization(self.request).setting.performance_selector
+
+        performance_selector = api.get_performance_selector(self.request, selector_name)
+        sales_segments_selection = performance_selector()
+        logger.debug("sales_segments: %s" % sales_segments_selection)
 
         selected_sales_segment = None
         if not performance_id:

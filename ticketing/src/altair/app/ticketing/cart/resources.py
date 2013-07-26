@@ -47,6 +47,8 @@ class TicketingCartResource(object):
         self.now = get_now(request)
         self._event_id = None
         self._event = None
+        self._performance_id = None
+        self._performance = None
         self._sales_segment_id = None
         self._populate_params()
 
@@ -88,9 +90,32 @@ class TicketingCartResource(object):
                 self._event = None
         return self._event
 
+    def _get_performance_id(self):
+        return self._performance_id
+
+    def _set_performance_id(self, value):
+        self._performance_id = value
+        self._performance = None
+
+    performance_id = property(_get_performance_id, _set_performance_id)
+
     @property
     def performance(self):
-        return self.sales_segment.performance
+        if self._performance is None:
+            try:
+                self._performance = self.sales_segment.performance
+            except:
+                if self.performance_id:
+                    try:
+                        self._performance = c_models.Performance.query.filter(
+                            c_models.Performance.id==self.performance_id,
+                            c_models.Performance.event_id==self.event.id
+                        ).one()
+                    except NoResultFound:
+                        pass
+            if self._performance is None:
+                raise NoPerformanceError(event_id=self.event.id)
+        return self._performance
 
     @reify
     def membergroups(self):
@@ -177,9 +202,13 @@ class TicketingCartResource(object):
 
         retval = list(itertools.chain(*((pair[0] or pair[1]) for pair in per_performance_sales_segments_dict.itervalues())))
         if not retval:
+            # 公演が指定されてるなら販売区分を絞る
+            sales_segments = self.sales_segments
+            if self.performance_id:
+                sales_segments = [ss for ss in sales_segments if ss.performance_id == self.performance.id]
             # 次の販売区分があるなら
             data = c_models.Event.find_next_and_last_sales_segment_period(
-                sales_segments=self.sales_segments,
+                sales_segments=sales_segments,
                 now=self.now)
             if any(data):
                 for datum in data:
