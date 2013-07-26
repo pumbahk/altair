@@ -3375,9 +3375,9 @@ class PerformanceSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     performance_id = Column(Identifier, ForeignKey('Performance.id'))
     performance = relationship('Performance', backref='settings')
     
-    abbreviated_title = Column(Unicode(255), doc=u"公演名略称", default="")
-    subtitle = Column(Unicode(255), doc=u"公演名副題", default="")
-    note = Column(UnicodeText, doc=u"公演名備考", default="")
+    abbreviated_title = Column(Unicode(255), doc=u"公演名略称", default=u"")
+    subtitle = Column(Unicode(255), doc=u"公演名副題", default=u"")
+    note = Column(UnicodeText, doc=u"公演名備考", default=u"")
 
     KEYS = ["abbreviated_title", "subtitle", "note"]
 
