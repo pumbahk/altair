@@ -331,7 +331,7 @@ class Page(BaseOriginalMixin,
 
     name = Column(Unicode(255), default=u"")
     title = Column(Unicode(255), default=u"")
-    keywords = Column(Unicode(255), default=u"")
+    keywords = Column(Unicode(500), default=u"")
     description = Column(Unicode(255), default=u"")
     url = Column(String(255), index=True) ##todo: delete
     version = Column(Integer, default=1)
