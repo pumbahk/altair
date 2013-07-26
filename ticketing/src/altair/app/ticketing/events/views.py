@@ -25,6 +25,7 @@ from altair.app.ticketing.views import BaseView
 from altair.app.ticketing.fanstatic import with_bootstrap
 from altair.app.ticketing.core.models import Event, Performance, StockType, StockTypeEnum
 from altair.app.ticketing.core import api as core_api
+from altair.app.ticketing.core.utils import PageURL_WebOb_Ex
 from altair.app.ticketing.events.performances.forms import PerformanceForm
 from altair.app.ticketing.events.sales_segment_groups.forms import SalesSegmentGroupForm
 from altair.app.ticketing.events.stock_types.forms import StockTypeForm
@@ -70,7 +71,7 @@ class Events(BaseView):
             query,
             page=int(self.request.params.get('page', 0)),
             items_per_page=10,
-            url=paginate.PageURL_WebOb(self.request)
+            url=PageURL_WebOb_Ex(self.request)
         )
 
         return {
