@@ -7,8 +7,9 @@ from . import sheet
 
 
 class DummySeat(dict):
-    pass
-
+    @property
+    def attributes(self):
+        return self
 
 class SeatSourceFromSeatTest(TestCase):
     """SeatからSeatSourceへの変換テスト"""
@@ -19,6 +20,8 @@ class SeatSourceFromSeatTest(TestCase):
         self.seat["row"] = u"あ"
         self.seat["seat"] = u"A1"
         self.seat.status = SeatStatusEnum.Vacant
+        self.seat.venue_id = 1
+        self.seat.group_l0_id = 'g'
 
     def test_ok(self):
         result = sheet.seat_source_from_seat(self.seat)
