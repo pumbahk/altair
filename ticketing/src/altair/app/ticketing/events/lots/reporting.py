@@ -16,12 +16,12 @@ class ReportCondition(object):
     """
     集計期間： limit_from, limit_to
     対象イベント: event_id
-    対象抽選: lot_id
+    対象抽選: lot
     抽選は現在申込受付中であること
 
     """
     def __init__(self, setting, now):
-        self.lot_id = setting.lot_id
+        self.lot = setting.lot
         self.setting = setting
         self.now = now
 
@@ -63,20 +63,13 @@ class ReportCondition(object):
     def need_total(self):
         return self.setting.period != ReportPeriodEnum.Entire.v[0]
 
-        
-
-    @property
-    def sales_segment_condition(self):
+    def is_reportable(self):
+        ss = self.lot.sales_condition
         limited_to = self.limited_to
         limited_from = self.limited_from
         to_date = self.to_date
         from_date = self.from_date
 
-        if limited_to and limited_from:
-            return and_(SalesSegment.start_on,
-                        SalesSegment.end_on)
-        if limited_to and not limited_from:
-            return SalesSegment.start_on
 
 
 class LotEntryReporter(object):

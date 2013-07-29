@@ -24,14 +24,14 @@ class ReportConditionTests(unittest.TestCase):
         from datetime import datetime
 
         setting = testing.DummyModel(
-            lot_id=123,
+            lot=testing.DummyModel(),
             frequency=ReportFrequencyEnum.Daily.v[0],
             period=ReportPeriodEnum.Normal.v[0],
         )
         now = datetime(2013, 1, 1, 23, 59)
 
         target = self._makeOne(setting, now)
-        self.assertEqual(target.lot_id, 123)
+        self.assertEqual(target.lot, setting.lot)
 
     def test_daily_normal(self):
         """ 毎日の前日分
@@ -41,7 +41,7 @@ class ReportConditionTests(unittest.TestCase):
         from datetime import datetime
 
         setting = testing.DummyModel(
-            lot_id=123,
+            lot=testing.DummyModel(),
             frequency=ReportFrequencyEnum.Daily.v[0],
             period=ReportPeriodEnum.Normal.v[0],
         )
@@ -63,7 +63,7 @@ class ReportConditionTests(unittest.TestCase):
         from datetime import datetime
 
         setting = testing.DummyModel(
-            lot_id=123,
+            lot=testing.DummyModel(),
             frequency=ReportFrequencyEnum.Daily.v[0],
             period=ReportPeriodEnum.Entire.v[0],
         )
@@ -84,7 +84,7 @@ class ReportConditionTests(unittest.TestCase):
         from datetime import datetime
 
         setting = testing.DummyModel(
-            lot_id=123,
+            lot=testing.DummyModel(),
             frequency=ReportFrequencyEnum.Weekly.v[0],
             period=ReportPeriodEnum.Normal.v[0],
         )
@@ -105,7 +105,7 @@ class ReportConditionTests(unittest.TestCase):
         from datetime import datetime
 
         setting = testing.DummyModel(
-            lot_id=123,
+            lot=testing.DummyModel(),
             frequency=ReportFrequencyEnum.Weekly.v[0],
             period=ReportPeriodEnum.Entire.v[0],
         )
@@ -117,7 +117,6 @@ class ReportConditionTests(unittest.TestCase):
         self.assertEqual(target.to_date, now)
         self.assertIsNone(target.limited_from)
         self.assertEqual(target.limited_to, '2013-01-17 12:34')
-
 
 class LotEntryReporterTests(unittest.TestCase):
     def setUp(self):
@@ -145,7 +144,7 @@ class LotEntryReporterTests(unittest.TestCase):
         request = testing.DummyRequest()
         mailer = get_mailer(request)
         setting = testing.DummyModel(
-            lot_id=123,
+            lot=testing.DummyModel(),
         )
         now = datetime(2013, 2, 3)
 
