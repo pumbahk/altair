@@ -153,7 +153,7 @@ def main(global_config, **local_config):
         config.include(config.maybe_dotted('altair.app.ticketing.cart.import_mail_module'))
         # 上からscanされてしまうためしかたなく追加。scanをinclude先に移動させて、このincludeを削除する。
         #config.include('altair.app.ticketing.cart' , route_prefix='/cart')
-        
+        config.include('.renderers')
 
     
         config.add_tween('.tweens.session_cleaner_factory', over=EXCVIEW)
