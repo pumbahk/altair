@@ -40,9 +40,17 @@ import altair.app.ticketing.lots.api as lots_api
 from altair.app.ticketing.lots.electing import Electing
 from altair.app.ticketing.lots.closing import LotCloser
 from .helpers import Link
-from .forms import ProductForm, LotForm, SearchEntryForm, SendingMailForm
+from .forms import (
+    ProductForm,
+    LotForm,
+    SearchEntryForm,
+    SendingMailForm,
+    LotEntryReportMailForm,
+)
+
 from . import api
-from .models import LotWishSummary
+from .models import LotWishSummary, LotEntryReportSetting
+
 
 from altair.app.ticketing.payments import helpers as payment_helpers
 
@@ -357,6 +365,9 @@ class LotEntries(BaseView):
         self.check_organization(self.context.event)
         lot = self.context.lot
         lot_status = api.get_lot_entry_status(lot, self.request)
+        report_settings = LotEntryReportSetting.query.filter(
+            LotEntryReportSetting.lot_id==lot.id
+        ).all()
 
         return dict(
             lot=lot,
@@ -364,6 +375,7 @@ class LotEntries(BaseView):
             #  公演、希望順ごとの数
             sub_counts = lot_status.sub_counts,
             lot_status=lot_status,
+            report_settings=report_settings,
             )
 
 
@@ -923,3 +935,42 @@ class LotEntries(BaseView):
                 "shipping_address": shipping_address, 
                 "mail_form": mail_form}
 
+
+
+@view_defaults(decorator=with_bootstrap, permission="event_editor")
+class LotReport(object):
+    def __init__(self, context, request):
+        self.context = context
+        self.request = request
+
+    @property
+    def index_url(self):
+        return self.request.route_url("lots.entries.index",
+                                      **self.request.matchdict)
+
+    @view_config(route_name="lot.entries.new_report_setting",
+                 renderer="lots/new_report_setting.html")
+    def new_setting(self):
+        form = LotEntryReportMailForm(formdata=self.request.POST)
+        form.lot_id.data = self.context.lot.id
+
+        if self.request.method == "POST":
+            if form.validate():
+                new_setting = LotEntryReportSetting()
+                form.sync(new_setting)
+                DBSession.add(new_setting)
+                return HTTPFound(self.index_url)
+        return dict(form=form,
+                    event=self.context.event)
+
+    @view_config(route_name="lot.entries.edit_report_setting",
+                 )
+    def update_setting(self):
+        if self.request.method == "POST":
+            pass
+        return dict()
+
+    @view_config(route_name="lot.entries.delete_report_setting",
+                 request_method="POST")
+    def delete_setting(self):
+        return dict()

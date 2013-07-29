@@ -1,0 +1,39 @@
+<%inherit file="/layout_2cols.html"/>
+<%namespace file="/common/helpers.html" name="ch" />
+<%! from altair.app.ticketing.core.models import ReportFrequencyEnum %>
+<%block name="breadcrumbs">
+  ${ch.breadcrumbs(
+      names=[u'イベント', event.title, u'抽選'],
+      urls=[request.route_path('events.index'), request.route_path('events.show', event_id=event.id)]
+  )}
+</%block>
+
+<div class="page-header">
+  <h3>新規メール送信先</h3>
+</div>
+
+<div class="content">
+  ${ch.alert_message(form)}
+</div>
+
+<form class="form-horizontal" method="POST" action="${request.url}">
+  ${ch.form_item(form.operator_id)}
+  ${ch.form_item(form.name)}
+  ${ch.form_item(form.email)}
+  ${ch.form_item(form.frequency)}
+  <div class="frequency-weekly">
+    ${ch.form_item(form.day_of_week)}
+  </div>
+  ${ch.form_item(form.period)}
+  ${ch.form_item(form.time)}
+  ${ch.form_item(form.start_on)}
+  ${ch.form_item(form.end_on)}
+  <div class="controls">
+    * オペレーターの追加は<a href="${request.route_path('operators.index')}">こちら</a>
+  </div>
+  ${ch.form_item(form.id)}
+  ${ch.form_item(form.event_id)}
+  ${ch.form_item(form.lot_id)}
+  <button type="submit" class="btn">保存</button>
+</form>
+
