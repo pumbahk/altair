@@ -14,6 +14,8 @@ Fashion.Backend.SVG = (function() {
   var SVG_NAMESPACE = "http://www.w3.org/2000/svg";
   var XLINK_NAMESPACE = "http://www.w3.org/1999/xlink";
 
+  var isGecko = window.navigator.userAgent.indexOf("Gecko/") >= 0;
+
   function newElement(element_name) {
     return window.document.createElementNS(SVG_NAMESPACE, element_name);
   }
@@ -45,6 +47,12 @@ Fashion.Backend.SVG = (function() {
     case 2: retval.middle = true; break;
     case 3: retval.right = true; break;
     }
+
+    retval.modifierKeys =
+         (domEvt.shiftKey ? Fashion.SHIFT_KEY: 0) |
+         (domEvt.ctrlKey ? Fashion.CTRL_KEY: 0) |
+         (domEvt.altKey ? Fashion.ALT_KEY: 0) |
+         (domEvt.metaKey ? Fashion.META_KEY: 0);
 
     var physicalPagePosition;
     if (typeof domEvt.pageX != 'number' && typeof domEvt.clientX == 'number') {
@@ -167,7 +175,7 @@ var Base = _class("BaseSVG", {
         [
           Fashion.DIRTY_VISIBILITY,
           function () {
-            this._elem.style.display = this.wrapper._visibility ? 'block' : 'none'
+            this._elem.style.display = this.wrapper._visibility ? 'block' : 'none';
           }
         ],
         [
@@ -200,6 +208,7 @@ var Base = _class("BaseSVG", {
       this._transformStack = new TransformStack();
       var self = this;
       this._eventFunc = function(domEvt) {
+        if (!self.drawable) { delete self._eventFunc; return true; }
         if (self.drawable._capturingShape &&
             self.drawable._capturingShape !== self)
           return true;
@@ -602,6 +611,14 @@ var DepthManager = _class("DepthManager", {
       this.root = root;
     },
 
+    getMaxDepth: function() {
+      return this.depth[this.depth.length-1];
+    },
+
+    getMinDepth: function() {
+      return this.depth[0];
+    },
+
     add: function(shape) {
       var nth = shape.wrapper._zIndex;
       var id = shape.wrapper.id;
@@ -619,9 +636,10 @@ var DepthManager = _class("DepthManager", {
           if (layer[i].wrapper.id == id) {
             layer.splice(i, 1);
             if (layer.length == 0) {
-              this.layers.splice(last_nth, 1);
+              this.layers.splice(last_nth, 1, void(0));
+              delete this.layers[last_nth];
               if (layer.next) layer.next.prev = layer.prev;
-              if (layter.prev) layer.prev.next = layer.next;
+              if (layer.prev) layer.prev.next = layer.next;
               this.depth.splice(this.depth.indexOf(last_nth), 1);
             }
             break;
@@ -710,11 +728,13 @@ var Drawable = _class("DrawableSVG", {
       mousemove: null,
       mouseout:  null,
       scroll: null,
-      visualchange: null
+      visualchange: null,
+      mousewheel: null
     },
     _eventFunc: null,
     _captureEventFunc: null,
     _scrollEventFunc: null,
+    _mouseWheelEventFunc: null,
     _refresher: null
   },
 
@@ -759,15 +779,18 @@ var Drawable = _class("DrawableSVG", {
                 if (type == 'scroll') {
                   this._viewport.addEventListener(type, this._scrollEventFunc, false);
                   this._handledEvents[type] = this._scrollEventFunc;
+                } else if (type == 'mousewheel') {
+                  this._viewport.addEventListener(isGecko ? 'DOMMouseScroll': type, this._mouseWheelEventFunc, false);
+                  this._handledEvents[type] = this._mouseWheelEventFunc;
                 } else if (type.indexOf('visualchange') != 0) {
                   this._svg.addEventListener(type, this._eventFunc, false);
                   this._handledEvents[type] = this._eventFunc;
                 }
               } else if (eventFunc && !handled) {
-                if (type == 'scroll')
-                  this._viewport.removeEventListener(type, this._eventFunc, false);
-                else if (type.indexOf('visualchange') != 0)
-                  this._svg.removeEventListener(type, eventFunc, false);
+                if (type == 'mousewheel')
+                  this._viewport.removeEventListener(isGecko ? 'DOMMouseScroll': type, eventFunc, false);
+                else
+                  this._viewport.removeEventListener(type, eventFunc, false);
                 this._handledEvents[type] = null;
               }
             }
@@ -793,9 +816,11 @@ var Drawable = _class("DrawableSVG", {
         return false;
       };
 
-      this._captureEventFunc = function (domEvt) {
+      this._captureEventFunc = function(domEvt) {
         var func = self._capturingShape._handledEvents[domEvt.type];
-        return func ? func(domEvt): true;
+        var rt = func ? func(domEvt): true;
+        domEvt.stopPropagation();
+        return rt;
       };
 
       this._scrollEventFunc = function () {
@@ -807,6 +832,24 @@ var Drawable = _class("DrawableSVG", {
             y: self._viewport.scrollTop
           };
           evt.logicalPosition = self.scrollPosition();
+          self.wrapper.handler.dispatch(evt);
+        }
+      };
+
+      this._mouseWheelEventFunc = function (domEvt) {
+        if (self._handledEvents.mousewheel) {
+          var evt = new Fashion.MouseWheelEvt(function () { domEvt.preventDefault(); });
+          evt.target = self.wrapper;
+          if (domEvt.wheelDelta) {
+            evt.delta = -(domEvt.wheelDelta / 120);
+          } else if (domEvt.detail) {
+            evt.delta = domEvt.detail;
+          }
+          evt.modifierKeys =
+               (domEvt.shiftKey ? Fashion.SHIFT_KEY: 0) |
+               (domEvt.ctrlKey ? Fashion.CTRL_KEY: 0) |
+               (domEvt.altKey ? Fashion.ALT_KEY: 0) |
+               (domEvt.metaKey ? Fashion.META_KEY: 0);
           self.wrapper.handler.dispatch(evt);
         }
       };
@@ -916,6 +959,14 @@ var Drawable = _class("DrawableSVG", {
 
     convertToPhysicalPoint: function(point) {
       return this.wrapper._transform.apply(point);
+    },
+
+    getMaxDepth: function() {
+      return this._depthManager.getMaxDepth();
+    },
+
+    getMinDepth: function() {
+      return this._depthManager.getMinDepth();
     },
 
     _updateContentSize: function () {

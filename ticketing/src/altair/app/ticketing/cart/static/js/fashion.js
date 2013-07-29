@@ -11,6 +11,11 @@ this.DIRTY_ZINDEX         = 0x00000010;
 this.DIRTY_STYLE          = 0x00000020;
 this.DIRTY_VISIBILITY     = 0x00000040;
 this.DIRTY_EVENT_HANDLERS = 0x00000080;
+
+this.SHIFT_KEY            = 0x00000001;
+this.CTRL_KEY             = 0x00000002;
+this.ALT_KEY              = 0x00000004;
+this.META_KEY             = 0x00000008;
 /** @} */
 
 /** @file lib.js { */
@@ -510,12 +515,13 @@ _lib._class = _class;
         while (pending.length)
           (pending.shift())();
       });
-    
-      return function onceOnLoad(f) {
-        if (loaded)
-          f();
-        else
+      return function onceOnLoad(f, item) {
+        if (loaded) {
+          if (item) _bindEvent(item, 'load', f);
+          else f();
+        } else {
           pending.push(f);
+        }
       };
     } else {
       return function onceOnLoad(f) {
@@ -1401,7 +1407,7 @@ var ImageData = _class('ImageData', {
         self._size = { width: self.node.width, height: self.node.height };
         while (self.callbacks.length)
           (self.callbacks.shift())(self._size);
-      });
+      }, this.node);
 
       this.node.src = url;
     },
@@ -1820,7 +1826,7 @@ var PathData = (function() {
           var op;
           if (!(op = OPERATORS[seg[0]]))
             throw new ValueError('Unexpected operator "' + arr[i] + '"');
-          builder.addSegments(arr, 1, seg.length, op);
+          builder.addSegments(seg, 1, seg.length - 1, op);
         }
       },
 
@@ -1888,6 +1894,7 @@ var MouseEvt = _class("MouseEvt", {
     physicalPosition:  { x: 0, y: 0 },
     screenPosition:    { x: 0, y: 0 },
     offsetPosition:    { x: 0, y: 0 },
+    modifierKeys:    0,
     left:            false,
     middle:          false,
     right:           false
@@ -1897,6 +1904,30 @@ var MouseEvt = _class("MouseEvt", {
 });
 /** @} */
   this.MouseEvt = MouseEvt;
+
+/** @file MouseWheelEvt.js { */
+var MouseWheelEvt = _class("MouseWheelEvt", {
+
+  props: {
+    type: 'mousewheel',
+    target: null,
+    delta: 0,
+    modifierKeys: 0,
+    _preventDefault: null
+  },
+
+  methods: {
+    init: function (preventDefault) {
+      this._preventDefault = preventDefault;
+    },
+
+    preventDefault: function preventDefault() {
+      this._preventDefault();
+    }
+  }
+});
+/** @} */
+  this.MouseWheelEvt = MouseWheelEvt;
 
 /** @file VisualChangeEvt.js { */
 var VisualChangeEvt = _class("VisualChangeEvt", {
@@ -2439,7 +2470,7 @@ var Drawable = _class("Drawable", {
         this.handler = new MouseEventsHandler(
           this,
           ['mousedown', 'mouseup', 'mousemove', 'mouseover', 'mouseout',
-           'scroll', 'visualchange']
+           'mousewheel', 'scroll', 'visualchange']
         );
       }
       this.handler.add.apply(this.handler, arguments);
@@ -2460,6 +2491,22 @@ var Drawable = _class("Drawable", {
       this._dirty |= Fashion.DIRTY_EVENT_HANDLERS;
       if (this.drawable)
         this.drawable._enqueueForUpdate(this);
+    },
+
+    convertToLogicalPoint: function(point) {
+      return this.impl.convertToLogicalPoint(point);
+    },
+
+    convertToPhysicalPoint: function(point) {
+      return this.impl.convertToPhysicalPoint(point);
+    },
+
+    getMaxDepth: function() {
+      return this.impl.getMaxDepth();
+    },
+
+    getMinDepth: function() {
+      return this.impl.getMinDepth();
     },
 
     _refresh: function () {
