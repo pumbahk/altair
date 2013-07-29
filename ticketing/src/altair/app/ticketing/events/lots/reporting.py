@@ -1,13 +1,27 @@
 # -*- coding:utf-8 -*-
 
 from datetime import timedelta
+from sqlalchemy import (
+    and_
+)
+from pyramid.renderers import render_to_response
+from pyramid_mailer.message import Message
 from altair.app.ticketing.core.models import (
+    SalesSegment,
     ReportFrequencyEnum,
     ReportPeriodEnum,
 )
 
 class ReportCondition(object):
+    """
+    集計期間： limit_from, limit_to
+    対象イベント: event_id
+    対象抽選: lot_id
+    抽選は現在申込受付中であること
+
+    """
     def __init__(self, setting, now):
+        self.lot_id = setting.lot_id
         self.setting = setting
         self.now = now
 
@@ -50,3 +64,51 @@ class ReportCondition(object):
         return self.setting.period != ReportPeriodEnum.Entire.v[0]
 
         
+
+    @property
+    def sales_segment_condition(self):
+        limited_to = self.limited_to
+        limited_from = self.limited_from
+        to_date = self.to_date
+        from_date = self.from_date
+
+        if limited_to and limited_from:
+            return and_(SalesSegment.start_on,
+                        SalesSegment.end_on)
+        if limited_to and not limited_from:
+            return SalesSegment.start_on
+
+
+class LotEntryReporter(object):
+    subject_prefix = u"[抽選申込状況レポート]"
+    body_template = "altair.app.ticketing:templates/lots_reports/_mail_body.html"
+
+    def __init__(self, sender, mailer, report_setting, now):
+        self.sender = sender
+        self.mailer = mailer
+        self.report_setting = report_setting
+        self.report_condition = ReportCondition(report_setting, now)
+
+    @property
+    def lot(self):
+        return self.report_setting.lot
+
+    def create_report_mail(self, status):
+
+        subject = self.subject_prefix + u" " + self.report_setting.lot.name
+        body = render_to_response(self.body_template,
+                                  dict(lot=self.lot,
+                                       lot_status=status))
+        return Message(subject=subject,
+                       recipients=[self.report_setting.recipient],
+                       html=body.text,
+                       sender=self.sender)
+
+    def send(self):
+        # 対象の集計内容をロード
+        status = self.load_lot_status()
+        # メール作成
+        message = self.create_report_mail(status)
+        # 送信
+        self.mailer.send_mail(message)
+
