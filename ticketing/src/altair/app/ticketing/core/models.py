@@ -2866,6 +2866,7 @@ class TicketPrintQueueEntry(Base, BaseModel):
                         default=datetime.now,
                         server_default=sqlf.current_timestamp())
     processed_at = Column(TIMESTAMP, nullable=True, default=None)
+    masked_at = Column(TIMESTAMP, nullable=True, default=None)
 
     @property
     def drawing(self):
@@ -2885,7 +2886,7 @@ class TicketPrintQueueEntry(Base, BaseModel):
     @classmethod
     def peek(self, operator, ticket_format_id, order_id=None):
         q = DBSession.query(TicketPrintQueueEntry) \
-            .filter_by(processed_at=None, operator=operator) \
+            .filter_by(processed_at=None, operator=operator, masked_at=None) \
             .filter(Ticket.ticket_format_id==ticket_format_id) \
             .options(joinedload(TicketPrintQueueEntry.seat))
         if order_id is not None:
@@ -2907,6 +2908,7 @@ class TicketPrintQueueEntry(Base, BaseModel):
             .outerjoin(OrderedProductItem.ordered_product) \
             .outerjoin(OrderedProduct.order) \
             .filter(TicketPrintQueueEntry.id.in_(ids)) \
+            .filter(TicketPrintQueueEntry.masked_at == None) \
             .filter(TicketPrintQueueEntry.processed_at == None) \
             .options(joinedload(TicketPrintQueueEntry.seat)) \
             .order_by(desc(TicketPrintQueueEntry.created_at)) \

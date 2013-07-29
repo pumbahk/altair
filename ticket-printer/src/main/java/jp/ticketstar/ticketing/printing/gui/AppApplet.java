@@ -32,8 +32,10 @@ import javax.print.PrintService;
 import javax.swing.ImageIcon;
 import javax.swing.JApplet;
 import javax.swing.JButton;
+import javax.swing.JToggleButton;
 import javax.swing.JComboBox;
 import javax.swing.JList;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JSplitPane;
 import javax.swing.JToolBar;
@@ -89,6 +91,7 @@ public class AppApplet extends JApplet implements IAppWindow, URLConnectionFacto
 	//private JApplet frame;
 	private JList list;
 	private JPanel panel;
+	private JLabel noPreviewImage;
 
 	private GuidesOverlay guidesOverlay;
 	private BoundingBoxOverlay boundingBoxOverlay;
@@ -110,38 +113,27 @@ public class AppApplet extends JApplet implements IAppWindow, URLConnectionFacto
 			componentResized(e);
 		}
 	};
-	
-	private PropertyChangeListener pageSetModelChangeListener = new PropertyChangeListener() {
-		@SuppressWarnings("unchecked")
-		public void propertyChange(PropertyChangeEvent evt) {
-			if (evt.getNewValue() != null) {
-				if (list != null)
-					list.clearSelection();
-				final PageSetModel pageSetModel = (PageSetModel)evt.getNewValue();
-				SwingUtilities.invokeLater(new Runnable() {
-					public void run() {
-						if (panel != null) {
-							panel.removeAll();
-							for (Page page: pageSetModel.getPages()) {
-								final JGVTComponent gvtComponent = new JGVTComponent(false, false);
-								{
-									Collection<Overlay> overlays = gvtComponent.getOverlays();
-									overlays.add(guidesOverlay);
-									overlays.add(boundingBoxOverlay);
-								}
-								gvtComponent.setPageFormat(model.getPageFormat());
-								gvtComponent.addComponentListener(centeringListener);
-								gvtComponent.setSize(new Dimension((int)panel.getWidth(), (int)panel.getHeight()));
-								gvtComponent.setGraphicsNode(page.getGraphics());
-								gvtComponent.setName(page.getName());
-								panel.add(gvtComponent, page.getName());
-							}
-							panel.validate();
-						}
-						if (list != null)
-							list.setModel(pageSetModel.getPages());
-					}
-				});
+
+	private class PreviewImageRenderer implements Runnable{
+		private PageSetModel pageSetModel;	
+		public PreviewImageRenderer(PageSetModel pageSetModel){
+			this.pageSetModel = pageSetModel;
+		}
+		public void runWithPreviewPage(){
+			for (Page page: pageSetModel.getPages()) {
+				final JGVTComponent gvtComponent = new JGVTComponent(false, false);
+				{
+					Collection<Overlay> overlays = gvtComponent.getOverlays();
+					overlays.add(guidesOverlay);
+					overlays.add(boundingBoxOverlay);
+				}
+				gvtComponent.setPageFormat(model.getPageFormat());
+				gvtComponent.addComponentListener(centeringListener);
+				gvtComponent.setSize(new Dimension((int)panel.getWidth(), (int)panel.getHeight()));
+				gvtComponent.setGraphicsNode(page.getGraphics());
+				gvtComponent.setName(page.getName());
+				panel.add(gvtComponent, page.getName());
+			}
 				pageSetModel.getPages().addListDataListener(new ListDataListener() {
 					public void contentsChanged(ListDataEvent evt) {}
 
@@ -157,6 +149,33 @@ public class AppApplet extends JApplet implements IAppWindow, URLConnectionFacto
 						panel.validate();
 					}
 				});
+		}
+		public void runWithoutPreview(){
+			panel.add(noPreviewImage,"no-preview");
+		}
+		public void run(){
+			if (panel != null) {
+				panel.removeAll();
+				if(model.getPreviewEnable()){
+					runWithPreviewPage();
+				}else {
+					runWithoutPreview();
+				}
+				panel.validate();
+			}
+			if (list != null)
+				list.setModel(pageSetModel.getPages());
+		}
+	};
+
+	private PropertyChangeListener pageSetModelChangeListener = new PropertyChangeListener() {
+		@SuppressWarnings("unchecked")
+		public void propertyChange(PropertyChangeEvent evt) {
+			if (evt.getNewValue() != null) {
+				if (list != null)
+					list.clearSelection();
+				final PageSetModel pageSetModel = (PageSetModel)evt.getNewValue();
+				SwingUtilities.invokeLater(new PreviewImageRenderer(pageSetModel));
 			}
 		}
 	};
@@ -249,7 +268,24 @@ public class AppApplet extends JApplet implements IAppWindow, URLConnectionFacto
 			btnPrint.setEnabled(!model.getPrintingStatus());
 		}
 	};
+	private PropertyChangeListener previewEnableChangeListener = new PropertyChangeListener(){
+		public void propertyChange(PropertyChangeEvent evt){
+			Boolean previewEnable = (Boolean)evt.getNewValue();
+			Boolean willBeReDraw = true;
+			if (previewEnable != null) {
+				if(previewEnable && model.getPageSetModel().getPages().getSize() > 25){ // xxx: magic number.
+					System.out.println("too many pages.");
+					willBeReDraw = false;
+					model.setPreviewEnable(false);
+				}
+				if(willBeReDraw){
+					SwingUtilities.invokeLater(new PreviewImageRenderer(model.getPageSetModel()));
+				}
+			}
+		}
+	};
 	private JButton btnPrint;
+	private JToggleButton btnPreview;
 	private JComboBox comboBoxPrintService;
 	private JComboBox comboBoxPageFormat;
 	private JComboBox comboBoxTicketFormat;
@@ -268,6 +304,7 @@ public class AppApplet extends JApplet implements IAppWindow, URLConnectionFacto
 		model.removePropertyChangeListener(ticketFormatChangeListener);
 		model.removePropertyChangeListener(orderIdChangeListener);
 		model.removePropertyChangeListener(printingStatusChangeListener);
+		model.removePropertyChangeListener(previewEnableChangeListener);
 	}
 	
 	public void bind(AppModel model) {
@@ -281,6 +318,7 @@ public class AppApplet extends JApplet implements IAppWindow, URLConnectionFacto
 		model.addPropertyChangeListener("ticketFormat", ticketFormatChangeListener);
 		model.addPropertyChangeListener("orderId", orderIdChangeListener);
 		model.addPropertyChangeListener("printingStatus", printingStatusChangeListener);
+		model.addPropertyChangeListener("previewEnable", previewEnableChangeListener);
 		if (!config.embedded)
 			model.refresh();
 		this.model = (AppAppletModel)model;
@@ -432,6 +470,22 @@ public class AppApplet extends JApplet implements IAppWindow, URLConnectionFacto
 		});
 		toolBar.add(comboBoxTicketFormat);
 		
+
+		btnPreview = new JToggleButton("disable", false);
+		btnPreview.addActionListener(new ActionListener(){
+			public void actionPerformed(ActionEvent arg0) {
+				Boolean enabled = btnPreview.isSelected();
+				if (enabled){
+					btnPreview.setText("enable");
+				} else{
+					btnPreview.setText("disable");
+				}
+				model.setPreviewEnable(enabled);
+			}
+		});
+
+		noPreviewImage = new JLabel(new ImageIcon(AppWindow.class.getResource("/misc/nopreview.png")));
+
 		btnPrint = new JButton("印刷");
 
 		btnPrint.addActionListener(new ActionListener() {
@@ -454,9 +508,12 @@ public class AppApplet extends JApplet implements IAppWindow, URLConnectionFacto
 		separator.setOrientation(SwingConstants.VERTICAL);
 		toolBar.add(separator);
 		toolBar.add(comboBoxPrintService);
+
+		toolBar.add(btnPreview);		
+
 		btnPrint.setIcon(new ImageIcon(AppWindow.class.getResource("/toolbarButtonGraphics/general/Print24.gif")));
 		toolBar.add(btnPrint);
-		
+
 		JSplitPane splitPane = new JSplitPane();
 		this.getContentPane().add(splitPane, BorderLayout.CENTER);
 		
