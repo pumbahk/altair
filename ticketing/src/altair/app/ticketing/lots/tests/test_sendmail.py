@@ -7,6 +7,7 @@ class send_accepted_mailTests(unittest.TestCase):
 
     def setUp(self):
         self.config = testing.setUp()
+        self.config.include('altair.app.ticketing.renderers')
 
     def tearDown(self):
         testing.tearDown()
