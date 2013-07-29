@@ -29,14 +29,14 @@
 </div>
 <form action="${request.url}" method="post">
 <div>
-  ID<br/>
+  ID(半角英数)<br/>
   <input type="text" name="username" size="22" value="${username}">
 %if message:
 <font color="red">IDが一致しません</font>
 %endif
 </div>
 <div>
-  パスワード(半角英数8桁)<br/>
+  パスワード(半角英数)<br/>
   <input type="password" name="password" size="22" value="">
 </div>
 <input type="submit" value="ログイン" />
