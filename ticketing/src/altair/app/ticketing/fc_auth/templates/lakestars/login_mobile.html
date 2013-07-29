@@ -30,6 +30,9 @@
 <div>
   ID(半角英数)<br/>
   <input type="text" name="username" size="22" maxlength="8" value="${username}">
+%if message:
+<font color="red">IDかパスワードが一致しません</font>
+%endif
 </div>
 <div>
   パスワード(半角英数)<br/>
