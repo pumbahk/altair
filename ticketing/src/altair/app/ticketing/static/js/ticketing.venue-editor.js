@@ -1,77 +1,6 @@
 (function (jQuery, I18n) {
 var __LIBS__ = {};
-__LIBS__['eHTNCAKW4Y2ALDLG'] = (function (exports) { (function () { 
-
-/************** CONF.js **************/
-exports.DEFAULT = {
-  ZOOM_RATIO: 0.8,
-  SHAPE_STYLE: {
-    fill: new Fashion.FloodFill(new Fashion.Color('#fff')),
-    stroke: new Fashion.Stroke(new Fashion.Color("#000"), 1)
-  },
-
-  TEXT_STYLE: {
-    fill: new Fashion.FloodFill(new Fashion.Color('#000')),
-    stroke: null
-  },
-
-  VENUE_STYLE: {
-    fill: new Fashion.FloodFill(new Fashion.Color('#FFCB3F')),
-    stroke: new Fashion.Stroke(new Fashion.Color('#5ABECD'), 1)
-  },
-
-  STYLES: {
-    label: {
-      fill: new Fashion.Color('#000'),
-      stroke: null
-    },
-    seat: {
-      fill: new Fashion.Color('#fff'),
-      stroke: new Fashion.Color('#000')
-    }
-  },
-
-  MASK_STYLE: {
-    fill:   new Fashion.FloodFill(new Fashion.Color("#0064ff80")),
-    stroke: new Fashion.Stroke(new Fashion.Color("#0080FF"), 2)
-  },
-
-  SEAT_STYLE: {
-    text_color: "#000",
-    fill:   { color: "#fff" },
-    stroke: { color: "#000", width: 1 }
-  },
-
-  AUGMENTED_STYLE: {
-    selected: {
-      text_color: "#FFF",
-      fill:   { color: "#009BE1" }
-    },
-    highlighted: {
-      fill: null,
-      stroke: { color: "#F63", width: 2, pattern: 'solid' }
-    },
-    tooltip: {
-    },
-    unselectable: {
-      stroke: { color: "#ababab", width: 2, pattern: 'solid' }
-    }
-  },
-
-  SEAT_STATUS_STYLE: {
-    0: { stroke: { color: "#929292", width: 3, pattern: 'solid' } },
-    1: {},
-    2: { stroke: { color: "#ffff40", width: 3, pattern: 'solid' } },
-    3: { stroke: { color: "#2020d2", width: 3, pattern: 'solid' } },
-    4: { stroke: { color: "#006666", width: 3, pattern: 'solid' } },
-    5: { stroke: { color: "#b3d940", width: 3, pattern: 'solid' } },
-    6: { stroke: { color: "#ff4040", width: 3, pattern: 'solid' } },
-    7: { stroke: { color: "#9f9fec", width: 3, pattern: 'solid' } },
-    8: { stroke: { color: "#ff8c40", width: 3, pattern: 'solid' } }
-  }
-};
- })(); return exports; })({});
-__LIBS__['C7XU1TV1_R2C6P6L'] = (function (exports) { (function () { 
+__LIBS__['c4_42FKUATLZ2U92'] = (function (exports) { (function () { 
 
 /************** util.js **************/
 exports.eventKey = function Util_eventKey(e) {
@@ -198,7 +127,78 @@ timer.prototype.lap = function(msg) {
     return lap;
 };
  })(); return exports; })({});
-__LIBS__['bUUFZRGJAFPAHD7K'] = (function (exports) { (function () { 
+__LIBS__['XOWE77TV7F8LYBA8'] = (function (exports) { (function () { 
+
+/************** CONF.js **************/
+exports.DEFAULT = {
+  ZOOM_RATIO: 0.8,
+  SHAPE_STYLE: {
+    fill: new Fashion.FloodFill(new Fashion.Color('#fff')),
+    stroke: new Fashion.Stroke(new Fashion.Color("#000"), 1)
+  },
+
+  TEXT_STYLE: {
+    fill: new Fashion.FloodFill(new Fashion.Color('#000')),
+    stroke: null
+  },
+
+  VENUE_STYLE: {
+    fill: new Fashion.FloodFill(new Fashion.Color('#FFCB3F')),
+    stroke: new Fashion.Stroke(new Fashion.Color('#5ABECD'), 1)
+  },
+
+  STYLES: {
+    label: {
+      fill: new Fashion.Color('#000'),
+      stroke: null
+    },
+    seat: {
+      fill: new Fashion.Color('#fff'),
+      stroke: new Fashion.Color('#000')
+    }
+  },
+
+  MASK_STYLE: {
+    fill:   new Fashion.FloodFill(new Fashion.Color("#0064ff80")),
+    stroke: new Fashion.Stroke(new Fashion.Color("#0080FF"), 2)
+  },
+
+  SEAT_STYLE: {
+    text_color: "#000",
+    fill:   { color: "#fff" },
+    stroke: { color: "#000", width: 1 }
+  },
+
+  AUGMENTED_STYLE: {
+    selected: {
+      text_color: "#FFF",
+      fill:   { color: "#009BE1" }
+    },
+    highlighted: {
+      fill: null,
+      stroke: { color: "#F63", width: 2, pattern: 'solid' }
+    },
+    tooltip: {
+    },
+    unselectable: {
+      stroke: { color: "#ababab", width: 2, pattern: 'solid' }
+    }
+  },
+
+  SEAT_STATUS_STYLE: {
+    0: { stroke: { color: "#929292", width: 3, pattern: 'solid' } },
+    1: {},
+    2: { stroke: { color: "#ffff40", width: 3, pattern: 'solid' } },
+    3: { stroke: { color: "#2020d2", width: 3, pattern: 'solid' } },
+    4: { stroke: { color: "#006666", width: 3, pattern: 'solid' } },
+    5: { stroke: { color: "#b3d940", width: 3, pattern: 'solid' } },
+    6: { stroke: { color: "#ff4040", width: 3, pattern: 'solid' } },
+    7: { stroke: { color: "#9f9fec", width: 3, pattern: 'solid' } },
+    8: { stroke: { color: "#ff8c40", width: 3, pattern: 'solid' } }
+  }
+};
+ })(); return exports; })({});
+__LIBS__['QCNIFOJ1NTPE8TKE'] = (function (exports) { (function () { 
 
 /************** identifiableset.js **************/
 var IdentifiableSet = exports.IdentifiableSet = function IdentifiableSet(options) {
@@ -247,12 +247,12 @@ IdentifiableSet.prototype.each = function IdentifiableSet_each(f) {
  * vim: sts=2 sw=2 ts=2 et
  */
  })(); return exports; })({});
-__LIBS__['vCOULM04ZLIGDTRX'] = (function (exports) { (function () { 
+__LIBS__['yKM36XN66FJ2HIM9'] = (function (exports) { (function () { 
 
 /************** models.js **************/
-var util = __LIBS__['C7XU1TV1_R2C6P6L'];
-var CONF = __LIBS__['eHTNCAKW4Y2ALDLG'];
-var IdentifiableSet = __LIBS__['bUUFZRGJAFPAHD7K'].IdentifiableSet;
+var util = __LIBS__['c4_42FKUATLZ2U92'];
+var CONF = __LIBS__['XOWE77TV7F8LYBA8'];
+var IdentifiableSet = __LIBS__['QCNIFOJ1NTPE8TKE'].IdentifiableSet;
 
 var VenueItemCollectionMixin = {
   venue: null,
@@ -726,12 +726,12 @@ console.log(ad2);
  * vim: sts=2 sw=2 ts=2 et
  */
  })(); return exports; })({});
-__LIBS__['xPHGOJFCQG5CYC3M'] = (function (exports) { (function () { 
+__LIBS__['AUVKTNE6Y1Y22MK1'] = (function (exports) { (function () { 
 
 /************** viewobjects.js **************/
-var util = __LIBS__['C7XU1TV1_R2C6P6L'];
-var CONF = __LIBS__['eHTNCAKW4Y2ALDLG'];
-var models = __LIBS__['vCOULM04ZLIGDTRX'];
+var util = __LIBS__['c4_42FKUATLZ2U92'];
+var CONF = __LIBS__['XOWE77TV7F8LYBA8'];
+var models = __LIBS__['yKM36XN66FJ2HIM9'];
 
 var Seat = exports.Seat = Backbone.Model.extend({
   defaults: {
@@ -899,7 +899,7 @@ var Seat = exports.Seat = Backbone.Model.extend({
  * vim: sts=2 sw=2 ts=2 et
  */
  })(); return exports; })({});
-__LIBS__['LJ2447LZSLTESQPB'] = (function (exports) { (function () { 
+__LIBS__['tK4U1SPSNSE4XF8H'] = (function (exports) { (function () { 
 
 /************** translations.js **************/
 
@@ -930,13 +930,13 @@ exports.ja = {
 /************** venue-editor.js **************/
 /* extern */ var jQuery, I18n;
 (function ($) {
-  var CONF = __LIBS__['eHTNCAKW4Y2ALDLG'];
-  var models = __LIBS__['vCOULM04ZLIGDTRX'];
-  var util = __LIBS__['C7XU1TV1_R2C6P6L'];
-  var viewobjects = __LIBS__['xPHGOJFCQG5CYC3M'];
-  var IdentifiableSet = __LIBS__['bUUFZRGJAFPAHD7K'].IdentifiableSet;
+  var CONF = __LIBS__['XOWE77TV7F8LYBA8'];
+  var models = __LIBS__['yKM36XN66FJ2HIM9'];
+  var util = __LIBS__['c4_42FKUATLZ2U92'];
+  var viewobjects = __LIBS__['AUVKTNE6Y1Y22MK1'];
+  var IdentifiableSet = __LIBS__['QCNIFOJ1NTPE8TKE'].IdentifiableSet;
   if (I18n)
-    I18n.translations = __LIBS__['LJ2447LZSLTESQPB'];
+    I18n.translations = __LIBS__['tK4U1SPSNSE4XF8H'];
 
   var parseCSSStyleText = (function () {
     var regexp_for_styles = /\s*(-?(?:[_a-z\u00a0-\u10ffff]|\\[^\n\r\f#])(?:[\-_A-Za-z\u00a0-\u10ffff]|\\[^\n\r\f])*)\s*:\s*((?:(?:(?:[^;\\ \n\r\t\f"']|\\[0-9A-Fa-f]{1,6}(?:\r\n|[ \n\r\t\f])?|\\[^\n\r\f0-9A-Fa-f])+|"(?:[^\n\r\f\\"]|\\(?:\n|\r\n|\r|\f)|\\[^\n\r\f])*"|'(?:[^\n\r\f\\']|\\(?:\n|\r\n|\r|\f)|\\[^\n\r\f])*')(?:\s+|(?=;|$)))+)(?:;|$)/g;
@@ -1211,6 +1211,7 @@ exports.ja = {
       };
     })();
     this.shift = false;
+    this.ctrl = false;
     this.drawing = null;
     this.metadata = null;
     this.keyEvents = null;
@@ -1412,16 +1413,19 @@ exports.ja = {
       {},
       drawing.documentElement.childNodes);
 
+    drawable.addEvent({
+      mousewheel: function (evt) {
+        if (self.shift) {
+          evt.preventDefault();
+          self.zoom(self.zoomRatio * (evt.delta < 0 ? 1 / 1.1: 1.1));
+        }
+      }
+    });
+
     self.drawable = drawable;
     self.shapes = shapes;
 
-    var cs = drawable.contentSize();
-    var vs = drawable.viewportSize();
-    var center = {
-      x: (cs.x - vs.x) / 2,
-      y: (cs.y - vs.y) / 2
-    };
-    self.drawable.transform(Fashion.Matrix.scale(self.zoomRatio));
+    self.zoom(self.zoomRatio);
     self.changeUIMode(self.uiMode);
   };
 
@@ -1518,8 +1522,16 @@ exports.ja = {
     var self = this;
 
     this.keyEvents = {
-      down: function(e) { if (util.eventKey(e).shift) self.shift = true;  return true; },
-      up:   function(e) { if (util.eventKey(e).shift) self.shift = false; return true; }
+      down: function(e) {
+        if (util.eventKey(e).shift) self.shift = true;
+        if (util.eventKey(e).ctrl) self.ctrl = true;
+        return true;
+      },
+      up:   function(e) {
+        if (util.eventKey(e).shift) self.shift = false;
+        if (util.eventKey(e).ctrl) self.ctrl = false;
+        return true;
+      }
     };
 
     $(document).bind('keydown', this.keyEvents.down);
@@ -1598,8 +1610,7 @@ exports.ja = {
       case 'zoomin':
         this.drawable.addEvent({
           mouseup: function(evt) {
-            self.zoomRatio*=1.2;
-            this.transform(Fashion.Matrix.scale(self.zoomRatio));
+            self.zoom(self.zoomRatio * 1.2);
           }
         });
         break;
@@ -1607,8 +1618,7 @@ exports.ja = {
       case 'zoomout':
         this.drawable.addEvent({
           mouseup: function(evt) {
-            self.zoomRatio/=1.2;
-            this.transform(Fashion.Matrix.scale(self.zoomRatio));
+            self.zoom(self.zoomRatio / 1.2);
           }
         });
         break;
@@ -1646,6 +1656,28 @@ exports.ja = {
       this._adjacencyLength = value;
     }
     return this._adjacencyLength;
+  };
+
+  VenueEditor.prototype.center = function VenueEditor_center(pos) {
+    var sp = this.drawable.scrollPosition();
+    var vs = this.drawable.viewportInnerSize();
+    var lvs = this.drawable._inverse_transform.apply(vs);
+    if (pos === void(0))
+      return { x: sp.x + lvs.x / 2, y: sp.y + lvs.y / 2 };
+    else
+      this.drawable.scrollPosition({ x: pos.x - lvs.x / 2, y: pos.y + lvs.y / 2 });
+  };
+
+  VenueEditor.prototype.zoom = function VenueEditor_zoom(ratio, center) {
+    var sp = this.drawable.scrollPosition();
+    var lvs;
+
+    lvs = this.drawable._inverse_transform.apply(this.drawable.viewportInnerSize());
+    center = center || { x: sp.x + lvs.x / 2, y: sp.y + lvs.y / 2 };
+    this.zoomRatio = ratio;
+    this.drawable.transform(Fashion.Matrix.scale(this.zoomRatio));
+    lvs = this.drawable._inverse_transform.apply(this.drawable.viewportInnerSize());
+    this.drawable.scrollPosition({ x: center.x - lvs.x / 2, y: center.y - lvs.y / 2 });
   };
 
   $.fn.venueeditor = function (options) {
