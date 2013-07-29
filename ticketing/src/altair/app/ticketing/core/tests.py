@@ -128,7 +128,7 @@ class TicketPrintHistoryTests(unittest.TestCase):
         from ..models import DomainConstraintError
         from .models import TicketPrintHistory
         import transaction
-        self.assertRaises(DomainConstraintError, lambda: TicketPrintHistory().save())
+        self.assertRaises(DomainConstraintError, lambda: TicketPrintHistory(ticket_id=1).save())
         transaction.begin()
         self.assertRaises(DomainConstraintError, lambda: TicketPrintHistory(ticket_id=1, seat_id=1).save())
         transaction.begin()
