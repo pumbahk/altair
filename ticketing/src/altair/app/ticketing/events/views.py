@@ -93,7 +93,7 @@ class Events(BaseView):
             'seat_stock_types':StockType.filter_by(event_id=event_id, type=StockTypeEnum.Seat.v).order_by(StockType.display_order).all(),
             'non_seat_stock_types':StockType.filter_by(event_id=event_id, type=StockTypeEnum.Other.v).order_by(StockType.display_order).all(),
             'cart_url': cart_url, 
-            "cart_now_cart_url": get_cart_now_url_builder(self.request).build(self.request, cart_url), 
+            "cart_now_cart_url": get_cart_now_url_builder(self.request).build(self.request, cart_url, event.id), 
             'form':EventForm(),
             'form_performance':PerformanceForm(organization_id=self.context.user.organization_id),
             'form_stock_type':StockTypeForm(event_id=event_id),

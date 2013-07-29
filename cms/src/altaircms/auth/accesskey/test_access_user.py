@@ -24,7 +24,8 @@ class PagePublishStatusTests(unittest.TestCase):
 
     def _makeOne(self, *args, **kwargs):
         from altaircms.page.models import Page
-        return Page(*args, **kwargs)
+        from altaircms.auth.accesskey.control import AccessKeyControl
+        return AccessKeyControl(Page(*args, **kwargs))
 
     def test_on_birth(self):
         target = self._makeOne()
@@ -53,7 +54,8 @@ class PagePrivateAccessTests(unittest.TestCase):
 
     def _makeOne(self, *args, **kwargs):
         from altaircms.page.models import Page
-        return Page(*args, **kwargs)
+        from altaircms.auth.accesskey.control import AccessKeyControl
+        return AccessKeyControl(Page(*args, **kwargs))
 
     def test_on_birth(self):
         target = self._makeOne()

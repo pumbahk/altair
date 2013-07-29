@@ -11,9 +11,31 @@ from sqlalchemy import engine_from_config
 logger = logging.getLogger(__name__)
 
 def includeme(config):
-    config.add_route("whattime.nowsetting.form", "/form", factory=".resources.CartAdminResource")
-    config.add_route("whattime.nowsetting.set", "/set", factory=".resources.CartAdminResource")
+    config.add_route("whattime.nowsetting.form", "/form", factory=".resources.WhattimeAdminResource")
+    config.add_route("whattime.nowsetting.set", "/set", factory=".resources.WhattimeAdminResource")
+    config.add_route("whattime.nowsetting.goto", "/goto", factory=".resources.WhattimeAdminResource")
     config.scan(".views")
+
+def install_backend_login(config):
+    settings = config.registry.settings
+    config.include('altair.app.ticketing.login.internal')
+    config.use_internal_login(secret=settings['authtkt.secret'], cookie_name='printqr.auth_tkt', auth_callback=find_group)
+    config.setup_internal_login_views(factory="altair.app.ticketing.whattime.resources.WhattimeAdminResource", 
+                                      login_html="altair.app.ticketing.whattime:templates/login.html")
+
+
+def install_cms_accesskey(config):
+    from .interfaces import IAccessKeyGetter
+    from .external import CMSAccessKeyGetter
+    settings = config.registry.settings
+    cms_accesskey_getter = CMSAccessKeyGetter.from_settings(settings)
+    config.registry.registerUtility(cms_accesskey_getter, IAccessKeyGetter, name="cms")
+    from altair.app.ticketing.api.impl import CMSCommunicationApi
+    CMSCommunicationApi(
+        settings["altaircms.event.notification_url"], 
+        settings["altaircms.apikey"]
+        ).bind_instance(config)
+
 
 def find_group(user_id, request):
     return ["group:cart_admin"]
@@ -43,18 +65,16 @@ def main(global_config, **local_config):
     config.include('altair.exclog')
     config.include('altair.browserid')
     config.include('altair.sqlahelper')
+    config.include("altair.preview")
+    config.include("altair.app.ticketing.carturl")
 
     ### selectable renderer
     config.include('altair.app.ticketing.cart.selectable_renderer')
     domain_candidates = json.loads(config.registry.settings["altair.cart.domain.mapping"])
     config.registry.utilities.register([], IDict, "altair.cart.domain.mapping", domain_candidates)
 
-    settings = config.registry.settings
-    config.include('altair.app.ticketing.login.internal')
-    config.use_internal_login(secret=settings['authtkt.secret'], cookie_name='printqr.auth_tkt', auth_callback=find_group)
-    config.setup_internal_login_views(factory="altair.app.ticketing.whattime.resources.CartAdminResource", 
-                                      login_html="altair.app.ticketing.whattime:templates/login.html")
-
+    config.include(install_backend_login)
+    config.include(install_cms_accesskey)
     config.include('.')
     config.include('altair.app.ticketing.organization_settings')
     config.include('altair.mobile')

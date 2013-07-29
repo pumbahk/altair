@@ -3,6 +3,7 @@ www_check_docroot = %(here)s/../var/www-check/altair.cms.admin
 
 [app:altaircms]
 use = config:%(here)s/../../baseconf/cms-common.ini#altaircms
+altaircms.stage = ${altair:altaircms.stage}
 sqlalchemy.url = ${altair:cms.db_url.master}
 pyramid.includes = pyramid_tm pyramid_fanstatic altair.findable_label
 

@@ -15,14 +15,12 @@ from altaircms.page.models import PageSet
 from altaircms.page.models import Page
 from altaircms.page.models import PageType
 from altaircms.page.models import PageDefaultInfo
-from altaircms.page.models import PageAccesskey
 from altaircms.page import subscribers as page_subscribers
 from altaircms.page.nameresolver import GetPageInfoException
 from altaircms.auth.api import require_login
 from altaircms.auth.api import get_or_404
 from altaircms.event.models import Event
 from altaircms.models import Genre
-
 from altaircms.subscribers import notify_model_create
 
 @view_config(permission="performance_update", route_name="plugins_jsapi_getti", renderer="json")
@@ -186,38 +184,7 @@ def delete_page_tags(request):
         return "OK"
     except ValueError:
         return "FAIL"
-    
-    
-@view_defaults(route_name="plugins_jsapi_accesskey", permission="page_update", 
-               custom_predicates=(require_login, )) ##?
-class PageAccessKeyView(object):
-    def __init__(self, request):
-        self.request = request
-
-    @view_config(renderer="json", request_method="POST", match_param="action=delete")
-    def delete_accesskey(self):
-        page_id = self.request.matchdict["page_id"]
-        targets = self.request.params.getall("targets[]")
-        targets = PageAccesskey.query.filter(PageAccesskey.id.in_(targets)).filter_by(page_id=page_id)
-        for t in targets:
-            DBSession.delete(t)
-        return "OK"
-
-    @view_config(renderer="json", request_method="POST", match_param="action=create")
-    def create_accesskey(self):
-        page_id = self.request.matchdict["page_id"]
-        expire = self.request.params.get("expire", None)
-        if expire:
-            try:
-                expire = datetime.strptime("%Y-%m-%d %H:%M:%S", expire)
-            except ValueError:
-                expire = None
-                
-        page = self.request.allowable(Page).filter_by(id=page_id).first()
-        if page is None:
-            return "FAIL"
-        key = page.create_access_key(expire=expire)
-        DBSession.add(key)
-        return "OK"
+   
+   
         
 

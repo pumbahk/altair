@@ -14,7 +14,7 @@
     <tr>
       <td><input name="object_id" type="radio" value="${page.id}"/></td>
       <td>
-        <a href="${request.route_path('page_detail', page_id=page.id)}">${page.name}</a>
+        <a href="${h.current_route_path_override(request, _query=dict(current_page_id=page.id))}#nav_page">${page.name} (id=${page.id})</a>
         <a class="action"  href="${request.route_path("preview_page", page_id=page.id)}">
           <i class="icon-eye-open"> </i></a>
         <a class="action"  href="${request.route_path("page_edit_", page_id=page.id)}">
@@ -54,3 +54,7 @@
     });
   });
 </script>
+
+%if current_page:
+
+%endif

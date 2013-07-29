@@ -2015,6 +2015,10 @@ class Organization(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     def point_feature_enabled(self):
         return self.setting.point_type is not None
 
+    def get_cms_data(self):
+        return {"organization_id": self.id, "organization_source": "oauth"}
+    
+
 orders_seat_table = Table("orders_seat", Base.metadata,
     Column("seat_id", Identifier, ForeignKey("Seat.id")),
     Column("OrderedProductItem_id", Identifier, ForeignKey("OrderedProductItem.id")),

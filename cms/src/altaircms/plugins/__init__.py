@@ -6,6 +6,7 @@ def includeme(config):
     altaircms.widget.each_organization.settings =
        altaircms.plugins.widget:ticketstar.widget.settings.ini
        altaircms.plugins.widget:89ers.widget.settings.ini
+    altaircms.stage = "stating" ## candidates = ["production", "dev", "staging", "local"]
     """
     config.add_directive("add_widgetname", ".helpers.add_widgetname")
 
@@ -40,26 +41,20 @@ def includeme(config):
 ## todo:rename
 def install_extra_config_features(config):
     ## settings
-    from .api import get_configparsers_from_inifiles
-    from .api import get_configparser_from_inifile
-    from .api import set_widget_aggregator_dispatcher
-    from .api import set_widget_aggregator_default
-    from .api import set_extra_resource
-    from .api import set_extra_resource_default
+    from .config import ConfigParserBuilder
+    from .config import WidgetSettingsSetup
     from .helpers import list_from_setting_value
 
     ## plugin 毎の設定ファイルの読み込み
-    osettings = config.registry.settings["altaircms.widget.each_organization.settings"]
-    inifiles = list_from_setting_value(osettings)
+    settings = config.registry.settings
     
-    inifile_for_default = config.registry.settings["altaircms.widget.organization.setting.default"]
-    configparser_for_default = get_configparser_from_inifile(config, inifile_for_default)
+    cfgparse_builder = ConfigParserBuilder(config)
+    configparser_for_default = cfgparse_builder.from_inifile(settings["altaircms.widget.organization.setting.default"])
+    configparsers = cfgparse_builder.list_from_inifile_list(
+        list_from_setting_value(
+            settings["altaircms.widget.each_organization.settings"]))
 
-    configparsers = get_configparsers_from_inifiles(config, inifiles)
-    set_widget_aggregator_dispatcher(config, configparsers)
-    set_widget_aggregator_default(config, configparser_for_default)
-
-    for configparser in configparsers:
-        set_extra_resource(config, configparser)
-    set_extra_resource_default(config,  configparser_for_default)
+    setup = WidgetSettingsSetup(config, settings["altaircms.stage"])
+    setup.each_settings(configparsers)
+    setup.default_setting(configparser_for_default)
     config.set_request_property(".api.get_cart_domain", "cart_domain", reify=True)

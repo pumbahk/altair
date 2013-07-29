@@ -49,6 +49,8 @@ def includeme(config):
 
     config.include("altaircms.viewlet")
     config.include("altaircms.panels")
+    config.include("altaircms.linklib")
+
     ## slack-off
     config.include("altaircms.slackoff")
     config.include("altairsite.feature") #for sitemap

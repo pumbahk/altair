@@ -11,9 +11,9 @@
 ${nco.breadcrumbs(
   names=["Top", "Page", u"Pageset詳細", u"詳細ページ", page.name], 
   urls=[request.route_path("dashboard"),
-        h.page.to_list_page(request,page),
+        request.route_path("pageset_list", pagetype=page.pagetype.name),
         h.link.pageset_detail(request, page.pageset),
-        request.route_path("page_detail",page_id=page.id)]
+        request.route_path('pageset_detail', pageset_id=page.pageset.id, kind=page.pageset.pagetype.name,_query=dict(curren_page_id=page.id))+"#nav_page"]
 )}
 
 <%block name='style'>

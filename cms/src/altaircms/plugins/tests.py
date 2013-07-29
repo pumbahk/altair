@@ -129,7 +129,7 @@ widgets =
    rawhtml
 """
     def _callFUT(self, *args, **kwargs):
-        from altaircms.plugins.api import set_widget_aggregator_dispatcher
+        from altaircms.plugins.config import set_widget_aggregator_dispatcher
         return set_widget_aggregator_dispatcher(*args, **kwargs)
     
     def test_it(self):

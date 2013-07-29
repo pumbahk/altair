@@ -24,7 +24,7 @@
      ${co.page_description(page)}
   </div>
   <div class="span6">
-	<form action="${h.page.to_duplicate(request,page)}" method="POST">
+	<form action="${h.current_route_path_override(request)}" method="POST">
  	  <input id="_method" name="_method" type="hidden" value="post" />
 	  <button type="submit" class="btn"><i class="icon-trash icon-white"></i> Duplicate</button>
 	</form>        
