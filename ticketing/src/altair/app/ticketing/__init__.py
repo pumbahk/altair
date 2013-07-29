@@ -12,13 +12,11 @@ from pyramid.authorization import ACLAuthorizationPolicy
 from pyramid_beaker import session_factory_from_settings
 from pyramid.tweens import EXCVIEW
 from pyramid.interfaces import IDict
-from pyramid.mako_templating import MakoRendererFactoryHelper
 from pyramid_beaker import set_cache_regions_from_settings
 
 import sqlahelper
 
 authn_exemption = re.compile(r'^(/_deform)|(/static)|(/_debug_toolbar)|(/favicon.ico)')
-txt_renderer_factory = MakoRendererFactoryHelper('makotxt.')
 
 def setup_mailtraverser(config):
     from altair.app.ticketing.mails.traverser import EmailInfoTraverser
@@ -157,11 +155,6 @@ def main(global_config, **local_config):
         #config.include('altair.app.ticketing.cart' , route_prefix='/cart')
         
 
-        config.add_renderer('.html' , 'pyramid.mako_templating.renderer_factory')
-        config.add_renderer('.txt' , txt_renderer_factory)
-        config.add_renderer('json'  , 'altair.app.ticketing.renderers.json_renderer_factory')
-        config.add_renderer('csv'   , 'altair.app.ticketing.renderers.csv_renderer_factory')
-        config.add_renderer('lxml'  , 'altair.app.ticketing.renderers.lxml_renderer_factory')
     
         config.add_tween('.tweens.session_cleaner_factory', over=EXCVIEW)
         #config.scan('altair.app.ticketing') # Bad Code
