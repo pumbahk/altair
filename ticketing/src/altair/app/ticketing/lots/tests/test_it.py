@@ -345,7 +345,7 @@ class ConfirmLotEntryViewTests(unittest.TestCase):
         self.assertEqual(result.location, 'http://example.com/back/to/form')
 
     def test_post(self):
-        from altair.app.ticketing import txt_renderer_factory        
+        #from altair.app.ticketing import txt_renderer_factory
         from datetime import datetime
         from altair.app.ticketing.payments.testing import DummyPreparer
         from altair.app.ticketing.payments.directives import add_payment_plugin
@@ -357,7 +357,7 @@ class ConfirmLotEntryViewTests(unittest.TestCase):
         ])
         self.session.flush()
         self.config.add_route('lots.entry.index', '/back/to/form')
-        self.config.add_renderer('.txt' , txt_renderer_factory)        
+        #self.config.add_renderer('.txt' , txt_renderer_factory)
         sales_segment = lot.sales_segment
         payment_delivery_method_pair = sales_segment.payment_delivery_method_pairs[0]
         plugin_id = payment_delivery_method_pair.payment_method.payment_plugin_id = 100

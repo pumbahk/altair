@@ -52,9 +52,9 @@ def includeme(config):
     config.include(setup_cart)
     config.include(setup_mailtraverser)
     config.add_subscriber(register_globals, 'pyramid.events.BeforeRender')
-    config.add_renderer('.html' , 'pyramid.mako_templating.renderer_factory')
-    config.add_renderer('json'  , 'altair.app.ticketing.renderers.json_renderer_factory')
-
+    #config.add_renderer('.html' , 'pyramid.mako_templating.renderer_factory')
+    #config.add_renderer('json'  , 'altair.app.ticketing.renderers.json_renderer_factory')
+    config.include('altair.app.ticketing.renderers')
     selectable_renderer.register_to(config)
 
     # static_viewにfactoryを適用したくないので、add_routeで個別指定する
