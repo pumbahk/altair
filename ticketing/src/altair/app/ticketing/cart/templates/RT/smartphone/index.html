@@ -2,11 +2,7 @@
 <%namespace file="tags_smartphone.html" name="m" />
 
 <%block name="css">
-<link rel="stylesheet" href="${request.static_url('altair.app.ticketing.cart:static/js/css/jquery.smihica_vertical_slider/smihica_vertical_slider.css')}" type="text/css" media="all" />
 <style type="text/css">
-    .modal {
-      font-size: 150%;
-    }
 .eventTitle {
   padding: 10px 0;
   margin: 0 0;
@@ -103,24 +99,10 @@
 </%block>
 
 <%block name="javascript">
-  <script type="text/javascript" src="${request.static_url('altair.app.ticketing.cart:static/js/fashion.js')}"></script>
-  <![if !(lt IE 9)]>
-  <script type="text/javascript" src="${request.static_url('altair.app.ticketing.cart:static/js/fashion.svg.js')}" charset="utf-8"></script>
-  <![endif]>
-  <!--[if (lt IE 9)]>
-  <script type="text/javascript" src="${request.static_url('altair.app.ticketing.cart:static/js/fashion.vml.js')}" charset="utf-8"></script>
-  <![endif]-->
-  <script type="text/javascript" src="${request.static_url('altair.app.ticketing.cart:static/js/underscore-min.js')}"></script>
-  <script type="text/javascript" src="${request.static_url('altair.app.ticketing.cart:static/js/backbone-min.js')}"></script>
-  <script type="text/javascript" src="${request.static_url('altair.app.ticketing.cart:static/js/ajaxhooks.min.js')}"></script>
-  <script type="text/javascript" src="${request.static_url('altair.app.ticketing.cart:static/js/carts.js')}"></script>
-  <script type="text/javascript" src="${request.static_url('altair.app.ticketing.cart:static/js/venue-viewer.js')}"></script>
-  <script type="text/javascript" src="${request.static_url('altair.app.ticketing.cart:static/js/jquery.smihica_vertical_slider.js')}" charset="utf-8"></script>
   <script type="text/javascript" src="${request.static_url('altair.app.ticketing.cart:static/js/underscore-min.js')}"></script>
   <script type="text/javascript" src="${request.static_url('altair.app.ticketing.cart:static/js/backbone-min.js')}"></script>
   <script type="text/javascript" src="${request.static_url('altair.app.ticketing.cart:static/js/ajaxhooks.min.js')}"></script>
   <script type="text/javascript" src="${request.static_url('altair.app.ticketing.cart:static/js/carts_smartphone.js')}"></script>
-  </script>
   <script type="text/javascript">
 var selected = ${selected};
 var salesSegmentsSelection = ${sales_segments_selection};

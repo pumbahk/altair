@@ -13,17 +13,16 @@
 <%block name="css">
 <style>
   #btn-back {
-    width: 49%;
+    width: 46%;
     height: 46px;
     vertical-align: top;
     padding: 1px;
-    margin-right: 20px;
-    background: url("${request.static_url('altair.app.ticketing.cart:static/img/settlement/btn_back_to_selection.gif')}") left top no-repeat;
+    margin-right: 10px;
   }
   #btn-complete {
-    width: 49%;
+    width: 46%;
     height: 46px;
-    background: url("${request.static_url('altair.app.ticketing.cart:static/img/settlement/btn_buy.gif')}") left top no-repeat;
+    margin-left: 10px;
   }
   th {
       text-align: left;
@@ -77,7 +76,7 @@
           <table id="contentsOfShopping" summary="席種、金額などのお買い物内容" class="methodArea">
             %for product in cart.products:
                 <tr id="commission">
-                  <th scope="row"><img src="${request.static_url('ticketing.cart:static/img/settlement/icon_dummy.gif')}" alt="" width="21" height="21" />${product.product.name}<strong>${product.seat_quantity}</strong>枚<br/></th>
+                  <th scope="row"><img src="${request.static_url('altair.app.ticketing.cart:static/img/settlement/icon_dummy.gif')}" alt="" width="21" height="21" />${product.product.name}<strong>${product.seat_quantity}</strong>枚<br/></th>
                   <td>&nbsp;</td>
                   <td>&nbsp;</td>
                   <td class="align1">￥${h.format_number(product.product.price * product.quantity)}</td>
