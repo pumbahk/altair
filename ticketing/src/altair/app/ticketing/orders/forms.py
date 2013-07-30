@@ -408,23 +408,6 @@ class SalesSegmentGroupSearchForm(Form):
     )
 
 
-class SalesSegmentSearchForm(Form):
-    performance_id = HiddenField(
-        validators=[Optional()],
-    )
-    sort = HiddenField(
-        validators=[Optional()],
-        default='id'
-    )
-    direction = HiddenField(
-        validators=[Optional(), AnyOf(['asc', 'desc'], message='')],
-        default='desc',
-    )
-    public = HiddenField(
-        validators=[Optional()],
-    )
-
-
 class OrderReserveForm(Form):
 
     def __init__(self, formdata=None, obj=None, prefix='', **kwargs):
