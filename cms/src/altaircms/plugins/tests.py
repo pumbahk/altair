@@ -139,8 +139,9 @@ widgets =
         from altaircms.auth.api import set_organization_mapping
         set_organization_mapping(config, dummy_mapping_utility(config))
 
-        from altaircms.plugins.api import _configparser_from_inifile
-        configparser = _configparser_from_inifile(self.inifile, _open=DummyOpen)
+        from altaircms.plugins.config import ConfigParserBuilder
+        cpb = ConfigParserBuilder(config, _open=DummyOpen)
+        configparser = cpb._configparser_from_inifile(self.inifile)
         result = self._callFUT(config, [configparser], validator=None)
 
         self.assertEquals(result.conts.keys(), [("demo", "oauth")])

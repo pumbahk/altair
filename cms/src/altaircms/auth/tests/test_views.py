@@ -279,6 +279,7 @@ class OAuthLoginTests(unittest.TestCase):
         res_data = json.dumps({
             'user_id': '99999999',
             'organization_id': '10101010', 
+            "organization_code": "OR", 
             'organization_name': 'this-is-organization', 
             "organization_short_name": "org", 
             'roles': [
@@ -332,6 +333,7 @@ class OAuthLoginTests(unittest.TestCase):
         res_data = json.dumps({
             'user_id': '888888888',
             'organization_id': '10101010', 
+            "organization_code": "OR", 
             "organization_short_name": "org", 
             'organization_name': 'this-is-organization', 
             'roles': [

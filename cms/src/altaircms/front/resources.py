@@ -60,7 +60,7 @@ class AccessControl(object):
             self.access_ok = False
 
             if self.request.organization is None:
-                self._error_message.append("not loging user")
+                self._error_message.append("not login user")
                 return page
 
             ## 同じorganizatioに属しているオペレーターは全部見れる。
