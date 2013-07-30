@@ -101,6 +101,7 @@ requires = [
 tests_require = [
     "nose", 
     "coverage"
+    "testfixtures",
 ]
 
 extras_require = {
