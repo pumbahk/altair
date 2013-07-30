@@ -1,6 +1,7 @@
 # -*- coding:utf-8 -*-
 from .forms import DetailForm
 from ..common.helper import SmartPhoneHelper
+from ..common.utils import SnsUtils
 from altaircms.event.event_info import get_event_notify_info
 from altairsite.config import smartphone_site_view_config
 from altairsite.mobile.core.helper import get_performances_month_unit, get_purchase_links \
@@ -19,6 +20,7 @@ def moveDetail(context, request):
     tickets = get_tickets(request=request, event=event)
     sales_start, sales_end = get_sales_date(request=request, event=event)
     event_info = get_event_notify_info(event=event)
+    utils = SnsUtils(request=request)
 
     return {
           'event': event
@@ -29,4 +31,8 @@ def moveDetail(context, request):
         , 'sales_end': sales_end
         , 'event_info': event_info
         , 'helper': SmartPhoneHelper()
+        , 'sns':{
+            'url':utils.get_sns_url(event_id=event.id),
+            'title':utils.get_sns_title(event_id=event.id)
+        }
     }
