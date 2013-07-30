@@ -1,6 +1,7 @@
 # -*- coding:utf-8 -*-
 import unittest
 import mock
+from testfixtures import LogCapture
 from datetime import datetime
 from pyramid import testing
 from altair.app.ticketing.core.models import (
@@ -231,7 +232,7 @@ class LotEntryReporterTests(unittest.TestCase):
         self.assertIn(u"S席", result.html)
 
 
-class send_report_mailsTests(unittest.TestCase):
+class send_lot_report_mailsTests(unittest.TestCase):
 
     def setUp(self):
         self.session = _setup_db(modules=[
@@ -248,8 +249,8 @@ class send_report_mailsTests(unittest.TestCase):
         _teardown_db()
 
     def _callFUT(self, *args, **kwargs):
-        from ..reporting import send_report_mails
-        return send_report_mails(*args, **kwargs)
+        from ..reporting import send_lot_report_mails
+        return send_lot_report_mails(*args, **kwargs)
 
     def _add_lot_entries(self):
         from altair.app.ticketing.core.models import (
@@ -298,3 +299,17 @@ class send_report_mailsTests(unittest.TestCase):
         mailer = get_mailer(request)
         self.assertEqual(mailer.outbox[0].subject, u"[抽選申込状況レポート] テスト抽選")
 
+    @mock.patch("altair.app.ticketing.events.lots.reporting.ReportCondition")
+    @mock.patch("altair.app.ticketing.events.lots.reporting.datetime")
+    def test_it_on_error(self, mock_dt, mock_cond):
+        mock_dt.now.return_value = datetime(2013, 2, 3, 10, 33)
+        mock_cond.side_effect = Exception()
+        from pyramid_mailer import get_mailer
+        self._add_lot_entries()
+        request = testing.DummyRequest()
+        sender = "testing@example.com"
+        with LogCapture() as l:
+            self._callFUT(request, sender)
+
+        mailer = get_mailer(request)
+        self.assertEqual(mailer.outbox, [])

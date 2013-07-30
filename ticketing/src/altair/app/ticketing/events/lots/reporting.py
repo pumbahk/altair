@@ -1,5 +1,8 @@
 # -*- coding:utf-8 -*-
-
+import sys
+import logging
+import traceback
+import StringIO
 from datetime import datetime, timedelta
 from pyramid.renderers import render_to_response
 from pyramid_mailer.message import Message
@@ -14,6 +17,8 @@ from altair.app.ticketing.lots.adapters import (
 from .models import (
     LotEntryReportSetting,
 )
+
+logger = logging.getLogger(__name__)
 
 class ReportCondition(object):
     """
@@ -116,14 +121,23 @@ class LotEntryReporter(object):
         # 送信
         self.mailer.send(message)
 
-def send_report_mails(request, sender):
+def send_lot_report_mails(request, sender):
+    logger.info("start send_lot_report_mails")
     now = datetime.now()
     settings = LotEntryReportSetting.get_in_term(now)
     mailer = get_mailer(request)
     for setting in settings:
-        cond = ReportCondition(setting, now)
-        if not cond.is_reportable():
-            continue
-        reporter = LotEntryReporter(sender, mailer, setting, now)
-        reporter.send()
+        try:
+            cond = ReportCondition(setting, now)
+            if not cond.is_reportable():
+                continue
+            reporter = LotEntryReporter(sender, mailer, setting, now)
+            reporter.send()
+        except Exception:
+            exc_info = sys.exc_info()
+            out = StringIO.StringIO()
+            traceback.print_exception(*exc_info, file=out)
+            tb = out.getvalue()
+            logger.error("error on send_lot_report_mails \n{0}".format(tb))
 
+    logger.info("end send_lot_report_mails")
