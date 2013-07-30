@@ -34,6 +34,7 @@ from altair.mobile.interfaces import IMobileRequest
 from . import api
 from . import helpers as h
 from . import schemas
+from .api import set_rendered_event
 from altair.mobile.api import set_we_need_pc_access, set_we_invalidate_pc_access
 from .events import notify_order_completed
 from .reserving import InvalidSeatSelectionException, NotEnoughAdjacencyException
@@ -193,6 +194,8 @@ class IndexView(IndexViewMixin):
             # 場合は例外
             if selected_sales_segment is None:
                 raise NoPerformanceError(event_id=self.context.event.id)
+
+        set_rendered_event(self.request, self.context.event)
 
         return dict(
             event=dict(
