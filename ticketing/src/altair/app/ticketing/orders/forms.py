@@ -220,7 +220,8 @@ class SearchFormBase(Form):
             if not field.data:
                 continue
 
-            if isinstance(field, SelectMultipleField) or isinstance(field, SelectField):
+            if isinstance(field, SelectMultipleField) or isinstance(field, SelectField)\
+               or isinstance(field, BugFreeSelectMultipleField):
                 data = []
                 for choice in field.choices:
                     if isinstance(field.data, list) and choice[0] in field.data:
@@ -308,27 +309,6 @@ class OrderSearchForm(SearchFormBase):
         validators=[Optional()]
         )
 
-    def get_conditions(self):
-        conditions = {}
-        for name, field in self._fields.items():
-            if isinstance(field, HiddenField):
-                continue
-            if not field.data:
-                continue
-
-            if isinstance(field, SelectMultipleField) or isinstance(field, SelectField):
-                data = []
-                for choice in field.choices:
-                    if isinstance(field.data, list) and choice[0] in field.data:
-                        data.append(choice[1])
-                    elif choice[0] == field.data:
-                        data.append(choice[1])
-                data = ', '.join(data)
-            else:
-                data = field.data
-            conditions[name] = (field.label.text, data)
-        return conditions
-
 class OrderRefundSearchForm(OrderSearchForm):
 
     def __init__(self, formdata=None, obj=None, prefix='', **kwargs):
@@ -340,16 +320,6 @@ class OrderRefundSearchForm(OrderSearchForm):
     def _get_translations(self):
         return Translations()
 
-    ordered_from = DateTimeField(
-        label=u'予約日時',
-        validators=[Optional(), after1900],
-        format='%Y-%m-%d %H:%M',
-    )
-    ordered_to = DateTimeField(
-        label=u'予約日時',
-        validators=[Optional(), after1900],
-        format='%Y-%m-%d %H:%M',
-    )
     payment_method = SelectField(
         label=u'決済方法',
         validators=[Required()],
@@ -357,7 +327,7 @@ class OrderRefundSearchForm(OrderSearchForm):
         coerce=int,
     )
     delivery_method = SelectMultipleField(
-        label=u'配送方法',
+        label=u'引取方法',
         validators=[Required()],
         choices=[],
         coerce=int,
@@ -374,7 +344,7 @@ class OrderRefundSearchForm(OrderSearchForm):
         choices=[],
         validators=[Required()],
     )
-    sales_segment_id = SelectMultipleField(
+    sales_segment_group_id = SelectMultipleField(
         label=u'販売区分',
         coerce=lambda x : int(x) if x else u"",
         choices=[],

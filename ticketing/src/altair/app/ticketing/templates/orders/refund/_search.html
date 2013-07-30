@@ -1,13 +1,15 @@
 <%page args="form" />
 <%namespace file="/common/helpers.html" name="ch" />
 
+<script src="${request.static_url('altair.app.ticketing:static/js/jquery.chosen.js')}"></script>
+<link rel="stylesheet" type="text/css" href="${request.static_url('altair.app.ticketing:static/css/chosen.css')}" />
+
 <script type="text/javascript">
   $(function() {
     if (${len(form.errors)} > 0) {
       $('a[href="#modal-search"]').click();
-    }
+     }
   });
-
   function sort_orders(sort, direction, url) {
     modal = $('#modal-search');
     if (sort) modal.find('#sort').val(sort);
@@ -30,7 +32,7 @@
 <div style="clear: left;"></div>
 
 
-<div id="modal-search" class="modal hide">
+<div id="modal-search" class="modal big hide">
   <div class="modal-header">
     <a class="close" data-dismiss="modal">×</a>
     <h3>検索条件設定</h3>
@@ -41,7 +43,7 @@
       <fieldset>
         ${ch.form_item(form.event_id)}
         ${ch.form_item(form.performance_id, class_='span10')}
-        ${ch.form_item(form.sales_segment_id)}
+        ${ch.form_item(form.sales_segment_group_id)}
         ${ch.form_item(form.payment_method)}
         ${ch.form_item(form.delivery_method)}
 
@@ -63,6 +65,11 @@
             var update_on_empty = function(){
               var $target = $(this).parents("form").find("select[name='performance_id']").eq(0);
               $target.empty();
+              $target.chosen().trigger("liszt:updated");
+
+              var $ssg = $(this).parents("form").find("select[name='sales_segment_group_id']").eq(0);
+              $ssg.empty();
+
               return;
             };
             var update_on_hasvalue = function(v){
@@ -77,31 +84,13 @@
                     var e = data.result[i];
                     $target.append($("<option>").attr("value", e.pk).text(e.name))
                   }
+                  $target.chosen().trigger("liszt:updated");
                 }
               });
-            };
-            var update_performances = function(){
-              var self = this;
-              var v = $(this).val();
-              if(!v){
-                return update_on_empty.call(self);
-              } else {
-                return update_on_hasvalue.call(self, v);
-              }
-            };
-            $("#search select[name='event_id']").change(update_performances);
-
-            var update_sales_segments_on_empty = function(){
-              var $target = $(this).parents("form").find("select[name='sales_segment_id']").eq(0);
-              $target.empty();
-              return;
-            };
-            var update_sales_segments_on_hasvalue = function(v){
-              var self = this;
-              var params = {performance_id: v, public:true};
-              $.getJSON("${request.route_url('orders.api.sales_segments')}", params).done(function(data){
+              params = {event_id: v, public:true};
+              $.getJSON("${request.route_url('orders.api.sales_segment_groups')}", params).done(function(data){
                 if(data.status){
-                  var $target = $(self).parents("form").find("select[name='sales_segment_id']").eq(0);
+                  var $target = $(self).parents("form").find("select[name='sales_segment_group_id']").eq(0);
                   $target.empty();
                   // optimize if slow.
                   for(var i=0, j=data.result.length; i<j; i++){
@@ -111,18 +100,19 @@
                 }
               });
             };
-            var update_sales_segments = function(){
+            var update_performances_and_ssgroups = function(){
               var self = this;
               var v = $(this).val();
               if(!v){
-                return update_sales_segments_on_empty.call(self);
+                return update_on_empty.call(self);
               } else {
-                return update_sales_segments_on_hasvalue.call(self, v);
+                return update_on_hasvalue.call(self, v);
               }
             };
-            $("#search select[name='performance_id']").change(update_sales_segments);
+            $("#search select[name='event_id']").change(update_performances_and_ssgroups).chosen();
+            $("#search select[name='performance_id']").chosen();
           });
-    		</script>
+        </script>
       </fieldset>
     </form>
   </div>
