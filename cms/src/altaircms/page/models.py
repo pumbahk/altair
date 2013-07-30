@@ -236,7 +236,7 @@ class StaticPageSet(Base,
 
     @declared_attr
     def __table_args__(cls):
-        return (sa.schema.UniqueConstraint("url", "organization_id"), )
+        return (sa.schema.UniqueConstraint("url", "organization_id", "pagetype_id"), )
 
 
 class StaticPage(BaseOriginalMixin, 

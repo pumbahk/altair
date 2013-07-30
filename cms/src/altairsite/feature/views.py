@@ -12,9 +12,9 @@ from datetime import datetime
 
 @usersite_view_config(route_name="features")
 def features_view(context, request):
-    path = request.matchdict["path"]
+    path = request.matchdict["page_name"]
     if os.path.splitext(path)[1] == "":
-        return HTTPFound(urljoin(request.route_path("features", path=os.path.join(path.rstrip("/"), "index.html")).replace("%2F", "/"), '?' + request.query_string))
+        return HTTPFound(urljoin(request.route_path("features", page_name=os.path.join(path.rstrip("/"), "index.html")).replace("%2F", "/"), '?' + request.query_string))
 
     control = AccessControlPC(request)
     static_page = control.fetch_static_page_from_params(path, datetime.now())
