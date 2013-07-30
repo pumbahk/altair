@@ -1,10 +1,13 @@
 # -*- coding:utf-8 -*-
 import unittest
+import mock
+from datetime import datetime
 from pyramid import testing
 from altair.app.ticketing.core.models import (
     ReportFrequencyEnum,
     ReportPeriodEnum,
 )
+from altair.app.ticketing.testing import _setup_db, _teardown_db
 
 class ReportConditionTests(unittest.TestCase):
     """ 
@@ -226,3 +229,72 @@ class LotEntryReporterTests(unittest.TestCase):
                          u"sender@example.com")
         print result.html
         self.assertIn(u"S席", result.html)
+
+
+class send_report_mailsTests(unittest.TestCase):
+
+    def setUp(self):
+        self.session = _setup_db(modules=[
+            "altair.app.ticketing.core.models",
+            "altair.app.ticketing.lots.models",
+            "altair.app.ticketing.events.lots.models",
+        ])
+        self.config = testing.setUp()
+        self.config.include('pyramid_mailer.testing')
+        self.config.include('altair.app.ticketing.renderers')
+
+    def tearDown(self):
+        testing.tearDown()
+        _teardown_db()
+
+    def _callFUT(self, *args, **kwargs):
+        from ..reporting import send_report_mails
+        return send_report_mails(*args, **kwargs)
+
+    def _add_lot_entries(self):
+        from altair.app.ticketing.core.models import (
+            SalesSegment,
+            Event,
+            Performance,
+            Venue,
+            Site,
+            Organization,
+        )
+        from altair.app.ticketing.lots.models import (
+            Lot,
+            LotEntry,
+        )
+        from altair.app.ticketing.events.lots.models import (
+            LotEntryReportSetting,
+        )
+        lot = Lot(
+            name=u"テスト抽選",
+            sales_segment=SalesSegment(
+                start_at=datetime(2013, 2, 1, 10, 33),
+                end_at=datetime(2013, 2, 7, 10, 33),
+            ),
+            limit_wishes=3,
+            event=Event(title=u"テストイベント"),
+        )
+        report_setting = LotEntryReportSetting(
+            lot=lot,
+            frequency=ReportFrequencyEnum.Daily.v[0],
+            period=ReportPeriodEnum.Normal.v[0],
+            time="10",
+        )
+        self.session.add(lot)
+        self.session.flush()
+
+    @mock.patch("altair.app.ticketing.events.lots.reporting.datetime")
+    def test_it(self, mock_dt):
+        mock_dt.now.return_value = datetime(2013, 2, 3, 10, 33)
+        from pyramid_mailer import get_mailer
+        self._add_lot_entries()
+        request = testing.DummyRequest()
+        sender = "testing@example.com"
+
+        self._callFUT(request, sender)
+
+        mailer = get_mailer(request)
+        self.assertEqual(mailer.outbox[0].subject, u"[抽選申込状況レポート] テスト抽選")
+

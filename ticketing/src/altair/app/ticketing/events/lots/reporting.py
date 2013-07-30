@@ -1,18 +1,18 @@
 # -*- coding:utf-8 -*-
 
-from datetime import timedelta
-from sqlalchemy import (
-    and_
-)
+from datetime import datetime, timedelta
 from pyramid.renderers import render_to_response
 from pyramid_mailer.message import Message
+from pyramid_mailer import get_mailer
 from altair.app.ticketing.core.models import (
-    SalesSegment,
     ReportFrequencyEnum,
     ReportPeriodEnum,
 )
 from altair.app.ticketing.lots.adapters import (
     LotEntryStatus,
+)
+from .models import (
+    LotEntryReportSetting,
 )
 
 class ReportCondition(object):
@@ -68,11 +68,11 @@ class ReportCondition(object):
 
     def is_reportable(self):
         lot = self.lot
-        ss = self.lot.sales_condition
-        limited_to = self.limited_to
-        limited_from = self.limited_from
-        to_date = self.to_date
-        from_date = self.from_date
+        # ss = self.lot.sales_segment
+        # limited_to = self.limited_to
+        # limited_from = self.limited_from
+        # to_date = self.to_date
+        # from_date = self.from_date
 
         # 抽選申込期間中
         if not lot.available_on(self.now):
@@ -114,4 +114,16 @@ class LotEntryReporter(object):
         # メール作成
         message = self.create_report_mail(status)
         # 送信
-        self.mailer.send_mail(message)
+        self.mailer.send(message)
+
+def send_report_mails(request, sender):
+    now = datetime.now()
+    settings = LotEntryReportSetting.get_in_term(now)
+    mailer = get_mailer(request)
+    for setting in settings:
+        cond = ReportCondition(setting, now)
+        if not cond.is_reportable():
+            continue
+        reporter = LotEntryReporter(sender, mailer, setting, now)
+        reporter.send()
+
