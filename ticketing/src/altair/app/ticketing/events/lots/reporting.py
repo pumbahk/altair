@@ -11,6 +11,9 @@ from altair.app.ticketing.core.models import (
     ReportFrequencyEnum,
     ReportPeriodEnum,
 )
+from altair.app.ticketing.lots.adapters import (
+    LotEntryStatus,
+)
 
 class ReportCondition(object):
     """
@@ -64,11 +67,18 @@ class ReportCondition(object):
         return self.setting.period != ReportPeriodEnum.Entire.v[0]
 
     def is_reportable(self):
+        lot = self.lot
         ss = self.lot.sales_condition
         limited_to = self.limited_to
         limited_from = self.limited_from
         to_date = self.to_date
         from_date = self.from_date
+
+        # 抽選申込期間中
+        if not lot.available_on(self.now):
+            return False
+
+        return True
 
 
 
@@ -86,6 +96,7 @@ class LotEntryReporter(object):
     def lot(self):
         return self.report_setting.lot
 
+
     def create_report_mail(self, status):
 
         subject = self.subject_prefix + u" " + self.report_setting.lot.name
@@ -99,9 +110,8 @@ class LotEntryReporter(object):
 
     def send(self):
         # 対象の集計内容をロード
-        status = self.load_lot_status()
+        status = LotEntryStatus(self.lot)
         # メール作成
         message = self.create_report_mail(status)
         # 送信
         self.mailer.send_mail(message)
-
