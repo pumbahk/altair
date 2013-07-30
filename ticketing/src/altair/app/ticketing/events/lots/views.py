@@ -750,7 +750,7 @@ class LotEntries(BaseView):
         affected = lots_api.submit_lot_entries(lot.id, entries)
 
         logger.debug('elect all: results = {0}'.format(results))
-        lot.start_electing()
+        lot.start_lotting()
         return dict(
             affected=affected,
             html=[(self.wish_tr_class(w), self.render_wish_row(w))
@@ -785,7 +785,8 @@ class LotEntries(BaseView):
 
         affected = lots_api.submit_lot_entries(lot.id, entries)
 
-        lot.start_electing()
+        lot.start_lotting()
+
         return dict(result="OK",
                     affected=affected,
                     html=[(self.wish_tr_class(w), self.render_wish_row(w))
@@ -816,7 +817,7 @@ class LotEntries(BaseView):
 
         affected = lots_api.submit_reject_entries(lot.id, entries)
 
-        lot.start_electing()
+        lot.start_lotting()
         return dict(result="OK",
                     affected=affected,
                     html=[(self.wish_tr_class(w), self.render_wish_row(w))

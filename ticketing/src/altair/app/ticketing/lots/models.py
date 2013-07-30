@@ -175,6 +175,11 @@ class Lot(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     def finish_lotting(self):
         self.status = int(LotStatusEnum.Elected)
 
+    def start_lotting(self):
+        logger.info("start lotting lot id={lot.id}".format(lot=self))
+        self.status = int(LotStatusEnum.Lotting)
+        
+
     def start_electing(self):
         logger.info("start electing lot id={lot.id}".format(lot=self))
         self.status = int(LotStatusEnum.Electing)
