@@ -48,7 +48,7 @@ class PreviewPermission(object):
             return Failure(u"取得した認証キーのスコープが足りません scope={scope}".format(scope=scope))
         if scope == "onepage+cart":
             target = get_rendered_target(request)
-            if target and data["backend_event_id"] != target.taget.id:
+            if target and data["backend_event_id"] != target.target.id:
                 return Failure(u"取得した認証キーの閲覧可能なイベントは「{title}」のみです。".format(title=target.target.title))
         return True
 
