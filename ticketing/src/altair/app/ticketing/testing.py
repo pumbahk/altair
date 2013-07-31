@@ -37,3 +37,12 @@ class DummyRequest(_DummyRequest):
         self.browserid = kwargs.get("browserid")
         self.request_iface = kwargs.get('request_iface', IRequest)
 
+class ElementTreeTestMixin(object):
+    def assertEqualsEtree(self, result, expected, msg):
+        from lxml.doctestcompare import LXMLOutputChecker
+        checker = LXMLOutputChecker()
+        if hasattr(result, 'getroot'):
+            result = result.getroot()
+        if hasattr(expected, 'getroot'):
+            expected = expected.getroot()
+        self.assertTrue(checker.compare_docs(expected, result), msg)
