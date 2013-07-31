@@ -2,6 +2,7 @@
 import sys
 import logging
 import traceback
+import transaction
 import StringIO
 from datetime import datetime, timedelta
 from pyramid.renderers import render_to_response
@@ -125,14 +126,18 @@ def send_lot_report_mails(request, sender):
     logger.info("start send_lot_report_mails")
     now = datetime.now()
     settings = LotEntryReportSetting.get_in_term(now)
+    logger.info(u"{0} settings".format(len(settings)))
     mailer = get_mailer(request)
     for setting in settings:
         try:
             cond = ReportCondition(setting, now)
             if not cond.is_reportable():
+                logger.info(u"setting {0} is not reportable".format(setting.id))
                 continue
             reporter = LotEntryReporter(sender, mailer, setting, now)
+            logger.info(u"send report setting by id={0}".format(setting.id))
             reporter.send()
+            transaction.commit()
         except Exception:
             exc_info = sys.exc_info()
             out = StringIO.StringIO()
