@@ -250,7 +250,7 @@ def _entry_info(wish):
     delivery_method = pdmp.delivery_method
     user_profile = None
     if shipping_address.user:
-        user_profile = shipping_address.user.profile
+        user_profile = shipping_address.user.user_profile
 
     return OrderedDict([
         (u"状態", wish.status),
