@@ -4,6 +4,7 @@ from altaircms.lib.itertools import find_or_first
 from altaircms.auth.accesskey.api import get_event_access_key_control
 from altaircms.auth.models import PageAccesskey
 from altaircms.linklib import get_cart_url_builder
+from functools import partial
 
 def event_page_section_panel(context, request, event):
     pagesets = event.pagesets
@@ -32,10 +33,9 @@ def event_accesskey_section_panel(context, request, event):
     control = get_event_access_key_control(request, event)
     accesskeys = control.query_access_key().options(orm.joinedload(PageAccesskey.operator)).all()
 
-    whattime_url = get_cart_url_builder(request).whattime_form_url(event)
+    whattime_url_gen = partial(get_cart_url_builder(request).whattime_form_url, event)
     def generate_url(hashkey):
-        fmt = "{url}whattime/form?accesskey={accesskey}&event_id={event_id}"
-        return fmt.format(url=whattime_url, accesskey=hashkey, event_id=event.id)
+        return whattime_url_gen(_query=dict(accesskey=hashkey, event_id=event.id))
     return dict(event=event, page_title=u"アクセスキー", 
                 preview_with_accesskey_url_gen=generate_url , 
                 create_accesskey_url=request.route_path("auth.accesskey.eventkey",action="create", event_id=event.id), 

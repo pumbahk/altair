@@ -7,6 +7,7 @@ from urlparse import ParseResult, urlparse
 from zope.interface import implementer
 from .interfaces import IGlobalLinkSettings
 from altaircms.auth.models import Host
+from altair.viewhelpers.structure import updated
 
 ## todo:move
 def quote(x):
@@ -137,13 +138,13 @@ class CartPageURLAdapter(object):
             hostname = hostname or self.get_hostname()        
         return scheme, hostname
 
-    def whattime_login_url(self, event, hostname=None):
+    def whattime_login_url(self, event, hostname=None, _query=None):
         scheme, hostname = self._get_scheme_hostname(hostname)
-        return _url_builder(scheme, hostname, "/whattime/login", {"event_id": unicode(event.id)})
+        return _url_builder(scheme, hostname, "/whattime/login", updated({"event_id": unicode(event.id)}, _query))
 
-    def whattime_form_url(self, event, hostname=None):
+    def whattime_form_url(self, event, hostname=None, _query=None):
         scheme, hostname = self._get_scheme_hostname(hostname)
-        return _url_builder(scheme, hostname, "/whattime/form", {"event_id": unicode(event.id)})
+        return _url_builder(scheme, hostname, "/whattime/form", updated({"event_id": unicode(event.id)}, _query))
 
     def cart_url(self, event, hostname=None):
         scheme, hostname = self._get_scheme_hostname(hostname)

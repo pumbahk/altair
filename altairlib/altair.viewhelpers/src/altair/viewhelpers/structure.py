@@ -1,7 +1,8 @@
 def updated(*ds):
     D = {}
     for d in ds:
-        D.update(d)
+        if d:
+            D.update(d)
     return D
 
 def merged(d1, **kwargs):
