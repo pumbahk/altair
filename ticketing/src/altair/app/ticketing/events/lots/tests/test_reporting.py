@@ -152,7 +152,7 @@ class LotEntryReporterTests(unittest.TestCase):
         )
         now = datetime(2013, 2, 3)
 
-        target = self._makeOne(sender, mailer, setting, now)
+        target = self._makeOne(sender, mailer, setting)
 
     def test_create_report_mail(self):
         from pyramid_mailer import get_mailer
@@ -218,7 +218,7 @@ class LotEntryReporterTests(unittest.TestCase):
             ],
         )
 
-        target = self._makeOne(sender, mailer, setting, now)
+        target = self._makeOne(sender, mailer, setting)
         target.subject_prefix = u"[testing抽選申込状況レポート]"
         result = target.create_report_mail(status)
 
