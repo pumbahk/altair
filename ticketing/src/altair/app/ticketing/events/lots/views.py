@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import logging
-logger = logging.getLogger(__name__)
+from datetime import datetime
 from sqlalchemy import sql
 from sqlalchemy import orm
 from pyramid.decorator import reify
@@ -53,6 +53,8 @@ from .models import LotWishSummary, LotEntryReportSetting
 
 
 from altair.app.ticketing.payments import helpers as payment_helpers
+
+logger = logging.getLogger(__name__)
 
 
 class BaseView(_BaseView):
@@ -964,14 +966,15 @@ class LotReport(object):
         return dict(form=form,
                     event=self.context.event)
 
-    @view_config(route_name="lot.entries.edit_report_setting",
-                 )
-    def update_setting(self):
-        if self.request.method == "POST":
-            pass
-        return dict()
 
     @view_config(route_name="lot.entries.delete_report_setting",
                  request_method="POST")
     def delete_setting(self):
-        return dict()
+        setting = LotEntryReportSetting.query.filter(
+            LotEntryReportSetting.id==self.request.matchdict['setting_id']
+        ).first()
+        if setting is None:
+            return HTTPNotFound()
+        setting.deleted_at = datetime.now()
+        return HTTPFound(self.index_url)
+

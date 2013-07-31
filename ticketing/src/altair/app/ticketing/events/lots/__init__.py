@@ -59,11 +59,8 @@ def includeme(config):
     config.add_route('lot.entries.new_report_setting',
                      'entries/{lot_id}/new_report',
                      factory=lot_resource_factory)
-    config.add_route('lot.entries.edit_report_setting',
-                     'entries/{lot_id}/edit_report',
-                     factory=lot_resource_factory)
     config.add_route('lot.entries.delete_report_setting',
-                     'entries/{lot_id}/delete_report',
+                     'entries/{lot_id}/delete_report/{setting_id}',
                      factory=lot_resource_factory)
 
 

@@ -33,7 +33,9 @@ Altair Backend -- ${lot.event.title}[${lot.name}]
 ${tabs.tabs(request)}
 
 <h2>レポートメール送信設定</h2>
+
 <a href="${request.route_url('lot.entries.new_report_setting', **request.matchdict)}" class="btn">新規</a>
+
 <table class="table">
   <tr>
     <th></th>
@@ -60,7 +62,11 @@ ${tabs.tabs(request)}
     </td>
     <td>${u'抽選' if rs.lot_id else u'イベント'}</td>
     <td>${''.join([enum.v[1] for enum in ReportPeriodEnum if enum.v[0] == rs.period])}</td>
-    <td></td>
+    <td>
+      <form action="${request.route_url('lot.entries.delete_report_setting', setting_id=rs.id, **request.matchdict)}" method="post" onsubmit="return confirm('削除してよろしいですか？')">
+	<button type="submit" class="btn">削除</a>
+      </form>
+    </td>
   </tr>
 %endfor
 
