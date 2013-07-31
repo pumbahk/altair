@@ -461,7 +461,7 @@ class LotReviewView(object):
             entry_no = form.entry_no.data
             tel_no = form.tel_no.data
             lot_entry = api.get_entry(self.request, entry_no, tel_no)
-            if lot_entry is None:
+            if lot_entry is None or lot_entry.canceled_at:
                 form.entry_no.errors.append(u'%sまたは%sが違います' % (form.entry_no.label.text, form.tel_no.label.text))
                 raise ValidationError()
         except ValidationError:
