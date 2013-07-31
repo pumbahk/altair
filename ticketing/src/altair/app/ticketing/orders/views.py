@@ -152,7 +152,7 @@ class OrdersAPIView(BaseView):
         if formdata['event_id']:
             query = query.filter(SalesSegmentGroup.event_id == formdata['event_id'])
         if formdata['public']:
-            query = query.filter(SalesSegmentGroup.public == formdata['public'])
+            query = query.filter(SalesSegmentGroup.public == bool(formdata['public']))
 
         sales_segment_groups = [dict(pk='', name=u'(すべて)')] + [dict(pk=p.id, name=p.name) for p in query]
         return {"result": sales_segment_groups, "status": True}
