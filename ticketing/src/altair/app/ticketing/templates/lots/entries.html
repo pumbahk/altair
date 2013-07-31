@@ -64,7 +64,10 @@ ${tabs.tabs(request)}
     <td>${''.join([enum.v[1] for enum in ReportPeriodEnum if enum.v[0] == rs.period])}</td>
     <td>
       <form action="${request.route_url('lot.entries.delete_report_setting', setting_id=rs.id, **request.matchdict)}" method="post" onsubmit="return confirm('削除してよろしいですか？')">
-	<button type="submit" class="btn">削除</a>
+	<button type="submit" class="btn">削除</button>
+      </form>
+      <form action="${request.route_url('lot.entries.send_report_setting', setting_id=rs.id, **request.matchdict)}" method="post" onsubmit="return confirm('レポートメールを送信します。よろしいですか？')">
+	<button type="submit" class="btn">送信</button>
       </form>
     </td>
   </tr>
