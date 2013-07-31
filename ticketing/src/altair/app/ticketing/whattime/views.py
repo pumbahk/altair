@@ -76,7 +76,7 @@ def now_set_view(context, request):
 @view_config(route_name="whattime.nowsetting.set", custom_predicates=(has_cms_login_key, ), request_method="POST", request_param="goto")
 @view_config(route_name="whattime.nowsetting.set", permission="cart_admin", request_method="POST", request_param="goto")
 def now_goto_view(context, request):
-    set_after_invalidate_url(request, request.route_path("whattime.nowsetting.form", _query=_treat_dict(request, request.GET)))
+    set_after_invalidate_url(request, request.route_url("whattime.nowsetting.form", _query=_treat_dict(request, request.GET)))
     if not has_session_key(request):
         request.session.flash(u"現在時刻が設定されていません")
         raise HTTPFound(request.route_path("whattime.nowsetting.form", _query=_treat_dict(request, request.GET)))
@@ -100,5 +100,5 @@ def now_goto_redirect_view(context, request):
     if not has_session_key(request):
         request.session.flash(u"現在時刻が設定されていません")
         raise HTTPFound(request.route_path("whattime.nowsetting.form", _query=_treat_dict(request, request.GET)))
-    set_after_invalidate_url(request, request.route_path("whattime.nowsetting.form", _query=_treat_dict(request, request.GET)))
+    set_after_invalidate_url(request, request.route_url("whattime.nowsetting.form", _query=_treat_dict(request, request.GET)))
     return HTTPFound(request.GET.get("redirect_to"))
