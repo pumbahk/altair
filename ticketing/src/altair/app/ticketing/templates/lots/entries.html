@@ -2,8 +2,11 @@
 <%namespace file="/common/helpers.html" name="ch" />
 <%namespace file="_entries_tabs.html" name="tabs" />
 <%
+from altair.app.ticketing.formatter import Japanese_Japan_Formatter
 from altair.app.ticketing.cart.helpers import format_currency
-from altair.app.ticketing.core.models import ReportFrequencyEnum, ReportPeriodEnum %>
+from altair.app.ticketing.core.models import ReportFrequencyEnum, ReportPeriodEnum 
+formatter = Japanese_Japan_Formatter()
+%>
 <%block name="style">
 <link rel="stylesheet" type="text/css" href="/static/css/decentcolorpicker.css" />
 <link rel="stylesheet" type="text/css" href="/static/css/performance.css" />
@@ -38,7 +41,6 @@ ${tabs.tabs(request)}
 
 <table class="table">
   <tr>
-    <th></th>
     <th>名前</th>
     <th>メールアドレス</th>
     <th>メール通知頻度</th>
@@ -51,11 +53,10 @@ ${tabs.tabs(request)}
   </tr>
 %for rs in report_settings:
   <tr>
-  <td><input type="radio" name="sales_reports_mail_id" value=${rs.id}></td>
     <td>${rs.name or ''}</td>
     <td>${rs.email}</td>
     <td>${''.join([enum.v[1] for enum in ReportFrequencyEnum if enum.v[0] == rs.frequency])}</td>
-    <td><%doc>${''.join([dow[1] for dow in form_report_mail.day_of_week.choices if rs.day_of_week == dow[0]])}</%doc>月火水木金土日</td>
+    <td><%doc>${''.join([dow[1] for dow in form_report_mail.day_of_week.choices if rs.day_of_week == dow[0]])}</%doc>${formatter.format_weekday(rs.day_of_week - 1) if rs.day_of_week else ''}</td>
     <td>${u'%s時' % rs.time if rs.time else ''}</td>
     <td>
       ${vh.term(rs.start_on, rs.end_on, without_minute=True)}
