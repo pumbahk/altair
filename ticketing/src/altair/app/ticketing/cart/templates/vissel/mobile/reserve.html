@@ -1,46 +1,37 @@
 <%inherit file="./base.html"/>
 <%namespace file="./tags_mobile.html" name="mobile" />
-
 <%mobile:header>チケット購入</%mobile:header>
-
-${event.title}
-
-<hr size="1" color="#888888" noshade="noshade" />
-
+<div align="center" style="text-align:center">${event.title}</div><hr size="1" noshade="noshade" />
+<div>購入内容をご確認ください</div>
 % for product in cart['products']:
 <div>
-  <div style="background-color:#dc3759">商品名(金額)</div>
-  <div>
-  ${product['name']} (${product['price']}円)<br />
+  <%mobile:form_header>${product['name']}</%mobile:form_header>
   % if product['detail']:
     ${product['detail']}<br />
   % endif
-  </div>
-  % if product['seats']:
-  <font color="#960020">■</font>座席番号<br/>
-  % for seat in product['seats']:
-    ${seat['name']}<br/>
-  % endfor
-  % endif
-  <font color="#960020">■</font>数量<br/>
-  ${product['quantity']}
+  金額: &yen;${product['price']}<br />
+  数量: ${product['quantity']}
   % if product['quantity'] != product['seat_quantity']:
     (${product['seat_quantity']}枚)
   % endif
-  <br/>
+  <br />
+  % if product['seats']:
+  座席番号:<br />
+  % for seat in product['seats']:
+・${seat['name']}<br/>
+  % endfor
+  % endif
 </div>
 % endfor
-<div style="background-color:#dc3759">合計金額</div>
-<div>
-  ${cart['total_amount']}円
-</div>
+<hr />
+合計金額: &yen;${cart['total_amount']}<br />
 <form action="${request.route_url('cart.payment', sales_segment_id=sales_segment_id)}" method="get">
   <div style="text-align:center;">
   <br/>
   <input type="submit" value="決済へ">
   </div>
 </form>
-<form action="${request.route_url('cart.products', event_id=event.id, performance_id=performance.id, seat_type_id=seat_type_id,sales_segment_id=sales_segment_id)}" method="get">
+<form action="${back_url}" method="get">
   <div style="text-align:center;">
   <input type="submit" value="戻る">
   </div>

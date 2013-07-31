@@ -8,8 +8,8 @@ def setup_cart(config):
     config.include('altair.app.ticketing.multicheckout')
     config.include('altair.app.ticketing.payments')
     config.include('altair.app.ticketing.payments.plugins')
-    config.include('altair.app.ticketing.cart')
-    config.scan('altair.app.ticketing.cart.views')
+    config.include('altair.app.ticketing.cart.setup_components')
+
     config.add_subscriber('.subscribers.on_order_completed', 'altair.app.ticketing.cart.events.OrderCompleted')
     config.set_cart_getter('altair.app.ticketing.cart.api.get_cart_safe')
     config.commit()
@@ -37,6 +37,10 @@ def setup_views(config):
     config.add_route('order_review.form', '/review')
     config.add_route('order_review.show', '/review/show')
 
+    config.add_route('cart.payment', '/payment/sales/{sales_segment_id}')
+    config.add_route('payment.confirm', '/confirm')
+    config.add_route('payment.finish', '/completed')
+
     config.add_view('.views.IndexView', attr='notready', route_name='notready', renderer='base/pc/cart/notready.html')
     config.add_view('.views.IndexView', attr='notready', request_type='altair.mobile.interfaces.IMobileRequest', route_name='notready', renderer='base/mobile/cart/notready.html')
     config.add_view('.views.IndexView', route_name='index', attr='get', request_method='GET', renderer='base/pc/cart/form.html', 
@@ -49,9 +53,14 @@ def setup_views(config):
     config.add_view('.views.IndexView', request_type='altair.mobile.interfaces.IMobileRequest', route_name='index', 
                     attr='post', request_method='POST', renderer='base/mobile/cart/form.html')
 
+    config.add_view('.views.PaymentView', route_name='cart.payment', request_method="GET", renderer=selectable_renderer("%(membership)s/pc/payment.html"))
+    config.add_view('.views.PaymentView', route_name='cart.payment', request_method="GET", request_type='altair.mobile.interfaces.IMobileRequest', renderer=selectable_renderer("%(membership)s/mobile/payment.html"))
     config.add_view('.views.PaymentView', route_name='cart.payment', attr='post', request_method='POST', renderer=selectable_renderer('%(membership)s/pc/payment.html'))
     config.add_view('.views.PaymentView', request_type='altair.mobile.interfaces.IMobileRequest',  route_name='cart.payment', 
                     attr='post', request_method='POST', renderer=selectable_renderer('%(membership)s/mobile/payment.html'))
+
+    config.add_view('.views.ConfirmView', route_name='payment.confirm', request_method="GET", renderer=selectable_renderer("%(membership)s/pc/confirm.html"))
+    config.add_view('.views.ConfirmView', route_name='payment.confirm', request_method="GET", request_type='altair.mobile.interfaces.IMobileRequest', renderer=selectable_renderer("%(membership)s/mobile/confirm.html"))
 
     config.add_view('.views.CompleteView', route_name='payment.finish', request_method='POST', renderer='base/pc/cart/completion.html')
     config.add_view('.views.CompleteView', request_type='altair.mobile.interfaces.IMobileRequest', route_name='payment.finish', 

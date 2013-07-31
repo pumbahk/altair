@@ -6,7 +6,7 @@ import logging
 import re
 import transaction
 
-from pyramid.view import view_config
+from pyramid.view import view_config, view_defaults
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound
 
 import sqlalchemy as sa
@@ -23,6 +23,7 @@ from . import api
 from . import helpers as h
 from . import schemas
 from .view_support import IndexViewMixin, get_amount_without_pdmp, get_seat_type_dicts
+from .resources import PerformanceOrientedTicketingCartResource
 from .exceptions import (
     NoEventError,
     NoPerformanceError,
@@ -36,6 +37,7 @@ from .exceptions import (
 logger = logging.getLogger(__name__)
 
 
+@view_defaults(renderer=selectable_renderer('%(membership)s/mobile/index.html'), xhr=False, permission="buy", request_type='altair.mobile.interfaces.IMobileRequest')
 class MobileIndexView(IndexViewMixin):
     """モバイルのパフォーマンス選択
     """
@@ -44,8 +46,8 @@ class MobileIndexView(IndexViewMixin):
         self.context = request.context
         self.prepare()
 
-    @view_config(route_name='cart.index', renderer=selectable_renderer('%(membership)s/mobile/index.html'), xhr=False, permission="buy", request_type='altair.mobile.interfaces.IMobileRequest')
-    def __call__(self):
+    @view_config(route_name='cart.index')
+    def event_based_landing_page(self):
         logger.debug('mobile index')
         self.check_redirect(mobile=True)
 
@@ -70,13 +72,13 @@ class MobileIndexView(IndexViewMixin):
                     if _sales_segment.performance_id == performance_id:
                         sales_segment = _sales_segment
                 if sales_segment is None:
-                    raise NoPerformanceError(event_id=self.context.event_id)
+                    raise NoPerformanceError(event_id=self.context.event.id)
 
         if sales_segment is not None:
             return HTTPFound(self.request.route_url(
                     "cart.seat_types",
                     event_id=self.context.event.id,
-                    performance_id=performance_id,
+                    performance_id=sales_segment.performance_id,
                     sales_segment_id=sales_segment.id))
 
 
@@ -100,15 +102,55 @@ class MobileIndexView(IndexViewMixin):
             )
 
 
-class MobileSelectProductView(object):
+    @view_config(route_name='cart.index2')
+    def performance_based_landing_page(self):
+        logger.debug('mobile index')
+        self.check_redirect(mobile=True)
+
+        try:
+            sales_segment = self.context.sales_segment
+        except NoSalesSegment:
+            sales_segment = None
+
+        if sales_segment is None:
+            # performance_id で指定される Performance は
+            # available_sales_segments に関連するものでなければならない
+
+            for _sales_segment in self.context.available_sales_segments:
+                if _sales_segment.performance_id == self.context.performance.id:
+                    sales_segment = _sales_segment
+            if sales_segment is None:
+                raise NoPerformanceError(event_id=self.context.event.id)
+
+        if sales_segment is not None:
+            return HTTPFound(self.request.route_url(
+                    "cart.seat_types2",
+                    event_id=self.context.event.id,
+                    performance_id=sales_segment.performance_id,
+                    sales_segment_id=sales_segment.id))
+
+
+        selector_name = c_api.get_organization(self.request).setting.performance_selector
+        performance_selector = api.get_performance_selector(self.request, selector_name)
+        key_to_formatted_sales_segments_map = performance_selector()
+
+        return dict(
+            event=self.context.event,
+            key_to_formatted_sales_segments_map=key_to_formatted_sales_segments_map,
+            selector_label_1=performance_selector.label,
+            selector_label_2=performance_selector.second_label
+            )
+
+@view_defaults(renderer=selectable_renderer('%(membership)s/mobile/seat_types.html'), xhr=False, request_type='altair.mobile.interfaces.IMobileRequest')
+class MobileSelectSeatTypeView(object):
     """モバイルの商品選択
     """
     def __init__(self, request):
         self.request = request
         self.context = request.context
 
-    @view_config(route_name='cart.seat_types', renderer=selectable_renderer('%(membership)s/mobile/seat_types.html'), xhr=False, request_type='altair.mobile.interfaces.IMobileRequest')
-    def __call__(self):
+    @view_config(route_name='cart.seat_types')
+    def seat_type(self):
         selector_name = c_api.get_organization(self.request).setting.performance_selector
         performance_selector = api.get_performance_selector(self.request, selector_name)
 
@@ -133,7 +175,7 @@ class MobileSelectProductView(object):
                 dict(
                     products_url=self.request.route_url(
                         'cart.products',
-                        event_id=self.request.context.event_id,
+                        event_id=self.request.context.event.id,
                         performance_id=sales_segment.performance.id,
                         sales_segment_id=sales_segment.id,
                         seat_type_id=_dict['id']),
@@ -149,9 +191,89 @@ class MobileSelectProductView(object):
             )
         return data
 
-    @view_config(route_name='cart.products', renderer=selectable_renderer('%(membership)s/mobile/products.html'), xhr=False, request_type='altair.mobile.interfaces.IMobileRequest')
+    @view_config(route_name='cart.seat_types2')
+    def seat_type2(self):
+        selector_name = c_api.get_organization(self.request).setting.performance_selector
+        performance_selector = api.get_performance_selector(self.request, selector_name)
+
+        try:
+            seat_type_id = long(self.request.params.get('seat_type_id') or self.request.params.get('stid'))
+        except (ValueError, TypeError):
+            seat_type_id = None
+
+        if seat_type_id:
+            return HTTPFound(self.request.route_url(
+                "cart.products2",
+                event_id=self.context.sales_segment.performance.event.id,
+                performance_id=self.context.sales_segment.performance.id,
+                sales_segment_id=self.context.sales_segment.id,
+                seat_type_id=seat_type_id))
+
+        sales_segment = self.context.sales_segment
+        seat_type_dicts = get_seat_type_dicts(self.request, sales_segment)
+
+        data = dict(
+            seat_types=[
+                dict(
+                    products_url=self.request.route_url(
+                        'cart.products2',
+                        event_id=self.request.context.event.id,
+                        performance_id=sales_segment.performance.id,
+                        sales_segment_id=sales_segment.id,
+                        seat_type_id=_dict['id']),
+                    **_dict
+                    )
+                for _dict in seat_type_dicts
+                ],
+            event=self.context.event,
+            performance=sales_segment.performance,
+            venue=sales_segment.performance.venue,
+            sales_segment=sales_segment,
+            return_value=performance_selector.select_value(sales_segment)
+            )
+        return data
+
+@view_defaults(renderer=selectable_renderer('%(membership)s/mobile/products.html'), xhr=False, request_type='altair.mobile.interfaces.IMobileRequest')
+class MobileSelectProductView(object):
+    """モバイルの商品選択
+    """
+
+    product_id_regex = re.compile(r'product-(?P<product_id>\d+)')
+
+    def __init__(self, request):
+        self.request = request
+        self.context = request.context
+
+    def iter_ordered_items(self):
+        for key, value in self.request.params.iteritems():
+            m = self.product_id_regex.match(key)
+            if m is None:
+                continue
+            quantity = int(value)
+            logger.debug("key = %s, value = %s" % (key, value))
+            if quantity == 0:
+                continue
+            yield m.groupdict()['product_id'], quantity
+
+    @property
+    def ordered_items(self):
+        """ リクエストパラメータから(プロダクトID,数量)タプルのリストを作成する
+        :return: list of tuple(altair.app.ticketing.products.models.Product, int)
+        """
+
+        controls = list(self.iter_ordered_items())
+        logger.debug('order %s' % controls)
+        if len(controls) == 0:
+            return []
+
+        products = dict([(p.id, p) for p in DBSession.query(c_models.Product).filter(c_models.Product.id.in_([c[0] for c in controls]))])
+        logger.debug('order %s' % products)
+
+        return [(products.get(int(c[0])), c[1]) for c in controls]
+
+    @view_config(route_name='cart.products')
+    @view_config(route_name='cart.products2')
     def products(self):
-        logger.debug('cart.products')
         seat_type_id = self.request.matchdict['seat_type_id']
 
         # 席種(イベントとパフォーマンスにひもづいてること)
@@ -188,6 +310,10 @@ class MobileSelectProductView(object):
 
         product_dicts = get_seat_type_dicts(self.request, self.context.sales_segment, seat_type.id)[0]['products']
 
+        if isinstance(self.context, PerformanceOrientedTicketingCartResource):
+            back_url = self.request.route_url('cart.seat_types2', performance_id=self.context.performance.id, sales_segment_id=self.context.sales_segment.id)
+        else:
+            back_url = self.request.route_url('cart.seat_types', event_id=self.context.event.id, sales_segment_id=self.context.sales_segment.id)
         return dict(
             event=self.context.event,
             performance=self.context.sales_segment.performance,
@@ -196,80 +322,11 @@ class MobileSelectProductView(object):
             seat_type=seat_type,
             products=product_dicts,
             form=form,
+            back_url=back_url
         )
 
-class MobileReserveView(object):
-
-    product_id_regex = re.compile(r'product-(?P<product_id>\d+)')
-
-    def __init__(self, request):
-        self.request = request
-        self.context = request.context
-
-    def iter_ordered_items(self):
-        for key, value in self.request.params.iteritems():
-            m = self.product_id_regex.match(key)
-            if m is None:
-                continue
-            quantity = int(value)
-            logger.debug("key = %s, value = %s" % (key, value))
-            if quantity == 0:
-                continue
-            yield m.groupdict()['product_id'], quantity
-
-    @property
-    def ordered_items(self):
-        """ リクエストパラメータから(プロダクトID,数量)タプルのリストを作成する
-        :return: list of tuple(altair.app.ticketing.products.models.Product, int)
-        """
-
-        controls = list(self.iter_ordered_items())
-        logger.debug('order %s' % controls)
-        if len(controls) == 0:
-            return []
-
-        products = dict([(p.id, p) for p in DBSession.query(c_models.Product).filter(c_models.Product.id.in_([c[0] for c in controls]))])
-        logger.debug('order %s' % products)
-
-        return [(products.get(int(c[0])), c[1]) for c in controls]
-
-    @view_config(route_name='cart.order', request_method="GET", renderer=selectable_renderer('%(membership)s/mobile/reserve.html'), request_type='altair.mobile.interfaces.IMobileRequest')
-    def reserve_mobile(self):
-        cart = api.get_cart_safe(self.request)
-
-        performance_id = self.request.params.get('performance_id')
-        seat_type_id = self.request.params.get('seat_type_id')
-        sales_segment_id = self.request.matchdict["sales_segment_id"]
-
-        # セールスセグメント必須
-        sales_segment = c_models.SalesSegment.filter_by(id=sales_segment_id).first()
-
-        performance = c_models.Performance.query.filter(
-            c_models.Performance.id==performance_id).first()
-        if performance:
-            event = performance.event
-        else:
-            event = None
-
-        data = dict(
-            event=event,
-            performance=performance, 
-            seat_type_id=seat_type_id,
-            sales_segment_id=sales_segment_id, 
-            payment_url=self.request.route_url("cart.payment", sales_segment_id=sales_segment.id),
-            cart=dict(products=[dict(name=p.product.name,
-                                     detail=h.product_name_with_unit(p.product.items),
-                                     quantity=p.quantity,
-                                     price=int(p.product.price),
-                                     seats=p.seats if p.product.sales_segment.seat_choice else [],
-                                     seat_quantity=p.seat_quantity
-                                )
-                                for p in cart.products],
-                      total_amount=h.format_number(get_amount_without_pdmp(cart))
-            ))
-        return data
-
-    @view_config(route_name='cart.products', renderer=selectable_renderer('%(membership)s/mobile/products.html'), xhr=False, request_type='altair.mobile.interfaces.IMobileRequest', request_method="POST")
+    @view_config(route_name='cart.products', request_method="POST")
+    @view_config(route_name='cart.products2', request_method="POST")
     def products_form(self):
         """商品の値検証とおまかせ座席確保とカート作成
         """
@@ -278,7 +335,7 @@ class MobileReserveView(object):
         sales_segment_group_id = self.request.matchdict["sales_segment_id"]
 
         # 古いカートを削除
-        old_cart = api.get_cart(self.request)
+        old_cart = api.get_cart(self.request) # これは get_cart でよい
         if old_cart:
             # !!! ここでトランザクションをコミットする !!!
             old_cart.release()
@@ -325,7 +382,7 @@ class MobileReserveView(object):
             # カート生成(席はおまかせ)
             cart = api.order_products(
                 self.request,
-                performance_id,
+                sales_segment.id,
                 order_items)
             cart.sales_segment = sales_segment
             if cart is None:
@@ -350,9 +407,71 @@ class MobileReserveView(object):
         DBSession.flush()
         api.set_cart(self.request, cart)
         # 購入確認画面へ
-        query = dict(
-            performance_id=performance_id,
-            event_id=performance.event_id,
-            seat_type_id=seat_type_id,
-        )
+        query = { 'seat_type_id': seat_type_id }
+        if isinstance(self.context, PerformanceOrientedTicketingCartResource):
+            query['performance_id'] = performance_id
+        else:
+            query['event_id'] = performance.event_id
+
         return HTTPFound(self.request.route_url('cart.order', sales_segment_id=sales_segment.id, _query=query))
+
+@view_defaults(route_name='cart.order', request_method="GET", renderer=selectable_renderer('%(membership)s/mobile/reserve.html'), request_type='altair.mobile.interfaces.IMobileRequest')
+class MobileReserveView(object):
+    def __init__(self, request):
+        self.request = request
+        self.context = request.context
+
+    @view_config()
+    def reserve_mobile(self):
+        cart = self.request.context.cart
+
+        # XXX: ここ汚い. performance_id が与えられていなかったら /perforamnce/{performance_id} に戻るようにしている
+        performance_id = None
+        try:
+            performance_id = long(self.request.params.get('performance_id'))
+        except (ValueError, TypeError):
+            pass
+
+        event_id = None
+        try:
+            event_id = self.request.params.get('event_id')
+        except (ValueError, TypeError):
+            pass
+
+        seat_type_id = None
+        try:
+            seat_type_id = self.request.params.get('seat_type_id')
+        except (ValueError, TypeError):
+            pass
+
+        sales_segment_id = self.context.sales_segment.id
+
+        performance = c_models.Performance.query.filter(c_models.Performance.id==performance_id).first()
+        if performance:
+            event = performance.event
+            back_url = self.request.route_url('cart.products2', performance_id=performance.id, seat_type_id=seat_type_id,sales_segment_id=sales_segment_id)
+        else:
+            event = c_models.Event.query.filter(c_models.Event.id==event_id).one()
+            back_url = self.request.route_url('cart.products', event_id=event.id, seat_type_id=seat_type_id,sales_segment_id=sales_segment_id)
+
+        data = dict(
+            event=event,
+            sales_segment_id=sales_segment_id, 
+            payment_url=self.request.route_url("cart.payment", sales_segment_id=sales_segment_id),
+            cart=dict(
+                products=[
+                    dict(
+                        name=p.product.name,
+                        detail=h.product_name_with_unit(p.product.items),
+                        quantity=p.quantity,
+                        price=int(p.product.price),
+                        seats=p.seats if p.product.sales_segment.seat_choice else [],
+                        seat_quantity=p.seat_quantity
+                        )
+                    for p in cart.products
+                    ],
+                total_amount=h.format_number(get_amount_without_pdmp(cart)),
+                ),
+            back_url=back_url
+            )
+        return data

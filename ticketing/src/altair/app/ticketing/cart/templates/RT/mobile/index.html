@@ -1,28 +1,31 @@
 <%inherit file="./base.html"/>
 <%namespace file="./tags_mobile.html" name="mobile" />
-
+<% from altair.app.ticketing.cart.resources import PerformanceOrientedTicketingCartResource %>
 <%mobile:header>チケット購入</%mobile:header>
-
-${event.title}
-
+<div align="center" style="text-align:center">${event.title}</div><hr size="1" noshade="noshade" />
 % if not key:
-  <hr size="1" color="#888888" noshade="noshade" />
-  <p><font color="#990018">■</font>${selector_label_1}をお選びください</p>
+  <%mobile:form_header>${selector_label_1}をお選びください</%mobile:form_header>
   % for _key, _ in key_to_formatted_sales_segments_map:
   <a href="${request.current_route_path(_query={'key': _key.encode('sjis')})}">${_key}</a><br/>
   % endfor
 % else:
-  <hr size="1" color="#888888" noshade="noshade" />
-  <p><font color="#990018">■</font>${selector_label_2}をお選びください</p>
-  % for _, sales_segments in key_to_formatted_sales_segments_map:
-  %   for sales_segment_info in sales_segments:
-  <a href="${request.route_path('cart.seat_types', event_id=event.id, sales_segment_id=sales_segment_info['id'])}">${sales_segment_info['name']}</a><br />
+  <%mobile:form_header>${selector_label_2}をお選びください</%mobile:form_header>
+  % if isinstance(request.context, PerformanceOrientedTicketingCartResource):
+  %   for _, sales_segments in key_to_formatted_sales_segments_map:
+  %     for sales_segment_info in sales_segments:
+  <a href="${request.route_path('cart.seat_types2', performance_id=sales_segment_info['performance_id'], sales_segment_id=sales_segment_info['id'])}">${sales_segment_info['name']}</a><br />
+  %     endfor
   %   endfor
-  % endfor
+  % else:
+  %   for _, sales_segments in key_to_formatted_sales_segments_map:
+  %     for sales_segment_info in sales_segments:
+  <a href="${request.route_path('cart.seat_types', event_id=event.id, sales_segment_id=sales_segment_info['id'])}">${sales_segment_info['name']}</a><br />
+  %     endfor
+  %   endfor
+  % endif
   <form action="${request.route_path('cart.index', event_id=event.id)}" method="get">
     <div style="text-align:center;">
       <input type="submit" value="戻る">
     </div>
   </form>
-  <hr size="1" color="#888888" noshade="noshade" />
 % endif

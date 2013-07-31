@@ -1,15 +1,9 @@
 <%inherit file="./base.html"/>
 <%namespace file="./tags_mobile.html" name="mobile" />
-
+<% from altair.app.ticketing.cart.resources import PerformanceOrientedTicketingCartResource %>
 <%mobile:header>チケット購入</%mobile:header>
-
-${event.title}
-
-<hr size="1" color="#888888" noshade="noshade" />
-
-<p>
-<font color="#960020">■</font>席種をお選びください
-</p>
+<div align="center" style="text-align:center">${event.title}</div><hr size="1" noshade="noshade" />
+<%mobile:form_header>席種をお選びください</%mobile:form_header>
   % for seat_type in seat_types:
   % if seat_type["availability"]:
     <a href="${request.current_route_url(_query={'stid': seat_type['id']})}">${seat_type['name']}</a>
@@ -18,21 +12,16 @@ ${event.title}
   % endif
   ${seat_type["availability_text"]}<br />
   % endfor
+% if not isinstance(request.context, PerformanceOrientedTicketingCartResource):
 <form action="${request.route_url('cart.index', event_id=event.id)}" method="get">
   <div style="text-align:center;">
   <input type="hidden" name="key" value="${return_value}" />
   <input type="submit" value="戻る">
   </div>
 </form>
-
-<hr size="1" color="#888888" noshade="noshade" />
-
-<div style="background-color:#dc3759">会場</div>
-<div>
-  ${venue.name}
-</div>
-
-<div style="background-color:#dc3759">日程</div>
-<div>
-  ${performance.start_on}(予定)
-</div>
+% endif
+<%mobile:header>選択内容</%mobile:header>
+<%mobile:form_header>会場</%mobile:form_header>
+<div>${venue.name}</div>
+<%mobile:form_header>日程</%mobile:form_header>
+<div>${performance.start_on}(予定)</div>

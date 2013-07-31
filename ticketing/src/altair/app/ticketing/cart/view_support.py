@@ -23,22 +23,24 @@ from .exceptions import (
     OutTermSalesException,
     DeliveryFailedException,
 )
-
+from .resources import PerformanceOrientedTicketingCartResource
 
 logger = logging.getLogger(__name__)
 
 class IndexViewMixin(object):
-
     def prepare(self):
         if self.context.event is None:
-            raise NoEventError(self.context.event_id)
+            raise NoEventError()
 
         from .api import get_event_info_from_cms
-        self.event_extra_info = get_event_info_from_cms(self.request, self.context.event_id)
+        self.event_extra_info = get_event_info_from_cms(self.request, self.context.event.id)
         logger.info(self.event_extra_info)
 
     def check_redirect(self, mobile):
-        performance_id = self.request.params.get('pid') or self.request.params.get('performance')
+        if isinstance(self.request, PerformanceOrientedTicketingCartResource):
+            performance_id = self.request.context.performance.id
+        else:
+            performance_id = self.request.params.get('pid') or self.request.params.get('performance')
 
         if performance_id:
             specified = c_models.Performance.query.filter(c_models.Performance.id==performance_id).filter(c_models.Performance.public==True).first()

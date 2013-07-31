@@ -93,7 +93,7 @@ class Payment(object):
         elif payment_plugin and delivery_plugin:
             # 決済と配送を別々に処理する            
             order = self.call_payment_plugin(payment_plugin)
-            self.cart.order = order
+            self.cart.order = order # XXX: _bind_order() で同じことをやっているので不要では?
             order_no = order.order_no
             try:
                 delivery_plugin.finish(self.request, self.cart)
