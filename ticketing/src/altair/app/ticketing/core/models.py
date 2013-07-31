@@ -447,12 +447,6 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         return self.sale_segment.products if self.sales_segment_id else []
 
     @property
-    def inner_sales_segments(self):
-        now = datetime.now()
-        sales_segment_sort_key_func = lambda ss: (ss.kind == u'sales_counter', ss.start_at <= now, now <= ss.end_at, ss.id)
-        return sorted(list(self.sales_segments), key=sales_segment_sort_key_func, reverse=True)
-
-    @property
     def stock_types(self):
         return sorted(list({s.stock_type for s in self.stocks if s.stock_type}),
                       key=lambda s: s.id)

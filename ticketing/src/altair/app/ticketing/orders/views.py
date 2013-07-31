@@ -829,7 +829,7 @@ class OrderDetailView(BaseView):
         if performance is None:
             return HTTPNotFound('performance id %d is not found' % performance_id)
 
-        sales_segments = performance.inner_sales_segments
+        sales_segments = performance.sales_segments
         sales_segment_id = int(self.request.params.get('sales_segment_id') or 0)
         if sales_segment_id:
             sales_segments = [ss for ss in sales_segments if ss.id == sales_segment_id]

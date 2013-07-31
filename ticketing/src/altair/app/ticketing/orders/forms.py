@@ -20,6 +20,7 @@ from altair.app.ticketing.core.models import (Organization, PaymentMethod, Deliv
                                    SalesSegment, Performance, Product, ProductItem, Event, OrderCancelReasonEnum)
 from altair.app.ticketing.cart.schemas import ClientForm
 from altair.app.ticketing.payments import plugins
+from altair.app.ticketing.core import helpers as core_helpers
 
 class OrderForm(Form):
 
@@ -424,14 +425,14 @@ class OrderReserveForm(Form):
             if 'stocks' in kwargs and kwargs['stocks']:
                 query = query.join(ProductItem).filter(ProductItem.stock_id.in_(kwargs['stocks']))
 
-            sales_segments = []
-            for p in query.all():
-                sales_segments.append(p.sales_segment)
-
-            self.sales_segment_id.choices = []
-            for sales_segment in performance.inner_sales_segments:
-                if sales_segment in sales_segments:
-                    self.sales_segment_id.choices.append((sales_segment.id, sales_segment.name))
+            sales_segments = set(product.sales_segment for product in query.distinct())
+            from pyramid.threadlocal import get_current_request
+            from altair.viewhelpers.datetime_ import create_date_time_formatter, DateTimeHelper
+            self.sales_segment_id.choices = [
+                (sales_segment.id, u'%s %s' % (sales_segment.name, DateTimeHelper(create_date_time_formatter(get_current_request())).term(sales_segment.start_at, sales_segment.end_at)))
+                for sales_segment in \
+                    core_helpers.build_sales_segment_list_for_inner_sales(sales_segments)
+                ]
 
             self.products.choices = []
             if 'sales_segment_id' in kwargs and kwargs['sales_segment_id']:
