@@ -117,6 +117,10 @@ def gzip_preferred(request, response):
     if 'gzip' in request.accept_encoding:
         response.encode_content('gzip')
 
+def is_organization_rs(context, request):
+    organization = c_api.get_organization(request)
+    return organization.id == 15
+
 @view_defaults(decorator=with_jquery.not_when(mobile_request))
 class IndexView(IndexViewMixin):
     """ 座席選択画面 """
@@ -147,10 +151,6 @@ class IndexView(IndexViewMixin):
                         part=name)
                 retval[name] = url
         return retval
-
-    def is_organization_rs(context, request):
-        organization = c_api.get_organization(request)
-        return organization.id == 15
 
     @view_config(decorator=with_jquery_tools, route_name='cart.index',request_type="altair.mobile.interfaces.ISmartphoneRequest",
                  custom_predicates=(is_organization_rs, ), renderer=selectable_renderer("RT/smartphone/index.html"), xhr=False, permission="buy")
@@ -571,10 +571,6 @@ class PaymentView(object):
         # XXX: 会員区分からバリデーションしなくていいの?
         return c_models.SalesSegment.query.filter(c_models.SalesSegment.id==self.request.matchdict['sales_segment_id']).one()
 
-    def is_organization_rs(context, request):
-        organization = c_api.get_organization(request)
-        return organization.id == 15
-
     @view_config(route_name='cart.payment', request_method="GET", renderer=selectable_renderer("%(membership)s/pc/payment.html"))
     @view_config(route_name='cart.payment', request_method="GET", request_type='altair.mobile.interfaces.IMobileRequest', renderer=selectable_renderer("%(membership)s/mobile/payment.html"))
     @view_config(route_name='cart.payment', request_method="GET", request_type="altair.mobile.interfaces.ISmartphoneRequest", renderer=selectable_renderer("RT/smartphone/payment.html"), custom_predicates=(is_organization_rs, ))
@@ -726,10 +722,6 @@ class ConfirmView(object):
         self.request = request
         self.context = request.context
 
-    def is_organization_rs(context, request):
-        organization = c_api.get_organization(request)
-        return organization.id == 15
-
     @view_config(route_name='payment.confirm', request_method="GET", renderer=selectable_renderer("%(membership)s/pc/confirm.html"))
     @view_config(route_name='payment.confirm', request_method="GET", request_type='altair.mobile.interfaces.IMobileRequest', renderer=selectable_renderer("%(membership)s/mobile/confirm.html"))
     @view_config(route_name='payment.confirm', request_method="GET", request_type="altair.mobile.interfaces.ISmartphoneRequest", renderer=selectable_renderer("RT/smartphone/confirm.html"), custom_predicates=(is_organization_rs, ))
@@ -761,10 +753,6 @@ class CompleteView(object):
         self.request = request
         self.context = request.context
         # TODO: Orderを表示？
-
-    def is_organization_rs(context, request):
-        organization = c_api.get_organization(request)
-        return organization.id == 15
 
     @back(back_to_top, back_to_product_list_for_mobile)
     @view_config(route_name='payment.finish', request_method="POST", renderer=selectable_renderer("%(membership)s/pc/completion.html"))
