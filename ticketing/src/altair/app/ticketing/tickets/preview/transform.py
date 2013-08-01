@@ -13,6 +13,7 @@ from altair.app.ticketing.tickets.preview.validators import parse, SVGTransformV
 
 from altair.app.ticketing.tickets.preview.fillvalues import TicketPreviewFillValuesException
 from . import TicketPreviewTransformException
+from ..constants import SVG_NAMESPACE
 
 def wrap_element(parent, tag, attrs):
     """
@@ -41,12 +42,11 @@ def transform_unit(fn, unit):
         return str(fn(ast.literal_eval(m.group(1))))+m.group(2)
     return num_rx.sub(_num_repl, unit, 1)
 
-fullsvg = etree.QName("http://www.w3.org/2000/svg", "svg")
 def _find_svg(xmltree):
-    if xmltree.tag == "svg" or xmltree.tag == fullsvg:
+    if xmltree.tag == "{%s}svg" % SVG_NAMESPACE:
         return xmltree
     else:
-        return xmltree.find("svg") or xmltree.find(fullsvg)
+        return xmltree.find("{%s}svg" % SVG_NAMESPACE)
 
 class SVGTransformer(object):
     def __init__(self, svg, postdata=None, encoding="utf-8"):
@@ -72,7 +72,7 @@ class SVGTransformer(object):
         po = ticket_format.data.get("print_offset")
         if po:
             attrs = {"transform": "translate(%s, %s)" % (as_user_unit(po.get('x', '0')), as_user_unit(po.get('y', '0')))}
-            wrap_element(svg, "g", attrs)
+            wrap_element(svg, "{%s}g" % SVG_NAMESPACE, attrs)
         return xmltree
 
     def put_pageformat(self, xmltree):
@@ -107,7 +107,7 @@ class SVGTransformer(object):
             attrib["viewBox"] = " ".join(box_val)
 
         attrs = {"transform": "scale(%s, %s)" % (self.data["sx"], self.data["sy"])}
-        wrap_element(svg, "g", attrs)
+        wrap_element(svg, "{%s}g" % SVG_NAMESPACE, attrs)
         return xmltree
 
     def as_string(self, xmltree):
