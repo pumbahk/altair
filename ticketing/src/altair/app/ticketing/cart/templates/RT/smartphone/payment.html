@@ -73,6 +73,12 @@ ${h.get_nickname(request)}
             <span class="paymentFeeType">(${h.fee_type(m.payment_method.fee_type)})</span>
             <div class="description">${m.payment_method.description or '' | n}</div>
           </div>
+          <%t:header>システム利用料</%t:header>
+          <div class="dispBox paymentFee_${h.format_number(m.transaction_fee)}">
+            <span class="paymentFee">${h.format_currency(m.system_fee)}</span>
+            <span class="paymentFeeType">(1申込当り)</span>
+            <div class="description">上記のシステム利用料がかかります。</div>
+          </div>
           <br/>
           <%t:header>${m.delivery_method.name}</%t:header>
           <div class="dispBox devlieryFee_${h.format_number(m.delivery_fee)}">
