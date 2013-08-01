@@ -35,7 +35,8 @@
       <div class="controls" style="margin-left: 80px;">
         <select name="sales_segment_id">
           <option value=""></option>
-          % for sales_segment in performance.inner_sales_segments:
+          <% from altair.app.ticketing.core.helpers import build_sales_segment_list_for_inner_sales %>
+          % for sales_segment in build_sales_segment_list_for_inner_sales(performance.sales_segments):
           <option value="${sales_segment.id}" ${'selected=""' if sales_segment.id == int(sales_segment_id or 0) else ''|n}>${sales_segment.name}</option>
           % endfor
         </select>

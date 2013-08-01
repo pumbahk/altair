@@ -119,8 +119,10 @@ class DetailSearchForm(TopSearchForm):
 
     def get_datetime(self, year, month, day):
         date = None
-        if year and month and day:
+        try:
             date = parse_date(int(year), int(month), int(day))
+        except:
+            pass
         return date
 
     def create_since_event_open(self):

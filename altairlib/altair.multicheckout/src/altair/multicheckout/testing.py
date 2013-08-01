@@ -116,16 +116,18 @@ class DummyHTTPLib(object):
         from io import BytesIO
         self.response_body = BytesIO(self.response_body)
 
-    def HTTPConnection(self, host, port):
+    def HTTPConnection(self, host, port, timeout=None):
         self.host = host
         self.port = port
         self.called.append(('HTTPConnection', [host, port]))
+        self.timeout = timeout
         return self
 
-    def HTTPSConnection(self, host, port):
+    def HTTPSConnection(self, host, port, timeout=None):
         self.host = host
         self.port = port
         self.called.append(('HTTPSConnection', [host, port]))
+        self.timeout = timeout
         return self
 
     def request(self, method, path, body, headers):

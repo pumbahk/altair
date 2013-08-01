@@ -1,4 +1,4 @@
-from altair.app.ticketing import txt_renderer_factory
+from altair.app.ticketing.renderers import txt_renderer_factory
 from pyramid.config import Configurator
 from pyramid_beaker import session_factory_from_settings
 import json

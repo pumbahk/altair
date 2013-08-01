@@ -34,3 +34,7 @@ class IOrganizationMapping(Interface):
         organization name -> (backend_id,  auth_source)
         * organization_name is individual name in cms area.
         """
+
+class IAPIKeyValidator(Interface):
+    def __call__(apikey):
+        """ validate api key"""

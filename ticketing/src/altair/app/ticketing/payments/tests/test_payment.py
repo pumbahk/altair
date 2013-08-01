@@ -215,7 +215,7 @@ class PaymentTests(unittest.TestCase):
         delivery_plugin.finish.assert_called_with(request, cart)
         mock_commit.assert_called_with()
 
-    @mock.patch("altair.app.ticketing.payments.payment.on_delivery_error")
+    #@mock.patch("altair.app.ticketing.payments.payment.on_delivery_error")
     @mock.patch("transaction.commit")
     def test_call_payment_with_delivery_error(self, mock_commit, mock_error_handler):
         from altair.app.ticketing.core.models import Order, Performance, Event, Organization
@@ -249,22 +249,22 @@ class PaymentTests(unittest.TestCase):
         # エラー発生時でもコミットされること。
         mock_commit.assert_called_with()
 
-class on_delivery_errorTests(unittest.TestCase):
-    def _callFUT(self, *args, **kwargs):
-        from ..payment import on_delivery_error
-        return on_delivery_error(*args, **kwargs)
+# class on_delivery_errorTests(unittest.TestCase):
+#     def _callFUT(self, *args, **kwargs):
+#         from ..payment import on_delivery_error
+#         return on_delivery_error(*args, **kwargs)
 
-    @mock.patch('traceback.print_exception')
-    @mock.patch('sys.exc_info')
-    def test_it(self, mock_exc_info, mock_print_exception):
-        exc_info = object(), object(), object()
-        mock_exc_info.return_value = exc_info
-        request = DummyRequest()
-        e = mock.Mock()
-        order_no = "error-order"
-        event_id = 11111
-        cart = testing.DummyModel(event_id=event_id)
-        order = mock.Mock(order_no=order_no, cart=cart)
+#     @mock.patch('traceback.print_exception')
+#     @mock.patch('sys.exc_info')
+#     def test_it(self, mock_exc_info, mock_print_exception):
+#         exc_info = object(), object(), object()
+#         mock_exc_info.return_value = exc_info
+#         request = DummyRequest()
+#         e = mock.Mock()
+#         order_no = "error-order"
+#         event_id = 11111
+#         cart = testing.DummyModel(event_id=event_id)
+#         order = mock.Mock(order_no=order_no, cart=cart)
 
 
         self._callFUT(e, request, order)

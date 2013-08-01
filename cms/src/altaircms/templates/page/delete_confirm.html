@@ -24,7 +24,7 @@
      ${co.page_description(page)}
   </div>
   <div class="span6">
-	<form action="${h.page.to_delete(request,page)}" method="POST">
+	<form action="${request.route_path("page_delete", id=page.id)}" method="POST">
  	  <input id="_method" name="_method" type="hidden" value="delete" />
 	  <button type="submit" class="btn btn-danger"><i class="icon-trash icon-white"></i> Delete</button>
 	</form>        

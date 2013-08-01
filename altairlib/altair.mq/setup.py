@@ -3,6 +3,7 @@ from setuptools import setup, find_packages
 version = '1.0'
 
 requires = [
+    "setuptools>0.7",
     "pika",
     "tornado",
     "pyramid",

@@ -12,49 +12,47 @@ class ExportForStockHolderTest(TestCase):
     def setUp(self):
         # DB用意
         self.session = testing._setup_db()
-        # EventとStockHolder用意
-        self.account = core_models.Account()
-        self.account.save()
-        self.organization = core_models.Organization()
-        self.organization.save()
-        self.event = core_models.Event(
-            account=self.account,
-            organization=self.organization)
-        self.event.save()
-        self.performance = core_models.Performance(event=self.event)
-        self.performance.save()
-        self.stock_holder = core_models.StockHolder(event=self.event)
-        self.stock_holder.save()
-
-    def test_ok(self):
-        result = reporting.export_for_stock_holder(self.event, self.stock_holder)
-        self.assertTrue(len(result.as_string()) > 0)
 
     def tearDown(self):
         testing._teardown_db()
 
 
-class ExportForStockHolderUnsoldTest(TestCase):
-    def setUp(self):
-        # DB用意
-        self.session = testing._setup_db()
-        # EventとStockHolder用意
-        self.account = core_models.Account()
-        self.account.save()
-        self.organization = core_models.Organization()
-        self.organization.save()
-        self.event = core_models.Event(
-            account=self.account,
-            organization=self.organization)
-        self.event.save()
-        self.performance = core_models.Performance(event=self.event)
-        self.performance.save()
-        self.stock_holder = core_models.StockHolder(event=self.event)
-        self.stock_holder.save()
-
-    def test_ok(self):
-        result = reporting.export_for_stock_holder_unsold(self.event, self.stock_holder)
+    def test_stocks_ok(self):
+        event, stock_holder = self._create_data()
+        report_type = "stock"
+        result = reporting.export_for_stock_holder(event, 
+                                                   stock_holder,
+                                                   report_type)
         self.assertTrue(len(result.as_string()) > 0)
 
-    def tearDown(self):
-        testing._teardown_db()
+
+    def _create_data(self):
+        from datetime import datetime
+        # EventとStockHolder用意
+        account = core_models.Account()
+        account.save()
+        organization = core_models.Organization(short_name="testing")
+        organization.save()
+        event = core_models.Event(account=account,
+                                  organization=organization)
+        event.save()
+        site = core_models.Site()
+        venue = core_models.Venue(site=site,
+                                  organization=organization)
+        performance = core_models.Performance(event=event,
+                                              venue=venue,
+                                              start_on=datetime(2013, 3, 4))
+        performance.save()
+        stock_holder = core_models.StockHolder(event=event,
+                                               account=account)
+        stock_holder.save()
+        return event, stock_holder
+
+    def test_unsold_ok(self):
+        
+        event, stock_holder = self._create_data()
+
+        result = reporting.export_for_stock_holder(event, stock_holder, 'unsold')
+        self.assertTrue(len(result.as_string()) > 0)
+
+

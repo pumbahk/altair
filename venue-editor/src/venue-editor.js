@@ -281,6 +281,7 @@
       };
     })();
     this.shift = false;
+    this.ctrl = false;
     this.drawing = null;
     this.metadata = null;
     this.keyEvents = null;
@@ -482,16 +483,19 @@
       {},
       drawing.documentElement.childNodes);
 
+    drawable.addEvent({
+      mousewheel: function (evt) {
+        if (self.shift) {
+          evt.preventDefault();
+          self.zoom(self.zoomRatio * (evt.delta < 0 ? 1 / 1.25: 1.25));
+        }
+      }
+    });
+
     self.drawable = drawable;
     self.shapes = shapes;
 
-    var cs = drawable.contentSize();
-    var vs = drawable.viewportSize();
-    var center = {
-      x: (cs.x - vs.x) / 2,
-      y: (cs.y - vs.y) / 2
-    };
-    self.drawable.transform(Fashion.Matrix.scale(self.zoomRatio));
+    self.zoom(self.zoomRatio);
     self.changeUIMode(self.uiMode);
   };
 
@@ -588,8 +592,16 @@
     var self = this;
 
     this.keyEvents = {
-      down: function(e) { if (util.eventKey(e).shift) self.shift = true;  return true; },
-      up:   function(e) { if (util.eventKey(e).shift) self.shift = false; return true; }
+      down: function(e) {
+        if (util.eventKey(e).shift) self.shift = true;
+        if (util.eventKey(e).ctrl) self.ctrl = true;
+        return true;
+      },
+      up:   function(e) {
+        if (util.eventKey(e).shift) self.shift = false;
+        if (util.eventKey(e).ctrl) self.ctrl = false;
+        return true;
+      }
     };
 
     $(document).bind('keydown', this.keyEvents.down);
@@ -668,8 +680,7 @@
       case 'zoomin':
         this.drawable.addEvent({
           mouseup: function(evt) {
-            self.zoomRatio*=1.2;
-            this.transform(Fashion.Matrix.scale(self.zoomRatio));
+            self.zoom(self.zoomRatio * 1.2);
           }
         });
         break;
@@ -677,8 +688,7 @@
       case 'zoomout':
         this.drawable.addEvent({
           mouseup: function(evt) {
-            self.zoomRatio/=1.2;
-            this.transform(Fashion.Matrix.scale(self.zoomRatio));
+            self.zoom(self.zoomRatio / 1.2);
           }
         });
         break;
@@ -716,6 +726,28 @@
       this._adjacencyLength = value;
     }
     return this._adjacencyLength;
+  };
+
+  VenueEditor.prototype.center = function VenueEditor_center(pos) {
+    var sp = this.drawable.scrollPosition();
+    var vs = this.drawable.viewportInnerSize();
+    var lvs = this.drawable._inverse_transform.apply(vs);
+    if (pos === void(0))
+      return { x: sp.x + lvs.x / 2, y: sp.y + lvs.y / 2 };
+    else
+      this.drawable.scrollPosition({ x: pos.x - lvs.x / 2, y: pos.y + lvs.y / 2 });
+  };
+
+  VenueEditor.prototype.zoom = function VenueEditor_zoom(ratio, center) {
+    var sp = this.drawable.scrollPosition();
+    var lvs;
+
+    lvs = this.drawable._inverse_transform.apply(this.drawable.viewportInnerSize());
+    center = center || { x: sp.x + lvs.x / 2, y: sp.y + lvs.y / 2 };
+    this.zoomRatio = ratio;
+    this.drawable.transform(Fashion.Matrix.scale(this.zoomRatio));
+    lvs = this.drawable._inverse_transform.apply(this.drawable.viewportInnerSize());
+    this.drawable.scrollPosition({ x: center.x - lvs.x / 2, y: center.y - lvs.y / 2 });
   };
 
   $.fn.venueeditor = function (options) {

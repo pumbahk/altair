@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
 
 from wtforms import Form
-from altair.formhelpers import OurForm, OurTextField, OurSelectField, OurIntegerField, OurBooleanField, NullableTextField
 from wtforms import HiddenField, FieldList
 from wtforms.validators import Length, Optional, ValidationError
 from wtforms.widgets import CheckboxInput, TextArea
 
 from altair.formhelpers import Translations, Required
+from altair.formhelpers import OurForm, OurTextField, OurSelectField, OurIntegerField, OurBooleanField, NullableTextField
 from altair.app.ticketing.core.models import StockTypeEnum, StockType
 
 class StockTypeForm(OurForm):
@@ -51,6 +51,16 @@ class StockTypeForm(OurForm):
         label=u'説明',
         hide_on_new=True
         )
+
+    def validate_name(form, field):
+        stock_type = StockType.query.filter(
+            StockType.name==field.data,
+            StockType.event_id==form.event_id.data,
+            StockType.quantity_only==form.quantity_only.data,
+            StockType.id!=form.id.data
+        ).count()
+        if stock_type > 0:
+            raise ValidationError(u'既に登録済みの席種名です')
 
     def validate_quantity_only(form, field):
         if form.id.data:

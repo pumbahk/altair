@@ -1,6 +1,6 @@
 # -*- encoding:utf-8 -*-
 import transaction
-from pyramid.httpexceptions import HTTPFound
+from pyramid.httpexceptions import HTTPFound, HTTPNotFound
 from altaircms.helpers.viewhelpers import FlashMessage
 from altaircms.models import DBSession
 from altaircms.models import model_from_dict, model_to_dict
@@ -114,7 +114,10 @@ class CRUDResource(RootFactory): ## fixme
         assert len(pks) == 1
         
         pk = pks[0].name
-        self.obj = self.model.query.filter_by(**{pk: id}).one()
+        self.obj = self.model.query.filter_by(**{pk: id}).first()
+        if self.obj is None:
+            logger.warn("data is not found model={model}, id={id}".format(model=self.model.__name__, id=id))
+            raise HTTPNotFound("data is not found")
         return self.obj
 
     ## listing

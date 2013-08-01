@@ -252,7 +252,8 @@ class MultiCheckoutView(object):
         self.request = request
 
     @view_config(route_name='payment.secure3d', request_method="GET", renderer=selectable_renderer('%(membership)s/pc/card_form.html'))
-    @view_config(route_name='payment.secure3d', request_type='altair.mobile.interfaces.IMobileRequest', request_method="GET", renderer=selectable_renderer('%(membership)s/mobile/card_form.html'))
+    @view_config(route_name='payment.secure3d', request_method="GET", request_type='altair.mobile.interfaces.IMobileRequest', renderer=selectable_renderer('%(membership)s/mobile/card_form.html'))
+    @view_config(route_name='payment.secure3d', request_method="GET", request_type="altair.mobile.interfaces.ISmartphoneRequest", renderer=selectable_renderer("RT/smartphone/card_form.html"))
     def card_info_secure3d_form(self):
         """ カード情報入力"""
         form = CardForm(formdata=self.request.params, csrf_context=self.request.session)
@@ -276,7 +277,8 @@ class MultiCheckoutView(object):
         return self._secure_code(order['order_no'], order['card_number'], order['exp_year'], order['exp_month'], order['secure_code'])
 
     @view_config(route_name='payment.secure3d', request_method="POST", renderer=selectable_renderer('%(membership)s/pc/card_form.html'))
-    @view_config(route_name='payment.secure3d', request_type='altair.mobile.interfaces.IMobileRequest', request_method="POST", renderer=selectable_renderer('%(membership)s/mobile/card_form.html'))
+    @view_config(route_name='payment.secure3d', request_method="POST", request_type='altair.mobile.interfaces.IMobileRequest', renderer=selectable_renderer('%(membership)s/mobile/card_form.html'))
+    @view_config(route_name='payment.secure3d', request_method="POST", request_type="altair.mobile.interfaces.ISmartphoneRequest", renderer=selectable_renderer("RT/smartphone/card_form.html"))
     def card_info_secure3d(self):
         """ カード決済処理(3Dセキュア)
         """

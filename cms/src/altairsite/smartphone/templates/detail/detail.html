@@ -12,6 +12,15 @@
         if perf.public:
             perfs.append({"perf":perf, "display_order":perf.display_order})
     perfs = sorted(perfs, key=lambda v: (v['display_order']))
+    info = {
+        'performance_period':helper.get_info(event_info, u'公演期間') or helper.disp_date_week(event.event_open) + u'〜' + helper.disp_date_week(event.event_close),
+        'performers':helper.get_info(event_info, u'出演者') or event.performers ,
+        'salessegment':helper.get_info_list(event_info, u'販売期間') ,
+        'notice':helper.get_info(event_info, u'説明／注意事項') or event.notice ,
+        'ticket_payment':helper.get_info(event_info, u'お支払い方法') ,
+        'ticket_pickup':helper.get_info(event_info, u'チケット引き取り方法') ,
+        'content':helper.get_info(event_info, u'お問い合わせ先') or event.inquiry_for,
+    }
 %>
 
 <script type="text/javascript">
@@ -64,6 +73,8 @@ $(function () {
 });
 </script>
 
+
+
 <h2 class="glitter red">イベント詳細</h2>
 <%m:header>イベント名称</%m:header>
 <div class="sectionbox">
@@ -76,7 +87,7 @@ $(function () {
 <%m:header>公演期間</%m:header>
 <div class="sectionbox">
   <div class="sectionbox-inner">
-    ${helper.disp_date_week(event.event_open)}〜${helper.disp_date_week(event.event_close)}
+      ${info['performance_period']}
   </div>
 </div>
 
@@ -86,15 +97,15 @@ $(function () {
 </%def>
 
 <%def name="render_sale(segment)">
-    % if segment.name.find(u"先行抽選") != -1:
+    % if segment.find(u"先行抽選") != -1:
         ${render_sale_image('altaircms:static/RT/img/search/icon_lottery.gif')}
-    % elif segment.name.find(u"先行先着") != -1:
+    % elif segment.find(u"先行先着") != -1:
         ${render_sale_image('altaircms:static/RT/img/search/icon_firstcome.gif')}
-    % elif segment.name.find(u"一般販売") != -1:
+    % elif segment.find(u"一般販売") != -1:
         ${render_sale_image('altaircms:static/RT/img/search/icon_normal.gif')}
-    % elif segment.name.find(u"一般発売") != -1:
+    % elif segment.find(u"一般発売") != -1:
         ${render_sale_image('altaircms:static/RT/img/search/icon_release.gif')}
-    % elif segment.name.find(u"先行販売") != -1:
+    % elif segment.find(u"先行販売") != -1:
         ${render_sale_image('altaircms:static/RT/img/search/icon_firstsale.gif')}
     % else:
         <span style="font-size:9px; background-color:#ffffaa; padding-left:9px; padding-right:9px; padding-top:1px; padding-bottom:1px; color:#111;">${segment.name}</span>
@@ -102,32 +113,51 @@ $(function () {
 </%def>
 
 <%m:header>販売期間</%m:header>
-% if event.salessegment_groups:
+% if info['salessegment']:
     <div class="sectionbox">
         <div class="sectionbox-inner">
             <table>
-                % for segment in event.salessegment_groups:
-                    % if segment.publicp:
-                        <tr>
-                            <td>
-                                ${render_sale(segment)}
-                            </td>
-                            <td>
-                                ${helper.disp_date(segment.start_on)}〜${helper.disp_date(segment.end_on)}<br/>
-                            </td>
-                        </tr>
-                    % endif
+                % for segment in info['salessegment']:
+                    <tr>
+                        <td>
+                            ${render_sale(segment[0])}
+                        </td>
+                        <td>
+                            ${segment[1]}
+                        </td>
+                    </tr>
                 % endfor
             </table>
         </div>
     </div>
 % else:
-    <div class="sectionbox">
-        <div class="sectionbox-inner">
-            ${helper.disp_date(event.deal_open)}〜${helper.disp_date(event.deal_close)}
+    % if event.salessegment_groups:
+        <div class="sectionbox">
+            <div class="sectionbox-inner">
+                <table>
+                    % for segment in event.salessegment_groups:
+                        % if segment.publicp:
+                            <tr>
+                                <td>
+                                    ${render_sale(segment.name)}
+                                </td>
+                                <td>
+                                    ${helper.disp_date(segment.start_on)}〜${helper.disp_date(segment.end_on)}<br/>
+                                </td>
+                            </tr>
+                        % endif
+                    % endfor
+                </table>
+            </div>
         </div>
-    </div>
-    <hr/>
+    % else:
+        <div class="sectionbox">
+            <div class="sectionbox-inner">
+                ${helper.disp_date(event.deal_open)}〜${helper.disp_date(event.deal_close)}
+            </div>
+        </div>
+        <hr/>
+    % endif
 % endif
 
 % if len(perfs):
@@ -138,21 +168,59 @@ $(function () {
 <hr/>
 % endif
 
-% if event.notice:
+% if info['performers']:
+    <%m:header>出演者</%m:header>
+    <div class="sectionbox">
+      <div class="sectionbox-inner">
+        ${helper.nl2br(info['performers'])|n}
+      </div>
+    </div>
+<hr/>
+% endif
+
+% if info['notice']:
     <%m:header>詳細/注意事項</%m:header>
-    <div>
+    <div class="sectionbox">
+      <div class="sectionbox-inner">
         <font size="-1">
-        ${helper.nl2br(event.notice)|n}
+        ${helper.nl2br(info['notice'])|n}
         </font>
+      </div>
+    </div>
+<hr/>
+% endif
+
+% if info['ticket_payment']:
+    <%m:header>お支払い方法</%m:header>
+    <div class="sectionbox">
+      <div class="sectionbox-inner">
+        ${helper.nl2br(info['ticket_payment'])|n}
+      </div>
     </div>
 
 <hr/>
 % endif
 
-% if event.inquiry_for:
+% if info['ticket_pickup']:
+    <%m:header>チケット引き取り方法</%m:header>
+    <div class="sectionbox">
+      <div class="sectionbox-inner">
+        ${helper.nl2br(info['ticket_pickup'])|n}
+      </div>
+    </div>
+
+<hr/>
+% endif
+
+% if info['content']:
     <%m:header>お問い合わせ</%m:header>
-        ${helper.nl2br(event.inquiry_for)|n}
-    <br /><br />
+    <div class="sectionbox">
+      <div class="sectionbox-inner">
+        ${helper.nl2br(info['content'])|n}
+      </div>
+    </div>
+
+<hr/>
 % endif
 
 

@@ -16,6 +16,7 @@ long_description = (
 
 
 requires = [
+    "setuptools>0.7",
     "sqlalchemy",
     "pyramid",
 ]

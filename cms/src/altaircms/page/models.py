@@ -30,8 +30,6 @@ from altaircms.models import model_to_dict
 from altaircms.layout.models import Layout
 from altaircms.models import WithOrganizationMixin
 
-import uuid
-
 
 class PublishStatusMixin(object):
     def publish_status(self, dt):
@@ -55,29 +53,7 @@ class PublishStatusMixin(object):
     def unpublish(self):
         self.published = False
 
-class PageAccesskey(Base, WithOrganizationMixin):
-    query = DBSession.query_property()
-    __tablename__ = "page_accesskeys"
-    id = sa.Column(sa.Integer, primary_key=True)
-    name = sa.Column(sa.Unicode(255))
-    page_id = sa.Column(sa.Integer, sa.ForeignKey("page.id"))
-    page = orm.relationship("Page", backref=orm.backref("access_keys", cascade="all"))
-    hashkey = sa.Column(sa.String(length=32), nullable=False)
-    expiredate = sa.Column(sa.DateTime)
-    created_at = sa.Column(sa.DateTime, default=datetime.now)
-    updated_at = sa.Column(DateTime, default=datetime.now, onupdate=datetime.now)    
 
-    def __repr__(self):
-        return "%r:%s %s" % (self.__class__, self.hashkey, self.expiredate)
-
-    def default_gen_key(self):
-        return uuid.uuid4().hex
-
-    def sethashkey(self, genkey=None, key=None):
-        if key:
-            self.hashkey = key
-        else:
-            self.hashkey = (genkey or self.default_gen_key)()
     
 class PageSet(Base, 
               WithOrganizationMixin, 
@@ -260,7 +236,7 @@ class StaticPageSet(Base,
 
     @declared_attr
     def __table_args__(cls):
-        return (sa.schema.UniqueConstraint("url", "organization_id"), )
+        return (sa.schema.UniqueConstraint("url", "organization_id", "pagetype_id"), )
 
 
 class StaticPage(BaseOriginalMixin, 
@@ -331,7 +307,7 @@ class Page(BaseOriginalMixin,
 
     name = Column(Unicode(255), default=u"")
     title = Column(Unicode(255), default=u"")
-    keywords = Column(Unicode(255), default=u"")
+    keywords = Column(Unicode(500), default=u"")
     description = Column(Unicode(255), default=u"")
     url = Column(String(255), index=True) ##todo: delete
     version = Column(Integer, default=1)
@@ -410,41 +386,6 @@ class Page(BaseOriginalMixin,
 
     def unpublish(self):
         self.published = False
-
-    def create_access_key(self, key=None, expire=None, _genkey=None):
-        access_key = PageAccesskey(expiredate=expire, page=self)
-        access_key.sethashkey(genkey=_genkey, key=key)
-        return access_key
-
-    def delete_access_key(self, target):
-        return self.access_keys.remove(target)
-
-    def get_access_key(self, key):
-        if key is None:
-            return None
-        if getattr(key, "hashkey", None):
-            return key
-        return PageAccesskey.query.filter_by(page=self, hashkey=key).first()
-
-    def can_private_access(self, key=None, now=None):
-        key = self.get_access_key(key)
-        if key is None:
-            return False
-
-        if not key in self.access_keys:
-            return False
-        if key.expiredate is None:
-            return True
-
-        now = now or datetime.now()
-        return now <= key.expiredate
-
-    def has_access_keys(self):
-        return bool(self.access_keys)
-
-    def valid_access_keys(self, _now=None):
-        now = _now or datetime.now()
-        return [k for k in self.access_keys if k.expiredate >= now]
 
     def valid_layout(self):
         if self.layout is None:
@@ -618,3 +559,4 @@ class MobileTag(WithOrganizationMixin, Base):
     @declared_attr
     def __tableargs__(cls):
         return  ((sa.schema.UniqueConstraint(cls.label,cls.organization_id)))
+

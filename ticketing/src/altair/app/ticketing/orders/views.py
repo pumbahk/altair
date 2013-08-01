@@ -57,7 +57,7 @@ from altair.app.ticketing.orders.export import OrderCSV, get_japanese_columns
 from altair.app.ticketing.orders.forms import (OrderForm, OrderSearchForm, OrderRefundSearchForm, SejOrderForm, SejTicketForm,
                                     SejRefundEventForm,SejRefundOrderForm, SendingMailForm,
                                     PerformanceSearchForm, OrderReserveForm, OrderRefundForm, ClientOptionalForm,
-                                    SalesSegmentGroupSearchForm, SalesSegmentSearchForm, PreviewTicketSelectForm, CartSearchForm)
+                                    SalesSegmentGroupSearchForm, PreviewTicketSelectForm, CartSearchForm)
 from altair.app.ticketing.views import BaseView
 from altair.app.ticketing.fanstatic import with_bootstrap
 from altair.app.ticketing.orders.events import notify_order_canceled
@@ -152,32 +152,10 @@ class OrdersAPIView(BaseView):
         if formdata['event_id']:
             query = query.filter(SalesSegmentGroup.event_id == formdata['event_id'])
         if formdata['public']:
-            query = query.filter(SalesSegmentGroup.public == formdata['public'])
+            query = query.filter(SalesSegmentGroup.public == bool(formdata['public']))
 
         sales_segment_groups = [dict(pk='', name=u'(すべて)')] + [dict(pk=p.id, name=p.name) for p in query]
         return {"result": sales_segment_groups, "status": True}
-
-    @view_config(renderer="json", route_name="orders.api.sales_segments")
-    def get_sales_segments(self):
-        form_search = SalesSegmentSearchForm(self.request.params)
-        if not form_search.validate():
-            return {"result": [],  "status": False}
-
-        formdata = form_search.data
-        query = SalesSegment.query
-        if formdata['sort']:
-            try:
-                query = asc_or_desc(query, getattr(SalesSegment, formdata['sort']), formdata['direction'], 'asc')
-            except AttributeError:
-                pass
-
-        if formdata['performance_id']:
-            query = query.filter(SalesSegment.performance_id == formdata['performance_id'])
-        if formdata['public']:
-            query = query.filter(SalesSegment.public == formdata['public'])
-
-        sales_segments = [dict(pk='', name=u'(すべて)')] + [dict(pk=p.id, name=p.sales_segment_group.name) for p in query]
-        return {"result": sales_segments, "status": True}
 
     @view_config(renderer="json", route_name="orders.api.checkbox_status", request_method="POST", match_param="action=add")
     def add_checkbox_status(self):
@@ -851,7 +829,7 @@ class OrderDetailView(BaseView):
         if performance is None:
             return HTTPNotFound('performance id %d is not found' % performance_id)
 
-        sales_segments = performance.inner_sales_segments
+        sales_segments = performance.sales_segments
         sales_segment_id = int(self.request.params.get('sales_segment_id') or 0)
         if sales_segment_id:
             sales_segments = [ss for ss in sales_segments if ss.id == sales_segment_id]

@@ -505,6 +505,13 @@ class TicketPrintQueueEntries(BaseView):
             .filter_by(operator=self.context.user, processed_at=None)\
             .options(joinedload(TicketPrintQueueEntry.seat))
 
+        if "status" in self.request.GET:
+            status = self.request.GET["status"]
+            if status == "masked":
+                queue_entries_qs = queue_entries_qs.filter(TicketPrintQueueEntry.masked_at!=None)
+            elif status == "unmasked":
+                queue_entries_qs = queue_entries_qs.filter(TicketPrintQueueEntry.masked_at==None)
+
         if queue_entries_sort_by == "Order.order_no":
             # queue_entries_qs = queue_entries_qs\
             #     .join(OrderedProductItem.ordered_product) \
@@ -523,6 +530,27 @@ class TicketPrintQueueEntries(BaseView):
             .filter(TicketPrintQueueEntry.id.in_(ids)) \
             .delete(synchronize_session=False)
         self.request.session.flash(u'エントリを %d 件削除しました' % n)
+        return HTTPFound(location=self.request.route_path("tickets.queue.index"))
+
+    @view_config(route_name='tickets.queue.mask', request_method="POST")
+    def mask(self):
+        ids = self.request.params.getall('id')
+        now = datetime.now()
+        n = DBSession.query(TicketPrintQueueEntry) \
+            .filter_by(operator=self.context.user) \
+            .filter(TicketPrintQueueEntry.id.in_(ids), TicketPrintQueueEntry.masked_at==None) \
+            .update({"masked_at": now}, synchronize_session=False)
+        self.request.session.flash(u'エントリを %d 件除外しました' % n)
+        return HTTPFound(location=self.request.route_path("tickets.queue.index"))
+
+    @view_config(route_name='tickets.queue.unmask', request_method="POST")
+    def unmask(self):
+        ids = self.request.params.getall('id')
+        n = DBSession.query(TicketPrintQueueEntry) \
+            .filter_by(operator=self.context.user) \
+            .filter(TicketPrintQueueEntry.id.in_(ids), TicketPrintQueueEntry.masked_at!=None) \
+            .update({"masked_at": None}, synchronize_session=False)
+        self.request.session.flash(u'エントリを %d 件元に戻しました' % n)
         return HTTPFound(location=self.request.route_path("tickets.queue.index"))
 
 @view_defaults(decorator=with_bootstrap, permission="event_editor")

@@ -131,7 +131,7 @@ class PerformanceShowView(BaseView):
         ## cart url
         cart_url = get_cart_url_builder(self.request).build(self.request, self.performance.event, self.performance)
         data["cart_url"] = cart_url
-        data["cart_now_cart_url"] = get_cart_now_url_builder(self.request).build(self.request, cart_url)
+        data["cart_now_cart_url"] = get_cart_now_url_builder(self.request).build(self.request, cart_url, self.performance.event_id)
         return data
 
 

@@ -220,8 +220,10 @@ class EventSearcher(object):
 
     def get_datetime(self, year, month, day):
         date = None
-        if year.isdigit() and month.isdigit() and day.isdigit():
+        try:
             date = parse_date(int(year), int(month), int(day))
+        except:
+            pass
         return date
 
     def create_since_open(self, form):

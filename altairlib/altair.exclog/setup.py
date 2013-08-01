@@ -4,6 +4,10 @@ import os
 version = '0.0'
 
 long_description = open('README.txt').read()
+requires = [
+    "setuptools>0.7",
+    'pyramid',
+]
 
 setup(name='altair.exclog',
       version=version,
@@ -24,10 +28,7 @@ setup(name='altair.exclog',
       namespace_packages=['altair'],
       include_package_data=True,
       zip_safe=False,
-      install_requires=[
-          'pyramid',
-          # -*- Extra requirements: -*-
-      ],
+      install_requires=requires,
       entry_points="""
       # -*- Entry points: -*-
       """,

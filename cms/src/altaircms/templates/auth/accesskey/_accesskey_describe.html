@@ -1,0 +1,81 @@
+<div class="box">
+  %if accesskeys:
+  <table class="table">
+	  <thead>
+	    <tr>
+        <th width="20px"></th>
+	      <th>名前</th>
+        <th>スコープ</th>      
+        <th>url</th>      
+        <th>作成者</th>
+	      <th>有効期限</th>
+        <th>ハッシュ値</th>
+	      <th>作成日時</th>
+	    </tr>
+	  </thead>
+	  <tbody>
+	    %for key in accesskeys:
+      <tr>
+		    <td>
+			    <input type="checkbox" name="object_id" value="${key.id}">
+		    </td>
+		    <td><a href="${request.route_path("auth.accesskey.detail",accesskey_id=key.id, _query=dict(endpoint=request.url))}">${key.name or u"-名前なし-"}</a></td>
+        <td>${key.scope}</td>
+        <td>
+          <a href="${preview_with_accesskey_url_gen(key.hashkey)}">クライアント確認用URL</a>
+        </td>
+        <td>${ key.operator.screen_name if key.operator else u"-"}</td>
+		    <td>${ key.expiredate or u"期限指定なし" }</td>
+        <td>${key.hashkey}</td>
+		    <td>${ key.created_at }</td>
+		  </tr>
+	    %endfor
+	  </tbody>
+  </table>
+  %endif
+
+  <div id="accesskey_btns" class="btn-group">
+    <a href="${create_accesskey_url}" class="btn indivisual-action">
+      <i class="icon-pencil"></i> アクセスキーの追加
+    </a>
+    <button class="btn dropdown-toggle" data-toggle="dropdown">
+      <span class="caret"></span>
+    </button>
+    <ul class="dropdown-menu">
+      <li>
+        <a href-fmt="${update_accesskey_url}" class="indivisual-get">
+          <i class="icon-cog"></i> アクセスキーの編集
+        </a>
+        <a href="${delete_accesskey_url}" class="target-action">
+          <i class="icon-trash"></i> アクセスキーの削除
+        </a>
+      </li>
+    </ul>
+  </div>
+
+    <script type="text/javascript">
+	  $("#accesskey_btns a.indivisual-action").click(function(e){
+	    e.preventDefault();
+	    var url = $(this).attr("href");
+	    $.post(url, {"operator_id": "${request.user.id}"}).done(function(){ location.reload(); });
+	  });
+	  $("#accesskey_btns a.indivisual-get").click(function(e){
+      var $this = $(e.currentTarget);
+      var  pk = $this.parents(".box").find("input[name='object_id']:checked").val();
+      $this.attr("href", $this.attr("href-fmt").replace("__id__", pk));
+      return true;
+	  });
+	  $("#accesskey_btns a.target-action").click(function(e){
+	    e.preventDefault();
+	    var url = $(this).attr("href");
+	    var arr = [];
+	    var elts = $(this).parents(".box").find("input:checked");
+	    for(var i=0,j=elts.length; i<j; i++){
+		    arr.push($(elts[i]).attr("value"));
+    	}
+        if(window.confirm("選択したアクセスキーを消します。よろしいですか？")){
+	      $.post(url, {"targets": arr}).done(function(){ location.reload(); });
+		}
+	  });
+    </script>
+</div>

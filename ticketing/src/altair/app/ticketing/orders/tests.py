@@ -98,7 +98,7 @@ class OrderedProductItemTests(unittest.TestCase):
 
     def _create_seats(self, num):
         from altair.app.ticketing.core.models import Seat, Venue, Site, Organization
-        organization = Organization()
+        organization = Organization(short_name="testing")
         site = Site()
         venue = Venue(site=site, organization=organization)
         return [Seat(name=u"Seat %d" % i, venue=venue,
@@ -110,9 +110,11 @@ class OrderedProductItemTests(unittest.TestCase):
                     status=int(SeatStatusEnum.Ordered)) for s in seats]
 
     def _create_product_item(self):
-        from altair.app.ticketing.core.models import ProductItem, Stock, Performance
+        from altair.app.ticketing.core.models import ProductItem, Stock, Performance, StockType, StockStatus
         performance = Performance()
-        stock = Stock(performance=performance)
+        stock = Stock(performance=performance,
+                      stock_type=StockType())
+        stock_status = StockStatus(stock=stock, quantity=100)
         return ProductItem(stock=stock, price=100.0)
 
     def test_release(self):
@@ -125,7 +127,8 @@ class OrderedProductItemTests(unittest.TestCase):
         self.session.add(product_item)
         self.session.flush()
 
-        target = self._makeOne(seats=seats, product_item=product_item)
+        target = self._makeOne(seats=seats, product_item=product_item,
+                               price=product_item.price)
 
         target.release()
         self._assertStatus(target.seats)

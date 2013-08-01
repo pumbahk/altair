@@ -1,0 +1,57 @@
+<%inherit file='/layout_2col.html'/>
+<%namespace name="nco" file="/navcomponents.html"/>
+<%namespace name="fco" file="/formcomponents.html"/>
+<div class="row-fluid">
+    ${nco.breadcrumbs(
+        names=["Top", "AccessKey", accesskey.name],
+        urls=[request.route_path("dashboard")]
+    )}
+<hr/>
+
+<div class="circle circle-master circle-top"></div>
+<h2>アクセスキー詳細</h2>
+
+<a href="${request.GET.get("endpoint")}">戻る</a>
+
+<table class="table table-striped table-describe">
+	  <tr>
+      <th rowspan="5">アクセスキー情報</th>
+	    <th>名前</th>
+		  <td>${accesskey.name or u"-名前なし-"}</td>      
+      <th>タイプ</th>
+      <td>${accesskey.keytype}</td>
+	  </tr>
+    <tr>
+      <th>スコープ</th>      
+      <td>${accesskey.scope}</td>
+      <th>作成者</th>
+      %if accesskey.operator:
+        <td>${ accesskey.operator.screen_name }</td>
+      %else:
+        <td>-</td>
+      %endif
+    </tr>
+    <tr>
+      <th>ハッシュ値</th>
+      <td colspan="3">${accesskey.hashkey}</td>
+    </tr>
+    <tr>
+	    <th>有効期限</th>
+		  <td colspan="3">${ accesskey.expiredate or u"期限指定なし" }</td>
+    </tr>
+    <tr>
+	    <th>作成日時</th>
+		  <td>${ accesskey.created_at }</td>
+	    <th>更新日時</th>
+		  <td>${ accesskey.updated_at }</td>
+    </tr>
+	</tbody>
+</table>
+
+<hr/>
+
+<h3>更新 form</h3>
+<form action="${h.current_route_path_override(request, accesskey_id=request.matchdict["accesskey_id"], _query=dict(request.GET))}" method="POST">
+  ${fco.form_as_table_strict(form, form.display_fields)}
+  <button class="btn" type="submit">保存</button>
+</form>

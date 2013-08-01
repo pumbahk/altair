@@ -206,7 +206,7 @@ class PageDuplicateView(object):
             raise HTTPForbidden("not enough permission to edit it")
         self.context.clone_page(page)
         FlashMessage.success(u"ページをコピーしました", request=self.request)
-        return HTTPFound(self.request.GET.get("endpoint") or "/")
+        return HTTPFound(get_endpoint(self.request) or "/")
 
 @view_defaults(route_name="page_delete", permission="page_delete", decorator=with_bootstrap)
 class PageDeleteView(object):
@@ -231,7 +231,7 @@ class PageDeleteView(object):
         ## flash messsage
         FlashMessage.success("page deleted", request=self.request)
 
-        return HTTPFound(location=h.page.to_list_page(self.request, page))
+        return HTTPFound(location=self.request.route_path("pageset_list", pagetype=page.pagetype.name))
 
 @view_defaults(route_name="pageset_delete", permission="page_delete", decorator=with_bootstrap)
 class PageSetDeleteView(object):
@@ -314,7 +314,7 @@ class PageUpdateView(object):
             page = self.context.update_page(page, form)
             ## flash messsage
             FlashMessage.success("page updated", request=self.request)
-            return HTTPFound(location=h.page.to_edit_page(self.request, page))
+            return HTTPFound(location=get_endpoint(self.request) or h.page.to_edit_page(self.request, page))
         else:
             return self._input_page(page, form)
 
@@ -430,7 +430,15 @@ class PageSetDetailView(object):
         pagetype = pageset.pagetype
         if not page_viewable_from_pagetype(self.request.context, pagetype):
             raise HTTPForbidden("not enough permission to view it")
+
+        page_id = self.request.GET.get("current_page_id")
+        if page_id:
+            page = get_or_404(self.request.allowable(Page), Page.id==page_id) 
+        else:
+            page = pageset.pages[0] if pageset.pages else None
+
         return {"pageset":pageset, 
+                "current_page":page, 
                 "myhelpers": myhelpers}
 
     @view_config(renderer="altaircms:templates/pagesets/other_page_detail.html")
@@ -445,10 +453,21 @@ class PageSetDetailView(object):
             raise EventPageFound(pageset)
         if not page_viewable_from_pagetype(self.context, pagetype):
             raise HTTPForbidden("not enough permission to view it")
+
+        page_id = self.request.GET.get("current_page_id")
+        if page_id:
+            page = get_or_404(self.request.allowable(Page), Page.id==page_id) 
+        else:
+            page = pageset.pages[0] if pageset.pages else None
+        if page and not page_viewable_from_pagetype(self.context, page.pagetype):
+            raise HTTPForbidden("not enough permission to view it")
+
         return {"pageset":pageset, 
+                "current_page":page, 
                 "myhelpers": myhelpers}
 
 
+### this is obsolete view
 @view_config(route_name="page_detail", renderer='altaircms:templates/page/view.html', permission='authenticated', 
              decorator=with_fanstatic_jqueries.merge(with_bootstrap))
 def page_detail(context, request):

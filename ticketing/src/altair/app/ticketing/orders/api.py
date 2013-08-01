@@ -174,6 +174,8 @@ class CartSearchQueryBuilder(SearchQueryBuilderBase, BaseSearchQueryBuilderMixin
         'ShippingAddress': ShippingAddress,
         'PaymentMethod': PaymentMethod,
         'DeliveryMethod': DeliveryMethod,
+        'SalesSegment': SalesSegment,
+        'SalesSegmentGroup': SalesSegmentGroup,
         }
 
     def _carted_from(self, query, value):
@@ -184,17 +186,13 @@ class CartSearchQueryBuilder(SearchQueryBuilderBase, BaseSearchQueryBuilderMixin
 
     def _sales_segment_group_id(self, query, value):
         if value and '' not in value:
-            query = query.join(self.targets['subject'].products)
-            query = query.join(self.targets['CartedProduct'].product)
-            query = query.join(self.targets['Product'].sales_segment)
+            query = query.join(self.targets['subject'].sales_segment)
             query = query.filter(self.targets['SalesSegment'].sales_segment_group_id.in_(value))
         return query
 
     def _sales_segment_id(self, query, value):
         if value and '' not in value:
-            query = query.join(self.targets['subject'].products)
-            query = query.join(self.targets['CartedProduct'].product)
-            query = query.filter(self.targets['Product'].sales_segment_id.in_(value))
+            query = query.filter(self.targets['subject'].sales_segment_id.in_(value))
         return query
 
     def _seat_number(self, query, value):

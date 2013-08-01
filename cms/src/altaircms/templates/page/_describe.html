@@ -1,0 +1,105 @@
+<%page args="page,page_status,myhelpers"/>
+
+<style type="text/css">
+  #appendix h3{ 
+  margin-top:20px;
+  }
+</style>
+
+<table class="table table-striped table-describe">
+  <tr>
+    <th rowspan="10">ページ情報</th>
+    <th>ページ名</th>
+		<td>
+		  ${page.name}
+ 		  <a href="${request.route_path("preview_page", page_id=page.id)}"><i class="icon-eye-open"> </i></a>
+		</td>
+    <th>所属イベント</th>
+    <td><a href="${h.page.event_page(request,page)}">${page.event.title if page.event else ""}</a></td>
+  </tr>
+  <tr>
+    <th>レイアウト</th><td>
+      %if page.layout:
+      <a href="${request.route_path("layout_detail", layout_id=page.layout_id)}">${page.layout.title}</a>
+      %endif
+    </td>
+    <th>親ページ</th>
+		<td>
+		  %for p in reversed(page.pageset.ancestors if page.pageset else []):
+			<a class="parent" href="${request.route_path("pageset", pageset_id=p.id)}">${p.name}</a> &raquo;
+      %endfor
+    </td>
+  </tr>
+  <tr>
+    <th>公開ステータス</th><td>${page_status}</td>
+		<th>掲載期間</th>
+		<td>${h.term(page.publish_begin, page.publish_end)}</td>
+  </tr>
+  <tr>
+    <th>タイトル</th><td colspan="3">${page.title}</td>
+  </tr>
+  <tr>
+    <th>description</th><td colspan="3">${page.description}</td>
+  </tr>
+  <tr>
+    <th>キーワード</th><td colspan="3">${page.keywords}</td>
+  </tr>
+</table>
+
+<div class="btn-group" style="float:left; margin-bottom:20px; margin-right:10px;">
+  <a href="${request.route_path("page_update",id=page.id, _query=dict(endpoint=request.url))}" class="btn">
+    <i class="icon-pencil"></i> ページ基本情報編集
+  </a>
+  <a class="btn dropdown-toggle" data-toggle="dropdown">
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu">
+	  <li>
+		  <a href="${request.route_path("page_update",id=page.id,_query=dict(endpint=request.url))}" class="">
+		    <i class="icon-pencil"></i> ページ基本情報編集
+		  </a>
+	  </li>
+    <li>
+		  <a href="${request.route_path("page_edit_", page_id=page.id)}"><i class="icon-minus"></i> ページのレイアウト編集</a>
+    </li>
+	  <li>
+		  <a href="${request.route_path("page_delete", id=page.id)}"><i class="icon-trash"></i> ページの削除</a>
+	  </li>
+	  <li class="divider"></li>
+	  <li>
+	   	<a href="${request.route_path("preview_page", page_id=page.id)}"><i class="icon-eye-open"></i>Preview</a>
+	  </li>
+  </ul>
+</div>
+
+<div>
+  <a href="${request.route_path("page_edit_", page_id=page.id)}" class="btn">D&Dとwidgetでページレイアウト編集</a>
+	%if page.published:
+	<button 
+	   href="${request.route_path("plugins_jsapi_page_publish_status", status="unpublish", page_id=page.id)}"
+	   id="publish_status" class="btn btn-inverse"><i class="icon-plus icon-white"></i>ページを非公開</button>
+	%else:
+	<button 
+	   href="${request.route_path("plugins_jsapi_page_publish_status", status="publish", page_id=page.id)}"
+	   id="publish_status" class="btn btn-info"><i class="icon-plus"></i>ページを公開</button>
+	%endif
+</div>
+
+<script type="text/javascript">
+  $(function(){
+  // swap status
+  $("#publish_status").click(function(e){
+  e.preventDefault();
+  if(window.confirm("「"+$(this).text()+"」しますがよろしいですか？\n\n(公開したページは、特別な権限を持たない限り変更できなくなります。)")){
+  $.post($(this).attr("href")).done(function(){location.reload();});
+  }
+  });
+  });
+</script>
+<div style="clear:both;"></div>
+
+<div id="appendix">
+  <h3>アクセスキー</h3>
+  ${panel("page_accesskey", page)}
+</div>
+

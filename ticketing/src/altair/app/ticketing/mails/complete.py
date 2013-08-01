@@ -8,6 +8,7 @@ logger = logging.getLogger(__name__)
 
 from pyramid.renderers import render
 from pyramid_mailer.message import Message
+from pyramid.compat import text_type
 from .interfaces import IPurchaseInfoMail
 from zope.interface import implementer
 import traceback
@@ -100,7 +101,10 @@ class PurchaseCompleteMail(object):
             if template_body and template_body.get("use") and template_body.get("value"):
                 value = build_value_with_render_event(self.request, value)
                 return Template(template_body["value"]).render(**value)
-            return render(self.mail_template, value, request=self.request)
+            else:
+                retval = render(self.mail_template, value, request=self.request)
+                assert isinstance(retval, text_type)
+                return retval
         except:
             logger.error("failed to render mail body (template_body=%s)" % template_body)
             raise

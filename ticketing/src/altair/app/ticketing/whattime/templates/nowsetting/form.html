@@ -1,29 +1,91 @@
 <%inherit file="../base.html"/>
 <%namespace file="altair.app.ticketing:templates/common/helpers.html" name="ch" />
 
-<div class="container">
-  <div class="page-header">
-    <h2>${organization.name}</h2>
-  </div>
+<%! from altair.viewhelpers.structure import merged %>
 
+<div class="container" style="max-width:870px; margin-left:20px;">
+  <div class="page-header">
+    <h2>${organization.name} の時間指定preview</h2>
+  </div>
+##${candidates_url_dict}
   <div class="content">
     ${ch.flash_messages(request)}
     ${ch.alert_message(form)}
   </div>
 
-<div>
-%if now_found:
-  設定済み 時刻:${now}
-%else:
-  未設定 時刻:${now}
-%endif
-</div>
+  <table class="table table-striped">
+  <%
+  itr = iter(description_itr)
+  name,label,data = itr.next()
+  %>
+  <tr id="${name}"><th rowspan="${len(description_itr)}">格納された情報</th><th>${label}</th><td>${data}</td></tr>
+  %for name,label,data in itr:
+    <tr id="${name}"><th>${label}</th><td>${data}</td></tr>
+  %endfor
+  <tr><th rowspan="2">設定された情報</th><th>現在時刻</th><td>${now}
+  %if now_found:
+  <span class="label label-info">設定済み</span>
+  %else:
+  <span class="label">未設定</span>
+  %endif
+  </td></tr>
+  <tr><th>リダイレクト先</th><td><a href="${request.params.get("redirect_to",u"-")}">${request.params.get("redirect_to",u"-")}</a></td></tr>
+  </table>
 
-<form class="form well" action="${request.route_path("whattime.nowsetting.set",_query=dict(request.GET))}" method="POST">
-  ${ch.form_item(form.now)}
-  ${ch.form_item(form.redirect_to)}
-  <input class="btn btn" type="submit" name="submit" value="現在時刻を設定する"/>
-  <input class="btn" type="submit" name="invalidate" value="現在時刻を取り消す"/>
-  <input class="btn btn-inverse" type="submit" name="goto" value="移動"/>
-</form>
+  <div class="row-fluid">
+    <div class="span5">
+      <form class="form well" action="${request.route_path("whattime.nowsetting.set",_query=dict(request.GET))}" method="POST">
+        ${ch.form_item(form.now)}
+        ${ch.form_item(form.redirect_to)}
+        <input class="btn btn" type="submit" name="submit" value="現在時刻を設定する"/>
+        <input class="btn" type="submit" name="invalidate" value="現在時刻を取り消す"/>
+        <input class="btn btn-inverse" type="submit" name="goto" value="移動"/>
+      </form>
+    </div>
+
+    <div class="span6">
+      <%! from altair.preview.api import FORCE_REQUEST_TYPE %>
+      <h4>usersite</h4>
+      <ul>
+        %for url in candidates_url_dict.get("usersite", {}).get("pc", []):
+        <li>(pc)<a href="${request.route_path("whattime.nowsetting.goto", _query=merged(request.GET, redirect_to=url))}">${url}</a></li>
+        %endfor
+        %for url in candidates_url_dict.get("usersite", {}).get("sp", []):
+        <li>(sp)<a href="${request.route_path("whattime.nowsetting.goto", _query=merged(request.GET, redirect_to=url, request_type=FORCE_REQUEST_TYPE.smartphone))}">${url}</a></li>
+        %endfor
+        %for url in candidates_url_dict.get("usersite", {}).get("mb", []):
+        <li>(mb)<a href="${request.route_path("whattime.nowsetting.goto", _query=merged(request.GET, redirect_to=url, request_type=FORCE_REQUEST_TYPE.mobile))}">${url}</a></li>
+        %endfor
+      </ul>
+      <h4>cart</h4>
+      <ul>
+        %for url in candidates_url_dict.get("cart",[]):
+        <li>(pc) <a href="${request.route_path("whattime.nowsetting.goto", _query=merged(request.GET, redirect_to=url))}">${url}</a></li>
+        <li>(sp) <a href="${request.route_path("whattime.nowsetting.goto", _query=merged(request.GET, redirect_to=url, request_type=FORCE_REQUEST_TYPE.smartphone))}">${url}</a></li>
+        <li>(mb) <a href="${request.route_path("whattime.nowsetting.goto", _query=merged(request.GET, redirect_to=url, request_type=FORCE_REQUEST_TYPE.mobile))}">${url}</a></li>
+        %endfor
+      </ul>
+      <hr/>
+      <h4>support</h4>
+      <ul>
+        %for url in candidates_url_dict.get("backend",[]):
+        <li>(backend) <a target="_blank" href="${url}">${url}</a></li>
+        %endfor
+        %for url in candidates_url_dict.get("cms",[]):
+        <li>(cms) <a target="_blank" href="${url}">${url}</a></li>
+        %endfor
+      </ul>
+    </div>
+  </div>
+
+  <script>
+    $(function(){
+      var pairs = window.location.search.split("?")[1].split("&");
+      for(var i=0,j=pairs.length; i<j; i++){
+        if(pairs[i].indexOf("redirect_to") > -1){ 
+          $('input[name="redirect_to"]').val(decodeURIComponent(pairs[i].split("=")[1]));
+        }
+      }
+    })
+  </script>
 </div>

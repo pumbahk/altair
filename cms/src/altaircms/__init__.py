@@ -49,6 +49,8 @@ def includeme(config):
 
     config.include("altaircms.viewlet")
     config.include("altaircms.panels")
+    config.include("altaircms.linklib")
+
     ## slack-off
     config.include("altaircms.slackoff")
     config.include("altairsite.feature") #for sitemap
@@ -115,7 +117,6 @@ def main(global_config, **local_config):
 
     settings = dict(global_config)
     settings.update(local_config)
-
     iterable_undefined_patch()
     session_factory = UnencryptedCookieSessionFactoryConfig(settings.get('session.secret'))
     authn_policy, authz_policy = _get_policies(settings)

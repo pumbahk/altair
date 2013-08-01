@@ -20,6 +20,7 @@ from altair.app.ticketing.core.models import (Organization, PaymentMethod, Deliv
                                    SalesSegment, Performance, Product, ProductItem, Event, OrderCancelReasonEnum)
 from altair.app.ticketing.cart.schemas import ClientForm
 from altair.app.ticketing.payments import plugins
+from altair.app.ticketing.core import helpers as core_helpers
 
 class OrderForm(Form):
 
@@ -220,7 +221,8 @@ class SearchFormBase(Form):
             if not field.data:
                 continue
 
-            if isinstance(field, SelectMultipleField) or isinstance(field, SelectField):
+            if isinstance(field, SelectMultipleField) or isinstance(field, SelectField)\
+               or isinstance(field, BugFreeSelectMultipleField):
                 data = []
                 for choice in field.choices:
                     if isinstance(field.data, list) and choice[0] in field.data:
@@ -308,27 +310,6 @@ class OrderSearchForm(SearchFormBase):
         validators=[Optional()]
         )
 
-    def get_conditions(self):
-        conditions = {}
-        for name, field in self._fields.items():
-            if isinstance(field, HiddenField):
-                continue
-            if not field.data:
-                continue
-
-            if isinstance(field, SelectMultipleField) or isinstance(field, SelectField):
-                data = []
-                for choice in field.choices:
-                    if isinstance(field.data, list) and choice[0] in field.data:
-                        data.append(choice[1])
-                    elif choice[0] == field.data:
-                        data.append(choice[1])
-                data = ', '.join(data)
-            else:
-                data = field.data
-            conditions[name] = (field.label.text, data)
-        return conditions
-
 class OrderRefundSearchForm(OrderSearchForm):
 
     def __init__(self, formdata=None, obj=None, prefix='', **kwargs):
@@ -340,16 +321,6 @@ class OrderRefundSearchForm(OrderSearchForm):
     def _get_translations(self):
         return Translations()
 
-    ordered_from = DateTimeField(
-        label=u'予約日時',
-        validators=[Optional(), after1900],
-        format='%Y-%m-%d %H:%M',
-    )
-    ordered_to = DateTimeField(
-        label=u'予約日時',
-        validators=[Optional(), after1900],
-        format='%Y-%m-%d %H:%M',
-    )
     payment_method = SelectField(
         label=u'決済方法',
         validators=[Required()],
@@ -357,7 +328,7 @@ class OrderRefundSearchForm(OrderSearchForm):
         coerce=int,
     )
     delivery_method = SelectMultipleField(
-        label=u'配送方法',
+        label=u'引取方法',
         validators=[Required()],
         choices=[],
         coerce=int,
@@ -374,7 +345,7 @@ class OrderRefundSearchForm(OrderSearchForm):
         choices=[],
         validators=[Required()],
     )
-    sales_segment_id = SelectMultipleField(
+    sales_segment_group_id = SelectMultipleField(
         label=u'販売区分',
         coerce=lambda x : int(x) if x else u"",
         choices=[],
@@ -438,23 +409,6 @@ class SalesSegmentGroupSearchForm(Form):
     )
 
 
-class SalesSegmentSearchForm(Form):
-    performance_id = HiddenField(
-        validators=[Optional()],
-    )
-    sort = HiddenField(
-        validators=[Optional()],
-        default='id'
-    )
-    direction = HiddenField(
-        validators=[Optional(), AnyOf(['asc', 'desc'], message='')],
-        default='desc',
-    )
-    public = HiddenField(
-        validators=[Optional()],
-    )
-
-
 class OrderReserveForm(Form):
 
     def __init__(self, formdata=None, obj=None, prefix='', **kwargs):
@@ -471,14 +425,14 @@ class OrderReserveForm(Form):
             if 'stocks' in kwargs and kwargs['stocks']:
                 query = query.join(ProductItem).filter(ProductItem.stock_id.in_(kwargs['stocks']))
 
-            sales_segments = []
-            for p in query.all():
-                sales_segments.append(p.sales_segment)
-
-            self.sales_segment_id.choices = []
-            for sales_segment in performance.inner_sales_segments:
-                if sales_segment in sales_segments:
-                    self.sales_segment_id.choices.append((sales_segment.id, sales_segment.name))
+            sales_segments = set(product.sales_segment for product in query.distinct())
+            from pyramid.threadlocal import get_current_request
+            from altair.viewhelpers.datetime_ import create_date_time_formatter, DateTimeHelper
+            self.sales_segment_id.choices = [
+                (sales_segment.id, u'%s %s' % (sales_segment.name, DateTimeHelper(create_date_time_formatter(get_current_request())).term(sales_segment.start_at, sales_segment.end_at)))
+                for sales_segment in \
+                    core_helpers.build_sales_segment_list_for_inner_sales(sales_segments)
+                ]
 
             self.products.choices = []
             if 'sales_segment_id' in kwargs and kwargs['sales_segment_id']:

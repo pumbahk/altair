@@ -39,7 +39,7 @@ now = get_now(request)
       </tr>
         %else:
         <td>
-          <a href="${request.route_path('page_detail', page_id=pages[0].id)}">${pages[0].name}(id=${pages[0].id})</a>
+          <a href="${request.route_path('pageset_detail', pageset_id=pageset.id, kind=pageset.pagetype.name,_query=dict(curren_page_id=pages[0].id))}#nav_page">${pages[0].name}(id=${pages[0].id})</a>
           <a class="action"  href="${request.route_path("preview_page", page_id=pages[0].id)}">
             <i class="icon-eye-open"> </i></a>
           <a class="action"  href="${request.route_path("page_edit_", page_id=pages[0].id)}">
@@ -67,7 +67,7 @@ now = get_now(request)
         %for page in pageset.pages[1:]:
         <tr>
           <td>
-            <a href="${request.route_path('page_detail', page_id=page.id)}">${page.name}(id=${page.id})</a>
+            <a href="${request.route_path('pageset_detail', pageset_id=pageset.id, kind="event_detail", _query=dict(current_page_id=page.id))}#nav_page">${page.name}(id=${page.id})</a>
             <a class="action"  href="${request.route_path("preview_page", page_id=page.id)}">
               <i class="icon-eye-open"> </i></a>
             <a class="action"  href="${request.route_path("page_edit_", page_id=page.id)}">

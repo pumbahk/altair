@@ -6,6 +6,7 @@ from altaircms.page.staticupload.api import as_static_page_response, StaticPageN
 import logging 
 import os.path
 from altairsite.config import usersite_view_config
+from altairsite.preview.api import set_rendered_page
 logger = logging.getLogger(__name__)
 
 ## todo refactoring
@@ -28,6 +29,7 @@ def _rendering_page(context, request, control, page): #todo: refactoring
 
     renderer = control.frontpage_renderer()
     response = renderer.render(descriptor.absspec(), page)
+    set_rendered_page(request, page)
     return response
     
 EXCLUDE_EXT_LIST = (".ico", ".js", ".css")

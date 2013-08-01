@@ -20,6 +20,7 @@ public class AppAppletModel implements AppModel {
 	PageSetModel pageSetModel = null;
 	PrintService printService = null;
 	Boolean printingStatus = false;
+	Boolean previewEnable = false;
 	GenericComboBoxModel<PrintService> printServices;
 	OurPageFormat pageFormat = null;
 	GenericComboBoxModel<OurPageFormat> pageFormats;
@@ -151,6 +152,23 @@ public class AppAppletModel implements AppModel {
 		final Boolean prevValue = this.printingStatus;
 		this.printingStatus = status;
 		propertyChangeSupport.firePropertyChange("printingStatus", prevValue, printingStatus);
+	}
+
+
+	/* (non-Javadoc)
+	 * @see jp.ticketstar.ticketing.printing.gui.IAppWindowModel#getPrintingStatus()
+	 */
+	public Boolean getPreviewEnable(){
+		return previewEnable;
+	}
+
+	/* (non-Javadoc)
+	 * @see jp.ticketstar.ticketing.printing.gui.IAppWindowModel#setPreviewEnable()
+	 */
+	public void setPreviewEnable(Boolean status){
+		final Boolean prevValue = this.previewEnable;
+		this.previewEnable = status;
+		propertyChangeSupport.firePropertyChange("previewEnable", prevValue, previewEnable);
 	}
 
 	/* (non-Javadoc)

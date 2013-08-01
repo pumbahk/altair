@@ -25,6 +25,7 @@ from altair.app.ticketing.views import BaseView
 from altair.app.ticketing.fanstatic import with_bootstrap
 from altair.app.ticketing.core.models import Event, Performance, StockType, StockTypeEnum
 from altair.app.ticketing.core import api as core_api
+from altair.app.ticketing.core.utils import PageURL_WebOb_Ex
 from altair.app.ticketing.events.performances.forms import PerformanceForm
 from altair.app.ticketing.events.sales_segment_groups.forms import SalesSegmentGroupForm
 from altair.app.ticketing.events.stock_types.forms import StockTypeForm
@@ -70,7 +71,7 @@ class Events(BaseView):
             query,
             page=int(self.request.params.get('page', 0)),
             items_per_page=10,
-            url=paginate.PageURL_WebOb(self.request)
+            url=PageURL_WebOb_Ex(self.request)
         )
 
         return {
@@ -92,7 +93,7 @@ class Events(BaseView):
             'seat_stock_types':StockType.filter_by(event_id=event_id, type=StockTypeEnum.Seat.v).order_by(StockType.display_order).all(),
             'non_seat_stock_types':StockType.filter_by(event_id=event_id, type=StockTypeEnum.Other.v).order_by(StockType.display_order).all(),
             'cart_url': cart_url, 
-            "cart_now_cart_url": get_cart_now_url_builder(self.request).build(self.request, cart_url), 
+            "cart_now_cart_url": get_cart_now_url_builder(self.request).build(self.request, cart_url, event.id), 
             'form':EventForm(),
             'form_performance':PerformanceForm(organization_id=self.context.user.organization_id),
             'form_stock_type':StockTypeForm(event_id=event_id),
