@@ -150,6 +150,7 @@ class CheckoutTests(unittest.TestCase):
         self.session.add(ordered_product)
         order = Order(
             id=1,
+            order_no='testing-order-no',
             branch_no=1,
             total_amount=200,
             system_fee=10,
@@ -164,6 +165,7 @@ class CheckoutTests(unittest.TestCase):
         cart = Cart(
             id=111,
             order_id=1,
+            _order_no=order.order_no,
         )
         self.session.add(cart)
 
@@ -228,7 +230,7 @@ class CheckoutTests(unittest.TestCase):
             '<itemId>this-is-itemId</itemId>'
             '<itemNumbers>100</itemNumbers>'
             '<itemFee>2112</itemFee>'
-            '<orderShippingFee>0</orderShippingFee>'
+            #'<orderShippingFee>0</orderShippingFee>'
             '</item>'
             '</root>'
         )
@@ -573,27 +575,28 @@ class CheckoutTests(unittest.TestCase):
             '<itemId>22</itemId>'
             '<itemNumbers>1</itemNumbers>'
             '<itemFee>140</itemFee>'
-            '<orderShippingFee>0</orderShippingFee>'
+            #'<orderShippingFee>0</orderShippingFee>'
             '</item>'
             '<item>'
             '<itemId>system_fee</itemId>'
             '<itemNumbers>1</itemNumbers>'
             '<itemFee>10</itemFee>'
-            '<orderShippingFee>0</orderShippingFee>'
-            '</item>'
-            '<item>'
-            '<itemId>transaction_fee</itemId>'
-            '<itemNumbers>1</itemNumbers>'
-            '<itemFee>20</itemFee>'
-            '<orderShippingFee>0</orderShippingFee>'
+            #'<orderShippingFee>0</orderShippingFee>'
+            #'</item>'
+            #'<item>'
+            #'<itemId>transaction_fee</itemId>'
+            #'<itemNumbers>1</itemNumbers>'
+            #'<itemFee>20</itemFee>'
+            #'<orderShippingFee>0</orderShippingFee>'
             '</item>'
             '<item>'
             '<itemId>delivery_fee</itemId>'
             '<itemNumbers>1</itemNumbers>'
             '<itemFee>30</itemFee>'
-            '<orderShippingFee>0</orderShippingFee>'
+            #'<orderShippingFee>0</orderShippingFee>'
             '</item>'
             '</items>'
+            '<orderShippingFee>0</orderShippingFee>'  # <- 移動？
             '</order>'
             '</orders>'
             '</root>' % dict(request_id=request_id)
