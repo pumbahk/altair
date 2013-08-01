@@ -370,7 +370,7 @@ class SejTest(unittest.TestCase):
         assert order.tickets[0].barcode_number == '00001'
 
         assert order.tickets[0].ticket_idx           == 1
-        assert order.tickets[0].ticket_type          == SejTicketType.TicketWithBarcode.v
+        self.assertEqual(order.tickets[0].ticket_type, SejTicketType.TicketWithBarcode.v)
         assert order.tickets[0].event_name           == u'イベント名1'
         assert order.tickets[0].performance_name     == u'パフォーマンス名'
         assert order.tickets[0].performance_datetime == datetime.datetime(2012,8,31,18,00)
