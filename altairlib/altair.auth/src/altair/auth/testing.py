@@ -4,3 +4,7 @@ class DummyDecider(object):
 
     def decide(self):
         return self.request.testing_who_api_name
+
+class DummySession(dict):
+    def save(self):
+        pass
