@@ -92,11 +92,10 @@ class LotEntryReporter(object):
     subject_prefix = u"[抽選申込状況レポート]"
     body_template = "altair.app.ticketing:templates/lots_reports/_mail_body.html"
 
-    def __init__(self, sender, mailer, report_setting, now):
+    def __init__(self, sender, mailer, report_setting):
         self.sender = sender
         self.mailer = mailer
         self.report_setting = report_setting
-        self.report_condition = ReportCondition(report_setting, now)
 
     @property
     def lot(self):
@@ -134,7 +133,7 @@ def send_lot_report_mails(request, sender):
             if not cond.is_reportable():
                 logger.info(u"setting {0} is not reportable".format(setting.id))
                 continue
-            reporter = LotEntryReporter(sender, mailer, setting, now)
+            reporter = LotEntryReporter(sender, mailer, setting)
             logger.info(u"send report setting by id={0}".format(setting.id))
             reporter.send()
             transaction.commit()

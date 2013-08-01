@@ -1,13 +1,15 @@
 # -*- coding: utf-8 -*-
 
 import logging
-logger = logging.getLogger(__name__)
+from datetime import datetime
 from sqlalchemy import sql
 from sqlalchemy import orm
 from pyramid.decorator import reify
 from pyramid.view import view_config, view_defaults
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound
 from pyramid.renderers import get_renderer
+from pyramid_mailer import get_mailer
+
 from altair.app.ticketing.views import BaseView as _BaseView
 from altair.app.ticketing.fanstatic import with_bootstrap
 from altair.app.ticketing.core.models import (
@@ -50,9 +52,11 @@ from .forms import (
 
 from . import api
 from .models import LotWishSummary, LotEntryReportSetting
-
+from .reporting import LotEntryReporter
 
 from altair.app.ticketing.payments import helpers as payment_helpers
+
+logger = logging.getLogger(__name__)
 
 
 class BaseView(_BaseView):
@@ -964,14 +968,31 @@ class LotReport(object):
         return dict(form=form,
                     event=self.context.event)
 
-    @view_config(route_name="lot.entries.edit_report_setting",
-                 )
-    def update_setting(self):
-        if self.request.method == "POST":
-            pass
-        return dict()
 
     @view_config(route_name="lot.entries.delete_report_setting",
                  request_method="POST")
     def delete_setting(self):
-        return dict()
+        setting = LotEntryReportSetting.query.filter(
+            LotEntryReportSetting.id==self.request.matchdict['setting_id']
+        ).first()
+        if setting is None:
+            return HTTPNotFound()
+        setting.deleted_at = datetime.now()
+        return HTTPFound(self.index_url)
+
+    @view_config(route_name="lot.entries.send_report_setting",
+                 request_method="POST")
+    def send_report(self):
+        """ 手動送信 """
+        setting = LotEntryReportSetting.query.filter(
+            LotEntryReportSetting.id==self.request.matchdict['setting_id']
+        ).first()
+        if setting is None:
+            return HTTPNotFound()
+
+
+        mailer = get_mailer(self.request)
+        sender = self.request.registry.settings['mail.message.sender']
+        reporter = LotEntryReporter(sender, mailer, setting)
+        reporter.send()
+        return HTTPFound(self.index_url)
