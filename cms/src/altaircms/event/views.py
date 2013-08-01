@@ -9,14 +9,26 @@ from pyramid.httpexceptions import HTTPCreated, HTTPForbidden, HTTPBadRequest, H
 
 from ..lib.fanstatic_decorator import with_bootstrap
 from ..auth.api import get_or_404
-from .models import Event
+from ..auth.models import Organization
+from altaircms.auth.models import Host
 from . import forms
 from . import searcher
 from ..models import DBSession
+from .models import Event
 from . import helpers as h
 from .event_info import get_event_notify_info
 from ..page.subscribers import notify_page_update
 from .receivedata import InvalidParamaterException
+from altaircms.viewlib import apikey_required
+from altaircms.viewlib import success_result, failure_result
+from altaircms.linklib import (
+    get_hostname_from_request, 
+    get_usersite_url_builder, 
+    get_mobile_url_builder, 
+    get_smartphone_url_builder, 
+    get_backend_url_builder, 
+    get_cms_url_builder, 
+    )
 ## CMS view
 ##
 @view_defaults(route_name="event_takein_pageset", renderer="altaircms:templates/event/takein_pageset.html", 
@@ -47,9 +59,26 @@ class PageSetTakein(object):
         else:
             return {"form": form, "event": event}
 
+## todo:move
+class Candidates(object):
+    def __init__(self, ks, values):
+        assert len(ks) == len(values)
+        for k in ks:
+            setattr(self, k, k)
+        self.candidates = ks
+        self.pairs = zip(ks, values)
+        self.data = dict(self.pairs)
 
+    def __contains__(self, k):
+        return k in self.candidates
+
+    def __getitem__(self, k):
+        return self.data[k]
+
+SectionCandidates = Candidates(("pageset", "performance", "description", "accesskey"), 
+                               [u"配下のページ", u"パフォーマンス", u"文言情報", u"アクセスキー"] )
 def in_section(info, request):
-    return request.matchdict.get("section") in ("performance", "description", "pageset")
+    return request.matchdict.get("section") in SectionCandidates
 
 @view_config(route_name="event", 
              renderer='altaircms:templates/event/view.html', permission='event_read',decorator=with_bootstrap)
@@ -59,12 +88,10 @@ def event_detail(context, request):
         section = request.matchdict.get("section", "pageset")
         id_ = request.matchdict['id']
         event = get_or_404(request.allowable(Event), Event.id==id_)
-
-        section_pairs = [("pageset", u"配下のページ"), ("performance", u"パフォーマンス"), ("description", u"文言情報")]
         return dict(
             panel_name = u"event_%s" % section,  #use layout?
             section=section, 
-            section_pairs = section_pairs, 
+            section_pairs = SectionCandidates.pairs, 
             event=event,
             myhelpers=h
         )
@@ -148,3 +175,38 @@ def event_info(request):
         logger.exception(e)
         return HTTPBadRequest(body=json.dumps({u'status':u'error', u'message':unicode(e), "apikey": apikey}))
 
+@view_config(route_name="api_event_url_candidates", request_method="GET", renderer="json", 
+             custom_predicates=(apikey_required("*event url candidates*"), ))
+def api_event_url_candidates(context, request):
+    backend_organization_id = request.GET["backend_organization_id"]
+    organization = Organization.query.filter_by(backend_id=backend_organization_id).first()
+    if organization is None:
+        return failure_result(message="organization is not found backend_id = {} ".format(backend_organization_id))
+
+    if request.GET.get("event_id"):
+        event = Event.query.filter_by(organization_id=organization.id, id=request.GET["event_id"]).first()
+        if event is None:
+            return failure_result(message="event is not found")
+    else:
+        event = Event.query.filter_by(organization_id=organization.id, backend_id=request.GET["backend_event_id"]).first()
+        if event is None:
+            return success_result(dict(backend_event_id=request.GET["backend_event_id"], urls={}))
+
+    pc_url_builder = get_usersite_url_builder(request)
+    mb_url_builder = get_mobile_url_builder(request)
+    sp_url_builder = get_smartphone_url_builder(request)
+    backend_url_builder = get_backend_url_builder(request)
+    cms_url_builder = get_cms_url_builder(request)
+
+    qs = Host.query.filter_by(organization_id=organization.id)
+    hostname = get_hostname_from_request(request, qs=qs, stage=pc_url_builder.global_link.stage, default="http://example.com", preview=True)
+    return success_result({"event_id": event.id, 
+            "backend_event_id": event.backend_id, 
+            "urls": {"usersite":
+                         {"pc": [pc_url_builder.front_page_url(p, hostname=hostname) for p in event.pagesets], 
+                          "mb": [mb_url_builder.event_page_url(event, hostname=hostname)], 
+                          "sp": [sp_url_builder.event_page_url(event, hostname=hostname)]
+                          }, 
+                     "cms": [cms_url_builder.event_page_url(event)], 
+                     "backend": [backend_url_builder.event_page_url(event)]}
+                           })

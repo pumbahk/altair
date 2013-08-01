@@ -1,10 +1,18 @@
+import sys
 from zope.interface import Interface
-from zope.interface import provider
+from zope.interface import implementer
+
+class MissingValue(Exception):
+    pass
 
 def includeme(config):
-    config.add_tween(".findable_label.findable_label_tween_factory")
-    output = config.maybe_dotted(config.registry.settings.get("altair.findable_label.output", ".findable_label.AppendHeaderElementOutput"))
-    config.registry.registerUtility(provider(IFindableLabelOutput)(output(config)))
+    OutputClass = config.maybe_dotted(config.registry.settings.get("altair.findable_label.output", AppendHeaderElementOutput))
+    try:
+        output = OutputClass.from_settings(config.registry.settings)
+        config.registry.registerUtility(output, IFindableLabelOutput)
+        config.add_tween("altair.findable_label.findable_label_tween_factory")
+    except MissingValue as e:
+        sys.stderr.write("altair.findable_label: {}".format(str(e)))
 
 class IFindableLabelOutput(Interface):
     def rewrite(response):
@@ -12,11 +20,23 @@ class IFindableLabelOutput(Interface):
     def output(response_body):
         pass
 
+@implementer(IFindableLabelOutput)
 class AppendHeaderElementOutput(object):
-    def __init__(self, config):
-        self.labelname = config.registry.settings.get("altair.findable_label.label", "[unknown]").decode("utf-8")
-        self.color = config.registry.settings.get("altair.findable_label.color", "#220000")
-        self.background_color = config.registry.settings.get("altair.findable_label.background_color", "#ffaaaa")
+    def __init__(self, labelname, color, background_color):
+        self.labelname = labelname
+        self.color = color
+        self.background_color = background_color
+
+    @classmethod
+    def from_settings(cls, settings, prefix="altair.findable_label."):
+        try:
+            labelname = settings[prefix+"label"].decode("utf-8")
+        except KeyError:
+            raise MissingValue("{prefix}label is not found in settings".format(prefix=prefix))
+
+        color = settings.get(prefix+"color", "#220000")
+        background_color = settings.get("background_color", "#ffaaaa")
+        return cls(labelname, color, background_color)
 
     def rewrite(self, response):
         result = self.output(response.text)

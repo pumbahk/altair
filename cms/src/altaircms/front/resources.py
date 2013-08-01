@@ -10,7 +10,7 @@ from altaircms.security import get_acl_candidates
 from altaircms.page.models import Page
 from altaircms.page.models import PageSet
 from altaircms.auth.api import set_request_organization
-from altaircms.datelib import get_now
+from altaircms.auth.accesskey.api import get_page_access_key_control
 
 class PageRenderingResource(object):
     def __init__(self, request):
@@ -54,12 +54,13 @@ class AccessControl(object):
             return page
 
         ## accesskeyが存在していれば
-        access_key = page.get_access_key(access_key)
+        control = get_page_access_key_control(self.request, page)
+        access_key = control.get_access_key(access_key)
         if not access_key:
             self.access_ok = False
 
             if self.request.organization is None:
-                self._error_message.append("not loging user")
+                self._error_message.append("not login user")
                 return page
 
             ## 同じorganizatioに属しているオペレーターは全部見れる。
@@ -69,7 +70,7 @@ class AccessControl(object):
                 fmt = "*fetch page* invalid organization page(%s) != operator(%s)" 
                 self._error_message.append(fmt % (self.request.organization.id, page.organization_id))
                 return page
-        elif not page.can_private_access(key=access_key, now=get_now(self.request)):
+        elif not control.can_private_access(key=access_key, now=get_now(self.request)):
             self.access_ok = False
             self._error_message.append(u"invalid access key %s.\n 有効期限が切れているかもしれません. (有効期限:%s)" % (access_key.hashkey, access_key.expiredate))
             return page

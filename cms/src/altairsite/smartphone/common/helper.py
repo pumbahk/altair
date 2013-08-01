@@ -156,3 +156,19 @@ class SmartPhoneHelper(object):
 
     def now(self, request):
         return get_now(request)
+
+    def get_info(self, event_info, label):
+        content = None
+        if event_info['event']:
+            for item in event_info['event']:
+                if item['label'].find(label) != -1:
+                    return item['content']
+        return content
+
+    def get_info_list(self, event_info, label):
+        contents = []
+        if event_info['event']:
+            for item in event_info['event']:
+                if item['label'].find(label) != -1:
+                    contents.append((item['label'], item['content']))
+        return contents

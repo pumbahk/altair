@@ -30,22 +30,30 @@
       % endif
     % endfor
 
+    <%
+        sales_segments = []
+        if sales_segment:
+            for segment in sales_segment:
+                sales_segments.append("sales_segment=" + segment)
+
+    %>
+
     % if int(page_num) > 1:
     <div align="center">
         % if int(page) > 1:
-            <a href="${path}?genre=${genre}&sub_genre=${sub_genre}&word=${word}&area=${area}&sale=${sale}&sales_segment=${sales_segment}&since_year=${since_year}&since_month=${since_month}&since_day=${since_day}&year=${year}&month=${month}&day=${day}&page=${int(page) - 1}">前へ</a>
+            <a href="${path}?genre=${genre}&sub_genre=${sub_genre}&word=${word}&area=${area}&sale=${sale}&${"&".join(sales_segments)}&since_year=${since_year}&since_month=${since_month}&since_day=${since_day}&year=${year}&month=${month}&day=${day}&page=${int(page) - 1}">前へ</a>
         % endif
 
         % for count in range(int(page_num)):
             % if int(page) == count + 1:
                 ${count+1}
             % else:
-                <a href="${path}?genre=${genre}&sub_genre=${sub_genre}&word=${word}&area=${area}&sale=${sale}&sales_segment=${sales_segment}&since_year=${since_year}&since_month=${since_month}&since_day=${since_day}&year=${year}&month=${month}&day=${day}&page=${count + 1}">${count + 1}</a>
+                <a href="${path}?genre=${genre}&sub_genre=${sub_genre}&word=${word}&area=${area}&sale=${sale}&${"&".join(sales_segments)}&since_year=${since_year}&since_month=${since_month}&since_day=${since_day}&year=${year}&month=${month}&day=${day}&page=${count + 1}">${count + 1}</a>
             % endif
         % endfor
 
         % if int(page) < int(page_num):
-            <a href="${path}?genre=${genre}&sub_genre=${sub_genre}&word=${word}&area=${area}&sale=${sale}&sales_segment=${sales_segment}&since_year=${since_year}&since_month=${since_month}&since_day=${since_day}&year=${year}&month=${month}&day=${day}&page=${int(page) + 1}">次へ</a>
+            <a href="${path}?genre=${genre}&sub_genre=${sub_genre}&word=${word}&area=${area}&sale=${sale}&${"&".join(sales_segments)}&since_year=${since_year}&since_month=${since_month}&since_day=${since_day}&year=${year}&month=${month}&day=${day}&page=${int(page) + 1}">次へ</a>
         % endif
     </div>
     % endif

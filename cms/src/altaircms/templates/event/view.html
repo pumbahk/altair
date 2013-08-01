@@ -6,6 +6,7 @@
         names=["Top", "Event", event.title],
         urls=[request.route_path("dashboard"), request.route_path("event_list")]
     )}
+</div>
 
 <%include file="./_describe.html" args="event=event"/>
 
@@ -23,6 +24,3 @@
    %endfor
 </ul>
 ${panel(panel_name, event)}
-
-
-

@@ -34,6 +34,14 @@ ${h.get_nickname(request)}
                     <span class="paymentFeeType">(${h.fee_type(m.payment_method.fee_type)})</span>
                     <div class="description">${m.payment_method.description or '' | n}</div>
                   </dd>
+                  <dt>システム利用料</dt>
+                  <dd class="paymentFee_${h.format_number(m.transaction_fee)}">
+                    <span class="paymentFee">${h.format_currency(m.system_fee)}</span>
+                    <span class="paymentFeeType">(1申込当り)</span>
+                    <div class="description">
+		      上記のシステム利用料がかかります。
+		    </div>
+                  </dd>
                 </dl>
               </td>
               <td onclick="$(this).parents('tr').find('input').click();">
@@ -118,7 +126,7 @@ ${h.get_nickname(request)}
                 ${h.error_list(request, form, 'email_1_confirm')}
               </li>
             </ul>
-            <p style="margin-left:10px; font-size:90%; color:#333;">予約受付完了メール等をメールでご案内します。「ticketstar.jp」からのメールを受信できるよう、お申し込み前にドメイン指定の設定を必ずお願いいたします。</p>
+            <p style="margin-left:10px; font-size:90%; color:#333;">予約受付完了メール等をメールでご案内します。「ticket.rakuten.co.jp」からのメールを受信できるよう、お申し込み前にドメイン指定の設定を必ずお願いいたします。</p>
           </td>
         </tr>
         <tr>

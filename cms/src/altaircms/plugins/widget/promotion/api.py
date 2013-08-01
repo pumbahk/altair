@@ -1,5 +1,6 @@
 # -*- coding:utf-8 -*-
 
+from sqlalchemy.orm.exc import NoResultFound
 from zope.interface import provider
 import altaircms.helpers as h
 from .interfaces import IPromotionManager
@@ -44,6 +45,8 @@ class RealPromotionManager(object):
                     "width": p.main_image.width, 
                     "height": p.main_image.height, 
                     "message": p.text}
+        except NoResultFound:
+            return {}
         except Exception, e:
             logger.exception(e)
             return {}

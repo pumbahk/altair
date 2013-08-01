@@ -32,8 +32,6 @@ class DetailSearchForm(SearchForm):
     day = SelectField(label='', validators=[Optional()], choices=[], coerce=str)
 
     def validate_word(form, field):
-        if field.data == "":
-            raise ValueError(u'検索文字列を入力してください')
         if len(field.data) > 200:
             raise ValueError(u'200文字以内で入力してください')
         return

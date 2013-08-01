@@ -40,9 +40,9 @@ setup(name='altair.rakuten_auth',
           'altair.browserid',
           # -*- Extra requirements: -*-
       ],
-      dependency_links=[
-          "file:../altair_auth#egg=altair.auth-1.0", 
-          ],
+      #dependency_links=[
+      #    "file:../altair_auth#egg=altair.auth-1.0", 
+      #    ],
       test_suite='altair.rakuten_auth',
       entry_points="""
       # -*- Entry points: -*-

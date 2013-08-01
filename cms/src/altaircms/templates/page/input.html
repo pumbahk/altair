@@ -17,7 +17,7 @@
 
 <div class="row">
   <div class="span5">
-	<form action="${h.page.to_update(request,page)}" method="POST">
+	<form action="${h.current_route_path_override(request)}" method="POST">
     ${fco.form_as_table_strict(form, ["pageset", "name", "url", "title", "pagetype", "publish_begin", "publish_end","description","keywords"])}
 	  ${h.base.confirm_stage()|n}
 	  <button type="submit" class="btn btn-primary"><i class="icon-cog icon-white"></i> Update</button>

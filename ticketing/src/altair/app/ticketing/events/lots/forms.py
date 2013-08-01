@@ -10,8 +10,10 @@ from altair.formhelpers import (
     after1900, CheckboxMultipleSelect, BugFreeSelectMultipleField,
     NFKC, Zenkaku, Katakana, strip_spaces, ignore_space_hyphen,
 )
-from altair.app.ticketing.core.models import Product, SalesSegment, SalesSegmentGroup
+from altair.app.ticketing.core.models import ReportFrequencyEnum, ReportPeriodEnum
+from altair.app.ticketing.core.models import Product, SalesSegment, SalesSegmentGroup, Operator
 from altair.app.ticketing.lots.models import Lot
+from .models import LotEntryReportSetting
 
 class LotForm(Form):
     name = TextField(
@@ -326,3 +328,160 @@ class SendingMailForm(Form):
             Optional()
         ]
     )
+
+
+
+
+class LotEntryReportMailForm(Form):
+
+    def __init__(self, formdata=None, obj=None, prefix='', **kwargs):
+        Form.__init__(self, formdata, obj, prefix, **kwargs)
+
+        if 'organization_id' in kwargs:
+            operators = Operator.query.filter_by(organization_id=kwargs['organization_id']).all()
+            self.operator_id.choices = [('', '')] + [(o.id, o.name) for o in operators]
+
+    def _get_translations(self):
+        return Translations()
+
+    id = HiddenField(
+        validators=[Optional()],
+    )
+    event_id = HiddenField(
+        validators=[Optional()],
+    )
+    lot_id = HiddenField(
+        validators=[Optional()],
+    )
+    operator_id = SelectField(
+        label=u'オペレータ',
+        validators=[Optional()],
+        choices=[],
+        coerce=lambda v: None if not v else int(v)
+    )
+    name = TextField(
+        label=u'名前',
+        validators=[
+            Optional(),
+            Length(max=255, message=u'255文字以内で入力してください'),
+        ]
+    )
+    email = TextField(
+        label=u'メールアドレス',
+        validators=[
+            Optional(),
+            Email()
+        ]
+    )
+    frequency = SelectField(
+        label=u'送信頻度',
+        validators=[Required()],
+        choices=[(kind.v[0], kind.v[1]) for kind in ReportFrequencyEnum],
+        coerce=int
+    )
+    day_of_week = SelectField(
+        label=u'送信曜日',
+        validators=[Optional()],
+        choices=[
+            ('', ''),
+            (1, u'月'),
+            (2, u'火'),
+            (3, u'水'),
+            (4, u'木'),
+            (5, u'金'),
+            (6, u'土'),
+            (7, u'日'),
+        ],
+        coerce=lambda v: None if not v else int(v)
+    )
+    time = SelectField(
+        label=u'送信時間',
+        validators=[Required()],
+        choices=[(h, u'%d時' % h) for h in range(0, 24)],
+        coerce=lambda v: None if not v else int(v)
+    )
+    start_on = DateTimeField(
+        label=u'開始日時',
+        validators=[Optional(), after1900],
+        format='%Y-%m-%d %H:%M',
+    )
+    end_on = DateTimeField(
+        label=u'終了日時',
+        validators=[Optional(), after1900],
+        format='%Y-%m-%d %H:%M',
+    )
+    period = SelectField(
+        label=u'レポート対象期間',
+        validators=[Required()],
+        choices=sorted([(kind.v[0], kind.v[1]) for kind in ReportPeriodEnum]),
+        coerce=int
+    )
+
+    def validate_operator_id(form, field):
+        if field.data:
+            q = LotEntryReportSetting.query_reporting_about(
+                event_id=form.event_id.data,
+                lot_id=form.lot_id.data,
+                time=form.time.data,
+                frequency=form.frequency.data,
+                day_of_week=form.day_of_week,
+            ).filter(LotEntryReportSetting.email==form.operator_id.data)
+
+            if q.count() > 0:
+                raise ValidationError(u'既に登録済みのオペレーターです')
+
+    def validate_email(form, field):
+        if field.data:
+            q = LotEntryReportSetting.query_reporting_about(
+                event_id=form.event_id.data,
+                lot_id=form.lot_id.data,
+                time=form.time.data,
+                frequency=form.frequency.data,
+                day_of_week=form.day_of_week,
+            ).filter(LotEntryReportSetting.email==form.email.data)
+
+            if q.count() > 0:
+                raise ValidationError(u'既に登録済みのメールアドレスです')
+
+    def validate_frequency(form, field):
+        if field.data:
+            if field.data == ReportFrequencyEnum.Weekly.v[0] and not form.day_of_week.data:
+                raise ValidationError(u'週次の場合は曜日を必ず選択してください')
+
+    def process(self, formdata=None, obj=None, **kwargs):
+        super(type(self), self).process(formdata, obj, **kwargs)
+        if not self.event_id.data:
+            self.event_id.data = None
+        if not self.lot_id.data:
+            self.lot_id.data = None
+
+    def validate(self):
+        status = super(type(self), self).validate()
+        if status:
+            # event_id or lot_id のどちらか必須
+            if (self.event_id.data and self.lot_id.data) or (not self.event_id.data and not self.lot_id.data):
+                self.event_id.errors.append(u'エラーが発生しました')
+                status = False
+            # operator_id or email のどちらか必須
+            email_length = len(self.email.data) if self.email.data else 0
+            if not self.operator_id.data and email_length == 0:
+                self.operator_id.errors.append(u'オペレーター、またはメールアドレスのいずれかを入力してください')
+                status = False
+            if self.operator_id.data and email_length > 0:
+                self.operator_id.errors.append(u'オペレーター、メールアドレスの両方を入力することはできません')
+                status = False
+        return status
+
+    def sync(self, obj):
+        obj.lot_id = self.lot_id.data or None
+        obj.event_id = self.event_id.data or None
+        obj.operator_id = self.operator_id.data
+        obj.name = self.name.data
+        obj.email = self.email.data
+        obj.frequency = self.frequency.data
+        obj.day_of_week = self.day_of_week.data
+        obj.time = self.time.data
+        obj.start_on = self.start_on.data
+        obj.end_on = self.end_on.data
+        obj.period = self.period.data
+

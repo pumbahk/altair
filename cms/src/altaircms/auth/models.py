@@ -1,12 +1,13 @@
-# coding: utf-8
+# -*= coding:utf-8 -*-
 
-#raise Exception, __name__
+import uuid
 from uuid import uuid4
 import hashlib
 from datetime import datetime
 import sqlahelper
-from sqlalchemy.orm import relationship, backref
 import sqlalchemy as sa
+import sqlalchemy.orm as orm
+from sqlalchemy.orm import relationship
 from sqlalchemy.schema import Table, Column, ForeignKey, UniqueConstraint
 from sqlalchemy.types import String, DateTime, Integer, Unicode, Enum
 from sqlalchemy.ext.associationproxy import association_proxy
@@ -204,10 +205,6 @@ class Operator(WithOrganizationMixin, Base):
 
     UniqueConstraint('auth_source', 'user_id')
 
-    def __unicode__(self):
-        return '%s' % self.user_id
-
-
 class Role(Base):
     __tablename__ = 'role'
     query = _session.query_property()
@@ -298,5 +295,44 @@ class Host(BaseOriginalMixin, WithOrganizationMixin, Base):
 
     id = sa.Column(sa.Integer, primary_key=True)
     host_name = sa.Column(sa.Unicode(255), unique=True, index=True)
-    
 
+
+class PageAccesskey(Base, WithOrganizationMixin):
+    query = DBSession.query_property()
+    __tablename__ = "page_accesskeys"
+    id = sa.Column(sa.Integer, primary_key=True)
+    name = sa.Column(sa.Unicode(255))
+    page_id = sa.Column(sa.Integer, sa.ForeignKey("page.id"))
+    page = orm.relationship("Page", backref=orm.backref("access_keys", cascade="all"))
+    event_id = sa.Column(sa.Integer, sa.ForeignKey("event.id"))
+    event = orm.relationship("Event", backref=orm.backref("access_keys", cascade="all"))
+    operator_id = sa.Column(sa.Integer, sa.ForeignKey("operator.id"))
+    operator = orm.relationship("Operator", backref=orm.backref("access_keys", cascade="all"))
+    
+    SCOPE_CANDIDATES = ("onepage", "onepage+cart", "usersite", "cart", "both")
+    scope = sa.Column(sa.String(length=16), nullable=False, default="onepage")
+
+    hashkey = sa.Column(sa.String(length=32), nullable=False)
+    expiredate = sa.Column(sa.DateTime)
+    created_at = sa.Column(sa.DateTime, default=datetime.now)
+    updated_at = sa.Column(DateTime, default=datetime.now, onupdate=datetime.now)    
+
+    def __repr__(self):
+        return "%r:%s %s" % (self.__class__, self.hashkey, self.expiredate)
+
+    def default_gen_key(self):
+        return uuid.uuid4().hex
+
+    def sethashkey(self, genkey=None, key=None):
+        if key:
+            self.hashkey = key
+        else:
+            self.hashkey = (genkey or self.default_gen_key)()
+
+    @property
+    def keytype(self):
+        if self.page_id:
+            return "page"
+        elif self.event_id:
+            return "event"
+        return "unknown"

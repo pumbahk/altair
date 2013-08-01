@@ -1,5 +1,7 @@
 import unittest
 from pyramid import testing
+from altair.auth import REQUEST_KEY
+from altair.auth.testing import DummySession
 from altair.app.ticketing.testing import _setup_db, _teardown_db
 from .testing import add_credential
 
@@ -144,8 +146,8 @@ class TestIt(unittest.TestCase):
         environ.update(kwargs)
         return environ
 
-    def _addCredential(self, membership, membergroup, username, password):
-        user = add_credential(membership, membergroup, username, password)
+    def _addCredential(self, membership, membergroup, username, password, organization_short_name="testing"):
+        user = add_credential(membership, membergroup, username, password, organization_short_name)
         self.session.add(user)
         return user
 
@@ -172,12 +174,16 @@ class TestIt(unittest.TestCase):
         self.assertEqual(pickle.loads(authenticated['repoze.who.userid'].decode('base64')), 
             {'username': 'test_user', 'membership': 'fc', 'membergroup': 'fc_plutinum', "is_guest": False})
 
-    def test_challenge_none(self):
+    def test_challenge_not_required(self):
         login_url = 'http://example.com/login'
         factory = self._makeAPIFactory(login_url=login_url)
         environ = self._makeEnv()
         api = factory(environ)
         environ['repoze.who.plugins'] = api.name_registry
+        from pyramid.threadlocal import get_current_request
+        request = get_current_request()
+        request.organization = testing.DummyModel(id=None)
+        environ[REQUEST_KEY] = request
 
         result = api.challenge()
         self.assertIsNone(result)
@@ -185,29 +191,35 @@ class TestIt(unittest.TestCase):
 
         
     def test_challenge_redirect(self):
+        from . import SESSION_KEY
+
         self.config.add_route('fc_auth.login', '/membership/{membership}/login')
+
         membership = "fc"
         membergroup = "fc_plutinum"
         username = "test_user"
         password = "secret"
-        self._addCredential(membership, membergroup, username, password)
+        self._addCredential(membership, membergroup, username, password,
+                            "fc")
 
         from pyramid.threadlocal import get_current_request
         request = get_current_request()
         request.context = testing.DummyResource()
         request.context.memberships = [testing.DummyModel()]
+        request.session = DummySession()
 
         factory = self._makeAPIFactory()
         environ = self._makeEnv()
+        environ[REQUEST_KEY] = request
         api = factory(environ)
         environ['repoze.who.plugins'] = api.name_registry
-        session = DummySession()
+        session = request.session
         environ['session.rakuten_openid'] = session
 
         result = api.challenge()
 
         self.assertEqual(result.location, 'http://example.com/membership/fc/login')
-        self.assertEqual(session['return_url'], 'http://127.0.0.1/')
+        self.assertEqual(session[SESSION_KEY]['return_url'], 'http://127.0.0.1/')
 
 
 class guest_authenticateTests(unittest.TestCase):
@@ -280,7 +292,6 @@ class guest_authenticateTests(unittest.TestCase):
 
 class LoginViewTests(unittest.TestCase):
     
-
     def _getTarget(self):
         from .views import LoginView
         return LoginView
@@ -288,29 +299,29 @@ class LoginViewTests(unittest.TestCase):
     def _makeOne(self, *args, **kwargs):
         return self._getTarget()(*args, **kwargs)
 
-
     def test_guest_login_fail(self):
-        membership_name = 'testing'
+        from . import SESSION_KEY
+        from repoze.who.interfaces import IAPIFactory
 
         request = testing.DummyRequest(matchdict={'membership': 'testing'})
-        request.environ['session.rakuten_openid'] = {'return_url': '/return/to/url'}
-        request.environ['repoze.who.api'] = DummyWhoApi(None)
+        request.session[SESSION_KEY] = {'return_url': '/return/to/url'}
+        request.registry.registerUtility(DummyWhoApi, IAPIFactory, name="fc_auth")
 
         target = self._makeOne(request)
 
         result = target.guest_login()
-
-        self.assertIn('guest_message', result)
+        self.assertEqual(result.location, "/return/to/url")
 
     def test_guest_login(self):
-        membership_name = 'testing'
+        from . import SESSION_KEY
+        from repoze.who.interfaces import IAPIFactory
 
         request = testing.DummyRequest(matchdict={'membership': 'testing'})
-        request.environ['session.rakuten_openid'] = {'return_url': '/return/to/url'}
-        request.environ['repoze.who.api'] = DummyWhoApi(
+        request.session[SESSION_KEY] = {'return_url': '/return/to/url'}
+        request.registry.registerUtility(lambda env: DummyWhoApi(
             {'membership': 'testing', 'is_guest': True},
-            [('X-TESTING', 'TESTING')])
-
+            [('X-TESTING', 'TESTING')]),
+                                         IAPIFactory, name="fc_auth")
 
         target = self._makeOne(request)
 
@@ -327,7 +338,3 @@ class DummyWhoApi(object):
 
     def login(self, identity):
         return self.authenticated, self.headers
-
-class DummySession(dict):
-    def save(self):
-        pass

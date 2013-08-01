@@ -32,17 +32,11 @@ class StaticPageCreateForm(Form):
         self.request = request
         self.static_directory = get_static_page_utility(request)
 
-    def _validate_root_directory(self, data):
-        path = os.path.join(self.static_directory.get_base_directory(), data["name"])
-        if os.path.exists(path):
-            raise validators.ValidationError(u"{0} は既に利用されています".format(data["name"]))
-
     def validate(self):
         queue = ValidationQueue()
         queue.enqueue("publish_begin", validate_term, begin="publish_begin", end="publish_end")
         queue.enqueue("zipfile", validate_filetype, "zipfile", failfn=lambda v: not zipupload.is_zipfile(v.file), 
                       message=u"zipfileではありません。.zipの拡張子が付いたファイルを投稿してください" )
-        queue.enqueue("name", self._validate_root_directory)
         return super(type(self), self).validate() and queue(self.data, self.errors)
 
 def validate_name_ascii(self, value):

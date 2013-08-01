@@ -2,12 +2,11 @@
 
 from altair.app.ticketing.models import (
     Base,
-    DBSession,
 )
 
 from altair.app.ticketing.core.models import (
     Event,
-    Performance,
+    #Performance,
     ShippingAddress,
 )
 
@@ -84,3 +83,4 @@ class LotEntrySearch(Base):
         return ("<{0.__class__.__name__} "
                 "organization_id={0.organization_id} "
                 "entry_no={0.entry_no}>".format(self))
+

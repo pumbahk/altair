@@ -14,6 +14,8 @@ class lot_wish_cartTests(unittest.TestCase):
             Performance, Product, PaymentDeliveryMethodPair, ProductItem,
             PaymentMethod, DeliveryMethod,
             SalesSegment,
+            Event,
+            Organization,
         )
         from ..models import LotEntryWish, LotEntry, Lot, LotEntryProduct
         product1 = Product(price=100,
@@ -22,7 +24,9 @@ class lot_wish_cartTests(unittest.TestCase):
                            items=[ProductItem(quantity=1), ProductItem(quantity=9)])
 
         wish = LotEntryWish(
-            performance=Performance(),
+            performance=Performance(
+                event=Event(organization=Organization()),
+            ),
             lot_entry=LotEntry(lot=Lot(system_fee=9999999999999999999,# not used
                                        sales_segment=SalesSegment(),
                                    ), 

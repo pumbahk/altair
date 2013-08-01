@@ -1,5 +1,6 @@
 import unittest
 from pyramid import testing
+import mock
 
 class DummyOrganization(object):
     def __init__(self, id=None):
@@ -24,7 +25,7 @@ class DummyPage(object):
     def get_access_key(self, request):
         return self.access_key
 
-    def can_private_access(self, key=None):
+    def can_private_access(self, key=None, now=None):
         self._called.append("can_private_access")
         return self.access_key.valid_status
 
@@ -55,7 +56,7 @@ class FrontAccessControlTests(unittest.TestCase):
 
         self.assertTrue(target.can_access())        
         self.assertEquals(page._called, ["valid_layout"])
-        # print target.error_message
+
 
 
     def test_login_other_organization_cant_access(self):
@@ -87,35 +88,35 @@ class FrontAccessControlTests(unittest.TestCase):
         self.assertEquals(page._called, [])
         # print target.error_message        
 
-    def test_not_login_with_valid_access_key_can_access(self):
+    @mock.patch("altaircms.front.resources.get_page_access_key_control")
+    def test_not_login_with_valid_access_key_can_access(self, m):
         organization_id = 1
-        request = testing.DummyRequest(organization=None)
+        request = testing.DummyRequest(organization=DummyOrganization(organization_id))
 
         page = DummyPage(organization_id=organization_id, 
                          access_key = DummyAccesskey("this-is-valid-access-key", True))
-
+        m.return_value = page
         target = self._makeOne(request)
         target.access_ok = True
         target._check_page_is_accessable(page, None)
 
         self.assertTrue(target.can_access())        
         self.assertEquals(page._called, ["can_private_access", "valid_layout"])
-        # print target.error_message
 
-    def test_not_login_with_invalid_access_key_cant_access(self):
+
+    @mock.patch("altaircms.front.resources.get_page_access_key_control")
+    def test_not_login_with_invalid_access_key_cant_access(self, m):
         organization_id = 1
-        request = testing.DummyRequest(organization=None)
+        request = testing.DummyRequest(organization=DummyOrganization(organization_id))
 
         page = DummyPage(organization_id=organization_id, 
                          access_key = DummyAccesskey("this-is-invalid-access-key-EVERYTIME-FAIL!", False))
-
+        m.return_value = page
         target = self._makeOne(request)
         target.access_ok = True
         target._check_page_is_accessable(page, None)
-
-        self.assertFalse(target.can_access())        
         self.assertEquals(page._called, ["can_private_access"])
-        # print target.error_message        
+        self.assertIn("invalid access key", target.error_message)
 
     def test_login_rendering_with_invalid_lalyout_cant_access(self):
         organization_id = 1

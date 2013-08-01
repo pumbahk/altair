@@ -447,12 +447,6 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         return self.sale_segment.products if self.sales_segment_id else []
 
     @property
-    def inner_sales_segments(self):
-        now = datetime.now()
-        sales_segment_sort_key_func = lambda ss: (ss.kind == u'sales_counter', ss.start_at <= now, now <= ss.end_at, ss.id)
-        return sorted(list(self.sales_segments), key=sales_segment_sort_key_func, reverse=True)
-
-    @property
     def stock_types(self):
         return sorted(list({s.stock_type for s in self.stocks if s.stock_type}),
                       key=lambda s: s.id)
@@ -1275,6 +1269,15 @@ class PaymentDeliveryMethodPair(Base, BaseModel, WithTimestamp, LogicallyDeleted
             pdmp.sales_segment_group_id = kwargs['sales_segment_group_id']
         pdmp.save()
 
+    def delete(self):
+        # 既に予約がある場合は削除できない
+        if self.orders:
+            raise Exception(u'予約がある為、削除できません')
+        # 既に抽選申込がある場合は削除できない
+        if self.lot_entries:
+            raise Exception(u'抽選申込がある為、削除できません')
+        super(PaymentDeliveryMethodPair, self).delete()
+
 class PaymentMethodPlugin(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'PaymentMethodPlugin'
     id = Column(Identifier, primary_key=True)
@@ -1630,13 +1633,13 @@ class Stock(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                 .join(OrderedProductItem.ordered_product)\
                 .join(OrderedProduct.order)\
                 .filter(Order.canceled_at==None)\
-                .with_entities(func.sum(OrderedProduct.quantity)).scalar() or 0
+                .with_entities(func.sum(OrderedProductItem.quantity)).scalar() or 0
             # Cartで確保されている座席数
             reserved_quantity += Stock.filter(Stock.id==self.id).join(Stock.product_items)\
                 .join(ProductItem.carted_product_items)\
                 .join(CartedProductItem.carted_product)\
                 .filter(CartedProduct.finished_at==None)\
-                .with_entities(func.sum(CartedProduct.quantity)).scalar() or 0
+                .with_entities(func.sum(CartedProductItem.quantity)).scalar() or 0
             vacant_quantity = self.quantity - reserved_quantity
         else:
             vacant_quantity = Seat.filter(Seat.stock_id==self.id)\
@@ -1840,6 +1843,10 @@ class Product(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         #ProductItem.create_default(product=self)
 
     def delete(self):
+        # 既に抽選申込されている場合は削除できない
+        if self.lot_entry_products:
+            raise Exception(u'抽選申込がある為、削除できません')
+
         # delete ProductItem
         for product_item in self.items:
             product_item.delete()
@@ -2002,6 +2009,10 @@ class Organization(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     def point_feature_enabled(self):
         return self.setting.point_type is not None
 
+    def get_cms_data(self):
+        return {"organization_id": self.id, "organization_source": "oauth"}
+    
+
 orders_seat_table = Table("orders_seat", Base.metadata,
     Column("seat_id", Identifier, ForeignKey("Seat.id")),
     Column("OrderedProductItem_id", Identifier, ForeignKey("OrderedProductItem.id")),
@@ -2110,7 +2121,7 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     multicheckout_approval_no = Column(Unicode(255), doc=u"マルチ決済受領番号")
 
     payment_delivery_method_pair_id = Column(Identifier, ForeignKey("PaymentDeliveryMethodPair.id"))
-    payment_delivery_pair = relationship("PaymentDeliveryMethodPair")
+    payment_delivery_pair = relationship("PaymentDeliveryMethodPair", backref='orders')
 
     paid_at = Column(DateTime, nullable=True, default=None)
     delivered_at = Column(DateTime, nullable=True, default=None)
@@ -2853,6 +2864,7 @@ class TicketPrintQueueEntry(Base, BaseModel):
                         default=datetime.now,
                         server_default=sqlf.current_timestamp())
     processed_at = Column(TIMESTAMP, nullable=True, default=None)
+    masked_at = Column(TIMESTAMP, nullable=True, default=None)
 
     @property
     def drawing(self):
@@ -2872,7 +2884,7 @@ class TicketPrintQueueEntry(Base, BaseModel):
     @classmethod
     def peek(self, operator, ticket_format_id, order_id=None):
         q = DBSession.query(TicketPrintQueueEntry) \
-            .filter_by(processed_at=None, operator=operator) \
+            .filter_by(processed_at=None, operator=operator, masked_at=None) \
             .filter(Ticket.ticket_format_id==ticket_format_id) \
             .options(joinedload(TicketPrintQueueEntry.seat))
         if order_id is not None:
@@ -2894,6 +2906,7 @@ class TicketPrintQueueEntry(Base, BaseModel):
             .outerjoin(OrderedProductItem.ordered_product) \
             .outerjoin(OrderedProduct.order) \
             .filter(TicketPrintQueueEntry.id.in_(ids)) \
+            .filter(TicketPrintQueueEntry.masked_at == None) \
             .filter(TicketPrintQueueEntry.processed_at == None) \
             .options(joinedload(TicketPrintQueueEntry.seat)) \
             .order_by(desc(TicketPrintQueueEntry.created_at)) \
@@ -3375,9 +3388,9 @@ class PerformanceSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     performance_id = Column(Identifier, ForeignKey('Performance.id'))
     performance = relationship('Performance', backref='settings')
     
-    abbreviated_title = Column(Unicode(255), doc=u"公演名略称", default="")
-    subtitle = Column(Unicode(255), doc=u"公演名副題", default="")
-    note = Column(UnicodeText, doc=u"公演名備考", default="")
+    abbreviated_title = Column(Unicode(255), doc=u"公演名略称", default=u"")
+    subtitle = Column(Unicode(255), doc=u"公演名副題", default=u"")
+    note = Column(UnicodeText, doc=u"公演名備考", default=u"")
 
     KEYS = ["abbreviated_title", "subtitle", "note"]
 

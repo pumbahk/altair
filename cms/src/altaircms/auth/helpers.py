@@ -41,8 +41,6 @@ def get_authenticated_organization(request):
     return None
 
 
-
-
 ### use where auth event 
 def get_roles_from_role_names(role_names):
     if role_names is not None:

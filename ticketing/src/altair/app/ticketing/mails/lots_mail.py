@@ -1,6 +1,7 @@
 # -*- coding:utf-8 -*-
 from altair.app.ticketing.payments import plugins
 from pyramid_mailer.message import Message
+from pyramid.compat import text_type
 from zope.interface import implementer
 from .interfaces import IPurchaseInfoMail
 from pyramid.renderers import render
@@ -104,7 +105,9 @@ class LotsMail(object):
 
     def build_mail_body(self, subject, traverser):
         value = self._body_tmpl_vars(subject, traverser)
-        return render(self.mail_template, value, request=self.request)
+        retval = render(self.mail_template, value, request=self.request)
+        assert isinstance(retval, text_type)
+        return retval
 
 
 class LotsAcceptedMail(LotsMail):

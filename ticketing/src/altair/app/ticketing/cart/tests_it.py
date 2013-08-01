@@ -108,6 +108,11 @@ class ReserveViewTests(unittest.TestCase):
 
         return performance, product1, product2, product3, product4, seats
 
+    def _sales_segment(self):
+        from ..core.models import SalesSegment, SalesSegmentGroup
+        return SalesSegment(upper_limit=100,
+                            sales_segment_group=SalesSegmentGroup())
+
     def test_it_quantity_only(self):
         from webob.multidict import MultiDict
         performance, product1, product2, product3, product4, seats = self._add_seats()
@@ -118,6 +123,7 @@ class ReserveViewTests(unittest.TestCase):
         ])
 
         context = mock.Mock()
+        context.sales_segment = self._sales_segment()
         request = testing.DummyRequest(params=params, 
             context=context)
         target = self._makeOne(request)
@@ -137,6 +143,7 @@ class ReserveViewTests(unittest.TestCase):
 
         
         context = mock.Mock()
+        context.sales_segment = self._sales_segment()
         request = testing.DummyRequest(params=params, 
             context=context)
         target = self._makeOne(request)
@@ -155,6 +162,7 @@ class ReserveViewTests(unittest.TestCase):
         ])
 
         context = mock.Mock()
+        context.sales_segment = self._sales_segment()
         request = testing.DummyRequest(params=params, 
             context=context)
         target = self._makeOne(request)
@@ -185,6 +193,7 @@ class ReserveViewTests(unittest.TestCase):
         ])
 
         context = mock.Mock()
+        context.sales_segment = self._sales_segment()
         request = testing.DummyRequest(params=params, 
             context=context)
         target = self._makeOne(request)

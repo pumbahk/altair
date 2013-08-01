@@ -94,20 +94,20 @@ class MatchUpPerformanceSelectorTests(unittest.TestCase):
 
         self.assertEqual(len(result), 2)
         self.assertEqual([pair[0] for pair in result], [u'testing performance1', u'testing performance2'])
-        self.assertEqual(result[0][1][0],
-                         {'seat_types_url': 'http://example.com/testing/seat_types/4/5/123', 
-                          'upper_limit': 10, 
-                          'order_url': 'http://example.com/testing/order/5', 
-                          'name': u'2013-04-01 00:00\u958b\u59cb \u30c6\u30b9\u30c8\u4f1a\u5834 \u524d\u58f2\u5238', 
-                          'id': 4})
-        self.assertEqual(result[0][1][1], 
+        self.assertEqual(result[0][1][0], 
                          {'seat_types_url': 'http://example.com/testing/seat_types/1/2/123',
                           'upper_limit': 3, 
                           'order_url': 'http://example.com/testing/order/2', 
                           'id': 2, 
                           'name': u'2013-03-31 00:00\u958b\u59cb \u30c6\u30b9\u30c8\u4f1a\u5834 \u524d\u58f2\u5238'})
+        self.assertEqual(result[0][1][1],
+                         {'seat_types_url': 'http://example.com/testing/seat_types/4/5/123', 
+                          'upper_limit': 10, 
+                          'order_url': 'http://example.com/testing/order/5', 
+                          'name': u'2013-04-01 00:00\u958b\u59cb \u30c6\u30b9\u30c8\u4f1a\u5834 \u524d\u58f2\u5238', 
+                          'id': 5})
         self.assertEqual(result[1][1][0],
-                         {'id': 6,
+                         {'id': 7,
                           'name': u'2013-04-01 00:00\u958b\u59cb \u30c6\u30b9\u30c8\u4f1a\u5834 \u524d\u58f2\u5238',
                           'order_url': 'http://example.com/testing/order/7',
                           'seat_types_url': 'http://example.com/testing/seat_types/6/7/123',
@@ -209,16 +209,16 @@ class DatePerformanceSelectorTests(unittest.TestCase):
                          {'seat_types_url': 'http://example.com/testing/seat_types/1/2/123',
                           'upper_limit': 3, 
                           'order_url': 'http://example.com/testing/order/2', 
-                          'id': 1, 
+                          'id': 2, 
                           'name': u'2013-03-31 00:00\u958b\u59cb \u30c6\u30b9\u30c8\u4f1a\u5834 \u524d\u58f2\u5238'})
         self.assertEqual(result[1][1][0],
                          {'seat_types_url': 'http://example.com/testing/seat_types/4/5/123', 
                           'upper_limit': 10, 
                           'order_url': 'http://example.com/testing/order/5', 
                           'name': u'2013-04-01 00:00\u958b\u59cb \u30c6\u30b9\u30c8\u4f1a\u5834 \u524d\u58f2\u5238', 
-                          'id': 4})
+                          'id': 5})
         self.assertEqual(result[1][1][1],
-                         {'id': 6,
+                         {'id': 7,
                           'name': u'2013-04-01 00:00\u958b\u59cb \u30c6\u30b9\u30c8\u4f1a\u5834 \u524d\u58f2\u5238',
                           'order_url': 'http://example.com/testing/order/7',
                           'seat_types_url': 'http://example.com/testing/seat_types/6/7/123',

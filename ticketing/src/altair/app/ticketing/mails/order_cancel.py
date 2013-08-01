@@ -1,6 +1,7 @@
 # -*- coding:utf-8 -*-
 from pyramid.renderers import render
 from pyramid_mailer.message import Message
+from pyramid.compat import text_type
 import logging
 from .forms import SubjectInfoRenderer
 from .forms import OrderInfoDefault, SubjectInfo, SubjectInfoWithValue
@@ -113,4 +114,6 @@ class CancelMail(object):
 
     def build_mail_body(self, order, traverser):
         value = self._body_tmpl_vars(order, traverser)
-        return render(self.mail_template, value, request=self.request)
+        retval = render(self.mail_template, value, request=self.request)
+        assert isinstance(retval, text_type)
+        return retval

@@ -1,8 +1,6 @@
-<%inherit file="/layout.html" />
+<%inherit file="/layout_2cols.html" />
 <%namespace file="/common/helpers.html" name="ch" />
 <%namespace file="/parts/_toggle_menu.html" name="tm" />
-
-<%include file="/parts/_toggle_menu.html" />
 
 <script>
 // ajax modal
@@ -28,170 +26,162 @@ $(function(){
   )}
 </%block>
 
-<div class="row-fluid">
-  <div id="left-menu" class="span2" style="${tm.menu_style()}">
-    <%include file="/parts/_menu.html" args="event=event" />
+<%block name="style">
+<link rel="stylesheet" type="text/css" href="/static/css/decentcolorpicker.css" />
+<script type="text/javascript" src="/static/js/jquery.decentcolorpicker.js"></script>
+</%block>
+
+
+<script>
+  $(function() {
+    $('[rel=popover]').popover()
+  });
+</script>
+
+<div class="page-header">
+  <h1 style="word-wrap: break-word;">${event.title}</h1>
+</div>
+
+<table class="table table-bordered fullwidth">
+  <tbody>
+    <tr>
+      <th class="span3">${form.title.label.text}</th>
+      <td>${event.title}</td>
+    </tr>
+    <tr>
+      <th>${form.abbreviated_title.label.text}</th>
+      <td>${event.abbreviated_title}</td>
+    </tr>
+    <tr>
+      <th>${form.code.label.text}</th>
+      <td>${event.code}</td>
+    </tr>
+    <tr>
+      <th>${form.account_id.label.text}</th>
+      <td>${event.account.name} 様</td>
+    </tr>
+    <tr>
+      <th>
+        販売開始日時
+        <span class="help-inline">
+          <a rel="popover" data-original-title="販売開始日時" data-content="登録済みの商品のうち最初の販売開始日時">
+            <i class="icon-question-sign"></i>
+          </a>
+        </span>
+      </th>
+      <td>${vh.datetime(event.sales_start_on)}</td>
+    </tr>
+    <tr>
+      <th>
+        販売終了日時
+        <span class="help-inline">
+          <a rel="popover" data-original-title="販売終了日時" data-content="登録済みの商品のうち最後の販売終了日時">
+            <i class="icon-question-sign"></i>
+          </a>
+        </span>
+      </th>
+      <td>${vh.datetime(event.sales_end_on)}</td>
+    </tr>
+    <tr>
+      <th>初回公演日時</th>
+      <td>
+        ${vh.datetime(event.first_start_on)}
+        % if event.first_performance:
+        (<a href="${request.route_path('performances.show', event_id=event.id, performance_id=event.first_performance.id)}">
+         ${event.first_performance.venue.name} 公演 </a>)
+        % endif
+      </td>
+    </tr>
+    <tr>
+      <th>最終公演日時</th>
+      <td>
+        ${vh.datetime(event.final_start_on)}
+        % if event.final_performance:
+        (<a href="${request.route_path('performances.show', event_id=event.id, performance_id=event.final_performance.id)}">
+         ${event.final_performance.venue.name} 公演 </a>)
+        % endif
+      </td>
+    </tr>
+    <tr>
+      <th>
+        カートURL
+        <span class="help-inline">
+          <a rel="popover" data-original-title="カートURL" data-content="購入カートのURL">
+            <i class="icon-question-sign"></i>
+          </a>
+        </span>
+      </th>
+      <td>
+        <a href="${cart_url}">${cart_url}</a>  (<a href="${cart_now_cart_url}">時間指定してカート購入</a>)
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<%include file="/events/_action_button.html" args="event=event, order=['edit', 'delete', 'copy']" />
+
+<hr />
+
+<div id="stock_types">
+  <h3>席種</h3>
+  <div style="margin-top: 20px;">
+    <%include file="/stock_types/_list.html" args="stock_types=event.stock_types, limit=10" />
+    <%include file="/stock_types/_action_button.html" args="event=event" />
+    <div id="stock_types-form">
+      <%include file="/stock_types/_form.html" args="form=form_stock_type" />
+    </div>
   </div>
+</div>
 
-  <div id="main-container" class="${tm.container_class()}">
-    <%block name="style">
-    <link rel="stylesheet" type="text/css" href="/static/css/decentcolorpicker.css" />
-    <script type="text/javascript" src="/static/js/jquery.decentcolorpicker.js"></script>
-    </%block>
+<hr />
 
-    <script>
-      $(function() {
-        $('[rel=popover]').popover()
-      });
+<div id="stock_holders">
+  <h3>配券先</h3>
+  <div style="margin-top: 20px;">
+    <%include file="/stock_holders/_list.html" args="form=form_stock_holder, stock_holders=event.stock_holders, limit=10" />
+    <%include file="/stock_holders/_action_button.html" args="event=event" />
+    <div id="stock_holders-form">
+    <%include file="/stock_holders/_form.html" args="form=form_stock_holder" />
+    </div>
+  </div>
+</div>
+
+<hr />
+
+<div id="sales_segment_groups">
+  <h3>販売区分グループ</h3>
+  <div style="margin-top: 20px;">
+    <form>
+    <%include file="/sales_segment_groups/_list.html" args="form=form_sales_segment_group, sales_segment_groups=event.sales_segment_groups, limit=10" />
+    <%include file="/sales_segment_groups/_action_button.html" />
+    </form>
+    <div id="sales_segment_groups-form">
+      <%include file="/sales_segment_groups/_modal.html" args="modal_id='modal-sales_segment_group', event=event" />
+    </div>
+  </div>
+</div>
+
+<hr />
+
+<div id="performances">
+  <h3>パフォーマンス</h3>
+  <div style="margin-top: 20px;">
+    <%include file="/performances/_list.html" args="form=form_performance, performances=event.performances, limit=10" />
+    <%include file="/performances/_action_button.html" args="event=event" />
+    <script type="text/javascript">
+      var is_sending = {};
+      $("#send_event").click(function(e){
+        var $e = $(e.currentTarget);
+        if(is_sending[$e.attr("href")]){ 
+          return false;
+        }
+        is_sending[$e.attr("href")] = true;
+        $('#modal-send_event').modal('hide');
+        setTimeout(function(){
+          is_sending[$e.attr("href")] = false;
+        }, 20000);
+        return true
+      })
     </script>
-
-    <div class="page-header">
-      <h1 style="word-wrap: break-word;">${event.title}</h1>
-    </div>
-
-    <table class="table table-bordered fullwidth">
-      <tbody>
-        <tr>
-          <th class="span3">${form.title.label.text}</th>
-          <td>${event.title}</td>
-        </tr>
-        <tr>
-          <th>${form.abbreviated_title.label.text}</th>
-          <td>${event.abbreviated_title}</td>
-        </tr>
-        <tr>
-          <th>${form.code.label.text}</th>
-          <td>${event.code}</td>
-        </tr>
-        <tr>
-          <th>${form.account_id.label.text}</th>
-          <td>${event.account.name} 様</td>
-        </tr>
-        <tr>
-          <th>
-            販売開始日時
-            <span class="help-inline">
-              <a rel="popover" data-original-title="販売開始日時" data-content="登録済みの商品のうち最初の販売開始日時">
-                <i class="icon-question-sign"></i>
-              </a>
-            </span>
-          </th>
-          <td>${vh.datetime(event.sales_start_on)}</td>
-        </tr>
-        <tr>
-          <th>
-            販売終了日時
-            <span class="help-inline">
-              <a rel="popover" data-original-title="販売終了日時" data-content="登録済みの商品のうち最後の販売終了日時">
-                <i class="icon-question-sign"></i>
-              </a>
-            </span>
-          </th>
-          <td>${vh.datetime(event.sales_end_on)}</td>
-        </tr>
-        <tr>
-          <th>初回公演日時</th>
-          <td>
-            ${vh.datetime(event.first_start_on)}
-            % if event.first_performance:
-            (<a href="${request.route_path('performances.show', event_id=event.id, performance_id=event.first_performance.id)}">
-             ${event.first_performance.venue.name} 公演 </a>)
-            % endif
-          </td>
-        </tr>
-        <tr>
-          <th>最終公演日時</th>
-          <td>
-            ${vh.datetime(event.final_start_on)}
-            % if event.final_performance:
-            (<a href="${request.route_path('performances.show', event_id=event.id, performance_id=event.final_performance.id)}">
-             ${event.final_performance.venue.name} 公演 </a>)
-            % endif
-          </td>
-        </tr>
-        <tr>
-          <th>
-            カートURL
-            <span class="help-inline">
-              <a rel="popover" data-original-title="カートURL" data-content="購入ページのURL">
-                <i class="icon-question-sign"></i>
-              </a>
-            </span>
-          </th>
-          <td>
-            <a href="${cart_url}">${cart_url}</a>  
-            <!--(<a href="${cart_now_cart_url}">時間指定してカート購入</a>)-->
-          </td>
-        </tr>
-      </tbody>
-    </table>
-    <%include file="/events/_action_button.html" args="event=event, order=['edit', 'delete', 'copy']" />
-
-    <hr />
-
-    <div id="stock_types">
-      <h3>席種</h3>
-      <div style="margin-top: 20px;">
-        <%include file="/stock_types/_list.html" args="stock_types=event.stock_types, limit=10" />
-        <%include file="/stock_types/_action_button.html" args="event=event" />
-        <div id="stock_types-form">
-          <%include file="/stock_types/_form.html" args="form=form_stock_type" />
-        </div>
-      </div>
-    </div>
-
-    <hr />
-
-    <div id="stock_holders">
-      <h3>配券先</h3>
-      <div style="margin-top: 20px;">
-        <%include file="/stock_holders/_list.html" args="form=form_stock_holder, stock_holders=event.stock_holders, limit=10" />
-        <%include file="/stock_holders/_action_button.html" args="event=event" />
-        <div id="stock_holders-form">
-        <%include file="/stock_holders/_form.html" args="form=form_stock_holder" />
-        </div>
-      </div>
-    </div>
-
-    <hr />
-
-    <div id="sales_segment_groups">
-      <h3>販売区分グループ</h3>
-      <div style="margin-top: 20px;">
-        <form>
-        <%include file="/sales_segment_groups/_list.html" args="form=form_sales_segment_group, sales_segment_groups=event.sales_segment_groups, limit=10" />
-        <%include file="/sales_segment_groups/_action_button.html" />
-        </form>
-        <div id="sales_segment_groups-form">
-          <%include file="/sales_segment_groups/_modal.html" args="modal_id='modal-sales_segment_group', event=event" />
-        </div>
-      </div>
-    </div>
-
-    <hr />
-
-    <div id="performances">
-      <h3>パフォーマンス</h3>
-      <div style="margin-top: 20px;">
-        <%include file="/performances/_list.html" args="form=form_performance, performances=event.performances, limit=10" />
-        <%include file="/performances/_action_button.html" args="event=event" />
-        <script type="text/javascript">
-          var is_sending = {};
-          $("#send_event").click(function(e){
-            var $e = $(e.currentTarget);
-            if(is_sending[$e.attr("href")]){ 
-              return false;
-            }
-            is_sending[$e.attr("href")] = true;
-            $('#modal-send_event').modal('hide');
-            setTimeout(function(){
-              is_sending[$e.attr("href")] = false;
-            }, 20000);
-            return true
-          })
-        </script>
-      </div>
-    </div>
-
   </div>
 </div>

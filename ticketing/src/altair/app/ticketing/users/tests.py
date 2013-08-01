@@ -6,7 +6,7 @@ class UserApiTest(unittest.TestCase):
     def setUp(self):
         self.config = testing.setUp()
         self.config.include('altair.app.ticketing.cart')
-        self.session = _setup_db()
+        self.session = _setup_db(['altair.app.ticketing.core.models', 'altair.app.ticketing.users.models'])
 
     def tearDown(self):
         testing.tearDown()

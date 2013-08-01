@@ -33,7 +33,8 @@
   % endfor
 % endif
 
-<div style="margin-left:10px; margin-bottom: 10px; font-size:150%;">注文内容をご確認ください</div>
+<div style="margin-left:10px; margin-bottom: 10px; font-size:150%; color: red;">まだお申し込みは完了していません</div>
+ご注文内容をご確認いただき「購入する」ボタンで購入してください。
 <form id="form1" action="${delegator['url'] if delegator else request.route_url('payment.finish')}" method="post">
   ${form.csrf_token()}
   <input type="hidden" name="performance_id" value="${cart.performance.id}"/>

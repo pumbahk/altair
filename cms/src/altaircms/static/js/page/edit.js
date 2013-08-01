@@ -377,7 +377,7 @@ var BlockSheet = Backbone.Model.extend({
     isNew: function(){return false;}, 
     load_data: function(){
         var self = this;
-        this.fetch().done(function(data){
+        this.fetch({cache: false}).done(function(data){
             self.after_load_success(data);
         });
     }, 

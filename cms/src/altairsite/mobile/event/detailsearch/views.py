@@ -45,6 +45,7 @@ def move_detailsearch_post(request):
         form = get_event_paging(request=request, form=form, qs=qs)
         form = create_genre_selectbox(request, form)
         form.week.data = get_week_map()
+        form.path.data = request.route_path('detailsearch')
 
     log_info("move_detailsearch_post", "end")
     return {'form':form}

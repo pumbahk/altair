@@ -1,13 +1,15 @@
 # -*- coding: utf-8 -*-
 
 import logging
-logger = logging.getLogger(__name__)
+from datetime import datetime
 from sqlalchemy import sql
 from sqlalchemy import orm
 from pyramid.decorator import reify
 from pyramid.view import view_config, view_defaults
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound
 from pyramid.renderers import get_renderer
+from pyramid_mailer import get_mailer
+
 from altair.app.ticketing.views import BaseView as _BaseView
 from altair.app.ticketing.fanstatic import with_bootstrap
 from altair.app.ticketing.core.models import (
@@ -40,11 +42,21 @@ import altair.app.ticketing.lots.api as lots_api
 from altair.app.ticketing.lots.electing import Electing
 from altair.app.ticketing.lots.closing import LotCloser
 from .helpers import Link
-from .forms import ProductForm, LotForm, SearchEntryForm, SendingMailForm
+from .forms import (
+    ProductForm,
+    LotForm,
+    SearchEntryForm,
+    SendingMailForm,
+    LotEntryReportMailForm,
+)
+
 from . import api
-from .models import LotWishSummary
+from .models import LotWishSummary, LotEntryReportSetting
+from .reporting import LotEntryReporter
 
 from altair.app.ticketing.payments import helpers as payment_helpers
+
+logger = logging.getLogger(__name__)
 
 
 class BaseView(_BaseView):
@@ -128,15 +140,19 @@ class Lots(BaseView):
             for product_id in self.request.POST.getall("product_id"):
                 product = Product.query.filter(Product.id==product_id).first()
                 if product:
-                    product.delete()
-                    self.request.session.flash(u"{0}を削除しました。".format(product.name))
+                    try:
+                        product.delete()
+                        self.request.session.flash(u"{0}を削除しました。".format(product.name))
+                    except Exception, e:
+                        self.request.session.flash(e.message)
+                        raise HTTPFound(location=self.request.route_url("lots.show", lot_id=lot.id))
 
         performance_ids = [p.id for p in lot.performances]
         stock_holders = StockHolder.query.join(Stock).filter(Stock.performance_id.in_(performance_ids)).distinct().all()
 
         stock_types = lot.event.stock_types
         ticket_bundles = lot.event.ticket_bundles
-        options = ["%s:%s" % (st.id, st.name) for st in stock_types]
+        options = ["%s:%s%s" % (st.id, st.name, u'(数受け)' if st.quantity_only else u'') for st in stock_types]
         stock_type_options = {"value": ';'.join(options)}
         options = ["%s:%s" % (st.id, st.name) for st in stock_holders]
         stock_holder_options = {"value": ';'.join(options)}
@@ -353,6 +369,9 @@ class LotEntries(BaseView):
         self.check_organization(self.context.event)
         lot = self.context.lot
         lot_status = api.get_lot_entry_status(lot, self.request)
+        report_settings = LotEntryReportSetting.query.filter(
+            LotEntryReportSetting.lot_id==lot.id
+        ).all()
 
         return dict(
             lot=lot,
@@ -360,6 +379,7 @@ class LotEntries(BaseView):
             #  公演、希望順ごとの数
             sub_counts = lot_status.sub_counts,
             lot_status=lot_status,
+            report_settings=report_settings,
             )
 
 
@@ -734,7 +754,7 @@ class LotEntries(BaseView):
         affected = lots_api.submit_lot_entries(lot.id, entries)
 
         logger.debug('elect all: results = {0}'.format(results))
-        lot.start_electing()
+        lot.start_lotting()
         return dict(
             affected=affected,
             html=[(self.wish_tr_class(w), self.render_wish_row(w))
@@ -769,7 +789,8 @@ class LotEntries(BaseView):
 
         affected = lots_api.submit_lot_entries(lot.id, entries)
 
-        lot.start_electing()
+        lot.start_lotting()
+
         return dict(result="OK",
                     affected=affected,
                     html=[(self.wish_tr_class(w), self.render_wish_row(w))
@@ -800,7 +821,7 @@ class LotEntries(BaseView):
 
         affected = lots_api.submit_reject_entries(lot.id, entries)
 
-        lot.start_electing()
+        lot.start_lotting()
         return dict(result="OK",
                     affected=affected,
                     html=[(self.wish_tr_class(w), self.render_wish_row(w))
@@ -919,3 +940,59 @@ class LotEntries(BaseView):
                 "shipping_address": shipping_address, 
                 "mail_form": mail_form}
 
+
+
+@view_defaults(decorator=with_bootstrap, permission="event_editor")
+class LotReport(object):
+    def __init__(self, context, request):
+        self.context = context
+        self.request = request
+
+    @property
+    def index_url(self):
+        return self.request.route_url("lots.entries.index",
+                                      **self.request.matchdict)
+
+    @view_config(route_name="lot.entries.new_report_setting",
+                 renderer="lots/new_report_setting.html")
+    def new_setting(self):
+        form = LotEntryReportMailForm(formdata=self.request.POST)
+        form.lot_id.data = self.context.lot.id
+
+        if self.request.method == "POST":
+            if form.validate():
+                new_setting = LotEntryReportSetting()
+                form.sync(new_setting)
+                DBSession.add(new_setting)
+                return HTTPFound(self.index_url)
+        return dict(form=form,
+                    event=self.context.event)
+
+
+    @view_config(route_name="lot.entries.delete_report_setting",
+                 request_method="POST")
+    def delete_setting(self):
+        setting = LotEntryReportSetting.query.filter(
+            LotEntryReportSetting.id==self.request.matchdict['setting_id']
+        ).first()
+        if setting is None:
+            return HTTPNotFound()
+        setting.deleted_at = datetime.now()
+        return HTTPFound(self.index_url)
+
+    @view_config(route_name="lot.entries.send_report_setting",
+                 request_method="POST")
+    def send_report(self):
+        """ 手動送信 """
+        setting = LotEntryReportSetting.query.filter(
+            LotEntryReportSetting.id==self.request.matchdict['setting_id']
+        ).first()
+        if setting is None:
+            return HTTPNotFound()
+
+
+        mailer = get_mailer(self.request)
+        sender = self.request.registry.settings['mail.message.sender']
+        reporter = LotEntryReporter(sender, mailer, setting)
+        reporter.send()
+        return HTTPFound(self.index_url)

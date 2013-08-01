@@ -8,42 +8,30 @@ import logging
 logger = logging.getLogger(__name__)
 
 def get_organization_from_request(request, override_host=None):
+    if hasattr(request, "_organization"):
+        return request._organization
     host_name = override_host or request.host
     organization = Organization.query.filter(Organization.id==Host.organization_id,  Host.host_name==host_name).first()
     if organization is None:
         logger.error("Host that named %s is not Found" % host_name)
         #raise Exception("Host that named %s is not Found" % host_name)
         raise HTTPBadRequest
+    request._organization = organization
     return organization
 
 class AllowableQueryFilterByOrganization(object):
     ExceptionClass = HTTPNotFound
     def __init__(self, request):
-        if hasattr(request,  "organization"):
-            self.call = self.allowable_query
-        else:
-            self.call = self.allowable_query_with_fetch
         self.request = request
 
-    def __call__(self,  model,  qs=None):
-        return self.call(model, qs=qs)
-
-    def allowable_query(self, model, qs=None):
-        query = qs or model.query
-        organization = self.request.organization
-        if organization is None:
-            logger.warn("*separation host=%s organization is not found",  self.request.host)
-            raise self.ExceptionClass("organization is not found")
-        if not hasattr(model, "organization_id"):
-            return query
-        return query.with_transformation(organization.inthere("organization_id"))
-
-    def allowable_query_with_fetch(self, model, qs=None):
+    def __call__(self, model, qs=None):
         query = qs or model.query
         organization = get_organization_from_request(self.request)
         if organization is None:
             logger.warn("*separation host=%s organization is not found",  self.request.host)
             raise self.ExceptionClass("organization is not found")
+        if not hasattr(model, "organization_id"):
+            return query
         return query.with_transformation(organization.inthere("organization_id"))
 
 ## selectable renderer

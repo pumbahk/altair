@@ -165,8 +165,8 @@ class: %s""" % model)
         return qs
     return query
 
-def get_or_404(qs, criteria):
-    r = qs.filter(criteria).first()
+def get_or_404(qs, *criteria):
+    r = qs.filter(*criteria).first()
     if r is None:
         raise HTTPNotFound("----")
     return r
@@ -174,7 +174,3 @@ def get_or_404(qs, criteria):
 def validate_apikey(apikey):
     return bool(APIKey.query.filter_by(apikey=apikey).first())
 
-
-# def raise_error_if_notallowable(request, obj):
-#     if request.organization.id != obj.organization_id:
-#         raise HTTPForbidden(u"閲覧権限を持っていません")

@@ -22,6 +22,7 @@ class DummyFileSession(object):
         self.make_path = make_path or (lambda : os.path.abspath(prefix))
         self.added = []
         self.deleted = []
+        self.options = {}
 
     def add(self, o):
         self.added.append(o)
@@ -96,7 +97,7 @@ class SyncS3Tests(unittest.TestCase):
         from altaircms.filelib.s3 import S3ConnectionFactory
         uploaded = []
         class Dummy(S3ConnectionFactory):
-            def upload(self, f, realpath):
+            def upload(self, f, realpath, options=None):
                 uploaded.append((f, realpath))
 
         self.config.registry.settings.update({"altaircms.s3.utility": Dummy})
@@ -113,7 +114,7 @@ class SyncS3Tests(unittest.TestCase):
         from altaircms.filelib.s3 import S3ConnectionFactory
 
         class Dummy(S3ConnectionFactory):
-            def upload(self, f, realpath):
+            def upload(self, f, realpath, options=None):
                 pass
 
         _result = object()
@@ -144,14 +145,14 @@ class SyncS3Tests(unittest.TestCase):
 
         self.assertEqual(assets[0].file_url, None)
         self.config.registry.notify(AfterS3Upload(request=None, session=session, files=files, uploader=uploader, extra_args=assets))
-        self.assertEqual(assets[0].file_url, "http://s3.amazonaws.com/:bucket:/:test-file.jpg:")
+        self.assertEqual(assets[0].file_url, "s3://:bucket:/:test-file.jpg:")
 
     ## delete
     def test_event_is_notified_after_s3delete_with_s3utility(self):
         from altaircms.filelib.s3 import S3ConnectionFactory
 
         class Dummy(S3ConnectionFactory):
-            def delete(self, f, realpath):
+            def delete(self, f, realpath, options=None):
                 pass
 
         _result = object()

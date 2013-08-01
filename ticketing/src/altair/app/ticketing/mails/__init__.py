@@ -1,4 +1,3 @@
-from altair.app.ticketing import txt_renderer_factory
 from altair.app.ticketing.core.models import MailTypeEnum
 from pyramid.settings import asbool
 
@@ -40,5 +39,5 @@ def includeme(config):
     config.add_route("mails.preview.organization", "/mailinfo/preview/organization/{organization_id}/mailtype/{mailtype}")
     config.add_route("mails.preview.event", "/mailinfo/preview/event/{event_id}/mailtype/{mailtype}")
     config.add_route("mails.preview.performance", "/mailinfo/preview/performance/{performance_id}/mailtype/{mailtype}")
-    config.add_renderer(".txt" ,txt_renderer_factory)
+    config.include('altair.app.ticketing.renderers')
     config.scan(".views")

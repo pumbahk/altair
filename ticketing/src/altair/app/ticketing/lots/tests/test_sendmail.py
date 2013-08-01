@@ -7,6 +7,7 @@ class send_accepted_mailTests(unittest.TestCase):
 
     def setUp(self):
         self.config = testing.setUp()
+        self.config.include('altair.app.ticketing.renderers')
 
     def tearDown(self):
         testing.tearDown()
@@ -22,9 +23,9 @@ class send_accepted_mailTests(unittest.TestCase):
         import pyramid_mailer
         import altair.app.ticketing.core.models as core_models
         import altair.app.ticketing.lots.models as lots_models
-        from altair.app.ticketing import txt_renderer_factory
+        #from altair.app.ticketing import txt_renderer_factory
         self.config.add_route('lots.review.index', 'review')
-        self.config.add_renderer('.txt' , txt_renderer_factory)        
+        #self.config.add_renderer('.txt' , txt_renderer_factory)
         self.config.add_renderer('.html' , 'pyramid.mako_templating.renderer_factory')
 
         request = testing.DummyRequest()
@@ -47,9 +48,13 @@ class send_accepted_mailTests(unittest.TestCase):
                     title=u"抽選テストイベント",
                     organization=core_models.Organization(short_name='testing', 
                                               contact_email="testing@sender.example.com", 
-                                              name=u"テスト組織"),
+                                                          name=u"テスト組織",
+                                                          settings=[
+                                                              core_models.OrganizationSetting(name="default"),
+                                                          ]),
                 ),
                 lotting_announce_datetime=datetime.now(),
+                sales_segment=core_models.SalesSegment(),
             ),
             payment_delivery_method_pair=core_models.PaymentDeliveryMethodPair(
                 system_fee=0,

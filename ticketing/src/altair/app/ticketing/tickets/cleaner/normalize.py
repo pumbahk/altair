@@ -3,18 +3,22 @@ from StringIO import StringIO
 import sys
 import re
 from collections import namedtuple
-import xml.sax
-from xml.sax.saxutils import XMLFilterBase, XMLGenerator
+from xml.sax import ContentHandler
+from lxml.sax import ElementTreeContentHandler, saxify
+from lxml import etree
+from ..constants import SVG_NAMESPACE
+
 import logging
 logger = logging.getLogger(__name__)
+
 """
 raw svg data -> cleaned svg data -> elminated needless tags svg data
 """
 
 
 ## tokenizer
-Start = namedtuple("S", "val attrs")
-End = namedtuple("E", "val")
+Start = namedtuple("S", "val qname attrs")
+End = namedtuple("E", "val qname")
 LBrace = namedtuple("L", "val")
 RBrace = namedtuple("R", "val")
 Content = namedtuple("C", "val")
@@ -131,9 +135,9 @@ class StateHandleHelper(object):
 font_family_rx = re.compile("font-family ?: *?([^;]+;?)")
 class ConvertXmlForTicketTemplateAttrsHook(object):
     @classmethod
-    def startElement(cls, name, attrs):
-        if name == "svg":
-            attrs._attrs["version"] = "1.2"
+    def startElementNS(cls, name, qname, attrs):
+        if name[0] == SVG_NAMESPACE and name[1] == "svg":
+            attrs._attrs[(None, "version")] = "1.2"
         return cls.replace_attrs(attrs._attrs)
 
     @classmethod
@@ -143,53 +147,55 @@ class ConvertXmlForTicketTemplateAttrsHook(object):
                 attrs["style"] = font_family_rx.sub("font-family: MS PGothic;",  attrs["style"])
         return attrs
 
-class ConvertXmlForTicketTemplateRenderingFilter(XMLFilterBase):
-    def __init__(self, upstream, downstream, eliminate=False,
-                 attrs_hook=ConvertXmlForTicketTemplateAttrsHook):
-        XMLFilterBase.__init__(self, upstream)
-        self._downstream = downstream
+class ConvertXmlForTicketTemplateRenderingFilter(ContentHandler):
+    def __init__(self, eliminate=False, attrs_hook=ConvertXmlForTicketTemplateAttrsHook):
+        self._downstream = ElementTreeContentHandler()
         self.sm = StateHandleHelper()
         self.eliminate = eliminate
         self.attrs_hook  = attrs_hook
 
-    def startDocument(self):
-        pass
+    @property
+    def result(self):
+        return self._downstream.etree
 
-    def startElement(self, name, attrs):
+    def startDocument(self):
+        self._downstream.startDocument()
+
+    def startElementNS(self, name, qname, attrs):
         # todo: refactoring
-        attrs = self.attrs_hook.startElement(name, attrs)
+        attrs = self.attrs_hook.startElementNS(name, qname, attrs)
         state = self.sm.state
         if state == on_external:
-            self.sm.heads[-1].append(Start(name, attrs))
+            self.sm.heads[-1].append(Start(name, qname, attrs))
         elif state == after_first_lbrace:
-            self.sm.heads[-1].append(Start(name, attrs))
+            self.sm.heads[-1].append(Start(name, qname, attrs))
         elif state == after_second_lbrace:
-            self.sm.heads[-1].append(Start(name, attrs))
+            self.sm.heads[-1].append(Start(name, qname, attrs))
         elif state == in_place_holder:
-            self.sm.heads[-1].append(Start(name, attrs))
+            self.sm.heads[-1].append(Start(name, qname, attrs))
             #peek last then tails << stag
         elif state == after_first_rbrace:
-            self.sm.tails[-1].append(Start(name, attrs))
+            self.sm.tails[-1].append(Start(name, qname, attrs))
         elif state == after_second_rbrace:
-            self.sm.tails[-1].append(Start(name, attrs))
+            self.sm.tails[-1].append(Start(name, qname, attrs))
             ## consume?
         else:
             raise Exception("invalid state")
 
-    def endElement(self, name):
+    def endElementNS(self, name, qname):
         state = self.sm.state
         if state == on_external:
-            self.sm.heads[-1].append(End(name))
+            self.sm.heads[-1].append(End(name, qname))
         elif state == after_first_lbrace:
-            self.sm.heads[-1].append(End(name))
+            self.sm.heads[-1].append(End(name, qname))
         elif state == after_second_lbrace:
-            self.sm.heads[-1].append(End(name))
+            self.sm.heads[-1].append(End(name, qname))
         elif state == in_place_holder:
-            self.sm.tails[-1].append(End(name))
+            self.sm.tails[-1].append(End(name, qname))
         elif state == after_first_rbrace:
-            self.sm.tails[-1].append(End(name))
+            self.sm.tails[-1].append(End(name, qname))
         elif state == after_second_rbrace:
-            self.sm.tails[-1].append(End(name))
+            self.sm.tails[-1].append(End(name, qname))
         else:
             raise Exception("invalid state")
 
@@ -201,9 +207,13 @@ class ConvertXmlForTicketTemplateRenderingFilter(XMLFilterBase):
         sm = self.sm
         downstream = self._downstream
         if self.eliminate:
-            return _eliminated_dump_to_downstream(sm, downstream)
+            _eliminated_dump_to_downstream(sm, downstream)
         else:
-            return _simple_dump_to_downstream(sm, downstream)
+            _simple_dump_to_downstream(sm, downstream)
+        self._downstream.endDocument()
+
+    def __call__(self, tree):
+        saxify(tree, self)
 
 class DocumentAlreadyEnd(Exception):
     pass
@@ -220,9 +230,9 @@ def _simple_dump_to_downstream(sm, downstream):
             for xs in (sm.heads[i], sm.content[i], sm.tails[i]):
                 for x in xs:
                     if isinstance(x, Start):
-                        downstream.startElement(x.val, x.attrs)
+                        downstream.startElementNS(x.val, x.qname, x.attrs)
                     elif isinstance(x, End):
-                        downstream.endElement(x.val)
+                        downstream.endElementNS(x.val, x.qname)
                     else:
                         downstream.characters(x.val)
                     if x.val == fst:
@@ -247,10 +257,10 @@ def _eliminated_dump_to_downstream(sm, downstream):
                     if isinstance(x, (Start, End)) and type(prev) == type(x) and prev.val == x.val:
                         continue
                     if isinstance(x, Start):
-                        downstream.startElement(x.val, x.attrs)
+                        downstream.startElementNS(x.val, x.qname, x.attrs)
                         prev = x
                     elif isinstance(x, End):
-                        downstream.endElement(x.val)
+                        downstream.endElementNS(x.val, x.qname)
                         prev = x
                     else:
                         downstream.characters(x.val)
@@ -266,14 +276,15 @@ def normalize(inp, outp=sys.stdout, encoding="UTF-8", header="", eliminate=False
     return _normalize(inp, outp, encoding, eliminate=eliminate)
 
 def _normalize(inp, outp=sys.stdout, encoding="UTF-8", eliminate=False):
-    downstream_handler = XMLGenerator(outp, encoding.lower())
-    parser = xml.sax.make_parser()
-    parser.setFeature(xml.sax.handler.feature_external_ges, False)
+    outp.write(etree.tostring(normalize_etree(etree.parse(inp), eliminate), encoding=encoding))
+
+def normalize_etree(tree, eliminate=False):
     attrs_hook = ConvertXmlForTicketTemplateAttrsHook
     filter_handler = ConvertXmlForTicketTemplateRenderingFilter(
-        parser, downstream_handler, eliminate=eliminate, attrs_hook=attrs_hook
+        eliminate=eliminate, attrs_hook=attrs_hook
         )
-    filter_handler.parse(inp)
+    filter_handler(tree)
+    return filter_handler.result
 
 
 if __name__ == "__main__":

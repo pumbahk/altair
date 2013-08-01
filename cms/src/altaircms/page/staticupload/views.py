@@ -353,8 +353,9 @@ class StaticPageView(BaseView):
         creator = self.context.creation(creation.StaticPageCreate, form.data)
         try:
             creator.update_underlying_something(static_page)
-        except:
-            FlashMessage.error(u"更新に失敗しました", request=self.request)
+        except Exception as e:
+            logger.error(str(e))
+            FlashMessage.error(u"更新に失敗しました。(ファイル名に日本語などのマルチバイト文字が含まれている時に失敗することがあります)", request=self.request)
             raise HTTPFound(self.context.endpoint(static_page))
 
         self.context.touch(static_page)

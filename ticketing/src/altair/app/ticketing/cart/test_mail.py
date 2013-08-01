@@ -110,7 +110,8 @@ def _build_sej(*args, **kwargs):
 class SendPurchaseCompleteMailTest(unittest.TestCase):
     def setUp(self):
         self.config = testing.setUp(settings={"altair.mailer": "pyramid_mailer.testing", "altair.sej.template_file": "xxx"})
-        self.config.add_renderer('.html' , 'pyramid.mako_templating.renderer_factory')
+        #self.config.add_renderer('.html' , 'pyramid.mako_templating.renderer_factory')
+        self.config.include('altair.app.ticketing.renderers')
         self.config.include('altair.app.ticketing.cart.import_mail_module')
 
         ## TBA

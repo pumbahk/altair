@@ -1,6 +1,7 @@
 # -*- encoding:utf-8 -*-
 from pyramid.config import Configurator
-from pyramid.session import UnencryptedCookieSessionFactoryConfig
+from pyramid_beaker import session_factory_from_settings
+from pyramid_beaker import set_cache_regions_from_settings
 from sqlalchemy import engine_from_config
 import sqlahelper
 
@@ -22,7 +23,8 @@ def main(global_config, **local_config):
     """
     settings = dict(global_config)
     settings.update(local_config)
-    session_factory = UnencryptedCookieSessionFactoryConfig(settings.get('session.secret'))
+    session_factory = session_factory_from_settings(settings)
+    set_cache_regions_from_settings(settings) 
     from sqlalchemy.pool import NullPool
     engine = engine_from_config(settings, poolclass=NullPool,
                                 pool_recycle=60)
@@ -74,6 +76,7 @@ def main(global_config, **local_config):
     config.include("altairsite.search", route_prefix="/search")
     config.include("altairsite.inquiry")
     config.include("altairsite.order")
+    config.include("altairsite.preview")
 
     config.add_static_view('static', 'altaircms:static', cache_max_age=3600)
     config.add_static_view('plugins/static', 'altaircms:plugins/static', cache_max_age=3600)
@@ -92,6 +95,7 @@ def main(global_config, **local_config):
     # layout
     config.include("pyramid_layout")
     config.add_layout(".pyramidlayout.MyLayout", 'altaircms:templates/usersite/base.html') #this is pyramid-layout's layout
+
     app = config.make_wsgi_app()
     from pyramid.interfaces import IRouter
     config.registry.registerUtility(app, IRouter)

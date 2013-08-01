@@ -4,6 +4,7 @@ from altaircms.page.models import Page
 from pyramid.httpexceptions import HTTPInternalServerError, HTTPNotFound
 from altaircms.lib.fanstatic_decorator import with_jquery
 from pyramid.view import view_config
+from altaircms.linklib import get_usersite_url_builder
 import logging 
 logger = logging.getLogger(__name__)
 
@@ -74,7 +75,13 @@ def preview_pageset(context, request, published=True):
     ## ugly
     now = get_now(request)
     if published:
-        return _append_preview_message(response, u"これはpreview画面です ({0}) 現在時刻:{1}".format(page.publish_status(now),  now), color="green", backgroundcolor="#afa")
+        usersite_url = get_usersite_url_builder(request).build(page.pageset)
+        message = u"""
+<div>
+<p>これはpreview画面です ({status}) 現在時刻:{now} <a href='{url}'>usersiteのurl</a></p>
+</div>
+""".format(status=page.publish_status(now), now=now, url=usersite_url)
+        return _append_preview_message(response, message.replace("\n", "\\n"), color="green", backgroundcolor="#afa")
     else:
         messages = [u'<div>'
                     u"<p>これはpreview画面です ({0}) 現在時刻:{1}</p>".format(page.publish_status(now),  now), 

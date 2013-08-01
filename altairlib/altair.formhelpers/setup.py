@@ -34,7 +34,7 @@ setup(name='altair.formhelpers',
       include_package_data=True,
       zip_safe=False,
       install_requires=[
-          'setuptools',
+          'setuptools>0.7',
           'wtforms',
           'pyramid',
           'zope.deprecation',

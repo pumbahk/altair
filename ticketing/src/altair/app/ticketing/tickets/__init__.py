@@ -25,6 +25,8 @@ def includeme(config):
 
     config.add_route('tickets.queue.index', '/queue', factory=".resources.TicketsResource")
     config.add_route('tickets.queue.delete', '/queue/delete', factory=".resources.TicketsResource")
+    config.add_route('tickets.queue.mask', '/queue/mask', factory=".resources.TicketsResource")
+    config.add_route('tickets.queue.unmask', '/queue/unmask', factory=".resources.TicketsResource")
 
     config.add_route('tickets.printer', '/print/printer')
     config.add_route('tickets.printer.api.formats', '/print/formats')
