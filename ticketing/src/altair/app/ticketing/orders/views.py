@@ -74,6 +74,7 @@ from altair.app.ticketing.loyalty import api as loyalty_api
 
 from . import utils
 from .api import CartSearchQueryBuilder, OrderSummarySearchQueryBuilder, QueryBuilderError, get_metadata_provider_registry
+from .utils import NumberIssuer
 from .models import OrderSummary
 
 logger = logging.getLogger(__name__)
@@ -784,7 +785,7 @@ class OrderDetailView(BaseView):
             .filter(Ticket.ticket_format_id==ticket_format.id)\
             .filter(OrderedProductItem.id==item.id)\
             .all()
-        dicts = build_dicts_from_ordered_product_item(item)
+        dicts = build_dicts_from_ordered_product_item(item, ticket_number_issuer=NumberIssuer())
         data = dict(ticket_format.data)
         data["ticket_format_id"] = ticket_format.id
         results = []

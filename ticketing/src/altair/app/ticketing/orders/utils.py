@@ -1,5 +1,7 @@
 # -*- coding:utf-8 -*-
 
+from collections import Counter
+import re
 import logging
 import pystache
 from altair.app.ticketing.tickets.utils import build_dicts_from_ordered_product_item
@@ -51,8 +53,6 @@ def enqueue_item(operator, order, ordered_product_item, ticket_format_id=None):
                 ordered_product_item=ordered_product_item,
                 seat=seat
                 )
-
-import re
 last_char = "\uFE4F" #utf-8(cjk)
 DIGIT_RX = re.compile(r"([0-9]+)")
 
@@ -62,21 +62,15 @@ def compare_by_comfortable_order((seat, dicts_)):
     else:
         return [(int(x) if x.isdigit() else x) for x in re.split(DIGIT_RX, seat.name) if x]
 
-class RingCounter(object):
-    def __init__(self, i=0, maxv=100000):
-        self.lower_limit = i
-        self.i = i
-        self.upper_limit = maxv
+class NumberIssuer(object):
+    def __init__(self):
+        self.counter = Counter()
 
-    def __call__(self):
-        v = self.i
-        self.i += 1
-        if self.i > self.upper_limit:
-            self.i = self.lower_limit
+    def __call__(self, k):
+        v = self.counter[k] + 1
+        self.counter[k] = v
         return v
-
-ticket_number_issuer=RingCounter()
-
+        
 def comfortable_sorted_built_dicts(ordered_product_item):
-    dicts = build_dicts_from_ordered_product_item(ordered_product_item, ticket_number_issuer=ticket_number_issuer)
+    dicts = build_dicts_from_ordered_product_item(ordered_product_item, ticket_number_issuer=NumberIssuer())
     return sorted(dicts, key=compare_by_comfortable_order)

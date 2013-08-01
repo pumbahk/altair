@@ -896,7 +896,7 @@ class SendingMailForm(Form):
 
 class PreviewTicketSelectForm(Form):
     ticket_format_id = SelectField(
-        label=u"チケットの種類", 
+        label=u"チケット様式", 
         choices=[], 
         validators=[Optional()],
     )
