@@ -135,7 +135,7 @@ ul.sitemapLists li.list2{
         </h3>
         <ul class="sitemapLists">
           %for sp in get_specials_pageset(request, now):
-          <li><a href="${request.route_path("features", path=sp.name)}" target="_blank">${sp.description}</a></li>
+          <li><a href="${request.route_path("features", page_name=sp.name)}" target="_blank">${sp.description}</a></li>
           %endfor
         </ul>
       </td>
