@@ -42,7 +42,7 @@ def setup_database():
 
     Base.metadata.create_all(sqlahelper.get_engine())
 
-    from altair.app.ticketing.seed.operator import OperatorData, OperatorRoleData
+    from altair.app.ticketing.seed.operator_ import OperatorData, OperatorRoleData
     from altair.app.ticketing.seed.service import ServiceData
     from altair.app.ticketing.seed.permission import PermissionData
     from altair.app.ticketing.seed.organization import OrganizationData
