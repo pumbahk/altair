@@ -574,6 +574,20 @@ class LotEntries(BaseView):
         lot = Lot.query.filter(Lot.id==lot_id).one()
 
         f = self.request.params['entries'].file
+        entries = self._parse_import_file(f)
+        if not entries:
+            self.request.session.flash(u"当選データがありませんでした")
+            return HTTPFound(location=self.request.route_url('lots.entries.index', lot_id=lot.id))
+
+        self.request.session.flash(u"{0}件の当選データを取り込みました".format(len(entries)))
+        electing_count = lots_api.submit_lot_entries(lot.id, entries)
+        rejecting_count = lots_api.submit_reject_entries(lot_id, lot.rejectable_entries)
+        self.request.session.flash(u"新たに{0}件が当選予定となりました".format(electing_count))
+        self.request.session.flash(u"新たに{0}件が落選予定となりました".format(rejecting_count))
+
+        return HTTPFound(location=self.request.route_url('lots.entries.index', lot_id=lot.id))
+
+    def _parse_import_file(self, f):
         header = 1
         entries = []
         for line in f:
@@ -588,18 +602,10 @@ class LotEntries(BaseView):
             parts = line.split(",")
             if len(parts) < 3:
                 raise Exception, parts
-            entry_no = parts[2]
-            wish_order = parts[5]
+            entry_no = parts[1]
+            wish_order = parts[2]
             entries.append((entry_no, wish_order))
-        if not entries:
-            self.request.session.flash(u"当選データがありませんでした")
-            return HTTPFound(location=self.request.route_url('lots.entries.index', lot_id=lot.id))
-
-        self.request.session.flash(u"{0}件の当選データを取り込みました".format(len(entries)))
-        lots_api.submit_lot_entries(lot.id, entries)
-        
-        return HTTPFound(location=self.request.route_url('lots.entries.index', lot_id=lot.id))
-
+        return entries
 
     @view_config(route_name='lots.entries.elect',
                  renderer="lots/electing.html",
