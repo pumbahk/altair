@@ -104,7 +104,7 @@ class RakutenOpenIDPlugin(object):
         # return_to URLの場合にverifyする
         # それ以外の場合デシリアライズしてclaimed_idを返す
         req = get_current_request(environ)
-        logger.debug('identity (req.path_url=%s, impl.verify_url=%s)' % (req.path_url, impl.verify_url))
+        logger.debug('identity (req.path_url=%s, impl.verify_url=%s, impl.extra_verify_url=%s)' % (req.path_url, impl.verify_url, impl.extra_verify_url))
 
         identity = None
 
@@ -191,7 +191,7 @@ class RakutenOpenIDPlugin(object):
     def remember(self, environ, identity):
         req = get_current_request(environ)
         impl = self._get_impl(environ)
-        logger.debug('remember identity: %s' % identity)
+        logger.debug('remember identity (req.path_url=%s, impl.verify_url=%s): %s' % (req.path_url, impl.verify_url, identity))
         if req.path_url == impl.verify_url:
             session = impl.get_session(req)
             if session is not None:
