@@ -30,7 +30,7 @@ def unit_list_view(context, request):
     else:
         qs = searcher.filter_default(qs, request.GET)
         
-    if request.GET.get('published', ''):
+    if 'True' == request.GET.get('published', ''):
         qs = context.TargetTopic.publishing(qs=qs)
         
     qs = context.TargetTopic.order_by_logic(qs)
