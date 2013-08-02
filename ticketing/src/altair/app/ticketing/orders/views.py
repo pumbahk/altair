@@ -1483,7 +1483,7 @@ class OrdersReserveView(BaseView):
         order_id = self.request.matchdict.get('order_id', 0)
         order = Order.get(order_id, self.context.user.organization_id)
         if order is None:
-            raise HTTPNotFound('order id %d is not found' % order.id)
+            raise HTTPNotFound('order id %s is not found' % order_id)
         return self._get_order_dicts(order)
 
     @view_config(route_name='orders.api.edit', request_method='PUT', renderer='json')
@@ -1610,7 +1610,7 @@ class OrdersReserveView(BaseView):
             }))
 
         edit_order.save()
-        return self._get_order_dicts(order)
+        return self._get_order_dicts(edit_order)
 
     @view_config(route_name='orders.api.get.html', renderer='ticketing:templates/orders/_tiny_order.html')
     def api_get_html(self):

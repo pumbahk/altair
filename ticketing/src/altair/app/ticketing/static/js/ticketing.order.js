@@ -118,7 +118,9 @@ order.OrderFormPresenter.prototype = {
     self.order.save(null, {
       success: function(model, res) {
         self.showMessage('保存しました', 'alert-success');
-        // Todo: reload #orderProduct and venue
+        self.view.close();
+        $('.venue-editor-main-side-toggle').click();
+        venueEditorRoot.venueeditor('refresh');
       },
       error: function(model, res) {
         var response = JSON.parse(res.responseText);
