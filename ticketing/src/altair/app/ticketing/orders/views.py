@@ -1621,7 +1621,12 @@ class OrdersReserveView(BaseView):
             raise HTTPNotFound('order (performance_id=%s, l0_id=%s) is not found' % (performance_id, l0_id))
         return {
             'order':order,
-        }
+            'options':dict(
+                data_source=dict(
+                    order_template_url='/static/tiny_order.html'
+                    )
+                )
+            }
 
     @view_config(route_name='orders.reserve.form', request_method='POST', renderer='ticketing:templates/orders/_form_reserve.html')
     def reserve_form(self):

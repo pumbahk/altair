@@ -24,9 +24,13 @@ def includeme(config):
     config.add_route('orders.issue_status'              , '/issue_status/{order_id}')
     config.add_route('orders.api.get'                   , '/api/get/')
     config.add_route('orders.api.get.html'              , '/api/get/html/')
-    config.add_route('orders.api.product.template'      , '/api/product/template/')
     config.add_route('orders.api.edit'                  , '/api/edit/{order_id}')
     config.add_route('orders.api.performance'           , '/api/performance/{performance_id}')
+    config.add_route("orders.api.performances"          , "/api/performances")
+    config.add_route("orders.api.sales_segment_groups"  , "/api/sales_segment_groups")
+    config.add_route("orders.api.sales_segments"        , "/api/sales_segments")
+    config.add_route("orders.api.checkbox_status"       , "/api/checkbox_status/{action}")
+    config.add_route("orders.api.orders"                , "/api/orders/{action}")
 
     config.add_route('orders.refund.index'              , '/refund/')
     config.add_route('orders.refund.search'             , '/refund/search/')
@@ -60,10 +64,6 @@ def includeme(config):
     config.add_route('orders.sej.ticket_template'       , '/sej/ticket_template')
 
     config.add_route("orders.mailinfo"                  , "/orders/{order_id}/mailinfo/{action}")
-    config.add_route("orders.api.performances"          , "/api/performances")
-    config.add_route("orders.api.sales_segment_groups"  , "/api/sales_segment_groups")
-    config.add_route("orders.api.checkbox_status"       , "/api/checkbox_status/{action}")
-    config.add_route("orders.api.orders"                , "/api/orders/{action}")
     config.add_route("cart.search",                       "/carts/")
     config.scan(".")
 

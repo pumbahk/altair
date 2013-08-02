@@ -2,17 +2,17 @@
 
 var order = {};
 
-order.init = function(order_id) {
+order.init = function(order_id, options) {
   this.app = new order.ApplicationController();
-  this.app.init(order_id);
+  this.app.init(order_id, options);
 };
 
 order.ApplicationController = function() {
 };
 
-order.ApplicationController.prototype.init = function(order_id) {
+order.ApplicationController.prototype.init = function(order_id, options) {
   this.orderFormPresenter = new order.OrderFormPresenter({viewType: order.OrderFormView});
-  this.orderFormPresenter.initialize(order_id);
+  this.orderFormPresenter.initialize(order_id, options);
   this.orderFormPresenter.fetchAndShow();
 };
 
@@ -26,14 +26,16 @@ order.OrderFormPresenter = function(params) {
 order.OrderFormPresenter.prototype = {
   defaults: {
   },
-  initialize: function(order_id) {
+  initialize: function(order_id, options) {
     var self = this;
     this.order = new order.Order({id: order_id});
+    this.options = options;
     this.performance = new order.Performance();
     this.view = new this.viewType({
       el: $('#orderProductForm'),
       presenter: this,
-      order: this.order
+      order: this.order,
+      data_source: this.options.data_source
     });
 
     $('.btn-save-order').on('click', function() {
@@ -54,7 +56,8 @@ order.OrderFormPresenter.prototype = {
     this.view = new this.viewType({
       el: $('#orderProductForm'),
       presenter: this,
-      order: this.order
+      order: this.order,
+      data_source: this.options.data_source
     });
     this.view.show();
   },
@@ -336,7 +339,7 @@ order.OrderFormView = Backbone.View.extend({
   initialize: function() {
     this.presenter = this.options.presenter;
     this.order = this.options.order;
-    this.template = new orderProductTemplate();
+    this.template = new orderProductTemplate(this.options.data_source);
     this.template.get();
   },
   alert: function(message, option) {
@@ -497,13 +500,13 @@ order.OrderProductItemFormView = Backbone.View.extend({
   }
 });
 
-var orderProductTemplate = function() {
+var orderProductTemplate = function(data_source) {
   return {
     template: '',
     get: function() {
       var self = this;
       $.ajax({
-        url: '/static/tiny_order.html',
+        url: data_source.order_template_url,
         async: false,
         dataType: 'html',
         success: function (data) {
