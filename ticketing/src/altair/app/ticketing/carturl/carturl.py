@@ -1,4 +1,5 @@
 # -*- coding:utf-8 -*-
+import sqlalchemy as sa
 import urllib
 from urlparse import ParseResult, urlparse
 import logging
@@ -21,7 +22,10 @@ def guess_host_name_from_request(request, organization=None):
     url = request.url
     ## too-addhoc
     qs = Host.query.filter(Host.organization_id==organization.id)
+    qs = qs.filter(sa.not_(Host.host_name.like("elbtest-%")))
     if "service" in url:
+        host = qs.filter(Host.host_name.like("%.tstar.jp")).first()
+    elif ".tstar.jp" in url:
         host = qs.filter(Host.host_name.like("%.tstar.jp")).first()
     elif "stg2" in url:
         host = qs.filter(Host.host_name.like("%stg2%")).first()
