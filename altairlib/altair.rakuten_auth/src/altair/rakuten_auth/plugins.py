@@ -196,7 +196,9 @@ class RakutenOpenIDPlugin(object):
             session = impl.get_session(req)
             if session is not None:
                 session[self.__class__.__name__ + '.identity'] = identity
-            session.save()
+                session.save()
+            else:
+                logger.warning('could not retrieve session')
         rememberer = self._get_rememberer(environ)
         return rememberer.remember(environ, identity)
 
