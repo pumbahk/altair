@@ -24,7 +24,7 @@
 <h4>${ss_name}</h4>
 <table border="1" bordercolor="#888" width="98%" style="border-collapse:collapse;">
   % if form.limited_from.data or form.limited_to.data:
-  <tr bgcolor="#ddd">
+  <tr style="background-color:#ddd;">
     <th colspan="6"></th>
     % if need_total:
     <th colspan="4">累計</th>
@@ -32,7 +32,7 @@
     <th colspan="4">${vh.term(form.limited_from.data, form.limited_to.data)}</th>
   </tr>
   % endif
-  <tr bgcolor="#ddd">
+  <tr style="background-color:#ddd;">
     <th style="width: 16%;">席種</th>
     <th style="width: 8%;">配券先</th>
     <th style="width: 16%;">商品</th>
