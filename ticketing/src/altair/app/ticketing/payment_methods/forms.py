@@ -52,3 +52,8 @@ class PaymentMethodForm(Form):
     hide_voucher = OurBooleanField(
         label=u'払込票を表示しない',
     )
+
+    public = OurBooleanField(
+        label=u'公開する',
+    )
+    

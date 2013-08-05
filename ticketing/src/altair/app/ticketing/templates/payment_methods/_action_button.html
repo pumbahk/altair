@@ -22,6 +22,11 @@
     } else {
       modal.find('#hide_voucher').removeAttr('checked');
     }
+    if ($(el).find('#public').attr('value')){
+      modal.find('#public').attr('checked', 'cheched');
+    } else {
+      modal.find('#public').removeAttr('checked');
+    }
     modal.find('*[name="description"]').val(decodeURI($(el).find('.payment_method_description').text()));
     modal.modal('toggle');
   }
