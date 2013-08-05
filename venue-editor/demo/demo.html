@@ -85,10 +85,11 @@
         selectable: function (seat) {
           return seat.id != "A4";
         },
-        click: function (viewer, seat, highlighted) {
-          $.each(highlighted, function (id, seat) {
-            console.log(seat);
-          });
+        click: function (seat) {
+          console.log(seat.cid);
+          // $.each(highlighted, function (id, seat) {
+          //   console.log(seat);
+          // });
         },
         select: function (viewer, selection) {
           $.each(selection, function (i, seat) {
