@@ -2618,10 +2618,11 @@ class OrderedProduct(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     @property
     def seat_quantity(self):
+        quantity = 0
         for item in self.ordered_product_items:
             if item.product_item.stock_type.is_seat:
-                return item.quantity
-        return 0
+                quantity += item.quantity
+        return quantity
 
     def release(self):
         # 在庫を解放する

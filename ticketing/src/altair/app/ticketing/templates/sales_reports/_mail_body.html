@@ -88,13 +88,13 @@
       <td style="padding: 5px; text-align: right;">${vh.number(report.total_paid_quantity + report.total_unpaid_quantity) or ''}</td>
       <td style="padding: 5px; text-align: right;">${vh.number(report.total_unpaid_quantity) or ''}</td>
       <td style="padding: 5px; text-align: right;">${vh.number(report.total_paid_quantity) or ''}</td>
-      <td style="padding: 5px; text-align: right;">${vh.price((report.total_paid_quantity + report.total_unpaid_quantity) * report.product_price)}</td>
+      <td style="padding: 5px; text-align: right;">${vh.price((report.total_paid_quantity + report.total_unpaid_quantity) / report.sales_unit * report.product_price)}</td>
       % endif
       % if form.limited_from.data or form.limited_to.data:
       <td style="padding: 5px; text-align: right;">${vh.number(report.paid_quantity + report.unpaid_quantity) or ''}</td>
       <td style="padding: 5px; text-align: right;">${vh.number(report.unpaid_quantity) or ''}</td>
       <td style="padding: 5px; text-align: right;">${vh.number(report.paid_quantity) or ''}</td>
-      <td style="padding: 5px; text-align: right;">${vh.price((report.paid_quantity + report.unpaid_quantity) * report.product_price)}</td>
+      <td style="padding: 5px; text-align: right;">${vh.price((report.paid_quantity + report.unpaid_quantity) / report.sales_unit * report.product_price)}</td>
       % endif
     </tr>
     % endfor
