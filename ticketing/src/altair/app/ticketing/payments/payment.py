@@ -35,6 +35,8 @@ class Payment(object):
         return res
 
     def call_delegator(self):
+        """ 確認後決済フロー
+        """
         preparer = get_preparer(self.request, self.cart.payment_delivery_pair)
         if preparer is None:
             raise Exception
@@ -67,6 +69,16 @@ class Payment(object):
         payment_plugin = get_payment_plugin(self.request, payment_delivery_pair.payment_method.payment_plugin_id)
         delivery_plugin = get_delivery_plugin(self.request, payment_delivery_pair.delivery_method.delivery_plugin_id)
         return payment_delivery_plugin, payment_plugin, delivery_plugin
+
+    def call_validate(self):
+        """ 決済処理前の状態チェック
+        """
+        preparer = get_preparer(self.request, self.cart.payment_delivery_pair)
+        if preparer is None:
+            raise Exception
+        if hasattr(preparer, 'validate'):
+            return preparer.validate(self.request, self.cart)
+        return None
 
     def call_payment(self):
         """ 決済処理
