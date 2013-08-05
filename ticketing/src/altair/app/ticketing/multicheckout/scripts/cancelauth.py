@@ -120,13 +120,17 @@ def main():
         logger.info("finished get_auth_orders %s" % shop_name)
 
         if statuses:
-            logger.info("starting sync_data %s" % shop_name)
-            sync_data(request, statuses)
-            logger.info("finished sync_data %s" % shop_name)
+            try:
+                logger.info("starting sync_data %s" % shop_name)
+                sync_data(request, statuses)
+                logger.info("finished sync_data %s" % shop_name)
 
-            logger.info("starting cancel_auth %s" % shop_name)
-            cancel_auth(request, statuses)
-            logger.info("finished cancel_auth %s" % shop_name)
+                logger.info("starting cancel_auth %s" % shop_name)
+                cancel_auth(request, statuses)
+                logger.info("finished cancel_auth %s" % shop_name)
+            except Exception, e:
+                logging.error('Multicheckout API error occured: %s' % e.message)
+                break
         processed_shops.append(shop_id)
 
 if __name__ == '__main__':
