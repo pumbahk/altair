@@ -13,7 +13,8 @@ from ..exceptions import (
     ZeroQuantityError,
     CartCreationException,
     DeliveryFailedException,
-    InvalidCartStatusError
+    InvalidCartStatusError,
+    OverOrderLimitException,
 )
 from ..reserving import InvalidSeatSelectionException, NotEnoughAdjacencyException
 from ..stocker import InvalidProductSelectionException, NotEnoughStockException
@@ -145,3 +146,19 @@ def payment_plugin_exception(context, request):
 def invalid_cart_status_error(request):
     return dict(message=Markup(u'大変申し訳ございません。ブラウザの複数ウィンドウからの操作や、戻るボタン等の操作により、予約を継続することができません。<br>'
                                u'ご予約の際は複数ウィンドウや戻るボタンを使わずにご予約ください。'))
+
+
+@mobile_view_config(context=OverOrderLimitException, renderer=selectable_renderer('altair.app.ticketing.cart:templates/%(membership)s/mobile/error.html'))
+@view_config(context=OverOrderLimitException, renderer=selectable_renderer('altair.app.ticketing.cart:templates/%(membership)s/pc/message.html'))
+def over_order_limit_exception(context, request):
+    event_id = context.event_id
+    event_name = context.event_name
+    performance_name = context.performance_name
+    order_limit = context.order_limit
+    location = request.route_url('cart.index', event_id=event_id)
+    msg = u'{performance_name} の購入は {limit} 回までとなっております。 <br><a href="{location}">{event_name}の購入ページに戻る</a>'
+    return dict(title=u'',
+                message=Markup(msg.format(location=location,
+                                          limit=order_limit,
+                                          event_name=event_name,
+                                          performance_name=performance_name)))

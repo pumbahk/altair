@@ -46,7 +46,8 @@ from .exceptions import (
     NoPerformanceError,
     InvalidCSRFTokenException, 
     CartCreationException,
-    InvalidCartStatusError
+    InvalidCartStatusError,
+    OverOrderLimitException,
 )
 
 logger = logging.getLogger(__name__)
@@ -670,6 +671,17 @@ class PaymentView(object):
             sales_segment = self.request.context.sales_segment
             payment_delivery_methods = self.context.available_payment_delivery_method_pairs(sales_segment)
             return dict(form=self.form, payment_delivery_methods=payment_delivery_methods)
+
+        sales_segment = cart.sales_segment
+        if not self.context.check_order_limit(sales_segment, user, shipping_address_params['email_1']):
+
+            order_limit = sales_segment.order_limit
+            performance = sales_segment.performance
+            event = performance.event
+            raise OverOrderLimitException(event_id=event.id,
+                                          event_name=event.title,
+                                          performance_name=performance.name,
+                                          order_limit=order_limit)
 
         cart.payment_delivery_pair = payment_delivery_pair
         cart.shipping_address = self.create_shipping_address(user, shipping_address_params)

@@ -3218,6 +3218,33 @@ class SalesSegment(Base, BaseModel, LogicallyDeleted, WithTimestamp):
     def available_payment_delivery_method_pairs(self, now):
         return [pdmp for pdmp in self.payment_delivery_method_pairs if pdmp.is_available_for(self, now)]
 
+
+    def query_orders_by_user(self, user):
+        """ 該当ユーザーがこの販売区分での注文内容を問い合わせ """
+        from altair.app.ticketing.cart.models import Cart
+        return DBSession.query(Order).filter(
+            Order.user_id==user.id
+        ).filter(
+            Cart.order_id==Order.id
+        ).filter(
+            Cart.sales_segment_id==self.id
+        )
+
+
+    def query_orders_by_mailaddress(self, mailaddress):
+        """ 該当メールアドレスによるこの販売区分での注文内容を問い合わせ """
+        from altair.app.ticketing.cart.models import Cart
+        return DBSession.query(Order).filter(
+            Order.shipping_address_id==ShippingAddress.id
+        ).filter(
+            or_(ShippingAddress.email_1 == mailaddress,
+                ShippingAddress.email_2 == mailaddress)
+        ).filter(
+            Cart.order_id==Order.id
+        ).filter(
+            Cart.sales_segment_id==self.id
+        )
+
     @property
     def event(self):
         return self.sales_segment_group.event
