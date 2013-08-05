@@ -1,5 +1,6 @@
  # -*- coding: utf-8 -*-
 
+import unicodedata
 import webhelpers.paginate as paginate
 
 from pyramid.view import view_config, view_defaults
@@ -74,6 +75,7 @@ class StockTypes(BaseView):
         f = StockTypeForm(self.request.POST)
         if f.validate():
             stock_type = merge_session_with_post(stock_type, f.data)
+            stock_type.display_order = unicodedata.normalize('NFKC', f.data['display_order'])
             stock_type.set_style(f.data)
             stock_type.save()
 

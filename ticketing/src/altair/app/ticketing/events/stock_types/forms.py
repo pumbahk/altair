@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import unicodedata
 from wtforms import Form
 from wtforms import HiddenField, FieldList
 from wtforms.validators import Length, Optional, ValidationError
@@ -70,3 +71,13 @@ class StockTypeForm(OurForm):
                     if stock.quantity > 0:
                         p = stock.performance
                         raise ValidationError(u'既に配席されている為、変更できません (%s席 @ %s %s)' % (stock.quantity, p.name, p.start_on.strftime("%m/%d")))
+
+    def validate_display_order(form, field):
+        if not field.data:
+            return
+
+        display_order_uc = unicodedata.normalize('NFKC',field.data)
+        if display_order_uc.isdigit():
+            return
+
+        raise ValueError(u"数字を入力して下さい")
