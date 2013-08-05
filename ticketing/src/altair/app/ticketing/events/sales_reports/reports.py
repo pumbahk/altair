@@ -214,6 +214,7 @@ class SalesDetailReportRecord(object):
                  product_id=None,
                  product_name=None,
                  product_price=None,
+                 sales_unit=None,
                  stock_holder_id=None,
                  stock_holder_name=None,
                  sales_segment_group_name=None,
@@ -232,6 +233,8 @@ class SalesDetailReportRecord(object):
         self.product_name = product_name
         # 商品単価
         self.product_price = product_price
+        # 販売単位
+        self.sales_unit = sales_unit
         # 商品表示順
         self.product_display_order = product_display_order
         # 枠ID
@@ -342,6 +345,7 @@ class SalesDetailReporter(object):
             Stock.id,
             StockType.display_order,
             Product.display_order,
+            func.sum(ProductItem.quantity),
         ).group_by(func.ifnull(Product.base_product_id, Product.id))
 
         for row in query.all():
@@ -356,7 +360,8 @@ class SalesDetailReporter(object):
                 sales_segment_group_name=row[7],
                 stock_id=row[8],
                 stock_type_display_order=row[9],
-                product_display_order=row[10]
+                product_display_order=row[10],
+                sales_unit=row[11]
             )
 
     def _get_order_quantity(self):
@@ -520,10 +525,10 @@ class SalesDetailReporter(object):
                     total.vacant_quantity += report.vacant_quantity
                 total.unpaid_quantity += report.unpaid_quantity
                 total.paid_quantity += report.paid_quantity
-                total.sum_amount += (report.paid_quantity + report.unpaid_quantity) * report.product_price
+                total.sum_amount += (report.paid_quantity + report.unpaid_quantity) / report.sales_unit * report.product_price
                 total.total_unpaid_quantity += report.total_unpaid_quantity
                 total.total_paid_quantity += report.total_paid_quantity
-                total.total_sum_amount += (report.total_paid_quantity + report.total_unpaid_quantity) * report.product_price
+                total.total_sum_amount += (report.total_paid_quantity + report.total_unpaid_quantity) / report.sales_unit * report.product_price
         self.total = total
 
 

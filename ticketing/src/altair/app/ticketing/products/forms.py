@@ -221,16 +221,16 @@ class ProductItemForm(OurForm):
         if not field.data:
             raise ValidationError(u'席種を選択してください')
         elif form.product_id.data:
-            product = Product.get(form.product_id.data)
-            stock = Stock.query.filter_by(
-                stock_type_id=field.data,
-                stock_holder_id=form.stock_holder_id.data,
-                performance_id=product.performance.id
-            ).one()
-            product_item = ProductItem.query.filter_by(product_id=form.product_id.data, stock_id=stock.id).first()
-            if product_item:
-                if not form.product_item_id.data or int(form.product_item_id.data) != product_item.id:
-                    raise ValidationError(u'既に登録済みの在庫です')
+            #product = Product.get(form.product_id.data)
+            #stock = Stock.query.filter_by(
+            #    stock_type_id=field.data,
+            #    stock_holder_id=form.stock_holder_id.data,
+            #    performance_id=product.performance.id
+            #).one()
+            #product_item = ProductItem.query.filter_by(product_id=form.product_id.data, stock_id=stock.id).first()
+            #if product_item:
+            #    if not form.product_item_id.data or int(form.product_item_id.data) != product_item.id:
+            #        raise ValidationError(u'既に登録済みの在庫です')
 
             stock_type = StockType.get(field.data)
             if stock_type.is_seat:
@@ -238,8 +238,9 @@ class ProductItemForm(OurForm):
                 product = Product.get(form.product_id.data)
                 if stock_type.id != product.seat_stock_type_id:
                     raise ValidationError(u'商品の席種と異なる在庫を登録することはできません')
-                # 同一Product内に登録できる席種は1つのみ
-                for product_item in product.items:
-                    if product_item.stock_type.is_seat and \
-                       (not form.product_item_id.data or int(form.product_item_id.data) != product_item.id):
-                        raise ValidationError(u'1つの商品に席種を複数登録することはできません')
+
+                ## 同一Product内に登録できる席種は1つのみ
+                #for product_item in product.items:
+                #    if product_item.stock_type.is_seat and \
+                #       (not form.product_item_id.data or int(form.product_item_id.data) != product_item.id):
+                #        raise ValidationError(u'1つの商品に席種を複数登録することはできません')
