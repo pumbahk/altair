@@ -1092,6 +1092,7 @@ class SalesSegmentGroup(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     event_id = AnnotatedColumn(Identifier, ForeignKey('Event.id'), _a_label=_(u'イベント'))
     event = relationship('Event')
+    auth3d_notice = Column(UnicodeText)
 
     @hybrid_method
     def in_term(self, dt):
@@ -3197,6 +3198,15 @@ class SalesSegment(Base, BaseModel, LogicallyDeleted, WithTimestamp):
         order_by="PaymentDeliveryMethodPair.id",
         cascade="all",
         collection_class=list)
+    x_auth3d_notice = Column("auth3d_notice", UnicodeText)
+
+    @property
+    def auth3d_notice(self):
+        return self.x_auth3d_notice if self.x_auth3d_notice else self.sales_segment_group.auth3d_notice
+
+    @auth3d_notice.setter
+    def auth3d_notice(self, value):
+        self.x_auth3d_notice = value
 
     def has_stock_type(self, stock_type):
         return stock_type in self.seat_stock_types
