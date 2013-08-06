@@ -92,7 +92,23 @@ class TemplateValidateTests(unittest.TestCase):
         try:
             self._callFUT(target)
         except Exception as e:
-            self.assertTrue( str(e).startswith("opcode:"))
+            self.assertTrue( str(e).startswith("sej_xml:"))
+
+    def test_huge_svg(self):
+        target = get_dummy_io(self.template % (u"""\
+  <flowRoot transform="translate(462,100.60401)">
+    <flowRegion><rect y="77.95668" x="78" height="14.5" width="73" /></flowRegion>
+    <flowDiv><flowPara>TEST</flowPara></flowDiv>
+  </flowRoot>
+""" * 200))
+        from altair.app.ticketing.tickets.cleaner.api import TicketCleanerValidationError
+        with self.assertRaises(TicketCleanerValidationError):
+            self._callFUT(target)
+
+        try:
+            self._callFUT(target)
+        except Exception as e:
+            self.assertTrue( str(e).startswith("sej_xml:"))
 
 if __name__ == "__main__":
     unittest.main()

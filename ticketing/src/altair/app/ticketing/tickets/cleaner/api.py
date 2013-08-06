@@ -10,7 +10,8 @@ from StringIO import StringIO
 
 from . import cleanup_svg
 from .normalize import normalize
-from ..convert import to_opcodes
+from ..convert import convert_svg
+from altair.app.ticketing.sej.ticket import SejTicketDataXml
 
 
 class TicketCleanerValidationError(Exception):
@@ -118,7 +119,7 @@ class TicketSVGValidator(object):
         try:
             default_io = io = self._validated_io_on_cleanup_phase(xmltree)
             io = self._validated_io_on_normalize_phase(io)
-            self._validate_on_converting_to_opcode(etree.parse(io))
+            self._validate_on_converting_to_sej_xml(etree.parse(io))
             io.seek(0)
             return io
         except Exception:
@@ -150,9 +151,10 @@ class TicketSVGValidator(object):
             logger.exception(e)
             raise self.exc_class("normalize: "+str(e))
 
-    def _validate_on_converting_to_opcode(self, xmltree):
+    def _validate_on_converting_to_sej_xml(self, xmltree):
         try:
-            to_opcodes(xmltree)
+            if not SejTicketDataXml(etree.tostring(convert_svg(xmltree), encoding=unicode)).validate():
+                raise Exception('Ticket data too large')
         except Exception, e:
             logger.exception(e)
-            raise self.exc_class("opcode:" + str(e))
+            raise self.exc_class("sej_xml:" + unicode(e))
