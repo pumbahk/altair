@@ -2,3 +2,6 @@
 	path = bundle/Fashion
 	url = git@github.com:smihica/Fashion
 	ignore = untracked
+[submodule "cms/src/altaircms/templates/front/layout"]
+	path = cms/src/altaircms/templates/front/layout
+	url = git@github.com:ticketstar/altair-cms-templates.git
