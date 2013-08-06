@@ -1,5 +1,15 @@
 <%inherit file="/layout_2cols.html"/>
 <%namespace file="/common/helpers.html" name="ch" />
+<%!
+  label_classes = [
+    'label-important',
+    'label-warning',
+    'label-default',
+    'label-success',
+    'label-info',
+    'label-inverse'
+  ]
+%>
 
 <%block name="breadcrumbs">
   ${ch.breadcrumbs(
@@ -25,45 +35,46 @@
 </span>
 
 <div class="events" style="clear: both">
-  % for event in events.items:
-  <div class="section event">
-    <div class="section-header">
-      <h3 style="word-wrap: break-word;">${event.title}</h3>
-    </div>
-    <div class="pull-right" style="margin-bottom: 10px;">
-      <%include file="/events/_action_button.html" args="event=event, order=['show', 'edit', 'delete', 'copy']" />
-    </div>
-    <div style="clear: both;"></div>
-    <%
-      label_classes = [
-        'label-important',
-        'label-warning',
-        'label-default',
-        'label-success',
-        'label-info',
-        'label-inverse'
-      ]
-    %>
-    % for i, sales_segment_group in enumerate(event.sales_segment_groups):
-      <span class="label ${label_classes[i%6]}">${sales_segment_group.name}</span>
+  <table class="table bordered">
+    <thead>
+      <tr>
+        <th>イベント名</th>
+        <th>登録公演数</th>
+        <th>-</th>
+      </tr>
+    </thead>
+    <tbody>
+    % for event, perf_count in events.items:
+      <tr>
+        <td>
+          <a href="${request.route_path('events.show', event_id=event.id)}">${event.title}</a>
+          % for i, sales_segment_group in enumerate(event.sales_segment_groups):
+            <span class="label ${label_classes[i%6]}">${sales_segment_group.name}</span>
+          % endfor
+        </td>
+        <td>${perf_count}</td>
+        <td>
+          <%include file="./_action_button.html" args="event=event, order=['edit', 'copy', 'delete'], small=True" />
+          % if event.cms_send_at:
+            % if event.updated_at > event.cms_send_at:
+              <a class="btn btn-small btn-warning" href="javascript:send_event(${event.id});" style="margin-left: 10px;">
+                <i class="icon-refresh icon-white"></i> CMSへ送信
+              </a>
+            % else:
+              <a class="btn btn-small btn-inverse" href="javascript:send_event(${event.id});" style="margin-left: 10px;">
+                <i class="icon-refresh icon-white"></i> CMSへ送信
+              </a>
+            % endif
+          % else:
+            <a class="btn btn-small btn-warning" href="javascript:send_event(${event.id});" style="margin-left: 10px;">
+                <i class="icon-refresh icon-white"></i> CMSへ送信
+            </a>
+          % endif
+        </td>
+      </tr>
     % endfor
-    <%include file="/performances/_list.html" args="form=form_performance, performances=event.performances, limit=5" />
-  </div>
-  % endfor
+    </tbody>
+  </table>
   ${ch.pager(events)}
-  <script type="text/javascript">
-    var is_sending = {};
-    $("#send_event").click(function(e){
-      var $e = $(e.currentTarget);
-      if(is_sending[$e.attr("href")]){ 
-        return false;
-      }
-      is_sending[$e.attr("href")] = true;
-      $('#modal-send_event').modal('hide');
-      setTimeout(function(){
-        is_sending[$e.attr("href")] = false;
-      }, 20000);
-      return true
-    })
-  </script>
 </div>
+<%include file="./_send_event_mixin.html" />

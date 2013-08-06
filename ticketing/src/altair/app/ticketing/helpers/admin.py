@@ -118,7 +118,7 @@ class AdminHelperAdapter(object):
             ACLAllowed
             )
 
-    def action_button(self, actions, order=None, vertical=True, options=None, dropup=False):
+    def action_button(self, actions, order=None, vertical=True, options=None, dropup=False, extra_classes=None):
         route_permission = getattr(self.request.registry, 'route_permission', None)
         count = 0
         if order is None:
@@ -128,13 +128,15 @@ class AdminHelperAdapter(object):
             attrs = actions[key].get('attrs', {})
             attrs['class'] = attrs.get('class', u'')
             if count == 0 or not vertical:
-                attrs['class'] += ' ' + u'btn'
+                attrs['class'] += u' ' + u'btn'
             if key == 'delete':
                 attrs['data-controls-modal'] = u'modal-delete'
                 attrs['data-backdrop'] = u'true'
                 attrs['data-keyboard'] = u'true'
             if options is not None:
-                attrs['class'] += ' ' + options
+                attrs['class'] += u' ' + options
+            if extra_classes:
+                attrs['class'] += u' ' + u' '.join(extra_classes)
             return ' '.join(u'%s="%s"' % (name, html_escape(value)) for name, value in attrs.iteritems())
 
         html = []
@@ -154,7 +156,7 @@ class AdminHelperAdapter(object):
                     return
 
                 if vertical and count == 1:
-                    html.append(u'<button class="btn dropdown-toggle" data-toggle="dropdown">')
+                    html.append(u'<button class="btn%s dropdown-toggle" data-toggle="dropdown">' % (u' ' + u' '.join(extra_classes) if extra_classes else u''))
                     html.append(u'<span class="caret"></span>')
                     html.append(u'</button>')
                     if dropup:
