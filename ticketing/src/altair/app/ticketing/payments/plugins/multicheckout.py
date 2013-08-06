@@ -36,7 +36,7 @@ from .models import DBSession
 from .. import logger
 from altair.app.ticketing.cart import api
 from altair.app.ticketing.cart.views import is_organization_rs # XXX
-from altair.app.ticketing.cart.exceptions import NoCartError
+from altair.app.ticketing.cart.exceptions import NoCartError, InvalidCartStatusError
 from altair.app.ticketing.cart.selectable_renderer import selectable_renderer
 from ..exceptions import PaymentPluginException
 from altair.app.ticketing.views import mobile_request
@@ -115,9 +115,7 @@ def get_error_message(request, error_code):
     return u'決済エラー:' + error_messages.get(error_code, u'決済に失敗しました。カードや内容を確認の上再度お試しください。')
 
 def get_order_no(request, cart):
-    
     if request.registry.settings.get('multicheckout.testing', False):
-        #return "%012d" % cart.id + "00"
         return cart.order_no + "00"
     return cart.order_no
 
@@ -125,7 +123,23 @@ def get_order_no(request, cart):
 class MultiCheckoutPlugin(object):
     def prepare(self, request, cart):
         """ 3Dセキュア認証 """
+        notice = cart.sales_segment.auth3d_notice
+        logger.debug(u"notce = {notice}, x_auth3d_notice={x_auth3d_notice} sales_segment={sales_segment.id}".format(
+            notice=notice,
+            x_auth3d_notice=cart.sales_segment.x_auth3d_notice,
+            sales_segment=cart.sales_segment,
+            ))
+        request.session['altair.app.ticketing.payments.auth3d_notice'] = notice
         return HTTPFound(location=back_url(request))
+
+    def validate(self, request, cart):
+        """ 確定前の状態確認 """
+        order_no = get_order_no(request, cart)
+        status = MultiCheckoutOrderStatus.by_order_no(order_no)
+        # オーソリ済みであること
+        if status is None or status.Status != str(MultiCheckoutStatusEnum.Authorized):
+            logger.debug('multicheckout status is not Authorized (%s)' % order_no)
+            raise InvalidCartStatusError
 
     def finish(self, request, cart):
         """ 売り上げ確定(3D認証) """
@@ -271,7 +285,7 @@ class MultiCheckoutView(object):
             self.request.errors = form.errors
             return dict(form=form)
         assert not form.csrf_token.errors
-        cart = get_cart(self.request)
+        get_cart(self.request)
         order = self._form_to_order(form)
 
         self.request.session['order'] = order
@@ -333,7 +347,6 @@ class MultiCheckoutView(object):
 
         item_name = api.get_item_name(self.request, cart.name)
 
-
         checkout_auth_result = multicheckout_api.checkout_auth_secure_code(
             self.request, get_order_no(self.request, cart),
             item_name, cart.total_amount, 0, order['client_name'], order['email_1'],
@@ -353,10 +366,7 @@ class MultiCheckoutView(object):
 
         self.request.session['order'] = order
 
-        #DBSession.add(checkout_auth_result)
-
         return HTTPFound(location=confirm_url(self.request))
-
 
     def _secure3d(self, card_number, exp_year, exp_month):
         """ セキュア3D """
@@ -375,8 +385,6 @@ class MultiCheckoutView(object):
             logger.debug("3d secure is failed ErrorCd = %s RetCd = %s" %(enrol.ErrorCd, enrol.RetCd))
             self.request.session['secure_type'] = 'secure_code'
             return self._secure_code(order['order_no'], order['card_number'], order['exp_year'], order['exp_month'], order['secure_code'])
-        form = CardForm(csrf_context=self.request.session)
-        return dict(form=form)
 
     @view_config(route_name='cart.secure3d_result', request_method="POST", renderer=selectable_renderer("%(membership)s/pc/confirm.html"))
     def card_info_secure3d_callback(self):
@@ -436,7 +444,5 @@ class MultiCheckoutView(object):
         )
         order['tran'] = tran
         self.request.session['order'] = order
-
-        #DBSession.add(checkout_auth_result)
 
         return HTTPFound(location=confirm_url(self.request))

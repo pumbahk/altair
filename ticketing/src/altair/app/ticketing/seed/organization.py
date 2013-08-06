@@ -20,6 +20,8 @@ class OrganizationData(DataSet):
         tel_1           = u'00-0000-0000'
         tel_2           = u'00-0000-0000'
         fax             = u'00-0000-0000'
+        short_name      = u'XX'
+        code            = u'XX'
         updated_at      = datetime.now()
         created_at      = datetime.now()
     class organization_1:
@@ -35,6 +37,8 @@ class OrganizationData(DataSet):
         tel_1           = u'00-0000-0000'
         tel_2           = u'00-0000-0000'
         fax             = u'00-0000-0000'
+        short_name      = u'XX'
+        code            = u'XX'
         updated_at      = datetime.now()
         created_at      = datetime.now()
     class organization_2:
@@ -50,6 +54,8 @@ class OrganizationData(DataSet):
         tel_1           = u'00-0000-0000'
         tel_2           = u'00-0000-0000'
         fax             = u'00-0000-0000'
+        short_name      = u'XX'
+        code            = u'XX'
         updated_at      = datetime.now()
         created_at      = datetime.now()
     class organization_3:
@@ -65,6 +71,8 @@ class OrganizationData(DataSet):
         tel_1           = u'00-0000-0000'
         tel_2           = u'00-0000-0000'
         fax             = u'00-0000-0000'
+        short_name      = u'XX'
+        code            = u'XX'
         updated_at      = datetime.now()
         created_at      = datetime.now()
     class organization_4:
@@ -80,6 +88,8 @@ class OrganizationData(DataSet):
         tel_1           = u'00-0000-0000'
         tel_2           = u'00-0000-0000'
         fax             = u'00-0000-0000'
+        short_name      = u'XX'
+        code            = u'XX'
         updated_at      = datetime.now()
         created_at      = datetime.now()
     class organization_5:
@@ -95,6 +105,8 @@ class OrganizationData(DataSet):
         tel_1           = u'00-0000-0000'
         tel_2           = u'00-0000-0000'
         fax             = u'00-0000-0000'
+        short_name      = u'XX'
+        code            = u'XX'
         updated_at      = datetime.now()
         created_at      = datetime.now()
     class organization_6:
@@ -110,5 +122,7 @@ class OrganizationData(DataSet):
         tel_1           = u'00-0000-0000'
         tel_2           = u'00-0000-0000'
         fax             = u'00-0000-0000'
+        short_name      = u'XX'
+        code            = u'XX'
         updated_at      = datetime.now()
         created_at      = datetime.now()

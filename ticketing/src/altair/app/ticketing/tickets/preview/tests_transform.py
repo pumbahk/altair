@@ -6,17 +6,17 @@ class TransformTests(unittest.TestCase):
     def _getTarget(self):
         from altair.app.ticketing.tickets.preview.transform import SVGTransformer
         return SVGTransformer
-
+    
     def _makeOne(self, *args, **kwargs):
         return self._getTarget()(*args, **kwargs)
 
     svg = """\
 <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
-<svg width="5cm" height="3cm" viewBox="0 0 5 3" version="1.1">
-  <rect x=".01" y=".01" width="4.98" height="2.98" 
+<ns0:svg xmlns:ns0="http://www.w3.org/2000/svg" width="5cm" height="3cm" viewBox="0 0 5 3" version="1.1">
+  <ns0:rect x=".01" y=".01" width="4.98" height="2.98" 
         fill="none" stroke="blue"  stroke-width=".03"/>
     <ellipse cx="2.5" cy="1.5" rx="2" ry="1" fill="red" />
-</svg>
+</ns0:svg>
 """
     def test_it(self):
         from lxml import etree
@@ -27,7 +27,7 @@ class TransformTests(unittest.TestCase):
         self.assertIn('width="10.0cm"', result)
         self.assertIn('height="9.0cm"', result)
         self.assertIn('viewBox="0 0 10.0 9.0"', result)
-        self.assertIn('<g transform="scale(2.0, 3.0)"', result)
+        self.assertIn('<ns0:g transform="scale(2.0, 3.0)"', result)
 
     def test_with_comment(self):
         from lxml import etree
@@ -39,7 +39,7 @@ class TransformTests(unittest.TestCase):
         self.assertIn('width="10.0cm"', result)
         self.assertIn('height="9.0cm"', result)
         self.assertIn('viewBox="0 0 10.0 9.0"', result)
-        self.assertIn('<g transform="scale(2.0, 3.0)"', result)
+        self.assertIn('<ns0:g transform="scale(2.0, 3.0)"', result)
 
     def test_identity(self):
         from lxml import etree
@@ -50,7 +50,7 @@ class TransformTests(unittest.TestCase):
         self.assertIn('width="5cm"', result)
         self.assertIn('height="3cm"', result)
         self.assertIn('viewBox="0 0 5 3"', result)
-        self.assertNotIn('<g transform="scale(1.0, 1.0)"', result)
+        self.assertNotIn('<ns0:g transform="scale(1.0, 1.0)"', result)
 
     ## find width
     def test_detect_size(self):
@@ -86,7 +86,7 @@ class FindSVGTests(unittest.TestCase):
         from lxml import etree
         xml = "<svg/>"
         result = self._callFUT(etree.fromstring(xml))
-        self.assertIn("svg", result.tag)
+        self.assertIsNone(result)
 
     def test_find_svg_ns(self):
         from lxml import etree

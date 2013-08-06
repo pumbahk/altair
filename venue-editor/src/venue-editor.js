@@ -161,7 +161,7 @@
       fillOpacity: fillOpacity,
       stroke: stroke,
       strokeWidth: strokeWidth,
-	  strokeOpacity: strokeOpacity,
+	    strokeOpacity: strokeOpacity,
       fontSize: fontSize,
       textAnchor: textAnchor
     };
@@ -365,7 +365,11 @@
       y: ((vb && vb[3]) || h || w)
     } : null);
 
-    var drawable = new Fashion.Drawable(self.canvas[0], { contentSize: { x: size.x+100, y: size.y+100 }, viewportSize: { x: this.canvas.innerWidth(), y: this.canvas.innerHeight() } });
+    var drawable = new Fashion.Drawable(self.canvas[0], {
+      contentSize: { x: size.x+100, y: size.y+100 },
+      viewportSize: { x: this.canvas.innerWidth(), y: this.canvas.innerHeight() },
+      captureTarget: document
+    });
     var shapes = {};
     var styleClasses = CONF.DEFAULT.STYLES;
 
@@ -570,13 +574,13 @@
                 } else {
                   seat.removeStyleType('tooltip');
                 }
-                self.callbacks.tooltip && self.callbacks.tooltip(seat);
+                self.callbacks.tooltip && self.callbacks.tooltip(null);
               }
             },
             mousedown: function(evt) {
               var seat = seats[id];
-              if (seat.get('model').get('sold')) {
-                self.callbacks.click && self.callbacks.click(seat.get('model'));
+              if (seat.get('model').selectable()) {
+                self.callbacks.click && self.callbacks.click(seat.get('model'), evt);
               }
             }
           }
@@ -623,6 +627,40 @@
 
       switch(type) {
       case 'select1':
+        var mousedown = false, scrollPos = null;
+        this.drawable.addEvent({
+          mousedown: function (evt) {
+            mousedown = true;
+            scrollPos = self.drawable.scrollPosition();
+            self.startPos = evt.logicalPosition;
+          },
+
+          mouseup: function (evt) {
+            mousedown = false;
+            if (self.dragging) {
+              self.drawable.releaseMouse();
+              self.dragging = false;
+            }
+          },
+
+          mousemove: function (evt) {
+            if (!self.dragging) {
+              if (mousedown) {
+                self.dragging = true;  
+                self.callbacks.tooltip && self.callbacks.tooltip(null);
+                self.drawable.captureMouse();
+              } else {
+                return;
+              }
+            }
+            var newScrollPos = Fashion._lib.subtractPoint(
+              scrollPos,
+              Fashion._lib.subtractPoint(
+                evt.logicalPosition,
+                self.startPos));
+            scrollPos = self.drawable.scrollPosition(newScrollPos);
+          }
+        });
         break;
 
       case 'select':
@@ -632,29 +670,33 @@
             self.rubberBand.position({x: self.startPos.x, y: self.startPos.y});
             self.rubberBand.size({x: 0, y: 0});
             self.drawable.draw(self.rubberBand);
+            self.drawable.captureMouse();
             self.dragging = true;
           },
 
           mouseup: function(evt) {
-            self.dragging = false;
-            var selection = []; 
-            var hitTest = util.makeHitTester(self.rubberBand);
-            for (var id in self.seats) {
-              var seatVO = self.seats[id];
-              var seat = seatVO.get('model');
-              if (seat.get('selectable') && (hitTest(seatVO.get('shape') || (self.shift && seat.get('selected'))))) {
-                selection.push(seat);
+            if (self.dragging) {
+              self.drawable.releaseMouse();
+              self.dragging = false;
+              var selection = []; 
+              var hitTest = util.makeHitTester(self.rubberBand);
+              for (var id in self.seats) {
+                var seatVO = self.seats[id];
+                var seat = seatVO.get('model');
+                if (seat.get('selectable') && (hitTest(seatVO.get('shape') || (self.shift && seat.get('selected'))))) {
+                  selection.push(seat);
+                }
               }
-            }
-            self.drawable.erase(self.rubberBand);
-            for (var i = 0; i < selection.length; i++) {
-              if (selection[i].get('selected') && selection.length == 1) {
-                selection[i].set('selected', false);
-              } else {
-                selection[i].set('selected', true);
+              self.drawable.erase(self.rubberBand);
+              for (var i = 0; i < selection.length; i++) {
+                if (selection[i].get('selected') && selection.length == 1) {
+                  selection[i].set('selected', false);
+                } else {
+                  selection[i].set('selected', true);
+                }
               }
+              self.callbacks.select && self.callbacks.select(self, selection);
             }
-            self.callbacks.select && self.callbacks.select(self, selection);
           },
 
           mousemove: function(evt) {

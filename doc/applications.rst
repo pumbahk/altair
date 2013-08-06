@@ -89,7 +89,7 @@ $ALTAIR/deploy/dev/conf
 
 ::
 
-    mysql> SELECT login_id, Organization.name, Organization.id FROM OperatorAuth JOIN Operator ON OperatorAuth.operator_id=Operator.id JOIN Organizat
+    mysql> SELECT login_id, Organization.name, Organization.id FROM OperatorAuth JOIN Operator ON OperatorAuth.operator_id=Operator.id JOIN Organization;
 
 *login_id* がログイン名になります。パスワードは *イツモノアレ* です。
 わからない人は隣の席の人に聞いてみてください。

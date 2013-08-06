@@ -26,16 +26,68 @@ exports.eventKey = function Util_eventKey(e) {
 };
 
 exports.convertToFashionStyle = function Util_convertToFashionStyle(style, gradient) {
-  var filler = function(color) {
-    if (gradient) return new Fashion.LinearGradientFill([[0, new Fashion.Color("#fff")], [1, new Fashion.Color(color || "#fff")]], .125);
-    return new Fashion.FloodFill(new Fashion.Color(color || "#000"));
+  var fill = function(fill) {
+    switch (fill.type) {
+    case 'flood':
+    default:
+      if (gradient) {
+        return new Fashion.LinearGradientFill(
+          [
+            [0, new Fashion.Color("#fff")],
+            [1, new Fashion.Color(fill.color || "#fff")]
+          ], .125);
+      } else if(fill.color) {
+        return new Fashion.FloodFill(new Fashion.Color(fill.color));
+      } else {
+        return null;
+      }
+    case 'linear':
+      return new Fashion.LinearGradientFill(_map(fill.colors, function (c) { return new Fashion.Color(c); }), fill.angle);
+    case 'radial':
+      return new Fashion.LinearGradientFill(_map(fill.colors, function (c) { return new Fashion.Color(c); }), fill.focus);
+    case 'tile':
+      return new Fashion.ImageTileFill(fill.imageData);
+    }
+    return null;
+  };
+
+  var stroke = function(stroke) {
+    return new Fashion.Stroke(
+            [(style.stroke.color || "#000"),
+             (style.stroke.width ? style.stroke.width: 1),
+             (style.stroke.pattern || "solid")].join(' '));
   };
 
   return {
-    "fill": style.fill ? filler(style.fill.color): null,
-    "stroke": style.stroke ? new Fashion.Stroke((style.stroke.color || "#000") + " " + (style.stroke.width ? style.stroke.width: 1) + " " + (style.stroke.pattern || "")) : null
+    "fill": style.fill ? fill(style.fill): null,
+    "stroke": style.stroke ? stroke(style.stroke): null
   };
 };
+
+exports.convertFromFashionStyle = function Util_convertFromFashionStyle(style) {
+  return {
+    text: null,
+    text_color: null,
+    fill: 
+      style.fill instanceof Fashion.FloodFill ?
+        { type: 'flood', color: style.fill.color._toString() }:
+      style.fill instanceof Fashion.LinearGradientFill ?
+        { type: 'linear', colors: _map(style.fill.colors, function (c) { return c._toString() }),
+          angle: style.fill.angle }:
+      style.fill instanceof Fashion.RadialGradientFill ?
+        { type: 'radial', colors: _map(style.fill.colors, function (c) { return c._toString() }),
+          focus: style.fill.focus }:
+      style.fill instanceof Fashion.ImageTileFill ?
+        { type: 'tile', imageData: style.imageData }:
+      null,
+    stroke:
+      style.stroke ?
+        { color: style.stroke.color._toString(), width: style.stroke.width,
+          pattern: style.stroke.pattern }:
+        null
+  };
+};
+
 
 exports.allAttributes = function Util_allAttributes(el) {
   var rt = {}, attrs=el.attributes, attr;

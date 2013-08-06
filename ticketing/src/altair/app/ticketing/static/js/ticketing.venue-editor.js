@@ -1,6 +1,6 @@
 (function (jQuery, I18n) {
 var __LIBS__ = {};
-__LIBS__['c4_42FKUATLZ2U92'] = (function (exports) { (function () { 
+__LIBS__['QG5W1PQJGDMCNRR0'] = (function (exports) { (function () { 
 
 /************** util.js **************/
 exports.eventKey = function Util_eventKey(e) {
@@ -31,16 +31,68 @@ exports.eventKey = function Util_eventKey(e) {
 };
 
 exports.convertToFashionStyle = function Util_convertToFashionStyle(style, gradient) {
-  var filler = function(color) {
-    if (gradient) return new Fashion.LinearGradientFill([[0, new Fashion.Color("#fff")], [1, new Fashion.Color(color || "#fff")]], .125);
-    return new Fashion.FloodFill(new Fashion.Color(color || "#000"));
+  var fill = function(fill) {
+    switch (fill.type) {
+    case 'flood':
+    default:
+      if (gradient) {
+        return new Fashion.LinearGradientFill(
+          [
+            [0, new Fashion.Color("#fff")],
+            [1, new Fashion.Color(fill.color || "#fff")]
+          ], .125);
+      } else if(fill.color) {
+        return new Fashion.FloodFill(new Fashion.Color(fill.color));
+      } else {
+        return null;
+      }
+    case 'linear':
+      return new Fashion.LinearGradientFill(_map(fill.colors, function (c) { return new Fashion.Color(c); }), fill.angle);
+    case 'radial':
+      return new Fashion.LinearGradientFill(_map(fill.colors, function (c) { return new Fashion.Color(c); }), fill.focus);
+    case 'tile':
+      return new Fashion.ImageTileFill(fill.imageData);
+    }
+    return null;
+  };
+
+  var stroke = function(stroke) {
+    return new Fashion.Stroke(
+            [(style.stroke.color || "#000"),
+             (style.stroke.width ? style.stroke.width: 1),
+             (style.stroke.pattern || "solid")].join(' '));
   };
 
   return {
-    "fill": style.fill ? filler(style.fill.color): null,
-    "stroke": style.stroke ? new Fashion.Stroke((style.stroke.color || "#000") + " " + (style.stroke.width ? style.stroke.width: 1) + " " + (style.stroke.pattern || "")) : null
+    "fill": style.fill ? fill(style.fill): null,
+    "stroke": style.stroke ? stroke(style.stroke): null
   };
 };
+
+exports.convertFromFashionStyle = function Util_convertFromFashionStyle(style) {
+  return {
+    text: null,
+    text_color: null,
+    fill: 
+      style.fill instanceof Fashion.FloodFill ?
+        { type: 'flood', color: style.fill.color._toString() }:
+      style.fill instanceof Fashion.LinearGradientFill ?
+        { type: 'linear', colors: _map(style.fill.colors, function (c) { return c._toString() }),
+          angle: style.fill.angle }:
+      style.fill instanceof Fashion.RadialGradientFill ?
+        { type: 'radial', colors: _map(style.fill.colors, function (c) { return c._toString() }),
+          focus: style.fill.focus }:
+      style.fill instanceof Fashion.ImageTileFill ?
+        { type: 'tile', imageData: style.imageData }:
+      null,
+    stroke:
+      style.stroke ?
+        { color: style.stroke.color._toString(), width: style.stroke.width,
+          pattern: style.stroke.pattern }:
+        null
+  };
+};
+
 
 exports.allAttributes = function Util_allAttributes(el) {
   var rt = {}, attrs=el.attributes, attr;
@@ -127,7 +179,7 @@ timer.prototype.lap = function(msg) {
     return lap;
 };
  })(); return exports; })({});
-__LIBS__['XOWE77TV7F8LYBA8'] = (function (exports) { (function () { 
+__LIBS__['ETI9GW_YTL1HJWHM'] = (function (exports) { (function () { 
 
 /************** CONF.js **************/
 exports.DEFAULT = {
@@ -198,7 +250,7 @@ exports.DEFAULT = {
   }
 };
  })(); return exports; })({});
-__LIBS__['QCNIFOJ1NTPE8TKE'] = (function (exports) { (function () { 
+__LIBS__['uS7I_ZFK3VAO4GI7'] = (function (exports) { (function () { 
 
 /************** identifiableset.js **************/
 var IdentifiableSet = exports.IdentifiableSet = function IdentifiableSet(options) {
@@ -247,12 +299,12 @@ IdentifiableSet.prototype.each = function IdentifiableSet_each(f) {
  * vim: sts=2 sw=2 ts=2 et
  */
  })(); return exports; })({});
-__LIBS__['yKM36XN66FJ2HIM9'] = (function (exports) { (function () { 
+__LIBS__['PY8P81UQNNXLDOQK'] = (function (exports) { (function () { 
 
 /************** models.js **************/
-var util = __LIBS__['c4_42FKUATLZ2U92'];
-var CONF = __LIBS__['XOWE77TV7F8LYBA8'];
-var IdentifiableSet = __LIBS__['QCNIFOJ1NTPE8TKE'].IdentifiableSet;
+var util = __LIBS__['QG5W1PQJGDMCNRR0'];
+var CONF = __LIBS__['ETI9GW_YTL1HJWHM'];
+var IdentifiableSet = __LIBS__['uS7I_ZFK3VAO4GI7'].IdentifiableSet;
 
 var VenueItemCollectionMixin = {
   venue: null,
@@ -600,7 +652,7 @@ var Stock = exports.Stock = Backbone.Model.extend({
     var style = CONF.DEFAULT.SEAT_STYLE;
     _.each(Stock.styleProviderAttributes, function (name) {
       var styleProvider = self.get(name);
-      if (styleProvider)
+      if (styleProvider && styleProvider.get('style'))
         style = util.mergeStyle(style, styleProvider.get('style'));
     });
     this.set('style', style);
@@ -726,12 +778,12 @@ console.log(ad2);
  * vim: sts=2 sw=2 ts=2 et
  */
  })(); return exports; })({});
-__LIBS__['AUVKTNE6Y1Y22MK1'] = (function (exports) { (function () { 
+__LIBS__['JBKBRAQF4GMGMPK9'] = (function (exports) { (function () { 
 
 /************** viewobjects.js **************/
-var util = __LIBS__['c4_42FKUATLZ2U92'];
-var CONF = __LIBS__['XOWE77TV7F8LYBA8'];
-var models = __LIBS__['yKM36XN66FJ2HIM9'];
+var util = __LIBS__['QG5W1PQJGDMCNRR0'];
+var CONF = __LIBS__['ETI9GW_YTL1HJWHM'];
+var models = __LIBS__['PY8P81UQNNXLDOQK'];
 
 var Seat = exports.Seat = Backbone.Model.extend({
   defaults: {
@@ -845,13 +897,17 @@ var Seat = exports.Seat = Backbone.Model.extend({
   _refreshStyle: function Seat__refreshStyle() {
     var model = this.get('model');
     var style = model && model.get('stock').get('style') || {};
-    style = util.mergeStyle(style, CONF.DEFAULT.SEAT_STATUS_STYLE[model.get('status')]);
+    var defaultStyle = CONF.DEFAULT.SEAT_STATUS_STYLE[model.get('status')]
+    if (defaultStyle)
+      style = util.mergeStyle(style, defaultStyle);
     var shape = this.get('shape');
     if (!shape)
       return;
     for (var i = 0; i < this.styleTypes.length; i++) {
       var styleType = this.styleTypes[i];
-      style = util.mergeStyle(style, CONF.DEFAULT.AUGMENTED_STYLE[styleType]);
+      var augmentedStyle = CONF.DEFAULT.AUGMENTED_STYLE[styleType];
+      if (augmentedStyle)
+        style = util.mergeStyle(style, augmentedStyle);
     }
     shape.style(util.convertToFashionStyle(style));
     var styleText = style.text || model.get('seat_no');
@@ -899,7 +955,7 @@ var Seat = exports.Seat = Backbone.Model.extend({
  * vim: sts=2 sw=2 ts=2 et
  */
  })(); return exports; })({});
-__LIBS__['tK4U1SPSNSE4XF8H'] = (function (exports) { (function () { 
+__LIBS__['UWBHGM13BHBSLR30'] = (function (exports) { (function () { 
 
 /************** translations.js **************/
 
@@ -930,13 +986,13 @@ exports.ja = {
 /************** venue-editor.js **************/
 /* extern */ var jQuery, I18n;
 (function ($) {
-  var CONF = __LIBS__['XOWE77TV7F8LYBA8'];
-  var models = __LIBS__['yKM36XN66FJ2HIM9'];
-  var util = __LIBS__['c4_42FKUATLZ2U92'];
-  var viewobjects = __LIBS__['AUVKTNE6Y1Y22MK1'];
-  var IdentifiableSet = __LIBS__['QCNIFOJ1NTPE8TKE'].IdentifiableSet;
+  var CONF = __LIBS__['ETI9GW_YTL1HJWHM'];
+  var models = __LIBS__['PY8P81UQNNXLDOQK'];
+  var util = __LIBS__['QG5W1PQJGDMCNRR0'];
+  var viewobjects = __LIBS__['JBKBRAQF4GMGMPK9'];
+  var IdentifiableSet = __LIBS__['uS7I_ZFK3VAO4GI7'].IdentifiableSet;
   if (I18n)
-    I18n.translations = __LIBS__['tK4U1SPSNSE4XF8H'];
+    I18n.translations = __LIBS__['UWBHGM13BHBSLR30'];
 
   var parseCSSStyleText = (function () {
     var regexp_for_styles = /\s*(-?(?:[_a-z\u00a0-\u10ffff]|\\[^\n\r\f#])(?:[\-_A-Za-z\u00a0-\u10ffff]|\\[^\n\r\f])*)\s*:\s*((?:(?:(?:[^;\\ \n\r\t\f"']|\\[0-9A-Fa-f]{1,6}(?:\r\n|[ \n\r\t\f])?|\\[^\n\r\f0-9A-Fa-f])+|"(?:[^\n\r\f\\"]|\\(?:\n|\r\n|\r|\f)|\\[^\n\r\f])*"|'(?:[^\n\r\f\\']|\\(?:\n|\r\n|\r|\f)|\\[^\n\r\f])*')(?:\s+|(?=;|$)))+)(?:;|$)/g;
@@ -1091,7 +1147,7 @@ exports.ja = {
       fillOpacity: fillOpacity,
       stroke: stroke,
       strokeWidth: strokeWidth,
-	  strokeOpacity: strokeOpacity,
+	    strokeOpacity: strokeOpacity,
       fontSize: fontSize,
       textAnchor: textAnchor
     };
@@ -1295,7 +1351,11 @@ exports.ja = {
       y: ((vb && vb[3]) || h || w)
     } : null);
 
-    var drawable = new Fashion.Drawable(self.canvas[0], { contentSize: { x: size.x+100, y: size.y+100 }, viewportSize: { x: this.canvas.innerWidth(), y: this.canvas.innerHeight() } });
+    var drawable = new Fashion.Drawable(self.canvas[0], {
+      contentSize: { x: size.x+100, y: size.y+100 },
+      viewportSize: { x: this.canvas.innerWidth(), y: this.canvas.innerHeight() },
+      captureTarget: document
+    });
     var shapes = {};
     var styleClasses = CONF.DEFAULT.STYLES;
 
@@ -1417,7 +1477,7 @@ exports.ja = {
       mousewheel: function (evt) {
         if (self.shift) {
           evt.preventDefault();
-          self.zoom(self.zoomRatio * (evt.delta < 0 ? 1 / 1.1: 1.1));
+          self.zoom(self.zoomRatio * (evt.delta < 0 ? 1 / 1.25: 1.25));
         }
       }
     });
@@ -1500,13 +1560,13 @@ exports.ja = {
                 } else {
                   seat.removeStyleType('tooltip');
                 }
-                self.callbacks.tooltip && self.callbacks.tooltip(seat);
+                self.callbacks.tooltip && self.callbacks.tooltip(null);
               }
             },
             mousedown: function(evt) {
               var seat = seats[id];
-              if (seat.get('model').get('sold')) {
-                self.callbacks.click && self.callbacks.click(seat.get('model'));
+              if (seat.get('model').selectable()) {
+                self.callbacks.click && self.callbacks.click(seat.get('model'), evt);
               }
             }
           }
@@ -1553,6 +1613,40 @@ exports.ja = {
 
       switch(type) {
       case 'select1':
+        var mousedown = false, scrollPos = null;
+        this.drawable.addEvent({
+          mousedown: function (evt) {
+            mousedown = true;
+            scrollPos = self.drawable.scrollPosition();
+            self.startPos = evt.logicalPosition;
+          },
+
+          mouseup: function (evt) {
+            mousedown = false;
+            if (self.dragging) {
+              self.drawable.releaseMouse();
+              self.dragging = false;
+            }
+          },
+
+          mousemove: function (evt) {
+            if (!self.dragging) {
+              if (mousedown) {
+                self.dragging = true;  
+                self.callbacks.tooltip && self.callbacks.tooltip(null);
+                self.drawable.captureMouse();
+              } else {
+                return;
+              }
+            }
+            var newScrollPos = Fashion._lib.subtractPoint(
+              scrollPos,
+              Fashion._lib.subtractPoint(
+                evt.logicalPosition,
+                self.startPos));
+            scrollPos = self.drawable.scrollPosition(newScrollPos);
+          }
+        });
         break;
 
       case 'select':
@@ -1562,29 +1656,33 @@ exports.ja = {
             self.rubberBand.position({x: self.startPos.x, y: self.startPos.y});
             self.rubberBand.size({x: 0, y: 0});
             self.drawable.draw(self.rubberBand);
+            self.drawable.captureMouse();
             self.dragging = true;
           },
 
           mouseup: function(evt) {
-            self.dragging = false;
-            var selection = []; 
-            var hitTest = util.makeHitTester(self.rubberBand);
-            for (var id in self.seats) {
-              var seatVO = self.seats[id];
-              var seat = seatVO.get('model');
-              if (seat.get('selectable') && (hitTest(seatVO.get('shape') || (self.shift && seat.get('selected'))))) {
-                selection.push(seat);
+            if (self.dragging) {
+              self.drawable.releaseMouse();
+              self.dragging = false;
+              var selection = []; 
+              var hitTest = util.makeHitTester(self.rubberBand);
+              for (var id in self.seats) {
+                var seatVO = self.seats[id];
+                var seat = seatVO.get('model');
+                if (seat.get('selectable') && (hitTest(seatVO.get('shape') || (self.shift && seat.get('selected'))))) {
+                  selection.push(seat);
+                }
               }
-            }
-            self.drawable.erase(self.rubberBand);
-            for (var i = 0; i < selection.length; i++) {
-              if (selection[i].get('selected') && selection.length == 1) {
-                selection[i].set('selected', false);
-              } else {
-                selection[i].set('selected', true);
+              self.drawable.erase(self.rubberBand);
+              for (var i = 0; i < selection.length; i++) {
+                if (selection[i].get('selected') && selection.length == 1) {
+                  selection[i].set('selected', false);
+                } else {
+                  selection[i].set('selected', true);
+                }
               }
+              self.callbacks.select && self.callbacks.select(self, selection);
             }
-            self.callbacks.select && self.callbacks.select(self, selection);
           },
 
           mousemove: function(evt) {

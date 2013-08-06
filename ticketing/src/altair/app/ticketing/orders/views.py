@@ -720,21 +720,19 @@ class OrderDetailView(BaseView):
             new_order.delivery_fee = f.delivery_fee.data
 
             for op, nop in itertools.izip(order.items, new_order.items):
-                nop.price = int(self.request.params.get('product_price-%d' % op.id) or 0)
+                nop.quantity = int(self.request.params.get('product_quantity-%d' % op.id) or 0)
                 for opi, nopi in itertools.izip(op.ordered_product_items, nop.ordered_product_items):
                     nopi.price = int(self.request.params.get('product_item_price-%d' % opi.id) or 0)
                     # 個数が変更できるのは数受けのケースのみ
                     if op.product.seat_stock_type.quantity_only:
                         stock_status = opi.product_item.stock.stock_status
-                        new_quantity = int(self.request.params.get('product_quantity-%d' % op.id) or 0)
+                        new_quantity = nop.quantity * nopi.product_item.quantity
                         old_quantity = op.quantity
                         if stock_status.quantity < (new_quantity - old_quantity):
                             raise NotEnoughStockException(stock_status.stock, stock_status.quantity, new_quantity)
                         stock_status.quantity -= (new_quantity - old_quantity)
-                        nop.quantity = new_quantity
                         nopi.quantity = new_quantity
-                if sum(nopi.price for nopi in nop.ordered_product_items) != nop.price:
-                    raise ValidationError(u'小計金額が正しくありません')
+                nop.price = sum(nopi.price * nopi.product_item.quantity for nopi in nop.ordered_product_items)
 
             total_amount = sum(nop.price * nop.quantity for nop in new_order.items)\
                            + new_order.system_fee + new_order.transaction_fee + new_order.delivery_fee
@@ -753,7 +751,7 @@ class OrderDetailView(BaseView):
             self.request.session.flash(u'在庫がありません')
             has_error = True
         except Exception, e:
-            logger.exception('save error (%s)' % e.message)
+            logger.info('save error (%s)' % e.message)
             self.request.session.flash(u'入力された金額および個数が不正です')
             has_error = True
         finally:

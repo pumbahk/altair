@@ -370,7 +370,7 @@ class SejTest(unittest.TestCase):
         assert order.tickets[0].barcode_number == '00001'
 
         assert order.tickets[0].ticket_idx           == 1
-        assert order.tickets[0].ticket_type          == SejTicketType.TicketWithBarcode.v
+        assert int(order.tickets[0].ticket_type)     == SejTicketType.TicketWithBarcode.v # XXX: enumなので文字列として格納される
         assert order.tickets[0].event_name           == u'イベント名1'
         assert order.tickets[0].performance_name     == u'パフォーマンス名'
         assert order.tickets[0].performance_datetime == datetime.datetime(2012,8,31,18,00)

@@ -52,25 +52,16 @@
                     var product_price = 0;
                     product_item_prices.each(function () {
                       var price = parseInt($(this).val());
-                      product_price += isNaN(price) ? 0 : price;
+                      product_price += isNaN(price) ? 0 : price * $(this).data('quantity');
                     });
                     $('span[name="product_price-${ordered_product.id}"]').text(product_price);
-                    $('input[name="product_price-${ordered_product.id}"]').val(product_price);
                   });
                 });
               </script>
               <span name="product_price-${ordered_product.id}">${int(ordered_product.price)}</span>
-              <input name="product_price-${ordered_product.id}" type="hidden" value="${int(ordered_product.price)}">
             </td>
             <td>
               % if ordered_product.product.seat_stock_type.quantity_only:
-              <script type="text/javascript">
-                $(function() {
-                  $('input[name="product_quantity-${ordered_product.id}"]').focusout(function(){
-                    $('span[name="product_quantity-${ordered_product.id}"]').text($(this).val());
-                  });
-                });
-              </script>
               <input name="product_quantity-${ordered_product.id}" type="text" value="${ordered_product.quantity}">
               % else:
               ${ordered_product.quantity}
@@ -82,11 +73,26 @@
             <td></td>
             <td>${ordered_product_item.product_item.stock_type.name}</td>
             <td>
+              <script type="text/javascript">
+                $(function() {
+                  var pip = $('input[name="product_item_price-${ordered_product_item.id}"]');
+                  pip.data('quantity', ${ordered_product_item.product_item.quantity});
+                });
+              </script>
               <input name="product_item_price-${ordered_product_item.id}" type="text" value="${int(ordered_product_item.price)}">
             </td>
             <td>
               % if ordered_product.product.seat_stock_type.quantity_only:
-              <span name="product_quantity-${ordered_product.id}">${ordered_product_item.quantity}</span>
+              <script type="text/javascript">
+                $(function() {
+                  var piq = $('span[name="product_item_quantity-${ordered_product_item.id}"]');
+                  piq.data('quantity', ${ordered_product_item.product_item.quantity});
+                  $('input[name="product_quantity-${ordered_product.id}"]').focusout(function(){
+                    piq.text($(this).val() * piq.data('quantity'));
+                  });
+                });
+              </script>
+              <span name="product_item_quantity-${ordered_product_item.id}">${ordered_product_item.quantity}</span>
               % else:
               ${ordered_product_item.quantity}
               % endif

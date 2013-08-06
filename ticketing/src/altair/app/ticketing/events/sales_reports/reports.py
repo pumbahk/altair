@@ -204,7 +204,8 @@ class SalesTotalReporter(object):
         return sorted(self.reports.values(), key=lambda x:(x.start_on, x.title))
 
     def pop_data(self):
-        return self.reports.values().pop()
+        values = self.reports.values()
+        return values.pop() if values else None
 
 
 class SalesDetailReportRecord(object):
@@ -501,7 +502,8 @@ class SalesDetailReporter(object):
             merged_record = record
             pre_merge_key = merge_key
         else:
-            merged_records[merged_record.product_id] = merged_record
+            if merged_record:
+                merged_records[merged_record.product_id] = merged_record
         self.reports = merged_records
         self.create_group_key_to_reports()
         return self.sort_data()

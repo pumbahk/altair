@@ -20,10 +20,11 @@
 
 <div class="well well-small">
   <%include file="/sales_reports/_report_settings.html"
-            args="form=form, form_report_mail=form_report_mail, event=record, report_settings=report_settings" />
+            args="form=form, form_report_mail=form_report_mail, event=event, report_settings=report_settings" />
 </div>
 
-<h3>${record.title}</h3>
+<h3>${event.title}</h3>
+% if record:
 <table class="table table-striped table-bordered table-condensed">
   <tr>
     <th colspan="4"></th>
@@ -60,3 +61,7 @@
 
 <h3>公演</h3>
 <%include file="./_list.html" args="form=form, reporter=performance_total_reporter" />
+
+% else:
+レポート対象データがありません
+% endif

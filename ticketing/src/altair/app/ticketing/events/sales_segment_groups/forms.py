@@ -2,7 +2,7 @@
 
 import logging
 from wtforms import Form
-from wtforms import TextField, SelectField, HiddenField, IntegerField, BooleanField, SelectMultipleField
+from wtforms import TextField, TextAreaField, SelectField, HiddenField, IntegerField, BooleanField, SelectMultipleField
 from wtforms.validators import Regexp, Length, Optional, ValidationError
 from wtforms.widgets import CheckboxInput
 
@@ -154,6 +154,10 @@ class SalesSegmentGroupForm(OurForm):
         validators=[Optional()],
         choices=[],
         coerce=str,
+    )
+    auth3d_notice = TextAreaField(
+        label=u'クレジットカード 3D認証フォーム 注記事項',
+        validators=[Optional()],
     )
 
     def validate_end_at(form, field):

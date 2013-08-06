@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from wtforms import Form
-from wtforms import TextField, SelectField, HiddenField, IntegerField, BooleanField, SelectMultipleField
+from wtforms import TextField, TextAreaField, SelectField, HiddenField, IntegerField, BooleanField, SelectMultipleField
 from wtforms.validators import Regexp, Length, Optional, ValidationError
 from wtforms.widgets import CheckboxInput
 from sqlalchemy.sql import or_, and_, select
@@ -155,6 +155,10 @@ class SalesSegmentForm(OurForm):
         places=2,
         default=0,
         validators=[Required()]
+    )
+    x_auth3d_notice = TextAreaField(
+        label=u'クレジットカード 3D認証フォーム 注記事項',
+        validators=[Optional()],
     )
 
     def validate(self):

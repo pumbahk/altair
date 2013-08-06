@@ -575,7 +575,8 @@ class order_productsTests(unittest.TestCase):
             Event,
             Performance,
             Organization,
-            Venue
+            Venue,
+            Site
             )
         from pyramid.interfaces import IRequest
         from .interfaces import IStocker, IReserving, ICartFactory
@@ -598,7 +599,8 @@ class order_productsTests(unittest.TestCase):
         organization = Organization(id=organization_id, short_name='', code='XX')
         event = Event(id=event_id, organization=organization)
         performance = Performance(id=performance_id, event=event)
-        venue = Venue(id=venue_id, organization=organization, site_id=site_id, performance=performance)
+        site = Site(id=site_id)
+        venue = Venue(id=venue_id, organization=organization, site=site, performance=performance)
         stock = Stock(id=stock_id, quantity=5, performance=performance, stock_type=StockType())
         stock_status = StockStatus(stock=stock, quantity=5)
         seats = [Seat(id=i, l0_id='s%s' % i, stock=stock, venue=venue, status_=SeatStatus(status=int(SeatStatusEnum.Vacant))) for i in range(1, 6)]
@@ -616,7 +618,7 @@ class order_productsTests(unittest.TestCase):
 
         # 座席隣接状態
         for seat_count in range (2, 4):
-            adjacency_set = SeatAdjacencySet(seat_count=seat_count)
+            adjacency_set = SeatAdjacencySet(seat_count=seat_count, site=site)
             for i in range(0, len(seats) - 1):
                 adjacency = SeatAdjacency(adjacency_set=adjacency_set)
                 adjacency.seats = seats[i:i+2]

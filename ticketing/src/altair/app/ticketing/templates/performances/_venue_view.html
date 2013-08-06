@@ -1,6 +1,11 @@
 <%! import json %>
 <%def name="venueeditor(data_source)">
       <style type="text/css">
+#venue-editor {
+  position: relative;
+  overflow: hidden;
+}
+
 #venue-editor .venue-editor-main {
   position: relative;
   border: 1px solid #ccc;
@@ -139,6 +144,7 @@
         <div class="ui-corner-all ui-toolbar clearfix">
           <div style="float:left">
             <span class="ui-buttonset">
+              <input type="radio" name="function" value="select1" class="ui-button ui-icon-primary-arrow-4 action-select1 ui-no-text" id="toolbar-action-select1" checked="checked" /><label for="toolbar-action-select1">移動</label>
               <input type="radio" name="function" value="select" class="ui-button ui-icon-primary-arrowthick-1-ne action-select ui-no-text" id="toolbar-action-select" checked="checked" /><label for="toolbar-action-select">席を選択</label>
               <input type="radio" name="function" value="zoomin" class="ui-button ui-icon-primary-zoomin action-zoomin ui-no-text" id="toolbar-action-zoomin" /><label for="toolbar-action-zoomin">拡大</label>
               <input type="radio" name="function" value="zoomout" class="ui-button ui-icon-primary-zoomout action-zoomout ui-no-text" id="toolbar-action-zoomout" /><label for="toolbar-action-zoomout">縮小</label>
@@ -217,6 +223,11 @@ venueEditor.find(".ui-buttonset").remove('ui-buttonset').buttonset();
 var loadingPanel = null;
 var callbacks = {};
 
+var venueEditorMainOffset = (function () {
+  var _ = venueEditor.find('.venue-editor-main').offset();
+  return { x: _.left, y: _.top };
+})();
+
 venueEditorRoot.venueeditor({
   dataSource: dataSource,
   callbacks: {
@@ -234,6 +245,9 @@ venueEditorRoot.venueeditor({
     },
     uimodeselect: function (viewer, mode) {
       switch (mode) {
+      case 'select1':
+        $("#toolbar-action-select1").attr("checked", "checked");
+        break;
       case 'select':
         $("#toolbar-action-select").attr("checked", "checked");
         break;
@@ -280,7 +294,7 @@ venueEditorRoot.venueeditor({
           tooltip.text(messages).css('width', '200px');
         }
       });
-      callbacks.click && callbacks.click(viewer, seat, highlighted);
+      callbacks.click && callbacks.click(seat);
     },
     select: function (viewer, selection) {
       callbacks.select && callbacks.select(viewer, selection);
@@ -297,23 +311,29 @@ venueEditorRoot.venueeditor({
       callbacks.load && callbacks.load(viewer);
     },
     tooltip: function (seat) {
-      var tooltip = venueEditor.find('.tooltip');
-      var model = seat.get('model');
-      if (($.inArray('tooltip', seat.styleTypes) != -1 || $.inArray('highlighted', seat.styleTypes) != -1)) {
-        var posx = 0;
-        var posy = 0;
-        var e = window.event;
-        if (e.pageX || e.pageY) {
-          posx = e.pageX;
-          posy = e.pageY;
-        } else if (e.clientX || e.clientY) {
-          posx = e.clientX + document.body.scrollLeft + document.documentElement.scrollLeft;
-          posy = e.clientY + document.body.scrollTop + document.documentElement.scrollTop;
+      var tooltip = venueEditor.find('.tooltip'), pos = null; 
+      if (seat) {
+        var model = seat.get('model');
+        var shape = seat.get('shape');
+        if ($.inArray('tooltip', seat.styleTypes) != -1 || $.inArray('highlighted', seat.styleTypes) != -1) {
+          pos = Fashion._lib.addPoint(
+            shape.drawable._transform.apply(
+              Fashion._lib.subtractPoint(
+                shape.position(),
+                shape.drawable.scrollPosition())),
+            venueEditorMainOffset
+            );
         }
-        tooltip.attr('style', 'visibility: visible; top: ' + posy + 'px; left: ' + posx + 'px;');
-        tooltip.html(model.get('stock').get('stockType').get('name') + "<br>" + model.get('name'));
+      }
+      if (pos) {
+        tooltip.css({
+          left: pos.x + 'px',
+          top: pos.y + 'px',
+          visibility: 'visible'
+        });
+        tooltip.html(model.get('stock').get('stockType').get('name') + "<br />" + model.get('name'));
       } else {
-        tooltip.attr('style', 'visibility: hidden;');
+        tooltip.css('visibility', 'hidden');
       }
     }
   }
@@ -321,21 +341,30 @@ venueEditorRoot.venueeditor({
 
 venueEditor.find(".action-zoomin").click(function () {
   venueEditorRoot.venueeditor("uimode", "zoomin");
+  return false;
 });
 venueEditor.find(".action-zoomout").click(function () {
   venueEditorRoot.venueeditor("uimode", "zoomout");
+  return false;
 });
 venueEditor.find(".action-clearSelection").click(function () {
   $("label[for='toolbar-action-clearSelection']").removeClass("ui-state-active");
   venueEditorRoot.venueeditor("clearSelection");
   venueEditor.find(".action-select").click();
+  return false;
 });
 venueEditor.find(".action-refresh").click(function () {
   $("label[for='toolbar-action-refresh']").removeClass("ui-state-active");
   venueEditorRoot.venueeditor("refresh");
+  return false;
+});
+venueEditor.find(".action-select1").click(function () {
+  venueEditorRoot.venueeditor("uimode", "select1");
+  return false;
 });
 venueEditor.find(".action-select").click(function () {
   venueEditorRoot.venueeditor("uimode", "select");
+  return false;
 }).trigger('click');
       </script>
       %if hasattr(caller, 'post'):

@@ -1,3 +1,5 @@
+# -*- coding:utf-8 -*-
+
 import unittest
 from altair.app.ticketing.testing import _setup_db, _teardown_db
 
@@ -18,15 +20,52 @@ class LotTests(unittest.TestCase):
     def _makeOne(self, *args, **kwargs):
         return self._getTarget()(*args, **kwargs)
 
-    def _entry(self, email):
+    def _entry(self, email=None, lot=None, entry_no=None,
+               elected_at=None, canceled_at=None, rejected_at=None):
         from altair.app.ticketing.core.models import ShippingAddress
         from altair.app.ticketing.lots.models import LotEntry
-        return LotEntry(shipping_address=ShippingAddress(email_1=email))
+        return LotEntry(lot=lot,
+                        entry_no=entry_no,
+                        elected_at=elected_at,
+                        canceled_at=canceled_at,
+                        rejected_at=rejected_at,
+                        shipping_address=ShippingAddress(email_1=email))
+
+    def _wish(self, email=None, lot=None, entry_no=None, wish_order=0):
+        from altair.app.ticketing.lots.models import LotEntryWish
+        entry = self._entry(email, lot=lot, entry_no=entry_no)
+        wish = LotEntryWish(lot_entry=entry,
+                            wish_order=wish_order)
+        return wish
 
 
     def test_remained_entries_empty(self):
         target = self._makeOne()
         self.assertEqual(target.remained_entries, [])
+
+    def test_remained_entries(self):
+        from datetime import datetime
+        target = self._makeOne()
+        # 当選
+        self._entry(entry_no="testing-elected",
+                    lot=target, elected_at=datetime.now())
+        # 落選
+        self._entry(entry_no="testing-rejected",
+                    lot=target, rejected_at=datetime.now())
+        # キャンセル
+        self._entry(entry_no="testing-canceled",
+                    lot=target, canceled_at=datetime.now())
+
+        # 申込のみ
+        self._entry(entry_no="testing-accepted",
+                    lot=target)
+
+        self.session.add(target)
+        self.session.flush()
+
+        self.assertEqual([e.entry_no for e in target.remained_entries],
+                         ['testing-rejected',
+                          'testing-canceled'])
 
     def test_check_entry_limit_no_check(self):
         email = 'test@example.com'
@@ -81,6 +120,103 @@ class LotTests(unittest.TestCase):
         result = target.check_entry_limit(email)
 
         self.assertFalse(result)
+
+    def test_electing_wishes_empty(self):
+        target = self._makeOne(entry_limit=5)
+        result = target.electing_wishes([])
+        self.assertEqual(result, 0)
+
+    def test_electing_wishes_one(self):
+        from ..models import LotElectWork
+        target = self._makeOne(entry_limit=5)
+        self._wish(lot=target,
+                   email="testing@example.com",
+                   entry_no="testing",
+                   wish_order=2)
+        self.session.add(target)
+        result = target.electing_wishes([
+            ('testing', 2),
+        ])
+        self.assertEqual(result, 1)
+        self.assertEqual(self.session.query(LotElectWork).filter(
+            LotElectWork.lot_id==target.id,
+            LotElectWork.lot_entry_no=='testing',
+            LotElectWork.wish_order==2,
+            LotElectWork.entry_wish_no=='testing-2',
+        ).count(), 1)
+
+    def test_electing_wishes_dup(self):
+        from ..models import LotElectWork
+        target = self._makeOne(entry_limit=5)
+        self._wish(lot=target,
+                   email="testing@example.com",
+                   entry_no="testing",
+                   wish_order=2)
+        self.session.add(
+            LotElectWork(
+                lot_id=target.id,
+                lot_entry_no='testing',
+                wish_order=2,
+                entry_wish_no='testing-2',
+            ),
+        )
+
+        result = target.electing_wishes([
+            ('testing', 2),
+        ])
+        self.assertEqual(result, 0)
+        self.assertEqual(self.session.query(LotElectWork).filter(
+            LotElectWork.lot_id==target.id,
+            LotElectWork.lot_entry_no=='testing',
+            LotElectWork.wish_order==2,
+        ).count(), 1)
+
+
+    def test_rejectable_entries(self):
+        target = self._makeOne(entry_limit=5)
+        self.session.add(target)
+        self.session.flush()
+
+        result = target.rejectable_entries
+
+        self.assertEqual(result, [])
+
+    def test_rejectable_entries_one(self):
+        from datetime import datetime
+        from ..models import LotElectWork, LotRejectWork
+        target = self._makeOne(entry_limit=5)
+        self._entry(lot=target,
+                   email="testing@example.com",
+                   entry_no="testing-rejectable")
+        self._entry(lot=target,
+                    email="testing@example.com",
+                    entry_no="testing-elected",
+                    elected_at=datetime.now())
+        self._entry(lot=target,
+                    email="testing@example.com",
+                    entry_no="testing-rejected",
+                    rejected_at=datetime.now())
+        self._entry(lot=target,
+                    email="testing@example.com",
+                    entry_no="testing-canceled",
+                    canceled_at=datetime.now())
+        self._entry(lot=target,
+                   email="testing@example.com",
+                   entry_no="testing-electing")
+        LotElectWork(lot=target,
+                     lot_entry_no="testing-electing")
+        self._entry(lot=target,
+                   email="testing@example.com",
+                   entry_no="testing-rejecting")
+        LotRejectWork(lot=target,
+                      lot_entry_no='testing-rejecting')
+        self.session.add(target)
+        self.session.flush()
+
+        result = target.rejectable_entries
+
+        self.assertEqual([l.entry_no for l in result],
+                         ["testing-rejectable"])
 
 
 class LotEntryTests(unittest.TestCase):

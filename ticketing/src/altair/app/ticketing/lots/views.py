@@ -270,7 +270,11 @@ class EntryLotView(object):
             birthday=birthday,
             memo=cform['memo'].data)
 
-        entry = self.request.session['lots.entry']
+        entry = self.request.session.get('lots.entry')
+        if entry is None:
+            self.request.session.flash(u"セッションに問題が発生しました。")
+            return self.back_to_form()
+
         self.request.session['lots.entry.time'] = datetime.now()
         cart = LotSessionCart(entry, self.request, self.context.lot)
 
@@ -348,7 +352,11 @@ class ConfirmLotEntryView(object):
             return self.back_to_form()
 
 
-        entry = self.request.session['lots.entry']
+        entry = self.request.session.get('lots.entry')
+        if entry is None:
+            self.request.session.flash(u"セッションに問題が発生しました。")
+            return self.back_to_form()
+
         entry.pop('token')
         entry_no = entry['entry_no']
         shipping_address = entry['shipping_address']
@@ -408,6 +416,9 @@ class CompletionLotEntryView(object):
             return HTTPFound(location=self.request.route_url('lots.entry.index', **self.request.matchdict))
         entry_no = self.request.session.pop('lots.entry_no')
         entry = DBSession.query(LotEntry).filter(LotEntry.entry_no==entry_no).one()
+        if entry is None:
+            self.request.session.flash(u"セッションに問題が発生しました。")
+            return self.back_to_form()
 
 
         try:

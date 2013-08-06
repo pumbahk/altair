@@ -5,16 +5,6 @@
 <%namespace name="co" file="components.html"/>
 <%namespace name="css" file="internal.css.html"/>
 
-<div class="circle circle-page circle-top"></div>
-<h2>page編集(D&D widget)</h2>
-
-${nco.breadcrumbs(
-  names=["Top", "Page", u"Pageset詳細", u"詳細ページ", page.name], 
-  urls=[request.route_path("dashboard"),
-        request.route_path("pageset_list", pagetype=page.pagetype.name),
-        h.link.pageset_detail(request, page.pageset),
-        request.route_path('pageset_detail', pageset_id=page.pageset.id, kind=page.pageset.pagetype.name,_query=dict(curren_page_id=page.id))+"#nav_page"]
-)}
 
 <%block name='style'>
     <link rel="stylesheet" type="text/css" href="${request.static_url("altaircms:static/css/overlay-basic.css")}"/>
@@ -49,18 +39,40 @@ ${nco.breadcrumbs(
 %>
 var NameToJName = ${json.dumps(WIDGET_LABEL_DICT)|n};
 </script>
-
 </%block>
+
+<div class="circle circle-page circle-top"></div>
+${nco.breadcrumbs(
+  names=["Top", "Page", u"Pageset詳細", u"詳細ページ", page.name], 
+  urls=[request.route_path("dashboard"),
+        request.route_path("pageset_list", pagetype=page.pagetype.name),
+        h.link.pageset_detail(request, page.pageset),
+        request.route_path('pageset_detail', pageset_id=page.pageset.id, kind=page.pageset.pagetype.name,_query=dict(curren_page_id=page.id))+"#nav_page"]
+)}
+
+<h2>page編集(D&D widget)</h2>
+
+<table class="table">
+  <tr>
+    <th rowspan="2">ページ情報</th>
+    <th>ページ名</th><td><a href="${request.route_path('pageset_detail', pageset_id=page.pageset.id, kind=page.pageset.pagetype.name,_query=dict(curren_page_id=page.id))}#nav_page">${page.name}</a></td>
+    %if event:
+    <th>対象イベント</th><td><a href="${request.route_path("event", id=page.event.id)}">${event.title}</a></td>    
+    %else:
+    <th>対象イベント</th><td>-</td>
+    %endif
+  </tr>
+  <tr>
+    <th>URL</th><td>${page.url}</td>
+		<th>掲載期間</th><td>${h.term(page.publish_begin, page.publish_end)}</td>
+  </tr>
+</table>
 
 %if page and event:
   <h4>イベント"${event.title}"の"${page.name}"の編集</h4>
 %elif page:
   <h4>${page.name}ページの編集</h4>
 %endif
-
-<div style="margin-bottom: 9px">
-  <h2 class="span6">ページのタイトル - ${page.name} (ID: ${page.id})></h2>
-</div>
 
 <div class="navbar navbar-inverse">
   <div class="navbar-inner">

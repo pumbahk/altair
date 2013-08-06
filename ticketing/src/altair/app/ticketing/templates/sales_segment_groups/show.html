@@ -70,10 +70,11 @@ ${ch.breadcrumbs(
             <th>販売終了日時</th>
             <th>配券元</th>
             <th>上限枚数</th>
-            <%doc><th>購入回数制限</th></%doc>
+            <th>購入回数制限</th>
             <th>座席選択可</th>
             <th>公開</th>
             <th>レポート対象</th>
+            <th>クレジットカード 3D認証フォーム 注記事項</th>
           </tr>
         </thead>
         <tbody>
@@ -92,10 +93,11 @@ ${ch.breadcrumbs(
             <td>${vh.datetime(sales_segment.end_at)}</td>
             <td>${sales_segment.account.name if sales_segment.account else u'(未設定)'}</td>
             <td>${sales_segment.upper_limit or u''}</td>
-            <%doc><td>${sales_segment.order_limit or u''}</td></%doc>
+            <td>${sales_segment.order_limit or u''}</td>
             <td>${u'○' if sales_segment.seat_choice else u'×'}</td>
             <td>${u'○' if sales_segment.public else u'×'}</td>
             <td>${u'○' if sales_segment.reporting else u'×'}</td>
+            <td>${sales_segment.x_auth3d_notice}</td>
           </tr>
         % endfor
         </tbody>
