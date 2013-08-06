@@ -145,7 +145,7 @@ class SalesTotalReporter(object):
 
         for id, stock_quantity in query.all():
             if id not in self.reports:
-                logger.warn('invalid key (%s:%s) get_stock_data' % (self.group_by, id))
+                logger.info('invalid key (%s:%s) get_stock_data' % (self.group_by, id))
                 continue
             record = self.reports[id]
             record.stock_quantity = stock_quantity or 0
@@ -176,7 +176,7 @@ class SalesTotalReporter(object):
 
         for id, order_amount, order_quantity in query.all():
             if id not in self.reports:
-                logger.warn('invalid key (%s:%s) get_order_data' % (self.group_by, id))
+                logger.info('invalid key (%s:%s) get_order_data' % (self.group_by, id))
                 continue
             record = self.reports[id]
             record.total_order_amount = order_amount or 0
@@ -190,7 +190,7 @@ class SalesTotalReporter(object):
                 query = query.filter(Order.created_at < self.form.limited_to.data)
             for id, order_amount, order_quantity in query.all():
                 if id not in self.reports:
-                    logger.warn('invalid key (%s:%s) get_order_data' % (self.group_by, id))
+                    logger.info('invalid key (%s:%s) get_order_data' % (self.group_by, id))
                     continue
                 record = self.reports[id]
                 record.order_amount = order_amount or 0
