@@ -1,0 +1,22 @@
+<script type="text/javascript">
+  function send_event(id) {
+    modal = $('#modal-send_event');
+    modal.find('#send_event').attr('href', '/events/send/' + id);
+    modal.modal('toggle');
+  }
+</script>
+
+<div id="modal-send_event" class="modal hide">
+  <div class="modal-header">
+    <a href="#" class="close">&times;</a>
+    <h3>確認</h3>
+  </div>
+
+  <div class="modal-body">
+    <p>CMSへイベントを送信します。よろしいですか？</p>
+  </div>
+  <div class="modal-footer">
+    <a href="javascript:void(0);" onclick="$('#modal-send_event').modal('hide');" class="btn secondary">キャンセル</a>
+    <a id="send_event" href="" class="btn danger">送信</a>
+  </div>
+</div>

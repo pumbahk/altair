@@ -20,6 +20,7 @@ from pyramid.response import Response
 from pyramid.path import AssetResolver
 from paste.util.multidict import MultiDict
 
+from altair.app.ticketing.models import DBSession
 from altair.app.ticketing.models import merge_session_with_post, record_to_multidict, merge_and_flush
 from altair.app.ticketing.views import BaseView
 from altair.app.ticketing.fanstatic import with_bootstrap
@@ -48,7 +49,12 @@ class Events(BaseView):
         if direction not in ['asc', 'desc']:
             direction = 'asc'
 
-        query = Event.filter(Event.organization_id==int(self.context.organization.id))
+        from sqlalchemy.sql.expression import func
+
+        query = DBSession.query(Event, func.count(Performance.id)) \
+            .join(Performance.event) \
+            .group_by(Event.id) \
+            .filter(Event.organization_id==int(self.context.organization.id))
         query = query.order_by(sort + ' ' + direction)
 
         form_search = EventSearchForm(self.request.params)
@@ -70,7 +76,7 @@ class Events(BaseView):
         events = paginate.Page(
             query,
             page=int(self.request.params.get('page', 0)),
-            items_per_page=10,
+            items_per_page=50,
             url=PageURL_WebOb_Ex(self.request)
         )
 
