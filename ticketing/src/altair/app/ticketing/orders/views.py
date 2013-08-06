@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import sys
 import json
 import logging
 import csv
@@ -753,7 +754,7 @@ class OrderDetailView(BaseView):
             self.request.session.flash(u'在庫がありません')
             has_error = True
         except Exception, e:
-            logger.info('save error (%s)' % e.message)
+            logger.info('save error (%s)' % e.message, exc_info=sys.exc_info())
             self.request.session.flash(u'入力された金額および個数が不正です')
             has_error = True
         finally:
