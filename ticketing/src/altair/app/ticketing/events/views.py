@@ -20,6 +20,8 @@ from pyramid.response import Response
 from pyramid.path import AssetResolver
 from paste.util.multidict import MultiDict
 
+from altair.sqlahelper import get_db_session
+
 from altair.app.ticketing.models import merge_session_with_post, record_to_multidict, merge_and_flush
 from altair.app.ticketing.views import BaseView
 from altair.app.ticketing.fanstatic import with_bootstrap
@@ -43,12 +45,14 @@ class Events(BaseView):
 
     @view_config(route_name='events.index', renderer='altair.app.ticketing:templates/events/index.html', permission='event_viewer')
     def index(self):
+        slave_session = get_db_session(self.request, name="slave")
+
         sort = self.request.params.get('sort', 'Event.id')
         direction = self.request.GET.get('direction', 'desc')
         if direction not in ['asc', 'desc']:
             direction = 'asc'
 
-        query = Event.filter(Event.organization_id==int(self.context.organization.id))
+        query = slave_session.query(Event).filter(Event.organization_id==int(self.context.organization.id))
         query = query.order_by(sort + ' ' + direction)
 
         form_search = EventSearchForm(self.request.params)
@@ -83,6 +87,7 @@ class Events(BaseView):
 
     @view_config(route_name='events.show', renderer='altair.app.ticketing:templates/events/show.html', permission='event_viewer')
     def show(self):
+        slave_session = get_db_session(self.request, name="slave")
         event_id = int(self.request.matchdict.get('event_id', 0))
         event = Event.get(event_id, organization_id=self.context.user.organization_id)
         if event is None:
@@ -90,8 +95,8 @@ class Events(BaseView):
         cart_url = get_cart_url_builder(self.request).build(self.request, event)
         return {
             'event':event,
-            'seat_stock_types':StockType.filter_by(event_id=event_id, type=StockTypeEnum.Seat.v).order_by(StockType.display_order).all(),
-            'non_seat_stock_types':StockType.filter_by(event_id=event_id, type=StockTypeEnum.Other.v).order_by(StockType.display_order).all(),
+            'seat_stock_types':slave_session.query(StockType).filter_by(event_id=event_id, type=StockTypeEnum.Seat.v).order_by(StockType.display_order).all(),
+            'non_seat_stock_types':slave_session.query(StockType).filter_by(event_id=event_id, type=StockTypeEnum.Other.v).order_by(StockType.display_order).all(),
             'cart_url': cart_url, 
             "cart_now_cart_url": get_cart_now_url_builder(self.request).build(self.request, cart_url, event.id), 
             'form':EventForm(),
