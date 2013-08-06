@@ -2,7 +2,7 @@
 import logging
 import transaction
 from altair.app.ticketing.models import DBSession
-from altair.app.ticketing.cart.exceptions import DeliveryFailedException, InvalidCartStatusError
+from altair.app.ticketing.cart.exceptions import DeliveryFailedException, InvalidCartStatusError, PaymentMethodEmptyError
 from altair.app.ticketing.core.models import Order
 from .api import (
     get_payment_delivery_plugin, 
@@ -74,10 +74,10 @@ class Payment(object):
 
         payment_delivery_plugin, payment_plugin, delivery_plugin = self.get_plugins(self.cart.payment_delivery_pair)
         event_id = self.cart.performance.event_id
-
+        
         if payment_delivery_plugin is not None:
             order = self.call_payment_delivery(payment_delivery_plugin)
-        elif payment_plugin and delivery_plugin:
+        elif payment_plugin and delivery_plugin:            
             # 決済と配送を別々に処理する
             order = self.call_payment_plugin(payment_plugin)
             self.cart.order = order

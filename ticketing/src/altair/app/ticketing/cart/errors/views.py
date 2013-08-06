@@ -13,7 +13,8 @@ from ..exceptions import (
     ZeroQuantityError,
     CartCreationException,
     DeliveryFailedException,
-    InvalidCartStatusError
+    InvalidCartStatusError,
+    PaymentMethodEmptyError
 )
 from ..reserving import InvalidSeatSelectionException, NotEnoughAdjacencyException
 from ..stocker import InvalidProductSelectionException, NotEnoughStockException
@@ -145,3 +146,14 @@ def payment_plugin_exception(context, request):
 def invalid_cart_status_error(request):
     return dict(message=Markup(u'大変申し訳ございません。ブラウザの複数ウィンドウからの操作や、戻るボタン等の操作により、予約を継続することができません。<br>'
                                u'ご予約の際は複数ウィンドウや戻るボタンを使わずにご予約ください。'))
+
+
+@mobile_view_config(context=PaymentMethodEmptyError,
+                    renderer=selectable_renderer('altair.app.ticketing.cart:templates/%(membership)s/mobile/error.html'))
+@view_config(context=PaymentMethodEmptyError,
+             renderer=selectable_renderer('altair.app.ticketing.cart:templates/%(membership)s/pc/message.html'))
+def payment_method_is_empty(request):
+    return dict(message=Markup(u'この商品は現在メンテナンス中のためご購入いただけません。'))
+
+
+
