@@ -6,7 +6,7 @@
   need_total = form.need_total.data
 %>
 
-<h3 style="margin-top: 30px;">${performance.name}　開催日:${vh.datetime(performance.start_on)}</h3>
+<h3 style="margin-top: 30px;">${performance.name}　開催日: ${vh.datetime(performance.start_on)}</h3>
 <%
   sales_segments = performance_reporter.sort_index()
   if len(sales_segments) > 1:
@@ -21,6 +21,7 @@
       reporter = performance_reporter.get_reporter(sales_segment)
       ss_name = sales_segment.name
   %>
+<h4>会場: ${performance.venue.name}</h4>
 <h4>${ss_name}</h4>
 <table border="1" bordercolor="#888" width="98%" style="border-collapse:collapse;">
   % if form.limited_from.data or form.limited_to.data:
