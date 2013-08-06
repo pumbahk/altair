@@ -77,8 +77,12 @@ class Payment(object):
         
         if payment_delivery_plugin is not None:
             order = self.call_payment_delivery(payment_delivery_plugin)
-        elif payment_plugin and delivery_plugin:            
-            # 決済と配送を別々に処理する
+        elif payment_plugin and delivery_plugin:
+            # 公開していない支払い方法はメンテナンス中のため登録させない
+            if not self.cart.payment_delivery_pair.payment_method.public:
+                raise PaymentMethodEmptyError
+            
+            # 決済と配送を別々に処理する            
             order = self.call_payment_plugin(payment_plugin)
             self.cart.order = order
             order_no = order.order_no
