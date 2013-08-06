@@ -172,7 +172,7 @@ class Lots(BaseView):
             "cellEdit": True,
             "cellsubmit": 'clientArray',
             "rowNum": 200,
-            "colModel" : [ 
+            "colModel" : [
                 {"hidden": True,
                  "jsonmap": "product.id",
                  "name": "product_id", 
@@ -221,7 +221,11 @@ class Lots(BaseView):
                  "edittype": 'select',
                  "editoptions": stock_holder_options,
                  "sortable":False},
-                {"label": u"商品明細名", 
+                {"hidden": True,
+                 "jsonmap": "product_item.id",
+                 "name" :'product_item_id',
+                 "editable": False},
+                {"label": u"商品明細名",
                  "jsonmap": "product_item.name",
                  "name" :'product_item_name', 
                  "index" :'product_item_name', 
