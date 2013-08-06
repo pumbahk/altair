@@ -542,6 +542,7 @@ class LotEntries(BaseView):
 
         electing_url = self.request.route_url('lots.entries.elect_entry_no', lot_id=lot.id)
         electing_all_url = self.request.route_url('lots.entries.elect_all', lot_id=lot.id)
+        rejecting_remains_url = self.request.route_url('lots.entries.reject_remains', lot_id=lot.id)
         rejecting_url = self.request.route_url('lots.entries.reject_entry_no', lot_id=lot.id)
         cancel_url = self.request.route_url('lots.entries.cancel', lot_id=lot.id)
         cancel_electing_url = self.request.route_url('lots.entries.cancel_electing', lot_id=lot.id)
@@ -565,6 +566,7 @@ class LotEntries(BaseView):
                     electing=electing,
                     performances=performances,
                     enable_elect_all=enable_elect_all,
+                    rejecting_remains_url=rejecting_remains_url,
         )
 
         
@@ -706,6 +708,25 @@ class LotEntries(BaseView):
         return 'lot-wish-' + wish.lot_entry.entry_no + '-' + str(wish.wish_order)
 
 
+    @view_config(route_name="lots.entries.reject_remains",
+                 request_method="POST",
+                 permission='event_viewer',
+                 renderer="json")
+    def reject_remains(self):
+        """ 一括落選予定処理"""
+        lot_id = self.request.matchdict["lot_id"]
+        lot = Lot.query.filter(Lot.id==lot_id).one()
+        entries = lot.rejectable_entries
+        rejecting_count = lots_api.submit_reject_entries(lot_id, entries)
+
+        def _wish_generator():
+            for e in entries:
+                for w in e.wishes:
+                    yield w
+
+        return dict(rejecting_count=rejecting_count,
+                    html=[(self.wish_tr_class(w), self.render_wish_row(w))
+                          for w in _wish_generator()])
 
 
     @view_config(route_name="lots.entries.elect_all", 
