@@ -70,9 +70,9 @@ def skip_needless_content(inp):
 
 
 #xxx: cleanup_svgはxmltreeを書き換えてしまう。なので２回呼び出すとおかしな結果になってしまう
-def get_validated_svg_cleaner(svgio, exc_class=TicketCleanerValidationError):
+def get_validated_svg_cleaner(svgio, exc_class=TicketCleanerValidationError, sej=False):
     xmltree = get_validated_xmltree(svgio, exc_class=exc_class)
-    result = TicketSVGValidator(exc_class=exc_class).validate(svgio, xmltree)
+    result = TicketSVGValidator(exc_class=exc_class, sej=sej).validate(svgio, xmltree)
     return TicketSVGCleaner(svgio, xmltree, result=result)
 
 class TicketSVGCleaner(object):
@@ -110,16 +110,18 @@ def invalid_svg_upload_when_save(io, suffix=".svg"):
     
 
 class TicketSVGValidator(object):
-    def __init__(self, exc_class=TicketCleanerValidationError, io_create=StringIO):
+    def __init__(self, exc_class=TicketCleanerValidationError, io_create=StringIO, sej=False):
         self.exc_class = exc_class
         self.io_create = io_create
+        self.sej = sej
 
     def validate(self, svgio, xmltree):
         default_io = None
         try:
             default_io = io = self._validated_io_on_cleanup_phase(xmltree)
             io = self._validated_io_on_normalize_phase(io)
-            self._validate_on_converting_to_sej_xml(etree.parse(io))
+            if self.sej:
+                self._validate_on_converting_to_sej_xml(etree.parse(io))
             io.seek(0)
             return io
         except Exception:
