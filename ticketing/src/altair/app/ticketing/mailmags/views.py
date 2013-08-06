@@ -1,14 +1,19 @@
 # encoding: utf-8
 
+import csv
 from pyramid.view import view_config, view_defaults
 from pyramid.httpexceptions import HTTPFound
+from pyramid.response import Response
 from altair.app.ticketing.views import BaseView
+from .export import MailMagCSV, get_japanese_columns
 
 from altair.app.ticketing.fanstatic import with_bootstrap
 import webhelpers.paginate as paginate
 from .models import MailMagazine, MailSubscription, MailSubscriptionStatus
-
 from .forms import MailMagazineForm
+from ..orders.views import encode_to_cp932
+from datetime import datetime
+
 import helpers
 
 @view_defaults(decorator=with_bootstrap,  permission='administrator')
@@ -60,6 +65,7 @@ class MailMagazinesView(BaseView):
         mail_subscriptions_query = MailSubscription.query.filter_by(segment=mailmag)
         if search_text:
             mail_subscriptions_query = mail_subscriptions_query.filter(MailSubscription.email.like(search_text + '%'))
+
         mail_subscriptions = paginate.Page(
             mail_subscriptions_query,
             page=int(self.request.params.get('page', 0)),
@@ -72,6 +78,33 @@ class MailMagazinesView(BaseView):
             search_text=search_text or u'',
             h=helpers
             )
+
+    @view_config(route_name='mailmags.download')
+    def download(self):
+        mailmag_id = self.request.matchdict.get('id')
+        mailmag = MailMagazine.query.filter_by(id=mailmag_id, organization=self.request.context.organization).one()
+        search_text = self.request.params.get('search_text')
+        mail_subscriptions_query = MailSubscription.query.filter_by(segment=mailmag)
+        if search_text:
+            mail_subscriptions_query = mail_subscriptions_query.filter(MailSubscription.email.like(search_text + '%'))
+
+        headers = [
+            ('Content-Type', 'application/octet-stream; charset=cp932'),
+            ('Content-Disposition', 'attachment; filename=mailmags_{date}.csv'.format(date=datetime.now().strftime('%Y%m%d%H%M%S')))
+        ]
+        response = Response(headers=headers)
+
+        export_type = MailMagCSV.EXPORT_TYPE_MAILMAG
+        excel_csv = True
+        kwargs = {}
+        if export_type:
+            kwargs['export_type'] = export_type
+        if excel_csv:
+            kwargs['excel_csv'] = True
+        mailmags_csv = MailMagCSV(organization_id=self.context.organization.id, localized_columns=get_japanese_columns(self.request), **kwargs)
+        writer = csv.writer(response, delimiter=',', quoting=csv.QUOTE_ALL)
+        writer.writerows([encode_to_cp932(column) for column in columns] for columns in mailmags_csv(mail_subscriptions_query))
+        return response
 
 @view_defaults(decorator=with_bootstrap,  permission='administrator')
 class MailSubscriptionsView(BaseView):
