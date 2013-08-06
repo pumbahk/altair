@@ -721,10 +721,11 @@ class OrderDetailView(BaseView):
             new_order.delivery_fee = f.delivery_fee.data
 
             for op, nop in itertools.izip(order.items, new_order.items):
-                nop.quantity = int(self.request.params.get('product_quantity-%d' % op.id) or 0)
+                # 個数が変更できるのは数受けのケースのみ
+                if op.product.seat_stock_type.quantity_only:
+                    nop.quantity = int(self.request.params.get('product_quantity-%d' % op.id) or 0)
                 for opi, nopi in itertools.izip(op.ordered_product_items, nop.ordered_product_items):
                     nopi.price = int(self.request.params.get('product_item_price-%d' % opi.id) or 0)
-                    # 個数が変更できるのは数受けのケースのみ
                     if op.product.seat_stock_type.quantity_only:
                         stock_status = opi.product_item.stock.stock_status
                         new_quantity = nop.quantity * nopi.product_item.quantity
