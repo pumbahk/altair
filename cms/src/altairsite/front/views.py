@@ -39,15 +39,19 @@ def rendering_page(context, request):
     dt = context.get_preview_date()
 
     control = context.pc_access_control()
-
     try:
         static_page = control.fetch_static_page_from_params(url, dt)
         if static_page:
-            return as_static_page_response(request, static_page, url)
+            if static_page.interceptive:
+                return as_static_page_response(request, static_page, url)
     except StaticPageNotFound:
         logger.info(u'no corresponding static page found for url=%s; falls back to standard page discovery' % url)
 
-    if os.path.splitext(request.url)[1] != "":
+    ## hmmm..
+    if url.endswith("/index.html"):
+        url = url.replace("/index.html", "")
+
+    if os.path.splitext(url)[1] != "":
         return HTTPNotFound()
 
     page = control.fetch_page_from_params(url, dt)
