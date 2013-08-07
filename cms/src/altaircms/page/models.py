@@ -225,6 +225,7 @@ class StaticPageSet(Base,
 
     pagetype_id = Column(sa.Integer, ForeignKey("pagetype.id"))
     pagetype = orm.relationship("PageType", backref="static_pagesets", uselist=False)
+    hash = sa.Column(sa.String(length=32), nullable=False)
 
     def current(self, dt=None, published=True):
         dt = dt or datetime.now()
