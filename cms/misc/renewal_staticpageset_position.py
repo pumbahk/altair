@@ -1,16 +1,24 @@
 # -*- coding:utf-8 -*-
 import os
+import sys
+from lxml import html
+import uuid
 import logging
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.WARN)
 import argparse
+
+from boto.s3.connection import S3Connection
 from pyramid.paster import bootstrap
-from pyramid.path import DottedNameResolver
-from altaircms.page.static_upload.refine import get_html_parser, DEFAULT_ENCODING
-from boto import connect_s3
-from boto.s3.key import Key
-from lxml import html
-import uuid
+from pyramid.path import AssetResolver
+
+from altaircms.page.staticupload.refine import (
+    get_html_parser,
+    DEFAULT_ENCODING,
+    is_html_filename
+    )
+from altair.pyramid_boto.s3.connection import DefaultS3Uploader
+
 
 def main():
     parser = argparse.ArgumentParser(description="renweal a position of data about static pageset. using hash(uuid4)")
@@ -26,6 +34,12 @@ def move_fs(basepath, src, dst):
         logger.warn("fs: {path} is not found".format(path=basepath))
         return 
     os.rename(os.path.join(basepath, src), os.path.join(basepath, dst))
+
+def fix_url_recursive(path, static_pageset, bucket_name):
+    for root, ds, fs in os.walk(path):
+        for f in fs:
+            if not f.startswith(".") and is_html_filename(f):
+                fix_url(os.path.join(root, f), static_pageset, bucket_name)
 
 def fix_url(fname, static_pageset, bucket_name):
     doc = html.parse(fname, parser=get_html_parser(DEFAULT_ENCODING)).getroot()
@@ -43,33 +57,35 @@ def fix_url(fname, static_pageset, bucket_name):
     with open(fname, "w") as wf:
         wf.write(html.tostring(doc, pretty_print=True, encoding=DEFAULT_ENCODING))
 
-def move_s3(bucket, src, dst):
-    k=Key(bucket)
-    k.key=src
-    k.copy(bucket, dst)
-    k.delete()
+def move_s3(uploader, src, dst):
+    uploader.copy_items(src, dst, recursive=True)
 
 def normalize_s3(sp, path):
     return "usersite/uploaded/{organization}/{path}".format(organization=sp.organization.short_name, path=path)
 
 def _main(args):
     from altaircms.page.models import StaticPageSet
+    from altaircms.auth.models import Organization
     from altaircms.models import DBSession
     env = bootstrap(args.config)
     request = env["request"]
-    base = DottedNameResolver().resolve(request.registry.settings["altaircms.page.static.directory"])
+    base = AssetResolver().resolve(request.registry.settings["altaircms.page.static.directory"]).abspath()
 
     bucket_name = request.registry.settings["s3.bucket_name"]
-    c = connect_s3()
-    bucket = c.get_bucket(bucket_name)
-    for sp in StaticPageSet.query.filter(hash=="").all():
+    connection = lambda : S3Connection(request.registry.settings["s3.access_key"], request.registry.settings["s3.secret_key"])
+    uploader = DefaultS3Uploader(connection, bucket_name)
+    for sp in StaticPageSet.query.filter(StaticPageSet.hash=="").all():
         try:
+            ##slackoff
+            sp.organization = Organization.query.filter_by(id=sp.organization_id).one()
+
             basedir = get_basepath(base, sp)
             sp.hash = uuid.uuid4().hex
             DBSession.add(sp)
-            fix_url(os.path.join(basedir, sp.url), sp, bucket_name)
+            fix_url_recursive(os.path.join(basedir, sp.url), sp, bucket_name)
             move_fs(basedir, sp.url, sp.hash)
-            move_s3(bucket, normalize_s3(sp, sp.url), normalize_s3(sp, sp.hash))
+            move_s3(uploader, normalize_s3(sp, sp.url), normalize_s3(sp, sp.hash))
+            sys.stderr.write(".")
         except Exception as e:
             logger.error(str(e))
     import transaction
