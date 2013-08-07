@@ -6,7 +6,7 @@ from altaircms.formhelpers import Form
 from wtforms import fields
 from wtforms import widgets
 from wtforms import validators
-from ..models import StaticPage
+from ..models import StaticPage, StaticPageSet
 from altaircms.formhelpers import dynamic_query_select_field_factory
 from altaircms.formhelpers import MaybeDateTimeField
 from altaircms.formhelpers.validations import validate_term, validate_filetype
@@ -126,10 +126,8 @@ class StaticPageSetForm(Form):
 
     def object_validate(self, obj):
         data = self.data
-        self.request._static_page_prefix = obj.url #too add-hoc    
-        path = os.path.join(self.static_directory.get_base_directory(), data["url"])
         if obj.url != data["url"]:
-            if os.path.exists(path):
+            if StaticPageSet.query.filter(StaticPageSet.organization_id==obj.organization_id, StaticPageSet.url==data["url"], StaticPageSet.id!=obj.id).count() > 0:
                 self.errors["url"] = [u"{0} は既に利用されています".format(data["url"])]
                 return False
             FlashMessage.info(u"ファイルの置かれる位置を変更しようとしています。この処理には時間がかかることがあります", request=self.request)

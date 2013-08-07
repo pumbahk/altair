@@ -90,7 +90,7 @@ def s3delete_files_completely(after_delete_completely):
     static_directory = event.static_directory
     static_pageset = event.static_pageset
     uploader = static_directory.s3utility.uploader
-    name = "{0}/{1}/{2}".format(static_directory.prefix, event.request.organization.short_name, static_pageset.url)
+    name = "{0}/{1}/{2}".format(static_directory.prefix, event.request.organization.short_name, static_pageset.hash)
     try:
         logger.warn("delete all completely!! danger danger,  src=%s" % name)
         delete_candidates = list(uploader.bucket.list(name))

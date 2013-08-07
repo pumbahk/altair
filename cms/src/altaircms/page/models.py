@@ -269,7 +269,7 @@ class StaticPage(BaseOriginalMixin,
     
     @property
     def prefix(self):
-        return self.pageset.url
+        return self.pageset.hash
 
     @property
     def description(self):
