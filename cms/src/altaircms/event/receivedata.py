@@ -206,10 +206,9 @@ class Scanner(object):
             if record.get("group_id"):
                 salessegment.group = group_dict[(event.id, record.get("group_id"))] = SalesSegmentGroup(name=record["name"], kind=kind_name, event_id=event.id)
             else:
+                logger.warn("group id is not found: {0}. creating it.".format(record))
                 salessegment.group = group_failback_dict[(event.id, record["name"], kind_name)] = SalesSegmentGroup(name=record["name"], kind=kind_name, event_id=event.id, publicp=publicp)
         salessegment.group.backend_id = record.get("group_id")
-        if not record.get("group_dict"):
-            logger.warn("group id is not found: {0}".format(record))
 
         salessegment.kind = kind_name
 
