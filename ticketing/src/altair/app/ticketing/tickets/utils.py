@@ -191,7 +191,6 @@ class DictBuilder(object):
                 },
             u'seatAttributes': dict(seat.attributes),
             u'席番': seat.name,
-            u'発券番号': ticket_number_issuer() if ticket_number_issuer else None
             })
         return retval
 
