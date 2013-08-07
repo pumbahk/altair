@@ -52,8 +52,8 @@
             <span class="label ${label_classes[i%6]}">${sales_segment_group.name}</span>
           % endfor
         </td>
-        <td>${perf_count}</td>
-        <td>
+        <td class="span1">${perf_count}</td>
+        <td class="span3">
           <%include file="./_action_button.html" args="event=event, order=['edit', 'copy', 'delete'], small=True" />
           % if event.cms_send_at:
             % if event.updated_at > event.cms_send_at:
