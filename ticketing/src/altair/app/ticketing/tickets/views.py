@@ -483,7 +483,7 @@ class TicketTemplates(BaseView):
             xmltree.write(stream, encoding="utf-8")
             stream.seek(0)
 
-        return FileLikeResponse(stream, request=self.request)
+        return FileLikeResponse(stream, request=self.request, filename="download.svg")
 
     @view_config(route_name='tickets.templates.data', renderer='json')
     def data(self):

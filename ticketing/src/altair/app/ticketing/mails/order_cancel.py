@@ -41,9 +41,8 @@ class OrderCancelInfoDefault(OrderInfoDefault):
     contact = SubjectInfo(name=u"contact", label=u"お問い合わせ", getval=get_contact)
 
     cancel_reason_default=u"""\
-　・お客様からキャンセルのご連絡があったため
 　・期限内のご入金がなくキャンセル扱いとしたため
-　・二重注文により、ひとつをキャンセル処理したため
+　・弊社判断によるキャンセル処理を行ったため
 """
     ## getvalが文字列の場合は、input formになり文言を変更できる
     cancel_reason = SubjectInfoWithValue(name="cancel_reason", label=u"キャンセル理由", 

@@ -16,9 +16,19 @@ def _support_mobile_utf8_query_string(request, encoding="cp932"): #xxxx
     coder = Transcoder(encoding)
     try:
         coder.transcode_query(request.query_string)
+        request.body = coder.transcode_query(request.body)
     except UnicodeDecodeError:
         coder._trans = lambda b : b.decode("utf-8").encode(encoding)
         request.query_string = coder.transcode_query(request.query_string)
+        request.body = coder.transcode_query(request.body)
+
+def _support_mobile_utf8_body(request, encoding="cp932"): #xxxx
+    coder = Transcoder(encoding)
+    try:
+        coder.transcode_query(request.body)
+    except UnicodeDecodeError:
+        coder._trans = lambda b : b.decode("utf-8").encode(encoding)
+        request.body = coder.transcode_query(request.body)
 
 def preview_tween(handler, registry):
     def tween(request):
@@ -32,7 +42,10 @@ def preview_tween(handler, registry):
         if req_type == FORCE_REQUEST_TYPE.mobile and not IMobileRequest.providedBy(request):
             if request.query_string:
                 _support_mobile_utf8_query_string(request)
+            if request.environ["REQUEST_METHOD"] == "POST":
+                _support_mobile_utf8_body(request)
             response = handler(make_mobile_request(request))
+
         elif req_type == FORCE_REQUEST_TYPE.smartphone and not ISmartphoneRequest.providedBy(request):
             directlyProvides(request, ISmartphoneRequest)
             response = handler(request)

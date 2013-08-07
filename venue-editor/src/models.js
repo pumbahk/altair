@@ -348,7 +348,7 @@ var Stock = exports.Stock = Backbone.Model.extend({
     var style = CONF.DEFAULT.SEAT_STYLE;
     _.each(Stock.styleProviderAttributes, function (name) {
       var styleProvider = self.get(name);
-      if (styleProvider)
+      if (styleProvider && styleProvider.get('style'))
         style = util.mergeStyle(style, styleProvider.get('style'));
     });
     this.set('style', style);

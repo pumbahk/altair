@@ -114,13 +114,17 @@ var Seat = exports.Seat = Backbone.Model.extend({
   _refreshStyle: function Seat__refreshStyle() {
     var model = this.get('model');
     var style = model && model.get('stock').get('style') || {};
-    style = util.mergeStyle(style, CONF.DEFAULT.SEAT_STATUS_STYLE[model.get('status')]);
+    var defaultStyle = CONF.DEFAULT.SEAT_STATUS_STYLE[model.get('status')]
+    if (defaultStyle)
+      style = util.mergeStyle(style, defaultStyle);
     var shape = this.get('shape');
     if (!shape)
       return;
     for (var i = 0; i < this.styleTypes.length; i++) {
       var styleType = this.styleTypes[i];
-      style = util.mergeStyle(style, CONF.DEFAULT.AUGMENTED_STYLE[styleType]);
+      var augmentedStyle = CONF.DEFAULT.AUGMENTED_STYLE[styleType];
+      if (augmentedStyle)
+        style = util.mergeStyle(style, augmentedStyle);
     }
     shape.style(util.convertToFashionStyle(style));
     var styleText = style.text || model.get('seat_no');

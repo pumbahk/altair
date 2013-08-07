@@ -76,7 +76,7 @@ class CandidatesURLDictBuilder(object):
             backend_event_id = cms_side["backend_event_id"]
         candidates_dict = cms_side.get("urls", {})
         event = Event.query.filter_by(organization_id=self.organization.id, id=backend_event_id).first()
-        logger.warn("backend event id = {}".format(backend_event_id))
+        logger.info("backend event id = {}".format(backend_event_id))
         if event is None:
             return candidates_dict
         candidates_dict.update(self.build_backend_side(event)["urls"])

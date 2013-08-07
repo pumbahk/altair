@@ -120,6 +120,56 @@ $(function(){
 
 <%include file="/events/_action_button.html" args="event=event, order=['edit', 'delete', 'copy']" />
 
+<div class="btn-group" style="float: left;">
+  % if event.cms_send_at:
+    % if event.updated_at > event.cms_send_at:
+      <a class="btn btn-warning" href="javascript:send_event(${event.id});" style="margin-left: 10px;">
+        <i class="icon-refresh icon-white"></i> CMSへ送信
+      </a>
+    % else:
+      <a class="btn btn-inverse" href="javascript:send_event(${event.id});" style="margin-left: 10px;">
+        <i class="icon-refresh icon-white"></i> CMSへ送信
+      </a>
+    % endif
+  % else:
+    <a class="btn btn-warning" href="javascript:send_event(${event.id});" style="margin-left: 10px;">
+        <i class="icon-refresh icon-white"></i> CMSへ送信
+    </a>
+  % endif
+</div>
+
+<div class="btn-group" style="float: left;">
+  <a class="btn" href="${request.route_path('reports.index', event_id=event.id)}" style="margin-left: 10px;">
+    帳票
+  </a>
+</div>
+
+<div class="btn-group" style="float: left;">
+  <a class="btn" href="${request.route_path('events.tickets.index', event_id=event.id)}" style="margin-left: 10px;">
+	券面
+  </a>
+</div>
+
+<div class="btn-group" style="float: left;">
+  <a class="btn" href="${request.route_path('events.mailinfo.index', event_id=event.id)}" style="margin-left: 10px;">
+	メール
+  </a>
+</div>
+<div class="btn-group" style="float: left;">
+  <a class="btn" href="${request.route_path('orders.index', _query=dict(event_id=event.id))}" style="margin-left: 10px;">
+	購入情報
+  </a>
+</div>
+<div class="btn-group" style="float: left;">
+  <a class="btn" href="${request.route_path('lots.index', event_id=event.id)}" style="margin-left: 10px;">
+	抽選
+  </a>
+</div>
+
+<%include file="./_send_event_mixin.html" />
+
+<div style="clear: left;"></div>
+
 <hr />
 
 <div id="stock_types">

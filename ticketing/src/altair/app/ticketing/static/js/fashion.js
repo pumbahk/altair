@@ -2302,6 +2302,7 @@ var Drawable = _class("Drawable", {
     _offset_position:      null,
     _transform: null,
     _inverse_transform: null,
+    _captureTarget: null,
     _dirty: 0
   },
   methods: {
@@ -2328,6 +2329,8 @@ var Drawable = _class("Drawable", {
           this.contentSize(options.contentSize);
         else if (options.viewportSize)
           this.contentSize(options.viewportSize);
+        if (options.captureTarget)
+          this._captureTarget = options.captureTarget;
       }
     },
 
@@ -2364,6 +2367,12 @@ var Drawable = _class("Drawable", {
         return this.impl.scrollPosition();
     },
 
+    captureTarget: function (value) {
+      if (value)
+        this._captureTarget = value;
+      return this._captureTarget;
+    },
+
     transform: function (value) {
       if (value) {
         this._transform = value;
@@ -2372,6 +2381,10 @@ var Drawable = _class("Drawable", {
         this._enqueueForUpdate(this);
       }
       return this._transform;
+    },
+
+    inverseTransform: function () {
+      return this._inverse_transform;
     },
 
     gensym: function() {

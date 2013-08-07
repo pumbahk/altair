@@ -145,7 +145,7 @@ class SalesTotalReporter(object):
 
         for id, stock_quantity in query.all():
             if id not in self.reports:
-                logger.warn('invalid key (%s:%s) get_stock_data' % (self.group_by, id))
+                logger.info('invalid key (%s:%s) get_stock_data' % (self.group_by, id))
                 continue
             record = self.reports[id]
             record.stock_quantity = stock_quantity or 0
@@ -176,7 +176,7 @@ class SalesTotalReporter(object):
 
         for id, order_amount, order_quantity in query.all():
             if id not in self.reports:
-                logger.warn('invalid key (%s:%s) get_order_data' % (self.group_by, id))
+                logger.info('invalid key (%s:%s) get_order_data' % (self.group_by, id))
                 continue
             record = self.reports[id]
             record.total_order_amount = order_amount or 0
@@ -190,7 +190,7 @@ class SalesTotalReporter(object):
                 query = query.filter(Order.created_at < self.form.limited_to.data)
             for id, order_amount, order_quantity in query.all():
                 if id not in self.reports:
-                    logger.warn('invalid key (%s:%s) get_order_data' % (self.group_by, id))
+                    logger.info('invalid key (%s:%s) get_order_data' % (self.group_by, id))
                     continue
                 record = self.reports[id]
                 record.order_amount = order_amount or 0
@@ -204,7 +204,8 @@ class SalesTotalReporter(object):
         return sorted(self.reports.values(), key=lambda x:(x.start_on, x.title))
 
     def pop_data(self):
-        return self.reports.values().pop()
+        values = self.reports.values()
+        return values.pop() if values else None
 
 
 class SalesDetailReportRecord(object):
@@ -501,7 +502,8 @@ class SalesDetailReporter(object):
             merged_record = record
             pre_merge_key = merge_key
         else:
-            merged_records[merged_record.product_id] = merged_record
+            if merged_record:
+                merged_records[merged_record.product_id] = merged_record
         self.reports = merged_records
         self.create_group_key_to_reports()
         return self.sort_data()

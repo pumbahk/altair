@@ -58,7 +58,7 @@ class IssuedPrintedSetterTests(unittest.TestCase):
         target.start_bubbling()
 
         self.assertEquals(order.printed_at, datetime(1950, 1, 1))
-        self.assertEquals(order.issued_at, datetime(1900, 1, 1))
+        self.assertEquals(order.issued_at, datetime(2000, 1, 1))
         self.assertEquals(order.issued, True)
 
     def test_bubling_from_item(self):

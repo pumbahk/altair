@@ -141,7 +141,7 @@ def get_now_from_request(request):
         return datetime.now() # XXX
 
 def get_cart_safe(request, for_update=True):
-    now = get_now_from_request(request) # XXX
+    now = datetime.now() ##cartのexpireの計算はcart.created_atで行われるので。ここはdatetime.nowが正しい
     minutes = max(int(request.registry.settings['altair_cart.expire_time']) - 1, 0)
     cart = get_cart(request, for_update)
     if cart is None:

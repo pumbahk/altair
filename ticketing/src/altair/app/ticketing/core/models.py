@@ -1092,6 +1092,7 @@ class SalesSegmentGroup(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     event_id = AnnotatedColumn(Identifier, ForeignKey('Event.id'), _a_label=_(u'イベント'))
     event = relationship('Event')
+    auth3d_notice = Column(UnicodeText)
 
     @hybrid_method
     def in_term(self, dt):
@@ -2046,7 +2047,7 @@ class ShippingAddressMixin(object):
 
 class ShippingAddress(Base, BaseModel, WithTimestamp, LogicallyDeleted, ShippingAddressMixin):
     __tablename__ = 'ShippingAddress'
-    __clone_excluded__ = ['user', 'cart']
+    __clone_excluded__ = ['user', 'cart', 'lot_entries']
 
     id = Column(Identifier, primary_key=True)
     user_id = Column(Identifier, ForeignKey("User.id"))
@@ -2099,7 +2100,7 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __table_args__= (
         UniqueConstraint('order_no', 'branch_no', name="ix_Order_order_no_branch_no"),
         )
-    __clone_excluded__ = ['cart', 'ordered_from', 'payment_delivery_pair', 'performance', 'user', '_attributes', 'refund', 'operator']
+    __clone_excluded__ = ['cart', 'ordered_from', 'payment_delivery_pair', 'performance', 'user', '_attributes', 'refund', 'operator', 'lot_entries', 'lot_wishes']
 
     id = Column(Identifier, primary_key=True)
     user_id = Column(Identifier, ForeignKey("User.id"))
@@ -3198,6 +3199,15 @@ class SalesSegment(Base, BaseModel, LogicallyDeleted, WithTimestamp):
         order_by="PaymentDeliveryMethodPair.id",
         cascade="all",
         collection_class=list)
+    x_auth3d_notice = Column("auth3d_notice", UnicodeText)
+
+    @property
+    def auth3d_notice(self):
+        return self.x_auth3d_notice if self.x_auth3d_notice else self.sales_segment_group.auth3d_notice
+
+    @auth3d_notice.setter
+    def auth3d_notice(self, value):
+        self.x_auth3d_notice = value
 
     def has_stock_type(self, stock_type):
         return stock_type in self.seat_stock_types
@@ -3207,6 +3217,33 @@ class SalesSegment(Base, BaseModel, LogicallyDeleted, WithTimestamp):
 
     def available_payment_delivery_method_pairs(self, now):
         return [pdmp for pdmp in self.payment_delivery_method_pairs if pdmp.is_available_for(self, now)]
+
+
+    def query_orders_by_user(self, user):
+        """ 該当ユーザーがこの販売区分での注文内容を問い合わせ """
+        from altair.app.ticketing.cart.models import Cart
+        return DBSession.query(Order).filter(
+            Order.user_id==user.id
+        ).filter(
+            Cart.order_id==Order.id
+        ).filter(
+            Cart.sales_segment_id==self.id
+        )
+
+
+    def query_orders_by_mailaddress(self, mailaddress):
+        """ 該当メールアドレスによるこの販売区分での注文内容を問い合わせ """
+        from altair.app.ticketing.cart.models import Cart
+        return DBSession.query(Order).filter(
+            Order.shipping_address_id==ShippingAddress.id
+        ).filter(
+            or_(ShippingAddress.email_1 == mailaddress,
+                ShippingAddress.email_2 == mailaddress)
+        ).filter(
+            Cart.order_id==Order.id
+        ).filter(
+            Cart.sales_segment_id==self.id
+        )
 
     @property
     def event(self):

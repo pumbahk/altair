@@ -1,4 +1,4 @@
-<%page args="event, order=None" />
+<%page args="event, order=None, small=False" />
 <%namespace file="/common/helpers.html" name="ch" />
 <%namespace file="/common/modal.html" import="delete_modal" />
 
@@ -9,16 +9,10 @@
     modal.find('#message').text("${u'選択したイベントを削除します。よろしいですか？'}");
     modal.modal('toggle');
   }
-  function send_event(id) {
-    modal = $('#modal-send_event');
-    modal.find('#send_event').attr('href', '/events/send/' + id);
-    modal.modal('toggle');
-  }
   function copy_event(id) {
     $(location).attr('href', '/events/copy/' + id);
   }
 </script>
-
 <%
   actions = {
     'new':dict(
@@ -46,7 +40,7 @@
       route_name='events.show',
     ),
     'copy':dict(
-      label=u'コピーして新規作成',
+      label=u'コピーして新規',
       url='javascript:copy_event(%d);' % event.id,
       icon='icon-plus',
       route_name='events.copy',
@@ -56,70 +50,7 @@
   order = iter(order or ['new', 'show', 'edit', 'delete', 'copy'])
 %>
 <div style="float: left;">
-  ${HH.action_button(actions, order)}
-</div>
-
-<div class="btn-group" style="float: left;">
-  % if event.cms_send_at:
-    % if event.updated_at > event.cms_send_at:
-      <a class="btn btn-warning" href="javascript:send_event(${event.id});" style="margin-left: 10px;">
-        <i class="icon-refresh icon-white"></i> CMSへ送信
-      </a>
-    % else:
-      <a class="btn btn-inverse" href="javascript:send_event(${event.id});" style="margin-left: 10px;">
-        <i class="icon-refresh icon-white"></i> CMSへ送信
-      </a>
-    % endif
-  % else:
-    <a class="btn btn-warning" href="javascript:send_event(${event.id});" style="margin-left: 10px;">
-        <i class="icon-refresh icon-white"></i> CMSへ送信
-    </a>
-  % endif
-</div>
-
-<div class="btn-group" style="float: left;">
-  <a class="btn" href="${request.route_path('reports.index', event_id=event.id)}" style="margin-left: 10px;">
-    帳票
-  </a>
-</div>
-
-<div class="btn-group" style="float: left;">
-  <a class="btn" href="${request.route_path('events.tickets.index', event_id=event.id)}" style="margin-left: 10px;">
-	券面
-  </a>
-</div>
-
-<div class="btn-group" style="float: left;">
-  <a class="btn" href="${request.route_path('events.mailinfo.index', event_id=event.id)}" style="margin-left: 10px;">
-	メール
-  </a>
-</div>
-<div class="btn-group" style="float: left;">
-  <a class="btn" href="${request.route_path('orders.index', _query=dict(event_id=event.id))}" style="margin-left: 10px;">
-	このイベントの商品情報
-  </a>
-</div>
-<div class="btn-group" style="float: left;">
-  <a class="btn" href="${request.route_path('lots.index', event_id=event.id)}" style="margin-left: 10px;">
-	抽選
-  </a>
-</div>
-
-<div style="clear: left;"></div>
-
-<div id="modal-send_event" class="modal hide">
-  <div class="modal-header">
-    <a href="#" class="close">&times;</a>
-    <h3>確認</h3>
-  </div>
-
-  <div class="modal-body">
-    <p>CMSへイベントを送信します。よろしいですか？</p>
-  </div>
-  <div class="modal-footer">
-    <a href="javascript:void(0);" onclick="$('#modal-send_event').modal('hide');" class="btn secondary">キャンセル</a>
-    <a id="send_event" href="" class="btn danger">送信</a>
-  </div>
+  ${HH.action_button(actions, order, extra_classes=[u'btn-small'] if small else [])}
 </div>
 
 ${delete_modal()}
