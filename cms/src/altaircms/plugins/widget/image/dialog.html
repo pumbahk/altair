@@ -1,4 +1,8 @@
 <%namespace file="../components.html" name="co"/>
+<script src=${request.static_url('altaircms:static/smartphone/js/jquery-ui-1.9.2.custom.min.js')}></script>
+<link rel="stylesheet" type="text/css" href=${request.static_url('altaircms:static/smartphone/css/jquery-ui-1.9.2.custom.min.css')} />
+<link rel="stylesheet" type="text/css" href="/plugins/static/css/widget/lib/image.css">
+<script>$('#imgtabs').tabs();</script>
 
 ## N個ごとに区切られたitreratorを受け取り、divで区切って出力(scrollのため)
 <%def name="render(assets)">
@@ -17,30 +21,31 @@
 <div class="title">
   <h1>画像(image)</h1>
 </div>
-
-<div>
-<table class="table">
-  <tbody>
-    ${co.formfield(form, "href")}
-    ${co.formfield(form, "width")}
-    ${co.formfield(form, "height")}
-    ${co.formfield(form, "alt")}
-    ${co.formfield(form, "align")}
-  </tbody>
-</table>
-<button type="button" id="image_submit">登録</button>
-
-<link rel="stylesheet" type="text/css" href="/plugins/static/css/widget/lib/image.css">
-<!-- "previous page" action -->
-<a class="prev browse left"></a>
-<a class="next browse right"></a>
-<div class="navi"></div>    
-
-<!-- root element for scrollable -->
-<div class="scrollable">   
-   <!-- root element for the items -->
-   <div class="items">
-   ${render(assets)}
-   </div>
-</div>
+<br/>
+<div style='clear:both;' id="imgtabs">
+  <ul>
+    <li><a href="#image_tab">画像の選択</a></li>
+    <li><a href="#setting_tab">表示設定</a></li>
+  </ul>
+  <form action="${request.route_path('image_widget_search')}" method="GET">
+    <div id="image_tab">
+      % for asset in assets:
+        % for img in asset:
+          ${img.asset.title}
+        % endfor
+      % endfor
+    </div>
+    <div id="setting_tab">
+      <table class="table">
+        <tbody>
+          ${co.formfield(form, "href")}
+          ${co.formfield(form, "width")}
+          ${co.formfield(form, "height")}
+          ${co.formfield(form, "alt")}
+          ${co.formfield(form, "align")}
+        </tbody>
+      </table>
+      <button type="button" id="image_submit">登録</button>
+    </div>
+  </form>
 </div>
