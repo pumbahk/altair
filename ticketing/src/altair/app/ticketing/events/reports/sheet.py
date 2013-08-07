@@ -116,7 +116,7 @@ def process_sheet(exporter, formatter, sheet, report_type, event, performance, s
     today_stamp = formatter.format_datetime(now or datetime.now())
     exporter.set_id(sheet, performance.code or "")
     exporter.set_report_type(sheet, report_type)
-    exporter.set_stock_holder_name(sheet, stock_holder.account.name or "")
+    exporter.set_stock_holder_name(sheet, "%s (%s)" % (stock_holder.account.name or "", stock_holder.name))
     exporter.set_datetime(sheet, today_stamp)
     exporter.set_event_name(sheet, event.title or "")
     exporter.set_performance_name(sheet, performance.name or "")
