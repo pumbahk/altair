@@ -50,18 +50,19 @@ import json
     $('#search').attr('action', url).submit();
   }
 
-  function sort_carts(sort, direction) {
+  function sort_carts(sort, direction, partial_url) {
+    var partial_url = partial_url || url;
     detail = $('#detail_search');
     if (sort) detail.find('#sort').val(sort);
     if (direction) detail.find('#direction').val(direction);
-    detail.find('#search').attr('action', url).submit();
+    detail.find('#search').attr('action', partial_url).submit();
   }
 </script>
 <div id="detail_search">
   <div>
     <h3>検索条件設定</h3>
   </div>
-  <form id="search" class="form-horizontal" method="GET">
+  <form id="search" class="form-horizontal" method="POST">
     <table>
       <tbody>
         <tr>
