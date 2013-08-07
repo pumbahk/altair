@@ -67,3 +67,18 @@ class ImageWidgetView(object):
         params.update(widget.attributes or {})      
         form = forms.ImageInfoForm(**AlignChoiceField.normalize_params(params))
         return {"assets": assets, "form": form, "widget": widget}
+
+    @view_config(route_name="image_widget_search", renderer="altaircms.plugins.widget:image/dialog.html", request_method="GET")
+    def search(self):
+        N = 5
+        assets = group_by_n(self.request.context.get_asset_query(), N)
+        widget = self.request.context.get_widget(self.request.GET.get("pk"))
+
+        if widget.width == 0:
+            widget.width = ""
+        if widget.height == 0:
+            widget.height = ""
+        params = widget.to_dict()
+        params.update(widget.attributes or {})
+        form = forms.ImageInfoForm(**AlignChoiceField.normalize_params(params))
+        return {"assets": assets, "form": form, "widget": widget}
