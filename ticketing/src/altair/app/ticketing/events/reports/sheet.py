@@ -139,11 +139,13 @@ def seat_source_from_seat(seat):
         seat_source.floor = attributes.get('floor')
 
     # ブロック名は、VenueAreaを検索して使う
-    if len(seat.areas) > 0:
-        # XXX: 最初に見つかった area をブロック名としている
-        seat_source.block = seat.areas[0].name
-    else:
-        area = None
+    # まれにgroup_l0_idがNULLな席とかがあってVenueArea.nameが拾えない場合があるので
+    # one()じゃなくてfirst()を使う
+    area = DBSession.query(VenueArea).join(VenueArea.groups)\
+        .filter_by(venue_id=seat.venue_id)\
+        .filter_by(group_l0_id=seat.group_l0_id).first()
+    if area is not None:
+        seat_source.block = area.name
 
     # 列番号は、SeatAttributeのを使う
     if 'row' in attributes:
