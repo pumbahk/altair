@@ -50,8 +50,11 @@ def fix_url(fname, static_pageset, bucket_name):
     replaced = "/{}/{}/".format(static_pageset.organization.short_name, static_pageset.hash)
     target_s3 = "{bucket}.s3.amazonaws.com".format(bucket=bucket_name)
     def link_repl(href):
-        if all(x in href for x in [target_s3, prefix]):
-            href = href.replace(prefix, replaced)
+        if target_s3 in href:
+            if prefix in href:
+                href = href.replace(prefix, replaced)
+            if href.startswith("http:"):
+                href = href.replace("http:", "", 1)
         return href
     doc.rewrite_links(link_repl)
     with open(fname, "w") as wf:
