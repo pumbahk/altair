@@ -52,7 +52,7 @@ class Events(BaseView):
         from sqlalchemy.sql.expression import func
 
         query = DBSession.query(Event, func.count(Performance.id)) \
-            .join(Performance.event) \
+            .outerjoin(Performance) \
             .group_by(Event.id) \
             .filter(Event.organization_id==int(self.context.organization.id))
         query = query.order_by(sort + ' ' + direction)
