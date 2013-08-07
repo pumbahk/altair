@@ -579,9 +579,7 @@
             },
             mousedown: function(evt) {
               var seat = seats[id];
-              if (seat.get('model').selectable()) {
-                self.callbacks.click && self.callbacks.click(seat.get('model'), evt);
-              }
+              self.callbacks.click && self.callbacks.click(seat.get('model'), evt);
             }
           }
         });
