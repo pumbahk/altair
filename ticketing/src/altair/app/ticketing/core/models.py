@@ -3229,6 +3229,11 @@ class SalesSegment(Base, BaseModel, LogicallyDeleted, WithTimestamp):
         collection_class=list)
     x_auth3d_notice = Column("auth3d_notice", UnicodeText)
 
+    event_id = Column(Identifier, ForeignKey("Event.id"))
+    event = relationship("Event", backref="sales_segments")
+    organization_id = Column(Identifier, ForeignKey("Organization.id"))
+    organization = relationship("Organization", backref="sales_segments")
+
     @property
     def auth3d_notice(self):
         return self.x_auth3d_notice if self.x_auth3d_notice else self.sales_segment_group.auth3d_notice
