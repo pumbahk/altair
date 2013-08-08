@@ -70,7 +70,21 @@ $(function() {cart.init(salesSegmentsSelection, selected, cartReleaseUrl, true);
   </div>
 </%block>
     ${self.widget.flow_widget(1)}
-    <h2 id="ticketName">${event['title']} (<span class="performanceNameSpace"></span>)</h2>
+    <div class="settlementBox2" id="settlementEventDetail" style="clear:both">
+      <div class="settlementBoxInner2">
+        <h2 style="border-left: 2px solid #bf191f; border-bottom: none; padding: 4px 0 4px 5px; margin: 8px 0 0 12px; height:21px; line-height: 21px; font-size:14px; background: none">${event['title']}</h2>
+        <table summary="イベント詳細情報">
+          <tbody>
+            %for v in event_extra_info:
+            <tr>
+              <th scope="row">${v['label']}</th>
+              <td>${v['content']|n}</td>
+            </tr>
+            %endfor
+          </tbody>
+        </table>
+      </div>
+    </div>
     <form id="form1" name="form1" method="post" action="">
       <div id="settlementSelectBox">
         <div id="settlementSelectBoxInner">
