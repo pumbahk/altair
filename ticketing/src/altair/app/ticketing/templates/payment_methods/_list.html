@@ -24,7 +24,7 @@
     </td>
     <td><span id="id">${payment_method.id}</span></td>
     <td><a href="javascript:edit_payment_method(${payment_method.id});"><span id="name">${payment_method.name}</span></a></td>
-    <td><span id="fee">${vh.price(payment_method.fee)}</span></td>
+    <td>&yen;<span id="fee">${vh.number(payment_method.fee)}</span></td>
     <td><span id="fee_type" value="${payment_method.fee_type}">${payment_method.fee_type_label}</span></td>
     <td><span id="hide_voucher" value="${'y' if payment_method.hide_voucher else ''}">${u'隠す' if payment_method.hide_voucher else u'隠さない' }</span></td>
     <td><span id="public" value="${'y' if payment_method.public else ''}">${u'公開' if payment_method.public else u'非公開'}</span></td>
