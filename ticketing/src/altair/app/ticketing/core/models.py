@@ -1094,6 +1094,9 @@ class SalesSegmentGroup(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     event = relationship('Event')
     auth3d_notice = Column(UnicodeText)
 
+    organization_id = Column(Identifier, ForeignKey('Organization.id'))
+    organization = relationship('Organization', backref="sales_segment_group")
+
     @hybrid_method
     def in_term(self, dt):
         return (self.start_at <= dt) & (dt <= self.end_at)
