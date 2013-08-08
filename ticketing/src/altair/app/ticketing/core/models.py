@@ -1300,6 +1300,7 @@ class PaymentMethod(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     description = Column(String(2000))
     fee = Column(Numeric(precision=16, scale=2), nullable=False)
     fee_type = Column(Integer, nullable=False, default=FeeTypeEnum.Once.v[0])
+    public = Column(Boolean, nullable=False, default=True)
 
     organization_id = Column(Identifier, ForeignKey('Organization.id'))
     organization = relationship('Organization', uselist=False, backref='payment_method_list')

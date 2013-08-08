@@ -56,3 +56,6 @@ class OverOrderLimitException(Exception):
         self.event_name = event_name
         self.performance_name = performance_name
         self.order_limit = order_limit
+
+class PaymentMethodEmptyError(CartException):
+    pass
