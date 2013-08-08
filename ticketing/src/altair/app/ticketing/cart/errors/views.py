@@ -149,7 +149,6 @@ def invalid_cart_status_error(request):
                                u'ご予約の際は複数ウィンドウや戻るボタンを使わずにご予約ください。'))
 
 
-<<<<<<< HEAD
 @mobile_view_config(context=OverOrderLimitException, renderer=selectable_renderer('altair.app.ticketing.cart:templates/%(membership)s/mobile/error.html'))
 @view_config(context=OverOrderLimitException, renderer=selectable_renderer('altair.app.ticketing.cart:templates/%(membership)s/pc/message.html'))
 def over_order_limit_exception(context, request):
@@ -164,14 +163,9 @@ def over_order_limit_exception(context, request):
                                           limit=order_limit,
                                           event_name=event_name,
                                           performance_name=performance_name)))
-=======
 @mobile_view_config(context=PaymentMethodEmptyError,
                     renderer=selectable_renderer('altair.app.ticketing.cart:templates/%(membership)s/mobile/error.html'))
 @view_config(context=PaymentMethodEmptyError,
              renderer=selectable_renderer('altair.app.ticketing.cart:templates/%(membership)s/pc/message.html'))
 def payment_method_is_empty(request):
     return dict(message=Markup(u'この商品は現在メンテナンス中のためご購入いただけません。'))
-
-
-
->>>>>>> origin/feature/sximada/4821-temply-disable-paymethod
