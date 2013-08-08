@@ -118,3 +118,7 @@ class StaticKindView(object):
                 'title':u"楽天チケット-特定商取引法に基づく表示"
             }
         }
+
+    @smartphone_site_view_config(match_param="kind=information", renderer='altairsite.smartphone:templates/page/information.html')
+    def move_information(self):
+        return {}

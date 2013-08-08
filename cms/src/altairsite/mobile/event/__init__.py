@@ -12,3 +12,4 @@ def includeme(config):
     config.include('.inquiry')
     config.include('.privacy')
     config.include('.legal')
+    config.include('.maintenance')
