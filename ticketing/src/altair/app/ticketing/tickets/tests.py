@@ -561,7 +561,6 @@ class TicketsUtilsTest(TestCase):
             u"受付日時s": u"2012/10/30 (火) 12:34",
             u"発券日時": u"\ufeff{{発券日時}}\ufeff",
             u"発券日時s": u"\ufeff{{発券日時s}}\ufeff",
-            u"発券番号": None,
             }
         out = build_dicts_from_carted_product_item(self.cart.products[0].items[0], now=datetime(2012, 10, 30, 12, 34, 56))
         self.assertEqual(1, len(out))
