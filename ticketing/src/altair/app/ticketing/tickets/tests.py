@@ -1,4 +1,4 @@
-# encoding: utf-8
+# Encoding: utf-8
 
 from unittest import TestCase
 from datetime import datetime
@@ -405,7 +405,6 @@ class TicketsUtilsTest(TestCase):
             u"終了時刻": u"",
             u"席種名": u"S席",
             u"席番": u"seat_name",
-            u"発券番号": None 
             }
         for k in expected:
             self.assertEqual(expected[k], out[k], (u"%s: expected %s, got %s" % (k, expected[k], out[k])).encode('utf-8'))
