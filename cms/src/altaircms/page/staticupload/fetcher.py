@@ -254,7 +254,7 @@ class ResponseMaker(object):
     def make_response_from_string(self, data):
         params = {self.body_var_name: data.data, 
                   "static_page": self.static_page} #ok?
-        return self.render(self.descriptor.absspec(), params, self.request)
+        return self.render(self.descriptor.absspec(), params)
 
     def make_response_from_filepath(self, data):
         assert data.data == data.path
