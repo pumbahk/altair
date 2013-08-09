@@ -72,7 +72,7 @@ class FetcherFromNetwork(object):
             prefix, file_path = file_path.split("/", 1)
         except ValueError:
             logger.info("{file_path} is toplevel path".format(file_path=file_path))
-            return file_path
+        return file_path
 
     def check_skip_fetch(self, url, path):
         if not path:

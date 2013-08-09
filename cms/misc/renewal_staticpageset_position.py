@@ -60,11 +60,11 @@ def fix_url(fname, static_pageset, bucket_name):
     with open(fname, "w") as wf:
         wf.write(html.tostring(doc, pretty_print=True, encoding=DEFAULT_ENCODING))
 
-def move_s3(uploader, src, dst):
-    uploader.copy_items(src, dst, recursive=True)
-
-def normalize_s3(sp, path):
-    return "usersite/uploaded/{organization}/{path}".format(organization=sp.organization.short_name, path=path)
+def move_s3(request, root):
+    from altaircms.page.staticupload.api import get_static_page_utility
+    utility=get_static_page_utility(request)
+    utility.upload_directory(root)
+    # uploader.copy_items(src, dst, recursive=True)
 
 def _main(args):
     from altaircms.page.models import StaticPageSet
@@ -75,8 +75,6 @@ def _main(args):
     base = AssetResolver().resolve(request.registry.settings["altaircms.page.static.directory"]).abspath()
 
     bucket_name = request.registry.settings["s3.bucket_name"]
-    connection = lambda : S3Connection(request.registry.settings["s3.access_key"], request.registry.settings["s3.secret_key"])
-    uploader = DefaultS3Uploader(connection, bucket_name)
     for sp in StaticPageSet.query.filter(StaticPageSet.hash=="").all():
         try:
             ##slackoff
@@ -87,7 +85,7 @@ def _main(args):
             DBSession.add(sp)
             fix_url_recursive(os.path.join(basedir, sp.url), sp, bucket_name)
             move_fs(basedir, sp.url, sp.hash)
-            move_s3(uploader, normalize_s3(sp, sp.url), normalize_s3(sp, sp.hash))
+            move_s3(request, os.path.join(basedir, sp.hash))
             sys.stderr.write(".")
         except Exception as e:
             logger.error(str(e))
