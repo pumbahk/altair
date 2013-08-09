@@ -67,10 +67,17 @@ class FetcherFromNetwork(object):
     #         return filepath + ".html"
     #     else:
     #         return filepath
+    def _split_page_prefix(self,file_path):
+        try:
+            prefix, file_path = file_path.split("/", 1)
+        except ValueError:
+            logger.info("{file_path} is toplevel path".format(file_path=file_path))
+            return file_path
+
     def check_skip_fetch(self, url, path):
         if not path:
             file_path = url[1:] if url.startswith("/") else url
-            prefix, file_path = file_path.split("/", 1)
+            file_path = self._split_page_prefix(file_path)
             if not file_path in self.static_page.file_structure:
                 logger.info("{0} is not found in {1}".format(file_path, self.static_page.file_structure_text))
                 raise StaticPageNotFound("{0} is not found".format(file_path))
@@ -81,9 +88,9 @@ class FetcherFromNetwork(object):
             url_parts = path
         else:
             file_path = url[1:] if url.startswith("/") else url
-            prefix, file_path = file_path.split("/", 1)
+            file_path = self._split_page_prefix(file_path)
             # file_path = self.convert_extname(file_path)
-            url_parts = "/{0}/{1}/{2}/{3}".format(self.request.organization.short_name, prefix, self.static_page.id, file_path)
+            url_parts = "/{0}/{1}/{2}/{3}".format(self.request.organization.short_name, self.static_page.prefix, self.static_page.id, file_path)
             io = urllib.urlopen(self.utility._get_url(url_parts))
         try:
             size = int(io.info().get("Content-Length", "0"))
