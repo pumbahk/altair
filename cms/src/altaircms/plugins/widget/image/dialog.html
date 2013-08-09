@@ -27,25 +27,28 @@
     <li><a href="#image_tab">画像の選択</a></li>
     <li><a href="#setting_tab">表示設定</a></li>
   </ul>
-  <form action="${request.route_path('image_widget_search')}" method="GET">
-    <div id="image_tab">
-      % for asset in assets:
-        % for img in asset:
-          ${img.asset.title}
-        % endfor
+  <div id="image_tab">
+    <div class="scrollable">
+      <form action="${request.route_path('image_widget_search')}" method="GET">
+        <input type="text" name="search_word" value=""/>
+        <input type="submit" value="検索">
+      </form>
+      % for img in assets:
+        <input type="radio" name="asset_id" width="20px" value="${img.id}"/>
+        ${img.title}<br/>
       % endfor
     </div>
-    <div id="setting_tab">
-      <table class="table">
-        <tbody>
-          ${co.formfield(form, "href")}
-          ${co.formfield(form, "width")}
-          ${co.formfield(form, "height")}
-          ${co.formfield(form, "alt")}
-          ${co.formfield(form, "align")}
-        </tbody>
-      </table>
-      <button type="button" id="image_submit">登録</button>
-    </div>
-  </form>
+  </div>
+  <div id="setting_tab">
+    <table class="table">
+      <tbody>
+        ${co.formfield(form, "href")}
+        ${co.formfield(form, "width")}
+        ${co.formfield(form, "height")}
+        ${co.formfield(form, "alt")}
+        ${co.formfield(form, "align")}
+      </tbody>
+    </table>
+    <button type="button" id="image_submit">登録</button>
+  </div>
 </div>

@@ -55,8 +55,7 @@ class ImageWidgetView(object):
 
     @view_config(route_name="image_widget_dialog", renderer="altaircms.plugins.widget:image/dialog.html", request_method="GET")
     def dialog(self):
-        N = 5
-        assets = group_by_n(self.request.context.get_asset_query(), N)
+        assets = self.request.context.get_asset_query()
         widget = self.request.context.get_widget(self.request.GET.get("pk"))
 
         if widget.width == 0:
@@ -70,8 +69,8 @@ class ImageWidgetView(object):
 
     @view_config(route_name="image_widget_search", renderer="altaircms.plugins.widget:image/dialog.html", request_method="GET")
     def search(self):
-        N = 5
-        assets = group_by_n(self.request.context.get_asset_query(), N)
+        search_word = self.request.GET['search_word']
+        assets = self.request.context.search_asset(search_word)
         widget = self.request.context.get_widget(self.request.GET.get("pk"))
 
         if widget.width == 0:
