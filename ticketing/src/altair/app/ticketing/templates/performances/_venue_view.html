@@ -310,7 +310,7 @@ venueEditorRoot.venueeditor({
       }
       callbacks.load && callbacks.load(viewer);
     },
-    tooltip: function (seat) {
+    tooltip: function (seat, evt) {
       var tooltip = venueEditor.find('.tooltip'), pos = null; 
       if (seat) {
         var model = seat.get('model');
@@ -319,10 +319,13 @@ venueEditorRoot.venueeditor({
           pos = Fashion._lib.addPoint(
             shape.drawable._transform.apply(
               Fashion._lib.subtractPoint(
-                shape.position(),
+                evt.logicalPosition,
                 shape.drawable.scrollPosition())),
-            venueEditorMainOffset
-            );
+            Fashion._lib.addPoint(
+              venueEditorMainOffset,
+              { x: 10, y: -10 }
+            )
+          );
         }
       }
       if (pos) {
