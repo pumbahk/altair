@@ -17,7 +17,7 @@ ${ch.breadcrumbs(
 
 <div class="page-header">
   <h2>${mutil.get_mailtype_description()}付加情報 ${event.title}</h2>
-  <span class="label">取引先<a href="${request.route_path("organizations.mails.new", organization_id=event.organization.id, mailtype=mailtype)}">に移動</a></span> &gt
+  <span class="label">${event.organization.name}<a href="${request.route_path("organizations.mails.new", organization_id=event.organization.id, mailtype=mailtype)}">に移動</a></span> &gt
   <span class="label label-warning">イベント</span> &gt
   <span class="label">パフォーマンス</span>
 </div>
