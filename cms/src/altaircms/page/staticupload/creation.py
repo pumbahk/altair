@@ -90,8 +90,8 @@ class StaticPageCreate(object):
     def create_model(self):
         data = self.data
         pageset = StaticPageSet(url=data["name"], 
-                                name=data["name"], 
-                                hash=uuid.uuid4().hex())
+                                name=data["label"], 
+                                hash=uuid.uuid4().hex)
         static_page = StaticPage(name=data["name"],
                                  pageset=pageset, 
                                  layout=data["layout"],

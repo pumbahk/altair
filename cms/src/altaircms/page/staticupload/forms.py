@@ -17,7 +17,7 @@ from altaircms.viewlib import FlashMessage
 
 ## static page
 class StaticPageCreateForm(Form):
-    name = fields.TextField(label=u"name", validators=[validators.Required()])
+    name = fields.TextField(label=u"urlの一部")
     label = fields.TextField(label=u"タイトル", validators=[validators.Required()])
     zipfile = fields.FileField(label=u"zipファイルを投稿")
     layout = dynamic_query_select_field_factory(Layout, allow_blank=True, 
@@ -120,7 +120,7 @@ class StaticPageForm(Form):
 
 class StaticPageSetForm(Form):
     name = fields.TextField(label=u"name", validators=[validators.Required()])    
-    url = fields.TextField(label=u"url", validators=[validators.Required()])
+    url = fields.TextField(label=u"url")
 
     __display_fields__ = ["name", "url"]    
 

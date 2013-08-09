@@ -41,13 +41,16 @@ class FetcherFromFileSystem(object):
         self.utility = utility
 
     def fetch(self, url, path):
-        if path is None:
-            if url.startswith("/"):
-                url_parts = url[1:]
+        if path is None: #xxx:
+            if self.static_page.pageset.url == "":
+                path = os.path.join(self.utility.get_rootname(self.static_page), url)            
             else:
-                url_parts = url
-            url_parts = "/".join(url_parts.split("/")[1:]) #foo/bar -> bar
-            path = os.path.join(self.utility.get_rootname(self.static_page), url_parts)
+                if url.startswith("/"):
+                    url_parts = url[1:]
+                else:
+                    url_parts = url
+                    url_parts = "/".join(url_parts.split("/")[1:]) #foo/bar -> bar
+                path = os.path.join(self.utility.get_rootname(self.static_page), url_parts)
         return FetchData(code=unknown, size=unknown, path=path, data=path, type="filepath", content_type=unknown, group_id=unicode(self.static_page.id))
 
 @implementer(IStaticPageDataFetcher)
