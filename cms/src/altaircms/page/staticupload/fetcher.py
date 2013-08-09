@@ -236,7 +236,7 @@ class ResponseMaker(object):
     def make_response(self, data):
         if self.force_original:
             return self.ordinary_response(data)
-        if self.is_ordinary_file(data):
+        if self.is_ordinary_file(data.path):
             return self.ordinary_response(data)
         if not self.descriptor.exists():
             return self.ordinary_response(data)
