@@ -223,6 +223,14 @@ MemberGroup_SalesSegment = Table('MemberGroup_SalesSegment', Base.metadata,
     UniqueConstraint('membergroup_id', 'sales_segment_group_id'),
 )
 
+MemberGroup_SalesSegmentGroup = Table('MemberGroup_SalesSegmentGroup', Base.metadata,
+    Column('id', Identifier, primary_key=True),
+    Column('membergroup_id', Identifier, ForeignKey('MemberGroup.id')),
+    Column('sales_segment_group_id', Identifier, ForeignKey('SalesSegmentGroup.id')),
+    Column('sales_segment_id', Identifier, ForeignKey('SalesSegment.id')),
+    UniqueConstraint('membergroup_id', 'sales_segment_group_id'),
+)
+
 class MemberGroup(Base, BaseModel, LogicallyDeleted, WithTimestamp):
     __tablename__ = 'MemberGroup'
     query = session.query_property()
