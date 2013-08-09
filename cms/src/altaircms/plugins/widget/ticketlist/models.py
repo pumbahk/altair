@@ -31,9 +31,9 @@ class TicketlistWidget(Widget):
 
     display_type = sa.Column(sa.Unicode(255))
     caption = sa.Column(sa.UnicodeText, doc=u"表に対する説明")
-    target_performance_id = sa.Column(sa.Integer, sa.ForeignKey("performance.id"))
+    target_performance_id = sa.Column(sa.Integer, sa.ForeignKey("performance.id", ondelete="SET NULL"))
     target_performance = orm.relationship(Performance)
-    target_salessegment_id = sa.Column(sa.Integer, sa.ForeignKey("sale.id"))
+    target_salessegment_id = sa.Column(sa.Integer, sa.ForeignKey("sale.id", ondelete="SET NULL"))
     target_salessegment = orm.relationship(SalesSegment)
     id = sa.Column(sa.Integer, sa.ForeignKey("widget.id"), primary_key=True)
     show_label = sa.Column(sa.Boolean, doc=u"見出しを表示するか否かのフラグ", default=True, nullable=False)
@@ -53,15 +53,3 @@ class TicketlistWidgetResource(HandleSessionMixin,
 
     def get_widget(self, widget_id):
         return self._get_or_create(TicketlistWidget, widget_id)
-
-def after_target_salessegment_deleted(mapper, connection, target):
-    for widget in TicketlistWidget.query.filter(TicketlistWidget.target_salessegment_id == target.id):
-        widget.target_salessegment_id = None
-
-sa.event.listen(SalesSegment, "before_delete", after_target_salessegment_deleted)
-
-def after_target_performance_deleted(mapper, connection, target):
-    for widget in TicketlistWidget.query.filter(TicketlistWidget.target_performance_id == target.id):
-        widget.target_performance_id = None
-
-sa.event.listen(Performance, "before_delete", after_target_performance_deleted)
