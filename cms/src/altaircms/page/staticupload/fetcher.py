@@ -88,7 +88,7 @@ class FetcherFromNetwork(object):
             size = 0
         if io.getcode() != 200:
             logger.info("static page response not success: url={0}, code={1}".format(io.geturl(), io.getcode()))
-            return FetchData(code=io.getcode(), size=size, data=io, type="socket", content_type=unknown, path=url_parts, group_id=unicode(self.static_page.id))
+            return FetchData(code=io.getcode(), size=size, data=io, type="socket", content_type=io.info().typeheader, path=url_parts, group_id=unicode(self.static_page.id))
         return FetchData(code=200, size=size, data=io, type="socket", content_type=io.info().typeheader, path=url_parts, group_id=unicode(self.static_page.id))
 
 CHARSET_RX = re.compile(r"charset=([^ ]+)")
