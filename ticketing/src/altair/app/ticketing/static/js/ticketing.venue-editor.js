@@ -1,6 +1,6 @@
 (function (jQuery, I18n) {
 var __LIBS__ = {};
-__LIBS__['QG5W1PQJGDMCNRR0'] = (function (exports) { (function () { 
+__LIBS__['R5IH8JVOTCG5LYFN'] = (function (exports) { (function () { 
 
 /************** util.js **************/
 exports.eventKey = function Util_eventKey(e) {
@@ -179,7 +179,7 @@ timer.prototype.lap = function(msg) {
     return lap;
 };
  })(); return exports; })({});
-__LIBS__['ETI9GW_YTL1HJWHM'] = (function (exports) { (function () { 
+__LIBS__['N9DNCYOOKZS28G_3'] = (function (exports) { (function () { 
 
 /************** CONF.js **************/
 exports.DEFAULT = {
@@ -250,7 +250,7 @@ exports.DEFAULT = {
   }
 };
  })(); return exports; })({});
-__LIBS__['uS7I_ZFK3VAO4GI7'] = (function (exports) { (function () { 
+__LIBS__['tKDWMJ7KV72GJRZZ'] = (function (exports) { (function () { 
 
 /************** identifiableset.js **************/
 var IdentifiableSet = exports.IdentifiableSet = function IdentifiableSet(options) {
@@ -299,12 +299,12 @@ IdentifiableSet.prototype.each = function IdentifiableSet_each(f) {
  * vim: sts=2 sw=2 ts=2 et
  */
  })(); return exports; })({});
-__LIBS__['PY8P81UQNNXLDOQK'] = (function (exports) { (function () { 
+__LIBS__['VW4MUDKKD7M8CXBJ'] = (function (exports) { (function () { 
 
 /************** models.js **************/
-var util = __LIBS__['QG5W1PQJGDMCNRR0'];
-var CONF = __LIBS__['ETI9GW_YTL1HJWHM'];
-var IdentifiableSet = __LIBS__['uS7I_ZFK3VAO4GI7'].IdentifiableSet;
+var util = __LIBS__['R5IH8JVOTCG5LYFN'];
+var CONF = __LIBS__['N9DNCYOOKZS28G_3'];
+var IdentifiableSet = __LIBS__['tKDWMJ7KV72GJRZZ'].IdentifiableSet;
 
 var VenueItemCollectionMixin = {
   venue: null,
@@ -778,12 +778,12 @@ console.log(ad2);
  * vim: sts=2 sw=2 ts=2 et
  */
  })(); return exports; })({});
-__LIBS__['JBKBRAQF4GMGMPK9'] = (function (exports) { (function () { 
+__LIBS__['y5V6IHW7HIXF2Y03'] = (function (exports) { (function () { 
 
 /************** viewobjects.js **************/
-var util = __LIBS__['QG5W1PQJGDMCNRR0'];
-var CONF = __LIBS__['ETI9GW_YTL1HJWHM'];
-var models = __LIBS__['PY8P81UQNNXLDOQK'];
+var util = __LIBS__['R5IH8JVOTCG5LYFN'];
+var CONF = __LIBS__['N9DNCYOOKZS28G_3'];
+var models = __LIBS__['VW4MUDKKD7M8CXBJ'];
 
 var Seat = exports.Seat = Backbone.Model.extend({
   defaults: {
@@ -955,7 +955,7 @@ var Seat = exports.Seat = Backbone.Model.extend({
  * vim: sts=2 sw=2 ts=2 et
  */
  })(); return exports; })({});
-__LIBS__['UWBHGM13BHBSLR30'] = (function (exports) { (function () { 
+__LIBS__['bII15MVZFDOK15S4'] = (function (exports) { (function () { 
 
 /************** translations.js **************/
 
@@ -986,13 +986,13 @@ exports.ja = {
 /************** venue-editor.js **************/
 /* extern */ var jQuery, I18n;
 (function ($) {
-  var CONF = __LIBS__['ETI9GW_YTL1HJWHM'];
-  var models = __LIBS__['PY8P81UQNNXLDOQK'];
-  var util = __LIBS__['QG5W1PQJGDMCNRR0'];
-  var viewobjects = __LIBS__['JBKBRAQF4GMGMPK9'];
-  var IdentifiableSet = __LIBS__['uS7I_ZFK3VAO4GI7'].IdentifiableSet;
+  var CONF = __LIBS__['N9DNCYOOKZS28G_3'];
+  var models = __LIBS__['VW4MUDKKD7M8CXBJ'];
+  var util = __LIBS__['R5IH8JVOTCG5LYFN'];
+  var viewobjects = __LIBS__['y5V6IHW7HIXF2Y03'];
+  var IdentifiableSet = __LIBS__['tKDWMJ7KV72GJRZZ'].IdentifiableSet;
   if (I18n)
-    I18n.translations = __LIBS__['UWBHGM13BHBSLR30'];
+    I18n.translations = __LIBS__['bII15MVZFDOK15S4'];
 
   var parseCSSStyleText = (function () {
     var regexp_for_styles = /\s*(-?(?:[_a-z\u00a0-\u10ffff]|\\[^\n\r\f#])(?:[\-_A-Za-z\u00a0-\u10ffff]|\\[^\n\r\f])*)\s*:\s*((?:(?:(?:[^;\\ \n\r\t\f"']|\\[0-9A-Fa-f]{1,6}(?:\r\n|[ \n\r\t\f])?|\\[^\n\r\f0-9A-Fa-f])+|"(?:[^\n\r\f\\"]|\\(?:\n|\r\n|\r|\f)|\\[^\n\r\f])*"|'(?:[^\n\r\f\\']|\\(?:\n|\r\n|\r|\f)|\\[^\n\r\f])*')(?:\s+|(?=;|$)))+)(?:;|$)/g;
@@ -1547,7 +1547,7 @@ exports.ja = {
                   seat.addStyleType('tooltip');
                 }
                 self.highlighted[_id] = seat;
-                self.callbacks.tooltip && self.callbacks.tooltip(seat);
+                self.callbacks.tooltip && self.callbacks.tooltip(seat, evt);
               }
             },
             mouseout: function(evt) {
@@ -1560,7 +1560,7 @@ exports.ja = {
                 } else {
                   seat.removeStyleType('tooltip');
                 }
-                self.callbacks.tooltip && self.callbacks.tooltip(null);
+                self.callbacks.tooltip && self.callbacks.tooltip(null, evt);
               }
             },
             mousedown: function(evt) {
@@ -1631,7 +1631,7 @@ exports.ja = {
             if (!self.dragging) {
               if (mousedown) {
                 self.dragging = true;  
-                self.callbacks.tooltip && self.callbacks.tooltip(null);
+                self.callbacks.tooltip && self.callbacks.tooltip(null, evt);
                 self.drawable.captureMouse();
               } else {
                 return;
