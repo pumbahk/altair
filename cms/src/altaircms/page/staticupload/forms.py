@@ -127,7 +127,9 @@ class StaticPageSetForm(Form):
     def object_validate(self, obj):
         data = self.data
         if obj.url != data["url"]:
-            if StaticPageSet.query.filter(StaticPageSet.organization_id==obj.organization_id, StaticPageSet.url==data["url"], StaticPageSet.id!=obj.id).count() > 0:
+            if StaticPageSet.query.filter(StaticPageSet.organization_id==obj.organization_id,
+                                          StaticPageSet.pagetype_id==obj.pagetype_id,
+                                          StaticPageSet.url==data["url"], StaticPageSet.id!=obj.id).count() > 0:
                 self.errors["url"] = [u"{0} は既に利用されています".format(data["url"])]
                 return False
             FlashMessage.info(u"ファイルの置かれる位置を変更しようとしています。この処理には時間がかかることがあります", request=self.request)
