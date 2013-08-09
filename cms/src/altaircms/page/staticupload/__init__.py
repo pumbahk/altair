@@ -2,6 +2,18 @@
 SESSION_NAME = "staticupload"
 from pyramid.path import AssetResolver
 
+def install_static_page_cache(config):
+    from .fetcher import StaticPageCache
+    from .interfaces import IStaticPageCache
+    from beaker.cache import cache_regions #xxx:
+    k = "altaircms.staticpage.filedata"
+    try:
+        kwargs = cache_regions[k]
+        config.registry.registerUtility(StaticPageCache(kwargs), IStaticPageCache)
+    except KeyError:
+        import sys
+        sys.stderr.write("cache_regions[{k}] is not found\n".format(k=k))
+
 def install_filesession(config):
     from ..filelib.core import on_file_exists_try_rename
     settings = config.registry.settings
@@ -36,5 +48,6 @@ def includeme(config):
     ## this is first..
     config.add_subscriber(".subscribers.delete_ignorefile_after_staticupload", ".directory_resources.AfterCreate")
     config.include(install_static_page_utility)
+    config.include(install_static_page_cache)
     config.scan(".views")
 

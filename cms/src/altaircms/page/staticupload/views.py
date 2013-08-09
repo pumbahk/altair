@@ -2,7 +2,7 @@
 import copy
 import shutil
 import os
-from pyramid.httpexceptions import HTTPFound, HTTPForbidden
+from pyramid.httpexceptions import HTTPFound, HTTPForbidden, HTTPNotFound
 from altaircms.filelib import zipupload
 from pyramid.view import view_config
 from pyramid.view import view_defaults
@@ -374,4 +374,4 @@ def static_page_display_view(context, request):
                                        path=path, cache_max_age=0)
     except StaticPageNotFound as e:
         logger.info(e)
-        raise HTTPForbidden()
+        raise HTTPNotFound(str(e))

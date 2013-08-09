@@ -12,6 +12,7 @@ def install_fetcher(config):
     settings = config.registry.settings
     config.include("altaircms:install_upload_file") #xxx:
     config.include("altaircms.page.staticupload:install_static_page_utility")
+    config.include("altaircms.page.staticupload:install_static_page_cache")
     from altairsite.fetcher import ICurrentPageFetcher
     from altairsite.fetcher import CurrentPageFetcher
     fetcher = CurrentPageFetcher(settings["altaircms.static.pagetype.pc"], 

@@ -145,6 +145,7 @@ def main(global_config, **local_config):
             settings["s3.bucket_name"], 
             exclude=config.maybe_dotted(settings.get("s3.static.exclude.function")), 
             prefix="/usersite"))
+
     config.include(".")
     config.add_route("smartphone.main", "/smartphone/main")
     config.add_route("smartphone.goto_sp_page", "/smartphone/goto_sp")
