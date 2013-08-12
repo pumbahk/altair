@@ -21,6 +21,10 @@ ${ch.breadcrumbs(
           <td class="span3">${cover.name}</td>
         </tr>
         <tr>
+          <th class="span2">テンプレート</th>
+          <td class="span3"><a href="${request.route_url('tickets.templates.show', id=cover.ticket.id)}">${cover.ticket.name}</a></td>
+        </tr>
+        <tr>
           <th class="span2">作成日時</th>
           <td class="span3">${cover.created_at}</td>
         </tr>

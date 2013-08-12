@@ -43,7 +43,7 @@ def enqueue_cover(operator, order):
         operator=operator, 
         ticket=cover.ticket, 
         data = {u"drawing": pystache.render(cover.ticket.data["drawing"], dict_)}, 
-        summary=u"表紙 {order.order_no}"
+        summary=u"表紙 {order.order_no}".format(order=order)
         )
 
 def enqueue_for_order(operator, order, ticket_format_id=None):

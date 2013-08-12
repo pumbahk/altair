@@ -33,18 +33,28 @@ class TicketCoverDictBuilder(object):
     def build_dict_from_order_total_information(self, order, retval=None):
         retval = retval or {}
         retval.update({
-                u'合計金額': order.total_amount, 
+                u'合計金額': u"{total_amount} 円".format(total_amount=int(order.total_amount)), 
                 u"合計枚数": sum(op.quantity for op in order.ordered_products),
                 u"座席詳細": "",  #<tbreak/>
-                u"商品代金詳細": "",  #<tbreak/>
+                u"商品詳細": u"<tbreak/>".join(u"{op.product.name} x{op.quantity}".format(op=op) for op in order.ordered_products),  #<tbreak/>
                 })
-        return 
+        return retval
+
+    def build_dict_from_shipping_address_information(self, shipping_address, retval=None):
+        retval = retval or {}
+        retval.update({
+                u'住所': u"{shipping.zip} {shipping.prefecture}{shipping.city}{shipping.address_1}{shipping.address_2}".format(shipping=shipping_address), 
+                u"氏名": u"{shipping.last_name} {shipping.first_name}".format(shipping=shipping_address), 
+                u"電話番号": shipping_address.tel_1, 
+                u"メールアドレス": shipping_address.email_1 or shipping_address.email_2
+                })
+        return retval
 
     def build_dict_from_order(self, order):
         extra = self.ticket_dict_builder.build_basic_dict_from_order(order)
         extra = self.ticket_dict_builder.build_dict_from_performance(order.performance, retval=extra)
-        extra = self.build_shipping_address_dict(extra, order.shipping_address)
-        extra = self.build_dict_from_order_total_information(extra, retval=extra)
+        extra = self.build_dict_from_order_total_information(order, retval=extra)
+        extra = self.build_dict_from_shipping_address_information(order.shipping_address, retval=extra)
         return extra
 
 class TicketDictBuilder(object):
