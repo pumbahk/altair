@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from altaircms.event.models import Event
 from altaircms.event.event_info import get_event_notify_info
+from altaircms.plugins.extra.stockstatus import StockStatus
 from altairsite.config import mobile_site_view_config
 from altairsite.mobile.event.eventdetail.forms import EventDetailForm
 from altairsite.mobile.core.helper import get_week_map, get_performances_month_unit, get_purchase_links\
@@ -8,6 +9,8 @@ from altairsite.mobile.core.helper import get_week_map, get_performances_month_u
 from altairsite.mobile.core.helper import log_info, Markup
 from altairsite.mobile.core.disphelper import DispHelper
 from altairsite.exceptions import UsersiteException
+from altairsite.smartphone.common.utils import get_stockstatus_from_event
+
 
 class ValidationFailure(UsersiteException):
     pass
@@ -35,11 +38,13 @@ def move_eventdetail(request):
     form.sales_start.data, form.sales_end.data = get_sales_date(request=request, event=form.event.data)
     log_info("move_eventdetail", "detail infomation get end")
     event_info = get_event_notify_info(event=form.event.data)
+    stock_status = get_stockstatus_from_event(request=request, event=form.event.data, status_impl=StockStatus)
 
     log_info("move_eventdetail", "end")
     return {
           'form':form
         , 'event_info':event_info
+        , 'stock_status':stock_status
         , 'helper':DispHelper()
     }
 

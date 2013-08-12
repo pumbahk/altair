@@ -176,13 +176,17 @@ ${helper.nl2br(info['content'])|n}
             %elif min(start_on_candidates) >= get_now(request):
                 販売前
             %elif max(end_on_candidates) >= get_now(request):
-                <div align="center">
-                <%m:band bgcolor="#ffcccc">
-                % if event.deal_close >= get_now(request):
-                  <a href="${purchase_links[perf['perf'].id]}"><font color="#cc0000">この公演のチケットを購入</font></a>
+                % if not perf.purchase_link and stock_status.scores.get(int(perf.backend_id),0) <= 0:
+                    予定枚数終了
+                % else:
+                    <div align="center">
+                    <%m:band bgcolor="#ffcccc">
+                    % if event.deal_close >= get_now(request):
+                      <a href="${purchase_links[perf.id]}"><font color="#cc0000">この公演のチケットを購入</font></a>
+                    % endif
+                    </%m:band>
+                    </div>
                 % endif
-                </%m:band>
-                </div>
             % else:
                 販売期間終了
             % endif
@@ -238,13 +242,17 @@ ${helper.nl2br(info['content'])|n}
                 %elif min(start_on_candidates) >= get_now(request):
                     販売前
                 %elif max(end_on_candidates) >= get_now(request):
-                    <div align="center">
-                    <%m:band bgcolor="#ffcccc">
-                    % if event.deal_close >= get_now(request):
-                      <a href="${purchase_links[perf.id]}"><font color="#cc0000">この公演のチケットを購入</font></a>
+                    % if not perf.purchase_link and stock_status.scores.get(int(perf.backend_id),0) <= 0:
+                        予定枚数終了
+                    % else:
+                        <div align="center">
+                        <%m:band bgcolor="#ffcccc">
+                        % if event.deal_close >= get_now(request):
+                          <a href="${purchase_links[perf.id]}"><font color="#cc0000">この公演のチケットを購入</font></a>
+                        % endif
+                        </%m:band>
+                        </div>
                     % endif
-                    </%m:band>
-                    </div>
                 % else:
                     販売期間終了
                 % endif
