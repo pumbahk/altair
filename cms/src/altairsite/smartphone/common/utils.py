@@ -1,4 +1,5 @@
 # -*- coding:utf-8 -*-
+from .stockapi import get_stockstatus
 from altaircms.page.models import PageSet, Page
 from altaircms.models import _GenrePath
 import sqlalchemy as sa
@@ -35,3 +36,7 @@ class SnsUtils(object):
         if page:
             title = page.name
         return title
+
+def get_stockstatus_from_event(event, request, status_impl):
+    stock_status = get_stockstatus(request=request, salessegment=None, event=event, status_impl=status_impl)
+    return stock_status
