@@ -883,6 +883,7 @@ class OrderDetailView(BaseView):
 
         for order in qs:
             if not order.queued:
+                utils.enqueue_cover(operator=self.context.user, order=order)
                 utils.enqueue_for_order(operator=self.context.user, order=order)
 
         # def clean_session_callback(request):
@@ -901,6 +902,7 @@ class OrderDetailView(BaseView):
     def order_print_queue(self):
         order_id = int(self.request.matchdict.get('order_id', 0))
         order = Order.query.get(order_id)
+        utils.enqueue_cover(operator=self.context.user, order=order)
         utils.enqueue_for_order(operator=self.context.user, order=order)
         self.request.session.flash(u'券面を印刷キューに追加しました')
         return HTTPFound(location=self.request.route_path('orders.show', order_id=order_id))
