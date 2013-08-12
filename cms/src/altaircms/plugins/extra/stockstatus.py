@@ -17,12 +17,12 @@ class StockDataAPI(object):
         self.external_url = url.rstrip("/")
         self.apikey = apikey
 
-    def get_fetch_stock_status_api_url(self, event, salessegment_group):
+    def get_fetch_stock_status_api_url(self, event):
         fmt = u"%(base)s/api/events/%(event_id)s/stock_statuses"
         return fmt % dict(base=self.external_url, event_id=event.backend_id)
 
-    def fetch_stock_status(self, request, event, salessegment_group=None):
-        url = self.get_fetch_stock_status_api_url(event, salessegment_group)
+    def fetch_stock_status(self, request, event):
+        url = self.get_fetch_stock_status_api_url(event)
         req = urllib2.Request(url)
         req.add_header('X-Altair-Authorization', self.apikey)
         try:

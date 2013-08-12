@@ -1,7 +1,8 @@
 # -*- coding:utf-8 -*-
 from .forms import DetailForm
 from ..common.helper import SmartPhoneHelper
-from ..common.utils import SnsUtils, get_stockstatus_from_event
+from ..common.utils import SnsUtils
+from altaircms.plugins.extra.api import get_stockstatus_summary
 from altaircms.plugins.extra.stockstatus import StockStatus
 from altaircms.event.event_info import get_event_notify_info
 from altairsite.config import smartphone_site_view_config
@@ -29,7 +30,7 @@ def moveDetail(context, request):
     sales_start, sales_end = get_sales_date(request=request, event=event)
     event_info = get_event_notify_info(event=event)
     utils = SnsUtils(request=request)
-    stock_status = get_stockstatus_from_event(request=request, event=event, status_impl=StockStatus)
+    stock_status = get_stockstatus_summary(request=request, event=event, status_impl=StockStatus)
 
     return {
           'event': event

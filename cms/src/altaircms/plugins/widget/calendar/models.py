@@ -60,7 +60,7 @@ class CalendarWidget(Widget):
             utility = get_widget_utility(request, page, self.type)
 
             status_impl = utility.status_impl
-            stock_status = get_stockstatus_summary(request, self, event, status_impl)
+            stock_status = get_stockstatus_summary(request, event, status_impl)
 
             template_name = utility.get_template_name(request, self)
             render_fn = utility.get_rendering_function(request, self)
