@@ -12,7 +12,7 @@ from altair.formhelpers import DateTimeField, Translations, Required
 from altair.formhelpers.form import OurForm
 from altair.formhelpers.fields import OurBooleanField
 from altair.app.ticketing.core.models import Event, Account, DeliveryMethod, TicketFormat
-from altair.app.ticketing.core.models import TicketFormat
+from altair.app.ticketing.core.models import TicketFormat, Ticket
 from .utils import as_user_unit
 from .convert import to_opcodes
 from .constants import PAPERS, ORIENTATIONS
@@ -123,6 +123,32 @@ def validate_margin(key, data):
             as_user_unit(pos)
         except Exception as e:
             raise ValidationError("%s[\"%s\"] is bad-formatted (%s)" % (key, k, e.args[0]))
+
+class TicketCoverForm(OurForm):
+    def _get_translations(self):
+        return Translations()
+
+    def __init__(self, formdata=None, obj=None, prefix='', **kwargs):
+        super(TicketCoverForm, self).__init__(formdata=formdata, obj=obj, prefix=prefix, **kwargs)
+        if 'organization_id' in kwargs:
+            self.ticket.choices = [
+                (ticket.id, ticket.name) for ticket in Ticket.filter_by(organization_id=kwargs['organization_id'], event_id=None)
+            ]
+
+    name = TextField(
+        label = u'名前',
+        validators=[
+            Required(),
+            Length(max=255, message=u'255文字以内で入力してください'),
+        ]
+    )
+
+    ticket = SelectField(
+        label=u"チケットテンプレート",
+        choices=[], 
+        coerce=long , 
+        validators=[Required()]
+    )
 
 class TicketTemplateForm(OurForm):
     def _get_translations(self):
