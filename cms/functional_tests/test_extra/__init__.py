@@ -32,7 +32,7 @@ class ExtraAPITests(AppFunctionalTests):
             salessegment = None
             class page:
                 organization_id = 1
-        result = get_stockstatus_summary(request, widget, event, StockStatus)
+        result = get_stockstatus_summary(request, event, StockStatus)
         self.assertEquals(result.scores,
                           {8: 812, 9: 759, 10: 2119, 6: 861, 7: 2874})
         self.assertEquals(result.counts,
