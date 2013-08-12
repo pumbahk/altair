@@ -499,8 +499,6 @@ class TicketTemplates(BaseView):
 class TicketPrintQueueEntries(BaseView):
     @view_config(route_name='tickets.queue.index', renderer='altair.app.ticketing:templates/tickets/queue/index.html')
     def index(self):
-        queue_entries_sort_by, queue_entries_direction = helpers.sortparams('queue_entry', self.request, ('TicketPrintQueueEntry.created_at', 'desc'))
-
         queue_entries_qs = DBSession.query(TicketPrintQueueEntry) \
             .filter_by(operator=self.context.user, processed_at=None)\
             .options(joinedload(TicketPrintQueueEntry.seat))
@@ -512,14 +510,19 @@ class TicketPrintQueueEntries(BaseView):
             elif status == "unmasked":
                 queue_entries_qs = queue_entries_qs.filter(TicketPrintQueueEntry.masked_at==None)
 
-        if queue_entries_sort_by == "Order.order_no":
-            # queue_entries_qs = queue_entries_qs\
-            #     .join(OrderedProductItem.ordered_product) \
-            #     .join(OrderedProduct.order)
-            ## これはsummaryのフォーマットが"注文 <order_no> - <message>"という形式のため。これで十分
-            queue_entries_sort_by = "TicketPrintQueueEntry.summary"
+        if "queue_entry_sort" in self.request.GET:
+            queue_entries_sort_by, queue_entries_direction = helpers.sortparams('queue_entry', self.request, ('TicketPrintQueueEntry.created_at', 'desc'))
+            if queue_entries_sort_by == "Order.order_no":
+                # queue_entries_qs = queue_entries_qs\
+                #     .join(OrderedProductItem.ordered_product) \
+                #     .join(OrderedProduct.order)
+                ## これはsummaryのフォーマットが"注文 <order_no> - <message>"という形式のため。これで十分
+                queue_entries_sort_by = "TicketPrintQueueEntry.summary"
+            queue_entries_qs = queue_entries_qs.order_by(helpers.get_direction(queue_entries_direction)(queue_entries_sort_by))
+        else:
+            ## default.これは印刷順序(TicketPrintQueueEntry.peekの順序)と同じ
+            queue_entries_qs = queue_entries_qs.order_by(*TicketPrintQueueEntry.printing_order_condition())
 
-        queue_entries_qs = queue_entries_qs.order_by(helpers.get_direction(queue_entries_direction)(queue_entries_sort_by))
         return dict(h=helpers, queue_entries=queue_entries_qs)
 
     @view_config(route_name='tickets.queue.delete', request_method="POST")

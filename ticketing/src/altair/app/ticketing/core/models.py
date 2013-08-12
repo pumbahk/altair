@@ -2894,10 +2894,13 @@ class TicketPrintQueueEntry(Base, BaseModel):
             q = q.join(OrderedProductItem) \
                 .join(OrderedProduct) \
                 .filter(OrderedProduct.order_id==order_id)
-            q = q.order_by(asc(OrderedProduct.id))
-        else:
-            q = q.order_by(TicketPrintQueueEntry.created_at, TicketPrintQueueEntry.id)
+        q = q.order_by(*self.printing_order_condition())
         return q.all()
+
+    @classmethod
+    def printing_order_condition(cls):
+        return (TicketPrintQueueEntry.created_at, TicketPrintQueueEntry.id)
+
 
     @classmethod
     def dequeue(self, ids, now=None):
