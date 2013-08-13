@@ -17,7 +17,7 @@ var svg_preview = (function(){
             return;
         }
         $el.spin("large");
-        $.post(apiurl, params).done(function(data){
+        return $.post(apiurl, params).done(function(data){
             if(data.status){
                 $el.empty();
                 var imgdata = "data:image/png;base64,"+data.data;
