@@ -600,13 +600,16 @@ class TicketPrintQueueEntries(BaseView):
             .filter_by(operator=self.context.user, processed_at=None)\
             .options(joinedload(TicketPrintQueueEntry.seat))
 
-        if "status" in self.request.GET:
-            status = self.request.GET["status"]
-            if status == "masked":
-                queue_entries_qs = queue_entries_qs.filter(TicketPrintQueueEntry.masked_at!=None)
-            elif status == "unmasked":
-                queue_entries_qs = queue_entries_qs.filter(TicketPrintQueueEntry.masked_at==None)
+        ## defaultは印刷対象のもののみ表示
+        status = self.request.GET.get("status")
+        if status == "all":
+            pass
+        elif status == "masked":
+            queue_entries_qs = queue_entries_qs.filter(TicketPrintQueueEntry.masked_at!=None)
+        else:
+            queue_entries_qs = queue_entries_qs.filter(TicketPrintQueueEntry.masked_at==None)
 
+        ## defaultは印刷順序(TicketPrintQueueEntry.peekの順序)と同じ
         if "queue_entry_sort" in self.request.GET:
             queue_entries_sort_by, queue_entries_direction = helpers.sortparams('queue_entry', self.request, ('TicketPrintQueueEntry.created_at', 'desc'))
             if queue_entries_sort_by == "Order.order_no":
@@ -617,7 +620,6 @@ class TicketPrintQueueEntries(BaseView):
                 queue_entries_sort_by = "TicketPrintQueueEntry.summary"
             queue_entries_qs = queue_entries_qs.order_by(helpers.get_direction(queue_entries_direction)(queue_entries_sort_by))
         else:
-            ## default.これは印刷順序(TicketPrintQueueEntry.peekの順序)と同じ
             queue_entries_qs = queue_entries_qs.order_by(*TicketPrintQueueEntry.printing_order_condition())
 
         return dict(h=helpers, queue_entries=queue_entries_qs)
