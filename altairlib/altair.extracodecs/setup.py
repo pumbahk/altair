@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 import os
 
-version = '0.0.1'
+version = '0.0.0'
 
 long_description = (
     open('README.txt').read()
@@ -14,7 +14,7 @@ long_description = (
     open('CHANGES.txt').read()
     + '\n')
 
-setup(name='altair.mobile',
+setup(name='altair.extracodecs',
       version=version,
       description="",
       long_description=long_description,
@@ -26,22 +26,18 @@ setup(name='altair.mobile',
       keywords='',
       author='',
       author_email='',
-      url='http://svn.plone.org/svn/collective/',
-      license='mit',
+      url='https://github.com/ticketstar/altair/',
+      license='proprietary',
       packages=find_packages('src'),
       package_dir = {'': 'src'},
       namespace_packages=['altair'],
       include_package_data=True,
       zip_safe=False,
       install_requires=[
-          "setuptools>0.7",
-          'radix',
-          'uamobile',
-          'altair.extracodecs',
+          'setuptools',
+          # -*- Extra requirements: -*-
       ],
-      dependency_links = [
-        'http://py-radix.googlecode.com/files/py-radix-0.5.tar.gz#egg=radix-0.5',
-      ],
+      test_suite="altair.extracodecs",
       entry_points="""
       # -*- Entry points: -*-
       """,
