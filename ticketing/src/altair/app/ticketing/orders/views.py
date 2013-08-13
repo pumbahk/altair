@@ -92,16 +92,16 @@ def available_ticket_formats_for_orders(orders):
         .with_entities(TicketFormat.id, TicketFormat.name)\
         .distinct(TicketFormat.id)
 
-def available_ticket_formats_for_ordered_product_item(ordered_product_item_id):
+def available_ticket_formats_for_ordered_product_item(ordered_product_item):
+    delivery_method_id = ordered_product_item.ordered_product.order.payment_delivery_pair.delivery_method_id
+    bundle_id = ordered_product_item.product_item.ticket_bundle_id
     return TicketFormat.query\
-        .filter(OrderedProductItem.id==ordered_product_item_id)\
-        .filter(OrderedProduct.id==OrderedProductItem.ordered_product_id)\
-        .filter(Order.id==OrderedProduct.order_id)\
-        .filter(PaymentDeliveryMethodPair.id==Order.payment_delivery_method_pair_id)\
-        .filter(DeliveryMethod.id==PaymentDeliveryMethodPair.delivery_method_id)\
-        .filter(TicketFormat_DeliveryMethod.delivery_method_id==DeliveryMethod.id)\
-        .filter(TicketFormat.id==TicketFormat_DeliveryMethod.ticket_format_id)\
-        .with_entities(TicketFormat.id, TicketFormat.name)
+        .filter(bundle_id==Ticket_TicketBundle.ticket_bundle_id, 
+                Ticket_TicketBundle.ticket_id==Ticket.id, 
+                Ticket.ticket_format_id==TicketFormat.id, 
+                TicketFormat_DeliveryMethod.delivery_method_id==delivery_method_id, 
+                TicketFormat.id==TicketFormat_DeliveryMethod.ticket_format_id)\
+                .with_entities(TicketFormat.id, TicketFormat.name).distinct(TicketFormat.id)
 
 def encode_to_cp932(data):
     try:
@@ -771,7 +771,7 @@ class OrderDetailView(BaseView):
         item = OrderedProductItem.query.filter_by(id=self.request.matchdict["item_id"]).first()
         if item is None:
             return {} ### xxx:
-        form = PreviewTicketSelectForm(item_id=item.id, ticket_formats=available_ticket_formats_for_ordered_product_item(item.id))
+        form = PreviewTicketSelectForm(item_id=item.id, ticket_formats=available_ticket_formats_for_ordered_product_item(item))
         return {"form": form, "item": item}
 
     @view_config(route_name="orders.item.preview.getdata", request_method="GET", renderer="json")
