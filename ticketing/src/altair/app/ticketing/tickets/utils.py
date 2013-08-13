@@ -32,11 +32,12 @@ class TicketCoverDictBuilder(object):
     
     def build_dict_from_order_total_information(self, order, retval=None):
         retval = retval or {}
+        flowline = etree.tostring(etree.Element("{{{}}}flowLine".format(SVG_NAMESPACE)))
         retval.update({
                 u'合計金額': u"{total_amount} 円".format(total_amount=int(order.total_amount)), 
                 u"合計枚数": sum(op.quantity for op in order.ordered_products),
                 u"座席詳細": "",  #<tbreak/>
-                u"商品詳細": u"<ns0:flowLine/> ".join(u"{op.product.name} x{op.quantity}".format(op=op) for op in order.ordered_products),  #<tbreak/>
+                u"商品詳細": flowline.join(u"  {op.product.name} x{op.quantity}".format(op=op) for op in order.ordered_products),
                 })
         return retval
 
