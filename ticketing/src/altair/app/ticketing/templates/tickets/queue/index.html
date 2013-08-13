@@ -49,15 +49,15 @@ ${ch.breadcrumbs(
 <%! from altair.viewhelpers.structure import updated %>
 <ul class="nav nav-tabs">
   %if request.GET.get("status") == "all":
-  <li><a href="${request.route_path("tickets.queue.index",_query=updated(request.GET,{"status": "unmasked"}))}">キューに入る予定のもののみ</a></li>
+  <li><a href="${request.route_path("tickets.queue.index",_query=updated(request.GET,{"status": "unmasked"}))}">印刷される予定のもののみ</a></li>
   <li><a href="${request.route_path("tickets.queue.index",_query=updated(request.GET,{"status": "masked"}))}">除外したもののみ</a></li>
   <li class="active"><a href="${request.route_path("tickets.queue.index",_query=updated(request.GET,{"status": "all"}))}">すべて表示</a></li>
   %elif request.GET.get("status") == "masked":
-  <li><a href="${request.route_path("tickets.queue.index",_query=updated(request.GET,{"status": "unmasked"}))}">キューに入る予定のもののみ</a></li>
+  <li><a href="${request.route_path("tickets.queue.index",_query=updated(request.GET,{"status": "unmasked"}))}">印刷される予定のもののみ</a></li>
   <li class="active"><a href="${request.route_path("tickets.queue.index",_query=updated(request.GET,{"status": "masked"}))}">除外したもののみ</a></li>
   <li><a href="${request.route_path("tickets.queue.index",_query=updated(request.GET,{"status": "all"}))}">すべて表示</a></li>
   %else:
-  <li class="active"><a href="${request.route_path("tickets.queue.index",_query=updated(request.GET,{"status": "unmasked"}))}">キューに入る予定のもののみ</a></li>
+  <li class="active"><a href="${request.route_path("tickets.queue.index",_query=updated(request.GET,{"status": "unmasked"}))}">印刷される予定のもののみ</a></li>
   <li><a href="${request.route_path("tickets.queue.index",_query=updated(request.GET,{"status": "masked"}))}">除外したもののみ</a></li>
   <li><a href="${request.route_path("tickets.queue.index",_query=updated(request.GET,{"status": "all"}))}">すべて表示</a></li>
   %endif
