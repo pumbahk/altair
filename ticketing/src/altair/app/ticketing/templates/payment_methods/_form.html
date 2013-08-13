@@ -1,28 +1,13 @@
-<%page args="form" />
+<%page args="form, action" />
 <%namespace file="/common/helpers.html" name="ch" />
-
-<div id="modal-payment_method" class="modal hide">
-  <div class="modal-header">
-    <a class="close" data-dismiss="modal">×</a>
-    <h3>決済方法</h3>
-  </div>
-
-  <div class="modal-body">
-    <form action="javascript:save_payment_method();" method="POST">
-      ${ch.form_item(form.id)}
-      ${ch.form_item(form.organization_id, class_='span6')}
-      ${ch.form_item(form.payment_plugin_id)}
-      ${ch.form_item(form.name, maxlength=255)}
-      ${ch.form_item(form.fee)}
-      ${ch.form_item(form.fee_type)}
-      ${ch.form_item(form.hide_voucher)}
-      ${ch.form_item(form.description, style='width:500px;height:100px;')}
-      ${ch.form_item(form.public)}
-    </form>
-  </div>
-
-  <div class="modal-footer">
-    <a href="#" class="btn" data-dismiss="modal">閉じる</a>
-    <a href="javascript:void(0);" onclick="$('#modal-payment_method').find('form').submit();" class="btn">保存</a>
-  </div>
-</div>
+<form action="${action}" method="POST">
+  ${ch.form_item(form.id)}
+  ${ch.form_item(form.organization_id, class_='span6')}
+  ${ch.form_item(form.payment_plugin_id)}
+  ${ch.form_item(form.name, maxlength=255)}
+  ${ch.form_item(form.fee)}
+  ${ch.form_item(form.fee_type)}
+  ${ch.form_item(form.hide_voucher)}
+  ${ch.form_item(form.description, style='width:500px;height:100px;')}
+  ${ch.form_item(form.public)}
+</form>
