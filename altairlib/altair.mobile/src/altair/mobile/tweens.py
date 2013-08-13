@@ -37,7 +37,7 @@ def mobile_request_factory(handler, registry):
 
 def make_mobile_request(request):
     session = getattr(request, 'session', None)
-    decoded = request.decode("cp932")
+    decoded = request.decode("cp932:normalized-tilde")
     request.environ.update(decoded.environ)
     decoded.environ = request.environ
     decoded.session = session
