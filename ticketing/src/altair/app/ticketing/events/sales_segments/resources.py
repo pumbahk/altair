@@ -10,6 +10,9 @@ class SalesSegmentAdminResource(TicketingAdminResource):
         sales_segment_group_id = None
         performance_id = None
 
+        if not self.user:
+            return
+
         try:
             event_id = long(self.request.matchdict.get('event_id'))
         except (TypeError, ValueError):
