@@ -36,7 +36,7 @@ class TicketCoverDictBuilder(object):
                 u'合計金額': u"{total_amount} 円".format(total_amount=int(order.total_amount)), 
                 u"合計枚数": sum(op.quantity for op in order.ordered_products),
                 u"座席詳細": "",  #<tbreak/>
-                u"商品詳細": u"<tbreak/>".join(u"{op.product.name} x{op.quantity}".format(op=op) for op in order.ordered_products),  #<tbreak/>
+                u"商品詳細": u"<ns0:flowLine/> ".join(u"{op.product.name} x{op.quantity}".format(op=op) for op in order.ordered_products),  #<tbreak/>
                 })
         return retval
 

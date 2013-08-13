@@ -4,8 +4,8 @@ import cssutils
 import logging
 from lxml import etree
 import numpy
-from ..constants import *
-from ..utils import parse_transform, tokenize_path_data, parse_poly_data, PathDataScanner, I
+from altair.app.ticketing.tickets.constants import *
+from altair.app.ticketing.tickets.utils import parse_transform, tokenize_path_data, parse_poly_data, PathDataScanner, I
 
 __all__ = (
     'cleanup_svg',
