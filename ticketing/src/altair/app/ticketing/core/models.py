@@ -2964,6 +2964,11 @@ class TicketCover(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     ticket = relationship('Ticket',  backref=backref('cover'))
     delivery_method_id = Column(Identifier, ForeignKey('DeliveryMethod.id'))
 
+    ## あとで伝搬サポートした時に移動
+    @classmethod
+    def get_from_order(cls, order):
+        return TicketCover.query.filter_by(organization_id=order.organization_id).first() #todo: DeliveryMethod?
+
 class TicketBundle(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = "TicketBundle"
     id = Column(Identifier, primary_key=True)

@@ -521,7 +521,6 @@ class OrdersRefundConfirmView(BaseView):
 
 @view_defaults(decorator=with_bootstrap, permission='sales_counter')
 class OrderDetailView(BaseView):
-
     @view_config(route_name='orders.show', renderer='altair.app.ticketing:templates/orders/show.html')
     def show(self):
         order_id = int(self.request.matchdict.get('order_id', 0))
@@ -765,6 +764,28 @@ class OrderDetailView(BaseView):
 
         self.request.session.flash(u'予約を保存しました')
         return render_to_response('altair.app.ticketing:templates/refresh.html', {}, request=self.request)
+
+    @view_config(route_name="orders.cover.preview", request_method="GET", renderer="altair.app.ticketing:templates/orders/_cover_preview_dialog.html")
+    def cover_preview_dialog(self):
+        from altair.app.ticketing.tickets.preview.api import SVGPreviewCommunication
+        from altair.app.ticketing.tickets.preview.transform import SVGTransformer
+        from altair.app.ticketing.tickets.utils import build_cover_dict_from_order
+        from altair.app.ticketing.core.models import TicketCover
+
+        order_id = int(self.request.matchdict.get('order_id', 0))
+        order = Order.get(order_id, self.context.organization.id)
+        if order is None:
+            raise HTTPNotFound('order id %d is not found' % order_id)
+        cover = TicketCover.get_from_order(order)
+        if cover is None:
+            raise HTTPNotFound('cover is not found. order id %d' % order_id)
+        svg = pystache.render(cover.ticket.data["drawing"], build_cover_dict_from_order(order))
+        data = {"ticket_format": cover.ticket.ticket_format_id, "sx": "1", "sy": "1"}
+        transformer = SVGTransformer(svg, data)
+        svg = transformer.transform()
+        preview = SVGPreviewCommunication.get_instance(self.request)
+        imgdata_base64 = preview.communicate(self.request, svg)
+        return {"order": order, "cover":cover, "data": imgdata_base64}
 
     @view_config(route_name="orders.item.preview", request_method="GET", renderer='altair.app.ticketing:templates/orders/_item_preview_dialog.html')
     def order_item_preview_dialog(self):
