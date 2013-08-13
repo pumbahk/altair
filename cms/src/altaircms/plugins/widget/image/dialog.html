@@ -1,8 +1,19 @@
 <%namespace file="../components.html" name="co"/>
 <script src=${request.static_url('altaircms:static/smartphone/js/jquery-ui-1.9.2.custom.min.js')}></script>
+<script src=${request.static_url('altaircms:static/js/jquery.form.js')}></script>
 <link rel="stylesheet" type="text/css" href=${request.static_url('altaircms:static/smartphone/css/jquery-ui-1.9.2.custom.min.css')} />
 <link rel="stylesheet" type="text/css" href="/plugins/static/css/widget/lib/image.css">
-<script>$('#imgtabs').tabs();</script>
+<script>
+    $('#imgtabs').tabs();
+
+    $(document).ready(function() {
+        $('#search_form').ajaxForm({dataType: 'json', success: successSearch});
+    });
+
+    function successSearch(data) {
+        alert(data);
+    }
+</script>
 
 ## N個ごとに区切られたitreratorを受け取り、divで区切って出力(scrollのため)
 <%def name="render(assets)">
@@ -28,7 +39,7 @@
     <li><a href="#setting_tab">表示設定</a></li>
   </ul>
   <div id="image_tab" style="height: 350px">
-    <form action="${request.route_path('image_widget_search')}" method="GET">
+    <form id="search_form" action="${request.route_path('image_widget_search')}" method="POST">
       検索文字列<br/>
       <input type="text" name="search_word" value=""/><input type="submit" value="検索" width="20px">
     </form>

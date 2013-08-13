@@ -5,6 +5,7 @@ from . import forms
 from altaircms.formhelpers import AlignChoiceField
 from webob.multidict import MultiDict
 import logging
+import json
 logger = logging.getLogger(__name__)
 
 @view_defaults(custom_predicates=(require_login,))
@@ -68,9 +69,10 @@ class ImageWidgetView(object):
         form = forms.ImageInfoForm(**AlignChoiceField.normalize_params(params))
         return {"assets": assets, "form": form, "widget": widget}
 
-    @view_config(route_name="image_widget_search", renderer="altaircms.plugins.widget:image/dialog.html", request_method="GET")
-    def search(self):
-        search_word = self.request.GET['search_word']
+
+    @view_config(route_name="image_widget_search", renderer="json", request_method="POST")
+    def updates_view(self):
+        search_word = self.request.POST['search_word']
 
         N = 4
         assets = None
@@ -79,13 +81,17 @@ class ImageWidgetView(object):
         else:
             assets = group_by_n(self.request.context.get_asset_query(), N)
 
-        widget = self.request.context.get_widget(self.request.GET.get("pk"))
+        import logging
+        logger = logging.getLogger(__file__)
+        logger.error("JJJJJSOSSOSOSOSOS")
 
-        if widget.width == 0:
-            widget.width = ""
-        if widget.height == 0:
-            widget.height = ""
-        params = widget.to_dict()
-        params.update(widget.attributes or {})
-        form = forms.ImageInfoForm(**AlignChoiceField.normalize_params(params))
-        return {"assets": assets, "form": form, "widget": widget}
+
+        for groupNo, group in enumerate(assets):
+            logger.error("groupNo =" + str(groupNo))
+            for img in group:
+                logger.error("imgID =" + str(img.id))
+
+        return [
+            100,
+            200,
+        ]
