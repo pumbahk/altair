@@ -269,7 +269,8 @@ class Performances(BaseView):
                 performance.create_venue_id = f.data['venue_id']
             else:
                 try:
-                    Performance.query.filter_by(id=performance_id).with_lockmode('update').one()
+                    query = Performance.query.filter_by(id=performance_id)
+                    performance = query.with_lockmode('update').populate_existing().one()
                 except Exception, e:
                     logging.info(e.message)
                     f.id.errors.append(u'エラーが発生しました。同時に同じ公演を編集することはできません。')
