@@ -241,7 +241,7 @@ class MemberGroup(Base, BaseModel, LogicallyDeleted, WithTimestamp):
     is_guest = AnnotatedColumn(Boolean, default=False, server_default='0', nullable=False, _a_label=_(u'ゲストログイン'))
 
     sales_segment_groups = relationship('SalesSegmentGroup',
-        secondary=MemberGroup_SalesSegment,
+        secondary=MemberGroup_SalesSegmentGroup,
         backref="membergroups")
 
     sales_segments = relationship('SalesSegment',
