@@ -7,7 +7,8 @@ from wtforms.validators import Length, Optional, ValidationError
 from wtforms.widgets import CheckboxInput, TextArea
 
 from altair.formhelpers import Translations, Required
-from altair.formhelpers import OurForm, OurTextField, OurSelectField, OurIntegerField, OurBooleanField, NullableTextField
+from altair.formhelpers import OurForm, OurTextField, OurSelectField, OurIntegerField, OurBooleanField, NullableTextField, NullableIntegerField
+from altair.formhelpers.filters import NFKC
 from altair.app.ticketing.core.models import StockTypeEnum, StockType
 
 class StockTypeForm(OurForm):
@@ -38,10 +39,12 @@ class StockTypeForm(OurForm):
         default=StockTypeEnum.Seat.v,
         widget=CheckboxInput(),
     )
-    display_order = OurTextField(
+    display_order = NullableIntegerField(
         label=u'表示順',
         hide_on_new=True,
-        default=u'1'
+        default=u'1',
+        raw_input_filters=[NFKC],
+        validators=[Optional()]
     )
     fill_color = OurTextField(
         label=u'塗りつぶし色',
@@ -71,13 +74,3 @@ class StockTypeForm(OurForm):
                     if stock.quantity > 0:
                         p = stock.performance
                         raise ValidationError(u'既に配席されている為、変更できません (%s席 @ %s %s)' % (stock.quantity, p.name, p.start_on.strftime("%m/%d")))
-
-    def validate_display_order(form, field):
-        if not field.data:
-            return
-
-        display_order_uc = unicodedata.normalize('NFKC',field.data)
-        if display_order_uc.isdigit():
-            return
-
-        raise ValueError(u"数字を入力して下さい")

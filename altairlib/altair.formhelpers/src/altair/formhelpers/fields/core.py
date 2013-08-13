@@ -29,15 +29,22 @@ def _gen_field_init(klass):
     def __init__(self, label=None, *args, **kwargs):
         _form  = kwargs.pop('_form', None)
         hide_on_new = kwargs.pop('hide_on_new', False)
+        raw_input_filters = kwargs.pop('raw_input_filters', [])
         if callable(label):
             label = label()
         super(klass, self).__init__(label, *args, **kwargs)
         self.form = _form
         self.hide_on_new = hide_on_new
+        self.raw_input_filters = raw_input_filters
         for base in self.__class__.__bases__[1:]:
             if hasattr(base, '__mixin_init__'):
                 base.__mixin_init__(self, *args, **kwargs)
 
+    def process_formdata(self, valuelist):
+        for raw_input_filter in self.raw_input_filters:
+            valuelist = raw_input_filter(valuelist)
+        return super(type(self), self).process_formdata(valuelist)
+ 
     def __call__(self, *args, **kwargs):
         if hasattr(self, '_render'):
             return self._render(__callee=prev_call, *args, **kwargs)
@@ -99,9 +106,16 @@ class OurBooleanField(fields.BooleanField, RendererMixin):
 class OurDecimalField(fields.DecimalField, RendererMixin):
     pass
 
-@_gen_field_init
 class NullableTextField(OurTextField):
     def process_formdata(self, valuelist):
-        super(NullableTextField, self).process_formdata(valuelist)
-        if self.data == '':
+        if not valuelist or valuelist[0] == '':
             self.data = None
+        else:
+            super(NullableTextField, self).process_formdata(valuelist)
+
+class NullableIntegerField(OurIntegerField):
+    def process_formdata(self, valuelist):
+        if not valuelist or valuelist[0] == '':
+            self.data = None
+        else:
+            super(NullableIntegerField, self).process_formdata(valuelist)
