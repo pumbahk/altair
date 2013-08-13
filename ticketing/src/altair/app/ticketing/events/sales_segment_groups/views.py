@@ -142,9 +142,14 @@ class SalesSegmentGroups(BaseView):
                 if bool(f.copy_products.data):
                     for product in ss.products:
                         Product.create_from_template(template=product, with_product_items=True, stock_holder_id=f.copy_to_stock_holder.data, sales_segment=id_map)
+
+            new_sales_segment_group.sync_member_group_to_children()
+
         else:
             sales_segment_group = merge_session_with_post(sales_segment_group, f.data)
             sales_segment_group.save()
+
+            sales_segment_group.sync_member_group_to_children()
 
         self.request.session.flash(u'販売区分グループを保存しました')
         return None

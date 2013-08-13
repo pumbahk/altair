@@ -111,3 +111,71 @@ class SalesSegmentTests(unittest.TestCase):
         result = target.query_orders_by_mailaddress("testing@example.com").all()
 
         self.assertEqual(result, orders)
+
+
+class SalesSegmentGroupTests(unittest.TestCase):
+    def _getTarget(self):
+        from .models import SalesSegmentGroup
+        return SalesSegmentGroup
+
+    def _makeOne(self, *args, **kwargs):
+        return self._getTarget()(*args, **kwargs)
+
+    def test_sync_member_group_to_children(self):
+        from .models import SalesSegment, Event, Organization
+        from altair.app.ticketing.users.models import MemberGroup
+        target = self._makeOne(
+            organization=Organization(),
+            event=Event(),
+            membergroups=[
+                MemberGroup(),
+                MemberGroup(),
+                ],
+            sales_segments=[
+                SalesSegment(membergroups=[MemberGroup()]),
+                SalesSegment(),
+                ],
+        )
+
+        target.sync_member_group_to_children()
+
+        self.assertEqual(target.membergroups,
+                         target.sales_segments[0].membergroups)
+        self.assertEqual(target.membergroups,
+                         target.sales_segments[1].membergroups)
+
+        self.assertEqual(target.event,
+                         target.sales_segments[0].event)
+        self.assertEqual(target.event,
+                         target.sales_segments[1].event)
+
+        self.assertEqual(target.organization,
+                         target.sales_segments[0].organization)
+        self.assertEqual(target.organization,
+                         target.sales_segments[1].organization)
+
+    def test_new_sales_segment(self):
+        from .models import Event, Organization
+        from altair.app.ticketing.users.models import MemberGroup
+
+        organization = Organization()
+        event = Event()
+        membergroups = [
+            MemberGroup(),
+            MemberGroup(),
+        ]
+
+        target = self._makeOne(
+            organization=organization,
+            event=event,
+            membergroups=membergroups,
+        )
+
+        result = target.new_sales_segment()
+
+        self.assertEqual(result.membergroups,
+                         membergroups)
+        self.assertEqual(result.event,
+                         event)
+        self.assertEqual(target.organization,
+                         organization)

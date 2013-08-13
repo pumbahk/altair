@@ -1122,6 +1122,12 @@ class SalesSegmentGroup(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
         super(type(self), self).delete()
 
+    def new_sales_segment(self):
+        return SalesSegment(sales_segment_group=self,
+                            event=self.event,
+                            organization=self.organization,
+                            membergroups=[m for m in self.membergroups])
+
     @staticmethod
     def create_from_template(template, with_payment_delivery_method_pairs=False, **kwargs):
         sales_segment_group = SalesSegmentGroup.clone(template)
@@ -1167,6 +1173,14 @@ class SalesSegmentGroup(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     @property
     def has_guest(self):
         return (not self.membergroups) or any(mg.is_guest for mg in self.membergroups)
+
+    # 4423対応中の緩衝材メソッド
+    def sync_member_group_to_children(self):
+        for ss in self.sales_segments:
+            ss.membergroups = [mg for mg in self.membergroups]
+            ss.event = self.event
+            ss.organization = self.organization
+
 
 SalesSegment_PaymentDeliveryMethodPair = Table(
     "SalesSegment_PaymentDeliveryMethodPair",
@@ -3281,9 +3295,6 @@ class SalesSegment(Base, BaseModel, LogicallyDeleted, WithTimestamp):
             Cart.sales_segment_id==self.id
         )
 
-    @property
-    def event(self):
-        return self.sales_segment_group.event
 
     @hybrid_property
     def name(self):

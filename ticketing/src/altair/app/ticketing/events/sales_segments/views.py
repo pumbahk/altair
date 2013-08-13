@@ -129,8 +129,15 @@ class SalesSegments(BaseView):
                 f.start_at.data = datetime.now()
             if f.end_at.data is None:
                 f.end_at.data = datetime.now()
-            sales_segment = merge_session_with_post(SalesSegment(), f.data)
-            pdmps = PaymentDeliveryMethodPair.query.filter(PaymentDeliveryMethodPair.id.in_(f.payment_delivery_method_pairs.data)).filter(PaymentDeliveryMethodPair.sales_segment_group_id==sales_segment.sales_segment_group_id).all()
+            sales_segment_group_id = f.sales_segment_group_id.data
+            sales_segment_group = SalesSegmentGroup.query.filter_by(id=sales_segment_group_id).one()
+            sales_segment = sales_segment_group.new_sales_segment()
+            sales_segment = merge_session_with_post(sales_segment, f.data)
+
+            pdmps = [pdmp
+                     for pdmp in sales_segment_group.payment_delivery_method_pairs
+                     if pdmp.id in f.payment_delivery_method_pairs.data]
+
             sales_segment.payment_delivery_method_pairs = pdmps
             sales_segment.save()
 
@@ -160,8 +167,14 @@ class SalesSegments(BaseView):
                 f.start_at.data = datetime.now()
             if f.end_at.data is None:
                 f.end_at.data = datetime.now()
-            sales_segment = merge_session_with_post(SalesSegment(), f.data)
-            pdmps = PaymentDeliveryMethodPair.query.filter(PaymentDeliveryMethodPair.id.in_(f.payment_delivery_method_pairs.data)).filter(PaymentDeliveryMethodPair.sales_segment_group_id==sales_segment.sales_segment_group_id).all()
+            sales_segment_group_id = f.sales_segment_group_id.data
+            sales_segment_group = SalesSegmentGroup.query.filter_by(id=sales_segment_group_id).one()
+            sales_segment = sales_segment_group.new_sales_segment()
+            sales_segment = merge_session_with_post(sales_segment, f.data)
+
+            pdmps = [pdmp
+                     for pdmp in sales_segment_group.payment_delivery_method_pairs
+                     if pdmp.id in f.payment_delivery_method_pairs.data]
             sales_segment.payment_delivery_method_pairs = pdmps
             sales_segment.save()
 
