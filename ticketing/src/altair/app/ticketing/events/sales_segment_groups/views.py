@@ -228,6 +228,7 @@ class SalesSegmentGroups(BaseView):
             sales_segment_group.membergroups.remove(mg)
 
         sales_segment_group.save()
+        sales_segment_group.sync_member_group_to_children()
 
         self.request.session.flash(u'membergroupの結びつき変更しました')
         return HTTPFound(self.request.POST["redirect_to"])
