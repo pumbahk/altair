@@ -1,0 +1,33 @@
+<html lang="ja">
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <title>仙台放送チケットサービス</title>
+</head>
+<body>
+<div align="center">
+  <img src="${request.static_url('altair.app.ticketing.fc_auth:static/oxtv/images/header_mobile.jpg')}" width="100%" height="108" alt="仙台放送チケットサービス" />
+</div>
+<div>
+<font color="#bf0011">■</font>ご優待価格購入パスワード
+</div>
+<form action="${request.url}" method="post">
+<input type="hidden" name="membership" value="oxtv" />
+<input type="hidden" name="password" value="oxtv" />
+<div>
+  パスワード<br/>
+  <input type="text" name="username" size="22" value="${username}">
+%if message:
+<br/><font color="red">パスワードが一致しません</font>
+%endif
+</div>
+<input type="submit" value="ログイン" />
+</form>
+<hr size="1" color="#888888" noshade="noshade" />
+<div align="center" style="font-size:x-small">
+  <div>
+    <a href="http://www.ticketstar.jp/corporate">運営会社</a> | <a href="mailto:oxtv@tstar.jp">お問い合わせ</a> | <a href="http://www.ticketstar.jp/privacy">個人情報保護方針</a> | <a href="http://www.ticketstar.jp/legal">特定商取引法に基づく表示</a>
+  </div>
+<div><font color="#888888">2010-2013 &copy; TicketStar, Inc. All rights reserved.</font></div>
+</div>
+</body>
+</html>
