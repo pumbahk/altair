@@ -1,25 +1,32 @@
-<%page args="carts, limit=None, detail=True, selectable=True" />
+<%page args="carts, formdata={}, limit=None, detail=True, selectable=True" />
 <%namespace file="/common/helpers.html" name="ch" />
 <% paging = False if limit else True %>
 <% from altair.app.ticketing.cart.models import Cart %>
 <%def name="search_and_sort(column, paging=True)">
 % if paging:
 <%
-  from altair.app.ticketing.helpers import column_name_for, label_text_for
-  sort_column = request.params.get('sort')
-  sort_direction = request.params.get('direction')
-  column_name = column_name_for(column)
-  direction = 'desc' if (column_name == sort_column and sort_direction == 'asc') else 'asc'
-  css_class = 'current ' + sort_direction if (column_name == sort_column) else ''
+from altair.app.ticketing.helpers import column_name_for, label_text_for
+import urlparse
+import urllib
+
+sort_column = request.params.get('sort')
+sort_direction = request.params.get('direction')
+column_name = column_name_for(column)
+direction = 'desc' if (column_name == sort_column and sort_direction == 'asc') else 'asc'
+css_class = 'current ' + sort_direction if (column_name == sort_column) else ''
+params = [pair for pair in request.params.items() if pair[0] not in ('direction', 'sort')]
+params.append(('direction', direction))
+params.append(('sort', column_name))
+url = urlparse.urljoin(request.path, '?' + urllib.urlencode(params))
 %>
-<a href="javascript:sort_carts('${column_name}', '${direction}');" class="${css_class}">${label_text_for(column)}</a>
+<a href="${url}" class="${css_class}">${label_text_for(column)}</a>
 % else:
   ${label_text_for(column)}
 % endif
 </%def>
 
 % if paging:
-  ${ch.pager(carts, "javascript:sort_carts('', '', '$partial_url')")}
+  ${ch.pager(carts)}
 % endif
 
 % if carts:

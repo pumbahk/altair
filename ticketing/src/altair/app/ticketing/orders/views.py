@@ -1624,8 +1624,10 @@ class CartView(BaseView):
                 query = CartSearchQueryBuilder(form.data)(query)
             except QueryBuilderError as e:
                 self.request.session.flash(e.message)
+            page = int(self.request.params.get('page', 0))
             carts = paginate.Page(
                 query,
+                page=page,
                 items_per_page=40,
                 item_count=query.count(),
                 url=paginate.PageURL_WebOb(self.request)
