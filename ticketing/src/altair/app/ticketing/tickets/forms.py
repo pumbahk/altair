@@ -7,15 +7,17 @@ from wtforms import Form
 from wtforms import TextField, IntegerField, HiddenField, SelectField, SelectMultipleField, FileField
 from wtforms.validators import Regexp, Length, Optional, ValidationError, StopValidation
 from wtforms.widgets import TextArea
+from sqlalchemy.orm.exc import NoResultFound
 from altair.formhelpers import DateTimeField, Translations, Required
 from altair.formhelpers.form import OurForm
 from altair.formhelpers.fields import OurBooleanField
-from altair.app.ticketing.core.models import Event, Account, DeliveryMethod
+from altair.app.ticketing.core.models import Event, Account, DeliveryMethod, TicketFormat
 from altair.app.ticketing.core.models import TicketFormat
 from .utils import as_user_unit
 from .convert import to_opcodes
 from .constants import PAPERS, ORIENTATIONS
 from .cleaner.api import get_validated_svg_cleaner
+from altair.app.ticketing.payments.plugins import SEJ_DELIVERY_PLUGIN_ID
 
 def filestorage_has_file(storage):
     return hasattr(storage, "filename") and storage.file
@@ -126,15 +128,14 @@ class TicketTemplateForm(OurForm):
     def _get_translations(self):
         return Translations()
 
-    def __init__(self, formdata=None, obj=None, prefix='', **kwargs):
+    def __init__(self, formdata=None, obj=None, prefix='', context=None, **kwargs):
         super(TicketTemplateForm, self).__init__(formdata=formdata, obj=obj, prefix=prefix, **kwargs)
-        if 'organization_id' in kwargs:
-            self.ticket_format.choices = [
-                (format.id, format.name) for format in TicketFormat.filter_by(organization_id=kwargs['organization_id'])
+        self.context = context
+        self.ticket_format_id.choices = [
+            (format.id, format.name) for format in TicketFormat.filter_by(organization_id=context.organization.id)
             ]
         if not formdata and not obj:
             self.priced.data = True
-        self._cleaner = None
 
     name = TextField(
         label = u'名前',
@@ -144,7 +145,7 @@ class TicketTemplateForm(OurForm):
         ]
     )
 
-    ticket_format = SelectField(
+    ticket_format_id = SelectField(
         label=u"チケット様式",
         choices=[], 
         coerce=long , 
@@ -166,30 +167,34 @@ class TicketTemplateForm(OurForm):
         label=u"手数料計算に含める"
         )
 
-    def validate_drawing(form, field):
-        svgio = field.data.file
-        form._cleaner = get_validated_svg_cleaner(svgio, exc_class=ValidationError)
-        return field.data
-
     def validate(self):
         super(type(self), self).validate()
-        if self._cleaner:
-            self.data_value = {"drawing": self._cleaner.get_cleaned_svgio().getvalue()}
-        else:
-            self.data_value = {}
+
+        svgio = self.drawing.data.file
+        try:
+            ticket_format = TicketFormat.query.filter_by(id=self.ticket_format_id.data, organization_id=self.context.organization.id).one()
+        except NoResultFound:
+            self.ticket_format_id.errors = list(self.ticket_format_id.errors or ()) + u'未知の券面フォーマットです'
+            return False
+        try:
+            cleaner = get_validated_svg_cleaner(svgio, exc_class=ValidationError,  sej=(any(delivery_method.delivery_plugin_id == SEJ_DELIVERY_PLUGIN_ID for delivery_method in ticket_format.delivery_methods)))
+            self.data_value = {"drawing": cleaner.get_cleaned_svgio().getvalue()}
+        except ValidationError as e:
+            self.drawing.errors = list(self.drawing.errors or ()) + [unicode(e)]
+            self.data_value = {"drawing": None}
         return not bool(self.errors)
 
 class TicketTemplateEditForm(OurForm):
     def _get_translations(self):
         return Translations()
 
-    def __init__(self, formdata=None, obj=None, prefix='', **kwargs):
+    def __init__(self, formdata=None, obj=None, prefix='', context=None, **kwargs):
         super(TicketTemplateEditForm, self).__init__(formdata=formdata, obj=obj, prefix=prefix, **kwargs)
-        if 'organization_id' in kwargs:
-            self.ticket_format.choices = [
-                (format.id, format.name) for format in TicketFormat.filter_by(organization_id=kwargs['organization_id'])
+        self.context = context
+        self.obj = obj
+        self.ticket_format_id.choices = [
+            (format.id, format.name) for format in TicketFormat.filter_by(organization_id=context.organization.id)
             ]
-        self._cleaner = None
 
     name = TextField(
         label = u'名前',
@@ -199,7 +204,7 @@ class TicketTemplateEditForm(OurForm):
         ]
     )
 
-    ticket_format = SelectField(
+    ticket_format_id = SelectField(
         label=u"チケット様式",
         choices=[], 
         coerce=long , 
@@ -221,25 +226,37 @@ class TicketTemplateEditForm(OurForm):
         ]
      )    
 
-
-    def validate_drawing(form, field):
-        if not filestorage_has_file(field.data):
-            return None
-        svgio = field.data.file
-        form._cleaner = get_validated_svg_cleaner(svgio, exc_class=ValidationError)
-        return field.data
-
     def validate(self):
         super(type(self), self).validate()
-        if self._cleaner:
-            self.data_value = {"drawing": self._cleaner.get_cleaned_svgio().getvalue()}
+
+        validate_only = False
+
+        if filestorage_has_file(self.drawing.data):
+            svgio = self.drawing.data.file
         else:
-            self.data_value = {}
+            from cStringIO import StringIO
+            svgio = StringIO(self.obj.data["drawing"].encode("utf-8"))
+            validate_only = True
+
+        try:
+            ticket_format = TicketFormat.query.filter_by(id=self.ticket_format_id.data, organization_id=self.context.organization.id).one()
+        except NoResultFound:
+            self.ticket_format_id.errors = list(self.ticket_format_id.errors or ()) + u'未知の券面フォーマットです'
+            return False
+        try:
+            cleaner = get_validated_svg_cleaner(svgio, exc_class=ValidationError,  sej=(any(delivery_method.delivery_plugin_id == SEJ_DELIVERY_PLUGIN_ID for delivery_method in ticket_format.delivery_methods)))
+            self.data_value = {"drawing": cleaner.get_cleaned_svgio().getvalue()}
+        except ValidationError as e:
+            self.drawing.errors = list(self.drawing.errors or ()) + [unicode(e)]
+            if validate_only:
+                self.data_value = None
+            else:
+                self.data_value = {"drawing": None}
         return not bool(self.errors)
         
-class TicketFormatForm(Form):
+class TicketFormatForm(OurForm):
     def __init__(self, formdata=None, obj=None, prefix='', **kwargs):
-        # super(type(self), self).__init__(self, formdata=formdata, obj=obj, prefix=prefix, **kwargs)
+        super(TicketFormatForm, self).__init__(formdata=formdata, obj=obj, prefix=prefix, **kwargs)
         Form.__init__(self, formdata=formdata, obj=obj, prefix=prefix, **kwargs)
         if 'organization_id' in kwargs:
             self.delivery_methods.choices = [

@@ -318,7 +318,7 @@ class TicketTemplates(BaseView):
     @view_config(route_name="tickets.templates.new", renderer="altair.app.ticketing:templates/tickets/templates/new.html", 
                  request_method="GET")
     def new(self):
-        form = forms.TicketTemplateForm(organization_id=self.context.user.organization_id)
+        form = forms.TicketTemplateForm(context=self.context)
         return dict(
             h=helpers,
             form=form,
@@ -329,8 +329,7 @@ class TicketTemplates(BaseView):
 
     @view_config(route_name='tickets.templates.new', renderer='altair.app.ticketing:templates/tickets/templates/new.html', request_method="POST")
     def new_post(self):
-        form = forms.TicketTemplateForm(organization_id=self.context.user.organization_id, 
-                                      formdata=self.request.POST)
+        form = forms.TicketTemplateForm(context=self.context, formdata=self.request.POST)
         if not form.validate():
             return dict(
                 h=helpers,
@@ -341,9 +340,9 @@ class TicketTemplates(BaseView):
                 )
 
         ticket_template = Ticket(name=form.data["name"], 
-                                 ticket_format_id=form.data["ticket_format"], 
+                                 ticket_format_id=form.data["ticket_format_id"], 
                                  data=form.data_value, 
-                                 organization_id=self.context.user.organization_id
+                                 organization_id=self.context.organization.id
                                  )
         
         ticket_template.save()
@@ -354,18 +353,15 @@ class TicketTemplates(BaseView):
                  request_method="GET")
     def edit(self):
         template = self.context.tickets_query().filter_by(
-            organization_id=self.context.user.organization_id,
+            organization_id=self.context.organization.id,
             id=self.request.matchdict["id"]).first()
 
         if template is None:
             raise HTTPNotFound("this is not found")
         
         form = forms.TicketTemplateEditForm(
-            organization_id=self.request.context.user.organization_id, 
-            name=template.name,
-            ticket_format=template.ticket_format_id,
-            always_reissueable=template.always_reissueable,
-            priced=template.priced
+            context=self.context,
+            obj=template
             )
         return dict(
             h=helpers,
@@ -380,14 +376,16 @@ class TicketTemplates(BaseView):
                  request_method="POST")
     def edit_post(self):
         template = self.context.tickets_query().filter_by(
-            organization_id=self.context.user.organization_id,
+            organization_id=self.context.organization.id,
             id=self.request.matchdict["id"]).first()
 
         if template is None:
             raise HTTPNotFound("this is not found")
 
-        form = forms.TicketTemplateEditForm(organization_id=self.context.user.organization_id, 
-                                        formdata=self.request.POST)
+        form = forms.TicketTemplateEditForm(
+            context=self.context, 
+            obj=template,
+            formdata=self.request.POST)
         if not form.validate():
             return dict(
                 h=helpers,
@@ -399,7 +397,7 @@ class TicketTemplates(BaseView):
                 )
 
         template.name = form.data["name"]
-        template.ticket_format_id = form.data["ticket_format"]
+        template.ticket_format_id = form.data["ticket_format_id"]
         template.always_reissueable = form.data["always_reissueable"]
         template.priced = form.data["priced"]
 
@@ -457,7 +455,7 @@ class TicketTemplates(BaseView):
     @view_config(route_name='tickets.templates.show', renderer='altair.app.ticketing:templates/tickets/templates/show.html')
     def show(self):
         qs = self.context.tickets_query().filter_by(id=self.request.matchdict['id'])
-        template = qs.filter_by(organization_id=self.context.user.organization_id).first()
+        template = qs.filter_by(organization_id=self.context.organization.id).first()
         if template is None:
             raise HTTPNotFound("this is not found")
 
@@ -467,7 +465,7 @@ class TicketTemplates(BaseView):
     def download(self):
         raw = self.request.params.get('raw')
         qs = self.context.tickets_query().filter_by(id=self.request.matchdict['id'])
-        template = qs.filter_by(organization_id=self.context.user.organization_id).first()
+        template = qs.filter_by(organization_id=self.context.organization.id).first()
         if template is None:
             raise HTTPNotFound("this is not found")
         if raw:
@@ -488,7 +486,7 @@ class TicketTemplates(BaseView):
     @view_config(route_name='tickets.templates.data', renderer='json')
     def data(self):
         qs = self.context.tickets_query().filter_by(id=self.request.matchdict['id'])
-        template = qs.filter_by(organization_id=self.context.user.organization_id).first()
+        template = qs.filter_by(organization_id=self.context.organization.id).first()
         if template is None:
             raise HTTPNotFound("this is not found")
         data = dict(template.ticket_format.data)
