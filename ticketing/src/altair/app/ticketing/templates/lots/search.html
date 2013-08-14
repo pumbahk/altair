@@ -179,14 +179,17 @@ ${tabs.tabs(request)}
 %if wishes:
 <div class="well">
   %if enable_elect_all:
-  <button id="all-elect-button" type="button" class="btn">
+  <button id="all-elect-button" type="button" class="btn" style="height:3em">
     一括で当選予定にする
   </button>
   %else:
-  <span class="btn btn-inverse">
+  <span class="btn btn-inverse"  style="height:3em">
     一括で当選予定にする<br>(希望順位を絞り込んだ場合のみ利用可能)
   </span>
   %endif
+  <button id="remains-reject-button" type="button" class="btn" style="height:3em">
+    残りの申込を落選予定にする
+  </button>
 </div>
 %endif
 
@@ -243,6 +246,7 @@ var rejectingUrl = "${rejecting_url}"
 var cancelRejectingUrl = "${cancel_rejecting_url}"
 var statusUrl = "${status_url}"
 var electingAllUrl = "${electing_all_url}"
+var rejectingRemainsUrl = "${rejecting_remains_url}"
 $(function() {
 
   $('#all-elect-button').on('click', function() {
@@ -262,6 +266,16 @@ $(function() {
       }});
     
   });
+  $('#remains-reject-button').on('click', function() {
+
+    $.ajax({
+      url: rejectingRemainsUrl,
+      type: "POST",
+      success: function(data, textStatus, xhr) {
+        rewrite_wishes(data);
+      }});
+  });
+
   function rewrite_wishes(data) {
     for (var i = 0; i <  data.html.length; i++) {
       $("." + data.html[i][0]).html(data.html[i][1]);

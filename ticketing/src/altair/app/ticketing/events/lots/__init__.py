@@ -38,6 +38,8 @@ def includeme(config):
                      factory=lot_resource_factory)
     config.add_route('lots.entries.elect_all', 'entries/elect_all/{lot_id}',
                      factory=lot_resource_factory)
+    config.add_route('lots.entries.reject_remains', 'entries/reject_remains/{lot_id}',
+                     factory=lot_resource_factory)
     config.add_route('lots.entries.reject_entry_no', 'entries/reject_entry_no/{lot_id}',
                      factory=lot_resource_factory)
     config.add_route('lots.entries.close', 'entries/close/{lot_id}',
