@@ -75,3 +75,64 @@ class SalesSegmentGroupsTests(unittest.TestCase):
         self.assertEqual(ssg.organization, organization)
         self.assertEqual(ssg.event, event)
 
+    def test_edit_post(self):
+        from altair.app.ticketing.core.models import (
+            Organization,
+            Operator,
+            Event,
+            OrganizationSetting,
+            Account,
+            SalesSegmentKindEnum,
+            SalesSegmentGroup,
+            SalesSegment,
+        )
+        organization = Organization(short_name='testing')
+        organization_setting = OrganizationSetting(organization=organization,
+                                                   name=u"default")
+        account = Account(organization=organization)
+        user = Operator(organization=organization)
+        event = Event(organization=organization)
+        sales_segment_group = SalesSegmentGroup(
+            event=event,
+            organization=organization,
+            sales_segments=[
+                SalesSegment(),
+            ],
+        )
+        self.session.add(organization)
+        self.session.flush()
+
+        context = testing.DummyResource(user=user)
+        request = DummyRequest(
+            context=context,
+            matchdict=dict(
+                sales_segment_group_id=str(sales_segment_group.id),
+            ),
+            matched_route=testing.DummyResource(name=''),
+            POST=dict(
+                id=str(sales_segment_group.id),
+                event_id=str(event.id),
+                account_id=str(account.id),
+                name='testing sales segment group',
+                kind='normal',
+                start_at='2013-01-01 00:00',
+                end_at='2013-12-31 00:00',
+            )
+        )
+
+        target = self._makeOne(context, request)
+
+        result = target._edit_post()
+
+        if result:
+            for f, msgs in result.errors.items():
+                print f,
+                for m in msgs:
+                    print m
+
+        self.assertIsNone(result)
+
+        ss = sales_segment_group.sales_segments[0]
+
+        self.assertEqual(ss.organization, organization)
+        self.assertEqual(ss.event, event)
