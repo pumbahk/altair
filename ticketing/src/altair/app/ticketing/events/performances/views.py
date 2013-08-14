@@ -140,8 +140,13 @@ class Performances(BaseView):
 
     @view_config(route_name='performances.index', renderer='altair.app.ticketing:templates/performances/index.html', permission='event_viewer')
     def index(self):
+        slave_session = get_db_session(self.request, name="slave")
+
         event_id = int(self.request.matchdict.get('event_id', 0))
-        event = Event.get(event_id, organization_id=self.context.user.organization_id)
+        event = slave_session.query(Event).filter(
+            Event.id==event_id,
+            Event.organization_id==self.context.user.organization_id).first()
+
         if event is None:
             return HTTPNotFound('event id %d is not found' % event_id)
 
@@ -150,7 +155,8 @@ class Performances(BaseView):
         if direction not in ['asc', 'desc']:
             direction = 'asc'
 
-        query = Performance.filter(Performance.event_id==event_id)
+        query = slave_session.query(Performance).filter(
+            Performance.event_id==event_id)
         query = query.order_by(sort + ' ' + direction)
 
         performances = paginate.Page(
@@ -169,8 +175,11 @@ class Performances(BaseView):
 
     @view_config(route_name='performances.new', request_method='GET', renderer='altair.app.ticketing:templates/performances/edit.html')
     def new_get(self):
+        slave_session = get_db_session(self.request, name="slave")
         event_id = int(self.request.matchdict.get('event_id', 0))
-        event = Event.get(event_id, organization_id=self.context.user.organization_id)
+        event = slave_session.query(Event).filter(
+            Event.id==event_id,
+            Event.organization_id==self.context.user.organization_id).first()
         if event is None:
             return HTTPNotFound('event id %d is not found' % event_id)
 

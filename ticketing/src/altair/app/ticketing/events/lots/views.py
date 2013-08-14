@@ -10,6 +10,8 @@ from pyramid.httpexceptions import HTTPFound, HTTPNotFound
 from pyramid.renderers import get_renderer
 from pyramid_mailer import get_mailer
 
+from altair.sqlahelper import get_db_session
+
 from altair.app.ticketing.views import BaseView as _BaseView
 from altair.app.ticketing.fanstatic import with_bootstrap
 from altair.app.ticketing.core.models import (
@@ -75,6 +77,8 @@ class Lots(BaseView):
 
     @view_config(route_name='lots.index', renderer='altair.app.ticketing:templates/lots/index.html', permission='event_viewer')
     def index(self):
+
+        slave_session = get_db_session(self.request, name="slave")
         self.check_organization(self.context.event)
         if "action-delete" in self.request.params:
             for lot_id in self.request.params.getall('lot_id'):
@@ -91,7 +95,7 @@ class Lots(BaseView):
         if event is None:
             return HTTPNotFound()
 
-        lots = Lot.query.filter(Lot.event_id==event.id).all()
+        lots = slave_session.query(Lot).filter(Lot.event_id==event.id).all()
 
         return dict(
             event=event,
@@ -147,8 +151,10 @@ class Lots(BaseView):
                         self.request.session.flash(e.message)
                         raise HTTPFound(location=self.request.route_url("lots.show", lot_id=lot.id))
 
+        slave_session = get_db_session(self.request, name="slave")
+
         performance_ids = [p.id for p in lot.performances]
-        stock_holders = StockHolder.query.join(Stock).filter(Stock.performance_id.in_(performance_ids)).distinct().all()
+        stock_holders = slave_session.query(StockHolder).join(Stock).filter(Stock.performance_id.in_(performance_ids)).distinct().all()
 
         stock_types = lot.event.stock_types
         ticket_bundles = lot.event.ticket_bundles
@@ -398,10 +404,11 @@ class LotEntries(BaseView):
         """
 
         # とりあえずすべて
+        slave_session = get_db_session(self.request, name="slave")
 
         self.check_organization(self.context.event)
         lot_id = self.request.matchdict["lot_id"]
-        lot = Lot.query.filter(Lot.id==lot_id).one()
+        lot = slave_session.query(Lot).filter(Lot.id==lot_id).one()
         entries = lots_api.get_lot_entries_iter(lot.id)
         filename='lot-{0.id}.csv'.format(lot)
         if self.request.matched_route.name == 'lots.entries.export':
@@ -439,11 +446,12 @@ class LotEntries(BaseView):
 
         - フィルター (すべて、未処理)
         """
+        slave_session = get_db_session(self.request, name="slave")
 
         # とりあえずすべて
         self.check_organization(self.context.event)
         lot_id = self.request.matchdict["lot_id"]
-        lot = Lot.query.filter(Lot.id==lot_id).one()
+        lot = slave_session.query(Lot).filter(Lot.id==lot_id).one()
         form = SearchEntryForm(formdata=self.request.POST)
         form.wish_order.choices = [("", "")] + [(str(i), i + 1) for i in range(lot.limit_wishes)]
         condition = (LotEntry.id != None)
@@ -517,7 +525,6 @@ class LotEntries(BaseView):
         logger.debug("condition = {0}".format(condition))
         logger.debug("from = {0}".format(form.entried_from.data))
 
-        #q = DBSession.query(LotEntryWish, MultiCheckoutOrderStatus, SejOrder).join(
         q = DBSession.query(LotWishSummary).filter(
             LotWishSummary.lot_id==lot_id
         ).options(
@@ -951,15 +958,16 @@ class LotEntries(BaseView):
     @view_config(route_name='lots.entries.show', renderer="lots/entry_show.html")
     def entry_show(self):
         self.check_organization(self.context.event)
+        slave_session = get_db_session(self.request, name="slave")
         lot_id = self.request.matchdict["lot_id"]
-        lot = Lot.query.filter(Lot.id==lot_id).one()
+        lot = slave_session.query(Lot).filter(Lot.id==lot_id).one()
 
         entry_no = self.request.matchdict['entry_no']
         lot_entry = lot.get_lot_entry(entry_no)
         shipping_address = lot_entry.shipping_address
         mail_form = SendingMailForm(recipient=shipping_address.email_1, 
                                     bcc="")
-        summaries = DBSession.query(LotWishSummary).filter(LotWishSummary.entry_no==entry_no).order_by(LotWishSummary.wish_order).all()
+        summaries = slave_session.query(LotWishSummary).filter(LotWishSummary.entry_no==entry_no).order_by(LotWishSummary.wish_order).all()
         wishes = sorted(lot_entry.wishes, key=lambda w: w.wish_order)
         wishes = zip(summaries, wishes)
         for w, ww in wishes:
