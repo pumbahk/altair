@@ -106,7 +106,6 @@ class BaseSearchQueryBuilderMixin(object):
 
     def _payment_method(self, query, value):
         query = query.join(self.targets['subject'].payment_delivery_pair)
-        query = query.join(self.targets['PaymentDeliveryMethodPair'])
         query = query.join(self.targets['PaymentMethod'])
         if isinstance(value, list):
             query = query.filter(self.targets['PaymentMethod'].id.in_(value))
@@ -116,7 +115,6 @@ class BaseSearchQueryBuilderMixin(object):
 
     def _delivery_method(self, query, value):
         query = query.join(self.targets['subject'].payment_delivery_pair)
-        query = query.join(self.targets['PaymentDeliveryMethodPair'])
         query = query.join(self.targets['DeliveryMethod'])
         query = query.filter(self.targets['DeliveryMethod'].id.in_(value))
         return query
@@ -172,6 +170,7 @@ class CartSearchQueryBuilder(SearchQueryBuilderBase, BaseSearchQueryBuilderMixin
         'Seat': Seat,
         'Performance': Performance,
         'ShippingAddress': ShippingAddress,
+        'PaymentDeliveryMethodPair': PaymentDeliveryMethodPair,
         'PaymentMethod': PaymentMethod,
         'DeliveryMethod': DeliveryMethod,
         'SalesSegment': SalesSegment,
