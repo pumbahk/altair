@@ -89,7 +89,7 @@ class MailMagazinesView(BaseView):
             mail_subscriptions_query = mail_subscriptions_query.filter(MailSubscription.email.like(search_text + '%'))
 
         headers = [
-            ('Content-Type', 'application/octet-stream; charset=cp932'),
+            ('Content-Type', 'application/octet-stream; charset=Windows-31J'),
             ('Content-Disposition', 'attachment; filename=mailmags_{date}.csv'.format(date=datetime.now().strftime('%Y%m%d%H%M%S')))
         ]
         response = Response(headers=headers)

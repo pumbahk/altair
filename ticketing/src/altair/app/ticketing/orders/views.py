@@ -336,7 +336,7 @@ class Orders(BaseView):
         orders = query
 
         headers = [
-            ('Content-Type', 'application/octet-stream; charset=cp932'),
+            ('Content-Type', 'application/octet-stream; charset=Windows-31J'),
             ('Content-Disposition', 'attachment; filename=orders_{date}.csv'.format(date=datetime.now().strftime('%Y%m%d%H%M%S')))
         ]
         response = Response(headers=headers)
