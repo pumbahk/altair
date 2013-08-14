@@ -1634,6 +1634,8 @@ class CartView(BaseView):
 
     @view_config(route_name='cart.search', renderer="altair.app.ticketing:templates/carts/index.html")
     def index(self):
+        slave_session = get_db_session(self.request, name="slave")
+
         form = CartSearchForm(self.request.params, organization_id=self.context.organization.id)
         carts = []
         organization_id = self.context.organization.id
@@ -1643,7 +1645,7 @@ class CartView(BaseView):
             self.request.session.flash(u'検索条件に誤りがあります')
         else:
             try:
-                query = Cart.query.filter(Cart.organization_id == organization_id).filter(Cart.deleted_at == None)
+                query = slave_session.query(Cart).filter(Cart.organization_id == organization_id).filter(Cart.deleted_at == None)
                 query = CartSearchQueryBuilder(form.data)(query)
             except QueryBuilderError as e:
                 self.request.session.flash(e.message)
