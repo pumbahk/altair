@@ -874,7 +874,7 @@ class OrderDetailView(BaseView):
 
     @view_config(route_name="orders.checked.queue", request_method="POST", permission='sales_counter')
     def enqueue_checked_order(self):
-        ords = self.request.session["orders"]
+        ords = self.request.session.get("orders", [])
         ords = [o.lstrip("o:") for o in ords if o.startswith("o:")]
 
         qs = DBSession.query(Order)\
@@ -887,7 +887,7 @@ class OrderDetailView(BaseView):
 
         # def clean_session_callback(request):
         logger.info("*ticketing print queue many* clean session")
-        session_values = self.request.session["orders"]
+        session_values = self.request.session.get("orders", [])
         for order in qs:
             session_values.remove("o:%s" % order.id)
         self.request.session["orders"] = session_values
