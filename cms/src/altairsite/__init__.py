@@ -7,6 +7,7 @@ import sqlahelper
 
 from altaircms.models import Base
 from altair.mobile import PC_ACCESS_COOKIE_NAME #dont't delete it
+from altair.extracodecs import register_codecs
 
 def install_fetcher(config):
     settings = config.registry.settings
@@ -32,7 +33,10 @@ def main(global_config, **local_config):
     sqlahelper.set_base(Base)
     sqlahelper.add_engine(engine)
 
+    register_codecs()
+
     config = Configurator(settings=settings, session_factory=session_factory)
+
     config.include("altair.browserid")
     config.include("altair.exclog")
 

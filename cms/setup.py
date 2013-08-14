@@ -36,7 +36,8 @@ requires = [
     'altair.cdnpath',
     'altair.viewhelpers',
     'altair.formhelpers',
-    "altair.preview", 
+    "altair.preview",
+    "altair.extracodecs",
     'pyramid_layout',
     'lxml',
     'waitress'
