@@ -2262,7 +2262,7 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                 return False
             # コンビニ引取は未発券のみキャンセル可能
             delivery_plugin_id = self.payment_delivery_pair.delivery_method.delivery_plugin_id
-            if delivery_plugin_id == plugins.SEJ_DELIVERY_PLUGIN_ID and self.is_issued:
+            if delivery_plugin_id == plugins.SEJ_DELIVERY_PLUGIN_ID and self.is_issued():
                 return False
             return True
         return False
