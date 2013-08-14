@@ -99,6 +99,7 @@ class SalesSegmentGroups(BaseView):
             if f.end_at.data is None:
                 f.end_at.data = datetime.now()
             sales_segment_group = merge_session_with_post(SalesSegmentGroup(), f.data)
+            sales_segment_group.organization = self.context.user.organization
             sales_segment_group.save()
 
             self.request.session.flash(u'販売区分グループを保存しました')
