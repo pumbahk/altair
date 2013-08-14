@@ -6,7 +6,9 @@
     <a href="${request.route_path('smartphone.main')}"><button class="btn-secondary btn-large">トップへ</button></a>
 </%block>
 
-<h2 class="glitter red">購入履歴</h2>
+<h2 class="glitter red">抽選申込確認/購入履歴</h2>
+
+<h2 class="glitter">購入履歴の確認</h2>
 
 <div class="order_outline">
     <ul class="order_old_new">
@@ -17,6 +19,21 @@
         <div class="sectionbox">
             <div class="sectionbox-inner">
                 上記どちらの確認フォームからもご予約の確認ができないお客様は<a href="${request.route_path('smartphone.page', kind='inquiry')}" target="_blank">こちら</a>からお問い合わせください
+            </div>
+        </div>
+    </p>
+</div>
+
+<h2 class="glitter">抽選申込チケットの確認</h2>
+
+<div class="order_outline">
+    <ul class="order_old_new">
+        <li><a href="${orderreview_url.lots}" class="btnRT">抽選申込内容の確認はこちら</a></li>
+    </ul>
+    <p class="textC">
+        <div class="sectionbox">
+            <div class="sectionbox-inner">
+                上記確認フォームから申込確認ができないお客様は<a href="${request.route_path('smartphone.page', kind='inquiry')}" target="_blank">こちら</a>からお問い合わせください
             </div>
         </div>
     </p>
