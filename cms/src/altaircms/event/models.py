@@ -47,17 +47,19 @@ class Event(BaseOriginalMixin, WithOrganizationMixin, Base):
         return Organization.query.filter_by(id=self.organization_id).one()
 
     @classmethod
-    def near_the_deal_close_query(cls, today, N=7, qs=None):
+    def near_the_deal_close_query(cls, now, N=7, qs=None):
         """ 現在から販売終了N日前までのqueryを返す"""
+        today = datetime(now.year, now.month, now.day)
         limit_day = today + timedelta(days=N)
-        where = (cls.deal_open <= today) & (today <= cls.deal_close) & (cls.deal_close <= limit_day)
+        where = (cls.deal_open <= now) & (now <= cls.deal_close) & (cls.deal_close <= limit_day)
         return (qs or cls.query).filter(where)
 
     @classmethod
-    def deal_start_this_week_query(cls, today, offset=None, qs=None):
+    def deal_start_this_week_query(cls, now, offset=None, qs=None):
         """今週販売開始するquery(月曜日を週のはじめとする)"""
+        today = datetime(now.year, now.month, now.day)
         start_day  = today + timedelta(days=offset or -today.weekday())
-        where = (cls.deal_open >= start_day) & (cls.deal_open < start_day+timedelta(days=7))
+        where = (cls.deal_open >= start_day) & (cls.deal_open < start_day+timedelta(days=7)) & ((cls.deal_close == None) | (now <= cls.deal_close))
         qs =  (qs or cls.query).filter(where)
         return qs
 
