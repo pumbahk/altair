@@ -23,6 +23,11 @@ def includeme(config):
     config.add_route('tickets.templates.data', '/templates/{id}/data', factory=".resources.TicketsResource")
     config.add_route('tickets.templates.update_derivatives', '/templates/{id}/update_derivatives')
 
+    config.add_route('tickets.covers.new', '/covers/new')
+    config.add_route('tickets.covers.show', '/covers/{id}')
+    config.add_route('tickets.covers.edit', '/covers/{id}/edit')
+    config.add_route('tickets.covers.delete', '/covers/{id}/delete')
+
     config.add_route('tickets.queue.index', '/queue', factory=".resources.TicketsResource")
     config.add_route('tickets.queue.delete', '/queue/delete', factory=".resources.TicketsResource")
     config.add_route('tickets.queue.mask', '/queue/mask', factory=".resources.TicketsResource")

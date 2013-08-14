@@ -92,16 +92,16 @@ def available_ticket_formats_for_orders(orders):
         .with_entities(TicketFormat.id, TicketFormat.name)\
         .distinct(TicketFormat.id)
 
-def available_ticket_formats_for_ordered_product_item(ordered_product_item_id):
+def available_ticket_formats_for_ordered_product_item(ordered_product_item):
+    delivery_method_id = ordered_product_item.ordered_product.order.payment_delivery_pair.delivery_method_id
+    bundle_id = ordered_product_item.product_item.ticket_bundle_id
     return TicketFormat.query\
-        .filter(OrderedProductItem.id==ordered_product_item_id)\
-        .filter(OrderedProduct.id==OrderedProductItem.ordered_product_id)\
-        .filter(Order.id==OrderedProduct.order_id)\
-        .filter(PaymentDeliveryMethodPair.id==Order.payment_delivery_method_pair_id)\
-        .filter(DeliveryMethod.id==PaymentDeliveryMethodPair.delivery_method_id)\
-        .filter(TicketFormat_DeliveryMethod.delivery_method_id==DeliveryMethod.id)\
-        .filter(TicketFormat.id==TicketFormat_DeliveryMethod.ticket_format_id)\
-        .with_entities(TicketFormat.id, TicketFormat.name)
+        .filter(bundle_id==Ticket_TicketBundle.ticket_bundle_id, 
+                Ticket_TicketBundle.ticket_id==Ticket.id, 
+                Ticket.ticket_format_id==TicketFormat.id, 
+                TicketFormat_DeliveryMethod.delivery_method_id==delivery_method_id, 
+                TicketFormat.id==TicketFormat_DeliveryMethod.ticket_format_id)\
+                .with_entities(TicketFormat.id, TicketFormat.name).distinct(TicketFormat.id)
 
 def encode_to_cp932(data):
     try:
@@ -521,7 +521,6 @@ class OrdersRefundConfirmView(BaseView):
 
 @view_defaults(decorator=with_bootstrap, permission='sales_counter')
 class OrderDetailView(BaseView):
-
     @view_config(route_name='orders.show', renderer='altair.app.ticketing:templates/orders/show.html')
     def show(self):
         order_id = int(self.request.matchdict.get('order_id', 0))
@@ -766,12 +765,34 @@ class OrderDetailView(BaseView):
         self.request.session.flash(u'予約を保存しました')
         return render_to_response('altair.app.ticketing:templates/refresh.html', {}, request=self.request)
 
+    @view_config(route_name="orders.cover.preview", request_method="GET", renderer="altair.app.ticketing:templates/orders/_cover_preview_dialog.html")
+    def cover_preview_dialog(self):
+        from altair.app.ticketing.tickets.preview.api import SVGPreviewCommunication
+        from altair.app.ticketing.tickets.preview.transform import SVGTransformer
+        from altair.app.ticketing.tickets.utils import build_cover_dict_from_order
+        from altair.app.ticketing.core.models import TicketCover
+
+        order_id = int(self.request.matchdict.get('order_id', 0))
+        order = Order.get(order_id, self.context.organization.id)
+        if order is None:
+            raise HTTPNotFound('order id %d is not found' % order_id)
+        cover = TicketCover.get_from_order(order)
+        if cover is None:
+            raise HTTPNotFound('cover is not found. order id %d' % order_id)
+        svg = pystache.render(cover.ticket.data["drawing"], build_cover_dict_from_order(order))
+        data = {"ticket_format": cover.ticket.ticket_format_id, "sx": "1", "sy": "1"}
+        transformer = SVGTransformer(svg, data)
+        svg = transformer.transform()
+        preview = SVGPreviewCommunication.get_instance(self.request)
+        imgdata_base64 = preview.communicate(self.request, svg)
+        return {"order": order, "cover":cover, "data": imgdata_base64}
+
     @view_config(route_name="orders.item.preview", request_method="GET", renderer='altair.app.ticketing:templates/orders/_item_preview_dialog.html')
     def order_item_preview_dialog(self):
         item = OrderedProductItem.query.filter_by(id=self.request.matchdict["item_id"]).first()
         if item is None:
             return {} ### xxx:
-        form = PreviewTicketSelectForm(item_id=item.id, ticket_formats=available_ticket_formats_for_ordered_product_item(item.id))
+        form = PreviewTicketSelectForm(item_id=item.id, ticket_formats=available_ticket_formats_for_ordered_product_item(item))
         return {"form": form, "item": item}
 
     @view_config(route_name="orders.item.preview.getdata", request_method="GET", renderer="json")
@@ -883,6 +904,7 @@ class OrderDetailView(BaseView):
 
         for order in qs:
             if not order.queued:
+                utils.enqueue_cover(operator=self.context.user, order=order)
                 utils.enqueue_for_order(operator=self.context.user, order=order)
 
         # def clean_session_callback(request):
@@ -901,6 +923,7 @@ class OrderDetailView(BaseView):
     def order_print_queue(self):
         order_id = int(self.request.matchdict.get('order_id', 0))
         order = Order.query.get(order_id)
+        utils.enqueue_cover(operator=self.context.user, order=order)
         utils.enqueue_for_order(operator=self.context.user, order=order)
         self.request.session.flash(u'券面を印刷キューに追加しました')
         return HTTPFound(location=self.request.route_path('orders.show', order_id=order_id))

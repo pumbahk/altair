@@ -2949,6 +2949,26 @@ class TicketPrintQueueEntry(Base, BaseModel):
     
 from ..operators.models import Operator
 
+class TicketCover(Base, BaseModel, WithTimestamp, LogicallyDeleted):
+    """
+    表紙。注文情報などが記載されている
+    """
+    __tablename__ = "TicketCover"
+    id = Column(Identifier, primary_key=True)
+    name = Column(Unicode(255), default=u"", nullable=False)
+    operator_id = Column(Identifier, ForeignKey('Operator.id'))
+    operator = relationship('Operator', uselist=False)
+    organization_id = Column(Identifier, ForeignKey('Organization.id'), nullable=True)
+    organization = relationship('Organization', uselist=False, backref='ticket_covers')
+    ticket_id = Column(Identifier, ForeignKey('Ticket.id'), nullable=False)
+    ticket = relationship('Ticket',  backref=backref('cover'))
+    delivery_method_id = Column(Identifier, ForeignKey('DeliveryMethod.id'))
+
+    ## あとで伝搬サポートした時に移動
+    @classmethod
+    def get_from_order(cls, order):
+        return TicketCover.query.filter_by(organization_id=order.organization_id).first() #todo: DeliveryMethod?
+
 class TicketBundle(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = "TicketBundle"
     id = Column(Identifier, primary_key=True)

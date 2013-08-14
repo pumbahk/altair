@@ -5,7 +5,8 @@ import re
 import logging
 import pystache
 from altair.app.ticketing.tickets.utils import build_dicts_from_ordered_product_item
-from altair.app.ticketing.core.models import TicketPrintQueueEntry
+from altair.app.ticketing.tickets.utils import build_cover_dict_from_order
+from altair.app.ticketing.core.models import TicketPrintQueueEntry, TicketCover
 from altair.app.ticketing.core.utils import ApplicableTicketsProducer
 from altair.app.ticketing.payments.plugins import SEJ_DELIVERY_PLUGIN_ID
 logger = logging.getLogger(__name__)
@@ -29,6 +30,18 @@ def item_ticket_pairs(order, ticket_dict=None, ticket=None):
                                 (order.id, ordered_product_item.id))
                 continue
             yield ordered_product_item, ticket
+
+def enqueue_cover(operator, order):
+    cover = TicketCover.get_from_order(order)
+    if cover is None:
+        logger.error("cover is not found. order = {order.id} organization_id = {operator.organization_id}".format(order=order, operator=operator))
+    dict_ = build_cover_dict_from_order(order)
+    TicketPrintQueueEntry.enqueue(
+        operator=operator, 
+        ticket=cover.ticket, 
+        data = {u"drawing": pystache.render(cover.ticket.data["drawing"], dict_)}, 
+        summary=u"表紙 {order.order_no}".format(order=order)
+        )
 
 def enqueue_for_order(operator, order, ticket_format_id=None):
     for ordered_product in order.items:
