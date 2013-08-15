@@ -82,7 +82,6 @@ class SalesSegmentGroupsTests(unittest.TestCase):
             Event,
             OrganizationSetting,
             Account,
-            SalesSegmentKindEnum,
             SalesSegmentGroup,
             SalesSegment,
         )
@@ -136,3 +135,64 @@ class SalesSegmentGroupsTests(unittest.TestCase):
 
         self.assertEqual(ss.organization, organization)
         self.assertEqual(ss.event, event)
+
+    def test_bind_membergroup_post(self):
+        from altair.app.ticketing.core.models import (
+            Organization,
+            Operator,
+            Event,
+            OrganizationSetting,
+            Account,
+            SalesSegmentGroup,
+            SalesSegment,
+        )
+        from altair.app.ticketing.users.models import (
+            MemberGroup,
+            Membership,
+        )
+        organization = Organization(short_name='testing')
+        membership = Membership(organization=organization)
+        membergroups = [MemberGroup(membership=membership)
+                        for i in range(10)]
+            
+
+        organization_setting = OrganizationSetting(organization=organization,
+                                                   name=u"default")
+        account = Account(organization=organization)
+        user = Operator(organization=organization)
+        event = Event(organization=organization)
+        sales_segment_group = SalesSegmentGroup(
+            event=event,
+            organization=organization,
+            sales_segments=[
+                SalesSegment(),
+            ],
+        )
+        self.session.add(organization)
+        self.session.flush()
+
+        context = testing.DummyResource(
+            user=user,
+        )
+        redirect_to = "/redirect/to"
+        request = DummyRequest(
+            context=context,
+            POST=([('redirect_to', redirect_to)]
+                  + [('membergroups', str(m.id))
+                     for m in membergroups]),
+            matchdict=dict(
+                sales_segment_group_id=str(sales_segment_group.id),
+            ),
+        )
+
+        target = self._makeOne(context, request)
+
+        result = target.bind_membergroup_post()
+
+        self.assertEqual(result.location,
+                         redirect_to)
+
+        self.assertEqual(sales_segment_group.membergroups,
+                         membergroups)
+        self.assertEqual(sales_segment_group.sales_segments[0].membergroups,
+                         membergroups)
