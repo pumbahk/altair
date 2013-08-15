@@ -49,13 +49,6 @@ import json
   function search_carts() {
     $('#search').attr('action', url).submit();
   }
-
-  function sort_carts(sort, direction) {
-    detail = $('#detail_search');
-    if (sort) detail.find('#sort').val(sort);
-    if (direction) detail.find('#direction').val(direction);
-    detail.find('#search').attr('action', url).submit();
-  }
 </script>
 <div id="detail_search">
   <div>
@@ -186,31 +179,12 @@ import json
     </script>
     ${ch.form_item(form.sort)}
     ${ch.form_item(form.direction)}
+
+    <div class="btn-group">
+      <a href="${url}" class="btn">リセット</a>
+      <button class="btn"><i class="icon-search"></i>検索</button>
+    </div>
   </form>
-</div>
-
-<div style="float: left;">
-  <ul class="nav nav-pills">
-    <li class="dropdown" style="margin-left: 10px;">
-      <div class="btn-group">
-        <a href="${url}" class="btn">
-			</i> リセット
-        </a>
-      </div>
-    </li>
-  </ul>
-</div>
-
-<div style="float: left;">
-  <ul class="nav nav-pills">
-    <li class="dropdown" id="top-search" style="margin-left: 10px;">
-      <div class="btn-group">
-        <a href="javascript:search_carts();" class="btn">
-          <i class="icon-search"></i> 検索
-        </a>
-      </div>
-    </li>
-  </ul>
 </div>
 
 <div style="clear: left;"></div>

@@ -15,7 +15,18 @@
 <%include file="/payment_methods/_list.html" args="form=form, payment_methods=payment_methods" />
 <%include file="/payment_methods/_action_button.html" />
 
+<div id="modal-payment_method" class="modal hide">
+  <div class="modal-header">
+    <a class="close" data-dismiss="modal">×</a>
+    <h3>決済方法</h3>
+  </div>
 
-<div id="payment_methods-form">
-  <%include file="/payment_methods/_form.html" args="form=form" />
+  <div class="modal-body">
+  </div>
+
+  <div class="modal-footer">
+    <a href="#" class="btn" data-dismiss="modal">閉じる</a>
+    <a href="javascript:void(0);" onclick="$('#modal-payment_method').find('form').submit();" class="btn">保存</a>
+  </div>
 </div>
+

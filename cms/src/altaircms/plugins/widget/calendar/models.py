@@ -33,7 +33,7 @@ class CalendarWidget(Widget):
     calendar_type = sa.Column(sa.String(255))
     from_date = sa.Column(sa.Date)
     to_date = sa.Column(sa.Date)
-    salessegment_id = sa.Column(sa.Integer, sa.ForeignKey("salessegment_group.id"))
+    salessegment_id = sa.Column(sa.Integer, sa.ForeignKey("salessegment_group.id", ondelete="SET NULL"))
     salessegment = orm.relationship("SalesSegmentGroup")
     show_label = sa.Column(sa.Boolean, doc=u"見出しを表示するか否かのフラグ", default=True, nullable=False)
 
@@ -60,7 +60,7 @@ class CalendarWidget(Widget):
             utility = get_widget_utility(request, page, self.type)
 
             status_impl = utility.status_impl
-            stock_status = get_stockstatus_summary(request, self, event, status_impl)
+            stock_status = get_stockstatus_summary(request, event, status_impl)
 
             template_name = utility.get_template_name(request, self)
             render_fn = utility.get_rendering_function(request, self)
@@ -101,7 +101,3 @@ TAB_CALENDAR_JS = u"""\
   });
 """
 
-def after_salessegment_group_deleted(mapper, connection, target):
-    for widget in CalendarWidget.query.filter_by(salessegment_id=target.id):
-        widget.salessegment_id = None
-sa.event.listen(SalesSegmentGroup, "before_delete", after_salessegment_group_deleted)

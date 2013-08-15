@@ -48,6 +48,7 @@ from .exceptions import (
     CartCreationException,
     InvalidCartStatusError,
     OverOrderLimitException,
+    PaymentMethodEmptyError,
 )
 
 logger = logging.getLogger(__name__)
@@ -583,7 +584,13 @@ class PaymentView(object):
 
         start_on = cart.performance.start_on
         sales_segment = self.request.context.sales_segment
-        payment_delivery_methods = self.context.available_payment_delivery_method_pairs(sales_segment)
+        payment_delivery_methods = [pdmp
+                                    for pdmp in self.context.available_payment_delivery_method_pairs(sales_segment)
+                                    if pdmp.payment_method.public]
+        
+        if 0 == len(payment_delivery_methods):
+            raise PaymentMethodEmptyError
+        
         user = get_or_create_user(self.context.authenticated_user())
         user_profile = None
         if user is not None:
@@ -664,12 +671,21 @@ class PaymentView(object):
         payment_delivery_method_pair_id = self.request.params.get('payment_delivery_method_pair_id', 0)
         payment_delivery_pair = c_models.PaymentDeliveryMethodPair.query.filter_by(id=payment_delivery_method_pair_id).first()
 
+
         self.form = schemas.ClientForm(formdata=self.request.params)
         shipping_address_params = self.get_validated_address_data()
         if not self._validate_extras(cart, payment_delivery_pair, shipping_address_params):
             start_on = cart.performance.start_on
             sales_segment = self.request.context.sales_segment
-            payment_delivery_methods = self.context.available_payment_delivery_method_pairs(sales_segment)
+            
+            payment_delivery_methods = [pdmp
+                                        for pdmp in self.context.available_payment_delivery_method_pairs(sales_segment)
+                                        if pdmp.payment_method.public]
+        
+            if 0 == len(payment_delivery_methods):
+                raise PaymentMethodEmptyError
+        
+
             return dict(form=self.form, payment_delivery_methods=payment_delivery_methods)
 
         sales_segment = cart.sales_segment
@@ -789,6 +805,8 @@ class CompleteView(object):
         payment = Payment(cart, self.request)
         order = payment.call_payment()
 
+        
+        
         notify_order_completed(self.request, order)
 
         # メール購読でエラーが出てロールバックされても困る

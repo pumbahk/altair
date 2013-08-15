@@ -133,7 +133,8 @@ class SolrSearch(object):
             logger.info("fulltext search result %s" % result.results)
             return result.results
         except solr.SolrException as e:
-            logger.warn((u"fulltext search failed. exception=%s, query=%s" % (str(e), query.query_string)).encode("utf-8"))
+            import sys
+            logger.warn(u"fulltext search failed. query=%s" % query.query_string, exc_info=sys.exc_info())
             return []
 
     def register(self, doc, commit=False):

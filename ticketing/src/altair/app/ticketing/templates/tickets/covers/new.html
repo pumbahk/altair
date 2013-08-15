@@ -1,0 +1,42 @@
+<%inherit file="/layout_2cols.html" />
+<%namespace file="/common/helpers.html" name="ch" />
+
+<style type="text/css">
+  .controls select{width: 80%;}
+  .controls textarea{width: 80%; min-height:100px;}
+</style>
+
+<%block name="breadcrumbs">
+${ch.breadcrumbs(
+  names=[u'トップ', u'チケット券面', u"表紙登録"],
+  urls=[request.route_path('index'), request.route_path("tickets.index")]
+)}
+</%block>
+
+<div class="page-header">
+  <h3>チケット表紙登録</h3>
+</div>
+
+<%
+  if request.matched_route.name == 'tickets.covers.edit':
+    route_name = u'編集'
+    route_path = request.route_path('tickets.covers.edit', id=cover.id)
+  else:
+    route_name = u'登録'
+    route_path = request.route_path('tickets.covers.new')
+%>
+
+
+
+<div class="well">
+  <form class="form-horizontal" action="${route_path}" method="POST"
+		enctype="multipart/form-data">
+	<fieldset>
+	  ${ch.form_item(form.name)}
+	  ${ch.form_item(form.ticket)}
+	</fieldset>
+	<div class="form-actions">
+	  <input class="btn btn-primary" type="submit" name="submit" value="登録">
+	</div>
+  </form>
+</div>

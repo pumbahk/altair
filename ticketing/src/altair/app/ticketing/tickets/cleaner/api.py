@@ -10,7 +10,8 @@ from StringIO import StringIO
 
 from . import cleanup_svg
 from .normalize import normalize
-from ..convert import to_opcodes
+from ..convert import convert_svg
+from altair.app.ticketing.sej.ticket import SejTicketDataXml
 
 
 class TicketCleanerValidationError(Exception):
@@ -69,9 +70,9 @@ def skip_needless_content(inp):
 
 
 #xxx: cleanup_svgはxmltreeを書き換えてしまう。なので２回呼び出すとおかしな結果になってしまう
-def get_validated_svg_cleaner(svgio, exc_class=TicketCleanerValidationError):
+def get_validated_svg_cleaner(svgio, exc_class=TicketCleanerValidationError, sej=False):
     xmltree = get_validated_xmltree(svgio, exc_class=exc_class)
-    result = TicketSVGValidator(exc_class=exc_class).validate(svgio, xmltree)
+    result = TicketSVGValidator(exc_class=exc_class, sej=sej).validate(svgio, xmltree)
     return TicketSVGCleaner(svgio, xmltree, result=result)
 
 class TicketSVGCleaner(object):
@@ -109,16 +110,18 @@ def invalid_svg_upload_when_save(io, suffix=".svg"):
     
 
 class TicketSVGValidator(object):
-    def __init__(self, exc_class=TicketCleanerValidationError, io_create=StringIO):
+    def __init__(self, exc_class=TicketCleanerValidationError, io_create=StringIO, sej=False):
         self.exc_class = exc_class
         self.io_create = io_create
+        self.sej = sej
 
     def validate(self, svgio, xmltree):
         default_io = None
         try:
             default_io = io = self._validated_io_on_cleanup_phase(xmltree)
             io = self._validated_io_on_normalize_phase(io)
-            self._validate_on_converting_to_opcode(etree.parse(io))
+            if self.sej:
+                self._validate_on_converting_to_sej_xml(etree.parse(io))
             io.seek(0)
             return io
         except Exception:
@@ -150,9 +153,10 @@ class TicketSVGValidator(object):
             logger.exception(e)
             raise self.exc_class("normalize: "+str(e))
 
-    def _validate_on_converting_to_opcode(self, xmltree):
+    def _validate_on_converting_to_sej_xml(self, xmltree):
         try:
-            to_opcodes(xmltree)
+            if not SejTicketDataXml(etree.tostring(convert_svg(xmltree), encoding=unicode)).validate():
+                raise Exception('Ticket data too large')
         except Exception, e:
             logger.exception(e)
-            raise self.exc_class("opcode:" + str(e))
+            raise self.exc_class("sej_xml:" + unicode(e))

@@ -10,7 +10,6 @@ from altairsite.config import usersite_view_config
 from altairsite.fetcher import get_current_page_fetcher
 from datetime import datetime
 
-@usersite_view_config(route_name="mobile.features", request_type="altairsite.tweens.IMobileRequest")
 @usersite_view_config(route_name="staticpage", request_type="altairsite.tweens.IMobileRequest")
 def staticpage_view(context, request):
     path = request.matchdict["page_name"]

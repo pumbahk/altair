@@ -13,13 +13,16 @@ from altair.app.ticketing.models import DBSession
 from .models import SejTicketTemplateFile, SejRefundTicket, SejRefundEvent
 from .zip_file import EnhZipFile, ZipInfo
 
+MAX_TICKET_DATA_LENGTH = 5000
 
-class SejTicketDataXml():
-
+class SejTicketDataXml(object):
     xml = ''
 
     def __init__(self, xml):
         self.xml = xml
+
+    def validate(self):
+        return len(unicode(self).encode('CP932')) < MAX_TICKET_DATA_LENGTH
 
     def __unicode__(self):
         from cStringIO import StringIO

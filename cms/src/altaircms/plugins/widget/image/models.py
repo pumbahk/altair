@@ -31,7 +31,7 @@ class ImageWidget(Widget):
     width = sa.Column(sa.Integer)
     height = sa.Column(sa.Integer)
     alt = sa.Column(sa.Unicode(255))
-    asset_id = sa.Column(sa.Integer, sa.ForeignKey("asset.id"))
+    asset_id = sa.Column(sa.Integer, sa.ForeignKey("asset.id", ondelete="SET NULL"))
     asset = orm.relationship(ImageAsset, backref="widget", uselist=False)
     nowrap = sa.Column(sa.Boolean, default=False)
     attributes = sa.Column(MutationDict.as_mutable(JSONEncodedDict(255)))

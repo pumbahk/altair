@@ -2,7 +2,7 @@
 import copy
 import shutil
 import os
-from pyramid.httpexceptions import HTTPFound, HTTPForbidden
+from pyramid.httpexceptions import HTTPFound, HTTPForbidden, HTTPNotFound
 from altaircms.filelib import zipupload
 from pyramid.view import view_config
 from pyramid.view import view_defaults
@@ -83,7 +83,7 @@ class StaticPageSetView(BaseView):
         try:
             path = os.path.join(static_directory.get_rootname(static_page), 
                                 self.request.params["path"])
-            logger.warn("*path: {0}".format(path))
+            logger.info("*path: {0}".format(path))
             return as_static_page_response(self.request, static_page, path, force_original=False, 
                                            path=path, cache_max_age=0)
         except StaticPageNotFound as e:
@@ -369,9 +369,9 @@ def static_page_display_view(context, request):
     static_directory = get_static_page_utility(request)
     try:
         path = os.path.join(static_directory.get_base_directory(), request.matchdict["path"])
-        logger.warn("*path: {0}".format(path))
+        logger.info("*path: {0}".format(path))
         return as_static_page_response(request, static_page, path, force_original=request.GET.get("force_original"), 
                                        path=path, cache_max_age=0)
     except StaticPageNotFound as e:
         logger.info(e)
-        raise HTTPForbidden()
+        raise HTTPNotFound(str(e))

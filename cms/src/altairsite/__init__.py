@@ -7,11 +7,13 @@ import sqlahelper
 
 from altaircms.models import Base
 from altair.mobile import PC_ACCESS_COOKIE_NAME #dont't delete it
+from altair.extracodecs import register_codecs
 
 def install_fetcher(config):
     settings = config.registry.settings
     config.include("altaircms:install_upload_file") #xxx:
     config.include("altaircms.page.staticupload:install_static_page_utility")
+    config.include("altaircms.page.staticupload:install_static_page_cache")
     from altairsite.fetcher import ICurrentPageFetcher
     from altairsite.fetcher import CurrentPageFetcher
     fetcher = CurrentPageFetcher(settings["altaircms.static.pagetype.pc"], 
@@ -31,7 +33,10 @@ def main(global_config, **local_config):
     sqlahelper.set_base(Base)
     sqlahelper.add_engine(engine)
 
+    register_codecs()
+
     config = Configurator(settings=settings, session_factory=session_factory)
+
     config.include("altair.browserid")
     config.include("altair.exclog")
 

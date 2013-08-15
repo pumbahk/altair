@@ -15,6 +15,7 @@ from ..exceptions import (
     DeliveryFailedException,
     InvalidCartStatusError,
     OverOrderLimitException,
+    PaymentMethodEmptyError,
 )
 from ..reserving import InvalidSeatSelectionException, NotEnoughAdjacencyException
 from ..stocker import InvalidProductSelectionException, NotEnoughStockException
@@ -162,3 +163,9 @@ def over_order_limit_exception(context, request):
                                           limit=order_limit,
                                           event_name=event_name,
                                           performance_name=performance_name)))
+@mobile_view_config(context=PaymentMethodEmptyError,
+                    renderer=selectable_renderer('altair.app.ticketing.cart:templates/%(membership)s/mobile/error.html'))
+@view_config(context=PaymentMethodEmptyError,
+             renderer=selectable_renderer('altair.app.ticketing.cart:templates/%(membership)s/pc/message.html'))
+def payment_method_is_empty(request):
+    return dict(message=Markup(u'この商品は現在メンテナンス中のためご購入いただけません。'))

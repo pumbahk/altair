@@ -1300,6 +1300,7 @@ class PaymentMethod(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     description = Column(String(2000))
     fee = Column(Numeric(precision=16, scale=2), nullable=False)
     fee_type = Column(Integer, nullable=False, default=FeeTypeEnum.Once.v[0])
+    public = Column(Boolean, nullable=False, default=True)
 
     organization_id = Column(Identifier, ForeignKey('Organization.id'))
     organization = relationship('Organization', uselist=False, backref='payment_method_list')
@@ -2259,6 +2260,10 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             payment_plugin_id = self.payment_delivery_pair.payment_method.payment_plugin_id
             if payment_plugin_id == plugins.SEJ_PAYMENT_PLUGIN_ID and self.payment_status != 'unpaid':
                 return False
+            # コンビニ引取は未発券のみキャンセル可能
+            delivery_plugin_id = self.payment_delivery_pair.delivery_method.delivery_plugin_id
+            if delivery_plugin_id == plugins.SEJ_DELIVERY_PLUGIN_ID and self.is_issued():
+                return False
             return True
         return False
 
@@ -2893,10 +2898,13 @@ class TicketPrintQueueEntry(Base, BaseModel):
             q = q.join(OrderedProductItem) \
                 .join(OrderedProduct) \
                 .filter(OrderedProduct.order_id==order_id)
-            q = q.order_by(asc(OrderedProduct.id))
-        else:
-            q = q.order_by(TicketPrintQueueEntry.created_at, TicketPrintQueueEntry.id)
+        q = q.order_by(*self.printing_order_condition())
         return q.all()
+
+    @classmethod
+    def printing_order_condition(cls):
+        return (TicketPrintQueueEntry.created_at, TicketPrintQueueEntry.id)
+
 
     @classmethod
     def dequeue(self, ids, now=None):
@@ -2940,6 +2948,26 @@ class TicketPrintQueueEntry(Base, BaseModel):
 
     
 from ..operators.models import Operator
+
+class TicketCover(Base, BaseModel, WithTimestamp, LogicallyDeleted):
+    """
+    表紙。注文情報などが記載されている
+    """
+    __tablename__ = "TicketCover"
+    id = Column(Identifier, primary_key=True)
+    name = Column(Unicode(255), default=u"", nullable=False)
+    operator_id = Column(Identifier, ForeignKey('Operator.id'))
+    operator = relationship('Operator', uselist=False)
+    organization_id = Column(Identifier, ForeignKey('Organization.id'), nullable=True)
+    organization = relationship('Organization', uselist=False, backref='ticket_covers')
+    ticket_id = Column(Identifier, ForeignKey('Ticket.id'), nullable=False)
+    ticket = relationship('Ticket',  backref=backref('cover'))
+    delivery_method_id = Column(Identifier, ForeignKey('DeliveryMethod.id'))
+
+    ## あとで伝搬サポートした時に移動
+    @classmethod
+    def get_from_order(cls, order):
+        return TicketCover.query.filter_by(organization_id=order.organization_id).first() #todo: DeliveryMethod?
 
 class TicketBundle(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = "TicketBundle"

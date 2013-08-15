@@ -37,6 +37,7 @@ setup(name='altair.mobile',
           "setuptools>0.7",
           'radix',
           'uamobile',
+          'altair.extracodecs',
       ],
       dependency_links = [
         'http://py-radix.googlecode.com/files/py-radix-0.5.tar.gz#egg=radix-0.5',

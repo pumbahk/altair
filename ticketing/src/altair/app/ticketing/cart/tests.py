@@ -989,7 +989,13 @@ class PaymentViewTests(unittest.TestCase):
             finished_at=None,
         )
         request.context = testing.DummyResource()
+
+        payment_method = testing.DummyModel()
+        payment_method.public = True
+        
         payment_delivery_method = testing.DummyModel()
+        payment_delivery_method.payment_method = payment_method
+        
         request.context.available_payment_delivery_method_pairs = lambda sales_segment: [payment_delivery_method]
         request.context.authenticated_user = lambda: { 'claimed_id': 'http://ticketstar.example.com/user/1' }
         request.context.get_payment_delivery_method_pair = lambda: None

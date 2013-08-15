@@ -30,7 +30,7 @@ class PaymentMethodForm(Form):
     )
     fee = DecimalField(
         label=u'決済手数料',
-        places=2,
+        places=0,
         validators=[Required()],
     )
     fee_type = SelectField(
@@ -52,3 +52,8 @@ class PaymentMethodForm(Form):
     hide_voucher = OurBooleanField(
         label=u'払込票を表示しない',
     )
+
+    public = OurBooleanField(
+        label=u'公開する',
+    )
+    
