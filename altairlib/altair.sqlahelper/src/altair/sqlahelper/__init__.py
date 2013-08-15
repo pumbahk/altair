@@ -7,6 +7,8 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from zope.interface import directlyProvides
 from pyramid.settings import asbool
+
+from altair.logicaldeleting import LogicalDeletableSession
 from .interfaces import ISessionMaker
 
 logger = logging.getLogger(__name__)
@@ -41,7 +43,7 @@ def register_sessionmakers(config, urls):
         engine = create_engine(url, echo=echo,
                                pool_recycle=0)
 
-        Session = sessionmaker(bind=engine)
+        Session = sessionmaker(bind=engine, class_=LogicalDeletableSession)
         directlyProvides(Session, ISessionMaker)
         config.registry.registerUtility(Session, name=name)
 
