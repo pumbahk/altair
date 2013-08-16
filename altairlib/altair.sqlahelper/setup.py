@@ -41,6 +41,7 @@ setup(name='altair.sqlahelper',
       include_package_data=True,
       zip_safe=False,
       install_requires=requires,
+      test_suite='altair.sqlahelper',
       entry_points="""
       # -*- Entry points: -*-
       """,
