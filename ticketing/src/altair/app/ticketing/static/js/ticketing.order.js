@@ -38,6 +38,9 @@ order.OrderFormPresenter.prototype = {
       data_source: this.options.data_source
     });
 
+    $('.btn-confirm').on('click', function() {
+      self.confirm();
+    });
     $('.btn-save-order').on('click', function() {
       self.save();
     });
@@ -50,7 +53,7 @@ order.OrderFormPresenter.prototype = {
   },
   showForm: function() {
     $('.btn-edit-order, #orderProduct').hide();
-    $('.btn-save-order, .btn-close').show();
+    $('.btn-confirm, .btn-close').show();
 
     this.view.close();
     this.view = new this.viewType({
@@ -111,7 +114,31 @@ order.OrderFormPresenter.prototype = {
     var self = this;
     self.view.close();
     $('.btn-edit-order, #orderProduct').show();
-    $('.btn-save-order, .btn-close').hide();
+    $('.btn-confirm, .btn-save-order, .btn-close').hide();
+    $('.btn-confirm, .btn-save-order, .btn-close').off();
+  },
+  confirm: function() {
+    var self = this;
+    $.ajax({
+      url: '/orders/api/edit_confirm',
+      async: false,
+      dataType: 'json',
+      data: JSON.stringify(self.order.attributes),
+      type: 'POST',
+      success: function (data) {
+        console.log(data);
+        self.order.set(self.order.parse(data));
+        self.view.show();
+        self.showMessage('変更内容を確認してください (手数料が再計算されています)', 'alert-warning');
+        $('.btn-confirm').hide();
+        $('.btn-save-order').show();
+      },
+      error: function (xhr, text) {
+        console.log(xhr);
+        var response = JSON.parse(xhr.responseText);
+        self.showMessage(response.message, 'alert-error');
+      }
+    });
   },
   save: function() {
     var self = this;
@@ -156,7 +183,7 @@ order.Order = Backbone.Model.extend({
       var total_amount = self.get('transaction_fee') + self.get('delivery_fee') + self.get('system_fee');
       this.each(function(op) {
         total_amount += op.get('price') * op.get('quantity');
-      })
+      });
       self.set('total_amount', total_amount);
     });
     response.ordered_products = opc;
@@ -199,7 +226,6 @@ order.OrderedProduct = Backbone.Model.extend({
 order.OrderedProductItem = Backbone.Model.extend({
   defaults: {
     id: null,
-    price: 0,
     quantity: 0,
     product_item: null,
     seats: null
@@ -347,6 +373,7 @@ order.OrderFormView = Backbone.View.extend({
   alert: function(message, option) {
     var alert = $('<div class="alert" style="margin: 8px;" />').addClass(option);
     alert.append($('<ul/>').append($('<li/>').text(message)));
+    this.$el.find('.alert').remove();
     this.$el.append(alert);
   },
   show: function() {

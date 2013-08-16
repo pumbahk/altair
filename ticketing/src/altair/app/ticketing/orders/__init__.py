@@ -25,6 +25,7 @@ def includeme(config):
     config.add_route('orders.api.get'                   , '/api/get/')
     config.add_route('orders.api.get.html'              , '/api/get/html/')
     config.add_route('orders.api.edit'                  , '/api/edit/{order_id}')
+    config.add_route("orders.api.edit_confirm"          , "/api/edit_confirm")
     config.add_route('orders.api.performance'           , '/api/performance/{performance_id}')
     config.add_route("orders.api.performances"          , "/api/performances")
     config.add_route("orders.api.sales_segment_groups"  , "/api/sales_segment_groups")

@@ -1486,6 +1486,35 @@ class OrdersReserveView(BaseView):
             raise HTTPNotFound('order id %s is not found' % order_id)
         return self._get_order_dicts(order)
 
+    @view_config(route_name='orders.api.edit_confirm', request_method='POST', renderer='json')
+    def api_edit_confirm(self):
+        order_data = self.request.json_body
+        order_id = order_data.get('id')
+
+        order = Order.get(order_id, self.context.organization.id)
+        prev_data = self._get_order_dicts(order)
+        if order_data == prev_data:
+            raise HTTPBadRequest(body=json.dumps({
+                'message':u'変更がありません'
+            }))
+
+        # 手数料を再計算して返す
+        sales_segment = None
+        products = []
+        for op_data in order_data.get('ordered_products'):
+            if sales_segment is None:
+                sales_segment_id = op_data.get('sales_segment_id')
+                sales_segment = SalesSegment.query.filter_by(id=sales_segment_id).first()
+            product = Product.query.filter_by(id=op_data.get('product_id')).first()
+            products.append((product, op_data.get('quantity')))
+
+        order_data['transaction_fee'] = int(sales_segment.get_transaction_fee(order.payment_delivery_pair, products))
+        order_data['delivery_fee'] = int(sales_segment.get_delivery_fee(order.payment_delivery_pair, products))
+        order_data['system_fee'] = int(order.payment_delivery_pair.system_fee)
+        order_data['total_amount'] = int(sales_segment.get_amount(order.payment_delivery_pair, products))
+
+        return order_data
+
     @view_config(route_name='orders.api.edit', request_method='PUT', renderer='json')
     def api_edit_put(self):
         order_id = self.request.matchdict.get('order_id', 0)
@@ -1497,6 +1526,13 @@ class OrdersReserveView(BaseView):
 
         order_data = MultiDict(self.request.json_body)
         logger.info(order_data)
+
+        # phase1: 合計金額が変わる変更はNG、ただしインナー予約のみOK、Sejへの変更リクエストは行う
+        # phase2: 合計金額が変わる変更もOK、決済の減額再処理を行う
+        if order.channel != ChannelEnum.INNER.v or order.total_amount != order_data.get('total_amount'):
+            raise HTTPBadRequest(body=json.dumps({
+                'message':u'金額は変更できません'
+            }))
 
         op_zip = itertools.izip(order.items, edit_order.items)
         for i, (op, eop) in enumerate(op_zip):
@@ -1546,17 +1582,17 @@ class OrdersReserveView(BaseView):
                 logger.info("stock_statuses %s" % stock_statuses)
                 logger.info('seats %s' % seats)
 
-                eopi.quantity = int(opi_data.get('quantity'))
                 eopi.price = int(opi_data.get('product_item').get('price'))
+                eopi.quantity = int(opi_data.get('quantity'))
+                #Todo:
                 #product_item = ProductItem
                 #eopi.product_item_id = product_item.id
 
-            # 座席がないなら商品削除
+            # 商品明細がないなら商品削除
             if op_data.get('quantity') == 0:
                 logger.info('delete ordered_product %s' % op_data.get('id'))
                 del_product = edit_order.items.pop(i)
                 del_product.delete()
-                continue
 
         # 商品追加
         for op_data in order_data.get('ordered_products'):
@@ -1573,6 +1609,7 @@ class OrdersReserveView(BaseView):
                         for opi_data in op_data.get('ordered_product_items'):
                             if opi_data.get('seats'):
                                 seats_data = opi_data.get('seats')
+                                #1Product複数座席ProductItemでうまくいかない？
                                 break
                         product_requires = [(product, len(seats_data))]
                         stock_statuses = stocker.take_stock(order.performance_id, product_requires)
