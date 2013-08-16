@@ -91,6 +91,7 @@ class FetcherFromNetwork(object):
             file_path = self._split_page_prefix(file_path)
             # file_path = self.convert_extname(file_path)
             url_parts = "/{0}/{1}/{2}/{3}".format(self.request.organization.short_name, self.static_page.prefix, self.static_page.id, file_path)
+            logger.debug("url:{url}".format(url=self.utility._get_url(url_parts)))
             io = urllib.urlopen(self.utility._get_url(url_parts))
         try:
             size = int(io.info().get("Content-Length", "0"))

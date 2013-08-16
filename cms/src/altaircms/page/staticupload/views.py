@@ -339,7 +339,7 @@ class StaticPageView(BaseView):
         writename = static_directory.get_writename(static_page)
         with zipupload.current_directory(static_directory.get_rootname(static_page)):
             zipupload.create_zipfile_from_directory(".", writename)
-        return download_response(path=writename,request=self.request, filename="{0}.zip".format(static_page.label)) 
+        return download_response(path=writename,request=self.request, filename="{0}.zip".format(static_page.name)) 
 
     @view_config(match_param="action=upload", request_param="zipfile", request_method="POST")
     def upload(self):
