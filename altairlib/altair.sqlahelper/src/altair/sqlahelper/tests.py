@@ -3,8 +3,10 @@ from pyramid import testing
 from .testing import DummyMaker
 
 class DummySession(object):
-    def __init__(self):
+    def __init__(self, *args, **kwargs):
         self.called = []
+        self.args = args
+        self.kwargs = kwargs
 
     def __call__(self):
         return self
@@ -85,6 +87,14 @@ class register_sessionmakersTests(unittest.TestCase):
         self._callFUT(self.config, urls)
         sessionmaker = self.config.registry.queryUtility(ISessionMaker, name='testing')
         self.assertEqual(str(sessionmaker().bind.url), 'sqlite:///')
+
+    def test_custom_session_class(self):
+        from .interfaces import ISessionMaker
+        urls = {'testing': {'url': 'sqlite:///', 'session_class': __name__ + '.DummySession'}}
+        self._callFUT(self.config, urls)
+        sessionmaker = self.config.registry.queryUtility(ISessionMaker, name='testing')
+        self.assertIsInstance(sessionmaker(), DummySession)
+        
 
 
 class get_db_sessionTests(unittest.TestCase):
