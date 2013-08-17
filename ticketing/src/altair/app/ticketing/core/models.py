@@ -53,7 +53,7 @@ logger = logging.getLogger(__name__)
 
 class Seat_SeatAdjacency(Base):
     __tablename__ = 'Seat_SeatAdjacency2'
-    l0_id = Column(String(255), ForeignKey('Seat.l0_id'), primary_key=True)
+    l0_id = Column(Unicode(48), ForeignKey('Seat.l0_id'), primary_key=True)
     seat_adjacency_id = Column(Identifier, ForeignKey('SeatAdjacency.id', ondelete='CASCADE'), primary_key=True, nullable=False)
 
 @implementer(ITentativeVenueSite)
@@ -77,7 +77,7 @@ class Site(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 class VenueArea_group_l0_id(Base):
     __tablename__   = "VenueArea_group_l0_id"
     venue_id = Column(Identifier, ForeignKey('Venue.id', ondelete='CASCADE'), primary_key=True, nullable=False)
-    group_l0_id = Column(String(255), ForeignKey('Seat.group_l0_id', onupdate=None, ondelete='CASCADE'), primary_key=True, nullable=True)
+    group_l0_id = Column(Unicode(48), ForeignKey('Seat.group_l0_id', onupdate=None, ondelete='CASCADE'), primary_key=True, nullable=True)
     venue_area_id = Column(Identifier, ForeignKey('VenueArea.id', ondelete='CASCADE'), index=True, primary_key=True, nullable=False)
     venue = relationship('Venue')
 
@@ -233,14 +233,14 @@ class Seat(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__   = "Seat"
 
     id              = Column(Identifier, primary_key=True)
-    l0_id           = Column(String(255))
+    l0_id           = Column(Unicode(48))
     name            = Column(Unicode(50), nullable=False, default=u"", server_default=u"")
     seat_no         = Column(String(255))
     stock_id        = Column(Identifier, ForeignKey('Stock.id'))
 
     venue_id        = Column(Identifier, ForeignKey('Venue.id', ondelete='CASCADE'), nullable=False)
-    row_l0_id       = Column(String(255), index=True)
-    group_l0_id     = Column(String(255), index=True)
+    row_l0_id       = Column(Unicode(48), index=True)
+    group_l0_id     = Column(Unicode(48), index=True)
 
     venue           = relationship("Venue", backref='seats')
     stock           = relationship("Stock", backref='seats')
