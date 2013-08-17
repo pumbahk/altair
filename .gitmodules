@@ -5,3 +5,4 @@
 [submodule "cms/src/altaircms/templates/front/layout"]
 	path = cms/src/altaircms/templates/front/layout
 	url = git@github.com:ticketstar/altair-cms-templates.git
+    ignore = untracked
