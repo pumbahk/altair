@@ -48,7 +48,7 @@ class StaticPageDirectoryRendererFromDB(object):
         return self.request.route_path("static_page_display", 
                                        static_page_id=self.pageset.id, 
                                        child_id=self.page.id, 
-                                       path="{0}/{1}".format(self.pageset.url, path)).replace("%2F", "/")
+                                       path="{0}/{1}".format(self.pageset.hash, path)).replace("%2F", "/")
 
     def delete_file_url(self, path):
         part = path.replace(self.root, "")

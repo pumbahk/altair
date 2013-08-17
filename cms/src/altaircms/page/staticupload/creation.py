@@ -1,4 +1,5 @@
 #-*- coding:utf-8 -*-
+import uuid
 import os
 import shutil #todo:move
 import logging
@@ -89,7 +90,8 @@ class StaticPageCreate(object):
     def create_model(self):
         data = self.data
         pageset = StaticPageSet(url=data["name"], 
-                                name=data["name"])
+                                name=data["label"], 
+                                hash=uuid.uuid4().hex)
         static_page = StaticPage(name=data["name"],
                                  pageset=pageset, 
                                  layout=data["layout"],
