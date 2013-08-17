@@ -46,15 +46,11 @@ def register_sessionmakers(config, urls):
         engine = create_engine(url, echo=echo,
                                pool_recycle=0)
 
-<<<<<<< HEAD
-        Session = sessionmaker(bind=engine, class_=LogicalDeletableSession)
-=======
         kwargs = {}
         if session_class_name is not None:
             kwargs['class_'] = config.maybe_dotted(session_class_name)
 
         Session = sessionmaker(bind=engine, **kwargs)
->>>>>>> develop
         directlyProvides(Session, ISessionMaker)
         config.registry.registerUtility(Session, name=name)
 
