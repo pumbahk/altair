@@ -45,6 +45,7 @@ seq = h.paginate(request, pages, item_count=page_count, items_per_page=50)
   <thead>
 	<tr>
 	  <th>名前</th>
+	  <th>トップページ</th>
 	  <th>生成日時</th>
 	  <th>更新日時</th>
 	</tr>
@@ -53,7 +54,10 @@ seq = h.paginate(request, pages, item_count=page_count, items_per_page=50)
     %for page in seq.paginated():
       <tr>
         <td> 
-		  <a href="${request.route_path("static_pageset", pagetype=pagetype.name, action="detail", static_page_id=page.id)}">${page.name}</a>
+		      <a href="${request.route_path("static_pageset", pagetype=pagetype.name, action="detail", static_page_id=page.id)}">${page.name}</a>
+        </td>
+        <td> 
+		      <a href="${request.route_path("static_pageset", pagetype=pagetype.name, action="preview", static_page_id=page.id, _query=dict(path="index.html"))}">${page.url}/index.html</a>
         </td>
 		<td>${h.base.jdatetime(page.created_at)}</td>
 		<td>${h.base.jdatetime(page.updated_at)}</td>

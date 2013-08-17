@@ -115,7 +115,6 @@ def includeme(config):
 
     ## subscriber
     config.add_subscriber(".subscribers.after_delete_static_pageset", ".subscribers.StaticPageSetDelete")
-    config.add_subscriber(".subscribers.after_update_static_pageset", ".subscribers.StaticPageSetUpdate")
     config.add_subscriber(".subscribers.update_pageset_genretag", ".subscribers.PageSetUpdate")
     config.add_subscriber(".subscribers.event_term_bubbling_update", ".subscribers.PerformanceCreate")
     config.add_subscriber(".subscribers.event_term_bubbling_update", ".subscribers.PerformanceUpdate")

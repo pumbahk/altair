@@ -162,15 +162,6 @@ def sales_term_bubbling_update(self):
 def event_term_bubbling_update(self):
     EventTermSummalize(self.request).summalize(self.obj).bubble()
 
-def after_update_static_pageset(self):
-    if not self.obj.url and hasattr(self.request, "_static_page_prefix"):
-        self.obj.url = self.request._static_page_
-
-    if self.obj.url != self.request._static_page_prefix:
-        utility = get_static_page_utility(self.request)
-        utility.rename(utility.get_toplevelname(self.obj, name=self.request._static_page_prefix),
-                       utility.get_toplevelname(self.obj))
-
 def after_delete_static_pageset(self):
     for p in self.obj.pages:
         DBSession.delete(p)
