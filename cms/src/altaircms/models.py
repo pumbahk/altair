@@ -23,7 +23,6 @@ from altaircms.seeds.saleskind import SALESKIND_CHOICES
 class WithOrganizationMixin(object):
     organization_id = sa.Column(sa.Integer, index=True) ## need FK?(organization.id)
 
-
 def initialize_sql(engine, dropall=False):
 
     DBSession.remove()
