@@ -82,19 +82,28 @@ order.OrderFormPresenter.prototype = {
     var selection = venueEditorRoot.venueeditor('selection');
     var opi = ordered_product_item;
     var seats = opi.get('seats');
+    var ensure_seats = self.order.get('ensure_seats');
+    var add_flag = false;
     selection.each(function(seat) {
-      if (!seats.get(seat)) {
+      var stock_type_id = seat.get('stock').get('stockType').get('id');
+      if (stock_type_id != opi.get('product_item').get('stock_type_id')) {
+        self.showMessage('席種が異なるので追加できません', 'alert-warning');
+        return false;
+      }
+      if (!seats.get(seat) && !ensure_seats.get(seat)) {
         seats.push(new order.Seat({
           'id':seat.get('id'),
           'name':seat.get('name'),
-          'stock_type_id':seat.get('stock').get('stockType').get('id')
+          'stock_type_id':stock_type_id
         }));
-        var ensure_seats = self.order.get('ensure_seats');
-        if (!ensure_seats.get(seat)) ensure_seats.push(seat);
+        ensure_seats.push(seat);
+        add_flag = true;
       }
     });
-    opi.trigger('change:seats');
-    self.showForm();
+    if (add_flag) {
+      opi.trigger('change:seats');
+      self.showForm();
+    }
   },
   deleteSeat: function(seat) {
     var self = this;
@@ -271,6 +280,7 @@ order.ProductItem = Backbone.Model.extend({
   defaults: {
     quantity: 1,
     stock_holder_name: null,
+    stock_type_id: null,
     is_seat: false
   }
 });
@@ -476,7 +486,9 @@ order.OrderProductFormView = Backbone.View.extend({
         var p = ss.get('products').get($(this).val());
         op.set('product_id', p.get('id'));
         op.set('price', p.get('price'));
-        self.presenter.showForm();
+        var opi = op.get('ordered_product_items').at(0);
+        var product_item = new order.ProductItem({stock_type_id: p.get('stock_type_id')});
+        opi.set('product_item', product_item);
       });
       product_name.append(product_list);
     }

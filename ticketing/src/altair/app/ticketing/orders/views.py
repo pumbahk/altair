@@ -1460,6 +1460,7 @@ class OrdersReserveView(BaseView):
                         price=int(opi.product_item.price),
                         quantity=opi.product_item.quantity,
                         stock_holder_name=opi.product_item.stock.stock_holder.name,
+                        stock_type_id=opi.product_item.stock.stock_type_id,
                         is_seat=opi.product_item.stock.stock_type.is_seat,
                     ),
                     seats=[
