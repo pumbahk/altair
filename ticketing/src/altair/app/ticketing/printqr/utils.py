@@ -119,14 +119,17 @@ def svg_data_from_token(ordered_product_item_token):
         u'data': json_safe_coerce(pair[1])
         }
     producer = ApplicableTicketsProducer.from_bundle(ordered_product_item_token.item.product_item.ticket_bundle)
-    ticket_template = producer.qr_only_tickets().next()
-
-    if ticket_template is None:
-        logger.info("*printqr avg_data_from_token ticket_template=None (token_id=%s)" % ordered_product_item_token.id)
-    else:
-        retval_data[u'ticket_template_name'] = ticket_template.name
-        retval_data[u'ticket_template_id'] = ticket_template.id
-    return [retval_data]
+    
+    data_list = []
+    for ticket_template in producer.qr_only_tickets():
+        if ticket_template is None:
+            logger.info("*printqr avg_data_from_token ticket_template=None (token_id=%s)" % ordered_product_item_token.id)
+        else:
+            data = retval_data.copy()
+            data[u'ticket_template_name'] = ticket_template.name
+            data[u'ticket_template_id'] = ticket_template.id
+            data_list.append(data)
+    return data_list
 
 def svg_data_from_token_with_descinfo(history, ordered_product_item_token):
     pair = build_dict_from_ordered_product_item_token(ordered_product_item_token)
@@ -149,15 +152,17 @@ def svg_data_from_token_with_descinfo(history, ordered_product_item_token):
             u"printed_at": str(ordered_product_item_token.printed_at) if ordered_product_item_token.printed_at else None, 
             u"refreshed_at": str(ordered_product_item_token.refreshed_at) if ordered_product_item_token.refreshed_at else None
             }
+    data_list = []
     producer = ApplicableTicketsProducer.from_bundle(item.product_item.ticket_bundle)
-    ticket_template = producer.qr_only_tickets().next()
-
-    if ticket_template is None:
-        logger.error("*printqr avg_data_from_token ticket_template=None (token_id=%s)" % ordered_product_item_token.id)
-    else:
-        retval_data[u'ticket_template_name'] = ticket_template.name
-        retval_data[u'ticket_template_id'] = ticket_template.id
-    return [retval_data]
+    for ticket_template in producer.qr_only_tickets():
+        if ticket_template is None:
+            logger.error("*printqr avg_data_from_token ticket_template=None (token_id=%s)" % ordered_product_item_token.id)
+        else:
+            data = retval_data.copy()
+            data[u'ticket_template_name'] = ticket_template.name
+            data[u'ticket_template_id'] = ticket_template.id
+            data_list.append(data)
+    return data_list
 
 def history_from_token(request, operator_id, order_id, token):
     return TicketPrintHistory(
