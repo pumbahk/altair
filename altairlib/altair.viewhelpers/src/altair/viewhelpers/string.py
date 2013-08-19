@@ -15,8 +15,10 @@ def truncate(s, size, ellipsis=u'...'):
 def truncate_eaw(s, width, ellipsis=u'...'):
     l = 0
     c = 0
-    for c in unicode(s):
-        l += unicodedata.east_asian_width(c)
+    for uch in unicode(s):
+        eawcode = unicodedata.east_asian_width(uch)
+        eawsize = 1 if eawcode in ('Na', 'H') else 2 # Na and H is harf-width char, otherwise full-width char.
+        l += eawsize
         if l > width:
             break
         c += 1
