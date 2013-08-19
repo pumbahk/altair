@@ -1,0 +1,53 @@
+<%page args="orders, period_from, period_to" />
+
+不正の可能性がある予約を検知しました。
+
+このアラートは以下の条件で検出しています。
+<ul>
+  <li>クレジットカード決済</li>
+  <li>セブンイレブン発券</li>
+  <li>1件の予約で7枚以上</li>
+  <li>同一人物(user_idまたはメールアドレス)による同一公演の予約が2件以上</li>
+  <li>${period_from}〜${period_to}の予約</li>
+</ul>
+
+<table border="1" bordercolor="#888" width="98%" style="border-collapse:collapse;">
+  <tr style="background-color:#ddd;">
+    <th>order_no</th>
+    <th>full_name</th>
+    <th>email</th>
+    <th>zip</th>
+    <th>prefecture</th>
+    <th>city</th>
+    <th>address_1</th>
+    <th>tel_1</th>
+    <th>Event.id</th>
+    <th>title</th>
+    <th>Performance.id</th>
+    <th>name</th>
+    <th>start_on</th>
+    <th>created_at</th>
+    <th>total_amount</th>
+    <th>card_brand</th>
+  </tr>
+  % for order in orders:
+  <tr>
+    <td>${order.order_no}</td>
+    <td>${order.shipping_address.full_name}</td>
+    <td>${order.shipping_address.email}</td>
+    <td>${order.shipping_address.zip}</td>
+    <td>${order.shipping_address.prefecture}</td>
+    <td>${order.shipping_address.city}</td>
+    <td>${order.shipping_address.address_1}</td>
+    <td>${order.shipping_address.tel_1}</td>
+    <td>${order.performance.event.id}</td>
+    <td>${order.performance.event.title}</td>
+    <td>${order.performance.id}</td>
+    <td>${order.performance.name}</td>
+    <td>${order.performance.start_on}</td>
+    <td>${order.created_at}</td>
+    <td>${order.total_amount}</td>
+    <td>${order.card_brand}</td>
+  </tr>
+  % endfor
+</table>
