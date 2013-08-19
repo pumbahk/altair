@@ -89,7 +89,8 @@ order.OrderFormPresenter.prototype = {
           'name':seat.get('name'),
           'stock_type_id':seat.get('stock').get('stockType').get('id')
         }));
-        seat.set('selected', false);
+        var ensure_seats = self.order.get('ensure_seats');
+        if (!ensure_seats.get(seat)) ensure_seats.push(seat);
       }
     });
     opi.trigger('change:seats');
@@ -97,11 +98,8 @@ order.OrderFormPresenter.prototype = {
   },
   deleteSeat: function(seat) {
     var self = this;
-    var selection = venueEditorRoot.venueeditor('selection');
-    selection.each(function(s) {
-      if (s.get('id') == seat.get('id')) s.set('selected', false);
-    });
     seat.collection.remove(seat);
+    self.order.get('ensure_seats').remove(seat);
     self.showForm();
   },
   addProduct: function() {
@@ -112,6 +110,10 @@ order.OrderFormPresenter.prototype = {
   },
   close: function() {
     var self = this;
+    var ensure_seats = self.order.get('ensure_seats');
+    ensure_seats.each(function(seat) {
+      ensure_seats.remove(seat);
+    });
     self.view.close();
     $('.btn-edit-order, #orderProduct').show();
     $('.btn-confirm, .btn-save-order, .btn-close').hide();
@@ -171,7 +173,8 @@ order.Order = Backbone.Model.extend({
     delivery_fee: 0,
     system_fee: 0,
     total_amount: 0,
-    ordered_products: null
+    ordered_products: null,
+    ensure_seats: null
   },
   parse: function (response) {
     var self = this;
@@ -187,6 +190,17 @@ order.Order = Backbone.Model.extend({
       self.set('total_amount', total_amount);
     });
     response.ordered_products = opc;
+
+    var ensure_seats = new order.EnsureSeatCollection();
+    ensure_seats.on('add', function(seat) {
+      seat.set('selected', false);
+      seat.set('selectable', false);
+    });
+    ensure_seats.on('remove', function(seat) {
+      seat.set('selectable', true);
+    });
+    response.ensure_seats = ensure_seats;
+
     return response;
   }
 });
@@ -350,6 +364,10 @@ order.StockTypeCollection = Backbone.Collection.extend({
 
 order.ProductCollection = Backbone.Collection.extend({
   model: order.Product
+});
+
+order.EnsureSeatCollection = Backbone.Collection.extend({
+  model: order.Seat
 });
 
 
