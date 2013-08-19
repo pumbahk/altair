@@ -161,6 +161,7 @@ def svg_data_from_token_with_descinfo(history, ordered_product_item_token):
             data = retval_data.copy()
             data[u'ticket_template_name'] = ticket_template.name
             data[u'ticket_template_id'] = ticket_template.id
+            data[u'ticket_name']= u"{}--{}".format(data[u"ticket_name"], ticket_template.name)
             data_list.append(data)
     return data_list
 
