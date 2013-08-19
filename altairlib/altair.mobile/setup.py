@@ -33,6 +33,7 @@ setup(name='altair.mobile',
       namespace_packages=['altair'],
       include_package_data=True,
       zip_safe=False,
+      test_suite='altair.mobile.tests',
       install_requires=[
           "setuptools>0.7",
           'radix',
