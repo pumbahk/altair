@@ -65,6 +65,7 @@ class MobileIndexView(IndexViewMixin):
                 # performance_id で指定される Performance は
                 # available_sales_segments に関連するものでなければならない
 
+                self.context.performance_id = performance_id
                 for _sales_segment in self.context.available_sales_segments:
                     if _sales_segment.performance_id == performance_id:
                         sales_segment = _sales_segment
