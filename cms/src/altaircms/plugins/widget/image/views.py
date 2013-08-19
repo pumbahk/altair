@@ -5,6 +5,7 @@ from . import forms
 from altaircms.formhelpers import AlignChoiceField
 from webob.multidict import MultiDict
 import logging
+from altaircms import helpers
 import json
 logger = logging.getLogger(__name__)
 
@@ -81,17 +82,18 @@ class ImageWidgetView(object):
         else:
             assets = group_by_n(self.request.context.get_asset_query(), N)
 
-        import logging
-        logger = logging.getLogger(__file__)
-        logger.error("JJJJJSOSSOSOSOSOS")
-
-
+        assets_dict = {}
         for groupNo, group in enumerate(assets):
-            logger.error("groupNo =" + str(groupNo))
+            img_list = []
             for img in group:
-                logger.error("imgID =" + str(img.id))
+                img_info = {
+                    "id":img.id ,
+                    "title":img.title ,
+                    "width":img.width ,
+                    "height":img.height ,
+                    "thumbnail_path":helpers.asset.rendering_object(self.request,img).thumbnail_path
+                }
+                img_list.append(img_info)
+            assets_dict.update({groupNo:img_list})
 
-        return [
-            100,
-            200,
-        ]
+        return assets_dict

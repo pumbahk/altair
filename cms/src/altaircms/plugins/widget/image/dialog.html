@@ -11,14 +11,46 @@
     });
 
     function successSearch(data) {
-        alert(data);
+        //$(".items").empty();
+        $(".scrollable").empty();
+        //$(".scrollable .items").empty();
+
+        console.log(data);
+        for (var groupNo in data){
+            //$(".items").append("<div class='group' id='group_" + groupNo + "'></div>");
+
+
+            $(".scrollable").append("<div class='items'></div>");
+            $(".scrollable .items").append("<div class='group' id='group_" + groupNo + "'></div>");
+
+            $("#group_" + groupNo).append("<div class='item'></div>");
+            for (var itemNo in data[groupNo]) {
+                console.log(itemNo)
+                var id = data[groupNo][itemNo]['id'];
+                var title = data[groupNo][itemNo]['title'];
+                var width = data[groupNo][itemNo]['width'];
+                var height = data[groupNo][itemNo]['height'];
+                var thumbnail_path = data[groupNo][itemNo]['thumbnail_path'];
+                $("#group_" + groupNo + " .item").append("<img pk='" + id + "' src='" + thumbnail_path + "' alt='' />");
+                $("#group_" + groupNo + " .item").append("<p>title:" + title + "width:" + width + "height:" + height + "</p>");
+            }
+        }
+
+
+        $(".scrollable").find("img").click(function(){
+            selected = this;
+            $(".scrollable").find(".managed").removeClass("managed")
+            we.attach_managed(selected);
+        });
+
     }
 </script>
+
 
 ## N個ごとに区切られたitreratorを受け取り、divで区切って出力(scrollのため)
 <%def name="render(assets)">
   % for i, g in enumerate(assets):
-  <div class="group" id="group:${i}">
+  <div class="group" id="group_${i}">
      % for image in g:
        <div class="item">
          <img pk="${image.id}" src="${h.asset.rendering_object(request,image).thumbnail_path}" alt="" class="${"managed" if widget.asset==image else ""}"/>

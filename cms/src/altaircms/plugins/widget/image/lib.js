@@ -45,7 +45,7 @@ if(!widget){
                     return false;
                 });
                 if(!!selected.length > 0){
-                    var k = selected.parents(".group").eq(0).attr("id").split(":")[1];
+                    var k = selected.parents(".group").eq(0).attr("id").split("_")[1];
                     root.data("scrollable").move(k, 1);
                 }
             })();
