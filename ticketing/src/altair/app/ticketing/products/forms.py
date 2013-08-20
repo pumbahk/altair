@@ -4,7 +4,7 @@ from decimal import Decimal
 
 from wtforms import Form
 from wtforms import TextField, SelectField, IntegerField, DecimalField, SelectMultipleField, HiddenField, BooleanField
-from wtforms.validators import Length, NumberRange, EqualTo, Optional, ValidationError, JIS0208
+from wtforms.validators import Length, NumberRange, EqualTo, Optional, ValidationError
 from wtforms.widgets import CheckboxInput, TextArea
 from sqlalchemy.sql import func
 
@@ -26,6 +26,7 @@ from altair.formhelpers.fields import (
 from altair.formhelpers.widgets import (
     CheckboxMultipleSelect,
     )
+from altair.formhelpers.validators import JISX0208
 from altair.app.ticketing.core.models import SalesSegment, SalesSegmentGroup, Product, ProductItem, StockHolder, StockType, Stock, Performance, TicketBundle
 from altair.app.ticketing.payments.plugins import SEJ_DELIVERY_PLUGIN_ID
 from altair.app.ticketing.helpers import label_text_for
