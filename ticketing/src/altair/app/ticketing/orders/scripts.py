@@ -119,7 +119,7 @@ def detect_fraud():
 
     now = datetime.now()
     period_from = args.f if args.f else now.strftime('%Y-%m-%d %H:%M')
-    period_to = args.t if args.t else (now - timedelta(days=1)).strftime('%Y-%m-%d %H:%M')
+    period_to = args.t if args.t else (now - timedelta(days=2)).strftime('%Y-%m-%d %H:%M')
 
     logging.info('start detect_fraud batch')
 
@@ -130,10 +130,10 @@ def detect_fraud():
     query = query.filter(PaymentMethod.payment_plugin_id==plugins.MULTICHECKOUT_PAYMENT_PLUGIN_ID)
     query = query.join(PaymentDeliveryMethodPair.delivery_method)
     query = query.filter(DeliveryMethod.delivery_plugin_id==plugins.SEJ_DELIVERY_PLUGIN_ID)
-    # 1件の注文で7枚以上
+    # 1件の注文で4枚以上
     query = query.join(Order.ordered_products)
     query = query.join(OrderedProduct.ordered_product_items)
-    query = query.group_by(Order.id).having(func.sum(OrderedProductItem.quantity) > 7)
+    query = query.group_by(Order.id).having(func.sum(OrderedProductItem.quantity) >= 4)
     query = query.with_entities(Order.id)
     # 指定期間
     query = query.filter(period_from<=Order.created_at, Order.created_at<=period_to)
@@ -150,7 +150,7 @@ def detect_fraud():
     if len(orders) > 0:
         settings = registry.settings
         sender = settings['mail.message.sender']
-        recipient = settings['mail.alert.recipient']
+        recipient = 'dev@ticketstar.jp,op@ticketstar.jp'
         subject = u'[alert] 不正予約'
         render_params = dict(orders=orders, period_from=period_from, period_to=period_to)
         html = render_to_response('altair.app.ticketing:templates/orders/_fraud_alert_mail.html', render_params, request=None)
