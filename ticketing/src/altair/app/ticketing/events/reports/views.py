@@ -33,7 +33,7 @@ class Reports(BaseView):
             'form_stock':ReportStockForm(),
             'form_stock_holder':ReportByStockHolderForm(event_id=event_id),
             'event':event,
-            'performances': event2performances(event),
+            'performances': event.performances,
         }
 
     @view_config(route_name='reports.sales', request_method='POST')
@@ -81,11 +81,14 @@ class Reports(BaseView):
                 'form_stock':f,
                 'form_stock_holder':ReportByStockHolderForm(event_id=event_id),
                 'event':event,
-                'performances': event2performances(event),
+                'performances': event.performances,
             }
 
         # CSVファイル生成
-        performanceids = request2performanceids(self.request)        
+        try:
+            performanceids = map(int, self.request.POST.getall('performance_id'))
+        except (ValueError, TypeError) as err:
+            raise HTTPNotFound('Performace id is illegal: {0}'.format(err.message))            
         exporter = reporting.export_for_stock_holder(event, stock_holders[0], f.report_type.data, performanceids=performanceids)
 
         # 出力ファイル名
@@ -123,11 +126,14 @@ class Reports(BaseView):
                 'form_stock':ReportStockForm(),
                 'form_stock_holder':f,
                 'event':event,
-                'performances': event2performances(event),
+                'performances': event.performances,
             }
 
         # CSVファイル生成
-        performanceids = request2performanceids(self.request)        
+        try:
+            performanceids = map(int, self.request.POST.getall('performance_id'))
+        except (ValueError, TypeError) as err:
+            raise HTTPNotFound('Performace id is illegal: {0}'.format(err.message))            
         exporter = reporting.export_for_stock_holder(event, stock_holder, f.report_type.data, performanceids=performanceids)
         
         # 出力ファイル名
@@ -142,14 +148,3 @@ class Reports(BaseView):
             ('Content-Disposition', 'attachment; filename=%s' % str(filename))
         ]
         return Response(exporter.as_string(), headers=headers)
-
-def request2performanceids(request):
-    params = request.params
-    try:
-        return [int(elm[1]) for elm in params.iteritems() if elm[0] == 'performance_id']
-    except (ValueError, TypeError):
-        raise
-
-def event2performances(event):
-    return Performance.query.filter(Performance.event_id==event.id).order_by('start_on').all()
-        
