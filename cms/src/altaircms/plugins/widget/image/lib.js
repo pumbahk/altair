@@ -29,12 +29,13 @@ if(!widget){
                 });
 
                 function successSearch(data) {
-                    $(".scrollable").empty();
                     var assets_data = data.assets_data;
                     var widget_asset_id = data.widget_asset_id;
 
+                    $(".scrollable").empty();
+                    $(".scrollable").append("<div class='items'></div>");
+
                     for (var groupNo in assets_data){
-                        $(".scrollable").append("<div class='items'></div>");
                         $(".scrollable .items").append("<div class='group' id='group_" + groupNo + "'></div>");
                         for (var itemNo in assets_data[groupNo]) {
                             $("#group_" + groupNo).append("<div class='item'></div>");
@@ -63,7 +64,6 @@ if(!widget){
 
                 addClickEvent();
                 moveSelectedItem();
-
             })();
 
         function addClickEvent() {
