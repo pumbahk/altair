@@ -4,7 +4,7 @@ from decimal import Decimal
 
 from wtforms import Form
 from wtforms import TextField, SelectField, IntegerField, DecimalField, SelectMultipleField, HiddenField, BooleanField
-from wtforms.validators import Length, NumberRange, EqualTo, Optional, ValidationError
+from wtforms.validators import Length, NumberRange, EqualTo, Optional, ValidationError, JIS0208
 from wtforms.widgets import CheckboxInput, TextArea
 from sqlalchemy.sql import func
 
@@ -73,13 +73,14 @@ class ProductForm(OurForm):
 
     id = HiddenField(
         label=label_text_for(Product.id),
-        validators=[Optional()],
+        validators=[Optional()],        
         )
     name = OurTextField(
         label=label_text_for(Product.name),
         validators=[
             Required(),
             Length(max=255, message=u'255文字以内で入力してください'),
+            JISX0208(),
             ]
         )
     price = OurDecimalField(
@@ -169,7 +170,8 @@ class ProductItemForm(OurForm):
         label=u'商品明細名',
         validators=[
             Required(),
-            Length(max=255, message=u'255文字以内で入力してください'),
+            Length(max=255, message=u'255文字以内で入力してください'), 
+            JISX0208(),           
             ]
     )
     product_item_price = OurDecimalField(
