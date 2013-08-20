@@ -11,38 +11,21 @@
     });
 
     function successSearch(data) {
-        //$(".items").empty();
         $(".scrollable").empty();
-        //$(".scrollable .items").empty();
-
-        console.log(data);
         for (var groupNo in data){
-            //$(".items").append("<div class='group' id='group_" + groupNo + "'></div>");
-
-
             $(".scrollable").append("<div class='items'></div>");
             $(".scrollable .items").append("<div class='group' id='group_" + groupNo + "'></div>");
-
-            $("#group_" + groupNo).append("<div class='item'></div>");
             for (var itemNo in data[groupNo]) {
-                console.log(itemNo)
+                $("#group_" + groupNo).append("<div class='item'></div>");
                 var id = data[groupNo][itemNo]['id'];
                 var title = data[groupNo][itemNo]['title'];
                 var width = data[groupNo][itemNo]['width'];
                 var height = data[groupNo][itemNo]['height'];
                 var thumbnail_path = data[groupNo][itemNo]['thumbnail_path'];
-                $("#group_" + groupNo + " .item").append("<img pk='" + id + "' src='" + thumbnail_path + "' alt='' />");
-                $("#group_" + groupNo + " .item").append("<p>title:" + title + "width:" + width + "height:" + height + "</p>");
+                $("#group_" + groupNo + " .item:eq(" + itemNo + ")").append("<img pk='" + id + "' src='" + thumbnail_path + "' alt='' />");
+                $("#group_" + groupNo + " .item:eq(" + itemNo + ")").append("<p>title:" + title + "width:" + width + "height:" + height + "</p>");
             }
         }
-
-
-        $(".scrollable").find("img").click(function(){
-            selected = this;
-            $(".scrollable").find(".managed").removeClass("managed")
-            we.attach_managed(selected);
-        });
-
     }
 </script>
 
