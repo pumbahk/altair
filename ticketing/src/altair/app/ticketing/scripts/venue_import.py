@@ -18,6 +18,7 @@ from altair.pyramid_assets import get_resolver
 from altair.pyramid_assets.interfaces import IWritableAssetDescriptor
 
 from altair.app.ticketing.utils import myurljoin
+from altair.formhelpers.validators import JISX0208
 
 io_encoding = locale.getpreferredencoding()
 
@@ -30,6 +31,9 @@ class FormatError(Exception):
     pass
 
 class LogicalError(Exception):
+    pass
+
+class ValidationError(Exception):
     pass
 
 def relativate(a, b):
@@ -140,10 +144,26 @@ class ObjectRetriever(object):
         return retval
 
     def __call__(self):
+        self.check_error_chars()
         objects = self.retrieve_si_objects([self.doc.getroot()])
         if len(objects) == 0:
             raise FormatError("No object defined in the root metadata element")
         return self.retrieve_si_objects([self.doc.getroot()])[0]
+
+    def check_error_chars(self):
+        error_chars = set([ch for ch in self.generate_fail_characters()])
+        if error_chars:
+            raise ValidationError('Cannot use characters: {0}'.format(error_chars))
+
+    def generate_fail_characters(self):
+        root = self.doc.getroot()
+        nodes = root.xpath('//si:object', namespaces={'si': SITE_INFO_NAMESPACE})
+        for node in nodes:
+            obj = self.create_si_object_from_node(node)            
+            if obj['class'] in ('Block', 'Seat'):
+                name = obj['properties']['name']
+                for ch in JISX0208.generate_error_chars(name):
+                    yield ch
 
 def import_tree(registry, update, organization, tree, file, bundle_base_url=None, venue_id=None, max_adjacency=None):
     # 論理削除をインストールする都合でコードの先頭でセッションが初期化

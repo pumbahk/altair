@@ -81,7 +81,7 @@ class ProductForm(OurForm):
         validators=[
             Required(),
             Length(max=255, message=u'255文字以内で入力してください'),
-            JISX0208(),
+            JISX0208,
             ]
         )
     price = OurDecimalField(
@@ -172,7 +172,7 @@ class ProductItemForm(OurForm):
         validators=[
             Required(),
             Length(max=255, message=u'255文字以内で入力してください'), 
-            JISX0208(),           
+            JISX0208,  
             ]
     )
     product_item_price = OurDecimalField(
