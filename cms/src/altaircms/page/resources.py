@@ -115,7 +115,6 @@ class PageResource(security.RootFactory):
         params = form.data
         for k, v in params.iteritems():
             setattr(page, k, v)
-        page.pageset.url = params["url"]
         self.add(page, flush=True)
         subscribers.notify_page_update(self.request, page, params)
         return page
