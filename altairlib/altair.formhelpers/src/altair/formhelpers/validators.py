@@ -96,15 +96,21 @@ class Charset(object):
         self.message = message or u'利用不可能な文字 (%(characters)s) が含まれています'
 
     def __call__(self, form, field):
-        assert isinstance(field.data, unicode)
         bad_chars = set()
-        for c in field.data:
-            try:
-                c.encode(self.encoding)
-            except UnicodeEncodeError:
-                bad_chars.add(c)
+        bad_chars = self.get_error_chars(field.data)
         if bad_chars:
             raise validators.ValidationError(field.gettext(self.message) % dict(characters=u'「' + u'」「'.join(bad_chars) + u'」'))
+
+    def get_error_chars(self, *args, **kwds):
+        return [ch for ch in self.generate_error_chars(*args, **kwds)]
+
+    def generate_error_chars(self, data):
+        assert isinstance(data, unicode)        
+        for c in data:
+                try:
+                    c.encode(self.encoding)
+                except UnicodeEncodeError:
+                    yield c
 
 JISX0208 = Charset('Shift_JIS')
 CP932 = Charset('CP932')
