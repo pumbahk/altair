@@ -33,7 +33,7 @@ class Reports(BaseView):
             'form_stock':ReportStockForm(),
             'form_stock_holder':ReportByStockHolderForm(event_id=event_id),
             'event':event,
-            'performances': event.performances,,
+            'performances': event.performances,
         }
 
     @view_config(route_name='reports.sales', request_method='POST')
@@ -85,7 +85,10 @@ class Reports(BaseView):
             }
 
         # CSVファイル生成
-        performanceids = self.request.POST.getall('performance_id')
+        try:
+            performanceids = map(int, self.request.POST.getall('performance_id'))
+        except (ValueError, TypeError) as err:
+            raise HTTPNotFound('Performace id is illegal: {0}'.format(err.message))            
         exporter = reporting.export_for_stock_holder(event, stock_holders[0], f.report_type.data, performanceids=performanceids)
 
         # 出力ファイル名
@@ -127,7 +130,10 @@ class Reports(BaseView):
             }
 
         # CSVファイル生成
-        performanceids = self.request.POST.getall('performance_id')
+        try:
+            performanceids = map(int, self.request.POST.getall('performance_id'))
+        except (ValueError, TypeError) as err:
+            raise HTTPNotFound('Performace id is illegal: {0}'.format(err.message))            
         exporter = reporting.export_for_stock_holder(event, stock_holder, f.report_type.data, performanceids=performanceids)
         
         # 出力ファイル名
