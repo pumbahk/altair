@@ -59,7 +59,8 @@ class ImageWidgetView(object):
     def dialog(self):
         N = 4
         assets = group_by_n(self.request.context.get_asset_query(), N)
-        widget = self.request.context.get_widget(self.request.GET.get("pk"))
+        pk = self.request.GET.get("pk")
+        widget = self.request.context.get_widget(pk)
 
         if widget.width == 0:
             widget.width = ""
@@ -68,11 +69,12 @@ class ImageWidgetView(object):
         params = widget.to_dict()
         params.update(widget.attributes or {})      
         form = forms.ImageInfoForm(**AlignChoiceField.normalize_params(params))
-        return {"assets": assets, "form": form, "widget": widget}
+        return {"assets": assets, "form": form, "widget": widget, "pk": pk}
 
 
     @view_config(route_name="image_widget_search", renderer="json", request_method="POST")
     def updates_view(self):
+        pk = self.request.POST['pk']
         search_word = self.request.POST['search_word']
 
         N = 4
@@ -96,4 +98,9 @@ class ImageWidgetView(object):
                 img_list.append(img_info)
             assets_dict.update({groupNo:img_list})
 
-        return assets_dict
+        widget = self.request.context.get_widget(pk)
+
+        return {
+            'widget_asset_id': widget.asset_id,
+            'assets_data': assets_dict
+        }

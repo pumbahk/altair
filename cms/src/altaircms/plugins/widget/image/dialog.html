@@ -3,32 +3,6 @@
 <script src=${request.static_url('altaircms:static/js/jquery.form.js')}></script>
 <link rel="stylesheet" type="text/css" href=${request.static_url('altaircms:static/smartphone/css/jquery-ui-1.9.2.custom.min.css')} />
 <link rel="stylesheet" type="text/css" href="/plugins/static/css/widget/lib/image.css">
-<script>
-    $('#imgtabs').tabs();
-
-    $(document).ready(function() {
-        $('#search_form').ajaxForm({dataType: 'json', success: successSearch});
-    });
-
-    function successSearch(data) {
-        $(".scrollable").empty();
-        for (var groupNo in data){
-            $(".scrollable").append("<div class='items'></div>");
-            $(".scrollable .items").append("<div class='group' id='group_" + groupNo + "'></div>");
-            for (var itemNo in data[groupNo]) {
-                $("#group_" + groupNo).append("<div class='item'></div>");
-                var id = data[groupNo][itemNo]['id'];
-                var title = data[groupNo][itemNo]['title'];
-                var width = data[groupNo][itemNo]['width'];
-                var height = data[groupNo][itemNo]['height'];
-                var thumbnail_path = data[groupNo][itemNo]['thumbnail_path'];
-                $("#group_" + groupNo + " .item:eq(" + itemNo + ")").append("<img pk='" + id + "' src='" + thumbnail_path + "' alt='' />");
-                $("#group_" + groupNo + " .item:eq(" + itemNo + ")").append("<p>title:" + title + "width:" + width + "height:" + height + "</p>");
-            }
-        }
-    }
-</script>
-
 
 ## N個ごとに区切られたitreratorを受け取り、divで区切って出力(scrollのため)
 <%def name="render(assets)">
@@ -56,6 +30,7 @@
   <div id="image_tab" style="height: 350px">
     <form id="search_form" action="${request.route_path('image_widget_search')}" method="POST">
       検索文字列<br/>
+      <input type="hidden" name="pk" value="${pk}"/>
       <input type="text" name="search_word" value=""/><input type="submit" value="検索" width="20px">
     </form>
     <button type="button" id="image_submit">登録</button>

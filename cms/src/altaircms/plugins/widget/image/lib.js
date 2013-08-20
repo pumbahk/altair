@@ -23,32 +23,75 @@ if(!widget){
             10, 1.43, 15, 
             function(){return $(".scrollable")}, 
             function(){
+
+                $(document).ready(function() {
+                    $('#search_form').ajaxForm({dataType: 'json', success: successSearch});
+                });
+
+                function successSearch(data) {
+                    $(".scrollable").empty();
+                    var assets_data = data.assets_data;
+                    var widget_asset_id = data.widget_asset_id;
+
+                    for (var groupNo in assets_data){
+                        $(".scrollable").append("<div class='items'></div>");
+                        $(".scrollable .items").append("<div class='group' id='group_" + groupNo + "'></div>");
+                        for (var itemNo in assets_data[groupNo]) {
+                            $("#group_" + groupNo).append("<div class='item'></div>");
+                            var id = assets_data[groupNo][itemNo]['id'];
+                            var title = assets_data[groupNo][itemNo]['title'];
+                            var width = assets_data[groupNo][itemNo]['width'];
+                            var height = assets_data[groupNo][itemNo]['height'];
+                            var thumbnail_path = assets_data[groupNo][itemNo]['thumbnail_path'];
+                            if (id == widget_asset_id) {
+                                $("#group_" + groupNo + " .item:eq(" + itemNo + ")").append("<img pk='" + id + "' src='" + thumbnail_path + "' alt='' class='managed' />");
+                            } else {
+                                $("#group_" + groupNo + " .item:eq(" + itemNo + ")").append("<img pk='" + id + "' src='" + thumbnail_path + "' alt='' />");
+                            }
+                            $("#group_" + groupNo + " .item:eq(" + itemNo + ")").append("<p>title:" + title + "width:" + width + "height:" + height + "</p>");
+                        }
+                    }
+                    addClickEvent();
+                    moveSelectedItem();
+                }
+
+                $('#imgtabs').tabs();
+
                 $("#image_submit").click(function(){
                     we.finish_dialog(this);
                 })
 
-                $(we.dialog).find("img").click(function(){
-                    selected = this;
-                    $(we.dialog).find(".managed").removeClass("managed")
-                    we.attach_managed(selected);
-                });
+                addClickEvent();
+                moveSelectedItem();
 
-                selected = $(we.dialog).find(".managed");
-                we.attach_highlight(selected);
-                // **scroiing**
-                // horizontal scrollables. each one is circular and has its own navigator instance
-                var root = $(".scrollable").scrollable({circular: true, keyboard: true});
-                root.navigator(".navi").eq(0).data("scrollable").focus();
-                var move = root.data("scrollable").move;
-                $(we.dialog).parent().mousewheel(function(e, delta){
-                    move(delta < 0 ? 1 : -1, 40); // 50 is speed
-                    return false;
-                });
-                if(!!selected.length > 0){
-                    var k = selected.parents(".group").eq(0).attr("id").split("_")[1];
-                    root.data("scrollable").move(k, 1);
-                }
             })();
+
+        function addClickEvent() {
+            $(we.dialog).find("img").click(function(){
+                selected = this;
+                $(we.dialog).find(".managed").removeClass("managed")
+                we.attach_managed(selected);
+            });
+        }
+
+        function moveSelectedItem() {
+            selected = $(we.dialog).find(".managed");
+            we.attach_highlight(selected);
+            // **scroiing**
+            // horizontal scrollables. each one is circular and has its own navigator instance
+            var root = $(".scrollable").scrollable({circular: true, keyboard: true});
+            root.navigator(".navi").eq(0).data("scrollable").focus();
+            var move = root.data("scrollable").move;
+            $(we.dialog).parent().mousewheel(function(e, delta){
+                move(delta < 0 ? 1 : -1, 40); // 50 is speed
+                return false;
+            });
+
+            if(!!selected.length > 0){
+                var k = selected.parents(".group").eq(0).attr("id").split("_")[1];
+                root.data("scrollable").move(k, 1);
+            }
+        }
     };
 
     var on_close = function(we){
