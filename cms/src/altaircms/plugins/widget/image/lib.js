@@ -26,6 +26,7 @@ if(!widget){
 
                 $(document).ready(function() {
                     $('#search_form').ajaxForm({dataType: 'json', success: successSearch});
+                    $('#tag_search_form').ajaxForm({dataType: 'json', success: successSearch});
                 });
 
                 function successSearch(data) {

@@ -73,7 +73,40 @@ class ImageWidgetView(object):
 
 
     @view_config(route_name="image_widget_search", renderer="json", request_method="POST")
-    def updates_view(self):
+    def search(self):
+        pk = self.request.POST['pk']
+        search_word = self.request.POST['search_word']
+
+        N = 4
+        assets = None
+        if search_word:
+            assets = group_by_n(self.request.context.search_asset(search_word), N)
+        else:
+            assets = group_by_n(self.request.context.get_asset_query(), N)
+
+        assets_dict = {}
+        for groupNo, group in enumerate(assets):
+            img_list = []
+            for img in group:
+                img_info = {
+                    "id":img.id ,
+                    "title":img.title ,
+                    "width":img.width ,
+                    "height":img.height ,
+                    "thumbnail_path":helpers.asset.rendering_object(self.request,img).thumbnail_path
+                }
+                img_list.append(img_info)
+            assets_dict.update({groupNo:img_list})
+
+        widget = self.request.context.get_widget(pk)
+
+        return {
+            'widget_asset_id': widget.asset_id,
+            'assets_data': assets_dict
+        }
+
+    @view_config(route_name="image_widget_tag_search", renderer="json", request_method="POST")
+    def tag_search(self):
         pk = self.request.POST['pk']
         search_word = self.request.POST['search_word']
 

@@ -28,11 +28,20 @@
     <li><a href="#setting_tab">表示設定</a></li>
   </ul>
   <div id="image_tab" style="height: 350px">
+
     <form id="search_form" action="${request.route_path('image_widget_search')}" method="POST">
       検索文字列<br/>
       <input type="hidden" name="pk" value="${pk}"/>
-      <input type="text" name="search_word" value=""/><input type="submit" value="検索" width="20px">
+      <input type="text" name="search_word" value=""/><input type="submit" value="検索">
+      <p/>
     </form>
+
+    <form id="tag_search_form" action="${request.route_path('image_widget_tag_search')}" method="POST">
+      検索タグ<br/>
+      <input type="hidden" name="pk" value="${pk}"/>
+      <input type="text" name="search_word" value=""/><input type="submit" value="タグ検索">
+    </form>
+
     <button type="button" id="image_submit">登録</button>
     <br/>
 
