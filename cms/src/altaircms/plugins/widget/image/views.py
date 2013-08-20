@@ -1,9 +1,14 @@
 from pyramid.view import view_config, view_defaults
 from altaircms.auth.api import require_login
+from altaircms.asset.models import ImageAsset
+from altaircms.asset import creation
 from altaircms.lib.itertools import group_by_n
 from . import forms
 from altaircms.formhelpers import AlignChoiceField
 from webob.multidict import MultiDict
+from pyramid.httpexceptions import (
+    HTTPFound
+)
 import logging
 from altaircms import helpers
 import json
@@ -108,14 +113,16 @@ class ImageWidgetView(object):
     @view_config(route_name="image_widget_tag_search", renderer="json", request_method="POST")
     def tag_search(self):
         pk = self.request.POST['pk']
-        search_word = self.request.POST['search_word']
+        tags = self.request.POST['tags']
+        try:
+            assets = self.request.allowable(ImageAsset)
+            search_result = creation.ImageSearcher(self.request).search(assets, {'tags':tags})
+        except Exception, e:
+            logger.exception(e.message.encode("utf-8"))
+            return HTTPFound(location=self.request.route_url("asset_image_list"))
 
         N = 4
-        assets = None
-        if search_word:
-            assets = group_by_n(self.request.context.search_asset(search_word), N)
-        else:
-            assets = group_by_n(self.request.context.get_asset_query(), N)
+        assets = group_by_n(search_result, N)
 
         assets_dict = {}
         for groupNo, group in enumerate(assets):
