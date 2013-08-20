@@ -32,7 +32,8 @@ if(!widget){
                     var assets_data = data.assets_data;
                     var widget_asset_id = data.widget_asset_id;
 
-                    $(".scrollable").empty();
+                    $(".scrollable").remove();
+                    $("#image_tab").append("<div class='scrollable' style='width: 550px'></div>");
                     $(".scrollable").append("<div class='items'></div>");
 
                     for (var groupNo in assets_data){
