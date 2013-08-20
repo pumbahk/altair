@@ -29,9 +29,13 @@ def get_report_title(report_type):
     }
     return report_types[report_type] if report_type in report_types else ''
 
-def export_for_stock_holder(event, stock_holder, report_type):
+def export_for_stock_holder(event, stock_holder, report_type, performanceids=None):
     """指定したEvent,StockHolderのレポートをExporterで返す
     """
+
+    if performanceids is None: # default is all pattern
+        performanceids = [perf.id for perf in event.performance]
+
     assetresolver = AssetResolver()
     template_path = assetresolver.resolve(
         "altair.app.ticketing:/templates/reports/assign_template.xls").abspath()
@@ -42,7 +46,8 @@ def export_for_stock_holder(event, stock_holder, report_type):
     report_title = get_report_title(report_type)
     today = date.today()
 
-    for i, performance in enumerate(event.performances):
+    is_target = lambda perf: perf.id in performanceids 
+    for i, performance in enumerate(filter(is_target, event.performances)):
         sheet_num = i + 1
         dt = formatter.format_datetime_for_sheet_name(performance.start_on)
         sheet_name = u"%s_%d" % (dt, sheet_num)

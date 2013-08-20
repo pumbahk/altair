@@ -36,7 +36,7 @@ class Event(BaseOriginalMixin, WithOrganizationMixin, Base):
     is_searchable = sa.Column(sa.Boolean, default=True)
 
     performers = sa.Column(sa.UnicodeText, doc=u"公演者")
-    inquiry_for = sa.Column(sa.Unicode(255), default=u"", doc=u"お問い合わせ先")
+    inquiry_for = sa.Column(sa.UnicodeText, default=u"", doc=u"お問い合わせ先")
     notice = sa.Column(sa.UnicodeText, doc=u"注意事項")
     ticket_pickup = sa.Column(sa.UnicodeText, doc=u"チケット引き取り方法")
     ticket_payment = sa.Column(sa.UnicodeText, doc=u"支払い方法")

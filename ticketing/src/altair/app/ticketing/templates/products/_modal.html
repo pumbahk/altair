@@ -4,6 +4,7 @@
   $(function() {
     (function (modal_product) {
       new_product = function new_product(sales_segment_id) {
+        if (!sales_segment_id) return false;
         load_modal_form(
           modal_product,
           '${request.route_path('products.new', _query=dict(sales_segment_id='__sales_segment_id__'))}'.replace('__sales_segment_id__', sales_segment_id),

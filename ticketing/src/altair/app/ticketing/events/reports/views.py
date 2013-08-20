@@ -14,7 +14,7 @@ from pyramid.response import Response
 
 from altair.app.ticketing.views import BaseView
 from altair.app.ticketing.fanstatic import with_bootstrap
-from altair.app.ticketing.core.models import Event, StockHolder
+from altair.app.ticketing.core.models import Event, StockHolder, Performance
 from altair.app.ticketing.events.reports import reporting
 from altair.app.ticketing.events.reports.forms import ReportStockForm, ReportByStockHolderForm
 
@@ -29,11 +29,11 @@ class Reports(BaseView):
         event = Event.get(event_id)
         if event is None:
             return HTTPNotFound('event id %d is not found' % event_id)
-
         return {
             'form_stock':ReportStockForm(),
             'form_stock_holder':ReportByStockHolderForm(event_id=event_id),
             'event':event,
+            'performances': event2performances(event),
         }
 
     @view_config(route_name='reports.sales', request_method='POST')
@@ -81,10 +81,12 @@ class Reports(BaseView):
                 'form_stock':f,
                 'form_stock_holder':ReportByStockHolderForm(event_id=event_id),
                 'event':event,
+                'performances': event2performances(event),
             }
 
         # CSVファイル生成
-        exporter = reporting.export_for_stock_holder(event, stock_holders[0], f.report_type.data)
+        performanceids = request2performanceids(self.request)        
+        exporter = reporting.export_for_stock_holder(event, stock_holders[0], f.report_type.data, performanceids=performanceids)
 
         # 出力ファイル名
         filename = "%(report_type)s_%(code)s_%(datetime)s.xls" % dict(
@@ -108,7 +110,7 @@ class Reports(BaseView):
         event = Event.get(event_id)
         if event is None:
             raise HTTPNotFound('event id %d is not found' % event_id)
-
+        
         # StockHolder
         stock_holder_id = int(self.request.params.get('stock_holder_id', 0))
         stock_holder = StockHolder.get(stock_holder_id)
@@ -121,11 +123,13 @@ class Reports(BaseView):
                 'form_stock':ReportStockForm(),
                 'form_stock_holder':f,
                 'event':event,
+                'performances': event2performances(event),
             }
 
         # CSVファイル生成
-        exporter = reporting.export_for_stock_holder(event, stock_holder, f.report_type.data)
-
+        performanceids = request2performanceids(self.request)        
+        exporter = reporting.export_for_stock_holder(event, stock_holder, f.report_type.data, performanceids=performanceids)
+        
         # 出力ファイル名
         filename = "%(report_type)s_%(code)s_%(datetime)s.xls" % dict(
             report_type=f.report_type.data,
@@ -138,3 +142,14 @@ class Reports(BaseView):
             ('Content-Disposition', 'attachment; filename=%s' % str(filename))
         ]
         return Response(exporter.as_string(), headers=headers)
+
+def request2performanceids(request):
+    params = request.params
+    try:
+        return [int(elm[1]) for elm in params.iteritems() if elm[0] == 'performance_id']
+    except (ValueError, TypeError):
+        raise
+
+def event2performances(event):
+    return Performance.query.filter(Performance.event_id==event.id).order_by('start_on').all()
+        
