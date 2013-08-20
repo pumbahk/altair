@@ -1,9 +1,7 @@
 #-*- coding:utf-8 -*-
 import copy
-import shutil
 import os
 from pyramid.httpexceptions import HTTPFound, HTTPForbidden, HTTPNotFound
-from altaircms.filelib import zipupload
 from pyramid.view import view_config
 from pyramid.view import view_defaults
 from altaircms.lib.fanstatic_decorator import with_bootstrap
@@ -17,10 +15,11 @@ from altaircms.models import DBSession
 from altaircms.page.models import StaticPageSet, StaticPage, PageType
 from . import forms
 from . import creation
+from .download import ZippedStaticFileManager, S3Downloader
 from .renderable import static_page_directory_renderer
 import logging
 logger = logging.getLogger(__name__)
-from altaircms.viewlib import BaseView, download_response
+from altaircms.viewlib import BaseView
 from altaircms.datelib import get_now
 
 @view_defaults(route_name="static_page_create", permission="authenticated")
@@ -336,10 +335,10 @@ class StaticPageView(BaseView):
         pk = self.request.matchdict["child_id"]
         static_page = get_or_404(self.request.allowable(StaticPage), StaticPage.id==pk)
         static_directory = get_static_page_utility(self.request)
-        writename = static_directory.get_writename(static_page)
-        with zipupload.current_directory(static_directory.get_rootname(static_page)):
-            zipupload.create_zipfile_from_directory(".", writename)
-        return download_response(path=writename,request=self.request, filename="{0}.zip".format(static_page.name)) 
+        s3prefix = os.path.join(static_directory.prefix, self.request.organization.short_name, static_page.prefix, unicode(static_page.id))
+        downloader = S3Downloader(self.request, static_page, prefix=s3prefix) ## xxx:
+        zm = ZippedStaticFileManager(self.request, static_page, static_directory.tmpdir, downloader=downloader)
+        return zm.download_response(static_directory.get_rootname(static_page))
 
     @view_config(match_param="action=upload", request_param="zipfile", request_method="POST")
     def upload(self):
