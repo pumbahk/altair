@@ -34,7 +34,7 @@ def export_for_stock_holder(event, stock_holder, report_type, performanceids=Non
     """
 
     if performanceids is None: # default is all pattern
-        performanceids = [perf.id for perf in event.performance]
+        performanceids = [perf.id for perf in event.performances]
 
     assetresolver = AssetResolver()
     template_path = assetresolver.resolve(
