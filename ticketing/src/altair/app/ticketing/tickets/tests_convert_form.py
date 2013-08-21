@@ -1,5 +1,7 @@
 # -*- coding:utf-8 -*-
 import unittest
+from pyramid.testing import DummyResource
+import mock
 
 class FormTests(unittest.TestCase):
     def _getTargetClass(self):
@@ -13,7 +15,9 @@ class FormTests(unittest.TestCase):
         from webob.multidict import MultiDict        
         return MultiDict(**kwargs)
 
-    def test_cleanup_has_effect(self):
+    @mock.patch("altair.app.ticketing.tickets.forms.TicketFormat")
+    def test_cleanup_has_effect(self, m):
+        m.query.filter_by.return_value.one.return_value = DummyResource(delivery_methods=[])
         from StringIO import StringIO
         from lxml.etree import fromstring
         from .constants import SVG_NAMESPACE
@@ -34,9 +38,10 @@ class FormTests(unittest.TestCase):
             filename="this-is-svg-file-name.svg"
             file=StringIO(svg.encode("utf-8"))
 
-        target = self._makeOne(self._getPostData(ticket_format=1, name="this-is-ticket-format-name", 
-                                                 drawing=DummyFileStrage))
-        target.ticket_format.choices = [(1, 1)]
+        target = self._makeOne(self._getPostData(ticket_format_id=1, name="this-is-ticket-format-name", 
+                                                 drawing=DummyFileStrage), 
+                               context=DummyResource(organization=DummyResource(id=1)))
+        target.ticket_format_id.choices = [(1, 1)]
 
         self.assertTrue(target.validate())
         result = fromstring(target.data_value["drawing"])
