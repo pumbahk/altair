@@ -33,8 +33,11 @@ if(!widget){
                     var assets_data = data.assets_data;
                     var widget_asset_id = data.widget_asset_id;
 
-                    $(".scrollable").remove();
+                    // pagination
                     $(".navi").empty();
+                    $(".browse").removeClass("disabled");
+
+                    $(".scrollable").remove();
                     $("#image_tab").append("<div class='scrollable' style='width: 550px'></div>");
                     $(".scrollable").append("<div class='items'></div>");
 
