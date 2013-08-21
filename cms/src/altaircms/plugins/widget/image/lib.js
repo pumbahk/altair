@@ -44,16 +44,16 @@ if(!widget){
                     for (var groupNo in assets_data){
                         $(".scrollable .items").append("<div class='group' id='group_" + groupNo + "'></div>");
                         for (var itemNo in assets_data[groupNo]) {
+
                             $("#group_" + groupNo).append("<div class='item'></div>");
-                            var id = assets_data[groupNo][itemNo]['id'];
-                            var title = assets_data[groupNo][itemNo]['title'];
-                            var width = assets_data[groupNo][itemNo]['width'];
-                            var height = assets_data[groupNo][itemNo]['height'];
-                            var thumbnail_path = assets_data[groupNo][itemNo]['thumbnail_path'];
+
                             var managed_class = "";
-                            if (id == widget_asset_id) {managed_class = "class='managed'"}
-                            $("#group_" + groupNo + " .item:eq(" + itemNo + ")").append("<img pk='" + id + "' src='" + thumbnail_path + "' alt='' " + managed_class + " />");
-                            $("#group_" + groupNo + " .item:eq(" + itemNo + ")").append("<p>title:" + title + "width:" + width + "height:" + height + "</p>");
+                            if (assets_data[groupNo][itemNo]['id'] == widget_asset_id) {managed_class = "class='managed'"}
+
+                            var img_temp = "<img pk='<%= id %>' src='<%=thumbnail_path%>' alt='' " + managed_class + " />";
+                            var p_temp = "<p>title:<%= title %> width:<%= width %> height:<%= height %></p>";
+                            $("#group_" + groupNo + " .item:eq(" + itemNo + ")").append(_.template(img_temp, assets_data[groupNo][itemNo]));
+                            $("#group_" + groupNo + " .item:eq(" + itemNo + ")").append(_.template(p_temp, assets_data[groupNo][itemNo]));
                         }
                     }
                     addClickEvent();
