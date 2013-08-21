@@ -9,6 +9,7 @@ from js.jqueryui import smoothness
 from js.jqueryui import jqueryui
 from js.backbone import backbone
 from js.bootstrap import bootstrap
+from js.jquery_form import jquery_form
 
 def bootstrap_need():
     bootstrap.need()
@@ -67,7 +68,8 @@ with_fanstatic_jqueries = FanstaticDecoratorFactory(
     # black_tie.need,
     smoothness.need, 
     underscore.need,
-    backbone.need
+    backbone.need,
+    jquery_form.need
     )
 
 with_bootstrap = FanstaticDecoratorFactory(

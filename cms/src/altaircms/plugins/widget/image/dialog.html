@@ -1,8 +1,4 @@
 <%namespace file="../components.html" name="co"/>
-<script src=${request.static_url('altaircms:static/smartphone/js/jquery-ui-1.9.2.custom.min.js')}></script>
-<script src=${request.static_url('altaircms:static/js/jquery.form.js')}></script>
-<link rel="stylesheet" type="text/css" href=${request.static_url('altaircms:static/smartphone/css/jquery-ui-1.9.2.custom.min.css')} />
-<link rel="stylesheet" type="text/css" href="/plugins/static/css/widget/lib/image.css">
 
 ## N個ごとに区切られたitreratorを受け取り、divで区切って出力(scrollのため)
 <%def name="render(assets)">
@@ -27,7 +23,7 @@
     <li><a href="#image_tab">画像の選択</a></li>
     <li><a href="#setting_tab">表示設定</a></li>
   </ul>
-  <div id="image_tab" style="height: 450px">
+  <div id="image_tab" style="height: 600px">
 
     <form id="search_form" action="${request.route_path('image_widget_search')}" method="POST">
       検索文字列<br/>

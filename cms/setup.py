@@ -25,6 +25,7 @@ requires = [
     'js.underscore',
     'js.backbone',
     'js.tinymce',
+    'js.jquery_form == 3.09',
     'pyramid_who',
     'uamobile',
     'fluent-logger == 0.3.3moriyoshi3',
