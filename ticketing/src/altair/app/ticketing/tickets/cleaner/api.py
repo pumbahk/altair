@@ -83,6 +83,8 @@ def iff_need_qrcode_insert(xmltree):
     for target in targets:
         target.tag = "{{{}}}qrcode".format(TS_SVG_EXT_NAMESPACE)
         target.attrib["content"] = target.attrib["{{{}}}label".format(INKSCAPE_NAMESPACE)]
+        if "style" in target.attrib:
+            target.attrib.pop("style")
         if not "eclevel" in target.attrib:
             target.attrib["eclevel"] = "m"
     return xmltree

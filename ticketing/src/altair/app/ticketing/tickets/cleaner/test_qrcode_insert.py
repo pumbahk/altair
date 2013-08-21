@@ -61,6 +61,21 @@ class QRCodeInsertTests(unittest.TestCase):
         self.assertNotIn("qrcode", output)
         self.assertNotIn("content=", output)
         self.assertNotIn("eclevel=", output)
+
+    def test_style_is_deleted(self):
+        from lxml import etree
+        from altair.app.ticketing.tickets.constants import SVG_NAMESPACE
+
+        tree = etree.fromstring(self.svg)
+        for x in tree.xpath("//n:rect", namespaces={"n": SVG_NAMESPACE}):
+            x.attrib["style"] = "fill:#0000ff;fill-rule:evenodd;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+
+        result = self._callFUT(tree)
+        output = etree.tostring(result, encoding="utf-8")
+
+        self.assertNotIn("style", output)
+
+
         
 
 if __name__ == "__main__":
