@@ -582,17 +582,17 @@ h4 span.order{
 }
 
 .redBtn {
-	-moz-box-shadow:inset 0px 1px 0px 0px #f29c93;
-	-webkit-box-shadow:inset 0px 1px 0px 0px #f29c93;
-	box-shadow:inset 0px 1px 0px 0px #f29c93;
-	background:-webkit-gradient( linear, left top, left bottom, color-stop(0.05, #cb3050), color-stop(1, #7b0000) );
-	background:-moz-linear-gradient( center top, #cb3050 5%, #7b0000 100% );
-	filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#cb3050', endColorstr='#7b0000');
-	background-color:#cb3050;
+	-moz-box-shadow:inset 0px 1px 0px 0px #f29c43;
+	-webkit-box-shadow:inset 0px 1px 0px 0px #f29c43;
+	box-shadow:inset 0px 1px 0px 0px #f29c43;
+	background:-webkit-gradient( linear, left top, left bottom, color-stop(0.05, #cb3000), color-stop(1, #7b0000) );
+	background:-moz-linear-gradient( center top, #cb3000 5%, #7b0000 100% );
+	filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#cb3000', endColorstr='#7b0000');
+	background-color:#cb3000;
 	-moz-border-radius:6px;
 	-webkit-border-radius:6px;
 	border-radius:6px;
-	border:1px solid #bb2040;
+	border:1px solid #bb2000;
 	display:inline-block;
 	color:#ffffff;
 	font-family:arial;
@@ -604,9 +604,9 @@ h4 span.order{
 }
 
 .redBtn:hover {
-	background:-webkit-gradient( linear, left top, left bottom, color-stop(0.05, #7b0000), color-stop(1, #9b0020) );
-	background:-moz-linear-gradient( center top, #7b0000 5%, #9b0020 100% );
-	filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#7b0000', endColorstr='#9b0020');
+	background:-webkit-gradient( linear, left top, left bottom, color-stop(0.05, #7b0000), color-stop(1, #9b0000) );
+	background:-moz-linear-gradient( center top, #7b0000 5%, #9b0000 100% );
+	filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#7b0000', endColorstr='#9b0000');
 	background-color:#7b0000;
 	color:#ffffff;
 }

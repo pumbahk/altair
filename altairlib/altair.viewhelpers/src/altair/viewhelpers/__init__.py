@@ -2,6 +2,7 @@ from .string import *
 from .iteration import *
 from .datetime_ import *
 from .numbers import *
+from .structure import *
 
 REQUEST_ADAPTERS = [
     lambda request: DateTimeHelper(create_date_time_formatter(request)),

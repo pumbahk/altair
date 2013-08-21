@@ -124,11 +124,12 @@ class CreateMailFromFakeOrderTests(unittest.TestCase):
         testing.tearDown()
 
     def test_it(self):
-        from altair.app.ticketing.core.models import Organization, MailTypeEnum
+        from altair.app.ticketing.core.models import Organization, MailTypeEnum, OrganizationSetting
         from altair.app.ticketing.mails.api import create_fake_order
         from altair.app.ticketing.mails.api import get_mail_utility
 
         org = Organization()
+        org.settings.append(OrganizationSetting(name="default"))
         org.extra_mail_info=None
         request = testing.DummyRequest()
         order = create_fake_order(request, org, 2, 1)
@@ -139,12 +140,13 @@ class CreateMailFromFakeOrderTests(unittest.TestCase):
         mutil.build_message(request, order).body
 
     def test_lot_entry(self):
-        from altair.app.ticketing.core.models import Organization, MailTypeEnum
+        from altair.app.ticketing.core.models import Organization, MailTypeEnum, OrganizationSetting
         from altair.app.ticketing.mails.api import create_fake_lot_entry
         from altair.app.ticketing.mails.api import create_fake_elected_wish
         from altair.app.ticketing.mails.api import get_mail_utility
 
         org = Organization()
+        org.settings.append(OrganizationSetting(name="default"))
         org.extra_mail_info=None
         request = testing.DummyRequest()
         request.context = testing.DummyResource(organization=org)

@@ -118,7 +118,10 @@ class StockStatusTests(unittest.TestCase):
         performance = DummyPerformance(backend_id=1)
 
         result = self._callFUT(request, data)
-        self.assertEquals(result.get_status(performance), StockStatus.triangle)
+
+        ### specification is changed!!
+        # self.assertEquals(result.get_status(performance), StockStatus.triangle)
+        self.assertEquals(result.get_status(performance), StockStatus.circle)
 
     def test_less_assigned(self):
         jsondata = u"""{

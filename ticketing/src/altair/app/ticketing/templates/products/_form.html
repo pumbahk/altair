@@ -9,7 +9,7 @@
   ${ch.form_item(form.sales_segment_id)}
   ${ch.form_item(form.public)}
   ${ch.form_item(form.description)}
-% if request.context.organization.point_feature_enabled:
+% if request.context.organization.point_feature_enabled and form.applied_point_grant_settings.choices:
   ${ch.form_item(form.applied_point_grant_settings)}
 % endif
 </form>

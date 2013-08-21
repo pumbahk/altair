@@ -29,6 +29,13 @@
   <tr>
     <th>event code(backend)</th><td>${event.code or u"-"}</td>
   </tr>
+  <tr>
+    <%
+       from altaircms.linklib import get_cart_url_builder
+       whattime_url = get_cart_url_builder(request).whattime_login_url(event)
+       %>
+    <th>時間指定preview</th><td colspan="3"><a blank="_target" href="${whattime_url}">時間指定preview用URL</a></td>
+  </tr>
 </table>
 
 ${panel("model_action_buttons", event, modelname="event", _query=dict(endpoint=request.url, delete_endpoint=request.route_path("event_list")))}

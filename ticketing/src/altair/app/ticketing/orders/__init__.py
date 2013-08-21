@@ -27,7 +27,8 @@ def includeme(config):
     config.add_route('orders.refund.confirm'            , '/refund/confirm/')
     config.add_route('orders.refund.immediate'          , '/refund/immediate/{order_id}')
 
-    config.add_route("orders.item.preview"              , "/item/preview/{order_id}/{item_id}")
+    config.add_route("orders.cover.preview"              , "/cover/preview/{order_id}/cover")
+    config.add_route("orders.item.preview"              , "/item/preview/{order_id}/item/{item_id}")
     config.add_route("orders.item.preview.getdata"      , "/api/item/{item_id}/ticket/{ticket_format_id}")
     config.add_route('orders.print.queue'               , '/print/queue/{order_id}')
     config.add_route('orders.print.queue.dialog'        , '/api/print/queue/{order_id}')
@@ -50,7 +51,6 @@ def includeme(config):
     config.add_route("orders.mailinfo"                  , "/orders/{order_id}/mailinfo/{action}")
     config.add_route("orders.api.performances"          , "/api/performances")
     config.add_route("orders.api.sales_segment_groups"  , "/api/sales_segment_groups")
-    config.add_route("orders.api.sales_segments"        , "/api/sales_segments")
     config.add_route("orders.api.checkbox_status"       , "/api/checkbox_status/{action}")
     config.add_route("orders.api.orders"                , "/api/orders/{action}")
     config.add_route("cart.search",                       "/carts/")

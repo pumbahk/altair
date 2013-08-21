@@ -28,6 +28,10 @@ class StaticKindView(object):
         return {
               'helper':SmartPhoneHelper()
             , 'canceled_events':canceled_events
+            , 'sns':{
+                'url':"https://ticket.rakuten.co.jp/change",
+                'title':u"楽天チケット-公演中止・変更情報"
+            }
         }
 
     @smartphone_site_view_config(match_param="kind=help", renderer='altairsite.smartphone:templates/page/help.html')
@@ -37,11 +41,20 @@ class StaticKindView(object):
         return {
               'helps':helps
             , 'helper':SmartPhoneHelper()
+            , 'sns':{
+                'url':"https://ticket.rakuten.co.jp/faq",
+                'title':u"楽天チケット-よくある質問"
+            }
         }
 
     @smartphone_site_view_config(match_param="kind=company", renderer='altairsite.smartphone:templates/page/company.html')
     def move_company(self):
-        return {}
+        return {
+            'sns':{
+                'url':"http://www.ticketstar.jp/",
+                'title':u"楽天チケット-運営会社"
+            }
+        }
 
     @smartphone_site_view_config(match_param="kind=inquiry", request_method="GET", renderer='altairsite.smartphone:templates/page/inquiry.html')
     def move_inquiry(self):
@@ -49,6 +62,10 @@ class StaticKindView(object):
         session.put_inquiry_session();
         return {
             'form':InquiryForm()
+            , 'sns':{
+                'url':"https://ticket.rakuten.co.jp/inquiry",
+                'title':u"楽天チケット-お問い合わせ"
+            }
         }
 
     @smartphone_site_view_config(match_param="kind=inquiry", request_method="POST", renderer='altairsite.smartphone:templates/page/inquiry.html')
@@ -78,12 +95,30 @@ class StaticKindView(object):
         return {
              'form':form
             ,'result':ret
+            , 'sns':{
+                'url':"https://ticket.rakuten.co.jp/inquiry",
+                'title':u"楽天チケット-お問い合わせ"
+            }
         }
 
     @smartphone_site_view_config(match_param="kind=privacy", renderer='altairsite.smartphone:templates/page/privacy.html')
     def move_privacy(self):
-        return {}
+        return {
+            'sns':{
+                'url':"http://privacy.rakuten.co.jp/",
+                'title':u"楽天チケット-個人情報保護方針"
+            }
+        }
 
     @smartphone_site_view_config(match_param="kind=legal", renderer='altairsite.smartphone:templates/page/legal.html')
     def move_legal(self):
+        return {
+            'sns':{
+                'url':"http://www.ticketstar.jp/legal",
+                'title':u"楽天チケット-特定商取引法に基づく表示"
+            }
+        }
+
+    @smartphone_site_view_config(match_param="kind=information", renderer='altairsite.smartphone:templates/page/information.html')
+    def move_information(self):
         return {}

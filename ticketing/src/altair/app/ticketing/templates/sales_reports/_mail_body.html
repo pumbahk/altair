@@ -6,7 +6,7 @@
   need_total = form.need_total.data
 %>
 
-<h3 style="margin-top: 30px;">${performance.name}　開催日:${vh.datetime(performance.start_on)}</h3>
+<h3 style="margin-top: 30px;">${performance.name}　開催日: ${vh.datetime(performance.start_on)}</h3>
 <%
   sales_segments = performance_reporter.sort_index()
   if len(sales_segments) > 1:
@@ -21,10 +21,11 @@
       reporter = performance_reporter.get_reporter(sales_segment)
       ss_name = sales_segment.name
   %>
+<h4>会場: ${performance.venue.name}</h4>
 <h4>${ss_name}</h4>
 <table border="1" bordercolor="#888" width="98%" style="border-collapse:collapse;">
   % if form.limited_from.data or form.limited_to.data:
-  <tr bgcolor="#ddd">
+  <tr style="background-color:#ddd;">
     <th colspan="6"></th>
     % if need_total:
     <th colspan="4">累計</th>
@@ -32,7 +33,7 @@
     <th colspan="4">${vh.term(form.limited_from.data, form.limited_to.data)}</th>
   </tr>
   % endif
-  <tr bgcolor="#ddd">
+  <tr style="background-color:#ddd;">
     <th style="width: 16%;">席種</th>
     <th style="width: 8%;">配券先</th>
     <th style="width: 16%;">商品</th>
@@ -88,13 +89,13 @@
       <td style="padding: 5px; text-align: right;">${vh.number(report.total_paid_quantity + report.total_unpaid_quantity) or ''}</td>
       <td style="padding: 5px; text-align: right;">${vh.number(report.total_unpaid_quantity) or ''}</td>
       <td style="padding: 5px; text-align: right;">${vh.number(report.total_paid_quantity) or ''}</td>
-      <td style="padding: 5px; text-align: right;">${vh.price((report.total_paid_quantity + report.total_unpaid_quantity) * report.product_price)}</td>
+      <td style="padding: 5px; text-align: right;">${vh.price((report.total_paid_quantity + report.total_unpaid_quantity) / report.sales_unit * report.product_price)}</td>
       % endif
       % if form.limited_from.data or form.limited_to.data:
       <td style="padding: 5px; text-align: right;">${vh.number(report.paid_quantity + report.unpaid_quantity) or ''}</td>
       <td style="padding: 5px; text-align: right;">${vh.number(report.unpaid_quantity) or ''}</td>
       <td style="padding: 5px; text-align: right;">${vh.number(report.paid_quantity) or ''}</td>
-      <td style="padding: 5px; text-align: right;">${vh.price((report.paid_quantity + report.unpaid_quantity) * report.product_price)}</td>
+      <td style="padding: 5px; text-align: right;">${vh.price((report.paid_quantity + report.unpaid_quantity) / report.sales_unit * report.product_price)}</td>
       % endif
     </tr>
     % endfor

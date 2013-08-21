@@ -135,18 +135,30 @@
 %for m in payment_delivery_methods:
 <hr />
 <% checked = 'checked' if str(m.id) == checked_id else '' %>
-<input type="radio" name="payment_delivery_method_pair_id" id="radio2" value="${m.id}" ${checked}>${m.payment_method.name}+${m.delivery_method.name}<br/>
-手数料:${h.format_currency(m.transaction_fee)} (${h.fee_type(m.payment_method.fee_type)}) + ${h.format_currency(m.delivery_fee)} (${h.fee_type(m.delivery_method.fee_type)})<br />
+<input type="radio" name="payment_delivery_method_pair_id" id="radio2" value="${m.id}" ${checked}>
+${m.payment_method.name}+${m.delivery_method.name}<br/>
+■決済手数料:<br/>
+${h.format_currency(m.transaction_fee)} (${h.fee_type(m.payment_method.fee_type)})<br/>
+■発券/引取手数料:<br/>
+${h.format_currency(m.delivery_fee)} (${h.fee_type(m.delivery_method.fee_type)})<br/>
+■システム利用料:<br/>
+${h.format_currency(m.system_fee)} (1申込当り)<br/>
 <div>
 % if m.payment_method.payment_plugin_id == 1:
 <font size="-2">
-予約受付完了と同時に決済され、即時予約確定となります。支払回数は≪1回払い≫のみのお取扱いとなります。以下のクレジットカードがご利用できます。<br />
+予約受付完了と同時に決済され、即時予約確定となります。<br/>
+（予約成立と同時に、ご登録のクレジットカードにて自動的に決済手続きを行わせて頂きます）<br/>
+支払回数は≪1回払い≫のみのお取扱いとなります。<br/>
+以下のクレジットカードがご利用できます。<br />
 <img src="${request.static_url('altair.app.ticketing.cart:static/img/mobile/kc_logo_rakuten.gif')}" height="30px" />
 <img src="${request.static_url('altair.app.ticketing.cart:static/img/mobile/visa.gif')}" height="30px" />
 <img src="${request.static_url('altair.app.ticketing.cart:static/img/mobile/master.gif')}" height="30px" />
 <img src="${request.static_url('altair.app.ticketing.cart:static/img/mobile/jcb.gif')}" height="30px" />
 <img src="${request.static_url('altair.app.ticketing.cart:static/img/mobile/amex_logo.gif')}" height="30px" />
 </font>
+<br/>
+各種手数料の他、公演によりシステム利用料がかかります。<br/>
+ご注文の際にカードの不正利用の疑いがあると思われる場合は、お客様の注文を当社の判断で一旦キャンセルさせて戴く場合がございます。<br/>
 % elif m.payment_method.payment_plugin_id == 2:
 <font size="-2">
 楽天会員IDでお支払いいただけます。<br />

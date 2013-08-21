@@ -14,7 +14,10 @@ def get_now(request=None):
     if request is None:
         logger.warn("get current request used. %s", traceback.format_stack(limit=3))
         request = get_current_request()
-    return _get_now(request)
+    if hasattr(request, "_now"):
+        return request._now
+    now = request._now = _get_now(request)
+    return now
 
 def get_today(request=None):
     if request is None:

@@ -40,6 +40,13 @@ class PaymentMethods(BaseView):
             'payment_methods':payment_methods,
         }
 
+    @view_config(route_name='payment_methods.new', request_method='GET', renderer='altair.app.ticketing:templates/payment_methods/_form.html')
+    def new(self):
+        return {
+            'form': PaymentMethodForm(),
+            'action': self.request.route_path('payment_methods.new'),
+            }
+
     @view_config(route_name='payment_methods.new', request_method='POST', renderer='altair.app.ticketing:templates/payment_methods/_form.html')
     def new_post(self):
         f = PaymentMethodForm(self.request.POST)
@@ -53,12 +60,21 @@ class PaymentMethods(BaseView):
         else:
             return {
                 'form':f,
+                'action': self.request.route_path('payment_methods.new'),
+            }
+
+    @view_config(route_name='payment_methods.edit', request_method='GET', renderer='altair.app.ticketing:templates/payment_methods/_form.html')
+    def edit(self):
+        payment_method_id = long(self.request.matchdict.get('payment_method_id', 0))
+        return {
+            'form': PaymentMethodForm(obj=PaymentMethod.query.filter_by(id=payment_method_id).one()),
+            'action': self.request.route_path('payment_methods.edit', payment_method_id=payment_method_id),
             }
 
     @view_config(route_name='payment_methods.edit', request_method='POST', renderer='altair.app.ticketing:templates/payment_methods/_form.html')
     def edit_post(self):
-        payment_method_id = int(self.request.matchdict.get('payment_method_id', 0))
-        payment_method = PaymentMethod.get(payment_method_id)
+        payment_method_id = long(self.request.matchdict.get('payment_method_id', 0))
+        payment_method = PaymentMethod.query.filter_by(id=payment_method_id).one()
         if payment_method is None:
             return HTTPNotFound('payment_method id %d is not found' % payment_method_id)
 
@@ -73,6 +89,7 @@ class PaymentMethods(BaseView):
         else:
             return {
                 'form':f,
+                'action': self.request.route_path('payment_methods.edit', payment_method_id=payment_method_id),
             }
 
     @view_config(route_name='payment_methods.delete')

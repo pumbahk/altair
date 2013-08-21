@@ -38,6 +38,8 @@ def includeme(config):
                      factory=lot_resource_factory)
     config.add_route('lots.entries.elect_all', 'entries/elect_all/{lot_id}',
                      factory=lot_resource_factory)
+    config.add_route('lots.entries.reject_remains', 'entries/reject_remains/{lot_id}',
+                     factory=lot_resource_factory)
     config.add_route('lots.entries.reject_entry_no', 'entries/reject_entry_no/{lot_id}',
                      factory=lot_resource_factory)
     config.add_route('lots.entries.close', 'entries/close/{lot_id}',
@@ -54,6 +56,18 @@ def includeme(config):
                      factory=lot_resource_factory)
     config.add_route('lots.entries.index', 'entries/{lot_id}',
                      factory=lot_resource_factory)
+
+    # レポートメール設定
+    config.add_route('lot.entries.new_report_setting',
+                     'entries/{lot_id}/new_report',
+                     factory=lot_resource_factory)
+    config.add_route('lot.entries.delete_report_setting',
+                     'entries/{lot_id}/delete_report/{setting_id}',
+                     factory=lot_resource_factory)
+    config.add_route('lot.entries.send_report_setting',
+                     'entries/{lot_id}/send_report/{setting_id}',
+                     factory=lot_resource_factory)
+
 
     config.include(".mailinfo", route_prefix="/lots/mailinfo/")
     # adapters

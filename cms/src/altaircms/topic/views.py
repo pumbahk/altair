@@ -29,7 +29,11 @@ def unit_list_view(context, request):
         qs = searcher.no_filter_without_tag(qs, request.GET)
     else:
         qs = searcher.filter_default(qs, request.GET)
-
+        
+    if 'True' == request.GET.get('published', ''):
+        qs = context.TargetTopic.publishing(qs=qs)
+        
+    qs = context.TargetTopic.order_by_logic(qs)
     pages = h.paginate(request, qs, item_count=qs.count())
     recently_tags = request.allowable(context.TargetTopic, context.tag_manager.recent_change_tags().filter_by(publicp=True))
     return dict(pages=pages, recently_tags=recently_tags, search_word=search_word, 

@@ -24,14 +24,13 @@ class SejError(PaymentPluginException):
     def __str__(self):
         return u"Error_Type=%d&Error_Msg=%s&Error_Field=%s" % (self.error_type, self.error_msg, self.error_field)
 
-class SejServerError(Exception):
-
+class SejServerError(PaymentPluginException):
     status_code  = 0
     reason      = ''
     body        = ''
 
     def __init__(self, status_code, reason, body):
-
+        super(SejServerError, self).__init__(reason, order_no=None, back_url=None)
         self.status_code = status_code
         self.reason = reason
         self.body = body

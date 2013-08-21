@@ -942,7 +942,7 @@ table.login thead th{
 	color: #fff;
 	font-weight: bold;
 	padding: 5px 10px;
-	
+	height: 2em;
 }
 
 table.login td{

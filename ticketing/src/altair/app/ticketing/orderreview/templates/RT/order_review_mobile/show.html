@@ -46,9 +46,8 @@ ${shipping.email_1}<br />
 <%mobile:form_header>この購入/予約はキャンセルされました</%mobile:form_header>
 <font size="-2">
 キャンセル処理は、下記のような理由によりおこなっております。<br />
-・お客様からキャンセルのご連絡があったため<br />
 ・期限内のご入金がなくキャンセル扱いとしたため<br />
-・二重注文により、ひとつをキャンセル処理したため
+・弊社判断によるキャンセル処理を行ったため
 </font>
 % else:
 <%mobile:form_header>お支払い</%mobile:form_header>
@@ -104,7 +103,7 @@ ${h.render_delivery_finished_viewlet(request, order)}
 <div>
 &#xe737;注意事項<br />
 <font size="-2">
-%if order.payment_delivery_pair.payment_method.payment_plugin.id == 1:
+%if order.payment_delivery_pair.delivery_method.delivery_plugin.id == 1:
 また、転居等による住所変更があった場合も上記メールアドレスへご連絡をお願いいたします。（送付先変更期限：各試合日の2週間前まで）
 
 なお、住所変更のご連絡がない場合等に起因する配送遅延等にはご対応いたしかねますのでご注意ください。

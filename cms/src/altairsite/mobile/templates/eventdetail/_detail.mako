@@ -6,24 +6,57 @@
         if perf.public:
             perfs.append({"perf":perf, "display_order":perf.display_order})
     perfs = sorted(perfs, key=lambda v: (v['display_order']))
+    from altaircms.datelib import get_now
+    info = {
+        'performance_period':helper.get_info(event_info, u'公演期間') or str(event.event_open.year) + u"/" + str(event.event_open.month).zfill(2) + u"/" + str(event.event_open.day).zfill(2) + u"(" + week[event.event_open.weekday()] + u") 〜 " + str(event.event_close.year) + u"/" + str(event.event_close.month).zfill(2) + u"/" + str(event.event_close.day).zfill(2) + u"(" + week[event.event_close.weekday()] + u")",
+        'performers':helper.get_info(event_info, u'出演者') or event.performers,
+        'salessegment':helper.get_info_list(event_info, u'販売期間') ,
+        'notice':helper.get_info(event_info, u'説明／注意事項') or event.notice,
+        'ticket_payment':helper.get_info(event_info, u'お支払い方法') ,
+        'ticket_pickup':helper.get_info(event_info, u'チケット引き取り方法') ,
+        'content':helper.get_info(event_info, u'お問い合わせ先') or event.inquiry_for,
+    }
 %>
 
+
+<%def name="render_sale(segment)">
+    % if segment.find(u"先行抽選") != -1:
+        先行抽選
+    % elif segment.find(u"先行先着") != -1:
+        先行先着
+    % elif segment.find(u"一般販売") != -1:
+        一般販売
+    % elif segment.find(u"一般発売") != -1:
+        一般発売
+    % elif segment.find(u"先行販売") != -1:
+        先行販売
+    % endif
+</%def>
+
 <%m:header>公演期間</%m:header>
-<% from altaircms.datelib import get_now %>
-${event.event_open.year}/${str(event.event_open.month).zfill(2)}/${str(event.event_open.day).zfill(2)}(${week[event.event_open.weekday()]})〜${event.event_close.year}/${str(event.event_close.month).zfill(2)}/${str(event.event_close.day).zfill(2)}(${week[event.event_close.weekday()]})<br/>
+${info['performance_period']}<br/>
+<br/>
+
 <%m:header>販売期間</%m:header>
-% if event.salessegment_groups:
-    % for segment in event.salessegment_groups:
-        % if segment.publicp:
-            ${segment.name}:${segment.start_on.year}/${segment.start_on.month}/${segment.start_on.day}〜${segment.end_on.year}/${segment.end_on.month}/${segment.end_on.day}
-            <br/>
-        % endif
+% if info['salessegment']:
+    % for segment in info['salessegment']:
+        ${render_sale(segment[0])}:${segment[1]}
+        <br/>
     % endfor
     <br />
 % else:
-    ${event.deal_open.year}/${event.deal_open.month}/${event.deal_open.day}〜${event.deal_close.year}/${event.deal_close.month}/${event.deal_close.day}
+    % if event.salessegment_groups:
+        % for segment in event.salessegment_groups:
+            % if segment.publicp:
+                ${segment.name}:${segment.start_on.year}/${segment.start_on.month}/${segment.start_on.day}〜${segment.end_on.year}/${segment.end_on.month}/${segment.end_on.day}
+                <br/>
+            % endif
+        % endfor
+        <br />
+    % else:
+        ${event.deal_open.year}/${event.deal_open.month}/${event.deal_open.day}〜${event.deal_close.year}/${event.deal_close.month}/${event.deal_close.day}
+    % endif
 % endif
-
 <div align="center">
     % if len(perfs):
         % if event.deal_close < get_now(request):
@@ -34,20 +67,44 @@ ${event.event_open.year}/${str(event.event_open.month).zfill(2)}/${str(event.eve
         % endif
     % endif
 </div><br />
-<% text = self.template.get_def('render_info').render(event=event, helper=helper) %>
-<%def name="render_info(event)">
-% if event.notice:
-<%m:header>詳細/注意事項</%m:header>
-<div><font size="-1">
-${helper.nl2br(event.notice)|n}
-</font></div>
-<br/><br/>
+
+% if info['performers']:
+    <%m:header>出演者</%m:header>
+    ${helper.nl2br(info['performers'])}<br/>
+    <br/>
 % endif
-% if event.inquiry_for:
+
+% if info['notice']:
+<%m:header>詳細/注意事項</%m:header>
+<div>
+    <font size="-1">
+        ${helper.nl2br(info['notice'])|n}
+    </font>
+</div>
+<br/>
+% endif
+
+% if info['ticket_payment']:
+    <%m:header>お支払い方法</%m:header>
+    ${helper.nl2br(info['ticket_payment'])|n}<br/>
+    <br/>
+% endif
+
+% if info['ticket_pickup']:
+    <%m:header>チケット引き取り方法</%m:header>
+    ${helper.nl2br(info['ticket_pickup'])|n}<br/>
+    <br/>
+% endif
+
+% if info['content']:
 <%m:header>お問い合わせ</%m:header>
-${helper.nl2br(event.inquiry_for)|n}
+${helper.nl2br(info['content'])|n}
 <br /><br />
 % endif
+
+<% text = self.template.get_def('render_info').render(event=event, helper=helper) %>
+<%def name="render_info(event)">
+
 </%def>
 % if text:
 <%m:band>公演詳細</%m:band>
@@ -119,13 +176,17 @@ ${helper.nl2br(event.inquiry_for)|n}
             %elif min(start_on_candidates) >= get_now(request):
                 販売前
             %elif max(end_on_candidates) >= get_now(request):
-                <div align="center">
-                <%m:band bgcolor="#ffcccc">
-                % if event.deal_close >= get_now(request):
-                  <a href="${purchase_links[perf['perf'].id]}"><font color="#cc0000">この公演のチケットを購入</font></a>
+                % if not perf['perf'].purchase_link and stock_status.scores.get(int(perf['perf'].backend_id),0) <= 0:
+                    予定枚数終了
+                % else:
+                    <div align="center">
+                    <%m:band bgcolor="#ffcccc">
+                    % if event.deal_close >= get_now(request):
+                      <a href="${purchase_links[perf['perf'].id]}"><font color="#cc0000">この公演のチケットを購入</font></a>
+                    % endif
+                    </%m:band>
+                    </div>
                 % endif
-                </%m:band>
-                </div>
             % else:
                 販売期間終了
             % endif
@@ -181,13 +242,17 @@ ${helper.nl2br(event.inquiry_for)|n}
                 %elif min(start_on_candidates) >= get_now(request):
                     販売前
                 %elif max(end_on_candidates) >= get_now(request):
-                    <div align="center">
-                    <%m:band bgcolor="#ffcccc">
-                    % if event.deal_close >= get_now(request):
-                      <a href="${purchase_links[perf.id]}"><font color="#cc0000">この公演のチケットを購入</font></a>
+                    % if not perf.purchase_link and stock_status.scores.get(int(perf.backend_id),0) <= 0:
+                        予定枚数終了
+                    % else:
+                        <div align="center">
+                        <%m:band bgcolor="#ffcccc">
+                        % if event.deal_close >= get_now(request):
+                          <a href="${purchase_links[perf.id]}"><font color="#cc0000">この公演のチケットを購入</font></a>
+                        % endif
+                        </%m:band>
+                        </div>
                     % endif
-                    </%m:band>
-                    </div>
                 % else:
                     販売期間終了
                 % endif

@@ -468,6 +468,109 @@ class TicketingCartResourceTests(unittest.TestCase):
         venue = Venue(id=venue_id, site=site, organization_id=organization.id)
         return venue
 
+    def _add_orders_user(self, order_limit=0):
+        from altair.app.ticketing.core.models import Order, SalesSegment
+        from altair.app.ticketing.cart.models import Cart
+        from altair.app.ticketing.users.models import User
+        sales_segment = SalesSegment(order_limit=order_limit)
+        user = User()
+        other = User()
+        orders = []
+        for i in range(2):
+            cart = Cart(sales_segment=sales_segment)
+            order = Order(user=user, cart=cart,
+                          total_amount=0,
+                          system_fee=0, transaction_fee=0, delivery_fee=0)
+            orders.append(order)
+
+        others = []
+        for i in range(2):
+            cart = Cart(sales_segment=sales_segment)
+            order = Order(user=other, cart=cart,
+                          total_amount=0,
+                          system_fee=0, transaction_fee=0, delivery_fee=0)
+            others.append(order)
+
+        self.session.add(sales_segment)
+        self.session.flush()
+        return sales_segment, user
+
+    def test_check_order_limit_noset(self):
+
+        request = testing.DummyRequest()
+        target = self._makeOne(request)
+        sales_segment, user = self._add_orders_user()
+
+        result = target.check_order_limit(sales_segment, user, "testing@example.com")
+
+        self.assertTrue(result)
+
+    def test_check_order_limit_user_over(self):
+
+        request = testing.DummyRequest()
+        target = self._makeOne(request)
+        sales_segment, user = self._add_orders_user(order_limit=1)
+
+        result = target.check_order_limit(sales_segment, user, "testing@example.com")
+
+        self.assertFalse(result)
+
+    def test_check_order_limit_user_under(self):
+
+        request = testing.DummyRequest()
+        target = self._makeOne(request)
+        sales_segment, user = self._add_orders_user(order_limit=3)
+
+        result = target.check_order_limit(sales_segment, user, "testing@example.com")
+
+        self.assertTrue(result)
+
+    def _add_orders_email(self, order_limit=0):
+        from altair.app.ticketing.core.models import Order, SalesSegment, ShippingAddress
+        from altair.app.ticketing.cart.models import Cart
+        sales_segment = SalesSegment(order_limit=order_limit)
+        orders = []
+        for i in range(2):
+            cart = Cart(sales_segment=sales_segment)
+            order = Order(cart=cart,
+                          shipping_address=ShippingAddress(email_1="testing@example.com"),
+                          total_amount=0,
+                          system_fee=0, transaction_fee=0, delivery_fee=0)
+            orders.append(order)
+
+        others = []
+        for i in range(2):
+            cart = Cart(sales_segment=sales_segment)
+            order = Order(cart=cart,
+                          shipping_address=ShippingAddress(email_1="other@example.com"),
+                          total_amount=0,
+                          system_fee=0, transaction_fee=0, delivery_fee=0)
+            others.append(order)
+
+        self.session.add(sales_segment)
+        self.session.flush()
+        return sales_segment, None
+
+    def test_check_order_limit_email_over(self):
+
+        request = testing.DummyRequest()
+        target = self._makeOne(request)
+        sales_segment, user = self._add_orders_email(order_limit=1)
+
+        result = target.check_order_limit(sales_segment, user, "testing@example.com")
+
+        self.assertFalse(result)
+
+    def test_check_order_limit_email_under(self):
+
+        request = testing.DummyRequest()
+        target = self._makeOne(request)
+        sales_segment, user = self._add_orders_email(order_limit=3)
+
+        result = target.check_order_limit(sales_segment, user, "testing@example.com")
+
+        self.assertTrue(result)
+
 class ReserveViewTests(unittest.TestCase):
     def setUp(self):
         self.session = _setup_db()
@@ -886,7 +989,13 @@ class PaymentViewTests(unittest.TestCase):
             finished_at=None,
         )
         request.context = testing.DummyResource()
+
+        payment_method = testing.DummyModel()
+        payment_method.public = True
+        
         payment_delivery_method = testing.DummyModel()
+        payment_delivery_method.payment_method = payment_method
+        
         request.context.available_payment_delivery_method_pairs = lambda sales_segment: [payment_delivery_method]
         request.context.authenticated_user = lambda: { 'claimed_id': 'http://ticketstar.example.com/user/1' }
         request.context.get_payment_delivery_method_pair = lambda: None

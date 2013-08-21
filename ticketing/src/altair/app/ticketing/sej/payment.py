@@ -63,19 +63,20 @@ class SejPayment(object):
 
     def request(self, params, retry_mode):
         request_params = create_request_params(params, self.secret_key)
-        ret = self.send_request(request_params, 0, retry_mode)
-        return ret
-
+        self.send_request(request_params, 0, retry_mode)
 
     def send_request(self, request_params, mode, retry_flg):
         for count in range(self.retry_count):
             if count > 0:
                 time.sleep(self.retry_interval)
             if self._send_request(request_params, mode, retry_flg):
-                return True
+                return
             else:
                 retry_flg=1
-        return False
+
+        reason = 'Sej Server connection error'
+        logger.error(reason)
+        raise SejServerError(status_code=None, reason=reason, body=None)
 
     def _send_request(self, request_params, mode, retry_flg):
         if retry_flg:
@@ -187,7 +188,7 @@ def request_order(
     #   'X_ticket_hon_cnt': '01'
     # }
 
-    error_type = ret.get('Error_Type', None)
+    error_type = ret.get('Error_Type', 0)
     if error_type:
         sej_error = SejError(
             message=ret.get('Error_Msg', None),
@@ -276,7 +277,7 @@ def request_cancel_order(
     payment.request(params, 0)
     ret = payment.response
 
-    error_type = ret.get('Error_Type', None)
+    error_type = ret.get('Error_Type', 0)
     if error_type:
         sej_error = SejError(
             message=ret.get('Error_Msg', None),
@@ -366,7 +367,7 @@ def request_update_order(
     #   'X_ticket_hon_cnt': '01'
     # }
 
-    error_type = ret.get('Error_Type', None)
+    error_type = ret.get('Error_Type', 0)
     if error_type:
         sej_error = SejError(
             message=ret.get('Error_Msg', None),

@@ -7,6 +7,7 @@ def setUpModule():
     _setup_db(modules=[
             "altair.app.ticketing.models",
             "altair.app.ticketing.core.models",
+            "altair.app.ticketing.lots.models",
             ])
 
 def tearDownModule():

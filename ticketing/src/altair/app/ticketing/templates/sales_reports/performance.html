@@ -24,7 +24,7 @@
             args="form=form, form_report_mail=form_report_mail, performance=performance, report_settings=report_settings" />
 </div>
 
-<h3>開催日:${vh.datetime(performance.start_on)}　${performance.name}</h3>
+<h3>開催日: ${vh.datetime(performance.start_on)}　${performance.name}</h3>
 
 <%
   sales_segments = performance_reporter.sort_index()
@@ -40,6 +40,7 @@
       reporter = performance_reporter.get_reporter(sales_segment)
       ss_name = sales_segment.name
   %>
+  <h4>会場: ${performance.venue.name}</h4>
   <h4>${ss_name}</h4>
   % if reporter:
   <table class="table table-bordered table-condensed">
@@ -105,12 +106,12 @@
       <td class="numeric">${vh.number(record.total_paid_quantity + record.total_unpaid_quantity) or ''}</td>
       <td class="numeric">${vh.number(record.total_unpaid_quantity) or ''}</td>
       <td class="numeric">${vh.number(record.total_paid_quantity) or ''}</td>
-      <td class="price">${vh.price((record.total_paid_quantity + record.total_unpaid_quantity) * record.product_price)}</td>
+      <td class="price">${vh.price((record.total_paid_quantity + record.total_unpaid_quantity) / record.sales_unit * record.product_price)}</td>
         % if form.limited_from.data or form.limited_to.data:
       <td class="numeric">${vh.number(record.paid_quantity + record.unpaid_quantity) or ''}</td>
       <td class="numeric">${vh.number(record.unpaid_quantity) or ''}</td>
       <td class="numeric">${vh.number(record.paid_quantity) or ''}</td>
-      <td class="price">${vh.price((record.paid_quantity + record.unpaid_quantity) * record.product_price)}</td>
+      <td class="price">${vh.price((record.paid_quantity + record.unpaid_quantity) / record.sales_unit * record.product_price)}</td>
         % endif
     </tr>
       % endfor

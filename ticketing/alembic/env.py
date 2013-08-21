@@ -31,6 +31,7 @@ import altair.app.ticketing.operators.models
 import altair.app.ticketing.sej.models
 import altair.app.ticketing.users.models
 import altair.app.ticketing.lots.models
+import altair.app.ticketing.lots_admin.models
 
 target_metadata = models.Base.metadata
 # target_metadata = None

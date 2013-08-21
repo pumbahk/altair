@@ -75,7 +75,7 @@ class StaticPageDirectory(object):
 
     def get_toplevelname(self, static_pageset, name=None):
         return os.path.join(self.get_base_directory(), 
-                            name or static_pageset.url, 
+                            name or static_pageset.hash, 
                             )
 
     def get_rootname(self, static_page, name=None):

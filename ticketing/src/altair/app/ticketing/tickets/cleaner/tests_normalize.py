@@ -2,6 +2,7 @@
 import unittest
 import os.path
 from altair.app.ticketing.tickets.cleaner.normalize import LBrace, RBrace, Content
+from altair.app.ticketing.testing import ElementTreeTestMixin
 
 class EventsFromStringTests(unittest.TestCase):
     def _callFUT(self, *args, **kwargs):
@@ -29,235 +30,128 @@ class EventsFromStringTests(unittest.TestCase):
         self.assertEquals(result, [Content("@@@"), LBrace("{"), Content("bbb"), LBrace("{"), Content("cc"), RBrace("}"), Content("dd"), LBrace("{"), RBrace("}"), Content("e"), RBrace("}")])
 
 
-class SVGNormalizeUnitTests(unittest.TestCase):
-    def _callFUT(self, *args, **kwargs):
-        from altair.app.ticketing.tickets.cleaner.normalize import _normalize
-        return _normalize(*args, **kwargs)
+class NormalizerTestCase(unittest.TestCase, ElementTreeTestMixin):
+    def check(self, fn, *args, **kwargs):
+        from lxml.etree import fromstring
+        from altair.app.ticketing.tickets.cleaner.normalize import normalize_etree
+        import re
+        lhs, rhs = re.split(ur'\s+->\s+', fn.__doc__, 1)
+        tree = fromstring(lhs)
+        expected = fromstring(rhs)
+        result = normalize_etree(tree, *args, **kwargs)
+        self.assertEqualsEtree(result.getroot(), expected, fn.__doc__)
 
+
+class SVGNormalizeUnitTests(NormalizerTestCase):
     def test_it(self):
-        from StringIO import StringIO
-        io = StringIO(u"""<doc>{{<flowSpan style="font-weight:bold">価格}}</flowSpan></doc>""".encode("utf-8"))
-
-        result = StringIO()
-        self._callFUT(io, result)
-        self.assertEquals(u'<doc><flowSpan style="font-weight:bold">{{価格}}</flowSpan></doc>', result.getvalue().decode("utf-8"))
+        u"""<doc>{{<flowSpan style="font-weight:bold">価格}}</flowSpan></doc> -> <doc><flowSpan style="font-weight:bold">{{価格}}</flowSpan></doc>"""
+        self.check(self.test_it)
 
     def test_cleaned_xml0(self):
-        """<a>{{bb}}</a> -> <a>{{bb}}</a>"""
-        from StringIO import StringIO
-        io = StringIO("<a>{{bb}}</a>")
-
-        result = StringIO()
-        self._callFUT(io, result)
-        self.assertEquals("<a>{{bb}}</a>", result.getvalue())
+        u"""<a>{{bb}}</a> -> <a>{{bb}}</a>"""
+        self.check(self.test_cleaned_xml0)
 
     def test_cleaned_xml1(self):
-        """<a>{{bb}} {{cc}}</a> -> <a>{{bb}} {{cc}}</a>"""
-        from StringIO import StringIO
-        io = StringIO("<a>{{bb}} {{c}}</a>")
-
-        result = StringIO()
-        self._callFUT(io, result)
-        self.assertEquals("<a>{{bb}} {{c}}</a>", result.getvalue())
+        u"""<a>{{bb}} {{c}}</a> -> <a>{{bb}} {{c}}</a>"""
+        self.check(self.test_cleaned_xml1)
 
     def test_cleaned_xml2(self):
-        """<a>{{bb</a>}} -> <a>{{bb}}</a>"""
-        from StringIO import StringIO
-        io = StringIO("<doc><a>{{bb</a>}}</doc>")
-
-        result = StringIO()
-        self._callFUT(io, result)
-        self.assertEquals("<doc><a>{{bb}}</a></doc>", result.getvalue())
+        u"""<doc><a>{{bb</a>}}</doc> -> <doc><a>{{bb}}</a></doc>"""
+        self.check(self.test_cleaned_xml2)
 
     def test_cleaned_xml3(self):
-        """<a>{<b>{ff</b></a>}} -> <a><b>{{ff}}</b></a>"""
-        from StringIO import StringIO
-        io = StringIO("<doc><a>{<b>{ff</b></a>}}</doc>")
-
-        result = StringIO()
-        self._callFUT(io, result)
-        self.assertEquals("<doc><a><b>{{ff}}</b></a></doc>", result.getvalue())
+        u"""<doc><a>{<b>{ff</b></a>}}</doc> -> <doc><a><b>{{ff}}</b></a></doc>"""
+        self.check(self.test_cleaned_xml3)
 
     def test_cleaned_xml4(self):
-        """<a>{<b>{ff}}</b></a> -> <a><b>{{ff}}</b></a>"""
-        from StringIO import StringIO
-        io = StringIO("<doc><a>{<b>{ff}}</b></a></doc>")
-
-        result = StringIO()
-        self._callFUT(io, result)
-        self.assertEquals("<doc><a><b>{{ff}}</b></a></doc>", result.getvalue())
+        u"""<doc><a>{<b>{ff}}</b></a></doc> -> <doc><a><b>{{ff}}</b></a></doc>"""
+        self.check(self.test_cleaned_xml4)
 
     def test_cleaned_xml5(self):
-        """<a>{</a>{ff}<b>}</b> -> <a></a>{{ff}}<b></b>"""
-        from StringIO import StringIO
-        io = StringIO("<doc><a>{</a>{ff}<b>}</b></doc>")
-
-        result = StringIO()
-        self._callFUT(io, result)
-        self.assertEquals('<doc><a></a>{{ff}}<b></b></doc>', result.getvalue())
+        u"""<doc><a>{</a>{ff}<b>}</b></doc> -> <doc><a/>{{ff}}<b/></doc>"""
+        self.check(self.test_cleaned_xml5)
 
     def test_cleaned_xml6(self):
-        """<a>{{hhh}} --- {{ii}</a>} -> <a>{{hhh}} --- {{ii}}</a>"""
-        from StringIO import StringIO
-        io = StringIO("<doc><a>{{hhh}} --- {{ii}</a>}</doc>")
-
-        result = StringIO()
-        self._callFUT(io, result)
-        self.assertEquals("<doc><a>{{hhh}} --- {{ii}}</a></doc>", result.getvalue())
+        u"""<doc><a>{{hhh}} --- {{ii}</a>}</doc> -> <doc><a>{{hhh}} --- {{ii}}</a></doc>"""
+        self.check(self.test_cleaned_xml6)
 
     def test_cleaned_xml7(self):
-        """<a>{{hhh}} --- {</a>{ii}} -> <a>{{hhh}} --- </a>{{ii}}"""
-        from StringIO import StringIO
-        io = StringIO("<doc><a>{{hhh}} --- {</a>{ii}}</doc>")
-
-        result = StringIO()
-        self._callFUT(io, result)
-        self.assertEquals("<doc><a>{{hhh}} --- </a>{{ii}}</doc>", result.getvalue())
+        u"""<doc><a>{{hhh}} --- {</a>{ii}}</doc> -> <doc><a>{{hhh}} --- </a>{{ii}}</doc>"""
+        self.check(self.test_cleaned_xml7)
 
     def test_cleaned_xml8(self):
-        """<a><b> xxx </b> {{</a>yyy}}"""
-        from StringIO import StringIO
-        io = StringIO("<doc><a><b> xxx </b> {{</a>yyy}}</doc>")
-
-        result = StringIO()
-        self._callFUT(io, result)
-        self.assertEquals("<doc><a><b> xxx </b> </a>{{yyy}}</doc>", result.getvalue())
+        u"""<doc><a><b> xxx </b> {{</a>yyy}}</doc> -> <doc><a><b> xxx </b> </a>{{yyy}}</doc>"""
+        self.check(self.test_cleaned_xml8)
 
     def test_cleaned_xml9(self):
-        """<a><b> xxx </b> {{y</a>yy}}"""
-        from StringIO import StringIO
-        io = StringIO("<doc><a><b> xxx </b> {{y</a>yy}}</doc>")
-
-        result = StringIO()
-        self._callFUT(io, result)
-        self.assertEquals("<doc><a><b> xxx </b> {{yyy}}</a></doc>", result.getvalue())
+        u"""<doc><a><b> xxx </b> {{y</a>yy}}</doc> -> <doc><a><b> xxx </b> {{yyy}}</a></doc>"""
+        self.check(self.test_cleaned_xml9)
 
     def test_cleaned_xml10(self):
-        """<a><b> xxx </b> {{y</a>yy}}"""
-        from StringIO import StringIO
-        io = StringIO("<doc><a><b> x{x}x </b> {{y</a>yy}}</doc>")
-        
-        result = StringIO()
-        self._callFUT(io, result)
-        self.assertEquals("<doc><a><b> x{x}x </b> {{yyy}}</a></doc>", result.getvalue())
+        u"""<doc><a><b> x{x}x </b> {{y</a>yy}}</doc> -> <doc><a><b> x{x}x </b> {{yyy}}</a></doc>"""
+        self.check(self.test_cleaned_xml10)
 
     def test_cleaned_xml11(self):
-        """<a><b> {{ </b> {{y</a>yy}}"""
-        from StringIO import StringIO
-        io = StringIO("<doc><a><a> {{ </a> {{yyy}}</a></doc>")
-        
-        result = StringIO()
-        self._callFUT(io, result)
-        self.assertEquals("<doc><a><a> {{  {{yyy}}</a></a></doc>", result.getvalue())
+        u"<doc><a><a> {{ </a> {{yyy}}</a></doc> -> <doc><a><a> {{  {{yyy}}</a></a></doc>"
+        self.check(self.test_cleaned_xml11)
 
     def test_cleaned_xml13(self):
-        """<doc><g><a><b><c>{{</c><c>{{yyy}}</c></b></a><a><x><r/></x><b><c/><c/></b></a></g></doc>"""
-        from StringIO import StringIO
-        io = StringIO("<doc><g><a><b><c>{{</c><c>{{yyy}}</c></b></a><a><x><r/></x><b><c/><c/></b></a></g></doc>")
-        
-        result = StringIO()
-        self._callFUT(io, result)
-        self.assertEquals('<doc><g><a><b><c></c><c>{{{{yyy}}</c></b></a><a><x><r></r></x><b><c></c><c></c></b></a></g></doc>', result.getvalue())
+        u"<doc><g><a><b><c>{{</c><c>{{yyy}}</c></b></a><a><x><r/></x><b><c/><c/></b></a></g></doc> -> <doc><g><a><b><c></c><c>{{{{yyy}}</c></b></a><a><x><r></r></x><b><c></c><c></c></b></a></g></doc>"
+        self.check(self.test_cleaned_xml13)
 
     def test_cleaned_xml14(self):
-        """<doc><g><a><b><c>{{yyy}}</c><c>}</c></b></a><a><x><r/></x><b><c/><c/></b></a></g></doc>"""
-        from StringIO import StringIO
-        io = StringIO("<doc><g><a><b><c>{{yyy}}</c><c>}</c></b></a><a><x><r/></x><b><c/><c/></b></a></g></doc>")
-        
-        result = StringIO()
-        self._callFUT(io, result)
-        self.assertEquals('<doc><g><a><b><c>{{yyy}}</c><c>}</c></b></a><a><x><r></r></x><b><c></c><c></c></b></a></g></doc>', result.getvalue())
+        u"<doc><g><a><b><c>{{yyy}}</c><c>}</c></b></a><a><x><r/></x><b><c/><c/></b></a></g></doc> -> <doc><g><a><b><c>{{yyy}}</c><c>}</c></b></a><a><x><r></r></x><b><c></c><c></c></b></a></g></doc>"
+        self.check(self.test_cleaned_xml14)
 
     ## simple xml1 and simple xml2 's result are asymnetric. this is support for unmatched parensis character set e.g. (().
     def test_simple_xml1(self):
-        """<doc>{<a></a></doc>"""
-        from StringIO import StringIO
-        io = StringIO("<doc>{<a></a></doc>")
-        
-        result = StringIO()
-        self._callFUT(io, result)
-        self.assertEquals('<doc><a></a></doc>', result.getvalue())
+        u"<doc>{<a></a></doc> -> <doc><a></a></doc>"
+        self.check(self.test_simple_xml1)
 
     def test_simple_xml2(self):
-        """<doc>}}<a></a></doc>"""
-        from StringIO import StringIO
-        io = StringIO("<doc>}}<a></a></doc>")
-        
-        result = StringIO()
-        self._callFUT(io, result)
-        self.assertEquals('<doc>}}<a></a></doc>', result.getvalue())
+        u"<doc>}}<a></a></doc> -> <doc>}}<a></a></doc>"
+        self.check(self.test_simple_xml2)
 
-       
-class EliminatedTagNormalizeUnitTests(unittest.TestCase):
-    def _callFUT(self, *args, **kwargs):
-        from altair.app.ticketing.tickets.cleaner.normalize import normalize
-        return normalize(*args, **kwargs)
 
+class EliminatedTagNormalizeUnitTests(NormalizerTestCase):
     def test_it(self):
-        """<F id=1>{{<F id=2>zz</F><f id=3>}}</F></F> -> <F id=1>{{zz}}</F>"""
-        from StringIO import StringIO
-        io = StringIO('<F id="1">{{<F id="2">zz</F><F id="3">}}</F></F>')
-
-        result = StringIO()
-        self._callFUT(io, result, eliminate=True)
-        self.assertEquals('<F id="1">{{zz}}</F>', result.getvalue())
+        u"""<F id="1">{{<F id="2">zz</F><F id="3">}}</F></F> -> <F id="1">{{zz}}</F>"""
+        self.check(self.test_it, eliminate=True)
 
     def test_it2(self):
-        """<F id=1>{{<F id=2>zz</F><f id=3>}}</F></F> -> <F id=1>{{zz}}</F>"""
-        from StringIO import StringIO
-        io = StringIO('<doc>{{<F id="2">zz</F><F id="3">}}</F></doc>')
-
-        result = StringIO()
-        self._callFUT(io, result, eliminate=True)
-        self.assertEquals('<doc><F id="2">{{zz}}</F></doc>', result.getvalue())
+        u"""<doc>{{<F id="2">zz</F><F id="3">}}</F></doc> -> <doc><F id="2">{{zz}}</F></doc>"""
+        self.check(self.test_it2, eliminate=True)
 
     def test_it3(self):
-        from StringIO import StringIO
-        """<F id=1><F id=2></F>)</F> => <F id=1><F id=2></F>)</F>"""
-        io = StringIO('<doc><F id="1"><F id="2">x</F>)</F></doc>')
-
-        result = StringIO()
-        self._callFUT(io, result, eliminate=True)
-        self.assertEquals('<doc><F id="1">x</F>)</doc>', result.getvalue())
+        u"""<doc><F id="1"><F id="2">x</F>)</F></doc> -> <doc><F id="1">x</F>)</doc>"""
+        self.check(self.test_it3, eliminate=True)
 
     def test_it4(self):
-        from StringIO import StringIO
-        io = StringIO('<doc><F id="1">{{<F id="2">aaa}}</F>)</F></doc>')
-
-        result = StringIO()
-        self._callFUT(io, result, eliminate=True)
-        self.assertEquals('<doc><F id="1">{{aaa}}</F>)</doc>', result.getvalue())
+        u"""<doc><F id="1">{{<F id="2">aaa}}</F>)</F></doc> -> <doc><F id="1">{{aaa}}</F>)</doc>"""
+        self.check(self.test_it4, eliminate=True)
 
     def test_complex(self):
-        """ そのまま{{}}の中の文字列をmustacheで文字列を埋め込もうとするとxmlとして不正な形式になり失敗する.normalizeした後のものはok
-        """
-        from StringIO import StringIO
+        """そのまま{{}}の中の文字列をmustacheで文字列を埋め込もうとするとxmlとして不正な形式になり失敗する.normalizeした後のものはok"""
+
         import pystache
-        import lxml.etree
-        svg_file = os.path.join(os.path.dirname(__file__), "sample.svg")
+        from lxml.etree import fromstring, tostring, XMLSyntaxError
+        from altair.app.ticketing.tickets.cleaner.normalize import normalize_etree
+        from ..constants import SVG_NAMESPACE
+        svg_file = open(os.path.join(os.path.dirname(__file__), "sample.svg")).read().decode("utf-8")
 
         ## occur xml syntax error using non normalized svg 
         render = pystache.Renderer()
-        emitted = render.render(open(svg_file).read().decode("utf-8"), {u"name": "--name--"})
-        io = StringIO()
-        io.write(emitted.encode("utf-8"))
-        io.seek(0)
+        emitted = render.render(svg_file, {u"名前": u"--name--"})
 
-        with self.assertRaises(lxml.etree.XMLSyntaxError):
-            lxml.etree.parse(io)
+        with self.assertRaises(XMLSyntaxError):
+            fromstring(emitted.encode("utf-8"))
 
         ## normalized svg
-        io = StringIO()
-        with open(svg_file) as rf:
-            self._callFUT(rf, io, eliminate=True)            
+        normalized = tostring(normalize_etree(fromstring(svg_file.encode("utf-8")), eliminate=True))
 
         render = pystache.Renderer()
-        emitted = render.render(io.getvalue().decode("utf-8"), {u"名前": "--name--"})
-        io = StringIO()
-        io.write(emitted.encode("utf-8"))
-        io.seek(0)
-        
-        self.assertTrue(lxml.etree.parse(io))
+        emitted = render.render(normalized, {u"名前": "--name--"})
+        self.assertTrue("{%s}svg" % SVG_NAMESPACE, fromstring(emitted).tag)
 
     ## todo: move
     def test_double(self):

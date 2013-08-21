@@ -29,7 +29,7 @@ class PromotionWidget(Widget):
     display_type = sa.Column(sa.Unicode(length=255))
     tag_id = sa.Column(sa.Integer, sa.ForeignKey("topiccoretag.id"))
     tag = orm.relationship("PromotionTag", uselist=False, primaryjoin="PromotionWidget.tag_id==PromotionTag.id")
-    system_tag_id = sa.Column(sa.Integer, sa.ForeignKey("topiccoretag.id"))
+    system_tag_id = sa.Column(sa.Integer, sa.ForeignKey("topiccoretag.id", ondelete="SET NULL"))
     system_tag = orm.relationship("PromotionTag", uselist=False, primaryjoin="PromotionWidget.system_tag_id==PromotionTag.id")
 
     def merge_settings(self, bname, bsettings):

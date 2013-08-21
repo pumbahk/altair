@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
 
 from wtforms import Form
-from wtforms import TextField, SelectField, HiddenField, IntegerField, BooleanField, SelectMultipleField
+from wtforms import TextField, TextAreaField, SelectField, HiddenField, IntegerField, BooleanField, SelectMultipleField
 from wtforms.validators import Regexp, Length, Optional, ValidationError
 from wtforms.widgets import CheckboxInput
 from sqlalchemy.sql import or_, and_, select
 
-from altair.formhelpers import (Translations, Required, RequiredOnUpdate, OurForm, OurDateTimeField,
+from altair.formhelpers import (Translations, Required, RequiredOnUpdate, DateTimeFormat, OurForm, OurDateTimeField,
                                    OurIntegerField, OurBooleanField, OurSelectField, OurDecimalField,
                                    BugFreeSelectField, PHPCompatibleSelectMultipleField, CheckboxMultipleSelect)
 from altair.app.ticketing.core.models import SalesSegmentGroup, SalesSegment, Account
@@ -36,7 +36,7 @@ class SalesSegmentForm(OurForm):
             ]
 
             if context.performance is not None:
-                self.performance_id.data = context.performance.id
+                self.performance_id.data = self.performance_id.default = context.performance.id
 
             if context.sales_segment_group is not None:
                 self.payment_delivery_method_pairs.choices = \
@@ -46,13 +46,13 @@ class SalesSegmentForm(OurForm):
                     ]
                 self.account_id.default = context.sales_segment_group.account_id
 
-                if formdata is None:
-                    self.payment_delivery_method_pairs.data = [int(pdmp.id) for pdmp in context.sales_segment_group.payment_delivery_method_pairs]
+                self.payment_delivery_method_pairs.default = [int(pdmp.id) for pdmp in context.sales_segment_group.payment_delivery_method_pairs]
 
                 for field_name in propagation_attrs:
                     field = getattr(self, field_name)
                     field.default = getattr(context.sales_segment_group, field_name)
-                self.sales_segment_group_id.data = context.sales_segment_group.id
+
+                self.sales_segment_group_id.data = self.sales_segment_group_id.default = context.sales_segment_group.id
             else:
                 for field_name in propagation_attrs:
                     field = getattr(self, field_name)
@@ -107,12 +107,12 @@ class SalesSegmentForm(OurForm):
     )
     start_at = OurDateTimeField(
         label=u'販売開始日時',
-        validators=[RequiredOnUpdate()],
+        validators=[DateTimeFormat()],
         format='%Y-%m-%d %H:%M'
     )
     end_at = OurDateTimeField(
         label=u'販売終了日時',
-        validators=[RequiredOnUpdate()],
+        validators=[DateTimeFormat()],
         format='%Y-%m-%d %H:%M',
         missing_value_defaults=dict(hour=u'23', minute=u'59', second='59')
     )
@@ -156,18 +156,24 @@ class SalesSegmentForm(OurForm):
         default=0,
         validators=[Required()]
     )
-
-    def validate_end_at(form, field):
-        if field.data is not None and field.data < form.start_at.data:
-            raise ValidationError(u'開演日時より過去の日時は入力できません')
+    x_auth3d_notice = TextAreaField(
+        label=u'クレジットカード 3D認証フォーム 注記事項',
+        validators=[Optional()],
+    )
 
     def validate(self):
         if super(SalesSegmentForm, self).validate():
-
-            # 同一公演の期限かぶりをチェックする
             start_at = self.start_at.data
             end_at = self.end_at.data
 
+            # 販売開始日時と販売終了日時の前後関係をチェックする
+            if start_at > end_at:
+                self.start_at.errors.append(u'販売開始日時が販売終了日時より後に設定されています')
+                self.end_at.errors.append(u'販売終了日時が販売開始日時より前に設定されています')
+                return False
+            
+            
+            # 同一公演の期限かぶりをチェックする
             if start_at is not None and end_at is not None:
                 q = SalesSegment.query.filter(
                     SalesSegment.performance_id==self.performance_id.data

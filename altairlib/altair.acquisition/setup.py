@@ -5,6 +5,7 @@ version = '0.0'
 
 
 requires = [
+    "setuptools>0.7",
     "zope.interface",
 ]
 

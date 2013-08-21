@@ -34,7 +34,7 @@ setup(name='altair.cartbot',
       include_package_data=True,
       zip_safe=False,
       install_requires=[
-          'setuptools',
+          'setuptools>0.7',
           'lxml',
           'lxmlmechanize',
           'python-dateutil',

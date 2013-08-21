@@ -7,12 +7,14 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from zope.interface import directlyProvides
 from pyramid.settings import asbool
+
 from .interfaces import ISessionMaker
 
 logger = logging.getLogger(__name__)
 
 url_key_pt = re.compile(r"altair\.sqlahelper\.sessions\.(?P<name>\w+)\.url")
 echo_key_pt = re.compile(r"altair\.sqlahelper\.sessions\.(?P<name>\w+)\.echo")
+session_class_key_pt = re.compile(r"altair\.sqlahelper\.sessions\.(?P<name>\w+)\.session_class")
 
 
 def param_match(key, value, matcher, param_name, results):
@@ -29,6 +31,7 @@ def from_settings(settings):
     for key, value in settings.items():
         param_match(key, value, url_key_pt, 'url', results)
         param_match(key, asbool(value), echo_key_pt, 'echo', results)
+        param_match(key, value, session_class_key_pt, 'session_class', results)
     return results
 
 
@@ -38,10 +41,16 @@ def register_sessionmakers(config, urls):
             continue
         url = c['url']
         echo = c.get('echo', False)
+        session_class_name = c.get('session_class', None)
+
         engine = create_engine(url, echo=echo,
                                pool_recycle=0)
 
-        Session = sessionmaker(bind=engine)
+        kwargs = {}
+        if session_class_name is not None:
+            kwargs['class_'] = config.maybe_dotted(session_class_name)
+
+        Session = sessionmaker(bind=engine, **kwargs)
         directlyProvides(Session, ISessionMaker)
         config.registry.registerUtility(Session, name=name)
 

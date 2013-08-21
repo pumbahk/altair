@@ -2,7 +2,7 @@
 import logging
 import transaction
 from altair.app.ticketing.models import DBSession
-from altair.app.ticketing.cart.exceptions import DeliveryFailedException, InvalidCartStatusError
+from altair.app.ticketing.cart.exceptions import DeliveryFailedException, InvalidCartStatusError, PaymentMethodEmptyError
 from altair.app.ticketing.core.models import Order
 from .api import (
     get_payment_delivery_plugin, 
@@ -35,6 +35,8 @@ class Payment(object):
         return res
 
     def call_delegator(self):
+        """ 確認後決済フロー
+        """
         preparer = get_preparer(self.request, self.cart.payment_delivery_pair)
         if preparer is None:
             raise Exception
@@ -68,17 +70,27 @@ class Payment(object):
         delivery_plugin = get_delivery_plugin(self.request, payment_delivery_pair.delivery_method.delivery_plugin_id)
         return payment_delivery_plugin, payment_plugin, delivery_plugin
 
+    def call_validate(self):
+        """ 決済処理前の状態チェック
+        """
+        preparer = get_preparer(self.request, self.cart.payment_delivery_pair)
+        if preparer is None:
+            raise Exception
+        if hasattr(preparer, 'validate'):
+            return preparer.validate(self.request, self.cart)
+        return None
+
     def call_payment(self):
         """ 決済処理
         """
 
         payment_delivery_plugin, payment_plugin, delivery_plugin = self.get_plugins(self.cart.payment_delivery_pair)
         event_id = self.cart.performance.event_id
-
+        
         if payment_delivery_plugin is not None:
             order = self.call_payment_delivery(payment_delivery_plugin)
         elif payment_plugin and delivery_plugin:
-            # 決済と配送を別々に処理する
+            # 決済と配送を別々に処理する            
             order = self.call_payment_plugin(payment_plugin)
             self.cart.order = order
             order_no = order.order_no

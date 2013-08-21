@@ -1,6 +1,7 @@
 # -*- coding:utf-8 -*-
 from pyramid.renderers import render
 from pyramid_mailer.message import Message
+from pyramid.compat import text_type
 import logging
 from .forms import SubjectInfoRenderer
 from .forms import OrderInfoDefault, SubjectInfo, SubjectInfoWithValue
@@ -40,9 +41,8 @@ class OrderCancelInfoDefault(OrderInfoDefault):
     contact = SubjectInfo(name=u"contact", label=u"お問い合わせ", getval=get_contact)
 
     cancel_reason_default=u"""\
-　・お客様からキャンセルのご連絡があったため
 　・期限内のご入金がなくキャンセル扱いとしたため
-　・二重注文により、ひとつをキャンセル処理したため
+　・弊社判断によるキャンセル処理を行ったため
 """
     ## getvalが文字列の場合は、input formになり文言を変更できる
     cancel_reason = SubjectInfoWithValue(name="cancel_reason", label=u"キャンセル理由", 
@@ -113,4 +113,6 @@ class CancelMail(object):
 
     def build_mail_body(self, order, traverser):
         value = self._body_tmpl_vars(order, traverser)
-        return render(self.mail_template, value, request=self.request)
+        retval = render(self.mail_template, value, request=self.request)
+        assert isinstance(retval, text_type)
+        return retval

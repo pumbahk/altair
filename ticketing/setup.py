@@ -9,6 +9,7 @@ CHANGES = open(os.path.join(here, 'CHANGES.txt')).read()
 requires = [
     'nose',
     'webtest',
+    'testfixtures',
     'pyramid == 1.3.4',
     'pyramid_debugtoolbar',
     'pyramid_fanstatic',
@@ -72,7 +73,7 @@ requires = [
     'redis',
     'beaker-extensions == 0.2.0dev-moriyoshi2',
     'boto',
-    'fluent-logger == 0.3.3moriyoshi2',
+    'fluent-logger == 0.3.3moriyoshi3',
     'Pillow', # for qrcode.image.pil
     'altair.findable_label', 
     'altair.log',
@@ -101,6 +102,7 @@ requires = [
 tests_require = [
     "nose", 
     "coverage"
+    "testfixtures",
 ]
 
 extras_require = {
@@ -150,7 +152,7 @@ setup(name='altair.app.ticketing',
         'https://github.com/moriyoshi/tableau/tarball/master#egg=tableau-0.0.4pre2',
         "https://github.com/numpy/numpy/tarball/v1.6.2#egg=numpy-1.6.2",
         'https://github.com/moriyoshi/beaker_extensions/tarball/0.2.0dev-moriyoshi2#egg=beaker-extensions-0.2.0dev-moriyoshi2',
-        'https://github.com/moriyoshi/fluent-logger-python/tarball/0.3.3moriyoshi2#egg=fluent-logger-0.3.3moriyoshi2',
+        'https://github.com/moriyoshi/fluent-logger-python/tarball/0.3.3moriyoshi3#egg=fluent-logger-0.3.3moriyoshi3',
         'http://py-radix.googlecode.com/files/py-radix-0.5.tar.gz#egg=radix-0.5',
       ],
       tests_require=tests_require,
@@ -163,22 +165,24 @@ setup(name='altair.app.ticketing',
       inquiry_demo=altair.app.ticketing.cart.commands:inquiry_demo
       cancel_auth_expired_carts=altair.app.ticketing.cart.commands:cancel_auth_expired_carts
       venue_import=altair.app.ticketing.scripts.venue_import:main
-      update_seat_status=altair.app.ticketing.orders.commands:update_seat_status
+      update_seat_status=altair.app.ticketing.orders.scripts:update_seat_status
       join_cart_and_order=altair.app.ticketing.cart.commands:join_cart_and_order
-      sej_notification=ticketing.sej.scripts.sej_notification:main
+      sej_notification=altair.app.ticketing.sej.scripts.sej_notification:main
       check_multicheckout_orders=altair.app.ticketing.scripts.check_multicheckout_orders:main
       populate_order_no=altair.app.ticketing.scripts.populate_order_no:main
       send_sales_reports=altair.app.ticketing.events.sales_reports.commands:main
+      send_lots_reports=altair.app.ticketing.events.lots.commands.send_lot_report_mails:main
       cancel_auth=altair.app.ticketing.multicheckout.scripts.cancelauth:main
       sej_nwts_upload=altair.app.ticketing.sej.scripts.sej_nwts_upload:main
       release_carts=altair.app.ticketing.cart.scripts.release_carts:main
       rakuten_checkout_sales=altair.app.ticketing.checkout.commands:rakuten_checkout_sales
-      refund_order=altair.app.ticketing.orders.commands:refund_order
+      refund_order=altair.app.ticketing.orders.scripts:refund_order
       sej_send_refund_file_with_proxy=altair.app.ticketing.sej.commands:send_refund_file_with_proxy
       import_point_grant_results=altair.app.ticketing.loyalty.commands:import_point_grant_results
       import_point_grant_data=altair.app.ticketing.loyalty.commands:import_point_grant_data
       export_point_grant_data=altair.app.ticketing.loyalty.commands:export_point_grant_data
       make_point_grant_data=altair.app.ticketing.loyalty.commands:make_point_grant_data
+      detect_fraud=altair.app.ticketing.orders.scripts:detect_fraud
       """,
       paster_plugins=['pyramid'],
       )

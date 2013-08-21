@@ -117,8 +117,8 @@ def get_seat_type_dicts(request, sales_segment, seat_type_id=None):
         availability_for_stock_type = max(availability_per_product_map[product_id] for product_id in products_for_stock_type[stock_type.id])
         product_dicts = []
         for product in products_for_stock_type[stock_type.id].itervalues():
-           quantity_power = [product_item for product_item in product_items_for_product[product.id] if stock_for_product_item[product_item.id].stock_type_id == product.seat_stock_type_id][0].quantity
-           product_dicts.append(
+            quantity_power = sum([product_item.quantity for product_item in product_items_for_product[product.id] if stock_for_product_item[product_item.id].stock_type_id == product.seat_stock_type_id])
+            product_dicts.append(
                 dict(
                     id=product.id,
                     name=product.name,

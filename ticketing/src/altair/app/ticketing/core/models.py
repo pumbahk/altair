@@ -53,7 +53,7 @@ logger = logging.getLogger(__name__)
 
 class Seat_SeatAdjacency(Base):
     __tablename__ = 'Seat_SeatAdjacency2'
-    l0_id = Column(String(255), ForeignKey('Seat.l0_id'), primary_key=True)
+    l0_id = Column(Unicode(48), ForeignKey('Seat.l0_id'), primary_key=True)
     seat_adjacency_id = Column(Identifier, ForeignKey('SeatAdjacency.id', ondelete='CASCADE'), primary_key=True, nullable=False)
 
 @implementer(ITentativeVenueSite)
@@ -77,7 +77,7 @@ class Site(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 class VenueArea_group_l0_id(Base):
     __tablename__   = "VenueArea_group_l0_id"
     venue_id = Column(Identifier, ForeignKey('Venue.id', ondelete='CASCADE'), primary_key=True, nullable=False)
-    group_l0_id = Column(String(255), ForeignKey('Seat.group_l0_id', onupdate=None, ondelete='CASCADE'), primary_key=True, nullable=True)
+    group_l0_id = Column(Unicode(48), ForeignKey('Seat.group_l0_id', onupdate=None, ondelete='CASCADE'), primary_key=True, nullable=True)
     venue_area_id = Column(Identifier, ForeignKey('VenueArea.id', ondelete='CASCADE'), index=True, primary_key=True, nullable=False)
     venue = relationship('Venue')
 
@@ -233,14 +233,14 @@ class Seat(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__   = "Seat"
 
     id              = Column(Identifier, primary_key=True)
-    l0_id           = Column(String(255))
+    l0_id           = Column(Unicode(48))
     name            = Column(Unicode(50), nullable=False, default=u"", server_default=u"")
     seat_no         = Column(String(255))
     stock_id        = Column(Identifier, ForeignKey('Stock.id'))
 
     venue_id        = Column(Identifier, ForeignKey('Venue.id', ondelete='CASCADE'), nullable=False)
-    row_l0_id       = Column(String(255), index=True)
-    group_l0_id     = Column(String(255), index=True)
+    row_l0_id       = Column(Unicode(48), index=True)
+    group_l0_id     = Column(Unicode(48), index=True)
 
     venue           = relationship("Venue", backref='seats')
     stock           = relationship("Stock", backref='seats')
@@ -445,12 +445,6 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     @property
     def products(self):
         return self.sale_segment.products if self.sales_segment_id else []
-
-    @property
-    def inner_sales_segments(self):
-        now = datetime.now()
-        sales_segment_sort_key_func = lambda ss: (ss.kind == u'sales_counter', ss.start_at <= now, now <= ss.end_at, ss.id)
-        return sorted(list(self.sales_segments), key=sales_segment_sort_key_func, reverse=True)
 
     @property
     def stock_types(self):
@@ -1098,6 +1092,7 @@ class SalesSegmentGroup(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     event_id = AnnotatedColumn(Identifier, ForeignKey('Event.id'), _a_label=_(u'イベント'))
     event = relationship('Event')
+    auth3d_notice = Column(UnicodeText)
 
     @hybrid_method
     def in_term(self, dt):
@@ -1275,6 +1270,15 @@ class PaymentDeliveryMethodPair(Base, BaseModel, WithTimestamp, LogicallyDeleted
             pdmp.sales_segment_group_id = kwargs['sales_segment_group_id']
         pdmp.save()
 
+    def delete(self):
+        # 既に予約がある場合は削除できない
+        if self.orders:
+            raise Exception(u'予約がある為、削除できません')
+        # 既に抽選申込がある場合は削除できない
+        if self.lot_entries:
+            raise Exception(u'抽選申込がある為、削除できません')
+        super(PaymentDeliveryMethodPair, self).delete()
+
 class PaymentMethodPlugin(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'PaymentMethodPlugin'
     id = Column(Identifier, primary_key=True)
@@ -1296,6 +1300,7 @@ class PaymentMethod(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     description = Column(String(2000))
     fee = Column(Numeric(precision=16, scale=2), nullable=False)
     fee_type = Column(Integer, nullable=False, default=FeeTypeEnum.Once.v[0])
+    public = Column(Boolean, nullable=False, default=True)
 
     organization_id = Column(Identifier, ForeignKey('Organization.id'))
     organization = relationship('Organization', uselist=False, backref='payment_method_list')
@@ -1630,13 +1635,13 @@ class Stock(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                 .join(OrderedProductItem.ordered_product)\
                 .join(OrderedProduct.order)\
                 .filter(Order.canceled_at==None)\
-                .with_entities(func.sum(OrderedProduct.quantity)).scalar() or 0
+                .with_entities(func.sum(OrderedProductItem.quantity)).scalar() or 0
             # Cartで確保されている座席数
             reserved_quantity += Stock.filter(Stock.id==self.id).join(Stock.product_items)\
                 .join(ProductItem.carted_product_items)\
                 .join(CartedProductItem.carted_product)\
                 .filter(CartedProduct.finished_at==None)\
-                .with_entities(func.sum(CartedProduct.quantity)).scalar() or 0
+                .with_entities(func.sum(CartedProductItem.quantity)).scalar() or 0
             vacant_quantity = self.quantity - reserved_quantity
         else:
             vacant_quantity = Seat.filter(Seat.stock_id==self.id)\
@@ -1840,6 +1845,10 @@ class Product(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         #ProductItem.create_default(product=self)
 
     def delete(self):
+        # 既に抽選申込されている場合は削除できない
+        if self.lot_entry_products:
+            raise Exception(u'抽選申込がある為、削除できません')
+
         # delete ProductItem
         for product_item in self.items:
             product_item.delete()
@@ -2002,6 +2011,10 @@ class Organization(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     def point_feature_enabled(self):
         return self.setting.point_type is not None
 
+    def get_cms_data(self):
+        return {"organization_id": self.id, "organization_source": "oauth"}
+    
+
 orders_seat_table = Table("orders_seat", Base.metadata,
     Column("seat_id", Identifier, ForeignKey("Seat.id")),
     Column("OrderedProductItem_id", Identifier, ForeignKey("OrderedProductItem.id")),
@@ -2035,7 +2048,7 @@ class ShippingAddressMixin(object):
 
 class ShippingAddress(Base, BaseModel, WithTimestamp, LogicallyDeleted, ShippingAddressMixin):
     __tablename__ = 'ShippingAddress'
-    __clone_excluded__ = ['user', 'cart']
+    __clone_excluded__ = ['user', 'cart', 'lot_entries']
 
     id = Column(Identifier, primary_key=True)
     user_id = Column(Identifier, ForeignKey("User.id"))
@@ -2088,7 +2101,7 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __table_args__= (
         UniqueConstraint('order_no', 'branch_no', name="ix_Order_order_no_branch_no"),
         )
-    __clone_excluded__ = ['cart', 'ordered_from', 'payment_delivery_pair', 'performance', 'user', '_attributes', 'refund', 'operator']
+    __clone_excluded__ = ['cart', 'ordered_from', 'payment_delivery_pair', 'performance', 'user', '_attributes', 'refund', 'operator', 'lot_entries', 'lot_wishes']
 
     id = Column(Identifier, primary_key=True)
     user_id = Column(Identifier, ForeignKey("User.id"))
@@ -2110,7 +2123,7 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     multicheckout_approval_no = Column(Unicode(255), doc=u"マルチ決済受領番号")
 
     payment_delivery_method_pair_id = Column(Identifier, ForeignKey("PaymentDeliveryMethodPair.id"))
-    payment_delivery_pair = relationship("PaymentDeliveryMethodPair")
+    payment_delivery_pair = relationship("PaymentDeliveryMethodPair", backref='orders')
 
     paid_at = Column(DateTime, nullable=True, default=None)
     delivered_at = Column(DateTime, nullable=True, default=None)
@@ -2246,6 +2259,10 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             # コンビニ決済は未入金のみキャンセル可能
             payment_plugin_id = self.payment_delivery_pair.payment_method.payment_plugin_id
             if payment_plugin_id == plugins.SEJ_PAYMENT_PLUGIN_ID and self.payment_status != 'unpaid':
+                return False
+            # コンビニ引取は未発券のみキャンセル可能
+            delivery_plugin_id = self.payment_delivery_pair.delivery_method.delivery_plugin_id
+            if delivery_plugin_id == plugins.SEJ_DELIVERY_PLUGIN_ID and self.is_issued():
                 return False
             return True
         return False
@@ -2607,10 +2624,11 @@ class OrderedProduct(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     @property
     def seat_quantity(self):
+        quantity = 0
         for item in self.ordered_product_items:
             if item.product_item.stock_type.is_seat:
-                return item.quantity
-        return 0
+                quantity += item.quantity
+        return quantity
 
     def release(self):
         # 在庫を解放する
@@ -2853,6 +2871,7 @@ class TicketPrintQueueEntry(Base, BaseModel):
                         default=datetime.now,
                         server_default=sqlf.current_timestamp())
     processed_at = Column(TIMESTAMP, nullable=True, default=None)
+    masked_at = Column(TIMESTAMP, nullable=True, default=None)
 
     @property
     def drawing(self):
@@ -2872,17 +2891,20 @@ class TicketPrintQueueEntry(Base, BaseModel):
     @classmethod
     def peek(self, operator, ticket_format_id, order_id=None):
         q = DBSession.query(TicketPrintQueueEntry) \
-            .filter_by(processed_at=None, operator=operator) \
+            .filter_by(processed_at=None, operator=operator, masked_at=None) \
             .filter(Ticket.ticket_format_id==ticket_format_id) \
             .options(joinedload(TicketPrintQueueEntry.seat))
         if order_id is not None:
             q = q.join(OrderedProductItem) \
                 .join(OrderedProduct) \
                 .filter(OrderedProduct.order_id==order_id)
-            q = q.order_by(asc(OrderedProduct.id))
-        else:
-            q = q.order_by(TicketPrintQueueEntry.created_at, TicketPrintQueueEntry.id)
+        q = q.order_by(*self.printing_order_condition())
         return q.all()
+
+    @classmethod
+    def printing_order_condition(cls):
+        return (TicketPrintQueueEntry.created_at, TicketPrintQueueEntry.id)
+
 
     @classmethod
     def dequeue(self, ids, now=None):
@@ -2894,6 +2916,7 @@ class TicketPrintQueueEntry(Base, BaseModel):
             .outerjoin(OrderedProductItem.ordered_product) \
             .outerjoin(OrderedProduct.order) \
             .filter(TicketPrintQueueEntry.id.in_(ids)) \
+            .filter(TicketPrintQueueEntry.masked_at == None) \
             .filter(TicketPrintQueueEntry.processed_at == None) \
             .options(joinedload(TicketPrintQueueEntry.seat)) \
             .order_by(desc(TicketPrintQueueEntry.created_at)) \
@@ -2925,6 +2948,26 @@ class TicketPrintQueueEntry(Base, BaseModel):
 
     
 from ..operators.models import Operator
+
+class TicketCover(Base, BaseModel, WithTimestamp, LogicallyDeleted):
+    """
+    表紙。注文情報などが記載されている
+    """
+    __tablename__ = "TicketCover"
+    id = Column(Identifier, primary_key=True)
+    name = Column(Unicode(255), default=u"", nullable=False)
+    operator_id = Column(Identifier, ForeignKey('Operator.id'))
+    operator = relationship('Operator', uselist=False)
+    organization_id = Column(Identifier, ForeignKey('Organization.id'), nullable=True)
+    organization = relationship('Organization', uselist=False, backref='ticket_covers')
+    ticket_id = Column(Identifier, ForeignKey('Ticket.id'), nullable=False)
+    ticket = relationship('Ticket',  backref=backref('cover'))
+    delivery_method_id = Column(Identifier, ForeignKey('DeliveryMethod.id'))
+
+    ## あとで伝搬サポートした時に移動
+    @classmethod
+    def get_from_order(cls, order):
+        return TicketCover.query.filter_by(organization_id=order.organization_id).first() #todo: DeliveryMethod?
 
 class TicketBundle(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = "TicketBundle"
@@ -3184,6 +3227,15 @@ class SalesSegment(Base, BaseModel, LogicallyDeleted, WithTimestamp):
         order_by="PaymentDeliveryMethodPair.id",
         cascade="all",
         collection_class=list)
+    x_auth3d_notice = Column("auth3d_notice", UnicodeText)
+
+    @property
+    def auth3d_notice(self):
+        return self.x_auth3d_notice if self.x_auth3d_notice else self.sales_segment_group.auth3d_notice
+
+    @auth3d_notice.setter
+    def auth3d_notice(self, value):
+        self.x_auth3d_notice = value
 
     def has_stock_type(self, stock_type):
         return stock_type in self.seat_stock_types
@@ -3193,6 +3245,33 @@ class SalesSegment(Base, BaseModel, LogicallyDeleted, WithTimestamp):
 
     def available_payment_delivery_method_pairs(self, now):
         return [pdmp for pdmp in self.payment_delivery_method_pairs if pdmp.is_available_for(self, now)]
+
+
+    def query_orders_by_user(self, user):
+        """ 該当ユーザーがこの販売区分での注文内容を問い合わせ """
+        from altair.app.ticketing.cart.models import Cart
+        return DBSession.query(Order).filter(
+            Order.user_id==user.id
+        ).filter(
+            Cart.order_id==Order.id
+        ).filter(
+            Cart.sales_segment_id==self.id
+        )
+
+
+    def query_orders_by_mailaddress(self, mailaddress):
+        """ 該当メールアドレスによるこの販売区分での注文内容を問い合わせ """
+        from altair.app.ticketing.cart.models import Cart
+        return DBSession.query(Order).filter(
+            Order.shipping_address_id==ShippingAddress.id
+        ).filter(
+            or_(ShippingAddress.email_1 == mailaddress,
+                ShippingAddress.email_2 == mailaddress)
+        ).filter(
+            Cart.order_id==Order.id
+        ).filter(
+            Cart.sales_segment_id==self.id
+        )
 
     @property
     def event(self):
@@ -3375,9 +3454,9 @@ class PerformanceSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     performance_id = Column(Identifier, ForeignKey('Performance.id'))
     performance = relationship('Performance', backref='settings')
     
-    abbreviated_title = Column(Unicode(255), doc=u"公演名略称")
-    subtitle = Column(Unicode(255), doc=u"公演名副題")
-    note = Column(UnicodeText, doc=u"公演名備考")
+    abbreviated_title = Column(Unicode(255), doc=u"公演名略称", default=u"")
+    subtitle = Column(Unicode(255), doc=u"公演名副題", default=u"")
+    note = Column(UnicodeText, doc=u"公演名備考", default=u"")
 
     KEYS = ["abbreviated_title", "subtitle", "note"]
 
@@ -3390,10 +3469,10 @@ class PerformanceSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     @classmethod
     def update_from_model(cls, obj, params):
-        setting = obj.settings or cls()
+        setting = obj.setting or cls()
 
         for k in cls.KEYS:
-            setattr(setting, k, params.get(k))
+            setattr(setting, k, params.get(k) or "")
         setting.performance = obj
         return setting
 

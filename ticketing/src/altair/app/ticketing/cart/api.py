@@ -26,8 +26,13 @@ from .interfaces import IPerformanceSelector
 
 from .models import Cart, PaymentMethodManager, DBSession
 from .exceptions import OutTermSalesException, NoSalesSegment, NoCartError
+from altair.preview.api import set_rendered_target
 
 logger = logging.getLogger(__name__)
+
+def set_rendered_event(request, event):
+    set_rendered_target(request, "event", event)
+
 
 def is_multicheckout_payment(cart):
     if cart is None:
@@ -136,7 +141,7 @@ def get_now_from_request(request):
         return datetime.now() # XXX
 
 def get_cart_safe(request, for_update=True):
-    now = get_now_from_request(request) # XXX
+    now = datetime.now() ##cartのexpireの計算はcart.created_atで行われるので。ここはdatetime.nowが正しい
     minutes = max(int(request.registry.settings['altair_cart.expire_time']) - 1, 0)
     cart = get_cart(request, for_update)
     if cart is None:

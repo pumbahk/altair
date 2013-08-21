@@ -8,7 +8,14 @@
             <li><a href="https://www.e-get.jp/rweb01/rts_pm/?G=tstar" class="btnNotRT" target="_blank">頭に<strong>「RT」</strong>が <strong>つかない</strong> 受付番号のお客様は こちら</a></li>
         </ul>
         <p class="textC">上記どちらの確認フォームからもご予約の確認ができないお客様は<a href="${request.route_path('usersite.inquiry')}" target="_blank">こちら</a>からお問い合わせください</p>
+    </div>
 
+    <h2><img src="${request.static_url("altaircms:static/RT/img/order/title_lot.gif")}" alt="抽選申込チケットの確認" width="702" height="43" /></h2>
+    <div class="order_outline">
+        <ul class="order_old_new">
+            <li><a href="https://rt.tstar.jp/lots/review" class="btnRT">抽選申込内容の確認はこちら</a></li>
+        </ul>
+        <p class="textC">上記確認フォームから申込確認ができないお客様は<a href="${request.route_path('usersite.inquiry')}" target="_blank">こちら</a>からお問い合わせください</p>
     </div>
 </div>
 

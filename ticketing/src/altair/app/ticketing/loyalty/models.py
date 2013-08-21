@@ -98,7 +98,6 @@ def product_added_to_sales_segment(target, value, initiator):
 
 def product_removed_from_sales_segment(target, value, initiator):
     for point_grant_setting in target.point_grant_settings:
-        print point_grant_settings, value
         point_grant_setting.target_products.discard(value)
 
 sa_event.listen(SalesSegment.products, 'append', product_added_to_sales_segment)

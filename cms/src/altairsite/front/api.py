@@ -81,7 +81,8 @@ class RenderingParamsCollector(object):
         if event is None:
             performances = []
         else:
-            performances = Performance.query.filter(Performance.event_id==event.id).order_by(sa.asc(Performance.start_on)).options(orm.joinedload("sales")).all()
+            performances = Performance.query.filter(Performance.event_id==event.id, Performance.public==True)
+            performances = performances.order_by(sa.asc(Performance.start_on)).options(orm.joinedload("sales")).all()
         ## 本当はwidget側からpullしていくようにしたい
         bsettings.scan(self.request, page=page, performances=performances, event=event)
         return bsettings

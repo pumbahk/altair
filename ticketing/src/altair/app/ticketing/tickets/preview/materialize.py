@@ -1,5 +1,6 @@
 # -*- coding:utf-8 -*-
 from lxml import etree
+from ..constants import SVG_NAMESPACE
 """
 本当は中間状態持っていて後でrenderingする形の方が良い。
 scaleとかtransformとかできる。
@@ -11,7 +12,7 @@ class Low(object):
         self.height = height
     
     def hline(self, y, kwargs=None):
-        e = etree.Element("line")
+        e = etree.Element("{%s}line" % SVG_NAMESPACE)
         e.attrib["x1"] = unicode(0)
         e.attrib["x2"] = unicode(self.width)
         e.attrib["y1"] = unicode(y)
@@ -22,7 +23,7 @@ class Low(object):
         return e
 
     def vline(self, x, kwargs=None):
-        e = etree.Element("line")
+        e = etree.Element("{%s}line" % SVG_NAMESPACE)
         e.attrib["y1"] = unicode(0)
         e.attrib["y2"] = unicode(self.height)
         e.attrib["x1"] = unicode(x)
@@ -33,7 +34,7 @@ class Low(object):
         return e
 
     def rect(self, x, y, w, h, kwargs=None):
-        e = etree.Element("rect")
+        e = etree.Element("{%s}rect" % SVG_NAMESPACE)
         e.attrib["x"] = unicode(x)
         e.attrib["y"] = unicode(y)
         e.attrib["width"] = unicode(w)
@@ -62,7 +63,7 @@ class Middle(object):
             svg.append(self.low.rect(area["x"], area["y"], area["width"], area["height"], option))
 
 def create_svg(svg):
-    svg = svg or etree.Element("svg")
+    svg = svg or etree.Element("{%s}svg" % SVG_NAMESPACE)
     svg.attrib["version"] = u"1.2"
     return svg
 
@@ -83,7 +84,7 @@ class TicketFormatMaterializer(object):
         return svg
 
 def svg_with_ticketformat(svg, ticketformat):
-    g = etree.Element("g")
+    g = etree.Element("{%s}g" % SVG_NAMESPACE)
     etree.tostring(TicketFormatMaterializer(ticketformat).materialize(g))
     svg.insert(0, g)
     ## width, heightの調整が必要?

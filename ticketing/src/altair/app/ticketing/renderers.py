@@ -1,8 +1,15 @@
 # -*- coding: utf-8 -*-
+
+#
+# altair.renderers にしたい
+#
+
 import json
 import csv
 from lxml import etree
 import StringIO
+from pyramid.mako_templating import MakoRendererFactoryHelper
+txt_renderer_factory = MakoRendererFactoryHelper('makotxt.')
 
 def json_renderer_factory(info):
     def _render(value, system):
@@ -83,3 +90,10 @@ def lxml_renderer_factory(info):
                 response.charset = charset
         return etree.tostring(value, xml_declaration=True, encoding=charset)
     return _render 
+
+def includeme(config):
+    config.add_renderer('.html' , 'pyramid.mako_templating.renderer_factory')
+    config.add_renderer('.txt' , txt_renderer_factory)
+    config.add_renderer('json'  , 'altair.app.ticketing.renderers.json_renderer_factory')
+    config.add_renderer('csv'   , 'altair.app.ticketing.renderers.csv_renderer_factory')
+    config.add_renderer('lxml'  , 'altair.app.ticketing.renderers.lxml_renderer_factory')

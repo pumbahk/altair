@@ -15,12 +15,18 @@ def render_with_template(template_name, request, widget, event):
     if widget.target_performance_id:
         target_performance_id = widget.target_performance_id
     else:
-        target_performance_id = Performance.query.filter(Performance.event_id==event.id).first().id
+        target_performance = Performance.query.filter(Performance.event_id==event.id).first()
+        if target_performance is None:
+            return u"講演が登録されていません"
+        target_performance_id = target_performance.id
 
     if widget.target_salessegment_id:
         target_salessegment_id = widget.target_salessegment_id
     else:
-        target_salessegment_id = SalesSegment.query.filter(SalesSegment.performance_id==target_performance_id).first().id
+        target_salessegment = SalesSegment.query.filter(SalesSegment.performance_id==target_performance_id).first()
+        if target_salessegment is None:
+            return u"販売区分が登録されていません"
+        target_salessegment_id = target_salessegment.id
 
     tickets = Ticket.query.filter(Ticket.salessegment_id==target_salessegment_id)
     tickets = tickets.order_by(sa.asc(Ticket.display_order), sa.desc(Ticket.price))

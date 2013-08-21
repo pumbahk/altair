@@ -15,6 +15,8 @@ class FormTests(unittest.TestCase):
 
     def test_cleanup_has_effect(self):
         from StringIO import StringIO
+        from lxml.etree import fromstring
+        from .constants import SVG_NAMESPACE
 
         svg = u"""\
 <?xml version="1.0" encoding="UTF-8" ?>
@@ -28,7 +30,7 @@ class FormTests(unittest.TestCase):
         self.assertIn(u'<flowDiv id="xxxx-this-is-deleted-after-converted-xxxxxx"></flowDiv>', 
                       svg)
 
-        class DummyFileStrage:
+        class DummyFileStrage(object):
             filename="this-is-svg-file-name.svg"
             file=StringIO(svg.encode("utf-8"))
 
@@ -37,9 +39,10 @@ class FormTests(unittest.TestCase):
         target.ticket_format.choices = [(1, 1)]
 
         self.assertTrue(target.validate())
-        result = target.data_value["drawing"]
-        self.assertIn(u'<flowDiv></flowDiv>', result)
-
+        result = fromstring(target.data_value["drawing"])
+        self.assertEquals(u'{%s}svg' % SVG_NAMESPACE, result.tag)
+        self.assertEquals(u'{%s}g' % SVG_NAMESPACE, result[0].tag)
+        self.assertEquals(u'{%s}flowDiv' % SVG_NAMESPACE, result[0][0].tag)
 
 
 if __name__ == "__main__":

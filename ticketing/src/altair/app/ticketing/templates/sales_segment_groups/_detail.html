@@ -47,12 +47,10 @@
     <th>${form.upper_limit.label.text}</th>
     <td id="upper_limit">${sales_segment_group.upper_limit or u''}</td>
   </tr>
-  <%doc>
   <tr>
     <th>${form.order_limit.label.text}</th>
     <td id="order_limit">${sales_segment_group.order_limit or u''}</td>
   </tr>
-  </%doc>
   <tr>
     <th>${form.seat_choice.label.text}</th>
     <td id="seat_choice" value="${sales_segment_group.seat_choice}">${u'○' if sales_segment_group.seat_choice else u'×'}</td>
@@ -64,5 +62,9 @@
   <tr>
     <th>${form.reporting.label.text}</th>
     <td id="reporting" value="${sales_segment_group.reporting}">${u'○' if sales_segment_group.reporting else u'×'}</td>
+  </tr>
+  <tr>
+    <th>${form.auth3d_notice.label.text}</th>
+    <td>${sales_segment_group.auth3d_notice}</td>
   </tr>
 </table>

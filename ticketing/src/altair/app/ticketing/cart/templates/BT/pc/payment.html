@@ -13,7 +13,9 @@ ${self.widget.flow_widget(2)}
   <div class="settlementBox">
     <div class="settlementBoxInner">
       <h2><img src="${request.static_url('altair.app.ticketing.cart:static/img/settlement/title_methods.gif')}" alt="お支払い、引き取り方法の指定" width="267" height="30" /></h2>
-      <p style="margin-left:20px;">どれかひとつをお選びください</p>
+      %if len(payment_delivery_methods) > 1:
+            <p style="margin-left:20px;">どれかひとつをお選びください</p>
+      %endif
       <% checked_id = request.params.get('payment_delivery_method_pair_id') %>
       %for m in payment_delivery_methods:
       <div class="settlementPayBox">
@@ -48,7 +50,7 @@ ${self.widget.flow_widget(2)}
         </div>
       </div>
       %endfor
-      <p>※ 注文受付完了、確認メール等をメールでご案内します。「tstar.jp」からのメールを受信できるよう、お申し込み前にドメイン指定の設定を必ずお願いいたします。</p>
+      <p>※ 注文受付完了、確認メール等をメールでご案内します。「bambitious.jp」からのメールを受信できるよう、お申し込み前にドメイン指定の設定を必ずお願いいたします。</p>
     </div>
   </div>
   <div class="confirmBox">
@@ -115,7 +117,7 @@ ${self.widget.flow_widget(2)}
                 ${h.error_list(request, form, 'email_1_confirm')}
               </li>
             </ul>
-            <p style="margin-left:10px; font-size:90%; color:#333;">注文受付完了、確認メール等をメールでご案内します。「tstar.jp」からのメールを受信できるよう、お申し込み前にドメイン指定の設定を必ずお願いいたします。</p>
+            <p style="margin-left:10px; font-size:90%; color:#333;">注文受付完了、確認メール等をメールでご案内します。「bambitious.jp」からのメールを受信できるよう、お申し込み前にドメイン指定の設定を必ずお願いいたします。</p>
           </td>
         </tr>
         <tr>

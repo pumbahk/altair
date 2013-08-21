@@ -49,3 +49,13 @@ class UnassignedOrderNumberError(CartException):
 class InvalidCartStatusError(CartException):
     def __init__(self, cart_id=None):
         self.cart_id = cart_id
+
+class OverOrderLimitException(Exception):
+    def __init__(self, event_id, event_name, performance_name, order_limit):
+        self.event_id = event_id
+        self.event_name = event_name
+        self.performance_name = performance_name
+        self.order_limit = order_limit
+
+class PaymentMethodEmptyError(CartException):
+    pass

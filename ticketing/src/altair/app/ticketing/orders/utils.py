@@ -1,9 +1,12 @@
 # -*- coding:utf-8 -*-
 
+from collections import Counter
+import re
 import logging
 import pystache
 from altair.app.ticketing.tickets.utils import build_dicts_from_ordered_product_item
-from altair.app.ticketing.core.models import TicketPrintQueueEntry
+from altair.app.ticketing.tickets.utils import build_cover_dict_from_order
+from altair.app.ticketing.core.models import TicketPrintQueueEntry, TicketCover
 from altair.app.ticketing.core.utils import ApplicableTicketsProducer
 from altair.app.ticketing.payments.plugins import SEJ_DELIVERY_PLUGIN_ID
 logger = logging.getLogger(__name__)
@@ -28,6 +31,19 @@ def item_ticket_pairs(order, ticket_dict=None, ticket=None):
                 continue
             yield ordered_product_item, ticket
 
+def enqueue_cover(operator, order):
+    cover = TicketCover.get_from_order(order)
+    if cover is None:
+        logger.error("cover is not found. order = {order.id} organization_id = {operator.organization_id}".format(order=order, operator=operator))
+        return 
+    dict_ = build_cover_dict_from_order(order)
+    TicketPrintQueueEntry.enqueue(
+        operator=operator, 
+        ticket=cover.ticket, 
+        data = {u"drawing": pystache.render(cover.ticket.data["drawing"], dict_)}, 
+        summary=u"表紙 {order.order_no}".format(order=order)
+        )
+
 def enqueue_for_order(operator, order, ticket_format_id=None):
     for ordered_product in order.items:
         for ordered_product_item in ordered_product.ordered_product_items:
@@ -51,8 +67,6 @@ def enqueue_item(operator, order, ordered_product_item, ticket_format_id=None):
                 ordered_product_item=ordered_product_item,
                 seat=seat
                 )
-
-import re
 last_char = "\uFE4F" #utf-8(cjk)
 DIGIT_RX = re.compile(r"([0-9]+)")
 
@@ -62,21 +76,15 @@ def compare_by_comfortable_order((seat, dicts_)):
     else:
         return [(int(x) if x.isdigit() else x) for x in re.split(DIGIT_RX, seat.name) if x]
 
-class RingCounter(object):
-    def __init__(self, i=0, maxv=100000):
-        self.lower_limit = i
-        self.i = i
-        self.upper_limit = maxv
+class NumberIssuer(object):
+    def __init__(self):
+        self.counter = Counter()
 
-    def __call__(self):
-        v = self.i
-        self.i += 1
-        if self.i > self.upper_limit:
-            self.i = self.lower_limit
+    def __call__(self, k):
+        v = self.counter[k] + 1
+        self.counter[k] = v
         return v
-
-ticket_number_issuer=RingCounter()
-
+        
 def comfortable_sorted_built_dicts(ordered_product_item):
-    dicts = build_dicts_from_ordered_product_item(ordered_product_item, ticket_number_issuer=ticket_number_issuer)
+    dicts = build_dicts_from_ordered_product_item(ordered_product_item, ticket_number_issuer=NumberIssuer())
     return sorted(dicts, key=compare_by_comfortable_order)

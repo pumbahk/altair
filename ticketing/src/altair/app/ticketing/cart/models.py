@@ -299,10 +299,11 @@ class CartedProduct(Base):
 
     @property
     def seat_quantity(self):
+        quantity = 0
         for item in self.items:
             if item.product_item.stock_type.is_seat:
-                return item.quantity
-        return 0
+                quantity += item.quantity
+        return quantity
 
     @deprecate("deprecated method")
     def pop_seats(self, seats, performance_id):

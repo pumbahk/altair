@@ -155,6 +155,38 @@ class Lot(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         ).all()
 
     @property
+    def rejectable_entries(self):
+        """ 落選予定指定可能なエントリ
+
+        - 当選していない elected_at
+        - まだ落選していない rejected_at
+        - 当選予定でない LotElectWork
+        - まだ落選予定でない LotRejectWork
+        - キャンセルされてない canceled_at
+
+        """
+
+
+        return LotEntry.query.outerjoin(
+            LotElectWork,
+            sql.and_(LotElectWork.lot_id==self.id,
+                     LotElectWork.lot_entry_no==LotEntry.entry_no),
+        ).outerjoin(
+            LotRejectWork,
+            sql.and_(LotRejectWork.lot_id==self.id,
+                     LotRejectWork.lot_entry_no==LotEntry.entry_no),
+        ).filter(
+            LotEntry.elected_at==None,
+            LotEntry.rejected_at==None,
+            LotEntry.canceled_at==None,
+            LotEntry.lot_id==self.id,
+            LotEntry.entry_no!=None,
+            LotElectWork.id==None,
+            LotRejectWork.id==None,
+        ).all()
+
+
+    @property
     def query_receipt_entries(self):
         """ 申込状態のエントリ """
 
@@ -174,6 +206,11 @@ class Lot(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     def finish_lotting(self):
         self.status = int(LotStatusEnum.Elected)
+
+    def start_lotting(self):
+        logger.info("start lotting lot id={lot.id}".format(lot=self))
+        self.status = int(LotStatusEnum.Lotting)
+        
 
     def start_electing(self):
         logger.info("start electing lot id={lot.id}".format(lot=self))
@@ -204,6 +241,25 @@ class Lot(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         """ 当選予定申込希望 """
         affected = 0
         for entry_no, wish_order in entry_wishes:
+
+            # すでに当選予定
+            if LotElectWork.query.filter_by(lot_id=self.id, lot_entry_no=entry_no).count():
+                logger.debug("already electing {entry_no}".format(entry_no=entry_no))
+                continue
+            # すでに落選予定
+            if LotRejectWork.query.filter_by(lot_id=self.id, lot_entry_no=entry_no).count():
+                logger.debug("already rejecting {entry_no}".format(entry_no=entry_no))
+                continue
+            entry = LotEntry.query.filter_by(lot_id=self.id, entry_no=entry_no).first()
+            if entry is None:
+                logger.debug("not found {entry_no}".format(entry_no=entry_no))
+                continue
+
+            # すでに当落確定
+            if entry.elected_at or entry.canceled_at or entry.rejected_at:
+                logger.debug("already elected, rejected or canceled {entry_no}".format(entry_no=entry_no))
+                continue
+
             w = LotElectWork(lot_id=self.id, lot_entry_no=entry_no, wish_order=wish_order,
                              entry_wish_no="{0}-{1}".format(entry_no, wish_order))
             DBSession.add(w)

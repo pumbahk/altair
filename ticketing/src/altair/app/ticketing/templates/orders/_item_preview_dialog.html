@@ -10,8 +10,10 @@
 	  ${form.ticket_format_id.label} ${form.ticket_format_id}
 	  ${form.item_id}
 	</form>
+   <p>※ チケット様式は印刷に利用可能なものが選択可能です。何も表示されない場合には変更してみてください</p>
 
 	<div id="drawing" style="height:200px;">
+
 	</div>
   </div>
 
@@ -26,15 +28,28 @@ $(function(){
   var MAX_SIZE_OF_PREVIEW_ITEM = 2;
 
   var renderPreviewImage = function(results, names, start, end, root){
-    for(var i = start; i < end; i++){
-      var jsondata = results[i];
-      root.append($("<h3>").text(names[i]));
-      var wrap = $("<div>").attr("id", "diagram:"+i);
-      root.append(wrap);
-      svg_preview(wrap,
-            "${request.route_path("tickets.preview.api", action="preview.base64")}", 
-            {svg: jsondata["drawing"], ticket_format: jsondata["ticket_format_id"], type: jsondata["preview_type"]});
+    var i = start;
+    if(i>=end){
+      return ;
     }
+    var jsondata = results[i];
+    var wrap = $("<div>").attr("id", "diagram:"+i);
+    var url = "${request.route_path("tickets.preview.api", action="preview.base64")}"; 
+    var params = {svg: jsondata["drawing"], ticket_format: jsondata["ticket_format_id"], type: jsondata["preview_type"]};
+    root.append($("<h3>").text(names[i]));
+    root.append(wrap);
+    svg_preview(wrap, url, params).done(function(){
+      // stretch
+      var wrapperArea = $("#PreviewModal");
+      var wrapperHeight = wrapperArea.height();
+      var wrapperContent = wrapperArea.find(".modal-body");
+      var contentHeight = wrapperContent.height();
+      var descriptionHeight = 70;
+      if(wrapperHeight < (contentHeight+descriptionHeight)){
+        wrapperArea.height(contentHeight+descriptionHeight);
+      }
+      return renderPreviewImage(results, names, i+1, end, root);
+    });
   };
 
   var draw_viewer = function(url, ticket_format_id){

@@ -33,10 +33,12 @@ setup(name='altair.mobile',
       namespace_packages=['altair'],
       include_package_data=True,
       zip_safe=False,
+      test_suite='altair.mobile.tests',
       install_requires=[
+          "setuptools>0.7",
           'radix',
-          'setuptools',
           'uamobile',
+          'altair.extracodecs',
       ],
       dependency_links = [
         'http://py-radix.googlecode.com/files/py-radix-0.5.tar.gz#egg=radix-0.5',

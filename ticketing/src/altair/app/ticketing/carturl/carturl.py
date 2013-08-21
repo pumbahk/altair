@@ -1,4 +1,5 @@
 # -*- coding:utf-8 -*-
+import sqlalchemy as sa
 import urllib
 from urlparse import ParseResult, urlparse
 import logging
@@ -21,7 +22,10 @@ def guess_host_name_from_request(request, organization=None):
     url = request.url
     ## too-addhoc
     qs = Host.query.filter(Host.organization_id==organization.id)
+    qs = qs.filter(sa.not_(Host.host_name.like("elbtest-%")))
     if "service" in url:
+        host = qs.filter(Host.host_name.like("%.tstar.jp")).first()
+    elif ".tstar.jp" in url:
         host = qs.filter(Host.host_name.like("%.tstar.jp")).first()
     elif "stg2" in url:
         host = qs.filter(Host.host_name.like("%stg2%")).first()
@@ -42,12 +46,12 @@ class CartNowURLBuilder(object):
     def build_hostname(self, parsed):
         return parsed.netloc
 
-    def build(self, request, cart_url):
+    def build(self, request, cart_url, event_id=None):
         parsed = urlparse(cart_url)
         scheme = parsed.scheme
         hostname = self.build_hostname(parsed)
         path = self.path_prefix
-        return _url_builder(scheme, hostname, path, {"redirect_to": cart_url})
+        return _url_builder(scheme, hostname, path, {"redirect_to": cart_url, "backend_event_id": event_id})
 
 @implementer(IURLBuilder)
 class CartURLBuilder(object):
@@ -58,8 +62,7 @@ class CartURLBuilder(object):
         suffix = unicode(event.id)
         return u"{0}/{1}".format(self.path_prefix, suffix.lstrip("/"))
 
-    def build_hostname(self, request):
-        organization = request.context.organization
+    def build_hostname(self, request, organization):
         return guess_host_name_from_request(request, organization=organization)    
 
     def build_query(self, performance):
@@ -68,9 +71,10 @@ class CartURLBuilder(object):
             query["performance"] = performance.id
         return query
 
-    def build(self, request, event, performance=None):
+    def build(self, request, event, performance=None, organization=None):
+        organization = organization or request.context.organization
         scheme = _get_scheme_from_request(request)
-        host_name = self.build_hostname(request)
+        host_name = self.build_hostname(request, organization)
         path = self.build_path(event)
         query = self.build_query(performance)
         return _url_builder(scheme, host_name, path, query)

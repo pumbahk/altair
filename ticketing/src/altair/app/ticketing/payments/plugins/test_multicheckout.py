@@ -53,12 +53,13 @@ class MultiCheckoutViewTests(unittest.TestCase):
     @mock.patch('altair.multicheckout.api.get_multicheckout_service')
     @mock.patch('altair.multicheckout.api.save_api_response')
     def test_card_info_secure3d_enable_api(self, save_api_response, get_multicheckout_service, secure3d_enrol, validate):
-        from ...multicheckout import models as mc_models
+        from altair.multicheckout import models as mc_models
         get_multicheckout_service.return_value = Checkout3D(
             auth_id='auth_id',
             auth_password='password',
             shop_code='000000',
-            api_base_url='http://example.com/'
+            api_base_url='http://example.com/',
+            api_timeout=90,
             )
         secure3d_enrol.return_value = mc_models.Secure3DReqEnrolResponse(
             ErrorCd='000000',
@@ -116,12 +117,13 @@ class MultiCheckoutViewTests(unittest.TestCase):
     @mock.patch('altair.multicheckout.api.get_multicheckout_service')
     @mock.patch('altair.multicheckout.api.save_api_response')
     def test_card_info_secure3d_disabled_api(self, save_api_response, get_multicheckout_service, secure3d_enrol, request_card_auth, validate):
-        from ...multicheckout import models as mc_models
+        from altair.multicheckout import models as mc_models
         get_multicheckout_service.return_value = Checkout3D(
             auth_id='auth_id',
             auth_password='password',
             shop_code='000000',
-            api_base_url='http://example.com/'
+            api_base_url='http://example.com/',
+            api_timeout=90,
             )
         secure3d_enrol.return_value = mc_models.Secure3DReqEnrolResponse(
             ErrorCd='000000',
@@ -176,12 +178,13 @@ class MultiCheckoutViewTests(unittest.TestCase):
     @mock.patch('altair.multicheckout.api.get_multicheckout_service')
     @mock.patch('altair.multicheckout.api.save_api_response')
     def test_card_info_secure3d_disabled_api_fail(self, save_api_response, get_multicheckout_service, secure3d_enrol, request_card_auth, validate):
-        from ...multicheckout import models as mc_models
+        from altair.multicheckout import models as mc_models
         get_multicheckout_service.return_value = Checkout3D(
             auth_id='auth_id',
             auth_password='password',
             shop_code='000000',
-            api_base_url='http://example.com/'
+            api_base_url='http://example.com/',
+            api_timeout=90,
             )
         secure3d_enrol.return_value = mc_models.Secure3DReqEnrolResponse(
             ErrorCd='000000',
@@ -238,12 +241,13 @@ class MultiCheckoutViewTests(unittest.TestCase):
     @mock.patch('altair.multicheckout.api.get_multicheckout_service')
     @mock.patch('altair.multicheckout.api.save_api_response')
     def test_card_info_secure3d_callback(self, save_api_response, get_multicheckout_service, secure3d_auth, request_card_auth):
-        from ...multicheckout import models as mc_models
+        from altair.multicheckout import models as mc_models
         get_multicheckout_service.return_value = Checkout3D(
             auth_id='auth_id',
             auth_password='password',
             shop_code='000000',
-            api_base_url='http://example.com/'
+            api_base_url='http://example.com/',
+            api_timeout=90,
             )
         secure3d_auth.return_value = mc_models.Secure3DAuthResponse(
             ErrorCd='000000',
@@ -303,12 +307,13 @@ class MultiCheckoutViewTests(unittest.TestCase):
     @mock.patch('altair.multicheckout.api.get_multicheckout_service')
     @mock.patch('altair.multicheckout.api.save_api_response')
     def test_card_info_secure3d_callback_fail(self, save_api_response, get_multicheckout_service, secure3d_auth, request_card_auth):
-        from ...multicheckout import models as mc_models
+        from altair.multicheckout import models as mc_models
         get_multicheckout_service.return_value = Checkout3D(
             auth_id='auth_id',
             auth_password='password',
             shop_code='000000',
-            api_base_url='http://example.com/'
+            api_base_url='http://example.com/',
+            api_timeout=90,
             )
         request_card_auth.return_value = mc_models.MultiCheckoutResponseCard(
             CmnErrorCd='000000')
@@ -395,73 +400,74 @@ class MultiCheckoutPluginTests(unittest.TestCase):
         from altair.multicheckout.interfaces import ICardBrandDetecter
         self.config.registry.utilities.register([], ICardBrandDetecter, "", lambda card_number: "TEST")
 
-    @mock.patch('altair.app.ticketing.core.models.Order.create_from_cart')
-    @mock.patch('altair.multicheckout.api.Checkout3D.request_card_sales')
-    @mock.patch('altair.multicheckout.api.get_multicheckout_service')
-    @mock.patch('altair.multicheckout.api.save_api_response')
-    def test_finish(self, save_api_response, get_multicheckout_service, request_card_sales, create_from_cart):
-        from ...multicheckout import models as mc_models
-        get_multicheckout_service.return_value = Checkout3D(
-            auth_id='auth_id',
-            auth_password='password',
-            shop_code='000000',
-            api_base_url='http://example.com/'
-            )
-        request_card_sales.return_value = mc_models.MultiCheckoutResponseCard(
-            CmnErrorCd='000000'
-            )
-        create_from_cart.return_value = testing.DummyModel()
+    # @mock.patch('altair.app.ticketing.core.models.Order.create_from_cart')
+    # @mock.patch('altair.multicheckout.api.Checkout3D.request_card_sales')
+    # @mock.patch('altair.multicheckout.api.get_multicheckout_service')
+    # @mock.patch('altair.multicheckout.api.save_api_response')
+    # def test_finish(self, save_api_response, get_multicheckout_service, request_card_sales, create_from_cart):
+    #     from altair.multicheckout import models as mc_models
+    #     get_multicheckout_service.return_value = Checkout3D(
+    #         auth_id='auth_id',
+    #         auth_password='password',
+    #         shop_code='000000',
+    #         api_base_url='http://example.com/',
+    #         api_timeout=90,
+    #         )
+    #     request_card_sales.return_value = mc_models.MultiCheckoutResponseCard(
+    #         CmnErrorCd='000000'
+    #         )
+    #     create_from_cart.return_value = testing.DummyModel()
 
-        self.config.registry.settings['cart.item_name'] = '楽天チケット' # configはバイト読み取り
-        self.config.registry.settings['altair_cart.expire_time'] = 15
-        cart_id = 500
-        dummy_cart = testing.DummyModel(
-            id=cart_id,
-            name=u"9999999",
-            total_amount=1234,
-            performance=testing.DummyModel(id=100, name=u'テスト公演'),
-            products=[],
-            is_expired=lambda self, *args: False,
-            finished_at=None,
-            order_no='000000000000',
-            shipping_address=testing.DummyModel(),
-        )
-        dummy_cart.finish = lambda: None
+    #     self.config.registry.settings['cart.item_name'] = '楽天チケット' # configはバイト読み取り
+    #     self.config.registry.settings['altair_cart.expire_time'] = 15
+    #     cart_id = 500
+    #     dummy_cart = testing.DummyModel(
+    #         id=cart_id,
+    #         name=u"9999999",
+    #         total_amount=1234,
+    #         performance=testing.DummyModel(id=100, name=u'テスト公演'),
+    #         products=[],
+    #         is_expired=lambda self, *args: False,
+    #         finished_at=None,
+    #         order_no='000000000000',
+    #         shipping_address=testing.DummyModel(),
+    #     )
+    #     dummy_cart.finish = lambda: None
 
-        session_order = {
-            'client_name': u'楽天太郎',
-            'email_1': u'ticketstar@example.com',
-            'card_number': u'XXXXXXXXXXXXXXXX',
-            'exp_year': '12',
-            'exp_month': '06',
-            'card_holder_name': u'RAKUTEN TAROU',
-            'order_no': '000000000000',
-            'pares': '*pares*',
-            'md': '*md*',
-            'tran': {
-                'mvn': '*tran*',
-                'xid': '*xid*',
-                'ts': '*ts*',
-                'eci': '*eci*',
-                'cavv': '*cavv*',
-                'cavv_algorithm': '*cavv_algorithm*',
-                },
-            }
-        params = {
-            'PaRes': 'this-is-pa-res',
-            'MD': 'this-is-md',
-        }
-        request = DummyRequest(
-            params=params,
-            _cart=dummy_cart,
-            session=DummySession(
-                order=session_order,
-                payment_confirm_url='http://example.com/payment_confirm'
-                ))
+    #     session_order = {
+    #         'client_name': u'楽天太郎',
+    #         'email_1': u'ticketstar@example.com',
+    #         'card_number': u'XXXXXXXXXXXXXXXX',
+    #         'exp_year': '12',
+    #         'exp_month': '06',
+    #         'card_holder_name': u'RAKUTEN TAROU',
+    #         'order_no': '000000000000',
+    #         'pares': '*pares*',
+    #         'md': '*md*',
+    #         'tran': {
+    #             'mvn': '*tran*',
+    #             'xid': '*xid*',
+    #             'ts': '*ts*',
+    #             'eci': '*eci*',
+    #             'cavv': '*cavv*',
+    #             'cavv_algorithm': '*cavv_algorithm*',
+    #             },
+    #         }
+    #     params = {
+    #         'PaRes': 'this-is-pa-res',
+    #         'MD': 'this-is-md',
+    #     }
+    #     request = DummyRequest(
+    #         params=params,
+    #         _cart=dummy_cart,
+    #         session=DummySession(
+    #             order=session_order,
+    #             payment_confirm_url='http://example.com/payment_confirm'
+    #             ))
 
-        target = self._makeOne()
+    #     target = self._makeOne()
 
-        result = target.finish_secure(request, dummy_cart)
+    #     result = target.finish_secure(request, dummy_cart)
 
     @mock.patch('transaction._transaction.Transaction.commit')
     @mock.patch('altair.app.ticketing.core.models.Order.create_from_cart')
@@ -470,12 +476,13 @@ class MultiCheckoutPluginTests(unittest.TestCase):
     @mock.patch('altair.multicheckout.api.get_multicheckout_service')
     @mock.patch('altair.multicheckout.api.save_api_response')
     def test_finish(self, save_api_response, get_multicheckout_service, request_card_sales, request_card_cancel_auth, create_from_cart, commit):
-        from ...multicheckout import models as mc_models
+        from altair.multicheckout import models as mc_models
         get_multicheckout_service.return_value = Checkout3D(
             auth_id='auth_id',
             auth_password='password',
             shop_code='000000',
-            api_base_url='http://example.com/'
+            api_base_url='http://example.com/',
+            api_timeout=90,
             )
         request_card_sales.return_value = mc_models.MultiCheckoutResponseCard(
             CmnErrorCd='000001'

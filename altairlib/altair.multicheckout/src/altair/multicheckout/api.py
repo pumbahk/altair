@@ -10,7 +10,8 @@ from . import models as m
 from datetime import date
 from . import logger
 from . import events
-from .interfaces import  IMulticheckoutSettingFactory
+from .interfaces import IMulticheckoutSettingFactory
+from .exceptions import MultiCheckoutAPIError
 
 DEFAULT_ITEM_CODE = "120"  # 通販
 
@@ -274,9 +275,6 @@ def checkout_auth_secure_code(request, order_no, item_name, amount, tax, client_
     save_api_response(request, res)
     return res
 
-class MultiCheckoutAPIError(Exception):
-    pass
-
 
 class Checkout3D(object):
     _httplib = httplib
@@ -398,25 +396,25 @@ class Checkout3D(object):
         headers.update(self.auth_header)
 
         logger.debug("request %s body = %s" % (url, sanitize_card_number(body)))
+        res = None
         try:
             http.request("POST", url_parts.path, body=body,headers=headers)
-        except Exception, e:
-            logger.error('multicheckout api request error: %s' % e.message)
-            raise MultiCheckoutAPIError
-
-        res = http.getresponse()
-        try:
+            res = http.getresponse()
             logger.debug('%(url)s %(status)s %(reason)s' % dict(
                 url=url,
                 status=res.status,
                 reason=res.reason,
             ))
             if res.status != 200:
-                raise MultiCheckoutAPIError, res.reason
+                raise Exception(res.reason)
 
             return etree.parse(res).getroot()
+        except Exception, e:
+            logger.error('multicheckout api request error: %s' % e.message)
+            raise MultiCheckoutAPIError(e)
         finally:
-            res.close()
+            if res:
+                res.close()
 
     @property
     def api_url(self):

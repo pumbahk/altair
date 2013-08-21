@@ -1,16 +1,19 @@
 # -*- encoding:utf-8 -*-
 from pyramid.config import Configurator
-from pyramid.session import UnencryptedCookieSessionFactoryConfig
+from pyramid_beaker import session_factory_from_settings
+from pyramid_beaker import set_cache_regions_from_settings
 from sqlalchemy import engine_from_config
 import sqlahelper
 
 from altaircms.models import Base
 from altair.mobile import PC_ACCESS_COOKIE_NAME #dont't delete it
+from altair.extracodecs import register_codecs
 
 def install_fetcher(config):
     settings = config.registry.settings
     config.include("altaircms:install_upload_file") #xxx:
     config.include("altaircms.page.staticupload:install_static_page_utility")
+    config.include("altaircms.page.staticupload:install_static_page_cache")
     from altairsite.fetcher import ICurrentPageFetcher
     from altairsite.fetcher import CurrentPageFetcher
     fetcher = CurrentPageFetcher(settings["altaircms.static.pagetype.pc"], 
@@ -22,14 +25,18 @@ def main(global_config, **local_config):
     """
     settings = dict(global_config)
     settings.update(local_config)
-    session_factory = UnencryptedCookieSessionFactoryConfig(settings.get('session.secret'))
+    session_factory = session_factory_from_settings(settings)
+    set_cache_regions_from_settings(settings) 
     from sqlalchemy.pool import NullPool
     engine = engine_from_config(settings, poolclass=NullPool,
                                 pool_recycle=60)
     sqlahelper.set_base(Base)
     sqlahelper.add_engine(engine)
 
+    register_codecs()
+
     config = Configurator(settings=settings, session_factory=session_factory)
+
     config.include("altair.browserid")
     config.include("altair.exclog")
 
@@ -74,6 +81,7 @@ def main(global_config, **local_config):
     config.include("altairsite.search", route_prefix="/search")
     config.include("altairsite.inquiry")
     config.include("altairsite.order")
+    config.include("altairsite.preview")
 
     config.add_static_view('static', 'altaircms:static', cache_max_age=3600)
     config.add_static_view('plugins/static', 'altaircms:plugins/static', cache_max_age=3600)
@@ -92,6 +100,7 @@ def main(global_config, **local_config):
     # layout
     config.include("pyramid_layout")
     config.add_layout(".pyramidlayout.MyLayout", 'altaircms:templates/usersite/base.html') #this is pyramid-layout's layout
+
     app = config.make_wsgi_app()
     from pyramid.interfaces import IRouter
     config.registry.registerUtility(app, IRouter)

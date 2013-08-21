@@ -141,14 +141,15 @@ class SearchPageResource(CommonResource):
                 .filter(today <= HotWord.term_end) \
                 .filter_by(enablep=True).filter(HotWord.id == query.hotword.id).first()
 
-            qs = self.request.allowable(Event) \
+            if hotword:
+                qs = self.request.allowable(Event) \
                         .filter(Event.is_searchable == True) \
                         .join(PageSet, Event.id == PageSet.event_id) \
                         .join(PageTag2Page, PageSet.id == PageTag2Page.object_id) \
                         .join(PageTag, PageTag2Page.tag_id == PageTag.id) \
                         .filter(PageTag.id == hotword.tag_id)
 
-            result = searcher.create_result(qs=qs, page=page, query=query, per=per)
+                result = searcher.create_result(qs=qs, page=page, query=query, per=per)
         return result
 
     # 詳細検索フォーム生成

@@ -10,5 +10,6 @@ def move_order(request):
     form = OrderReviewForm()
     form.altair_orderreview_url.data = request.altair_orderreview_url
     form.getti_orderreview_url.data = request.getti_orderreview_url
+    form.lots_orderreview_url.data = request.lots_orderreview_url
     log_info("move_order", "end")
     return {'form':form}

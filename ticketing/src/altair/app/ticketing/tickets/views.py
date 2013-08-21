@@ -17,7 +17,7 @@ from ..utils import json_safe_coerce
 from ..views import BaseView
 from ..models import DBSession
 from ..core.models import DeliveryMethod
-from ..core.models import TicketFormat, PageFormat, Ticket
+from ..core.models import TicketFormat, PageFormat, Ticket, TicketCover
 from ..core.models import TicketPrintQueueEntry, TicketPrintHistory
 from ..core.models import OrderedProductItemToken, OrderedProductItem, OrderedProduct, Order
 from . import forms
@@ -65,6 +65,7 @@ class TicketMasters(BaseView):
         ticket_format_sort_by, ticket_format_direction = helpers.sortparams('ticket_format', self.request, ('updated_at', 'desc'))
         page_format_sort_by, page_format_direction = helpers.sortparams('page_format', self.request, ('updated_at', 'desc'))
         ticket_template_sort_by, ticket_template_direction = helpers.sortparams('ticket_template', self.request, ('updated_at', 'desc'))
+        ticket_cover_sort_by, ticket_cover_direction = helpers.sortparams('ticket_cover', self.request, ('updated_at', 'desc'))
 
         ticket_format_qs = TicketFormat.filter_by(organization_id=self.context.user.organization_id)
         ticket_format_qs = ticket_format_qs.order_by(helpers.get_direction(ticket_format_direction)(ticket_format_sort_by))
@@ -72,11 +73,15 @@ class TicketMasters(BaseView):
         ticket_template_qs = Ticket.templates_query().filter_by(organization_id=self.context.user.organization_id)
         ticket_template_qs = ticket_template_qs.order_by(helpers.get_direction(ticket_template_direction)(ticket_template_sort_by))
 
+        ticket_cover_qs = TicketCover.query.filter_by(organization_id=self.context.user.organization_id)
+        ticket_cover_qs = ticket_cover_qs.order_by(helpers.get_direction(ticket_cover_direction)(ticket_cover_sort_by))    
+
         ticket_candidates = [{"name": t.name,"pk": t.id }for t in ticket_template_qs]
         return dict(h=helpers, 
                     page_formats=page_format_qs,
                     ticket_formats=ticket_format_qs,
                     templates=ticket_template_qs, 
+                    covers=ticket_cover_qs, 
                     ticket_candidates=json.dumps(ticket_candidates))
 
 @view_defaults(decorator=with_bootstrap, permission="event_editor")
@@ -314,11 +319,50 @@ class PageFormats(BaseView):
         return format.data
 
 @view_defaults(decorator=with_bootstrap, permission="event_editor")
-class TicketTemplates(BaseView):
-    @view_config(route_name="tickets.templates.new", renderer="altair.app.ticketing:templates/tickets/templates/new.html", 
+class TicketCovers(BaseView):
+    @view_config(route_name="tickets.covers.edit",renderer='altair.app.ticketing:templates/tickets/covers/new.html')
+    def edit(self):
+        cover = TicketCover.filter_by(organization_id=self.context.user.organization_id,
+                                    id=self.request.matchdict["id"]).first()
+        if cover is None:
+            raise HTTPNotFound("this is not found")
+
+        form = forms.TicketCoverForm(organization_id=self.context.user.organization_id, 
+                                     name=cover.name, 
+                                     ticket=cover.ticket_id)
+        return dict(h=helpers, form=form, cover=cover)
+        
+    @view_config(route_name='tickets.covers.edit', renderer='altair.app.ticketing:templates/tickets/covers/new.html', request_method="POST")
+    def edit_post(self):
+        cover = TicketCover.filter_by(organization_id=self.context.user.organization_id,
+                                    id=self.request.matchdict["id"]).first()
+        if cover is None:
+            raise HTTPNotFound("this is not found")
+
+        form = forms.TicketCoverForm(organization_id=self.context.user.organization_id, 
+                                      formdata=self.request.POST)
+        if not form.validate():
+            return dict(h=helpers, form=form, cover=cover)
+        
+        params = form.data
+        cover.name = params["name"]
+        cover.ticket_id = params["ticket"]
+        cover.save()
+        self.request.session.flash(u'表紙を更新しました')
+        return HTTPFound(location=self.request.route_path("tickets.index"))
+
+    @view_config(route_name='tickets.covers.show', renderer='altair.app.ticketing:templates/tickets/covers/show.html')
+    def show(self):
+        cover = TicketCover.filter_by(organization_id=self.context.user.organization_id,
+                                    id=self.request.matchdict["id"]).first()
+        if cover is None:
+            raise HTTPNotFound("this is not found")
+        return dict(h=helpers, cover=cover, event=getattr(self.request.context, 'event', None))
+
+    @view_config(route_name="tickets.covers.new", renderer="altair.app.ticketing:templates/tickets/covers/new.html", 
                  request_method="GET")
     def new(self):
-        form = forms.TicketTemplateForm(organization_id=self.context.user.organization_id)
+        form = forms.TicketCoverForm(organization_id=self.context.user.organization_id)
         return dict(
             h=helpers,
             form=form,
@@ -327,9 +371,9 @@ class TicketTemplates(BaseView):
             route_name=u'登録',
             )
 
-    @view_config(route_name='tickets.templates.new', renderer='altair.app.ticketing:templates/tickets/templates/new.html', request_method="POST")
+    @view_config(route_name='tickets.covers.new', renderer='altair.app.ticketing:templates/tickets/covers/new.html', request_method="POST")
     def new_post(self):
-        form = forms.TicketTemplateForm(organization_id=self.context.user.organization_id, 
+        form = forms.TicketCoverForm(organization_id=self.context.user.organization_id, 
                                       formdata=self.request.POST)
         if not form.validate():
             return dict(
@@ -340,10 +384,64 @@ class TicketTemplates(BaseView):
                 route_name=u'登録',
                 )
 
+        ticket_cover = TicketCover(name=form.data["name"], 
+                                   ticket_id=form.data["ticket"], 
+                                   organization_id=self.context.user.organization_id
+                                   )
+        
+        ticket_cover.save()
+        self.request.session.flash(u'表紙を登録しました')
+        return HTTPFound(location=self.request.route_path("tickets.index"))
+
+    def delete(self):
+        cover_id = self.request.matchdict["id"]
+        message = u"このチケットテンプレートを削除します。よろしいですか？"
+        next_to = self.request.route_path("events.tickets.covers.delete",
+                                          id=cover_id)
+        return dict(message=message, next_to=next_to)
+
+    @view_config(route_name='tickets.covers.delete', request_method="POST")
+    def delete_post(self):
+        cover = TicketCover.filter_by(organization_id=self.context.user.organization_id,
+                                    id=self.request.matchdict["id"]).first()
+        if cover is None:
+            raise HTTPNotFound("this is not found")
+
+        cover.delete()
+        self.request.session.flash(u'表紙を削除しました')
+
+        return HTTPFound(location=self.request.route_path("tickets.index"))
+
+@view_defaults(decorator=with_bootstrap, permission="event_editor")
+class TicketTemplates(BaseView):
+    @view_config(route_name="tickets.templates.new", renderer="altair.app.ticketing:templates/tickets/templates/new.html", 
+                 request_method="GET")
+    def new(self):
+        form = forms.TicketTemplateForm(context=self.context)
+        return dict(
+            h=helpers,
+            form=form,
+            event=getattr(self.request.context, 'event', None),
+            route_path=self.request.path,
+            route_name=u'登録',
+            )
+
+    @view_config(route_name='tickets.templates.new', renderer='altair.app.ticketing:templates/tickets/templates/new.html', request_method="POST")
+    def new_post(self):
+        form = forms.TicketTemplateForm(context=self.context, formdata=self.request.POST)
+        if not form.validate():
+            return dict(
+                h=helpers,
+                form=form,
+                event=getattr(self.request.context, 'event', None),
+                route_path=self.request.path,
+                route_name=u'登録',
+                )
+
         ticket_template = Ticket(name=form.data["name"], 
-                                 ticket_format_id=form.data["ticket_format"], 
+                                 ticket_format_id=form.data["ticket_format_id"], 
                                  data=form.data_value, 
-                                 organization_id=self.context.user.organization_id
+                                 organization_id=self.context.organization.id
                                  )
         
         ticket_template.save()
@@ -354,18 +452,15 @@ class TicketTemplates(BaseView):
                  request_method="GET")
     def edit(self):
         template = self.context.tickets_query().filter_by(
-            organization_id=self.context.user.organization_id,
+            organization_id=self.context.organization.id,
             id=self.request.matchdict["id"]).first()
 
         if template is None:
             raise HTTPNotFound("this is not found")
         
         form = forms.TicketTemplateEditForm(
-            organization_id=self.request.context.user.organization_id, 
-            name=template.name,
-            ticket_format=template.ticket_format_id,
-            always_reissueable=template.always_reissueable,
-            priced=template.priced
+            context=self.context,
+            obj=template
             )
         return dict(
             h=helpers,
@@ -380,14 +475,16 @@ class TicketTemplates(BaseView):
                  request_method="POST")
     def edit_post(self):
         template = self.context.tickets_query().filter_by(
-            organization_id=self.context.user.organization_id,
+            organization_id=self.context.organization.id,
             id=self.request.matchdict["id"]).first()
 
         if template is None:
             raise HTTPNotFound("this is not found")
 
-        form = forms.TicketTemplateEditForm(organization_id=self.context.user.organization_id, 
-                                        formdata=self.request.POST)
+        form = forms.TicketTemplateEditForm(
+            context=self.context, 
+            obj=template,
+            formdata=self.request.POST)
         if not form.validate():
             return dict(
                 h=helpers,
@@ -399,7 +496,7 @@ class TicketTemplates(BaseView):
                 )
 
         template.name = form.data["name"]
-        template.ticket_format_id = form.data["ticket_format"]
+        template.ticket_format_id = form.data["ticket_format_id"]
         template.always_reissueable = form.data["always_reissueable"]
         template.priced = form.data["priced"]
 
@@ -457,7 +554,7 @@ class TicketTemplates(BaseView):
     @view_config(route_name='tickets.templates.show', renderer='altair.app.ticketing:templates/tickets/templates/show.html')
     def show(self):
         qs = self.context.tickets_query().filter_by(id=self.request.matchdict['id'])
-        template = qs.filter_by(organization_id=self.context.user.organization_id).first()
+        template = qs.filter_by(organization_id=self.context.organization.id).first()
         if template is None:
             raise HTTPNotFound("this is not found")
 
@@ -467,7 +564,7 @@ class TicketTemplates(BaseView):
     def download(self):
         raw = self.request.params.get('raw')
         qs = self.context.tickets_query().filter_by(id=self.request.matchdict['id'])
-        template = qs.filter_by(organization_id=self.context.user.organization_id).first()
+        template = qs.filter_by(organization_id=self.context.organization.id).first()
         if template is None:
             raise HTTPNotFound("this is not found")
         if raw:
@@ -483,12 +580,12 @@ class TicketTemplates(BaseView):
             xmltree.write(stream, encoding="utf-8")
             stream.seek(0)
 
-        return FileLikeResponse(stream, request=self.request)
+        return FileLikeResponse(stream, request=self.request, filename="download.svg")
 
     @view_config(route_name='tickets.templates.data', renderer='json')
     def data(self):
         qs = self.context.tickets_query().filter_by(id=self.request.matchdict['id'])
-        template = qs.filter_by(organization_id=self.context.user.organization_id).first()
+        template = qs.filter_by(organization_id=self.context.organization.id).first()
         if template is None:
             raise HTTPNotFound("this is not found")
         data = dict(template.ticket_format.data)
@@ -499,20 +596,32 @@ class TicketTemplates(BaseView):
 class TicketPrintQueueEntries(BaseView):
     @view_config(route_name='tickets.queue.index', renderer='altair.app.ticketing:templates/tickets/queue/index.html')
     def index(self):
-        queue_entries_sort_by, queue_entries_direction = helpers.sortparams('queue_entry', self.request, ('TicketPrintQueueEntry.created_at', 'desc'))
-
         queue_entries_qs = DBSession.query(TicketPrintQueueEntry) \
             .filter_by(operator=self.context.user, processed_at=None)\
             .options(joinedload(TicketPrintQueueEntry.seat))
 
-        if queue_entries_sort_by == "Order.order_no":
-            # queue_entries_qs = queue_entries_qs\
-            #     .join(OrderedProductItem.ordered_product) \
-            #     .join(OrderedProduct.order)
-            ## これはsummaryのフォーマットが"注文 <order_no> - <message>"という形式のため。これで十分
-            queue_entries_sort_by = "TicketPrintQueueEntry.summary"
+        ## defaultは印刷対象のもののみ表示
+        status = self.request.GET.get("status")
+        if status == "all":
+            pass
+        elif status == "masked":
+            queue_entries_qs = queue_entries_qs.filter(TicketPrintQueueEntry.masked_at!=None)
+        else:
+            queue_entries_qs = queue_entries_qs.filter(TicketPrintQueueEntry.masked_at==None)
 
-        queue_entries_qs = queue_entries_qs.order_by(helpers.get_direction(queue_entries_direction)(queue_entries_sort_by))
+        ## defaultは印刷順序(TicketPrintQueueEntry.peekの順序)と同じ
+        if "queue_entry_sort" in self.request.GET:
+            queue_entries_sort_by, queue_entries_direction = helpers.sortparams('queue_entry', self.request, ('TicketPrintQueueEntry.created_at', 'desc'))
+            if queue_entries_sort_by == "Order.order_no":
+                # queue_entries_qs = queue_entries_qs\
+                #     .join(OrderedProductItem.ordered_product) \
+                #     .join(OrderedProduct.order)
+                ## これはsummaryのフォーマットが"注文 <order_no> - <message>"という形式のため。これで十分
+                queue_entries_sort_by = "TicketPrintQueueEntry.summary"
+            queue_entries_qs = queue_entries_qs.order_by(helpers.get_direction(queue_entries_direction)(queue_entries_sort_by))
+        else:
+            queue_entries_qs = queue_entries_qs.order_by(*TicketPrintQueueEntry.printing_order_condition())
+
         return dict(h=helpers, queue_entries=queue_entries_qs)
 
     @view_config(route_name='tickets.queue.delete', request_method="POST")
@@ -523,6 +632,27 @@ class TicketPrintQueueEntries(BaseView):
             .filter(TicketPrintQueueEntry.id.in_(ids)) \
             .delete(synchronize_session=False)
         self.request.session.flash(u'エントリを %d 件削除しました' % n)
+        return HTTPFound(location=self.request.route_path("tickets.queue.index"))
+
+    @view_config(route_name='tickets.queue.mask', request_method="POST")
+    def mask(self):
+        ids = self.request.params.getall('id')
+        now = datetime.now()
+        n = DBSession.query(TicketPrintQueueEntry) \
+            .filter_by(operator=self.context.user) \
+            .filter(TicketPrintQueueEntry.id.in_(ids), TicketPrintQueueEntry.masked_at==None) \
+            .update({"masked_at": now}, synchronize_session=False)
+        self.request.session.flash(u'エントリを %d 件除外しました' % n)
+        return HTTPFound(location=self.request.route_path("tickets.queue.index"))
+
+    @view_config(route_name='tickets.queue.unmask', request_method="POST")
+    def unmask(self):
+        ids = self.request.params.getall('id')
+        n = DBSession.query(TicketPrintQueueEntry) \
+            .filter_by(operator=self.context.user) \
+            .filter(TicketPrintQueueEntry.id.in_(ids), TicketPrintQueueEntry.masked_at!=None) \
+            .update({"masked_at": None}, synchronize_session=False)
+        self.request.session.flash(u'エントリを %d 件元に戻しました' % n)
         return HTTPFound(location=self.request.route_path("tickets.queue.index"))
 
 @view_defaults(decorator=with_bootstrap, permission="event_editor")

@@ -2,6 +2,7 @@
 from .searcher import EventSearcher, SimpleEventSearcher, PrefectureEventSearcher
 from .helper import SmartPhoneHelper
 from .const import get_areas, SalesEnum
+from .utils import SnsUtils
 from ..search.search_query import SearchQuery
 from ..search.forms import TopSearchForm, GenreSearchForm, AreaSearchForm
 from ..search.search_query import SaleInfo
@@ -55,6 +56,7 @@ class CommonResource(object):
         areas = self.get_area()
         week_sales = self.search_week(genre, 1, 10)
         near_end_sales = self.search_near_end(genre, 1, 10)
+        utils = SnsUtils(request=self.request)
 
         return {
              'genre':genre
@@ -68,6 +70,10 @@ class CommonResource(object):
             ,'near_end_sales':near_end_sales
             ,'helper':SmartPhoneHelper()
             ,'form':form
+            , 'sns':{
+                'url':utils.get_sns_url_from_genre(genre=genre),
+                'title':u"楽天チケット-" + genre.label
+            }
         }
 
     def get_subsubgenre_render_param(self, genre_id):
@@ -78,19 +84,25 @@ class CommonResource(object):
         query = SearchQuery(None, genre, SalesEnum.ON_SALE.v, None)
         page = form.data['page'] if form.data['page'] else 1
         result = self.search_subsubgenre(query, int(page), 10)
+        utils = SnsUtils(request=self.request)
 
         return {
              'form':form
             ,'genre':genre
             ,'result':result
             ,'helper':SmartPhoneHelper()
+            , 'sns':{
+                'url':utils.get_sns_url_from_genre(genre=genre),
+                'title':u"楽天チケット-" + genre.label
+            }
         }
 
     # サブサブジャンル検索
     def search_subsubgenre(self, query, page, per):
         searcher = SimpleEventSearcher(request=self.request)
         qs = searcher.search_freeword(search_query=query, genre_label=query.genre.label, cond=None)
-        qs = searcher.search_sale(search_query=query, qs=qs)
+        if qs:
+            qs = searcher.search_sale(search_query=query, qs=qs)
         result = searcher.create_result(qs=qs, page=page, query=query, per=per)
         return result
 

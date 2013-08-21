@@ -22,18 +22,6 @@ ${ch.breadcrumbs(
       return true;
     });
 
-    // click by selectable
-    $("table").selectable({
-      filter: "td.printstatus-wrap",
-      distance: 1,
-      stop: function(){
-          $(".ui-selected input[type='checkbox']", this).each(function(_,e){
-              $(e).click();
-           });
-          $(".ui-selected").removeClass("ui-selected");
-        }
-      });
-
     // add-all,remove-all
     $("#addall").on("click", function(){
       var candidates = $("input.printstatus[type='checkbox']:not(:checked)")
@@ -47,6 +35,34 @@ ${ch.breadcrumbs(
 </script>
 
 <h2>印刷キュー</h2>
+
+<div>
+  <%
+     total = queue_entries.count()
+     availables = queue_entries.filter_by(masked_at=None).count()
+  %>
+  件数:${total}  印刷対象:${availables} 除外:${total - availables}
+</div>
+
+<hr/>
+
+<%! from altair.viewhelpers.structure import updated %>
+<ul class="nav nav-tabs">
+  %if request.GET.get("status") == "all":
+  <li><a href="${request.route_path("tickets.queue.index",_query=updated(request.GET,{"status": "unmasked"}))}">印刷される予定のもののみ</a></li>
+  <li><a href="${request.route_path("tickets.queue.index",_query=updated(request.GET,{"status": "masked"}))}">除外したもののみ</a></li>
+  <li class="active"><a href="${request.route_path("tickets.queue.index",_query=updated(request.GET,{"status": "all"}))}">すべて表示</a></li>
+  %elif request.GET.get("status") == "masked":
+  <li><a href="${request.route_path("tickets.queue.index",_query=updated(request.GET,{"status": "unmasked"}))}">印刷される予定のもののみ</a></li>
+  <li class="active"><a href="${request.route_path("tickets.queue.index",_query=updated(request.GET,{"status": "masked"}))}">除外したもののみ</a></li>
+  <li><a href="${request.route_path("tickets.queue.index",_query=updated(request.GET,{"status": "all"}))}">すべて表示</a></li>
+  %else:
+  <li class="active"><a href="${request.route_path("tickets.queue.index",_query=updated(request.GET,{"status": "unmasked"}))}">印刷される予定のもののみ</a></li>
+  <li><a href="${request.route_path("tickets.queue.index",_query=updated(request.GET,{"status": "masked"}))}">除外したもののみ</a></li>
+  <li><a href="${request.route_path("tickets.queue.index",_query=updated(request.GET,{"status": "all"}))}">すべて表示</a></li>
+  %endif
+</ul>
+
 <div id="queue_entry_menu" class="btn-group">
   <a class="btn" href="${request.route_path("tickets.printer")}" target="_blank"><i class="icon-print"></i> 印刷ツールを開く</a>
   <a class="btn id-delegate-action"
@@ -54,6 +70,18 @@ ${ch.breadcrumbs(
      data-base-url="${request.route_path("tickets.queue.delete")}"
      href="#deleteModalQueueEntry">
     <i class="icon-minus"></i> 削除
+  </a>
+  <a class="btn id-delegate-action"
+     data-delegated="#maskModalQueueEntry"
+     data-base-url="${request.route_path("tickets.queue.mask")}"
+     href="#maskModalQueueEntry">
+    <i class="icon-minus"></i> 印刷対象から一時的に除外
+  </a>
+  <a class="btn id-delegate-action"
+     data-delegated="#unmaskModalQueueEntry"
+     data-base-url="${request.route_path("tickets.queue.unmask")}"
+     href="#unmaskModalQueueEntry">
+    <i class="icon-minus"></i> 除外したものを元に戻す
   </a>
   <a type="button" class="btn" id="addall">全部ON</a>
   <a type="button" class="btn" id="removeall">全部OFF</a>
@@ -64,18 +92,26 @@ ${ch.breadcrumbs(
   <thead>
     <tr>
       <th class="minwidth"></th>
+      <th><a href="${sortable(request, "Order.order_no", direction="desc")}" class="sortable">注文番号</a></th>
       <th><a href="${sortable(request, "TicketPrintQueueEntry.summary")}" class="sortable">内容</a></th>
       <th><a href="${sortable(request, "TicketPrintQueueEntry.ticket_id", direction="desc")}" class="sortable">テンプレート</a></th>
-      <th><a href="${sortable(request, "Order.order_no", direction="desc")}" class="sortable">注文番号</a></th>
       <th><a href="${sortable(request, "TicketPrintQueueEntry.ordered_product_item_id", direction="desc")}" class="sortable">券種</a></th>
       <th><a href="${sortable(request, "TicketPrintQueueEntry.seat_id", direction="desc")}" class="sortable">座席</a></th>
       <th><a href="${sortable(request, "TicketPrintQueueEntry.created_at", direction="desc")}" class="sortable">作成日時</a></th>
+      <th>除外</a></th>
     </tr>
   </thead>
   <tbody>
   % for entry in queue_entries:
     <tr>
       <td class="printstatus-wrap"><input class="printstatus" type="checkbox" name="queue_entry_id" value="${entry.id}" /></td>
+      <td class="orderno">
+        % if entry.ordered_product_item:
+        <a href="${request.route_url('orders.show', order_id=entry.ordered_product_item.ordered_product.order.id)}">${entry.ordered_product_item.ordered_product.order.order_no}</a>
+        % else:
+        -
+        % endif
+      </td>
       <td>${entry.summary}</td>
       <td>
         %if entry.ticket.event_id:
@@ -86,13 +122,6 @@ ${ch.breadcrumbs(
       </td>
       <td>
         % if entry.ordered_product_item:
-        <a href="${request.route_url('orders.show', order_id=entry.ordered_product_item.ordered_product.order.id)}">${entry.ordered_product_item.ordered_product.order.order_no}</a>
-        % else:
-        -
-        % endif
-      </td>
-      <td>
-        % if entry.ordered_product_item:
         ${entry.ordered_product_item.product_item.name}
         % else:
         -
@@ -100,6 +129,7 @@ ${ch.breadcrumbs(
       </td>
       <td>${entry.seat.name if entry.seat else u'-'}</td>
       <td>${entry.created_at}</td>
+      <td>${u"除外中" if entry.masked_at else u"-"}</td>
     </tr>
   % endfor
   </tbody>
@@ -117,6 +147,38 @@ ${ch.breadcrumbs(
     <a href="#" class="btn" data-dismiss="modal">キャンセル</a>
     <form action="#" data-base-url="${request.route_path("tickets.queue.delete")}" method="POST">
       <button type="submit" class="btn">削除する</button>
+    </form>
+  </div>
+</div>
+
+<div class="modal hide" id="maskModalQueueEntry">
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal">×</button>
+    <h3>確認</h3>
+  </div>
+  <div class="modal-body">
+    このエントリーを一時的に印刷対象から除外します(データは削除されません)。よろしいですか？
+  </div>
+  <div class="modal-footer">
+    <a href="#" class="btn" data-dismiss="modal">キャンセル</a>
+    <form action="#" data-base-url="${request.route_path("tickets.queue.mask")}" method="POST">
+      <button type="submit" class="btn">除外する</button>
+    </form>
+  </div>
+</div>
+
+<div class="modal hide" id="unmaskModalQueueEntry">
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal">×</button>
+    <h3>確認</h3>
+  </div>
+  <div class="modal-body">
+    このエントリーを除外対象から元に戻します。よろしいですか？
+  </div>
+  <div class="modal-footer">
+    <a href="#" class="btn" data-dismiss="modal">キャンセル</a>
+    <form action="#" data-base-url="${request.route_path("tickets.queue.unmask")}" method="POST">
+      <button type="submit" class="btn">実行する</button>
     </form>
   </div>
 </div>

@@ -7,7 +7,7 @@
 <div class="row">
     ${co.page_difference(page, dict(params))}
 
-    <form action="${h.page.to_update(request,page)}" method="POST">
+    <form action="${h.current_route_path_override(request)}" method="POST">
       <input id="_method" name="_method" type="hidden" value="put" />
       ## POST data
       %for k,v in params:

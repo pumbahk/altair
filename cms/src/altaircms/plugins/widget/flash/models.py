@@ -26,7 +26,7 @@ class FlashWidget(Widget):
     query = DBSession.query_property()
 
     id = sa.Column(sa.Integer, sa.ForeignKey("widget.id"), primary_key=True)
-    asset_id = sa.Column(sa.Integer, sa.ForeignKey("asset.id"))
+    asset_id = sa.Column(sa.Integer, sa.ForeignKey("asset.id", ondelete="SET NULL"))
     asset = orm.relationship(FlashAsset, backref="widget", uselist=False)
     href = sa.Column(sa.String(255))
     width = sa.Column(sa.Integer)

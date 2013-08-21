@@ -175,6 +175,8 @@ def _elect_lots_task(context, message, lot, work, history):
         if payment_finished and delivery_finished:
             lot_entry = wish.lot_entry
             logger.warning("lot entry {0} is already ordered.".format(lot_entry.entry_no))
+            event = LotElectedEvent(request, wish)
+            request.registry.notify(event)
             return
     try:
         order = elect_lot_wish(request, wish, order)

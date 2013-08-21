@@ -17,15 +17,14 @@ class IDirectoryResourceFactory(Interface):
     def __call__(request):
         pass
 
+## event
+
 class IAfterFormInitialize(Interface):
     request = Attribute("request")
     form = Attribute("form")
     rendering_val = Attribute("rendering_val")
 
-class IForm(Interface):
-    def validate():
-        pass
-    
+
 class IModelEvent(Interface):
     request = Attribute("")
     obj = Attribute("")
@@ -34,6 +33,18 @@ class IModelEvent(Interface):
 class IAfterResponseEvent(Interface):
     request = Attribute("request object")
     response_data = Attribute("response data usually dict like object")
+
+
+
+
+
+
+
+## obsolete
+class IForm(Interface):
+    def validate():
+        pass
+    
 
 class IConcrete(Interface):
     def concrete():

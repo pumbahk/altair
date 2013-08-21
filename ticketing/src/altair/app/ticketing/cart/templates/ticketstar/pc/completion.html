@@ -1,4 +1,4 @@
-><%inherit file="./base.html"/>
+<%inherit file="./base.html"/>
 <%block name="css">
 <style type="text/css">
   .confirm-message{
@@ -12,6 +12,7 @@
 
 ${h.get_nickname(request)} 
 <p><img src="${request.static_url('altair.app.ticketing.cart:static/img/settlement/completion.gif')}" alt="購入を完了いたしました。" width="201" height="50" /></p>
+<p>下記の受付番号はとても大切な番号です。すぐにメモするか印刷して保管してください。</p>
 
 <div class="confirmBox">
   <div class="confirmBoxInner">
@@ -93,9 +94,9 @@ ${h.get_nickname(request)}
     <div class="confirm-message">
       <ul>
 
-        <li>お申し込み時に、ご登録いただいたメールアドレス宛に、受付完了メールが送られます。しばらくたっても確認のメールが届かない場合は、入力されたメールアドレスが誤っている可能性があります。<a href="mailto:info@tstar.jp">info@tstar.jp</a> までご連絡ください。<br />
+        <li>お申し込み時に、ご登録いただいたメールアドレス宛に、受付完了メールが送られます。しばらくたっても確認のメールが届かない場合は、入力されたメールアドレスが誤っている可能性があります。<a target="_blank" href="mailto:info@tstar.jp">info@tstar.jp</a> までご連絡ください。<br />
           （お問い合わせの際は、お申込み時のお名前と電話番号を記載お願いします）</li>
-        <li>お申込内容は、「<a href="https://c.tstar.jp/orderreview">履歴確認</a>」からもご確認いただけます。受付番号とご登録時のお電話番号をお手元にご用意の上、ご利用ください。</li>
+        <li>お申込内容は、「<a target="_blank" href="https://c.tstar.jp/orderreview">履歴確認</a>」からもご確認いただけます。受付番号とご登録時のお電話番号をお手元にご用意の上、ご利用ください。</li>
       </ul>
 
     </div>

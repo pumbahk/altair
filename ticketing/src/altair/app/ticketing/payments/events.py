@@ -13,6 +13,7 @@ def cancel_on_delivery_error(event):
     import sys
     import traceback
     import StringIO
+    import sqlahelper
 
     e = event.exception
     request = event.request
@@ -24,3 +25,6 @@ def cancel_on_delivery_error(event):
 
     order.cancel(request)
     order.note = str(e)
+    
+    DBSession = sqlahelper.get_session()
+    DBSession.expunge_all()

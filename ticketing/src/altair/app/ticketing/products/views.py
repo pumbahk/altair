@@ -78,7 +78,7 @@ class Products(BaseView):
             if performance is None:
                 return HTTPNotFound('performance id %d is not found' % performance_id)
 
-        f = ProductForm(performance=performance, sales_segment=sales_segment, applied_point_grant_settings=[pgs.id for pgs in sales_segment.point_grant_settings])
+        f = ProductForm(performance=performance, sales_segment=sales_segment, applied_point_grant_settings=(sales_segment and [pgs.id for pgs in sales_segment.point_grant_settings]))
         return {
             'form': f,
             'action': self.request.path,

@@ -106,7 +106,6 @@ class BaseSearchQueryBuilderMixin(object):
 
     def _payment_method(self, query, value):
         query = query.join(self.targets['subject'].payment_delivery_pair)
-        query = query.join(self.targets['PaymentDeliveryMethodPair'])
         query = query.join(self.targets['PaymentMethod'])
         if isinstance(value, list):
             query = query.filter(self.targets['PaymentMethod'].id.in_(value))
@@ -116,7 +115,6 @@ class BaseSearchQueryBuilderMixin(object):
 
     def _delivery_method(self, query, value):
         query = query.join(self.targets['subject'].payment_delivery_pair)
-        query = query.join(self.targets['PaymentDeliveryMethodPair'])
         query = query.join(self.targets['DeliveryMethod'])
         query = query.filter(self.targets['DeliveryMethod'].id.in_(value))
         return query
@@ -172,8 +170,11 @@ class CartSearchQueryBuilder(SearchQueryBuilderBase, BaseSearchQueryBuilderMixin
         'Seat': Seat,
         'Performance': Performance,
         'ShippingAddress': ShippingAddress,
+        'PaymentDeliveryMethodPair': PaymentDeliveryMethodPair,
         'PaymentMethod': PaymentMethod,
         'DeliveryMethod': DeliveryMethod,
+        'SalesSegment': SalesSegment,
+        'SalesSegmentGroup': SalesSegmentGroup,
         }
 
     def _carted_from(self, query, value):
@@ -184,17 +185,13 @@ class CartSearchQueryBuilder(SearchQueryBuilderBase, BaseSearchQueryBuilderMixin
 
     def _sales_segment_group_id(self, query, value):
         if value and '' not in value:
-            query = query.join(self.targets['subject'].products)
-            query = query.join(self.targets['CartedProduct'].product)
-            query = query.join(self.targets['Product'].sales_segment)
+            query = query.join(self.targets['subject'].sales_segment)
             query = query.filter(self.targets['SalesSegment'].sales_segment_group_id.in_(value))
         return query
 
     def _sales_segment_id(self, query, value):
         if value and '' not in value:
-            query = query.join(self.targets['subject'].products)
-            query = query.join(self.targets['CartedProduct'].product)
-            query = query.filter(self.targets['Product'].sales_segment_id.in_(value))
+            query = query.filter(self.targets['subject'].sales_segment_id.in_(value))
         return query
 
     def _seat_number(self, query, value):

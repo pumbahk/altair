@@ -1,7 +1,5 @@
 <%inherit file='../layout_2col.html'/>
 <%namespace name="nco" file="../navcomponents.html"/>
-<%namespace name="fco" file="../formcomponents.html"/>
-<%namespace name="mco" file="../modelcomponents.html"/>
 
 <%block name="style">
 <style type="text/css">
@@ -23,29 +21,33 @@
 
 <table class="table table-striped table-describe">
   <tr>
-    <th>ページ名</th><td>${pageset.name}
+    <th rowspan="7">ページセット情報</th>
+    <th>ページ名</th><td>${pageset.name} 
       %if pageset.genre_id and pageset.genre.is_category_toppage(pageset):
         <span class="label label-info">カテゴリトップページ:${pageset.genre.label}</span>
       %endif
     </td>
+    <th></th><td></td>
   </tr>
   <tr>
-    <th>所属ジャンル</th><td>${u", ".join(reversed([g.label for g in pageset.genre.ancestors_include_self])) if pageset.genre_id else u"-"}</td>
-  </tr>
-  <tr>
-    <th>URL</th><td>${pageset.url}</td>
+    <th>URL</th><td colspan="3">${pageset.url}</td>
   </tr>
   <tr>
     <th>ページタイプ</th><td>イベント詳細ページ</td>
+    <th>所属ジャンル</th><td>${u", ".join(reversed([g.label for g in pageset.genre.ancestors_include_self])) if pageset.genre_id else u"-"}</td>
   </tr>
   <tr>
-    <th>公開タグ</th><td>${u", ".join(t.label for t in pageset.public_tags if t.organization_id)}</td>
+    <th>作成日時</th><td>${h.base.jdatetime(pageset.created_at)}</td>
+    <th>更新日時</th><td>${h.base.jdatetime(pageset.updated_at)}</td>
   </tr>
   <tr>
-    <th>非公開タグ</th><td>${u", ".join(t.label for t in pageset.private_tags if t.organization_id)}</td>
+    <th>公開タグ</th><td colspan="3">${u", ".join(t.label for t in pageset.public_tags if t.organization_id)}</td>
   </tr>
   <tr>
-    <th>モバイルタグ(ドキュメントページでは使用不可)</th><td>${u", ".join(t.label for t in pageset.mobile_tags if t.organization_id)}</td>
+    <th>非公開タグ</th><td colspan="3">${u", ".join(t.label for t in pageset.private_tags if t.organization_id)}</td>
+  </tr>
+  <tr>
+    <th>モバイルタグ(ドキュメントページでは使用不可)</th><td colspan="3">${u", ".join(t.label for t in pageset.mobile_tags if t.organization_id)}</td>
   </tr>
 </table>
 
@@ -68,7 +70,7 @@
   ## 一番下のjsに依存している
 <div class="box">
   ${panel("pageset_page", pageset)}
-  <div class="btn-group">
+  <div class="btn-group" id="nav_page">
 	  <a class="btn btn-success submit" id="pageset_addpage" href="${request.route_path("plugins_jsapi_addpage", pageset_id=pageset.id)}"
        message="「${pageset.name}」に新しいページを追加します。よろしいですか？">
 		  <i class="icon-plus"> </i> 新しいページの追加
@@ -78,6 +80,24 @@
     </a>
   </div>
 </div>
+<hr/>
+
+%if current_page:
+<div class="box">
+  <h3> 選択されたページ</h3>
+    <ul class="nav nav-tabs">
+      %for page in pageset.pages:
+      %if unicode(page.id) == unicode(current_page.id):
+        <li class="active"><a href="${h.current_route_path_override(request,_query=dict(current_page_id=page.id))}#nav_page">${page.name}(id=${page.id})</a></li>
+      %else:
+        <li><a href="${h.current_route_path_override(request,_query=dict(current_page_id=page.id))}#nav_page">${page.name}(id=${page.id})</a></li>
+      %endif
+      %endfor
+    </ul>
+    ${panel("describe_page", current_page)}
+</div>
+%endif
+
 <hr/>
 
 <h3>登録しているアセット</h3>

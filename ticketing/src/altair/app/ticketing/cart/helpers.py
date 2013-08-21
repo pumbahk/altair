@@ -88,9 +88,18 @@ def build_unit_template(product_items):
         else:
             return u"%d×{{num}}枚" % product_items[0].quantity
     else:
+        stock_type_dict = dict()
+        for product_item in product_items:
+            id = product_item.stock_type.id
+            if id in stock_type_dict:
+                stock_type = stock_type_dict[id]
+                stock_type['quantity'] += product_item.quantity
+            else:
+                stock_type = dict(name=escape(product_item.stock_type.name), quantity=product_item.quantity)
+            stock_type_dict[id] = stock_type
         return u"(%s)×{{num}}" % u" + ".join(
-            u"%s:%d枚" % (escape(product_item.stock_type.name), product_item.quantity)
-            for product_item in product_items)
+            u"%s:%d枚" % (stock_type.get('name'), stock_type.get('quantity'))
+            for stock_type in stock_type_dict.values())
 
 def products_filter_by_salessegment(products, sales_segment):
     if sales_segment is None:

@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import logging
 import webhelpers.paginate as paginate
 
 from pyramid.view import view_config, view_defaults
@@ -12,8 +13,10 @@ from altair.app.ticketing.models import merge_session_with_post, record_to_multi
 from altair.app.ticketing.fanstatic import with_bootstrap
 from altair.app.ticketing.core.models import Account, Event
 from altair.app.ticketing.sej.models import SejTenant
-from .forms import AccountForm, my_int_coerce
+from .forms import AccountForm
 from altair.app.ticketing.organizations.forms import OrganizationForm
+
+logger = logging.getLogger(__name__)
 
 @view_defaults(decorator=with_bootstrap, permission='master_editor')
 class Accounts(BaseView):
@@ -60,7 +63,7 @@ class Accounts(BaseView):
         if f.validate():
             account = Account(
                 account_type=f.data['account_type'],
-                user_id=my_int_coerce(f.data['user_id']),
+                user_id=f.data['user_id'],
                 name=f.data['name'],
                 organization_id = self.context.user.organization.id
                 )

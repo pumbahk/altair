@@ -70,7 +70,6 @@ class SalesTotalReporter(object):
         self.get_stock_data()
 
     def add_form_filter(self, query):
-        query = query.filter(Performance.public==True)
         if self.form.performance_id.data:
             query = query.filter(Performance.id==self.form.performance_id.data)
         if self.form.event_id.data:
@@ -95,9 +94,9 @@ class SalesTotalReporter(object):
         # イベント名称/公演名称、販売期間
         # 一般公開されている販売区分のみ対象
         query = Event.query.filter(Event.organization_id==self.organization.id)\
-            .outerjoin(Performance).filter(Performance.deleted_at==None)\
-            .outerjoin(Stock).filter(Stock.deleted_at==None, Stock.stock_holder_id.in_(self.stock_holder_ids))\
-            .outerjoin(SalesSegment, SalesSegment.performance_id==Performance.id).filter(SalesSegment.reporting==True)
+            .join(Performance).filter(Performance.deleted_at==None)\
+            .join(SalesSegment, SalesSegment.performance_id==Performance.id).filter(SalesSegment.reporting==True)\
+            .outerjoin(Stock).filter(Stock.deleted_at==None, Stock.stock_holder_id.in_(self.stock_holder_ids))
         query = self.add_form_filter(query)
 
         if self.group_by == Performance.id:
@@ -145,7 +144,7 @@ class SalesTotalReporter(object):
 
         for id, stock_quantity in query.all():
             if id not in self.reports:
-                logger.warn('invalid key (%s:%s) get_stock_data' % (self.group_by, id))
+                logger.info('invalid key (%s:%s) get_stock_data' % (self.group_by, id))
                 continue
             record = self.reports[id]
             record.stock_quantity = stock_quantity or 0
@@ -176,7 +175,7 @@ class SalesTotalReporter(object):
 
         for id, order_amount, order_quantity in query.all():
             if id not in self.reports:
-                logger.warn('invalid key (%s:%s) get_order_data' % (self.group_by, id))
+                logger.info('invalid key (%s:%s) get_order_data' % (self.group_by, id))
                 continue
             record = self.reports[id]
             record.total_order_amount = order_amount or 0
@@ -190,7 +189,7 @@ class SalesTotalReporter(object):
                 query = query.filter(Order.created_at < self.form.limited_to.data)
             for id, order_amount, order_quantity in query.all():
                 if id not in self.reports:
-                    logger.warn('invalid key (%s:%s) get_order_data' % (self.group_by, id))
+                    logger.info('invalid key (%s:%s) get_order_data' % (self.group_by, id))
                     continue
                 record = self.reports[id]
                 record.order_amount = order_amount or 0
@@ -204,7 +203,8 @@ class SalesTotalReporter(object):
         return sorted(self.reports.values(), key=lambda x:(x.start_on, x.title))
 
     def pop_data(self):
-        return self.reports.values().pop()
+        values = self.reports.values()
+        return values.pop() if values else None
 
 
 class SalesDetailReportRecord(object):
@@ -214,6 +214,7 @@ class SalesDetailReportRecord(object):
                  product_id=None,
                  product_name=None,
                  product_price=None,
+                 sales_unit=None,
                  stock_holder_id=None,
                  stock_holder_name=None,
                  sales_segment_group_name=None,
@@ -232,6 +233,8 @@ class SalesDetailReportRecord(object):
         self.product_name = product_name
         # 商品単価
         self.product_price = product_price
+        # 販売単位
+        self.sales_unit = sales_unit
         # 商品表示順
         self.product_display_order = product_display_order
         # 枠ID
@@ -303,6 +306,17 @@ class SalesDetailReporter(object):
         query = query.join(SalesSegment, SalesSegment.id==Product.sales_segment_id).filter(
             or_(SalesSegment.performance_id==None, SalesSegment.reporting==True)
         )
+        # 期間指定内で有効な販売区分のみ対象
+        if form.limited_from.data and form.limited_to.data:
+            query = query.filter(or_(
+                form.limited_from.data <= SalesSegment.end_at,
+                SalesSegment.start_at <= form.limited_to.data
+            ))
+        elif form.limited_from.data:
+            query = query.filter(form.limited_from.data <= SalesSegment.end_at)
+        elif form.limited_to.data:
+            query = query.filter(SalesSegment.start_at <= form.limited_to.data)
+
         if form.sales_segment_group_id.data:
             query = query.join(SalesSegmentGroup).filter(and_(
                 SalesSegmentGroup.id==form.sales_segment_group_id.data,
@@ -342,6 +356,7 @@ class SalesDetailReporter(object):
             Stock.id,
             StockType.display_order,
             Product.display_order,
+            func.sum(ProductItem.quantity),
         ).group_by(func.ifnull(Product.base_product_id, Product.id))
 
         for row in query.all():
@@ -356,7 +371,8 @@ class SalesDetailReporter(object):
                 sales_segment_group_name=row[7],
                 stock_id=row[8],
                 stock_type_display_order=row[9],
-                product_display_order=row[10]
+                product_display_order=row[10],
+                sales_unit=row[11]
             )
 
     def _get_order_quantity(self):
@@ -371,7 +387,11 @@ class SalesDetailReporter(object):
                 Product.id==ProductItem.product_id,
                 Product.seat_stock_type_id==Stock.stock_type_id
             ))
-        form = SalesReportForm(performance_id=self.form.performance_id.data)
+        form = SalesReportForm(
+            performance_id=self.form.performance_id.data,
+            limited_from=self.form.limited_from.data,
+            limited_to=self.form.limited_to.data,
+        )
         query = self.add_sales_segment_filter(query, form)
         if self.form.performance_id.data:
             query = query.filter(Stock.performance_id==self.form.performance_id.data)
@@ -383,9 +403,9 @@ class SalesDetailReporter(object):
             func.sum(OrderedProductItem.quantity)
         ).group_by(Stock.id)
 
-        self.vacant_quantity = dict()
+        self.order_quantity = dict()
         for id, quantity in query.all():
-            self.vacant_quantity[id] = quantity
+            self.order_quantity[id] = quantity
 
     def get_stock_data(self):
         # 残席数を算出するためのStock単位の予約数
@@ -413,7 +433,7 @@ class SalesDetailReporter(object):
             report = self.reports[id]
             report.stock_quantity = stock_quantity or 0
             # 残席数 = 配席数 - 予約数 にする (StockStatus.quantityは販売中のものが含まれない為)
-            report.vacant_quantity = stock_quantity - self.vacant_quantity.get(report.stock_id, 0)
+            report.vacant_quantity = stock_quantity - self.order_quantity.get(report.stock_id, 0)
 
     def get_order_data(self, all_period=True):
         # 購入件数クエリ
@@ -496,7 +516,8 @@ class SalesDetailReporter(object):
             merged_record = record
             pre_merge_key = merge_key
         else:
-            merged_records[merged_record.product_id] = merged_record
+            if merged_record:
+                merged_records[merged_record.product_id] = merged_record
         self.reports = merged_records
         self.create_group_key_to_reports()
         return self.sort_data()
@@ -520,10 +541,10 @@ class SalesDetailReporter(object):
                     total.vacant_quantity += report.vacant_quantity
                 total.unpaid_quantity += report.unpaid_quantity
                 total.paid_quantity += report.paid_quantity
-                total.sum_amount += (report.paid_quantity + report.unpaid_quantity) * report.product_price
+                total.sum_amount += (report.paid_quantity + report.unpaid_quantity) / report.sales_unit * report.product_price
                 total.total_unpaid_quantity += report.total_unpaid_quantity
                 total.total_paid_quantity += report.total_paid_quantity
-                total.total_sum_amount += (report.total_paid_quantity + report.total_unpaid_quantity) * report.product_price
+                total.total_sum_amount += (report.total_paid_quantity + report.total_unpaid_quantity) / report.sales_unit * report.product_price
         self.total = total
 
 
@@ -588,7 +609,7 @@ def sendmail(settings, recipient, subject, html):
         subject = subject,
         body = '',
         html = html.text
-    ) 
+    )
     try:
         mailer.send(sender, recipient.split(','))
         return True

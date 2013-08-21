@@ -35,6 +35,14 @@ class CMSCommunicationApi(BaseCommunicationApi):
         req.add_header('Connection', 'close')
         return req
 
+    def create_response(self, path, params=None):
+        try:
+            req = self.create_connection(path, params)
+            return urllib2.urlopen(req)
+        except urllib2.HTTPError as e:
+            logger.warn("*communication api* -- {e} : code={code} url={url} reason={reason}".format(e=e, code=e.code, url=e.url, reason=e.reason))
+            raise
+
 def get_communication_api(request, cls):
     return request.registry.queryUtility(ICommunicationApi, cls.__name__)
 

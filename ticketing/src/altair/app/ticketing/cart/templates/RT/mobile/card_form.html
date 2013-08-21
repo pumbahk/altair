@@ -61,6 +61,14 @@ ${h.error_list(request, form, 'secure_code')}
 （カード会社により、カード表面のクレジットカード番号の左上または右上の数字4桁の場合もあります）。<br />
 クレジットカードの暗証番号とは異なりますのでご注意下さい。<br />
 </font>
+<%
+notice = request.session.get('altair.app.ticketing.payments.auth3d_notice')
+%>
+%if notice:
+          ${notice | n}
+%endif
+<font size="-2">
+</font>
 </div>
 <hr />
 <input type="submit" value="送信" />

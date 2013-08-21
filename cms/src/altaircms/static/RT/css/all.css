@@ -1180,6 +1180,16 @@ ul#globalNav1 li.right{
 .searchRemaining {
     width: 82px;
     margin-right: 10px;
+    color: #16b26e;
+    font-weight: bold;
+    text-align: center;
+}
+/* }}} */
+
+/* .searchRemainingOnsale {{{ */
+.searchRemainingOnsale {
+    width: 82px;
+    margin-right: 10px;
     color: #ff3399;
     font-weight: bold;
     text-align: center;

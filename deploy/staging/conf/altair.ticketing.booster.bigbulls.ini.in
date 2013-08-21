@@ -11,9 +11,6 @@ altair.site_data.base_url = s3://tstar-dev/venue-layouts/frontend/
 session.type = redis
 cache.type = redis
 
-; mako
-makotxt.default_filters = unicode
-
 [app:www-check]
 use = egg:Paste#static
 document_root = %(www_check_docroot)s

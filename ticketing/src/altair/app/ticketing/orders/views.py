@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import sys
 import json
 import logging
 import csv
@@ -57,7 +58,7 @@ from altair.app.ticketing.orders.export import OrderCSV, get_japanese_columns
 from altair.app.ticketing.orders.forms import (OrderForm, OrderSearchForm, OrderRefundSearchForm, SejOrderForm, SejTicketForm,
                                     SejRefundEventForm,SejRefundOrderForm, SendingMailForm,
                                     PerformanceSearchForm, OrderReserveForm, OrderRefundForm, ClientOptionalForm,
-                                    SalesSegmentGroupSearchForm, SalesSegmentSearchForm, PreviewTicketSelectForm, CartSearchForm)
+                                    SalesSegmentGroupSearchForm, PreviewTicketSelectForm, CartSearchForm)
 from altair.app.ticketing.views import BaseView
 from altair.app.ticketing.fanstatic import with_bootstrap
 from altair.app.ticketing.orders.events import notify_order_canceled
@@ -74,6 +75,7 @@ from altair.app.ticketing.loyalty import api as loyalty_api
 
 from . import utils
 from .api import CartSearchQueryBuilder, OrderSummarySearchQueryBuilder, QueryBuilderError, get_metadata_provider_registry
+from .utils import NumberIssuer
 from .models import OrderSummary
 
 logger = logging.getLogger(__name__)
@@ -90,16 +92,16 @@ def available_ticket_formats_for_orders(orders):
         .with_entities(TicketFormat.id, TicketFormat.name)\
         .distinct(TicketFormat.id)
 
-def available_ticket_formats_for_ordered_product_item(ordered_product_item_id):
+def available_ticket_formats_for_ordered_product_item(ordered_product_item):
+    delivery_method_id = ordered_product_item.ordered_product.order.payment_delivery_pair.delivery_method_id
+    bundle_id = ordered_product_item.product_item.ticket_bundle_id
     return TicketFormat.query\
-        .filter(OrderedProductItem.id==ordered_product_item_id)\
-        .filter(OrderedProduct.id==OrderedProductItem.ordered_product_id)\
-        .filter(Order.id==OrderedProduct.order_id)\
-        .filter(PaymentDeliveryMethodPair.id==Order.payment_delivery_method_pair_id)\
-        .filter(DeliveryMethod.id==PaymentDeliveryMethodPair.delivery_method_id)\
-        .filter(TicketFormat_DeliveryMethod.delivery_method_id==DeliveryMethod.id)\
-        .filter(TicketFormat.id==TicketFormat_DeliveryMethod.ticket_format_id)\
-        .with_entities(TicketFormat.id, TicketFormat.name)
+        .filter(bundle_id==Ticket_TicketBundle.ticket_bundle_id, 
+                Ticket_TicketBundle.ticket_id==Ticket.id, 
+                Ticket.ticket_format_id==TicketFormat.id, 
+                TicketFormat_DeliveryMethod.delivery_method_id==delivery_method_id, 
+                TicketFormat.id==TicketFormat_DeliveryMethod.ticket_format_id)\
+                .with_entities(TicketFormat.id, TicketFormat.name).distinct(TicketFormat.id)
 
 def encode_to_cp932(data):
     try:
@@ -152,32 +154,10 @@ class OrdersAPIView(BaseView):
         if formdata['event_id']:
             query = query.filter(SalesSegmentGroup.event_id == formdata['event_id'])
         if formdata['public']:
-            query = query.filter(SalesSegmentGroup.public == formdata['public'])
+            query = query.filter(SalesSegmentGroup.public == bool(formdata['public']))
 
         sales_segment_groups = [dict(pk='', name=u'(すべて)')] + [dict(pk=p.id, name=p.name) for p in query]
         return {"result": sales_segment_groups, "status": True}
-
-    @view_config(renderer="json", route_name="orders.api.sales_segments")
-    def get_sales_segments(self):
-        form_search = SalesSegmentSearchForm(self.request.params)
-        if not form_search.validate():
-            return {"result": [],  "status": False}
-
-        formdata = form_search.data
-        query = SalesSegment.query
-        if formdata['sort']:
-            try:
-                query = asc_or_desc(query, getattr(SalesSegment, formdata['sort']), formdata['direction'], 'asc')
-            except AttributeError:
-                pass
-
-        if formdata['performance_id']:
-            query = query.filter(SalesSegment.performance_id == formdata['performance_id'])
-        if formdata['public']:
-            query = query.filter(SalesSegment.public == formdata['public'])
-
-        sales_segments = [dict(pk='', name=u'(すべて)')] + [dict(pk=p.id, name=p.sales_segment_group.name) for p in query]
-        return {"result": sales_segments, "status": True}
 
     @view_config(renderer="json", route_name="orders.api.checkbox_status", request_method="POST", match_param="action=add")
     def add_checkbox_status(self):
@@ -356,7 +336,7 @@ class Orders(BaseView):
         orders = query
 
         headers = [
-            ('Content-Type', 'application/octet-stream; charset=cp932'),
+            ('Content-Type', 'application/octet-stream; charset=Windows-31J'),
             ('Content-Disposition', 'attachment; filename=orders_{date}.csv'.format(date=datetime.now().strftime('%Y%m%d%H%M%S')))
         ]
         response = Response(headers=headers)
@@ -541,7 +521,6 @@ class OrdersRefundConfirmView(BaseView):
 
 @view_defaults(decorator=with_bootstrap, permission='sales_counter')
 class OrderDetailView(BaseView):
-
     @view_config(route_name='orders.show', renderer='altair.app.ticketing:templates/orders/show.html')
     def show(self):
         order_id = int(self.request.matchdict.get('order_id', 0))
@@ -742,21 +721,20 @@ class OrderDetailView(BaseView):
             new_order.delivery_fee = f.delivery_fee.data
 
             for op, nop in itertools.izip(order.items, new_order.items):
-                nop.price = int(self.request.params.get('product_price-%d' % op.id) or 0)
+                # 個数が変更できるのは数受けのケースのみ
+                if op.product.seat_stock_type.quantity_only:
+                    nop.quantity = int(self.request.params.get('product_quantity-%d' % op.id) or 0)
                 for opi, nopi in itertools.izip(op.ordered_product_items, nop.ordered_product_items):
                     nopi.price = int(self.request.params.get('product_item_price-%d' % opi.id) or 0)
-                    # 個数が変更できるのは数受けのケースのみ
                     if op.product.seat_stock_type.quantity_only:
                         stock_status = opi.product_item.stock.stock_status
-                        new_quantity = int(self.request.params.get('product_quantity-%d' % op.id) or 0)
+                        new_quantity = nop.quantity * nopi.product_item.quantity
                         old_quantity = op.quantity
                         if stock_status.quantity < (new_quantity - old_quantity):
                             raise NotEnoughStockException(stock_status.stock, stock_status.quantity, new_quantity)
                         stock_status.quantity -= (new_quantity - old_quantity)
-                        nop.quantity = new_quantity
                         nopi.quantity = new_quantity
-                if sum(nopi.price for nopi in nop.ordered_product_items) != nop.price:
-                    raise ValidationError(u'小計金額が正しくありません')
+                nop.price = sum(nopi.price * nopi.product_item.quantity for nopi in nop.ordered_product_items)
 
             total_amount = sum(nop.price * nop.quantity for nop in new_order.items)\
                            + new_order.system_fee + new_order.transaction_fee + new_order.delivery_fee
@@ -775,7 +753,7 @@ class OrderDetailView(BaseView):
             self.request.session.flash(u'在庫がありません')
             has_error = True
         except Exception, e:
-            logger.exception('save error (%s)' % e.message)
+            logger.info('save error (%s)' % e.message, exc_info=sys.exc_info())
             self.request.session.flash(u'入力された金額および個数が不正です')
             has_error = True
         finally:
@@ -787,12 +765,34 @@ class OrderDetailView(BaseView):
         self.request.session.flash(u'予約を保存しました')
         return render_to_response('altair.app.ticketing:templates/refresh.html', {}, request=self.request)
 
+    @view_config(route_name="orders.cover.preview", request_method="GET", renderer="altair.app.ticketing:templates/orders/_cover_preview_dialog.html")
+    def cover_preview_dialog(self):
+        from altair.app.ticketing.tickets.preview.api import SVGPreviewCommunication
+        from altair.app.ticketing.tickets.preview.transform import SVGTransformer
+        from altair.app.ticketing.tickets.utils import build_cover_dict_from_order
+        from altair.app.ticketing.core.models import TicketCover
+
+        order_id = int(self.request.matchdict.get('order_id', 0))
+        order = Order.get(order_id, self.context.organization.id)
+        if order is None:
+            raise HTTPNotFound('order id %d is not found' % order_id)
+        cover = TicketCover.get_from_order(order)
+        if cover is None:
+            raise HTTPNotFound('cover is not found. order id %d' % order_id)
+        svg = pystache.render(cover.ticket.data["drawing"], build_cover_dict_from_order(order))
+        data = {"ticket_format": cover.ticket.ticket_format_id, "sx": "1", "sy": "1"}
+        transformer = SVGTransformer(svg, data)
+        svg = transformer.transform()
+        preview = SVGPreviewCommunication.get_instance(self.request)
+        imgdata_base64 = preview.communicate(self.request, svg)
+        return {"order": order, "cover":cover, "data": imgdata_base64}
+
     @view_config(route_name="orders.item.preview", request_method="GET", renderer='altair.app.ticketing:templates/orders/_item_preview_dialog.html')
     def order_item_preview_dialog(self):
         item = OrderedProductItem.query.filter_by(id=self.request.matchdict["item_id"]).first()
         if item is None:
             return {} ### xxx:
-        form = PreviewTicketSelectForm(item_id=item.id, ticket_formats=available_ticket_formats_for_ordered_product_item(item.id))
+        form = PreviewTicketSelectForm(item_id=item.id, ticket_formats=available_ticket_formats_for_ordered_product_item(item))
         return {"form": form, "item": item}
 
     @view_config(route_name="orders.item.preview.getdata", request_method="GET", renderer="json")
@@ -808,7 +808,7 @@ class OrderDetailView(BaseView):
             .filter(Ticket.ticket_format_id==ticket_format.id)\
             .filter(OrderedProductItem.id==item.id)\
             .all()
-        dicts = build_dicts_from_ordered_product_item(item)
+        dicts = build_dicts_from_ordered_product_item(item, ticket_number_issuer=NumberIssuer())
         data = dict(ticket_format.data)
         data["ticket_format_id"] = ticket_format.id
         results = []
@@ -851,7 +851,7 @@ class OrderDetailView(BaseView):
         if performance is None:
             return HTTPNotFound('performance id %d is not found' % performance_id)
 
-        sales_segments = performance.inner_sales_segments
+        sales_segments = performance.sales_segments
         sales_segment_id = int(self.request.params.get('sales_segment_id') or 0)
         if sales_segment_id:
             sales_segments = [ss for ss in sales_segments if ss.id == sales_segment_id]
@@ -895,7 +895,7 @@ class OrderDetailView(BaseView):
 
     @view_config(route_name="orders.checked.queue", request_method="POST", permission='sales_counter')
     def enqueue_checked_order(self):
-        ords = self.request.session["orders"]
+        ords = self.request.session.get("orders", [])
         ords = [o.lstrip("o:") for o in ords if o.startswith("o:")]
 
         qs = DBSession.query(Order)\
@@ -904,11 +904,12 @@ class OrderDetailView(BaseView):
 
         for order in qs:
             if not order.queued:
+                utils.enqueue_cover(operator=self.context.user, order=order)
                 utils.enqueue_for_order(operator=self.context.user, order=order)
 
         # def clean_session_callback(request):
         logger.info("*ticketing print queue many* clean session")
-        session_values = self.request.session["orders"]
+        session_values = self.request.session.get("orders", [])
         for order in qs:
             session_values.remove("o:%s" % order.id)
         self.request.session["orders"] = session_values
@@ -922,6 +923,7 @@ class OrderDetailView(BaseView):
     def order_print_queue(self):
         order_id = int(self.request.matchdict.get('order_id', 0))
         order = Order.query.get(order_id)
+        utils.enqueue_cover(operator=self.context.user, order=order)
         utils.enqueue_for_order(operator=self.context.user, order=order)
         self.request.session.flash(u'券面を印刷キューに追加しました')
         return HTTPFound(location=self.request.route_path('orders.show', order_id=order_id))
@@ -1632,6 +1634,8 @@ class CartView(BaseView):
 
     @view_config(route_name='cart.search', renderer="altair.app.ticketing:templates/carts/index.html")
     def index(self):
+        slave_session = get_db_session(self.request, name="slave")
+
         form = CartSearchForm(self.request.params, organization_id=self.context.organization.id)
         carts = []
         organization_id = self.context.organization.id
@@ -1641,12 +1645,14 @@ class CartView(BaseView):
             self.request.session.flash(u'検索条件に誤りがあります')
         else:
             try:
-                query = Cart.query.filter(Cart.organization_id == organization_id).filter(Cart.deleted_at == None)
+                query = slave_session.query(Cart).filter(Cart.organization_id == organization_id).filter(Cart.deleted_at == None)
                 query = CartSearchQueryBuilder(form.data)(query)
             except QueryBuilderError as e:
                 self.request.session.flash(e.message)
+            page = int(self.request.params.get('page', 0))
             carts = paginate.Page(
                 query,
+                page=page,
                 items_per_page=40,
                 item_count=query.count(),
                 url=paginate.PageURL_WebOb(self.request)

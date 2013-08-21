@@ -1,13 +1,17 @@
 # -*- coding: utf-8 -*-
 
 import logging
-logger = logging.getLogger(__name__)
+from datetime import datetime
 from sqlalchemy import sql
 from sqlalchemy import orm
 from pyramid.decorator import reify
 from pyramid.view import view_config, view_defaults
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound
 from pyramid.renderers import get_renderer
+from pyramid_mailer import get_mailer
+
+from altair.sqlahelper import get_db_session
+
 from altair.app.ticketing.views import BaseView as _BaseView
 from altair.app.ticketing.fanstatic import with_bootstrap
 from altair.app.ticketing.core.models import (
@@ -40,11 +44,21 @@ import altair.app.ticketing.lots.api as lots_api
 from altair.app.ticketing.lots.electing import Electing
 from altair.app.ticketing.lots.closing import LotCloser
 from .helpers import Link
-from .forms import ProductForm, LotForm, SearchEntryForm, SendingMailForm
+from .forms import (
+    ProductForm,
+    LotForm,
+    SearchEntryForm,
+    SendingMailForm,
+    LotEntryReportMailForm,
+)
+
 from . import api
-from .models import LotWishSummary
+from .models import LotWishSummary, LotEntryReportSetting
+from .reporting import LotEntryReporter
 
 from altair.app.ticketing.payments import helpers as payment_helpers
+
+logger = logging.getLogger(__name__)
 
 
 class BaseView(_BaseView):
@@ -63,6 +77,8 @@ class Lots(BaseView):
 
     @view_config(route_name='lots.index', renderer='altair.app.ticketing:templates/lots/index.html', permission='event_viewer')
     def index(self):
+
+        slave_session = get_db_session(self.request, name="slave")
         self.check_organization(self.context.event)
         if "action-delete" in self.request.params:
             for lot_id in self.request.params.getall('lot_id'):
@@ -79,7 +95,7 @@ class Lots(BaseView):
         if event is None:
             return HTTPNotFound()
 
-        lots = Lot.query.filter(Lot.event_id==event.id).all()
+        lots = slave_session.query(Lot).filter(Lot.event_id==event.id).all()
 
         return dict(
             event=event,
@@ -128,15 +144,21 @@ class Lots(BaseView):
             for product_id in self.request.POST.getall("product_id"):
                 product = Product.query.filter(Product.id==product_id).first()
                 if product:
-                    product.delete()
-                    self.request.session.flash(u"{0}を削除しました。".format(product.name))
+                    try:
+                        product.delete()
+                        self.request.session.flash(u"{0}を削除しました。".format(product.name))
+                    except Exception, e:
+                        self.request.session.flash(e.message)
+                        raise HTTPFound(location=self.request.route_url("lots.show", lot_id=lot.id))
+
+        slave_session = get_db_session(self.request, name="slave")
 
         performance_ids = [p.id for p in lot.performances]
-        stock_holders = StockHolder.query.join(Stock).filter(Stock.performance_id.in_(performance_ids)).distinct().all()
+        stock_holders = slave_session.query(StockHolder).join(Stock).filter(Stock.performance_id.in_(performance_ids)).distinct().all()
 
         stock_types = lot.event.stock_types
         ticket_bundles = lot.event.ticket_bundles
-        options = ["%s:%s" % (st.id, st.name) for st in stock_types]
+        options = ["%s:%s%s" % (st.id, st.name, u'(数受け)' if st.quantity_only else u'') for st in stock_types]
         stock_type_options = {"value": ';'.join(options)}
         options = ["%s:%s" % (st.id, st.name) for st in stock_holders]
         stock_holder_options = {"value": ';'.join(options)}
@@ -156,7 +178,7 @@ class Lots(BaseView):
             "cellEdit": True,
             "cellsubmit": 'clientArray',
             "rowNum": 200,
-            "colModel" : [ 
+            "colModel" : [
                 {"hidden": True,
                  "jsonmap": "product.id",
                  "name": "product_id", 
@@ -205,7 +227,11 @@ class Lots(BaseView):
                  "edittype": 'select',
                  "editoptions": stock_holder_options,
                  "sortable":False},
-                {"label": u"商品明細名", 
+                {"hidden": True,
+                 "jsonmap": "product_item.id",
+                 "name" :'product_item_id',
+                 "editable": False},
+                {"label": u"商品明細名",
                  "jsonmap": "product_item.name",
                  "name" :'product_item_name', 
                  "index" :'product_item_name', 
@@ -353,6 +379,9 @@ class LotEntries(BaseView):
         self.check_organization(self.context.event)
         lot = self.context.lot
         lot_status = api.get_lot_entry_status(lot, self.request)
+        report_settings = LotEntryReportSetting.query.filter(
+            LotEntryReportSetting.lot_id==lot.id
+        ).all()
 
         return dict(
             lot=lot,
@@ -360,6 +389,7 @@ class LotEntries(BaseView):
             #  公演、希望順ごとの数
             sub_counts = lot_status.sub_counts,
             lot_status=lot_status,
+            report_settings=report_settings,
             )
 
 
@@ -374,10 +404,11 @@ class LotEntries(BaseView):
         """
 
         # とりあえずすべて
+        slave_session = get_db_session(self.request, name="slave")
 
         self.check_organization(self.context.event)
         lot_id = self.request.matchdict["lot_id"]
-        lot = Lot.query.filter(Lot.id==lot_id).one()
+        lot = slave_session.query(Lot).filter(Lot.id==lot_id).one()
         entries = lots_api.get_lot_entries_iter(lot.id)
         filename='lot-{0.id}.csv'.format(lot)
         if self.request.matched_route.name == 'lots.entries.export':
@@ -415,11 +446,12 @@ class LotEntries(BaseView):
 
         - フィルター (すべて、未処理)
         """
+        slave_session = get_db_session(self.request, name="slave")
 
         # とりあえずすべて
         self.check_organization(self.context.event)
         lot_id = self.request.matchdict["lot_id"]
-        lot = Lot.query.filter(Lot.id==lot_id).one()
+        lot = slave_session.query(Lot).filter(Lot.id==lot_id).one()
         form = SearchEntryForm(formdata=self.request.POST)
         form.wish_order.choices = [("", "")] + [(str(i), i + 1) for i in range(lot.limit_wishes)]
         condition = (LotEntry.id != None)
@@ -493,7 +525,6 @@ class LotEntries(BaseView):
         logger.debug("condition = {0}".format(condition))
         logger.debug("from = {0}".format(form.entried_from.data))
 
-        #q = DBSession.query(LotEntryWish, MultiCheckoutOrderStatus, SejOrder).join(
         q = DBSession.query(LotWishSummary).filter(
             LotWishSummary.lot_id==lot_id
         ).options(
@@ -518,6 +549,7 @@ class LotEntries(BaseView):
 
         electing_url = self.request.route_url('lots.entries.elect_entry_no', lot_id=lot.id)
         electing_all_url = self.request.route_url('lots.entries.elect_all', lot_id=lot.id)
+        rejecting_remains_url = self.request.route_url('lots.entries.reject_remains', lot_id=lot.id)
         rejecting_url = self.request.route_url('lots.entries.reject_entry_no', lot_id=lot.id)
         cancel_url = self.request.route_url('lots.entries.cancel', lot_id=lot.id)
         cancel_electing_url = self.request.route_url('lots.entries.cancel_electing', lot_id=lot.id)
@@ -541,6 +573,7 @@ class LotEntries(BaseView):
                     electing=electing,
                     performances=performances,
                     enable_elect_all=enable_elect_all,
+                    rejecting_remains_url=rejecting_remains_url,
         )
 
         
@@ -554,6 +587,20 @@ class LotEntries(BaseView):
         lot = Lot.query.filter(Lot.id==lot_id).one()
 
         f = self.request.params['entries'].file
+        entries = self._parse_import_file(f)
+        if not entries:
+            self.request.session.flash(u"当選データがありませんでした")
+            return HTTPFound(location=self.request.route_url('lots.entries.index', lot_id=lot.id))
+
+        self.request.session.flash(u"{0}件の当選データを取り込みました".format(len(entries)))
+        electing_count = lots_api.submit_lot_entries(lot.id, entries)
+        rejecting_count = lots_api.submit_reject_entries(lot_id, lot.rejectable_entries)
+        self.request.session.flash(u"新たに{0}件が当選予定となりました".format(electing_count))
+        self.request.session.flash(u"新たに{0}件が落選予定となりました".format(rejecting_count))
+
+        return HTTPFound(location=self.request.route_url('lots.entries.index', lot_id=lot.id))
+
+    def _parse_import_file(self, f):
         header = 1
         entries = []
         for line in f:
@@ -568,18 +615,10 @@ class LotEntries(BaseView):
             parts = line.split(",")
             if len(parts) < 3:
                 raise Exception, parts
-            entry_no = parts[2]
-            wish_order = parts[5]
+            entry_no = parts[1]
+            wish_order = parts[2]
             entries.append((entry_no, wish_order))
-        if not entries:
-            self.request.session.flash(u"当選データがありませんでした")
-            return HTTPFound(location=self.request.route_url('lots.entries.index', lot_id=lot.id))
-
-        self.request.session.flash(u"{0}件の当選データを取り込みました".format(len(entries)))
-        lots_api.submit_lot_entries(lot.id, entries)
-        
-        return HTTPFound(location=self.request.route_url('lots.entries.index', lot_id=lot.id))
-
+        return entries
 
     @view_config(route_name='lots.entries.elect',
                  renderer="lots/electing.html",
@@ -676,6 +715,25 @@ class LotEntries(BaseView):
         return 'lot-wish-' + wish.lot_entry.entry_no + '-' + str(wish.wish_order)
 
 
+    @view_config(route_name="lots.entries.reject_remains",
+                 request_method="POST",
+                 permission='event_viewer',
+                 renderer="json")
+    def reject_remains(self):
+        """ 一括落選予定処理"""
+        lot_id = self.request.matchdict["lot_id"]
+        lot = Lot.query.filter(Lot.id==lot_id).one()
+        entries = lot.rejectable_entries
+        rejecting_count = lots_api.submit_reject_entries(lot_id, entries)
+
+        def _wish_generator():
+            for e in entries:
+                for w in e.wishes:
+                    yield w
+
+        return dict(rejecting_count=rejecting_count,
+                    html=[(self.wish_tr_class(w), self.render_wish_row(w))
+                          for w in _wish_generator()])
 
 
     @view_config(route_name="lots.entries.elect_all", 
@@ -734,7 +792,7 @@ class LotEntries(BaseView):
         affected = lots_api.submit_lot_entries(lot.id, entries)
 
         logger.debug('elect all: results = {0}'.format(results))
-        lot.start_electing()
+        lot.start_lotting()
         return dict(
             affected=affected,
             html=[(self.wish_tr_class(w), self.render_wish_row(w))
@@ -769,7 +827,8 @@ class LotEntries(BaseView):
 
         affected = lots_api.submit_lot_entries(lot.id, entries)
 
-        lot.start_electing()
+        lot.start_lotting()
+
         return dict(result="OK",
                     affected=affected,
                     html=[(self.wish_tr_class(w), self.render_wish_row(w))
@@ -800,7 +859,7 @@ class LotEntries(BaseView):
 
         affected = lots_api.submit_reject_entries(lot.id, entries)
 
-        lot.start_electing()
+        lot.start_lotting()
         return dict(result="OK",
                     affected=affected,
                     html=[(self.wish_tr_class(w), self.render_wish_row(w))
@@ -899,15 +958,16 @@ class LotEntries(BaseView):
     @view_config(route_name='lots.entries.show', renderer="lots/entry_show.html")
     def entry_show(self):
         self.check_organization(self.context.event)
+        slave_session = get_db_session(self.request, name="slave")
         lot_id = self.request.matchdict["lot_id"]
-        lot = Lot.query.filter(Lot.id==lot_id).one()
+        lot = slave_session.query(Lot).filter(Lot.id==lot_id).one()
 
         entry_no = self.request.matchdict['entry_no']
         lot_entry = lot.get_lot_entry(entry_no)
         shipping_address = lot_entry.shipping_address
         mail_form = SendingMailForm(recipient=shipping_address.email_1, 
                                     bcc="")
-        summaries = DBSession.query(LotWishSummary).filter(LotWishSummary.entry_no==entry_no).order_by(LotWishSummary.wish_order).all()
+        summaries = slave_session.query(LotWishSummary).filter(LotWishSummary.entry_no==entry_no).order_by(LotWishSummary.wish_order).all()
         wishes = sorted(lot_entry.wishes, key=lambda w: w.wish_order)
         wishes = zip(summaries, wishes)
         for w, ww in wishes:
@@ -919,3 +979,59 @@ class LotEntries(BaseView):
                 "shipping_address": shipping_address, 
                 "mail_form": mail_form}
 
+
+
+@view_defaults(decorator=with_bootstrap, permission="event_editor")
+class LotReport(object):
+    def __init__(self, context, request):
+        self.context = context
+        self.request = request
+
+    @property
+    def index_url(self):
+        return self.request.route_url("lots.entries.index",
+                                      **self.request.matchdict)
+
+    @view_config(route_name="lot.entries.new_report_setting",
+                 renderer="lots/new_report_setting.html")
+    def new_setting(self):
+        form = LotEntryReportMailForm(formdata=self.request.POST)
+        form.lot_id.data = self.context.lot.id
+
+        if self.request.method == "POST":
+            if form.validate():
+                new_setting = LotEntryReportSetting()
+                form.sync(new_setting)
+                DBSession.add(new_setting)
+                return HTTPFound(self.index_url)
+        return dict(form=form,
+                    event=self.context.event)
+
+
+    @view_config(route_name="lot.entries.delete_report_setting",
+                 request_method="POST")
+    def delete_setting(self):
+        setting = LotEntryReportSetting.query.filter(
+            LotEntryReportSetting.id==self.request.matchdict['setting_id']
+        ).first()
+        if setting is None:
+            return HTTPNotFound()
+        setting.deleted_at = datetime.now()
+        return HTTPFound(self.index_url)
+
+    @view_config(route_name="lot.entries.send_report_setting",
+                 request_method="POST")
+    def send_report(self):
+        """ 手動送信 """
+        setting = LotEntryReportSetting.query.filter(
+            LotEntryReportSetting.id==self.request.matchdict['setting_id']
+        ).first()
+        if setting is None:
+            return HTTPNotFound()
+
+
+        mailer = get_mailer(self.request)
+        sender = self.request.registry.settings['mail.message.sender']
+        reporter = LotEntryReporter(sender, mailer, setting)
+        reporter.send()
+        return HTTPFound(self.index_url)

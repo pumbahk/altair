@@ -45,7 +45,7 @@ class EventBaseTest(unittest.TestCase):
         event.title = u'_test_title'
         event.abbreviated_title= u'_test_ab_title'
         event.seats_and_prices = u'seats_and_prices'
-        event.organization = Organization()
+        event.organization = Organization(short_name='XX', code='XX')
         return event
  
     def test_crud(self):

@@ -64,6 +64,7 @@ class get_multicheckout_service_Tests(unittest.TestCase):
     def _callFUT(self, request, *args, **kwargs):
         settings = {
             u'altair_checkout3d.base_url': u'http://example.com/api/',
+            u'altair_checkout3d.timeout': '90',
         }
         self.config.registry.settings.update(settings)
         request.config = self.config
@@ -277,6 +278,8 @@ class Checkout3DTests(unittest.TestCase):
         return api.Checkout3D
 
     def _makeOne(self, *args, **kwargs):
+        # quick hack
+        kwargs['api_timeout'] = kwargs.get('api_timeout', 90)
         return self._getTarget()(*args, **kwargs)
 
     def test_add_params(self):
@@ -696,7 +699,7 @@ class Checkout3DTests(unittest.TestCase):
         )
 
     def test_request_with_error(self):
-        from ..api import MultiCheckoutAPIError
+        from ..exceptions import MultiCheckoutAPIError
         target = self._makeOne("user", "pass", api_base_url="http://example.com/", shop_code="SHOP")
         target._httplib = DummyHTTPLib("<Message />", status="401")
         element = etree.XML('<root />')

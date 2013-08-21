@@ -100,9 +100,9 @@ class LotSessionCart(object):
 
 
 class LotEntryStatus(object):
-    def __init__(self, lot, request):
+    def __init__(self, lot, request=None):
         self.lot = lot
-        self.request = request
+        self.request = request # いらない
 
     @property
     def performances(self):

@@ -146,6 +146,12 @@ Fashion.Backend.VML = (function() {
     case 3: retval.right = true; break;
     }
 
+    retval.modifierKeys =
+         (msieEvt.shiftKey ? Fashion.SHIFT_KEY: 0) |
+         (msieEvt.ctrlKey ? Fashion.CTRL_KEY: 0) |
+         (msieEvt.altKey ? Fashion.ALT_KEY: 0) |
+         (msieEvt.metaKey ? Fashion.META_KEY: 0);
+
     var physicalPagePosition;
 
     var doc = window.document, body = doc.body;
@@ -375,7 +381,7 @@ var Base = (function() {
                 var beingHandled = this._handledEvents[type];
                 var toHandle = this.wrapper.handler && this.wrapper.handler.handles(type);
                 if (!beingHandled && toHandle) {
-                  this.drawable._handleEvent(type);
+                  this.drawable._handleEvent(type, this.drawable._eventFunc);
                   this._handledEvents[type] = true;
                 } else if (beingHandled && !toHandle) {
                   this.drawable._unhandleEvent(type);
@@ -826,6 +832,7 @@ var Text = _class("TextVML", {
 /** @file Drawable.js { */
 var Drawable = _class("DrawableVML", {
   props: {
+    wrapper: null,
     _vg: null,
     _content: null,
     _viewport: null,
@@ -838,14 +845,17 @@ var Drawable = _class("DrawableVML", {
       mouseover: [ false, 0, null ],
       mouseout: [ false, 0, null ],
       scroll: [ false, 0, null ],
-      visualchange: [ false, 0, null ]
+      visualchange: [ false, 0, null ],
+      mousewheel: [ false, 0, null ]
     },
     _scrollPosition: { x: 0, y: 0 },
     _currentEvent: null,
     _eventFunc: null,
     _captureEventFunc: null,
     _scrollEventFunc: null,
-    _refresher: null
+    _mouseWheelEventFunc: null,
+    _refresher: null,
+    _captureTarget: null
   },
 
   class_props: {
@@ -909,14 +919,26 @@ var Drawable = _class("DrawableVML", {
             for (var type in this._handledEvents) {
               var beingHandled = this._handledEvents[type][0];
               var toHandle = this.wrapper.handler.handles(type);
-              if (!beingHandled && toHandle) {
-                if (type != 'scroll' && type.indexOf('visualchange') != 0)
-                  this._handleEvent(type);
-                this._handledEvents[type][0] = true;
-              } else if (beingHandled && !toHandle) {
-                if (type != 'scroll' && type.indexOf('visualchange') != 0)
+              switch (type) {
+              case 'scroll':
+              case 'visualchange':
+                break;
+              case 'mousewheel':
+                if (!beingHandled && toHandle) {
+                  this._handleEvent(type, this._mouseWheelEventFunc);
+                  this._handledEvents[type][0] = true;
+                } else if (beingHandled && !toHandle) {
                   this._unhandleEvent(type);
-                this._handledEvents[type][0] = false;
+                  this._handledEvents[type][0] = false;
+                }
+              default:
+                if (!beingHandled && toHandle) {
+                  this._handleEvent(type, this._eventFunc);
+                  this._handledEvents[type][0] = true;
+                } else if (beingHandled && !toHandle) {
+                  this._unhandleEvent(type);
+                  this._handledEvents[type][0] = false;
+                }
               }
             }
           }
@@ -969,6 +991,22 @@ var Drawable = _class("DrawableVML", {
         }
       };
 
+      this._mouseWheelEventFunc = function (msieEvt) {
+        if (self._handledEvents.mousewheel) {
+          var preventDefault = false;
+          var evt = new Fashion.MouseWheelEvt(function () { preventDefault = true; });
+          evt.target = self.wrapper;
+          evt.delta = -(msieEvt.wheelDelta / 120);
+          evt.modifierKeys =
+               (msieEvt.shiftKey ? Fashion.SHIFT_KEY: 0) |
+               (msieEvt.ctrlKey ? Fashion.CTRL_KEY: 0) |
+               (msieEvt.altKey ? Fashion.ALT_KEY: 0) |
+               (msieEvt.metaKey ? Fashion.META_KEY: 0);
+          self.wrapper.handler.dispatch(evt);
+          return !preventDefault;
+        }
+      };
+
       this._viewport = this._buildViewportElement();
       Fashion._lib._bindEvent(this._viewport, 'scroll', this._scrollEventFunc);
       this._content = this._buildContentElement();
@@ -978,12 +1016,15 @@ var Drawable = _class("DrawableVML", {
     },
 
     dispose: function() {
+      if (this._capturingShape)
+        this.releaseMouse(this._capturingShape);
+      this._capturingShape = false;
       if (this._viewport && this._viewport.parentNode)
         this._viewport.parentNode.removeChild(this._viewport);
       this._viewport = null;
       this._content = null;
       this._vg = null;
-      this._wrapper = null;
+      this.wrapper = null;
     },
 
     refresh: function (dirty) {
@@ -1045,11 +1086,10 @@ var Drawable = _class("DrawableVML", {
         throw new Fashion.AlreadyExists("The shape is already capturing.");
       }
 
-      var self = this;
-
-      self._currentEvent.cancelBubble = true;
+      this._currentEvent.cancelBubble = true;
+      this._captureTarget = this.wrapper.captureTarget() || this._viewport.offsetParent;
       for (var type in shape._handledEvents)
-        this._viewport.offsetParent.attachEvent('on' + type, this._captureEventFunc);
+        this._captureTarget.attachEvent('on' + type, this._captureEventFunc);
 
       this._capturingShape = shape;
     },
@@ -1062,9 +1102,10 @@ var Drawable = _class("DrawableVML", {
       }
 
       for (var type in shape._handledEvents)
-        this._viewport.offsetParent.detachEvent('on' + type, this._captureEventFunc);
+        this._captureTarget.detachEvent('on' + type, this._captureEventFunc);
 
       this._capturingShape = null;
+      this._captureTarget = null;
     },
 
     capturingShape: function () {
@@ -1117,11 +1158,11 @@ var Drawable = _class("DrawableVML", {
       return viewport;
     },
 
-    _handleEvent: function (type) {
+    _handleEvent: function (type, eventFunc) {
       var triple = this._handledEvents[type];
       __assert__(triple);
       if (triple[1]++ == 0)
-        this._content.attachEvent('on' + type, triple[2] = this._eventFunc);
+        this._content.attachEvent('on' + type, triple[2] = eventFunc);
     },
 
     _unhandleEvent: function (type) {

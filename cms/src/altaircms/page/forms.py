@@ -222,7 +222,7 @@ class PageForm(Form):
 @implementer(IForm)
 class PageUpdateForm(Form):
     name = fields.TextField(label=u"名前", validators=[validators.Required()])
-    url = fields.TextField(validators=[url_field_validator, url_not_conflict], label=u"URL")
+    # url = fields.TextField(validators=[url_field_validator, url_not_conflict], label=u"URL")
 
     title = fields.TextField(label=u"ページタイトル", validators=[validators.Required()], widget=widgets.TextArea())
     description = fields.TextField(label=u"概要", widget=widgets.TextArea())

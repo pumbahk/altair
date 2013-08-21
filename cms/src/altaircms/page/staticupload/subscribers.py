@@ -4,6 +4,7 @@ import json
 import functools
 from datetime import datetime
 from fnmatch import fnmatch
+from altaircms.models import DBSession
 import logging
 logger = logging.getLogger(__name__)
 
@@ -48,7 +49,9 @@ def s3upload_directory(after_zipupload):
     except Exception as e:
         logger.exception(str(e))
         logger.error("static page: s3upload failure. absroot={0}".format(absroot))
+    ## update uploaded_at
     static_page.uploaded_at = datetime.now()
+    DBSession.add(static_page)
 
 def s3clean_directory(after_model_delete):
     event = after_model_delete
@@ -71,17 +74,23 @@ def for_event(fn):
 @for_event
 def s3delete_file(request, root, static_page, static_directory):
     static_directory.delete_file(os.path.dirname(root), os.path.basename(root))
+    ## update uploaded_at
+    static_page.uploaded_at = datetime.now()
+    DBSession.add(static_page)
 
 @for_event
 def s3update_file(request, root, static_page, static_directory):
     static_directory.upload_file(os.path.dirname(root), os.path.basename(root))
+    ## update uploaded_at
+    static_page.uploaded_at = datetime.now()
+    DBSession.add(static_page)
 
 def s3delete_files_completely(after_delete_completely):
     event = after_delete_completely
     static_directory = event.static_directory
     static_pageset = event.static_pageset
     uploader = static_directory.s3utility.uploader
-    name = "{0}/{1}/{2}".format(static_directory.prefix, event.request.organization.short_name, static_pageset.url)
+    name = "{0}/{1}/{2}".format(static_directory.prefix, event.request.organization.short_name, static_pageset.hash)
     try:
         logger.warn("delete all completely!! danger danger,  src=%s" % name)
         delete_candidates = list(uploader.bucket.list(name))

@@ -11,7 +11,4 @@ def includeme(config):
 
     ## tag
     config.add_route("plugins_jsapi_page_tag_delete", "/page/api/page/{page_id}/tag/delete")
-    config.scan(".views")
-    
-    ## access key
-    config.add_route("plugins_jsapi_accesskey", "/page/api/page/{page_id}/accesskey/{action}")
+    config.scan(".views")  
