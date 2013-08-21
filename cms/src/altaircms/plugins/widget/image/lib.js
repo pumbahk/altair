@@ -62,6 +62,10 @@ if(!widget){
                     we.finish_dialog(this);
                 })
 
+                $("#image_info_submit").click(function(){
+                    we.finish_dialog(this);
+                })
+
                 addClickEvent();
                 moveSelectedItem();
             })();
