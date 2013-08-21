@@ -62,7 +62,7 @@ class Reports(BaseView):
 
     @view_config(route_name='reports.stocks', request_method='POST', renderer='altair.app.ticketing:templates/events/report.html')
     def download_stocks(self):
-        """仕入明細ダウンロード
+        """仕入明細/残席明細ダウンロード
         """
         # Event
         event_id = int(self.request.matchdict.get('event_id', 0))
