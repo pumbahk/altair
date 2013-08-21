@@ -19,6 +19,7 @@ class ImageWidgetView(object):
     def __init__(self, context, request):
         self.context = context
         self.request = request
+        self.N = 4
 
     def _create_or_update(self):
         try:
@@ -62,8 +63,7 @@ class ImageWidgetView(object):
 
     @view_config(route_name="image_widget_dialog", renderer="altaircms.plugins.widget:image/dialog.html", request_method="GET")
     def dialog(self):
-        N = 4
-        assets = group_by_n(self.request.context.get_asset_query(), N)
+        assets = group_by_n(self.request.context.get_asset_query(), self.N)
         pk = self.request.GET.get("pk")
         widget = self.request.context.get_widget(pk)
 
@@ -82,12 +82,11 @@ class ImageWidgetView(object):
         pk = self.request.POST['pk'] if self.request.POST['pk'] != "None" else None
         search_word = self.request.POST['search_word']
 
-        N = 4
         assets = None
         if search_word:
-            assets = group_by_n(self.request.context.search_asset(search_word), N)
+            assets = group_by_n(self.request.context.search_asset(search_word), self.N)
         else:
-            assets = group_by_n(self.request.context.get_asset_query(), N)
+            assets = group_by_n(self.request.context.get_asset_query(), self.N)
 
         assets_dict = create_search_result(self.request, assets)
         widget = self.request.context.get_widget(pk) if pk else None
@@ -109,8 +108,7 @@ class ImageWidgetView(object):
             logger.exception(e.message.encode("utf-8"))
             return HTTPFound(location=self.request.route_url("asset_image_list"))
 
-        N = 4
-        assets = group_by_n(search_result, N)
+        assets = group_by_n(search_result, self.N)
 
         assets_dict = create_search_result(self.request, assets)
         widget = self.request.context.get_widget(pk) if pk else None
