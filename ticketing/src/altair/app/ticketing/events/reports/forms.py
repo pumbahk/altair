@@ -17,6 +17,7 @@ class ReportStockForm(Form):
         choices=[
             ('stock', u'仕入明細'),
             ('unsold', u'残席明細'),
+            ('sold', u'販売済座席明細'),
         ],
         coerce=str,
     )
