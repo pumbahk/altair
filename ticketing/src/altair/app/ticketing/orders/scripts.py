@@ -118,8 +118,8 @@ def detect_fraud():
     registry = env['registry']
 
     now = datetime.now()
-    period_from = args.f if args.f else now.strftime('%Y-%m-%d %H:%M')
-    period_to = args.t if args.t else (now - timedelta(days=2)).strftime('%Y-%m-%d %H:%M')
+    period_from = args.f if args.f else (now - timedelta(days=2)).strftime('%Y-%m-%d %H:%M')
+    period_to = args.t if args.t else now.strftime('%Y-%m-%d %H:%M')
 
     logging.info('start detect_fraud batch')
 
