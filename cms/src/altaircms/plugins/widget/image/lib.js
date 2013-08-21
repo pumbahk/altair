@@ -24,7 +24,13 @@ if(!widget){
             function(){return $(".scrollable")}, 
             function(){
                 $("#image_submit").click(function(){
-                    we.finish_dialog(this);
+                    if ($(we.dialog).find(".managed").length) {
+                        we.finish_dialog(this);
+                    } else {
+                        if(window.confirm('画像が選択されていません。本当に閉じますか？')){
+                            we.finish_dialog(this);
+                        }
+                    }
                 })
 
                 $(we.dialog).find("img").click(function(){
