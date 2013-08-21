@@ -79,7 +79,7 @@ class ImageWidgetView(object):
 
     @view_config(route_name="image_widget_search", renderer="json", request_method="POST")
     def search(self):
-        pk = self.request.POST['pk']
+        pk = self.request.POST['pk'] if self.request.POST['pk'] != "None" else None
         search_word = self.request.POST['search_word']
 
         N = 4
@@ -89,30 +89,18 @@ class ImageWidgetView(object):
         else:
             assets = group_by_n(self.request.context.get_asset_query(), N)
 
-        assets_dict = {}
-        for groupNo, group in enumerate(assets):
-            img_list = []
-            for img in group:
-                img_info = {
-                    "id":img.id ,
-                    "title":img.title ,
-                    "width":img.width ,
-                    "height":img.height ,
-                    "thumbnail_path":helpers.asset.rendering_object(self.request,img).thumbnail_path
-                }
-                img_list.append(img_info)
-            assets_dict.update({groupNo:img_list})
-
-        widget = self.request.context.get_widget(pk)
+        assets_dict = create_search_result(self.request, assets)
+        widget = self.request.context.get_widget(pk) if pk else None
+        asset_id = widget.asset_id if widget else None
 
         return {
-            'widget_asset_id': widget.asset_id,
+            'widget_asset_id': asset_id,
             'assets_data': assets_dict
         }
 
     @view_config(route_name="image_widget_tag_search", renderer="json", request_method="POST")
     def tag_search(self):
-        pk = self.request.POST['pk']
+        pk = self.request.POST['pk'] if self.request.POST['pk'] != "None" else None
         tags = self.request.POST['tags']
         try:
             assets = self.request.allowable(ImageAsset)
@@ -124,23 +112,27 @@ class ImageWidgetView(object):
         N = 4
         assets = group_by_n(search_result, N)
 
-        assets_dict = {}
-        for groupNo, group in enumerate(assets):
-            img_list = []
-            for img in group:
-                img_info = {
-                    "id":img.id ,
-                    "title":img.title ,
-                    "width":img.width ,
-                    "height":img.height ,
-                    "thumbnail_path":helpers.asset.rendering_object(self.request,img).thumbnail_path
-                }
-                img_list.append(img_info)
-            assets_dict.update({groupNo:img_list})
-
-        widget = self.request.context.get_widget(pk)
+        assets_dict = create_search_result(self.request, assets)
+        widget = self.request.context.get_widget(pk) if pk else None
+        asset_id = widget.asset_id if widget else None
 
         return {
-            'widget_asset_id': widget.asset_id,
+            'widget_asset_id': asset_id,
             'assets_data': assets_dict
         }
+
+def create_search_result(request, assets):
+    assets_dict = {}
+    for groupNo, group in enumerate(assets):
+        img_list = []
+        for img in group:
+            img_info = {
+                "id":img.id ,
+                "title":img.title ,
+                "width":img.width ,
+                "height":img.height ,
+                "thumbnail_path":helpers.asset.rendering_object(request,img).thumbnail_path
+            }
+            img_list.append(img_info)
+        assets_dict.update({groupNo:img_list})
+    return assets_dict
