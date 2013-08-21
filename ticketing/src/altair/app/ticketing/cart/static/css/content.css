@@ -677,11 +677,13 @@
 	margin-bottom: 5px;
 }
 
-#settlementEventDetail .detailBoxInner {
+#settlementEventDetail .detailBoxInner,
+.settlementEventDetail .detailBoxInner {
 	padding: 0 0 10px;
 }
 
-#settlementEventDetail .detailBoxInner table {
+#settlementEventDetail .detailBoxInner table,
+.settlementEventDetail .detailBoxInner table {
 	width: 670px !important;
 	margin: 0 auto;
 }
@@ -2242,12 +2244,14 @@
 	background: url(../img/settlement/bg_line.gif) repeat-x left bottom;
 }
 
-#settlementEventDetail table {
+#settlementEventDetail table,
+.settlementEventDetail table {
 	width: 900px;
 	margin: 0 auto;
 }
 
-#settlementEventDetail th {
+#settlementEventDetail th,
+.settlementEventDetail th {
 	vertical-align: top;
 	padding: 2px 20px 2px 2px;
 	border-bottom: 1px solid #e6e6e6;
@@ -2255,14 +2259,17 @@
 	white-space: nowrap;
 }
 
-#settlementEventDetail td {
+#settlementEventDetail td,
+.settlementEventDetail td {
 	width: 100%;
 	padding: 2px;
 	border-bottom: 1px solid #e6e6e6;
 }
 
 #settlementEventDetail tr:last-child th,
-#settlementEventDetail tr:last-child td {
+#settlementEventDetail tr:last-child td,
+.settlementEventDetail tr:last-child th,
+.settlementEventDetail tr:last-child td {
 	border: none;
 }
 
