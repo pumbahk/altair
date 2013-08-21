@@ -46,11 +46,9 @@ if(!widget){
                             var width = assets_data[groupNo][itemNo]['width'];
                             var height = assets_data[groupNo][itemNo]['height'];
                             var thumbnail_path = assets_data[groupNo][itemNo]['thumbnail_path'];
-                            if (id == widget_asset_id) {
-                                $("#group_" + groupNo + " .item:eq(" + itemNo + ")").append("<img pk='" + id + "' src='" + thumbnail_path + "' alt='' class='managed' />");
-                            } else {
-                                $("#group_" + groupNo + " .item:eq(" + itemNo + ")").append("<img pk='" + id + "' src='" + thumbnail_path + "' alt='' />");
-                            }
+                            var managed_class = "";
+                            if (id == widget_asset_id) {managed_class = "class='managed'"}
+                            $("#group_" + groupNo + " .item:eq(" + itemNo + ")").append("<img pk='" + id + "' src='" + thumbnail_path + "' alt='' " + managed_class + " />");
                             $("#group_" + groupNo + " .item:eq(" + itemNo + ")").append("<p>title:" + title + "width:" + width + "height:" + height + "</p>");
                         }
                     }
