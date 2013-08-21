@@ -34,6 +34,7 @@ if(!widget){
                     var widget_asset_id = data.widget_asset_id;
 
                     $(".scrollable").remove();
+                    $(".navi").empty();
                     $("#image_tab").append("<div class='scrollable' style='width: 550px'></div>");
                     $(".scrollable").append("<div class='items'></div>");
 
