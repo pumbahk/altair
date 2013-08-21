@@ -78,7 +78,7 @@
   </p>
 </div>
 
-<div id="modal-report" class="modal hide">
+<div id="modal-report" class="modal hide big">
   <div class="modal-header">
     <a class="close" data-dismiss="modal">&times;</a>
     <h3>ダウンロード</h3>
@@ -89,44 +89,44 @@
       ${ch.form_item(form_stock.report_type)}
 
       <%block name="display_performance_checkboxes">
-      <label class="control-label">パフォーマンス選択</label>
-      <br/><br/>
-      <p>
-	<input type="button" value="全て選択" onClick="enable_all_performances()"/>
-	<input type="button" value="全て解除" onClick="disable_all_performances()"/>
-      </p>
-      
-      <table class="table fullwidth checkboxed_table">
-	<thead>
-	  <tr>
-	    <th></th>
-	    <th>公演日時</th>
-	    <th>公演名/会場</th>
-	    <th>公演コード</th>
-	  </tr>
-	</thead>
-	
-	<tbody>
-	% for performance in performances:
-	  <tr>
-	    <td>
-	      <input class="performance" type="checkbox" name="performance_id" value="${performance.id}" checked="checked" >
-	      </input>
-	    </td>
-	    <td>
-	      ${vh.datetime(performance.start_on)}
-	    </td>
-	    <td>
-	      <span>${vh.truncate_eaw(performance.name, 40)}</span><br/>
-	      <span>${vh.truncate_eaw(performance.venue.name, 40)}</span><br/>
-	    </td>
-	    <td>
-	      ${performance.code}
-	    </td>
-	  </tr>
-	% endfor
-	</tbody>
-      </table>
+      <div class="control-group ">
+        <label class="control-label">パフォーマンス選択</label>
+        <div class="controls ">
+          <p>
+            <input type="button" value="全て選択" onClick="enable_all_performances()"/>
+            <input type="button" value="全て解除" onClick="disable_all_performances()"/>
+          </p>
+          <table class="table fullwidth checkboxed_table">
+            <thead>
+            <tr>
+              <th></th>
+              <th>公演日時</th>
+              <th>公演名/会場</th>
+              <th>公演コード</th>
+            </tr>
+            </thead>
+            <tbody>
+            % for performance in performances:
+            <tr>
+              <td>
+                <input class="performance" type="checkbox" name="performance_id" value="${performance.id}" checked="checked" />
+              </td>
+              <td>
+                ${vh.datetime(performance.start_on)}
+              </td>
+              <td>
+                <span>${vh.truncate_eaw(performance.name, 40)}</span><br/>
+                <span>${vh.truncate_eaw(performance.venue.name, 40)}</span><br/>
+              </td>
+              <td>
+                ${performance.code}
+              </td>
+            </tr>
+            % endfor
+            </tbody>
+          </table>
+        </div>
+      </div>
       </%block>
 
     </form>
@@ -137,7 +137,7 @@
   </div>
 </div>
 
-<div id="modal-report-stockholder" class="modal hide">
+<div id="modal-report-stockholder" class="modal hide big">
   <div class="modal-header">
     <a class="close" data-dismiss="modal">&times;</a>
     <h3>ダウンロード</h3>

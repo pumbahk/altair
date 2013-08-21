@@ -585,13 +585,14 @@ class EventReporter(object):
 
         # 公演別のレポート
         for performance in event.performances:
-            if not performance.public:
-                continue
             end_on = performance.end_on or performance.start_on
             if self.form.limited_from.data and end_on < self.form.limited_from.data:
                 continue
             self.form.performance_id.data = performance.id
-            self.reporters[performance] = PerformanceReporter(self.form, performance)
+            reporter = PerformanceReporter(self.form, performance)
+            if not reporter.reporters:
+                continue
+            self.reporters[performance] = reporter
 
     def sort_index(self):
         return sorted(self.reporters.keys(), key=lambda x:(x.start_on, x.name))
