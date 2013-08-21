@@ -12,7 +12,12 @@
 ${widget.html_suffix}
 </%def>
 
-${render(request, widget)}
+% if widget.asset_id:
+    ${render(request, widget)}
+% else:
+    <!-- <div class="image-widget" data-id="${widget.id}">404</div> -->
+% endif
+
 <%doc>
 %if widget.nowrap:
     ${render(request, widget)}
