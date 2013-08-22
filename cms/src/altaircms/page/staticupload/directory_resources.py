@@ -116,10 +116,14 @@ class StaticPageDirectory(object):
         return shutil.rmtree(src)
         
     def create(self, src, io):
-        logger.info("create src: %s" % (src))                
-        zipupload.extract_directory_from_zipfile(src, io)
-        self.request.registry.notify(AfterCreate(self.request, self, src))
-        return True
+        logger.info("create src: %s" % (src))
+        try:
+            zipupload.extract_directory_from_zipfile(src, io)
+            self.request.registry.notify(AfterCreate(self.request, self, src))
+            return True
+        except UnicodeDecodeError:
+            logger.error("uploaded zip file is invalid")
+            raise 
 
     def update(self, src, io):
         logger.info("update src: %s" % (src))                

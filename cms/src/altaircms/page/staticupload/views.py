@@ -40,15 +40,14 @@ class StaticPageCreateView(BaseView):
             return {"form": form}
         creator = self.context.creation(creation.StaticPageCreate, form.data)
         pagetype = get_or_404(self.request.allowable(PageType), PageType.name==self.request.matchdict["pagetype"])
-        static_page = creator.create()
-
         try:
+            static_page = creator.create()
             static_page.pageset.pagetype = pagetype
             FlashMessage.success(u"%sが作成されました" % static_page.label, request=self.request)
             return HTTPFound(self.context.endpoint(static_page))
         except Exception as e:
             logger.exception(e)
-            FlashMessage.error(str(e), request=self.request)
+            FlashMessage.error(u"作成に失敗しました。(ファイル名に日本語などのマルチバイト文字が含まれている時に失敗することがあります)", request=self.request)
             creator.rollback()
             return {"form": form}
 
