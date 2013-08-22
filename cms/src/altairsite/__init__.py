@@ -43,7 +43,7 @@ def main(global_config, **local_config):
     config.add_renderer('.html' , 'pyramid.mako_templating.renderer_factory')
 
     config.include("altair.now")
-    config.include("altaircms.templatelib")
+    # config.include("altaircms.templatelib")
     config.include("altair.cdnpath")
     from altair.cdnpath import S3StaticPathFactory
     config.add_cdn_static_path(S3StaticPathFactory(

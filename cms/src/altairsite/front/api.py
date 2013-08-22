@@ -78,16 +78,18 @@ class FrontPageRenderer(object):
                                 package=package,
                                 registry=request.registry, 
                                 )
-        helper.type = ".s3mako"
         def normalize(uri):
             if layout.uploaded_at:
                 return "{}@{}".format(uri, layout.uploaded_at.strftime("%Y%m%d%H%M"))
             return uri
-        helper.renderer.wrap_lookup(partial(IndividualTemplateLookupAdapter, 
-                                            self.request, 
-                                            fetch_fn=FetchTemplate("http://tstar-dev.s3.amazonaws.com/cms-layout-templates/"), 
-                                            invalidate_check_fn=partial(invalidate_check_datetime, layout.updated_at), 
-                                            normalize_fn=normalize))
+
+        ## black magic
+        helper.renderer.lookup =IndividualTemplateLookupAdapter( 
+            self.request, 
+            helper.renderer.lookup,               
+            fetch_fn=FetchTemplate("http://tstar-dev.s3.amazonaws.com/cms-layout-templates/"), 
+            invalidate_check_fn=partial(invalidate_check_datetime, layout.updated_at), 
+            normalize_fn=normalize)
         return helper.render_to_response(value, None, request=request)
 
 from altaircms.templatelib import IndividualTemplateLookupAdapter
