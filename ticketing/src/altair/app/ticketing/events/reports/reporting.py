@@ -59,7 +59,6 @@ def export_for_sold_seats(event, stock_holder, report_type, performanceids=None)
     exporter = xls_export.SoldSeatsExporter(template=template_path)
     formatter = DateTimeFormatter()
 
-    kind = 'sold'
     report_title = get_report_title(report_type)
     today = date.today()
     
@@ -74,13 +73,8 @@ def export_for_sold_seats(event, stock_holder, report_type, performanceids=None)
             sheet.set_name(sheet_name)
         else:
             sheet = exporter.add_sheet(sheet_name)
-
-        table = report_sheet.SoldSeatTableRecord()            
-        seat_sources = [source for source in report_sheet.generate_sold_seat_sources(performance)]
-        records = report_sheet.sold_seat_records_from_sold_seat_sources(
-            seat_sources, report_type, kind, date)
-        table.records = records
-        tables = [table]
+        table_creator = report_sheet.SoldTableCreator(performance, stock_holder, today)
+        tables = table_creator.generate_table()
         report_sheet.process_sheet(exporter, formatter, sheet, report_title, event, performance, stock_holder, tables)
     return exporter
 
