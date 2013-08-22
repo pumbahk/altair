@@ -37,6 +37,8 @@ order.OrderFormPresenter.prototype = {
       order: this.order,
       data_source: this.options.data_source
     });
+    this.ensure_seats = new order.EnsureSeatCollection();
+    this.release_seats = new order.ReleaseSeatCollection();
 
     $('.btn-confirm').on('click', function() {
       self.confirm();
@@ -82,7 +84,6 @@ order.OrderFormPresenter.prototype = {
     var selection = venueEditorRoot.venueeditor('selection');
     var opi = ordered_product_item;
     var seats = opi.get('seats');
-    var ensure_seats = self.order.get('ensure_seats');
     var add_flag = false;
     selection.each(function(seat) {
       var stock_type_id = seat.get('stock').get('stockType').get('id');
@@ -90,13 +91,13 @@ order.OrderFormPresenter.prototype = {
         self.showMessage('席種が異なるので追加できません', 'alert-warning');
         return false;
       }
-      if (!seats.get(seat) && !ensure_seats.get(seat)) {
+      if (!seats.get(seat) && !self.ensure_seats.get(seat)) {
         seats.push(new order.Seat({
           'id':seat.get('id'),
           'name':seat.get('name'),
           'stock_type_id':stock_type_id
         }));
-        ensure_seats.push(seat);
+        self.ensure_seats.push(seat);
         add_flag = true;
       }
     });
@@ -107,8 +108,11 @@ order.OrderFormPresenter.prototype = {
   },
   deleteSeat: function(seat) {
     var self = this;
+    var venue = venueEditorRoot.venueeditor('model');
+    var venue_seat = venue.seats.get(seat.id);
+    if (self.ensure_seats.get(venue_seat)) self.ensure_seats.remove(venue_seat);
+    if (!self.release_seats.get(venue_seat)) self.release_seats.push(venue_seat);
     seat.collection.remove(seat);
-    self.order.get('ensure_seats').remove(seat);
     self.showForm();
   },
   addProduct: function() {
@@ -119,9 +123,11 @@ order.OrderFormPresenter.prototype = {
   },
   close: function() {
     var self = this;
-    var ensure_seats = self.order.get('ensure_seats');
-    ensure_seats.each(function(seat) {
-      ensure_seats.remove(seat);
+    self.ensure_seats.each(function(seat) {
+      self.ensure_seats.remove(seat);
+    });
+    self.release_seats.each(function(seat) {
+      self.release_seats.remove(seat);
     });
     self.view.close();
     $('.btn-edit-order, #orderProduct').show();
@@ -156,9 +162,20 @@ order.OrderFormPresenter.prototype = {
     self.order.save(null, {
       success: function(model, res) {
         self.showMessage('保存しました', 'alert-success');
-        self.view.close();
-        $('.venue-editor-main-side-toggle').click();
-        venueEditorRoot.venueeditor('refresh');
+        $('.btn-save-order, .btn-close').hide();
+
+        self.ensure_seats.each(function(seat) {
+          seat.set('sold', true);
+          seat.set('status', 3);
+          seat.set('selectable', true);
+          seat.trigger('change:selectable');
+        });
+        self.release_seats.each(function(seat) {
+          seat.set('sold', false);
+          seat.set('status', 1);
+          seat.set('selectable', true);
+          seat.trigger('change:selectable');
+        });
       },
       error: function(model, res) {
         var response = JSON.parse(res.responseText);
@@ -182,8 +199,7 @@ order.Order = Backbone.Model.extend({
     delivery_fee: 0,
     system_fee: 0,
     total_amount: 0,
-    ordered_products: null,
-    ensure_seats: null
+    ordered_products: null
   },
   parse: function (response) {
     var self = this;
@@ -199,17 +215,6 @@ order.Order = Backbone.Model.extend({
       self.set('total_amount', total_amount);
     });
     response.ordered_products = opc;
-
-    var ensure_seats = new order.EnsureSeatCollection();
-    ensure_seats.on('add', function(seat) {
-      seat.set('selected', false);
-      seat.set('selectable', false);
-    });
-    ensure_seats.on('remove', function(seat) {
-      seat.set('selectable', true);
-    });
-    response.ensure_seats = ensure_seats;
-
     return response;
   }
 });
@@ -377,7 +382,31 @@ order.ProductCollection = Backbone.Collection.extend({
 });
 
 order.EnsureSeatCollection = Backbone.Collection.extend({
-  model: order.Seat
+  model: order.Seat,
+  initialize: function() {
+    this.on('add', function(seat) {
+      seat.set('selected', false);
+      seat.set('selectable', false);
+    });
+    this.on('remove', function(seat) {
+      seat.set('selectable', true);
+      seat.trigger('change:selectable');
+    });
+  }
+});
+
+order.ReleaseSeatCollection = Backbone.Collection.extend({
+  model: order.Seat,
+  initialize: function() {
+    this.on('add', function(seat) {
+      seat.set('selected', false);
+      seat.set('selectable', true);
+    });
+    this.on('remove', function(seat) {
+      seat.set('selectable', true);
+      seat.trigger('change:selectable');
+    });
+  }
 });
 
 
@@ -399,10 +428,11 @@ order.OrderFormView = Backbone.View.extend({
     this.template.get();
   },
   alert: function(message, option) {
+    var el = $('#orderProductAlert');
     var alert = $('<div class="alert" style="margin: 8px;" />').addClass(option);
     alert.append($('<ul/>').append($('<li/>').text(message)));
-    this.$el.find('.alert').remove();
-    this.$el.append(alert);
+    el.find('.alert').remove();
+    el.append(alert);
   },
   show: function() {
     this.render();
