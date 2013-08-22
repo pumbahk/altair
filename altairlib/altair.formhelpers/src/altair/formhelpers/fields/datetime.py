@@ -131,6 +131,7 @@ class OurDateTimeFieldBase(fields.Field):
                         self.process_errors.append(self.gettext('Not a valid datetime value'))
             else:
                 missing_fields = []
+                missing_fields_exist = False
                 for k in self._fields:
                     v = u' '.join(formdata.getlist(self.name_prefix + k)).strip()
                     if not v:
@@ -141,8 +142,9 @@ class OurDateTimeFieldBase(fields.Field):
                         if missing_fields is not None:
                             for _k in missing_fields:
                                 self.process_errors.append(self.gettext("Required field `%(field)s' is not supplied") % dict(field=self.gettext(_k)))
+                                missing_fields_exist = True
                             missing_fields = []
-                if len(missing_fields) == len(self._fields):
+                if missing_fields_exist:
                     self.data = None
                     self.raw_data = None
                 else:
