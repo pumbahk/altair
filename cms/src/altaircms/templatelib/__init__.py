@@ -5,18 +5,11 @@ import logging
 logger = logging.getLogger(__name__)
 from mako.template import Template
 from pyramid.httpexceptions import HTTPNotFound
-from pyramid.mako_templating import (
-    IMakoLookup, 
-    MakoRendererFactoryHelper, 
-    MakoLookupTemplateRenderer, 
-    PkgResourceTemplateLookup
-    )
 from datetime import datetime
 import threading
 
 class IndividualTemplateLookupAdapter(object):
-    def __init__(self, request, lookup, invalidate_check_fn=None, fetch_fn=None, normalize_fn=None): #xxx:
-        self.request = request
+    def __init__(self, lookup, invalidate_check_fn=None, fetch_fn=None, normalize_fn=None): #xxx:
         self.lookup = lookup
         self.invalidate_check_fn = invalidate_check_fn
         self.fetch_fn = fetch_fn
@@ -32,9 +25,6 @@ class IndividualTemplateLookupAdapter(object):
             adjusted = uri.replace(':', '$')
             adjusted = self.normalize_fn(adjusted)
             try:
-                # if self.filesystem_checks:
-                #     return self._check(adjusted, self._collection[adjusted])
-                # else:
                 return self._collection[adjusted]
             except KeyError:
                 return self._load(uri, adjusted) #xxx:
