@@ -116,3 +116,43 @@ class SalesSegmentAdminResource(TicketingAdminResource):
                 self.performance = self.sales_segment.performance
         else:
             self.sales_segment = None
+
+
+class SalesSegmentEditor(object):
+    use_default_fields = [
+        "seat_choice",
+        "public",
+        "reporting",
+        "payment_delivery_method_pairs",
+        "start_at",
+        "end_at",
+        "upper_limit",
+        "order_limit",
+        "account_id",
+        "margin_ratio",
+        "refund_ratio",
+        "printing_fee",
+        "registration_fee",
+        "auth3d_notice",
+    ]
+
+    def __init__(self, sales_segment_group, form):
+        self.sales_segment_group = sales_segment_group
+        self.form = form
+
+    def apply_changes(self, obj):
+        for field in self.form:
+            setattr(obj, field._name, self.get_value(field))
+        return obj
+
+    def is_use_default(self, field):
+        return self.form["use_default_" + field._name].data
+
+    def get_value(self, field):
+        if field._name not in self.use_default_fields:
+            return field.data
+        else:
+            if self.is_use_default(field):
+                return getattr(self.sales_segment_group, field._name)
+            else:
+                return field.data
