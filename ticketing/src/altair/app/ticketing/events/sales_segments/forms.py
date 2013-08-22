@@ -392,45 +392,52 @@ class EditSalesSegmentForm(OurForm):
         widget=CheckboxInput()
     )
 
-    def validate_payment_delivery_method_pairs(self, field):
-        pass
+    def _validate_terms(self):
+        start_at = self.start_at.data
+        end_at = self.end_at.data
+
+        # 販売開始日時と販売終了日時の前後関係をチェックする
+        if start_at > end_at:
+            self.start_at.errors.append(u'販売開始日時が販売終了日時より後に設定されています')
+            self.end_at.errors.append(u'販売終了日時が販売開始日時より前に設定されています')
+            return False
+        return True
+
+    def _validate_performance_terms(self):
+        # 同一公演の期限かぶりをチェックする
+        start_at = self.start_at.data
+        end_at = self.end_at.data
+        if start_at is not None and end_at is not None:
+            q = SalesSegment.query.filter(
+                SalesSegment.performance_id==self.performance_id.data
+            ).filter(
+                or_(and_(start_at<=SalesSegment.start_at,
+                         SalesSegment.start_at<=end_at),
+                    and_(start_at<=SalesSegment.end_at,
+                         SalesSegment.end_at<=end_at),
+                    and_(SalesSegment.start_at<=start_at,
+                         end_at<=SalesSegment.end_at),
+                    )
+            ).filter(
+                SalesSegment.sales_segment_group_id==self.sales_segment_group_id.data
+            )
+
+            if self.id.data is not None:
+                q = q.filter(SalesSegment.id != self.id.data)
+
+            dup = q.first()
+            if dup:
+                self.start_at.errors.append(u'同一公演について期間がかぶっています。{0}～{1}'.format(
+                        dup.start_at, dup.end_at))
+                return False
+        return True
 
     def validate(self):
         if super(EditSalesSegmentForm, self).validate():
-            start_at = self.start_at.data
-            end_at = self.end_at.data
-
-            # 販売開始日時と販売終了日時の前後関係をチェックする
-            if start_at > end_at:
-                self.start_at.errors.append(u'販売開始日時が販売終了日時より後に設定されています')
-                self.end_at.errors.append(u'販売終了日時が販売開始日時より前に設定されています')
+            if not self._validate_terms():
                 return False
-            
-            
-            # 同一公演の期限かぶりをチェックする
-            if start_at is not None and end_at is not None:
-                q = SalesSegment.query.filter(
-                    SalesSegment.performance_id==self.performance_id.data
-                ).filter(
-                    or_(and_(start_at<=SalesSegment.start_at,
-                             SalesSegment.start_at<=end_at),
-                        and_(start_at<=SalesSegment.end_at,
-                             SalesSegment.end_at<=end_at),
-                        and_(SalesSegment.start_at<=start_at,
-                             end_at<=SalesSegment.end_at),
-                        )
-                ).filter(
-                    SalesSegment.sales_segment_group_id==self.sales_segment_group_id.data
-                )
-
-                if self.id.data is not None:
-                    q = q.filter(SalesSegment.id != self.id.data)
-
-                dup = q.first()
-                if dup:
-                    self.start_at.errors.append(u'同一公演について期間がかぶっています。{0}～{1}'.format(
-                            dup.start_at, dup.end_at))
-                    return False
+            if not self._validate_performance_terms():
+                return False
 
             return True
 
