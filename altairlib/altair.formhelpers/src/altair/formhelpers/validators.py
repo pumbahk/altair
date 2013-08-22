@@ -17,6 +17,7 @@ __all__ = (
     'SejCompliantEmail',
     'Zenkaku',
     'after1900',
+    'SwitchOptional',
     )
 
 def todatetime(d):
