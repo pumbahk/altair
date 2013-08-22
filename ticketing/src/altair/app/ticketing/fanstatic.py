@@ -13,7 +13,7 @@ from js.bootstrap_ts import bootstrap, bootstrap_responsive_css
 from js.jquery_timepicker_addon import timepicker
 from js.jquery_colorpicker import jquery_colorpicker
 from js.jquery_cookie import cookie
-from js.jqgrid import jqgrid, jqgrid_i18n_en
+from js.jqgrid_ts import jqgrid, jqgrid_i18n_en
 from js.jqueryui_bootstrap import jqueryui_bootstrap
 from js.i18n import i18n
 import venusian
