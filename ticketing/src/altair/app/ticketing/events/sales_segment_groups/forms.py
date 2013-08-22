@@ -160,9 +160,16 @@ class SalesSegmentGroupForm(OurForm):
         validators=[Optional()],
     )
 
-    def validate_end_at(form, field):
-        if field.data is not None and field.data < form.start_at.data:
-            raise ValidationError(u'開演日時より過去の日時は入力できません')
+    def validate(self, *args, **kwargs):
+        retval = super(type(self), self).validate(*args, **kwargs)
+        if self.end_at.data is not None and self.start_at.data is not None and self.end_at.data < self.start_at.data:
+            if not self.end_at.errors:
+                self.end_at.errors = []
+            else:
+                self.end_at.errors = list(self.end_at.errors) 
+            self.end_at.errors.append(ValidationError(u'開演日時より過去の日時は入力できません'))
+            retval = False
+        return retval
 
 
 class MemberGroupToSalesSegmentForm(OurForm):
