@@ -369,7 +369,7 @@ def static_page_display_view(context, request):
     static_directory = get_static_page_utility(request)
     try:
         path = os.path.join(static_directory.get_base_directory(), request.matchdict["path"])
-        logger.info("*path: {0}".format(path))
+        logger.info(u"*path: {0}".format(path))
         return as_static_page_response(request, static_page, path, force_original=request.GET.get("force_original"), 
                                        path=path, cache_max_age=0)
     except StaticPageNotFound as e:

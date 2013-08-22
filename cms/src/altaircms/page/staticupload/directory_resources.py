@@ -149,7 +149,7 @@ class S3StaticPageDirectory(StaticPageDirectory):
         return "http://{0}.s3.amazonaws.com/{1}{2}/".format(bucket_name, self.prefix, dirname.replace(self.basedir, ""))
 
     def get_name(self, dirname, filename):
-        return "{0}{1}/{2}".format(self.prefix, dirname.replace(self.basedir, ""), filename)
+        return u"{0}{1}/{2}".format(self.prefix, dirname.replace(self.basedir, ""), filename)
 
     def get_url(self, path):
         return self._get_url(path.replace(self.basedir, ""))
