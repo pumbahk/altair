@@ -177,6 +177,9 @@ class StaticPageCache(object):
             v = fetch_function(self, k)
             logger.debug("StaticPageCache: setitem and remove sentinel -- {k}, fetching=removed".format(k=k))
             self.fetching.remove_value(k)
+            if v is None:
+                logger.error("404 --- {k}".format(k=k))
+                raise HTTPNotFound
             if not v.group_id in self.file_group:
                 self.file_group[v.group_id] = {k}
             else:
