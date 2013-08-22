@@ -6,7 +6,8 @@ from itertools import groupby
 from string import ascii_letters
 
 from altair.app.ticketing.models import DBSession
-from altair.app.ticketing.core.models import SeatStatusEnum, VenueArea
+from altair.app.ticketing.core.models import SeatStatusEnum, VenueArea,\
+    OrderedProductItem, OrderedProduct, ProductItem
 
 import logging
 
@@ -21,6 +22,17 @@ class SeatSource(object):
         self.seat = seat       # ex: 10
         self.status = status
 
+class SoldSeatSource(SeatSource):
+    """SoldSeatRecordを作成する際に使うオブジェクト
+    """
+    def __init__(self, block=None, floor=None, line=None, seat=None, status=None, source=None, product_item=None):
+        self.source = source
+        self.block = block  
+        self.floor = floor  
+        self.line = line    
+        self.seat = seat    
+        self.status = status
+        self.product_item = product_item
 
 class SeatRecord(object):
     """帳票の一行分のレコード
@@ -65,6 +77,35 @@ class SeatRecord(object):
             ]
         return record
 
+class SoldSeatRecord(SeatRecord):
+    def __init__(self, block=None, line=None, start=None, end=None,
+                 date=None, quantity=0, kind="sold", product_item=None):
+        self.block = block
+        self.line = line
+        self.start = start
+        self.end = end
+        self.date = date
+        self.quantity = quantity
+        self.kind = kind
+        self.product_item = product_item
+        
+    def is_sold(self):
+        return self.kind == "sold"
+
+    def get_record(self):
+        """Exporterが扱える形の一行分のレコードを返す
+        """
+        record = {'block': self.block or '',
+                  'line': self.line or '',
+                  'product_item': self.product_item or ''
+                  }
+        
+        record['sold'] = [self.start or '',
+                          u'〜',
+                          self.end or '',
+                          str(self.quantity),
+                          ]
+        return record
 
 class StockRecord(object):
     """席種ごとの帳票データ
@@ -109,6 +150,28 @@ class StockRecord(object):
             data["records"].append(record.get_record())
         return data
 
+class SoldSeatTableRecord(StockRecord):
+    def get_seat_type_display(self):
+        return u''
+        
+    def get_records(self):
+        data = {'seattype': self.get_seat_type_display(),
+                'stocks_label': self.stocks_label,
+                'total2': str(self.get_total_sold()),
+                'records': [],
+                }
+        for record in self.records:
+            data["records"].append(record.get_record())            
+        return data
+
+    def get_total_sold(self):
+        """販売済座席数の合計を返す
+        """
+        value = 0
+        for record in self.records:
+            if record.is_sold():
+                value += record.quantity
+        return value
 
 def process_sheet(exporter, formatter, sheet, report_type, event, performance, stock_holder, stock_records, now=None):
     """シートの内容を埋める
@@ -155,6 +218,34 @@ def seat_source_from_seat(seat):
     seat_source.status = seat.status
     return seat_source
 
+def sold_seat_source_from_seat(seat):
+    """SeatとProductItemからSoldSeatSourceを作成する
+    """
+    attributes = seat.attributes or {}
+    seat_source = SoldSeatSource(source=seat)
+
+    # フロアは、SeatAttributeのを使う
+    if 'floor' in attributes:
+        seat_source.floor = attributes.get('floor')
+
+    # ブロック名は、VenueAreaを検索して使う
+    # まれにgroup_l0_idがNULLな席とかがあってVenueArea.nameが拾えない場合があるので
+    # one()じゃなくてfirst()を使う
+    area = DBSession.query(VenueArea).join(VenueArea.groups)\
+        .filter_by(venue_id=seat.venue_id)\
+        .filter_by(group_l0_id=seat.group_l0_id).first()
+    if area is not None:
+        seat_source.block = area.name
+
+    # 列番号は、SeatAttributeのを使う
+    if 'row' in attributes:
+        seat_source.line = attributes.get('row')
+
+    seat_source.seat = seat.seat_no
+    seat_source.status = seat.status
+    seat_source.product_item = product_item.name
+    return seat_source
+    
 
 def is_series_seat(seatsource1, seatsource2):
     """seatsource1とseatsource2が別の列、もしくは通路などを
@@ -175,7 +266,6 @@ def is_series_seat(seatsource1, seatsource2):
             if index1 > -1 and index2 > -1 and abs(index1 - index2) == 1:
                 return True
     return False
-
 
 def seat_records_from_seat_sources(seat_sources, report_type, kind, date):
     """SeatSourceのリストからSeatRecordのリストを返す
@@ -218,6 +308,46 @@ def seat_records_from_seat_sources(seat_sources, report_type, kind, date):
             flush()
     return result
 
+def sold_seat_records_from_sold_seat_sources(seat_sources, report_type, kind, date):
+    """SoldSeatSourceのリストからSoldSeatRecordのリストを返す
+    サマリー作成
+    """
+    result = []
+    # block,floor,line,seatの優先順でソートする
+    def to_int_or_str(seat):
+        return int(seat) if seat.isdigit() else seat
+    sorted_seat_sources = sorted(
+        seat_sources,
+        key=lambda v: (v.block, v.floor, v.line, to_int_or_str(v.seat) if (v.seat!=None and v.seat!='') else None))
+    # block,floor,lineでグループ化してSeatRecordを作る
+    for key, generator in groupby(sorted_seat_sources, lambda v: (v.block, v.floor, v.line)):
+        values = list(generator)
+        # 連続した座席はまとめる
+        lst_values = []
+        def flush():
+            seat_record = SoldSeatRecord(
+                    block=lst_values[0].block,
+                    line=lst_values[0].line,
+                    start=lst_values[0].seat,
+                    end=lst_values[-1].seat,
+                    date=date,
+                    quantity=len(lst_values),
+                    kind=kind,
+                    product_item=lst_values[0].product_item,
+                )
+            result.append(seat_record)
+            del lst_values[:]
+
+        for value in values:
+            # 1つ前の座席と連続していなければ結果に追加してlst_valuesをリセット
+            if lst_values and not is_series_seat(lst_values[-1], value):
+                flush()
+            if report_type != 'sold' or value.status == SeatStatusEnum.Ordered.v:
+                lst_values.append(value)
+        # 残り
+        if lst_values:
+            flush()
+    return result
 
 class SalesScheduleRecord(object):
     """販売日程管理票の1シート分
@@ -338,3 +468,34 @@ class SalesSchedulePriceRecordRecord(object):
             price=self.price if self.price is not None else "",
         )
         return record
+
+def performance2soldseats(performance):
+    perf_id = performance if type(performance) is int else performance.id
+    ordered_product_items = OrderedProductItem.query.join(OrderedProduct)\
+                                                    .join(ProductItem)\
+                                                    .filter(ProductItem.performance_id==perf_id)
+    for opitem in ordered_product_items:
+        if opitem.seats:
+            for seat in opitem.seats:
+                if seat.status == SeatStatusEnum.Ordered.v:
+                    yield opitem, seat
+
+def generate_sold_seat_sources(performance):
+    for opitem, seat in performance2soldseats(performance):
+        seat_source = SoldSeatSource(source=seat)
+        attributes = seat.attributes or {}        
+        area = DBSession.query(VenueArea).join(VenueArea.groups)\
+                                         .filter_by(venue_id=seat.venue_id)\
+                                         .filter_by(group_l0_id=seat.group_l0_id).first()
+
+        if area is not None:
+            seat_source.block = area.name
+        if 'floor' in attributes:
+            seat_source.floor = attributes.get('floor')            
+        if 'row' in attributes:
+            seat_source.line = attributes.get('row')
+        seat_source.seat = seat.seat_no
+        seat_source.status = seat.status
+        seat_source.product_item = opitem.product_item.name
+        yield seat_source
+        

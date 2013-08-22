@@ -62,7 +62,7 @@ class Reports(BaseView):
 
     @view_config(route_name='reports.stocks', request_method='POST', renderer='altair.app.ticketing:templates/events/report.html')
     def download_stocks(self):
-        """仕入明細/残席明細ダウンロード
+        """仕入明細/残席明細/販売済座席明細ダウンロード
         """
         # Event
         event_id = int(self.request.matchdict.get('event_id', 0))
@@ -88,8 +88,8 @@ class Reports(BaseView):
         try:
             performanceids = map(int, self.request.POST.getall('performance_id'))
         except (ValueError, TypeError) as err:
-            raise HTTPNotFound('Performace id is illegal: {0}'.format(err.message))            
-        exporter = reporting.export_for_stock_holder(event, stock_holders[0], f.report_type.data, performanceids=performanceids)
+            raise HTTPNotFound('Performace id is illegal: {0}'.format(err.message))
+        exporter = reporting.exporter_factory(event, stock_holders[0], f.report_type.data, performanceids=performanceids)
 
         # 出力ファイル名
         filename = "%(report_type)s_%(code)s_%(datetime)s.xls" % dict(

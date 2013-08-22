@@ -30,8 +30,62 @@ def get_report_title(report_type):
     }
     return report_types[report_type] if report_type in report_types else ''
 
+class DoesNotExistReport(ValueError):
+    pass
+
+def exporter_factory(event, stock_holder=None, report_type=None, *args, **kwds):
+    """適切なExporterを生成して返す
+    """
+    if report_type is None:
+        return export_for_sales(event)
+    elif report_type in ('stock', 'unsold'):
+        return export_for_stock_holder(event, stock_holder, report_type, *args, **kwds)
+    elif report_type == 'sold':
+        return export_for_sold_seats(event, stock_holder, report_type, *args, **kwds)
+    else:
+        raise DoesNotExistReport('This report type does not exist: {0}'.format(repr(report_type)))
+
+
+
+def export_for_sold_seats(event, stock_holder, report_type, performanceids=None):
+    """指定したEvent,StockHolderの販売済座席のレポートをExporterで返す
+    """
+    if performanceids is None: # default is all pattern
+        performanceids = [perf.id for perf in event.performances]
+
+    assetresolver = AssetResolver()
+    template_path = assetresolver.resolve(
+        "altair.app.ticketing:/templates/reports/sold_seats_report_template.xls").abspath()
+    exporter = xls_export.SoldSeatsExporter(template=template_path)
+    formatter = DateTimeFormatter()
+
+    kind = 'sold'
+    report_title = get_report_title(report_type)
+    today = date.today()
+    
+    is_target = lambda perf: perf.id in performanceids 
+    for i, performance in enumerate(filter(is_target, event.performances)):
+        sheet_num = i + 1
+        dt = formatter.format_datetime_for_sheet_name(performance.start_on)
+        sheet_name = u"%s_%d" % (dt, sheet_num)
+        # 一つ目のシートは追加せずに取得
+        if i == 0:
+            sheet = exporter.workbook.get_sheet(0)
+            sheet.set_name(sheet_name)
+        else:
+            sheet = exporter.add_sheet(sheet_name)
+
+        table = report_sheet.SoldSeatTableRecord()            
+        seat_sources = [source for source in report_sheet.generate_sold_seat_sources(performance)]
+        records = report_sheet.sold_seat_records_from_sold_seat_sources(
+            seat_sources, report_type, kind, date)
+        table.records = records
+        tables = [table]
+        report_sheet.process_sheet(exporter, formatter, sheet, report_title, event, performance, stock_holder, tables)
+    return exporter
+
 def export_for_stock_holder(event, stock_holder, report_type, performanceids=None):
-    """指定したEvent,StockHolderのレポートをExporterで返す
+    """指定したEvent,StockHolderの仕入明細/残席明細レポートをExporterで返す
     """
 
     if performanceids is None: # default is all pattern
@@ -58,6 +112,7 @@ def export_for_stock_holder(event, stock_holder, report_type, performanceids=Non
             sheet.set_name(sheet_name)
         else:
             sheet = exporter.add_sheet(sheet_name)
+
         # PerformanceごとのStockを取得
         stock_records = []
         stocks = Stock.filter_by(performance_id=performance.id)\
