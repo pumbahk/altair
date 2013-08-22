@@ -33,6 +33,7 @@ setup(name='altair.formhelpers',
       namespace_packages=['altair'],
       include_package_data=True,
       zip_safe=False,
+      test_suite='altair.formhelpers.tests',
       install_requires=[
           'setuptools>0.7',
           'wtforms',
