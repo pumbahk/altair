@@ -111,10 +111,13 @@ with_fanstatic_jqueries = FanstaticDecoratorFactory(
     jquery.need,
     jquery_tools.need,
     json2.need,
-    jqueryui.need,
-    jqueryui_bootstrap.need,
     underscore.need,
     backbone.need
+    )
+
+with_jqueryui = FanstaticDecoratorFactory(
+    jqueryui.need,
+    jqueryui_bootstrap.need
     )
 
 with_wysiwyg_editor = FanstaticDecoratorFactory(
@@ -125,10 +128,8 @@ with_bootstrap = FanstaticDecoratorFactory(
     jquery.need,
     jquery_tools.need,
     json2.need,
-    jqueryui.need,
     jquery_colorpicker.need,
     cookie.need,
-    jqueryui_bootstrap.need,
     underscore.need,
     backbone.need,
     bootstrap.need,
