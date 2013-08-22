@@ -1,4 +1,5 @@
 # -*- coding:utf-8 -*-
+from zope.interface import Interface, implementer, Attribute
 import time
 import sqlalchemy as sa
 import sqlalchemy.orm as orm
@@ -12,7 +13,11 @@ logger = logging.getLogger(__file__)
 from ..pyramidlayout import get_subcategories_from_page #obsolete
 from .. import pyramidlayout
 from altaircms.models import Performance
-from altaircms.templatelib.api import refresh_template_cache_only_needs
+
+class ILayoutModelRenderer(Interface):
+    request = Attribute("request")
+    def render(assetspec, page):
+        pass
 
 def get_frontpage_renderer(request):
     """ rendererを取得
@@ -23,49 +28,6 @@ def get_frontpage_discriptor_resolver(request):
     return request.registry.getUtility(ILayoutModelResolver)
 
 from pyramid.renderers import RendererHelper    
-
-class Lock(object):
-    """todo: implementation. we needs filesystem based lock. (not thread local and not dblock(too-wide))"""
-    def acquire(self):
-        pass
-
-    def release(self):
-        pass
-
-_Lock  = Lock()
-
-class TemplateFetcher(object):
-    def __init__(self, request):
-        self.request = request
-
-    def refresh_template_if_need(self, template, layout):
-        if not hasattr(template, "cache"):
-            logger.info("*debug validate template: cache is not found")
-            return
-
-        if layout.synced_at is None:
-            return
-        synced_at = time.mktime(layout.synced_at.timetuple())
-
-        fmt = "*debug validate template: layout.updated_at={0}, template.last_modified={1}"
-        logger.warn(fmt.format(synced_at ,template.last_modified))
-        if synced_at > template.last_modified:
-            self.refresh_template_cache(template, layout, synced_at)
-
-    def _refresh_template_cache(self, template, layout, synced_at):
-        resolver = get_frontpage_discriptor_resolver(self.request)
-        refresh_targets = [resolver.from_assetspec(self.request, f) for f in layout.dependencies]
-        refresh_template_cache_only_needs(template, refresh_targets, synced_at)
-
-    def refresh_template_cache(self, template, layout, synced_at):
-        _Lock.acquire()
-        try:
-            self._refresh_template_cache(template, layout, synced_at)
-        except:
-            _Lock.release()
-            raise
-        else:
-            _Lock.release()
 
 class RenderingParamsCollector(object):
     def __init__(self, request):
@@ -93,10 +55,11 @@ class RenderingParamsCollector(object):
                       myhelper=pyramidlayout)
         return params
 
+@implementer(ILayoutModelResolver)
 class FrontPageRenderer(object):
     def __init__(self, request):
         self.request = request
-        self.fetcher = TemplateFetcher(request)
+        # self.fetcher = TemplateFetcher(request)
         self.params_collector = RenderingParamsCollector(request)
 
     def render(self, template, page):
@@ -105,13 +68,29 @@ class FrontPageRenderer(object):
         params.update(page=page, display_blocks=bsettings.blocks)
         return self._render(template, page.layout, params)
 
-    def _render(self, template, layout, params):
-        return self.render_to_response(template, layout, params, self.request)        
+    def _render(self, assetspec, layout, params):
+        logger.info("-assetspec--%s", assetspec)
+        return self.render_to_response(assetspec, layout, params, self.request)        
 
     def render_to_response(self, renderer_name, layout, value, request=None, package=None):
         """render_to_response_with_fresh_template"""
-        helper = RendererHelper(name=renderer_name, package=package,
-                                registry=request.registry)
-        template = helper.renderer.implementation()
-        self.fetcher.refresh_template_if_need(template, layout)
+        helper = RendererHelper(name=renderer_name, 
+                                package=package,
+                                registry=request.registry, 
+                                )
+        helper.type = ".s3mako"
+        def normalize(uri):
+            if layout.uploaded_at:
+                return "{}@{}".format(uri, layout.uploaded_at.strftime("%Y%m%d%H%M"))
+            return uri
+        helper.renderer.wrap_lookup(partial(IndividualTemplateLookupAdapter, 
+                                            self.request, 
+                                            fetch_fn=FetchTemplate("http://tstar-dev.s3.amazonaws.com/cms-layout-templates/"), 
+                                            invalidate_check_fn=partial(invalidate_check_datetime, layout.updated_at), 
+                                            normalize_fn=normalize))
         return helper.render_to_response(value, None, request=request)
+
+from altaircms.templatelib import IndividualTemplateLookupAdapter
+from altaircms.templatelib import FetchTemplate
+from altaircms.templatelib import invalidate_check_datetime
+from functools import partial

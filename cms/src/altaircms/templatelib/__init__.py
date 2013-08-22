@@ -1,256 +1,184 @@
 # -*- coding:utf-8 -*-
 import os
 import urllib
-import shutil
-
-from pyramid.settings import asbool
-from mako import exceptions
-from pyramid.compat import is_nonstr_iter
-from pyramid.util import DottedNameResolver
-from pyramid.mako_templating import (
-    MakoRendererFactoryHelper, 
-    registry_lock, 
-    PkgResourceTemplateLookup, 
-    IMakoLookup
-)
-from pyramid.interfaces import IRendererFactory
-from pyramid.path import AssetResolver
 import logging
-logger = logging.getLogger()
+logger = logging.getLogger(__name__)
 from zope.interface import implementer
-from zope.interface import Interface
-from altair.pyramid_boto.s3.assets import DefaultS3RetrieverFactory
-from altair.pyramid_boto.s3.assets import S3AssetResolver
-from altair.pyramid_boto.s3.connection import DefaultS3ConnectionFactory
+from mako.template import Template
+from pyramid.httpexceptions import HTTPNotFound
+from pyramid.interfaces import (
+    ITemplateRenderer, 
+    )
+from pyramid.settings import asbool
+from pyramid.compat import (
+    is_nonstr_iter,
+    )
+from pyramid.mako_templating import (
+    IMakoLookup, 
+    MakoRendererFactoryHelper, 
+    MakoLookupTemplateRenderer, 
+    PkgResourceTemplateLookup
+    )
+from pyramid.util import DottedNameResolver
+from datetime import datetime
+import threading
 
-class IMakoLookupFactory(Interface):
-    def __call__(*args, **kwargs):
-        pass
+class IndividualTemplateLookupAdapter(object):
+    def __init__(self, request, lookup, invalidate_check_fn=None, fetch_fn=None, normalize_fn=None): #xxx:
+        self.request = request
+        self.lookup = lookup
+        self.invalidate_check_fn = invalidate_check_fn
+        self.fetch_fn = fetch_fn
+        self.normalize_fn = normalize_fn
+        self._mutex = threading.Lock()
 
-class IFailbackLookup(Interface):
-    def __call__(lookup, uri):
-        """return template"""
-
-#utility
-def get_renderer_factory(request, filename):
-    ext = os.path.splitext(filename)[1]
-    return request.registry.queryUtility(IRendererFactory, name=ext)
-
-def create_file_from_io(name, io):
-    try:
-        with open(name, "wb") as wf:
-            shutil.copyfileobj(io, wf)
-    except IOError:
-        os.makedirs(os.path.dirname(name).rstrip(".."))
-        with open(name, "wb") as wf:
-            shutil.copyfileobj(io, wf)
-
-def create_adjusted_name(uri):
-    return uri.replace(':', '$')
-
-
-class TemplateLookupEvents(object):
-    __slots__ = ("events", )
-    def __init__(self, **events):
-        self.events = events or {}
-
-    def exists(self, key):
-        return key in self.events
-
-    def fire(self, key, *args, **kwargs):
-        event = self.events.pop(key)
-        event(*args, **kwargs)
-
-    def fire_if_exists(self, key, *args, **kwargs):
-        return self.exists(key) and self.fire(key, *args, **kwargs)
-
-
-@implementer(IMakoLookup)
-class HasFailbackTemplateLookup(PkgResourceTemplateLookup):
-    Events = TemplateLookupEvents
-    def __init__(self, failback_lookup, *args, **kwargs):
-        self.failback_lookup = failback_lookup
-        self._events = self.Events()
-        super(HasFailbackTemplateLookup, self).__init__(*args, **kwargs)
-
-    def add_event(self, k, fn):
-        self._events.events[k] = fn
-
-    def get_template_failback(self, uri): #need cache
-        return self.failback_lookup(self, uri)
+    def __getattr__(self, k):
+        return getattr(self.lookup, k)
 
     def get_template(self, uri):
-        try:
-            self._events.fire_if_exists(uri, self)
-            return super(HasFailbackTemplateLookup, self).get_template(uri)
-        except exceptions.TopLevelLookupException as e:
+        isabs = os.path.isabs(uri)
+        if (not isabs) and (':' in uri):
+            adjusted = uri.replace(':', '$')
+            adjusted = self.normalize_fn(adjusted)
             try:
-                v = self.get_template_failback(uri)
-                if v:
-                    return v
-                raise e
-            except Exception as sube:
-                logger.exception(sube)
-                raise e
+                # if self.filesystem_checks:
+                #     return self._check(adjusted, self._collection[adjusted])
+                # else:
+                return self._collection[adjusted]
+            except KeyError:
+                return self._load(uri, adjusted) #xxx:
+        return self.lookup.lookup(uri)
 
-
-class AssetSpecManager(object):
-    def __init__(self, assetspec):
-        self.assetspec = assetspec
-        self.default_directory = AssetResolver().resolve(assetspec).abspath()        
-        if not ":" in assetspec:
-            self.prefix = assetspec+":"
+    def _check(self, uri, template):
+        if template.filename is None:
+            return template
+        if self.invalidate_check_fn(template.module._modified_time):
+            self._collection.pop(uri, None)
+            return self._load(template.filename, uri)
         else:
-            self.prefix = assetspec.rstrip("/")+"/"    
+            return template
 
-    def is_assetspec(self, uri):
-        return ":" in uri
+    def _load(self, name, uri):
+        self._mutex.acquire()
+        try:
+            try:
+                # try returning from collection one
+                # more time in case concurrent thread already loaded
+                return self._collection[uri]
+            except KeyError:
+                pass
+            try:
+                self._collection[uri] = template = self.fetch_fn(self, name, uri)
+                return template
+            except:
+                # if compilation fails etc, ensure
+                # template is removed from collection,
+                # re-raise
+                self._collection.pop(uri, None)
+                raise
+        finally:
+            self._mutex.release()
 
-    def as_assetspec(self, uri):
-        if not self.is_assetspec(uri):
-            uri =  "{0}{1}".format(self.prefix, uri)
-        module, path = uri.split(":")
-        return "{0}:{1}".format(module, os.path.normpath(path))
+def invalidate_check_datetime(dt, modified_time): #modified_time is utc
+    return modified_time is None or (dt-datetime.fromtimestamp(0)).total_seconds > modified_time
 
-@implementer(IFailbackLookup)
-class DefaultFailbackLookup(object):
-    def __init__(self, host, assetspec):
-        self.host = host.rstrip("/")
-        self.asset_spec_manager = AssetSpecManager(assetspec)
+class FetchTemplate(object):
+    def __init__(self, prefix):
+        self.prefix = prefix
+        
+    def build_url(self, uri):
+        return os.path.join(self.prefix, uri.replace("altaircms:templates/front/layout/", ""))
 
-    @classmethod 
-    def from_settings(cls, settings, prefix=""):
-        return cls(settings[prefix+"lookup.host"], 
-                   settings[prefix+"directories"][0])
+    def __call__(self, lookup, name, uri, module_filename=None):
+        logger.info("name: {name}".format(name=name))
+        if not "altaircms:templates/front/layout/" in name:
+            return lookup.lookup.get_template(name)
+        url = self.build_url(name)
+        logger.info("fetching: {url}".format(url=url))
+        res = urllib.urlopen(url)
+        if res.code != 200:
+            import pdb; pdb.set_trace()
+            raise HTTPNotFound(res.read())
+        string = res.read()
+        return Template(
+            text=string, 
+            lookup=lookup,
+            module_filename=module_filename,
+            **lookup.template_args)
 
-    def __call__(self, lookup, uri):
-        uri = self.asset_spec_manager.as_assetspec(uri)
-        lookup_url = "{0}/{1}".format(self.host, uri.lstrip("/"))
-        res = urllib.urlopen(lookup_url)
-        if res.getcode() != 200:
-            logger.warn("failback lookup template is failed: url={0}".format(uri))
-            return None
-        adjusted = create_adjusted_name(uri)
-        srcfile = AssetResolver().resolve(uri).abspath()
-        create_file_from_io(srcfile, res)
-        return lookup._load(srcfile, adjusted)
+@implementer(ITemplateRenderer)
+class FlexibleMakoLookupTemplateRenderer(MakoLookupTemplateRenderer): #TODO:rename
+    def wrap_lookup(self, wrapper):
+        self.lookup = wrapper(self.lookup)
 
-@implementer(IFailbackLookup)
-class S3FailbackLookup(object):
-    def __init__(self, assetspec, access_key, secret_key, bucket_name, delimiter):
-        self.asset_spec_manager = AssetSpecManager(assetspec)
-        self.connection = DefaultS3ConnectionFactory(access_key, secret_key)()
-        self.retriver_factory = DefaultS3RetrieverFactory()
-        self.delimiter = delimiter
-        self.bucket_name = bucket_name
+registry_lock = threading.Lock()
 
-    @classmethod 
-    def from_settings(cls, settings, prefix=""):
-        return cls(settings[prefix+"directories"][0], 
-                   settings[prefix+"access_key"], 
-                   settings[prefix+"secret_key"], 
-                   settings[prefix+"bucket_name"], 
-                   settings.get(prefix+"delimiter", "/"))
+class FlexibleMakoRendererFactoryHelper(object): 
+    """almost copy from pyramid.mako_templating.MakoRendererFactoryHelper"""
 
-    def refresh(self, descriptor):
-        cache = descriptor.retriever.object_cache
-        k = descriptor.key_or_prefix
-        if cache.has_key(k):
-            del cache[k]        
+    def __init__(self, settings_prefix=None, renderer_impl=FlexibleMakoLookupTemplateRenderer):
+        self.settings_prefix = settings_prefix
+        self.renderer_impl = renderer_impl
 
-    def __call__(self, lookup, uri):
-        uri = self.asset_spec_manager.as_assetspec(uri)
-        resolver = S3AssetResolver(self.connection, self.retriver_factory, 
-                                   delimiter=self.delimiter)
-        descriptor = resolver.resolve("s3://{0}/{1}".format(self.bucket_name, uri.lstrip("/")))
-        self.refresh(descriptor)
-        # if not descriptor.exists():
-        #     logger.warn("failback lookup template is failed: abspath={0}".format(descriptor.abspath()))
-        #     return None
-        adjusted = create_adjusted_name(uri)
-        srcfile = AssetResolver().resolve(uri).abspath()
-        create_file_from_io(srcfile, descriptor.stream())
-        return lookup._load(srcfile, adjusted)
+    def __call__(self, info):
+        path = info.name
+        registry = info.registry
+        settings = info.settings
+        settings_prefix = self.settings_prefix
 
+        if settings_prefix is None:
+            settings_prefix = info.type +'.'
 
-@implementer(IMakoLookupFactory)
-class HasFailbackTemplateLookupFactory(object):
-    TemplateLookupClass = HasFailbackTemplateLookup
-    def __init__(self, failback_lookup, name):
-        self.failback_lookup = failback_lookup
-        self.name = name
+        lookup = registry.queryUtility(IMakoLookup, name=settings_prefix)
 
-    def __call__(self, *args, **kwargs):
-        return self.TemplateLookupClass(
-            self.failback_lookup,
-            *args, **kwargs)
+        def sget(name, default=None):
+            return settings.get(settings_prefix + name, default)
 
+        if lookup is None:
+            reload_templates = True
+            directories = []
+            module_directory = None
+            input_encoding = sget('input_encoding', 'utf-8')
+            error_handler = sget('error_handler', None)
+            default_filters = sget('default_filters', 'h')
+            imports = sget('imports', None)
+            strict_undefined = asbool(sget('strict_undefined', False))
+            preprocessor = sget('preprocessor', None)
+            if error_handler is not None:
+                dotted = DottedNameResolver(info.package)
+                error_handler = dotted.maybe_resolve(error_handler)
+            if default_filters is not None:
+                if not is_nonstr_iter(default_filters):
+                    default_filters = list(filter(
+                        None, default_filters.splitlines()))
+            if imports is not None:
+                if not is_nonstr_iter(imports):
+                    imports = list(filter(None, imports.splitlines()))
+            if preprocessor is not None:
+                dotted = DottedNameResolver(info.package)
+                preprocessor = dotted.maybe_resolve(preprocessor)
 
-_settings_prefix = "s3.mako."
+            lookup = PkgResourceTemplateLookup(
+                directories=directories,
+                module_directory=module_directory,
+                input_encoding=input_encoding,
+                error_handler=error_handler,
+                default_filters=default_filters,
+                imports=imports,
+                filesystem_checks=reload_templates,
+                strict_undefined=strict_undefined,
+                preprocessor=preprocessor
+                )
 
-# almost copy of mako_templating.
-def _make_lookup(config, package=None, _settings_prefix=_settings_prefix):
-    settings = config.registry.settings
-    def sget(name, default=None):
-        return settings.get(_settings_prefix + name, default)
-    reload_templates = settings.get('pyramid.reload_templates', None)
-    if reload_templates is None:
-        reload_templates = settings.get('reload_templates', False)
-    reload_templates = asbool(reload_templates)
-    directories = sget('directories', [])
-    module_directory = sget('module_directory', None)
-    input_encoding = sget('input_encoding', 'utf-8')
-    error_handler = sget('error_handler', None)
-    default_filters = sget('default_filters', 'h')
-    imports = sget('imports', None)
-    strict_undefined = asbool(sget('strict_undefined', False))
-    preprocessor = sget('preprocessor', None)
-    if not is_nonstr_iter(directories):
-        directories = list(filter(None, directories.splitlines()))
-    directories = [ AssetResolver().resolve(d).abspath() for d in directories ]
-    if module_directory is not None:
-        module_directory = AssetResolver().resolve(module_directory).abspath()
-    if error_handler is not None:
-        dotted = DottedNameResolver(package)
-        error_handler = dotted.maybe_resolve(error_handler)
-    if default_filters is not None:
-        if not is_nonstr_iter(default_filters):
-            default_filters = list(filter(
-                None, default_filters.splitlines()))
-    if imports is not None:
-        if not is_nonstr_iter(imports):
-            imports = list(filter(None, imports.splitlines()))
-    if preprocessor is not None:
-        dotted = DottedNameResolver(package)
-        preprocessor = dotted.maybe_resolve(preprocessor)
+            registry_lock.acquire()
+            try:
+                registry.registerUtility(lookup, IMakoLookup,
+                                         name=settings_prefix)
+            finally:
+                registry_lock.release()
+        return self.renderer_impl(path, lookup)
 
+renderer_factory = FlexibleMakoRendererFactoryHelper('s3mako.')
 
-    return config.registry.queryUtility(IMakoLookupFactory)(
-        directories=directories,
-        module_directory=module_directory,
-        input_encoding=input_encoding,
-        error_handler=error_handler,
-        default_filters=default_filters,
-        imports=imports,
-        filesystem_checks=reload_templates,
-        strict_undefined=strict_undefined,
-        preprocessor=preprocessor
-        )
-
-
-def includeme(config, _settings_prefix=_settings_prefix):
-    settings = config.registry.settings
-    download_if_notfound_helper = MakoRendererFactoryHelper(_settings_prefix)
-
-    FailbackClass = config.maybe_dotted(settings[_settings_prefix+"failback.lookup"])
-    lookup_factory = HasFailbackTemplateLookupFactory(
-        FailbackClass.from_settings(settings, prefix=_settings_prefix), 
-        settings[_settings_prefix+"renderer.name"])
-
-    # don't have to lock?'
-    registry_lock.acquire()
-    config.registry.registerUtility(lookup_factory, IMakoLookupFactory)
-    lookup = _make_lookup(config, _settings_prefix=_settings_prefix)
-    config.registry.registerUtility(lookup, IMakoLookup, name=_settings_prefix)
-    registry_lock.release()
-    config.add_renderer(lookup_factory.name, download_if_notfound_helper)
+def includeme(config):
+    config.add_renderer(".s3mako", renderer_factory)
