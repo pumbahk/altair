@@ -5,8 +5,6 @@ class CP932NormalizedTildeTest(TestCase):
         from . import register_codecs
         import codecs
         import exceptions
-        with self.assertRaises(exceptions.LookupError):
-            codecs.getencoder('cp932:normalized-tilde')
         register_codecs()
         codecs.getencoder('cp932:normalized-tilde')
         "\x81`".decode('cp932:normalized-tilde')
