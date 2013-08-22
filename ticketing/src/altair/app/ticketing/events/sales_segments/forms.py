@@ -296,7 +296,8 @@ class EditSalesSegmentForm(OurForm):
     upper_limit = OurIntegerField(
         label=u'購入上限枚数',
         default=10,
-        validators=[RequiredOnUpdate()]
+        validators=[SwitchOptional('use_default_upper_limit'),
+                    Required()]
     )
     use_default_upper_limit = OurBooleanField(
         label=u'販売区分グループの値を利用する',
@@ -307,7 +308,8 @@ class EditSalesSegmentForm(OurForm):
     order_limit = OurIntegerField(
         label=u'購入回数制限',
         default=0,
-        validators=[RequiredOnUpdate()]
+        validators=[SwitchOptional('use_default_order_limit'),
+                    Required()]
     )
     use_default_order_limit = OurBooleanField(
         label=u'販売区分グループの値を利用する',
@@ -317,7 +319,8 @@ class EditSalesSegmentForm(OurForm):
 
     account_id = OurSelectField(
         label=u'配券元',
-        validators=[Required(u'選択してください')],
+        validators=[SwitchOptional('use_default_account_id'),
+                    Required(u'選択してください')],
         choices=[],
         coerce=int
     )
@@ -331,7 +334,8 @@ class EditSalesSegmentForm(OurForm):
         label=u'販売手数料率(%)',
         places=2,
         default=0,
-        validators=[Required()]
+        validators=[SwitchOptional('use_default_margin_ratio'),
+                    Required()]
     )
     use_default_margin_ratio = OurBooleanField(
         label=u'販売区分グループの値を利用する',
@@ -343,7 +347,8 @@ class EditSalesSegmentForm(OurForm):
         label=u'払戻手数料率(%)',
         places=2,
         default=0,
-        validators=[Required()]
+        validators=[SwitchOptional('use_default_refund_ratio'),
+                    Required()]
     )
     use_default_refund_ratio = OurBooleanField(
         label=u'販売区分グループの値を利用する',
@@ -355,7 +360,8 @@ class EditSalesSegmentForm(OurForm):
         label=u'印刷代金(円/枚)',
         places=2,
         default=0,
-        validators=[Required()]
+        validators=[SwitchOptional('use_default_printing_fee'),
+                    Required()]
     )
     use_default_printing_fee = OurBooleanField(
         label=u'販売区分グループの値を利用する',
@@ -367,7 +373,8 @@ class EditSalesSegmentForm(OurForm):
         label=u'登録手数料(円/公演)',
         places=2,
         default=0,
-        validators=[Required()]
+        validators=[SwitchOptional('use_default_registration_fee'),
+                    Required()]
     )
     use_default_registration_fee = OurBooleanField(
         label=u'販売区分グループの値を利用する',
@@ -388,68 +395,44 @@ class EditSalesSegmentForm(OurForm):
     def validate_payment_delivery_method_pairs(self, field):
         pass
 
-    def validate_start_at(self, field):
-        if not self.use_default_start_at.data:
-            if not field.data:
-                raise ValidationError(u"入力してください")
+    def validate(self):
+        if super(EditSalesSegmentForm, self).validate():
+            start_at = self.start_at.data
+            end_at = self.end_at.data
 
-    def validate_end_at(self, field):
-        pass
-    def validate_upper_limit(self, field):
-        pass
-    def validate_order_limit(self, field):
-        pass
-    def validate_account_id(self, field):
-        pass
-    def validate_margin_retio(self, field):
-        pass
-    def validate_refund_retio(self, field):
-        pass
-    def validate_printing_fee(self, field):
-        pass
-    def validate_registration_fee(self, field):
-        pass
-    def validate_auth3d_notice(self, field):
-        pass
-
-    # def validate(self):
-    #     if super(SalesSegmentForm, self).validate():
-    #         start_at = self.start_at.data
-    #         end_at = self.end_at.data
-
-    #         # 販売開始日時と販売終了日時の前後関係をチェックする
-    #         if start_at > end_at:
-    #             self.start_at.errors.append(u'販売開始日時が販売終了日時より後に設定されています')
-    #             self.end_at.errors.append(u'販売終了日時が販売開始日時より前に設定されています')
-    #             return False
+            # 販売開始日時と販売終了日時の前後関係をチェックする
+            if start_at > end_at:
+                self.start_at.errors.append(u'販売開始日時が販売終了日時より後に設定されています')
+                self.end_at.errors.append(u'販売終了日時が販売開始日時より前に設定されています')
+                return False
             
             
-    #         # 同一公演の期限かぶりをチェックする
-    #         if start_at is not None and end_at is not None:
-    #             q = SalesSegment.query.filter(
-    #                 SalesSegment.performance_id==self.performance_id.data
-    #             ).filter(
-    #                 or_(and_(start_at<=SalesSegment.start_at,
-    #                          SalesSegment.start_at<=end_at),
-    #                     and_(start_at<=SalesSegment.end_at,
-    #                          SalesSegment.end_at<=end_at),
-    #                     and_(SalesSegment.start_at<=start_at,
-    #                          end_at<=SalesSegment.end_at),
-    #                     )
-    #             ).filter(
-    #                 SalesSegment.sales_segment_group_id==self.sales_segment_group_id.data
-    #             )
+            # 同一公演の期限かぶりをチェックする
+            if start_at is not None and end_at is not None:
+                q = SalesSegment.query.filter(
+                    SalesSegment.performance_id==self.performance_id.data
+                ).filter(
+                    or_(and_(start_at<=SalesSegment.start_at,
+                             SalesSegment.start_at<=end_at),
+                        and_(start_at<=SalesSegment.end_at,
+                             SalesSegment.end_at<=end_at),
+                        and_(SalesSegment.start_at<=start_at,
+                             end_at<=SalesSegment.end_at),
+                        )
+                ).filter(
+                    SalesSegment.sales_segment_group_id==self.sales_segment_group_id.data
+                )
 
-    #             if self.id.data is not None:
-    #                 q = q.filter(SalesSegment.id != self.id.data)
+                if self.id.data is not None:
+                    q = q.filter(SalesSegment.id != self.id.data)
 
-    #             dup = q.first()
-    #             if dup:
-    #                 self.start_at.errors.append(u'同一公演について期間がかぶっています。{0}～{1}'.format(
-    #                         dup.start_at, dup.end_at))
-    #                 return False
+                dup = q.first()
+                if dup:
+                    self.start_at.errors.append(u'同一公演について期間がかぶっています。{0}～{1}'.format(
+                            dup.start_at, dup.end_at))
+                    return False
 
-    #         return True
+            return True
 
 
 class PointGrantSettingAssociationForm(OurForm):
