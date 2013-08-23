@@ -4,7 +4,7 @@ from pyramid.httpexceptions import HTTPNotFound
 from sqlalchemy.orm.exc import NoResultFound
 
 from altair.app.ticketing.resources import TicketingAdminResource
-from altair.app.ticketing.core.models import SalesSegment, SalesSegmentGroup, Performance, Event, Organization
+from altair.app.ticketing.core.models import SalesSegment, SalesSegmentGroup, Performance, Event, Organization, PaymentDeliveryMethodPair
 
 class SalesSegmentAdminResource(TicketingAdminResource):
     def __init__(self, request):
@@ -142,7 +142,15 @@ class SalesSegmentEditor(object):
 
     def apply_changes(self, obj):
         for field in self.form:
-            setattr(obj, field.name, self.get_value(field))
+            if field.name == "payment_delivery_method_pairs":
+                value = self.get_value(field)
+                if any([isinstance(v, int) for v in value]):
+                    value = PaymentDeliveryMethodPair.query.filter(
+                        PaymentDeliveryMethodPair.id.in_(value)).all()
+                setattr(obj, field.name, value)
+
+            else:
+                setattr(obj, field.name, self.get_value(field))
         return obj
 
     def is_use_default(self, field):

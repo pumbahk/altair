@@ -255,7 +255,6 @@ class EditSalesSegmentForm(OurForm):
 
     start_at = OurDateTimeField(
         label=u'販売開始日時',
-        #validators=[Optional(), DateTimeFormat()],
         validators=[SwitchOptional('use_default_start_at'),
                     Required(),
                     DateTimeFormat()],

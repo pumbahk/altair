@@ -314,10 +314,26 @@ class EditSalesSegment(BaseView):
     def event(self):
         return self.context.sales_segment.sales_segment.event
 
+    @property
+    def account_choices(self):
+        return [(a.id, a.name)
+                for a
+                in self.context.user.organization.accounts]
+
+    @property
+    def payment_delivery_method_pair_choices(self):
+        return [(unicode(pdmp.id),
+                 u'%s - %s' % (pdmp.payment_method.name, pdmp.delivery_method.name))
+                for pdmp in self.context.sales_segment.sales_segment_group.payment_delivery_method_pairs
+        ]
+
+
     @view_config()
     def __call__(self):
         form = EditSalesSegmentForm(obj=self.sales_segment,
                                     formdata=self.request.POST)
+        form.account_id.choices = self.account_choices
+        form.payment_delivery_method_pairs.choices = self.payment_delivery_method_pair_choices
         if self.request.method == "POST":
             if form.validate():
                 editor = SalesSegmentEditor(self.sales_segment_group, form)

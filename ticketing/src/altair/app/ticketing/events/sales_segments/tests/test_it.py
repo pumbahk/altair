@@ -203,6 +203,10 @@ class EditSalesSegmentTests(unittest.TestCase):
             PaymentDeliveryMethodPair,
             PaymentMethod,
             DeliveryMethod,
+            Organization,
+        )
+        from altair.app.ticketing.users.models import (
+            User,
         )
         sales_segment = SalesSegment(
             start_at=datetime(2013, 8, 31),
@@ -227,13 +231,34 @@ class EditSalesSegmentTests(unittest.TestCase):
                         payment_method=PaymentMethod(name='testing-payment', fee=0),
                         delivery_method=DeliveryMethod(name='testing-delivery', fee=0)
                     ),
+                    PaymentDeliveryMethodPair(
+                        system_fee=0,
+                        transaction_fee=0,
+                        delivery_fee=0,
+                        discount=0,
+                        payment_method=PaymentMethod(name='testing-payment', fee=0),
+                        delivery_method=DeliveryMethod(name='testing-delivery', fee=0)
+                    ),
                 ],
             ),
         )
+        user = User(
+            organization=Organization(
+                short_name="testing",
+                accounts=[
+                    Account(),
+                    Account(),
+                    sales_segment.sales_segment_group.account,
+                ],
+            )
+        )
+
         self.session.add(sales_segment)
+        self.session.add(user)
         self.session.flush()
         context = testing.DummyResource(
             sales_segment=sales_segment,
+            user=user,
         )
         return context
 
@@ -267,7 +292,7 @@ class EditSalesSegmentTests(unittest.TestCase):
         self.assertIn('form', result)
         self.assertTrue(result['form'].errors)
 
-    def test_post_valid_form(self):
+    def test_post_valid_form_with_using_group(self):
         from datetime import datetime
         context = self._context()
         request = DummyRequest(context=context,
@@ -314,6 +339,52 @@ class EditSalesSegmentTests(unittest.TestCase):
         self.assert_attr_equal(sales_segment, sales_segment_group, "order_limit", 1)
         self.assert_attr_equal(sales_segment, sales_segment_group, "printing_fee", 150)
         self.assert_attr_equal(sales_segment, sales_segment_group, "margin_ratio", 99)
+
+
+    def test_post_valid_form_without_using_group(self):
+        from datetime import datetime
+        context = self._context()
+        request = DummyRequest(context=context,
+                               POST=MultiDict(
+                                   start_at="2013-08-31 10:10",
+                                   end_at="2013-09-30 20:31",
+                                   account_id=context.user.organization.accounts[0].id,
+                                   refund_ratio=10000,
+                                   payment_delivery_method_pairs=context.sales_segment.sales_segment_group.payment_delivery_method_pairs[0].id,
+                                   upper_limit=4,
+                                   registration_fee=20000,
+                                   order_limit=10,
+                                   printing_fee=1010,
+                                   margin_ratio=1310,
+                               ),
+                               method="POST")
+
+        target = self._makeOne(context, request)
+
+        result = target()
+        if isinstance(result, dict):
+            form = result['form']
+            for name, errors in form.errors.items():
+                print name,
+                for e in errors:
+                    print e
+            print(dict(form.data))
+
+        self.assertFalse(isinstance(result, dict))
+
+        sales_segment = context.sales_segment
+        sales_segment_group = context.sales_segment.sales_segment_group
+
+        self.assertEqual(sales_segment.start_at, datetime(2013, 8, 31, 10, 10))
+        self.assertEqual(sales_segment.end_at, datetime(2013, 9, 30, 20, 31))
+        self.assertEqual(sales_segment.account_id, context.user.organization.accounts[0].id)
+        self.assertEqual(sales_segment.refund_ratio, 10000)
+        self.assertEqual(sales_segment.payment_delivery_method_pairs, [sales_segment_group.payment_delivery_method_pairs[0]])
+        self.assertEqual(sales_segment.upper_limit, 4)
+        self.assertEqual(sales_segment.registration_fee, 20000)
+        self.assertEqual(sales_segment.order_limit, 10)
+        self.assertEqual(sales_segment.printing_fee, 1010)
+        self.assertEqual(sales_segment.margin_ratio, 1310)
 
     def assert_attr_equal(self, o1, o2, attr, actual):
         self.assertEqual(getattr(o1, attr), getattr(o2, attr), attr)
