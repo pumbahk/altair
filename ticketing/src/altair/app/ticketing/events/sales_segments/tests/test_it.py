@@ -3,6 +3,7 @@
 import unittest
 from pyramid import testing
 from altair.app.ticketing.testing import _setup_db, _teardown_db, DummyRequest
+from webob.multidict import MultiDict
 
 
 class SalesSegmentsTests(unittest.TestCase):
@@ -174,6 +175,14 @@ class SalesSegmentsTests(unittest.TestCase):
 
 class EditSalesSegmentTests(unittest.TestCase):
 
+    def setUp(self):
+        self.session = _setup_db([
+            "altair.app.ticketing.core.models",
+        ])
+
+    def tearDown(self):
+        _teardown_db()
+
     def _getTarget(self):
         from ..views import EditSalesSegment
         return EditSalesSegment
@@ -190,14 +199,39 @@ class EditSalesSegmentTests(unittest.TestCase):
             SalesSegment,
             SalesSegmentGroup,
             Event,
+            Account,
+            PaymentDeliveryMethodPair,
+            PaymentMethod,
+            DeliveryMethod,
         )
         sales_segment = SalesSegment(
             start_at=datetime(2013, 8, 31),
             end_at=datetime(2013, 9, 30),
             sales_segment_group=SalesSegmentGroup(
                 event=Event(),
+                start_at=datetime(2014, 8, 31),
+                end_at=datetime(2014, 9, 30),
+                order_limit=1,
+                upper_limit=8,
+                registration_fee=100,
+                printing_fee=150,
+                refund_ratio=88,
+                margin_ratio=99,
+                account=Account(),
+                payment_delivery_method_pairs=[
+                    PaymentDeliveryMethodPair(
+                        system_fee=0,
+                        transaction_fee=0,
+                        delivery_fee=0,
+                        discount=0,
+                        payment_method=PaymentMethod(name='testing-payment', fee=0),
+                        delivery_method=DeliveryMethod(name='testing-delivery', fee=0)
+                    ),
+                ],
             ),
         )
+        self.session.add(sales_segment)
+        self.session.flush()
         context = testing.DummyResource(
             sales_segment=sales_segment,
         )
@@ -221,7 +255,9 @@ class EditSalesSegmentTests(unittest.TestCase):
     def test_post_invalid_form(self):
         context = self._context()
         request = DummyRequest(context=context,
-                               POST=dict(),
+                               POST=dict(
+                                   end_at="",
+                               ),
                                method="POST")
 
         target = self._makeOne(context, request)
@@ -232,9 +268,21 @@ class EditSalesSegmentTests(unittest.TestCase):
         self.assertTrue(result['form'].errors)
 
     def test_post_valid_form(self):
+        from datetime import datetime
         context = self._context()
         request = DummyRequest(context=context,
-                               POST=dict(
+                               POST=MultiDict(
+                                   use_default_start_at="on",
+                                   end_at="",
+                                   use_default_end_at="on",
+                                   use_default_account_id="on",
+                                   use_default_refund_ratio="on",
+                                   use_default_payment_delivery_method_pairs="on",
+                                   use_default_upper_limit="on",
+                                   use_default_registration_fee="on",
+                                   use_default_order_limit="on",
+                                   use_default_printing_fee="on",
+                                   use_default_margin_ratio="on",
                                ),
                                method="POST")
 
@@ -247,5 +295,27 @@ class EditSalesSegmentTests(unittest.TestCase):
                 print name,
                 for e in errors:
                     print e
+            print(dict(form.data))
 
-        #self.assertFalse(isinstance(result, dict))
+        self.assertFalse(isinstance(result, dict))
+
+        sales_segment = context.sales_segment
+        sales_segment_group = context.sales_segment.sales_segment_group
+
+        self.assert_attr_equal(sales_segment, sales_segment_group, "start_at", datetime(2014, 8, 31))
+        self.assert_attr_equal(sales_segment, sales_segment_group, "end_at", datetime(2014, 9, 30))
+        self.assertIsNotNone(sales_segment.account_id)
+        self.assert_attr_equal(sales_segment, sales_segment_group, "account_id", sales_segment_group.account_id)
+        self.assert_attr_equal(sales_segment, sales_segment_group, "refund_ratio", 88)
+        self.assertTrue(sales_segment.payment_delivery_method_pairs)
+        self.assert_attr_equal(sales_segment, sales_segment_group, "payment_delivery_method_pairs", sales_segment_group.payment_delivery_method_pairs)
+        self.assert_attr_equal(sales_segment, sales_segment_group, "upper_limit", 8)
+        self.assert_attr_equal(sales_segment, sales_segment_group, "registration_fee", 100)
+        self.assert_attr_equal(sales_segment, sales_segment_group, "order_limit", 1)
+        self.assert_attr_equal(sales_segment, sales_segment_group, "printing_fee", 150)
+        self.assert_attr_equal(sales_segment, sales_segment_group, "margin_ratio", 99)
+
+    def assert_attr_equal(self, o1, o2, attr, actual):
+        self.assertEqual(getattr(o1, attr), getattr(o2, attr), attr)
+        self.assertEqual(getattr(o1, attr), actual, attr)
+        self.assertEqual(getattr(o2, attr), actual, attr)

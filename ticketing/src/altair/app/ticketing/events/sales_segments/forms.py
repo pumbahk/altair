@@ -241,13 +241,13 @@ class EditSalesSegmentForm(OurForm):
 
     payment_delivery_method_pairs = PHPCompatibleSelectMultipleField(
         label=u'決済・引取方法',
-        validators=[SwitchOptional('use_default_delivery_method_pairs'),
+        validators=[SwitchOptional('use_default_payment_delivery_method_pairs'),
                     Required()],
         choices=[],
         coerce=lambda x : int(x) if x else u'',
         widget=CheckboxMultipleSelect(multiple=True)
     )
-    use_default_delivery_method_pairs = OurBooleanField(
+    use_default_payment_delivery_method_pairs = OurBooleanField(
         label=u'販売区分グループの値を利用する',
         default=True,
         widget=CheckboxInput()
@@ -263,7 +263,6 @@ class EditSalesSegmentForm(OurForm):
     )
     use_default_start_at = OurBooleanField(
         label=u'販売区分グループの値を利用する',
-        #default=True,
         widget=CheckboxInput()
     )
 
@@ -275,7 +274,6 @@ class EditSalesSegmentForm(OurForm):
     )
     use_default_end_at = OurBooleanField(
         label=u'販売区分グループの値を利用する',
-        default=True,
         widget=CheckboxInput()
     )
 
@@ -287,7 +285,6 @@ class EditSalesSegmentForm(OurForm):
     )
     use_default_upper_limit = OurBooleanField(
         label=u'販売区分グループの値を利用する',
-        default=True,
         widget=CheckboxInput()
     )
 
@@ -299,7 +296,6 @@ class EditSalesSegmentForm(OurForm):
     )
     use_default_order_limit = OurBooleanField(
         label=u'販売区分グループの値を利用する',
-        default=True,
         widget=CheckboxInput()
     )
 
@@ -312,7 +308,6 @@ class EditSalesSegmentForm(OurForm):
     )
     use_default_account_id = OurBooleanField(
         label=u'販売区分グループの値を利用する',
-        default=True,
         widget=CheckboxInput()
     )
 
@@ -325,7 +320,6 @@ class EditSalesSegmentForm(OurForm):
     )
     use_default_margin_ratio = OurBooleanField(
         label=u'販売区分グループの値を利用する',
-        default=True,
         widget=CheckboxInput()
     )
 
@@ -338,7 +332,6 @@ class EditSalesSegmentForm(OurForm):
     )
     use_default_refund_ratio = OurBooleanField(
         label=u'販売区分グループの値を利用する',
-        default=True,
         widget=CheckboxInput()
     )
 
@@ -351,7 +344,6 @@ class EditSalesSegmentForm(OurForm):
     )
     use_default_printing_fee = OurBooleanField(
         label=u'販売区分グループの値を利用する',
-        default=True,
         widget=CheckboxInput()
     )
 
@@ -364,7 +356,6 @@ class EditSalesSegmentForm(OurForm):
     )
     use_default_registration_fee = OurBooleanField(
         label=u'販売区分グループの値を利用する',
-        default=True,
         widget=CheckboxInput()
     )
 
@@ -374,7 +365,6 @@ class EditSalesSegmentForm(OurForm):
     )
     use_default_auth3d_notice = OurBooleanField(
         label=u'販売区分グループの値を利用する',
-        default=True,
         widget=CheckboxInput()
     )
 

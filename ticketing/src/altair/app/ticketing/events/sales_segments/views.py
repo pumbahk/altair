@@ -319,9 +319,8 @@ class EditSalesSegment(BaseView):
         form = EditSalesSegmentForm(obj=self.sales_segment,
                                     formdata=self.request.POST)
         if self.request.method == "POST":
-            form.process()
-            editor = SalesSegmentEditor(self.sales_segment_group, form)
             if form.validate():
+                editor = SalesSegmentEditor(self.sales_segment_group, form)
                 editor.apply_changes(self.sales_segment)
                 return None
         return dict(form=form)
