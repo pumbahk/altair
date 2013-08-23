@@ -3244,20 +3244,34 @@ class SalesSegment(Base, BaseModel, LogicallyDeleted, WithTimestamp):
         order_by="PaymentDeliveryMethodPair.id",
         cascade="all",
         collection_class=list)
-    x_auth3d_notice = Column("auth3d_notice", UnicodeText)
+    auth3d_notice = Column(UnicodeText)
 
     event_id = Column(Identifier, ForeignKey("Event.id"))
     event = relationship("Event", backref="sales_segments")
     organization_id = Column(Identifier, ForeignKey("Organization.id"))
     organization = relationship("Organization", backref="sales_segments")
 
-    @property
-    def auth3d_notice(self):
-        return self.x_auth3d_notice if self.x_auth3d_notice else self.sales_segment_group.auth3d_notice
+    use_default_seat_choice = Column(Boolean)
+    use_default_public = Column(Boolean)
+    use_default_reporting = Column(Boolean)
+    use_default_payment_delivery_method_pairs = Column(Boolean)
+    use_default_start_at = Column(Boolean)
+    use_default_end_at = Column(Boolean)
+    use_default_upper_limit = Column(Boolean)
+    use_default_order_limit = Column(Boolean)
+    use_default_account_id = Column(Boolean)
+    use_default_margin_ratio = Column(Boolean)
+    use_default_refund_ratio = Column(Boolean)
+    use_default_printing_fee = Column(Boolean)
+    use_default_registration_fee = Column(Boolean)
+    
+    # @property
+    # def auth3d_notice(self):
+    #     return self.x_auth3d_notice if self.x_auth3d_notice else self.sales_segment_group.auth3d_notice
 
-    @auth3d_notice.setter
-    def auth3d_notice(self, value):
-        self.x_auth3d_notice = value
+    # @auth3d_notice.setter
+    # def auth3d_notice(self, value):
+    #     self.x_auth3d_notice = value
 
     def has_stock_type(self, stock_type):
         return stock_type in self.seat_stock_types
@@ -3315,17 +3329,17 @@ class SalesSegment(Base, BaseModel, LogicallyDeleted, WithTimestamp):
     def in_term(self, dt):
         return (self.start_at <= dt) & (dt <= self.end_at)
 
-    @hybrid_property
-    def seat_choice(self):
-        return self._seat_choice if self._seat_choice is not None else self.sales_segment_group.seat_choice
+    # @hybrid_property
+    # def seat_choice(self):
+    #     return self._seat_choice if self._seat_choice is not None else self.sales_segment_group.seat_choice
 
-    @seat_choice.expression
-    def seat_choice(cls):
-        return or_(and_(cls._seat_choice == None, SalesSegmentGroup.seat_choice), cls._seat_choice)
+    # @seat_choice.expression
+    # def seat_choice(cls):
+    #     return or_(and_(cls._seat_choice == None, SalesSegmentGroup.seat_choice), cls._seat_choice)
 
-    @seat_choice.setter
-    def seat_choice(self, value):
-        self._seat_choice = tristate(value)
+    # @seat_choice.setter
+    # def seat_choice(self, value):
+    #     self._seat_choice = tristate(value)
 
     @property
     def stocks(self):
