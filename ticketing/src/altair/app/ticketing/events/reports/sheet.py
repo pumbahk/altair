@@ -7,7 +7,7 @@ from string import ascii_letters
 
 from altair.app.ticketing.models import DBSession
 from altair.app.ticketing.core.models import SeatStatusEnum, VenueArea,\
-    OrderedProductItem, OrderedProduct, ProductItem, Stock
+    OrderedProductItem, OrderedProduct, ProductItem, Stock, Order
 
 import logging
 
@@ -255,7 +255,6 @@ def sold_seat_source_from_seat(seat):
     seat_source.status = seat.status
     seat_source.product_item = product_item.name
     return seat_source
-    
 
 def is_series_seat(seatsource1, seatsource2):
     """seatsource1とseatsource2が別の列、もしくは通路などを
@@ -502,10 +501,13 @@ class SoldTableCreator(object):
 
     def get_ordered_product_items(self):
         return OrderedProductItem.query.join(OrderedProduct)\
+                                       .join(Order)\
+                                       .filter(Order.canceled_at==None)\
                                        .join(ProductItem)\
                                        .filter(ProductItem.performance_id==self.performance_id)\
                                        .join(Stock)\
-                                       .filter(Stock.stock_holder_id==self.stock_holder_id)
+                                       .filter(Stock.stock_holder_id==self.stock_holder_id)\
+
 
     def seat2seatsource(self, seat, ordered_product_item):
         seat_source = self.SEAT_SOURCE(source=seat)
@@ -535,6 +537,7 @@ class SoldTableCreator(object):
                 yield record
 
     def create_summaries_from_quantity_sources(self, sources):
+        sources.sort(lambda n, m: cmp(n.product_item, m.product_item))
         for key, generator in groupby(sources, lambda v: v.product_item):
             record = self.RECORD()
             record.product_item = key
@@ -586,7 +589,7 @@ class SoldTableCreator(object):
             seat_sources,
             key=lambda v: (v.block, v.floor, v.line, to_int_or_str(v.seat) if (v.seat!=None and v.seat!='') else None))
         # block,floor,lineでグループ化してSeatRecordを作る
-        for key, generator in groupby(sorted_seat_sources, lambda v: (v.block, v.floor, v.line)):
+        for key, generator in groupby(sorted_seat_sources, lambda v: (v.block, v.floor, v.line, v.product_item)):
             values = list(generator)
             # 連続した座席はまとめる
             lst_values = []
