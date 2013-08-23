@@ -148,6 +148,9 @@ class PartialChange(object):
         filename = self.request.matchdict["path"].replace("%2F", "/").lstrip("/")
         absroot = self.utility.get_rootname(static_page)
         path = os.path.join(absroot, filename, self.data["name"])
+        dirname = os.path.dirname(path)
+        if not os.path.exists(dirname):
+            os.makedirs(dirname)
         with open(path, "wb") as wf:
             shutil.copyfileobj(self.data["file"].file, wf)
         self.request.registry.notify(AfterPartialCreateFile(self.request, path, self.utility, static_page))
@@ -157,6 +160,9 @@ class PartialChange(object):
         name = self.data["name"]
         absroot = self.utility.get_rootname(static_page)
         path = os.path.join(absroot, name)
+        dirname = os.path.dirname(path)
+        if not os.path.exists(dirname):
+            os.makedirs(dirname)
         with open(path, "wb") as wf:
             shutil.copyfileobj(self.data["file"].file, wf)
         self.request.registry.notify(AfterPartialUpdateFile(self.request, path, self.utility, static_page))

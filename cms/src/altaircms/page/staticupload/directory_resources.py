@@ -48,6 +48,8 @@ class S3StaticPageDirectoryFactory(StaticPageDirectoryFactory):
         config.add_subscriber(".subscribers.delete_completely_filesystem", ".creation.AfterDeleteCompletely")  
         config.add_subscriber(".subscribers.update_model_file_structure", ".creation.AfterModelCreate")
 
+        config.add_subscriber(".subscribers.refine_html_file_after_staticupload", ".creation.AfterPartialCreateFile")
+        config.add_subscriber(".subscribers.refine_html_file_after_staticupload", ".creation.AfterPartialUpdateFile")
         config.add_subscriber(".subscribers.s3update_file", ".creation.AfterPartialCreateFile")
         config.add_subscriber(".subscribers.s3update_file", ".creation.AfterPartialUpdateFile")
         config.add_subscriber(".subscribers.s3delete_file", ".creation.AfterPartialDeleteFile")
