@@ -170,3 +170,82 @@ class SalesSegmentsTests(unittest.TestCase):
         self.assertEqual(ss.organization, organization)
         self.assertEqual(ss.event, event)
         self.assertEqual(ss.membergroups, [membergroup])
+
+
+class EditSalesSegmentTests(unittest.TestCase):
+
+    def _getTarget(self):
+        from ..views import EditSalesSegment
+        return EditSalesSegment
+
+    def _makeOne(self, *args, **kwargs):
+        return self._getTarget()(*args, **kwargs)
+
+    def assert_data(self, form, name, actual):
+        self.assertEqual(form[name].data, actual)
+
+    def _context(self):
+        from datetime import datetime
+        from altair.app.ticketing.core.models import (
+            SalesSegment,
+            SalesSegmentGroup,
+            Event,
+        )
+        sales_segment = SalesSegment(
+            start_at=datetime(2013, 8, 31),
+            end_at=datetime(2013, 9, 30),
+            sales_segment_group=SalesSegmentGroup(
+                event=Event(),
+            ),
+        )
+        context = testing.DummyResource(
+            sales_segment=sales_segment,
+        )
+        return context
+
+    def test_get(self):
+        from datetime import datetime
+        context = self._context()
+        request = DummyRequest(context=context)
+        target = self._makeOne(context, request)
+
+        result = target()
+
+        self.assertIn('form', result)
+        form = result['form']
+
+
+        self.assert_data(form, 'start_at', datetime(2013, 8, 31))
+        self.assert_data(form, 'end_at', datetime(2013, 9, 30))
+
+    def test_post_invalid_form(self):
+        context = self._context()
+        request = DummyRequest(context=context,
+                               POST=dict(),
+                               method="POST")
+
+        target = self._makeOne(context, request)
+
+        result = target()
+
+        self.assertIn('form', result)
+        self.assertTrue(result['form'].errors)
+
+    def test_post_valid_form(self):
+        context = self._context()
+        request = DummyRequest(context=context,
+                               POST=dict(
+                               ),
+                               method="POST")
+
+        target = self._makeOne(context, request)
+
+        result = target()
+        if isinstance(result, dict):
+            form = result['form']
+            for name, errors in form.errors.items():
+                print name,
+                for e in errors:
+                    print e
+
+        #self.assertFalse(isinstance(result, dict))

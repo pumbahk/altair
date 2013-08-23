@@ -13,12 +13,12 @@ from altair.app.ticketing.views import BaseView
 from altair.app.ticketing.fanstatic import with_bootstrap
 from altair.app.ticketing.core.models import Event, Performance, SalesSegment, SalesSegmentGroup, Product, PaymentDeliveryMethodPair, Organization
 from altair.app.ticketing.events.payment_delivery_method_pairs.forms import PaymentDeliveryMethodPairForm
-from .forms import SalesSegmentForm, PointGrantSettingAssociationForm
+from .forms import SalesSegmentForm, PointGrantSettingAssociationForm, EditSalesSegmentForm
 from altair.app.ticketing.memberships.forms import MemberGroupForm
 from altair.app.ticketing.users.models import MemberGroup, Membership
 from altair.app.ticketing.loyalty.models import PointGrantSetting
 from webob.multidict import MultiDict
-
+from .resources import SalesSegmentEditor
 from datetime import datetime
 
 @view_defaults(decorator=with_bootstrap, permission='event_editor')
@@ -188,7 +188,7 @@ class SalesSegments(BaseView):
                 'account_map':self._account_map(self.sales_segment_groups)
                 }
 
-    @view_config(route_name='sales_segments.edit', request_method='GET', renderer='altair.app.ticketing:templates/sales_segments/edit.html', xhr=False)
+    #@view_config(route_name='sales_segments.edit', request_method='GET', renderer='altair.app.ticketing:templates/sales_segments/edit.html', xhr=False)
     def edit(self):
         return {
             'event': self.context.sales_segment.sales_segment_group.event,
@@ -201,7 +201,7 @@ class SalesSegments(BaseView):
             'account_map':self._account_map(self.sales_segment_groups)
             }
 
-    @view_config(route_name='sales_segments.edit', request_method='GET', renderer='altair.app.ticketing:templates/sales_segments/_form.html', xhr=True)
+    #@view_config(route_name='sales_segments.edit', request_method='GET', renderer='altair.app.ticketing:templates/sales_segments/_form.html', xhr=True)
     def edit_xhr(self):
         return {
             'form': SalesSegmentForm(obj=self.context.sales_segment, context=self.context),
@@ -242,7 +242,7 @@ class SalesSegments(BaseView):
         self.request.session.flash(u'販売区分を保存しました')
         return None
 
-    @view_config(route_name='sales_segments.edit', request_method='POST', renderer='altair.app.ticketing:templates/sales_segments/edit.html', xhr=False)
+    #@view_config(route_name='sales_segments.edit', request_method='POST', renderer='altair.app.ticketing:templates/sales_segments/edit.html', xhr=False)
     def edit_post(self):
         f = self._edit_post()
         if f is None:
@@ -259,7 +259,7 @@ class SalesSegments(BaseView):
                 'account_map':self._account_map(self.sales_segment_groups)
                 }
 
-    @view_config(route_name='sales_segments.edit', request_method='POST', renderer='altair.app.ticketing:templates/sales_segments/_form.html', xhr=True)
+    #@view_config(route_name='sales_segments.edit', request_method='POST', renderer='altair.app.ticketing:templates/sales_segments/_form.html', xhr=True)
     def edit_post_xhr(self):
         f = self._edit_post()
         if f is None:
@@ -297,6 +297,34 @@ class SalesSegments(BaseView):
         sales_segment_group = SalesSegmentGroup.get(sales_segment_group_id)
         result = [dict(pk=pdmp.id, name='%s - %s' % (pdmp.payment_method.name, pdmp.delivery_method.name)) for pdmp in sales_segment_group.payment_delivery_method_pairs]
         return {"result": result, "status": True}
+
+
+@view_defaults(renderer='altair.app.ticketing:templates/sales_segments/edit.html',
+               route_name='sales_segments.edit')
+class EditSalesSegment(BaseView):
+    @property
+    def sales_segment(self):
+        return self.context.sales_segment
+
+    @property
+    def sales_segment_group(self):
+        return self.context.sales_segment.sales_segment_group
+
+    @property
+    def event(self):
+        return self.context.sales_segment.sales_segment.event
+
+    @view_config()
+    def __call__(self):
+        form = EditSalesSegmentForm(obj=self.sales_segment,
+                                    formdata=self.request.POST)
+        if self.request.method == "POST":
+            form.process()
+            editor = SalesSegmentEditor(self.sales_segment_group, form)
+            if form.validate():
+                editor.apply_changes(self.sales_segment)
+                return None
+        return dict(form=form)
 
 @view_defaults(decorator=with_bootstrap, permission='event_editor')
 class SalesSegmentPointGrantSettings(BaseView):

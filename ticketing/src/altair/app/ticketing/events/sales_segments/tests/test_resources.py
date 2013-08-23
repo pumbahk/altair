@@ -27,8 +27,8 @@ class SalesSegmentEditorTests(unittest.TestCase):
         )
         form = DummyForm(
             fields=[
-                testing.DummyModel(_name="start_at"),
-                testing.DummyModel(_name="use_default_start_at", data=True),
+                testing.DummyModel(name="start_at"),
+                testing.DummyModel(name="use_default_start_at", data=True),
             ],
         )
 
@@ -47,8 +47,8 @@ class SalesSegmentEditorTests(unittest.TestCase):
         )
         form = DummyForm(
             fields=[
-                testing.DummyModel(_name="start_at", data=datetime(2013, 8, 31)),
-                testing.DummyModel(_name="use_default_start_at", data=False),
+                testing.DummyModel(name="start_at", data=datetime(2013, 8, 31)),
+                testing.DummyModel(name="use_default_start_at", data=False),
             ],
         )
 
@@ -64,8 +64,8 @@ class SalesSegmentEditorTests(unittest.TestCase):
 class DummyForm(dict):
     def __init__(self, fields):
         for field in fields:
-            self[field._name] = field
-            setattr(self, field._name, field)
+            self[field.name] = field
+            setattr(self, field.name, field)
         self.fields = fields
 
     def __iter__(self):

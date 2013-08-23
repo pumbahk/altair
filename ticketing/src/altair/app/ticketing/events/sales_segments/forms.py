@@ -208,21 +208,6 @@ class EditSalesSegmentForm(OurForm):
     def _get_translations(self):
         return Translations()
 
-    id = HiddenField(
-        label=u'ID',
-        validators=[Optional()],
-    )
-    sales_segment_group_id = BugFreeSelectField(
-        label=u'販売区分グループ',
-        validators=[Required()],
-        choices=[],
-        coerce=lambda x: int(x) if x else None
-    )
-    performance_id = BugFreeSelectField(
-        label=u'公演',
-        choices=[],
-        coerce=lambda x: int(x) if x else None
-    )
     seat_choice = OurBooleanField(
         label=u'座席選択可',
         default=True,
@@ -256,7 +241,8 @@ class EditSalesSegmentForm(OurForm):
 
     payment_delivery_method_pairs = PHPCompatibleSelectMultipleField(
         label=u'決済・引取方法',
-        validators=[Required()],
+        validators=[SwitchOptional('use_default_delivery_method_pairs'),
+                    Required()],
         choices=[],
         coerce=lambda x : int(x) if x else u'',
         widget=CheckboxMultipleSelect(multiple=True)
@@ -436,8 +422,8 @@ class EditSalesSegmentForm(OurForm):
         if super(EditSalesSegmentForm, self).validate():
             if not self._validate_terms():
                 return False
-            if not self._validate_performance_terms():
-                return False
+            #if not self._validate_performance_terms():
+            #    return False
 
             return True
 

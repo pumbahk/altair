@@ -142,17 +142,17 @@ class SalesSegmentEditor(object):
 
     def apply_changes(self, obj):
         for field in self.form:
-            setattr(obj, field._name, self.get_value(field))
+            setattr(obj, field.name, self.get_value(field))
         return obj
 
     def is_use_default(self, field):
-        return self.form["use_default_" + field._name].data
+        return self.form["use_default_" + field.name].data
 
     def get_value(self, field):
-        if field._name not in self.use_default_fields:
+        if field.name not in self.use_default_fields:
             return field.data
         else:
             if self.is_use_default(field):
-                return getattr(self.sales_segment_group, field._name)
+                return getattr(self.sales_segment_group, field.name)
             else:
                 return field.data
