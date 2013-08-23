@@ -176,12 +176,15 @@ class SalesSegmentsTests(unittest.TestCase):
 class EditSalesSegmentTests(unittest.TestCase):
 
     def setUp(self):
+        self.config = testing.setUp()
+        self.config.add_route('sales_segments.show', '/sales_segments/show/')
         self.session = _setup_db([
             "altair.app.ticketing.core.models",
         ])
 
     def tearDown(self):
         _teardown_db()
+        testing.tearDown()
 
     def _getTarget(self):
         from ..views import EditSalesSegment
@@ -345,17 +348,18 @@ class EditSalesSegmentTests(unittest.TestCase):
         from datetime import datetime
         context = self._context()
         request = DummyRequest(context=context,
-                               POST=MultiDict(
-                                   start_at="2013-08-31 10:10",
-                                   end_at="2013-09-30 20:31",
-                                   account_id=context.user.organization.accounts[0].id,
-                                   refund_ratio=10000,
-                                   payment_delivery_method_pairs=context.sales_segment.sales_segment_group.payment_delivery_method_pairs[0].id,
-                                   upper_limit=4,
-                                   registration_fee=20000,
-                                   order_limit=10,
-                                   printing_fee=1010,
-                                   margin_ratio=1310,
+                               POST=MultiDict({
+                                   'start_at': "2013-08-31 10:10",
+                                   'end_at': "2013-09-30 20:31",
+                                   'account_id': context.user.organization.accounts[0].id,
+                                   'refund_ratio': 10000,
+                                   'payment_delivery_method_pairs[]': context.sales_segment.sales_segment_group.payment_delivery_method_pairs[0].id,
+                                   'upper_limit': 4,
+                                   'registration_fee': 20000,
+                                   'order_limit': 10,
+                                   'printing_fee': 1010,
+                                   'margin_ratio': 1310,
+                                   }
                                ),
                                method="POST")
 

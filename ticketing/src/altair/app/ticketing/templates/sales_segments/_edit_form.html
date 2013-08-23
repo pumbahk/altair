@@ -1,0 +1,151 @@
+<%page args="form, action='#'" />
+<% from wtforms.widgets import HiddenInput %>
+<%namespace file="/common/helpers.html" name="ch" />
+<%
+ssg = sales_segment.sales_segment_group
+%>
+${form.errors}
+<form action="${action}" method="POST">
+  <table width="100%" class="table">
+    <tr>
+      <td></td><th>販売区分</th><th>販売区分グループ</th>
+    </tr>
+    <tr>
+      <th>
+	${form.payment_delivery_method_pairs.label}
+	<label>
+	  <input type="checkbox" name="use_default_payment_delivery_method_pairs">
+	  販売区分グループの値を使う
+	</label>
+      </th>
+      <td>${form.payment_delivery_method_pairs}</td>
+      <td>
+	<ul>
+	  %for pdmp in ssg.payment_delivery_method_pairs:
+	  <li>${pdmp.payment_method.name} - ${pdmp.delivery_method.name}</li>
+	  %endfor
+	</ul>
+      </td>
+    </tr>
+    <tr>
+      <th>${form.start_at.label}
+	<label>
+	  <input type="checkbox" name="use_default_start_at">
+	  販売区分グループの値を使う
+	</label>
+      </th>
+      <td>${form.start_at}</td>
+      <td>${ssg.start_at}</td>
+    </tr>
+    <tr>
+      <th>${form.end_at.label}
+	<label>
+	  <input type="checkbox" name="use_default_end_at">
+	  販売区分グループの値を使う
+	</label>
+      </th>
+      <td>${form.end_at}</td>
+      <td>${ssg.end_at}</td>
+    </tr>
+    <tr>
+      <th>${form.account_id.label}
+	<label>
+	  <input type="checkbox" name="use_default_account_id">
+	  販売区分グループの値を使う
+	</label>
+      </th>
+      <td>${form.account_id}</td>
+      <td>${ssg.account.name}</td>
+    </tr>
+    <tr>
+      <th>${form.margin_ratio.label}
+	<label>
+	  <input type="checkbox" name="use_default_margin_ratio">
+	  販売区分グループの値を使う
+	</label>
+      </th>
+      <td>${form.margin_ratio}</td>
+      <td>${ssg.margin_ratio}</td>
+    </tr>
+    <tr>
+      <th>${form.refund_ratio.label}
+	<label>
+	  <input type="checkbox" name="use_default_refund_ratio">
+	  販売区分グループの値を使う
+	</label>
+      </th>
+      <td>${form.refund_ratio}</td>
+      <td>${ssg.refund_ratio}</td>
+    </tr>
+    <tr>
+      <th>${form.printing_fee.label}
+	<label>
+	  <input type="checkbox" name="use_default_printing_fee">
+	  販売区分グループの値を使う
+	</label>
+      </th>
+      <td>${form.printing_fee}</td>
+      <td>${ssg.printing_fee}</td>
+    </tr>
+    <tr>
+      <th>${form.registration_fee.label}
+	<label>
+	  <input type="checkbox" name="use_default_registration_fee">
+	  販売区分グループの値を使う
+	</label>
+      </th>
+      <td>${form.registration_fee}</td>
+      <td>${ssg.registration_fee}</td>
+    </tr>
+    <tr>
+      <th>${form.upper_limit.label}
+	<label>
+	  <input type="checkbox" name="use_default_upper_limit">
+	  販売区分グループの値を使う
+	</label>
+      </th>
+      <td>${form.upper_limit}</td>
+      <td>${ssg.upper_limit}</td>
+    </tr>
+    <tr>
+      <th>${form.order_limit.label}
+	<label>
+	  <input type="checkbox" name="use_default_order_limit">
+	  販売区分グループの値を使う
+	</label>
+      </th>
+      <td>${form.order_limit}</td>
+      <td>${ssg.order_limit}</td>
+    </tr>
+    <tr>
+      <th>${form.public.label}
+	<label>
+	  <input type="checkbox" name="use_default_public">
+	  販売区分グループの値を使う
+	</label>
+      </th>
+      <td>${form.public}</td>
+      <td>${u'一般公開する' if ssg.public else u'一般公開しない'}</td>
+    </tr>
+    <tr>
+      <th>${form.reporting.label}
+	<label>
+	  <input type="checkbox" name="use_default_reporting">
+	  販売区分グループの値を使う
+	</label>
+      </th>
+      <td>${form.reporting}</td>
+      <td>${u'レポート対象にする' if ssg.reporting else u'レポート対象にしない'}</td>
+    </tr>
+    <tr>
+      <th>${form.auth3d_notice.label}
+	<label>
+	  <input type="checkbox" name="use_default_auth3d_notice">
+	  販売区分グループの値を使う
+	</label>
+      </th>
+      <td>${form.auth3d_notice}</td>
+      <td>${ssg.auth3d_notice}</td>
+    </tr>
+  </table>
+</form>

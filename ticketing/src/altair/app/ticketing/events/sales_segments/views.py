@@ -300,7 +300,8 @@ class SalesSegments(BaseView):
 
 
 @view_defaults(renderer='altair.app.ticketing:templates/sales_segments/edit.html',
-               route_name='sales_segments.edit')
+               route_name='sales_segments.edit',
+               decorator=with_bootstrap, permission='event_editor')
 class EditSalesSegment(BaseView):
     @property
     def sales_segment(self):
@@ -312,7 +313,12 @@ class EditSalesSegment(BaseView):
 
     @property
     def event(self):
-        return self.context.sales_segment.sales_segment.event
+        return self.context.sales_segment.sales_segment_group.event
+
+    @property
+    def performance(self):
+        return self.context.sales_segment.performance
+
 
     @property
     def account_choices(self):
@@ -334,12 +340,18 @@ class EditSalesSegment(BaseView):
                                     formdata=self.request.POST)
         form.account_id.choices = self.account_choices
         form.payment_delivery_method_pairs.choices = self.payment_delivery_method_pair_choices
+        if self.request.method == "GET":
+            form.payment_delivery_method_pairs.data = [pdmp.id 
+                                                        for pdmp in self.sales_segment.payment_delivery_method_pairs]
         if self.request.method == "POST":
             if form.validate():
                 editor = SalesSegmentEditor(self.sales_segment_group, form)
                 editor.apply_changes(self.sales_segment)
-                return None
-        return dict(form=form)
+                return HTTPFound(self.request.route_url('sales_segments.show', **self.request.matchdict))
+
+        return dict(form=form, event=self.event,
+                    performance=self.performance,
+                    sales_segment=self.sales_segment)
 
 @view_defaults(decorator=with_bootstrap, permission='event_editor')
 class SalesSegmentPointGrantSettings(BaseView):
