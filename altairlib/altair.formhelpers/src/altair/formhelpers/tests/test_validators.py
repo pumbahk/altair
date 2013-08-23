@@ -1,11 +1,10 @@
 #-*- coding: utf-8 -*-
 import unittest
-
+import string
 
 class DummyForm(dict):
     """ """
     pass
-
 
 class DummyField(object):
     def __init__(self, data, raw_data=None):
@@ -46,7 +45,7 @@ class SwitchOptionalTests(unittest.TestCase):
         target(form, DummyField(data=""))
 
 
-class JISX0208Test(TestCase):
+class JISX0208Test(unittest.TestCase):
     VALID_CHARS = unicode(string.printable) + u'日本語'
     INVALID_CHARS = u'㈱ⅰ①⑴⒈❶'
 
@@ -55,6 +54,7 @@ class JISX0208Test(TestCase):
         return JISX0208
 
     def test_valid_by_form(self):
+        checker = self._get_target()
         form = DummyForm()
         field = DummyField(self.VALID_CHARS)
         checker(form, field)
