@@ -14,7 +14,7 @@ def install_lookupwrapper(config, name="intercept"):
     from altairsite.front.renderer import LayoutModelLookupWrapperFactory
     settings = config.registry.settings
     factory = LayoutModelLookupWrapperFactory(directory_spec=settings["altaircms.layout_directory"], 
-                                              s3prefix="http://tstar-dev.s3.amazonaws.com/cms-layout-templates/")
+                                              s3prefix=settings["altaircms.layout_s3prefix"])
     config.registry.adapters.register([IMakoLookup], ILookupWrapperFactory, name=name, value=factory)
    
 def includeme(config):
