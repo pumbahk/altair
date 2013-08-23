@@ -10,5 +10,8 @@ steps = {
 %> 
 <div class="flow-widget">
   <img class="flow-widget-body" src="${request.static_url('altair.app.ticketing.cart:static/img/settlement/purchase_flow_%02d.jpg' % step)}" alt="${steps[step]}" />
+  %if int(step) == 1:
+    <div><a href="http://c.tstar.jp/static/uploaded/ticketstar/help" target="_blank">「座席を選択して購入」についての詳しい説明はこちら</a></div>
+  %endif
 </div>
 </%def>
