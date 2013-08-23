@@ -2,6 +2,7 @@ from unittest import TestCase
 from webob.multidict import MultiDict
 from wtforms.form import WebobInputWrapper
 from datetime import date, datetime
+import itertools
 
 class OurDateTimeFieldTest(TestCase):
     def _getTarget(self):
@@ -12,20 +13,16 @@ class OurDateTimeFieldTest(TestCase):
         unbound_field = self._getTarget()(*args, **kwargs)
         return unbound_field.bind(None, 'test')
 
-    def test_all_field_missing(self):
-        field = self._makeOne()
-        field.process(WebobInputWrapper(MultiDict()))
-        self.assertEqual(len(field.process_errors), 0)
-        self.assertEqual(field.data, None)
-        self.assertEqual(field.raw_data, None)
-
     def test_rest_of_fields_missing(self):
-        defaults = {
-            'month': 1,
-            'day': 1,
-            'hour': 0,
-            'minute': 0,
-            'second': 0
+        from altair.formhelpers.fields.datetime import  Min, Max
+
+        defaults_map = {
+            'year': (None, None, None),
+            'month': (1, 1, 12),
+            'day': (1, 1, 31),
+            'hour': (0, 0, 23),
+            'minute': (0, 0, 59),
+            'second': (0, 0, 59),
             }
 
         field_values = [
@@ -55,16 +52,29 @@ class OurDateTimeFieldTest(TestCase):
                 }
             ]
 
-        for n in range(1, len(field_values)):
-            args = dict(defaults)
-            for field_value in field_values[0:n]:
-                args[field_value['data'][0]] = field_value['data'][1]
-            expected = datetime(**args)
-            formdata = MultiDict(dict(field_value['formdata'] for field_value in field_values[0:n]))
-            field = self._makeOne()
-            field.process(WebobInputWrapper(MultiDict(formdata)))
-            self.assertEqual(field.data, expected)
-            self.assertEqual(field.raw_data, [expected.strftime('%Y-%m-%d %H:%M:%S')])
+        target = self._getTarget()
+        keys = ('year', 'month', 'day', 'hour', 'minute', 'second')
+        missing_value_defaults_combinations = list(
+            zip((target._missing_value_defaults[k], Min, Max), defaults_map[k])
+            for k in keys
+            )
+        for combination in itertools.product(*missing_value_defaults_combinations):
+            defaults = zip(keys, combination)
+            missing_value_defaults = dict((k, v[0]) for k, v in defaults)
+            for n in range(0, len(field_values)):
+                if n == 0:
+                    expected = None
+                else:
+                    args = dict((k, v[1]) for k, v in defaults)
+                    for field_value in field_values[0:n]:
+                        args[field_value['data'][0]] = field_value['data'][1]
+                    expected = datetime(**args)
+                params = dict(field_value['formdata'] for field_value in field_values[0:n])
+                formdata = MultiDict(params)
+                field = self._makeOne(missing_value_defaults=missing_value_defaults)
+                field.process(WebobInputWrapper(MultiDict(formdata)))
+                self.assertEqual(field.data, expected)
+                self.assertEqual(field.raw_data, expected and [expected.strftime('%Y-%m-%d %H:%M:%S')])
 
     def test_some_fields_missing(self):
         field = self._makeOne()
