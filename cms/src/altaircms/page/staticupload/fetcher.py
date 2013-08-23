@@ -176,23 +176,28 @@ class StaticPageCache(object):
         try:
             v = fetch_function(self, k)
             logger.debug("StaticPageCache: setitem and remove sentinel -- {k}, fetching=removed".format(k=k))
-            self.fetching.remove_value(k)
             if v is None:
-                logger.error("404 --- {k}".format(k=k))
-                raise HTTPNotFound
+                raise ValueError("404 --- {k} is None".format(k=k))
+            self.file_data[k] = v
+            self.fetching.remove_value(k)
             if not v.group_id in self.file_group:
                 self.file_group[v.group_id] = {k}
             else:
                 cached = self.file_group[v.group_id]
                 cached.add(k)
                 self.file_group[v.group_id] = cached
-            self.file_data[k] = v
             # logger.debug("result: group={group} data={data}".format(group=self.file_group[v.group_id], data=v)) #annoying
             return v
+        except ValueError as e:
+            logger.warn(str(e)) #insecure string
+            self.file_data.remove_value(k)
+            self.fetching.remove_value(k) #call multiplly is ok?
         except Exception as e:
             logger.exception(str(e))
+            self.file_data.remove_value(k)
+            self.fetching.remove_value(k) #call multiplly is ok?
             logger.warn("fetching: exception found. on fetching data. release for '{k}'".format(k=k))
-            self.fetching.remove_value(k)
+        raise HTTPNotFound
 
     def remove_group(self, k):
         try:
