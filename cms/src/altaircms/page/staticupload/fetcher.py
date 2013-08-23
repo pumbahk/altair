@@ -189,11 +189,11 @@ class StaticPageCache(object):
             # logger.debug("result: group={group} data={data}".format(group=self.file_group[v.group_id], data=v)) #annoying
             return v
         except ValueError as e:
-            logger.warn(str(e)) #insecure string
+            logger.warn(repr(e)) #insecure string
             self.file_data.remove_value(k)
             self.fetching.remove_value(k) #call multiplly is ok?
         except Exception as e:
-            logger.exception(str(e))
+            logger.exception(repr(e))
             self.file_data.remove_value(k)
             self.fetching.remove_value(k) #call multiplly is ok?
             logger.warn("fetching: exception found. on fetching data. release for '{k}'".format(k=k))
