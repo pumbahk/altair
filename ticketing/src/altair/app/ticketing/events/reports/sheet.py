@@ -49,7 +49,6 @@ class SeatRecord(object):
         self.quantity = quantity
         self.kind = kind
 
-
     def is_stocks(self):
         return self.kind == "stocks"
 
@@ -228,39 +227,11 @@ def seat_source_from_seat(seat):
     seat_source.status = seat.status
     return seat_source
 
-def sold_seat_source_from_seat(seat):
-    """SeatとProductItemからSoldSeatSourceを作成する
-    """
-    attributes = seat.attributes or {}
-    seat_source = SoldSeatSource(source=seat)
-
-    # フロアは、SeatAttributeのを使う
-    if 'floor' in attributes:
-        seat_source.floor = attributes.get('floor')
-
-    # ブロック名は、VenueAreaを検索して使う
-    # まれにgroup_l0_idがNULLな席とかがあってVenueArea.nameが拾えない場合があるので
-    # one()じゃなくてfirst()を使う
-    area = DBSession.query(VenueArea).join(VenueArea.groups)\
-        .filter_by(venue_id=seat.venue_id)\
-        .filter_by(group_l0_id=seat.group_l0_id).first()
-    if area is not None:
-        seat_source.block = area.name
-
-    # 列番号は、SeatAttributeのを使う
-    if 'row' in attributes:
-        seat_source.line = attributes.get('row')
-
-    seat_source.seat = seat.seat_no
-    seat_source.status = seat.status
-    seat_source.product_item = product_item.name
-    return seat_source
 
 def is_series_seat(seatsource1, seatsource2):
     """seatsource1とseatsource2が別の列、もしくは通路などを
     挟んで連続していない場合にTrueを返す
     """
-
     # いずれかのseatがNULLの時は違う列扱い
     if seatsource1.seat == None or seatsource2.seat == None:
         return False
@@ -311,47 +282,6 @@ def seat_records_from_seat_sources(seat_sources, report_type, kind, date):
                 flush()
             # 残席のみ
             if report_type != 'unsold' or value.status == SeatStatusEnum.Vacant.v:
-                lst_values.append(value)
-        # 残り
-        if lst_values:
-            flush()
-    return result
-
-def sold_seat_records_from_sold_seat_sources(seat_sources, report_type, kind, date):
-    """SoldSeatSourceのリストからSoldSeatRecordのリストを返す
-    サマリー作成
-    """
-    result = []
-    # block,floor,line,seatの優先順でソートする
-    def to_int_or_str(seat):
-        return int(seat) if seat.isdigit() else seat
-    sorted_seat_sources = sorted(
-        seat_sources,
-        key=lambda v: (v.block, v.floor, v.line, to_int_or_str(v.seat) if (v.seat!=None and v.seat!='') else None))
-    # block,floor,lineでグループ化してSeatRecordを作る
-    for key, generator in groupby(sorted_seat_sources, lambda v: (v.block, v.floor, v.line)):
-        values = list(generator)
-        # 連続した座席はまとめる
-        lst_values = []
-        def flush():
-            seat_record = SoldSeatRecord(
-                    block=lst_values[0].block,
-                    line=lst_values[0].line,
-                    start=lst_values[0].seat,
-                    end=lst_values[-1].seat,
-                    date=date,
-                    quantity=len(lst_values),
-                    kind=kind,
-                    product_item=lst_values[0].product_item,
-                )
-            result.append(seat_record)
-            del lst_values[:]
-
-        for value in values:
-            # 1つ前の座席と連続していなければ結果に追加してlst_valuesをリセット
-            if lst_values and not is_series_seat(lst_values[-1], value):
-                flush()
-            if report_type != 'sold' or value.status == SeatStatusEnum.Ordered.v:
                 lst_values.append(value)
         # 残り
         if lst_values:
@@ -537,8 +467,9 @@ class SoldTableCreator(object):
                 yield record
 
     def create_summaries_from_quantity_sources(self, sources):
-        sources.sort(lambda n, m: cmp(n.product_item, m.product_item))
-        for key, generator in groupby(sources, lambda v: v.product_item):
+        _get_key = lambda src: src.product_item
+        sources.sort(key=_get_key)
+        for key, generator in groupby(sources, _get_key):
             record = self.RECORD()
             record.product_item = key
             record.quantity = sum([source.quantity for source in generator])
@@ -561,8 +492,7 @@ class SoldTableCreator(object):
                 seat_sources += [self.seat2seatsource(seat_source, opitem) for seat_source in sold_seats]
             elif opitem.product_item.stock.stock_type.quantity_only:
                 quantity_ordered_product_items.append(opitem)
-            else:
-                pass
+
         quantity_source = self.create_sources_quantity_only(quantity_ordered_product_items)
         return seat_sources, quantity_source
 
@@ -574,7 +504,7 @@ class SoldTableCreator(object):
         record.quantity = 1
         record.product_item = seat_source.product_item
         return record
-        
+
     def create_summaries_from_seat_sources(self, seat_sources):
         """SoldSeatSourceのリストからSoldSeatRecordのリストを返す
         サマリー作成
@@ -582,6 +512,10 @@ class SoldTableCreator(object):
         date = self.date
         kind = report_type = self.REPORT_TYPE
         result = []
+        _get_key = lambda src: (src.block, src.floor, src.line,
+                                _to_int_or_str(v.seat) if (v.seat!=None and v.seat!='') else None,
+                                src.product_item)
+
         # block,floor,line,seatの優先順でソートする
         def to_int_or_str(seat):
             return int(seat) if seat.isdigit() else seat
@@ -606,12 +540,11 @@ class SoldTableCreator(object):
                 )
                 result.append(seat_record)
                 del lst_values[:]
-            
             for value in values:
                 # 1つ前の座席と連続していなければ結果に追加してlst_valuesをリセット
                 if lst_values and not is_series_seat(lst_values[-1], value):
                     flush()
-                if report_type != 'sold' or value.status == SeatStatusEnum.Ordered.v:
+                if value.status == SeatStatusEnum.Ordered.v:
                     lst_values.append(value)
             # 残り
             if lst_values:
