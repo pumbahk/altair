@@ -22,7 +22,7 @@ from pyramid.httpexceptions import HTTPNotFound
 
 
 class IInterceptHandler(Interface):
-    def need_reload(last_modified_at):
+    def need_refresh(last_modified_at):
         """last modified is time.time() -- ust"""
 
     def load(lookup, master_name, uri):
@@ -64,9 +64,9 @@ class LayoutModelLookupInterceptHandler(object):
         self.uploaded_at = uploaded_at
 
     def need_intercept(self, uri):
-        return self.layout_spec in uri
+        return self.layout_spec in uri and self.uploaded_at
         
-    def need_reload(self, last_modified_at):
+    def need_refresh(self, last_modified_at):
         return last_modified_at and self.uploaded_at and self.uploaded_at_as_time > last_modified_at
 
     def normalize_for_key(self, uri):
@@ -94,7 +94,7 @@ class LayoutModelLookupInterceptHandler(object):
 
     @reify
     def uploaded_at_as_time(self):
-        return (self.uploaded_at-datetime.fromtimestamp(0)).total_seconds
+        return (self.uploaded_at-datetime.fromtimestamp(0)).total_seconds()
 
     @reify
     def uploaded_at_as_string(self):
@@ -123,13 +123,13 @@ class LookupInterceptWrapper(object):
                     return self._collection[adjusted]
             except KeyError:
                 return self._load(uri, adjusted) #xxx:
-        return self.lookup.lookup(uri)
+        return self.lookup.get_template(uri)
 
     def _check(self, uri, template):
         logger.info("checking: template {}".format(template))
         if template.filename is None:
             return template
-        if self.handler.need_reload(template.last_modified): #modified_time is utc
+        if self.handler.need_refresh(template.last_modified): #modified_time is utc
             self._collection.pop(uri, None)
             return self._load(template.filename, uri)
         else:
