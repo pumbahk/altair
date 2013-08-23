@@ -40,7 +40,6 @@ function build_form_params(form) {
       value = get_selected_options(v);
     } else {
       value = $(v).val();
-      console.log(value);
     }
     if (value != null) {
       if (v.name.substr(-2) == '[]') {
