@@ -1,23 +1,8 @@
-<%page args="form" />
-<%namespace file="/common/helpers.html" import="form_item" />
-
-<div id="modal-account" class="modal hide">
-  <div class="modal-header">
-    <a class="close" data-dismiss="modal">×</a>
-    <h3>取引先</h3>
-  </div>
-
-  <div class="modal-body">
-    <form action="javascript:save_account();" method="POST">
-      ${form_item(form.id)}
-      ${form_item(form.account_type, class_='span6')}
-      ${form_item(form.user_id, class_='span6')}
-      ${form_item(form.name, maxlength=255)}
-    </form>
-  </div>
-
-  <div class="modal-footer">
-    <a href="#" class="btn" data-dismiss="modal">閉じる</a>
-    <a href="javascript:void(0);" onclick="$('#modal-account').find('form').submit();" class="btn">保存</a>
-  </div>
-</div>
+<%page args="form, action='#'" />
+<%namespace file="/common/helpers.html" name="ch" />
+<form action="${action}" method="POST">
+  ${ch.form_item(form.id)}
+  ${ch.form_item(form.account_type, class_='span6')}
+  ${ch.form_item(form.user_id, class_='span6')}
+  ${ch.form_item(form.name, maxlength=255)}
+</form>
