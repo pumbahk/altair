@@ -3264,7 +3264,7 @@ class SalesSegment(Base, BaseModel, LogicallyDeleted, WithTimestamp):
     use_default_refund_ratio = Column(Boolean)
     use_default_printing_fee = Column(Boolean)
     use_default_registration_fee = Column(Boolean)
-    
+    use_default_auth3d_notice = Column(Boolean)
     # @property
     # def auth3d_notice(self):
     #     return self.x_auth3d_notice if self.x_auth3d_notice else self.sales_segment_group.auth3d_notice

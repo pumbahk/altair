@@ -45,6 +45,8 @@ def upgrade():
                   sa.Column("use_default_printing_fee", sa.Boolean))
     op.add_column("SalesSegment", 
                   sa.Column("use_default_registration_fee", sa.Boolean))
+    op.add_column("SalesSegment", 
+                  sa.Column("use_default_auth3d_notice", sa.Boolean))
 
 
 def downgrade():
@@ -61,4 +63,5 @@ def downgrade():
     op.drop_column("SalesSegment", "use_default_refund_ratio")
     op.drop_column("SalesSegment", "use_default_printing_fee")
     op.drop_column("SalesSegment", "use_default_registration_fee")
+    op.drop_column("SalesSegment", "use_default_auth3d_notice")
 
