@@ -3222,7 +3222,7 @@ class SalesSegment(Base, BaseModel, LogicallyDeleted, WithTimestamp):
     order_limit = AnnotatedColumn(Integer, default=0,
                                   _a_label=_(u'購入回数制限'))
 
-    _seat_choice = Column('seat_choice', Boolean, nullable=True, default=None)
+    seat_choice = Column(Boolean, nullable=True, default=None)
     public = Column(Boolean, default=True)
     reporting = Column(Boolean, nullable=False, default=True, server_default='1')
     performance_id = Column(Identifier, ForeignKey('Performance.id'))
