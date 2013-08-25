@@ -2,14 +2,11 @@ import unittest
 from pyramid import testing
 
 
-class SalesSegmentGroupUpdateTests(unittest.TestCase):
+class UpdateSalesSegmentTests(unittest.TestCase):
 
-    def _getTarget(self):
-        from ..resources import SalesSegmentGroupUpdate
-        return SalesSegmentGroupUpdate
-
-    def _makeOne(self, *args, **kwargs):
-        return self._getTarget()(*args, **kwargs)
+    def _callFUT(self, *args, **kwargs):
+        from ..resources import update_sales_segment
+        return update_sales_segment(*args, **kwargs)
 
     def test_update_sales_segment_use_defaults(self):
         from datetime import datetime
@@ -29,7 +26,6 @@ class SalesSegmentGroupUpdateTests(unittest.TestCase):
             registration_fee=450,
             auth3d_notice=u"testing",
         )
-        target = self._makeOne(ssg)
 
         ss = testing.DummyModel(
             use_default_seat_choice=True,
@@ -48,7 +44,7 @@ class SalesSegmentGroupUpdateTests(unittest.TestCase):
             use_default_auth3d_notice=True,
         )
 
-        target.update_sales_segment(ss)
+        self._callFUT(ssg, ss)
 
     def test_update_sales_segment_use_owns(self):
         from datetime import datetime
@@ -68,7 +64,6 @@ class SalesSegmentGroupUpdateTests(unittest.TestCase):
             registration_fee=450,
             auth3d_notice=u"testing",
         )
-        target = self._makeOne(ssg)
 
         ss = testing.DummyModel(
             use_default_seat_choice=False,
@@ -101,4 +96,19 @@ class SalesSegmentGroupUpdateTests(unittest.TestCase):
             auth3d_notice=u"testing-own",
         )
 
-        target.update_sales_segment(ss)
+        self._callFUT(ssg, ss)
+        
+        self.assertTrue(ss.seat_choice)
+        self.assertFalse(ss.public)
+        self.assertTrue(ss.reporting)
+        self.assertEqual(len(ss.payment_delivery_method_pairs), 1)
+        self.assertEqual(ss.start_at, datetime(2014, 10, 11, 12, 31))
+        self.assertEqual(ss.end_at, datetime(2014, 11, 11, 12, 31))
+        self.assertEqual(ss.upper_limit, 110)
+        self.assertEqual(ss.order_limit, 120)
+        self.assertEqual(ss.account_id, 10)
+        self.assertEqual(ss.margin_ratio, 1150)
+        self.assertEqual(ss.refund_ratio, 1250)
+        self.assertEqual(ss.printing_fee, 1350)
+        self.assertEqual(ss.registration_fee, 1450)
+        self.assertEqual(ss.auth3d_notice, u"testing-own")

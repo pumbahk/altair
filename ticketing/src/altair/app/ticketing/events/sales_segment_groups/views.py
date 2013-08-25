@@ -18,7 +18,7 @@ from altair.app.ticketing.events.sales_segment_groups.forms import SalesSegmentG
 from altair.app.ticketing.events.sales_segments.forms import SalesSegmentForm
 from altair.app.ticketing.memberships.forms import MemberGroupForm
 from altair.app.ticketing.users.models import MemberGroup, Membership
-from .resources import SalesSegmentGroupUpdate
+from .resources import SalesSegmentGroupUpdate, SalesSegmentGroupCreate
 
 @view_defaults(decorator=with_bootstrap, permission='event_editor')
 class SalesSegmentGroups(BaseView):
@@ -102,7 +102,7 @@ class SalesSegmentGroups(BaseView):
             sales_segment_group = merge_session_with_post(SalesSegmentGroup(), f.data)
             sales_segment_group.organization = self.context.user.organization
             sales_segment_group.save()
-
+            SalesSegmentGroupCreate(sales_segment_group).create(event.performances)
             self.request.session.flash(u'販売区分グループを保存しました')
             return render_to_response('altair.app.ticketing:templates/refresh.html', {}, request=self.request)
         else:
