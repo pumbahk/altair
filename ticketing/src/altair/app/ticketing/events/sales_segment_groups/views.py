@@ -18,7 +18,7 @@ from altair.app.ticketing.events.sales_segment_groups.forms import SalesSegmentG
 from altair.app.ticketing.events.sales_segments.forms import SalesSegmentForm
 from altair.app.ticketing.memberships.forms import MemberGroupForm
 from altair.app.ticketing.users.models import MemberGroup, Membership
-from .resources import SalesSegmentGroupUpdate, SalesSegmentGroupCreate
+from altair.app.ticketing.events.sales_segments.resources import SalesSegmentGroupUpdate, SalesSegmentGroupCreate
 
 @view_defaults(decorator=with_bootstrap, permission='event_editor')
 class SalesSegmentGroups(BaseView):
