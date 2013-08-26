@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from datetime import datetime, date
+from datetime import datetime, date, time
 from decimal import Decimal
 import json
 
@@ -93,6 +93,7 @@ def merge_session_with_post(session, post, filters={}):
                     or isinstance(value, Decimal)\
                     or isinstance(value, datetime)\
                     or isinstance(value, date)\
+                    or isinstance(value, time)\
                     or value is None:
                     setattr(session, key, value)
                 else:

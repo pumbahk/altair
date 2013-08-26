@@ -76,6 +76,7 @@ class SalesSegmentGroupsTests(unittest.TestCase):
         self.assertEqual(ssg.event, event)
 
     def test_edit_post(self):
+        from datetime import time
         from altair.app.ticketing.core.models import (
             Organization,
             Operator,
@@ -108,15 +109,19 @@ class SalesSegmentGroupsTests(unittest.TestCase):
                 sales_segment_group_id=str(sales_segment_group.id),
             ),
             matched_route=testing.DummyResource(name=''),
-            POST=dict(
-                id=str(sales_segment_group.id),
-                event_id=str(event.id),
-                account_id=str(account.id),
-                name='testing sales segment group',
-                kind='normal',
-                start_at='2013-01-01 00:00',
-                end_at='2013-12-31 00:00',
-            )
+            POST={
+                "id": str(sales_segment_group.id),
+                "event_id": str(event.id),
+                "account_id": str(account.id),
+                "name": 'testing sales segment group',
+                "kind": 'normal',
+                #start_at='2013-01-01 00:00',
+                #end_at='2013-12-31 00:00',
+                "start_day_prior_to_performance": "4",
+                "start_time": '00:00:01',
+                "end_day_prior_to_performance": "1",
+                "end_time": '23:59:00',
+            }
         )
 
         target = self._makeOne(context, request)
@@ -131,6 +136,10 @@ class SalesSegmentGroupsTests(unittest.TestCase):
 
         self.assertIsNone(result)
 
+        self.assertEqual(sales_segment_group.start_day_prior_to_performance, 4)
+        self.assertEqual(sales_segment_group.start_time, time(0, 0, 1))
+        self.assertEqual(sales_segment_group.end_day_prior_to_performance, 1)
+        self.assertEqual(sales_segment_group.end_time, time(23, 59, 0))
         ss = sales_segment_group.sales_segments[0]
 
         self.assertEqual(ss.organization, organization)

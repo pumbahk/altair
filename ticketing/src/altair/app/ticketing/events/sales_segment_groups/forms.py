@@ -6,8 +6,10 @@ from wtforms import TextField, TextAreaField, SelectField, HiddenField, IntegerF
 from wtforms.validators import Regexp, Length, Optional, ValidationError
 from wtforms.widgets import CheckboxInput
 
-from altair.formhelpers import (OurDateTimeField, Translations, Required, RequiredOnUpdate,
-                                   OurForm, OurIntegerField, OurBooleanField, OurDecimalField, OurSelectField)
+from altair.formhelpers import (
+    OurDateTimeField, Translations, Required, RequiredOnUpdate,
+    OurForm, OurIntegerField, OurBooleanField, OurDecimalField, OurSelectField,
+    OurTimeField, )
 from altair.app.ticketing.core.models import SalesSegmentKindEnum, Event, StockHolder, Account
 
 logger = logging.getLogger(__name__)
@@ -63,18 +65,36 @@ class SalesSegmentGroupForm(OurForm):
             Length(max=255, message=u'255文字以内で入力してください'),
         ],
     )
-    start_at = OurDateTimeField(
-        label=u'販売開始日時',
+    # start_at = OurDateTimeField(
+    #     label=u'販売開始日時',
+    #     validators=[RequiredOnUpdate()],
+    #     format='%Y-%m-%d %H:%M',
+    #     hide_on_new=True
+    # )
+    start_day_prior_to_performance = OurIntegerField(
+        label=u'販売開始日時(公演開始までの日数)',
         validators=[RequiredOnUpdate()],
-        format='%Y-%m-%d %H:%M',
-        hide_on_new=True
     )
-    end_at = OurDateTimeField(
-        label=u'販売終了日時',
+    start_time = OurTimeField(
+        label=u'販売開始日時(時刻)',
         validators=[RequiredOnUpdate()],
-        format='%Y-%m-%d %H:%M',
-        hide_on_new=True
     )
+    # end_at = OurDateTimeField(
+    #     label=u'販売終了日時',
+    #     validators=[RequiredOnUpdate()],
+    #     format='%Y-%m-%d %H:%M',
+    #     hide_on_new=True
+    # )
+    end_day_prior_to_performance = OurIntegerField(
+        label=u'販売終了日時(公演開始までの日数)',
+        validators=[RequiredOnUpdate()],
+    )
+    end_time = OurTimeField(
+        label=u'販売終了日時(時刻)',
+        validators=[RequiredOnUpdate()],
+    )
+
+
     seat_choice = OurBooleanField(
         label=u'座席選択可',
         widget=CheckboxInput(),
@@ -162,13 +182,13 @@ class SalesSegmentGroupForm(OurForm):
 
     def validate(self, *args, **kwargs):
         retval = super(type(self), self).validate(*args, **kwargs)
-        if self.end_at.data is not None and self.start_at.data is not None and self.end_at.data < self.start_at.data:
-            if not self.end_at.errors:
-                self.end_at.errors = []
-            else:
-                self.end_at.errors = list(self.end_at.errors) 
-            self.end_at.errors.append(ValidationError(u'開演日時より過去の日時は入力できません'))
-            retval = False
+        # if self.end_at.data is not None and self.start_at.data is not None and self.end_at.data < self.start_at.data:
+        #     if not self.end_at.errors:
+        #         self.end_at.errors = []
+        #     else:
+        #         self.end_at.errors = list(self.end_at.errors) 
+        #     self.end_at.errors.append(ValidationError(u'開演日時より過去の日時は入力できません'))
+        #     retval = False
         return retval
 
 
