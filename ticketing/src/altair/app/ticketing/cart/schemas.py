@@ -76,7 +76,7 @@ class ClientForm(OurForm):
         validators=[
             Required(),
             Length(min=1, max=11),
-            Regexp(r'^\d*$', message=u'-を抜いた数字のみを入力してください'), 
+            Regexp(r'^\d*$', message=u'-(ハイフン)を抜いた数字のみを入力してください'), 
         ]
     )
     fax = fields.TextField(
@@ -93,7 +93,7 @@ class ClientForm(OurForm):
         filters=[ignore_space_hyphen], 
         validators=[
             Required(),
-            Regexp(r'^\d{7}$', message=u'-を抜いた数字(7桁)のみを入力してください'), 
+            Regexp(r'^\d{7}$', message=u'-(ハイフン)を抜いた数字(7桁)のみを入力してください'), 
             Length(min=7, max=7, message=u'確認してください'),
         ]
     )
