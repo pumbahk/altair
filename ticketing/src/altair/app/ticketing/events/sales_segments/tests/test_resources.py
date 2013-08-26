@@ -117,6 +117,21 @@ class UpdateSalesSegmentTests(unittest.TestCase):
 
         self._callFUT(ssg, ss)
 
+        self.assertFalse(ss.seat_choice)
+        self.assertTrue(ss.public)
+        self.assertFalse(ss.reporting)
+        self.assertEqual(ss.payment_delivery_method_pairs, [])
+        self.assertEqual(ss.start_at, datetime(2013, 10, 11, 12, 31))
+        self.assertEqual(ss.end_at, datetime(2013, 11, 11, 12, 31))
+        self.assertEqual(ss.upper_limit, 10)
+        self.assertEqual(ss.order_limit, 20)
+        self.assertEqual(ss.account_id, 1)
+        self.assertEqual(ss.margin_ratio, 150)
+        self.assertEqual(ss.refund_ratio, 250)
+        self.assertEqual(ss.printing_fee, 350)
+        self.assertEqual(ss.registration_fee, 450)
+        self.assertEqual(ss.auth3d_notice, u"testing")
+
     def test_update_sales_segment_use_owns(self):
         from datetime import datetime
         ssg = testing.DummyModel(
