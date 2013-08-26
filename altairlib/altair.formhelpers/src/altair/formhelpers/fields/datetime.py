@@ -13,8 +13,10 @@ __all__ = (
     'OurDateTimeFieldBase',
     'OurDateTimeField',
     'OurDateField',
+    'OurTimeField',
     'DateTimeField',
     'DateField',
+    'TimeField',
     )
 
 Automatic = atom('Automatic')
