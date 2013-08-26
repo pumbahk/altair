@@ -76,7 +76,7 @@ class ClientForm(OurForm):
         validators=[
             Required(),
             Length(min=1, max=11),
-            Regexp(r'^\d*$', message=u'-(ハイフン)を抜いた数字のみを入力してください'), 
+            Regexp(r'^\d*$', message=u'-(ハイフン)を抜いた半角数字のみを入力してください'), 
         ]
     )
     fax = fields.TextField(

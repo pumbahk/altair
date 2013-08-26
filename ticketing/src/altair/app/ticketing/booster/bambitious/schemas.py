@@ -44,9 +44,9 @@ class OrderFormSchema(Form):
     city = fields.TextField(u"市区町村", filters=[strip_spaces], validators=[v.Required(), CP932, length_limit_long])
     address1 = fields.TextField(u"住所", filters=[strip_spaces], validators=[v.Required(), CP932, length_limit_long])
     address2 = fields.TextField(u"住所", filters=[strip_spaces], validators=[CP932, length_limit_long])
-    tel_1 = fields.TextField(u"電話番号(携帯)", filters=[strip_spaces], validators=[v.Length(max=11), v.Regexp(r'^\d*$', message=u'-(ハイフン)を抜いた数字のみを入力してください')])
-    tel_2 = fields.TextField(u"電話番号(自宅)", filters=[strip_spaces], validators=[v.Length(max=11), v.Regexp(r'^\d*$', message=u'-(ハイフン)を抜いた数字のみを入力してください')])
-    fax = fields.TextField(u"FAX番号", filters=[strip_spaces], validators=[v.Length(max=11), v.Regexp(r'^\d*$', message=u'-(ハイフン)を抜いた数字のみを入力してください')])
+    tel_1 = fields.TextField(u"電話番号(携帯)", filters=[strip_spaces], validators=[v.Length(max=11), v.Regexp(r'^\d*$', message=u'-(ハイフン)を抜いた半角数字のみを入力してください')])
+    tel_2 = fields.TextField(u"電話番号(自宅)", filters=[strip_spaces], validators=[v.Length(max=11), v.Regexp(r'^\d*$', message=u'-(ハイフン)を抜いた半角数字のみを入力してください')])
+    fax = fields.TextField(u"FAX番号", filters=[strip_spaces], validators=[v.Length(max=11), v.Regexp(r'^\d*$', message=u'-(ハイフン)を抜いた半角数字のみを入力してください')])
     email_1 = fields.TextField(u"メールアドレス", filters=[strip_spaces], validators=[v.Required(), SejCompliantEmail()])
     email_1_confirm = fields.TextField(u"メールアドレス（確認用）", filters=[strip_spaces], validators=[v.Required(), SejCompliantEmail(), v.EqualTo('email_1', u'確認用メールアドレスが一致しません。')])
 

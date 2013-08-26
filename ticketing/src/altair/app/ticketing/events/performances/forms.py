@@ -61,7 +61,7 @@ class PerformanceForm(OurForm):
         label=u'公演コード(英数字12桁)',
         validators=[
             Required(),
-            Regexp(u'^[a-zA-Z0-9]*$', message=u'英数字のみ入力できます'),
+            Regexp(u'^[a-zA-Z0-9]*$', message=u'半角英数字のみ入力できます'),
             Length(min=12, max=12, message=u'12文字入力してください'),
         ],
     )
