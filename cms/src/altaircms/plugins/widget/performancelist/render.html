@@ -35,7 +35,11 @@ logger = logging.getLogger(__name__)
           %if widget.mask_performance_date:
             <td width="27%"> - </td>
           %else:
-            <td width="27%">${myhelpers.performance_describe_date(performance)} <br/> ${myhelpers.performance_describe_time(performance)}</td>
+            %if myhelpers.range_performance(performance):
+              <td width="27%"> ${myhelpers.performance_describe_range_date(performance)}</td>
+            %else:
+              <td width="27%"> ${myhelpers.performance_describe_date(performance)} <br/> ${myhelpers.performance_describe_time(performance)}</td>
+            %endif
           %endif
 
           <td width="25%">${performance.venue}</td>

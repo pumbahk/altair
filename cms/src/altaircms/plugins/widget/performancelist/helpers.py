@@ -6,6 +6,30 @@ from altaircms.rowspanlib import RowSpanGrid
 from .models import PerformancelistWidget
 from altaircms.page.models import Page
 
+def range_performance(performance):
+    s = performance.start_on
+    e = performance.end_on
+
+    if e:
+        if s.year == e.year and s.month == e.month and s.day == e.day:
+            return False
+        return True
+    return False
+
+def performance_describe_range_date(performance):
+    try:
+        s = performance.start_on
+        e = performance.end_on
+        D = {
+            "s_date": s.strftime(u"%Y年%m月%d日".encode("utf-8")).decode("utf-8"),
+            "s_week": unicode(WEEK[s.weekday()]),
+            "e_date": e.strftime(u"%Y年%m月%d日".encode("utf-8")).decode("utf-8"),
+            "e_week": unicode(WEEK[e.weekday()]),
+             }
+        return u"%(s_date)s（%(s_week)s）〜 %(e_date)s（%(e_week)s）" % D
+    except Exception, e:
+        logger.exception(str(e))
+
 def performance_describe_date(performance):
     try:
         d = performance.start_on
