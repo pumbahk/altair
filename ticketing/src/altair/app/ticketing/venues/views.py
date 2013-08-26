@@ -49,10 +49,7 @@ def get_site_drawing(context, request):
 
 @view_config(route_name="api.get_seats", request_method="GET", renderer='json', permission='event_viewer')
 def get_seats(request):
-    venue_id = int(request.matchdict.get('venue_id', 0))
-    venue = Venue.get(venue_id)
-    if venue is None:
-        return HTTPNotFound("Venue id #%d not found" % venue_id)
+    venue = request.context.venue
 
     _necessary_params = request.params.get(u'n', None)
     necessary_params = set() if _necessary_params is None else set(_necessary_params.split(u'|'))
@@ -152,12 +149,7 @@ def get_seats(request):
 
 @view_config(route_name='seats.download', permission='event_editor')
 def download(request):
-    venue_id = int(request.matchdict.get('venue_id', 0))
-    venue = Venue.get(venue_id)
-    if venue is None:
-        return HTTPNotFound("Venue id #%d not found" % venue_id)
-
-    seats = Seat.filter_by(venue_id=venue_id).all()
+    venue = request.context.venue
 
     headers = [
         ('Content-Type', 'application/octet-stream; charset=cp932'),
@@ -165,7 +157,7 @@ def download(request):
     ]
     response = Response(headers=headers)
 
-    seats_csv = SeatCSV(seats)
+    seats_csv = SeatCSV(venue.seats)
 
     writer = csv.DictWriter(response, seats_csv.header, delimiter=',', quoting=csv.QUOTE_ALL)
     writer.writeheader()
@@ -192,8 +184,7 @@ def index(request):
 
 @view_config(route_name="api.get_frontend", request_method="GET", permission='event_viewer')
 def frontend_drawing(request):
-    venue_id = int(request.matchdict.get('venue_id', 0))
-    venue = Venue.get(venue_id, organization_id=request.context.user.organization_id)
+    venue = request.context.venue
     part = request.matchdict.get('part')
     drawing = get_venue_site_adapter(request, venue.site).get_frontend_drawing(part)
     if drawing is None:
@@ -206,12 +197,10 @@ def frontend_drawing(request):
 # FIXME: add permission limitation
 @view_config(route_name='venues.show', renderer='altair.app.ticketing:templates/venues/show.html', decorator=with_bootstrap)
 def show(request):
-    venue_id = int(request.matchdict.get('venue_id', 0))
-    venue = Venue.get(venue_id, organization_id=request.context.user.organization_id)
-    if venue is None:
-        return HTTPNotFound("Venue id #%d not found" % venue_id)
+    venue = request.context.venue
+    venue_id = venue.id
 
-    site = Site.get(venue.site_id)
+    site = venue.site
     drawing = get_venue_site_adapter(request, site)
     root = None
     pages = drawing.get_frontend_pages()
@@ -280,8 +269,7 @@ def show(request):
 
 @view_config(route_name='venues.checker', permission='event_editor', renderer='altair.app.ticketing:templates/venues/checker.html')
 def show_checker(context, request):
-    venue_id = int(request.matchdict.get('venue_id', 0))
-    venue = Venue.filter_by(id=venue_id, organization_id=context.user.organization.id).one()
+    venue = request.context.venue
     return {
         'venue': venue,
         'site': venue.site,
@@ -331,44 +319,34 @@ def new_post(request):
 
 @view_config(route_name='venues.edit', request_method='GET', renderer='altair.app.ticketing:templates/venues/edit.html', decorator=with_bootstrap)
 def edit_get(request):
-    venue_id = int(request.matchdict.get('venue_id', 0))
-    venue = Venue.get(venue_id, organization_id=request.context.user.organization_id)
-    if venue is None:
-        return HTTPNotFound('venue id %d is not found' % venue_id)
-
-    site = Site.get(venue.site_id)
-    if site is None:
+    venue = request.context.venue
+    if venue.site is None:
         return HTTPNotFound('site id %d is not found' % venue.site_id)
 
     f = SiteForm()
-    f.process(record_to_multidict(site))
+    f.process(record_to_multidict(venue.site))
     f.name.process_data(venue.name)
     f.sub_name.process_data(venue.sub_name)
 
     return {
         'form':f,
         'venue':venue,
-        'site':site,
-        'drawing': get_venue_site_adapter(request, site),
+        'site':venue.site,
+        'drawing': get_venue_site_adapter(request, venue.site),
         'route_name': u'編集',
         'route_path': request.path,
     }
 
 @view_config(route_name='venues.edit', request_method='POST', renderer='altair.app.ticketing:templates/venues/edit.html',  decorator=with_bootstrap)
 def edit_post(request):
-    venue_id = int(request.matchdict.get('venue_id', 0))
-    venue = Venue.get(venue_id, organization_id=request.context.user.organization_id)
-    if venue is None:
-        return HTTPNotFound('venue id %d is not found' % venue_id)
-
-    site = Site.get(venue.site_id)
+    venue = request.context.venue
 
     f = SiteForm(request.POST)
     if f.validate():
         venue = merge_session_with_post(venue, f.data)
         venue.save()
 
-        site = merge_session_with_post(site, f.data)
+        site = merge_session_with_post(venue.site, f.data)
         site.save()
 
         request.session.flash(u'会場を保存しました')
@@ -377,8 +355,8 @@ def edit_post(request):
         return {
             'form':f,
             'venue':venue,
-            'site':site,
-            'drawing': get_venue_site_adapter(request, site),
+            'site':venue.site,
+            'drawing': get_venue_site_adapter(request, venue.site),
             'route_name': u'編集',
             'route_path': request.path,
         }

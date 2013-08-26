@@ -1,4 +1,8 @@
+# -*- coding: utf-8 -*-
+
 from pyramid.interfaces import IRequest
+
+from altair.app.ticketing import newRootFactory
 from .interfaces import IVenueSiteDrawingProviderAdapterFactory, ITentativeVenueSite
 from .adapters import VenueSiteDrawingProviderAdapterFactory
 
@@ -23,15 +27,17 @@ def new_venue_site_provider_factory_factory(config):
     return factory_factory
 
 def includeme(config):
-    config.add_route("venues.index", "/")
-    config.add_route("venues.new", '/new')
-    config.add_route("venues.edit", "/edit/{venue_id}")
-    config.add_route("venues.show", "/show/{venue_id}")
-    config.add_route("venues.checker", "/{venue_id}/checker")
-    config.add_route("api.get_site_drawing", "/api/drawing/{site_id}")
-    config.add_route("api.get_seats", "/{venue_id}/seats/")
-    config.add_route("api.get_frontend", "/{venue_id}/frontend/{part}")
-    config.add_route("seats.download", "/download/{venue_id}")
+    from .resources import VenueAdminResource
+    factory = newRootFactory(VenueAdminResource)
+    config.add_route("venues.index", "/", factory=factory)
+    config.add_route("venues.new", '/new', factory=factory)
+    config.add_route("venues.edit", "/edit/{venue_id}", factory=factory)
+    config.add_route("venues.show", "/show/{venue_id}", factory=factory)
+    config.add_route("venues.checker", "/{venue_id}/checker", factory=factory)
+    config.add_route("api.get_site_drawing", "/api/drawing/{site_id}", factory=factory)
+    config.add_route("api.get_seats", "/{venue_id}/seats/", factory=factory)
+    config.add_route("api.get_frontend", "/{venue_id}/frontend/{part}", factory=factory)
+    config.add_route("seats.download", "/download/{venue_id}", factory=factory)
     config.registry.registerAdapter(
         new_venue_site_provider_factory_factory(config),
         (ITentativeVenueSite, ),
