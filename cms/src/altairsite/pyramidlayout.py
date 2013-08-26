@@ -9,12 +9,33 @@ from altaircms.page.models import PageTag
 from altaircms.models import Category, Genre, SalesSegmentKind, _GenrePath
 from markupsafe import Markup
 
+### todo: move?
+class cached_method(object):
+    """a relative of pyramid.decorator.reify"""
+    def __init__(self, wrapped):
+        self.wrapped = wrapped
+        try:
+            self.__doc__ = wrapped.__doc__
+        except: # pragma: no cover
+            pass
+
+    def __get__(self, inst, objtype=None):
+        if inst is None:
+            return self
+        cache = {}
+        def cached_method(k, *args, **kwargs):
+            try:
+                return cache[k]
+            except KeyError:
+                v = cache[k] = self.wrapped(inst, k, *args, **kwargs)
+                return v
+        setattr(inst, self.wrapped.__name__, cached_method)
+        return cached_method
 
 class MyLayout(object):
     def __init__(self, context, request):
         self.context = context
         self.request = request
-
 
     def navigation_link_list(self, hierarchy):
         return get_navigation_links(self.request, hierarchy)
@@ -42,7 +63,8 @@ class MyLayout(object):
             genre = page.pageset.genre
             return genre.children_with_joined_pageset if genre else []
         return []
-       
+
+    @cached_method
     def get_genre_tree_with_nestlevel(self, genre):
         if not genre:
             return []
