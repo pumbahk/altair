@@ -13,8 +13,10 @@ __all__ = (
     'OurDateTimeFieldBase',
     'OurDateTimeField',
     'OurDateField',
+    'OurTimeField',
     'DateTimeField',
     'DateField',
+    'TimeField',
     )
 
 Automatic = atom('Automatic')
@@ -68,15 +70,16 @@ class OurDateTimeFieldBase(fields.Field):
             }
         }
 
+    _format = '%Y-%m-%d %H:%M:%S'
     _raw_data_format = "%(year)04d-%(month)02d-%(day)02d %(hour)02d:%(minute)02d:%(second)02d"
 
-    def __init__(self, _form=None, hide_on_new=False, label=None, validators=None, format='%Y-%m-%d %H:%M:%S', value_defaults=None, missing_value_defaults=None, allow_two_digit_year=True, **kwargs):
+    def __init__(self, _form=None, hide_on_new=False, label=None, validators=None, format=None, value_defaults=None, missing_value_defaults=None, allow_two_digit_year=True, **kwargs):
         super(OurDateTimeFieldBase, self).__init__(label, validators, **kwargs)
         self.form = _form
         self.hide_on_new = hide_on_new
         self.name_prefix = self.name + u'.'
         self.id_prefix = self.id + u'.'
-        self.format = format
+        self.format = format or self._format
         self.value_defaults = value_defaults
         self.missing_value_defaults = missing_value_defaults or dict(self._missing_value_defaults)
         self.allow_two_digit_year = allow_two_digit_year
@@ -264,6 +267,7 @@ class OurTimeField(OurDateTimeFieldBase):
 
     _fields = ['hour', 'minute', 'second']
 
+    _format = '%H:%M:%S'
     _raw_data_format = "%(hour)02d:%(minute)02d:%(second)02d"
 
     def process_data(self, data):
@@ -272,8 +276,8 @@ class OurTimeField(OurDateTimeFieldBase):
                 self._values[k] = u''
         else:
             if isinstance(data, datetime):
-                data = data.date()
-            elif not isinstance(data, date):
+                data = data.time()
+            elif not isinstance(data, time):
                 raise TypeError()
             for k in self._fields:
                 self._values[k] = getattr(data, k) 
