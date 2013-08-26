@@ -82,7 +82,7 @@ class StaticPageSetView(BaseView):
         try:
             path = os.path.join(static_directory.get_rootname(static_page), 
                                 self.request.params["path"])
-            logger.info("*path: {0}".format(path))
+            logger.info(u"*path: {0}".format(path))
             return as_static_page_response(self.request, static_page, path, force_original=False, 
                                            path=path, cache_max_age=0)
         except StaticPageNotFound as e:
