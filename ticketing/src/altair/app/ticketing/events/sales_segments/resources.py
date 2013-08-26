@@ -211,6 +211,14 @@ class SalesSegmentGroupUpdate(object):
             update_sales_segment(self.ssg, ss)
 
 def update_sales_segment(ssg, ss):
+    # if ss.use_default_start_at:
+    #     sync_attr(ss, ssg, 'start_at')
+    # if ss.use_default_end_at:
+    #     sync_attr(ss, ssg, 'end_at')
+    if ss.use_default_start_at:
+        ss.start_at = ssg.start_for_performance(ss.performance)
+    if ss.use_default_end_at:
+        ss.end_at = ssg.end_for_performance(ss.performance)
     if ss.use_default_seat_choice:
         sync_attr(ss, ssg, 'seat_choice')
     if ss.use_default_public:
@@ -219,10 +227,6 @@ def update_sales_segment(ssg, ss):
         sync_attr(ss, ssg, 'reporting')
     if ss.use_default_payment_delivery_method_pairs:
         sync_attr(ss, ssg, 'payment_delivery_method_pairs')
-    if ss.use_default_start_at:
-        sync_attr(ss, ssg, 'start_at')
-    if ss.use_default_end_at:
-        sync_attr(ss, ssg, 'end_at')
     if ss.use_default_upper_limit:
         sync_attr(ss, ssg, 'upper_limit')
     if ss.use_default_order_limit:

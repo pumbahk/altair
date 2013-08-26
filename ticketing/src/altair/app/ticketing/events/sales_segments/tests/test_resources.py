@@ -80,14 +80,16 @@ class UpdateSalesSegmentTests(unittest.TestCase):
         return update_sales_segment(*args, **kwargs)
 
     def test_update_sales_segment_use_defaults(self):
-        from datetime import datetime
+        from datetime import datetime, time
         ssg = testing.DummyModel(
             seat_choice=False,
             public=True,
             reporting=False,
             payment_delivery_method_pairs=[],
-            start_at=datetime(2013, 10, 11, 12, 31),
-            end_at=datetime(2013, 11, 11, 12, 31),
+            start_day_prior_to_performance=14,
+            start_time=time(10, 00),
+            end_day_prior_to_performance=1,
+            end_time=time(23, 59),
             upper_limit=10,
             order_limit=20,
             account_id=1,
@@ -98,7 +100,12 @@ class UpdateSalesSegmentTests(unittest.TestCase):
             auth3d_notice=u"testing",
         )
 
+        used_performances = []
+        ssg.start_for_performance = lambda performance: used_performances.append(performance) or datetime(2013, 10, 11, 12, 31)
+        ssg.end_for_performance = lambda performance: used_performances.append(performance) or datetime(2013, 11, 11, 12, 31)
+
         ss = testing.DummyModel(
+            performance=testing.DummyModel(),
             use_default_seat_choice=True,
             use_default_public=True,
             use_default_reporting=True,
@@ -133,14 +140,16 @@ class UpdateSalesSegmentTests(unittest.TestCase):
         self.assertEqual(ss.auth3d_notice, u"testing")
 
     def test_update_sales_segment_use_owns(self):
-        from datetime import datetime
+        from datetime import datetime, time
         ssg = testing.DummyModel(
             seat_choice=False,
             public=True,
             reporting=False,
             payment_delivery_method_pairs=[],
-            start_at=datetime(2013, 10, 11, 12, 31),
-            end_at=datetime(2013, 11, 11, 12, 31),
+            start_day_prior_to_performance=14,
+            start_time=time(10, 00),
+            end_day_prior_to_performance=1,
+            end_time=time(23, 59),
             upper_limit=10,
             order_limit=20,
             account_id=1,
