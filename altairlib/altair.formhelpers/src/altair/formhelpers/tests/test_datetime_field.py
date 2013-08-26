@@ -90,6 +90,11 @@ class OurDateTimeFieldTest(TestCase):
         self.assertEqual(field.data, None)
         self.assertEqual(field.raw_data, None)
 
+    def test_single_value(self):
+        field = self._makeOne()
+        field.process(WebobInputWrapper(MultiDict({'test': '2013-01-01 00:01:02'})))
+        self.assertEqual(field.data, datetime(2013, 1, 1, 0, 1, 2))
+
 class OurTimeFieldTest(TestCase):
     def _getTarget(self):
         from altair.formhelpers.fields.datetime import OurTimeField
@@ -161,4 +166,8 @@ class OurTimeFieldTest(TestCase):
         self.assertEqual(field.data, None)
         self.assertEqual(field.raw_data, None)
 
+    def test_single_value(self):
+        field = self._makeOne()
+        field.process(WebobInputWrapper(MultiDict({'test': '00:01:02'})))
+        self.assertEqual(field.data, time(0, 1, 2))
 
