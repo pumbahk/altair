@@ -20,24 +20,24 @@ class SalesSegmentTests(unittest.TestCase):
     def _makeOne(self, *args, **kwargs):
         return self._getTarget()(*args, **kwargs)
 
-    def test_auth3d_notice_setter(self):
-        target = self._makeOne(auth3d_notice=u"aa")
-        self.assertEqual(target.auth3d_notice, u"aa")
-        self.assertEqual(target.x_auth3d_notice, u"aa")
+    # def test_auth3d_notice_setter(self):
+    #     target = self._makeOne(auth3d_notice=u"aa")
+    #     self.assertEqual(target.auth3d_notice, u"aa")
+    #     self.assertEqual(target.x_auth3d_notice, u"aa")
 
-    def test_auth3d_notice_without_acquire(self):
-        from .models import SalesSegmentGroup
-        target = self._makeOne(auth3d_notice=u"aa",
-                               sales_segment_group=SalesSegmentGroup(auth3d_notice=u"bb"))
-        self.assertEqual(target.auth3d_notice, u"aa")
-        self.assertEqual(target.x_auth3d_notice, u"aa")
+    # def test_auth3d_notice_without_acquire(self):
+    #     from .models import SalesSegmentGroup
+    #     target = self._makeOne(auth3d_notice=u"aa",
+    #                            sales_segment_group=SalesSegmentGroup(auth3d_notice=u"bb"))
+    #     self.assertEqual(target.auth3d_notice, u"aa")
+    #     self.assertEqual(target.x_auth3d_notice, u"aa")
 
-    def test_auth3d_notice_acquire(self):
-        from .models import SalesSegmentGroup
-        target = self._makeOne(auth3d_notice=None,
-                               sales_segment_group=SalesSegmentGroup(auth3d_notice=u"bb"))
-        self.assertEqual(target.auth3d_notice, u"bb")
-        self.assertIsNone(target.x_auth3d_notice)
+    # def test_auth3d_notice_acquire(self):
+    #     from .models import SalesSegmentGroup
+    #     target = self._makeOne(auth3d_notice=None,
+    #                            sales_segment_group=SalesSegmentGroup(auth3d_notice=u"bb"))
+    #     self.assertEqual(target.auth3d_notice, u"bb")
+    #     self.assertIsNone(target.x_auth3d_notice)
 
     def test_query_orders_by_user(self):
         from altair.app.ticketing.core.models import Order
@@ -179,3 +179,37 @@ class SalesSegmentGroupTests(unittest.TestCase):
                          event)
         self.assertEqual(target.organization,
                          organization)
+
+    def test_start_for_performance(self):
+        from altair.app.ticketing.core.models import Performance
+        from datetime import datetime, time
+        performance = Performance(
+            start_on=datetime(2013, 8, 31, 10, 10)
+        )
+
+        target = self._makeOne(
+            start_day_prior_to_performance=10,
+            start_time=time(11, 00)
+        )
+        
+
+        result = target.start_for_performance(performance)
+
+        self.assertEqual(result, datetime(2013, 8, 21, 11, 0))
+
+    def test_end_for_performance(self):
+        from altair.app.ticketing.core.models import Performance
+        from datetime import datetime, time
+        performance = Performance(
+            start_on=datetime(2013, 8, 31, 10, 10)
+        )
+
+        target = self._makeOne(
+            end_day_prior_to_performance=10,
+            end_time=time(11, 00)
+        )
+        
+
+        result = target.end_for_performance(performance)
+
+        self.assertEqual(result, datetime(2013, 8, 21, 11, 0))
