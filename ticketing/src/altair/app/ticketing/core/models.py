@@ -2514,11 +2514,16 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         else:
             return False
 
+    def undelivered(self):
+        self.delivered_at = None
+        self.save()
+        return True
+
     def delete(self, force=False):
         if not self.can_delete() and not force:
             logger.info('order (%s) cannot delete status (%s)' % (self.id, self.status))
             raise Exception(u'キャンセル以外は非表示にできません')
-
+            
         # delete OrderedProduct
         for ordered_product in self.items:
             ordered_product.delete()
