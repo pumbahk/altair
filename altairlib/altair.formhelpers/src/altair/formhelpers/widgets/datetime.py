@@ -186,4 +186,41 @@ class OurDateTimeWidget(object):
             u'</span>'
             )
 
+class OurTimeWidget(object):
+    _default_placeholders = dict(
+        hour='HH',
+        minute='MM',
+        second='SS',
+        )
+
+    def __init__(self, input_builder=build_time_input_japanese_japan, class_prefix=u'datetimewidget-', placeholders=None):
+        self.input_builder = input_builder
+        self.class_prefix = class_prefix
+        self.placeholders = placeholders
+
+    def __call__(self, field, **kwargs):
+        from ..fields.datetime import Automatic
+        kwargs.pop('class_', None)
+        class_prefix = kwargs.pop('class_prefix', self.class_prefix)
+        placeholders = kwargs.pop('placeholders', self.placeholders)
+        if placeholders is Automatic:
+            placeholders = dict(self._default_placeholders)
+            placeholders.update(field.missing_value_defaults)
+        if placeholders is None:
+            placeholders = {}
+        return HTMLString(
+            u'<span %s>' % html_params(class_=class_prefix + 'container') + \
+            u''.join(self.input_builder(
+                fields=field._values,
+                id_prefix=field.id_prefix,
+                name_prefix=field.name_prefix,
+                class_prefix=class_prefix,
+                omit_second=kwargs.pop('omit_second', False),
+                hour_attrs={'placeholder': placeholders.get('hour', u'')},
+                minute_attrs={'placeholder': placeholders.get('minute', u'')},
+                second_attrs={'placeholder': placeholders.get('second', u'')},
+                common_attrs=kwargs
+                )) + \
+            u'</span>'
+            )
 
