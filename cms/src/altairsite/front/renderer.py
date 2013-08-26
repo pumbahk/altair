@@ -185,8 +185,10 @@ class RenderingParamsCollector(object):
 class FrontPageRenderer(object):
     def __init__(self, request):
         self.request = request
-        # self.fetcher = TemplateFetcher(request)
-        self.params_collector = RenderingParamsCollector(request)
+
+    @reify
+    def params_collector(self):
+        return RenderingParamsCollector(self.request)
 
     def render(self, template, page):
         bsettings = self.params_collector.get_bsettings(page)
