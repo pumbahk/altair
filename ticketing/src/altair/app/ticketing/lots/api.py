@@ -48,6 +48,7 @@ from altair.app.ticketing.core.models import (
     ShippingAddress,
     DBSession,
     Performance,
+    Product,
 )
 
 from altair.app.ticketing.users.models import (
@@ -66,7 +67,9 @@ from .models import (
     LotEntryProduct,
     LotElectedEntry,
     LotRejectedEntry,
-    LotElectWork,
+    #LotElectWork,
+    TemporaryLotEntryWish,
+    TemporaryLotEntryProduct,
 )
 from altair.app.ticketing.users import api as user_api
 
@@ -152,13 +155,28 @@ def build_lot_entry(lot, wishes, payment_delivery_method_pair, membergroup=None,
         entry.wishes.append(wish)
     return entry
 
-def build_temporary_lot_entry(*args, **kwargs):
-    entry = build_lot_entry(*args, **kwargs)
-    for wish in entry.wishes:
-        wish.performance = Performance.filter_by(id=wish.performance_id).one()
-    DBSession.expunge(entry)
-    return entry
+def build_temporary_wishes(wishes,
+                           payment_delivery_method_pair,
+                           sales_segment):
+    """ 表示用のオンメモリモデルを作成する """
+    results = []
+    for i, wish_rec in enumerate(wishes):
+        performance_id = long(wish_rec["performance_id"])
+        performance = Performance.query.filter(Performance.id==performance_id).one()
+        wish = TemporaryLotEntryWish(i, performance,
+                                     payment_delivery_method_pair,
+                                     sales_segment)
 
+        for wished_product_rec in wish_rec["wished_products"]:
+            if wished_product_rec['quantity'] > 0:
+                product = TemporaryLotEntryProduct(
+                    quantity=wished_product_rec["quantity"],
+                    product=Product.query.filter(Product.id==wished_product_rec["product_id"]).first()
+                )
+                wish.products.append(product)
+        results.append(wish)
+    return results
+    
 def entry_lot(request, entry_no, lot, shipping_address, wishes, payment_delivery_method_pair, user, gender, birthday, memo):
     """
     wishes
