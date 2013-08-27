@@ -19,6 +19,7 @@ from altair.app.ticketing.views import BaseView
 from altair.app.ticketing.fanstatic import with_bootstrap
 from altair.app.ticketing.events.performances.forms import PerformanceForm, PerformancePublicForm
 from altair.app.ticketing.core.models import Performance, PerformanceSetting
+from altair.app.ticketing.core.api import get_organization
 from altair.app.ticketing.products.forms import ProductForm
 from altair.app.ticketing.orders.forms import OrderForm, OrderSearchForm
 from altair.app.ticketing.venues.api import get_venue_site_adapter
@@ -295,14 +296,16 @@ class Performances(BaseView):
     def open_get(self):
         f = PerformancePublicForm(record_to_multidict(self.context.performance))
         f.public.data = 0 if f.public.data == 1 else 1
+
         return {
             'form':f,
-            'performance':self.context.performance
+            'performance':self.context.performance,
         }
 
     @view_config(route_name='performances.open', request_method='POST',renderer='altair.app.ticketing:templates/performances/_form_open.html')
     def open_post(self):
         f = PerformancePublicForm(self.request.POST)
+
         if f.validate():
             performance = merge_session_with_post(self.context.performance, f.data)
             performance.save()
@@ -315,7 +318,7 @@ class Performances(BaseView):
 
         return {
             'form':f,
-            'performance':self.context.performance
+            'performance':self.context.performance,
         }
 
 @view_config(decorator=with_bootstrap, permission="authenticated",
