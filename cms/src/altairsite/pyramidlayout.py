@@ -4,6 +4,9 @@ import sqlalchemy.orm as orm
 from altaircms.datelib import get_now
 from zope.deprecation import deprecate
 
+import weakref
+from functools import partial
+
 from altaircms.tag.models import HotWord
 from altaircms.page.models import PageTag
 from altaircms.models import Category, Genre, SalesSegmentKind, _GenrePath
@@ -18,19 +21,23 @@ class cached_method(object):
             self.__doc__ = wrapped.__doc__
         except: # pragma: no cover
             pass
+        self.cache_map = weakref.WeakKeyDictionary()
+
+    def __call__(self, inst, cache, k, *args, **kwargs):
+        try:
+            return cache[k]
+        except KeyError:
+            v = cache[k] = self.wrapped(inst, k, *args, **kwargs)
+            return v
 
     def __get__(self, inst, objtype=None):
         if inst is None:
             return self
-        cache = {}
-        def cached_method(k, *args, **kwargs):
-            try:
-                return cache[k]
-            except KeyError:
-                v = cache[k] = self.wrapped(inst, k, *args, **kwargs)
-                return v
-        setattr(inst, self.wrapped.__name__, cached_method)
-        return cached_method
+        try:
+            return self.cache_map[inst]
+        except KeyError:
+            m = self.cache_map[inst] = partial(self.__call__, inst, {})
+            return m
 
 class MyLayout(object):
     def __init__(self, context, request):
