@@ -86,8 +86,7 @@ class UpdateSalesSegmentTests(unittest.TestCase):
             public=True,
             reporting=False,
             payment_delivery_method_pairs=[],
-            start_day_prior_to_performance=14,
-            start_time=time(10, 00),
+            start_at=datetime(2013, 8, 31),
             end_day_prior_to_performance=1,
             end_time=time(23, 59),
             upper_limit=10,
@@ -128,7 +127,7 @@ class UpdateSalesSegmentTests(unittest.TestCase):
         self.assertTrue(ss.public)
         self.assertFalse(ss.reporting)
         self.assertEqual(ss.payment_delivery_method_pairs, [])
-        self.assertEqual(ss.start_at, datetime(2013, 10, 11, 12, 31))
+        self.assertEqual(ss.start_at, datetime(2013, 8, 31))
         self.assertEqual(ss.end_at, datetime(2013, 11, 11, 12, 31))
         self.assertEqual(ss.upper_limit, 10)
         self.assertEqual(ss.order_limit, 20)

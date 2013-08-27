@@ -65,25 +65,19 @@ class SalesSegmentGroupForm(OurForm):
             Length(max=255, message=u'255文字以内で入力してください'),
         ],
     )
-    # start_at = OurDateTimeField(
-    #     label=u'販売開始日時',
+    start_at = OurDateTimeField(
+        label=u'販売開始日時',
+        validators=[RequiredOnUpdate()],
+        format='%Y-%m-%d %H:%M',
+        hide_on_new=False
+    )
+    # start_day_prior_to_performance = OurIntegerField(
+    #     label=u'販売開始日時(公演開始までの日数)',
     #     validators=[RequiredOnUpdate()],
-    #     format='%Y-%m-%d %H:%M',
-    #     hide_on_new=True
     # )
-    start_day_prior_to_performance = OurIntegerField(
-        label=u'販売開始日時(公演開始までの日数)',
-        validators=[RequiredOnUpdate()],
-    )
-    start_time = OurTimeField(
-        label=u'販売開始日時(時刻)',
-        validators=[RequiredOnUpdate()],
-    )
-    # end_at = OurDateTimeField(
-    #     label=u'販売終了日時',
-    #     validators=[RequiredOnUpdate()],
-    #     format='%Y-%m-%d %H:%M',
-    #     hide_on_new=True
+    # start_time = OurTimeField(
+    #     label=u'販売開始日時(時刻)',
+    #     validators=[],
     # )
     end_day_prior_to_performance = OurIntegerField(
         label=u'販売終了日時(公演開始までの日数)',
@@ -93,7 +87,12 @@ class SalesSegmentGroupForm(OurForm):
         label=u'販売終了日時(時刻)',
         validators=[RequiredOnUpdate()],
     )
-
+    # end_at = OurDateTimeField(
+    #     label=u'販売終了日時',
+    #     validators=[RequiredOnUpdate()],
+    #     format='%Y-%m-%d %H:%M',
+    #     hide_on_new=True
+    # )
 
     seat_choice = OurBooleanField(
         label=u'座席選択可',

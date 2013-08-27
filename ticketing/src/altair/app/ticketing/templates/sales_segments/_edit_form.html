@@ -31,10 +31,7 @@ ssg = sales_segment.sales_segment_group
       </th>
       <td>${form.start_at}</td>
       <td>
-	<small>公演開始(${sales_segment.performance.start_on})の
-	${ssg.start_day_prior_to_performance}日前
-	${ssg.start_time}</small><br>
-	${ssg.start_for_performance(sales_segment.performance)}
+        ${ssg.start_at}
       </td>
     </tr>
     <tr>
@@ -44,7 +41,7 @@ ssg = sales_segment.sales_segment_group
       </th>
       <td>${form.end_at}</td>
       <td>
-	<small>公演開始(${sales_segment.performance.end_on})の
+	<small>公演開始(${sales_segment.performance.start_on})の
 	${ssg.end_day_prior_to_performance}日前
 	${ssg.end_time}</small><br>
 	${ssg.end_for_performance(sales_segment.performance)}
