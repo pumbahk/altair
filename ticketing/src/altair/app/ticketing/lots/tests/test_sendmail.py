@@ -2,12 +2,15 @@
 
 import unittest
 from pyramid import testing
+from altair.app.ticketing.mails.testing import MailTestMixin
 
-class send_accepted_mailTests(unittest.TestCase):
+class send_accepted_mailTests(unittest.TestCase, MailTestMixin):
 
     def setUp(self):
         self.config = testing.setUp()
+        self.config.include('altair.app.ticketing.mails')
         self.config.include('altair.app.ticketing.renderers')
+        self.registerDummyMailer()
 
     def tearDown(self):
         testing.tearDown()
@@ -87,5 +90,5 @@ class send_accepted_mailTests(unittest.TestCase):
         self.assertEqual(result.subject, u"抽選テスト 【テスト組織】")
         self.assertEqual(result.sender, "testing@sender.example.com")
         self.assertEqual(result.recipients, ['testing@example.com'])
-        self.assertIn(u'抽選テスト', result.body)
+        self.assertBodyContains(u'抽選テスト', result.body)
 

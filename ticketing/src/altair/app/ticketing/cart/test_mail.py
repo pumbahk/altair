@@ -7,6 +7,7 @@ import unittest
 from pyramid import testing
 from datetime import datetime
 from altair.app.ticketing.cart import helpers as h
+from altair.app.ticketing.mails.testing import MailTestMixin
 
 def setUpModule():
     from altair.app.ticketing.testing import _setup_db
@@ -107,23 +108,7 @@ def _build_sej(*args, **kwargs):
     sqlahelper.get_session().add(sejorder)
     return sejorder
 
-class SendPurchaseCompleteMailTest(unittest.TestCase):
-    def assertBodyContains(self, needle, haystack, message=None):
-        from pyramid_mailer.message import Attachment
-        from cgi import parse_header
-        if isinstance(haystack, Attachment):
-            ct, ctparams = parse_header(haystack.content_type)
-            haystack = haystack.data.decode(ctparams.get('charset', 'UTF-8'))
-        self.assertIn(needle, haystack, message)
-
-    def assertBodyDoesNotContain(self, needle, haystack, message=None):
-        from pyramid_mailer.message import Attachment
-        from cgi import parse_header
-        if isinstance(haystack, Attachment):
-            ct, ctparams = parse_header(haystack.content_type)
-            haystack = haystack.data.decode(ctparams.get('charset', 'UTF-8'))
-        self.assertNotIn(needle, haystack, message)
-
+class SendPurchaseCompleteMailTest(unittest.TestCase, MailTestMixin):
     def setUp(self):
         self.config = testing.setUp(settings={"altair.sej.template_file": "xxx"})
         #self.config.add_renderer('.html' , 'pyramid.mako_templating.renderer_factory')
@@ -137,11 +122,7 @@ class SendPurchaseCompleteMailTest(unittest.TestCase):
         self.config.include('altair.app.ticketing.payments.plugins')
         self.config.add_subscriber('altair.app.ticketing.cart.subscribers.add_helpers', 'pyramid.events.BeforeRender')
 
-        # XXX
-        from pyramid_mailer import get_mailer
-        from pyramid_mailer.interfaces import IMailer
-        self.config.registry.unregisterUtility(get_mailer(self.config.registry), IMailer)
-        self.config.include('pyramid_mailer.testing') 
+        self.registerDummyMailer()
 
     def tearDown(self):
         self._get_mailer().outbox = []
