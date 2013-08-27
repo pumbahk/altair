@@ -90,9 +90,12 @@ ${ch.breadcrumbs(
               <th>配送日時</th>
               <td>
                 % if order.delivered_at:
-                  ${vh.datetime(order.delivered_at)}
+		   ${vh.datetime(order.delivered_at)}
                 % endif
                 ${HH.delivery_status(order)}
+                % if order.delivered_at:
+		  (<a href="#" data-toggle="modal" data-target="#ForceChangeUndelivered">強制的に未配送にする</a>)
+                % endif
               </td>
             </tr>
             % if order.status == 'canceled':
@@ -634,6 +637,18 @@ $(function(){
   </div>
   <form method="post" action="${request.route_path('orders.issue_status', order_id=order.id)}" style="margin: 0">
     <input type="hidden" name="issued" value="0" />
+    <div class="modal-footer">
+      <button class="btn" data-dismiss="modal">キャンセル</button>
+      <button class="btn btn-warning">設定する</a>
+    </div>
+  </form>
+</div>
+
+<div class="modal hide" id="ForceChangeUndelivered">
+  <div class="modal-body">
+    この注文を強制的に未配送にしますか？
+  </div>
+  <form method="post" action="${request.route_path('orders.undelivered', order_id=order.id)}" style="margin: 0">
     <div class="modal-footer">
       <button class="btn" data-dismiss="modal">キャンセル</button>
       <button class="btn btn-warning">設定する</a>
