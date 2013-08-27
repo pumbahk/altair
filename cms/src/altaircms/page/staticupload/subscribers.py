@@ -38,6 +38,15 @@ def refine_html_files_after_staticupload(after_create):
                 with open(path, "w") as wf:
                     wf.write(output)
 
+def refine_html_file_after_staticupload(partial_create):
+    event = partial_create
+    path = event.root
+    dirname, f = os.path.split(path)
+    output = refine_link_as_string(f, dirname, event.static_directory)
+    os.rename(path, path+".original")
+    with open(path, "w") as wf:
+        wf.write(output)
+
 ## after create -> (s3upload) -> after zipupload
 def s3upload_directory(after_zipupload):
     event = after_zipupload
