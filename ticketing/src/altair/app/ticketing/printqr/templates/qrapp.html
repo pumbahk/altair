@@ -107,7 +107,11 @@ td.progress-shortcut{
       <label>qrcode: <input type="text" name="qrcode" value=""/></label>
       <a class="btn" id="load_button">読み込み</a>
       <a class="btn" id="clear_button">入力値のクリア</a>
-      <label>　※ 同一注文のQR全て発券する<input type="checkbox" name="print_unit_is_order" value=""/></label>
+      <select name="print_unit_strategy" id="unit_strategy">
+        <option selected value="token">券面1枚ずつ印刷</option>
+        <option value="order">(手動)同一注文の券面まとめて発券</option>
+        <option value="order_auto">(自動)同一注文の券面まとめて発券</option>
+      </select>
     </div>
 
     <div id="one:status-box">
@@ -327,8 +331,15 @@ $(function(){
   };
 
   //QRの読み込みページのときqrコードのinputにフォーカスをあてる
+  var invalidatingAutoFocus = false;
+  $('select[name="print_unit_strategy"]').hover(
+    function(){invalidatingAutoFocus = true;},
+    function(){invalidatingAutoFocus = false;}
+  );
   setInterval(function(){
-   $("#one.active input[name='qrcode']").focus();
+   if(!invalidatingAutoFocus){
+     $("#one.active input[name='qrcode']").focus();
+   }
   },500);
 });
 

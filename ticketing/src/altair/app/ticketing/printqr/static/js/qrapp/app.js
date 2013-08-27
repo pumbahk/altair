@@ -79,20 +79,21 @@ var DataStore = Backbone.Model.extend({
     this.set("qrcode", "");
   }, 
   setPrintStrategy: function(print_unit){
-    if(print_unit=="order"){
-      this.set("print_unit", "order");
-      this.set("print_strategy", "同一注文の券面まとめて発券");
-    }else {
-      this.set("print_unit", "token");
-      this.set("print_strategy", "個別に発券");
+    this.set("print_unit", print_unit);
+    switch(print_unit){
+    case "order":
+        this.set("print_strategy", "(手動)同一注文の券面まとめて発券");
+        break;
+    case "token":
+        this.set("print_strategy", "個別に発券");
+        break;
+    case "order_auto":
+        this.set("print_strategy", "(自動)同一注文の券面まとめて発券");
     }
   }, 
   cleanBuffer: function(){
       this.get("ticket_buffers").clean();
       this.set("print_num", 0);
-  }, 
-  isPrintUnitOrder: function(){
-    return this.get("print_unit") == "order";
   }, 
   updateByQRData: function(data){
     // this order is important for call api.applet.ticket.data(ordered_product_item_token_id, printed)
@@ -242,14 +243,14 @@ var QRInputView = AppPageViewBase.extend({
   events: {
     "click #load_button": "loadQRCodeInput", 
     "click #clear_button": "clearQRCodeInput", 
-    "click input[name='print_unit_is_order']": "checkPrintUnitIsOrder", 
+    "change #unit_strategy": "checkPrintUnitIsOrder", 
     "keydown input[name='qrcode']": "readOnEnter"
   }, 
   initialize: function(opts){
     QRInputView.__super__.initialize.call(this, opts);
     this.$qrcode = this.$el.find('input[name="qrcode"]');
     this.$status = this.$el.find('#status');
-    this.$print_unit_is_order = this.$el.find("input[name='print_unit_is_order']");
+    this.$print_unit_strategy = this.$el.find("#unit_strategy");
 
     this.datastore.bind("change:qrcode_status", this.showStatus, this);
     this.datastore.bind("*qr.canceled.ticket", this.notifyMessageForCanceled, this);
@@ -259,19 +260,21 @@ var QRInputView = AppPageViewBase.extend({
     this.communicating = false;
   }, 
   checkPrintUnitIsOrder: function(){
-    if(this.$print_unit_is_order.attr("checked") == "checked"){
-      this.datastore.setPrintStrategy("order");
-    }else {
-      this.datastore.setPrintStrategy("token");
-    }
+      //console.log(this.$print_unit_strategy.find("option:selected").val());
+      this.datastore.setPrintStrategy(this.$print_unit_strategy.find("option:selected").val());
   }, 
   notifyMessageForPrintedAlready: function(){
-    var fmt = 'そのチケットは既に印刷されてます(前回印刷日時:{0}) -- 強制発券しますか？<a id="{1}" class="btn">強制発券する</a>';
     this.datastore.set("qrcode", "<confirm>");
-    this.messageView.refreshCallback = this.refreshPrintedStatus.bind(this);
-    this.messageView.alert(fmt.replace("{0}", this.datastore.get("printed_at"))
-                              .replace("{1}", "printed_at_force_refresh") //see: messagView.events
-                            ,  true);
+    if(getHandleObject(this.datastore).enableForcePrinting()){
+      var fmt = 'そのチケットは既に印刷されてます(前回印刷日時:{0}) -- 強制発券しますか？<a id="{1}" class="btn">強制発券する</a>';
+      this.messageView.refreshCallback = this.refreshPrintedStatus.bind(this);
+      this.messageView.alert(fmt.replace("{0}", this.datastore.get("printed_at"))
+                             .replace("{1}", "printed_at_force_refresh") //see: messagView.events
+                             ,  true);
+    } else{
+      var fmt = 'そのチケットは既に印刷されています(前回印刷日時:{0}) -- 自動発券モードでは印刷できません';
+      this.messageView.alert(fmt.replace("{0}", this.datastore.get("printed_at")));
+    }
   }, 
   refreshPrintedStatus: function(){
     var params = {
@@ -303,12 +306,17 @@ var QRInputView = AppPageViewBase.extend({
     }).fail(function(s, msg){self.messageView.error(s.responseText)});
   }, 
   notifyMessageForCanceled: function(){
-    var fmt = 'そのチケットはキャンセルされています(キャンセルされた日付:{0}) -- 強制発券しますか？<a id="{1}" class="btn">強制発券する</a>';
     this.datastore.set("qrcode", "<confirm>");
-    this.messageView.canceledCallback = this.refreshCanceled.bind(this);
-    this.messageView.alert(fmt.replace("{0}", this.datastore.get("canceled"))
-                              .replace("{1}", "canceled_force_print") //see: messagView.events
-                            ,  true);
+    if(getHandleObject(this.datastore).enableForcePrinting()){
+      var fmt = 'そのチケットはキャンセルされています(キャンセルされた日付:{0}) -- 強制発券しますか？<a id="{1}" class="btn">強制発券する</a>';
+      this.messageView.canceledCallback = this.refreshCanceled.bind(this);
+      this.messageView.alert(fmt.replace("{0}", this.datastore.get("canceled"))
+                             .replace("{1}", "canceled_force_print") //see: messagView.events
+                             ,  true);
+    } else {
+      var fmt = 'そのチケットはキャンセルされています(キャンセルされた日付:{0}) -- 自動発券モードでは印刷できません';
+      this.messageView.alert(fmt.replace("{0}", this.datastore.get("canceled")));
+    }
   }, 
   refreshCanceled: function(){
     this.datastore.set("canceled", false);
@@ -609,6 +617,81 @@ var PrintableTicketsSelectView = Backbone.View.extend({
   }
 })
 
+//HnadleObject..
+var actions = {
+  enableForcePrinting: null, 
+  createTicket: null, 
+  addTicket: null, 
+  printAll: null, 
+  updatePrintedAt: null
+};
+
+var PrintUnitIsToken = {
+  enableForcePrinting: function(){
+    return true;
+  }, 
+  createTicket: function createTicket(appletView){
+    appletView.createTicketUnitByToken().done(appletView.autoPrint.bind(appletView));
+  }, 
+  addTicket: function addTicket(datastore, service, ticket){
+    service.addTicket(service.createTicketFromJSObject(ticket));
+    datastore.set("print_num",  datastore.get("print_num") + 1);
+  }, 
+  printAll: function printAll(appletView){
+    appletView.service.printAll();
+  }, 
+  getAfterPrintApi: function getAfterPrintApi(apiResource){
+    return apiResource["api.ticket.after_printed"];      
+  }
+};
+var PrintUnitIsOrder = {
+  enableForcePrinting: function(){
+    return true;
+  }, 
+  createTicket: function createTicket(appletView){
+    return appletView.createTicketUnitByOrder();
+  }, 
+  addTicket: function addTicket(datastore, service, ticket){
+    datastore.get("ticket_buffers").addTicket(ticket);        
+    datastore.set("print_num",  datastore.get("print_num") + 1);
+  }, 
+  printAll: function printAll(appletView){
+    appletView._printAllWithBuffer();
+  }, 
+  getAfterPrintApi: function getAfterPrintApi(apiResource){
+    return apiResource["api.ticket.after_printed_order"];      
+  }
+};
+var PrintUnitIsOrderAutoPrint ={
+  enableForcePrinting: function(){
+    return false;
+  }, 
+  createTicket: function createTicket(appletView){
+    appletView.createTicketUnitByOrder().done(appletView.autoPrint.bind(appletView));
+  }, 
+  addTicket: function addTicket(){
+    datastore.get("ticket_buffers").addTicket(ticket);        
+    datastore.set("print_num",  datastore.get("print_num") + 1);
+  }, 
+  printAll: function printAll(appletView){
+    appletView._printAllWithBuffer();
+  }, 
+  getAfterPrintApi: function getAfterPrintApi(apiResource){
+    return apiResource["api.ticket.after_printed_order"];      
+  }
+};
+
+var HandleTable = {
+  token: PrintUnitIsToken, 
+  order: PrintUnitIsOrder, 
+  order_auto: PrintUnitIsOrderAutoPrint
+};
+
+var getHandleObject = function(model){
+  // console.log(model.get("print_unit"));
+  return HandleTable[model.get("print_unit")];
+}
+
 var AppletView = Backbone.View.extend({
   initialize: function(opts){
     this.appviews = opts.appviews;
@@ -632,12 +715,7 @@ var AppletView = Backbone.View.extend({
   }, 
   _addTicket: function(ticket){
     try {
-      if(this.datastore.isPrintUnitOrder()){
-        this.datastore.get("ticket_buffers").addTicket(ticket);
-      }else {
-        this.service.addTicket(this.service.createTicketFromJSObject(ticket));
-      }           
-        this.datastore.set("print_num",  this.datastore.get("print_num") + 1);
+        getHandleObject(this.datastore).addTicket(this.datastore, ticket);
     } catch (e) {
       this.appviews.messageView.error(e);
     }
@@ -665,7 +743,6 @@ var AppletView = Backbone.View.extend({
       });
   }, 
   _printAllWithBuffer: function(){
-    this.appviews.messageView.info("チケット印刷中です.....");
     var self = this;
     this.datastore.get("ticket_buffers").consumeAll(function(buf, template_id, template_name){
       self.datastore.set("ticket_template_id", template_id);
@@ -682,11 +759,7 @@ var AppletView = Backbone.View.extend({
     if(this.datastore.get("printed")){
       try {
         this.appviews.messageView.info("チケット印刷中です.....");
-        if(this.datastore.isPrintUnitOrder()){
-          this._printAllWithBuffer();
-        }else{
-          this.service.printAll();
-        }
+        getHandleObject(this.datastore).printAll(this);
         this._afterPrintAll();
       } catch (e) {
         this.datastore.set("printed", false);
@@ -695,12 +768,7 @@ var AppletView = Backbone.View.extend({
     }
   }, 
   _updateTicketPrintedAt: function(callback){
-    if(this.datastore.isPrintUnitOrder()){
-      var apiUrl = this.apiResource["api.ticket.after_printed_order"]      
-    }else {
-      var apiUrl = this.apiResource["api.ticket.after_printed"]      
-    }
-
+    var apiUrl = getHandleObject(this.datastore).getAfterPrintApi(this.apiResource);
     var params = {
       ordered_product_item_token_id: this.datastore.get("ordered_product_item_token_id"), 
       order_no: this.datastore.get("orderno"), 
@@ -752,16 +820,12 @@ var AppletView = Backbone.View.extend({
     }
   }, 
   createTicket: function(){
-    if(this.datastore.isPrintUnitOrder()){
-      return this.createTicketUnitByOrder()
-    }else {
-      return this.createTicketUnitByToken()
-    }
+      getHandleObject(this.datastore).createTicket(this);
   }, 
   createTicketUnitByOrder: function(){
     var orderno = this.datastore.get("orderno");
     var self = this;
-    $.ajax({
+    return $.ajax({
       type: 'POST',
       processData: false,
       data: JSON.stringify({ order_no: orderno }),
@@ -785,7 +849,7 @@ var AppletView = Backbone.View.extend({
   createTicketUnitByToken: function(){
     var tokenId = this.datastore.get("ordered_product_item_token_id");
     var self = this;
-    $.ajax({
+    return $.ajax({
       type: 'POST',
       processData: false,
       data: JSON.stringify({ ordered_product_item_token_id: tokenId }),
@@ -810,13 +874,15 @@ var AppletView = Backbone.View.extend({
         self.appviews.messageView.info("券面印刷用データを追加中です...");
         self._addTicket(ticket);
       });
-      if(self.datastore.get("auto_trigger")){
-        self.datastore.trigger("*qr.validate.preprint");
-      }else{
-        var fmt = "キャンセル済みのチケットあるいはチケットは自動的に印刷しません。印刷するには、購入情報を確認した後、印刷ボタンを押してください";
-        self.appviews.messageView.alert(fmt);
-      }
     }).fail(function(s, msg){self.appviews.messageView.error(s.responseText)});
+  }, 
+  autoPrint: function(){
+    if(this.datastore.get("auto_trigger")){
+      this.datastore.trigger("*qr.validate.preprint");
+    }else{
+      var fmt = "キャンセル済みのチケットあるいはチケットは自動的に印刷しません。印刷するには、購入情報を確認した後、印刷ボタンを押してください";
+      this.appviews.messageView.alert(fmt);
+    }
   }, 
   fetchPinterCandidates: function(){
     try {
