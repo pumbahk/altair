@@ -3,6 +3,8 @@ logger = logging.getLogger(__name__)
 from pyramid_mailer.message import Message
 
 from collections import namedtuple
+from .api import get_appropriate_message_part
+
 MailData = namedtuple("MailData", "subject sender body recipients")
 
 class SimpleMail(object):
@@ -15,6 +17,6 @@ class SimpleMail(object):
             subject=subject,
             recipients=recipients,
             bcc=bcc or [],
-            body=mail_body,
+            body=get_appropriate_message_part(self.request, recipients[0] if recipients else None, mail_body),
             sender=sender)
 

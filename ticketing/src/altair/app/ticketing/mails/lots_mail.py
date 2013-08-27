@@ -5,7 +5,7 @@ from pyramid.compat import text_type
 from zope.interface import implementer
 from .interfaces import IPurchaseInfoMail
 from pyramid.renderers import render
-from .api import create_or_update_mailinfo,  create_fake_lot_entry,  create_fake_elected_wish, get_mail_setting_default
+from .api import create_or_update_mailinfo,  create_fake_lot_entry,  create_fake_elected_wish, get_mail_setting_default, get_appropriate_message_part
 from .forms import SubjectInfoWithValue, SubjectInfo, SubjectInfoDefault
 from .forms import SubjectInfoRenderer
 import logging
@@ -75,7 +75,7 @@ class LotsMail(object):
             subject=subject,
             recipients=[lot_entry.shipping_address.email_1],
             bcc=bcc,
-            body=mail_body,
+            body=get_appropriate_message_part(self.request, lot_entry.shipping_address.email_1, mail_body),
             sender=sender)
 
     def build_message(self, subject, traverser):
