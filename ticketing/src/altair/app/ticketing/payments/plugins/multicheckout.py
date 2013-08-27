@@ -186,7 +186,6 @@ class MultiCheckoutPlugin(object):
                     error_code=checkout_sales_result.CmnErrorCd
                 )
 
-
         ahead_com_code = checkout_sales_result.AheadComCd
 
         order = c_models.Order.create_from_cart(cart)

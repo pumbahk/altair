@@ -17,19 +17,7 @@
 	<div class="wrapper">
 		<!-- メインカラム -->
 		<div class="maincol">
-			<div class="header">
-				<div class="gnavi">
-					<ul>
-						<li><a href="/top">チケットTOP</a></li>
-						<li><a href="/purchase">チケット購入</a></li>
-						<!-- <li><a href="price.html">価格・座席図</a></li> -->
-						<li><a href="/unocurppied">残席情報</a></li>
-						<li><a href="/playguide">チケット取扱数量</a></li>
-						<li><a href="/howto">購入・引取方法</a></li>
-						<li><a href="/faq">FAQ</a></li>
-					</ul>　　
-				</div>
-			</div>
+			<div class="header"></div>
       <div class="kadomaru">
         <table cellpadding="0" cellspacing="0" class="textC" style="margin:0 auto;">
           <tr>
@@ -47,11 +35,6 @@
                     <tr>
                       <td style="text-align:center;"> 
                         <input type="submit" class="redBtn" style="margin-top: 30px;" value="チケット購入" />
-                        <div style="margin-top: 10px; font-size: 80%">
-                          ■3/30・31 秋田ノーザンハピネッツ試合<br />
-                          ■4/13・14 千葉ジェッツ試合<br />
-                          2/1(金) 10:00より一般発売開始<br />
-                        </div>
                         %if guest_message:
                         <div class="small red">${guest_message}</div>
                         %endif

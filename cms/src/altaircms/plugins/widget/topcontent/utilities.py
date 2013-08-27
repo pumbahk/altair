@@ -15,7 +15,7 @@ def render_topics_with_template(template_name, request, widget):
     searcher = get_topic_searcher(request, widget.type)
 
     qs = searcher.query_publishing_topics(d, widget.tag, widget.system_tag)
-    qs = qs.options(orm.joinedload("linked_page"), orm.joinedload("image_asset")).limit(widget.display_count)
+    qs = qs.options(orm.joinedload("linked_page"), orm.joinedload("linked_page.event"), orm.joinedload("image_asset")).limit(widget.display_count)
     qs = [q for q in qs if q.image_asset_id]
     result = render(template_name, {"widget": widget, "qs": qs}, request)
     return result

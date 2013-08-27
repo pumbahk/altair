@@ -4,6 +4,8 @@ from pyramid.view import render_view_to_response
 from pyramid_mailer import get_mailer
 from pyramid_mailer.message import Message
 from altair.app.ticketing.core.api import get_organization, get_organization_setting, is_mobile_request
+from altair.app.ticketing.mails.api import get_appropriate_message_part
+
 logger = logging.getLogger(__name__)
 
 def send_qr_mail(request, context, recipient, sender):
@@ -22,7 +24,7 @@ def _send_mail_simple(request, recipient, sender, mail_body, subject=u"QRチケ�
             subject=subject, 
             recipients=[recipient], 
             #bcc=bcc,
-            body=mail_body,
+            body=get_appropriate_message_part(request, recipient, mail_body),
             sender=sender)
     return get_mailer(request).send(message)
 

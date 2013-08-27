@@ -3,11 +3,11 @@ import re
 import os
 import urllib
 from datetime import datetime
+from collections import namedtuple
 from zope.interface import implementer
 from pyramid.response import FileResponse
 from pyramid.response import Response
 from pyramid.interfaces import IRendererFactory
-from pyramid.renderers import render_to_response
 from pyramid.decorator import reify
 
 import logging
@@ -17,8 +17,9 @@ from .interfaces import IStaticPageDataFetcher
 from .interfaces import IStaticPageCache
 from .. import StaticPageNotFound
 from altairsite.front.api import get_frontpage_discriptor_resolver
+from altairsite.front.api import get_frontpage_renderer
 from altaircms.response import FileLikeResponse
-from collections import namedtuple
+
 
 CACHE_MAX_AGE=60
 
@@ -176,6 +177,9 @@ class StaticPageCache(object):
         try:
             v = fetch_function(self, k)
             logger.debug("StaticPageCache: setitem and remove sentinel -- {k}, fetching=removed".format(k=k))
+            if v is None:
+                raise ValueError("404 --- {k} is None".format(k=k))
+            self.file_data[k] = v
             self.fetching.remove_value(k)
             if v is None:
                 logger.error("404 --- {k}".format(k=k))
@@ -186,13 +190,18 @@ class StaticPageCache(object):
                 cached = self.file_group[v.group_id]
                 cached.add(k)
                 self.file_group[v.group_id] = cached
-            self.file_data[k] = v
             # logger.debug("result: group={group} data={data}".format(group=self.file_group[v.group_id], data=v)) #annoying
             return v
+        except ValueError as e:
+            logger.warn(repr(e)) #insecure string
+            self.file_data.remove_value(k)
+            self.fetching.remove_value(k) #call multiplly is ok?
         except Exception as e:
-            logger.exception(str(e))
+            logger.exception(repr(e))
+            self.file_data.remove_value(k)
+            self.fetching.remove_value(k) #call multiplly is ok?
             logger.warn("fetching: exception found. on fetching data. release for '{k}'".format(k=k))
-            self.fetching.remove_value(k)
+        raise HTTPNotFound
 
     def remove_group(self, k):
         try:
@@ -218,12 +227,14 @@ class ResponseMaker(object):
     NotFound = StaticPageNotFound
     def __init__(self, request, static_page, 
                  force_original=False, 
-                 cache_max_age=None, body_var_name="inner_body"):
+                 cache_max_age=None, body_var_name="inner_body", 
+                 render_impl=get_frontpage_renderer):
         self.request = request
         self.static_page = static_page
         self.force_original = force_original
         self.cache_max_age = cache_max_age
         self.body_var_name = body_var_name
+        self.renderer = render_impl(request)
 
     @reify
     def descriptor(self):
@@ -301,7 +312,7 @@ class ResponseMaker(object):
 
     def render(self, spec, params):
         try:
-            return render_to_response(spec, params, self.request)
+            return self.renderer._render(spec, self.static_page.layout, params)
         except Exception as e:
             logger.exception(e)
             raise StaticPageNotFound("exception is occured")

@@ -4,17 +4,45 @@ import sqlalchemy.orm as orm
 from altaircms.datelib import get_now
 from zope.deprecation import deprecate
 
+import weakref
+from functools import partial
+
 from altaircms.tag.models import HotWord
 from altaircms.page.models import PageTag
 from altaircms.models import Category, Genre, SalesSegmentKind, _GenrePath
 from markupsafe import Markup
 
+### todo: move?
+class cached_method(object):
+    """a relative of pyramid.decorator.reify"""
+    def __init__(self, wrapped):
+        self.wrapped = wrapped
+        try:
+            self.__doc__ = wrapped.__doc__
+        except: # pragma: no cover
+            pass
+        self.cache_map = weakref.WeakKeyDictionary()
+
+    def __call__(self, inst, cache, k, *args, **kwargs):
+        try:
+            return cache[k]
+        except KeyError:
+            v = cache[k] = self.wrapped(inst, k, *args, **kwargs)
+            return v
+
+    def __get__(self, inst, objtype=None):
+        if inst is None:
+            return self
+        try:
+            return self.cache_map[inst]
+        except KeyError:
+            m = self.cache_map[inst] = partial(self.__call__, inst, {})
+            return m
 
 class MyLayout(object):
     def __init__(self, context, request):
         self.context = context
         self.request = request
-
 
     def navigation_link_list(self, hierarchy):
         return get_navigation_links(self.request, hierarchy)
@@ -42,7 +70,8 @@ class MyLayout(object):
             genre = page.pageset.genre
             return genre.children_with_joined_pageset if genre else []
         return []
-       
+
+    @cached_method
     def get_genre_tree_with_nestlevel(self, genre):
         if not genre:
             return []

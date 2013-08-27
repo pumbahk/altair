@@ -40,7 +40,6 @@ function build_form_params(form) {
       value = get_selected_options(v);
     } else {
       value = $(v).val();
-      console.log(value);
     }
     if (value != null) {
       if (v.name.substr(-2) == '[]') {
@@ -263,6 +262,54 @@ var get_datetime_for, set_datetime_for, attach_datepicker;
     $(this).find(list).removeAttr('disabled');
     $(this).submit(function(){
       $(this).find(list).attr('disabled','disabled');
+    });
+  };
+
+  $.fn.bootstrap_radios_to_buttons = function bootstrap_radios_to_buttons() {
+    this.each(function (_, button_set) {
+      var $button_set = $(button_set);
+      var radio_sets = {};
+      var labels = $button_set.find('label');
+      function findLabel(id) {
+        for (var i = 0; i < labels.length; i++) {
+          if (labels[i].getAttribute('for') == id)
+            return labels[i];
+        }
+        return void(0);
+      }
+      function reflectState(radio_set, record) {
+        if (radio_set.active && !radio_set.active.radio[0].checked) {
+          radio_set.active.button.removeClass('active');
+          radio_set.active = null;
+        }
+        if (record.radio[0].checked) {
+          record.button.addClass('active');
+          radio_set.active = record;
+        }
+      }
+      $button_set.find(':radio[class~="btn"]').each(function (_, radio) {
+        var $radio = $(radio);
+        var name = $radio.attr('name');
+        var id = $radio.attr('id');
+        var $label = $(radio.parentNode.localName.toLowerCase() == 'label' ?
+                       radio.parentNode: findLabel(id));
+        var radio_set = radio_sets[name];
+        if (!radio_set)
+          radio_sets[name] = radio_set = { active: null, list: [] };
+        $radio.css('display', 'none');
+        $label.css('display', 'none'); 
+        var $button = $('<button class="btn"></button>').html($label.html());
+        var record = { button: $button, radio: $radio, label: $label };
+        reflectState(radio_set, record);
+        $button.click(function () {
+          $radio.click();
+        });
+        $radio.change(function () {
+          reflectState(radio_set, record);
+        });
+        $radio.after($button);
+        radio_set.list.push(record);
+      });
     });
   };
 }(jQuery))

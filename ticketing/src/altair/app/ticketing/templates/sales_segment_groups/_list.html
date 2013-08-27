@@ -9,8 +9,8 @@
         <tr>
           <th class="minwidth"></th>
           <th>${ch.sortable(form.name, paging)}</th>
-          <th>${ch.sortable(form.start_at, paging)}</a></th>
-          <th>${ch.sortable(form.end_at, paging)}</a></th>
+          <%doc><th>${ch.sortable(form.start_at, paging)}</a></th></%doc>
+          <%doc><th>${ch.sortable(form.end_at, paging)}</a></th></%doc>
           <th>${ch.sortable(form.account_id, paging)}</a></th>
           <th>${ch.sortable(form.upper_limit, paging)}</a></th>
           <%doc><th>${ch.sortable(form.order_limit, paging)}</a></th></%doc>
@@ -32,8 +32,8 @@
             <input type="hidden" id="kind" value="${sales_segment_group.kind}" />
           </td>
           <td ${rowspan}><a href="${request.route_path('sales_segment_groups.show', sales_segment_group_id=sales_segment_group.id)}">${sales_segment_group.name}</a></td>
-          <td ${rowspan}>${vh.datetime(sales_segment_group.start_at)}</td>
-          <td ${rowspan}>${vh.datetime(sales_segment_group.end_at)}</td>
+          <%doc><td ${rowspan}>${vh.datetime(sales_segment_group.start_at)}</td></%doc>
+          <%doc><td ${rowspan}>${vh.datetime(sales_segment_group.end_at)}</td></%doc>
           <td ${rowspan}>${sales_segment_group.account.name}</td>
           <td ${rowspan}>${sales_segment_group.upper_limit or u''}</td>
           <%doc><td ${rowspan}>${sales_segment_group.order_limit or u''}</td></%doc>
