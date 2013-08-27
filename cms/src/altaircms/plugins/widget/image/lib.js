@@ -38,7 +38,7 @@ if(!widget){
                     $(".browse").removeClass("disabled");
 
                     $(".scrollable").remove();
-                    $("#image_tab").append("<div class='scrollable' style='width: 550px'></div>");
+                    $("#tag_search_form").after("<div class='scrollable' style='width: 550px'></div>");
                     $(".scrollable").append("<div class='items'></div>");
 
                     for (var groupNo in assets_data){
