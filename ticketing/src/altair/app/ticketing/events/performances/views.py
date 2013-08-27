@@ -290,17 +290,16 @@ class Performances(BaseView):
     def open_get(self):
         f = PerformancePublicForm(record_to_multidict(self.context.performance))
         f.public.data = 0 if f.public.data == 1 else 1
-        org = get_organization(request=self.request)
+
         return {
             'form':f,
             'performance':self.context.performance,
-            'organization':org
         }
 
     @view_config(route_name='performances.open', request_method='POST',renderer='altair.app.ticketing:templates/performances/_form_open.html')
     def open_post(self):
         f = PerformancePublicForm(self.request.POST)
-        org = get_organization(request=self.request)
+
         if f.validate():
             performance = merge_session_with_post(self.context.performance, f.data)
             performance.save()
@@ -314,7 +313,6 @@ class Performances(BaseView):
         return {
             'form':f,
             'performance':self.context.performance,
-            'organization':org
         }
 
 @view_config(decorator=with_bootstrap, permission="authenticated",
