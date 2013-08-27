@@ -3,6 +3,7 @@
 def includeme(config):
     config.add_route('orders.index'                     , '/')
     config.add_route('orders.checked.queue'             , '/checked/queue')
+    config.add_route('orders.checked.delivered'         , '/checked/delivered')
     config.add_route('orders.show'                      , '/show/{order_id}')
     config.add_route('orders.edit.shipping_address'     , '/edit/{order_id}/shipping_address/')
     config.add_route('orders.edit.product'              , '/edit/{order_id}/product/')
