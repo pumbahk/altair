@@ -2,7 +2,8 @@ from altair.app.ticketing.core.models import MailTypeEnum
 from pyramid.settings import asbool
 
 def install_mail_utility(config):
-    config.include(config.registry.settings["altair.mailer"])
+    config.include('pyramid_mailer')
+    config.include('altair.mobile')
     config.include(".config")
 
     from .api import MailSettingDefaultGetter
@@ -33,6 +34,10 @@ def install_mail_utility(config):
     from altair.app.ticketing.mails.lots_mail import LotsRejectedMail
     config.add_lot_entry_mail_utility(MailTypeEnum.LotsRejectedMail, 
                                   ".lots_mail", LotsRejectedMail, "altair.app.ticketing:templates/mail/lot_reject_entry.txt")
+
+    ## message_part_factory
+    config.add_message_part_factory('nonmobile.plain', 'text/plain')
+    config.add_message_part_factory('mobile.plain', 'text/plain')
 
 def includeme(config):
     config.include(install_mail_utility)

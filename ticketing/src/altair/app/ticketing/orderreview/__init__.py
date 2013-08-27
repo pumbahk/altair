@@ -23,6 +23,7 @@ def main(global_config, **local_config):
     config.set_root_factory('.resources.OrderReviewResource')
     #config.add_renderer('.html' , 'pyramid.mako_templating.renderer_factory')
     #config.add_renderer('.txt' , txt_renderer_factory)
+    config.include('altair.app.ticketing.mails')
     config.include('altair.app.ticketing.renderers')
     config.add_static_view('static', 'altair.app.ticketing.orderreview:static', cache_max_age=3600)
     config.add_static_view('static_', 'altair.app.ticketing.cart:static', cache_max_age=3600)

@@ -52,7 +52,7 @@ def rendering_page(context, request):
         url = url.replace("/index.html", "")
 
     if os.path.splitext(url)[1] != "":
-        return HTTPNotFound()
+        raise HTTPNotFound()
 
     page = control.fetch_page_from_params(url, dt)
 

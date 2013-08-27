@@ -34,6 +34,10 @@ class DummyRequest(_DummyRequest):
         from webob.multidict import MultiDict
         if hasattr(self, 'params'):
             self.params = MultiDict(self.params)
+        if hasattr(self, 'GET'):
+            self.GET = MultiDict(self.GET)
+        if hasattr(self, 'POST'):
+            self.POST = MultiDict(self.POST)
         self.browserid = kwargs.get("browserid")
         self.request_iface = kwargs.get('request_iface', IRequest)
 

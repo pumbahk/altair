@@ -1,5 +1,5 @@
 # -*- coding:utf-8 -*-
-from .api import create_or_update_mailinfo,  create_fake_order, get_mail_setting_default
+from .api import create_or_update_mailinfo,  create_fake_order, get_mail_setting_default, get_appropriate_message_part
 from .forms import SubjectInfoRenderer, OrderInfoDefault, SubjectInfoWithValue
 from mako.template import Template
 from altair.app.ticketing.cart import helpers as ch ##
@@ -69,7 +69,7 @@ class PurchaseCompleteMail(object):
             subject=subject,
             recipients=[order.shipping_address.email_1],
             bcc=bcc,
-            body=mail_body,
+            body=get_appropriate_message_part(self.request, order.shipping_address.email_1, mail_body),
             sender=sender)
 
     def build_message(self, subject, traverser):
