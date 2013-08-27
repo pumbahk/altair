@@ -10,7 +10,7 @@ import argparse
 from pyramid.paster import bootstrap, setup_logging   
 from pyramid.renderers import render_to_response
 from sqlalchemy import and_
-from sqlalchemy.sql.expression import not_
+from sqlalchemy.sql.expression import not_, or_
 from sqlalchemy.sql import func
 import sqlahelper
 
@@ -132,21 +132,17 @@ def detect_fraud():
     query = query.filter(DeliveryMethod.delivery_plugin_id==plugins.SEJ_DELIVERY_PLUGIN_ID)
     # 指定期間
     query = query.filter(period_from<=Order.created_at, Order.created_at<=period_to)
-    # 1件の注文で4枚以上
+    # 同一人物(user_idまたはメールアドレス)による同一公演の予約枚数が8枚以上、または合計金額が10万以上
+    query = query.join(Order.shipping_address)
     query = query.join(Order.ordered_products)
     query = query.join(OrderedProduct.ordered_product_items)
-    query = query.group_by(Order.id).having(func.sum(OrderedProductItem.quantity) >= 4)
-    query = query.with_entities(Order.id)
+    query = query.group_by(Order.performance_id, func.ifnull(Order.user_id, ShippingAddress.email_1))
+    query = query.having(or_(
+        func.sum(OrderedProductItem.quantity) >= 8,
+        func.sum(OrderedProductItem.price * OrderedProductItem.quantity) >= 100000
+    ))
+    query = query.with_entities(Order.performance_id, func.ifnull(Order.user_id, ShippingAddress.email_1))
     orders = query.all()
-
-    # 同一人物(user_idまたはメールアドレス)による同一公演の注文が2件以上存在
-    if len(orders) > 0:
-        query = Order.query.filter(Order.id.in_([o[0] for o in orders]))
-        query = query.join(Order.shipping_address)
-        query = query.group_by(Order.performance_id, func.ifnull(Order.user_id, ShippingAddress.email_1))
-        query = query.having(func.count(Order.id) >= 2)
-        query = query.with_entities(Order.performance_id, func.ifnull(Order.user_id, ShippingAddress.email_1))
-        orders = query.all()
 
     # 該当した予約を予約者ごとに全て取得
     if len(orders) > 0:
@@ -154,7 +150,11 @@ def detect_fraud():
             query = Order.query.filter(Order.canceled_at==None)
             query = query.join(Order.shipping_address)
             query = query.filter(func.ifnull(Order.user_id, ShippingAddress.email_1)==order[1])
-            frauds.append(query.all())
+            query = query.filter(period_from<=Order.created_at, Order.created_at<=period_to)
+            rows = query.all()
+            # 同一人物(user_idまたはメールアドレス)による同一公演の注文が2件以上存在
+            if len(rows) >= 2:
+                frauds.append(rows)
 
     if len(frauds) > 0:
         settings = registry.settings
