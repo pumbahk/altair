@@ -76,3 +76,5 @@ class ImageWidgetResource(HandleSessionMixin,
     WidgetClass = ImageWidget
     AssetClass = ImageAsset
 
+    def search_asset(self, search_word):
+        return self.request.allowable(self.AssetClass).filter(self.AssetClass.title.like("%" + search_word + "%"))

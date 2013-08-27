@@ -3,7 +3,7 @@
 ## N個ごとに区切られたitreratorを受け取り、divで区切って出力(scrollのため)
 <%def name="render(assets)">
   % for i, g in enumerate(assets):
-  <div class="group" id="group:${i}">
+  <div class="group" id="group_${i}">
      % for image in g:
        <div class="item">
          <img pk="${image.id}" src="${h.asset.rendering_object(request,image).thumbnail_path}" alt="" class="${"managed" if widget.asset==image else ""}"/>
@@ -17,30 +17,52 @@
 <div class="title">
   <h1>画像(image)</h1>
 </div>
+<br/>
+<div style='clear:both;' id="imgtabs">
+  <ul>
+    <li><a href="#image_tab">画像の選択</a></li>
+    <li><a href="#setting_tab">表示設定</a></li>
+  </ul>
+  <div id="image_tab" style="height: 600px">
 
-<div>
-<table class="table">
-  <tbody>
-    ${co.formfield(form, "href")}
-    ${co.formfield(form, "width")}
-    ${co.formfield(form, "height")}
-    ${co.formfield(form, "alt")}
-    ${co.formfield(form, "align")}
-  </tbody>
-</table>
-<button type="button" id="image_submit">登録</button>
+    <form id="search_form" action="${request.route_path('image_widget_search')}" method="POST">
+      検索文字列<br/>
+      <input type="hidden" name="pk" value="${pk}"/>
+      <input type="text" name="search_word" value=""/><input type="submit" value="検索">
+      <p/>
+    </form>
 
-<link rel="stylesheet" type="text/css" href="/plugins/static/css/widget/lib/image.css">
-<!-- "previous page" action -->
-<a class="prev browse left"></a>
-<a class="next browse right"></a>
-<div class="navi"></div>    
+    <form id="tag_search_form" action="${request.route_path('image_widget_tag_search')}" method="POST">
+      検索タグ<br/>
+      <input type="hidden" name="pk" value="${pk}"/>
+      <input type="text" name="tags" value=""/><input type="submit" value="タグ検索">
+    </form>
 
-<!-- root element for scrollable -->
-<div class="scrollable">   
-   <!-- root element for the items -->
-   <div class="items">
-   ${render(assets)}
-   </div>
-</div>
+    <button type="button" id="image_submit">登録</button>
+    <br/>
+
+    <link rel="stylesheet" type="text/css" href="/plugins/static/css/widget/lib/image.css">
+    <!-- "previous page" action -->
+    <a class="prev browse left"></a>
+    <a class="next browse right"></a>
+    <div class="navi"></div>
+
+    <div class="scrollable" style="width: 550px">
+        <div class="items">
+          ${render(assets)}
+        </div>
+    </div>
+  </div>
+  <div id="setting_tab">
+    <table class="table">
+      <tbody>
+        ${co.formfield(form, "href")}
+        ${co.formfield(form, "width")}
+        ${co.formfield(form, "height")}
+        ${co.formfield(form, "alt")}
+        ${co.formfield(form, "align")}
+      </tbody>
+    </table>
+    <button type="button" id="image_info_submit">登録</button>
+  </div>
 </div>
