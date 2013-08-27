@@ -418,12 +418,12 @@ def _id2int(elm):
             raise TypeError('invalid type: {0}'.format(repr(elm)))
         
 class SoldTableCreator(object):
-    SEAT_SOURCE = SoldSeatSource
-    TABLE = SoldSeatTableRecord
+    seat_source = SoldSeatSoure
+    table = SoldSeatTableRecord
+    record = SoldSeatRecord
     REPORT_TYPE = 'sold'
     KIND = 'sold'
-    RECORD = SoldSeatRecord
-    
+
     def __init__(self, performance, stock_holder, date):
         self.performance_id = _id2int(performance)
         self.stock_holder_id = _id2int(stock_holder)
@@ -440,7 +440,7 @@ class SoldTableCreator(object):
 
 
     def seat2seatsource(self, seat, ordered_product_item):
-        seat_source = self.SEAT_SOURCE(source=seat)
+        seat_source = self.saet_source(source=seat)
         attributes = seat.attributes or {}        
         area = DBSession.query(VenueArea).join(VenueArea.groups)\
                                          .filter_by(venue_id=seat.venue_id)\
@@ -470,13 +470,13 @@ class SoldTableCreator(object):
         _get_key = lambda src: src.product_item
         sources.sort(key=_get_key)
         for key, generator in groupby(sources, _get_key):
-            record = self.RECORD()
+            record = self.record()
             record.product_item = key
             record.quantity = sum([source.quantity for source in generator])
             yield record
         
     def create_sources_quantity_only(self, ordered_product_items):
-        return [self.SEAT_SOURCE(product_item=opitem.product_item.name,
+        return [self.seat_source(product_item=opitem.product_item.name,
                                  quantity=opitem.quantity)
                 for opitem in ordered_product_items]
         
@@ -497,9 +497,9 @@ class SoldTableCreator(object):
         return seat_sources, quantity_source
 
     def create_record_quantity_only(self, opitem):
-        seat_source = self.SEAT_SOURCE()
+        seat_source = self.seat_source()
         seat_source.product_item = opitem.product_item.name
-        record = self.RECORD()
+        record = self.record()
         record.kind = self.KIND
         record.quantity = 1
         record.product_item = seat_source.product_item
@@ -528,7 +528,7 @@ class SoldTableCreator(object):
             # 連続した座席はまとめる
             lst_values = []
             def flush():
-                seat_record = self.RECORD(
+                seat_record = self.record(
                     block=lst_values[0].block,
                     line=lst_values[0].line,
                     start=lst_values[0].seat,
@@ -552,7 +552,7 @@ class SoldTableCreator(object):
         return result
 
     def generate_table(self):
-        table = self.TABLE()
+        table = self.table()
         records = [record for record in self.generate_record()]
         records.sort()
         table.records = records

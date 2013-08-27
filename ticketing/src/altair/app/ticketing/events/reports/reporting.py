@@ -30,7 +30,7 @@ def get_report_title(report_type):
     }
     return report_types[report_type] if report_type in report_types else ''
 
-class DoesNotExistReport(ValueError):
+class DoesNotExistReportType(Exception):
     pass
 
 def exporter_factory(event, stock_holder=None, report_type=None, *args, **kwds):
@@ -43,7 +43,7 @@ def exporter_factory(event, stock_holder=None, report_type=None, *args, **kwds):
     elif report_type == 'sold':
         return export_for_sold_seats(event, stock_holder, report_type, *args, **kwds)
     else:
-        raise DoesNotExistReport('This report type does not exist: {0}'.format(repr(report_type)))
+        raise DoesNotExistReportType('This report type does not exist: {0}'.format(repr(report_type)))
 
 
 
