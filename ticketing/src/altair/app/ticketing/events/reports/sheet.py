@@ -418,7 +418,7 @@ def _id2int(elm):
             raise TypeError('invalid type: {0}'.format(repr(elm)))
         
 class SoldTableCreator(object):
-    seat_source = SoldSeatSoure
+    seat_source = SoldSeatSource
     table = SoldSeatTableRecord
     record = SoldSeatRecord
     REPORT_TYPE = 'sold'
@@ -440,7 +440,7 @@ class SoldTableCreator(object):
 
 
     def seat2seatsource(self, seat, ordered_product_item):
-        seat_source = self.saet_source(source=seat)
+        seat_source = self.seat_source(source=seat)
         attributes = seat.attributes or {}        
         area = DBSession.query(VenueArea).join(VenueArea.groups)\
                                          .filter_by(venue_id=seat.venue_id)\
