@@ -1,5 +1,5 @@
 from fanstatic import Library, Resource
-from js.jqgrid import jqgrid
+from js.jqgrid_ts import jqgrid
 
 altair_grid_library = Library('altair_grid', 'grid_resources')
 altair_grid = Resource(altair_grid_library,

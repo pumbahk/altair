@@ -669,3 +669,54 @@ class SeatAssignExporter(BaseExporter):
         if total2:
             total2_rowx = self.current_pos[sheet] - 2
             self.update_cell_text(sheet, total2_rowx, 14, total2)
+
+class SoldSeatsExporter(SeatAssignExporter):
+    """販売済座席帳票出力
+    """
+    def write_record_row(self, sheet, record):    
+        """行の書き込み
+        """
+        row_data = self._record_row
+        cells = list(self._record_row['cells'])
+        pos = self.current_pos.get(sheet, 13)
+        # 商品明細
+        if record.get('product_item'):
+            cells[0] = StrCell(
+                pos,
+                0,
+                cells[0].xf_idx,
+                self.workbook.add_str(record.get('product_item')))
+
+        # ブロック
+        if record.get('block'):
+            cells[6] = StrCell(
+                pos,
+                6,
+                cells[6].xf_idx,
+                self.workbook.add_str(record.get('block')))
+        # 列
+        if record.get('line'):
+            cells[10] = StrCell(
+                pos,
+                10,
+                cells[10].xf_idx,
+                self.workbook.add_str(record.get('line')))
+        
+        # 席数
+        if record.get('sold'):
+            returns = record.get('sold', [])
+            for i, value in enumerate(returns):
+                cells[11 + i] = StrCell(
+                    pos,
+                    11 + i,
+                    cells[11 + i].xf_idx,
+                    self.workbook.add_str(value))
+        #シートに書き込み        
+        self.write_row_data(
+            sheet,
+            pos,
+            cells=cells,
+            styles=row_data['styles'],
+            merged_ranges=row_data['merged_ranges'],
+        )
+        self.current_pos[sheet] = pos + 1

@@ -3,6 +3,11 @@
 
 <script type="text/javascript">
   $(function() {
+    $("#btn-report-sold-seats").click(function(){
+      modal = $('#modal-report');  
+      modal.find('form select[name="report_type"]').val("sold");
+      modal.modal("show");
+    });      
     $("#btn-report-event-stocks").click(function() {
       modal = $('#modal-report');
       modal.find('form select[name="report_type"]').val('stock');
@@ -75,6 +80,12 @@
       <i class="icon-file icon-white"></i> 残席明細　　　
     </button>
     <span style="margin-left: 10px;">自社枠に紐づいた座席の残席明細をダウンロードします。</span>
+  </p>
+  <p>
+    <button id="btn-report-sold-seats" class="btn btn-success">
+      <i class="icon-file icon-white"></i> 販売済座席明細
+    </button>
+    <span style="margin-left: 10px;">自社枠に紐づいた販売済みの座席明細をダウンロードします。</span>
   </p>
 </div>
 

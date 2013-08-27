@@ -141,20 +141,25 @@
       </style>
       <div style="width:100%;" id="venue-editor">
         <div class="tooltip"></div>
-        <div class="ui-corner-all ui-toolbar clearfix">
-          <div style="float:left">
-            <span class="ui-buttonset">
-              <input type="radio" name="function" value="select1" class="ui-button ui-icon-primary-arrow-4 action-select1 ui-no-text" id="toolbar-action-select1" checked="checked" /><label for="toolbar-action-select1">移動</label>
-              <input type="radio" name="function" value="select" class="ui-button ui-icon-primary-arrowthick-1-ne action-select ui-no-text" id="toolbar-action-select" checked="checked" /><label for="toolbar-action-select">席を選択</label>
-              <input type="radio" name="function" value="zoomin" class="ui-button ui-icon-primary-zoomin action-zoomin ui-no-text" id="toolbar-action-zoomin" /><label for="toolbar-action-zoomin">拡大</label>
-              <input type="radio" name="function" value="zoomout" class="ui-button ui-icon-primary-zoomout action-zoomout ui-no-text" id="toolbar-action-zoomout" /><label for="toolbar-action-zoomout">縮小</label>
-              <input type="checkbox" value="clearSelection" class="ui-button ui-icon-primary-close action-clearSelection ui-no-text" id="toolbar-action-clearSelection" /><label for="toolbar-action-clearSelection">すべての選択を解除</label>
-              <input type="checkbox" value="refresh" class="ui-button ui-icon-primary-refresh action-refresh ui-no-text" id="toolbar-action-refresh" /><label for="toolbar-action-refresh">最新情報に更新</label>
-            </span>
+        <div class="navbar" style="margin-bottom:0;">
+          <div class="navbar-inner" style="border-bottom: none;">
+            <div style="float:left">
+              <span class="btn-group">
+                <input type="radio" name="function" value="select1" class="btn action-select1" id="toolbar-action-select1" /><label for="toolbar-action-select1"><i class="icon-move"></i> 移動</label>
+                <input type="radio" name="function" value="select" class="btn action-select" id="toolbar-action-select" /><label for="toolbar-action-select"><i class="icon-hand-up"></i> 席を選択</label>
+                <input type="radio" name="function" value="zoomin" class="btn action-zoomin" id="toolbar-action-zoomin" /><label for="toolbar-action-zoomin"><i class="icon-zoom-in"></i> 拡大</label>
+                <input type="radio" name="function" value="zoomout" class="btn action-zoomout" id="toolbar-action-zoomout" /><label for="toolbar-action-zoomout"><i class="icon-zoom-out"></i> 縮小</label>
+                <button class="btn action-clearSelection" id="toolbar-action-clearSelection"><i class="icon-remove"></i> すべての選択を解除</button>
+                <button class="btn action-refresh" id="toolbar-action-refresh"><i class="icon-refresh"></i> 最新情報に更新</button>
+                <script type="text/javascript">
+                  $("script:last").parent().bootstrap_radios_to_buttons();
+                </script>
+              </span>
+            </div>
+            %if hasattr(caller, 'toolbar_extra'):
+              ${caller.toolbar_extra()}
+            %endif
           </div>
-          %if hasattr(caller, 'toolbar_extra'):
-            ${caller.toolbar_extra()}
-          %endif
         </div>
         <div class="venue-editor-main">
           <div class="venue-editor-main-root"></div>
@@ -218,7 +223,6 @@ venueEditor.find(".ui-button").each(function (i, n) {
   }
   n.button(options);
 });
-venueEditor.find(".ui-buttonset").remove('ui-buttonset').buttonset();
 
 var loadingPanel = null;
 var callbacks = {};
@@ -246,22 +250,22 @@ venueEditorRoot.venueeditor({
     uimodeselect: function (viewer, mode) {
       switch (mode) {
       case 'select1':
-        $("#toolbar-action-select1").attr("checked", "checked");
+        $("#toolbar-action-select1").prop('checked', true).change();
         break;
       case 'select':
-        $("#toolbar-action-select").attr("checked", "checked");
+        $("#toolbar-action-select").prop('checked', true).change();
         break;
       case 'zoomin':
-        $("#toolbar-action-zoomin").attr("checked", "checked");
+        $("#toolbar-action-zoomin").prop('checked', true).change();
         break;
       case 'zoomout':
-        $("#toolbar-action-zoomout").attr("checked", "checked");
+        $("#toolbar-action-zoomout").prop('checked', true).change();
         break;
       case 'clearSelection':
-        $("#toolbar-action-clearSelection").attr("checked", "checked");
+        $("#toolbar-action-clearSelection").prop('checked', true).change();
         break;
       case 'refresh':
-        $("#toolbar-action-refresh").attr("checked", "checked");
+        $("#toolbar-action-refresh").prop('checked', true).change();
         break;
       }
     },
@@ -344,30 +348,24 @@ venueEditorRoot.venueeditor({
 
 venueEditor.find(".action-zoomin").click(function () {
   venueEditorRoot.venueeditor("uimode", "zoomin");
-  return false;
 });
 venueEditor.find(".action-zoomout").click(function () {
   venueEditorRoot.venueeditor("uimode", "zoomout");
-  return false;
 });
 venueEditor.find(".action-clearSelection").click(function () {
   $("label[for='toolbar-action-clearSelection']").removeClass("ui-state-active");
   venueEditorRoot.venueeditor("clearSelection");
   venueEditor.find(".action-select").click();
-  return false;
 });
 venueEditor.find(".action-refresh").click(function () {
   $("label[for='toolbar-action-refresh']").removeClass("ui-state-active");
   venueEditorRoot.venueeditor("refresh");
-  return false;
 });
 venueEditor.find(".action-select1").click(function () {
   venueEditorRoot.venueeditor("uimode", "select1");
-  return false;
 });
 venueEditor.find(".action-select").click(function () {
   venueEditorRoot.venueeditor("uimode", "select");
-  return false;
 }).trigger('click');
       </script>
       %if hasattr(caller, 'post'):

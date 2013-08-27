@@ -10,6 +10,8 @@ def includeme(config):
     config.add_route("image_widget_delete", "/widget/image/delete", factory=ImageWidgetResource)
     config.add_route("image_widget_update", "/widget/image/update", factory=ImageWidgetResource)
     config.add_route("image_widget_dialog", "/widget/image/dialog", factory=ImageWidgetResource)
+    config.add_route("image_widget_search", "/widget/image/search", factory=ImageWidgetResource)
+    config.add_route("image_widget_tag_search", "/widget/image/tagsearch", factory=ImageWidgetResource)
 
     settings = {
         "model": ImageWidget, 

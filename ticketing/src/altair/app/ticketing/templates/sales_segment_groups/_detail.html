@@ -20,8 +20,12 @@
     <td id="current_start_at">${vh.datetime(sales_segment_group.start_at)}</td>
   </tr>
   <tr>
-    <th>${form.end_at.label.text}</th>
-    <td id="current_end_at">${vh.datetime(sales_segment_group.end_at)}</td>
+    <th>${form.end_day_prior_to_performance.label.text}</th>
+    <td id="current_end_at">${sales_segment_group.end_day_prior_to_performance}</td>
+  </tr>
+  <tr>
+    <th>${form.end_time.label.text}</th>
+    <td id="current_end_at">${sales_segment_group.end_time}</td>
   </tr>
   <tr>
     <th>${form.account_id.label.text}</th>

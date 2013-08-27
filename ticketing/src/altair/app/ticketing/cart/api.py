@@ -59,14 +59,21 @@ def is_login_required(request, event):
 
     """ 指定イベントがログイン画面を必要とするか """
     # 終了分もあわせて、このeventからひもづく sales_segment -> membergroupに1つでもguestがあれば True 
+    # q = MemberGroup.query.filter(
+    #     MemberGroup.is_guest==False
+    # ).filter(
+    #     MemberGroup.id==MemberGroup_SalesSegment.c.membergroup_id
+    # ).filter(
+    #     c_models.SalesSegmentGroup.id==MemberGroup_SalesSegment.c.sales_segment_group_id
+    # ).filter(
+    #     c_models.SalesSegmentGroup.event_id==event.id
+    # )
     q = MemberGroup.query.filter(
         MemberGroup.is_guest==False
     ).filter(
         MemberGroup.id==MemberGroup_SalesSegment.c.membergroup_id
     ).filter(
-        c_models.SalesSegmentGroup.id==MemberGroup_SalesSegment.c.sales_segment_group_id
-    ).filter(
-        c_models.SalesSegmentGroup.event_id==event.id
+        c_models.SalesSegment.event_id==event.id
     )
     return bool(q.count())
 

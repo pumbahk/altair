@@ -96,3 +96,9 @@ class ILotsRejectedMailDelivery(Interface):
     """ 抽選落選通知メールの配送ビューレットのコンテキスト"""
     request = Attribute("r")
     order = Attribute(u"抽選注文")
+
+class IMessagePartFactory(Interface):
+    """ 送信されるメールのメッセージパートを生成する factory """
+
+    def __call__(request, text_body):
+        pass

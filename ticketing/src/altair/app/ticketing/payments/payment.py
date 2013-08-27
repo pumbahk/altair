@@ -83,6 +83,7 @@ class Payment(object):
     def call_payment(self):
         """ 決済処理
         """
+        self.call_validate()
 
         payment_delivery_plugin, payment_plugin, delivery_plugin = self.get_plugins(self.cart.payment_delivery_pair)
         event_id = self.cart.performance.event_id

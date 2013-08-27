@@ -1,10 +1,17 @@
 from pyramid.view import view_config, view_defaults
 from altaircms.auth.api import require_login
+from altaircms.asset.models import ImageAsset
+from altaircms.asset import creation
 from altaircms.lib.itertools import group_by_n
 from . import forms
 from altaircms.formhelpers import AlignChoiceField
 from webob.multidict import MultiDict
+from pyramid.httpexceptions import (
+    HTTPFound
+)
 import logging
+from altaircms import helpers
+import json
 logger = logging.getLogger(__name__)
 
 @view_defaults(custom_predicates=(require_login,))
@@ -12,6 +19,7 @@ class ImageWidgetView(object):
     def __init__(self, context, request):
         self.context = context
         self.request = request
+        self.N = 4
 
     def _create_or_update(self):
         try:
@@ -55,9 +63,9 @@ class ImageWidgetView(object):
 
     @view_config(route_name="image_widget_dialog", renderer="altaircms.plugins.widget:image/dialog.html", request_method="GET")
     def dialog(self):
-        N = 5
-        assets = group_by_n(self.request.context.get_asset_query(), N)
-        widget = self.request.context.get_widget(self.request.GET.get("pk"))
+        assets = group_by_n(self.request.context.get_asset_query(), self.N)
+        pk = self.request.GET.get("pk")
+        widget = self.request.context.get_widget(pk)
 
         if widget.width == 0:
             widget.width = ""
@@ -66,4 +74,63 @@ class ImageWidgetView(object):
         params = widget.to_dict()
         params.update(widget.attributes or {})      
         form = forms.ImageInfoForm(**AlignChoiceField.normalize_params(params))
-        return {"assets": assets, "form": form, "widget": widget}
+        return {"assets": assets, "form": form, "widget": widget, "pk": pk}
+
+
+    @view_config(route_name="image_widget_search", renderer="json", request_method="POST")
+    def search(self):
+        pk = self.request.POST['pk'] if self.request.POST['pk'] != "None" else None
+        search_word = self.request.POST['search_word']
+
+        assets = None
+        if search_word:
+            assets = group_by_n(self.request.context.search_asset(search_word), self.N)
+        else:
+            assets = group_by_n(self.request.context.get_asset_query(), self.N)
+
+        assets_dict = create_search_result(self.request, assets)
+        widget = self.request.context.get_widget(pk) if pk else None
+        asset_id = widget.asset_id if widget else None
+
+        return {
+            'widget_asset_id': asset_id,
+            'assets_data': assets_dict
+        }
+
+    @view_config(route_name="image_widget_tag_search", renderer="json", request_method="POST")
+    def tag_search(self):
+        pk = self.request.POST['pk'] if self.request.POST['pk'] != "None" else None
+        tags = self.request.POST['tags']
+        try:
+            assets = self.request.allowable(ImageAsset)
+            search_result = creation.ImageSearcher(self.request).search(assets, {'tags':tags})
+        except Exception, e:
+            logger.exception(e.message.encode("utf-8"))
+            return HTTPFound(location=self.request.route_url("asset_image_list"))
+
+        assets = group_by_n(search_result, self.N)
+
+        assets_dict = create_search_result(self.request, assets)
+        widget = self.request.context.get_widget(pk) if pk else None
+        asset_id = widget.asset_id if widget else None
+
+        return {
+            'widget_asset_id': asset_id,
+            'assets_data': assets_dict
+        }
+
+def create_search_result(request, assets):
+    assets_dict = {}
+    for groupNo, group in enumerate(assets):
+        img_list = []
+        for img in group:
+            img_info = {
+                "id":img.id ,
+                "title":img.title ,
+                "width":img.width ,
+                "height":img.height ,
+                "thumbnail_path":helpers.asset.rendering_object(request,img).thumbnail_path
+            }
+            img_list.append(img_info)
+        assets_dict.update({groupNo:img_list})
+    return assets_dict
