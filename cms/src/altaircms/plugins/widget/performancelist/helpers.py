@@ -5,30 +5,25 @@ logger = logging.getLogger(__name__)
 from altaircms.rowspanlib import RowSpanGrid
 from .models import PerformancelistWidget
 from altaircms.page.models import Page
+from altair.viewhelpers.datetime_ import create_date_time_formatter, DateTimeHelper
 
 def range_performance(performance):
-    s = performance.start_on
-    e = performance.end_on
+    start_on = performance.start_on
+    end_on = performance.end_on
 
-    if e:
-        if s.year == e.year and s.month == e.month and s.day == e.day:
+    if end_on:
+        if start_on.year == end_on.year and start_on.month == end_on.month and start_on.day == end_on.day:
             return False
         return True
     return False
 
-def performance_describe_range_date(performance):
-    try:
-        s = performance.start_on
-        e = performance.end_on
-        D = {
-            "s_date": s.strftime(u"%Y年%m月%d日".encode("utf-8")).decode("utf-8"),
-            "s_week": unicode(WEEK[s.weekday()]),
-            "e_date": e.strftime(u"%Y年%m月%d日".encode("utf-8")).decode("utf-8"),
-            "e_week": unicode(WEEK[e.weekday()]),
-             }
-        return u"%(s_date)s（%(s_week)s）〜 %(e_date)s（%(e_week)s）" % D
-    except Exception, e:
-        logger.exception(str(e))
+def performance_describe_range_date(request, performance):
+    dth = DateTimeHelper(create_date_time_formatter(request))
+    return dth.term(
+        performance.start_on and performance.start_on.date(),
+        performance.end_on and performance.end_on.date(),
+        with_weekday=True
+        )
 
 def performance_describe_date(performance):
     try:

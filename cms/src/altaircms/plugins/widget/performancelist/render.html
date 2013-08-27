@@ -36,7 +36,7 @@ logger = logging.getLogger(__name__)
             <td width="27%"> - </td>
           %else:
             %if myhelpers.range_performance(performance):
-              <td width="27%"> ${myhelpers.performance_describe_range_date(performance)}</td>
+              <td width="27%"> ${myhelpers.performance_describe_range_date(request, performance)}</td>
             %else:
               <td width="27%"> ${myhelpers.performance_describe_date(performance)} <br/> ${myhelpers.performance_describe_time(performance)}</td>
             %endif
