@@ -7,8 +7,15 @@
             perfs.append({"perf":perf, "display_order":perf.display_order})
     perfs = sorted(perfs, key=lambda v: (v['display_order']))
     from altaircms.datelib import get_now
+
+    o = event.event_open
+    c = event.event_close
+    period = helper.get_info(event_info, u'公演期間') or str(o.year) + u"/" + str(o.month).zfill(2) + u"/" + str(o.day).zfill(2) + u"(" + week[o.weekday()] + u") 〜 " + str(c.year) + u"/" + str(c.month).zfill(2) + u"/" + str(c.day).zfill(2) + u"(" + week[c.weekday()] + u")"
+    if o.year==c.year and o.month==c.month and o.day==c.day:
+        period = str(o.year) + u"/" + str(o.month).zfill(2) + u"/" + str(o.day).zfill(2) + u"(" + week[o.weekday()] + u")"
+
     info = {
-        'performance_period':helper.get_info(event_info, u'公演期間') or str(event.event_open.year) + u"/" + str(event.event_open.month).zfill(2) + u"/" + str(event.event_open.day).zfill(2) + u"(" + week[event.event_open.weekday()] + u") 〜 " + str(event.event_close.year) + u"/" + str(event.event_close.month).zfill(2) + u"/" + str(event.event_close.day).zfill(2) + u"(" + week[event.event_close.weekday()] + u")",
+        'performance_period':period,
         'performers':helper.get_info(event_info, u'出演者') or event.performers,
         'salessegment':helper.get_info_list(event_info, u'販売期間') ,
         'notice':helper.get_info(event_info, u'説明／注意事項') or event.notice,
