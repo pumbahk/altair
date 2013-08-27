@@ -65,7 +65,7 @@ class StaticPageDelete(object):
             ## snapshot取っておく
             self.utility.backup(src)
             ## 直接のsrcは空で保存できるようになっているはず。
-            if os.path.exists(src):
+            if os.path.lexists(src):
                 raise Exception("%s exists. after delete" % src)
         except Exception, e:
             logger.exception(str(e))
@@ -149,7 +149,7 @@ class PartialChange(object):
         absroot = self.utility.get_rootname(static_page)
         path = os.path.join(absroot, filename, self.data["name"])
         dirname = os.path.dirname(path)
-        if not os.path.exists(dirname):
+        if not os.path.lexists(dirname):
             os.makedirs(dirname)
         with open(path, "wb") as wf:
             shutil.copyfileobj(self.data["file"].file, wf)
@@ -161,7 +161,7 @@ class PartialChange(object):
         absroot = self.utility.get_rootname(static_page)
         path = os.path.join(absroot, name)
         dirname = os.path.dirname(path)
-        if not os.path.exists(dirname):
+        if not os.path.lexists(dirname):
             os.makedirs(dirname)
         with open(path, "wb") as wf:
             shutil.copyfileobj(self.data["file"].file, wf)
