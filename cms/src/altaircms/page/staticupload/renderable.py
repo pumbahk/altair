@@ -29,7 +29,7 @@ class _Node(object):
     def _add_element(self, n):
         if isinstance(n,(tuple, list)) and n:
             if not self.children.get(n[0]):
-                fullname = "{0}/{1}".format(self.root, n[0]) if self.root else n[0]
+                fullname = u"{0}/{1}".format(self.root, n[0]) if self.root else n[0]
                 self.children[n[0]] = _Node(fullname, self.D)
             self.children[n[0]]._add_element(n[1:])
 
@@ -48,7 +48,7 @@ class StaticPageDirectoryRendererFromDB(object):
         return self.request.route_path("static_page_display", 
                                        static_page_id=self.pageset.id, 
                                        child_id=self.page.id, 
-                                       path="{0}/{1}".format(self.pageset.url, path)).replace("%2F", "/")
+                                       path=u"{0}/{1}".format(self.pageset.hash, path)).replace("%2F", "/")
 
     def delete_file_url(self, path):
         part = path.replace(self.root, "")
@@ -82,7 +82,7 @@ class StaticPageDirectoryRendererFromDB(object):
             return []
 
     def join_name(self, dirname, basename):
-        return "{0}/{1}".format(dirname, basename)
+        return u"{0}/{1}".format(dirname, basename)
 
     def parent_action_links(self, path):
         part = path.replace(self.root, "")

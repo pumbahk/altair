@@ -22,6 +22,22 @@
       modal.modal('show');
     });
   });
+
+  function set_all_performance(status){
+      var performances = document.getElementsByClassName("performance");
+      for(var ii=0; ii<performances.length; ii++){
+	  performances[ii].checked = status;
+      }
+  };
+
+  function enable_all_performances(){
+      set_all_performance(true);
+  };
+
+  function disable_all_performances(){
+      set_all_performance(false);
+  };
+
 </script>
 
 <%block name="breadcrumbs">
@@ -62,7 +78,7 @@
   </p>
 </div>
 
-<div id="modal-report" class="modal hide">
+<div id="modal-report" class="modal hide big">
   <div class="modal-header">
     <a class="close" data-dismiss="modal">&times;</a>
     <h3>ダウンロード</h3>
@@ -71,6 +87,48 @@
     <p>以下の明細をダウンロードします。</p>
     <form class="form-horizontal" action="${request.route_path('reports.stocks', event_id=event.id)}" method="POST">
       ${ch.form_item(form_stock.report_type)}
+
+      <%block name="display_performance_checkboxes">
+      <div class="control-group ">
+        <label class="control-label">パフォーマンス選択</label>
+        <div class="controls ">
+          <p>
+            <input type="button" value="全て選択" onClick="enable_all_performances()"/>
+            <input type="button" value="全て解除" onClick="disable_all_performances()"/>
+          </p>
+          <table class="table fullwidth checkboxed_table">
+            <thead>
+            <tr>
+              <th></th>
+              <th>公演日時</th>
+              <th>公演名/会場</th>
+              <th>公演コード</th>
+            </tr>
+            </thead>
+            <tbody>
+            % for performance in performances:
+            <tr>
+              <td>
+                <input class="performance" type="checkbox" name="performance_id" value="${performance.id}" checked="checked" />
+              </td>
+              <td>
+                ${vh.datetime(performance.start_on)}
+              </td>
+              <td>
+                <span>${vh.truncate_eaw(performance.name, 40)}</span><br/>
+                <span>${vh.truncate_eaw(performance.venue.name, 40)}</span><br/>
+              </td>
+              <td>
+                ${performance.code}
+              </td>
+            </tr>
+            % endfor
+            </tbody>
+          </table>
+        </div>
+      </div>
+      </%block>
+
     </form>
   </div>
   <div class="modal-footer">
@@ -79,7 +137,7 @@
   </div>
 </div>
 
-<div id="modal-report-stockholder" class="modal hide">
+<div id="modal-report-stockholder" class="modal hide big">
   <div class="modal-header">
     <a class="close" data-dismiss="modal">&times;</a>
     <h3>ダウンロード</h3>
@@ -89,6 +147,7 @@
     <form class="form-horizontal" action="${request.route_path('reports.stocks_by_stockholder', event_id=event.id)}" method="POST">
       ${ch.form_item(form_stock_holder.stock_holder_id)}
       ${ch.form_item(form_stock_holder.report_type)}
+      ${display_performance_checkboxes()}
     </form>
   </div>
   <div class="modal-footer">

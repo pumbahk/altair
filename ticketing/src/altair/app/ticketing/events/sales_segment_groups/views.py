@@ -18,6 +18,7 @@ from altair.app.ticketing.events.sales_segment_groups.forms import SalesSegmentG
 from altair.app.ticketing.events.sales_segments.forms import SalesSegmentForm
 from altair.app.ticketing.memberships.forms import MemberGroupForm
 from altair.app.ticketing.users.models import MemberGroup, Membership
+from altair.app.ticketing.events.sales_segments.resources import SalesSegmentGroupUpdate, SalesSegmentGroupCreate
 
 @view_defaults(decorator=with_bootstrap, permission='event_editor')
 class SalesSegmentGroups(BaseView):
@@ -94,13 +95,14 @@ class SalesSegmentGroups(BaseView):
 
         f = SalesSegmentGroupForm(self.request.POST, event_id=event_id, new_form=True)
         if f.validate():
-            if f.start_at.data is None:
-                f.start_at.data = datetime.now() 
-            if f.end_at.data is None:
-                f.end_at.data = datetime.now()
+            # if f.start_at.data is None:
+            #     f.start_at.data = datetime.now() 
+            # if f.end_at.data is None:
+            #     f.end_at.data = datetime.now()
             sales_segment_group = merge_session_with_post(SalesSegmentGroup(), f.data)
+            sales_segment_group.organization = self.context.user.organization
             sales_segment_group.save()
-
+            SalesSegmentGroupCreate(sales_segment_group).create(event.performances)
             self.request.session.flash(u'販売区分グループを保存しました')
             return render_to_response('altair.app.ticketing:templates/refresh.html', {}, request=self.request)
         else:
@@ -142,9 +144,16 @@ class SalesSegmentGroups(BaseView):
                 if bool(f.copy_products.data):
                     for product in ss.products:
                         Product.create_from_template(template=product, with_product_items=True, stock_holder_id=f.copy_to_stock_holder.data, sales_segment=id_map)
+
+            new_sales_segment_group.sync_member_group_to_children()
+            
         else:
             sales_segment_group = merge_session_with_post(sales_segment_group, f.data)
             sales_segment_group.save()
+
+            sales_segment_group.sync_member_group_to_children()
+            SalesSegmentGroupUpdate(sales_segment_group).update(
+                sales_segment_group.sales_segments)
 
         self.request.session.flash(u'販売区分グループを保存しました')
         return None
@@ -222,6 +231,7 @@ class SalesSegmentGroups(BaseView):
             sales_segment_group.membergroups.remove(mg)
 
         sales_segment_group.save()
+        sales_segment_group.sync_member_group_to_children()
 
         self.request.session.flash(u'membergroupの結びつき変更しました')
         return HTTPFound(self.request.POST["redirect_to"])

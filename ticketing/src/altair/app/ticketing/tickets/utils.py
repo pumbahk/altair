@@ -43,12 +43,20 @@ class TicketCoverDictBuilder(object):
 
     def build_dict_from_shipping_address_information(self, shipping_address, retval=None):
         retval = retval or {}
-        retval.update({
-                u'住所': u"{shipping.zip} {shipping.prefecture}{shipping.city}{shipping.address_1}{shipping.address_2}".format(shipping=shipping_address), 
-                u"氏名": u"{shipping.last_name} {shipping.first_name}".format(shipping=shipping_address), 
-                u"電話番号": shipping_address.tel_1, 
-                u"メールアドレス": shipping_address.email_1 or shipping_address.email_2
-                })
+        if shipping_address:
+            retval.update({
+                    u'住所': u"{shipping.zip} {shipping.prefecture}{shipping.city}{shipping.address_1}{shipping.address_2}".format(shipping=shipping_address), 
+                    u"氏名": u"{shipping.last_name} {shipping.first_name}".format(shipping=shipping_address), 
+                    u"電話番号": shipping_address.tel_1, 
+                    u"メールアドレス": shipping_address.email_1 or shipping_address.email_2
+                    })
+        else:
+            retval.update({
+                    u'住所': u"-", 
+                    u"氏名": u"-", 
+                    u"電話番号": u"-", 
+                    u"メールアドレス": u"-"
+                    })
         return retval
 
     def build_dict_from_order(self, order):

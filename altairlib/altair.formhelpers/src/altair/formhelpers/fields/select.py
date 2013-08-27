@@ -149,7 +149,7 @@ class WTFormsChoiceGroupsWrapper(object):
         else:
             return False
 
-    def __iter__(sef):
+    def __iter__(self):
         for _, group in self.choice_groups:
             for encoded_value, label in group:
                 yield encoded_value

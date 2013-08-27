@@ -6,8 +6,6 @@
 % if paging:
 <%
 from altair.app.ticketing.helpers import column_name_for, label_text_for
-import urlparse
-import urllib
 
 sort_column = request.params.get('sort')
 sort_direction = request.params.get('direction')
@@ -17,7 +15,7 @@ css_class = 'current ' + sort_direction if (column_name == sort_column) else ''
 params = [pair for pair in request.params.items() if pair[0] not in ('direction', 'sort')]
 params.append(('direction', direction))
 params.append(('sort', column_name))
-url = urlparse.urljoin(request.path, '?' + urllib.urlencode(params))
+url = request.current_route_path(_query=params)
 %>
 <a href="${url}" class="${css_class}">${label_text_for(column)}</a>
 % else:

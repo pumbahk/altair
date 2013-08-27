@@ -8,11 +8,16 @@ import transaction
 import argparse
 
 from pyramid.paster import bootstrap, setup_logging   
+from pyramid.renderers import render_to_response
 from sqlalchemy import and_
 from sqlalchemy.sql.expression import not_
+from sqlalchemy.sql import func
 import sqlahelper
 
-from altair.app.ticketing.core.models import DBSession, SeatStatus, SeatStatusEnum, Order
+from altair.app.ticketing.core.models import DBSession, SeatStatus, SeatStatusEnum, Order, OrderedProduct, OrderedProductItem
+from altair.app.ticketing.core.models import PaymentDeliveryMethodPair, PaymentMethod, DeliveryMethod, ShippingAddress, Mailer
+from altair.app.ticketing.payments import plugins
+from altair.app.ticketing.events.sales_reports.reports import sendmail
 from altair.app.ticketing.sej.refund import create_and_send_refund_file
 
 def update_seat_status():
@@ -97,3 +102,71 @@ def refund_order():
     create_and_send_refund_file(registry.settings)
 
     logging.info('end refund_order batch')
+
+def detect_fraud():
+    ''' 不正予約の監視
+    '''
+    parser = argparse.ArgumentParser()
+    parser.add_argument('config')
+    parser.add_argument('-f')
+    parser.add_argument('-t')
+    args = parser.parse_args()
+
+    setup_logging(args.config)
+    env = bootstrap(args.config)
+    request = env['request']
+    registry = env['registry']
+
+    now = datetime.now()
+    period_from = args.f if args.f else (now - timedelta(days=2)).strftime('%Y-%m-%d %H:%M')
+    period_to = args.t if args.t else now.strftime('%Y-%m-%d %H:%M')
+
+    logging.info('start detect_fraud batch')
+
+    # クレジットカード決済 x セブンイレブン発券
+    query = Order.query.filter(Order.canceled_at==None)
+    query = query.join(Order.payment_delivery_pair)
+    query = query.join(PaymentDeliveryMethodPair.payment_method)
+    query = query.filter(PaymentMethod.payment_plugin_id==plugins.MULTICHECKOUT_PAYMENT_PLUGIN_ID)
+    query = query.join(PaymentDeliveryMethodPair.delivery_method)
+    query = query.filter(DeliveryMethod.delivery_plugin_id==plugins.SEJ_DELIVERY_PLUGIN_ID)
+    # 1件の注文で4枚以上
+    query = query.join(Order.ordered_products)
+    query = query.join(OrderedProduct.ordered_product_items)
+    query = query.group_by(Order.id).having(func.sum(OrderedProductItem.quantity) >= 4)
+    query = query.with_entities(Order.id)
+    # 指定期間
+    query = query.filter(period_from<=Order.created_at, Order.created_at<=period_to)
+    orders = query.all()
+
+    # 同一人物(user_idまたはメールアドレス)による同一公演の注文が2件以上存在
+    if len(orders) > 0:
+        query = Order.query.filter(Order.id.in_([o[0] for o in orders]))
+        query = query.join(Order.shipping_address)
+        query = query.group_by(Order.performance_id, func.ifnull(Order.user_id, ShippingAddress.email_1))
+        query = query.having(func.count(Order.id) >= 2)
+        orders = query.all()
+
+    if len(orders) > 0:
+        settings = registry.settings
+        sender = settings['mail.message.sender']
+        recipient = 'dev@ticketstar.jp,op@ticketstar.jp'
+        subject = u'[alert] 不正予約'
+        render_params = dict(orders=orders, period_from=period_from, period_to=period_to)
+        html = render_to_response('altair.app.ticketing:templates/orders/_fraud_alert_mail.html', render_params, request=None)
+
+        mailer = Mailer(settings)
+        mailer.create_message(
+            sender=sender,
+            recipient=recipient,
+            subject=subject,
+            body='',
+            html=html.text
+        )
+        try:
+            mailer.send(sender, recipient.split(','))
+            logging.info('sendmail success')
+        except Exception:
+            logging.warn('sendmail fail')
+
+    logging.info('end detect_fraud batch')

@@ -3,11 +3,11 @@ import re
 import os
 import urllib
 from datetime import datetime
+from collections import namedtuple
 from zope.interface import implementer
 from pyramid.response import FileResponse
 from pyramid.response import Response
 from pyramid.interfaces import IRendererFactory
-from pyramid.renderers import render_to_response
 from pyramid.decorator import reify
 
 import logging
@@ -17,8 +17,9 @@ from .interfaces import IStaticPageDataFetcher
 from .interfaces import IStaticPageCache
 from .. import StaticPageNotFound
 from altairsite.front.api import get_frontpage_discriptor_resolver
+from altairsite.front.api import get_frontpage_renderer
 from altaircms.response import FileLikeResponse
-from collections import namedtuple
+
 
 CACHE_MAX_AGE=60
 
@@ -41,13 +42,16 @@ class FetcherFromFileSystem(object):
         self.utility = utility
 
     def fetch(self, url, path):
-        if path is None:
-            if url.startswith("/"):
-                url_parts = url[1:]
+        if path is None: #xxx:
+            if self.static_page.pageset.url == "":
+                path = os.path.join(self.utility.get_rootname(self.static_page), url)            
             else:
-                url_parts = url
-            url_parts = "/".join(url_parts.split("/")[1:]) #foo/bar -> bar
-            path = os.path.join(self.utility.get_rootname(self.static_page), url_parts)
+                if url.startswith("/"):
+                    url_parts = url[1:]
+                else:
+                    url_parts = url
+                    url_parts = "/".join(url_parts.split("/")[1:]) #foo/bar -> bar
+                path = os.path.join(self.utility.get_rootname(self.static_page), url_parts)
         return FetchData(code=unknown, size=unknown, path=path, data=path, type="filepath", content_type=unknown, group_id=unicode(self.static_page.id))
 
 @implementer(IStaticPageDataFetcher)
@@ -64,10 +68,17 @@ class FetcherFromNetwork(object):
     #         return filepath + ".html"
     #     else:
     #         return filepath
+    def _split_page_prefix(self,file_path):
+        try:
+            prefix, file_path = file_path.split("/", 1)
+        except ValueError:
+            logger.info("{file_path} is toplevel path".format(file_path=file_path))
+        return file_path
+
     def check_skip_fetch(self, url, path):
         if not path:
             file_path = url[1:] if url.startswith("/") else url
-            prefix, file_path = file_path.split("/", 1)
+            file_path = self._split_page_prefix(file_path)
             if not file_path in self.static_page.file_structure:
                 logger.info("{0} is not found in {1}".format(file_path, self.static_page.file_structure_text))
                 raise StaticPageNotFound("{0} is not found".format(file_path))
@@ -78,9 +89,10 @@ class FetcherFromNetwork(object):
             url_parts = path
         else:
             file_path = url[1:] if url.startswith("/") else url
-            prefix, file_path = file_path.split("/", 1)
+            file_path = self._split_page_prefix(file_path)
             # file_path = self.convert_extname(file_path)
-            url_parts = "/{0}/{1}/{2}/{3}".format(self.request.organization.short_name, prefix, self.static_page.id, file_path)
+            url_parts = "/{0}/{1}/{2}/{3}".format(self.request.organization.short_name, self.static_page.prefix, self.static_page.id, file_path)
+            logger.debug("url:{url}".format(url=self.utility._get_url(url_parts)))
             io = urllib.urlopen(self.utility._get_url(url_parts))
         try:
             size = int(io.info().get("Content-Length", "0"))
@@ -120,7 +132,7 @@ class CachedFetcher(object):
             self.fetcher.check_skip_fetch(url, path)
         try:
             return self.cache_impl[k]
-        except KeyError:
+        except (KeyError, ValueError):
             def fetch_function(cache, k):
                 data = self.fetcher.fetch(url, path)
                 content_type = data.content_type
@@ -165,20 +177,31 @@ class StaticPageCache(object):
         try:
             v = fetch_function(self, k)
             logger.debug("StaticPageCache: setitem and remove sentinel -- {k}, fetching=removed".format(k=k))
+            if v is None:
+                raise ValueError("404 --- {k} is None".format(k=k))
+            self.file_data[k] = v
             self.fetching.remove_value(k)
+            if v is None:
+                logger.error("404 --- {k}".format(k=k))
+                raise HTTPNotFound
             if not v.group_id in self.file_group:
                 self.file_group[v.group_id] = {k}
             else:
                 cached = self.file_group[v.group_id]
                 cached.add(k)
                 self.file_group[v.group_id] = cached
-            self.file_data[k] = v
             # logger.debug("result: group={group} data={data}".format(group=self.file_group[v.group_id], data=v)) #annoying
             return v
+        except ValueError as e:
+            logger.warn(repr(e)) #insecure string
+            self.file_data.remove_value(k)
+            self.fetching.remove_value(k) #call multiplly is ok?
         except Exception as e:
-            logger.exception(str(e))
+            logger.exception(repr(e))
+            self.file_data.remove_value(k)
+            self.fetching.remove_value(k) #call multiplly is ok?
             logger.warn("fetching: exception found. on fetching data. release for '{k}'".format(k=k))
-            self.fetching.remove_value(k)
+        raise HTTPNotFound
 
     def remove_group(self, k):
         try:
@@ -192,7 +215,8 @@ class StaticPageCache(object):
         try:
             logger.debug("StaticPageCache: getitem -- {k}".format(k=k))
             return self.file_data[k]
-        except KeyError:
+        except (KeyError, ValueError):
+            ## value error is "insecure string pickle"
             logger.debug("StaticPageCache: notfound -- {k}".format(k=k))
             if k in self.fetching:
                 logger.debug("StaticPageCache: fetching is exists -- {k}".format(k=k))
@@ -203,12 +227,14 @@ class ResponseMaker(object):
     NotFound = StaticPageNotFound
     def __init__(self, request, static_page, 
                  force_original=False, 
-                 cache_max_age=None, body_var_name="inner_body"):
+                 cache_max_age=None, body_var_name="inner_body", 
+                 render_impl=get_frontpage_renderer):
         self.request = request
         self.static_page = static_page
         self.force_original = force_original
         self.cache_max_age = cache_max_age
         self.body_var_name = body_var_name
+        self.renderer = render_impl(request)
 
     @reify
     def descriptor(self):
@@ -286,7 +312,7 @@ class ResponseMaker(object):
 
     def render(self, spec, params):
         try:
-            return render_to_response(spec, params, self.request)
+            return self.renderer._render(spec, self.static_page.layout, params)
         except Exception as e:
             logger.exception(e)
             raise StaticPageNotFound("exception is occured")

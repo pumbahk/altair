@@ -18,8 +18,7 @@ from altair.app.ticketing.models import merge_session_with_post, record_to_multi
 from altair.app.ticketing.views import BaseView
 from altair.app.ticketing.fanstatic import with_bootstrap
 from altair.app.ticketing.events.performances.forms import PerformanceForm, PerformancePublicForm
-from altair.app.ticketing.core.models import Event, Performance, Order, Venue
-from altair.app.ticketing.core.models import PerformanceSetting
+from altair.app.ticketing.core.models import Performance, PerformanceSetting
 from altair.app.ticketing.products.forms import ProductForm
 from altair.app.ticketing.orders.forms import OrderForm, OrderSearchForm
 from altair.app.ticketing.venues.api import get_venue_site_adapter
@@ -31,18 +30,15 @@ from altair.app.ticketing.core.models import MailTypeChoices
 from altair.app.ticketing.orders.api import OrderSummarySearchQueryBuilder, QueryBuilderError
 from altair.app.ticketing.orders.models import OrderSummary
 from altair.app.ticketing.carturl.api import get_cart_url_builder, get_cart_now_url_builder
+from altair.app.ticketing.events.sales_segments.resources import (
+    SalesSegmentGroupCreate,
+)
 
 @view_defaults(decorator=with_bootstrap, permission="event_editor")
 class PerformanceShowView(BaseView):
     def __init__(self, context, request):
         super(PerformanceShowView, self).__init__(context, request)
-        # XXX: context でやったほうがいい?
-        performance_id = int(self.request.matchdict.get('performance_id', 0))
-        performance = Performance.query.filter(Performance.id == performance_id)\
-                        .join(Event).filter(Event.organization_id == self.context.user.organization_id).first()
-        if performance is None:
-            raise HTTPNotFound('performance id %d is not found' % performance_id)
-        self.performance = performance
+        self.performance = self.context.performance
 
     def build_data_source(self, query_option=None):
         query = {u'n':u'seats|stock_types|stock_holders|stocks'}
@@ -142,21 +138,13 @@ class Performances(BaseView):
     def index(self):
         slave_session = get_db_session(self.request, name="slave")
 
-        event_id = int(self.request.matchdict.get('event_id', 0))
-        event = slave_session.query(Event).filter(
-            Event.id==event_id,
-            Event.organization_id==self.context.user.organization_id).first()
-
-        if event is None:
-            return HTTPNotFound('event id %d is not found' % event_id)
-
         sort = self.request.GET.get('sort', 'Performance.start_on')
         direction = self.request.GET.get('direction', 'asc')
         if direction not in ['asc', 'desc']:
             direction = 'asc'
 
         query = slave_session.query(Performance).filter(
-            Performance.event_id==event_id)
+            Performance.event_id==self.context.event.id)
         query = query.order_by(sort + ' ' + direction)
 
         performances = paginate.Page(
@@ -167,51 +155,39 @@ class Performances(BaseView):
         )
 
         return {
-            'event':event,
+            'event':self.context.event,
             'performances':performances,
             'form':PerformanceForm(organization_id=self.context.user.organization_id),
         }
 
-
     @view_config(route_name='performances.new', request_method='GET', renderer='altair.app.ticketing:templates/performances/edit.html')
     def new_get(self):
-        slave_session = get_db_session(self.request, name="slave")
-        event_id = int(self.request.matchdict.get('event_id', 0))
-        event = slave_session.query(Event).filter(
-            Event.id==event_id,
-            Event.organization_id==self.context.user.organization_id).first()
-        if event is None:
-            return HTTPNotFound('event id %d is not found' % event_id)
-
-        f = PerformanceForm(MultiDict(code=event.code), organization_id=self.context.user.organization_id)
-
+        f = PerformanceForm(MultiDict(code=self.context.event.code), organization_id=self.context.user.organization_id)
         return {
             'form':f,
-            'event':event,
+            'event':self.context.event,
             'route_name': u'登録',
             'route_path': self.request.path,
         }
 
     @view_config(route_name='performances.new', request_method='POST', renderer='altair.app.ticketing:templates/performances/edit.html')
     def new_post(self):
-        event_id = int(self.request.matchdict.get('event_id', 0))
-        event = Event.get(event_id, organization_id=self.context.user.organization_id)
-        if event is None:
-            return HTTPNotFound('event id %d is not found' % event_id)
-
         f = PerformanceForm(self.request.POST, organization_id=self.context.user.organization_id)
         if f.validate():
             performance = merge_session_with_post(Performance(), f.data)
             PerformanceSetting.create_from_model(performance, f.data)
-            performance.event_id = event_id
+            performance.event_id = self.context.event.id
             performance.create_venue_id = f.data['venue_id']
             performance.save()
 
+            event = performance.event
+            for ssg in event.sales_segment_groups:
+                SalesSegmentGroupCreate(ssg).create_sales_segment_for(performance)
             self.request.session.flash(u'パフォーマンスを保存しました')
             return HTTPFound(location=route_path('performances.show', self.request, performance_id=performance.id))
         return {
             'form':f,
-            'event':event,
+            'event':self.context.event,
             'route_name': u'登録',
             'route_path': self.request.path,
         }
@@ -219,14 +195,11 @@ class Performances(BaseView):
     @view_config(route_name='performances.edit', request_method='GET', renderer='altair.app.ticketing:templates/performances/edit.html')
     @view_config(route_name='performances.copy', request_method='GET', renderer='altair.app.ticketing:templates/performances/edit.html')
     def edit_get(self):
+        performance = self.context.performance
         if self.request.matched_route.name == 'performances.edit':
             route_name = u'編集'
         else:
             route_name = u'コピー'
-        performance_id = int(self.request.matchdict.get('performance_id', 0))
-        performance = Performance.get(performance_id, self.context.user.organization_id)
-        if performance is None:
-            return HTTPNotFound('performance id %d is not found' % performance_id)
 
         is_copy = (self.request.matched_route.name == 'performances.copy')
         kwargs = dict(
@@ -254,14 +227,11 @@ class Performances(BaseView):
     @view_config(route_name='performances.edit', request_method='POST', renderer='altair.app.ticketing:templates/performances/edit.html')
     @view_config(route_name='performances.copy', request_method='POST', renderer='altair.app.ticketing:templates/performances/edit.html')
     def edit_post(self):
+        performance = self.context.performance
         if self.request.matched_route.name == 'performances.edit':
             route_name = u'編集'
         else:
             route_name = u'コピー'
-        performance_id = int(self.request.matchdict.get('performance_id', 0))
-        performance = Performance.get(performance_id, self.context.user.organization_id)
-        if performance is None:
-            return HTTPNotFound('performance id %d is not found' % performance_id)
 
         is_copy = (self.request.matched_route.name == 'performances.copy')
         kwargs = dict(
@@ -278,7 +248,7 @@ class Performances(BaseView):
                 performance.create_venue_id = f.data['venue_id']
             else:
                 try:
-                    query = Performance.query.filter_by(id=performance_id)
+                    query = Performance.query.filter_by(id=performance.id)
                     performance = query.with_lockmode('update').populate_existing().one()
                 except Exception, e:
                     logging.info(e.message)
@@ -310,11 +280,7 @@ class Performances(BaseView):
 
     @view_config(route_name='performances.delete')
     def delete(self):
-        performance_id = int(self.request.matchdict.get('performance_id', 0))
-        performance = Performance.get(performance_id, self.context.user.organization_id)
-        if performance is None:
-            return HTTPNotFound('performance id %d is not found' % performance_id)
-
+        performance = self.context.performance
         location = route_path('events.show', self.request, event_id=performance.event_id)
         try:
             performance.delete()
@@ -327,28 +293,18 @@ class Performances(BaseView):
 
     @view_config(route_name='performances.open', request_method='GET',renderer='altair.app.ticketing:templates/performances/_form_open.html')
     def open_get(self):
-        performance_id = int(self.request.matchdict.get('performance_id', 0))
-        performance = Performance.get(performance_id, self.context.user.organization_id)
-        if performance is None:
-            return HTTPNotFound('performance id %d is not found' % id)
-
-        f = PerformancePublicForm(record_to_multidict(performance))
+        f = PerformancePublicForm(record_to_multidict(self.context.performance))
         f.public.data = 0 if f.public.data == 1 else 1
         return {
             'form':f,
-            'performance':performance
+            'performance':self.context.performance
         }
 
     @view_config(route_name='performances.open', request_method='POST',renderer='altair.app.ticketing:templates/performances/_form_open.html')
     def open_post(self):
-        performance_id = int(self.request.matchdict.get('performance_id', 0))
-        performance = Performance.get(performance_id, self.context.user.organization_id)
-        if performance is None:
-            return HTTPNotFound('performance id %d is not found' % id)
-
         f = PerformancePublicForm(self.request.POST)
         if f.validate():
-            performance = merge_session_with_post(performance, f.data)
+            performance = merge_session_with_post(self.context.performance, f.data)
             performance.save()
 
             if performance.public:
@@ -359,14 +315,13 @@ class Performances(BaseView):
 
         return {
             'form':f,
-            'performance':performance
+            'performance':self.context.performance
         }
 
 @view_config(decorator=with_bootstrap, permission="authenticated",
              route_name="performances.mailinfo.index")
 def mailinfo_index_view(context, request):
-    performance_id = request.matchdict["performance_id"]
-    return HTTPFound(request.route_url("performances.mailinfo.edit", performance_id=performance_id, mailtype=MailTypeChoices[0][0]))
+    return HTTPFound(request.route_url("performances.mailinfo.edit", performance_id=context.performance.id, mailtype=MailTypeChoices[0][0]))
 
 @view_defaults(decorator=with_bootstrap, permission="authenticated", 
                route_name="performances.mailinfo.edit", 
@@ -374,19 +329,16 @@ def mailinfo_index_view(context, request):
 class MailInfoNewView(BaseView):
     @view_config(request_method="GET")
     def mailinfo_new(self):
-        performance = Performance.filter_by(id=self.request.matchdict["performance_id"]).first()
-        if performance is None:
-            raise HTTPNotFound('performance id %s is not found' % self.request.matchdict["performance_id"])
-
+        performance = self.context.performance
         mutil = get_mail_utility(self.request, self.request.matchdict["mailtype"])
         template = MailInfoTemplate(self.request, performance.event.organization, mutil=mutil)
         choice_form = template.as_choice_formclass()()
         formclass = template.as_formclass()
         mailtype = self.request.matchdict["mailtype"]
         form = formclass(**(performance.extra_mailinfo.data.get(mailtype, {}) if performance.extra_mailinfo else {}))
-        return {"performance": performance, 
+        return {"performance": performance,
                 "form": form, 
-                "organization": performance.event.organization, 
+                "organization": performance.event.organization,
                 "mailtype": self.request.matchdict["mailtype"], 
                 "choices": MailTypeChoices, 
                 "mutil": mutil, 
@@ -396,10 +348,7 @@ class MailInfoNewView(BaseView):
     def mailinfo_new_post(self):
         logger.debug("mailinfo.post: %s" % self.request.POST)
         mutil = get_mail_utility(self.request, self.request.matchdict["mailtype"])
-
-        performance = Performance.filter_by(id=self.request.matchdict["performance_id"]).first()
-        if performance is None:
-            raise HTTPNotFound('performance id %s is not found' % self.request.matchdict["performance_id"])
+        performance = self.context.performance
 
         template = MailInfoTemplate(self.request, performance.event.organization, mutil=mutil)
         choice_form = template.as_choice_formclass()()

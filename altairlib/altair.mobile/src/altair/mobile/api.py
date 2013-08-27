@@ -25,7 +25,7 @@ def _detect_from_email_address(detector, address):
     return detector.detect_from_fqdn(fqdn)
 
 def detect_from_email_address(registry, address):
-    return _detect_from_email_address(registry.queryUtility(IMobileCarrierDetector), fqdn)
+    return _detect_from_email_address(registry.queryUtility(IMobileCarrierDetector), address)
 
 def detect_from_ip_address(registry, address):
     detector = registry.queryUtility(IMobileCarrierDetector)

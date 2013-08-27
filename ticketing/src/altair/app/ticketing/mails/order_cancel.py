@@ -8,7 +8,7 @@ from .forms import OrderInfoDefault, SubjectInfo, SubjectInfoWithValue
 from altair.app.ticketing.cart import helpers as ch ##
 from .interfaces import IPurchaseInfoMail
 from zope.interface import implementer
-from .api import create_or_update_mailinfo,  create_fake_order, get_mail_setting_default
+from .api import create_or_update_mailinfo,  create_fake_order, get_mail_setting_default, get_appropriate_message_part
 
 logger = logging.getLogger(__name__)
 
@@ -85,11 +85,12 @@ class CancelMail(object):
         subject = self.get_mail_subject(organization, traverser)
         sender = mail_setting_default.get_sender(self.request, traverser, organization)
         bcc = mail_setting_default.get_bcc(self.request, traverser, organization)
+        primary_recipient = order.shipping_address.email_1 if order.shipping_address else None
         return Message(
             subject=subject,
-            recipients=[order.shipping_address.email_1 if order.shipping_address else ""],
+            recipients=[primary_recipient] if primary_recipient else [],
             bcc=bcc,
-            body=mail_body,
+            body=get_appropriate_message_part(self.request, primary_recipient, mail_body),
             sender=sender)
 
     def _body_tmpl_vars(self, order, traverser):

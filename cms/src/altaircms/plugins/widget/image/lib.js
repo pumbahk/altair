@@ -63,7 +63,13 @@ if(!widget){
                 $('#imgtabs').tabs();
 
                 $("#image_submit").click(function(){
-                    we.finish_dialog(this);
+                    if ($(we.dialog).find(".managed").length) {
+                        we.finish_dialog(this);
+                    } else {
+                        if(window.confirm('画像が選択されていません。本当に閉じますか？')){
+                            we.finish_dialog(this);
+                        }
+                    }
                 })
 
                 $("#image_info_submit").click(function(){

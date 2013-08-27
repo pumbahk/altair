@@ -1,7 +1,7 @@
 # coding: utf-8
 from pyramid.path import AssetResolver
 
-SESSION_NAME = "layout"
+SESSION_NAME = "cms-layout-templates"
 
 def install_filesession(config):
     from ..filelib import FileSession

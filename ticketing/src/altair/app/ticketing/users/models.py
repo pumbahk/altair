@@ -223,6 +223,14 @@ MemberGroup_SalesSegment = Table('MemberGroup_SalesSegment', Base.metadata,
     UniqueConstraint('membergroup_id', 'sales_segment_group_id'),
 )
 
+MemberGroup_SalesSegmentGroup = Table('MemberGroup_SalesSegmentGroup', Base.metadata,
+    Column('id', Identifier, primary_key=True),
+    Column('membergroup_id', Identifier, ForeignKey('MemberGroup.id')),
+    Column('sales_segment_group_id', Identifier, ForeignKey('SalesSegmentGroup.id')),
+    Column('sales_segment_id', Identifier, ForeignKey('SalesSegment.id')),
+    UniqueConstraint('membergroup_id', 'sales_segment_group_id'),
+)
+
 class MemberGroup(Base, BaseModel, LogicallyDeleted, WithTimestamp):
     __tablename__ = 'MemberGroup'
     query = session.query_property()
@@ -233,7 +241,7 @@ class MemberGroup(Base, BaseModel, LogicallyDeleted, WithTimestamp):
     is_guest = AnnotatedColumn(Boolean, default=False, server_default='0', nullable=False, _a_label=_(u'ゲストログイン'))
 
     sales_segment_groups = relationship('SalesSegmentGroup',
-        secondary=MemberGroup_SalesSegment,
+        secondary=MemberGroup_SalesSegmentGroup,
         backref="membergroups")
 
     sales_segments = relationship('SalesSegment',

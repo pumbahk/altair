@@ -17,6 +17,9 @@ class CalendarWidgetView(object):
         params = self.request.json_body["data"]
         if not "show_label" in params:
             params["show_label"] = False
+        ## not good
+        if params.get("salessegment_id") == u"__None":
+            params["salessegment_id"] = None
         widget = context.update_data(widget,page_id=page_id, **params)
         context.add(widget, flush=True)
 

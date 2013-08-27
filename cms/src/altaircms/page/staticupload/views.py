@@ -40,15 +40,14 @@ class StaticPageCreateView(BaseView):
             return {"form": form}
         creator = self.context.creation(creation.StaticPageCreate, form.data)
         pagetype = get_or_404(self.request.allowable(PageType), PageType.name==self.request.matchdict["pagetype"])
-        static_page = creator.create()
-
         try:
+            static_page = creator.create()
             static_page.pageset.pagetype = pagetype
             FlashMessage.success(u"%sが作成されました" % static_page.label, request=self.request)
             return HTTPFound(self.context.endpoint(static_page))
         except Exception as e:
             logger.exception(e)
-            FlashMessage.error(str(e), request=self.request)
+            FlashMessage.error(u"作成に失敗しました。(ファイル名に日本語などのマルチバイト文字が含まれている時に失敗することがあります)", request=self.request)
             creator.rollback()
             return {"form": form}
 
@@ -328,7 +327,7 @@ class StaticPageView(BaseView):
         static_page = get_or_404(self.request.allowable(StaticPage), StaticPage.id==pk)
         deleter = self.context.creation(creation.StaticPageDelete)
         deleter.delete(static_page)
-        FlashMessage.success(u"%sが削除されました" % static_page.prefix, request=self.request)
+        FlashMessage.success(u"%sが削除されました" % static_page.label, request=self.request)
         return {"redirect_to": self.context.endpoint(static_page)}
 
     @view_config(match_param="action=download")
@@ -339,7 +338,7 @@ class StaticPageView(BaseView):
         writename = static_directory.get_writename(static_page)
         with zipupload.current_directory(static_directory.get_rootname(static_page)):
             zipupload.create_zipfile_from_directory(".", writename)
-        return download_response(path=writename,request=self.request, filename="{0}.zip".format(static_page.prefix)) 
+        return download_response(path=writename,request=self.request, filename="{0}.zip".format(static_page.name)) 
 
     @view_config(match_param="action=upload", request_param="zipfile", request_method="POST")
     def upload(self):
@@ -359,7 +358,7 @@ class StaticPageView(BaseView):
             raise HTTPFound(self.context.endpoint(static_page))
 
         self.context.touch(static_page)
-        FlashMessage.success(u"%sが更新されました" % static_page.prefix, request=self.request)
+        FlashMessage.success(u"%sが更新されました" % static_page.label, request=self.request)
         return HTTPFound(self.context.endpoint(static_page))
 
 
@@ -369,7 +368,7 @@ def static_page_display_view(context, request):
     static_directory = get_static_page_utility(request)
     try:
         path = os.path.join(static_directory.get_base_directory(), request.matchdict["path"])
-        logger.info("*path: {0}".format(path))
+        logger.info(u"*path: {0}".format(path))
         return as_static_page_response(request, static_page, path, force_original=request.GET.get("force_original"), 
                                        path=path, cache_max_age=0)
     except StaticPageNotFound as e:

@@ -83,7 +83,10 @@ def main(argv=sys.argv):
                 continue
 
             if form not in reports:
-                render_param = dict(performance_reporter=PerformanceReporter(form, performance))
+                reporter = PerformanceReporter(form, performance)
+                if not reporter.reporters:
+                    continue
+                render_param = dict(performance_reporter=reporter)
                 reports[form] = render_to_response('altair.app.ticketing:templates/sales_reports/performance_mail.html', render_param)
             subject = u'%s (開催日:%s)' % (performance.name, performance.start_on.strftime('%Y-%m-%d %H:%M'))
         elif event:
@@ -93,7 +96,10 @@ def main(argv=sys.argv):
                 continue
 
             if form not in reports:
-                render_param = dict(event_reporter=EventReporter(form, event))
+                reporter = EventReporter(form, event)
+                if not reporter.reporters:
+                    continue
+                render_param = dict(event_reporter=reporter)
                 reports[form] = render_to_response('altair.app.ticketing:templates/sales_reports/event_mail.html', render_param)
             subject = event.title
         else:

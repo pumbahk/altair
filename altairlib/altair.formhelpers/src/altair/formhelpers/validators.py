@@ -2,6 +2,7 @@
 
 import re
 from wtforms import validators
+from wtforms.compat import string_types
 from datetime import date, datetime
 
 __all__ = (
@@ -16,6 +17,7 @@ __all__ = (
     'SejCompliantEmail',
     'Zenkaku',
     'after1900',
+    'SwitchOptional',
     )
 
 def todatetime(d):
@@ -127,3 +129,22 @@ def Zenkaku(form, field):
         raise validators.ValidationError(field.gettext(u'全角で入力してください'))
 
 after1900 = DateTimeInRange(from_=date(1900, 1, 1))
+
+
+class SwitchOptional(validators.Optional):
+    """
+    :param switch_field:
+        If field named `switch_field` is True, this field marked as optional.
+    :param strip_whitespace:
+        If True (the default) also stop the validation chain on input which
+        consists of only whitespace.
+    """
+    field_flags = ('optional', )
+
+    def __init__(self, switch_field, strip_whitespace=True):
+        super(SwitchOptional, self).__init__(strip_whitespace=strip_whitespace)
+        self.switch_field = switch_field
+
+    def __call__(self, form, field):
+        if form[self.switch_field].data:
+            super(SwitchOptional, self).__call__(form, field)

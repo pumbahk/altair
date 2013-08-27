@@ -105,6 +105,25 @@ $(function() {cart.init(salesSegmentsSelection, selected, cartReleaseUrl, true);
         </div>
       </div>
     </form>
+    <div class="settlementBox2" id="settlementEventDetail" style="clear:both">
+      <div class="settlementBoxInner2">
+        <h2><img src="${request.static_url('altair.app.ticketing.cart:static/img/settlement/title_event.gif')}" alt="イベント詳細" width="106" height="29" /></h2>
+        <table summary="イベント詳細情報">
+          <tbody>
+            <tr>
+              <th scope="row">イベント名</th>
+              <td>${event["title"]} (<span class="performanceNameSpace"></span>)</td>
+            </tr>
+            %for v in event_extra_info:
+            <tr>
+              <th scope="row">${v['label']}</th>
+              <td>${v['content']|n}</td>
+            </tr>
+            %endfor
+          </tbody>
+        </table>
+      </div>
+    </div>
     <div id="settlementOperation" class="settlementBox2">
       <div class="settlementBoxInner2">
         <h2 id="hallName">
@@ -224,24 +243,5 @@ $(function() {cart.init(salesSegmentsSelection, selected, cartReleaseUrl, true);
             </div>
           </div>
         </div>
-      </div>
-    </div>
-    <div class="settlementBox2" id="settlementEventDetail" style="clear:both">
-      <div class="settlementBoxInner2">
-        <h2><img src="${request.static_url('altair.app.ticketing.cart:static/img/settlement/title_event.gif')}" alt="イベント詳細" width="106" height="29" /></h2>
-        <table summary="イベント詳細情報">
-          <tbody>
-            <tr>
-              <th scope="row">イベント名</th>
-              <td>${event["title"]} (<span class="performanceNameSpace"></span>)</td>
-            </tr>
-            %for v in event_extra_info:
-            <tr>
-              <th scope="row">${v['label']}</th>
-              <td>${v['content']|n}</td>
-            </tr>
-            %endfor
-          </tbody>
-        </table>
       </div>
     </div>

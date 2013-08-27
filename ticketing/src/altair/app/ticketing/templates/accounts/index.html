@@ -8,16 +8,15 @@
   )}
 </%block>
 <div class="page-header">
-  <h3>取引先</h3>
+  <h1>取引先</h1>
 </div>
 
-<%include file="/accounts/_action_button.html" />
-<div id="accounts-form">
-  <%include file="/accounts/_form.html" args="form=form" />
-</div>
+<%include file="./_action_button.html" />
 
 <div class="row-fluid" style="margin-top: 30px;">
   <div class="span6">
-    <%include file="/accounts/_list.html" args="form=form, accounts=accounts" />
+    <%include file="./_list.html" args="form=form, accounts=accounts" />
   </div>
 </div>
+
+<%include file="./_modal.html" args="modal_id='modal_account'"/>

@@ -70,7 +70,6 @@ class SalesTotalReporter(object):
         self.get_stock_data()
 
     def add_form_filter(self, query):
-        query = query.filter(Performance.public==True)
         if self.form.performance_id.data:
             query = query.filter(Performance.id==self.form.performance_id.data)
         if self.form.event_id.data:
@@ -95,9 +94,9 @@ class SalesTotalReporter(object):
         # イベント名称/公演名称、販売期間
         # 一般公開されている販売区分のみ対象
         query = Event.query.filter(Event.organization_id==self.organization.id)\
-            .outerjoin(Performance).filter(Performance.deleted_at==None)\
-            .outerjoin(Stock).filter(Stock.deleted_at==None, Stock.stock_holder_id.in_(self.stock_holder_ids))\
-            .outerjoin(SalesSegment, SalesSegment.performance_id==Performance.id).filter(SalesSegment.reporting==True)
+            .join(Performance).filter(Performance.deleted_at==None)\
+            .join(SalesSegment, SalesSegment.performance_id==Performance.id).filter(SalesSegment.reporting==True)\
+            .outerjoin(Stock).filter(Stock.deleted_at==None, Stock.stock_holder_id.in_(self.stock_holder_ids))
         query = self.add_form_filter(query)
 
         if self.group_by == Performance.id:
@@ -586,13 +585,14 @@ class EventReporter(object):
 
         # 公演別のレポート
         for performance in event.performances:
-            if not performance.public:
-                continue
             end_on = performance.end_on or performance.start_on
             if self.form.limited_from.data and end_on < self.form.limited_from.data:
                 continue
             self.form.performance_id.data = performance.id
-            self.reporters[performance] = PerformanceReporter(self.form, performance)
+            reporter = PerformanceReporter(self.form, performance)
+            if not reporter.reporters:
+                continue
+            self.reporters[performance] = reporter
 
     def sort_index(self):
         return sorted(self.reporters.keys(), key=lambda x:(x.start_on, x.name))
@@ -610,7 +610,7 @@ def sendmail(settings, recipient, subject, html):
         subject = subject,
         body = '',
         html = html.text
-    ) 
+    )
     try:
         mailer.send(sender, recipient.split(','))
         return True

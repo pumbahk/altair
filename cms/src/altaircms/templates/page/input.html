@@ -15,10 +15,14 @@
   </div>
 </div>
 
+<div class="alert alert-info">
+  ページのURLを変更する際には「<a href="${request.route_path("pageset_update", id=page.pageset.id, action="input", _query=dict(endpoint=request.GET.get("endpoint","")))}">ページセットの編集</a>」を利用してください
+</div>
+
 <div class="row">
   <div class="span5">
 	<form action="${h.current_route_path_override(request)}" method="POST">
-    ${fco.form_as_table_strict(form, ["pageset", "name", "url", "title", "pagetype", "publish_begin", "publish_end","description","keywords"])}
+    ${fco.form_as_table_strict(form, ["pageset", "name", "title", "pagetype", "publish_begin", "publish_end","description","keywords"])}
 	  ${h.base.confirm_stage()|n}
 	  <button type="submit" class="btn btn-primary"><i class="icon-cog icon-white"></i> Update</button>
     </form>

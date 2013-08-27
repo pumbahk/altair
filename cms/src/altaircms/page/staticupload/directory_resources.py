@@ -75,7 +75,7 @@ class StaticPageDirectory(object):
 
     def get_toplevelname(self, static_pageset, name=None):
         return os.path.join(self.get_base_directory(), 
-                            name or static_pageset.url, 
+                            name or static_pageset.hash, 
                             )
 
     def get_rootname(self, static_page, name=None):
@@ -116,10 +116,14 @@ class StaticPageDirectory(object):
         return shutil.rmtree(src)
         
     def create(self, src, io):
-        logger.info("create src: %s" % (src))                
-        zipupload.extract_directory_from_zipfile(src, io)
-        self.request.registry.notify(AfterCreate(self.request, self, src))
-        return True
+        logger.info("create src: %s" % (src))
+        try:
+            zipupload.extract_directory_from_zipfile(src, io)
+            self.request.registry.notify(AfterCreate(self.request, self, src))
+            return True
+        except UnicodeDecodeError:
+            logger.error("uploaded zip file is invalid")
+            raise 
 
     def update(self, src, io):
         logger.info("update src: %s" % (src))                
@@ -149,7 +153,7 @@ class S3StaticPageDirectory(StaticPageDirectory):
         return "http://{0}.s3.amazonaws.com/{1}{2}/".format(bucket_name, self.prefix, dirname.replace(self.basedir, ""))
 
     def get_name(self, dirname, filename):
-        return "{0}{1}/{2}".format(self.prefix, dirname.replace(self.basedir, ""), filename)
+        return u"{0}{1}/{2}".format(self.prefix, dirname.replace(self.basedir, ""), filename)
 
     def get_url(self, path):
         return self._get_url(path.replace(self.basedir, ""))

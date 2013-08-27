@@ -1,10 +1,10 @@
 from __future__ import absolute_import
 
 from wtforms import fields
-from datetime import datetime, date
+from datetime import datetime, date, time
 import warnings
 from ..utils import atom, days_of_month
-from ..widgets.datetime import OurDateTimeWidget, OurDateWidget
+from ..widgets.datetime import OurDateTimeWidget, OurDateWidget, OurTimeWidget
 
 __all__ = (
     'Automatic',
@@ -13,13 +13,25 @@ __all__ = (
     'OurDateTimeFieldBase',
     'OurDateTimeField',
     'OurDateField',
+    'OurTimeField',
     'DateTimeField',
     'DateField',
+    'TimeField',
     )
 
 Automatic = atom('Automatic')
 Max = atom('Max')
 Min = atom('Min')
+
+def _raise_undefined_minimum_error(field):
+    def _(self, v):
+        raise ValueError('minimum value for %s is not defined' % field)
+    return _
+
+def _raise_undefined_maximum_error(field):
+    def _(self, v):
+        raise ValueError('maximum value for %s is not defined' % field)
+    return _
 
 class OurDateTimeFieldBase(fields.Field):
     _missing_value_defaults = dict(
@@ -30,16 +42,6 @@ class OurDateTimeFieldBase(fields.Field):
         minute=u'0',
         second=u'0'
         )
-
-    def _raise_undefined_minimum_error(field):
-        def _(self, v):
-            raise ValueError('minimum value for %s is not defined' % field)
-        return _
-
-    def _raise_undefined_maximum_error(field):
-        def _(self, v):
-            raise ValueError('maximum value for %s is not defined' % field)
-        return _
 
     _min_max = {
         'year': {
@@ -68,13 +70,16 @@ class OurDateTimeFieldBase(fields.Field):
             }
         }
 
-    def __init__(self, _form=None, hide_on_new=False, label=None, validators=None, format='%Y-%m-%d %H:%M:%S', value_defaults=None, missing_value_defaults=None, allow_two_digit_year=True, **kwargs):
+    _format = '%Y-%m-%d %H:%M:%S'
+    _raw_data_format = "%(year)04d-%(month)02d-%(day)02d %(hour)02d:%(minute)02d:%(second)02d"
+
+    def __init__(self, _form=None, hide_on_new=False, label=None, validators=None, format=None, value_defaults=None, missing_value_defaults=None, allow_two_digit_year=True, **kwargs):
         super(OurDateTimeFieldBase, self).__init__(label, validators, **kwargs)
         self.form = _form
         self.hide_on_new = hide_on_new
         self.name_prefix = self.name + u'.'
         self.id_prefix = self.id + u'.'
-        self.format = format
+        self.format = format or self._format
         self.value_defaults = value_defaults
         self.missing_value_defaults = missing_value_defaults or dict(self._missing_value_defaults)
         self.allow_two_digit_year = allow_two_digit_year
@@ -131,6 +136,7 @@ class OurDateTimeFieldBase(fields.Field):
                         self.process_errors.append(self.gettext('Not a valid datetime value'))
             else:
                 missing_fields = []
+                missing_fields_exist_intermittently = False
                 for k in self._fields:
                     v = u' '.join(formdata.getlist(self.name_prefix + k)).strip()
                     if not v:
@@ -138,11 +144,13 @@ class OurDateTimeFieldBase(fields.Field):
                         self._values[k] = u''
                     else:
                         self._values[k] = v
-                        if missing_fields is not None:
+                        if missing_fields:
                             for _k in missing_fields:
                                 self.process_errors.append(self.gettext("Required field `%(field)s' is not supplied") % dict(field=self.gettext(_k)))
+                                missing_fields_exist_intermittently = True
                             missing_fields = []
-                if len(missing_fields) == len(self._fields):
+                if len(missing_fields) == len(self._fields) or \
+                   missing_fields_exist_intermittently:
                     self.data = None
                     self.raw_data = None
                 else:
@@ -154,13 +162,13 @@ class OurDateTimeFieldBase(fields.Field):
                             # strftime() cannot be used here because
                             # the method doesn't deal with any datetime
                             # before 1900/1/1
-                            "%(year)04d-%(month)02d-%(day)02d %(hour)02d:%(minute)02d:%(second)02d" % dict(
-                                year=self.data.year,
-                                month=self.data.month,
-                                day=self.data.day,
-                                hour=getattr(self.data, 'hour', 0),
-                                minute=getattr(self.data, 'minute', 0),
-                                second=getattr(self.data, 'second', 0)
+                            self._raw_data_format % dict(
+                                year=getattr(self.data, 'year', None),
+                                month=getattr(self.data, 'month', None),
+                                day=getattr(self.data, 'day', None),
+                                hour=getattr(self.data, 'hour', None),
+                                minute=getattr(self.data, 'minute', None),
+                                second=getattr(self.data, 'second', None)
                                 )
                             ]
         else:
@@ -211,6 +219,8 @@ class OurDateField(OurDateTimeFieldBase):
     widget = OurDateWidget()
     _fields = ['year', 'month', 'day']
 
+    _raw_data_format = "%(year)04d-%(month)02d-%(day)02d 00:00:00"
+
     def process_data(self, data):
         if data is None:
             for k in self._fields:
@@ -236,3 +246,53 @@ class OurDateField(OurDateTimeFieldBase):
         return widget(self, **kwargs)
 
 DateField = OurDateField
+
+class OurTimeField(OurDateTimeFieldBase):
+    widget = OurTimeWidget()
+
+    _min_max = {
+        'hour': {
+            Min: _raise_undefined_minimum_error('hour'),
+            Max: _raise_undefined_maximum_error('hour')
+            },
+        'minute': {
+            Min: lambda self, v: 0,
+            Max: lambda self, v: 59
+            },
+        'second': {
+            Min: lambda self, v: 0,
+            Max: lambda self, v: 59
+            }
+        }
+
+    _fields = ['hour', 'minute', 'second']
+
+    _format = '%H:%M:%S'
+    _raw_data_format = "%(hour)02d:%(minute)02d:%(second)02d"
+
+    def process_data(self, data):
+        if data is None:
+            for k in self._fields:
+                self._values[k] = u''
+        else:
+            if isinstance(data, datetime):
+                data = data.time()
+            elif not isinstance(data, time):
+                raise TypeError()
+            for k in self._fields:
+                self._values[k] = getattr(data, k) 
+        self.data = data
+
+    def _create_data(self, values):
+        try:
+            return time(**values)
+        except (TypeError, ValueError):
+            self.process_errors.append(self.gettext('Not a valid time value'))
+
+    def __call__(self, widget=None, **kwargs):
+        if widget is None:
+            widget = self.widget
+        return widget(self, **kwargs)
+
+TimeField = OurTimeField
+

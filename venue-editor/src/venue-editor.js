@@ -579,7 +579,9 @@
             },
             mousedown: function(evt) {
               var seat = seats[id];
-              self.callbacks.click && self.callbacks.click(seat.get('model'), evt);
+              if (seat.get('model').get('sold')) {
+                self.callbacks.click && self.callbacks.click(seat.get('model'), evt);
+              }
             }
           }
         });
