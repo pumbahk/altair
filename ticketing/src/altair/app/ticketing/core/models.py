@@ -20,7 +20,7 @@ from sqlalchemy import Table, Column, ForeignKey, func, or_, and_, event
 from sqlalchemy import ForeignKeyConstraint, UniqueConstraint, PrimaryKeyConstraint
 from sqlalchemy.util import warn_deprecated
 from sqlalchemy.ext.hybrid import hybrid_property, hybrid_method
-from sqlalchemy.types import Boolean, BigInteger, Integer, Float, String, Date, DateTime, Numeric, Unicode, UnicodeText, TIMESTAMP
+from sqlalchemy.types import Boolean, BigInteger, Integer, Float, String, Date, DateTime, Numeric, Unicode, UnicodeText, TIMESTAMP, Time
 from sqlalchemy.orm import join, backref, column_property, joinedload, deferred, relationship, aliased
 from sqlalchemy.orm.collections import attribute_mapped_collection
 from sqlalchemy.orm.exc import NoResultFound
@@ -1094,6 +1094,14 @@ class SalesSegmentGroup(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     event = relationship('Event')
     auth3d_notice = Column(UnicodeText)
 
+    organization_id = Column(Identifier, ForeignKey('Organization.id'))
+    organization = relationship('Organization', backref="sales_segment_group")
+
+    start_day_prior_to_performance = Column(Integer)
+    start_time = Column(Time)
+    end_day_prior_to_performance = Column(Integer)
+    end_time = Column(Time)
+
     @hybrid_method
     def in_term(self, dt):
         return (self.start_at <= dt) & (dt <= self.end_at)
@@ -1118,6 +1126,12 @@ class SalesSegmentGroup(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             pdmp.delete()
 
         super(type(self), self).delete()
+
+    def new_sales_segment(self):
+        return SalesSegment(sales_segment_group=self,
+                            event=self.event,
+                            organization=self.organization,
+                            membergroups=[m for m in self.membergroups])
 
     @staticmethod
     def create_from_template(template, with_payment_delivery_method_pairs=False, **kwargs):
@@ -1164,6 +1178,29 @@ class SalesSegmentGroup(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     @property
     def has_guest(self):
         return (not self.membergroups) or any(mg.is_guest for mg in self.membergroups)
+
+    # 4423対応中の緩衝材メソッド
+    def sync_member_group_to_children(self):
+        for ss in self.sales_segments:
+            ss.membergroups = [mg for mg in self.membergroups]
+            ss.event = self.event
+            ss.organization = self.organization
+
+    def start_for_performance(self, performance):
+        """ 公演開始日に対応した販売開始日時を算出"""
+        s = performance.start_on
+        d = datetime(s.year, s.month, s.day,
+                     self.start_time.hour, self.start_time.minute)
+        d -= timedelta(days=self.start_day_prior_to_performance)
+        return d
+
+    def end_for_performance(self, performance):
+        """ 公演開始日に対応した販売終了日時を算出"""
+        s = performance.start_on
+        d = datetime(s.year, s.month, s.day,
+                     self.end_time.hour, self.end_time.minute)
+        d -= timedelta(days=self.end_day_prior_to_performance)
+        return d
 
 SalesSegment_PaymentDeliveryMethodPair = Table(
     "SalesSegment_PaymentDeliveryMethodPair",
@@ -3210,7 +3247,7 @@ class SalesSegment(Base, BaseModel, LogicallyDeleted, WithTimestamp):
     order_limit = AnnotatedColumn(Integer, default=0,
                                   _a_label=_(u'購入回数制限'))
 
-    _seat_choice = Column('seat_choice', Boolean, nullable=True, default=None)
+    seat_choice = Column(Boolean, nullable=True, default=None)
     public = Column(Boolean, default=True)
     reporting = Column(Boolean, nullable=False, default=True, server_default='1')
     performance_id = Column(Identifier, ForeignKey('Performance.id'))
@@ -3232,15 +3269,27 @@ class SalesSegment(Base, BaseModel, LogicallyDeleted, WithTimestamp):
         order_by="PaymentDeliveryMethodPair.id",
         cascade="all",
         collection_class=list)
-    x_auth3d_notice = Column("auth3d_notice", UnicodeText)
+    auth3d_notice = Column(UnicodeText)
 
-    @property
-    def auth3d_notice(self):
-        return self.x_auth3d_notice if self.x_auth3d_notice else self.sales_segment_group.auth3d_notice
+    event_id = Column(Identifier, ForeignKey("Event.id"))
+    event = relationship("Event", backref="sales_segments")
+    organization_id = Column(Identifier, ForeignKey("Organization.id"))
+    organization = relationship("Organization", backref="sales_segments")
 
-    @auth3d_notice.setter
-    def auth3d_notice(self, value):
-        self.x_auth3d_notice = value
+    use_default_seat_choice = Column(Boolean)
+    use_default_public = Column(Boolean)
+    use_default_reporting = Column(Boolean)
+    use_default_payment_delivery_method_pairs = Column(Boolean)
+    use_default_start_at = Column(Boolean)
+    use_default_end_at = Column(Boolean)
+    use_default_upper_limit = Column(Boolean)
+    use_default_order_limit = Column(Boolean)
+    use_default_account_id = Column(Boolean)
+    use_default_margin_ratio = Column(Boolean)
+    use_default_refund_ratio = Column(Boolean)
+    use_default_printing_fee = Column(Boolean)
+    use_default_registration_fee = Column(Boolean)
+    use_default_auth3d_notice = Column(Boolean)
 
     def has_stock_type(self, stock_type):
         return stock_type in self.seat_stock_types
@@ -3278,9 +3327,6 @@ class SalesSegment(Base, BaseModel, LogicallyDeleted, WithTimestamp):
             Cart.sales_segment_id==self.id
         )
 
-    @property
-    def event(self):
-        return self.sales_segment_group.event
 
     @hybrid_property
     def name(self):
@@ -3301,17 +3347,6 @@ class SalesSegment(Base, BaseModel, LogicallyDeleted, WithTimestamp):
     def in_term(self, dt):
         return (self.start_at <= dt) & (dt <= self.end_at)
 
-    @hybrid_property
-    def seat_choice(self):
-        return self._seat_choice if self._seat_choice is not None else self.sales_segment_group.seat_choice
-
-    @seat_choice.expression
-    def seat_choice(cls):
-        return or_(and_(cls._seat_choice == None, SalesSegmentGroup.seat_choice), cls._seat_choice)
-
-    @seat_choice.setter
-    def seat_choice(self, value):
-        self._seat_choice = tristate(value)
 
     @property
     def stocks(self):

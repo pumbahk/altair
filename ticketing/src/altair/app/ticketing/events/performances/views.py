@@ -30,6 +30,9 @@ from altair.app.ticketing.core.models import MailTypeChoices
 from altair.app.ticketing.orders.api import OrderSummarySearchQueryBuilder, QueryBuilderError
 from altair.app.ticketing.orders.models import OrderSummary
 from altair.app.ticketing.carturl.api import get_cart_url_builder, get_cart_now_url_builder
+from altair.app.ticketing.events.sales_segments.resources import (
+    SalesSegmentGroupCreate,
+)
 
 @view_defaults(decorator=with_bootstrap, permission="event_editor")
 class PerformanceShowView(BaseView):
@@ -177,6 +180,9 @@ class Performances(BaseView):
             performance.create_venue_id = f.data['venue_id']
             performance.save()
 
+            event = performance.event
+            for ssg in event.sales_segment_groups:
+                SalesSegmentGroupCreate(ssg).create_sales_segment_for(performance)
             self.request.session.flash(u'パフォーマンスを保存しました')
             return HTTPFound(location=route_path('performances.show', self.request, performance_id=performance.id))
         return {
