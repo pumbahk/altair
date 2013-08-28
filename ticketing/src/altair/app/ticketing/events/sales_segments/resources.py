@@ -143,27 +143,33 @@ class SalesSegmentEditor(object):
     def apply_changes(self, obj):
         for field in self.form:
             if field.name == "payment_delivery_method_pairs":
-                value = self.get_value(field)
+                value = self.get_value(field, obj.performance)
                 if any([isinstance(v, int) for v in value]):
                     value = PaymentDeliveryMethodPair.query.filter(
                         PaymentDeliveryMethodPair.id.in_(value)).all()
                 setattr(obj, field.name, value)
-
             else:
-                setattr(obj, field.name, self.get_value(field))
+                setattr(obj, field.name, self.get_value(field, obj.performance))
         return obj
 
     def is_use_default(self, field):
         return self.form["use_default_" + field.name].data
 
-    def get_value(self, field):
+    def get_value(self, field, performance):
         if field.name not in self.use_default_fields:
             return field.data
         else:
-            if self.is_use_default(field):
-                return getattr(self.sales_segment_group, field.name)
-            else:
+            if not self.is_use_default(field):
                 return field.data
+            else:
+                if field.name == 'start_at':
+                    return self.sales_segment_group.start_for_performance(performance)
+                elif field.name == 'end_at':
+                    return self.sales_segment_group.end_for_performance(performance)
+                else:
+                    return getattr(self.sales_segment_group, field.name)
+
+
 
 
 def sync_attr(dest, src, attr):
