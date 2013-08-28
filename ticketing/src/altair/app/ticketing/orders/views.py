@@ -367,8 +367,8 @@ class OrdersRefundIndexView(BaseView):
     def index(self):
         if self.request.session.get('orders'):
             del self.request.session['orders']
-        if self.request.session.get('altair.app.ticketing.refund.condition'):
-            del self.request.session['altair.app.ticketing.refund.condition']
+        if self.request.session.get('ticketing.refund.condition'):
+            del self.request.session['ticketing.refund.condition']
 
         form_search = OrderRefundSearchForm(organization_id=self.organization_id)
         page = 0
@@ -387,7 +387,7 @@ class OrdersRefundIndexView(BaseView):
         if self.request.method == 'POST':
             refund_condition = self.request.params
         else:
-            refund_condition = MultiDict(self.request.session.get('altair.app.ticketing.refund.condition', []))
+            refund_condition = MultiDict(self.request.session.get('ticketing.refund.condition', []))
         form_search = OrderRefundSearchForm(refund_condition, organization_id=self.organization_id)
         if form_search.validate():
             query = Order.filter(Order.organization_id==self.organization_id)
@@ -399,12 +399,10 @@ class OrdersRefundIndexView(BaseView):
             if self.request.method == 'POST':
                 # 検索結果のOrder.idはデフォルト選択状態にする
                 checked_orders = set()
-                order_ids = query.with_entities(Order.id).all()
-                for order_id in order_ids:
-                    checked_orders.add('o:%s' % order_id)
-
+                for order in query:
+                    checked_orders.add('o:%s' % order.id)
                 self.request.session['orders'] = checked_orders
-                self.request.session['altair.app.ticketing.refund.condition'] = self.request.params.items()
+                self.request.session['ticketing.refund.condition'] = self.request.params.items()
 
             page = int(self.request.params.get('page', 0))
             orders = paginate.Page(
@@ -428,7 +426,7 @@ class OrdersRefundIndexView(BaseView):
     @view_config(route_name='orders.refund.checked')
     def checked(self):
         slave_session = get_db_session(self.request, name="slave")
-        refund_condition = MultiDict(self.request.session.get('altair.app.ticketing.refund.condition', []))
+        refund_condition = MultiDict(self.request.session.get('ticketing.refund.condition', []))
         form_search = OrderRefundSearchForm(refund_condition, organization_id=self.organization_id)
         if form_search.validate():
             try:
@@ -466,7 +464,7 @@ class OrdersRefundConfirmView(BaseView):
         super(type(self), self).__init__(*args, **kwargs)
 
         self.checked_orders = [o.lstrip('o:') for o in self.request.session.get('orders', []) if o.startswith('o:')]
-        self.refund_condition = MultiDict(self.request.session.get('altair.app.ticketing.refund.condition', []))
+        self.refund_condition = MultiDict(self.request.session.get('ticketing.refund.condition', []))
         self.organization_id = int(self.context.organization.id)
         self.form_search = OrderRefundSearchForm(self.refund_condition, organization_id=self.organization_id)
 
@@ -513,7 +511,7 @@ class OrdersRefundConfirmView(BaseView):
         Order.reserve_refund(refund_param)
 
         del self.request.session['orders']
-        del self.request.session['altair.app.ticketing.refund.condition']
+        del self.request.session['ticketing.refund.condition']
 
         self.request.session.flash(u'払戻予約しました')
         return HTTPFound(location=route_path('orders.refund.index', self.request))
