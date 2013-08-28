@@ -10,6 +10,7 @@ from altair.formhelpers import (
     OurDateTimeField, Translations, Required, RequiredOnUpdate,
     OurForm, OurIntegerField, OurBooleanField, OurDecimalField, OurSelectField,
     OurTimeField, )
+from altair.app.ticketing.helpers import label_text_for
 from altair.app.ticketing.core.models import SalesSegmentKindEnum, Event, StockHolder, Account
 
 logger = logging.getLogger(__name__)
@@ -19,6 +20,11 @@ def fix_boolean(formdata, name):
         if name in formdata:
             if not formdata[name]:
                 del formdata[name]
+
+def append_error(field, error):
+    if not hasattr(field.errors, 'append'):
+        field.errors = list(field.errors)
+    field.errors.append(error)
 
 class SalesSegmentGroupForm(OurForm):
     def __init__(self, formdata=None, obj=None, prefix='', **kwargs):
@@ -73,25 +79,29 @@ class SalesSegmentGroupForm(OurForm):
     )
     start_day_prior_to_performance = OurIntegerField(
         label=u'販売開始日時(公演開始までの日数)',
-        validators=[],
+        validators=[Optional()],
+        hide_on_new=False
     )
     start_time = OurTimeField(
         label=u'販売開始日時(時刻)',
         validators=[],
+        hide_on_new=False
     )
     end_day_prior_to_performance = OurIntegerField(
         label=u'販売終了日時(公演開始までの日数)',
-        validators=[RequiredOnUpdate()],
+        validators=[Optional()],
+        hide_on_new=False
     )
     end_time = OurTimeField(
         label=u'販売終了日時(時刻)',
-        validators=[RequiredOnUpdate()],
+        validators=[],
+        hide_on_new=False
     )
     end_at = OurDateTimeField(
         label=u'販売終了日時',
         validators=[],
         format='%Y-%m-%d %H:%M',
-        hide_on_new=True
+        hide_on_new=False
     )
 
     seat_choice = OurBooleanField(
@@ -179,61 +189,67 @@ class SalesSegmentGroupForm(OurForm):
         validators=[Optional()],
     )
 
-    def _validate_start(self):
+    def _validate_start(self, *args, **kwargs):
         msg1 = u"{0},{1}どちらかを指定してください".format(
-            self.start_at.label,
-            self.start_day_prior_to_performance,
+            label_text_for(self.start_at),
+            label_text_for(self.start_day_prior_to_performance)
         )
         msg2 = u"{0},{1}は両方指定してください".format(
-            self.start_day_prior_to_performance,
-            self.start_time,
+            label_text_for(self.start_day_prior_to_performance),
+            label_text_for(self.start_time)
         )
 
-        if self.start_at and (self.start_day_prior_to_performance or self.start_time):
-            self.start_at.errors.append(ValidationError(msg1))
-            return False
-        if not self.start_at:
-            if not self.start_day_prior_to_performance or not self.start_time:
-                self.start_at.errors.append(ValidationError(msg1))
+        if self.start_at.data:
+            if self.start_day_prior_to_performance.data or self.start_time.data:
+                append_error(self.start_at, ValidationError(msg1))
                 return False
-        if not self.start_day_prior_to_performance:
-            if not self.start_at:
-                self.start_at.errors.append(ValidationError(msg1))
+        else:
+            if bool(int(bool(self.start_day_prior_to_performance.data)) ^ int(bool(self.start_time.data))):
+                append_error(self.start_day_prior_to_performance, ValidationError(msg2))
                 return False
-        if self.start_day_prior_to_performance:
-            if not self.start_time:
-                self.start_day_prior_to_performance.errors.append(ValidationError(msg2))
-                return False
-                
-        return True
-
-    def _validate_end(self):
-        return True
-
-    def _validate_term(self):
-        if self.end_at.data is not None and self.start_at.data is not None and self.end_at.data < self.start_at.data:
-            if not self.end_at.errors:
-                self.end_at.errors = []
             else:
-                self.end_at.errors = list(self.end_at.errors) 
-            self.end_at.errors.append(ValidationError(u'開演日時より過去の日時は入力できません'))
+                if not self.start_day_prior_to_performance.data:
+                    append_error(self.start_at, ValidationError(msg1))
+                    return False
+        return True
+
+    def _validate_end(self, *args, **kwargs):
+        msg1 = u"{0},{1}どちらかを指定してください".format(
+            label_text_for(self.end_at),
+            label_text_for(self.end_day_prior_to_performance)
+        )
+        msg2 = u"{0},{1}は両方指定してください".format(
+            label_text_for(self.end_day_prior_to_performance),
+            label_text_for(self.end_time)
+        )
+
+        if self.end_at.data:
+            if self.end_day_prior_to_performance.data or self.end_time.data:
+                append_error(self.end_at, ValidationError(msg1))
+                return False
+        else:
+            if bool(int(bool(self.end_day_prior_to_performance.data)) ^ int(bool(self.end_time.data))):
+                append_error(self.end_day_prior_to_performance, ValidationError(msg2))
+                return False
+            else:
+                if not self.end_day_prior_to_performance.data:
+                    append_error(self.end_at, ValidationError(msg1))
+                    return False
+        return True
+
+    def _validate_term(self, *args, **kwargs):
+        if self.end_at.data is not None and self.start_at.data is not None and self.end_at.data < self.start_at.data:
+            append_error(self.end_at, ValidationError(u'開演日時より過去の日時は入力できません'))
             return False
         return True
 
     def validate(self, *args, **kwargs):
-        if not super(type(self), self).validate(*args, **kwargs):
-            return False
-
-        if not self._validate_start(self):
-            return False
-
-        if not self._validate_end(self):
-            return False
-
-        if not self._validate_term(self):
-            return False
-
-        return True
+        return all([fn(*args, **kwargs) for fn in [
+            super(type(self), self).validate,
+            self._validate_start,
+            self._validate_end,
+            self._validate_term
+            ]])
 
 
 class MemberGroupToSalesSegmentForm(OurForm):

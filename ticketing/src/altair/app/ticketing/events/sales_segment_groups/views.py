@@ -95,10 +95,6 @@ class SalesSegmentGroups(BaseView):
 
         f = SalesSegmentGroupForm(self.request.POST, event_id=event_id, new_form=True)
         if f.validate():
-            # if f.start_at.data is None:
-            #     f.start_at.data = datetime.now() 
-            # if f.end_at.data is None:
-            #     f.end_at.data = datetime.now()
             sales_segment_group = merge_session_with_post(SalesSegmentGroup(), f.data)
             sales_segment_group.organization = self.context.user.organization
             sales_segment_group.save()
@@ -108,7 +104,8 @@ class SalesSegmentGroups(BaseView):
         else:
             return {
                 'form':f,
-            }
+                'action': self.request.path,
+                }
 
     @view_config(route_name='sales_segment_groups.copy', request_method='GET', renderer='altair.app.ticketing:templates/sales_segment_groups/_form.html', xhr=True)
     @view_config(route_name='sales_segment_groups.edit', request_method='GET', renderer='altair.app.ticketing:templates/sales_segment_groups/_form.html', xhr=True)
