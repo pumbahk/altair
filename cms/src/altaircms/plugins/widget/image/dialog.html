@@ -1,5 +1,11 @@
 <%namespace file="../components.html" name="co"/>
 
+<style>
+    .container-fluid form input {
+        min-width: 0px;
+    }
+</style>
+
 ## N個ごとに区切られたitreratorを受け取り、divで区切って出力(scrollのため)
 <%def name="render(assets)">
   % for i, g in enumerate(assets):
@@ -9,9 +15,9 @@
          <img pk="${image.id}" src="${h.asset.rendering_object(request,image).thumbnail_path}" alt="" class="${"managed" if widget.asset==image else ""}"/>
          <p>title:${image.title} width:${image.width} height:${image.height} </p>
        </div>
-     % endfor          
+     % endfor
   </div>
-  % endfor 
+  % endfor
 </%def>
 
 <div class="title">
@@ -25,19 +31,27 @@
   </ul>
   <div id="image_tab" style="height: 600px">
 
-    <form id="search_form" action="${request.route_path('image_widget_search')}" method="POST">
-      検索文字列<br/>
+    <form id="search_form" action="${request.route_path('image_widget_search')}" method="POST" style="display: inline">
+      検索文字列
       <input type="hidden" name="pk" value="${pk}"/>
-      <input type="text" name="search_word" value=""/><input type="submit" value="検索">
-      <p/>
+      <input type="text" name="search_word" value="" style="min-width: 0px"/>
+      <input type="submit" value="検索" style="width: 50px" style="min-width: 0px">
     </form>
 
-    <form id="tag_search_form" action="${request.route_path('image_widget_tag_search')}" method="POST">
-      検索タグ<br/>
+    <form id="tag_search_form" action="${request.route_path('image_widget_tag_search')}" method="POST" style="display: inline">
+      検索タグ
       <input type="hidden" name="pk" value="${pk}"/>
-      <input type="text" name="tags" value=""/><input type="submit" value="タグ検索">
+      <input type="text" name="tags" value="" style="min-width: 0px"/>
+      <input type="submit" value="タグ検索" style="min-width: 0px">
     </form>
 
+    <div class="scrollable" style="width: 550px">
+        <div class="items">
+          ${render(assets)}
+        </div>
+    </div>
+
+    <br/>
     <button type="button" id="image_submit">登録</button>
     <br/>
 
@@ -47,11 +61,8 @@
     <a class="next browse right"></a>
     <div class="navi"></div>
 
-    <div class="scrollable" style="width: 550px">
-        <div class="items">
-          ${render(assets)}
-        </div>
-    </div>
+
+
   </div>
   <div id="setting_tab">
     <table class="table">
