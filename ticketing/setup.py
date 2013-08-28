@@ -47,7 +47,7 @@ requires = [
     'js.i18n',
     'js.jquery_cookie',
     'js.jqgrid-ts',
-    'js.bootstrap-datepicker',
+    'js.bootstrap-datepicker-ts',
     'simplejson',
     'waitress',
     'altair-commons',
