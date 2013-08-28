@@ -19,6 +19,7 @@ from altair.app.ticketing.views import BaseView
 from altair.app.ticketing.fanstatic import with_bootstrap
 from altair.app.ticketing.events.performances.forms import PerformanceForm, PerformancePublicForm
 from altair.app.ticketing.core.models import Performance, PerformanceSetting
+from altair.app.ticketing.core.api import get_organization
 from altair.app.ticketing.products.forms import ProductForm
 from altair.app.ticketing.orders.forms import OrderForm, OrderSearchForm
 from altair.app.ticketing.venues.api import get_venue_site_adapter
@@ -30,6 +31,9 @@ from altair.app.ticketing.core.models import MailTypeChoices
 from altair.app.ticketing.orders.api import OrderSummarySearchQueryBuilder, QueryBuilderError
 from altair.app.ticketing.orders.models import OrderSummary
 from altair.app.ticketing.carturl.api import get_cart_url_builder, get_cart_now_url_builder
+from altair.app.ticketing.events.sales_segments.resources import (
+    SalesSegmentGroupCreate,
+)
 
 @view_defaults(decorator=with_bootstrap, permission="event_editor")
 class PerformanceShowView(BaseView):
@@ -177,6 +181,9 @@ class Performances(BaseView):
             performance.create_venue_id = f.data['venue_id']
             performance.save()
 
+            event = performance.event
+            for ssg in event.sales_segment_groups:
+                SalesSegmentGroupCreate(ssg).create_sales_segment_for(performance)
             self.request.session.flash(u'パフォーマンスを保存しました')
             return HTTPFound(location=route_path('performances.show', self.request, performance_id=performance.id))
         return {
@@ -289,14 +296,16 @@ class Performances(BaseView):
     def open_get(self):
         f = PerformancePublicForm(record_to_multidict(self.context.performance))
         f.public.data = 0 if f.public.data == 1 else 1
+
         return {
             'form':f,
-            'performance':self.context.performance
+            'performance':self.context.performance,
         }
 
     @view_config(route_name='performances.open', request_method='POST',renderer='altair.app.ticketing:templates/performances/_form_open.html')
     def open_post(self):
         f = PerformancePublicForm(self.request.POST)
+
         if f.validate():
             performance = merge_session_with_post(self.context.performance, f.data)
             performance.save()
@@ -309,7 +318,7 @@ class Performances(BaseView):
 
         return {
             'form':f,
-            'performance':self.context.performance
+            'performance':self.context.performance,
         }
 
 @view_config(decorator=with_bootstrap, permission="authenticated",

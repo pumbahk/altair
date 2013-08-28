@@ -3,11 +3,11 @@ import re
 import os
 import urllib
 from datetime import datetime
+from collections import namedtuple
 from zope.interface import implementer
 from pyramid.response import FileResponse
 from pyramid.response import Response
 from pyramid.interfaces import IRendererFactory
-from pyramid.renderers import render_to_response
 from pyramid.decorator import reify
 
 import logging
@@ -17,8 +17,9 @@ from .interfaces import IStaticPageDataFetcher
 from .interfaces import IStaticPageCache
 from .. import StaticPageNotFound
 from altairsite.front.api import get_frontpage_discriptor_resolver
+from altairsite.front.api import get_frontpage_renderer
 from altaircms.response import FileLikeResponse
-from collections import namedtuple
+
 
 CACHE_MAX_AGE=60
 
@@ -180,6 +181,9 @@ class StaticPageCache(object):
                 raise ValueError("404 --- {k} is None".format(k=k))
             self.file_data[k] = v
             self.fetching.remove_value(k)
+            if v is None:
+                logger.error("404 --- {k}".format(k=k))
+                raise HTTPNotFound
             if not v.group_id in self.file_group:
                 self.file_group[v.group_id] = {k}
             else:
@@ -223,12 +227,14 @@ class ResponseMaker(object):
     NotFound = StaticPageNotFound
     def __init__(self, request, static_page, 
                  force_original=False, 
-                 cache_max_age=None, body_var_name="inner_body"):
+                 cache_max_age=None, body_var_name="inner_body", 
+                 render_impl=get_frontpage_renderer):
         self.request = request
         self.static_page = static_page
         self.force_original = force_original
         self.cache_max_age = cache_max_age
         self.body_var_name = body_var_name
+        self.renderer = render_impl(request)
 
     @reify
     def descriptor(self):
@@ -306,7 +312,7 @@ class ResponseMaker(object):
 
     def render(self, spec, params):
         try:
-            return render_to_response(spec, params, self.request)
+            return self.renderer._render(spec, self.static_page.layout, params)
         except Exception as e:
             logger.exception(e)
             raise StaticPageNotFound("exception is occured")

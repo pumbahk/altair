@@ -5,6 +5,25 @@ logger = logging.getLogger(__name__)
 from altaircms.rowspanlib import RowSpanGrid
 from .models import PerformancelistWidget
 from altaircms.page.models import Page
+from altair.viewhelpers.datetime_ import create_date_time_formatter, DateTimeHelper
+
+def range_performance(performance):
+    start_on = performance.start_on
+    end_on = performance.end_on
+
+    if end_on:
+        if start_on.year == end_on.year and start_on.month == end_on.month and start_on.day == end_on.day:
+            return False
+        return True
+    return False
+
+def performance_describe_range_date(request, performance):
+    dth = DateTimeHelper(create_date_time_formatter(request))
+    return dth.term(
+        performance.start_on and performance.start_on.date(),
+        performance.end_on and performance.end_on.date(),
+        with_weekday=True
+        )
 
 def performance_describe_date(performance):
     try:

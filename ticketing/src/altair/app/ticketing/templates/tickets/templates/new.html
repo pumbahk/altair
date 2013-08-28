@@ -17,6 +17,23 @@ ${ch.breadcrumbs(
   <h3>チケットテンプレート登録</h3>
 </div>
 
+## これ直接ではないほうが良い気がする。
+<%doc>
+<div class="alert alert-success">
+    <dl>
+      <dt>プレースホルダーについて:</dt>
+      <dd>
+        {{名前}} のように{{ }}で囲まれたものがプレースホルダーです。発券時にプレースホルダー名に対応する値をシステムから取り出し埋め込みます。
+        (<a href="">詳しい説明..</a>)
+      </dd>
+      <dt>QRコードの埋め込み方: </dt>
+      <dd>アップロードする券面データに、idが"QR"から始まるrect要素を追加してください。label属性の値がQRコードに変換されます。
+        (<a href="">詳しい説明..</a>)
+      </dd>
+    </dl>
+</div>
+</%doc>
+
 <%
   if request.matched_route.name == 'tickets.templates.edit':
     route_name = u'編集'

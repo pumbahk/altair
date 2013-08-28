@@ -49,6 +49,7 @@ selectable_renderer = SelectableRendererSetup(
     )
 
 def includeme(config):
+    config.include('altair.app.ticketing.mails')
     config.include(setup_cart)
     config.include(setup_mailtraverser)
     config.add_subscriber(register_globals, 'pyramid.events.BeforeRender')

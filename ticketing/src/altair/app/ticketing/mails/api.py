@@ -1,18 +1,31 @@
 # -*- coding:utf-8 -*-
 import sys
 import traceback 
+import logging
+import cgi
+import re
+import unicodedata
+from datetime import datetime
+
+from zope.interface import implementer
+
+from pyramid_mailer import get_mailer
+from pyramid_mailer.message import Attachment
+
+from altair.mobile.api import detect_from_email_address
+from altair.mobile import carriers
+
+from altair.app.ticketing.core.models import ExtraMailInfo, PaymentMethodPlugin, DeliveryMethodPlugin
+
 from .interfaces import (
     IMailUtility, 
     ITraverserFactory, 
-    IMailSettingDefault
+    IMailSettingDefault,
+    IMessagePartFactory
 )
-from datetime import datetime
 from .fake import FakeObject
 from .traverser import EmailInfoTraverser
-import logging
-from zope.interface import implementer
-from altair.app.ticketing.core.models import ExtraMailInfo, PaymentMethodPlugin, DeliveryMethodPlugin
-from pyramid_mailer import get_mailer
+
 logger = logging.getLogger(__name__)
 
 def get_mail_utility(request, mailtype):
@@ -171,12 +184,20 @@ def create_or_update_mailinfo(request, data, organization=None, event=None, perf
     else:
         return update_mailinfo(target, data, kind)
 
+def stringize_message_body(body):
+    if isinstance(body, Attachment):
+        ct, ctparams = cgi.parse_header(body.content_type)
+        charset = ctparams.get('charset', 'utf-8' if body.transfer_encoding == '8bit' else 'us-ascii')
+        return body.data.decode(charset)
+    else:
+        return body
+
 def preview_text_from_message(message):
     params = dict(subject=message.subject, 
                   recipients=message.recipients, 
                   bcc=message.bcc, 
                   sender=message.sender, 
-                  body=message.body)
+                  body=stringize_message_body(message.body))
     return u"""\
 subject: %(subject)s
 recipients: %(recipients)s
@@ -196,10 +217,10 @@ def message_settings_override(message, override):
         if "recipient" in override:
             message.recipients = [override["recipient"]]
         if "subject" in override:
-            message.sender = override["subject"]
+            message.subject = override["subject"]
         if "bcc" in override:
             bcc = override["bcc"]
-            message.sender = bcc if hasattr(bcc, "length") else [bcc]
+            message.bcc = bcc if hasattr(bcc, "length") else [bcc]
     return message
 
 
@@ -275,3 +296,57 @@ def create_fake_elected_wish(request, performance=None):
     if performance:
         elected_wish.performance = performance
     return elected_wish
+
+@implementer(IMessagePartFactory)
+class MessagePartFactory(object):
+    def __init__(self, content_type, charset, encoding, encode_errors, filters, transfer_encoding):
+        self.transfer_encoding = transfer_encoding or 'base64'
+
+        _content_type, ctparams = cgi.parse_header(content_type)
+        _charset = ctparams.get('charset')
+        if charset is None:
+            if _charset is not None:
+                charset = _charset
+            else:
+                charset = 'utf-8' # XXX: hard-coded default
+
+        ctparams['charset'] = charset
+
+        if encoding is None:
+            encoding = charset
+
+        combined_content_type = _content_type + "".join("; %s=%s" % (key, re.sub(r'[\\"]', lambda g: "\\" + g.group(0), value)) for key, value in ctparams.items())
+
+        self.content_type = combined_content_type
+        self.encoding = encoding
+        self.encode_errors = encode_errors
+        self.filters = filters
+
+    def __call__(self, request, text_body):
+        if isinstance(text_body, unicode):
+            for filter_ in self.filters:
+                text_body = filter_(text_body)
+            body = text_body.encode(self.encoding, self.encode_errors)
+        return Attachment(
+            data=body,
+            content_type=self.content_type,
+            transfer_encoding=self.transfer_encoding,
+            disposition="inline"
+            )
+
+def is_nonmobile_recipient(request, email_address):
+    carrier = detect_from_email_address(request.registry, email_address)
+    return carrier.is_nonmobile
+
+def get_message_part_factory(request, name):
+    return request.registry.getUtility(IMessagePartFactory, name)
+
+def get_appropriate_message_part_factory(request, primary_recipient, kind='plain'):
+    if (not primary_recipient) or is_nonmobile_recipient(request, primary_recipient):
+        type_ = 'nonmobile'
+    else:
+        type_ = 'mobile'
+    return get_message_part_factory(request, '%s.%s' % (type_, kind))
+
+def get_appropriate_message_part(request, primary_recipient, mail_body, kind='plain'):
+    return get_appropriate_message_part_factory(request, primary_recipient, kind)(request, mail_body)

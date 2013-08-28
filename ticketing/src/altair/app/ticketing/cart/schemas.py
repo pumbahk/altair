@@ -72,16 +72,16 @@ class ClientForm(OurForm):
     )
     tel_1 = fields.TextField(
         label=u"電話番号",
-        filters=[ignore_space_hyphen], 
+        filters=[ignore_space_hyphen, NFKC], 
         validators=[
             Required(),
             Length(min=1, max=11),
-            Regexp(r'^\d*$', message=u'-を抜いた数字のみを入力してください'), 
+            Regexp(r'^\d*$', message=u'-(ハイフン)を抜いた半角数字のみを入力してください'), 
         ]
     )
     fax = fields.TextField(
         label=u"FAX番号",
-        filters=[ignore_space_hyphen], 
+        filters=[ignore_space_hyphen, NFKC], 
         validators=[
             Optional(),
             Length(min=1, max=11),
@@ -90,10 +90,10 @@ class ClientForm(OurForm):
     )
     zip = fields.TextField(
         label=u"郵便番号",
-        filters=[ignore_space_hyphen], 
+        filters=[ignore_space_hyphen, NFKC], 
         validators=[
             Required(),
-            Regexp(r'^\d{7}$', message=u'-を抜いた数字(7桁)のみを入力してください'), 
+            Regexp(r'^\d{7}$', message=u'-(ハイフン)を抜いた半角数字(7桁)のみを入力してください'), 
             Length(min=7, max=7, message=u'確認してください'),
         ]
     )
@@ -135,7 +135,7 @@ class ClientForm(OurForm):
     )
     email_1 = fields.TextField(
         label=u"メールアドレス",
-        filters=[strip_spaces],
+        filters=[strip_spaces, NFKC],
         validators=[
             Required(),
             SejCompliantEmail(),
@@ -143,7 +143,7 @@ class ClientForm(OurForm):
     )
     email_1_confirm = fields.TextField(
         label=u"メールアドレス (確認)",
-        filters=[strip_spaces],
+        filters=[strip_spaces, NFKC],
         validators=[
             Required(),
             SejCompliantEmail(),
@@ -154,7 +154,7 @@ class ClientForm(OurForm):
         email_1,
         fields.TextField(
             label=u"メールアドレス",
-            filters=[strip_spaces],
+            filters=[strip_spaces, NFKC],
             validators=[
                 SejCompliantEmail(),
                 ]
@@ -165,7 +165,7 @@ class ClientForm(OurForm):
         email_1_confirm,
         fields.TextField(
             label=u"メールアドレス (確認)",
-            filters=[strip_spaces],
+            filters=[strip_spaces, NFKC],
             validators=[
                 SejCompliantEmail(),
                 ]

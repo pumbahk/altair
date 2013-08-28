@@ -85,9 +85,8 @@ class TemplateValidateTests(unittest.TestCase):
     <flowDiv><flowPara>{{発券番号}}</flowPara></flowDiv>
   </flowRoot>
 """)
-        from altair.app.ticketing.tickets.cleaner.api import TicketCleanerValidationError
         with self.assertRaises(TicketCleanerValidationError):
-            self._callFUT(target)
+            self._callFUT(target, sej=True)
 
         try:
             self._callFUT(target)
@@ -101,14 +100,9 @@ class TemplateValidateTests(unittest.TestCase):
     <flowDiv><flowPara>TEST</flowPara></flowDiv>
   </flowRoot>
 """ * 200))
-        from altair.app.ticketing.tickets.cleaner.api import TicketCleanerValidationError
-        with self.assertRaises(TicketCleanerValidationError):
-            self._callFUT(target)
-
-        try:
-            self._callFUT(target)
-        except Exception as e:
-            self.assertTrue( str(e).startswith("sej_xml:"))
+        with self.assertRaises(TicketCleanerValidationError) as e:
+            self._callFUT(target, sej=True)
+            e.expected("sej_xml:")
 
 if __name__ == "__main__":
     unittest.main()

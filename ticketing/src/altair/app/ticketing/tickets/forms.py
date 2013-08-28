@@ -200,7 +200,9 @@ class TicketTemplateForm(OurForm):
         try:
             ticket_format = TicketFormat.query.filter_by(id=self.ticket_format_id.data, organization_id=self.context.organization.id).one()
         except NoResultFound:
-            self.ticket_format_id.errors = list(self.ticket_format_id.errors or ()) + u'未知の券面フォーマットです'
+            errors = list(self.ticket_format_id.errors or ())
+            errors.append(u'未知の券面フォーマットです')
+            self.ticket_format_id.errors = errors
             return False
         try:
             cleaner = get_validated_svg_cleaner(svgio, exc_class=ValidationError,  sej=(any(delivery_method.delivery_plugin_id == SEJ_DELIVERY_PLUGIN_ID for delivery_method in ticket_format.delivery_methods)))

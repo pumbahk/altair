@@ -124,11 +124,6 @@ class MultiCheckoutPlugin(object):
     def prepare(self, request, cart):
         """ 3Dセキュア認証 """
         notice = cart.sales_segment.auth3d_notice
-        logger.debug(u"notce = {notice}, x_auth3d_notice={x_auth3d_notice} sales_segment={sales_segment.id}".format(
-            notice=notice,
-            x_auth3d_notice=cart.sales_segment.x_auth3d_notice,
-            sales_segment=cart.sales_segment,
-            ))
         request.session['altair.app.ticketing.payments.auth3d_notice'] = notice
         return HTTPFound(location=back_url(request))
 
@@ -185,7 +180,6 @@ class MultiCheckoutPlugin(object):
                     back_url=back_url(request),
                     error_code=checkout_sales_result.CmnErrorCd
                 )
-
 
         ahead_com_code = checkout_sales_result.AheadComCd
 

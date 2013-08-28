@@ -57,7 +57,15 @@ class Accounts(BaseView):
             'sej_tenants':SejTenant.filter_by(organization_id=account.user.organization.id).all()
         }
 
-    @view_config(route_name='accounts.new', request_method='POST', renderer='altair.app.ticketing:templates/accounts/_form.html')
+    @view_config(route_name='accounts.new', request_method='GET', renderer='altair.app.ticketing:templates/accounts/_form.html', xhr=True)
+    def new(self):
+        f = AccountForm()
+        return {
+            'form':f,
+            'action': self.request.path,
+        }
+
+    @view_config(route_name='accounts.new', request_method='POST', renderer='altair.app.ticketing:templates/accounts/_form.html', xhr=True)
     def new_post(self):
         f = AccountForm(self.request.POST, organization_id=self.context.user.organization.id)
         if f.validate():
@@ -74,9 +82,23 @@ class Accounts(BaseView):
         else:
             return {
                 'form':f,
+                'action': self.request.path,
             }
 
-    @view_config(route_name='accounts.edit', request_method='POST', renderer='altair.app.ticketing:templates/accounts/_form.html')
+    @view_config(route_name='accounts.edit', request_method='GET', renderer='altair.app.ticketing:templates/accounts/_form.html', xhr=True)
+    def edit(self):
+        account_id = int(self.request.matchdict.get('account_id', 0))
+        account = Account.query.filter_by(id=account_id).filter_by(organization_id=self.context.user.organization_id).first()
+        if account is None:
+            return HTTPNotFound('account id %d is not found' % account_id)
+
+        f = AccountForm(obj=account)
+        return {
+            'form':f,
+            'action': self.request.path,
+        }
+
+    @view_config(route_name='accounts.edit', request_method='POST', renderer='altair.app.ticketing:templates/accounts/_form.html', xhr=True)
     def edit_post(self):
         account_id = int(self.request.matchdict.get('account_id', 0))
         account = Account.query.filter_by(id=account_id).filter_by(organization_id=self.context.user.organization_id).first()
@@ -94,6 +116,7 @@ class Accounts(BaseView):
         else:
             return {
                 'form':f,
+                'action': self.request.path,
             }
 
     @view_config(route_name='accounts.delete')

@@ -48,6 +48,8 @@ class S3StaticPageDirectoryFactory(StaticPageDirectoryFactory):
         config.add_subscriber(".subscribers.delete_completely_filesystem", ".creation.AfterDeleteCompletely")  
         config.add_subscriber(".subscribers.update_model_file_structure", ".creation.AfterModelCreate")
 
+        config.add_subscriber(".subscribers.refine_html_file_after_staticupload", ".creation.AfterPartialCreateFile")
+        config.add_subscriber(".subscribers.refine_html_file_after_staticupload", ".creation.AfterPartialUpdateFile")
         config.add_subscriber(".subscribers.s3update_file", ".creation.AfterPartialCreateFile")
         config.add_subscriber(".subscribers.s3update_file", ".creation.AfterPartialUpdateFile")
         config.add_subscriber(".subscribers.s3delete_file", ".creation.AfterPartialDeleteFile")
@@ -116,10 +118,14 @@ class StaticPageDirectory(object):
         return shutil.rmtree(src)
         
     def create(self, src, io):
-        logger.info("create src: %s" % (src))                
-        zipupload.extract_directory_from_zipfile(src, io)
-        self.request.registry.notify(AfterCreate(self.request, self, src))
-        return True
+        logger.info("create src: %s" % (src))
+        try:
+            zipupload.extract_directory_from_zipfile(src, io)
+            self.request.registry.notify(AfterCreate(self.request, self, src))
+            return True
+        except UnicodeDecodeError:
+            logger.error("uploaded zip file is invalid")
+            raise 
 
     def update(self, src, io):
         logger.info("update src: %s" % (src))                

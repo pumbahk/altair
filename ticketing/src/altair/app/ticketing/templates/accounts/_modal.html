@@ -1,0 +1,46 @@
+<%page args="modal_id" />
+<%namespace file="/common/helpers.html" name="ch" />
+<script type="text/javascript">
+  var new_account, edit_account, delete_account;
+  $(function () {
+    var endpoints = {
+      'new': '${request.route_path('accounts.new')|n}',
+      'edit': '${request.route_path('accounts.edit', account_id='__id__')|n}',
+      'delete': '${request.route_path('accounts.delete', account_id='__id__')|n}',
+    };
+    (function (modal_account) {
+      new_account = function new_account() {
+        load_modal_form(modal_account, endpoints['new'], null, null);
+        modal_account.modal('toggle');
+      };
+
+      edit_account = function edit_account(id) {
+        console.log(id);
+        if (!id) return;
+        load_modal_form(modal_account, endpoints['edit'].replace('__id__', id), null, null);
+        modal_account.modal('toggle');
+      };
+
+      delete_account = function delete_account(id) {
+        if (!id) return;
+        var modal = $('#modal-delete');
+        modal.find('#delete').attr('href', endpoints['delete'].replace('__id__', id));
+        modal.find('#message').text('選択した取引先を削除します。よろしいですか？');
+        modal.modal('toggle');
+      };
+    })($('#${modal_id}'));
+  });
+</script>
+<div id="${modal_id}" class="modal hide">
+  <div class="modal-header">
+    <a class="close" data-dismiss="modal">×</a>
+    <h3>取引先</h3>
+  </div>
+
+  <div class="modal-body"></div>
+
+  <div class="modal-footer">
+    <a href="#" class="btn" data-dismiss="modal">閉じる</a>
+    <a href="javascript:void(0);" onclick="$('#${modal_id}').find('form').submit();" class="btn">保存</a>
+  </div>
+</div>

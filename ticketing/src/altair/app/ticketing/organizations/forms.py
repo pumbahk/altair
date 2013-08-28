@@ -94,7 +94,7 @@ class OrganizationForm(Form):
         label = u'短縮名',
         validators=[
             Required(),
-            Regexp(u'^[a-zA-Z0-9_-]*$', message=u'英数字のみ入力できます'),
+            Regexp(u'^[a-zA-Z0-9_-]*$', message=u'半角英数字のみ入力できます'),
             Length(max=32, message=u'32文字以内で入力してください'),
         ]
     )

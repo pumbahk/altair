@@ -10,6 +10,7 @@ from StringIO import StringIO
 
 from . import cleanup_svg
 from .normalize import normalize
+from ..constants import SVG_NAMESPACE, TS_SVG_EXT_NAMESPACE, INKSCAPE_NAMESPACE
 from ..convert import convert_svg
 from altair.app.ticketing.sej.ticket import SejTicketDataXml
 
@@ -72,13 +73,25 @@ def skip_needless_content(inp):
 #xxx: cleanup_svgはxmltreeを書き換えてしまう。なので２回呼び出すとおかしな結果になってしまう
 def get_validated_svg_cleaner(svgio, exc_class=TicketCleanerValidationError, sej=False):
     xmltree = get_validated_xmltree(svgio, exc_class=exc_class)
-    result = TicketSVGValidator(exc_class=exc_class, sej=sej).validate(svgio, xmltree)
-    return TicketSVGCleaner(svgio, xmltree, result=result)
+    xmltree = iff_need_qrcode_insert(xmltree)
+    result = TicketSVGValidator(exc_class=exc_class, sej=sej).validate(xmltree)
+    return TicketSVGCleaner(xmltree, result=result)
+
+def iff_need_qrcode_insert(xmltree):
+    targets = xmltree.xpath('//n:rect[starts-with(@id, "QR")]', namespaces={"n": SVG_NAMESPACE})
+
+    for target in targets:
+        target.tag = "{{{}}}qrcode".format(TS_SVG_EXT_NAMESPACE)
+        target.attrib["content"] = target.attrib["{{{}}}label".format(INKSCAPE_NAMESPACE)]
+        if "style" in target.attrib:
+            target.attrib.pop("style")
+        if not "eclevel" in target.attrib:
+            target.attrib["eclevel"] = "m"
+    return xmltree
 
 class TicketSVGCleaner(object):
-    def __init__(self, svgio, xmltree, io_create=StringIO, result=None):
+    def __init__(self, xmltree, io_create=StringIO, result=None):
         self.io_create = io_create
-        self.svgio = svgio
         self.xmltree = xmltree
         self.result = result
 
@@ -115,7 +128,7 @@ class TicketSVGValidator(object):
         self.io_create = io_create
         self.sej = sej
 
-    def validate(self, svgio, xmltree):
+    def validate(self, xmltree):
         default_io = None
         try:
             default_io = io = self._validated_io_on_cleanup_phase(xmltree)
