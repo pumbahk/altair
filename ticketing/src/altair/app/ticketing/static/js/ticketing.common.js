@@ -216,7 +216,7 @@ var get_datetime_for, set_datetime_for, attach_datepicker;
           button.datepicker('setValue', dateStr)
         })
         .on('changeDate', function (ev) {
-          set_datetime_for(container, { year: ev.date.getYear() + 1900, month: ev.date.getMonth(), day: ev.date.getDate() });
+          set_datetime_for(container, { year: ev.date.getYear() + 1900, month: ev.date.getMonth() + 1, day: ev.date.getDate() });
           refresh_dow();
           button.datepicker('hide');
         });
