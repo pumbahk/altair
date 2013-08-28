@@ -184,12 +184,20 @@ def create_or_update_mailinfo(request, data, organization=None, event=None, perf
     else:
         return update_mailinfo(target, data, kind)
 
+def stringize_message_body(body):
+    if isinstance(body, Attachment):
+        ct, ctparams = cgi.parse_header(body.content_type)
+        charset = ctparams.get('charset', 'utf-8' if body.transfer_encoding == '8bit' else 'us-ascii')
+        return body.data.decode(charset)
+    else:
+        return body
+
 def preview_text_from_message(message):
     params = dict(subject=message.subject, 
                   recipients=message.recipients, 
                   bcc=message.bcc, 
                   sender=message.sender, 
-                  body=message.body)
+                  body=stringize_message_body(message.body))
     return u"""\
 subject: %(subject)s
 recipients: %(recipients)s
@@ -209,10 +217,10 @@ def message_settings_override(message, override):
         if "recipient" in override:
             message.recipients = [override["recipient"]]
         if "subject" in override:
-            message.sender = override["subject"]
+            message.subject = override["subject"]
         if "bcc" in override:
             bcc = override["bcc"]
-            message.sender = bcc if hasattr(bcc, "length") else [bcc]
+            message.bcc = bcc if hasattr(bcc, "length") else [bcc]
     return message
 
 
