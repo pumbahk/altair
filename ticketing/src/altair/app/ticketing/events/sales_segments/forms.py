@@ -376,7 +376,7 @@ class EditSalesSegmentForm(OurForm):
         end_at = self.end_at.data
 
         # 販売開始日時と販売終了日時の前後関係をチェックする
-        if start_at > end_at:
+        if start_at is not None and end_at is not None and start_at > end_at:
             self.start_at.errors.append(u'販売開始日時が販売終了日時より後に設定されています')
             self.end_at.errors.append(u'販売終了日時が販売開始日時より前に設定されています')
             return False
