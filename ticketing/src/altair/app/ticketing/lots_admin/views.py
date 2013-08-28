@@ -17,6 +17,7 @@ from altair.app.ticketing.fanstatic import with_bootstrap
 from altair.app.ticketing.core.models import (
     SalesSegment,
     Event,
+    Organization,
 )
 
 from altair.app.ticketing.lots.models import (
@@ -59,12 +60,19 @@ class IndexView(object):
         公演、販売区分
         """
 
+        organization_id = self.context.organization.id
         now = datetime.now()
         # 公開中
         lots = Lot.query.options(
             joinedload(Lot.event),
         ).join(
             Lot.sales_segment
+        ).join(
+            Lot.event
+        ).join(
+            Event.organization,
+        ).filter(
+            Organization.id==organization_id
         ).filter(
             SalesSegment.start_at<=now
         ).filter(
@@ -78,6 +86,12 @@ class IndexView(object):
             joinedload(Lot.event),
         ).join(
             Lot.sales_segment
+        ).join(
+            Lot.event
+        ).join(
+            Event.organization,
+        ).filter(
+            Organization.id==organization_id
         ).filter(
             SalesSegment.start_at>now
         ).filter(
@@ -89,6 +103,12 @@ class IndexView(object):
             joinedload(Lot.event),
         ).join(
             Lot.sales_segment
+        ).join(
+            Lot.event
+        ).join(
+            Event.organization,
+        ).filter(
+            Organization.id==organization_id
         ).filter(
             SalesSegment.end_at<now
         ).filter(
