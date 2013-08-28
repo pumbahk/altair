@@ -137,9 +137,6 @@ def request_order(
     if type(payment_type) is not SejPaymentType:
         raise ValueError('payment_type')
 
-    if tickets is list:
-        raise ValueError('tickets')
-
     payment = SejPayment(url = hostname + '/order/order.do', secret_key = secret_key)
     params = create_sej_request_data(
         order_id=order_id,
@@ -241,6 +238,7 @@ def request_order(
         sej_ticket.performance_datetime = ticket.get('performance_datetime')
         sej_ticket.ticket_template_id   = ticket.get('ticket_template_id')
         sej_ticket.ticket_data_xml      = ticket.get('xml').xml
+        sej_ticket.product_item_id      = ticket.get('product_item_id')
         code = ret.get('X_barcode_no_%02d' % idx)
         if code:
             sej_ticket.barcode_number = code
@@ -321,9 +319,6 @@ def request_update_order(
 
     if type(payment_type) is not SejPaymentType:
         raise ValueError('payment_type')
-
-    if tickets is list:
-        raise ValueError('tickets')
 
     sej_order = SejOrder.query.filter_by(
         order_id = condition.get('order_id'),
@@ -414,6 +409,7 @@ def request_update_order(
         sej_ticket.performance_datetime = ticket.get('performance_datetime')
         sej_ticket.ticket_template_id   = ticket.get('ticket_template_id')
         sej_ticket.ticket_data_xml      = ticket.get('xml').xml
+        sej_ticket.product_item_id      = ticket.get('product_item_id')
         code = ret.get('X_barcode_no_%02d' % idx)
         if code:
             sej_ticket.barcode_number = code

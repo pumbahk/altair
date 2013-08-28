@@ -73,7 +73,7 @@ def get_ticketing_start_at(current_date, cart):
 def get_sej_order(order):
     return SejOrder.filter(SejOrder.order_id == order.order_no).first()
 
-def get_sej_ticket_data(order_no, product_item, svg):
+def get_sej_ticket_data(product_item, svg):
     performance = product_item.performance
     return dict(
         ticket_type         = SejTicketType.TicketWithBarcode,
@@ -81,7 +81,8 @@ def get_sej_ticket_data(order_no, product_item, svg):
         performance_name    = re.sub('[ \-\.,;\'\"]', '', han2zen(performance.name)[:20]),
         ticket_template_id  = u'TTTS000001',
         performance_datetime= performance.start_on,
-        xml = SejTicketDataXml(svg)
+        xml = SejTicketDataXml(svg),
+        product_item_id = product_item.id
     )
 
 def applicable_tickets_iter(bundle):
@@ -98,7 +99,7 @@ def get_tickets(order):
                     ticket_format = ticket.ticket_format
                     transform = transform_matrix_from_ticket_format(ticket_format)
                     svg = etree.tostring(convert_svg(etree.ElementTree(etree.fromstring(pystache.render(ticket.data['drawing'], dict_))), transform), encoding=unicode)
-                    ticket = get_sej_ticket_data(order.order_no, ordered_product_item.product_item, svg)
+                    ticket = get_sej_ticket_data(ordered_product_item.product_item, svg)
                     tickets.append(ticket)
     return tickets
 
@@ -113,7 +114,7 @@ def get_tickets_from_cart(cart, now):
                     ticket_format = ticket.ticket_format
                     transform = transform_matrix_from_ticket_format(ticket_format)
                     svg = etree.tostring(convert_svg(etree.ElementTree(etree.fromstring(pystache.render(ticket.data['drawing'], dict_))), transform), encoding=unicode)
-                    ticket = get_sej_ticket_data(cart.order_no, carted_product_item.product_item, svg)
+                    ticket = get_sej_ticket_data(carted_product_item.product_item, svg)
                     tickets.append(ticket)
     return tickets
 
