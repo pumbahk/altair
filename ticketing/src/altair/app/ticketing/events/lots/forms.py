@@ -95,7 +95,7 @@ class LotForm(Form):
             Required(),
         ],
     )
-    x_auth3d_notice = TextAreaField(
+    auth3d_notice = TextAreaField(
         label=u'クレジットカード 3D認証フォーム 注記事項',
         validators=[Optional()],
     )
@@ -109,7 +109,7 @@ class LotForm(Form):
             upper_limit=self.data['upper_limit'],
             seat_choice=self.data['seat_choice'],
             account_id=sales_segment_group.account_id,
-            x_auth3d_notice=self.data['x_auth3d_notice'],
+            auth3d_notice=self.data['auth3d_notice'],
             )
         lot = Lot(
             event=event,
@@ -132,7 +132,7 @@ class LotForm(Form):
         sales_segment.end_at=self.data['end_at']
         sales_segment.upper_limit=self.data['upper_limit']
         sales_segment.seat_choice=self.data['seat_choice']
-        sales_segment.x_auth3d_notice = self.data['x_auth3d_notice']
+        sales_segment.auth3d_notice = self.data['auth3d_notice']
 
         lot.name=self.data['name']
         lot.limit_wishes=self.data['limit_wishes']

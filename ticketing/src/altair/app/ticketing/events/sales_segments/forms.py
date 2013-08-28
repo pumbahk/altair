@@ -158,6 +158,10 @@ class SalesSegmentForm(OurForm):
         default=0,
         validators=[Required()]
     )
+    # x_auth3d_notice = TextAreaField(
+    #     label=u'クレジットカード 3D認証フォーム 注記事項',
+    #     validators=[Optional()],
+    # )
     x_auth3d_notice = TextAreaField(
         label=u'クレジットカード 3D認証フォーム 注記事項',
         validators=[Optional()],
