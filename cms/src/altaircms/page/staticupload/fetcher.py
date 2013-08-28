@@ -164,7 +164,6 @@ class StaticPageCache(object):
     def __init__(self, kwargs):
         self.file_data = Cache._get_cache("file_data", kwargs) #xxx:
         self.fetching = Cache._get_cache("fetching", kwargs) #xxx:
-        self.file_group = Cache._get_cache("file_group", kwargs) #xxx:
 
     def on_fetching_another(self, k):
         logger.info("fetching: fetching another process. '{k}'".format(k=k))
@@ -181,16 +180,6 @@ class StaticPageCache(object):
                 raise ValueError("404 --- {k} is None".format(k=k))
             self.file_data[k] = v
             self.fetching.remove_value(k)
-            if v is None:
-                logger.error("404 --- {k}".format(k=k))
-                raise HTTPNotFound
-            if not v.group_id in self.file_group:
-                self.file_group[v.group_id] = {k}
-            else:
-                cached = self.file_group[v.group_id]
-                cached.add(k)
-                self.file_group[v.group_id] = cached
-            # logger.debug("result: group={group} data={data}".format(group=self.file_group[v.group_id], data=v)) #annoying
             return v
         except ValueError as e:
             logger.warn(repr(e)) #insecure string
@@ -205,18 +194,11 @@ class StaticPageCache(object):
         try:
             self.file_data.remove_value(k)
         except ValueError: #insecure string
+            logger.error("clear_cache: k={k} insecure string found. remove".format(k=k))
             handler = self.file_data._get_value(k).namespace
             handler.do_remove()
         self.fetching.remove_value(k) #call multiplly is ok?
             
-
-    def remove_group(self, k):
-        try:
-            group = self.file_group[k]
-            for f in group["files"]:
-                self.file_data.remove_value(f)
-        except KeyError:
-            logger.info("group: {k} is not found".format(k=k))
 
     def __getitem__(self, k):
         try:
