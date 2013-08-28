@@ -73,6 +73,8 @@ def is_login_required(request, event):
     ).filter(
         MemberGroup.id==MemberGroup_SalesSegment.c.membergroup_id
     ).filter(
+        c_models.SalesSegment.id==MemberGroup_SalesSegment.c.sales_segment_id
+    ).filter(
         c_models.SalesSegment.event_id==event.id
     )
     return bool(q.count())
