@@ -178,9 +178,11 @@ class EditSalesSegmentTests(unittest.TestCase):
     def setUp(self):
         self.config = testing.setUp()
         self.config.add_route('sales_segments.show', '/sales_segments/show/')
+        self.config.add_route('sales_segments.edit', '/sales_segments/show/')
         self.session = _setup_db([
             "altair.app.ticketing.core.models",
         ])
+
 
     def tearDown(self):
         _teardown_db()
@@ -299,6 +301,7 @@ class EditSalesSegmentTests(unittest.TestCase):
         from datetime import datetime
         context = self._context()
         request = DummyRequest(context=context,
+                               is_xhr=False,
                                POST=MultiDict(
                                    use_default_start_at="on",
                                    end_at="",
@@ -348,6 +351,7 @@ class EditSalesSegmentTests(unittest.TestCase):
         from datetime import datetime
         context = self._context()
         request = DummyRequest(context=context,
+                               is_xhr=False,
                                POST=MultiDict({
                                    'start_at': "2013-08-31 10:10",
                                    'end_at': "2013-09-30 20:31",

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-
+import logging
 import json
 import webhelpers.paginate as paginate
 
@@ -20,6 +20,8 @@ from altair.app.ticketing.loyalty.models import PointGrantSetting
 from webob.multidict import MultiDict
 from .resources import SalesSegmentEditor
 from datetime import datetime
+
+logger = logging.getLogger(__name__)
 
 @view_defaults(decorator=with_bootstrap, permission='event_editor')
 class SalesSegments(BaseView):
@@ -299,8 +301,7 @@ class SalesSegments(BaseView):
         return {"result": result, "status": True}
 
 
-@view_defaults(renderer='altair.app.ticketing:templates/sales_segments/edit.html',
-               route_name='sales_segments.edit',
+@view_defaults(route_name='sales_segments.edit',
                decorator=with_bootstrap, permission='event_editor')
 class EditSalesSegment(BaseView):
     @property
@@ -334,7 +335,8 @@ class EditSalesSegment(BaseView):
         ]
 
 
-    @view_config()
+    @view_config(renderer='altair.app.ticketing:templates/sales_segments/edit.html',)
+    @view_config(renderer='altair.app.ticketing:templates/sales_segments/_edit_form.html', xhr=True)
     def __call__(self):
         form = EditSalesSegmentForm(obj=self.sales_segment,
                                     formdata=self.request.POST)
@@ -347,11 +349,15 @@ class EditSalesSegment(BaseView):
             if form.validate():
                 editor = SalesSegmentEditor(self.sales_segment_group, form)
                 editor.apply_changes(self.sales_segment)
-                return HTTPFound(self.request.route_url('sales_segments.show', **self.request.matchdict))
+                if not self.request.is_xhr:
+                    return HTTPFound(self.request.route_url('sales_segments.show', **self.request.matchdict))
+                else:
+                    return render_to_response('altair.app.ticketing:templates/refresh.html', {}, request=self.request)
 
         return dict(form=form, event=self.event,
                     performance=self.performance,
-                    sales_segment=self.sales_segment)
+                    sales_segment=self.sales_segment,
+                    action=self.request.route_path('sales_segments.edit', **self.request.matchdict))
 
 @view_defaults(decorator=with_bootstrap, permission='event_editor')
 class SalesSegmentPointGrantSettings(BaseView):
