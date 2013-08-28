@@ -81,6 +81,7 @@ class LayoutModelLookupInterceptHandler(object):
         logger.info("fetching: {url}".format(url=url))
         res = urllib.urlopen(url)
         if res.code != 200:
+            logger.error("{url} is {code}. ".format(url=url, code=res.code))
             raise HTTPNotFound(res.read())
         string = res.read()
         return Template(
