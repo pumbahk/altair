@@ -163,6 +163,7 @@ class ReserveViewTests(unittest.TestCase):
 
         context = mock.Mock()
         context.sales_segment = self._sales_segment()
+        context.sales_segment.seat_choice = True
         request = testing.DummyRequest(params=params, 
             context=context)
         target = self._makeOne(request)
@@ -194,6 +195,8 @@ class ReserveViewTests(unittest.TestCase):
 
         context = mock.Mock()
         context.sales_segment = self._sales_segment()
+        context.sales_segment.seat_choice = True
+        assert context.sales_segment.seat_choice
         request = testing.DummyRequest(params=params, 
             context=context)
         target = self._makeOne(request)
