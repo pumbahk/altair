@@ -178,7 +178,8 @@ var get_datetime_for, set_datetime_for, attach_datepicker;
   attach_datepicker = function attach_datepicker($containers) {
     $containers.each(function (_, container) {
       container = $(container);
-      if (!container.data('datepicker_enabled')) {
+      var $day = container.find('span.' + datetimewidget_prefix + 'day');
+      if (!container.data('datepicker_enabled') && $day.length > 0) {
         function refresh_dow() {
           var value = get_datetime_for(container);
           if (value.year !== null && value.month !== null && value.day !== null) {
@@ -198,56 +199,26 @@ var get_datetime_for, set_datetime_for, attach_datepicker;
         var dowInner = $('<span class="' + datetimewidget_prefix + 'dow-text"></span>').appendTo(dow);
         dowInner.before('(');
         dowInner.after(')');
-        container.find('span.' + datetimewidget_prefix + 'day').append(dow);
+        $day.append(dow);
         bind_event_for(container, 'change', refresh_dow);
 
         // button
         var button = $('<a href="#"><i class="icon-calendar"></i></a>');
-        button.click(function () {
-          var o = button.offset();
+        button.data('date', '1900-1-1');
+        button.datepicker({ format: 'yyyy-m-d' })
+        .on('show', function () {
           var now = new Date();
           var value = get_datetime_for(container);
           var dateStr =
               (value.year || (now.getYear() + 1900)) + '-' + 
               (value.month || (now.getMonth() + 1)) + '-' + 
               (value.day || now.getDate());
-          function destroy() {
-            button.datepicker("destroy");
-          }
-          button.datepicker("dialog",
-            dateStr,
-            function (date) {
-              date = date.split('-');
-              set_datetime_for(container, { year: date[0], month: date[1], day: date[2] });
-              refresh_dow();
-              destroy();
-            }, {
-              dateFormat: 'yy-m-d',
-              showMonthAfterYear: true,
-              yearSuffix: '年',
-              monthNames: [
-                '1月',
-                '2月',
-                '3月',
-                '4月',
-                '5月',
-                '6月',
-                '7月',
-                '8月',
-                '9月',
-                '10月',
-                '11月',
-                '12月'
-              ],
-              dayNamesMin: dows,
-              onClose: function () {
-                destroy();
-              }
-            },
-            [o.left, o.top]
-          );
-          $.datepicker.dpDiv.css('zIndex', 9999); // XXX: hack
-          return false;
+          button.datepicker('setValue', dateStr)
+        })
+        .on('changeDate', function (ev) {
+          set_datetime_for(container, { year: ev.date.getYear() + 1900, month: ev.date.getMonth(), day: ev.date.getDate() });
+          refresh_dow();
+          button.datepicker('hide');
         });
         container.append(button);
         refresh_dow();
