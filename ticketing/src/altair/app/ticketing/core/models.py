@@ -1187,7 +1187,13 @@ class SalesSegmentGroup(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             ss.organization = self.organization
 
     def start_for_performance(self, performance):
-        """ 公演開始日に対応した販売開始日時を算出"""
+        """ 公演開始日に対応した販売開始日時を算出
+        start_atによる直接指定の場合は、start_atを利用する
+        """
+
+        if self.start_at:
+            return self.start_at
+
         s = performance.start_on
         d = datetime(s.year, s.month, s.day,
                      self.start_time.hour, self.start_time.minute)
@@ -1195,7 +1201,12 @@ class SalesSegmentGroup(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         return d
 
     def end_for_performance(self, performance):
-        """ 公演開始日に対応した販売終了日時を算出"""
+        """ 公演開始日に対応した販売終了日時を算出
+        end_atによる直接指定の場合は、end_atを利用する
+        """
+        if self.end_at:
+            return self.end_at
+
         s = performance.start_on
         d = datetime(s.year, s.month, s.day,
                      self.end_time.hour, self.end_time.minute)

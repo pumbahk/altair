@@ -17,15 +17,23 @@
   </tr>
   <tr>
     <th>${form.start_at.label.text}</th>
-    <td id="current_start_at">${vh.datetime(sales_segment_group.start_at)}</td>
+    <td>
+      % if sales_segment_group.start_day_prior_to_performance:
+        公演日の<span id="current_day_prior_to_performance">${sales_segment_group.start_day_prior_to_performance}</span>日前の<span id="current_start_time">${sales_segment_group.start_time}</span>
+      % else:
+        <span id="current_start_at">${vh.datetime(sales_segment_group.start_at)}</span>
+      % endif
+    </td>
   </tr>
   <tr>
-    <th>${form.end_day_prior_to_performance.label.text}</th>
-    <td id="current_end_at">${sales_segment_group.end_day_prior_to_performance}</td>
-  </tr>
-  <tr>
-    <th>${form.end_time.label.text}</th>
-    <td id="current_end_at">${sales_segment_group.end_time}</td>
+    <th>${form.end_at.label.text}</th>
+    <td>
+      % if sales_segment_group.end_day_prior_to_performance:
+        公演日の<span id="current_end_day_prior_to_performance">${sales_segment_group.end_day_prior_to_performance}</span>日前の<span id="current_end_time">${sales_segment_group.end_time}</span>
+      % else:
+        <span id="current_end_at">${vh.datetime(sales_segment_group.end_at)}</span>
+      % endif
+    </td>
   </tr>
   <tr>
     <th>${form.account_id.label.text}</th>
