@@ -474,10 +474,10 @@ class OrdersRefundConfirmView(BaseView):
             self.request.session.flash(u'払戻対象を選択してください')
             return HTTPFound(location=route_path('orders.refund.checked', self.request))
 
-        form_refund = OrderRefundForm(
-            MultiDict(payment_method_id=self.form_search.payment_method.data),
-            organization_id=self.organization_id
-        )
+        params = MultiDict()
+        if self.form_search.payment_method.data:
+            params.add('payment_method_id', self.form_search.payment_method.data)
+        form_refund = OrderRefundForm(params, organization_id=self.organization_id)
         return {
             'orders':self.checked_orders,
             'refund_condition':self.refund_condition,

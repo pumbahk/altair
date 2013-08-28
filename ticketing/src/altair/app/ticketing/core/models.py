@@ -3221,6 +3221,8 @@ class Refund(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     include_delivery_fee = Column(Boolean, nullable=False, default=False)
     include_item = Column(Boolean, nullable=False, default=False)
     cancel_reason = Column(String(255), nullable=True, default=None)
+    start_at = Column(DateTime, nullable=False)
+    end_at = Column(DateTime, nullable=False)
     orders = relationship('Order', backref=backref('refund', uselist=False))
 
     def fee(self, order):
