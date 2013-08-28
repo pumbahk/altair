@@ -12,6 +12,7 @@ from js.backbone import backbone
 from js.bootstrap_ts import bootstrap, bootstrap_responsive_css
 from js.jquery_cookie import cookie
 from js.jqgrid_ts import jqgrid, jqgrid_i18n_en
+from js.jqueryui import ui_draggable
 from js.jqueryui_bootstrap import jqueryui_bootstrap
 from js.bootstrap_datepicker_ts import bootstrap_datepicker
 from js.i18n import i18n
@@ -135,6 +136,7 @@ with_bootstrap = FanstaticDecoratorFactory(
     bootstrap_datepicker.need,
     i18n.need,
     jqgrid.need,
-    jqgrid_i18n_en.need
+    jqgrid_i18n_en.need,
+    ui_draggable.need
     )
 
