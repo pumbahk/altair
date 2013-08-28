@@ -323,13 +323,13 @@ class OrderRefundSearchForm(OrderSearchForm):
 
     payment_method = SelectField(
         label=u'決済方法',
-        validators=[Required()],
+        validators=[Optional()],
         choices=[],
         coerce=int,
     )
     delivery_method = SelectMultipleField(
         label=u'引取方法',
-        validators=[Required()],
+        validators=[Optional()],
         choices=[],
         coerce=int,
     )
@@ -343,13 +343,13 @@ class OrderRefundSearchForm(OrderSearchForm):
         label=u"公演",
         coerce=lambda x : int(x) if x else u"",
         choices=[],
-        validators=[Required()],
+        validators=[Optional()],
     )
     sales_segment_group_id = SelectMultipleField(
         label=u'販売区分',
         coerce=lambda x : int(x) if x else u"",
         choices=[],
-        validators=[Required()],
+        validators=[Optional()],
     )
     status = BugFreeSelectMultipleField(
         label=u'ステータス',
