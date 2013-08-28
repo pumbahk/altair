@@ -12,7 +12,16 @@
   <h1>払戻</h1>
 </div>
 
+
 <div style="float: left;">
+  <div class="alert alert-warning">
+    払戻対象を選択してください。以下の検索条件は自動的に付加されます。
+    <div style="margin-bottom: 5px;"></div>
+    <ul>
+      <li>ステータス: 受付済み、配送済み</li>
+      <li>決済: 入金済み</li>
+    </ul>
+  </div>
   <%include file="/orders/refund/_search.html" args="form=form_search" />
 </div>
 <div style="clear: both;"></div>
