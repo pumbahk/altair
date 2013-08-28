@@ -396,7 +396,7 @@ class OrdersRefundIndexView(BaseView):
             except QueryBuilderError as e:
                 self.request.session.flash(e.message)
 
-            if self.request.method == 'POST':
+            if self.request.method == 'POST' and self.request.params.get('page', None) is None:
                 # 検索結果のOrder.idはデフォルト選択状態にする
                 checked_orders = set()
                 for order in query:
