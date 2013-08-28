@@ -155,8 +155,9 @@ class PaymentTests(unittest.TestCase):
         preparer.prepare.assert_called_with(request, cart)
 
 
+    @mock.patch("altair.app.ticketing.payments.payment.get_preparer")
     @mock.patch("transaction.commit")
-    def test_call_payment_with_peymend_delivery_plugin(self, mock_commit):
+    def test_call_payment_with_peymend_delivery_plugin(self, mock_commit, mock_get_preparer):
         from altair.app.ticketing.core.models import Order, Performance, Event, Organization
         order = Order(total_amount=10, system_fee=1234,
             transaction_fee=234, delivery_fee=234,
@@ -183,9 +184,11 @@ class PaymentTests(unittest.TestCase):
         self.assertEqual(order.organization_id, order.performance.event.organization.id)
         payment_delivery_plugin.finish.assert_called_with(request, cart)
         mock_commit.assert_called_with()
+        mock_get_preparer.assert_called_with(request, payment_delivery_pair)
 
+    @mock.patch("altair.app.ticketing.payments.payment.get_preparer")
     @mock.patch("transaction.commit")
-    def test_call_payment_with_peymend_plugin_delivery_plugin(self, mock_commit):
+    def test_call_payment_with_peymend_plugin_delivery_plugin(self, mock_commit, mock_get_preparer):
         from altair.app.ticketing.core.models import Order, Performance, Event, Organization
         order = Order(total_amount=10, system_fee=1234,
             transaction_fee=234, delivery_fee=234,
@@ -214,10 +217,11 @@ class PaymentTests(unittest.TestCase):
         payment_plugin.finish.assert_called_with(request, cart)
         delivery_plugin.finish.assert_called_with(request, cart)
         mock_commit.assert_called_with()
+        mock_get_preparer.assert_called_with(request, payment_delivery_pair)
 
-    #@mock.patch("altair.app.ticketing.payments.payment.on_delivery_error")
+    @mock.patch("altair.app.ticketing.payments.payment.get_preparer")
     @mock.patch("transaction.commit")
-    def test_call_payment_with_delivery_error(self, mock_commit):
+    def test_call_payment_with_delivery_error(self, mock_commit, mock_get_preparer):
         from altair.app.ticketing.core.models import Order, Performance, Event, Organization
         from altair.app.ticketing.cart.exceptions import DeliveryFailedException
         event_id = 768594
@@ -228,6 +232,7 @@ class PaymentTests(unittest.TestCase):
             performance=Performance(event=Event(id=event_id, organization=Organization(short_name="this-is-test", id=11111))))
         self.session.add(order)
         self.session.flush()
+
         payment_plugin = mock.Mock()
         payment_plugin.finish.return_value = order
         delivery_plugin = mock.Mock()
@@ -247,6 +252,7 @@ class PaymentTests(unittest.TestCase):
 
         # エラー発生時でもコミットされること。
         mock_commit.assert_called_with()
+        mock_get_preparer.assert_called_with(request, payment_delivery_pair)
 
 # class on_delivery_errorTests(unittest.TestCase):
 #     def _callFUT(self, *args, **kwargs):

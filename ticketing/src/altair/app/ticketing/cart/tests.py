@@ -677,7 +677,8 @@ class ReserveViewTests(unittest.TestCase):
                                      start_at=now - timedelta(days=1), end_at=now + timedelta(days=1), public=True, upper_limit=10,
                                      payment_delivery_method_pairs=[
                                         PaymentDeliveryMethodPair(system_fee=0, transaction_fee=0, delivery_fee=0, discount=0)
-                                        ])
+                                        ],
+                                     seat_choice=True)
         product_item = ProductItem(id=product_item_id, stock_id=stock.id, price=100, quantity=1, performance=performance)
         product = Product(id=1, price=100, items=[product_item], name=u"S席", sales_segment=sales_segment)
         self.session.add(performance)
