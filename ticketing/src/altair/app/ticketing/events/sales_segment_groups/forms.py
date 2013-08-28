@@ -67,18 +67,18 @@ class SalesSegmentGroupForm(OurForm):
     )
     start_at = OurDateTimeField(
         label=u'販売開始日時',
-        validators=[RequiredOnUpdate()],
+        validators=[],
         format='%Y-%m-%d %H:%M',
         hide_on_new=False
     )
-    # start_day_prior_to_performance = OurIntegerField(
-    #     label=u'販売開始日時(公演開始までの日数)',
-    #     validators=[RequiredOnUpdate()],
-    # )
-    # start_time = OurTimeField(
-    #     label=u'販売開始日時(時刻)',
-    #     validators=[],
-    # )
+    start_day_prior_to_performance = OurIntegerField(
+        label=u'販売開始日時(公演開始までの日数)',
+        validators=[],
+    )
+    start_time = OurTimeField(
+        label=u'販売開始日時(時刻)',
+        validators=[],
+    )
     end_day_prior_to_performance = OurIntegerField(
         label=u'販売終了日時(公演開始までの日数)',
         validators=[RequiredOnUpdate()],
@@ -87,12 +87,12 @@ class SalesSegmentGroupForm(OurForm):
         label=u'販売終了日時(時刻)',
         validators=[RequiredOnUpdate()],
     )
-    # end_at = OurDateTimeField(
-    #     label=u'販売終了日時',
-    #     validators=[RequiredOnUpdate()],
-    #     format='%Y-%m-%d %H:%M',
-    #     hide_on_new=True
-    # )
+    end_at = OurDateTimeField(
+        label=u'販売終了日時',
+        validators=[],
+        format='%Y-%m-%d %H:%M',
+        hide_on_new=True
+    )
 
     seat_choice = OurBooleanField(
         label=u'座席選択可',
@@ -179,16 +179,61 @@ class SalesSegmentGroupForm(OurForm):
         validators=[Optional()],
     )
 
+    def _validate_start(self):
+        msg1 = u"{0},{1}どちらかを指定してください".format(
+            self.start_at.label,
+            self.start_day_prior_to_performance,
+        )
+        msg2 = u"{0},{1}は両方指定してください".format(
+            self.start_day_prior_to_performance,
+            self.start_time,
+        )
+
+        if self.start_at and (self.start_day_prior_to_performance or self.start_time):
+            self.start_at.errors.append(ValidationError(msg1))
+            return False
+        if not self.start_at:
+            if not self.start_day_prior_to_performance or not self.start_time:
+                self.start_at.errors.append(ValidationError(msg1))
+                return False
+        if not self.start_day_prior_to_performance:
+            if not self.start_at:
+                self.start_at.errors.append(ValidationError(msg1))
+                return False
+        if self.start_day_prior_to_performance:
+            if not self.start_time:
+                self.start_day_prior_to_performance.errors.append(ValidationError(msg2))
+                return False
+                
+        return True
+
+    def _validate_end(self):
+        return True
+
+    def _validate_term(self):
+        if self.end_at.data is not None and self.start_at.data is not None and self.end_at.data < self.start_at.data:
+            if not self.end_at.errors:
+                self.end_at.errors = []
+            else:
+                self.end_at.errors = list(self.end_at.errors) 
+            self.end_at.errors.append(ValidationError(u'開演日時より過去の日時は入力できません'))
+            return False
+        return True
+
     def validate(self, *args, **kwargs):
-        retval = super(type(self), self).validate(*args, **kwargs)
-        # if self.end_at.data is not None and self.start_at.data is not None and self.end_at.data < self.start_at.data:
-        #     if not self.end_at.errors:
-        #         self.end_at.errors = []
-        #     else:
-        #         self.end_at.errors = list(self.end_at.errors) 
-        #     self.end_at.errors.append(ValidationError(u'開演日時より過去の日時は入力できません'))
-        #     retval = False
-        return retval
+        if not super(type(self), self).validate(*args, **kwargs):
+            return False
+
+        if not self._validate_start(self):
+            return False
+
+        if not self._validate_end(self):
+            return False
+
+        if not self._validate_term(self):
+            return False
+
+        return True
 
 
 class MemberGroupToSalesSegmentForm(OurForm):
