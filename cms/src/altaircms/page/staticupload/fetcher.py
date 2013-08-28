@@ -194,14 +194,21 @@ class StaticPageCache(object):
             return v
         except ValueError as e:
             logger.warn(repr(e)) #insecure string
-            self.file_data.remove_value(k)
-            self.fetching.remove_value(k) #call multiplly is ok?
+            self.clear_cache(k)
         except Exception as e:
             logger.exception(repr(e))
-            self.file_data.remove_value(k)
-            self.fetching.remove_value(k) #call multiplly is ok?
+            self.clear_cache(k)
             logger.warn("fetching: exception found. on fetching data. release for '{k}'".format(k=k))
         raise HTTPNotFound
+
+    def clear_cache(self, k):
+        try:
+            self.file_data.remove_value(k)
+        except ValueError: #insecure string
+            handler = self.file_data._get_value(k).namespace
+            handler.do_remove()
+        self.fetching.remove_value(k) #call multiplly is ok?
+            
 
     def remove_group(self, k):
         try:
