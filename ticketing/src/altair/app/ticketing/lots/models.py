@@ -349,7 +349,13 @@ class Lot(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         if self.sales_segment is None:
             return None
         return self.sales_segment.seat_choice
-        
+    
+    @property
+    def auth3d_notice(self):
+        if self.sales_segment is None:
+            return None
+        return self.sales_segment.auth3d_notice
+
     def get_elected_wishes(self):
         return DBSession.query(LotEntryWish).filter(
             LotEntryWish.lot_entry_id==LotEntry.id
