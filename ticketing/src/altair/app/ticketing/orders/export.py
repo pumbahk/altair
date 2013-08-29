@@ -310,7 +310,7 @@ class OrderCSV(object):
             CurrencyRenderer(u'ordered_product.price'),
             PlainTextRenderer(u'ordered_product.quantity'),
             PlainTextRenderer(u'ordered_product.product.name'),
-            PlainTextRenderer(u'ordered_product.product.sales_segment_group.name'),
+            PlainTextRenderer(u'ordered_product.product.sales_segment.sales_segment_group.name'),
             PlainTextRenderer(u'ordered_product_item.product_item.name'),
             CurrencyRenderer(u'ordered_product_item.price'),
             PerSeatQuantityRenderer(u'ordered_product_item', u'ordered_product_item.quantity'),
