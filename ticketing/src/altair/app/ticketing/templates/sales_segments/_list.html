@@ -1,5 +1,5 @@
 <%page args="sales_segments" />
-<% from altair.app.ticketing.events.sales_segments.forms import SalesSegmentForm %>
+<% from altair.app.ticketing.core.models import SalesSegment %>
 <%namespace file="/common/helpers.html" name="ch" />
 % if sales_segments:
 <div class="row-fluid">
@@ -9,17 +9,17 @@
         <tr>
           <th class="minwidth"></th>
           <th>名称</th>
-          <th>${ch.sortable(SalesSegmentForm.start_at)}</a></th>
-          <th>${ch.sortable(SalesSegmentForm.end_at)}</a></th>
+          <th>${ch.sortable(SalesSegment.start_at)}</a></th>
+          <th>${ch.sortable(SalesSegment.end_at)}</a></th>
           % if not performance:
           <th>公演名</th>
           % endif
-          <th>${ch.sortable(SalesSegmentForm.account_id)}</a></th>
-          <th>${ch.sortable(SalesSegmentForm.upper_limit)}</a></th>
-          <%doc><th>${ch.sortable(SalesSegmentForm.order_limit)}</a></th></%doc>
-          <th>${ch.sortable(SalesSegmentForm.seat_choice)}</a></th>
-          <th>${ch.sortable(SalesSegmentForm.public)}</a></th>
-          <th>${ch.sortable(SalesSegmentForm.reporting)}</a></th>
+          <th>${ch.sortable(SalesSegment.account_id)}</a></th>
+          <th>${ch.sortable(SalesSegment.upper_limit)}</a></th>
+          <%doc><th>${ch.sortable(SalesSegment.order_limit)}</a></th></%doc>
+          <th>${ch.sortable(SalesSegment.seat_choice)}</a></th>
+          <th>${ch.sortable(SalesSegment.public)}</a></th>
+          <th>${ch.sortable(SalesSegment.reporting)}</a></th>
           <th>決済方法</th>
           <th>引取方法</th>
         </tr>

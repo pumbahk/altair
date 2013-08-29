@@ -3252,24 +3252,34 @@ class SalesSegment(Base, BaseModel, LogicallyDeleted, WithTimestamp):
     __tablename__ = 'SalesSegment'
     query = DBSession.query_property()
     id = Column(Identifier, primary_key=True)
-    start_at = Column(DateTime)
-    end_at = Column(DateTime)
-    upper_limit = Column(Integer)
+    start_at = AnnotatedColumn(DateTime, _a_label=_(u'販売開始'))
+    end_at = AnnotatedColumn(DateTime, _a_label=_(u'販売終了'))
+    upper_limit = AnnotatedColumn(Integer, _a_label=_(u'購入上限枚数'))
     order_limit = AnnotatedColumn(Integer, default=0,
                                   _a_label=_(u'購入回数制限'))
 
-    seat_choice = Column(Boolean, nullable=True, default=None)
-    public = Column(Boolean, default=True)
-    reporting = Column(Boolean, nullable=False, default=True, server_default='1')
-    performance_id = Column(Identifier, ForeignKey('Performance.id'))
+    seat_choice = AnnotatedColumn(Boolean, nullable=True, default=None,
+                                  _a_label=_(u'座席選択可'))
+    public = AnnotatedColumn(Boolean, default=True,
+                                  _a_label=_(u'一般公開'))
+    reporting = AnnotatedColumn(Boolean, nullable=False, default=True, server_default='1',
+                                _a_label=_(u'レポート対象'))
+    performance_id = AnnotatedColumn(Identifier, ForeignKey('Performance.id'),
+                                _a_label=_(u'パフォーマンス'))
     performance = relationship("Performance", backref="sales_segments")
-    sales_segment_group_id = Column(Identifier, ForeignKey("SalesSegmentGroup.id"))
+    sales_segment_group_id = AnnotatedColumn(Identifier, ForeignKey("SalesSegmentGroup.id"),
+                                             _a_label=_(u'販売区分グループ'))
     sales_segment_group = relationship("SalesSegmentGroup", backref="sales_segments")
-    margin_ratio = Column(Numeric(precision=16, scale=2), nullable=False, default=0, server_default='0')
-    refund_ratio = Column(Numeric(precision=16, scale=2), nullable=False, default=0, server_default='0')
-    printing_fee = Column(Numeric(precision=16, scale=2), nullable=False, default=0, server_default='0')
-    registration_fee = Column(Numeric(precision=16, scale=2), nullable=False, default=0, server_default='0')
-    account_id = Column(Identifier, ForeignKey('Account.id'))
+    margin_ratio = AnnotatedColumn(Numeric(precision=16, scale=2), nullable=False, default=0, server_default='0',
+                                   _a_label=_(u'販売手数料率'))
+    refund_ratio = AnnotatedColumn(Numeric(precision=16, scale=2), nullable=False, default=0, server_default='0',
+                          _a_label=_(u'払戻手数料率'))
+    printing_fee = AnnotatedColumn(Numeric(precision=16, scale=2), nullable=False, default=0, server_default='0',
+                          _a_label=_(u'印刷代金(円/枚)'))
+    registration_fee = AnnotatedColumn(Numeric(precision=16, scale=2), nullable=False, default=0, server_default='0',
+                                       _a_label=_(u'登録手数料(円/公演)'))
+    account_id = AnnotatedColumn(Identifier, ForeignKey('Account.id'),
+                                 _a_label=_(u'配券元'))
     account = relationship('Account', backref='sales_segments')
 
     seat_stock_types = association_proxy('products', 'seat_stock_type')
@@ -3282,7 +3292,8 @@ class SalesSegment(Base, BaseModel, LogicallyDeleted, WithTimestamp):
         collection_class=list)
     auth3d_notice = Column(UnicodeText)
 
-    event_id = Column(Identifier, ForeignKey("Event.id"))
+    event_id = AnnotatedColumn(Identifier, ForeignKey("Event.id"),
+                               _a_label=_(u'イベント'))
     event = relationship("Event", backref="sales_segments")
     organization_id = Column(Identifier, ForeignKey("Organization.id"))
     organization = relationship("Organization", backref="sales_segments")

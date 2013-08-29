@@ -1,63 +1,489 @@
 <%page args="form, action='#'" />
-<% from wtforms.widgets import HiddenInput %>
 <%namespace file="/common/helpers.html" name="ch" />
-
-<script>
+<form action="${action}" method="POST">
+% if form.context.sales_segment_group is None:
+<label for="${form.sales_segment_group_id.name}">${HH.label_text_for(form.sales_segment_group_id)}</label>
+${form.sales_segment_group_id}
+% else:
+<input type="hidden" id="${form.sales_segment_group_id.name}" name="${form.sales_segment_group_id.name}" value="${form.context.sales_segment_group.id}" />
+% endif
+% if form.context.performance is None:
+<label for="${form.performance_id.name}">${HH.label_text_for(form.performance_id)}</label>
+${form.performance_id}
+% else:
+<input type="hidden" id="${form.performance_id.name}" name="${form.performance_id.name}" value="${form.context.performance.id}" />
+% endif
+<script type="text/javascript">
+function get_sales_segment_group_id() {
+  return $('#${form.sales_segment_group_id.name}').val();
+}
+function get_performance_id() {
+  return $('#${form.performance_id.name}').val();
+}
+</script>
+  <table width="100%" class="table">
+    <tr>
+      <td></td><th>販売区分</th><th>販売区分グループ</th>
+    </tr>
+    <tr class="SalesSegment_payment_delivery_method_pairs">
+      <th>
+        ${form.payment_delivery_method_pairs.label}
+        ${form.use_default_payment_delivery_method_pairs()}
+        ${form.use_default_payment_delivery_method_pairs.label}
+      </th>
+      <td>
+        ${form.payment_delivery_method_pairs}
+        ${ch.validate_errors(form.payment_delivery_method_pairs)}
+      </td>
+      <td>
+        % if form.context.sales_segment_group:
+          <ul>
+            %for pdmp in form.context.sales_segment_group.payment_delivery_method_pairs:
+            <li>${pdmp.payment_method.name} - ${pdmp.delivery_method.name}</li>
+            %endfor
+          </ul>
+        % endif
+      </td>
+    </tr>
+    <tr class="SalesSegment_start_at">
+      <th>
+        ${form.start_at.label}
+        ${form.use_default_start_at()}
+        ${form.use_default_start_at.label}
+      </th>
+      <td>
+        ${form.start_at}
+        ${ch.validate_errors(form.start_at)}
+      </td>
+      <td>
+        % if form.context.sales_segment_group:
+          % if form.context.sales_segment_group.start_at:
+            ${vh.datetime(form.context.sales_segment_group.start_at)}
+          % else:
+            % if form.context.performance:
+              ${vh.datetime(form.context.sales_segment_group.start_for_performance(form.context.performance))}
+              <p class="label label-info">
+                公演日 (${vh.date(form.context.performance.start_on)}) の
+                ${form.context.sales_segment_group.start_day_prior_to_performance}日前
+              </p>
+            % endif
+          % endif
+        % endif
+      </td>
+    </tr>
+    <tr class="SalesSegment_end_at">
+      <th>
+        ${form.end_at.label}
+        ${form.use_default_end_at()}
+        ${form.use_default_end_at.label}
+      </th>
+      <td>
+        ${form.end_at}
+        ${ch.validate_errors(form.end_at)}
+      </td>
+      <td>
+        % if form.context.sales_segment_group:
+          % if form.context.sales_segment_group.end_at:
+            ${vh.datetime(form.context.sales_segment_group.end_at)}
+          % else:
+            % if form.context.performance:
+              ${vh.datetime(form.context.sales_segment_group.end_for_performance(form.context.performance))}
+              <p class="label label-info">
+                公演日 (${vh.date(form.context.performance.start_on)}) の
+                ${form.context.sales_segment_group.end_day_prior_to_performance}日前
+              </p>
+            % endif
+          % endif
+        % endif
+      </td>
+    </tr>
+    <tr class="SalesSegment_account_id">
+      <th>
+        ${form.account_id.label}
+        ${form.use_default_account_id()}
+        ${form.use_default_account_id.label}
+      </th>
+      <td>
+        ${form.account_id}
+        ${ch.validate_errors(form.account_id)}
+      </td>
+      <td>
+        % if form.context.sales_segment_group:
+          ${form.context.sales_segment_group.account.name}
+        % endif
+      </td>
+    </tr>
+    <tr class="SalesSegment_margin_ratio">
+      <th>
+        ${form.margin_ratio.label}
+        ${form.use_default_margin_ratio()}
+        ${form.use_default_margin_ratio.label}
+      </th>
+      <td>
+        ${form.margin_ratio}
+        ${ch.validate_errors(form.margin_ratio)}
+      </td>
+      <td>
+        % if form.context.sales_segment_group:
+          ${form.context.sales_segment_group.margin_ratio}
+        % endif
+      </td>
+    </tr>
+    <tr class="SalesSegment_refund_ratio">
+      <th>
+        ${form.refund_ratio.label}
+        ${form.use_default_refund_ratio()}
+        ${form.use_default_refund_ratio.label}
+      </th>
+      <td>
+        ${form.refund_ratio}
+        ${ch.validate_errors(form.refund_ratio)}
+      </td>
+      <td>
+        % if form.context.sales_segment_group:
+          ${form.context.sales_segment_group.refund_ratio}
+        % endif
+      </td>
+    </tr>
+    <tr class="SalesSegment_printing_fee">
+      <th>
+        ${form.printing_fee.label}
+        ${form.use_default_printing_fee()}
+        ${form.use_default_printing_fee.label}
+      </th>
+      <td>
+        ${form.printing_fee}
+        ${ch.validate_errors(form.printing_fee)}
+      </td>
+      <td>
+        % if form.context.sales_segment_group:
+          ${form.context.sales_segment_group.printing_fee}
+        % endif
+      </td>
+    </tr>
+    <tr class="SalesSegment_registration_fee">
+      <th>
+        ${form.registration_fee.label}
+        ${form.use_default_registration_fee()}
+        ${form.use_default_registration_fee.label}
+      </th>
+      <td>
+        ${form.registration_fee}
+        ${ch.validate_errors(form.registration_fee)}
+      </td>
+      <td>
+        % if form.context.sales_segment_group:
+          ${form.context.sales_segment_group.registration_fee}
+        % endif
+      </td>
+    </tr>
+    <tr class="SalesSegment_upper_limit">
+      <th>
+        ${form.upper_limit.label}
+        ${form.use_default_upper_limit()}
+        ${form.use_default_upper_limit.label}
+      </th>
+      <td>
+        ${form.upper_limit}
+        ${ch.validate_errors(form.upper_limit)}
+      </td>
+      <td>
+        % if form.context.sales_segment_group:
+          ${form.context.sales_segment_group.upper_limit}
+        % endif
+      </td>
+    </tr>
+    <tr class="SalesSegment_order_limit">
+      <th>
+        ${form.order_limit.label}
+        ${form.use_default_order_limit()}
+        ${form.use_default_order_limit.label}
+      </th>
+      <td>
+        ${form.order_limit}
+        ${ch.validate_errors(form.order_limit)}
+      </td>
+      <td>
+        % if form.context.sales_segment_group:
+          ${form.context.sales_segment_group.order_limit}
+        % endif
+      </td>
+    </tr>
+    <tr class="SalesSegment_public">
+      <th>
+        ${form.public.label}
+        ${form.use_default_public()}
+        ${form.use_default_public.label}
+      </th>
+      <td>
+        ${form.public}
+        ${ch.validate_errors(form.public)}
+      </td>
+      <td>
+        % if form.context.sales_segment_group:
+          ${u'一般公開する' if form.context.sales_segment_group.public else u'一般公開しない'}
+        % endif
+      </td>
+    </tr>
+    <tr class="SalesSegment_reporting">
+      <th>
+        ${form.reporting.label}
+        ${form.use_default_reporting()}
+        ${form.use_default_reporting.label}
+      </th>
+      <td>
+        ${form.reporting}
+        ${ch.validate_errors(form.reporting)}
+      </td>
+      <td>
+        % if form.context.sales_segment_group:
+          ${u'レポート対象にする' if form.context.sales_segment_group.reporting else u'レポート対象にしない'}
+        % endif
+      </td>
+    </tr>
+    <tr class="SalesSegment_auth3d_notice">
+      <th>
+        ${form.auth3d_notice.label}
+        ${form.use_default_auth3d_notice()}
+        ${form.use_default_auth3d_notice.label}
+      </th>
+      <td>
+        ${form.auth3d_notice}
+        ${ch.validate_errors(form.auth3d_notice)}
+      </td>
+      <td>
+        % if form.context.sales_segment_group:
+          ${form.context.sales_segment_group.auth3d_notice}
+        % endif
+      </td>
+    </tr>
+  </table>
+  <script type="text/javascript">
 (function($) {
-  var pdmp_map = ${pdmp_map|n};
-  var account_map = ${account_map|n};
-  $(function() {
-    $('#sales_segment_group_id').change(function() {
-      var sales_segment_group_id = $(this).val();
-      $('#payment_delivery_method_pairs').empty();
-      var pdmps = pdmp_map[sales_segment_group_id];
-      for (var i=0; i < pdmps.length; i++) {
-        var pdmp = pdmps[i];
-        var id = 'payment_delivery_method_pair_id.' + pdmp[0];
-        $('#payment_delivery_method_pairs').append(
-          $('<span class="checkbox-set-item"></span>')
-            .append(
-              $('<input />')
-              .attr('type', 'checkbox')
-              .attr('name', 'payment_delivery_method_pairs[]')
-              .attr('value', pdmp[0])
-              .attr('id', id))
-            .append(' ')
-            .append(
-              $('<label class="inline"></label>')
-              .text(pdmp[1])
-              .attr('for', id))
-        );
+  var form = $('script:last').parent();
+  var endpoint = "${request.route_path('sales_segments.api.get_sales_segment_group_info', sales_segment_group_id='__sales_segment_group_id__', _query=dict(performance_id='__performance_id__'))|n}";
+  var cache = {};
+  function load(sales_segment_group_id, performance_id, next) {
+    var data = cache[sales_segment_group_id + ":" + performance_id];
+    if (!sales_segment_group_id) {
+      next({});
+    }
+    if (data) {
+      next(data);
+      return;
+    }
+    $.ajax({
+      url: endpoint.replace('__sales_segment_group_id__', sales_segment_group_id).replace('__performance_id__', performance_id),
+      dataType: 'json',
+      success: function (resp) {
+        var data = resp['result'];
+        cache[sales_segment_group_id] = data;
+        next(data);
       }
-      $('#account_id').val(account_map[sales_segment_group_id]);
     });
-  });
+  }
+
+  function parseISO8601UTC(str) {
+    var g = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})(?:Z|\+00:00)$/.exec(str);
+    if (!g)
+      throw str;
+    return new Date(Date.UTC(g[1], g[2], g[3], g[4], g[5], g[6]));
+  }
+
+  function formatDateTime(date) {
+    return (date.getYear() + 1900) + "年" + date.getMonth() + "月" + date.getDate() + "日" + date.getHours() + "時" + date.getMinutes() + "分";
+  }
+
+  function formatDayOffset(dayOffset, time) {
+    return '公演日の' + dayOffset + "日前の" + time;
+  }
+
+  function formatRatio(value) {
+    return value + '%';
+  }
+
+  function formatCurrency(value) {
+    return value + '円';
+  }
+
+  function circleOrCross(value) {
+    return value ? '○': '×';
+  }
+
+  function setDateTime(n, prefix, value) {
+    $(document.getElementById(prefix + '.year')).val(value.getYear() + 1900);
+    $(document.getElementById(prefix + '.month')).val(value.getMonth());
+    $(document.getElementById(prefix + '.day')).val(value.getDate());
+    $(document.getElementById(prefix + '.day')).trigger('change');
+    $(document.getElementById(prefix + '.hour')).val(value.getHours());
+    $(document.getElementById(prefix + '.minute')).val(value.getMinutes());
+    $(document.getElementById(prefix + '.second')).val(value.getSeconds());
+  }
+
+  refreshers = {
+    payment_delivery_method_pairs: function (data, n) {
+      var pdmps = data.payment_delivery_method_pairs;
+      var formField = n.find('#payment_delivery_method_pairs');
+      formField.empty();
+      var originalValue = n.find('td:nth-child(3)');
+      originalValue.empty();
+      if (pdmps) {
+        for (var i=0; i < pdmps.length; i++) {
+          var pdmp = pdmps[i];
+          var id = 'payment_delivery_method_pair_id.' + pdmp[0];
+          formField.append(
+            $('<span class="checkbox-set-item"></span>')
+              .append(
+                $('<input />')
+                .attr('type', 'checkbox')
+                .attr('name', 'payment_delivery_method_pairs[]')
+                .attr('value', pdmp[0])
+                .attr('id', id))
+              .append(' ')
+              .append(
+                $('<label class="inline"></label>')
+                .text(pdmp[1])
+                .attr('for', id))
+          );
+        }
+        var ul = $('<ul></ul>');
+        for (var i = 0; i < pdmps.length; i++) {
+          ul.append($('<li></li>').text(pdmps[i][1]));
+        }
+        originalValue.append(ul);
+      }
+    },
+    start_at: function (data, n) {
+      var start_at = data.start_at;
+      var start_day_prior_to_performance = data.start_day_prior_to_performance;
+      var start_time = data.start_time;
+      var calculated_start_at = data.calculated_start_at;
+      var originalValue = n.find('td:nth-child(3)');
+      originalValue.empty();
+      if (start_at) {
+        start_at = parseISO8601UTC(start_at);
+        originalValue.append(formatDateTime(start_at));
+      } else if (start_day_prior_to_performance) {
+        originalValue.append(formatDayOffset(data.start_day_prior_to_performance, data.start_time));
+      }
+      if (calculated_start_at) {
+        calculated_start_at = parseISO8601UTC(calculated_start_at);
+        setDateTime(n, 'start_at', calculated_start_at);
+      }
+    },
+    end_at: function (data, n) {
+      var end_at = data.end_at;
+      var end_day_prior_to_performance = data.end_day_prior_to_performance;
+      var end_time = data.end_time;
+      var calculated_end_at = data.calculated_end_at;
+      var originalValue = n.find('td:nth-child(3)');
+      originalValue.empty();
+      if (end_at) {
+        end_at = parseISO8601UTC(end_at);
+        originalValue.append(formatDateTime(end_at));
+      } else if (end_day_prior_to_performance) {
+        originalValue.append(formatDayOffset(data.start_day_prior_to_performance, data.start_time));
+      }
+      if (calculated_end_at) {
+        calculated_end_at = parseISO8601UTC(calculated_end_at);
+        setDateTime(n, 'end_at', calculated_end_at);
+      }
+    },
+    account_id: function (data, n) {
+      var originalValue = n.find('td:nth-child(3)');
+      originalValue.empty();
+      if (data.account_id !== void(0)) {
+        var formField = n.find('#account_id');
+        var accountName = null;
+        formField.find('option').each(function (_, n) {
+          if (n.value == data.account_id)
+            accountName = $(n).text();
+        });
+        originalValue.text(accountName);
+        formField.val(data.account_id);
+      }
+    },
+    margin_ratio: function (data, n) {
+      var originalValue = n.find('td:nth-child(3)');
+      originalValue.empty();
+      if (data.margin_ratio !== void(0))
+        originalValue.text(formatRatio(data.margin_ratio));
+    },
+    refund_ratio: function (data, n) {
+      var originalValue = n.find('td:nth-child(3)');
+      originalValue.empty();
+      if (data.refund_ratio !== void(0))
+        originalValue.text(formatRatio(data.refund_ratio));
+    },
+    printing_fee: function (data, n) {
+      var originalValue = n.find('td:nth-child(3)');
+      originalValue.empty();
+      if (data.printing_fee)
+        originalValue.text(formatCurrency(data.printing_fee) + "/枚");
+    },
+    registration_fee: function (data, n) {
+      var originalValue = n.find('td:nth-child(3)');
+      originalValue.empty();
+      if (data.registration_fee !== void(0))
+        originalValue.text(formatCurrency(data.registration_fee) + "/公演");
+    },
+    upper_limit: function (data, n) {
+      var originalValue = n.find('td:nth-child(3)');
+      originalValue.empty();
+      if (data.upper_limit !== void(0))
+        originalValue.text(data.upper_limit + "枚");
+    },
+    order_limit: function (data, n) {
+      var originalValue = n.find('td:nth-child(3)');
+      originalValue.empty();
+      if (data.order_limit !== void(0))
+        originalValue.text(data.order_limit + "回");
+    },
+    'public': function (data, n) {
+      var originalValue = n.find('td:nth-child(3)');
+      originalValue.empty();
+      if (data['public'] !== void(0))
+        originalValue.text(circleOrCross(data['public']));
+    },
+    reporting: function (data, n) {
+      var originalValue = n.find('td:nth-child(3)');
+      originalValue.empty();
+      if (data.reporting !== void(0))
+        originalValue.text(circleOrCross(data.reporting));
+    },
+    auth3d_notice: function (data, n) {
+      var originalValue = n.find('td:nth-child(3)');
+      originalValue.empty();
+      if (data.auth3d_notice !== void(0))
+        originalValue.text(data.auth3d_notice);
+    }
+  };
+
+  $('#sales_segment_group_id').change(function() {
+    var sales_segment_group_id = get_sales_segment_group_id();
+    var performance_id = get_performance_id();
+    load(sales_segment_group_id, performance_id, function (data) {
+      $.each([
+        'payment_delivery_method_pairs',
+        'account_id',
+        'start_at',
+        'end_at',
+        'account_id',
+        'margin_ratio',
+        'refund_ratio',
+        'printing_fee',
+        'registration_fee',
+        'upper_limit',
+        'order_limit',
+        'public',
+        'reporting',
+        'auth3d_notice'
+        ], function (_, k) {
+        var n = form.find('.SalesSegment_' + k);
+        refreshers[k](data, n);
+      });
+    });
+  }).trigger('change');
 })($);
 </script>
-<form action="${action}" method="POST">
-  ${ch.form_item(form.id)}
-  % if not form.sales_segment_group_id.data:
-    ${ch.form_item(form.sales_segment_group_id, class_='span8')}
-  % else:
-    <input type="hidden" name="${form.sales_segment_group_id.name}" value="${form.sales_segment_group_id.data}" />
-  % endif
-  % if not form.performance_id.data:
-    ${ch.form_item(form.performance_id, class_='span8')}
-  % else:
-    <input type="hidden" name="${form.performance_id.name}" value="${form.performance_id.data}" />
-  % endif
-  ${ch.form_item(form.payment_delivery_method_pairs)}
-  ${ch.form_item(form.start_at, class_="datefield")}
-  ${ch.form_item(form.end_at, class_="datefield")}
-  ${ch.form_item(form.account_id)}
-  ${ch.form_item(form.margin_ratio)}
-  ${ch.form_item(form.refund_ratio)}
-  ${ch.form_item(form.printing_fee)}
-  ${ch.form_item(form.registration_fee)}
-  ${ch.form_item(form.upper_limit)}
-  ${ch.form_item(form.order_limit)}
-  ${ch.form_item(form.seat_choice)}
-  ${ch.form_item(form.public)}
-  ${ch.form_item(form.reporting)}
-  ${ch.form_item(form.auth3d_notice)}
 </form>

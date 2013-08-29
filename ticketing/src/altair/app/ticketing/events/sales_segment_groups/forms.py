@@ -31,19 +31,21 @@ class SalesSegmentGroupForm(OurForm):
         fix_boolean(formdata, 'seat_choice')
         fix_boolean(formdata, 'public')
         fix_boolean(formdata, 'reporting')
+        context = kwargs.pop('context', None)
         super(SalesSegmentGroupForm, self).__init__(formdata, obj, prefix, **kwargs)
-        if 'event_id' in kwargs:
-            event = Event.get(kwargs['event_id'])
+        self.context = context
+        if context.event:
             self.copy_to_stock_holder.choices = [('', u'変更しない')] + [
-                (str(sh.id), sh.name) for sh in StockHolder.get_own_stock_holders(event)
+                (str(sh.id), sh.name) for sh in StockHolder.get_own_stock_holders(context.event)
             ]
             self.account_id.choices = [
-                (a.id, a.name) for a in Account.query.filter_by(organization_id=event.organization_id)
+                (a.id, a.name) for a in Account.query.filter_by(organization_id=context.event.organization_id)
             ]
-            self.account_id.default = event.account_id
+            self.account_id.default = context.event.account_id
             for field_name in ('margin_ratio', 'refund_ratio', 'printing_fee', 'registration_fee'):
                 field = getattr(self, field_name)
-                field.default = getattr(event.organization.setting, field_name)
+                field.default = getattr(context.event.organization.setting, field_name)
+            self.event_id.data = self.event_id.default = context.event.id
             self.process(formdata, obj, **kwargs)
         if 'new_form' in kwargs:
             self.reporting.data = True

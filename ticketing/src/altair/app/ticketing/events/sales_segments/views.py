@@ -13,35 +13,20 @@ from altair.app.ticketing.views import BaseView
 from altair.app.ticketing.fanstatic import with_bootstrap
 from altair.app.ticketing.core.models import Event, Performance, SalesSegment, SalesSegmentGroup, Product, PaymentDeliveryMethodPair, Organization
 from altair.app.ticketing.events.payment_delivery_method_pairs.forms import PaymentDeliveryMethodPairForm
-from .forms import SalesSegmentForm, PointGrantSettingAssociationForm, EditSalesSegmentForm
+from .forms import SalesSegmentForm, PointGrantSettingAssociationForm
 from altair.app.ticketing.memberships.forms import MemberGroupForm
 from altair.app.ticketing.users.models import MemberGroup, Membership
 from altair.app.ticketing.loyalty.models import PointGrantSetting
 from webob.multidict import MultiDict
 from .resources import SalesSegmentEditor
 from datetime import datetime
+from altair.pyramid_tz.api import get_timezone
+from altair.app.ticketing.utils import toutc
 
 logger = logging.getLogger(__name__)
 
 @view_defaults(decorator=with_bootstrap, permission='event_editor')
 class SalesSegments(BaseView):
-    def _pdmp_map(self, sales_segment_groups):
-        """ 販売区分グループごとのPDMP json
-        """
-        mapped = {}
-        for ssg in sales_segment_groups:
-            mapped[str(ssg.id)] = [(pdmp.id, pdmp.payment_method.name + " - " + pdmp.delivery_method.name) 
-                              for pdmp in ssg.payment_delivery_method_pairs]
-        return json.dumps(mapped)
-
-    def _account_map(self, sales_segment_groups):
-        """ 販売区分グループごとのAccount json
-        """
-        mapped = {}
-        for ssg in sales_segment_groups:
-            mapped[str(ssg.id)] = ssg.account_id
-        return json.dumps(mapped)
-
     @property
     def sales_segment_groups(self):
         performance = self.context.performance
@@ -101,25 +86,32 @@ class SalesSegments(BaseView):
             'form_pdmp':PaymentDeliveryMethodPairForm(),
             }
 
+
+    @property
+    def new_url(self):
+        query = {}
+        if self.context.performance:
+            query['performance_id'] = self.context.performance.id
+        if self.context.sales_segment_group:
+            query['sales_segment_group_id'] = self.context.sales_segment_group.id
+        return self.request.current_route_path(_query=query)
+
     @view_config(route_name='sales_segments.new', request_method='GET', renderer='altair.app.ticketing:templates/sales_segments/edit.html', xhr=False)
     def new(self):
         return {
             'event': self.context.event,
             'performance': self.context.performance,
+            'sales_segment': None,
             'sales_segment_group': self.context.sales_segment_group,
             'form': SalesSegmentForm(context=self.context),
-            'action': self.request.path,
-            'pdmp_map': self._pdmp_map(self.sales_segment_groups),
-            'account_map':self._account_map(self.sales_segment_groups)
+            'action': self.new_url
             }
 
     @view_config(route_name='sales_segments.new', request_method='GET', renderer='altair.app.ticketing:templates/sales_segments/_form.html', xhr=True)
     def new_xhr(self):
         return {
             'form': SalesSegmentForm(context=self.context),
-            'action': self.request.path,
-            'pdmp_map': self._pdmp_map(self.sales_segment_groups),
-            'account_map':self._account_map(self.sales_segment_groups)
+            'action': self.new_url
             }
 
     @view_config(route_name='sales_segments.new', request_method='POST', renderer='altair.app.ticketing:templates/sales_segments/edit.html', xhr=False)
@@ -150,14 +142,14 @@ class SalesSegments(BaseView):
                 sales_segment_group_id=sales_segment.sales_segment_group_id,
                 _query={'performance_id': sales_segment.performance_id}))
         else:
+            import sys
             return {
                 'event': self.context.event,
                 'performance': self.context.performance,
+                'sales_segment': None,
                 'sales_segment_group': self.context.sales_segment_group,
                 'form': f,
-                'action': self.request.path_url,
-                'pdmp_map': self._pdmp_map(self.sales_segment_groups),
-                'account_map':self._account_map(self.sales_segment_groups)
+                'action': self.new_url
                 }
 
     @view_config(route_name='sales_segments.new', request_method='POST', renderer='altair.app.ticketing:templates/sales_segments/_form.html', xhr=True)
@@ -185,107 +177,14 @@ class SalesSegments(BaseView):
         else:
             return {
                 'form': f,
-                'action': self.request.path_url,
-                'pdmp_map': self._pdmp_map(self.sales_segment_groups),
-                'account_map':self._account_map(self.sales_segment_groups)
-                }
-
-    #@view_config(route_name='sales_segments.edit', request_method='GET', renderer='altair.app.ticketing:templates/sales_segments/edit.html', xhr=False)
-    def edit(self):
-        return {
-            'event': self.context.sales_segment.sales_segment_group.event,
-            'performance': self.context.sales_segment.performance,
-            'sales_segment_group': self.context.sales_segment.sales_segment_group,
-            'sales_segment': self.context.sales_segment,
-            'form': SalesSegmentForm(obj=self.context.sales_segment, context=self.context),
-            'action': self.request.path,
-            'pdmp_map': self._pdmp_map(self.sales_segment_groups),
-            'account_map':self._account_map(self.sales_segment_groups)
-            }
-
-    #@view_config(route_name='sales_segments.edit', request_method='GET', renderer='altair.app.ticketing:templates/sales_segments/_form.html', xhr=True)
-    def edit_xhr(self):
-        return {
-            'form': SalesSegmentForm(obj=self.context.sales_segment, context=self.context),
-            'action': self.request.path,
-            'pdmp_map': self._pdmp_map(self.sales_segment_groups),
-            'account_map':self._account_map(self.sales_segment_groups)
-            }
-
-    def _edit_post(self):
-        sales_segment_id = int(self.request.matchdict.get('sales_segment_id', 0))
-        sales_segment = SalesSegment.get(sales_segment_id)
-        if sales_segment is None:
-            raise HTTPBadRequest(body=json.dumps({
-                'message':u'販売区分が存在しません',
-            }))
-
-        f = SalesSegmentForm(self.request.POST, context=self.context)
-        if not f.validate():
-            return f
-        pdmp_ids = self.request.params.getall('payment_delivery_method_pairs[]')
-
-        pdmps = list(PaymentDeliveryMethodPair.query.filter(PaymentDeliveryMethodPair.id.in_(pdmp_ids)).filter(PaymentDeliveryMethodPair.sales_segment_group_id==sales_segment.sales_segment_group_id))
-        
-        if self.request.matched_route.name == 'sales_segments.copy':
-            with_pdmp = bool(f.copy_payment_delivery_method_pairs.data)
-            id_map = SalesSegment.create_from_template(sales_segment, with_payment_delivery_method_pairs=with_pdmp)
-            f.id.data = id_map[sales_segment_id]
-            new_sales_segment = merge_session_with_post(SalesSegment.get(f.id.data), f.data)
-            new_sales_segment.save()
-            if f.copy_products.data:
-                for product in sales_segment.product:
-                    Product.create_from_template(template=product, with_product_items=True, stock_holder_id=f.copy_to_stock_holder.data, sales_segment=id_map)
-        else:
-            sales_segment = merge_session_with_post(sales_segment, f.data)
-            sales_segment.payment_delivery_method_pairs = pdmps
-            sales_segment.save()
-
-        self.request.session.flash(u'販売区分を保存しました')
-        return None
-
-    #@view_config(route_name='sales_segments.edit', request_method='POST', renderer='altair.app.ticketing:templates/sales_segments/edit.html', xhr=False)
-    def edit_post(self):
-        f = self._edit_post()
-        if f is None:
-            return HTTPFound(location=self.request.route_path('sales_segments.edit', sales_segment_id=self.context.sales_segment.id))
-        else:
-            return {
-                'event': self.context.event,
-                'performance': self.context.performance,
-                'sales_segment_group': self.context.sales_segment_group,
-                'sales_segment': self.context.sales_segment,
-                'form':f,
-                'action': self.request.path_url,
-                'pdmp_map': self._pdmp_map(self.sales_segment_groups),
-                'account_map':self._account_map(self.sales_segment_groups)
-                }
-
-    #@view_config(route_name='sales_segments.edit', request_method='POST', renderer='altair.app.ticketing:templates/sales_segments/_form.html', xhr=True)
-    def edit_post_xhr(self):
-        f = self._edit_post()
-        if f is None:
-            return render_to_response('altair.app.ticketing:templates/refresh.html', {}, request=self.request)
-        else:
-            return {
-                'form':f,
-                'action': self.request.path_url,
-                'pdmp_map': self._pdmp_map(self.sales_segment_groups),
-                'account_map':self._account_map(self.sales_segment_groups)
+                'action': self.new_url
                 }
 
     @view_config(route_name='sales_segments.delete')
     def delete(self):
-        sales_segment_id = int(self.request.matchdict.get('sales_segment_id', 0))
-        sales_segment = SalesSegment.get(sales_segment_id)
-        if sales_segment is None:
-            raise HTTPBadRequest(body=json.dumps({
-                'message':u'販売区分が存在しません',
-            }))
-
-        location = route_path('sales_segment_groups.show', self.request, sales_segment_group_id=sales_segment.sales_segment_group_id)
+        location = route_path('sales_segment_groups.show', self.request, sales_segment_group_id=self.context.sales_segment.sales_segment_group_id)
         try:
-            sales_segment.delete()
+            self.context.sales_segment.delete()
             self.request.session.flash(u'販売区分を削除しました')
         except Exception, e:
             self.request.session.flash(e.message)
@@ -293,70 +192,97 @@ class SalesSegments(BaseView):
 
         return HTTPFound(location=location)
 
-    @view_config(renderer='json', route_name='sales_segments.api.get_payment_delivery_method_pairs')
-    def get_payment_delivery_method_pairs(self):
-        sales_segment_group_id = int(self.request.params.get('sales_segment_group_id', 0))
-        sales_segment_group = SalesSegmentGroup.get(sales_segment_group_id)
-        result = [dict(pk=pdmp.id, name='%s - %s' % (pdmp.payment_method.name, pdmp.delivery_method.name)) for pdmp in sales_segment_group.payment_delivery_method_pairs]
-        return {"result": result, "status": True}
+    @view_config(renderer='json', route_name='sales_segments.api.get_sales_segment_group_info')
+    def get_sales_segment_group_info(self):
+        sales_segment_group_id = None
+        sales_segment_group = None
+        performance_id = None
+        performance = None
+        try:
+            sales_segment_group_id = long(self.request.matchdict['sales_segment_group_id'])
+        except (ValueError, TypeError):
+            pass
+        if sales_segment_group_id:
+            sales_segment_group = SalesSegmentGroup.query.filter_by(id=sales_segment_group_id).one()
+
+        try:
+            performance_id = long(self.request.params.get('performance_id'))
+        except (ValueError, TypeError):
+            pass
+        if performance_id:
+            performance = Performance.query.filter_by(id=performance_id).one()
+
+        def stringize(x):
+            if x is None:
+                return None
+            else:
+                return unicode(x)
+        tz = get_timezone(self.request)
+        if performance:
+            calculated_start_at = sales_segment_group.start_for_performance(performance)
+            calculated_end_at = sales_segment_group.end_for_performance(performance)
+        else:
+            calculated_start_at = sales_segment_group.start_at
+            calculated_end_at = sales_segment_group.end_at
+
+        result = {
+            'id': sales_segment_group.id,
+            'event_id': sales_segment_group.event_id,
+            'name': sales_segment_group.name,
+            'kind': sales_segment_group.kind,
+            'start_at': toutc(sales_segment_group.start_at, tz).isoformat() if sales_segment_group.start_at else None,
+            'calculated_start_at': toutc(calculated_start_at, tz).isoformat() if calculated_start_at else None,
+            'start_day_prior_to_performance': sales_segment_group.start_day_prior_to_performance,
+            'start_time': sales_segment_group.start_time.strftime('%H:%M:%S') if sales_segment_group.start_time else None,
+            'end_at': toutc(sales_segment_group.end_at, tz).isoformat() if sales_segment_group.end_at else None,
+            'calculated_end_at': toutc(calculated_end_at, tz).isoformat() if calculated_end_at else None,
+            'end_day_prior_to_performance': sales_segment_group.end_day_prior_to_performance,
+            'end_time': sales_segment_group.end_time.strftime('%H:%M:%S') if sales_segment_group.end_time else None,
+            'upper_limit': sales_segment_group.upper_limit,
+            'order_limit': sales_segment_group.order_limit,
+            'seat_choice': sales_segment_group.seat_choice,
+            'public': sales_segment_group.public,
+            'reporting': sales_segment_group.reporting,
+            'margin_ratio': stringize(sales_segment_group.margin_ratio),
+            'refund_ratio': stringize(sales_segment_group.refund_ratio),
+            'printing_fee': stringize(sales_segment_group.printing_fee),
+            'registration_fee': stringize(sales_segment_group.registration_fee),
+            'auth3d_notice': sales_segment_group.auth3d_notice,
+            'payment_delivery_method_pairs': [
+                (pdmp.id, pdmp.payment_method.name + " - " + pdmp.delivery_method.name) 
+                for pdmp in sales_segment_group.payment_delivery_method_pairs
+                ],
+            'account_id': sales_segment_group.account_id,
+            }
+        return {"result": result, "status": 'ok'}
 
 
 @view_defaults(route_name='sales_segments.edit',
                decorator=with_bootstrap, permission='event_editor')
 class EditSalesSegment(BaseView):
-    @property
-    def sales_segment(self):
-        return self.context.sales_segment
-
-    @property
-    def sales_segment_group(self):
-        return self.context.sales_segment.sales_segment_group
-
-    @property
-    def event(self):
-        return self.context.sales_segment.sales_segment_group.event
-
-    @property
-    def performance(self):
-        return self.context.sales_segment.performance
-
-
-    @property
-    def account_choices(self):
-        return [(a.id, a.name)
-                for a
-                in self.context.user.organization.accounts]
-
-    @property
-    def payment_delivery_method_pair_choices(self):
-        return [(unicode(pdmp.id),
-                 u'%s - %s' % (pdmp.payment_method.name, pdmp.delivery_method.name))
-                for pdmp in self.context.sales_segment.sales_segment_group.payment_delivery_method_pairs
-        ]
 
 
     @view_config(renderer='altair.app.ticketing:templates/sales_segments/edit.html',)
-    @view_config(renderer='altair.app.ticketing:templates/sales_segments/_edit_form.html', xhr=True)
-    def __call__(self):
-        form = EditSalesSegmentForm(obj=self.sales_segment,
-                                    formdata=self.request.POST)
-        form.account_id.choices = self.account_choices
-        form.payment_delivery_method_pairs.choices = self.payment_delivery_method_pair_choices
+    @view_config(renderer='altair.app.ticketing:templates/sales_segments/_form.html', xhr=True)
+    def edit(self):
+        form = SalesSegmentForm(obj=self.context.sales_segment,
+                                formdata=self.request.POST,
+                                context=self.context)
         if self.request.method == "GET":
             form.payment_delivery_method_pairs.data = [pdmp.id 
-                                                        for pdmp in self.sales_segment.payment_delivery_method_pairs]
+                                                        for pdmp in self.context.sales_segment.payment_delivery_method_pairs]
         if self.request.method == "POST":
             if form.validate():
-                editor = SalesSegmentEditor(self.sales_segment_group, form)
-                editor.apply_changes(self.sales_segment)
+                editor = SalesSegmentEditor(self.context.sales_segment_group, form)
+                editor.apply_changes(self.context.sales_segment)
                 if not self.request.is_xhr:
                     return HTTPFound(self.request.route_url('sales_segments.show', **self.request.matchdict))
                 else:
                     return render_to_response('altair.app.ticketing:templates/refresh.html', {}, request=self.request)
 
-        return dict(form=form, event=self.event,
-                    performance=self.performance,
-                    sales_segment=self.sales_segment,
+        return dict(form=form, event=self.context.event,
+                    performance=self.context.performance,
+                    sales_segment=self.context.sales_segment,
                     action=self.request.route_path('sales_segments.edit', **self.request.matchdict))
 
 @view_defaults(decorator=with_bootstrap, permission='event_editor')
@@ -385,8 +311,6 @@ class SalesSegmentPointGrantSettings(BaseView):
         point_grant_setting_ids = set(long(v) for v in self.request.POST.getall('point_grant_setting_id'))
 
         for point_grant_setting in PointGrantSetting.query.filter(PointGrantSetting.id.in_(point_grant_setting_ids)):
-            import sys
-            print >>sys.stderr, point_grant_setting
             self.context.sales_segment.point_grant_settings.remove(point_grant_setting)
         return_to = self.request.params.get('return_to')
         if return_to is None:
