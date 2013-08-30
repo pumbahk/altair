@@ -322,10 +322,6 @@ function get_performance_id() {
     return value + '円';
   }
 
-  function circleOrCross(value) {
-    return value ? '○': '×';
-  }
-
   function setDateTime(n, prefix, value) {
     $(document.getElementById(prefix + '.year')).val(value.getYear() + 1900);
     $(document.getElementById(prefix + '.month')).val(value.getMonth());
@@ -466,13 +462,13 @@ function get_performance_id() {
       var originalValue = n.find('td:nth-child(3)');
       originalValue.empty();
       if (data['public'] !== void(0))
-        originalValue.text(circleOrCross(data['public']));
+        originalValue.text(data['public'] ? "一般公開する": "非公開にする");
     },
     reporting: function (data, n) {
       var originalValue = n.find('td:nth-child(3)');
       originalValue.empty();
       if (data.reporting !== void(0))
-        originalValue.text(circleOrCross(data.reporting));
+        originalValue.text(data.reporting ? "レポート対象にする": "レポート対象にしない");
     },
     auth3d_notice: function (data, n) {
       var originalValue = n.find('td:nth-child(3)');
@@ -509,7 +505,7 @@ function get_performance_id() {
     });
   }
   var formElements = $('#sales_segment_group_id, #performance_id');
-  if (formElements.filter(':hidden').length != 2)
+  if (formElements.filter('input[type="hidden"]').length != 2)
     formElements.change(onChangeHandler);
 })($);
 </script>
