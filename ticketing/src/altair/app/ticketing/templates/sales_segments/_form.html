@@ -504,9 +504,10 @@ function get_performance_id() {
       });
     });
   }
-  var formElements = $('#sales_segment_group_id, #performance_id');
+  var formElements = form.find('#sales_segment_group_id').add('#performance_id');
+  formElements.change(onChangeHandler);
   if (formElements.filter('input[type="hidden"]').length != 2)
-    formElements.change(onChangeHandler);
+    onChangeHandler();
 })($);
 </script>
 </form>
