@@ -290,11 +290,11 @@ function get_performance_id() {
     var g = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})(?:Z|\+00:00)$/.exec(str);
     if (!g)
       throw str;
-    return new Date(Date.UTC(g[1], g[2], g[3], g[4], g[5], g[6]));
+    return new Date(Date.UTC(g[1], parseInt(g[2]) - 1, g[3], g[4], g[5], g[6]));
   }
 
   function formatDateTime(date) {
-    return (date.getYear() + 1900) + "年" + date.getMonth() + "月" + date.getDate() + "日" + date.getHours() + "時" + date.getMinutes() + "分";
+    return (date.getYear() + 1900) + "年" + (date.getMonth() + 1) + "月" + date.getDate() + "日" + date.getHours() + "時" + date.getMinutes() + "分";
   }
 
   function formatDayOffset(dayOffset, time) {
@@ -311,7 +311,7 @@ function get_performance_id() {
 
   function setDateTime(n, prefix, value) {
     $(document.getElementById(prefix + '.year')).val(value.getYear() + 1900);
-    $(document.getElementById(prefix + '.month')).val(value.getMonth());
+    $(document.getElementById(prefix + '.month')).val(value.getMonth() + 1);
     $(document.getElementById(prefix + '.day')).val(value.getDate());
     $(document.getElementById(prefix + '.day')).trigger('change');
     $(document.getElementById(prefix + '.hour')).val(value.getHours());
