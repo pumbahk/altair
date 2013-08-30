@@ -243,14 +243,13 @@ var QRInputView = AppPageViewBase.extend({
   events: {
     "click #load_button": "loadQRCodeInput", 
     "click #clear_button": "clearQRCodeInput", 
-    "change #unit_strategy": "checkPrintUnitIsOrder", 
+    "change .unit_strategy": "checkPrintUnitIsOrder", 
     "keydown input[name='qrcode']": "readOnEnter"
   }, 
   initialize: function(opts){
     QRInputView.__super__.initialize.call(this, opts);
     this.$qrcode = this.$el.find('input[name="qrcode"]');
     this.$status = this.$el.find('#status');
-    this.$print_unit_strategy = this.$el.find("#unit_strategy");
 
     this.datastore.bind("change:qrcode_status", this.showStatus, this);
     this.datastore.bind("*qr.canceled.ticket", this.notifyMessageForCanceled, this);
@@ -260,8 +259,7 @@ var QRInputView = AppPageViewBase.extend({
     this.communicating = false;
   }, 
   checkPrintUnitIsOrder: function(){
-      //console.log(this.$print_unit_strategy.find("option:selected").val());
-      this.datastore.setPrintStrategy(this.$print_unit_strategy.find("option:selected").val());
+    this.datastore.setPrintStrategy(this.$el.find(".unit_strategy:checked").val());
   }, 
   notifyMessageForPrintedAlready: function(){
     this.datastore.set("qrcode", "<confirm>");
@@ -664,7 +662,7 @@ var PrintUnitIsOrder = {
 };
 var PrintUnitIsOrderAutoPrint ={
   enableForcePrinting: function(){
-    return false;
+    return true;
   }, 
   createTicket: function createTicket(appletView){
     return appletView.createTicketUnitByOrder().done(appletView.autoPrint.bind(appletView));
