@@ -103,15 +103,19 @@ td.progress-shortcut{
     </p>
 
     <div class="form-inline">
+      <div>
 ##      <label>qrcode: <input type="password" name="qrcode" value="J1CH40PMHH3RSNHKTN1210131QSNH000000031ZSK0SADTI9GU1O1F $72$7B$5SH 4*H. 12*2O"/></label>
       <label>qrcode: <input type="text" name="qrcode" value=""/></label>
       <a class="btn" id="load_button">読み込み</a>
       <a class="btn" id="clear_button">入力値のクリア</a>
-      <select name="print_unit_strategy" id="unit_strategy">
-        <option selected value="token">券面1枚ずつ印刷</option>
-        <option value="order">(手動)同一注文の券面まとめて発券</option>
-        <option value="order_auto">(自動)同一注文の券面まとめて発券</option>
-      </select>
+      </div>
+      <div stlye="margin-top:10px;">
+印刷方法: 
+<!-- <input type="radio" name="melon" id="me1" value="u1"><label for="me1">選択肢1</label> -->
+<label><input checked="checked" type="radio" name="print_unit_strategy" class="unit_strategy" value="token">券面1枚ずつ印刷</input></label>
+<label><input type="radio" name="print_unit_strategy" class="unit_strategy" value="order">(手動)同一注文の券面まとめて発券</input></label>
+<label><input type="radio" name="print_unit_strategy" class="unit_strategy" value="order_auto">(自動)同一注文の券面まとめて発券</input></label>
+</div>
     </div>
 
     <div id="one:status-box">
@@ -235,7 +239,6 @@ td.progress-shortcut{
     Now loading...
   </div>
 </div>
-
 <script type="text/javascript" src="${request.static_url("altair.app.ticketing.printqr:static/js/message.js")}"></script>
 <script type="text/javascript" src="${request.static_url("altair.app.ticketing.printqr:static/js/qrapp/app.js")}"></script>
 <script type="text/javascript" src="${request.static_url("altair.app.ticketing.printqr:static/js/qrapp/applet.js")}"></script>
@@ -331,15 +334,8 @@ $(function(){
   };
 
   //QRの読み込みページのときqrコードのinputにフォーカスをあてる
-  var invalidatingAutoFocus = false;
-  $('select[name="print_unit_strategy"],option').hover(
-    function(){invalidatingAutoFocus = true;},
-    function(){invalidatingAutoFocus = false;}
-  );
   setInterval(function(){
-   if(!invalidatingAutoFocus){
      $("#one.active input[name='qrcode']").focus();
-   }
   },500);
 });
 
