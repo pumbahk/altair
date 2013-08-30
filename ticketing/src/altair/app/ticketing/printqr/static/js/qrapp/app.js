@@ -664,7 +664,7 @@ var PrintUnitIsOrder = {
 };
 var PrintUnitIsOrderAutoPrint ={
   enableForcePrinting: function(){
-    return false;
+    return true;
   }, 
   createTicket: function createTicket(appletView){
     return appletView.createTicketUnitByOrder().done(appletView.autoPrint.bind(appletView));

@@ -332,7 +332,7 @@ $(function(){
 
   //QRの読み込みページのときqrコードのinputにフォーカスをあてる
   var invalidatingAutoFocus = false;
-  $('select[name="print_unit_strategy"]').hover(
+  $('select[name="print_unit_strategy"],option').hover(
     function(){invalidatingAutoFocus = true;},
     function(){invalidatingAutoFocus = false;}
   );
