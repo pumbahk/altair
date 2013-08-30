@@ -1,5 +1,6 @@
 <%page args="form, action='#'" />
 <%namespace file="/common/helpers.html" name="ch" />
+<%from altair.formhelpers.widgets import LabelledCheckboxInput %>
 <form action="${action}" method="POST">
 % if form.context.sales_segment_group is None:
 <label for="${form.sales_segment_group_id.name}">${HH.label_text_for(form.sales_segment_group_id)}</label>
@@ -28,8 +29,7 @@ function get_performance_id() {
     <tr class="SalesSegment_payment_delivery_method_pairs">
       <th>
         ${form.payment_delivery_method_pairs.label}
-        ${form.use_default_payment_delivery_method_pairs()}
-        ${form.use_default_payment_delivery_method_pairs.label}
+        ${form.use_default_payment_delivery_method_pairs(_widget=LabelledCheckboxInput())}
       </th>
       <td>
         ${form.payment_delivery_method_pairs}
@@ -48,8 +48,7 @@ function get_performance_id() {
     <tr class="SalesSegment_start_at">
       <th>
         ${form.start_at.label}
-        ${form.use_default_start_at()}
-        ${form.use_default_start_at.label}
+        ${form.use_default_start_at(_widget=LabelledCheckboxInput())}
       </th>
       <td>
         ${form.start_at}
@@ -74,8 +73,7 @@ function get_performance_id() {
     <tr class="SalesSegment_end_at">
       <th>
         ${form.end_at.label}
-        ${form.use_default_end_at()}
-        ${form.use_default_end_at.label}
+        ${form.use_default_end_at(_widget=LabelledCheckboxInput())}
       </th>
       <td>
         ${form.end_at}
@@ -100,8 +98,7 @@ function get_performance_id() {
     <tr class="SalesSegment_account_id">
       <th>
         ${form.account_id.label}
-        ${form.use_default_account_id()}
-        ${form.use_default_account_id.label}
+        ${form.use_default_account_id(_widget=LabelledCheckboxInput())}
       </th>
       <td>
         ${form.account_id}
@@ -116,8 +113,7 @@ function get_performance_id() {
     <tr class="SalesSegment_margin_ratio">
       <th>
         ${form.margin_ratio.label}
-        ${form.use_default_margin_ratio()}
-        ${form.use_default_margin_ratio.label}
+        ${form.use_default_margin_ratio(_widget=LabelledCheckboxInput())}
       </th>
       <td>
         ${form.margin_ratio}
@@ -132,8 +128,7 @@ function get_performance_id() {
     <tr class="SalesSegment_refund_ratio">
       <th>
         ${form.refund_ratio.label}
-        ${form.use_default_refund_ratio()}
-        ${form.use_default_refund_ratio.label}
+        ${form.use_default_refund_ratio(_widget=LabelledCheckboxInput())}
       </th>
       <td>
         ${form.refund_ratio}
@@ -148,8 +143,7 @@ function get_performance_id() {
     <tr class="SalesSegment_printing_fee">
       <th>
         ${form.printing_fee.label}
-        ${form.use_default_printing_fee()}
-        ${form.use_default_printing_fee.label}
+        ${form.use_default_printing_fee(_widget=LabelledCheckboxInput())}
       </th>
       <td>
         ${form.printing_fee}
@@ -164,8 +158,7 @@ function get_performance_id() {
     <tr class="SalesSegment_registration_fee">
       <th>
         ${form.registration_fee.label}
-        ${form.use_default_registration_fee()}
-        ${form.use_default_registration_fee.label}
+        ${form.use_default_registration_fee(_widget=LabelledCheckboxInput())}
       </th>
       <td>
         ${form.registration_fee}
@@ -180,8 +173,7 @@ function get_performance_id() {
     <tr class="SalesSegment_upper_limit">
       <th>
         ${form.upper_limit.label}
-        ${form.use_default_upper_limit()}
-        ${form.use_default_upper_limit.label}
+        ${form.use_default_upper_limit(_widget=LabelledCheckboxInput())}
       </th>
       <td>
         ${form.upper_limit}
@@ -196,8 +188,7 @@ function get_performance_id() {
     <tr class="SalesSegment_order_limit">
       <th>
         ${form.order_limit.label}
-        ${form.use_default_order_limit()}
-        ${form.use_default_order_limit.label}
+        ${form.use_default_order_limit(_widget=LabelledCheckboxInput())}
       </th>
       <td>
         ${form.order_limit}
@@ -212,8 +203,7 @@ function get_performance_id() {
     <tr class="SalesSegment_seat_choice">
       <th>
         ${form.seat_choice.label}
-        ${form.use_default_seat_choice()}
-        ${form.use_default_seat_choice.label}
+        ${form.use_default_seat_choice(_widget=LabelledCheckboxInput())}
       </th>
       <td>
         ${form.seat_choice}
@@ -228,8 +218,7 @@ function get_performance_id() {
     <tr class="SalesSegment_public">
       <th>
         ${form.public.label}
-        ${form.use_default_public()}
-        ${form.use_default_public.label}
+        ${form.use_default_public(_widget=LabelledCheckboxInput())}
       </th>
       <td>
         ${form.public}
@@ -244,8 +233,7 @@ function get_performance_id() {
     <tr class="SalesSegment_reporting">
       <th>
         ${form.reporting.label}
-        ${form.use_default_reporting()}
-        ${form.use_default_reporting.label}
+        ${form.use_default_reporting(_widget=LabelledCheckboxInput())}
       </th>
       <td>
         ${form.reporting}
@@ -260,8 +248,7 @@ function get_performance_id() {
     <tr class="SalesSegment_auth3d_notice">
       <th>
         ${form.auth3d_notice.label}
-        ${form.use_default_auth3d_notice()}
-        ${form.use_default_auth3d_notice.label}
+        ${form.use_default_auth3d_notice(_widget=LabelledCheckboxInput())}
       </th>
       <td>
         ${form.auth3d_notice}
