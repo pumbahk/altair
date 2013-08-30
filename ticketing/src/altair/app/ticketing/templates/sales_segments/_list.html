@@ -46,7 +46,7 @@
           <td ${rowspan}>${sales_segment.account.name}</td>
           <td ${rowspan}>${sales_segment.upper_limit or u''}</td>
           <%doc><td ${rowspan}>${sales_segment.order_limit or u''}</td></%doc>
-          <td ${rowspan}>${u'選択可' if sales_segment.seat_choice else u'選択不可'}</td>
+          <td ${rowspan}>${u'選択可' if sales_segment.seat_choice else u'×選択不可'}</td>
           <td ${rowspan}>${u'公開' if sales_segment.public else u'非公開'}</td>
           <td ${rowspan}>${u'対象' if sales_segment.reporting else u'×対象外'}</td>
           % if count == 0:
