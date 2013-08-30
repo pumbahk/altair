@@ -90,8 +90,8 @@ class EntryLotView(object):
     @view_config(route_name='lots.entry.index', renderer=selectable_renderer("mobile/%(membership)s/index.html"), request_method="POST", custom_predicates=(is_nogizaka, ))
     def nogizaka_auth(self):
         KEYWORD = 'gA8du3dfAKdjasd0aeFdafcdERs2dkd0'
-        if self.request.session.get('lots.passed.keyword') != KEYWORD:
-            keyword = self.request.POST.get('keyword', None)
+        keyword = self.request.POST.get('keyword', None)
+        if keyword or self.request.session.get('lots.passed.keyword') != KEYWORD:
             if keyword != KEYWORD:
                 raise HTTPNotFound()
             self.request.session['lots.passed.keyword'] = keyword
