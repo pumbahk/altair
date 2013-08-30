@@ -207,16 +207,16 @@ class SalesSegmentGroupForm(OurForm):
             label_text_for(self.start_time)
         )
 
-        if self.start_at.data:
-            if self.start_day_prior_to_performance.data or self.start_time.data:
+        if self.start_at.data is not None:
+            if self.start_day_prior_to_performance.data is not None or self.start_time.data is not None:
                 append_error(self.start_at, ValidationError(msg1))
                 return False
         else:
-            if bool(int(bool(self.start_day_prior_to_performance.data)) ^ int(bool(self.start_time.data))):
+            if bool(int(self.start_day_prior_to_performance.data is not None) ^ int(self.start_time.data is not None)):
                 append_error(self.start_day_prior_to_performance, ValidationError(msg2))
                 return False
             else:
-                if not self.start_day_prior_to_performance.data:
+                if self.start_day_prior_to_performance.data is None:
                     append_error(self.start_at, ValidationError(msg1))
                     return False
         return True
@@ -231,16 +231,16 @@ class SalesSegmentGroupForm(OurForm):
             label_text_for(self.end_time)
         )
 
-        if self.end_at.data:
-            if self.end_day_prior_to_performance.data or self.end_time.data:
+        if self.end_at.data is not None:
+            if self.end_day_prior_to_performance.data is not None or self.end_time.data is not None:
                 append_error(self.end_at, ValidationError(msg1))
                 return False
         else:
-            if bool(int(bool(self.end_day_prior_to_performance.data)) ^ int(bool(self.end_time.data))):
+            if bool(int(self.end_day_prior_to_performance.data is not None) ^ int(self.end_time.data is not None)):
                 append_error(self.end_day_prior_to_performance, ValidationError(msg2))
                 return False
             else:
-                if not self.end_day_prior_to_performance.data:
+                if self.end_day_prior_to_performance.data is None:
                     append_error(self.end_at, ValidationError(msg1))
                     return False
         return True

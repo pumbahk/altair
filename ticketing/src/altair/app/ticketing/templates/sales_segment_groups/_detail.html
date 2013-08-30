@@ -18,7 +18,7 @@
   <tr>
     <th>${form.start_at.label.text}</th>
     <td>
-      % if sales_segment_group.start_day_prior_to_performance:
+      % if sales_segment_group.start_day_prior_to_performance is not None:
         公演日の<span id="current_day_prior_to_performance">${sales_segment_group.start_day_prior_to_performance}</span>日前の<span id="current_start_time">${sales_segment_group.start_time}</span>
       % else:
         <span id="current_start_at">${vh.datetime(sales_segment_group.start_at)}</span>
@@ -28,7 +28,7 @@
   <tr>
     <th>${form.end_at.label.text}</th>
     <td>
-      % if sales_segment_group.end_day_prior_to_performance:
+      % if sales_segment_group.end_day_prior_to_performance is not None:
         公演日の<span id="current_end_day_prior_to_performance">${sales_segment_group.end_day_prior_to_performance}</span>日前の<span id="current_end_time">${sales_segment_group.end_time}</span>
       % else:
         <span id="current_end_at">${vh.datetime(sales_segment_group.end_at)}</span>
