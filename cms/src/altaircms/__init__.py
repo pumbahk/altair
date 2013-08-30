@@ -139,6 +139,7 @@ def main(global_config, **local_config):
     config.include(install_pyramidlayout)
     config.include(install_separation)
     config.include("altairsite.front.install_resolver")
+    config.include("altairsite.install_tracking_image_generator") #hmm.
     config.include("altair.cdnpath")
     from altair.cdnpath import S3StaticPathFactory
     config.add_cdn_static_path(S3StaticPathFactory(
