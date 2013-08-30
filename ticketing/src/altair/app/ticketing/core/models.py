@@ -1104,7 +1104,7 @@ class SalesSegmentGroup(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     @hybrid_method
     def in_term(self, dt):
-        return (self.start_at <= dt) & (dt <= self.end_at)
+        return (self.start_at <= dt) & ((self.end_at == None) | (dt <= self.end_at))
 
     @classmethod
     def get(cls, id, organization_id=None, **kwargs):
@@ -3367,7 +3367,7 @@ class SalesSegment(Base, BaseModel, LogicallyDeleted, WithTimestamp):
 
     @hybrid_method
     def in_term(self, dt):
-        return (self.start_at <= dt) & ((end_at == None) | (dt <= self.end_at))
+        return (self.start_at <= dt) & ((self.end_at == None) | (dt <= self.end_at))
 
 
     @property
