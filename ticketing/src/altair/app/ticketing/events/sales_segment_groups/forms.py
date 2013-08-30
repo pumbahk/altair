@@ -119,7 +119,7 @@ class SalesSegmentGroupForm(OurForm):
     order_limit = OurIntegerField(
         label=u'購入回数制限',
         default=0,
-        validators=[RequiredOnUpdate()],
+        validators=[Optional()],
         hide_on_new=True
     )
     public = OurBooleanField(
