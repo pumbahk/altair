@@ -163,6 +163,8 @@ class SelectFieldDataMixin(object):
             self.data = None
 
     def process_formdata(self, valuelist):
+        for raw_input_filter in self.raw_input_filters:
+            valuelist = raw_input_filter(valuelist)
         coerce = self.coerce
         if valuelist:
             try:
@@ -189,7 +191,18 @@ class LazySelectFieldBase(fields.SelectFieldBase):
     widget = widgets.Select()
 
     def __init__(self, label=None, validators=None, coerce=None, choices=None, model=None, cachable=None, **kwargs):
+        _form = kwargs.pop('_form', None)
+        hide_on_new = kwargs.pop('hide_on_new', False)
+        raw_input_filters = kwargs.pop('raw_input_filters', [])
+        if callable(label):
+            label = label()
         super(LazySelectFieldBase, self).__init__(label, validators, **kwargs)
+        self.form = _form
+        self.hide_on_new = hide_on_new
+        self.raw_input_filters = raw_input_filters
+        for base in self.__class__.__bases__[1:]:
+            if hasattr(base, '__mixin_init__'):
+                base.__mixin_init__(self, label, validators, coerce, choices, model, cachable, **kwargs)
         if choices is not None:
             if callable(choices):
                 self._model = LazyWrapper(

@@ -23,7 +23,7 @@ class SalesSegmentEditorTests(unittest.TestCase):
     def test_apply_changes_use_default(self):
         from datetime import datetime
         sales_segment_group = testing.DummyModel(
-            start_at=datetime(2013, 8, 31)
+            start_for_performance=lambda performance: datetime(2013, 8, 31),
         )
         form = DummyForm(
             fields=[
@@ -34,7 +34,9 @@ class SalesSegmentEditorTests(unittest.TestCase):
 
         target = self._makeOne(sales_segment_group, form)
         
-        obj = testing.DummyModel()
+        obj = testing.DummyModel(
+            performance=testing.DummyModel()
+        )
         result = target.apply_changes(obj)
 
         self.assertEqual(result, obj)
@@ -54,7 +56,9 @@ class SalesSegmentEditorTests(unittest.TestCase):
 
         target = self._makeOne(sales_segment_group, form)
         
-        obj = testing.DummyModel()
+        obj = testing.DummyModel(
+            performance=testing.DummyModel()
+        )
         result = target.apply_changes(obj)
 
         self.assertEqual(result, obj)

@@ -25,16 +25,13 @@ class SalesSegmentGroups(BaseView):
 
     @view_config(route_name='sales_segment_groups.index', renderer='altair.app.ticketing:templates/sales_segment_groups/index.html')
     def index(self):
-        event_id = int(self.request.matchdict.get('event_id', 0))
-        event = Event.get(event_id, organization_id=self.context.user.organization_id)
-
         sort = self.request.GET.get('sort', 'SalesSegmentGroup.id')
         direction = self.request.GET.get('direction', 'asc')
         if direction not in ['asc', 'desc']:
             direction = 'asc'
 
         conditions = {
-            'event_id':event.id
+            'event_id': self.context.event.id
         }
         query = SalesSegmentGroup.filter_by(**conditions)
         query = query.order_by(sort + ' ' + direction)
@@ -47,58 +44,35 @@ class SalesSegmentGroups(BaseView):
         )
 
         return {
-            'form_sales_segment_group':SalesSegmentGroupForm(event_id=event_id),
+            'form_sales_segment_group':SalesSegmentGroupForm(context=self.context),
             'sales_segment_groups':sales_segment_groups,
-            'event':event,
+            'event': self.context.event,
         }
 
     @view_config(route_name='sales_segment_groups.show', renderer='altair.app.ticketing:templates/sales_segment_groups/show.html')
     def show(self):
-        sales_segment_group_id = int(self.request.matchdict.get('sales_segment_group_id', 0))
-        sales_segment_group = SalesSegmentGroup.get(sales_segment_group_id, self.context.user.organization_id)
-        if sales_segment_group is None:
-            return HTTPNotFound('sales_segment_group id %d is not found' % sales_segment_group_id)
-
-        member_groups = sales_segment_group.membergroups
-        form_ss = SalesSegmentGroupForm(obj=sales_segment_group, event_id=sales_segment_group.event_id)
-        form_s = SalesSegmentForm(performances=sales_segment_group.event.performances, sales_segment_groups=[sales_segment_group])
-
         return {
-            'form_s':form_s,
-            'form_ss':form_ss,
-            'member_groups': member_groups, 
-            'sales_segment_group':sales_segment_group,
-        }
+            'form_s': SalesSegmentForm(context=self.context),
+            'form_ss': SalesSegmentGroupForm(obj=self.context.sales_segment_group, context=self.context),
+            'member_groups': self.context.sales_segment_group.membergroups, 
+            'sales_segment_group':self.context.sales_segment_group,
+            }
 
     @view_config(route_name='sales_segment_groups.new', request_method='GET', renderer='altair.app.ticketing:templates/sales_segment_groups/_form.html', xhr=True)
     def new_xhr(self):
-        event_id = int(self.request.matchdict.get('event_id', 0))
-        event = Event.get(event_id, organization_id=self.context.user.organization_id)
-        if not event:
-            raise HTTPBadRequest(body=json.dumps({
-                'message':u'イベントが存在しません',
-            }))
-
-        f = SalesSegmentGroupForm(None, event_id=event_id, new_form=True)
-
         return {
-            'form': f,
+            'form': SalesSegmentGroupForm(None, context=self.context, new_form=True),
             'action': self.request.path,
             }
 
     @view_config(route_name='sales_segment_groups.new', request_method='POST', renderer='altair.app.ticketing:templates/sales_segment_groups/_form.html', xhr=True)
     def new_post(self):
-        event_id = int(self.request.POST.get('event_id', 0))
-        event = Event.get(event_id, organization_id=self.context.user.organization_id)
-        if not event:
-            return HTTPNotFound('event id %d is not found' % event_id)
-
-        f = SalesSegmentGroupForm(self.request.POST, event_id=event_id, new_form=True)
+        f = SalesSegmentGroupForm(self.request.POST, context=self.context, new_form=True)
         if f.validate():
             sales_segment_group = merge_session_with_post(SalesSegmentGroup(), f.data)
             sales_segment_group.organization = self.context.user.organization
             sales_segment_group.save()
-            SalesSegmentGroupCreate(sales_segment_group).create(event.performances)
+            SalesSegmentGroupCreate(sales_segment_group).create(self.context.event.performances)
             self.request.session.flash(u'販売区分グループを保存しました')
             return render_to_response('altair.app.ticketing:templates/refresh.html', {}, request=self.request)
         else:
@@ -110,29 +84,20 @@ class SalesSegmentGroups(BaseView):
     @view_config(route_name='sales_segment_groups.copy', request_method='GET', renderer='altair.app.ticketing:templates/sales_segment_groups/_form.html', xhr=True)
     @view_config(route_name='sales_segment_groups.edit', request_method='GET', renderer='altair.app.ticketing:templates/sales_segment_groups/_form.html', xhr=True)
     def edit_xhr(self):
-        sales_segment_group_id = int(self.request.matchdict.get('sales_segment_group_id', 0))
-        sales_segment_group = SalesSegmentGroup.get(sales_segment_group_id, self.context.user.organization_id)
-        if sales_segment_group is None:
-            return HTTPNotFound('sales_segment_group id %d is not found' % sales_segment_group_id)
-
         return {
-            'form': SalesSegmentGroupForm(record_to_multidict(sales_segment_group), event_id=sales_segment_group.event_id),
+            'form': SalesSegmentGroupForm(obj=self.context.sales_segment_group, context=self.context),
             'action': self.request.path,
             }
 
     def _edit_post(self):
-        sales_segment_group_id = int(self.request.matchdict.get('sales_segment_group_id', 0))
-        sales_segment_group = SalesSegmentGroup.get(sales_segment_group_id, self.context.user.organization_id)
-        if sales_segment_group is None:
-            return HTTPNotFound('sales_segment_group id %d is not found' % sales_segment_group_id)
-
-        f = SalesSegmentGroupForm(self.request.POST, event_id=sales_segment_group.event_id)
+        f = SalesSegmentGroupForm(self.request.POST, context=self.context)
         if not f.validate():
             return f
+        sales_segment_group = self.context.sales_segment_group
         if self.request.matched_route.name == 'sales_segment_groups.copy':
             with_pdmp = bool(f.copy_payment_delivery_method_pairs.data)
             id_map = SalesSegmentGroup.create_from_template(sales_segment_group, with_payment_delivery_method_pairs=with_pdmp)
-            f.id.data = id_map[sales_segment_group_id]
+            f.id.data = id_map[self.context.sales_segment_group.id]
             new_sales_segment_group = merge_session_with_post(SalesSegmentGroup.get(f.id.data), f.data)
             new_sales_segment_group.save()
 
@@ -169,15 +134,10 @@ class SalesSegmentGroups(BaseView):
 
     @view_config(route_name='sales_segment_groups.delete')
     def delete(self):
-        sales_segment_group_id = int(self.request.matchdict.get('sales_segment_group_id', 0))
-        sales_segment_group = SalesSegmentGroup.get(sales_segment_group_id, self.context.user.organization_id)
-        if sales_segment_group is None:
-            return HTTPNotFound('sales_segment_group id %d is not found' % sales_segment_group_id)
-
-        location = route_path('sales_segment_groups.index', self.request, event_id=sales_segment_group.event_id)
+        location = route_path('sales_segment_groups.index', self.request, event_id=self.context.sales_segment_group.event_id)
         try:
-            sales_segment_group.delete()
-            self.request.session.flash(u'販売区分を削除しました')
+            self.context.sales_segment_group.delete()
+            self.request.session.flash(u'販売区分グループを削除しました')
         except Exception, e:
             self.request.session.flash(e.message)
             raise HTTPFound(location=location)
@@ -187,30 +147,24 @@ class SalesSegmentGroups(BaseView):
     @view_config(route_name="sales_segment_groups.bind_membergroup",
                  renderer='altair.app.ticketing:templates/sales_segment_groups/bind_membergroup.html', request_method="GET")
     def bind_membergroup_get(self):
-        sales_segment_group_id = int(self.request.matchdict.get('sales_segment_group_id', 0))
-        sales_segment_group = SalesSegmentGroup.get(sales_segment_group_id, self.context.user.organization_id)
-        if sales_segment_group is None:
-            return HTTPNotFound('sales_segment_group id %d is not found' % sales_segment_group_id)
-        
+        sales_segment_group = self.context.sales_segment_group
         redirect_to = self.request.route_path("sales_segment_groups.show",  sales_segment_group_id=sales_segment_group_id)
         membergroups = MemberGroup.query.filter(MemberGroup.membership_id==Membership.id, Membership.organization_id==self.context.user.organization_id)
         form = MemberGroupToSalesSegmentForm(obj=sales_segment_group, membergroups=membergroups)
-        return {"form": form,
-                "membergroups": sales_segment_group.membergroups,
-                'form_mg': MemberGroupForm(),
-                'form_ss': SalesSegmentGroupForm(),
-                "sales_segment_group":sales_segment_group,
-                "redirect_to": redirect_to,
-                "sales_segment_group_id": sales_segment_group_id}
+        return {
+            'form': form,
+            'membergroups': sales_segment_group.membergroups,
+            'form_mg': MemberGroupForm(),
+            'form_ss': SalesSegmentGroupForm(),
+            'sales_segment_group':sales_segment_group,
+            'redirect_to': redirect_to,
+            'sales_segment_group_id': sales_segment_group_id
+            }
 
     @view_config(route_name="sales_segment_groups.bind_membergroup",
                  renderer='altair.app.ticketing:templates/sales_segment_groups/bind_membergroup.html', request_method="POST")
     def bind_membergroup_post(self):
-        sales_segment_group_id = int(self.request.matchdict.get('sales_segment_group_id', 0))
-        sales_segment_group = SalesSegmentGroup.get(sales_segment_group_id, self.context.user.organization_id)
-        if sales_segment_group is None:
-            return HTTPNotFound('sales_segment_group id %d is not found' % sales_segment_group_id)
-        
+        sales_segment_group = self.context.sales_segment_group
         candidates_membergroups = MemberGroup.query
         will_bounds = candidates_membergroups.filter(MemberGroup.id.in_(self.request.POST.getall("membergroups")))
 

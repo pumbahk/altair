@@ -43,27 +43,27 @@ function get_selected_sales_segment_id() {
     </tr>
     <tr>
       <th>購入上限枚数</th>
-      <td>${sales_segment.upper_limit}</td>
+      <td>${sales_segment.upper_limit or u'-'}</td>
     </tr>
     <tr>
       <th>購入回数制限</th>
-      <td>${sales_segment.order_limit}</td>
+      <td>${sales_segment.order_limit or u'-'}</td>
     </tr>
     <tr>
       <th>座席選択</th>
-      <td>${u'○' if sales_segment.seat_choice else u'×'}</td>
+      <td>${u'選択可' if sales_segment.seat_choice else u'×選択不可'}</td>
     </tr>
     <tr>
       <th>公開／非公開</th>
-      <td>${u'○' if sales_segment.public else u'×'}</td>
+      <td>${u'公開' if sales_segment.public else u'非公開'}</td>
     </tr>
     <tr>
       <th>レポート対象</th>
-      <td>${u'○' if sales_segment.reporting else u'×'}</td>
+      <td>${u'対象' if sales_segment.reporting else u'×対象外'}</td>
     </tr>
     <tr>
       <th>クレジットカード 3D認証フォーム 注記事項</th>
-      <td>${sales_segment.auth3d_notice}</td>
+      <td>${sales_segment.auth3d_notice or u'(なし)'}</td>
     </tr>
   </tbody>
 </table>

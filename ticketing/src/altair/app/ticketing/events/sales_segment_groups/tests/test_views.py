@@ -57,19 +57,15 @@ class SalesSegmentGroupsTests(unittest.TestCase):
                 account_id=str(account.id),
                 name='testing sales segment group',
                 kind='normal',
+                start_at="2013-10-10 00:00",
+                end_at="2013-10-10 00:00",
             )
         )
 
         target = self._makeOne(context, request)
 
         result = target.new_post()
-        if isinstance(result, dict):
-            for f, msgs in result['form'].errors.items():
-                print f,
-                for m in msgs:
-                    print m
-
-
+        self.assertFalse(isinstance(result, dict))
         ssg = self.session.query(SalesSegmentGroup).filter_by(
             name="testing sales segment group").one()
         self.assertEqual(ssg.organization, organization)

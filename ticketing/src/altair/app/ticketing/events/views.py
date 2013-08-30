@@ -107,8 +107,7 @@ class Events(BaseView):
             'form':EventForm(),
             'form_performance':PerformanceForm(organization_id=self.context.user.organization_id),
             'form_stock_type':StockTypeForm(event_id=event_id),
-            'form_stock_holder':StockHolderForm(organization_id=self.context.user.organization_id, event_id=event_id),
-            'form_sales_segment_group':SalesSegmentGroupForm(event_id=event_id),
+            'form_stock_holder':StockHolderForm(organization_id=self.context.user.organization_id, event_id=event_id)
         }
 
     @view_config(route_name='events.new', request_method='GET', renderer='altair.app.ticketing:templates/events/edit.html')

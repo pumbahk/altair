@@ -117,7 +117,6 @@ class SalesSegmentAdminResource(TicketingAdminResource):
         else:
             self.sales_segment = None
 
-
 class SalesSegmentEditor(object):
     use_default_fields = [
         "seat_choice",
