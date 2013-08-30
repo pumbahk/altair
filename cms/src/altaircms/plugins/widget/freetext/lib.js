@@ -55,8 +55,9 @@ if(!widget){
     var collect_data = function(we, choiced_elt){
         var root = $(we.dialog)
         var freetext = root.find(text_area_expr).val();
-        freetext = freetext.replace("a href=", "a target='_blank' href=")
-        return {freetext: freetext}
+        var $dom = $(freetext);
+        $dom.find("A").attr({target:"_blank"});
+        return {freetext: $dom.html()}
     };
 
     return widget.include("freetext", {
