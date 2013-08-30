@@ -241,7 +241,7 @@ function get_performance_id() {
       </td>
       <td>
         % if form.context.sales_segment_group:
-          ${u'対象' if form.context.sales_segment_group.reporting else u'非対象'}
+          ${u'対象' if form.context.sales_segment_group.reporting else u'×対象外'}
         % endif
       </td>
     </tr>
@@ -455,7 +455,7 @@ function get_performance_id() {
       var originalValue = n.find('td:nth-child(3)');
       originalValue.empty();
       if (data.reporting !== void(0))
-        originalValue.text(data.reporting ? "対象": "非対象");
+        originalValue.text(data.reporting ? "対象": "×対象外");
     },
     auth3d_notice: function (data, n) {
       var originalValue = n.find('td:nth-child(3)');
