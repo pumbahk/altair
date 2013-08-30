@@ -10,6 +10,8 @@ from altair.formhelpers import (
     OurDateTimeField, Translations, Required, RequiredOnUpdate,
     OurForm, OurIntegerField, OurBooleanField, OurDecimalField, OurSelectField,
     OurTimeField, )
+from altair.formhelpers.fields.datetime import Min, Max
+from altair.formhelpers.widgets.datetime import OurTimeWidget
 from altair.app.ticketing.helpers import label_text_for
 from altair.app.ticketing.core.models import SalesSegmentKindEnum, Event, StockHolder, Account
 
@@ -87,7 +89,9 @@ class SalesSegmentGroupForm(OurForm):
     start_time = OurTimeField(
         label=u'販売開始日時(時刻)',
         validators=[],
-        hide_on_new=False
+        hide_on_new=False,
+        widget=OurTimeWidget(omit_second=True),
+        missing_value_defaults=dict(hour=Min, minute=Min, second=Min)
     )
     end_day_prior_to_performance = OurIntegerField(
         label=u'販売終了日時(公演開始までの日数)',
@@ -97,7 +101,9 @@ class SalesSegmentGroupForm(OurForm):
     end_time = OurTimeField(
         label=u'販売終了日時(時刻)',
         validators=[],
-        hide_on_new=False
+        hide_on_new=False,
+        widget=OurTimeWidget(omit_second=True),
+        missing_value_defaults=dict(hour=Max, minute=Max, second=Max)
     )
     end_at = OurDateTimeField(
         label=u'販売終了日時',

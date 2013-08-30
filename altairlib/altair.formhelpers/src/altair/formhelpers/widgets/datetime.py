@@ -152,10 +152,11 @@ class OurDateTimeWidget(object):
         second='SS',
         )
 
-    def __init__(self, input_builder=build_datetime_input_japanese_japan, class_prefix=u'datetimewidget-', placeholders=None):
+    def __init__(self, input_builder=build_datetime_input_japanese_japan, class_prefix=u'datetimewidget-', placeholders=None, omit_second=False):
         self.input_builder = input_builder
         self.class_prefix = class_prefix
         self.placeholders = placeholders
+        self.omit_second = omit_second
 
     def __call__(self, field, **kwargs):
         from ..fields.datetime import Automatic
@@ -174,7 +175,7 @@ class OurDateTimeWidget(object):
                 id_prefix=field.id_prefix,
                 name_prefix=field.name_prefix,
                 class_prefix=class_prefix,
-                omit_second=kwargs.pop('omit_second', False),
+                omit_second=kwargs.pop('omit_second', self.omit_second),
                 year_attrs={'placeholder': placeholders.get('year', u'')},
                 month_attrs={'placeholder': placeholders.get('month', u'')},
                 day_attrs={'placeholder': placeholders.get('day', u'')},
@@ -193,10 +194,11 @@ class OurTimeWidget(object):
         second='SS',
         )
 
-    def __init__(self, input_builder=build_time_input_japanese_japan, class_prefix=u'datetimewidget-', placeholders=None):
+    def __init__(self, input_builder=build_time_input_japanese_japan, class_prefix=u'datetimewidget-', placeholders=None, omit_second=False):
         self.input_builder = input_builder
         self.class_prefix = class_prefix
         self.placeholders = placeholders
+        self.omit_second = omit_second
 
     def __call__(self, field, **kwargs):
         from ..fields.datetime import Automatic
@@ -215,7 +217,7 @@ class OurTimeWidget(object):
                 id_prefix=field.id_prefix,
                 name_prefix=field.name_prefix,
                 class_prefix=class_prefix,
-                omit_second=kwargs.pop('omit_second', False),
+                omit_second=kwargs.pop('omit_second', self.omit_second),
                 hour_attrs={'placeholder': placeholders.get('hour', u'')},
                 minute_attrs={'placeholder': placeholders.get('minute', u'')},
                 second_attrs={'placeholder': placeholders.get('second', u'')},
