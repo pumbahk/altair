@@ -1104,6 +1104,10 @@ class SalesSegmentGroup(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     @hybrid_method
     def in_term(self, dt):
+        return (self.start_at <= dt) and ((self.end_at is None) or (dt <= self.end_at))
+
+    @in_term.expression
+    def in_term_expr(self, dt):
         return (self.start_at <= dt) & ((None == self.end_at) | (dt <= self.end_at))
 
     @classmethod
@@ -3367,6 +3371,10 @@ class SalesSegment(Base, BaseModel, LogicallyDeleted, WithTimestamp):
 
     @hybrid_method
     def in_term(self, dt):
+        return (self.start_at <= dt) and ((self.end_at is None) or (dt <= self.end_at))
+
+    @in_term.expression
+    def in_term_expr(self, dt):
         return (self.start_at <= dt) & ((None == self.end_at) | (dt <= self.end_at))
 
 
