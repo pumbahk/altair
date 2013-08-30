@@ -73,10 +73,16 @@ class qr:
         if re.compile('[0-9A-Z: -]').match(c):
             return c
         
-        bin = unpack('!H', c.encode("eucjp"))[0]
-        if bin/256 < 160 or bin%256 < 160:
-            raise BaseException("Out of range: %s" % c)
-        mid = (bin/256-160)*96 + (bin%256-160)
+        if re.compile('[\x21-\x7e]').match(c):
+            # 9249 - 9343
+            mid = 96*96 + unpack('B', c.encode("ascii"))[0]
+        else:
+            c = c.encode("eucjp")
+            bin = unpack('!H', c)[0]
+            if bin/256 < 160 or bin%256 < 160:
+                raise BaseException("Out of range: %s" % c)
+            mid = (bin/256-160)*96 + (bin%256-160)            # 0-9215
+
         return "".join([C42[i] for i in (mid/42/42, (mid/42)%42, mid%42)])
     
     def dec42(self, s):
@@ -88,8 +94,10 @@ class qr:
                 buf.append(s.pop(0))
             else:
                 i = (C42r[s[0]]*42+C42r[s[1]])*42+C42r[s[2]]
-                c = pack('!H', (i/96+160)*256 + i%96+160)
-                buf.append(c.decode("eucjp"))
+                if 96*96 <= i < 96*96+256:
+                    buf.append(pack('B', i - 96*96))
+                else:
+                    buf.append(pack('!H', (i/96+160)*256 + i%96+160).decode("eucjp"))
                 s = s[3:]
         return "".join(buf)
     
