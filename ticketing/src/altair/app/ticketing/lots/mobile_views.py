@@ -26,6 +26,7 @@ from .models import (
 )
 from . import urls
 from .adapters import LotSessionCart
+from .views import is_nogizaka, nogizaka_auth
 
 logger = logging.getLogger(__name__)
 
@@ -68,7 +69,7 @@ class EntryLotView(object):
     def cr2br(self, t):
         return h.cr2br(t)
 
-    @view_config(route_name='lots.entry.index', renderer=selectable_renderer("mobile/%(membership)s/index.html"))
+    @view_config(route_name='lots.entry.index', renderer=selectable_renderer("mobile/%(membership)s/index.html"), custom_predicates=(nogizaka_auth, ))
     def index(self):
         event = self.context.event
         lot = self.context.lot
@@ -85,6 +86,17 @@ class EntryLotView(object):
             sales_segment=sales_segment,
             option_index=len(api.get_options(self.request, lot.id)) + 1
             )
+
+    @view_config(route_name='lots.entry.index', renderer=selectable_renderer("mobile/%(membership)s/index.html"), request_method="POST", custom_predicates=(is_nogizaka, ))
+    def nogizaka_auth(self):
+        KEYWORD = 'gA8du3dfAKdjasd0aeFdafcdERs2dkd0'
+        if self.request.session.get('lots.passed.keyword') != KEYWORD:
+            keyword = self.request.POST.get('keyword', None)
+            if keyword != KEYWORD:
+                raise HTTPNotFound()
+            self.request.session['lots.passed.keyword'] = keyword
+            return self.index()
+        raise HTTPNotFound()
 
     @view_config(route_name='lots.entry.step1', renderer=selectable_renderer("mobile/%(membership)s/step1.html"))
     def step1(self):
