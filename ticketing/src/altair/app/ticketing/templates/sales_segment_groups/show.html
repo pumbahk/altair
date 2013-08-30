@@ -74,7 +74,6 @@ ${ch.breadcrumbs(
             <th>座席選択可</th>
             <th>公開</th>
             <th>レポート対象</th>
-            <th>クレジットカード 3D認証フォーム 注記事項</th>
           </tr>
         </thead>
         <tbody>
@@ -92,12 +91,11 @@ ${ch.breadcrumbs(
             <td>${vh.datetime(sales_segment.start_at)}</td>
             <td>${vh.datetime(sales_segment.end_at)}</td>
             <td>${sales_segment.account.name if sales_segment.account else u'(未設定)'}</td>
-            <td>${sales_segment.upper_limit or u''}</td>
-            <td>${sales_segment.order_limit or u''}</td>
-            <td>${u'○' if sales_segment.seat_choice else u'×'}</td>
-            <td>${u'○' if sales_segment.public else u'×'}</td>
-            <td>${u'○' if sales_segment.reporting else u'×'}</td>
-            <td>${sales_segment.auth3d_notice}</td>
+            <td>${sales_segment.upper_limit or u'-'}</td>
+            <td>${sales_segment.order_limit or u'-'}</td>
+            <td>${u'選択可' if sales_segment.seat_choice else u'選択不可'}</td>
+            <td>${u'公開' if sales_segment.public else u'非公開'}</td>
+            <td>${u'対象' if sales_segment.reporting else u'非対象'}</td>
           </tr>
         % endfor
         </tbody>

@@ -181,7 +181,7 @@ function get_performance_id() {
       </td>
       <td>
         % if form.context.sales_segment_group:
-          ${form.context.sales_segment_group.upper_limit}
+          ${form.context.sales_segment_group.upper_limit or u'-'}
         % endif
       </td>
     </tr>
@@ -196,7 +196,7 @@ function get_performance_id() {
       </td>
       <td>
         % if form.context.sales_segment_group:
-          ${form.context.sales_segment_group.order_limit}
+          ${form.context.sales_segment_group.order_limit or u'-'}
         % endif
       </td>
     </tr>
@@ -211,7 +211,7 @@ function get_performance_id() {
       </td>
       <td>
         % if form.context.sales_segment_group:
-          ${u'座席選択可' if form.context.sales_segment_group.seat_choice else u'座席選択不可'}
+          ${u'選択可' if form.context.sales_segment_group.seat_choice else u'選択不可'}
         % endif
       </td>
     </tr>
@@ -226,7 +226,7 @@ function get_performance_id() {
       </td>
       <td>
         % if form.context.sales_segment_group:
-          ${u'一般公開する' if form.context.sales_segment_group.public else u'一般公開しない'}
+          ${u'公開' if form.context.sales_segment_group.public else u'非公開'}
         % endif
       </td>
     </tr>
@@ -241,7 +241,7 @@ function get_performance_id() {
       </td>
       <td>
         % if form.context.sales_segment_group:
-          ${u'レポート対象にする' if form.context.sales_segment_group.reporting else u'レポート対象にしない'}
+          ${u'対象' if form.context.sales_segment_group.reporting else u'非対象'}
         % endif
       </td>
     </tr>
@@ -256,7 +256,7 @@ function get_performance_id() {
       </td>
       <td>
         % if form.context.sales_segment_group:
-          ${form.context.sales_segment_group.auth3d_notice}
+          ${form.context.sales_segment_group.auth3d_notice or u'(なし)'}
         % endif
       </td>
     </tr>
@@ -443,19 +443,19 @@ function get_performance_id() {
       var originalValue = n.find('td:nth-child(3)');
       originalValue.empty();
       if (data['seat_choice'] !== void(0))
-        originalValue.text(data['seat_choice'] ? "座席選択可": "座席選択不可");
+        originalValue.text(data['seat_choice'] ? "選択可": "選択不可");
     },
     'public': function (data, n) {
       var originalValue = n.find('td:nth-child(3)');
       originalValue.empty();
       if (data['public'] !== void(0))
-        originalValue.text(data['public'] ? "一般公開する": "非公開にする");
+        originalValue.text(data['public'] ? "公開": "非公開");
     },
     reporting: function (data, n) {
       var originalValue = n.find('td:nth-child(3)');
       originalValue.empty();
       if (data.reporting !== void(0))
-        originalValue.text(data.reporting ? "レポート対象にする": "レポート対象にしない");
+        originalValue.text(data.reporting ? "対象": "非対象");
     },
     auth3d_notice: function (data, n) {
       var originalValue = n.find('td:nth-child(3)');
