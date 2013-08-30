@@ -210,3 +210,6 @@ var google_remarketing_only = true;
 
 <script type="text/javascript" src="//jp.rakuten-static.com/1/js/grp/ftr/js/parm_selector_footer.js"></script>
 
+## tracking 画像(<browserid>.gif)を取得するhtmlを生成
+<%! from altairsite.tracking import get_tracking_image %>
+${get_tracking_image(request)}

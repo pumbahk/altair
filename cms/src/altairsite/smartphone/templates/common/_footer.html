@@ -10,5 +10,10 @@
         <a href="${request.route_path('smartphone.page', kind='legal')}">特定商取引法に基づく表示</a>
     </div>
     <div><font color="#888888">Copyright 2010-2013 TicketStar Inc. All Rights Reserved.</font></div>
+
+## tracking 画像(<browserid>.gif)を取得するhtmlを生成
+<%! from altairsite.tracking import get_tracking_image %>
+${get_tracking_image(request)}
+
 </font>
 </div>
