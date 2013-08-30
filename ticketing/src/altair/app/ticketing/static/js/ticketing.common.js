@@ -213,7 +213,8 @@ var get_datetime_for, set_datetime_for, attach_datepicker;
               (value.year || (now.getYear() + 1900)) + '-' + 
               (value.month || (now.getMonth() + 1)) + '-' + 
               (value.day || now.getDate());
-          button.datepicker('setValue', dateStr)
+          button.datepicker('setValue', dateStr);
+          button.data('datepicker').picker.css('z-index', 100000);
         })
         .on('changeDate', function (ev) {
           set_datetime_for(container, { year: ev.date.getYear() + 1900, month: ev.date.getMonth() + 1, day: ev.date.getDate() });

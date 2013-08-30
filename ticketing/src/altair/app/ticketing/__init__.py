@@ -168,6 +168,7 @@ def main(global_config, **local_config):
         event_push_communication.bind_instance(config)
         config.include('altair.pyramid_assets')
         config.include('altair.pyramid_boto')
+        config.include('altair.pyramid_tz')
 
         config.add_subscriber(register_globals, 'pyramid.events.BeforeRender')
 

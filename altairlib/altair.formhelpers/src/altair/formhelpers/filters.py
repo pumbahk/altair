@@ -50,3 +50,5 @@ replace_ambiguous = Translate({
     u'\uff5e': u'\u301c',
 })
 
+def zero_as_none(data):
+    return None if not data else data

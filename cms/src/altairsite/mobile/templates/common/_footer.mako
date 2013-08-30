@@ -12,3 +12,7 @@
     <div><font color="#888888">Copyright 2010-2013 TicketStar Inc. All Rights Reserved.</font></div>
 </font>
 </div>
+
+## tracking 画像(<browserid>.gif)を取得するhtmlを生成
+<%! from altairsite.tracking import get_tracking_image %>
+${get_tracking_image(request)}

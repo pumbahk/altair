@@ -10,6 +10,8 @@ from altair.formhelpers import (
     OurDateTimeField, Translations, Required, RequiredOnUpdate,
     OurForm, OurIntegerField, OurBooleanField, OurDecimalField, OurSelectField,
     OurTimeField, )
+from altair.formhelpers.fields.datetime import Min, Max
+from altair.formhelpers.widgets.datetime import OurTimeWidget
 from altair.app.ticketing.helpers import label_text_for
 from altair.app.ticketing.core.models import SalesSegmentKindEnum, Event, StockHolder, Account
 
@@ -31,19 +33,21 @@ class SalesSegmentGroupForm(OurForm):
         fix_boolean(formdata, 'seat_choice')
         fix_boolean(formdata, 'public')
         fix_boolean(formdata, 'reporting')
+        context = kwargs.pop('context', None)
         super(SalesSegmentGroupForm, self).__init__(formdata, obj, prefix, **kwargs)
-        if 'event_id' in kwargs:
-            event = Event.get(kwargs['event_id'])
+        self.context = context
+        if context.event:
             self.copy_to_stock_holder.choices = [('', u'変更しない')] + [
-                (str(sh.id), sh.name) for sh in StockHolder.get_own_stock_holders(event)
+                (str(sh.id), sh.name) for sh in StockHolder.get_own_stock_holders(context.event)
             ]
             self.account_id.choices = [
-                (a.id, a.name) for a in Account.query.filter_by(organization_id=event.organization_id)
+                (a.id, a.name) for a in Account.query.filter_by(organization_id=context.event.organization_id)
             ]
-            self.account_id.default = event.account_id
+            self.account_id.default = context.event.account_id
             for field_name in ('margin_ratio', 'refund_ratio', 'printing_fee', 'registration_fee'):
                 field = getattr(self, field_name)
-                field.default = getattr(event.organization.setting, field_name)
+                field.default = getattr(context.event.organization.setting, field_name)
+            self.event_id.data = self.event_id.default = context.event.id
             self.process(formdata, obj, **kwargs)
         if 'new_form' in kwargs:
             self.reporting.data = True
@@ -85,7 +89,9 @@ class SalesSegmentGroupForm(OurForm):
     start_time = OurTimeField(
         label=u'販売開始日時(時刻)',
         validators=[],
-        hide_on_new=False
+        hide_on_new=False,
+        widget=OurTimeWidget(omit_second=True),
+        missing_value_defaults=dict(hour=Min, minute=Min, second=Min)
     )
     end_day_prior_to_performance = OurIntegerField(
         label=u'販売終了日時(公演開始までの日数)',
@@ -95,7 +101,9 @@ class SalesSegmentGroupForm(OurForm):
     end_time = OurTimeField(
         label=u'販売終了日時(時刻)',
         validators=[],
-        hide_on_new=False
+        hide_on_new=False,
+        widget=OurTimeWidget(omit_second=True),
+        missing_value_defaults=dict(hour=Max, minute=Max, second=Max)
     )
     end_at = OurDateTimeField(
         label=u'販売終了日時',
@@ -117,7 +125,7 @@ class SalesSegmentGroupForm(OurForm):
     order_limit = OurIntegerField(
         label=u'購入回数制限',
         default=0,
-        validators=[RequiredOnUpdate()],
+        validators=[Optional()],
         hide_on_new=True
     )
     public = OurBooleanField(
@@ -199,16 +207,16 @@ class SalesSegmentGroupForm(OurForm):
             label_text_for(self.start_time)
         )
 
-        if self.start_at.data:
-            if self.start_day_prior_to_performance.data or self.start_time.data:
+        if self.start_at.data is not None:
+            if self.start_day_prior_to_performance.data is not None or self.start_time.data is not None:
                 append_error(self.start_at, ValidationError(msg1))
                 return False
         else:
-            if bool(int(bool(self.start_day_prior_to_performance.data)) ^ int(bool(self.start_time.data))):
+            if bool(int(self.start_day_prior_to_performance.data is not None) ^ int(self.start_time.data is not None)):
                 append_error(self.start_day_prior_to_performance, ValidationError(msg2))
                 return False
             else:
-                if not self.start_day_prior_to_performance.data:
+                if self.start_day_prior_to_performance.data is None:
                     append_error(self.start_at, ValidationError(msg1))
                     return False
         return True
@@ -223,16 +231,16 @@ class SalesSegmentGroupForm(OurForm):
             label_text_for(self.end_time)
         )
 
-        if self.end_at.data:
-            if self.end_day_prior_to_performance.data or self.end_time.data:
+        if self.end_at.data is not None:
+            if self.end_day_prior_to_performance.data is not None or self.end_time.data is not None:
                 append_error(self.end_at, ValidationError(msg1))
                 return False
         else:
-            if bool(int(bool(self.end_day_prior_to_performance.data)) ^ int(bool(self.end_time.data))):
+            if bool(int(self.end_day_prior_to_performance.data is not None) ^ int(self.end_time.data is not None)):
                 append_error(self.end_day_prior_to_performance, ValidationError(msg2))
                 return False
             else:
-                if not self.end_day_prior_to_performance.data:
+                if self.end_day_prior_to_performance.data is None:
                     append_error(self.end_at, ValidationError(msg1))
                     return False
         return True

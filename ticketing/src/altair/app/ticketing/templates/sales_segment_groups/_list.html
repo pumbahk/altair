@@ -1,6 +1,7 @@
-<%page args="form, sales_segment_groups, limit=None" />
+<%page args="sales_segment_groups, limit=None" />
 <%namespace file="/common/helpers.html" name="ch" />
 <% paging = False if limit else True %>
+<% from altair.app.ticketing.core.models import SalesSegmentGroup %>
 % if sales_segment_groups:
 <div class="row-fluid">
   <div class="span12">
@@ -8,15 +9,15 @@
       <thead>
         <tr>
           <th class="minwidth"></th>
-          <th>${ch.sortable(form.name, paging)}</th>
-          <%doc><th>${ch.sortable(form.start_at, paging)}</a></th></%doc>
-          <%doc><th>${ch.sortable(form.end_at, paging)}</a></th></%doc>
-          <th>${ch.sortable(form.account_id, paging)}</a></th>
-          <th>${ch.sortable(form.upper_limit, paging)}</a></th>
-          <%doc><th>${ch.sortable(form.order_limit, paging)}</a></th></%doc>
-          <th>${ch.sortable(form.seat_choice, paging)}</a></th>
-          <th>${ch.sortable(form.public, paging)}</a></th>
-          <th>${ch.sortable(form.reporting, paging)}</a></th>
+          <th>${ch.sortable(SalesSegmentGroup.name, paging)}</th>
+          <%doc><th>${ch.sortable(SalesSegmentGroup.start_at, paging)}</a></th></%doc>
+          <%doc><th>${ch.sortable(SalesSegmentGroup.end_at, paging)}</a></th></%doc>
+          <th>${ch.sortable(SalesSegmentGroup.account_id, paging)}</a></th>
+          <th>${ch.sortable(SalesSegmentGroup.upper_limit, paging)}</a></th>
+          <%doc><th>${ch.sortable(SalesSegmentGroup.order_limit, paging)}</a></th></%doc>
+          <th>${ch.sortable(SalesSegmentGroup.seat_choice, paging)}</a></th>
+          <th>${ch.sortable(SalesSegmentGroup.public, paging)}</a></th>
+          <th>${ch.sortable(SalesSegmentGroup.reporting, paging)}</a></th>
           <th>決済方法</th>
           <th>引取方法</th>
         </tr>

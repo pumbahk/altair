@@ -20,6 +20,13 @@ def install_fetcher(config):
                                  settings["altaircms.static.pagetype.mobile"])
     config.registry.registerUtility(fetcher, ICurrentPageFetcher)
 
+def install_tracking_image_generator(config):
+    settings = config.registry.settings
+    from .tracking import ITrackingImageGenerator
+    TrackingImage = config.maybe_dotted(settings["altaircms.tracking.image.impl"])
+    config.registry.registerUtility(TrackingImage.from_settings(settings, prefix="altaircms.tracking.image."), 
+                                    ITrackingImageGenerator)
+
 def main(global_config, **local_config):
     """ This function returns a Pyramid WSGI application.
     """
@@ -100,6 +107,9 @@ def main(global_config, **local_config):
     # layout
     config.include("pyramid_layout")
     config.add_layout(".pyramidlayout.MyLayout", 'altaircms:templates/usersite/base.html') #this is pyramid-layout's layout
+
+    # tracking
+    config.include(install_tracking_image_generator)
 
     app = config.make_wsgi_app()
     from pyramid.interfaces import IRouter

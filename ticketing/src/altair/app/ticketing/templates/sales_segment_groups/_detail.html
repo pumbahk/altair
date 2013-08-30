@@ -18,7 +18,7 @@
   <tr>
     <th>${form.start_at.label.text}</th>
     <td>
-      % if sales_segment_group.start_day_prior_to_performance:
+      % if sales_segment_group.start_day_prior_to_performance is not None:
         公演日の<span id="current_day_prior_to_performance">${sales_segment_group.start_day_prior_to_performance}</span>日前の<span id="current_start_time">${sales_segment_group.start_time}</span>
       % else:
         <span id="current_start_at">${vh.datetime(sales_segment_group.start_at)}</span>
@@ -28,7 +28,7 @@
   <tr>
     <th>${form.end_at.label.text}</th>
     <td>
-      % if sales_segment_group.end_day_prior_to_performance:
+      % if sales_segment_group.end_day_prior_to_performance is not None:
         公演日の<span id="current_end_day_prior_to_performance">${sales_segment_group.end_day_prior_to_performance}</span>日前の<span id="current_end_time">${sales_segment_group.end_time}</span>
       % else:
         <span id="current_end_at">${vh.datetime(sales_segment_group.end_at)}</span>
@@ -57,26 +57,32 @@
   </tr>
   <tr>
     <th>${form.upper_limit.label.text}</th>
-    <td id="upper_limit">${sales_segment_group.upper_limit or u''}</td>
+    <td id="upper_limit">${sales_segment_group.upper_limit or u'-'}</td>
   </tr>
   <tr>
     <th>${form.order_limit.label.text}</th>
-    <td id="order_limit">${sales_segment_group.order_limit or u''}</td>
+    <td id="order_limit">${sales_segment_group.order_limit or u'-'}</td>
   </tr>
   <tr>
     <th>${form.seat_choice.label.text}</th>
-    <td id="seat_choice" value="${sales_segment_group.seat_choice}">${u'○' if sales_segment_group.seat_choice else u'×'}</td>
+    <td id="seat_choice" value="${sales_segment_group.seat_choice}">
+      ${u'選択可' if sales_segment_group.seat_choice else u'×選択不可'}
+    </td>
   </tr>
   <tr>
     <th>${form.public.label.text}</th>
-    <td id="public" value="${sales_segment_group.public}">${u'○' if sales_segment_group.public else u'×'}</td>
+    <td id="public" value="${sales_segment_group.public}">
+      ${u'公開' if sales_segment_group.public else u'非公開'}
+    </td>
   </tr>
   <tr>
     <th>${form.reporting.label.text}</th>
-    <td id="reporting" value="${sales_segment_group.reporting}">${u'○' if sales_segment_group.reporting else u'×'}</td>
+    <td id="reporting" value="${sales_segment_group.reporting}">
+      ${u'対象' if sales_segment_group.reporting else u'×対象外'}
+    </td>
   </tr>
   <tr>
     <th>${form.auth3d_notice.label.text}</th>
-    <td>${sales_segment_group.auth3d_notice}</td>
+    <td>${sales_segment_group.auth3d_notice or u'(なし)'}</td>
   </tr>
 </table>
