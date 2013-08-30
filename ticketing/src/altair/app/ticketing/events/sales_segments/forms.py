@@ -9,7 +9,7 @@ from sqlalchemy.sql import or_, and_, select
 from altair.formhelpers import (Translations, Required, RequiredOnUpdate, DateTimeFormat, OurForm, OurDateTimeField,
                                    OurIntegerField, OurBooleanField, OurSelectField, OurDecimalField,
                                    BugFreeSelectField, PHPCompatibleSelectMultipleField, CheckboxMultipleSelect,
-                                SwitchOptional,
+                                SwitchOptional, zero_as_none
 )
 from altair.app.ticketing.core.models import SalesSegmentGroup, SalesSegment, Account
 from altair.app.ticketing.loyalty.models import PointGrantSetting, SalesSegment_PointGrantSetting
@@ -120,9 +120,9 @@ class SalesSegmentForm(OurForm):
 
     order_limit = OurIntegerField(
         label=u'購入回数制限',
-        default=0,
-        validators=[SwitchOptional('use_default_order_limit'),
-                    Required()]
+        default=None,
+        filters=[zero_as_none],
+        validators=[Optional()]
     )
     use_default_order_limit = OurBooleanField(
         label=u'グループの値を利用',
