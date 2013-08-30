@@ -209,6 +209,22 @@ function get_performance_id() {
         % endif
       </td>
     </tr>
+    <tr class="SalesSegment_seat_choice">
+      <th>
+        ${form.seat_choice.label}
+        ${form.use_default_seat_choice()}
+        ${form.use_default_seat_choice.label}
+      </th>
+      <td>
+        ${form.seat_choice}
+        ${ch.validate_errors(form.seat_choice)}
+      </td>
+      <td>
+        % if form.context.sales_segment_group:
+          ${u'座席選択可' if form.context.sales_segment_group.seat_choice else u'座席選択不可'}
+        % endif
+      </td>
+    </tr>
     <tr class="SalesSegment_public">
       <th>
         ${form.public.label}
@@ -338,7 +354,8 @@ function get_performance_id() {
                 .attr('type', 'checkbox')
                 .attr('name', 'payment_delivery_method_pairs[]')
                 .attr('value', pdmp[0])
-                .attr('id', id))
+                .attr('id', id)
+                .attr('checked', 'checked'))
               .append(' ')
               .append(
                 $('<label class="inline"></label>')
@@ -459,7 +476,7 @@ function get_performance_id() {
     }
   };
 
-  $('#sales_segment_group_id').change(function() {
+  function onChangeHandler() {
     var sales_segment_group_id = get_sales_segment_group_id();
     var performance_id = get_performance_id();
     load(sales_segment_group_id, performance_id, function (data) {
@@ -483,7 +500,10 @@ function get_performance_id() {
         refreshers[k](data, n);
       });
     });
-  }).trigger('change');
+  }
+  var formElements = $('#sales_segment_group_id, #performance_id');
+  if (formElements.filter(':hidden').length != 2)
+    formElements.change(onChangeHandler);
 })($);
 </script>
 </form>
