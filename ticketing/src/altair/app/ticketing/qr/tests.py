@@ -25,7 +25,6 @@ class QrTest(unittest.TestCase):
 
     def test_enc42(self):
         s = u"A あa!\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~ん"
-        print self.o.enc42(s)
         self.assertEqual(self.o.dec42(self.o.enc42(s)), s)
 
     def test_enc42_basic(self):
@@ -33,6 +32,9 @@ class QrTest(unittest.TestCase):
 
     def test_enc42_euc_mark(self):
         self.assertEqual(self.o.dec42(self.o.enc42(u"△■＠")), u"△■＠")
+
+    def test_enc42_utf_mark_replace(self):
+        self.assertEqual(self.o.dec42(self.o.enc42(u"♡")), u"〓")
 
     def test_enc42_asc(self):
         self.assertEqual(self.o.dec42(self.o.enc42("ABC")), u"ABC")

@@ -77,10 +77,13 @@ class qr:
             # 9249 - 9343
             mid = 96*96 + unpack('B', c.encode("ascii"))[0]
         else:
-            c = c.encode("eucjp")
-            bin = unpack('!H', c)[0]
-            if bin/256 < 160 or bin%256 < 160:
-                raise BaseException("Out of range: %s" % c)
+            try:
+                c = c.encode("eucjp")
+                bin = unpack('!H', c)[0]
+                if bin/256 < 160 or bin%256 < 160:
+                    raise BaseException("Out of range: %s" % c)
+            except:
+                bin = unpack('!H', u"〓".encode("eucjp"))[0]
             mid = (bin/256-160)*96 + (bin%256-160)            # 0-9215
 
         return "".join([C42[i] for i in (mid/42/42, (mid/42)%42, mid%42)])
