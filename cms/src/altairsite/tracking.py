@@ -28,7 +28,7 @@ class TrackingImageTagGenerator(object):
     def __call__(self, request):
         browse_id = get_tracking_id(request, dummy=self.dummy)
         url = self.build_url(browse_id)
-        return Markup(u'<img src="{url}"/>'.format(url=url))
+        return Markup(u'<img src="{url}" width="0" height="0" />'.format(url=url))
 
 def get_tracking_id(request, dummy=_DUMMY):
     return request.headers.get("X-Altair-Browserid", dummy)
