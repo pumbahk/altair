@@ -750,8 +750,8 @@ var AppletView = Backbone.View.extend({
         self.service.addTicket(self.service.createTicketFromJSObject(ticket));
         self.consumed_tokens.push(ticket.ordered_product_item_token_id);
       });
-      self.service.printAll();
     });
+    self.service.printAll();
   }, 
   sendPrintSignalIfNeed: function(){
     if(this.datastore.get("printed")){
