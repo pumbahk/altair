@@ -56,7 +56,9 @@ if(!widget){
         var root = $(we.dialog)
         var freetext = root.find(text_area_expr).val();
         var $dom = $(freetext);
-        $dom.find("A").attr({target:"_blank"});
+        if ($("#short_name") == "RT") {
+            $dom.find("A").attr({target:"_blank"});
+        }
         return {freetext: $dom.html()}
     };
 
