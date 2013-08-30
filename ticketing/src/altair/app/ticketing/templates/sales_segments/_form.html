@@ -448,13 +448,19 @@ function get_performance_id() {
       var originalValue = n.find('td:nth-child(3)');
       originalValue.empty();
       if (data.upper_limit !== void(0))
-        originalValue.text(data.upper_limit + "枚");
+        originalValue.text(data.order_limit === null ? "-": data.upper_limit + "枚");
     },
     order_limit: function (data, n) {
       var originalValue = n.find('td:nth-child(3)');
       originalValue.empty();
       if (data.order_limit !== void(0))
-        originalValue.text(data.order_limit + "回");
+        originalValue.text(data.order_limit === null ? "-": data.order_limit + "回");
+    },
+    seat_choice: function (data, n) {
+      var originalValue = n.find('td:nth-child(3)');
+      originalValue.empty();
+      if (data['seat_choice'] !== void(0))
+        originalValue.text(data['seat_choice'] ? "座席選択可": "座席選択不可");
     },
     'public': function (data, n) {
       var originalValue = n.find('td:nth-child(3)');
@@ -492,6 +498,7 @@ function get_performance_id() {
         'registration_fee',
         'upper_limit',
         'order_limit',
+        'seat_choice',
         'public',
         'reporting',
         'auth3d_notice'
