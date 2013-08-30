@@ -217,7 +217,7 @@ class SalesSegmentGroupUpdate(object):
 
 def update_sales_segment(ssg, ss):
     if ss.use_default_start_at:
-        sync_attr(ss, ssg, 'start_at')
+        ss.start_at = ssg.start_for_performance(ss.performance)
     if ss.use_default_end_at:
         ss.end_at = ssg.end_for_performance(ss.performance)
     if ss.use_default_seat_choice:

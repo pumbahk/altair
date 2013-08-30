@@ -87,7 +87,7 @@ function get_performance_id() {
             % if form.context.performance:
               ${vh.datetime(form.context.sales_segment_group.end_for_performance(form.context.performance))}
               <p class="label label-info">
-                公演日 (${vh.date(form.context.performance.start_on)}) の
+                公演日 (${vh.date(form.context.performance.end_on)}) の
                 ${form.context.sales_segment_group.end_day_prior_to_performance}日前
               </p>
             % endif
@@ -382,7 +382,7 @@ function get_performance_id() {
         end_at = parseISO8601UTC(end_at);
         originalValue.append(formatDateTime(end_at));
       } else if (end_day_prior_to_performance) {
-        originalValue.append(formatDayOffset(data.start_day_prior_to_performance, data.start_time));
+        originalValue.append(formatDayOffset(data.end_day_prior_to_performance, data.end_time));
       }
       if (calculated_end_at) {
         calculated_end_at = parseISO8601UTC(calculated_end_at);
