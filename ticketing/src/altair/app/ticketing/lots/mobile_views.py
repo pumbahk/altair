@@ -69,8 +69,7 @@ class EntryLotView(object):
     def cr2br(self, t):
         return h.cr2br(t)
 
-    # @view_config(route_name='lots.entry.index', renderer=selectable_renderer("mobile/%(membership)s/index.html"), custom_predicates=(nogizaka_auth, ))
-    @view_config(route_name='lots.entry.index', renderer=selectable_renderer("mobile/%(membership)s/index.html"))
+    @view_config(route_name='lots.entry.index', renderer=selectable_renderer("mobile/%(membership)s/index.html"), custom_predicates=(nogizaka_auth, ))
     def index(self):
         event = self.context.event
         lot = self.context.lot
@@ -90,7 +89,6 @@ class EntryLotView(object):
 
     @view_config(route_name='lots.entry.index', renderer=selectable_renderer("mobile/%(membership)s/index.html"), request_method="POST", custom_predicates=(is_nogizaka, ))
     def nogizaka_auth(self):
-        return self.index()
         KEYWORD = 'gA8du3dfAKdjasd0aeFdafcdERs2dkd0'
         keyword = self.request.POST.get('keyword', None)
         if keyword or self.request.session.get('lots.passed.keyword') != KEYWORD:
