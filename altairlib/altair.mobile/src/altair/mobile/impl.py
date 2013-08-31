@@ -176,11 +176,12 @@ class MobileRequestMaker(object):
             for k, v in attrs.items():
                 html.append(u' %s="%s"' % (escape(k), escape(v)))
             html.append(u'>')
-            html.append(u'<input type="hidden" name="')
-            html.append(escape(self.query_string_key))
-            html.append('" value="')
-            html.append(escape(self.get_session_restorer(session)))
-            html.append('"/ >')
+            if self.query_string_key is not None:
+                html.append(u'<input type="hidden" name="')
+                html.append(escape(self.query_string_key))
+                html.append('" value="')
+                html.append(escape(self.get_session_restorer(session)))
+                html.append('"/ >')
             return Markup(u''.join(html))
 
         request.open_form_tag_for_get = open_form_tag_for_get
