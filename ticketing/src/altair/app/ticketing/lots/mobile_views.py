@@ -217,11 +217,14 @@ class EntryLotView(object):
                             product_id=product.id,
                             quantity=quantity))
         except (ValueError, KeyError, NoResultFound):
+            import sys
+            logger.error('could not parse request', exc_info=sys.exc_info())
             raise HTTPBadRequest()
 
 
         options = api.get_options(self.request, lot.id)
         if len(options) < option_index_zb:
+            logger.error('too few options')
             raise HTTPBadRequest()
 
         try:

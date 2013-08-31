@@ -19,7 +19,7 @@ ${h.japanese_date(performance.start_on)}<br />
 選択できる公演はありません
 %endif
 <hr />
-<form action="${request.route_path('lots.entry.index', event_id=event.id, lot_id=lot.id)}" method="get">
+${request.open_form_tag_for_get(action=request.route_path('lots.entry.index', event_id=event.id, lot_id=lot.id))}
 <div align="center" style="text-align:center">
 <input type="submit" value="戻る" />
 </div>
