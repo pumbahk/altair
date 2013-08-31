@@ -6,12 +6,16 @@ from uamobile.softbank import SoftBankUserAgent
 from uamobile.willcom import WillcomUserAgent
 from uamobile.nonmobile import NonMobileUserAgent
 import radix
+import hashlib
+import logging
 from zope.interface import implementer, directlyProvides
 from pyramid.threadlocal import manager
 from markupsafe import Markup, escape
 from urlparse import urlparse, urlunparse
 from .interfaces import IMobileUserAgent, IMobileUserAgentDisplayInfo, IMobileRequest, IMobileCarrierDetector, IMobileRequestMaker
 from .carriers import carriers, DoCoMo, EZweb, SoftBank, Willcom, NonMobile
+
+logger = logging.getLogger(__name__)
 
 @implementer(IMobileUserAgent)
 class UAMobileUserAgentWrapper(object):
@@ -101,6 +105,8 @@ def parse_query_string(query_string):
 
 @implementer(IMobileRequestMaker)
 class MobileRequestMaker(object):
+    hash_key = __name__ + '.ua_hash'
+
     def __init__(self, query_string_key):
         self.query_string_key = query_string_key
 
@@ -113,6 +119,9 @@ class MobileRequestMaker(object):
             pass
         return None
 
+    def new_session(self, session, request):
+        return session.__class__(request)
+
     def fetch_session(self, request, session):
         if self.query_string_key is not None:
             query_string = request.environ.get('QUERY_STRING')
@@ -124,7 +133,16 @@ class MobileRequestMaker(object):
                         session_restorer = v
                 if session_restorer is not None:
                     request.cookies[cookie_key] = session_restorer
-                    session = session.__class__(request)
+                    session = self.new_session(session, request)
+        return session
+
+    def revalidate_session(self, request, session):
+        hash = session.get(self.hash_key)
+        _hash = hashlib.sha1(request.user_agent).hexdigest()
+        if hash != _hash:
+            logger.error('UA hash mismatch')
+            session.clear()
+        session[self.hash_key] = _hash
         return session
 
     def get_session_restorer(self, session):
@@ -189,7 +207,9 @@ class MobileRequestMaker(object):
 
     def __call__(self, request):
         session = getattr(request, 'session', None)
-        session = self.fetch_session(request, session)
+        if session is not None:
+            session = self.fetch_session(request, session)
+            session = self.revalidate_session(request, session)
         decoded = request.decode("cp932:normalized-tilde")
         request.environ.update(decoded.environ)
         decoded.environ = request.environ
