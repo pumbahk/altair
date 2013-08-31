@@ -1,4 +1,4 @@
-from .interfaces import IMobileCarrierDetector
+from .interfaces import IMobileCarrierDetector, IMobileRequestMaker
 from . import PC_ACCESS_COOKIE_NAME
 from datetime import datetime #ok?
 
@@ -40,3 +40,7 @@ def set_we_need_pc_access(response):
 def set_we_invalidate_pc_access(response):
     response.delete_cookie(PC_ACCESS_COOKIE_NAME)
 
+def make_mobile_request(request):
+    registry = getattr(request, 'registry', request)
+    maker = registry.queryUtility(IMobileRequestMaker)
+    return maker(request)

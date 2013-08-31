@@ -90,7 +90,7 @@ ${mailmagazine.description|n}
 % endfor
 % endif
 
-<form method="post" action="${request.path}">
+<form method="post" action="${request.current_route_path()}">
 <input type="hidden" name="token" value="${token}" />
 <div align="center" style="text-align:center">
 <input type="submit" name="back" value="戻る" />

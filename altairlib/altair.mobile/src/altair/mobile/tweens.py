@@ -3,10 +3,9 @@ import re
 import logging
 from zope.interface import directlyProvides
 from .interfaces import IMobileRequest, ISmartphoneRequest
-from pyramid.threadlocal import manager
 from pyramid.response import Response
 from pyramid.settings import asbool
-from .api import detect
+from .api import detect, make_mobile_request
 logger = logging.getLogger(__name__)
 from . import PC_ACCESS_COOKIE_NAME
 
@@ -34,22 +33,6 @@ def mobile_request_factory(handler, registry):
         request.mobile_ua = detect(request)
         return make_mobile_response(handler, request)
     return tween
-
-def make_mobile_request(request):
-    session = getattr(request, 'session', None)
-    decoded = request.decode("cp932:normalized-tilde")
-    request.environ.update(decoded.environ)
-    decoded.environ = request.environ
-    decoded.session = session
-    manager.get()['request'] = decoded # hack!
-    decoded.is_mobile = True
-    directlyProvides(decoded, IMobileRequest)
-    decoded.registry = request.registry
-    decoded.mobile_ua = request.mobile_ua
-
-    ## todo:remove.
-    decoded.is_docomo = request.mobile_ua.carrier.is_docomo #cms, usersite compatibility
-    return decoded
 
 def make_mobile_response(handler, request):
     decoded = make_mobile_request(request)
