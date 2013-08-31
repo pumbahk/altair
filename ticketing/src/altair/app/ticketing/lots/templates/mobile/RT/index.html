@@ -29,13 +29,13 @@ ${view.cr2br(lot.description)|n}
 </div>
 %endif
 % if option_index == 1:
-<form action="${request.route_path('lots.entry.step1', event_id=event.id, lot_id=lot.id, option_index=option_index)}" method="get">
+${request.open_form_tag_for_get(action=request.route_path('lots.entry.step1', event_id=event.id, lot_id=lot.id, option_index=option_index))}
 <div align="center" style="text-align:center">
 <input type="submit" value="希望選択画面へ" />
 </div>
 </form>
 % else:
-<form action="${request.route_path('lots.entry.step3', event_id=event.id, lot_id=lot.id)}" method="get">
+${request.open_form_tag_for_get(action=request.route_path('lots.entry.step3', event_id=event.id, lot_id=lot.id))}
 <div align="center" style="text-align:center">
 <input type="submit" value="確認画面へ" />
 </div>

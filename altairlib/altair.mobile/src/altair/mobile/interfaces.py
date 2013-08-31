@@ -47,3 +47,7 @@ class IMobileRequest(Interface):
 class ISmartphoneRequest(Interface):
     """ smartphone request interface"""
     pass
+
+class IMobileRequestMaker(Interface):
+    def __call__(request):
+        pass

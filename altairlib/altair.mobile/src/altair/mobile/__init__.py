@@ -3,6 +3,7 @@ from altair.extracodecs import register_codecs
 
 def includeme(config):
     config.include(install_detector)
+    config.include(install_mobile_request_maker)
     config.add_tween(".tweens.mobile_encoding_convert_factory")
     register_codecs()
 
@@ -11,6 +12,15 @@ def install_detector(config):
     from .interfaces import IMobileCarrierDetector
     config.registry.registerUtility(DefaultCarrierDetector(), IMobileCarrierDetector)
 
+def install_mobile_request_maker(config):
+    from .impl import MobileRequestMaker
+    from .interfaces import IMobileRequestMaker
+    config.registry.registerUtility(
+        MobileRequestMaker(
+            config.registry.settings.get('altair.mobile.embedded_session_restorer', None)
+            ),
+        IMobileRequestMaker
+        )
 
 def mobile_view_config(**kwargs):
     return view_config(request_type=__name__ + '.interfaces.IMobileRequest', 

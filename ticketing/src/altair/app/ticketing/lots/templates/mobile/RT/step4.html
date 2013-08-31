@@ -6,7 +6,7 @@ ${lot.name}
 </div>
 <%mobile:messages messages="${messages}" />
 <%mobile:header>お客様情報の入力</%mobile:header>
-<form method="post" action="${request.url}">
+<form method="post" action="${request.current_route_path()}">
 <%mobile:form_header>申込者氏名(全角)${h.mobile_required_mark()}</%mobile:form_header>
 <div>
   ${form['last_name'].label}

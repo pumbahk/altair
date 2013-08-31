@@ -38,6 +38,7 @@ setup(name='altair.mobile',
           "setuptools>0.7",
           'radix',
           'uamobile',
+          'markupsafe',
           'altair.extracodecs',
       ],
       dependency_links = [
