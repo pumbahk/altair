@@ -313,6 +313,12 @@ class EntryLotView(object):
             self.request.session.flash(u"入力内容を確認してください")
             return self.step4_rendered_value(form=cform, pdmp_messages=pdmp_messages)
 
+        email = self.request.params.get('email_1')
+        # 申込回数チェック
+        if not lot.check_entry_limit(email):
+            self.request.session.flash(u"抽選への申込は{0}回までとなっております。".format(lot.entry_limit))
+            return self.step4_rendered_value(form=cform, pdmp_messages=pdmp_messages)
+
         entry_no = api.generate_entry_no(self.request, self.context.organization)
         shipping_address_dict = cform.get_validated_address_data()
         api.new_lot_entry(
