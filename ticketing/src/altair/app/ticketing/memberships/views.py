@@ -12,7 +12,6 @@ from altair.app.ticketing.users import models as umodels
 from altair.app.ticketing.views import BaseView
 from altair.app.ticketing.fanstatic import with_bootstrap
 from . import forms
-from altair.app.ticketing.events.sales_segment_groups.forms import SalesSegmentGroupForm
 
 ## admin権限を持っている人以外見れない想定。
 
@@ -100,8 +99,7 @@ class MemberGroupView(BaseView):
         return {"membergroup": membergroup, 
                 "form": forms.MemberGroupForm(), 
                 "redirect_to": redirect_to, 
-                "salessegments": salessegments, 
-                "form_sg": SalesSegmentGroupForm()}
+                "salessegments": salessegments}
 
     @view_config(match_param="action=new", renderer="altair.app.ticketing:templates/memberships/groups/new.html", 
                  request_param="membership_id", request_method="GET")
@@ -232,8 +230,7 @@ class SalesSegmentView(BaseView):
                 "membergroup_id": self.request.params["membergroup_id"], 
                 "salessegments_source": self.request.route_path("membergrups.api.salessegments.candidates", event_id="__id__"), 
                 "membergroup": membergroup, 
-                "form_mg": forms.MemberGroupForm(), 
-                "form_sg": SalesSegmentGroupForm()}
+                "form_mg": forms.MemberGroupForm()}
 
 
     @view_config(match_param="action=edit", renderer="altair.app.ticketing:templates/memberships/salessegments/edit.html", 

@@ -20,7 +20,7 @@ route_path=request.route_path('membergroups.salessegments',action='edit', member
   <h3>現在結びついている販売区分</h3>
 </div>
 
-<%include file="/sales_segment_groups/_list.html" args="form=form_sg, sales_segment_groups=membergroup.sales_segment_groups" />
+<%include file="/sales_segment_groups/_list.html" args="sales_segment_groups=membergroup.sales_segment_groups" />
 
 <div class="page-header">
   <h3>販売区分の結びつき変更</h3>
