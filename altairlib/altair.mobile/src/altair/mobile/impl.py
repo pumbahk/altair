@@ -139,7 +139,7 @@ class MobileRequestMaker(object):
     def revalidate_session(self, request, session):
         hash = session.get(self.hash_key)
         _hash = hashlib.sha1(request.user_agent).hexdigest()
-        if hash != _hash:
+        if hash is not None and hash != _hash:
             logger.error('UA hash mismatch')
             session.clear()
         session[self.hash_key] = _hash
