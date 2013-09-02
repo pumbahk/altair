@@ -40,7 +40,7 @@ class StockTypeForm(OurForm):
         widget=CheckboxInput(),
     )
     display = OurBooleanField(
-        label=u'表示(カートに独立した席として表示する)',
+        label=u'表示(カートに表示して選択可とする)',
         default=True,
         hide_on_new=True
     )
