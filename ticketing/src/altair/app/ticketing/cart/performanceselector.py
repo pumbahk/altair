@@ -43,12 +43,10 @@ class _PerformanceSelector(object):
         return sorted(key_to_sales_segments_map.items(), lambda a, b: self.sorter(a[1][0], b[1][0]))
 
     def sales_segment_to_dict(self, sales_segment):
+
         return dict(
             id=sales_segment.id,
-            name=u'{start:%Y-%m-%d %H:%M}開始 {vname} {name}'.format(
-                name=sales_segment.name,
-                start=sales_segment.performance.start_on,
-                vname=sales_segment.performance.venue.name),
+            name=self._create_name(sales_segment),
             order_url=self.request.route_url(
                 'cart.order',
                 sales_segment_id=sales_segment.id),
@@ -59,6 +57,24 @@ class _PerformanceSelector(object):
                 sales_segment_id=sales_segment.id,
                 event_id=self.context.event.id)
             )
+
+    def _create_name(self, sales_segment):
+        date_format = u'{start:%Y-%m-%d %H:%M} {vname} {name}'
+        date_range_format = u'{start:%Y-%m-%d %H:%M} - {end:%Y-%m-%d} {vname} {name}'
+        s = sales_segment.performance.start_on
+        e = sales_segment.performance.end_on
+        if e:
+            if not (s.year == e.year and s.month == e.month and s.day == e.day):
+                return date_range_format.format(
+                    name = sales_segment.name,
+                    start = s,
+                    end = e,
+                    vname = sales_segment.performance.venue.name)
+        return date_format.format(
+                name = sales_segment.name,
+                start = s,
+                end = e,
+                vname = sales_segment.performance.venue.name)
 
 @implementer(IPerformanceSelector)
 class MatchUpPerformanceSelector(_PerformanceSelector):
@@ -92,9 +108,10 @@ class DatePerformanceSelector(_PerformanceSelector):
     """ 日付 -> 会場 """
 
     label = u"開催日"
-    second_label = u"会場"
+    second_label = u"開催日付・会場"
 
     date_format = u"{0.year:04}年{0.month:02}月{0.day:02}日"
+    date_range_format = u"{0.year:04}年{0.month:02}月{0.day:02}日 - {1.year:04}年{1.month:02}月{1.day:02}日"
 
     def __init__(self, request):
         self.request = request
@@ -102,6 +119,12 @@ class DatePerformanceSelector(_PerformanceSelector):
         self.sales_segments = self.context.available_sales_segments
 
     def select_value(self, sales_segment):
+        s = sales_segment.performance.start_on
+        e = sales_segment.performance.end_on
+
+        if e:
+            if not (s.year == e.year and s.month == e.month and s.day == e.day):
+                return self.date_range_format.format(sales_segment.performance.start_on, sales_segment.performance.end_on)
         return self.date_format.format(sales_segment.performance.start_on)
 
     def __call__(self):

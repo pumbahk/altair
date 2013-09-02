@@ -38,6 +38,16 @@ def cart_timeout(request):
     return request.registry.settings['altair_cart.expire_time']
 
 def performance_date(performance):
+    date_format = u'{s.month}月{s.day}日 {s.hour:02}:{s.minute:02}'
+    date_range_format = u'{s.month}月{s.day}日 {s.hour:02}:{s.minute:02} - {e.month}月{e.day}日'
+    s = performance.start_on
+    e = performance.end_on
+    if e:
+        if not (s.year == e.year and s.month == e.month and s.day == e.day):
+            return date_range_format.format(s=s, e=e)
+    return date_format.format(s=s) if s else u"-"
+
+def performance_end_date(performance):
     s = performance.start_on
     return u'{s.month}月{s.day}日 {s.hour:02}:{s.minute:02}'.format(s=s) if s else u"-"
 
