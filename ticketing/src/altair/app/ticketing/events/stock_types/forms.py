@@ -39,6 +39,11 @@ class StockTypeForm(OurForm):
         default=StockTypeEnum.Seat.v,
         widget=CheckboxInput(),
     )
+    display = OurBooleanField(
+        label=u'表示(カートに独立した席として表示する)',
+        default=True,
+        hide_on_new=True
+    )
     display_order = NullableIntegerField(
         label=u'表示順',
         hide_on_new=True,

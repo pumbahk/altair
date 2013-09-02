@@ -1573,6 +1573,7 @@ class StockType(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     id = Column(Identifier, primary_key=True)
     name = Column(String(255))
     type = Column(Integer)  # @see StockTypeEnum
+    display = Column(Boolean, default=True)
     display_order = Column(Integer, nullable=False, default=1)
     event_id = Column(Identifier, ForeignKey("Event.id"))
     quantity_only = Column(Boolean, default=False)
