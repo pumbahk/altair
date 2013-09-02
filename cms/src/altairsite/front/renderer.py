@@ -8,7 +8,7 @@ from pyramid.decorator import reify
 from zope.interface import Interface, implementer, Attribute
 from datetime import datetime
 import os
-import urllib
+from altair.pyramid_boto.s3.connection import DefaultS3ConnectionFactory, Key
 import logging
 logger = logging.getLogger(__file__)
 
@@ -47,21 +47,42 @@ class ILookupWrapperFactory(Interface):
 
 @implementer(ILookupWrapperFactory)
 class LayoutModelLookupWrapperFactory(object):
-    def __init__(self, directory_spec, s3prefix):
+    def __init__(self, directory_spec, loader, prefix): 
         self.directory_spec = directory_spec
-        self.prefix = s3prefix.rstrip("/")
+        self.prefix = prefix.rstrip("/")
+        self.loader = loader
 
     def __call__(self, lookup, layout):
         handler = LayoutModelLookupInterceptHandler(
-            self.prefix, self.directory_spec, layout.updated_at)
+            self.prefix, self.directory_spec, layout.updated_at, self.loader)
         return LookupInterceptWrapper(lookup, handler)
+
+class S3Loader(object):
+    def __init__(self, bucket_name, access_key, secret_key):
+        self.connection_factory = DefaultS3ConnectionFactory(access_key, secret_key)
+        self.bucket_name = bucket_name
+
+    @reify
+    def connection(self):
+        return self.connection_factory()
+        
+    @reify
+    def bucket(self):
+        return self.connection.get_bucket(self.bucket_name)
+
+    def __call__(self, uri):
+        k = Key(self.bucket)
+        k.key = uri
+        return k.get_contents_as_string()
+        
 
 @implementer(IInterceptHandler)
 class LayoutModelLookupInterceptHandler(object):
-    def __init__(self, prefix, layout_spec, uploaded_at):
+    def __init__(self, prefix, layout_spec, uploaded_at, loader):
         self.prefix = prefix
         self.layout_spec = layout_spec
         self.uploaded_at = uploaded_at
+        self.loader = loader 
 
     def need_intercept(self, uri):
         return self.layout_spec in uri and self.uploaded_at
@@ -76,19 +97,17 @@ class LayoutModelLookupInterceptHandler(object):
         return adjusted
 
     def load_template(self, lookup, name, uri, module_filename=None):
-        logger.info("name: {name}".format(name=name))
-        url = self.build_url(name)
-        logger.info("fetching: {url}".format(url=url))
-        res = urllib.urlopen(url)
-        if res.code != 200:
-            logger.error("{url} is {code}. ".format(url=url, code=res.code))
-            raise HTTPNotFound(res.read())
-        string = res.read()
-        return Template(
-            text=string, 
-            lookup=lookup,
-            module_filename=module_filename,
-            **lookup.template_args)
+        try:
+            logger.info("load template -- name: {name}".format(name=name))
+            string = self.loader(self.build_url(name))
+            return Template(
+                text=string, 
+                lookup=lookup,
+                module_filename=module_filename,
+                **lookup.template_args)
+        except Exception as e:
+            logger.error(e)
+            raise HTTPNotFound()
 
     def build_url(self, uri):
         return "{prefix}/{uri}".format(prefix=self.prefix, uri=uri.replace(self.layout_spec, "").lstrip("/"))
