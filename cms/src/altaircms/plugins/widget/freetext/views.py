@@ -1,6 +1,7 @@
 from pyramid.view import view_config, view_defaults
 from altaircms.auth.api import require_login
 from altaircms.auth.api import get_or_404
+from altairsite.separation import get_organization_from_request
 from . import models
 from . import forms
 
@@ -56,7 +57,8 @@ class FreetextWidgetView(object):
         pk = self.request.GET.get("pk")
         widget = context.get_widget(pk)
         choice_form = forms.FreeTextChoiceForm()
-        return {"widget": widget, "choice_form": choice_form}
+        org = get_organization_from_request(request=self.request)
+        return {"widget": widget, "choice_form": choice_form, "short_name":org.short_name}
     
     @view_config(route_name="api_get_default_text", request_method="GET", renderer="json", request_param="default_body_id")
     def get_data(self):
