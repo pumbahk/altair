@@ -13,6 +13,7 @@ from . import forms
 from . import helpers as h
 from altair.app.ticketing.models import DBSession
 from altair.app.ticketing.core.models import Event
+from altair.app.ticketing.core.models import Performance
 from altair.app.ticketing.core.models import Order
 from altair.app.ticketing.core.models import OrderedProductItem
 from altair.app.ticketing.core.models import OrderedProduct
@@ -109,6 +110,8 @@ def progress_total_result_data(context, request):
 def choice_event_view(context, request):
     now = datetime.now()
     events = Event.query.filter_by(organization_id=context.operator.organization_id)
+    events = events.filter(Performance.event_id==Event.id)
+    events = events.distinct(Event.id)
     return dict(events=events, now=now)
 
 ## app
