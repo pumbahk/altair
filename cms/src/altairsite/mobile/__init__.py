@@ -1,3 +1,4 @@
+from altair.extracodecs import register_codecs
 from pyramid.config import Configurator
 from pyramid.tweens import INGRESS
 import altaircms.layout.models
@@ -17,6 +18,8 @@ def includeme(config):
 
 def install_app(config):
     config.include("altair.mobile.install_detector")
+    config.include("altair.mobile.install_mobile_request_maker")
+    register_codecs()
     config.include("altairsite.config.install_convinient_request_properties")
     config.include("altairsite.mobile.event")
     config.include('altairsite.mobile.staticpage')
