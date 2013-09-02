@@ -349,6 +349,7 @@ def refund_sej_order(sej_order, organization_id, order, now):
     tenant = SejTenant.filter_by(organization_id=organization_id).first()
     shop_id = (tenant and tenant.shop_id) or settings.get('sej.shop_id')
     performance = order.performance
+    prev = order.prev
 
     # create SejRefundEvent
     re = SejRefundEvent.filter(and_(
@@ -364,11 +365,10 @@ def refund_sej_order(sej_order, organization_id, order, now):
     re.event_code_01 = performance.code
     re.title = performance.name
     re.event_at = performance.start_on.strftime('%Y%m%d')
-    re.start_at = now.strftime('%Y%m%d')
-    end_at = (performance.end_on or performance.start_on) + timedelta(days=+14)
-    re.end_at = end_at.strftime('%Y%m%d')
-    re.event_expire_at = end_at.strftime('%Y%m%d')
-    ticket_expire_at = (performance.end_on or performance.start_on) + timedelta(days=+30)
+    re.start_at = prev.refund.start_at.strftime('%Y%m%d')
+    re.end_at = prev.refund.end_at.strftime('%Y%m%d')
+    re.event_expire_at = prev.refund.end_at.strftime('%Y%m%d')
+    ticket_expire_at = prev.refund.end_at + timedelta(days=+7)
     re.ticket_expire_at = ticket_expire_at.strftime('%Y%m%d')
     re.refund_enabled = 1
     re.need_stub = 1
@@ -383,7 +383,6 @@ def refund_sej_order(sej_order, organization_id, order, now):
         rt = SejRefundTicket()
         DBSession.add(rt)
 
-    prev = order.prev
     rt.available = 1
     rt.refund_event_id = re.id
     rt.event_code_01 = performance.code

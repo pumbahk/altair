@@ -323,13 +323,13 @@ class OrderRefundSearchForm(OrderSearchForm):
 
     payment_method = SelectField(
         label=u'決済方法',
-        validators=[Required()],
+        validators=[Optional()],
         choices=[],
         coerce=int,
     )
     delivery_method = SelectMultipleField(
         label=u'引取方法',
-        validators=[Required()],
+        validators=[Optional()],
         choices=[],
         coerce=int,
     )
@@ -343,13 +343,13 @@ class OrderRefundSearchForm(OrderSearchForm):
         label=u"公演",
         coerce=lambda x : int(x) if x else u"",
         choices=[],
-        validators=[Required()],
+        validators=[Optional()],
     )
     sales_segment_group_id = SelectMultipleField(
         label=u'販売区分',
         coerce=lambda x : int(x) if x else u"",
         choices=[],
-        validators=[Required()],
+        validators=[Optional()],
     )
     status = BugFreeSelectMultipleField(
         label=u'ステータス',
@@ -600,26 +600,26 @@ class OrderRefundForm(Form):
         coerce=int,
     )
     include_item = IntegerField(
-        label=u'商品金額を払戻しする',
-        validators=[Required()],
+        label=u'商品金額',
+        validators=[Optional()],
         default=0,
         widget=CheckboxInput(),
     )
     include_system_fee = IntegerField(
-        label=u'システム利用料を払戻しする',
-        validators=[Required()],
+        label=u'システム利用料',
+        validators=[Optional()],
         default=0,
         widget=CheckboxInput(),
     )
     include_transaction_fee = IntegerField(
-        label=u'決済手数料を払戻しする',
-        validators=[Required()],
+        label=u'決済手数料',
+        validators=[Optional()],
         default=0,
         widget=CheckboxInput(),
     )
     include_delivery_fee = IntegerField(
-        label=u'配送手数料を払戻しする',
-        validators=[Required()],
+        label=u'配送手数料',
+        validators=[Optional()],
         default=0,
         widget=CheckboxInput(),
     )
@@ -628,6 +628,23 @@ class OrderRefundForm(Form):
         validators=[Required()],
         choices=[e.v for e in OrderCancelReasonEnum],
         coerce=int
+    )
+    start_at = DateField(
+        label=u'払戻期間',
+        validators=[Required(), after1900],
+        format='%Y-%m-%d',
+        widget=OurDateWidget()
+    )
+    end_at = DateField(
+        label=u'払戻期間',
+        validators=[Required(), after1900],
+        format='%Y-%m-%d',
+        missing_value_defaults=dict(
+            year=u'',
+            month=Max,
+            day=Max
+        ),
+        widget=OurDateWidget()
     )
 
     def validate_payment_method_id(form, field):
