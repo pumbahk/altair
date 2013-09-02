@@ -12,7 +12,7 @@ from zope.interface import implementer, directlyProvides
 from pyramid.threadlocal import manager
 from markupsafe import Markup, escape
 from urlparse import urlparse, urlunparse
-from .interfaces import IMobileUserAgent, IMobileUserAgentDisplayInfo, IMobileRequest, IMobileCarrierDetector, IMobileRequestMaker
+from .interfaces import IMobileUserAgent, IMobileUserAgentDisplayInfo, IMobileRequest, IMobileCarrierDetector, IMobileRequestMaker, ISessionObjectImplCompanion
 from .carriers import carriers, DoCoMo, EZweb, SoftBank, Willcom, NonMobile
 
 logger = logging.getLogger(__name__)
@@ -103,6 +103,37 @@ overridden_url_methods = [
 def parse_query_string(query_string):
     return (tuple(urllib.unquote(kv) for kv in c.partition(b'=')) for c in query_string.split(b'&'))
 
+
+@implementer(ISessionObjectImplCompanion)
+class BeakerSessionObjectCompanion(object):
+    def get_cookie_key_from_session(self):
+        return getattr(self.session, 'key')
+
+    def get_session_restorer(self):
+        cookie_key = self.get_cookie_key_from_session()
+
+        session_restorer = None
+        cookie = getattr(self.session, 'cookie')
+        if cookie:
+            return cookie[cookie_key].coded_value
+        else:
+            return None 
+
+    def renew_session(self, request):
+        self.session = self.session.__class__(request)
+
+    def __init__(self, session):
+        self.session = session
+
+def make_session_object_impl_companion(adaptee):
+    try:
+        from beaker.session import SessionObject
+        if isinstance(adaptee, SessionObject):
+            return BeakerSessionObjectCompanion(adaptee)
+    except:
+        pass
+    return None
+
 @implementer(IMobileRequestMaker)
 class MobileRequestMaker(object):
     hash_key = __name__ + '.ua_hash'
@@ -110,22 +141,10 @@ class MobileRequestMaker(object):
     def __init__(self, query_string_key):
         self.query_string_key = query_string_key
 
-    def get_cookie_key_from_session(self, session):
-        try:
-            from beaker.session import SessionObject
-            if isinstance(session, SessionObject):
-                return getattr(session, 'key', None)
-        except ImportError:
-            pass
-        return None
-
-    def new_session(self, session, request):
-        return session.__class__(request)
-
-    def fetch_session(self, request, session):
+    def fetch_session(self, request, companion):
         if self.query_string_key is not None:
             query_string = request.environ.get('QUERY_STRING')
-            cookie_key = self.get_cookie_key_from_session(session)
+            cookie_key = companion.get_cookie_key_from_session()
             if query_string is not None:
                 session_restorer = None
                 for k, _, v in parse_query_string(query_string):
@@ -133,31 +152,20 @@ class MobileRequestMaker(object):
                         session_restorer = v
                 if session_restorer is not None:
                     request.cookies[cookie_key] = session_restorer
-                    session = self.new_session(session, request)
-        return session
+                    companion.renew_session(request)
 
-    def revalidate_session(self, request, session):
-        hash = session.get(self.hash_key)
+    def revalidate_session(self, request, companion):
+        hash = companion.session.get(self.hash_key)
         _hash = hashlib.sha1(request.user_agent).hexdigest()
         if hash is not None and hash != _hash:
             logger.error('UA hash mismatch')
-            session.clear()
-        session[self.hash_key] = _hash
-        return session
+            companion.session.clear()
+        companion.session[self.hash_key] = _hash
+        return companion.session
 
-    def get_session_restorer(self, session):
-        cookie_key = self.get_cookie_key_from_session(session)
-
-        session_restorer = None
-        cookie = getattr(session, 'cookie')
-        if cookie:
-            return cookie[cookie_key].coded_value
-        else:
-            return None 
-
-    def override_url_methods(self, request, session):
+    def override_url_methods(self, request, companion):
         def _mix_query(kw):
-            session_restorer = self.get_session_restorer(session)
+            session_restorer = companion.get_session_restorer()
             if session_restorer is not None:
                 kw.setdefault('_query', {})[self.query_string_key] = session_restorer
 
@@ -172,9 +180,9 @@ class MobileRequestMaker(object):
             if orig is not None:
                 setattr(request, k, decorate(orig))
 
-    def retouch_request(self, request, session):
+    def retouch_request(self, request, companion):
         if self.query_string_key is not None:
-            self.override_url_methods(request, session)
+            self.override_url_methods(request, companion)
             try:
                 del request.params[self.query_string_key]
             except KeyError:
@@ -198,7 +206,7 @@ class MobileRequestMaker(object):
                 html.append(u'<input type="hidden" name="')
                 html.append(escape(self.query_string_key))
                 html.append('" value="')
-                html.append(escape(self.get_session_restorer(session)))
+                html.append(escape(companion.get_session_restorer()))
                 html.append('"/ >')
             return Markup(u''.join(html))
 
@@ -206,14 +214,16 @@ class MobileRequestMaker(object):
         return request
 
     def __call__(self, request):
-        session = getattr(request, 'session', None)
-        if session is not None:
-            session = self.fetch_session(request, session)
-            session = self.revalidate_session(request, session)
+        companion = request.registry.queryAdapter(
+            getattr(request, 'session', None),
+            ISessionObjectImplCompanion
+            )
+        if companion is not None:
+            self.fetch_session(request, companion)
+            self.revalidate_session(request, companion)
         decoded = request.decode("cp932:normalized-tilde")
         request.environ.update(decoded.environ)
         decoded.environ = request.environ
-        decoded.session = session
         manager.get()['request'] = decoded # hack!
         decoded.is_mobile = True
         directlyProvides(decoded, IMobileRequest)
@@ -221,7 +231,9 @@ class MobileRequestMaker(object):
         decoded.mobile_ua = request.mobile_ua
         ## todo:remove.
         decoded.is_docomo = request.mobile_ua.carrier.is_docomo #cms, usersite compatibility
-        decoded = self.retouch_request(decoded, session)
+        if companion is not None:
+            self.retouch_request(decoded, companion)
+            decoded.session = companion.session
         return decoded
 
 
