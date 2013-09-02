@@ -941,6 +941,35 @@ class OrderDetailView(BaseView):
         self.request.session.flash(u'券面を印刷キューに追加しました')
         return HTTPFound(location=self.request.route_path('orders.show', order_id=order_id))
 
+    @view_config(route_name="orders.checked.delivered", request_method="POST", permission='sales_counter')
+    def change_checked_orders_to_delivered(self):
+        ords = self.request.session.get("orders", [])
+        ords = [o.lstrip("o:") for o in ords if o.startswith("o:")]
+        qs = Order.query.filter(Order.organization_id==self.context.organization.id)\
+                        .filter(Order.id.in_(ords))        
+        exist_order_ids = set()
+        fail_nos = []
+        for order in qs:
+            exist_order_ids.add(str(order.id))
+            no = order.order_no
+            status = order.delivered()
+            if not status:
+                fail_nos.append(no)
+
+        request_ids = set(ords)
+        lost_order_ids = request_ids - exist_order_ids
+
+        if fail_nos:
+            nos_str = ', '.join(fail_nos)            
+            self.request.session.flash(u'配送済に変更できない注文が含まれていました。')
+            self.request.session.flash(u'({0})'.format(nos_str))
+
+        if lost_order_ids:
+            ids_str = ', '.join(map(repr, lost_order_ids))
+            self.request.session.flash(u'存在しない注文が含まれていました。')
+            self.request.session.flash(u'({0})'.format(ids_str))
+            
+        return HTTPFound(location=self.request.route_path('orders.index'))
 
 @view_defaults(decorator=with_bootstrap, permission='sales_counter')
 class OrdersReserveView(BaseView):
@@ -1639,6 +1668,7 @@ class MailInfoView(BaseView):
         self.request.session.flash(u'メール再送信しました')
         return HTTPFound(self.request.current_route_url(order_id=order_id, action="show"))
 
+
 @view_defaults(decorator=with_bootstrap, permission='sales_editor')
 class CartView(BaseView):
     def __init__(self, context, request):
@@ -1672,3 +1702,4 @@ class CartView(BaseView):
             )
 
         return { 'form_search': form, 'carts': carts, 'url': self.request.path }
+

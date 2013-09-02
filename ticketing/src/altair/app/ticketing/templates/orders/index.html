@@ -62,6 +62,9 @@
   <form style="display:inline" action="${request.route_path('orders.checked.queue')}" method="POST">
     <button class="btn" type="submit"><i class="icon-print"></i>選択した予約の券面を印刷キューに追加</button>
   </form>
+  <form style="display:inline" action="${request.route_path('orders.checked.delivered')}" method="POST">
+    <button class="btn" type="submit"><i class="icon-gift"></i>選択した予約を配送済に変更</button>
+  </form>
 </div>
 
 <p> ${max(orders.items_per_page * (orders.page-1) + 1,0)}～${min(orders.items_per_page * orders.page, orders.item_count)} / ${orders.item_count}件</p>
