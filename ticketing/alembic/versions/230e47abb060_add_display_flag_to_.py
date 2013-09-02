@@ -19,7 +19,7 @@ Identifier = sa.BigInteger
 
 
 def upgrade():
-    op.add_column('StockType', sa.Column('display', sa.Boolean(True)))
+    op.add_column('StockType', sa.Column('display', sa.Boolean(), nullable=False, default=True, server_default=text('1')))
 
 
 def downgrade():
