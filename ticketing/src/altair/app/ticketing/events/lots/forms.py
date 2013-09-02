@@ -429,8 +429,9 @@ class LotEntryReportMailForm(Form):
                 lot_id=form.lot_id.data,
                 time=form.time.data,
                 frequency=form.frequency.data,
-                day_of_week=form.day_of_week,
-            ).filter(LotEntryReportSetting.email==form.operator_id.data)
+                day_of_week=form.day_of_week.data,
+            ).filter(LotEntryReportSetting.operator_id==form.operator_id.data)
+
 
             if q.count() > 0:
                 raise ValidationError(u'既に登録済みのオペレーターです')
@@ -442,7 +443,7 @@ class LotEntryReportMailForm(Form):
                 lot_id=form.lot_id.data,
                 time=form.time.data,
                 frequency=form.frequency.data,
-                day_of_week=form.day_of_week,
+                day_of_week=form.day_of_week.data,
             ).filter(LotEntryReportSetting.email==form.email.data)
 
             if q.count() > 0:
