@@ -26,6 +26,7 @@ from altair.formhelpers.fields import (
 from altair.formhelpers.widgets import (
     CheckboxMultipleSelect,
     )
+from altair.formhelpers.validators import JISX0208
 from altair.app.ticketing.core.models import SalesSegment, SalesSegmentGroup, Product, ProductItem, StockHolder, StockType, Stock, Performance, TicketBundle
 from altair.app.ticketing.payments.plugins import SEJ_DELIVERY_PLUGIN_ID
 from altair.app.ticketing.helpers import label_text_for
@@ -73,13 +74,14 @@ class ProductForm(OurForm):
 
     id = HiddenField(
         label=label_text_for(Product.id),
-        validators=[Optional()],
+        validators=[Optional()],        
         )
     name = OurTextField(
         label=label_text_for(Product.name),
         validators=[
             Required(),
             Length(max=255, message=u'255文字以内で入力してください'),
+            JISX0208,
             ]
         )
     price = OurDecimalField(
@@ -169,7 +171,8 @@ class ProductItemForm(OurForm):
         label=u'商品明細名',
         validators=[
             Required(),
-            Length(max=255, message=u'255文字以内で入力してください'),
+            Length(max=255, message=u'255文字以内で入力してください'), 
+            JISX0208,  
             ]
     )
     product_item_price = OurDecimalField(
