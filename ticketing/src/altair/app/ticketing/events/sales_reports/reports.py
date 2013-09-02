@@ -87,7 +87,11 @@ class SalesTotalReporter(object):
             ss.sales_segment_group_id==SalesSegment.sales_segment_group_id,
             ss.performance_id==Performance.id,
             ss.deleted_at==None
-        )).filter(or_(SalesSegment.reporting==True, ss.reporting==True))
+        )).filter(
+            or_(SalesSegment.reporting==True, ss.reporting==True)
+        ).filter(
+            or_(SalesSegment.performance_id==None, SalesSegment.id==ss.id)
+        )
         return query
 
     def get_event_data(self):
@@ -328,7 +332,11 @@ class SalesDetailReporter(object):
                 ss.sales_segment_group_id==SalesSegment.sales_segment_group_id,
                 ss.performance_id==form.performance_id.data,
                 ss.deleted_at==None
-            )).filter(or_(SalesSegment.reporting==True, ss.reporting==True))
+            )).filter(
+                or_(SalesSegment.reporting==True, ss.reporting==True)
+            ).filter(
+                or_(SalesSegment.performance_id==None, SalesSegment.id==ss.id)
+            )
         return query
 
     def get_performance_data(self):
