@@ -259,10 +259,6 @@ class Orders(BaseView):
         organization_id = self.context.organization.id
         query = DBSession.query(Order).filter(Order.organization_id==organization_id)
 
-        if self.request.params.get('action') == 'checked':
-            checked_orders = [o.lstrip('o:') for o in self.request.session.get('orders', []) if o.startswith('o:')]
-            query = query.filter(Order.id.in_(checked_orders))
-
         params = MultiDict(self.request.params)
         params["order_no"] = " ".join(self.request.params.getall("order_no"))
 
@@ -272,6 +268,10 @@ class Orders(BaseView):
                 query = OrderSummarySearchQueryBuilder(form_search.data, lambda key: form_search[key].label.text)(slave_session.query(OrderSummary).filter(OrderSummary.organization_id==organization_id, OrderSummary.deleted_at==None))
             except QueryBuilderError as e:
                 self.request.session.flash(e.message)
+
+        if self.request.params.get('action') == 'checked':
+            checked_orders = [o.lstrip('o:') for o in self.request.session.get('orders', []) if o.startswith('o:')]
+            query = query.filter(Order.id.in_(checked_orders))
 
         page = int(self.request.params.get('page', 0))
 
