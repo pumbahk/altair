@@ -55,6 +55,7 @@ def get_amount_without_pdmp(cart):
 def get_seat_type_dicts(request, sales_segment, seat_type_id=None):
     # TODO: cachable
     q = DBSession.query(c_models.StockType, c_models.Product, c_models.ProductItem, c_models.Stock, c_models.StockStatus.quantity) \
+        .filter(c_models.StockType.display == True) \
         .filter(c_models.Product.public == True) \
         .filter(c_models.Product.deleted_at == None) \
         .filter(c_models.ProductItem.product_id==c_models.Product.id) \
