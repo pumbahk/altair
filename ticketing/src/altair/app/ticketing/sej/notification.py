@@ -90,13 +90,15 @@ def reflect_cancel_from_svc(request, sej_order, order, notification):
 
 def reflect_expire(request, sej_order, order, notification):
     now = notification.processed_at
-    order.release()
-    order.mark_canceled(now)
-    order.save()
-    sej_order.mark_canceled(now)
+    # 代済発券はキャンセルしない
+    if notification.payment_type != SejPaymentType.Paid.v:
+        order.release()
+        order.mark_canceled(now)
+        order.save()
+        sej_order.mark_canceled(now)
+        notify_order_canceled(request, order)
     sej_order.processed_at = notification.processed_at
     notification.reflected_at = datetime.now() # SAFE TO USE datetime.now() HERE
-    notify_order_canceled(request, order)
 
 def reflect_re_grant(request, sej_order, order, notification):
     sej_order.exchange_number         = notification.exchange_number_new
