@@ -16,6 +16,9 @@
     reset_form(modal, '#event_id', false);
     modal.find('#id').val(id);
     modal.find('#name').val($(el).attr('name'));
+    if ($(el).attr('display') == 'True') {
+        modal.find('#display').attr('checked', 'checked');  
+    }
     modal.find('#display_order').val($(el).attr('display_order'));
     modal.find('#description').val($(el).attr('description'));
     if ($(el).attr('quantity_only') == '1') {
