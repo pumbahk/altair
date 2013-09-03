@@ -8,7 +8,7 @@ from wtforms import Form, ValidationError
 from wtforms import (HiddenField, TextField, SelectField, SelectMultipleField, TextAreaField, BooleanField,
                      RadioField, FieldList, FormField, DecimalField, IntegerField)
 from wtforms.validators import Optional, AnyOf, Length, Email, Regexp
-from wtforms.widgets import CheckboxInput
+from wtforms.widgets import CheckboxInput, HiddenInput
 
 from altair.formhelpers import (
     Translations,
@@ -970,3 +970,4 @@ class CartSearchForm(SearchFormBase):
             ('incomplete', u'注文不成立'),
         ]
     )
+

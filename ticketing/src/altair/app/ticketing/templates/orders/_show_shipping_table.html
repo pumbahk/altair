@@ -1,0 +1,55 @@
+<%page args="order,shipping_address"/>
+          <table class="table table-striped table-bordered">
+            <tr>
+              <th class="span2">引取方法</th>
+              <td class="span3">${order.payment_delivery_pair.delivery_method.name}</td>
+            </tr>
+            <tr>
+              <th>氏名</th>
+              <td>
+                % if shipping_address:
+                  ${shipping_address.last_name} ${shipping_address.first_name}
+                  % if shipping_address.last_name_kana or shipping_address.first_name_kana:
+                    (${shipping_address.last_name_kana} ${shipping_address.first_name_kana})
+                  % endif
+                % endif
+              </td>
+            </tr>
+            <tr>
+              <th>住所</th>
+              <td>
+                % if shipping_address:
+                  ${shipping_address.zip or ''}
+                  ${shipping_address.country or ''}
+                  ${shipping_address.prefecture or ''}
+                  ${shipping_address.city or ''}
+                  ${shipping_address.address_1 or ''}
+                  ${shipping_address.address_2 or ''}
+                % endif
+              </td>
+            </tr>
+            <tr>
+              <th>Tel</th>
+              <td>
+                % if shipping_address:
+                  ${shipping_address.tel_1}
+                % endif
+              </td>
+            </tr>
+            <tr>
+              <th>メールアドレス (PC)</th>
+              <td>
+                % if shipping_address:
+                  ${shipping_address.email_pc or ''}
+                % endif
+              </td>
+            </tr>
+            <tr>
+              <th>メールアドレス (携帯)</th>
+              <td>
+                % if shipping_address:
+                  ${shipping_address.email_mobile or ''}
+                % endif
+              </td>
+            </tr>
+          </table>

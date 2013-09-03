@@ -4,7 +4,7 @@ def includeme(config):
     config.add_route('orders.index'                     , '/')
     config.add_route('orders.checked.queue'             , '/checked/queue')
     config.add_route('orders.checked.delivered'         , '/checked/delivered')
-    config.add_route('orders.show'                      , '/show/{order_id}')
+    config.add_route('orders.show'                      , '/show/{order_id}', factory=".resources.OrdersShowResource")
     config.add_route('orders.edit.shipping_address'     , '/edit/{order_id}/shipping_address/')
     config.add_route('orders.edit.product'              , '/edit/{order_id}/product/')
     config.add_route('orders.cancel'                    , '/cancel/{order_id}')
@@ -33,6 +33,7 @@ def includeme(config):
     config.add_route("orders.item.preview"              , "/item/preview/{order_id}/item/{item_id}")
     config.add_route("orders.item.preview.getdata"      , "/api/item/{item_id}/ticket/{ticket_format_id}")
     config.add_route('orders.print.queue'               , '/print/queue/{order_id}')
+    config.add_route('orders.print.queue.each'               , '/print/queue/each/{order_id}', factory=".resources.OrderPrintEachResource")
     config.add_route('orders.print.queue.dialog'        , '/api/print/queue/{order_id}')
 
     config.add_subscriber('.mail.on_order_canceled'     , '.events.OrderCanceled')

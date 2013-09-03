@@ -50,7 +50,8 @@ from altair.app.ticketing.core.models import (
     SeatStatus,
     SeatStatusEnum,
     ChannelEnum, 
-    MailTypeEnum
+    MailTypeEnum, 
+    OrderedProductItemToken
     )
 from altair.app.ticketing.mails.api import get_mail_utility
 from altair.app.ticketing.mailmags.models import MailSubscription, MailMagazine, MailSubscriptionStatus
@@ -58,7 +59,8 @@ from altair.app.ticketing.orders.export import OrderCSV, get_japanese_columns
 from altair.app.ticketing.orders.forms import (OrderForm, OrderSearchForm, OrderRefundSearchForm, SejOrderForm, SejTicketForm,
                                     SejRefundEventForm,SejRefundOrderForm, SendingMailForm,
                                     PerformanceSearchForm, OrderReserveForm, OrderRefundForm, ClientOptionalForm,
-                                    SalesSegmentGroupSearchForm, PreviewTicketSelectForm, CartSearchForm)
+                                    SalesSegmentGroupSearchForm, PreviewTicketSelectForm, CartSearchForm, 
+                                               )
 from altair.app.ticketing.views import BaseView
 from altair.app.ticketing.fanstatic import with_bootstrap
 from altair.app.ticketing.orders.events import notify_order_canceled
@@ -521,63 +523,23 @@ class OrdersRefundConfirmView(BaseView):
 class OrderDetailView(BaseView):
     @view_config(route_name='orders.show', renderer='altair.app.ticketing:templates/orders/show.html')
     def show(self):
-        order_id = int(self.request.matchdict.get('order_id', 0))
-        order = Order.get(order_id, self.context.organization.id, include_deleted=True)
-        if order and order.deleted_at:
-            order = Order.filter_by(order_no=order.order_no).first()
-            if order:
-                return HTTPFound(location=route_path('orders.show', self.request, order_id=order.id))
+        order = self.context.order
         if order is None:
-            raise HTTPNotFound('order id %d is not found' % order_id)
+            raise HTTPNotFound('order id %d is not found' % self.context.order_id)
 
-        order_history = DBSession.query(Order, include_deleted=True)\
-                                 .filter(Order.order_no==order.order_no)\
-                                 .options(joinedload('ordered_products'), joinedload('ordered_products.ordered_product_items'))\
-                                 .order_by(Order.branch_no.desc()).all()
+        dependents = self.context.get_dependents_models(order)
+        order_history = dependents.histories
+        mail_magazines = dependents.mail_magazines
 
-        if order.shipping_address:
-            mail_magazines = MailMagazine.query \
-                .filter(MailMagazine.organization_id == order.organization_id) \
-                .filter(MailSubscription.email == order.shipping_address.email_1) \
-                .filter(or_(MailSubscription.status == None,
-                            MailSubscription.status == MailSubscriptionStatus.Subscribed.v)) \
-                .distinct().all()
-            form_shipping_address = ClientOptionalForm(record_to_multidict(order.shipping_address))
-            form_shipping_address.tel_1.data = order.shipping_address.tel_1
-            form_shipping_address.email_1.data = order.shipping_address.email_1
-            form_shipping_address.email_2.data = order.shipping_address.email_2
-        else:
-            mail_magazines = []
-            form_shipping_address = ClientOptionalForm()
-
-        if order.user and order.user.mail_subscription:
-            mail_magazines += [ms.segment for ms in order.user.mail_subscription if ms.segment.organization_id == order.organization_id]
-
-        form_order = OrderForm(record_to_multidict(order))
-        form_order_reserve = OrderReserveForm(performance_id=order.performance_id)
-        form_refund = OrderRefundForm(MultiDict(payment_method_id=order.payment_delivery_pair.payment_method.id), organization_id=order.organization_id)
-
+        joined_objects_for_product_item = dependents.describe_objects_for_product_item_provider()
         metadata_provider_registry = get_metadata_provider_registry(self.request)
-        ordered_product_attributes = []
-        for key, value in (
-                pair
-                for ordered_product in order.ordered_products
-                for ordered_product_item in ordered_product.ordered_product_items
-                for pair in ordered_product_item.attributes.items()):
-            metadata = None
-            try:
-                metadata = metadata_provider_registry.queryProviderByKey(key)[key]
-            except:
-                pass
-            if metadata is not None:
-                display_name = metadata.get_display_name('ja_JP')
-                coerced_value = metadata.get_coercer()(value)
-            else:
-                display_name = key
-                coerced_value = value
+        ordered_product_attributes = joined_objects_for_product_item.get_product_item_attributes(metadata_provider_registry)
 
-            ordered_product_attributes.append((display_name, key, coerced_value))
-            ordered_product_attributes = sorted(ordered_product_attributes, key=lambda x: x[0])
+        forms = self.context.get_dependents_forms(order)
+        form_shipping_address = forms.get_shipping_address_form()
+        form_order = forms.get_order_form()
+        form_order_reserve = forms.get_order_reserve_form()
+        form_refund = forms.get_order_refund_form()
 
         return {
             'order_current':order,
@@ -590,6 +552,7 @@ class OrderDetailView(BaseView):
             'form_order':form_order,
             'form_order_reserve':form_order_reserve,
             'form_refund':form_refund,
+            "objects_for_describe_product_item": joined_objects_for_product_item()
         }
 
     @view_config(route_name='orders.cancel', permission='sales_editor')
@@ -930,6 +893,19 @@ class OrderDetailView(BaseView):
             return HTTPFound(location=self.request.POST.get("redirect_url"))
         return HTTPFound(location=self.request.route_path('orders.index'))
 
+    @view_config(route_name="orders.print.queue.each")
+    def order_tokens_print_queue(self):
+        order = self.context.order
+        if order is None:
+            raise HTTPNotFound('order id %d is not found' % self.context.order_id)
+
+        #token@seat@ticket.id
+        actions = self.context.get_dependents_actions(order)
+        candidates_action = actions.get_print_candidate_action(self.request.POST.getall("candidate_id"))
+        candidates_action.enqueue(operator=self.context.user)
+        self.request.session.flash(u'券面を印刷キューに追加しました')
+        return HTTPFound(location=self.request.route_path('orders.show', order_id=order.id))
+        
     @view_config(route_name='orders.print.queue')
     def order_print_queue(self):
         order_id = int(self.request.matchdict.get('order_id', 0))
