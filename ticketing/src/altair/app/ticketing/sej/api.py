@@ -335,13 +335,48 @@ def cancel_sej_order(sej_order, organization_id):
         logger.error(u'コンビニ決済(セブン-イレブン)のキャンセルに失敗しました %s' % e)
         return False
 
+def get_per_order_fee(order):
+    pdmp = order.payment_delivery_pair
+    fee = 0
+    if order.refund.include_system_fee:
+        fee += order.system_fee
+    if order.refund.include_transaction_fee:
+        fee += pdmp.transaction_fee_per_order
+    if order.refund.include_delivery_fee:
+        fee += pdmp.delivery_fee_per_order
+    if order.refund.include_item:
+        # チケットに紐づかない商品明細分の合計金額
+        for op in order.items:
+            for opi in op.ordered_product_items:
+                if not opi.product_item.ticket_bundle_id:
+                    fee += opi.price * opi.quantity
+    return fee
+
+def get_per_ticket_fee(order):
+    pdmp = order.payment_delivery_pair
+    fee = 0
+    if order.refund.include_transaction_fee:
+        fee += pdmp.transaction_fee_per_ticket
+    if order.refund.include_delivery_fee:
+        fee += pdmp.delivery_fee_per_ticket
+    return fee
+
+def get_ticket_price(order, product_item_id):
+    if not order.refund.include_item:
+        return 0
+    for op in order.items:
+        for opi in op.ordered_product_items:
+            if opi.product_item_id == product_item_id:
+                return opi.price
+    return 0
+
 def refund_sej_order(sej_order, organization_id, order, now):
     if not sej_order or sej_order.cancel_at:
         logger.error(u'コンビニ決済(セブン-イレブン)の払戻に失敗しました %s' % sej_order.order_id if sej_order else None)
         return False
 
-    sej_ticket = SejTicket.query.filter_by(order_id=sej_order.id).first()
-    if not sej_ticket:
+    sej_tickets = SejTicket.query.filter_by(order_id=sej_order.id).all()
+    if not sej_tickets:
         logger.error(u'コンビニ決済(セブン-イレブン)の払戻に失敗しました %s' % sej_order.order_id)
         return False
 
@@ -349,7 +384,6 @@ def refund_sej_order(sej_order, organization_id, order, now):
     tenant = SejTenant.filter_by(organization_id=organization_id).first()
     shop_id = (tenant and tenant.shop_id) or settings.get('sej.shop_id')
     performance = order.performance
-    prev = order.prev
 
     # create SejRefundEvent
     re = SejRefundEvent.filter(and_(
@@ -365,30 +399,37 @@ def refund_sej_order(sej_order, organization_id, order, now):
     re.event_code_01 = performance.code
     re.title = performance.name
     re.event_at = performance.start_on.strftime('%Y%m%d')
-    re.start_at = prev.refund.start_at.strftime('%Y%m%d')
-    re.end_at = prev.refund.end_at.strftime('%Y%m%d')
-    re.event_expire_at = prev.refund.end_at.strftime('%Y%m%d')
-    ticket_expire_at = prev.refund.end_at + timedelta(days=+7)
+    re.start_at = order.refund.start_at.strftime('%Y%m%d')
+    re.end_at = order.refund.end_at.strftime('%Y%m%d')
+    re.event_expire_at = order.refund.end_at.strftime('%Y%m%d')
+    ticket_expire_at = order.refund.end_at + timedelta(days=+7)
     re.ticket_expire_at = ticket_expire_at.strftime('%Y%m%d')
     re.refund_enabled = 1
     re.need_stub = 1
     DBSession.merge(re)
 
     # create SejRefundTicket
-    rt = SejRefundTicket.filter(and_(
-        SejRefundTicket.order_id==sej_order.order_id,
-        SejRefundTicket.ticket_barcode_number==sej_ticket.barcode_number
-    )).first()
-    if not rt:
-        rt = SejRefundTicket()
-        DBSession.add(rt)
+    per_order_fee = get_per_order_fee(order.prev)
+    for i, sej_ticket in enumerate(sej_tickets):
+        rt = SejRefundTicket.filter(and_(
+            SejRefundTicket.order_id==sej_order.order_id,
+            SejRefundTicket.ticket_barcode_number==sej_ticket.barcode_number
+        )).first()
+        if not rt:
+            rt = SejRefundTicket()
+            DBSession.add(rt)
 
-    rt.available = 1
-    rt.refund_event_id = re.id
-    rt.event_code_01 = performance.code
-    rt.order_id = sej_order.order_id
-    rt.ticket_barcode_number = sej_ticket.barcode_number
-    rt.refund_ticket_amount = prev.refund.item(prev)
-    rt.refund_other_amount = prev.refund.fee(prev)
-    DBSession.merge(rt)
+        rt.available = 1
+        rt.refund_event_id = re.id
+        rt.event_code_01 = performance.code
+        rt.order_id = sej_order.order_id
+        rt.ticket_barcode_number = sej_ticket.barcode_number
+        rt.refund_ticket_amount = get_ticket_price(order.prev, sej_ticket.product_item_id)
+        rt.refund_other_amount = get_per_ticket_fee(order.prev)
+        # 手数料などの払戻があったら1件目に含める
+        if per_order_fee > 0 and i == 0:
+            rt.refund_other_amount += per_order_fee
+
+        DBSession.merge(rt)
+
     return True
