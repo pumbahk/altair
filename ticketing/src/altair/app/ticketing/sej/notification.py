@@ -91,7 +91,8 @@ def reflect_cancel_from_svc(request, sej_order, order, notification):
 def reflect_expire(request, sej_order, order, notification):
     now = notification.processed_at
     # 代済発券はキャンセルしない
-    if notification.payment_type != SejPaymentType.Paid.v:
+    payment_type = int(notification.payment_type)
+    if payment_type != SejPaymentType.Paid.v:
         order.release()
         order.mark_canceled(now)
         order.save()
