@@ -23,13 +23,22 @@
   <div class="modal-body">
     ${ch.flash_messages(request, type='alert-error')}
     ${ch.alert_message(form)}
-    <form action="javascript:refund_order();">
+    <form class="form-horizontal" action="javascript:refund_order();">
       ${ch.form_item(form.payment_method_id)}
+      <label class="required control-label">払戻対象</label>
       ${ch.form_item(form.include_item)}
       ${ch.form_item(form.include_system_fee)}
       ${ch.form_item(form.include_transaction_fee)}
       ${ch.form_item(form.include_delivery_fee)}
       ${ch.form_item(form.cancel_reason)}
+      <div class="control-group">
+        <label class="control-label">コンビニでの払戻期間</label>
+        <div class="controls">
+          ${form.start_at} 〜 ${form.end_at}
+          ${ch.validate_errors(form.start_at)}
+          ${ch.validate_errors(form.end_at)}
+        </div>
+      </div>
     </form>
   </div>
 

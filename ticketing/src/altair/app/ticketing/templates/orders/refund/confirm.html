@@ -41,7 +41,7 @@
     ${ch.form_item(form_refund.include_delivery_fee)}
     ${ch.form_item(form_refund.cancel_reason)}
     <div class="control-group">
-      <label class="required control-label">払戻期間</label>
+      <label class="control-label">コンビニでの払戻期間</label>
       <div class="controls">
         ${form_refund.start_at} 〜 ${form_refund.end_at}
         ${ch.validate_errors(form_refund.start_at)}
