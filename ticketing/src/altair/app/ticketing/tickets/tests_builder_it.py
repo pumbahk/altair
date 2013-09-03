@@ -18,7 +18,7 @@ class BuilderItTest(unittest.TestCase):
         transaction.abort()
 
     def _getTarget(self):
-        from altair.app.ticketing.tickets.utils import TicketDictBuilder
+        from altair.app.ticketing.tickets.vars_builder import TicketDictBuilder
         return TicketDictBuilder
 
     def _makeOne(self, *args, **kwargs):
@@ -851,7 +851,7 @@ class BuilderItTicketCreateTest(unittest.TestCase):
         transaction.abort()
 
     def _getTarget(self):
-        from altair.app.ticketing.tickets.utils import TicketDictBuilder
+        from altair.app.ticketing.tickets.vars_builder import TicketDictBuilder
         return TicketDictBuilder
 
     def _makeOne(self, *args, **kwargs):
