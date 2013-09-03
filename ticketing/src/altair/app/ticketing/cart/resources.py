@@ -170,7 +170,7 @@ class TicketingCartResourceBase(object):
                 for datum in data:
                     if datum is not None:
                         datum['event'] = datum['performance'].event
-                raise OutTermSalesException(*data)
+                raise OutTermSalesException(next=data[0], last=data[1], outer=self)
             else:
                 raise HTTPNotFound()
         return retval
@@ -436,17 +436,19 @@ class SalesSegmentOrientedTicketingCartResource(TicketingCartResourceBase):
             raise HTTPNotFound()
         return [self.sales_segment] if self.sales_segment.applicable(user=self.authenticated_user(), type='all') else []
 
-def compat_ticketing_cart_resource_factory(request):
-    from .resources import EventOrientedTicketingCartResource, PerformanceOrientedTicketingCartResource
-    performance_id = None
-    try:
-        performance_id = long(request.params.get('pid') or request.params.get('performance'))
-    except (ValueError, TypeError):
-        pass
-    if performance_id is not None:
-        return PerformanceOrientedTicketingCartResource(request, performance_id)
-    else:
-        return EventOrientedTicketingCartResource(request)
+# def compat_ticketing_cart_resource_factory(request):
+#     from .resources import EventOrientedTicketingCartResource, PerformanceOrientedTicketingCartResource
+#     performance_id = None
+#     try:
+#         performance_id = long(request.params.get('pid') or request.params.get('performance'))
+#     except (ValueError, TypeError):
+#         pass
+#     if performance_id is not None:
+#         return PerformanceOrientedTicketingCartResource(request, performance_id)
+#     else:
+#         return EventOrientedTicketingCartResource(request)
+
+compat_ticketing_cart_resource_factory = EventOrientedTicketingCartResource
 
 @implementer(IOrderDelivery)
 class OrderDelivery(object):
