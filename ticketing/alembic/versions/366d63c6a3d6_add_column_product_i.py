@@ -22,5 +22,5 @@ def upgrade():
     op.add_column('SejTicket', sa.Column('product_item_id', Identifier(), sa.ForeignKey('ProductItem.id', name='SejTicket_ibfk_2'), nullable=True))
 
 def downgrade():
-    op.drop_constraint(u'SejTicket_ibfk_2', u'SejTicket', type="foreignkey")
+    op.drop_constraint(u'SejTicket_ibfk_2', u'SejTicket', type_="foreignkey")
     op.drop_column(u'SejTicket', 'product_item_id')
