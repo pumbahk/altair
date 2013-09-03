@@ -53,9 +53,9 @@ class HandlerTest(unittest.TestCase):
         target = self._makeOne(None, None, layout_uploaded_at, None)
         
         self.assertEquals(target.normalize_for_key("/front/index.html"), 
-                          "/front/index.html@201308231300")
+                          "/front/index.html@20130823130000")
         self.assertEquals(target.normalize_for_key("altaircms:front/layout/RT/index.html"),
-                          "altaircms$front/layout/RT/index.html@201308231300")
+                          "altaircms$front/layout/RT/index.html@20130823130000")
 
     def test_normalize_for_key__uploaded_at_is_None(self):
         target = self._makeOne(None, None, None, None)
