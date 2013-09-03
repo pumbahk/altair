@@ -5,6 +5,7 @@ def includeme(config):
     layout_lookup = LayoutModelResolver(settings["altaircms.layout_directory"], 
                                    checkskip=False)
     config.registry.registerUtility(layout_lookup, ILayoutModelResolver)
+    config.include("altairsite.front.install_lookupwrapper")
 
     config.add_route("preview_pageset", "/preview/pageset/{pageset_id}", factory=".resources.PageRenderingResource")
     config.add_route("preview_page", "/preview/page/{page_id}", factory=".resources.PageRenderingResource")
