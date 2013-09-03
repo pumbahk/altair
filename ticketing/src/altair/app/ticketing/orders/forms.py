@@ -631,13 +631,13 @@ class OrderRefundForm(Form):
     )
     start_at = DateField(
         label=u'払戻期間',
-        validators=[Required(), after1900],
+        validators=[Optional(), after1900],
         format='%Y-%m-%d',
         widget=OurDateWidget()
     )
     end_at = DateField(
         label=u'払戻期間',
-        validators=[Required(), after1900],
+        validators=[Optional(), after1900],
         format='%Y-%m-%d',
         missing_value_defaults=dict(
             year=u'',
@@ -658,9 +658,31 @@ class OrderRefundForm(Form):
                 # 決済と払戻が別でもよいのは、払戻方法が 銀行振込 コンビニ決済 のケースのみ
                 raise ValidationError(u'指定された払戻方法は、この決済方法では選択できません')
 
-    def validate_include_item(form, field):
-        if not field.data and not form.include_system_fee.data and not form.include_transaction_fee.data and not form.include_delivery_fee.data:
-            raise ValidationError(u'払戻対象を選択してください')
+    def validate(self):
+        status = super(type(self), self).validate()
+        if status:
+            import logging
+            logging.info('*'*100)
+            logging.info(self.start_at.data)
+            logging.info('*'*100)
+
+            if not self.include_item.data and \
+               not self.include_system_fee.data and \
+               not self.include_transaction_fee.data and \
+               not self.include_delivery_fee.data:
+                self.include_item.errors.append(u'払戻対象を選択してください')
+
+            # コンビニ払戻なら必須
+            refund_pm = PaymentMethod.get(self.payment_method_id.data)
+            if refund_pm.payment_plugin_id == plugins.SEJ_PAYMENT_PLUGIN_ID:
+                if not self.start_at.data:
+                    self.start_at.errors.append(u'入力してください')
+                    status = False
+                if not self.end_at.data:
+                    self.end_at.errors.append(u'入力してください')
+                    status = False
+        return status
+
 
 class ClientOptionalForm(ClientForm):
     def __init__(self, formdata=None, obj=None, prefix='', **kwargs):
