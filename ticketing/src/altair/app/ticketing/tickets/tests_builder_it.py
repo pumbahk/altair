@@ -858,18 +858,7 @@ class BuilderItTicketCreateTest(unittest.TestCase):
         from altair.app.ticketing.formatter import Japanese_Japan_Formatter
         return self._getTarget()(Japanese_Japan_Formatter(), *args, **kwargs)
 
-    def test_build_ordered_product_item__without_seat(self):
-        target = self._makeOne()
-        ordered_product_item = get_ordered_product_item__full_relation(quantity=2, quantity_only=True)
-        model = ordered_product_item
-
-        result = target.build_dicts_from_ordered_product_item(model)
-
-        self.assertEqual(len(result), 2)
-        seat_result, data = result[0]
-        # import json
-        # print json.dumps(data, ensure_ascii=False, indent=2)
-
+    def assert_basic_renderable_placeholder(self, data):
         self.assertEquals(data[u"イベント名"], u":Event:title")
         self.assertEquals(data[u"イベント名略称"], u":abbreviated_title")
 
@@ -893,9 +882,6 @@ class BuilderItTicketCreateTest(unittest.TestCase):
 
         self.assertEquals(data[u"会場名"], u":Venue:name")
 
-        self.assertEquals(data[u"席種名"], u":StockType:name")
-        # self.assertEquals(data[u"席番"], u"") #xxx!
-
         self.assertEquals(data[u"商品名"], u":ProductItem:name")
         self.assertEquals(data[u"商品価格"], u"12,000円")
         self.assertEquals(data[u"券種名"], u":ProductItem:name")
@@ -906,12 +892,26 @@ class BuilderItTicketCreateTest(unittest.TestCase):
         self.assertEquals(data[u"注文番号"], u":order_no")
         self.assertEquals(data[u"注文日時"], u"2000年 01月 01日 (土) 01時 00分")
         self.assertEquals(data[u"受付日時"], u"2000年 01月 01日 (土) 01時 00分")
-        self.assertEquals(data[u"発券日時"], u"2000年 01月 01日 (土) 01時 13分")
         self.assertEquals(data[u"注文日時s"], u"2000/01/01 (土) 01:00")
         self.assertEquals(data[u"受付日時s"], u"2000/01/01 (土) 01:00")
-        self.assertEquals(data[u"発券日時s"], u"2000/01/01 (土) 01:13")
 
-        self.assertEquals(data[u"発券番号"], None)
+        self.assertEquals(data[u"発券番号"], "")
+
+    def test_build_ordered_product_item__without_seat(self):
+        target = self._makeOne()
+        ordered_product_item = get_ordered_product_item__full_relation(quantity=2, quantity_only=True)
+        model = ordered_product_item
+
+        result = target.build_dicts_from_ordered_product_item(model)
+
+        self.assertEqual(len(result), 2)
+        seat_result, data = result[0]
+        # import json
+        # print json.dumps(data, ensure_ascii=False, indent=2)
+
+        self.assert_basic_renderable_placeholder(data)
+        self.assertEquals(data[u"席種名"], u":StockType:name")
+        # self.assertEquals(data[u"席番"], u"") #xxx!
 
     def test_build_ordered_product_item__with_seat(self):
         from altair.app.ticketing.core.models import Seat
@@ -933,48 +933,12 @@ class BuilderItTicketCreateTest(unittest.TestCase):
         # import json
         # print json.dumps(data, ensure_ascii=False, indent=2)
 
-        self.assertEquals(data[u"イベント名"], u":Event:title")
-        self.assertEquals(data[u"イベント名略称"], u":abbreviated_title")
-
-        self.assertEquals(data[u"aux"][u"key"], u"value")
-
-        self.assertEquals(data[u"パフォーマンス名"], u":Performance:name")
-        self.assertEquals(data[u"対戦名"], u":Performance:name")
-        self.assertEquals(data[u"公演コード"], u":code")
-        self.assertEquals(data[u"開催日"], u"2000年 01月 01日 (土)")
-        self.assertEquals(data[u"開場時刻"], u"00時 00分")
-        self.assertEquals(data[u"開始時刻"], u"10時 00分")
-        self.assertEquals(data[u"終了時刻"], u"23時 00分")
-        self.assertEquals(data[u"開催日s"], u"2000/01/01 (土)")
-        self.assertEquals(data[u"開場時刻s"], u"00:00")
-        self.assertEquals(data[u"開始時刻s"], u"10:00")
-        self.assertEquals(data[u"終了時刻s"], u"23:00")
-
-        self.assertEqual(data[u"公演名略称"], u":PerformanceSetting:abbreviated_title") 
-        self.assertEqual(data[u"公演名備考"], u":PerformanceSetting:note")
-        self.assertEqual(data[u"公演名副題"], u":PerformanceSetting:subtitle") 
-
-        self.assertEquals(data[u"会場名"], u":Venue:name")
+        self.assert_basic_renderable_placeholder(data)
 
         self.assertEquals(data[u"席種名"], u":StockType:name")
         self.assertEquals(data[u"席番"], u":Seat:name") #xxx!
-
-        self.assertEquals(data[u"商品名"], u":ProductItem:name")
-        self.assertEquals(data[u"商品価格"], u"12,000円")
-        self.assertEquals(data[u"券種名"], u":ProductItem:name")
-        self.assertEquals(data[u"チケット価格"], u"14,000円")
-
-        self.assertEquals(data[u"予約番号"], u":order_no")
-        self.assertEquals(data[u"受付番号"], u":order_no")
-        self.assertEquals(data[u"注文番号"], u":order_no")
-        self.assertEquals(data[u"注文日時"], u"2000年 01月 01日 (土) 01時 00分")
-        self.assertEquals(data[u"受付日時"], u"2000年 01月 01日 (土) 01時 00分")
         self.assertEquals(data[u"発券日時"], u"2000年 01月 01日 (土) 01時 13分")
-        self.assertEquals(data[u"注文日時s"], u"2000/01/01 (土) 01:00")
-        self.assertEquals(data[u"受付日時s"], u"2000/01/01 (土) 01:00")
         self.assertEquals(data[u"発券日時s"], u"2000/01/01 (土) 01:13")
-
-        self.assertEquals(data[u"発券番号"], None)
 
 
     def test_build_ordered_product_item_token__without_seat(self):
@@ -993,48 +957,13 @@ class BuilderItTicketCreateTest(unittest.TestCase):
         # import json
         # print json.dumps(data, ensure_ascii=False, indent=2)
 
-        self.assertEquals(data[u"イベント名"], u":Event:title")
-        self.assertEquals(data[u"イベント名略称"], u":abbreviated_title")
-
-        self.assertEquals(data[u"aux"][u"key"], u"value")
-
-        self.assertEquals(data[u"パフォーマンス名"], u":Performance:name")
-        self.assertEquals(data[u"対戦名"], u":Performance:name")
-        self.assertEquals(data[u"公演コード"], u":code")
-        self.assertEquals(data[u"開催日"], u"2000年 01月 01日 (土)")
-        self.assertEquals(data[u"開場時刻"], u"00時 00分")
-        self.assertEquals(data[u"開始時刻"], u"10時 00分")
-        self.assertEquals(data[u"終了時刻"], u"23時 00分")
-        self.assertEquals(data[u"開催日s"], u"2000/01/01 (土)")
-        self.assertEquals(data[u"開場時刻s"], u"00:00")
-        self.assertEquals(data[u"開始時刻s"], u"10:00")
-        self.assertEquals(data[u"終了時刻s"], u"23:00")
-
-        self.assertEqual(data[u"公演名略称"], u":PerformanceSetting:abbreviated_title") 
-        self.assertEqual(data[u"公演名備考"], u":PerformanceSetting:note")
-        self.assertEqual(data[u"公演名副題"], u":PerformanceSetting:subtitle") 
-
-        self.assertEquals(data[u"会場名"], u":Venue:name")
+        self.assert_basic_renderable_placeholder(data)
 
         self.assertEquals(data[u"席種名"], u":StockType:name")
         # self.assertEquals(data[u"席番"], u"") #xxx!
-
-        self.assertEquals(data[u"商品名"], u":ProductItem:name")
-        self.assertEquals(data[u"商品価格"], u"12,000円")
-        self.assertEquals(data[u"券種名"], u":ProductItem:name")
-        self.assertEquals(data[u"チケット価格"], u"14,000円")
-
-        self.assertEquals(data[u"予約番号"], u":order_no")
-        self.assertEquals(data[u"受付番号"], u":order_no")
-        self.assertEquals(data[u"注文番号"], u":order_no")
-        self.assertEquals(data[u"注文日時"], u"2000年 01月 01日 (土) 01時 00分")
-        self.assertEquals(data[u"受付日時"], u"2000年 01月 01日 (土) 01時 00分")
         self.assertEquals(data[u"発券日時"], u"2000年 01月 01日 (土) 01時 13分")
-        self.assertEquals(data[u"注文日時s"], u"2000/01/01 (土) 01:00")
-        self.assertEquals(data[u"受付日時s"], u"2000/01/01 (土) 01:00")
         self.assertEquals(data[u"発券日時s"], u"2000/01/01 (土) 01:13")
 
-        self.assertEquals(data[u"発券番号"], None)
 
 
     def test_build_ordered_product_item_token__with_seat(self):
@@ -1061,45 +990,11 @@ class BuilderItTicketCreateTest(unittest.TestCase):
         # import json
         # print json.dumps(data, ensure_ascii=False, indent=2)
 
-        self.assertEquals(data[u"イベント名"], u":Event:title")
-        self.assertEquals(data[u"イベント名略称"], u":abbreviated_title")
-
-        self.assertEquals(data[u"aux"][u"key"], u"value")
-
-        self.assertEquals(data[u"パフォーマンス名"], u":Performance:name")
-        self.assertEquals(data[u"対戦名"], u":Performance:name")
-        self.assertEquals(data[u"公演コード"], u":code")
-        self.assertEquals(data[u"開催日"], u"2000年 01月 01日 (土)")
-        self.assertEquals(data[u"開場時刻"], u"00時 00分")
-        self.assertEquals(data[u"開始時刻"], u"10時 00分")
-        self.assertEquals(data[u"終了時刻"], u"23時 00分")
-        self.assertEquals(data[u"開催日s"], u"2000/01/01 (土)")
-        self.assertEquals(data[u"開場時刻s"], u"00:00")
-        self.assertEquals(data[u"開始時刻s"], u"10:00")
-        self.assertEquals(data[u"終了時刻s"], u"23:00")
-
-        self.assertEqual(data[u"公演名略称"], u":PerformanceSetting:abbreviated_title") 
-        self.assertEqual(data[u"公演名備考"], u":PerformanceSetting:note")
-        self.assertEqual(data[u"公演名副題"], u":PerformanceSetting:subtitle") 
-
-        self.assertEquals(data[u"会場名"], u":Venue:name")
+        self.assert_basic_renderable_placeholder(data)
 
         self.assertEquals(data[u"席種名"], u":StockType:name")
         self.assertEquals(data[u"席番"], u":Seat:name") #xxx!
-
-        self.assertEquals(data[u"商品名"], u":ProductItem:name")
-        self.assertEquals(data[u"商品価格"], u"12,000円")
-        self.assertEquals(data[u"券種名"], u":ProductItem:name")
-        self.assertEquals(data[u"チケット価格"], u"14,000円")
-
-        self.assertEquals(data[u"予約番号"], u":order_no")
-        self.assertEquals(data[u"受付番号"], u":order_no")
-        self.assertEquals(data[u"注文番号"], u":order_no")
-        self.assertEquals(data[u"注文日時"], u"2000年 01月 01日 (土) 01時 00分")
-        self.assertEquals(data[u"受付日時"], u"2000年 01月 01日 (土) 01時 00分")
         self.assertEquals(data[u"発券日時"], u"2000年 01月 01日 (土) 01時 13分")
-        self.assertEquals(data[u"注文日時s"], u"2000/01/01 (土) 01:00")
-        self.assertEquals(data[u"受付日時s"], u"2000/01/01 (土) 01:00")
         self.assertEquals(data[u"発券日時s"], u"2000/01/01 (土) 01:13")
 
     ## carted product
@@ -1137,48 +1032,14 @@ class BuilderItTicketCreateTest(unittest.TestCase):
         # import json
         # print json.dumps(data, ensure_ascii=False, indent=2)
 
-        self.assertEquals(data[u"イベント名"], u":Event:title")
-        self.assertEquals(data[u"イベント名略称"], u":abbreviated_title")
-
-        self.assertEquals(data[u"aux"][u"key"], u"value")
-
-        self.assertEquals(data[u"パフォーマンス名"], u":Performance:name")
-        self.assertEquals(data[u"対戦名"], u":Performance:name")
-        self.assertEquals(data[u"公演コード"], u":code")
-        self.assertEquals(data[u"開催日"], u"2000年 01月 01日 (土)")
-        self.assertEquals(data[u"開場時刻"], u"00時 00分")
-        self.assertEquals(data[u"開始時刻"], u"10時 00分")
-        self.assertEquals(data[u"終了時刻"], u"23時 00分")
-        self.assertEquals(data[u"開催日s"], u"2000/01/01 (土)")
-        self.assertEquals(data[u"開場時刻s"], u"00:00")
-        self.assertEquals(data[u"開始時刻s"], u"10:00")
-        self.assertEquals(data[u"終了時刻s"], u"23:00")
-
-        self.assertEqual(data[u"公演名略称"], u":PerformanceSetting:abbreviated_title") 
-        self.assertEqual(data[u"公演名備考"], u":PerformanceSetting:note")
-        self.assertEqual(data[u"公演名副題"], u":PerformanceSetting:subtitle") 
-
-        self.assertEquals(data[u"会場名"], u":Venue:name")
+        self.assert_basic_renderable_placeholder(data)
 
         self.assertEquals(data[u"席種名"], u":StockType:name")
         # self.assertEquals(data[u"席番"], u":Seat:name") #xxx!
-
-        self.assertEquals(data[u"商品名"], u":ProductItem:name")
-        self.assertEquals(data[u"商品価格"], u"12,000円")
-        self.assertEquals(data[u"券種名"], u":ProductItem:name")
-        self.assertEquals(data[u"チケット価格"], u"14,000円")
-
-        self.assertEquals(data[u"予約番号"], u":order_no")
-        self.assertEquals(data[u"受付番号"], u":order_no")
-        self.assertEquals(data[u"注文番号"], u":order_no")
-        self.assertEquals(data[u"注文日時"], u"2000年 01月 01日 (土) 01時 00分")
-        self.assertEquals(data[u"受付日時"], u"2000年 01月 01日 (土) 01時 00分")
         self.assertEquals(data[u"発券日時"], u"\ufeff{{発券日時}}\ufeff")
-        # self.assertEquals(data[u"発券日時"], u"2000年 01月 01日 (土) 01時 13分")
-        self.assertEquals(data[u"注文日時s"], u"2000/01/01 (土) 01:00")
-        self.assertEquals(data[u"受付日時s"], u"2000/01/01 (土) 01:00")
         self.assertEquals(data[u"発券日時s"], u"\ufeff{{発券日時s}}\ufeff")
         # self.assertEquals(data[u"発券日時s"], u"2000/01/01 (土) 01:13")
+
 
     def test_build_carted_product_item__with_seat(self):
         from altair.app.ticketing.core.models import PaymentDeliveryMethodPair

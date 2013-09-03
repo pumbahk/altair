@@ -449,13 +449,13 @@ class TicketDictBuilder(object):
                 d = {}
                 d = self.build_dict_from_stock(ordered_product_item.product_item.stock, d)
                 d = self.build_dict_from_venue(ordered_product_item.product_item.performance.venue, d)
-                d[u'発券番号'] = ticket_number_issuer(ordered_product_item.product_item.id) if ticket_number_issuer else None
+                d[u'発券番号'] = ticket_number_issuer(ordered_product_item.product_item.id) if ticket_number_issuer else ""
                 d.update(extra)
                 retval.append((None, d))
         else:
             for seat in ordered_product_item.seats:
                 d = self.build_dict_from_seat(seat, ticket_number_issuer)
-                d[u'発券番号'] = ticket_number_issuer(ordered_product_item.product_item.id) if ticket_number_issuer else None
+                d[u'発券番号'] = ticket_number_issuer(ordered_product_item.product_item.id) if ticket_number_issuer else ""
                 d.update(extra)
                 retval.append((seat, d))
         return retval
@@ -476,14 +476,14 @@ class TicketDictBuilder(object):
         if ordered_product_item_token.seat is not None:
             d = self.build_dict_from_seat(ordered_product_item_token.seat, ticket_number_issuer)
             d[u'serial'] = ordered_product_item_token.serial
-            d[u'発券番号'] = ticket_number_issuer(ordered_product_item.product_item.id) if ticket_number_issuer else None
+            d[u'発券番号'] = ticket_number_issuer(ordered_product_item.product_item.id) if ticket_number_issuer else ""
             d.update(extra)
             return (ordered_product_item_token.seat, d) 
         else:
             d = {}
             d = self.build_dict_from_stock(ordered_product_item.product_item.stock, d)
             d = self.build_dict_from_venue(ordered_product_item.product_item.performance.venue, d)
-            d[u'発券番号'] = ticket_number_issuer(ordered_product_item.product_item.id) if ticket_number_issuer else None
+            d[u'発券番号'] = ticket_number_issuer(ordered_product_item.product_item.id) if ticket_number_issuer else ""
             d[u'serial'] = ordered_product_item_token.serial
             d.update(extra)
             return (None, d)
