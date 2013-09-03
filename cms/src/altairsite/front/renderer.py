@@ -118,7 +118,7 @@ class LayoutModelLookupInterceptHandler(object):
 
     @reify
     def uploaded_at_as_string(self):
-        return self.uploaded_at.strftime("%Y%m%d%H%M")
+        return self.uploaded_at.strftime("%Y%m%d%H%M%S")
 
 @implementer(ILookupWrapper)
 class LookupInterceptWrapper(object):
