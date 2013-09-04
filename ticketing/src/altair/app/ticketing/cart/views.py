@@ -42,6 +42,7 @@ from .stocker import InvalidProductSelectionException, NotEnoughStockException
 from .selectable_renderer import selectable_renderer
 from .view_support import IndexViewMixin, get_amount_without_pdmp, get_seat_type_dicts
 from .exceptions import (
+    NoSalesSegment,
     NoCartError, 
     NoPerformanceError,
     InvalidCSRFTokenException, 
