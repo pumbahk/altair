@@ -867,26 +867,26 @@ class OutTermSalesView(object):
     @view_config(renderer=selectable_renderer('altair.app.ticketing.cart:templates/%(membership)s/pc/out_term_sales_event.html'),
                  custom_predicates=(lambda context, _: isinstance(context.outer, EventOrientedTicketingCartResource), ))
     def pc_event(self):
-        return self._render()
+        return self._render_event()
 
     @view_config(renderer=selectable_renderer('altair.app.ticketing.cart:templates/%(membership)s/mobile/out_term_sales_event.html'),
                  request_type='altair.mobile.interfaces.IMobileRequest',
                  custom_predicates=(lambda context, _: isinstance(context.outer, EventOrientedTicketingCartResource), ))
     def mobile_event(self):
-        return self._render()
+        return self._render_event()
 
     @view_config(renderer=selectable_renderer('altair.app.ticketing.cart:templates/%(membership)s/pc/out_term_sales_performance.html'),
                  custom_predicates=(lambda context, _: not isinstance(context.outer, EventOrientedTicketingCartResource), ))
     def pc_performance(self):
-        return self._render()
+        return self._render_performance()
 
     @view_config(renderer=selectable_renderer('altair.app.ticketing.cart:templates/%(membership)s/mobile/out_term_sales_performance.html'),
                  request_type='altair.mobile.interfaces.IMobileRequest',
                  custom_predicates=(lambda context, _: not isinstance(context.outer, EventOrientedTicketingCartResource), ))
     def mobile_performance(self):
-        return self._render()
+        return self._render_performance()
 
-    def _render(self):
+    def _render_event(self):
         api.logout(self.request)
         if self.context.next is None:
             datum = self.context.last
@@ -895,6 +895,22 @@ class OutTermSalesView(object):
             datum = self.context.next
             which = 'next'
         return dict(which=which, outer=self.context.outer, **datum)
+
+    def _render_performance(self):
+        if self.context.next is None:
+            datum = self.context.last
+            which = 'last'
+        else:
+            datum = self.context.next
+            which = 'next'
+        event_context = EventOrientedTicketingCartResource(self.request, self.context.outer.performance.event_id)
+        available_sales_segments = None
+        try:
+            available_sales_segments = event_context.available_sales_segments
+        except NoSalesSegment:
+            pass
+        api.logout(self.request)
+        return dict(which=which, outer=self.context.outer, available_sales_segments=available_sales_segments, **datum)
 
 @view_config(decorator=with_jquery.not_when(mobile_request), route_name='cart.logout')
 def logout(request):
