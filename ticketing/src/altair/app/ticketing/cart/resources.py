@@ -347,7 +347,7 @@ class EventOrientedTicketingCartResource(TicketingCartResourceBase):
             cart = self.cart
         except NoCartError:
             pass
-        if cart is not None:
+        if cart is not None and (self._event_id is None or cart.performance.event_id == self._event_id):
             return cart.performance
         return None
 
