@@ -50,6 +50,7 @@ from .exceptions import (
     InvalidCartStatusError,
     OverOrderLimitException,
     PaymentMethodEmptyError,
+    OutTermSalesException,
 )
 from .resources import EventOrientedTicketingCartResource, PerformanceOrientedTicketingCartResource
 
@@ -911,7 +912,7 @@ class OutTermSalesView(object):
         available_sales_segments = None
         try:
             available_sales_segments = event_context.available_sales_segments
-        except NoSalesSegment:
+        except (NoSalesSegment, OutTermSalesException):
             pass
         api.logout(self.request)
         return dict(which=which, outer=self.context.outer, available_sales_segments=available_sales_segments, **datum)
