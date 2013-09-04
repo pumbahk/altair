@@ -54,6 +54,7 @@ from .forms import (
 
 from . import api
 from .models import LotWishSummary, LotEntryReportSetting
+from .models import CSVExporter
 from .reporting import LotEntryReporter
 
 from altair.app.ticketing.payments import helpers as payment_helpers
@@ -409,7 +410,8 @@ class LotEntries(BaseView):
         self.check_organization(self.context.event)
         lot_id = self.request.matchdict["lot_id"]
         lot = slave_session.query(Lot).filter(Lot.id==lot_id).one()
-        entries = lots_api.get_lot_entries_iter(lot.id)
+        #entries = lots_api.get_lot_entries_iter(lot.id)
+        entries = CSVExporter(DBSession, lot.id)
         filename='lot-{0.id}.csv'.format(lot)
         if self.request.matched_route.name == 'lots.entries.export':
             self.request.response.content_type = 'text/plain;charset=Shift_JIS'
