@@ -122,6 +122,9 @@ class BeakerSessionObjectCompanion(object):
     def renew_session(self, request):
         self.session = self.session.__class__(request)
 
+    def invalidate(self):
+        self.session.invalidate() 
+
     def __init__(self, session):
         self.session = session
 
@@ -159,7 +162,7 @@ class MobileRequestMaker(object):
         _hash = hashlib.sha1(request.user_agent).hexdigest()
         if hash is not None and hash != _hash:
             logger.error('UA hash mismatch')
-            companion.session.clear()
+            companion.invalidate()
         companion.session[self.hash_key] = _hash
         return companion.session
 

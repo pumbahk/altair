@@ -63,3 +63,6 @@ class ISessionObjectImplCompanion(Interface):
 
     def renew_session(request):
         pass
+
+    def invalidate():
+        pass
