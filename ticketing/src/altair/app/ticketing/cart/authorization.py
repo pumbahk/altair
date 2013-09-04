@@ -37,7 +37,7 @@ class MembershipAuthorizationPolicy(object):
         if permission == "buy":
             logger.debug('authorize for buy %s' % (principals,))
             if not context.login_required:
-                logger.debug('event %s do not require login' % event.title)
+                logger.debug('event %s do not require login' % context.event.title)
                 return True            
 
             principals = [p for p in principals if p != 'system.Everyone']
