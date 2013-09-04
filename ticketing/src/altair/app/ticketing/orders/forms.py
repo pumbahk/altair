@@ -671,6 +671,7 @@ class OrderRefundForm(Form):
                not self.include_transaction_fee.data and \
                not self.include_delivery_fee.data:
                 self.include_item.errors.append(u'払戻対象を選択してください')
+                status = False
 
             # コンビニ払戻なら必須
             refund_pm = PaymentMethod.get(self.payment_method_id.data)
