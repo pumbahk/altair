@@ -3,6 +3,12 @@
 <% from altair.app.ticketing.cart.resources import PerformanceOrientedTicketingCartResource %>
 <%mobile:header>チケット購入</%mobile:header>
 <div align="center" style="text-align:center">${event.title}</div><hr size="1" noshade="noshade" />
+% if preferred_performance:
+<font color="red" size="-1">
+誠に申し訳ございませんが、選択された公演「${h.format_name(request, performance=preferred_performance)}」は<u>現在販売しておりません</u>。<br />
+他の日時／会場を下記よりお選びいただけます。<br />
+</font>
+% endif
 % if not key:
   <%mobile:form_header>${selector_label_1}をお選びください</%mobile:form_header>
   % for _key, _ in key_to_formatted_sales_segments_map:

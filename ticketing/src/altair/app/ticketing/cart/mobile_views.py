@@ -61,18 +61,28 @@ class MobileIndexView(IndexViewMixin):
         except NoSalesSegment:
             sales_segment = None
 
+        preferred_performance = None
+
         if sales_segment is None:
             # パフォーマンスIDから販売区分の解決を試みる
             if performance_id:
                 # performance_id で指定される Performance は
                 # available_sales_segments に関連するものでなければならない
 
-                self.context.performance_id = performance_id
-                for _sales_segment in self.context.available_sales_segments:
+                sales_segments = self.context.available_sales_segments
+                # 数が少ないのでリニアサーチ
+                for _sales_segment in sales_segments:
                     if _sales_segment.performance_id == performance_id:
+                        # 複数個の SalesSegment が該当する可能性があるが
+                        # 最初の 1 つを採用することにする。実用上問題ない。
                         sales_segment = _sales_segment
+                        break
                 if sales_segment is None:
-                    raise NoPerformanceError(event_id=self.context.event.id)
+                    # 該当する物がない
+                    preferred_performance = c_models.Performance.query.filter_by(id=performance_id, public=True).first()
+                    if preferred_performance is not None:
+                        if preferred_performance.event_id != self.context.event.id:
+                            preferred_performance = None 
 
         if sales_segment is not None:
             return HTTPFound(self.request.route_url(
@@ -98,7 +108,8 @@ class MobileIndexView(IndexViewMixin):
             key_to_formatted_sales_segments_map=key_to_formatted_sales_segments_map,
             key=key,
             selector_label_1=performance_selector.label,
-            selector_label_2=performance_selector.second_label
+            selector_label_2=performance_selector.second_label,
+            preferred_performance=preferred_performance
             )
 
 
@@ -138,7 +149,8 @@ class MobileIndexView(IndexViewMixin):
             event=self.context.event,
             key_to_formatted_sales_segments_map=key_to_formatted_sales_segments_map,
             selector_label_1=performance_selector.label,
-            selector_label_2=performance_selector.second_label
+            selector_label_2=performance_selector.second_label,
+            preferred_performance=None
             )
 
 @view_defaults(renderer=selectable_renderer('%(membership)s/mobile/seat_types.html'), xhr=False, request_type='altair.mobile.interfaces.IMobileRequest')

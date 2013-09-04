@@ -179,6 +179,7 @@ class IndexView(IndexViewMixin):
         logger.debug("sales_segments: %s" % sales_segments_selection)
 
         selected_sales_segment = None
+        preferred_performance = None
         if not performance_id:
             # GETパラメータ指定がなければ、選択肢の1つ目を採用
             selected_sales_segment = sales_segments[0]
@@ -194,11 +195,13 @@ class IndexView(IndexViewMixin):
                     # 最初の 1 つを採用することにする。実用上問題ない。
                     selected_sales_segment = sales_segment
                     break
-
-            # performance_id が指定されていて、かつパフォーマンスが見つからない
-            # 場合は例外
-            if selected_sales_segment is None:
-                raise NoPerformanceError(event_id=self.context.event.id)
+            else:
+                # 該当する物がないので、デフォルト (選択肢の1つ目)
+                selected_sales_segment = sales_segments[0]
+                preferred_performance = c_models.Performance.query.filter_by(id=performance_id, public=True).first()
+                if preferred_performance is not None:
+                    if preferred_performance.event_id != self.context.event.id:
+                        preferred_performance = None 
 
         set_rendered_event(self.request, self.context.event)
 
@@ -223,7 +226,7 @@ class IndexView(IndexViewMixin):
             event_extra_info=self.event_extra_info.get("event") or [],
             selection_label=performance_selector.label,
             second_selection_label=performance_selector.second_label,
-            performance=performance_id or ""
+            preferred_performance=preferred_performance
             )
 
     # パフォーマンスベースのランディング画面
@@ -266,7 +269,7 @@ class IndexView(IndexViewMixin):
             event_extra_info=self.event_extra_info.get("event") or [],
             selection_label=performance_selector.label,
             second_selection_label=performance_selector.second_label,
-            performance=self.context.performance.id or ""
+            preferred_performance=self.context.performance
             )
 
     @view_config(route_name='cart.seat_types2', renderer="json")
