@@ -404,14 +404,13 @@ class LotEntries(BaseView):
         - フィルター (すべて、未処理)
         """
 
-        # とりあえずすべて
         slave_session = get_db_session(self.request, name="slave")
 
         self.check_organization(self.context.event)
         lot_id = self.request.matchdict["lot_id"]
         lot = slave_session.query(Lot).filter(Lot.id==lot_id).one()
         #entries = lots_api.get_lot_entries_iter(lot.id)
-        entries = CSVExporter(DBSession, lot.id)
+        entries = CSVExporter(slave_session, lot.id)
         filename='lot-{0.id}.csv'.format(lot)
         if self.request.matched_route.name == 'lots.entries.export':
             self.request.response.content_type = 'text/plain;charset=Shift_JIS'
