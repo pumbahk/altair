@@ -45,6 +45,7 @@ class _PerformanceSelector(object):
     def sales_segment_to_dict(self, sales_segment):
         return dict(
             id=sales_segment.id,
+            performance_id=sales_segment.performance_id,
             name=u'{start:%Y-%m-%d %H:%M}開始 {vname} {name}'.format(
                 name=sales_segment.name,
                 start=sales_segment.performance.start_on,
@@ -54,7 +55,7 @@ class _PerformanceSelector(object):
                 sales_segment_id=sales_segment.id),
             upper_limit=sales_segment.upper_limit,
             seat_types_url=self.request.route_url(
-                'cart.seat_types',
+                'cart.seat_types2',
                 performance_id=sales_segment.performance.id,
                 sales_segment_id=sales_segment.id,
                 event_id=self.context.event.id)

@@ -33,6 +33,8 @@ from pyramid.i18n import TranslationString as _
 from zope.deprecation import deprecation
 
 from .exceptions import InvalidStockStateError
+from .interfaces import ISalesSegmentQueryable
+
 from altair.app.ticketing.models import (
     Base, DBSession, 
     MutationDict, JSONEncodedDict, 
@@ -416,6 +418,7 @@ class Account(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     def filter_by_organization_id(id):
         return Account.filter(Account.organization_id==id).all()
 
+@implementer(ISalesSegmentQueryable)
 class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'Performance'
 
@@ -626,6 +629,11 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
         return data
 
+    def query_sales_segments(self, user=None, now=None, type='available'):
+        """ISalesSegmentQueryable.query_sales_segments)"""
+        q = build_sales_segment_query(performance_id=self.id, user=user, now=now, type=type)
+        return q
+
     @classmethod
     def get(cls, id, organization_id=None, **kwargs):
         if organization_id:
@@ -689,6 +697,62 @@ class ReportSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         else:
             return self.email
 
+def build_sales_segment_query(event_id=None, performance_id=None, sales_segment_group_id=None, sales_segment_id=None, user=None, now=None, type='available'):
+    if all(not x for x in [event_id, performance_id, sales_segment_group_id, sales_segment_id]):
+        raise ValueError("any of event_id, performance_id, sales_segment_group_id or sales_segment_id must be non-null value")
+
+    q = SalesSegment.query
+    q = q.options(
+        joinedload(
+            SalesSegment.sales_segment_group,
+            SalesSegmentGroup.membergroups))
+    q = q.filter(SalesSegment.public != False)
+    q = q.filter(SalesSegmentGroup.public != False)
+    q = q.filter(SalesSegmentGroup.normal_sales | SalesSegmentGroup.sales_counter) # XXX: 窓口販売が当日券用の区分に使われている。このようなケースでは、publicフラグがTrueであることを必ずチェックしなければならない
+
+    if event_id is not None:
+        q = q.filter(Performance.event_id == event_id)
+        q = q.filter(SalesSegmentGroup.event_id == event_id)
+    if performance_id is not None:
+        q = q.filter(Performance.id == performance_id)
+        q = q.filter(Event.id == Performance.event_id)
+        q = q.filter(SalesSegmentGroup.event_id == Event.id)
+    if sales_segment_group_id is not None:
+        q = q.filter(SalesSegmentGroup.id == sales_segment_group_id)
+    if sales_segment_id is not None:
+        q = q.filter(SalesSegment.id == sales_segment_id)
+
+    q = q.filter(Performance.id==SalesSegment.performance_id)
+    q = q.filter(Performance.public != False)
+    q = q.filter(SalesSegment.sales_segment_group_id==SalesSegmentGroup.id)
+
+    if type == 'available':
+        q = q.filter(SalesSegment.in_term(now))
+    elif type == 'from':
+        q = q.filter(SalesSegment.start_at >= now)
+    elif type == 'before':
+        q = q.filter(SalesSegment.end_at < now)
+
+    if user and user.get('is_guest'):
+        q = q \
+            .outerjoin(MemberGroup,
+                       SalesSegmentGroup.membergroups) \
+            .filter(or_(MemberGroup.is_guest != False,
+                        MemberGroup.id == None))
+    elif user and 'membership' in user:
+        q = q \
+            .outerjoin(MemberGroup,
+                       SalesSegmentGroup.membergroups) \
+            .filter(
+                or_(
+                    or_(MemberGroup.is_guest != False,
+                        MemberGroup.id == None),
+                    MemberGroup.name == user['membergroup']
+                    )
+                )
+    return q
+
+@implementer(ISalesSegmentQueryable)
 class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'Event'
 
@@ -945,43 +1009,7 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         return self.query_sales_segments(user=user, now=now, type='available')
 
     def query_sales_segments(self, user=None, now=None, type='available'):
-        q = SalesSegment.query
-        q = q.options(
-            joinedload(
-                SalesSegment.sales_segment_group,
-                SalesSegmentGroup.membergroups))
-        q = q.filter(SalesSegment.public != False)
-        q = q.filter(SalesSegmentGroup.public != False)
-        q = q.filter(SalesSegmentGroup.normal_sales | SalesSegmentGroup.sales_counter) # XXX: 窓口販売が当日券用の区分に使われている。このようなケースでは、publicフラグがTrueであることを必ずチェックしなければならない
-        q = q.filter(Performance.event_id==self.id)
-        q = q.filter(Performance.id==SalesSegment.performance_id)
-        q = q.filter(Performance.public != False)
-        q = q.filter(SalesSegment.sales_segment_group_id==SalesSegmentGroup.id)
-
-        if type == 'available':
-            q = q.filter(SalesSegment.in_term(now))
-        elif type == 'from':
-            q = q.filter(SalesSegment.start_at >= now)
-        elif type == 'before':
-            q = q.filter(SalesSegment.end_at < now)
-
-        if user and user.get('is_guest'):
-            q = q \
-                .outerjoin(MemberGroup,
-                           SalesSegmentGroup.membergroups) \
-                .filter(or_(MemberGroup.is_guest != False,
-                            MemberGroup.id == None))
-        elif user and 'membership' in user:
-            q = q \
-                .outerjoin(MemberGroup,
-                           SalesSegmentGroup.membergroups) \
-                .filter(
-                    or_(
-                        or_(MemberGroup.is_guest != False,
-                            MemberGroup.id == None),
-                        MemberGroup.name == user['membergroup']
-                        )
-                    )
+        q = build_sales_segment_query(event_id=self.id, user=user, now=now, type=type)
         return q
 
     @staticmethod
@@ -1069,6 +1097,7 @@ class SalesSegmentKindEnum(StandardEnum):
         'other',
     ]
 
+@implementer(ISalesSegmentQueryable)
 class SalesSegmentGroup(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'SalesSegmentGroup'
     id = AnnotatedColumn(Identifier, primary_key=True, _a_label=_(u'ID'))
@@ -1216,6 +1245,11 @@ class SalesSegmentGroup(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                      self.end_time.hour, self.end_time.minute)
         d -= timedelta(days=self.end_day_prior_to_performance)
         return d
+
+    def query_sales_segments(self, user=None, now=None, type='available'):
+        """ISalesSegmentQueryable.query_sales_segments)"""
+        q = build_sales_segment_query(sales_segment_group_id=self.id, user=user, now=now, type=type)
+        return q
 
 SalesSegment_PaymentDeliveryMethodPair = Table(
     "SalesSegment_PaymentDeliveryMethodPair",
@@ -2203,6 +2237,8 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     browserid = Column(String(40))
 
+    sales_segment_id = Column(Identifier, ForeignKey('SalesSegment.id'))
+    sales_segment = relationship('SalesSegment', backref='orders')
 
     def is_canceled(self):
         return bool(self.canceled_at)
@@ -2616,6 +2652,8 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             transaction_fee=cart.transaction_fee,
             delivery_fee=cart.delivery_fee,
             performance=cart.performance,
+            sales_segment=cart.sales_segment,
+            organization_id=cart.sales_segment.sales_segment_group.event.organization_id,
             channel=cart.channel,
             operator=cart.operator,
             user=cart.shipping_address and cart.shipping_address.user
@@ -3236,6 +3274,8 @@ class Refund(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     include_delivery_fee = Column(Boolean, nullable=False, default=False)
     include_item = Column(Boolean, nullable=False, default=False)
     cancel_reason = Column(String(255), nullable=True, default=None)
+    start_at = Column(DateTime, nullable=True)
+    end_at = Column(DateTime, nullable=True)
     orders = relationship('Order', backref=backref('refund', uselist=False))
 
     def fee(self, order):
@@ -3486,6 +3526,8 @@ class SalesSegment(Base, BaseModel, LogicallyDeleted, WithTimestamp):
              pdmp.per_ticket_fee * product.num_priced_tickets(pdmp)) * quantity
             for product, quantity in product_quantities])
 
+    def applicable(self, user=None, now=None, type='available'):
+        return build_sales_segment_query(sales_segment_id=self.id, user=user, now=now, type=type).exists()
 
 class OrganizationSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = "OrganizationSetting"

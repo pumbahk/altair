@@ -122,7 +122,7 @@ def create_refund_zip_file():
     archive_txt.write(refund_ticket_file_name + '\r\n')
     archive_txt.close()
 
-    # SejRefundTikct -> YYYYMMDD_TPBTICKET.dat
+    # SejRefundTicket -> YYYYMMDD_TPBTICKET.dat
     refund_ticket_tsv = open(work_dir + refund_ticket_file_name, 'w')
     tsv_writer = csv.writer(refund_ticket_tsv, delimiter='\t', quoting=csv.QUOTE_NONE, lineterminator='\r\n')
     sej_refund_tickets = SejRefundTicket.query.filter(SejRefundTicket.sent_at==None).all()

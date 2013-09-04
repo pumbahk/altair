@@ -1,4 +1,4 @@
-<%page args="orders, period_from, period_to" />
+<%page args="frauds, period_from, period_to" />
 
 不正の可能性がある予約を検知しました。
 
@@ -6,22 +6,23 @@
 <ul>
   <li>クレジットカード決済</li>
   <li>セブンイレブン発券</li>
-  <li>1件の予約で4枚以上</li>
   <li>同一人物(user_idまたはメールアドレス)による同一公演の予約が2件以上</li>
+  <li>同一人物(user_idまたはメールアドレス)による同一公演の予約枚数が8枚以上、または合計金額が10万以上</li>
   <li>${period_from}〜${period_to}の予約</li>
 </ul>
 
+% for orders in frauds:
 <table border="1" bordercolor="#888" width="98%" style="border-collapse:collapse;">
   <tr style="background-color:#ddd;">
-    <th>order_no</th>
-    <th>created_at</th>
-    <th>total_amount</th>
-    <th>Event.id</th>
-    <th>title</th>
-    <th>Performance.id</th>
-    <th>name</th>
-    <th>start_on</th>
-    <th>card_brand</th>
+    <th style="width: 12%;">予約番号</th>
+    <th style="width: 10%;">予約日時</th>
+    <th style="width: 10%;">合計金額</th>
+    <th style="width: 8%;">id</th>
+    <th style="width: 20%;">イベント名</th>
+    <th style="width: 8%;">id</th>
+    <th style="width: 14%;">公演名</th>
+    <th style="width: 10%;">公演開始</th>
+    <th style="width: 8%;">カード</th>
   </tr>
   % for order in orders:
   <tr>
@@ -37,3 +38,5 @@
   </tr>
   % endfor
 </table>
+<br>
+% endfor

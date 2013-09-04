@@ -12,7 +12,7 @@
   <h1>払戻確認</h1>
 </div>
 
-<div class="alert alert-info">
+<div class="alert alert-warning">
   ${len(orders)}件の予約に払戻条件を設定し、払戻を予約します。
 </div>
 
@@ -28,22 +28,33 @@
           $(this).val(0);
         }
       }).change();
-      $('.draggable').draggable({scroll: true, handle:$('.draggable .modal-header')});
       $('form').disableOnSubmit();
     });
   </script>
 
-  <form action="${request.route_path('orders.refund.confirm')}" method="POST">
+  <form class="form-horizontal" action="${request.route_path('orders.refund.confirm')}" method="POST">
     ${ch.form_item(form_refund.payment_method_id)}
+    <label class="required control-label">払戻対象</label>
     ${ch.form_item(form_refund.include_item)}
     ${ch.form_item(form_refund.include_system_fee)}
     ${ch.form_item(form_refund.include_transaction_fee)}
     ${ch.form_item(form_refund.include_delivery_fee)}
     ${ch.form_item(form_refund.cancel_reason)}
-    <a href="${request.route_path('orders.refund.checked')}" class="btn">戻る</a>
-    <a class="btn btn-success" href="${request.route_path('orders.download', _query=dict(action='checked'))}">
-      <i class="icon-file icon-white"></i> 払戻対象をダウンロード
-    </a>
-    <button type="submit" class="btn btn-danger">払戻予約</button>
+    <div class="control-group">
+      <label class="control-label">コンビニでの払戻期間</label>
+      <div class="controls">
+        ${form_refund.start_at} 〜 ${form_refund.end_at}
+        ${ch.validate_errors(form_refund.start_at)}
+        ${ch.validate_errors(form_refund.end_at)}
+      </div>
+    </div>
+    <div class="pull-right">
+      <a href="${request.route_path('orders.refund.checked')}" class="btn">戻る</a>
+      <a class="btn btn-success" href="${request.route_path('orders.download', _query=dict(action='checked'))}">
+        <i class="icon-file icon-white"></i> 払戻対象をダウンロード
+      </a>
+      <button type="submit" class="btn btn-danger">払戻予約</button>
+    </div>
   </form>
+  <div style="clear: both;"></div>
 </div>

@@ -45,6 +45,10 @@ class S3ConnectionFactory(object):
     def bucket_name(self):
         return self.uploader.bucket_name
 
+    @property
+    def bucket(self):
+        return self.uploader.bucket
+
     @classmethod
     def from_settings(cls, settings):
         access_key, secret_key = settings["s3.access_key"], settings["s3.secret_key"]

@@ -1,28 +1,24 @@
 <%inherit file="./base.html"/>
 <%namespace file="./tags_mobile.html" name="mobile" />
 <%mobile:header>チケット購入</%mobile:header>
-${event.title}
-<hr size="1" color="#888888" noshade="noshade" />
+<div align="center" style="text-align:center">${event.title}</div><hr size="1" noshade="noshade" />
 % if seat_type.description:
 <div>${seat_type.description|n}</div>
-<hr size="1" color="#888888" noshade="noshade" />
 % endif
 商品をお選びください
-
-<form action="${request.url}" method="post">
+<form action="${request.current_route_path()}" method="post">
   % for product in products:
     <div>
       <br/>
-      <div>
-        <font color="#960020">■</font>${product['name']} &yen;${product['price']}
-      </div>
+      <%mobile:form_header>${product['name']}</%mobile:form_header>
       % if product['description']:
         <div>${product['description']}</div>
       % endif
       % if product['detail']:
         ${product['detail']}<br/>
       % endif
-      数量
+      金額: &yen;${product['price']}<br />
+      数量:
       <select name="product-${product['id']}">
         % for num in range(product['upper_limit'] + 1):
         <option value="${num}">${num}</option>
@@ -32,31 +28,19 @@ ${event.title}
   % endfor
   <div style="text-align:center;">
   <br/>
-  <input type="hidden" name="performance_id" value="${performance.id}">
-  <input type="hidden" name="seat_type_id" value="${seat_type.id}">
+  <input type="hidden" name="performance_id" value="${performance.id}" />
+  <input type="hidden" name="seat_type_id" value="${seat_type.id}" />
   ${form.csrf_token()}
-  <input type="submit" value="次へ">
+  <input type="submit" value="次へ" />
   </div>
 </form>
-<form action="${request.route_url('cart.seat_types', event_id=event.id, performance_id=performance.id, sales_segment_id=sales_segment.id)}" method="get">
-  <div style="text-align:center;">
-  <input type="submit" value="戻る">
-  </div>
+<form action="${back_url}" method="get">
+<div style="text-align:center;"><input type="submit" value="戻る" /></div>
 </form>
-
-<hr size="1" color="#888888" noshade="noshade" />
-
-<div style="background-color:#dc3759">会場</div>
-<div>
-  ${venue.name}
-</div>
-
-<div style="background-color:#dc3759">日程</div>
-<div>
-  ${performance.start_on}(予定)
-</div>
-
-<div style="background-color:#dc3759">席種</div>
-<div>
-${seat_type.name}
-</div>
+<%mobile:header>選択内容</%mobile:header>
+<%mobile:form_header>会場</%mobile:form_header>
+<div>${venue.name}</div>
+<%mobile:form_header>日程</%mobile:form_header>
+<div>${performance.start_on}(予定)</div>
+<%mobile:form_header>席種</%mobile:form_header>
+<div>${seat_type.name}</div>

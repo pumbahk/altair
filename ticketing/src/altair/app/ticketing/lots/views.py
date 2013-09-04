@@ -351,10 +351,16 @@ class ConfirmLotEntryView(object):
         DBSession.add(self.context.organization)
         magazines_to_subscribe = get_magazines_to_subscribe(self.context.organization, [entry['shipping_address']['email_1']])
 
-        temporary_entry = api.build_temporary_lot_entry(
-            lot=lot,
-            wishes=entry['wishes'],
-            payment_delivery_method_pair=payment_delivery_method_pair)
+        wishes = api.build_temporary_wishes(entry['wishes'],
+                                            payment_delivery_method_pair=payment_delivery_method_pair,
+                                            sales_segment=lot.sales_segment)
+        for wish in wishes:
+            assert wish.performance, type(wish)
+
+        # temporary_entry = api.build_temporary_lot_entry(
+        #     lot=lot,
+        #     wishes=entry['wishes'],
+
 
         return dict(event=event,
                     lot=lot,
@@ -362,7 +368,7 @@ class ConfirmLotEntryView(object):
                     payment_delivery_method_pair_id=entry['payment_delivery_method_pair_id'],
                     payment_delivery_method_pair=payment_delivery_method_pair,
                     token=entry['token'],
-                    wishes=temporary_entry.wishes,
+                    wishes=wishes,
                     gender=entry['gender'],
                     birthday=entry['birthday'],
                     memo=entry['memo'],

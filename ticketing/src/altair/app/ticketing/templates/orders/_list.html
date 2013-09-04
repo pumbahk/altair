@@ -34,6 +34,7 @@
         % endif
         <th style="width: 70px;">ステータス</th>
         <th style="width: 90px;">決済</th>
+        <th style="width: 90px;">配送</th>
         <th style="width: 100px;">${search_and_sort(form.order_no)}</th>
         <th style="width: 120px;">${search_and_sort(form.created_at)}</th>
         <th style="width: 70px;">${search_and_sort(form.total_amount)}</th>
@@ -56,6 +57,7 @@
         % endif
         <td>${HH.order_status(order)}</td>
         <td>${HH.payment_status(order)}</td>
+        <td>${HH.delivery_status(order)}</td>
         <td><a href="${request.route_path('orders.show', order_id=order.id)}">${order.order_no}</a></td>
         <td><a href="${request.route_path('orders.show', order_id=order.id)}">${vh.datetime(order.created_at)}</a></td>
         <td style="text-align: right;">${vh.price(order.total_amount)}</td>

@@ -340,10 +340,12 @@ class LotEntryReportSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     def query_reporting_about(cls, time, frequency, 
                               event_id=None, lot_id=None,
                               day_of_week=None):
-        query = cls.query.filter(
+        query = cls.query
+        query = query.filter(
             cls.frequency==frequency,
             cls.time==time,
         )
+
         if event_id:
             query = query.filter(cls.event_id==event_id)
         if lot_id:

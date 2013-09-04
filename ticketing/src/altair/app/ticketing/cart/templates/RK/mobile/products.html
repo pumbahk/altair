@@ -6,7 +6,7 @@
 <div>${seat_type.description|n}</div>
 % endif
 商品をお選びください
-<form action="${request.url}" method="post">
+<form action="${request.current_route_path()}" method="post">
   % for product in products:
     <div>
       <br/>
@@ -34,7 +34,7 @@
   <input type="submit" value="次へ" />
   </div>
 </form>
-<form action="${request.route_url('cart.seat_types', event_id=event.id, performance_id=performance.id, sales_segment_id=sales_segment.id)}" method="get">
+<form action="${back_url}" method="get">
 <div style="text-align:center;"><input type="submit" value="戻る" /></div>
 </form>
 <%mobile:header>選択内容</%mobile:header>
