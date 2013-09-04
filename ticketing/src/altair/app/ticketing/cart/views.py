@@ -269,7 +269,7 @@ class IndexView(IndexViewMixin):
             event_extra_info=self.event_extra_info.get("event") or [],
             selection_label=performance_selector.label,
             second_selection_label=performance_selector.second_label,
-            preferred_performance=self.context.performance
+            preferred_performance=None
             )
 
     @view_config(route_name='cart.seat_types2', renderer="json")
