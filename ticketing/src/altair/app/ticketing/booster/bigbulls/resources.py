@@ -22,7 +22,7 @@ def get_age(y, m, d):
             return age -1
         return age
     except Exception as e:
-        logger.warn(str(e))
+        logger.info('Failed to get age, ' + str(e))
         return INVALID_AGE #?
 
 class BjbigbullsCartResource(BoosterCartResource):
