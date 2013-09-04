@@ -245,6 +245,8 @@ class TicketingCartResourceBase(object):
 
     @reify
     def login_required(self):
+        if self.event is None:
+            return False
         if self.event.organization.setting.auth_type == "rakuten":
             return True
 
