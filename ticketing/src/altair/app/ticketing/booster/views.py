@@ -10,6 +10,7 @@ from altair.app.ticketing.cart.exceptions import NoCartError, InvalidCSRFTokenEx
 from altair.app.ticketing.cart.views import PaymentView as _PaymentView, CompleteView as _CompleteView
 from altair.app.ticketing.cart import api as cart_api, schemas as cart_schemas
 from altair.app.ticketing.payments import api as payment_api
+from altair.app.ticketing.payments.payment import Payment
 from altair.app.ticketing.core import models as c_models
 from altair.app.ticketing.users.models import User, UserProfile
 
@@ -58,7 +59,7 @@ class IndexView(BaseView):
             logger.debug("%s" % form.errors)
             return dict(form=form, products=products)
 
-        cart = cart_api.order_products(self.request, self.context.sales_segment.performance.id, self.ordered_items)
+        cart = cart_api.order_products(self.request, self.context.sales_segment.id, self.ordered_items)
         if cart is None:
             logger.debug('cart is None')
             return dict(form=form, products=products)
@@ -99,6 +100,30 @@ class PaymentView(_PaymentView):
     @back
     def post(self):
         return super(self.__class__, self).post()
+
+class ConfirmView(object):
+    """ 決済確認画面 """
+    def __init__(self, request):
+        self.request = request
+        self.context = request.context
+
+    def __call__(self):
+        form = cart_schemas.CSRFSecureForm(csrf_context=self.request.session)
+        cart = self.request.context.cart
+        if cart.shipping_address is None:
+            raise InvalidCartStatusError(cart.id)
+
+        payment = Payment(cart, self.request)
+        try:
+            payment.call_validate()
+            delegator = payment.call_delegator()
+        except PaymentDeliveryMethodPairNotFound:
+            raise HTTPFound(self.request.route_path("cart.payment", sales_segment_id=cart.sales_segment_id))
+        return dict(
+            cart=cart,
+            form=form,
+            delegator=delegator,
+        )
 
 class ObjectLike(dict):
     __getattr__ = dict.get

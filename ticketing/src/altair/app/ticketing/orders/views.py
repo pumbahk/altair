@@ -1151,8 +1151,9 @@ class OrdersReserveView(BaseView):
             self.release_seats(performance.venue, seats)
 
             # create cart
-            cart = api.order_products(self.request, performance_id, order_items, selected_seats=seats)
-            cart.sales_segment = SalesSegment.get(f.sales_segment_id.data)
+            sales_segment = SalesSegment.get(f.sales_segment_id.data)
+            cart = api.order_products(self.request, sales_segment.id, order_items, selected_seats=seats)
+            cart.sales_segment = sales_segment
             pdmp = DBSession.query(PaymentDeliveryMethodPair).filter_by(id=post_data.get('payment_delivery_method_pair_id')).one()
             cart.payment_delivery_pair = pdmp
             cart.channel = ChannelEnum.INNER.v

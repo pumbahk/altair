@@ -169,3 +169,34 @@ def get_availability_text(quantity):
     else:
         return u'◎'
 
+def cart_url(request, event=None, performance=None, sales_segment=None):
+    if sales_segment is not None:
+        extra = {}
+        if sales_segment.performance_id is not None:
+            extra['_query'] = {'performance': sales_segment.performance_id}
+        return request.route_path('cart.index', event_id=sales_segment.event_id, **extra)
+    elif performance is not None:
+        return request.route_path('cart.index', event_id=performance.event_id, _query={'performance': performance.id})
+    elif event is not None:
+        return request.route_path('cart.index', event_id=event.id)
+    else:
+        raise ValueError()
+
+def format_performance_name(request, performance):
+    return u'%s (%s %d時公演)' % (performance.name, japanese_date(performance.start_on), performance.start_on.hour)
+
+def format_name(request, event=None, performance=None, sales_segment=None):
+    out = []
+    if sales_segment is not None:
+        if sales_segment.performance_id:
+            out.append(format_performance_name(request, sales_segment.performance))
+        else:
+            out.append(sales_segment.event.title)
+        out.extend([u' [', sales_segment.name, u']'])
+    elif performance is not None:
+        out.append(format_performance_name(request, performance))
+    elif event is not None:
+        out.append(event.title)
+    else:
+        raise ValueError()
+    return u''.join(out)

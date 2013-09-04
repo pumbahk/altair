@@ -82,6 +82,12 @@ $(function() {cart.init(salesSegmentsSelection, selected, cartReleaseUrl, true);
     % endif
 
     <h2 id="ticketName">${event['title']}</h2>
+    % if preferred_performance:
+    <div class="settlementNotice">
+      <p>誠に申し訳ございませんが、選択された公演「${h.format_name(request, performance=preferred_performance)}」は<u>現在販売しておりません</u>。</p>
+      <p>他の日時／会場を下記よりお選びいただけます。</p>
+    </div>
+    % endif
     <form id="form1" name="form1" method="post" action="">
       <div id="settlementSelectBox">
         <div id="settlementSelectBoxInner">

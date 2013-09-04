@@ -6,6 +6,7 @@ from pyramid.threadlocal import get_current_request
 from zope.interface import implementer
 from . import api
 from ..core import api as core_api
+from .resources import TicketingCartResourceBase
 from pyramid.httpexceptions import HTTPNotFound
 
 logger = logging.getLogger(__name__)
@@ -22,6 +23,8 @@ class MembershipAuthorizationPolicy(object):
         """
         principalsには、ユーザーの会員種別がすでに入っている想定
         """
+        assert isinstance(context, TicketingCartResourceBase)
+
         request = context.request
 
         if 'buy' not in permission and not principals:
@@ -33,17 +36,8 @@ class MembershipAuthorizationPolicy(object):
 
         if permission == "buy":
             logger.debug('authorize for buy %s' % (principals,))
-
-            event = api.get_event(request)
-            organization = core_api.get_organization(request)
-            if not event:
-                logger.debug('no event')
-                return True
-            if event.organization_id != organization.id:
-                raise HTTPNotFound()
-
-            if not api.is_login_required(request, event):
-                logger.debug('event %s do not require login' % event.title)
+            if not context.login_required:
+                logger.debug('event %s do not require login' % context.event.title)
                 return True            
 
             principals = [p for p in principals if p != 'system.Everyone']
