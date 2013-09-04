@@ -180,7 +180,7 @@ class TicketingCartResourceBase(object):
         """ 該当イベントのSalesSegment取得
         """
         if self._sales_segment_id is None:
-            logger.warning("sales_segment_id is not provided")
+            logger.info("sales_segment_id is not provided")
             raise NoSalesSegment()
 
         # XXX: 件数少ないしリニアサーチでいいよね
