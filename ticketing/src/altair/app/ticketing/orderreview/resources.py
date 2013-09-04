@@ -3,7 +3,6 @@
 from datetime import datetime
 from dateutil import parser
 from pyramid.decorator import reify
-from altair.app.ticketing.cart.resources import TicketingCartResource
 from altair.app.ticketing.core.models import DBSession, Order
 from altair.app.ticketing.users.models import User, UserCredential, Membership, UserProfile
 from altair.app.ticketing.sej.models import SejOrder
@@ -33,9 +32,9 @@ def create_credential(cart_id, membership_name):
     credential = UserCredential(user=user, auth_identifier=str(cart_id), membership=membership)
     return credential
 
-class OrderReviewResource(TicketingCartResource):
+class OrderReviewResource(object):
     def __init__(self, request):
-        super(OrderReviewResource, self).__init__(request)
+        self.request = request
 
     @property
     def organization_id(self):
