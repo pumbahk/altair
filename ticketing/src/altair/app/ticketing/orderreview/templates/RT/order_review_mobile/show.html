@@ -69,7 +69,12 @@ ${shipping.email_1}<br />
 <div>窓口支払</div>
 % endif
 <%mobile:form_header>お引き取り</%mobile:form_header>
-% if order.payment_delivery_pair.delivery_method.delivery_plugin.id == 1:
+%if order.payment_delivery_pair.delivery_method.id == 71:
+<div>コンビニ（セブン-イレブン）店頭でのお受取です。</div>
+公演日約1週間前までに、セブン-イレブン店頭レジでチケット引取をする際に必要な
+引換票番号をメールにてお送りいたします(当選メールとは別のメールになります)。
+詳細は、そちらをご確認ください。
+% elif order.payment_delivery_pair.delivery_method.delivery_plugin.id == 1:
 <div>郵送</div>
 下記、ご登録送付先住所へチケットを配送いたします。
 <% shipping = order.shipping_address %>
