@@ -1,26 +1,18 @@
 <script>
   $(function() {
-    $('#menu-toggle').toggle(
-      function() {
-        if ($.cookie('menu')) {
-          $('.sidebar-nav').hide();
-        } else {
-          $('.sidebar-nav').toggle('slide', {direction: 'left'}, 100);
-        }
-        $('#main-container').removeAttr('class');
-        $('#left-menu').removeAttr('class');
-        $.cookie('menu', 'hide', {path:'/', expires:7});
-      },
-      function() {
+    $('#menu-toggle').click(function() {
+      if ($.cookie('menu')) {
         $('#main-container').attr('class', 'span10');
         $('#left-menu').removeAttr('style').attr('class', 'span2');
-        $('.sidebar-nav').toggle('slide', {direction: 'left'}, 100);
+        $('.sidebar-nav').show();
         $.cookie('menu', null, {path:'/', expires:7});
+      } else {
+        $('#main-container').removeAttr('class');
+        $('#left-menu').removeAttr('class');
+        $('.sidebar-nav').hide();
+        $.cookie('menu', 'hide', {path:'/', expires:7});
       }
-    );
-    if ($.cookie('menu')) {
-      $('#menu-toggle').click();
-    }
+    });
   });
 </script>
 
