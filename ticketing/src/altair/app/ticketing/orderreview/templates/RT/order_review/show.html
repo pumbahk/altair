@@ -205,7 +205,16 @@ shipping =order.shipping_address
     <div class="settlementBoxInner2">
       <h2>お引取</h2>
       <div class="confirmBoxText">
-        ${h.render_delivery_finished_viewlet(request, order)}
+        % if order.payment_delivery_pair.delivery_method.id == 71:
+         <div>
+           <h4>コンビニ（セブン-イレブン）店頭でのお受取です。</h4>
+           公演日約1週間前までに、セブン-イレブン店頭レジでチケット引取をする際に必要な
+           引換票番号をメールにてお送りいたします(当選メールとは別のメールになります)。
+           詳細は、そちらをご確認ください。
+         </div>
+        % else:
+          ${h.render_delivery_finished_viewlet(request, order)}
+        % endif
       </div>
     </div>
   </div>
