@@ -170,7 +170,7 @@ def main(global_config, **local_config):
     config.include('altair.app.ticketing.checkout')
     config.include('altair.app.ticketing.multicheckout')
     config.include('altair.mobile')
-    config.include('altair.app.ticketing.venues')
+    config.include('altair.app.ticketing.venues.setup_components')
     config.include('altair.app.ticketing.payments')
     config.include('altair.app.ticketing.payments.plugins')
     config.add_subscriber('altair.app.ticketing.payments.events.cancel_on_delivery_error',
