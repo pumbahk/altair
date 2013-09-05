@@ -1,0 +1,79 @@
+<%page args="performance, stats" />
+<%namespace file="/common/helpers.html" name="ch" />
+
+<% from altair.app.ticketing.payments import plugins %>
+
+<div class="alert alert-warning">
+  <p>CSVファイルを読み込みました。以下の内容で正しいか確認してください。</p>
+</div>
+
+<table class="table table-striped table-bordered">
+  <tr>
+    <th class="span2">インポート方法</th>
+    <td class="span6">${stats.get('import_type')[1]}</td>
+  </tr>
+  <tr>
+    <th>数受けの予約に座席を割り当てる</th>
+    <td>${u'割り当てる' if stats.get('seat_allocation') else u'割り当てない'}</td>
+  </tr>
+  <tr>
+    <th>登録/更新する予約件数</th>
+    <td>${stats.get('total_order_count')}</td>
+  </tr>
+  <tr>
+    <th>商品別の予約件数</th>
+    <td>
+      <% order_per_product = stats.get('order_per_product') %>
+      <table>
+      % for product, count in order_per_product.iteritems():
+        <tr>
+          <td>${product.name}</td>
+          <td>${product.price}</td>
+          <td>${count}</td>
+        </tr>
+      % endfor
+      </table>
+    </td>
+  </tr>
+  <tr>
+    <th>決済方法/引取方法ごとの予約券数</th>
+    <td>
+      <% order_per_pdmp = stats.get('order_per_pdmp') %>
+      <table class="table-condensed">
+        % for pdmp, count in order_per_pdmp.iteritems():
+        <tr>
+          <td>${pdmp.payment_method.name}</td>
+          <td>${pdmp.delivery_method.name}</td>
+          <td>${count}</td>
+          <td>
+            % if pdmp.delivery_method.delivery_plugin_id == plugins.SEJ_DELIVERY_PLUGIN_ID:
+              コンビニ発券開始日時:
+            % endif
+          </td>
+        </tr>
+        % endfor
+      </table>
+    </td>
+  </tr>
+  <tr>
+    <th>登録できない予約の一覧</th>
+    <td>${stats.get('error_order_count')}</td>
+  </tr>
+</table>
+
+<% error_reasons = stats.get('error_reasons') %>
+% if error_reasons:
+<h5>登録できない予約のエラー詳細</h5>
+<div class="alert alert-error">
+  % for error in error_reasons:
+  <p>${error}</p>
+  % endfor
+</div>
+% endif
+
+<form class="form-horizontal" action="${request.route_path('performances.import_orders.confirm', performance_id=performance.id)}" method="POST">
+  <div class="form-actions">
+    <input class="btn btn-primary pull-right" type="submit" name="submit" value="インポートを実行する">
+    <a href="${request.route_path('performances.import_orders.index', performance_id=performance.id)}" class="btn pull-right" style="margin-right: 10px;">戻る</a>
+  </div>
+</form>

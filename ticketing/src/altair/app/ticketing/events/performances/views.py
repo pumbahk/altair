@@ -21,7 +21,7 @@ from altair.app.ticketing.events.performances.forms import PerformanceForm, Perf
 from altair.app.ticketing.core.models import Performance, PerformanceSetting
 from altair.app.ticketing.core.api import get_organization
 from altair.app.ticketing.products.forms import ProductForm
-from altair.app.ticketing.orders.forms import OrderForm, OrderSearchForm
+from altair.app.ticketing.orders.forms import OrderForm, OrderSearchForm, OrderImportForm
 from altair.app.ticketing.venues.api import get_venue_site_adapter
 
 from altair.app.ticketing.mails.forms import MailInfoTemplate
@@ -35,7 +35,7 @@ from altair.app.ticketing.events.sales_segments.resources import (
     SalesSegmentGroupCreate,
 )
 
-@view_defaults(decorator=with_bootstrap, permission="event_editor")
+@view_defaults(decorator=with_bootstrap, permission='event_editor', renderer='altair.app.ticketing:templates/performances/show.html')
 class PerformanceShowView(BaseView):
     def __init__(self, context, request):
         super(PerformanceShowView, self).__init__(context, request)
@@ -98,15 +98,23 @@ class PerformanceShowView(BaseView):
 
     def _extra_data(self):
         # プリンターAPI
-        return dict(
+        data = dict(
             endpoints=dict(
                 (key, self.request.route_path('tickets.printer.api.%s' % key))
                 for key in ['formats', 'peek', 'dequeue']
                 )
             )
 
-    @view_config(route_name='performances.show', renderer='altair.app.ticketing:templates/performances/show.html', permission='event_viewer')
-    @view_config(route_name='performances.show_tab', renderer='altair.app.ticketing:templates/performances/show.html', permission='event_viewer')
+        ## cart url
+        cart_url = get_cart_url_builder(self.request).build(self.request, self.performance.event, self.performance)
+        data.update(dict(
+            cart_url=cart_url,
+            cart_now_cart_url=get_cart_now_url_builder(self.request).build(self.request, cart_url, self.performance.event_id)
+        ))
+        return data
+
+    @view_config(route_name='performances.show', permission='event_viewer')
+    @view_config(route_name='performances.show_tab', permission='event_viewer')
     def show(self):
         tab = self.request.matchdict.get('tab', 'product')
         if not isinstance(has_permission('event_editor', self.request.context, self.request), ACLAllowed):
@@ -124,12 +132,68 @@ class PerformanceShowView(BaseView):
             raise HTTPNotFound()
         data.update(getattr(self, tab_method)())
         data.update(self._extra_data())
-
-        ## cart url
-        cart_url = get_cart_url_builder(self.request).build(self.request, self.performance.event, self.performance)
-        data["cart_url"] = cart_url
-        data["cart_now_cart_url"] = get_cart_now_url_builder(self.request).build(self.request, cart_url, self.performance.event_id)
         return data
+
+    def import_orders_initialize(self):
+        # セッションに確保中の在庫があれば開放する
+        importer = self.request.session.get('ticketing.order.importer')
+        if importer:
+            importer.release_seats()
+            del self.request.session['ticketing.order.importer']
+
+    @view_config(route_name='performances.import_orders.index', request_method='GET')
+    def import_orders_get(self):
+        self.import_orders_initialize()
+        data = {
+            'tab': 'import_orders',
+            'performance': self.performance,
+            'form': OrderImportForm()
+        }
+        data.update(self._extra_data())
+        return data
+
+    @view_config(route_name='performances.import_orders.index', request_method='POST')
+    def import_orders_post(self):
+        self.import_orders_initialize()
+        f = OrderImportForm(self.request.params)
+        if f.validate():
+            from altair.app.ticketing.orders.importer import OrderImporter
+            from altair.app.ticketing.cart import api as cart_api
+            reserving = cart_api.get_reserving(self.request)
+            importer = OrderImporter(self.context, self.performance.id, **f.data)
+            importer.allocate_seats(reserving)
+            self.request.session['ticketing.order.importer'] = importer
+            return HTTPFound(self.request.route_url('performances.import_orders.confirm', performance_id=self.performance.id))
+        else:
+            return HTTPFound(self.request.route_url('performances.import_orders.index', performance_id=self.performance.id))
+
+    @view_config(route_name='performances.import_orders.confirm', request_method='GET')
+    def import_orders_confirm_get(self):
+        importer = self.request.session.get('ticketing.order.importer')
+        if importer:
+            data = {
+                'tab': 'import_orders',
+                'action': 'confirm',
+                'performance': self.performance,
+                'stats': importer.statistics()
+            }
+            data.update(self._extra_data())
+            return data
+        else:
+            return HTTPFound(self.request.route_url('performances.import_orders.index', performance_id=self.performance.id))
+
+    @view_config(route_name='performances.import_orders.confirm', request_method='POST')
+    def import_orders_confirm_post(self):
+        importer = self.request.session.get('ticketing.order.importer')
+        try:
+            importer.execute()
+        except Exception, e:
+            logger.error('order import error: %s' % e)
+            self.request.session.flash(u'インポート失敗しました')
+            raise HTTPFound(self.request.route_url('performances.import_orders.confirm', performance_id=self.performance.id))
+
+        self.request.session.flash(u'インポート成功しました')
+        return HTTPFound(self.request.route_url('performances.import_orders.index', performance_id=self.performance.id))
 
 
 @view_defaults(decorator=with_bootstrap, permission="event_editor")

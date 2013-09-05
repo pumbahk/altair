@@ -6,7 +6,7 @@ from datetime import datetime
 from pyramid.security import has_permission, ACLAllowed
 from wtforms import Form, ValidationError
 from wtforms import (HiddenField, TextField, SelectField, SelectMultipleField, TextAreaField, BooleanField,
-                     RadioField, FieldList, FormField, DecimalField, IntegerField)
+                     RadioField, FieldList, FormField, DecimalField, IntegerField, FileField)
 from wtforms.validators import Optional, AnyOf, Length, Email, Regexp
 from wtforms.widgets import CheckboxInput
 
@@ -21,6 +21,8 @@ from altair.app.ticketing.core.models import (Organization, PaymentMethod, Deliv
 from altair.app.ticketing.cart.schemas import ClientForm
 from altair.app.ticketing.payments import plugins
 from altair.app.ticketing.core import helpers as core_helpers
+from altair.app.ticketing.orders.importer import ImportTypeEnum
+
 
 class OrderForm(Form):
 
@@ -683,6 +685,34 @@ class OrderRefundForm(Form):
                     self.end_at.errors.append(u'入力してください')
                     status = False
         return status
+
+
+class OrderImportForm(Form):
+
+    def __init__(self, *args, **kwargs):
+        super(type(self), self).__init__(*args, **kwargs)
+
+    def _get_translations(self):
+        return Translations()
+
+    order_csv = FileField(
+        u'CSVファイル',
+        validators=[]
+    )
+    import_type = SelectField(
+        label=u'インポート方法',
+        validators=[Required()],
+        choices=[e.v for e in ImportTypeEnum],
+        coerce=int,
+    )
+    seat_allocation = BooleanField(
+        label=u'数受けの予約に座席を割り当てる',
+        validators=[Required()],
+    )
+
+    def validate_order_csv(form, field):
+        if not hasattr(field.data, 'file'):
+            raise ValidationError(u'選択してください')
 
 
 class ClientOptionalForm(ClientForm):
