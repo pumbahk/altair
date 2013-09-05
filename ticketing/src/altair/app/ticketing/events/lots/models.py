@@ -439,10 +439,8 @@ FROM LotEntryWish
               ON LotEntryWish.lot_entry_id = LotEntry.id
               JOIN Product
               ON LotEntryProduct.product_id = Product.id
-              JOIN Stock
-              ON Product.seat_stock_type_id = Stock.id
               JOIN StockType
-              ON Stock.stock_type_id = StockType.id
+              ON Product.seat_stock_type_id = StockType.id
          WHERE LotEntry.lot_id = %s
          AND LotEntryProduct.deleted_at IS NULL
          GROUP BY LotEntryProduct.lot_wish_id
@@ -503,15 +501,14 @@ AND LotEntry.deleted_at IS NULL
         u'性別',
     )
 
-    def __init__(self, session, lot_id, fetch_count=100):
+    def __init__(self, session, lot_id):
         self.session = session
         self.lot_id = lot_id
-        self.fetch_count = fetch_count
 
     def __iter__(self):
         cur = self.session.bind.execute(self.sql, self.lot_id, self.lot_id)
         try:
-            for row in cur.fetchmany(self.fetch_count):
+            for row in cur.fetchall():
                 yield OrderedDict([
                     (c, row[c])
                     for c in self.csv_columns]
