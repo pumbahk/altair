@@ -617,7 +617,11 @@ class LotEntries(BaseView):
             if len(parts) < 3:
                 raise Exception, parts
             entry_no = parts[1]
-            wish_order = parts[2]
+            try:
+                wish_order = int(parts[2]) - 1
+            except ValueError:
+                continue
+
             entries.append((entry_no, wish_order))
         return entries
 
