@@ -26,6 +26,13 @@ def new_venue_site_provider_factory_factory(config):
         return _
     return factory_factory
 
+def setup_components(config):
+    config.registry.registerAdapter(
+        new_venue_site_provider_factory_factory(config),
+        (ITentativeVenueSite, ),
+        IVenueSiteDrawingProviderAdapterFactory
+        )
+
 def includeme(config):
     from .resources import VenueAdminResource
     factory = newRootFactory(VenueAdminResource)
@@ -38,9 +45,5 @@ def includeme(config):
     config.add_route("api.get_seats", "/{venue_id}/seats/", factory=factory)
     config.add_route("api.get_frontend", "/{venue_id}/frontend/{part}", factory=factory)
     config.add_route("seats.download", "/download/{venue_id}", factory=factory)
-    config.registry.registerAdapter(
-        new_venue_site_provider_factory_factory(config),
-        (ITentativeVenueSite, ),
-        IVenueSiteDrawingProviderAdapterFactory
-        )
+    config.include(setup_components)
     config.scan(".")
