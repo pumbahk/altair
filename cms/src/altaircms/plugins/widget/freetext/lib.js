@@ -54,9 +54,14 @@ if(!widget){
 
     var collect_data = function(we, choiced_elt){
         var root = $(we.dialog)
+
         var freetext = root.find(text_area_expr).val();
+        if (freetext == "") return {freetext: ""}
+
         var $dom = $(freetext);
-        if ($("#short_name").val() == "RT") {
+        if (!$dom.html()) $dom = $("<span>" + freetext + "</span>");
+
+        if ($("#org_id").val() == "8") {
             $dom.find("A").attr({target:"_blank"});
         }
         return {freetext: $dom.html()}
