@@ -259,10 +259,6 @@ class Orders(BaseView):
         organization_id = self.context.organization.id
         query = DBSession.query(Order).filter(Order.organization_id==organization_id)
 
-        if self.request.params.get('action') == 'checked':
-            checked_orders = [o.lstrip('o:') for o in self.request.session.get('orders', []) if o.startswith('o:')]
-            query = query.filter(Order.id.in_(checked_orders))
-
         params = MultiDict(self.request.params)
         params["order_no"] = " ".join(self.request.params.getall("order_no"))
 
@@ -272,6 +268,10 @@ class Orders(BaseView):
                 query = OrderSummarySearchQueryBuilder(form_search.data, lambda key: form_search[key].label.text)(slave_session.query(OrderSummary).filter(OrderSummary.organization_id==organization_id, OrderSummary.deleted_at==None))
             except QueryBuilderError as e:
                 self.request.session.flash(e.message)
+
+        if self.request.params.get('action') == 'checked':
+            checked_orders = [o.lstrip('o:') for o in self.request.session.get('orders', []) if o.startswith('o:')]
+            query = query.filter(Order.id.in_(checked_orders))
 
         page = int(self.request.params.get('page', 0))
 
@@ -367,8 +367,8 @@ class OrdersRefundIndexView(BaseView):
     def index(self):
         if self.request.session.get('orders'):
             del self.request.session['orders']
-        if self.request.session.get('altair.app.ticketing.refund.condition'):
-            del self.request.session['altair.app.ticketing.refund.condition']
+        if self.request.session.get('ticketing.refund.condition'):
+            del self.request.session['ticketing.refund.condition']
 
         form_search = OrderRefundSearchForm(organization_id=self.organization_id)
         page = 0
@@ -387,7 +387,7 @@ class OrdersRefundIndexView(BaseView):
         if self.request.method == 'POST':
             refund_condition = self.request.params
         else:
-            refund_condition = MultiDict(self.request.session.get('altair.app.ticketing.refund.condition', []))
+            refund_condition = MultiDict(self.request.session.get('ticketing.refund.condition', []))
         form_search = OrderRefundSearchForm(refund_condition, organization_id=self.organization_id)
         if form_search.validate():
             query = Order.filter(Order.organization_id==self.organization_id)
@@ -396,15 +396,13 @@ class OrdersRefundIndexView(BaseView):
             except QueryBuilderError as e:
                 self.request.session.flash(e.message)
 
-            if self.request.method == 'POST':
+            if self.request.method == 'POST' and self.request.params.get('page', None) is None:
                 # 検索結果のOrder.idはデフォルト選択状態にする
                 checked_orders = set()
-                order_ids = query.with_entities(Order.id).all()
-                for order_id in order_ids:
-                    checked_orders.add('o:%s' % order_id)
-
+                for order in query:
+                    checked_orders.add('o:%s' % order.id)
                 self.request.session['orders'] = checked_orders
-                self.request.session['altair.app.ticketing.refund.condition'] = self.request.params.items()
+                self.request.session['ticketing.refund.condition'] = self.request.params.items()
 
             page = int(self.request.params.get('page', 0))
             orders = paginate.Page(
@@ -428,7 +426,7 @@ class OrdersRefundIndexView(BaseView):
     @view_config(route_name='orders.refund.checked')
     def checked(self):
         slave_session = get_db_session(self.request, name="slave")
-        refund_condition = MultiDict(self.request.session.get('altair.app.ticketing.refund.condition', []))
+        refund_condition = MultiDict(self.request.session.get('ticketing.refund.condition', []))
         form_search = OrderRefundSearchForm(refund_condition, organization_id=self.organization_id)
         if form_search.validate():
             try:
@@ -466,7 +464,7 @@ class OrdersRefundConfirmView(BaseView):
         super(type(self), self).__init__(*args, **kwargs)
 
         self.checked_orders = [o.lstrip('o:') for o in self.request.session.get('orders', []) if o.startswith('o:')]
-        self.refund_condition = MultiDict(self.request.session.get('altair.app.ticketing.refund.condition', []))
+        self.refund_condition = MultiDict(self.request.session.get('ticketing.refund.condition', []))
         self.organization_id = int(self.context.organization.id)
         self.form_search = OrderRefundSearchForm(self.refund_condition, organization_id=self.organization_id)
 
@@ -476,10 +474,10 @@ class OrdersRefundConfirmView(BaseView):
             self.request.session.flash(u'払戻対象を選択してください')
             return HTTPFound(location=route_path('orders.refund.checked', self.request))
 
-        form_refund = OrderRefundForm(
-            MultiDict(payment_method_id=self.form_search.payment_method.data),
-            organization_id=self.organization_id
-        )
+        params = MultiDict()
+        if self.form_search.payment_method.data:
+            params.add('payment_method_id', self.form_search.payment_method.data)
+        form_refund = OrderRefundForm(params, organization_id=self.organization_id)
         return {
             'orders':self.checked_orders,
             'refund_condition':self.refund_condition,
@@ -513,7 +511,7 @@ class OrdersRefundConfirmView(BaseView):
         Order.reserve_refund(refund_param)
 
         del self.request.session['orders']
-        del self.request.session['altair.app.ticketing.refund.condition']
+        del self.request.session['ticketing.refund.condition']
 
         self.request.session.flash(u'払戻予約しました')
         return HTTPFound(location=route_path('orders.refund.index', self.request))
@@ -941,6 +939,35 @@ class OrderDetailView(BaseView):
         self.request.session.flash(u'券面を印刷キューに追加しました')
         return HTTPFound(location=self.request.route_path('orders.show', order_id=order_id))
 
+    @view_config(route_name="orders.checked.delivered", request_method="POST", permission='sales_counter')
+    def change_checked_orders_to_delivered(self):
+        ords = self.request.session.get("orders", [])
+        ords = [o.lstrip("o:") for o in ords if o.startswith("o:")]
+        qs = Order.query.filter(Order.organization_id==self.context.organization.id)\
+                        .filter(Order.id.in_(ords))        
+        exist_order_ids = set()
+        fail_nos = []
+        for order in qs:
+            exist_order_ids.add(str(order.id))
+            no = order.order_no
+            status = order.delivered()
+            if not status:
+                fail_nos.append(no)
+
+        request_ids = set(ords)
+        lost_order_ids = request_ids - exist_order_ids
+
+        if fail_nos:
+            nos_str = ', '.join(fail_nos)            
+            self.request.session.flash(u'配送済に変更できない注文が含まれていました。')
+            self.request.session.flash(u'({0})'.format(nos_str))
+
+        if lost_order_ids:
+            ids_str = ', '.join(map(repr, lost_order_ids))
+            self.request.session.flash(u'存在しない注文が含まれていました。')
+            self.request.session.flash(u'({0})'.format(ids_str))
+            
+        return HTTPFound(location=self.request.route_path('orders.index'))
 
 @view_defaults(decorator=with_bootstrap, permission='sales_counter')
 class OrdersReserveView(BaseView):
@@ -1124,8 +1151,9 @@ class OrdersReserveView(BaseView):
             self.release_seats(performance.venue, seats)
 
             # create cart
-            cart = api.order_products(self.request, performance_id, order_items, selected_seats=seats)
-            cart.sales_segment = SalesSegment.get(f.sales_segment_id.data)
+            sales_segment = SalesSegment.get(f.sales_segment_id.data)
+            cart = api.order_products(self.request, sales_segment.id, order_items, selected_seats=seats)
+            cart.sales_segment = sales_segment
             pdmp = DBSession.query(PaymentDeliveryMethodPair).filter_by(id=post_data.get('payment_delivery_method_pair_id')).one()
             cart.payment_delivery_pair = pdmp
             cart.channel = ChannelEnum.INNER.v
@@ -1639,6 +1667,7 @@ class MailInfoView(BaseView):
         self.request.session.flash(u'メール再送信しました')
         return HTTPFound(self.request.current_route_url(order_id=order_id, action="show"))
 
+
 @view_defaults(decorator=with_bootstrap, permission='sales_editor')
 class CartView(BaseView):
     def __init__(self, context, request):
@@ -1672,3 +1701,4 @@ class CartView(BaseView):
             )
 
         return { 'form_search': form, 'carts': carts, 'url': self.request.path }
+

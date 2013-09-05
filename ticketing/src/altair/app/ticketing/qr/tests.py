@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import unittest
-from altair.app.ticketing.qr import qr
+from .builder import qr
 
 class QrTest(unittest.TestCase):
     data = { "serial": "SERIALNUMBER",
@@ -20,6 +20,28 @@ class QrTest(unittest.TestCase):
     def tearDown(self):
         pass
     
+    def test_enc32(self):
+        self.assertEqual(self.o.dec32(self.o.enc32(31)), 31)
+
+    def test_enc42(self):
+        s = u"A あa!\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~ん"
+        self.assertEqual(self.o.dec42(self.o.enc42(s)), s)
+
+    def test_enc42_basic(self):
+        self.assertEqual(self.o.dec42(self.o.enc42(u"あいう")), u"あいう")
+
+    def test_enc42_euc_mark(self):
+        self.assertEqual(self.o.dec42(self.o.enc42(u"△■＠")), u"△■＠")
+
+    def test_enc42_utf_mark_replace(self):
+        self.assertEqual(self.o.dec42(self.o.enc42(u"♡")), u"〓")
+
+    def test_enc42_asc(self):
+        self.assertEqual(self.o.dec42(self.o.enc42("ABC")), u"ABC")
+
+    def test_enc42_misc(self):
+        self.assertEqual(self.o.dec42(self.o.enc42("abc")), u"abc")
+
     def test_sign(self):
         self.assertEqual(self.o.sign("ABC"), "CP7BJVI7"+"ABC")
     

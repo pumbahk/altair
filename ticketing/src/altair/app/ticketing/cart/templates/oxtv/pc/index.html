@@ -70,6 +70,12 @@ $(function() {cart.init(salesSegmentsSelection, selected, cartReleaseUrl, true);
   </div>
 </%block>
     ${self.widget.flow_widget(1)}
+    % if preferred_performance:
+    <div class="settlementNotice">
+      <p>誠に申し訳ございませんが、選択された公演「${h.format_name(request, performance=preferred_performance)}」は<u>現在販売しておりません</u>。</p>
+      <p>他の日時／会場を下記よりお選びいただけます。</p>
+    </div>
+    % endif
     <div class="settlementBox2" id="settlementEventDetail" style="clear:both">
       <div class="settlementBoxInner2">
         <h2 style="border-left: 2px solid #bf191f; border-bottom: none; padding: 4px 0 4px 5px; margin: 8px 0 0 12px; height:21px; line-height: 21px; font-size:14px; background: none">${event['title']}</h2>

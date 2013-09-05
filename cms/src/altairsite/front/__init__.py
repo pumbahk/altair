@@ -12,9 +12,14 @@ def install_lookupwrapper(config, name="intercept"):
     from pyramid.mako_templating import IMakoLookup
     from altairsite.front.renderer import ILookupWrapperFactory
     from altairsite.front.renderer import LayoutModelLookupWrapperFactory
+    from altairsite.front.renderer import S3Loader
     settings = config.registry.settings
     factory = LayoutModelLookupWrapperFactory(directory_spec=settings["altaircms.layout_directory"], 
-                                              s3prefix=settings["altaircms.layout_s3prefix"])
+                                              loader=S3Loader(bucket_name=settings["s3.bucket_name"], 
+                                                              access_key=settings["s3.access_key"],                                               
+                                                              secret_key=settings["s3.secret_key"], 
+                                                              ), 
+                                              prefix=settings["altaircms.layout_s3prefix"])
     config.registry.adapters.register([IMakoLookup], ILookupWrapperFactory, name=name, value=factory)
    
 def includeme(config):

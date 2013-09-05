@@ -45,17 +45,17 @@ class LotEntriesTests(unittest.TestCase):
         request = _dummy_request()
         lot = Lot(event=request.context.event)
 
-        wish1 = _wish(lot=lot, entry_no='RT0000003109', wish_order=1)
-        wish2 = _wish(lot=lot, entry_no='RT000000310A', wish_order=1)
-        wish3 = _wish(lot=lot, entry_no='RT0000000000', wish_order=1)
-        wish4 = _wish(lot=lot, entry_no='RT0000000001', wish_order=1)
-        wish5 = _wish(lot=lot, entry_no='RT0000000002', wish_order=1)
+        wish1 = _wish(lot=lot, entry_no=u'RT0000003109', wish_order=1)
+        wish2 = _wish(lot=lot, entry_no=u'RT000000310A', wish_order=1)
+        wish3 = _wish(lot=lot, entry_no=u'RT0000000000', wish_order=1)
+        wish4 = _wish(lot=lot, entry_no=u'RT0000000001', wish_order=1)
+        wish5 = _wish(lot=lot, entry_no=u'RT0000000002', wish_order=1)
         # 当選
-        wish6 = _wish(lot=lot, entry_no='RT0000000003', wish_order=1, elected_at=datetime.now())
+        wish6 = _wish(lot=lot, entry_no=u'RT0000000003', wish_order=1, elected_at=datetime.now())
         # 落選
-        wish7 = _wish(lot=lot, entry_no='RT0000000004', wish_order=1, rejected_at=datetime.now())
+        wish7 = _wish(lot=lot, entry_no=u'RT0000000004', wish_order=1, rejected_at=datetime.now())
         # キャンセル
-        wish8 = _wish(lot=lot, entry_no='RT0000000005', wish_order=1, canceled_at=datetime.now())
+        wish8 = _wish(lot=lot, entry_no=u'RT0000000005', wish_order=1, canceled_at=datetime.now())
 
         self.session.add(lot)
         self.session.flush()

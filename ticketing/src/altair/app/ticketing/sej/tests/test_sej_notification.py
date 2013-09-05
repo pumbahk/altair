@@ -286,3 +286,40 @@ class SejNotificationTest(unittest.TestCase, CoreTestMixin):
         assert notification.reflected_at is not None
         assert order.canceled_at is not None
         assert sej_order.cancel_at is not None
+
+    def test_expire_notification_paid_order(self):
+        from ..models import SejOrder
+        from ..resources import SejPaymentType
+        from altair.app.ticketing.core.models import PaymentDeliveryMethodPair
+        from altair.app.ticketing.payments.plugins import SEJ_PAYMENT_PLUGIN_ID, SEJ_DELIVERY_PLUGIN_ID
+        order = self._create_order(
+            [(product, 1) for product in self.products],
+            pdmp=PaymentDeliveryMethodPair(
+                system_fee=0.,
+                transaction_fee=0.,
+                delivery_fee=0.,
+                discount=0.,
+                discount_unit=0,
+                public=True,
+                payment_method=self.payment_methods[SEJ_PAYMENT_PLUGIN_ID],
+                delivery_method=self.delivery_methods[SEJ_DELIVERY_PLUGIN_ID]
+                )
+            )
+        order.order_no = '012301230123'
+        self.session.add(order)
+        sej_order = SejOrder(
+            order_id=order.order_no,
+            exchange_number='000000000000',
+            billing_number='000000000000',
+            payment_type=SejPaymentType.Paid.v
+            )
+        self.session.add(sej_order)
+        self.session.flush()
+        notification = create_expire_notification_from_order('000000', sej_order)
+        self.session.add(notification)
+        from ..notification import process_notification
+        process_notification(testing.DummyRequest())
+        assert notification.reflected_at is not None
+        assert sej_order.processed_at is not None
+        assert sej_order.cancel_at is None
+        assert order.canceled_at is None

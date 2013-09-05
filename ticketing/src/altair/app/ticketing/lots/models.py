@@ -381,7 +381,6 @@ class Lot(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                 LotEntry.entry_no==entry_no
         ).first()
 
-
 class LotEntry(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     """ 抽選申し込み """
     
@@ -517,7 +516,79 @@ class LotEntry(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         ).count()
 
 
-class LotEntryWish(Base, BaseModel, WithTimestamp, LogicallyDeleted):
+class LotEntryProductSupport(object):
+    """ 表示と実モデルで利用する金額計算プロパティ """
+
+    @property
+    def subtotal(self):
+        """ 購入額小計
+        """
+        return self.product.price * self.quantity
+
+
+class LotEntryWishSupport(object):
+    """ 表示と実モデルで利用する金額計算プロパティ """
+
+    @property
+    def product_quantities(self):
+        """ (product, quantity) """
+        return [(p.product, p.quantity)
+                for p in self.products]
+
+
+    @property
+    def transaction_fee(self):
+        """ 決済手数料 """
+        return self.lot_entry.sales_segment.get_transaction_fee(self.lot_entry.payment_delivery_method_pair,
+                                                                self.product_quantities)
+
+    @property
+    def delivery_fee(self):
+        """ 引取手数料 """
+        return self.lot_entry.sales_segment.get_delivery_fee(self.lot_entry.payment_delivery_method_pair,
+                                                             self.product_quantities)
+
+    @property
+    def tickets_amount(self):
+        return sum(p.subtotal for p in self.products)
+
+    @property
+    def total_amount(self):
+        return self.tickets_amount + self.system_fee + self.transaction_fee + self.delivery_fee
+
+    @property
+    def total_quantity(self):
+        return sum([p.quantity for p in self.products])
+
+    @property
+    def system_fee(self):
+        #return self.lot_entry.lot.system_fee
+        return self.lot_entry.payment_delivery_method_pair.system_fee
+
+class TemporaryLotEntry(object):
+    def __init__(self, payment_delivery_method_pair, sales_segment):
+        self.payment_delivery_method_pair = payment_delivery_method_pair
+        self.sales_segment = sales_segment
+
+
+class TemporaryLotEntryProduct(LotEntryProductSupport):
+    def __init__(self, quantity, product):
+        self.quantity = quantity
+        self.product = product
+
+class TemporaryLotEntryWish(LotEntryWishSupport):
+    """ 確認画面用のオンメモリ希望内容 """
+
+    def __init__(self, wish_order, performance,
+                 payment_delivery_method_pair,
+                 sales_segment):
+        self.wish_order = wish_order
+        self.performance = performance
+        self.lot_entry = TemporaryLotEntry(payment_delivery_method_pair, sales_segment)
+        self.products = []
+
+    
+class LotEntryWish(LotEntryWishSupport, Base, BaseModel, WithTimestamp, LogicallyDeleted):
     u""" 抽選申し込み希望 """
     __tablename__ = 'LotEntryWish'
 
@@ -577,40 +648,6 @@ class LotEntryWish(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     def work_errors(self):
         return [w.error for w in self.works if w.error]
 
-    @property
-    def product_quantities(self):
-        """ (product, quantity) """
-        return [(p.product, p.quantity)
-                for p in self.products]
-
-    @property
-    def transaction_fee(self):
-        """ 決済手数料 """
-        return self.lot_entry.sales_segment.get_transaction_fee(self.lot_entry.payment_delivery_method_pair,
-                                                                self.product_quantities)
-
-    @property
-    def delivery_fee(self):
-        """ 引取手数料 """
-        return self.lot_entry.sales_segment.get_delivery_fee(self.lot_entry.payment_delivery_method_pair,
-                                                             self.product_quantities)
-
-    @property
-    def tickets_amount(self):
-        return sum(p.subtotal for p in self.products)
-
-    @property
-    def total_amount(self):
-        return self.tickets_amount + self.system_fee + self.transaction_fee + self.delivery_fee
-
-    @property
-    def total_quantity(self):
-        return sum([p.quantity for p in self.products])
-
-    @property
-    def system_fee(self):
-        #return self.lot_entry.lot.system_fee
-        return self.lot_entry.payment_delivery_method_pair.system_fee
 
 
     @property
@@ -644,7 +681,7 @@ class LotEntryWish(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         now = now or datetime.now()
         self.canceled_at = now
 
-class LotEntryProduct(Base, BaseModel, WithTimestamp, LogicallyDeleted):
+class LotEntryProduct(LotEntryProductSupport, Base, BaseModel, WithTimestamp, LogicallyDeleted):
     u""" 抽選申し込み商品 """
     __tablename__ = 'LotEntryProduct'
     
@@ -666,12 +703,6 @@ class LotEntryProduct(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     organization_id = sa.Column(Identifier,
                                 sa.ForeignKey('Organization.id'))
     organization = orm.relationship('Organization', backref='lot_entry_products')
-
-    @property
-    def subtotal(self):
-        """ 購入額小計
-        """
-        return self.product.price * self.quantity
 
 
 #class LotElectWork(Base, BaseModel, WithTimestamp, LogicallyDeleted):

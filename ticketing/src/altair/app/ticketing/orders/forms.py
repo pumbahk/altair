@@ -323,13 +323,13 @@ class OrderRefundSearchForm(OrderSearchForm):
 
     payment_method = SelectField(
         label=u'決済方法',
-        validators=[Required()],
+        validators=[Optional()],
         choices=[],
         coerce=int,
     )
     delivery_method = SelectMultipleField(
         label=u'引取方法',
-        validators=[Required()],
+        validators=[Optional()],
         choices=[],
         coerce=int,
     )
@@ -343,13 +343,13 @@ class OrderRefundSearchForm(OrderSearchForm):
         label=u"公演",
         coerce=lambda x : int(x) if x else u"",
         choices=[],
-        validators=[Required()],
+        validators=[Optional()],
     )
     sales_segment_group_id = SelectMultipleField(
         label=u'販売区分',
         coerce=lambda x : int(x) if x else u"",
         choices=[],
-        validators=[Required()],
+        validators=[Optional()],
     )
     status = BugFreeSelectMultipleField(
         label=u'ステータス',
@@ -600,26 +600,26 @@ class OrderRefundForm(Form):
         coerce=int,
     )
     include_item = IntegerField(
-        label=u'商品金額を払戻しする',
-        validators=[Required()],
+        label=u'商品金額',
+        validators=[Optional()],
         default=0,
         widget=CheckboxInput(),
     )
     include_system_fee = IntegerField(
-        label=u'システム利用料を払戻しする',
-        validators=[Required()],
+        label=u'システム利用料',
+        validators=[Optional()],
         default=0,
         widget=CheckboxInput(),
     )
     include_transaction_fee = IntegerField(
-        label=u'決済手数料を払戻しする',
-        validators=[Required()],
+        label=u'決済手数料',
+        validators=[Optional()],
         default=0,
         widget=CheckboxInput(),
     )
     include_delivery_fee = IntegerField(
-        label=u'配送手数料を払戻しする',
-        validators=[Required()],
+        label=u'配送手数料',
+        validators=[Optional()],
         default=0,
         widget=CheckboxInput(),
     )
@@ -628,6 +628,23 @@ class OrderRefundForm(Form):
         validators=[Required()],
         choices=[e.v for e in OrderCancelReasonEnum],
         coerce=int
+    )
+    start_at = DateField(
+        label=u'払戻期間',
+        validators=[Optional(), after1900],
+        format='%Y-%m-%d',
+        widget=OurDateWidget()
+    )
+    end_at = DateField(
+        label=u'払戻期間',
+        validators=[Optional(), after1900],
+        format='%Y-%m-%d',
+        missing_value_defaults=dict(
+            year=u'',
+            month=Max,
+            day=Max
+        ),
+        widget=OurDateWidget()
     )
 
     def validate_payment_method_id(form, field):
@@ -641,9 +658,32 @@ class OrderRefundForm(Form):
                 # 決済と払戻が別でもよいのは、払戻方法が 銀行振込 コンビニ決済 のケースのみ
                 raise ValidationError(u'指定された払戻方法は、この決済方法では選択できません')
 
-    def validate_include_item(form, field):
-        if not field.data and not form.include_system_fee.data and not form.include_transaction_fee.data and not form.include_delivery_fee.data:
-            raise ValidationError(u'払戻対象を選択してください')
+    def validate(self):
+        status = super(type(self), self).validate()
+        if status:
+            import logging
+            logging.info('*'*100)
+            logging.info(self.start_at.data)
+            logging.info('*'*100)
+
+            if not self.include_item.data and \
+               not self.include_system_fee.data and \
+               not self.include_transaction_fee.data and \
+               not self.include_delivery_fee.data:
+                self.include_item.errors.append(u'払戻対象を選択してください')
+                status = False
+
+            # コンビニ払戻なら必須
+            refund_pm = PaymentMethod.get(self.payment_method_id.data)
+            if refund_pm.payment_plugin_id == plugins.SEJ_PAYMENT_PLUGIN_ID:
+                if not self.start_at.data:
+                    self.start_at.errors.append(u'入力してください')
+                    status = False
+                if not self.end_at.data:
+                    self.end_at.errors.append(u'入力してください')
+                    status = False
+        return status
+
 
 class ClientOptionalForm(ClientForm):
     def __init__(self, formdata=None, obj=None, prefix='', **kwargs):

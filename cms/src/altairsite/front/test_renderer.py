@@ -21,7 +21,7 @@ class HandlerTest(unittest.TestCase):
     def test_need_intercept(self):
         layout_uploaded_at = mkdatetime(13, 0, 0)
         layout_spec = "altaircms:templates/front/layout"
-        target = self._makeOne(None, layout_spec, layout_uploaded_at)
+        target = self._makeOne(None, layout_spec, layout_uploaded_at, None)
 
         self.assertTrue(target.need_intercept("altaircms:templates/front/layout/RT/index.html"))
         self.assertFalse(target.need_intercept("altaircms:templates/front/index.html"))
@@ -29,7 +29,7 @@ class HandlerTest(unittest.TestCase):
 
     def test_need_intercept__if_uploaded_at_is_None(self):
         layout_spec = "altaircms:templates/front/layout"
-        target = self._makeOne(None, layout_spec, None)
+        target = self._makeOne(None, layout_spec, None, None)
 
         self.assertFalse(target.need_intercept("altaircms:templates/front/layout/RT/index.html"))
         self.assertFalse(target.need_intercept("altaircms:templates/front/index.html"))
@@ -38,27 +38,27 @@ class HandlerTest(unittest.TestCase):
 
     def test_need_refresh(self):
         layout_uploaded_at = mkdatetime(13, 0, 0)
-        target = self._makeOne(None, None, layout_uploaded_at)
+        target = self._makeOne(None, None, layout_uploaded_at, None)
 
         self.assertTrue(target.need_refresh(mktime(12, 0, 0)))
         self.assertFalse(target.need_refresh(mktime(14, 0, 0)))
 
     def test_need_refresh__if_modifled_None(self):
-        target = self._makeOne(None, None, None)
+        target = self._makeOne(None, None, None, None)
         self.assertFalse(target.need_refresh(None))
 
 
     def test_normalize_for_key(self):
         layout_uploaded_at = mkdatetime(13, 0, 0)
-        target = self._makeOne(None, None, layout_uploaded_at)
+        target = self._makeOne(None, None, layout_uploaded_at, None)
         
         self.assertEquals(target.normalize_for_key("/front/index.html"), 
-                          "/front/index.html@201308231300")
+                          "/front/index.html@20130823130000")
         self.assertEquals(target.normalize_for_key("altaircms:front/layout/RT/index.html"),
-                          "altaircms$front/layout/RT/index.html@201308231300")
+                          "altaircms$front/layout/RT/index.html@20130823130000")
 
     def test_normalize_for_key__uploaded_at_is_None(self):
-        target = self._makeOne(None, None, None)
+        target = self._makeOne(None, None, None, None)
         
         self.assertEquals(target.normalize_for_key("/front/index.html"),
                           "/front/index.html")
@@ -66,47 +66,45 @@ class HandlerTest(unittest.TestCase):
                           "altaircms$front/layout/RT/index.html")
 
     def test_build_url(self):
-        prefix = "http://tstar-dev.s3.amazonaws.com/cms-layout-templates"
+        prefix = "cms-layout-templates"
         layout_spec = "altaircms:templates/front/layout"
-        target = self._makeOne(prefix, layout_spec, None)
+        target = self._makeOne(prefix, layout_spec, None, None)
         
         name = "altaircms:templates/front/layout/RT/index.html"
         result = target.build_url(name)
-        self.assertEquals(result, "http://tstar-dev.s3.amazonaws.com/cms-layout-templates/RT/index.html")
+        self.assertEquals(result, "cms-layout-templates/RT/index.html")
         
 
-    @mock.patch("altairsite.front.renderer.urllib.urlopen")
-    def test_load_template(self, m):
-        m.return_value.code = 200
-        m.return_value.read.return_value = "ok:${status}"
-
-        prefix = "http://tstar-dev.s3.amazonaws.com/cms-layout-templates"
+    def test_load_template(self):
+        prefix = "cms-layout-templates"
         layout_spec = "altaircms:templates/front/layout"
-        target = self._makeOne(prefix, layout_spec, None)
-        
+
+        def dummy_loader(key):
+            self.assertEquals(key, "cms-layout-templates/RT/index.html")
+            return "ok:${status}"
+
+        target = self._makeOne(prefix, layout_spec, None, dummy_loader)
         lookup=DummyResource(template_args={})
-        name = "altaircms:front/layout/RT/index.html"
-        uri = "altaircms$front/layout/RT/index.html@2013081312"
+        name = "altaircms:templates/front/layout/RT/index.html"
+        uri = "altaircms:templates$front/layout/RT/index.html@2013081312"
         result = target.load_template(lookup, name, uri, None)
 
         self.assertEquals(result.render(status=200), "ok:200")
 
-    @mock.patch("altairsite.front.renderer.urllib.urlopen")
-    def test_load_template__error(self, m):
-        m.return_value.code = 403
-        m.return_value.read.return_value = "ng"
-
-        prefix = "http://tstar-dev.s3.amazonaws.com/cms-layout-templates"
+    def test_load_template__error(self):
+        prefix = "cms-layout-templates"
         layout_spec = "altaircms:templates/front/layout"
-        target = self._makeOne(prefix, layout_spec, None)
-        
-        lookup=DummyResource(template_args={})
-        name = "altaircms:front/layout/RT/index.html"
-        uri = "altaircms$front/layout/RT/index.html@2013081312"
 
+        def dummy_loader(key):
+            raise Exception("ng")
+        
+        target = self._makeOne(prefix, layout_spec, None, dummy_loader)
+        lookup=DummyResource(template_args={})
+        name = "altaircms:templates/front/layout/RT/index.html"
+        uri = "altaircms:templates$front/layout/RT/index.html@2013081312"
         from pyramid.httpexceptions import HTTPNotFound
-        with self.assertRaisesRegexp(HTTPNotFound, "ng"):
-            target.load_template(lookup, name, uri, None)
+        with self.assertRaises(HTTPNotFound):
+            target.load_template(lookup, name, uri, dummy_loader)
 
 
 class LookupWrapperTest(unittest.TestCase):
@@ -186,27 +184,25 @@ class IntegrationTest(unittest.TestCase):
         from altairsite.front.renderer import LookupInterceptWrapper
         return LookupInterceptWrapper(*args, **kwargs)
 
-    def _getHandler(self):
+    def _getHandler(self, expected_url, response_message=":response-message:"):
         from altairsite.front.renderer import LayoutModelLookupInterceptHandler
-        prefix = "http://tstar-dev.s3.amazonaws.com/cms-layout-templates"
+        prefix = "cms-layout-templates"
         layout_spec = "altaircms:templates/front/layout"
         uploaded_at = mkdatetime(10, 0, 0)
-        return LayoutModelLookupInterceptHandler(prefix, layout_spec, uploaded_at)
+        def dummy_loader(url):
+            if url == expected_url:
+                return response_message
+            raise Exception
+        return LayoutModelLookupInterceptHandler(prefix, layout_spec, uploaded_at, dummy_loader)
 
 
-    @mock.patch("altairsite.front.renderer.urllib.urlopen")
-    def test_first_call__load_template__from_external_resource(self, m):
-        m.return_value.code = 200
-        m.return_value.read.return_value = ":external-resource:"
-
+    def test_first_call__load_template__from_external_resource(self):
         from mako.lookup import TemplateLookup
         lookup = TemplateLookup()
 
-        handler = self._getHandler()
+        handler = self._getHandler(expected_url="cms-layout-templates/RT/index.html", response_message=":external-resource:")
         target = self._makeOne(lookup, handler)
         result = target.get_template(self.layout_spec)
-
-        m.assert_called_once_with("http://tstar-dev.s3.amazonaws.com/cms-layout-templates/RT/index.html")
         self.assertEquals(result.render(), ":external-resource:")
 
     @mock.patch("mako.lookup.TemplateLookup.get_template")
@@ -214,7 +210,7 @@ class IntegrationTest(unittest.TestCase):
         from mako.lookup import TemplateLookup
         lookup = TemplateLookup()
         
-        handler = self._getHandler()
+        handler = self._getHandler(expected_url="cms-layout-templates/RT/index.html", response_message=":external-resource:")
         target = self._makeOne(lookup, handler)
 
         result = target.get_template("altaircms:templates/another/foo.html")
@@ -227,7 +223,7 @@ class IntegrationTest(unittest.TestCase):
         from mako.lookup import TemplateLookup
         lookup = TemplateLookup()
 
-        handler = self._getHandler()
+        handler = self._getHandler(expected_url="cms-layout-templates/RT/index.html", response_message=":external-resource:")
         handler.uploaded_at = None
         target = self._makeOne(lookup, handler)
 
@@ -236,12 +232,11 @@ class IntegrationTest(unittest.TestCase):
         m.assert_called_once_with(self.layout_spec)
         self.assertEqual(result, m())
 
-
     def test_second_call__using_cache(self):
         from mako.lookup import TemplateLookup
         lookup = TemplateLookup()
        
-        handler = self._getHandler()
+        handler = self._getHandler(expected_url="cms-layout-templates/RT/index.html", response_message=":external-resource:")
         target = self._makeOne(lookup, handler)
 
         ## put cache(as called once).
@@ -256,7 +251,7 @@ class IntegrationTest(unittest.TestCase):
         from mako.lookup import TemplateLookup
         lookup = TemplateLookup()
         
-        handler = self._getHandler()
+        handler = self._getHandler(expected_url="cms-layout-templates/RT/index.html", response_message=":external-resource:")
         handler.uploaded_at = None
         target = self._makeOne(lookup, handler)
 
@@ -269,15 +264,11 @@ class IntegrationTest(unittest.TestCase):
         self.assertEqual(result, m())
 
 
-    @mock.patch("altairsite.front.renderer.urllib.urlopen")
-    def test_second_call__cache_is_older__load_template__from_external_resource(self, m):
-        m.return_value.code = 200
-        m.return_value.read.return_value = ":external-resource:"
-
+    def test_second_call__cache_is_older__load_template__from_external_resource(self):
         from mako.lookup import TemplateLookup
         lookup = TemplateLookup()
         
-        handler = self._getHandler()
+        handler = self._getHandler(expected_url="cms-layout-templates/RT/index.html", response_message=":external-resource:")
         handler.uploaded_at = None
         target = self._makeOne(lookup, handler)
 
@@ -293,8 +284,6 @@ class IntegrationTest(unittest.TestCase):
         ##
 
         result = target.get_template(self.layout_spec)
-
-        m.assert_called_once_with("http://tstar-dev.s3.amazonaws.com/cms-layout-templates/RT/index.html")
         self.assertEqual(result.render(), ":external-resource:")
 
 

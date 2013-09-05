@@ -208,11 +208,7 @@ class SejTicket(BaseModel,  WithTimestamp, LogicallyDeleted, Base):
     performance_datetime    = Column(DateTime)
     ticket_template_id      = Column(String(10))
     ticket_data_xml         = Column(String(5000))
-
     order                   = relationship("SejOrder", backref='tickets', order_by='SejTicket.ticket_idx')
     order_id                = Column(Identifier, ForeignKey("SejOrder.id"), nullable=True)
-
     ticket_idx              = Column(Integer)
-
-
-
+    product_item_id         = Column(Identifier, ForeignKey("ProductItem.id"), nullable=True)

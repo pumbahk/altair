@@ -18,7 +18,6 @@ from altair.app.ticketing.api.impl import CMSCommunicationApi
 from altair.mobile.interfaces import IMobileRequest
 from altair.app.ticketing.core import models as c_models
 from altair.app.ticketing.core import api as c_api
-from altair.app.ticketing.users.models import User, UserCredential, Membership, MemberGroup, MemberGroup_SalesSegment
 
 from .interfaces import IPaymentMethodManager
 from .interfaces import IStocker, IReserving, ICartFactory
@@ -52,39 +51,6 @@ def is_checkout_payment(cart):
         return False
     return cart.payment_delivery_pair.payment_method.payment_plugin_id == 2
 
-# こいつは users.apiあたりに移動すべきか
-def is_login_required(request, event):
-    if event.organization.setting.auth_type == "rakuten":
-        return True
-
-    """ 指定イベントがログイン画面を必要とするか """
-    # 終了分もあわせて、このeventからひもづく sales_segment -> membergroupに1つでもguestがあれば True 
-    # q = MemberGroup.query.filter(
-    #     MemberGroup.is_guest==False
-    # ).filter(
-    #     MemberGroup.id==MemberGroup_SalesSegment.c.membergroup_id
-    # ).filter(
-    #     c_models.SalesSegmentGroup.id==MemberGroup_SalesSegment.c.sales_segment_group_id
-    # ).filter(
-    #     c_models.SalesSegmentGroup.event_id==event.id
-    # )
-    q = MemberGroup.query.filter(
-        MemberGroup.is_guest==False
-    ).filter(
-        MemberGroup.id==MemberGroup_SalesSegment.c.membergroup_id
-    ).filter(
-        c_models.SalesSegment.id==MemberGroup_SalesSegment.c.sales_segment_id
-    ).filter(
-        c_models.SalesSegment.event_id==event.id
-    )
-    return bool(q.count())
-
-def get_event(request):
-    event_id = request.matchdict.get('event_id')
-    if not event_id:
-        return None
-    return c_models.Event.query.filter(c_models.Event.id==event_id).first()
-
 def is_mobile(request):
     return IMobileRequest.providedBy(request)
 
@@ -113,12 +79,8 @@ def set_cart(request, cart):
     # pyramid.testing.DummySession には persist がない
     if hasattr(request.session, 'persist'):
         request.session.persist()
-    request._cart = cart
 
 def get_cart(request, for_update=True):
-    if hasattr(request, '_cart'):
-        return request._cart
-
     cart_id = request.session.get('altair.app.ticketing.cart_id')
     if cart_id is None:
         return None
@@ -126,12 +88,10 @@ def get_cart(request, for_update=True):
     q = Cart.query.filter(Cart.id==cart_id)
     if for_update:
         q = q.with_lockmode('update')
-    request._cart = q.first()
-    return request._cart
+
+    return q.first()
 
 def remove_cart(request):
-    if hasattr(request, '_cart'):
-        delattr(request, '_cart')
     if request.session.get("altair.app.ticketing.cart_id"):
         del request.session['altair.app.ticketing.cart_id']
 
@@ -233,10 +193,14 @@ def get_cart_factory(request):
     stocker_cls = reg.adapters.lookup([IRequest], ICartFactory, "")
     return stocker_cls(request)
 
-def order_products(request, performance_id, product_requires, selected_seats=[]):
+def order_products(request, sales_segment_id, product_requires, selected_seats=[]):
     stocker = get_stocker(request)
     reserving = get_reserving(request)
     cart_factory = get_cart_factory(request)
+
+    performance_id = c_models.SalesSegment.filter_by(id=sales_segment_id).one().performance_id
+
+    logger.debug("sales_segment_id=%d, performance_id=%s" % (sales_segment_id, performance_id))
 
     stockstatuses = stocker.take_stock(performance_id, product_requires)
 

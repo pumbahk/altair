@@ -1,4 +1,5 @@
 # -*- coding:utf-8 -*-
+from collections import OrderedDict
 
 from sqlalchemy import (
     Column,
@@ -340,10 +341,12 @@ class LotEntryReportSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     def query_reporting_about(cls, time, frequency, 
                               event_id=None, lot_id=None,
                               day_of_week=None):
-        query = cls.query.filter(
+        query = cls.query
+        query = query.filter(
             cls.frequency==frequency,
             cls.time==time,
         )
+
         if event_id:
             query = query.filter(cls.event_id==event_id)
         if lot_id:
@@ -352,3 +355,169 @@ class LotEntryReportSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             query = query.filter(cls.day_of_week==day_of_week)
         return query
 
+
+
+class CSVExporter(object):
+
+    # specified for pymysql format param style; see PEP-249 DB API 2.0
+    sql = u"""\
+SELECT
+    CASE
+        WHEN LotEntry.closed_at IS NOT NULL THEN '終了'
+        WHEN LotEntryWish.elected_at IS NOT NULL THEN '当選'
+        WHEN LotEntryWish.rejected_at IS NOT NULL THEN '落選'
+        WHEN LotEntryWish.canceled_at IS NOT NULL THEN 'キャンセル'
+        WHEN LotElectWork.lot_entry_no IS NOT NULL THEN '当選予定'
+        WHEN LotRejectWork.lot_entry_no IS NOT NULL THEN '落選予定'
+        ELSE '申込'
+    END AS `状態`,
+    LotEntry.entry_no AS `申し込み番号`,
+    LotEntryWish.wish_order + 1 AS `希望順序`,
+    LotEntryWish.created_at AS `申し込み日`,
+    -- NULL,
+    p_sum.stock_names AS `席種`,
+    p_sum.total_quantity AS `枚数`,
+    Event.title AS `イベント`,
+    Venue.name AS `会場`,
+    Performance.name AS `公演`,
+    Performance.code AS `公演コード`,
+    Performance.start_on AS `公演日`,
+    p_sum.names AS `商品`,
+    PaymentMethod.name AS `決済方法`,
+    DeliveryMethod.name AS `引取方法`,
+    ShippingAddress.last_name AS `配送先姓`,
+    ShippingAddress.first_name AS `配送先名`,
+    ShippingAddress.last_name_kana AS `配送先姓(カナ)`,
+    ShippingAddress.first_name_kana AS `配送先名(カナ)`,
+    ShippingAddress.zip AS `郵便番号`,
+    ShippingAddress.country AS `国`,
+    ShippingAddress.prefecture AS `都道府県`,
+    ShippingAddress.city AS `市区町村`,
+    ShippingAddress.address_1 AS `住所1`,
+    ShippingAddress.address_2 AS `住所2`,
+    ShippingAddress.tel_1 AS `電話番号1`,
+    ShippingAddress.tel_2 AS `電話番号2`,
+    ShippingAddress.fax AS `FAX`,
+    ShippingAddress.email_1 AS `メールアドレス1`,
+    ShippingAddress.email_2 AS `メールアドレス2`,
+    UserProfile.last_name AS `姓`,
+    UserProfile.first_name AS `名`,
+    UserProfile.last_name_kana AS `姓(カナ)`,
+    UserProfile.first_name_kana AS `名(カナ)`,
+    UserProfile.nick_name AS `ニックネーム`,
+    UserProfile.sex AS `性別`,
+    NULL
+FROM LotEntryWish
+     JOIN LotEntry
+     ON LotEntryWish.lot_entry_id = LotEntry.id
+     JOIN Performance
+     ON LotEntryWish.performance_id = Performance.id
+     JOIN Venue
+     ON Performance.id = Venue.performance_id
+     JOIN Lot
+     ON LotEntry.lot_id = Lot.id
+     JOIN PaymentDeliveryMethodPair as PDMP
+     ON LotEntry.payment_delivery_method_pair_id = PDMP.id
+     JOIN PaymentMethod
+     ON PDMP.payment_method_id = PaymentMethod.id
+     JOIN DeliveryMethod
+     ON PDMP.delivery_method_id = DeliveryMethod.id
+     JOIN Event
+     ON Lot.event_id = Event.id
+     JOIN ShippingAddress
+     ON LotEntry.shipping_address_id = ShippingAddress.id
+     JOIN (
+         SELECT
+             LotEntryProduct.lot_wish_id,
+             sum(LotEntryProduct.quantity) as total_quantity,
+             group_concat(Product.name) as names,
+             group_concat(StockType.name) as stock_names
+         FROM LotEntryProduct
+              JOIN LotEntryWish
+              ON LotEntryProduct.lot_wish_id = LotEntryWish.id
+              JOIN LotEntry
+              ON LotEntryWish.lot_entry_id = LotEntry.id
+              JOIN Product
+              ON LotEntryProduct.product_id = Product.id
+              JOIN Stock
+              ON Product.seat_stock_type_id = Stock.id
+              JOIN StockType
+              ON Stock.stock_type_id = StockType.id
+         WHERE LotEntry.lot_id = %s
+         AND LotEntryProduct.deleted_at IS NULL
+         GROUP BY LotEntryProduct.lot_wish_id
+     ) p_sum
+     ON p_sum.lot_wish_id = LotEntryWish.id
+     LEFT JOIN User
+     ON LotEntry.user_id = User.id
+     LEFT JOIN UserProfile
+     ON User.id = UserProfile.user_id
+     LEFT JOIN LotElectWork
+     ON LotElectWork.lot_id = Lot.id
+     AND LotElectWork.lot_entry_no = LotEntry.entry_no
+     AND LotElectWork.wish_order = LotEntryWish.wish_order
+     LEFT JOIN LotRejectWork
+     ON LotRejectWork.lot_id = Lot.id
+     AND LotRejectWork.lot_entry_no = LotEntry.entry_no
+WHERE Lot.id = %s
+AND LotEntryWish.deleted_at IS NULL
+AND LotEntry.deleted_at IS NULL
+
+"""
+
+    csv_columns = (
+        u'状態',
+        u'申し込み番号',
+        u'希望順序',
+        u'申し込み日',
+        u'席種',
+        u'枚数',
+        u'イベント',
+        u'会場',
+        u'公演',
+        u'公演コード',
+        u'公演日',
+        u'商品',
+        u'決済方法',
+        u'引取方法',
+        u'配送先姓',
+        u'配送先名',
+        u'配送先姓(カナ)',
+        u'配送先名(カナ)',
+        u'郵便番号',
+        u'国',
+        u'都道府県',
+        u'市区町村',
+        u'住所1',
+        u'住所2',
+        u'電話番号1',
+        u'電話番号2',
+        u'FAX',
+        u'メールアドレス1',
+        u'メールアドレス2',
+        u'姓',
+        u'名',
+        u'姓(カナ)',
+        u'名(カナ)',
+        U'ニックネーム',
+        u'性別',
+    )
+
+    def __init__(self, session, lot_id, fetch_count=100):
+        self.session = session
+        self.lot_id = lot_id
+        self.fetch_count = fetch_count
+
+    def __iter__(self):
+        cur = self.session.bind.execute(self.sql, self.lot_id, self.lot_id)
+        try:
+            for row in cur.fetchmany(self.fetch_count):
+                yield OrderedDict([
+                    (c, row[c])
+                    for c in self.csv_columns]
+                )
+        finally:
+            cur.close()
+
+    def all(self):
+        return list(self)

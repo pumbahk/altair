@@ -17,6 +17,7 @@ def includeme(config):
 
 def install_app(config):
     config.include("altair.mobile.install_detector")
+    config.include("altair.mobile.install_mobile_request_maker")
     config.include("altairsite.config.install_convinient_request_properties")
     config.include("altairsite.mobile.event")
     config.include('altairsite.mobile.staticpage')

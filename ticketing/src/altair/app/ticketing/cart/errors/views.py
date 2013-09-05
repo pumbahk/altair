@@ -33,9 +33,9 @@ logger = logging.getLogger(__name__)
 @mobile_view_config(context=NotFound, renderer=selectable_renderer('altair.app.ticketing.cart:templates/%(membership)s/mobile/errors/notfound.html'))
 @view_config(context=NotFound, renderer=selectable_renderer('altair.app.ticketing.cart:templates/%(membership)s/pc/errors/notfound.html'))
 def notfound(request):
-    event_id = getattr(request.context, 'event_id', None)
-    if event_id is not None:
-        logger.debug("404 on event_id=%s" % event_id)
+    event = getattr(request.context, 'event', None)
+    if event is not None:
+        logger.debug("404 on event_id=%s" % event.id)
     request.response.status = 404
     return {}
 
@@ -116,7 +116,7 @@ def invalid_csrf_token_exception(request):
 @mobile_view_config(context=DeliveryFailedException, renderer=selectable_renderer('altair.app.ticketing.cart:templates/%(membership)s/mobile/error.html'))
 @view_config(context=DeliveryFailedException, renderer=selectable_renderer('altair.app.ticketing.cart:templates/%(membership)s/pc/message.html'))
 def delivery_failed_exception(context, request):
-    event_id = context.event_id
+    event_id = context.event.id
     location = request.route_url('cart.index', event_id=event_id)
     return dict(title=u'決済エラー', message=Markup(u'決済中にエラーが発生しました。しばらく時間を置いてから<a href="%s">再度お試しください。</a>' % location))
 

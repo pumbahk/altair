@@ -1,6 +1,6 @@
 import sqlalchemy as sa
 from webob.multidict import MultiDict
-from altair.app.ticketing.cart.resources import TicketingCartResource
+from altair.app.ticketing.cart.resources import EventOrientedTicketingCartResource
 from altair.app.ticketing.core.models import DBSession, Order, Product
 from altair.app.ticketing.users.models import User, UserCredential, Membership
 from altair.app.ticketing.sej.models import SejOrder
@@ -15,7 +15,7 @@ from .api import get_booster_settings
 from altair.app.ticketing.cart.helpers import products_filter_by_salessegment
 logger = logging.getLogger(__name__)
 
-class BoosterCartResource(TicketingCartResource):
+class BoosterCartResource(EventOrientedTicketingCartResource):
     @reify
     def membership_name(self):
         return get_booster_settings(self.request).membership_name

@@ -13,8 +13,15 @@ def install_detector(config):
     config.registry.registerUtility(DefaultCarrierDetector(), IMobileCarrierDetector)
 
 def install_mobile_request_maker(config):
-    from .impl import MobileRequestMaker
-    from .interfaces import IMobileRequestMaker
+    from pyramid.interfaces import ISession
+    from beaker.session import SessionObject
+    from .impl import MobileRequestMaker, make_session_object_impl_companion 
+    from .interfaces import IMobileRequestMaker, ISessionObjectImplCompanion
+    config.registry.registerAdapter(
+        make_session_object_impl_companion,
+        (ISession,),
+        ISessionObjectImplCompanion
+        )
     config.registry.registerUtility(
         MobileRequestMaker(
             config.registry.settings.get('altair.mobile.embedded_session_restorer', None)

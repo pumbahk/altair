@@ -52,28 +52,44 @@ class WhoDecider(object):
         DBSession.add(org) # XXX
         return org.setting.auth_type
 
+def setup_components(config):
+    from pyramid.interfaces import IRequest
+    from .interfaces import IStocker, IReserving, ICartFactory, IPerformanceSelector
+    from .stocker import Stocker
+    from .reserving import Reserving
+    from .carting import CartFactory
+    from .performanceselector import MatchUpPerformanceSelector, DatePerformanceSelector
+    reg = config.registry
+    reg.adapters.register([IRequest], IStocker, "", Stocker)
+    reg.adapters.register([IRequest], IReserving, "", Reserving)
+    reg.adapters.register([IRequest], ICartFactory, "", CartFactory)
+    reg.adapters.register([IRequest], IPerformanceSelector, "matchup", MatchUpPerformanceSelector)
+    reg.adapters.register([IRequest], IPerformanceSelector, "date", DatePerformanceSelector)
 
 def includeme(config):
-    # ディレクティブ
-    config.add_directive("add_payment_method", ".directives.add_payment_method")
     # 購入系
-    config.add_route('cart.index', 'events/{event_id}')
-    config.add_route('cart.index.sales', 'events/{event_id}/sales/{sales_segment_group_id}')
-    config.add_route('cart.seat_types', 'events/{event_id}/sales_segment/{sales_segment_id}/seat_types')
-    config.add_route('cart.info', 'events/{event_id}/sales_segment/{sales_segment_id}/info')
-    config.add_route('cart.seats', 'events/{event_id}/sales_segment/{sales_segment_id}/seats')
-    config.add_route('cart.seat_adjacencies', 'events/{event_id}/performances/{performance_id}/venues/{venue_id}/seat_adjacencies/{length_or_range}')
-    config.add_route('cart.venue_drawing', 'events/{event_id}/performances/{performance_id}/venues/{venue_id}/drawing/{part}')
-    config.add_route('cart.products', 'events/{event_id}/sales_segment/{sales_segment_id}/seat_types/{seat_type_id}/products')
+    config.add_route('cart.index', 'events/{event_id}', factory='.resources.compat_ticketing_cart_resource_factory')
+    config.add_route('cart.index.sales', 'events/{event_id}/sales/{sales_segment_group_id}', factory='.resources.compat_ticketing_cart_resource_factory')
+    config.add_route('cart.index2', 'performances/{performance_id}', factory='.resources.PerformanceOrientedTicketingCartResource')
+    config.add_route('cart.index.sales2', 'performances/{performance_id}/sales/{sales_segment_group_id}')
+    config.add_route('cart.seat_types', 'events/{event_id}/sales_segment/{sales_segment_id}/seat_types', factory='.resources.EventOrientedTicketingCartResource')
+    config.add_route('cart.seat_types2', 'performances/{performance_id}/sales_segment/{sales_segment_id}/seat_types')
+    config.add_route('cart.info', 'performances/{performance_id}/sales_segment/{sales_segment_id}/info')
+    config.add_route('cart.seats', 'performances/{performance_id}/sales_segment/{sales_segment_id}/seats')
+    config.add_route('cart.seat_adjacencies', 'performances/{performance_id}/venues/{venue_id}/seat_adjacencies/{length_or_range}')
+    config.add_route('cart.venue_drawing', 'performancess/{performance_id}/venues/{venue_id}/drawing/{part}')
+    config.add_route('cart.products', 'events/{event_id}/sales_segment/{sales_segment_id}/seat_types/{seat_type_id}/products', factory='.resources.EventOrientedTicketingCartResource')
+
+    config.add_route('cart.products2', 'performances/{performance_id}/sales_segment/{sales_segment_id}/seat_types/{seat_type_id}/products')
 
     # obsolete
-    config.add_route('cart.seat_types.obsolete', 'events/{event_id}/performances/{performance_id}/sales_segment/{sales_segment_id}/seat_types')
-    config.add_route('cart.seats.obsolete', 'events/{event_id}/performances/{performance_id}/sales_segment/{sales_segment_id}/seats')
-    config.add_route('cart.products.obsolete', 'events/{event_id}/performances/{performance_id}/sales_segment/{sales_segment_id}/seat_types/{seat_type_id}/products')
-
+    config.add_route('cart.info.obsolete', 'events/{event_id}/sales_segment/{sales_segment_id}/info', factory='.resources.EventOrientedTicketingCartResource')
+    config.add_route('cart.seats.obsolete', 'events/{event_id}/sales_segment/{sales_segment_id}/seats', factory='.resources.EventOrientedTicketingCartResource')
+    config.add_route('cart.seat_adjacencies.obsolete', 'events/{event_id}/performances/{performance_id}/venues/{venue_id}/seat_adjacencies/{length_or_range}', factory='.resources.EventOrientedTicketingCartResource')
+    config.add_route('cart.venue_drawing.obsolete', 'events/{event_id}/performances/{performance_id}/venues/{venue_id}/drawing/{part}', factory='.resources.EventOrientedTicketingCartResource')
     # order / payment / release
-    config.add_route('cart.order', 'order/sales/{sales_segment_id}')
-    config.add_route('cart.payment', 'payment/sales/{sales_segment_id}')
+    config.add_route('cart.order', 'order/sales/{sales_segment_id}', factory='.resources.SalesSegmentOrientedTicketingCartResource')
+    config.add_route('cart.payment', 'payment/sales/{sales_segment_id}', factory='.resources.SalesSegmentOrientedTicketingCartResource')
     config.add_route('cart.release', 'release')
 
     # 完了／エラー
@@ -95,18 +111,7 @@ def includeme(config):
     config.add_route('rakuten_auth.error', '/error')
     config.add_route('cart.logout', '/logout')
 
-    from pyramid.interfaces import IRequest
-    from .interfaces import IStocker, IReserving, ICartFactory, IPerformanceSelector
-    from .stocker import Stocker
-    from .reserving import Reserving
-    from .carting import CartFactory
-    from .performanceselector import MatchUpPerformanceSelector, DatePerformanceSelector
-    reg = config.registry
-    reg.adapters.register([IRequest], IStocker, "", Stocker)
-    reg.adapters.register([IRequest], IReserving, "", Reserving)
-    reg.adapters.register([IRequest], ICartFactory, "", CartFactory)
-    reg.adapters.register([IRequest], IPerformanceSelector, "matchup", MatchUpPerformanceSelector)
-    reg.adapters.register([IRequest], IPerformanceSelector, "date", DatePerformanceSelector)
+    setup_components(config)
 
 def import_mail_module(config):
     config.include('altair.app.ticketing.mails')
@@ -125,7 +130,7 @@ def main(global_config, **local_config):
     sqlahelper.add_engine(engine)
 
     config = Configurator(settings=settings,
-                          root_factory='.resources.TicketingCartResource',
+                          root_factory='.resources.PerformanceOrientedTicketingCartResource',
                           session_factory=session_factory)
     config.registry['sa.engine'] = engine
     config.add_renderer('.html' , 'pyramid.mako_templating.renderer_factory')
