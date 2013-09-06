@@ -435,7 +435,7 @@ def request_fileget(
     params = JavaHashMap()
 
     params['X_shop_id'] = shop_id
-    params['X_data_type'] = "%02d" % notification_type.v
+    params['X_data_type'] = "%02d" % notification_type
     params['X_date'] = date.strftime('%Y%m%d')
 
     payment = SejPayment(url = hostname + u'/order/getfile.do', secret_key = secret_key)

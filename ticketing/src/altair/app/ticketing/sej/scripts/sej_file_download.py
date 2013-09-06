@@ -7,107 +7,82 @@
 import sys
 import sqlahelper
 from sqlalchemy.orm.exc import NoResultFound
-import optparse, textwrap
+import argparse, textwrap
 
 from os.path import abspath, dirname
 
 from pyramid.paster import bootstrap
-from altair.app.ticketing.sej.payment import request_fileget
-from altair.app.ticketing.sej.models import SejFile
-from altair.app.ticketing.sej.resources import SejNotificationType, code_from_notification_type
-from altair.app.ticketing.sej.exceptions import SejServerError
+from ..payment import request_fileget
+from ..models import SejTenant
+from ..resources import SejNotificationType, code_from_notification_type
+from ..exceptions import SejServerError
 
-sys.path.append(abspath(dirname(dirname(__file__))))
+from dateutil.parser import parse as parsedate
 
 from paste.deploy import loadapp
 
 import logging
 
-logging.basicConfig()
 log = logging.getLogger(__file__)
 
 import os
 
 DBSession = sqlahelper.get_session()
 
-
-def file_get_and_import(date, shop_id, secret_key, hostname, file_dest):
-
-    for notification_type in SejNotificationType:
-        try:
-            body = request_fileget(
-                notification_type,
-                date,
-                secret_key = 'VpER7BsZpuLPqjUJ',
-                hostname = 'inticket.sej.co.jp')
-
-            date_str = date.strftime('%Y%m%d')
-            sej_output_path = "%s/%s" % (file_dest, date_str)
-            if not os.path.exists(sej_output_path):
-                os.makedirs(sej_output_path)
-            file_path = '%s/SEITIS%02d_%s.txt' % (sej_output_path, notification_type.v,date_str)
-
-            try :
-                file = SejFile.filter(SejFile.file_date == date and SejFile.notification_type == notification_type.v).one()
-            except NoResultFound, e:
-                file = SejFile()
-                DBSession.add(file)
-
-            file.file_url = "file://%s" % file_path
-            file.file_date = date
-            file.notification_type = notification_type.v
-            DBSession.flush()
-
-            f = open(file_path , 'w')
-            f.write(body)
-            f.close()
-
-        except SejServerError, e:
-            print "No Data"
-
-
 def main(argv=sys.argv):
+    parser = argparse.ArgumentParser()
+    parser.add_argument('config_uri', metavar='config', type=str,
+                        help='config file')
+    parser.add_argument('date', metavar='YYYYMMDD', type=str, nargs='*',
+                        help="target date")
+    parser.add_argument('-O', '--organization', metavar='organization', type=long,
+                        help='organization name')
+    parser.add_argument('-u', '--endpoint', metavar='endpoint', type=str,
+                        help='api endpoint')
+    parser.add_argument('-s', '--shop-id', metavar='shopid', type=str,
+                        help='shopid')
+    parser.add_argument('-k', '--apikey', metavar='apikey', type=str,
+                        help='api key')
+    parser.add_argument('-t', '--type', metavar='tuchi_kbn', type=int,
+                        required=True, help=u"通知区分")
 
-    description = """\
-    """
-    usage = "usage: %prog config_uri --date 2012070"
-    parser = optparse.OptionParser(
-        usage=usage,
-        description=textwrap.dedent(description)
-        )
-    parser.add_option(
-        '-d', '--date',
-        dest='date',
-        metavar='YYYYMMDD',
-        type="string",
-        help=("target date")
-        )
+    args = parser.parse_args()
 
-    options, args = parser.parse_args(sys.argv[1:])
-    if not len(args) >= 2:
-        print('You must provide at least one argument')
-        return 2
-
-    config_uri = args[0]
-    env = bootstrap(config_uri)
+    env = bootstrap(args.config_uri)
     request = env['request']
     registry = env['registry']
     settings = registry.settings
 
-    date = options.date
     session = sqlahelper.get_session()
     session.configure(autocommit=True, extension=[])
 
-    if len(sys.argv) < 2:
-        print "usage: python sej_notification.py development.ini"
-        sys.exit()
+    shop_id = registry.settings.get('altair.sej.shop_id') or registry.settings.get('sej.shop_id')
+    api_key = registry.settings.get('altair.sej.api_key') or registry.settings.get('sej.api_key')
+    api_url = registry.settings.get('altair.sej.inticket_api_url') or registry.settings.get('sej.inticket_api_url')
+    if args.organization:
+        tenant = SejTenant.query.filter_by(organization_id=args.organization).one()
+        if tenant.shop_id: shop_id = tenant.shop_id
+        if tenant.api_key: api_key = tenant.api_key
+        if tenant.inticket_api_url: api_url = tenant.inticket_api_url
+    if args.shop_id: shop_id = args.shop_id
+    if args.apikey: api_key = args.apikey
+    if args.endpoint: api_url = args.endpoint
 
-    hostname = settings['sej.inticket_api_url']
-    shop_id = settings['sej.shop_id']
-    secret_key = settings['sej.api_key']
-    file_dest = settings['sej.file_dest_path']
+    if not (shop_id and api_key and api_url):
+        print >>sys.stderr, "could not determine either shop_id, api_key or api_url"
+        return 1
 
-    file_get_and_import(date, shop_id, secret_key, hostname, file_dest)
+    for date in args.date:
+        body = request_fileget(
+            args.type,
+            parsedate(date),
+            shop_id=shop_id,
+            secret_key=api_key,
+            hostname=api_url,
+            )
+        sys.stdout.write(body)
+        sys.stdout.flush()
 
 if __name__ == u"__main__":
-    main(sys.argv)
+    logging.basicConfig()
+    sys.exit(main(sys.argv))
