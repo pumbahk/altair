@@ -1,194 +1,202 @@
 # -*- coding:utf-8 -*-
 
 import logging
-from dateutil import parser
+from dateutil.parser import parse as parsedate
+from .resources import SejNotificationType
+from collections import OrderedDict
+
 logger = logging.getLogger(__file__)
 
+class SejFileParserError(Exception):
+    pass
+
+class SejFileReader(object):
+    def get_col_raw(self, num):
+        retval = self.f.read(num)
+        if len(retval) != num:
+            raise SejFileParserError("Unexpected EOF")
+        self.cursor += num
+        return retval
+
+    def get_col(self, num):
+        return self.get_col_raw(num).decode(self.encoding)
+
+    def get_col_strip(self, num):
+        return self.get_col_raw(num).replace(' ', '').decode(self.encoding)
+
+    def get_int(self, num):
+        col = self.get_col_strip(num)
+        return int(col) if col else None
+
+    def get_datetime(self, num):
+        col = self.get_col_strip(num)
+        return parsedate(col) if len(col) else None
+
+    def eor(self):
+        if self.cursor > self.record_length:
+            raise SejFileParserError('cursor overrun (%d >= %d)' % (self.cursor, self.record_length))
+        self.f.read(self.record_length - self.cursor)
+        self.cursor = 0
+
+    def __init__(self, f, encoding='CP932'):
+        self.f = f
+        self.encoding = encoding
+        self.cursor = 0
+        self.record_length = 0
+
 class SejFileParser(object):
-
-    class SejFileParserRow(object):
-        cursor = 0
-        #
-        def __init__(self, row):
-            self.row = row
-        #
-        def get_col(self, num):
-            row = self.row[self.cursor:self.cursor+num]
-            self.cursor = self.cursor + num
-            return row
-
-        def get_col_strip(self, num):
-            col = self.get_col(num).replace(' ', '')
-            return col if len(col) else None
-
-        def get_int(self, num):
-            col = self.get_col(num).replace(' ', '')
-            return int(col) if len(col) else None
-
-        def get_datetime(self, num):
-            col = self.get_col(num).replace(' ', '')
-            return parser.parse(col) if len(col) else None
-
     rec_segment = ''
     shop_id     = ''
     filename    = ''
     date        = ''
-    row_length  = 0
-    row_count   = 0
 
-    def parse_header(self, row):
-        self.rec_segment = row.get_col(1)
-        if self.rec_segment != 'H':
-            raise Exception("Invalid header type : %s" % self.rec_segment)
-        self.shop_id     = row.get_col(5)
-        self.filename    = row.get_col(30)
-        self.date        = row.get_col(8)
-        self.row_length  = int(row.get_col(4))
+    def __init__(self, reader):
+        self.reader = reader
+        self.shop_id     = None
+        self.filename    = None
+        self.date        = None
+        self.records     = []
 
-    def parse_footer(self, row):
-        self.row_count   = int(row.get_col(6))
+    def header(self):
+        self.shop_id     = self.reader.get_col(5)
+        self.filename    = self.reader.get_col_strip(30)
+        self.date        = self.reader.get_datetime(8)
+        self.reader.record_length = self.reader.get_int(4)
+        self.reader.eor()
+
+    def footer(self):
+        expected_record_count = int(self.reader.get_col(6)) - 2
+        self.reader.eor()
+        if len(self.records) != expected_record_count:
+            raise SejFileParserError("record count mismatch: expected %d, actual %d" % (expected_record_count, len(self.records)))
 
     def parse_row(self, row):
-        raise Exception("stub: method not implements.")
+        raise NotImplementedError("stub: method not implements.")
 
-    def parse(self, data):
+    def parse(self):
+        try:
+            row_type = self.reader.get_col(1)
 
-        self.parse_header(SejFileParser.SejFileParserRow(data))
-        total_length = len(data)
+            if row_type != 'H':
+                raise SejFileParserError("Unknown row type: %s" % row_type)
+        except SejFileParserError:
+            return False # EOF
+            
+        self.header()
 
-        if total_length % self.row_length != 0:
-            raise Exception('Invalid row length  row:%d total:%d' % (self.row_length, total_length))
-
-        values = []
-
-        for start_at in range(self.row_length, len(data),self.row_length):
-            row = data[start_at : start_at + self.row_length]
-            row_obj = SejFileParser.SejFileParserRow(row)
-            row_type = row_obj.get_col(1)
+        while True:
+            row_type = self.reader.get_col(1)
             if row_type == 'E':
-                self.parse_footer(row_obj)
+                self.footer()
                 break
-            values.append(self.parse_row(row_obj))
+            elif row_type == 'D':
+                record = self.parse_row()
+                self.reader.eor()
+                self.records.append(record)
+            else:
+                raise SejFileParserError("Unknown row type: %s" % row_type)
 
-        if not self.row_count:
-            raise Exception('Invalid row footer row:%d total:%d' % (self.row_length, total_length))
-        if self.row_count != len(values)+2:
-            raise Exception('Invalid row count count:%d/%d row:%d total:%d' % (self.row_count, len(values), self.row_length, total_length))
-
-        return values
-
+        return True
 
 class SejInstantPaymentFileParser(SejFileParser):
+    notification_types = [SejNotificationType.FileInstantPaymentInfo]
 
-    def parse_row(self, row):
-        data = dict(
-            segment             = 'D',
-            shop_id             = row.get_col(5),
-            order_id            = row.get_col(12),
-            notification_type   = row.get_int(2),
-            payment_type        = row.get_int(2),
-            billing_number      = row.get_col_strip(13),
-            exchange_number     = row.get_col_strip(13),
-            price               = row.get_int(6),
-            total_ticket_count  = row.get_col(2),
-            ticket_count        = row.get_int(2),
-            return_ticket_count = row.get_int(2),
-            cancel_reason       = row.get_col(2),
-            process_at          = row.get_datetime(14),
-            signature           = row.get_col(32)
-        )
-        return data
+    def parse_row(self):
+        return OrderedDict([
+            ('shop_id'               , self.reader.get_col(5)),
+            ('order_id'              , self.reader.get_col(12)),
+            ('notification_type'     , self.reader.get_int(2)),
+            ('payment_type'          , self.reader.get_int(2)),
+            ('billing_number'        , self.reader.get_col_strip(13)),
+            ('exchange_number'       , self.reader.get_col_strip(13)),
+            ('price'                 , self.reader.get_int(6)),
+            ('total_ticket_count'    , self.reader.get_col(2)),
+            ('ticket_count'          , self.reader.get_int(2)),
+            ('return_ticket_count'   , self.reader.get_int(2)),
+            ('cancel_reason'         , self.reader.get_col(2)),
+            ('process_at'            , self.reader.get_datetime(14)),
+            ('signature'             , self.reader.get_col(32))
+            ])
 
-class SejExpiredFileParser(SejFileParser):
-    def parse_row(self, row):
-        data = dict(
-            segment             = 'D',
-            shop_id             = row.get_col(5),
-            order_id            = row.get_col(12),
-            notification_type   = row.get_int(2),
-            payment_type        = row.get_int(2),
-            expired_at          = row.get_datetime(12),
-            billing_number      = row.get_col(13),
-            exchange_number     = row.get_col(13),
-            checksum            = row.get_col(32),
-        )
-        return data
+class SejExpireFileParser(SejFileParser):
+    notification_types = [
+        SejNotificationType.FilePaymentExpire,
+        SejNotificationType.FileTicketingExpire
+        ]
+    def parse_row(self):
+        return OrderedDict([
+            ('shop_id'               , self.reader.get_col(5)),
+            ('order_id'              , self.reader.get_col(12)),
+            ('notification_type'     , self.reader.get_int(2)),
+            ('payment_type'          , self.reader.get_int(2)),
+            ('expired_at'            , self.reader.get_datetime(12)),
+            ('billing_number'        , self.reader.get_col(13)),
+            ('exchange_number'       , self.reader.get_col(13)),
+            ('checksum'              , self.reader.get_col(32)),
+            ])
 
-class SejPaymentInfoFileParser(SejFileParser):
-    def parse_row(self, row):
-        data = dict(
-            segment             = 'D',
-            notification_type   = row.get_int(2),
-            ticket_barcode_number
-                                = row.get_col(13),
-            order_id            = row.get_col(12),
-            credit_price        = row.get_col(6),
-            recieved_at         = row.get_datetime(14),
-            close_at            = row.get_datetime(14),
-            pay_at              = row.get_datetime(14),
-            payment_for         = row.get_int(2),
-        )
-        return data
-
-
-class SejCheckCancelFileParser(SejFileParser):
-
-    def parse_row(self, row):
-        data = dict(
-            segment             = 'D',
-            notification_type   = int(row.get_col(2)),
-            ticket_barcode_number
-                                = row.get_col(13),
-            order_id            = row.get_col(12),
-            refund_ticket_price = row.get_int(6),
-            refund_other_price  = row.get_int(6),
-            received_at         = row.get_datetime(14),
-            payment_type        = row.get_int(2),
-            refund_status       = row.get_int(2), # 01:払戻済み 02:払戻取消
-            refund_cancel_reason= row.get_int(2), # 02:払戻取消のとき
-            refund_cancel_at    = row.get_datetime(14)
-        )
-        return data
-
-class SejCheckFileParser(SejFileParser):
-    def parse_row(self, row):
-        data = dict(
-            segment             = 'D',
-            shop_id             = row.get_col(5),
-            order_id            = row.get_col(12),
-            notification_type   = int(row.get_col(2)),
-            payment_type        = row.get_int(2),
-            billing_number      = row.get_col_strip(13),
-            exchnage_number     = row.get_col_strip(13),
-            receipt_amount      = row.get_int(6),
-            ticket_total_count  = row.get_int(2),
-            ticket_count        = row.get_int(2),
-            return_count        = row.get_int(2),
-            cancel_reason       = row.get_int(2),
-            process_at         = row.get_datetime(14),
-        )
-        return data
+class SejPaymentInfoFileParser(SejExpireFileParser):
+    notification_types = [ SejNotificationType.FileCheckInfo ]
+    def parse_row(self):
+        return OrderedDict([
+            ('notification_type'     , self.reader.get_int(2)),
+            ('ticket_barcode_number' , self.reader.get_col(13)),
+            ('order_id'              , self.reader.get_col(12)),
+            ('credit_price'          , self.reader.get_col(6)),
+            ('recieved_at'           , self.reader.get_datetime(14)),
+            ('close_at'              , self.reader.get_datetime(14)),
+            ('pay_at'                , self.reader.get_datetime(14)),
+            ('payment_for'           , self.reader.get_int(2))
+            ])
 
 class SejRefundFileParser(SejFileParser):
-    def parse_row(self, row):
-        data = dict(
-            segment             = 'D',
-            notification_type   = int(row.get_col(2)),
-            ticket_barcode_number
-                                = row.get_col(13),
-            order_id            = row.get_col(12),
-            ticket_refund_amount= row.get_int(6),
-            other_refund_amount = row.get_int(6),
-            recieved_at         = row.get_datetime(14),
-            payment_type        = row.get_int(2),
-            refund_status       = row.get_int(2),
-            refund_reason       = row.get_int(2),
-            refund_at           = row.get_datetime(14),
+    notification_types = [
+        SejNotificationType.FileInstantRefundInfo,
+        SejNotificationType.FileRefundComplete,
+        SejNotificationType.FileRefundCancel,
+        ]
 
-        )
-        return data
+    def parse_row(self):
+        return OrderedDict([
+            ('notification_type'     , self.reader.get_int(2)),
+            ('ticket_barcode_number' , self.reader.get_col(13)),
+            ('order_id'              , self.reader.get_col(12)),
+            ('refund_ticket_price'   , self.reader.get_int(6)),
+            ('refund_other_price'    , self.reader.get_int(6)),
+            ('received_at'           , self.reader.get_datetime(14)),
+            ('payment_type'          , self.reader.get_int(2)),
+            ('refund_status'         , self.reader.get_int(2)), # 01:払戻済み 02:払戻取消
+            ('refund_cancel_reason'  , self.reader.get_int(2)), # 02:払戻取消のとき
+            ('refund_cancel_at'      , self.reader.get_datetime(14))
+            ])
 
-class SejReturnFileWriter():
-    pass
+class SejCheckFileParser(SejFileParser):
+    notification_types = [
+        SejNotificationType.FilePaymentCancel,
+        SejNotificationType.FileTicketingCancel,
+        ]
 
+    def parse_row(self):
+        return OrderedDict([
+            ('shop_id'               , self.reader.get_col(5)),
+            ('order_id'              , self.reader.get_col(12)),
+            ('notification_type'     , self.reader.get_int(2)),
+            ('payment_type'          , self.reader.get_int(2)),
+            ('billing_number'        , self.reader.get_col_strip(13)),
+            ('exchnage_number'       , self.reader.get_col_strip(13)),
+            ('receipt_amount'        , self.reader.get_int(6)),
+            ('ticket_total_count'    , self.reader.get_int(2)),
+            ('ticket_count'          , self.reader.get_int(2)),
+            ('return_count'          , self.reader.get_int(2)),
+            ('cancel_reason'         , self.reader.get_int(2)),
+            ('process_at'            , self.reader.get_datetime(14))
+            ])
+
+parsers = [
+    SejInstantPaymentFileParser,
+    SejExpireFileParser,
+    SejPaymentInfoFileParser,
+    SejRefundFileParser,
+    SejCheckFileParser,
+    ]
 

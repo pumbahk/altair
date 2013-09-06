@@ -184,6 +184,7 @@ setup(name='altair.app.ticketing',
       make_point_grant_data=altair.app.ticketing.loyalty.commands:make_point_grant_data
       detect_fraud=altair.app.ticketing.orders.scripts:detect_fraud
       sej_file_download=altair.app.ticketing.sej.scripts.sej_file_download:main
+      sej_parse_file=altair.app.ticketing.sej.scripts.sej_parse_file:main
       """,
       paster_plugins=['pyramid'],
       )
