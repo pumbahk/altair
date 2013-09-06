@@ -35,6 +35,14 @@ class VisitorBase(object):
                     'decorate_transform',
                     ]
                 ),
+        (u'{%s}ellipse' % SVG_NAMESPACE):
+            (
+                'visit_ellipse',
+                [
+                    'decorate_styles',
+                    'decorate_transform',
+                    ]
+                ),
         (u'{%s}polyline' % SVG_NAMESPACE):
             (
                 'visit_polyline',
