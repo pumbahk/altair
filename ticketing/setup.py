@@ -97,6 +97,7 @@ requires = [
     'altair.viewhelpers',
     'altair.formhelpers',
     'altair.keybreak',
+    'altair.svg',
     ]
 
 tests_require = [

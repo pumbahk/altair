@@ -8,7 +8,7 @@ from mock import Mock
 class Regression(TestCase):
     def test_h(self):
         from .convert import EmittingPathDataHandler
-        from .utils import PathDataScanner
+        from altair.svg.path import PathDataScanner
 
         emitter = Mock()
         PathDataScanner(['m', '10', '0', 'h', '10'], EmittingPathDataHandler(emitter))()
@@ -18,7 +18,7 @@ class Regression(TestCase):
 
     def test_H(self):
         from .convert import EmittingPathDataHandler
-        from .utils import PathDataScanner
+        from altair.svg.path import PathDataScanner
 
         emitter = Mock()
         PathDataScanner(['m', '10', '0', 'H', '20'], EmittingPathDataHandler(emitter))()
@@ -28,7 +28,7 @@ class Regression(TestCase):
 
     def test_v(self):
         from .convert import EmittingPathDataHandler
-        from .utils import PathDataScanner
+        from altair.svg.path import PathDataScanner
 
         emitter = Mock()
         PathDataScanner(['m', '0', '10', 'v', '10'], EmittingPathDataHandler(emitter))()
@@ -38,7 +38,7 @@ class Regression(TestCase):
 
     def test_V(self):
         from .convert import EmittingPathDataHandler
-        from .utils import PathDataScanner
+        from altair.svg.path import PathDataScanner
 
         emitter = Mock()
         PathDataScanner(['m', '0', '10', 'V', '20'], EmittingPathDataHandler(emitter))()
@@ -48,7 +48,7 @@ class Regression(TestCase):
 
     def test_a(self):
         from .convert import EmittingPathDataHandler
-        from .utils import PathDataScanner
+        from altair.svg.path import PathDataScanner
 
         emitter = Mock()
         PathDataScanner(['m', '0', '10', 'a', '20', '20', '3.', '1', '1', '20', '30'], EmittingPathDataHandler(emitter))()
@@ -58,7 +58,7 @@ class Regression(TestCase):
 
     def test_A(self):
         from .convert import EmittingPathDataHandler
-        from .utils import PathDataScanner
+        from altair.svg.path import PathDataScanner
 
         emitter = Mock()
         PathDataScanner(['m', '0', '10', 'A', '20', '20', '3', '1', '1', '20', '30'], EmittingPathDataHandler(emitter))()

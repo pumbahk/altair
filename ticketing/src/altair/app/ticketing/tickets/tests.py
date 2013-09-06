@@ -594,7 +594,7 @@ class TicketsCleanerTest(TestCase):
         self.assertEqual(20, float(elem.get(u'x2')))
         self.assertEqual(30, float(elem.get(u'y2')))
 
-        from altair.app.ticketing.tickets.utils import parse_poly_data
+        from altair.svg.path import parse_poly_data
         svg = etree.fromstring('''<svg xmlns="http://www.w3.org/2000/svg"><polyline points="1,2 3,4 5,6" transform="matrix(1, 1, 1, 1, 10, 20)" /></svg>''')
         TransformApplier()(svg)
         elem = svg[0]

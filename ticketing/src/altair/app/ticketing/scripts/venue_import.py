@@ -20,9 +20,10 @@ from altair.pyramid_assets.interfaces import IWritableAssetDescriptor
 from altair.app.ticketing.utils import myurljoin
 from altair.formhelpers.validators import JISX0208
 
+from altair.svg.constants import SVG_NAMESPACE
+
 io_encoding = locale.getpreferredencoding()
 
-SVG_NAMESPACE = 'http://www.w3.org/2000/svg'
 SITE_INFO_NAMESPACE = 'http://xmlns.ticketstar.jp/2012/site-info'
 
 verbose = False
