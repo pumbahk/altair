@@ -69,8 +69,8 @@ class JISX0208Test(unittest.TestCase):
 
     def test_input_nonunicode(self):
         checker = self._get_target()
-        data = u'non unicode'.encode('sjis')
-        with self.assertRaises(AssertionError):
+        data = u'日本語'.encode('sjis')
+        with self.assertRaises(UnicodeDecodeError):
             checker.get_error_chars(data)
 
     def test_get_check_chars(self):

@@ -105,7 +105,6 @@ class Charset(object):
         return [ch for ch in self.generate_error_chars(*args, **kwds)]
 
     def generate_error_chars(self, data):
-        assert isinstance(data, unicode)        
         for c in data:
                 try:
                     c.encode(self.encoding)
