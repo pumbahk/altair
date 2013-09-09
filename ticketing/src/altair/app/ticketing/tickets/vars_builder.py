@@ -465,7 +465,7 @@ class TicketDictBuilder(object):
                 retval.append((None, d))
         else:
             for seat in ordered_product_item.seats:
-                d = self.build_dict_from_seat(seat, ticket_number_issuer)
+                d = self.build_dict_from_seat(seat, ticket_number_issuer=ticket_number_issuer)
                 d[u'発券番号'] = ticket_number_issuer(ordered_product_item.product_item.id) if ticket_number_issuer else ""
                 d.update(extra)
                 retval.append((seat, d))
@@ -485,7 +485,7 @@ class TicketDictBuilder(object):
         if not ordered_product_item_token.valid:
             return None
         if ordered_product_item_token.seat is not None:
-            d = self.build_dict_from_seat(ordered_product_item_token.seat, ticket_number_issuer)
+            d = self.build_dict_from_seat(ordered_product_item_token.seat, ticket_number_issuer=ticket_number_issuer)
             d[u'serial'] = ordered_product_item_token.serial
             d[u'発券番号'] = ticket_number_issuer(ordered_product_item.product_item.id) if ticket_number_issuer else ""
             d.update(extra)
@@ -502,7 +502,7 @@ class TicketDictBuilder(object):
     def build_dict_from_ordered_product_item_token(self, ordered_product_item_token, user_profile=None, ticket_number_issuer=None):
         ordered_product_item = ordered_product_item_token.item
         extra = self.build_basic_dict_from_ordered_product_item(ordered_product_item, user_profile)
-        return self._build_dict_from_ordered_product_item_token(extra, ordered_product_item, ordered_product_item_token, ticket_number_issuer)
+        return self._build_dict_from_ordered_product_item_token(extra, ordered_product_item, ordered_product_item_token, ticket_number_issuer=ticket_number_issuer)
 
     def build_dict_from_cart(self, cart, retval=None, now=None):
         retval = retval or {}
@@ -572,7 +572,7 @@ class TicketDictBuilder(object):
                 retval.append((None, d))
         else:
             for seat in carted_product_item.seats:
-                d = self.build_dict_from_seat(seat, ticket_number_issuer)
+                d = self.build_dict_from_seat(seat, ticket_number_issuer=ticket_number_issuer)
                 d[u'発券番号'] = ""
                 d.update(extra)
                 retval.append((seat, d))
