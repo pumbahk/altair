@@ -61,6 +61,7 @@ from altair.app.ticketing.orders.forms import (OrderForm, OrderSearchForm, Order
                                     PerformanceSearchForm, OrderReserveForm, OrderRefundForm, ClientOptionalForm,
                                     SalesSegmentGroupSearchForm, PreviewTicketSelectForm, CartSearchForm, 
                                                )
+from altair.app.ticketing.orders.forms import OrderAttributesEditFormFactory
 from altair.app.ticketing.views import BaseView
 from altair.app.ticketing.fanstatic import with_bootstrap
 from altair.app.ticketing.orders.events import notify_order_canceled
@@ -799,6 +800,28 @@ class OrderDetailView(BaseView):
                 results.append(r)
         return {"results": results, "names": names}
 
+    @view_config(route_name="orders.memo_on_order", request_method="POST", renderer="json")
+    def edit_memo_on_order(self):
+        order_id = int(self.request.matchdict.get('order_id', 0))
+        order = Order.get(order_id, self.context.organization.id)
+        if order is None:
+            raise HTTPBadRequest(body=json.dumps({
+                'message':u'不正なデータです',
+            }))
+
+        f = OrderAttributesEditFormFactory(3)(MultiDict(self.request.json_body))
+        if not f.note.validate(f):
+            raise HTTPBadRequest(body=json.dumps({
+                'message':f.get_error_messages(), 
+            }))
+        marker = object()
+        for k, v in f.get_result():
+            v = order.attributes.get(k, marker)
+            if v or v is not marker:
+                order.attributes[k] = v
+        order.save()
+        return {}
+        
     @view_config(route_name='orders.note', request_method='POST', renderer='json', permission='sales_counter')
     def note(self):
         order_id = int(self.request.matchdict.get('order_id', 0))
