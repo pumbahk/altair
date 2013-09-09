@@ -528,6 +528,17 @@ class BuilderItTest(unittest.TestCase):
             p.assert_called_once_with(model.payment_delivery_pair, retval=result)
 
 
+    def test_build_order_attribute(self):
+        from altair.app.ticketing.core.models import Order
+        target = self._makeOne()
+        model = Order()
+        model.attributes["memo_on_order"] = u":memo_on_order"
+        model.attributes["memo_after_order"] = u":memo_after_order"
+        data = {}
+        result = target.build_dict_from_order(model, retval=data)
+        self.assertEqual(result[u"予約時補助文言"], u":memo_on_order")
+        self.assertEqual(result[u"予約後補助文言"], u":memo_after_order")
+
     def test_build_payment_delivery_method_pair__none(self):
         target = self._makeOne()
         model = None

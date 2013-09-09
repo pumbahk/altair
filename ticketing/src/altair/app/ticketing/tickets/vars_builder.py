@@ -371,9 +371,20 @@ class TicketDictBuilder(object):
         payment_delivery_method_pair = order.payment_delivery_pair # XXX
         self.build_user_profile_dict(retval, user_profile)
         self.build_shipping_address_dict(retval, shipping_address) #xxx:
+        retval = self.build_dict_from_order_attributes(order.attributes, retval=retval)
         retval = self.build_dict_from_payment_delivery_method_pair(payment_delivery_method_pair, retval=retval)
         return retval
 
+    def build_dict_from_order_attributes(self, attributes, retval=None):
+        retval = retval or {}
+        if not attributes:
+            return retval
+        if u"memo_on_order" in attributes:
+            retval[u"予約時補助文言"] = attributes["memo_on_order"]
+        if u"memo_after_order" in attributes:
+            retval[u"予約後補助文言"] = attributes["memo_after_order"]
+        return retval
+        
     def build_dict_from_payment_delivery_method_pair(self, payment_delivery_method_pair, retval=None):
         retval = retval or {}
         if payment_delivery_method_pair is None:
