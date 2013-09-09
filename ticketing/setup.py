@@ -185,6 +185,7 @@ setup(name='altair.app.ticketing',
       detect_fraud=altair.app.ticketing.orders.scripts:detect_fraud
       sej_file_download=altair.app.ticketing.sej.scripts.sej_file_download:main
       sej_parse_file=altair.app.ticketing.sej.scripts.sej_parse_file:main
+      publish_lot_electing=altair.app.ticketing.events.lots.commands.publish_lot_electing:main
       """,
       paster_plugins=['pyramid'],
       )
