@@ -1,0 +1,98 @@
+<%page args="vh,HH,order"/>
+
+          <table class="table table-striped table-bordered">
+            <tr>
+              <th class="span2">予約番号</th>
+              <td class="span3">${order.order_no}</td>
+            </tr>
+            <tr>
+              <th>ステータス</th>
+              <td>${HH.order_status(order)}</td>
+            </tr>
+            <tr>
+              <th>予約日時</th>
+              <td>${vh.datetime(order.created_at)}</td>
+            </tr>
+            <tr>
+              <th>決済日時</th>
+              <td>
+                % if order.paid_at:
+                  ${vh.datetime(order.paid_at)}
+                % endif
+                ${HH.payment_status(order)}
+              </td>
+            </tr>
+            <tr>
+              <th>最終発券 (印字) 日時</th>
+              <td>
+                % if order.issued_at:
+                  ${vh.datetime(order.issued_at)}
+                % else:
+                  % if order.queued:
+                    - <span class="label label-info">既に印刷キューに入っています</span>
+                  % else:
+                    -
+                  % endif
+                % endif
+              </td>
+            </tr>
+            <tr>
+              <th>発券済みフラグ</th>
+              <td>
+                % if order.is_canceled():
+                  % if order.issued:
+                    発券済み
+                  % else:
+                    未発券
+                  % endif
+                % else:
+                  % if order.issued:
+                    発券済み
+                    (<a href="#" data-toggle="modal" data-target="#ForceMarkUnissued">強制的に未発券に戻す</a>)
+                  % else:
+                    未発券
+                    (<a href="#" data-toggle="modal" data-target="#ForceMarkIssued">強制的に発券済にする</a>)
+                  % endif
+                % endif
+              </td>
+            </tr>
+            <tr>
+              <th>配送日時</th>
+              <td>
+                % if order.delivered_at:
+		   ${vh.datetime(order.delivered_at)}
+                % endif
+                ${HH.delivery_status(order)}
+                % if order.delivered_at:
+		  (<a href="#" data-toggle="modal" data-target="#ForceChangeUndelivered">強制的に未配送にする</a>)
+                % endif
+              </td>
+            </tr>
+            % if order.status == 'canceled':
+            <tr>
+              <th>キャンセル日時</th>
+              <td>${vh.datetime(order.canceled_at)}</td>
+            </tr>
+            % endif
+            <tr>
+              <th>販売チャネル</th>
+              <td>
+                <% from altair.app.ticketing.core.api import get_channel %>
+                ${get_channel(order.channel).k}
+              </td>
+            </tr>
+            <tr>
+              <th>オペレーター</th>
+              <td>
+                % if order.operator:
+                  ${order.operator.name}
+                % endif
+              </td>
+            </tr>
+            % if order.refund:
+            <tr>
+              <th>払戻方法</th>
+              <td>${order.refund.payment_method.name}</td>
+            </tr>
+            % endif
+          </table>

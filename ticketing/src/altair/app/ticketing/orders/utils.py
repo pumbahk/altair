@@ -1,9 +1,10 @@
 # -*- coding:utf-8 -*-
-
+## TODO: move to enqueue.py
 from collections import Counter
 import re
 import logging
 import pystache
+from altair.app.ticketing.tickets.utils import build_dict_from_ordered_product_item_token
 from altair.app.ticketing.tickets.utils import build_dicts_from_ordered_product_item
 from altair.app.ticketing.tickets.utils import build_cover_dict_from_order
 from altair.app.ticketing.core.models import TicketPrintQueueEntry, TicketCover
@@ -48,6 +49,22 @@ def enqueue_for_order(operator, order, ticket_format_id=None):
     for ordered_product in order.items:
         for ordered_product_item in ordered_product.ordered_product_items:
             enqueue_item(operator, order, ordered_product_item, ticket_format_id)
+
+def enqueue_token(operator, token, ticket, i, j, ordered_product_item=None, order=None, seat=None, issuer=None):
+    dict_ = build_dict_from_ordered_product_item_token(token, ticket_number_issuer=issuer)
+    ordered_product_item = ordered_product_item or token.ordered_product_item
+    TicketPrintQueueEntry.enqueue(
+        operator=operator, 
+        ticket=ticket, 
+        data={ u'drawing': pystache.render(ticket.data['drawing'], dict_) },
+        summary=u'注文 %s - %s%s' % (
+            order.order_no,
+            ordered_product_item.product_item.name,
+            u' (%d / %d枚目)' % (i, j) if (i and j) else u""
+            ),
+        ordered_product_item=ordered_product_item,
+        seat=seat
+        )
    
 def enqueue_item(operator, order, ordered_product_item, ticket_format_id=None):
     bundle = ordered_product_item.product_item.ticket_bundle

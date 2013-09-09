@@ -38,6 +38,14 @@
     }).change();
     $('.draggable').draggable({scroll: true, handle:$('.draggable .modal-header')});
     $('#modal-reserve').disableOnSubmit();
+
+    // pager (see:templates/performances/_reservation.html)
+    pager = new Pager("#modal-reserve", "reserve");
+    pager.$el.find("#reserve-tab").on("click", function(){pager.next("reserve");});
+    pager.$el.find("#reserve-next").on("click", function(){pager.next("memo");});
+    pager.$el.find("#memo-tab").on("click", function(){pager.next("memo");});
+    pager.$el.find("#memo-prev").on("click", function(){pager.next("reserve");});
+    $("#modal-reserve").bind("*onFailure", function(){pager.next("reserve");});
   });
 </script>
 
@@ -47,9 +55,28 @@
   </div>
 
   <div class="modal-body">
+    <%doc>
+    wizard形式にする前にタブ化する
+    [購入情報入力|文言・メモ入力|購入情報確認|文言・メモ入力確認]
+    </%doc>
+
+    <ul class="nav nav-tabs" style="margin-bottom:10px;">
+      <li class="active"><a id="reserve-tab">購入情報入力</a></li>
+      <li><a id="memo-tab">文言・メモ入力</a></li>
+      <li><a>購入情報確認</a></li>
+      <li><a>文言・メモ入力確認</a></li>
+    </ul>
+
     ${ch.alert_message(form)}
 
     <form class="form-horizontal" action="javascript:confirmOrder();">
+    <div class="memo-area" style="display:none">
+      ${ch.form_item(form.note, rows=3, class_='span10')}
+      %for field in form_order_edit_attribute:
+        ${ch.form_item(field, class_='span10', style="width:80%")}
+      %endfor
+    </div>
+    <div class="reserve-area">
       % if form.products.choices:
       <script type="text/javascript">
         $(function() {
@@ -167,13 +194,19 @@
           <p>※ 当日窓口決済を選択すると、予約のステータスが「入金済み」になります</p>
         </div>
       </div>
-      ${ch.form_item(form.note, rows=3, class_='span10')}
       ${ch.form_item(form.performance_id)}
+    </div>
     </form>
   </div>
 
   <div class="modal-footer">
-    <button onclick="javascript:reselectOrder(); return false;" class="btn secondary btn-close">戻る</button>
-    <button onclick="$('#modal-reserve').find('form').submit(); return false;" class="btn danger">確認する</button>
+    <div class="reserve-area">
+      <button onclick="javascript:reselectOrder(); return false;" class="btn secondary btn-close">戻る</button>
+      <button id="reserve-next" class="btn danger">メモ・文言を設定する</button>
+    </div>
+    <div class="memo-area" style="display:none">
+      <button id="memo-prev" class="btn secondary btn-close">戻る</button>
+      <button onclick="$('#modal-reserve').find('form').submit(); return false;" class="btn danger">確認する</button>
+    </div>
   </div>
 </div>
