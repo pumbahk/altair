@@ -481,7 +481,7 @@ class TicketsUtilsTest(TestCase):
             u"受付日時s": u"2012/10/30 (火) 12:34",
             u"発券日時": u"2012年 11月 01日 (木) 12時 34分",
             u"発券日時s": u"2012/11/01 (木) 12:34",
-            u"発券番号": None,
+            u"発券番号": "",
             }
         out = build_dicts_from_ordered_product_item(self.order.items[0].ordered_product_items[0])
         self.assertEqual(1, len(out))
