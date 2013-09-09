@@ -379,10 +379,12 @@ class TicketDictBuilder(object):
         retval = retval or {}
         if not attributes:
             return retval
-        if u"memo_on_order" in attributes:
-            retval[u"予約時補助文言"] = attributes["memo_on_order"]
-        if u"memo_after_order" in attributes:
-            retval[u"予約後補助文言"] = attributes["memo_after_order"]
+        if u"memo_on_order1" in attributes:
+            retval[u"予約時補助文言1"] = attributes["memo_on_order1"]
+        if u"memo_on_order2" in attributes:
+            retval[u"予約時補助文言2"] = attributes["memo_on_order2"]
+        if u"memo_on_order3" in attributes:
+            retval[u"予約時補助文言3"] = attributes["memo_on_order3"]
         return retval
         
     def build_dict_from_payment_delivery_method_pair(self, payment_delivery_method_pair, retval=None):
