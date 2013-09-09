@@ -977,19 +977,19 @@ def OrderAttributesEditFormFactory(N, memo_field_name_fmt="memo_on_order{}",
     for i in range(1, N+1):
         name = memo_field_name_fmt.format(i)
         label = memo_field_label_fmt.format(i)
-        attrs[name] = TextField(label=label, validators=[Optional(), Length(30)])#todo: 全角10文字
+        attrs[name] = TextField(label=label, validators=[Optional(), Length(max=10)])#todo: 全角10文字
 
     def get_error_messages(self):
         messages = []
-        for field in form:
-            mes = u"{}:{}".format(field.label, u", ".join(field.errors))
+        for field in self:
+            mes = u"{}:{}".format(field.label.text, u", ".join(field.errors))
             messages.append(mes)
         return u"\n".join(messages)
     attrs["get_error_messages"] = get_error_messages
 
     def get_result(self):
         result = []
-        for field in form:
+        for field in self:
             result.append((field.name, field.data))
         return result
     attrs["get_result"] = get_result

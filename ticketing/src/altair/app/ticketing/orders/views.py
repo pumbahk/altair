@@ -810,14 +810,15 @@ class OrderDetailView(BaseView):
             }))
 
         f = OrderAttributesEditFormFactory(3)(MultiDict(self.request.json_body))
-        if not f.note.validate(f):
+        if not f.validate():
             raise HTTPBadRequest(body=json.dumps({
                 'message':f.get_error_messages(), 
             }))
         marker = object()
+	#logger.debug(self.request.json_body)
         for k, v in f.get_result():
-            v = order.attributes.get(k, marker)
-            if v or v is not marker:
+            old = order.attributes.get(k, marker)
+            if v or old is not marker:
                 order.attributes[k] = v
         order.save()
         return {}

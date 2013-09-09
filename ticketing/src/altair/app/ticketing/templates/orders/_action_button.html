@@ -57,7 +57,7 @@
     var param = {};
     var form = $('#order-attributes-form');
     form.find('.message').empty();
-    $(form.find('form').serializeArray()).each(function(i, v) {
+    $(form.serializeArray()).each(function(i, v) {
       param[v.name] = v.value;
     });
     $.ajax({
@@ -74,6 +74,7 @@
         var messages = responseText['message'] || xhr.statusText
         form.find('.message').text(messages);
       }
+    });
   }
   function save_note() {
     var param = {};
