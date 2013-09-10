@@ -380,6 +380,7 @@ class OrderImporter():
 
         # 予約(ダミーOrder)単位で1件ずつおまかせ配席をしていく
         # 座席ステータスはインナー予約での座席確保と同じ状態にする
+        sum_quantity = dict()
         order_no_list = self.orders.keys()
         for order_no in order_no_list:
             order = self.orders.get(order_no)
@@ -387,18 +388,32 @@ class OrderImporter():
             for op in order.ordered_product.values():
                 for opi in op.ordered_product_item.values():
                     product_item = ProductItem.query.filter_by(id=opi.product_item_id).one()
-                    try:
-                        logger.info('product_item_id = %sm stock_id = %s, quantity = %s' % (product_item.id, product_item.stock_id, opi.quantity))
-                        seats = reserving.reserve_seats(product_item.stock_id, int(opi.quantity), reserve_status=SeatStatusEnum.Keep)
-                        opi._seats = [s.id for s in seats]
-                        logger.info(opi._seats)
-                    except NotEnoughAdjacencyException, e:
-                        logger.info('cannot allocate seat (stock_id=%s, quantity=%s) %s' % (product_item.stock_id, opi.quantity, e))
-                        status = False
-                        self.error_reasons.append(
-                            u'配席できません 予約番号: %s  商品明細: %s  個数: %s  stock_id: %s' % (order_no, product_item.name, opi.quantity, product_item.stock_id)
-                        )
-                        break
+                    stock = product_item.stock
+                    if product_item.stock_type.quantity_only:
+                        logger.debug('stock %d quantity only' % stock.id)
+                        if stock.id not in sum_quantity:
+                            sum_quantity[stock.id] = 0
+                        sum_quantity[stock.id] += opi.quantity
+                        if stock.stock_status.quantity < sum_quantity[stock.id]:
+                            logger.info('cannot allocate quantity rest=%s (stock_id=%s, quantity=%s)' % (stock.stock_status.quantity, stock.id, opi.quantity))
+                            status = False
+                            self.error_reasons.append(
+                                u'配席可能な座席がありません 予約番号: %s  商品明細: %s  個数: %s  (stock_id: %s)' % (order_no, product_item.name, opi.quantity, stock.id)
+                            )
+                            break
+                    else:
+                        try:
+                            logger.info('product_item_id = %sm stock_id = %s, quantity = %s' % (product_item.id, stock.id, opi.quantity))
+                            seats = reserving.reserve_seats(stock.id, int(opi.quantity), reserve_status=SeatStatusEnum.Keep)
+                            opi._seats = [s.id for s in seats]
+                            logger.info(opi._seats)
+                        except NotEnoughAdjacencyException, e:
+                            logger.info('cannot allocate seat (stock_id=%s, quantity=%s) %s' % (stock.id, opi.quantity, e))
+                            status = False
+                            self.error_reasons.append(
+                                u'配席可能な座席がありません 予約番号: %s  商品明細: %s  個数: %s  (stock_id: %s)' % (order_no, product_item.name, opi.quantity, stock.id)
+                            )
+                            break
                 if not status:
                     break
             if not status:
@@ -501,26 +516,28 @@ class OrderImporter():
                     attr.update({'ordered_product':ordered_product})
                     ordered_product_item = OrderedProductItem(**attr)
 
-                    seats = []
-                    for seat_id in temp_ordered_product_item._seats:
+                    stock = temp_ordered_product_item.product_item.stock
+                    stock_type = stock.stock_type
+                    if stock.id not in decrease_per_stock.keys():
+                        decrease_per_stock[stock.id] = 0
+
+                    if stock_type.quantity_only:
+                        decrease_per_stock[stock.id] += ordered_product_item.quantity
+                    else:
+                        decrease_per_stock[stock.id] += len(temp_ordered_product_item._seats)
+
                         # update SeatStatus
-                        seat_status = SeatStatus.query.filter_by(seat_id=seat_id).one()
-                        logger.info('seat(%s) status Keep to Ordered' % seat_status.seat_id)
-                        if seat_status.status != int(SeatStatusEnum.Keep):
-                            logger.error('seat(%s) invalid status %s' % (seat_status.seat_id, seat_status.status))
-                            raise Exception(u'invalid status')
-                        seat_status.status = int(SeatStatusEnum.Ordered)
-                        seats.append(seat_status.seat)
+                        seats = []
+                        for seat_id in temp_ordered_product_item._seats:
+                            seat_status = SeatStatus.query.filter_by(seat_id=seat_id).one()
+                            logger.info('seat(%s) status Keep to Ordered' % seat_status.seat_id)
+                            if seat_status.status != int(SeatStatusEnum.Keep):
+                                logger.error('seat(%s) invalid status %s' % (seat_status.seat_id, seat_status.status))
+                                raise Exception(u'invalid seat status')
+                            seat_status.status = int(SeatStatusEnum.Ordered)
+                            seats.append(seat_status.seat)
+                        ordered_product_item.seats = seats
 
-                        # for update StockStatus.quantity
-                        stock_id = seat_status.seat.stock_id
-                        if stock_id not in decrease_per_stock.keys():
-                            decrease_per_stock[stock_id] = 0
-                        decrease_per_stock[stock_id] += 1
-
-                    # Todo: 数受けのままのケースでの在庫引き当て
-
-                    ordered_product_item.seats = seats
                     ordered_product_item.save()
                     logger.info(vars(ordered_product_item))
 
