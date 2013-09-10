@@ -553,6 +553,7 @@ class OrderDetailView(BaseView):
             'form_order':form_order,
             'form_order_reserve':form_order_reserve,
             'form_refund':form_refund,
+            'form_order_edit_attribute': forms.get_order_edit_attribute(), 
             "objects_for_describe_product_item": joined_objects_for_product_item()
         }
 

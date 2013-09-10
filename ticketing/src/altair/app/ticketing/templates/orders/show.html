@@ -149,13 +149,12 @@ ${ch.breadcrumbs(
             <h3>券面補助文言の追加</h3>
           </div>
           <form id="order-attributes-form" method="POST" action="javascript:save_order_attributes('${request.route_path("orders.memo_on_order", order_id=order.id)}')">
-            <div class="message pull-left"></div>
             ## TODO: remove magic number
-            %for i in range(1,4):
-              <% attr_name = "memo_on_order{}".format(i) %>
-              <label>補助文言${i}:<input name="${attr_name}" value="${order.attributes.get(attr_name,'')}"/></label>
+            %for field in form_order_edit_attribute:
+              <label>${field.label.text}:<input name="${field.name}" value="${order.attributes.get(field.name,'')}"/></label>
             %endfor
             <input type="submit" value="補助文言を保存">
+            <div class="message pull-left"></div>
           </form>
         </div>
       </div>
