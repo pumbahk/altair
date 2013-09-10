@@ -22,7 +22,7 @@ def install_app(config):
     config.include("altairsite.mobile.event")
     config.include('altairsite.mobile.staticpage')
     config.add_route("home", "/")
-    config.set_request_property("altairsite.mobile.api.mobile_static_url", "mobile_static_url")
+    config.set_request_property("altairsite.mobile.api.mobile_static_url", "mobile_static_url", reify=True)
     config.scan(".")
 
 def main(global_config, **settings):
