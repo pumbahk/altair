@@ -7,6 +7,7 @@ from standardenum import StandardEnum
 
 from zope.interface import implementer
 from pyramid.threadlocal import get_current_request
+from sqlalchemy.orm.exc import NoResultFound
 
 from altair.app.ticketing import csvutils
 from altair.app.ticketing.cart.reserving import NotEnoughAdjacencyException
@@ -67,6 +68,8 @@ class TemporaryModel(object):
 @implementer(IPaymentCart)
 class TemporaryOrder(TemporaryModel):
 
+    id = None  # used to generate ReservedNumber.number
+    order = None  # use DeliveryMethod.finish()
     order_no = None
     total_amount = 0
     system_fee = 0
@@ -137,10 +140,6 @@ class TemporaryShippingAddress(TemporaryModel):
         return self.email_1 or self.email_2
 
 
-class TemporarySeat(TemporaryModel):
-    pass
-
-
 def price_to_number(string):
     if string is not None:
         string = string.replace(',', '')
@@ -176,7 +175,6 @@ class OrderImporter():
         self.seat_allocation = seat_allocation
         self.orders = dict()
         self.error_orders = dict()
-        self.error_reasons = []
 
         for e in ImportTypeEnum:
             if e.v[0] == import_type:
@@ -186,39 +184,44 @@ class OrderImporter():
     def parse_import_file(self, file):
         reader = csv_reader(file)
         for row in reader:
-            # User
-            user = self.get_user(row)
+            try:
+                order_no = row.get(u'order.order_no')
 
-            # SalesSegment, PaymentDeliveryMethodPair
-            sales_segment = self.get_sales_segment(row)
-            pdmp = self.get_pdmp(row, sales_segment)
+                # User
+                user = self.get_user(row)
 
-            # Order: dict(order_no=order)
-            order_no = row.get(u'order.order_no')
-            order = self.orders.get(order_no)
-            if order is None:
-                order = self.create_temporary_order(row, sales_segment, pdmp, user)
+                # SalesSegment, PaymentDeliveryMethodPair
+                sales_segment = self.get_sales_segment(row)
+                pdmp = self.get_pdmp(row, sales_segment)
 
-            # OrderedProduct: dict(product_id=ordered_product)
-            product = self.get_product(row, sales_segment)
-            op = order.ordered_product.get(product.id)
-            if op is None:
-                op = self.create_temporary_ordered_product(row, order, product)
-                order.ordered_product[product.id] = op
+                # Order: dict(order_no=order)
+                order = self.orders.get(order_no)
+                if order is None:
+                    order = self.create_temporary_order(row, sales_segment, pdmp, user)
 
-            # OrderedProductItem: dict(product_item_id=ordered_product_item)
-            product_item = self.get_product_item(row, product)
-            opi = op.ordered_product_item.get(product_item.id)
-            if opi is None:
-                opi = self.create_temporary_ordered_product_item(row, op, product_item)
-                op.ordered_product_item[product_item.id] = opi
-            else:
-                opi.quantity += int(row.get(u'ordered_product_item.quantity'))
+                # OrderedProduct: dict(product_id=ordered_product)
+                product = self.get_product(row, sales_segment)
+                op = order.ordered_product.get(product.id)
+                if op is None:
+                    op = self.create_temporary_ordered_product(row, order, product)
+                    order.ordered_product[product.id] = op
 
-            # Seat: dict(seat_id=seat)
-            seat = self.get_seat(row, product_item)
-            if seat:
-                opi._seats.append(seat.id)
+                # OrderedProductItem: dict(product_item_id=ordered_product_item)
+                product_item = self.get_product_item(row, product)
+                opi = op.ordered_product_item.get(product_item.id)
+                if opi is None:
+                    opi = self.create_temporary_ordered_product_item(row, op, product_item)
+                    op.ordered_product_item[product_item.id] = opi
+                else:
+                    opi.quantity += int(row.get(u'ordered_product_item.quantity'))
+
+                # Seat: dict(seat_id=seat)
+                seat = self.get_seat(row, product_item)
+                if seat:
+                    opi._seats.append(seat.id)
+            except NoResultFound, e:
+                self.error_orders[order_no] = u'予約番号: %s  %s' % (order_no, e.message)
+                continue
 
             self.orders[order_no] = order
 
@@ -229,8 +232,9 @@ class OrderImporter():
                 SalesSegment.performance_id == self.performance_id,
                 SalesSegmentGroup.name == ssg_name,
             ).one()
-        except Exception:
-            raise
+        except NoResultFound, e:
+            e.message = u'販売区分がありません  販売区分グループ名: %s' % ssg_name
+            raise e
         return sales_segment
 
     def get_pdmp(self, row, sales_segment):
@@ -244,8 +248,9 @@ class OrderImporter():
             ).join(DeliveryMethod).filter(
                 DeliveryMethod.name == delivery_method_name
             ).one()
-        except Exception:
-            raise
+        except NoResultFound, e:
+            e.message = u'決済引取方法がありません  決済方法: %s  引取方法: %s' % (payment_method_name, delivery_method_name)
+            raise e
         return pdmp
 
     def get_user(self, row):
@@ -258,8 +263,10 @@ class OrderImporter():
             credential = UserCredential.query.filter(
                 UserCredential.auth_identifier == auth_identifier
             ).one()
-        except Exception:
-            raise
+        except NoResultFound, e:
+            # Todo: userがいなかったら生成する？
+            e.message = u'ユーザーが見つかりません'
+            raise e
         return credential.user
 
     def get_product(self, row, sales_segment):
@@ -269,8 +276,9 @@ class OrderImporter():
                 Product.sales_segment_id == sales_segment.id,
                 Product.name == product_name
             ).one()
-        except Exception:
-            raise
+        except NoResultFound, e:
+            e.message = u'商品がありません  商品: %s' % product_name
+            raise e
         return product
 
     def get_product_item(self, row, product):
@@ -280,8 +288,9 @@ class OrderImporter():
                 ProductItem.product_id == product.id,
                 ProductItem.name == product_item_name
             ).one()
-        except Exception:
-            raise
+        except NoResultFound, e:
+            e.message = u'商品明細がありません  商品明細: %s' % product_item_name
+            raise e
         return product
 
     def get_seat(self, row, product_item):
@@ -296,8 +305,9 @@ class OrderImporter():
                 Seat.stock_id == product_item.stock_id,
                 Seat.name == seat_name
             ).one()
-        except Exception:
-            raise
+        except NoResultFound, e:
+            e.message = u'座席がありません  座席: %s' % seat_name
+            raise e
         return seat
 
     def create_temporary_order(self, row, sales_segment, pdmp, user):
@@ -324,9 +334,7 @@ class OrderImporter():
             user_id             = user.id,
             shipping_address    = self.create_temporary_shipping_address(row, user),
             operator_id         = self.user.id,
-            ordered_product     = dict(),
-            order               = None,  # use DeliveryMethod.finish()
-            id                  = None  # for generate ReservedNumber.number
+            ordered_product     = dict()
         )
         logger.info(vars(order))
         return order
@@ -384,7 +392,7 @@ class OrderImporter():
         order_no_list = self.orders.keys()
         for order_no in order_no_list:
             order = self.orders.get(order_no)
-            status = True
+            error_reason = None
             for op in order.ordered_product.values():
                 for opi in op.ordered_product_item.values():
                     product_item = ProductItem.query.filter_by(id=opi.product_item_id).one()
@@ -396,10 +404,7 @@ class OrderImporter():
                         sum_quantity[stock.id] += opi.quantity
                         if stock.stock_status.quantity < sum_quantity[stock.id]:
                             logger.info('cannot allocate quantity rest=%s (stock_id=%s, quantity=%s)' % (stock.stock_status.quantity, stock.id, opi.quantity))
-                            status = False
-                            self.error_reasons.append(
-                                u'配席可能な座席がありません 予約番号: %s  商品明細: %s  個数: %s  (stock_id: %s)' % (order_no, product_item.name, opi.quantity, stock.id)
-                            )
+                            error_reason = u'配席可能な座席がありません  商品明細: %s  個数: %s  (stock_id: %s)' % (order_no, product_item.name, opi.quantity, stock.id)
                             break
                     else:
                         try:
@@ -409,15 +414,13 @@ class OrderImporter():
                             logger.info(opi._seats)
                         except NotEnoughAdjacencyException, e:
                             logger.info('cannot allocate seat (stock_id=%s, quantity=%s) %s' % (stock.id, opi.quantity, e))
-                            status = False
-                            self.error_reasons.append(
-                                u'配席可能な座席がありません 予約番号: %s  商品明細: %s  個数: %s  (stock_id: %s)' % (order_no, product_item.name, opi.quantity, stock.id)
-                            )
+                            error_reason = u'配席可能な座席がありません  商品明細: %s  個数: %s  (stock_id: %s)' % (order_no, product_item.name, opi.quantity, stock.id)
                             break
-                if not status:
+                if error_reason:
                     break
-            if not status:
-                self.error_orders[order_no] = self.orders.pop(order_no)
+            if error_reason:
+                self.error_orders[order_no] = u'予約番号: %s  %s' % (order_no, error_reason)
+                self.orders.pop(order_no)
 
     def release_seats(self):
         if not self.seat_allocation:
@@ -467,7 +470,7 @@ class OrderImporter():
         # 配席できない予約の数
         stats['error_order_count'] = len(self.error_orders)
         # 配席できない理由
-        stats['error_reasons'] = self.error_reasons
+        stats['error_orders'] = self.error_orders
 
         return stats
 

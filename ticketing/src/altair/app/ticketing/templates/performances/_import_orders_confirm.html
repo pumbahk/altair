@@ -61,11 +61,11 @@
   </tr>
 </table>
 
-<% error_reasons = stats.get('error_reasons') %>
-% if error_reasons:
+<% errors = stats.get('error_orders') %>
+% if errors:
 <h5>登録できない予約のエラー詳細</h5>
 <div class="alert alert-error">
-  % for error in error_reasons:
+  % for error in errors.values():
   <p>${error}</p>
   % endfor
 </div>
