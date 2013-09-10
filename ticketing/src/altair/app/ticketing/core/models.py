@@ -1379,6 +1379,17 @@ class FeeTypeEnum(StandardEnum):
     Once = (0, u'1件あたりの手数料')
     PerUnit = (1, u'1枚あたりの手数料')
 
+class ServiceFeeMethod(Base, BaseModel, WithTimestamp, LogicallyDeleted):
+    __tablename__ = 'ServiceFeeMethod'
+    id = Column(Identifier, primary_key=True)
+    name = Column(String(255))
+    description = Column(String(2000))
+    fee = Column(Numeric(precision=16, scale=2), nullable=False)
+    fee_type = Column(Integer, nullable=False, default=FeeTypeEnum.Once.v[0])
+    organization_id = Column(Identifier, ForeignKey('Organization.id'))
+    organization = relationship('Organization', uselist=False, backref='service_fee_method_list')
+    # is_system_fee_default
+
 class PaymentMethod(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'PaymentMethod'
     id = Column(Identifier, primary_key=True)
