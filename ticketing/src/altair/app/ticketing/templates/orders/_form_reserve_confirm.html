@@ -161,9 +161,10 @@
       % endif
 
       ${ch.form_item(form.sales_counter_payment_method_id)}
+      ${ch.form_item(form.performance_id)}
       </div>
 
-      <div class="memo-area">
+      <div class="memo-area" style="display:none">
         <input type="hidden" name="${form.note.name}" value="${form.note.data}"/>
         %for field in form_order_edit_attribute:
           <input type="hidden" name="${field.name}" value="${field.data}"/>
