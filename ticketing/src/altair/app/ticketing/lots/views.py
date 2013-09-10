@@ -71,23 +71,23 @@ def my_render_view_to_response(context, request, view_name=''):
         return None
     return view_callable(context, request)
 
-def get_nogizaka_lot_id(request):
+def get_nogizaka_lot_ids(request):
     try:
-        return long(request.registry.settings.get('altair.lots.nogizaka_lot_id'))
+        return [long(id) for id in request.registry.settings.get('altair.lots.nogizaka_lot_id').split(',')]
     except:
-        return None
+        return []
 
 def is_nogizaka(context, request):
     if request.method != 'POST':
         return False
     lot = getattr(context, 'lot')
-    if not lot or lot.id != get_nogizaka_lot_id(request):
+    if not lot or lot.id not in get_nogizaka_lot_ids(request):
         return False
     return True
 
 def nogizaka_auth(context, request):
     lot = getattr(context, 'lot')
-    if not lot or lot.id != get_nogizaka_lot_id(request):
+    if not lot or lot.id not in get_nogizaka_lot_ids(request):
         return True
     if request.session.get('lots.passed.keyword'):
         return True
