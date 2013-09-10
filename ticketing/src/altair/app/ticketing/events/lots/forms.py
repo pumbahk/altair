@@ -12,7 +12,9 @@ from altair.formhelpers import (
 )
 from altair.app.ticketing.core.models import ReportFrequencyEnum, ReportPeriodEnum
 from altair.app.ticketing.core.models import Product, SalesSegment, SalesSegmentGroup, Operator
+from altair.app.ticketing.events.sales_segments.resources import SalesSegmentGroupCreate
 from altair.app.ticketing.lots.models import Lot
+
 from .models import LotEntryReportSetting
 
 class LotForm(Form):
@@ -102,19 +104,10 @@ class LotForm(Form):
 
     def create_lot(self, event):
         sales_segment_group = SalesSegmentGroup.query.filter(SalesSegmentGroup.id==self.data['sales_segment_group_id']).one()
-        sales_segment = SalesSegment(
-            sales_segment_group_id=self.data['sales_segment_group_id'],
-            start_at=self.data['start_at'],
-            end_at=self.data['end_at'],
-            upper_limit=self.data['upper_limit'],
-            seat_choice=self.data['seat_choice'],
-            account_id=sales_segment_group.account_id,
-            auth3d_notice=self.data['auth3d_notice'],
-            )
+
         lot = Lot(
             event=event,
             organization_id=event.organization_id,
-            sales_segment=sales_segment,
             name=self.data['name'],
             limit_wishes=self.data['limit_wishes'],
             entry_limit=self.data['entry_limit'],
@@ -122,6 +115,16 @@ class LotForm(Form):
             lotting_announce_datetime=self.data['lotting_announce_datetime'],
             auth_type=self.data['auth_type'],
             )
+        creator = SalesSegmentGroupCreate(sales_segment_group)
+        sales_segment = creator.create_sales_lot_segment(lot)
+        sales_segment.sales_segment_group_id=self.data['sales_segment_group_id']
+        sales_segment.start_at=self.data['start_at']
+        sales_segment.end_at=self.data['end_at']
+        sales_segment.upper_limit=self.data['upper_limit']
+        sales_segment.seat_choice=self.data['seat_choice']
+        sales_segment.account_id=sales_segment_group.account_id
+        sales_segment.auth3d_notice=self.data['auth3d_notice']
+
         return lot
     
 
