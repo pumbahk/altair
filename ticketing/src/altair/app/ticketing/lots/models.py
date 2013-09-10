@@ -462,6 +462,12 @@ class LotEntry(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             return None
         return self.order.delivery_fee
 
+    @property
+    def sej_order(self):
+        if self.order is None:
+            return None
+        return self.order.sej_order
+
     # end [order amount fee interface]
 
     def close(self):
