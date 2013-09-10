@@ -3565,6 +3565,9 @@ class OrganizationSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     point_rate = Column(Float, nullable=True)
 
     bcc_recipient = Column(Unicode(255), nullable=True)
+    
+    system_fee = AnnotatedColumn(Numeric(precision=16, scale=2), nullable=False, _a_label=_(u'システム利用料'))
+    system_fee_type = Column(Integer, nullable=False, default=FeeTypeEnum.Once.v[0])
 
 class PerformanceSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = "PerformanceSetting"
