@@ -6,6 +6,7 @@
   function new_stock_type() {
     var modal = $('#modal-stock_type');
     reset_form(modal, '#event_id', true);
+    modal.find('#display').attr('checked', 'checked');
     modal.modal('toggle');
   }
   function edit_stock_type(id) {
