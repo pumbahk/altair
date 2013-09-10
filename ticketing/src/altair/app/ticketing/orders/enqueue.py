@@ -131,7 +131,7 @@ class EachPrintWithoutToken(object):
                         if unicode(seat.id) in seats:
                             using_tokens[(unicode(opi.id), unicode(seat.id))].append(token)
                     else:
-                        if opi.id in opis and opi_count.get(unicode(opi.id)) > i:
+                        if unicode(opi.id) in opis and opi_count.get(unicode(opi.id)) > i:
                             using_tokens[(unicode(opi.id), unicode(None))].append(token)
         return using_tokens
 
