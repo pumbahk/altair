@@ -1,10 +1,15 @@
 # -*- coding: utf-8 -*-
 
+import sys
 import csv
 import logging
 from standardenum import StandardEnum
 
+from zope.interface import implementer
+from pyramid.threadlocal import get_current_request
+
 from altair.app.ticketing import csvutils
+from altair.app.ticketing.cart.reserving import NotEnoughAdjacencyException
 from altair.app.ticketing.core.models import (\
     DBSession,
     Organization,
@@ -12,6 +17,7 @@ from altair.app.ticketing.core.models import (\
     Order,
     OrderedProduct,
     OrderedProductItem,
+    OrderedProductItemToken,
     ChannelEnum,
     PaymentDeliveryMethodPair,
     PaymentMethod,
@@ -25,12 +31,20 @@ from altair.app.ticketing.core.models import (\
     Seat,
     SeatStatus,
     SejOrder,
-    StockStatus
+    StockStatus,
+    Venue
 )
+from altair.app.ticketing.orders.export import japanese_columns
+from altair.app.ticketing.payments import plugins as payments_plugins
+from altair.app.ticketing.payments.interfaces import (
+    IPaymentCart,
+    IPaymentCartedProduct,
+    IPaymentCartedProductItem,
+    IPaymentShippingAddress
+)
+from altair.app.ticketing.payments.payment import get_delivery_plugin
 from altair.app.ticketing.users.models import UserCredential, Membership
 from altair.app.ticketing.users.api import get_or_create_user
-from altair.app.ticketing.cart.reserving import NotEnoughAdjacencyException
-from altair.app.ticketing.orders.export import japanese_columns
 
 logger = logging.getLogger(__name__)
 
@@ -45,36 +59,85 @@ class TemporaryModel(object):
         for k in self.__dict__:
             v = getattr(self, k)
             logger.info('%s %s %s' % (k, type(v), v))
-            if isinstance(v, int) or isinstance(v, long) or isinstance(v, unicode):
+            if not k.startswith('_') and (isinstance(v, int) or isinstance(v, long) or isinstance(v, unicode)):
                 attr[k] = v
         return attr
 
 
+@implementer(IPaymentCart)
 class TemporaryOrder(TemporaryModel):
-    pass
+
+    order_no = None
+    total_amount = 0
+    system_fee = 0
+    delivery_fee = 0
+    transaction_fee = 0
+
+    @property
+    def performance(self):
+        return Performance.query.filter_by(id=self.performance_id).one()
+
+    @property
+    def sales_segment(self):
+        return SalesSegment.query.filter_by(id=self.sales_segment_id).one()
+
+    @property
+    def payment_delivery_pair(self):
+        return PaymentDeliveryMethodPair.query.filter_by(id=self.payment_delivery_method_pair_id).one()
+
+    @property
+    def products(self):
+        return self.ordered_product.values()
+
+    def finish(self):
+        pass
 
 
+@implementer(IPaymentCartedProduct)
 class TemporaryOrderedProduct(TemporaryModel):
-    pass
+
+    quantity = 0
+
+    @property
+    def items(self):
+        return self.ordered_product_item.values()
+
+    @property
+    def product(self):
+        return Product.query.filter_by(id=self.product_id).one()
+
+    @property
+    def cart(self):
+        return self._parent
 
 
+@implementer(IPaymentCartedProductItem)
 class TemporaryOrderedProductItem(TemporaryModel):
-    pass
+
+    quantity = 0
+
+    @property
+    def product_item(self):
+        return ProductItem.query.filter_by(id=self.product_item_id).one()
+
+    @property
+    def seats(self):
+        return [Seat.query.filter_by(id=seat_id).one() for seat_id in self._seats]
+
+    @property
+    def carted_product(self):
+        return self._parent
+
+
+@implementer(IPaymentShippingAddress)
+class TemporaryShippingAddress(TemporaryModel):
+
+    @property
+    def email(self):
+        return self.email_1 or self.email_2
 
 
 class TemporarySeat(TemporaryModel):
-    pass
-
-
-class TemporaryOrderedProductItemToken(TemporaryModel):
-    pass
-
-
-class TemporaryShippingAddress(TemporaryModel):
-    pass
-
-
-class TemporarySejOrder(TemporaryModel):
     pass
 
 
@@ -82,7 +145,6 @@ def price_to_number(string):
     if string is not None:
         string = string.replace(',', '')
     return string
-
 
 def csv_reader(file):
     reader = csv.DictReader(file)
@@ -107,8 +169,9 @@ class ImportTypeEnum(StandardEnum):
 class OrderImporter():
 
     def __init__(self, context, performance_id, order_csv, import_type, seat_allocation):
+        self.user = context.user
         self.organization_id = context.organization.id
-        self.performance = Performance.get(performance_id)
+        self.performance_id = performance_id
         self.import_type = None
         self.seat_allocation = seat_allocation
         self.orders = dict()
@@ -123,35 +186,39 @@ class OrderImporter():
     def parse_import_file(self, file):
         reader = csv_reader(file)
         for row in reader:
-            # sales_segment
-            sales_segment = self.get_sales_segment(row)
+            # User
+            user = self.get_user(row)
 
-            # order: dict(order_no=order)
+            # SalesSegment, PaymentDeliveryMethodPair
+            sales_segment = self.get_sales_segment(row)
+            pdmp = self.get_pdmp(row, sales_segment)
+
+            # Order: dict(order_no=order)
             order_no = row.get(u'order.order_no')
             order = self.orders.get(order_no)
             if order is None:
-                order = self.create_temporary_order(row, sales_segment)
+                order = self.create_temporary_order(row, sales_segment, pdmp, user)
 
-            # ordered_product: dict(product_id=ordered_product)
+            # OrderedProduct: dict(product_id=ordered_product)
             product = self.get_product(row, sales_segment)
             op = order.ordered_product.get(product.id)
             if op is None:
-                op = self.create_temporary_ordered_product(row, product)
+                op = self.create_temporary_ordered_product(row, order, product)
                 order.ordered_product[product.id] = op
 
-            # ordered_product_item: dict(product_item_id=ordered_product_item)
+            # OrderedProductItem: dict(product_item_id=ordered_product_item)
             product_item = self.get_product_item(row, product)
             opi = op.ordered_product_item.get(product_item.id)
             if opi is None:
-                opi = self.create_temporary_ordered_product_item(row, product_item)
+                opi = self.create_temporary_ordered_product_item(row, op, product_item)
                 op.ordered_product_item[product_item.id] = opi
             else:
                 opi.quantity += int(row.get(u'ordered_product_item.quantity'))
 
-            # seat: dict(seat_id=seat)
-            seat = self.get_seat(row)
+            # Seat: dict(seat_id=seat)
+            seat = self.get_seat(row, product_item)
             if seat:
-                opi.seats.append(seat.id)
+                opi._seats.append(seat.id)
 
             self.orders[order_no] = order
 
@@ -159,7 +226,7 @@ class OrderImporter():
         ssg_name = row.get(u'ordered_product.product.sales_segment.sales_segment_group.name')
         try:
             sales_segment = SalesSegment.query.join(SalesSegmentGroup).filter(
-                SalesSegment.performance_id == self.performance.id,
+                SalesSegment.performance_id == self.performance_id,
                 SalesSegmentGroup.name == ssg_name,
             ).one()
         except Exception:
@@ -217,24 +284,23 @@ class OrderImporter():
             raise
         return product
 
-    def get_seat(self, row):
+    def get_seat(self, row, product_item):
         seat_name = row.get(u'seat.name')
         if not seat_name:
             return None
 
         try:
+            venue = Venue.query.filter_by(performance_id=self.performance_id).one()
             seat = Seat.query.filter(
-                Seat.venue_id == self.performance.venue.id,
+                Seat.venue_id == venue.id,
+                Seat.stock_id == product_item.stock_id,
                 Seat.name == seat_name
             ).one()
         except Exception:
             raise
         return seat
 
-    def create_temporary_order(self, row, sales_segment):
-        pdmp = self.get_pdmp(row, sales_segment)
-        user = self.get_user(row)
-
+    def create_temporary_order(self, row, sales_segment, pdmp, user):
         order = TemporaryOrder(
             order_no            = row.get(u'order.order_no'),
             total_amount        = price_to_number(row.get(u'order.total_amount')),
@@ -249,46 +315,50 @@ class OrderImporter():
             card_brand          = row.get(u'order.card_brand'),
             card_ahead_com_code = row.get(u'order.card_ahead_com_code'),
             card_ahead_com_name = row.get(u'order.card_ahead_com_name'),
-            performance_id      = self.performance.id,
+            performance_id      = self.performance_id,
             organization_id     = self.organization_id,
             channel             = ChannelEnum.INNER.v,
             sales_segment_id    = sales_segment.id,
             payment_delivery_method_pair_id = pdmp.id,
             branch_no           = 1,
             user_id             = user.id,
-            shipping_address    = self.create_temporary_shipping_address(row),
-            sej_order           = self.create_sej_order(row),
-            ordered_product     = dict()
-            #Todo:operator_id=,
+            shipping_address    = self.create_temporary_shipping_address(row, user),
+            operator_id         = self.user.id,
+            ordered_product     = dict(),
+            order               = None,  # use DeliveryMethod.finish()
+            id                  = None  # for generate ReservedNumber.number
         )
         logger.info(vars(order))
         return order
 
-    def create_temporary_ordered_product(self, row, product):
+    def create_temporary_ordered_product(self, row, parent, product):
         ordered_product = TemporaryOrderedProduct(
             price = price_to_number(row.get(u'ordered_product.price')),
             quantity = int(row.get(u'ordered_product.quantity')),
             product_id = product.id,
+            _parent = parent,
             ordered_product_item = dict()
         )
         return ordered_product
 
-    def create_temporary_ordered_product_item(self, row, product_item):
+    def create_temporary_ordered_product_item(self, row, parent, product_item):
         ordered_product_item = TemporaryOrderedProductItem(
             price = price_to_number(row.get(u'ordered_product_item.price')),
             quantity = int(row.get(u'ordered_product_item.quantity')),
             product_item_id = product_item.id,
-            seats = []
+            _parent = parent,
+            _seats = []
         )
         return ordered_product_item
 
-    def create_temporary_shipping_address(self, row):
-        shipping_address    = TemporaryOrderedProduct(
+    def create_temporary_shipping_address(self, row, user):
+        shipping_address    = TemporaryShippingAddress(
+            user_id         = user.id,
             first_name      = row.get(u'shipping_address.first_name'),
             last_name       = row.get(u'shipping_address.last_name'),
             first_name_kana = row.get(u'shipping_address.first_name_kana'),
             last_name_kana  = row.get(u'shipping_address.last_name_kana'),
-            zip             = row.get(u'shipping_address.zip'),
+            zip             = row.get(u'shipping_address.zip').replace('-', ''),
             country         = row.get(u'shipping_address.country'),
             prefecture      = row.get(u'shipping_address.prefecture'),
             city            = row.get(u'shipping_address.city'),
@@ -303,13 +373,6 @@ class OrderImporter():
             nick_name       = row.get(u'user_profile.nick_name')
         )
         return shipping_address
-
-    def create_sej_order(self, row):
-        sej_order = TemporarySejOrder(
-            billing_number = row.get(u'sej_order.billing_number'),
-            exchange_number = row.get(u'sej_order.exchange_number'),
-        )
-        return sej_order
 
     def allocate_seats(self, reserving):
         if not self.seat_allocation:
@@ -327,8 +390,8 @@ class OrderImporter():
                     try:
                         logger.info('product_item_id = %sm stock_id = %s, quantity = %s' % (product_item.id, product_item.stock_id, opi.quantity))
                         seats = reserving.reserve_seats(product_item.stock_id, int(opi.quantity), reserve_status=SeatStatusEnum.Keep)
-                        opi.seats = [s.id for s in seats]
-                        logger.info(opi.seats)
+                        opi._seats = [s.id for s in seats]
+                        logger.info(opi._seats)
                     except NotEnoughAdjacencyException, e:
                         logger.info('cannot allocate seat (stock_id=%s, quantity=%s) %s' % (product_item.stock_id, opi.quantity, e))
                         status = False
@@ -348,7 +411,7 @@ class OrderImporter():
         for order in self.orders.values():
             for op in order.ordered_product.values():
                 for opi in op.ordered_product_item.values():
-                    for seat_id in opi.seats:
+                    for seat_id in opi._seats:
                         seat_status = SeatStatus.query.filter_by(seat_id=seat_id).one()
                         if seat_status.status == int(SeatStatusEnum.Keep):
                             logger.info('seat(%s) status Keep to Vacant' % seat_status.seat_id)
@@ -394,10 +457,11 @@ class OrderImporter():
         return stats
 
     def execute(self):
-        # Todo: 予約生成処理、temp_to_order
+        # 予約生成処理
         decrease_per_stock = dict()
         for temp_order in self.orders.values():
             # 新規追加ならorder_noを採番
+            base_id = None
             if self.import_type == ImportTypeEnum.Create.v:
                 from altair.app.ticketing.core import api as c_api
                 from altair.app.ticketing.utils import sensible_alnum_encode
@@ -422,15 +486,7 @@ class OrderImporter():
             order.save()
             logger.info(vars(order))
 
-            # SejOrder
-            # Todo: Sejとの通信
-            temp_sej_order = temp_order.sej_order
-            attr = temp_sej_order.attributes()
-            attr.update({'order_id':order.order_no})
-            sej_order = SejOrder(**attr)
-            sej_order.save()
-            logger.info(vars(sej_order))
-
+            pdmp = order.payment_delivery_pair
             for temp_ordered_product in temp_order.ordered_product.values():
                 # OrderedProduct
                 attr = temp_ordered_product.attributes()
@@ -446,7 +502,7 @@ class OrderImporter():
                     ordered_product_item = OrderedProductItem(**attr)
 
                     seats = []
-                    for seat_id in temp_ordered_product_item.seats:
+                    for seat_id in temp_ordered_product_item._seats:
                         # update SeatStatus
                         seat_status = SeatStatus.query.filter_by(seat_id=seat_id).one()
                         logger.info('seat(%s) status Keep to Ordered' % seat_status.seat_id)
@@ -462,9 +518,29 @@ class OrderImporter():
                             decrease_per_stock[stock_id] = 0
                         decrease_per_stock[stock_id] += 1
 
+                    # Todo: 数受けのままのケースでの在庫引き当て
+
                     ordered_product_item.seats = seats
                     ordered_product_item.save()
                     logger.info(vars(ordered_product_item))
+
+            # 引取手続
+            # - コンビニ受け取り: SejOrder
+            # - QR: OrderedProductItemToken
+            # - 窓口: ReservedNumber
+            if self.import_type == ImportTypeEnum.Create.v:
+                request = get_current_request()
+                delivery_plugin_id = pdmp.delivery_method.delivery_plugin_id
+                delivery_plugin = get_delivery_plugin(request, delivery_plugin_id)
+                logger.info('delivery_plugin_id = %s' % delivery_plugin_id)
+                if delivery_plugin:
+                    logger.info('delivery_plugin found')
+                    try:
+                        temp_order.id = base_id
+                        temp_order.order = order
+                        delivery_plugin.finish(request, temp_order)
+                    except Exception as e:
+                        logger.error('%s call delivery plugin error(%s)' % (order.order_no, e.message), exc_info=sys.exc_info())
 
         # StockStatus.quantity はまとめて減算
         for stock_id, quantity in decrease_per_stock.iteritems():

@@ -21,6 +21,19 @@ class IPaymentCart(Interface):
     def finish():
         """ finish cart lifecycle"""
 
+
+class IPaymentCartedProduct(Interface):
+    items = Attribute(u"")
+
+
+class IPaymentCartedProductItem(Interface):
+    product_item = Attribute(u"")
+
+
+class IPaymentShippingAddress(Interface):
+    email = Attribute(u"")
+
+
 class IPaymentPreparer(Interface):
     def prepare(request, cart):
         """ 決済処理の前処理を行う

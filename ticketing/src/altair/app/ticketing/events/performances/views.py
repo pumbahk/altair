@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import sys
 import re
 import logging
 logger = logging.getLogger(__name__)
@@ -188,7 +189,7 @@ class PerformanceShowView(BaseView):
         try:
             importer.execute()
         except Exception, e:
-            logger.error('order import error: %s' % e)
+            logger.error('order import error: %s' % e, exc_info=sys.exc_info())
             self.request.session.flash(u'インポート失敗しました')
             raise HTTPFound(self.request.route_url('performances.import_orders.confirm', performance_id=self.performance.id))
 
