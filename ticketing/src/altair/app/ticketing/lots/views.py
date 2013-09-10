@@ -71,6 +71,28 @@ def my_render_view_to_response(context, request, view_name=''):
         return None
     return view_callable(context, request)
 
+def get_nogizaka_lot_id(request):
+    try:
+        return long(request.registry.settings.get('altair.lots.nogizaka_lot_id'))
+    except:
+        return None
+
+def is_nogizaka(context, request):
+    if request.method != 'POST':
+        return False
+    lot = getattr(context, 'lot')
+    if not lot or lot.id != get_nogizaka_lot_id(request):
+        return False
+    return True
+
+def nogizaka_auth(context, request):
+    lot = getattr(context, 'lot')
+    if not lot or lot.id != get_nogizaka_lot_id(request):
+        return True
+    if request.session.get('lots.passed.keyword'):
+        return True
+    return False
+
 @view_config(context=NoResultFound)
 def no_results_found(context, request):
     """ 改良が必要。ログに該当のクエリを出したい。 """
@@ -122,7 +144,7 @@ class EntryLotView(object):
     def _create_form(self):
         return api.create_client_form(self.context)
 
-    @view_config(request_method="GET")
+    @view_config(request_method="GET", custom_predicates=(nogizaka_auth,))
     def get(self, form=None):
         """
 
@@ -189,7 +211,23 @@ class EntryLotView(object):
             payment_delivery_method_pair_id=self.request.params.get('payment_delivery_method_pair_id'),
             lot=lot, performances=performances, performance_map=performance_map, stocks=stocks)
 
-    @view_config(request_method="POST")
+    @view_config(request_method="POST", custom_predicates=(is_nogizaka, ))
+    def nogizaka_auth(self):
+        KEYWORD = 'gA8du3dfAKdjasd0aeFdafcdERs2dkd0'
+        keyword = self.request.POST.get('keyword', None)
+        if keyword or self.request.session.get('lots.passed.keyword') != KEYWORD:
+            if keyword != KEYWORD:
+                raise HTTPNotFound()
+            self.request.session['lots.passed.keyword'] = keyword
+            return self.get()
+            #render_param = self.get()
+            #render_param.update(dict(view=self))
+            #from pyramid.renderers import render_to_response
+            #return render_to_response(selectable_renderer("pc/%(membership)s/index.html"), render_param, request=self.request)
+        else:
+            return self.post()
+
+    @view_config(request_method="POST", custom_predicates=(lambda *args:not is_nogizaka(*args), )) 
     def post(self):
         """ 抽選申し込み作成(一部)
         商品、枚数チェック
@@ -197,7 +235,6 @@ class EntryLotView(object):
         - 申し込み回数
         - 申し込み内の公演、席種排他チェック
         """
-
         lot = self.context.lot
         if not lot:
             logger.debug('lot not not found')
