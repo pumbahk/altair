@@ -149,7 +149,6 @@ ${ch.breadcrumbs(
             <h3>券面補助文言の追加</h3>
           </div>
           <form id="order-attributes-form" method="POST" action="javascript:save_order_attributes('${request.route_path("orders.memo_on_order", order_id=order.id)}')">
-            ## TODO: remove magic number
             %for field in form_order_edit_attribute:
               <label>${field.label.text}:<input name="${field.name}" value="${order.attributes.get(field.name,'')}"/></label>
             %endfor

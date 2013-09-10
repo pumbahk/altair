@@ -972,7 +972,7 @@ class CartSearchForm(SearchFormBase):
     )
 
 def OrderAttributesEditFormFactory(N, memo_field_name_fmt="memo_on_order{}", 
-                                   memo_field_label_fmt=u"補助文言{}"):
+                                   memo_field_label_fmt=u"補助文言{}(最大10文字)"):
     attrs = {}
     for i in range(1, N+1):
         name = memo_field_name_fmt.format(i)

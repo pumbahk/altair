@@ -20,6 +20,13 @@
     $('#modal-reserve').on('shown', function(){
       $('#reserve-button').attr('disabled', null); 
     });
+
+    // pager (see:templates/performances/_reservation.html)
+    pager = new Pager("#modal-reserve", "reserve");
+    pager.$el.find("#reserve-tab").on("click", function(){pager.next("reserve");});
+    pager.$el.find("#reserve-next").on("click", function(){pager.next("memo");});
+    pager.$el.find("#memo-tab").on("click", function(){pager.next("memo");});
+    pager.$el.find("#memo-prev").on("click", function(){pager.next("reserve");});
   });
 </script>
 
@@ -29,6 +36,18 @@
   </div>
 
   <div class="modal-body">
+    <%doc>
+    wizard形式にする前にタブ化する
+    [購入情報入力|文言・メモ入力|購入情報確認|文言・メモ入力確認]
+    </%doc>
+
+    <ul class="nav nav-tabs" style="margin-bottom:10px;">
+      <li><a>購入情報入力</a></li>
+      <li><a>文言・メモ入力</a></li>
+      <li class="active"><a id="reserve-tab">購入情報確認</a></li>
+      <li class="active"><a id="memo-tab"></a>文言・メモ入力確認</li>
+    </ul>
+
     <form class="form-horizontal" action="javascript:completeOrder();" method="POST">
       <div class="content">
         <div class="alert alert-success">
@@ -36,6 +55,7 @@
         </div>
       </div>
 
+      <div class="reserve-area">
       <table class="table table-striped table-bordered">
         <tr>
           <th colspan="2">商品</th>
@@ -141,13 +161,36 @@
       % endif
 
       ${ch.form_item(form.sales_counter_payment_method_id)}
-      ${ch.form_item(form.note, rows=3, class_='span10')}
-      ${ch.form_item(form.performance_id)}
+      </div>
+
+      <div class="memo-area">
+        <input type="hidden" name="${form.note.name}" value="${form.note.data}"/>
+        %for field in form_order_edit_attribute:
+          <input type="hidden" name="${field.name}" value="${field.data}"/>
+        %endfor
+        <table class="table table-striped table-bordered">
+          <tr>
+            <th style="width:30%;">${form.note.label.text}</th><td>${form.note.data}</td>
+          </tr>
+          %for field in form_order_edit_attribute:
+          <tr>
+            <th style="width:30%;">${field.label.text}</th><td>${field.data}</td>
+          </tr>
+          %endfor
+        </table>
+      </div>
     </form>
   </div>
 
   <div class="modal-footer">
-    <button onclick="javascript:reselectOrder(); return false;" class="btn secondary btn-close">戻る</button>
-    <button onclick="$('#modal-reserve').find('form').submit(); return false;" class="btn danger" id="reserve-button">予約する</button>
+    <div class="reserve-area">
+      <button onclick="javascript:reselectOrder(); return false;" class="btn secondary btn-close">戻る</button>
+      <button id="reserve-next" class="btn danger">メモ・文言情報を確認する</button>
+      <button onclick="$('#modal-reserve').find('form').submit(); return false;" class="btn danger" id="reserve-button">予約する</button>
+    </div>
+    <div class="memo-area" style="display:none">
+      <button id="memo-prev" class="btn secondary btn-close">戻る</button>
+      <button onclick="$('#modal-reserve').find('form').submit(); return false;" class="btn danger" id="reserve-button">予約する</button>
+    </div>
   </div>
 </div>

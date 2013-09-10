@@ -816,7 +816,7 @@ class OrderDetailView(BaseView):
                 'message':f.get_error_messages(), 
             }))
         marker = object()
-	#logger.debug(self.request.json_body)
+        #logger.debug(self.request.json_body)
         for k, v in f.get_result():
             old = order.attributes.get(k, marker)
             if v or old is not marker:
@@ -1081,10 +1081,11 @@ class OrdersReserveView(BaseView):
             'stocks':post_data.get('stocks'),
             'seats':post_data.get('seats'),
         }
-
+        form_order_edit_attribute = OrderAttributesEditFormFactory(3)()
         return {
             'seats':seats,
             'form':form_reserve,
+            'form_order_edit_attribute': form_order_edit_attribute, 
             'performance':performance,
         }
 
@@ -1127,6 +1128,11 @@ class OrdersReserveView(BaseView):
             f.process(post_data)
             if not f.validate():
                 raise ValidationError(reduce(lambda a,b: a+b, f.errors.values(), []))
+
+            ## memo
+            form_order_edit_attribute = OrderAttributesEditFormFactory(3)(post_data)
+            if not form_order_edit_attribute.validate():
+                raise ValidationError(form_order_edit_attribute.get_error_messages())
 
             seats = post_data.get('seats')
             order_items = []
@@ -1177,6 +1183,7 @@ class OrdersReserveView(BaseView):
                 'cart':cart,
                 'form':f,
                 'performance': performance,
+                'form_order_edit_attribute': form_order_edit_attribute
             }
         except ValidationError, e:
             raise HTTPBadRequest(body=json.dumps({'message':e.message}))
@@ -1242,6 +1249,17 @@ class OrdersReserveView(BaseView):
                 order.attributes[attr] = post_data.get(attr)
                 if not need_payment:
                     order.paid_at = datetime.now()
+
+            ## memo
+            form_order_edit_attribute = OrderAttributesEditFormFactory(3)(post_data)
+            if not form_order_edit_attribute.validate():
+                raise HTTPBadRequest(body=json.dumps({
+                    "message": u"文言・メモの設定でエラーが発生しました",
+                }))
+            for k, v in form_order_edit_attribute.get_result():
+                if v:
+                    order.attributes[k] = v
+
 
             if with_enqueue:
                 utils.enqueue_for_order(operator=self.context.user, order=order)
