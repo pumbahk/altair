@@ -20,9 +20,10 @@ Identifier = sa.BigInteger
 def upgrade():
     op.create_table('ServiceFeeMethod',
                     sa.Column('id', Identifier(), nullable=False),
-                    sa.Column('name', sa.String(length=255), nullable=True),
+                    sa.Column('name', sa.String(length=255), nullable=True), 
+                    sa.Column('description', sa.String(length=1024), nullable=True),                   
                     sa.Column('fee', sa.Numeric(precision=16, scale=2), nullable=False, default=0),
-                    sa.Column('fee_type', sa.Integer(), nullable=False, default=0),
+                    sa.Column('fee_type', sa.Integer(), nullable=False, default=0),  
                     sa.Column('organization_id', Identifier(), nullable=True),
                     sa.Column('payment_plugin_id', Identifier(), nullable=True),
                     sa.Column('created_at', sa.TIMESTAMP(), server_default=sqlf.current_timestamp(), nullable=False),
