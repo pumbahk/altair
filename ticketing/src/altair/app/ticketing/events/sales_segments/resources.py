@@ -205,6 +205,30 @@ class SalesSegmentGroupCreate(object):
             )
         update_sales_segment(self.ssg, ss)
         return ss
+
+    def create_sales_lot_segment(self, lot):
+        ss = SalesSegment(
+            organization=lot.event.organization,
+            event=lot.event,
+            sales_segment_group=self.ssg,
+            use_default_seat_choice=True,
+            use_default_public=True,
+            use_default_reporting=True,
+            use_default_payment_delivery_method_pairs=True,
+            use_default_start_at=True,
+            use_default_end_at=True,
+            use_default_upper_limit=True,
+            use_default_order_limit=True,
+            use_default_account_id=True,
+            use_default_margin_ratio=True,
+            use_default_refund_ratio=True,
+            use_default_printing_fee=True,
+            use_default_registration_fee=True,
+            use_default_auth3d_notice=True,
+            )
+        lot.sales_segment = ss
+        update_sales_segment(self.ssg, ss)
+        return ss
             
 class SalesSegmentGroupUpdate(object):
 
