@@ -3,13 +3,13 @@
 
 <%block name="breadcrumbs">
   ${ch.breadcrumbs(
-      names=[u'トップ', u'決済方法'],
+      names=[u'トップ', u'手数料'],
       urls=[request.route_path('index')]
   )}
 </%block>
 
 <div class="page-header">
-  <h3>決済方法</h3>
+  <h3>手数料</h3>
 </div>
 
 <%include file="/service_fee_methods/_list.html" args="form=form, service_fee_methods=service_fee_methods" />
@@ -18,7 +18,7 @@
 <div id="modal-service_fee_method" class="modal hide">
   <div class="modal-header">
     <a class="close" data-dismiss="modal">×</a>
-    <h3>決済方法</h3>
+    <h3>手数料</h3>
   </div>
 
   <div class="modal-body">

@@ -11,8 +11,6 @@
     <th>${ch.sortable(form.name)}</th>
     <th>${ch.sortable(form.fee)}</th>
     <th>${ch.sortable(form.fee_type)}</th>
-    <th>${form.hide_voucher.label}</th>
-    <th>${form.public.label}</th>
   </tr>
   </thead>
   <tbody>
@@ -24,9 +22,7 @@
     <td><span class="id">${service_fee_method.id}</span></td>
     <td><a href="javascript:edit_service_fee_method(${service_fee_method.id});"><span id="name">${service_fee_method.name}</span></a></td>
     <td><span class="fee">${vh.price(service_fee_method.fee)}</span></td>
-    <td><span class="fee_type">${service_fee_method.fee_type_label}</span></td>
-    <td><span class="hide_voucher">${u'隠す' if service_fee_method.hide_voucher else u'隠さない' }</span></td>
-    <td><span class="public">${u'公開' if service_fee_method.public else u'非公開'}</span></td>
+    <td><span class="fee_type">${service_fee_method.fee_type}</span></td>
   </tr>
   % endfor
   </tbody>
