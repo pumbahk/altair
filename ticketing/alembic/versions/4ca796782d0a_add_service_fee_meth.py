@@ -25,7 +25,6 @@ def upgrade():
                     sa.Column('fee', sa.Numeric(precision=16, scale=2), nullable=False, default=0),
                     sa.Column('fee_type', sa.Integer(), nullable=False, default=0),  
                     sa.Column('organization_id', Identifier(), nullable=True),
-                    sa.Column('payment_plugin_id', Identifier(), nullable=True),
                     sa.Column('created_at', sa.TIMESTAMP(), server_default=sqlf.current_timestamp(), nullable=False),
                     sa.Column('updated_at', sa.TIMESTAMP(), server_default=text('0'), nullable=False),
                     sa.Column('deleted_at', sa.TIMESTAMP(), nullable=True),
