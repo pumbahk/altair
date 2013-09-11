@@ -59,6 +59,9 @@
     }).change();
 
     $('#system_fee, #transaction_fee, #delivery_fee, #discount').load(function(){
+      % if not is_edit:
+        $('#system_fee').val(${system_fee});
+      % endif
       $(this).val(Math.floor($(this).val()));
     }).load();
 
