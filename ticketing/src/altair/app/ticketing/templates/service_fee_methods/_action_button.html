@@ -6,16 +6,18 @@ var endpoints = ${
 HH.json(dict(
   new=request.route_path('service_fee_methods.new'),
   edit=request.route_path('service_fee_methods.edit', service_fee_method_id='__id__'),
-  delete=request.route_path('service_fee_methods.delete', service_fee_method_id='__id__')))|n
+  delete=request.route_path('service_fee_methods.delete', service_fee_method_id='__id__'),
+  system_fee_default=request.route_path('service_fee_methods.system_fee_default', service_fee_method_id='__id__')))|n
 };
 
 var new_service_fee_method, edit_service_fee_method, delete_service_fee_method, save_service_fee_method, get_selected_service_fee_method_id;
 
-(function (modal_sel, modal_delete_sel) {
+(function (modal_sel, modal_delete_sel, modal_system_fee_default_sel) {
   var modal, modal_delete;
   $(function () {
     modal = $(modal_sel);
     modal_delete = $(modal_delete_sel);
+    modal_system_fee_default = $(modal_system_fee_default_sel);
   });
 
   new_service_fee_method = function new_service_fee_method() {
@@ -37,7 +39,12 @@ var new_service_fee_method, edit_service_fee_method, delete_service_fee_method, 
     var url = id ? '/service_fee_methods/edit/' + id : '/service_fee_methods/new';
     post_modal_form(modal, form, url);
   }
-})('#modal-service_fee_method', '#modal-delete');
+  set_system_fee_default = function set_system_fee_default(id) {
+    modal_system_fee_default.find('#set_system_fee_default').attr('href', endpoints['system_fee_default'].replace('__id__', id));
+    modal_system_fee_default.find('#message').text("指定した手数料をシステム手数料のデフォルトにします。よろしいですか？");
+    modal_system_fee_default.modal('toggle');
+  }
+})('#modal-service_fee_method', '#modal-delete', '#modal-system_fee_default');
 </script>
 
 <%
@@ -57,8 +64,13 @@ var new_service_fee_method, edit_service_fee_method, delete_service_fee_method, 
       url='javascript:delete_service_fee_method(get_selected_service_fee_method_id());',
       icon='icon-minus',
     ),
+    'system_fee_default':dict(
+      label=u'システム利用料のデフォルト値を変更',
+      url='javascript:set_system_fee_default(get_selected_service_fee_method_id());',
+      icon='icon-minus',
+    ),
   }
-  order = iter(['new', 'edit', 'delete'])
+  order = iter(['new', 'edit', 'delete', 'system_fee_default'])
 %>
 ${HH.action_button(actions, order)}
 

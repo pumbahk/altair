@@ -42,3 +42,6 @@ class ServiceFeeMethodForm(Form):
         label=u"説明文(HTML)", 
         widget=TextArea()
     )
+    system_fee_default = OurBooleanField(
+        label=u"システム利用料のデフォルト値", 
+    )

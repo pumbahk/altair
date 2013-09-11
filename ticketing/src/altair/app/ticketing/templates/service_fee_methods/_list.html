@@ -11,6 +11,7 @@
     <th>${ch.sortable(form.name)}</th>
     <th>${ch.sortable(form.fee)}</th>
     <th>${ch.sortable(form.fee_type)}</th>
+    <th>${ch.sortable(form.system_fee_default)}</th>
   </tr>
   </thead>
   <tbody>
@@ -23,6 +24,7 @@
     <td><a href="javascript:edit_service_fee_method(${service_fee_method.id});"><span id="name">${service_fee_method.name}</span></a></td>
     <td><span class="fee">${vh.price(service_fee_method.fee)}</span></td>
     <td><span class="fee_type">${service_fee_method.fee_type}</span></td>
+    <td><span class="fee_type">${service_fee_method.system_fee_default}</span></td>
   </tr>
   % endfor
   </tbody>
