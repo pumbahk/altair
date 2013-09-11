@@ -47,7 +47,6 @@ from altair.app.ticketing.payments.interfaces import (
 )
 from altair.app.ticketing.payments.payment import get_delivery_plugin
 from altair.app.ticketing.users.models import UserCredential, Membership
-from altair.app.ticketing.users.api import get_or_create_user
 
 logger = logging.getLogger(__name__)
 
@@ -170,7 +169,7 @@ class ImportTypeEnum(StandardEnum):
 class OrderImporter():
 
     def __init__(self, context, performance_id, order_csv, import_type):
-        self.user = context.user
+        self.operator = context.user
         self.organization_id = context.organization.id
         self.performance_id = performance_id
         self.import_type = None
@@ -255,17 +254,17 @@ class OrderImporter():
         return pdmp
 
     def get_user(self, row):
-        # Todo: membershipも条件にいれないとだめ？
-        #row.get(u'membership.name')
-        #row.get(u'membergroup.name')
         auth_identifier = row.get(u'user_credential.auth_identifier')
-        logger.info(auth_identifier)
+        membership_name = row.get(u'membership.name')
+        if not auth_identifier or not membership_name:
+            return None
+
         try:
-            credential = UserCredential.query.filter(
-                UserCredential.auth_identifier == auth_identifier
+            credential = UserCredential.query.join(Membership).filter(
+                UserCredential.auth_identifier == auth_identifier,
+                Membership.name==membership_name
             ).one()
         except NoResultFound, e:
-            # Todo: userがいなかったら生成する？
             e.message = u'ユーザーが見つかりません'
             raise e
         return credential.user
@@ -332,9 +331,9 @@ class OrderImporter():
             sales_segment_id    = sales_segment.id,
             payment_delivery_method_pair_id = pdmp.id,
             branch_no           = 1,
-            user_id             = user.id,
+            user_id             = user.id if user else None,
             shipping_address    = self.create_temporary_shipping_address(row, user),
-            operator_id         = self.user.id,
+            operator_id         = self.operator.id,
             ordered_product     = dict()
         )
         logger.info(vars(order))
@@ -362,7 +361,7 @@ class OrderImporter():
 
     def create_temporary_shipping_address(self, row, user):
         shipping_address    = TemporaryShippingAddress(
-            user_id         = user.id,
+            user_id         = user.id if user else None,
             first_name      = row.get(u'shipping_address.first_name'),
             last_name       = row.get(u'shipping_address.last_name'),
             first_name_kana = row.get(u'shipping_address.first_name_kana'),
