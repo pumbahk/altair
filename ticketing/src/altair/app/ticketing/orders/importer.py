@@ -327,7 +327,7 @@ class OrderImporter():
             card_ahead_com_name = row.get(u'order.card_ahead_com_name'),
             performance_id      = self.performance_id,
             organization_id     = self.organization_id,
-            channel             = ChannelEnum.INNER.v,
+            channel             = ChannelEnum.IMPORT.v,
             sales_segment_id    = sales_segment.id,
             payment_delivery_method_pair_id = pdmp.id,
             branch_no           = 1,
@@ -485,7 +485,6 @@ class OrderImporter():
         decrease_per_stock = dict()
         for org_order_no, temp_order in self.orders.iteritems():
             # 新規追加ならorder_noを採番
-            base_id = None
             if self.import_type == ImportTypeEnum.Create.v:
                 from altair.app.ticketing.core import api as c_api
                 from altair.app.ticketing.utils import sensible_alnum_encode
@@ -565,7 +564,6 @@ class OrderImporter():
                 if delivery_plugin:
                     logger.info('delivery_plugin found')
                     try:
-                        temp_order.id = base_id
                         temp_order.order = order
                         delivery_plugin.finish(request, temp_order)
                     except Exception as e:

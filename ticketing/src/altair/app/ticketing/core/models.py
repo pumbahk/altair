@@ -2332,12 +2332,16 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         from altair.app.ticketing.checkout.models import Checkout
         return Cart.query.filter(Cart._order_no==self.order_no).join(Checkout).with_entities(Checkout).first()
 
+    @property
+    def is_inner_channel(self):
+        return self.channel in [ChannelEnum.INNER.v, ChannelEnum.IMPORT.v]
+
     def can_change_status(self, status):
         # 決済ステータスはインナー予約のみ変更可能
         if status == 'paid':
-            return (self.status == 'ordered' and self.payment_status == 'unpaid' and self.channel == ChannelEnum.INNER.v)
+            return (self.status == 'ordered' and self.payment_status == 'unpaid' and self.is_inner_channel)
         elif status == 'unpaid':
-            return (self.status == 'ordered' and self.payment_status == 'paid' and self.channel == ChannelEnum.INNER.v)
+            return (self.status == 'ordered' and self.payment_status == 'paid' and self.is_inner_channel)
         else:
             return False
 
@@ -2362,7 +2366,7 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     def can_deliver(self):
         # 受付済のみ配送済に変更可能
         # インナー予約は常に、それ以外は入金済のみ変更可能
-        return self.status == 'ordered' and (self.channel == ChannelEnum.INNER.v or self.payment_status == 'paid')
+        return self.status == 'ordered' and (self.is_inner_channel or self.payment_status == 'paid')
 
     def can_delete(self):
         # キャンセルのみ論理削除可能
@@ -2386,7 +2390,7 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
         # インナー予約の場合はAPI決済していないのでスキップ
         # ただしコンビニ決済はインナー予約でもAPIで通知しているので処理する
-        if self.channel == ChannelEnum.INNER.v and ppid != plugins.SEJ_PAYMENT_PLUGIN_ID:
+        if self.is_inner_channel and ppid != plugins.SEJ_PAYMENT_PLUGIN_ID:
             logger.info(u'インナー予約のキャンセルなので決済払戻処理をスキップ %s' % self.order_no)
 
         # クレジットカード決済
@@ -3262,6 +3266,7 @@ class ChannelEnum(StandardEnum):
     PC = 1
     Mobile = 2
     INNER = 3
+    IMPORT = 4
 
 class Refund(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'Refund'
