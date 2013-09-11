@@ -7,56 +7,65 @@
   <p>CSVファイルを読み込みました。以下の内容で正しいか確認してください。</p>
 </div>
 
-<table class="table table-striped table-bordered">
+<table class="table table-bordered">
   <tr>
     <th class="span2">インポート方法</th>
     <td class="span6">${stats.get('import_type')[1]}</td>
   </tr>
   <tr>
-    <th>数受けの予約に座席を割り当てる</th>
-    <td>${u'割り当てる' if stats.get('seat_allocation') else u'割り当てない'}</td>
+    <th>インポートする予約数</th>
+    <td>${stats.get('order_count')}</td>
   </tr>
   <tr>
-    <th>登録/更新する予約件数</th>
-    <td>${stats.get('total_order_count')}</td>
-  </tr>
-  <tr>
-    <th>商品別の予約件数</th>
-    <td>
-      <% order_per_product = stats.get('order_per_product') %>
-      <table>
-      % for product, count in order_per_product.iteritems():
-        <tr>
-          <td>${product.name}</td>
-          <td>${product.price}</td>
-          <td>${count}</td>
-        </tr>
-      % endfor
-      </table>
-    </td>
-  </tr>
-  <tr>
-    <th>決済方法/引取方法ごとの予約券数</th>
+    <th>決済方法/引取方法ごとの予約数</th>
     <td>
       <% order_per_pdmp = stats.get('order_per_pdmp') %>
-      <table class="table-condensed">
-        % for pdmp, count in order_per_pdmp.iteritems():
+      <table class="table table-bordered table-condensed">
+        <tr>
+          <th class="span3">決済方法</th>
+          <th class="span3">引取方法</th>
+          <th class="span2">予約数</th>
+          <th class="span3"></th>
+        </tr>
+        % for pdmp, info in order_per_pdmp.iteritems():
         <tr>
           <td>${pdmp.payment_method.name}</td>
           <td>${pdmp.delivery_method.name}</td>
-          <td>${count}</td>
-          <td>
-            % if pdmp.delivery_method.delivery_plugin_id == plugins.SEJ_DELIVERY_PLUGIN_ID:
-              コンビニ発券開始日時:
-            % endif
-          </td>
+          <td>${info.get('count')}</td>
+          <td>${info.get('remark', u'')}</td>
         </tr>
         % endfor
       </table>
     </td>
   </tr>
   <tr>
-    <th>登録できない予約の一覧</th>
+    <th>インポートする席数</th>
+    <td>${stats.get('seat_count')}</td>
+  </tr>
+  <tr>
+    <th>商品別の席数</th>
+    <td>
+      <% seat_per_product = stats.get('seat_per_product') %>
+      <table class="table table-bordered table-condensed">
+        <tr>
+          <th class="span3">商品名</th>
+          <th class="span3">単価</th>
+          <th class="span2">席数</th>
+          <th class="span3"></th>
+        </tr>
+        % for product, count in seat_per_product.iteritems():
+        <tr>
+          <td>${product.name}</td>
+          <td>${vh.price(product.price)}</td>
+          <td>${count}</td>
+          <td></td>
+        </tr>
+        % endfor
+      </table>
+    </td>
+  </tr>
+  <tr>
+    <th>インポートできない予約数</th>
     <td>${stats.get('error_order_count')}</td>
   </tr>
 </table>

@@ -3,6 +3,7 @@
 import sys
 import csv
 import logging
+from datetime import datetime
 from standardenum import StandardEnum
 
 from zope.interface import implementer
@@ -37,6 +38,7 @@ from altair.app.ticketing.core.models import (\
 )
 from altair.app.ticketing.orders.export import japanese_columns
 from altair.app.ticketing.payments import plugins as payments_plugins
+from altair.app.ticketing.payments.plugins.sej import get_ticketing_start_at
 from altair.app.ticketing.payments.interfaces import (
     IPaymentCart,
     IPaymentCartedProduct,
@@ -167,12 +169,11 @@ class ImportTypeEnum(StandardEnum):
 
 class OrderImporter():
 
-    def __init__(self, context, performance_id, order_csv, import_type, seat_allocation):
+    def __init__(self, context, performance_id, order_csv, import_type):
         self.user = context.user
         self.organization_id = context.organization.id
         self.performance_id = performance_id
         self.import_type = None
-        self.seat_allocation = seat_allocation
         self.orders = dict()
         self.error_orders = dict()
 
@@ -383,9 +384,6 @@ class OrderImporter():
         return shipping_address
 
     def allocate_seats(self, reserving):
-        if not self.seat_allocation:
-            return
-
         # 予約(ダミーOrder)単位で1件ずつおまかせ配席をしていく
         # 座席ステータスはインナー予約での座席確保と同じ状態にする
         sum_quantity = dict()
@@ -423,9 +421,6 @@ class OrderImporter():
                 self.orders.pop(order_no)
 
     def release_seats(self):
-        if not self.seat_allocation:
-            return
-
         for order in self.orders.values():
             for op in order.ordered_product.values():
                 for opi in op.ordered_product_item.values():
@@ -435,23 +430,35 @@ class OrderImporter():
                             logger.info('seat(%s) status Keep to Vacant' % seat_status.seat_id)
                             seat_status.status = int(SeatStatusEnum.Vacant)
 
-    def get_order_per_product(self):
-        order_per_product = dict()
+    def get_seat_count(self):
+        count = 0
+        for order in self.orders.values():
+            for op in order.ordered_product.values():
+                for opi in op.ordered_product_item.values():
+                    count += opi.quantity
+        return count
+
+    def get_seat_per_product(self):
+        seat_per_product = dict()
         for order in self.orders.values():
             for op in order.ordered_product.values():
                 p = Product.query.filter_by(id=op.product_id).one()
-                if p not in order_per_product:
-                    order_per_product[p] = 0
-                order_per_product[p] += sum([int(opi.quantity) for opi in op.ordered_product_item.values()])
-        return order_per_product
+                if p not in seat_per_product:
+                    seat_per_product[p] = 0
+                seat_per_product[p] += sum([int(opi.quantity) for opi in op.ordered_product_item.values()])
+        return seat_per_product
 
     def get_order_per_pdmp(self):
         order_per_pdmp = dict()
         for order in self.orders.values():
             pdmp = PaymentDeliveryMethodPair.query.filter_by(id=order.payment_delivery_method_pair_id).one()
             if pdmp not in order_per_pdmp:
-                order_per_pdmp[pdmp] = 0
-            order_per_pdmp[pdmp] += 1
+                order_per_pdmp[pdmp] = dict(count=0)
+                if pdmp.delivery_method.delivery_plugin_id == payments_plugins.SEJ_DELIVERY_PLUGIN_ID:
+                    now = datetime.now()
+                    ticketing_start_at = get_ticketing_start_at(now, order)
+                    order_per_pdmp[pdmp].update(dict(remark=u'発券開始日時 : %s' % ticketing_start_at.strftime('%Y-%m-%d %H:%M')))
+            order_per_pdmp[pdmp]['count'] += 1
         return order_per_pdmp
 
     def statistics(self):
@@ -459,17 +466,17 @@ class OrderImporter():
 
         # インポート方法
         stats['import_type'] = self.import_type
-        # 数受けの予約に座席を割り当てるかどうか
-        stats['seat_allocation'] = self.seat_allocation
-        # 登録予定の予約件数合計
-        stats['total_order_count'] = len(self.orders)
-        # 商品別の予約件数、席数
-        stats['order_per_product'] = self.get_order_per_product()
-        # 決済方法/引取方法ごとの予約券数、コンビニ引取があるなら発券開始日時
+        # インポートする予約数
+        stats['order_count'] = len(self.orders)
+        # インポートする席数
+        stats['seat_count'] = self.get_seat_count()
+        # 商品別の席数
+        stats['seat_per_product'] = self.get_seat_per_product()
+        # 決済方法/引取方法ごとの予約数、コンビニ引取があるなら発券開始日時
         stats['order_per_pdmp'] = self.get_order_per_pdmp()
-        # 配席できない予約の数
+        # インポートできない予約数
         stats['error_order_count'] = len(self.error_orders)
-        # 配席できない理由
+        # インポートできない理由
         stats['error_orders'] = self.error_orders
 
         return stats
@@ -477,7 +484,7 @@ class OrderImporter():
     def execute(self):
         # 予約生成処理
         decrease_per_stock = dict()
-        for temp_order in self.orders.values():
+        for org_order_no, temp_order in self.orders.iteritems():
             # 新規追加ならorder_noを採番
             base_id = None
             if self.import_type == ImportTypeEnum.Create.v:
@@ -498,6 +505,9 @@ class OrderImporter():
             logger.info(vars(shipping_address))
 
             # Order
+            temp_order.note += u'\nインポート日時: %s' % datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            if self.import_type == ImportTypeEnum.Create.v:
+                temp_order.note += u'\n元の予約番号: %s' % org_order_no
             attr = temp_order.attributes()
             attr.update({'shipping_address':shipping_address})
             order = Order(**attr)

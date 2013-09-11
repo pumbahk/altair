@@ -705,10 +705,6 @@ class OrderImportForm(Form):
         choices=[e.v for e in ImportTypeEnum],
         coerce=int,
     )
-    seat_allocation = BooleanField(
-        label=u'数受けの予約に座席を割り当てる',
-        validators=[Required()],
-    )
 
     def validate_order_csv(form, field):
         if not hasattr(field.data, 'file'):
