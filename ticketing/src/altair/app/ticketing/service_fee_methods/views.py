@@ -111,7 +111,6 @@ class ServiceFeeMethods(BaseView):
 
     @view_config(route_name='service_fee_methods.system_fee_default')
     def system_fee_default(self):
-
         service_fee_method_id = int(self.request.matchdict.get('service_fee_method_id', 0))
         service_fee_method = ServiceFeeMethod.get(service_fee_method_id)
         if service_fee_method is None:
