@@ -1081,11 +1081,10 @@ class OrdersReserveView(BaseView):
             'stocks':post_data.get('stocks'),
             'seats':post_data.get('seats'),
         }
-        form_order_edit_attribute = OrderAttributesEditFormFactory(3)()
         return {
             'seats':seats,
             'form':form_reserve,
-            'form_order_edit_attribute': form_order_edit_attribute, 
+            'form_order_edit_attribute': OrderAttributesEditFormFactory(3)(), 
             'performance':performance,
         }
 
@@ -1105,6 +1104,7 @@ class OrdersReserveView(BaseView):
         return {
             'seats':selected_seats,
             'form':f,
+            'form_order_edit_attribute': OrderAttributesEditFormFactory(3)(post_data), 
             'performance':performance,
         }
 
