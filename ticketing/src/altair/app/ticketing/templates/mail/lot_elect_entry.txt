@@ -1,10 +1,8 @@
-楽天チケットをご利用いただきまして、誠にありがとうございます。
-%if not revised:
-先日お申込みいただきました「${lot_entry.lot.name}」に関しまして、
-抽選の結果、下記内容にてチケットをご用意いたしました。
-%else:
-先日お申込みいただきました「${lot_entry.lot.name}」に関しまして、
-キャンセルが出たため、再度抽選を行い、下記内容にてチケットをご用意いたしました。
+${header}
+${name}　様
+
+%if get("first_sentence").status:
+${get("first_sentence").body}
 %endif
 
 -----
