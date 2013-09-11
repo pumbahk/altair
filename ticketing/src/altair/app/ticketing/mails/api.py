@@ -73,7 +73,15 @@ class ExtraMailInfoAccessor(object):
 
     def __call__(self, data, k, default=None):
         try:
-            return data[self.mtype][k]
+            result = data[self.mtype][k]
+            ## this is not good. ad-hoc reply for collecting data from chaining candidates.
+            ## {"use": True, "value": ""}. this value is found as falsy value(but bool(this) is True).
+            if result and isinstance(result, (unicode,str)):
+                return result
+            elif result and result.get("value"):
+                return result
+            else:
+                return self.default
         except KeyError:
             return default or self.default
 
