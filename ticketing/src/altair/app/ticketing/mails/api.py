@@ -76,7 +76,7 @@ class ExtraMailInfoAccessor(object):
             result = data[self.mtype][k]
             ## this is not good. ad-hoc reply for collecting data from chaining candidates.
             ## {"use": True, "value": ""}. this value is found as falsy value(but bool(this) is True).
-            if result and isinstance(result, (unicode,str)):
+            if result and isinstance(result, basestring):
                 return result
             elif result and result.get("value"):
                 return result
