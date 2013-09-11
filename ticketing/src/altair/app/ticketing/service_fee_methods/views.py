@@ -55,7 +55,7 @@ class ServiceFeeMethods(BaseView):
             service_fee_method.organization_id = self.context.user.organization_id
             service_fee_method.save()
 
-            self.request.session.flash(u'決済方法を保存しました')
+            self.request.session.flash(u'手数料を保存しました')
             return render_to_response('altair.app.ticketing:templates/refresh.html', {}, request=self.request)
         else:
             return {
@@ -84,7 +84,7 @@ class ServiceFeeMethods(BaseView):
             service_fee_method.organization_id = self.context.user.organization_id
             service_fee_method.save()
 
-            self.request.session.flash(u'サービス手数料を保存しました')
+            self.request.session.flash(u'手数料を保存しました')
             return render_to_response('altair.app.ticketing:templates/refresh.html', {}, request=self.request)
         else:
             return {
@@ -102,10 +102,24 @@ class ServiceFeeMethods(BaseView):
         location = route_path('service_fee_methods.index', self.request)
         try:
             service_fee_method.delete()
-            self.request.session.flash(u'サービス手数料を削除しました')
+            self.request.session.flash(u'手数料を削除しました')
         except Exception, e:
             self.request.session.flash(e.message)
             raise HTTPFound(location=location)
 
         return HTTPFound(location=location)
 
+    @view_config(route_name='service_fee_methods.system_fee_default')
+    def system_fee_default(self):
+
+        service_fee_method_id = int(self.request.matchdict.get('service_fee_method_id', 0))
+        service_fee_method = ServiceFeeMethod.get(service_fee_method_id)
+        if service_fee_method is None:
+            raise HTTPNotFound('service_fee_method id %d is not found' % service_fee_method_id)
+        others = ServiceFeeMethod.filter_by(organization_id=self.context.user.organization_id)
+        location = route_path('service_fee_methods.index', self.request)        
+        for other in others:
+            other.system_fee_default = False
+        service_fee_method.system_fee_default = True
+        self.request.session.flash(u'{0} をシステム利用料のデフォルト値として設定しました'.format(service_fee_method.name))
+        return HTTPFound(location=location)

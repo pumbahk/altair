@@ -1388,8 +1388,8 @@ class ServiceFeeMethod(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     fee = Column(Numeric(precision=16, scale=2), nullable=False)
     fee_type = Column(Integer, nullable=False, default=FeeTypeEnum.Once.v[0])
     organization_id = Column(Identifier, ForeignKey('Organization.id'))
-    organization = relationship('Organization', uselist=False, backref='service_fee_method_list')
-    # is_system_fee_default
+    organization = relationship('Organization', uselist=False, backref='service_fee_method_list') 
+    system_fee_default = Column(Boolean, nullable=False, default=True)
 
 class PaymentMethod(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'PaymentMethod'
