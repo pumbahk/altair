@@ -260,13 +260,21 @@ class JoinedObjectsForProductItemDependentsProvider(object):
             seats = seat_dict.get(ordered_product_item.id, None)
             if seats is None:
                 for i in range(parent_item.quantity):
-                    if not ticket_bundle.id in ticket_cache:
-                        ticket_cache[ticket_bundle.id] = list(ApplicableTicketsProducer.from_bundle(ticket_bundle).will_issued_by_own_tickets())
-                    seat_list.append(((None, None), ticket_cache[ticket_bundle.id]))
+                    if ticket_bundle is None:
+                        tickets = []
+                    else:
+                        if not ticket_bundle.id in ticket_cache:
+                            ticket_cache[ticket_bundle.id] = list(ApplicableTicketsProducer.from_bundle(ticket_bundle).will_issued_by_own_tickets())
+                        tickets = ticket_cache[ticket_bundle.id]
+                    seat_list.append(((None, None), tickets))
             else:
                 for seat in seats:
-                    if not ticket_bundle.id in ticket_cache:
-                        ticket_cache[ticket_bundle.id] = list(ApplicableTicketsProducer.from_bundle(ticket_bundle).will_issued_by_own_tickets())
-                    seat_list.append(((seat, None), ticket_cache[ticket_bundle.id]))
+                    if ticket_bundle is None:
+                        tickets = []
+                    else:
+                        if not ticket_bundle.id in ticket_cache:
+                            ticket_cache[ticket_bundle.id] = list(ApplicableTicketsProducer.from_bundle(ticket_bundle).will_issued_by_own_tickets())
+                        tickets = ticket_cache[ticket_bundle.id]
+                    seat_list.append(((seat, None), tickets))
         return r
 
