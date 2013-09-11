@@ -6,8 +6,7 @@ _NOT_FOUND_IMG = "/static/img/not_found.jpg"
 
 def normalize_url(request, url):
     if url.startswith("s3://"):
-        scheme = request.environ.get("wsgi.url_scheme") or urlparse.urlparse(url).scheme
-        return "{0}://{1}".format(scheme, url[5:].replace("/", ".s3.amazonaws.com/", 1))
+        return "//{}".format(url[5:].replace("/", ".s3.amazonaws.com/", 1))
     return url
 
     # return url.replace("s3://", "{0}://s3.amazonaws.com/".format(scheme))
