@@ -437,6 +437,38 @@ class LotEntry(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     user_id = sa.Column(Identifier, sa.ForeignKey('User.id'))
     user = orm.relationship('User', backref='lot_entries')
 
+    # begin [order amount fee interface]
+    @property
+    def total_amount(self):
+        if self.order is None:
+            return None
+        return self.order.total_amount
+
+    @property
+    def system_fee(self):
+        if self.order is None:
+            return None
+        return self.order.system_fee
+
+    @property
+    def transaction_fee(self):
+        if self.order is None:
+            return None
+        return self.order.transaction_fee
+
+    @property
+    def delivery_fee(self):
+        if self.order is None:
+            return None
+        return self.order.delivery_fee
+
+    @property
+    def sej_order(self):
+        if self.order is None:
+            return None
+        return self.order.sej_order
+
+    # end [order amount fee interface]
 
     def close(self):
         self.closed_at = datetime.now()

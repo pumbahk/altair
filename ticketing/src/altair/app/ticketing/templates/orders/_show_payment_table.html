@@ -1,0 +1,51 @@
+<%page args="order,checkout,sej_order"/>
+          <table class="table table-striped table-bordered">
+            <tr>
+              <th class="span2">決済方法</th>
+              <td class="span3">${order.payment_delivery_pair.payment_method.name}</td>
+            </tr>
+            % if order.multicheckout_approval_no:
+            <tr>
+              <th>マルチ決済受領番号</th>
+              <td>${order.multicheckout_approval_no}</td>
+            </tr>
+            <tr>
+              <th>カードブランド</th>
+              <td>${order.card_brand or ''}</td>
+            </tr>
+            <tr>
+              <th>仕向け先</th>
+              <td>
+                ${order.card_ahead_com_name or ''} (${order.card_ahead_com_code or ''})
+              </td>
+            </tr>
+            % endif
+            % if checkout:
+            <tr>
+              <th>楽天あんしん支払いサービス 注文番号</th>
+              <td>${checkout.orderId}</td>
+            </tr>
+            <tr>
+              <th>楽天あんしん支払いサービス 注文管理番号</th>
+              <td>${checkout.orderControlId}</td>
+            </tr>
+            <tr>
+              <th>楽天あんしん支払いサービス 利用ポイント数</th>
+              <td>${vh.price(int(checkout.usedPoint or 0))}</td>
+            </tr>
+            <tr>
+              <th>楽天あんしん支払いサービス 売上日時</th>
+              <td>${vh.datetime(checkout.sales_at)}</td>
+            </tr>
+            % endif
+            % if sej_order:
+            <tr>
+              <th>支払票番号</th>
+              <td>${sej_order.billing_number or ''}</td>
+            </tr>
+            <tr>
+              <th>引換票番号</th>
+              <td>${sej_order.exchange_number or ''}</td>
+            </tr>
+            % endif
+          </table>

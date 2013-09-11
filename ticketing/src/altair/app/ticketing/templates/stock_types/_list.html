@@ -27,6 +27,7 @@
           <th style="width:20px"></th>
           <th style="width: 60px">名称</th>
           <th>席数</th>
+          <th style="width:40px">表示</th>
           <th style="width:40px">表示順</th>
           <th>説明</th>
         </tr>
@@ -52,6 +53,7 @@
                type="${stock_type.type}"
                quantity_only="${1 if stock_type.quantity_only else 0}"
                quantity="${quantity}"
+               display="${stock_type.display}"
                display_order="${stock_type.display_order}"
                description="${stock_type.description or ''}"
                data="${HH.json(stock_type.style)}">
@@ -60,6 +62,9 @@
           </td>
           <td>
             ${quantity}
+          </td>
+          <td>
+            ${u'する' if stock_type.display else u'しない'}
           </td>
           <td>
             ${stock_type.display_order}
@@ -90,6 +95,7 @@
           <th style="width:30px"></th>
           <th>名称</th>
           <th style="width: 60px">在庫数</th>
+          <th style="width:40px">表示</th>
           <th style="width:40px">表示順</th>
           <th>説明</th>
         </tr>
@@ -112,6 +118,7 @@
                type="${stock_type.type}"
                quantity_only="${1 if stock_type.quantity_only else 0}"
                quantity="${quantity}"
+               display="${stock_type.display}"               
                display_order="${stock_type.display_order}"
                description="${stock_type.description or ''}"
                data='${HH.json(stock_type.style)}'>
@@ -120,6 +127,9 @@
           </td>
           <td>
             ${quantity}
+          </td>
+          <td>
+            ${u'する' if stock_type.display else u'しない'}
           </td>
           <td>
             ${stock_type.display_order}

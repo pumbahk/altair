@@ -81,13 +81,17 @@ class SejNotificationType(StandardEnum):
     # 5-3.発券期限切れ
     FileTicketingExpire     = 61
     # 5-4.払戻速報
-    FileRefundExpire        = 92
+    FileInstantRefundInfo   = 92
     # 6-1.支払い案内
     FileCheckInfo           = 94
     # 6-2.会計取消(入金)
     FilePaymentCancel       = 95
     # 6-3.会計取消(発券)
     FileTicketingCancel     = 96
+    # 6-4.払戻確定
+    FileRefundComplete      = 97
+    # 6-5.会計取消(発券)
+    FileRefundCancel        = 98
 
 
 code_from_notification_type = {

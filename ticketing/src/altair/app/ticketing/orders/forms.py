@@ -8,7 +8,7 @@ from wtforms import Form, ValidationError
 from wtforms import (HiddenField, TextField, SelectField, SelectMultipleField, TextAreaField, BooleanField,
                      RadioField, FieldList, FormField, DecimalField, IntegerField)
 from wtforms.validators import Optional, AnyOf, Length, Email, Regexp
-from wtforms.widgets import CheckboxInput
+from wtforms.widgets import CheckboxInput, HiddenInput
 
 from altair.formhelpers import (
     Translations,
@@ -993,3 +993,29 @@ class CartSearchForm(SearchFormBase):
             ('incomplete', u'注文不成立'),
         ]
     )
+
+def OrderAttributesEditFormFactory(N, memo_field_name_fmt="memo_on_order{}", 
+                                   memo_field_label_fmt=u"補助文言{}(最大10文字)"):
+    attrs = {}
+    for i in range(1, N+1):
+        name = memo_field_name_fmt.format(i)
+        label = memo_field_label_fmt.format(i)
+        attrs[name] = TextField(label=label, validators=[Optional(), Length(max=10)])#todo: 全角10文字
+
+    def get_error_messages(self):
+        messages = []
+        for field in self:
+            mes = u"{}:{}".format(field.label.text, u", ".join(field.errors))
+            messages.append(mes)
+        return u"\n".join(messages)
+    attrs["get_error_messages"] = get_error_messages
+
+    def get_result(self):
+        result = []
+        for field in self:
+            result.append((field.name, field.data))
+        return result
+    attrs["get_result"] = get_result
+    return type("OrderAttributesEditForm", (Form, ), attrs)
+
+    

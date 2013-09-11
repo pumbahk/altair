@@ -6,6 +6,7 @@
   function new_stock_type() {
     var modal = $('#modal-stock_type');
     reset_form(modal, '#event_id', true);
+    modal.find('#display').attr('checked', 'checked');
     modal.modal('toggle');
   }
   function edit_stock_type(id) {
@@ -16,6 +17,9 @@
     reset_form(modal, '#event_id', false);
     modal.find('#id').val(id);
     modal.find('#name').val($(el).attr('name'));
+    if ($(el).attr('display') == 'True') {
+        modal.find('#display').attr('checked', 'checked');  
+    }
     modal.find('#display_order').val($(el).attr('display_order'));
     modal.find('#description').val($(el).attr('description'));
     if ($(el).attr('quantity_only') == '1') {
