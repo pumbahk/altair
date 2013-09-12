@@ -135,11 +135,12 @@ class PerformanceShowView(BaseView):
         data.update(self._extra_data())
         return data
 
-    def import_orders_initialize(self):
-        # セッションに確保中の在庫があれば開放する
+    def import_orders_initialize(self, release_seats=True):
         importer = self.request.session.get('ticketing.order.importer')
         if importer:
-            importer.release_seats()
+            if release_seats:
+                # セッションに確保中の在庫があれば開放する
+                importer.release_seats()
             del self.request.session['ticketing.order.importer']
 
     @view_config(route_name='performances.import_orders.index', request_method='GET')
@@ -186,6 +187,7 @@ class PerformanceShowView(BaseView):
     @view_config(route_name='performances.import_orders.confirm', request_method='POST')
     def import_orders_confirm_post(self):
         importer = self.request.session.get('ticketing.order.importer')
+        performance_id = self.performance.id
         try:
             importer.execute()
         except Exception, e:
@@ -194,7 +196,8 @@ class PerformanceShowView(BaseView):
             raise HTTPFound(self.request.route_url('performances.import_orders.confirm', performance_id=self.performance.id))
 
         self.request.session.flash(u'インポート成功しました')
-        return HTTPFound(self.request.route_url('performances.import_orders.index', performance_id=self.performance.id))
+        self.import_orders_initialize(release_seats=False)
+        return HTTPFound(self.request.route_url('performances.import_orders.index', performance_id=performance_id))
 
 
 @view_defaults(decorator=with_bootstrap, permission="event_editor")

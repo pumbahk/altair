@@ -302,22 +302,22 @@ class StockerTests(unittest.TestCase):
         c_m.DBSession.flush()
         return stock
 
-    def test__take_stock(self):
+    def test_take_stock_by_stock_id(self):
         request = testing.DummyRequest()
         target = self._makeOne(request)
         stock = self._add_stock(10)
-        result = target._take_stock([(stock.id, 8)])
+        result = target.take_stock_by_stock_id([(stock.id, 8)])
         self.assertEqual(result[0][0].quantity, 2)
         self.assertEqual(result[0][1], 8)
 
-    def test__take_stock_not_enough(self):
+    def test_take_stock_by_stock_id_not_enough(self):
         from altair.app.ticketing.cart.stocker import NotEnoughStockException
         request = testing.DummyRequest()
         target = self._makeOne(request)
         stock = self._add_stock(10)
-        self.assertRaises(NotEnoughStockException, target._take_stock, [(stock.id, 100)])
+        self.assertRaises(NotEnoughStockException, target.take_stock_by_stock_id, [(stock.id, 100)])
 
-    def test__take_stock_invalid_product(self):
+    def test_take_stock_by_stock_id_invalid_product(self):
         from altair.app.ticketing.cart.stocker import InvalidProductSelectionException
         request = testing.DummyRequest()
         target = self._makeOne(request)
@@ -326,7 +326,7 @@ class StockerTests(unittest.TestCase):
         other_performance_id = stock.performance_id + 1
         self.assertRaises(InvalidProductSelectionException, target.take_stock, other_performance_id, [(product, 1)])
 
-    def test_take_stock(self):
+    def testtake_stock_by_stock_id(self):
         stock = self._add_stock(10)
         status = stock.stock_status
         product = stock.product_items[0].product

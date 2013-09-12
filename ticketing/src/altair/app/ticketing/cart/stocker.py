@@ -55,10 +55,10 @@ class Stocker(object):
 
         stock_requires = self.quantity_for_stock_id(performance_id, product_requires)
         logger.debug("stock requires %s" % stock_requires)
-        return self._take_stock(stock_requires)
+        return self.take_stock_by_stock_id(stock_requires)
 
 
-    def _take_stock(self, stock_requires):
+    def take_stock_by_stock_id(self, stock_requires):
         """
         :param stock_requires: list of tuple (stock_id, quantity)
         :return: list of StockStatus

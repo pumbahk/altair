@@ -710,6 +710,8 @@ class OrderImportForm(Form):
         if not hasattr(field.data, 'file'):
             raise ValidationError(u'選択してください')
 
+        # Todo:ファイルフォーマットのチェック
+
 
 class ClientOptionalForm(ClientForm):
     def __init__(self, formdata=None, obj=None, prefix='', **kwargs):
