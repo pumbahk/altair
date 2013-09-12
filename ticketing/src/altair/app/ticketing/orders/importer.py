@@ -74,6 +74,10 @@ class TemporaryCart(TemporaryModel):
     delivery_fee = 0
     transaction_fee = 0
     shipping_address = None
+    channel = None
+    name = None
+    has_different_amount = False
+    different_amount = 0
 
     @property
     def performance(self):
@@ -136,6 +140,16 @@ class TemporaryCartedProductItem(TemporaryModel):
 
 @implementer(IPaymentShippingAddress)
 class TemporaryShippingAddress(TemporaryModel):
+
+    user_id         = None
+    tel_1           = None
+    tel_2           = None
+    first_name      = None
+    last_name       = None
+    first_name_kana = None
+    last_name_kana  = None
+    zip             = None
+    email_1         = None
 
     @property
     def email(self):
