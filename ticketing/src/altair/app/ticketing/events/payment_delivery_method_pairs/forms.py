@@ -6,7 +6,7 @@ from wtforms.validators import NumberRange, Regexp, Length, Optional, Validation
 from wtforms.widgets import CheckboxInput
 
 from altair.formhelpers import DateTimeField, Translations, Required, after1900
-from altair.app.ticketing.core.models import SalesSegment, PaymentMethod, DeliveryMethod, PaymentDeliveryMethodPair
+from altair.app.ticketing.core.models import SalesSegment, PaymentMethod, DeliveryMethod, PaymentDeliveryMethodPair, FeeTypeEnum
 
 class PaymentDeliveryMethodPairForm(Form):
 
@@ -34,6 +34,12 @@ class PaymentDeliveryMethodPairForm(Form):
         places=2,
         default=0,
         validators=[Required()],
+    )
+    system_fee_type = SelectField(
+        label=u'システム利用料計算単位',
+        validators=[Required(u'選択してください')],
+        choices=[fee_type.v for fee_type in FeeTypeEnum],
+        coerce=int
     )
     transaction_fee = DecimalField(
         label=u'決済手数料',
