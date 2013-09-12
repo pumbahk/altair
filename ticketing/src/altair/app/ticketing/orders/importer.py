@@ -170,6 +170,10 @@ class ImpoertCSVReader(object):
                 row[k] = unicode(v.decode(self.encoding))
             yield row
 
+    @property
+    def fieldnames(self):
+        return self.reader.fieldnames
+
 
 class ImportTypeEnum(StandardEnum):
     Create = (1, u'新規登録')
@@ -195,7 +199,6 @@ class OrderImporter():
         reader = ImpoertCSVReader(file)
         for row in reader:
             try:
-                # Todo: 新規登録で、同じ公演で同じ予約番号の有効な予約が既に存在したらNGにする
                 order_no = row.get(u'order.order_no')
 
                 # User

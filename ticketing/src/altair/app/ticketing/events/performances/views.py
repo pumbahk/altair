@@ -167,7 +167,13 @@ class PerformanceShowView(BaseView):
             self.request.session['ticketing.order.importer'] = importer
             return HTTPFound(self.request.route_url('performances.import_orders.confirm', performance_id=self.performance.id))
         else:
-            return HTTPFound(self.request.route_url('performances.import_orders.index', performance_id=self.performance.id))
+            data = {
+                'tab': 'import_orders',
+                'performance': self.performance,
+                'form': f
+            }
+            data.update(self._extra_data())
+            return data
 
     @view_config(route_name='performances.import_orders.confirm', request_method='GET')
     def import_orders_confirm_get(self):

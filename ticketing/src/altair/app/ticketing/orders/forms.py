@@ -21,7 +21,9 @@ from altair.app.ticketing.core.models import (Organization, PaymentMethod, Deliv
 from altair.app.ticketing.cart.schemas import ClientForm
 from altair.app.ticketing.payments import plugins
 from altair.app.ticketing.core import helpers as core_helpers
-from altair.app.ticketing.orders.importer import ImportTypeEnum
+from altair.app.ticketing.orders.importer import ImportTypeEnum, ImpoertCSVReader
+from altair.app.ticketing.orders.export import OrderCSV
+from altair.app.ticketing.csvutils import AttributeRenderer
 
 
 class OrderForm(Form):
@@ -710,7 +712,23 @@ class OrderImportForm(Form):
         if not hasattr(field.data, 'file'):
             raise ValidationError(u'選択してください')
 
-        # Todo:ファイルフォーマットのチェック
+        # ヘッダーをチェック
+        reader = ImpoertCSVReader(field.data.file)
+        import_header = reader.fieldnames
+        field.data.file.seek(0)
+
+        export_header = []
+        for c in OrderCSV.per_seat_columns:
+            if not isinstance(c, AttributeRenderer):
+                if hasattr(c, 'column_name'):
+                    column_name = c.column_name
+                else:
+                    column_name = c.key
+                export_header.append(column_name)
+
+        difference = set(import_header) - set(export_header)
+        if len(difference) > 0:
+            raise ValidationError(u'CSVファイルのフォーマットが正しくありません')
 
 
 class ClientOptionalForm(ClientForm):
