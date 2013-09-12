@@ -53,16 +53,6 @@ class TemporaryModel(object):
         for k, v in kwargs.iteritems():
             setattr(self, k, v)
 
-    def attributes(self):
-        # Todo: このメソッドなくす
-        attr = dict()
-        for k in self.__dict__:
-            v = getattr(self, k)
-            logger.info('%s %s %s' % (k, type(v), v))
-            if not k.startswith('_') and (isinstance(v, int) or isinstance(v, long) or isinstance(v, unicode)):
-                attr[k] = v
-        return attr
-
 
 @implementer(IPaymentCart)
 class TemporaryCart(TemporaryModel):
@@ -161,20 +151,24 @@ def price_to_number(string):
         string = string.replace(',', '')
     return string
 
-def csv_reader(file):
-    # Todo: classにする
-    reader = csv.DictReader(file)
-    columns = dict((v, k) for k, v in japanese_columns.iteritems())
-    header = []
-    for field in reader.fieldnames:
-        field = unicode(field.decode('cp932'))
-        header.append(columns.get(field))
-    reader.fieldnames = header
 
-    for row in reader:
-        for k, v in row.iteritems():
-            row[k] = unicode(v.decode('cp932'))
-        yield row
+class ImpoertCSVReader(object):
+
+    def __init__(self, file, encoding='cp932'):
+        self.reader = csv.DictReader(file)
+        self.encoding = encoding
+        columns = dict((v, k) for k, v in japanese_columns.iteritems())
+        header = []
+        for field in self.reader.fieldnames:
+            field = unicode(field.decode(self.encoding))
+            header.append(columns.get(field))
+        self.reader.fieldnames = header
+
+    def __iter__(self):
+        for row in self.reader:
+            for k, v in row.iteritems():
+                row[k] = unicode(v.decode(self.encoding))
+            yield row
 
 
 class ImportTypeEnum(StandardEnum):
@@ -198,7 +192,7 @@ class OrderImporter():
         self.parse_import_file(order_csv.file)
 
     def parse_import_file(self, file):
-        reader = csv_reader(file)
+        reader = ImpoertCSVReader(file)
         for row in reader:
             try:
                 # Todo: 新規登録で、同じ公演で同じ予約番号の有効な予約が既に存在したらNGにする
@@ -395,7 +389,6 @@ class OrderImporter():
             email_1         = row.get(u'shipping_address.email_1'),
             email_2         = row.get(u'shipping_address.email_2'),
             sex             = row.get(u'user_profile.sex'),
-            nick_name       = row.get(u'user_profile.nick_name')
         )
         return shipping_address
 
@@ -533,7 +526,7 @@ class OrderImporter():
                             temp_carted_product_item.seats.append(seat_status.seat)
 
             # create ShippingAddress
-            attr = temp_order._shipping_address.attributes()
+            attr = temp_order._shipping_address.__dict__
             shipping_address = ShippingAddress(**attr)
             shipping_address.save()
             temp_order.shipping_address = shipping_address
