@@ -705,6 +705,7 @@ class OrderImportForm(Form):
         label=u'インポート方法',
         validators=[Required()],
         choices=[e.v for e in ImportTypeEnum],
+        default=ImportTypeEnum.Create.v[0],
         coerce=int,
     )
 

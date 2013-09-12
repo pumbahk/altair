@@ -4,14 +4,14 @@
 <% from altair.app.ticketing.payments import plugins %>
 
 <div class="alert alert-warning">
-  <p>CSVファイルを読み込みました。以下の内容で正しいか確認してください。</p>
+  <p>インポート完了しました。</p>
 </div>
 
 <%include file="./_import_orders_stats.html" args="stats=stats" />
 
 <% errors = stats.get('error_orders') %>
 % if errors:
-<h5>インポートできない予約のエラー詳細</h5>
+<h5>インポートできなかった予約のエラー詳細</h5>
 <div class="alert alert-error">
   % for error in errors.values():
   <p>${error}</p>
@@ -21,7 +21,6 @@
 
 <form class="form-horizontal" action="${request.route_path('performances.import_orders.confirm', performance_id=performance.id)}" method="POST">
   <div class="form-actions">
-    <input class="btn btn-primary pull-right" type="submit" name="submit" value="インポートを実行する">
     <a href="${request.route_path('performances.import_orders.index', performance_id=performance.id)}" class="btn pull-right" style="margin-right: 10px;">戻る</a>
   </div>
 </form>

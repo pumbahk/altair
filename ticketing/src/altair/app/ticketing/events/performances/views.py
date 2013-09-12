@@ -31,10 +31,12 @@ from altair.app.ticketing.mails.api import get_mail_utility
 from altair.app.ticketing.core.models import MailTypeChoices
 from altair.app.ticketing.orders.api import OrderSummarySearchQueryBuilder, QueryBuilderError
 from altair.app.ticketing.orders.models import OrderSummary
+from altair.app.ticketing.orders.importer import OrderImporter
 from altair.app.ticketing.carturl.api import get_cart_url_builder, get_cart_now_url_builder
 from altair.app.ticketing.events.sales_segments.resources import (
     SalesSegmentGroupCreate,
 )
+
 
 @view_defaults(decorator=with_bootstrap, permission='event_editor', renderer='altair.app.ticketing:templates/performances/show.html')
 class PerformanceShowView(BaseView):
@@ -159,11 +161,7 @@ class PerformanceShowView(BaseView):
         self.import_orders_initialize()
         f = OrderImportForm(self.request.params)
         if f.validate():
-            from altair.app.ticketing.orders.importer import OrderImporter
-            from altair.app.ticketing.cart import api as cart_api
-            reserving = cart_api.get_reserving(self.request)
             importer = OrderImporter(self.context, self.performance.id, **f.data)
-            importer.allocate_seats(reserving)
             self.request.session['ticketing.order.importer'] = importer
             return HTTPFound(self.request.route_url('performances.import_orders.confirm', performance_id=self.performance.id))
         else:
@@ -178,17 +176,17 @@ class PerformanceShowView(BaseView):
     @view_config(route_name='performances.import_orders.confirm', request_method='GET')
     def import_orders_confirm_get(self):
         importer = self.request.session.get('ticketing.order.importer')
-        if importer:
-            data = {
-                'tab': 'import_orders',
-                'action': 'confirm',
-                'performance': self.performance,
-                'stats': importer.statistics()
-            }
-            data.update(self._extra_data())
-            return data
-        else:
+        if importer is None:
             return HTTPFound(self.request.route_url('performances.import_orders.index', performance_id=self.performance.id))
+
+        data = {
+            'tab': 'import_orders',
+            'action': 'confirm',
+            'performance': self.performance,
+            'stats': importer.validated_stats()
+        }
+        data.update(self._extra_data())
+        return data
 
     @view_config(route_name='performances.import_orders.confirm', request_method='POST')
     def import_orders_confirm_post(self):
@@ -198,12 +196,24 @@ class PerformanceShowView(BaseView):
             importer.execute()
         except Exception, e:
             logger.error('order import error: %s' % e, exc_info=sys.exc_info())
-            self.request.session.flash(u'インポート失敗しました')
-            raise HTTPFound(self.request.route_url('performances.import_orders.confirm', performance_id=self.performance.id))
 
-        self.request.session.flash(u'インポート成功しました')
-        self.import_orders_initialize(release_seats=False)
-        return HTTPFound(self.request.route_url('performances.import_orders.index', performance_id=performance_id))
+        self.request.session.flash(u'インポート完了しました')
+        return HTTPFound(self.request.route_url('performances.import_orders.completed', performance_id=performance_id))
+
+    @view_config(route_name='performances.import_orders.completed', request_method='GET')
+    def import_orders_completed(self):
+        importer = self.request.session.get('ticketing.order.importer')
+        if importer is None:
+            return HTTPFound(self.request.route_url('performances.import_orders.index', performance_id=self.performance.id))
+
+        data = {
+            'tab': 'import_orders',
+            'action': 'completed',
+            'performance': self.performance,
+            'stats': importer.imported_stats()
+        }
+        data.update(self._extra_data())
+        return data
 
 
 @view_defaults(decorator=with_bootstrap, permission="event_editor")
