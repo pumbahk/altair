@@ -132,7 +132,7 @@ class CachedFetcher(object):
             self.fetcher.check_skip_fetch(url, path)
         try:
             return self.cache_impl[k]
-        except (KeyError, ValueError):
+        except (KeyError, ValueError, EOFError):
             def fetch_function(cache, k):
                 data = self.fetcher.fetch(url, path)
                 content_type = data.content_type
@@ -204,7 +204,7 @@ class StaticPageCache(object):
         try:
             logger.debug("StaticPageCache: getitem -- {k}".format(k=k))
             return self.file_data[k]
-        except (KeyError, ValueError):
+        except (KeyError, ValueError, EOFError):
             ## value error is "insecure string pickle"
             logger.debug("StaticPageCache: notfound -- {k}".format(k=k))
             if k in self.fetching:
