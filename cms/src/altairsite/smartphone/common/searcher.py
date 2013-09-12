@@ -48,9 +48,9 @@ class EventSearcher(object):
     def search_sale(self, search_query, qs=None):
         sale = search_query.sale
         if sale == SalesEnum.ON_SALE.v:
-            qs = self.search_on_sale(qs)
+            qs = self.search_event_in_session(qs)
         elif sale == SalesEnum.GENRE.v:
-            qs = self.search_on_sale(qs)
+            qs = self.search_event_in_session(qs)
         elif sale == SalesEnum.WEEK_SALE.v:
             qs = self.search_week_sale(None, qs)
         elif sale == SalesEnum.NEAR_SALE_END.v:
@@ -166,12 +166,12 @@ class EventSearcher(object):
         if info.closed:
             qs = self.search_closed(qs=qs)
         if not info.canceled and not info.closed:
-                qs = self.search_on_sale(qs=qs)
+                qs = self.search_event_in_session(qs=qs)
         return qs
 
-    # 販売中
-    def search_on_sale(self, qs=None):
-        where = (get_now(self.request) <= Event.deal_close)
+    # 公演が終了しているかどうか
+    def search_event_in_session(self, qs=None):
+        where = (get_now(self.request) <= Event.event_close)
         qs = self._create_common_qs(where=where, qs=qs)
         return qs
 
