@@ -53,6 +53,10 @@ from .utils import ApplicableTicketsProducer
 
 logger = logging.getLogger(__name__)
 
+class FeeTypeEnum(StandardEnum):
+    Once = (0, u'1件あたりの手数料')
+    PerUnit = (1, u'1枚あたりの手数料')
+
 class Seat_SeatAdjacency(Base):
     __tablename__ = 'Seat_SeatAdjacency2'
     l0_id = Column(Unicode(48), ForeignKey('Seat.l0_id'), primary_key=True)
@@ -1263,7 +1267,10 @@ class PaymentDeliveryMethodPair(Base, BaseModel, WithTimestamp, LogicallyDeleted
     __tablename__ = 'PaymentDeliveryMethodPair'
     query = DBSession.query_property()
     id = AnnotatedColumn(Identifier, primary_key=True, _a_label=_(u'ID'))
+
     system_fee = AnnotatedColumn(Numeric(precision=16, scale=2), nullable=False, _a_label=_(u'システム利用料'))
+    system_fee_type = Column(Integer, nullable=False, default=FeeTypeEnum.Once.v[0])
+    
     transaction_fee = AnnotatedColumn(Numeric(precision=16, scale=2), nullable=False, _a_label=_(u'決済手数料'))
     delivery_fee = AnnotatedColumn(Numeric(precision=16, scale=2), nullable=False, _a_label=_(u'引取手数料'))
     discount = AnnotatedColumn(Numeric(precision=16, scale=2), nullable=False, _a_label=_(u'割引額'))
@@ -1330,9 +1337,30 @@ class PaymentDeliveryMethodPair(Base, BaseModel, WithTimestamp, LogicallyDeleted
             return Decimal()
 
     @property
+    def system_fee_per_product(self):
+        """商品ごとのシステム利用料"""
+        return Decimal()
+
+    @property
+    def system_fee_per_ticket(self):
+        """発券ごとのシステム利用料"""
+        if self.system_fee_type == FeeTypeEnum.PerUnit.v[0]:
+            return self.system_fee
+        else:
+            return Decimal()
+
+    @property
+    def system_fee_per_order(self):
+        """注文ごとのシステム利用料"""
+        if self.system_fee_type == FeeTypeEnum.Once.v[0]:
+            return self.system_fee
+        else:
+            return Decimal()
+
+    @property
     def per_order_fee(self):
         """注文ごと手数料"""
-        return self.system_fee + self.delivery_fee_per_order + self.transaction_fee_per_order
+        return self.system_fee_per_order + self.delivery_fee_per_order + self.transaction_fee_per_order
 
     @property
     def per_product_fee(self):
@@ -1375,9 +1403,6 @@ class DeliveryMethodPlugin(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     id = Column(Identifier, primary_key=True)
     name = Column(String(255))
 
-class FeeTypeEnum(StandardEnum):
-    Once = (0, u'1件あたりの手数料')
-    PerUnit = (1, u'1枚あたりの手数料')
 
 class ServiceFeeMethod(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'ServiceFeeMethod'
@@ -3534,6 +3559,12 @@ class SalesSegment(Base, BaseModel, LogicallyDeleted, WithTimestamp):
         return pdmp.delivery_fee_per_order + sum([
             (pdmp.delivery_fee_per_product + \
              pdmp.delivery_fee_per_ticket * product.num_priced_tickets(pdmp)) * quantity
+            for product, quantity in product_quantities])
+
+    def get_system_fee(self, pdmp, product_quantities):
+        return pdmp.system_fee_per_order + sum([
+            (pdmp.system_fee_per_product + \
+             pdmp.system_fee_per_ticket * product.num_priced_tickets(pdmp)) * quantity
             for product, quantity in product_quantities])
 
     def get_products_amount(self, pdmp, product_quantities):

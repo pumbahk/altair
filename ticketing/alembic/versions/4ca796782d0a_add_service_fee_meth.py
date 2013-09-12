@@ -23,7 +23,7 @@ def upgrade():
                     sa.Column('name', sa.String(length=255), nullable=True), 
                     sa.Column('description', sa.String(length=1024), nullable=True),                   
                     sa.Column('fee', sa.Numeric(precision=16, scale=2), nullable=False, default=0),
-                    sa.Column('fee_type', sa.Integer(), nullable=False, default=0),  
+                    sa.Column('fee_type', sa.Integer(), nullable=False, default=0),
                     sa.Column('organization_id', Identifier(), nullable=True),
                     sa.Column('created_at', sa.TIMESTAMP(), server_default=sqlf.current_timestamp(), nullable=False),
                     sa.Column('updated_at', sa.TIMESTAMP(), server_default=text('0'), nullable=False),
@@ -32,6 +32,9 @@ def upgrade():
                     sa.ForeignKeyConstraint(['organization_id'], ['Organization.id'], 'ServiceFeeMethod_ibfk_1'),
                     sa.PrimaryKeyConstraint('id')
                     )
+    op.add_column('PaymentDeliveryMethodPair', sa.Column('system_fee_type', sa.Integer(), nullable=False, default=0))
 
 def downgrade():
     op.drop_table('ServiceFeeMethod')
+    op.drop_column('PaymentDeliveryMethodPair', 'system_fee_type')
+
