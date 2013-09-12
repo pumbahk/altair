@@ -65,7 +65,7 @@ class TemporaryModel(object):
 
 
 @implementer(IPaymentCart)
-class TemporaryOrder(TemporaryModel):
+class TemporaryCart(TemporaryModel):
 
     order = None
     order_no = None
@@ -93,14 +93,14 @@ class TemporaryOrder(TemporaryModel):
 
     @property
     def products(self):
-        return self._ordered_product.values()
+        return self._carted_product.values()
 
     def finish(self):
         pass
 
 
 @implementer(IPaymentCartedProduct)
-class TemporaryOrderedProduct(TemporaryModel):
+class TemporaryCartedProduct(TemporaryModel):
 
     price = 0
     quantity = 0
@@ -111,7 +111,7 @@ class TemporaryOrderedProduct(TemporaryModel):
 
     @property
     def items(self):
-        return self._ordered_product_item.values()
+        return self._carted_product_item.values()
 
     @property
     def cart(self):
@@ -119,7 +119,7 @@ class TemporaryOrderedProduct(TemporaryModel):
 
 
 @implementer(IPaymentCartedProductItem)
-class TemporaryOrderedProductItem(TemporaryModel):
+class TemporaryCartedProductItem(TemporaryModel):
 
     price = 0
     quantity = 0
@@ -204,17 +204,17 @@ class OrderImporter():
 
                 # OrderedProduct: dict(product_id=ordered_product)
                 product = self.get_product(row, sales_segment)
-                op = order._ordered_product.get(product.id)
+                op = order._carted_product.get(product.id)
                 if op is None:
-                    op = self.create_temporary_ordered_product(row, order, product)
-                    order._ordered_product[product.id] = op
+                    op = self.create_temporary_carted_product(row, order, product)
+                    order._carted_product[product.id] = op
 
                 # OrderedProductItem: dict(product_item_id=ordered_product_item)
                 product_item = self.get_product_item(row, product)
-                opi = op._ordered_product_item.get(product_item.id)
+                opi = op._carted_product_item.get(product_item.id)
                 if opi is None:
-                    opi = self.create_temporary_ordered_product_item(row, op, product_item)
-                    op._ordered_product_item[product_item.id] = opi
+                    opi = self.create_temporary_carted_product_item(row, op, product_item)
+                    op._carted_product_item[product_item.id] = opi
                 else:
                     opi.quantity += int(row.get(u'ordered_product_item.quantity'))
 
@@ -314,7 +314,7 @@ class OrderImporter():
         return seat
 
     def create_temporary_order(self, row, sales_segment, pdmp, user):
-        order = TemporaryOrder(
+        order = TemporaryCart(
             order_no            = row.get(u'order.order_no'),
             total_amount        = price_to_number(row.get(u'order.total_amount')),
             system_fee          = price_to_number(row.get(u'order.system_fee')),
@@ -337,23 +337,23 @@ class OrderImporter():
             user_id             = user.id if user else None,
             branch_no           = 1,
             _shipping_address   = self.create_temporary_shipping_address(row, user),
-            _ordered_product    = dict(),
+            _carted_product     = dict(),
         )
         logger.info(vars(order))
         return order
 
-    def create_temporary_ordered_product(self, row, parent, product):
-        ordered_product = TemporaryOrderedProduct(
+    def create_temporary_carted_product(self, row, parent, product):
+        ordered_product = TemporaryCartedProduct(
             price                 = price_to_number(row.get(u'ordered_product.price')),
             quantity              = int(row.get(u'ordered_product.quantity')),
             product_id            = product.id,
-            _ordered_product_item = dict(),
+            _carted_product_item  = dict(),
             _parent               = parent,
         )
         return ordered_product
 
-    def create_temporary_ordered_product_item(self, row, parent, product_item):
-        ordered_product_item = TemporaryOrderedProductItem(
+    def create_temporary_carted_product_item(self, row, parent, product_item):
+        ordered_product_item = TemporaryCartedProductItem(
             price           = price_to_number(row.get(u'ordered_product_item.price')),
             quantity        = int(row.get(u'ordered_product_item.quantity')),
             product_item_id = product_item.id,
@@ -393,8 +393,8 @@ class OrderImporter():
         for order_no in order_no_list:
             order = self.orders.get(order_no)
             error_reason = None
-            for op in order._ordered_product.values():
-                for opi in op._ordered_product_item.values():
+            for op in order._carted_product.values():
+                for opi in op._carted_product_item.values():
                     product_item = ProductItem.query.filter_by(id=opi.product_item_id).one()
                     stock = product_item.stock
                     if product_item.stock_type.quantity_only:
@@ -424,8 +424,8 @@ class OrderImporter():
 
     def release_seats(self):
         for order in self.orders.values():
-            for op in order._ordered_product.values():
-                for opi in op._ordered_product_item.values():
+            for op in order._carted_product.values():
+                for opi in op._carted_product_item.values():
                     for seat_id in opi._seat_ids:
                         seat_status = SeatStatus.query.filter_by(seat_id=seat_id).one()
                         if seat_status.status == int(SeatStatusEnum.Keep):
@@ -435,19 +435,19 @@ class OrderImporter():
     def get_seat_count(self):
         count = 0
         for order in self.orders.values():
-            for op in order._ordered_product.values():
-                for opi in op._ordered_product_item.values():
+            for op in order._carted_product.values():
+                for opi in op._carted_product_item.values():
                     count += opi.quantity
         return count
 
     def get_seat_per_product(self):
         seat_per_product = dict()
         for order in self.orders.values():
-            for op in order._ordered_product.values():
+            for op in order._carted_product.values():
                 p = Product.query.filter_by(id=op.product_id).one()
                 if p not in seat_per_product:
                     seat_per_product[p] = 0
-                seat_per_product[p] += sum([int(opi.quantity) for opi in op._ordered_product_item.values()])
+                seat_per_product[p] += sum([int(opi.quantity) for opi in op._carted_product_item.values()])
         return seat_per_product
 
     def get_order_per_pdmp(self):
@@ -495,19 +495,19 @@ class OrderImporter():
             #   Keepの座席は*つかんだ*だけで、座席を所有するオブジェクトは一時的なものなので、
             #   在庫数は減算していない
             # - なので、予約確定時に在庫数を減らす
-            for temp_ordered_product in temp_order._ordered_product.values():
-                for temp_ordered_product_item in temp_ordered_product._ordered_product_item.values():
-                    stock = temp_ordered_product_item.product_item.stock
+            for temp_carted_product in temp_order._carted_product.values():
+                for temp_carted_product_item in temp_carted_product._carted_product_item.values():
+                    stock = temp_carted_product_item.product_item.stock
 
                     # 在庫数
-                    quantity = temp_ordered_product_item.quantity
+                    quantity = temp_carted_product_item.quantity
                     stock_requires = [(stock.id, quantity)]
                     stock_statuses = stocker.take_stock_by_stock_id(stock_requires)
 
                     # 座席ステータス
                     if not stock.stock_type.quantity_only:
                         seat_statuses = SeatStatus.query.filter(
-                            SeatStatus.seat_id.in_(temp_ordered_product_item._seat_ids)
+                            SeatStatus.seat_id.in_(temp_carted_product_item._seat_ids)
                         ).with_lockmode('update').all()
                         for seat_status in seat_statuses:
                             logger.info('seat(%s) status Keep to Ordered' % seat_status.seat_id)
@@ -516,7 +516,7 @@ class OrderImporter():
                                 # Todo: エラー時に終了するか継続するか
                                 raise Exception(u'invalid seat status')
                             seat_status.status = int(SeatStatusEnum.Ordered)
-                            temp_ordered_product_item.seats.append(seat_status.seat)
+                            temp_carted_product_item.seats.append(seat_status.seat)
 
             # create ShippingAddress
             attr = temp_order._shipping_address.attributes()
