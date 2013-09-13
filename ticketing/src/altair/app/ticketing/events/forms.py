@@ -26,7 +26,12 @@ class EventSearchForm(OurForm):
         )
 
     performance_date = DateTimeField(
-        label=u'公演日',
+        label=u'公演日開始日',
+        validators=[Optional(), after1900],
+        widget=OurDateWidget()
+        )
+    performance_date_end = DateTimeField(
+        label=u'公演日終了日',
         validators=[Optional(), after1900],
         widget=OurDateWidget()
         )

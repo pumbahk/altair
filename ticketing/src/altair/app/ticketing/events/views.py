@@ -67,12 +67,26 @@ class Events(BaseView):
                 query = query.filter(or_(Event.code.like(pattern), Event.title.like(pattern)))
             if form_search.performance_name_or_code.data:
                 pattern = '%' + form_search.performance_name_or_code.data + '%'
-                query = query.join(Event.performances)\
-                            .filter(or_(Performance.code.like(pattern), Performance.name.like(pattern)))
-            if form_search.performance_date.data:
-                query = query.join(Event.performances)\
-                        .filter(Performance.start_on >= form_search.performance_date.data) \
-                        .filter(Performance.end_on < (form_search.performance_date.data + timedelta(days=1)))
+                query = query.filter(or_(Performance.code.like(pattern), Performance.name.like(pattern)))
+            if form_search.performance_date.data and form_search.performance_date_end.data:
+                where = (
+                    (form_search.performance_date.data <= Performance.start_on) & (Performance.start_on <= form_search.performance_date_end.data) |
+                    (form_search.performance_date.data <= Performance.end_on) & (Performance.end_on <= form_search.performance_date_end.data) |
+                    (Performance.start_on <= form_search.performance_date.data) & (form_search.performance_date_end.data <= Performance.end_on))
+                query = query.filter(where)
+            elif form_search.performance_date.data:
+                where = (
+                    (form_search.performance_date.data <= Performance.start_on) |
+                    (form_search.performance_date.data <= Performance.start_on) & (Performance.start_on <= (form_search.performance_date.data + timedelta(days=1))) & (Performance.end_on is None) |
+                    (Performance.start_on <= form_search.performance_date.data) & (form_search.performance_date.data <= Performance.end_on))
+                query = query.filter(where)
+            elif form_search.performance_date_end.data:
+                where = (
+                    (Performance.end_on <= form_search.performance_date_end.data) |
+                    (Performance.start_on <= form_search.performance_date_end.data) & (form_search.performance_date_end.data <= Performance.end_on) |
+                    ((form_search.performance_date_end.data + timedelta(days=-1)) <= Performance.start_on) & (Performance.start_on <= form_search.performance_date_end.data) & (Performance.end_on is None))
+                query = query.filter(where)
+
             if form_search.lot_only.data:
                 query = query.join(Event.lots)
 
