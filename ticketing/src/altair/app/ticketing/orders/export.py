@@ -9,7 +9,7 @@ from altair.app.ticketing.cart.helpers import format_number as _format_number
 from altair.app.ticketing.mailmags.models import MailSubscription, MailMagazine, MailSubscriptionStatus
 from altair.app.ticketing.utils import dereference
 from altair.app.ticketing.csvutils import CSVRenderer, PlainTextRenderer, CollectionRenderer, AttributeRenderer, SimpleRenderer
-from .api import get_metadata_provider_registry
+from .api import get_ordered_product_metadata_provider_registry
 
 def format_number(value):
     return _format_number(float(value))
@@ -93,7 +93,7 @@ japanese_columns = {
 
 def get_japanese_columns(request):
     retval = dict(japanese_columns)
-    registry = get_metadata_provider_registry(request)
+    registry = get_ordered_product_metadata_provider_registry(request)
     for provider in registry.getProviders():
         for key in provider:
             metadata = provider[key]

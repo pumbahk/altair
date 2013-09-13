@@ -35,7 +35,14 @@ from altair.app.ticketing.sej.models import (
     SejOrder,
     )
 from .models import OrderSummary
-from .interfaces import IOrderedProductAttributeMetadataProviderRegistry
+
+
+## backward compatibility
+from altair.metadata.api import get_metadata_provider_registry
+from .metadata import METADATA_NAME_ORDERED_PRODUCT
+from functools import partial
+get_ordered_product_metadata_provider_registry = partial(get_metadata_provider_registry,
+                                                         name=METADATA_NAME_ORDERED_PRODUCT)
 
 class QueryBuilderError(Exception):
     pass
@@ -528,10 +535,3 @@ class OrderSummarySearchQueryBuilder(SearchQueryBuilderBase):
         else:
             query = asc_or_desc(query, self.targets['subject'].order_no, 'desc')
         return query
-
-def get_metadata_provider_registry(request_or_registry):
-    if IRequest.providedBy(request_or_registry):
-        registry = request_or_registry.registry
-    else:
-        registry = request_or_registry
-    return registry.queryUtility(IOrderedProductAttributeMetadataProviderRegistry)

@@ -77,7 +77,7 @@ from altair.app.ticketing.cart.exceptions import NoCartError
 from altair.app.ticketing.loyalty import api as loyalty_api
 
 from . import utils
-from .api import CartSearchQueryBuilder, OrderSummarySearchQueryBuilder, QueryBuilderError, get_metadata_provider_registry
+from .api import CartSearchQueryBuilder, OrderSummarySearchQueryBuilder, QueryBuilderError, get_ordered_product_metadata_provider_registry
 from .utils import NumberIssuer
 from .models import OrderSummary
 
@@ -533,7 +533,7 @@ class OrderDetailView(BaseView):
         mail_magazines = dependents.mail_magazines
 
         joined_objects_for_product_item = dependents.describe_objects_for_product_item_provider()
-        metadata_provider_registry = get_metadata_provider_registry(self.request)
+        metadata_provider_registry = get_ordered_product_metadata_provider_registry(self.request)
         ordered_product_attributes = joined_objects_for_product_item.get_product_item_attributes(metadata_provider_registry)
 
         forms = self.context.get_dependents_forms(order)
