@@ -17,7 +17,7 @@ def is_finished_payment(request, pdmp, order):
 def is_finished_delivery(request, pdmp, order):
     if order is None:
         return False
-    plugin = get_delivery_plugin(request, pdmp.payment_method.payment_plugin_id)
+    plugin = get_delivery_plugin(request, pdmp.delivery_method.delivery_plugin_id)
     return plugin.finished(request, order)
 
 def get_cart(request):
