@@ -41,12 +41,28 @@
           ${form_search.performance_name_or_code()}
         </div>
         <div class="controls">
-          ${form_search.performance_date.label()}
-          ${form_search.performance_date()}
+          ${form_search.perf_range_start.label()}
+          ${form_search.perf_range_start()} 〜 ${form_search.perf_range_end()}
         </div>
         <div class="controls">
-          ${form_search.performance_date_end.label()}
-          ${form_search.performance_date_end()}
+          ${form_search.deal_range_start.label()}
+          ${form_search.deal_range_start()} 〜 ${form_search.deal_range_end()}
+        </div>
+        <div class="controls">
+          ${form_search.perf_open_start.label()}
+          ${form_search.perf_open_start()} 〜 ${form_search.perf_open_end()}
+        </div>
+        <div class="controls">
+          ${form_search.perf_close_start.label()}
+          ${form_search.perf_close_start()} 〜 ${form_search.perf_close_end()}
+        </div>
+        <div class="controls">
+          ${form_search.deal_open_start.label()}
+          ${form_search.deal_open_start()} 〜 ${form_search.deal_open_end()}
+        </div>
+        <div class="controls">
+          ${form_search.deal_close_start.label()}
+          ${form_search.deal_close_start()} 〜 ${form_search.deal_close_end()}
         </div>
         <div class="controls">
           ${form_search.lot_only()} ${form_search.lot_only.label(class_='inline')}

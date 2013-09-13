@@ -25,7 +25,7 @@ from altair.sqlahelper import get_db_session
 from altair.app.ticketing.models import merge_session_with_post, record_to_multidict, merge_and_flush
 from altair.app.ticketing.views import BaseView
 from altair.app.ticketing.fanstatic import with_bootstrap
-from altair.app.ticketing.core.models import Event, Performance, StockType, StockTypeEnum
+from altair.app.ticketing.core.models import Event, Performance, StockType, StockTypeEnum, SalesSegment
 from altair.app.ticketing.core import api as core_api
 from altair.app.ticketing.core.utils import PageURL_WebOb_Ex
 from altair.app.ticketing.events.performances.forms import PerformanceForm
@@ -61,6 +61,7 @@ class Events(BaseView):
         query = query.order_by(sort + ' ' + direction)
 
         form_search = EventSearchForm(self.request.params)
+        search_query = None
         if form_search.validate():
             if form_search.event_name_or_code.data:
                 pattern = '%' + form_search.event_name_or_code.data + '%'
@@ -68,24 +69,17 @@ class Events(BaseView):
             if form_search.performance_name_or_code.data:
                 pattern = '%' + form_search.performance_name_or_code.data + '%'
                 query = query.filter(or_(Performance.code.like(pattern), Performance.name.like(pattern)))
-            if form_search.performance_date.data and form_search.performance_date_end.data:
-                where = (
-                    (form_search.performance_date.data <= Performance.start_on) & (Performance.start_on <= form_search.performance_date_end.data) |
-                    (form_search.performance_date.data <= Performance.end_on) & (Performance.end_on <= form_search.performance_date_end.data) |
-                    (Performance.start_on <= form_search.performance_date.data) & (form_search.performance_date_end.data <= Performance.end_on))
-                query = query.filter(where)
-            elif form_search.performance_date.data:
-                where = (
-                    (form_search.performance_date.data <= Performance.start_on) |
-                    (form_search.performance_date.data <= Performance.start_on) & (Performance.start_on <= (form_search.performance_date.data + timedelta(days=1))) & (Performance.end_on is None) |
-                    (Performance.start_on <= form_search.performance_date.data) & (form_search.performance_date.data <= Performance.end_on))
-                query = query.filter(where)
-            elif form_search.performance_date_end.data:
-                where = (
-                    (Performance.end_on <= form_search.performance_date_end.data) |
-                    (Performance.start_on <= form_search.performance_date_end.data) & (form_search.performance_date_end.data <= Performance.end_on) |
-                    ((form_search.performance_date_end.data + timedelta(days=-1)) <= Performance.start_on) & (Performance.start_on <= form_search.performance_date_end.data) & (Performance.end_on is None))
-                query = query.filter(where)
+
+            query = self._need_sales_segment(query, form_search.deal_range_start.data, form_search.deal_range_end.data
+                , form_search.deal_open_start.data, form_search.deal_open_end.data
+                , form_search.deal_close_start.data, form_search.deal_close_end.data)
+            query = self._create_range_where(query, form_search.perf_range_start.data, form_search.perf_range_end.data, Performance.start_on, Performance.end_on)
+            query = self._create_range_where(query, form_search.deal_range_start.data, form_search.deal_range_end.data, SalesSegment.start_at, SalesSegment.end_at)
+            query = self._create_where(query, form_search.perf_open_start.data, form_search.perf_open_end.data, Performance.start_on)
+            query = self._create_where(query, form_search.perf_close_start.data, form_search.perf_close_end.data, Performance.end_on)
+            query = self._create_where(query, form_search.deal_open_start.data, form_search.deal_open_end.data, SalesSegment.start_at)
+            query = self._create_where(query, form_search.deal_close_start.data, form_search.deal_close_end.data, SalesSegment.end_at)
+            search_query = self._create_search_query(form_search)
 
             if form_search.lot_only.data:
                 query = query.join(Event.lots)
@@ -102,7 +96,99 @@ class Events(BaseView):
             'form':EventForm(),
             'form_performance':PerformanceForm(organization_id=self.context.user.organization_id),
             'events':events,
+            'search_query':search_query
         }
+
+    def _create_search_query(self, form):
+        search_query = []
+        if form.perf_range_start.data or form.perf_range_end.data:
+            query = u"公演期間検索："
+            str = self._get_str(form.perf_range_start.data) or ""
+            query = query + str + u" 〜 "
+            str = self._get_str(form.perf_range_end.data) or ""
+            query = query + str
+            search_query.append(query)
+        if form.deal_range_start.data or form.deal_range_end.data:
+            query = u"販売期間検索："
+            str = self._get_str(form.deal_range_start.data) or ""
+            query = query + str + u" 〜 "
+            str = self._get_str(form.deal_range_end.data) or ""
+            query = query + str
+            search_query.append(query)
+        if form.perf_open_start.data or form.perf_open_end.data:
+            query = u"公演開始日検索："
+            str = self._get_str(form.perf_open_start.data) or ""
+            query = query + str + u" 〜 "
+            str = self._get_str(form.perf_open_end.data) or ""
+            query = query + str
+            search_query.append(query)
+        if form.perf_close_start.data or form.perf_close_end.data:
+            query = u"公演開始日検索："
+            str = self._get_str(form.perf_close_start.data) or ""
+            query = query + str + u" 〜 "
+            str = self._get_str(form.perf_close_end.data) or ""
+            query = query + str
+            search_query.append(query)
+        if form.deal_open_start.data or form.deal_open_end.data:
+            query = u"販売開始日検索："
+            str = self._get_str(form.deal_open_start.data) or ""
+            query = query + str + u" 〜 "
+            str = self._get_str(form.deal_open_end.data) or ""
+            query = query + str
+            search_query.append(query)
+        if form.deal_close_start.data or form.deal_close_end.data:
+            query = u"公演終了日検索："
+            str = self._get_str(form.deal_close_start.data) or ""
+            query = query + str + u" 〜 "
+            str = self._get_str(form.deal_close_end.data) or ""
+            query = query + str
+            search_query.append(query)
+        return ", ".join(search_query)
+
+    def _get_str(self, target):
+        if target:
+            str = target.strftime("%Y/%m/%d")
+            return str
+        return target
+
+    def _need_sales_segment(self, query, *args):
+        if len(args):
+            query = query.join(SalesSegment, Performance.id == SalesSegment.performance_id)
+        return query
+
+    def _create_where(self, query, from_date, to_date, target):
+        if from_date and to_date:
+            where = (
+                (from_date <= target) & (target <= to_date))
+            query = query.filter(where)
+        elif from_date:
+            where = (from_date <= target)
+            query = query.filter(where)
+        elif to_date:
+            where = (target <= to_date)
+            query = query.filter(where)
+        return query
+
+    def _create_range_where(self, query, from_date, to_date, from_target, to_target):
+        if from_date and to_date:
+            where = (
+                (from_date <= from_target) & (from_target <= to_date) |
+                (from_date <= to_target) & (to_target <= to_date) |
+                (from_target <= from_date) & (to_date <= to_target))
+            query = query.filter(where)
+        elif from_date:
+            where = (
+                (from_date <= from_target) |
+                (from_date <= from_target) & (from_target <= (from_date + timedelta(days=1))) & (to_target is None) |
+                (from_target <= from_date) & (from_date <= to_target))
+            query = query.filter(where)
+        elif to_date:
+            where = (
+                (to_target <= to_date.data) |
+                (from_target <= to_date.data) & (to_date.data <= to_target) |
+                ((to_date + timedelta(days=-1)) <= from_target) & (from_target <= to_date) & (to_target is None))
+            query = query.filter(where)
+        return query
 
     @view_config(route_name='events.show', renderer='altair.app.ticketing:templates/events/show.html', permission='event_viewer')
     def show(self):

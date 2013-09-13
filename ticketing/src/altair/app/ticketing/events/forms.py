@@ -25,13 +25,74 @@ class EventSearchForm(OurForm):
         widget=OurTextInput()
         )
 
-    performance_date = DateTimeField(
-        label=u'公演日開始日',
+    perf_range_start = DateTimeField(
+        label=u'公演期間検索',
         validators=[Optional(), after1900],
         widget=OurDateWidget()
         )
-    performance_date_end = DateTimeField(
-        label=u'公演日終了日',
+
+    perf_range_end = DateTimeField(
+        label=u'',
+        validators=[Optional(), after1900],
+        widget=OurDateWidget()
+        )
+
+    deal_range_start = DateTimeField(
+        label=u'販売期間検索',
+        validators=[Optional(), after1900],
+        widget=OurDateWidget()
+        )
+
+    deal_range_end = DateTimeField(
+        label=u'',
+        validators=[Optional(), after1900],
+        widget=OurDateWidget()
+        )
+
+    perf_open_start = DateTimeField(
+        label=u'公演開始日検索',
+        validators=[Optional(), after1900],
+        widget=OurDateWidget()
+        )
+
+    perf_open_end = DateTimeField(
+        label=u'',
+        validators=[Optional(), after1900],
+        widget=OurDateWidget()
+        )
+
+    perf_close_start = DateTimeField(
+        label=u'公演終了日検索',
+        validators=[Optional(), after1900],
+        widget=OurDateWidget()
+        )
+
+    perf_close_end = DateTimeField(
+        label=u'',
+        validators=[Optional(), after1900],
+        widget=OurDateWidget()
+        )
+
+    deal_open_start = DateTimeField(
+        label=u'販売開始日検索',
+        validators=[Optional(), after1900],
+        widget=OurDateWidget()
+        )
+
+    deal_open_end = DateTimeField(
+        label=u'',
+        validators=[Optional(), after1900],
+        widget=OurDateWidget()
+        )
+
+    deal_close_start = DateTimeField(
+        label=u'販売終了日検索',
+        validators=[Optional(), after1900],
+        widget=OurDateWidget()
+        )
+
+    deal_close_end = DateTimeField(
+        label=u'',
         validators=[Optional(), after1900],
         widget=OurDateWidget()
         )
