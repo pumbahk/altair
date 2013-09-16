@@ -181,7 +181,7 @@ class StaticPageCache(object):
             self.file_data[k] = v
             self.fetching.remove_value(k)
             return v
-        except ValueError as e:
+        except (ValueError, EOFError) as e:
             logger.warn(repr(e)) #insecure string
             self.clear_cache(k)
         except Exception as e:
@@ -193,7 +193,7 @@ class StaticPageCache(object):
     def clear_cache(self, k):
         try:
             self.file_data.remove_value(k)
-        except ValueError: #insecure string
+        except (ValueError, EOFError): #insecure string
             logger.error("clear_cache: k={k} insecure string found. remove".format(k=k))
             handler = self.file_data._get_value(k).namespace
             handler.do_remove()
