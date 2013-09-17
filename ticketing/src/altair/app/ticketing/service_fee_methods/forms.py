@@ -3,7 +3,7 @@
 from wtforms import Form
 from wtforms import TextField, HiddenField, SelectField, DecimalField
 from wtforms.validators import Length, Optional, NumberRange
-from wtforms.widgets import TextArea
+from wtforms.widgets import TextArea, CheckboxInput
 from altair.formhelpers import Translations, Required
 from altair.formhelpers.fields import OurBooleanField, LazySelectField
 from altair.app.ticketing.core.models import FeeTypeEnum
@@ -43,5 +43,7 @@ class ServiceFeeMethodForm(Form):
         widget=TextArea()
     )
     system_fee_default = OurBooleanField(
-        label=u"システム利用料のデフォルト値", 
+        label=u"システム利用料のデフォルト値",
+        default=False,
+        widget=CheckboxInput(),
     )
