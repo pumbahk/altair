@@ -22,6 +22,7 @@ def install_app(config):
     config.include("altairsite.mobile.event")
     config.include('altairsite.mobile.staticpage')
     config.add_route("home", "/")
+    config.set_request_property("altairsite.mobile.api.mobile_static_url", "mobile_static_url", reify=True)
     config.scan(".")
 
 def main(global_config, **settings):
@@ -42,6 +43,7 @@ def main(global_config, **settings):
     config.include('altaircms.tag.install_tagmanager')
     config.include('altaircms.topic.install_topic_searcher')
     config.set_request_property("altaircms.auth.api.get_allowable_query", "allowable", reify=True)
+    config.set_request_property("altairsite.mobile.api.mobile_static_url", "mobile_static_url", reify=True)
     search_utility = settings.get("altaircms.solr.search.utility")
     config.add_fulltext_search(search_utility)
     config.include(install_app)

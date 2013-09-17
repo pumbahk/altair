@@ -6,8 +6,8 @@
 </head>
 <body>
 <div align="center" style="text-align:center">
-<img src="${request.static_url('altaircms:static/mobile/logo.jpg')}" /><br />
-<div style="background-image:url(${request.static_url('altaircms:static/mobile/bg_bar.gif')});background-color:#cc0000;" bgcolor="#cc0000"><font color="white">${self.title()}</font></div>
+<img src="${request.mobile_static_url('altaircms:static/mobile/logo.jpg')}" /><br />
+<div style="background-image:url(${request.mobile_static_url('altaircms:static/mobile/bg_bar.gif')});background-color:#cc0000;" bgcolor="#cc0000"><font color="white">${self.title()}</font></div>
 </div>
 ${self.body()}
 <hr />
