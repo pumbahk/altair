@@ -74,8 +74,13 @@ def includeme(config):
     config.include("altair.metadata") #xxx:
     from altair.metadata import DefaultModelAttributeMetadataProviderRegistry
     from .metadata import METADATA_NAME_ORDERED_PRODUCT
-    metadata_registry = DefaultModelAttributeMetadataProviderRegistry()
-    config.set_model_metadata_provider_registry(metadata_registry, name=METADATA_NAME_ORDERED_PRODUCT)
+    config.set_model_metadata_provider_registry(DefaultModelAttributeMetadataProviderRegistry(),
+                                                name=METADATA_NAME_ORDERED_PRODUCT)
+    from .metadata import METADATA_NAME_ORDER, order_metadata_provider
+    order_attrs_registry = DefaultModelAttributeMetadataProviderRegistry()
+    order_attrs_registry.registerProvider(order_metadata_provider)
+    config.set_model_metadata_provider_registry(order_attrs_registry,
+                                                name=METADATA_NAME_ORDER)
 
 
 

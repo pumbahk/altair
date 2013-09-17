@@ -77,7 +77,11 @@ from altair.app.ticketing.cart.exceptions import NoCartError
 from altair.app.ticketing.loyalty import api as loyalty_api
 
 from . import utils
-from .api import CartSearchQueryBuilder, OrderSummarySearchQueryBuilder, QueryBuilderError, get_ordered_product_metadata_provider_registry
+from .api import CartSearchQueryBuilder, OrderSummarySearchQueryBuilder, QueryBuilderError
+from .api import (
+    get_ordered_product_metadata_provider_registry, 
+    get_order_metadata_provider_registry
+)
 from .utils import NumberIssuer
 from .models import OrderSummary
 
@@ -533,8 +537,12 @@ class OrderDetailView(BaseView):
         mail_magazines = dependents.mail_magazines
 
         joined_objects_for_product_item = dependents.describe_objects_for_product_item_provider()
-        metadata_provider_registry = get_ordered_product_metadata_provider_registry(self.request)
-        ordered_product_attributes = joined_objects_for_product_item.get_product_item_attributes(metadata_provider_registry)
+        ordered_product_attributes = joined_objects_for_product_item.get_product_item_attributes(
+            get_ordered_product_metadata_provider_registry(self.request)
+        )
+        order_attributes = dependents.get_order_attributes(
+            get_order_metadata_provider_registry(self.request)
+        )
 
         forms = self.context.get_dependents_forms(order)
         form_shipping_address = forms.get_shipping_address_form()
@@ -545,6 +553,7 @@ class OrderDetailView(BaseView):
         return {
             'order_current':order,
             'ordered_product_attributes': ordered_product_attributes,
+            'order_attributes': order_attributes,
             'order_history':order_history,
             'point_grant_settings': loyalty_api.applicable_point_grant_settings_for_order(order),
             'sej_order':SejOrder.query.filter(SejOrder.order_id==order.order_no).first(),

@@ -39,10 +39,15 @@ from .models import OrderSummary
 
 ## backward compatibility
 from altair.metadata.api import get_metadata_provider_registry
-from .metadata import METADATA_NAME_ORDERED_PRODUCT
+from .metadata import (
+    METADATA_NAME_ORDERED_PRODUCT, 
+    METADATA_NAME_ORDER
+)
 from functools import partial
 get_ordered_product_metadata_provider_registry = partial(get_metadata_provider_registry,
                                                          name=METADATA_NAME_ORDERED_PRODUCT)
+get_order_metadata_provider_registry = partial(get_metadata_provider_registry,
+                                               name=METADATA_NAME_ORDER)
 
 class QueryBuilderError(Exception):
     pass

@@ -101,22 +101,13 @@ ${ch.breadcrumbs(
       </div>
 
       <% row = 0 %>
-      % for key, value in order.attributes.items():
+      % for label, key, value in order_attributes:
         % if row == 0:
         <div class="row-fluid">
           <div class="span6">
             <table class="table table-striped table-bordered">
         % endif
               <tr>
-                <%
-                  label = ''
-                  if key == 'sales_counter_payment_method_id':
-                    label = u'当日窓口決済'
-                    for (id, name) in form_order_reserve.sales_counter_payment_method_id.choices:
-                      if id == int(value):
-                        value = name
-                        break
-                %>
                 <th class="span3">${label}</th>
                 <td class="span2">${value}</td>
               </tr>
