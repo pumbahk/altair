@@ -42,7 +42,7 @@ def _refine_pageset_collect_future(qs, _now_day=None):
    if _now_day is None:
       _now_day = datetime.now()
 
-   qs = qs.filter((_now_day <= Event.deal_close )|( Event.deal_close == None))
+   qs = qs.filter((_now_day <= Event.event_close )|( Event.event_close == None))
    return qs
 
 def _refine_pageset_search_order(qs):

@@ -1196,6 +1196,16 @@ ul#globalNav1 li.right{
 }
 /* }}} */
 
+/* .searchRemainingOnsale {{{ */
+.searchRemainingSalesTermination {
+    width: 82px;
+    margin-right: 10px;
+    color: #c7c7c7;
+    font-weight: bold;
+    text-align: center;
+}
+/* }}} */
+
 /* .searchRemainingToday {{{ */
 .searchRemainingToday {
     width: 82px;
