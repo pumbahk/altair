@@ -1,8 +1,10 @@
 # -*- coding:utf-8 -*-
 from altair.metadata import DefaultModelAttributeMetadataProvider
+from altair.app.ticketing.core.models import PaymentMethod
 
 METADATA_NAME_ORDERED_PRODUCT = "OrderedProduct"
 METADATA_NAME_ORDER = "Order"
+
 
 order_metadata_provider = DefaultModelAttributeMetadataProvider(
     "ticketing.admin", 
@@ -11,7 +13,7 @@ order_metadata_provider = DefaultModelAttributeMetadataProvider(
             'display_name': {
                 'ja_JP': u"当日窓口決済"
             }, 
-            'type':long
+            'coercer': lambda id: PaymentMethod.query.get(id).name if id else None
         }, 
         'memo_on_order1': {
             'display_name': {

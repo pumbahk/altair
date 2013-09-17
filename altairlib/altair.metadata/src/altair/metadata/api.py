@@ -12,11 +12,10 @@ def get_metadata_provider_registry(request_or_registry, name=""):
 def with_provided_values_iterator(metadata_provider_registry, itr, locale="ja_JP"):
     attributes = []
     for key, value in itr:
-        metadata = None
         try:
             metadata = metadata_provider_registry.queryProviderByKey(key)[key]
         except:
-            pass
+            metadata = None
         if metadata is not None:
             display_name = metadata.get_display_name(locale)
             coerced_value = metadata.get_coercer()(value)
