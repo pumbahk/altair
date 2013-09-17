@@ -117,6 +117,8 @@ def available_ticket_formats_for_ordered_product_item(ordered_product_item):
                 .with_entities(TicketFormat.id, TicketFormat.name).distinct(TicketFormat.id)
 
 def encode_to_cp932(data):
+    if not hasattr(data, "encode"):
+        return str(data)
     try:
         return data.encode('cp932')
     except UnicodeEncodeError:
@@ -310,6 +312,43 @@ def index(request):
         'orders':orders,
         'page': page,
     }
+
+@view_config(route_name='orders.download')
+def download(request):
+    slave_session = get_db_session(request, name="slave")
+
+    organization_id = request.context.organization.id
+    params = MultiDict(request.params)
+    params["order_no"] = " ".join(request.params.getall("order_no"))
+
+    form_search = OrderSearchForm(params, organization_id=organization_id)
+    from .download import OrderDownload
+    if request.method == "POST" and form_search.validate():
+        query = OrderDownload(slave_session,
+                              columns=[],
+                              condition={})
+    else:
+        query = OrderDownload(slave_session,
+                              columns=[],
+                              condition={})
+
+    if request.params.get('action') == 'checked':
+        checked_orders = [o.lstrip('o:') 
+                          for o in request.session.get('orders', []) 
+                          if o.startswith('o:')]
+        #query = query.filter(Order.id.in_(checked_orders))
+
+    headers = [
+        ('Content-Type', 'application/octet-stream; charset=Windows-31J'),
+        ('Content-Disposition', 'attachment; filename=orders_{date}.csv'.format(date=datetime.now().strftime('%Y%m%d%H%M%S')))
+    ]
+
+    response = Response(headers=headers)
+    writer = csv.writer(response, delimiter=',', quoting=csv.QUOTE_ALL)
+    writer.writerows([encode_to_cp932(column) 
+                      for column in columns.values()] 
+                     for columns in query[:1023])
+    return response
 
 #########################################################################
 

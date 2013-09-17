@@ -153,107 +153,107 @@ class OrderDownload(list):
     def query_cond(self, condition, limit=None, offset=None):
         sql = ""
         params = ()
-        if 'billing_or_exchange_number' in condition:
-            pass
+        # if 'billing_or_exchange_number' in condition:
+        #     pass
 
-        if 'ordered_from' in condition:
-            sql = sql + " AND `Order`.created_at >= %s"
-            params = params + (condition['ordered_from'],)
+        # if 'ordered_from' in condition:
+        #     sql = sql + " AND `Order`.created_at >= %s"
+        #     params = params + (condition['ordered_from'],)
 
-        if 'ordered_to' in condition:
-            sql = sql + " AND `Order`.created_at <= %s"
-            params = params + (condition['ordered_to'],)
+        # if 'ordered_to' in condition:
+        #     sql = sql + " AND `Order`.created_at <= %s"
+        #     params = params + (condition['ordered_to'],)
 
-        if 'status' in condition:
-            status_cond = []
-            if 'ordered' in condition['status']:
-                status_cond.append("(`Order`.canceled_at IS NULL AND `Order`.delivered_at IS NULL)")
-            if 'delivered' in condition['status']:
-                status_cond.append("(`Order`.canceled_at IS NULL AND `Order`.delivered_at IS NOT NULL)")
-            if 'canceled' in condition['status']:
-                status_cond.append("(`Order`.canceled_at IS NOT NULL)")
+        # if 'status' in condition:
+        #     status_cond = []
+        #     if 'ordered' in condition['status']:
+        #         status_cond.append("(`Order`.canceled_at IS NULL AND `Order`.delivered_at IS NULL)")
+        #     if 'delivered' in condition['status']:
+        #         status_cond.append("(`Order`.canceled_at IS NULL AND `Order`.delivered_at IS NOT NULL)")
+        #     if 'canceled' in condition['status']:
+        #         status_cond.append("(`Order`.canceled_at IS NOT NULL)")
             
-            if status_cond:
-                sql = sql + " AND ( " + " OR ".join(status_cond) + " ) "
+        #     if status_cond:
+        #         sql = sql + " AND ( " + " OR ".join(status_cond) + " ) "
 
-        if 'issue_status' in condition:
-            issue_cond = []
-            if 'issued' in condition['issue_status']:
-                issue_cond.append(' `Order`.issued = 1 ')
-            if 'unissued' in condition['issue_status']:
-                issue_cond.append(' `Order`.issued = 0 ')
+        # if 'issue_status' in condition:
+        #     issue_cond = []
+        #     if 'issued' in condition['issue_status']:
+        #         issue_cond.append(' `Order`.issued = 1 ')
+        #     if 'unissued' in condition['issue_status']:
+        #         issue_cond.append(' `Order`.issued = 0 ')
 
-            if issue_cond:
-                sql = sql + " AND ( " + " OR ".join(issue_cond) + " ) "
+        #     if issue_cond:
+        #         sql = sql + " AND ( " + " OR ".join(issue_cond) + " ) "
 
-        if 'payment_status' in condition:
-            # unpaid, paid, refunding, refunded
-            payment_cond = []
-            if 'unpaid' in condition['payment_status']:
-                payment_cond.append("(`Order`.refunded_at IS NULL "
-                                    " AND `Order`.refund_id IS NULL "
-                                    " AND `Order`.paid_at IS NULL ) ")
+        # if 'payment_status' in condition:
+        #     # unpaid, paid, refunding, refunded
+        #     payment_cond = []
+        #     if 'unpaid' in condition['payment_status']:
+        #         payment_cond.append("(`Order`.refunded_at IS NULL "
+        #                             " AND `Order`.refund_id IS NULL "
+        #                             " AND `Order`.paid_at IS NULL ) ")
 
-            if 'paid' in condition['payment_status']:
-                payment_cond.append("(`Order`.refunded_at IS NULL "
-                                    " AND `Order`.refund_id IS NULL "
-                                    " AND `Order`.paid_at IS NOT NULL ) ")
+        #     if 'paid' in condition['payment_status']:
+        #         payment_cond.append("(`Order`.refunded_at IS NULL "
+        #                             " AND `Order`.refund_id IS NULL "
+        #                             " AND `Order`.paid_at IS NOT NULL ) ")
 
-            if 'refunding' in condition['payment_status']:
-                payment_cond.append("(`Order`.refunded_at IS NULL "
-                                    " AND `Order`.refund_id IS NOT NULL ) ")
-            if 'refunded' in condition['payment_status']:
-                payment_cond.append("(`Order`.refunded_at IS NOT NULL ) ")
+        #     if 'refunding' in condition['payment_status']:
+        #         payment_cond.append("(`Order`.refunded_at IS NULL "
+        #                             " AND `Order`.refund_id IS NOT NULL ) ")
+        #     if 'refunded' in condition['payment_status']:
+        #         payment_cond.append("(`Order`.refunded_at IS NOT NULL ) ")
 
 
-            if payment_cond:
-                sql = sql + " AND ( " + " OR ".join(payment_cond) + " ) "
+        #     if payment_cond:
+        #         sql = sql + " AND ( " + " OR ".join(payment_cond) + " ) "
 
-        if 'member_id' in condition:
-            sql = sql + " AND UserCredential.auth_identifier = %s"
-            params += (condition['member_id'],)
+        # if 'member_id' in condition:
+        #     sql = sql + " AND UserCredential.auth_identifier = %s"
+        #     params += (condition['member_id'],)
 
-        if 'number_of_tickets' in condition:
-            if (condition.get('event_id') or condition.get('performance_id')):
+        # if 'number_of_tickets' in condition:
+        #     if (condition.get('event_id') or condition.get('performance_id')):
             
-                cond = """ AND `Order`.id in (
-                SELECT OrderedProduct.order_id AS order_id,
-                FROM OrderedProduct
-                JOIN OrderedProductItem
-                ON OrderedProduct.id = OrderedProductItem.ordered_product_id
-                AND OrderedProductItem.deleted_at IS NULL
-                JOIN ProductItem
-                ON OrderedProductItem.product_item_id = ProductItem.id
-                AND ProductItem.deleted_at IS NULL
-                JOIN Performance
-                ON ProductItem.performance_id = Performance.id
-                AND Performance.deleted_at IS NULL
-                WHERE OrderedProduct.deleted_at IS NULL
-                """
+        #         cond = """ AND `Order`.id in (
+        #         SELECT OrderedProduct.order_id AS order_id,
+        #         FROM OrderedProduct
+        #         JOIN OrderedProductItem
+        #         ON OrderedProduct.id = OrderedProductItem.ordered_product_id
+        #         AND OrderedProductItem.deleted_at IS NULL
+        #         JOIN ProductItem
+        #         ON OrderedProductItem.product_item_id = ProductItem.id
+        #         AND ProductItem.deleted_at IS NULL
+        #         JOIN Performance
+        #         ON ProductItem.performance_id = Performance.id
+        #         AND Performance.deleted_at IS NULL
+        #         WHERE OrderedProduct.deleted_at IS NULL
+        #         """
     
-                if condition.get('event_id'):
-                    cond = cond + " AND Performance.event_id = %s"
-                    params += (condition['event_id'],)
-                if condition.get('performance_id'):
-                    cond = cond + " AND Performance.id = %s"
-                    params += (condition['performance_id'],)
+        #         if condition.get('event_id'):
+        #             cond = cond + " AND Performance.event_id = %s"
+        #             params += (condition['event_id'],)
+        #         if condition.get('performance_id'):
+        #             cond = cond + " AND Performance.id = %s"
+        #             params += (condition['performance_id'],)
     
     
-                cond = cond + """
-                GROUP BY OrderedProduct.order_id
-                HAVING sum(ProductItem.quantity) >= %s)
-                """
-                params += (condition['number_of_tickets'],)
+        #         cond = cond + """
+        #         GROUP BY OrderedProduct.order_id
+        #         HAVING sum(ProductItem.quantity) >= %s)
+        #         """
+        #         params += (condition['number_of_tickets'],)
     
-                sql = sql + cond
+        #         sql = sql + cond
 
-        # order by
-        if 'sort' in condition:
-            if 'direction' in condition:
-                # asc, desc
-                pass
-            else:
-                pass
+        # # order by
+        # if 'sort' in condition:
+        #     if 'direction' in condition:
+        #         # asc, desc
+        #         pass
+        #     else:
+        #         pass
 
         if limit is not None and offset is not None:
             sql += " LIMIT %s, %s "
@@ -303,20 +303,33 @@ class OrderDownload(list):
 
         sql, params = self.query(self.condition, limit=limit, offset=offset)
         logger.debug(sql)
-        cur = self.db_session.bind.execute(sql, *params)
+        #cur = self.db_session.bind.execute(sql, *params)
+        sa_conn = self.db_session.bind.connect()
+        conn = sa_conn.connection
+        cur = conn.cursor()
+        cur.execute(sql, params)
         # columns = self.columns
         # if not columns:
         #     columns = [d[0] for d in cur.description]
 
         try:
-            for row in cur.fetchall():
-                # yield OrderedDict([
-                #     (c, row[c])
-                #     for c in columns]
-                # )
-                yield OrderedDict(row.items())
+            while True:
+                rows = cur.fetchmany(100)
+                logger.debug('fetchmany')
+                if not rows:
+                    break
+
+                for row in rows:
+                    # yield OrderedDict([
+                    #     (c, row[c])
+                    #     for c in columns]
+                    # )
+                    yield OrderedDict(
+                        zip([d[0] for d in cur.description],
+                            row)
+                    )
         finally:
-            cur.close()
+            sa_conn.close()
 
 
     def __getitem__(self, s): # for slice
