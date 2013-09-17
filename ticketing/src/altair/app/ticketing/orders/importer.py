@@ -458,7 +458,7 @@ class OrderImporter():
                     else:
                         try:
                             logger.info('product_item_id = %sm stock_id = %s, quantity = %s' % (product_item.id, stock.id, cpi.quantity))
-                            seats = reserving.reserve_seats(stock.id, int(cpi.quantity), reserve_status=SeatStatusEnum.Keep)
+                            seats = reserving.reserve_seats(stock.id, int(cpi.quantity), reserve_status=SeatStatusEnum.Import)
                             cpi._seat_ids = [s.id for s in seats]
                         except NotEnoughAdjacencyException, e:
                             logger.info('cannot allocate seat (stock_id=%s, quantity=%s) %s' % (stock.id, cpi.quantity, e))
@@ -486,8 +486,8 @@ class OrderImporter():
                     cpi.seats = None
                     for seat_id in cpi._seat_ids:
                         seat_status = SeatStatus.query.filter_by(seat_id=seat_id).with_lockmode('update').one()
-                        if seat_status.status == int(SeatStatusEnum.Keep):
-                            logger.info('seat(%s) status Keep to Vacant' % seat_status.seat_id)
+                        if seat_status.status == int(SeatStatusEnum.Import):
+                            logger.info('seat(%s) status Import to Vacant' % seat_status.seat_id)
                             seat_status.status = int(SeatStatusEnum.Vacant)
 
     def get_seat_count(self, carts):
@@ -568,8 +568,8 @@ class OrderImporter():
             SeatStatus.seat_id.in_(seat_ids)
         ).with_lockmode('update').all()
         for seat_status in seat_statuses:
-            logger.info('seat(%s) status Keep to Ordered' % seat_status.seat_id)
-            if seat_status.status != int(SeatStatusEnum.Keep):
+            logger.info('seat(%s) status Import to Ordered' % seat_status.seat_id)
+            if seat_status.status != int(SeatStatusEnum.Import):
                 raise Exception('seat(%s) invalid status %s' % (seat_status.seat_id, seat_status.status))
             seat_status.status = int(SeatStatusEnum.Ordered)
             seats.append(seat_status.seat)
@@ -587,7 +587,7 @@ class OrderImporter():
             # 在庫更新
             # - SeatStatus.statusがInCartの座席は、CartがDB上に生成され座席を所有しているので
             #   在庫数(StockStatus.quantity)も減算しているが、
-            #   Keepの座席は*つかんだ*だけで、座席を所有するオブジェクトは一時的なものなので、
+            #   Importの座席は*つかんだ*だけで、座席を所有するオブジェクトは一時的なものなので、
             #   在庫数は減算していない
             # - なので、予約確定時に在庫数を減らす
             try:
@@ -670,3 +670,21 @@ class OrderImporter():
 
         self.imported = True
         return
+
+
+def get_import_seats_query(performance_id):
+    return SeatStatus.query.join(SeatStatus.seat, Seat.venue).filter(
+        Venue.performance_id==performance_id,
+        SeatStatus.status==int(SeatStatusEnum.Import)
+    )
+
+def count_import_seats(performance_id):
+    return get_import_seats_query(performance_id).count()
+
+def release_import_seats(performance_id):
+    seat_statuses = get_import_seats_query(performance_id).with_lockmode('update').all()
+    for seat_status in seat_statuses:
+        logger.info('seat(%s) status Import to Vacant' % seat_status.seat_id)
+        seat_status.status = int(SeatStatusEnum.Vacant)
+        seat_status.save()
+    return

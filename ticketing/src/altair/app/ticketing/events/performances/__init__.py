@@ -21,3 +21,4 @@ def includeme(config):
     config.add_route('performances.import_orders.confirm', '/import_orders/{performance_id}/confirm', factory=factory)
     config.add_route('performances.import_orders.completed', '/import_orders/{performance_id}/completed', factory=factory)
     config.add_route('performances.import_orders.clear', '/import_orders/{performance_id}/clear', factory=factory)
+    config.add_route('performances.import_orders.release', '/import_orders/{performance_id}/release', factory=factory)

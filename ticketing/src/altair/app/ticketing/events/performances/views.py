@@ -31,7 +31,7 @@ from altair.app.ticketing.mails.api import get_mail_utility
 from altair.app.ticketing.core.models import MailTypeChoices
 from altair.app.ticketing.orders.api import OrderSummarySearchQueryBuilder, QueryBuilderError
 from altair.app.ticketing.orders.models import OrderSummary
-from altair.app.ticketing.orders.importer import OrderImporter
+from altair.app.ticketing.orders.importer import OrderImporter, count_import_seats, release_import_seats
 from altair.app.ticketing.carturl.api import get_cart_url_builder, get_cart_now_url_builder
 from altair.app.ticketing.events.sales_segments.resources import (
     SalesSegmentGroupCreate,
@@ -157,7 +157,8 @@ class PerformanceShowView(BaseView):
         data = {
             'tab': 'import_orders',
             'performance': self.performance,
-            'form': OrderImportForm()
+            'form': OrderImportForm(),
+            'count':count_import_seats(self.performance.id)
         }
         data.update(self._extra_data())
         return data
@@ -233,6 +234,12 @@ class PerformanceShowView(BaseView):
         importer = self.request.session.get('ticketing.order.importer')
         if importer:
             self.import_orders_initialize()
+        return HTTPFound(self.request.route_url('performances.import_orders.index', performance_id=self.performance.id))
+
+    @view_config(route_name='performances.import_orders.release')
+    def import_orders_release(self):
+        release_import_seats(self.performance.id)
+        self.request.session.flash(u'座席を開放しました')
         return HTTPFound(self.request.route_url('performances.import_orders.index', performance_id=self.performance.id))
 
 
