@@ -298,44 +298,33 @@ class OrderDownload(list):
 
 
     def __getslice__(self, start, stop):
-        #cur = self.db_session.bind.execute(sql, *params)
-        sa_conn = self.db_session.bind.connect()
-        conn = sa_conn.connection
-        # columns = self.columns
-        # if not columns:
-        #     columns = [d[0] for d in cur.description]
+        return self.execute(start, stop)
+
+    def execute(self, start, stop):
         logger.debug("start = {0}, stop = {1}".format(start, stop))
         limit = 1000
         offset = start
-        try:
-            while True:
-                
-                sql, params = self.query(self.condition, limit=limit, offset=offset)
-                logger.debug(sql)
-                logger.debug("limit = {0}, offset = {1}".format(limit, offset))
-                cur = conn.cursor()
-                cur.execute(sql, params)
+        while True:
+            sql, params = self.query(self.condition, limit=limit, offset=offset)
+            logger.debug("limit = {0}, offset = {1}".format(limit, offset))
+            cur = self.db_session.bind.execute(sql, *params)
+            try:
                 rows = cur.fetchall()
                 logger.debug('fetchall')
                 if not rows:
                     break
 
                 for row in rows:
-                    # yield OrderedDict([
-                    #     (c, row[c])
-                    #     for c in columns]
-                    # )
                     yield OrderedDict(
-                        zip([d[0] for d in cur.description],
-                            row)
+                        row.items()
                     )
                 offset = offset + limit
                 limit = min(stop - offset, limit)
                 if limit <= 0:
                     break
-        finally:
-            sa_conn.close()
-
+            finally:
+                logger.debug('close')
+                cur.close()
 
     def __getitem__(self, s): # for slice
         logger.debug("slice {0}".format(s))

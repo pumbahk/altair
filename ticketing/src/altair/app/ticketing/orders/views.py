@@ -347,7 +347,7 @@ def download(request):
     writer = csv.writer(response, delimiter=',', quoting=csv.QUOTE_ALL)
     writer.writerows([encode_to_cp932(column) 
                       for column in columns.values()] 
-                     for columns in query[:10000])
+                     for columns in query[:1024])
     return response
 
 #########################################################################
