@@ -32,7 +32,8 @@ def get_enqueue_each_print_action(order, candidate_id_list):
 
 
 class DummyEachPrintByToken(object):
-    def __init__(self, candidate_id_list):
+    def __init__(self, order, candidate_id_list):
+        self.order = order
         self.candidate_id_list = candidate_id_list
 
     def enqueue(self, operator):
@@ -228,9 +229,12 @@ class JoinedObjectsForProductItemDependentsProvider(object):
                 parent_item = ordered_product_item
                 seat_list = []
                 item_list.append((parent_item, seat_list))
-            if not ticket_bundle.id in ticket_cache:
-                ticket_cache[ticket_bundle.id] = list(ApplicableTicketsProducer.from_bundle(ticket_bundle).will_issued_by_own_tickets())
-            seat_list.append(((seat, token), ticket_cache[ticket_bundle.id]))
+            if ticket_bundle is None:
+                seat_list.append(((seat, token), []))
+            else:
+                if not ticket_bundle.id in ticket_cache:
+                    ticket_cache[ticket_bundle.id] = list(ApplicableTicketsProducer.from_bundle(ticket_bundle).will_issued_by_own_tickets())
+                seat_list.append(((seat, token), ticket_cache[ticket_bundle.id]))
         return r
 
 
@@ -260,13 +264,21 @@ class JoinedObjectsForProductItemDependentsProvider(object):
             seats = seat_dict.get(ordered_product_item.id, None)
             if seats is None:
                 for i in range(parent_item.quantity):
-                    if not ticket_bundle.id in ticket_cache:
-                        ticket_cache[ticket_bundle.id] = list(ApplicableTicketsProducer.from_bundle(ticket_bundle).will_issued_by_own_tickets())
-                    seat_list.append(((None, None), ticket_cache[ticket_bundle.id]))
+                    if ticket_bundle is None:
+                        tickets = []
+                    else:
+                        if not ticket_bundle.id in ticket_cache:
+                            ticket_cache[ticket_bundle.id] = list(ApplicableTicketsProducer.from_bundle(ticket_bundle).will_issued_by_own_tickets())
+                        tickets = ticket_cache[ticket_bundle.id]
+                    seat_list.append(((None, None), tickets))
             else:
                 for seat in seats:
-                    if not ticket_bundle.id in ticket_cache:
-                        ticket_cache[ticket_bundle.id] = list(ApplicableTicketsProducer.from_bundle(ticket_bundle).will_issued_by_own_tickets())
-                    seat_list.append(((seat, None), ticket_cache[ticket_bundle.id]))
+                    if ticket_bundle is None:
+                        tickets = []
+                    else:
+                        if not ticket_bundle.id in ticket_cache:
+                            ticket_cache[ticket_bundle.id] = list(ApplicableTicketsProducer.from_bundle(ticket_bundle).will_issued_by_own_tickets())
+                        tickets = ticket_cache[ticket_bundle.id]
+                    seat_list.append(((seat, None), tickets))
         return r
 
