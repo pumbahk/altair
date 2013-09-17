@@ -61,6 +61,14 @@
     $('#system_fee, #transaction_fee, #delivery_fee, #discount').load(function(){
       % if not is_edit:
         $('#system_fee').val(${system_fee});
+        options = $('#system_fee_type option');
+        for(ii=0; ii<options.length; ii++){
+            if(options[ii].value == "${system_fee_type}"){
+                options[ii].selected = true;
+            }else{ 
+                options[ii].selected = false;
+           }
+        }
       % endif
       $(this).val(Math.floor($(this).val()));
     }).load();
