@@ -194,11 +194,15 @@ class StaticPageCache(object):
         try:
             self.file_data.remove_value(k)
         except (ValueError, EOFError): #insecure string
-            logger.error("clear_cache: k={k} insecure string found. remove".format(k=k))
+            logger.warn("clear_cache: k={k} insecure string found. remove".format(k=k))
+            handler = self.file_data._get_value(k).namespace
+            handler.do_remove()
+        except Exception as e:
+            logger.error(repr(e))
+            logger.warn("clear_cache: k={k} insecure string found. remove".format(k=k))
             handler = self.file_data._get_value(k).namespace
             handler.do_remove()
         self.fetching.remove_value(k) #call multiplly is ok?
-            
 
     def __getitem__(self, k):
         try:
