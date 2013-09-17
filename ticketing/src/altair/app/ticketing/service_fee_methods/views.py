@@ -51,9 +51,16 @@ class ServiceFeeMethods(BaseView):
     def new_post(self):
         f = ServiceFeeMethodForm(self.request.POST)
         if f.validate():
+            if f.system_fee_default.data:
+                others = ServiceFeeMethod.filter_by(organization_id=self.context.user.organization_id)
+                for other in others:
+                    other.system_fee_default = False
+
             service_fee_method = merge_session_with_post(ServiceFeeMethod(), f.data)
             service_fee_method.organization_id = self.context.user.organization_id
             service_fee_method.save()
+            
+            
 
             self.request.session.flash(u'手数料を保存しました')
             return render_to_response('altair.app.ticketing:templates/refresh.html', {}, request=self.request)
@@ -80,6 +87,11 @@ class ServiceFeeMethods(BaseView):
 
         f = ServiceFeeMethodForm(self.request.POST)
         if f.validate():
+            if f.system_fee_default.data:
+                others = ServiceFeeMethod.filter_by(organization_id=self.context.user.organization_id)
+                for other in others:
+                    other.system_fee_default = False
+
             service_fee_method = merge_session_with_post(service_fee_method, f.data)
             service_fee_method.organization_id = self.context.user.organization_id
             service_fee_method.save()
