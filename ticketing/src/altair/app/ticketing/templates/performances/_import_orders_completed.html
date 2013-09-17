@@ -1,7 +1,7 @@
-<%page args="performance, stats" />
+<%page args="performance, importer" />
 <%namespace file="/common/helpers.html" name="ch" />
 
-<% from altair.app.ticketing.payments import plugins %>
+<% stats = importer.imported_stats() %>
 
 <div class="alert alert-warning">
   <p>インポート完了しました。</p>
@@ -19,8 +19,8 @@
 </div>
 % endif
 
-<form class="form-horizontal" action="${request.route_path('performances.import_orders.confirm', performance_id=performance.id)}" method="POST">
+<form class="form-horizontal" action="${request.route_path('performances.import_orders.clear', performance_id=performance.id)}" method="GET">
   <div class="form-actions">
-    <a href="${request.route_path('performances.import_orders.index', performance_id=performance.id)}" class="btn pull-right" style="margin-right: 10px;">戻る</a>
+    <input class="btn btn-primary pull-right" type="submit" name="submit" value="戻る">
   </div>
 </form>

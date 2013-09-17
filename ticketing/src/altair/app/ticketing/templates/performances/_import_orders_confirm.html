@@ -1,7 +1,7 @@
-<%page args="performance, stats" />
+<%page args="performance, importer" />
 <%namespace file="/common/helpers.html" name="ch" />
 
-<% from altair.app.ticketing.payments import plugins %>
+<% stats = importer.validated_stats() %>
 
 <div class="alert alert-warning">
   <p>CSVファイルを読み込みました。以下の内容で正しいか確認してください。</p>
@@ -22,6 +22,6 @@
 <form class="form-horizontal" action="${request.route_path('performances.import_orders.confirm', performance_id=performance.id)}" method="POST">
   <div class="form-actions">
     <input class="btn btn-primary pull-right" type="submit" name="submit" value="インポートを実行する">
-    <a href="${request.route_path('performances.import_orders.index', performance_id=performance.id)}" class="btn pull-right" style="margin-right: 10px;">戻る</a>
+    <a href="${request.route_path('performances.import_orders.clear', performance_id=performance.id)}" class="btn pull-right" style="margin-right: 10px;">戻る</a>
   </div>
 </form>

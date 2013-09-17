@@ -147,7 +147,13 @@ class PerformanceShowView(BaseView):
 
     @view_config(route_name='performances.import_orders.index', request_method='GET')
     def import_orders_get(self):
-        self.import_orders_initialize()
+        importer = self.request.session.get('ticketing.order.importer')
+        if importer:
+            if importer.imported:
+                return HTTPFound(self.request.route_url('performances.import_orders.completed', performance_id=self.performance.id))
+            elif importer.allocated:
+                return HTTPFound(self.request.route_url('performances.import_orders.confirm', performance_id=self.performance.id))
+
         data = {
             'tab': 'import_orders',
             'performance': self.performance,
@@ -158,32 +164,34 @@ class PerformanceShowView(BaseView):
 
     @view_config(route_name='performances.import_orders.index', request_method='POST')
     def import_orders_post(self):
-        self.import_orders_initialize()
         f = OrderImportForm(self.request.params)
         if f.validate():
             importer = OrderImporter(self.context, self.performance.id, **f.data)
+            importer.allocate_seats()
             self.request.session['ticketing.order.importer'] = importer
             return HTTPFound(self.request.route_url('performances.import_orders.confirm', performance_id=self.performance.id))
-        else:
-            data = {
-                'tab': 'import_orders',
-                'performance': self.performance,
-                'form': f
-            }
-            data.update(self._extra_data())
-            return data
+
+        data = {
+            'tab': 'import_orders',
+            'performance': self.performance,
+            'form': f
+        }
+        data.update(self._extra_data())
+        return data
 
     @view_config(route_name='performances.import_orders.confirm', request_method='GET')
     def import_orders_confirm_get(self):
         importer = self.request.session.get('ticketing.order.importer')
         if importer is None:
             return HTTPFound(self.request.route_url('performances.import_orders.index', performance_id=self.performance.id))
+        elif importer.imported:
+            return HTTPFound(self.request.route_url('performances.import_orders.completed', performance_id=self.performance.id))
 
         data = {
             'tab': 'import_orders',
             'action': 'confirm',
             'performance': self.performance,
-            'stats': importer.validated_stats()
+            'importer': importer,
         }
         data.update(self._extra_data())
         return data
@@ -191,13 +199,16 @@ class PerformanceShowView(BaseView):
     @view_config(route_name='performances.import_orders.confirm', request_method='POST')
     def import_orders_confirm_post(self):
         importer = self.request.session.get('ticketing.order.importer')
+        if importer is None:
+            return HTTPFound(self.request.route_url('performances.import_orders.index', performance_id=self.performance.id))
+
         performance_id = self.performance.id
         try:
             importer.execute()
         except Exception, e:
-            logger.error('order import error: %s' % e, exc_info=sys.exc_info())
+            logger.error('orders import error: %s' % e, exc_info=sys.exc_info())
 
-        self.request.session.flash(u'インポート完了しました')
+        self.request.session['ticketing.order.importer'] = importer
         return HTTPFound(self.request.route_url('performances.import_orders.completed', performance_id=performance_id))
 
     @view_config(route_name='performances.import_orders.completed', request_method='GET')
@@ -205,15 +216,24 @@ class PerformanceShowView(BaseView):
         importer = self.request.session.get('ticketing.order.importer')
         if importer is None:
             return HTTPFound(self.request.route_url('performances.import_orders.index', performance_id=self.performance.id))
+        elif not importer.imported:
+            return HTTPFound(self.request.route_url('performances.import_orders.confirm', performance_id=self.performance.id))
 
         data = {
             'tab': 'import_orders',
             'action': 'completed',
             'performance': self.performance,
-            'stats': importer.imported_stats()
+            'importer': importer
         }
         data.update(self._extra_data())
         return data
+
+    @view_config(route_name='performances.import_orders.clear')
+    def import_orders_clear(self):
+        importer = self.request.session.get('ticketing.order.importer')
+        if importer:
+            self.import_orders_initialize()
+        return HTTPFound(self.request.route_url('performances.import_orders.index', performance_id=self.performance.id))
 
 
 @view_defaults(decorator=with_bootstrap, permission="event_editor")

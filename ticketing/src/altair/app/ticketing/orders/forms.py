@@ -21,7 +21,7 @@ from altair.app.ticketing.core.models import (Organization, PaymentMethod, Deliv
 from altair.app.ticketing.cart.schemas import ClientForm
 from altair.app.ticketing.payments import plugins
 from altair.app.ticketing.core import helpers as core_helpers
-from altair.app.ticketing.orders.importer import ImportTypeEnum, ImpoertCSVReader
+from altair.app.ticketing.orders.importer import ImportTypeEnum, ImportCSVReader
 from altair.app.ticketing.orders.export import OrderCSV
 from altair.app.ticketing.csvutils import AttributeRenderer
 
@@ -714,7 +714,7 @@ class OrderImportForm(Form):
             raise ValidationError(u'選択してください')
 
         # ヘッダーをチェック
-        reader = ImpoertCSVReader(field.data.file)
+        reader = ImportCSVReader(field.data.file)
         import_header = reader.fieldnames
         field.data.file.seek(0)
 

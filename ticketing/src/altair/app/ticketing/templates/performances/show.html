@@ -136,11 +136,11 @@ Altair Backend -- ${performance.event.title}[${performance.name}]
     % elif tab == 'import_orders':
     <div class="tab-pane" id="import_orders">
       % if action == 'confirm':
-        <%include file="./_import_orders_confirm.html" args="performance=performance, stats=stats" />
+        <%include file="./_import_orders_confirm.html" args="performance=performance, importer=importer" />
       % elif action == 'completed':
-        <%include file="./_import_orders_completed.html" args="performance=performance, stats=stats" />
+        <%include file="./_import_orders_completed.html" args="performance=performance, importer=importer" />
       % else:
-        <%include file="./_import_orders.html" args="performance=performance, form=form" />
+        <%include file="./_import_orders.html" args="performance=performance, importer=importer, form=form" />
       % endif
     </div>
     % elif HH.has_permission('event_editor'):

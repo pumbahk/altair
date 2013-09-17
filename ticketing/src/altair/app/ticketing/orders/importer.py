@@ -166,7 +166,7 @@ def price_to_number(string):
     return int(string)
 
 
-class ImpoertCSVReader(object):
+class ImportCSVReader(object):
 
     def __init__(self, file, encoding='cp932'):
         self.reader = csv.DictReader(file)
@@ -197,24 +197,33 @@ class ImportTypeEnum(StandardEnum):
 class OrderImporter():
 
     def __init__(self, context, performance_id, order_csv, import_type):
-        self.operator = context.user
+        self.operator_id = context.user.id
         self.organization_id = context.organization.id
         self.performance_id = performance_id
-        self.import_type = None
+        self.import_type = import_type
+
+        # csvファイルから読み込んだ予約 {order_no:cart}
         self.carts = OrderedDict()
+        # csvファイルから読み込めなかった予約 {order_no:cart}
         self.validation_errors = OrderedDict()
-        self.import_errors = OrderedDict()
+        # インポートできた予約 {order_no:cart}
         self.committed_carts = OrderedDict()
+        # csvファイルから読み込めなかった予約 / インポートできなかった予約 {order_no:cart}
+        self.import_errors = OrderedDict()
 
-        for e in ImportTypeEnum:
-            if e.v[0] == import_type:
-                self.import_type = e.v
-
+        self.allocated = False
+        self.imported = False
         self.parse_import_file(order_csv.file)
-        self.allocate_seats()
+
+    @property
+    def import_type_label(self):
+        for e in ImportTypeEnum:
+            if e.v[0] == self.import_type:
+                return e.v[1]
+        return u''
 
     def parse_import_file(self, file):
-        reader = ImpoertCSVReader(file)
+        reader = ImportCSVReader(file)
         for row in reader:
             try:
                 order_no = row.get(u'order.order_no')
@@ -235,7 +244,7 @@ class OrderImporter():
                     cart = self.create_temporary_cart(row, sales_segment, pdmp, user)
 
                 # create TemporaryCartedProduct: dict(product_id=temp_carted_product)
-                product = self.get_product(row, sales_segment)
+                product = self.get_product(row, cart.sales_segment)
                 cp = cart._carted_product.get(product.id)
                 if cp is None:
                     cp = self.create_temporary_carted_product(row, cart, product)
@@ -255,8 +264,8 @@ class OrderImporter():
                 if seat:
                     cpi._seat_ids.append(seat.id)
             except NoResultFound, e:
-                self.carts.pop(order_no)
                 self.validation_errors[order_no] = u'予約番号: %s  %s' % (order_no, e.message)
+                self.carts.pop(order_no)
                 continue
 
             self.carts[order_no] = cart
@@ -266,8 +275,9 @@ class OrderImporter():
         for order_no in order_no_list:
             cart = self.carts.get(order_no)
             if cart.total_amount != cart.calculated_total_amount:
-                self.carts.pop(order_no)
                 self.validation_errors[order_no] = u'予約番号: %s  %s' % (order_no, u'金額が正しくありません')
+                self.carts.pop(order_no)
+        return
 
     def get_sales_segment(self, row):
         ssg_name = row.get(u'ordered_product.product.sales_segment.sales_segment_group.name')
@@ -362,14 +372,14 @@ class OrderImporter():
             transaction_fee     = price_to_number(row.get(u'order.transaction_fee')),
             delivery_fee        = price_to_number(row.get(u'order.delivery_fee')),
             note                = row.get(u'order.note'),
-            payment_delivery_method_pair_id = pdmp.id,
             performance_id      = self.performance_id,
-            sales_segment_id    = sales_segment.id,
             organization_id     = self.organization_id,
-            channel             = ChannelEnum.IMPORT.v,
-            operator_id         = self.operator.id,
+            operator_id         = self.operator_id,
+            sales_segment_id    = sales_segment.id,
+            payment_delivery_method_pair_id = pdmp.id,
             user_id             = user.id if user else None,
             branch_no           = 1,
+            channel             = ChannelEnum.IMPORT.v,
             _shipping_address   = self.create_temporary_shipping_address(row, user),
             _carted_product     = dict(),
             paid_at             = row.get(u'order.paid_at'),
@@ -423,15 +433,15 @@ class OrderImporter():
         request = get_current_request()
         reserving = cart_api.get_reserving(request)
 
-        # 予約(ダミーOrder)単位で1件ずつおまかせ配席をしていく
+        # 予約(TemporaryCart)単位で1件ずつおまかせ配席をしていく
         # 座席ステータスはインナー予約での座席確保と同じ状態にする
         sum_quantity = dict()
         order_no_list = self.carts.keys()
         for order_no in order_no_list:
             cart = self.carts.get(order_no)
             error_reason = None
-            for cp in cart._carted_product.values():
-                for cpi in cp._carted_product_item.values():
+            for cp in cart.products:
+                for cpi in cp.items:
                     product_item = ProductItem.query.filter_by(id=cpi.product_item_id).one()
                     stock = product_item.stock
                     if product_item.stock_type.quantity_only:
@@ -442,23 +452,28 @@ class OrderImporter():
                         if stock.stock_status.quantity < sum_quantity[stock.id]:
                             logger.info('cannot allocate quantity rest=%s (stock_id=%s, quantity=%s)' %
                                         (stock.stock_status.quantity, stock.id, cpi.quantity))
-                            error_reason = u'配席可能な座席がありません  商品明細: %s  個数: %s  (stock_id: %s)' % (product_item.name, cpi.quantity, stock.id)
+                            error_reason = u'配席可能な座席がありません  商品明細: %s  個数: %s  (stock_id: %s)' % \
+                                           (product_item.name, cpi.quantity, stock.id)
                             break
                     else:
                         try:
                             logger.info('product_item_id = %sm stock_id = %s, quantity = %s' % (product_item.id, stock.id, cpi.quantity))
                             seats = reserving.reserve_seats(stock.id, int(cpi.quantity), reserve_status=SeatStatusEnum.Keep)
                             cpi._seat_ids = [s.id for s in seats]
-                            logger.info(cpi._seat_ids)
                         except NotEnoughAdjacencyException, e:
                             logger.info('cannot allocate seat (stock_id=%s, quantity=%s) %s' % (stock.id, cpi.quantity, e))
-                            error_reason = u'配席可能な座席がありません  商品明細: %s  個数: %s  (stock_id: %s)' % (product_item.name, cpi.quantity, stock.id)
+                            error_reason = u'配席可能な座席がありません  商品明細: %s  個数: %s  (stock_id: %s)' % \
+                                           (product_item.name, cpi.quantity, stock.id)
                             break
                 if error_reason:
                     break
             if error_reason:
                 self.validation_errors[order_no] = u'予約番号: %s  %s' % (order_no, error_reason)
+                self.release_seats(order_no=order_no)
                 self.carts.pop(order_no)
+
+        self.allocated = True
+        return
 
     def release_seats(self, order_no=None):
         if order_no:
@@ -466,8 +481,8 @@ class OrderImporter():
         else:
             carts = self.carts.values()
         for cart in carts:
-            for cp in cart._carted_product.values():
-                for cpi in cp._carted_product_item.values():
+            for cp in cart.products:
+                for cpi in cp.items:
                     cpi.seats = None
                     for seat_id in cpi._seat_ids:
                         seat_status = SeatStatus.query.filter_by(seat_id=seat_id).with_lockmode('update').one()
@@ -478,25 +493,24 @@ class OrderImporter():
     def get_seat_count(self, carts):
         count = 0
         for cart in carts.values():
-            for cp in cart._carted_product.values():
-                for cpi in cp._carted_product_item.values():
-                    count += cpi.quantity
+            for cp in cart.products:
+                count += sum([cpi.quantity for cpi in cp.items])
         return count
 
     def get_seat_per_product(self, carts):
         seat_per_product = OrderedDict()
         for cart in carts.values():
-            for cp in cart._carted_product.values():
-                p = Product.query.filter_by(id=cp.product_id).one()
+            for cp in cart.products:
+                p = cp.product
                 if p not in seat_per_product:
                     seat_per_product[p] = 0
-                seat_per_product[p] += sum([int(cpi.quantity) for cpi in cp._carted_product_item.values()])
+                seat_per_product[p] += sum([int(cpi.quantity) for cpi in cp.items])
         return seat_per_product
 
     def get_order_per_pdmp(self, carts):
         order_per_pdmp = OrderedDict()
         for cart in carts.values():
-            pdmp = PaymentDeliveryMethodPair.query.filter_by(id=cart.payment_delivery_method_pair_id).one()
+            pdmp = cart.payment_delivery_pair
             if pdmp not in order_per_pdmp:
                 order_per_pdmp[pdmp] = dict(count=0)
                 if pdmp.delivery_method.delivery_plugin_id == payments_plugins.SEJ_DELIVERY_PLUGIN_ID:
@@ -511,7 +525,7 @@ class OrderImporter():
         carts = self.carts
 
         # インポート方法
-        stats['import_type'] = self.import_type
+        stats['import_type'] = self.import_type_label
         # インポートする予約数
         stats['order_count'] = len(carts)
         # インポートする席数
@@ -532,7 +546,7 @@ class OrderImporter():
         carts = self.committed_carts
 
         # インポート方法
-        stats['import_type'] = self.import_type
+        stats['import_type'] = self.import_type_label
         # インポートした予約数
         stats['order_count'] = len(carts)
         # インポートした席数
@@ -577,8 +591,8 @@ class OrderImporter():
             #   在庫数は減算していない
             # - なので、予約確定時に在庫数を減らす
             try:
-                for temp_cp in temp_cart._carted_product.values():
-                    for temp_cpi in temp_cp._carted_product_item.values():
+                for temp_cp in temp_cart.products:
+                    for temp_cpi in temp_cp.items:
                         stock = temp_cpi.product_item.stock
 
                         # 在庫数
@@ -606,7 +620,7 @@ class OrderImporter():
             temp_cart.shipping_address = shipping_address
 
             # order_noを採番
-            if self.import_type == ImportTypeEnum.Create.v:
+            if self.import_type == ImportTypeEnum.Create.v[0]:
                 organization = Organization.query.filter_by(id=self.organization_id).one()
                 base_id = core_api.get_next_order_no()
                 order_no = organization.code + sensible_alnum_encode(base_id).zfill(10)
@@ -614,7 +628,7 @@ class OrderImporter():
 
             # 備考欄に追記
             note = u''
-            if self.import_type == ImportTypeEnum.Create.v:
+            if self.import_type == ImportTypeEnum.Create.v[0]:
                 note = u'元の予約番号: %s  ' % org_order_no
             imported_at = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
             note += u'インポート日時: %s' % imported_at
@@ -649,9 +663,10 @@ class OrderImporter():
             temp_cart = self.carts.pop(org_order_no)
             temp_cart.shipping_address = None
             temp_cart.order = None
-            for cp in temp_cart._carted_product.values():
-                for cpi in cp._carted_product_item.values():
+            for cp in temp_cart.products:
+                for cpi in cp.items:
                     cpi.seats = None
             self.committed_carts[org_order_no] = temp_cart
 
+        self.imported = True
         return

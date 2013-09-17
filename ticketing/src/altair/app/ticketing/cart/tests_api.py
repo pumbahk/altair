@@ -187,7 +187,7 @@ class ReservingTests(unittest.TestCase):
         target = self._makeOne(request)
         seats = c_m.Seat.query.filter(c_m.Seat.name.in_([u'B-1', u'C-1', u'E-1'])).all()
 
-        result = target._reserve(seats)
+        result = target._reserve(seats, c_m.SeatStatusEnum.InCart)
         self.assertEqual(len(result), len(seats))
 
         for s in result:
