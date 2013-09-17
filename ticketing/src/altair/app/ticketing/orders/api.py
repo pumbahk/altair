@@ -41,7 +41,19 @@ from altair.app.ticketing.sej.models import (
 from altair.app.ticketing.payments.payment import Payment, get_delivery_plugin
 from altair.app.ticketing.payments import plugins as payments_plugins
 from .models import OrderSummary
-from .interfaces import IOrderedProductAttributeMetadataProviderRegistry
+
+
+## backward compatibility
+from altair.metadata.api import get_metadata_provider_registry
+from .metadata import (
+    METADATA_NAME_ORDERED_PRODUCT, 
+    METADATA_NAME_ORDER
+)
+from functools import partial
+get_ordered_product_metadata_provider_registry = partial(get_metadata_provider_registry,
+                                                         name=METADATA_NAME_ORDERED_PRODUCT)
+get_order_metadata_provider_registry = partial(get_metadata_provider_registry,
+                                               name=METADATA_NAME_ORDER)
 
 logger = logging.getLogger(__name__)
 
@@ -538,12 +550,6 @@ class OrderSummarySearchQueryBuilder(SearchQueryBuilderBase):
             query = asc_or_desc(query, self.targets['subject'].order_no, 'desc')
         return query
 
-def get_metadata_provider_registry(request_or_registry):
-    if IRequest.providedBy(request_or_registry):
-        registry = request_or_registry.registry
-    else:
-        registry = request_or_registry
-    return registry.queryUtility(IOrderedProductAttributeMetadataProviderRegistry)
 
 def create_inner_order(cart, note):
     request = get_current_request()
@@ -575,3 +581,4 @@ def create_inner_order(cart, note):
 
     order.note = note
     return order
+

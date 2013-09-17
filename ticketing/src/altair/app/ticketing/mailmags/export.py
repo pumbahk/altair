@@ -10,7 +10,7 @@ from sqlalchemy.sql.expression import or_
 from altair.app.ticketing.mailmags.models import MailSubscription, MailMagazine, MailSubscriptionStatus
 from altair.app.ticketing.utils import dereference
 from altair.app.ticketing.csvutils import CSVRenderer, PlainTextRenderer, CollectionRenderer, AttributeRenderer, SimpleRenderer
-from altair.app.ticketing.orders.api import get_metadata_provider_registry
+from altair.app.ticketing.orders.api import get_ordered_product_metadata_provider_registry
 
 def one_or_empty(b):
     return u'1' if b else u''
@@ -24,7 +24,7 @@ japanese_columns = {
 
 def get_japanese_columns(request):
     retval = dict(japanese_columns)
-    registry = get_metadata_provider_registry(request)
+    registry = get_ordered_product_metadata_provider_registry(request)
     for provider in registry.getProviders():
         for key in provider:
             metadata = provider[key]

@@ -1,8 +1,8 @@
 # encoding: utf-8
 
-from altair.app.ticketing.orders.metadata import DefaultOrderedProductAttributeMetadataProvider
+from altair.metadata import DefaultModelAttributeMetadataProvider
 
-metadata_provider = DefaultOrderedProductAttributeMetadataProvider(
+metadata_provider = DefaultModelAttributeMetadataProvider(
     'booster.bambitious',
     {
         'product_delivery_method_name': {

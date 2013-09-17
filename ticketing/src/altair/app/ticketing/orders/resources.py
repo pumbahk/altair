@@ -40,6 +40,7 @@ from .enqueue import (
     get_enqueue_each_print_action, 
     JoinedObjectsForProductItemDependentsProvider
 )
+from altair.metadata.api import with_provided_values_iterator
 
 class OrderDependentsProvilder(object):
     def __init__(self, order):
@@ -52,6 +53,10 @@ class OrderDependentsProvilder(object):
             .filter(Order.order_no==order.order_no)\
             .options(joinedload('ordered_products'), joinedload('ordered_products.ordered_product_items'))\
             .order_by(Order.branch_no.desc()).all()
+
+    def get_order_attributes(self, metadata_provider_registry):
+        itr = self.order.attributes.items()
+        return with_provided_values_iterator(metadata_provider_registry, itr)
 
 
     @property
@@ -69,7 +74,6 @@ class OrderDependentsProvilder(object):
         if order.user and order.user.mail_subscription:
             mail_magazines += [ms.segment for ms in order.user.mail_subscription if ms.segment.organization_id == order.organization_id]
         return mail_magazines
-
 
     def describe_objects_for_product_item_provider(self): #todo:rename
         order_id = self.order.id

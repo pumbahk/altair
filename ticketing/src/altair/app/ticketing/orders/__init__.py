@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-
 def includeme(config):
     config.add_route('orders.index'                     , '/')
     config.add_route('orders.checked.queue'             , '/checked/queue')
@@ -71,7 +70,17 @@ def includeme(config):
     reg.adapters.register([IRequest], IReserving, "", Reserving)
     reg.adapters.register([IRequest], ICartFactory, "", CartFactory)
 
-    from .metadata import DefaultOrderedProductAttributeMetadataProviderRegistry
-    metadata_registry = DefaultOrderedProductAttributeMetadataProviderRegistry()
-    from .interfaces import IOrderedProductAttributeMetadataProviderRegistry
-    reg.registerUtility(metadata_registry, IOrderedProductAttributeMetadataProviderRegistry)
+    ##metadata
+    config.include("altair.metadata") #xxx:
+    from altair.metadata import DefaultModelAttributeMetadataProviderRegistry
+    from .metadata import METADATA_NAME_ORDERED_PRODUCT
+    config.set_model_metadata_provider_registry(DefaultModelAttributeMetadataProviderRegistry(),
+                                                name=METADATA_NAME_ORDERED_PRODUCT)
+    from .metadata import METADATA_NAME_ORDER, order_metadata_provider
+    order_attrs_registry = DefaultModelAttributeMetadataProviderRegistry()
+    order_attrs_registry.registerProvider(order_metadata_provider)
+    config.set_model_metadata_provider_registry(order_attrs_registry,
+                                                name=METADATA_NAME_ORDER)
+
+
+
