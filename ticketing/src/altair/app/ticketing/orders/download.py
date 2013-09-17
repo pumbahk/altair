@@ -1,63 +1,11 @@
 # -*- coding:utf-8 -*-
+import logging
+import re
 from collections import OrderedDict
 
+logger = logging.getLogger(__name__)
+
 """
-- Order
-- Performance
-- SalesSegment
-- PDMP
-- PaymentMethod
-- DeliveryMethod
-- outer User
-- outer UserProfile
-- outer UserCredential
-- outer ShippingAddress
-
-
-CREATE TABLE `Order` (
-  `id` bigint(20) NOT NULL AUTO_INCREMENT,
-  `user_id` bigint(20) DEFAULT NULL,
-  `shipping_address_id` bigint(20) DEFAULT NULL,
-  `organization_id` bigint(20) DEFAULT NULL,
-  `total_amount` decimal(16,2) NOT NULL,
-  `system_fee` decimal(16,2) NOT NULL,
-  `transaction_fee` decimal(16,2) NOT NULL,
-  `delivery_fee` decimal(16,2) NOT NULL,
-  `multicheckout_approval_no` varchar(255) DEFAULT NULL,
-  `payment_delivery_method_pair_id` bigint(20) DEFAULT NULL,
-  `paid_at` datetime DEFAULT NULL,
-  `delivered_at` datetime DEFAULT NULL,
-  `canceled_at` datetime DEFAULT NULL,
-  `order_no` varchar(255) DEFAULT NULL,
-  `performance_id` bigint(20) DEFAULT NULL,
-  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
-  `deleted_at` timestamp NULL DEFAULT NULL,
-  `note` text,
-  `issued` tinyint(1) DEFAULT '0',
-  `issued_at` datetime DEFAULT NULL,
-  `printed_at` datetime DEFAULT NULL,
-  `branch_no` int(11) NOT NULL DEFAULT '1',
-  `channel` int(11) DEFAULT NULL,
-  `operator_id` bigint(20) DEFAULT NULL,
-  `refunded_at` datetime DEFAULT NULL,
-  `refund_id` bigint(20) DEFAULT NULL,
-  `card_brand` varchar(20) DEFAULT NULL,
-  `card_ahead_com_code` varchar(20) DEFAULT NULL,
-  `card_ahead_com_name` varchar(20) DEFAULT NULL,
-  `browserid` varchar(40) DEFAULT NULL,
-  `sales_segment_id` bigint(20) DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `ix_Order_order_no_branch_no` (`order_no`,`branch_no`),
-  KEY `user_id` (`user_id`),
-  KEY `shipping_address_id` (`shipping_address_id`),
-  KEY `organization_id` (`organization_id`),
-  KEY `payment_delivery_method_pair_id` (`payment_delivery_method_pair_id`),
-  KEY `performance_id` (`performance_id`),
-  KEY `ix_Order_deleted_at` (`deleted_at`),
-  KEY `Order_ibfk_6` (`operator_id`),
-  KEY `Order_ibfk_7` (`refund_id`),
-  KEY `Order_ibfk_8` (`sales_segment_id`),
 
 
 ステータス
@@ -79,8 +27,8 @@ CREATE TABLE `Order` (
 """
 
 sql = """\
-explain 
 SELECT 
+    `Order`.id AS id,
     CASE
         WHEN `Order`.canceled_at IS NOT NULL
         THEN 'canceled'
@@ -132,11 +80,14 @@ SELECT
     `Order`.order_no, -- 予約番号
     `Order`.created_at, -- 予約日時
     `Order`.total_amount, -- 合計
-    ShippingAddress.last_name + ' ' + ShippingAddress.first_name, -- 配送先氏名
-    Event.title, -- イベント
-    Performance.start_on, -- 開演日時
+    ShippingAddress.last_name + ' ' + ShippingAddress.first_name AS shipping_name, -- 配送先氏名
+    Event.id AS event_id,
+    Event.title AS event_title, -- イベント
+    Performance.id AS performance_id,
+    Performance.start_on AS performance_start_on, -- 開演日時
     `Order`.card_brand, -- カードブランド
-    `Order`.card_ahead_com_name, -- 仕向け先
+    `Order`.card_ahead_com_code, -- 仕向け先コード
+    `Order`.card_ahead_com_name, -- 仕向け先名
     NULL
 FROM `Order`
     JOIN Performance
@@ -148,7 +99,7 @@ FROM `Order`
     JOIN SalesSegment
     ON `Order`.sales_segment_id = SalesSegment.id
     AND SalesSegment.deleted_at IS NULL
-JOIN PaymentDeliveryMethodPair AS PDMP
+    JOIN PaymentDeliveryMethodPair AS PDMP
     ON `Order`.payment_delivery_method_pair_id = PDMP.id
     AND PDMP.deleted_at IS NULL
     JOIN PaymentMethod
@@ -177,12 +128,30 @@ WHERE `Order`.deleted_at IS NULL
 
 # Userに対してUserProfileが複数あると行数が増える可能性
 
-class OrderDownload(object):
-    def __init__(self, db_session):
-        self.db_session = db_session
 
-    def query(self, condition, limit, offset):
-        sql = self.sql
+
+m = re.search('^FROM', sql, re.M)
+count_sql = "SELECT count(*) " + sql[m.start():]
+
+class OrderDownload(list):
+    sql = sql
+    count_sql = count_sql
+
+    def __init__(self, db_session, columns, condition):
+        self.db_session = db_session
+        self.columns = columns
+        self.condition = condition
+
+    def query(self, condition, limit=None, offset=None):
+        sql, params = self.query_cond(condition, limit, offset)
+        return (self.sql + sql), params
+
+    def count_query(self, condition):
+        sql, params = self.query_cond(condition)
+        return (self.count_sql + sql), params
+
+    def query_cond(self, condition, limit=None, offset=None):
+        sql = ""
         params = ()
         if 'billing_or_exchange_number' in condition:
             pass
@@ -242,40 +211,42 @@ class OrderDownload(object):
 
         if 'member_id' in condition:
             sql = sql + " AND UserCredential.auth_identifier = %s"
-            params += (condition['memger_id'],)
+            params += (condition['member_id'],)
 
-        if 'number_of_tickets' in condition and (condition.get('event_id') or condition.get('performance_id')):
+        if 'number_of_tickets' in condition:
+            if (condition.get('event_id') or condition.get('performance_id')):
             
-            cond = """ AND `Order`.id in (
-            SELECT OrderedProduct.order_id AS order_id,
-            FROM OrderedProduct
-            JOIN OrderedProductItem
-            ON OrderedProduct.id = OrderedProductItem.ordered_product_id
-            AND OrderedProductItem.deleted_at IS NULL
-            JOIN ProductItem
-            ON OrderedProductItem.product_item_id = ProductItem.id
-            AND ProductItem.deleted_at IS NULL
-            JOIN Performance
-            ON ProductItem.performance_id = Performance.id
-            AND Performance.deleted_at IS NULL
-            WHERE OrderedProduct.deleted_at IS NULL
-            """
+                cond = """ AND `Order`.id in (
+                SELECT OrderedProduct.order_id AS order_id,
+                FROM OrderedProduct
+                JOIN OrderedProductItem
+                ON OrderedProduct.id = OrderedProductItem.ordered_product_id
+                AND OrderedProductItem.deleted_at IS NULL
+                JOIN ProductItem
+                ON OrderedProductItem.product_item_id = ProductItem.id
+                AND ProductItem.deleted_at IS NULL
+                JOIN Performance
+                ON ProductItem.performance_id = Performance.id
+                AND Performance.deleted_at IS NULL
+                WHERE OrderedProduct.deleted_at IS NULL
+                """
+    
+                if condition.get('event_id'):
+                    cond = cond + " AND Performance.event_id = %s"
+                    params += (condition['event_id'],)
+                if condition.get('performance_id'):
+                    cond = cond + " AND Performance.id = %s"
+                    params += (condition['performance_id'],)
+    
+    
+                cond = cond + """
+                GROUP BY OrderedProduct.order_id
+                HAVING sum(ProductItem.quantity) >= %s)
+                """
+                params += (condition['number_of_tickets'],)
+    
+                sql = sql + cond
 
-            if condition.get('event_id'):
-                cond = cond + " AND Performance.event_id = %s"
-                params += (condition['event_id'],)
-            if condition.get('performance_id'):
-                cond = cond + " AND Performance.id = %s"
-                params += (condition['performance_id'],)
-
-
-            cond = cond + """
-            GROUP BY OrderedProduct.order_id
-            HAVING sum(ProductItem.quantity) >= %s)
-            """
-            params += (condition['number_of_tickets'],)
-
-            sql = sql + cond
         # order by
         if 'sort' in condition:
             if 'direction' in condition:
@@ -284,15 +255,79 @@ class OrderDownload(object):
             else:
                 pass
 
-        return sql
+        if limit is not None and offset is not None:
+            sql += " LIMIT %s, %s "
+            params += (offset, limit)
+        elif limit is not None:
+            sql += " LIMIT %s "
+            params += (limit,)
 
-    def __iter__(self, columns, condition):
-        cur = self.db_session.bind.execute(self.query(condition))
+        return sql, params
+
+    def __iter__(self):
+        sql, params = self.query(self.condition)
+        cur = self.db_session.bind.execute(sql, *params)
+        # columns = self.columns
+        # if not columns:
+        #     columns = [d[0] for d in cur.description]
+
         try:
             for row in cur.fetchall():
-                yield OrderedDict([
-                    (c, row[c])
-                    for c in columns]
-                )
+                # yield OrderedDict([
+                #     (c, row[c])
+                #     for c in columns]
+                # )
+                yield row
+                # yield OrderedDict(
+                #     row.items(),
+                #     )
         finally:
             cur.close()
+
+
+
+    def count(self):
+        sql, params = self.count_query(self.condition)
+        logger.debug("sql = {0}".format(sql))
+        cur = self.db_session.bind.execute(sql, *params)
+        try:
+            r = cur.fetchone()
+            return r[0]
+        finally:
+            cur.close()
+
+
+    def __getslice__(self, start, stop):
+        limit = stop - start
+        offset = start
+
+        sql, params = self.query(self.condition, limit=limit, offset=offset)
+        logger.debug(sql)
+        cur = self.db_session.bind.execute(sql, *params)
+        # columns = self.columns
+        # if not columns:
+        #     columns = [d[0] for d in cur.description]
+
+        try:
+            for row in cur.fetchall():
+                # yield OrderedDict([
+                #     (c, row[c])
+                #     for c in columns]
+                # )
+                yield OrderedDict(row.items())
+        finally:
+            cur.close()
+
+
+    def __getitem__(self, s): # for slice
+        logger.debug("slice {0}".format(s))
+        assert isinstance(s, slice)
+        assert False
+        start = s.start
+        stop = s.stop
+        return self.__getslice__(start, stop)
+
+    def __len__(self):
+        c = self.count()
+        logger.debug("count = {0}".format(c))
+        return c

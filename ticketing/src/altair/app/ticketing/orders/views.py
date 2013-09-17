@@ -262,10 +262,61 @@ def session_has_order_p(context, request):
     return bool(request.session.get("orders"))
 
 
+#########################################################################
+@view_config(decorator=with_bootstrap,
+             route_name='orders.index',
+             renderer='altair.app.ticketing:templates/orders/index.html',
+             #renderer="string",
+             permission='sales_counter')
+def index(request):
+    slave_session = get_db_session(request, name="slave")
+
+    organization_id = request.context.organization.id
+    params = MultiDict(request.params)
+    params["order_no"] = " ".join(request.params.getall("order_no"))
+
+    form_search = OrderSearchForm(params, organization_id=organization_id)
+    from .download import OrderDownload
+    if request.method == "POST" and form_search.validate():
+        query = OrderDownload(slave_session,
+                              columns=[],
+                              condition=form_search)
+    else:
+        query = OrderDownload(slave_session,
+                              columns=[],
+                              condition={})
+
+    if request.params.get('action') == 'checked':
+        checked_orders = [o.lstrip('o:') 
+                          for o in request.session.get('orders', []) 
+                          if o.startswith('o:')]
+        #query = query.filter(Order.id.in_(checked_orders))
+
+    page = int(request.params.get('page', 0))
+
+    orders = paginate.Page(
+        query,
+        page=page,
+        items_per_page=40,
+        #item_count=query.count(),
+        url=paginate.PageURL_WebOb(request)
+    )
+
+    #return list(query)
+
+    return {
+        'form':OrderForm(),
+        'form_search':form_search,
+        'orders':orders,
+        'page': page,
+    }
+
+#########################################################################
+
 @view_defaults(decorator=with_bootstrap, permission='sales_editor')
 class Orders(BaseView):
 
-    @view_config(route_name='orders.index', renderer='altair.app.ticketing:templates/orders/index.html', permission='sales_counter')
+    #@view_config(route_name='orders.index', renderer='altair.app.ticketing:templates/orders/index.html', permission='sales_counter')
     def index(self):
         slave_session = get_db_session(self.request, name="slave")
 
@@ -303,7 +354,7 @@ class Orders(BaseView):
             'page': page,
         }
 
-    @view_config(route_name='orders.download')
+    #@view_config(route_name='orders.download')
     def download(self):
         slave_session = get_db_session(self.request, name="slave")
 
