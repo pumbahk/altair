@@ -265,25 +265,10 @@ class OrderDownload(list):
         return sql, params
 
     def __iter__(self):
-        sql, params = self.query(self.condition)
-        cur = self.db_session.bind.execute(sql, *params)
-        # columns = self.columns
-        # if not columns:
-        #     columns = [d[0] for d in cur.description]
+        start = 0
+        stop = self.count()
 
-        try:
-            for row in cur.fetchall():
-                # yield OrderedDict([
-                #     (c, row[c])
-                #     for c in columns]
-                # )
-                yield row
-                # yield OrderedDict(
-                #     row.items(),
-                #     )
-        finally:
-            cur.close()
-
+        return self.execute(start, stop)
 
 
     def count(self):
