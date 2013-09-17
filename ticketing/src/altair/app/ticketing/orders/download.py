@@ -298,24 +298,25 @@ class OrderDownload(list):
 
 
     def __getslice__(self, start, stop):
-        limit = stop - start
-        offset = start
-
-        sql, params = self.query(self.condition, limit=limit, offset=offset)
-        logger.debug(sql)
         #cur = self.db_session.bind.execute(sql, *params)
         sa_conn = self.db_session.bind.connect()
         conn = sa_conn.connection
-        cur = conn.cursor()
-        cur.execute(sql, params)
         # columns = self.columns
         # if not columns:
         #     columns = [d[0] for d in cur.description]
-
+        logger.debug("start = {0}, stop = {1}".format(start, stop))
+        limit = 1000
+        offset = start
         try:
             while True:
-                rows = cur.fetchmany(100)
-                logger.debug('fetchmany')
+                
+                sql, params = self.query(self.condition, limit=limit, offset=offset)
+                logger.debug(sql)
+                logger.debug("limit = {0}, offset = {1}".format(limit, offset))
+                cur = conn.cursor()
+                cur.execute(sql, params)
+                rows = cur.fetchall()
+                logger.debug('fetchall')
                 if not rows:
                     break
 
@@ -328,6 +329,10 @@ class OrderDownload(list):
                         zip([d[0] for d in cur.description],
                             row)
                     )
+                offset = offset + limit
+                limit = min(stop - offset, limit)
+                if limit <= 0:
+                    break
         finally:
             sa_conn.close()
 
