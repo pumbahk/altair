@@ -24,7 +24,11 @@
     <td><a href="javascript:edit_service_fee_method(${service_fee_method.id});"><span id="name">${service_fee_method.name}</span></a></td>
     <td><span class="fee">${vh.price(service_fee_method.fee)}</span></td>
     <td><span class="fee_type">${service_fee_method.fee_type_label}</span></td>
-    <td><span class="fee_type">${service_fee_method.system_fee_default}</span></td>
+    <td><span class="fee_type">
+        % if service_fee_method.system_fee_default:
+          ○
+        % endif
+    </span></td>
   </tr>
   % endfor
   </tbody>
