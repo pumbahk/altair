@@ -20,13 +20,15 @@ class PaymentDeliveryMethodPairs(BaseView):
 
         f = PaymentDeliveryMethodPairForm(organization_id=self.context.user.organization_id)
         f.sales_segment_group_id.data = sales_segment_group_id
-
+        
         try:
             system_fee, system_fee_type = get_system_fee_default(organization_id=self.context.user.organization_id)
         except SystemFeeDefaultDoesNotExist:
             system_fee = f.system_fee.default
+            system_fee_type = f.system_fee_type.default
         except SystemFeeDefaultDuplicated:
             system_fee = f.system_fee.default
+            system_fee_type = f.system_fee_type.default            
 
         return {
             'form':f,
@@ -34,6 +36,7 @@ class PaymentDeliveryMethodPairs(BaseView):
             'payment_methods':PaymentMethod.filter_by(organization_id=self.context.user.organization_id).all(),
             'delivery_methods':DeliveryMethod.filter_by(organization_id=self.context.user.organization_id).all(),
             'system_fee': system_fee,
+            'system_fee_type': system_fee_type,
         }
 
     @view_config(route_name='payment_delivery_method_pairs.new', request_method='POST', renderer='altair.app.ticketing:templates/payment_delivery_method_pairs/edit.html')
