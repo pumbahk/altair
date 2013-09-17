@@ -1,10 +1,14 @@
 # encoding: utf-8
 
+import logging
 import re
+
 from sqlalchemy.sql.expression import and_, or_
 from sqlalchemy.sql import functions as safunc
 from sqlalchemy.orm import aliased
 from pyramid.interfaces import IRequest
+from pyramid.threadlocal import get_current_request
+
 from altair.app.ticketing.models import asc_or_desc
 from altair.app.ticketing.utils import todatetime
 from altair.app.ticketing.core.models import (
@@ -34,8 +38,13 @@ from altair.app.ticketing.users.models import (
 from altair.app.ticketing.sej.models import (
     SejOrder,
     )
+from altair.app.ticketing.payments.payment import Payment, get_delivery_plugin
+from altair.app.ticketing.payments import plugins as payments_plugins
 from .models import OrderSummary
 from .interfaces import IOrderedProductAttributeMetadataProviderRegistry
+
+logger = logging.getLogger(__name__)
+
 
 class QueryBuilderError(Exception):
     pass
@@ -535,3 +544,34 @@ def get_metadata_provider_registry(request_or_registry):
     else:
         registry = request_or_registry
     return registry.queryUtility(IOrderedProductAttributeMetadataProviderRegistry)
+
+def create_inner_order(cart, note):
+    request = get_current_request()
+    payment_plugin_id = cart.payment_delivery_pair.payment_method.payment_plugin_id
+
+    if payment_plugin_id == payments_plugins.SEJ_PAYMENT_PLUGIN_ID:
+        # コンビニ決済のみ決済処理を行う
+        payment = Payment(cart, request)
+        order = payment.call_payment()
+    else:
+        order = Order.create_from_cart(cart)
+        order.organization_id = order.performance.event.organization_id
+        order.save()
+        cart.order = order
+
+        # 配送手続: 以下のモデルを生成する
+        # - コンビニ受取: SejOrder
+        # - QR: OrderedProductItemToken
+        # - 窓口: ReservedNumber
+        delivery_plugin_id = cart.payment_delivery_pair.delivery_method.delivery_plugin_id
+        delivery_plugin = get_delivery_plugin(request, delivery_plugin_id)
+        if delivery_plugin:
+            try:
+                delivery_plugin.finish(request, cart)
+            except Exception as e:
+                logger.error('call delivery plugin error(%s)' % e.message)
+                raise Exception(u'配送手続でエラーが発生しました')
+        cart.finish()
+
+    order.note = note
+    return order

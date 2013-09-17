@@ -67,7 +67,7 @@ from altair.app.ticketing.fanstatic import with_bootstrap
 from altair.app.ticketing.orders.events import notify_order_canceled
 from altair.app.ticketing.orders.exceptions import InnerCartSessionException
 from altair.app.ticketing.payments.payment import Payment, get_delivery_plugin
-from altair.app.ticketing.payments import plugins as payment_plugins
+from altair.app.ticketing.payments import plugins as payments_plugins
 from altair.app.ticketing.tickets.utils import build_dicts_from_ordered_product_item
 from altair.app.ticketing.cart import api
 from altair.app.ticketing.cart.models import Cart
@@ -77,7 +77,13 @@ from altair.app.ticketing.cart.exceptions import NoCartError
 from altair.app.ticketing.loyalty import api as loyalty_api
 
 from . import utils
-from .api import CartSearchQueryBuilder, OrderSummarySearchQueryBuilder, QueryBuilderError, get_metadata_provider_registry
+from .api import (
+    CartSearchQueryBuilder,
+    OrderSummarySearchQueryBuilder,
+    QueryBuilderError,
+    get_metadata_provider_registry,
+    create_inner_order
+)
 from .utils import NumberIssuer
 from .models import OrderSummary
 
@@ -1219,36 +1225,18 @@ class OrdersReserveView(BaseView):
         try:
             # create order
             cart = api.get_cart_safe(self.request)
+            note = post_data.get('note')
+            order = create_inner_order(cart, note)
 
-            payment = Payment(cart, self.request)
-            payment_plugin_id = cart.payment_delivery_pair.payment_method.payment_plugin_id
-            need_payment = (payment_plugin_id == payment_plugins.SEJ_PAYMENT_PLUGIN_ID)
-
-            if need_payment:
-                order = payment.call_payment()
-            else:
-                order = Order.create_from_cart(cart)
-                order.organization_id = order.performance.event.organization_id
-                order.save()
-                cart.order = order
-
-                delivery_plugin_id = cart.payment_delivery_pair.delivery_method.delivery_plugin_id
-                delivery_plugin = get_delivery_plugin(self.request, delivery_plugin_id)
-                if delivery_plugin:
-                    try:
-                        delivery_plugin.finish(self.request, cart)
-                    except Exception as e:
-                        logger.error('call delivery plugin error(%s)' % e.message)
-                        raise HTTPBadRequest(body=json.dumps({
-                            'message':u'配送手続でエラーが発生しました',
-                        }))
-                cart.finish()
-
-            order.note = post_data.get('note')
+            # 窓口での決済方法
             attr = 'sales_counter_payment_method_id'
-            if int(post_data.get(attr, 0)):
-                order.attributes[attr] = post_data.get(attr)
-                if not need_payment:
+            sales_counter_id = int(post_data.get(attr, 0))
+            if sales_counter_id:
+                order.attributes[attr] = sales_counter_id
+
+                # 窓口で決済済みなら決済済みにする (コンビニ決済以外)
+                payment_plugin_id = order.payment_delivery_pair.payment_method.payment_plugin_id
+                if payment_plugin_id != payments_plugins.SEJ_PAYMENT_PLUGIN_ID:
                     order.paid_at = datetime.now()
 
             ## memo
@@ -1269,19 +1257,14 @@ class OrdersReserveView(BaseView):
             api.remove_cart(self.request)
             if self.request.session.get('altair.app.ticketing.inner_cart'):
                 del self.request.session['altair.app.ticketing.inner_cart']
-            logger.debug('order reserve session data=%s' % self.request.session)
 
-            return {
-                'order_id':order.id,
-            }
+            return dict(order_id=order.id)
         except NoCartError, e:
             logger.info("%s" % e.message)
             raise HTTPBadRequest(body=json.dumps({'message':u'エラーが発生しました。もう一度選択してください。'}))
         except Exception, e:
             logger.exception('save error (%s)' % e.message)
-            raise HTTPBadRequest(body=json.dumps({
-                'message':u'エラーが発生しました',
-            }))
+            raise HTTPBadRequest(body=json.dumps({'message':u'エラーが発生しました'}))
 
     @view_config(route_name='orders.reserve.reselect', request_method='POST', renderer='json')
     def reserve_reselect(self):

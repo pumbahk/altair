@@ -30,7 +30,7 @@ def includeme(config):
     config.add_route('orders.refund.confirm'            , '/refund/confirm/')
     config.add_route('orders.refund.immediate'          , '/refund/immediate/{order_id}')
 
-    config.add_route("orders.cover.preview"              , "/cover/preview/{order_id}/cover")
+    config.add_route("orders.cover.preview"             , "/cover/preview/{order_id}/cover")
     config.add_route("orders.item.preview"              , "/item/preview/{order_id}/item/{item_id}")
     config.add_route("orders.item.preview.getdata"      , "/api/item/{item_id}/ticket/{ticket_format_id}")
     config.add_route('orders.print.queue'               , '/print/queue/{order_id}')

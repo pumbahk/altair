@@ -16,3 +16,8 @@ def includeme(config):
     config.add_route('performances.open', '/open/{performance_id}', factory=factory)
     config.add_route("performances.mailinfo.index", "/mailinfo/{performance_id}", factory=factory)
     config.add_route("performances.mailinfo.edit", "/mailinfo/{performance_id}/mailtype/{mailtype}", factory=factory)
+
+    config.add_route('performances.import_orders.index', '/import_orders/{performance_id}', factory=factory)
+    config.add_route('performances.import_orders.confirm', '/import_orders/{performance_id}/confirm', factory=factory)
+    config.add_route('performances.import_orders.completed', '/import_orders/{performance_id}/completed', factory=factory)
+    config.add_route('performances.import_orders.clear', '/import_orders/{performance_id}/clear', factory=factory)
