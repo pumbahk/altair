@@ -713,6 +713,10 @@ class OrderImportForm(Form):
         if not hasattr(field.data, 'file'):
             raise ValidationError(u'選択してください')
 
+        if len(field.data.file.readlines()) < 2:
+            raise ValidationError(u'データがありません')
+        field.data.file.seek(0)
+
         # ヘッダーをチェック
         reader = ImportCSVReader(field.data.file)
         import_header = reader.fieldnames
