@@ -59,7 +59,19 @@ class PageCacheTests(unittest.TestCase):
         from pyramid.httpexceptions import HTTPNotFound
         cache_key = ":key:"
         def fetch_function(_self, k):
-            raise EOFError
+            raise ValueError
+        target = self._makeOne()
+
+        with mock.patch.object(target, "clear_cache") as m:
+            with self.assertRaises(HTTPNotFound):
+                target.on_fetching_self(cache_key, fetch_function)
+            m.assert_called_with_once(cache_key)
+
+    def test_on_fetching_self__Exception__clear_cache_is_called(self):
+        from pyramid.httpexceptions import HTTPNotFound
+        cache_key = ":key:"
+        def fetch_function(_self, k):
+            raise Exception
         target = self._makeOne()
 
         with mock.patch.object(target, "clear_cache") as m:
@@ -119,6 +131,22 @@ class PageCacheTests(unittest.TestCase):
             m_file_delete.assert_called_with_once()
 
         target.fetching.remove_value.assert_called_with_once(cache_key)    
+
+
+    def test_clear_cache__Exception__do_remove(self):
+        cache_key = ":key:"
+        target = self._makeOne()
+        target.fetching.remove_value = mock.Mock()
+
+        with mock.patch.object(target, "file_data") as m:
+            m.remove_value.side_effect = Exception("insecure string")
+            m_file_delete = m._get_value.return_value.namespace.do_remove #hmm
+
+            target.clear_cache(cache_key)
+            m.remove_value.assert_called_with_once(cache_key)
+            m_file_delete.assert_called_with_once()
+
+        target.fetching.remove_value.assert_called_with_once(cache_key)
 
 if __name__ == "__main__":
     unittest.main()
