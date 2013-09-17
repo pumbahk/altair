@@ -1415,6 +1415,12 @@ class ServiceFeeMethod(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     organization = relationship('Organization', uselist=False, backref='service_fee_method_list') 
     system_fee_default = Column(Boolean, nullable=False, default=True)
 
+    @property
+    def fee_type_label(self):
+        for ft in FeeTypeEnum:
+            if ft.v[0] == self.fee_type:
+                return ft.v[1]
+    
 class PaymentMethod(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'PaymentMethod'
     id = Column(Identifier, primary_key=True)
