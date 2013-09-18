@@ -40,6 +40,8 @@
     <thead>
       <tr>
         <th>イベント名</th>
+        <th>公演期間</th>
+        <th>販売期間</th>
         <th>登録公演数</th>
         <th>-</th>
       </tr>
@@ -53,6 +55,8 @@
             <span class="label ${label_classes[i%6]}">${sales_segment_group.name}</span>
           % endfor
         </td>
+        <td>${h.get_performance_start(event)}〜${h.get_performance_end(event)}</td>
+        <td>${h.get_deal_start(event)}〜${h.get_deal_end(event)}</td>
         <td class="span1">${perf_count}</td>
         <td class="span3">
           <%include file="./_action_button.html" args="event=event, order=['edit', 'copy', 'delete'], small=True" />

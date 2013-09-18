@@ -1,13 +1,16 @@
 # -*- coding: utf-8 -*-
+from altair.app.ticketing import newRootFactory
+from .resources import EventAdminResource
 
 def includeme(config):
-    config.add_route('events.index', '/')
-    config.add_route('events.new', '/new')
-    config.add_route('events.show', '/show/{event_id}')
-    config.add_route('events.edit', '/edit/{event_id}')
-    config.add_route('events.copy', '/copy/{event_id}')
-    config.add_route('events.delete', '/delete/{event_id}')
-    config.add_route('events.send', '/send/{event_id}')
+    factory = newRootFactory(EventAdminResource)
+    config.add_route('events.index', '/', factory=factory)
+    config.add_route('events.new', '/new', factory=factory)
+    config.add_route('events.show', '/show/{event_id}', factory=factory)
+    config.add_route('events.edit', '/edit/{event_id}', factory=factory)
+    config.add_route('events.copy', '/copy/{event_id}', factory=factory)
+    config.add_route('events.delete', '/delete/{event_id}', factory=factory)
+    config.add_route('events.send', '/send/{event_id}', factory=factory)
 
     config.include('altair.app.ticketing.events.performances', route_prefix='performances')
     config.include('altair.app.ticketing.events.sales_segment_groups', route_prefix='sales_segment_groups')
