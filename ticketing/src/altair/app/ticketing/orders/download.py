@@ -1,12 +1,12 @@
 # -*- coding:utf-8 -*-
 import logging
-import re
 from collections import OrderedDict
 from sqlalchemy import (
     select,
     and_,
     case,
     text,
+    func,
 )
 from altair.app.ticketing.core.models import (
     Event,
@@ -175,112 +175,15 @@ logger = logging.getLogger(__name__)
 
 sql = str(select(summary_columns, from_obj=[summary_joins]))
 
-# sql = """\
-# SELECT 
-#     `Order`.id AS id,
-#     CASE
-#         WHEN `Order`.canceled_at IS NOT NULL
-#         THEN 'canceled'
-#         WHEN `Order`.delivered_at IS NOT NULL
-#         THEN 'delivered'
-#         ELSE 'ordered'
-#     END AS status,
-#     CASE
-#         WHEN `Order`.canceled_at IS NOT NULL
-#         THEN 'キャンセル'
-#         WHEN `Order`.delivered_at IS NOT NULL
-#         THEN '配送済み'
-#         ELSE '受付済み'
-#     END AS status_label, -- ステータス
-#     CASE
-#         WHEN `Order`.canceled_at IS NOT NULL
-#         THEN 'important'
-#         WHEN `Order`.delivered_at IS NOT NULL
-#         THEN 'success'
-#         ELSE 'warning'
-#     END AS status_class, -- success, inverse
-#     CASE
-#         WHEN `Order`.refund_id IS NOT NULL and `Order`.refunded_at IS NULL
-#         THEN 'refunding'
-#         WHEN `Order`.refunded_at IS NOT NULL
-#         THEN 'refunded'
-#         WHEN `Order`.paid_at IS NOT NULL
-#         THEN 'paid'
-#         ELSE 'unpaid'
-#     END AS payment_status,
-#     CASE
-#         WHEN `Order`.refund_id IS NOT NULL and `Order`.refunded_at IS NULL
-#         THEN '払戻予約' -- XXX (中止)の場合がある
-#         WHEN `Order`.refunded_at IS NOT NULL
-#         THEN '払戻済み' -- XXX (中止)の場合がある
-#         WHEN `Order`.paid_at IS NOT NULL
-#         THEN '入金済み'
-#         ELSE '未入金'
-#     END AS payment_status_label,
-#     CASE
-#         WHEN `Order`.refund_id IS NOT NULL and `Order`.refunded_at IS NULL
-#         THEN 'warning'
-#         WHEN `Order`.refunded_at IS NOT NULL
-#         THEN 'important'
-#         WHEN `Order`.paid_at IS NOT NULL
-#         THEN 'success'
-#         ELSE 'inverse'
-#     END AS payment_status_style,
-#     `Order`.order_no, -- 予約番号
-#     `Order`.created_at, -- 予約日時
-#     `Order`.total_amount, -- 合計
-#     ShippingAddress.last_name + ' ' + ShippingAddress.first_name AS shipping_name, -- 配送先氏名
-#     Event.id AS event_id,
-#     Event.title AS event_title, -- イベント
-#     Performance.id AS performance_id,
-#     Performance.start_on AS performance_start_on, -- 開演日時
-#     `Order`.card_brand, -- カードブランド
-#     `Order`.card_ahead_com_code, -- 仕向け先コード
-#     `Order`.card_ahead_com_name, -- 仕向け先名
-#     NULL
-# FROM `Order`
-#     JOIN Performance
-#     ON `Order`.performance_id = Performance.id
-#     AND Performance.deleted_at IS NULL
-#     JOIN Event
-#     ON Performance.event_id = Event.id
-#     AND Event.deleted_at IS NULL
-#     JOIN SalesSegment
-#     ON `Order`.sales_segment_id = SalesSegment.id
-#     AND SalesSegment.deleted_at IS NULL
-#     JOIN PaymentDeliveryMethodPair AS PDMP
-#     ON `Order`.payment_delivery_method_pair_id = PDMP.id
-#     AND PDMP.deleted_at IS NULL
-#     JOIN PaymentMethod
-#     ON PDMP.payment_method_id = PaymentMethod.id
-#     AND PaymentMethod.deleted_at IS NULL
-#     JOIN DeliveryMethod
-#     ON PDMP.delivery_method_id = DeliveryMethod.id
-#     AND DeliveryMethod.deleted_at IS NULL
-#     LEFT JOIN ShippingAddress
-#     ON `Order`.shipping_address_id = ShippingAddress.id
-#     AND ShippingAddress.deleted_at IS NULL
-#     LEFT JOIN User
-#     ON `Order`.user_id = User.id
-#     AND User.deleted_at IS NULL
-#     LEFT JOIN UserProfile
-#     ON User.id = UserProfile.user_id
-#     AND UserProfile.deleted_at IS NULL
-#     LEFT JOIN UserCredential
-#     ON User.id = UserCredential.user_id
-#     AND UserCredential.deleted_at IS NULL
-#     LEFT JOIN SejOrder
-#     ON `Order`.order_no = SejOrder.order_id
-#     AND SejOrder.deleted_at IS NULL
-# WHERE `Order`.deleted_at IS NULL
-# """
 
 # Userに対してUserProfileが複数あると行数が増える可能性
 
 
 
-m = re.search('^FROM', sql, re.M)
-count_sql = "SELECT count(*) " + sql[m.start():]
+#m = re.search('^FROM', sql, re.M)
+#count_sql = "SELECT count(*) " + sql[m.start():]
+count_sql = str(select([func.count(t_order.c.id)],
+                       from_obj=[summary_joins]))
 
 class OrderDownload(list):
     sql = sql
