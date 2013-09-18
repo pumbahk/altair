@@ -19,5 +19,5 @@ def includeme(config):
 
     config.add_route('performances.import_orders.index', '/import_orders/{performance_id}', factory=factory)
     config.add_route('performances.import_orders.confirm', '/import_orders/{performance_id}/confirm', factory=factory)
-    config.add_route('performances.import_orders.completed', '/import_orders/{performance_id}/completed', factory=factory)
-    config.add_route('performances.import_orders.clear', '/import_orders/{performance_id}/clear', factory=factory)
+    config.add_route('performances.import_orders.show', '/import_orders/{performance_id}/show/{task_id}', factory=factory)
+    config.add_route('performances.import_orders.delete', '/import_orders/{performance_id}/delete/{task_id}', factory=factory)

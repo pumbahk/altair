@@ -319,6 +319,7 @@ class SeatStatusEnum(StandardEnum):
     NotOnSale = 0
     Vacant = 1
     Keep = 8  # インナー予約で座席確保した状態、カート生成前
+    Import = 9  # 予約インポートで座席確保した状態、カート生成前
     InCart = 2
     Ordered = 3
     Confirmed = 4
@@ -3655,3 +3656,34 @@ class PerformanceSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     def create_from_template(cls, template, **kwargs):
         setting = cls.clone(template)
         return setting
+
+
+class ImportStatusEnum(StandardEnum):
+    Waiting = (1, u'インポート待ち')
+    Importing = (2, u'インポート中')
+    Imported = (3, u'インポート完了')
+
+
+class OrderImportTask(Base, BaseModel, WithTimestamp, LogicallyDeleted):
+    __tablename__ = 'OrderImportTask'
+
+    id = Column(Identifier, primary_key=True)
+    organization_id = Column(Identifier, ForeignKey('Organization.id', ondelete='CASCADE'), nullable=False)
+    performance_id = Column(Identifier, ForeignKey('Performance.id'), nullable=False)
+    operator_id = Column(Identifier, ForeignKey('Operator.id', ondelete='CASCADE'), nullable=False)
+    import_type = Column(Integer, nullable=False)
+    status = Column(Integer, nullable=False)
+    count = Column(Integer, nullable=False)
+    data = Column(UnicodeText(8388608))
+    error = Column(UnicodeText, nullable=True)
+
+    organization = relationship('Organization')
+    performance = relationship('Performance')
+    operator = relationship('Operator')
+
+    @classmethod
+    def status_label(cls, status):
+        for e in ImportStatusEnum:
+            if e.v[0] == status:
+                return e.v[1]
+        return u''

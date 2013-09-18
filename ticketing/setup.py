@@ -183,6 +183,7 @@ setup(name='altair.app.ticketing',
       export_point_grant_data=altair.app.ticketing.loyalty.commands:export_point_grant_data
       make_point_grant_data=altair.app.ticketing.loyalty.commands:make_point_grant_data
       detect_fraud=altair.app.ticketing.orders.scripts:detect_fraud
+      import_orders=altair.app.ticketing.orders.scripts:import_orders
       sej_file_download=altair.app.ticketing.sej.scripts.sej_file_download:main
       sej_parse_file=altair.app.ticketing.sej.scripts.sej_parse_file:main
       publish_lot_electing=altair.app.ticketing.events.lots.commands.publish_lot_electing:main
