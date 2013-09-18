@@ -120,6 +120,13 @@ class AssetRepositoryTests(unittest.TestCase):
         self.assertEqual(len(result), 2)
         self.assertEqual([e.id for e in result], [9, 10])
         
+    def test_filter_query(self):
+        request = Request(get_assets(10))
+        target = self._makeOne(request, FakeAsset, offset=3)
+        result = target.filter_by(id=6).list_of_asset(None, 1)
+        
+        self.assertEqual(len(result), 1)
+        self.assertEqual([e.id for e in result], [6])
 
 
 class WidgetRepository(unittest.TestCase):
