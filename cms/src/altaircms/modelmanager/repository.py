@@ -42,19 +42,19 @@ class AssetRepository(object):
         self.Model = Model
         self.offset = offset
 
-    def list_of_asset(self, asset_id, i=1):
+    def list_of_asset(self, asset_id, i=0):
         if asset_id is None:
             return self.list_of_asset_any(i)
         return self.list_of_asset_with_selected(asset_id, i)
 
     def list_of_asset_any(self, i, j=0):
         qs = self.request.allowable(self.Model)
-        if i > 1:
-            qs = qs.offset(self.offset*(i-1)+j)
+        if i > 0:
+            qs = qs.offset((self.offset*i)+j)
         return list(self.filtered_query(qs).limit(self.offset))
 
     def list_of_asset_with_selected(self, asset_id, i):
-        if i > 1:
+        if i > 0:
             return self.list_of_asset_any(i, -1)
         qs = self.request.allowable(self.Model)
         rest = list(self.filtered_query(qs).limit(self.offset-1))

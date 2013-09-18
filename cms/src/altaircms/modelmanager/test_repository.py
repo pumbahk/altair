@@ -67,7 +67,7 @@ class AssetRepositoryTests(unittest.TestCase):
         """[1o, 2o, 3o, 4, 5, 6, 7, 8, 9, 10]"""
         request = Request(get_assets(10))
         target = self._makeOne(request, FakeAsset, offset=3)
-        result = target.list_of_asset(None, 1)
+        result = target.list_of_asset(None, 0)
 
         self.assertEqual(len(result), 3)
         self.assertEqual([e.id for e in result], [1, 2, 3])
@@ -76,7 +76,7 @@ class AssetRepositoryTests(unittest.TestCase):
         """[1, 2, 3, 4o, 5o, 6o, 7, 8, 9, 10]"""
         request = Request(get_assets(10))
         target = self._makeOne(request, FakeAsset, offset=3)
-        result = target.list_of_asset(None, 2)
+        result = target.list_of_asset(None, 1)
 
         self.assertEqual(len(result), 3)
         self.assertEqual([e.id for e in result], [4, 5, 6])
@@ -85,7 +85,7 @@ class AssetRepositoryTests(unittest.TestCase):
         """[1, 2, 3, 4, 5, 6, 7, 8, 9, 10o]"""
         request = Request(get_assets(10))
         target = self._makeOne(request, FakeAsset, offset=3)
-        result = target.list_of_asset(None, 4)
+        result = target.list_of_asset(None, 3)
 
         self.assertEqual(len(result), 1)
         self.assertEqual([e.id for e in result], [10])
@@ -95,7 +95,7 @@ class AssetRepositoryTests(unittest.TestCase):
         request = Request(get_assets(10))
         target = self._makeOne(request, FakeAsset, offset=3)
         asset_id = 5
-        result = target.list_of_asset(asset_id, 1)
+        result = target.list_of_asset(asset_id, 0)
 
         self.assertEqual(len(result), 3)
         self.assertEqual([e.id for e in result], [5, 1, 2])
@@ -105,7 +105,7 @@ class AssetRepositoryTests(unittest.TestCase):
         request = Request(get_assets(10))
         target = self._makeOne(request, FakeAsset, offset=3)
         asset_id = 5
-        result = target.list_of_asset(asset_id, 2)
+        result = target.list_of_asset(asset_id, 1)
 
         self.assertEqual(len(result), 3)
         self.assertEqual([e.id for e in result], [3, 4, 5])
@@ -115,7 +115,7 @@ class AssetRepositoryTests(unittest.TestCase):
         request = Request(get_assets(10))
         target = self._makeOne(request, FakeAsset, offset=3)
         asset_id = 5
-        result = target.list_of_asset(asset_id, 4)
+        result = target.list_of_asset(asset_id, 3)
 
         self.assertEqual(len(result), 2)
         self.assertEqual([e.id for e in result], [9, 10])
@@ -123,7 +123,7 @@ class AssetRepositoryTests(unittest.TestCase):
     def test_filter_query(self):
         request = Request(get_assets(10))
         target = self._makeOne(request, FakeAsset, offset=3)
-        result = target.filter_by(id=6).list_of_asset(None, 1)
+        result = target.filter_by(id=6).list_of_asset(None, 0)
         
         self.assertEqual(len(result), 1)
         self.assertEqual([e.id for e in result], [6])
