@@ -1,6 +1,23 @@
 # -*- coding: utf-8 -*-
-
 class EventHelper(object):
+    def get_performance_range(self, event):
+        perf_range = []
+        for perf in event.performances:
+            range = perf.start_on.strftime('%Y/%m/%d %H:%M')
+            if perf.end_on:
+                range += u" 〜 " + perf.end_on.strftime('%Y/%m/%d %H:%M')
+            perf_range.append(range)
+        return perf_range
+
+    def get_deal_range(self, event):
+        sales_segment_range = []
+        for segment in event.sales_segments:
+            range = segment.start_at.strftime('%Y/%m/%d %H:%M') + u" 〜 "
+            if segment.end_at:
+                range += segment.end_at.strftime('%Y/%m/%d %H:%M')
+            sales_segment_range.append(range)
+        return sales_segment_range
+
     def get_performance_start(self, event):
         min = None
         for perf in event.performances:
