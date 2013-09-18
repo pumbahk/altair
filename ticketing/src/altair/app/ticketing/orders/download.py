@@ -2,6 +2,151 @@
 import logging
 import re
 from collections import OrderedDict
+from sqlalchemy import (
+    select,
+    and_,
+    case,
+    text,
+)
+from altair.app.ticketing.core.models import (
+    Event,
+    Performance,
+    SalesSegment,
+    Order,
+    PaymentDeliveryMethodPair,
+    PaymentMethod,
+    DeliveryMethod,
+    ShippingAddress,
+)
+from altair.app.ticketing.users.models import (
+    User,
+    UserProfile,
+    UserCredential,
+)
+from altair.app.ticketing.sej.models import SejOrder
+
+t_event = Event.__table__
+t_performance = Performance.__table__
+t_sales_segment = SalesSegment.__table__
+t_order = Order.__table__
+t_pdmp = PaymentDeliveryMethodPair.__table__
+t_payment_method = PaymentMethod.__table__
+t_delivery_method = DeliveryMethod.__table__
+t_shipping_address = ShippingAddress.__table__
+t_user = User.__table__
+t_user_profile = UserProfile.__table__
+t_user_credential = UserCredential.__table__
+t_sej_order = SejOrder.__table__
+
+summary_columns = [
+    t_order.c.id,
+    case([(t_order.c.canceled_at!=None,
+           text("'canceled'")),
+          (t_order.c.delivered_at!=None,
+           text("'delivered'"))],
+         else_=text("'ordered'"),
+    ).label('status'),
+    case([(t_order.c.canceled_at!=None,
+           text(u"'キャンセル'")),
+          (t_order.c.delivered_at!=None,
+           text(u"'配送済み'"))],
+         else_=text(u"'受付済み'"),
+     ).label('status_label'),
+    case([(t_order.c.canceled_at!=None,
+           text(u"'important'")),
+          (t_order.c.delivered_at!=None,
+           text("'success'"))],
+         else_=text("'warning'"),
+     ).label('status_class'),
+    case([(and_(t_order.c.refund_id!=None,
+                t_order.c.refunded_at==None),
+           text("'refunding'")),
+          (t_order.c.refunded_at!=None,
+           text("'refunded'")),
+          (t_order.c.paid_at!=None,
+           text("'paid'"))],
+         else_=text("'unpaid'"),
+    ).label('payment_status'),
+    case([(and_(t_order.c.refund_id!=None,
+                t_order.c.refunded_at==None),
+           #-- XXX (中止)の場合がある
+           text(u"'払戻予約'")),
+          (t_order.c.refunded_at!=None,
+           #-- XXX (中止)の場合がある
+           text(u"'払戻済み'")),
+          (t_order.c.paid_at!=None,
+           text(u"'入金済み'"))],
+         else_=text(u"'未入金'"),
+    ).label('payment_status_label'),
+    case([(and_(t_order.c.refund_id!=None,
+                t_order.c.refunded_at==None),
+           text("'warning'")),
+          (t_order.c.refunded_at!=None,
+           text("'important'")),
+          (t_order.c.paid_at!=None,
+           text("'success'"))],
+         else_=text("'inverse'"),
+    ).label('payment_status_style'),
+    t_order.c.order_no, #-- 予約番号
+    t_order.c.created_at, #-- 予約日時
+    t_order.c.total_amount, #-- 合計
+    (t_shipping_address.c.last_name
+     + text("' '")
+     + t_shipping_address.c.first_name).label('shipping_name'), #-- 配送先氏名
+    t_event.c.id.label('event_id'),
+    t_event.c.title.label('event_title'), #-- イベント
+    t_payment_method.c.id.label('performance_id'),
+    t_performance.c.start_on.label('performance_start_on'), #-- 開演日時
+    t_order.c.card_brand, # -- カードブランド
+    t_order.c.card_ahead_com_code, #-- 仕向け先コード
+    t_order.c.card_ahead_com_name, #-- 仕向け先名
+]
+
+summary_joins = t_order.join(
+    t_performance,
+    and_(t_performance.c.id==t_order.c.performance_id,
+         t_performance.c.deleted_at==None),
+).join(
+    t_event,
+    and_(t_event.c.id==t_performance.c.event_id,
+         t_event.c.deleted_at==None),
+).join(
+    t_sales_segment,
+    and_(t_sales_segment.c.id==t_order.c.sales_segment_id,
+         t_sales_segment.c.deleted_at==None),
+).join(
+    t_pdmp,
+    and_(t_pdmp.c.id==t_order.c.payment_delivery_method_pair_id,
+         t_pdmp.c.deleted_at==None),
+).join(
+    t_payment_method,
+    and_(t_payment_method.c.id==t_pdmp.c.payment_method_id,
+         t_payment_method.c.deleted_at==None),
+).join(
+    t_delivery_method,
+    and_(t_delivery_method.c.id==t_pdmp.c.delivery_method_id,
+         t_delivery_method.c.deleted_at==None),
+).join(
+    t_shipping_address,
+    and_(t_shipping_address.c.id==t_order.c.shipping_address_id,
+         t_shipping_address.c.deleted_at==None),
+).outerjoin(
+    t_user,
+    and_(t_user.c.id==t_order.c.user_id,
+         t_user.c.deleted_at==None),
+).outerjoin(
+    t_user_profile,
+    and_(t_user_profile.c.user_id==t_user.c.id,
+         t_user_profile.c.deleted_at==None),
+).outerjoin(
+    t_user_credential,
+    and_(t_user_credential.c.user_id==t_user.c.id,
+         t_user_credential.c.deleted_at==None),
+).outerjoin(
+    t_sej_order,
+    and_(t_sej_order.c.order_id==t_order.c.order_no,
+         t_sej_order.c.deleted_at==None),
+)
 
 logger = logging.getLogger(__name__)
 
@@ -26,105 +171,109 @@ logger = logging.getLogger(__name__)
 
 """
 
-sql = """\
-SELECT 
-    `Order`.id AS id,
-    CASE
-        WHEN `Order`.canceled_at IS NOT NULL
-        THEN 'canceled'
-        WHEN `Order`.delivered_at IS NOT NULL
-        THEN 'delivered'
-        ELSE 'ordered'
-    END AS status,
-    CASE
-        WHEN `Order`.canceled_at IS NOT NULL
-        THEN 'キャンセル'
-        WHEN `Order`.delivered_at IS NOT NULL
-        THEN '配送済み'
-        ELSE '受付済み'
-    END AS status_label, -- ステータス
-    CASE
-        WHEN `Order`.canceled_at IS NOT NULL
-        THEN 'important'
-        WHEN `Order`.delivered_at IS NOT NULL
-        THEN 'success'
-        ELSE 'warning'
-    END AS status_class, -- success, inverse
-    CASE
-        WHEN `Order`.refund_id IS NOT NULL and `Order`.refunded_at IS NULL
-        THEN 'refunding'
-        WHEN `Order`.refunded_at IS NOT NULL
-        THEN 'refunded'
-        WHEN `Order`.paid_at IS NOT NULL
-        THEN 'paid'
-        ELSE 'unpaid'
-    END AS payment_status,
-    CASE
-        WHEN `Order`.refund_id IS NOT NULL and `Order`.refunded_at IS NULL
-        THEN '払戻予約' -- XXX (中止)の場合がある
-        WHEN `Order`.refunded_at IS NOT NULL
-        THEN '払戻済み' -- XXX (中止)の場合がある
-        WHEN `Order`.paid_at IS NOT NULL
-        THEN '入金済み'
-        ELSE '未入金'
-    END AS payment_status_label,
-    CASE
-        WHEN `Order`.refund_id IS NOT NULL and `Order`.refunded_at IS NULL
-        THEN 'warning'
-        WHEN `Order`.refunded_at IS NOT NULL
-        THEN 'important'
-        WHEN `Order`.paid_at IS NOT NULL
-        THEN 'success'
-        ELSE 'inverse'
-    END AS payment_status_style,
-    `Order`.order_no, -- 予約番号
-    `Order`.created_at, -- 予約日時
-    `Order`.total_amount, -- 合計
-    ShippingAddress.last_name + ' ' + ShippingAddress.first_name AS shipping_name, -- 配送先氏名
-    Event.id AS event_id,
-    Event.title AS event_title, -- イベント
-    Performance.id AS performance_id,
-    Performance.start_on AS performance_start_on, -- 開演日時
-    `Order`.card_brand, -- カードブランド
-    `Order`.card_ahead_com_code, -- 仕向け先コード
-    `Order`.card_ahead_com_name, -- 仕向け先名
-    NULL
-FROM `Order`
-    JOIN Performance
-    ON `Order`.performance_id = Performance.id
-    AND Performance.deleted_at IS NULL
-    JOIN Event
-    ON Performance.event_id = Event.id
-    AND Event.deleted_at IS NULL
-    JOIN SalesSegment
-    ON `Order`.sales_segment_id = SalesSegment.id
-    AND SalesSegment.deleted_at IS NULL
-    JOIN PaymentDeliveryMethodPair AS PDMP
-    ON `Order`.payment_delivery_method_pair_id = PDMP.id
-    AND PDMP.deleted_at IS NULL
-    JOIN PaymentMethod
-    ON PDMP.payment_method_id = PaymentMethod.id
-    AND PaymentMethod.deleted_at IS NULL
-    JOIN DeliveryMethod
-    ON PDMP.delivery_method_id = DeliveryMethod.id
-    AND DeliveryMethod.deleted_at IS NULL
-    LEFT JOIN ShippingAddress
-    ON `Order`.shipping_address_id = ShippingAddress.id
-    AND ShippingAddress.deleted_at IS NULL
-    LEFT JOIN User
-    ON `Order`.user_id = User.id
-    AND User.deleted_at IS NULL
-    LEFT JOIN UserProfile
-    ON User.id = UserProfile.user_id
-    AND UserProfile.deleted_at IS NULL
-    LEFT JOIN UserCredential
-    ON User.id = UserCredential.user_id
-    AND UserCredential.deleted_at IS NULL
-    LEFT JOIN SejOrder
-    ON `Order`.order_no = SejOrder.order_id
-    AND SejOrder.deleted_at IS NULL
-WHERE `Order`.deleted_at IS NULL
-"""
+
+
+sql = str(select(summary_columns, from_obj=[summary_joins]))
+
+# sql = """\
+# SELECT 
+#     `Order`.id AS id,
+#     CASE
+#         WHEN `Order`.canceled_at IS NOT NULL
+#         THEN 'canceled'
+#         WHEN `Order`.delivered_at IS NOT NULL
+#         THEN 'delivered'
+#         ELSE 'ordered'
+#     END AS status,
+#     CASE
+#         WHEN `Order`.canceled_at IS NOT NULL
+#         THEN 'キャンセル'
+#         WHEN `Order`.delivered_at IS NOT NULL
+#         THEN '配送済み'
+#         ELSE '受付済み'
+#     END AS status_label, -- ステータス
+#     CASE
+#         WHEN `Order`.canceled_at IS NOT NULL
+#         THEN 'important'
+#         WHEN `Order`.delivered_at IS NOT NULL
+#         THEN 'success'
+#         ELSE 'warning'
+#     END AS status_class, -- success, inverse
+#     CASE
+#         WHEN `Order`.refund_id IS NOT NULL and `Order`.refunded_at IS NULL
+#         THEN 'refunding'
+#         WHEN `Order`.refunded_at IS NOT NULL
+#         THEN 'refunded'
+#         WHEN `Order`.paid_at IS NOT NULL
+#         THEN 'paid'
+#         ELSE 'unpaid'
+#     END AS payment_status,
+#     CASE
+#         WHEN `Order`.refund_id IS NOT NULL and `Order`.refunded_at IS NULL
+#         THEN '払戻予約' -- XXX (中止)の場合がある
+#         WHEN `Order`.refunded_at IS NOT NULL
+#         THEN '払戻済み' -- XXX (中止)の場合がある
+#         WHEN `Order`.paid_at IS NOT NULL
+#         THEN '入金済み'
+#         ELSE '未入金'
+#     END AS payment_status_label,
+#     CASE
+#         WHEN `Order`.refund_id IS NOT NULL and `Order`.refunded_at IS NULL
+#         THEN 'warning'
+#         WHEN `Order`.refunded_at IS NOT NULL
+#         THEN 'important'
+#         WHEN `Order`.paid_at IS NOT NULL
+#         THEN 'success'
+#         ELSE 'inverse'
+#     END AS payment_status_style,
+#     `Order`.order_no, -- 予約番号
+#     `Order`.created_at, -- 予約日時
+#     `Order`.total_amount, -- 合計
+#     ShippingAddress.last_name + ' ' + ShippingAddress.first_name AS shipping_name, -- 配送先氏名
+#     Event.id AS event_id,
+#     Event.title AS event_title, -- イベント
+#     Performance.id AS performance_id,
+#     Performance.start_on AS performance_start_on, -- 開演日時
+#     `Order`.card_brand, -- カードブランド
+#     `Order`.card_ahead_com_code, -- 仕向け先コード
+#     `Order`.card_ahead_com_name, -- 仕向け先名
+#     NULL
+# FROM `Order`
+#     JOIN Performance
+#     ON `Order`.performance_id = Performance.id
+#     AND Performance.deleted_at IS NULL
+#     JOIN Event
+#     ON Performance.event_id = Event.id
+#     AND Event.deleted_at IS NULL
+#     JOIN SalesSegment
+#     ON `Order`.sales_segment_id = SalesSegment.id
+#     AND SalesSegment.deleted_at IS NULL
+#     JOIN PaymentDeliveryMethodPair AS PDMP
+#     ON `Order`.payment_delivery_method_pair_id = PDMP.id
+#     AND PDMP.deleted_at IS NULL
+#     JOIN PaymentMethod
+#     ON PDMP.payment_method_id = PaymentMethod.id
+#     AND PaymentMethod.deleted_at IS NULL
+#     JOIN DeliveryMethod
+#     ON PDMP.delivery_method_id = DeliveryMethod.id
+#     AND DeliveryMethod.deleted_at IS NULL
+#     LEFT JOIN ShippingAddress
+#     ON `Order`.shipping_address_id = ShippingAddress.id
+#     AND ShippingAddress.deleted_at IS NULL
+#     LEFT JOIN User
+#     ON `Order`.user_id = User.id
+#     AND User.deleted_at IS NULL
+#     LEFT JOIN UserProfile
+#     ON User.id = UserProfile.user_id
+#     AND UserProfile.deleted_at IS NULL
+#     LEFT JOIN UserCredential
+#     ON User.id = UserCredential.user_id
+#     AND UserCredential.deleted_at IS NULL
+#     LEFT JOIN SejOrder
+#     ON `Order`.order_no = SejOrder.order_id
+#     AND SejOrder.deleted_at IS NULL
+# WHERE `Order`.deleted_at IS NULL
+# """
 
 # Userに対してUserProfileが複数あると行数が増える可能性
 
@@ -292,6 +441,7 @@ class OrderDownload(list):
         while True:
             sql, params = self.query(self.condition, limit=limit, offset=offset)
             logger.debug("limit = {0}, offset = {1}".format(limit, offset))
+            logger.debug("sql = {0}".format(sql))
             cur = self.db_session.bind.execute(sql, *params)
             try:
                 rows = cur.fetchall()
