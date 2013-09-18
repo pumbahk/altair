@@ -180,27 +180,12 @@ sql = str(select(summary_columns, from_obj=[summary_joins]))
 
 
 
-#m = re.search('^FROM', sql, re.M)
-#count_sql = "SELECT count(*) " + sql[m.start():]
-count_sql = str(select([func.count(t_order.c.id)],
-                       from_obj=[summary_joins]))
-
 class OrderDownload(list):
-    sql = sql
-    count_sql = count_sql
 
     def __init__(self, db_session, columns, condition):
         self.db_session = db_session
         self.columns = columns
         self.condition = condition
-
-    def query(self, condition, limit=None, offset=None):
-        sql, params = self.query_cond(condition, limit, offset)
-        return (self.sql + sql), params
-
-    def count_query(self, condition):
-        sql, params = self.query_cond(condition)
-        return (self.count_sql + sql), params
 
     def query_cond(self, condition, limit=None, offset=None):
         sql = ""
@@ -324,9 +309,11 @@ class OrderDownload(list):
 
 
     def count(self):
-        sql, params = self.count_query(self.condition)
+        sql = select([func.count(t_order.c.id)],
+                     from_obj=[summary_joins])
+
         logger.debug("sql = {0}".format(sql))
-        cur = self.db_session.bind.execute(sql, *params)
+        cur = self.db_session.bind.execute(sql)
         try:
             r = cur.fetchone()
             return r[0]
@@ -342,10 +329,10 @@ class OrderDownload(list):
         limit = 1000
         offset = start
         while True:
-            sql, params = self.query(self.condition, limit=limit, offset=offset)
+            sql = select(summary_columns, from_obj=[summary_joins]).limit(limit).offset(offset)
             logger.debug("limit = {0}, offset = {1}".format(limit, offset))
             logger.debug("sql = {0}".format(sql))
-            cur = self.db_session.bind.execute(sql, *params)
+            cur = self.db_session.bind.execute(sql)
             try:
                 rows = cur.fetchall()
                 logger.debug('fetchall')
