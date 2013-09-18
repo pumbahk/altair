@@ -7,6 +7,7 @@ import transaction
 from datetime import datetime
 from standardenum import StandardEnum
 from collections import OrderedDict
+from StringIO import StringIO
 
 from zope.interface import implementer
 from pyramid.threadlocal import get_current_request
@@ -30,8 +31,9 @@ from altair.app.ticketing.core.models import (
     ShippingAddress,
     SeatStatusEnum,
     Seat,
-    SeatStatus,
-    Venue
+    Venue,
+    OrderImportTask,
+    ImportStatusEnum
 )
 from altair.app.ticketing.orders.api import create_inner_order
 from altair.app.ticketing.orders.export import japanese_columns
@@ -196,11 +198,23 @@ class ImportTypeEnum(StandardEnum):
 
 class OrderImporter():
 
-    def __init__(self, context, performance_id, order_csv, import_type):
-        self.operator_id = context.user.id
-        self.organization_id = context.organization.id
+    def __init__(self, operator, organization, performance_id, order_csv, import_type, **kwargs):
+        self.operator_id = operator.id
+        self.organization_id = organization.id
         self.performance_id = performance_id
         self.import_type = import_type
+        self.status = ImportStatusEnum.Waiting.v[0]
+        file_data = order_csv.read()
+        self.file_data = unicode(file_data.decode('cp932'))
+
+        self.task_id = None
+        self.created_at = None
+        if 'task_id' in kwargs:
+            self.task_id = kwargs.get('task_id')
+        if 'created_at' in kwargs:
+            self.created_at = kwargs.get('created_at')
+        if 'status' in kwargs:
+            self.status = kwargs.get('status')
 
         # csvファイルから読み込んだ予約 {order_no:cart}
         self.carts = OrderedDict()
@@ -211,8 +225,18 @@ class OrderImporter():
         # csvファイルから読み込めなかった予約 / インポートできなかった予約 {order_no:cart}
         self.import_errors = OrderedDict()
 
-        self.imported = False
-        self.parse_import_file(order_csv.file)
+        file = StringIO()
+        file.write(file_data)
+        file.seek(0)
+        self.parse_import_file(file)
+
+    @property
+    def operator(self):
+        return Operator.query.filter_by(id=self.operator_id).one()
+
+    @property
+    def imported(self):
+        return self.status == ImportStatusEnum.Imported.v[0]
 
     @property
     def import_type_label(self):
@@ -264,12 +288,14 @@ class OrderImporter():
                     cpi._seat_ids.append(seat.id)
             except NoResultFound, e:
                 self.validation_errors[order_no] = u'予約番号: %s  %s' % (order_no, e.message)
-                self.carts.pop(order_no)
+                if order_no in self.carts.keys():
+                    self.carts.pop(order_no)
                 continue
 
             self.carts[order_no] = cart
+        return
 
-        # validation
+    def validate(self):
         sum_quantity = dict()
         order_no_list = self.carts.keys()
         for order_no in order_no_list:
@@ -301,7 +327,6 @@ class OrderImporter():
             except Exception, e:
                 self.validation_errors[order_no] = u'予約番号: %s  %s' % (order_no, e.message)
                 self.carts.pop(order_no)
-
         return
 
     def get_sales_segment(self, row):
@@ -484,9 +509,8 @@ class OrderImporter():
             order_per_pdmp[pdmp]['count'] += 1
         return order_per_pdmp
 
-    def validated_stats(self):
+    def _get_stats(self, carts, errors):
         stats = dict()
-        carts = self.carts
 
         # インポート方法
         stats['import_type'] = self.import_type_label
@@ -499,32 +523,27 @@ class OrderImporter():
         # 決済方法/引取方法ごとの予約数、コンビニ引取があるなら発券開始日時
         stats['order_per_pdmp'] = self.get_order_per_pdmp(carts)
         # インポートできない予約数
-        stats['error_order_count'] = len(self.validation_errors)
+        stats['error_order_count'] = len(errors)
         # インポートできない理由
-        stats['error_orders'] = self.validation_errors
+        stats['error_orders'] = errors
+
+        # OrderImportTaskからの情報
+        stats['task_id'] = self.task_id
+        stats['created_at'] = self.created_at
+        stats['operator_name'] = self.operator.name
+        stats['status'] = OrderImportTask.status_label(self.status)
 
         return stats
+
+    def validated_stats(self):
+        carts = self.carts
+        errors = self.validation_errors
+        return self._get_stats(carts, errors)
 
     def imported_stats(self):
-        stats = dict()
         carts = self.committed_carts
-
-        # インポート方法
-        stats['import_type'] = self.import_type_label
-        # インポートした予約数
-        stats['order_count'] = len(carts)
-        # インポートした席数
-        stats['seat_count'] = self.get_seat_count(carts)
-        # 商品別の席数
-        stats['seat_per_product'] = self.get_seat_per_product(carts)
-        # 決済方法/引取方法ごとの予約数、コンビニ引取があるなら発券開始日時
-        stats['order_per_pdmp'] = self.get_order_per_pdmp(carts)
-        # インポートできなかった予約数
-        stats['error_order_count'] = len(self.import_errors)
-        # インポートできなかった理由
-        stats['error_orders'] = self.import_errors
-
-        return stats
+        errors = self.import_errors
+        return self._get_stats(carts, errors)
 
     def allocate_seats(self, reserving, product_item, quantity):
         stock = product_item.stock
@@ -627,5 +646,34 @@ class OrderImporter():
                     cpi.seats = None
             self.committed_carts[org_order_no] = temp_cart
 
-        self.imported = True
+        self.status = ImportStatusEnum.Imported.v
         return
+
+    def add_task(self):
+        logger.info('file data = %s' % self.file_data)
+        task = OrderImportTask(
+            organization_id=self.organization_id,
+            performance_id=self.performance_id,
+            operator_id=self.operator_id,
+            import_type=self.import_type,
+            count=len(self.carts),
+            status=self.status,
+            data=self.file_data
+        )
+        task.save()
+
+    @staticmethod
+    def load_task(task):
+        file = StringIO()
+        file.write(task.data.encode('cp932'))
+        file.seek(0)
+        return OrderImporter(
+            task.operator,
+            task.organization,
+            task.performance_id,
+            file,
+            task.import_type,
+            task_id=task.id,
+            created_at=task.created_at,
+            status=task.status
+        )

@@ -1,6 +1,24 @@
 <%page args="stats" />
 
 <table class="table table-bordered">
+  % if stats.get('task_id'):
+  <tr>
+    <th>ID</th>
+    <td>${stats.get('task_id')}</td>
+  </tr>
+  <tr>
+    <th>オペレーター</th>
+    <td>${stats.get('operator_name')}</td>
+  </tr>
+  <tr>
+    <th>ステータス</th>
+    <td>${stats.get('status')}</td>
+  </tr>
+  <tr>
+    <th>登録日時</th>
+    <td>${stats.get('created_at')}</td>
+  </tr>
+  % endif
   <!--
   <tr>
     <th class="span2">インポート方法</th>
