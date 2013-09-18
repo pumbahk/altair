@@ -200,8 +200,11 @@ class Cart(Base):
 
     @property
     def system_fee(self):
-        return self.payment_delivery_pair.system_fee
-
+        """システム利用料"""
+        return self.sales_segment.get_system_fee(
+            self.payment_delivery_pair,
+            [(p.product, p.quantity) for p in self.products])
+        
     @classmethod
     def get_or_create(cls, performance, cart_session_id):
         try:
