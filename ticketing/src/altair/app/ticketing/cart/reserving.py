@@ -81,7 +81,7 @@ class Reserving(object):
         for stat in statuses:
             stat.status = int(reserve_status)
         return statuses
-        
+
     def get_default_seat_index_type_id(self, stock_id):
         """ Stock -> Performance -> Venue """
 

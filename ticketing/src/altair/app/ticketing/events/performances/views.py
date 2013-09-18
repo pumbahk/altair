@@ -31,7 +31,7 @@ from altair.app.ticketing.mails.api import get_mail_utility
 from altair.app.ticketing.core.models import MailTypeChoices
 from altair.app.ticketing.orders.api import OrderSummarySearchQueryBuilder, QueryBuilderError
 from altair.app.ticketing.orders.models import OrderSummary
-from altair.app.ticketing.orders.importer import OrderImporter, count_import_seats, release_import_seats
+from altair.app.ticketing.orders.importer import OrderImporter
 from altair.app.ticketing.carturl.api import get_cart_url_builder, get_cart_now_url_builder
 from altair.app.ticketing.events.sales_segments.resources import (
     SalesSegmentGroupCreate,
@@ -140,9 +140,6 @@ class PerformanceShowView(BaseView):
     def import_orders_initialize(self, release_seats=True):
         importer = self.request.session.get('ticketing.order.importer')
         if importer:
-            if release_seats:
-                # セッションに確保中の在庫があれば開放する
-                importer.release_seats()
             del self.request.session['ticketing.order.importer']
 
     @view_config(route_name='performances.import_orders.index', request_method='GET')
@@ -151,14 +148,13 @@ class PerformanceShowView(BaseView):
         if importer:
             if importer.imported:
                 return HTTPFound(self.request.route_url('performances.import_orders.completed', performance_id=self.performance.id))
-            elif importer.allocated:
+            else:
                 return HTTPFound(self.request.route_url('performances.import_orders.confirm', performance_id=self.performance.id))
 
         data = {
             'tab': 'import_orders',
             'performance': self.performance,
             'form': OrderImportForm(),
-            'count':count_import_seats(self.performance.id)
         }
         data.update(self._extra_data())
         return data
@@ -168,7 +164,6 @@ class PerformanceShowView(BaseView):
         f = OrderImportForm(self.request.params)
         if f.validate():
             importer = OrderImporter(self.context, self.performance.id, **f.data)
-            importer.allocate_seats()
             self.request.session['ticketing.order.importer'] = importer
             return HTTPFound(self.request.route_url('performances.import_orders.confirm', performance_id=self.performance.id))
 
@@ -234,12 +229,6 @@ class PerformanceShowView(BaseView):
         importer = self.request.session.get('ticketing.order.importer')
         if importer:
             self.import_orders_initialize()
-        return HTTPFound(self.request.route_url('performances.import_orders.index', performance_id=self.performance.id))
-
-    @view_config(route_name='performances.import_orders.release')
-    def import_orders_release(self):
-        release_import_seats(self.performance.id)
-        self.request.session.flash(u'座席を開放しました')
         return HTTPFound(self.request.route_url('performances.import_orders.index', performance_id=self.performance.id))
 
 

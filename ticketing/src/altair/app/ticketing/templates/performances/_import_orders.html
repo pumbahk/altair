@@ -1,4 +1,4 @@
-<%page args="performance, importer, form, import_seat_count" />
+<%page args="performance, importer, form" />
 <%namespace file="/common/helpers.html" name="ch" />
 
 <div class="alert alert-warning">
@@ -9,22 +9,9 @@
   </ul>
 </div>
 
-% if import_seat_count > 0:
-<div class="alert alert-error">
-  <p>インポート作業の中断などにより、座席が確保されたままになっています。</p>
-  <ul>
-    <li>インポート作業を中断してログアウトすると、座席が確保されたままになることがあります。</li>
-    <li>この公演で、他のブラウザおよび他の作業者によりインポートが作業中でないなら、座席を開放してください。</li>
-  </ul>
-</div>
-% endif
-
 <form class="form-horizontal" enctype="multipart/form-data" action="${request.route_path('performances.import_orders.index', performance_id=performance.id)}" method="POST">
   ${ch.form_item(form.order_csv)}
   <div class="form-actions">
     <input class="btn btn-primary pull-right" type="submit" name="submit" value="確認する">
-    % if import_seat_count > 0:
-    <a href="${request.route_path('performances.import_orders.release', performance_id=performance.id)}" class="btn btn-danger pull-right" style="margin-right: 10px;">座席を開放する</a>
-    % endif
   </div>
 </form>

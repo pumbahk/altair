@@ -211,7 +211,6 @@ class OrderImporter():
         # csvファイルから読み込めなかった予約 / インポートできなかった予約 {order_no:cart}
         self.import_errors = OrderedDict()
 
-        self.allocated = False
         self.imported = False
         self.parse_import_file(order_csv.file)
 
@@ -271,12 +270,38 @@ class OrderImporter():
             self.carts[order_no] = cart
 
         # validation
+        sum_quantity = dict()
         order_no_list = self.carts.keys()
         for order_no in order_no_list:
             cart = self.carts.get(order_no)
+
+            # 合計金額
             if cart.total_amount != cart.calculated_total_amount:
                 self.validation_errors[order_no] = u'予約番号: %s  %s' % (order_no, u'金額が正しくありません')
                 self.carts.pop(order_no)
+
+            # 在庫数
+            # - ここでは在庫総数のチェックのみ
+            # - 実際に配席しないと連席判定も含めた在庫の過不足は分からない為
+            try:
+                for cp in cart.products:
+                    for cpi in cp.items:
+                        product_item = cpi.product_item
+                        stock = product_item.stock
+                        if stock.id not in sum_quantity:
+                            sum_quantity[stock.id] = 0
+
+                        sum_quantity[stock.id] += cpi.quantity
+                        if stock.stock_status.quantity < sum_quantity[stock.id]:
+                            logger.info('cannot allocate quantity rest=%s (stock_id=%s, quantity=%s)' %
+                                        (stock.stock_status.quantity, stock.id, cpi.quantity))
+                            error_reason = u'配席可能な座席がありません  商品明細: %s  個数: %s  (stock_id: %s)' %\
+                                           (product_item.name, cpi.quantity, stock.id)
+                            raise Exception(error_reason)
+            except Exception, e:
+                self.validation_errors[order_no] = u'予約番号: %s  %s' % (order_no, e.message)
+                self.carts.pop(order_no)
+
         return
 
     def get_sales_segment(self, row):
@@ -429,67 +454,6 @@ class OrderImporter():
         )
         return shipping_address
 
-    def allocate_seats(self):
-        request = get_current_request()
-        reserving = cart_api.get_reserving(request)
-
-        # 予約(TemporaryCart)単位で1件ずつおまかせ配席をしていく
-        # 座席ステータスはインナー予約での座席確保と同じ状態にする
-        sum_quantity = dict()
-        order_no_list = self.carts.keys()
-        for order_no in order_no_list:
-            cart = self.carts.get(order_no)
-            error_reason = None
-            for cp in cart.products:
-                for cpi in cp.items:
-                    product_item = ProductItem.query.filter_by(id=cpi.product_item_id).one()
-                    stock = product_item.stock
-                    if product_item.stock_type.quantity_only:
-                        logger.debug('stock %d quantity only' % stock.id)
-                        if stock.id not in sum_quantity:
-                            sum_quantity[stock.id] = 0
-                        sum_quantity[stock.id] += cpi.quantity
-                        if stock.stock_status.quantity < sum_quantity[stock.id]:
-                            logger.info('cannot allocate quantity rest=%s (stock_id=%s, quantity=%s)' %
-                                        (stock.stock_status.quantity, stock.id, cpi.quantity))
-                            error_reason = u'配席可能な座席がありません  商品明細: %s  個数: %s  (stock_id: %s)' % \
-                                           (product_item.name, cpi.quantity, stock.id)
-                            break
-                    else:
-                        try:
-                            logger.info('product_item_id = %sm stock_id = %s, quantity = %s' % (product_item.id, stock.id, cpi.quantity))
-                            seats = reserving.reserve_seats(stock.id, int(cpi.quantity), reserve_status=SeatStatusEnum.Import)
-                            cpi._seat_ids = [s.id for s in seats]
-                        except NotEnoughAdjacencyException, e:
-                            logger.info('cannot allocate seat (stock_id=%s, quantity=%s) %s' % (stock.id, cpi.quantity, e))
-                            error_reason = u'配席可能な座席がありません  商品明細: %s  個数: %s  (stock_id: %s)' % \
-                                           (product_item.name, cpi.quantity, stock.id)
-                            break
-                if error_reason:
-                    break
-            if error_reason:
-                self.validation_errors[order_no] = u'予約番号: %s  %s' % (order_no, error_reason)
-                self.release_seats(order_no=order_no)
-                self.carts.pop(order_no)
-
-        self.allocated = True
-        return
-
-    def release_seats(self, order_no=None):
-        if order_no:
-            carts = [self.carts.get(order_no)]
-        else:
-            carts = self.carts.values()
-        for cart in carts:
-            for cp in cart.products:
-                for cpi in cp.items:
-                    cpi.seats = None
-                    for seat_id in cpi._seat_ids:
-                        seat_status = SeatStatus.query.filter_by(seat_id=seat_id).with_lockmode('update').one()
-                        if seat_status.status == int(SeatStatusEnum.Import):
-                            logger.info('seat(%s) status Import to Vacant' % seat_status.seat_id)
-                            seat_status.status = int(SeatStatusEnum.Vacant)
-
     def get_seat_count(self, carts):
         count = 0
         for cart in carts.values():
@@ -562,55 +526,52 @@ class OrderImporter():
 
         return stats
 
-    def reserve_seats(self, seat_ids):
+    def allocate_seats(self, reserving, product_item, quantity):
+        stock = product_item.stock
+        logger.info('product_item_id = %sm stock_id = %s, quantity = %s' % (product_item.id, stock.id, quantity))
+
         seats = []
-        seat_statuses = SeatStatus.query.filter(
-            SeatStatus.seat_id.in_(seat_ids)
-        ).with_lockmode('update').all()
-        for seat_status in seat_statuses:
-            logger.info('seat(%s) status Import to Ordered' % seat_status.seat_id)
-            if seat_status.status != int(SeatStatusEnum.Import):
-                raise Exception('seat(%s) invalid status %s' % (seat_status.seat_id, seat_status.status))
-            seat_status.status = int(SeatStatusEnum.Ordered)
-            seats.append(seat_status.seat)
+        if not product_item.stock_type.quantity_only:
+            try:
+                seats = reserving.reserve_seats(stock.id, int(quantity), reserve_status=SeatStatusEnum.Ordered)
+            except NotEnoughAdjacencyException, e:
+                logger.info('cannot allocate seat (stock_id=%s, quantity=%s) %s' % (stock.id, quantity, e))
+                e.message = u'配席可能な座席がありません  商品明細: %s  個数: %s  (stock_id: %s)' % (product_item.name, quantity, stock.id)
+                raise e
         return seats
 
     def execute(self):
         request = get_current_request()
         stocker = cart_api.get_stocker(request)
+        reserving = cart_api.get_reserving(request)
 
         # インポート実行
         order_no_list = self.carts.keys()
         for org_order_no in order_no_list:
             temp_cart = self.carts.get(org_order_no)
 
-            # 在庫更新
-            # - SeatStatus.statusがInCartの座席は、CartがDB上に生成され座席を所有しているので
-            #   在庫数(StockStatus.quantity)も減算しているが、
-            #   Importの座席は*つかんだ*だけで、座席を所有するオブジェクトは一時的なものなので、
-            #   在庫数は減算していない
-            # - なので、予約確定時に在庫数を減らす
+            # 配席/在庫更新
             try:
                 for temp_cp in temp_cart.products:
                     for temp_cpi in temp_cp.items:
+                        product_item = temp_cpi.product_item
                         stock = temp_cpi.product_item.stock
+
+                        # 配席
+                        if not stock.stock_type.quantity_only:
+                            seats = self.allocate_seats(reserving, product_item, temp_cpi.quantity)
+                            temp_cpi._seat_ids = [seat.id for seat in seats]
+                            temp_cpi.seats += seats
 
                         # 在庫数
                         quantity = temp_cpi.quantity
                         stock_requires = [(stock.id, quantity)]
                         stocker.take_stock_by_stock_id(stock_requires)
-
-                        # 座席ステータス
-                        if not stock.stock_type.quantity_only:
-                            seats = self.reserve_seats(temp_cpi._seat_ids)
-                            temp_cpi.seats += seats
-            except Exception, e:
+            except (NotEnoughAdjacencyException, Exception), e:
                 logger.error('take stock error(%s): %s' % (org_order_no, e.message))
                 transaction.abort()
                 self.import_errors[org_order_no] = u'予約番号: %s  %s' % (org_order_no, u'座席を確保できませんでした')
-                self.release_seats(order_no=org_order_no)
                 self.carts.pop(org_order_no)
-                transaction.commit()
                 continue
 
             # create ShippingAddress
@@ -642,9 +603,7 @@ class OrderImporter():
                 logger.error('create inner order error (%s): %s' % (org_order_no, e.message), exc_info=sys.exc_info())
                 transaction.abort()
                 self.import_errors[org_order_no] = u'予約番号: %s  %s' % (org_order_no, e.message)
-                self.release_seats(order_no=org_order_no)
                 self.carts.pop(org_order_no)
-                transaction.commit()
                 continue
 
             if temp_cart.created_at:
@@ -670,21 +629,3 @@ class OrderImporter():
 
         self.imported = True
         return
-
-
-def get_import_seats_query(performance_id):
-    return SeatStatus.query.join(SeatStatus.seat, Seat.venue).filter(
-        Venue.performance_id==performance_id,
-        SeatStatus.status==int(SeatStatusEnum.Import)
-    )
-
-def count_import_seats(performance_id):
-    return get_import_seats_query(performance_id).count()
-
-def release_import_seats(performance_id):
-    seat_statuses = get_import_seats_query(performance_id).with_lockmode('update').all()
-    for seat_status in seat_statuses:
-        logger.info('seat(%s) status Import to Vacant' % seat_status.seat_id)
-        seat_status.status = int(SeatStatusEnum.Vacant)
-        seat_status.save()
-    return

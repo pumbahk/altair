@@ -140,7 +140,7 @@ Altair Backend -- ${performance.event.title}[${performance.name}]
       % elif action == 'completed':
         <%include file="./_import_orders_completed.html" args="performance=performance, importer=importer" />
       % else:
-        <%include file="./_import_orders.html" args="performance=performance, importer=importer, form=form, import_seat_count=count" />
+        <%include file="./_import_orders.html" args="performance=performance, form=form" />
       % endif
     </div>
     % elif HH.has_permission('event_editor'):
