@@ -1,13 +1,13 @@
 # -*- coding:utf-8 -*-
-from altaircms.formhelpers import Form
+from altaircms.formhelpers import Form, MaybeIntegerField
 from altaircms.formhelpers import AlignChoiceField
 import wtforms.fields as fields
 import wtforms.validators as validators
 
 class ImageInfoForm(Form):
     href = fields.TextField(id="href", label=u"リンク先")
-    width = fields.TextField(id="width", label=u"レンダリングのwidth")
-    height = fields.TextField(id="height", label=u"レンダリング時のheight")
+    width = MaybeIntegerField(id="width", label=u"レンダリングのwidth", validators=[validators.Optional()])
+    height = MaybeIntegerField(id="height", label=u"レンダリング時のheight", validators=[validators.Optional()])
     alt = fields.TextField(id="alt", label=u"レンダリング時のalt")
     align = AlignChoiceField(id="align", label="align")
 
@@ -21,12 +21,3 @@ class ImageInfoForm(Form):
         ## align設定追加
         self.attributes.data = dict([("data-align", self.data["align"])])
         return True
-
-# if __name__ == "__main__":
-#     for f in ImageInfoForm():
-#         print f()
-#     from webob.multidict import MultiDict
-#     form = ImageInfoForm(MultiDict(dict(align="center")))
-#     form.validate()
-#     print form.data
-

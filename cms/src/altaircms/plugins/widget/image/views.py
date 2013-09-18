@@ -56,21 +56,16 @@ class ImageWidgetView(object):
 
     @view_config(route_name="image_widget_delete", renderer="json", request_method="POST")        
     def delete(self):
-        context = self.request.context
+        context = self.context
         widget = context.get_widget(self.request.json_body["pk"])
         context.delete(widget, flush=True)
         return {"status": "ok"}
 
     @view_config(route_name="image_widget_dialog", renderer="altaircms.plugins.widget:image/dialog.html", request_method="GET")
     def dialog(self):
-        assets = group_by_n(self.request.context.get_asset_query(), self.N)
+        assets = group_by_n(self.context.get_asset_query(), self.N)
         pk = self.request.GET.get("pk")
-        widget = self.request.context.get_widget(pk)
-
-        if widget.width == 0:
-            widget.width = ""
-        if widget.height == 0:
-            widget.height = ""
+        widget = self.context.get_widget(pk)
         params = widget.to_dict()
         params.update(widget.attributes or {})      
         form = forms.ImageInfoForm(**AlignChoiceField.normalize_params(params))
@@ -84,12 +79,12 @@ class ImageWidgetView(object):
 
         assets = None
         if search_word:
-            assets = group_by_n(self.request.context.search_asset(search_word), self.N)
+            assets = group_by_n(self.context.search_asset(search_word), self.N)
         else:
-            assets = group_by_n(self.request.context.get_asset_query(), self.N)
+            assets = group_by_n(self.context.get_asset_query(), self.N)
 
         assets_dict = create_search_result(self.request, assets)
-        widget = self.request.context.get_widget(pk) if pk else None
+        widget = self.context.get_widget(pk) if pk else None
         asset_id = widget.asset_id if widget else None
 
         return {
@@ -111,7 +106,7 @@ class ImageWidgetView(object):
         assets = group_by_n(search_result, self.N)
 
         assets_dict = create_search_result(self.request, assets)
-        widget = self.request.context.get_widget(pk) if pk else None
+        widget = self.context.get_widget(pk) if pk else None
         asset_id = widget.asset_id if widget else None
 
         return {
