@@ -102,7 +102,7 @@ summary_columns = [
     t_order.c.card_ahead_com_name, #-- 仕向け先名
 ]
 
-summary_joins = t_order.join(
+order_summary_joins = t_order.join(
     t_performance,
     and_(t_performance.c.id==t_order.c.performance_id,
          t_performance.c.deleted_at==None),
@@ -173,7 +173,7 @@ logger = logging.getLogger(__name__)
 
 
 
-sql = str(select(summary_columns, from_obj=[summary_joins]))
+sql = str(select(summary_columns, from_obj=[order_summary_joins]))
 
 
 # Userに対してUserProfileが複数あると行数が増える可能性
@@ -310,7 +310,7 @@ class OrderDownload(list):
 
     def count(self):
         sql = select([func.count(t_order.c.id)],
-                     from_obj=[summary_joins])
+                     from_obj=[order_summary_joins])
 
         logger.debug("sql = {0}".format(sql))
         cur = self.db_session.bind.execute(sql)
@@ -329,7 +329,11 @@ class OrderDownload(list):
         limit = 1000
         offset = start
         while True:
-            sql = select(summary_columns, from_obj=[summary_joins]).limit(limit).offset(offset)
+            sql = select(summary_columns, 
+                         from_obj=[order_summary_joins]
+            ).limit(limit
+            ).offset(offset)
+
             logger.debug("limit = {0}, offset = {1}".format(limit, offset))
             logger.debug("sql = {0}".format(sql))
             cur = self.db_session.bind.execute(sql)
