@@ -43,6 +43,25 @@ class SelectField(fields.SelectField):
         else:
             raise ValueError(self.gettext('Not a valid choice'))
 
+class MaybeIntegerField(fields.IntegerField):
+    blank_text = u"--------"
+    blank_value = ""
+
+    def process_data(self, value):
+        if value is None or value == self.blank_value:
+            self.data = self.blank_value
+        else:
+            super(MaybeIntegerField, self).process_data(value)
+
+    def process_formdata(self, valuelist):
+        if valuelist:
+            v = valuelist[0] 
+            if v is self.blank_value:
+                self.data = None
+                return 
+            return super(MaybeIntegerField, self).process_formdata(valuelist)
+
+
 from wtforms.compat import text_type
 class MaybeSelectField(SelectField):
     blank_text = u"--------"
