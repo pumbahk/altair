@@ -20,7 +20,7 @@ class PaymentDeliveryMethodPairs(BaseView):
 
         f = PaymentDeliveryMethodPairForm(organization_id=self.context.user.organization_id)
         f.sales_segment_group_id.data = sales_segment_group_id
-        
+
         try:
             system_fee, system_fee_type = get_system_fee_default(organization_id=self.context.user.organization_id)
         except SystemFeeDefaultDoesNotExist:
@@ -28,7 +28,7 @@ class PaymentDeliveryMethodPairs(BaseView):
             system_fee_type = f.system_fee_type.default
         except SystemFeeDefaultDuplicated:
             system_fee = f.system_fee.default
-            system_fee_type = f.system_fee_type.default            
+            system_fee_type = f.system_fee_type.default
 
         return {
             'form':f,
@@ -60,8 +60,10 @@ class PaymentDeliveryMethodPairs(BaseView):
                 system_fee, system_fee_type = get_system_fee_default(organization_id=self.context.user.organization_id)
             except SystemFeeDefaultDoesNotExist:
                 system_fee = f.system_fee.default
+                system_fee_type = f.system_fee_type.default
             except SystemFeeDefaultDuplicated:
                 system_fee = f.system_fee.default
+                system_fee_type = f.system_fee_type.default
                 
             return {
                 'form':f,
