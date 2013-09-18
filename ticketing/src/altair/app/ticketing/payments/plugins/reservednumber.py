@@ -69,7 +69,8 @@ class ReservedNumberDeliveryPlugin(object):
     def finish(self, request, cart):
         """ 確定処理 """
         seq_no = sensible_alnum_decode(cart.order_no[2:])
-        number = hashlib.md5(seq_no).hexdigest()
+        logger.debug('seq_no = %s' % seq_no)
+        number = hashlib.md5(str(seq_no)).hexdigest()
         reserved_number = m.ReservedNumber(order_no=cart.order_no, number=number)
         m.DBSession.add(reserved_number)
         logger.debug(u"引き換え番号: %s" % reserved_number.number)
