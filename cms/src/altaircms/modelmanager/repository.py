@@ -30,11 +30,8 @@ class WidgetRepository(object):
         self.request = request
         self.Model = Model
 
-    def _get_or_create(self, model, pk):
+    def get_or_create(self, pk):
         if pk is None or pk=="null":
-            return model()
+            return self.Model()
         else:
             return self.request.allowable(self.Model).get(pk)
-        
-    def get_widget(self, pk):
-        return self._get_or_create(self.Model, pk)

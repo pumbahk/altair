@@ -34,6 +34,9 @@ class Request:
         return FakeQuery(self.xs)
 
 FakeAsset = namedtuple("FakeAsset", "id")
+_FakeWidget = namedtuple("FakeWidget", "id")
+def FakeWidget(id=None):
+    return _FakeWidget(id=id)
 
 class FakeQueryTests(unittest.TestCase):
     def test_it(self):
@@ -117,6 +120,38 @@ class AssetRepositoryTests(unittest.TestCase):
         self.assertEqual(len(result), 2)
         self.assertEqual([e.id for e in result], [9, 10])
         
+
+
+class WidgetRepository(unittest.TestCase):
+    def _getTarget(self):
+        from altaircms.modelmanager.repository import WidgetRepository
+        return WidgetRepository
+        
+    def _makeOne(self, *args, **kwargs):
+        return self._getTarget()(*args, **kwargs)
+        
+    def test_get(self):
+        widget = _FakeWidget(id=10)
+        request = Request([widget]) 
+
+        target = self._makeOne(request, FakeWidget)
+        result = target.get_or_create(10)
+        self.assertEqual(result, widget)
+
+    def test_create(self):
+        request = Request([]) 
+
+        target = self._makeOne(request, FakeWidget)
+        result = target.get_or_create(None)
+        self.assertTrue(isinstance(result, _FakeWidget))
+
+    def test_create2(self):
+        request = Request([]) 
+
+        target = self._makeOne(request, FakeWidget)
+        result = target.get_or_create("null")
+        self.assertTrue(isinstance(result, _FakeWidget))
+
 
 if __name__ == "__main__":
     unittest.main()
