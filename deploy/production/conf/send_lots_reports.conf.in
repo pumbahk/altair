@@ -17,7 +17,7 @@ handlers = spool, fluent
 [logger_ticketing]
 level = DEBUG
 handlers = spool, fluent
-qualname = ticketing
+qualname = altair.app.ticketing
 propagate = 0
 
 [handler_fluent]

@@ -102,6 +102,8 @@ def deal_limit_class(limit):
     limit_class = "searchRemainingOnsale"
     if limit == u"本日販売":
         limit_class = "searchRemainingToday"
+    if limit == u"販売終了":
+        limit_class = "searchRemainingSalesTermination"
     if limit.find(u"販売開始") != -1:
         limit_class = "searchRemaining"
     return limit_class

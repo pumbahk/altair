@@ -21,8 +21,16 @@
     <td><input type="radio" name="payment_delivery_method_pair_id" value=${pdmp.id} /></td>
     <td>${pdmp.payment_method.name}</td>
     <td>${pdmp.delivery_method.name}</td>
-    <td>${vh.price(pdmp.system_fee)}</td>
     <%! from altair.app.ticketing.core.models import FeeTypeEnum %>
+    <%
+      fee_type = ''
+      if pdmp.system_fee_type == int(FeeTypeEnum.Once.v[0]):
+        fee_type = u' / 件'
+      if pdmp.system_fee_type == int(FeeTypeEnum.PerUnit.v[0]):
+        fee_type = u' / 枚'
+    %>      
+    
+    <td>${vh.price(pdmp.system_fee)}${fee_type}</td>
     <%
       fee_type = ''
       if pdmp.payment_method.fee_type == int(FeeTypeEnum.Once.v[0]):

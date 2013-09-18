@@ -15,7 +15,7 @@ from pyramid_mailer.message import Attachment
 from altair.mobile.api import detect_from_email_address
 from altair.mobile import carriers
 
-from altair.app.ticketing.core.models import ExtraMailInfo, PaymentMethodPlugin, DeliveryMethodPlugin
+from altair.app.ticketing.core.models import ExtraMailInfo, PaymentMethod, DeliveryMethod
 
 from .interfaces import (
     IMailUtility, 
@@ -234,7 +234,7 @@ def message_settings_override(message, override):
 
 ## fake
 ### TODO:refactroing
-def create_fake_order(request, organization, payment_plugin_id, delivery_plugin_id, event=None, performance=None):
+def create_fake_order(request, organization, payment_method_id, delivery_method_id, event=None, performance=None):
     ## must not save models 
     now = datetime.now()
     order = FakeObject("T")
@@ -247,17 +247,15 @@ def create_fake_order(request, organization, payment_plugin_id, delivery_plugin_
     else:
         order.performance._fake_root = organization
 
-    order.payment_delivery_pair.payment_method.payment_plugin_id = payment_plugin_id
-    payment_plugin = PaymentMethodPlugin.query.filter_by(id=payment_plugin_id).first()
-    if payment_plugin:
-        order.payment_delivery_pair.payment_method.payment_plugin = payment_plugin
-        order.payment_delivery_pair.payment_method.name = payment_plugin.name
+    order.payment_delivery_pair.payment_method.payment_plugin_id = 1 #dummy
+    payment_method = PaymentMethod.query.filter_by(id=payment_method_id).first()
+    if payment_method:
+        order.payment_delivery_pair.payment_method = payment_method
 
-    order.payment_delivery_pair.delivery_method.delivery_plugin_id = delivery_plugin_id
-    delivery_plugin = DeliveryMethodPlugin.query.filter_by(id=delivery_plugin_id).first()
-    if delivery_plugin:
-        order.payment_delivery_pair.delivery_method.delivery_plugin = delivery_plugin
-        order.payment_delivery_pair.delivery_method.name = delivery_plugin.name
+    order.payment_delivery_pair.delivery_method.delivery_plugin_id = 1 #dummy
+    delivery_method = DeliveryMethod.query.filter_by(id=delivery_method_id).first()
+    if delivery_method:
+        order.payment_delivery_pair.delivery_method = delivery_method
 
     if event:
         order.performance.event = event
@@ -265,7 +263,7 @@ def create_fake_order(request, organization, payment_plugin_id, delivery_plugin_
         order.performance = performance
     return order
 
-def create_fake_lot_entry(request, organization, payment_plugin_id, delivery_plugin_id, event=None, performance=None):
+def create_fake_lot_entry(request, organization, payment_method_id, delivery_method_id, event=None, performance=None):
     ## must not save models 
     now = datetime.now()
     lot_entry = FakeObject("T")
@@ -280,17 +278,16 @@ def create_fake_lot_entry(request, organization, payment_plugin_id, delivery_plu
     else:
         lot_entry.lot.event._fake_root = organization #lot_entry
 
-    lot_entry.payment_delivery_pair.payment_method.payment_plugin_id = payment_plugin_id
-    payment_plugin = PaymentMethodPlugin.query.filter_by(id=payment_plugin_id).first()
-    if payment_plugin:
-        lot_entry.payment_delivery_method_pair.payment_method.payment_plugin = payment_plugin #l
-        lot_entry.payment_delivery_method_pair.payment_method.name = payment_plugin.name #l
 
-    lot_entry.payment_delivery_pair.delivery_method.delivery_plugin_id = delivery_plugin_id
-    delivery_plugin = DeliveryMethodPlugin.query.filter_by(id=delivery_plugin_id).first()
-    if delivery_plugin:
-        lot_entry.payment_delivery_method_pair.delivery_method.delivery_plugin = delivery_plugin
-        lot_entry.payment_delivery_method_pair.delivery_method.name = delivery_plugin.name
+    lot_entry.payment_delivery_method_pair.payment_method.payment_plugin_id = 1 #dummy
+    payment_method = PaymentMethod.query.filter_by(id=payment_method_id).first()
+    if payment_method:
+        lot_entry.payment_delivery_method_pair.payment_method = payment_method
+
+    lot_entry.payment_delivery_method_pair.delivery_method.delivery_plugin_id = 1 #dummy
+    delivery_method = DeliveryMethod.query.filter_by(id=delivery_method_id).first()
+    if delivery_method:
+        lot_entry.payment_delivery_method_pair.delivery_method = delivery_method
 
     if event:
         lot_entry.lot.event = event #lot_entry

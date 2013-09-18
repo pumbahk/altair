@@ -1,0 +1,24 @@
+<%page args="performance, stats" />
+<%namespace file="/common/helpers.html" name="ch" />
+
+<div>
+  <h4>予約インポート詳細</h4>
+</div>
+
+<%include file="_stats.html" args="stats=stats" />
+
+<% errors = stats.get('error_orders') %>
+% if errors:
+<h5>インポートできなかった予約のエラー詳細</h5>
+<div class="alert alert-error">
+  % for error in errors.values():
+  <p>${error}</p>
+  % endfor
+</div>
+% endif
+
+<form class="form-horizontal" action="${request.route_path('performances.import_orders.index', performance_id=performance.id)}" method="GET">
+  <div class="form-actions">
+    <input class="btn btn-primary pull-right" type="submit" value="戻る">
+  </div>
+</form>

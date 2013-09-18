@@ -71,9 +71,9 @@ class TestSearcher(unittest.TestCase):
         ret = self.searcher.get_events_from_sale(form, None)
         self.assertTrue(True)
 
-    def test_get_events_on_sale(self):
+    def test_get_event_in_session(self):
         form = DetailSearchForm()
-        ret = self.searcher._get_events_on_sale(form, None)
+        ret = self.searcher._get_event_in_session(form, None)
         self.assertTrue(True)
 
     def test_get_events_week_sale(self):

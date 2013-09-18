@@ -53,6 +53,10 @@ from .utils import ApplicableTicketsProducer
 
 logger = logging.getLogger(__name__)
 
+class FeeTypeEnum(StandardEnum):
+    Once = (0, u'1件あたりの手数料')
+    PerUnit = (1, u'1枚あたりの手数料')
+
 class Seat_SeatAdjacency(Base):
     __tablename__ = 'Seat_SeatAdjacency2'
     l0_id = Column(Unicode(48), ForeignKey('Seat.l0_id'), primary_key=True)
@@ -315,6 +319,7 @@ class SeatStatusEnum(StandardEnum):
     NotOnSale = 0
     Vacant = 1
     Keep = 8  # インナー予約で座席確保した状態、カート生成前
+    Import = 9  # 予約インポートで座席確保した状態、カート生成前
     InCart = 2
     Ordered = 3
     Confirmed = 4
@@ -1263,7 +1268,10 @@ class PaymentDeliveryMethodPair(Base, BaseModel, WithTimestamp, LogicallyDeleted
     __tablename__ = 'PaymentDeliveryMethodPair'
     query = DBSession.query_property()
     id = AnnotatedColumn(Identifier, primary_key=True, _a_label=_(u'ID'))
+
     system_fee = AnnotatedColumn(Numeric(precision=16, scale=2), nullable=False, _a_label=_(u'システム利用料'))
+    system_fee_type = Column(Integer, nullable=False, default=FeeTypeEnum.Once.v[0])
+    
     transaction_fee = AnnotatedColumn(Numeric(precision=16, scale=2), nullable=False, _a_label=_(u'決済手数料'))
     delivery_fee = AnnotatedColumn(Numeric(precision=16, scale=2), nullable=False, _a_label=_(u'引取手数料'))
     discount = AnnotatedColumn(Numeric(precision=16, scale=2), nullable=False, _a_label=_(u'割引額'))
@@ -1330,9 +1338,30 @@ class PaymentDeliveryMethodPair(Base, BaseModel, WithTimestamp, LogicallyDeleted
             return Decimal()
 
     @property
+    def system_fee_per_product(self):
+        """商品ごとのシステム利用料"""
+        return Decimal()
+
+    @property
+    def system_fee_per_ticket(self):
+        """発券ごとのシステム利用料"""
+        if self.system_fee_type == FeeTypeEnum.PerUnit.v[0]:
+            return self.system_fee
+        else:
+            return Decimal()
+
+    @property
+    def system_fee_per_order(self):
+        """注文ごとのシステム利用料"""
+        if self.system_fee_type == FeeTypeEnum.Once.v[0]:
+            return self.system_fee
+        else:
+            return Decimal()
+
+    @property
     def per_order_fee(self):
         """注文ごと手数料"""
-        return self.system_fee + self.delivery_fee_per_order + self.transaction_fee_per_order
+        return self.system_fee_per_order + self.delivery_fee_per_order + self.transaction_fee_per_order
 
     @property
     def per_product_fee(self):
@@ -1375,10 +1404,24 @@ class DeliveryMethodPlugin(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     id = Column(Identifier, primary_key=True)
     name = Column(String(255))
 
-class FeeTypeEnum(StandardEnum):
-    Once = (0, u'1件あたりの手数料')
-    PerUnit = (1, u'1枚あたりの手数料')
 
+class ServiceFeeMethod(Base, BaseModel, WithTimestamp, LogicallyDeleted):
+    __tablename__ = 'ServiceFeeMethod'
+    id = Column(Identifier, primary_key=True)
+    name = Column(String(255))
+    description = Column(String(2000))
+    fee = Column(Numeric(precision=16, scale=2), nullable=False)
+    fee_type = Column(Integer, nullable=False, default=FeeTypeEnum.Once.v[0])
+    organization_id = Column(Identifier, ForeignKey('Organization.id'))
+    organization = relationship('Organization', uselist=False, backref='service_fee_method_list') 
+    system_fee_default = Column(Boolean, nullable=False, default=True)
+
+    @property
+    def fee_type_label(self):
+        for ft in FeeTypeEnum:
+            if ft.v[0] == self.fee_type:
+                return ft.v[1]
+    
 class PaymentMethod(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'PaymentMethod'
     id = Column(Identifier, primary_key=True)
@@ -2333,12 +2376,16 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         from altair.app.ticketing.checkout.models import Checkout
         return Cart.query.filter(Cart._order_no==self.order_no).join(Checkout).with_entities(Checkout).first()
 
+    @property
+    def is_inner_channel(self):
+        return self.channel in [ChannelEnum.INNER.v, ChannelEnum.IMPORT.v]
+
     def can_change_status(self, status):
         # 決済ステータスはインナー予約のみ変更可能
         if status == 'paid':
-            return (self.status == 'ordered' and self.payment_status == 'unpaid' and self.channel == ChannelEnum.INNER.v)
+            return (self.status == 'ordered' and self.payment_status == 'unpaid' and self.is_inner_channel)
         elif status == 'unpaid':
-            return (self.status == 'ordered' and self.payment_status == 'paid' and self.channel == ChannelEnum.INNER.v)
+            return (self.status == 'ordered' and self.payment_status == 'paid' and self.is_inner_channel)
         else:
             return False
 
@@ -2363,7 +2410,7 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     def can_deliver(self):
         # 受付済のみ配送済に変更可能
         # インナー予約は常に、それ以外は入金済のみ変更可能
-        return self.status == 'ordered' and (self.channel == ChannelEnum.INNER.v or self.payment_status == 'paid')
+        return self.status == 'ordered' and (self.is_inner_channel or self.payment_status == 'paid')
 
     def can_delete(self):
         # キャンセルのみ論理削除可能
@@ -2387,7 +2434,7 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
         # インナー予約の場合はAPI決済していないのでスキップ
         # ただしコンビニ決済はインナー予約でもAPIで通知しているので処理する
-        if self.channel == ChannelEnum.INNER.v and ppid != plugins.SEJ_PAYMENT_PLUGIN_ID:
+        if self.is_inner_channel and ppid != plugins.SEJ_PAYMENT_PLUGIN_ID:
             logger.info(u'インナー予約のキャンセルなので決済払戻処理をスキップ %s' % self.order_no)
 
         # クレジットカード決済
@@ -3263,6 +3310,7 @@ class ChannelEnum(StandardEnum):
     PC = 1
     Mobile = 2
     INNER = 3
+    IMPORT = 4
 
 class Refund(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'Refund'
@@ -3520,6 +3568,12 @@ class SalesSegment(Base, BaseModel, LogicallyDeleted, WithTimestamp):
              pdmp.delivery_fee_per_ticket * product.num_priced_tickets(pdmp)) * quantity
             for product, quantity in product_quantities])
 
+    def get_system_fee(self, pdmp, product_quantities):
+        return pdmp.system_fee_per_order + sum([
+            (pdmp.system_fee_per_product + \
+             pdmp.system_fee_per_ticket * product.num_priced_tickets(pdmp)) * quantity
+            for product, quantity in product_quantities])
+
     def get_products_amount(self, pdmp, product_quantities):
         return sum([
             (product.price + \
@@ -3602,3 +3656,34 @@ class PerformanceSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     def create_from_template(cls, template, **kwargs):
         setting = cls.clone(template)
         return setting
+
+
+class ImportStatusEnum(StandardEnum):
+    Waiting = (1, u'インポート待ち')
+    Importing = (2, u'インポート中')
+    Imported = (3, u'インポート完了')
+
+
+class OrderImportTask(Base, BaseModel, WithTimestamp, LogicallyDeleted):
+    __tablename__ = 'OrderImportTask'
+
+    id = Column(Identifier, primary_key=True)
+    organization_id = Column(Identifier, ForeignKey('Organization.id', ondelete='CASCADE'), nullable=False)
+    performance_id = Column(Identifier, ForeignKey('Performance.id'), nullable=False)
+    operator_id = Column(Identifier, ForeignKey('Operator.id', ondelete='CASCADE'), nullable=False)
+    import_type = Column(Integer, nullable=False)
+    status = Column(Integer, nullable=False)
+    count = Column(Integer, nullable=False)
+    data = Column(UnicodeText(8388608))
+    error = Column(UnicodeText, nullable=True)
+
+    organization = relationship('Organization')
+    performance = relationship('Performance')
+    operator = relationship('Operator')
+
+    @classmethod
+    def status_label(cls, status):
+        for e in ImportStatusEnum:
+            if e.v[0] == status:
+                return e.v[1]
+        return u''

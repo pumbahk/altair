@@ -6,7 +6,7 @@ from datetime import datetime
 from pyramid.security import has_permission, ACLAllowed
 from wtforms import Form, ValidationError
 from wtforms import (HiddenField, TextField, SelectField, SelectMultipleField, TextAreaField, BooleanField,
-                     RadioField, FieldList, FormField, DecimalField, IntegerField)
+                     RadioField, FieldList, FormField, DecimalField, IntegerField, FileField)
 from wtforms.validators import Optional, AnyOf, Length, Email, Regexp
 from wtforms.widgets import CheckboxInput, HiddenInput
 
@@ -21,6 +21,10 @@ from altair.app.ticketing.core.models import (Organization, PaymentMethod, Deliv
 from altair.app.ticketing.cart.schemas import ClientForm
 from altair.app.ticketing.payments import plugins
 from altair.app.ticketing.core import helpers as core_helpers
+from altair.app.ticketing.orders.importer import ImportTypeEnum, ImportCSVReader
+from altair.app.ticketing.orders.export import OrderCSV
+from altair.app.ticketing.csvutils import AttributeRenderer
+
 
 class OrderForm(Form):
 
@@ -683,6 +687,53 @@ class OrderRefundForm(Form):
                     self.end_at.errors.append(u'入力してください')
                     status = False
         return status
+
+
+class OrderImportForm(Form):
+
+    def __init__(self, *args, **kwargs):
+        super(type(self), self).__init__(*args, **kwargs)
+
+    def _get_translations(self):
+        return Translations()
+
+    order_csv = FileField(
+        u'CSVファイル',
+        validators=[]
+    )
+    import_type = SelectField(
+        label=u'インポート方法',
+        validators=[Required()],
+        choices=[e.v for e in ImportTypeEnum],
+        default=ImportTypeEnum.Create.v[0],
+        coerce=int,
+    )
+
+    def validate_order_csv(form, field):
+        if not hasattr(field.data, 'file'):
+            raise ValidationError(u'選択してください')
+
+        if len(field.data.file.readlines()) < 2:
+            raise ValidationError(u'データがありません')
+        field.data.file.seek(0)
+
+        # ヘッダーをチェック
+        reader = ImportCSVReader(field.data.file)
+        import_header = reader.fieldnames
+        field.data.file.seek(0)
+
+        export_header = []
+        for c in OrderCSV.per_seat_columns:
+            if not isinstance(c, AttributeRenderer):
+                if hasattr(c, 'column_name'):
+                    column_name = c.column_name
+                else:
+                    column_name = c.key
+                export_header.append(column_name)
+
+        difference = set(import_header) - set(export_header)
+        if len(difference) > 0:
+            raise ValidationError(u'CSVファイルのフォーマットが正しくありません')
 
 
 class ClientOptionalForm(ClientForm):

@@ -92,7 +92,7 @@ class SearchPageResource(CommonResource):
             qs = searcher.search_area(search_query=query, qs=qs)
 
         if qs:
-            qs = searcher.search_on_sale(qs=qs)
+            qs = searcher.search_event_in_session(qs=qs)
         result = searcher.create_result(qs=qs, page=page, query=query, per=per)
         return result
 

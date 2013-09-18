@@ -1,0 +1,28 @@
+<%page args="performance, stats" />
+<%namespace file="/common/helpers.html" name="ch" />
+
+<div class="alert alert-warning">
+  <p>CSVファイルを読み込みました。以下の内容で正しいか確認してください。</p>
+  <ul>
+    <li>注意: 席数は在庫総数のチェックのみです。インポート時の配席順などにより、実際にはいくつかの席がインポートできない可能性があります。</li>
+  </ul>
+</div>
+
+<%include file="_stats.html" args="stats=stats" />
+
+<% errors = stats.get('error_orders') %>
+% if errors:
+<h5>インポートできない予約のエラー詳細</h5>
+<div class="alert alert-error">
+  % for error in errors.values():
+  <p>${error}</p>
+  % endfor
+</div>
+% endif
+
+<form class="form-horizontal" action="${request.route_path('performances.import_orders.confirm', performance_id=performance.id)}" method="POST">
+  <div class="form-actions">
+    <input class="btn btn-primary pull-right" type="submit" value="インポートを実行する">
+    <a href="${request.route_path('performances.import_orders.index', performance_id=performance.id)}" class="btn pull-right" style="margin-right: 10px;">戻る</a>
+  </div>
+</form>

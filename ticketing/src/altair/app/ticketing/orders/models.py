@@ -23,6 +23,7 @@ from altair.app.ticketing.users.models import (
     User,
     UserProfile,
     Member,
+    Membership,
     UserCredential,
 )
 from altair.app.ticketing.sej.models import (
@@ -49,6 +50,10 @@ class SummarizedUserCredential(object):
     def __init__(self, auth_identifier, membership):
         self.auth_identifier = auth_identifier
         self.membership = membership
+
+class SummarizedMembership(object):
+    def __init__(self, name):
+        self.name = name
 
 class SummarizedUserProfile(object):
     def __init__(self,
@@ -221,6 +226,7 @@ class OrderSummary(Base):
             ShippingAddress.__table__.c.email_2,
             PaymentMethod.__table__.c.name.label('payment_method_name'),
             DeliveryMethod.__table__.c.name.label('delivery_method_name'),
+            Membership.__table__.c.name.label('membership_name')
             ],
         primary_key=[
             Order.__table__.c.id
@@ -280,6 +286,7 @@ class OrderSummary(Base):
     payment_method_name = PaymentMethod.__table__.c.name
     delivery_method_id = DeliveryMethod.id
     delivery_method_name = DeliveryMethod.__table__.c.name
+    membership_name = Membership.__table__.c.name
 
     __table__ = Order.__table__ \
         .join(
@@ -321,7 +328,12 @@ class OrderSummary(Base):
             UserCredential.__table__,
             and_(User.id==UserCredential.user_id,
                  UserCredential.deleted_at==None)
-            )
+            ) \
+        .outerjoin(
+            Membership.__table__,
+            and_(UserCredential.membership_id==Membership.id,
+                 Membership.deleted_at==None)
+        )
 
     ordered_products = orm.relationship('OrderedProduct', primaryjoin=Order.id==OrderedProduct.order_id)
     refund = orm.relationship('Refund', primaryjoin=Order.refund_id==Refund.id)
@@ -360,8 +372,10 @@ class OrderSummary(Base):
                 self.user_profile_sex
                 ),
             SummarizedUserCredential(
-                self.auth_identifier, 
-                None
+                self.auth_identifier,
+                SummarizedMembership(
+                    self.membership_name
+                    )
                 )
             )
 

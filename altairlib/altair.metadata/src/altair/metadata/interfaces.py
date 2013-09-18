@@ -1,6 +1,7 @@
+# -*- coding:utf-8 -*-
 from zope.interface import Interface, Attribute
 
-class IOrderedProductAttributeMetadata(Interface):
+class IModelAttributeMetadata(Interface):
     key = Attribute('''''')
     type = Attribute('''''')
     provider = Attribute('''''')
@@ -11,7 +12,7 @@ class IOrderedProductAttributeMetadata(Interface):
     def get_display_name(locale):
         pass 
 
-class IOrderedProductAttributeMetadataProvider(Interface):
+class IModelAttributeMetadataProvider(Interface):
     name = Attribute('''''')
 
     def __iter__():
@@ -23,7 +24,7 @@ class IOrderedProductAttributeMetadataProvider(Interface):
     def __contains__(key):
         pass
 
-class IOrderedProductAttributeMetadataProviderRegistry(Interface):
+class IModelAttributeMetadataProviderRegistry(Interface):
     def queryProviderByName(name):
         pass
 

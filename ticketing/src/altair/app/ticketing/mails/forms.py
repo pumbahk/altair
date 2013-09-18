@@ -161,12 +161,10 @@ def MailInfoFormFactory(template, mutil=None, request=None):
 
 def MethodChoicesFormFactory(template):
     attrs = {}
-    choices = [(m.payment_plugin_id, m.name)
-               for m in template.organization.payment_method_list]
+    choices = [(m.id, m.name) for m in template.organization.payment_method_list]
     attrs["payment_methods"] = fields.SelectField(label=u"決済方法", choices=choices, id="payment_methods")    
 
-    choices = [(m.delivery_plugin_id, m.name)
-               for m in template.organization.delivery_method_list]
+    choices = [(m.id, m.name) for m in template.organization.delivery_method_list]
     attrs["delivery_methods"] = fields.SelectField(label=u"引取方法", choices=choices, id="delivery_methods")
     return type("MethodChoiceForm", (Form, ), attrs)
 
