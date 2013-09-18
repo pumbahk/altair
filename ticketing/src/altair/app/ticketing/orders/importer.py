@@ -175,9 +175,12 @@ class ImportCSVReader(object):
         self.encoding = encoding
         columns = dict((v, k) for k, v in japanese_columns.iteritems())
         header = []
-        for field in self.reader.fieldnames:
-            field = unicode(field.decode(self.encoding))
-            header.append(columns.get(field))
+        try:
+            for field in self.reader.fieldnames:
+                field = unicode(field.decode(self.encoding))
+                header.append(columns.get(field))
+        except Exception, e:
+            logger.info('invalid file: %s' % e.message)
         self.reader.fieldnames = header
 
     def __iter__(self):
@@ -564,6 +567,8 @@ class OrderImporter():
         stocker = cart_api.get_stocker(request)
         reserving = cart_api.get_reserving(request)
 
+        self.validate()
+
         # インポート実行
         order_no_list = self.carts.keys()
         for org_order_no in order_no_list:
@@ -650,7 +655,6 @@ class OrderImporter():
         return
 
     def add_task(self):
-        logger.info('file data = %s' % self.file_data)
         task = OrderImportTask(
             organization_id=self.organization_id,
             performance_id=self.performance_id,
