@@ -55,6 +55,7 @@ class MatchUpPerformanceSelectorTests(unittest.TestCase):
                         name=u'testing performance1',
                         id=1,
                         start_on=datetime(2013, 3, 31),
+                        end_on=datetime(2013, 4, 1),
                         venue=testing.DummyModel(name=u"テスト会場"),
                         display_order=1,
                         ),
@@ -67,6 +68,7 @@ class MatchUpPerformanceSelectorTests(unittest.TestCase):
                         name=u'testing performance1',
                         id=4,
                         start_on=datetime(2013, 4, 1),
+                        end_on=datetime(2013, 4, 2),
                         venue=testing.DummyModel(name=u"テスト会場"),
                         display_order=3
                         ),
@@ -79,6 +81,7 @@ class MatchUpPerformanceSelectorTests(unittest.TestCase):
                         name=u'testing performance2',
                         id=6,
                         start_on=datetime(2013, 4, 1),
+                        end_on=datetime(2013, 4, 2),
                         venue=testing.DummyModel(name=u"テスト会場"),
                         display_order=2
                         ),
@@ -165,6 +168,7 @@ class DatePerformanceSelectorTests(unittest.TestCase):
                         name=u'testing performance1',
                         id=1,
                         start_on=datetime(2013, 3, 31),
+                        end_on=datetime(2013, 4, 1),
                         venue=testing.DummyModel(name=u"テスト会場"),
                         display_order=1
                         ),
@@ -177,6 +181,7 @@ class DatePerformanceSelectorTests(unittest.TestCase):
                         name=u'testing performance1',
                         id=4,
                         start_on=datetime(2013, 4, 1),
+                        end_on=datetime(2013, 4, 2),
                         venue=testing.DummyModel(name=u"テスト会場"),
                         display_order=2
                         ),
@@ -189,6 +194,7 @@ class DatePerformanceSelectorTests(unittest.TestCase):
                         name=u'testing performance2',
                         id=6,
                         start_on=datetime(2013, 4, 1),
+                        end_on=datetime(2013, 4, 2),
                         venue=testing.DummyModel(name=u"テスト会場"),
                         display_order=3
                         ),
