@@ -200,7 +200,7 @@ logger = logging.getLogger(__name__)
 
 
 
-sql = str(select(summary_columns, from_obj=[order_summary_joins]))
+#sql = str(select(summary_columns, from_obj=[order_summary_joins]))
 
 
 # Userに対してUserProfileが複数あると行数が増える可能性
@@ -211,13 +211,14 @@ class OrderDownload(list):
 
     #target = order_summary_joins
     target = order_product_summary_joins
+    columns = summary_columns
 
     def __init__(self, db_session, columns, condition):
         self.db_session = db_session
-        self.columns = columns
+        #self.columns = columns
         self.condition = condition
 
-    def query_cond(self, condition, limit=None, offset=None):
+    def query_cond(self, condition):
         sql = ""
         params = ()
         # if 'billing_or_exchange_number' in condition:
@@ -322,13 +323,6 @@ class OrderDownload(list):
         #     else:
         #         pass
 
-        if limit is not None and offset is not None:
-            sql += " LIMIT %s, %s "
-            params += (offset, limit)
-        elif limit is not None:
-            sql += " LIMIT %s "
-            params += (limit,)
-
         return sql, params
 
     def __iter__(self):
@@ -359,7 +353,7 @@ class OrderDownload(list):
         limit = min(1000, stop)
         offset = start
         while True:
-            sql = select(summary_columns, 
+            sql = select(self.columns, 
                          from_obj=[self.target]
             ).limit(limit
             ).offset(offset)
