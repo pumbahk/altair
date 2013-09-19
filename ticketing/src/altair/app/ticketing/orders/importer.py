@@ -230,7 +230,7 @@ class OrderImporter():
         if 'errors' in kwargs:
             errors = kwargs.get('errors')
             if errors:
-                self.errors = OrderedDict(json.loads(errors))
+                self.errors = OrderedDict(errors)
 
         file = StringIO()
         file.write(file_data)
@@ -683,14 +683,14 @@ class OrderImporter():
             count=len(self.valid_carts),
             status=self.status,
             data=self.file_data,
-            error=json.dumps(self.errors)
+            errors=json.dumps(self.errors)
         )
         task.save()
 
     def update_task(self):
         task = self.task
         task.status = self.status
-        task.error = json.dumps(self.errors)
+        task.errors = json.dumps(self.errors)
         task.save()
 
     @staticmethod
@@ -708,5 +708,5 @@ class OrderImporter():
             created_at=task.created_at,
             updated_at=task.updated_at,
             status=task.status,
-            errors=task.error
+            errors=task.errors
         )
