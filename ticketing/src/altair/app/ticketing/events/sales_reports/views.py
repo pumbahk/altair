@@ -91,7 +91,7 @@ class SalesReports(BaseView):
         if not form.recipient.data:
             form.recipient.data = ', '.join([rs.recipient for rs in report_settings])
         if not form.subject.data:
-            form.subject.data = u'[売上レポート] %s' % subject
+            form.subject.data = u'[売上レポート|%s] %s' % (self.context.user.organization.name, subject)
 
         return {
             'form':form,
