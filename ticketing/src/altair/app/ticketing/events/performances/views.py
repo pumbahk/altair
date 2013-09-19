@@ -196,7 +196,7 @@ class PerformanceShowView(BaseView):
             'tab': 'import_orders',
             'action': 'confirm',
             'performance': self.performance,
-            'stats': importer.validated_stats(),
+            'stats': importer.stats(),
         }
         data.update(self._extra_data())
         return data
@@ -222,16 +222,11 @@ class PerformanceShowView(BaseView):
             return HTTPFound(self.request.route_url('performances.import_orders.index', performance_id=self.performance.id))
 
         importer = OrderImporter.load_task(task)
-        if importer.imported:
-            stats = importer.imported_stats()
-        else:
-            stats = importer.validated_stats()
-
         data = {
             'tab': 'import_orders',
             'action': 'show',
             'performance': self.performance,
-            'stats': stats,
+            'stats': importer.stats(),
         }
         data.update(self._extra_data())
         return data

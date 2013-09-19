@@ -205,18 +205,9 @@ def import_orders():
     for task in tasks:
         try:
             task = DBSession.merge(task)
-            task.status = ImportStatusEnum.Importing.v[0]
-            task.save()
-            transaction.commit()
-
-            task = DBSession.merge(task)
             logging.info('order_import_task(%s) importing..' % task.id)
             importer = OrderImporter.load_task(task)
             importer.execute()
-
-            task = DBSession.merge(task)
-            task.status = ImportStatusEnum.Imported.v[0]
-            task.save()
             transaction.commit()
         except Exception, e:
             transaction.abort()
