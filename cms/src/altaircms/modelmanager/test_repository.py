@@ -128,6 +128,17 @@ class AssetRepositoryTests(unittest.TestCase):
         self.assertEqual(len(result), 1)
         self.assertEqual([e.id for e in result], [6])
 
+    def test_with_multiple_goal(self):
+        request = Request(get_assets(10))
+        target = self._makeOne(request, FakeAsset, offset=3)
+
+        xs = target.filter_by(id=6)
+        ys = target.filter_by(id=7)
+
+        self.assertNotEqual(xs, ys)
+        self.assertEqual(len(xs.lazy_query.fns), 1)
+        self.assertEqual(len(ys.lazy_query.fns), 1)
+        self.assertNotEqual(xs.lazy_query, ys.lazy_query)
 
 class WidgetRepository(unittest.TestCase):
     def _getTarget(self):
