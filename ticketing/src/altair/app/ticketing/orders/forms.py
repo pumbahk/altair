@@ -732,7 +732,7 @@ class OrderImportForm(Form):
                 export_header.append(column_name)
 
         difference = set(import_header) - set(export_header)
-        if len(difference) > 0:
+        if len(difference) > 0 or len(import_header) == 0:
             raise ValidationError(u'CSVファイルのフォーマットが正しくありません')
 
 
