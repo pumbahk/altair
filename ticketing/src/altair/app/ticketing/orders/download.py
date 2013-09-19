@@ -350,7 +350,7 @@ class OrderDownload(list):
 
     def execute(self, start, stop):
         logger.debug("start = {0}, stop = {1}".format(start, stop))
-        limit = min(1000, stop)
+        limit = min(1000, stop-start)
         offset = start
         while True:
             sql = select(self.columns, 
