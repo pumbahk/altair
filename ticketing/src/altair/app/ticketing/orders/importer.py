@@ -12,7 +12,7 @@ from StringIO import StringIO
 
 from zope.interface import implementer
 from pyramid.threadlocal import get_current_request
-from sqlalchemy.orm.exc import NoResultFound
+from sqlalchemy.orm.exc import NoResultFound, MultipleResultsFound
 
 from altair.app.ticketing.cart.reserving import NotEnoughAdjacencyException
 from altair.app.ticketing.cart import api as cart_api
@@ -228,7 +228,9 @@ class OrderImporter():
         if 'status' in kwargs:
             self.status = kwargs.get('status')
         if 'errors' in kwargs:
-            self.errors = OrderedDict(json.loads(kwargs.get('errors')))
+            errors = kwargs.get('errors')
+            if errors:
+                self.errors = OrderedDict(json.loads(errors))
 
         file = StringIO()
         file.write(file_data)
@@ -302,7 +304,7 @@ class OrderImporter():
                 seat = self.get_seat(row, product_item)
                 if seat:
                     cpi._seat_ids.append(seat.id)
-            except NoResultFound, e:
+            except (NoResultFound, MultipleResultsFound), e:
                 self.errors[order_no] = u'予約番号: %s  %s' % (order_no, e.message)
                 continue
 
@@ -351,6 +353,9 @@ class OrderImporter():
         except NoResultFound, e:
             e.message = u'販売区分がありません  販売区分グループ名: %s' % ssg_name
             raise e
+        except MultipleResultsFound, e:
+            e.message = u'候補の販売区分が複数あります  販売区分グループ名: %s' % ssg_name
+            raise e
         return sales_segment
 
     def get_pdmp(self, row, sales_segment):
@@ -366,6 +371,9 @@ class OrderImporter():
             ).one()
         except NoResultFound, e:
             e.message = u'決済引取方法がありません  決済方法: %s  引取方法: %s' % (payment_method_name, delivery_method_name)
+            raise e
+        except MultipleResultsFound, e:
+            e.message = u'候補の決済引取方法が複数あります  決済方法: %s  引取方法: %s' % (payment_method_name, delivery_method_name)
             raise e
         return pdmp
 
@@ -395,6 +403,9 @@ class OrderImporter():
         except NoResultFound, e:
             e.message = u'商品がありません  商品: %s' % product_name
             raise e
+        except MultipleResultsFound, e:
+            e.message = u'候補の商品が複数あります  商品: %s' % product_name
+            raise e
         return product
 
     def get_product_item(self, row, product):
@@ -406,6 +417,9 @@ class OrderImporter():
             ).one()
         except NoResultFound, e:
             e.message = u'商品明細がありません  商品明細: %s' % product_item_name
+            raise e
+        except MultipleResultsFound, e:
+            e.message = u'候補の商品明細が複数あります  商品明細: %s' % product_item_name
             raise e
         return product
 
@@ -423,6 +437,9 @@ class OrderImporter():
             ).one()
         except NoResultFound, e:
             e.message = u'座席がありません  座席: %s' % seat_name
+            raise e
+        except MultipleResultsFound, e:
+            e.message = u'候補の座席が複数あります  座席: %s' % seat_name
             raise e
         return seat
 
@@ -663,7 +680,7 @@ class OrderImporter():
             performance_id=self.performance_id,
             operator_id=self.operator_id,
             import_type=self.import_type,
-            count=len(self.carts),
+            count=len(self.valid_carts),
             status=self.status,
             data=self.file_data,
             error=json.dumps(self.errors)

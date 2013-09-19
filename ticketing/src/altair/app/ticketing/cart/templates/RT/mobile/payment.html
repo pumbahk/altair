@@ -142,7 +142,7 @@ ${h.format_currency(m.transaction_fee)} (${h.fee_type(m.payment_method.fee_type)
 ■発券/引取手数料:<br/>
 ${h.format_currency(m.delivery_fee)} (${h.fee_type(m.delivery_method.fee_type)})<br/>
 ■システム利用料:<br/>
-${h.format_currency(m.system_fee)} (${h.fee_type(m.system_fee_type)})<br/>
+${h.format_currency(m.system_fee)} (1申込当り)<br/>
 <div>
 % if m.payment_method.payment_plugin_id == 1:
 <font size="-2">
