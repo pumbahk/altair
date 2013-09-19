@@ -13,7 +13,7 @@
 
 <script>
   $(document).ready(function(){
-    var event_rows = event_table.rows.length - 2;
+    var event_rows = event_table.rows.length - 1;
     if (event_rows < 0) event_rows = 0;
 
     for (var cnt=0; cnt<event_rows; cnt++) {
@@ -59,7 +59,9 @@
 </span>
 
 <div class="events" style="clear: both">
-  ${search_query}
+  % if search_query:
+    ${search_query}
+  % endif
   <table id="event_table" class="table bordered">
     <thead>
       <tr>
@@ -108,9 +110,11 @@
           </td>
           <td>
             % if (len(h.get_deal_range(event)) > 1) or (len(h.get_performance_range(event)) > 1):
-            <a href="javascript:toggle_detail(${row_no});">
-              <button>開く</button>
-            </a>
+            <div class="btn-group">
+              <a href="javascript:toggle_detail(${row_no});" class="btn">
+                <i class=""></i> 開く
+              </a>
+            </div>
             % endif
           </td>
         % endif

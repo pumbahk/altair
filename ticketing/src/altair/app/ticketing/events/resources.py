@@ -2,6 +2,7 @@
 from altair.app.ticketing.resources import TicketingAdminResource
 from datetime import timedelta
 from altair.app.ticketing.core.models import Performance, SalesSegment
+from sqlalchemy import or_
 
 class EventAdminResource(TicketingAdminResource):
     def __init__(self, request):
@@ -10,6 +11,12 @@ class EventAdminResource(TicketingAdminResource):
     def need_sales_segment(self, query, *args):
         if len(args):
             query = query.join(SalesSegment, Performance.id == SalesSegment.performance_id)
+        return query
+
+    def create_like_where(self, query, target, code, title):
+        if target:
+            pattern = '%' + target + '%'
+            query = query.filter(or_(code.like(pattern), title.like(pattern)))
         return query
 
     def create_where(self, query, from_date, to_date, target):
@@ -48,48 +55,58 @@ class EventAdminResource(TicketingAdminResource):
 
     def create_search_query(self, form):
         search_query = []
+        if form.event_name_or_code.data:
+            query = u"イベント名（コード）："
+            query += form.event_name_or_code.data
+            search_query.append(query)
+        if form.performance_name_or_code.data:
+            query = u"パフォーマンス名（コード）："
+            query += form.performance_name_or_code.data
+            search_query.append(query)
         if form.perf_range_start.data or form.perf_range_end.data:
             query = u"公演期間検索："
             str = self._get_str(form.perf_range_start.data) or ""
-            query = query + str + u" 〜 "
+            query += str + u" 〜 "
             str = self._get_str(form.perf_range_end.data) or ""
-            query = query + str
+            query += str
             search_query.append(query)
         if form.deal_range_start.data or form.deal_range_end.data:
             query = u"販売期間検索："
             str = self._get_str(form.deal_range_start.data) or ""
-            query = query + str + u" 〜 "
+            query += str + u" 〜 "
             str = self._get_str(form.deal_range_end.data) or ""
-            query = query + str
+            query += str
             search_query.append(query)
         if form.perf_open_start.data or form.perf_open_end.data:
             query = u"公演開始日検索："
             str = self._get_str(form.perf_open_start.data) or ""
-            query = query + str + u" 〜 "
+            query += str + u" 〜 "
             str = self._get_str(form.perf_open_end.data) or ""
-            query = query + str
+            query += str
             search_query.append(query)
         if form.perf_close_start.data or form.perf_close_end.data:
-            query = u"公演開始日検索："
+            query = u"公演終了日検索："
             str = self._get_str(form.perf_close_start.data) or ""
-            query = query + str + u" 〜 "
+            query += str + u" 〜 "
             str = self._get_str(form.perf_close_end.data) or ""
-            query = query + str
+            query += str
             search_query.append(query)
         if form.deal_open_start.data or form.deal_open_end.data:
             query = u"販売開始日検索："
             str = self._get_str(form.deal_open_start.data) or ""
-            query = query + str + u" 〜 "
+            query += str + u" 〜 "
             str = self._get_str(form.deal_open_end.data) or ""
-            query = query + str
+            query += str
             search_query.append(query)
         if form.deal_close_start.data or form.deal_close_end.data:
-            query = u"公演終了日検索："
+            query = u"販売終了日検索："
             str = self._get_str(form.deal_close_start.data) or ""
-            query = query + str + u" 〜 "
+            query += str + u" 〜 "
             str = self._get_str(form.deal_close_end.data) or ""
-            query = query + str
+            query += str
             search_query.append(query)
+        if form.lot_only.data:
+            search_query.append(u"抽選を含む")
         return ", ".join(search_query)
 
     def _get_str(self, target):

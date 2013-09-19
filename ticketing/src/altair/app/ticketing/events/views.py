@@ -63,13 +63,8 @@ class Events(BaseView):
         form_search = EventSearchForm(self.request.params)
         search_query = None
         if form_search.validate():
-            if form_search.event_name_or_code.data:
-                pattern = '%' + form_search.event_name_or_code.data + '%'
-                query = query.filter(or_(Event.code.like(pattern), Event.title.like(pattern)))
-            if form_search.performance_name_or_code.data:
-                pattern = '%' + form_search.performance_name_or_code.data + '%'
-                query = query.filter(or_(Performance.code.like(pattern), Performance.name.like(pattern)))
-
+            query = self.context.create_like_where(query, form_search.event_name_or_code.data, Event.code, Event.title)
+            query = self.context.create_like_where(query, form_search.performance_name_or_code.data, Performance.code, Performance.name)
             query = self.context.need_sales_segment(query, form_search.deal_range_start.data, form_search.deal_range_end.data
                 , form_search.deal_open_start.data, form_search.deal_open_end.data
                 , form_search.deal_close_start.data, form_search.deal_close_end.data)
