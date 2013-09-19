@@ -4,6 +4,7 @@ import sys
 import csv
 import logging
 import transaction
+import json
 from datetime import datetime
 from standardenum import StandardEnum
 from collections import OrderedDict
@@ -210,28 +211,35 @@ class OrderImporter():
         file_data = order_csv.read()
         self.file_data = unicode(file_data.decode('cp932'))
 
+        # csvファイルから読み込んだ予約 {order_no:cart}
+        self.carts = OrderedDict()
+        # csvファイルから読み込めなかった予約 / インポートできなかった予約 {order_no:cart}
+        self.errors = OrderedDict()
+
         self.task_id = None
         self.created_at = None
+        self.updated_at = None
         if 'task_id' in kwargs:
             self.task_id = kwargs.get('task_id')
         if 'created_at' in kwargs:
             self.created_at = kwargs.get('created_at')
+        if 'updated_at' in kwargs:
+            self.updated_at = kwargs.get('updated_at')
         if 'status' in kwargs:
             self.status = kwargs.get('status')
-
-        # csvファイルから読み込んだ予約 {order_no:cart}
-        self.carts = OrderedDict()
-        # csvファイルから読み込めなかった予約 {order_no:cart}
-        self.validation_errors = OrderedDict()
-        # インポートできた予約 {order_no:cart}
-        self.committed_carts = OrderedDict()
-        # csvファイルから読み込めなかった予約 / インポートできなかった予約 {order_no:cart}
-        self.import_errors = OrderedDict()
+        if 'errors' in kwargs:
+            self.errors = OrderedDict(json.loads(kwargs.get('errors')))
 
         file = StringIO()
         file.write(file_data)
         file.seek(0)
         self.parse_import_file(file)
+
+    @property
+    def task(self):
+        if self.task_id:
+            return OrderImportTask.query.filter_by(id=self.task_id).one()
+        return None
 
     @property
     def operator(self):
@@ -240,6 +248,11 @@ class OrderImporter():
     @property
     def imported(self):
         return self.status == ImportStatusEnum.Imported.v[0]
+
+    @property
+    def valid_carts(self):
+        errors = self.errors.keys()
+        return OrderedDict([(order_no, cart) for order_no, cart in self.carts.items() if order_no not in errors])
 
     @property
     def import_type_label(self):
@@ -253,7 +266,7 @@ class OrderImporter():
         for row in reader:
             try:
                 order_no = row.get(u'order.order_no')
-                if order_no in self.validation_errors.keys():
+                if order_no in self.errors.keys():
                     continue
 
                 # create TemporaryCart
@@ -290,9 +303,7 @@ class OrderImporter():
                 if seat:
                     cpi._seat_ids.append(seat.id)
             except NoResultFound, e:
-                self.validation_errors[order_no] = u'予約番号: %s  %s' % (order_no, e.message)
-                if order_no in self.carts.keys():
-                    self.carts.pop(order_no)
+                self.errors[order_no] = u'予約番号: %s  %s' % (order_no, e.message)
                 continue
 
             self.carts[order_no] = cart
@@ -306,8 +317,7 @@ class OrderImporter():
 
             # 合計金額
             if cart.total_amount != cart.calculated_total_amount:
-                self.validation_errors[order_no] = u'予約番号: %s  %s' % (order_no, u'金額が正しくありません')
-                self.carts.pop(order_no)
+                self.errors[order_no] = u'予約番号: %s  %s' % (order_no, u'金額が正しくありません')
 
             # 在庫数
             # - ここでは在庫総数のチェックのみ
@@ -328,8 +338,7 @@ class OrderImporter():
                                            (product_item.name, cpi.quantity, stock.id)
                             raise Exception(error_reason)
             except Exception, e:
-                self.validation_errors[order_no] = u'予約番号: %s  %s' % (order_no, e.message)
-                self.carts.pop(order_no)
+                self.errors[order_no] = u'予約番号: %s  %s' % (order_no, e.message)
         return
 
     def get_sales_segment(self, row):
@@ -512,8 +521,10 @@ class OrderImporter():
             order_per_pdmp[pdmp]['count'] += 1
         return order_per_pdmp
 
-    def _get_stats(self, carts, errors):
+    def stats(self):
         stats = dict()
+        carts = self.valid_carts
+        errors = self.errors
 
         # インポート方法
         stats['import_type'] = self.import_type_label
@@ -533,20 +544,12 @@ class OrderImporter():
         # OrderImportTaskからの情報
         stats['task_id'] = self.task_id
         stats['created_at'] = self.created_at
+        stats['updated_at'] = self.updated_at
+
         stats['operator_name'] = self.operator.name
         stats['status'] = OrderImportTask.status_label(self.status)
 
         return stats
-
-    def validated_stats(self):
-        carts = self.carts
-        errors = self.validation_errors
-        return self._get_stats(carts, errors)
-
-    def imported_stats(self):
-        carts = self.committed_carts
-        errors = self.import_errors
-        return self._get_stats(carts, errors)
 
     def allocate_seats(self, reserving, product_item, quantity):
         stock = product_item.stock
@@ -567,11 +570,17 @@ class OrderImporter():
         stocker = cart_api.get_stocker(request)
         reserving = cart_api.get_reserving(request)
 
+        # ステータス更新
+        self.status = ImportStatusEnum.Importing.v[0]
+        self.update_task()
+        transaction.commit()
+
         self.validate()
 
         # インポート実行
         order_no_list = self.carts.keys()
         for org_order_no in order_no_list:
+            logger.info('order_no (%s) importing..' % org_order_no)
             temp_cart = self.carts.get(org_order_no)
 
             # 配席/在庫更新
@@ -594,8 +603,7 @@ class OrderImporter():
             except (NotEnoughAdjacencyException, Exception), e:
                 logger.error('take stock error(%s): %s' % (org_order_no, e.message))
                 transaction.abort()
-                self.import_errors[org_order_no] = u'予約番号: %s  %s' % (org_order_no, u'座席を確保できませんでした')
-                self.carts.pop(org_order_no)
+                self.errors[org_order_no] = u'予約番号: %s  %s' % (org_order_no, u'座席を確保できませんでした')
                 continue
 
             # create ShippingAddress
@@ -626,8 +634,7 @@ class OrderImporter():
             except Exception, e:
                 logger.error('create inner order error (%s): %s' % (org_order_no, e.message), exc_info=sys.exc_info())
                 transaction.abort()
-                self.import_errors[org_order_no] = u'予約番号: %s  %s' % (org_order_no, e.message)
-                self.carts.pop(org_order_no)
+                self.errors[org_order_no] = u'予約番号: %s  %s' % (org_order_no, e.message)
                 continue
 
             if temp_cart.created_at:
@@ -641,17 +648,13 @@ class OrderImporter():
 
             order.save()
             transaction.commit()
+            logger.info('order_no (%s) import success' % org_order_no)
 
-            # 以下のモデルはセッションに保存しない
-            temp_cart = self.carts.pop(org_order_no)
-            temp_cart.shipping_address = None
-            temp_cart.order = None
-            for cp in temp_cart.products:
-                for cpi in cp.items:
-                    cpi.seats = None
-            self.committed_carts[org_order_no] = temp_cart
+        # ステータス更新
+        self.status = ImportStatusEnum.Imported.v[0]
+        self.update_task()
+        transaction.commit()
 
-        self.status = ImportStatusEnum.Imported.v
         return
 
     def add_task(self):
@@ -662,8 +665,15 @@ class OrderImporter():
             import_type=self.import_type,
             count=len(self.carts),
             status=self.status,
-            data=self.file_data
+            data=self.file_data,
+            error=json.dumps(self.errors)
         )
+        task.save()
+
+    def update_task(self):
+        task = self.task
+        task.status = self.status
+        task.error = json.dumps(self.errors)
         task.save()
 
     @staticmethod
@@ -679,5 +689,7 @@ class OrderImporter():
             task.import_type,
             task_id=task.id,
             created_at=task.created_at,
-            status=task.status
+            updated_at=task.updated_at,
+            status=task.status,
+            errors=task.error
         )
