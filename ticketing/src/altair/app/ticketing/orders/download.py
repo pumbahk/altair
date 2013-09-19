@@ -13,10 +13,14 @@ from altair.app.ticketing.core.models import (
     Performance,
     SalesSegment,
     Order,
+    OrderedProduct,
+    OrderedProductItem,
     PaymentDeliveryMethodPair,
     PaymentMethod,
     DeliveryMethod,
     ShippingAddress,
+    Product,
+    ProductItem,
 )
 from altair.app.ticketing.users.models import (
     User,
@@ -37,6 +41,11 @@ t_user = User.__table__
 t_user_profile = UserProfile.__table__
 t_user_credential = UserCredential.__table__
 t_sej_order = SejOrder.__table__
+
+t_ordered_product = OrderedProduct.__table__
+t_ordered_product_item = OrderedProductItem.__table__
+t_product = Product.__table__
+t_product_item = ProductItem.__table__
 
 summary_columns = [
     t_order.c.id,
@@ -148,6 +157,24 @@ order_summary_joins = t_order.join(
          t_sej_order.c.deleted_at==None),
 )
 
+order_product_summary_joins = order_summary_joins.join(
+    t_ordered_product,
+    and_(t_ordered_product.c.order_id==t_order.c.id,
+         t_ordered_product.c.deleted_at==None),
+).join(
+    t_product,
+    and_(t_product.c.id==t_ordered_product.c.product_id,
+         t_product.c.deleted_at==None),
+).join(
+    t_ordered_product_item,
+    and_(t_ordered_product_item.c.ordered_product_id==t_ordered_product.c.id,
+         t_ordered_product_item.c.deleted_at==None),
+).join(
+    t_product_item,
+    and_(t_product_item.c.id==t_ordered_product_item.c.product_item_id,
+         t_product_item.c.deleted_at==None),
+)
+
 logger = logging.getLogger(__name__)
 
 """
@@ -181,6 +208,9 @@ sql = str(select(summary_columns, from_obj=[order_summary_joins]))
 
 
 class OrderDownload(list):
+
+    #target = order_summary_joins
+    target = order_product_summary_joins
 
     def __init__(self, db_session, columns, condition):
         self.db_session = db_session
@@ -310,7 +340,7 @@ class OrderDownload(list):
 
     def count(self):
         sql = select([func.count(t_order.c.id)],
-                     from_obj=[order_summary_joins])
+                     from_obj=[self.target])
 
         logger.debug("sql = {0}".format(sql))
         cur = self.db_session.bind.execute(sql)
@@ -330,7 +360,7 @@ class OrderDownload(list):
         offset = start
         while True:
             sql = select(summary_columns, 
-                         from_obj=[order_summary_joins]
+                         from_obj=[self.target]
             ).limit(limit
             ).offset(offset)
 
