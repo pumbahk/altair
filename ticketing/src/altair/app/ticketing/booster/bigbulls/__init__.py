@@ -45,9 +45,9 @@ def setup_booster_settings(config):
 
 
 def setup_order_product_attribute_metadata(config):
-    from altair.app.ticketing.orders.api import get_metadata_provider_registry
+    from altair.app.ticketing.orders.api import get_ordered_product_metadata_provider_registry
     from .metadata import metadata_provider
-    get_metadata_provider_registry(config.registry).registerProvider(metadata_provider)
+    get_ordered_product_metadata_provider_registry(config.registry).registerProvider(metadata_provider)
     
 def includeme(config):
     config.include(setup_order_product_attribute_metadata)

@@ -12,6 +12,7 @@ def includeme(config):
 
 def install_app(config):
     ##ここに追加
+    settings = config.registry.settings
     config.include("altairsite.config")
     add_route = functools.partial(config.add_route, factory=".resources.TopPageResource")
     add_route("smartphone.main", "/")
@@ -21,6 +22,14 @@ def install_app(config):
                              renderer='altairsite.smartphone:templates/top.html')
     add_route("smartphone.goto_pc_page", "/goto_pc")
     add_route("smartphone.goto_sp_page", "/goto_sp")
+
+    config.include("altair.cdnpath")
+    from altair.cdnpath import S3StaticPathFactory
+    config.add_cdn_static_path(S3StaticPathFactory(
+            settings["s3.bucket_name"],
+            exclude=config.maybe_dotted(settings.get("s3.static.exclude.function")),
+            prefix="/usersite"))
+
     config.include('altairsite.smartphone.genre')
     config.include('altairsite.smartphone.search')
     config.include('altairsite.smartphone.detail')

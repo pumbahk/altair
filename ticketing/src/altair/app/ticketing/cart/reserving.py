@@ -68,20 +68,20 @@ class Reserving(object):
             s.status = int(reserve_status)
         return selected_seats
 
-    def reserve_seats(self, stock_id, quantity):
+    def reserve_seats(self, stock_id, quantity, reserve_status=SeatStatusEnum.InCart):
         seats = self.get_vacant_seats(stock_id, quantity)
         logger.debug('reserving %d seats for stock %s' % (len(seats), stock_id))
-        self._reserve(seats)
+        self._reserve(seats, reserve_status)
         return seats
 
-    def _reserve(self, seats):
+    def _reserve(self, seats, reserve_status):
         statuses = SeatStatus.query.filter(
             SeatStatus.seat_id.in_([s.id for s in seats])
         ).with_lockmode('update').all()
         for stat in statuses:
-            stat.status = int(SeatStatusEnum.InCart)
+            stat.status = int(reserve_status)
         return statuses
-        
+
     def get_default_seat_index_type_id(self, stock_id):
         """ Stock -> Performance -> Venue """
 

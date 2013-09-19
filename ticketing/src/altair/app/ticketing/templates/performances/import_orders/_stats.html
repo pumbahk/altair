@@ -1,0 +1,84 @@
+<%page args="stats" />
+
+<table class="table table-bordered">
+  % if stats.get('task_id'):
+  <tr>
+    <th>ID</th>
+    <td>${stats.get('task_id')}</td>
+  </tr>
+  <tr>
+    <th>オペレーター</th>
+    <td>${stats.get('operator_name')}</td>
+  </tr>
+  <tr>
+    <th>ステータス</th>
+    <td>${stats.get('status')}</td>
+  </tr>
+  <tr>
+    <th>登録日時</th>
+    <td>${stats.get('created_at')}</td>
+  </tr>
+  % endif
+  <!--
+  <tr>
+    <th class="span2">インポート方法</th>
+    <td class="span6">${stats.get('import_type')[1]}</td>
+  </tr>
+  -->
+  <tr>
+    <th>インポート対象の予約数</th>
+    <td>${stats.get('order_count')}</td>
+  </tr>
+  <tr>
+    <th>決済方法/引取方法ごとの予約数</th>
+    <td>
+      <% order_per_pdmp = stats.get('order_per_pdmp') %>
+      <table class="table table-bordered table-condensed">
+        <tr>
+          <th class="span3">決済方法</th>
+          <th class="span3">引取方法</th>
+          <th class="span2">予約数</th>
+          <th class="span3"></th>
+        </tr>
+        % for pdmp, info in order_per_pdmp.iteritems():
+        <tr>
+          <td>${pdmp.payment_method.name}</td>
+          <td>${pdmp.delivery_method.name}</td>
+          <td>${info.get('count')}</td>
+          <td>${info.get('remark', u'')}</td>
+        </tr>
+        % endfor
+      </table>
+    </td>
+  </tr>
+  <tr>
+    <th>インポート対象の席数</th>
+    <td>${stats.get('seat_count')}</td>
+  </tr>
+  <tr>
+    <th>商品別の席数</th>
+    <td>
+      <% seat_per_product = stats.get('seat_per_product') %>
+      <table class="table table-bordered table-condensed">
+        <tr>
+          <th class="span3">商品名</th>
+          <th class="span3">単価</th>
+          <th class="span2">席数</th>
+          <th class="span3"></th>
+        </tr>
+        % for product, count in seat_per_product.iteritems():
+        <tr>
+          <td>${product.name}</td>
+          <td>${vh.price(product.price)}</td>
+          <td>${count}</td>
+          <td></td>
+        </tr>
+        % endfor
+      </table>
+    </td>
+  </tr>
+  <tr>
+    <th>インポートできない予約数</th>
+    <td>${stats.get('error_order_count')}</td>
+  </tr>
+</table>

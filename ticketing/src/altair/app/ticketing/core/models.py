@@ -315,6 +315,7 @@ class SeatStatusEnum(StandardEnum):
     NotOnSale = 0
     Vacant = 1
     Keep = 8  # インナー予約で座席確保した状態、カート生成前
+    Import = 9  # 予約インポートで座席確保した状態、カート生成前
     InCart = 2
     Ordered = 3
     Confirmed = 4
@@ -2333,12 +2334,16 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         from altair.app.ticketing.checkout.models import Checkout
         return Cart.query.filter(Cart._order_no==self.order_no).join(Checkout).with_entities(Checkout).first()
 
+    @property
+    def is_inner_channel(self):
+        return self.channel in [ChannelEnum.INNER.v, ChannelEnum.IMPORT.v]
+
     def can_change_status(self, status):
         # 決済ステータスはインナー予約のみ変更可能
         if status == 'paid':
-            return (self.status == 'ordered' and self.payment_status == 'unpaid' and self.channel == ChannelEnum.INNER.v)
+            return (self.status == 'ordered' and self.payment_status == 'unpaid' and self.is_inner_channel)
         elif status == 'unpaid':
-            return (self.status == 'ordered' and self.payment_status == 'paid' and self.channel == ChannelEnum.INNER.v)
+            return (self.status == 'ordered' and self.payment_status == 'paid' and self.is_inner_channel)
         else:
             return False
 
@@ -2363,7 +2368,7 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     def can_deliver(self):
         # 受付済のみ配送済に変更可能
         # インナー予約は常に、それ以外は入金済のみ変更可能
-        return self.status == 'ordered' and (self.channel == ChannelEnum.INNER.v or self.payment_status == 'paid')
+        return self.status == 'ordered' and (self.is_inner_channel or self.payment_status == 'paid')
 
     def can_delete(self):
         # キャンセルのみ論理削除可能
@@ -2387,7 +2392,7 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
         # インナー予約の場合はAPI決済していないのでスキップ
         # ただしコンビニ決済はインナー予約でもAPIで通知しているので処理する
-        if self.channel == ChannelEnum.INNER.v and ppid != plugins.SEJ_PAYMENT_PLUGIN_ID:
+        if self.is_inner_channel and ppid != plugins.SEJ_PAYMENT_PLUGIN_ID:
             logger.info(u'インナー予約のキャンセルなので決済払戻処理をスキップ %s' % self.order_no)
 
         # クレジットカード決済
@@ -3263,6 +3268,7 @@ class ChannelEnum(StandardEnum):
     PC = 1
     Mobile = 2
     INNER = 3
+    IMPORT = 4
 
 class Refund(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'Refund'
@@ -3602,3 +3608,34 @@ class PerformanceSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     def create_from_template(cls, template, **kwargs):
         setting = cls.clone(template)
         return setting
+
+
+class ImportStatusEnum(StandardEnum):
+    Waiting = (1, u'インポート待ち')
+    Importing = (2, u'インポート中')
+    Imported = (3, u'インポート完了')
+
+
+class OrderImportTask(Base, BaseModel, WithTimestamp, LogicallyDeleted):
+    __tablename__ = 'OrderImportTask'
+
+    id = Column(Identifier, primary_key=True)
+    organization_id = Column(Identifier, ForeignKey('Organization.id', ondelete='CASCADE'), nullable=False)
+    performance_id = Column(Identifier, ForeignKey('Performance.id'), nullable=False)
+    operator_id = Column(Identifier, ForeignKey('Operator.id', ondelete='CASCADE'), nullable=False)
+    import_type = Column(Integer, nullable=False)
+    status = Column(Integer, nullable=False)
+    count = Column(Integer, nullable=False)
+    data = Column(UnicodeText(8388608))
+    errors = Column(MutationDict.as_mutable(JSONEncodedDict(65536)), nullable=True)
+
+    organization = relationship('Organization')
+    performance = relationship('Performance')
+    operator = relationship('Operator')
+
+    @classmethod
+    def status_label(cls, status):
+        for e in ImportStatusEnum:
+            if e.v[0] == status:
+                return e.v[1]
+        return u''

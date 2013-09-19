@@ -37,8 +37,7 @@ class PrefixedStaticURLInfo(StaticURLInfo):
         validate_url(url)
         
     def _after_generate(self, path, request, kwargs):
-        scheme = request.environ.get("wsgi.url_scheme", "http")
-        return "{0}://{1}{2}".format(scheme, self.prefix, path)
+        return "//{0}{1}".format(self.prefix, path)
 
     def _generate_with_exclude(self, path, request, **kwargs):
         if self.exclude(path):

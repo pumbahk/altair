@@ -17,5 +17,5 @@ ${caller.body()}
 % if color:
   style="background-color:${color}" bgcolor="${color}"
 % endif
-><img src="${request.static_url('altaircms:static/mobile/clear.gif')}" width="1" height="${width}" /></div>
+><img src="${request.mobile_static_url('altaircms:static/mobile/clear.gif')}" width="1" height="${width}" /></div>
 </%def>

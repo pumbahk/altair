@@ -106,7 +106,7 @@ class EventSearcher(object):
         log_info("get_events_from_sale", "start")
         if form.sale.data == int(SalesEnum.ON_SALE):
             log_info("get_events_from_sale", "search start ON_SALE")
-            qs = self._get_events_on_sale(form, qs)
+            qs = self._get_event_in_session(form, qs)
         elif form.sale.data == int(SalesEnum.WEEK_SALE):
             log_info("get_events_from_sale", "search start WEEK_SALE")
             qs = self.get_events_week_sale(date.today(), None, qs)
@@ -128,11 +128,11 @@ class EventSearcher(object):
         return qs
 
     # 販売中
-    def _get_events_on_sale(self, form, qs=None):
-        log_info("_get_events_on_sale", "start")
-        where = (get_now(self.request) <= Event.deal_close)
+    def _get_event_in_session(self, form, qs=None):
+        log_info("_get_event_in_session", "start")
+        where = (get_now(self.request) <= Event.event_close)
         qs = self._create_common_qs(where=where, qs=qs)
-        log_info("_get_events_on_sale", "end")
+        log_info("_get_event_in_session", "end")
         return qs
 
     # 今週発売検索(月曜日を週のはじめとする)

@@ -167,18 +167,17 @@ def download(request):
 
 @view_config(route_name='venues.index', renderer='altair.app.ticketing:templates/venues/index.html', decorator=with_bootstrap, permission='event_editor')
 def index(request):
-    query = DBSession.query(Venue, Site, Performance, func.count(Seat.id))
+    query = DBSession.query(Venue, Site, Performance)
     query = query.filter(Venue.organization_id==request.context.user.organization_id)
     query = query.join((Site, and_(Site.id==Venue.site_id, Site.deleted_at==None)))
     query = query.outerjoin((Performance, and_(Performance.id==Venue.performance_id, Performance.deleted_at==None)))
-    query = query.outerjoin(Seat)
     query = query.options(undefer(Site.created_at), undefer(Performance.created_at))
     query = query.group_by(Venue.id)
     query = query.order_by(asc(Venue.site_id), asc(-Venue.performance_id))
 
     items = []
-    for venue, site, performance, count in query:
-        items.append(dict(venue=venue, site=site, performance=performance, count=count))
+    for venue, site, performance in query:
+        items.append(dict(venue=venue, site=site, performance=performance))
 
     return dict(items=items)
 

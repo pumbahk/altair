@@ -129,6 +129,7 @@ def send_lot_report_mails(request, sender):
     mailer = get_mailer(request)
     for setting in settings:
         try:
+            setting = DBSession.merge(setting)
             cond = ReportCondition(setting, now)
             if not cond.is_reportable():
                 logger.info(u"setting {0} is not reportable".format(setting.id))

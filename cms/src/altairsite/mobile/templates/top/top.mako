@@ -1,8 +1,8 @@
 <%inherit file="../common/_base.mako" />
 <%namespace file="../common/tags_mobile.mako" name="m" />
 <%block name="title">楽天チケットトップ</%block>
-<div style="background-image:url(${request.static_url("altaircms:static/mobile/bg_bar.gif")});background-color:#bf0000;
-            color: #ffffff" bgcolor="#bf0000" background="${request.static_url("altaircms:static/mobile/bg_bar.gif")}"></div>
+<div style="background-image:url(${request.mobile_static_url("altaircms:static/mobile/bg_bar.gif")});background-color:#bf0000;
+            color: #ffffff" bgcolor="#bf0000" background="${request.mobile_static_url("altaircms:static/mobile/bg_bar.gif")}"></div>
 <div align="center">楽天チケットへようこそ</div>
 <div>
 ├<a href="https://member.id.rakuten.co.jp/rms/mid/vc?__event=regist&c2=313131784">楽天会員登録 (無料)</a><br />

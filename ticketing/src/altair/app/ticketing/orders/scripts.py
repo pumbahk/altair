@@ -16,6 +16,8 @@ import sqlahelper
 
 from altair.app.ticketing.core.models import DBSession, SeatStatus, SeatStatusEnum, Order, OrderedProduct, OrderedProductItem
 from altair.app.ticketing.core.models import PaymentDeliveryMethodPair, PaymentMethod, DeliveryMethod, ShippingAddress, Mailer
+from altair.app.ticketing.core.models import OrderImportTask, ImportStatusEnum
+from altair.app.ticketing.orders.importer import OrderImporter
 from altair.app.ticketing.payments import plugins
 from altair.app.ticketing.sej.refund import create_and_send_refund_file
 
@@ -179,3 +181,36 @@ def detect_fraud():
             logging.warn('sendmail fail')
 
     logging.info('end detect_fraud batch')
+
+
+def import_orders():
+    ''' 予約の一括登録
+    '''
+    parser = argparse.ArgumentParser()
+    parser.add_argument('config')
+    args = parser.parse_args()
+
+    setup_logging(args.config)
+    env = bootstrap(args.config)
+
+    request = env['request']
+    request.browserid = u''
+
+    logging.info('start import_orders batch')
+
+    tasks = OrderImportTask.query.filter(
+        OrderImportTask.status == ImportStatusEnum.Waiting.v[0]
+    ).all()
+
+    for task in tasks:
+        try:
+            task = DBSession.merge(task)
+            logging.info('order_import_task(%s) importing..' % task.id)
+            importer = OrderImporter.load_task(task)
+            importer.execute()
+            transaction.commit()
+        except Exception, e:
+            transaction.abort()
+            logging.error('orders import error: %s' % e, exc_info=sys.exc_info())
+
+    logging.info('end import_orders batch')
