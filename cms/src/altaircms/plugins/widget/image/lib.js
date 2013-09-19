@@ -59,10 +59,10 @@ var AjaxScrollableHandler = function(we, gateway, areaManager){
 AjaxScrollableHandler.prototype.fetchImages = function(){
     var i = this.getIndex();
     if(!this.cache[i]){
+        this.cache[i] = true //hmm;
         var self = this;
         return this.gateway.fetch(i).done(function(html){
             self.areaManager.injectImages(i, html);
-            self.cache[i] = true //hmm;
         });
     }
 };
