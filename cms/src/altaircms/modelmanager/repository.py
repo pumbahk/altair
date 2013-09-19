@@ -52,13 +52,27 @@ class AssetRepository(object):
         self.Model = Model
         self.offset = offset
 
+    def count_of_asset(self, asset_id=None):
+        if asset_id is None:
+            size = self._get_query().count()
+        else:
+            size = self._get_query().count() + 1
+
+        if size % self.offset == 0:
+            return size / self.offset
+        else:
+            return (size / self.offset) + 1
+            
+    def _get_query(self):
+        return self.request.allowable(self.Model)
+
     def list_of_asset(self, asset_id, i=0):
         if asset_id is None:
             return self.list_of_asset_any(i)
         return self.list_of_asset_with_selected(asset_id, i)
 
     def list_of_asset_any(self, i, j=0):
-        qs = self.request.allowable(self.Model)
+        qs = self._get_query()
         if i > 0:
             qs = qs.offset((self.offset*i)+j)
         return list(self.filtered_query(qs).limit(self.offset))
@@ -66,7 +80,7 @@ class AssetRepository(object):
     def list_of_asset_with_selected(self, asset_id, i):
         if i > 0:
             return self.list_of_asset_any(i, -1)
-        qs = self.request.allowable(self.Model)
+        qs = self._get_query()
         rest = list(self.filtered_query(qs).limit(self.offset-1))
         r = [self.request.allowable(self.Model).get(asset_id)]
         r.extend(rest)

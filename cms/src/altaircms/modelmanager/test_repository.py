@@ -1,5 +1,6 @@
 # -*- coding:utf-8 -*-
 import unittest
+import mock
 from collections import namedtuple
 
 class FakeQuery(object):
@@ -139,6 +140,35 @@ class AssetRepositoryTests(unittest.TestCase):
         self.assertEqual(len(xs.lazy_query.fns), 1)
         self.assertEqual(len(ys.lazy_query.fns), 1)
         self.assertNotEqual(xs.lazy_query, ys.lazy_query)
+
+
+class AssetRepositoryCountTests(unittest.TestCase):
+    def _getTarget(self):
+        from altaircms.modelmanager.repository import AssetRepository
+        return AssetRepository
+        
+    def _makeOne(self, *args, **kwargs):
+        return self._getTarget()(*args, **kwargs)
+
+    def test_count_of_asset__without_asset_id(self):
+        """[[1, 2, 3], [4, 5, 6], [7, 8, 9]]"""
+        N = 9
+        with mock.patch.object(self._getTarget(), "_get_query") as m:
+            m.count.return_value = N
+            target = self._makeOne(None, None, offset=3)
+            result = target.count_of_asset()
+            ## 9 % 3 == 0 and 9 / 3 == 3
+            self.assertEqual(result, 3)
+
+    def test_count_of_asset__with_asset_id(self):
+        """[[5, 1, 2], [3, 4, 5], [6, 7, 8], [9]]"""
+        N = 10
+        with mock.patch.object(self._getTarget(), "_get_query") as m:
+            m.count.return_value = N
+            target = self._makeOne(None, None, offset=3)
+            result = target.count_of_asset(5)
+            ## (9+1) % 3 == 1 and (9+1) / 3 == 3
+            self.assertEqual(result, 4)
 
 class WidgetRepository(unittest.TestCase):
     def _getTarget(self):
