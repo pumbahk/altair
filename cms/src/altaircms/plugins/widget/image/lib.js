@@ -26,14 +26,12 @@ var AjaxImageAreaManager = function(root){
 AjaxImageAreaManager.prototype.bind = function(we, root){
     this.we = we;
     this.root = root;
-    var self = this;
-
     var $dialog = $(we.dialog);
     this.highlightImage($dialog.find(".managed"));
-    $dialog.find("img").click(function(){self.selectImage(this);});
+    this.root.on("click", ".group img" ,function(e){this.selectImage($(e.currentTarget));}.bind(this));
 };
 AjaxImageAreaManager.prototype.getImageArea = function(i){
-    return this.root.find("group #group_"+(i-1));
+    return this.root.find(".group#group_"+(i-1));
 };
 AjaxImageAreaManager.prototype.injectImages = function(i, html){
     return this.getImageArea(i).html(html);
@@ -67,10 +65,11 @@ AjaxScrollableHandler.prototype.fetchImages = function(){
     }
 };
 AjaxScrollableHandler.prototype.bind = function(root){
-    this.root = root;
-    this.scrollable = root.data("scrollable");
+    var $scrollable = root.find(".scrollable");
+    this.root = $scrollable;
+    this.scrollable = $scrollable.data("scrollable");
     this.scrollable.onSeek(this.fetchImages.bind(this));
-    this.areaManager.bind(this.we, root);
+    this.areaManager.bind(this.we, $scrollable);
 };
 AjaxScrollableHandler.prototype.getIndex = function(){
     return this.scrollable.getIndex();
@@ -111,7 +110,7 @@ SearchAreaManager.prototype.redraw = function(assets_data, widget_asset_id){
     $(".browse").removeClass("disabled");
 
     $(".scrollable").remove();
-    $("#tag_search_form").after("<div class='scrollable' style='width: 550px'></div>");
+    //$("#tag_search_form").after("<div class='scrollable' style='width: 550px'></div>");
     $(".scrollable").append("<div class='items'></div>");
 
     for (var groupNo in assets_data){
@@ -134,19 +133,28 @@ SearchAreaManager.prototype.redraw = function(assets_data, widget_asset_id){
 var SubmitHandler = function(we){
     this.we = we;
     this.root = null;
+    this.submitBtn = null; //for debug
+    this.infoSubmitBtn = null; //for debug
+    this.$submitBtn = null;
+    this.$infoSubmitBtn = null;
 }
 SubmitHandler.prototype.bind = function(root, submitBtn, infoSubmitBtn){
     this.root = root;
-    this.root.find(submitBtn).click(this.afterSubmit.bind(this));
-    this.root.find(infoSubmitBtn).click(this.justFinish.bind(this));
+    this.submitBtn = submitBtn;
+    this.infoSubmitBtn = infoSubmitBtn;
+    this.$submitBtn = this.root.find(submitBtn);
+    this.$infoSubmitBtn = this.root.find(infoSubmitBtn);
+    this.$submitBtn.click(this.afterSubmit.bind(this));
+    this.$infoSubmitBtn.click(this.justFinish.bind(this));
+    this.$choicedElement = null;
 };
 SubmitHandler.prototype.justFinish = function(){
     we = this.we;
+    this.$choicedElement = this.root.find(".managed");
     we.finish_dialog(this);
 }
 SubmitHandler.prototype.afterSubmit = function(){
-    we = this.we;
-    if ($(we.dialog).find(".managed").length) {
+    if (this.root.find(".managed").length) {
         this.justFinish();
     } else {
         if(window.confirm('画像が選択されていません。本当に閉じますか？')){
@@ -155,24 +163,69 @@ SubmitHandler.prototype.afterSubmit = function(){
     }
 }
 
-var ApplicationHandler = function(we, scrollableHandler, searchHandler, submitHandler){
+var ApplicationHandler = function(we, scrollableHandler, searchHandler, submitHandler, tabHandler){
     this.we = we;
     this.scrollableHandler = scrollableHandler;
     this.searchHandler = searchHandler;
     this.submitHandler = submitHandler;
+    this.tabHandler = tabHandler;
 };
 
 ApplicationHandler.prototype.bind = function(root, submitBtn, infoSubmitBtn){
     this.scrollableHandler.bind(root);
     this.searchHandler.bind(root);
     this.submitHandler.bind(root, submitBtn, infoSubmitBtn);
+    this.tabHandler.bind(root);
 }
+
+ApplicationHandler.prototype.choicedElement = function(){
+    return this.submitHandler.$choicedElement;
+};
 
 var setupApplicationHandler = function(we, gateway){
     var scrollableHandler = new AjaxScrollableHandler(we, gateway, new AjaxImageAreaManager());
     var searchHandler = new SearchHandler(we, new SearchAreaManager()); //hmm.
     var submitHandler = new SubmitHandler(we);
-    return new ApplicationHandler(we, scrollableHandler,searchHandler,submitHandler);
+    var tabHandler = new TabHandler(we, "image");
+    return new ApplicationHandler(we, scrollableHandler, searchHandler, submitHandler, tabHandler);
+};
+
+/// tab handler
+var TabHandler = function TabHandler(we,current){
+    this.we = we;
+    this.$el = null;
+    this.current = current;
+};
+TabHandler.prototype.bind = function(root){
+    var self = this;
+    this.root = root;
+    this.root.find("#image_ref").on("click", function(){self.next("image");});
+    this.root.find("#setting_ref").on("click", function(){self.next("setting");});
+};
+TabHandler.prototype.on_image_input = function(){
+  if("image" === this.current){
+     return;
+  }
+  this.root.find("#setting_tab").hide();
+  this.root.find("#image_tab").show();
+  this.root.find("#image_ref").tab("show");
+};
+TabHandler.prototype.on_setting_input = function(){
+  if("setting" === this.current){
+     return;
+  }
+  this.root.find("#image_tab").hide();
+  this.root.find("#setting_tab").show();
+  this.root.find("#setting_ref").tab("show")
+};
+TabHandler.prototype.next = function(target){
+  switch(target){
+    case "image":
+      this.on_image_input(); break;
+    case "setting":
+      this.on_setting_input(); break;
+  }
+  this.current = target;
 };
 
 (function(widget){
@@ -189,7 +242,7 @@ var setupApplicationHandler = function(we, gateway){
         return we.dialog.load(url);
     };
 
-    var selected = null;
+    var appHandler = null; //hmm..
 
     var on_dialog = function(we){
         we.bind_retry(we, 
@@ -201,7 +254,7 @@ var setupApplicationHandler = function(we, gateway){
                 "/api/widget/image/fetch",
                 "/api/widget/image/search"
             );
-            var appHandler = setupApplicationHandler(we, gateway);
+            appHandler = setupApplicationHandler(we, gateway);
             widget.env.image.appHandler = appHandler; // for debug;
             // **scroiing**
             // horizontal scrollables. each one is circular and has its own navigator instance
@@ -214,7 +267,7 @@ var setupApplicationHandler = function(we, gateway){
                 return false;
             });
 
-            appHandler.bind(root);
+            appHandler.bind($(we.dialog), "#image_submit", "#image_info_submit");
             // if(!!selected.length > 0){
             //     var k = selected.parents(".group").eq(0).attr("id").split("_")[1];
             //     root.data("scrollable").move(k, 1);
@@ -228,7 +281,7 @@ var setupApplicationHandler = function(we, gateway){
     };
 
     var collect_data = function(we, choiced_elt){
-        var choiced_elt = $(selected); // module global variable
+        var choiced_elt = appHandler.choicedElement(); // module global variable
         var root = $(we.dialog);
         return {imagefile: choiced_elt.attr("src"), 
                 asset_id: choiced_elt.attr("pk"), 

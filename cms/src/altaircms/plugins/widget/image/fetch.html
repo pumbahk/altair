@@ -1,6 +1,12 @@
 %for asset in assets:
+  %if loop.first:
+  <div class="item first">
+  %elif loop.last:
+  <div class="item last">
+  %else:
   <div class="item">
-  <img pk="${asset.id}" src="${h.asset.rendering_object(request,asset).thumbnail_path}"/>
-  <p>title:${asset.title} width:${asset.width} height:${asset.height} </p>
+  %endif
+  <img pk="${asset.id}" src="${h.asset.rendering_object(request,asset).thumbnail_path}" class="${"managed" if widget.asset_id==asset.id else ""}"/>
+  <p>title:${asset.title}</p><p>width:${asset.width}</p><p>height:${asset.height}</p>
   </div>
 %endfor

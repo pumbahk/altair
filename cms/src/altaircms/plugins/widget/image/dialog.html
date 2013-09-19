@@ -1,10 +1,12 @@
 <%namespace file="../components.html" name="co"/>
 
+<link rel="stylesheet" type="text/css" href="/plugins/static/css/widget/lib/image.css">
 <style>
     .container-fluid form input {
         min-width: 0px;
     }
 </style>
+
 
 ## N個ごとに区切られたitreratorを受け取り、divで区切って出力(scrollのため)
 <%def name="render(assets)">
@@ -13,9 +15,15 @@
     %if i == 0:
       ## ./fetch.htmlと同じ(todo:まとめる)
       %for asset in assets:
+        %if loop.first:
+        <div class="item first">
+        %elif loop.last:
+        <div class="item last">
+        %else:
         <div class="item">
-        <img pk="${asset.id}" src="${h.asset.rendering_object(request,asset).thumbnail_path}"/>
-        <p>title:${asset.title} width:${asset.width} height:${asset.height} </p>
+        %endif
+        <img pk="${asset.id}" src="${h.asset.rendering_object(request,asset).thumbnail_path}" class="${"managed" if widget.asset_id==asset.id else ""}"/>
+        <p>title:${asset.title}</p><p>width:${asset.width}</p><p>height:${asset.height}</p>
         </div>
       %endfor
     %endif
@@ -29,47 +37,51 @@
 <br/>
 <div style='clear:both;' id="imgtabs">
   <div class="tabbable">
-  </div>
-  <ul>
-    <li><a href="#image_tab">画像の選択</a></li>
-    <li><a href="#setting_tab">表示設定</a></li>
+  <ul class="nav nav-tabs">
+    <li class="active"><a id="image_ref">画像の選択</a></li>
+    <li><a id="setting_ref">表示設定</a></li>
   </ul>
   <div id="image_tab" style="height: 600px">
+    <div class="row-fluid">
+      <div class="span6">
+        <form class="form-inline" id="search_form" action="${request.route_path('image_widget_search')}" method="POST" style="display: inline">
+          検索文字列
+          <input type="hidden" name="pk" value="${pk}"/>
+          <input class="search-query" name="search_word" value="" style="min-width: 0px;" type="text" placeholder="アセット名検索">
+          <input type="submit" value="検索" style="width: 50px" style="min-width: 0px">
+        </form>
+      </div>
 
-    <form id="search_form" action="${request.route_path('image_widget_search')}" method="POST" style="display: inline">
-      検索文字列
-      <input type="hidden" name="pk" value="${pk}"/>
-      <input type="text" name="search_word" value="" style="min-width: 0px"/>
-      <input type="submit" value="検索" style="width: 50px" style="min-width: 0px">
-    </form>
+      <div class="span6">
+        <form class="form-inline" id="tag_search_form" action="${request.route_path('image_widget_tag_search')}" method="POST" style="display: inline">
+          検索タグ
+          <input type="hidden" name="pk" value="${pk}"/>
+          <input class="search-query" placeholder="タグ名検索" type="text" name="tags" value="" style="min-width: 0px"/>
+          <input type="submit" value="タグ検索" style="min-width: 0px">
+        </form>
+      </div>
+    </div>
 
-    <form id="tag_search_form" action="${request.route_path('image_widget_tag_search')}" method="POST" style="display: inline">
-      検索タグ
-      <input type="hidden" name="pk" value="${pk}"/>
-      <input type="text" name="tags" value="" style="min-width: 0px"/>
-      <input type="submit" value="タグ検索" style="min-width: 0px">
-    </form>
-
-    <div class="scrollable" style="width: 550px">
+    <div class="scrollable">
         <div class="items">
           ${render(assets)}
         </div>
     </div>
 
-    <br/>
-    <button type="button" id="image_submit">登録</button>
-    <br/>
-
-    <link rel="stylesheet" type="text/css" href="/plugins/static/css/widget/lib/image.css">
     <!-- "previous page" action -->
-    <a class="prev browse left"></a>
-    <a class="next browse right"></a>
-    <div class="navi"></div>
-
-
-
+    <div class="row-fluid">
+      <div class="span4">
+        <a class="prev browse left"></a>
+        <a class="next browse right"></a>
+        <button style="margin-top: 10px; margin-left:30px;"class="btn btn-primary" type="button" id="image_submit">画像を登録</button>
+      </div>
+      <div class="span8">
+        <div class="navi" style="display:inline"></div>
+      </div>
+    </div>
   </div>
-  <div id="setting_tab">
+  </div>
+  <div id="setting_tab" style="display:none;">
     <table class="table">
       <tbody>
         ${co.formfield(form, "href")}
@@ -79,6 +91,7 @@
         ${co.formfield(form, "align")}
       </tbody>
     </table>
-    <button type="button" id="image_info_submit">登録</button>
+    <button type="button" id="image_info_submit" class="btn btn-primary">設定を保存して登録</button>
+  </div>
   </div>
 </div>
