@@ -37,7 +37,6 @@ class PaymentDeliveryMethodPairForm(Form):
     )
     system_fee_type = SelectField(
         label=u'システム利用料計算単位',
-        default=FeeTypeEnum.Once.v[0],
         validators=[Required(u'選択してください')],
         choices=[fee_type.v for fee_type in FeeTypeEnum],
         coerce=int
