@@ -22,7 +22,7 @@ class MaybeIntegerField(unittest.TestCase):
         form = self._makeOne(n=10)
         self.assertEqual(form.n.data, 10)
 
-    def test_post__with_blak_value(self):
+    def test_post__with_blank_value(self):
         form = self._makeOne(MultiDict(n=""))
         self.assertTrue(form.validate())
         self.assertEqual(form.n.data, None)

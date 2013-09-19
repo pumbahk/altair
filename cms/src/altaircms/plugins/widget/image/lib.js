@@ -2,21 +2,32 @@ if(!widget){
     throw "widget module is not found";
 }
 
-var AjaxScrollableAPIGateway = function(pk, fetch_url, seach_url){
+var AjaxScrollableAPIGateway = function(pk, fetch_url, search_url, tag_search_url){
     this.pk = pk; // null if opened dialog, first time.
     this.fetch_url = fetch_url;
-    this.seach_url = seach_url;
+    this.search_url = search_url;
+    this.tag_search_url = tag_search_url;
 };
-AjaxScrollableAPIGateway.prototype.fetch = function(i){
+AjaxScrollableAPIGateway.prototype.fetch = function(word, i){
     return $.ajax(this.fetch_url, {
         dataType: "html",
         type: "GET",
-        url: this.fetch_url,
         data: {"page": i, "widget": this.pk}
     }); //dfd
 };
-AjaxScrollableAPIGateway.prototype.search = function(word,i){
-    return $.get(this.search_url, {"search_word": word, "page": i, "widget": this.pk}) //dfd
+AjaxScrollableAPIGateway.prototype.search = function(word, i){
+    return $.ajax(this.search_url, {
+        dataType: "html",
+        type: "GET",
+        data: {"page": i, "widget": this.pk, "search_word": word}
+    }); //dfd
+};
+AjaxScrollableAPIGateway.prototype.tag_search = function(word, i){
+    return $.ajax(this.tag_search_url, {
+        dataType: "html",
+        type: "GET",
+        data: {"page": i, "widget": this.pk, "tags": word}
+    }); //dfd
 };
 
 var AjaxImageAreaManager = function(root){
@@ -50,16 +61,25 @@ var AjaxScrollableHandler = function(we, gateway, areaManager){
     this.we = we;
     this.root = null;
     this.scrollable = null;
-    this.cache = {}; //{1: true, 2: true, ...}
+    this.cache = {fetch: {}, search: {}}; //{1: true, 2: true, ...}
     this.gateway = gateway;
     this.areaManager = areaManager;
+    this.apiType = "fetch"; // fetch or search or tag_search
+    this.word = "" // search word
+};
+AjaxScrollableHandler.prototype.setSearchWord = function(apiType, word){
+    //console.log(word);
+    this.apiType = apiType;
+    this.word = word;
 };
 AjaxScrollableHandler.prototype.fetchImages = function(){
     var i = this.getIndex();
-    if(!this.cache[i]){
-        this.cache[i] = true //hmm;
+    var apiType = this.apiType;
+    if(!this.cache[apiType][i]){
+        this.cache[apiType][i] = true //hmm;
         var self = this;
-        return this.gateway.fetch(i).done(function(html){
+        // notice: ducktyping.
+        return this.gateway[apiType](this.word, i).done(function(html){
             self.areaManager.injectImages(i, html);
         });
     }
@@ -80,19 +100,36 @@ var SearchHandler = function(we, areaManager){
     this.root = null;
     this.we = we;
     this.areaManager = areaManager;
+    this.afterSearchSubmitHook = function(){}; //todo: observer
 };
 
 SearchHandler.prototype.bind = function(root, search_form, tag_search_form){
     this.root = root;
     this.areaManager.bind(root);
     var successSearch = this.afterSearch.bind(this);
+    var self = this;
     // todo: add failure cont.
-    $('#search_form').ajaxForm({dataType: 'json', success: successSearch});
-    $('#tag_search_form').ajaxForm({dataType: 'json', success: successSearch});
+    $('#search_form').ajaxForm({dataType: 'json', success: successSearch,
+                               beforeSubmit: function(arr, $form, options){
+                                   for(var i=0,j=arr.length;i<j;i++){
+                                       if(arr[i].name == "search_word"){
+                                           self.afterSearchSubmitHook("search", arr[i].value);
+                                       }
+                                   }
+                               }});
+    $('#tag_search_form').ajaxForm({dataType: 'json', success: successSearch,
+                               beforeSubmit: function(arr, $form, options){
+                                   for(var i=0,j=arr.length;i<j;i++){
+                                       if(arr[i].name == "tags"){
+                                           self.afterSearchSubmitHook("tag_search", arr[i].value);
+                                       }
+                                   }
+                               }});
 };
 SearchHandler.prototype.afterSearch = function(data){
     var assets_data = data.assets_data;
     var widget_asset_id = data.widget_asset_id;
+    
     this.areaManager.redraw(assets_data,widget_asset_id);
     addClickEvent();
     moveSelectedItem();
@@ -176,6 +213,9 @@ ApplicationHandler.prototype.bind = function(root, submitBtn, infoSubmitBtn){
     this.searchHandler.bind(root);
     this.submitHandler.bind(root, submitBtn, infoSubmitBtn);
     this.tabHandler.bind(root);
+    
+    // setting hook. todo: list?
+    this.searchHandler.afterSearchSubmitHook = this.scrollableHandler.setSearchWord.bind(this.scrollableHandler);
 }
 
 ApplicationHandler.prototype.choicedElement = function(){
@@ -252,7 +292,8 @@ TabHandler.prototype.next = function(target){
             var gateway = new AjaxScrollableAPIGateway(
                 we.get_pk(we.where),
                 "/api/widget/image/fetch",
-                "/api/widget/image/search"
+                "/api/widget/image/search",
+                "/api/widget/image/tag_search"
             );
             appHandler = setupApplicationHandler(we, gateway);
             widget.env.image.appHandler = appHandler; // for debug;
