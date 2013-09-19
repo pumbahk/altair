@@ -23,10 +23,14 @@ class FakeQuery(object):
             return r
         return r
 
+    def one(self):
+        return self.xs[0]
+
     def get(self, i):
         for x in self.xs:
             if x.id == i:
                 return x
+
 
 class Request:
     def __init__(self, xs):
@@ -154,7 +158,7 @@ class AssetRepositoryCountTests(unittest.TestCase):
         """[[1, 2, 3], [4, 5, 6], [7, 8, 9]]"""
         N = 9
         with mock.patch.object(self._getTarget(), "_get_query") as m:
-            m.count.return_value = N
+            m.return_value.count.return_value = N
             target = self._makeOne(None, None, offset=3)
             result = target.count_of_asset()
             ## 9 % 3 == 0 and 9 / 3 == 3
@@ -164,7 +168,7 @@ class AssetRepositoryCountTests(unittest.TestCase):
         """[[5, 1, 2], [3, 4, 5], [6, 7, 8], [9]]"""
         N = 10
         with mock.patch.object(self._getTarget(), "_get_query") as m:
-            m.count.return_value = N
+            m.return_value.count.return_value = N
             target = self._makeOne(None, None, offset=3)
             result = target.count_of_asset(5)
             ## (9+1) % 3 == 1 and (9+1) / 3 == 3

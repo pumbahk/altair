@@ -47,20 +47,28 @@ class MaybeIntegerField(fields.IntegerField):
     blank_text = u"--------"
     blank_value = ""
 
+    def __init__(self, *args, **kwargs):
+        self.blank_value = kwargs.pop("blank_value", self.blank_value)
+        super(MaybeIntegerField, self).__init__(*args, **kwargs)
+
     def process_data(self, value):
         if value is None or value == self.blank_value:
             self.data = self.blank_value
         else:
             super(MaybeIntegerField, self).process_data(value)
 
+    def pre_validate(self, form):
+        if self.data == self.blank_value:
+            self.data = self.default
+
     def process_formdata(self, valuelist):
         if valuelist:
             v = valuelist[0] 
-            if v is self.blank_value:
+            if v == self.blank_value:
                 self.data = None
                 return 
             return super(MaybeIntegerField, self).process_formdata(valuelist)
-
+    
 
 from wtforms.compat import text_type
 class MaybeSelectField(SelectField):

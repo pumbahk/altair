@@ -1,5 +1,7 @@
 # -*- coding:utf-8 -*-
 from pyramid.decorator import reify
+import logging
+logger = logging.getLogger(__name__)
 import copy
 
 class LazyQuery(object):
@@ -82,7 +84,8 @@ class AssetRepository(object):
             return self.list_of_asset_any(i, -1)
         qs = self._get_query()
         rest = list(self.filtered_query(qs).limit(self.offset-1))
-        r = [self.request.allowable(self.Model).get(asset_id)]
+        one = self.request.allowable(self.Model).filter_by(id=asset_id).one() #hmm:
+        r = [one]
         r.extend(rest)
         return r
 
@@ -95,4 +98,5 @@ class WidgetRepository(object):
         if pk is None or pk=="null":
             return self.Model()
         else:
+            logger.info("%s -- %s",  self.Model, pk)
             return self.request.allowable(self.Model).get(pk)

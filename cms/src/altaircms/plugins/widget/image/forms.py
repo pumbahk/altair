@@ -4,6 +4,10 @@ from altaircms.formhelpers import AlignChoiceField
 import wtforms.fields as fields
 import wtforms.validators as validators
 
+class FetchImageForm(Form):
+    page = MaybeIntegerField(default=0)
+    pk = MaybeIntegerField(default=None)
+
 class ImageInfoForm(Form):
     href = fields.TextField(id="href", label=u"リンク先")
     width = MaybeIntegerField(id="width", label=u"レンダリングのwidth", validators=[validators.Optional()])

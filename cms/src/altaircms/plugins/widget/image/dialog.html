@@ -8,16 +8,19 @@
 
 ## N個ごとに区切られたitreratorを受け取り、divで区切って出力(scrollのため)
 <%def name="render(assets)">
-  % for i, g in enumerate(assets):
-  <div class="group" id="group_${i}">
-     % for image in g:
-       <div class="item">
-         <img pk="${image.id}" src="${h.asset.rendering_object(request,image).thumbnail_path}" alt="" class="${"managed" if widget.asset==image else ""}"/>
-         <p>title:${image.title} width:${image.width} height:${image.height} </p>
-       </div>
-     % endfor
+  %for i in xrange(max_of_pages):
+  <div class="group" id="group_${i}"> 
+    %if i == 0:
+      ## ./fetch.htmlと同じ(todo:まとめる)
+      %for asset in assets:
+        <div class="item">
+        <img pk="${asset.id}" src="${h.asset.rendering_object(request,asset).thumbnail_path}"/>
+        <p>title:${asset.title} width:${asset.width} height:${asset.height} </p>
+        </div>
+      %endfor
+    %endif
   </div>
-  % endfor
+  %endfor
 </%def>
 
 <div class="title">
@@ -25,6 +28,8 @@
 </div>
 <br/>
 <div style='clear:both;' id="imgtabs">
+  <div class="tabbable">
+  </div>
   <ul>
     <li><a href="#image_tab">画像の選択</a></li>
     <li><a href="#setting_tab">表示設定</a></li>

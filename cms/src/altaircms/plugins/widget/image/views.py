@@ -7,11 +7,12 @@ from . import forms
 from altaircms.formhelpers import AlignChoiceField
 from webob.multidict import MultiDict
 from pyramid.httpexceptions import (
-    HTTPFound
+    HTTPFound, 
+    HTTPNotFound
 )
 import logging
 from altaircms import helpers
-import json
+from .models import ImageWidget
 logger = logging.getLogger(__name__)
 
 @view_defaults(custom_predicates=(require_login,))
@@ -24,6 +25,7 @@ class ImageWidgetView(object):
     def _create_or_update(self):
         try:
             form = forms.ImageInfoForm(MultiDict(self.request.json_body["data"], page_id=self.request.json_body["page_id"]))
+
             if not form.validate():
                 logger.warn(str(form.errors))
                 r = self.request.json_body.copy()
@@ -63,14 +65,29 @@ class ImageWidgetView(object):
 
     @view_config(route_name="image_widget_dialog", renderer="altaircms.plugins.widget:image/dialog.html", request_method="GET")
     def dialog(self):
-        assets = group_by_n(self.context.get_asset_query(), self.N)
-        pk = self.request.GET.get("pk")
-        widget = self.context.get_widget(pk)
-        params = widget.to_dict()
-        params.update(widget.attributes or {})      
-        form = forms.ImageInfoForm(**AlignChoiceField.normalize_params(params))
-        return {"assets": assets, "form": form, "widget": widget, "pk": pk}
+        form = forms.FetchImageForm(self.request.GET)
+        if not form.validate():
+            raise HTTPNotFound()
+        pk = form.pk.data
+        widget = self.context.widget_repository.get_or_create(pk)
+        assets = self.context.asset_repository.list_of_asset(widget.asset_id, form.page.data) #pagination
 
+        params = widget.to_dict()
+        params.update(widget.attributes or {})
+        max_of_pages = self.context.asset_repository.count_of_asset(widget.asset_id)
+        form = forms.ImageInfoForm(**AlignChoiceField.normalize_params(params))
+
+        return {"assets": assets, "form": form, "widget": widget, "pk": pk, "max_of_pages": max_of_pages}
+
+    @view_config(route_name="image_widget_fetch", renderer="altaircms.plugins.widget:image/fetch.html", request_method="GET")
+    def fetch(self):
+        form = forms.FetchImageForm(self.request.GET)
+        if not form.validate():
+            raise HTTPNotFound()
+        pk = form.pk.data
+        widget = self.context.widget_repository.get_or_create(pk)
+        assets = self.context.asset_repository.list_of_asset(widget.asset_id, form.page.data) #pagination
+        return {"assets": assets, "widget": widget, "pk": pk}
 
     @view_config(route_name="image_widget_search", renderer="json", request_method="POST")
     def search(self):

@@ -1,0 +1,6 @@
+%for asset in assets:
+  <div class="item">
+  <img pk="${asset.id}" src="${h.asset.rendering_object(request,asset).thumbnail_path}"/>
+  <p>title:${asset.title} width:${asset.width} height:${asset.height} </p>
+  </div>
+%endfor
