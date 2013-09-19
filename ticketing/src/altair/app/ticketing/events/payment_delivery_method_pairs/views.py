@@ -9,10 +9,10 @@ from altair.app.ticketing.views import BaseView
 from altair.app.ticketing.fanstatic import with_bootstrap
 from altair.app.ticketing.core.models import SalesSegmentGroup, PaymentDeliveryMethodPair, PaymentMethod, DeliveryMethod
 from altair.app.ticketing.events.payment_delivery_method_pairs.forms import PaymentDeliveryMethodPairForm
-from altair.app.ticketing.service_fee_methods.api import get_system_fee_default, SystemFeeDefaultDoesNotExist, SystemFeeDefaultDuplicated
 
 @view_defaults(decorator=with_bootstrap, permission='event_editor')
 class PaymentDeliveryMethodPairs(BaseView):
+
     @view_config(route_name='payment_delivery_method_pairs.new', request_method='GET', renderer='altair.app.ticketing:templates/payment_delivery_method_pairs/edit.html')
     def new_get(self):
         sales_segment_group_id = int(self.request.matchdict.get('sales_segment_group_id', 0))
@@ -20,23 +20,12 @@ class PaymentDeliveryMethodPairs(BaseView):
 
         f = PaymentDeliveryMethodPairForm(organization_id=self.context.user.organization_id)
         f.sales_segment_group_id.data = sales_segment_group_id
-        
-        try:
-            system_fee, system_fee_type = get_system_fee_default(organization_id=self.context.user.organization_id)
-        except SystemFeeDefaultDoesNotExist:
-            system_fee = f.system_fee.default
-            system_fee_type = f.system_fee_type.default
-        except SystemFeeDefaultDuplicated:
-            system_fee = f.system_fee.default
-            system_fee_type = f.system_fee_type.default            
 
         return {
             'form':f,
             'sales_segment_group':sales_segment_group,
             'payment_methods':PaymentMethod.filter_by(organization_id=self.context.user.organization_id).all(),
             'delivery_methods':DeliveryMethod.filter_by(organization_id=self.context.user.organization_id).all(),
-            'system_fee': system_fee,
-            'system_fee_type': system_fee_type,
         }
 
     @view_config(route_name='payment_delivery_method_pairs.new', request_method='POST', renderer='altair.app.ticketing:templates/payment_delivery_method_pairs/edit.html')
@@ -56,19 +45,11 @@ class PaymentDeliveryMethodPairs(BaseView):
             self.request.session.flash(u'決済・引取方法を登録しました')
             return HTTPFound(location=route_path('sales_segment_groups.show', self.request, sales_segment_group_id=f.sales_segment_group_id.data))
         else:
-            try:
-                system_fee, system_fee_type = get_system_fee_default(organization_id=self.context.user.organization_id)
-            except SystemFeeDefaultDoesNotExist:
-                system_fee = f.system_fee.default
-            except SystemFeeDefaultDuplicated:
-                system_fee = f.system_fee.default
-                
             return {
                 'form':f,
                 'sales_segment_group':sales_segment_group,
                 'payment_methods':PaymentMethod.filter_by(organization_id=self.context.user.organization_id).all(),
                 'delivery_methods':DeliveryMethod.filter_by(organization_id=self.context.user.organization_id).all(),
-                'system_fee': system_fee,
             }
 
     @view_config(route_name='payment_delivery_method_pairs.edit', request_method='GET', renderer='altair.app.ticketing:templates/payment_delivery_method_pairs/edit.html')
