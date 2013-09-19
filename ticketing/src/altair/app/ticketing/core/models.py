@@ -3627,7 +3627,7 @@ class OrderImportTask(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     status = Column(Integer, nullable=False)
     count = Column(Integer, nullable=False)
     data = Column(UnicodeText(8388608))
-    error = Column(UnicodeText, nullable=True)
+    errors = Column(MutationDict.as_mutable(JSONEncodedDict(65536)), nullable=True)
 
     organization = relationship('Organization')
     performance = relationship('Performance')
