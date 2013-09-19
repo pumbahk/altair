@@ -1,29 +1,39 @@
 # -*- coding:utf-8 -*-
 from pyramid.decorator import reify
+import copy
 
 class LazyQuery(object):
-    def __init__(self):
-        self.fns = []
+    def __init__(self, fns=None):
+        self.fns = fns or []
 
     def filter(self, *args, **kwargs):
-        self.fns.append(lambda qs : qs.filter(*args, **kwargs))
-        return self
+        fns = self.fns[:]
+        fns.append(lambda qs : qs.filter(*args, **kwargs))
+        return self.__class__(fns)
 
     def filter_by(self, *args, **kwargs):
-        self.fns.append(lambda qs : qs.filter_by(*args, **kwargs))
-        return self
+        fns = self.fns[:]
+        fns.append(lambda qs : qs.filter_by(*args, **kwargs))
+        return self.__class__(fns)
 
     @classmethod
     def inject(cls, target_cls):
         @reify
         def lazy_query(self):
             return cls()
+
         def filter(self, *args, **kwargs):
-            self.lazy_query.filter(*args, **kwargs)
-            return self
+            q = self.lazy_query.filter(*args, **kwargs)
+            copied = copy.copy(self)
+            copied.lazy_query = q
+            return copied
+
         def filter_by(self, *args, **kwargs):
-            self.lazy_query.filter_by(*args, **kwargs)
-            return self
+            q = self.lazy_query.filter_by(*args, **kwargs)
+            copied = copy.copy(self)
+            copied.lazy_query = q
+            return copied
+
         def filtered_query(self, qs):
             for fn in self.lazy_query.fns:
                 qs = fn(qs)
