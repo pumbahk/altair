@@ -73,8 +73,3 @@ class IntegrationTests(unittest.TestCase):
         factory = S3StaticPathFactory(":bucket-name:")
         prefix = factory._get_correct_prefix("/prefix")
         self.assertEqual(prefix, "/prefix")
-
-    def test_generate(self):
-        from . import PrefixedStaticURLInfo
-        info = PrefixedStaticURLInfo("aaa")
-        info._generate("path", "request")
