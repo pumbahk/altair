@@ -1365,11 +1365,11 @@ class PaymentDeliveryMethodPair(Base, BaseModel, WithTimestamp, LogicallyDeleted
 
     @property
     def per_product_fee(self):
-        return self.delivery_fee_per_product + self.transaction_fee_per_product
+        return self.system_fee_per_product + self.delivery_fee_per_product + self.transaction_fee_per_product
     
     @property
     def per_ticket_fee(self):
-        return self.delivery_fee_per_ticket + self.transaction_fee_per_ticket
+        return self.system_fee_per_ticket + self.delivery_fee_per_ticket + self.transaction_fee_per_ticket
 
     def is_available_for(self, sales_segment, on_day):
         return self.public and (
