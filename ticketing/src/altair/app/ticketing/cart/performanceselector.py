@@ -7,7 +7,7 @@
 from collections import OrderedDict
 from zope.interface import implementer
 from .interfaces import IPerformanceSelector
-from .helpers import create_date_label
+from .helpers import create_date_label, create_time_label, create_time_only_label
 
 class _PerformanceSelector(object):
     def select_value(self, sales_segment):
@@ -47,7 +47,10 @@ class _PerformanceSelector(object):
 
         return dict(
             id=sales_segment.id,
-            name=self.create_date_venue_label(sales_segment),
+            name=self._create_name(sales_segment),
+            name_pc=self.time_label(sales_segment),
+            name_mobile=self.time_label(sales_segment),
+            name_smartphone=self.time_label(sales_segment),
             order_url=self.request.route_url(
                 'cart.order',
                 sales_segment_id=sales_segment.id),
@@ -59,16 +62,24 @@ class _PerformanceSelector(object):
                 event_id=self.context.event.id)
             )
 
-    def create_venue_label(self, sales_segment):
+    def _create_name(self, sales_segment):
+        return self.time_label(sales_segment)
+
+    def time_only_label(self, sales_segment):
+        v = self.venue_label(sales_segment)
+        t = create_time_only_label(sales_segment.performance.start_on, sales_segment.performance.end_on)
+        return t + " " + v
+
+    def time_label(self, sales_segment):
+        v = self.venue_label(sales_segment)
+        t = create_time_label(sales_segment.performance.start_on, sales_segment.performance.end_on)
+        return t + " " + v
+
+    def venue_label(self, sales_segment):
         venue_format = u"{vname} {name}"
         return venue_format.format(
             name = sales_segment.name,
             vname = sales_segment.performance.venue.name)
-
-    def create_date_venue_label(self, sales_segment):
-        venue_label = self.create_venue_label(sales_segment)
-        date_label = create_date_label(sales_segment.performance.start_on, sales_segment.performance.end_on)
-        return date_label + " " + venue_label
 
 @implementer(IPerformanceSelector)
 class MatchUpPerformanceSelector(_PerformanceSelector):
@@ -101,7 +112,7 @@ class DatePerformanceSelector(_PerformanceSelector):
     """ 日付 -> 会場 """
 
     label = u"開催日"
-    second_label = u"会場"
+    second_label = u"日付・会場"
 
     def __init__(self, request):
         self.request = request
@@ -125,7 +136,10 @@ class DatePerformanceSelector(_PerformanceSelector):
 
         return dict(
             id=sales_segment.id,
-            name=self.create_venue_label(sales_segment),
+            name=self._create_name(sales_segment),
+            name_pc=self.time_only_label(sales_segment),
+            name_mobile=self.time_label(sales_segment),
+            name_smartphone=self.time_only_label(sales_segment),
             order_url=self.request.route_url(
                 'cart.order',
                 sales_segment_id=sales_segment.id),
