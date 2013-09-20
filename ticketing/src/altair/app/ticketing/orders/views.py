@@ -288,7 +288,7 @@ def index(request):
         query = OrderDownload(slave_session,
                               organization_id,
                               columns=[],
-                              condition={})
+                              condition=None)
 
     if request.params.get('action') == 'checked':
         checked_orders = [o.lstrip('o:') 
@@ -329,12 +329,12 @@ def download(request):
         query = OrderDownload(slave_session,
                               organization_id,
                               columns=[],
-                              condition={})
+                              condition=form_search)
     else:
         query = OrderDownload(slave_session,
                               organization_id,
                               columns=[],
-                              condition={})
+                              condition=None)
 
     query = KeyBreakAdapter(query, 'id',
                             ('product_name', 'product_price', 'product_quantity'),

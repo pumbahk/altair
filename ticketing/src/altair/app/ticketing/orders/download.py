@@ -4,6 +4,7 @@
 
 """
 
+import re
 import logging
 from collections import OrderedDict
 from sqlalchemy import (
@@ -361,11 +362,21 @@ class OrderDownload(list):
         self.db_session = db_session
         #self.columns = columns
         self.organization_id = organization_id
-        self.condition = condition
+        self.condition = self.query_cond(condition)
 
     def query_cond(self, condition):
-        sql = ""
-        params = ()
+        cond = t_organization.c.id==self.organization_id
+        if condition is None:
+            return cond
+
+        if condition.order_no.data:
+            value = condition.order_no.data
+            if isinstance(value, basestring):
+                value = re.split(ur'[ \t　]+', value)
+
+            cond = and_(cond,
+                        t_order.c.order_no.in_(value))
+
         # if 'billing_or_exchange_number' in condition:
         #     pass
 
@@ -468,7 +479,7 @@ class OrderDownload(list):
         #     else:
         #         pass
 
-        return sql, params
+        return cond
 
     def __iter__(self):
         start = 0
@@ -480,7 +491,7 @@ class OrderDownload(list):
     def count(self):
         sql = select([func.count(t_order.c.id)],
                      from_obj=[self.target],
-                     whereclause=t_organization.c.id==self.organization_id,
+                     whereclause=self.condition,
         )
 
 
@@ -503,7 +514,7 @@ class OrderDownload(list):
         while True:
             sql = select(self.columns, 
                          from_obj=[self.target],
-                         whereclause=t_organization.c.id==self.organization_id,
+                         whereclause=self.condition,
             ).limit(limit
             ).offset(offset)
 
