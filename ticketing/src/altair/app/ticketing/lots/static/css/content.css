@@ -2089,9 +2089,29 @@
 
 #mailMagazineBoxInner dd ul li {
 	float: left;
-	width: 48%;
 	padding: 10px 0 0;
 	border: none;
+}
+
+#mailMagazineBoxInner dd ul li.subscribed {
+	color: #7f7b72;
+}
+
+#mailMagazineBoxInner dd ul li.subscribed label:after {
+  display: inline-block;
+	border-radius: 2px;
+	-webkit-border-radius: 2px;
+	-moz-border-radius: 2px;
+	color: #fff;
+	background-color: #f88;
+	vertical-align: middle;
+	margin: 0 0 0 4px;
+	padding: 2px 3px;
+	font-size: 10px;
+	height: 10px;
+	line-height: 10px;
+	font-weight: bold;
+	content: "購読中";
 }
 
 /* こんな商品にも興味をもっています */
