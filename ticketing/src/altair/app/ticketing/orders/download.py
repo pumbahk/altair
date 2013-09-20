@@ -10,6 +10,7 @@ from collections import OrderedDict
 from sqlalchemy import (
     select,
     and_,
+    or_,
     case,
     text,
     func,
@@ -377,8 +378,11 @@ class OrderDownload(list):
             cond = and_(cond,
                         t_order.c.order_no.in_(value))
 
-        # if 'billing_or_exchange_number' in condition:
-        #     pass
+        if condition.billing_or_exchange_number.data:
+            value = condition.billing_or_exchange_number.data
+            cond = and_(cond,
+                        or_(t_sej_order.c.exchange_number==value,
+                            t_sej_order.c.billing_number==value))
 
         # if 'ordered_from' in condition:
         #     sql = sql + " AND `Order`.created_at >= %s"
