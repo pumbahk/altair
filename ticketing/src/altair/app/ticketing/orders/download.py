@@ -14,6 +14,7 @@ from sqlalchemy import (
     func,
 )
 from altair.app.ticketing.core.models import (
+    Organization,
     Event,
     Performance,
     Venue,
@@ -37,6 +38,7 @@ from altair.app.ticketing.sej.models import SejOrder
 
 logger = logging.getLogger(__name__)
 
+t_organization = Organization.__table__
 t_event = Event.__table__
 t_performance = Performance.__table__
 t_sales_segment = SalesSegment.__table__
@@ -202,6 +204,10 @@ order_summary_joins = t_order.join(
     and_(t_event.c.id==t_performance.c.event_id,
          t_event.c.deleted_at==None),
 ).join(
+    t_organization,
+    and_(t_organization.c.id==t_event.c.organization_id,
+         t_organization.c.deleted_at==None),
+).join(
     t_sales_segment,
     and_(t_sales_segment.c.id==t_order.c.sales_segment_id,
          t_sales_segment.c.deleted_at==None),
@@ -351,9 +357,10 @@ class OrderDownload(list):
     #columns = summary_columns
     columns = detail_summary_columns
 
-    def __init__(self, db_session, columns, condition):
+    def __init__(self, db_session, organization_id, columns, condition):
         self.db_session = db_session
         #self.columns = columns
+        self.organization_id = organization_id
         self.condition = condition
 
     def query_cond(self, condition):
@@ -472,7 +479,10 @@ class OrderDownload(list):
 
     def count(self):
         sql = select([func.count(t_order.c.id)],
-                     from_obj=[self.target])
+                     from_obj=[self.target],
+                     whereclause=t_organization.c.id==self.organization_id,
+        )
+
 
         logger.debug("sql = {0}".format(sql))
         cur = self.db_session.bind.execute(sql)
@@ -492,7 +502,8 @@ class OrderDownload(list):
         offset = start
         while True:
             sql = select(self.columns, 
-                         from_obj=[self.target]
+                         from_obj=[self.target],
+                         whereclause=t_organization.c.id==self.organization_id,
             ).limit(limit
             ).offset(offset)
 

@@ -281,10 +281,12 @@ def index(request):
     from .download import OrderDownload
     if request.method == "POST" and form_search.validate():
         query = OrderDownload(slave_session,
+                              organization_id,
                               columns=[],
                               condition=form_search)
     else:
         query = OrderDownload(slave_session,
+                              organization_id,
                               columns=[],
                               condition={})
 
@@ -325,10 +327,12 @@ def download(request):
     from .download import OrderDownload, KeyBreakAdapter
     if request.method == "POST" and form_search.validate():
         query = OrderDownload(slave_session,
+                              organization_id,
                               columns=[],
                               condition={})
     else:
         query = OrderDownload(slave_session,
+                              organization_id,
                               columns=[],
                               condition={})
 
