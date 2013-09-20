@@ -7,30 +7,6 @@
     }
 </style>
 
-
-## N個ごとに区切られたitreratorを受け取り、divで区切って出力(scrollのため)
-<%def name="render(assets)">
-  %for i in xrange(max_of_pages):
-  <div class="group" id="group_${i}"> 
-    %if i == 0:
-      ## ./fetch.htmlと同じ(todo:まとめる)
-      %for asset in assets:
-        %if loop.first:
-        <div class="item first">
-        %elif loop.last:
-        <div class="item last">
-        %else:
-        <div class="item">
-        %endif
-        <img pk="${asset.id}" src="${h.asset.rendering_object(request,asset).thumbnail_path}" class="${"managed" if widget.asset_id==asset.id else ""}"/>
-        <p>title:${asset.title}</p><p>width:${asset.width}</p><p>height:${asset.height}</p>
-        </div>
-      %endfor
-    %endif
-  </div>
-  %endfor
-</%def>
-
 <div class="title">
   <h1>画像(image)</h1>
 </div>
@@ -63,9 +39,8 @@
     </div>
 
     <div class="scrollable">
-        <div class="items">
-          ${render(assets)}
-        </div>
+          ## hmm.
+          <%include file="./scrollable.html", args="widget=widget,assets=assets,max_of_pages=max_of_pages"/>
     </div>
 
     <!-- "previous page" action -->

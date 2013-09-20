@@ -49,10 +49,11 @@ class LazyQuery(object):
 
 @LazyQuery.inject
 class AssetRepository(object):
-    def __init__(self, request, Model, offset=5):
+    def __init__(self, request, Model, offset=5, qs=None):
         self.request = request
         self.Model = Model
         self.offset = offset
+        self.qs = qs
 
     def count_of_asset(self, asset_id=None):
         if asset_id is None:
@@ -65,8 +66,13 @@ class AssetRepository(object):
         else:
             return (size / self.offset) + 1
             
+    def start_from(self, qs):
+        copied = copy.copy(self)
+        copied.qs = qs
+        return copied
+
     def _get_query(self):
-        return self.request.allowable(self.Model)
+        return self.qs or self.request.allowable(self.Model)
 
     def list_of_asset(self, asset_id, i=0):
         if asset_id is None:

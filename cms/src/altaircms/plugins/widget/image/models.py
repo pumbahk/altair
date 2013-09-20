@@ -6,22 +6,11 @@ import sqlalchemy as sa
 import sqlalchemy.orm as orm
 from altaircms.plugins.widget.api import safe_execute
 from altaircms.widget.models import Widget
-from altaircms.widget.models import AssetWidgetResourceMixin
 from altaircms.plugins.base import DBSession
-from altaircms.plugins.base import asset
-from altaircms.plugins.base.mixins import HandleSessionMixin
-from altaircms.plugins.base.mixins import UpdateDataMixin
-from altaircms.security import RootFactory
+from altaircms.asset.models import ImageAsset
 
 from pyramid.renderers import render
-ImageAsset = asset.ImageAsset
-
 from altaircms.modellib import MutationDict, JSONEncodedDict
-from altaircms.modelmanager.repository import (
-    AssetRepository, 
-    WidgetRepository
-)
-from pyramid.decorator import reify
 
 class ImageWidget(Widget):
     implements(IWidget)
@@ -73,19 +62,3 @@ class ImageWidget(Widget):
                     "request": bsettings.extra["request"]})
         bsettings.add(bname, renderHTML)
 
-class ImageWidgetResource(HandleSessionMixin, #todo:remove
-                          UpdateDataMixin, #todo:remove
-                          AssetWidgetResourceMixin,  #todo:remove
-                          RootFactory
-                          ):
-    WidgetClass = ImageWidget #todo:remove
-    AssetClass = ImageAsset #todo:remove
-    @reify
-    def asset_repository(self):
-        return AssetRepository(self.request, ImageAsset, offset=5)
-    @reify
-    def widget_repository(self):
-        return WidgetRepository(self.request, ImageWidget)
-
-    def search_asset(self, search_word):
-        return self.request.allowable(self.AssetClass).filter(self.AssetClass.title.like("%" + search_word + "%"))

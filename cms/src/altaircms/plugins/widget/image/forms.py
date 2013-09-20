@@ -8,6 +8,16 @@ class FetchImageForm(Form):
     page = MaybeIntegerField(default=0)
     pk = MaybeIntegerField(default=None)
 
+class SearchByNameForm(Form):
+    search_word = fields.TextField()
+    page = MaybeIntegerField(default=0)
+    pk = MaybeIntegerField(default=None)
+
+class SearchByTagForm(Form):
+    tags = fields.TextField()
+    page = MaybeIntegerField(default=0)
+    pk = MaybeIntegerField(default=None)
+
 class ImageInfoForm(Form):
     href = fields.TextField(id="href", label=u"リンク先")
     width = MaybeIntegerField(id="width", label=u"レンダリングのwidth", validators=[validators.Optional()])
