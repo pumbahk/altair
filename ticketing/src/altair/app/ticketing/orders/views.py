@@ -322,7 +322,7 @@ def download(request):
     params["order_no"] = " ".join(request.params.getall("order_no"))
 
     form_search = OrderSearchForm(params, organization_id=organization_id)
-    from .download import OrderDownload
+    from .download import OrderDownload, KeyBreakAdapter
     if request.method == "POST" and form_search.validate():
         query = OrderDownload(slave_session,
                               columns=[],
@@ -332,11 +332,10 @@ def download(request):
                               columns=[],
                               condition={})
 
-    if request.params.get('action') == 'checked':
-        checked_orders = [o.lstrip('o:') 
-                          for o in request.session.get('orders', []) 
-                          if o.startswith('o:')]
-        #query = query.filter(Order.id.in_(checked_orders))
+    query = KeyBreakAdapter(query, 'id',
+                            ('product_name', 'product_price', 'product_quantity'),
+                            ('product_id'),
+                            ('item_name', 'item_price', 'item_quantity'))
 
     headers = [
         ('Content-Type', 'application/octet-stream; charset=Windows-31J'),
@@ -344,10 +343,15 @@ def download(request):
     ]
 
     response = Response(headers=headers)
+    headers = query.headers
+    logger.debug("headers = {0}".format(headers))
+    results = iter(query)
     writer = csv.writer(response, delimiter=',', quoting=csv.QUOTE_ALL)
-    writer.writerows([encode_to_cp932(column) 
-                      for column in columns.values()] 
-                     for columns in query)
+    writer.writerows([[encode_to_cp932(c)
+                       for c in headers]] +
+                     [[encode_to_cp932(columns.get(h))
+                       for h in headers]
+                      for columns in results])
     return response
 
 #########################################################################
