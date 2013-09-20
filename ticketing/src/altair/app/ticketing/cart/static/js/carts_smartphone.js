@@ -546,7 +546,7 @@ cart.PerformanceSearchView = Backbone.View.extend({
             var salesSegment = salesSegments[i];
             var opt = $('<option/>');
             $(opt).attr('value', salesSegment.id);
-            $(opt).text(salesSegment.name);
+            $(opt).text(salesSegment.name_smartphone);
             this.salesSegmentSelection.append(opt);
         }
         var salesSegmentId = this.model.get('defaultSalesSegmentId');
