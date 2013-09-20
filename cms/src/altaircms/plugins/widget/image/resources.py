@@ -15,6 +15,7 @@ from pyramid.decorator import reify
 from . import forms
 from .models import ImageWidget
 from altaircms.asset.creation import ImageSearcher
+from altaircms.tag.manager import MatchedTagNotFound
 
 class FetchService(object):
     def __init__(self, context):
@@ -76,7 +77,9 @@ class TagsearchService(object):
             searcher = ImageSearcher(self.context.request, not_found_then_return_all=False)
             assets = searcher.search(repository._get_query(), {'tags':search_word}) #xxx:
             return repository.start_from(assets)
-            return assets
+        except MatchedTagNotFound, e:
+            logger.warn("matched tag is not found. search_word={word}".format(word=search_word))
+            return repository.start_from(repository.Model.query.filter_by(id=-1))
         except Exception, e:
             logger.exception(e.message.encode("utf-8"))
             raise FailureException()

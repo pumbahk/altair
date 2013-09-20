@@ -42,7 +42,7 @@ AjaxImageAreaManager.prototype.bind = function(we, root){
     this.root.on("click", ".group img" ,function(e){this.selectImage($(e.currentTarget));}.bind(this));
 };
 AjaxImageAreaManager.prototype.getImageArea = function(i){
-    return this.root.find(".group#group_"+(i-1));
+    return this.root.find(".group#group_"+(i));
 };
 AjaxImageAreaManager.prototype.injectImages = function(i, html){
     return this.getImageArea(i).html(html);
@@ -61,21 +61,22 @@ var AjaxScrollableHandler = function(we, gateway, areaManager){
     this.we = we;
     this.root = null;
     this.scrollable = null;
-    this.cache = {fetch: {}, search: {}}; //{1: true, 2: true, ...}
+    this.cache = {fetch: {}, search: {}, tag_search: {}}; //{1: true, 2: true, ...}
     this.gateway = gateway;
     this.areaManager = areaManager;
     this.apiType = "fetch"; // fetch or search or tag_search
     this.word = "" // search word
 };
 AjaxScrollableHandler.prototype.setSearchWord = function(apiType, word){
-    //console.log(word);
+    console.log("*debug setword: "+word);
     this.apiType = apiType;
     this.word = word;
 };
 AjaxScrollableHandler.prototype.fetchImages = function(){
     var i = this.getIndex();
     var apiType = this.apiType;
-    if(!this.cache[apiType][i]){
+    console.log("*debug fetch images i="+i+" cached="+this.cache[apiType][i])
+    if(i > 0 && !this.cache[apiType][i]){
         this.cache[apiType][i] = true //hmm;
         var self = this;
         // notice: ducktyping.
@@ -87,9 +88,13 @@ AjaxScrollableHandler.prototype.fetchImages = function(){
 AjaxScrollableHandler.prototype.bind = function(root){
     var $scrollable = root.find(".scrollable");
     this.root = $scrollable;
+    this.areaManager.bind(this.we, $scrollable);
+};
+AjaxScrollableHandler.prototype.setupScrollable = function($scrollable){
+    // after call setupScrollable of SearchHandler
     this.scrollable = $scrollable.data("scrollable");
     this.scrollable.onSeek(this.fetchImages.bind(this));
-    this.areaManager.bind(this.we, $scrollable);
+    this.cache = {fetch: {}, search: {}, tag_search: {}}; //hmmm.
 };
 AjaxScrollableHandler.prototype.getIndex = function(){
     return this.scrollable.getIndex();
@@ -100,71 +105,98 @@ var SearchHandler = function(we, areaManager){
     this.root = null;
     this.we = we;
     this.areaManager = areaManager;
-    this.afterSearchSubmitHook = function(){}; //todo: observer
+    this.afterSearchSubmitHook = function(){alert("invalid search hook")}; //todo: observer
+    this.afterScrollableSetupHook = function(){alert("invalid setup hook")}; //todo: observer
 };
 
 SearchHandler.prototype.bind = function(root, search_form, tag_search_form){
     this.root = root;
     this.areaManager.bind(root);
-    var successSearch = this.afterSearch.bind(this);
+    this.setupScrollable(this.areaManager.$scrollable);
+
+    var onSuccess = this.afterSearch.bind(this);
+    var onFailure = (function(){alert(data);});
     var self = this;
     // todo: add failure cont.
-    $('#search_form').ajaxForm({dataType: 'json', success: successSearch,
-                               beforeSubmit: function(arr, $form, options){
+    $('#search_form').ajaxForm({dataType: 'html', success: onSuccess, failure: onFailure,
+                                timeout: 1000,
+                                beforeSubmit: function(arr, $form, options){
                                    for(var i=0,j=arr.length;i<j;i++){
                                        if(arr[i].name == "search_word"){
                                            self.afterSearchSubmitHook("search", arr[i].value);
                                        }
                                    }
+                                    //console.log(arr);
+                                   return true;
                                }});
-    $('#tag_search_form').ajaxForm({dataType: 'json', success: successSearch,
+    $('#tag_search_form').ajaxForm({dataType: 'html', success: onSuccess, failure: onFailure,
+                                    timeout: 1000,
                                beforeSubmit: function(arr, $form, options){
                                    for(var i=0,j=arr.length;i<j;i++){
                                        if(arr[i].name == "tags"){
                                            self.afterSearchSubmitHook("tag_search", arr[i].value);
                                        }
                                    }
+                                   //console.log(arr);
+                                   return true;
                                }});
 };
-SearchHandler.prototype.afterSearch = function(data){
-    var assets_data = data.assets_data;
-    var widget_asset_id = data.widget_asset_id;
-    
-    this.areaManager.redraw(assets_data,widget_asset_id);
-    addClickEvent();
-    moveSelectedItem();
-}
+SearchHandler.prototype.setupScrollable = function($scrollable){
+    // **scroiing**
+    // horizontal scrollables. each one is circular and has its own navigator instance
+    $scrollable.scrollable({circular: true, keyboard: true});
+    $scrollable.navigator(".navi").eq(0).data("scrollable").focus();
 
+    var move = $scrollable.data("scrollable").move;
+    this.root.parent().mousewheel(function(e, delta){
+        move(delta < 0 ? 1 : -1, 40); // 50 is speed
+        return false;
+    });
+    console.log("*debug setup scrollable");
+    this.afterScrollableSetupHook($scrollable);
+};
+SearchHandler.prototype.destroyScrollable = function($scrollable){
+    console.log("*debug destroy scrollable");
+    var scrollableJQObject = $($scrollable.data("scrollable"));
+    var events = ['onBeforeSeek', 'onSeek', 'onAddItem'];
+    for(var i=0,j=events.length; i<j; i++){
+        scrollableJQObject.off(events[i]);
+    }
+    delete scrollableJQObject;
+    $scrollable.data("scrollable",null);
+};
+SearchHandler.prototype.afterSearch = function(html){
+    this.areaManager.redraw(html);
+    this.destroyScrollable(this.areaManager.$scrollable);
+    this.setupScrollable(this.areaManager.$scrollable);
+}
 var SearchAreaManager = function(root){
     this.root = root; //$el?
+    this.$navi = null;
+    this.$browse = null;
+    this.$scrollable = null;
 };
 SearchAreaManager.prototype.bind = function(root){
     this.root = root;
-}
-SearchAreaManager.prototype.redraw = function(assets_data, widget_asset_id){
-    // pagination
-    $(".navi").empty();
-    $(".browse").removeClass("disabled");
-
-    $(".scrollable").remove();
-    //$("#tag_search_form").after("<div class='scrollable' style='width: 550px'></div>");
-    $(".scrollable").append("<div class='items'></div>");
-
-    for (var groupNo in assets_data){
-        $(".scrollable .items").append("<div class='group' id='group_" + groupNo + "'></div>");
-        for (var itemNo in assets_data[groupNo]) {
-
-            $("#group_" + groupNo).append("<div class='item'></div>");
-
-            var managed_class = "";
-            if (assets_data[groupNo][itemNo]['id'] == widget_asset_id) {managed_class = "class='managed'"}
-
-            var img_temp = "<img pk='<%= id %>' src='<%=thumbnail_path%>' alt='' " + managed_class + " />";
-            var p_temp = "<p>title:<%= title %> width:<%= width %> height:<%= height %></p>";
-            $("#group_" + groupNo + " .item:eq(" + itemNo + ")").append(_.template(img_temp, assets_data[groupNo][itemNo]));
-            $("#group_" + groupNo + " .item:eq(" + itemNo + ")").append(_.template(p_temp, assets_data[groupNo][itemNo]));
-        }
+    this.$navi = root.find(".navi");
+    this.$browse = root.find(".browse");
+    this.$scrollable = root.find(".scrollable");
+    if(!this.$navi.length){
+        throw ".navi is not found";
     }
+    if(!this.$browse.length){
+        throw ".browse is not found";
+    }
+    if(!this.$scrollable.length){
+        throw ".scrollable is not found";
+    }
+}
+SearchAreaManager.prototype.redraw = function(html){
+    //before
+    this.$navi.empty();
+    this.$browse.removeClass("disabled");
+    //redraw
+    this.$scrollable.html(html);
 };
 
 var SubmitHandler = function(we){
@@ -212,10 +244,7 @@ ApplicationHandler.prototype.bind = function(root, submitBtn, infoSubmitBtn){
     this.scrollableHandler.bind(root);
     this.searchHandler.bind(root);
     this.submitHandler.bind(root, submitBtn, infoSubmitBtn);
-    this.tabHandler.bind(root);
-    
-    // setting hook. todo: list?
-    this.searchHandler.afterSearchSubmitHook = this.scrollableHandler.setSearchWord.bind(this.scrollableHandler);
+    this.tabHandler.bind(root);   
 }
 
 ApplicationHandler.prototype.choicedElement = function(){
@@ -227,6 +256,10 @@ var setupApplicationHandler = function(we, gateway){
     var searchHandler = new SearchHandler(we, new SearchAreaManager()); //hmm.
     var submitHandler = new SubmitHandler(we);
     var tabHandler = new TabHandler(we, "image");
+
+    // setting hook. todo: list?
+    searchHandler.afterSearchSubmitHook = scrollableHandler.setSearchWord.bind(scrollableHandler);
+    searchHandler.afterScrollableSetupHook = scrollableHandler.setupScrollable.bind(scrollableHandler);
     return new ApplicationHandler(we, scrollableHandler, searchHandler, submitHandler, tabHandler);
 };
 
@@ -297,17 +330,6 @@ TabHandler.prototype.next = function(target){
             );
             appHandler = setupApplicationHandler(we, gateway);
             widget.env.image.appHandler = appHandler; // for debug;
-            // **scroiing**
-            // horizontal scrollables. each one is circular and has its own navigator instance
-            var root = $(".scrollable").scrollable({circular: true, keyboard: true});
-            root.navigator(".navi").eq(0).data("scrollable").focus();
-
-            var move = root.data("scrollable").move;
-            $(we.dialog).parent().mousewheel(function(e, delta){
-                move(delta < 0 ? 1 : -1, 40); // 50 is speed
-                return false;
-            });
-
             appHandler.bind($(we.dialog), "#image_submit", "#image_info_submit");
             // if(!!selected.length > 0){
             //     var k = selected.parents(".group").eq(0).attr("id").split("_")[1];

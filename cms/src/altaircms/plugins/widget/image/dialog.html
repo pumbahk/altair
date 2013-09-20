@@ -20,7 +20,7 @@
   <div id="image_tab" style="height: 600px">
     <div class="row-fluid">
       <div class="span6">
-        <form class="form-inline" id="search_form" action="${request.route_path('image_widget_search')}" method="POST" style="display: inline">
+        <form class="form-inline" id="search_form" action="${request.route_path('image_widget_search_first')}" method="POST" style="display: inline">
           検索文字列
           <input type="hidden" name="pk" value="${pk}"/>
           <input class="search-query" name="search_word" value="" style="min-width: 0px;" type="text" placeholder="アセット名検索">
@@ -29,7 +29,7 @@
       </div>
 
       <div class="span6">
-        <form class="form-inline" id="tag_search_form" action="${request.route_path('image_widget_tag_search')}" method="POST" style="display: inline">
+        <form class="form-inline" id="tag_search_form" action="${request.route_path('image_widget_tag_search_first')}" method="POST" style="display: inline">
           検索タグ
           <input type="hidden" name="pk" value="${pk}"/>
           <input class="search-query" placeholder="タグ名検索" type="text" name="tags" value="" style="min-width: 0px"/>

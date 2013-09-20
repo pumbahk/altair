@@ -1,5 +1,5 @@
 <%page args="widget,assets,max_of_pages"/>
-
+${max_of_pages}
 <div class="items">
 ## N個ごとに区切られたitreratorを受け取り、divで区切って出力(scrollのため).初回だけレンダリング
 %for i in xrange(max_of_pages):
