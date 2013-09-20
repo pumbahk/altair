@@ -182,15 +182,10 @@
             <div class="dispBox">
               <%m:header>メールマガジンの配信</%m:header>
               ご利用いただいた方には、楽天チケットからのメールマガジンをお送りします。不要な方はチェックをはずしてください。<br/><br/>
-<%
-style = ''
-if len(list(mailmagazines_to_subscribe)) == 1:
-    style = 'style="width: 100%;"'
-%>
-                % for mailmagazine in mailmagazines_to_subscribe:
-                <div ${style|n}>
+                % for mailmagazine, subscribed in mailmagazines_to_subscribe:
+                <div${subscribed and u' class="subscribed"' or u''|n}>
                   <div>
-                    <input type="checkbox" checked="checked" name="mailmagazine" id="mailmagazine-${mailmagazine.id}" value="${mailmagazine.id}" />
+                    <input type="checkbox" checked="checked" name="mailmagazine" id="mailmagazine-${mailmagazine.id}" value="${mailmagazine.id}"${subscribed and u' disabled="disabled"' or u''|n} />
                     <label for="mailmagazine-${mailmagazine.id}">${mailmagazine.name}</label>
                   </div>
                   <div>

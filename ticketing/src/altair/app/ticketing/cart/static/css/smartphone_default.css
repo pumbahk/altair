@@ -989,3 +989,24 @@ input[type="submit"] {
   margin: 5px 0 0 0;
   font-weight: bold;
 }
+
+#mailMagazineBoxInner .dispBox .subscribed {
+	color: #bbb;
+}
+
+#mailMagazineBoxInner .dispBox .subscribed label:after {
+  display: inline-block;
+	border-radius: 2px;
+	-webkit-border-radius: 2px;
+	-moz-border-radius: 2px;
+	color: #fff;
+	background-color: #f88;
+	vertical-align: middle;
+	margin: 0 0 0 4px;
+	padding: 2px 3px;
+	font-size: 10px;
+	height: 10px;
+	line-height: 10px;
+	font-weight: bold;
+	content: "購読中";
+}
