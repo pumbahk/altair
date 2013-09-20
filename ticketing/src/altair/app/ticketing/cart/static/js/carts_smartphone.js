@@ -544,10 +544,9 @@ cart.PerformanceSearchView = Backbone.View.extend({
         // 公演会場選択
         for (var i = 0; i < salesSegments.length; i++) {
             var salesSegment = salesSegments[i];
-            var shortName = salesSegment.name.slice(11);
             var opt = $('<option/>');
             $(opt).attr('value', salesSegment.id);
-            $(opt).text(shortName);
+            $(opt).text(salesSegment.name);
             this.salesSegmentSelection.append(opt);
         }
         var salesSegmentId = this.model.get('defaultSalesSegmentId');
