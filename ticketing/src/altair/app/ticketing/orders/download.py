@@ -384,13 +384,15 @@ class OrderDownload(list):
                         or_(t_sej_order.c.exchange_number==value,
                             t_sej_order.c.billing_number==value))
 
-        # if 'ordered_from' in condition:
-        #     sql = sql + " AND `Order`.created_at >= %s"
-        #     params = params + (condition['ordered_from'],)
+        if condition.ordered_from.data:
+            value = condition.ordered_from.data
+            cond = and_(cond,
+                        t_order.c.created_at>=value)
 
-        # if 'ordered_to' in condition:
-        #     sql = sql + " AND `Order`.created_at <= %s"
-        #     params = params + (condition['ordered_to'],)
+        if condition.ordered_to.data:
+            value = condition.ordered_to.data
+            cond = and_(cond,
+                        t_order.c.created_at<value)
 
         # if 'status' in condition:
         #     status_cond = []
