@@ -554,7 +554,8 @@ class OrderDetailView(BaseView):
         form_refund = forms.get_order_refund_form()
 
         return {
-            'order_current':order,
+            'is_current_order': order.deleted_at is None, 
+            'order':order,
             'ordered_product_attributes': ordered_product_attributes,
             'order_attributes': order_attributes,
             'order_history':order_history,
