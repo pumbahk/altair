@@ -68,14 +68,14 @@ var AjaxScrollableHandler = function(we, gateway, areaManager){
     this.word = "" // search word
 };
 AjaxScrollableHandler.prototype.setSearchWord = function(apiType, word){
-    console.log("*debug setword: "+word);
+    // console.log("*debug setword: "+word);
     this.apiType = apiType;
     this.word = word;
 };
 AjaxScrollableHandler.prototype.fetchImages = function(){
     var i = this.getIndex();
     var apiType = this.apiType;
-    console.log("*debug fetch images i="+i+" cached="+this.cache[apiType][i])
+    // console.log("*debug fetch images i="+i+" cached="+this.cache[apiType][i])
     if(i > 0 && !this.cache[apiType][i]){
         this.cache[apiType][i] = true //hmm;
         var self = this;
@@ -152,11 +152,11 @@ SearchHandler.prototype.setupScrollable = function($scrollable){
         move(delta < 0 ? 1 : -1, 40); // 50 is speed
         return false;
     });
-    console.log("*debug setup scrollable");
+    // console.log("*debug setup scrollable");
     this.afterScrollableSetupHook($scrollable);
 };
 SearchHandler.prototype.destroyScrollable = function($scrollable){
-    console.log("*debug destroy scrollable");
+    // console.log("*debug destroy scrollable");
     var scrollableJQObject = $($scrollable.data("scrollable"));
     var events = ['onBeforeSeek', 'onSeek', 'onAddItem'];
     for(var i=0,j=events.length; i<j; i++){
