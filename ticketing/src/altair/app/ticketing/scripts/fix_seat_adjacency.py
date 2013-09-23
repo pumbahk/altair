@@ -325,24 +325,27 @@ def fix_seat_adjacency(session, site_id):
     site = session.query(Site).filter(Site.id == site_id).one()
     message(u"Processing site #{0.id} ({0.name})".format(site))
     wrong_adjacencies, used_venue_id = find_wrong_adjacencies(session, site)
-    message(u"Wrong adjacencies:")
-    for wrong_adjacency_pair, pair_seat_adjacency_ids in sorted(wrong_adjacencies.iteritems()):
-        message(
-            u"(row_l0_id={0[0][1]}, seat_no={0[0][0]}, name={0[0][2]}, l0_id={0[0][3]}) -- (row_l0_id={0[1][1]}, seat_no={0[1][0]}, name={0[1][2]}, l0_id={0[1][3]}): {1}".format(
-                wrong_adjacency_pair,
-                u', '.join(unicode(adjacency_id) for adjacency_id in pair_seat_adjacency_ids)
-                ),
-            True)
-    relevant_rows = get_relevant_rows(
-        session, used_venue_id,
-        list(itertools.chain(*((x[3] for x in wrong_adjacency_pair) for wrong_adjacency_pair in wrong_adjacencies.iterkeys()))))
-    relevant_adjacencies = get_relevant_adjacencies(session, site, used_venue_id, relevant_rows)
-    rebuilt_adjacencies = rebuild_adjacencies(relevant_adjacencies)
-    diff = diff_adjacencies(relevant_adjacencies, rebuilt_adjacencies)
-    stmts = build_sql_for_diff(session, diff)
-    print 'BEGIN;'
-    for stmt in stmts:
-        print stmt, ';'
+    if wrong_adjacencies:
+        message(u"Wrong adjacencies:")
+        for wrong_adjacency_pair, pair_seat_adjacency_ids in sorted(wrong_adjacencies.iteritems()):
+            message(
+                u"(row_l0_id={0[0][1]}, seat_no={0[0][0]}, name={0[0][2]}, l0_id={0[0][3]}) -- (row_l0_id={0[1][1]}, seat_no={0[1][0]}, name={0[1][2]}, l0_id={0[1][3]}): {1}".format(
+                    wrong_adjacency_pair,
+                    u', '.join(unicode(adjacency_id) for adjacency_id in pair_seat_adjacency_ids)
+                    ),
+                True)
+        relevant_rows = get_relevant_rows(
+            session, used_venue_id,
+            list(itertools.chain(*((x[3] for x in wrong_adjacency_pair) for wrong_adjacency_pair in wrong_adjacencies.iterkeys()))))
+        relevant_adjacencies = get_relevant_adjacencies(session, site, used_venue_id, relevant_rows)
+        rebuilt_adjacencies = rebuild_adjacencies(relevant_adjacencies)
+        diff = diff_adjacencies(relevant_adjacencies, rebuilt_adjacencies)
+        stmts = build_sql_for_diff(session, diff)
+        print 'BEGIN;'
+        for stmt in stmts:
+            print stmt, ';'
+    else:
+        message('No wrong adjacencies found. Whew!')
 
 def main(argv=sys.argv):
     parser = argparse.ArgumentParser()
