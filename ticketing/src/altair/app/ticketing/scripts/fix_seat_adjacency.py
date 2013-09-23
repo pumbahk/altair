@@ -81,37 +81,43 @@ def numeric_seat_no(seat_no):
 def twenty_six(n):
     return reduce(lambda x, y: x * 26 + y, (int(d, 36) - 10 for d in n), 0)
 
-def parse_l0_id_and_make_it_numeric(l0_id, prefix_base=26, num_base=10000, suffix_base=26):
-    # s3-119-12 のような l0_id を数値に変換する
-    value = 0L
-    space = 1
-    for g in re.finditer(r'([a-zA-Z]+)?([0-9]+)?([a-zA-Z]+)?', l0_id):
-        prefix = g.group(1)
-        num = g.group(2)
-        suffix = g.group(3)
+class L0IDParser(object):
+    def __init__(self, prefix_base=26, num_base=10000, suffix_base=26):
+        self.prefix_base = prefix_base
+        self.num_base = num_base
+        self.suffix_base = suffix_base
 
-        if prefix:
-            n = twenty_six(prefix)
-            if n >= prefix_base:
-                raise Exception('prefix_base too small')
-            value = value * prefix_base + n
-            space *= prefix_base
-        if num:
-            n = long(num, 10)
-            if n >= num_base:
-                raise Exception('num_base too small')
-            value = value * num_base + n
-            space *= num_base
-        if suffix:
-            n = twenty_six(suffix)
-            if n >= suffix_base:
-                raise Exception('prefix_base too small')
-            value = value * suffix_base + n
-            space *= suffix_base
+    def __call__(self, l0_id):
+        # s3-119-12 のような l0_id を数値に変換する
+        value = 0L
+        space = 1
+        for g in re.finditer(r'([a-zA-Z]+)?([0-9]+)?([a-zA-Z]+)?', l0_id):
+            prefix = g.group(1)
+            num = g.group(2)
+            suffix = g.group(3)
 
-    return value, space
+            if prefix:
+                n = twenty_six(prefix)
+                if n >= self.prefix_base:
+                    raise Exception('prefix_base too small: %s' % l0_id)
+                value = value * self.prefix_base + n
+                space *= self.prefix_base
+            if num:
+                n = long(num, 10)
+                if n >= self.num_base:
+                    raise Exception('num_base too small: %s' % l0_id)
+                value = value * self.num_base + n
+                space *= self.num_base
+            if suffix:
+                n = twenty_six(suffix)
+                if n >= self.suffix_base:
+                    raise Exception('prefix_base too small: %s' % l0_id)
+                value = value * self.suffix_base + n
+                space *= self.suffix_base
 
-def find_wrong_adjacencies(session, site):
+        return value, space
+
+def find_wrong_adjacencies(session, site, l0_id_parser):
     message('Getting adjacency data...')
     adjacencies = get_pair_adjacencies_for(session, site)
     message('Finding wrong adjacencies...')
@@ -136,9 +142,9 @@ def find_wrong_adjacencies(session, site):
                     raise 'inconsistency found for SeatAdjacency.id={0}'.format(seat_adjacency_id)
         adjacency_to_be_compared = tuple(adjacency_to_be_compared)
         lhs_seat_no = numeric_seat_no(adjacency_to_be_compared[0][0])
-        lhs_mapped_l0_id = parse_l0_id_and_make_it_numeric(adjacency_to_be_compared[0][3])
+        lhs_mapped_l0_id = l0_id_parser(adjacency_to_be_compared[0][3])
         rhs_seat_no = numeric_seat_no(adjacency_to_be_compared[1][0])
-        rhs_mapped_l0_id = parse_l0_id_and_make_it_numeric(adjacency_to_be_compared[1][3])
+        rhs_mapped_l0_id = l0_id_parser(adjacency_to_be_compared[1][3])
         if lhs_seat_no > rhs_seat_no:
             if lhs_mapped_l0_id <= rhs_mapped_l0_id:
                 raise 'discrepancy between l0_id and seat_no found for SeatAdjacency.id={0}'.format(seat_adjacency_id)
@@ -320,11 +326,11 @@ def build_sql_for_diff(session, diff):
                     stmts.append(render_sql(expr))
     return stmts
 
-def fix_seat_adjacency(session, site_id):
+def fix_seat_adjacency(session, site_id, l0_id_parser):
     from altair.app.ticketing.core.models import Site
     site = session.query(Site).filter(Site.id == site_id).one()
     message(u"Processing site #{0.id} ({0.name})".format(site))
-    wrong_adjacencies, used_venue_id = find_wrong_adjacencies(session, site)
+    wrong_adjacencies, used_venue_id = find_wrong_adjacencies(session, site, l0_id_parser)
     if wrong_adjacencies:
         message(u"Wrong adjacencies:")
         for wrong_adjacency_pair, pair_seat_adjacency_ids in sorted(wrong_adjacencies.iteritems()):
@@ -353,6 +359,9 @@ def main(argv=sys.argv):
                         help='config file')
     parser.add_argument('site_id', metavar='site_id', type=long, nargs='*',
                         help='site_id')
+    parser.add_argument('--prefix-base', metavar='prefix_base', type=long, default=26)
+    parser.add_argument('--num-base', metavar='num_base', type=long, default=10000)
+    parser.add_argument('--suffix-base', metavar='suffix_base', type=long, default=26)
 
     args = parser.parse_args()
 
@@ -362,8 +371,14 @@ def main(argv=sys.argv):
 
     session = sqlahelper.get_session()
 
+    l0_id_parser = L0IDParser(
+        prefix_base=args.prefix_base,
+        num_base=args.num_base,
+        suffix_base=args.suffix_base
+        )
+
     for site_id in args.site_id:
-        fix_seat_adjacency(session, site_id)
+        fix_seat_adjacency(session, site_id, l0_id_parser)
 
 if __name__ == '__main__':
     main()
