@@ -1,4 +1,4 @@
-#__table__ encoding: utf-8
+# encoding: utf-8
 import sys
 import itertools
 import logging
@@ -346,12 +346,10 @@ def fix_seat_adjacency(session, site_id, l0_id_parser):
         relevant_adjacencies = get_relevant_adjacencies(session, site, used_venue_id, relevant_rows)
         rebuilt_adjacencies = rebuild_adjacencies(relevant_adjacencies)
         diff = diff_adjacencies(relevant_adjacencies, rebuilt_adjacencies)
-        stmts = build_sql_for_diff(session, diff)
-        print 'BEGIN;'
-        for stmt in stmts:
-            print stmt, ';'
+        return build_sql_for_diff(session, diff)
     else:
         message('No wrong adjacencies found. Whew!')
+        return []
 
 def main(argv=sys.argv):
     parser = argparse.ArgumentParser()
@@ -377,8 +375,12 @@ def main(argv=sys.argv):
         suffix_base=args.suffix_base
         )
 
+    stmts = []
     for site_id in args.site_id:
-        fix_seat_adjacency(session, site_id, l0_id_parser)
+        stmts.extend(fix_seat_adjacency(session, site_id, l0_id_parser))
+    print 'BEGIN;'
+    for stmt in stmts:
+        print stmt, ';'
 
 if __name__ == '__main__':
     main()
