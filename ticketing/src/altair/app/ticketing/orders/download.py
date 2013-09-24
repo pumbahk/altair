@@ -113,6 +113,21 @@ summary_columns = [
            text("'success'"))],
          else_=text("'inverse'"),
     ).label('payment_status_class'),
+    case([(t_order.c.delivered_at!=None,
+           text("'delivered'")),
+          ],
+          else_=text("'undelivered'")
+    ).label('delivery_status'),
+    case([(t_order.c.delivered_at!=None,
+           text("'success'")),
+          ],
+          else_=text("'inverse'")
+    ).label('delivery_status_class'),
+    case([(t_order.c.delivered_at!=None,
+           text(u"'配送済み'")),
+          ],
+          else_=text(u"'未配送'")
+    ).label('delivery_status_label'),
     t_order.c.order_no, #-- 予約番号
     t_order.c.created_at, #-- 予約日時
     t_order.c.total_amount, #-- 合計
