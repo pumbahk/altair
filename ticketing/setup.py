@@ -187,6 +187,7 @@ setup(name='altair.app.ticketing',
       sej_file_download=altair.app.ticketing.sej.scripts.sej_file_download:main
       sej_parse_file=altair.app.ticketing.sej.scripts.sej_parse_file:main
       publish_lot_electing=altair.app.ticketing.events.lots.commands.publish_lot_electing:main
+      fix_seat_adjacency=altair.app.ticketing.scripts.fix_seat_adjacency:main
       """,
       paster_plugins=['pyramid'],
       )
