@@ -21,7 +21,9 @@ from altair.app.ticketing.core.models import (
     Performance,
     Venue,
     SalesSegment,
-    SalesSegmentGroup,    
+    SalesSegmentGroup,
+    Seat,
+    orders_seat_table,
     Order,
     OrderedProduct,
     OrderedProductItem,
@@ -55,7 +57,7 @@ t_user = User.__table__
 t_user_profile = UserProfile.__table__
 t_user_credential = UserCredential.__table__
 t_sej_order = SejOrder.__table__
-
+t_seat = Seat.__table__
 t_ordered_product = OrderedProduct.__table__
 t_ordered_product_item = OrderedProductItem.__table__
 t_product = Product.__table__
@@ -384,11 +386,27 @@ class OrderDownload(list):
 
             cond = and_(cond,
                         t_order.c.order_no.in_(value))
-        # 座席番号
-        # 電話番号
-        # 氏名
-        # メールアドレス
-        # 会員番号
+
+        # 座席番号 seat_number:
+        if condition.seat_number.data:
+            value = condition.seat_number.data
+            subq = select([orders_seat_table.c.OrderedProductItem_id],
+                          from_obj=orders_seat_table.join(
+                              t_seat,
+                              and_(t_seat.c.id==orders_seat_table.c.seat_id,
+                                   t_seat.c.deleted_at==None),
+                          ),
+                          whereclause=t_seat.c.name.like('%s%%' % value))
+            cond = and_(cond,
+                        t_ordered_product_item.c.id.in_(subq))
+
+        # 電話番号 tel:
+
+        # 氏名 name:
+
+        # メールアドレス email:
+
+        # 会員番号 member_id:
 
         # 予約日時(開始)
         if condition.ordered_from.data:
