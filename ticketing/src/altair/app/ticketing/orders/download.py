@@ -394,17 +394,21 @@ class OrderDownload(list):
             cond = and_(cond,
                         t_order.c.created_at<value)
 
-        # if 'status' in condition:
-        #     status_cond = []
-        #     if 'ordered' in condition['status']:
-        #         status_cond.append("(`Order`.canceled_at IS NULL AND `Order`.delivered_at IS NULL)")
-        #     if 'delivered' in condition['status']:
-        #         status_cond.append("(`Order`.canceled_at IS NULL AND `Order`.delivered_at IS NOT NULL)")
-        #     if 'canceled' in condition['status']:
-        #         status_cond.append("(`Order`.canceled_at IS NOT NULL)")
-            
-        #     if status_cond:
-        #         sql = sql + " AND ( " + " OR ".join(status_cond) + " ) "
+        if condition.status.data:
+            status_cond = []
+            value = condition.status.data
+            if 'ordered' in value:
+                status_cond.append(and_(t_order.c.canceled_at==None,
+                                        t_order.c.delivered_at==None))
+            if 'delivered' in value:
+                status_cond.append(and_(t_order.c.canceled_at==None,
+                                       t_order.c.delivered_at!=None))
+            if 'canceled' in value:
+                status_cond.append(t_order.c.canceled_at!=None)
+
+            if status_cond:
+                cond = and_(cond,
+                            or_(*status_cond))
 
         # if 'issue_status' in condition:
         #     issue_cond = []
