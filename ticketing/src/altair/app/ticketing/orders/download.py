@@ -536,40 +536,43 @@ class OrderDownload(list):
                 cond = and_(cond,
                             or_(*payment_cond))
 
-        # if 'number_of_tickets' in condition:
-        #     if (condition.get('event_id') or condition.get('performance_id')):
-            
-        #         cond = """ AND `Order`.id in (
-        #         SELECT OrderedProduct.order_id AS order_id,
-        #         FROM OrderedProduct
-        #         JOIN OrderedProductItem
-        #         ON OrderedProduct.id = OrderedProductItem.ordered_product_id
-        #         AND OrderedProductItem.deleted_at IS NULL
-        #         JOIN ProductItem
-        #         ON OrderedProductItem.product_item_id = ProductItem.id
-        #         AND ProductItem.deleted_at IS NULL
-        #         JOIN Performance
-        #         ON ProductItem.performance_id = Performance.id
-        #         AND Performance.deleted_at IS NULL
-        #         WHERE OrderedProduct.deleted_at IS NULL
-        #         """
+        if condition.number_of_tickets.data:
+            if condition.performance_id.data or condition.event_id.data:
+                value = condition.number_of_tickets.data
+                from_obj = t_ordered_product_item.join(
+                    t_product_item,
+                    and_(t_product_item.c.id==t_ordered_product_item.c.product_item_id,
+                         t_product_item.c.deleted_at==None),
+                ).join(
+                    t_ordered_product,
+                    and_(t_ordered_product.c.id==t_ordered_product_item.c.ordered_product_id,
+                         t_ordered_product.c.deleted_at==None),
+                ).join(
+                    t_performance,
+                    and_(t_performance.c.id==t_product_item.c.performance_id,
+                         t_performance.c.deleted_at==None),
+                )
     
-        #         if condition.get('event_id'):
-        #             cond = cond + " AND Performance.event_id = %s"
-        #             params += (condition['event_id'],)
-        #         if condition.get('performance_id'):
-        #             cond = cond + " AND Performance.id = %s"
-        #             params += (condition['performance_id'],)
+                sub_cond = t_ordered_product_item.c.deleted_at==None
+                if condition.event_id.data:
+                     sub_cond = and_(sub_cond,
+                                    t_performance.c.event_id==condition.event_id.data)
+                if condition.performance_id.data:
+                     sub_cond = and_(sub_cond,
+                                     t_performance.c.id==condition.event_id.data)
     
+                subq = select([t_ordered_product.c.order_id],
+                              from_obj=from_obj,
+                              whereclause=sub_cond,
+                ).group_by(
+                    t_ordered_product.c.order_id
+                ).having(
+                    func.sum(t_ordered_product_item.c.quantity)>=value
+                )
     
-        #         cond = cond + """
-        #         GROUP BY OrderedProduct.order_id
-        #         HAVING sum(ProductItem.quantity) >= %s)
-        #         """
-        #         params += (condition['number_of_tickets'],)
+                cond = and_(cond,
+                            t_order.c.id.in_(subq))
     
-        #         sql = sql + cond
-
         # # order by
         # if 'sort' in condition:
         #     if 'direction' in condition:
