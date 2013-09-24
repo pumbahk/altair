@@ -200,7 +200,7 @@ class Scanner(object):
 
     def _retrive_salessegment_group(self, organization, event, salessegment, record, group_dict, group_failback_dict, kind_dict):
         kind_name = record.get("kind_name", "unknown")
-        group_publicp = record.get("group_publicp")
+        publicp = record.get("group_publicp")
         salessegment.group = group_dict.get((event.id, record.get("group_id"))) or group_failback_dict.get((event.id, record["name"], kind_name, publicp))
         if salessegment.group is None:
             if record.get("group_id"):
@@ -218,7 +218,7 @@ class Scanner(object):
         kind.label = record.get("kind_label", u"<不明>")
         salessegment.group.master = kind
         salessegment.group.kind = kind.name #todo:replace
-        salessegment.group.publicp = group_publicp
+        salessegment.group.publicp = publicp
 
     def fetch_salessegments(self, organization):
         fetcher = self.salessegment_fetcher
