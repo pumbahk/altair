@@ -153,6 +153,8 @@ class SalesSegment(BaseOriginalMixin, Base):
     created_at = sa.Column(sa.DateTime, default=datetime.now)
     updated_at = sa.Column(sa.DateTime, default=datetime.now, onupdate=datetime.now)
 
+    publicp = sa.Column(sa.Boolean, default=True)
+
     SALESKIND_DICT = dict(SALESKIND_CHOICES)
     @property
     def jkind(self):
