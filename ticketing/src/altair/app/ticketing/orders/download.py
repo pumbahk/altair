@@ -112,7 +112,7 @@ summary_columns = [
           (t_order.c.paid_at!=None,
            text("'success'"))],
          else_=text("'inverse'"),
-    ).label('payment_status_style'),
+    ).label('payment_status_class'),
     t_order.c.order_no, #-- 予約番号
     t_order.c.created_at, #-- 予約日時
     t_order.c.total_amount, #-- 合計
