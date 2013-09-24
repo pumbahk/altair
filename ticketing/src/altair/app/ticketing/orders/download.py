@@ -370,6 +370,7 @@ class OrderDownload(list):
         if condition is None:
             return cond
 
+        # 予約番号
         if condition.order_no.data:
             value = condition.order_no.data
             if isinstance(value, basestring):
@@ -378,22 +379,26 @@ class OrderDownload(list):
             cond = and_(cond,
                         t_order.c.order_no.in_(value))
 
+        # セブン−イレブン払込票/引換票番号
         if condition.billing_or_exchange_number.data:
             value = condition.billing_or_exchange_number.data
             cond = and_(cond,
                         or_(t_sej_order.c.exchange_number==value,
                             t_sej_order.c.billing_number==value))
 
+        # 予約日時(開始)
         if condition.ordered_from.data:
             value = condition.ordered_from.data
             cond = and_(cond,
                         t_order.c.created_at>=value)
 
+        # 予約日時(終了)
         if condition.ordered_to.data:
             value = condition.ordered_to.data
             cond = and_(cond,
                         t_order.c.created_at<value)
 
+        # ステータス(注文)
         if condition.status.data:
             status_cond = []
             value = condition.status.data
@@ -410,6 +415,7 @@ class OrderDownload(list):
                 cond = and_(cond,
                             or_(*status_cond))
 
+        # ステータス(発券)
         if condition.issue_status.data:
             issue_cond = []
             value = condition.issue_status.data
@@ -423,6 +429,7 @@ class OrderDownload(list):
                             or_(*issue_cond))
 
 
+        # ステータス(決済)
         if condition.payment_status.data:
             value = condition.payment_status.data
             # unpaid, paid, refunding, refunded
