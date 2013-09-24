@@ -410,15 +410,18 @@ class OrderDownload(list):
                 cond = and_(cond,
                             or_(*status_cond))
 
-        # if 'issue_status' in condition:
-        #     issue_cond = []
-        #     if 'issued' in condition['issue_status']:
-        #         issue_cond.append(' `Order`.issued = 1 ')
-        #     if 'unissued' in condition['issue_status']:
-        #         issue_cond.append(' `Order`.issued = 0 ')
+        if condition.issue_status.data:
+            issue_cond = []
+            value = condition.issue_status.data
+            if 'issued' in value:
+                issue_cond.append(t_order.c.issued==1)
+            if 'unissued' in value:
+                issue_cond.append(t_order.c.issued==0)
 
-        #     if issue_cond:
-        #         sql = sql + " AND ( " + " OR ".join(issue_cond) + " ) "
+            if issue_cond:
+                cond = and_(cond,
+                            or_(*issue_cond))
+
 
         # if 'payment_status' in condition:
         #     # unpaid, paid, refunding, refunded
