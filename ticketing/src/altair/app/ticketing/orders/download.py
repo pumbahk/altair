@@ -425,6 +425,10 @@ class OrderDownload(list):
                         ))
 
         # 会員番号 member_id:
+        if condition.member_id.data:
+            value = condition.member_id.data
+            cond = and_(cond,
+                        t_user_credential.c.auth_identifier == value)
 
         # 予約日時(開始)
         if condition.ordered_from.data:
@@ -531,10 +535,6 @@ class OrderDownload(list):
             if payment_cond:
                 cond = and_(cond,
                             or_(*payment_cond))
-
-        # if 'member_id' in condition:
-        #     sql = sql + " AND UserCredential.auth_identifier = %s"
-        #     params += (condition['member_id'],)
 
         # if 'number_of_tickets' in condition:
         #     if (condition.get('event_id') or condition.get('performance_id')):
