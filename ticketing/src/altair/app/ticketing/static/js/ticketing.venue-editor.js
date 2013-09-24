@@ -1,6 +1,6 @@
 (function (jQuery, I18n) {
 var __LIBS__ = {};
-__LIBS__['hLJ4S7EQZ1ZVZVHJ'] = (function (exports) { (function () { 
+__LIBS__['YP7NJV10XUS2HS7V'] = (function (exports) { (function () { 
 
 /************** translations.js **************/
 
@@ -26,7 +26,7 @@ exports.ja = {
   } 
 };
  })(); return exports; })({});
-__LIBS__['O0D35V5LI4O_BIBX'] = (function (exports) { (function () { 
+__LIBS__['BK1JZWVKA1U4BKQJ'] = (function (exports) { (function () { 
 
 /************** CONF.js **************/
 exports.DEFAULT = {
@@ -97,7 +97,7 @@ exports.DEFAULT = {
   }
 };
  })(); return exports; })({});
-__LIBS__['bLFGB5HNCILY9QO1'] = (function (exports) { (function () { 
+__LIBS__['V342J9HWA6I8_DUH'] = (function (exports) { (function () { 
 
 /************** util.js **************/
 exports.eventKey = function Util_eventKey(e) {
@@ -276,7 +276,7 @@ timer.prototype.lap = function(msg) {
     return lap;
 };
  })(); return exports; })({});
-__LIBS__['UEG3XSUYZAFV1FPZ'] = (function (exports) { (function () { 
+__LIBS__['IF_82JQZ4N_GGY1Z'] = (function (exports) { (function () { 
 
 /************** identifiableset.js **************/
 var IdentifiableSet = exports.IdentifiableSet = function IdentifiableSet(options) {
@@ -325,12 +325,12 @@ IdentifiableSet.prototype.each = function IdentifiableSet_each(f) {
  * vim: sts=2 sw=2 ts=2 et
  */
  })(); return exports; })({});
-__LIBS__['dSYM4NONCKMR1FFP'] = (function (exports) { (function () { 
+__LIBS__['bACOSZR_4_LXZX2T'] = (function (exports) { (function () { 
 
 /************** models.js **************/
-var util = __LIBS__['bLFGB5HNCILY9QO1'];
-var CONF = __LIBS__['O0D35V5LI4O_BIBX'];
-var IdentifiableSet = __LIBS__['UEG3XSUYZAFV1FPZ'].IdentifiableSet;
+var util = __LIBS__['V342J9HWA6I8_DUH'];
+var CONF = __LIBS__['BK1JZWVKA1U4BKQJ'];
+var IdentifiableSet = __LIBS__['IF_82JQZ4N_GGY1Z'].IdentifiableSet;
 
 var VenueItemCollectionMixin = {
   venue: null,
@@ -804,12 +804,12 @@ console.log(ad2);
  * vim: sts=2 sw=2 ts=2 et
  */
  })(); return exports; })({});
-__LIBS__['KP5YNQS3MEKEJ1BU'] = (function (exports) { (function () { 
+__LIBS__['n91KW06XAMFS6MPX'] = (function (exports) { (function () { 
 
 /************** viewobjects.js **************/
-var util = __LIBS__['bLFGB5HNCILY9QO1'];
-var CONF = __LIBS__['O0D35V5LI4O_BIBX'];
-var models = __LIBS__['dSYM4NONCKMR1FFP'];
+var util = __LIBS__['V342J9HWA6I8_DUH'];
+var CONF = __LIBS__['BK1JZWVKA1U4BKQJ'];
+var models = __LIBS__['bACOSZR_4_LXZX2T'];
 
 var Seat = exports.Seat = Backbone.Model.extend({
   defaults: {
@@ -986,13 +986,13 @@ var Seat = exports.Seat = Backbone.Model.extend({
 /************** venue-editor.js **************/
 /* extern */ var jQuery, I18n;
 (function ($) {
-  var CONF = __LIBS__['O0D35V5LI4O_BIBX'];
-  var models = __LIBS__['dSYM4NONCKMR1FFP'];
-  var util = __LIBS__['bLFGB5HNCILY9QO1'];
-  var viewobjects = __LIBS__['KP5YNQS3MEKEJ1BU'];
-  var IdentifiableSet = __LIBS__['UEG3XSUYZAFV1FPZ'].IdentifiableSet;
+  var CONF = __LIBS__['BK1JZWVKA1U4BKQJ'];
+  var models = __LIBS__['bACOSZR_4_LXZX2T'];
+  var util = __LIBS__['V342J9HWA6I8_DUH'];
+  var viewobjects = __LIBS__['n91KW06XAMFS6MPX'];
+  var IdentifiableSet = __LIBS__['IF_82JQZ4N_GGY1Z'].IdentifiableSet;
   if (I18n)
-    I18n.translations = __LIBS__['hLJ4S7EQZ1ZVZVHJ'];
+    I18n.translations = __LIBS__['YP7NJV10XUS2HS7V'];
 
   var parseCSSStyleText = (function () {
     var regexp_for_styles = /\s*(-?(?:[_a-z\u00a0-\u10ffff]|\\[^\n\r\f#])(?:[\-_A-Za-z\u00a0-\u10ffff]|\\[^\n\r\f])*)\s*:\s*((?:(?:(?:[^;\\ \n\r\t\f"']|\\[0-9A-Fa-f]{1,6}(?:\r\n|[ \n\r\t\f])?|\\[^\n\r\f0-9A-Fa-f])+|"(?:[^\n\r\f\\"]|\\(?:\n|\r\n|\r|\f)|\\[^\n\r\f])*"|'(?:[^\n\r\f\\']|\\(?:\n|\r\n|\r|\f)|\\[^\n\r\f])*')(?:\s+|(?=;|$)))+)(?:;|$)/g;
@@ -1305,11 +1305,16 @@ var Seat = exports.Seat = Backbone.Model.extend({
       this.drawable.dispose();
     for (var key in data.metadata) {
       for (var i in data.metadata[key]) {
+        var update_flg = false;
         for (var j in this.metadata[key]) {
           if (this.metadata[key][j].id == data.metadata[key][i].id) {
             this.metadata[key][j] = data.metadata[key][i];
+            update_flg = true;
             break;
           }
+        }
+        if (!update_flg) {
+          this.metadata[key][i] = data.metadata[key][i];
         }
       }
     }

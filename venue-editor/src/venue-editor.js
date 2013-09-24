@@ -319,11 +319,16 @@
       this.drawable.dispose();
     for (var key in data.metadata) {
       for (var i in data.metadata[key]) {
+        var update_flg = false;
         for (var j in this.metadata[key]) {
           if (this.metadata[key][j].id == data.metadata[key][i].id) {
             this.metadata[key][j] = data.metadata[key][i];
+            update_flg = true;
             break;
           }
+        }
+        if (!update_flg) {
+          this.metadata[key][i] = data.metadata[key][i];
         }
       }
     }
