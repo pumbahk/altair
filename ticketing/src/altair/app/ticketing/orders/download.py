@@ -401,10 +401,28 @@ class OrderDownload(list):
                         t_ordered_product_item.c.id.in_(subq))
 
         # 電話番号 tel:
+        if condition.tel.data:
+            value = condition.tel.data
+            cond = and_(cond,
+                        or_(t_shipping_address.c.tel_1==value,
+                            t_shipping_address.c.tel_2==value))
 
         # 氏名 name:
+        if condition.name.data:
+            value = condition.name.data
+            cond = and_(cond,
+                        or_(t_shipping_address.c.last_name + " " + t_shipping_address.c.first_name == value,
+                            t_shipping_address.c.last_name == value,
+                            t_shipping_address.c.first_name == value,
+                        ))
 
         # メールアドレス email:
+        if condition.email.data:
+            value = condition.email.data
+            cond = and_(cond,
+                        or_(t_shipping_address.c.email_1==value,
+                            t_shipping_address.c.email_2==value,
+                        ))
 
         # 会員番号 member_id:
 
