@@ -360,16 +360,10 @@ class KeyBreakAdapter(object):
         return iter(self.results)
 
 
-class OrderDownload(list):
+class OrderSearchBase(list):
 
-    #target = order_summary_joins
-    target = order_product_summary_joins
-    #columns = summary_columns
-    columns = detail_summary_columns
-
-    def __init__(self, db_session, organization_id, columns, condition):
+    def __init__(self, db_session, organization_id, condition):
         self.db_session = db_session
-        #self.columns = columns
         self.organization_id = organization_id
         self.condition = self.query_cond(condition)
 
@@ -390,15 +384,23 @@ class OrderDownload(list):
         # 座席番号 seat_number:
         if condition.seat_number.data:
             value = condition.seat_number.data
-            subq = select([orders_seat_table.c.OrderedProductItem_id],
+            subq = select([t_ordered_product.c.order_id],
                           from_obj=orders_seat_table.join(
                               t_seat,
                               and_(t_seat.c.id==orders_seat_table.c.seat_id,
                                    t_seat.c.deleted_at==None),
+                          ).join(
+                              t_ordered_product_item,
+                              and_(t_ordered_product_item.c.id==orders_seat_table.c.OrderedProductItem_id,
+                                   t_ordered_product_item.c.deleted_at==None),
+                          ).join(
+                              t_ordered_product,
+                              and_(t_ordered_product.c.id==t_ordered_product_item.c.ordered_product_id,
+                                   t_ordered_product.c.deleted_at==None),
                           ),
                           whereclause=t_seat.c.name.like('%s%%' % value))
             cond = and_(cond,
-                        t_ordered_product_item.c.id.in_(subq))
+                        t_order.c.id.in_(subq))
 
         # 電話番号 tel:
         if condition.tel.data:
@@ -653,3 +655,13 @@ class OrderDownload(list):
         c = self.count()
         logger.debug("count = {0}".format(c))
         return c
+
+class OrderSummary(OrderSearchBase):
+    target = order_summary_joins
+    columns = summary_columns
+
+
+class OrderDownload(OrderSearchBase):
+    target = order_product_summary_joins
+    columns = detail_summary_columns
+

@@ -278,17 +278,15 @@ def index(request):
     params["order_no"] = " ".join(request.params.getall("order_no"))
 
     form_search = OrderSearchForm(params, organization_id=organization_id)
-    from .download import OrderDownload
+    from .download import OrderSummary
     if request.method == "POST" and form_search.validate():
-        query = OrderDownload(slave_session,
-                              organization_id,
-                              columns=[],
-                              condition=form_search)
+        query = OrderSummary(slave_session,
+                            organization_id,
+                            condition=form_search)
     else:
-        query = OrderDownload(slave_session,
-                              organization_id,
-                              columns=[],
-                              condition=None)
+        query = OrderSummary(slave_session,
+                            organization_id,
+                            condition=None)
 
     if request.params.get('action') == 'checked':
         checked_orders = [o.lstrip('o:') 
@@ -328,12 +326,10 @@ def download(request):
     if request.method == "POST" and form_search.validate():
         query = OrderDownload(slave_session,
                               organization_id,
-                              columns=[],
                               condition=form_search)
     else:
         query = OrderDownload(slave_session,
                               organization_id,
-                              columns=[],
                               condition=None)
 
     query = KeyBreakAdapter(query, 'id',
