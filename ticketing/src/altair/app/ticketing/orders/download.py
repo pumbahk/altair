@@ -38,6 +38,8 @@ from altair.app.ticketing.users.models import (
     User,
     UserProfile,
     UserCredential,
+    Membership,
+    MemberGroup,
 )
 from altair.app.ticketing.sej.models import SejOrder
 
@@ -63,6 +65,8 @@ t_ordered_product_item = OrderedProductItem.__table__
 t_product = Product.__table__
 t_product_item = ProductItem.__table__
 t_venue = Venue.__table__
+t_membership = Membership.__table__
+t_member_group = MemberGroup.__table__
 
 summary_columns = [
     t_order.c.id,
@@ -167,9 +171,9 @@ detail_summary_columns = summary_columns + [
     t_user_profile.c.sex.label('user_sex'), #性別
 
     # Membership
-    #会員種別名
-    #会員グループ名
-    #会員種別ID
+    t_membership.c.name.label('member_ship_name'), #会員種別名
+    t_member_group.c.name.label('member_group_name'), #会員グループ名
+    t_user_credential.c.auth_identifier,  #会員種別ID
 
     # ShippingAddress
     t_shipping_address.c.last_name, #配送先姓
@@ -196,7 +200,7 @@ detail_summary_columns = summary_columns + [
     t_performance.c.code.label('performance_code'), #公演コード
 
     # Venue
-    #会場
+    t_venue.c.name.label('venue_name'), #会場
 
     # Product
     t_product.c.id.label('product_id'), # break key
@@ -264,6 +268,14 @@ order_summary_joins = t_order.join(
     t_user_credential,
     and_(t_user_credential.c.user_id==t_user.c.id,
          t_user_credential.c.deleted_at==None),
+).outerjoin(
+    t_membership,
+    and_(t_membership.c.id==t_user_credential.c.membership_id,
+         t_membership.c.deleted_at==None),
+).outerjoin(
+    t_member_group,
+    and_(t_member_group.c.membership_id==t_membership.c.id,
+         t_member_group.c.deleted_at==None),
 ).outerjoin(
     t_sej_order,
     and_(t_sej_order.c.order_id==t_order.c.order_no,
