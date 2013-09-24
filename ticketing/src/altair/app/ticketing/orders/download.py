@@ -21,6 +21,7 @@ from altair.app.ticketing.core.models import (
     Performance,
     Venue,
     SalesSegment,
+    SalesSegmentGroup,    
     Order,
     OrderedProduct,
     OrderedProductItem,
@@ -44,6 +45,7 @@ t_organization = Organization.__table__
 t_event = Event.__table__
 t_performance = Performance.__table__
 t_sales_segment = SalesSegment.__table__
+t_sales_segment_group = SalesSegmentGroup.__table__
 t_order = Order.__table__
 t_pdmp = PaymentDeliveryMethodPair.__table__
 t_payment_method = PaymentMethod.__table__
@@ -214,6 +216,10 @@ order_summary_joins = t_order.join(
     and_(t_sales_segment.c.id==t_order.c.sales_segment_id,
          t_sales_segment.c.deleted_at==None),
 ).join(
+    t_sales_segment_group,
+    and_(t_sales_segment_group.c.id==t_sales_segment.c.sales_segment_group_id,
+         t_sales_segment_group.c.deleted_at==None),
+).join(
     t_pdmp,
     and_(t_pdmp.c.id==t_order.c.payment_delivery_method_pair_id,
          t_pdmp.c.deleted_at==None),
@@ -378,13 +384,11 @@ class OrderDownload(list):
 
             cond = and_(cond,
                         t_order.c.order_no.in_(value))
-
-        # セブン−イレブン払込票/引換票番号
-        if condition.billing_or_exchange_number.data:
-            value = condition.billing_or_exchange_number.data
-            cond = and_(cond,
-                        or_(t_sej_order.c.exchange_number==value,
-                            t_sej_order.c.billing_number==value))
+        # 座席番号
+        # 電話番号
+        # 氏名
+        # メールアドレス
+        # 会員番号
 
         # 予約日時(開始)
         if condition.ordered_from.data:
@@ -397,6 +401,43 @@ class OrderDownload(list):
             value = condition.ordered_to.data
             cond = and_(cond,
                         t_order.c.created_at<value)
+
+        # セブン−イレブン払込票/引換票番号
+        if condition.billing_or_exchange_number.data:
+            value = condition.billing_or_exchange_number.data
+            cond = and_(cond,
+                        or_(t_sej_order.c.exchange_number==value,
+                            t_sej_order.c.billing_number==value))
+
+        # イベント event_id
+        if condition.event_id.data:
+            value = condition.event_id.data
+            cond = and_(cond,
+                        t_event.c.id==value)
+
+        # 公演 performance_id
+        if condition.performance_id.data:
+            value = condition.performance_id.data
+            cond = and_(cond,
+                        t_performance.c.id==value)
+
+        # 販売区分(実際は販売区分グループ) sales_segment_group_id:
+        if condition.sales_segment_group_id.data:
+            value = condition.sales_segment_group_id.data
+            cond = and_(cond,
+                        t_sales_segment_group.c.id==value)
+
+        # 決済方法 payment_method
+        if condition.payment_method.data:
+            value = condition.payment_method.data
+            cond = and_(cond,
+                        t_payment_method.c.id==value)
+
+        # 引取方法 delivery_method
+        if condition.delivery_method.data:
+            value = condition.delivery_method.data
+            cond = and_(cond,
+                        t_delivery_method.c.id==value)
 
         # ステータス(注文)
         if condition.status.data:
