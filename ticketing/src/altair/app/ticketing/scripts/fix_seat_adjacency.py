@@ -129,17 +129,17 @@ def find_wrong_adjacencies(session, site, l0_id_parser):
             venues_to_be_compared = set(per_venue_adjacencies)
         else:
             if venues_to_be_compared != set(per_venue_adjacencies):
-                raise 'inconsistency found for SeatAdjacency.id={0}'.format(seat_adjacency_id)
+                raise Exception('inconsistency found for SeatAdjacency.id={0}'.format(seat_adjacency_id))
         adjacency_to_be_compared = None
         for venue_id, adjacency in per_venue_adjacencies.iteritems():
             if adjacency_to_be_compared is None:
                 if adjacency[0].row_l0_id != adjacency[1].row_l0_id:
-                    raise 'inconsistency found for SeatAdjacency.id={0}'.format(seat_adjacency_id)
+                    raise Exception('inconsistency found for SeatAdjacency.id={0}'.format(seat_adjacency_id))
                 adjacency_to_be_compared = set((seat.seat_no, seat.row_l0_id, seat.name, seat.l0_id) for seat in adjacency)
                 used_venue_id = venue_id
             else:
                 if adjacency_to_be_compared != set((seat.seat_no, seat.row_l0_id, seat.name, seat.l0_id) for seat in adjacency):
-                    raise 'inconsistency found for SeatAdjacency.id={0}'.format(seat_adjacency_id)
+                    raise Exception('inconsistency found for SeatAdjacency.id={0}'.format(seat_adjacency_id))
         adjacency_to_be_compared = tuple(adjacency_to_be_compared)
         lhs_seat_no = numeric_seat_no(adjacency_to_be_compared[0][0])
         lhs_mapped_l0_id = l0_id_parser(adjacency_to_be_compared[0][3])
@@ -147,7 +147,7 @@ def find_wrong_adjacencies(session, site, l0_id_parser):
         rhs_mapped_l0_id = l0_id_parser(adjacency_to_be_compared[1][3])
         if lhs_seat_no > rhs_seat_no:
             if lhs_mapped_l0_id <= rhs_mapped_l0_id:
-                raise 'discrepancy between l0_id and seat_no found for SeatAdjacency.id={0}'.format(seat_adjacency_id)
+                raise Exception('discrepancy between l0_id and seat_no found for SeatAdjacency.id={0}'.format(seat_adjacency_id))
             adjacency_to_be_compared = (adjacency_to_be_compared[1], adjacency_to_be_compared[0])
             rhs_seat_no, lhs_seat_no = lhs_seat_no, rhs_seat_no 
         if rhs_seat_no - lhs_seat_no > 1:
