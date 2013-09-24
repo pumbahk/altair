@@ -423,28 +423,30 @@ class OrderDownload(list):
                             or_(*issue_cond))
 
 
-        # if 'payment_status' in condition:
-        #     # unpaid, paid, refunding, refunded
-        #     payment_cond = []
-        #     if 'unpaid' in condition['payment_status']:
-        #         payment_cond.append("(`Order`.refunded_at IS NULL "
-        #                             " AND `Order`.refund_id IS NULL "
-        #                             " AND `Order`.paid_at IS NULL ) ")
+        if condition.payment_status.data:
+            value = condition.payment_status.data
+            # unpaid, paid, refunding, refunded
+            payment_cond = []
+            if 'unpaid' in value:
+                payment_cond.append(and_(t_order.c.refunded_at==None,
+                                         t_order.c.refund_id==None,
+                                         t_order.c.paid_at==None))
 
-        #     if 'paid' in condition['payment_status']:
-        #         payment_cond.append("(`Order`.refunded_at IS NULL "
-        #                             " AND `Order`.refund_id IS NULL "
-        #                             " AND `Order`.paid_at IS NOT NULL ) ")
+            if 'paid' in value:
+                payment_cond.append(and_(t_order.c.refunded_at==None,
+                                         t_order.c.refund_id==None,
+                                         t_order.c.paid_at!=None))
 
-        #     if 'refunding' in condition['payment_status']:
-        #         payment_cond.append("(`Order`.refunded_at IS NULL "
-        #                             " AND `Order`.refund_id IS NOT NULL ) ")
-        #     if 'refunded' in condition['payment_status']:
-        #         payment_cond.append("(`Order`.refunded_at IS NOT NULL ) ")
+            if 'refunding' in value:
+                payment_cond.append(and_(t_order.c.refunded_at==None,
+                                         t_order.c.refund_id!=None))
 
+            if 'refunded' in value:
+                payment_cond.append(t_order.c.refunded_at!=None)
 
-        #     if payment_cond:
-        #         sql = sql + " AND ( " + " OR ".join(payment_cond) + " ) "
+            if payment_cond:
+                cond = and_(cond,
+                            or_(*payment_cond))
 
         # if 'member_id' in condition:
         #     sql = sql + " AND UserCredential.auth_identifier = %s"
