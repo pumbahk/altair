@@ -94,7 +94,7 @@ $(function () {
 <%m:header>公演期間</%m:header>
 <div class="sectionbox">
   <div class="sectionbox-inner">
-      ${info['performance_period']}
+      ${helper.nl2br(info['performance_period'])|n}
   </div>
 </div>
 
@@ -130,7 +130,7 @@ $(function () {
                             ${render_sale(segment[0])}
                         </td>
                         <td>
-                            ${segment[1]}
+                            ${helper.nl2br(segment[1])|n}
                         </td>
                     </tr>
                 % endfor

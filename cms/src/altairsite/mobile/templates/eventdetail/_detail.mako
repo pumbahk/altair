@@ -41,13 +41,13 @@
 </%def>
 
 <%m:header>公演期間</%m:header>
-${info['performance_period']}<br/>
+${helper.nl2br(info['performance_period'])|n}<br/>
 <br/>
 
 <%m:header>販売期間</%m:header>
 % if info['salessegment']:
     % for segment in info['salessegment']:
-        ${render_sale(segment[0])}:${segment[1]}
+        ${render_sale(segment[0])}:${helper.nl2br(segment[1])|n}
         <br/>
     % endfor
     <br />
@@ -77,7 +77,7 @@ ${info['performance_period']}<br/>
 
 % if info['performers']:
     <%m:header>出演者</%m:header>
-    ${helper.nl2br(info['performers'])}<br/>
+    ${helper.nl2br(info['performers'])|n}<br/>
     <br/>
 % endif
 
