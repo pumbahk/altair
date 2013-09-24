@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import logging
 from decimal import Decimal
 
 from wtforms import Form
@@ -27,9 +28,12 @@ from altair.formhelpers.widgets import (
     CheckboxMultipleSelect,
     )
 from altair.formhelpers.validators import JISX0208
-from altair.app.ticketing.core.models import SalesSegment, SalesSegmentGroup, Product, ProductItem, StockHolder, StockType, Stock, Performance, TicketBundle
+from altair.app.ticketing.core.models import SalesSegment, Product, ProductItem, StockHolder, StockType, TicketBundle
 from altair.app.ticketing.payments.plugins import SEJ_DELIVERY_PLUGIN_ID
 from altair.app.ticketing.helpers import label_text_for
+
+logger = logging.getLogger(__name__)
+
 
 class ProductForm(OurForm):
     @classmethod
@@ -247,3 +251,11 @@ class ProductItemForm(OurForm):
                 #    if product_item.stock_type.is_seat and \
                 #       (not form.product_item_id.data or int(form.product_item_id.data) != product_item.id):
                 #        raise ValidationError(u'1つの商品に席種を複数登録することはできません')
+
+    def validate_stock_holder_id(form, field):
+        # 既に予約があるならStockHolderの変更は不可
+        if form.product_item_id.data:
+            pi = ProductItem.query.filter_by(id=form.product_item_id.data).one()
+            stock = pi.stock
+            if stock.stock_holder_id != field.data and len(pi.ordered_product_items) > 0:
+                raise ValidationError(u'既にこの商品明細への予約がある為、変更できません')
