@@ -38,8 +38,8 @@ logger = logging.getLogger(__name__)
             <% status= stock_status.get_status(p)%>
             <div class="performances">
             <%
-               start_on_candidates = [s.start_on for s in p.sales]
-               end_on_candidates = [s.end_on for s in p.sales if s.end_on]
+               start_on_candidates = [s.start_on for s in p.sales if s.publicp and s.group.publicp]
+               end_on_candidates = [s.end_on for s in p.sales if s.end_on and s.publicp and s.group.publicp]
             %>
 
             %if not start_on_candidates:
