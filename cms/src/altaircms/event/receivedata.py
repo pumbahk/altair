@@ -200,7 +200,7 @@ class Scanner(object):
 
     def _retrive_salessegment_group(self, organization, event, salessegment, record, group_dict, group_failback_dict, kind_dict):
         kind_name = record.get("kind_name", "unknown")
-        publicp = record.get("publicp")
+        publicp = record.get("group_publicp")
         salessegment.group = group_dict.get((event.id, record.get("group_id"))) or group_failback_dict.get((event.id, record["name"], kind_name, publicp))
         if salessegment.group is None:
             if record.get("group_id"):
@@ -259,6 +259,7 @@ class Scanner(object):
                 event = self.event_fetcher.cache[env["event"]["id"]]              
                 salessegment.start_on = parse_datetime(record['start_on'])
                 salessegment.end_on = parse_datetime(record['end_on'])
+                salessegment.publicp = record['publicp']
                 ## kind, group
                 self._retrive_salessegment_group(organization, event, salessegment, record, group_dict, group_failback_dict, kind_dict)
             except KeyError as e:
