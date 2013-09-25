@@ -8,11 +8,11 @@
 </style>
 <%block name="breadcrumbs">
 ${ch.breadcrumbs(
-  names=[u'トップ', u'購入情報', order_current.performance.name, order_current.order_no],
+  names=[u'トップ', u'購入情報', order.performance.name, order.order_no],
   urls=[
     request.route_path('index'),
     request.route_path('orders.index'),
-    request.route_path('performances.show', performance_id=order_current.performance_id) + '/order'
+    request.route_path('performances.show', performance_id=order.performance_id) + '/order'
   ]
 )}
 </%block>
@@ -22,15 +22,13 @@ ${ch.breadcrumbs(
 
 <div class="tabbable tabs-below" id="tabbable-content">
   <div class="tab-content" id="tabbable-tab-content">
-    % for i, order in enumerate(order_history):
-    <div class="tab-pane ${'active' if i == 0 else ''}" id="order_history-${order.id}">
+    <div class="active" id="order_history-${order.id}">
       <div class="row-fluid">
         <div class="span6">
           <div class="page-header">
             <h3>予約情報</h3>
           </div>
           <%include file="./_show_order_table.html" args="order=order,vh=vh,HH=HH"/>
-          % if i == 0:
           <div class="pull-right">
             <%include file="/orders/_action_button.html"
               args="order=order, sort=['mailinfo', 'paid', 'unpaid', 'delivered', 'cancel', 'refund', 'print', 'delete']" />
@@ -38,7 +36,6 @@ ${ch.breadcrumbs(
           <div id="refund-form">
             <%include file="/orders/refund/_form.html" args="form=form_refund" />
           </div>
-          % endif
         </div>
 
         <div class="span6">
@@ -56,7 +53,7 @@ ${ch.breadcrumbs(
           </div>
           <%include file="./_show_shipping_table.html" args="order=order,shipping_address=order.shipping_address"/>
 
-          % if i == 0:
+          % if is_current_order:
           <div class="pull-right">
             <%include file="/orders/_action_button.html" args="order=order, sort=['edit_shipping_address']" />
           </div>
@@ -89,7 +86,7 @@ ${ch.breadcrumbs(
             <h3>商品</h3>
           </div>
           <%include file="./_show_product_table.html"/ args="order=order,performance=order.performance,objects_for_describe_product_item=objects_for_describe_product_item" />
-          % if i == 0:
+          % if is_current_order:
           <div class="pull-right">
             <%include file="/orders/_action_button.html" args="order=order, sort=['edit_product']" />
           </div>
@@ -182,9 +179,9 @@ ${ch.breadcrumbs(
       <div class="row-fluid">
         <div id="note-form" class="span6 well" style="padding-left: 10px;">
           <form style="margin: 0;">
-            <textarea id="note" name="note" rows="3" style="width:100%;" ${'disabled="disabled"' if i != 0 else ''}>${order.note or ''}</textarea>
+            <textarea id="note" name="note" rows="3" style="width:100%;" ${'disabled="disabled"' if not is_current_order else ''}>${order.note or ''}</textarea>
           </form>
-          % if i == 0:
+          % if is_current_order:
           <div class="message pull-left"></div>
           <div class="pull-right">
             <%include file="/orders/_action_button.html" args="order=order, sort=['note']" />
@@ -193,21 +190,20 @@ ${ch.breadcrumbs(
         </div>
       </div>
     </div>
-    % endfor
   </div>
 
   <ul class="nav nav-tabs">
-    % for i, order in enumerate(order_history):
-    <li class="${'active' if i == 0 else ''}">
-      <a href="#order_history-${order.id}" data-toggle="tab">
-        % if i == 0:
+    %for _order in order_history:
+    <li class="${'active' if order.id == _order.id else ''}">
+      <a href="${request.current_route_path(_query=dict(order_history=_order.id))}">
+        % if _order.deleted_at is None:
           最新
         % else:
-          履歴${order.branch_no}
+          履歴${_order.branch_no}
         % endif
       </a>
     </li>
-    % endfor
+   %endfor
   </ul>
 </div>
 
@@ -239,7 +235,7 @@ $(function(){
     <input type="hidden" name="issued" value="1" />
     <div class="modal-footer">
       <button class="btn" data-dismiss="modal">キャンセル</button>
-      <button class="btn btn-warning">設定する</a>
+      <button class="btn btn-warning">設定する</button>
     </div>
   </form>
 </div>
@@ -251,7 +247,7 @@ $(function(){
     <input type="hidden" name="issued" value="0" />
     <div class="modal-footer">
       <button class="btn" data-dismiss="modal">キャンセル</button>
-      <button class="btn btn-warning">設定する</a>
+      <button class="btn btn-warning">設定する</button>
     </div>
   </form>
 </div>
@@ -263,7 +259,7 @@ $(function(){
   <form method="post" action="${request.route_path('orders.undelivered', order_id=order.id)}" style="margin: 0">
     <div class="modal-footer">
       <button class="btn" data-dismiss="modal">キャンセル</button>
-      <button class="btn btn-warning">設定する</a>
+      <button class="btn btn-warning">設定する</button>
     </div>
   </form>
 </div>

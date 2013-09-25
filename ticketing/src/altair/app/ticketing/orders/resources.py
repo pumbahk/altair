@@ -51,7 +51,6 @@ class OrderDependentsProvilder(object):
         order = self.order
         return DBSession.query(Order, include_deleted=True)\
             .filter(Order.order_no==order.order_no)\
-            .options(joinedload('ordered_products'), joinedload('ordered_products.ordered_product_items'))\
             .order_by(Order.branch_no.desc()).all()
 
     def get_order_attributes(self, metadata_provider_registry):
@@ -77,7 +76,7 @@ class OrderDependentsProvilder(object):
 
     def describe_objects_for_product_item_provider(self): #todo:rename
         order_id = self.order.id
-        qs = OrderedProduct.query.filter(OrderedProduct.order_id==order_id)
+        qs = DBSession.query(OrderedProduct, include_deleted=True).filter(OrderedProduct.order_id==order_id)
         qs = qs.join(OrderedProductItem).join(ProductItem, OrderedProductItem.product_item_id==ProductItem.id)
         qs = qs.outerjoin(OrderedProductItemToken, OrderedProductItem.id==OrderedProductItemToken.ordered_product_item_id)
         qs = qs.outerjoin(TicketBundle, ProductItem.ticket_bundle_id==TicketBundle.id)
@@ -125,9 +124,12 @@ class OrderResource(TicketingAdminResource):
     
     @reify
     def order(self):
+        order_history_id = self.request.GET.get("order_history")
+        if order_history_id is not None:
+            return Order.get(order_history_id, self.organization.id, include_deleted=True)
         order = Order.get(self.order_id, self.organization.id, include_deleted=True)
-        if order and order.deleted_at: #obsolete?
-            return Order.filter_by(order_no=order.order_no).first()
+        if order.deleted_at:
+            return Order.filter_by(order_no=order.order_no).first() #logical deleted
         return order
 
 class OrderPrintByTokenActionProvider(object):
