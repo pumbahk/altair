@@ -59,6 +59,17 @@
     }).change();
 
     $('#system_fee, #transaction_fee, #delivery_fee, #discount').load(function(){
+      % if not is_edit:
+        $('#system_fee').val(${system_fee});
+        options = $('#system_fee_type option');
+        for(ii=0; ii<options.length; ii++){
+            if(options[ii].value == "${system_fee_type}"){
+                options[ii].selected = true;
+            }else{ 
+                options[ii].selected = false;
+           }
+        }
+      % endif
       $(this).val(Math.floor($(this).val()));
     }).load();
 
@@ -101,6 +112,7 @@
       % endif
 
       ${ch.form_item(form.system_fee, class_='span2')}
+      ${ch.form_item(form.system_fee_type, class_='span2')}
       ${ch.form_item(form.transaction_fee, class_='span2')}
       ${ch.form_item(form.delivery_fee, class_='span2')}
       ${ch.form_item(form.discount, class_='span2')}
