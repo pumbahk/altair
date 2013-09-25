@@ -94,7 +94,7 @@ $(function () {
 <%m:header>公演期間</%m:header>
 <div class="sectionbox">
   <div class="sectionbox-inner">
-      ${info['performance_period']}
+      ${helper.nl2br(info['performance_period'])|n}
   </div>
 </div>
 
@@ -130,7 +130,7 @@ $(function () {
                             ${render_sale(segment[0])}
                         </td>
                         <td>
-                            ${segment[1]}
+                            ${helper.nl2br(segment[1])|n}
                         </td>
                     </tr>
                 % endfor
@@ -245,6 +245,7 @@ $(function () {
     </div>
 </div>
 % endif
+
 <ul class="panellist fullwidth expandable">
   <% index = 0 %>
 
@@ -254,8 +255,8 @@ $(function () {
           <ul class="panelgroup-inner">
             % for i, perf in enumerate(perfs):
               <%
-                start_on_candidates = [salessegment.start_on for salessegment in perf['perf'].sales]
-                end_on_candidates = [salessegment.end_on for salessegment in perf['perf'].sales if salessegment.end_on]
+                start_on_candidates = [salessegment.start_on for salessegment in perf['perf'].sales if salessegment.publicp and salessegment.group.publicp]
+                end_on_candidates = [salessegment.end_on for salessegment in perf['perf'].sales if salessegment.end_on and salessegment.publicp and salessegment.group.publicp]
               %>
                 <% index += 1 %>
                 <li class="panel">
@@ -312,27 +313,27 @@ $(function () {
         <li class="panelgroup" id=${count}>
           <span class="panelgroup-label"><a href="#" data-toggle=${count}>${month}</a></span>
           <ul class="panelgroup-inner">
-            % for i, perf in enumerate(event.performances):
+            % for i, perf in enumerate(perfs):
               <%
-                start_on_candidates = [salessegment.start_on for salessegment in perf.sales]
-                end_on_candidates = [salessegment.end_on for salessegment in perf.sales if salessegment.end_on]
+                start_on_candidates = [salessegment.start_on for salessegment in perf['perf'].sales if salessegment.publicp and salessegment.group.publicp]
+                end_on_candidates = [salessegment.end_on for salessegment in perf['perf'].sales if salessegment.end_on and salessegment.publicp and salessegment.group.publicp]
               %>
-              % if (str(perf.start_on.year) + "/" + str(perf.start_on.month).zfill(2) == month) and perf.public:
+              % if (str(perf['perf'].start_on.year) + "/" + str(perf['perf'].start_on.month).zfill(2) == month):
                 <% index += 1 %>
                 <li class="panel">
                   <table class="panellist margined with-action-buttons">
-                    <caption>[${index}]${perf.title}</caption>
+                    <caption>[${index}]${perf['perf'].title}</caption>
                     <tbody>
                       <tr>
                         <td class="panel condensed">
                           <div class="panel-inner h_70px">
                             <p class="first">
-                              % if perf.open_on:
-                                開場：${helper.disp_time(perf.open_on)}<br/>
+                              % if perf['perf'].open_on:
+                                開場：${helper.disp_time(perf['perf'].open_on)}<br/>
                               % endif
-                              開演：${helper.disp_time(perf.start_on)}<br/>
-                              % if perf.venue:
-                                会場：${perf.venue}<br/>
+                              開演：${helper.disp_time(perf['perf'].start_on)}<br/>
+                              % if perf['perf'].venue:
+                                会場：${perf['perf'].venue}<br/>
                               % endif
                             </p>
                           </div>
@@ -345,13 +346,13 @@ $(function () {
                                 販売前
                             </div>
                           %elif max(end_on_candidates) >= helper.now(request):
-                            % if not perf.purchase_link and stock_status.scores.get(int(perf.backend_id),0) <= 0:
+                            % if not perf['perf'].purchase_link and stock_status.scores.get(int(perf['perf'].backend_id),0) <= 0:
                               <div class="actions">
                                 予定枚数終了
                               </div>
                             % else:
                               <div class="actions">
-                                <a class="purchase" index="${count}" href="${purchase_links[perf.id]}">
+                                <a class="purchase" index="${count}" href="${purchase_links[perf['perf'].id]}">
                                   <button class="btn btn-primary btn-large"><span class="btn-inner">購入</span></button>
                                 </a>
                               </div>

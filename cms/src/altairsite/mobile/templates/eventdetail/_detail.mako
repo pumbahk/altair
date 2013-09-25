@@ -41,13 +41,13 @@
 </%def>
 
 <%m:header>公演期間</%m:header>
-${info['performance_period']}<br/>
+${helper.nl2br(info['performance_period'])|n}<br/>
 <br/>
 
 <%m:header>販売期間</%m:header>
 % if info['salessegment']:
     % for segment in info['salessegment']:
-        ${render_sale(segment[0])}:${segment[1]}
+        ${render_sale(segment[0])}:${helper.nl2br(segment[1])|n}
         <br/>
     % endfor
     <br />
@@ -77,7 +77,7 @@ ${info['performance_period']}<br/>
 
 % if info['performers']:
     <%m:header>出演者</%m:header>
-    ${helper.nl2br(info['performers'])}<br/>
+    ${helper.nl2br(info['performers'])|n}<br/>
     <br/>
 % endif
 
@@ -156,8 +156,8 @@ ${helper.nl2br(info['content'])|n}
         % for i, perf in enumerate(perfs):
             <% index += 1 %>
             <%
-                start_on_candidates = [salessegment.start_on for salessegment in perf['perf'].sales]
-                end_on_candidates = [salessegment.end_on for salessegment in perf['perf'].sales if salessegment.end_on]
+                start_on_candidates = [salessegment.start_on for salessegment in perf['perf'].sales if salessegment.publicp and salessegment.group.publicp]
+                end_on_candidates = [salessegment.end_on for salessegment in perf['perf'].sales if salessegment.end_on and salessegment.publicp and salessegment.group.publicp]
             %>
             % if not first:
                 <hr />
@@ -218,44 +218,44 @@ ${helper.nl2br(info['content'])|n}
         ${month_list(month_unit_keys, month)}
         <%m:line width="2" />
         <% first = True %>
-        % for i, perf in enumerate(event.performances):
-            % if (str(perf.start_on.year) + "/" + str(perf.start_on.month).zfill(2) == month) and perf.public:
+        % for i, perf in enumerate(perfs):
+            % if (str(perf['perf'].start_on.year) + "/" + str(perf['perf'].start_on.month).zfill(2) == month):
                 <% index += 1 %>
                 <%
-                    start_on_candidates = [salessegment.start_on for salessegment in perf.sales]
-                    end_on_candidates = [salessegment.end_on for salessegment in perf.sales if salessegment.end_on]
+                    start_on_candidates = [salessegment.start_on for salessegment in perf['perf'].sales if salessegment.publicp and salessegment.group.publicp]
+                    end_on_candidates = [salessegment.end_on for salessegment in perf['perf'].sales if salessegment.end_on and salessegment.publicp and salessegment.group.publicp]
                 %>
                 % if not first:
                     <hr />
                 % endif
                 % if event.deal_close <  get_now(request) or not start_on_candidates:
-                [${index}]<font size="-1">${perf.title}</font><br />
+                [${index}]<font size="-1">${perf['perf'].title}</font><br />
                 % else:
-                [${index}]<font size="-1"><a href="${purchase_links[perf.id]}">${perf.title}</a></font><br />
+                [${index}]<font size="-1"><a href="${purchase_links[perf['perf'].id]}">${perf['perf'].title}</a></font><br />
                 % endif
-                % if perf.open_on:
-                    開場:${str(perf.open_on.year)[2:]}/${str(perf.open_on.month).zfill(2)}/${str(perf.open_on.day).zfill(2)}(${week[perf.open_on.weekday()]})
-                    ${str(perf.open_on.hour).zfill(2)}:${str(perf.open_on.minute).zfill(2)}<br />
+                % if perf['perf'].open_on:
+                    開場:${str(perf['perf'].open_on.year)[2:]}/${str(perf['perf'].open_on.month).zfill(2)}/${str(perf['perf'].open_on.day).zfill(2)}(${week[perf['perf'].open_on.weekday()]})
+                    ${str(perf['perf'].open_on.hour).zfill(2)}:${str(perf['perf'].open_on.minute).zfill(2)}<br />
                 % endif
-                % if perf.start_on:
-                    開演:${str(perf.start_on.year)[2:]}/${str(perf.start_on.month).zfill(2)}/${str(perf.start_on.day).zfill(2)}(${week[perf.start_on.weekday()]})
-                    ${str(perf.start_on.hour).zfill(2)}:${str(perf.start_on.minute).zfill(2)}<br />
+                % if perf['perf'].start_on:
+                    開演:${str(perf['perf'].start_on.year)[2:]}/${str(perf['perf'].start_on.month).zfill(2)}/${str(perf['perf'].start_on.day).zfill(2)}(${week[perf['perf'].start_on.weekday()]})
+                    ${str(perf['perf'].start_on.hour).zfill(2)}:${str(perf['perf'].start_on.minute).zfill(2)}<br />
                 % endif
-                % if perf.venue:
-                    会場:${perf.venue}<br/>
+                % if perf['perf'].venue:
+                    会場:${perf['perf'].venue}<br/>
                 % endif
                 % if not start_on_candidates:
                     準備中
                 %elif min(start_on_candidates) >= get_now(request):
                     販売前
                 %elif max(end_on_candidates) >= get_now(request):
-                    % if not perf.purchase_link and stock_status.scores.get(int(perf.backend_id),0) <= 0:
+                    % if not perf['perf'].purchase_link and stock_status.scores.get(int(perf['perf'].backend_id),0) <= 0:
                         予定枚数終了
                     % else:
                         <div align="center">
                         <%m:band bgcolor="#ffcccc">
                         % if event.deal_close >= get_now(request):
-                          <a href="${purchase_links[perf.id]}"><font color="#cc0000">この公演のチケットを購入</font></a>
+                          <a href="${purchase_links[perf['perf'].id]}"><font color="#cc0000">この公演のチケットを購入</font></a>
                         % endif
                         </%m:band>
                         </div>

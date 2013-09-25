@@ -37,15 +37,47 @@ def form_log(request, message):
 def cart_timeout(request):
     return request.registry.settings['altair_cart.expire_time']
 
+def create_date_label(start, end):
+    only_start_format = u"{start.year}年{start.month}月{start.day}日"
+    range_format = u"{start.year}年{start.month}月{start.day}日 - {end.year}年{end.month}月{end.day}日"
+    same_year_format = u"{start.year}年{start.month}月{start.day}日 - {end.month}月{end.day}日"
+
+    date_format = only_start_format
+
+    if end:
+        if start.year != end.year or start.month != end.month or start.day != end.day:
+            date_format = range_format
+            if start.year == end.year:
+                date_format = same_year_format
+
+    return date_format.format(start=start, end=end)
+
+def create_time_label(start, end):
+    only_start_format = u"{start.year}年{start.month}月{start.day}日 {start:%H:%M}"
+    range_format = u"{start.year}年{start.month}月{start.day}日 - {end.year}年{end.month}月{end.day}日"
+    same_year_format = u"{start.year}年{start.month}月{start.day}日 - {end.month}月{end.day}日"
+
+    date_format = only_start_format
+
+    if end:
+        if start.year != end.year or start.month != end.month or start.day != end.day:
+            date_format = range_format
+            if start.year == end.year:
+                date_format = same_year_format
+
+    return date_format.format(start=start, end=end)
+
+def create_time_only_label(start, end):
+    time_format = u"{start:%H:%M}"
+
+    if end:
+        if start.year != end.year or start.month != end.month or start.day != end.day:
+            return ""
+
+    return time_format.format(start=start)
+
 def performance_date(performance):
-    date_format = u'{s.month}月{s.day}日 {s.hour:02}:{s.minute:02}'
-    date_range_format = u'{s.month}月{s.day}日 {s.hour:02}:{s.minute:02} - {e.month}月{e.day}日'
-    s = performance.start_on
-    e = performance.end_on
-    if e:
-        if not (s.year == e.year and s.month == e.month and s.day == e.day):
-            return date_range_format.format(s=s, e=e)
-    return date_format.format(s=s) if s else u"-"
+    return create_date_label(performance.start_on, performance.end_on)
 
 def performance_end_date(performance):
     s = performance.start_on
