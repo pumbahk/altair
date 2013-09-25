@@ -10,7 +10,9 @@ import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Logger;
 
+import jp.ticketstar.ticketing.LoggingUtils;
 import jp.ticketstar.ticketing.PrintableEvent;
 import jp.ticketstar.ticketing.PrintableEventListener;
 import jp.ticketstar.ticketing.RequestBodySender;
@@ -28,12 +30,40 @@ import com.google.gson.stream.JsonWriter;
 
 class AppAppletServiceImpl extends BasicAppService {
 	private AppApplet applet;
+	private static final Logger logger = Logger.getLogger(BasicAppService.class.getName());
 	
 	public AppAppletServiceImpl(AppApplet applet, AppAppletModel model) {
 		super(model);
 		this.applet = applet;
 	}
 	
+
+	private void notifyPagePrinted(final Page page) {
+		try {
+			URLFetcher.fetch(applet.newURLConnection(applet.config.dequeueUrl), new RequestBodySender() {
+				public String getRequestMethod() {
+					return "POST";
+				}
+
+				@Override
+				public void send(OutputStream out) throws IOException {
+					final JsonWriter writer = new JsonWriter(new OutputStreamWriter(out, "utf-8"));
+					writer.beginObject();
+					writer.name("queue_ids");
+					writer.beginArray();
+					for (final String queueId: page.getQueueIds())
+						writer.value(queueId);
+					writer.endArray();
+					writer.endObject();
+					writer.flush();
+					writer.close();
+				}
+			});
+		} catch (IOException e) {
+			logger.warning(LoggingUtils.formatException(e));
+		}
+	}
+
 	public void printAll() {
 		invokeWhenReady(new Runnable() {
 			public void run() {
@@ -46,38 +76,19 @@ class AppAppletServiceImpl extends BasicAppService {
 							printable.addPrintableEventListener(new PrintableEventListener() {
 								public void pagePrinted(PrintableEvent evt) {
 									final Page page = printable.getPages().get(evt.getPageIndex());
-		
-									try {
-										URLFetcher.fetch(applet.newURLConnection(applet.config.dequeueUrl), new RequestBodySender() {
-											public String getRequestMethod() {
-												return "POST";
-											}
-			
-											@Override
-											public void send(OutputStream out) throws IOException {
-												final JsonWriter writer = new JsonWriter(new OutputStreamWriter(out, "utf-8"));
-												writer.beginObject();
-												writer.name("queue_ids");
-												writer.beginArray();
-												for (final String queueId: page.getQueueIds())
-													writer.value(queueId);
-												writer.endArray();
-												writer.endObject();
-												writer.flush();
-												writer.close();
-											}
-										});
-									} catch (IOException e) {
-										displayError(e);
-									}
+									applet.threadGenerator.execute(new Runnable() {
+										public void run() {
+											notifyPagePrinted(page);
+										}
+									});
 									model.getPageSetModel().getPages().remove(page);
 								}
 							});
 							job.setPrintable(printable, model.getPageFormat());
 							job.print();
-              model.setPrintingStatus(Boolean.valueOf(false)); 
+							model.setPrintingStatus(Boolean.valueOf(false)); 
 						} catch (Exception e) {
-							e.printStackTrace();
+							logger.warning(LoggingUtils.formatException(e));
 							displayError("Failed to print tickets\nReason: " + e);
 						}
 						return null;

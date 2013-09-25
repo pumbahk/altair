@@ -7,9 +7,11 @@ import java.util.concurrent.FutureTask;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Logger;
 
 public class SerializingExecutor implements Executor {
 	private final LinkedBlockingQueue<Runnable> queue;
+	private static final Logger logger = Logger.getLogger(SerializingExecutor.class.getName());
 	private volatile Thread worker;
 
 	public SerializingExecutor(final ThreadFactory threadFactory) {
@@ -19,12 +21,20 @@ public class SerializingExecutor implements Executor {
 				while (worker != null) {
 					try {
 						final Runnable task = queue.poll(1, TimeUnit.SECONDS);
-						if (task != null)
-							task.run();
+						if (task != null) {
+							try {
+								task.run();
+							} catch (Exception e) {
+								// there's nothing more we can do...
+								logger.severe(LoggingUtils.formatException(e));
+							}
+						}
 					} catch (InterruptedException e) {
+						// may be thrown when poll() is interrupted.
 						break;
 					}
 				}
+				worker = null;
 			}
 		});
 	}
@@ -32,6 +42,8 @@ public class SerializingExecutor implements Executor {
 	public void start() {
 		if (this.worker == null)
 			throw new IllegalStateException("Executor was terminated");
+		if (this.worker.isAlive())
+			throw new IllegalStateException("Worker has already been started");
 		this.worker.start();
 	}
 

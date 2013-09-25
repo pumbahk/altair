@@ -23,7 +23,6 @@ import java.beans.PropertyChangeListener;
 import java.util.Collection;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.ThreadFactory;
@@ -69,6 +68,7 @@ import netscape.javascript.JSObject;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 import com.google.gson.stream.JsonWriter;
+
 import javax.swing.JSeparator;
 import javax.swing.SwingConstants;
 
@@ -123,6 +123,7 @@ public class AppApplet extends JApplet implements IAppWindow, URLConnectionFacto
 			for (Page page: pageSetModel.getPages()) {
 				final JGVTComponent gvtComponent = new JGVTComponent(false, false);
 				{
+					@SuppressWarnings("unchecked")
 					Collection<Overlay> overlays = gvtComponent.getOverlays();
 					overlays.add(guidesOverlay);
 					overlays.add(boundingBoxOverlay);
@@ -169,7 +170,6 @@ public class AppApplet extends JApplet implements IAppWindow, URLConnectionFacto
 	};
 
 	private PropertyChangeListener pageSetModelChangeListener = new PropertyChangeListener() {
-		@SuppressWarnings("unchecked")
 		public void propertyChange(PropertyChangeEvent evt) {
 			if (evt.getNewValue() != null) {
 				if (list != null)
