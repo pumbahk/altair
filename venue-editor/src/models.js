@@ -26,33 +26,67 @@ var Venue = exports.Venue = function Venue() {
 _.extend(Venue.prototype, Backbone.Events);
 
 Venue.prototype.initialize = function Venue_initialize(initialData, options) {
-  initialData = initialData || { seats: {}, stock_types: [], stock_holders: [], stocks: [] };
-  var stockTypes = new StockTypeCollection(null, { venue: this });
-  var stockHolders = new StockHolderCollection(null, { venue: this });
-  var stocks = new StockCollection(null, { venue: this });
-  var seats = new SeatCollection(null, { venue: this });
-  var perStockSeatSet = {};
-  var perStockHolderStockMap = {};
-  var perStockTypeStockMap = {};
+  this.load_data(initialData, options);
+}
 
-  stockTypes.add({
-    id: "",
-    name: I18n ? I18n.t("altair.venue_editor.unassigned"): "Unassigned",
-    isSeat: true,
-    quantityOnly: false,
-    quantity: 0,
-    style: {}
-  });
-  if (initialData.stock_types) {
-    for (var i = 0; i < initialData.stock_types.length; i++) {
-      var stockTypeDatum = initialData.stock_types[i];
-      var stockType = new StockType({
-        id: stockTypeDatum.id,
-        name: stockTypeDatum.name,
-        isSeat: stockTypeDatum.is_seat,
-        quantityOnly: stockTypeDatum.quantity_only,
-        style: stockTypeDatum.style
-      });
+Venue.prototype.load_data = function Venue_load_data(data, options) {
+  data = data || { seats: {}, stock_types: [], stock_holders: [], stocks: [] };
+  var stockTypes;
+  var stockHolders;
+  var stocks;
+  var seats;
+  var perStockSeatSet;
+  var perStockHolderStockMap;
+  var perStockTypeStockMap;
+  var init = !(options && options.update);
+
+  if (init) {
+    stockTypes = new StockTypeCollection(null, { venue: this });
+    stockHolders = new StockHolderCollection(null, { venue: this });
+    stocks = new StockCollection(null, { venue: this });
+    seats = new SeatCollection(null, { venue: this });
+    perStockSeatSet = {};
+    perStockHolderStockMap = {};
+    perStockTypeStockMap = {};
+  } else {
+    stockTypes = this.stockTypes;
+    stockHolders = this.stockHolders;
+    stocks = this.stocks;
+    seats = this.seats;
+    perStockSeatSet = this.perStockSeatSet;
+    perStockHolderStockMap = this.perStockHolderStockMap;
+    perStockTypeStockMap = this.perStockTypeStockMap;
+  }
+
+  if (init) {
+    stockTypes.add({
+      id: "",
+      name: I18n ? I18n.t("altair.venue_editor.unassigned"): "Unassigned",
+      isSeat: true,
+      quantityOnly: false,
+      quantity: 0,
+      style: {}
+    });
+  }
+  if (data.stock_types) {
+    for (var i = 0; i < data.stock_types.length; i++) {
+      var stockTypeDatum = data.stock_types[i];
+      var stockType = stockTypes.get(stockTypeDatum.id);
+      if (!stockType) {
+        stockType = new StockType({
+          id: stockTypeDatum.id,
+          name: stockTypeDatum.name,
+          isSeat: stockTypeDatum.is_seat,
+          quantityOnly: stockTypeDatum.quantity_only,
+          style: stockTypeDatum.style
+        });
+      } else {
+        stockType.set('name', stockTypeDatum.name);
+        stockType.set('isSeat', stockTypeDatum.is_seat);
+        stockType.set('quantityOnly', stockTypeDatum.quantity_only);
+        stockType.set('style', stockTypeDatum.style);
+        stockTypes.remove(stockType);
+      }
       stockTypes.add(stockType);
       stockType.on('change:name change:style', function () {
         this.set('edited', true);
@@ -60,35 +94,55 @@ Venue.prototype.initialize = function Venue_initialize(initialData, options) {
     }
   }
 
-  stockHolders.add({
-    id: "",
-    name: I18n ? I18n.t("altair.venue_editor.unassigned"): "Unassigned",
-    style: {}
-  });
-  if (initialData.stock_holders) {
-    for (var i = 0; i < initialData.stock_holders.length; i++) {
-      var stockHolderDatum = initialData.stock_holders[i];
-      stockHolders.add({
-        id: stockHolderDatum.id,
-        name: stockHolderDatum.name,
-        style: stockHolderDatum.style
-      });
+  if (init) {
+    stockHolders.add({
+      id: "",
+      name: I18n ? I18n.t("altair.venue_editor.unassigned"): "Unassigned",
+      style: {}
+    });
+  }
+  if (data.stock_holders) {
+    for (var i = 0; i < data.stock_holders.length; i++) {
+      var stockHolderDatum = data.stock_holders[i];
+      var stockHolder = stockHolders.get(stockHolderDatum.id);
+      if (!stockHolder) {
+        stockHolder = new StockHolder({
+          id: stockHolderDatum.id,
+          name: stockHolderDatum.name,
+          style: stockHolderDatum.style
+        });
+      } else {
+        stockHolder.set('name', stockHolderDatum.name);
+        stockHolder.set('style', stockHolderDatum.style);
+        stockHolders.remove(stockHolder);
+      }
+      stockHolders.add(stockHolder);
     }
   }
 
   function normalizedId(id) { return id === null ? "": "" + id; }
-  for (var i = 0; i < initialData.stocks.length; i++) {
-    var stockDatum = initialData.stocks[i];
+  for (var i = 0; i < data.stocks.length; i++) {
+    var stockDatum = data.stocks[i];
     var stockHolder = stockHolders.get(normalizedId(stockDatum.stock_holder_id));
     var stockType = stockTypes.get(normalizedId(stockDatum.stock_type_id));
-    var stock = new Stock({
-      id: stockDatum.id,
-      stockHolder: stockHolder,
-      stockType: stockType,
-      assigned: stockDatum.assigned,
-      available: stockDatum.available,
-      assignable: stockDatum.assignable
-    });
+    var stock = stocks.get(stockDatum.id);
+    if (!stock) {
+      stock = new Stock({
+        id: stockDatum.id,
+        stockHolder: stockHolder,
+        stockType: stockType,
+        assigned: stockDatum.assigned,
+        available: stockDatum.available,
+        assignable: stockDatum.assignable
+      });
+    } else {
+      stock.set('stockHolder', stockHolder);
+      stock.set('stockType', stockType);
+      stock.set('assigned', stockDatum.assigned);
+      stock.set('available', stockDatum.available);
+      stock.set('assignable', stockDatum.assignable);
+      stocks.remove(stock);
+    }
     stocks.add(stock);
     stock.on('change:assigned', function () {
       this.set('edited', true);
@@ -122,19 +176,30 @@ Venue.prototype.initialize = function Venue_initialize(initialData, options) {
     }
   }
 
-  for (var id in initialData.seats) {
-    var seatDatum = initialData.seats[id];
+  for (var id in data.seats) {
+    var seatDatum = data.seats[id];
     var stock = stocks.get(seatDatum.stock_id);
     var sold = ($.inArray(seatDatum.status, [0, 1]) == -1);
-    var seat = new Seat({
-      id: seatDatum.id,
-      name: seatDatum.name,
-      seat_no: seatDatum.seat_no,
-      status: seatDatum.status,
-      stock: stock,
-      sold: sold,
-      selectable: (stock && stock.get('assignable') && !sold) ? true : false
-    });
+    var seat = seats.get(seatDatum.id);
+    if (!seat) {
+      seat = new Seat({
+        id: seatDatum.id,
+        name: seatDatum.name,
+        seat_no: seatDatum.seat_no,
+        status: seatDatum.status,
+        stock: stock,
+        sold: sold,
+        selectable: (stock && stock.get('assignable') && !sold) ? true : false
+      });
+    } else {
+      seat.set('name', seatDatum.name);
+      seat.set('seat_no', seatDatum.seat_no);
+      seat.set('status', seatDatum.status);
+      seat.set('stock', stock);
+      seat.set('sold', sold);
+      seat.set('selectable', (stock && stock.get('assignable') && !sold) ? true : false);
+      seats.remove(seat);
+    }
     seats.add(seat);
     {
       var set;
@@ -160,7 +225,7 @@ Venue.prototype.initialize = function Venue_initialize(initialData, options) {
             }
           }
           if (new_) {
-            var set = perStockSeatSet[new_.id]
+            var set = perStockSeatSet[new_.id];
             if (!set)
               set = perStockSeatSet[new_.id] = new IdentifiableSet();
             set.add(this);

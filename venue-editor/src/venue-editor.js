@@ -315,26 +315,8 @@
   };
 
   VenueEditor.prototype.refresh = function VenueEditor_refresh(data) {
-    if (this.drawable !== null)
-      this.drawable.dispose();
-    for (var key in data.metadata) {
-      for (var i in data.metadata[key]) {
-        var update_flg = false;
-        for (var j in this.metadata[key]) {
-          if (this.metadata[key][j].id == data.metadata[key][i].id) {
-            this.metadata[key][j] = data.metadata[key][i];
-            update_flg = true;
-            break;
-          }
-        }
-        if (!update_flg) {
-          this.metadata[key][i] = data.metadata[key][i];
-        }
-      }
-    }
-    this.initDrawable();
-    this.initModel();
-    this.initSeats();
+    this.updateModel(data.metadata);
+    this.updateSeats(data.metadata);
     this.callbacks.load && this.callbacks.load(this);
   };
 
@@ -459,7 +441,7 @@
                 size: {
                   x: parseFloat(attrs.width),
                   y: parseFloat(attrs.height)
-                },
+                }
               });
               shape.style(CONF.DEFAULT.SHAPE_STYLE);
               break;
@@ -509,19 +491,38 @@
   };
 
   VenueEditor.prototype.initModel = function VenueEditor_initModel() {
-    this.venue = new models.Venue(this.metadata, {
-      callbacks: this.callbacks
-    });
+    this.venue = new models.Venue(this.metadata, {callbacks: this.callbacks});
   };
 
-  VenueEditor.prototype.initSeats = function VenueEditor_initSeats() {
+  VenueEditor.prototype.updateModel = function VenueEditor_updateModel(metadata) {
+    this.venue.load_data(metadata, {update: true});
+  };
+
+  VenueEditor.prototype.initSeats = function VenueEditor_initSeats(metadata) {
     var self = this;
-    var seats = {};
-    for (var id in this.shapes) {
+    var seats;
+    var id_holder;
+    if (metadata) {
+      seats = this.seats;
+      id_holder = metadata.seats;
+    } else {
+      seats = {};
+      id_holder = this.shapes;
+    }
+    for (var id in id_holder) {
       var shape = this.shapes[id];
       var seat = this.venue.seats.get(id);
       if (!seat)
         continue;
+
+      var vseat = seats[id];
+      if (vseat) {
+        vseat.set('model', seat);
+        vseat._refreshStyle();
+        //vseat.trigger('change:shape');
+        continue;
+      }
+
       seats[id] = (function (id) {
         seat.on('change:selected', function () {
           var value = this.get('selected');
@@ -593,6 +594,10 @@
       })(id);
     }
     this.seats = seats;
+  };
+
+  VenueEditor.prototype.updateSeats = function VenueEditor_updateSeats(metadata) {
+    this.initSeats(metadata);
   };
 
   VenueEditor.prototype.addKeyEvent = function VenueEditor_addKeyEvent() {
