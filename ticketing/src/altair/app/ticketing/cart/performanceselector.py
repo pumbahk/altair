@@ -7,6 +7,7 @@
 from collections import OrderedDict
 from zope.interface import implementer
 from .interfaces import IPerformanceSelector
+from .helpers import create_date_label, create_time_label, create_time_only_label
 
 class _PerformanceSelector(object):
     def select_value(self, sales_segment):
@@ -47,6 +48,9 @@ class _PerformanceSelector(object):
         return dict(
             id=sales_segment.id,
             name=self._create_name(sales_segment),
+            name_pc=self.time_label(sales_segment),
+            name_mobile=self.time_label(sales_segment),
+            name_smartphone=self.time_label(sales_segment),
             order_url=self.request.route_url(
                 'cart.order',
                 sales_segment_id=sales_segment.id),
@@ -59,22 +63,23 @@ class _PerformanceSelector(object):
             )
 
     def _create_name(self, sales_segment):
-        date_format = u'{start:%Y-%m-%d %H:%M} {vname} {name}'
-        date_range_format = u'{start:%Y-%m-%d %H:%M} - {end:%Y-%m-%d} {vname} {name}'
-        s = sales_segment.performance.start_on
-        e = sales_segment.performance.end_on
-        if e:
-            if not (s.year == e.year and s.month == e.month and s.day == e.day):
-                return date_range_format.format(
-                    name = sales_segment.name,
-                    start = s,
-                    end = e,
-                    vname = sales_segment.performance.venue.name)
-        return date_format.format(
-                name = sales_segment.name,
-                start = s,
-                end = e,
-                vname = sales_segment.performance.venue.name)
+        return self.time_label(sales_segment)
+
+    def time_only_label(self, sales_segment):
+        v = self.venue_label(sales_segment)
+        t = create_time_only_label(sales_segment.performance.start_on, sales_segment.performance.end_on)
+        return t + " " + v
+
+    def time_label(self, sales_segment):
+        v = self.venue_label(sales_segment)
+        t = create_time_label(sales_segment.performance.start_on, sales_segment.performance.end_on)
+        return t + " " + v
+
+    def venue_label(self, sales_segment):
+        venue_format = u"{vname} {name}"
+        return venue_format.format(
+            name = sales_segment.name,
+            vname = sales_segment.performance.venue.name)
 
 @implementer(IPerformanceSelector)
 class MatchUpPerformanceSelector(_PerformanceSelector):
@@ -102,16 +107,12 @@ class MatchUpPerformanceSelector(_PerformanceSelector):
                 ]))
         return selection
 
-
 @implementer(IPerformanceSelector)
 class DatePerformanceSelector(_PerformanceSelector):
     """ 日付 -> 会場 """
 
     label = u"開催日"
-    second_label = u"開催日付・会場"
-
-    date_format = u"{0.year:04}年{0.month:02}月{0.day:02}日"
-    date_range_format = u"{0.year:04}年{0.month:02}月{0.day:02}日 - {1.year:04}年{1.month:02}月{1.day:02}日"
+    second_label = u"日付・会場"
 
     def __init__(self, request):
         self.request = request
@@ -119,13 +120,7 @@ class DatePerformanceSelector(_PerformanceSelector):
         self.sales_segments = self.context.available_sales_segments
 
     def select_value(self, sales_segment):
-        s = sales_segment.performance.start_on
-        e = sales_segment.performance.end_on
-
-        if e:
-            if not (s.year == e.year and s.month == e.month and s.day == e.day):
-                return self.date_range_format.format(sales_segment.performance.start_on, sales_segment.performance.end_on)
-        return self.date_format.format(sales_segment.performance.start_on)
+        return create_date_label(sales_segment.performance.start_on, sales_segment.performance.end_on)
 
     def __call__(self):
         selection = []
@@ -137,3 +132,21 @@ class DatePerformanceSelector(_PerformanceSelector):
                 ]))
         return selection
 
+    def sales_segment_to_dict(self, sales_segment):
+
+        return dict(
+            id=sales_segment.id,
+            name=self._create_name(sales_segment),
+            name_pc=self.time_only_label(sales_segment),
+            name_mobile=self.time_label(sales_segment),
+            name_smartphone=self.time_only_label(sales_segment),
+            order_url=self.request.route_url(
+                'cart.order',
+                sales_segment_id=sales_segment.id),
+            upper_limit=sales_segment.upper_limit,
+            seat_types_url=self.request.route_url(
+                'cart.seat_types2',
+                performance_id=sales_segment.performance.id,
+                sales_segment_id=sales_segment.id,
+                event_id=self.context.event.id)
+            )

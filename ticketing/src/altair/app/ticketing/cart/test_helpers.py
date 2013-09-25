@@ -1,6 +1,8 @@
 # -*- coding:utf-8 -*-
 import unittest
+from . import helpers
 from pyramid import testing
+from datetime import datetime
 
 class form_logTests(unittest.TestCase):
 
@@ -43,3 +45,17 @@ class form_logTests(unittest.TestCase):
  ('b', '100')]
 
 """)
+
+class helper_Tests(unittest.TestCase):
+
+    def setUp(self):
+        self.config = testing.setUp()
+
+    def tearDown(self):
+        testing.tearDown()
+
+    def test_craete_date_label(self):
+        s = datetime(2013, 9, 2)
+        e = datetime(2014, 9, 2)
+        ret = helpers.create_date_label(s, e)
+        self.assertEqual(ret, u"2013年9月2日 - 2014年9月2日")
