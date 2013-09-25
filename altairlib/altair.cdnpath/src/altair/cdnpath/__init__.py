@@ -33,7 +33,7 @@ class PrefixedStaticURLInfo(StaticURLInfo):
     def validate(self):
         class request:
             environ = {}
-        url = self._after_generate(request, "/foo/bar/txt")
+        url = self._after_generate("/foo/bar/txt", request, None)
         validate_url(url)
         
     def _after_generate(self, path, request, kwargs):

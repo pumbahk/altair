@@ -77,7 +77,8 @@ def back_to_top(request):
         event_id = long(request.matchdict.get('event_id'))
     except (ValueError, TypeError):
         pass
-    if isinstance(request.context, PerformanceOrientedTicketingCartResource):
+    if isinstance(request.context, PerformanceOrientedTicketingCartResource) and \
+       request.context.performance:
         performance_id = request.context.performance.id
     else:
         try:

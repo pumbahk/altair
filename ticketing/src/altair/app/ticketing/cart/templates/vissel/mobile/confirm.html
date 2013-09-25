@@ -1,18 +1,13 @@
 <%inherit file="./base.html"/>
 <%namespace file="./tags_mobile.html" name="mobile" />
-
 <%mobile:header>チケット購入</%mobile:header>
-
 % if request.session.peek_flash():
-<div>
-  % for message in request.session.pop_flash():
-  <font color="red">${message}</font><br />
-  % endfor
-</div>
-<br/>
+<%mobile:messages messages="${request.session.pop_flush()}" />
 % endif
-
-注文内容をご確認ください
+<div><font size="-1">
+<font color="red">まだお申し込みは完了していません。</font><br />
+注文内容を確認の上、ページ下の「申し込む」ボタンでお申し込みください。<br />
+</font></div>
 <%mobile:header>申込内容確認</%mobile:header>
 <form id="form1" action="${delegator['url'] if delegator else request.route_url('payment.finish')}" method="post">
 ${form.csrf_token()}
@@ -75,21 +70,24 @@ ${shipping.last_name_kana} ${shipping.first_name_kana}
 <div>
 ${shipping.tel_1}
 </div>
-<%mobile:form_header>配送先住所 <font size="-1">※配送を選択した場合</font></%mobile:form_header>
+<%mobile:form_header>配送先住所 <font size="-1">※配送を選択の場合</font></%mobile:form_header>
 <div>
 ${shipping.zip} ${shipping.prefecture}${shipping.city}${shipping.address_1}${shipping.address_2}
 </div>
 
 % if mailmagazines_to_subscribe:
 <%mobile:header>メールマガジンの配信</%mobile:header>
-<p>
-ご利用いただいた方には、ブルズ神戸からのメールマガジンをお送りします。不要な方はチェックをはずしてください。
-</p>
-% for mailmagazine in mailmagazines_to_subscribe:
-<input type="checkbox" checked="checked" name="mailmagazine" id="mailmagazine-${mailmagazine.id}" value="${mailmagazine.id}" />${mailmagazine.name}<br/>
-<div style="font-size:x-small;">
+ご利用いただいた方には、ヴィッセル神戸からのメールマガジンをお送りします。不要な方はチェックをはずしてください。<br />
+% for mailmagazine, subscribed in mailmagazines_to_subscribe:
+% if subscribed:
+<font color="red">(購読済)</font>
+% else:
+<input type="checkbox" checked="checked" name="mailmagazine" id="mailmagazine-${mailmagazine.id}" value="${mailmagazine.id}" />
+% endif
+${mailmagazine.name}<br/>
+<div><font size="-2">
 ${mailmagazine.description|n}
-</div>
+</font></div>
 % endfor
 % endif
 

@@ -165,7 +165,8 @@ def download(request):
 
     return response
 
-@view_config(route_name='venues.index', renderer='altair.app.ticketing:templates/venues/index.html', decorator=with_bootstrap, permission='event_editor')
+@view_config(route_name='venues.index', renderer='altair.app.ticketing:templates/venues/index.html',
+             decorator=with_bootstrap, permission='event_editor')
 def index(request):
     query = DBSession.query(Venue, Site, Performance)
     query = query.filter(Venue.organization_id==request.context.user.organization_id)
@@ -193,8 +194,8 @@ def frontend_drawing(request):
         content_encoding = 'gzip'
     return Response(body=drawing.stream().read(), content_type='text/xml; charset=utf-8', content_encoding=content_encoding)
 
-# FIXME: add permission limitation
-@view_config(route_name='venues.show', renderer='altair.app.ticketing:templates/venues/show.html', decorator=with_bootstrap)
+@view_config(route_name='venues.show', renderer='altair.app.ticketing:templates/venues/show.html',
+             decorator=with_bootstrap, permission='event_editor')
 def show(request):
     venue = request.context.venue
     venue_id = venue.id
@@ -266,7 +267,8 @@ def show(request):
         'adjs': adjs,
     }
 
-@view_config(route_name='venues.checker', permission='event_editor', renderer='altair.app.ticketing:templates/venues/checker.html')
+@view_config(route_name='venues.checker', renderer='altair.app.ticketing:templates/venues/checker.html',
+             decorator=with_bootstrap, permission='event_editor')
 def show_checker(context, request):
     venue = request.context.venue
     return {
@@ -275,7 +277,8 @@ def show_checker(context, request):
         'drawing': get_venue_site_adapter(request, venue.site),
     }
 
-@view_config(route_name='venues.new', request_method='GET', renderer='altair.app.ticketing:templates/venues/edit.html', decorator=with_bootstrap)
+@view_config(route_name='venues.new', request_method='GET', renderer='altair.app.ticketing:templates/venues/edit.html',
+             decorator=with_bootstrap, permission='event_editor')
 def new_get(request):
     f = SiteForm()
     site = Site()
@@ -296,7 +299,8 @@ def new_get(request):
         'route_path': request.path,
     }
 
-@view_config(route_name='venues.new', request_method='POST', renderer='altair.app.ticketing:templates/venues/edit.html', decorator=with_bootstrap)
+@view_config(route_name='venues.new', request_method='POST', renderer='altair.app.ticketing:templates/venues/edit.html',
+             decorator=with_bootstrap, permission='event_editor')
 def new_post(request):
     f = SiteForm(request.POST)
 
@@ -316,7 +320,8 @@ def new_post(request):
             'route_path': request.path,
         }
 
-@view_config(route_name='venues.edit', request_method='GET', renderer='altair.app.ticketing:templates/venues/edit.html', decorator=with_bootstrap)
+@view_config(route_name='venues.edit', request_method='GET', renderer='altair.app.ticketing:templates/venues/edit.html',
+             decorator=with_bootstrap, permission='event_editor')
 def edit_get(request):
     venue = request.context.venue
     if venue.site is None:
@@ -336,7 +341,8 @@ def edit_get(request):
         'route_path': request.path,
     }
 
-@view_config(route_name='venues.edit', request_method='POST', renderer='altair.app.ticketing:templates/venues/edit.html',  decorator=with_bootstrap)
+@view_config(route_name='venues.edit', request_method='POST', renderer='altair.app.ticketing:templates/venues/edit.html',
+             decorator=with_bootstrap, permission='event_editor')
 def edit_post(request):
     venue = request.context.venue
 

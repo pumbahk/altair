@@ -128,37 +128,37 @@
 	</div>
   </div>
 
-  % if mailmagazines_to_subscribe:
-  <div class="settlementBox">
-	<div class="settlementBoxInner">
-      <h2><img src="${request.static_url('altair.app.ticketing.cart:static/img/settlement/title_magazine.gif')}" alt="メールマガジンの配信" width="177" height="30" /></h2>
-	  <div id="mailMagazineBox">
-		<div id="mailMagazineBoxInner">
-		  <dl>
-			<dt>
-        ご利用いただいた方には、秋田ノーザンハピネッツからのメールマガジン（Happinets Times）をお送りします。不要な方はチェックをはずしてください。
-			</dt>
-            <dd>
-              <ul>
-                %for mailmagazine in mailmagazines_to_subscribe:
-                <li style="width:100%;">
-                  <div>
-                    <input type="checkbox" checked="checked" name="mailmagazine" id="mailmagazine-${mailmagazine.id}" value="${mailmagazine.id}" />
-                    <label for="mailmagazine-${mailmagazine.id}">${mailmagazine.name}</label>
-                  </div>
-                  <div>
-                    ${mailmagazine.description|n}
-                  </div>
-                </li>
-                %endfor
-              </ul>
-            </dd>
-			</dl>
+	% if mailmagazines_to_subscribe:
+	<div class="settlementBox">
+		<div class="settlementBoxInner">
+			<h2><img src="${request.static_url('altair.app.ticketing.cart:static/img/settlement/title_magazine.gif')}" alt="メールマガジンの配信" width="177" height="30" /></h2>
+			<div id="mailMagazineBox">
+				<div id="mailMagazineBoxInner">
+					<dl>
+						<dt>
+							ご購入いただいた方に、下記のメールマガジンをお送りします。不要な方はチェックをはずしてください。
+						</dt>
+						<dd>
+							<ul>
+								% for mailmagazine, subscribed in mailmagazines_to_subscribe:
+								<li${subscribed and u' class="subscribed"' or u''|n}>
+									<div>
+										<input type="checkbox" checked="checked" name="mailmagazine" id="mailmagazine-${mailmagazine.id}" value="${mailmagazine.id}"${subscribed and u' disabled="disabled"' or u''|n} />
+										<label for="mailmagazine-${mailmagazine.id}">${mailmagazine.name}</label>
+									</div>
+									<div>
+										${mailmagazine.description|n}
+									</div>
+								</li>
+								% endfor
+							</ul>
+						</dd>
+					</dl>
+				</div>
+			</div>
 		</div>
-	  </div>
 	</div>
-  </div>
-  % endif
+	% endif
 
   <table style="margin-left: auto; margin-right: auto;">
     <tr>
