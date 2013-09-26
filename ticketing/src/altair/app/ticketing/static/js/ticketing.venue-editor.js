@@ -1,6 +1,6 @@
 (function (jQuery, I18n) {
 var __LIBS__ = {};
-__LIBS__['eDKL6EABUPLMCQFW'] = (function (exports) { (function () { 
+__LIBS__['bIPY39LNQ1KZE7YW'] = (function (exports) { (function () { 
 
 /************** translations.js **************/
 
@@ -26,7 +26,7 @@ exports.ja = {
   } 
 };
  })(); return exports; })({});
-__LIBS__['t7NJI175GCRBYM2W'] = (function (exports) { (function () { 
+__LIBS__['R9C6AW09Q4KV9ZV2'] = (function (exports) { (function () { 
 
 /************** CONF.js **************/
 exports.DEFAULT = {
@@ -97,7 +97,7 @@ exports.DEFAULT = {
   }
 };
  })(); return exports; })({});
-__LIBS__['DM5FX46LQR707XOM'] = (function (exports) { (function () { 
+__LIBS__['YW9PJ8NWEUCJ_1QA'] = (function (exports) { (function () { 
 
 /************** util.js **************/
 exports.eventKey = function Util_eventKey(e) {
@@ -276,7 +276,7 @@ timer.prototype.lap = function(msg) {
     return lap;
 };
  })(); return exports; })({});
-__LIBS__['PYJAKAPIMO9KCGHD'] = (function (exports) { (function () { 
+__LIBS__['x1RMNDN35OQYFQFQ'] = (function (exports) { (function () { 
 
 /************** identifiableset.js **************/
 var IdentifiableSet = exports.IdentifiableSet = function IdentifiableSet(options) {
@@ -325,12 +325,12 @@ IdentifiableSet.prototype.each = function IdentifiableSet_each(f) {
  * vim: sts=2 sw=2 ts=2 et
  */
  })(); return exports; })({});
-__LIBS__['dO3GX2G01SH1HLLA'] = (function (exports) { (function () { 
+__LIBS__['LLU5L5PYDEE5KJAI'] = (function (exports) { (function () { 
 
 /************** models.js **************/
-var util = __LIBS__['DM5FX46LQR707XOM'];
-var CONF = __LIBS__['t7NJI175GCRBYM2W'];
-var IdentifiableSet = __LIBS__['PYJAKAPIMO9KCGHD'].IdentifiableSet;
+var util = __LIBS__['YW9PJ8NWEUCJ_1QA'];
+var CONF = __LIBS__['R9C6AW09Q4KV9ZV2'];
+var IdentifiableSet = __LIBS__['x1RMNDN35OQYFQFQ'].IdentifiableSet;
 
 var VenueItemCollectionMixin = {
   venue: null,
@@ -357,39 +357,22 @@ _.extend(Venue.prototype, Backbone.Events);
 
 Venue.prototype.initialize = function Venue_initialize(initialData, options) {
   this.load_data(initialData, options);
-}
+};
 
 Venue.prototype.load_data = function Venue_load_data(data, options) {
   data = data || { seats: {}, stock_types: [], stock_holders: [], stocks: [] };
-  var stockTypes;
-  var stockHolders;
-  var stocks;
-  var seats;
-  var perStockSeatSet;
-  var perStockHolderStockMap;
-  var perStockTypeStockMap;
-  var init = !(options && options.update);
 
-  if (init) {
-    stockTypes = new StockTypeCollection(null, { venue: this });
-    stockHolders = new StockHolderCollection(null, { venue: this });
-    stocks = new StockCollection(null, { venue: this });
-    seats = new SeatCollection(null, { venue: this });
-    perStockSeatSet = {};
-    perStockHolderStockMap = {};
-    perStockTypeStockMap = {};
-  } else {
-    stockTypes = this.stockTypes;
-    stockHolders = this.stockHolders;
-    stocks = this.stocks;
-    seats = this.seats;
-    perStockSeatSet = this.perStockSeatSet;
-    perStockHolderStockMap = this.perStockHolderStockMap;
-    perStockTypeStockMap = this.perStockTypeStockMap;
-  }
+  if (!options || !options.update) {
+    this.stockHolders = new StockTypeCollection(null, { venue: this });
+    this.stockTypes = new StockHolderCollection(null, { venue: this });
+    this.stocks = new StockCollection(null, { venue: this });
+    this.seats = new SeatCollection(null, { venue: this });
+    this.perStockSeatSet = {};
+    this.perStockHolderStockMap = {};
+    this.perStockTypeStockMap = {};
+    this.callbacks = options && options.callbacks ? _.clone(options.callbacks) : {};
 
-  if (init) {
-    stockTypes.add({
+    this.stockTypes.add({
       id: "",
       name: I18n ? I18n.t("altair.venue_editor.unassigned"): "Unassigned",
       isSeat: true,
@@ -397,7 +380,21 @@ Venue.prototype.load_data = function Venue_load_data(data, options) {
       quantity: 0,
       style: {}
     });
+    this.stockHolders.add({
+      id: "",
+      name: I18n ? I18n.t("altair.venue_editor.unassigned"): "Unassigned",
+      style: {}
+    });
   }
+
+  var stockTypes = this.stockTypes;
+  var stockHolders = this.stockHolders;
+  var stocks = this.stocks;
+  var seats = this.seats;
+  var perStockSeatSet = this.perStockSeatSet;
+  var perStockHolderStockMap = this.perStockHolderStockMap;
+  var perStockTypeStockMap = this.perStockTypeStockMap;
+
   if (data.stock_types) {
     for (var i = 0; i < data.stock_types.length; i++) {
       var stockTypeDatum = data.stock_types[i];
@@ -418,19 +415,9 @@ Venue.prototype.load_data = function Venue_load_data(data, options) {
         stockTypes.remove(stockType);
       }
       stockTypes.add(stockType);
-      stockType.on('change:name change:style', function () {
-        this.set('edited', true);
-      });
     }
   }
 
-  if (init) {
-    stockHolders.add({
-      id: "",
-      name: I18n ? I18n.t("altair.venue_editor.unassigned"): "Unassigned",
-      style: {}
-    });
-  }
   if (data.stock_holders) {
     for (var i = 0; i < data.stock_holders.length; i++) {
       var stockHolderDatum = data.stock_holders[i];
@@ -461,6 +448,7 @@ Venue.prototype.load_data = function Venue_load_data(data, options) {
         id: stockDatum.id,
         stockHolder: stockHolder,
         stockType: stockType,
+        venue: this,
         assigned: stockDatum.assigned,
         available: stockDatum.available,
         assignable: stockDatum.assignable
@@ -474,36 +462,6 @@ Venue.prototype.load_data = function Venue_load_data(data, options) {
       stocks.remove(stock);
     }
     stocks.add(stock);
-    stock.on('change:assigned', function () {
-      this.set('edited', true);
-      this.get('stockHolder').recalculateQuantity();
-      this.get('stockType').recalculateQuantity();
-    });
-    stock.on('change:assignable', function () {
-      this.set('edited', true);
-    });
-    if (stockHolder && stockType) {
-      var map = perStockHolderStockMap[stockHolder.id];
-      if (!map)
-        map = perStockHolderStockMap[stockHolder.id] = {};
-      map[stockType.id] = stock;
-
-      map = perStockTypeStockMap[stockType.id];
-      if (!map)
-        map = perStockTypeStockMap[stockType.id] = {};
-      map[stockHolder.id] = stock;
-
-      stock.on('change:stockHolder change:stockType', function () {
-        var prevStockHolderId = this.previous('stockHolder').id;
-        var newStockHolderId = this.get('stockHolder').id;
-        var prevStockTypeId = this.previous('stockType').id;
-        var newStockTypeId = this.get('stockType').id;
-        delete perStockHolderStockMap[prevStockHolderId][prevStockTypeId];
-        delete perStockTypeStockMap[prevStockTypeId][prevStockHolderId];
-        perStockHolderStockMap[newStockHolderId][newStockTypeId] = this;
-        perStockTypeStockMap[newStockTypeId][newStockHolderId] = this;
-      });
-    }
   }
 
   for (var id in data.seats) {
@@ -518,6 +476,7 @@ Venue.prototype.load_data = function Venue_load_data(data, options) {
         seat_no: seatDatum.seat_no,
         status: seatDatum.status,
         stock: stock,
+        venue: this,
         sold: sold,
         selectable: (stock && stock.get('assignable') && !sold) ? true : false
       });
@@ -528,47 +487,11 @@ Venue.prototype.load_data = function Venue_load_data(data, options) {
       seat.set('stock', stock);
       seat.set('sold', sold);
       seat.set('selectable', (stock && stock.get('assignable') && !sold) ? true : false);
-      seats.pop(seat);
+      seats.remove(seat);
     }
     seats.add(seat);
-    {
-      var set;
-      if (stock) {
-        set = perStockSeatSet[stock.id];
-      } else {
-        console.log('Stock not found in Seat.id:' + seat.id);
-      }
-      if (!set)
-        set = perStockSeatSet[stock.id] = new IdentifiableSet();
-      set.add(seat);
-      seat.on('change:stock', function () {
-        var prev = this.previous('stock');
-        var new_ = this.get('stock');
-        if (prev != new_) {
-          this.set('edited', true);
-          if (prev) {
-            perStockSeatSet[prev.id].remove(this);
-            if (prev.has('assigned')) {
-              prev.set('edited', true);
-              if (this.get('selectable')) prev.set('available', prev.get('available') - 1);
-              prev.set('assigned', perStockSeatSet[prev.id].length);
-            }
-          }
-          if (new_) {
-            var set = perStockSeatSet[new_.id];
-            if (!set)
-              set = perStockSeatSet[new_.id] = new IdentifiableSet();
-            set.add(this);
-            if (new_.has('assigned')) {
-              new_.set('edited', true);
-              if (this.get('selectable')) new_.set('available', new_.get('available') + 1);
-              new_.set('assigned', perStockSeatSet[new_.id].length);
-            }
-          }
-        }
-      });
-    }
   }
+
   this.stockHolders = stockHolders;
   this.stockTypes = stockTypes;
   this.stocks = stocks;
@@ -677,6 +600,13 @@ var StockType = exports.StockType = ProvidesStyle.extend({
     edited: false
   },
 
+  initialize: function StockType_initialize() {
+    var self = this;
+    self.on('change:name change:style', function() {
+      this.set('edited', true);
+    });
+  },
+
   keyedStocks: function StockType_stocks() {
     return this.collection.venue.perStockTypeStockMap[this.id];
   },
@@ -731,11 +661,67 @@ var Stock = exports.Stock = Backbone.Model.extend({
   defaults: {
     stockHolder: null,
     stockType: null,
+    venue: null,
     assigned: 0,
     available: 0,
     style: CONF.DEFAULT.SEAT_STYLE,
     assignable: true,
     edited: false
+  },
+
+  initialize: function Stock_initialize() {
+    var self = this;
+    var stockHolder = self.get('stockHolder');
+    var stockType = self.get('stockType');
+
+    self.on('change:assigned', function () {
+      this.set('edited', true);
+      this.get('stockHolder').recalculateQuantity();
+      this.get('stockType').recalculateQuantity();
+    });
+    self.on('change:assignable', function () {
+      this.set('edited', true);
+    });
+
+    if (stockHolder && stockType) {
+      var venue = this.get('venue');
+      var perStockHolderStockMap = venue.perStockHolderStockMap;
+      var perStockTypeStockMap = venue.perStockTypeStockMap;
+
+      var map = perStockHolderStockMap[stockHolder.id];
+      if (!map)
+        map = perStockHolderStockMap[stockHolder.id] = {};
+      map[stockType.id] = self;
+
+      map = perStockTypeStockMap[stockType.id];
+      if (!map)
+        map = perStockTypeStockMap[stockType.id] = {};
+      map[stockHolder.id] = self;
+
+      self.on('change:stockHolder change:stockType', function () {
+        var prevStockHolderId = this.previous('stockHolder').id;
+        var newStockHolderId = this.get('stockHolder').id;
+        var prevStockTypeId = this.previous('stockType').id;
+        var newStockTypeId = this.get('stockType').id;
+        delete perStockHolderStockMap[prevStockHolderId][prevStockTypeId];
+        delete perStockTypeStockMap[prevStockTypeId][prevStockHolderId];
+        perStockHolderStockMap[newStockHolderId][newStockTypeId] = this;
+        perStockTypeStockMap[newStockTypeId][newStockHolderId] = this;
+      });
+    }
+
+    _.each(Stock.styleProviderAttributes, function (name) {
+      var styleProvider = self.get(name);
+      if (styleProvider) {
+        styleProvider.on('change:style', function () {
+          self._refreshStyle();
+        });
+      } else {
+        console.log(name + ' not found in Stock.id:' + self.id);
+      }
+    });
+
+    this._refreshStyle();
   },
 
   _refreshStyle: function Stock__refreshStyle() {
@@ -754,22 +740,6 @@ var Stock = exports.Stock = Backbone.Model.extend({
         seat.trigger('change:stock');
       });
     }
-  },
-
-  initialize: function Stock_initialize() {
-    var self = this;
-    _.each(Stock.styleProviderAttributes, function (name) {
-      var styleProvider = self.get(name);
-      if (styleProvider) {
-        styleProvider.on('change:style', function () {
-          self._refreshStyle();
-        });
-      } else {
-        console.log(name + ' not found in Stock.id:' + self.id);
-      }
-    });
-
-    this._refreshStyle();
   }
 }, {
   styleProviderAttributes: [ 'stockHolder', 'stockType' ]
@@ -790,9 +760,56 @@ var Seat = exports.Seat = Backbone.Model.extend({
     edited: false
   },
 
+  initialize: function Seat_initialize() {
+    var self = this;
+    var stock = self.get('stock');
+    var venue = self.get('venue');
+    var perStockSeatSet = venue.perStockSeatSet;
+
+    var seat_set;
+    if (stock) {
+      seat_set = perStockSeatSet[stock.id];
+    } else {
+      console.log('Stock not found in Seat.id:' + self.id);
+    }
+    if (!seat_set)
+      seat_set = perStockSeatSet[stock.id] = new IdentifiableSet();
+    seat_set.add(self);
+
+    self.on('change:stock', function () {
+      var prev = this.previous('stock');
+      var new_ = this.get('stock');
+      if (prev != new_) {
+        this.set('edited', true);
+        if (prev) {
+          perStockSeatSet[prev.id].remove(this);
+          if (prev.has('assigned')) {
+            prev.set('edited', true);
+            if (this.get('selectable')) prev.set('available', prev.get('available') - 1);
+            prev.set('assigned', perStockSeatSet[prev.id].length);
+          }
+        }
+        if (new_) {
+          var seat_set = perStockSeatSet[new_.id];
+          if (!seat_set)
+            seat_set = perStockSeatSet[new_.id] = new IdentifiableSet();
+          seat_set.add(this);
+
+          if (new_.has('assigned')) {
+            new_.set('edited', true);
+            if (this.get('selectable')) new_.set('available', new_.get('available') + 1);
+            new_.set('assigned', perStockSeatSet[new_.id].length);
+          }
+        }
+      }
+    });
+  },
+
   validate: function (attrs, options) {
+    var result = '';
     if (attrs['selected'] && !this.selectable())
-      return 'Seat ' + this.id + ' is not selectable';
+      result = 'Seat ' + this.id + ' is not selectable';
+    return result;
   },
 
   selectable: function Seat_selectable() {
@@ -869,12 +886,12 @@ console.log(ad2);
  * vim: sts=2 sw=2 ts=2 et
  */
  })(); return exports; })({});
-__LIBS__['BTOHPHWYIXYEU0QE'] = (function (exports) { (function () { 
+__LIBS__['yEYAIFNNA3MOJLVV'] = (function (exports) { (function () { 
 
 /************** viewobjects.js **************/
-var util = __LIBS__['DM5FX46LQR707XOM'];
-var CONF = __LIBS__['t7NJI175GCRBYM2W'];
-var models = __LIBS__['dO3GX2G01SH1HLLA'];
+var util = __LIBS__['YW9PJ8NWEUCJ_1QA'];
+var CONF = __LIBS__['R9C6AW09Q4KV9ZV2'];
+var models = __LIBS__['LLU5L5PYDEE5KJAI'];
 
 var Seat = exports.Seat = Backbone.Model.extend({
   defaults: {
@@ -926,22 +943,24 @@ var Seat = exports.Seat = Backbone.Model.extend({
 
     function onShapeChange() {
       var prev = self.previous('shape');
-      var events = self.get('events');
-      if (events) {
-        if (prev) {
-          for (var eventKind in events) {
-            if (events[eventKind])
-              prev.removeEvent(eventKind, events[eventKind]);
-          }
-          if (self.label) {
+      var new_ = self.get('shape');
+      if (prev != new_) {
+        var events = self.get('events');
+        if (events) {
+          if (prev) {
             for (var eventKind in events) {
               if (events[eventKind])
-                self.label.removeEvent(eventKind, events[eventKind]);
+                prev.removeEvent(eventKind, events[eventKind]);
+            }
+            if (self.label) {
+              for (var eventKind in events) {
+                if (events[eventKind])
+                  self.label.removeEvent(eventKind, events[eventKind]);
+              }
             }
           }
+          new_.addEvent(events);
         }
-        var new_ = self.get('shape');
-        new_.addEvent(events);
       }
       self._refreshStyle();
     }
@@ -1051,13 +1070,13 @@ var Seat = exports.Seat = Backbone.Model.extend({
 /************** venue-editor.js **************/
 /* extern */ var jQuery, I18n;
 (function ($) {
-  var CONF = __LIBS__['t7NJI175GCRBYM2W'];
-  var models = __LIBS__['dO3GX2G01SH1HLLA'];
-  var util = __LIBS__['DM5FX46LQR707XOM'];
-  var viewobjects = __LIBS__['BTOHPHWYIXYEU0QE'];
-  var IdentifiableSet = __LIBS__['PYJAKAPIMO9KCGHD'].IdentifiableSet;
+  var CONF = __LIBS__['R9C6AW09Q4KV9ZV2'];
+  var models = __LIBS__['LLU5L5PYDEE5KJAI'];
+  var util = __LIBS__['YW9PJ8NWEUCJ_1QA'];
+  var viewobjects = __LIBS__['yEYAIFNNA3MOJLVV'];
+  var IdentifiableSet = __LIBS__['x1RMNDN35OQYFQFQ'].IdentifiableSet;
   if (I18n)
-    I18n.translations = __LIBS__['eDKL6EABUPLMCQFW'];
+    I18n.translations = __LIBS__['bIPY39LNQ1KZE7YW'];
 
   var parseCSSStyleText = (function () {
     var regexp_for_styles = /\s*(-?(?:[_a-z\u00a0-\u10ffff]|\\[^\n\r\f#])(?:[\-_A-Za-z\u00a0-\u10ffff]|\\[^\n\r\f])*)\s*:\s*((?:(?:(?:[^;\\ \n\r\t\f"']|\\[0-9A-Fa-f]{1,6}(?:\r\n|[ \n\r\t\f])?|\\[^\n\r\f0-9A-Fa-f])+|"(?:[^\n\r\f\\"]|\\(?:\n|\r\n|\r|\f)|\\[^\n\r\f])*"|'(?:[^\n\r\f\\']|\\(?:\n|\r\n|\r|\f)|\\[^\n\r\f])*')(?:\s+|(?=;|$)))+)(?:;|$)/g;
@@ -1549,28 +1568,35 @@ var Seat = exports.Seat = Backbone.Model.extend({
     this.venue.load_data(metadata, {update: true});
   };
 
-  VenueEditor.prototype.initSeats = function VenueEditor_initSeats(metadata) {
+  VenueEditor.prototype.initSeats = function VenueEditor_initSeats() {
+    this.setSeats();
+  };
+
+  VenueEditor.prototype.updateSeats = function VenueEditor_updateSeats(metadata) {
+    this.setSeats(metadata);
+  };
+
+  VenueEditor.prototype.setSeats = function VenueEditor_setSeats(metadata) {
     var self = this;
     var seats;
-    var id_holder;
+    var target_seats;
     if (metadata) {
       seats = this.seats;
-      id_holder = metadata.seats;
+      target_seats = metadata.seats;
     } else {
       seats = {};
-      id_holder = this.shapes;
+      target_seats = this.shapes;
     }
-    for (var id in id_holder) {
+    for (var id in target_seats) {
       var shape = this.shapes[id];
       var seat = this.venue.seats.get(id);
       if (!seat)
         continue;
 
-      var vseat = seats[id];
-      if (vseat) {
-        vseat.set('model', seat);
-        vseat._refreshStyle();
-        //vseat.trigger('change:shape');
+      var seat_vo = seats[id];
+      if (seat_vo) {
+        seat_vo.set('model', seat);
+        seat_vo.trigger('change:shape');
         continue;
       }
 
@@ -1645,10 +1671,6 @@ var Seat = exports.Seat = Backbone.Model.extend({
       })(id);
     }
     this.seats = seats;
-  };
-
-  VenueEditor.prototype.updateSeats = function VenueEditor_updateSeats(metadata) {
-    this.initSeats(metadata);
   };
 
   VenueEditor.prototype.addKeyEvent = function VenueEditor_addKeyEvent() {

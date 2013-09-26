@@ -498,28 +498,35 @@
     this.venue.load_data(metadata, {update: true});
   };
 
-  VenueEditor.prototype.initSeats = function VenueEditor_initSeats(metadata) {
+  VenueEditor.prototype.initSeats = function VenueEditor_initSeats() {
+    this.setSeats();
+  };
+
+  VenueEditor.prototype.updateSeats = function VenueEditor_updateSeats(metadata) {
+    this.setSeats(metadata);
+  };
+
+  VenueEditor.prototype.setSeats = function VenueEditor_setSeats(metadata) {
     var self = this;
     var seats;
-    var id_holder;
+    var target_seats;
     if (metadata) {
       seats = this.seats;
-      id_holder = metadata.seats;
+      target_seats = metadata.seats;
     } else {
       seats = {};
-      id_holder = this.shapes;
+      target_seats = this.shapes;
     }
-    for (var id in id_holder) {
+    for (var id in target_seats) {
       var shape = this.shapes[id];
       var seat = this.venue.seats.get(id);
       if (!seat)
         continue;
 
-      var vseat = seats[id];
-      if (vseat) {
-        vseat.set('model', seat);
-        vseat._refreshStyle();
-        //vseat.trigger('change:shape');
+      var seat_vo = seats[id];
+      if (seat_vo) {
+        seat_vo.set('model', seat);
+        seat_vo.trigger('change:shape');
         continue;
       }
 
@@ -594,10 +601,6 @@
       })(id);
     }
     this.seats = seats;
-  };
-
-  VenueEditor.prototype.updateSeats = function VenueEditor_updateSeats(metadata) {
-    this.initSeats(metadata);
   };
 
   VenueEditor.prototype.addKeyEvent = function VenueEditor_addKeyEvent() {
