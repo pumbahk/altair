@@ -49,12 +49,10 @@
   <div class="row-fluid">
     <input id="sales-counter-button" type="button" class="btn btn-warning" style="vertical-align: baseline; font-size: 100%;" value="当日窓口発券モードにする" />
     <script type="text/javascript">
-      $(function(){
-        $('#sales-counter-button').click(function(){
+      $('#sales-counter-button').click(function(){
         loadApplet();
         $(this).css('display', 'none');
         $('#sales-counter-label').css('display', 'inline');
-        });
       });
     </script>
 
@@ -72,7 +70,7 @@
           <%vv:venueeditor data_source="${data_source}">
             <%def name="toolbar_extra()">
             <div style="float:right">
-              <a href="javascript:getOrderForm();" class="btn btn-primary btn">座席指定</a>
+              <button class="btn btn-primary action-openOrderForm">座席指定</button>
             </div>
             </%def>
 
@@ -110,7 +108,11 @@
   };
 
 
+  var orderFormOpening = false;
   function getOrderForm(stock_id) {
+    if (orderFormOpening)
+      return;
+    orderFormOpening = true;
     var param = {'seats':[], 'stocks':[], 'performance_id':${performance.id}};
     var sales_segment_id = $('#sales_summary-form').find('select[name="sales_segment_id"]').val();
     if (sales_segment_id) param['sales_segment_id'] = sales_segment_id;
@@ -130,6 +132,9 @@
       url: '${request.route_path('orders.reserve.form')}',
       data: JSON.stringify(param),
       dataType: 'html',
+      complete: function () {
+        orderFormOpening = false;
+      },
       success: function(data) {
         $('#reserve-form').html(data);
         $('#modal-reserve').modal({'backdrop':'static', 'keyboard':false});
@@ -258,6 +263,12 @@
       venueEditorRoot.data('venueeditor').dataSource.metadata = metadata + '&sales_segment_id=' + $(this).val();
       venueEditorRoot.venueeditor('load');
       getSalesSummary();
+    });
+
+    // 「おまかせ」ボタンはajaxで追加されるので、delegateを使わないとうまく動かない
+    var openOrderFormButtons = $(document.body).delegate(".action-openOrderForm", "click", function () {
+      var stock_id = $(this).data('stock-id');
+      getOrderForm(stock_id ? parseInt(stock_id): void(0));
     });
 
     getSalesSummary();
