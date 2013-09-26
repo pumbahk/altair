@@ -240,12 +240,14 @@ venueEditorRoot.venueeditor({
         loadingPanel.remove();
         loadingPanel = null;
       }
-      $("<div></div>").text(msg).dialog({
-        modal: true,
-        buttons: {
-          "Ok": function () { $(this).dialog('destroy'); }
-        }
-      });
+      var dialog = $('<div class="modal hide"></div>');
+      var body = $('<div class="modal-body"></div>').text(msg);
+      var footer = $('<div class="modal-footer"></div>');
+      var button = $('<button class="btn" data-dismiss="modal">閉じる</button>');
+      dialog.append(body);
+      footer.append(button);
+      dialog.append(footer);
+      dialog.modal('show');
     },
     uimodeselect: function (viewer, mode) {
       switch (mode) {

@@ -1,6 +1,6 @@
 (function (jQuery, I18n) {
 var __LIBS__ = {};
-__LIBS__['hLJ4S7EQZ1ZVZVHJ'] = (function (exports) { (function () { 
+__LIBS__['L7P7RSAXSXITZJI4'] = (function (exports) { (function () { 
 
 /************** translations.js **************/
 
@@ -26,7 +26,7 @@ exports.ja = {
   } 
 };
  })(); return exports; })({});
-__LIBS__['O0D35V5LI4O_BIBX'] = (function (exports) { (function () { 
+__LIBS__['LJOM7016UQWJBZH5'] = (function (exports) { (function () { 
 
 /************** CONF.js **************/
 exports.DEFAULT = {
@@ -97,7 +97,7 @@ exports.DEFAULT = {
   }
 };
  })(); return exports; })({});
-__LIBS__['bLFGB5HNCILY9QO1'] = (function (exports) { (function () { 
+__LIBS__['DBX8WW4PM9M5X5GU'] = (function (exports) { (function () { 
 
 /************** util.js **************/
 exports.eventKey = function Util_eventKey(e) {
@@ -276,7 +276,7 @@ timer.prototype.lap = function(msg) {
     return lap;
 };
  })(); return exports; })({});
-__LIBS__['UEG3XSUYZAFV1FPZ'] = (function (exports) { (function () { 
+__LIBS__['wRQDBAHSUI44_XIU'] = (function (exports) { (function () { 
 
 /************** identifiableset.js **************/
 var IdentifiableSet = exports.IdentifiableSet = function IdentifiableSet(options) {
@@ -325,12 +325,12 @@ IdentifiableSet.prototype.each = function IdentifiableSet_each(f) {
  * vim: sts=2 sw=2 ts=2 et
  */
  })(); return exports; })({});
-__LIBS__['dSYM4NONCKMR1FFP'] = (function (exports) { (function () { 
+__LIBS__['d8SCTWIN_Y_I3FQZ'] = (function (exports) { (function () { 
 
 /************** models.js **************/
-var util = __LIBS__['bLFGB5HNCILY9QO1'];
-var CONF = __LIBS__['O0D35V5LI4O_BIBX'];
-var IdentifiableSet = __LIBS__['UEG3XSUYZAFV1FPZ'].IdentifiableSet;
+var util = __LIBS__['DBX8WW4PM9M5X5GU'];
+var CONF = __LIBS__['LJOM7016UQWJBZH5'];
+var IdentifiableSet = __LIBS__['wRQDBAHSUI44_XIU'].IdentifiableSet;
 
 var VenueItemCollectionMixin = {
   venue: null,
@@ -356,154 +356,142 @@ var Venue = exports.Venue = function Venue() {
 _.extend(Venue.prototype, Backbone.Events);
 
 Venue.prototype.initialize = function Venue_initialize(initialData, options) {
-  initialData = initialData || { seats: {}, stock_types: [], stock_holders: [], stocks: [] };
-  var stockTypes = new StockTypeCollection(null, { venue: this });
-  var stockHolders = new StockHolderCollection(null, { venue: this });
-  var stocks = new StockCollection(null, { venue: this });
-  var seats = new SeatCollection(null, { venue: this });
-  var perStockSeatSet = {};
-  var perStockHolderStockMap = {};
-  var perStockTypeStockMap = {};
+  this.load_data(initialData, options);
+};
 
-  stockTypes.add({
-    id: "",
-    name: I18n ? I18n.t("altair.venue_editor.unassigned"): "Unassigned",
-    isSeat: true,
-    quantityOnly: false,
-    quantity: 0,
-    style: {}
-  });
-  if (initialData.stock_types) {
-    for (var i = 0; i < initialData.stock_types.length; i++) {
-      var stockTypeDatum = initialData.stock_types[i];
-      var stockType = new StockType({
-        id: stockTypeDatum.id,
-        name: stockTypeDatum.name,
-        isSeat: stockTypeDatum.is_seat,
-        quantityOnly: stockTypeDatum.quantity_only,
-        style: stockTypeDatum.style
-      });
+Venue.prototype.load_data = function Venue_load_data(data, options) {
+  data = data || { seats: {}, stock_types: [], stock_holders: [], stocks: [] };
+
+  if (!options || !options.update) {
+    this.stockHolders = new StockTypeCollection(null, { venue: this });
+    this.stockTypes = new StockHolderCollection(null, { venue: this });
+    this.stocks = new StockCollection(null, { venue: this });
+    this.seats = new SeatCollection(null, { venue: this });
+    this.perStockSeatSet = {};
+    this.perStockHolderStockMap = {};
+    this.perStockTypeStockMap = {};
+    this.callbacks = options && options.callbacks ? _.clone(options.callbacks) : {};
+
+    this.stockTypes.add({
+      id: "",
+      name: I18n ? I18n.t("altair.venue_editor.unassigned"): "Unassigned",
+      isSeat: true,
+      quantityOnly: false,
+      quantity: 0,
+      style: {}
+    });
+    this.stockHolders.add({
+      id: "",
+      name: I18n ? I18n.t("altair.venue_editor.unassigned"): "Unassigned",
+      style: {}
+    });
+  }
+
+  var stockTypes = this.stockTypes;
+  var stockHolders = this.stockHolders;
+  var stocks = this.stocks;
+  var seats = this.seats;
+  var perStockSeatSet = this.perStockSeatSet;
+  var perStockHolderStockMap = this.perStockHolderStockMap;
+  var perStockTypeStockMap = this.perStockTypeStockMap;
+
+  if (data.stock_types) {
+    for (var i = 0; i < data.stock_types.length; i++) {
+      var stockTypeDatum = data.stock_types[i];
+      var stockType = stockTypes.get(stockTypeDatum.id);
+      if (!stockType) {
+        stockType = new StockType({
+          id: stockTypeDatum.id,
+          name: stockTypeDatum.name,
+          isSeat: stockTypeDatum.is_seat,
+          quantityOnly: stockTypeDatum.quantity_only,
+          style: stockTypeDatum.style
+        });
+      } else {
+        stockType.set('name', stockTypeDatum.name);
+        stockType.set('isSeat', stockTypeDatum.is_seat);
+        stockType.set('quantityOnly', stockTypeDatum.quantity_only);
+        stockType.set('style', stockTypeDatum.style);
+        stockTypes.remove(stockType);
+      }
       stockTypes.add(stockType);
-      stockType.on('change:name change:style', function () {
-        this.set('edited', true);
-      });
     }
   }
 
-  stockHolders.add({
-    id: "",
-    name: I18n ? I18n.t("altair.venue_editor.unassigned"): "Unassigned",
-    style: {}
-  });
-  if (initialData.stock_holders) {
-    for (var i = 0; i < initialData.stock_holders.length; i++) {
-      var stockHolderDatum = initialData.stock_holders[i];
-      stockHolders.add({
-        id: stockHolderDatum.id,
-        name: stockHolderDatum.name,
-        style: stockHolderDatum.style
-      });
+  if (data.stock_holders) {
+    for (var i = 0; i < data.stock_holders.length; i++) {
+      var stockHolderDatum = data.stock_holders[i];
+      var stockHolder = stockHolders.get(stockHolderDatum.id);
+      if (!stockHolder) {
+        stockHolder = new StockHolder({
+          id: stockHolderDatum.id,
+          name: stockHolderDatum.name,
+          style: stockHolderDatum.style
+        });
+      } else {
+        stockHolder.set('name', stockHolderDatum.name);
+        stockHolder.set('style', stockHolderDatum.style);
+        stockHolders.remove(stockHolder);
+      }
+      stockHolders.add(stockHolder);
     }
   }
 
   function normalizedId(id) { return id === null ? "": "" + id; }
-  for (var i = 0; i < initialData.stocks.length; i++) {
-    var stockDatum = initialData.stocks[i];
+  for (var i = 0; i < data.stocks.length; i++) {
+    var stockDatum = data.stocks[i];
     var stockHolder = stockHolders.get(normalizedId(stockDatum.stock_holder_id));
     var stockType = stockTypes.get(normalizedId(stockDatum.stock_type_id));
-    var stock = new Stock({
-      id: stockDatum.id,
-      stockHolder: stockHolder,
-      stockType: stockType,
-      assigned: stockDatum.assigned,
-      available: stockDatum.available,
-      assignable: stockDatum.assignable
-    });
-    stocks.add(stock);
-    stock.on('change:assigned', function () {
-      this.set('edited', true);
-      this.get('stockHolder').recalculateQuantity();
-      this.get('stockType').recalculateQuantity();
-    });
-    stock.on('change:assignable', function () {
-      this.set('edited', true);
-    });
-    if (stockHolder && stockType) {
-      var map = perStockHolderStockMap[stockHolder.id];
-      if (!map)
-        map = perStockHolderStockMap[stockHolder.id] = {};
-      map[stockType.id] = stock;
-
-      map = perStockTypeStockMap[stockType.id];
-      if (!map)
-        map = perStockTypeStockMap[stockType.id] = {};
-      map[stockHolder.id] = stock;
-
-      stock.on('change:stockHolder change:stockType', function () {
-        var prevStockHolderId = this.previous('stockHolder').id;
-        var newStockHolderId = this.get('stockHolder').id;
-        var prevStockTypeId = this.previous('stockType').id;
-        var newStockTypeId = this.get('stockType').id;
-        delete perStockHolderStockMap[prevStockHolderId][prevStockTypeId];
-        delete perStockTypeStockMap[prevStockTypeId][prevStockHolderId];
-        perStockHolderStockMap[newStockHolderId][newStockTypeId] = this;
-        perStockTypeStockMap[newStockTypeId][newStockHolderId] = this;
+    var stock = stocks.get(stockDatum.id);
+    if (!stock) {
+      stock = new Stock({
+        id: stockDatum.id,
+        stockHolder: stockHolder,
+        stockType: stockType,
+        venue: this,
+        assigned: stockDatum.assigned,
+        available: stockDatum.available,
+        assignable: stockDatum.assignable
       });
+    } else {
+      stock.set('stockHolder', stockHolder);
+      stock.set('stockType', stockType);
+      stock.set('assigned', stockDatum.assigned);
+      stock.set('available', stockDatum.available);
+      stock.set('assignable', stockDatum.assignable);
+      stocks.remove(stock);
     }
+    stocks.add(stock);
   }
 
-  for (var id in initialData.seats) {
-    var seatDatum = initialData.seats[id];
+  for (var id in data.seats) {
+    var seatDatum = data.seats[id];
     var stock = stocks.get(seatDatum.stock_id);
     var sold = ($.inArray(seatDatum.status, [0, 1]) == -1);
-    var seat = new Seat({
-      id: seatDatum.id,
-      name: seatDatum.name,
-      seat_no: seatDatum.seat_no,
-      status: seatDatum.status,
-      stock: stock,
-      sold: sold,
-      selectable: (stock && stock.get('assignable') && !sold) ? true : false
-    });
-    seats.add(seat);
-    {
-      var set;
-      if (stock) {
-        set = perStockSeatSet[stock.id];
-      } else {
-        console.log('Stock not found in Seat.id:' + seat.id);
-      }
-      if (!set)
-        set = perStockSeatSet[stock.id] = new IdentifiableSet();
-      set.add(seat);
-      seat.on('change:stock', function () {
-        var prev = this.previous('stock');
-        var new_ = this.get('stock');
-        if (prev != new_) {
-          this.set('edited', true);
-          if (prev) {
-            perStockSeatSet[prev.id].remove(this);
-            if (prev.has('assigned')) {
-              prev.set('edited', true);
-              if (this.get('selectable')) prev.set('available', prev.get('available') - 1);
-              prev.set('assigned', perStockSeatSet[prev.id].length);
-            }
-          }
-          if (new_) {
-            var set = perStockSeatSet[new_.id]
-            if (!set)
-              set = perStockSeatSet[new_.id] = new IdentifiableSet();
-            set.add(this);
-            if (new_.has('assigned')) {
-              new_.set('edited', true);
-              if (this.get('selectable')) new_.set('available', new_.get('available') + 1);
-              new_.set('assigned', perStockSeatSet[new_.id].length);
-            }
-          }
-        }
+    var seat = seats.get(seatDatum.id);
+    if (!seat) {
+      seat = new Seat({
+        id: seatDatum.id,
+        name: seatDatum.name,
+        seat_no: seatDatum.seat_no,
+        status: seatDatum.status,
+        stock: stock,
+        venue: this,
+        sold: sold,
+        selectable: (stock && stock.get('assignable') && !sold) ? true : false
       });
+    } else {
+      seat.set('name', seatDatum.name);
+      seat.set('seat_no', seatDatum.seat_no);
+      seat.set('status', seatDatum.status);
+      seat.set('stock', stock);
+      seat.set('sold', sold);
+      seat.set('selectable', (stock && stock.get('assignable') && !sold) ? true : false);
+      seats.remove(seat);
     }
+    seats.add(seat);
   }
+
   this.stockHolders = stockHolders;
   this.stockTypes = stockTypes;
   this.stocks = stocks;
@@ -612,6 +600,13 @@ var StockType = exports.StockType = ProvidesStyle.extend({
     edited: false
   },
 
+  initialize: function StockType_initialize() {
+    var self = this;
+    self.on('change:name change:style', function() {
+      this.set('edited', true);
+    });
+  },
+
   keyedStocks: function StockType_stocks() {
     return this.collection.venue.perStockTypeStockMap[this.id];
   },
@@ -666,11 +661,67 @@ var Stock = exports.Stock = Backbone.Model.extend({
   defaults: {
     stockHolder: null,
     stockType: null,
+    venue: null,
     assigned: 0,
     available: 0,
     style: CONF.DEFAULT.SEAT_STYLE,
     assignable: true,
     edited: false
+  },
+
+  initialize: function Stock_initialize() {
+    var self = this;
+    var stockHolder = self.get('stockHolder');
+    var stockType = self.get('stockType');
+
+    self.on('change:assigned', function () {
+      this.set('edited', true);
+      this.get('stockHolder').recalculateQuantity();
+      this.get('stockType').recalculateQuantity();
+    });
+    self.on('change:assignable', function () {
+      this.set('edited', true);
+    });
+
+    if (stockHolder && stockType) {
+      var venue = this.get('venue');
+      var perStockHolderStockMap = venue.perStockHolderStockMap;
+      var perStockTypeStockMap = venue.perStockTypeStockMap;
+
+      var map = perStockHolderStockMap[stockHolder.id];
+      if (!map)
+        map = perStockHolderStockMap[stockHolder.id] = {};
+      map[stockType.id] = self;
+
+      map = perStockTypeStockMap[stockType.id];
+      if (!map)
+        map = perStockTypeStockMap[stockType.id] = {};
+      map[stockHolder.id] = self;
+
+      self.on('change:stockHolder change:stockType', function () {
+        var prevStockHolderId = this.previous('stockHolder').id;
+        var newStockHolderId = this.get('stockHolder').id;
+        var prevStockTypeId = this.previous('stockType').id;
+        var newStockTypeId = this.get('stockType').id;
+        delete perStockHolderStockMap[prevStockHolderId][prevStockTypeId];
+        delete perStockTypeStockMap[prevStockTypeId][prevStockHolderId];
+        perStockHolderStockMap[newStockHolderId][newStockTypeId] = this;
+        perStockTypeStockMap[newStockTypeId][newStockHolderId] = this;
+      });
+    }
+
+    _.each(Stock.styleProviderAttributes, function (name) {
+      var styleProvider = self.get(name);
+      if (styleProvider) {
+        styleProvider.on('change:style', function () {
+          self._refreshStyle();
+        });
+      } else {
+        console.log(name + ' not found in Stock.id:' + self.id);
+      }
+    });
+
+    this._refreshStyle();
   },
 
   _refreshStyle: function Stock__refreshStyle() {
@@ -689,22 +740,6 @@ var Stock = exports.Stock = Backbone.Model.extend({
         seat.trigger('change:stock');
       });
     }
-  },
-
-  initialize: function Stock_initialize() {
-    var self = this;
-    _.each(Stock.styleProviderAttributes, function (name) {
-      var styleProvider = self.get(name);
-      if (styleProvider) {
-        styleProvider.on('change:style', function () {
-          self._refreshStyle();
-        });
-      } else {
-        console.log(name + ' not found in Stock.id:' + self.id);
-      }
-    });
-
-    this._refreshStyle();
   }
 }, {
   styleProviderAttributes: [ 'stockHolder', 'stockType' ]
@@ -725,9 +760,56 @@ var Seat = exports.Seat = Backbone.Model.extend({
     edited: false
   },
 
+  initialize: function Seat_initialize() {
+    var self = this;
+    var stock = self.get('stock');
+    var venue = self.get('venue');
+    var perStockSeatSet = venue.perStockSeatSet;
+
+    var seat_set;
+    if (stock) {
+      seat_set = perStockSeatSet[stock.id];
+    } else {
+      console.log('Stock not found in Seat.id:' + self.id);
+    }
+    if (!seat_set)
+      seat_set = perStockSeatSet[stock.id] = new IdentifiableSet();
+    seat_set.add(self);
+
+    self.on('change:stock', function () {
+      var prev = this.previous('stock');
+      var new_ = this.get('stock');
+      if (prev != new_) {
+        this.set('edited', true);
+        if (prev) {
+          perStockSeatSet[prev.id].remove(this);
+          if (prev.has('assigned')) {
+            prev.set('edited', true);
+            if (this.get('selectable')) prev.set('available', prev.get('available') - 1);
+            prev.set('assigned', perStockSeatSet[prev.id].length);
+          }
+        }
+        if (new_) {
+          var seat_set = perStockSeatSet[new_.id];
+          if (!seat_set)
+            seat_set = perStockSeatSet[new_.id] = new IdentifiableSet();
+          seat_set.add(this);
+
+          if (new_.has('assigned')) {
+            new_.set('edited', true);
+            if (this.get('selectable')) new_.set('available', new_.get('available') + 1);
+            new_.set('assigned', perStockSeatSet[new_.id].length);
+          }
+        }
+      }
+    });
+  },
+
   validate: function (attrs, options) {
+    var result = '';
     if (attrs['selected'] && !this.selectable())
-      return 'Seat ' + this.id + ' is not selectable';
+      result = 'Seat ' + this.id + ' is not selectable';
+    return result;
   },
 
   selectable: function Seat_selectable() {
@@ -804,12 +886,12 @@ console.log(ad2);
  * vim: sts=2 sw=2 ts=2 et
  */
  })(); return exports; })({});
-__LIBS__['KP5YNQS3MEKEJ1BU'] = (function (exports) { (function () { 
+__LIBS__['n77UAXU3LQL37Q3C'] = (function (exports) { (function () { 
 
 /************** viewobjects.js **************/
-var util = __LIBS__['bLFGB5HNCILY9QO1'];
-var CONF = __LIBS__['O0D35V5LI4O_BIBX'];
-var models = __LIBS__['dSYM4NONCKMR1FFP'];
+var util = __LIBS__['DBX8WW4PM9M5X5GU'];
+var CONF = __LIBS__['LJOM7016UQWJBZH5'];
+var models = __LIBS__['d8SCTWIN_Y_I3FQZ'];
 
 var Seat = exports.Seat = Backbone.Model.extend({
   defaults: {
@@ -861,22 +943,24 @@ var Seat = exports.Seat = Backbone.Model.extend({
 
     function onShapeChange() {
       var prev = self.previous('shape');
-      var events = self.get('events');
-      if (events) {
-        if (prev) {
-          for (var eventKind in events) {
-            if (events[eventKind])
-              prev.removeEvent(eventKind, events[eventKind]);
-          }
-          if (self.label) {
+      var new_ = self.get('shape');
+      if (prev != new_) {
+        var events = self.get('events');
+        if (events) {
+          if (prev) {
             for (var eventKind in events) {
               if (events[eventKind])
-                self.label.removeEvent(eventKind, events[eventKind]);
+                prev.removeEvent(eventKind, events[eventKind]);
+            }
+            if (self.label) {
+              for (var eventKind in events) {
+                if (events[eventKind])
+                  self.label.removeEvent(eventKind, events[eventKind]);
+              }
             }
           }
+          new_.addEvent(events);
         }
-        var new_ = self.get('shape');
-        new_.addEvent(events);
       }
       self._refreshStyle();
     }
@@ -923,7 +1007,7 @@ var Seat = exports.Seat = Backbone.Model.extend({
   _refreshStyle: function Seat__refreshStyle() {
     var model = this.get('model');
     var style = model && model.get('stock').get('style') || {};
-    var defaultStyle = CONF.DEFAULT.SEAT_STATUS_STYLE[model.get('status')]
+    var defaultStyle = CONF.DEFAULT.SEAT_STATUS_STYLE[model.get('status')];
     if (defaultStyle)
       style = util.mergeStyle(style, defaultStyle);
     var shape = this.get('shape');
@@ -986,13 +1070,13 @@ var Seat = exports.Seat = Backbone.Model.extend({
 /************** venue-editor.js **************/
 /* extern */ var jQuery, I18n;
 (function ($) {
-  var CONF = __LIBS__['O0D35V5LI4O_BIBX'];
-  var models = __LIBS__['dSYM4NONCKMR1FFP'];
-  var util = __LIBS__['bLFGB5HNCILY9QO1'];
-  var viewobjects = __LIBS__['KP5YNQS3MEKEJ1BU'];
-  var IdentifiableSet = __LIBS__['UEG3XSUYZAFV1FPZ'].IdentifiableSet;
+  var CONF = __LIBS__['LJOM7016UQWJBZH5'];
+  var models = __LIBS__['d8SCTWIN_Y_I3FQZ'];
+  var util = __LIBS__['DBX8WW4PM9M5X5GU'];
+  var viewobjects = __LIBS__['n77UAXU3LQL37Q3C'];
+  var IdentifiableSet = __LIBS__['wRQDBAHSUI44_XIU'].IdentifiableSet;
   if (I18n)
-    I18n.translations = __LIBS__['hLJ4S7EQZ1ZVZVHJ'];
+    I18n.translations = __LIBS__['L7P7RSAXSXITZJI4'];
 
   var parseCSSStyleText = (function () {
     var regexp_for_styles = /\s*(-?(?:[_a-z\u00a0-\u10ffff]|\\[^\n\r\f#])(?:[\-_A-Za-z\u00a0-\u10ffff]|\\[^\n\r\f])*)\s*:\s*((?:(?:(?:[^;\\ \n\r\t\f"']|\\[0-9A-Fa-f]{1,6}(?:\r\n|[ \n\r\t\f])?|\\[^\n\r\f0-9A-Fa-f])+|"(?:[^\n\r\f\\"]|\\(?:\n|\r\n|\r|\f)|\\[^\n\r\f])*"|'(?:[^\n\r\f\\']|\\(?:\n|\r\n|\r|\f)|\\[^\n\r\f])*')(?:\s+|(?=;|$)))+)(?:;|$)/g;
@@ -1301,21 +1385,8 @@ var Seat = exports.Seat = Backbone.Model.extend({
   };
 
   VenueEditor.prototype.refresh = function VenueEditor_refresh(data) {
-    if (this.drawable !== null)
-      this.drawable.dispose();
-    for (var key in data.metadata) {
-      for (var i in data.metadata[key]) {
-        for (var j in this.metadata[key]) {
-          if (this.metadata[key][j].id == data.metadata[key][i].id) {
-            this.metadata[key][j] = data.metadata[key][i];
-            break;
-          }
-        }
-      }
-    }
-    this.initDrawable();
-    this.initModel();
-    this.initSeats();
+    this.updateModel(data.metadata);
+    this.updateSeats(data.metadata);
     this.callbacks.load && this.callbacks.load(this);
   };
 
@@ -1440,7 +1511,7 @@ var Seat = exports.Seat = Backbone.Model.extend({
                 size: {
                   x: parseFloat(attrs.width),
                   y: parseFloat(attrs.height)
-                },
+                }
               });
               shape.style(CONF.DEFAULT.SHAPE_STYLE);
               break;
@@ -1490,19 +1561,45 @@ var Seat = exports.Seat = Backbone.Model.extend({
   };
 
   VenueEditor.prototype.initModel = function VenueEditor_initModel() {
-    this.venue = new models.Venue(this.metadata, {
-      callbacks: this.callbacks
-    });
+    this.venue = new models.Venue(this.metadata, {callbacks: this.callbacks});
+  };
+
+  VenueEditor.prototype.updateModel = function VenueEditor_updateModel(metadata) {
+    this.venue.load_data(metadata, {update: true});
   };
 
   VenueEditor.prototype.initSeats = function VenueEditor_initSeats() {
+    this.setSeats();
+  };
+
+  VenueEditor.prototype.updateSeats = function VenueEditor_updateSeats(metadata) {
+    this.setSeats(metadata);
+  };
+
+  VenueEditor.prototype.setSeats = function VenueEditor_setSeats(metadata) {
     var self = this;
-    var seats = {};
-    for (var id in this.shapes) {
+    var seats;
+    var target_seats;
+    if (metadata) {
+      seats = this.seats;
+      target_seats = metadata.seats;
+    } else {
+      seats = {};
+      target_seats = this.shapes;
+    }
+    for (var id in target_seats) {
       var shape = this.shapes[id];
       var seat = this.venue.seats.get(id);
       if (!seat)
         continue;
+
+      var seat_vo = seats[id];
+      if (seat_vo) {
+        seat_vo.set('model', seat);
+        seat_vo.trigger('change:shape');
+        continue;
+      }
+
       seats[id] = (function (id) {
         seat.on('change:selected', function () {
           var value = this.get('selected');

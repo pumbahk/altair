@@ -52,22 +52,24 @@ var Seat = exports.Seat = Backbone.Model.extend({
 
     function onShapeChange() {
       var prev = self.previous('shape');
-      var events = self.get('events');
-      if (events) {
-        if (prev) {
-          for (var eventKind in events) {
-            if (events[eventKind])
-              prev.removeEvent(eventKind, events[eventKind]);
-          }
-          if (self.label) {
+      var new_ = self.get('shape');
+      if (prev != new_) {
+        var events = self.get('events');
+        if (events) {
+          if (prev) {
             for (var eventKind in events) {
               if (events[eventKind])
-                self.label.removeEvent(eventKind, events[eventKind]);
+                prev.removeEvent(eventKind, events[eventKind]);
+            }
+            if (self.label) {
+              for (var eventKind in events) {
+                if (events[eventKind])
+                  self.label.removeEvent(eventKind, events[eventKind]);
+              }
             }
           }
+          new_.addEvent(events);
         }
-        var new_ = self.get('shape');
-        new_.addEvent(events);
       }
       self._refreshStyle();
     }
@@ -114,7 +116,7 @@ var Seat = exports.Seat = Backbone.Model.extend({
   _refreshStyle: function Seat__refreshStyle() {
     var model = this.get('model');
     var style = model && model.get('stock').get('style') || {};
-    var defaultStyle = CONF.DEFAULT.SEAT_STATUS_STYLE[model.get('status')]
+    var defaultStyle = CONF.DEFAULT.SEAT_STATUS_STYLE[model.get('status')];
     if (defaultStyle)
       style = util.mergeStyle(style, defaultStyle);
     var shape = this.get('shape');
