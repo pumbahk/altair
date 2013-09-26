@@ -71,6 +71,7 @@ class PaymentDeliveryMethodPairs(BaseView):
                 'payment_methods':PaymentMethod.filter_by(organization_id=self.context.user.organization_id).all(),
                 'delivery_methods':DeliveryMethod.filter_by(organization_id=self.context.user.organization_id).all(),
                 'system_fee': system_fee,
+                'system_fee_type': system_fee_type,                
             }
 
     @view_config(route_name='payment_delivery_method_pairs.edit', request_method='GET', renderer='altair.app.ticketing:templates/payment_delivery_method_pairs/edit.html')
