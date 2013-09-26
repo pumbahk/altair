@@ -228,14 +228,40 @@ public class AppAppletService implements StandardAppService {
 		executeSynchronously(new Runnable() {
 			public void run() {
 				impl.loadDocument(uri);
+				final Runnable wrapper = new Runnable() {
+					public synchronized void run() {
+						notifyAll();
+					}
+				};
+				impl.invokeWhenDocumentReady(wrapper);
+				synchronized (wrapper) {
+					try {
+						wrapper.wait();
+					} catch (InterruptedException e) {
+						displayError(e);
+					}
+				}
 			}
-		});
+		});			
 	}
 	
 	public void loadDocument(final URLConnection conn, final RequestBodySender sender) {
 		executeSynchronously(new Runnable() {
 			public void run() {
 				impl.loadDocument(conn, sender);
+				final Runnable wrapper = new Runnable() {
+					public synchronized void run() {
+						notifyAll();
+					}
+				};
+				impl.invokeWhenDocumentReady(wrapper);
+				synchronized (wrapper) {
+					try {
+						wrapper.wait();
+					} catch (InterruptedException e) {
+						displayError(e);
+					}
+				}
 			}
 		});
 	}

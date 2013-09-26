@@ -1,8 +1,6 @@
 package jp.ticketstar.ticketing.printing.gui;
 
 import java.io.IOException;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
 import java.net.URL;
 import java.net.URLConnection;
 import java.awt.BorderLayout;
@@ -26,6 +24,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.ThreadFactory;
+import java.util.logging.Logger;
 
 import javax.print.PrintService;
 import javax.swing.ImageIcon;
@@ -56,7 +55,6 @@ import jp.ticketstar.ticketing.printing.OurPageFormat;
 import jp.ticketstar.ticketing.printing.Page;
 import jp.ticketstar.ticketing.printing.PageSetModel;
 import jp.ticketstar.ticketing.printing.StandardAppService;
-import jp.ticketstar.ticketing.RequestBodySender;
 import jp.ticketstar.ticketing.printing.TicketFormat;
 import jp.ticketstar.ticketing.URLConnectionFactory;
 import jp.ticketstar.ticketing.printing.gui.liveconnect.JSObjectPropertyChangeListenerProxy;
@@ -67,7 +65,6 @@ import netscape.javascript.JSObject;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
-import com.google.gson.stream.JsonWriter;
 
 import javax.swing.JSeparator;
 import javax.swing.SwingConstants;
@@ -206,12 +203,13 @@ public class AppApplet extends JApplet implements IAppWindow, URLConnectionFacto
 	private PropertyChangeListener pageFormatChangeListener = new PropertyChangeListener() {
 		public void propertyChange(PropertyChangeEvent evt) {
 			if (evt.getNewValue() != null && !model.getPrintingStatus()) {
-				doLoadTicketData();
 				final OurPageFormat pageFormat = (OurPageFormat)evt.getNewValue();
-				for (final PrintService printService: model.getPrintServices()) {
-					if (printService.getName().equals(pageFormat.getPreferredPrinterName())) {
-						model.setPrintService(printService);
-						break;
+				if (!config.embedded) {
+					for (final PrintService printService: model.getPrintServices()) {
+						if (printService.getName().equals(pageFormat.getPreferredPrinterName())) {
+							model.setPrintService(printService);
+							break;
+						}
 					}
 				}
 				if (comboBoxPageFormat != null)
@@ -235,7 +233,6 @@ public class AppApplet extends JApplet implements IAppWindow, URLConnectionFacto
 	private PropertyChangeListener ticketFormatChangeListener = new PropertyChangeListener() {
 		public void propertyChange(PropertyChangeEvent evt) {
 			if (evt.getNewValue() != null && !model.getPrintingStatus()) {
-				doLoadTicketData();
 				if (comboBoxTicketFormat != null) {
 					final TicketFormat ticketFormat = (TicketFormat)evt.getNewValue();
 					comboBoxTicketFormat.setSelectedItem(ticketFormat);
@@ -256,16 +253,10 @@ public class AppApplet extends JApplet implements IAppWindow, URLConnectionFacto
 			}
 		}
 	};
-	private PropertyChangeListener orderIdChangeListener = new PropertyChangeListener() {
-		public void propertyChange(PropertyChangeEvent evt) {
-			if (evt.getNewValue() != null && !model.getPrintingStatus()) {
-				doLoadTicketData();
-			}
-		}
-	};
 	private PropertyChangeListener printingStatusChangeListener = new PropertyChangeListener(){
-		public void propertyChange(PropertyChangeEvent evt){
-			btnPrint.setEnabled(!model.getPrintingStatus());
+		public void propertyChange(PropertyChangeEvent evt) {
+			if (btnPrint != null)
+				btnPrint.setEnabled(!model.getPrintingStatus());
 		}
 	};
 	private PropertyChangeListener previewEnableChangeListener = new PropertyChangeListener(){
@@ -274,7 +265,7 @@ public class AppApplet extends JApplet implements IAppWindow, URLConnectionFacto
 			Boolean willBeReDraw = true;
 			if (previewEnable != null) {
 				if(previewEnable && model.getPageSetModel().getPages().getSize() > 25){ // xxx: magic number.
-					System.out.println("too many pages.");
+					appServiceImpl.displayError("発券枚数が多すぎるため、プレビューを有効にできません");
 					willBeReDraw = false;
 					model.setPreviewEnable(false);
 				}
@@ -294,7 +285,6 @@ public class AppApplet extends JApplet implements IAppWindow, URLConnectionFacto
 	public void unbind() {
 		if (model == null)
 			return;
-
 		model.removePropertyChangeListener(pageSetModelChangeListener);
 		model.removePropertyChangeListener(printServicesChangeListener);
 		model.removePropertyChangeListener(printServiceChangeListener);
@@ -302,7 +292,6 @@ public class AppApplet extends JApplet implements IAppWindow, URLConnectionFacto
 		model.removePropertyChangeListener(pageFormatChangeListener);
 		model.removePropertyChangeListener(ticketFormatsChangeListener);
 		model.removePropertyChangeListener(ticketFormatChangeListener);
-		model.removePropertyChangeListener(orderIdChangeListener);
 		model.removePropertyChangeListener(printingStatusChangeListener);
 		model.removePropertyChangeListener(previewEnableChangeListener);
 	}
@@ -316,7 +305,6 @@ public class AppApplet extends JApplet implements IAppWindow, URLConnectionFacto
 		model.addPropertyChangeListener("pageFormat", pageFormatChangeListener);
 		model.addPropertyChangeListener("ticketFormats", ticketFormatsChangeListener);
 		model.addPropertyChangeListener("ticketFormat", ticketFormatChangeListener);
-		model.addPropertyChangeListener("orderId", orderIdChangeListener);
 		model.addPropertyChangeListener("printingStatus", printingStatusChangeListener);
 		model.addPropertyChangeListener("previewEnable", previewEnableChangeListener);
 		if (!config.embedded)
@@ -378,36 +366,6 @@ public class AppApplet extends JApplet implements IAppWindow, URLConnectionFacto
 		}
 	}
 
-	protected void doLoadTicketData() {
-		try {
-			final URLConnection conn = newURLConnection(config.peekUrl);
-			appServiceImpl.loadDocument(conn, new RequestBodySender() {
-				public String getRequestMethod() {
-					return "POST";
-				}
-				public void send(OutputStream out) throws IOException {
-					final JsonWriter writer = new JsonWriter(new OutputStreamWriter(out, "utf-8"));
-					writer.beginObject();
-					writer.name("ticket_format_id");
-					writer.value(model.getTicketFormat().getId());
-					writer.name("page_format_id");
-					writer.value(model.getPageFormat().getId());
-					final Integer orderId = model.getOrderId();
-					if (orderId != null) {
-						writer.name("order_id");
-						writer.value(orderId);
-					}
-					writer.endObject();
-					writer.flush();
-					writer.close();
-				}
-			});
-			model.setPrintingStatus(Boolean.valueOf(false));
-		} catch (IOException e) {
-			throw new ApplicationException(e);
-		}
-	}
-
 	public void init() {
 		config = getConfiguration();
 		model = new AppAppletModel();
@@ -419,9 +377,11 @@ public class AppApplet extends JApplet implements IAppWindow, URLConnectionFacto
 			guidesOverlay = new GuidesOverlay(model);
 			boundingBoxOverlay = new BoundingBoxOverlay(model);
 		}
-		
-		appServiceImpl.setAppWindow(this);
+
 		populateModel();
+		appServiceImpl.setAppWindow(this);
+		if (!config.embedded)
+			appServiceImpl.doLoadTicketData();		
 
 		if (config.callback != null) {
 			try {
@@ -490,7 +450,6 @@ public class AppApplet extends JApplet implements IAppWindow, URLConnectionFacto
 
 		btnPrint.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				model.setPrintingStatus(Boolean.valueOf(true));
 				appServiceImpl.printAll();
 			}
 		});
