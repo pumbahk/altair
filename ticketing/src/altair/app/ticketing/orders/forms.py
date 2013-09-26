@@ -473,6 +473,13 @@ class OrderReserveForm(Form):
     def _get_translations(self):
         return Translations()
 
+    def get_defalut_sales_counter_payment_method(self):
+        for (pm_id, label) in self.sales_counter_payment_method_id.choices:
+            pm = PaymentMethod.query.filter_by(id=pm_id).first()
+            if pm and pm.payment_plugin_id == plugins.RESERVE_NUMBER_PAYMENT_PLUGIN_ID:
+                return pm_id
+        return 0
+
     performance_id = HiddenField(
         validators=[Required()],
     )
