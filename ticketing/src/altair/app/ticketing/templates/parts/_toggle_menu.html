@@ -15,15 +15,10 @@
     });
   });
 </script>
-
-<div id="menu-toggle" class="label" style="width: 80px; margin-bottom: 5px; text-align: center;">
-  メニュー
-</div>
-
+<span id="menu-toggle" class="label">メニュー</span>
 <%def name="menu_style()">
 <% return 'display: none;' if request.cookies.get('menu') else '' %>
 </%def>
-
 <%def name="container_class()">
 <% return 'span10' if not request.cookies.get('menu') else '' %>
 </%def>

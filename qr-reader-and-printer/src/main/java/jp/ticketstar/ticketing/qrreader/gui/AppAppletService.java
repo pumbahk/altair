@@ -4,7 +4,6 @@ import java.util.Map;
 
 import jp.ticketstar.ticketing.qrreader.AppModel;
 import jp.ticketstar.ticketing.qrreader.AppService;
-import jp.ticketstar.ticketing.qrreader.CollectionUtils;
 import jp.ticketstar.ticketing.qrreader.Ticket;
 import jp.ticketstar.ticketing.qrreader.TicketImpl;
 import jp.ticketstar.ticketing.qrreader.gui.liveconnect.LiveConnectUtils;

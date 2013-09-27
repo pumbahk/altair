@@ -8,11 +8,13 @@ import java.awt.print.PrinterJob;
 import java.beans.PropertyChangeListener;
 import java.net.URI;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.LinkedList;
+import java.util.List;
+import java.util.logging.Logger;
 
 import javax.print.PrintService;
 
+import jp.ticketstar.ticketing.LoggingUtils;
 import jp.ticketstar.ticketing.printing.gui.IAppWindow;
 import jp.ticketstar.ticketing.svg.ExtendedSVG12BridgeContext;
 import jp.ticketstar.ticketing.svg.ExtendedSVG12OMDocument;
@@ -31,6 +33,7 @@ import org.w3c.dom.svg.SVGAElement;
 import org.w3c.dom.svg.SVGDocument;
 
 public abstract class BasicAppService extends SVGUserAgentGUIAdapter implements MinimumAppService, UserAgent {
+	private static final Logger logger = Logger.getLogger(BasicAppService.class.getName());
 	protected AppModel model;
 	protected volatile SVGDocumentLoader documentLoader;
 	protected IAppWindow appWindow;
@@ -39,50 +42,47 @@ public abstract class BasicAppService extends SVGUserAgentGUIAdapter implements 
 	public class LoaderListener implements SVGDocumentLoaderListener {
 		ExtendedSVG12BridgeContext bridgeContext;
 		
-		public void documentLoadingCancelled(SVGDocumentLoaderEvent arg0) {
+		private void next() {
+			appWindow.setInteractionEnabled(true);
 			BasicAppService.this.documentLoader = null;
-			displayError("Load cancelled");
+			BasicAppService.this.doPendingTasks();
+		}
+	
+		public void documentLoadingCancelled(SVGDocumentLoaderEvent arg0) {
+			logger.info("load canceled");
+			next();
+			displayError("Load canceled");
 		}
 
 		public void documentLoadingCompleted(SVGDocumentLoaderEvent arg0) {
-			BasicAppService.this.documentLoader = null;
 			// TODO: do it async!
 			try {
 				bridgeContext.setInteractive(false);
 				bridgeContext.setDynamic(false);
 				BasicAppService.this.model.setPageSetModel(new PageSetModel(bridgeContext, (ExtendedSVG12OMDocument)arg0.getSVGDocument()));
-				appWindow.setInteractionEnabled(true);
-				synchronized (BasicAppService.this.pendingTasks) {
-					for (final Runnable task: BasicAppService.this.pendingTasks) {
-						task.run();
-					}
-					BasicAppService.this.pendingTasks.clear();
-				}
 			} catch (Exception e) {
 				e.printStackTrace();
 				displayError("Failed to load document\nReason: " + e);
+			} finally {
+				logger.info("Load completed");
+				next();
 			}
 		}
 
 		public void documentLoadingFailed(SVGDocumentLoaderEvent arg0) {
-			BasicAppService.this.documentLoader = null;
-			((SVGDocumentLoader)arg0.getSource()).getException().printStackTrace();
+			logger.severe(LoggingUtils.formatException(((SVGDocumentLoader)arg0.getSource()).getException()));
+			next();
 			displayError("Failed to load document\nReason: " + ((SVGDocumentLoader)arg0.getSource()).getException());
 		}
 
 		public void documentLoadingStarted(SVGDocumentLoaderEvent arg0) {
-			System.out.println("load started!!");
+			logger.info("load started");
 			appWindow.setInteractionEnabled(false);
 		}
 
 		public LoaderListener(ExtendedSVG12BridgeContext bridgeContext) {
 			this.bridgeContext = bridgeContext;
 		}
-	}
-	
-	public BasicAppService(AppModel model) {
-		super(null);
-		this.model = model;
 	}
 
 	public void setAppWindow(IAppWindow appWindow) {
@@ -214,11 +214,36 @@ public abstract class BasicAppService extends SVGUserAgentGUIAdapter implements 
 		model.addPropertyChangeListener("pageSetModel", listener);
 	}
 
-	public synchronized void invokeWhenReady(Runnable runnable) {
-		if (documentLoader == null) {
-			runnable.run();
-		} else {
+	protected void doPendingTasks() {
+		logger.entering(getClass().getName(), "doPendingTasks()");
+		ArrayList<Runnable> tasksToBeDone = null;
+		synchronized (pendingTasks) {
+			tasksToBeDone = new ArrayList<Runnable>(pendingTasks);
+			pendingTasks.clear();
+		}	
+		
+		for (final Runnable task: tasksToBeDone) {
+			try {
+				task.run();
+			} catch (Exception e) {
+				logger.severe(LoggingUtils.formatException(e));
+			}
+		}
+		logger.exiting(getClass().getName(), "doPendingTasks()");
+	}
+	
+	public void invokeWhenDocumentReady(Runnable runnable) {
+		logger.entering(getClass().getName(), "invokeWhenDocumentReady()");
+		synchronized (pendingTasks) {
 			pendingTasks.add(runnable);
 		}
+		if (documentLoader == null)
+			doPendingTasks();
+		logger.exiting(getClass().getName(), "invokeWhenDocumentReady()");
+	}
+
+	public BasicAppService(AppModel model) {
+		super(null);
+		this.model = model;
 	}
 }
