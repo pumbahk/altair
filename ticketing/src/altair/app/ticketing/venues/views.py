@@ -13,7 +13,7 @@ from pyramid.httpexceptions import HTTPFound, HTTPNotFound
 from pyramid.response import Response
 from pyramid.url import route_path
 from sqlalchemy import and_, distinct
-from sqlalchemy.sql import exists, join, func, or_
+from sqlalchemy.sql import exists, join, func, or_, not_
 from sqlalchemy.sql.expression import asc, desc
 from sqlalchemy.orm import joinedload, noload, aliased, undefer
 
@@ -57,6 +57,7 @@ def get_seats(request):
     filter_params = set() if _filter_params is None else set(_filter_params.split(u'|'))
     sales_segment_id = request.params.get(u'sales_segment_id', None)
     loaded_at = request.params.get(u'loaded_at', None)
+    sale_only = (u'sale_only' in filter_params)
     if loaded_at:
         loaded_at = datetime.fromtimestamp(float(loaded_at))
 
@@ -72,13 +73,15 @@ def get_seats(request):
         seats_data = {}
         query = DBSession.query(Seat).join(SeatStatus).filter(Seat.venue==venue)
         query = query.with_entities(Seat.l0_id, Seat.name, Seat.seat_no, Seat.stock_id, SeatStatus.status)
-        if sales_segment_id:
-            query = query.join(ProductItem, and_(ProductItem.performance_id==venue.performance_id, ProductItem.stock_id==Seat.stock_id))
-            query = query.join(Product).join(SalesSegment).filter(SalesSegment.id==sales_segment_id).distinct()
-        elif u'sale_only' in filter_params:
-            query = query.filter(exists().where(and_(ProductItem.performance_id==venue.performance_id, ProductItem.stock_id==Seat.stock_id)))
+        # 差分取得のときは販売可能かどうかに関わらず取得する
         if loaded_at:
             query = query.filter(or_(Seat.updated_at>loaded_at, SeatStatus.updated_at>loaded_at))
+        elif sale_only:
+            if sales_segment_id:
+                query = query.join(ProductItem, and_(ProductItem.performance_id==venue.performance_id, ProductItem.stock_id==Seat.stock_id))
+                query = query.join(Product).join(SalesSegment).filter(SalesSegment.id==sales_segment_id).distinct()
+            else:
+                query = query.filter(exists().where(and_(ProductItem.performance_id==venue.performance_id, ProductItem.stock_id==Seat.stock_id)))
         for l0_id, name, seat_no, stock_id, status in query:
             seats_data[l0_id] = {
                 'id': l0_id,
@@ -90,24 +93,31 @@ def get_seats(request):
         retval[u'seats'] = seats_data
 
     if u'stocks' in necessary_params:
-        query = DBSession.query(Stock).options(joinedload('stock_status')).filter_by(performance=venue.performance)
-        if sales_segment_id:
-            query = query.join(ProductItem, and_(ProductItem.performance_id==venue.performance_id, ProductItem.stock_id==Stock.id))
-            query = query.join(Product).join(SalesSegment).filter(SalesSegment.id==sales_segment_id).distinct()
-        elif u'sale_only' in filter_params:
-            query = query.filter(exists().where(and_(ProductItem.performance_id==venue.performance_id, ProductItem.stock_id==Seat.stock_id)))
+        stocks_data = []
+        query = DBSession.query(Stock, func.count(ProductItem.id)).options(joinedload('stock_status')).filter_by(performance=venue.performance)
+        query = query.outerjoin(ProductItem, and_(ProductItem.performance_id==venue.performance_id, ProductItem.stock_id==Stock.id))
+        # 差分取得のときは販売可能かどうかに関わらず取得する
         if loaded_at:
             query = query.join(StockStatus).filter(StockStatus.updated_at>loaded_at)
-        retval[u'stocks'] = [
-            dict(
+        elif sale_only:
+            if sales_segment_id:
+                query = query.join(Product).join(SalesSegment).filter(SalesSegment.id==sales_segment_id)
+            query = query.having(func.count(ProductItem.id)>0)
+        query = query.group_by(Stock.id)
+        for (stock, count) in query:
+            if sale_only:
+                assignable = bool(count > 0)
+            else:
+                assignable = bool(not stock.locked_at)
+            stocks_data.append(dict(
                 id=stock.id,
                 assigned=stock.quantity,
                 stock_type_id=stock.stock_type_id,
                 stock_holder_id=stock.stock_holder_id,
                 available=stock.stock_status.quantity,
-                assignable=False if (stock.locked_at and u'sale_only' not in filter_params) else True)\
-            for stock in query
-            ]
+                assignable=assignable
+            ))
+        retval[u'stocks'] = stocks_data
 
     if u'stock_types' in necessary_params:
         query = DBSession.query(StockType).filter_by(event=venue.performance.event).order_by(StockType.display_order)
@@ -128,7 +138,7 @@ def get_seats(request):
             ]
 
     if u'stock_holders' in necessary_params:
-        query = DBSession.query(StockHolder).filter_by(event=venue.performance.event)
+        query = DBSession.query(StockHolder).filter_by(event=venue.performance.event).options(undefer(StockHolder.style))
         if sales_segment_id:
             query = query.join(Stock, and_(Stock.performance_id==venue.performance_id, Stock.stock_holder_id==StockHolder.id))
             query = query.join(ProductItem, and_(ProductItem.performance_id==venue.performance_id, ProductItem.stock_id==Stock.id))

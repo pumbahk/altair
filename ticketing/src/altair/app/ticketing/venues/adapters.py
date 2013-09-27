@@ -2,6 +2,9 @@ import re
 import sys
 import logging
 import json
+import time
+from datetime import date, timedelta
+
 from zope.interface import implementer
 from zope.deprecation import deprecate
 from altair.pyramid_boto.s3.assets import IS3KeyProvider
@@ -118,7 +121,9 @@ class VenueSiteDrawingProviderAdapter(object):
                     headers = {}
                     if re.match('^.+\.(svgz|gz)$', drawing.path):
                         headers['response-content-encoding'] = 'gzip'
-                    retval = key.generate_url(expires_in=172800, response_headers=headers)
+                    expire_date = date.today() + timedelta(days=2)
+                    expire_epoch = time.mktime(expire_date.timetuple())
+                    retval = key.generate_url(expires_in=expire_epoch, expires_in_absolute=True, response_headers=headers)
                 else:
                     retval = self.request.static_url(drawing.path)
             self._direct_drawing_url = retval

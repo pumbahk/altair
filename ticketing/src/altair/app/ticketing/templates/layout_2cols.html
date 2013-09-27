@@ -1,26 +1,25 @@
 <%inherit file="/layout.html" />
 <%namespace file="/parts/_toggle_menu.html" name="tm" />
 
-<%include file="/parts/_toggle_menu.html" />
-
-<div class="row-fluid">
+<div class="row-fluid" style="position:relative">
   <div id="left-menu" class="span2" style="${tm.menu_style()}">
   <%include file="/parts/_menu.html" />
   </div>
   <div id="main-container" class="${tm.container_class()}">
     <%block name="breadcrumbs" />
     <%block name="messages">
+      % if request.session.peek_flash():
       <div class="content">
-        % if request.session.peek_flash():
-          <div class="alert ${type}">
-            <a class="close" data-dismiss="alert">&times;</a>
-            % for message in request.session.pop_flash():
-              <h4 class="alert-heading">${message}</h4>
-            % endfor
-          </div>
-        % endif
+        <div class="alert ${type}">
+          <a class="close" data-dismiss="alert">&times;</a>
+          % for message in request.session.pop_flash():
+            <h4 class="alert-heading">${message}</h4>
+          % endfor
+        </div>
       </div>
+      % endif
     </%block>
     ${next.body()}
+    <div style="position:absolute;left:0px;top:-12px"><%include file="/parts/_toggle_menu.html" /></div>
   </div>
 </div>

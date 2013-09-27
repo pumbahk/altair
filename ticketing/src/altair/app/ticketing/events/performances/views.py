@@ -89,7 +89,7 @@ class PerformanceShowView(BaseView):
             form_order=OrderForm(event_id=self.performance.event_id)
             )
 
-    def _tab_sales_segment(self):
+    def _tab_summary(self):
         return dict(
             sales_segments=self.performance.sales_segments
             )
@@ -119,7 +119,7 @@ class PerformanceShowView(BaseView):
     @view_config(route_name='performances.show', permission='event_viewer')
     @view_config(route_name='performances.show_tab', permission='event_viewer')
     def show(self):
-        tab = self.request.matchdict.get('tab', 'product')
+        tab = self.request.matchdict.get('tab', 'summary')
         if not isinstance(has_permission('event_editor', self.request.context, self.request), ACLAllowed):
             if tab not in ['order', 'reservation']:
                 tab = 'reservation'
