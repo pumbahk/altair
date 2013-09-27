@@ -79,20 +79,17 @@ span.editable {
   $(".collapse").collapse();
 </script>
 
-<div class="tabbable" id="seat-allocation-tab">
-  <div class="tab-content" id="seat-allocation-tab-content">
-    <div class="tab-pane active" id="map">
-      <div class="container-fluid">
-        <div class="row-fluid">
-          <%vv:venueeditor data_source="${data_source}">
-            <%def name="toolbar_extra()">
-              <div style="float:right">
-                <input type="button" class="btn venue-editor-main-side-toggle" value="配席テーブル表示" />
-                <a name="save" href="javascript:saveStocks();" class="btn btn-primary">保存する</a>
-              </div>
-            </%def>
-            <%def name="post()">
+<%include file="./_detail_table.html" args="expanded=false" />
 
+<div class="row-fluid">
+<%vv:venueeditor data_source="${data_source}">
+  <%def name="toolbar_extra()">
+    <div style="float:right">
+      <input type="button" class="btn venue-editor-main-side-toggle" value="配席テーブル表示" />
+      <a name="save" href="javascript:saveStocks();" class="btn btn-primary">保存する</a>
+    </div>
+  </%def>
+  <%def name="post()">
 <script type="text/javascript">
 
 function deepClone(o) {
@@ -554,12 +551,8 @@ callbacks.select = function (viewer, selection) {
   $('span.selection-count').text(selection_set.length);
 };
 </script>
-            </%def>
-          </%vv:venueeditor>
-        </div>
-      </div>
-    </div>
-  </div>
+  </%def>
+</%vv:venueeditor>
 </div>
 
 <div>

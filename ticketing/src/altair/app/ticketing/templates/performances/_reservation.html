@@ -57,9 +57,10 @@ callback_name = '%' + ''.join(random.choice("abcdefghjijklmnopqrstuvwxyz") for _
 }
 </style>
 
-<div class="container-fluid">
+<%include file="./_detail_table.html" args="expanded=false" />
+<div>
   <div class="pull-left">
-    <form class="form-horizontal" id="sales_summary-form">
+    <form class="form-horizontal" id="sales_summary-form" style="margin:0">
       <input type="hidden" name="performance_id" value="${performance.id}" />
       <label style="display:inline-block">
         販売区分
@@ -89,19 +90,15 @@ callback_name = '%' + ''.join(random.choice("abcdefghjijklmnopqrstuvwxyz") for _
 </div>
 <div style="clear: both;"></div>
 
-<div class="tabbable tabs-below tabs-above" id="seat-allocation-tab">
-  <div class="tab-content"  id="seat-allocation-tab-content">
-    <div class="tab-pane active" id="map">
-      <div class="container-fluid">
-        <div class="row-fluid">
-          <%vv:venueeditor data_source="${data_source}">
-            <%def name="toolbar_extra()">
-            <div style="float:right">
-              <button class="btn btn-primary action-openOrderForm">座席指定</button>
-            </div>
-            </%def>
+<div class="row-fluid">
+<%vv:venueeditor data_source="${data_source}">
+  <%def name="toolbar_extra()">
+  <div style="float:right">
+    <button class="btn btn-primary action-openOrderForm">座席指定</button>
+  </div>
+  </%def>
 
-            <%def name="post()">
+  <%def name="post()">
 <script type="text/javascript">
   var callbackName = ${json.dumps(callback_name)|n};
   var appletCodeBase = ${json.dumps(request.application_url)|n};
@@ -544,12 +541,8 @@ callback_name = '%' + ''.join(random.choice("abcdefghjijklmnopqrstuvwxyz") for _
     getSalesSummary();
   });
 </script>
-            </%def>
-          </%vv:venueeditor>
-        </div>
-      </div>
-    </div>
-  </div>
+  </%def>
+</%vv:venueeditor>
 </div>
 
 <div>

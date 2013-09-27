@@ -1,6 +1,7 @@
 <%page args="performance, form, order_import_tasks" />
 <%namespace file="/common/helpers.html" name="ch" />
 
+<%include file="../_detail_table.html" args="expanded=False" />
 % if order_import_tasks:
 <div>
   <h4>予約インポート</h4>
