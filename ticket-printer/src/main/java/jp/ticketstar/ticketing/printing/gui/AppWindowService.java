@@ -39,6 +39,8 @@ public class AppWindowService extends BasicAppService {
 	}
 
 	protected TicketPrintable createTicketPrintable(PrinterJob job) {
+		if (model.getPageSetModel() == null)
+			throw new IllegalStateException("pageSetModel is not loaded");
 		return new TicketPrintable(
 			new ArrayList<Page>(model.getPageSetModel().getPages()), job,
 			new AffineTransform(72. / 90, 0, 0, 72. / 90, 0, 0)
@@ -46,7 +48,7 @@ public class AppWindowService extends BasicAppService {
 	}
 
 	public void printAll() {
-		invokeWhenReady(new Runnable() {
+		invokeWhenDocumentReady(new Runnable() {
 			public void run() {
 				AccessController.doPrivileged(new PrivilegedAction<Object>() {
 					public Object run() {

@@ -1,63 +1,90 @@
 <%page args="performance" />
 <%namespace file="./_venue_view.html" name="vv" />
 <%namespace file="/common/helpers.html" name="ch" />
-
+<%
+import json, random
+endpoints_json = json.dumps(endpoints, ensure_ascii=False)
+callback_name = '%' + ''.join(random.choice("abcdefghjijklmnopqrstuvwxyz") for _ in range(0, 10))
+%>
 <style>
-  .swatch {
-    display: inline-block;
-    width: 20px;
-    height: 20px;
-    margin: -6px 2px;
-    -webkit-border-radius: 3px;
-    -moz-border-radius: 3px;
-    border-radius: 3px;
-  }
+.swatch {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  margin: -6px 2px;
+  -webkit-border-radius: 3px;
+  -moz-border-radius: 3px;
+  border-radius: 3px;
+}
 
-  #venue-editor .venue-editor-main .venue-editor-main-root {
-    width: 100%;
-  }
+#venue-editor .venue-editor-main .venue-editor-main-root {
+  width: 100%;
+}
 
-  #venue-editor .venue-editor-main .venue-editor-main-side {
-    width: 0%;
-  }
+#venue-editor .venue-editor-main .venue-editor-main-side {
+  width: 0%;
+}
 
-  .modal-backdrop.fade.in {
-    opacity: 0.1;
-  }
+.modal-backdrop.fade.in {
+  opacity: 0.1;
+}
+#screen {
+  position: fixed;
+  left: 0px;
+  top: 0px;
+  width: 100%;
+  height: 100%;
+  margin: 0 0;
+  padding: 0 0;
+  z-index: 10000;
+  background-color: #000;
+  filter: alpha(opacity=50);
+  opacity: .5;
+}
+
+#screen .splash {
+  position: fixed;
+  width: 30%;
+  height: 100px;
+  left: 50%;
+  top: 50%;
+  margin: -50px 0 0 -15%;
+  background-color: #eee;
+  color: #000;
+  font-size: 20px;
+  text-align: center;
+  line-height: 100px;
+}
 </style>
 
-
-<div class="container-fluid pull-left">
-  <form class="form-horizontal" id="sales_summary-form">
-    <input type="hidden" name="performance_id" value="${performance.id}" />
-    <div class="control-group">
-      <label class="control-label" style="width: 60px;">販売区分</label>
-      <div class="controls" style="margin-left: 80px;">
-        <select name="sales_segment_id">
+<div class="container-fluid">
+  <div class="pull-left">
+    <form class="form-horizontal" id="sales_summary-form">
+      <input type="hidden" name="performance_id" value="${performance.id}" />
+      <label style="display:inline-block">
+        販売区分
+        <select name="sales_segment_id" style="width:10em">
           <option value=""></option>
           <% from altair.app.ticketing.core.helpers import build_sales_segment_list_for_inner_sales %>
           % for sales_segment in build_sales_segment_list_for_inner_sales(performance.sales_segments):
           <option value="${sales_segment.id}" ${'selected=""' if sales_segment.id == int(sales_segment_id or 0) else ''|n}>${sales_segment.name}</option>
           % endfor
         </select>
-      </div>
-    </div>
-  </form>
-</div>
-
-<div class="container-fluid pull-right">
-  <div class="row-fluid">
+      </label>
+    </form>
+  </div>
+  <div class="pull-right">
     <input id="sales-counter-button" type="button" class="btn btn-warning" style="vertical-align: baseline; font-size: 100%;" value="当日窓口発券モードにする" />
-    <script type="text/javascript">
-      $('#sales-counter-button').click(function(){
-        loadApplet();
-        $(this).css('display', 'none');
-        $('#sales-counter-label').css('display', 'inline');
-      });
-    </script>
-
-    <span id="sales-counter-label" class="label label-inverse" style="vertical-align: baseline; font-size: 100%; display:none;">発券用プリンタ</span>
-    <%include file="_printer.html" />
+    <div id="sales-counter-toolbar" style="display:none">
+      <label style="display:inline-block">
+        様式
+        <select id="pageFormat" style="width:13em;vertical-align: baseline;"></select>
+      </label>
+      <label style="display:inline-block">
+        プリンタ
+        <select id="printService" style="width:13em;vertical-align: baseline;"></select>
+      </label>
+    </div>
   </div>
 </div>
 <div style="clear: both;"></div>
@@ -76,6 +103,13 @@
 
             <%def name="post()">
 <script type="text/javascript">
+  var callbackName = ${json.dumps(callback_name)|n};
+  var appletCodeBase = ${json.dumps(request.application_url)|n};
+  var appletArchive = ${json.dumps(request.static_url('altair.app.ticketing:static/printing-0.0.0-jar-with-dependencies.jar'))|n};
+  var appletEndpoints = ${json.dumps(endpoints_json)|n};
+  var cookie = ${json.dumps(request.headers.get('cookie'))|n};
+  var uiMode = 'normal';  // normal, salesCounter
+
   // todo rewrite: 
   var Pager = function Pager(el, current){
     this.$el = $(el);
@@ -200,13 +234,8 @@
       dataType: 'json',
       data: JSON.stringify(param),
       success: function(result) {
-        if (window.ticketPrinterService) {
-          printOrder(result.order_id); // _printer.html
-        }
-        window.open('/orders/show/' + result.order_id, '_blank');
         $('#modal-reserve').modal('hide');
-        venueEditorRoot.venueeditor('refresh');
-        getSalesSummary();
+        onReservationComplete(result);
       },
       error: function(xhr, text) {
         var responseText = JSON.parse(xhr.responseText);
@@ -257,6 +286,245 @@
     });
   }
 
+  function onReservationComplete(result) {
+    if (window.ticketPrinterService)
+      printOrder(result.order_id); // _printer.html
+    window.open('/orders/show/' + result.order_id, '_blank');
+    venueEditorRoot.venueeditor('refresh');
+    getSalesSummary();
+  }
+
+  function switchToSalesCounterMode() {
+    if (uiMode == 'salesCounter')
+      return;
+    uiMode = 'salesCounter';
+
+    loadApplet();
+    $('#sales-counter-button').css('display', 'none');
+    $('#sales-counter-toolbar').css('display', 'block');
+  }
+
+  window[callbackName] = function (applet) {
+    var service = applet.getService();
+    var createProxy = function () { return applet.createPropertyChangeListenerProxy.apply(applet, arguments); };
+    var $page = $('#page');
+    var $printService = $('#printService');
+    var $pageFormat = $('#pageFormat');
+    var $ticketFormat = $('#ticketFormat');
+    var pageFormatToPrintServiceMap = {};
+    function refreshPages() {
+      var pages = service.getPages();
+      $page.empty();
+      if (pages) {
+        for (var i = pages.iterator(); i.hasNext();) {
+          var page = i.next();
+          $page.append($('<option></option>').text(page.getName()));
+        }
+      }
+    }
+    function refreshPrintServices() {
+      var printServices = service.getPrintServices();
+      $printService.empty();
+      if (printServices) {
+        for (var i = printServices.iterator(); i.hasNext();) {
+          var printService = i.next();
+          var name = printService.getName();
+          $printService.append(
+            $('<option></option>')
+              .attr('value', name)
+              .text(name)
+          );
+        }
+      }
+    }
+    function refreshPageFormats() {
+      var pageFormats = service.getPageFormats();
+      $pageFormat.empty();
+      if (pageFormats) {
+        for (var i = pageFormats.iterator(); i.hasNext();) {
+          var pageFormat = i.next();
+          var id = pageFormat.getId();
+          var name = pageFormat.getName();
+          $pageFormat.append($('<option></option>').attr('value', id).text(name));
+          pageFormatToPrintServiceMap[id] = pageFormat.getPreferredPrinterName();
+        }
+      }
+    }
+    function refreshTicketFormats() {
+      var ticketFormats = service.getTicketFormats();
+      $ticketFormat.empty();
+      if (ticketFormats) {
+        for (var i = ticketFormats.iterator(); i.hasNext();) {
+          var ticketFormat = i.next();
+          $ticketFormat.append($('<option></option>').text(ticketFormat.getName()));
+        }
+      }
+    }
+
+    function getPageFormatById(id) {
+      var pageFormats = service.getPageFormats();
+      if (pageFormats) {
+        for (var i = pageFormats.iterator(); i.hasNext();) {
+          var pageFormat = i.next();
+          if (pageFormat.getId() == id) {
+            return pageFormat;
+          }
+        }
+      }
+      return null;
+    }
+
+    function getPrintServiceByName(name) {
+      var printServices = service.getPrintServices();
+      if (printServices) {
+        for (var i = printServices.iterator(); i.hasNext();) {
+          var printService = i.next();
+          if (printService.getName() == name)
+            return printService;
+        }
+      }
+      return null;
+    }
+
+    function onPageFormatChange() {
+      var id = $pageFormat.val();
+      $printService.val(pageFormatToPrintServiceMap[id]);
+    }
+
+    $pageFormat.change(onPageFormatChange);
+    service.addListenerForPages(createProxy(refreshPages));
+    refreshPages();
+    refreshPrintServices();
+    refreshPageFormats();
+    refreshTicketFormats();
+    onPageFormatChange();
+
+    function printOrder(orderId) {
+        service.filterByOrderId(orderId);
+        var currentPrintService = getPrintServiceByName($printService.val());
+        var currentPageFormat = getPageFormatById($pageFormat.val());
+        if (!currentPrintService) {
+            alert('no print service');
+        }
+        service.setPageFormat(getPageFormatById($pageFormat.val()));
+        service.setPrintService(currentPrintService);
+        service.printAll();
+    };
+
+    window.ticketPrinterService = service;
+    window.printOrder = printOrder;
+    $('#screen').hide();
+  };
+
+  function writeAppletTag(options) {
+    var buf = [];
+    var version = options.version.split('.');
+    var width = (0|options.width) || 100;
+    var height = (0|options.height) || 100;
+    var id = options.id;
+    var code = options.code;
+    var codebase = options.codebase;
+    var archive = options.archive;
+    var scriptable = options.scriptable || false;
+    var params = options.params;
+
+    function escapeHTMLSpecials(text) {
+      return ("" + text)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    function buildHTMLForIE() {
+      buf.push(
+        '<object',
+        ' classid="clsid:8AD9C840-044E-11D1-B3E9-00805F499D93"',
+        ' codebase="http://javadl-esd.sun.com/update/', version.slice(0, 3).join('.'), '/jinstall-6u35-windows-i586.cab#Version=', version.join(','), '"',
+        ' width="', width, '"',
+        ' height="', height, '"');
+      if (id)
+        buf.push(' id="', escapeHTMLSpecials(id), '"');
+      buf.push('>');
+      buf.push('<param name="type" value="application/x-java-applet;version=', version[0], '.', version[1], '" />');
+      buf.push('<param name="code" value="', escapeHTMLSpecials(code), '" />');
+      if (codebase)
+        buf.push('<param name="codebase" value="', escapeHTMLSpecials(codebase), '" />');
+      if (archive)
+        buf.push('<param name="archive" value="', escapeHTMLSpecials(archive), '" />');
+      buf.push('<param name="scriptable" value="', (scriptable ? 'true': 'false'), '" />');
+      for (var k in params)
+        buf.push('<param name="', escapeHTMLSpecials(k), '" value="', escapeHTMLSpecials(params[k]), '" />');
+      buf.push('</object>');
+    }
+
+    function buildHTMLForOthers() {
+      buf.push('<embed',
+        ' type="application/x-java-applet;version=', version[0], '.', version[1], '"',
+        ' pluginspage="http://java.sun.com/products/plugin/index.html#download"',
+        ' code="', escapeHTMLSpecials(code), '"',
+        ' width="', width, '"',
+        ' height="', height, '"',
+        ' scriptable="', (scriptable ? 'true': 'false'), '"');
+      if (codebase)
+        buf.push(' codebase="', escapeHTMLSpecials(codebase), '"');
+      if (archive)
+        buf.push(' archive="', escapeHTMLSpecials(archive), '"');
+      if (id) {
+        buf.push(' name="', escapeHTMLSpecials(id), '"');
+        buf.push(' id="', escapeHTMLSpecials(id), '"');
+      }
+      for (var k in params)
+        buf.push(' ', escapeHTMLSpecials(k), '="', escapeHTMLSpecials(params[k]), '"');
+      buf.push('></embed>');
+    }
+
+    function buildHTMLApplet() {
+      buf.push('<applet',
+        ' code="', escapeHTMLSpecials(code), '"',
+        ' width="', width, '"',
+        ' height="', height, '"',
+        ' scriptable="', (scriptable ? 'true': 'false'), '"');
+      if (codebase)
+        buf.push(' codebase="', escapeHTMLSpecials(codebase), '"');
+      if (archive)
+        buf.push(' archive="', escapeHTMLSpecials(archive), '"');
+      if (id) {
+        buf.push(' name="', escapeHTMLSpecials(id), '"');
+        buf.push(' id="', escapeHTMLSpecials(id), '"');
+      }
+      buf.push('>');
+      for (var k in params)
+        buf.push('<param name="', escapeHTMLSpecials(k), '" value="', escapeHTMLSpecials(params[k]), '" />');
+      buf.push('</applet>');
+    }
+
+    if (navigator.userAgent.indexOf('MSIE') >= 0)
+      buildHTMLForIE();
+    else
+      buildHTMLForOthers();
+    $('#applet-tag').empty().append(buf.join(''));
+  }
+
+  function loadApplet() {
+    $('#screen').show();
+    writeAppletTag({
+      version: '1.6.0.35',
+      width: 1, height: 1,
+      code: 'jp.ticketstar.ticketing.printing.gui.AppApplet',
+      codebase: appletCodeBase,
+      archive: appletArchive,
+      scriptable: true,
+      id: 'applet',
+      params: {
+        endpoints: appletEndpoints,
+        cookie: cookie,
+        embedded: true,
+        callback: callbackName 
+      }
+    });
+  }
+
   $(function() {
     $('#sales_summary-form').find('select[name="sales_segment_id"]').change(function() {
       var metadata = "${data_source.get('metadata')|n}"
@@ -264,6 +532,8 @@
       venueEditorRoot.venueeditor('load');
       getSalesSummary();
     });
+
+    $('#sales-counter-button').click(function() { switchToSalesCounterMode(); });
 
     // 「おまかせ」ボタンはajaxで追加されるので、delegateを使わないとうまく動かない
     var openOrderFormButtons = $(document.body).delegate(".action-openOrderForm", "click", function () {
@@ -287,3 +557,9 @@
 </div>
 <div id="sales-summary"></div>
 <div id="reserve-form"></div>
+<div id="applet-tag"></div>
+<div id="screen" style="display:none;">
+  <div class="splash">
+    Now loading...
+  </div>
+</div>

@@ -6,7 +6,7 @@
   testing = get_current_registry().settings.get('altair.app.ticketing.testing', False)
 %>
 
-<div class="well sidebar-nav">
+<div class="sidebar-nav well">
   <ul class="nav nav-list">
     <li class="nav-header">公演管理</li>
     <li><a href="${request.route_path('events.index')}">イベント</a></li>
