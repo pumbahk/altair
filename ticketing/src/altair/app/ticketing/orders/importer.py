@@ -187,7 +187,7 @@ class ImportCSVReader(object):
     def __iter__(self):
         for row in self.reader:
             for k, v in row.iteritems():
-                row[k] = unicode(v.decode(self.encoding))
+                row[k] = v.decode(self.encoding) if v is not None else u''
             yield row
 
     @property
