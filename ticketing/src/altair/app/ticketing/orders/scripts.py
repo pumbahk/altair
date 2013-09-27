@@ -200,7 +200,7 @@ def import_orders():
 
     tasks = OrderImportTask.query.filter(
         OrderImportTask.status == ImportStatusEnum.Waiting.v[0]
-    ).all()
+    ).order_by(OrderImportTask.id).all()
 
     for task in tasks:
         try:
