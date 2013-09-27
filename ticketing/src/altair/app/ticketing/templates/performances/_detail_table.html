@@ -1,0 +1,64 @@
+<%page args="expanded=True" />
+<table class="table table-bordered table-condensed ">
+  <tbody>
+    <tr>
+      <th width="10%">公演コード</th>
+      <td width="15%">${performance.code}</td>
+      <th width="5%">開場</th>
+      <td width="20%">${vh.datetime(performance.open_on)}</td>
+      <th width="5%">開演</th>
+      <td width="20%">${vh.datetime(performance.start_on)}</td>
+      <th width="5%">会場</th>
+      <td width="20%">
+        ${performance.venue.name}
+        %if performance.venue.sub_name != None:
+          <div class="sub_name">${performance.venue.sub_name}</div>
+        %endif
+      </td>
+    </tr>
+% if expanded:
+    <tr>
+      <th rowspan="2">リダイレクト先</th>
+      <td colspan="7">
+        <span class="label" style="background-color:#040">PC</span>${performance.redirect_url_pc or u'未設定'}
+      </td>
+    </tr>
+    <tr>
+      <td colspan="7"><span class="label" style="background-color:#008">モバイル</span>${performance.redirect_url_mobile or u'未設定'}</td>
+    </tr>
+    <tr>
+      <th>
+        カートURL
+        <span class="help-inline">
+          <a rel="popover" data-original-title="カートURL" data-content="購入カートのURL">
+            <i class="icon-question-sign"></i>
+          </a>
+        </span>
+      </th>
+      <td colspan="7">
+        <a href="${cart_url}">${cart_url}</a>  (<a href="${cart_now_cart_url}">時間指定してカート購入</a>)
+      </td>
+    </tr>
+    %if performance.settings:
+      %for k, v, doc in performance.settings[0].describe_iter():
+        <tr>
+          <th>${doc}</th>
+          <td colspan="7">${v}</td>
+        </tr>
+      %endfor
+    %endif
+% endif
+  </tbody>
+% if expanded:
+  <tfoot>
+    <tr>
+      <td colspan="8">
+        <div class="pull-right">
+          <%include file="/performances/_action_button.html" args="event=performance.event, order=['edit', 'delete', 'copy', 'mail']" />
+        </div>
+      </td>
+    </tr>
+  </tfoot>
+% endif
+</table>
+
