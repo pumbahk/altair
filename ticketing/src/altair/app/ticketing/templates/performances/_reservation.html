@@ -138,6 +138,9 @@ callback_name = '%' + ''.join(random.choice("abcdefghjijklmnopqrstuvwxyz") for _
     this.current = target;
   };
 
+  function showAlert(message) {
+    $('.content').prepend('<div class="alert alert-error"><a class="close" data-dismiss="alert">&times;</a><h4 class="alert-heading">' + message + '</h4></div>');
+  }
 
   var orderFormOpening = false;
   function getOrderForm(stock_id) {
@@ -174,7 +177,7 @@ callback_name = '%' + ''.join(random.choice("abcdefghjijklmnopqrstuvwxyz") for _
       error: function(xhr, text) {
         var responseText = JSON.parse(xhr.responseText);
         var messages = responseText['message'] || xhr.statusText;
-        $('.content').prepend('<div class="alert alert-error"><a class="close" data-dismiss="alert">&times;</a><h4 class="alert-heading">' + messages + '</h4></div>');
+        showAlert(messages);
       }
     });
   }
@@ -261,7 +264,7 @@ callback_name = '%' + ''.join(random.choice("abcdefghjijklmnopqrstuvwxyz") for _
       error: function(xhr, text) {
         var responseText = JSON.parse(xhr.responseText);
         var message = responseText['message'] || xhr.statusText;
-        $('.content').prepend('<div class="alert alert-error"><a class="close" data-dismiss="alert">&times;</a><h4 class="alert-heading">' + message + '</h4></div>');
+        showAlert(message);
         $('#modal-reserve').modal('hide');
       }
     });
@@ -408,8 +411,35 @@ callback_name = '%' + ''.join(random.choice("abcdefghjijklmnopqrstuvwxyz") for _
         service.printAll();
     };
 
+    function heartbeat() {
+      var alertShown = false;
+      setInterval(function () {
+        var exited = false; 
+        if (typeof applet.getService == 'undefined') {
+          exited = true;
+        } else {
+          try {
+            applet.getService();
+          } catch (e) {
+            if (e.toString().indexOf("exited") >= 0) {
+              exited = true;
+            }
+          }
+        }
+        if (exited) {
+          if (!alertShown) {
+            alertShown = true;
+            if (confirm("Appletが突然終了しました。\n大量発券を一度に行ったりするとこの問題が発生することがあります。\n\nOKを押すとページがリロードされます。")) {
+              location.reload(true);
+            }
+          }
+        }
+      }, 5000);
+    }
+
     window.ticketPrinterService = service;
     window.printOrder = printOrder;
+    heartbeat();
     $('#screen').hide();
   };
 
