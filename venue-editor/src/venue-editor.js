@@ -528,6 +528,9 @@
         seat_vo.set('model', seat);
         seat_vo.trigger('change:shape');
         continue;
+      } else {
+        if (metadata && !seat.get('stock').get('assignable'))
+          continue;
       }
 
       seats[id] = (function (id) {

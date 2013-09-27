@@ -13,7 +13,7 @@ from pyramid.httpexceptions import HTTPFound, HTTPNotFound
 from pyramid.response import Response
 from pyramid.url import route_path
 from sqlalchemy import and_, distinct
-from sqlalchemy.sql import exists, join, func, or_
+from sqlalchemy.sql import exists, join, func, or_, not_
 from sqlalchemy.sql.expression import asc, desc
 from sqlalchemy.orm import joinedload, noload, aliased, undefer
 
@@ -77,9 +77,11 @@ def get_seats(request):
         if loaded_at:
             query = query.filter(or_(Seat.updated_at>loaded_at, SeatStatus.updated_at>loaded_at))
         elif sale_only:
-            query = query.join(ProductItem, and_(ProductItem.performance_id==venue.performance_id, ProductItem.stock_id==Seat.stock_id))
             if sales_segment_id:
+                query = query.join(ProductItem, and_(ProductItem.performance_id==venue.performance_id, ProductItem.stock_id==Seat.stock_id))
                 query = query.join(Product).join(SalesSegment).filter(SalesSegment.id==sales_segment_id).distinct()
+            else:
+                query = query.filter(exists().where(and_(ProductItem.performance_id==venue.performance_id, ProductItem.stock_id==Seat.stock_id)))
         for l0_id, name, seat_no, stock_id, status in query:
             seats_data[l0_id] = {
                 'id': l0_id,
@@ -92,18 +94,21 @@ def get_seats(request):
 
     if u'stocks' in necessary_params:
         stocks_data = []
-        query = DBSession.query(Stock).options(joinedload('stock_status')).filter_by(performance=venue.performance)
+        query = DBSession.query(Stock, func.count(ProductItem.id)).options(joinedload('stock_status')).filter_by(performance=venue.performance)
+        query = query.outerjoin(ProductItem, and_(ProductItem.performance_id==venue.performance_id, ProductItem.stock_id==Stock.id))
         # 差分取得のときは販売可能かどうかに関わらず取得する
         if loaded_at:
             query = query.join(StockStatus).filter(StockStatus.updated_at>loaded_at)
         elif sale_only:
-            query = query.join(ProductItem, and_(ProductItem.performance_id==venue.performance_id, ProductItem.stock_id==Stock.id))
             if sales_segment_id:
-                query = query.join(Product).join(SalesSegment).filter(SalesSegment.id==sales_segment_id).distinct()
-        for stock in query:
-            assignable = (sale_only or not stock.locked_at)
-            if sale_only and (stock.stock_type_id is None or stock.stock_holder_id is None):
-                assignable = False
+                query = query.join(Product).join(SalesSegment).filter(SalesSegment.id==sales_segment_id)
+            query = query.having(func.count(ProductItem.id)>0)
+        query = query.group_by(Stock.id)
+        for (stock, count) in query:
+            if sale_only:
+                assignable = bool(count > 0)
+            else:
+                assignable = bool(not stock.locked_at)
             stocks_data.append(dict(
                 id=stock.id,
                 assigned=stock.quantity,
@@ -133,7 +138,7 @@ def get_seats(request):
             ]
 
     if u'stock_holders' in necessary_params:
-        query = DBSession.query(StockHolder).filter_by(event=venue.performance.event)
+        query = DBSession.query(StockHolder).filter_by(event=venue.performance.event).options(undefer(StockHolder.style))
         if sales_segment_id:
             query = query.join(Stock, and_(Stock.performance_id==venue.performance_id, Stock.stock_holder_id==StockHolder.id))
             query = query.join(ProductItem, and_(ProductItem.performance_id==venue.performance_id, ProductItem.stock_id==Stock.id))
