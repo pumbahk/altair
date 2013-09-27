@@ -1184,6 +1184,7 @@ cart.VenueView = Backbone.View.extend({
     },
     reset: function () {
         this.currentViewer.venueviewer("unselectAll");
+        this.currentViewer.venueviewer("destroySeats");
         this.currentViewer.venueviewer("navigate", this.currentViewer.venueviewer("root"));
     }
 });
