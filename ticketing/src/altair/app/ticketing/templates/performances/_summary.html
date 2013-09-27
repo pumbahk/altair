@@ -2,65 +2,7 @@
 
 <div class="row-fluid">
   <div class="span12">
-    <table class="table table-bordered table-condensed ">
-      <tbody>
-        <tr>
-          <th>開場</th>
-          <td>${vh.datetime(performance.open_on)}</td>
-          <th>公演コード</th>
-          <td>${performance.code}</td>
-        </tr>
-        <tr>
-          <th>開演</th>
-          <td>${vh.datetime(performance.start_on)}</td>
-          <th>会場</th>
-          <td>
-            ${performance.venue.name}
-            %if performance.venue.sub_name != None:
-              <div class="sub_name">${performance.venue.sub_name}</div>
-            %endif
-          </td>
-        </tr>
-        <tr>
-          <th>リダイレクト先URL (PC)</th>
-          <td colspan="3">${performance.redirect_url_pc or u'未設定'}</td>
-        </tr>
-        <tr>
-          <th>リダイレクト先URL (モバイル)</th>
-          <td colspan="3">${performance.redirect_url_mobile or u'未設定'}</td>
-        </tr>
-        <tr>
-          <th>
-            カートURL
-            <span class="help-inline">
-              <a rel="popover" data-original-title="カートURL" data-content="購入カートのURL">
-                <i class="icon-question-sign"></i>
-              </a>
-            </span>
-          </th>
-          <td colspan="3">
-            <a href="${cart_url}">${cart_url}</a>  (<a href="${cart_now_cart_url}">時間指定してカート購入</a>)
-          </td>
-        </tr>
-        %if performance.settings:
-          %for k, v, doc in performance.settings[0].describe_iter():
-            <tr>
-              <th>${doc}</th>
-              <td colspan="3">${v}</td>
-            </tr>
-          %endfor
-        %endif
-      </tbody>
-      <tfoot>
-        <tr>
-          <td colspan="4">
-            <div class="pull-right">
-              <%include file="/performances/_action_button.html" args="event=performance.event, order=['edit', 'delete', 'copy', 'mail']" />
-            </div>
-          </td>
-        </tr>
-      </tfoot>
-    </table>
+    <%include file="./_detail_table.html" args="expanded=True" />
     <input type="hidden" id="performance_id" value="${performance.id}"></input>
     <div style="overflow:hidden">
       <h3 class="pull-left" style="margin-right: 10px">販売区分</h3>
