@@ -8,16 +8,16 @@
   <div id="main-container" class="${tm.container_class()}">
     <%block name="breadcrumbs" />
     <%block name="messages">
-      % if request.session.peek_flash():
       <div class="content">
+      % if request.session.peek_flash():
         <div class="alert ${type}">
           <a class="close" data-dismiss="alert">&times;</a>
           % for message in request.session.pop_flash():
             <h4 class="alert-heading">${message}</h4>
           % endfor
         </div>
-      </div>
       % endif
+      </div>
     </%block>
     ${next.body()}
     <div style="position:absolute;left:0px;top:-12px"><%include file="/parts/_toggle_menu.html" /></div>
