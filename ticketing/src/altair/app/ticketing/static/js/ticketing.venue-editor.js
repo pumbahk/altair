@@ -1,6 +1,6 @@
 (function (jQuery, I18n) {
 var __LIBS__ = {};
-__LIBS__['vO7B0EYPI2XAO1VE'] = (function (exports) { (function () { 
+__LIBS__['R5_FP_8K288AN9Q8'] = (function (exports) { (function () { 
 
 /************** util.js **************/
 exports.eventKey = function Util_eventKey(e) {
@@ -179,7 +179,7 @@ timer.prototype.lap = function(msg) {
     return lap;
 };
  })(); return exports; })({});
-__LIBS__['Z8FGXD5R0AED9JGO'] = (function (exports) { (function () { 
+__LIBS__['cFWKBX0IYF90B9RD'] = (function (exports) { (function () { 
 
 /************** CONF.js **************/
 exports.DEFAULT = {
@@ -250,7 +250,7 @@ exports.DEFAULT = {
   }
 };
  })(); return exports; })({});
-__LIBS__['t6O6BBPA0PI0HVX2'] = (function (exports) { (function () { 
+__LIBS__['fY1VFLTN3UUP51EW'] = (function (exports) { (function () { 
 
 /************** identifiableset.js **************/
 var IdentifiableSet = exports.IdentifiableSet = function IdentifiableSet(options) {
@@ -299,12 +299,12 @@ IdentifiableSet.prototype.each = function IdentifiableSet_each(f) {
  * vim: sts=2 sw=2 ts=2 et
  */
  })(); return exports; })({});
-__LIBS__['x779341V6P5KP_G2'] = (function (exports) { (function () { 
+__LIBS__['kSX2H9LJD0CASMS5'] = (function (exports) { (function () { 
 
 /************** models.js **************/
-var util = __LIBS__['vO7B0EYPI2XAO1VE'];
-var CONF = __LIBS__['Z8FGXD5R0AED9JGO'];
-var IdentifiableSet = __LIBS__['t6O6BBPA0PI0HVX2'].IdentifiableSet;
+var util = __LIBS__['R5_FP_8K288AN9Q8'];
+var CONF = __LIBS__['cFWKBX0IYF90B9RD'];
+var IdentifiableSet = __LIBS__['fY1VFLTN3UUP51EW'].IdentifiableSet;
 
 var VenueItemCollectionMixin = {
   venue: null,
@@ -860,12 +860,12 @@ console.log(ad2);
  * vim: sts=2 sw=2 ts=2 et
  */
  })(); return exports; })({});
-__LIBS__['R139RZJ1KTY9U25B'] = (function (exports) { (function () { 
+__LIBS__['r2PCRESVJDOMKF1K'] = (function (exports) { (function () { 
 
 /************** viewobjects.js **************/
-var util = __LIBS__['vO7B0EYPI2XAO1VE'];
-var CONF = __LIBS__['Z8FGXD5R0AED9JGO'];
-var models = __LIBS__['x779341V6P5KP_G2'];
+var util = __LIBS__['R5_FP_8K288AN9Q8'];
+var CONF = __LIBS__['cFWKBX0IYF90B9RD'];
+var models = __LIBS__['kSX2H9LJD0CASMS5'];
 
 var Seat = exports.Seat = Backbone.Model.extend({
   defaults: {
@@ -980,7 +980,8 @@ var Seat = exports.Seat = Backbone.Model.extend({
 
   _refreshStyle: function Seat__refreshStyle() {
     var model = this.get('model');
-    var style = model && model.get('stock').get('style') || {};
+    var stock = model && model.get('stock');
+    var style = stock && stock.get('style') || {};
     var defaultStyle = CONF.DEFAULT.SEAT_STATUS_STYLE[model.get('status')];
     if (defaultStyle)
       style = util.mergeStyle(style, defaultStyle);
@@ -1039,7 +1040,7 @@ var Seat = exports.Seat = Backbone.Model.extend({
  * vim: sts=2 sw=2 ts=2 et
  */
  })(); return exports; })({});
-__LIBS__['BWGMZE9LM9VVYRJN'] = (function (exports) { (function () { 
+__LIBS__['bLQ0130PPA7K5EF2'] = (function (exports) { (function () { 
 
 /************** translations.js **************/
 
@@ -1070,13 +1071,13 @@ exports.ja = {
 /************** venue-editor.js **************/
 /* extern */ var jQuery, I18n;
 (function ($) {
-  var CONF = __LIBS__['Z8FGXD5R0AED9JGO'];
-  var models = __LIBS__['x779341V6P5KP_G2'];
-  var util = __LIBS__['vO7B0EYPI2XAO1VE'];
-  var viewobjects = __LIBS__['R139RZJ1KTY9U25B'];
-  var IdentifiableSet = __LIBS__['t6O6BBPA0PI0HVX2'].IdentifiableSet;
+  var CONF = __LIBS__['cFWKBX0IYF90B9RD'];
+  var models = __LIBS__['kSX2H9LJD0CASMS5'];
+  var util = __LIBS__['R5_FP_8K288AN9Q8'];
+  var viewobjects = __LIBS__['r2PCRESVJDOMKF1K'];
+  var IdentifiableSet = __LIBS__['fY1VFLTN3UUP51EW'].IdentifiableSet;
   if (I18n)
-    I18n.translations = __LIBS__['BWGMZE9LM9VVYRJN'];
+    I18n.translations = __LIBS__['bLQ0130PPA7K5EF2'];
 
   var parseCSSStyleText = (function () {
     var regexp_for_styles = /\s*(-?(?:[_a-z\u00a0-\u10ffff]|\\[^\n\r\f#])(?:[\-_A-Za-z\u00a0-\u10ffff]|\\[^\n\r\f])*)\s*:\s*((?:(?:(?:[^;\\ \n\r\t\f"']|\\[0-9A-Fa-f]{1,6}(?:\r\n|[ \n\r\t\f])?|\\[^\n\r\f0-9A-Fa-f])+|"(?:[^\n\r\f\\"]|\\(?:\n|\r\n|\r|\f)|\\[^\n\r\f])*"|'(?:[^\n\r\f\\']|\\(?:\n|\r\n|\r|\f)|\\[^\n\r\f])*')(?:\s+|(?=;|$)))+)(?:;|$)/g;
