@@ -439,12 +439,12 @@ var Seat = exports.Seat = Backbone.Model.extend({
     var seat_set;
     if (stock) {
       seat_set = perStockSeatSet[stock.id];
+      if (!seat_set)
+        seat_set = perStockSeatSet[stock.id] = new IdentifiableSet();
+      seat_set.add(self);
     } else {
       console.log('Stock not found in Seat.id:' + self.id);
     }
-    if (!seat_set)
-      seat_set = perStockSeatSet[stock.id] = new IdentifiableSet();
-    seat_set.add(self);
 
     self.on('change:stock', function () {
       var prev = this.previous('stock');
