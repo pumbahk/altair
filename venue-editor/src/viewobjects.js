@@ -115,7 +115,8 @@ var Seat = exports.Seat = Backbone.Model.extend({
 
   _refreshStyle: function Seat__refreshStyle() {
     var model = this.get('model');
-    var style = model && model.get('stock').get('style') || {};
+    var stock = model && model.get('stock');
+    var style = stock && stock.get('style') || {};
     var defaultStyle = CONF.DEFAULT.SEAT_STATUS_STYLE[model.get('status')];
     if (defaultStyle)
       style = util.mergeStyle(style, defaultStyle);
