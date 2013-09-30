@@ -322,7 +322,7 @@ def download(request):
     params["order_no"] = " ".join(request.params.getall("order_no"))
 
     form_search = OrderSearchForm(params, organization_id=organization_id)
-    from .download import OrderDownload, KeyBreakAdapter
+    from .download import OrderDownload, KeyBreakAdapter, japanese_columns, header_intl
     if request.method == "POST" and form_search.validate():
         query = OrderDownload(slave_session,
                               organization_id,
@@ -333,7 +333,7 @@ def download(request):
                               condition=None)
 
     query = KeyBreakAdapter(query, 'id',
-                            ('product_name', 'product_price', 'product_quantity'),
+                            ('product_name', 'product_price', 'product_quantity', 'product_sales_segment'),
                             ('product_id'),
                             ('item_name', 'item_price', 'item_quantity'))
 
@@ -344,11 +344,12 @@ def download(request):
 
     response = Response(headers=headers)
     headers = query.headers
+    iheaders = header_intl(headers, japanese_columns)
     logger.debug("headers = {0}".format(headers))
     results = iter(query)
     writer = csv.writer(response, delimiter=',', quoting=csv.QUOTE_ALL)
     writer.writerows([[encode_to_cp932(c)
-                       for c in headers]] +
+                       for c in iheaders]] +
                      [[encode_to_cp932(columns.get(h))
                        for h in headers]
                       for columns in results])

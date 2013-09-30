@@ -45,11 +45,89 @@ from altair.app.ticketing.sej.models import SejOrder
 
 logger = logging.getLogger(__name__)
 
+japanese_columns = {
+    u'id': u"注文ID",
+    u'order_no': u'予約番号',
+    u'status': u'ステータス',
+    u'status_label': u'ステータス',
+    u'status_class': u'ステータス',
+    u'payment_status': u'決済ステータス',
+    u'payment_status_label': u'決済ステータス',
+    u'payment_status_class': u'決済ステータス',
+    u'delivery_status': u'引取ステータス',
+    u'delivery_status_label': u'引取ステータス',
+    u'delivery_status_class': u'引取ステータス',
+    u'created_at': u'予約日時',
+    u'paid_at': u'支払日時',
+    u'delivered_at': u'配送日時',
+    u'canceled_at': u'キャンセル日時',
+    u'total_amount': u'合計金額',
+    u'transaction_fee': u'決済手数料',
+    u'delivery_fee': u'配送手数料',
+    u'system_fee': u'システム利用料',
+    u'margin': u'内手数料金額',
+    u'note': u'メモ',
+    u'card_brand': u'カードブランド',
+    u'card_ahead_com_code': u'仕向け先企業コード',
+    u'card_ahead_com_name': u'仕向け先企業名',
+    u'billing_number': u'SEJ払込票番号',
+    u'exchange_number': u'SEJ引換票番号',
+    u'shipping_name': u'配送先名',
+    u'user_last_name': u'姓',
+    u'user_first_name': u'名',
+    u'user_last_name_kana': u'姓(カナ)',
+    u'user_first_name_kana': u'名(カナ)',
+    u'user_nick_name': u'ニックネーム',
+    u'user_sex': u'性別',
+    u'membership_name': u'会員種別名',
+    u'membergroup_name': u'会員グループ名',
+    u'auth_identifier': u'会員種別ID',
+    u'last_name': u'配送先姓',
+    u'first_name': u'配送先名',
+    u'last_name_kana': u'配送先姓(カナ)',
+    u'first_name_kana': u'配送先名(カナ)',
+    u'zip': u'郵便番号',
+    u'country': u'国',
+    u'prefecture': u'都道府県',
+    u'city': u'市区町村',
+    u'address_1': u'住所1',
+    u'address_2': u'住所2',
+    u'tel_1': u'電話番号1',
+    u'tel_2': u'電話番号2',
+    u'fax': u'FAX',
+    u'email_1': u'メールアドレス1',
+    u'email_2': u'メールアドレス2',
+    u'payment_method_name': u'決済方法',
+    u'delivery_method_name': u'引取方法',
+    u'event_id': u'イベントID',
+    u'event_title': u'イベント',
+    u'performance_id': u'公演ID',
+    u'performance_name': u'公演',
+    u'performance_code': u'公演コード',
+    u'performance_start_on': u'公演日',
+    u'venue_name': u'会場',
+    u'product_id': u'商品ID',
+    u'product_price': u'商品単価',
+    u'product_quantity': u'商品個数',
+    u'product_name': u'商品名',
+    u'product_sales_segment': u'販売区分',
+    u'product_margin_ratio': u'販売手数料率',
+    u'item_name': u'商品明細名',
+    u'item_price': u'商品明細単価',
+    u'item_quantity': u'商品明細個数',
+    u'item_print_histories': u'発券作業者',
+    u'mail_permission': u'メールマガジン受信可否',
+    u'seat_name': u'座席名',
+    }
+
+
 t_organization = Organization.__table__
 t_event = Event.__table__
 t_performance = Performance.__table__
 t_sales_segment = SalesSegment.__table__
+t_product_sales_segment = SalesSegment.__table__.alias()
 t_sales_segment_group = SalesSegmentGroup.__table__
+t_product_sales_segment_group = SalesSegmentGroup.__table__.alias()
 t_order = Order.__table__
 t_pdmp = PaymentDeliveryMethodPair.__table__
 t_payment_method = PaymentMethod.__table__
@@ -171,8 +249,8 @@ detail_summary_columns = summary_columns + [
     t_user_profile.c.sex.label('user_sex'), #性別
 
     # Membership
-    t_membership.c.name.label('member_ship_name'), #会員種別名
-    t_member_group.c.name.label('member_group_name'), #会員グループ名
+    t_membership.c.name.label('membership_name'), #会員種別名
+    t_member_group.c.name.label('membergroup_name'), #会員グループ名
     t_user_credential.c.auth_identifier,  #会員種別ID
 
     # ShippingAddress
@@ -192,8 +270,8 @@ detail_summary_columns = summary_columns + [
     t_shipping_address.c.email_1, #メールアドレス1
     t_shipping_address.c.email_2, #メールアドレス2
 
-    t_payment_method.c.name.label('payment_method.name'), #決済方法
-    t_delivery_method.c.name.label('delivery_method.name'), #引取方法
+    t_payment_method.c.name.label('payment_method_name'), #決済方法
+    t_delivery_method.c.name.label('delivery_method_name'), #引取方法
 
     # Performance
     t_performance.c.name.label('performance_name'), #公演
@@ -208,9 +286,9 @@ detail_summary_columns = summary_columns + [
     t_product.c.price.label('product_price'), #商品単価[0]
     # OrderedProduct
     t_ordered_product.c.quantity.label('product_quantity'), #商品個数[0]
-    #販売区分[0]
-    #販売手数料率[0]
-
+    t_product_sales_segment_group.c.name.label('product_sales_segment'), #販売区分[0]
+    t_product_sales_segment.c.margin_ratio.label('product_margin_ratio'), #販売手数料率[0] margin_ratio
+    
     # ProductItem
     t_product_item.c.name.label('item_name'), #商品明細名[0][0]
     t_product_item.c.price.label('item_price'), #商品明細単価[0][0]
@@ -302,6 +380,14 @@ order_product_summary_joins = order_summary_joins.join(
     t_venue,
     and_(t_venue.c.performance_id==t_performance.c.id,
          t_venue.c.deleted_at==None),
+).join(
+    t_product_sales_segment,
+    and_(t_product_sales_segment.c.id==t_product.c.sales_segment_id,
+         t_product_sales_segment.c.deleted_at==None),
+).join(
+    t_product_sales_segment_group,
+    and_(t_product_sales_segment_group.c.id==t_product_sales_segment.c.sales_segment_group_id,
+         t_product_sales_segment_group.c.deleted_at==None),
 )
 
 
@@ -386,6 +472,15 @@ class KeyBreakAdapter(object):
     def __iter__(self):
         return iter(self.results)
 
+def header_intl(headers, col_names):
+    for h in headers:
+        if h.find('[') > -1:
+            h, tail = h.split('[', 1)
+            tail = "[" + tail
+        else:
+            tail = ""
+
+        yield col_names[h] + tail
 
 class OrderSearchBase(list):
 
