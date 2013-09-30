@@ -291,7 +291,7 @@ class SalesSegmentForm(OurForm):
             sales_segment_groups = context.event.sales_segment_groups
             for field_name in propagation_attrs:
                 field = getattr(self, field_name)
-                field.default = getattr(context.user.organization.setting, field_name, None)
+                field.default = getattr(context.organization.setting, field_name, None)
         sales_segment_group_id_choices.extend([(s.id, s.name) for s in sales_segment_groups])
         self.sales_segment_group_id.choices = sales_segment_group_id_choices
 
