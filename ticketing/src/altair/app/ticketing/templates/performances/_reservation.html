@@ -175,8 +175,13 @@ callback_name = '%' + ''.join(random.choice("abcdefghjijklmnopqrstuvwxyz") for _
         $('#modal-reserve').modal('show');
       },
       error: function(xhr, text) {
-        var responseText = JSON.parse(xhr.responseText);
-        var messages = responseText['message'] || xhr.statusText;
+        var messages = '';
+        try {
+          var responseText = JSON.parse(xhr.responseText);
+          messages = responseText['message'] || xhr.statusText;
+        } catch(e) {
+          messages = 'エラーが発生しました。もう一度やり直してください。(' + xhr.statusText + ':' + xhr.status + ')'
+        }
         showAlert(messages);
       }
     });
