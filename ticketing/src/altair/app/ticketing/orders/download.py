@@ -288,7 +288,7 @@ detail_summary_columns = summary_columns + [
     t_ordered_product.c.quantity.label('product_quantity'), #商品個数[0]
     t_product_sales_segment_group.c.name.label('product_sales_segment'), #販売区分[0]
     t_product_sales_segment.c.margin_ratio.label('product_margin_ratio'), #販売手数料率[0] margin_ratio
-    
+    (t_product.c.price * t_ordered_product.c.quantity * t_product_sales_segment.c.margin_ratio / 100).label('margin'),
     # ProductItem
     t_product_item.c.name.label('item_name'), #商品明細名[0][0]
     t_product_item.c.price.label('item_price'), #商品明細単価[0][0]

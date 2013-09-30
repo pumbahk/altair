@@ -333,7 +333,7 @@ def download(request):
                               condition=None)
 
     query = KeyBreakAdapter(query, 'id',
-                            ('product_name', 'product_price', 'product_quantity', 'product_sales_segment'),
+                            ('product_name', 'product_price', 'product_quantity', 'product_sales_segment', 'margin'),
                             ('product_id'),
                             ('item_name', 'item_price', 'item_quantity'))
 
@@ -348,9 +348,39 @@ def download(request):
     logger.debug("headers = {0}".format(headers))
     results = iter(query)
     writer = csv.writer(response, delimiter=',', quoting=csv.QUOTE_ALL)
+
+    def render_plain(v):
+        if v is None:
+            return u''
+        return u'="{0}"'.format(v)
+
+    def render_zip(v):
+        if not v:
+            return u''
+        zip1, zip2 = v[:3], v[3:]
+        return u'{0}-{1}'.format(zip1, zip2)
+
+    def render_currency(v):
+        from altair.app.ticketing.cart.helpers import format_number
+        if v is None:
+            return u'0'
+        return format_number(float(v))
+
+    renderers = dict()
+    for n in ('total_amount', 'transaction_fee', 'delimiter', 'system_fee', 'margin'):
+        renderers[n] = render_currency
+
+    renderers['zip'] = render_zip
+
+    def render(name, v):
+        if name.find('[') > -1:
+            name, _ = name.split('[', 1)
+        renderer = renderers.get(name, render_plain)
+        return renderer(v)
+
     writer.writerows([[encode_to_cp932(c)
                        for c in iheaders]] +
-                     [[encode_to_cp932(columns.get(h))
+                     [[encode_to_cp932(render(h, columns.get(h)))
                        for h in headers]
                       for columns in results])
     return response
