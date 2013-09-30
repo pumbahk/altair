@@ -1,7 +1,7 @@
 # encoding: utf-8
 
 from altair.app.ticketing.sej.api import create_sej_notification_data_from_record
-from altair.app.ticketing.sej import models as sej_models, resources as sej_resources
+from altair.app.ticketing.sej import models as sej_models
 from pyramid.paster import bootstrap
 from altair.app.ticketing.models import DBSession
 from altair.app.ticketing.core import models as c_models
@@ -17,8 +17,7 @@ def generate_process_number(order):
 def create_expire_notification_from_order(shop_id, order):
     sej_order = DBSession.query(sej_models.SejOrder).filter_by(order_id=order.order_no).one()
     return sej_models.SejNotification(
-        # XXX: なんでこれ resources の中にあんだよ...
-        notification_type=sej_resources.SejNotificationType.TicketingExpire.v,
+        notification_type=sej_models.SejNotificationType.TicketingExpire.v,
         process_number=generate_process_number(order),
         shop_id=shop_id,
         order_id=sej_order.order_id,
@@ -32,8 +31,7 @@ def create_expire_notification_from_order(shop_id, order):
 def create_payment_notification_from_order(shop_id, order):
     sej_order = DBSession.query(sej_models.SejOrder).filter_by(order_id=order.order_no).one()
     return sej_models.SejNotification(
-        # XXX: なんでこれ resources の中にあんだよ...
-        notification_type=sej_resources.SejNotificationType.PaymentComplete.v,
+        notification_type=sej_models.SejNotificationType.PaymentComplete.v,
         process_number=generate_process_number(order),
         shop_id=shop_id,
         order_id=sej_order.order_id,
@@ -52,8 +50,8 @@ def create_payment_notification_from_order(shop_id, order):
         )
 
 actions = {
-    sej_resources.SejNotificationType.PaymentComplete.v: create_payment_notification_from_order,
-    sej_resources.SejNotificationType.TicketingExpire.v: create_expire_notification_from_order,
+    sej_models.SejNotificationType.PaymentComplete.v: create_payment_notification_from_order,
+    sej_models.SejNotificationType.TicketingExpire.v: create_expire_notification_from_order,
     }
 
 class ApplicationError(Exception):
@@ -62,7 +60,7 @@ class ApplicationError(Exception):
 def main(env, args):
     settings = env['registry'].settings
     try:
-        action = actions.get(int(getattr(sej_resources.SejNotificationType, args[0], None)))
+        action = actions.get(int(getattr(sej_models.SejNotificationType, args[0], None)))
         if action is None:
             raise ApplicationError('unknown action')
         order = DBSession.query(c_models.Order).filter_by(order_no=args[1]).one()

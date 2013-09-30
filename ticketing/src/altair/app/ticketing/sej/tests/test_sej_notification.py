@@ -14,8 +14,7 @@ def generate_process_number():
     return last_process_number
 
 def create_expire_notification_from_order(shop_id, sej_order):
-    from ..models import SejNotification
-    from ..resources import SejNotificationType # XXX: なんでこれ resources の中にあんだよ...
+    from ..models import SejNotification, SejNotificationType
     return SejNotification(
         notification_type=SejNotificationType.TicketingExpire.v,
         process_number=generate_process_number(),
@@ -29,8 +28,7 @@ def create_expire_notification_from_order(shop_id, sej_order):
         )
 
 def create_payment_notification_from_order(shop_id, sej_order):
-    from ..models import SejNotification
-    from ..resources import SejNotificationType # XXX: なんでこれ resources の中にあんだよ...
+    from ..models import SejNotification, SejNotificationType
     return SejNotification(
         notification_type=SejNotificationType.PaymentComplete.v,
         process_number=generate_process_number(),
@@ -69,8 +67,7 @@ class SejNotificationTest(unittest.TestCase, CoreTestMixin):
         return self.session.query(SejNotification).order_by('created_at DESC').first()
 
     def test_payment_complete_cash_on_delivery(self):
-        from ..models import SejOrder
-        from ..resources import SejPaymentType # XXX: なんでこれ resources の中にあんだよ...
+        from ..models import SejOrder, SejPaymentType
         from altair.app.ticketing.core.models import PaymentDeliveryMethodPair
         from altair.app.ticketing.payments.plugins import SEJ_PAYMENT_PLUGIN_ID, SEJ_DELIVERY_PLUGIN_ID
         order = self._create_order(
@@ -111,8 +108,7 @@ class SejNotificationTest(unittest.TestCase, CoreTestMixin):
         assert all(ordered_product_item.printed_at is not None for ordered_product in order.items for ordered_product_item in ordered_product.ordered_product_items)
 
     def test_payment_complete_prepayment(self):
-        from ..models import SejOrder
-        from ..resources import SejPaymentType # XXX: なんでこれ resources の中にあんだよ...
+        from ..models import SejOrder, SejPaymentType
         from altair.app.ticketing.core.models import PaymentDeliveryMethodPair
         from altair.app.ticketing.payments.plugins import SEJ_PAYMENT_PLUGIN_ID, SEJ_DELIVERY_PLUGIN_ID
         order = self._create_order(
@@ -170,8 +166,7 @@ class SejNotificationTest(unittest.TestCase, CoreTestMixin):
         assert all(ordered_product_item.printed_at is not None for ordered_product in order.items for ordered_product_item in ordered_product.ordered_product_items)
 
     def test_payment_complete_paid_issuing(self):
-        from ..models import SejOrder
-        from ..resources import SejPaymentType # XXX: なんでこれ resources の中にあんだよ...
+        from ..models import SejOrder, SejPaymentType
         from altair.app.ticketing.core.models import PaymentDeliveryMethodPair
         from altair.app.ticketing.payments.plugins import SEJ_PAYMENT_PLUGIN_ID, SEJ_DELIVERY_PLUGIN_ID
         order = self._create_order(
@@ -210,8 +205,7 @@ class SejNotificationTest(unittest.TestCase, CoreTestMixin):
         assert all(ordered_product_item.printed_at is not None for ordered_product in order.items for ordered_product_item in ordered_product.ordered_product_items)
 
     def test_payment_complete_prepayment_only(self):
-        from ..models import SejOrder
-        from ..resources import SejPaymentType # XXX: なんでこれ resources の中にあんだよ...
+        from ..models import SejOrder, SejPaymentType
         from altair.app.ticketing.core.models import PaymentDeliveryMethodPair
         from altair.app.ticketing.payments.plugins import SEJ_PAYMENT_PLUGIN_ID, SEJ_DELIVERY_PLUGIN_ID
         order = self._create_order(
@@ -252,8 +246,7 @@ class SejNotificationTest(unittest.TestCase, CoreTestMixin):
         assert not any(ordered_product_item.printed_at is not None for ordered_product in order.items for ordered_product_item in ordered_product.ordered_product_items)
 
     def test_cancel(self):
-        from ..models import SejOrder
-        from ..resources import SejPaymentType # XXX: なんでこれ resources の中にあんだよ...
+        from ..models import SejOrder, SejPaymentType
         from altair.app.ticketing.core.models import PaymentDeliveryMethodPair
         from altair.app.ticketing.payments.plugins import SEJ_PAYMENT_PLUGIN_ID, SEJ_DELIVERY_PLUGIN_ID
         order = self._create_order(
@@ -288,8 +281,7 @@ class SejNotificationTest(unittest.TestCase, CoreTestMixin):
         assert sej_order.cancel_at is not None
 
     def test_expire_notification_paid_order(self):
-        from ..models import SejOrder
-        from ..resources import SejPaymentType
+        from ..models import SejOrder, SejPaymentType
         from altair.app.ticketing.core.models import PaymentDeliveryMethodPair
         from altair.app.ticketing.payments.plugins import SEJ_PAYMENT_PLUGIN_ID, SEJ_DELIVERY_PLUGIN_ID
         order = self._create_order(

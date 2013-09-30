@@ -6,7 +6,7 @@ import logging
 from datetime import datetime
 
 from .exceptions import SejRequestError
-from .resources import is_ticket, need_ticketing, SejTicketType, SejPaymentType
+from .models import is_ticket, need_ticketing, SejTicketType, SejPaymentType
 from .utils import JavaHashMap
 
 logger = logging.getLogger(__name__)

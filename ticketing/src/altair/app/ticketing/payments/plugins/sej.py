@@ -24,9 +24,8 @@ from altair.app.ticketing.models import DBSession
 from altair.app.ticketing.core import models as c_models
 
 from altair.app.ticketing.sej.ticket import SejTicketDataXml
-from altair.app.ticketing.sej.models import SejOrder, SejTenant
+from altair.app.ticketing.sej.models import SejOrder, SejTenant, SejPaymentType, SejTicketType
 from altair.app.ticketing.sej.payment import request_order
-from altair.app.ticketing.sej.resources import SejPaymentType, SejTicketType
 from altair.app.ticketing.sej.utils import han2zen
 
 from altair.app.ticketing.tickets.convert import convert_svg

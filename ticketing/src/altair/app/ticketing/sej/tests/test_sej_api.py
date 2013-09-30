@@ -23,7 +23,7 @@ class SejApiTest(unittest.TestCase):
     def test_callback_notification(self):
         from altair.app.ticketing.utils import uniurldecode
         from ..api import callback_notification
-        from ..resources import SejPaymentType, SejNotificationType
+        from ..models import SejPaymentType, SejNotificationType
         from hashlib import md5
         import re
         params = {

@@ -8,8 +8,13 @@ from sqlalchemy import and_
 from altair.app.ticketing.core.models import Order
 from altair.app.ticketing.orders.events import notify_order_canceled
 
-from .models import SejNotification, SejOrder, SejTicket
-from .resources import SejNotificationType, SejPaymentType
+from .models import (
+    SejNotification,
+    SejOrder,
+    SejTicket,
+    SejNotificationType,
+    SejPaymentType
+    )
 
 import logging
 

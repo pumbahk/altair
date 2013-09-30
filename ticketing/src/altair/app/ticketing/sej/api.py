@@ -12,10 +12,9 @@ from sqlalchemy.orm.exc import NoResultFound
 import sqlahelper
 
 from .utils import JavaHashMap
-from .models import SejNotification, SejOrder, SejTicket, SejTenant, SejRefundEvent, SejRefundTicket
+from .models import SejNotification, SejOrder, SejTicket, SejTenant, SejRefundEvent, SejRefundTicket, SejNotificationType
 
 from .helpers import make_sej_response, create_hash_from_x_start_params, build_sej_datetime
-from .resources import SejNotificationType
 from .exceptions import SejResponseError
 from altair.app.ticketing.sej.exceptions import SejServerError
 from altair.app.ticketing.sej.payment import request_cancel_order

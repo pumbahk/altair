@@ -9,10 +9,23 @@ from datetime import datetime
 from dateutil.parser import parse
 
 from .utils import JavaHashMap
-from .models import SejOrder, SejTicket, SejNotification
-
-from .helpers import make_sej_response, parse_sej_response, create_sej_request, create_request_params, create_sej_request_data, create_hash_from_x_start_params
-from .resources import SejNotificationType, SejOrderUpdateReason, SejPaymentType, SejTicketType
+from .models import (
+    SejOrder,
+    SejTicket,
+    SejNotification,
+    SejNotificationType,
+    SejOrderUpdateReason,
+    SejPaymentType,
+    SejTicketType
+    )
+from .helpers import (
+    make_sej_response,
+    parse_sej_response,
+    create_sej_request,
+    create_request_params,
+    create_sej_request_data,
+    create_hash_from_x_start_params
+    )
 from .exceptions import SejResponseError, SejServerError, SejError
 
 import sqlahelper

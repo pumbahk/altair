@@ -2,7 +2,7 @@
 
 import logging
 from dateutil.parser import parse as parsedate
-from .resources import SejNotificationType
+from .models import SejNotificationType
 from collections import OrderedDict
 
 logger = logging.getLogger(__file__)

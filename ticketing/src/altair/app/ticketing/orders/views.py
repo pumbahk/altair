@@ -1296,7 +1296,7 @@ class OrdersReserveView(BaseView):
 from altair.app.ticketing.sej.models import SejOrder, SejTicket, SejTicketTemplateFile, SejRefundEvent, SejRefundTicket, SejTenant
 from altair.app.ticketing.sej.ticket import SejTicketDataXml
 from altair.app.ticketing.sej.payment import request_update_order, request_cancel_order
-from altair.app.ticketing.sej.resources import code_from_ticket_type, code_from_update_reason, code_from_payment_type
+from altair.app.ticketing.sej.models import code_from_ticket_type, code_from_update_reason, code_from_payment_type
 from altair.app.ticketing.sej.exceptions import  SejServerError
 from altair.app.ticketing.sej import api as sej_api
 
