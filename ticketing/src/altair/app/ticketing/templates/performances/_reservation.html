@@ -139,7 +139,27 @@ callback_name = '%' + ''.join(random.choice("abcdefghjijklmnopqrstuvwxyz") for _
   };
 
   function showAlert(message) {
-    $('.content').prepend('<div class="alert alert-error"><a class="close" data-dismiss="alert">&times;</a><h4 class="alert-heading">' + message + '</h4></div>');
+    var dialog = $('<div class="modal hide"></div>');
+    var header = $('<div class="modal-header"><a class="close" data-dismiss="modal">&times;</a><h3>エラー</h3></div>');
+    var alert_msg = $('<div class="alert alert-error"></div>').text(message);
+    var body = $('<div class="modal-body"></div>').append(alert_msg);
+    var close_btn = $('<button class="btn" data-dismiss="modal">閉じる</button>');
+    var footer = $('<div class="modal-footer"></div>').append(close_btn);
+    dialog.append(header);
+    dialog.append(body);
+    dialog.append(footer);
+    dialog.modal('show');
+  }
+
+  function getErrorMessage(xhr) {
+    var messages = '';
+    try {
+      var responseText = JSON.parse(xhr.responseText);
+      messages = responseText['message'] || xhr.statusText;
+    } catch(e) {
+      messages = 'エラーが発生しました。もう一度やり直してください。'
+    }
+    return messages;
   }
 
   var orderFormOpening = false;
@@ -175,13 +195,7 @@ callback_name = '%' + ''.join(random.choice("abcdefghjijklmnopqrstuvwxyz") for _
         $('#modal-reserve').modal('show');
       },
       error: function(xhr, text) {
-        var messages = '';
-        try {
-          var responseText = JSON.parse(xhr.responseText);
-          messages = responseText['message'] || xhr.statusText;
-        } catch(e) {
-          messages = 'エラーが発生しました。もう一度やり直してください。(' + xhr.statusText + ':' + xhr.status + ')'
-        }
+        var messages = getErrorMessage(xhr);
         showAlert(messages);
       }
     });
@@ -206,8 +220,7 @@ callback_name = '%' + ''.join(random.choice("abcdefghjijklmnopqrstuvwxyz") for _
         $('#modal-reserve').modal('show');
       },
       error: function(xhr, text) {
-        var responseText = JSON.parse(xhr.responseText);
-        var messages = responseText['message'] || xhr.statusText;
+        var messages = getErrorMessage(xhr);
         var errors = '';
         if (typeof messages == 'string') {
           errors += '<li>' + messages + '</li>';
@@ -243,8 +256,7 @@ callback_name = '%' + ''.join(random.choice("abcdefghjijklmnopqrstuvwxyz") for _
         onReservationComplete(result);
       },
       error: function(xhr, text) {
-        var responseText = JSON.parse(xhr.responseText);
-        var messages = responseText['message'] || xhr.statusText;
+        var messages = getErrorMessage(xhr);
         var errors = '';
         if (typeof messages == 'string') {
           errors += '<li>' + messages + '</li>';
@@ -267,10 +279,9 @@ callback_name = '%' + ''.join(random.choice("abcdefghjijklmnopqrstuvwxyz") for _
         $('#modal-reserve').modal('hide');
       },
       error: function(xhr, text) {
-        var responseText = JSON.parse(xhr.responseText);
-        var message = responseText['message'] || xhr.statusText;
-        showAlert(message);
         $('#modal-reserve').modal('hide');
+        var messages = getErrorMessage(xhr);
+        showAlert(messages);
       }
     });
   }
