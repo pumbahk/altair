@@ -18,6 +18,11 @@ class LazyQuery(object):
         fns.append(lambda qs : qs.filter_by(*args, **kwargs))
         return self.__class__(fns)
 
+    def order_by(self, *args, **kwargs):
+        fns = self.fns[:]
+        fns.append(lambda qs : qs.order_by(*args, **kwargs))
+        return self.__class__(fns)
+
     @classmethod
     def inject(cls, target_cls):
         @reify
@@ -36,6 +41,12 @@ class LazyQuery(object):
             copied.lazy_query = q
             return copied
 
+        def order_by(self, *args, **kwargs):
+            q = self.lazy_query.order_by(*args, **kwargs)
+            copied = copy.copy(self)
+            copied.lazy_query = q
+            return copied
+
         def filtered_query(self, qs):
             for fn in self.lazy_query.fns:
                 qs = fn(qs)
@@ -44,6 +55,7 @@ class LazyQuery(object):
         target_cls.lazy_query = lazy_query
         target_cls.filter = filter
         target_cls.filter_by = filter_by
+        target_cls.order_by = order_by
         target_cls.filtered_query = filtered_query
         return target_cls
 

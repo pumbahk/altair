@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 import logging
 logger = logging.getLogger(__name__)
-
+import sqlalchemy as sa
 from altaircms.security import RootFactory
 from altaircms.plugins.base.mixins import HandleSessionMixin
 from altaircms.plugins.base.mixins import UpdateDataMixin
@@ -101,7 +101,7 @@ class ImageWidgetResource(HandleSessionMixin, #todo:remove
     AssetClass = ImageAsset #todo:remove
     @reify
     def asset_repository(self):
-        return AssetRepository(self.request, ImageAsset, offset=5)
+        return AssetRepository(self.request, ImageAsset, offset=5).order_by(sa.desc(ImageAsset.updated_at))
     @reify
     def widget_repository(self):
         return WidgetRepository(self.request, ImageWidget)
