@@ -4,13 +4,13 @@
   <div class="span12">
     <%include file="./_detail_table.html" args="expanded=True" />
     <input type="hidden" id="performance_id" value="${performance.id}"></input>
-    <div style="overflow:hidden">
+    <div>
       <h3 class="pull-left" style="margin-right: 10px">販売区分</h3>
-      <div style="margin-top:10px">
+      <div class="pull-left" style="margin-top:10px">
         <%include file="/sales_segments/_action_button.html" />
       </div>
     </div>
-    <form>
+    <form class="clearfix">
     <%include file="/sales_segments/_list.html" args="sales_segments=sales_segments" />
     </form>
     <div id="sales_segments-form">
