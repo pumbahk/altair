@@ -296,6 +296,7 @@ class send_lot_report_mailsTests(unittest.TestCase):
         self._callFUT(request, sender)
 
         mailer = get_mailer(request)
+        self.assertEqual(len(mailer.outbox), 1)
         self.assertEqual(mailer.outbox[0].subject, u"[抽選申込状況レポート] テスト抽選")
 
     @mock.patch("altair.app.ticketing.events.lots.reporting.ReportCondition")

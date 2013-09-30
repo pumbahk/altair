@@ -36,7 +36,7 @@ class LotEntriesTests(unittest.TestCase):
         result = target._parse_import_file(f)
 
         self.assertEqual(result,
-                         [('RT0000003109', '1'), ('RT000000310A', '1')])
+                         [('RT0000003109', 0), ('RT000000310A', 0)])
 
     def test_import_accepted_entries(self):
         from datetime import datetime
