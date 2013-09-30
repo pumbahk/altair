@@ -228,7 +228,6 @@ class LotEntryReporterTests(unittest.TestCase):
                          [u"testing-recipient@example.com"])
         self.assertEqual(result.sender,
                          u"sender@example.com")
-        print result.html
         self.assertIn(u"S席", result.html)
 
 
