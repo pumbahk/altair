@@ -3,10 +3,11 @@
 import optparse
 import sys
 from datetime import datetime
-from sqlalchemy import and_
+from sqlalchemy.sql.expression import desc
 
 from altair.app.ticketing.core.models import Order
 from altair.app.ticketing.orders.events import notify_order_canceled
+from altair.app.ticketing.models import DBSession
 
 from .models import (
     SejNotification,
@@ -25,21 +26,15 @@ __all__ = [
     ]
 
 def get_sej_order(notification):
-    if notification.exchange_number and notification.billing_number:
-        return SejOrder.filter(
-            and_(
-                SejOrder.order_id        == notification.order_id,
-                SejOrder.exchange_number == (notification.exchange_number or None),
-                SejOrder.billing_number  == (notification.billing_number or None)
-                )
-            ).first()
-    elif notification.exchange_number:
-        return SejOrder.filter(and_(SejOrder.order_id       == notification.order_id, SejOrder.exchange_number== notification.exchange_number)).first()
-    elif notification.billing_number:
-        return SejOrder.filter(and_(SejOrder.order_id       == notification.order_id, SejOrder.billing_number == notification.billing_number)).first()
+    q = SejOrder.filter_by(order_no=notification.order_no)
+    if notification.exchange_number:
+        q = q.filter_by(exchange_number=notification.exchange_number)
+    if notification.billing_number:
+        q = q.filter_by(billing_number=notification.billing_number)
+    return q.order_by(desc(SejOrder.branch_no)).limit(1).first()
 
 def get_order(sej_order):
-    return Order.filter_by(order_no = sej_order.order_id).first()
+    return Order.filter_by(order_no=sej_order.order_no).first()
 
 def reflect_ticketing_and_payment(request, sej_order, order, notification):
     now = datetime.now()
@@ -107,13 +102,21 @@ def reflect_expire(request, sej_order, order, notification):
     notification.reflected_at = datetime.now() # SAFE TO USE datetime.now() HERE
 
 def reflect_re_grant(request, sej_order, order, notification):
-    sej_order.exchange_number         = notification.exchange_number_new
-    sej_order.billing_number          = notification.billing_number_new
-    for sej_ticket in sej_order.tickets:
-        code = notification.barcode_numbers.get('X_barcode_no_%02d' % sej_ticket.ticket_idx)
+    branch = sej_order.new_branch(
+        payment_type=notification.payment_type_new,
+        exchange_number=notification.exchange_number_new,
+        billing_number=notification.billing_number_new,
+        ticketing_due_at=notification.ticketing_due_at,
+        processed_at = notification.processed_at
+        )
+    DBSession.add(branch)
+    # XXX: バーコード番号は無条件で更新してしまう (ごめんなさい)
+    # やっぱり古い番号はキープしておいたほうがよいかもしれない
+    for sej_ticket in SejTicket.query.filter_by(order_no=sej_order.order_no):
+        code = notification.barcode_numbers.get(str(sej_ticket.ticket_idx))
         if code:
             sej_ticket.barcode_number = code
-    sej_order.processed_at = notification.processed_at
+    notification.reflected_at = datetime.now() # SAFE TO USE datetime.now() HERE
 
 def dummy(request, sej_order, order, notification):
     pass
@@ -133,13 +136,13 @@ def fetch_notifications():
             if order:
                 yield sej_order, order, notification
             else:
-                logging.error("Order Not found: order_no=%s, exchange_number=%s, billing_number=%s" % (notification.order_id, notification.exchange_number,notification.billing_number))
+                logging.error("Order Not found: order_no=%s, exchange_number=%s, billing_number=%s" % (notification.order_no, notification.exchange_number,notification.billing_number))
         else:
-            logging.error("SejOrder Not found: order_no=%s, exchange_number=%s, billing_number=%s" % (notification.order_id, notification.exchange_number,notification.billing_number))
+            logging.error("SejOrder Not found: order_no=%s, exchange_number=%s, billing_number=%s" % (notification.order_no, notification.exchange_number,notification.billing_number))
 
 def process_notification(request):
     reflected_at = datetime.now()
     for sej_order, order, notification in fetch_notifications():
         action = actions.get(int(notification.notification_type), dummy)
-        log.info("Processing notification: process_number=%s, order_no=%s, exchange_number=%s, billing_number=%s, action=%s", notification.process_number, sej_order.order_id, notification.exchange_number, notification.billing_number, action.__name__)
+        log.info("Processing notification: process_number=%s, order_no=%s, exchange_number=%s, billing_number=%s, action=%s", notification.process_number, sej_order.order_no, notification.exchange_number, notification.billing_number, action.__name__)
         action(request, sej_order, order, notification)

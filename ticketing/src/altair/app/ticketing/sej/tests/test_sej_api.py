@@ -57,7 +57,7 @@ class SejApiTest(unittest.TestCase):
         assert target.process_number      == params['X_shori_id']
         assert target.payment_type        == params['X_shori_kbn']
         assert target.shop_id             == params['X_shop_id']
-        assert target.order_id            == params['X_shop_order_id']
+        assert target.order_no            == params['X_shop_order_id']
         assert target.billing_number      == params['X_haraikomi_no']
         assert target.exchange_number     == params['X_hikikae_no']
         assert float(target.total_price)  == float(params['X_goukei_kingaku'])
@@ -79,7 +79,7 @@ class SejApiTest(unittest.TestCase):
         assert target.process_number      == params['X_shori_id']
         assert target.payment_type        == params['X_shori_kbn']
         assert target.shop_id             == params['X_shop_id']
-        assert target.order_id            == params['X_shop_order_id']
+        assert target.order_no            == params['X_shop_order_id']
         assert target.billing_number      == params['X_haraikomi_no']
         assert target.exchange_number     == params['X_hikikae_no']
         assert float(target.total_price)  == float(params['X_goukei_kingaku'])
@@ -116,7 +116,7 @@ class SejApiTest(unittest.TestCase):
         assert target.process_number      == params['X_shori_id']
         assert target.payment_type        == params['X_shori_kbn']
         assert target.shop_id             == params['X_shop_id']
-        assert target.order_id            == params['X_shop_order_id']
+        assert target.order_no            == params['X_shop_order_id']
         assert target.ticketing_due_at    == datetime(2012, 5, 23, 0, 0, 0)
         assert target.billing_number      == params['X_haraikomi_no']
         assert target.exchange_number     == params['X_hikikae_no']

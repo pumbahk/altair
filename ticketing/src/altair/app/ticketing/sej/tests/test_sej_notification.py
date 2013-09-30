@@ -19,7 +19,7 @@ def create_expire_notification_from_order(shop_id, sej_order):
         notification_type=SejNotificationType.TicketingExpire.v,
         process_number=generate_process_number(),
         shop_id=shop_id,
-        order_id=sej_order.order_id,
+        order_no=sej_order.order_no,
         payment_type=sej_order.payment_type,
         ticketing_due_at=sej_order.ticketing_due_at,
         billing_number=sej_order.billing_number,
@@ -33,7 +33,7 @@ def create_payment_notification_from_order(shop_id, sej_order):
         notification_type=SejNotificationType.PaymentComplete.v,
         process_number=generate_process_number(),
         shop_id=shop_id,
-        order_id=sej_order.order_id,
+        order_no=sej_order.order_no,
         payment_type=sej_order.payment_type,
         ticketing_due_at=sej_order.ticketing_due_at,
         billing_number=sej_order.billing_number,
@@ -86,7 +86,7 @@ class SejNotificationTest(unittest.TestCase, CoreTestMixin):
         order.order_no = '012301230123'
         self.session.add(order)
         sej_order = SejOrder(
-            order_id=order.order_no,
+            order_no=order.order_no,
             exchange_number='000000000000',
             billing_number='000000000000',
             payment_type=SejPaymentType.CashOnDelivery.v
@@ -127,7 +127,7 @@ class SejNotificationTest(unittest.TestCase, CoreTestMixin):
         order.order_no = '012301230123'
         self.session.add(order)
         sej_order = SejOrder(
-            order_id=order.order_no,
+            order_no=order.order_no,
             exchange_number=None,
             billing_number='000000000000',
             payment_type=SejPaymentType.Prepayment.v
@@ -185,7 +185,7 @@ class SejNotificationTest(unittest.TestCase, CoreTestMixin):
         order.order_no = '012301230123'
         self.session.add(order)
         sej_order = SejOrder(
-            order_id=order.order_no,
+            order_no=order.order_no,
             exchange_number='000000000000',
             billing_number='000000000000',
             payment_type=SejPaymentType.Paid.v
@@ -224,7 +224,7 @@ class SejNotificationTest(unittest.TestCase, CoreTestMixin):
         order.order_no = '012301230123'
         self.session.add(order)
         sej_order = SejOrder(
-            order_id=order.order_no,
+            order_no=order.order_no,
             exchange_number=None,
             billing_number='000000000000',
             payment_type=SejPaymentType.PrepaymentOnly.v
@@ -265,7 +265,7 @@ class SejNotificationTest(unittest.TestCase, CoreTestMixin):
         order.order_no = '012301230123'
         self.session.add(order)
         sej_order = SejOrder(
-            order_id=order.order_no,
+            order_no=order.order_no,
             exchange_number='000000000000',
             billing_number='000000000000',
             payment_type=SejPaymentType.CashOnDelivery.v
@@ -300,7 +300,7 @@ class SejNotificationTest(unittest.TestCase, CoreTestMixin):
         order.order_no = '012301230123'
         self.session.add(order)
         sej_order = SejOrder(
-            order_id=order.order_no,
+            order_no=order.order_no,
             exchange_number='000000000000',
             billing_number='000000000000',
             payment_type=SejPaymentType.Paid.v

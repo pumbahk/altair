@@ -104,7 +104,7 @@ class SejInstantPaymentFileParser(SejFileParser):
     def parse_row(self):
         return OrderedDict([
             ('shop_id'               , self.reader.get_col(5)),
-            ('order_id'              , self.reader.get_col(12)),
+            ('order_no'              , self.reader.get_col(12)),
             ('notification_type'     , self.reader.get_int(2)),
             ('payment_type'          , self.reader.get_int(2)),
             ('billing_number'        , self.reader.get_col_strip(13)),
@@ -126,7 +126,7 @@ class SejExpireFileParser(SejFileParser):
     def parse_row(self):
         return OrderedDict([
             ('shop_id'               , self.reader.get_col(5)),
-            ('order_id'              , self.reader.get_col(12)),
+            ('order_no'              , self.reader.get_col(12)),
             ('notification_type'     , self.reader.get_int(2)),
             ('payment_type'          , self.reader.get_int(2)),
             ('expired_at'            , self.reader.get_datetime(12)),
@@ -141,7 +141,7 @@ class SejPaymentInfoFileParser(SejExpireFileParser):
         return OrderedDict([
             ('notification_type'     , self.reader.get_int(2)),
             ('ticket_barcode_number' , self.reader.get_col(13)),
-            ('order_id'              , self.reader.get_col(12)),
+            ('order_no'              , self.reader.get_col(12)),
             ('credit_price'          , self.reader.get_col(6)),
             ('recieved_at'           , self.reader.get_datetime(14)),
             ('close_at'              , self.reader.get_datetime(14)),
@@ -160,7 +160,7 @@ class SejRefundFileParser(SejFileParser):
         return OrderedDict([
             ('notification_type'     , self.reader.get_int(2)),
             ('ticket_barcode_number' , self.reader.get_col(13)),
-            ('order_id'              , self.reader.get_col(12)),
+            ('order_no'              , self.reader.get_col(12)),
             ('refund_ticket_price'   , self.reader.get_int(6)),
             ('refund_other_price'    , self.reader.get_int(6)),
             ('received_at'           , self.reader.get_datetime(14)),
@@ -179,7 +179,7 @@ class SejCheckFileParser(SejFileParser):
     def parse_row(self):
         return OrderedDict([
             ('shop_id'               , self.reader.get_col(5)),
-            ('order_id'              , self.reader.get_col(12)),
+            ('order_no'              , self.reader.get_col(12)),
             ('notification_type'     , self.reader.get_int(2)),
             ('payment_type'          , self.reader.get_int(2)),
             ('billing_number'        , self.reader.get_col_strip(13)),

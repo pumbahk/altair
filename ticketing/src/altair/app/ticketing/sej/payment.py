@@ -125,7 +125,7 @@ def request_order(
         shop_name,
         contact_01,
         contact_02,
-        order_id,
+        order_no,
         username,
         username_kana,
         tel,
@@ -152,7 +152,7 @@ def request_order(
 
     payment = SejPayment(url = hostname + '/order/order.do', secret_key = secret_key)
     params = create_sej_request_data(
-        order_id=order_id,
+        order_no=order_no,
         total=total,
         ticket_total=ticket_total,
         commission_fee=commission_fee,
@@ -202,7 +202,7 @@ def request_order(
     if error_type:
         sej_error = SejError(
             message=ret.get('Error_Msg', None),
-            order_no=order_id,
+            order_no=order_no,
             back_url=None,
             error_code=int(error_type),
             error_field=ret.get('Error_Field', None)
@@ -210,55 +210,51 @@ def request_order(
         logger.warn(sej_error)
         raise sej_error
 
-    sej_order = SejOrder()
-    sej_order.shop_id                   = shop_id
-    sej_order.shop_name                 = shop_name
-    sej_order.contact_01                = contact_01
-    sej_order.contact_02                = contact_02
-    sej_order.user_name                 = username
-    sej_order.user_name_kana            = username_kana
-    sej_order.tel                       = tel
-    sej_order.zip_code                  = zip
-    sej_order.email                     = email
-
-    sej_order.payment_type              = payment_type.v
-    sej_order.billing_number            = ret.get('X_haraikomi_no')
-    sej_order.total_ticket_count        = int(ret.get('X_ticket_cnt', 0))
-    sej_order.ticket_count              = int(ret.get('X_ticket_hon_cnt', 0))
-    sej_order.exchange_sheet_url        = ret.get('X_url_info')
-    sej_order.order_id                  = ret.get('X_shop_order_id')
-    sej_order.exchange_sheet_number     = ret.get('iraihyo_id_00')
-    sej_order.exchange_number           = ret.get('X_hikikae_no')
-    sej_order.order_at                  = datetime.now()
-    sej_order.total_price               = int(params.get('X_goukei_kingaku',0))
-    sej_order.ticket_price              = int(params.get('X_ticket_daikin',0))
-    sej_order.commission_fee            = int(params.get('X_ticket_kounyu_daikin',0))
-    sej_order.ticketing_fee             = int(params.get('X_hakken_daikin',0))
-
-    sej_order.payment_due_at            = payment_due_at
-    sej_order.ticketing_start_at        = ticketing_start_at
-    sej_order.ticketing_due_at          = ticketing_due_at
-    sej_order.regrant_number_due_at     = regrant_number_due_at
-
-    sej_order.attributes = dict()
+    sej_order = SejOrder(
+        shop_id                   = shop_id,
+        shop_name                 = shop_name,
+        contact_01                = contact_01,
+        contact_02                = contact_02,
+        user_name                 = username,
+        user_name_kana            = username_kana,
+        tel                       = tel,
+        zip_code                  = zip,
+        email                     = email,
+        payment_type              = payment_type.v,
+        billing_number            = ret.get('X_haraikomi_no'),
+        total_ticket_count        = int(ret.get('X_ticket_cnt', 0)),
+        ticket_count              = int(ret.get('X_ticket_hon_cnt', 0)),
+        exchange_sheet_url        = ret.get('X_url_info'),
+        order_no                  = ret.get('X_shop_order_id'),
+        exchange_sheet_number     = ret.get('iraihyo_id_00'),
+        exchange_number           = ret.get('X_hikikae_no'),
+        order_at                  = datetime.now(),
+        total_price               = int(params.get('X_goukei_kingaku',0)),
+        ticket_price              = int(params.get('X_ticket_daikin',0)),
+        commission_fee            = int(params.get('X_ticket_kounyu_daikin',0)),
+        ticketing_fee             = int(params.get('X_hakken_daikin',0)),
+        payment_due_at            = payment_due_at,
+        ticketing_start_at        = ticketing_start_at,
+        ticketing_due_at          = ticketing_due_at,
+        regrant_number_due_at     = regrant_number_due_at
+        )
     idx = 1
     for ticket in tickets:
-        sej_ticket = SejTicket()
-        sej_ticket.ticket_idx           = idx
-        sej_ticket.ticket_type          = ticket.get('ticket_type').v
-        sej_ticket.event_name           = ticket.get('event_name')
-        sej_ticket.performance_name     = ticket.get('performance_name')
-        sej_ticket.performance_datetime = ticket.get('performance_datetime')
-        sej_ticket.ticket_template_id   = ticket.get('ticket_template_id')
-        sej_ticket.ticket_data_xml      = ticket.get('xml').xml
-        sej_ticket.product_item_id      = ticket.get('product_item_id')
-        code = ret.get('X_barcode_no_%02d' % idx)
-        if code:
-            sej_ticket.barcode_number = code
-
-        sej_order.tickets.append(sej_ticket)
-
-        idx+=1
+        sej_ticket = SejTicket(
+            order                = sej_order,
+            order_no             = sej_order.order_no,
+            ticket_idx           = idx,
+            ticket_type          = '%d' % ticket.get('ticket_type').v,
+            event_name           = ticket.get('event_name'),
+            performance_name     = ticket.get('performance_name'),
+            performance_datetime = ticket.get('performance_datetime'),
+            ticket_template_id   = ticket.get('ticket_template_id'),
+            ticket_data_xml      = ticket.get('xml').xml,
+            product_item_id      = ticket.get('product_item_id'),
+            barcode_number       = ret.get('X_barcode_no_%02d' % idx) or None
+            )
+        idx += 1
+        DBSession.add(sej_ticket)
 
     DBSession.add(sej_order)
     DBSession.flush()
@@ -266,7 +262,7 @@ def request_order(
     return sej_order
 
 def request_cancel_order(
-        order_id,
+        order_no,
         billing_number,
         exchange_number,
         shop_id = u'30520',
@@ -279,7 +275,7 @@ def request_cancel_order(
     payment = SejPayment(url = hostname + u'/order/cancelorder.do', secret_key = secret_key)
     params = JavaHashMap()
     params['X_shop_id']         = shop_id
-    params['X_shop_order_id']   = order_id
+    params['X_shop_order_id']   = order_no
     if billing_number:
         params['X_haraikomi_no']    = billing_number
     if exchange_number:
@@ -292,7 +288,7 @@ def request_cancel_order(
     if error_type:
         sej_error = SejError(
             message=ret.get('Error_Msg', None),
-            order_no=order_id,
+            order_no=order_no,
             back_url=None,
             error_code=int(error_type),
             error_field=ret.get('Error_Field', None)
@@ -300,7 +296,10 @@ def request_cancel_order(
         logger.warn(sej_error)
         raise sej_error
 
-    sej_order = SejOrder.query.filter_by(order_id = order_id, billing_number = billing_number, exchange_number=exchange_number).one()
+    sej_order = SejOrder.query.filter_by(
+        order_no=order_no,
+        billing_number=billing_number,
+        exchange_number=exchange_number).one()
     sej_order.cancel_at = datetime.now()
     DBSession.merge(sej_order)
     DBSession.flush()
@@ -334,7 +333,7 @@ def request_update_order(
         raise ValueError('payment_type')
 
     sej_order = SejOrder.query.filter_by(
-        order_id = condition.get('order_id'),
+        order_no=condition.get('order_no'),
         billing_number = condition.get('billing_number'),
         exchange_number=condition.get('exchange_number')).one()
 
@@ -343,7 +342,7 @@ def request_update_order(
 
     payment = SejPayment(url = hostname + u'/order/updateorder.do', secret_key = secret_key)
     params = create_sej_request_data(
-        order_id=condition.get('order_id'),
+        order_no=condition.get('order_no'),
         total=total,
         ticket_total=ticket_total,
         commission_fee=commission_fee,
@@ -379,7 +378,7 @@ def request_update_order(
     if error_type:
         sej_error = SejError(
             message=ret.get('Error_Msg', None),
-            order_no=condition.get('order_id'),
+            order_no=condition.get('order_no'),
             back_url=None,
             error_code=int(error_type),
             error_field=ret.get('Error_Field', None)
@@ -392,7 +391,7 @@ def request_update_order(
     sej_order.total_ticket_count        = int(ret.get('X_ticket_cnt', 0))
     sej_order.ticket_count              = int(ret.get('X_ticket_hon_cnt', 0))
     sej_order.exchange_sheet_url        = ret.get('X_url_info')
-    sej_order.order_id                  = ret.get('X_shop_order_id')
+    sej_order.order_no                  = ret.get('X_shop_order_id')
     sej_order.exchange_sheet_number     = ret.get('iraihyo_id_00')
     sej_order.exchange_number           = ret.get('X_hikikae_no')
     sej_order.total_price               = int(params.get('X_goukei_kingaku',0))
@@ -407,7 +406,8 @@ def request_update_order(
     sej_order.regrant_number_due_at     = regrant_number_due_at
 
     order_buffer = {}
-    for ticket in sej_order.tickets:
+    tickets = SejTicket.query.filter_by(order_no=sej_order.order_no)
+    for ticket in tickets:
         order_buffer[ticket.ticket_idx] = ticket
 
     idx = 1
@@ -416,7 +416,7 @@ def request_update_order(
         if not sej_ticket:
             break
         sej_ticket.ticket_idx           = idx
-        sej_ticket.ticket_type          = "%d" % ticket.get('ticket_type').v
+        sej_ticket.ticket_type          = '%d' % ticket.get('ticket_type').v
         sej_ticket.event_name           = ticket.get('event_name')
         sej_ticket.performance_name     = ticket.get('performance_name')
         sej_ticket.performance_datetime = ticket.get('performance_datetime')
@@ -532,7 +532,7 @@ def request_cancel_event(cancel_events):
                 cancel_event.shop_id,
                 ticket.event_code_01,
                 ticket.event_code_02,
-                ticket.order_id,
+                ticket.order_no,
                 unicode(ticket.ticket_barcode_number),
                 unicode(ticket.refund_ticket_amount),
                 unicode(ticket.refund_other_amount),

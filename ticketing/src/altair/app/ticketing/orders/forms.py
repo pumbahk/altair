@@ -788,12 +788,11 @@ class SejTicketForm(Form):
     )
 
 class SejOrderForm(Form):
-
     id = HiddenField(
         label=u'ID',
         validators=[Optional()],
     )
-    order_id= TextField(
+    order_no= TextField(
         label=u'オーダーID',
         validators=[Optional()],
     )

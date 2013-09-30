@@ -44,9 +44,9 @@ def includeme(config):
     config.add_route('orders.sej.event.refund.detail'   , '/sej/event/refund/{event_id}')
 
     config.add_route('orders.sej.order.request'         , '/sej/order/request')
-    config.add_route('orders.sej.order.info'            , '/sej/order/{order_id}/')
-    config.add_route('orders.sej.order.cancel'          , '/sej/order/{order_id}/cancel')
-    config.add_route('orders.sej.order.ticket.data'     , '/sej/order/{order_id}/ticket/{ticket_id}/data')
+    config.add_route('orders.sej.order.info'            , '/sej/order/{order_no}/')
+    config.add_route('orders.sej.order.cancel'          , '/sej/order/{order_no}/cancel')
+    config.add_route('orders.sej.order.ticket.data'     , '/sej/order/{order_no}/ticket/{ticket_id}/data')
     config.add_route('orders.sej.order.ticket.refund'   , '/sej/order/refund/{ticket_id}/ticket')
 
     config.add_route('orders.sej.ticket_template'       , '/sej/ticket_template')

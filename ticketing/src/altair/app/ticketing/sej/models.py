@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 
 from altair.app.ticketing.models import BaseModel, LogicallyDeleted, WithTimestamp, MutationDict, JSONEncodedDict, relationship, Identifier
-from sqlalchemy import Table, Column, BigInteger, Integer, String, DateTime, Date, ForeignKey, Enum, DECIMAL, Binary
+from sqlalchemy import Table, Column, BigInteger, Integer, String, DateTime, Date, ForeignKey, Enum, DECIMAL, Binary, UniqueConstraint
 from sqlalchemy.orm import relationship, join, column_property, mapper, backref
+from sqlalchemy.sql.expression import asc
 import sqlahelper
 from datetime import datetime
 from altair.app.ticketing.utils import StandardEnum
@@ -143,7 +144,7 @@ class SejRefundTicket(BaseModel,  WithTimestamp, LogicallyDeleted, Base):
     available                   = Column(Integer)
     event_code_01               = Column(String(16))
     event_code_02               = Column(String(16), nullable=True)
-    order_id                    = Column(String(12))
+    order_no                    = Column(String(12))
     ticket_barcode_number       = Column(String(13))
     refund_ticket_amount        = Column(DECIMAL)
     refund_other_amount         = Column(DECIMAL)
@@ -161,7 +162,7 @@ class SejNotification(BaseModel, WithTimestamp, LogicallyDeleted, Base):
     payment_type_new        = Column(Enum('1', '2', '3', '4'), nullable=True)
 
     shop_id                 = Column(String(5))
-    order_id                = Column(String(12))
+    order_no                = Column(String(12))
 
     exchange_number         = Column(String(13))
     exchange_number_new     = Column(String(13), nullable=True)
@@ -207,6 +208,9 @@ class SejFile(BaseModel, WithTimestamp, LogicallyDeleted, Base):
 
 class SejOrder(BaseModel,  WithTimestamp, LogicallyDeleted, Base):
     __tablename__           = 'SejOrder'
+    __table_args__= (
+        UniqueConstraint('order_no', 'branch_no'),
+        )
     id                      = Column(Identifier, primary_key=True)
     shop_id                 = Column(String(5))
     shop_name               = Column(String(64))
@@ -218,7 +222,7 @@ class SejOrder(BaseModel,  WithTimestamp, LogicallyDeleted, Base):
     zip_code                = Column(String(7))
     email                   = Column(String(64))
 
-    order_id                = Column(String(12))
+    order_no                = Column(String(12))
     exchange_number         = Column(String(13))
     billing_number          = Column(String(13))
 
@@ -252,7 +256,7 @@ class SejOrder(BaseModel,  WithTimestamp, LogicallyDeleted, Base):
 
     processed_at            = Column(DateTime, nullable=True)
 
-    # 決済に日時
+    # 決済日時
     order_at                = Column(DateTime, nullable=True)
     # 支払日時
     pay_at                  = Column(DateTime, nullable=True)
@@ -260,6 +264,10 @@ class SejOrder(BaseModel,  WithTimestamp, LogicallyDeleted, Base):
     issue_at                = Column(DateTime, nullable=True)
     # キャンセル日時
     cancel_at               = Column(DateTime, nullable=True)
+
+    # 枝番 (もとい、バージョン番号. 1スタートで1づつ単調増加)
+    # Order.branch_no とは直接関係ない。再付番の際に増える
+    branch_no               = Column(Integer, nullable=False, default=1, server_default='1')
 
     def mark_canceled(self, now=None):
         self.cancel_at = now or datetime.now() # SAFE TO USE datetime.now() HERE
@@ -269,6 +277,77 @@ class SejOrder(BaseModel,  WithTimestamp, LogicallyDeleted, Base):
 
     def mark_paid(self, now=None):
         self.pay_at = now or datetime.now() # SAFE TO USE datetime.now() HERE
+
+    @property
+    def prev(self):
+        return DBSession.query(self.__class__, include_deleted=True) \
+            .filter_by(order_no=self.order_no, branch_no=(self.branch_no - 1)) \
+            .one()
+
+    @property
+    def next(self):
+        return DBSession.query(self.__class__, include_deleted=True) \
+            .filter_by(order_no=self.order_no, branch_no=(self.branch_no + 1)) \
+            .one()
+
+    @property
+    def tickets(self):
+        return SejTicket.query.filter_by(order_no=self.order_no).order_by(SejTicket.ticket_idx).all()
+
+    def new_branch(self, payment_type, ticketing_due_at, exchange_number=None, billing_number=None, processed_at=None):
+        # payment_type は文字列になり得る (MySQLのENUM型をDBAPIは文字列として扱う)
+        if int(payment_type) == SejPaymentType.Paid:
+            # 再付番の際、代済に変更になるということは、必ず支払済のはずのため
+            # (これはSEJ側の想定)、payment_due_atは変更してはならない
+            payment_due_at_new = self.payment_due_at
+        else:
+            # 代引の場合は payment_due_at は ticketing_due_at と必ず等しくなるはずである
+            payment_due_at_new = ticketing_due_at
+        return self.__class__(
+            shop_id=self.shop_id,
+            shop_name=self.shop_name,
+            contact_01=self.contact_01,
+            contact_02=self.contact_02,
+            user_name=self.user_name,
+            user_name_kana=self.user_name_kana,
+            tel=self.tel,
+            zip_code=self.zip_code,
+            email=self.email,
+            order_no=self.order_no,
+            branch_no=(self.branch_no + 1),
+            exchange_sheet_url=self.exchange_sheet_url,
+            exchange_sheet_number=self.exchange_sheet_number,
+            total_price=self.total_price,
+            ticket_price=self.ticket_price,
+            commission_fee=self.commission_fee,
+            ticketing_fee=self.ticketing_fee,
+            total_ticket_count=self.total_ticket_count,
+            ticket_count=self.ticket_count,
+            return_ticket_count=self.return_ticket_count,
+            process_id=self.process_id,
+            pay_store_number=self.pay_store_number,
+            pay_store_name=self.pay_store_name,
+            cancel_reason=self.cancel_reason,
+            ticketing_store_number=self.ticketing_store_number,
+            ticketing_store_name=self.ticketing_store_name,
+            ticketing_start_at=self.ticketing_start_at,
+            regrant_number_due_at=self.regrant_number_due_at,
+            order_at=self.order_at,
+            pay_at=self.pay_at,
+            issue_at=self.issue_at,
+            cancel_at=self.cancel_at,
+
+            payment_type=payment_type,
+            ticketing_due_at=ticketing_due_at,
+            payment_due_at=payment_due_at_new,
+            exchange_number=exchange_number or self.exchange_number,
+            billing_number=billing_number or self.billing_number,
+            processed_at=processed_at
+            )
+
+    @classmethod
+    def branches(cls, order_no):
+        return cls.query.filter_by(order_no=order_no).order_by(asc(cls.branch_no)).all()
 
 class SejTicket(BaseModel,  WithTimestamp, LogicallyDeleted, Base):
     __tablename__           = 'SejTicket'
@@ -281,8 +360,8 @@ class SejTicket(BaseModel,  WithTimestamp, LogicallyDeleted, Base):
     performance_datetime    = Column(DateTime)
     ticket_template_id      = Column(String(10))
     ticket_data_xml         = Column(String(5000))
-    order                   = relationship("SejOrder", backref='tickets', order_by='SejTicket.ticket_idx')
-    order_id                = Column(Identifier, ForeignKey("SejOrder.id"), nullable=True)
+    order                   = relationship("SejOrder")
+    order_no                = Column(Identifier, ForeignKey("SejOrder.order_no"), nullable=True)
     ticket_idx              = Column(Integer)
     product_item_id         = Column(Identifier, ForeignKey("ProductItem.id"), nullable=True)
 

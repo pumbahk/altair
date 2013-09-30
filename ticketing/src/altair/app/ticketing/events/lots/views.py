@@ -710,7 +710,7 @@ class LotEntries(BaseView):
         ).one()
         tmpl = get_renderer("/lots/search.html")
         auth = MultiCheckoutOrderStatus.by_order_no(wish.lot_entry.entry_no)
-        sej =  DBSession.query(SejOrder).filter(SejOrder.order_id==wish.lot_entry.entry_no).first()
+        sej =  DBSession.query(SejOrder).filter(SejOrder.order_no==wish.lot_entry.entry_no).first()
 
         html = tmpl.implementation().get_def('lot_wish_row').render(
             self.request, w=w, auth=auth, sej=sej, view=self)
