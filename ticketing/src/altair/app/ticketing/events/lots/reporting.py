@@ -8,6 +8,7 @@ from datetime import datetime, timedelta
 from pyramid.renderers import render_to_response
 from pyramid_mailer.message import Message
 from pyramid_mailer import get_mailer
+from altair.app.ticketing.models import DBSession
 from altair.app.ticketing.core.models import (
     DBSession,
     ReportFrequencyEnum,
