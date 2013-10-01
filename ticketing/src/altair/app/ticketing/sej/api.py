@@ -149,7 +149,7 @@ def reflect_re_grant(notification):
                 .where(
                     and_(
                         SejTicket.barcode_number == barcode_number,
-                        SejTicket.order_ino== notification.order_no
+                        SejTicket.order_no == notification.order_no
                     )
             ).values(
                 barcode_number = barcode_number
