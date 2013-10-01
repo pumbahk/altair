@@ -99,9 +99,20 @@ class ImageWidgetResource(HandleSessionMixin, #todo:remove
                           ):
     WidgetClass = ImageWidget #todo:remove
     AssetClass = ImageAsset #todo:remove
+
+    @property
+    def page_offset(self): #hmm
+        try:
+            return int(self.request.params.get("offset", 5))
+        except ValueError as e:
+            logger.warn(repr(e))
+            return 5
+    
     @reify
     def asset_repository(self):
-        return AssetRepository(self.request, ImageAsset, offset=5).order_by(sa.desc(ImageAsset.updated_at))
+        qs = AssetRepository(self.request, ImageAsset, offset=self.page_offset)
+        return qs.order_by(sa.desc(ImageAsset.updated_at))
+
     @reify
     def widget_repository(self):
         return WidgetRepository(self.request, ImageWidget)

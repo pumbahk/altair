@@ -2,6 +2,60 @@ if(!widget){
     throw "widget module is not found";
 }
 
+var ChunkedApiWrapper = function(api, offset, chunkSize){
+    this.cache = {};
+    this.api = api;
+
+    this.page_offset = offset;
+    this.page_chunk_size = chunkSize;
+    this.server_page_offset = this.page_offset * this.page_chunk_size;
+};
+ChunkedApiWrapper.prototype.clean = function(){
+    this.cache = {};
+};
+ChunkedApiWrapper.prototype.realPageIndex = function(page){
+    return Math.floor(page / this.page_chunk_size);
+};
+ChunkedApiWrapper.prototype.chunkIndex = function(page){
+    return page % this.page_chunk_size;
+};
+ChunkedApiWrapper.prototype.dataFromCache = function(cached,i){
+    var idx = this.page_offset * this.chunkIndex(i);
+    //json :: {assets: [], widget: {}, "pk": 0}
+    var assets = [];
+    var data = {"widget": cached["widget"],
+                "assets": assets,
+                "pk": cached["pk"]
+               };
+    var cached_assets = cached["assets"];
+    for(var j=idx,k=idx+this.page_offset; j<k; j++){
+        var v = cached_assets[j]
+        if(!v){
+            break;
+        }
+        assets.push(v);
+    }
+    return data;
+};
+ChunkedApiWrapper.prototype.callAPI = function(word, i){
+    var page = this.realPageIndex(i);
+    // console.log("i: ", i,"realPageIndex: ",page);
+    var cached = this.cache[page];
+    //debug* window.PageCache = this.cache;
+    var self = this;
+    var dfd = new $.Deferred();
+    if(!!cached){
+        return dfd.resolve(this.dataFromCache(cached, i));
+    }
+    //debug* window.Chunked = this;
+    this.api(word, page, this.server_page_offset).done(function(data){
+        //debug* window.APIData = data;
+        self.cache[page] = data;
+        dfd.resolve(self.dataFromCache(data, i));
+    });
+    return dfd.promise();
+};
+
 (function(widget){
     // utility
     var AjaxScrollableAPIGateway = function(pk, fetch_url, search_url, tag_search_url){
@@ -9,26 +63,48 @@ if(!widget){
         this.fetch_url = fetch_url;
         this.search_url = search_url;
         this.tag_search_url = tag_search_url;
+        this.needCleans = [];
     };
-    AjaxScrollableAPIGateway.prototype.fetch = function(word, i){
+    AjaxScrollableAPIGateway.prototype.clean = function(){
+        var cleans = this.needCleans;
+        for(var i=0,j=cleans.length;i<j;i++){
+            if(!!cleans[i].clean){
+                console.log("clean: "+cleans[i]);
+                cleans[i].clean(); //hmm.
+            }
+        }
+    };
+    AjaxScrollableAPIGateway.prototype.fetch = function(word, i, offset){
+        var params = {"page": i, "pk": this.pk};
+        if(!!offset){
+            params["offset"] = offset;
+        }
         return $.ajax(this.fetch_url, {
-            dataType: "html",
+            dataType: "json",
             type: "GET",
-            data: {"page": i, "widget": this.pk}
+            data: params
         }); //dfd
     };
-    AjaxScrollableAPIGateway.prototype.search = function(word, i){
+    AjaxScrollableAPIGateway.prototype.search = function(word, i, offset){
+        var params = {"page": i, "pk": this.pk, "search_word": word};
+        if(!!offset){
+            params["offset"] = offset;
+        }
         return $.ajax(this.search_url, {
-            dataType: "html",
+            dataType: "json",
             type: "GET",
-            data: {"page": i, "widget": this.pk, "search_word": word}
+            data: params
         }); //dfd
     };
-    AjaxScrollableAPIGateway.prototype.tag_search = function(word, i){
+    AjaxScrollableAPIGateway.prototype.tag_search = function(word, i, offset){
+        var params = {"page": i, "pk": this.pk, "tags": word};
+        if(!!offset){
+            params["offset"] = offset;
+        }
         return $.ajax(this.tag_search_url, {
-            dataType: "html",
+            dataType: "json",
             type: "GET",
-            data: {"page": i, "widget": this.pk, "tags": word}
+            data: params
         }); //dfd
     };
 
@@ -46,7 +122,35 @@ if(!widget){
     AjaxImageAreaManager.prototype.getImageArea = function(i){
         return this.root.find(".group#group_"+(i));
     };
-    AjaxImageAreaManager.prototype.injectImages = function(i, html){
+    var ItemsDivTemplate = _.template([
+        '<% _.each(data.assets, function(asset) { %>',
+        '<div class="item<%= asset.class %>">',
+        '<img pk="<%- asset.id%>" src="<%- asset.thumbnail_src %>" class="<%- asset.managed %>"/>',
+        '<p class="title"><%- asset.title %></p>',
+        '<p><span class="item-width"><%- asset.width %></span>x<span class="item-height"><%- asset.height %></span></p>',
+        '<p><%- asset.updated_at %></p>',
+        '</div>',
+        '<% }); %>'
+    ].join("\n"));
+    ItemsDivTemplate.buildVars = function(data){
+        var assets = data.assets;
+        var asset_id = data.widget.asset_id;
+        for(var i=0,j=assets.length; i<j; i++){
+            assets[i].class = "";
+            assets[i].managed = assets[i].id == asset_id ? "managed" : "";
+        }
+        if(!!assets[0]){
+            assets[0].class = " first";
+        }
+        if(!!assets[assets.length-1]){
+            assets[assets.length-1].class = " last";
+        }
+        return data;
+    }; //xxx:
+    AjaxImageAreaManager.prototype.injectImages = function(i, data){
+        // need model?
+        var data = ItemsDivTemplate.buildVars(data);
+        var html = ItemsDivTemplate({data: data})
         return this.getImageArea(i).html(html);
     };
     AjaxImageAreaManager.prototype.selectImage = function(selected){
@@ -63,11 +167,11 @@ if(!widget){
         this.we = we;
         this.root = null;
         this.scrollable = null;
-        this.cache = {fetch: {}, search: {}, tag_search: {}}; //{1: true, 2: true, ...}
         this.gateway = gateway;
         this.areaManager = areaManager;
         this.apiType = "fetch"; // fetch or search or tag_search
         this.word = "" // search word
+        this.semaphore = {fetch: {}, search: {}, tag_search: {}}
     };
     AjaxScrollableHandler.prototype.setSearchWord = function(apiType, word){
         // console.log("*debug setword: "+word);
@@ -78,12 +182,12 @@ if(!widget){
         var i = this.getIndex();
         var apiType = this.apiType;
         // console.log("*debug fetch images i="+i+" cached="+this.cache[apiType][i])
-        if(i > 0 && !this.cache[apiType][i]){
-            this.cache[apiType][i] = true //hmm;
+        if(i > 0 && !this.semaphore[apiType][i]){
+            this.semaphore[apiType][i] = true //hmm;
             var self = this;
             // notice: ducktyping.
-            return this.gateway[apiType](this.word, i).done(function(html){
-                self.areaManager.injectImages(i, html);
+            return this.gateway[apiType](this.word, i).done(function(data){
+                self.areaManager.injectImages(i, data);
             });
         }
     };
@@ -96,7 +200,8 @@ if(!widget){
         // after call setupScrollable of SearchHandler
         this.scrollable = $scrollable.data("scrollable");
         this.scrollable.onSeek(this.fetchImages.bind(this));
-        this.cache = {fetch: {}, search: {}, tag_search: {}}; //hmmm.
+        this.semaphore = {fetch: {}, search: {}, tag_search: {}};
+        this.gateway.clean();
     };
     AjaxScrollableHandler.prototype.getIndex = function(){
         return this.scrollable.getIndex();
@@ -120,7 +225,7 @@ if(!widget){
         var onFailure = (function(){alert(data);});
         var self = this;
         // todo: add failure cont.
-        $('#search_form').ajaxForm({dataType: 'html', success: onSuccess, failure: onFailure,
+        $('#search_form').ajaxForm({dataType: 'json', success: onSuccess, failure: onFailure,
                                     timeout: 1000,
                                     beforeSubmit: function(arr, $form, options){
                                         for(var i=0,j=arr.length;i<j;i++){
@@ -131,7 +236,7 @@ if(!widget){
                                         //console.log(arr);
                                         return true;
                                     }});
-        $('#tag_search_form').ajaxForm({dataType: 'html', success: onSuccess, failure: onFailure,
+        $('#tag_search_form').ajaxForm({dataType: 'json', success: onSuccess, failure: onFailure,
                                         timeout: 1000,
                                         beforeSubmit: function(arr, $form, options){
                                             for(var i=0,j=arr.length;i<j;i++){
@@ -167,8 +272,8 @@ if(!widget){
         delete scrollableJQObject;
         $scrollable.data("scrollable",null);
     };
-    SearchHandler.prototype.afterSearch = function(html){
-        this.areaManager.redraw(html);
+    SearchHandler.prototype.afterSearch = function(data){
+        this.areaManager.redraw(data);
         this.destroyScrollable(this.areaManager.$scrollable);
         this.setupScrollable(this.areaManager.$scrollable);
     }
@@ -192,13 +297,25 @@ if(!widget){
         if(!this.$scrollable.length){
             throw ".scrollable is not found";
         }
-    }
-    SearchAreaManager.prototype.redraw = function(html){
+    };
+    var DrawableTemplate = _.template([
+        '<div class="items">',
+        '<% _.times(data.max_of_pages, function(i) { %>',
+        '<div class="group" id="group_<%- i %>">',
+        '<% if (i==0) {%>',
+        '<%= firstItemContent %>',
+        '<% } %>',
+        '</div>',
+        '<% }); %>',
+        '</div>'
+    ].join("\n"));
+    SearchAreaManager.prototype.redraw = function(data){
         //before
         this.$navi.empty();
         this.$browse.removeClass("disabled");
         //redraw
-        this.$scrollable.html(html);
+        var content = ItemsDivTemplate({"data": ItemsDivTemplate.buildVars(data)});
+        this.$scrollable.html(DrawableTemplate({"data": data, "firstItemContent": content}));
     };
 
     var SubmitHandler = function(we){
@@ -331,7 +448,22 @@ if(!widget){
                 "/api/widget/image/search",
                 "/api/widget/image/tag_search"
             );
-            appHandler = setupApplicationHandler(we, gateway);
+            var setUpWrapper = function(gateway, action){
+                var PageOffset = 5;
+                var PageChunkSize = 6;
+                var wrapper = new ChunkedApiWrapper(gateway[action].bind(gateway), PageOffset, PageChunkSize)
+                gateway.needCleans.push(wrapper);
+                return wrapper.callAPI.bind(wrapper);
+            };
+            var chunkedAPIGateway = {
+                gateway: gateway,
+                fetch: setUpWrapper(gateway, "fetch"),
+                search: setUpWrapper(gateway, "search"),
+                tag_search: setUpWrapper(gateway, "tag_search")
+            };
+            this.chunkedAPIGateway = chunkedAPIGateway;
+            chunkedAPIGateway.__proto__ = gateway; // hmm;
+            appHandler = setupApplicationHandler(we, chunkedAPIGateway);
             widget.env.image.appHandler = appHandler; // for debug;
             appHandler.bind($(we.dialog), "#image_submit", "#image_info_submit");
             // if(!!selected.length > 0){
