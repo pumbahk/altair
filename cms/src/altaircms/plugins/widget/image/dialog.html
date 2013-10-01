@@ -40,7 +40,28 @@
 
     <div class="scrollable">
           ## hmm.
-          <%include file="./scrollable.html", args="widget=widget,assets=assets,max_of_pages=max_of_pages"/>
+        <div class="items">
+        ## N個ごとに区切られたitreratorを受け取り、divで区切って出力(scrollのため).初回だけレンダリング
+        %for i in xrange(max_of_pages):
+        <div class="group" id="group_${i}"> 
+          %if i == 0:
+            ## ./fetch.htmlと同じ(todo:まとめる)
+            %for asset in assets:
+              %if loop.first:
+              <div class="item first">
+              %elif loop.last:
+              <div class="item last">
+              %else:
+              <div class="item">
+              %endif
+              <img pk="${asset.id}" src="${h.asset.rendering_object(request,asset).thumbnail_path}" class="${"managed" if widget.asset_id==asset.id else ""}"/>
+              <p class="title">${asset.title}</p><p><span class="item-width">${asset.width}</span>x<span class="item-height">${asset.height}</span></p><p>${asset.updated_at.strftime("%Y/%m/%d %H:%M") if asset.updated_at else "-"}</p>
+              </div>
+            %endfor
+          %endif
+        </div>
+        %endfor
+        </div>
     </div>
 
     <!-- "previous page" action -->
