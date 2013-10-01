@@ -2,6 +2,7 @@
 
 import unittest
 from pyramid import testing
+from zope.interface import directlyProvides
 from altair.app.ticketing.testing import _setup_db, _teardown_db, DummyRequest
 from webob.multidict import MultiDict
 
@@ -28,6 +29,15 @@ class SalesSegmentsTests(unittest.TestCase):
     def _makeOne(self, *args, **kwargs):
         return self._getTarget()(*args, **kwargs)
 
+    def _makeRequest(self, *args, **kwargs):
+        from pyramid.interfaces import IRoutesMapper
+        request = DummyRequest(*args, **kwargs)
+        mapper = request.registry.queryUtility(IRoutesMapper)
+        request.environ['PATH_INFO'] = request.path_info
+        info = mapper(request)
+        request.matched_route = info['route']
+        return request
+
     def test_new_post(self):
         from datetime import datetime
         from altair.app.ticketing.core.models import (
@@ -44,7 +54,9 @@ class SalesSegmentsTests(unittest.TestCase):
         from altair.app.ticketing.users.models import (
             MemberGroup,
         )
+        from ..resources import ISalesSegmentAdminResource
 
+        self.config.add_route('sales_segments.new', 'sales_segments/new')
         self.config.add_route('sales_segments.index', 'sales_segments/index')
         organization = Organization(short_name='testing')
         account = Account(organization=organization)
@@ -71,10 +83,13 @@ class SalesSegmentsTests(unittest.TestCase):
             event=event,
             performance=performance,
             sales_segment_group=sales_segment_group,
-            user=testing.DummyModel(organization=organization),
+            organization=organization
         )
-        request = DummyRequest(context=context,
+        directlyProvides(context, ISalesSegmentAdminResource)
+        request = self._makeRequest(context=context,
+                               path='/sales_segments/new',
                                POST={
+                                   'performance_id': context.performance.id,
                                    'start_at': '2013-05-05 00:00',
                                    'end_at': '2013-12-31 23:59',
                                    'payment_delivery_method_pairs': str(pdmp.id),
@@ -88,7 +103,7 @@ class SalesSegmentsTests(unittest.TestCase):
             for e, msgs in result['form'].errors.items():
                 print e,
                 for m in msgs:
-                    print m
+                    print m.encode('utf-8')
 
         self.assertEqual(result.location, '/sales_segments/index?performance_id=%d' % performance.id)
         self.assertEqual(request.session.pop_flash(), [u"販売区分を作成しました"])
@@ -116,7 +131,9 @@ class SalesSegmentsTests(unittest.TestCase):
         from altair.app.ticketing.users.models import (
             MemberGroup,
         )
+        from ..resources import ISalesSegmentAdminResource
 
+        self.config.add_route('sales_segments.new', 'sales_segments/new')
         self.config.add_route('sales_segments.index', 'sales_segments/index')
         organization = Organization(short_name='testing')
         account = Account(organization=organization)
@@ -143,10 +160,13 @@ class SalesSegmentsTests(unittest.TestCase):
             event=event,
             performance=performance,
             sales_segment_group=sales_segment_group,
-            user=testing.DummyModel(organization=organization),
+            organization=organization
         )
-        request = DummyRequest(context=context,
+        directlyProvides(context, ISalesSegmentAdminResource)
+        request = self._makeRequest(context=context,
+                               path='/sales_segments/new',
                                POST={
+                                   'performance_id': context.performance.id,
                                    'start_at': '2013-05-05 00:00',
                                    'end_at': '2013-12-31 23:59',
                                    'payment_delivery_method_pairs': str(pdmp.id),
@@ -160,7 +180,7 @@ class SalesSegmentsTests(unittest.TestCase):
             for e, msgs in result['form'].errors.items():
                 print e,
                 for m in msgs:
-                    print m
+                    print m.encode('utf-8')
 
 
         self.assertEqual(request.session.pop_flash(), [u"販売区分を作成しました"])
@@ -204,6 +224,7 @@ class EditSalesSegmentTests(unittest.TestCase):
             SalesSegment,
             SalesSegmentGroup,
             Event,
+            Performance,
             Account,
             PaymentDeliveryMethodPair,
             PaymentMethod,
@@ -213,49 +234,62 @@ class EditSalesSegmentTests(unittest.TestCase):
         from altair.app.ticketing.users.models import (
             User,
         )
+        from ..resources import ISalesSegmentAdminResource
+
+        account = Account()
+        organization = Organization(
+            short_name="testing",
+            accounts=[
+                Account(),
+                Account(),
+                account,
+                ]
+            )
+        event=Event(organization=organization)
+        performance = Performance(
+            event=event,
+            start_on=datetime(2014, 10, 10),
+            end_on=datetime(2014, 10, 10)
+            )
+        sales_segment_group=SalesSegmentGroup(
+            event=event,
+            start_at=datetime(2014, 8, 31),
+            end_at=datetime(2014, 9, 30),
+            order_limit=1,
+            upper_limit=8,
+            registration_fee=100,
+            printing_fee=150,
+            refund_ratio=88,
+            margin_ratio=99,
+            account=account,
+            payment_delivery_method_pairs=[
+                PaymentDeliveryMethodPair(
+                    system_fee=0,
+                    transaction_fee=0,
+                    delivery_fee=0,
+                    discount=0,
+                    payment_method=PaymentMethod(name='testing-payment', fee=0),
+                    delivery_method=DeliveryMethod(name='testing-delivery', fee=0)
+                ),
+                PaymentDeliveryMethodPair(
+                    system_fee=0,
+                    transaction_fee=0,
+                    delivery_fee=0,
+                    discount=0,
+                    payment_method=PaymentMethod(name='testing-payment', fee=0),
+                    delivery_method=DeliveryMethod(name='testing-delivery', fee=0)
+                    ),
+                ]
+            )
+
         sales_segment = SalesSegment(
+            performance=performance,
             start_at=datetime(2013, 8, 31),
             end_at=datetime(2013, 9, 30),
-            sales_segment_group=SalesSegmentGroup(
-                event=Event(),
-                start_at=datetime(2014, 8, 31),
-                end_at=datetime(2014, 9, 30),
-                order_limit=1,
-                upper_limit=8,
-                registration_fee=100,
-                printing_fee=150,
-                refund_ratio=88,
-                margin_ratio=99,
-                account=Account(),
-                payment_delivery_method_pairs=[
-                    PaymentDeliveryMethodPair(
-                        system_fee=0,
-                        transaction_fee=0,
-                        delivery_fee=0,
-                        discount=0,
-                        payment_method=PaymentMethod(name='testing-payment', fee=0),
-                        delivery_method=DeliveryMethod(name='testing-delivery', fee=0)
-                    ),
-                    PaymentDeliveryMethodPair(
-                        system_fee=0,
-                        transaction_fee=0,
-                        delivery_fee=0,
-                        discount=0,
-                        payment_method=PaymentMethod(name='testing-payment', fee=0),
-                        delivery_method=DeliveryMethod(name='testing-delivery', fee=0)
-                    ),
-                ],
-            ),
-        )
-        user = User(
-            organization=Organization(
-                short_name="testing",
-                accounts=[
-                    Account(),
-                    Account(),
-                    sales_segment.sales_segment_group.account,
-                ],
+            sales_segment_group=sales_segment_group
             )
+        user = User(
+            organization=organization
         )
 
         self.session.add(sales_segment)
@@ -263,8 +297,13 @@ class EditSalesSegmentTests(unittest.TestCase):
         self.session.flush()
         context = testing.DummyResource(
             sales_segment=sales_segment,
+            sales_segment_group=sales_segment_group,
+            event=event,
+            performance=performance,
+            organization=organization,
             user=user,
         )
+        directlyProvides(context, ISalesSegmentAdminResource)
         return context
 
     def test_get(self):
@@ -273,7 +312,7 @@ class EditSalesSegmentTests(unittest.TestCase):
         request = DummyRequest(context=context)
         target = self._makeOne(context, request)
 
-        result = target()
+        result = target.edit()
 
         self.assertIn('form', result)
         form = result['form']
@@ -292,7 +331,7 @@ class EditSalesSegmentTests(unittest.TestCase):
 
         target = self._makeOne(context, request)
 
-        result = target()
+        result = target.edit()
 
         self.assertIn('form', result)
         self.assertTrue(result['form'].errors)
@@ -319,13 +358,13 @@ class EditSalesSegmentTests(unittest.TestCase):
 
         target = self._makeOne(context, request)
 
-        result = target()
+        result = target.edit()
         if isinstance(result, dict):
             form = result['form']
             for name, errors in form.errors.items():
                 print name,
                 for e in errors:
-                    print e
+                    print e.encode('utf-8')
             print(dict(form.data))
 
         self.assertFalse(isinstance(result, dict))
@@ -369,13 +408,13 @@ class EditSalesSegmentTests(unittest.TestCase):
 
         target = self._makeOne(context, request)
 
-        result = target()
+        result = target.edit()
         if isinstance(result, dict):
             form = result['form']
             for name, errors in form.errors.items():
                 print name,
                 for e in errors:
-                    print e
+                    print e.encode('utf-8')
             print(dict(form.data))
 
         self.assertFalse(isinstance(result, dict))

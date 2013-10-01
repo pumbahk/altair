@@ -14,7 +14,8 @@ from altair.formhelpers import (Translations, Required, RequiredOnUpdate, DateTi
 from altair.app.ticketing.core.models import SalesSegmentGroup, SalesSegment, Account
 from altair.app.ticketing.loyalty.models import PointGrantSetting, SalesSegment_PointGrantSetting
 
-from .resources import SalesSegmentAdminResource
+from .resources import ISalesSegmentAdminResource
+from zope.interface import providedBy
 
 propagation_attrs = ('margin_ratio', 'refund_ratio', 'printing_fee', 'registration_fee', 'reporting')
 
@@ -257,7 +258,7 @@ class SalesSegmentForm(OurForm):
             for a in context.organization.accounts
             ]
 
-        if isinstance(context, SalesSegmentAdminResource):
+        if ISalesSegmentAdminResource.providedBy(context):
             performance_id_choices = []
             if context.performance is not None:
                 self.performance_id.data = self.performance_id.default = context.performance.id

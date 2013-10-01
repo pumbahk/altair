@@ -2,16 +2,18 @@
 
 import unittest
 from webob.multidict import MultiDict
+from pyramid.testing import DummyResource
+from mock import Mock
 
-class EditSalesSegmentFormTests(unittest.TestCase):
+class SalesSegmentFormTests(unittest.TestCase):
     def setUp(self):
         import altair.app.ticketing.core.models
         import sqlalchemy.orm
         sqlalchemy.orm.configure_mappers()
 
     def _getTarget(self):
-        from ..forms import EditSalesSegmentForm
-        return EditSalesSegmentForm
+        from ..forms import SalesSegmentForm
+        return SalesSegmentForm
 
     def _makeOne(self, *args, **kwargs):
         return self._getTarget()(*args, **kwargs)
@@ -23,7 +25,12 @@ class EditSalesSegmentFormTests(unittest.TestCase):
                 end_at="",
             )
         )
-        target = self._makeOne(formdata=formdata)
+        context = DummyResource(
+            organization=Mock(accounts=[Mock()]),
+            event=Mock(sales_segment_groups=[]),
+            sales_segment_group=None
+            )
+        target = self._makeOne(formdata=formdata, context=context)
         target.validate()
         self.assertNotIn('start_at', target.errors)
 
@@ -35,7 +42,12 @@ class EditSalesSegmentFormTests(unittest.TestCase):
                 end_at="",
             )
         )
-        target = self._makeOne(formdata=formdata)
+        context = DummyResource(
+            organization=Mock(accounts=[Mock()]),
+            event=Mock(sales_segment_groups=[]),
+            sales_segment_group=None
+            )
+        target = self._makeOne(formdata=formdata, context=context)
         target.process()
 
         target.validate()
@@ -51,12 +63,17 @@ class EditSalesSegmentFormTests(unittest.TestCase):
                 end_at="",
             )
         )
-        target = self._makeOne(formdata=formdata)
+        context = DummyResource(
+            organization=Mock(accounts=[Mock()]),
+            event=Mock(sales_segment_groups=[]),
+            sales_segment_group=None
+            )
+        target = self._makeOne(formdata=formdata, context=context)
 
         target.validate()
         for name, errors in target.errors.items():
             print name,
             for e in errors:
-                print e
+                print e.encode('utf-8')
 
         self.assertNotIn('start_at', target.errors)
