@@ -1,0 +1,233 @@
+<%inherit file="../commons/layout.html" />
+
+<style type="text/css">
+.OrderBox .settlementBoxInner2 {
+    padding: 0 0 10px;
+}
+
+.OrderBox table {
+    line-height: 1.5em;
+}
+
+
+.OrderBox h2 {
+    text-align: left;
+    margin: 0 3px 5px 2px;
+    padding: 8px 0 10px 12px;
+    background: url(${request.static_url("altair.app.ticketing.cart:static/img/settlement/bg_line.gif")}) repeat-x left bottom;
+}
+
+.OrderBox .confirmBoxText{
+    margin-left: 20px;
+}
+
+table.itemize {
+	width: 900px;
+	margin: 0 auto;
+}
+
+.itemize th {
+	vertical-align: top;
+	padding: 2px 20px 2px 2px;
+	border-bottom: 1px solid .e6e6e6;
+	font-weight: normal;
+	white-space: nowrap;
+}
+
+.itemize td {
+	width: 100%;
+	padding: 2px;
+	border-bottom: 1px solid .e6e6e6;
+}
+
+.itemize tr:last-child th,
+.itemize tr:last-child td {
+	border: none;
+}
+
+</style>
+<h2>受付履歴確認 検索結果</h2>
+<%
+shipping =order.shipping_address
+%>
+
+<div class="settlementBox2 OrderBox">
+  <div class="settlementBoxInner2">
+    <h2>受付番号</h2>
+    <table class="itemize">
+      <tr>
+        <th scope="row">受付番号</th>
+        <td>${order.order_no}</td>
+      </tr>
+      <tr>
+        <th scope="row">受付日</th>
+        <td>${h.japanese_date(order.created_at)}</td>
+      </tr>
+      <tr>
+        <th scope="row">ステータス</th>
+        <td>${h.order_status(order)}</td>
+      </tr>
+    </table>
+  </div>
+</div>
+
+<div class="settlementBox2 OrderBox">
+  <div class="settlementBoxInner2">
+    <h2>購入者情報</h2>
+    <table class="itemize" summary="配送先情報">
+      <tr>
+        <th scope="row">氏名（漢字）</th>
+        <td>${shipping.last_name} ${shipping.first_name}</td>
+      </tr>
+      <tr>
+        <th scope="row">氏名（カナ）</th>
+        <td>${shipping.last_name_kana} ${shipping.first_name_kana}</td>
+      </tr>
+      <tr>
+        <th scope="row">電話番号</th>
+        <td>${shipping.tel_1}</td>
+      </tr>
+        <!--
+        <tr>
+          <th scope="row">電話番号（携帯電話）</th>
+          <td>000-0000-0000</td>
+        </tr>
+        -->
+        <tr>
+          <th scope="row">住所</th>
+          <td>${shipping.zip} ${shipping.prefecture}${shipping.city}${shipping.address_1}${shipping.address_2}</td>
+        </tr>
+    </table>
+  </div>
+</div>
+
+<div class="settlementBox2 OrderBox">
+  <div class="settlementBoxInner2">
+    <h2>購入したイベントの情報</h2>
+    <table class="itemize">
+      <tr>
+        <th scope="row">イベント名</th>
+        <td>${order.performance.event.title}</td>
+      </tr>
+      <tr>
+        <th scope="row">公演・試合名</th>
+        <td>${order.performance.name}</td>
+      </tr>
+      <tr>
+        <th scope="row">公演日</th>
+        <td>
+          <span class="date">${h.japanese_date(order.performance.start_on)}</span> 
+          <span class="time">${h.japanese_time(order.performance.start_on)}</span>
+        </td>
+      </tr>
+      <tr>
+        <th scope="row">会場</th>
+        <td>${order.performance.venue.name}</td>
+      </tr>
+    </table>
+  </div>
+</div>
+
+<div style="margin-left:10px;">  
+<div class="settlementBox OrderBox">
+  <div class="settlementBoxInner">
+    <h2>注文内容</h2>
+
+    <table id="contentsOfShopping" summary="席種、金額などのお買い物内容">
+       %for product in order.items:
+        <tr>
+          <th scope="row"><span style="background-color:${getattr(product.product.items[0].stock_type, 'style', {}).get('fill', {}).get('color') or '#000'}; width:12px; height:12px; border: 1px solid #888; border-radius:2px; display:inline-block; margin-right: 0.5em;"></span>${product.product.name}
+          </th>
+          <td><strong>${product.seat_quantity}</strong>枚</td>
+          <td>
+          % if product.product.sales_segment.seat_choice:
+            % for seat in product.seats:
+              ${seat['name']}<br/>
+            % endfor
+          % endif
+          </td>
+          <td class="align1">￥${h.format_number(product.price * product.quantity)}</td>
+        </tr>
+        %endfor
+        <tr class="comission">
+          <th scope="row">決済手数料</th>
+          <td>&nbsp;</td>
+          <td>&nbsp;</td>
+          <td class="align1">￥${h.format_number(order.transaction_fee)}</td>
+        </tr>
+        <tr class="comission">
+          <th scope="row">発券/引取手数料</th>
+          <td>&nbsp;</td>
+          <td>&nbsp;</td>
+          <td class="align1">￥${h.format_number(order.delivery_fee)}</td>
+        </tr>
+        <tr class="comission">
+          <th scope="row">システム利用料</th>
+          <td>&nbsp;</td>
+          <td>&nbsp;</td>
+          <td class="align1">￥${h.format_number(order.system_fee)}</td>
+        </tr>
+        <tr id="total">
+          <th scope="row"><img src="${request.static_url("altair.app.ticketing.cart:static/img/settlement/total.gif")}" alt="合計金額" width="67" height="16" /></th>
+          <td>&nbsp;</td>
+          <td>&nbsp;</td>
+          <td class="align1">￥${h.format_number(order.total_amount)}</td>
+        </tr>
+    </table>      
+  </div>
+</div>
+</div>
+
+% if order.status == 'canceled' or order.payment_status == 'refunded':
+  <div class="settlementBox2 OrderBox">
+    <div class="settlementBoxInner2">
+      <h2><span class="red">この購入/予約はキャンセルされました</span></h2>
+      <div class="confirmBoxText">
+        <p>
+      キャンセル処理は、下記のような理由によりおこなっております。<br />
+      ・期限内のご入金がなくキャンセル扱いとしたため<br />
+      ・弊社判断によるキャンセル処理を行ったため<br />
+        </p>
+      </div>
+    </div>
+  </div>
+% else:
+  <div class="settlementBox2 OrderBox">
+    <div class="settlementBoxInner2">
+      <h2>お支払</h2>
+      <div class="confirmBoxText">
+        ${h.render_payment_finished_viewlet(request, order)}
+      </div>
+    </div>
+  </div>
+
+  <div class="settlementBox2 OrderBox">
+    <div class="settlementBoxInner2">
+      <h2>お引取</h2>
+      <div class="confirmBoxText">
+        % if order.payment_delivery_pair.delivery_method.id == 71:
+         <div>
+           <h4>コンビニ（セブン-イレブン）店頭でのお受取です。</h4>
+           公演日約1週間前までに、セブン-イレブン店頭レジでチケット引取をする際に必要な
+           引換票番号をメールにてお送りいたします(当選メールとは別のメールになります)。
+           詳細は、そちらをご確認ください。
+         </div>
+        % else:
+          ${h.render_delivery_finished_viewlet(request, order)}
+        % endif
+      </div>
+    </div>
+  </div>
+% endif
+
+<div class="settlementBox2 OrderBox">
+  <div class="settlementBoxInner2">
+    <h2>注意事項</h2>
+    <div class="confirmBoxText">
+      <p>
+        入力された個人情報は「個人情報保護方針」に基づき適切に取扱われます。
+      </p>
+    </div>
+  </div>
+</div>
+
