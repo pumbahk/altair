@@ -2,62 +2,62 @@ if(!widget){
     throw "widget module is not found";
 }
 
-var ChunkedApiWrapper = function(api, offset, chunkSize){
-    this.cache = {};
-    this.api = api;
-
-    this.page_offset = offset;
-    this.page_chunk_size = chunkSize;
-    this.server_page_offset = this.page_offset * this.page_chunk_size;
-};
-ChunkedApiWrapper.prototype.clean = function(){
-    this.cache = {};
-};
-ChunkedApiWrapper.prototype.realPageIndex = function(page){
-    return Math.floor(page / this.page_chunk_size);
-};
-ChunkedApiWrapper.prototype.chunkIndex = function(page){
-    return page % this.page_chunk_size;
-};
-ChunkedApiWrapper.prototype.dataFromCache = function(cached,i){
-    var idx = this.page_offset * this.chunkIndex(i);
-    //json :: {assets: [], widget: {}, "pk": 0}
-    var assets = [];
-    var data = {"widget": cached["widget"],
-                "assets": assets,
-                "pk": cached["pk"]
-               };
-    var cached_assets = cached["assets"];
-    for(var j=idx,k=idx+this.page_offset; j<k; j++){
-        var v = cached_assets[j]
-        if(!v){
-            break;
-        }
-        assets.push(v);
-    }
-    return data;
-};
-ChunkedApiWrapper.prototype.callAPI = function(word, i){
-    var page = this.realPageIndex(i);
-    // console.log("i: ", i,"realPageIndex: ",page);
-    var cached = this.cache[page];
-    //debug* window.PageCache = this.cache;
-    var self = this;
-    var dfd = new $.Deferred();
-    if(!!cached){
-        return dfd.resolve(this.dataFromCache(cached, i));
-    }
-    //debug* window.Chunked = this;
-    this.api(word, page, this.server_page_offset).done(function(data){
-        //debug* window.APIData = data;
-        self.cache[page] = data;
-        dfd.resolve(self.dataFromCache(data, i));
-    });
-    return dfd.promise();
-};
-
 (function(widget){
     // utility
+    var ChunkedApiWrapper = function(api, offset, chunkSize){
+        this.cache = {};
+        this.api = api;
+
+        this.page_offset = offset;
+        this.page_chunk_size = chunkSize;
+        this.server_page_offset = this.page_offset * this.page_chunk_size;
+    };
+    ChunkedApiWrapper.prototype.clean = function(){
+        this.cache = {};
+    };
+    ChunkedApiWrapper.prototype.realPageIndex = function(page){
+        return Math.floor(page / this.page_chunk_size);
+    };
+    ChunkedApiWrapper.prototype.chunkIndex = function(page){
+        return page % this.page_chunk_size;
+    };
+    ChunkedApiWrapper.prototype.dataFromCache = function(cached,i){
+        var idx = this.page_offset * this.chunkIndex(i);
+        //json :: {assets: [], widget: {}, "pk": 0}
+        var assets = [];
+        var data = {"widget": cached["widget"],
+                    "assets": assets,
+                    "pk": cached["pk"]
+                   };
+        var cached_assets = cached["assets"];
+        for(var j=idx,k=idx+this.page_offset; j<k; j++){
+            var v = cached_assets[j]
+            if(!v){
+                break;
+            }
+            assets.push(v);
+        }
+        return data;
+    };
+    ChunkedApiWrapper.prototype.callAPI = function(word, i){
+        var page = this.realPageIndex(i);
+        // console.log("i: ", i,"realPageIndex: ",page);
+        var cached = this.cache[page];
+        //debug* window.PageCache = this.cache;
+        var self = this;
+        var dfd = new $.Deferred();
+        if(!!cached){
+            return dfd.resolve(this.dataFromCache(cached, i));
+        }
+        //debug* window.Chunked = this;
+        this.api(word, page, this.server_page_offset).done(function(data){
+            //debug* window.APIData = data;
+            self.cache[page] = data;
+            dfd.resolve(self.dataFromCache(data, i));
+        });
+        return dfd.promise();
+    };
+
     var AjaxScrollableAPIGateway = function(pk, fetch_url, search_url, tag_search_url){
         this.pk = pk; // null if opened dialog, first time.
         this.fetch_url = fetch_url;
