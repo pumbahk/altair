@@ -3,7 +3,8 @@ import logging
 import re
 import json
 import transaction
-from datetime import datetime
+import time
+from datetime import datetime, timedelta
 
 import sqlalchemy as sa
 from sqlalchemy.orm import joinedload
@@ -150,7 +151,11 @@ class IndexView(IndexViewMixin):
                     headers = {}
                     if re.match('^.+\.(svgz|gz)$', drawing.path):
                         headers['response-content-encoding'] = 'gzip'
-                    url = key.generate_url(expires_in=1800, response_headers=headers)
+                    cache_minutes = 30
+                    expire_date = datetime.now() + timedelta(minutes=cache_minutes)
+                    expire_date = expire_date.replace(minute=(expire_date.minute/cache_minutes*cache_minutes), second=0)
+                    expire_epoch = time.mktime(expire_date.timetuple())
+                    url = key.generate_url(expires_in=expire_epoch, expires_in_absolute=True, response_headers=headers)
                 else:
                     url = self.request.route_url(
                         'cart.venue_drawing',
