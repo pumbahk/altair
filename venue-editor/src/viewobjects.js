@@ -39,9 +39,9 @@ var Seat = exports.Seat = Backbone.Model.extend({
       var prevModel = self.previous('model');
       var model = self.get('model');
       if (prevModel) {
-        model.off('change:selectable', onSelectableChanged);
-        model.off('change:selected', onSelectedChanged);
-        model.off('change:stock', onStockChanged);
+        prevModel.off('change:selectable', onSelectableChanged);
+        prevModel.off('change:selected', onSelectedChanged);
+        prevModel.off('change:stock', onStockChanged);
       }
       if (model) {
         model.on('change:selectable', onSelectableChanged);
@@ -130,7 +130,7 @@ var Seat = exports.Seat = Backbone.Model.extend({
         style = util.mergeStyle(style, augmentedStyle);
     }
     shape.style(util.convertToFashionStyle(style));
-    var styleText = style.text || model.get('seat_no');
+    var styleText = style.text || (model ? model.get('seat_no') : '');
     if (!this.label) {
       var p = shape.position(),
           t = shape.transform(),

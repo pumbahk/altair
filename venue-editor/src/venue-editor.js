@@ -779,6 +779,40 @@
     this.unselectAll();
   };
 
+  VenueEditor.prototype.showVacantSeat = function VenueEditor_showVacantSeat() {
+    var vacantSeat = new models.Seat({
+      name: '',
+      seat_no: '',
+      status: 0,
+      stock: null,
+      venue: this.venue,
+      sold: false,
+      selectable: false
+    });
+    for (var l0_id in this.seats) {
+      var seatVO = this.seats[l0_id];
+      var seat = seatVO.get('model');
+      if (seat && seat.get('sold')) {
+        seatVO.set('model', vacantSeat);
+        seatVO.trigger('change:shape');
+      }
+    }
+  };
+
+  VenueEditor.prototype.showAllSeat = function VenueEditor_showAllSeat() {
+    for (var l0_id in this.seats) {
+      var seatVO = this.seats[l0_id];
+      var seat = seatVO.get('model');
+      if (l0_id != seat.id) {
+        seat = this.venue.seats.get(l0_id);
+        if (seat) {
+          seatVO.set('model', seat);
+          seatVO.trigger('change:shape');
+        }
+      }
+    }
+  };
+
   VenueEditor.prototype.adjacencyLength = function VenueEditor_adjacencyLength(value) {
     if (value !== void(0)) {
       this._adjacencyLength = value;
@@ -882,6 +916,14 @@
 
           case 'clearAll':
             aux.manager.clearAll();
+            return;
+
+          case 'showVacantSeat':
+            aux.manager.showVacantSeat();
+            return;
+
+          case 'showAllSeat':
+            aux.manager.showAllSeat();
             return;
 
           case 'refresh':
