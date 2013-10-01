@@ -321,7 +321,7 @@ def cancel_sej_order(sej_order, organization_id):
     api_key = (tenant and tenant.api_key) or settings.get('sej.api_key')
 
     if sej_order.shop_id != shop_id:
-        logger.error(u'SejOrder(order_no=%s).shop_id (%s) != SejTenant.shop_id' % (sej_order.order_no, sej_order.shop_id, shop_id))
+        logger.error(u'SejOrder(order_no=%s).shop_id (%s) != SejTenant.shop_id (%s)' % (sej_order.order_no, sej_order.shop_id, shop_id))
         return False
 
     try:
