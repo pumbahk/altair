@@ -41,7 +41,7 @@ if(!widget){
     };
     ChunkedApiWrapper.prototype.callAPI = function(word, i){
         var page = this.realPageIndex(i);
-        // console.log("i: ", i,"realPageIndex: ",page);
+        // console.log("*debug i: ", i,"realPageIndex: ",page);
         var cached = this.cache[page];
         //debug* window.PageCache = this.cache;
         var self = this;
@@ -69,7 +69,7 @@ if(!widget){
         var cleans = this.needCleans;
         for(var i=0,j=cleans.length;i<j;i++){
             if(!!cleans[i].clean){
-                console.log("clean: "+cleans[i]);
+                //console.log("clean: "+cleans[i]);
                 cleans[i].clean(); //hmm.
             }
         }
