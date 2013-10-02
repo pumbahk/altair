@@ -120,13 +120,21 @@ def cancel_auth_expired_carts():
             transaction.abort()
             carts_to_skip.add(cart_id)
             continue
+
+        ##################################
+        # finishする
+        ##################################
+        cart.finished_at = now
+        ##################################
+
         logging.info('TRANSACTION IS BEING COMMITTED...')
         transaction.commit()
-        logging.info('verifying if the cart in question (id=%d) still exists' % cart_id)
-        cart = m.Cart.query.filter_by(id=cart_id).first()
-        if cart is None:
-            logging.info('cart (id=%d) IS GONE FOR SOME REASONS. SIGH.')
-            continue
+
+        # logging.info('verifying if the cart in question (id=%d) still exists' % cart_id)
+        # cart = m.Cart.query.filter_by(id=cart_id).first()
+        # if cart is None:
+        #     logging.info('cart (id=%d) IS GONE FOR SOME REASONS. SIGH.')
+        #     continue
 
         # if api.is_multicheckout_payment(cart):
         #     logging.info('well, then trying to cancel the authorization request associated with the order (order_no=%s)' % order_no)
@@ -154,9 +162,9 @@ def cancel_auth_expired_carts():
         #         logging.error('Multicheckout API error occured: %s' % e.message)
         #         break
 
-        cart.finished_at = now
-        logging.info("TRANSACTION IS BEING COMMITTED AGAIN...")
-        transaction.commit()
+        # cart.finished_at = now
+        # logging.info("TRANSACTION IS BEING COMMITTED AGAIN...")
+        # transaction.commit()
 
     conn.close()
     logging.info("end auth cancel batch")
