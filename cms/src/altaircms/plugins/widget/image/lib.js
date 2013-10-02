@@ -69,7 +69,7 @@ if(!widget){
         var cleans = this.needCleans;
         for(var i=0,j=cleans.length;i<j;i++){
             if(!!cleans[i].clean){
-                //console.log("clean: "+cleans[i]);
+                // console.log("*debug clean: "+cleans[i]);
                 cleans[i].clean(); //hmm.
             }
         }
@@ -120,12 +120,12 @@ if(!widget){
         this.root.on("click", ".group img" ,function(e){this.selectImage($(e.currentTarget));}.bind(this));
     };
     AjaxImageAreaManager.prototype.getImageArea = function(i){
-        return this.root.find(".group#group_"+(i));
+        return this.root.find(":not(.cloned).group#group_"+(i));
     };
     var ItemsDivTemplate = _.template([
         '<% _.each(data.assets, function(asset) { %>',
         '<div class="item<%= asset.class %>">',
-        '<img pk="<%- asset.id%>" src="<%- asset.thumbnail_src %>" class="<%- asset.managed %>"/>',
+        '<img pk="<%- asset.id%>" src="<%- asset.thumbnail_src %>" <%- asset.managed %>/>',
         '<p class="title"><%- asset.title %></p>',
         '<p><span class="item-width"><%- asset.width %></span>x<span class="item-height"><%- asset.height %></span></p>',
         '<p><%- asset.updated_at %></p>',
@@ -137,7 +137,7 @@ if(!widget){
         var asset_id = data.widget.asset_id;
         for(var i=0,j=assets.length; i<j; i++){
             assets[i].class = "";
-            assets[i].managed = assets[i].id == asset_id ? "managed" : "";
+            assets[i].managed = assets[i].id == asset_id ? 'class="managed"' : '';
         }
         if(!!assets[0]){
             assets[0].class = " first";
@@ -147,10 +147,15 @@ if(!widget){
         }
         return data;
     }; //xxx:
+    AjaxImageAreaManager.prototype.updatePagination = function(i){
+        this.root.find(".page-navi .js-page-current").text(i);
+    };
     AjaxImageAreaManager.prototype.injectImages = function(i, data){
         // need model?
         var data = ItemsDivTemplate.buildVars(data);
-        var html = ItemsDivTemplate({data: data})
+        var html = ItemsDivTemplate({data: data});
+        // console.log("*debug area="+this.getImageArea(i));
+        // console.log("*debug area length="+this.getImageArea(i).length);
         return this.getImageArea(i).html(html);
     };
     AjaxImageAreaManager.prototype.selectImage = function(selected){
@@ -181,14 +186,20 @@ if(!widget){
     AjaxScrollableHandler.prototype.fetchImages = function(){
         var i = this.getIndex();
         var apiType = this.apiType;
-        // console.log("*debug fetch images i="+i+" cached="+this.cache[apiType][i])
-        if(i > 0 && !this.semaphore[apiType][i]){
-            this.semaphore[apiType][i] = true //hmm;
-            var self = this;
-            // notice: ducktyping.
-            return this.gateway[apiType](this.word, i).done(function(data){
-                self.areaManager.injectImages(i, data);
-            });
+        // console.log("*debug fetch images i="+i+" cached="+this.semaphore[apiType][i])
+        if(i >= 0){
+            if(!this.semaphore[apiType][i]){
+                this.semaphore[apiType][i] = true //hmm;
+                var self = this;
+                // notice: ducktyping.
+                return this.gateway[apiType](this.word, i).done(function(data){
+                    // console.log("*debug api="+apiType+" word="+this.word+" i="+i+" data="+JSON.stringify(data));
+                    self.areaManager.injectImages(i, data);
+                    self.areaManager.updatePagination(i);
+                });
+            } else {
+                this.areaManager.updatePagination(i);                
+            }
         }
     };
     AjaxScrollableHandler.prototype.bind = function(root){
@@ -299,6 +310,7 @@ if(!widget){
         }
     };
     var DrawableTemplate = _.template([
+        '<p class="page-navi"><span class="js-page-current">0</span>/<span class="js-page-max"><%- (data.max_of_pages-1) %></span></p>',
         '<div class="items">',
         '<% _.times(data.max_of_pages, function(i) { %>',
         '<div class="group" id="group_<%- i %>">',

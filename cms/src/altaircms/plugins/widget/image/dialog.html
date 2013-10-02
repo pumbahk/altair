@@ -39,13 +39,12 @@
     </div>
 
     <div class="scrollable">
-          ## hmm.
+        ## 初回以降のレンダリングはlib.js側
+        <p class="page-navi"><span class="js-page-current">0</span>/<span class="js-page-max">${max_of_pages-1}</span></p>
         <div class="items">
-        ## N個ごとに区切られたitreratorを受け取り、divで区切って出力(scrollのため).初回だけレンダリング
         %for i in xrange(max_of_pages):
         <div class="group" id="group_${i}"> 
           %if i == 0:
-            ## ./fetch.htmlと同じ(todo:まとめる)
             %for asset in assets:
               %if loop.first:
               <div class="item first">
