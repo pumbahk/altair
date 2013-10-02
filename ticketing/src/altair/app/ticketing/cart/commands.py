@@ -128,31 +128,31 @@ def cancel_auth_expired_carts():
             logging.info('cart (id=%d) IS GONE FOR SOME REASONS. SIGH.')
             continue
 
-        if api.is_multicheckout_payment(cart):
-            logging.info('well, then trying to cancel the authorization request associated with the order (order_no=%s)' % order_no)
-            logging.info('check for order_no=%s' % order_no)
-            request.altair_checkout3d_override_shop_name = None
-            try:
-                request.altair_checkout3d_override_shop_name = cart.performance.event.organization.setting.multicheckout_shop_name
-                if not request.altair_checkout3d_override_shop_name:
-                    raise
-            except:
-                logging.info('can not detect shop_name for order_no = %s' % order_no)
-                carts_to_skip.add(cart_id)
-                continue
+        # if api.is_multicheckout_payment(cart):
+        #     logging.info('well, then trying to cancel the authorization request associated with the order (order_no=%s)' % order_no)
+        #     logging.info('check for order_no=%s' % order_no)
+        #     request.altair_checkout3d_override_shop_name = None
+        #     try:
+        #         request.altair_checkout3d_override_shop_name = cart.performance.event.organization.setting.multicheckout_shop_name
+        #         if not request.altair_checkout3d_override_shop_name:
+        #             raise
+        #     except:
+        #         logging.info('can not detect shop_name for order_no = %s' % order_no)
+        #         carts_to_skip.add(cart_id)
+        #         continue
 
-            try:
-                # 状態確認
-                inquiry = multicheckout_api.checkout_inquiry(request, order_no)
-                # オーソリOKだったらキャンセル
-                if inquiry.Status == m.MULTICHECKOUT_AUTH_OK:
-                    logging.info("cancel auth for order_no=%s" % order_no)
-                    multicheckout_api.checkout_auth_cancel(request, order_no)
-                else:
-                    logging.info("Order(order_no = %s) status = %s " % (order_no, inquiry.Status))
-            except Exception, e:
-                logging.error('Multicheckout API error occured: %s' % e.message)
-                break
+        #     try:
+        #         # 状態確認
+        #         inquiry = multicheckout_api.checkout_inquiry(request, order_no)
+        #         # オーソリOKだったらキャンセル
+        #         if inquiry.Status == m.MULTICHECKOUT_AUTH_OK:
+        #             logging.info("cancel auth for order_no=%s" % order_no)
+        #             multicheckout_api.checkout_auth_cancel(request, order_no)
+        #         else:
+        #             logging.info("Order(order_no = %s) status = %s " % (order_no, inquiry.Status))
+        #     except Exception, e:
+        #         logging.error('Multicheckout API error occured: %s' % e.message)
+        #         break
 
         cart.finished_at = now
         logging.info("TRANSACTION IS BEING COMMITTED AGAIN...")
