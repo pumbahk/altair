@@ -5,6 +5,7 @@
 
 from xml.etree import ElementTree as etree
 import socket
+import ssl
 import httplib
 import urlparse
 from . import models as m
@@ -397,7 +398,6 @@ class Checkout3D(object):
         headers.update(self.auth_header)
 
         logger.debug("request %s body = %s" % (url, sanitize_card_number(body)))
-        res = None
         try:
             http.request("POST", url_parts.path, body=body,headers=headers)
             res = http.getresponse()
@@ -410,15 +410,14 @@ class Checkout3D(object):
                 raise Exception(res.reason)
 
             return etree.parse(res).getroot()
-        except socket.timeout, e:
+        except (socket.timeout, ssl.SSLError), e:
             logger.warn('multicheckout api request timeout: %s(%s)' % (type(e), e.message))
             raise MultiCheckoutAPITimeoutError(e)
         except Exception, e:
             logger.error('multicheckout api request error: %s(%s)' % (type(e), e.message))
             raise MultiCheckoutAPIError(e)
         finally:
-            if res:
-                res.close()
+            http.close()
 
     @property
     def api_url(self):
