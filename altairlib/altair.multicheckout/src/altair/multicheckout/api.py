@@ -410,11 +410,11 @@ class Checkout3D(object):
                 raise Exception(res.reason)
 
             return etree.parse(res).getroot()
-        except socket.error, e:
-            logger.warn('multicheckout api request timeout: %s' % e.message)
+        except socket.timeout, e:
+            logger.warn('multicheckout api request timeout: %s(%s)' % (type(e), e.message))
             raise MultiCheckoutAPITimeoutError(e)
         except Exception, e:
-            logger.error('multicheckout api request error: %s' % e.message)
+            logger.error('multicheckout api request error: %s(%s)' % (type(e), e.message))
             raise MultiCheckoutAPIError(e)
         finally:
             if res:
