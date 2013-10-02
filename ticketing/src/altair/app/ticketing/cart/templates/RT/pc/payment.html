@@ -44,6 +44,18 @@ ${h.get_nickname(request)}
 		              上記のシステム利用料がかかります。
 		            </div>
                   </dd>
+                  
+                  %if m.special_fee > 0:
+                  <dt>${m.special_fee_name}</dt>
+                  <dd class="paymentFee_${h.format_number(m.transaction_fee)}">
+                    <span class="paymentFee">${h.format_currency(m.special_fee)}</span>
+                    <span class="paymentFeeType">(${h.fee_type(m.special_fee_type)})</span>
+                    <div class="description">
+		              上記のシステム利用料がかかります。
+		            </div>
+                  </dd>
+                  %end if
+                  
                 </dl>
               </td>
               <td onclick="$(this).parents('tr').find('input').click();">

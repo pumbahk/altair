@@ -85,6 +85,16 @@ ${h.get_nickname(request)}
             <td>&nbsp;</td>
             <td class="align1">￥${h.format_number(order.system_fee)}</td>
           </tr>
+          
+          % if order.special_fee > 0:
+          <tr id="commission">
+            <th scope="row">${order.special_fee_name}</th>
+            <td>&nbsp;</td>
+            <td>&nbsp;</td>
+            <td class="align1">￥${h.format_number(order.special_fee)}</td>
+          </tr>
+          % end if
+          
           <tr id="total">
             <th scope="row">合計金額</th>
             <td>&nbsp;</td>
