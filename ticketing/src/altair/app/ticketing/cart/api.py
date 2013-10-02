@@ -264,22 +264,33 @@ def get_performance_selector(request, name):
     performance_selector = reg.adapters.lookup([IRequest], IPerformanceSelector, name)(request)
     return performance_selector
 
-def get_cart_user_identifier(request):
+def get_cart_user_identifiers(request):
     from altair.rakuten_auth.api import authenticated_user
     from altair.browserid import get_browserid
+
+    retval = []
+
     user = authenticated_user(request)
     if user and hasattr(user, '__getitem__'):
         # Rakuten OpenID
         claimed_id = user.get('claimed_id')
         if claimed_id:
-            return claimed_id
+            retval.append((claimed_id, 'strong'))
 
-        @ fc_auth
+        # fc_auth
         triplet = tuple((user.get(k) or '') for k in ('username', 'membergroup', 'membership'))
         fc_auth_id = ''.join(triplet)
         if fc_auth_id:
-            return fc_auth_id
+            retval.append((fc_auth_id, 'strong'))
 
-    # falls back to browserid
-    return get_browserid(request)
+    # browserid is decent
+    browserid = get_browserid(request)
+    if browserid:
+        retval.append((browserid, 'decent'))
 
+    # remote address is *weak*
+    remote_addr = request.remote_addr
+    if remote_addr:
+        retval.append((remote_addr, 'weak'))
+
+    return retval

@@ -51,12 +51,14 @@ from .exceptions import (
     OverOrderLimitException,
     PaymentMethodEmptyError,
     OutTermSalesException,
+    TooManyCartsCreated,
 )
 from .resources import EventOrientedTicketingCartResource, PerformanceOrientedTicketingCartResource
-from .limitting import limitter
+from .limitting import LimitterDecorators
 
 logger = logging.getLogger(__name__)
 
+limitter = LimitterDecorators('altair.cart.limit_per_unit_time', TooManyCartsCreated)
 
 def back_to_product_list_for_mobile(request):
     cart = api.get_cart_safe(request)
@@ -503,7 +505,7 @@ class ReserveView(object):
         return [(products.get(int(c[0])), c[1]) for c in controls]
 
 
-    @limitter('altair.ticketing.cart.limit_per_unit_time', TooManyCartsCreated)
+    @limitter.acquire
     @view_config(route_name='cart.order', request_method="POST", renderer='json')
     def reserve(self):
         h.form_log(self.request, "received order")
@@ -576,6 +578,7 @@ class ReleaseCartView(object):
     def __init__(self, request):
         self.request = request
 
+    @limitter.release
     @view_config(route_name='cart.release', request_method="POST", renderer="json")
     def __call__(self):
         try:
@@ -806,6 +809,7 @@ class CompleteView(object):
         self.context = request.context
         # TODO: Orderを表示？
 
+    @limitter.release
     @back(back_to_top, back_to_product_list_for_mobile)
     @view_config(route_name='payment.finish', request_method="POST", renderer=selectable_renderer("%(membership)s/pc/completion.html"))
     @view_config(route_name='payment.finish', request_method="POST", request_type='altair.mobile.interfaces.IMobileRequest', renderer=selectable_renderer("%(membership)s/mobile/completion.html"))
@@ -921,6 +925,7 @@ class OutTermSalesView(object):
         return dict(which=which, outer=self.context.outer, available_sales_segments=available_sales_segments, **datum)
 
 @view_config(decorator=with_jquery.not_when(mobile_request), route_name='cart.logout')
+@limitter.release
 def logout(request):
     headers = security.forget(request)
     location = c_api.get_host_base_url(request)

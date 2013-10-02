@@ -32,8 +32,9 @@ from .exceptions import (
     OverQuantityLimitError, 
     ZeroQuantityError, 
     CartCreationException,
+    TooManyCartsCreated,
 )
-from .limitting import limitter
+from .views import limitter
 
 logger = logging.getLogger(__name__)
 
@@ -338,7 +339,7 @@ class MobileSelectProductView(object):
             back_url=back_url
         )
 
-    @limitter('altair.ticketing.cart.limit_per_unit_time', TooManyCartsCreated)
+    @limitter.acquire
     @view_config(route_name='cart.products', request_method="POST")
     @view_config(route_name='cart.products2', request_method="POST")
     def products_form(self):
@@ -351,6 +352,7 @@ class MobileSelectProductView(object):
         # 古いカートを削除
         old_cart = api.get_cart(self.request) # これは get_cart でよい
         if old_cart:
+            limitter._release(self.request)
             # !!! ここでトランザクションをコミットする !!!
             old_cart.release()
             api.remove_cart(self.request)
