@@ -11,9 +11,48 @@ from contextlib import nested
 import altair.app.ticketing.core.models
 from altair.app.ticketing.tickets.utils import datetime_as_dict
 
+class _IntegrationAssertionMixin(object):
+    def assert_basic_renderable_placeholder(self, data):
+        self.assertEquals(data[u"イベント名"], u":Event:title")
+        self.assertEquals(data[u"イベント名略称"], u":abbreviated_title")
+
+        self.assertEquals(data[u"aux"][u"key"], u"value")
+
+        self.assertEquals(data[u"パフォーマンス名"], u":Performance:name")
+        self.assertEquals(data[u"対戦名"], u":Performance:name")
+        self.assertEquals(data[u"公演コード"], u":code")
+        self.assertEquals(data[u"開催日"], u"2000年 01月 01日 (土)")
+        self.assertEquals(data[u"開場時刻"], u"00時 00分")
+        self.assertEquals(data[u"開始時刻"], u"10時 00分")
+        self.assertEquals(data[u"終了時刻"], u"23時 00分")
+        self.assertEquals(data[u"開催日s"], u"2000/01/01 (土)")
+        self.assertEquals(data[u"開場時刻s"], u"00:00")
+        self.assertEquals(data[u"開始時刻s"], u"10:00")
+        self.assertEquals(data[u"終了時刻s"], u"23:00")
+
+        self.assertEqual(data[u"公演名略称"], u":PerformanceSetting:abbreviated_title") 
+        self.assertEqual(data[u"公演名備考"], u":PerformanceSetting:note")
+        self.assertEqual(data[u"公演名副題"], u":PerformanceSetting:subtitle") 
+
+        self.assertEquals(data[u"会場名"], u":Venue:name")
+
+        self.assertEquals(data[u"商品名"], u":ProductItem:name")
+        self.assertEquals(data[u"商品価格"], u"12,000円")
+        self.assertEquals(data[u"券種名"], u":ProductItem:name")
+        self.assertEquals(data[u"チケット価格"], u"14,000円")
+
+        self.assertEquals(data[u"予約番号"], u":order_no")
+        self.assertEquals(data[u"受付番号"], u":order_no")
+        self.assertEquals(data[u"注文番号"], u":order_no")
+        self.assertEquals(data[u"注文日時"], u"2000年 01月 01日 (土) 01時 00分")
+        self.assertEquals(data[u"受付日時"], u"2000年 01月 01日 (土) 01時 00分")
+        self.assertEquals(data[u"注文日時s"], u"2000/01/01 (土) 01:00")
+        self.assertEquals(data[u"受付日時s"], u"2000/01/01 (土) 01:00")
+
+        self.assertEquals(data[u"発券番号"], "")
 
 
-class BuilderItTest(unittest.TestCase):
+class BuilderItTest(_IntegrationAssertionMixin, unittest.TestCase):
     def tearDown(self):
         transaction.abort()
 
@@ -656,6 +695,7 @@ class BuilderItTest(unittest.TestCase):
             n.assert_called_once_with(model.product_item, retval=result)
 
 def get_ordered_product_item__full_relation(quantity, quantity_only):
+    from altair.app.ticketing.core.models import OrderedProductItemToken
     from altair.app.ticketing.core.models import OrderedProductItem
     from altair.app.ticketing.core.models import OrderedProduct
     from altair.app.ticketing.core.models import Stock
@@ -858,65 +898,37 @@ def get_carted_product_item__full_relation(quantity, quantity_only):
     stock.stock_status = StockStatus(quantity=10)
     return carted_product_item
 
-class BuilderItTicketCreateTest(unittest.TestCase):
+def setup_ordered_product_token_from_ordered_product_item(ordered_product_item):
+    from altair.app.ticketing.core.models import OrderedProductItemToken
+    for i, seat in ordered_product_item.iterate_serial_and_seat():
+        token = OrderedProductItemToken(
+            item = ordered_product_item, 
+            serial = i, 
+            seat = seat, 
+            valid=True #valid=Falseの時は何時だろう？
+        )
+
+class BuilderItTicketListCreateTest(_IntegrationAssertionMixin, unittest.TestCase):
     """see: https://redmine.ticketstar.jp/issues/5138"""
     def tearDown(self):
         transaction.abort()
 
     def _getTarget(self):
-        from altair.app.ticketing.tickets.vars_builder import TicketDictBuilder
-        return TicketDictBuilder
+        from altair.app.ticketing.tickets.vars_builder import TicketDictListBuilder
+        return TicketDictListBuilder
 
     def _makeOne(self, *args, **kwargs):
         from altair.app.ticketing.formatter import Japanese_Japan_Formatter
-        return self._getTarget()(Japanese_Japan_Formatter(), *args, **kwargs)
-
-    def assert_basic_renderable_placeholder(self, data):
-        self.assertEquals(data[u"イベント名"], u":Event:title")
-        self.assertEquals(data[u"イベント名略称"], u":abbreviated_title")
-
-        self.assertEquals(data[u"aux"][u"key"], u"value")
-
-        self.assertEquals(data[u"パフォーマンス名"], u":Performance:name")
-        self.assertEquals(data[u"対戦名"], u":Performance:name")
-        self.assertEquals(data[u"公演コード"], u":code")
-        self.assertEquals(data[u"開催日"], u"2000年 01月 01日 (土)")
-        self.assertEquals(data[u"開場時刻"], u"00時 00分")
-        self.assertEquals(data[u"開始時刻"], u"10時 00分")
-        self.assertEquals(data[u"終了時刻"], u"23時 00分")
-        self.assertEquals(data[u"開催日s"], u"2000/01/01 (土)")
-        self.assertEquals(data[u"開場時刻s"], u"00:00")
-        self.assertEquals(data[u"開始時刻s"], u"10:00")
-        self.assertEquals(data[u"終了時刻s"], u"23:00")
-
-        self.assertEqual(data[u"公演名略称"], u":PerformanceSetting:abbreviated_title") 
-        self.assertEqual(data[u"公演名備考"], u":PerformanceSetting:note")
-        self.assertEqual(data[u"公演名副題"], u":PerformanceSetting:subtitle") 
-
-        self.assertEquals(data[u"会場名"], u":Venue:name")
-
-        self.assertEquals(data[u"商品名"], u":ProductItem:name")
-        self.assertEquals(data[u"商品価格"], u"12,000円")
-        self.assertEquals(data[u"券種名"], u":ProductItem:name")
-        self.assertEquals(data[u"チケット価格"], u"14,000円")
-
-        self.assertEquals(data[u"予約番号"], u":order_no")
-        self.assertEquals(data[u"受付番号"], u":order_no")
-        self.assertEquals(data[u"注文番号"], u":order_no")
-        self.assertEquals(data[u"注文日時"], u"2000年 01月 01日 (土) 01時 00分")
-        self.assertEquals(data[u"受付日時"], u"2000年 01月 01日 (土) 01時 00分")
-        self.assertEquals(data[u"注文日時s"], u"2000/01/01 (土) 01:00")
-        self.assertEquals(data[u"受付日時s"], u"2000/01/01 (土) 01:00")
-
-        self.assertEquals(data[u"発券番号"], "")
+        from altair.app.ticketing.tickets.vars_builder import TicketDictBuilder
+        builder = TicketDictBuilder(Japanese_Japan_Formatter(), *args, **kwargs)
+        return self._getTarget()(builder)
 
     def test_build_ordered_product_item__without_seat(self):
         target = self._makeOne()
         ordered_product_item = get_ordered_product_item__full_relation(quantity=2, quantity_only=True)
+        setup_ordered_product_token_from_ordered_product_item(ordered_product_item)
         model = ordered_product_item
-
         result = target.build_dicts_from_ordered_product_item(model)
-
         self.assertEqual(len(result), 2)
         seat_result, data = result[0]
         # import json
@@ -929,22 +941,22 @@ class BuilderItTicketCreateTest(unittest.TestCase):
     def test_build_ordered_product_item__with_seat(self):
         from altair.app.ticketing.core.models import Seat
         target = self._makeOne()
-        ordered_product_item = get_ordered_product_item__full_relation(quantity=2, quantity_only=False)
+        ordered_product_item = get_ordered_product_item__full_relation(quantity=1, quantity_only=False)
         seat = Seat(l0_id=":l0_id", 
                     seat_no=":seat_no", 
                     name=":Seat:name", 
                     stock = ordered_product_item.product_item.stock, 
                     venue = ordered_product_item.product_item.performance.venue)
-        
         ordered_product_item.seats.append(seat)
-        model = ordered_product_item
+        setup_ordered_product_token_from_ordered_product_item(ordered_product_item)        
 
+        model = ordered_product_item
         result = target.build_dicts_from_ordered_product_item(model)
+        # import json
+        # print json.dumps(result, ensure_ascii=False, indent=2)
 
         self.assertEqual(len(result), 1)
         seat_result, data = result[0]
-        # import json
-        # print json.dumps(data, ensure_ascii=False, indent=2)
 
         self.assert_basic_renderable_placeholder(data)
 
@@ -955,14 +967,11 @@ class BuilderItTicketCreateTest(unittest.TestCase):
 
 
     def test_build_ordered_product_item_token__without_seat(self):
-        from altair.app.ticketing.core.models import OrderedProductItemToken
         target = self._makeOne()
         ordered_product_item = get_ordered_product_item__full_relation(quantity=2, quantity_only=True)
-        token = OrderedProductItemToken()
-        ordered_product_item.tokens.append(token)
+        setup_ordered_product_token_from_ordered_product_item(ordered_product_item)        
 
         model = ordered_product_item
-
         result = target.build_dicts_from_ordered_product_item(model)
         
         self.assertEqual(len(result), 2)
@@ -980,20 +989,16 @@ class BuilderItTicketCreateTest(unittest.TestCase):
 
 
     def test_build_ordered_product_item_token__with_seat(self):
-        from altair.app.ticketing.core.models import OrderedProductItemToken
         from altair.app.ticketing.core.models import Seat
         target = self._makeOne()
         ordered_product_item = get_ordered_product_item__full_relation(quantity=2, quantity_only=False)
-        token = OrderedProductItemToken()
-        ordered_product_item.tokens.append(token)
         seat = Seat(l0_id=":l0_id", 
                     seat_no=":seat_no", 
                     name=":Seat:name", 
                     stock = ordered_product_item.product_item.stock, 
                     venue = ordered_product_item.product_item.performance.venue)
-        token.seat = seat
         ordered_product_item.seats.append(seat)
-
+        setup_ordered_product_token_from_ordered_product_item(ordered_product_item)        
         model = ordered_product_item
 
         result = target.build_dicts_from_ordered_product_item(model)
