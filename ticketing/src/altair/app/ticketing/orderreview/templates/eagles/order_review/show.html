@@ -1,233 +1,267 @@
-<%inherit file="../commons/layout.html" />
-
-<style type="text/css">
-.OrderBox .settlementBoxInner2 {
-    padding: 0 0 10px;
-}
-
-.OrderBox table {
-    line-height: 1.5em;
-}
-
-
-.OrderBox h2 {
-    text-align: left;
-    margin: 0 3px 5px 2px;
-    padding: 8px 0 10px 12px;
-    background: url(${request.static_url("altair.app.ticketing.cart:static/img/settlement/bg_line.gif")}) repeat-x left bottom;
-}
-
-.OrderBox .confirmBoxText{
-    margin-left: 20px;
-}
-
-table.itemize {
-	width: 900px;
-	margin: 0 auto;
-}
-
-.itemize th {
-	vertical-align: top;
-	padding: 2px 20px 2px 2px;
-	border-bottom: 1px solid .e6e6e6;
-	font-weight: normal;
-	white-space: nowrap;
-}
-
-.itemize td {
-	width: 100%;
-	padding: 2px;
-	border-bottom: 1px solid .e6e6e6;
-}
-
-.itemize tr:last-child th,
-.itemize tr:last-child td {
-	border: none;
-}
-
-</style>
-<h2>受付履歴確認 検索結果</h2>
+<%inherit file="/eagles/commons/layout.html" />
+<div class="purchased">
+% if order.performance.event.id != 0:
+  <h2>受付履歴確認 検索結果</h2>
+  <% pm,t_shirts = h.order_desc(order) %>
+  <div class="section">
+    <h3>購入情報</h3>
+    <table class="purchasedContents">
+      <tbody>
+        <tr>
+          <thead>
+            <th colspan="4"><span style="color: #000000">${order.performance.event.title} <br />${order.performance.name}<br />${h.japanese_date(order.performance.start_on)} ${h.japanese_time(order.performance.start_on)} ${order.performance.venue.name}</span></th>
+          </thead>
+        </tr>
+        %for product in order.items:
+        <tr>
+          <th scope="row"><img src="${request.static_url('altair.app.ticketing.cart:static/img/settlement/icon_dummy.gif')}" alt="" width="22" height="21" /> <span style="color: #000000">${product.product.name}</span></th>
+          <td ${u'' if product.product.sales_segment.seat_choice and product.seats else u' colspan="2"'|n}><strong>${product.seat_quantity}</strong>枚</td>
+        % if product.product.sales_segment.seat_choice and product.seats:
+          <td>
+          % for seat in product.seats:
+            ${seat['name']}<br/>
+          % endfor
+          </td>
+        % endif
+          <td class="textR">￥${h.format_number(product.price * product.quantity)}</td>
+        </tr>
+        %endfor
+        <tr>
+          <td colspan="3">ステータス</td>
+          <td class="textR">${h.order_status(order)}</td>
+        </tr>
+        <tr>
+          <td colspan="3">決済手数料</td>
+          <td class="textR">￥${h.format_number(order.transaction_fee)}</td>
+        </tr>
+        <tr>
+          <td colspan="3">発券/引取手数料</td>
+          <td class="textR">￥${h.format_number(order.delivery_fee)}</td>
+        </tr>
+        <tr>
+          <td colspan="3">システム利用料</td>
+          <td class="textR">￥${h.format_number(order.system_fee)}</td>
+        </tr>
+        <tr>
+          <td colspan="3">合計金額</td>
+          <td class="textR">￥${h.format_number(order.total_amount)}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
 <%
 shipping =order.shipping_address
 %>
-
-<div class="settlementBox2 OrderBox">
-  <div class="settlementBoxInner2">
-    <h2>受付番号</h2>
-    <table class="itemize">
-      <tr>
-        <th scope="row">受付番号</th>
-        <td>${order.order_no}</td>
-      </tr>
-      <tr>
-        <th scope="row">受付日</th>
-        <td>${h.japanese_date(order.created_at)}</td>
-      </tr>
-      <tr>
-        <th scope="row">ステータス</th>
-        <td>${h.order_status(order)}</td>
-      </tr>
-    </table>
+  % if order.status == 'canceled' or order.payment_status == 'refunded':
+  <div class="section">
+    <h3><span class="red">この購入/予約はキャンセルされました</span></h3>
+    <p>キャンセル処理は、下記のような理由によりおこなっております。</p>
+    <ul class="cancel-list-style">
+      <li>お客様からキャンセルのご連絡があったため</li>
+      <li>期限内のご入金がなくキャンセル扱いとしたため</li>
+      <li>二重注文により、ひとつをキャンセル処理したため</li>
+    </ul>
   </div>
-</div>
-
-<div class="settlementBox2 OrderBox">
-  <div class="settlementBoxInner2">
-    <h2>購入者情報</h2>
-    <table class="itemize" summary="配送先情報">
-      <tr>
-        <th scope="row">氏名（漢字）</th>
-        <td>${shipping.last_name} ${shipping.first_name}</td>
-      </tr>
-      <tr>
-        <th scope="row">氏名（カナ）</th>
-        <td>${shipping.last_name_kana} ${shipping.first_name_kana}</td>
-      </tr>
-      <tr>
-        <th scope="row">電話番号</th>
-        <td>${shipping.tel_1}</td>
-      </tr>
-        <!--
-        <tr>
-          <th scope="row">電話番号（携帯電話）</th>
-          <td>000-0000-0000</td>
-        </tr>
-        -->
-        <tr>
-          <th scope="row">住所</th>
-          <td>${shipping.zip} ${shipping.prefecture}${shipping.city}${shipping.address_1}${shipping.address_2}</td>
-        </tr>
-    </table>
-  </div>
-</div>
-
-<div class="settlementBox2 OrderBox">
-  <div class="settlementBoxInner2">
-    <h2>購入したイベントの情報</h2>
-    <table class="itemize">
-      <tr>
-        <th scope="row">イベント名</th>
-        <td>${order.performance.event.title}</td>
-      </tr>
-      <tr>
-        <th scope="row">公演・試合名</th>
-        <td>${order.performance.name}</td>
-      </tr>
-      <tr>
-        <th scope="row">公演日</th>
-        <td>
-          <span class="date">${h.japanese_date(order.performance.start_on)}</span> 
-          <span class="time">${h.japanese_time(order.performance.start_on)}</span>
-        </td>
-      </tr>
-      <tr>
-        <th scope="row">会場</th>
-        <td>${order.performance.venue.name}</td>
-      </tr>
-    </table>
-  </div>
-</div>
-
-<div style="margin-left:10px;">  
-<div class="settlementBox OrderBox">
-  <div class="settlementBoxInner">
-    <h2>注文内容</h2>
-
-    <table id="contentsOfShopping" summary="席種、金額などのお買い物内容">
-       %for product in order.items:
-        <tr>
-          <th scope="row"><span style="background-color:${getattr(product.product.items[0].stock_type, 'style', {}).get('fill', {}).get('color') or '#000'}; width:12px; height:12px; border: 1px solid #888; border-radius:2px; display:inline-block; margin-right: 0.5em;"></span>${product.product.name}
-          </th>
-          <td><strong>${product.seat_quantity}</strong>枚</td>
-          <td>
-          % if product.product.sales_segment.seat_choice:
-            % for seat in product.seats:
-              ${seat['name']}<br/>
-            % endfor
-          % endif
-          </td>
-          <td class="align1">￥${h.format_number(product.price * product.quantity)}</td>
-        </tr>
-        %endfor
-        <tr class="comission">
-          <th scope="row">決済手数料</th>
-          <td>&nbsp;</td>
-          <td>&nbsp;</td>
-          <td class="align1">￥${h.format_number(order.transaction_fee)}</td>
-        </tr>
-        <tr class="comission">
-          <th scope="row">発券/引取手数料</th>
-          <td>&nbsp;</td>
-          <td>&nbsp;</td>
-          <td class="align1">￥${h.format_number(order.delivery_fee)}</td>
-        </tr>
-        <tr class="comission">
-          <th scope="row">システム利用料</th>
-          <td>&nbsp;</td>
-          <td>&nbsp;</td>
-          <td class="align1">￥${h.format_number(order.system_fee)}</td>
-        </tr>
-        <tr id="total">
-          <th scope="row"><img src="${request.static_url("altair.app.ticketing.cart:static/img/settlement/total.gif")}" alt="合計金額" width="67" height="16" /></th>
-          <td>&nbsp;</td>
-          <td>&nbsp;</td>
-          <td class="align1">￥${h.format_number(order.total_amount)}</td>
-        </tr>
-    </table>      
-  </div>
-</div>
-</div>
-
-% if order.status == 'canceled' or order.payment_status == 'refunded':
-  <div class="settlementBox2 OrderBox">
-    <div class="settlementBoxInner2">
-      <h2><span class="red">この購入/予約はキャンセルされました</span></h2>
-      <div class="confirmBoxText">
-        <p>
-      キャンセル処理は、下記のような理由によりおこなっております。<br />
-      ・期限内のご入金がなくキャンセル扱いとしたため<br />
-      ・弊社判断によるキャンセル処理を行ったため<br />
-        </p>
-      </div>
+  % else:
+  <div class="_2columns">
+    <div class="column section">
+      <h3>お支払</h3>
+      ${h.render_payment_finished_viewlet(request, order)}
     </div>
+    <div class="column section">
+      <h3>お引取</h3>
+      ${h.render_delivery_finished_viewlet(request, order)}
+    </div>
+  </div>
+  % endif
+  <div class="section">
+    <h3>購入者情報</h3>
+    <table class="purchasedContents" summary="配送先情報">
+      <tbody>
+        <tr>
+          <th scope="row"><span style="color: #000000">氏名（漢字）</span></th>
+          <td>${shipping.last_name} ${shipping.first_name}</td>
+        </tr>
+        <tr>
+          <th scope="row"><span style="color: #000000">氏名（カナ）</span></th>
+          <td>${shipping.last_name_kana} ${shipping.first_name_kana}</td>
+        </tr>
+        <tr>
+          <th scope="row"><span style="color: #000000">電話番号</span></th>
+          <td>${shipping.tel_1}</td>
+        </tr>
+        <tr>
+            <th scope="row"><span style="color: #000000">住所</span></th>
+            <td>${shipping.zip} ${shipping.prefecture}${shipping.city}${shipping.address_1}${shipping.address_2}</td>
+        </tr>
+      </tbody>
+    </table>
   </div>
 % else:
-  <div class="settlementBox2 OrderBox">
-    <div class="settlementBoxInner2">
-      <h2>お支払</h2>
-      <div class="confirmBoxText">
-        ${h.render_payment_finished_viewlet(request, order)}
-      </div>
-    </div>
+  <div class="section">
+    <table class="purchasedContents">
+      <thead>
+        <tr>
+          <th><span>受付番号</span></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="textC font20">${order.order_no}</td>
+        </tr>
+      </tbody>
+    </table>
   </div>
+  <!-- sectionおわり -->
 
-  <div class="settlementBox2 OrderBox">
-    <div class="settlementBoxInner2">
-      <h2>お引取</h2>
-      <div class="confirmBoxText">
-        % if order.payment_delivery_pair.delivery_method.id == 71:
-         <div>
-           <h4>コンビニ（セブン-イレブン）店頭でのお受取です。</h4>
-           公演日約1週間前までに、セブン-イレブン店頭レジでチケット引取をする際に必要な
-           引換票番号をメールにてお送りいたします(当選メールとは別のメールになります)。
-           詳細は、そちらをご確認ください。
-         </div>
-        % else:
-          ${h.render_delivery_finished_viewlet(request, order)}
+  <% pm,t_shirts = h.order_desc(order) %>
+  <div class="section">
+    <h3>購入情報</h3>
+    <table class="purchasedContents">
+      <tbody>
+        <tr>
+          <th colspan="2"><span>バンビシャス奈良 2013-2014 ブースタークラブ</span></th>
+        </tr>
+        <tr>
+          <td>新規／継続</td>
+          <td class="textR">${u'継続' if pm.get('cont') == 'yes' else u'新規'}</td>
+        </tr>
+        % if pm.get('old_id_number') and pm.get('cont') == 'yes':
+        <tr>
+          <td>2012-13会員番号</td>
+          <td class="textR">${pm.get('old_id_number')}</td>
+        </tr>
         % endif
-      </div>
-    </div>
+        <tr>
+          <td>会員種別</td>
+          <td class="textR">${order.items[0].product.name}</td>
+        </tr>
+        <% t_shirts_size = order.items[0].ordered_product_items[0].attributes.get('t_shirts_size') %>
+        % if t_shirts_size:
+        <tr>
+          <td>Tシャツサイズ</td>
+          <td class="textR">${t_shirts_size}</td>
+        </tr>
+        % endif
+        <tr>
+          <td>氏名</td>
+          <td class="textR">${pm.get('last_name')} ${pm.get('first_name')}</td>
+        </tr>
+        <tr>
+          <td>氏名（フリガナ）</td>
+          <td class="textR">${pm.get('last_name_kana')} ${pm.get('first_name_kana')}</td>
+        </tr>
+        <tr>
+          <td>誕生日</td>
+          <td class="textR">${pm.get('year')}年${pm.get('month')}月${pm.get('day')}日</td>
+        </tr>
+        <tr>
+          <td>性別</td>
+          <td class="textR">
+          %if pm.get('sex')=='male':
+            男性
+          %endif
+          %if pm.get('sex')==2:
+            女性
+          %endif
+          </td>
+        </tr>
+        <tr>
+          <td>郵便番号</td>
+          <td class="textR">${pm.get('zipcode1')}-${pm.get('zipcode2')}</td>
+        </tr>
+        <tr>
+          <td>住所</td>
+          <td class="textR">${pm.get('prefecture')} ${pm.get('city')} ${pm.get('address1')} ${pm.get('address2')}</td>
+        </tr>
+        <tr>
+          <td>電話番号（携帯）</td>
+          <td class="textR">${pm.get('tel_1', '-')}</td>
+        </tr>
+        <tr>
+          <td>電話番号（自宅）</td>
+          <td class="textR">${pm.get('tel_2', '-')}</td>
+        </tr>
+        <tr>
+          <td>メールアドレス</td>
+          <td class="textR">${pm.get('email_1')}</td>
+        </tr>
+        <tr>
+          <td>バンビシャス奈良からのメールマガジンの配信</td>
+          <td class="textR">${u'希望する' if pm.get('mail_permission') else u'希望しない'}</td>
+        </tr>
+        <tr>
+          <td>メモリアルブックへの掲載希望</td>
+          <td class="textR">${u'はい' if pm.get('publicity') == 'yes' else u'いいえ'}</td>
+        </tr>
+      </tbody>
+    </table>
   </div>
+  <div class="section">
+    <h3>お支払い</h3>
+    %if order.payment_delivery_pair.payment_method.payment_plugin.id == 3:
+    <table class="purchasedContents">
+      <thead>
+        <tr>
+          <th colspan="2"><span>セブン-イレブン</span></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>払込票番号</td>
+          <td class="textR">${sej_order.billing_number}</td>
+        </tr>
+        <tr>
+          <td>予約有効期限</td>
+          <td class="textR">${h.japanese_date(sej_order.payment_due_at)}${h.japanese_time(sej_order.payment_due_at)}</td>
+        </tr>
+        <tr>
+          <td colspan="2">
+            注意事項
+            <ul>
+              <li>セブン-イレブン決済の際には払込票番号が必要です。下記、「払込票印刷」ボタンをクリックし、払込票を印刷してお持ちになるか、上記の払込票番号をお控えいただき、レジでお伝え下さい。</li>
+              <li>予約有効期限までに、払込票または払込票番号をセブン-イレブン店頭レジにてお申し出の上、代金をお支払いください。</li>
+              <li>支払期日までに入金されない場合は、申込が無効となりますのでご注意ください。</li>
+            </ul>
+          </td>
+        </tr>
+      </tbody>
+      <tfoot>
+        <tr>
+          <td colspan="2" class="textC">
+            <form action="${sej_order.exchange_sheet_url}" method="post" target="_blank">
+              <input type="hidden" name="iraihyo_id_00" value="${sej_order.exchange_sheet_number}" />
+              <input type="submit" class="paymentCoupon" value="払込票印刷">
+            </form>
+          </td>
+        </tr>
+      </tfoot>
+    </table>
+    % else:
+    <table class="purchasedContents">
+      <thead>
+        <tr>
+          <th colspan="2"><span>クレジットカード</span></th>
+        </tr>
+      </thead>
+    </table>
+    % endif
+  </div>
+  <!-- sectionおわり -->
+  <div class="section">
+    <h3>注意事項</h3>
+    <ul>
+      <li>入力された個人情報は「個人情報保護方針」に基づき適切に取扱われます。</li>
+    </ul>
+  </div>
+  <!-- sectionおわり -->
+  <div class="section">
+    <h3>お問い合わせ先</h3>
+    <ul class="markNone font14">
+      <li>バンビシャス奈良</li>
+      <li>TEL: 0742-20-1800 (平日：10:00〜17:00)</li>
+    </ul>
+  </div>
+  <!-- sectionおわり -->
 % endif
-
-<div class="settlementBox2 OrderBox">
-  <div class="settlementBoxInner2">
-    <h2>注意事項</h2>
-    <div class="confirmBoxText">
-      <p>
-        入力された個人情報は「個人情報保護方針」に基づき適切に取扱われます。
-      </p>
-    </div>
-  </div>
 </div>
-
