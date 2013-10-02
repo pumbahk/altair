@@ -2718,6 +2718,14 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                     quantity=item.product_item.quantity * product.quantity,
                     seats=item.seats
                     )
+                for i, seat in ordered_product_item.iterate_serial_and_seat():
+                    token = OrderedProductItemToken(
+                        item = ordered_product_item, 
+                        serial = i, 
+                        seat = seat, 
+                        valid=True #valid=Falseの時は何時だろう？
+                        )
+                    ordered_product_item.tokens.append(token)
         return order
 
     @staticmethod
@@ -2865,6 +2873,14 @@ class OrderedProductItem(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         total = len(self.tokens)
         issued_count = len([i for i in self.tokens if i.issued_at])
         return dict(issued=issued_count, total=total)
+
+    def iterate_serial_and_seat(self):
+        if self.seats:
+            for i, s in enumerate(self.seats):
+                yield i, s
+        else:
+            for i in xrange(self.quantity):
+                yield i, None
 
 class OrderedProductItemToken(Base,BaseModel, LogicallyDeleted):
     __tablename__ = "OrderedProductItemToken"
