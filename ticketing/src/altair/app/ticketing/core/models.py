@@ -2276,6 +2276,10 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     items = relationship('OrderedProduct')
     total_amount = Column(Numeric(precision=16, scale=2), nullable=False)
     system_fee = Column(Numeric(precision=16, scale=2), nullable=False)
+    
+    special_fee_name = Column(String(255), nullable=True)
+    special_fee = Column(Numeric(precision=16, scale=2), nullable=False)
+    
     transaction_fee = Column(Numeric(precision=16, scale=2), nullable=False)
     delivery_fee = Column(Numeric(precision=16, scale=2), nullable=False)
 

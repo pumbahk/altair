@@ -214,7 +214,14 @@ class Cart(Base):
         return self.sales_segment.get_system_fee(
             self.payment_delivery_pair,
             [(p.product, p.quantity) for p in self.products])
-        
+
+    @property
+    def special_fee(self):
+        """特別手数料"""
+        return self.sales_segment.get_special_fee(
+            self.payment_delivery_pair,
+            [(p.product, p.quantity) for p in self.products])
+    
     @classmethod
     def get_or_create(cls, performance, cart_session_id):
         try:
