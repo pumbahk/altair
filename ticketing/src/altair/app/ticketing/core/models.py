@@ -1299,6 +1299,10 @@ class PaymentDeliveryMethodPair(Base, BaseModel, WithTimestamp, LogicallyDeleted
     delivery_method_id = AnnotatedColumn(Identifier, ForeignKey('DeliveryMethod.id'), _a_label=_(u'引取方法'))
     delivery_method = relationship('DeliveryMethod', backref='payment_delivery_method_pairs')
 
+    special_fee_name = AnnotatedColumn(String(255), _a_label=_(u'特別徴収'))
+    special_fee = AnnotatedColumn(Numeric(precision=16, scale=2), nullable=False, _a_label=_(u'特別徴収額'))
+    special_fee_type = Column(Integer, nullable=False, default=FeeTypeEnum.Once.v[0])
+
     @property
     def delivery_fee_per_product(self):
         """商品ごとの引取手数料"""
@@ -1363,17 +1367,38 @@ class PaymentDeliveryMethodPair(Base, BaseModel, WithTimestamp, LogicallyDeleted
             return Decimal()
 
     @property
+    def special_fee_per_product(self):
+        """商品ごとのと区別手数料"""
+        return Decimal()
+
+    @property
+    def special_fee_per_ticket(self):
+        """発券ごとの特別手数料"""
+        if self.special_fee_type == FeeTypeEnum.PerUnit.v[0]:
+            return self.special_fee
+        else:
+            return Decimal()
+
+    @property
+    def special_fee_per_order(self):
+        """注文ごとの特別手数料"""
+        if self.special_fee_type == FeeTypeEnum.Once.v[0]:
+            return self.special_fee
+        else:
+            return Decimal()
+
+    @property
     def per_order_fee(self):
         """注文ごと手数料"""
-        return self.system_fee_per_order + self.delivery_fee_per_order + self.transaction_fee_per_order
+        return self.system_fee_per_order + self.special_fee_per_order + self.delivery_fee_per_order + self.transaction_fee_per_order
 
     @property
     def per_product_fee(self):
-        return self.system_fee_per_product + self.delivery_fee_per_product + self.transaction_fee_per_product
+        return self.system_fee_per_product + self.special_fee_per_order + self.delivery_fee_per_product + self.transaction_fee_per_product
     
     @property
     def per_ticket_fee(self):
-        return self.system_fee_per_ticket + self.delivery_fee_per_ticket + self.transaction_fee_per_ticket
+        return self.system_fee_per_ticket + self.special_fee_per_ticket + self.delivery_fee_per_ticket + self.transaction_fee_per_ticket
 
     def is_available_for(self, sales_segment, on_day):
         return self.public and (
@@ -3596,6 +3621,12 @@ class SalesSegment(Base, BaseModel, LogicallyDeleted, WithTimestamp):
         return pdmp.system_fee_per_order + sum([
             (pdmp.system_fee_per_product + \
              pdmp.system_fee_per_ticket * product.num_priced_tickets(pdmp)) * quantity
+            for product, quantity in product_quantities])
+
+    def get_special_fee(self, pdmp, product_quantities):
+        return pdmp.special_fee_per_order + sum([
+            (pdmp.special_fee_per_product + \
+             pdmp.special_fee_per_ticket * product.num_priced_tickets(pdmp)) * quantity
             for product, quantity in product_quantities])
 
     def get_products_amount(self, pdmp, product_quantities):
