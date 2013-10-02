@@ -12,6 +12,14 @@ from altair.app.ticketing.core.utils import ApplicableTicketsProducer
 from altair.app.ticketing.payments.plugins import SEJ_DELIVERY_PLUGIN_ID
 logger = logging.getLogger(__name__)
 
+## 
+from pyramid.threadlocal import get_current_request
+from altair.app.ticketing.tickets.api import get_svg_builder
+
+def _get_svg_renderer():
+    request = get_current_request()
+    return get_svg_builder(request)
+
 def delivery_type_from_built_dict(dict_):
     try:
         if int(dict_["deliveryMethod"][u"plugin_id"]) == int(SEJ_DELIVERY_PLUGIN_ID):
@@ -38,10 +46,11 @@ def enqueue_cover(operator, order):
         logger.error("cover is not found. order = {order.id} organization_id = {operator.organization_id}".format(order=order, operator=operator))
         return 
     dict_ = build_cover_dict_from_order(order)
+    svg_renderer = _get_svg_renderer()
     TicketPrintQueueEntry.enqueue(
         operator=operator, 
         ticket=cover.ticket, 
-        data = {u"drawing": pystache.render(cover.ticket.data["drawing"], dict_)}, 
+        data = {u"drawing": svg_renderer.render(cover.ticket, dict_)}, 
         summary=u"表紙 {order.order_no}".format(order=order)
         )
 
@@ -53,10 +62,11 @@ def enqueue_for_order(operator, order, ticket_format_id=None):
 def enqueue_token(operator, token, ticket, i, j, ordered_product_item=None, order=None, seat=None, issuer=None):
     dict_ = build_dict_from_ordered_product_item_token(token, ticket_number_issuer=issuer)
     ordered_product_item = ordered_product_item or token.ordered_product_item
+    svg_renderer = _get_svg_renderer()
     TicketPrintQueueEntry.enqueue(
         operator=operator, 
         ticket=ticket, 
-        data={ u'drawing': pystache.render(ticket.data['drawing'], dict_) },
+        data={ u'drawing': svg_renderer.render(ticket, dict_)},
         summary=u'注文 %s - %s%s' % (
             order.order_no,
             ordered_product_item.product_item.name,
@@ -69,12 +79,14 @@ def enqueue_token(operator, token, ticket, i, j, ordered_product_item=None, orde
 def enqueue_item(operator, order, ordered_product_item, ticket_format_id=None):
     bundle = ordered_product_item.product_item.ticket_bundle
     dicts = comfortable_sorted_built_dicts(ordered_product_item)
+    svg_renderer = _get_svg_renderer()
+
     for index, (seat, dict_) in enumerate(dicts):
         for ticket in ApplicableTicketsProducer.from_bundle(bundle).will_issued_by_own_tickets(format_id=ticket_format_id):
             TicketPrintQueueEntry.enqueue(
                 operator=operator,
                 ticket=ticket,
-                data={ u'drawing': pystache.render(ticket.data['drawing'], dict_) },
+                data={ u'drawing': svg_renderer.render(ticket, dict_)},
                 summary=u'注文 %s - %s%s' % (
                     order.order_no,
                     ordered_product_item.product_item.name,
