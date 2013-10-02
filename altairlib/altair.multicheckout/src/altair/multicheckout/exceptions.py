@@ -2,3 +2,6 @@
 
 class MultiCheckoutAPIError(Exception):
     pass
+
+class MultiCheckoutAPITimeoutError(Exception):
+    pass
