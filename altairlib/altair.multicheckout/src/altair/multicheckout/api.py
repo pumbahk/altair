@@ -397,7 +397,6 @@ class Checkout3D(object):
         headers.update(self.auth_header)
 
         logger.debug("request %s body = %s" % (url, sanitize_card_number(body)))
-        res = None
         try:
             http.request("POST", url_parts.path, body=body,headers=headers)
             res = http.getresponse()
@@ -417,8 +416,7 @@ class Checkout3D(object):
             logger.error('multicheckout api request error: %s(%s)' % (type(e), e.message))
             raise MultiCheckoutAPIError(e)
         finally:
-            if res:
-                res.close()
+            http.close()
 
     @property
     def api_url(self):
