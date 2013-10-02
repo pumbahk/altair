@@ -53,6 +53,7 @@ from .exceptions import (
     OutTermSalesException,
 )
 from .resources import EventOrientedTicketingCartResource, PerformanceOrientedTicketingCartResource
+from .limitting import limitter
 
 logger = logging.getLogger(__name__)
 
@@ -502,6 +503,7 @@ class ReserveView(object):
         return [(products.get(int(c[0])), c[1]) for c in controls]
 
 
+    @limitter('altair.ticketing.cart.limit_per_unit_time', TooManyCartsCreated)
     @view_config(route_name='cart.order', request_method="POST", renderer='json')
     def reserve(self):
         h.form_log(self.request, "received order")

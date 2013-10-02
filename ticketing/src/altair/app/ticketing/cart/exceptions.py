@@ -60,3 +60,7 @@ class OverOrderLimitException(Exception):
 
 class PaymentMethodEmptyError(CartException):
     pass
+
+class TooManyCartsCreated(CartException):
+    def __init__(self, id_=None):
+        self.id_ = id_

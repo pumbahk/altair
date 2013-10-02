@@ -33,6 +33,7 @@ from .exceptions import (
     ZeroQuantityError, 
     CartCreationException,
 )
+from .limitting import limitter
 
 logger = logging.getLogger(__name__)
 
@@ -337,6 +338,7 @@ class MobileSelectProductView(object):
             back_url=back_url
         )
 
+    @limitter('altair.ticketing.cart.limit_per_unit_time', TooManyCartsCreated)
     @view_config(route_name='cart.products', request_method="POST")
     @view_config(route_name='cart.products2', request_method="POST")
     def products_form(self):
