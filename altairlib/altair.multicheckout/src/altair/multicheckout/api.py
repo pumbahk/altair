@@ -4,6 +4,7 @@
 """
 
 from xml.etree import ElementTree as etree
+import socket
 import httplib
 import urlparse
 from . import models as m
@@ -11,7 +12,7 @@ from datetime import date
 from . import logger
 from . import events
 from .interfaces import IMulticheckoutSettingFactory
-from .exceptions import MultiCheckoutAPIError
+from .exceptions import MultiCheckoutAPIError, MultiCheckoutAPITimeoutError
 
 DEFAULT_ITEM_CODE = "120"  # 通販
 
@@ -409,6 +410,9 @@ class Checkout3D(object):
                 raise Exception(res.reason)
 
             return etree.parse(res).getroot()
+        except socket.error, e:
+            logger.warn('multicheckout api request timeout: %s' % e.message)
+            raise MultiCheckoutAPITimeoutError(e)
         except Exception, e:
             logger.error('multicheckout api request error: %s' % e.message)
             raise MultiCheckoutAPIError(e)

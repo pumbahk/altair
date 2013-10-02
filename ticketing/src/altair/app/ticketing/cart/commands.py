@@ -9,6 +9,7 @@ import transaction
 from altair.app.ticketing.core import models as o_m
 from altair.app.ticketing.core.api import get_channel
 from altair.multicheckout import api as multicheckout_api
+from altair.multicheckout.exceptions import MultiCheckoutAPITimeoutError
 from altair.app.ticketing.checkout import api as checkout_api
 from . import api
 from altair.app.ticketing.cart.exceptions import UnassignedOrderNumberError
@@ -150,6 +151,9 @@ def cancel_auth_expired_carts():
                     multicheckout_api.checkout_auth_cancel(request, order_no)
                 else:
                     logging.info("Order(order_no = %s) status = %s " % (order_no, inquiry.Status))
+            except MultiCheckoutAPITimeoutError, e:
+                logging.warn('Multicheckout API timeout occured: %s' % e.message)
+                continue
             except Exception, e:
                 logging.error('Multicheckout API error occured: %s' % e.message)
                 break
