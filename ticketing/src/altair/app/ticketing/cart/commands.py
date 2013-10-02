@@ -152,7 +152,8 @@ def cancel_auth_expired_carts():
                 else:
                     logging.info("Order(order_no = %s) status = %s " % (order_no, inquiry.Status))
             except MultiCheckoutAPITimeoutError, e:
-                logging.warn('Multicheckout API timeout occured: %s' % e.message)
+                logging.info('Multicheckout API timeout occured: %s' % e.message)
+                carts_to_skip.add(cart_id)
                 continue
             except Exception, e:
                 logging.error('Multicheckout API error occured: %s' % e.message)
