@@ -20,13 +20,13 @@ Identifier = sa.BigInteger
 def upgrade():
     op.add_column('PaymentDeliveryMethodPair',
                   sa.Column('ext_system_fee_name',
-                            sa.String(length=255), nullable=False, default="")))
+                            sa.String(length=255), nullable=False, default=""))
     op.add_column('PaymentDeliveryMethodPair',
                   sa.Column('ext_system_fee',
-                            sa.Integer(), nullable=False, default=0)))
+                            sa.Integer(), nullable=False, default=0))
     op.add_column('PaymentDeliveryMethodPair',
                   sa.Column('ext_system_fee_type',
-                            sa.Integer(), nullable=False, default=0)))
+                            sa.Integer(), nullable=False, default=0))
 
 def downgrade():
     op.drop_column('PaymentDeliveryMethodPair', 'ext_system_fee_name')
