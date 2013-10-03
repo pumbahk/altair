@@ -9,20 +9,13 @@ class SimpleControl(object):
         return vals
 
 class TicketModelControl(object):
-    QR_PLACEHOLDER = "IdentifiedQRSource" #todo:rename
-    QR_TAG_FORMAT = u'<ts:qrcode content="{}"/>'
-
     def get_template(self, ticket):
-        return ticket.data['drawing']
+        return ticket.drawing
 
-    def _update_vals_for_unique_qrcode(self, ticket, vals):
-        if "qr_tag_format" in ticket.data:
-            qr_fmt = ticket.data["qr_tag_format"]
-            vals[self.QR_PLACEHOLDER] = qr_fmt.format(vals.get(self.QR_PLACEHOLDER, ""))
+    def get_vals(self, ticket, build_vals):
+        vals = ticket.vars_defaults
+        vals.update(build_vals)
         return vals
-
-    def get_vals(self, ticket, vals):
-        return self._update_vals_for_unique_qrcode(ticket, vals)
 
 @implementer(ISVGBuilder)
 class SVGBuilder(object):

@@ -2954,6 +2954,10 @@ class Ticket(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     def drawing(self):
         return self.data["drawing"]
 
+    @property
+    def vars_defaults(self):
+        return self.data.get("vars_defaults", {})
+
     def create_event_bound(self, event):
         new_object = self.__class__.clone(self)
         new_object.event_id = event.id

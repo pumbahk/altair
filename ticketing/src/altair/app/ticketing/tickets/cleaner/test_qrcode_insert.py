@@ -1,11 +1,11 @@
-# -*- encoding:utf-8 -*-
+# -*- coding:utf-8 -*-
 
 import unittest
 
 class QRCodeInsertTests(unittest.TestCase):
     def _callFUT(self, *args, **kwargs):
-        from altair.app.ticketing.tickets.cleaner.api import iff_need_qrcode_insert
-        return iff_need_qrcode_insert(*args, **kwargs)
+        from altair.app.ticketing.tickets.cleaner.api import QRCodeEmitter
+        return QRCodeEmitter(*args, **kwargs).emit()
 
     svg = u"""
 <svg
