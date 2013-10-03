@@ -196,11 +196,20 @@ def import_orders():
     request = env['request']
     request.browserid = u''
 
+    # 多重起動防止
+    LOCK_NAME = import_orders.__name__
+    LOCK_TIMEOUT = 10
+    conn = sqlahelper.get_engine().connect()
+    status = conn.scalar("select get_lock(%s,%s)", (LOCK_NAME, LOCK_TIMEOUT))
+    if status != 1:
+        logging.warn('lock timeout: already running process')
+        return
+
     logging.info('start import_orders batch')
 
     tasks = OrderImportTask.query.filter(
         OrderImportTask.status == ImportStatusEnum.Waiting.v[0]
-    ).all()
+    ).order_by(OrderImportTask.id).all()
 
     for task in tasks:
         try:
