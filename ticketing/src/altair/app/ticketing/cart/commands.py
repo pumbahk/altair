@@ -54,7 +54,7 @@ def join_cart_and_order():
         logging.info('order_no = %s : cart[id=%s].order=order[%s]' % (cart.order_no, cart.id, order.id))
     transaction.commit()
 
-def cancel_auth_expired_carts():
+def release_carts():
     """ 期限切れカートのオーソリをキャンセルする
     """
 
@@ -77,7 +77,7 @@ def cancel_auth_expired_carts():
     expire_time = int(settings['altair_cart.expire_time'])
 
     # 多重起動防止
-    LOCK_NAME = cancel_auth_expired_carts.__name__
+    LOCK_NAME = release_carts.__name__
     LOCK_TIMEOUT = 10
     conn = sqlahelper.get_engine().connect()
     status = conn.scalar("select get_lock(%s,%s)", (LOCK_NAME, LOCK_TIMEOUT))
