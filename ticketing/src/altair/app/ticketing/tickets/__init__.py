@@ -9,7 +9,7 @@ def setup_svg(config):
     config.registry.registerUtility(builder, ISVGBuilder)
 
 def includeme(config):
-    config.includeme(setup_svg)
+    config.include(setup_svg)
     config.add_route('tickets.index', '/')
 
     config.add_route('tickets.ticketformats.new', '/ticketformats/new')
