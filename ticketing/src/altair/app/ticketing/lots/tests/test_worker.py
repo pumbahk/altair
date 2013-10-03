@@ -16,6 +16,7 @@ class lot_wish_cartTests(unittest.TestCase):
             SalesSegment,
             Event,
             Organization,
+            FeeTypeEnum,
         )
         from ..models import LotEntryWish, LotEntry, Lot, LotEntryProduct
         product1 = Product(price=100,
@@ -32,6 +33,7 @@ class lot_wish_cartTests(unittest.TestCase):
                                    ), 
                                entry_no='testing-entry',
                                payment_delivery_method_pair=PaymentDeliveryMethodPair(system_fee=11,
+                                                                                      system_fee_type=FeeTypeEnum.Once.v[0],
                                                                                       transaction_fee=111,
                                                                                       payment_method=PaymentMethod(),
                                                                                       delivery_method=DeliveryMethod(),
