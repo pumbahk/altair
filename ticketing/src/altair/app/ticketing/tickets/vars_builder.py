@@ -15,6 +15,8 @@ def datetime_as_dict(dt):
         u'weekday': dt.weekday()
         } if dt is not None else None
 
+def get_unique_string_for_qr_from_token(token):
+    return u"発券時ユニークID: token.id={}".format(token.id)
 
 class TicketCoverDictBuilder(object):
     def __init__(self, formatter):
@@ -511,12 +513,14 @@ class TicketDictBuilder(object):
             return None
         if ordered_product_item_token.seat is not None:
             d = self.build_dict_from_seat(ordered_product_item_token.seat, ticket_number_issuer=ticket_number_issuer)
+            d[u'発券時ユニークID'] = get_unique_string_for_qr_from_token(ordered_product_item_token)
             d[u'serial'] = ordered_product_item_token.serial
             d[u'発券番号'] = ticket_number_issuer(ordered_product_item.product_item.id) if ticket_number_issuer else ""
             d.update(extra)
             return (ordered_product_item_token.seat, d) 
         else:
             d = {}
+            d[u'発券時ユニークID'] = get_unique_string_for_qr_from_token(ordered_product_item_token)
             d = self.build_dict_from_stock(ordered_product_item.product_item.stock, d)
             d = self.build_dict_from_venue(ordered_product_item.product_item.performance.venue, d)
             d[u'発券番号'] = ticket_number_issuer(ordered_product_item.product_item.id) if ticket_number_issuer else ""
