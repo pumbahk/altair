@@ -438,7 +438,7 @@ class ConfirmLotEntryView(object):
         try:
             api.notify_entry_lot(self.request, entry)
         except Exception as e:
-            logger.warning('error orccured during sending mail. \n{0}'.format(e))
+            logger.warning(u'error orccured during sending mail. \n{0}'.format(e))
 
 
         return HTTPFound(location=urls.entry_completion(self.request))

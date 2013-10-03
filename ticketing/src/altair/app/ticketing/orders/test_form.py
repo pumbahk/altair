@@ -18,9 +18,9 @@ class FormMemoAttributeFormTests(unittest.TestCase):
     def test_get_errors(self):
         target = self._getTarget()
         N = 3
-        form = target(N)(MultiDict({"memo_on_order3": u"あいうえおかきくけこさ"}))
+        form = target(N)(MultiDict({"memo_on_order3": u"あいうえおかきくけこさあいうえおかきくけこさ"}))
         self.assertFalse(form.validate())
-        self.assertIn(u"補助文言3(最大10文字):", form.get_error_messages())
+        self.assertIn(u"補助文言3(最大20文字):", form.get_error_messages())
 
     def test_get_result(self):
         target = self._getTarget()

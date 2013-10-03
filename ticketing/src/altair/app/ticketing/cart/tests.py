@@ -302,35 +302,41 @@ class CartedProductItemTests(unittest.TestCase):
             self.assertEqual(s.status, int(SeatStatusEnum.Ordered))
 
 
-class TicketingCartResourceTests(unittest.TestCase):
+class TicketingCartResourceTestBase(object):
     def setUp(self):
+        self.config = testing.setUp()
+        self.config.include('altair.app.ticketing.cart')
+        self.config.registry.settings['altair_cart.expire_time'] = '10'
         self.session = _setup_db()
+        self.organization = self._add_organization(1)
 
     def tearDown(self):
+        testing.tearDown()
         _teardown_db()
         import sqlahelper
         sqlahelper.get_base().metadata.drop_all()
 
-
-    def _getTarget(self):
-        from . import resources
-        return resources.TicketingCartResource
-
     def _makeOne(self, *args, **kwargs):
         return self._getTarget()(*args, **kwargs)
+
+    def _add_organization(self, organization_id):
+        from ..core import models
+        organization = models.Organization(id=organization_id, name='example', hosts=[models.Host(organization_id=organization_id, host_name='example.com:80')])
+        return organization
 
     def _add_stock_status(self, quantity=100):
         from ..products import models
         product_item = models.ProductItem(id=1, price=0, quantity=0)
         stock = models.Stock(id=1, product_items=[product_item])
         stock_status = models.StockStatus(stock=stock, quantity=quantity)
-        models.DBSession.add(stock_status)
+        self.session.add(stock_status)
         return product_item
 
     def _add_event(self, event_id):
         from ..core import models
-        event = models.Event(id=event_id)
+        event = models.Event(id=event_id, organization_id=self.organization.id)
         self.session.add(event)
+        return event
 
     def _add_sales_segment(self, performance, start_at, end_at):
         from ..core import models
@@ -420,13 +426,16 @@ class TicketingCartResourceTests(unittest.TestCase):
 
         self.assertEqual(result, [ms])
 
-    def test_event_id(self):
-        request = DummyRequest(matchdict={"event_id": "12345"})
+    @mock.patch("altair.app.ticketing.core.api.get_organization")
+    def test_event_id(self, get_organization):
+        from altair.app.ticketing.core.models import Organization
+        organization = get_organization.return_value = self.organization
+        event = self._add_event(12345L)
+        self.session.flush()
+        request = DummyRequest(matchdict={"event_id": str(event.id)})
         target = self._makeOne(request)
-
-        result = target.event_id
-
-        self.assertEqual(result, 12345L)
+        result = target.event.id
+        self.assertEqual(result, event.id)
 
     @mock.patch("altair.app.ticketing.core.api.get_organization")
     def test_get_sales_segment(self, get_organization):
@@ -571,6 +580,17 @@ class TicketingCartResourceTests(unittest.TestCase):
 
         self.assertTrue(result)
 
+class EventOrientedTicketingCartResourceTests(unittest.TestCase, TicketingCartResourceTestBase):
+    def setUp(self):
+        TicketingCartResourceTestBase.setUp(self)
+
+    def tearDown(self):
+        TicketingCartResourceTestBase.tearDown(self)
+
+    def _getTarget(self):
+        from . import resources
+        return resources.EventOrientedTicketingCartResource
+
 class ReserveViewTests(unittest.TestCase):
     def setUp(self):
         self.session = _setup_db()
@@ -644,7 +664,7 @@ class ReserveViewTests(unittest.TestCase):
     def test_it(self, get_organization):
         from altair.app.ticketing.core.models import Seat, SeatAdjacency, Seat_SeatAdjacency, SeatAdjacencySet, SeatStatus, SeatStatusEnum, Stock, StockType, StockStatus, Product, ProductItem, Performance, Event, SalesSegment, SalesSegmentGroup, SalesSegmentKindEnum, Organization, Host, PaymentDeliveryMethodPair, SeatIndex, SeatIndexType
         from .models import Cart
-        from .resources import TicketingCartResource
+        from .resources import EventOrientedTicketingCartResource
         from webob.multidict import MultiDict
         from datetime import datetime, timedelta
 
@@ -686,9 +706,10 @@ class ReserveViewTests(unittest.TestCase):
         self.session.add(product)
         self.session.add(product_item)
         self.session.add(stock_status)
-        [self.session.add(s) for s in seats]
-        [self.session.add(s) for s in seat_statuses]
-
+        for seat in seats:
+            self.session.add(seat)
+        for seat_status in seat_statuses:
+            self.session.add(seat_status)
 
         # SeatIndex
         self.session.add(SeatIndexType(venue=venue, name='',
@@ -707,8 +728,7 @@ class ReserveViewTests(unittest.TestCase):
         self.session.flush()
         for seat in seats:
             self.session.add(Seat_SeatAdjacency(seat_adjacency_id=adjacency.id, l0_id=seat.l0_id))
-        print adjacency.seats_filter_by_venue(venue.id)
-
+        self.assertEqual(adjacency.seats_filter_by_venue(venue.id), seats)
 
         params = MultiDict({
             "performance_id": performance.id,
@@ -725,7 +745,7 @@ class ReserveViewTests(unittest.TestCase):
         request.registry.adapters.register([IRequest], IStocker, "", Stocker)
         request.registry.adapters.register([IRequest], IReserving, "", Reserving)
         request.registry.adapters.register([IRequest], ICartFactory, "", CartFactory)
-        request.context = TicketingCartResource(request)
+        request.context = EventOrientedTicketingCartResource(request)
         target = self._makeOne(request)
         result = target.reserve()
 
@@ -769,7 +789,7 @@ class ReserveViewTests(unittest.TestCase):
 
         from altair.app.ticketing.core.models import Seat, SeatAdjacency, Seat_SeatAdjacency, SeatAdjacencySet, SeatStatus, SeatStatusEnum, Stock, StockType, StockStatus, Product, ProductItem, Performance, Event, SalesSegment, SalesSegmentGroup, SalesSegmentKindEnum, PaymentDeliveryMethodPair, Organization
         from .models import Cart
-        from .resources import TicketingCartResource
+        from .resources import EventOrientedTicketingCartResource
         from webob.multidict import MultiDict
         from datetime import datetime, timedelta
 
@@ -841,74 +861,13 @@ class ReserveViewTests(unittest.TestCase):
         request.registry.adapters.register([IRequest], IStocker, "", Stocker)
         request.registry.adapters.register([IRequest], IReserving, "", Reserving)
         request.registry.adapters.register([IRequest], ICartFactory, "", CartFactory)
-        request.context = TicketingCartResource(request)
+        request.context = EventOrientedTicketingCartResource(request)
         target = self._makeOne(request)
         result = target.reserve()
 
         self.assertEqual(result, dict(reason='stock', result='NG'))
         cart_id = request.session.get('altair.app.ticketing.cart_id')
         self.assertIsNone(cart_id)
-
-    # 数受け処理にふっているため、このテストは通らない
-#    def test_it_no_seat(self):
-#
-#
-#        from altair.app.ticketing.core.models import Seat, SeatAdjacency, SeatAdjacencySet, SeatStatus, SeatStatusEnum, Stock, StockStatus, Product, ProductItem, Performance
-#        from .models import Cart
-#        from .resources import TicketingCartResource
-#
-#        # 在庫
-#        stock_id = 1
-#        product_item_id = 2
-#        adjacency_set_id = 3
-#        adjacency_id = 4
-#        venue_id = 5
-#        site_id = 6
-#        organization_id = 7
-#        performance_id = 8
-#
-#        venue = self._add_venue(organization_id, site_id, venue_id)
-#        stock = Stock(id=stock_id, quantity=100)
-#        stock_status = StockStatus(stock_id=stock.id, quantity=100)
-#        seats = [Seat(id=i, stock_id=stock.id, venue=venue) for i in range(2)]
-#        seat_statuses = [SeatStatus(seat_id=i, status=int(SeatStatusEnum.InCart)) for i in range(2)]
-#        performance = Performance(id=performance_id)
-#        product_item = ProductItem(id=product_item_id, stock_id=stock.id, price=100, quantity=1, performance=performance)
-#        product = Product(id=1, price=100, items=[product_item])
-#        self.session.add(stock)
-#        self.session.add(product)
-#        self.session.add(product_item)
-#        self.session.add(stock_status)
-#        [self.session.add(s) for s in seats]
-#        [self.session.add(s) for s in seat_statuses]
-#
-#        # 座席隣接状態
-#        adjacency_set = SeatAdjacencySet(id=adjacency_set_id, seat_count=2)
-#        adjacency = SeatAdjacency(adjacency_set=adjacency_set, id=adjacency_id)
-#        for seat in seats:
-#            seat.adjacencies.append(adjacency)
-#        self.session.add(adjacency_set)
-#        self.session.add(adjacency)
-#        self.session.flush()
-#
-#
-#        params = {
-#            "performance_id": performance.id,
-#            "product-" + str(product.id): '2',
-#            }
-#
-#        request = DummyRequest(params=params)
-#        request.context = TicketingCartResource(request)
-#        target = self._makeOne(request)
-#        result = target()
-#
-#        self.assertEqual(result, dict(result='NG'))
-#        cart_id = request.session.get('altair.app.ticketing.cart_id')
-#        self.assertIsNone(cart_id)
-#        from sqlalchemy import sql
-#        stock_statuses = self.session.bind.execute(sql.select([StockStatus.quantity]).where(StockStatus.stock_id==stock_id))
-#        for stock_status in stock_statuses:
-#            self.assertEqual(stock_status.quantity, 100)
 
     def test_iter_ordered_items(self):
         params = [
@@ -920,6 +879,7 @@ class ReserveViewTests(unittest.TestCase):
         class DummyParams(object):
             def __init__(self, params):
                 self.params = params
+
             def iteritems(self):
                 for k, v in self.params:
                     yield k, v
@@ -967,9 +927,9 @@ class PaymentViewTests(unittest.TestCase):
 
     def test_it_no_cart(self):
         from .exceptions import NoCartError
-        from .resources import TicketingCartResource
+        from .resources import EventOrientedTicketingCartResource
         request = DummyRequest()
-        request.context = TicketingCartResource(request)
+        request.context = EventOrientedTicketingCartResource(request)
         request.registry.settings = { 'altair_cart.expire_time': "15" }
         target = self._makeOne(request)
         self.assertRaises(NoCartError, lambda: target())
@@ -979,17 +939,18 @@ class PaymentViewTests(unittest.TestCase):
         self._register_starndard_payment_methods()
         request = DummyRequest()
         request.registry.settings = { 'altair_cart.expire_time': "15" }
-        request._cart = testing.DummyModel(
-            performance=testing.DummyModel(
-                event=testing.DummyModel(
-                    id="this-is-event-id",
+        request.context = testing.DummyResource(
+            cart=testing.DummyModel(
+                performance=testing.DummyModel(
+                    event=testing.DummyModel(
+                        id="this-is-event-id",
+                    ),
+                    start_on=datetime(2013, 1, 1, 0, 0, 0)
                 ),
-                start_on=datetime(2013, 1, 1, 0, 0, 0)
-            ),
-            is_expired=lambda minutes, now: False,
-            finished_at=None,
+                is_expired=lambda minutes, now: False,
+                finished_at=None,
+            )
         )
-        request.context = testing.DummyResource()
 
         payment_method = testing.DummyModel()
         payment_method.public = True

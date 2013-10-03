@@ -544,18 +544,21 @@ class order_productsTests(unittest.TestCase):
     def test_it(self):
         from pyramid.interfaces import IRequest
         from .interfaces import IStocker, IReserving, ICartFactory
+        from altair.app.ticketing.core.models import SalesSegment
         request = testing.DummyRequest()
         request.registry.adapters.register([IRequest], IStocker, "", DummyStocker)
         request.registry.adapters.register([IRequest], IReserving, "", DummyReserving)
         request.registry.adapters.register([IRequest], ICartFactory, "", DummyCartFactory)
 
-        performance_id = "1"
+        sales_segment_id = 1
+        self.session.add(SalesSegment(id=sales_segment_id))
+        self.session.flush()
         product_requires = [
             (testing.DummyModel(), 10),
             (testing.DummyModel(), 20),
         ]
 
-        result = self._callFUT(request, performance_id, product_requires)
+        result = self._callFUT(request, sales_segment_id, product_requires)
         self.assertIsNotNone(result)
 
     def test_one_order(self):
@@ -570,6 +573,7 @@ class order_productsTests(unittest.TestCase):
             Stock,
             StockStatus,
             StockType,
+            SalesSegment,
             Product,
             ProductItem,
             Event,
@@ -594,11 +598,13 @@ class order_productsTests(unittest.TestCase):
         site_id = 3
         organization_id = 4
         performance_id = 5
-        event_id = 6
+        sales_segment_id = 6
+        event_id = 7
 
         organization = Organization(id=organization_id, short_name='', code='XX')
         event = Event(id=event_id, organization=organization)
         performance = Performance(id=performance_id, event=event)
+        sales_segment = SalesSegment(id=sales_segment_id, performance_id=performance_id)
         site = Site(id=site_id)
         venue = Venue(id=venue_id, organization=organization, site=site, performance=performance)
         stock = Stock(id=stock_id, quantity=5, performance=performance, stock_type=StockType())
@@ -607,7 +613,8 @@ class order_productsTests(unittest.TestCase):
         seat_index_type = SeatIndexType(name=u'', venue=venue)
         seat_indexes = [SeatIndex(seat=seat, seat_index_type=seat_index_type, index=1) for seat in seats]
         product_item = ProductItem(stock=stock, price=100, quantity=1, performance=performance)
-        product = Product(id=1, price=100, items=[product_item])
+        product = Product(id=1, price=100, sales_segment_id=sales_segment_id, items=[product_item])
+        self.session.add(sales_segment)
         self.session.add(stock)
         self.session.add(product)
         self.session.add(product_item)
@@ -628,7 +635,7 @@ class order_productsTests(unittest.TestCase):
 
         # 注文 S席 2枚
         ordered_products = [(product, 2)]
-        cart1 = self._callFUT(request, performance_id, ordered_products)
+        cart1 = self._callFUT(request, sales_segment_id, ordered_products)
 
         self.assertIsNotNone(cart1)
         self.assertEqual(len(cart1.products), 1)
@@ -642,7 +649,7 @@ class order_productsTests(unittest.TestCase):
 
         assertQuantity(3)
 
-        cart2 = self._callFUT(request, performance_id, ordered_products)
+        cart2 = self._callFUT(request, sales_segment_id, ordered_products)
 
         self.assertIsNotNone(cart2)
         self.assertEqual(len(cart2.products), 1)
@@ -652,7 +659,7 @@ class order_productsTests(unittest.TestCase):
 
         assertQuantity(1)
 
-        self.assertRaises(NotEnoughStockException, lambda:self._callFUT(request, performance_id, ordered_products))
+        self.assertRaises(NotEnoughStockException, lambda:self._callFUT(request, sales_segment_id, ordered_products))
 
 
 class DummyStocker(object):

@@ -49,6 +49,8 @@ class SalesSegmentGroupsTests(unittest.TestCase):
 
         context = testing.DummyResource(
             user=user,
+            event=event,
+            sales_segment_group=None
         )
         request = DummyRequest(
             context=context,
@@ -98,7 +100,11 @@ class SalesSegmentGroupsTests(unittest.TestCase):
         self.session.add(organization)
         self.session.flush()
 
-        context = testing.DummyResource(user=user)
+        context = testing.DummyResource(
+            user=user,
+            event=event,
+            sales_segment_group=sales_segment_group
+            )
         request = DummyRequest(
             context=context,
             matchdict=dict(
@@ -174,6 +180,8 @@ class SalesSegmentGroupsTests(unittest.TestCase):
 
         context = testing.DummyResource(
             user=user,
+            event=event,
+            sales_segment_group=sales_segment_group
         )
         redirect_to = "/redirect/to"
         request = DummyRequest(
