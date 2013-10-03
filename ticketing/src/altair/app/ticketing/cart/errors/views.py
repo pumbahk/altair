@@ -16,6 +16,7 @@ from ..exceptions import (
     InvalidCartStatusError,
     OverOrderLimitException,
     PaymentMethodEmptyError,
+    TooManyCartsCreated,
 )
 from ..reserving import InvalidSeatSelectionException, NotEnoughAdjacencyException
 from ..stocker import InvalidProductSelectionException, NotEnoughStockException
@@ -163,9 +164,20 @@ def over_order_limit_exception(context, request):
                                           limit=order_limit,
                                           event_name=event_name,
                                           performance_name=performance_name)))
+
 @mobile_view_config(context=PaymentMethodEmptyError,
                     renderer=selectable_renderer('altair.app.ticketing.cart:templates/%(membership)s/mobile/error.html'))
 @view_config(context=PaymentMethodEmptyError,
              renderer=selectable_renderer('altair.app.ticketing.cart:templates/%(membership)s/pc/message.html'))
 def payment_method_is_empty(request):
     return dict(message=Markup(u'この商品は現在メンテナンス中のためご購入いただけません。'))
+
+
+@mobile_view_config(context=TooManyCartsCreated, renderer=selectable_renderer('altair.app.ticketing.cart:templates/%(membership)s/mobile/error.html'))
+@view_config(context=TooManyCartsCreated, renderer=selectable_renderer('altair.app.ticketing.cart:templates/%(membership)s/pc/message.html'))
+def too_many_cart_exception(context, request):
+    return dict(title=u'', message=u'誠に申し訳ございませんが、現在ご購入ができない状態になっております。しばらく経ってからお試しください')
+
+@view_config(context=TooManyCartsCreated, renderer='json', xhr=True)
+def too_many_cart_exception_xhr(context, request):
+    return dict(result='NG', reason='too many carts')
