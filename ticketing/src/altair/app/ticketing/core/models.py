@@ -2338,9 +2338,7 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     @property
     def sej_order(self):
-        if not hasattr(self, "_sej_order"):
-            self._sej_order = SejOrder.filter(SejOrder.order_id == self.order_no).first()
-        return self._sej_order
+        return SejOrder.filter_by(order_no=self.order_no).order_by(desc(SejOrder.branch_no)).first()
 
     @property
     def status(self):
@@ -2513,7 +2511,7 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
         # コンビニ決済 (セブン-イレブン)
         elif ppid == plugins.SEJ_PAYMENT_PLUGIN_ID:
-            sej_order = SejOrder.query.filter_by(order_id=self.order_no).first()
+            sej_order = self.sej_order
 
             # 未入金ならコンビニ決済のキャンセル通知
             if self.payment_status == 'unpaid':
@@ -2537,15 +2535,15 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         # コンビニ受取
         dpid = self.payment_delivery_pair.delivery_method.delivery_plugin_id
         if dpid == plugins.SEJ_DELIVERY_PLUGIN_ID and ppid != plugins.SEJ_PAYMENT_PLUGIN_ID:
-            sej_order = SejOrder.query.filter_by(order_id=self.order_no).first()
+            sej_order = self.sej_order
             # SejAPIでエラーのケースではSejOrderはつくられないのでスキップ
             if sej_order:
                 result = sej_api.cancel_sej_order(sej_order, self.organization_id)
                 if not result:
-                    logger.info('SejOrder (order_id=%s) cancel error' % self.order_no)
+                    logger.info('SejOrder (order_no=%s) cancel error' % self.order_no)
                     return False
             else:
-                logger.info('skip cancel delivery method. SejOrder not found (order_id=%s)' % self.order_no)
+                logger.info('skip cancel delivery method. SejOrder not found (order_no=%s)' % self.order_no)
 
         # 在庫を戻す
         logger.info('try release stock (order_no=%s)' % self.order_no)

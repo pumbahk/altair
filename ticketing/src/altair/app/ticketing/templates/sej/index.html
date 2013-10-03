@@ -45,7 +45,7 @@
           % endif
       </td>
       <td>${c.from_payment_type_id(order.payment_type)}</td>
-      <td>${order.order_id}</td>
+      <td>${order.order_no}</td>
       <td>${order.process_id if order.process_id else '-'}</td>
       <td>${order.exchange_number if order.exchange_number else '-'}</td>
       <td>${order.billing_number if order.billing_number else '-'}</td>
@@ -64,8 +64,8 @@
     <tr>
       <td colspan="17">
           <div class="btn-group">
-          <a href="${request.route_path('orders.sej.order.info', order_id=order.id)}" class="btn">詳細</a>
-          <a href="${request.route_path('orders.sej.order.cancel', order_id=order.id)}" onclick="return confirm('本当に取り消しますか？');" class="btn">発券取り消し</a>
+          <a href="${request.route_path('orders.sej.order.info', order_no=order.no)}" class="btn">詳細</a>
+          <a href="${request.route_path('orders.sej.order.cancel', order_no=order.no)}" onclick="return confirm('本当に取り消しますか？');" class="btn">発券取り消し</a>
           <form action="${order.exchange_sheet_url}" method="POST" target="_blank">
               <input type="hidden" name="iraihyo_id_00" value="${order.exchange_sheet_number}">
               <input type="submit" name="submit" value="引換え票を表示" class="btn"/>

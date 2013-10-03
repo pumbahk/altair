@@ -2,7 +2,7 @@
 from zope.interface import implementer
 from pyramid.view import view_config
 from pyramid.response import Response
-
+from sqlalchemy.sql.expression import desc
 from altair.app.ticketing.payments.interfaces import IPaymentPlugin, IOrderPayment, IDeliveryPlugin, IOrderDelivery
 from altair.app.ticketing.cart.interfaces import ICartPayment, ICartDelivery
 from altair.app.ticketing.mails.interfaces import (
@@ -24,9 +24,8 @@ from altair.app.ticketing.models import DBSession
 from altair.app.ticketing.core import models as c_models
 
 from altair.app.ticketing.sej.ticket import SejTicketDataXml
-from altair.app.ticketing.sej.models import SejOrder, SejTenant
+from altair.app.ticketing.sej.models import SejOrder, SejTenant, SejPaymentType, SejTicketType
 from altair.app.ticketing.sej.payment import request_order
-from altair.app.ticketing.sej.resources import SejPaymentType, SejTicketType
 from altair.app.ticketing.sej.utils import han2zen
 
 from altair.app.ticketing.tickets.convert import convert_svg
@@ -69,9 +68,6 @@ def get_ticketing_start_at(current_date, cart):
         ticketing_start_at = current_date + timedelta(days=cart.payment_delivery_pair.issuing_interval_days)
         ticketing_start_at = ticketing_start_at.replace(hour=00, minute=00, second=00)
     return ticketing_start_at
-
-def get_sej_order(order):
-    return SejOrder.filter(SejOrder.order_id == order.order_no).first()
 
 def get_sej_ticket_data(product_item, svg):
     performance = product_item.performance
@@ -146,14 +142,14 @@ class SejPaymentPlugin(object):
         api_key = (tenant and tenant.api_key) or settings['sej.api_key']
         api_url = (tenant and tenant.inticket_api_url) or settings['sej.inticket_api_url']
 
-        sej_order = get_sej_order(order)
+        sej_order = order.sej_order
         if not sej_order:
             request_order(
                 shop_name           = tenant.shop_name,
                 shop_id             = tenant.shop_id,
                 contact_01          = tenant.contact_01,
                 contact_02          = tenant.contact_02,
-                order_id            = order.order_no,
+                order_no            = order.order_no,
                 username            = u'%s%s' % (shipping_address.last_name, shipping_address.first_name),
                 username_kana       = u'%s%s' % (shipping_address.last_name_kana, shipping_address.first_name_kana),
                 tel                 = tel1 if tel1 else tel2,
@@ -179,9 +175,7 @@ class SejPaymentPlugin(object):
 
     def finished(self, request, order):
         """ 支払番号発行済か判定 """
-        sej_order = DBSession.query(SejOrder).filter(
-            SejOrder.order_id==order.order_no
-        ).first()
+        sej_order = order.sej_order
         if sej_order is None:
             return False
 
@@ -215,14 +209,14 @@ class SejDeliveryPlugin(object):
         api_key = (tenant and tenant.api_key) or settings['sej.api_key']
         api_url = (tenant and tenant.inticket_api_url) or settings['sej.inticket_api_url']
 
-        sej_order = SejOrder.filter(SejOrder.order_id == cart.order_no).first()
+        sej_order = SejOrder.filter(SejOrder.order_no == cart.order_no).order_by(desc(SejOrder.branch_no)).first()
         if not sej_order:
             request_order(
                 shop_name           = tenant.shop_name,
                 shop_id             = tenant.shop_id,
                 contact_01          = tenant.contact_01,
                 contact_02          = tenant.contact_02,
-                order_id            = order_no,
+                order_no            = order_no,
                 username            = u'%s%s' % (shipping_address.last_name, shipping_address.first_name),
                 username_kana       = u'%s%s' % (shipping_address.last_name_kana, shipping_address.first_name_kana),
                 tel                 = tel1 if tel1 else tel2,
@@ -244,9 +238,7 @@ class SejDeliveryPlugin(object):
 
     def finished(self, request, order):
         """ 支払番号発行済か判定 """
-        sej_order = DBSession.query(SejOrder).filter(
-            SejOrder.order_id==order.order_no
-        ).first()
+        sej_order = order.sej_order
         if sej_order is None:
             return False
 
@@ -270,7 +262,7 @@ class SejPaymentDeliveryPlugin(object):
         api_key = (tenant and tenant.api_key) or settings['sej.api_key']
         api_url = (tenant and tenant.inticket_api_url) or settings['sej.inticket_api_url']
 
-        sej_order = get_sej_order(order)
+        sej_order = order.sej_order
         if not sej_order:
             shipping_address = cart.shipping_address
             performance = cart.performance
@@ -286,7 +278,7 @@ class SejPaymentDeliveryPlugin(object):
                 shop_id             = tenant.shop_id,
                 contact_01          = tenant.contact_01,
                 contact_02          = tenant.contact_02,
-                order_id            = order.order_no,
+                order_no            = order.order_no,
                 username            = u'%s%s' % (shipping_address.last_name, shipping_address.first_name),
                 username_kana       = u'%s%s' % (shipping_address.last_name_kana, shipping_address.first_name_kana),
                 tel                 = tel1 if tel1 else tel2,
@@ -310,9 +302,7 @@ class SejPaymentDeliveryPlugin(object):
 
     def finished(self, request, order):
         """ 支払番号発行済か判定 """
-        sej_order = DBSession.query(SejOrder).filter(
-            SejOrder.order_id==order.order_no
-        ).first()
+        sej_order = order.sej_order
         if sej_order is None:
             return False
 
@@ -324,7 +314,7 @@ class SejPaymentDeliveryPlugin(object):
              name="delivery-%d" % DELIVERY_PLUGIN_ID, renderer='altair.app.ticketing.payments.plugins:templates/sej_delivery_complete_mobile.html')
 def sej_delivery_viewlet(context, request):
     order = context.order
-    sej_order = get_sej_order(order)
+    sej_order = order.sej_order
     payment_id = context.order.payment_delivery_pair.payment_method.payment_plugin_id
     delivery_method = context.order.payment_delivery_pair.delivery_method
     is_payment_with_sej = int(payment_id or -1) == PAYMENT_PLUGIN_ID
@@ -346,7 +336,7 @@ def sej_delivery_confirm_viewlet(context, request):
              name="payment-%d" % PAYMENT_PLUGIN_ID, renderer='altair.app.ticketing.payments.plugins:templates/sej_payment_complete_mobile.html')
 def sej_payment_viewlet(context, request):
     order = context.order
-    sej_order = get_sej_order(order)
+    sej_order = order.sej_order
     payment_method = context.order.payment_delivery_pair.payment_method
     return dict(
         order=order,

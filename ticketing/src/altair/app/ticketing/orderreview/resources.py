@@ -72,7 +72,7 @@ class OrderReviewResource(object):
             payment_method_plugin_id = order.payment_delivery_pair.payment_method.payment_plugin.id
             delivery_method_plugin_id = order.payment_delivery_pair.delivery_method.delivery_plugin.id
             if payment_method_plugin_id == 3 or delivery_method_plugin_id == 2:
-                sej_order = SejOrder.filter(SejOrder.order_id == order_no).first()
+                sej_order = SejOrder.filter(SejOrder.order_no == order_no).first()
 
         return order, sej_order
 

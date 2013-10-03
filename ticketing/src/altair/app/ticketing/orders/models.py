@@ -2,6 +2,7 @@ import sqlalchemy as sa
 from sqlalchemy.sql import and_
 from pyramid.threadlocal import get_current_request
 import sqlalchemy.orm as orm
+from sqlalchemy.sql.expression import desc
 from altair.sqla import session_partaken_by
 
 from altair.app.ticketing.core.models import (
@@ -381,7 +382,7 @@ class OrderSummary(Base):
 
     @property
     def sej_order(self):
-        return SejOrder.query.filter_by(order_id=self.order_no).first()
+        return SejOrder.query.filter_by(order_no=self.order_no).order_by(desc(SejOrder.branch_no)).first()
 
     def _shipping_address(self):
         if self.shipping_address_id is None:

@@ -6,7 +6,7 @@ import logging
 from datetime import datetime
 
 from .exceptions import SejRequestError
-from .resources import is_ticket, need_ticketing, SejTicketType, SejPaymentType
+from .models import is_ticket, need_ticketing, SejTicketType, SejPaymentType
 from .utils import JavaHashMap
 
 logger = logging.getLogger(__name__)
@@ -76,7 +76,7 @@ def create_request_params(params, secret_key):
 
 
 def create_sej_request_data(
-        order_id,
+        order_no,
         total,
         ticket_total,
         commission_fee,
@@ -95,7 +95,7 @@ def create_sej_request_data(
     params['X_shop_id']         = shop_id
     # ショップ名称
     # 注文ID
-    params['X_shop_order_id']   = order_id
+    params['X_shop_order_id']   = order_no
 
     if payment_type != SejPaymentType.Paid and payment_due_at:
         # コンビニでの決済を行う場合の支払い期限の設定

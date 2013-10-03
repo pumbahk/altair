@@ -13,8 +13,11 @@ from os.path import abspath, dirname
 
 from pyramid.paster import bootstrap
 from ..payment import request_fileget
-from ..models import SejTenant
-from ..resources import SejNotificationType, code_from_notification_type
+from ..models import (
+    SejTenant,
+    SejNotificationType,
+    code_from_notification_type
+    )
 from ..exceptions import SejServerError
 
 from dateutil.parser import parse as parsedate

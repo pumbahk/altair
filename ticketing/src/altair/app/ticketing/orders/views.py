@@ -19,7 +19,7 @@ from wtforms import ValidationError
 from wtforms.validators import Optional
 from sqlalchemy import and_
 from sqlalchemy.sql import exists
-from sqlalchemy.sql.expression import or_
+from sqlalchemy.sql.expression import or_, desc
 from sqlalchemy.orm import joinedload, undefer
 from webob.multidict import MultiDict
 from altair.sqlahelper import get_db_session
@@ -560,7 +560,7 @@ class OrderDetailView(BaseView):
             'order_attributes': order_attributes,
             'order_history':order_history,
             'point_grant_settings': loyalty_api.applicable_point_grant_settings_for_order(order),
-            'sej_order':SejOrder.query.filter(SejOrder.order_id==order.order_no).first(),
+            'sej_order':SejOrder.query.filter(SejOrder.order_no==order.order_no).order_by(desc(SejOrder.branch_no)).first(),
             'mail_magazines':mail_magazines,
             'form_shipping_address':form_shipping_address,
             'form_order':form_order,
@@ -1296,7 +1296,7 @@ class OrdersReserveView(BaseView):
 from altair.app.ticketing.sej.models import SejOrder, SejTicket, SejTicketTemplateFile, SejRefundEvent, SejRefundTicket, SejTenant
 from altair.app.ticketing.sej.ticket import SejTicketDataXml
 from altair.app.ticketing.sej.payment import request_update_order, request_cancel_order
-from altair.app.ticketing.sej.resources import code_from_ticket_type, code_from_update_reason, code_from_payment_type
+from altair.app.ticketing.sej.models import code_from_ticket_type, code_from_update_reason, code_from_payment_type
 from altair.app.ticketing.sej.exceptions import  SejServerError
 from altair.app.ticketing.sej import api as sej_api
 
@@ -1322,7 +1322,7 @@ class SejOrderView(object):
            filter = or_(
                SejOrder.billing_number.like('%'+ query_str +'%'),
                SejOrder.exchange_number.like('%'+ query_str + '%'),
-               SejOrder.order_id.like('%'+ query_str + '%'),
+               SejOrder.order_no.like('%'+ query_str + '%'),
                SejOrder.user_name.like('%'+ query_str + '%'),
                SejOrder.user_name_kana.like('%'+ query_str + '%'),
                SejOrder.email.like('%'+ query_str + '%'),
@@ -1380,11 +1380,11 @@ class SejOrderInfoView(object):
 
     @view_config(route_name='orders.sej.order.info', request_method="GET", renderer='altair.app.ticketing:templates/sej/order_info.html')
     def order_info_get(self):
-        order_id = int(self.request.matchdict.get('order_id', 0))
-        order = SejOrder.query.get(order_id)
+        order_no = self.request.matchdict.get('order_no', '')
+        order = SejOrder.query.filter_by(order_no=order_no).order_by(desc(SejOrder.branch_no)).first()
 
         templates = SejTicketTemplateFile.query.all()
-        f = SejOrderForm(order_id=order.order_id)
+        f = SejOrderForm(order_no=order.order_no)
         tf = SejTicketForm()
         rf = SejRefundOrderForm()
         f.process(record_to_multidict(order))
@@ -1394,8 +1394,8 @@ class SejOrderInfoView(object):
 
     @view_config(route_name='orders.sej.order.info', request_method="POST",  renderer='altair.app.ticketing:templates/sej/order_info.html')
     def order_info_post(self):
-        order_id = int(self.request.matchdict.get('order_id', 0))
-        order = SejOrder.query.get(order_id)
+        order_no = self.request.matchdict.get('order_no', '')
+        order = SejOrder.query.filter_by(order_no=order_no).order_by(desc(SejOrder.branch_no)).first()
 
         tickets = []
         for ticket in order.tickets:
@@ -1410,7 +1410,7 @@ class SejOrderInfoView(object):
             )
             tickets.append(td)
 
-        f = SejOrderForm(self.request.POST, order_id=order.order_id)
+        f = SejOrderForm(self.request.POST, order_no=order.order_no)
         if f.validate():
             data = f.data
             try:
@@ -1427,7 +1427,7 @@ class SejOrderInfoView(object):
                     regrant_number_due_at = data.get('regrant_number_due_at'),
                     tickets = tickets,
                     condition=dict(
-                        order_id        = order.order_id,
+                        order_no        = order.order_no,
                         billing_number  = order.billing_number,
                         exchange_number = order.exchange_number,
                     ),
@@ -1442,13 +1442,13 @@ class SejOrderInfoView(object):
             logger.info(str(f.errors))
             self.request.session.flash(u'バリデーションエラー：更新出来ませんでした。')
 
-        return HTTPFound(location=self.request.route_path('orders.sej.order.info', order_id=order_id))
+        return HTTPFound(location=self.request.route_path('orders.sej.order.info', order_no=order_no))
     #
     @view_config(route_name='orders.sej.order.ticket.data', request_method="GET", renderer='json')
     def order_info_ticket_data(self):
-        order_id = int(self.request.matchdict.get('order_id', 0))
+        order_no = self.request.matchdict.get('order_no', '')
         ticket_id = int(self.request.matchdict.get('ticket_id', 0))
-        order = SejOrder.query.get(order_id)
+        order = SejOrder.query.filter_by(order_no=order_no).order_by(desc(SejOrder.branch_no)).first()
         if order:
             ticket = SejTicket.query.get(ticket_id)
             return dict(
@@ -1463,9 +1463,9 @@ class SejOrderInfoView(object):
 
     @view_config(route_name='orders.sej.order.ticket.data', request_method="POST", renderer='altair.app.ticketing:templates/sej/order_info.html')
     def order_info_ticket_data_post(self):
-        order_id = int(self.request.matchdict.get('order_id', 0))
+        order_no = self.request.matchdict.get('order_no', '')
         ticket_id = int(self.request.matchdict.get('ticket_id', 0))
-        order = SejOrder.query.get(order_id)
+        order = SejOrder.query.filter_by(order_no=order_no).order_by(desc(SejOrder.branch_no)).first()
         if order:
             ticket = SejTicket.query.get(ticket_id)
             f = SejTicketForm(self.request.POST)
@@ -1480,20 +1480,20 @@ class SejOrderInfoView(object):
             else:
                 self.request.session.flash(u'バリデーションエラー：更新出来ませんでした。')
 
-        return HTTPFound(location=self.request.route_path('orders.sej.order.info', order_id=order_id))
+        return HTTPFound(location=self.request.route_path('orders.sej.order.info', order_no=order_no))
 
     @view_config(route_name='orders.sej.order.cancel', renderer='altair.app.ticketing:templates/sej/order_info.html')
     def order_cancel(self):
-        order_id = int(self.request.matchdict.get('order_id', 0))
-        sej_order = SejOrder.query.get(order_id)
+        order_no = self.request.matchdict.get('order_no', '')
+        sej_order = SejOrder.query.filter_by(order_no=order_no).order_by(desc(SejOrder.branch_no)).first()
 
         result = sej_api.cancel_sej_order(sej_order, self.request.context.organization.id)
         if result:
             self.request.session.flash(u'オーダーをキャンセルしました。')
-            return HTTPFound(location=self.request.route_path('orders.sej.order.info', order_id=order_id))
+            return HTTPFound(location=self.request.route_path('orders.sej.order.info', order_no=order_no))
         else:
             self.request.session.flash(u'オーダーをキャンセルに失敗しました。')
-            raise HTTPFound(location=self.request.route_path('orders.sej.order.info', order_id=order_id))
+            raise HTTPFound(location=self.request.route_path('orders.sej.order.info', order_no=order_no))
 
 
 @view_defaults(decorator=with_bootstrap, permission='administrator')
@@ -1571,7 +1571,7 @@ class SejRefundView(BaseView):
             try:
                 ct = SejRefundTicket.filter(
                     and_(
-                        SejRefundTicket.order_id == ticket.order_id,
+                        SejRefundTicket.order_no == ticket.order_no,
                         SejRefundTicket.ticket_barcode_number == ticket.barcode_number
                     )).one()
             except NoResultFound, e:
@@ -1581,7 +1581,7 @@ class SejRefundView(BaseView):
             ct.available     = 1
             ct.event_code_01 = event.event_code_01
             ct.event_code_02 = event.event_code_02
-            ct.order_id = ticket.order_id
+            ct.order_no = ticket.order_no
             ct.ticket_barcode_number = ticket.barcode_number
             ct.refund_ticket_amount = data.get('refund_ticket_amount')
             ct.refund_other_amount = data.get('refund_other_amount')
@@ -1592,7 +1592,7 @@ class SejRefundView(BaseView):
         else:
             self.request.session.flash(u'失敗しました')
 
-        return HTTPFound(location=self.request.route_path('orders.sej.order.info', order_id=ticket.order.id))
+        return HTTPFound(location=self.request.route_path('orders.sej.order.info', order_no=ticket.order.order_no))
 
 # @TODO move this
 @view_defaults(decorator=with_bootstrap, permission='administrator')
