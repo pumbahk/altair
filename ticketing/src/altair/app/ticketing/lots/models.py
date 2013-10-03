@@ -595,7 +595,11 @@ class LotEntryWishSupport(object):
     @property
     def system_fee(self):
         #return self.lot_entry.lot.system_fee
-        return self.lot_entry.payment_delivery_method_pair.system_fee
+        #return self.lot_entry.payment_delivery_method_pair.system_fee
+        return self.lot_entry.sales_segment.get_system_fee(self.lot_entry.payment_delivery_method_pair,
+                                                           self.product_quantities)
+
+
 
 class TemporaryLotEntry(object):
     def __init__(self, payment_delivery_method_pair, sales_segment):
