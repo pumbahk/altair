@@ -409,12 +409,10 @@ class KeyBreakAdapter(object):
         breaked_items = []
         child1_count = 0
         child2_count = 0
-        #i = j = 0 # bad name
+
         break_counter = KeyBreakCounter(keys=[key, child1_key, child2_key])
         for counter, key_changes, item in break_counter(iter):
             print counter
-            # first key break
-            #if item[key] != last_key and last_key != marker:
             if key_changes[key]:
                 result = OrderedDict(last_item)
                 for name, value in breaked_items:
@@ -423,10 +421,8 @@ class KeyBreakAdapter(object):
                     result.pop(c)
                 self.results.append(result)
                 breaked_items = []
-                #i = j = 0
 
             # second key break
-            #if item[child1_key] != last_child1_key or item[key] != last_key:
             if key_changes[child1_key]:
                 for childitem1 in child1:
                     name = "{0}[{1}]".format(childitem1, counter[child1_key])
@@ -434,7 +430,6 @@ class KeyBreakAdapter(object):
                         (name,
                          item[childitem1]))
                     child1_count = max(child1_count, counter[child1_key])
-                #j = 0
 
             for childitem2 in child2:
                 name = "{0}[{1}][{2}]".format(childitem2, counter[child1_key], counter[child2_key])
@@ -443,12 +438,8 @@ class KeyBreakAdapter(object):
                      item[childitem2]))
                 child2_count = max(child2_count, counter[child2_key])
 
-            # if item[child1_key] != last_child1_key:
-            #     i += 1
             last_item = item
-            #last_key = item[key]
-            #last_child1_key = item[child1_key]
-            #j += 1
+
 
         # 最終アイテムにはキーブレイクが発生しないので明示的に処理する(i,jは処理済み)
         result = OrderedDict(last_item)
