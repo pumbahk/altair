@@ -267,7 +267,7 @@ if(!widget){
 
         var move = $scrollable.data("scrollable").move;
         this.root.parent().mousewheel(function(e, delta){
-            move(delta < 0 ? 1 : -1, 40); // 50 is speed
+            move((isNaN(delta) ? 1 : delta < 0 ? 1 : -1), 0.1); // 0.1 is speed
             return false;
         });
         // console.log("*debug setup scrollable");
