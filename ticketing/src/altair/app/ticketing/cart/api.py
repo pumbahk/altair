@@ -16,6 +16,7 @@ from pyramid.httpexceptions import HTTPNotFound
 from altair.app.ticketing.api.impl import get_communication_api
 from altair.app.ticketing.api.impl import CMSCommunicationApi
 from altair.mobile.interfaces import IMobileRequest
+from altair.mobile.api import detect_from_ip_address
 from altair.app.ticketing.core import models as c_models
 from altair.app.ticketing.core import api as c_api
 
@@ -289,9 +290,15 @@ def get_cart_user_identifiers(request):
     if browserid:
         retval.append((browserid, 'decent'))
 
-    # remote address is *weak*
     remote_addr = request.remote_addr
     if remote_addr:
-        retval.append((remote_addr, 'weak'))
+        mobile_ca = detect_from_ip_address(request.registry, remote_addr)
+        logger.debug('carrier=%s' % mobile_ca.name)
+        if mobile_ca.is_nonmobile:
+            # remote address is *weakest*
+            retval.append((remote_addr, 'weak'))
+        else:
+            # subscriber ID is decent, in my opinion
+            retval.append((mobile_ca.unique_opaque, 'decent'))
 
     return retval
