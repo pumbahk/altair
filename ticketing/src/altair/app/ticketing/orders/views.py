@@ -872,6 +872,7 @@ class OrderDetailView(BaseView):
         for stock_type in performance.stock_types:
             stock_data = []
             stocks = Stock.filter(Stock.performance_id==performance_id)\
+                .options(joinedload('stock_status'))\
                 .filter(Stock.stock_type_id==stock_type.id)\
                 .filter(Stock.quantity>0)\
                 .filter(exists().where(and_(ProductItem.performance_id==performance_id, ProductItem.stock_id==Stock.id))).all()
@@ -884,8 +885,8 @@ class OrderDetailView(BaseView):
                     ))
             sales_summary.append(dict(
                 stock_type=stock_type,
-                total_quantity=stock_type.num_seats(performance_id=performance.id, sale_only=True) or 0,
-                rest_quantity=stock_type.rest_num_seats(performance_id=performance.id, sale_only=True) or 0,
+                total_quantity=sum([s.get('stock').quantity for s in stock_data]),
+                rest_quantity=sum([s.get('stock').stock_status.quantity for s in stock_data]),
                 stocks=stock_data
             ))
 
