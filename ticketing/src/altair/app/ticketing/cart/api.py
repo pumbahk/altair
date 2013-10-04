@@ -25,7 +25,7 @@ from .interfaces import IStocker, IReserving, ICartFactory
 from .interfaces import IPerformanceSelector
 
 from .models import Cart, PaymentMethodManager, DBSession
-from .exceptions import OutTermSalesException, NoSalesSegment, NoCartError
+from .exceptions import NoCartError
 from altair.preview.api import set_rendered_target
 
 logger = logging.getLogger(__name__)

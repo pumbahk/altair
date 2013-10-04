@@ -62,7 +62,7 @@ class Payment(object):
 
     def get_plugins(self, payment_delivery_pair):
         if payment_delivery_pair is None:
-            raise InvalidCartStatusError()
+            raise InvalidCartStatusError(cart_id=self.cart.id)
         payment_delivery_plugin = get_payment_delivery_plugin(self.request,
             payment_delivery_pair.payment_method.payment_plugin_id,
             payment_delivery_pair.delivery_method.delivery_plugin_id,)
@@ -102,7 +102,7 @@ class Payment(object):
                 #on_delivery_error(e, self.request, order)
                 self.request.registry.notify(DeliveryErrorEvent(e, self.request, order))
                 transaction.commit()
-                raise DeliveryFailedException(order_no, event_id)
+                raise DeliveryFailedException.from_resource(self.request.context, self.request, order_no=order_no)
         else:
             raise Exception(u"対応する決済プラグインか配送プラグインが見つかりませんでした") # TODO 例外クラス作成
 

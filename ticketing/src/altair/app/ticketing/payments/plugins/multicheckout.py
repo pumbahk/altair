@@ -134,7 +134,7 @@ class MultiCheckoutPlugin(object):
         # オーソリ済みであること
         if status is None or status.Status != str(MultiCheckoutStatusEnum.Authorized):
             logger.debug('multicheckout status is not Authorized (%s)' % order_no)
-            raise InvalidCartStatusError
+            raise InvalidCartStatusError(cart.id)
 
     def finish(self, request, cart):
         """ 売り上げ確定(3D認証) """

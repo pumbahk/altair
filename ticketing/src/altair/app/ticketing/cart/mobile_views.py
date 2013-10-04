@@ -133,7 +133,7 @@ class MobileIndexView(IndexViewMixin):
                 if _sales_segment.performance_id == self.context.performance.id:
                     sales_segment = _sales_segment
             if sales_segment is None:
-                raise NoPerformanceError(event_id=self.context.event.id)
+                raise NoPerformanceError('performance (%d) is not associated to the relevant SalesSegment' % self.context.performance.id)
 
         if sales_segment is not None:
             return HTTPFound(self.request.route_url(
@@ -403,8 +403,7 @@ class MobileSelectProductView(object):
             cart.sales_segment = sales_segment
             if cart is None:
                 transaction.abort()
-                logger.debug("cart is None. aborted.")
-                raise CartCreationException
+                raise CartCreationException.from_resource(self.context, self.request)
         except NotEnoughAdjacencyException as e:
             transaction.abort()
             logger.debug("not enough adjacency")

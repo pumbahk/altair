@@ -65,3 +65,9 @@ class IPerformanceSelector(Interface):
 
     label = Attribute(u"絞り込みの項目名")
     second_label = Attribute(u"公演決定の項目名")
+
+class ICartContext(Interface):
+    event = Attribute(u"イベント")
+    performance = Attribute(u"パフォーマンス")
+    sales_segment = Attribute(u"販売区分")
+    authenticated_user = Attribute(u"認証ユーザ")
