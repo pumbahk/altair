@@ -224,7 +224,6 @@ venueEditor.find(".ui-button").each(function (i, n) {
   n.button(options);
 });
 
-var loadingPanel = null;
 var callbacks = {};
 
 var venueEditorMainOffset = (function () {
@@ -236,10 +235,7 @@ venueEditorRoot.venueeditor({
   dataSource: dataSource,
   callbacks: {
     message: function (msg) {
-      if (loadingPanel) {
-        loadingPanel.remove();
-        loadingPanel = null;
-      }
+      $('#loading-panel').remove();
       var dialog = $('<div class="modal hide"></div>');
       var body = $('<div class="modal-body"></div>').text(msg);
       var footer = $('<div class="modal-footer"></div>');
@@ -306,14 +302,12 @@ venueEditorRoot.venueeditor({
       callbacks.select && callbacks.select(viewer, selection);
     },
     loading: function (viewer) {
-      loadingPanel = $('<div class="loading-panel">Loading...</div>')
-        .appendTo(venueEditor.find(".venue-editor-main"));
+      if ($('#loading-panel').length == 0) {
+        $('<div id="loading-panel" class="loading-panel">Loading...</div>').appendTo(venueEditor.find(".venue-editor-main"));
+      }
     },
     load: function (viewer) {
-      if (loadingPanel) {
-        loadingPanel.remove();
-        loadingPanel = null;
-      }
+      $('#loading-panel').remove();
       callbacks.load && callbacks.load(viewer);
     },
     tooltip: function (seat, evt) {
