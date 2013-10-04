@@ -1,14 +1,14 @@
 """PerformanceSetting.xxx -> Performance.xxx
 
 Revision ID: 30449e9b3ea9
-Revises: 1d67a6111a7
+Revises: 2d39cc727512
 Create Date: 2013-10-04 15:57:41.479482
 
 """
 
 # revision identifiers, used by Alembic.
 revision = '30449e9b3ea9'
-down_revision = '1d67a6111a7'
+down_revision = '2d39cc727512'
 
 from alembic import op
 import sqlalchemy as sa

@@ -2204,7 +2204,6 @@ class ShippingAddress(Base, BaseModel, WithTimestamp, LogicallyDeleted, Shipping
     tel_1 = Column(String(32))
     tel_2 = Column(String(32))
     fax = Column(String(32))
-    point = Column(String(255))
 
     @hybrid_property
     def full_name_kana(self):
