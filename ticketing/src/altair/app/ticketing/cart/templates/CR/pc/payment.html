@@ -1,5 +1,9 @@
 <%inherit file="./base.html"/>
 
+<%block name="javascript">
+    <script type="text/javascript" src="${request.static_url('altair.app.ticketing.cart:static/js/ajaxzip3-https.js')}"></script>
+</%block>
+
 %if request.session.peek_flash():
     %for message in request.session.pop_flash():
     <div class="error">${message}</div>
@@ -123,7 +127,8 @@ ${h.get_nickname(request)}
           <td>
             <ul>
               <li>${form['zip'].label}
-                ${form['zip']}
+                <% path = request.static_url('altair.app.ticketing.cart:static/js/zipdata') %>
+                ${form['zip'](onKeyUp="AjaxZip3.zip2addr('" + path + "', 'zip','','prefecture','city','', 'address_1');")}
                 (例: 1030001)
                 ${h.error_list(request, form, 'zip')}
               </li>
