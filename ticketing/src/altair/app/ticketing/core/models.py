@@ -1299,8 +1299,9 @@ class PaymentDeliveryMethodPair(Base, BaseModel, WithTimestamp, LogicallyDeleted
     delivery_method_id = AnnotatedColumn(Identifier, ForeignKey('DeliveryMethod.id'), _a_label=_(u'引取方法'))
     delivery_method = relationship('DeliveryMethod', backref='payment_delivery_method_pairs')
 
-    special_fee_name = AnnotatedColumn(String(255), _a_label=_(u'特別徴収'))
-    special_fee = AnnotatedColumn(Numeric(precision=16, scale=2), nullable=False, _a_label=_(u'特別徴収額'))
+    special_fee_name = AnnotatedColumn(String(255), nullable=False, _a_label=_(u'特別徴収'), default="")
+    special_fee = AnnotatedColumn(Numeric(precision=16, scale=2), nullable=False,
+                                  _a_label=_(u'特別徴収額'), default=FeeTypeEnum.Once.v[0])
     special_fee_type = Column(Integer, nullable=False, default=FeeTypeEnum.Once.v[0])
 
     @property
@@ -2277,8 +2278,8 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     total_amount = Column(Numeric(precision=16, scale=2), nullable=False)
     system_fee = Column(Numeric(precision=16, scale=2), nullable=False)
     
-    special_fee_name = Column(String(255), nullable=True)
-    special_fee = Column(Numeric(precision=16, scale=2), nullable=False)
+    special_fee_name = Column(String(255), nullable=False, default="")
+    special_fee = Column(Numeric(precision=16, scale=2), nullable=False, default=0)
     
     transaction_fee = Column(Numeric(precision=16, scale=2), nullable=False)
     delivery_fee = Column(Numeric(precision=16, scale=2), nullable=False)
