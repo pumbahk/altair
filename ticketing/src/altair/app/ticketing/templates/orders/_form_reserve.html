@@ -3,7 +3,7 @@
 
 <style type="text/css">
   #modal-reserve .product_quantity {
-    width: 80px;
+    width: 50px;
     padding: 2px;
     margin: 0;
   }
@@ -114,11 +114,16 @@
           <th>単価</th>
           <th style="width: 80px;">個数</th>
         </tr>
+        <script type="text/javascript" src="${request.static_url('altair.app.ticketing:static/js/jquery-spin.js')}"></script>
         % for product in form.products.choices:
         <tr>
           <td>${product[1]['name']} (${product[1]['sales_segment']})</td>
           <td>${vh.price(product[1]['price'])}</td>
           <td><input id="product_quantity-${product[0]}" name="product_quantity-${product[0]}" type="text" value=""></td>
+          <script type="text/javascript">
+              $("#product_quantity-${product[0]}").spin(
+                  {imageBasePath: "${request.static_url('altair.app.ticketing:static/images/spin/')}", min: 0});
+          </script>
         </tr>
         % endfor
         <tr>
