@@ -41,12 +41,14 @@ def upgrade():
         existing_nullable=False)
 
 def downgrade():
+    op.drop_index('ix_SejOrder_order_no', 'SejOrder')
     op.alter_column(
         'SejOrder',
         'order_no',
         new_column_name='order_id',
         existing_type=sa.String(12),
         existing_nullable=False)
+    op.create_index('ix_SejOrder_order_id', 'SejOrder', ['order_id'])
     op.alter_column(
         'SejNotification',
         'order_no',
