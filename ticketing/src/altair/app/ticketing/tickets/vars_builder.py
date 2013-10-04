@@ -71,6 +71,7 @@ class TicketDictListBuilder(object):
             for token in ordered_product_item.tokens:
                 d = builder._build_dict_from_ordered_product_item_token(extra, ordered_product_item, token, ticket_number_issuer=ticket_number_issuer)
                 if d is not None:
+                    d.update(extra)
                     retval.append((token.seat, d))
         elif ordered_product_item.product_item.stock.stock_type.quantity_only: #BC
             for i in range(0, ordered_product_item.quantity):
