@@ -30,9 +30,16 @@ class LimitterDecorators(object):
     def __init__(self, setting_name, exc_class, cache_region=(__name__ + '.limitter')):
         self.setting_name = setting_name
         self.exc_class = exc_class
-        self.cache = self.cache_manager.get_cache_region(__name__, cache_region)
+        cache = None
+        try:
+            cache = self.cache_manager.get_cache_region(__name__, cache_region)
+        except:
+            pass
+        self.cache = cache
 
     def acquire(self, func):
+        if self.cache is None:
+            return func
         limits = {'strong': 0, 'decent': 0, 'weak': 0}
         def _(*args, **kwargs):
             try:
@@ -63,11 +70,15 @@ class LimitterDecorators(object):
         return _
 
     def _release(self, request):
+        if self.cache is None:
+            return
         for id_, _ in get_cart_user_identifiers(request):
             count = self.cache.get(id_, createfunc=lambda: 0)
             self.cache.put(id_, max(count - 1, 0))
 
     def release(self, func):
+        if self.cache is None:
+            return func
         limits = {'strong': 0, 'decent': 0, 'weak': 0}
         def _(*args, **kwargs):
             try:
