@@ -42,16 +42,18 @@ class ContextualCartException(CartException):
 
     not_provided = Nothing()
 
-    def __init__(self, request, message, event_id=None, performance_id=None, sales_segment_group_id=None, sales_segment_id=None, **kwargs):
+    def __init__(self, request, message, event_id=None, performance_id=None, sales_segment_group_id=None, sales_segment_id=None, authenticated_user=None, host_base_url=None, **kwargs):
         super(ContextualCartException, self).__init__(message)
         self.request = request
         self.event_id = event_id
         self.performance_id = performance_id
         self.sales_segment_group_id = sales_segment_group_id
         self.sales_segment_id = sales_segment_id
+        self.authenticated_user = authenticated_user
+        self.host_base_url = host_base_url
 
     @classmethod
-    def from_resource(cls, context, request, message='', event_id=not_provided, performance_id=not_provided, sales_segment_id=not_provided, **kwargs):
+    def from_resource(cls, context, request, message='', event_id=not_provided, performance_id=not_provided, sales_segment_id=not_provided, authenticated_user=not_provided, host_base_url=not_provided, **kwargs):
         if event_id is cls.not_provided:
             try:
                 event_id = context.event.id
@@ -67,12 +69,24 @@ class ContextualCartException(CartException):
                 sales_segment_id = context.sales_segment.id
             except:
                 sales_segment_id = None
+        if authenticated_user is cls.not_provided:
+            try:
+                authenticated_user = context.authenticated_user
+            except:
+                authenticated_user = None
+        if host_base_url is cls.not_provided:
+            try:
+                host_base_url = context.host_base_url
+            except:
+                host_base_url = None
         return cls(
             request,
             message,
             event_id=event_id,
             performance_id=performance_id,
             sales_segment_id=sales_segment_id,
+            authenticated_user=authenticated_user,
+            host_base_url=host_base_url,
             **kwargs
             )
 
@@ -135,12 +149,6 @@ class OutTermSalesException(ContextualCartException):
 class CartCreationException(ContextualCartException):
     pass
 
-class DeliveryFailedException(ContextualCartException):
-    def __init__(self, *args, **kwargs):
-        order_no = kwargs.pop('order_no')
-        super(DeliveryFailedException, self).__init__(*args, **kwargs)
-        self.order_no = order_no
-
 class OverOrderLimitException(ContextualCartException):
     def __init__(self, *args, **kwargs):
         order_limit = kwargs.pop('order_limit')
@@ -149,3 +157,9 @@ class OverOrderLimitException(ContextualCartException):
 
 class PaymentMethodEmptyError(ContextualCartException):
     pass
+
+class PaymentError(ContextualCartException):
+    def __init__(self, *args, **kwargs):
+        cause = kwargs.pop('cause')
+        super(PaymentError, self).__init__(*args, **kwargs)
+        self.cause = cause

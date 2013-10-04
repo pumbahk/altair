@@ -13,19 +13,17 @@ from ..exceptions import (
     OverQuantityLimitError,
     ZeroQuantityError,
     CartCreationException,
-    DeliveryFailedException,
     InvalidCartStatusError,
     OverOrderLimitException,
     PaymentMethodEmptyError,
     TooManyCartsCreated,
+    PaymentError,
 )
 from ..reserving import InvalidSeatSelectionException, NotEnoughAdjacencyException
 from ..stocker import InvalidProductSelectionException, NotEnoughStockException
 from .. import api
 from altair.mobile import mobile_view_config
 from altair.app.ticketing.cart.selectable_renderer import selectable_renderer
-from altair.app.ticketing.payments.exceptions import PaymentPluginException
-from altair.multicheckout.exceptions import MultiCheckoutAPIError
 import logging
 import transaction
 
@@ -133,9 +131,7 @@ class CommonErrorView(object):
         return dict(message=Markup(u'大変申し訳ございません。ブラウザの複数ウィンドウからの操作や、戻るボタン等の操作により、予約を継続することができません。<br>'
                                    u'ご予約の際は複数ウィンドウや戻るボタンを使わずにご予約ください。'))
 
-    @_for_(MultiCheckoutAPIError)
-    @_for_(PaymentPluginException)
-    @_for_(DeliveryFailedException)
+    @_for_(PaymentError)
     def payment_delivery_exception(self):
         if hasattr(self.context, 'back_url') and self.context.back_url is not None:
             try:

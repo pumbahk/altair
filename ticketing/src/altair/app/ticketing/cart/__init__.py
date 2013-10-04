@@ -8,7 +8,7 @@ from altair.app.ticketing.models import DBSession
 from pyramid.config import Configurator
 #from pyramid.session import UnencryptedCookieSessionFactoryConfig
 from pyramid.interfaces import IDict
-from pyramid.tweens import INGRESS
+from pyramid.tweens import INGRESS, MAIN, EXCVIEW
 from pyramid_beaker import session_factory_from_settings
 from pyramid_beaker import set_cache_regions_from_settings
 
@@ -179,10 +179,9 @@ def main(global_config, **local_config):
     config.set_cart_getter('.api.get_cart_safe')
     config.include('.errors')
     config.add_tween('altair.app.ticketing.tweens.session_cleaner_factory', under=INGRESS)
-    config.add_tween('altair.app.ticketing.cart.tweens.response_time_tween_factory', under=INGRESS)
+    config.add_tween('altair.app.ticketing.cart.tweens.response_time_tween_factory', over=MAIN)
+    config.add_tween('altair.app.ticketing.cart.tweens.PaymentPluginErrorConverterTween', under=EXCVIEW)
     config.scan()
-
-
 
     ## cmsとの通信
     bind_communication_api(config, 

@@ -71,3 +71,4 @@ class ICartContext(Interface):
     performance = Attribute(u"パフォーマンス")
     sales_segment = Attribute(u"販売区分")
     authenticated_user = Attribute(u"認証ユーザ")
+    host_base_url = Attribute(u"トップページURL")

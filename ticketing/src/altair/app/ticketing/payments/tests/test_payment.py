@@ -223,7 +223,7 @@ class PaymentTests(unittest.TestCase):
     @mock.patch("transaction.commit")
     def test_call_payment_with_delivery_error(self, mock_commit, mock_get_preparer):
         from altair.app.ticketing.core.models import Order, Performance, Event, Organization
-        from altair.app.ticketing.cart.exceptions import DeliveryFailedException
+        from altair.app.ticketing.payments.exceptions import PaymentPluginError
         event_id = 768594
         order_no = "error-order"
         order = Order(total_amount=10, system_fee=1234,
@@ -248,7 +248,7 @@ class PaymentTests(unittest.TestCase):
         target = self._makeOne(cart, request)
         target.get_plugins = lambda pair: (None, payment_plugin, delivery_plugin)
 
-        self.assertRaises(DeliveryFailedException, target.call_payment)
+        self.assertRaises(PaymentPluginError, target.call_payment)
 
         # エラー発生時でもコミットされること。
         mock_commit.assert_called_with()

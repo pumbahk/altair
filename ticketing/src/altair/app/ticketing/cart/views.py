@@ -52,6 +52,7 @@ from .exceptions import (
     PaymentMethodEmptyError,
     OutTermSalesException,
     TooManyCartsCreated,
+    PaymentError,
 )
 from .resources import EventOrientedTicketingCartResource, PerformanceOrientedTicketingCartResource
 from .limitting import LimitterDecorators
@@ -737,7 +738,8 @@ class PaymentView(object):
         result = payment.call_prepare()
         if callable(result):
             return result
-        return HTTPFound(self.request.route_url("payment.confirm"))
+        else:
+            return HTTPFound(self.request.route_url("payment.confirm"))
 
     def get_client_name(self):
         return self.request.params['last_name'] + self.request.params['first_name']
@@ -827,8 +829,6 @@ class CompleteView(object):
         payment = Payment(cart, self.request)
         order = payment.call_payment()
 
-        
-        
         notify_order_completed(self.request, order)
 
         # メール購読でエラーが出てロールバックされても困る
