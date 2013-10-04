@@ -13,9 +13,15 @@ class KeyBreak(object):
         self.keys = keys
 
     def __call__(self, data):
-        last_data = data[0] if len(data) else dict()
-        for d in data:
-            yield dict([(k, d.get(k) != last_data.get(k)) for k in self.keys]), d
+        marker = object()
+        #last_data = data[0] if len(data) else dict()
+        last_data = dict()
+        last_data.setdefault(marker)
+        for i, d in enumerate(data):
+            if i == 0:
+                yield dict([(k, False) for k in self.keys]), d
+            else:
+                yield dict([(k, d.get(k) != last_data.get(k)) for k in self.keys]), d
             last_data = d
 
 class PredicatedYielder(object):

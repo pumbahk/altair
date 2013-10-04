@@ -42,7 +42,9 @@ from altair.app.ticketing.users.models import (
     MemberGroup,
 )
 from altair.app.ticketing.sej.models import SejOrder
-
+from altair.keybreak import (
+    KeyBreakCounter,
+)
 logger = logging.getLogger(__name__)
 
 japanese_columns = {
@@ -112,6 +114,7 @@ japanese_columns = {
     u'product_name': u'商品名',
     u'product_sales_segment': u'販売区分',
     u'product_margin_ratio': u'販売手数料率',
+    u'product_item_id': u'商品明細ID',
     u'item_name': u'商品明細名',
     u'item_price': u'商品明細単価',
     u'item_quantity': u'商品明細個数',
@@ -290,6 +293,7 @@ detail_summary_columns = summary_columns + [
     t_product_sales_segment.c.margin_ratio.label('product_margin_ratio'), #販売手数料率[0] margin_ratio
     (t_product.c.price * t_ordered_product.c.quantity * t_product_sales_segment.c.margin_ratio / 100).label('margin'),
     # ProductItem
+    t_product_item.c.id.label('product_item_id'), #商品明細名[0][0]
     t_product_item.c.name.label('item_name'), #商品明細名[0][0]
     t_product_item.c.price.label('item_price'), #商品明細単価[0][0]
     # OrderedProductItem
@@ -394,7 +398,7 @@ order_product_summary_joins = order_summary_joins.join(
 # Userに対してUserProfileが複数あると行数が増える可能性
 
 class KeyBreakAdapter(object):
-    def __init__(self, iter, key, child1, child1_key, child2=[]):
+    def __init__(self, iter, key, child1, child1_key, child2, child2_key):
 
         self.results = []
         # 初回判定用のマーカー
@@ -405,11 +409,13 @@ class KeyBreakAdapter(object):
         breaked_items = []
         child1_count = 0
         child2_count = 0
-        i = j = 0 # bad name
-        for item in iter:
-
+        #i = j = 0 # bad name
+        break_counter = KeyBreakCounter(keys=[key, child1_key, child2_key])
+        for counter, key_changes, item in break_counter(iter):
+            print counter
             # first key break
-            if item[key] != last_key and last_key != marker:
+            #if item[key] != last_key and last_key != marker:
+            if key_changes[key]:
                 result = OrderedDict(last_item)
                 for name, value in breaked_items:
                     result[name] = value
@@ -417,46 +423,47 @@ class KeyBreakAdapter(object):
                     result.pop(c)
                 self.results.append(result)
                 breaked_items = []
-                i = j = 0
+                #i = j = 0
 
             # second key break
-            if item[child1_key] != last_child1_key or item[key] != last_key:
+            #if item[child1_key] != last_child1_key or item[key] != last_key:
+            if key_changes[child1_key]:
                 for childitem1 in child1:
-                    name = "{0}[{1}]".format(childitem1, i)
+                    name = "{0}[{1}]".format(childitem1, counter[child1_key])
                     breaked_items.append(
                         (name,
                          item[childitem1]))
-                    child1_count = max(child1_count, i)
-                j = 0
+                    child1_count = max(child1_count, counter[child1_key])
+                #j = 0
 
             for childitem2 in child2:
-                name = "{0}[{1}][{2}]".format(childitem2, i, j)
+                name = "{0}[{1}][{2}]".format(childitem2, counter[child1_key], counter[child2_key])
                 breaked_items.append(
                     (name,
                      item[childitem2]))
-                child2_count = max(child2_count, j)
+                child2_count = max(child2_count, counter[child2_key])
 
-            if item[child1_key] != last_child1_key:
-                i += 1
+            # if item[child1_key] != last_child1_key:
+            #     i += 1
             last_item = item
-            last_key = item[key]
-            last_child1_key = item[child1_key]
-            j += 1
+            #last_key = item[key]
+            #last_child1_key = item[child1_key]
+            #j += 1
 
         # 最終アイテムにはキーブレイクが発生しないので明示的に処理する(i,jは処理済み)
         result = OrderedDict(last_item)
         for childitem1 in child1:
-            name = "{0}[{1}]".format(childitem1, i)
+            name = "{0}[{1}]".format(childitem1, counter[child1_key])
             breaked_items.append(
                 (name,
                  item[childitem1]))
-            child1_count = max(child1_count, i)
+            child1_count = max(child1_count, counter[child1_key])
             for childitem2 in child2:
-                name = "{0}[{1}][{2}]".format(childitem2, i, j)
+                name = "{0}[{1}][{2}]".format(childitem2, counter[child1_key], counter[child2_key])
                 breaked_items.append(
                     (name,
                      item[childitem2]))
-                child2_count = max(child2_count, j)
+                child2_count = max(child2_count, counter[child2_key])
         for c in child1 + child2:
             result.pop(c)
 

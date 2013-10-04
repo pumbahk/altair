@@ -96,6 +96,7 @@ requires = [
     'altair.sqlahelper',
     'altair.viewhelpers',
     'altair.formhelpers',
+    'altair.keybreak',
     ]
 
 tests_require = [

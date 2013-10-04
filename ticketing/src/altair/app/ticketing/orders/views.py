@@ -334,8 +334,9 @@ def download(request):
 
     query = KeyBreakAdapter(query, 'id',
                             ('product_name', 'product_price', 'product_quantity', 'product_sales_segment', 'margin'),
-                            ('product_id'),
-                            ('item_name', 'item_price', 'item_quantity'))
+                            'product_id',
+                            ('item_name', 'item_price', 'item_quantity'),
+                            'product_item_id',)
 
     headers = [
         ('Content-Type', 'application/octet-stream; charset=Windows-31J'),
@@ -345,7 +346,7 @@ def download(request):
     response = Response(headers=headers)
     headers = query.headers
     iheaders = header_intl(headers, japanese_columns)
-    logger.debug("headers = {0}".format(headers))
+    #logger.debug("headers = {0}".format(headers))
     results = iter(query)
     writer = csv.writer(response, delimiter=',', quoting=csv.QUOTE_ALL)
 
