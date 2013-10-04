@@ -638,7 +638,7 @@ class PaymentView(object):
                 address_1=user_profile.address_1,
                 address_2=user_profile.address_2,
                 email_1=user_profile.email_1,
-                email_2=user_profile.email_2
+                email_2=user_profile.email_2,
                 )
         else:
             formdata = None
@@ -668,7 +668,8 @@ class PaymentView(object):
                 email_2=form.data['email_2'],
                 tel_1=form.data['tel_1'],
                 tel_2=None,
-                fax=form.data['fax']
+                fax=form.data['fax'],
+                point=form.data['point']
                 )
         else:
             return None
@@ -765,7 +766,8 @@ class PaymentView(object):
             tel_1=data['tel_1'],
             tel_2=data['tel_2'],
             fax=data['fax'],
-            sex=data.get("sex"), 
+            sex=data.get("sex"),
+            point=data.get("point"),
             user=user
         )
 
