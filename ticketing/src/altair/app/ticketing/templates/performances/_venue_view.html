@@ -235,7 +235,7 @@ venueEditorRoot.venueeditor({
   dataSource: dataSource,
   callbacks: {
     message: function (msg) {
-      $('.loading-panel').remove();
+      $('#loading-panel').remove();
       var dialog = $('<div class="modal hide"></div>');
       var body = $('<div class="modal-body"></div>').text(msg);
       var footer = $('<div class="modal-footer"></div>');
@@ -302,12 +302,12 @@ venueEditorRoot.venueeditor({
       callbacks.select && callbacks.select(viewer, selection);
     },
     loading: function (viewer) {
-      if ($('.loading-panel').length == 0) {
-        $('<div class="loading-panel">Loading...</div>').appendTo(venueEditor.find(".venue-editor-main"));
+      if ($('#loading-panel').length == 0) {
+        $('<div id="loading-panel" class="loading-panel">Loading...</div>').appendTo(venueEditor.find(".venue-editor-main"));
       }
     },
     load: function (viewer) {
-      $('.loading-panel').remove();
+      $('#loading-panel').remove();
       callbacks.load && callbacks.load(viewer);
     },
     tooltip: function (seat, evt) {
