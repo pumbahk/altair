@@ -401,10 +401,6 @@ class KeyBreakAdapter(object):
     def __init__(self, iter, key, child1, child1_key, child2, child2_key):
 
         self.results = []
-        # 初回判定用のマーカー
-        marker = object()
-        last_key = marker
-        last_child1_key = marker
         last_item = None
         breaked_items = []
         child1_count = 0
@@ -455,6 +451,8 @@ class KeyBreakAdapter(object):
                     (name,
                      item[childitem2]))
                 child2_count = max(child2_count, counter[child2_key])
+        self.results.append(result)
+
         for c in child1 + child2:
             result.pop(c)
 
