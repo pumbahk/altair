@@ -467,14 +467,13 @@ if(!widget){
                 gateway.needCleans.push(wrapper);
                 return wrapper.callAPI.bind(wrapper);
             };
-            var chunkedAPIGateway = {
-                gateway: gateway,
-                fetch: setUpWrapper(gateway, "fetch"),
-                search: setUpWrapper(gateway, "search"),
-                tag_search: setUpWrapper(gateway, "tag_search")
-            };
-            this.chunkedAPIGateway = chunkedAPIGateway;
-            chunkedAPIGateway.__proto__ = gateway; // hmm;
+            var chunkedAPIGateway = Object.create(gateway, {
+                    gateway: {value: gateway},
+                    fetch: {value: setUpWrapper(gateway, "fetch")},
+                    search: {value: setUpWrapper(gateway, "search")},
+                    tag_search: {value: setUpWrapper(gateway, "tag_search")}
+            });
+
             appHandler = setupApplicationHandler(we, chunkedAPIGateway);
             widget.env.image.appHandler = appHandler; // for debug;
             appHandler.bind($(we.dialog), "#image_submit", "#image_info_submit");
