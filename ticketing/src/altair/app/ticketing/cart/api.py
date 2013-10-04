@@ -292,13 +292,14 @@ def get_cart_user_identifiers(request):
 
     remote_addr = request.remote_addr
     if remote_addr:
-        mobile_ca = detect_from_ip_address(request.registry, remote_addr)
-        logger.debug('carrier=%s' % mobile_ca.name)
-        if mobile_ca.is_nonmobile:
+        carrier = detect_from_ip_address(request.registry, remote_addr)
+        logger.debug('carrier=%s' % carrier.name)
+        if (not carrier.is_nonmobile) and IMobileRequest.providedBy(request):
+            unique_opaque = request.mobile_ua.unique_opaque
+            if unique_opaque is not None:
+                # subscriber ID is decent, in my opinion
+                retval.append((unique_opaque, 'decent'))
+        else:
             # remote address is *weakest*
             retval.append((remote_addr, 'weak'))
-        else:
-            # subscriber ID is decent, in my opinion
-            retval.append((mobile_ca.unique_opaque, 'decent'))
-
     return retval
