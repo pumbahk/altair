@@ -170,6 +170,20 @@ ${self.widget.flow_widget(2)}
             </ul>
           </td>
         </tr>
+        <tr>
+          <th scope="row">楽天スーパーポイント(半角数字)</th>
+          <td>
+            <ul>
+              <li>${form['point'].label}
+                ${form['point']}(例: 1111222233334444)
+                ${h.error_list(request, form, 'point')}
+              </li>
+              <li>
+                  楽天ポイント口座を確認するには、<a href="https://point.rakuten.co.jp/PointAccount/PointAccountLogin/" target=”_blank”>こちら</a>
+              </li>
+            </ul>
+          </td>
+        </tr>
       </table>
       <!--
           </div>

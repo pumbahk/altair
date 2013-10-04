@@ -171,6 +171,15 @@ class ClientForm(OurForm):
                 ]
             )
         )
+    point = fields.TextField(
+        label=u"楽天スーパーポイント",
+        filters=[NFKC],
+        validators=[
+            Optional(),
+            Regexp(r'^\d{16}$', message=u'16桁の数字を入れて下さい。'),
+            Length(min=16, max=16, message=u'確認してください'),
+        ]
+    )
 
     def _validate_email_addresses(self, *args, **kwargs):
         status = True
