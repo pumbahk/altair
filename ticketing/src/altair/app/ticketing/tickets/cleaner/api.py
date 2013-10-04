@@ -91,7 +91,7 @@ class QRCodeEmitter(object):
             target.tag = "{{{ns}}}qrcode".format(ns=TS_SVG_EXT_NAMESPACE)
             attr_name = "{{{ns}}}label".format(ns=INKSCAPE_NAMESPACE)
             content = target.attrib[attr_name]
-            target.attrib["content"] = "{{{{{content}}}}}".format(content=content)
+            target.attrib["content"] = u"{content}".format(content=content)
 
             ## need prefix?
             self.vars_defaults[content] = content

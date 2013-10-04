@@ -9,6 +9,7 @@ from altair.app.ticketing.tickets.utils import build_cover_dict_from_order
 from altair.app.ticketing.core.models import TicketPrintQueueEntry, TicketCover
 from altair.app.ticketing.core.utils import ApplicableTicketsProducer
 from altair.app.ticketing.payments.plugins import SEJ_DELIVERY_PLUGIN_ID
+from altair.app.ticketing.utils import json_safe_coerce
 logger = logging.getLogger(__name__)
 
 ## 
@@ -49,7 +50,7 @@ def enqueue_cover(operator, order):
     TicketPrintQueueEntry.enqueue(
         operator=operator, 
         ticket=cover.ticket, 
-        data = {u"drawing": svg_builder.build(cover.ticket, dict_)}, 
+        data = json_safe_coerce({u"drawing": svg_builder.build(cover.ticket, dict_), "vars_defaults": cover.ticket.vars_defaults}), 
         summary=u"表紙 {order.order_no}".format(order=order)
         )
 
@@ -65,7 +66,7 @@ def enqueue_token(operator, token, ticket, i, j, ordered_product_item=None, orde
     TicketPrintQueueEntry.enqueue(
         operator=operator, 
         ticket=ticket, 
-        data={ u'drawing': svg_builder.build(ticket, dict_)},
+        data=json_safe_coerce({u'drawing': svg_builder.build(ticket, dict_), u"vars_defaults": ticket.vars_defaults}),
         summary=u'注文 %s - %s%s' % (
             order.order_no,
             ordered_product_item.product_item.name,
@@ -85,7 +86,7 @@ def enqueue_item(operator, order, ordered_product_item, ticket_format_id=None):
             TicketPrintQueueEntry.enqueue(
                 operator=operator,
                 ticket=ticket,
-                data={ u'drawing': svg_builder.build(ticket, dict_)},
+                data=json_safe_coerce({ u'drawing': svg_builder.build(ticket, dict_), u"vars_defaults": ticket.vars_defaults}),
                 summary=u'注文 %s - %s%s' % (
                     order.order_no,
                     ordered_product_item.product_item.name,

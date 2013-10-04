@@ -8,11 +8,15 @@ class SimpleControl(object):
     def get_vals(self, template, vals):
         return vals
 
+import logging
+logger = logging.getLogger(__name__)
+
 class TicketModelControl(object):
     def get_template(self, ticket):
         return ticket.drawing
 
     def get_vals(self, ticket, build_vals):
+        # logger.info(build_vals)
         vals = ticket.vars_defaults
         vals.update(build_vals)
         return vals

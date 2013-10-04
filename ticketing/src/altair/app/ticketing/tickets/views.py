@@ -726,16 +726,16 @@ class TicketPrinter(BaseView):
                     .join(Order) \
                     .filter_by(organization_id=self.context.organization.id) \
                     .one()
-                pair = build_dict_from_ordered_product_item_token(ordered_product_item_token)
+                d = build_dict_from_ordered_product_item_token(ordered_product_item_token)
                 retval = [] 
-                if pair is not None:
+                if d is not None:
                     retval.append({
                         u'ordered_product_item_token_id': ordered_product_item_token.id,
                         u'ordered_product_item_id': ordered_product_item_token.item.id,
                         u'order_id': ordered_product_item_token.item.ordered_product.order.id,
                         u'seat_id': ordered_product_item_token.seat_id,
                         u'serial': ordered_product_item_token.serial,
-                        u'data': json_safe_coerce(pair[1])
+                        u'data': json_safe_coerce(d)
                         })
                 return {
                     u'status': u'success',
