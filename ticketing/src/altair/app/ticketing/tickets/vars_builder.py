@@ -202,6 +202,9 @@ class TicketDictBuilder(object):
             u'開始時刻s': safe_format(self.formatter.format_time_short, performance.start_on),
             u'終了時刻': safe_format(self.formatter.format_time, performance.end_on), 
             u'終了時刻s': safe_format(self.formatter.format_time_short, performance.end_on),
+            u"公演名略称": performance.abbreviated_title if performance.abbreviated_title else u"", 
+            u"公演名副題": performance.subtitle if performance.subtitle else u"", 
+            u"公演名備考": performance.note if performance.note else u"", 
             })
         return self.build_dict_from_performance_setting(setting, retval=retval)
         
@@ -211,9 +214,6 @@ class TicketDictBuilder(object):
             return retval
 
         retval.update({ 
-                u"公演名略称": setting.abbreviated_title if setting else u"", 
-                u"公演名副題": setting.subtitle if setting else u"", 
-                u"公演名備考": setting.note if setting else u"", 
                 })
         return retval
 
