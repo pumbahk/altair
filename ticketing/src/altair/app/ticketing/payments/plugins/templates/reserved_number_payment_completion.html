@@ -1,7 +1,8 @@
-
 <div>
-    <h4>窓口でのお支払いです</h4>
-    <div>
-        お支払い番号: ${reserved_number.number}
-    </div>
+  <h4>窓口でのお支払いです</h4>
+  % if reserved_number:
+  <div>
+    お支払い番号: ${reserved_number.number}
+  </div>
+  % endif
 </div>

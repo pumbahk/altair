@@ -51,7 +51,7 @@ def reserved_number_payment_viewlet(context, request):
     logger.debug(u"窓口")
     order = context.order
     logger.debug(u"order_no = %s" % order.order_no)
-    reserved_number = m.PaymentReservedNumber.query.filter_by(order_no=order.order_no).one()
+    reserved_number = m.PaymentReservedNumber.query.filter_by(order_no=order.order_no).first()
     return dict(reserved_number=reserved_number)
 
 @view_config(context=ICartPayment, name="payment-%d" % PAYMENT_PLUGIN_ID, renderer="altair.app.ticketing.payments.plugins:templates/reserved_number_payment_confirm.html")
