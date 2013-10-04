@@ -33,6 +33,7 @@ from altair.app.ticketing.core.models import (
     ShippingAddress,
     Product,
     ProductItem,
+    TicketPrintHistory,
 )
 from altair.app.ticketing.users.models import (
     User,
@@ -40,6 +41,9 @@ from altair.app.ticketing.users.models import (
     UserCredential,
     Membership,
     MemberGroup,
+)
+from altair.app.ticketing.operators.models import (
+    Operator,
 )
 from altair.app.ticketing.sej.models import SejOrder
 from altair.keybreak import (
@@ -141,6 +145,7 @@ t_user_profile = UserProfile.__table__
 t_user_credential = UserCredential.__table__
 t_sej_order = SejOrder.__table__
 t_seat = Seat.__table__
+t_print_hisotry = TicketPrintHistory.__table__
 t_ordered_product = OrderedProduct.__table__
 t_ordered_product_item = OrderedProductItem.__table__
 t_product = Product.__table__
@@ -148,6 +153,7 @@ t_product_item = ProductItem.__table__
 t_venue = Venue.__table__
 t_membership = Membership.__table__
 t_member_group = MemberGroup.__table__
+t_operator = Operator.__table__
 
 summary_columns = [
     t_order.c.id,
@@ -298,8 +304,8 @@ detail_summary_columns = summary_columns + [
     t_product_item.c.price.label('item_price'), #商品明細単価[0][0]
     # OrderedProductItem
     t_ordered_product_item.c.quantity.label('item_quantity'), #商品明細個数[0][0]
-    #発券作業者[0][0]
-    #座席名[0][0][0]
+    t_operator.c.name.label('item_print_histories'), #発券作業者[0][0]
+    t_seat.c.name.label('seat_name'), #座席名[0][0][0]
 ]
 
 order_summary_joins = t_order.join(
@@ -392,13 +398,26 @@ order_product_summary_joins = order_summary_joins.join(
     t_product_sales_segment_group,
     and_(t_product_sales_segment_group.c.id==t_product_sales_segment.c.sales_segment_group_id,
          t_product_sales_segment_group.c.deleted_at==None),
+).outerjoin(
+    orders_seat_table,
+    t_ordered_product_item.c.id==orders_seat_table.c.OrderedProductItem_id,
+).outerjoin(
+    t_seat,
+    and_(t_seat.c.id==orders_seat_table.c.seat_id,
+         t_seat.c.deleted_at==None),
+).outerjoin(
+    t_print_hisotry,
+    t_print_hisotry.c.seat_id==t_seat.c.id,
+).outerjoin(
+    t_operator,
+    and_(t_operator.c.id==t_print_hisotry.c.operator_id,
+         t_operator.c.deleted_at==None),
 )
-
 
 # Userに対してUserProfileが複数あると行数が増える可能性
 
 class KeyBreakAdapter(object):
-    def __init__(self, iter, key, child1, child1_key, child2, child2_key):
+    def __init__(self, iter, key, child1, child1_key, child2, child2_key, child3):
 
         self.results = []
         last_item = None
@@ -408,13 +427,15 @@ class KeyBreakAdapter(object):
 
         break_counter = KeyBreakCounter(keys=[key, child1_key, child2_key])
         for counter, key_changes, item in break_counter(iter):
-            print counter
             if key_changes[key]:
                 result = OrderedDict(last_item)
-                for name, value in breaked_items:
-                    result[name] = value
-                for c in child1 + child2:
+                for c in child1 + child2 + child3:
                     result.pop(c)
+                for name, value in breaked_items:
+                    if name in result:
+                        result[name] = result[name] + "," + value
+                    else:
+                        result[name] = value
                 self.results.append(result)
                 breaked_items = []
 
@@ -427,34 +448,53 @@ class KeyBreakAdapter(object):
                          item[childitem1]))
                     child1_count = max(child1_count, counter[child1_key])
 
-            for childitem2 in child2:
-                name = "{0}[{1}][{2}]".format(childitem2, counter[child1_key], counter[child2_key])
-                breaked_items.append(
-                    (name,
-                     item[childitem2]))
-                child2_count = max(child2_count, counter[child2_key])
-
+            # third key break
+            if key_changes[child2_key]:
+                for childitem2 in child2:
+                    name = "{0}[{1}][{2}]".format(childitem2, counter[child1_key], counter[child2_key])
+                    breaked_items.append(
+                        (name,
+                         item[childitem2]))
+                    child2_count = max(child2_count, counter[child2_key])
+            for childitem3 in child3:
+                name = childitem3
+                if item[childitem3]:
+                    breaked_items.append(
+                        (name, 
+                         item[childitem3]))
             last_item = item
 
 
-        # 最終アイテムにはキーブレイクが発生しないので明示的に処理する(i,jは処理済み)
-        result = OrderedDict(last_item)
-        for childitem1 in child1:
-            name = "{0}[{1}]".format(childitem1, counter[child1_key])
-            breaked_items.append(
-                (name,
-                 item[childitem1]))
-            child1_count = max(child1_count, counter[child1_key])
-            for childitem2 in child2:
-                name = "{0}[{1}][{2}]".format(childitem2, counter[child1_key], counter[child2_key])
-                breaked_items.append(
-                    (name,
-                     item[childitem2]))
-                child2_count = max(child2_count, counter[child2_key])
-        self.results.append(result)
+        # 最終アイテムにはキーブレイクが発生しないので明示的に処理する
+        # for childitem1 in child1:
+        #     name = "{0}[{1}]".format(childitem1, counter[child1_key])
+        #     breaked_items.append(
+        #         (name,
+        #          item[childitem1]))
+        #     child1_count = max(child1_count, counter[child1_key])
+        #     for childitem2 in child2:
+        #         name = "{0}[{1}][{2}]".format(childitem2, counter[child1_key], counter[child2_key])
+        #         breaked_items.append(
+        #             (name,
+        #              item[childitem2]))
+        #         child2_count = max(child2_count, counter[child2_key])
+        #     for childitem3 in child3:
+        #         name = childitem3
+        #         if item[childitem3]:
+        #             breaked_items.append(
+        #                 (name, 
+        #                  item[childitem3]))
 
-        for c in child1 + child2:
+
+        result = OrderedDict(last_item)
+        for c in child1 + child2 + child3:
             result.pop(c)
+        for name, value in breaked_items:
+            if name in result:
+                logger.debug("{0}".format((name, value)))
+            else:
+                result[name] = value
+        self.results.append(result)
 
         headers = list(result)
         self.headers = headers
