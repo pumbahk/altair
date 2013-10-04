@@ -389,6 +389,10 @@ Seat.prototype.selectable = function Seat_selectable() {
     this.parent.callbacks.selectable(this.parent, this);
 };
 
+Seat.prototype.destroy = function Seat_destroy() {
+    this.detach();
+};
+
 var SeatAdjacencies = exports.SeatAdjacencies = function SeatAdjacencies(parent) {
   this.tbl = [];
   this.src = parent.dataSource.seatAdjacencies;
@@ -1983,8 +1987,9 @@ function parseTransform(transform_str) {
               mouseout: function(evt) {
                 var highlighted = self.highlighted;
                 self.highlighted = {};
-                for (var i in highlighted)
-                  highlighted[i].removeOverlay('highlighted');
+                for (var i in highlighted){
+                    highlighted[i].removeOverlay('highlighted');
+                }
               },
               mousedown: function(evt) {
                 self.nextSingleClickAction = function () {
@@ -2181,10 +2186,23 @@ function parseTransform(transform_str) {
         if (this._smallTextsShown) {
           for(var i = this.small_texts.length; --i >= 0;)
             this.small_texts[i].visibility(false);
-          this._smallTextsShown = false;
+            this._smallTextsShown = false;
         }
-      }
-    }
+      },
+
+     destroySeats: function VenueViewer_destroySheet(){
+       var seats = this.seats;
+       if(!!seats){
+         for(var k in seats){
+           var seat = seats[k];
+           if(seat.destroy){
+             seat.destroy();
+             delete seat;
+           }
+         }
+       }
+     }
+   }
   });
 
   /* main */
@@ -2288,6 +2306,9 @@ function parseTransform(transform_str) {
 
         case 'unselectAll':
           return aux.unselectAll();
+
+        case 'destroySeats':
+          return aux.destroySeats();
 
         case 'refresh':
           return aux.refresh();
