@@ -8,12 +8,20 @@ ${form.sales_segment_group_id}
 % else:
 <input type="hidden" id="${form.sales_segment_group_id.name}" name="${form.sales_segment_group_id.name}" value="${form.context.sales_segment_group.id}" />
 % endif
-% if form.context.performance is None:
+
+% if form.context.performance:
+<input type="hidden" id="${form.performance_id.name}" name="${form.performance_id.name}" value="${form.context.performance.id}" />
+% elif form.context.sales_segment and form.context.sales_segment.lots:
+抽選 
+%for lot in form.context.sales_segment.lots:
+${lot.name}
+<input type="hidden" id="${form.lot_id.name}" name="${form.lot_id.name}" value="${lot.id}" />
+%endfor
+% else:
 <label for="${form.performance_id.name}">${HH.label_text_for(form.performance_id)}</label>
 ${form.performance_id}
-% else:
-<input type="hidden" id="${form.performance_id.name}" name="${form.performance_id.name}" value="${form.context.performance.id}" />
 % endif
+
 <script type="text/javascript">
 function get_sales_segment_group_id() {
   return $('#${form.sales_segment_group_id.name}').val();

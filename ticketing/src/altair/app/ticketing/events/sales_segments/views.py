@@ -272,6 +272,8 @@ class EditSalesSegment(BaseView):
             form.payment_delivery_method_pairs.data = [pdmp.id 
                                                         for pdmp in self.context.sales_segment.payment_delivery_method_pairs]
         if self.request.method == "POST":
+            if 'lot_id' in self.request.POST:
+                form.performance_id.choices = [(None, None)]
             if form.validate():
                 editor = SalesSegmentEditor(self.context.sales_segment_group, form)
                 editor.apply_changes(self.context.sales_segment)
