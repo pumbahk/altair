@@ -430,6 +430,10 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     id = Column(Identifier, primary_key=True)
     name = Column(String(255))
     code = Column(String(12))  # Organization.code(2桁) + Event.code(3桁) + 7桁(デフォルトはstart.onのYYMMDD+ランダム1桁)
+    abbreviated_title = Column(Unicode(255), doc=u"公演名略称", default=u"")
+    subtitle = Column(Unicode(255), doc=u"公演名副題", default=u"")
+    note = Column(UnicodeText, doc=u"公演名備考", default=u"")
+
     open_on = Column(DateTime)
     start_on = Column(DateTime)
     end_on = Column(DateTime)
@@ -3640,12 +3644,8 @@ class PerformanceSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     id = Column(Identifier, primary_key=True)
     performance_id = Column(Identifier, ForeignKey('Performance.id'))
     performance = relationship('Performance', backref='settings')
-    
-    abbreviated_title = Column(Unicode(255), doc=u"公演名略称", default=u"")
-    subtitle = Column(Unicode(255), doc=u"公演名副題", default=u"")
-    note = Column(UnicodeText, doc=u"公演名備考", default=u"")
-
-    KEYS = ["abbreviated_title", "subtitle", "note"]
+               
+    KEYS = []
 
     @classmethod
     def create_from_model(cls, obj, params):

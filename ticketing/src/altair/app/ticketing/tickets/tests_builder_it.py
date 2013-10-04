@@ -271,10 +271,13 @@ class BuilderItTest(_IntegrationAssertionMixin, unittest.TestCase):
         target = self._makeOne()
         data = {}
         model = Performance(name=":name",
-                           code=":code", 
-                           open_on=datetime(2000, 1, 1), 
-                           start_on=datetime(2000, 1, 1, 10), 
-                           end_on=datetime(2000, 1, 1, 23))
+                            code=":code", 
+                            open_on=datetime(2000, 1, 1), 
+                            start_on=datetime(2000, 1, 1, 10), 
+                            end_on=datetime(2000, 1, 1, 23), 
+                            abbreviated_title=":abbreviated_title", 
+                            subtitle=":subtitle", 
+                            note=":note")
         with mock.patch.object(target, "build_dict_from_event") as m, mock.patch.object(target, "build_dict_from_performance_setting") as n:
             m.side_effect = lambda _, retval:retval
             n.side_effect = lambda _, retval:retval
@@ -299,6 +302,9 @@ class BuilderItTest(_IntegrationAssertionMixin, unittest.TestCase):
             self.assertEqual(result[u'開始時刻s'],  target.formatter.format_time_short(model.start_on))
             self.assertEqual(result[u'終了時刻'],  target.formatter.format_time(model.end_on))
             self.assertEqual(result[u'終了時刻s'],  target.formatter.format_time_short(model.end_on))
+            self.assertEqual(result[u"公演名略称"], ":abbreviated_title")
+            self.assertEqual(result[u"公演名副題"], ":subtitle")
+            self.assertEqual(result[u"公演名備考"], ":note")
 
             m.assert_called_once_with(model.event, retval=result)
             n.assert_called_once_with(None, retval=result)
@@ -315,14 +321,9 @@ class BuilderItTest(_IntegrationAssertionMixin, unittest.TestCase):
         from altair.app.ticketing.core.models import PerformanceSetting
         target = self._makeOne()
         data = {}
-        model = PerformanceSetting(abbreviated_title=":abbreviated_title", 
-                                   subtitle=":subtitle", 
-                                   note=":note")
-
+        model = PerformanceSetting()
         result = target.build_dict_from_performance_setting(model, retval=data)
-        self.assertEqual(result[u"公演名略称"], ":abbreviated_title")
-        self.assertEqual(result[u"公演名副題"], ":subtitle")
-        self.assertEqual(result[u"公演名備考"], ":note")
+        self.assertEqual(result, {})
 
     def test_build_venue__none(self):
         target = self._makeOne()
@@ -784,10 +785,11 @@ def get_ordered_product_item__full_relation(quantity, quantity_only):
                        code=":code", 
                        open_on=datetime(2000, 1, 1), 
                        start_on=datetime(2000, 1, 1, 10), 
-                       end_on=datetime(2000, 1, 1, 23))
-    performance.settings.append(PerformanceSetting(abbreviated_title=":PerformanceSetting:abbreviated_title", 
-                                                   subtitle=":PerformanceSetting:subtitle", 
-                                                   note=":PerformanceSetting:note"))
+                       end_on=datetime(2000, 1, 1, 23), 
+                       abbreviated_title=":PerformanceSetting:abbreviated_title", 
+                       subtitle=":PerformanceSetting:subtitle", 
+                       note=":PerformanceSetting:note")
+    performance.settings.append(PerformanceSetting())
 
     venue = performance.venue = Venue(name=":Venue:name", 
                                       sub_name=":sub_name")
@@ -876,10 +878,11 @@ def get_carted_product_item__full_relation(quantity, quantity_only):
                        code=":code", 
                        open_on=datetime(2000, 1, 1), 
                        start_on=datetime(2000, 1, 1, 10), 
-                       end_on=datetime(2000, 1, 1, 23))
-    performance.settings.append(PerformanceSetting(abbreviated_title=":PerformanceSetting:abbreviated_title", 
-                                                   subtitle=":PerformanceSetting:subtitle", 
-                                                   note=":PerformanceSetting:note"))
+                       end_on=datetime(2000, 1, 1, 23), 
+                       abbreviated_title=":PerformanceSetting:abbreviated_title", 
+                       subtitle=":PerformanceSetting:subtitle", 
+                       note=":PerformanceSetting:note")
+    performance.settings.append(PerformanceSetting())
 
     venue = performance.venue = Venue(name=":Venue:name", 
                   sub_name=":sub_name")

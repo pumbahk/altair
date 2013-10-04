@@ -16,6 +16,15 @@
         %endif
       </td>
     </tr>
+    <tr>
+      <th width="10%">公演名略称</th>
+      <td width="20%">${performance.abbreviated_title or u""}</td>
+      <th width="10%">公演名副題</th>
+      <td width="20%">${performance.subtitle or u""}</td>
+      <th width="10%">公演名備考</th>
+      <td width="20%">${performance.note or u""}</td>
+      </td>
+    </tr>
 % if expanded:
     <tr>
       <th rowspan="2">リダイレクト先</th>
