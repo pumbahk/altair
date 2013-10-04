@@ -94,15 +94,16 @@ def get_seats(request):
 
     if u'stocks' in necessary_params:
         stocks_data = []
-        count_column = ProductItem.id if sale_only else Stock.id
+        count_column = ProductItem.id if not loaded_at and sale_only else Stock.id
         query = DBSession.query(Stock, func.count(count_column)).options(joinedload('stock_status')).filter_by(performance=venue.performance)
-        if sale_only:
+        # 差分取得のときは販売可能かどうかに関わらず取得する
+        if loaded_at:
+            query = query.join(StockStatus).filter(StockStatus.updated_at>loaded_at)
+        elif sale_only:
             query = query.join(ProductItem, and_(ProductItem.performance_id==venue.performance_id, ProductItem.stock_id==Stock.id))
             if sales_segment_id:
                 query = query.join(Product).join(SalesSegment).filter(SalesSegment.id==sales_segment_id)
             query = query.having(func.count(ProductItem.id)>0)
-        if loaded_at:
-            query = query.join(StockStatus).filter(StockStatus.updated_at>loaded_at)
         query = query.group_by(Stock.id)
         for (stock, count) in query:
             if sale_only:
