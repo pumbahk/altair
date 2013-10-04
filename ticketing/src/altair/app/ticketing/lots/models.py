@@ -586,7 +586,8 @@ class LotEntryWishSupport(object):
 
     @property
     def total_amount(self):
-        return self.tickets_amount + self.system_fee + self.transaction_fee + self.delivery_fee
+        return self.tickets_amount + self.system_fee + self.special_fee +\
+            self.transaction_fee + self.delivery_fee
 
     @property
     def total_quantity(self):
@@ -598,6 +599,12 @@ class LotEntryWishSupport(object):
         #return self.lot_entry.payment_delivery_method_pair.system_fee
         return self.lot_entry.sales_segment.get_system_fee(self.lot_entry.payment_delivery_method_pair,
                                                            self.product_quantities)
+
+    @property
+    def special_fee(self):
+        return self.lot_entry.sales_segment.get_special_fee(self.lot_entry.payment_delivery_method_pair,
+                                                            self.product_quantities)
+
 
 
 
