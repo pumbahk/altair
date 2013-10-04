@@ -643,7 +643,7 @@ class PaymentView(object):
                 address_1=user_profile.address_1,
                 address_2=user_profile.address_2,
                 email_1=user_profile.email_1,
-                email_2=user_profile.email_2,
+                email_2=user_profile.email_2
                 )
         else:
             formdata = None
@@ -772,7 +772,6 @@ class PaymentView(object):
             tel_2=data['tel_2'],
             fax=data['fax'],
             sex=data.get("sex"),
-            point=data.get("point"),
             user=user
         )
 
