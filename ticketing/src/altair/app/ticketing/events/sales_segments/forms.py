@@ -34,6 +34,9 @@ class SalesSegmentForm(OurForm):
         choices=[],
         coerce=lambda x: long(x) if x else None
     )
+    lot_id = OurIntegerField(
+        label=u'抽選',
+    )
     seat_choice = OurBooleanField(
         label=u'座席選択可',
         default=True,
