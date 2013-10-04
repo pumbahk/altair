@@ -6,8 +6,6 @@ import logging
 import csv
 import itertools
 from datetime import datetime
-import pystache
-
 from pyramid.view import view_config, view_defaults
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound, HTTPBadRequest
 from pyramid.response import Response
@@ -23,7 +21,7 @@ from sqlalchemy.sql.expression import or_, desc
 from sqlalchemy.orm import joinedload, undefer
 from webob.multidict import MultiDict
 from altair.sqlahelper import get_db_session
-
+from altair.app.ticketing.tickets.api import get_svg_builder
 from altair.app.ticketing.models import DBSession, merge_session_with_post, record_to_multidict, asc_or_desc
 from altair.app.ticketing.core.models import (
     Order,
@@ -87,6 +85,11 @@ from .api import (
 )
 from .utils import NumberIssuer
 from .models import OrderSummary
+from altair.app.ticketing.tickets.preview.api import SVGPreviewCommunication
+from altair.app.ticketing.tickets.preview.transform import SVGTransformer
+from altair.app.ticketing.tickets.utils import build_cover_dict_from_order
+from altair.app.ticketing.core.models import TicketCover
+
 
 logger = logging.getLogger(__name__)
 
@@ -756,11 +759,6 @@ class OrderDetailView(BaseView):
 
     @view_config(route_name="orders.cover.preview", request_method="GET", renderer="altair.app.ticketing:templates/orders/_cover_preview_dialog.html")
     def cover_preview_dialog(self):
-        from altair.app.ticketing.tickets.preview.api import SVGPreviewCommunication
-        from altair.app.ticketing.tickets.preview.transform import SVGTransformer
-        from altair.app.ticketing.tickets.utils import build_cover_dict_from_order
-        from altair.app.ticketing.core.models import TicketCover
-
         order_id = int(self.request.matchdict.get('order_id', 0))
         order = Order.get(order_id, self.context.organization.id)
         if order is None:
@@ -768,7 +766,8 @@ class OrderDetailView(BaseView):
         cover = TicketCover.get_from_order(order)
         if cover is None:
             raise HTTPNotFound('cover is not found. order id %d' % order_id)
-        svg = pystache.render(cover.ticket.data["drawing"], build_cover_dict_from_order(order))
+        svg_builder = get_svg_builder(self.request)
+        svg = svg_builder.build(cover.ticket, build_cover_dict_from_order(order))
         data = {"ticket_format": cover.ticket.ticket_format_id, "sx": "1", "sy": "1"}
         transformer = SVGTransformer(svg, data)
         svg = transformer.transform()
@@ -802,12 +801,13 @@ class OrderDetailView(BaseView):
         data["ticket_format_id"] = ticket_format.id
         results = []
         names = []
+        svg_builder = get_svg_builder(self.request)
         for seat, dict_ in dicts:
             names.append(seat.name if seat else dict_["product"]["name"])
             preview_type = utils.delivery_type_from_built_dict(dict_)
 
             for ticket in tickets:
-                svg = pystache.render(ticket.data['drawing'], dict_)
+                svg = svg_builder.build(ticket, dict_)
                 r = data.copy()
                 r["preview_type"] = preview_type
                 r.update(drawing=svg)

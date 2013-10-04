@@ -13,7 +13,8 @@ from .vars_builder import (
     datetime_as_dict, 
     safe_format, 
     TicketCoverDictBuilder, 
-    TicketDictBuilder
+    TicketDictBuilder, 
+    TicketDictListBuilder
     )
 I = numpy.matrix('1 0 0; 0 1 0; 0 0 1', dtype=numpy.float64)
 
@@ -22,6 +23,7 @@ I = numpy.matrix('1 0 0; 0 1 0; 0 0 1', dtype=numpy.float64)
 DictBuilder = TicketDictBuilder
 
 _default_builder = DictBuilder(Japanese_Japan_Formatter())
+_default_dict_list_builder = TicketDictListBuilder(_default_builder)
 build_dict_from_stock = _default_builder.build_dict_from_stock
 build_dict_from_venue = _default_builder.build_dict_from_venue
 build_dict_from_seat = _default_builder.build_dict_from_seat
@@ -30,8 +32,8 @@ build_dict_from_event = _default_builder.build_dict_from_event
 build_dict_from_performance = _default_builder.build_dict_from_performance
 build_dict_from_product = _default_builder.build_dict_from_product
 build_dict_from_product_item = _default_builder.build_dict_from_product_item
-build_dicts_from_ordered_product_item = _default_builder.build_dicts_from_ordered_product_item
-build_dicts_from_carted_product_item = _default_builder.build_dicts_from_carted_product_item
+build_dicts_from_ordered_product_item = _default_dict_list_builder.build_dicts_from_ordered_product_item
+build_dicts_from_carted_product_item = _default_dict_list_builder.build_dicts_from_carted_product_item
 build_dict_from_ordered_product_item_token = _default_builder.build_dict_from_ordered_product_item_token
 
 _default_cover_builder = TicketCoverDictBuilder(Japanese_Japan_Formatter())
