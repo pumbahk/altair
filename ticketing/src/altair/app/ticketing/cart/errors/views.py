@@ -157,7 +157,7 @@ class XHROnlyExcView(object):
         self.request = request
 
     @view_config(context=TooManyCartsCreated)
-    def too_many_cart_exception_xhr(context, request):
+    def too_many_cart_exception_xhr(self):
         return dict(result='NG', reason='too many carts')
 
 @view_defaults(renderer=selectable_renderer('altair.app.ticketing.cart:templates/%(membership)s/mobile/error.html'), request_type='altair.mobile.interfaces.IMobileRequest')
@@ -168,29 +168,29 @@ class MobileOnlyExcView(object):
         return dict(message=u"枚数は合計%d枚以内で選択してください" % upper_limit)
 
     @view_config(context=ZeroQuantityError)
-    def zero_quantity_error(request):
+    def zero_quantity_error(self):
         return dict(message=u"枚数は1枚以上で選択してください")
 
     @view_config(context=NotEnoughStockException)
-    def not_enough_stock_exception(request):
+    def not_enough_stock_exception(self):
         return dict(message=u"在庫がありません。\nご希望の座席を確保できませんでした。")
 
     @view_config(context=InvalidSeatSelectionException)
-    def invalid_seat_selection_exception(request):
+    def invalid_seat_selection_exception(self):
         return dict(message=u"座席選択に誤りがあります。\n座席を再度選択してください。")
 
     @view_config(context=InvalidProductSelectionException)
-    def invalid_product_selection_exception(request):
+    def invalid_product_selection_exception(self):
         return dict(message=u"席種選択に誤りがあります。\n席種を再度選択してください。")
 
     @view_config(context=NotEnoughAdjacencyException)
-    def not_enough_ajacency_exception(request):
+    def not_enough_ajacency_exception(self):
         return dict(message=u"連席で座席を確保できません。個別に購入してください。")
 
     @view_config(context=CartCreationException)
-    def cart_creation_exception(request):
+    def cart_creation_exception(self):
         return dict(message=u"カートを作成できませんでした。しばらく時間を置いてから再度お試しください。")
 
     @view_config(context=InvalidCSRFTokenException)
-    def invalid_csrf_token_exception(request):
+    def invalid_csrf_token_exception(self):
         return dict(message=u"ウェブブラウザの戻るボタンは使用できません。画面上の戻るボタンから操作して下さい。")
