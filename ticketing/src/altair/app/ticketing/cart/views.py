@@ -841,7 +841,7 @@ class CompleteView(object):
         transaction.commit()
 
         cart = api.get_cart(self.request) # これは get_cart でよい
-        order = DBSession.query(order.__class__).get(order.id)
+        DBSession.add(order) # transaction をコミットしたので、再度attach
 
         # メール購読
         user = get_or_create_user(self.context.authenticated_user())
