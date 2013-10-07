@@ -382,8 +382,9 @@ class FlashUpdater(Updater):
         return asset
    
 class ImageSearcher(object):
-    def __init__(self, request):
+    def __init__(self, request, not_found_then_return_all=True):
         self.request = request
+        self.not_found_then_return_all = not_found_then_return_all
 
     def search(self, qs, data):
         qs = query_filter_by_users(qs, data)
@@ -391,11 +392,15 @@ class ImageSearcher(object):
             return qs
         
         manager = get_tagmanager("image_asset")
-        return QueryParser(data["tags"]).filter_by_manager(manager, qs, organization_id=self.request.organization.id)
+        return QueryParser(data["tags"]).filter_by_manager(manager, qs, 
+                                                           organization_id=self.request.organization.id, 
+                                                           not_found_then_return_all=self.not_found_then_return_all
+                                                       )
 
 class MovieSearcher(object):
-    def __init__(self, request):
+    def __init__(self, request, not_found_then_return_all=True):
         self.request = request
+        self.not_found_then_return_all = not_found_then_return_all
 
     def search(self, qs, data):
         qs = query_filter_by_users(qs, data)
@@ -403,11 +408,15 @@ class MovieSearcher(object):
             return qs
         
         manager = get_tagmanager("movie_asset")
-        return QueryParser(data["tags"]).filter_by_manager(manager, qs, organization_id=self.request.organization.id)
+        return QueryParser(data["tags"]).filter_by_manager(manager, qs, 
+                                                           organization_id=self.request.organization.id, 
+                                                           not_found_then_return_all=self.not_found_then_return_all
+                                                       )
 
 class FlashSearcher(object):
-    def __init__(self, request):
+    def __init__(self, request, not_found_then_return_all=True):
         self.request = request
+        self.not_found_then_return_all = not_found_then_return_all
 
     def search(self, qs, data):
         qs = query_filter_by_users(qs, data)
@@ -415,4 +424,7 @@ class FlashSearcher(object):
             return qs
         
         manager = get_tagmanager("flash_asset")
-        return QueryParser(data["tags"]).filter_by_manager(manager, qs, organization_id=self.request.organization.id)
+        return QueryParser(data["tags"]).filter_by_manager(manager, qs, 
+                                                           organization_id=self.request.organization.id, 
+                                                           not_found_then_return_all=self.not_found_then_return_all
+                                                       )
