@@ -490,17 +490,18 @@ class KeyBreakAdapter(object):
 
         headers = list(result)
         self.headers = headers
+        self.extra_headers = []
         for i in range(child1_count):
             for n in child1:
-                self.headers.append("{0}[{1}]".format(n, i))
+                self.extra_headers.append("{0}[{1}]".format(n, i))
             for j in range(child2_count):
                 for n in child2:
-                    self.headers.append("{0}[{1}][{2}]".format(n, i, j))
+                    self.extra_headers.append("{0}[{1}][{2}]".format(n, i, j))
                 for n in child3_comma_separated:
-                    self.headers.append("{0}[{1}][{2}]".format(n, i, j))
+                    self.extra_headers.append("{0}[{1}][{2}]".format(n, i, j))
                 for k in range(child3_count):
                     for n in child3_indexed:
-                        self.headers.append("{0}[{1}][{2}][{3}]".format(n, i, j, k))
+                        self.extra_headers.append("{0}[{1}][{2}][{3}]".format(n, i, j, k))
 
     def __iter__(self):
         return iter(self.results)
