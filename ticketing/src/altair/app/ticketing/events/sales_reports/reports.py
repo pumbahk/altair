@@ -44,6 +44,22 @@ class SalesReportRecord(object):
         self.total_order_amount = 0
 
 
+def get_order_quantity(stock_ids, group_by):
+    # Stock単位の全ての予約席数 (販売区分での絞り込みは行わない)
+    query = OrderedProductItem.query\
+        .join(OrderedProduct).filter(OrderedProduct.deleted_at==None)\
+        .join(Order).filter(Order.canceled_at==None, Order.deleted_at==None)\
+        .join(Performance).filter(Performance.deleted_at==None)\
+        .join(Event).filter(Event.deleted_at==None)\
+        .join(ProductItem, ProductItem.id==OrderedProductItem.product_item_id)\
+        .join(Stock).filter(Stock.id.in_(stock_ids))\
+        .with_entities(
+            group_by,
+            func.sum(OrderedProductItem.quantity)
+        ).group_by(group_by)
+    return dict([(id, quantity) for id, quantity in query.all()])
+
+
 class SalesTotalReporter(object):
 
     def __init__(self, form, organization, group_by='Event'):
@@ -135,12 +151,14 @@ class SalesTotalReporter(object):
             .join(Event).filter(Event.organization_id==self.organization.id)
         query = self.add_sales_segment_filter(query)
         query = self.add_form_filter(query)
+
+        # 残席数を算出するためのStock単位の予約席数
         stock_ids = [s.id for s in query.with_entities(Stock.id).distinct()]
+        order_quantity = get_order_quantity(stock_ids, self.group_by)
 
         query = Stock.query.filter(Stock.id.in_(stock_ids))\
             .join(Performance).filter(Performance.id==Stock.performance_id)\
             .join(Event).filter(Event.organization_id==self.organization.id)
-        query = self.add_form_filter(query)
         query = query.with_entities(
             self.group_by,
             func.sum(Stock.quantity)
@@ -152,8 +170,8 @@ class SalesTotalReporter(object):
                 continue
             record = self.reports[id]
             record.stock_quantity = stock_quantity or 0
-            # 残席数 = 配席数 - 予約数 にする (StockStatus.quantityは販売中のものが含まれない為)
-            record.vacant_quantity = stock_quantity - record.total_order_quantity
+            # 残席数 = 配席数 - 予約席数 にする (StockStatus.quantityは販売中のものが含まれない為)
+            record.vacant_quantity = stock_quantity - order_quantity.get(id, 0)
 
     def get_order_data(self):
         # 販売金額、販売枚数
@@ -383,42 +401,7 @@ class SalesDetailReporter(object):
                 sales_unit=row[11]
             )
 
-    def _get_order_quantity(self):
-        # Stock単位の予約数
-        query = OrderedProductItem.query\
-            .join(OrderedProduct).filter(OrderedProduct.deleted_at==None)\
-            .join(Order).filter(Order.canceled_at==None)\
-            .join(ProductItem, ProductItem.id==OrderedProductItem.product_item_id)\
-            .join(Stock).filter(Stock.deleted_at==None)\
-            .join(Product, and_(
-                Product.id==OrderedProduct.product_id,
-                Product.id==ProductItem.product_id,
-                Product.seat_stock_type_id==Stock.stock_type_id
-            ))
-        form = SalesReportForm(
-            performance_id=self.form.performance_id.data,
-            limited_from=self.form.limited_from.data,
-            limited_to=self.form.limited_to.data,
-        )
-        query = self.add_sales_segment_filter(query, form)
-        if self.form.performance_id.data:
-            query = query.filter(Stock.performance_id==self.form.performance_id.data)
-        elif self.form.event_id.data:
-            query = query.join(StockType).filter(StockType.event_id==self.form.event_id.data)
-
-        query = query.with_entities(
-            Stock.id,
-            func.sum(OrderedProductItem.quantity)
-        ).group_by(Stock.id)
-
-        self.order_quantity = dict()
-        for id, quantity in query.all():
-            self.order_quantity[id] = quantity
-
     def get_stock_data(self):
-        # 残席数を算出するためのStock単位の予約数
-        self._get_order_quantity()
-
         # 配席数、残席数
         query = Stock.query.filter(Stock.stock_holder_id.in_(self.stock_holder_ids))\
             .join(ProductItem).filter(ProductItem.deleted_at==None)\
@@ -428,6 +411,10 @@ class SalesDetailReporter(object):
             query = query.filter(Stock.performance_id==self.form.performance_id.data)
         if self.form.event_id.data:
             query = query.join(StockType, StockType.id==Stock.stock_type_id).filter(StockType.event_id==self.form.event_id.data)
+
+        # 残席数を算出するためのStock単位の予約席数
+        stock_ids = [s.id for s in query.with_entities(Stock.id).distinct()]
+        order_quantity = get_order_quantity(stock_ids, Stock.id)
 
         query = query.with_entities(
             func.ifnull(Product.base_product_id, Product.id),
@@ -440,8 +427,8 @@ class SalesDetailReporter(object):
                 continue
             report = self.reports[id]
             report.stock_quantity = stock_quantity or 0
-            # 残席数 = 配席数 - 予約数 にする (StockStatus.quantityは販売中のものが含まれない為)
-            report.vacant_quantity = stock_quantity - self.order_quantity.get(report.stock_id, 0)
+            # 残席数 = 配席数 - 予約席数 にする (StockStatus.quantityは販売中のものが含まれない為)
+            report.vacant_quantity = stock_quantity - order_quantity.get(report.stock_id, 0)
 
     def get_order_data(self, all_period=True):
         # 購入件数クエリ
