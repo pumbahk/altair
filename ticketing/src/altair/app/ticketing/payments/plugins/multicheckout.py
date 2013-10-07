@@ -133,8 +133,12 @@ class MultiCheckoutPlugin(object):
         status = MultiCheckoutOrderStatus.by_order_no(order_no)
         # オーソリ済みであること
         if status is None or status.Status != str(MultiCheckoutStatusEnum.Authorized):
-            logger.debug('multicheckout status is not Authorized (%s)' % order_no)
-            raise InvalidCartStatusError
+            logger.debug('multicheckout status is not authorized (%s)' % order_no)
+            raise MultiCheckoutSettlementFailure(
+                message='multicheckout status is not authorized (%s)' % order_no,
+                order_no=order_no,
+                back_url=back_url(request)
+                )
 
     def finish(self, request, cart):
         """ 売り上げ確定(3D認証) """
@@ -145,44 +149,49 @@ class MultiCheckoutPlugin(object):
         if card_number:
             card_brand = detect_card_brand(request, card_number)
 
-        if not cart.has_different_amount:
-            checkout_sales_result = multicheckout_api.checkout_sales(
-                request, get_order_no(request, cart),
-            )
-
+        try:
+            if not cart.has_different_amount:
+                checkout_sales_result = multicheckout_api.checkout_sales(
+                    request, get_order_no(request, cart),
+                )
+            else:
+                ## 金額変更での売上確定
+                checkout_sales_result = multicheckout_api.checkout_sales_different_amount(
+                    request, get_order_no(request, cart), cart.different_amount,
+                )
             if checkout_sales_result.CmnErrorCd != '000000':
-                logger.info(u'finish_secure: 決済エラー order_no = %s, error_code = %s' % (order_no, checkout_sales_result.CmnErrorCd))
-                multicheckout_api.checkout_auth_cancel(request, get_order_no(request, cart))
-                request.session.flash(get_error_message(request, checkout_sales_result.CmnErrorCd))
-                transaction.commit()
                 raise MultiCheckoutSettlementFailure(
                     message='finish_secure: generic failure',
                     order_no=order_no,
                     back_url=back_url(request),
                     error_code=checkout_sales_result.CmnErrorCd
-                )
-        else:
-            ## 金額変更での売上確定
-            checkout_sales_result = multicheckout_api.checkout_sales_different_amount(
-                request, get_order_no(request, cart), cart.different_amount,
-            )
-            if checkout_sales_result.CmnErrorCd != '000000':
-                logger.info(u'finish_secure: 決済エラー order_no = %s, error_code = %s' % (order_no, checkout_sales_result.CmnErrorCd))
-
-                ## 抽選特有の事情により、キャンセルは管理画面から行う
-                # multicheckout_api.checkout_auth_cancel(request, get_order_no(request, cart))
-
-                request.session.flash(get_error_message(request, checkout_sales_result.CmnErrorCd))
+                    )
+        except MultiCheckoutSettlementFailure as e:
+            # XXX: これは本当は呼び出し元でやってほしい
+            logger.info(u'finish_secure: 決済エラー order_no = %s, error_code = %s' % (e.order_no, e.error_code))
+            request.session.flash(get_error_message(request, e.error_code))
+            raise
+        except Exception:
+            # MultiCheckoutSettlementFailure 以外の例外 (通信エラーなど)
+            logger.exception('multicheckout plugin')
+            raise MultiCheckoutSettlementFailure(
+                message='uncaught exception',
+                order_no=order_no,
+                back_url=back_url(request))
+        finally:
+            # checkout_auth_cancel が失敗する可能性があるので、try-finally必要
+            try:
+                if cart.has_different_amount:
+                    ## 抽選特有の事情により、キャンセルは管理画面から行う
+                    pass
+                else:
+                    multicheckout_api.checkout_auth_cancel(request, get_order_no(request, cart))
+            finally:
                 transaction.commit()
-                raise MultiCheckoutSettlementFailure(
-                    message='finish_secure: generic failure',
-                    order_no=order_no,
-                    back_url=back_url(request),
-                    error_code=checkout_sales_result.CmnErrorCd
-                )
 
         ahead_com_code = checkout_sales_result.AheadComCd
 
+        c_models.Order.query.session.add(cart)
         order = c_models.Order.create_from_cart(cart)
         order.card_brand = card_brand
         order.card_ahead_com_code = ahead_com_code
@@ -341,22 +350,32 @@ class MultiCheckoutView(object):
 
         item_name = api.get_item_name(self.request, cart.name)
 
-        checkout_auth_result = multicheckout_api.checkout_auth_secure_code(
-            self.request, get_order_no(self.request, cart),
-            item_name, cart.total_amount, 0, order['client_name'], order['email_1'],
-            order['card_number'], order['exp_year'] + order['exp_month'], order['card_holder_name'],
-            order['secure_code'],
-        )
+        try:
+            checkout_auth_result = multicheckout_api.checkout_auth_secure_code(
+                self.request, get_order_no(self.request, cart),
+                item_name, cart.total_amount, 0, order['client_name'], order['email_1'],
+                order['card_number'], order['exp_year'] + order['exp_month'], order['card_holder_name'],
+                order['secure_code'],
+            )
 
-        if checkout_auth_result.CmnErrorCd != '000000':
-            logger.info(u'card_info_secure3d_callback: 決済エラー order_no = %s, error_code = %s' % (order['order_no'], checkout_auth_result.CmnErrorCd))
-            self.request.session.flash(get_error_message(self.request, checkout_auth_result.CmnErrorCd))
+            if checkout_auth_result.CmnErrorCd != '000000':
+                raise MultiCheckoutSettlementFailure(
+                    message='card_info_secure3d_callback: generic failure',
+                    order_no=order['order_no'],
+                    back_url=back_url(self.request),
+                    error_code=checkout_auth_result.CmnErrorCd
+                    )
+        except MultiCheckoutSettlementFailure as e:
+            logger.info(u'card_info_secure3d_callback: 決済エラー order_no = %s, error_code = %s' % (e.order_no, e.error_code))
+            self.request.session.flash(get_error_message(self.request, e.error_code))
+            raise
+        except Exception:
+            # MultiCheckoutSettlementFailure 以外の例外 (通信エラーなど)
+            logger.exception('multicheckout plugin')
             raise MultiCheckoutSettlementFailure(
-                message='card_info_secure3d_callback: generic failure',
+                message='uncaught exception',
                 order_no=order['order_no'],
-                back_url=back_url(self.request),
-                error_code=checkout_auth_result.CmnErrorCd
-                )
+                back_url=back_url(self.request))
 
         self.request.session['order'] = order
 
@@ -366,7 +385,15 @@ class MultiCheckoutView(object):
         """ セキュア3D """
         cart = get_cart(self.request)
         order = self.request.session['order']
-        enrol = multicheckout_api.secure3d_enrol(self.request, get_order_no(self.request, cart), card_number, exp_year, exp_month, cart.total_amount)
+        try:
+            enrol = multicheckout_api.secure3d_enrol(self.request, get_order_no(self.request, cart), card_number, exp_year, exp_month, cart.total_amount)
+        except Exception:
+            # MultiCheckoutSettlementFailure 以外の例外 (通信エラーなど)
+            logger.exception('multicheckout plugin')
+            raise MultiCheckoutSettlementFailure(
+                message='uncaught exception',
+                order_no=order['order_no'],
+                back_url=back_url(self.request))
         if enrol.is_enable_auth_api():
             form=m_h.secure3d_acs_form(self.request, complete_url(self.request), enrol)
             self.request.response.text = form
@@ -395,42 +422,52 @@ class MultiCheckoutView(object):
         order['md'] = md
         order['order_no'] = get_order_no(self.request, cart)
 
-        auth_result = multicheckout_api.secure3d_auth(self.request, get_order_no(self.request, cart), pares, md)
-        item_name = api.get_item_name(self.request, cart.name)
+        try:
+            auth_result = multicheckout_api.secure3d_auth(self.request, get_order_no(self.request, cart), pares, md)
+            item_name = api.get_item_name(self.request, cart.name)
 
-        # TODO: エラーメッセージ
-        #if not auth_result.is_enable_auth_checkout():
-        #    return HTTPFound(back_url(self.request))
+            # TODO: エラーメッセージ
+            #if not auth_result.is_enable_auth_checkout():
+            #    return HTTPFound(back_url(self.request))
 
-        # TODO: エラーメッセージ
-        if not auth_result.is_enable_secure3d():
+            # TODO: エラーメッセージ
+            if not auth_result.is_enable_secure3d():
+                raise MultiCheckoutSettlementFailure(
+                    message='card_info_secure3d_callback: secure3d not enabled?',
+                    order_no=order['order_no'],
+                    back_url=back_url(self.request),
+                    error_code=auth_result.ErrorCd,
+                    return_code=auth_result.RetCd
+                    )
+
+            logger.debug('call checkout auth')
+            checkout_auth_result = multicheckout_api.checkout_auth_secure3d(
+                self.request, get_order_no(self.request, cart),
+                item_name, cart.total_amount, 0, order['client_name'], order['email_1'],
+                order['card_number'], order['exp_year'] + order['exp_month'], order['card_holder_name'],
+                mvn=auth_result.Mvn, xid=auth_result.Xid, ts=auth_result.Ts,
+                eci=auth_result.Eci, cavv=auth_result.Cavv, cavv_algorithm=auth_result.Cavva,
+            )
+            logger.debug('called checkout auth')
+            # TODO: エラーチェック CmnErrorCd CardErrorCd
+            if checkout_auth_result.CmnErrorCd != '000000':
+                raise MultiCheckoutSettlementFailure(
+                    message='card_info_secure3d_callback: generic failure',
+                    order_no=order['order_no'],
+                    back_url=back_url(self.request),
+                    error_code=checkout_auth_result.CmnErrorCd
+                    )
+        except MultiCheckoutSettlementFailure as e:
+            logger.info(u'card_info_secure3d_callback: 決済エラー order_no = %s, error_code = %s' % (e.order_no, e.error_code))
+            self.request.session.flash(get_error_message(self.request, e.error_code))
+            raise
+        except Exception:
+            # MultiCheckoutSettlementFailure 以外の例外 (通信エラーなど)
+            logger.exception('multicheckout plugin')
             raise MultiCheckoutSettlementFailure(
-                message='card_info_secure3d_callback: secure3d not enabled?',
+                message='uncaught exception',
                 order_no=order['order_no'],
-                back_url=back_url(self.request),
-                error_code=auth_result.ErrorCd,
-                return_code=auth_result.RetCd
-                )
-
-        logger.debug('call checkout auth')
-        checkout_auth_result = multicheckout_api.checkout_auth_secure3d(
-            self.request, get_order_no(self.request, cart),
-            item_name, cart.total_amount, 0, order['client_name'], order['email_1'],
-            order['card_number'], order['exp_year'] + order['exp_month'], order['card_holder_name'],
-            mvn=auth_result.Mvn, xid=auth_result.Xid, ts=auth_result.Ts,
-            eci=auth_result.Eci, cavv=auth_result.Cavv, cavv_algorithm=auth_result.Cavva,
-        )
-        logger.debug('called checkout auth')
-        # TODO: エラーチェック CmnErrorCd CardErrorCd
-        if checkout_auth_result.CmnErrorCd != '000000':
-            logger.info(u'card_info_secure3d_callback: 決済エラー order_no = %s, error_code = %s' % (checkout_auth_result.OrderNo, checkout_auth_result.CmnErrorCd))
-            self.request.session.flash(get_error_message(self.request, checkout_auth_result.CmnErrorCd))
-            raise MultiCheckoutSettlementFailure(
-                message='card_info_secure3d_callback: generic failure',
-                order_no=order['order_no'],
-                back_url=back_url(self.request),
-                error_code=checkout_auth_result.CmnErrorCd
-                )
+                back_url=back_url(self.request))
 
         tran = dict(
             mvn=auth_result.Mvn, xid=auth_result.Xid, ts=auth_result.Ts,

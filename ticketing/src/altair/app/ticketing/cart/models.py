@@ -42,7 +42,7 @@ from altair.app.ticketing.models import Identifier
 from altair.app.ticketing.core import models as c_models
 from altair.app.ticketing.core import api as c_api
 from . import logger
-from .exceptions import NoCartError, UnassignedOrderNumberError, CartCreationException, InvalidCartStatusError
+from .exceptions import NoCartError, CartCreationException, InvalidCartStatusError
 
 class PaymentMethodManager(object):
     def __init__(self):
@@ -142,13 +142,23 @@ class Cart(Base):
         return new_cart
 
     @classmethod
-    def create_from(cls, that):
+    def create_from(cls, request, that):
         # すでに detach しているかもしれないので、merge を試みる
         that = DBSession.merge(that) 
         if that.order_id is not None:
-            raise CartCreationException("Cannot translate the contents of a cart that has already been associated to the order")
+            raise CartCreationException(
+                request,
+                "Cannot translate the contents of a cart that has already been associated to the order",
+                performance_id=that.performance_id,
+                sales_segment_id=that.sales_segment_id
+                )
         if that.finished_at is not None:
-            raise CartCreationException("Cannot translate the contents of a cart that has already been marked as finished")
+            raise CartCreationException(
+                request,
+                "Cannot translate the contents of a cart that has already been marked as finished",
+                performance_id=that.performance_id,
+                sales_segment_id=that.sales_segment_id
+                )
         new_cart = cls.create(
             cart_session_id=that.cart_session_id,
             shipping_address_id=that.shipping_address_id,
@@ -167,7 +177,7 @@ class Cart(Base):
     @hybrid_property
     def order_no(self):
         if self._order_no is None:
-            raise UnassignedOrderNumberError(self.id)
+            raise InvalidCartStatusError(cart_id=self.id)
         return self._order_no
 
     @order_no.expression

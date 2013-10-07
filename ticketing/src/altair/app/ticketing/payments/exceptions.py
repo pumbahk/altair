@@ -1,4 +1,5 @@
 # encoding: utf-8
+import sys
 
 class PaymentPluginException(Exception):
     def __init__(self, message, order_no, back_url):
@@ -9,6 +10,7 @@ class PaymentPluginException(Exception):
         self.message = message
         self.order_no = order_no
         self.back_url = back_url
+        self.cause = sys.exc_info()
 
 class PaymentDeliveryMethodPairNotFound(Exception):
     """

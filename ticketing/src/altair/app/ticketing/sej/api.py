@@ -440,3 +440,6 @@ def refund_sej_order(sej_order, organization_id, order, now):
         DBSession.merge(rt)
 
     return True
+
+def get_sej_order(order_no):
+    return SejOrder.filter_by(order_no=order_no).order_by(desc(SejOrder.branch_no)).first()

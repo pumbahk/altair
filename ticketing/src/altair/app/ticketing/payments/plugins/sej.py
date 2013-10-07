@@ -1,9 +1,16 @@
 # -*- coding:utf-8 -*-
+import re
+import logging
+from datetime import datetime, timedelta
 from zope.interface import implementer
+from lxml import etree
+import numpy
+import pystache
 from pyramid.view import view_config
 from pyramid.response import Response
 from sqlalchemy.sql.expression import desc
-from altair.app.ticketing.payments.interfaces import IPaymentPlugin, IOrderPayment, IDeliveryPlugin, IOrderDelivery
+
+
 from altair.app.ticketing.cart.interfaces import ICartPayment, ICartDelivery
 from altair.app.ticketing.mails.interfaces import (
     ICompleteMailPayment, 
@@ -18,11 +25,10 @@ from altair.app.ticketing.mails.interfaces import (
     ILotsRejectedMailDelivery,
 )
 
-from .. import logger
-from pyramid.threadlocal import get_current_registry
 from altair.app.ticketing.models import DBSession
 from altair.app.ticketing.core import models as c_models
 
+from altair.app.ticketing.sej.exceptions import SejErrorBase
 from altair.app.ticketing.sej.ticket import SejTicketDataXml
 from altair.app.ticketing.sej.models import SejOrder, SejTenant, SejPaymentType, SejTicketType
 from altair.app.ticketing.sej.payment import request_order
@@ -36,16 +42,17 @@ from altair.app.ticketing.tickets.utils import (
     transform_matrix_from_ticket_format
     )
 from altair.app.ticketing.core.utils import ApplicableTicketsProducer
-
-from lxml import etree
-from datetime import datetime, timedelta
-import numpy
-import pystache
 from altair.app.ticketing.cart import helpers as cart_helper
-import re
 
+from ..interfaces import IPaymentPlugin, IOrderPayment, IDeliveryPlugin, IOrderDelivery
+from ..exceptions import PaymentPluginException
 from . import SEJ_PAYMENT_PLUGIN_ID as PAYMENT_PLUGIN_ID
 from . import SEJ_DELIVERY_PLUGIN_ID as DELIVERY_PLUGIN_ID
+
+logger = logging.getLogger(__name__)
+
+class SejPluginFailure(PaymentPluginException):
+    pass
 
 def includeme(config):
     # 決済系(マルチ決済)
@@ -137,13 +144,12 @@ class SejPaymentPlugin(object):
         tel1 = shipping_address.tel_1 and shipping_address.tel_1.replace('-', '')
         tel2 = shipping_address.tel_2 and shipping_address.tel_2.replace('-', '')
 
-        settings = get_current_registry().settings
+        settings = request.registry.settings
         tenant = SejTenant.filter_by(organization_id = performance.event.organization.id).first()
         api_key = (tenant and tenant.api_key) or settings['sej.api_key']
         api_url = (tenant and tenant.inticket_api_url) or settings['sej.inticket_api_url']
 
-        sej_order = order.sej_order
-        if not sej_order:
+        try:
             request_order(
                 shop_name           = tenant.shop_name,
                 shop_id             = tenant.shop_id,
@@ -168,7 +174,9 @@ class SejPaymentPlugin(object):
                 current_date + timedelta(days=365),
                 secret_key = api_key,
                 hostname = api_url
-            )
+                )
+        except SejErrorBase:
+            raise SejPluginFailure('payment plugin', order_no=order.order_no, back_url=None)
 
         return order
 
@@ -204,13 +212,12 @@ class SejDeliveryPlugin(object):
         tel1 = shipping_address.tel_1 and shipping_address.tel_1.replace('-', '')
         tel2 = shipping_address.tel_2 and shipping_address.tel_2.replace('-', '')
 
-        settings = get_current_registry().settings
+        settings = request.registry.settings
         tenant = SejTenant.filter_by(organization_id = performance.event.organization.id).first()
         api_key = (tenant and tenant.api_key) or settings['sej.api_key']
         api_url = (tenant and tenant.inticket_api_url) or settings['sej.inticket_api_url']
 
-        sej_order = SejOrder.filter(SejOrder.order_no == cart.order_no).order_by(desc(SejOrder.branch_no)).first()
-        if not sej_order:
+        try:
             request_order(
                 shop_name           = tenant.shop_name,
                 shop_id             = tenant.shop_id,
@@ -234,7 +241,9 @@ class SejDeliveryPlugin(object):
                 tickets=tickets,
                 secret_key = api_key,
                 hostname = api_url
-            )
+                )
+        except SejErrorBase:
+            raise SejPluginFailure('payment plugin', order_no=order.order_no, back_url=None)
 
     def finished(self, request, order):
         """ 支払番号発行済か判定 """
@@ -257,13 +266,12 @@ class SejPaymentDeliveryPlugin(object):
 
         performance = cart.performance
 
-        settings = get_current_registry().settings
+        settings = request.registry.settings
         tenant = SejTenant.filter_by(organization_id = performance.event.organization.id).first()
         api_key = (tenant and tenant.api_key) or settings['sej.api_key']
         api_url = (tenant and tenant.inticket_api_url) or settings['sej.inticket_api_url']
 
-        sej_order = order.sej_order
-        if not sej_order:
+        try:
             shipping_address = cart.shipping_address
             performance = cart.performance
             current_date = datetime.now()
@@ -296,7 +304,9 @@ class SejPaymentDeliveryPlugin(object):
                 tickets=tickets,
                 secret_key = api_key,
                 hostname = api_url
-            )
+                )
+        except SejErrorBase:
+            raise SejPluginFailure('payment plugin', order_no=order.order_no, back_url=None)
 
         return order
 
