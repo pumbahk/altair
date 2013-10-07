@@ -433,7 +433,7 @@ class KeyBreakAdapter(object):
                     result.pop(c)
                 for name, value in breaked_items:
                     if name in result:
-                        result[name] = result[name] + "," + value
+                        result[name] = unicode(result[name]) + "," + unicode(value)
                     else:
                         result[name] = value
                 self.results.append(result)
@@ -457,41 +457,19 @@ class KeyBreakAdapter(object):
                          item[childitem2]))
                     child2_count = max(child2_count, counter[child2_key])
             for childitem3 in child3:
-                name = childitem3
+                name = "{0}[{1}][{2}]".format(childitem3, counter[child1_key], counter[child2_key])
                 if item[childitem3]:
                     breaked_items.append(
                         (name, 
                          item[childitem3]))
             last_item = item
 
-
-        # 最終アイテムにはキーブレイクが発生しないので明示的に処理する
-        # for childitem1 in child1:
-        #     name = "{0}[{1}]".format(childitem1, counter[child1_key])
-        #     breaked_items.append(
-        #         (name,
-        #          item[childitem1]))
-        #     child1_count = max(child1_count, counter[child1_key])
-        #     for childitem2 in child2:
-        #         name = "{0}[{1}][{2}]".format(childitem2, counter[child1_key], counter[child2_key])
-        #         breaked_items.append(
-        #             (name,
-        #              item[childitem2]))
-        #         child2_count = max(child2_count, counter[child2_key])
-        #     for childitem3 in child3:
-        #         name = childitem3
-        #         if item[childitem3]:
-        #             breaked_items.append(
-        #                 (name, 
-        #                  item[childitem3]))
-
-
         result = OrderedDict(last_item)
         for c in child1 + child2 + child3:
             result.pop(c)
         for name, value in breaked_items:
             if name in result:
-                logger.debug("{0}".format((name, value)))
+                result[name] = unicode(result[name]) + "," + unicode(value)
             else:
                 result[name] = value
         self.results.append(result)
@@ -503,6 +481,8 @@ class KeyBreakAdapter(object):
                 self.headers.append("{0}[{1}]".format(n, i))
             for j in range(child2_count):
                 for n in child2:
+                    self.headers.append("{0}[{1}][{2}]".format(n, i, j))
+                for n in child3:
                     self.headers.append("{0}[{1}][{2}]".format(n, i, j))
 
     def __iter__(self):

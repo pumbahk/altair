@@ -347,7 +347,7 @@ def download(request):
     response = Response(headers=headers)
     headers = query.headers
     iheaders = header_intl(headers, japanese_columns)
-    #logger.debug("headers = {0}".format(headers))
+    logger.debug("headers = {0}".format(headers))
     results = iter(query)
     writer = csv.writer(response, delimiter=',', quoting=csv.QUOTE_ALL)
 
