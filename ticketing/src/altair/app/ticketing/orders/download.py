@@ -368,7 +368,7 @@ order_summary_joins = t_order.join(
          t_member_group.c.deleted_at==None),
 ).outerjoin(
     t_sej_order,
-    and_(t_sej_order.c.order_id==t_order.c.order_no,
+    and_(t_sej_order.c.order_no==t_order.c.order_no,
          t_sej_order.c.deleted_at==None),
 )
 
