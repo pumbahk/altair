@@ -131,3 +131,7 @@ p.cartNickname{
   margin: 0px auto 20px auto;
   box-shadow: #888 2px 2px 4px -2px;
 }
+
+.red {
+	color: #FF0000;
+}
