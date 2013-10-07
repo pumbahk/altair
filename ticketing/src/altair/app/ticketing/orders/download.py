@@ -433,7 +433,8 @@ class KeyBreakAdapter(object):
                     result.pop(c)
                 for name, value in breaked_items:
                     if name in result:
-                        result[name] = unicode(result[name]) + "," + unicode(value)
+                        if result[name] not in result[name].split(","):
+                            result[name] = unicode(result[name]) + "," + unicode(value)
                     else:
                         result[name] = value
                 self.results.append(result)
@@ -469,7 +470,8 @@ class KeyBreakAdapter(object):
             result.pop(c)
         for name, value in breaked_items:
             if name in result:
-                result[name] = unicode(result[name]) + "," + unicode(value)
+                if result[name] not in result[name].split(","):
+                    result[name] = unicode(result[name]) + "," + unicode(value)
             else:
                 result[name] = value
         self.results.append(result)
