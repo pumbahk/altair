@@ -834,6 +834,7 @@ class CompleteView(object):
 
         payment = Payment(cart, self.request)
         order = payment.call_payment()
+        order_id = order.id
 
         notify_order_completed(self.request, order)
 
@@ -841,7 +842,7 @@ class CompleteView(object):
         transaction.commit()
 
         cart = api.get_cart(self.request) # これは get_cart でよい
-        DBSession.add(order) # transaction をコミットしたので、再度attach
+        order = c_models.Order.query.filter_by(id=order_id).one() # transaction をコミットしたので、再度読み直し
 
         # メール購読
         user = get_or_create_user(self.context.authenticated_user())
