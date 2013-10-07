@@ -29,6 +29,7 @@ import altair.app.ticketing.mypage.models
 import altair.app.ticketing.oauth2.models
 import altair.app.ticketing.operators.models
 import altair.app.ticketing.sej.models
+import altair.app.ticketing.sej.notification.models
 import altair.app.ticketing.users.models
 import altair.app.ticketing.lots.models
 import altair.app.ticketing.lots_admin.models

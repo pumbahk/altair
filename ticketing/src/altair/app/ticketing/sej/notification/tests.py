@@ -49,7 +49,7 @@ def create_payment_notification_from_order(shop_id, sej_order):
         )
 
 
-class SejNotificationTest(unittest.TestCase, CoreTestMixin):
+class SejNotificationProcessorTest(unittest.TestCase, CoreTestMixin):
     def setUp(self):
         self.session = _setup_db([
             'altair.app.ticketing.core.models',
@@ -61,6 +61,13 @@ class SejNotificationTest(unittest.TestCase, CoreTestMixin):
     def tearDown(self):
         testing.tearDown()
         _teardown_db()
+
+    def _getTarget(self):
+        from .processor import SejNotificationProcessor
+        return SejNotificationProcessor
+
+    def _makeOne(self, *args, **kwargs):
+        return self._getTarget()(*args, **kwargs)
 
     def last_notification(self):
         from ..models import SejNotification
@@ -84,30 +91,29 @@ class SejNotificationTest(unittest.TestCase, CoreTestMixin):
                 )
             )
         order.order_no = '012301230123'
-        self.session.add(order)
         sej_order = SejOrder(
             order_no=order.order_no,
             exchange_number='000000000000',
             billing_number='000000000000',
             payment_type=SejPaymentType.CashOnDelivery.v
             )
-        self.session.add(sej_order)
-        self.session.flush()
         notification = create_payment_notification_from_order('000000', sej_order)
-        self.session.add(notification)
-        from ..notification import process_notification
-        process_notification(testing.DummyRequest())
-        assert notification.reflected_at is not None
-        assert sej_order.pay_at is not None
-        assert sej_order.issue_at is not None
-        assert order.paid_at is not None
+
+        now = datetime(2013, 1, 1, 1, 23, 45)
+        processor = self._makeOne(testing.DummyRequest(), now)
+        processor(sej_order, order, notification)
+
+        assert notification.reflected_at == now
+        assert sej_order.pay_at == notification.processed_at
+        assert sej_order.issue_at == notification.processed_at
+        assert order.paid_at == notification.processed_at
         assert order.issued
-        assert order.issued_at is not None
-        assert order.printed_at is not None
+        assert order.issued_at == notification.processed_at
+        assert order.printed_at == notification.processed_at
         assert all(ordered_product_item.issued_at is not None for ordered_product in order.items for ordered_product_item in ordered_product.ordered_product_items)
         assert all(ordered_product_item.printed_at is not None for ordered_product in order.items for ordered_product_item in ordered_product.ordered_product_items)
 
-    def test_payment_complete_prepayment(self):
+    def test_payment_complete_prepayment_1(self):
         from ..models import SejOrder, SejPaymentType
         from altair.app.ticketing.core.models import PaymentDeliveryMethodPair
         from altair.app.ticketing.payments.plugins import SEJ_PAYMENT_PLUGIN_ID, SEJ_DELIVERY_PLUGIN_ID
@@ -125,21 +131,20 @@ class SejNotificationTest(unittest.TestCase, CoreTestMixin):
                 )
             )
         order.order_no = '012301230123'
-        self.session.add(order)
         sej_order = SejOrder(
             order_no=order.order_no,
             exchange_number=None,
             billing_number='000000000000',
             payment_type=SejPaymentType.Prepayment.v
             )
-        self.session.add(sej_order)
-        self.session.flush()
         # 支払
         notification = create_payment_notification_from_order('000000', sej_order)
-        self.session.add(notification)
-        from ..notification import process_notification
-        process_notification(testing.DummyRequest())
-        assert notification.reflected_at is not None
+
+        now = datetime(2013, 1, 1, 1, 23, 45)
+        processor = self._makeOne(testing.DummyRequest(), now)
+        processor(sej_order, order, notification)
+
+        assert notification.reflected_at == now
         assert sej_order.pay_at is not None
         assert sej_order.issue_at is None
         assert order.paid_at is not None
@@ -149,19 +154,44 @@ class SejNotificationTest(unittest.TestCase, CoreTestMixin):
         assert not any(ordered_product_item.issued_at is not None for ordered_product in order.items for ordered_product_item in ordered_product.ordered_product_items)
         assert not any(ordered_product_item.printed_at is not None for ordered_product in order.items for ordered_product_item in ordered_product.ordered_product_items)
 
+    def test_payment_complete_prepayment_2(self):
+        from ..models import SejOrder, SejPaymentType
+        from altair.app.ticketing.core.models import PaymentDeliveryMethodPair
+        from altair.app.ticketing.payments.plugins import SEJ_PAYMENT_PLUGIN_ID, SEJ_DELIVERY_PLUGIN_ID
+        order = self._create_order(
+            [(product, 1) for product in self.products],
+            pdmp=PaymentDeliveryMethodPair(
+                system_fee=0.,
+                transaction_fee=0.,
+                delivery_fee=0.,
+                discount=0.,
+                discount_unit=0,
+                public=True,
+                payment_method=self.payment_methods[SEJ_PAYMENT_PLUGIN_ID],
+                delivery_method=self.delivery_methods[SEJ_DELIVERY_PLUGIN_ID]
+                )
+            )
+        order.order_no = '012301230123'
+        sej_order = SejOrder(
+            order_no=order.order_no,
+            exchange_number=u'000000000000',
+            billing_number='000000000000',
+            payment_type=SejPaymentType.Prepayment.v
+            )
+
         # 発券
-        sej_order.exchange_number=u'000000000000'
         notification = create_payment_notification_from_order('000000', sej_order)
-        self.session.add(notification)
-        from ..notification import process_notification
-        process_notification(testing.DummyRequest())
-        assert notification.reflected_at is not None
-        assert sej_order.pay_at is not None
-        assert sej_order.issue_at is not None
-        assert order.paid_at is not None
+        now = datetime(2013, 1, 1, 1, 23, 45)
+        processor = self._makeOne(testing.DummyRequest(), now)
+        processor(sej_order, order, notification)
+
+        assert notification.reflected_at == now
+        assert sej_order.pay_at != notification.processed_at
+        assert sej_order.issue_at == notification.processed_at
+        assert order.paid_at != notification.processed_at
         assert order.issued
-        assert order.issued_at is not None
-        assert order.printed_at is not None
+        assert order.issued_at == notification.processed_at
+        assert order.printed_at == notification.processed_at
         assert all(ordered_product_item.issued_at is not None for ordered_product in order.items for ordered_product_item in ordered_product.ordered_product_items)
         assert all(ordered_product_item.printed_at is not None for ordered_product in order.items for ordered_product_item in ordered_product.ordered_product_items)
 
@@ -183,24 +213,23 @@ class SejNotificationTest(unittest.TestCase, CoreTestMixin):
                 )
             )
         order.order_no = '012301230123'
-        self.session.add(order)
         sej_order = SejOrder(
             order_no=order.order_no,
             exchange_number='000000000000',
             billing_number='000000000000',
             payment_type=SejPaymentType.Paid.v
             )
-        self.session.add(sej_order)
-        self.session.flush()
         notification = create_payment_notification_from_order('000000', sej_order)
-        self.session.add(notification)
-        from ..notification import process_notification
-        process_notification(testing.DummyRequest())
-        assert notification.reflected_at is not None
-        assert sej_order.issue_at is not None
+
+        now = datetime(2013, 1, 1, 1, 23, 45)
+        processor = self._makeOne(testing.DummyRequest(), now)
+        processor(sej_order, order, notification)
+
+        assert notification.reflected_at == now
+        assert sej_order.issue_at == notification.processed_at
         assert order.issued
-        assert order.issued_at is not None
-        assert order.printed_at is not None
+        assert order.issued_at == notification.processed_at
+        assert order.printed_at == notification.processed_at
         assert all(ordered_product_item.issued_at is not None for ordered_product in order.items for ordered_product_item in ordered_product.ordered_product_items)
         assert all(ordered_product_item.printed_at is not None for ordered_product in order.items for ordered_product_item in ordered_product.ordered_product_items)
 
@@ -222,21 +251,20 @@ class SejNotificationTest(unittest.TestCase, CoreTestMixin):
                 )
             )
         order.order_no = '012301230123'
-        self.session.add(order)
         sej_order = SejOrder(
             order_no=order.order_no,
             exchange_number=None,
             billing_number='000000000000',
             payment_type=SejPaymentType.PrepaymentOnly.v
             )
-        self.session.add(sej_order)
-        self.session.flush()
         notification = create_payment_notification_from_order('000000', sej_order)
-        self.session.add(notification)
-        from ..notification import process_notification
-        process_notification(testing.DummyRequest())
-        assert notification.reflected_at is not None
-        assert sej_order.pay_at is not None
+
+        now = datetime(2013, 1, 1, 1, 23, 45)
+        processor = self._makeOne(testing.DummyRequest(), now)
+        processor(sej_order, order, notification)
+
+        assert notification.reflected_at == now
+        assert sej_order.pay_at == notification.processed_at
         assert sej_order.issue_at is None
         assert order.paid_at is not None
         assert order.issued == False
@@ -263,22 +291,21 @@ class SejNotificationTest(unittest.TestCase, CoreTestMixin):
                 )
             )
         order.order_no = '012301230123'
-        self.session.add(order)
         sej_order = SejOrder(
             order_no=order.order_no,
             exchange_number='000000000000',
             billing_number='000000000000',
             payment_type=SejPaymentType.CashOnDelivery.v
             )
-        self.session.add(sej_order)
-        self.session.flush()
         notification = create_expire_notification_from_order('000000', sej_order)
-        self.session.add(notification)
-        from ..notification import process_notification
-        process_notification(testing.DummyRequest())
-        assert notification.reflected_at is not None
-        assert order.canceled_at is not None
-        assert sej_order.cancel_at is not None
+
+        now = datetime(2013, 1, 1, 1, 23, 45)
+        processor = self._makeOne(testing.DummyRequest(), now)
+        processor(sej_order, order, notification)
+
+        assert notification.reflected_at == now
+        assert order.canceled_at == notification.processed_at
+        assert sej_order.cancel_at == notification.processed_at
 
     def test_expire_notification_paid_order(self):
         from ..models import SejOrder, SejPaymentType
@@ -298,20 +325,20 @@ class SejNotificationTest(unittest.TestCase, CoreTestMixin):
                 )
             )
         order.order_no = '012301230123'
-        self.session.add(order)
+        order.paid_at=datetime(2012, 1, 1, 1, 23, 45)
         sej_order = SejOrder(
             order_no=order.order_no,
             exchange_number='000000000000',
             billing_number='000000000000',
             payment_type=SejPaymentType.Paid.v
             )
-        self.session.add(sej_order)
-        self.session.flush()
         notification = create_expire_notification_from_order('000000', sej_order)
-        self.session.add(notification)
-        from ..notification import process_notification
-        process_notification(testing.DummyRequest())
-        assert notification.reflected_at is not None
-        assert sej_order.processed_at is not None
+
+        now = datetime(2013, 1, 1, 1, 23, 45)
+        processor = self._makeOne(testing.DummyRequest(), now)
+        processor(sej_order, order, notification)
+
+        assert notification.reflected_at == now
+        assert sej_order.processed_at == notification.processed_at
         assert sej_order.cancel_at is None
         assert order.canceled_at is None

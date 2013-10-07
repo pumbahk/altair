@@ -13,7 +13,11 @@ import sys
 
 def generate_process_number(order):
     """order.idから適当に12桁の数字を生成"""
-    return "%012d" % order.id 
+    prev_notification = sej_models.SejNotification.query.filter_by(order_no=order.order_no).order_by(desc(sej_models.SejNotification.created_at)).first()
+    if prev_notification is None:
+        return "%010d%02d" % (order.id, order.branch_no)
+    else:
+        return "%012d" % (long(prev_notification.process_number) + 1)
 
 def get_sej_order(order_no):
     return DBSession.query(sej_models.SejOrder).filter_by(order_no=order_no).order_by(desc(sej_models.SejOrder.branch_no)).limit(1).one()
