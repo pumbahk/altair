@@ -104,6 +104,7 @@ class Payment(object):
             try:
                 delivery_plugin.finish(self.request, self.cart)
             except Exception as e:
+                DBSession.add(order)
                 self.request.registry.notify(DeliveryErrorEvent(e, self.request, order))
                 raise
         # transaction.commit() で order がデタッチされるので再度アタッチ
