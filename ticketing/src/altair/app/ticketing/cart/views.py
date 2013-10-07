@@ -53,6 +53,7 @@ from .exceptions import (
     PaymentMethodEmptyError,
     OutTermSalesException,
     TooManyCartsCreated,
+    PaymentError,
 )
 from .resources import EventOrientedTicketingCartResource, PerformanceOrientedTicketingCartResource
 from .limitting import LimitterDecorators
@@ -622,7 +623,7 @@ class PaymentView(object):
                                     if pdmp.payment_method.public]
         
         if 0 == len(payment_delivery_methods):
-            raise PaymentMethodEmptyError
+            raise PaymentMethodEmptyError.from_resource(self.context, self.request)
         
         user = get_or_create_user(self.context.authenticated_user())
         user_profile = None
@@ -715,7 +716,7 @@ class PaymentView(object):
                                         if pdmp.payment_method.public]
         
             if 0 == len(payment_delivery_methods):
-                raise PaymentMethodEmptyError
+                raise PaymentMethodEmptyError.from_resource(self.context, self.request)
         
 
             return dict(form=self.form, payment_delivery_methods=payment_delivery_methods)
@@ -724,12 +725,7 @@ class PaymentView(object):
         if not self.context.check_order_limit(sales_segment, user, shipping_address_params['email_1']):
 
             order_limit = sales_segment.order_limit
-            performance = sales_segment.performance
-            event = performance.event
-            raise OverOrderLimitException(event_id=event.id,
-                                          event_name=event.title,
-                                          performance_name=performance.name,
-                                          order_limit=order_limit)
+            raise OverOrderLimitException.from_resource(self.context, self.request, order_limit=order_limit)
 
         cart.payment_delivery_pair = payment_delivery_pair
         cart.shipping_address = self.create_shipping_address(user, shipping_address_params)
@@ -748,7 +744,8 @@ class PaymentView(object):
         result = payment.call_prepare()
         if callable(result):
             return result
-        return HTTPFound(self.request.route_url("payment.confirm"))
+        else:
+            return HTTPFound(self.request.route_url("payment.confirm"))
 
     def get_client_name(self):
         return self.request.params['last_name'] + self.request.params['first_name']
@@ -838,8 +835,6 @@ class CompleteView(object):
         payment = Payment(cart, self.request)
         order = payment.call_payment()
 
-        
-        
         notify_order_completed(self.request, order)
 
         # メール購読でエラーが出てロールバックされても困る
@@ -883,24 +878,24 @@ class OutTermSalesView(object):
         self.context = context
 
     @view_config(renderer=selectable_renderer('altair.app.ticketing.cart:templates/%(membership)s/pc/out_term_sales_event.html'),
-                 custom_predicates=(lambda context, _: isinstance(context.outer, EventOrientedTicketingCartResource), ))
+                 custom_predicates=(lambda context, _: issubclass(context.type_, EventOrientedTicketingCartResource), ))
     def pc_event(self):
         return self._render_event()
 
     @view_config(renderer=selectable_renderer('altair.app.ticketing.cart:templates/%(membership)s/mobile/out_term_sales_event.html'),
                  request_type='altair.mobile.interfaces.IMobileRequest',
-                 custom_predicates=(lambda context, _: isinstance(context.outer, EventOrientedTicketingCartResource), ))
+                 custom_predicates=(lambda context, _: issubclass(context.type_, EventOrientedTicketingCartResource), ))
     def mobile_event(self):
         return self._render_event()
 
     @view_config(renderer=selectable_renderer('altair.app.ticketing.cart:templates/%(membership)s/pc/out_term_sales_performance.html'),
-                 custom_predicates=(lambda context, _: not isinstance(context.outer, EventOrientedTicketingCartResource), ))
+                 custom_predicates=(lambda context, _: not issubclass(context.type_, EventOrientedTicketingCartResource), ))
     def pc_performance(self):
         return self._render_performance()
 
     @view_config(renderer=selectable_renderer('altair.app.ticketing.cart:templates/%(membership)s/mobile/out_term_sales_performance.html'),
                  request_type='altair.mobile.interfaces.IMobileRequest',
-                 custom_predicates=(lambda context, _: not isinstance(context.outer, EventOrientedTicketingCartResource), ))
+                 custom_predicates=(lambda context, _: not issubclass(context.type_, EventOrientedTicketingCartResource), ))
     def mobile_performance(self):
         return self._render_performance()
 
@@ -912,7 +907,7 @@ class OutTermSalesView(object):
         else:
             datum = self.context.next
             which = 'next'
-        return dict(which=which, outer=self.context.outer, **datum)
+        return dict(which=which, outer=self.context, **datum)
 
     def _render_performance(self):
         if self.context.next is None:
@@ -921,14 +916,14 @@ class OutTermSalesView(object):
         else:
             datum = self.context.next
             which = 'next'
-        event_context = EventOrientedTicketingCartResource(self.request, self.context.outer.performance.event_id)
+        event_context = EventOrientedTicketingCartResource(self.request, self.context.performance.event_id)
         available_sales_segments = None
         try:
             available_sales_segments = event_context.available_sales_segments
         except (NoSalesSegment, OutTermSalesException):
             pass
         api.logout(self.request)
-        return dict(which=which, outer=self.context.outer, available_sales_segments=available_sales_segments, **datum)
+        return dict(which=which, outer=self.context, available_sales_segments=available_sales_segments, **datum)
 
 @view_config(decorator=with_jquery.not_when(mobile_request), route_name='cart.logout')
 @limitter.release

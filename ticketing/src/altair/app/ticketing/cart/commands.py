@@ -12,7 +12,7 @@ from altair.multicheckout import api as multicheckout_api
 from altair.multicheckout.exceptions import MultiCheckoutAPITimeoutError
 from altair.app.ticketing.checkout import api as checkout_api
 from . import api
-from altair.app.ticketing.cart.exceptions import UnassignedOrderNumberError
+from altair.app.ticketing.cart.exceptions import InvalidCartStatusError
 from sqlalchemy.sql.expression import not_
 
 
@@ -111,7 +111,7 @@ def release_carts():
 
         try:
             order_no = get_order_no(request, cart)
-        except UnassignedOrderNumberError:
+        except InvalidCartStatusError:
             order_no = None
 
         cart_id = cart.id

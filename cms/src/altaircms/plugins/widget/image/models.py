@@ -6,16 +6,10 @@ import sqlalchemy as sa
 import sqlalchemy.orm as orm
 from altaircms.plugins.widget.api import safe_execute
 from altaircms.widget.models import Widget
-from altaircms.widget.models import AssetWidgetResourceMixin
 from altaircms.plugins.base import DBSession
-from altaircms.plugins.base import asset
-from altaircms.plugins.base.mixins import HandleSessionMixin
-from altaircms.plugins.base.mixins import UpdateDataMixin
-from altaircms.security import RootFactory
+from altaircms.asset.models import ImageAsset
 
 from pyramid.renderers import render
-ImageAsset = asset.ImageAsset
-
 from altaircms.modellib import MutationDict, JSONEncodedDict
 
 class ImageWidget(Widget):
@@ -68,13 +62,3 @@ class ImageWidget(Widget):
                     "request": bsettings.extra["request"]})
         bsettings.add(bname, renderHTML)
 
-class ImageWidgetResource(HandleSessionMixin,
-                          UpdateDataMixin,
-                          AssetWidgetResourceMixin, 
-                          RootFactory
-                          ):
-    WidgetClass = ImageWidget
-    AssetClass = ImageAsset
-
-    def search_asset(self, search_word):
-        return self.request.allowable(self.AssetClass).filter(self.AssetClass.title.like("%" + search_word + "%"))

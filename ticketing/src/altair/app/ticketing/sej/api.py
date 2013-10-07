@@ -7,6 +7,7 @@ logger = logging.getLogger(__name__)
 
 from sqlalchemy import update
 from sqlalchemy import and_
+from sqlalchemy.sql.expression import desc
 from sqlalchemy.orm.exc import NoResultFound
 
 import sqlahelper
@@ -440,3 +441,6 @@ def refund_sej_order(sej_order, organization_id, order, now):
         DBSession.merge(rt)
 
     return True
+
+def get_sej_order(order_no):
+    return SejOrder.filter_by(order_no=order_no).order_by(desc(SejOrder.branch_no)).first()

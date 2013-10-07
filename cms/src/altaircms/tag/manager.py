@@ -8,6 +8,9 @@ from .interfaces import ITagManager
 from .interfaces import ISystemTagManager
 import re
 
+class MatchedTagNotFound(Exception):
+    pass
+
 class QueryParser(object):
     """ support and search only
     e.g. "abc def" => a object has abc and def.
@@ -19,11 +22,13 @@ class QueryParser(object):
         words = re.split(u"[, 　\s]+", self.query.strip())
         return [x for x in words if x]
 
-    def filter_by_manager(self, manager, qs, organization_id):
+    def filter_by_manager(self, manager, qs, organization_id, not_found_then_return_all=True):
         words = self.parse()
         tags = manager.get_tag_list(words, organization_id=organization_id)
         word_count = len(tags)
         if word_count <= 0:
+            if not not_found_then_return_all:
+                raise MatchedTagNotFound("matched tag is not found")
             return qs
         elif word_count <= 1:
             return manager.more_filter_by_tag(qs, tags[0])

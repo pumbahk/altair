@@ -672,11 +672,6 @@ class OrderRefundForm(Form):
     def validate(self):
         status = super(type(self), self).validate()
         if status:
-            import logging
-            logging.info('*'*100)
-            logging.info(self.start_at.data)
-            logging.info('*'*100)
-
             if not self.include_item.data and \
                not self.include_system_fee.data and \
                not self.include_transaction_fee.data and \

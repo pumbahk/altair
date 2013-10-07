@@ -26,7 +26,7 @@
   % for i, order in enumerate(orders):
     <% if limit and i >= limit: break %>
     % if i == 0:
-    <table class="table table-striped table-bordered">
+    <table class="table table-bordered">
       <thead>
       <tr>
         % if selectable:
@@ -49,7 +49,8 @@
       </thead>
       <tbody>
     % endif
-      <tr>
+      <% tr_class = u'fraud_suspect' if order.fraud_suspect else u'' %>
+      <tr class="${tr_class}">
         % if selectable:
         <td class="checkbox_status-wrap">
           <input class="checkbox_status" type="checkbox" name="o:${order.id}"/>

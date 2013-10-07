@@ -6,6 +6,8 @@ from datetime import datetime
 from time import mktime, time
 from email.utils import formatdate
 from sqlalchemy.orm import joinedload
+from altair.app.ticketing.payments.exceptions import PaymentPluginException
+from .exceptions import PaymentError
 
 logger = logging.getLogger(__name__)
 
@@ -80,3 +82,14 @@ def response_time_tween_factory(handler, registry):
             end = time()
             logger.info("request handled in %g sec" % (end - start))
     return _tween
+
+class PaymentPluginErrorConverterTween(object):
+    def __init__(self, handler, registry):
+        self.handler = handler
+        self.registry = registry
+
+    def __call__(self, request):
+        try:
+            return self.handler(request)
+        except PaymentPluginException as e:
+            raise PaymentError.from_resource(request.context, request, cause=e)

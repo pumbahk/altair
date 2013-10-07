@@ -44,7 +44,7 @@ from altair.app.ticketing.models import (
 )
 from standardenum import StandardEnum
 from altair.app.ticketing.users.models import User, UserCredential, MemberGroup, MemberGroup_SalesSegment
-from altair.app.ticketing.sej.models import SejOrder
+from altair.app.ticketing.sej.api import get_sej_order
 from altair.app.ticketing.utils import tristate, is_nonmobile_email_address, sensible_alnum_decode, todate, todatetime
 from altair.app.ticketing.payments import plugins
 from altair.app.ticketing.sej import api as sej_api
@@ -2283,6 +2283,7 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     card_ahead_com_code = Column(Unicode(20), doc=u"仕向け先企業コード")
     card_ahead_com_name = Column(Unicode(20), doc=u"仕向け先企業名")
 
+    fraud_suspect = Column(Boolean, nullable=True, default=None)
     browserid = Column(String(40))
 
     sales_segment_id = Column(Identifier, ForeignKey('SalesSegment.id'))
@@ -2342,7 +2343,7 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     @property
     def sej_order(self):
-        return SejOrder.filter_by(order_no=self.order_no).order_by(desc(SejOrder.branch_no)).first()
+        return get_sej_order(self.order_no)
 
     @property
     def status(self):

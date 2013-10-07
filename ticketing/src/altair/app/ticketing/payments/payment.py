@@ -2,7 +2,6 @@
 import logging
 import transaction
 from altair.app.ticketing.models import DBSession
-from altair.app.ticketing.cart.exceptions import DeliveryFailedException, InvalidCartStatusError, PaymentMethodEmptyError
 from altair.app.ticketing.core.models import Order
 from .api import (
     get_payment_delivery_plugin, 
@@ -11,6 +10,7 @@ from .api import (
     get_delivery_plugin,
 )
 from .events import DeliveryErrorEvent
+from .exceptions import PaymentDeliveryMethodPairNotFound
 
 logger = logging.getLogger(__name__)
 
@@ -61,13 +61,15 @@ class Payment(object):
         return order
 
     def get_plugins(self, payment_delivery_pair):
-        if payment_delivery_pair is None:
-            raise InvalidCartStatusError()
+        assert payment_delivery_pair is not None
         payment_delivery_plugin = get_payment_delivery_plugin(self.request,
             payment_delivery_pair.payment_method.payment_plugin_id,
             payment_delivery_pair.delivery_method.delivery_plugin_id,)
         payment_plugin = get_payment_plugin(self.request, payment_delivery_pair.payment_method.payment_plugin_id)
         delivery_plugin = get_delivery_plugin(self.request, payment_delivery_pair.delivery_method.delivery_plugin_id)
+        if payment_delivery_plugin is None and \
+           (payment_plugin is None or delivery_plugin is None):
+            raise PaymentDeliveryMethodPairNotFound(u"対応する決済プラグインか配送プラグインが見つかりませんでした")
         return payment_delivery_plugin, payment_plugin, delivery_plugin
 
     def call_validate(self):
@@ -90,32 +92,25 @@ class Payment(object):
         
         if payment_delivery_plugin is not None:
             order = self.call_payment_delivery(payment_delivery_plugin)
-        elif payment_plugin and delivery_plugin:
+            self._bind_order(order)
+            # 注文確定として、他の処理でロールバックされないようにコミット
+            transaction.commit()
+        else:
             # 決済と配送を別々に処理する            
             order = self.call_payment_plugin(payment_plugin)
-            self.cart.order = order # XXX: _bind_order() で同じことをやっているので不要では?
-            order_no = order.order_no
+            self._bind_order(order)
+            # 注文確定として、他の処理でロールバックされないようにコミット
+            transaction.commit()
             try:
                 delivery_plugin.finish(self.request, self.cart)
             except Exception as e:
-                self._bind_order(order)
-                #on_delivery_error(e, self.request, order)
                 self.request.registry.notify(DeliveryErrorEvent(e, self.request, order))
-                transaction.commit()
-                raise DeliveryFailedException(order_no, event_id)
-        else:
-            raise Exception(u"対応する決済プラグインか配送プラグインが見つかりませんでした") # TODO 例外クラス作成
-
-        self._bind_order(order)
-        order_no = order.order_no
-        # 注文確定として、他の処理でロールバックされないようにコミット
-        transaction.commit()
-        # デタッチされてしまうので再度取得
-        order = DBSession.query(Order).filter(Order.order_no==order_no).one()
+                raise
+        # transaction.commit() で order がデタッチされるので再度アタッチ
+        DBSession.add(order)
         return order
 
     def call_delivery(self, order):
         payment_delivery_plugin, payment_plugin, delivery_plugin = self.get_plugins(self.cart.payment_delivery_pair)
         self.cart.order = order
         delivery_plugin.finish(self.request, self.cart)
-

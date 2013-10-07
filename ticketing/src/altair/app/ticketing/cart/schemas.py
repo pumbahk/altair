@@ -172,7 +172,7 @@ class ClientForm(OurForm):
             )
         )
     point = fields.TextField(
-        label=u"楽天スーパーポイント",
+        label=u"楽天スーパーポイント口座",
         filters=[NFKC],
         validators=[
             Optional(),

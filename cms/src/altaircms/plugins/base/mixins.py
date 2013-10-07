@@ -3,6 +3,7 @@ from altaircms.interfaces import IHandleSession
 from altaircms.interfaces import IHandleWidget
 from altaircms.interfaces import IUpdateData
 from zope.interface import implements
+from zope.deprecation import deprecate
 
 class HandleSessionMixin(object):
     implements(IHandleSession)
@@ -17,6 +18,7 @@ class HandleSessionMixin(object):
         if flush:
             self.session.flush()
 
+#deprecate("use altaircms.plugins.base.creation.WidgetRepository")
 class HandleWidgetMixin(object):
     implements(IHandleWidget)
     WidgetClass = None
