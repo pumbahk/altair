@@ -71,6 +71,7 @@ class TopicListingFull(unittest.TestCase):
 """)
 
 
+    @unittest.skip ("* #5609: must fix")
     def test_multiple_items(self):
         """ 関連づいたtopicが取得できてるか調べる
         tagに関連付けられたtopicを取り出す
