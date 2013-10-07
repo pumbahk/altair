@@ -124,6 +124,7 @@ japanese_columns = {
     u'item_quantity': u'商品明細個数',
     u'item_print_histories': u'発券作業者',
     u'mail_permission': u'メールマガジン受信可否',
+    u'seat_id': u'座席ID',
     u'seat_name': u'座席名',
     }
 
@@ -305,6 +306,7 @@ detail_summary_columns = summary_columns + [
     # OrderedProductItem
     t_ordered_product_item.c.quantity.label('item_quantity'), #商品明細個数[0][0]
     t_operator.c.name.label('item_print_histories'), #発券作業者[0][0]
+    t_seat.c.id.label('seat_id'),  # 座席ID
     t_seat.c.name.label('seat_name'), #座席名[0][0][0]
 ]
 
@@ -417,19 +419,20 @@ order_product_summary_joins = order_summary_joins.join(
 # Userに対してUserProfileが複数あると行数が増える可能性
 
 class KeyBreakAdapter(object):
-    def __init__(self, iter, key, child1, child1_key, child2, child2_key, child3):
+    def __init__(self, iter, key, child1, child1_key, child2, child2_key, child3_comma_separated, child3_indexed, child3_key):
 
         self.results = []
         last_item = None
         breaked_items = []
         child1_count = 0
         child2_count = 0
+        child3_count = 0
 
-        break_counter = KeyBreakCounter(keys=[key, child1_key, child2_key])
+        break_counter = KeyBreakCounter(keys=[key, child1_key, child2_key, child3_key])
         for counter, key_changes, item in break_counter(iter):
             if key_changes[key]:
                 result = OrderedDict(last_item)
-                for c in child1 + child2 + child3:
+                for c in child1 + child2 + child3_comma_separated + child3_indexed:
                     result.pop(c)
                 for name, value in breaked_items:
                     if name in result:
@@ -457,17 +460,26 @@ class KeyBreakAdapter(object):
                         (name,
                          item[childitem2]))
                     child2_count = max(child2_count, counter[child2_key])
-            for childitem3 in child3:
+            for childitem3 in child3_comma_separated:
                 name = "{0}[{1}][{2}]".format(childitem3, counter[child1_key], counter[child2_key])
                 if item[childitem3]:
                     breaked_items.append(
                         (name, 
                          item[childitem3]))
+            for childitem3 in child3_indexed:
+                name = "{0}[{1}][{2}][{3}]".format(childitem3, counter[child1_key], counter[child2_key], counter[child3_key])
+                if item[childitem3]:
+                    breaked_items.append(
+                        (name, 
+                         item[childitem3]))
+                child3_count = max(child3_count, counter[child3_key])
+
             last_item = item
 
         result = OrderedDict(last_item)
-        for c in child1 + child2 + child3:
+        for c in child1 + child2 + child3_comma_separated + child3_indexed:
             result.pop(c)
+
         for name, value in breaked_items:
             if name in result:
                 if value not in result[name].split(","):
@@ -484,8 +496,11 @@ class KeyBreakAdapter(object):
             for j in range(child2_count):
                 for n in child2:
                     self.headers.append("{0}[{1}][{2}]".format(n, i, j))
-                for n in child3:
+                for n in child3_comma_separated:
                     self.headers.append("{0}[{1}][{2}]".format(n, i, j))
+                for k in range(child3_count):
+                    for n in child3_indexed:
+                        self.headers.append("{0}[{1}][{2}][{3}]".format(n, i, j, k))
 
     def __iter__(self):
         return iter(self.results)

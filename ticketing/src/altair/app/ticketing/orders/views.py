@@ -337,7 +337,9 @@ def download(request):
                             'product_id',
                             ('item_name', 'item_price', 'item_quantity'),
                             'product_item_id',
-                            ('item_print_histories',))
+                            ('item_print_histories',),
+                            ('seat_name',),
+                            'seat_id',)
 
     headers = [
         ('Content-Type', 'application/octet-stream; charset=Windows-31J'),
