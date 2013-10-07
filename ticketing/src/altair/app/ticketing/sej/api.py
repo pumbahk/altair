@@ -7,6 +7,7 @@ logger = logging.getLogger(__name__)
 
 from sqlalchemy import update
 from sqlalchemy import and_
+from sqlalchemy.sql.expression import desc
 from sqlalchemy.orm.exc import NoResultFound
 
 import sqlahelper
