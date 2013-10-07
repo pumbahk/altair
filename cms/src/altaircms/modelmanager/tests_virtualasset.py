@@ -59,6 +59,7 @@ class VirtualAssetsTests(unittest.TestCase):
         from altaircms.modelmanager.virtualasset import _NOT_FOUND_IMG
         self.assertEquals(target.image_path, _NOT_FOUND_IMG)
 
+    @unittest.skip ("* #5609: must fix")
     def test_subpath_notfound__image_url_found(self):
         class obj:
             image_url = "s3://:bucket:/foo.jpg"

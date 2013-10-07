@@ -124,6 +124,7 @@ class CheckboxListFieldTests(unittest.TestCase):
         target = MForm()
         self.assertEqual(u'<div id="vs"></div>', target.vs.__html__())
 
+    @unittest.skip ("* #5609: must fix")
     def test_render_list(self):
         from wtforms import Form
         class MForm(Form):

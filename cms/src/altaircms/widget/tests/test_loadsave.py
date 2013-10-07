@@ -13,6 +13,7 @@ class WidgetStructureSaveTest(unittest.TestCase):
     def _makeOne(self, *args, **kwargs):
         return self._getTarget()(*args, **kwargs)
 
+    @unittest.skip ("* #5609: must fix")
     def test_shallow_copy(self):
         target = self._getTarget()
 
