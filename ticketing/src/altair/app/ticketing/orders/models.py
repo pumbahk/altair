@@ -201,6 +201,7 @@ class OrderSummary(Base):
             Order.__table__.c.shipping_address_id,
             Order.__table__.c.issued,
             Order.__table__.c.user_id,
+            Order.__table__.c.fraud_suspect,
             Order.__table__.c.created_at,
             Order.__table__.c.deleted_at,
             UserProfile.__table__.c.last_name.label('user_profile_last_name'),
@@ -259,6 +260,7 @@ class OrderSummary(Base):
     shipping_address_id = Order.shipping_address_id
     issued = Order.issued
     user_id = Order.user_id
+    fraud_suspect = Order.fraud_suspect
     created_at = Order.created_at
     deleted_at = Order.deleted_at
     user_profile_last_name = UserProfile.__table__.c.last_name

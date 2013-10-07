@@ -23,6 +23,21 @@ ${ch.breadcrumbs(
 <div class="tabbable tabs-below" id="tabbable-content">
   <div class="tab-content" id="tabbable-tab-content">
     <div class="active" id="order_history-${order.id}">
+      % if order.fraud_suspect:
+      <div class="alert alert-danger">
+        この予約は不正の可能性があります。確認して問題なければアラートを解除してください。
+        <form method="POST" action="${request.route_path('orders.fraud.clear', order_id=order.id)}">
+          <input type="submit" class="btn btn-warning pull-right" value="アラート解除" />
+        </form>
+        このアラートは以下の条件で検出しています。
+        <ul>
+          <li>クレジットカード決済</li>
+          <li>セブンイレブン発券</li>
+          <li>同一人物(user_idまたはメールアドレス)による同一公演の予約が2件以上</li>
+          <li>同一人物(user_idまたはメールアドレス)による同一公演の予約枚数が8枚以上、または合計金額が10万以上</li>
+        </ul>
+      </div>
+      % endif
       <div class="row-fluid">
         <div class="span6">
           <div class="page-header">

@@ -984,6 +984,20 @@ class OrderDetailView(BaseView):
             
         return HTTPFound(location=self.request.route_path('orders.index'))
 
+    @view_config(route_name='orders.fraud.clear', permission='sales_editor')
+    def fraud_clear(self):
+        order_id = int(self.request.matchdict.get('order_id', 0))
+        order = Order.get(order_id, self.context.organization.id)
+        if order is None:
+            return HTTPNotFound('order id %d is not found' % order_id)
+
+        order.fraud_suspect = 0
+        order.save()
+
+        self.request.session.flash(u'不正アラートを解除しました')
+        return HTTPFound(location=route_path('orders.show', self.request, order_id=order.id))
+
+
 @view_defaults(decorator=with_bootstrap, permission='sales_counter')
 class OrdersReserveView(BaseView):
 

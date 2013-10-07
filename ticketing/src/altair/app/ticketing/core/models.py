@@ -2283,6 +2283,7 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     card_ahead_com_code = Column(Unicode(20), doc=u"仕向け先企業コード")
     card_ahead_com_name = Column(Unicode(20), doc=u"仕向け先企業名")
 
+    fraud_suspect = Column(Boolean, nullable=True, default=None)
     browserid = Column(String(40))
 
     sales_segment_id = Column(Identifier, ForeignKey('SalesSegment.id'))
