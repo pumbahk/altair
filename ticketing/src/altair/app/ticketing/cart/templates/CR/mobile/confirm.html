@@ -38,6 +38,12 @@ ${product.product.name} ${product.seat_quantity} 枚<br/>
 <div>
 ￥${h.format_number(cart.system_fee)}
 </div>
+%if cart.special_fee > 0
+<%mobile:form_header>${cart.special_fee_name}</%mobile:form_header>
+<div>
+￥${h.format_number(cart.special_fee)}
+</div>
+%endif
 <%mobile:form_header>合計金額</%mobile:form_header>
 <div>
 ￥${h.format_number(cart.total_amount)}
