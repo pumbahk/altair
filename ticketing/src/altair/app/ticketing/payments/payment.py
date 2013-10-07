@@ -101,6 +101,7 @@ class Payment(object):
             self._bind_order(order)
             # 注文確定として、他の処理でロールバックされないようにコミット
             transaction.commit()
+            DBSession.add(self.cart)
             try:
                 delivery_plugin.finish(self.request, self.cart)
             except Exception as e:
