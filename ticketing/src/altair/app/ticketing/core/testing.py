@@ -67,10 +67,13 @@ class CoreTestMixin(object):
         from altair.app.ticketing.core.models import TicketBundle, Ticket, TicketFormat
         return TicketBundle(
             tickets=[
-                Ticket(ticket_format=TicketFormat(
-                    name='%d-%d' % (n, j),
-                    delivery_methods=list(combination)
-                    ))
+                Ticket(
+                    ticket_format=TicketFormat(
+                        name='%d-%d' % (n, j),
+                        delivery_methods=list(combination),
+                        ),
+                    flags=Ticket.FLAG_PRICED
+                    )
                 for n in range(1, len(self.delivery_methods))
                 for j, combination in enumerate(combinations(self.delivery_methods.values(), n))
                 ]
@@ -121,6 +124,7 @@ class CoreTestMixin(object):
             system_fee=pdmp and pdmp.system_fee or 0.,
             transaction_fee=pdmp and pdmp.transaction_fee or 0.,
             delivery_fee=pdmp and pdmp.delivery_fee or 0.,
+            issued=False,
             items=[
                 OrderedProduct(
                     product=product, quantity=quantity,
