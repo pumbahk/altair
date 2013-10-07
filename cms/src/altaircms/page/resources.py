@@ -64,6 +64,9 @@ class PageResource(security.RootFactory):
         if pagetype is None:
             logger.info("pagetype is not found")
             return False
+        if self.request.user is None:
+            logger.info("not login user")
+            return False
         try:
             if pagetype.is_important:
                 status = self.request.user.has_permission_by_name(important_name)
