@@ -67,7 +67,7 @@ ${self.widget.flow_widget(2)}
               -->
       <table id="confirmDelivery">
         <tr>
-          <th scope="row">購入者氏名(全角)</th>
+          <th scope="row">購入者氏名(全角)<span class="red"><※必須></span></th>
           <td>
             <ul>
               <li>
@@ -86,7 +86,7 @@ ${self.widget.flow_widget(2)}
           </td>
         </tr>
         <tr>
-          <th scope="row">購入者氏名(全角カナ)</th>
+          <th scope="row">購入者氏名(全角カナ)<span class="red"><※必須></span></th>
           <td>
             <ul>
               <li>
@@ -105,7 +105,7 @@ ${self.widget.flow_widget(2)}
           </td>
         </tr>
         <tr>
-          <th scope="row">メールアドレス (半角英数)</th>
+          <th scope="row">メールアドレス (半角英数)<span class="red"><※必須></span></th>
           <td>
             <ul>
               <li>
@@ -125,7 +125,7 @@ ${self.widget.flow_widget(2)}
           </td>
         </tr>
         <tr>
-          <th scope="row">住所</th>
+          <th scope="row">住所<span class="red"><※必須></span></th>
           <td>
             <ul>
               <li>${form['zip'].label}
@@ -160,7 +160,7 @@ ${self.widget.flow_widget(2)}
           </td>
         </tr>
         <tr>
-          <th scope="row">電話番号(半角数字)</th>
+          <th scope="row">電話番号(半角数字)<span class="red"><※必須></span></th>
           <td>
             <ul>
               <li>${form['tel_1'].label}
@@ -176,11 +176,11 @@ ${self.widget.flow_widget(2)}
           </td>
         </tr>
         <tr>
-          <th scope="row">楽天スーパーポイント(半角数字)</th>
+          <th scope="row">楽天スーパーポイント口座(半角数字)</th>
           <td>
             <ul>
               <li>${form['point'].label}
-                ${form['point']}(例: 1111222233334444)
+                ${form['point']}(例: 1111222233334444)ハイフン無し
                 ${h.error_list(request, form, 'point')}
               </li>
               <li>
