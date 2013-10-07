@@ -80,7 +80,7 @@ ${h.get_nickname(request)}
             <div class="description">上記のシステム利用料がかかります。</div>
           </div>
           <br/>
-          % if m.special_fee > 0:
+          %if m.special_fee > 0:
           <%t:header>${m.special_fee_name}</%t:header>
           <div class="dispBox paymentFee_${h.format_number(m.transaction_fee)}">
             <span class="paymentFee">${h.format_currency(m.special_fee)}</span> 
@@ -88,7 +88,7 @@ ${h.get_nickname(request)}
             <div class="description">上記の${m.special_fee_name}がかかります。</div>
           </div>
           <br/>
-          % end if
+          %endif
           <%t:header>${m.delivery_method.name}</%t:header>
           <div class="dispBox devlieryFee_${h.format_number(m.delivery_fee)}">
             <span class="deliveryFee">${h.format_currency(m.delivery_fee)}</span>
