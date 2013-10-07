@@ -2730,6 +2730,8 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             shipping_address=cart.shipping_address,
             payment_delivery_pair=cart.payment_delivery_pair,
             system_fee=cart.system_fee,
+            special_fee_name=cart.special_fee_name,
+            special_fee=cart.special_fee,
             transaction_fee=cart.transaction_fee,
             delivery_fee=cart.delivery_fee,
             performance=cart.performance,
