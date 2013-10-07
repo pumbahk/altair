@@ -61,6 +61,16 @@ class OrderForm(Form):
         default=0,
         validators=[Required()],
     )
+    special_fee = DecimalField(
+        label=u'特別手数料',
+        places=2,
+        default=0,
+        validators=[Required()],
+    )
+    special_fee_name = TextField(
+        label=u'特別手数料',
+        validators=[Optional()],
+    )
 
 class SearchFormBase(Form):
 

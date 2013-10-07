@@ -975,11 +975,12 @@ class OrderDetailView(BaseView):
         try:
             if not f.validate():
                 raise ValidationError()
-
             new_order = Order.clone(order, deep=True)
             new_order.system_fee = f.system_fee.data
             new_order.transaction_fee = f.transaction_fee.data
             new_order.delivery_fee = f.delivery_fee.data
+            new_order.special_fee = f.special_fee.data
+            new_order.special_fee_name = f.special_fee_name.data
 
             for op, nop in itertools.izip(order.items, new_order.items):
                 # 個数が変更できるのは数受けのケースのみ
@@ -998,7 +999,7 @@ class OrderDetailView(BaseView):
                 nop.price = sum(nopi.price * nopi.product_item.quantity for nopi in nop.ordered_product_items)
 
             total_amount = sum(nop.price * nop.quantity for nop in new_order.items)\
-                           + new_order.system_fee + new_order.transaction_fee + new_order.delivery_fee
+                           + new_order.system_fee + new_order.transaction_fee + new_order.delivery_fee + new_order.special_fee
             if new_order.payment_status != 'unpaid':
                 if total_amount != new_order.total_amount:
                     raise ValidationError(u'入金済みの為、合計金額は変更できません')
