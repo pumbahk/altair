@@ -243,7 +243,7 @@ class SejDeliveryPlugin(object):
                 hostname = api_url
                 )
         except SejErrorBase:
-            raise SejPluginFailure('payment plugin', order_no=order.order_no, back_url=None)
+            raise SejPluginFailure('payment plugin', order_no=cart.order_no, back_url=None)
 
     def finished(self, request, order):
         """ 支払番号発行済か判定 """
