@@ -1,6 +1,7 @@
 def main():
     import sys
     from argparse import ArgumentParser
+    from ConfigParser import ConfigParser
     from .bot import CartBot
 
     parser = ArgumentParser()
