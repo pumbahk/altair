@@ -31,8 +31,8 @@ def update_product_item_id():
     while True:
         # 有効な予約でSejTicket.product_item_idが空のものを1件ずつ処理
         query = Order.query.filter(Order.canceled_at==None, Order.deleted_at==None)\
-            .join(SejOrder, SejOrder.order_id==Order.order_no)\
-            .join(SejTicket, SejTicket.order_id==SejOrder.id)\
+            .join(SejOrder, SejOrder.order_no==Order.order_no)\
+            .join(SejTicket, SejTicket.order_no==SejOrder.id)\
             .filter(SejTicket.product_item_id==None)
 
         if term_from:
@@ -49,8 +49,8 @@ def update_product_item_id():
             order_no = order.order_no
 
             sej_ticket_query = SejTicket.query.filter(SejTicket.product_item_id==None)\
-                .join(SejOrder, SejOrder.id==SejTicket.order_id)\
-                .filter(SejOrder.order_id==order_no)\
+                .join(SejOrder, SejOrder.id==SejTicket.order_no)\
+                .filter(SejOrder.order_no==order_no)\
                 .order_by(SejTicket.ticket_idx)
             sej_tickets = sej_ticket_query.all()
 
