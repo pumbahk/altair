@@ -157,8 +157,9 @@ def detect_fraud():
             # 同一人物(user_idまたはメールアドレス)による同一公演の注文が2件以上存在
             if len(rows) >= 2:
                 frauds.append(rows)
-                order.fraud_suspect = True
-                order.save()
+                for row in rows:
+                    row.fraud_suspect = True
+                    row.save()
 
     if len(frauds) > 0:
         settings = registry.settings
@@ -182,6 +183,7 @@ def detect_fraud():
         except Exception:
             logging.warn('sendmail fail')
 
+    transaction.commit()
     logging.info('end detect_fraud batch')
 
 
