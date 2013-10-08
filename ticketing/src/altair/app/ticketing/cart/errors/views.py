@@ -105,11 +105,11 @@ class CommonErrorView(object):
         self.request = request
 
     @_for_(PaymentMethodEmptyError)
-    def payment_method_is_empty(request):
+    def payment_method_is_empty(self):
         return dict(message=Markup(u'この商品は現在メンテナンス中のためご購入いただけません。'))
 
     @_for_(TooManyCartsCreated)
-    def too_many_cart_exception(context, request):
+    def too_many_cart_exception(self):
         return dict(title=u'', message=u'誠に申し訳ございませんが、現在ご購入ができない状態になっております。しばらく経ってからお試しください')
 
     @_for_(OverOrderLimitException)
