@@ -34,12 +34,13 @@ class IOLikeList(list):
         self.append(json.dumps(x, ensure_ascii=False, indent=2))
 
 class DecisionMaker(object):
-    def __init__(self, filename, org_name, classifier=classify, dump=None, strict=True):
+    def __init__(self, filename, org_name, classifier=classify, dump=None, strict=True, modules=None):
         self.filename = filename
         self.org_name = org_name
         self.classifier = classifier
         self.strict = strict
         self.dump = dump
+        self.modules = modules
 
     def normalize_src(self, prefix, filepath):
         return filepath
@@ -64,19 +65,25 @@ class DecisionMaker(object):
         filepath = filepath.replace("/img/", "/images/")
         static_ext = 'static/{0}/{1}/'.format(self.org_name, device)
         filepath = filepath.replace("{}/".format(self.org_name), "")
+        filepath = filepath.replace("static/89ers/", "static/") # for  "dst_file": "ticketing/src/altair/app/ticketing/fc_auth/static/NH/pc/89ers/style.css"
         filepath = filepath.replace("static/", static_ext)
         return filepath
+
+    def module_real_path(self, prefix):
+        for k, v in self.modules.items():
+            prefix = prefix.replace(k, v)
+        return prefix.replace(".", "/")
 
     def info(self, spec, virtual=False):
         file_type, (prefix, filepath) = self.classifier(spec, strict=self.strict)
         dst = self.normalize_dst(file_type, prefix, filepath)
-        data = {"src_file": os.path.join(prefix.replace(".", "/"), self.normalize_src(prefix, filepath)), 
+        data = {"src_file": os.path.join(self.module_real_path(prefix), self.normalize_src(prefix, filepath)), 
                 "html": self.filename, 
                 "src": spec, 
                 "dst": u"{}:{}".format(prefix, dst), 
                 "org_name": self.org_name, 
                 "file_type": file_type, 
-                "dst_file": os.path.join(prefix.replace(".", "/"), dst), 
+                "dst_file": os.path.join(self.module_real_path(prefix), dst), 
                 "virtual": virtual
         }
         return data
@@ -122,7 +129,7 @@ if __name__ == "__main__":
             if "/templates/" in root:
                 path = os.path.join(root, f)
                 m = template_org_rx.search(root)
-                dm = DecisionMaker(path, m.group(1), dump=dump)
+                dm = DecisionMaker(path, m.group(1), dump=dump, modules={"altair.app.ticketing": "ticketing/src/altair/app/ticketing"})
                 with open(path) as rf:
                     dm.decision(rf)
 
