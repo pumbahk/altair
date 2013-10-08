@@ -332,14 +332,132 @@ def download(request):
                               organization_id,
                               condition=None)
 
-    query = KeyBreakAdapter(query, 'id',
-                            ('product_name', 'product_price', 'product_quantity', 'product_sales_segment', 'margin'),
-                            'product_id',
-                            ('item_name', 'item_price', 'item_quantity'),
-                            'product_item_id',
-                            ('item_print_histories',),
-                            ('seat_name',),
-                            'seat_id',)
+    export_type = int(request.params.get('export_type', OrderCSV.EXPORT_TYPE_ORDER))
+    excel_csv = bool(request.params.get('excel_csv'))
+
+    if export_type == OrderCSV.EXPORT_TYPE_ORDER:
+        query = KeyBreakAdapter(query, 'id',
+                                ('product_name', 'product_price', 'product_quantity', 'product_sales_segment', 'margin'),
+                                'product_id',
+                                ('item_name', 'item_price', 'item_quantity'),
+                                'product_item_id',
+                                ('item_print_histories',),
+                                ('seat_name',),
+                                'seat_id',)
+        csv_headers = ([
+            "order_no",
+            "status_label",
+            "payment_status_label",
+            "created_at",
+            "paid_at",
+            "delivered_at",
+            "canceled_at",
+            "total_amount",
+            "transaction_fee",
+            "delivery_fee",
+            "system_fee",
+            "margin",
+            "note",
+            "card_brand",
+            "card_ahead_com_code",
+            "card_ahead_com_name",
+            "billing_number",
+            "exchange_number",
+            #"メールマガジン受信可否",
+            "user_last_name",
+            "user_first_name",
+            "user_last_name_kana",
+            "user_first_name_kana",
+            "user_nick_name",
+            "user_sex",
+            "membership_name",
+            "membergroup_name",
+            "auth_identifier",
+            "last_name",
+            "first_name",
+            "last_name_kana",
+            "first_name_kana",
+            "zip",
+            "country",
+            "prefecture",
+            "city",
+            "address_1",
+            "address_2",
+            "tel_1",
+            "tel_2",
+            "fax",
+            "email_1",
+            "email_2",
+            "payment_method_name",
+            "delivery_method_name",
+            "event_title",
+            "performance_name",
+            "performance_code",
+            "performance_start_on",
+            "venue_name",
+        ] + query.extra_headers)
+    else:
+        csv_headers = [
+            "order_no",  # 予約番号
+            "status_label",  # ステータス
+            "payment_status_label",  # 決済ステータス
+            "created_at",  # 予約日時
+            "paid_at",  # 支払日時
+            "delivered_at",  # 配送日時
+            "canceled_at",  # キャンセル日時
+            "total_amount",  # 合計金額
+            "transaction_fee",  # 決済手数料
+            "delivery_fee",  # 配送手数料
+            "system_fee",  # システム利用料
+            "margin",  # 内手数料金額
+            "note",  # メモ
+            "card_brand",  # カードブランド
+            "card_ahead_com_code",  #  仕向け先企業コード
+            "card_ahead_com_name",  # 仕向け先企業名
+            "billing_number",  # SEJ払込票番号
+            "exchange_number",  # SEJ引換票番号
+            #メールマガジン受信可否
+            "user_last_name",  # 姓
+            "user_first_name",  # 名
+            "user_last_name_kana",  # 姓(カナ)
+            "user_first_name_kana",  # 名(カナ)
+            "user_nick_name",  # ニックネーム
+            "user_sex",  # 性別
+            "membership_name",  # 会員種別名
+            "membergroup_name",  # 会員グループ名
+            "auth_identifier",  # 会員種別ID
+            "last_name",  # 配送先姓
+            "first_name",  # 配送先名
+            "last_name_kana",  # 配送先姓(カナ)
+            "first_name_kana",  # 配送先名(カナ)
+            "zip",  # 郵便番号
+            "country",  # 国
+            "prefecture",  # 都道府県
+            "city",  # 市区町村
+            "address_1",  # 住所1
+            "address_2",  # 住所2
+            "tel_1",  # 電話番号1
+            "tel_2",  # 電話番号2
+            "fax",  # FAX
+            "address_1",  # メールアドレス1
+            "address_2",  # メールアドレス2
+            "payment_method_name",  # 決済方法
+            "delivery_method_name",  # 引取方法
+            "event_title",  # イベント
+            "performance_name",  # 公演
+            "performance_code",  # 公演コード
+            "performance_start_on",  # 公演日
+            "venue_name",  # 会場
+            "product_price",  # 商品単価
+            "product_quantity", # 商品個数
+            "product_name",  # 商品名
+            "product_sales_segment",  # 販売区分
+            "item_name",  # 商品明細名
+            "item_price",  # 商品明細単価
+            "item_quantity",  # 商品明細個数
+            "item_print_histories",  #発券作業者
+            "seat_name",  # 座席名
+        ]
 
     headers = [
         ('Content-Type', 'application/octet-stream; charset=Windows-31J'),
@@ -347,61 +465,8 @@ def download(request):
     ]
 
     response = Response(headers=headers)
-    headers = ([
-        "order_no",
-	"status_label",
-	"payment_status_label",
-	"created_at",
-	"paid_at",
-	"delivered_at",
-	"canceled_at",
-	"total_amount",
-	"transaction_fee",
-	"delivery_fee",
-	"system_fee",
-	"margin",
-	"note",
-	"card_brand",
-	"card_ahead_com_code",
-	"card_ahead_com_name",
-	"billing_number",
-	"exchange_number",
-	#"メールマガジン受信可否",
-	"user_last_name",
-	"user_first_name",
-	"user_last_name_kana",
-	"user_first_name_kana",
-	"user_nick_name",
-	"user_sex",
-	"membership_name",
-	"membergroup_name",
-	"auth_identifier",
-	"last_name",
-	"first_name",
-	"last_name_kana",
-	"first_name_kana",
-	"zip",
-	"country",
-	"prefecture",
-	"city",
-	"address_1",
-	"address_2",
-	"tel_1",
-	"tel_2",
-	"fax",
-	"email_1",
-	"email_2",
-	"payment_method_name",
-	"delivery_method_name",
-	"event_title",
-	"performance_name",
-	"performance_code",
-	"performance_start_on",
-	"venue_name",
-    ]
-               + query.extra_headers)
-    iheaders = header_intl(headers, japanese_columns)
-    logger.debug("headers = {0}".format(headers))
+    iheaders = header_intl(csv_headers, japanese_columns)
+    logger.debug("csv headers = {0}".format(csv_headers))
     results = iter(query)
     writer = csv.writer(response, delimiter=',', quoting=csv.QUOTE_ALL)
 
@@ -437,7 +502,7 @@ def download(request):
     writer.writerows([[encode_to_cp932(c)
                        for c in iheaders]] +
                      [[encode_to_cp932(render(h, columns.get(h)))
-                       for h in headers]
+                       for h in csv_headers]
                       for columns in results])
     return response
 
