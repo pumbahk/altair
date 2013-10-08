@@ -84,6 +84,8 @@ class MovieAssetForm(Form):
 class MovieAssetUpdateForm(Form):
     type = "movie"
     title = fields.TextField(label=u"タイトル", validators=[required_field()])
+    width = fields.TextField(label=u"幅", validators=[required_field()])
+    height = fields.TextField(label=u"高さ", validators=[required_field()])
     filepath = fields.FileField(label=u'動画を投稿(空欄の場合には以前の画像がそのまま使われます)',
                                 validators=[only_movie_file.none_is_ok, validate_filepath])
     placeholder = fields.FileField(label=u'プレースホルダー(空欄の場合にはダミーの画像が使われます)',

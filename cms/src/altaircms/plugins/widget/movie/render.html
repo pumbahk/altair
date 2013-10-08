@@ -1,19 +1,21 @@
 ## movie widget output template
-## 
+##
 <div class="movie-widget" ${widget.html_attributes|n}>
     %if widget.asset.mimetype == 'video/quicktime':
-        <embed 
-           type="video/quicktime" 
-           alt="${widget.alt}"       
-           height="${widget.height or widget.asset.height}"       
-           width="${widget.width or widget.asset.width}" 
-           src="${h.asset.rendering_object(request,widget.asset).filepath}"></embed>
+        <embed
+           type="video/quicktime"
+           alt="${widget.alt}"
+           height="${widget.height or widget.asset.height}"
+           width="${widget.width or widget.asset.width}"
+           src="${h.asset.rendering_object(request,widget.asset).filepath}"
+           scale="tofit"></embed>
     %elif widget.asset.mimetype == 'video/mp4':
           <embed src="${h.asset.rendering_object(request,widget.asset).filepath}" type="image/x-macpaint"
                  pluginspage="http://www.apple.com/quicktime/download"
-                 height="${widget.height or widget.asset.height or 160}"       
+                 height="${widget.height or widget.asset.height or 160}"
                  width="${widget.width or widget.asset.width or 160}"
-                 autoplay="true"></embed>
+                 autoplay="true"
+                 scale="tofit"></embed>
     %else:
         ${h.asset.not_found_image(request)|n}
     %endif
