@@ -5,13 +5,9 @@ import re
 import sys
 import ast
 import json
-from functools import partial
 
 static_rx = re.compile(r"request\.static_url\((.+?)\)")
 template_org_rx = re.compile(r"/templates/([^/]+)")
-target = "/Users/nao/work/altair/altair/ticketing/src/altair/app/ticketing/cart/templates/vissel/pc/index.html"
-
-dump_json=partial(json.dumps, indent=2, ensure_ascii=False)
 
 class UnKnownFileType(Exception):
     pass
@@ -27,9 +23,18 @@ def classify(s, strict=True):
         if strict:
             raise UnKnownFileType(s)
         return ("other", s.split(":", 1))
+
+class Dump(object):
+    def __init__(self, stdout=sys.stdout, stderr=sys.stderr):
+        self.stdout = stdout
+        self.stderr = stderr
     
+class IOLikeList(list):
+    def write(self, x):
+        self.append(json.dumps(x, ensure_ascii=False, indent=2))
+
 class DecisionMaker(object):
-    def __init__(self, filename, org_name, classifier=classify, dump=dump_json, strict=True):
+    def __init__(self, filename, org_name, classifier=classify, dump=None, strict=True):
         self.filename = filename
         self.org_name = org_name
         self.classifier = classifier
@@ -83,7 +88,8 @@ class DecisionMaker(object):
             "filename": self.filename, 
             "error": repr(e)
         }
-        sys.stderr.write(self.dump(data))
+        self.dump.stderr.write(data)
+
                         
     def decision(self, inp):
         for line in inp:
@@ -92,7 +98,7 @@ class DecisionMaker(object):
                 try:
                     assetspec = m.group(1)
                     data = self.info(ast.literal_eval(assetspec))
-                    sys.stdout.write(self.dump(data))
+                    self.dump.stdout.write(data)
                 except Exception as e:
                     #see: e.g.altair/app/ticketing/cart/templates/BT/pc/_widgets.html
                     fmt = m.group(1)
@@ -100,21 +106,26 @@ class DecisionMaker(object):
                         for i in [1, 2, 3, 4]:
                             assetspec = eval(fmt, {"step":i})
                             data = self.info(assetspec)
-                            sys.stdout.write(self.dump(data))
+                            self.dump.stdout.write(data)
                         data = self.info(fmt, virtual=True)
-                        sys.stdout.write(self.dump(data))
+                        self.dump.stdout.write(data)
 
                     else:
                         data = self.error(e, line, assetspec)
-                        sys.stderr.write(self.dump(data))
+                        self.dump.stderr.write(data)
 
 if __name__ == "__main__":
     cwd = sys.argv[1]
+    dump = Dump(IOLikeList(), sys.stderr)
     for root, ds, fs in os.walk(cwd, topdown=False):
         for f in fs:
             if "/templates/" in root:
                 path = os.path.join(root, f)
                 m = template_org_rx.search(root)
-                dm = DecisionMaker(path, m.group(1))
+                dm = DecisionMaker(path, m.group(1), dump=dump)
                 with open(path) as rf:
                     dm.decision(rf)
+
+    sys.stdout.write("[\n")
+    sys.stdout.write((',').join(dump.stdout))
+    sys.stdout.write("\n]")
