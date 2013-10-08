@@ -425,7 +425,7 @@ class KeyBreakAdapter(object):
         last_item = None
         breaked_items = []
         child1_count = 0
-        child2_count = 0
+        child2_count = {}
         child3_count = 0
 
         break_counter = KeyBreakCounter(keys=[key, child1_key, child2_key, child3_key])
@@ -459,7 +459,7 @@ class KeyBreakAdapter(object):
                     breaked_items.append(
                         (name,
                          item[childitem2]))
-                    child2_count = max(child2_count, counter[child2_key])
+                    child2_count[counter[child1_key]] = max(child2_count.get(counter[child1_key], 0), counter[child2_key])
             for childitem3 in child3_comma_separated:
                 name = "{0}[{1}][{2}]".format(childitem3, counter[child1_key], counter[child2_key])
                 if item[childitem3]:
@@ -491,10 +491,10 @@ class KeyBreakAdapter(object):
         headers = list(result)
         self.headers = headers
         self.extra_headers = []
-        for i in range(child1_count):
+        for i in range(child1_count + 1):
             for n in child1:
                 self.extra_headers.append("{0}[{1}]".format(n, i))
-            for j in range(child2_count):
+            for j in range(child2_count.get(i, -1) + 1):
                 for n in child2:
                     self.extra_headers.append("{0}[{1}][{2}]".format(n, i, j))
                 for n in child3_comma_separated:
