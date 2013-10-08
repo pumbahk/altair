@@ -117,6 +117,8 @@ def available_ticket_formats_for_ordered_product_item(ordered_product_item):
                 .with_entities(TicketFormat.id, TicketFormat.name).distinct(TicketFormat.id)
 
 def encode_to_cp932(data):
+    if not hasattr(data, "encode"):
+        return str(data)
     try:
         return data.encode('cp932')
     except UnicodeEncodeError:
@@ -262,10 +264,255 @@ def session_has_order_p(context, request):
     return bool(request.session.get("orders"))
 
 
+#########################################################################
+@view_config(decorator=with_bootstrap,
+             route_name='orders.index',
+             renderer='altair.app.ticketing:templates/orders/index.html',
+             #renderer="string",
+             permission='sales_counter')
+def index(request):
+    slave_session = get_db_session(request, name="slave")
+
+    organization_id = request.context.organization.id
+    params = MultiDict(request.params)
+    params["order_no"] = " ".join(request.params.getall("order_no"))
+
+    form_search = OrderSearchForm(params, organization_id=organization_id)
+    from .download import OrderSummary
+    if request.method == "POST" and form_search.validate():
+        query = OrderSummary(slave_session,
+                            organization_id,
+                            condition=form_search)
+    else:
+        query = OrderSummary(slave_session,
+                            organization_id,
+                            condition=None)
+
+    if request.params.get('action') == 'checked':
+        checked_orders = [o.lstrip('o:') 
+                          for o in request.session.get('orders', []) 
+                          if o.startswith('o:')]
+        #query = query.filter(Order.id.in_(checked_orders))
+
+    page = int(request.params.get('page', 0))
+
+    orders = paginate.Page(
+        query,
+        page=page,
+        items_per_page=40,
+        #item_count=query.count(),
+        url=paginate.PageURL_WebOb(request)
+    )
+
+    #return list(query)
+
+    return {
+        'form':OrderForm(),
+        'form_search':form_search,
+        'orders':orders,
+        'page': page,
+    }
+
+@view_config(route_name='orders.download')
+def download(request):
+    slave_session = get_db_session(request, name="slave")
+
+    organization_id = request.context.organization.id
+    params = MultiDict(request.params)
+    params["order_no"] = " ".join(request.params.getall("order_no"))
+
+    form_search = OrderSearchForm(params, organization_id=organization_id)
+    from .download import OrderDownload, OrderSummaryKeyBreakAdapter, japanese_columns, header_intl, SeatSummaryKeyBreakAdapter
+    if request.method == "POST" and form_search.validate():
+        query = OrderDownload(slave_session,
+                              organization_id,
+                              condition=form_search)
+    else:
+        query = OrderDownload(slave_session,
+                              organization_id,
+                              condition=None)
+
+    export_type = int(request.params.get('export_type', OrderCSV.EXPORT_TYPE_ORDER))
+    excel_csv = bool(request.params.get('excel_csv'))
+
+    if export_type == OrderCSV.EXPORT_TYPE_ORDER:
+        query = OrderSummaryKeyBreakAdapter(query, 'id',
+                                ('product_name', 'product_price', 'product_quantity', 'product_sales_segment', 'margin'),
+                                'product_id',
+                                ('item_name', 'item_price', 'item_quantity'),
+                                'product_item_id',
+                                ('item_print_histories',),
+                                ('seat_name',),
+                                'seat_id',)
+        csv_headers = ([
+            "order_no",
+            "status_label",
+            "payment_status_label",
+            "created_at",
+            "paid_at",
+            "delivered_at",
+            "canceled_at",
+            "total_amount",
+            "transaction_fee",
+            "delivery_fee",
+            "system_fee",
+            "margin",
+            "note",
+            "card_brand",
+            "card_ahead_com_code",
+            "card_ahead_com_name",
+            "billing_number",
+            "exchange_number",
+            #"メールマガジン受信可否",
+            "user_last_name",
+            "user_first_name",
+            "user_last_name_kana",
+            "user_first_name_kana",
+            "user_nick_name",
+            "user_sex",
+            "membership_name",
+            "membergroup_name",
+            "auth_identifier",
+            "last_name",
+            "first_name",
+            "last_name_kana",
+            "first_name_kana",
+            "zip",
+            "country",
+            "prefecture",
+            "city",
+            "address_1",
+            "address_2",
+            "tel_1",
+            "tel_2",
+            "fax",
+            "email_1",
+            "email_2",
+            "payment_method_name",
+            "delivery_method_name",
+            "event_title",
+            "performance_name",
+            "performance_code",
+            "performance_start_on",
+            "venue_name",
+        ] + query.extra_headers)
+    else:
+        query = SeatSummaryKeyBreakAdapter(query, "seat_id", ["item_print_histories"])
+        csv_headers = [
+            "order_no",  # 予約番号
+            "status_label",  # ステータス
+            "payment_status_label",  # 決済ステータス
+            "created_at",  # 予約日時
+            "paid_at",  # 支払日時
+            "delivered_at",  # 配送日時
+            "canceled_at",  # キャンセル日時
+            "total_amount",  # 合計金額
+            "transaction_fee",  # 決済手数料
+            "delivery_fee",  # 配送手数料
+            "system_fee",  # システム利用料
+            "margin",  # 内手数料金額
+            "note",  # メモ
+            "card_brand",  # カードブランド
+            "card_ahead_com_code",  #  仕向け先企業コード
+            "card_ahead_com_name",  # 仕向け先企業名
+            "billing_number",  # SEJ払込票番号
+            "exchange_number",  # SEJ引換票番号
+            #メールマガジン受信可否
+            "user_last_name",  # 姓
+            "user_first_name",  # 名
+            "user_last_name_kana",  # 姓(カナ)
+            "user_first_name_kana",  # 名(カナ)
+            "user_nick_name",  # ニックネーム
+            "user_sex",  # 性別
+            "membership_name",  # 会員種別名
+            "membergroup_name",  # 会員グループ名
+            "auth_identifier",  # 会員種別ID
+            "last_name",  # 配送先姓
+            "first_name",  # 配送先名
+            "last_name_kana",  # 配送先姓(カナ)
+            "first_name_kana",  # 配送先名(カナ)
+            "zip",  # 郵便番号
+            "country",  # 国
+            "prefecture",  # 都道府県
+            "city",  # 市区町村
+            "address_1",  # 住所1
+            "address_2",  # 住所2
+            "tel_1",  # 電話番号1
+            "tel_2",  # 電話番号2
+            "fax",  # FAX
+            "address_1",  # メールアドレス1
+            "address_2",  # メールアドレス2
+            "payment_method_name",  # 決済方法
+            "delivery_method_name",  # 引取方法
+            "event_title",  # イベント
+            "performance_name",  # 公演
+            "performance_code",  # 公演コード
+            "performance_start_on",  # 公演日
+            "venue_name",  # 会場
+            "product_price",  # 商品単価
+            "product_quantity", # 商品個数
+            "product_name",  # 商品名
+            "product_sales_segment",  # 販売区分
+            "item_name",  # 商品明細名
+            "item_price",  # 商品明細単価
+            "item_quantity",  # 商品明細個数
+            "item_print_histories",  #発券作業者
+            "seat_name",  # 座席名
+        ]
+
+    headers = [
+        ('Content-Type', 'application/octet-stream; charset=Windows-31J'),
+        ('Content-Disposition', 'attachment; filename=orders_{date}.csv'.format(date=datetime.now().strftime('%Y%m%d%H%M%S')))
+    ]
+
+    response = Response(headers=headers)
+    iheaders = header_intl(csv_headers, japanese_columns)
+    logger.debug("csv headers = {0}".format(csv_headers))
+    results = iter(query)
+    writer = csv.writer(response, delimiter=',', quoting=csv.QUOTE_ALL)
+
+    def render_plain(v):
+        if v is None:
+            return u''
+        return u'="{0}"'.format(v)
+
+    def render_zip(v):
+        if not v:
+            return u''
+        zip1, zip2 = v[:3], v[3:]
+        return u'{0}-{1}'.format(zip1, zip2)
+
+    def render_currency(v):
+        from altair.app.ticketing.cart.helpers import format_number
+        if v is None:
+            return u'0'
+        return format_number(float(v))
+
+    renderers = dict()
+    for n in ('total_amount', 'transaction_fee', 'delimiter', 'system_fee', 'margin'):
+        renderers[n] = render_currency
+
+    renderers['zip'] = render_zip
+
+    def render(name, v):
+        if name.find('[') > -1:
+            name, _ = name.split('[', 1)
+        renderer = renderers.get(name, render_plain)
+        return renderer(v)
+
+    writer.writerows([[encode_to_cp932(c)
+                       for c in iheaders]] +
+                     [[encode_to_cp932(render(h, columns.get(h)))
+                       for h in csv_headers]
+                      for columns in results])
+    return response
+
+#########################################################################
+
 @view_defaults(decorator=with_bootstrap, permission='sales_editor')
 class Orders(BaseView):
 
-    @view_config(route_name='orders.index', renderer='altair.app.ticketing:templates/orders/index.html', permission='sales_counter')
+    #@view_config(route_name='orders.index', renderer='altair.app.ticketing:templates/orders/index.html', permission='sales_counter')
     def index(self):
         slave_session = get_db_session(self.request, name="slave")
 
@@ -303,7 +550,7 @@ class Orders(BaseView):
             'page': page,
         }
 
-    @view_config(route_name='orders.download')
+    #@view_config(route_name='orders.download')
     def download(self):
         slave_session = get_db_session(self.request, name="slave")
 

@@ -1,0 +1,97 @@
+<%page args="form, orders, limit=None, detail=True, selectable=True" />
+<%namespace file="/common/helpers.html" name="ch" />
+<% paging = False if limit else True %>
+
+<%def name="search_and_sort(column, paging=True)">
+% if paging:
+<%
+  sort_column = request.params.get('sort')
+  sort_direction = request.params.get('direction')
+  direction = 'desc' if (column.name == sort_column and sort_direction == 'asc') else 'asc'
+  css_class = 'current ' + sort_direction if (column.name == sort_column) else ''
+%>
+<a href="javascript:sort_orders('${column.name}', '${direction}');" class="${css_class}">${column.label.text}</a>
+% else:
+  ${column.label.text}
+% endif
+</%def>
+
+% if paging:
+  ${ch.pager(orders, "javascript:sort_orders('', '', '$partial_url')")}
+% endif
+
+% if orders:
+  <div style="margin-top: 20px;"></div>
+  <% i = 0 %>
+  % for i, order in enumerate(orders):
+    <% if limit and i >= limit: break %>
+    % if i == 0:
+    <table class="table table-striped table-bordered">
+      <thead>
+      <tr>
+        % if selectable:
+        <th style="width: 30px;"></th>
+        % endif
+        <th style="width: 70px;">ステータス</th>
+        <th style="width: 90px;">決済</th>
+        <th style="width: 90px;">配送</th>
+        <th style="width: 100px;">${search_and_sort(form.order_no)}</th>
+        <th style="width: 120px;">${search_and_sort(form.created_at)}</th>
+        <th style="width: 70px;">${search_and_sort(form.total_amount)}</th>
+        <th style="width: 120px;">配送先氏名</th>
+        % if detail:
+        <th>イベント</th>
+        <th style="width: 70px;">開演日時</th>
+        % endif
+        <th style="width: 70px;">カードブランド</th>
+        <th style="width: 70px;">仕向け先</th>
+      </tr>
+      </thead>
+      <tbody>
+    % endif
+      <tr>
+        % if selectable:
+        <td class="checkbox_status-wrap">
+          <input class="checkbox_status" type="checkbox" name="o:${order['id']}"/>
+        </td>
+        % endif
+        <td>
+	  <span class="label label-${order['status_class']}">${order['status_label']}</span>
+	</td>
+        <td>
+	  <span class="label label-${order['payment_status_class']}">
+	    ${order['payment_status_label']}
+	  </span>
+	</td>
+        <td>
+	  <span class="label label-${order['delivery_status_class']}">
+	    ${order['delivery_status_label']}
+	  </span>
+	</td>
+        <td><a href="${request.route_path('orders.show', order_id=order['id'])}">${order['order_no']}</a></td>
+        <td><a href="${request.route_path('orders.show', order_id=order['id'])}">${vh.datetime(order['created_at'])}</a></td>
+        <td style="text-align: right;">${vh.price(order['total_amount'])}</td>
+        <td>
+          % if order['shipping_name']:
+	  ${order['shipping_name']}
+          % endif
+        </td>
+        % if detail:
+        <td><a href="${request.route_path('events.show', event_id=order['event_id'])}">${order['event_title']}</a></td>
+        <td><a href="${request.route_path('performances.show', performance_id=order['performance_id'])}/reservation">${order['performance_start_on'] or ''}</a></td>
+        % endif
+      	<td>${order['card_brand'] or ''}</td>
+      	<td>
+          ${order['card_ahead_com_code'] or ''}<br/>
+      	  ${order['card_ahead_com_name'] or ''}
+        </td>
+      </tr>
+  % else:
+      </tbody>
+    </table>
+  % endfor
+% endif
+
+% if paging:
+  ${ch.pager(orders, "javascript:sort_orders('', '', '$partial_url')")}
+% endif
