@@ -9,12 +9,16 @@ pyramid.includes = pyramid_tm pyramid_fanstatic pyramid_beaker pyramid_mailer al
 ;mail
 altair.mails.bcc.show_flash_message = false
 
-; altair:site-data
-altair.site_data.base_url = s3://tstar-dev/venue-layouts/frontend/
-altair.queryprofile.summary_path = __queryprofile
+; fanstatic
+fanstatic.minified = false
+
 ; Beaker
 session.type = ${altair:beaker_backend_type}
 cache.type = ${altair:beaker_backend_type}
+
+; altair:site-data
+altair.site_data.base_url = s3://tstar-dev/venue-layouts/frontend/
+altair.queryprofile.summary_path = __queryprofile
 
 [app:www-check]
 use = egg:Paste#static
