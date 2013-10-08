@@ -418,7 +418,55 @@ order_product_summary_joins = order_summary_joins.join(
 
 # Userに対してUserProfileが複数あると行数が増える可能性
 
-class KeyBreakAdapter(object):
+class SeatSummaryKeyBreakAdapter(object):
+    def __init__(self, iter, key, childitems):
+        self.results = []
+        last_item = None
+        breaked_items = []
+
+        break_counter = KeyBreakCounter(keys=[key])
+        for counter, key_changes, item in break_counter(iter):
+            if key_changes[key]:
+                result = OrderedDict(last_item)
+                for c in childitems:
+                    result.pop(c)
+                for name, value in breaked_items:
+                    if name in result:
+                        if value not in result[name].split(","):
+                            result[name] = unicode(result[name]) + "," + unicode(value)
+                    else:
+                        result[name] = unicode(value)
+                self.results.append(result)
+                breaked_items = []
+
+            for childitem in childitems:
+                name = "{0}".format(childitem)
+                if item[childitem]:
+                    breaked_items.append(
+                        (name,
+                         item[childitem]))
+            last_item = item
+
+        result = OrderedDict(last_item)
+        for c in childitems:
+            result.pop(c)
+
+        for name, value in breaked_items:
+            if name in result:
+                if value not in result[name].split(","):
+                    result[name] = unicode(result[name]) + "," + unicode(value)
+            else:
+                result[name] = unicode(value)
+
+        self.results.append(result)
+        headers = list(result)
+        self.headers = headers
+
+    def __iter__(self):
+        return iter(self.results)
+
+
+class OrderSummaryKeyBreakAdapter(object):
     def __init__(self, iter, key, child1, child1_key, child2, child2_key, child3_comma_separated, child3_indexed, child3_key):
 
         self.results = []

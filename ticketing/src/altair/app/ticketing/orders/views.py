@@ -322,7 +322,7 @@ def download(request):
     params["order_no"] = " ".join(request.params.getall("order_no"))
 
     form_search = OrderSearchForm(params, organization_id=organization_id)
-    from .download import OrderDownload, KeyBreakAdapter, japanese_columns, header_intl
+    from .download import OrderDownload, OrderSummaryKeyBreakAdapter, japanese_columns, header_intl, SeatSummaryKeyBreakAdapter
     if request.method == "POST" and form_search.validate():
         query = OrderDownload(slave_session,
                               organization_id,
@@ -336,7 +336,7 @@ def download(request):
     excel_csv = bool(request.params.get('excel_csv'))
 
     if export_type == OrderCSV.EXPORT_TYPE_ORDER:
-        query = KeyBreakAdapter(query, 'id',
+        query = OrderSummaryKeyBreakAdapter(query, 'id',
                                 ('product_name', 'product_price', 'product_quantity', 'product_sales_segment', 'margin'),
                                 'product_id',
                                 ('item_name', 'item_price', 'item_quantity'),
@@ -397,6 +397,7 @@ def download(request):
             "venue_name",
         ] + query.extra_headers)
     else:
+        query = SeatSummaryKeyBreakAdapter(query, "seat_id", ["item_print_histories"])
         csv_headers = [
             "order_no",  # 予約番号
             "status_label",  # ステータス
