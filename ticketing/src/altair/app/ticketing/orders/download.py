@@ -342,7 +342,7 @@ order_summary_joins = t_order.join(
     t_delivery_method,
     and_(t_delivery_method.c.id==t_pdmp.c.delivery_method_id,
          t_delivery_method.c.deleted_at==None),
-).join(
+).outerjoin(
     t_shipping_address,
     and_(t_shipping_address.c.id==t_order.c.shipping_address_id,
          t_shipping_address.c.deleted_at==None),
