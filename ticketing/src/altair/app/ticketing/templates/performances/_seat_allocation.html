@@ -414,9 +414,9 @@ function buildSeatDetailRow(seat) {
 function buildSeatDetailTable(selection) {
   var table = $('<table class="table table-condensed"></table>');
   var tbody = $('<tbody></tbody>').appendTo(table);
+  var header = $('<th width="8%"></th width="15%"><th>ID</th><th width="30%">座席</th><th width="27%">席種</th><th width="20%">配券先</th>');
+  tbody.append(header);
   if (selection.length) {
-    var header = $('<th width="8%"></th width="15%"><th>ID</th><th width="30%">座席</th><th width="27%">席種</th><th width="20%">配券先</th>');
-    tbody.append(header);
     selection.each(function (seat) {
       tbody.append(buildSeatDetailRow(seat));
     });
