@@ -369,9 +369,9 @@ class SalesScheduleReportExporter(BaseExporter):
         self.update_cell_text(sheet, pos, 5, row_data['start'])
         self.update_cell_text(sheet, pos, 6, row_data['price_name'])
         self.update_cell_text(sheet, pos, 7, row_data['sales_end'])
-        self.update_cell_text(sheet, pos, 9, row_data['submit_order'])
-        self.update_cell_text(sheet, pos, 11, row_data['submit_pay'])
-        self.update_cell_text(sheet, pos, 13, row_data['pay_datetime'])
+        #self.update_cell_text(sheet, pos, 9, row_data['submit_order'])
+        #self.update_cell_text(sheet, pos, 11, row_data['submit_pay'])
+        self.update_cell_text(sheet, pos, 10, row_data['pay_datetime'])
         self.current_pos[sheet] = pos + 1
 
     def write_prices_header(self, sheet, price_name):
