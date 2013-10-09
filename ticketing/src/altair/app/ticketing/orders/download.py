@@ -243,7 +243,7 @@ detail_summary_columns = summary_columns + [
     t_order.c.transaction_fee, #決済手数料
     t_order.c.delivery_fee, #配送手数料
     t_order.c.system_fee, #システム利用料
-    #内手数料金額 ?
+    (t_order.c.total_amount * t_product_sales_segment.c.margin_ratio / 100).label('margin'),  #内手数料金額
     t_order.c.note, #メモ
 
     # SEJOrder
