@@ -115,8 +115,7 @@ if(!widget){
     AjaxImageAreaManager.prototype.bind = function(we, root){
         this.we = we;
         this.root = root;
-        var $dialog = $(we.dialog);
-        this.highlightImage($dialog.find(".managed"));
+        this.highlightImage(root.find(".managed"));
         this.root.on("click", ".group img" ,function(e){this.selectImage($(e.currentTarget));}.bind(this));
     };
     AjaxImageAreaManager.prototype.getImageArea = function(i){
@@ -125,7 +124,7 @@ if(!widget){
     var ItemsDivTemplate = _.template([
         '<% _.each(data.assets, function(asset) { %>',
         '<div class="item<%= asset.class %>">',
-        '<img pk="<%- asset.id%>" src="<%- asset.thumbnail_src %>" <%- asset.managed %>/>',
+        '<img pk="<%- asset.id%>" src="<%- asset.thumbnail_src %>" <%= asset.managed %>/>',
         '<p class="title"><%- asset.title %></p>',
         '<p><span class="item-width"><%- asset.width %></span>x<span class="item-height"><%- asset.height %></span></p>',
         '<p><%- asset.updated_at %></p>',
@@ -137,7 +136,7 @@ if(!widget){
         var asset_id = data.widget.asset_id;
         for(var i=0,j=assets.length; i<j; i++){
             assets[i].class = "";
-            assets[i].managed = assets[i].id == asset_id ? 'class="managed"' : '';
+            assets[i].managed = assets[i].id === asset_id ? 'class="managed"' : '';
         }
         if(!!assets[0]){
             assets[0].class = " first";
@@ -156,7 +155,9 @@ if(!widget){
         var html = ItemsDivTemplate({data: data});
         // console.log("*debug area="+this.getImageArea(i));
         // console.log("*debug area length="+this.getImageArea(i).length);
-        return this.getImageArea(i).html(html);
+        var e = this.getImageArea(i).html(html);
+        this.highlightImage(this.root.find(".managed"));
+        return e;
     };
     AjaxImageAreaManager.prototype.selectImage = function(selected){
         var we = this.we;
