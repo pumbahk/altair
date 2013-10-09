@@ -492,7 +492,7 @@ class OrderSummaryKeyBreakAdapter(object):
                 breaked_items = []
 
             # second key break
-            if key_changes[child1_key]:
+            if key_changes[key] or key_changes[child1_key]:
                 for childitem1 in child1:
                     name = "{0}[{1}]".format(childitem1, counter[child1_key])
                     breaked_items.append(
@@ -501,7 +501,7 @@ class OrderSummaryKeyBreakAdapter(object):
                     child1_count = max(child1_count, counter[child1_key])
 
             # third key break
-            if key_changes[child2_key]:
+            if key_changes[key] or key_changes[child1_key] or key_changes[child2_key]:
                 for childitem2 in child2:
                     name = "{0}[{1}][{2}]".format(childitem2, counter[child1_key], counter[child2_key])
                     breaked_items.append(

@@ -346,8 +346,8 @@ def download(request):
                                 'seat_id',)
         csv_headers = ([
             "order_no",
-            "status_label",
-            "payment_status_label",
+            "status",
+            "payment_status",
             "created_at",
             "paid_at",
             "delivered_at",
@@ -400,8 +400,8 @@ def download(request):
         query = SeatSummaryKeyBreakAdapter(query, "seat_id", ["item_print_histories"])
         csv_headers = [
             "order_no",  # 予約番号
-            "status_label",  # ステータス
-            "payment_status_label",  # 決済ステータス
+            "status",  # ステータス
+            "payment_status",  # 決済ステータス
             "created_at",  # 予約日時
             "paid_at",  # 支払日時
             "delivered_at",  # 配送日時
