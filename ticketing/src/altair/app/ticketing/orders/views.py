@@ -337,7 +337,7 @@ def download(request):
 
     if export_type == OrderCSV.EXPORT_TYPE_ORDER:
         query = OrderSummaryKeyBreakAdapter(query, 'id',
-                                ('product_name', 'product_price', 'product_quantity', 'product_sales_segment', 'margin'),
+                                ('product_name', 'product_price', 'product_quantity', 'product_sales_segment', 'product_margin'),
                                 'product_id',
                                 ('item_name', 'item_price', 'item_quantity'),
                                 'product_item_id',
@@ -485,11 +485,11 @@ def download(request):
     def render_currency(v):
         from altair.app.ticketing.cart.helpers import format_number
         if v is None:
-            return u'0'
+            return u''
         return format_number(float(v))
 
     renderers = dict()
-    for n in ('total_amount', 'transaction_fee', 'delimiter', 'system_fee', 'margin'):
+    for n in ('total_amount', 'transaction_fee', 'delimiter', 'system_fee', 'margin', 'product_margin', 'product_price', 'item_price'):
         renderers[n] = render_currency
 
     renderers['zip'] = render_zip
