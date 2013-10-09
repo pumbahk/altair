@@ -292,7 +292,7 @@ def index(request):
         checked_orders = [o.lstrip('o:') 
                           for o in request.session.get('orders', []) 
                           if o.startswith('o:')]
-        #query = query.filter(Order.id.in_(checked_orders))
+        query = query.filter(Order.id.in_(checked_orders))
 
     page = int(request.params.get('page', 0))
 
@@ -300,11 +300,8 @@ def index(request):
         query,
         page=page,
         items_per_page=40,
-        #item_count=query.count(),
         url=paginate.PageURL_WebOb(request)
     )
-
-    #return list(query)
 
     return {
         'form':OrderForm(),
@@ -313,7 +310,7 @@ def index(request):
         'page': page,
     }
 
-@view_config(route_name='orders.download')
+# @view_config(route_name='orders.download')
 def download(request):
     slave_session = get_db_session(request, name="slave")
 
@@ -565,7 +562,7 @@ class Orders(BaseView):
             'page': page,
         }
 
-    #@view_config(route_name='orders.download')
+    @view_config(route_name='orders.download')
     def download(self):
         slave_session = get_db_session(self.request, name="slave")
 
