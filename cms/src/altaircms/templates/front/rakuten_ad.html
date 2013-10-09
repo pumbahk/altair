@@ -1,0 +1,16 @@
+<script type="text/javascript">
+(function() {
+  var Rakutentag_Rak_Ticket_All = function(){
+    this.display = function(a) {};
+    this.prepare = function(a) {};
+    this.loadCommonJS = function() {};
+  };
+  rakutentag_Rak_Ticket_All = new Rakutentag_Rak_Ticket_All();
+  var pagecd = "Rak_Ticket_All";
+  var rdm = Math.floor(1000000*Math.random());
+  var scHost=(("https:"==document.location.protocol)?"s":"");
+  var src = 'http' + scHost +'://grp09.ias.rakuten.co.jp/ctrl/?pgcd='+pagecd+'&nsc=0&rdm='+rdm;
+  document.write('<scr' + 'ipt src="' + src + '" ></scr' + 'ipt>');
+})();
+</script>
+<script type='text/javascript'>rakutentag_Rak_Ticket_All.loadCommonJS();</script>
