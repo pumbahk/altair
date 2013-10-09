@@ -709,20 +709,32 @@ class OrderSearchBase(list):
         # 販売区分(実際は販売区分グループ) sales_segment_group_id:
         if condition.sales_segment_group_id.data:
             value = condition.sales_segment_group_id.data
-            cond = and_(cond,
-                        t_sales_segment_group.c.id==value)
+            if isinstance(value, list):
+                cond = and_(cond,
+                            or_(*[t_sales_segment_group.c.id==v for v in value]))
+            else:
+                cond = and_(cond,
+                            t_sales_segment_group.c.id==value)
 
         # 決済方法 payment_method
         if condition.payment_method.data:
             value = condition.payment_method.data
-            cond = and_(cond,
-                        t_payment_method.c.id==value)
+            if isinstance(value, list):
+                cond = and_(cond,
+                            or_(*[t_payment_method.c.id==v for v in value]))
+            else:
+                cond = and_(cond,
+                            t_payment_method.c.id==value)
 
         # 引取方法 delivery_method
         if condition.delivery_method.data:
             value = condition.delivery_method.data
-            cond = and_(cond,
-                        t_delivery_method.c.id==value)
+            if isinstance(value, list):
+                cond = and_(cond,
+                            or_(*[t_delivery_method.c.id==v for v in value]))
+            else:
+                cond = and_(cond,
+                            t_delivery_method.c.id==value)
 
         # ステータス(注文)
         if condition.status.data:
