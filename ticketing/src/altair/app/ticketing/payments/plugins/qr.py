@@ -73,38 +73,18 @@ def deliver_completion_mail_viewlet(context, request):
 def delivery_notice_viewlet(context, request):
     return Response(text=u"＜QRでのお受取りの方＞\n{0}".format(context.mail_data("notice")))
 
-def _with_serial_and_seat(ordered_product_item):
-    if ordered_product_item.seats:
-        for i, s in enumerate(ordered_product_item.seats):
-            yield i, s
-    else:
-        for i in xrange(ordered_product_item.quantity):
-            yield i, None
-
 class QRTicketDeliveryPlugin(object):
     def prepare(self, request, cart):
         """ 前処理 """
 
     def finish(self, request, cart):
         """ 確定時処理 """
-        order = cart.order
-        for op in order.ordered_products:
-            for opi in op.ordered_product_items:
-                for i, seat in _with_serial_and_seat(opi):
-                    token = core_models.OrderedProductItemToken(
-                        item = opi, 
-                        serial = i, 
-                        seat = seat, 
-                        valid=True
-                        )
-                    opi.tokens.append(token)
+        pass
 
     def finished(self, request, order):
+        """ tokenが存在すること """
         result = True
         for op in order.ordered_products:
             for opi in op.ordered_product_items:
-                for seat in _with_serial_and_seat(opi):
-                    result = result and opi.tokens
-
+                result = result and opi.tokens
         return result
-        

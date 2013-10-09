@@ -12,7 +12,7 @@ from altair.multicheckout import api as multicheckout_api
 from altair.multicheckout.exceptions import MultiCheckoutAPITimeoutError
 from altair.app.ticketing.checkout import api as checkout_api
 from . import api
-from altair.app.ticketing.cart.exceptions import UnassignedOrderNumberError
+from altair.app.ticketing.cart.exceptions import InvalidCartStatusError
 from sqlalchemy.sql.expression import not_
 
 
@@ -55,7 +55,7 @@ def join_cart_and_order():
         logging.info('order_no = %s : cart[id=%s].order=order[%s]' % (cart.order_no, cart.id, order.id))
     transaction.commit()
 
-def cancel_auth_expired_carts():
+def release_carts():
     """ 期限切れカートのオーソリをキャンセルする
     """
 
@@ -78,7 +78,7 @@ def cancel_auth_expired_carts():
     expire_time = int(settings['altair_cart.expire_time'])
 
     # 多重起動防止
-    LOCK_NAME = cancel_auth_expired_carts.__name__
+    LOCK_NAME = release_carts.__name__
     LOCK_TIMEOUT = 10
     conn = sqlahelper.get_engine().connect()
     status = conn.scalar("select get_lock(%s,%s)", (LOCK_NAME, LOCK_TIMEOUT))
@@ -111,7 +111,7 @@ def cancel_auth_expired_carts():
 
         try:
             order_no = get_order_no(request, cart)
-        except UnassignedOrderNumberError:
+        except InvalidCartStatusError:
             order_no = None
 
         cart_id = cart.id
@@ -121,46 +121,9 @@ def cancel_auth_expired_carts():
             transaction.abort()
             carts_to_skip.add(cart_id)
             continue
-        logging.info('TRANSACTION IS BEING COMMITTED...')
-        transaction.commit()
-        logging.info('verifying if the cart in question (id=%d) still exists' % cart_id)
-        cart = m.Cart.query.filter_by(id=cart_id).first()
-        if cart is None:
-            logging.info('cart (id=%d) IS GONE FOR SOME REASONS. SIGH.')
-            continue
-
-        if api.is_multicheckout_payment(cart):
-            logging.info('well, then trying to cancel the authorization request associated with the order (order_no=%s)' % order_no)
-            logging.info('check for order_no=%s' % order_no)
-            request.altair_checkout3d_override_shop_name = None
-            try:
-                request.altair_checkout3d_override_shop_name = cart.performance.event.organization.setting.multicheckout_shop_name
-                if not request.altair_checkout3d_override_shop_name:
-                    raise
-            except:
-                logging.info('can not detect shop_name for order_no = %s' % order_no)
-                carts_to_skip.add(cart_id)
-                continue
-
-            try:
-                # 状態確認
-                inquiry = multicheckout_api.checkout_inquiry(request, order_no)
-                # オーソリOKだったらキャンセル
-                if inquiry.Status == m.MULTICHECKOUT_AUTH_OK:
-                    logging.info("cancel auth for order_no=%s" % order_no)
-                    multicheckout_api.checkout_auth_cancel(request, order_no)
-                else:
-                    logging.info("Order(order_no = %s) status = %s " % (order_no, inquiry.Status))
-            except MultiCheckoutAPITimeoutError, e:
-                logging.info('Multicheckout API timeout occured: %s' % e.message)
-                carts_to_skip.add(cart_id)
-                continue
-            except Exception, e:
-                logging.error('Multicheckout API error occured: %s' % e.message)
-                break
 
         cart.finished_at = now
-        logging.info("TRANSACTION IS BEING COMMITTED AGAIN...")
+        logging.info('TRANSACTION IS BEING COMMITTED...')
         transaction.commit()
 
     conn.close()

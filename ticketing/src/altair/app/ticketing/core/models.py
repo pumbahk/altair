@@ -44,7 +44,7 @@ from altair.app.ticketing.models import (
 )
 from standardenum import StandardEnum
 from altair.app.ticketing.users.models import User, UserCredential, MemberGroup, MemberGroup_SalesSegment
-from altair.app.ticketing.sej.models import SejOrder
+from altair.app.ticketing.sej.api import get_sej_order
 from altair.app.ticketing.utils import tristate, is_nonmobile_email_address, sensible_alnum_decode, todate, todatetime
 from altair.app.ticketing.payments import plugins
 from altair.app.ticketing.sej import api as sej_api
@@ -430,6 +430,10 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     id = Column(Identifier, primary_key=True)
     name = Column(String(255))
     code = Column(String(12))  # Organization.code(2桁) + Event.code(3桁) + 7桁(デフォルトはstart.onのYYMMDD+ランダム1桁)
+    abbreviated_title = Column(Unicode(255), doc=u"公演名略称", default=u"")
+    subtitle = Column(Unicode(255), doc=u"公演名副題", default=u"")
+    note = Column(UnicodeText, doc=u"公演名備考", default=u"")
+
     open_on = Column(DateTime)
     start_on = Column(DateTime)
     end_on = Column(DateTime)
@@ -2279,6 +2283,7 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     card_ahead_com_code = Column(Unicode(20), doc=u"仕向け先企業コード")
     card_ahead_com_name = Column(Unicode(20), doc=u"仕向け先企業名")
 
+    fraud_suspect = Column(Boolean, nullable=True, default=None)
     browserid = Column(String(40))
 
     sales_segment_id = Column(Identifier, ForeignKey('SalesSegment.id'))
@@ -2338,9 +2343,7 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     @property
     def sej_order(self):
-        if not hasattr(self, "_sej_order"):
-            self._sej_order = SejOrder.filter(SejOrder.order_id == self.order_no).first()
-        return self._sej_order
+        return get_sej_order(self.order_no)
 
     @property
     def status(self):
@@ -2513,7 +2516,7 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
         # コンビニ決済 (セブン-イレブン)
         elif ppid == plugins.SEJ_PAYMENT_PLUGIN_ID:
-            sej_order = SejOrder.query.filter_by(order_id=self.order_no).first()
+            sej_order = self.sej_order
 
             # 未入金ならコンビニ決済のキャンセル通知
             if self.payment_status == 'unpaid':
@@ -2537,15 +2540,15 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         # コンビニ受取
         dpid = self.payment_delivery_pair.delivery_method.delivery_plugin_id
         if dpid == plugins.SEJ_DELIVERY_PLUGIN_ID and ppid != plugins.SEJ_PAYMENT_PLUGIN_ID:
-            sej_order = SejOrder.query.filter_by(order_id=self.order_no).first()
+            sej_order = self.sej_order
             # SejAPIでエラーのケースではSejOrderはつくられないのでスキップ
             if sej_order:
                 result = sej_api.cancel_sej_order(sej_order, self.organization_id)
                 if not result:
-                    logger.info('SejOrder (order_id=%s) cancel error' % self.order_no)
+                    logger.info('SejOrder (order_no=%s) cancel error' % self.order_no)
                     return False
             else:
-                logger.info('skip cancel delivery method. SejOrder not found (order_id=%s)' % self.order_no)
+                logger.info('skip cancel delivery method. SejOrder not found (order_no=%s)' % self.order_no)
 
         # 在庫を戻す
         logger.info('try release stock (order_no=%s)' % self.order_no)
@@ -2718,6 +2721,14 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                     quantity=item.product_item.quantity * product.quantity,
                     seats=item.seats
                     )
+                for i, seat in ordered_product_item.iterate_serial_and_seat():
+                    token = OrderedProductItemToken(
+                        item = ordered_product_item, 
+                        serial = i, 
+                        seat = seat, 
+                        valid=True #valid=Falseの時は何時だろう？
+                        )
+                    ordered_product_item.tokens.append(token)
         return order
 
     @staticmethod
@@ -2866,6 +2877,14 @@ class OrderedProductItem(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         issued_count = len([i for i in self.tokens if i.issued_at])
         return dict(issued=issued_count, total=total)
 
+    def iterate_serial_and_seat(self):
+        if self.seats:
+            for i, s in enumerate(self.seats):
+                yield i, s
+        else:
+            for i in xrange(self.quantity):
+                yield i, None
+
 class OrderedProductItemToken(Base,BaseModel, LogicallyDeleted):
     __tablename__ = "OrderedProductItemToken"
     __clone_excluded__ = ['seat']
@@ -2937,6 +2956,10 @@ class Ticket(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     @property
     def drawing(self):
         return self.data["drawing"]
+
+    @property
+    def vars_defaults(self):
+        return self.data.get("vars_defaults", {})
 
     def create_event_bound(self, event):
         new_object = self.__class__.clone(self)
@@ -3621,12 +3644,8 @@ class PerformanceSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     id = Column(Identifier, primary_key=True)
     performance_id = Column(Identifier, ForeignKey('Performance.id'))
     performance = relationship('Performance', backref='settings')
-    
-    abbreviated_title = Column(Unicode(255), doc=u"公演名略称", default=u"")
-    subtitle = Column(Unicode(255), doc=u"公演名副題", default=u"")
-    note = Column(UnicodeText, doc=u"公演名備考", default=u"")
-
-    KEYS = ["abbreviated_title", "subtitle", "note"]
+               
+    KEYS = []
 
     @classmethod
     def create_from_model(cls, obj, params):

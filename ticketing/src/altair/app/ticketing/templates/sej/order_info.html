@@ -26,14 +26,14 @@ ${ch.breadcrumbs(
 </%block>
 
 <div class="page-header">
-  <h3>${order.id}:${order.order_id}</h3>
+  <h3>${order.id}:${order.order_no}</h3>
 
     <div class="btn-group">
         %if not order.cancel_at:
       <a  id="update" href="#" class="btn"><i class="icon-pencil"></i>編集</a>
         % endif
           %if not order.cancel_at:
-          <a href="${request.route_path('orders.sej.order.cancel', order_id=order.id)}" class="btn">発券取り消し</a>
+          <a href="${request.route_path('orders.sej.order.cancel', order_no=order.no)}" class="btn">発券取り消し</a>
         % endif
         <form action="${order.exchange_sheet_url}" method="POST">
             <input type="hidden" name="iraihyo_id_00" value="${order.exchange_sheet_number}">
@@ -68,7 +68,7 @@ ${ch.breadcrumbs(
     </tr>
     <tr>
       <th>オーダーID</th>
-      <td>${order.order_id}</td>
+      <td>${order.order_no}</td>
     </tr>
       <tr>
         <th>支払票番号</th>
@@ -225,7 +225,7 @@ ${ch.breadcrumbs(
 </div>
 
 <div id="modal-edit" class="modal hide">
-  <form action="${request.route_path('orders.sej.order.info', order_id=order.id)}" method="POST">
+  <form action="${request.route_path('orders.sej.order.info', order_no=order_no}" method="POST">
     <div class="modal-header">
       <a href="#" class="close">&times;</a>
       <h3>オーダー情報</h3>
@@ -312,12 +312,12 @@ ${ch.breadcrumbs(
       var ticket_id = $(this).attr('ticket_id')
       $.ajax({
         type: "GET",
-        url: "${request.route_path('orders.sej.order.ticket.data', order_id=order.id, ticket_id='AA')}".replace("AA",ticket_id),
+        url: "${request.route_path('orders.sej.order.ticket.data', order_no=order.order_no, ticket_id='AA')}".replace("AA",ticket_id),
         success: function(msg){
           console.log(msg);
           var modal = $('#modal-ticket-edit');
           modal.modal('toggle');
-          $('#ticket-edit-form').attr('action', "${request.route_path('orders.sej.order.ticket.data', order_id=order.id, ticket_id='AA')}".replace("AA",ticket_id))
+          $('#ticket-edit-form').attr('action', "${request.route_path('orders.sej.order.ticket.data', order_no=order.order_no, ticket_id='AA')}".replace("AA",ticket_id))
           $('#ticket_type').val(msg['ticket_type'])
           $('#event_name').val(msg['event_name'])
           $('#performance_name').val(msg['performance_name'])

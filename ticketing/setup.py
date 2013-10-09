@@ -96,6 +96,7 @@ requires = [
     'altair.sqlahelper',
     'altair.viewhelpers',
     'altair.formhelpers',
+    'altair.keybreak',
     ]
 
 tests_require = [
@@ -163,7 +164,7 @@ setup(name='altair.app.ticketing',
       main = altair.app.ticketing:main
       [console_scripts]
       inquiry_demo=altair.app.ticketing.cart.commands:inquiry_demo
-      cancel_auth_expired_carts=altair.app.ticketing.cart.commands:cancel_auth_expired_carts
+      release_carts=altair.app.ticketing.cart.commands:release_carts
       venue_import=altair.app.ticketing.scripts.venue_import:main
       update_seat_status=altair.app.ticketing.orders.scripts:update_seat_status
       join_cart_and_order=altair.app.ticketing.cart.commands:join_cart_and_order
@@ -174,7 +175,6 @@ setup(name='altair.app.ticketing',
       send_lots_reports=altair.app.ticketing.events.lots.commands.send_lot_report_mails:main
       cancel_auth=altair.app.ticketing.multicheckout.scripts.cancelauth:main
       sej_nwts_upload=altair.app.ticketing.sej.scripts.sej_nwts_upload:main
-      release_carts=altair.app.ticketing.cart.scripts.release_carts:main
       rakuten_checkout_sales=altair.app.ticketing.checkout.commands:rakuten_checkout_sales
       refund_order=altair.app.ticketing.orders.scripts:refund_order
       sej_send_refund_file_with_proxy=altair.app.ticketing.sej.commands:send_refund_file_with_proxy

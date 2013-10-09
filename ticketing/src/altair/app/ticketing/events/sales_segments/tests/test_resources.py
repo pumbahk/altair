@@ -131,7 +131,7 @@ class UpdateSalesSegmentTests(unittest.TestCase):
         self.assertTrue(ss.public)
         self.assertFalse(ss.reporting)
         self.assertEqual(ss.payment_delivery_method_pairs, [])
-        self.assertEqual(ss.start_at, datetime(2013, 8, 31))
+        self.assertEqual(ss.start_at, datetime(2013, 10, 11, 12, 31))
         self.assertEqual(ss.end_at, datetime(2013, 11, 11, 12, 31))
         self.assertEqual(ss.upper_limit, 10)
         self.assertEqual(ss.order_limit, 20)

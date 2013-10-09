@@ -7,15 +7,15 @@ logger = logging.getLogger(__name__)
 
 from sqlalchemy import update
 from sqlalchemy import and_
+from sqlalchemy.sql.expression import desc
 from sqlalchemy.orm.exc import NoResultFound
 
 import sqlahelper
 
 from .utils import JavaHashMap
-from .models import SejNotification, SejOrder, SejTicket, SejTenant, SejRefundEvent, SejRefundTicket
+from .models import SejNotification, SejOrder, SejTicket, SejTenant, SejRefundEvent, SejRefundTicket, SejNotificationType
 
 from .helpers import make_sej_response, create_hash_from_x_start_params, build_sej_datetime
-from .resources import SejNotificationType
 from .exceptions import SejResponseError
 from altair.app.ticketing.sej.exceptions import SejServerError
 from altair.app.ticketing.sej.payment import request_cancel_order
@@ -55,7 +55,7 @@ def callback_notification(params,
         n.process_number        = hash_map['X_shori_id']
         n.shop_id               = hash_map['X_shop_id']
         n.payment_type          = str(int(hash_map['X_shori_kbn']))
-        n.order_id              = hash_map['X_shop_order_id']
+        n.order_no              = hash_map['X_shop_order_id']
         n.billing_number        = hash_map['X_haraikomi_no']
         n.exchange_number       = hash_map['X_hikikae_no']
         n.total_price           = hash_map['X_goukei_kingaku']
@@ -76,7 +76,7 @@ def callback_notification(params,
         n.process_number                = hash_map['X_shori_id']
         n.shop_id                       = hash_map['X_shop_id']
         n.payment_type                  = str(int(hash_map['X_shori_kbn']))
-        n.order_id                      = hash_map['X_shop_order_id']
+        n.order_no                      = hash_map['X_shop_order_id']
         n.billing_number                = hash_map['X_haraikomi_no']
         n.exchange_number               = hash_map['X_hikikae_no']
         n.payment_type_new              = str(int(hash_map['X_shori_kbn_new']))
@@ -84,10 +84,11 @@ def callback_notification(params,
         n.exchange_number_new           = hash_map['X_hikikae_no_new']
         n.ticketing_due_at_new    = parse(hash_map['X_lmt_time_new'])
         n.barcode_numbers = dict()
-        n.barcode_numbers['barcodes'] = list()
 
-        for idx in range(1,20):
-            n.barcode_numbers['barcodes'].append(hash_map['X_barcode_no_new_%02d' % idx])
+        for idx in range(1, 20):
+            barcode_number = hash_map['X_barcode_no_new_%02d' % idx]
+            if barcode_number:
+                n.barcode_numbers[idx] = barcode_number
         n.processed_at          = parse(hash_map['X_shori_time'])
         n.signature                     = hash_map['xcode']
 
@@ -96,7 +97,7 @@ def callback_notification(params,
     def process_expire():
         n.process_number                = hash_map['X_shori_id']
         n.shop_id                       = hash_map['X_shop_id']
-        n.order_id                      = hash_map['X_shop_order_id']
+        n.order_no                      = hash_map['X_shop_order_id']
         n.payment_type                  = str(int(hash_map['X_shori_kbn']))
         n.ticketing_due_at              = parse(hash_map['X_lmt_time'])
         n.billing_number                = hash_map['X_haraikomi_no']
@@ -129,7 +130,7 @@ def reflect_re_grant(notification):
         .where(
             and_(
                 SejOrder.shop_id         == notification.shop_id,
-                SejOrder.order_id        == notification.order_id,
+                SejOrder.order_no        == notification.order_no,
                 SejOrder.exchange_number == notification.exchange_number,
                 SejOrder.billing_number  == notification.billing_number
             )
@@ -149,7 +150,7 @@ def reflect_re_grant(notification):
                 .where(
                     and_(
                         SejTicket.barcode_number == barcode_number,
-                        SejTicket.order_id == notification.order_id
+                        SejTicket.order_no == notification.order_no
                     )
             ).values(
                 barcode_number = barcode_number
@@ -164,7 +165,7 @@ def reflect_payment_complete (notification):
         .where(
             and_(
                 SejOrder.shop_id         == notification.shop_id,
-                SejOrder.order_id        == notification.order_id,
+                SejOrder.order_no        == notification.order_no,
                 SejOrder.exchange_number == notification.exchange_number,
                 SejOrder.billing_number  == notification.billing_number
             )
@@ -190,13 +191,13 @@ def reflect_expire(notification):
         .where(
             and_(
                 SejOrder.shop_id         == notification.shop_id,
-                SejOrder.order_id        == notification.order_id,
+                SejOrder.order_no        == notification.order_no,
                 SejOrder.exchange_number == notification.exchange_number,
                 SejOrder.billing_number  == notification.billing_number
             )
     ).values(
         process_number                = notification.process_number,
-        order_id                      = notification.order_id,
+        order_no                      = notification.order_no,
         ticketing_due_at              = notification.ticketing_due_at,
         billing_number                = notification.billing_number,
         exchange_number               = notification.exchange_number,
@@ -229,7 +230,7 @@ def create_payment_or_cancel_request_from_record(n):
         'X_shori_id':           n.process_number,
         'X_shop_id':            n.shop_id,
         'X_shori_kbn':          str(int(n.payment_type)),
-        'X_shop_order_id':      n.order_id,
+        'X_shop_order_id':      n.order_no,
         'X_haraikomi_no':       n.billing_number or '',
         'X_hikikae_no':         n.exchange_number or '',
         'X_goukei_kingaku':     str(n.total_price),
@@ -260,7 +261,7 @@ def create_re_grant_request_from_record(n):
         'X_shori_id':           n.process_number,
         'X_shop_id':            n.shop_id,
         'X_shori_kbn':          str(int(n.payment_type)),
-        'X_shop_order_id':      n.order_id,
+        'X_shop_order_id':      n.order_no,
         'X_haraikomi_no':       n.billing_number or '',
         'X_hikikae_no':         n.exchange_number or '',
         'X_shori_kbn_new':      str(int(n.payment_type_new)),
@@ -269,11 +270,11 @@ def create_re_grant_request_from_record(n):
         'X_lmt_time_new':       build_sej_datetime(n.ticketing_due_at_new),
         'X_shori_time':         build_sej_datetime(n.processed_at),
         }
-    if n.barcode_numbers is not None and 'barcodes' in n.barcode_numbers:
-        barcodes = n.barcode_numbers['barcodes']
+    if n.barcode_numbers is not None:
         for i in range(0, 20):
-            barcode = barcodes[i] if i < len(barcodes) else ''
-            params['X_barcode_no_new_%02d' % (i + 1)] = barcode
+            barcode_number = n.barcode_numbers.get(i + 1)
+            if barcode_number:
+                params['X_barcode_no_new_%02d' % (i + 1)] = barcode_number
     return params
 
 def create_expire_request_from_record(n):
@@ -281,7 +282,7 @@ def create_expire_request_from_record(n):
         'X_tuchi_type':         str(SejNotificationType.TicketingExpire.v),
         'X_shori_id':           n.process_number,
         'X_shop_id':            n.shop_id,
-        'X_shop_order_id':      n.order_id,
+        'X_shop_order_id':      n.order_no,
         'X_shori_kbn':          str(n.payment_type),
         'X_lmt_time':           build_sej_datetime(n.ticketing_due_at),
         'X_haraikomi_no':       n.billing_number or '',
@@ -306,8 +307,11 @@ def create_sej_notification_data_from_record(n, secret_key):
     return params
 
 def cancel_sej_order(sej_order, organization_id):
-    if not sej_order or sej_order.cancel_at:
-        logger.error(u'コンビニ決済(セブン-イレブン)のキャンセルに失敗しました %s' % sej_order.order_id if sej_order else None)
+    if not sej_order:
+        logger.error(u'sej_order is None')
+        return False
+    if sej_order.cancel_at:
+        logger.error(u'SejOrder(order_no=%s) is already canceled' % sej_order.order_no if sej_order else None)
         return False
 
     settings = get_current_registry().settings
@@ -318,12 +322,12 @@ def cancel_sej_order(sej_order, organization_id):
     api_key = (tenant and tenant.api_key) or settings.get('sej.api_key')
 
     if sej_order.shop_id != shop_id:
-        logger.error(u'コンビニ決済(セブン-イレブン)のキャンセルに失敗しました Invalid shop_id : %s' % shop_id)
+        logger.error(u'SejOrder(order_no=%s).shop_id (%s) != SejTenant.shop_id (%s)' % (sej_order.order_no, sej_order.shop_id, shop_id))
         return False
 
     try:
         request_cancel_order(
-            order_id=sej_order.order_id,
+            order_no=sej_order.order_no,
             billing_number=sej_order.billing_number,
             exchange_number=sej_order.exchange_number,
             shop_id=shop_id,
@@ -331,8 +335,9 @@ def cancel_sej_order(sej_order, organization_id):
             hostname=inticket_api_url
         )
         return True
-    except SejServerError, e:
-        logger.error(u'コンビニ決済(セブン-イレブン)のキャンセルに失敗しました %s' % e)
+    except SejServerError as e:
+        import sys
+        logger.error(u'Could not cancel SejOrder (%s)' % e, exc_info=sys.exc_info())
         return False
 
 def get_per_order_fee(order):
@@ -371,13 +376,16 @@ def get_ticket_price(order, product_item_id):
     return 0
 
 def refund_sej_order(sej_order, organization_id, order, now):
-    if not sej_order or sej_order.cancel_at:
-        logger.error(u'コンビニ決済(セブン-イレブン)の払戻に失敗しました %s' % sej_order.order_id if sej_order else None)
+    if not sej_order:
+        logger.error(u'sej_order is None')
+        return False
+    if sej_order.cancel_at:
+        logger.error(u'SejOrder(order_no=%s) is already canceled' % sej_order.order_no if sej_order else None)
         return False
 
-    sej_tickets = SejTicket.query.filter_by(order_id=sej_order.id).all()
+    sej_tickets = SejTicket.query.filter_by(order_no=sej_order.order_no).order_by(SejTicket.ticket_idx).all()
     if not sej_tickets:
-        logger.error(u'コンビニ決済(セブン-イレブン)の払戻に失敗しました %s' % sej_order.order_id)
+        logger.error(u'No tickets associated with SejOrder(order_no=%s)' % sej_order.order_no)
         return False
 
     settings = get_current_registry().settings
@@ -412,7 +420,7 @@ def refund_sej_order(sej_order, organization_id, order, now):
     per_order_fee = get_per_order_fee(order.prev)
     for i, sej_ticket in enumerate(sej_tickets):
         rt = SejRefundTicket.filter(and_(
-            SejRefundTicket.order_id==sej_order.order_id,
+            SejRefundTicket.order_no==sej_order.order_no,
             SejRefundTicket.ticket_barcode_number==sej_ticket.barcode_number
         )).first()
         if not rt:
@@ -422,7 +430,7 @@ def refund_sej_order(sej_order, organization_id, order, now):
         rt.available = 1
         rt.refund_event_id = re.id
         rt.event_code_01 = performance.code
-        rt.order_id = sej_order.order_id
+        rt.order_no = sej_order.order_no
         rt.ticket_barcode_number = sej_ticket.barcode_number
         rt.refund_ticket_amount = get_ticket_price(order.prev, sej_ticket.product_item_id)
         rt.refund_other_amount = get_per_ticket_fee(order.prev)
@@ -433,3 +441,6 @@ def refund_sej_order(sej_order, organization_id, order, now):
         DBSession.merge(rt)
 
     return True
+
+def get_sej_order(order_no):
+    return SejOrder.filter_by(order_no=order_no).order_by(desc(SejOrder.branch_no)).first()

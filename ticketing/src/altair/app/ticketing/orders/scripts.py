@@ -126,7 +126,7 @@ def detect_fraud():
     logging.info('start detect_fraud batch')
 
     # クレジットカード決済 x セブンイレブン発券
-    query = Order.query.filter(Order.canceled_at==None)
+    query = Order.query.filter(Order.canceled_at==None, Order.fraud_suspect==None)
     query = query.join(Order.payment_delivery_pair)
     query = query.join(PaymentDeliveryMethodPair.payment_method)
     query = query.filter(PaymentMethod.payment_plugin_id==plugins.MULTICHECKOUT_PAYMENT_PLUGIN_ID)
@@ -157,6 +157,9 @@ def detect_fraud():
             # 同一人物(user_idまたはメールアドレス)による同一公演の注文が2件以上存在
             if len(rows) >= 2:
                 frauds.append(rows)
+                for row in rows:
+                    row.fraud_suspect = True
+                    row.save()
 
     if len(frauds) > 0:
         settings = registry.settings
@@ -180,6 +183,7 @@ def detect_fraud():
         except Exception:
             logging.warn('sendmail fail')
 
+    transaction.commit()
     logging.info('end detect_fraud batch')
 
 

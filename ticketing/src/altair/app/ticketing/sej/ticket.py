@@ -137,7 +137,7 @@ def create_refund_zip_file():
             sej_refund_ticket.refund_event.shop_id,
             sej_refund_ticket.event_code_01,
             sej_refund_ticket.event_code_02,
-            sej_refund_ticket.order_id,
+            sej_refund_ticket.order_no,
             sej_refund_ticket.ticket_barcode_number,
             int(sej_refund_ticket.refund_ticket_amount),
             int(sej_refund_ticket.refund_other_amount)

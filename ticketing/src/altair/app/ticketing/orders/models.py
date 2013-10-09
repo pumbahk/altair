@@ -2,6 +2,7 @@ import sqlalchemy as sa
 from sqlalchemy.sql import and_
 from pyramid.threadlocal import get_current_request
 import sqlalchemy.orm as orm
+from sqlalchemy.sql.expression import desc
 from altair.sqla import session_partaken_by
 
 from altair.app.ticketing.core.models import (
@@ -200,6 +201,7 @@ class OrderSummary(Base):
             Order.__table__.c.shipping_address_id,
             Order.__table__.c.issued,
             Order.__table__.c.user_id,
+            Order.__table__.c.fraud_suspect,
             Order.__table__.c.created_at,
             Order.__table__.c.deleted_at,
             UserProfile.__table__.c.last_name.label('user_profile_last_name'),
@@ -258,6 +260,7 @@ class OrderSummary(Base):
     shipping_address_id = Order.shipping_address_id
     issued = Order.issued
     user_id = Order.user_id
+    fraud_suspect = Order.fraud_suspect
     created_at = Order.created_at
     deleted_at = Order.deleted_at
     user_profile_last_name = UserProfile.__table__.c.last_name
@@ -381,7 +384,7 @@ class OrderSummary(Base):
 
     @property
     def sej_order(self):
-        return SejOrder.query.filter_by(order_id=self.order_no).first()
+        return SejOrder.query.filter_by(order_no=self.order_no).order_by(desc(SejOrder.branch_no)).first()
 
     def _shipping_address(self):
         if self.shipping_address_id is None:

@@ -14,6 +14,7 @@ from altaircms.page.models import Layout
 
 import os 
 here = os.path.abspath(os.path.dirname(__file__))
+@unittest.skip ("* #5609: maybe fix")
 class RenderingTest(unittest.TestCase):
     def tearDown(self):
         tearDown()

@@ -44,7 +44,7 @@ class SejTestFile(unittest.TestCase):
             webob.util.status_reasons[800] = 'OK'
 
             from ..payment import request_fileget
-            from ..resources import SejNotificationType
+            from ..models import SejNotificationType
             from ..file import SejInstantPaymentFileParser
             file = request_fileget(
                 date=datetime.datetime(2011,9,12),

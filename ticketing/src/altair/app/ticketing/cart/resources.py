@@ -1,10 +1,5 @@
 # -*- coding:utf-8 -*-
 
-"""
-
-TODO: 引き当て処理自体はResourceから分離する。
-TODO: cart取得
-"""
 import logging
 
 from datetime import datetime, date
@@ -15,7 +10,6 @@ from pyramid.security import Allow
 from pyramid.decorator import reify
 from pyramid.httpexceptions import HTTPNotFound
 from sqlalchemy.orm.exc import NoResultFound
-#from sqlalchemy.orm import joinedload
 from zope.interface import implementer
 from .interfaces import ICartPayment, ICartDelivery
 from altair.app.ticketing.payments.interfaces import IOrderPayment, IOrderDelivery 
@@ -33,11 +27,13 @@ from ..users import models as u_models
 from . import models as m
 from .api import get_cart_safe
 from .exceptions import NoCartError
+from .interfaces import ICartContext
 from zope.deprecation import deprecate
 from altair.now import get_now
 
 logger = logging.getLogger(__name__)
 
+@implementer(ICartContext)
 class TicketingCartResourceBase(object):
     __acl__ = [
         (Allow, Authenticated, 'view'),
@@ -170,7 +166,7 @@ class TicketingCartResourceBase(object):
                 for datum in data:
                     if datum is not None:
                         datum['event'] = datum['performance'].event
-                raise OutTermSalesException(next=data[0], last=data[1], outer=self)
+                raise OutTermSalesException.from_resource(self, self.request, next=data[0], last=data[1], type_=self.__class__)
             else:
                 raise HTTPNotFound()
         return retval
@@ -181,14 +177,14 @@ class TicketingCartResourceBase(object):
         """
         if self._sales_segment_id is None:
             logger.info("sales_segment_id is not provided")
-            raise NoSalesSegment()
+            raise NoSalesSegment.from_resource(self, self.request, sales_segment_id=None)
 
         # XXX: 件数少ないしリニアサーチでいいよね
         for sales_segment in self.available_sales_segments:
             if sales_segment.id == self._sales_segment_id:
                 return sales_segment
 
-        raise NoSalesSegment()
+        raise NoSalesSegment.from_resource(self, self.request, sales_segment_id=None)
 
     def get_sales_segment(self):
         return self.sales_segment
@@ -397,7 +393,7 @@ class PerformanceOrientedTicketingCartResource(TicketingCartResourceBase):
                 except NoResultFound:
                     pass
                 if performance is None:
-                    raise NoPerformanceError()
+                    raise NoPerformanceError('Performance (id=%d) not found' % self._performance_id)
                 self._performance = performance
             return self._performance
 

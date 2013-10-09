@@ -71,29 +71,43 @@ def skip_needless_content(inp):
 
 
 #xxx: cleanup_svgはxmltreeを書き換えてしまう。なので２回呼び出すとおかしな結果になってしまう
+#todo: refactoring;
 def get_validated_svg_cleaner(svgio, exc_class=TicketCleanerValidationError, sej=False):
     xmltree = get_validated_xmltree(svgio, exc_class=exc_class)
-    xmltree = iff_need_qrcode_insert(xmltree)
+    qr_code_emitter = QRCodeEmitter(xmltree)
+    qr_code_emitter.emit()
     result = TicketSVGValidator(exc_class=exc_class, sej=sej).validate(xmltree)
-    return TicketSVGCleaner(xmltree, result=result)
+    return TicketSVGCleaner(xmltree, result=result, vars_defaults=qr_code_emitter.vars_defaults)
 
-def iff_need_qrcode_insert(xmltree):
-    targets = xmltree.xpath('//n:rect[starts-with(@id, "QR")]', namespaces={"n": SVG_NAMESPACE})
 
-    for target in targets:
-        target.tag = "{{{}}}qrcode".format(TS_SVG_EXT_NAMESPACE)
-        target.attrib["content"] = target.attrib["{{{}}}label".format(INKSCAPE_NAMESPACE)]
-        if "style" in target.attrib:
-            target.attrib.pop("style")
-        if not "eclevel" in target.attrib:
-            target.attrib["eclevel"] = "m"
-    return xmltree
+class QRCodeEmitter(object):
+    def __init__(self, xmltree):
+        self.xmltree = xmltree
+        self.vars_defaults = {}
+
+    def emit(self):
+        targets = self.xmltree.xpath('//n:rect[starts-with(@id, "QR")]', namespaces={"n": SVG_NAMESPACE})
+        for target in targets:
+            target.tag = "{{{ns}}}qrcode".format(ns=TS_SVG_EXT_NAMESPACE)
+            attr_name = "{{{ns}}}label".format(ns=INKSCAPE_NAMESPACE)
+            content = target.attrib[attr_name]
+            target.attrib["content"] = u"{content}".format(content=content)
+
+            ## need prefix?
+            self.vars_defaults[content] = content
+
+            if "style" in target.attrib:
+                target.attrib.pop("style")
+            if not "eclevel" in target.attrib:
+                target.attrib["eclevel"] = "m"
+        return self.xmltree
 
 class TicketSVGCleaner(object):
-    def __init__(self, xmltree, io_create=StringIO, result=None):
+    def __init__(self, xmltree, io_create=StringIO, vars_defaults={}, result=None):
         self.io_create = io_create
         self.xmltree = xmltree
         self.result = result
+        self.vars_defaults = vars_defaults
 
     def get_cleaned_svgio(self):
         if self.result:

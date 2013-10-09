@@ -16,8 +16,8 @@ from os.path import abspath, dirname
 from paste.deploy import loadapp
 
 # from altair.app.ticketing.sej.models import SejCancelEvent
-from altair.app.ticketing.sej.payment import request_fileget, request_cancel_event
-from altair.app.ticketing.sej.resources import SejNotificationType, code_from_notification_type # , SejServerError
+from ..payment import request_fileget, request_cancel_event
+from ..models import SejNotificationType, code_from_notification_type
 
 sys.path.append(abspath(dirname(dirname(__file__))))
 

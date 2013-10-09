@@ -4,17 +4,22 @@ import os
 import re
 from dateutil.parser import parse as parsedate
 from datetime import datetime, timedelta
-from urlparse import urlparse
+from urlparse import urlparse, urlunparse
 import urllib2
 import lxml.html
 import json
 from random import shuffle, sample, randint
 from lxmlmechanize.form import encode_urlencoded_form_data
 from lxmlmechanize.core import Mechanize, FORM_URLENCODE_MIME_TYPE
-from ConfigParser import ConfigParser
+from lxmlmechanize.urllib2ext.auth import KeyChain, KeyChainBackedAuthHandler, Credentials
+from cookielib import CookieJar
 
 class CartBotError(Exception):
     pass
+
+def strip_path_part(url):
+    parsed_url = urlparse(url)
+    return urlunparse((parsed_url[0], parsed_url[1], '', parsed_url[3], parsed_url[4], parsed_url[5]))
 
 def set_form_value(form, k, v):
     elem = form.find('.//*[@name="%s"]' % k)
@@ -295,12 +300,18 @@ class CartBot(object):
         if path != '/cart/completed':
             raise CartBotError('Checkout failure')
 
-        order_no = self.m.page.root.find('.//*[@class="confirmBox"][1]//*[@class="confirm-message"]').text_content().strip()
+        order_no = self.m.page.root.xpath('.//*[@class="confirmBox"][1]//*[@class="confirm-message"]')[0].text_content().strip()
         print 'Checkout successful: order_no=%s' % order_no
         return order_no
 
-    def __init__(self, url, credentials, shipping_address, credit_card_info):
-        self.m = Mechanize()
+    def __init__(self, url, credentials, shipping_address, credit_card_info, http_auth_credentials=None):
+        keychain = KeyChain()
+        if http_auth_credentials:
+            keychain.add(Credentials(strip_path_part(url), http_auth_credentials.get('realm', None), http_auth_credentials['user'], http_auth_credentials['password']))
+        opener = urllib2.build_opener(
+            KeyChainBackedAuthHandler(keychain),
+            urllib2.HTTPCookieProcessor(CookieJar()))
+        self.m = Mechanize(opener=opener)
         self.credentials = credentials
         self.shipping_address = shipping_address
         self.credit_card_info = credit_card_info

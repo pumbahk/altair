@@ -5,6 +5,7 @@
 
 import unittest
 from pyramid import testing
+from mock import patch
 
 def _setup_db():
     from sqlalchemy import create_engine
@@ -128,9 +129,12 @@ class Bj89erCartResourceTests(unittest.TestCase):
     def _makeOne(self, *args, **kwargs):
         return self._getTarget()(*args, **kwargs)
 
-    def test_get_or_create_user(self):
+    @patch('altair.app.ticketing.cart.api.get_cart')
+    def test_get_or_create_user(self, get_cart):
         from altair.app.ticketing.core.models import Host, Organization
         from altair.app.ticketing.users.models import Membership
+
+        get_cart.return_value = testing.DummyModel(id="this-is-cart-id")
 
         request = testing.DummyRequest()
         host = Host(host_name=request.host,
@@ -140,7 +144,6 @@ class Bj89erCartResourceTests(unittest.TestCase):
         self.session.add(host)
         self.session.add(membership)
 
-        request._cart = testing.DummyModel(id="this-is-cart-id")
         request.registry.settings['89ers.event_id'] = '10'
         request.registry.settings['89ers.performance_id'] = '100'
         target = self._makeOne(request)

@@ -2,6 +2,7 @@
 
 from altair.app.ticketing.seed import DataSet
 from altair.app.ticketing.sej.models import *
+from altair.app.ticketing.sej.notification.models import *
 import datetime
 
 class SejTicketTemplateFileData(DataSet):

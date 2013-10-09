@@ -266,8 +266,18 @@ class LotEntryWishTests(unittest.TestCase):
         return self._getTarget()(*args, **kwargs)
 
     def test_system_fee(self):
-        from altair.app.ticketing.core.models import PaymentDeliveryMethodPair
-        from ..models import LotEntry
-        target = self._makeOne(lot_entry=LotEntry(payment_delivery_method_pair=PaymentDeliveryMethodPair(system_fee=315)))
+        from altair.app.ticketing.core.models import PaymentDeliveryMethodPair,\
+            SalesSegment, FeeTypeEnum
+            
+        from ..models import LotEntry, Lot
+        
+        system_fee = 315
 
-        self.assertEqual(target.system_fee, 315)
+        pdmp = PaymentDeliveryMethodPair(system_fee=system_fee,
+                                         system_fee_type=FeeTypeEnum.Once.v[0])
+        ss = SalesSegment()
+        lot = Lot(sales_segment=ss)
+        lot_entry = LotEntry(payment_delivery_method_pair=pdmp, lot=lot)
+        
+        target = self._makeOne(lot_entry=lot_entry)
+        self.assertEqual(target.system_fee, system_fee)

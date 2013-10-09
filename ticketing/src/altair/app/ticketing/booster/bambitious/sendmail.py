@@ -8,5 +8,5 @@ mail_renderer_names = {
 }
 
 extra_info_populators = {
-    '3': lambda order, value: value.update(dict(sej_order=SejOrder.filter(SejOrder.order_id == order.order_no).first())),
+    '3': lambda order, value: value.update(dict(sej_order=SejOrder.filter(SejOrder.order_no == order.order_no).first())),
 }

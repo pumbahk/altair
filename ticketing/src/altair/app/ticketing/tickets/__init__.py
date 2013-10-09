@@ -1,6 +1,15 @@
-# encoding: utf-8
+# -*- coding:utf-8 -*-
+
+def setup_svg(config):
+    from .interfaces import ISVGBuilder
+    from .svg_builder import TicketModelControl
+    from .svg_builder import SVGBuilder
+    import pystache
+    builder = SVGBuilder(TicketModelControl(), renderer=pystache)
+    config.registry.registerUtility(builder, ISVGBuilder)
 
 def includeme(config):
+    config.include(setup_svg)
     config.add_route('tickets.index', '/')
 
     config.add_route('tickets.ticketformats.new', '/ticketformats/new')

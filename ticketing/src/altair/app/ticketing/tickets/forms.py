@@ -206,7 +206,10 @@ class TicketTemplateForm(OurForm):
             return False
         try:
             cleaner = get_validated_svg_cleaner(svgio, exc_class=ValidationError,  sej=(any(delivery_method.delivery_plugin_id == SEJ_DELIVERY_PLUGIN_ID for delivery_method in ticket_format.delivery_methods)))
-            self.data_value = {"drawing": cleaner.get_cleaned_svgio().getvalue()}
+            self.data_value = {
+                "drawing": cleaner.get_cleaned_svgio().getvalue(), 
+                "vars_defaults": cleaner.vars_defaults
+            }
         except ValidationError as e:
             self.drawing.errors = list(self.drawing.errors or ()) + [unicode(e)]
             self.data_value = {"drawing": None}
@@ -273,7 +276,10 @@ class TicketTemplateEditForm(OurForm):
             return False
         try:
             cleaner = get_validated_svg_cleaner(svgio, exc_class=ValidationError,  sej=(any(delivery_method.delivery_plugin_id == SEJ_DELIVERY_PLUGIN_ID for delivery_method in ticket_format.delivery_methods)))
-            self.data_value = {"drawing": cleaner.get_cleaned_svgio().getvalue()}
+            self.data_value = {
+                "drawing": cleaner.get_cleaned_svgio().getvalue(), 
+                "vars_defaults": cleaner.vars_defaults
+            }
         except ValidationError as e:
             self.drawing.errors = list(self.drawing.errors or ()) + [unicode(e)]
             if validate_only:

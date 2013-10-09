@@ -39,13 +39,32 @@
             </tr>
             % endif
             % if sej_order:
+            <% branches = [_sej_order for _sej_order in sej_order.branches(sej_order.order_no) if _sej_order != sej_order] %>
             <tr>
               <th>支払票番号</th>
-              <td>${sej_order.billing_number or ''}</td>
+              <td>
+                % if sej_order.billing_number:
+                  ${sej_order.billing_number}
+                  % if branches:
+                    (再付番前の番号: ${u', '.join(_sej_order.billing_number or u'-' for _sej_order in branches)})
+                  % endif
+                % else:
+                  -
+                %endif
+              </td>
             </tr>
             <tr>
               <th>引換票番号</th>
-              <td>${sej_order.exchange_number or ''}</td>
+              <td>
+                % if sej_order.exchange_number:
+                  ${sej_order.exchange_number}
+                  % if branches:
+                    (再付番前の番号: ${u', '.join(_sej_order.exchange_number or u'-' for _sej_order in branches)})
+                  % endif
+                % else:
+                  -
+                % endif
+              </td>
             </tr>
             % endif
           </table>

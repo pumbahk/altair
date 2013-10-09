@@ -1,17 +1,15 @@
 from pyramid.view import view_config, view_defaults
 from altaircms.auth.api import require_login
-from altaircms.asset.models import ImageAsset
-from altaircms.asset import creation
-from altaircms.lib.itertools import group_by_n
 from . import forms
 from altaircms.formhelpers import AlignChoiceField
 from webob.multidict import MultiDict
 from pyramid.httpexceptions import (
-    HTTPFound
+    HTTPFound, 
+    HTTPNotFound, 
+    HTTPBadRequest
 )
 import logging
 from altaircms import helpers
-import json
 logger = logging.getLogger(__name__)
 
 @view_defaults(custom_predicates=(require_login,))
@@ -19,11 +17,11 @@ class ImageWidgetView(object):
     def __init__(self, context, request):
         self.context = context
         self.request = request
-        self.N = 4
 
     def _create_or_update(self):
         try:
             form = forms.ImageInfoForm(MultiDict(self.request.json_body["data"], page_id=self.request.json_body["page_id"]))
+
             if not form.validate():
                 logger.warn(str(form.errors))
                 r = self.request.json_body.copy()
@@ -56,81 +54,93 @@ class ImageWidgetView(object):
 
     @view_config(route_name="image_widget_delete", renderer="json", request_method="POST")        
     def delete(self):
-        context = self.request.context
+        context = self.context
         widget = context.get_widget(self.request.json_body["pk"])
         context.delete(widget, flush=True)
         return {"status": "ok"}
 
     @view_config(route_name="image_widget_dialog", renderer="altaircms.plugins.widget:image/dialog.html", request_method="GET")
     def dialog(self):
-        assets = group_by_n(self.request.context.get_asset_query(), self.N)
-        pk = self.request.GET.get("pk")
-        widget = self.request.context.get_widget(pk)
+        service = self.context.fetch_service
+        form = service.try_form(self.request.GET, FailureException=HTTPNotFound)
+        widget = self.context.widget_repository.get_or_create(form.pk.data)
+        assets = service.get_assets_list(widget, form.page.data) #pagination
+        max_of_pages = service.max_of_pages(widget)
 
-        if widget.width == 0:
-            widget.width = ""
-        if widget.height == 0:
-            widget.height = ""
         params = widget.to_dict()
-        params.update(widget.attributes or {})      
-        form = forms.ImageInfoForm(**AlignChoiceField.normalize_params(params))
-        return {"assets": assets, "form": form, "widget": widget, "pk": pk}
+        params.update(widget.attributes or {})
+        setting_form = forms.ImageInfoForm(**AlignChoiceField.normalize_params(params))
+        return {"assets": assets, "form": setting_form, "widget": widget, "pk": form.pk.data, "max_of_pages": max_of_pages}
 
+@view_defaults(custom_predicates=(require_login,))
+class ImageWidgetAPIView(object):
+    def __init__(self, context, request):
+        self.context = context
+        self.request = request
 
-    @view_config(route_name="image_widget_search", renderer="json", request_method="POST")
+    @view_config(route_name="image_widget_fetch", renderer="json", request_method="GET")
+    def fetch(self):
+        service = self.context.fetch_service
+        form = service.try_form(self.request.GET, FailureException=HTTPNotFound)
+        widget = self.context.widget_repository.get_or_create(form.pk.data)
+        assets = service.get_assets_list(widget, form.page.data) #pagination
+        return {"assets": dicts_from_asset_list(self.request, assets), "widget": dict_from_widget(self.request, widget), "pk": form.pk.data}
+
+    @view_config(route_name="image_widget_search_first", renderer="json", request_method="POST")
+    def search_first(self):
+        service = self.context.search_service
+        form = service.try_form(self.request.POST, FailureException=HTTPBadRequest)
+        widget = self.context.widget_repository.get_or_create(form.pk.data)
+        assets = service.get_assets_list(widget, form.search_word.data, form.page.data) #pagination
+        max_of_pages = service.max_of_pages(widget, form.search_word.data)
+        return {"assets": dicts_from_asset_list(self.request, assets), "widget": dict_from_widget(self.request, widget), "pk": form.pk.data, "max_of_pages": max_of_pages}
+
+    @view_config(route_name="image_widget_search", renderer="json", request_method="GET")
     def search(self):
-        pk = self.request.POST['pk'] if self.request.POST['pk'] != "None" else None
-        search_word = self.request.POST['search_word']
+        service = self.context.search_service
+        form = service.try_form(self.request.GET, FailureException=HTTPBadRequest)
+        widget = self.context.widget_repository.get_or_create(form.pk.data)
+        assets = service.get_assets_list(widget, form.search_word.data, form.page.data) #pagination
+        return {"assets": dicts_from_asset_list(self.request, assets), "widget": dict_from_widget(self.request, widget), "pk": form.pk.data}
 
-        assets = None
-        if search_word:
-            assets = group_by_n(self.request.context.search_asset(search_word), self.N)
-        else:
-            assets = group_by_n(self.request.context.get_asset_query(), self.N)
+    @view_config(route_name="image_widget_tag_search_first", renderer="json", request_method="POST")
+    def tag_search_first(self):
+        service = self.context.tagsearch_service
+        form = service.try_form(self.request.POST, FailureException=HTTPBadRequest)
+        widget = self.context.widget_repository.get_or_create(form.pk.data)
+        redirect_to = lambda : HTTPFound(location=self.request.route_url("asset_image_list"))
+        assets = service.get_assets_list(widget, form.tags.data, redirect_to, form.page.data) #pagination
+        max_of_pages = service.max_of_pages(widget, form.tags.data, redirect_to)
+        return {"assets": dicts_from_asset_list(self.request, assets), "widget": dict_from_widget(self.request, widget), "pk": form.pk.data, "max_of_pages": max_of_pages}
 
-        assets_dict = create_search_result(self.request, assets)
-        widget = self.request.context.get_widget(pk) if pk else None
-        asset_id = widget.asset_id if widget else None
-
-        return {
-            'widget_asset_id': asset_id,
-            'assets_data': assets_dict
-        }
-
-    @view_config(route_name="image_widget_tag_search", renderer="json", request_method="POST")
+    @view_config(route_name="image_widget_tag_search", renderer="json", request_method="GET")
     def tag_search(self):
-        pk = self.request.POST['pk'] if self.request.POST['pk'] != "None" else None
-        tags = self.request.POST['tags']
-        try:
-            assets = self.request.allowable(ImageAsset)
-            search_result = creation.ImageSearcher(self.request).search(assets, {'tags':tags})
-        except Exception, e:
-            logger.exception(e.message.encode("utf-8"))
-            return HTTPFound(location=self.request.route_url("asset_image_list"))
+        service = self.context.tagsearch_service
+        form = service.try_form(self.request.GET, FailureException=HTTPBadRequest)
+        widget = self.context.widget_repository.get_or_create(form.pk.data)
+        redirect_to = lambda : HTTPFound(location=self.request.route_url("asset_image_list"))
+        assets = service.get_assets_list(widget, form.tags.data, redirect_to, form.page.data) #pagination
+        return {"assets": dicts_from_asset_list(self.request, assets), "widget": dict_from_widget(self.request, widget), "pk": form.pk.data}
 
-        assets = group_by_n(search_result, self.N)
 
-        assets_dict = create_search_result(self.request, assets)
-        widget = self.request.context.get_widget(pk) if pk else None
-        asset_id = widget.asset_id if widget else None
 
-        return {
-            'widget_asset_id': asset_id,
-            'assets_data': assets_dict
-        }
+def dict_from_asset(request, asset):
+    return {
+        "id":asset.id ,
+        "title":asset.title ,
+        "width":asset.width ,
+        "height":asset.height ,
+        "thumbnail_src":helpers.asset.rendering_object(request,asset).thumbnail_path, 
+        "updated_at": asset.updated_at.strftime("%Y/%m/%d %H:%M") if asset.updated_at else "-", 
+    }
 
-def create_search_result(request, assets):
-    assets_dict = {}
-    for groupNo, group in enumerate(assets):
-        img_list = []
-        for img in group:
-            img_info = {
-                "id":img.id ,
-                "title":img.title ,
-                "width":img.width ,
-                "height":img.height ,
-                "thumbnail_path":helpers.asset.rendering_object(request,img).thumbnail_path
-            }
-            img_list.append(img_info)
-        assets_dict.update({groupNo:img_list})
-    return assets_dict
+def dict_from_widget(request, widget):
+    return {
+        "id": widget.id, 
+        "asset_id": widget.asset_id
+    }
+
+def dicts_from_asset_list(request, assets):
+    return [dict_from_asset(request, asset) for asset in assets]
+
+
