@@ -20,6 +20,7 @@ class NoPerformanceError(CartException):
 
 class TooManyCartsCreated(CartException):
     def __init__(self, id_=None):
+        super(TooManyCartsCreated, self).__init__()
         self.id_ = id_
 
 class OverQuantityLimitError(CartException):
@@ -31,9 +32,8 @@ class ZeroQuantityError(CartException):
     pass
 
 class InvalidCartStatusError(CartException):
-    def __init__(self, *args, **kwargs):
-        cart_id = kwargs.pop('cart_id')
-        super(CartException, self).__init__(*args, **kwargs)
+    def __init__(self, cart_id):
+        super(InvalidCartStatusError, self).__init__()
         self.cart_id = cart_id
 
 class ContextualCartException(CartException):
