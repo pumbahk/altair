@@ -243,7 +243,7 @@ detail_summary_columns = summary_columns + [
     t_order.c.transaction_fee, #決済手数料
     t_order.c.delivery_fee, #配送手数料
     t_order.c.system_fee, #システム利用料
-    # (t_order.c.total_amount * t_product_sales_segment.c.margin_ratio / 100).label('margin'), 
+    (t_order.c.total_amount * t_sales_segment.c.margin_ratio / 100).label('margin'), 
     # t_order.c.margin, #内手数料金額
     t_order.c.note, #メモ
 
@@ -479,7 +479,7 @@ class OrderSummaryKeyBreakAdapter(object):
         child3_count = {}
 
         break_counter = KeyBreakCounter(keys=[key, child1_key, child2_key, child3_key])
-        margin = 0  # very hack
+        #margin = 0  # very hack
         for counter, key_changes, item in break_counter(iter):
             if key_changes[key]:
                 result = OrderedDict(last_item)
@@ -491,10 +491,10 @@ class OrderSummaryKeyBreakAdapter(object):
                             result[name] = unicode(result[name]) + "," + unicode(value)
                     else:
                         result[name] = value
-                result['margin'] = margin
+                #result['margin'] = margin
                 self.results.append(result)
                 breaked_items = []
-                margin = 0
+                #margin = 0
 
             # second key break
             if key_changes[key] or key_changes[child1_key]:
@@ -504,7 +504,7 @@ class OrderSummaryKeyBreakAdapter(object):
                         (name,
                          item[childitem1]))
                     child1_count = max(child1_count, counter[child1_key])
-                margin += item['product_margin']
+                # margin += item['product_margin']
 
             # third key break
             if key_changes[key] or key_changes[child1_key] or key_changes[child2_key]:
