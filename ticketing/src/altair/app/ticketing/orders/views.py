@@ -471,12 +471,23 @@ def download(request):
     iheaders = header_intl(csv_headers, japanese_columns)
     logger.debug("csv headers = {0}".format(csv_headers))
     results = iter(query)
-    writer = csv.writer(response, delimiter=',', quoting=csv.QUOTE_ALL)
+    writer = csv.writer(response, delimiter=',')
+
+    if excel_csv:
+        def render_text(v):
+            if v is None:
+                return u''
+            return u'="{0}"'.format(v)
+    else:
+        def render_text(v):
+            if v is None:
+                return u''
+            return v
 
     def render_plain(v):
-        if v is None:
+        if not v:
             return u''
-        return u'="{0}"'.format(v)
+        return v
 
     def render_zip(v):
         if not v:
@@ -496,10 +507,12 @@ def download(request):
 
     renderers['zip'] = render_zip
 
+    for n in ('created_at', 'paid_at', 'delivered_at', 'canceled_at', 'performance_start_on', 'product_quantity', 'item_quantity'):
+        renderers[n] = render_plain
+
     def render(name, v):
-        if name.find('[') > -1:
-            name, _ = name.split('[', 1)
-        renderer = renderers.get(name, render_plain)
+        name, _, _ = name.partition('[')
+        renderer = renderers.get(name, render_text)
         return renderer(v)
 
     writer.writerows([[encode_to_cp932(c)

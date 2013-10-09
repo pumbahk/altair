@@ -441,7 +441,6 @@ class SeatSummaryKeyBreakAdapter(object):
                         result[name] = unicode(value)
                 self.results.append(result)
                 breaked_items = []
-                first = False
 
             for childitem in childitems:
                 name = "{0}".format(childitem)
@@ -450,6 +449,7 @@ class SeatSummaryKeyBreakAdapter(object):
                         (name,
                          item[childitem]))
             last_item = item
+            first = False
 
         result = OrderedDict(last_item)
         for c in childitems:
