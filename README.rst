@@ -58,7 +58,7 @@ mac
   $ env/bin/pip install --upgrade setuptools
   $ cd deploy/dev
   $ python bootstrap.py -d
-  $ bin/buildout -c buildout.local.cfg
+  $ ./buildout.sh
 
 * supervisor で起動
 
@@ -103,7 +103,7 @@ buildout環境構築
 
   $ cd /srv/altair/deploy
   $ python bootstrap.py -d
-  $ bin/buildout
+  $ ./buildout.sh
 
 
 現在実行しているサービスの確認

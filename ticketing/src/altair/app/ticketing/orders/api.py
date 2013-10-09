@@ -351,7 +351,7 @@ class OrderSearchQueryBuilder(SearchQueryBuilderBase, BaseSearchQueryBuilderMixi
         query = query \
             .join(
                 self.targets['SejOrder'],
-                self.targets['subject'].order_no == self.targets['SejOrder'].order_id
+                self.targets['subject'].order_no == self.targets['SejOrder'].order_no
                 ) \
             .filter(or_(
                 self.targets['SejOrder'].billing_number == value,
@@ -535,7 +535,7 @@ class OrderSummarySearchQueryBuilder(SearchQueryBuilderBase):
         query = query \
             .join(
                 self.targets['SejOrder'],
-                self.targets['subject'].order_no == self.targets['SejOrder'].order_id
+                self.targets['subject'].order_no == self.targets['SejOrder'].order_no
                 ) \
             .filter(or_(
                 self.targets['SejOrder'].billing_number == value,

@@ -104,8 +104,14 @@ def ticketdata_from_qrdata(qrdata, event_id="*"):
         "note": note,
         }
 
+def vars_dict_and_seat_pair_from_token(token):
+    d = build_dict_from_ordered_product_item_token(token)
+    if d is None:
+        return None
+    return d, token.seat    
+
 def svg_data_from_token(ordered_product_item_token):
-    pair = build_dict_from_ordered_product_item_token(ordered_product_item_token)
+    pair = vars_dict_and_seat_pair_from_token(ordered_product_item_token)
     if pair is None:
         logger.info("*printqr avg_data_from_token pair=None (token_id=%s)" % ordered_product_item_token.id)
         return []
@@ -132,7 +138,7 @@ def svg_data_from_token(ordered_product_item_token):
     return data_list
 
 def svg_data_from_token_with_descinfo(history, ordered_product_item_token):
-    pair = build_dict_from_ordered_product_item_token(ordered_product_item_token)
+    pair = vars_dict_and_seat_pair_from_token(ordered_product_item_token)
     if pair is None:
         logger.error("*printqr avg_data_from_token_with_desc_info pair=None (token_id=%s)" % ordered_product_item_token.id)
         return []

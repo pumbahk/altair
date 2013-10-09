@@ -128,7 +128,7 @@ class OrderResource(TicketingAdminResource):
         if order_history_id is not None:
             return Order.get(order_history_id, self.organization.id, include_deleted=True)
         order = Order.get(self.order_id, self.organization.id, include_deleted=True)
-        if order.deleted_at:
+        if order and order.deleted_at:
             return Order.filter_by(order_no=order.order_no).first() #logical deleted
         return order
 

@@ -103,10 +103,10 @@ def _build_order(*args, **kwargs):
 
 def _build_sej(*args, **kwargs):
     from altair.app.ticketing.sej.models import SejOrder
-    sejorder = SejOrder(**kwargs)
+    sej_order = SejOrder(**kwargs)
     import sqlahelper
-    sqlahelper.get_session().add(sejorder)
-    return sejorder
+    sqlahelper.get_session().add(sej_order)
+    return sej_order
 
 class SendPurchaseCompleteMailTest(unittest.TestCase, MailTestMixin):
     def setUp(self):
@@ -368,12 +368,12 @@ class SendPurchaseCompleteMailTest(unittest.TestCase, MailTestMixin):
 
         order = _build_order()
 
-        sejorder = _build_sej(order_id=101010,
+        sej_order = _build_sej(order_no=101010,
                               exchange_number="707070", 
                               ticketing_start_at=datetime(3000, 1, 1), 
                               ticketing_due_at=datetime(4000, 1, 1), 
                               )
-        order.order_no = sejorder.order_id
+        order.order_no = sej_order.order_no
         
         payment_method = PaymentMethod(payment_plugin_id=1, name=u"クレジットカード決済")
         from altair.app.ticketing.payments.plugins.multicheckout import PAYMENT_ID
@@ -455,13 +455,13 @@ class SendPurchaseCompleteMailTest(unittest.TestCase, MailTestMixin):
         order = _build_order()
         
         ## extra info
-        sejorder = _build_sej(order_id=101010,
+        sej_order = _build_sej(order_no=101010,
                               billing_number="909090", 
                               payment_due_at=datetime(2000, 1, 1), 
                               exchange_number="707070", 
                               ticketing_start_at=datetime(3000, 1, 1), 
                               ticketing_due_at=datetime(4000, 1, 1))
-        order.order_no = sejorder.order_id
+        order.order_no = sej_order.order_no
         
         payment_method = PaymentMethod(payment_plugin_id=3, name=u"セブン支払い")
         from altair.app.ticketing.payments.plugins.sej import PAYMENT_PLUGIN_ID

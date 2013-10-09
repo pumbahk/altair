@@ -4,6 +4,7 @@ import unittest
 from pyramid import testing
 
 class MatchUpPerformanceSelectorTests(unittest.TestCase):
+    maxDiff = None
 
     def setUp(self):
         self.config = testing.setUp()
@@ -42,7 +43,7 @@ class MatchUpPerformanceSelectorTests(unittest.TestCase):
         self.assertEqual(len(result), 0)
 
     def test_a_sales_segment(self):
-        self.config.add_route('cart.seat_types', '/testing/seat_types/{performance_id}/{sales_segment_id}/{event_id}')
+        self.config.add_route('cart.seat_types2', '/testing/seat_types2/{performance_id}/{sales_segment_id}')
         self.config.add_route('cart.order', '/testing/order/{sales_segment_id}')
         from datetime import datetime
         request = testing.DummyRequest()
@@ -60,33 +61,36 @@ class MatchUpPerformanceSelectorTests(unittest.TestCase):
                         display_order=1,
                         ),
                     name=u"前売券",
+                    start_at=datetime(2013, 1, 1),
                     id=2,
                     upper_limit=3
                     ),
                 DummySalesSegment(
                     performance=DummyPerformance(
                         name=u'testing performance1',
-                        id=4,
+                        id=3,
                         start_on=datetime(2013, 4, 1),
-                        end_on=datetime(2013, 4, 2),
+                        end_on=datetime(2013, 4, 1),
                         venue=testing.DummyModel(name=u"テスト会場"),
                         display_order=3
                         ),
                     name=u"前売券",
-                    id=5,
+                    start_at=datetime(2013, 1, 1),
+                    id=4,
                     upper_limit=10
                     ),
                 DummySalesSegment(
                     performance=DummyPerformance(
                         name=u'testing performance2',
-                        id=6,
+                        id=5,
                         start_on=datetime(2013, 4, 1),
                         end_on=datetime(2013, 4, 2),
                         venue=testing.DummyModel(name=u"テスト会場"),
                         display_order=2
                         ),
                     name=u"前売券",
-                    id=7,
+                    start_at=datetime(2013, 1, 1),
+                    id=6,
                     upper_limit=10
                     ),
                 ]
@@ -96,27 +100,41 @@ class MatchUpPerformanceSelectorTests(unittest.TestCase):
         result = target()
 
         self.assertEqual(len(result), 2)
-        self.assertEqual([pair[0] for pair in result], [u'testing performance1', u'testing performance2'])
+        self.assertEqual(result[0][0], u'testing performance1')
         self.assertEqual(result[0][1][0], 
-                         {'seat_types_url': 'http://example.com/testing/seat_types/1/2/123',
+                         {'id': 2, 
+                          'seat_types_url': 'http://example.com/testing/seat_types2/1/2',
                           'upper_limit': 3, 
                           'order_url': 'http://example.com/testing/order/2', 
-                          'id': 2, 
-                          'name': u'2013-03-31 00:00\u958b\u59cb \u30c6\u30b9\u30c8\u4f1a\u5834 \u524d\u58f2\u5238'})
+                          'name': u'2013年3月31日 - 4月1日 テスト会場 前売券',
+                          'name_pc': u'2013年3月31日 - 4月1日 テスト会場 前売券',
+                          'name_smartphone': u'2013年3月31日 - 4月1日 テスト会場 前売券',
+                          'name_mobile': u'2013年3月31日 - 4月1日 テスト会場 前売券',
+                          })
         self.assertEqual(result[0][1][1],
-                         {'seat_types_url': 'http://example.com/testing/seat_types/4/5/123', 
+                         {'id': 4,
+                          'seat_types_url': 'http://example.com/testing/seat_types2/3/4', 
                           'upper_limit': 10, 
-                          'order_url': 'http://example.com/testing/order/5', 
-                          'name': u'2013-04-01 00:00\u958b\u59cb \u30c6\u30b9\u30c8\u4f1a\u5834 \u524d\u58f2\u5238', 
-                          'id': 5})
+                          'order_url': 'http://example.com/testing/order/4', 
+                          'name': u'2013年4月1日 00:00 テスト会場 前売券',
+                          'name_pc': u'2013年4月1日 00:00 テスト会場 前売券', 
+                          'name_smartphone': u'2013年4月1日 00:00 テスト会場 前売券', 
+                          'name_mobile': u'2013年4月1日 00:00 テスト会場 前売券', 
+                          })
+        self.assertEqual(result[1][0], u'testing performance2')
         self.assertEqual(result[1][1][0],
-                         {'id': 7,
-                          'name': u'2013-04-01 00:00\u958b\u59cb \u30c6\u30b9\u30c8\u4f1a\u5834 \u524d\u58f2\u5238',
-                          'order_url': 'http://example.com/testing/order/7',
-                          'seat_types_url': 'http://example.com/testing/seat_types/6/7/123',
-                          'upper_limit': 10})
+                         {'id': 6,
+                          'seat_types_url': 'http://example.com/testing/seat_types2/5/6',
+                          'upper_limit': 10,
+                          'order_url': 'http://example.com/testing/order/6',
+                          'name': u'2013年4月1日 - 4月2日 テスト会場 前売券',
+                          'name_pc': u'2013年4月1日 - 4月2日 テスト会場 前売券',
+                          'name_smartphone': u'2013年4月1日 - 4月2日 テスト会場 前売券',
+                          'name_mobile': u'2013年4月1日 - 4月2日 テスト会場 前売券',
+                          })
 
 class DatePerformanceSelectorTests(unittest.TestCase):
+    maxDiff = None
 
     def setUp(self):
         self.config = testing.setUp()
@@ -155,7 +173,7 @@ class DatePerformanceSelectorTests(unittest.TestCase):
         self.assertEqual(len(result), 0)
 
     def test_a_sales_segment(self):
-        self.config.add_route('cart.seat_types', '/testing/seat_types/{performance_id}/{sales_segment_id}/{event_id}')
+        self.config.add_route('cart.seat_types2', '/testing/seat_types2/{performance_id}/{sales_segment_id}')
         self.config.add_route('cart.order', '/testing/order/{sales_segment_id}')
         from datetime import datetime
         request = testing.DummyRequest()
@@ -166,19 +184,20 @@ class DatePerformanceSelectorTests(unittest.TestCase):
                 DummySalesSegment(
                     performance=DummyPerformance(
                         name=u'testing performance1',
-                        id=1,
+                        id=2,
                         start_on=datetime(2013, 3, 31),
                         end_on=datetime(2013, 4, 1),
                         venue=testing.DummyModel(name=u"テスト会場"),
                         display_order=1
                         ),
                     name=u"前売券",
-                    id=2,
+                    start_at=datetime(2013, 1, 1),
+                    id=1,
                     upper_limit=3,
                     ),
                 DummySalesSegment(
                     performance=DummyPerformance(
-                        name=u'testing performance1',
+                        name=u'testing performance2',
                         id=4,
                         start_on=datetime(2013, 4, 1),
                         end_on=datetime(2013, 4, 2),
@@ -186,19 +205,35 @@ class DatePerformanceSelectorTests(unittest.TestCase):
                         display_order=2
                         ),
                     name=u"前売券",
+                    start_at=datetime(2013, 1, 1),
+                    id=3,
+                    upper_limit=10,
+                    ),
+                DummySalesSegment(
+                    performance=DummyPerformance(
+                        name=u'testing performance3',
+                        id=6,
+                        start_on=datetime(2013, 4, 1),
+                        end_on=datetime(2013, 4, 1),
+                        venue=testing.DummyModel(name=u"テスト会場"),
+                        display_order=3
+                        ),
+                    name=u"前売券",
+                    start_at=datetime(2013, 1, 1),
                     id=5,
                     upper_limit=10,
                     ),
                 DummySalesSegment(
                     performance=DummyPerformance(
-                        name=u'testing performance2',
-                        id=6,
+                        name=u'testing performance4',
+                        id=8,
                         start_on=datetime(2013, 4, 1),
-                        end_on=datetime(2013, 4, 2),
+                        end_on=datetime(2013, 4, 1),
                         venue=testing.DummyModel(name=u"テスト会場"),
                         display_order=3
                         ),
                     name=u"前売券",
+                    start_at=datetime(2013, 1, 2),
                     id=7,
                     upper_limit=10,
                     ),
@@ -208,27 +243,51 @@ class DatePerformanceSelectorTests(unittest.TestCase):
         target = self._makeOne(request)
         result = target()
 
-        self.assertEqual(len(result), 2)
-        self.assertEqual([pair[0] for pair in result], [u'2013年03月31日', u'2013年04月01日'])
+        self.assertEqual(len(result), 3)
 
+        self.assertEqual(result[0][0], u'2013年3月31日 - 4月1日')
         self.assertEqual(result[0][1][0], 
-                         {'seat_types_url': 'http://example.com/testing/seat_types/1/2/123',
+                         {'id': 1,
+                          'seat_types_url': 'http://example.com/testing/seat_types2/2/1',
+                          'order_url': 'http://example.com/testing/order/1', 
                           'upper_limit': 3, 
-                          'order_url': 'http://example.com/testing/order/2', 
-                          'id': 2, 
-                          'name': u'2013-03-31 00:00\u958b\u59cb \u30c6\u30b9\u30c8\u4f1a\u5834 \u524d\u58f2\u5238'})
+                          'name': u'2013年3月31日 - 4月1日 テスト会場 前売券',
+                          'name_pc': u'テスト会場 前売券',
+                          'name_smartphone': u'テスト会場 前売券',
+                          'name_mobile': u'2013年3月31日 - 4月1日 テスト会場 前売券',
+                          })
+        self.assertEqual(result[1][0], u'2013年4月1日 - 4月2日')
         self.assertEqual(result[1][1][0],
-                         {'seat_types_url': 'http://example.com/testing/seat_types/4/5/123', 
+                         {'id': 3,
+                          'seat_types_url': 'http://example.com/testing/seat_types2/4/3', 
+                          'order_url': 'http://example.com/testing/order/3',
                           'upper_limit': 10, 
-                          'order_url': 'http://example.com/testing/order/5', 
-                          'name': u'2013-04-01 00:00\u958b\u59cb \u30c6\u30b9\u30c8\u4f1a\u5834 \u524d\u58f2\u5238', 
-                          'id': 5})
-        self.assertEqual(result[1][1][1],
+                          'name': u'2013年4月1日 - 4月2日 テスト会場 前売券',
+                          'name_pc': u'テスト会場 前売券',
+                          'name_smartphone': u'テスト会場 前売券',
+                          'name_mobile': u'2013年4月1日 - 4月2日 テスト会場 前売券',
+                         })
+        self.assertEqual(result[2][0], u'2013年4月1日')
+        self.assertEqual(result[2][1][0],
+                         {'id': 5,
+                          'seat_types_url': 'http://example.com/testing/seat_types2/6/5',
+                          'order_url': 'http://example.com/testing/order/5',
+                          'upper_limit': 10,
+                          'name': u'2013年4月1日 00:00 テスト会場 前売券',
+                          'name_pc': u'00:00 テスト会場 前売券',
+                          'name_smartphone': u'00:00 テスト会場 前売券',
+                          'name_mobile': u'2013年4月1日 00:00 テスト会場 前売券',
+                          })
+        self.assertEqual(result[2][1][1],
                          {'id': 7,
-                          'name': u'2013-04-01 00:00\u958b\u59cb \u30c6\u30b9\u30c8\u4f1a\u5834 \u524d\u58f2\u5238',
                           'order_url': 'http://example.com/testing/order/7',
-                          'seat_types_url': 'http://example.com/testing/seat_types/6/7/123',
-                          'upper_limit': 10})
+                          'seat_types_url': 'http://example.com/testing/seat_types2/8/7',
+                          'upper_limit': 10,
+                          'name': u'2013年4月1日 00:00 テスト会場 前売券',
+                          'name_pc': u'00:00 テスト会場 前売券',
+                          'name_smartphone': u'00:00 テスト会場 前売券',
+                          'name_mobile': u'2013年4月1日 00:00 テスト会場 前売券',
+                          })
         
 class DummyEvent(testing.DummyModel):
     pass

@@ -135,6 +135,12 @@ class SalesSegmentGroups(BaseView):
     @view_config(route_name='sales_segment_groups.delete')
     def delete(self):
         location = route_path('sales_segment_groups.index', self.request, event_id=self.context.sales_segment_group.event_id)
+
+        if self.context.sales_segment_group.sales_segments:
+            self.request.session.flash(u"この販売区分グループは"
+                                       u"販売区分を持っているため"
+                                       u"削除できません")
+            return HTTPFound(location=location)
         try:
             self.context.sales_segment_group.delete()
             self.request.session.flash(u'販売区分グループを削除しました')

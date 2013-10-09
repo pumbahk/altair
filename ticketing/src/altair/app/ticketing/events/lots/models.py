@@ -192,7 +192,7 @@ class LotWishSummary(Base):
                  MultiCheckoutOrderStatus.Status!=None),
     ).outerjoin(
         SejOrder.__table__,
-        SejOrder.order_id==LotEntry.entry_no,
+        SejOrder.order_no==LotEntry.entry_no,
     ).outerjoin(
         Order.__table__,
         and_(Order.id==LotEntry.order_id,

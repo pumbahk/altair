@@ -64,6 +64,10 @@ cart.order_messages = {
         message: function(order_form_presenter){
             return order_form_presenter.showOverUpperLimitMessage();
         }
+    },
+    'too many carts': {
+        title: '購入エラー',
+        message: '誠に申し訳ございませんが、現在ご購入手続を進めることができない状況となっております。しばらく経ってから再度お試しください。'
     }
 };
 
@@ -1184,6 +1188,7 @@ cart.VenueView = Backbone.View.extend({
     },
     reset: function () {
         this.currentViewer.venueviewer("unselectAll");
+        this.currentViewer.venueviewer("destroySeats");
         this.currentViewer.venueviewer("navigate", this.currentViewer.venueviewer("root"));
     }
 });

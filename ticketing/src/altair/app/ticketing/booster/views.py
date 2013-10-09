@@ -111,7 +111,7 @@ class ConfirmView(object):
         form = cart_schemas.CSRFSecureForm(csrf_context=self.request.session)
         cart = self.request.context.cart
         if cart.shipping_address is None:
-            raise InvalidCartStatusError(cart.id)
+            raise InvalidCartStatusError.from_request(self.request.context, self.request, 'cart.shipping_address is None', cart_id=cart.id)
 
         payment = Payment(cart, self.request)
         try:

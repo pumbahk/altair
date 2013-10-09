@@ -11,7 +11,7 @@ import argparse
 import csv
 
 from pyramid.paster import bootstrap
-from ..resources import SejNotificationType
+from ..models import SejNotificationType
 from ..exceptions import SejServerError
 from ..file import parsers, SejFileReader
 

@@ -29,7 +29,7 @@ class SejTest(unittest.TestCase):
         '''入金発券完了通知'''
         import sqlahelper
         from webob.multidict import MultiDict
-        from altair.app.ticketing.sej.models import SejOrder
+        from altair.app.ticketing.sej.models import SejOrder, SejTicket
         from altair.app.ticketing.sej.payment import SejOrderUpdateReason, SejPaymentType
         from altair.app.ticketing.sej.api import callback_notification
 
@@ -39,7 +39,7 @@ class SejTest(unittest.TestCase):
         sejOrder.billing_number        = u'00000001'
         sejOrder.ticket_count          = 1
         sejOrder.exchange_sheet_url    = u'https://www.r1test.com/order/hi.do'
-        sejOrder.order_id              = u'orderid00001'
+        sejOrder.order_no              = u'orderid00001'
         sejOrder.exchange_sheet_number = u'11111111'
         sejOrder.exchange_number       = u'22222222'
         sejOrder.order_at              = datetime.datetime.now()
@@ -72,7 +72,7 @@ class SejTest(unittest.TestCase):
 
         assert response == '<SENBDATA>status=800&</SENBDATA><SENBDATA>DATA=END</SENBDATA>'
         from altair.app.ticketing.sej.models import SejNotification
-        n = SejNotification.query.filter_by(order_id = u'120607191915', billing_number=u'2329873576572').one()
+        n = SejNotification.query.filter_by(order_no=u'120607191915', billing_number=u'2329873576572').one()
 
         assert n.process_number        == '000000036380'
         assert int(n.payment_type)     == SejPaymentType.CashOnDelivery.v
@@ -121,7 +121,7 @@ class SejTest(unittest.TestCase):
 
         assert response == '<SENBDATA>status=800&</SENBDATA><SENBDATA>DATA=END</SENBDATA>'
         from altair.app.ticketing.sej.models import SejNotification
-        n = SejNotification.query.filter_by(order_id = u'000000000600', billing_number=u'2343068205221').one()
+        n = SejNotification.query.filter_by(order_no=u'000000000600', billing_number=u'2343068205221').one()
 
         assert n.process_number == u'000000036605'
         assert int(n.payment_type )         == SejPaymentType.CashOnDelivery.v
@@ -178,11 +178,11 @@ class SejTest(unittest.TestCase):
 
         assert response == '<SENBDATA>status=800&</SENBDATA><SENBDATA>DATA=END</SENBDATA>'
         from altair.app.ticketing.sej.models import SejNotification
-        n = SejNotification.query.filter_by(order_id = u'000000000605', billing_number=u'2374045665660').one()
+        n = SejNotification.query.filter_by(order_no=u'000000000605', billing_number=u'2374045665660').one()
 
         assert n.process_number         == u'000000036665'
         assert n.shop_id                == u'30520'
-        assert n.order_id               == u'000000000605'
+        assert n.order_no               == u'000000000605'
         assert n.notification_type      == u'72'
         assert int(n.payment_type )     == SejPaymentType.CashOnDelivery.v
         assert n.billing_number         == u'2374045665660'
@@ -206,7 +206,7 @@ class SejTest(unittest.TestCase):
         sej_order.exchange_number = u'12345678'
         sej_order.ticket_count  = 1
         sej_order.url_info      = u'https://www.r1test.com/order/hi.do&iraihyo_id_00=11111111'
-        sej_order.order_id      = u'orderid00001'
+        sej_order.order_no      = u'orderid00001'
         sej_order.exchange_sheet_number = u'11111111'
         sej_order.order_at      = datetime.datetime.now()
 
@@ -217,7 +217,7 @@ class SejTest(unittest.TestCase):
         DBSession.flush()
 
         request_cancel_order(
-            order_id=u'orderid00001',
+            order_no=u'orderid00001',
             billing_number=u'00000001',
             exchange_number ='12345678',
             hostname=u"http://127.0.0.1:38002"
@@ -228,7 +228,7 @@ class SejTest(unittest.TestCase):
         self.assertEqual(self.server.request.method, 'POST')
         self.assertEqual(self.server.request.url, 'http://127.0.0.1:38002/order/cancelorder.do')
 
-        sej_order = SejOrder.query.filter_by(order_id = u'orderid00001', billing_number=u'00000001').one()
+        sej_order = SejOrder.query.filter_by(order_no=u'orderid00001', billing_number=u'00000001').one()
 
         assert sej_order.cancel_at is not None
 
@@ -236,14 +236,14 @@ class SejTest(unittest.TestCase):
         '''2-1.決済要求 代引き'''
 
         from altair.app.ticketing.sej.ticket import SejTicketDataXml
-        from altair.app.ticketing.sej.models import SejOrder
+        from altair.app.ticketing.sej.models import SejOrder, SejTicket
         from altair.app.ticketing.sej.payment import SejPaymentType, SejTicketType, request_order
 
         import webob.util
 
         sej_sample_response\
             = '<SENBDATA>' + \
-                'X_shop_order_id=%(order_id)s&'+ \
+                'X_shop_order_id=%(order_no)s&'+ \
                 'X_haraikomi_no=%(haraikomi_no)s&' + \
                 'X_url_info=https://www.r1test.com/order/hi.do&' +\
                 'iraihyo_id_00=%(iraihyo_id_00)s&' + \
@@ -257,7 +257,7 @@ class SejTest(unittest.TestCase):
 
         def sej_dummy_response(environ):
             return sej_sample_response % dict(
-                order_id         = 'orderid00001',
+                order_no         = 'orderid00001',
                 haraikomi_no     = '0000000001',
                 iraihyo_id_00    = '11111111',
                 ticket_total_num = 3,
@@ -271,7 +271,7 @@ class SejTest(unittest.TestCase):
             shop_name       = u'楽天チケット',
             contact_01      = u'contact',
             contact_02      = u'連絡先2',
-            order_id        = u"orderid00001",
+            order_no        = u"orderid00001",
             username        = u"お客様氏名",
             username_kana   = u'コイズミモリヨシ',
             tel             = u'0312341234',
@@ -355,44 +355,45 @@ class SejTest(unittest.TestCase):
         self.assertEqual(self.server.request.method, 'POST')
         self.assertEqual(self.server.request.url, 'http://127.0.0.1:38001/order/order.do')
 
-        order = SejOrder.query.filter_by(order_id = u'orderid00001', billing_number=u'0000000001').one()
+        sej_order = SejOrder.query.filter_by(order_no=u'orderid00001', billing_number=u'0000000001').one()
+        sej_tickets = SejTicket.query.filter_by(order_no=sej_order.order_no).order_by(SejTicket.ticket_idx).all()
 
-        assert order is not None
-        assert order.total_price    == 15000
-        assert order.ticket_price   == 13000
-        assert order.commission_fee == 1000
-        assert order.ticketing_fee  == 1000
-        assert order.total_ticket_count == 3
-        assert order.ticket_count == 2
-        assert order.exchange_sheet_number == u'11111111'
-        assert order.billing_number == u'0000000001'
-        assert order.exchange_sheet_url == u'https://www.r1test.com/order/hi.do'
-        assert order.tickets[0].barcode_number == '00001'
+        assert sej_order is not None
+        assert sej_order.total_price    == 15000
+        assert sej_order.ticket_price   == 13000
+        assert sej_order.commission_fee == 1000
+        assert sej_order.ticketing_fee  == 1000
+        assert sej_order.total_ticket_count == 3
+        assert sej_order.ticket_count == 2
+        assert sej_order.exchange_sheet_number == u'11111111'
+        assert sej_order.billing_number == u'0000000001'
+        assert sej_order.exchange_sheet_url == u'https://www.r1test.com/order/hi.do'
+        assert sej_tickets[0].barcode_number == '00001'
 
-        assert order.tickets[0].ticket_idx           == 1
-        assert int(order.tickets[0].ticket_type)     == SejTicketType.TicketWithBarcode.v # XXX: enumなので文字列として格納される
-        assert order.tickets[0].event_name           == u'イベント名1'
-        assert order.tickets[0].performance_name     == u'パフォーマンス名'
-        assert order.tickets[0].performance_datetime == datetime.datetime(2012,8,31,18,00)
-        assert order.tickets[0].ticket_template_id   == u'TTTS000001'
-        assert order.tickets[0].ticket_data_xml      is not None
+        assert sej_tickets[0].ticket_idx           == 1
+        assert int(sej_tickets[0].ticket_type)     == SejTicketType.TicketWithBarcode.v # XXX: enumなので文字列として格納される
+        assert sej_tickets[0].event_name           == u'イベント名1'
+        assert sej_tickets[0].performance_name     == u'パフォーマンス名'
+        assert sej_tickets[0].performance_datetime == datetime.datetime(2012,8,31,18,00)
+        assert sej_tickets[0].ticket_template_id   == u'TTTS000001'
+        assert sej_tickets[0].ticket_data_xml      is not None
 
-        assert order.tickets[1].barcode_number == '00002'
-        assert order.tickets[2].barcode_number == '00003'
+        assert sej_tickets[1].barcode_number == '00002'
+        assert sej_tickets[2].barcode_number == '00003'
 
 
     def test_request_order_prepayment(self):
         '''2-1.決済要求 支払い済み'''
         import sqlahelper
         from altair.app.ticketing.sej.ticket import SejTicketDataXml
-        from altair.app.ticketing.sej.models import SejOrder
+        from altair.app.ticketing.sej.models import SejOrder, SejTicket
         from altair.app.ticketing.sej.payment import SejPaymentType, SejTicketType, request_order
 
         import webob.util
 
         sej_sample_response\
             = '<SENBDATA>' + \
-            'X_shop_order_id=%(order_id)s&'+ \
+            'X_shop_order_id=%(order_no)s&'+ \
             'X_haraikomi_no=%(haraikomi_no)s&' + \
             'X_hikikae_no=%(hikikae_no)s&' + \
             'X_url_info=https://www.r1test.com/order/hi.do&' +\
@@ -407,7 +408,7 @@ class SejTest(unittest.TestCase):
 
         def sej_dummy_response(environ):
             return sej_sample_response % dict(
-                order_id         = 'orderid00001',
+                order_no         = 'orderid00001',
                 haraikomi_no     = '0000000001',
                 iraihyo_id_00    = '11111111',
                 hikikae_no       = '22222222',
@@ -422,7 +423,7 @@ class SejTest(unittest.TestCase):
              shop_name       = u'楽天チケット',
              contact_01      = u'contact',
              contact_02      = u'連絡先2',
-             order_id        = u"orderid00001",
+             order_no        = u"orderid00001",
              username        = u"お客様氏名",
              username_kana   = u'コイズミモリヨシ',
              tel             = u'0312341234',
@@ -506,14 +507,15 @@ class SejTest(unittest.TestCase):
         self.assertEqual(self.server.request.method, 'POST')
         self.assertEqual(self.server.request.url, 'http://127.0.0.1:38001/order/order.do')
 
-        sej_order = SejOrder.query.filter_by(order_id = u'orderid00001', billing_number=u'0000000001').one()
+        sej_order = SejOrder.query.filter_by(order_no=u'orderid00001', billing_number=u'0000000001').one()
 
         assert sej_order is not None
         assert sej_order.total_ticket_count == 3
         assert sej_order.ticket_count == 2
-        assert len(sej_order.tickets) == 3
+        sej_tickets = SejTicket.query.filter_by(order_no=sej_order.order_no).order_by(SejTicket.ticket_idx).all()
+        assert len(sej_tickets) == 3
         idx = 1
-        for ticket in sej_order.tickets:
+        for ticket in sej_tickets:
             assert ticket.ticket_idx == idx
             assert ticket.event_name == u'イベント名'
             assert ticket.performance_name == u'パフォーマンス名'
@@ -524,23 +526,24 @@ class SejTest(unittest.TestCase):
         assert sej_order.billing_number == u'0000000001'
         assert sej_order.exchange_sheet_url == u'https://www.r1test.com/order/hi.do'
 
-        assert sej_order.tickets[0].barcode_number == '00001'
-        assert sej_order.tickets[1].barcode_number == '00002'
-        assert sej_order.tickets[2].barcode_number == '00003'
+        sej_tickets = SejTicket.query.filter_by(order_no=sej_order.order_no).order_by(SejTicket.ticket_idx).all()
+        assert sej_tickets[0].barcode_number == '00001'
+        assert sej_tickets[1].barcode_number == '00002'
+        assert sej_tickets[2].barcode_number == '00003'
 
-        assert sej_order.tickets[0].ticket_idx           == 1
-        assert sej_order.tickets[0].ticket_type          == SejTicketType.TicketWithBarcode.v
-        assert sej_order.tickets[0].event_name           == u'イベント名'
-        assert sej_order.tickets[0].performance_name     == u'パフォーマンス名'
-        assert sej_order.tickets[0].performance_datetime == datetime.datetime(2012,8,31,18,00)
-        assert sej_order.tickets[0].ticket_template_id   == u'TTTS000001'
-        assert sej_order.tickets[0].ticket_data_xml      is not None
+        assert sej_tickets[0].ticket_idx           == 1
+        assert sej_tickets[0].ticket_type          == '%d' % SejTicketType.TicketWithBarcode.v
+        assert sej_tickets[0].event_name           == u'イベント名'
+        assert sej_tickets[0].performance_name     == u'パフォーマンス名'
+        assert sej_tickets[0].performance_datetime == datetime.datetime(2012,8,31,18,00)
+        assert sej_tickets[0].ticket_template_id   == u'TTTS000001'
+        assert sej_tickets[0].ticket_data_xml      is not None
 
     def test_request_order_cancel(self):
 
         import webob.util
         import sqlahelper
-        from altair.app.ticketing.sej.models import SejOrder
+        from altair.app.ticketing.sej.models import SejOrder, SejTicket
         from altair.app.ticketing.sej.payment import SejOrderUpdateReason, request_cancel_order
         webob.util.status_reasons[800] = 'OK'
 
@@ -553,7 +556,7 @@ class SejTest(unittest.TestCase):
         sej_order.exchange_number   = u'00001111'
         sej_order.ticket_count      = 1
         sej_order.exchange_sheet_url      = u'https://www.r1test.com/order/hi.do&iraihyo_id_00=11111111'
-        sej_order.order_id      = u'orderid00001'
+        sej_order.order_no      = u'orderid00001'
         sej_order.exchange_sheet_number = u'11111111'
         sej_order.order_at      = datetime.datetime.now()
 
@@ -563,7 +566,7 @@ class SejTest(unittest.TestCase):
         DBSession.flush()
 
         request_cancel_order(
-            order_id=u'orderid00001',
+            order_no=u'orderid00001',
             billing_number=u'00000001',
             exchange_number=u'00001111',
             hostname=u"http://127.0.0.1:38002"
@@ -575,187 +578,8 @@ class SejTest(unittest.TestCase):
         self.assertEqual(self.server.request.method, 'POST')
         self.assertEqual(self.server.request.url, 'http://127.0.0.1:38002/order/cancelorder.do')
 
-        sej_order = SejOrder.query.filter_by(order_id = u'orderid00001', billing_number=u'00000001').one()
+        sej_order = SejOrder.query.filter_by(order_no=u'orderid00001', billing_number=u'00000001').one()
         assert sej_order.cancel_at is not None
-
-    # def test_refund_file(self):
-
-    #     from altair.app.ticketing.sej.models import SejOrder, SejCancelTicket, SejCancelEvent
-    #     from altair.app.ticketing.sej.payment import SejOrderUpdateReason, SejPaymentType, request_cancel_event
-
-    #     import sqlahelper
-    #     DBSession = sqlahelper.get_session()
-
-    #     event = SejCancelEvent()
-    #     event.available = 1
-    #     event.shop_id = u'30520'
-    #     event.event_code_01  = u'EPZED'
-    #     event.event_code_02  = u'0709A'
-    #     event.title = u'入金、払戻用興行'
-    #     event.sub_title = u'入金、払戻用公演'
-    #     event.event_at = datetime.datetime(2012,8,31,18,00)
-    #     event.start_at = datetime.datetime(2012,6,7,18,30)
-    #     event.end_at = datetime.datetime(2012,6,10,18,30)
-    #     event.expire_at = datetime.datetime(2012,6,10,18,30)
-    #     event.event_expire_at = datetime.datetime(2012,6,10,18,30)
-    #     event.ticket_expire_at = datetime.datetime(2012,7,10,18,30)
-    #     event.disapproval_reason = u''
-    #     event.need_stub = 1
-    #     event.remarks = u'備考'
-    #     event.un_use_01 = u''
-    #     event.un_use_02 = u''
-    #     event.un_use_03 = u''
-    #     event.un_use_04 = u''
-    #     event.un_use_05 = u''
-
-    #     event.tickets = list()
-
-    #     DBSession.add(event)
-
-    #     ticket = SejCancelTicket()
-    #     ticket.available = 1
-    #     ticket.shop_id = u'30520'
-    #     ticket.event_code_01  = u'EPZED'
-    #     ticket.event_code_02  = u'0709A'
-    #     ticket.order_id  = u'120605112150'
-    #     ticket.ticket_barcode_number = u'2222222222222'
-    #     ticket.refund_ticket_amount = 13000
-    #     ticket.refund_amount = 2000
-    #     DBSession.add(ticket)
-    #     event.tickets.append(ticket)
-
-
-    #     DBSession.flush()
-
-
-    #     request_cancel_event(event)
-
-    # def test_refund_file(self):
-
-    #     from altair.app.ticketing.sej.models import SejOrder, SejCancelTicket, SejCancelEvent
-    #     from altair.app.ticketing.sej.payment import SejOrderUpdateReason, SejPaymentType, request_cancel_event
-
-    #     import sqlahelper
-    #     DBSession = sqlahelper.get_session()
-
-    #     event1 = SejCancelEvent()
-    #     event1.available = 1
-    #     event1.shop_id = u'30520'
-    #     event1.event_code_01  = u'EPZED'
-    #     event1.event_code_02  = u'0709A'
-    #     event1.title = u'入金、払戻用興行'
-    #     event1.sub_title = u'入金、払戻用公演'
-    #     event1.event_at = datetime.datetime(2012,8,31,18,00)
-    #     event1.start_at = datetime.datetime(2012,6,7,18,30)
-    #     event1.end_at = datetime.datetime(2012,6,10,18,30)
-    #     event1.event_expire_at = datetime.datetime(2012,6,10,18,30)
-    #     event1.ticket_expire_at = datetime.datetime(2012,7,10,18,30)
-    #     event1.refund_enabled = 1
-    #     event1.disapproval_reason = None
-    #     event1.need_stub = 1
-    #     event1.remarks = u'備考'
-    #     event1.un_use_01 = u''
-    #     event1.un_use_02 = u''
-    #     event1.un_use_03 = u''
-    #     event1.un_use_04 = u''
-    #     event1.un_use_05 = u''
-
-    #     event1.tickets = list()
-
-    #     DBSession.add(event1)
-
-    #     event2 = SejCancelEvent()
-    #     event2.available = 1
-    #     event2.shop_id = u'30520'
-    #     event2.event_code_01  = u'EPZED'
-    #     event2.event_code_02  = u'0709B'
-    #     event2.title = u'入金、払戻用興行'
-    #     event2.sub_title = u'入金、払戻用公演'
-    #     event2.event_at = datetime.datetime(2012,8,31,18,00)
-    #     event2.start_at = datetime.datetime(2012,6,7,18,30)
-    #     event2.end_at = datetime.datetime(2012,6,10,18,30)
-    #     event2.event_expire_at = datetime.datetime(2012,6,10,18,30)
-    #     event2.ticket_expire_at = datetime.datetime(2012,7,10,18,30)
-    #     event2.refund_enabled = 1
-    #     event2.disapproval_reason = None
-    #     event2.need_stub = 1
-    #     event2.remarks = u'備考'
-    #     event2.un_use_01 = u''
-    #     event2.un_use_02 = u''
-    #     event2.un_use_03 = u''
-    #     event2.un_use_04 = u''
-    #     event2.un_use_05 = u''
-
-    #     event2.tickets = list()
-
-    #     DBSession.add(event2)
-
-    #     event3 = SejCancelEvent()
-    #     event3.available = 1
-    #     event3.shop_id = u'30520'
-    #     event3.event_code_01  = u'EPZED'
-    #     event3.event_code_02  = u'0709C'
-    #     event3.title = u'入金、払戻用興行'
-    #     event3.sub_title = u'入金、払戻用公演'
-    #     event3.event_at = datetime.datetime(2012,8,31,18,00)
-    #     event3.start_at = datetime.datetime(2012,6,7,18,30)
-    #     event3.end_at = datetime.datetime(2012,6,10,18,30)
-    #     event3.event_expire_at = datetime.datetime(2012,6,10,18,30)
-    #     event3.ticket_expire_at = datetime.datetime(2012,7,10,18,30)
-    #     event3.refund_enabled = 1
-    #     event3.disapproval_reason = None
-    #     event3.need_stub = 1
-    #     event3.remarks = u'備考'
-    #     event3.un_use_01 = u''
-    #     event3.un_use_02 = u''
-    #     event3.un_use_03 = u''
-    #     event3.un_use_04 = u''
-    #     event3.un_use_05 = u''
-
-    #     event3.tickets = list()
-
-    #     DBSession.add(event2)
-
-    #     ticket = SejCancelTicket()
-    #     ticket.available = 1
-    #     ticket.shop_id = u'30520'
-    #     ticket.event_code_01  = u'EPZED'
-    #     ticket.event_code_02  = u'0709A'
-    #     ticket.order_id  = u'120607195249'
-    #     ticket.ticket_barcode_number = u'6200004507473'
-    #     ticket.refund_ticket_amount = 13000
-    #     ticket.refund_amount = 1000
-    #     DBSession.add(ticket)
-    #     event1.tickets.append(ticket)
-
-    #     ticket = SejCancelTicket()
-    #     ticket.available = 1
-    #     ticket.shop_id = u'30520'
-    #     ticket.event_code_01  = u'EPZED'
-    #     ticket.event_code_02  = u'0709B'
-    #     ticket.order_id  = u'120607195250'
-    #     ticket.ticket_barcode_number = u'6200004507480'
-    #     ticket.refund_ticket_amount = 13000
-    #     ticket.refund_amount = 1000
-    #     DBSession.add(ticket)
-    #     event2.tickets.append(ticket)
-
-    #     ticket = SejCancelTicket()
-    #     ticket.available = 1
-    #     ticket.shop_id = u'30520'
-    #     ticket.event_code_01  = u'EPZED'
-    #     ticket.event_code_02  = u'0709A'
-    #     ticket.order_id  = u'120607200334'
-    #     ticket.ticket_barcode_number = u'6200004507497'
-    #     ticket.refund_ticket_amount = 13000
-    #     ticket.refund_amount = 1000
-    #     DBSession.add(ticket)
-    #     event3.tickets.append(ticket)
-
-    #     DBSession.flush()
-
-    #     request_cancel_event([event1, event2, event3])
-
 
     def test_create_ticket_template(self):
         from altair.app.ticketing.sej.models import SejTicketTemplateFile

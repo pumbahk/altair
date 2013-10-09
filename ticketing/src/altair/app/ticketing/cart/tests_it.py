@@ -52,6 +52,10 @@ class ReserveViewTests(unittest.TestCase):
         event = c_m.Event(organization=org)
         # performance
         performance = c_m.Performance(event=event)
+        # sales_segment_Group
+        sales_segment_group = c_m.SalesSegmentGroup(event=event)
+        # sales_segment
+        sales_segment = c_m.SalesSegment(sales_segment_group=sales_segment_group, performance=performance, upper_limit=100)
         # site
         site = c_m.Site()
         # venue
@@ -106,26 +110,17 @@ class ReserveViewTests(unittest.TestCase):
         self.session.add(stock3)
         self.session.flush()
 
-        return performance, product1, product2, product3, product4, seats
-
-    def _sales_segment(self):
-        from ..core.models import SalesSegment, SalesSegmentGroup
-        return SalesSegment(upper_limit=100,
-                            sales_segment_group=SalesSegmentGroup())
+        return sales_segment, product1, product2, product3, product4, seats
 
     def test_it_quantity_only(self):
         from webob.multidict import MultiDict
-        performance, product1, product2, product3, product4, seats = self._add_seats()
+        sales_segment, product1, product2, product3, product4, seats = self._add_seats()
 
-        params = MultiDict([
-            ('performance_id', str(performance.id)),
-            ('product-%d' % product3.id, 1),
-        ])
+        params = MultiDict([('product-%d' % product3.id, 1)])
 
         context = mock.Mock()
-        context.sales_segment = self._sales_segment()
-        request = testing.DummyRequest(params=params, 
-            context=context)
+        context.sales_segment = sales_segment
+        request = testing.DummyRequest(params=params, context=context)
         target = self._makeOne(request)
 
         results = target.reserve()
@@ -134,18 +129,13 @@ class ReserveViewTests(unittest.TestCase):
 
     def test_it_not_enough_quantity(self):
         from webob.multidict import MultiDict
-        performance, product1, product2, product3, product4, seats = self._add_seats()
+        sales_segment, product1, product2, product3, product4, seats = self._add_seats()
 
-        params = MultiDict([
-            ('performance_id', str(performance.id)),
-            ('product-%d' % product4.id, 1),
-        ])
-
+        params = MultiDict([('product-%d' % product4.id, 1)])
         
         context = mock.Mock()
-        context.sales_segment = self._sales_segment()
-        request = testing.DummyRequest(params=params, 
-            context=context)
+        context.sales_segment = sales_segment
+        request = testing.DummyRequest(params=params, context=context)
         target = self._makeOne(request)
 
         results = target.reserve()
@@ -154,18 +144,14 @@ class ReserveViewTests(unittest.TestCase):
 
     def test_it_reserving(self):
         from webob.multidict import MultiDict
-        performance, product1, product2, product3, product4, seats = self._add_seats()
+        sales_segment, product1, product2, product3, product4, seats = self._add_seats()
 
-        params = MultiDict([
-            ('performance_id', str(performance.id)),
-            ('product-%d' % product1.id, 2),
-        ])
+        params = MultiDict([('product-%d' % product1.id, 2)])
 
         context = mock.Mock()
-        context.sales_segment = self._sales_segment()
+        context.sales_segment = sales_segment
         context.sales_segment.seat_choice = True
-        request = testing.DummyRequest(params=params, 
-            context=context)
+        request = testing.DummyRequest(params=params, context=context)
         target = self._makeOne(request)
 
         results = target.reserve()
@@ -178,7 +164,7 @@ class ReserveViewTests(unittest.TestCase):
 
     def test_it_reserving_selected(self):
         from webob.multidict import MultiDict
-        performance, product1, product2, product3, product4, seats = self._add_seats()
+        sales_segment, product1, product2, product3, product4, seats = self._add_seats()
 
         seat1 = seats[0]
         seat2 = seats[1]
@@ -187,16 +173,14 @@ class ReserveViewTests(unittest.TestCase):
         seat5 = seats[4]
 
         params = MultiDict([
-            ('performance_id', str(performance.id)),
             ('product-%d' % product1.id, 2),
             ('selected_seat', seat1.l0_id),
             ('selected_seat', seat3.l0_id),
         ])
 
         context = mock.Mock()
-        context.sales_segment = self._sales_segment()
+        context.sales_segment = sales_segment
         context.sales_segment.seat_choice = True
-        assert context.sales_segment.seat_choice
         request = testing.DummyRequest(params=params, 
             context=context)
         target = self._makeOne(request)
@@ -210,7 +194,7 @@ class ReserveViewTests(unittest.TestCase):
 
     def test_it_invalid_reserving_selected(self):
         from webob.multidict import MultiDict
-        performance, product1, product2, product3, product4, seats = self._add_seats()
+        sales_segment, product1, product2, product3, product4, seats = self._add_seats()
 
         seat1 = seats[0]
         seat2 = seats[1]
@@ -219,13 +203,13 @@ class ReserveViewTests(unittest.TestCase):
         seat5 = seats[4]
 
         params = MultiDict([
-            ('performance_id', str(performance.id)),
             ('product-%d' % product1.id, 2),
             ('selected_seat', seat2.l0_id),
             ('selected_seat', seat4.l0_id),
         ])
 
         context = mock.Mock()
+        context.sales_segment = sales_segment
         request = testing.DummyRequest(params=params, 
             context=context)
 

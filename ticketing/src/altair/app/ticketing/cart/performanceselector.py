@@ -68,7 +68,10 @@ class _PerformanceSelector(object):
     def time_only_label(self, sales_segment):
         v = self.venue_label(sales_segment)
         t = create_time_only_label(sales_segment.performance.start_on, sales_segment.performance.end_on)
-        return t + " " + v
+        if t:
+            return t + " " + v
+        else:
+            return v
 
     def time_label(self, sales_segment):
         v = self.venue_label(sales_segment)

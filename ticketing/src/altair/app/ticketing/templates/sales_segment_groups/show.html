@@ -84,6 +84,10 @@ ${ch.breadcrumbs(
             <td>
               % if sales_segment.performance is not None:
                 <a href="${request.route_path('sales_segments.show', sales_segment_id=sales_segment.id)}">${sales_segment.performance.name}</a>
+              % elif sales_segment.lots:
+		%for lot in sales_segment.lots:
+		[抽選]<a href="${request.route_path('lots.show', lot_id=lot.id)}">${lot.name}</a>
+		%endfor
               % else:
                 -
               % endif

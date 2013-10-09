@@ -6,8 +6,6 @@ import logging
 import csv
 import itertools
 from datetime import datetime
-import pystache
-
 from pyramid.view import view_config, view_defaults
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound, HTTPBadRequest
 from pyramid.response import Response
@@ -19,11 +17,11 @@ from wtforms import ValidationError
 from wtforms.validators import Optional
 from sqlalchemy import and_
 from sqlalchemy.sql import exists
-from sqlalchemy.sql.expression import or_
+from sqlalchemy.sql.expression import or_, desc
 from sqlalchemy.orm import joinedload, undefer
 from webob.multidict import MultiDict
 from altair.sqlahelper import get_db_session
-
+from altair.app.ticketing.tickets.api import get_svg_builder
 from altair.app.ticketing.models import DBSession, merge_session_with_post, record_to_multidict, asc_or_desc
 from altair.app.ticketing.core.models import (
     Order,
@@ -87,6 +85,11 @@ from .api import (
 )
 from .utils import NumberIssuer
 from .models import OrderSummary
+from altair.app.ticketing.tickets.preview.api import SVGPreviewCommunication
+from altair.app.ticketing.tickets.preview.transform import SVGTransformer
+from altair.app.ticketing.tickets.utils import build_cover_dict_from_order
+from altair.app.ticketing.core.models import TicketCover
+
 
 logger = logging.getLogger(__name__)
 
@@ -114,6 +117,8 @@ def available_ticket_formats_for_ordered_product_item(ordered_product_item):
                 .with_entities(TicketFormat.id, TicketFormat.name).distinct(TicketFormat.id)
 
 def encode_to_cp932(data):
+    if not hasattr(data, "encode"):
+        return str(data)
     try:
         return data.encode('cp932')
     except UnicodeEncodeError:
@@ -259,10 +264,257 @@ def session_has_order_p(context, request):
     return bool(request.session.get("orders"))
 
 
+#########################################################################
+@view_config(decorator=with_bootstrap,
+             route_name='orders.index',
+             renderer='altair.app.ticketing:templates/orders/index.html',
+             #renderer="string",
+             permission='sales_counter')
+def index(request):
+    slave_session = get_db_session(request, name="slave")
+
+    organization_id = request.context.organization.id
+    params = MultiDict(request.params)
+    params["order_no"] = " ".join(request.params.getall("order_no"))
+
+    form_search = OrderSearchForm(params, organization_id=organization_id)
+    from .download import OrderSummary
+    if request.method == "POST" and form_search.validate():
+        query = OrderSummary(slave_session,
+                            organization_id,
+                            condition=form_search)
+    else:
+        query = OrderSummary(slave_session,
+                            organization_id,
+                            condition=None)
+
+    if request.params.get('action') == 'checked':
+        checked_orders = [o.lstrip('o:') 
+                          for o in request.session.get('orders', []) 
+                          if o.startswith('o:')]
+        #query = query.filter(Order.id.in_(checked_orders))
+
+    page = int(request.params.get('page', 0))
+
+    orders = paginate.Page(
+        query,
+        page=page,
+        items_per_page=40,
+        #item_count=query.count(),
+        url=paginate.PageURL_WebOb(request)
+    )
+
+    #return list(query)
+
+    return {
+        'form':OrderForm(),
+        'form_search':form_search,
+        'orders':orders,
+        'page': page,
+    }
+
+@view_config(route_name='orders.download')
+def download(request):
+    slave_session = get_db_session(request, name="slave")
+
+    organization_id = request.context.organization.id
+    params = MultiDict(request.params)
+    params["order_no"] = " ".join(request.params.getall("order_no"))
+
+    form_search = OrderSearchForm(params, organization_id=organization_id)
+    from .download import OrderDownload, OrderSummaryKeyBreakAdapter, japanese_columns, header_intl, SeatSummaryKeyBreakAdapter
+    if request.method == "POST" and form_search.validate():
+        query = OrderDownload(slave_session,
+                              organization_id,
+                              condition=form_search)
+    else:
+        query = OrderDownload(slave_session,
+                              organization_id,
+                              condition=None)
+
+    export_type = int(request.params.get('export_type', OrderCSV.EXPORT_TYPE_ORDER))
+    excel_csv = bool(request.params.get('excel_csv'))
+
+    if export_type == OrderCSV.EXPORT_TYPE_ORDER:
+        query = OrderSummaryKeyBreakAdapter(query, 'id',
+                                ('product_price', 'product_quantity',
+                                 'product_name',
+                                 'product_sales_segment', 'product_margin_ratio'),
+                                'product_id',
+                                ('item_name', 'item_price', 'item_quantity'),
+                                'product_item_id',
+                                ('item_print_histories',),
+                                ('seat_name',),
+                                'seat_id',)
+        csv_headers = ([
+            "order_no",
+            "status",
+            "payment_status",
+            "created_at",
+            "paid_at",
+            "delivered_at",
+            "canceled_at",
+            "total_amount",
+            "transaction_fee",
+            "delivery_fee",
+            "system_fee",
+            "margin",
+            "note",
+            "card_brand",
+            "card_ahead_com_code",
+            "card_ahead_com_name",
+            "billing_number",
+            "exchange_number",
+            #"メールマガジン受信可否",
+            "user_last_name",
+            "user_first_name",
+            "user_last_name_kana",
+            "user_first_name_kana",
+            "user_nick_name",
+            "user_sex",
+            "membership_name",
+            "membergroup_name",
+            "auth_identifier",
+            "last_name",
+            "first_name",
+            "last_name_kana",
+            "first_name_kana",
+            "zip",
+            "country",
+            "prefecture",
+            "city",
+            "address_1",
+            "address_2",
+            "tel_1",
+            "tel_2",
+            "fax",
+            "email_1",
+            "email_2",
+            "payment_method_name",
+            "delivery_method_name",
+            "event_title",
+            "performance_name",
+            "performance_code",
+            "performance_start_on",
+            "venue_name",
+        ] + query.extra_headers)
+    else:
+        query = SeatSummaryKeyBreakAdapter(query, "seat_id", ["item_print_histories"])
+        csv_headers = [
+            "order_no",  # 予約番号
+            "status",  # ステータス
+            "payment_status",  # 決済ステータス
+            "created_at",  # 予約日時
+            "paid_at",  # 支払日時
+            "delivered_at",  # 配送日時
+            "canceled_at",  # キャンセル日時
+            "total_amount",  # 合計金額
+            "transaction_fee",  # 決済手数料
+            "delivery_fee",  # 配送手数料
+            "system_fee",  # システム利用料
+            "margin",  # 内手数料金額
+            "note",  # メモ
+            "card_brand",  # カードブランド
+            "card_ahead_com_code",  #  仕向け先企業コード
+            "card_ahead_com_name",  # 仕向け先企業名
+            "billing_number",  # SEJ払込票番号
+            "exchange_number",  # SEJ引換票番号
+            #メールマガジン受信可否
+            "user_last_name",  # 姓
+            "user_first_name",  # 名
+            "user_last_name_kana",  # 姓(カナ)
+            "user_first_name_kana",  # 名(カナ)
+            "user_nick_name",  # ニックネーム
+            "user_sex",  # 性別
+            "membership_name",  # 会員種別名
+            "membergroup_name",  # 会員グループ名
+            "auth_identifier",  # 会員種別ID
+            "last_name",  # 配送先姓
+            "first_name",  # 配送先名
+            "last_name_kana",  # 配送先姓(カナ)
+            "first_name_kana",  # 配送先名(カナ)
+            "zip",  # 郵便番号
+            "country",  # 国
+            "prefecture",  # 都道府県
+            "city",  # 市区町村
+            "address_1",  # 住所1
+            "address_2",  # 住所2
+            "tel_1",  # 電話番号1
+            "tel_2",  # 電話番号2
+            "fax",  # FAX
+            "address_1",  # メールアドレス1
+            "address_2",  # メールアドレス2
+            "payment_method_name",  # 決済方法
+            "delivery_method_name",  # 引取方法
+            "event_title",  # イベント
+            "performance_name",  # 公演
+            "performance_code",  # 公演コード
+            "performance_start_on",  # 公演日
+            "venue_name",  # 会場
+            "product_name",  # 商品名
+            "product_price",  # 商品単価
+            "product_quantity", # 商品個数
+            "product_sales_segment",  # 販売区分
+            "item_name",  # 商品明細名
+            "item_price",  # 商品明細単価
+            "item_quantity",  # 商品明細個数
+            "item_print_histories",  #発券作業者
+            "seat_name",  # 座席名
+        ]
+
+    headers = [
+        ('Content-Type', 'application/octet-stream; charset=Windows-31J'),
+        ('Content-Disposition', 'attachment; filename=orders_{date}.csv'.format(date=datetime.now().strftime('%Y%m%d%H%M%S')))
+    ]
+
+    response = Response(headers=headers)
+    iheaders = header_intl(csv_headers, japanese_columns)
+    logger.debug("csv headers = {0}".format(csv_headers))
+    results = iter(query)
+    writer = csv.writer(response, delimiter=',', quoting=csv.QUOTE_ALL)
+
+    def render_plain(v):
+        if v is None:
+            return u''
+        return u'="{0}"'.format(v)
+
+    def render_zip(v):
+        if not v:
+            return u''
+        zip1, zip2 = v[:3], v[3:]
+        return u'{0}-{1}'.format(zip1, zip2)
+
+    def render_currency(v):
+        from altair.app.ticketing.cart.helpers import format_number
+        if v is None:
+            return u''
+        return format_number(float(v))
+
+    renderers = dict()
+    for n in ('total_amount', 'transaction_fee', 'delimiter', 'system_fee', 'margin', 'product_margin', 'product_price', 'item_price'):
+        renderers[n] = render_currency
+
+    renderers['zip'] = render_zip
+
+    def render(name, v):
+        if name.find('[') > -1:
+            name, _ = name.split('[', 1)
+        renderer = renderers.get(name, render_plain)
+        return renderer(v)
+
+    writer.writerows([[encode_to_cp932(c)
+                       for c in iheaders]] +
+                     [[encode_to_cp932(render(h, columns.get(h)))
+                       for h in csv_headers]
+                      for columns in results])
+    return response
+
+#########################################################################
+
 @view_defaults(decorator=with_bootstrap, permission='sales_editor')
 class Orders(BaseView):
 
-    @view_config(route_name='orders.index', renderer='altair.app.ticketing:templates/orders/index.html', permission='sales_counter')
+    #@view_config(route_name='orders.index', renderer='altair.app.ticketing:templates/orders/index.html', permission='sales_counter')
     def index(self):
         slave_session = get_db_session(self.request, name="slave")
 
@@ -300,7 +552,7 @@ class Orders(BaseView):
             'page': page,
         }
 
-    @view_config(route_name='orders.download')
+    #@view_config(route_name='orders.download')
     def download(self):
         slave_session = get_db_session(self.request, name="slave")
 
@@ -560,7 +812,7 @@ class OrderDetailView(BaseView):
             'order_attributes': order_attributes,
             'order_history':order_history,
             'point_grant_settings': loyalty_api.applicable_point_grant_settings_for_order(order),
-            'sej_order':SejOrder.query.filter(SejOrder.order_id==order.order_no).first(),
+            'sej_order':SejOrder.query.filter(SejOrder.order_no==order.order_no).order_by(desc(SejOrder.branch_no)).first(),
             'mail_magazines':mail_magazines,
             'form_shipping_address':form_shipping_address,
             'form_order':form_order,
@@ -756,11 +1008,6 @@ class OrderDetailView(BaseView):
 
     @view_config(route_name="orders.cover.preview", request_method="GET", renderer="altair.app.ticketing:templates/orders/_cover_preview_dialog.html")
     def cover_preview_dialog(self):
-        from altair.app.ticketing.tickets.preview.api import SVGPreviewCommunication
-        from altair.app.ticketing.tickets.preview.transform import SVGTransformer
-        from altair.app.ticketing.tickets.utils import build_cover_dict_from_order
-        from altair.app.ticketing.core.models import TicketCover
-
         order_id = int(self.request.matchdict.get('order_id', 0))
         order = Order.get(order_id, self.context.organization.id)
         if order is None:
@@ -768,7 +1015,8 @@ class OrderDetailView(BaseView):
         cover = TicketCover.get_from_order(order)
         if cover is None:
             raise HTTPNotFound('cover is not found. order id %d' % order_id)
-        svg = pystache.render(cover.ticket.data["drawing"], build_cover_dict_from_order(order))
+        svg_builder = get_svg_builder(self.request)
+        svg = svg_builder.build(cover.ticket, build_cover_dict_from_order(order))
         data = {"ticket_format": cover.ticket.ticket_format_id, "sx": "1", "sy": "1"}
         transformer = SVGTransformer(svg, data)
         svg = transformer.transform()
@@ -802,12 +1050,13 @@ class OrderDetailView(BaseView):
         data["ticket_format_id"] = ticket_format.id
         results = []
         names = []
+        svg_builder = get_svg_builder(self.request)
         for seat, dict_ in dicts:
             names.append(seat.name if seat else dict_["product"]["name"])
             preview_type = utils.delivery_type_from_built_dict(dict_)
 
             for ticket in tickets:
-                svg = pystache.render(ticket.data['drawing'], dict_)
+                svg = svg_builder.build(ticket, dict_)
                 r = data.copy()
                 r["preview_type"] = preview_type
                 r.update(drawing=svg)
@@ -872,6 +1121,7 @@ class OrderDetailView(BaseView):
         for stock_type in performance.stock_types:
             stock_data = []
             stocks = Stock.filter(Stock.performance_id==performance_id)\
+                .options(joinedload('stock_status'))\
                 .filter(Stock.stock_type_id==stock_type.id)\
                 .filter(Stock.quantity>0)\
                 .filter(exists().where(and_(ProductItem.performance_id==performance_id, ProductItem.stock_id==Stock.id))).all()
@@ -884,8 +1134,8 @@ class OrderDetailView(BaseView):
                     ))
             sales_summary.append(dict(
                 stock_type=stock_type,
-                total_quantity=stock_type.num_seats(performance_id=performance.id, sale_only=True) or 0,
-                rest_quantity=stock_type.rest_num_seats(performance_id=performance.id, sale_only=True) or 0,
+                total_quantity=sum([s.get('stock').quantity for s in stock_data]),
+                rest_quantity=sum([s.get('stock').stock_status.quantity for s in stock_data]),
                 stocks=stock_data
             ))
 
@@ -982,6 +1232,20 @@ class OrderDetailView(BaseView):
             self.request.session.flash(u'({0})'.format(ids_str))
             
         return HTTPFound(location=self.request.route_path('orders.index'))
+
+    @view_config(route_name='orders.fraud.clear', permission='sales_editor')
+    def fraud_clear(self):
+        order_id = int(self.request.matchdict.get('order_id', 0))
+        order = Order.get(order_id, self.context.organization.id)
+        if order is None:
+            return HTTPNotFound('order id %d is not found' % order_id)
+
+        order.fraud_suspect = 0
+        order.save()
+
+        self.request.session.flash(u'不正アラートを解除しました')
+        return HTTPFound(location=route_path('orders.show', self.request, order_id=order.id))
+
 
 @view_defaults(decorator=with_bootstrap, permission='sales_counter')
 class OrdersReserveView(BaseView):
@@ -1296,7 +1560,7 @@ class OrdersReserveView(BaseView):
 from altair.app.ticketing.sej.models import SejOrder, SejTicket, SejTicketTemplateFile, SejRefundEvent, SejRefundTicket, SejTenant
 from altair.app.ticketing.sej.ticket import SejTicketDataXml
 from altair.app.ticketing.sej.payment import request_update_order, request_cancel_order
-from altair.app.ticketing.sej.resources import code_from_ticket_type, code_from_update_reason, code_from_payment_type
+from altair.app.ticketing.sej.models import code_from_ticket_type, code_from_update_reason, code_from_payment_type
 from altair.app.ticketing.sej.exceptions import  SejServerError
 from altair.app.ticketing.sej import api as sej_api
 
@@ -1322,7 +1586,7 @@ class SejOrderView(object):
            filter = or_(
                SejOrder.billing_number.like('%'+ query_str +'%'),
                SejOrder.exchange_number.like('%'+ query_str + '%'),
-               SejOrder.order_id.like('%'+ query_str + '%'),
+               SejOrder.order_no.like('%'+ query_str + '%'),
                SejOrder.user_name.like('%'+ query_str + '%'),
                SejOrder.user_name_kana.like('%'+ query_str + '%'),
                SejOrder.email.like('%'+ query_str + '%'),
@@ -1380,11 +1644,11 @@ class SejOrderInfoView(object):
 
     @view_config(route_name='orders.sej.order.info', request_method="GET", renderer='altair.app.ticketing:templates/sej/order_info.html')
     def order_info_get(self):
-        order_id = int(self.request.matchdict.get('order_id', 0))
-        order = SejOrder.query.get(order_id)
+        order_no = self.request.matchdict.get('order_no', '')
+        order = SejOrder.query.filter_by(order_no=order_no).order_by(desc(SejOrder.branch_no)).first()
 
         templates = SejTicketTemplateFile.query.all()
-        f = SejOrderForm(order_id=order.order_id)
+        f = SejOrderForm(order_no=order.order_no)
         tf = SejTicketForm()
         rf = SejRefundOrderForm()
         f.process(record_to_multidict(order))
@@ -1394,8 +1658,8 @@ class SejOrderInfoView(object):
 
     @view_config(route_name='orders.sej.order.info', request_method="POST",  renderer='altair.app.ticketing:templates/sej/order_info.html')
     def order_info_post(self):
-        order_id = int(self.request.matchdict.get('order_id', 0))
-        order = SejOrder.query.get(order_id)
+        order_no = self.request.matchdict.get('order_no', '')
+        order = SejOrder.query.filter_by(order_no=order_no).order_by(desc(SejOrder.branch_no)).first()
 
         tickets = []
         for ticket in order.tickets:
@@ -1410,7 +1674,7 @@ class SejOrderInfoView(object):
             )
             tickets.append(td)
 
-        f = SejOrderForm(self.request.POST, order_id=order.order_id)
+        f = SejOrderForm(self.request.POST, order_no=order.order_no)
         if f.validate():
             data = f.data
             try:
@@ -1427,7 +1691,7 @@ class SejOrderInfoView(object):
                     regrant_number_due_at = data.get('regrant_number_due_at'),
                     tickets = tickets,
                     condition=dict(
-                        order_id        = order.order_id,
+                        order_no        = order.order_no,
                         billing_number  = order.billing_number,
                         exchange_number = order.exchange_number,
                     ),
@@ -1442,13 +1706,13 @@ class SejOrderInfoView(object):
             logger.info(str(f.errors))
             self.request.session.flash(u'バリデーションエラー：更新出来ませんでした。')
 
-        return HTTPFound(location=self.request.route_path('orders.sej.order.info', order_id=order_id))
+        return HTTPFound(location=self.request.route_path('orders.sej.order.info', order_no=order_no))
     #
     @view_config(route_name='orders.sej.order.ticket.data', request_method="GET", renderer='json')
     def order_info_ticket_data(self):
-        order_id = int(self.request.matchdict.get('order_id', 0))
+        order_no = self.request.matchdict.get('order_no', '')
         ticket_id = int(self.request.matchdict.get('ticket_id', 0))
-        order = SejOrder.query.get(order_id)
+        order = SejOrder.query.filter_by(order_no=order_no).order_by(desc(SejOrder.branch_no)).first()
         if order:
             ticket = SejTicket.query.get(ticket_id)
             return dict(
@@ -1463,9 +1727,9 @@ class SejOrderInfoView(object):
 
     @view_config(route_name='orders.sej.order.ticket.data', request_method="POST", renderer='altair.app.ticketing:templates/sej/order_info.html')
     def order_info_ticket_data_post(self):
-        order_id = int(self.request.matchdict.get('order_id', 0))
+        order_no = self.request.matchdict.get('order_no', '')
         ticket_id = int(self.request.matchdict.get('ticket_id', 0))
-        order = SejOrder.query.get(order_id)
+        order = SejOrder.query.filter_by(order_no=order_no).order_by(desc(SejOrder.branch_no)).first()
         if order:
             ticket = SejTicket.query.get(ticket_id)
             f = SejTicketForm(self.request.POST)
@@ -1480,20 +1744,20 @@ class SejOrderInfoView(object):
             else:
                 self.request.session.flash(u'バリデーションエラー：更新出来ませんでした。')
 
-        return HTTPFound(location=self.request.route_path('orders.sej.order.info', order_id=order_id))
+        return HTTPFound(location=self.request.route_path('orders.sej.order.info', order_no=order_no))
 
     @view_config(route_name='orders.sej.order.cancel', renderer='altair.app.ticketing:templates/sej/order_info.html')
     def order_cancel(self):
-        order_id = int(self.request.matchdict.get('order_id', 0))
-        sej_order = SejOrder.query.get(order_id)
+        order_no = self.request.matchdict.get('order_no', '')
+        sej_order = SejOrder.query.filter_by(order_no=order_no).order_by(desc(SejOrder.branch_no)).first()
 
         result = sej_api.cancel_sej_order(sej_order, self.request.context.organization.id)
         if result:
             self.request.session.flash(u'オーダーをキャンセルしました。')
-            return HTTPFound(location=self.request.route_path('orders.sej.order.info', order_id=order_id))
+            return HTTPFound(location=self.request.route_path('orders.sej.order.info', order_no=order_no))
         else:
             self.request.session.flash(u'オーダーをキャンセルに失敗しました。')
-            raise HTTPFound(location=self.request.route_path('orders.sej.order.info', order_id=order_id))
+            raise HTTPFound(location=self.request.route_path('orders.sej.order.info', order_no=order_no))
 
 
 @view_defaults(decorator=with_bootstrap, permission='administrator')
@@ -1571,7 +1835,7 @@ class SejRefundView(BaseView):
             try:
                 ct = SejRefundTicket.filter(
                     and_(
-                        SejRefundTicket.order_id == ticket.order_id,
+                        SejRefundTicket.order_no == ticket.order_no,
                         SejRefundTicket.ticket_barcode_number == ticket.barcode_number
                     )).one()
             except NoResultFound, e:
@@ -1581,7 +1845,7 @@ class SejRefundView(BaseView):
             ct.available     = 1
             ct.event_code_01 = event.event_code_01
             ct.event_code_02 = event.event_code_02
-            ct.order_id = ticket.order_id
+            ct.order_no = ticket.order_no
             ct.ticket_barcode_number = ticket.barcode_number
             ct.refund_ticket_amount = data.get('refund_ticket_amount')
             ct.refund_other_amount = data.get('refund_other_amount')
@@ -1592,7 +1856,7 @@ class SejRefundView(BaseView):
         else:
             self.request.session.flash(u'失敗しました')
 
-        return HTTPFound(location=self.request.route_path('orders.sej.order.info', order_id=ticket.order.id))
+        return HTTPFound(location=self.request.route_path('orders.sej.order.info', order_no=ticket.order.order_no))
 
 # @TODO move this
 @view_defaults(decorator=with_bootstrap, permission='administrator')

@@ -316,6 +316,7 @@ def import_tree(registry, update, organization, tree, file, bundle_base_url=None
             num_seats_in_row = len(seat_objs)
             num_seats_in_block += num_seats_in_row
             seats_in_row = []
+            seat_order = dict()
             for seat_obj in seat_objs:
                 seat_l0_id = seat_obj['_node'].get('id')
                 if seat_l0_id in seats_given:
@@ -338,6 +339,9 @@ def import_tree(registry, update, organization, tree, file, bundle_base_url=None
                 gate = seat_obj['properties'].get('gate')
                 floor = seat_obj['properties'].get('floor')
                 indexes = seat_obj['collections'].get('indexes')
+                seat_index = seat_obj['properties'].get('seat_index')
+                if seat_index is not None:
+                    seat_order[seat_l0_id] = int(seat_index)    # for build adjacencies
                 if name is not None:
                     seat.name = name
                 if seat_no is not None:
@@ -360,8 +364,12 @@ def import_tree(registry, update, organization, tree, file, bundle_base_url=None
                         seat_index.index = index
                 seats_in_row.append(seat)
 
-            # sort by l0_id
-            seats_in_row.sort(lambda a, b: cmp(a.l0_id, b.l0_id))
+            if seats_in_row[0].l0_id in seat_order:
+                # sort by index
+                seats_in_row.sort(key=lambda a: seat_order[a.l0_id])
+            else:
+                # sort by l0_id
+                seats_in_row.sort(lambda a, b: cmp(a.l0_id, b.l0_id))
 
             # generate adjacencies
             for seat_count in range(2, (min(num_seats_in_row, max_adjacency) if max_adjacency else num_seats_in_row) + 1):

@@ -40,7 +40,7 @@ import logging
 logging.basicConfig()
 log = logging.getLogger(__file__)
 
-def create_xml(event_name, ticket_price, order_id, number, seat_number, area, area_eng):
+def create_xml(event_name, ticket_price, order_no, number, seat_number, area, area_eng):
     return ((
 u"""<?xml version="1.0" encoding="Shift_JIS" ?>
 <TICKET>
@@ -54,13 +54,13 @@ u"""<?xml version="1.0" encoding="Shift_JIS" ?>
 7 fs
 14 22 m 90 10 "主催: ブルーマングループ IN %(area)s、LLP<br/>お問合せ: ブルーマングループ%(area)s公演事務局 03-5414-3255<br/>後援: 東京都、米国大使館、港区、東京メトロ<br/>営利目的の転売禁止<br/>4歳以下入場不可" X
 6.35 fs
-13.3 42.4 m 30 2 "予約番号：" X 25.1 42.4 m 30 2 "%(order_id)s" X
+13.3 42.4 m 30 2 "予約番号：" X 25.1 42.4 m 30 2 "%(order_no)s" X
 13.3 44.8 m 80 2 "お問合せ先：楽天チケット お問い合わせセンター 03-9876-5432" X
 8 fs
 :b hc 112 5 m 28 8 "BLUE MAN GROUP IN %(area_eng)s" X
 112 14 m 28 12 "開催日 2012年<br/>8月31日(金)<br/>開場 12:30<br/>開演 13:00<br/>" X
 112 32 m 28 15 "ポンチョ席<br/>1列%(seat_number)s番<br/>\\\\%(ticket_price)s(税込)" X
-:b hc 7 fs 112 50 m 28 4 "%(order_id)s" X
+:b hc 7 fs 112 50 m 28 4 "%(order_no)s" X
 pc
 ]]></b>
 <FIXTAG01></FIXTAG01>
@@ -69,7 +69,7 @@ pc
 <FIXTAG04></FIXTAG04>
 <FIXTAG05></FIXTAG05>
 <FIXTAG06></FIXTAG06>
-</TICKET>""") % dict(event_name=event_name, ticket_price=locale.format('%d', ticket_price, grouping=True), order_id=order_id, number=number,seat_number=seat_number, area=area, area_eng=area_eng)
+</TICKET>""") % dict(event_name=event_name, ticket_price=locale.format('%d', ticket_price, grouping=True), order_no=order_no, number=number,seat_number=seat_number, area=area, area_eng=area_eng)
 )
 
 s = {}
@@ -96,7 +96,7 @@ def request_5():
         area=area,
         area_eng=area_eng,
         ticket_price=int(price),
-        order_id=k,
+        order_no=k,
         number=k,
         seat_number=int(seat_number)+10,
         )
@@ -110,94 +110,6 @@ def request_5():
         xml = SejTicketDataXml(xml)
     )
     tickets.append(ticket)
-    '''
-    seat_number+=1
-
-    rec = dict(
-        event_name=u'%s公演' % area,
-        area=area,
-        area_eng=area_eng,
-        ticket_price=int(price),
-        order_id=k,
-        number=k,
-        seat_number=int(seat_number)+10,
-        )
-    xml = create_xml(**rec)
-    ticket = dict(
-        ticket_type         = SejTicketType.TicketWithBarcode,
-        event_name          = u'%s公演' % area,
-        performance_name    = u'２０１２年０８月３１日（金）',
-        ticket_template_id  = u'TTTS000001',
-        performance_datetime= datetime.datetime(2012,8,31,18,00),
-        xml = SejTicketDataXml(xml)
-    )
-    tickets.append(ticket)
-    seat_number+=1
-
-    rec = dict(
-        event_name=u'%s公演' % area,
-        area=area,
-        area_eng=area_eng,
-        ticket_price=int(price),
-        order_id=k,
-        number=k,
-        seat_number=int(seat_number)+10,
-        )
-    xml = create_xml(**rec)
-    ticket = dict(
-        ticket_type         = SejTicketType.TicketWithBarcode,
-        event_name          = u'%s公演' % area,
-        performance_name    = u'２０１２年０８月３１日（金）',
-        ticket_template_id  = u'TTTS000001',
-        performance_datetime= datetime.datetime(2012,8,31,18,00),
-        xml = SejTicketDataXml(xml)
-    )
-    tickets.append(ticket)
-    seat_number+=1
-
-    rec = dict(
-        event_name=u'%s公演' % area,
-        area=area,
-        area_eng=area_eng,
-        ticket_price=int(price),
-        order_id=k,
-        number=k,
-        seat_number=int(seat_number)+10,
-        )
-    xml = create_xml(**rec)
-    ticket = dict(
-        ticket_type         = SejTicketType.TicketWithBarcode,
-        event_name          = u'%s公演' % area,
-        performance_name    = u'２０１２年０８月３１日（金）',
-        ticket_template_id  = u'TTTS000001',
-        performance_datetime= datetime.datetime(2012,8,31,18,00),
-        xml = SejTicketDataXml(xml)
-    )
-    tickets.append(ticket)
-    seat_number+=1
-
-    rec = dict(
-        event_name=u'%s公演' % area,
-        area=area,
-        area_eng=area_eng,
-        ticket_price=int(price),
-        order_id=k,
-        number=k,
-        seat_number=int(seat_number)+10,
-        )
-    xml = create_xml(**rec)
-    ticket = dict(
-        ticket_type         = SejTicketType.TicketWithBarcode,
-        event_name          = u'%s公演' % area,
-        performance_name    = u'２０１２年０８月３１日（金）',
-        ticket_template_id  = u'TTTS000001',
-        performance_datetime= datetime.datetime(2012,8,31,18,00),
-        xml = SejTicketDataXml(xml)
-    )
-    tickets.append(ticket)
-    print tickets
-'''
-
 
     payment_due_at    = datetime.datetime(2012,6,20,22,59)
     ticketing_due_at  = datetime.datetime(2012,6,20,23,59)
@@ -205,7 +117,7 @@ def request_5():
 
     ticket_total = int(price)*len(tickets)
     o = request_order(
-        order_id = order_number,
+        order_no            = order_number,
         total               = ticket_total+ticketing_fee+commission_fee,
         ticket_total        = ticket_total,
         ticketing_fee       = int(ticketing_fee),

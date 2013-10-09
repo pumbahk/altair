@@ -93,6 +93,10 @@ callback_name = '%' + ''.join(random.choice("abcdefghjijklmnopqrstuvwxyz") for _
 <div class="row-fluid">
 <%vv:venueeditor data_source="${data_source}">
   <%def name="toolbar_extra()">
+  <input id="show-vacant-btn" type="button" class="btn btn-info" style="margin-left: 15px;" value="空席のみ表示" />
+  <script type="text/javascript">
+    $('#show-vacant-btn').click(function() {showVacantSeatMode();});
+  </script>
   <div style="float:right">
     <button class="btn btn-primary action-openOrderForm">座席指定</button>
   </div>
@@ -106,6 +110,7 @@ callback_name = '%' + ''.join(random.choice("abcdefghjijklmnopqrstuvwxyz") for _
   var appletEndpoints = ${json.dumps(endpoints_json)|n};
   var cookie = ${json.dumps(request.headers.get('cookie'))|n};
   var uiMode = 'normal';  // normal, salesCounter
+  var uiFilter = '';  // vacant
 
   // todo rewrite: 
   var Pager = function Pager(el, current){
@@ -318,6 +323,18 @@ callback_name = '%' + ''.join(random.choice("abcdefghjijklmnopqrstuvwxyz") for _
     loadApplet();
     $('#sales-counter-button').css('display', 'none');
     $('#sales-counter-toolbar').css('display', 'block');
+  }
+
+  function showVacantSeatMode() {
+    if (uiFilter == 'vacant') {
+      uiFilter = '';
+      venueEditorRoot.venueeditor('showAllSeat');
+      $('#show-vacant-btn').val('空席のみ表示');
+    } else {
+      uiFilter = 'vacant';
+      venueEditorRoot.venueeditor('showVacantSeat');
+      $('#show-vacant-btn').val('全ての座席を表示');
+    }
   }
 
   window[callbackName] = function (applet) {

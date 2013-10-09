@@ -3,9 +3,17 @@
 from pyramid.httpexceptions import HTTPNotFound
 from sqlalchemy.orm.exc import NoResultFound
 
+from zope.interface import Interface, Attribute, implementer
 from altair.app.ticketing.resources import TicketingAdminResource
 from altair.app.ticketing.core.models import SalesSegment, SalesSegmentGroup, Performance, Event, Organization, PaymentDeliveryMethodPair
 
+class ISalesSegmentAdminResource(Interface):
+    event = Attribute('')
+    performance = Attribute('')
+    sales_segment_group = Attribute('')
+    sales_segment = Attribute('')
+
+@implementer(ISalesSegmentAdminResource)
 class SalesSegmentAdminResource(TicketingAdminResource):
     def __init__(self, request):
         super(SalesSegmentAdminResource, self).__init__(request)

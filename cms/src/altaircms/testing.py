@@ -73,24 +73,26 @@ def dummy_form_factory(name="DummyForm", validate=False, errors=None):
 
 
 def setup_db(models=[], extra_tables=[]):
+    base =  sqlahelper.get_base()
     sqlahelper.get_session().remove()
 
     resolver = DottedNameResolver()
     for m in models:
         resolver.maybe_resolve(m)
 
-    metadata = sqlahelper.get_base().metadata
+    metadata = base.metadata
     for t in extra_tables:
         t.tometadata(metadata)
 
     engine = create_engine("sqlite:///")
     sqlahelper.add_engine(engine)
-    sqlahelper.get_base().metadata.create_all()
+    base.metadata.create_all()
     assert Base == sqlahelper.get_base()
 
-def teardown_db():
+def teardown_db(base=None):
     transaction.abort()
-    sqlahelper.get_base().metadata.drop_all()
+    base = base or sqlahelper.get_base()
+    base.metadata.drop_all()
 
 """
 todo: output meessage via logger

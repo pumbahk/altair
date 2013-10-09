@@ -32,7 +32,9 @@ from .exceptions import (
     OverQuantityLimitError, 
     ZeroQuantityError, 
     CartCreationException,
+    TooManyCartsCreated,
 )
+from .views import limitter
 
 logger = logging.getLogger(__name__)
 
@@ -131,7 +133,7 @@ class MobileIndexView(IndexViewMixin):
                 if _sales_segment.performance_id == self.context.performance.id:
                     sales_segment = _sales_segment
             if sales_segment is None:
-                raise NoPerformanceError(event_id=self.context.event.id)
+                raise NoPerformanceError('performance (%d) is not associated to the relevant SalesSegment' % self.context.performance.id)
 
         if sales_segment is not None:
             return HTTPFound(self.request.route_url(
@@ -337,6 +339,7 @@ class MobileSelectProductView(object):
             back_url=back_url
         )
 
+    @limitter.acquire
     @view_config(route_name='cart.products', request_method="POST")
     @view_config(route_name='cart.products2', request_method="POST")
     def products_form(self):
@@ -349,6 +352,7 @@ class MobileSelectProductView(object):
         # 古いカートを削除
         old_cart = api.get_cart(self.request) # これは get_cart でよい
         if old_cart:
+            limitter._release(self.request)
             # !!! ここでトランザクションをコミットする !!!
             old_cart.release()
             api.remove_cart(self.request)
@@ -399,8 +403,7 @@ class MobileSelectProductView(object):
             cart.sales_segment = sales_segment
             if cart is None:
                 transaction.abort()
-                logger.debug("cart is None. aborted.")
-                raise CartCreationException
+                raise CartCreationException.from_resource(self.context, self.request)
         except NotEnoughAdjacencyException as e:
             transaction.abort()
             logger.debug("not enough adjacency")

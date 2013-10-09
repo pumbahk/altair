@@ -16,6 +16,7 @@ from pyramid.httpexceptions import HTTPNotFound
 from altair.app.ticketing.api.impl import get_communication_api
 from altair.app.ticketing.api.impl import CMSCommunicationApi
 from altair.mobile.interfaces import IMobileRequest
+from altair.mobile.api import detect_from_ip_address
 from altair.app.ticketing.core import models as c_models
 from altair.app.ticketing.core import api as c_api
 
@@ -24,7 +25,7 @@ from .interfaces import IStocker, IReserving, ICartFactory
 from .interfaces import IPerformanceSelector
 
 from .models import Cart, PaymentMethodManager, DBSession
-from .exceptions import OutTermSalesException, NoSalesSegment, NoCartError
+from .exceptions import NoCartError
 from altair.preview.api import set_rendered_target
 
 logger = logging.getLogger(__name__)
@@ -263,3 +264,42 @@ def get_performance_selector(request, name):
     reg = request.registry
     performance_selector = reg.adapters.lookup([IRequest], IPerformanceSelector, name)(request)
     return performance_selector
+
+def get_cart_user_identifiers(request):
+    from altair.rakuten_auth.api import authenticated_user
+    from altair.browserid import get_browserid
+
+    retval = []
+
+    user = authenticated_user(request)
+    if user and hasattr(user, '__getitem__'):
+        if not user.get('is_guest', False):
+            # Rakuten OpenID
+            claimed_id = user.get('claimed_id')
+            if claimed_id:
+                retval.append((claimed_id, 'strong'))
+
+            # fc_auth
+            triplet = tuple((user.get(k) or '') for k in ('username', 'membergroup', 'membership'))
+            fc_auth_id = ''.join(triplet)
+            if fc_auth_id:
+                retval.append((fc_auth_id, 'strong'))
+
+    # browserid is decent
+    browserid = get_browserid(request)
+    if browserid:
+        retval.append((browserid, 'decent'))
+
+    remote_addr = request.remote_addr
+    if remote_addr:
+        carrier = detect_from_ip_address(request.registry, remote_addr)
+        logger.debug('carrier=%s' % carrier.name)
+        if (not carrier.is_nonmobile) and IMobileRequest.providedBy(request):
+            unique_opaque = request.mobile_ua.unique_opaque
+            if unique_opaque is not None:
+                # subscriber ID is decent, in my opinion
+                retval.append((unique_opaque, 'decent'))
+        else:
+            # remote address is *weakest*
+            retval.append((remote_addr, 'weak'))
+    return retval
