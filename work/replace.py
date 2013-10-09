@@ -1,10 +1,12 @@
 # -*- coding:utf-8 -*-
 import json
+import tempfile
 import os.path
 import cssutils
 import logging
 from collections import OrderedDict
 import sys
+from utils import abspath_from_rel
 
 class EventQueue(object):
     def __init__(self):
@@ -32,7 +34,8 @@ class App(object):
                 self.mv_events.add(D["src_file"], D["dst_file"])
                 if D["file_type"] == "css":
                     self.css_events.add(D["src_file"], D["dst_file"])
-            self.sed_events.add(D["html"], (D["src"], D["dst"]))
+            if "src" in D and "dst" in D:
+                self.sed_events.add(D["html"], (D["src"], D["dst"]))
             self.dst_from_src[D["src_file"]] = D["dst_file"]
         return self
 
@@ -46,25 +49,10 @@ def get_css_parser(target):
         return parsers[target], False
     
     ## suppress logging message
-    parser = cssutils.CSSParser(loglevel=logging.CRITICAL).parseFile(target)
+    parser = cssutils.CSSParser(loglevel=logging.CRITICAL).parseFile(target, validate=False)
     parsers[target] = parser
     return parser, True
 
-def abspath_from_rel(rel, cwd):
-    if rel.startswith("/"):
-        raise ValueError("not relative path: {}".format(rel))
-
-    nodes = rel.split("/")
-    if not nodes:
-        return cwd
-    if nodes[0] == "./":
-        nodes.pop(0)
-
-    cwd_nodes = cwd.split("/")
-    while nodes[0] == "..":
-        nodes.pop(0)
-        cwd_nodes.pop(-1)
-    return "{}/{}".format("/".join(cwd_nodes).rstrip("/"), ("/").join(nodes).lstrip("/"))
 
 
 class CSSReplacer(object):
@@ -79,15 +67,15 @@ class CSSReplacer(object):
         dst_img = self.dst_from_src[src_img]
         return os.path.relpath(dst_img, self.dst_css)
 
-    def replace(self, target):
+    def replace(self, target, outname):
         css, created = get_css_parser(target) #href=None?
         if not created:
             return 
         def replacer(url):
-            print "="
-            print url, self.replace_url(url)
             return self.replace_url(url)
         cssutils.replaceUrls(css, replacer, ignoreImportRules=True)
+        with open(outname, "w") as wf:
+            wf.write(css.cssText)
         
 def execute(app):
     for html, vs in app.sed_events:
@@ -116,7 +104,9 @@ def css_execute(app):
         for dst in vs:
             replacer = CSSReplacer(src, dst, app.dst_from_src)
             try:
-                replacer.replace(src)
+                outname = tempfile.mktemp()
+                replacer.replace(src, outname)
+                print "mv {outname} {dst}".format(outname=outname, dst=dst)
             except KeyError as e:
                 for k in app.dst_from_src.keys():
                     print k
@@ -128,5 +118,5 @@ def css_execute(app):
 if __name__ == "__main__":
     with open(sys.argv[1]) as rf:
         app = App().parse(json.load(rf))
-        # execute(app)
+        execute(app)
         css_execute(app)

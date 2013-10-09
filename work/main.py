@@ -1,10 +1,13 @@
 # -*- coding:utf-8 -*-
 
+import cssutils
+import logging
 import os
 import re
 import sys
 import ast
 import json
+from utils import abspath_from_rel
 
 static_rx = re.compile(r"request\.static_url\((.+?)\)")
 template_org_rx = re.compile(r"/templates/([^/]+)")
@@ -33,14 +36,21 @@ class IOLikeList(list):
     def write(self, x):
         self.append(json.dumps(x, ensure_ascii=False, indent=2))
 
+class JSONWrapper(object):
+    def __init__(self, out):
+        self.out = out
+    def write(self, x):
+        self.out.write(json.dumps(x, ensure_ascii=False, indent=2))
+
 class DecisionMaker(object):
-    def __init__(self, filename, org_name, classifier=classify, dump=None, strict=True, modules=None):
+    def __init__(self, filename, org_name, used_css, classifier=classify, dump=None, strict=True, modules=None):
         self.filename = filename
         self.org_name = org_name
         self.classifier = classifier
         self.strict = strict
         self.dump = dump
         self.modules = modules
+        self.used_css = used_css
 
     def normalize_src(self, prefix, filepath):
         return filepath
@@ -101,6 +111,25 @@ class DecisionMaker(object):
         }
         self.dump.stderr.write(data)
 
+    def with_css(self, cssdata):
+        k = cssdata["src_file"]
+        if k in self.used_css:
+            return
+        self.used_css[k] = 1
+
+        css = cssutils.CSSParser(loglevel=logging.CRITICAL).parseFile(k)
+        src_dir = os.path.dirname(cssdata["src_file"])
+        def replacer(url):
+            src_file = abspath_from_rel(url, src_dir)
+            data = {
+                "file_type": "images", 
+                "src_file": src_file, 
+                "dst_file": self.normalize_dst("images", "", src_file), 
+                "virtual": False
+            }
+            self.dump.stdout.write(data)
+            return url
+        cssutils.replaceUrls(css, replacer, ignoreImportRules=True)
                         
     def decision(self, inp):
         for line in inp:
@@ -108,8 +137,11 @@ class DecisionMaker(object):
             if m:
                 try:
                     assetspec = m.group(1)
-                    data = self.info(ast.literal_eval(assetspec))
+                    path = ast.literal_eval(assetspec)
+                    data = self.info(path)
                     self.dump.stdout.write(data)
+                    if path.endswith(".css"):
+                        self.with_css(data)
                 except Exception as e:
                     #see: e.g.altair/app/ticketing/cart/templates/BT/pc/_widgets.html
                     fmt = m.group(1)
@@ -127,14 +159,15 @@ class DecisionMaker(object):
 
 if __name__ == "__main__":
     cwd = sys.argv[1]
-    dump = Dump(IOLikeList(), sys.stderr)
+    dump = Dump(IOLikeList(), JSONWrapper(sys.stderr))
+    used_css = {}
     for root, ds, fs in os.walk(cwd, topdown=False):
         for f in fs:
             if "/templates/" in root:
                 path = os.path.join(root, f)
                 m = template_org_rx.search(root)
                 modules = {"altair.app.ticketing": "ticketing/src/altair/app/ticketing"}
-                dm = DecisionMaker(path, m.group(1), dump=dump, modules=modules)
+                dm = DecisionMaker(path, m.group(1), used_css, dump=dump, modules=modules)
                 with open(path) as rf:
                     dm.decision(rf)
 
