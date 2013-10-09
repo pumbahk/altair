@@ -449,9 +449,9 @@ def download(request):
             "performance_code",  # 公演コード
             "performance_start_on",  # 公演日
             "venue_name",  # 会場
+            "product_name",  # 商品名
             "product_price",  # 商品単価
             "product_quantity", # 商品個数
-            "product_name",  # 商品名
             "product_sales_segment",  # 販売区分
             "item_name",  # 商品明細名
             "item_price",  # 商品明細単価

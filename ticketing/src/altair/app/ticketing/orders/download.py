@@ -118,7 +118,7 @@ japanese_columns = {
     u'product_name': u'商品名',
     u'product_sales_segment': u'販売区分',
     u'product_margin_ratio': u'販売手数料率',
-    u'product_margin': u'販売手数料',
+    u'product_margin': u'内手数料金額',
     u'product_item_id': u'商品明細ID',
     u'item_name': u'商品明細名',
     u'item_price': u'商品明細単価',
