@@ -471,12 +471,18 @@ def download(request):
     iheaders = header_intl(csv_headers, japanese_columns)
     logger.debug("csv headers = {0}".format(csv_headers))
     results = iter(query)
-    writer = csv.writer(response, delimiter=',', quoting=csv.QUOTE_ALL)
+    writer = csv.writer(response, delimiter=',')
 
-    def render_plain(v):
-        if v is None:
-            return u''
-        return u'="{0}"'.format(v)
+    if excel_csv:
+        def render_plain(v):
+            if v is None:
+                return u''
+            return u'="{0}"'.format(v)
+    else:
+        def render_plain(v):
+            if v is None:
+                return u''
+            return v
 
     def render_zip(v):
         if not v:
