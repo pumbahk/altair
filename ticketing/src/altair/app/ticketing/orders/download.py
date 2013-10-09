@@ -586,7 +586,7 @@ class OrderSearchBase(list):
 
     def order_by(self, query):
         if self._cond is None:
-            return query
+            return query.order_by(self.default_order)
 
         logger.debug('order_by {0}'.format(self._cond))
         if 'sort' in self._cond:
@@ -596,7 +596,7 @@ class OrderSearchBase(list):
             elif self._cond['sort'].data == 'order_no':
                 sort_col = t_order.c.order_no
             else:
-                return query
+                return query.order_by(self.default_order)
             logger.debug('order_by {0}'.format(sort_col))
 
             if 'direction' in self._cond:
@@ -605,10 +605,10 @@ class OrderSearchBase(list):
                 elif self._cond['direction'].data == 'desc':
                     return query.order_by(sort_col.desc())                    
                 else:
-                    return query
+                    return query.order_by(self.default_order)
             else:
                 return query.order_by(sort_col)
-        return query
+        return query.order_by(self.default_order)
 
     def query_cond(self, condition):
         cond = t_organization.c.id==self.organization_id
@@ -895,9 +895,11 @@ class OrderSearchBase(list):
 class OrderSummary(OrderSearchBase):
     target = order_summary_joins
     columns = summary_columns
+    default_order = t_order.c.created_at.desc()
 
 
 class OrderDownload(OrderSearchBase):
     target = order_product_summary_joins
     columns = detail_summary_columns
+    default_order = t_order.c.created_at.asc()
 
