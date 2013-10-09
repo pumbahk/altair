@@ -1,12 +1,10 @@
 # -*- coding:utf-8 -*-
 import json
+import os.path
+import cssutils
+import logging
 from collections import OrderedDict
 import sys
-
-class UpdateManager(object):
-    def __init__(self, target):
-        self.target = target
-        self.q = []
 
 class EventQueue(object):
     def __init__(self):
@@ -14,38 +12,93 @@ class EventQueue(object):
 
     def add(self, k, v):
         if not k in self.q:
-            self.q[k] = set()
-        if not v in self.q[k]:
-            self.q[k].add(v)
+            self.q[k] = []
+        if not v in self.q[k]: #O(n)
+            self.q[k].append(v)
 
     def __iter__(self):
         return iter(self.q.items())
 
 class App(object):
     def __init__(self):
-        self.file_events = EventQueue()
-        self.fs_events = EventQueue()
+        self.sed_events = EventQueue()
+        self.css_events = EventQueue()
+        self.mv_events = EventQueue()
+        self.dst_from_src = {}
 
     def parse(self, xs):
         for D in xs:
             if not D["virtual"]:
-                self.fs_events.add(D["src_file"], D["dst_file"])
-            self.file_events.add(D["html"], (D["src"], D["dst"]))
+                self.mv_events.add(D["src_file"], D["dst_file"])
+                if D["file_type"] == "css":
+                    self.css_events.add(D["src_file"], D["dst_file"])
+            self.sed_events.add(D["html"], (D["src"], D["dst"]))
+            self.dst_from_src[D["src_file"]] = D["dst_file"]
         return self
 
-def normalize_for_sed(x):
+def escape_for_sed(x):
     return x.replace(".", "\.").replace("/", "\/")
 
+parsers = {}
+def get_css_parser(target):
+    global parsers
+    if target in parsers:
+        return parsers[target], False
+    
+    ## suppress logging message
+    parser = cssutils.CSSParser(loglevel=logging.CRITICAL).parseFile(target)
+    parsers[target] = parser
+    return parser, True
+
+def abspath_from_rel(rel, cwd):
+    if rel.startswith("/"):
+        raise ValueError("not relative path: {}".format(rel))
+
+    nodes = rel.split("/")
+    if not nodes:
+        return cwd
+    if nodes[0] == "./":
+        nodes.pop(0)
+
+    cwd_nodes = cwd.split("/")
+    while nodes[0] == "..":
+        nodes.pop(0)
+        cwd_nodes.pop(-1)
+    return "{}/{}".format("/".join(cwd_nodes).rstrip("/"), ("/").join(nodes).lstrip("/"))
+
+
+class CSSReplacer(object):
+    def __init__(self, src_css, dst_css, dst_from_src):
+        self.src_css = src_css
+        self.dst_css = dst_css 
+        self.dst_from_src = dst_from_src
+        self.src_css_dir = os.path.dirname(self.src_css)
+
+    def replace_url(self, src_img_rel):
+        src_img = abspath_from_rel(src_img_rel, self.src_css_dir)
+        dst_img = self.dst_from_src[src_img]
+        return os.path.relpath(dst_img, self.dst_css)
+
+    def replace(self, target):
+        css, created = get_css_parser(target) #href=None?
+        if not created:
+            return 
+        def replacer(url):
+            print "="
+            print url, self.replace_url(url)
+            return self.replace_url(url)
+        cssutils.replaceUrls(css, replacer, ignoreImportRules=True)
+        
 def execute(app):
-    for html, vs in app.file_events:
+    for html, vs in app.sed_events:
         for (src, dst) in vs:
             if src == dst:
                 sys.stderr.write("skip:{}".format(src))
                 sys.stderr.write("\n")
                 continue
-            print "gsed -i 's/{src}/{dst}/g;' {html}".format(html=html, src=normalize_for_sed(src), dst=normalize_for_sed(dst))
+            print "gsed -i 's/{src}/{dst}/g;' {html}".format(html=html, src=escape_for_sed(src), dst=escape_for_sed(dst))
     print "git commit -a -m 'template edit'"
-    for k, vs in app.fs_events:
+    for k, vs in app.mv_events:
         used = {}
         for v in vs:
             if k == v:
@@ -58,7 +111,22 @@ def execute(app):
             else:
                 print "mkdir -p `dirname {v}` && cp {k} {v} && git add {v}".format(k=used[k], v=v)
 
+def css_execute(app):
+    for src, vs in app.css_events:
+        for dst in vs:
+            replacer = CSSReplacer(src, dst, app.dst_from_src)
+            try:
+                replacer.replace(src)
+            except KeyError as e:
+                for k in app.dst_from_src.keys():
+                    print k
+                raise 
+            except Exception as e:
+                pass
+
+
 if __name__ == "__main__":
     with open(sys.argv[1]) as rf:
         app = App().parse(json.load(rf))
-        execute(app)
+        # execute(app)
+        css_execute(app)

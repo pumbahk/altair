@@ -63,9 +63,13 @@ class DecisionMaker(object):
             filepath = filepath.replace("images_m/", "images/").replace("img_m/", "images/")
 
         filepath = filepath.replace("/img/", "/images/")
-        static_ext = 'static/{0}/{1}/'.format(self.org_name, device)
         filepath = filepath.replace("{}/".format(self.org_name), "")
         filepath = filepath.replace("static/89ers/", "static/") # for  "dst_file": "ticketing/src/altair/app/ticketing/fc_auth/static/NH/pc/89ers/style.css"
+
+        static_ext = 'static/{0}/{1}/'.format(self.org_name, device)
+        if not file_type in os.path.splitext(filepath)[0]:
+            static_ext = '{0}{1}/'.format(static_ext, file_type)
+
         filepath = filepath.replace("static/", static_ext)
         return filepath
 
@@ -129,7 +133,8 @@ if __name__ == "__main__":
             if "/templates/" in root:
                 path = os.path.join(root, f)
                 m = template_org_rx.search(root)
-                dm = DecisionMaker(path, m.group(1), dump=dump, modules={"altair.app.ticketing": "ticketing/src/altair/app/ticketing"})
+                modules = {"altair.app.ticketing": "ticketing/src/altair/app/ticketing"}
+                dm = DecisionMaker(path, m.group(1), dump=dump, modules=modules)
                 with open(path) as rf:
                     dm.decision(rf)
 
