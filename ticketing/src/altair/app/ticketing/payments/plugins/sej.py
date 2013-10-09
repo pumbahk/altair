@@ -28,6 +28,7 @@ from altair.app.ticketing.mails.interfaces import (
 from altair.app.ticketing.models import DBSession
 from altair.app.ticketing.core import models as c_models
 
+from altair.app.ticketing.sej.api import get_sej_order
 from altair.app.ticketing.sej.exceptions import SejErrorBase
 from altair.app.ticketing.sej.ticket import SejTicketDataXml
 from altair.app.ticketing.sej.models import SejOrder, SejTenant, SejPaymentType, SejTicketType
@@ -183,7 +184,7 @@ class SejPaymentPlugin(object):
 
     def finished(self, request, order):
         """ 支払番号発行済か判定 """
-        sej_order = order.sej_order
+        sej_order = get_sej_order(order.order_no)
         if sej_order is None:
             return False
 
@@ -247,7 +248,7 @@ class SejDeliveryPlugin(object):
 
     def finished(self, request, order):
         """ 支払番号発行済か判定 """
-        sej_order = order.sej_order
+        sej_order = get_sej_order(order.order_no)
         if sej_order is None:
             return False
 
@@ -312,7 +313,7 @@ class SejPaymentDeliveryPlugin(object):
 
     def finished(self, request, order):
         """ 支払番号発行済か判定 """
-        sej_order = order.sej_order
+        sej_order = get_sej_order(order.order_no)
         if sej_order is None:
             return False
 
@@ -324,7 +325,7 @@ class SejPaymentDeliveryPlugin(object):
              name="delivery-%d" % DELIVERY_PLUGIN_ID, renderer='altair.app.ticketing.payments.plugins:templates/sej_delivery_complete_mobile.html')
 def sej_delivery_viewlet(context, request):
     order = context.order
-    sej_order = order.sej_order
+    sej_order = get_sej_order(order.order_no)
     payment_id = context.order.payment_delivery_pair.payment_method.payment_plugin_id
     delivery_method = context.order.payment_delivery_pair.delivery_method
     is_payment_with_sej = int(payment_id or -1) == PAYMENT_PLUGIN_ID
@@ -346,7 +347,7 @@ def sej_delivery_confirm_viewlet(context, request):
              name="payment-%d" % PAYMENT_PLUGIN_ID, renderer='altair.app.ticketing.payments.plugins:templates/sej_payment_complete_mobile.html')
 def sej_payment_viewlet(context, request):
     order = context.order
-    sej_order = order.sej_order
+    sej_order = get_sej_order(order.order_no)
     payment_method = context.order.payment_delivery_pair.payment_method
     return dict(
         order=order,
@@ -365,7 +366,7 @@ def payment_mail_viewlet(context, request):
     """ 完了メール表示
     :param context: ICompleteMailPayment
     """
-    sej_order=context.order.sej_order
+    sej_order = get_sej_order(context.order.order_no)
     payment_method = context.order.payment_delivery_pair.payment_method
     return dict(sej_order=sej_order, h=cart_helper, 
                 notice=context.mail_data("notice"),
@@ -378,7 +379,7 @@ def delivery_mail_viewlet(context, request):
     """ 完了メール表示
     :param context: ICompleteMailDelivery
     """
-    sej_order=context.order.sej_order
+    sej_order = get_sej_order(context.order.order_no)
     payment_id = context.order.payment_delivery_pair.payment_method.payment_plugin_id
     delivery_method = context.order.payment_delivery_pair.delivery_method
     is_payment_with_sej = int(payment_id or -1) == PAYMENT_PLUGIN_ID
