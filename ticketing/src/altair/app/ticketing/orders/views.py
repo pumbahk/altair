@@ -289,13 +289,13 @@ def index(request):
                             condition=None)
 
     if request.params.get('action') == 'checked':
+        
         checked_orders = [o.lstrip('o:') 
                           for o in request.session.get('orders', []) 
                           if o.startswith('o:')]
-        #query = query.filter(Order.id.in_(checked_orders))
-
+        query.target_order_ids = checked_orders
+        
     page = int(request.params.get('page', 0))
-
     orders = paginate.Page(
         query,
         page=page,

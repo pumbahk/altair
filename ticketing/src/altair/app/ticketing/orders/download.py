@@ -583,6 +583,7 @@ class OrderSearchBase(list):
         self.organization_id = organization_id
         self._cond = condition
         self.condition = self.query_cond(condition)
+        self.target_order_ids = []
 
     def order_by(self, query):
         if self._cond is None:
@@ -869,6 +870,8 @@ class OrderSearchBase(list):
             ).limit(limit
             ).offset(offset)
             sql = self.order_by(sql)
+            if self.target_order_ids:
+                sql = sql.where(Order.id.in_(self.target_order_ids))
 
             logger.debug("limit = {0}, offset = {1}".format(limit, offset))
             logger.debug("sql = {0}".format(sql))
