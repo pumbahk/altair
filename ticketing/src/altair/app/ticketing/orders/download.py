@@ -427,8 +427,9 @@ class SeatSummaryKeyBreakAdapter(object):
         breaked_items = []
 
         break_counter = KeyBreakCounter(keys=[key])
+        first = True
         for counter, key_changes, item in break_counter(iter):
-            if key_changes[key]:
+            if key_changes[key] and not first:
                 result = OrderedDict(last_item)
                 for c in childitems:
                     result.pop(c)
@@ -440,6 +441,7 @@ class SeatSummaryKeyBreakAdapter(object):
                         result[name] = unicode(value)
                 self.results.append(result)
                 breaked_items = []
+                first = False
 
             for childitem in childitems:
                 name = "{0}".format(childitem)
@@ -480,13 +482,15 @@ class OrderSummaryKeyBreakAdapter(object):
 
         break_counter = KeyBreakCounter(keys=[key, child1_key, child2_key, child3_key])
         #margin = 0  # very hack
+        first = True
         for counter, key_changes, item in break_counter(iter):
-            if key_changes[key]:
+            if key_changes[key] and not first:
                 result = OrderedDict(last_item)
                 for c in child1 + child2 + child3_comma_separated + child3_indexed:
                     result.pop(c)
                 for name, value in breaked_items:
                     if name in result:
+                        assert isinstance(result[name], basestring), result
                         if value not in result[name].split(","):
                             result[name] = unicode(result[name]) + "," + unicode(value)
                     else:
@@ -497,7 +501,7 @@ class OrderSummaryKeyBreakAdapter(object):
                 #margin = 0
 
             # second key break
-            if key_changes[key] or key_changes[child1_key]:
+            if key_changes[key] or key_changes[child1_key] or first:
                 for childitem1 in child1:
                     name = "{0}[{1}]".format(childitem1, counter[child1_key])
                     breaked_items.append(
@@ -507,7 +511,7 @@ class OrderSummaryKeyBreakAdapter(object):
                 # margin += item['product_margin']
 
             # third key break
-            if key_changes[key] or key_changes[child1_key] or key_changes[child2_key]:
+            if key_changes[key] or key_changes[child1_key] or key_changes[child2_key] or first:
                 for childitem2 in child2:
                     name = "{0}[{1}][{2}]".format(childitem2, counter[child1_key], counter[child2_key])
                     breaked_items.append(
@@ -529,6 +533,7 @@ class OrderSummaryKeyBreakAdapter(object):
                 child3_count[(counter[child1_key], counter[child2_key])] = max(child3_count.get((counter[child1_key], counter[child2_key]), 0), counter[child3_key])
 
             last_item = item
+            first = False
 
         result = OrderedDict(last_item)
         for c in child1 + child2 + child3_comma_separated + child3_indexed:
@@ -536,6 +541,7 @@ class OrderSummaryKeyBreakAdapter(object):
 
         for name, value in breaked_items:
             if name in result:
+                assert isinstance(result[name], basestring), result
                 if value not in result[name].split(","):
                     result[name] = unicode(result[name]) + "," + unicode(value)
             else:
