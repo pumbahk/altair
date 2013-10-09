@@ -337,7 +337,9 @@ def download(request):
 
     if export_type == OrderCSV.EXPORT_TYPE_ORDER:
         query = OrderSummaryKeyBreakAdapter(query, 'id',
-                                ('product_name', 'product_price', 'product_quantity', 'product_sales_segment', 'product_margin'),
+                                ('product_price', 'product_quantity',
+                                 'product_name',
+                                 'product_sales_segment', 'product_margin_ratio'),
                                 'product_id',
                                 ('item_name', 'item_price', 'item_quantity'),
                                 'product_item_id',
