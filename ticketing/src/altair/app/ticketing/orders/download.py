@@ -118,6 +118,7 @@ japanese_columns = {
     u'product_name': u'商品名',
     u'product_sales_segment': u'販売区分',
     u'product_margin_ratio': u'販売手数料率',
+    u'product_margin': u'内手数料金額',
     u'product_item_id': u'商品明細ID',
     u'item_name': u'商品明細名',
     u'item_price': u'商品明細単価',
@@ -298,7 +299,7 @@ detail_summary_columns = summary_columns + [
     t_ordered_product.c.quantity.label('product_quantity'), #商品個数[0]
     t_product_sales_segment_group.c.name.label('product_sales_segment'), #販売区分[0]
     t_product_sales_segment.c.margin_ratio.label('product_margin_ratio'), #販売手数料率[0] margin_ratio
-    (t_product.c.price * t_ordered_product.c.quantity * t_product_sales_segment.c.margin_ratio / 100).label('margin'),
+    (t_product.c.price * t_ordered_product.c.quantity * t_product_sales_segment.c.margin_ratio / 100).label('product_margin'),
     # ProductItem
     t_product_item.c.id.label('product_item_id'), #商品明細名[0][0]
     t_product_item.c.name.label('item_name'), #商品明細名[0][0]
@@ -492,7 +493,7 @@ class OrderSummaryKeyBreakAdapter(object):
                 breaked_items = []
 
             # second key break
-            if key_changes[child1_key]:
+            if key_changes[key] or key_changes[child1_key]:
                 for childitem1 in child1:
                     name = "{0}[{1}]".format(childitem1, counter[child1_key])
                     breaked_items.append(
@@ -501,7 +502,7 @@ class OrderSummaryKeyBreakAdapter(object):
                     child1_count = max(child1_count, counter[child1_key])
 
             # third key break
-            if key_changes[child2_key]:
+            if key_changes[key] or key_changes[child1_key] or key_changes[child2_key]:
                 for childitem2 in child2:
                     name = "{0}[{1}][{2}]".format(childitem2, counter[child1_key], counter[child2_key])
                     breaked_items.append(

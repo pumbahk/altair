@@ -337,7 +337,7 @@ def download(request):
 
     if export_type == OrderCSV.EXPORT_TYPE_ORDER:
         query = OrderSummaryKeyBreakAdapter(query, 'id',
-                                ('product_name', 'product_price', 'product_quantity', 'product_sales_segment', 'margin'),
+                                ('product_name', 'product_price', 'product_quantity', 'product_sales_segment', 'product_margin'),
                                 'product_id',
                                 ('item_name', 'item_price', 'item_quantity'),
                                 'product_item_id',
@@ -346,8 +346,8 @@ def download(request):
                                 'seat_id',)
         csv_headers = ([
             "order_no",
-            "status_label",
-            "payment_status_label",
+            "status",
+            "payment_status",
             "created_at",
             "paid_at",
             "delivered_at",
@@ -400,8 +400,8 @@ def download(request):
         query = SeatSummaryKeyBreakAdapter(query, "seat_id", ["item_print_histories"])
         csv_headers = [
             "order_no",  # 予約番号
-            "status_label",  # ステータス
-            "payment_status_label",  # 決済ステータス
+            "status",  # ステータス
+            "payment_status",  # 決済ステータス
             "created_at",  # 予約日時
             "paid_at",  # 支払日時
             "delivered_at",  # 配送日時
@@ -449,9 +449,9 @@ def download(request):
             "performance_code",  # 公演コード
             "performance_start_on",  # 公演日
             "venue_name",  # 会場
+            "product_name",  # 商品名
             "product_price",  # 商品単価
             "product_quantity", # 商品個数
-            "product_name",  # 商品名
             "product_sales_segment",  # 販売区分
             "item_name",  # 商品明細名
             "item_price",  # 商品明細単価
@@ -485,11 +485,11 @@ def download(request):
     def render_currency(v):
         from altair.app.ticketing.cart.helpers import format_number
         if v is None:
-            return u'0'
+            return u''
         return format_number(float(v))
 
     renderers = dict()
-    for n in ('total_amount', 'transaction_fee', 'delimiter', 'system_fee', 'margin'):
+    for n in ('total_amount', 'transaction_fee', 'delimiter', 'system_fee', 'margin', 'product_margin', 'product_price', 'item_price'):
         renderers[n] = render_currency
 
     renderers['zip'] = render_zip
