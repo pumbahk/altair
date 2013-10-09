@@ -2713,6 +2713,7 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             for opi, nopi in itertools.izip(op.ordered_product_items, nop.ordered_product_items):
                 nopi.seats = opi.seats
                 nopi.attributes = opi.attributes
+
         new_order.add()
         origin.delete(force=True)
         return Order.get(new_order.id, new_order.organization_id)
@@ -3374,6 +3375,7 @@ class Refund(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     payment_method_id = Column(Identifier, ForeignKey('PaymentMethod.id'))
     payment_method = relationship('PaymentMethod')
     include_system_fee = Column(Boolean, nullable=False, default=False)
+    include_special_fee = Column(Boolean, nullable=False, default=False)
     include_transaction_fee = Column(Boolean, nullable=False, default=False)
     include_delivery_fee = Column(Boolean, nullable=False, default=False)
     include_item = Column(Boolean, nullable=False, default=False)

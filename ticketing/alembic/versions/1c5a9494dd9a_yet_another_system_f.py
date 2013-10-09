@@ -34,6 +34,9 @@ def upgrade():
     op.add_column('Order',
                   sa.Column('special_fee',
                             sa.Integer(), nullable=False, default=0))
+    op.add_column('Refund',
+                  sa.Column('include_special_fee',
+                            sa.Boolean(), nullable=False, default=False))
 
 def downgrade():
     op.drop_column('PaymentDeliveryMethodPair', 'special_fee_name')
@@ -41,3 +44,4 @@ def downgrade():
     op.drop_column('PaymentDeliveryMethodPair', 'special_fee_type')
     op.drop_column('Order', 'special_fee_name')
     op.drop_column('Order', 'special_fee')
+    op.drop_column('Refund', 'include_special_fee')

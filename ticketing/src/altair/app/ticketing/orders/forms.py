@@ -68,7 +68,7 @@ class OrderForm(Form):
         validators=[Required()],
     )
     special_fee_name = TextField(
-        label=u'特別手数料',
+        label=u'特別手数料名',
         validators=[Optional()],
     )
 
@@ -632,6 +632,12 @@ class OrderRefundForm(Form):
         default=0,
         widget=CheckboxInput(),
     )
+    include_special_fee = IntegerField(
+        label=u'特別手数料',
+        validators=[Optional()],
+        default=0,
+        widget=CheckboxInput(),
+    )
     include_transaction_fee = IntegerField(
         label=u'決済手数料',
         validators=[Optional()],
@@ -684,6 +690,7 @@ class OrderRefundForm(Form):
         if status:
             if not self.include_item.data and \
                not self.include_system_fee.data and \
+               not self.include_special_fee.data and \
                not self.include_transaction_fee.data and \
                not self.include_delivery_fee.data:
                 self.include_item.errors.append(u'払戻対象を選択してください')
