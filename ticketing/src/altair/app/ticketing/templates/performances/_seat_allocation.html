@@ -255,7 +255,11 @@ var makeEditable = (function () {
        top: (editable.parent().innerHeight() - editing.outerHeight()) / 2 + 'px'
       });
       editing.focus();
-      editing.blur(cancel);
+      editing.blur(function (e) {
+        var _value = endEdit();
+        save && save(_value);
+        return false;
+      });
       editing.keydown(function (e) {
         if (e.which == 13) {
           var _value = endEdit();
