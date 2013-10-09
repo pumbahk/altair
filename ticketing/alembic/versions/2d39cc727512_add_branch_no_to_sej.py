@@ -26,6 +26,7 @@ def upgrade():
     op.drop_column('SejTicket', 'order_id')
     op.create_foreign_key('SejTicket_ibfk_1', 'SejTicket', 'SejOrder', ['order_no'], ['order_no'])
     op.add_column('SejOrder', sa.Column('branch_no', sa.Integer(), nullable=False, default=1, server_default='1'))
+    op.execute("DELETE FROM `SejTicket` WHERE order_no='';"),
     op.execute("DELETE FROM `SejOrder` WHERE order_no='';"),
     op.create_unique_constraint('ix_SejOrder_order_no_branch_no', 'SejOrder', ['order_no', 'branch_no'])
 
