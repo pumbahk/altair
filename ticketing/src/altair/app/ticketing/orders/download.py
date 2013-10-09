@@ -575,7 +575,34 @@ class OrderSearchBase(list):
     def __init__(self, db_session, organization_id, condition):
         self.db_session = db_session
         self.organization_id = organization_id
+        self._cond = condition
         self.condition = self.query_cond(condition)
+
+    def order_by(self, query):
+        if self._cond is None:
+            return query
+
+        logger.debug('order_by {0}'.format(self._cond))
+        if 'sort' in self._cond:
+            sort_col = None
+            if self._cond['sort'].data == 'created_at':
+                sort_col = t_order.c.created_at
+            elif self._cond['sort'].data == 'order_no':
+                sort_col = t_order.c.order_no
+            else:
+                return query
+            logger.debug('order_by {0}'.format(sort_col))
+
+            if 'direction' in self._cond:
+                if self._cond['direction'].data == 'asc':
+                    return query.order_by(sort_col.asc())
+                elif self._cond['direction'].data == 'desc':
+                    return query.order_by(sort_col.desc())                    
+                else:
+                    return query
+            else:
+                return query.order_by(sort_col)
+        return query
 
     def query_cond(self, condition):
         cond = t_organization.c.id==self.organization_id
@@ -785,14 +812,6 @@ class OrderSearchBase(list):
                 cond = and_(cond,
                             t_order.c.id.in_(subq))
     
-        # # order by
-        # if 'sort' in condition:
-        #     if 'direction' in condition:
-        #         # asc, desc
-        #         pass
-        #     else:
-        #         pass
-
         return cond
 
     def __iter__(self):
@@ -831,6 +850,7 @@ class OrderSearchBase(list):
                          whereclause=self.condition,
             ).limit(limit
             ).offset(offset)
+            sql = self.order_by(sql)
 
             logger.debug("limit = {0}, offset = {1}".format(limit, offset))
             logger.debug("sql = {0}".format(sql))
