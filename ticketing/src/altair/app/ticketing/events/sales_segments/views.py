@@ -96,17 +96,6 @@ class SalesSegments(BaseView):
             query['sales_segment_group_id'] = self.context.sales_segment_group.id
         return self.request.current_route_path(_query=query)
 
-    @view_config(route_name='sales_segments.new', request_method='GET', renderer='altair.app.ticketing:templates/sales_segments/edit.html', xhr=False)
-    def new(self):
-        return {
-            'event': self.context.event,
-            'performance': self.context.performance,
-            'sales_segment': None,
-            'sales_segment_group': self.context.sales_segment_group,
-            'form': SalesSegmentForm(context=self.context),
-            'action': self.new_url
-            }
-
     @view_config(route_name='sales_segments.new', request_method='GET', renderer='altair.app.ticketing:templates/sales_segments/_form.html', xhr=True)
     def new_xhr(self):
         return {
@@ -137,26 +126,6 @@ class SalesSegments(BaseView):
         self.context.sales_segment = sales_segment
         self.request.session.flash(u'販売区分を作成しました')
         return None
-
-    @view_config(route_name='sales_segments.new', request_method='POST', renderer='altair.app.ticketing:templates/sales_segments/edit.html', xhr=False)
-    def new_post(self):
-        f = self._new_post()
-        if f is None:
-            sales_segment = self.context.sales_segment
-            return HTTPFound(self.request.route_path(
-                'sales_segments.index',
-                event_id=sales_segment.sales_segment_group.event_id,
-                sales_segment_group_id=sales_segment.sales_segment_group_id,
-                _query={'performance_id': sales_segment.performance_id}))
-        else:
-            return {
-                'event': self.context.event,
-                'performance': self.context.performance,
-                'sales_segment': None,
-                'sales_segment_group': self.context.sales_segment_group,
-                'form': f,
-                'action': self.new_url
-                }
 
     @view_config(route_name='sales_segments.new', request_method='POST', renderer='altair.app.ticketing:templates/sales_segments/_form.html', xhr=True)
     def new_post_xhr(self):
@@ -259,18 +228,14 @@ class EditSalesSegment(BaseView):
         )
 
     @view_config(route_name='sales_segments.copy', request_method='GET', renderer='altair.app.ticketing:templates/sales_segments/_form.html', xhr=True)
-    @view_config(route_name='sales_segments.copy', request_method='GET', renderer='altair.app.ticketing:templates/sales_segments/edit.html', xhr=False)
     @view_config(route_name='sales_segments.edit', request_method='GET', renderer='altair.app.ticketing:templates/sales_segments/_form.html', xhr=True)
-    @view_config(route_name='sales_segments.edit', request_method='GET', renderer='altair.app.ticketing:templates/sales_segments/edit.html', xhr=False)
     def get(self):
         form = SalesSegmentForm(obj=self.context.sales_segment, formdata=self.request.POST, context=self.context)
         form.payment_delivery_method_pairs.data = [pdmp.id for pdmp in self.context.sales_segment.payment_delivery_method_pairs]
         return self._render_params(form)
 
     @view_config(route_name='sales_segments.copy', request_method='POST', renderer='altair.app.ticketing:templates/sales_segments/_form.html', xhr=True)
-    @view_config(route_name='sales_segments.copy', request_method='POST', renderer='altair.app.ticketing:templates/sales_segments/edit.html', xhr=False)
     @view_config(route_name='sales_segments.edit', request_method='POST', renderer='altair.app.ticketing:templates/sales_segments/_form.html', xhr=True)
-    @view_config(route_name='sales_segments.edit', request_method='POST', renderer='altair.app.ticketing:templates/sales_segments/edit.html', xhr=False)
     def post(self):
         form = SalesSegmentForm(obj=self.context.sales_segment, formdata=self.request.POST, context=self.context)
         if 'lot_id' in self.request.POST:
