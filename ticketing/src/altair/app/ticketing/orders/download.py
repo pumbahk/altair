@@ -933,3 +933,8 @@ class OrderDownload(OrderSearchBase):
     columns = detail_summary_columns
     default_order = t_order.c.created_at.asc()
 
+class OrderSeatDownload(OrderSearchBase):
+    target = order_product_summary_joins
+    columns = detail_summary_columns
+    default_order = t_seat.c.id
+
