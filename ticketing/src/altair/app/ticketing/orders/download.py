@@ -236,6 +236,12 @@ summary_columns = [
     t_order.c.card_ahead_com_name, #-- 仕向け先名
 ]
 
+# 
+t_member_group_names = select([t_member_group.c.membership_id,
+                               func.group_concat(t_member_group.c.name).label('names')],
+                              whereclause=t_member_group.c.deleted_at==None,
+                          ).group_by(t_member_group.c.membership_id).alias()
+
 detail_summary_columns = summary_columns + [
     t_order.c.paid_at, #支払日時
     t_order.c.delivered_at, #配送日時
@@ -262,7 +268,7 @@ detail_summary_columns = summary_columns + [
 
     # Membership
     t_membership.c.name.label('membership_name'), #会員種別名
-    t_member_group.c.name.label('membergroup_name'), #会員グループ名
+    t_member_group_names.c.names.label('membergroup_name'), #会員グループ名
     t_user_credential.c.auth_identifier,  #会員種別ID
 
     # ShippingAddress
@@ -365,14 +371,11 @@ order_summary_joins = t_order.join(
     and_(t_membership.c.id==t_user_credential.c.membership_id,
          t_membership.c.deleted_at==None),
 ).outerjoin(
-    t_member_group,
-    and_(t_member_group.c.membership_id==t_membership.c.id,
-         t_member_group.c.deleted_at==None),
-).outerjoin(
     t_sej_order,
     and_(t_sej_order.c.order_no==t_order.c.order_no,
          t_sej_order.c.deleted_at==None),
 )
+
 
 order_product_summary_joins = order_summary_joins.join(
     t_ordered_product,
@@ -416,7 +419,11 @@ order_product_summary_joins = order_summary_joins.join(
     t_operator,
     and_(t_operator.c.id==t_print_hisotry.c.operator_id,
          t_operator.c.deleted_at==None),
+).outerjoin(
+    t_member_group_names,
+    t_member_group_names.c.membership_id==t_membership.c.id,
 )
+
 
 # Userに対してUserProfileが複数あると行数が増える可能性
 
