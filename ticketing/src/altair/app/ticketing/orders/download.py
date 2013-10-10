@@ -618,7 +618,9 @@ class OrderSearchBase(list):
         return query.order_by(self.default_order)
 
     def query_cond(self, condition):
-        cond = t_organization.c.id==self.organization_id
+        cond = and_(t_organization.c.id==self.organization_id,
+                    t_order.c.deleted_at==None)
+
         if condition is None:
             return cond
 
