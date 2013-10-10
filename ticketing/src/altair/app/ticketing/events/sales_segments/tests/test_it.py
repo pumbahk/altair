@@ -12,6 +12,7 @@ class SalesSegmentsTests(unittest.TestCase):
     def setUp(self):
         self.config = testing.setUp()
         self.config.include('altair.app.ticketing.renderers')
+
         self.session = _setup_db([
             "altair.app.ticketing.core.models",
         ])
@@ -115,7 +116,7 @@ class SalesSegmentsTests(unittest.TestCase):
         self.assertEqual(ss.event, event)
         self.assertEqual(ss.membergroups, [membergroup])
 
-    def test_new_post_xhr(self):
+    def test_new_post(self):
         from datetime import datetime
         from altair.app.ticketing.core.models import (
             Organization,
@@ -175,7 +176,7 @@ class SalesSegmentsTests(unittest.TestCase):
 
         target = self._makeOne(context, request)
 
-        result = target.new_post_xhr()
+        result = target.new_post()
         if isinstance(result, dict):
             for e, msgs in result['form'].errors.items():
                 print e,
@@ -197,8 +198,9 @@ class EditSalesSegmentTests(unittest.TestCase):
 
     def setUp(self):
         self.config = testing.setUp()
+        self.config.include('altair.app.ticketing.renderers')
         self.config.add_route('sales_segments.show', '/sales_segments/show/')
-        self.config.add_route('sales_segments.edit', '/sales_segments/show/')
+        self.config.add_route('sales_segments.edit', '/sales_segments/edit/')
         self.session = _setup_db([
             "altair.app.ticketing.core.models",
         ])
@@ -309,10 +311,10 @@ class EditSalesSegmentTests(unittest.TestCase):
     def test_get(self):
         from datetime import datetime
         context = self._context()
-        request = DummyRequest(context=context)
+        request = DummyRequest(context=context, matched_route=testing.DummyResource(name='sales_segments.edit'))
         target = self._makeOne(context, request)
 
-        result = target.edit()
+        result = target.get()
 
         self.assertIn('form', result)
         form = result['form']
@@ -324,6 +326,7 @@ class EditSalesSegmentTests(unittest.TestCase):
     def test_post_invalid_form(self):
         context = self._context()
         request = DummyRequest(context=context,
+                               matched_route=testing.DummyResource(name='sales_segments.edit'),
                                POST=dict(
                                    end_at="",
                                ),
@@ -331,7 +334,7 @@ class EditSalesSegmentTests(unittest.TestCase):
 
         target = self._makeOne(context, request)
 
-        result = target.edit()
+        result = target.post()
 
         self.assertIn('form', result)
         self.assertTrue(result['form'].errors)
@@ -340,6 +343,7 @@ class EditSalesSegmentTests(unittest.TestCase):
         from datetime import datetime
         context = self._context()
         request = DummyRequest(context=context,
+                               matched_route=testing.DummyResource(name='sales_segments.edit'),
                                is_xhr=False,
                                POST=MultiDict(
                                    use_default_start_at="on",
@@ -358,7 +362,7 @@ class EditSalesSegmentTests(unittest.TestCase):
 
         target = self._makeOne(context, request)
 
-        result = target.edit()
+        result = target.post()
         if isinstance(result, dict):
             form = result['form']
             for name, errors in form.errors.items():
@@ -390,6 +394,7 @@ class EditSalesSegmentTests(unittest.TestCase):
         from datetime import datetime
         context = self._context()
         request = DummyRequest(context=context,
+                               matched_route=testing.DummyResource(name='sales_segments.edit'),
                                is_xhr=False,
                                POST=MultiDict({
                                    'start_at': "2013-08-31 10:10",
@@ -408,7 +413,7 @@ class EditSalesSegmentTests(unittest.TestCase):
 
         target = self._makeOne(context, request)
 
-        result = target.edit()
+        result = target.post()
         if isinstance(result, dict):
             form = result['form']
             for name, errors in form.errors.items():
