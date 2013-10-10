@@ -1,12 +1,13 @@
 <%page args="modal_id, performance=None, sales_segment_group=None" />
 <%namespace file="/common/helpers.html" name="ch" />
 <script type="text/javascript">
-  var new_sales_segment, edit_sales_segment, delete_sales_segment;
+  var new_sales_segment, edit_sales_segment, delete_sales_segment, copy_sales_segment;
   $(function() {
     var endpoints = {
       'new': '${request.route_path('sales_segments.new', _query=dict(performance_id=performance.id if performance else u'', sales_segment_group_id=sales_segment_group.id if sales_segment_group else u''))|n}',
       'edit': '${request.route_path('sales_segments.edit', sales_segment_id='__id__')|n}',
-      'delete': '${request.route_path('sales_segments.delete', sales_segment_id='__id__')}'
+      'delete': '${request.route_path('sales_segments.delete', sales_segment_id='__id__')}',
+      'copy': '${request.route_path('sales_segments.copy', sales_segment_id='__id__')|n}'
     };
     (function(modal_sales_segment) {
       new_sales_segment = function new_sales_segment() {
@@ -57,6 +58,15 @@
         modal.find('#delete').attr('href', endpoints['delete'].replace(encodeURIComponent('__id__'), id));
         modal.find('#message').text('選択した販売区分を削除します。よろしいですか？');
         modal.modal('toggle');
+      };
+      copy_sales_segment = function copy_sales_segment(id) {
+        if (!id) return false;
+        load_modal_form(
+          modal_sales_segment,
+          endpoints['copy'].replace(encodeURIComponent('__id__'), id),
+          null,
+          null
+        );
       };
     })($('#${modal_id}'));
   });
