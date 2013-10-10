@@ -3388,6 +3388,8 @@ class Refund(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         total_fee = 0
         if self.include_system_fee:
             total_fee += order.system_fee
+        if self.include_special_fee:
+            total_fee += order.special_fee
         if self.include_transaction_fee:
             total_fee += order.transaction_fee
         if self.include_delivery_fee:
