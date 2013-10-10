@@ -97,16 +97,20 @@ class SalesSegments(BaseView):
         return self.request.current_route_path(_query=query)
 
     @view_config(route_name='sales_segments.new', request_method='GET', renderer='altair.app.ticketing:templates/sales_segments/_form.html', xhr=True)
-    def new_xhr(self):
+    def new_get(self):
         return {
             'form': SalesSegmentForm(context=self.context),
             'action': self.new_url
             }
 
-    def _new_post(self):
+    @view_config(route_name='sales_segments.new', request_method='POST', renderer='altair.app.ticketing:templates/sales_segments/_form.html', xhr=True)
+    def new_post(self):
         f = SalesSegmentForm(self.request.POST, context=self.context)
         if not f.validate():
-            return f
+            return {
+                'form': f,
+                'action': self.new_url
+            }
 
         if f.start_at.data is None:
             f.start_at.data = datetime.now()
@@ -123,20 +127,8 @@ class SalesSegments(BaseView):
         sales_segment.payment_delivery_method_pairs = pdmps
         sales_segment.save()
 
-        self.context.sales_segment = sales_segment
         self.request.session.flash(u'販売区分を作成しました')
-        return None
-
-    @view_config(route_name='sales_segments.new', request_method='POST', renderer='altair.app.ticketing:templates/sales_segments/_form.html', xhr=True)
-    def new_post_xhr(self):
-        f = self._new_post()
-        if f is None:
-            return render_to_response('altair.app.ticketing:templates/refresh.html', {}, request=self.request)
-        else:
-            return {
-                'form': f,
-                'action': self.new_url
-                }
+        return render_to_response('altair.app.ticketing:templates/refresh.html', {}, request=self.request)
 
     @view_config(route_name='sales_segments.delete')
     def delete(self):
@@ -268,11 +260,7 @@ class EditSalesSegment(BaseView):
                             )
             else:
                 editor.apply_changes(self.context.sales_segment)
-
-            if not self.request.is_xhr:
-                return HTTPFound(self.request.route_url('sales_segments.show', **self.request.matchdict))
-            else:
-                return render_to_response('altair.app.ticketing:templates/refresh.html', {}, request=self.request)
+            return render_to_response('altair.app.ticketing:templates/refresh.html', {}, request=self.request)
         return self._render_params(form)
 
 
