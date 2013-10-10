@@ -1,12 +1,11 @@
 # -*- coding:utf-8 -*-
 import json
-import tempfile
 import os.path
-import cssutils
-import logging
 from collections import OrderedDict
 import sys
+sys.path.append(os.path.dirname(__file__))
 from utils import abspath_from_rel
+from utils import css_url_iterator
 
 class EventQueue(object):
     def __init__(self):
@@ -42,40 +41,29 @@ class App(object):
 def escape_for_sed(x):
     return x.replace(".", "\.").replace("/", "\/")
 
-parsers = {}
-def get_css_parser(target):
-    global parsers
-    if target in parsers:
-        return parsers[target], False
-    
-    ## suppress logging message
-    parser = cssutils.CSSParser(loglevel=logging.CRITICAL).parseFile(target, validate=False)
-    parsers[target] = parser
-    return parser, True
-
-
-
 class CSSReplacer(object):
     def __init__(self, src_css, dst_css, dst_from_src):
         self.src_css = src_css
         self.dst_css = dst_css 
         self.dst_from_src = dst_from_src
         self.src_css_dir = os.path.dirname(self.src_css)
+        self.dst_css_dir = os.path.dirname(self.dst_css)
 
-    def replace_url(self, src_img_rel):
+    def new_relative_url(self, src_img_rel):
         src_img = abspath_from_rel(src_img_rel, self.src_css_dir)
         dst_img = self.dst_from_src[src_img]
-        return os.path.relpath(dst_img, self.dst_css)
+        return os.path.relpath(dst_img, self.dst_css_dir)
 
-    def replace(self, target, outname):
-        css, created = get_css_parser(target) #href=None?
-        if not created:
-            return 
-        def replacer(url):
-            return self.replace_url(url)
-        cssutils.replaceUrls(css, replacer, ignoreImportRules=True)
-        with open(outname, "w") as wf:
-            wf.write(css.cssText)
+    def replaced_iter(self, target):
+        used = {}
+        with open(target) as rf:
+            for img_rel in css_url_iterator(rf):
+                if img_rel.startswith("http") and "://" in img_rel:
+                    continue
+                if img_rel in used:
+                    continue
+                used[img_rel] = 1
+                yield img_rel, self.new_relative_url(img_rel)
         
 def execute(app):
     for html, vs in app.sed_events:
@@ -84,7 +72,7 @@ def execute(app):
                 sys.stderr.write("skip:{}".format(src))
                 sys.stderr.write("\n")
                 continue
-            print "gsed -i 's/{src}/{dst}/g;' {html}".format(html=html, src=escape_for_sed(src), dst=escape_for_sed(dst))
+            print 'sed -i "s/{src}/{dst}/g;" {html}'.format(html=html, src=escape_for_sed(src), dst=escape_for_sed(dst))
     print "git commit -a -m 'template edit'"
     for k, vs in app.mv_events:
         used = {}
@@ -100,19 +88,19 @@ def execute(app):
                 print "mkdir -p `dirname {v}` && cp {k} {v} && git add {v}".format(k=used[k], v=v)
 
 def css_execute(app):
+    used = {}
     for src, vs in app.css_events:
         for dst in vs:
-            replacer = CSSReplacer(src, dst, app.dst_from_src)
+            if dst in used:
+                continue
+            used[dst] = 1
             try:
-                outname = tempfile.mktemp()
-                replacer.replace(src, outname)
-                print "mv {outname} {dst}".format(outname=outname, dst=dst)
-            except KeyError as e:
-                for k in app.dst_from_src.keys():
-                    print k
-                raise 
-            except Exception as e:
-                pass
+                replacer = CSSReplacer(src, dst, app.dst_from_src)
+                for pat, rep in replacer.replaced_iter(src):
+                    if pat != rep:
+                        print 'sed -i "s/{pat}/{rep}/g;" {dst}'.format(dst=dst, pat=escape_for_sed(pat), rep=escape_for_sed(rep))
+            except IOError:
+                sys.stderr.write("skip: No Such file {}".format(src))
 
 
 if __name__ == "__main__":

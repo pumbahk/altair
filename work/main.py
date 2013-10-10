@@ -1,13 +1,13 @@
 # -*- coding:utf-8 -*-
 
-import cssutils
-import logging
 import os
 import re
 import sys
 import ast
 import json
+sys.path.append(os.path.dirname(__file__))
 from utils import abspath_from_rel
+from utils import css_url_iterator
 
 static_rx = re.compile(r"request\.static_url\((.+?)\)")
 template_org_rx = re.compile(r"/templates/([^/]+)")
@@ -112,24 +112,31 @@ class DecisionMaker(object):
         self.dump.stderr.write(data)
 
     def with_css(self, cssdata):
-        k = cssdata["src_file"]
+        k = cssdata["dst_file"]
         if k in self.used_css:
             return
         self.used_css[k] = 1
-
-        css = cssutils.CSSParser(loglevel=logging.CRITICAL).parseFile(k)
+                
         src_dir = os.path.dirname(cssdata["src_file"])
-        def replacer(url):
-            src_file = abspath_from_rel(url, src_dir)
-            data = {
-                "file_type": "images", 
-                "src_file": src_file, 
-                "dst_file": self.normalize_dst("images", "", src_file), 
-                "virtual": False
-            }
-            self.dump.stdout.write(data)
-            return url
-        cssutils.replaceUrls(css, replacer, ignoreImportRules=True)
+
+        with open(cssdata["src_file"]) as rf:
+            for url in css_url_iterator(rf):
+                if url.startswith("http") and "://" in url:
+                    continue
+                if url.endswith(".css"):
+                    file_type = "css"
+                else:
+                    file_type = "images"
+                src_file = abspath_from_rel(url, src_dir)
+                data = {
+                    "file_type": file_type, 
+                    "src_file": src_file, 
+                    "dst_file": self.normalize_dst(file_type, "", src_file), 
+                    "virtual": False
+                }
+                if file_type == "css":
+                    self.with_css(data)
+                self.dump.stdout.write(data)
                         
     def decision(self, inp):
         for line in inp:
