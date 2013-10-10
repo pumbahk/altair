@@ -114,17 +114,13 @@ class CommonErrorView(object):
 
     @_for_(OverOrderLimitException)
     def over_order_limit_exception(self):
-        event_id = self.context.event_id
-        event_name = self.context.event.name
-        performance_name = self.context.performance.name
-        order_limit = self.context.order_limit
-        location = self.request.route_url('cart.index', event_id=event_id)
-        msg = u'{performance_name} の購入は {limit} 回までとなっております。 <br><a href="{location}">{event_name}の購入ページに戻る</a>'
+        location = self.request.route_url('cart.index', event_id=self.context.event_id)
+        msg = u'{performance.name} の購入は {limit} 回までとなっております。 <br><a href="{location}">{event.title}の購入ページに戻る</a>'
         return dict(title=u'',
                     message=Markup(msg.format(location=location,
-                                              limit=order_limit,
-                                              event_name=event_name,
-                                              performance_name=performance_name)))
+                                              limit=self.context.order_limit,
+                                              event=self.context.event,
+                                              performance=self.context.performance)))
 
     @_for_(InvalidCartStatusError)
     def invalid_cart_status_error(self):
