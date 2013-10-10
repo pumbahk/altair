@@ -42,7 +42,7 @@ class JSONWrapper(object):
     def write(self, x):
         self.out.write(json.dumps(x, ensure_ascii=False, indent=2))
 
-app_rx = re.compile(r'([^/:\.]+)[/:\.](?:templates|static)[/:\.]')
+app_rx = re.compile(r'([^/:\.]+?)[/:\.](?:templates|static)[/:\.]')
 class DecisionMaker(object):
     def __init__(self, filename, org_name, used_css, classifier=classify, dump=None, strict=True, modules=None):
         self.filename = filename
@@ -59,7 +59,7 @@ class DecisionMaker(object):
         if self._app_name:
             return self._app_name
         self._app_name = self.detect_app_name(self.filename)
-        return m.group(1)
+        return self._app_name
 
     def detect_app_name(self, appname):
         m = app_rx.search(appname)
@@ -117,7 +117,7 @@ class DecisionMaker(object):
                 "org_name": self.org_name, 
                 "file_type": file_type, 
                 "dst_file": self.normalize_appname(os.path.join(self.module_real_path(prefix), dst), current_app_name), 
-                "app_changed": current_app_name == self.app_name, 
+                "app_changed": current_app_name != self.app_name, 
                 "virtual": virtual
         }
         return data
@@ -153,7 +153,7 @@ class DecisionMaker(object):
                     "file_type": file_type, 
                     "src_file": src_file, 
                     "dst_file": self.normalize_appname(self.normalize_dst(file_type, "", src_file), current_app_name), 
-                    "app_changed": current_app_name == self.app_name, 
+                    "app_changed": current_app_name != self.app_name, 
                     "virtual": False
                 }
                 if file_type == "css":

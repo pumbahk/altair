@@ -85,7 +85,7 @@ def execute(app):
                 print "mkdir -p `dirname {v}` && git mv {k} {v}".format(k=k, v=v)
                 used[k] = v
             else:
-                print "mkdir -p `dirname {v}` && cp {k} {v} && git add {v}".format(k=used[k], v=v)
+                print "mkdir -p `dirname {v}` && cp {k} {v} && git add {v}".format(k=used.get(k, k), v=v)
 
 def css_execute(app):
     used = {}
@@ -100,7 +100,7 @@ def css_execute(app):
                     if pat != rep:
                         print 'sed -i "s/{pat}/{rep}/g;" {dst}'.format(dst=dst, pat=escape_for_sed(pat), rep=escape_for_sed(rep))
             except IOError:
-                sys.stderr.write("skip: No Such file {}".format(src))
+                sys.stderr.write("skip: No Such file {}\n".format(src))
 
 
 if __name__ == "__main__":
