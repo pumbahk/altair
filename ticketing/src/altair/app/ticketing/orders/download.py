@@ -932,9 +932,14 @@ class OrderDownload(OrderSearchBase):
     target = order_product_summary_joins
     columns = detail_summary_columns
     default_order = t_order.c.created_at.asc()
+    
+    def order_by(self, query):
+        return query.order_by(self.default_order)
 
 class OrderSeatDownload(OrderSearchBase):
     target = order_product_summary_joins
     columns = detail_summary_columns
     default_order = t_seat.c.id
 
+    def order_by(self, query):
+        return query.order_by(self.default_order)
