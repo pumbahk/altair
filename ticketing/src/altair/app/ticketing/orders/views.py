@@ -322,18 +322,24 @@ def download(request):
     params["order_no"] = " ".join(request.params.getall("order_no"))
 
     form_search = OrderSearchForm(params, organization_id=organization_id)
-    from .download import OrderDownload, OrderSummaryKeyBreakAdapter, japanese_columns, header_intl, SeatSummaryKeyBreakAdapter
+    from .download import OrderDownload, OrderSummaryKeyBreakAdapter, japanese_columns, header_intl, SeatSummaryKeyBreakAdapter, OrderSeatDownload
+    export_type = int(request.params.get('export_type', OrderCSV.EXPORT_TYPE_ORDER))
+    excel_csv = bool(request.params.get('excel_csv'))
+
+    query_type = OrderDownload
+    if export_type == OrderCSV.EXPORT_TYPE_ORDER:
+        query_type = OrderDownload
+    elif export_type == OrderCSV.EXPORT_TYPE_SEAT:
+        query_type = OrderSeatDownload
+
     if request.method == "POST" and form_search.validate():
-        query = OrderDownload(slave_session,
+        query = query_type(slave_session,
                               organization_id,
                               condition=form_search)
     else:
         query = OrderDownload(slave_session,
                               organization_id,
                               condition=None)
-
-    export_type = int(request.params.get('export_type', OrderCSV.EXPORT_TYPE_ORDER))
-    excel_csv = bool(request.params.get('excel_csv'))
 
     if export_type == OrderCSV.EXPORT_TYPE_ORDER:
         query = OrderSummaryKeyBreakAdapter(query, 'id',
