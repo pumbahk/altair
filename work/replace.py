@@ -30,7 +30,7 @@ class App(object):
     def parse(self, xs):
         for D in xs:
             if not D["virtual"]:
-                self.mv_events.add(D["src_file"], D["dst_file"])
+                self.mv_events.add(D["src_file"], (D["dst_file"], D["app_changed"]))
                 if D["file_type"] == "css":
                     self.css_events.add(D["src_file"], D["dst_file"])
             if "src" in D and "dst" in D:
@@ -76,12 +76,12 @@ def execute(app):
     print "git commit -a -m 'template edit'"
     for k, vs in app.mv_events:
         used = {}
-        for v in vs:
+        for v, app_changed in vs:
             if k == v:
                 sys.stderr.write("skip:{}".format(k))
                 sys.stderr.write("\n")
                 continue
-            if not k in used:
+            if not k in used and not app_changed:
                 print "mkdir -p `dirname {v}` && git mv {k} {v}".format(k=k, v=v)
                 used[k] = v
             else:

@@ -42,6 +42,7 @@ class JSONWrapper(object):
     def write(self, x):
         self.out.write(json.dumps(x, ensure_ascii=False, indent=2))
 
+app_rx = re.compile(r'([^/:\.]+)[/:\.](?:templates|static)[/:\.]')
 class DecisionMaker(object):
     def __init__(self, filename, org_name, used_css, classifier=classify, dump=None, strict=True, modules=None):
         self.filename = filename
@@ -51,6 +52,20 @@ class DecisionMaker(object):
         self.dump = dump
         self.modules = modules
         self.used_css = used_css
+        self._app_name = None
+        
+    @property
+    def app_name(self):
+        if self._app_name:
+            return self._app_name
+        self._app_name = self.detect_app_name(self.filename)
+        return m.group(1)
+
+    def detect_app_name(self, appname):
+        m = app_rx.search(appname)
+        if not m:
+            raise ValueError(appname)
+        return m.group(1)
 
     def normalize_src(self, prefix, filepath):
         return filepath
@@ -87,17 +102,22 @@ class DecisionMaker(object):
         for k, v in self.modules.items():
             prefix = prefix.replace(k, v)
         return prefix.replace(".", "/")
+    
+    def normalize_appname(self, target, pat):
+        return target.replace(pat, self.app_name, 1)
 
     def info(self, spec, virtual=False):
+        current_app_name = self.detect_app_name(spec)
         file_type, (prefix, filepath) = self.classifier(spec, strict=self.strict)
         dst = self.normalize_dst(file_type, prefix, filepath)
         data = {"src_file": os.path.join(self.module_real_path(prefix), self.normalize_src(prefix, filepath)), 
                 "html": self.filename, 
                 "src": spec, 
-                "dst": u"{}:{}".format(prefix, dst), 
+                "dst": self.normalize_appname(u"{}:{}".format(prefix, dst), current_app_name), 
                 "org_name": self.org_name, 
                 "file_type": file_type, 
-                "dst_file": os.path.join(self.module_real_path(prefix), dst), 
+                "dst_file": self.normalize_appname(os.path.join(self.module_real_path(prefix), dst), current_app_name), 
+                "app_changed": current_app_name == self.app_name, 
                 "virtual": virtual
         }
         return data
@@ -128,10 +148,12 @@ class DecisionMaker(object):
                 else:
                     file_type = "images"
                 src_file = abspath_from_rel(url, src_dir)
+                current_app_name = self.detect_app_name(src_file)
                 data = {
                     "file_type": file_type, 
                     "src_file": src_file, 
-                    "dst_file": self.normalize_dst(file_type, "", src_file), 
+                    "dst_file": self.normalize_appname(self.normalize_dst(file_type, "", src_file), current_app_name), 
+                    "app_changed": current_app_name == self.app_name, 
                     "virtual": False
                 }
                 if file_type == "css":
