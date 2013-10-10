@@ -243,6 +243,10 @@ class EditSalesSegment(BaseView):
         if form.validate():
             editor = SalesSegmentEditor(self.context.sales_segment_group, form)
             if self.request.matched_route.name == 'sales_segments.copy':
+                if len(form.copy_performances.data) == 0:
+                    form.copy_performances.errors.append(u'選択してください')
+                    return self._render_params(form)
+
                 sales_segment = self.context.sales_segment
                 for performance_id in form.copy_performances.data:
                     form.performance_id.data = performance_id
@@ -252,6 +256,9 @@ class EditSalesSegment(BaseView):
                         performance_id=performance_id
                     )
                     logger.info('sales_segment copy from:to=%s' % id_map)
+                    new_sales_segment = SalesSegment.query.filter_by(id=id_map.get(sales_segment.id)).one()
+                    editor.apply_changes(new_sales_segment)
+
                     if form.copy_products.data:
                         for product in sales_segment.products:
                             Product.create_from_template(
@@ -259,8 +266,6 @@ class EditSalesSegment(BaseView):
                                 with_product_items=True,
                                 sales_segment=id_map
                             )
-                    new_sales_segment = SalesSegment.query.filter_by(id=id_map.get(sales_segment.id)).one()
-                    editor.apply_changes(new_sales_segment)
             else:
                 editor.apply_changes(self.context.sales_segment)
 
