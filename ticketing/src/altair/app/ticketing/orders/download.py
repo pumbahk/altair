@@ -123,6 +123,7 @@ japanese_columns = {
     u'item_name': u'商品明細名',
     u'item_price': u'商品明細単価',
     u'item_quantity': u'商品明細個数',
+    u'seat_quantity': u'商品明細個数',
     u'item_print_histories': u'発券作業者',
     u'mail_permission': u'メールマガジン受信可否',
     u'seat_id': u'座席ID',
@@ -236,6 +237,12 @@ summary_columns = [
     t_order.c.card_ahead_com_name, #-- 仕向け先名
 ]
 
+# 
+t_member_group_names = select([t_member_group.c.membership_id,
+                               func.group_concat(t_member_group.c.name).label('names')],
+                              whereclause=t_member_group.c.deleted_at==None,
+                          ).group_by(t_member_group.c.membership_id).alias()
+
 detail_summary_columns = summary_columns + [
     t_order.c.paid_at, #支払日時
     t_order.c.delivered_at, #配送日時
@@ -262,7 +269,7 @@ detail_summary_columns = summary_columns + [
 
     # Membership
     t_membership.c.name.label('membership_name'), #会員種別名
-    t_member_group.c.name.label('membergroup_name'), #会員グループ名
+    t_member_group_names.c.names.label('membergroup_name'), #会員グループ名
     t_user_credential.c.auth_identifier,  #会員種別ID
 
     # ShippingAddress
@@ -310,6 +317,11 @@ detail_summary_columns = summary_columns + [
     t_operator.c.name.label('item_print_histories'), #発券作業者[0][0]
     t_seat.c.id.label('seat_id'),  # 座席ID
     t_seat.c.name.label('seat_name'), #座席名[0][0][0]
+    case([(t_seat.c.id!=None,
+           text("1")),
+          ],
+          else_=t_ordered_product_item.c.quantity,
+    ).label('seat_quantity'),
 ]
 
 order_summary_joins = t_order.join(
@@ -365,14 +377,11 @@ order_summary_joins = t_order.join(
     and_(t_membership.c.id==t_user_credential.c.membership_id,
          t_membership.c.deleted_at==None),
 ).outerjoin(
-    t_member_group,
-    and_(t_member_group.c.membership_id==t_membership.c.id,
-         t_member_group.c.deleted_at==None),
-).outerjoin(
     t_sej_order,
     and_(t_sej_order.c.order_no==t_order.c.order_no,
          t_sej_order.c.deleted_at==None),
 )
+
 
 order_product_summary_joins = order_summary_joins.join(
     t_ordered_product,
@@ -416,20 +425,24 @@ order_product_summary_joins = order_summary_joins.join(
     t_operator,
     and_(t_operator.c.id==t_print_hisotry.c.operator_id,
          t_operator.c.deleted_at==None),
+).outerjoin(
+    t_member_group_names,
+    t_member_group_names.c.membership_id==t_membership.c.id,
 )
+
 
 # Userに対してUserProfileが複数あると行数が増える可能性
 
 class SeatSummaryKeyBreakAdapter(object):
-    def __init__(self, iter, key, childitems):
+    def __init__(self, iter, key1, key2, childitems):
         self.results = []
         last_item = None
         breaked_items = []
 
-        break_counter = KeyBreakCounter(keys=[key])
+        break_counter = KeyBreakCounter(keys=[key1, key2])
         first = True
         for counter, key_changes, item in break_counter(iter):
-            if key_changes[key] and not first:
+            if (key_changes[key1] or key_changes[key2]) and not first:
                 result = OrderedDict(last_item)
                 for c in childitems:
                     result.pop(c)
@@ -583,6 +596,7 @@ class OrderSearchBase(list):
         self.organization_id = organization_id
         self._cond = condition
         self.condition = self.query_cond(condition)
+        self.target_order_ids = []
 
     def order_by(self, query):
         if self._cond is None:
@@ -611,7 +625,9 @@ class OrderSearchBase(list):
         return query.order_by(self.default_order)
 
     def query_cond(self, condition):
-        cond = t_organization.c.id==self.organization_id
+        cond = and_(t_organization.c.id==self.organization_id,
+                    t_order.c.deleted_at==None)
+
         if condition is None:
             return cond
 
@@ -869,6 +885,8 @@ class OrderSearchBase(list):
             ).limit(limit
             ).offset(offset)
             sql = self.order_by(sql)
+            if self.target_order_ids:
+                sql = sql.where(Order.id.in_(self.target_order_ids))
 
             logger.debug("limit = {0}, offset = {1}".format(limit, offset))
             logger.debug("sql = {0}".format(sql))
@@ -914,4 +932,9 @@ class OrderDownload(OrderSearchBase):
     target = order_product_summary_joins
     columns = detail_summary_columns
     default_order = t_order.c.created_at.asc()
+
+class OrderSeatDownload(OrderSearchBase):
+    target = order_product_summary_joins
+    columns = detail_summary_columns
+    default_order = t_seat.c.id
 
