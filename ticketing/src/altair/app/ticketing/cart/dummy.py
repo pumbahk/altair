@@ -68,6 +68,7 @@ def _dummy_performance():
     class performance:
         name = "Hey"
         start_on = datetime.now()
+        end_on = datetime.now()
         id = 1111
         class event:
             title = "event"
