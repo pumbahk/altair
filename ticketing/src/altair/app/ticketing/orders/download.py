@@ -123,6 +123,7 @@ japanese_columns = {
     u'item_name': u'商品明細名',
     u'item_price': u'商品明細単価',
     u'item_quantity': u'商品明細個数',
+    u'seat_quantity': u'商品明細個数',
     u'item_print_histories': u'発券作業者',
     u'mail_permission': u'メールマガジン受信可否',
     u'seat_id': u'座席ID',
@@ -316,6 +317,11 @@ detail_summary_columns = summary_columns + [
     t_operator.c.name.label('item_print_histories'), #発券作業者[0][0]
     t_seat.c.id.label('seat_id'),  # 座席ID
     t_seat.c.name.label('seat_name'), #座席名[0][0][0]
+    case([(t_seat.c.id!=None,
+           text("1")),
+          ],
+          else_=t_ordered_product_item.c.quantity,
+    ).label('seat_quantity'),
 ]
 
 order_summary_joins = t_order.join(
@@ -428,15 +434,15 @@ order_product_summary_joins = order_summary_joins.join(
 # Userに対してUserProfileが複数あると行数が増える可能性
 
 class SeatSummaryKeyBreakAdapter(object):
-    def __init__(self, iter, key, childitems):
+    def __init__(self, iter, key1, key2, childitems):
         self.results = []
         last_item = None
         breaked_items = []
 
-        break_counter = KeyBreakCounter(keys=[key])
+        break_counter = KeyBreakCounter(keys=[key1, key2])
         first = True
         for counter, key_changes, item in break_counter(iter):
-            if key_changes[key] and not first:
+            if (key_changes[key1] or key_changes[key2]) and not first:
                 result = OrderedDict(last_item)
                 for c in childitems:
                     result.pop(c)

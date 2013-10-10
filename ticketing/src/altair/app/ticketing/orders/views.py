@@ -399,7 +399,7 @@ def download(request):
             "venue_name",
         ] + query.extra_headers)
     else:
-        query = SeatSummaryKeyBreakAdapter(query, "seat_id", ["item_print_histories"])
+        query = SeatSummaryKeyBreakAdapter(query, "seat_id", "order_no", ["item_print_histories"])
         csv_headers = [
             "order_no",  # 予約番号
             "status",  # ステータス
@@ -457,7 +457,8 @@ def download(request):
             "product_sales_segment",  # 販売区分
             "item_name",  # 商品明細名
             "item_price",  # 商品明細単価
-            "item_quantity",  # 商品明細個数
+            #"item_quantity",  # 商品明細個数
+            "seat_quantity",  # 商品明細個数
             "item_print_histories",  #発券作業者
             "seat_name",  # 座席名
         ]
