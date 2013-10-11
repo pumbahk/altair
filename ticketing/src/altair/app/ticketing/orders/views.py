@@ -475,7 +475,9 @@ def download(request):
     ]
 
     response = Response(headers=headers)
-    iheaders = header_intl(csv_headers, japanese_columns)
+    ordered_product_metadata_provider_registry = get_ordered_product_metadata_provider_registry(request)
+    iheaders = header_intl(csv_headers, japanese_columns,
+                           ordered_product_metadata_provider_registry)
     logger.debug("csv headers = {0}".format(csv_headers))
     results = iter(query)
     writer = csv.writer(response, delimiter=',')

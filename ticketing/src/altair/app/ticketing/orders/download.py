@@ -613,7 +613,7 @@ class OrderSummaryKeyBreakAdapter(object):
     def __iter__(self):
         return iter(self.results)
 
-def header_intl(headers, col_names):
+def header_intl(headers, col_names, ordered_product_metadata_provider_registry):
     for h in headers:
         if h.find('[') > -1:
             h, tail = h.split('[', 1)
@@ -621,7 +621,16 @@ def header_intl(headers, col_names):
         else:
             tail = ""
 
-        yield col_names.get(h, h) + tail
+        if h == "attribute":
+            key, tail = tail.lstrip("[").split("]", 1)
+            for provider in ordered_product_metadata_provider_registry.getProviders():
+                if key in provider:
+                    yield provider[key].get_display_name('ja_JP') + tail
+                    break
+            else:
+                yield h + "[" + key + "]" + tail
+        else:
+            yield col_names.get(h, h) + tail
 
 class OrderSearchBase(list):
 
