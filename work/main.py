@@ -40,6 +40,7 @@ ALIAS_MAP = {
     "vissel": []
 }
 
+COMMON_IMG_PREFIX_LIST = ["bg_", "btn_", "header_", "ie6border", "side_", "icon_", "title_", "amex_logo", "visa", "jcb", "kc_logo"]
 class Dump(object):
     def __init__(self, stdout=sys.stdout, stderr=sys.stderr):
         self.stdout = stdout
@@ -86,6 +87,7 @@ class DecisionMaker(object):
     def normalize_dst(self, file_type, prefix, filepath):
         if file_type == "js":
             return self.normalize_src(prefix, filepath)
+
         fname = self.filename
         if "/pc/" in fname or "pc_" in fname or "_pc" in fname:
             device = "pc"
@@ -104,18 +106,25 @@ class DecisionMaker(object):
         filepath = filepath.replace("{}/".format(self.org_name), "")
         filepath = filepath.replace("static/89ers/", "static/") # for  "dst_file": "ticketing/src/altair/app/ticketing/fc_auth/static/NH/pc/89ers/style.css"
 
+        ## device削除
+        filepath = filepath.replace("/{}".format(device), "").replace("{}_".format(device), "")
+
+        ## 共通ファイルは各orgごとにしない
+        basename = os.path.basename(filepath)
+        for pat in COMMON_IMG_PREFIX_LIST:
+            if pat in basename:
+                return filepath.replace("/static/", "/static/base/")
+        if "ie6" in filepath:
+            return filepath.replace("/static/", "/static/base/")
+
+        ## staticのprefix整理
         static_ext = 'static/{0}/{1}/'.format(self.org_name, device)
         if not file_type in os.path.splitext(filepath)[0]:
             static_ext = '{0}{1}/'.format(static_ext, file_type)
 
-
-        ## device削除
-        filepath = filepath.replace("/{}".format(device), "").replace("{}_".format(device), "")
-
         filepath = filepath.replace("static/", static_ext)
 
         ## normalize basename
-        basename = os.path.basename(filepath)
         basename_target = "/{}".format(basename)
 
         basename = basename.replace("-{}".format(self.org_name), "").replace("{}_".format(self.org_name), "").replace(self.org_name, "")
