@@ -93,6 +93,9 @@ class DecisionMaker(object):
         if file_type == "js":
             return self.normalize_src(prefix, filepath)
 
+        if "js/css/" in filepath:
+            return self.normalize_src(prefix, filepath)
+
         fname = self.filename
         if "/pc/" in fname or "pc_" in fname or "_pc" in fname:
             device = "pc"
