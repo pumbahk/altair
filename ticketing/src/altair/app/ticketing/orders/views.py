@@ -364,8 +364,10 @@ def download(request):
             "transaction_fee",
             "delivery_fee",
             "system_fee",
+            "special_fee",
             "margin",
             "note",
+            "special_fee_name",
             "card_brand",
             "card_ahead_com_code",
             "card_ahead_com_name",
@@ -418,8 +420,10 @@ def download(request):
             "transaction_fee",  # 決済手数料
             "delivery_fee",  # 配送手数料
             "system_fee",  # システム利用料
+            "special_fee",  # 特別手数料
             "margin",  # 内手数料金額
             "note",  # メモ
+            "special_fee_name", # 特別手数料名
             "card_brand",  # カードブランド
             "card_ahead_com_code",  #  仕向け先企業コード
             "card_ahead_com_name",  # 仕向け先企業名
@@ -509,7 +513,7 @@ def download(request):
         return format_number(float(v))
 
     renderers = dict()
-    for n in ('total_amount', 'transaction_fee', 'delimiter', 'system_fee', 'margin', 'product_margin', 'product_price', 'item_price'):
+    for n in ('total_amount', 'transaction_fee', 'delimiter', 'system_fee', 'special_fee', 'margin', 'product_margin', 'product_price', 'item_price'):
         renderers[n] = render_currency
 
     renderers['zip'] = render_zip
