@@ -27,6 +27,19 @@ def classify(s, strict=True):
             raise UnKnownFileType(s)
         return ("other", s.split(":", 1))
 
+ALIAS_MAP = {
+    "89ers": [], 
+    "BT": ["bambitious"], 
+    "bigbulls": [], 
+    "CR": ["cinqreves"], 
+    "NH": ["happinets"], 
+    "RK": ["kings"], 
+    "lakestarts": [], 
+    "oxtv": ["ox"], 
+    "ticketstar": [], 
+    "vissel": []
+}
+
 class Dump(object):
     def __init__(self, stdout=sys.stdout, stderr=sys.stderr):
         self.stdout = stdout
@@ -100,7 +113,17 @@ class DecisionMaker(object):
         filepath = filepath.replace("/{}".format(device), "").replace("{}_".format(device), "")
 
         filepath = filepath.replace("static/", static_ext)
-        return filepath
+
+        ## normalize basename
+        basename = os.path.basename(filepath)
+        basename_target = "/{}".format(basename)
+
+        basename = basename.replace("-{}".format(self.org_name), "").replace("{}_".format(self.org_name), "").replace(self.org_name, "")
+        for rep in ALIAS_MAP.get(self.org_name, []):
+            basename = basename.replace("-{}".format(rep), "").replace("{}_".format(rep), "").replace(rep, "")
+        if basename == ".ico":
+            basename = "icon.ico" #shortcut icon
+        return filepath.replace(basename_target, "/{}".format(basename))
 
     def module_real_path(self, prefix):
         for k, v in self.modules.items():
