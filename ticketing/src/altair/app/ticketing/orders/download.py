@@ -26,6 +26,7 @@ from altair.app.ticketing.core.models import (
     orders_seat_table,
     Order,
     OrderedProduct,
+    OrderedProductAttribute,
     OrderedProductItem,
     PaymentDeliveryMethodPair,
     PaymentMethod,
@@ -155,6 +156,7 @@ t_seat = Seat.__table__
 t_print_hisotry = TicketPrintHistory.__table__
 t_ordered_product = OrderedProduct.__table__
 t_ordered_product_item = OrderedProductItem.__table__
+t_ordered_product_attribute = OrderedProductAttribute.__table__
 t_product = Product.__table__
 t_product_item = ProductItem.__table__
 t_venue = Venue.__table__
@@ -329,6 +331,8 @@ detail_summary_columns = summary_columns + [
           ],
           else_=t_ordered_product_item.c.quantity,
     ).label('seat_quantity'),
+    t_ordered_product_attribute.c.name.label('attribute_name'),
+    t_ordered_product_attribute.c.value.label('attribute_value'),
 ]
 
 order_summary_joins = t_order.join(
@@ -435,6 +439,10 @@ order_product_summary_joins = order_summary_joins.join(
 ).outerjoin(
     t_member_group_names,
     t_member_group_names.c.membership_id==t_membership.c.id,
+).outerjoin(
+    t_ordered_product_attribute,
+    and_(t_ordered_product_attribute.c.ordered_product_item_id==t_ordered_product_item.c.id,
+         t_ordered_product_attribute.c.deleted_at==None),
 )
 
 
@@ -489,6 +497,14 @@ class SeatSummaryKeyBreakAdapter(object):
     def __iter__(self):
         return iter(self.results)
 
+attr_pt = re.compile(r"attribute\[(?P<name>\w+)]\[(?P<i>\d+)\]\[(?P<j>\d+)\]", re.UNICODE)
+def attribute_cols_sort_key(a):
+    m = attr_pt.match(a)
+    if m is None:
+        return None
+    d = m.groupdict()
+    return int(d['i']), int(d['j']), d['name']
+
 
 class OrderSummaryKeyBreakAdapter(object):
     def __init__(self, iter, key, child1, child1_key, child2, child2_key, child3_comma_separated, child3_indexed, child3_key):
@@ -503,6 +519,7 @@ class OrderSummaryKeyBreakAdapter(object):
         break_counter = KeyBreakCounter(keys=[key, child1_key, child2_key, child3_key])
         #margin = 0  # very hack
         first = True
+        attribute_cols = set()
         for counter, key_changes, item in break_counter(iter):
             if key_changes[key] and not first:
                 result = OrderedDict(last_item)
@@ -538,6 +555,14 @@ class OrderSummaryKeyBreakAdapter(object):
                         (name,
                          item[childitem2]))
                     child2_count[counter[child1_key]] = max(child2_count.get(counter[child1_key], 0), counter[child2_key])
+
+            name = "attribute[{0}][{1}][{2}]".format(item['attribute_name'], counter[child1_key], counter[child2_key])
+            attribute_cols.add(name)
+            if item['attribute_value']:
+                breaked_items.append(
+                    (name,
+                     item['attribute_value']))
+
             for childitem3 in child3_comma_separated:
                 name = "{0}[{1}][{2}]".format(childitem3, counter[child1_key], counter[child2_key])
                 if item[childitem3]:
@@ -582,6 +607,8 @@ class OrderSummaryKeyBreakAdapter(object):
                 for k in range(child3_count.get((i, j), -1) + 1):
                     for n in child3_indexed:
                         self.extra_headers.append("{0}[{1}][{2}][{3}]".format(n, i, j, k))
+        self.extra_headers += sorted(list(attribute_cols),
+                                     key=attribute_cols_sort_key)
 
     def __iter__(self):
         return iter(self.results)
@@ -594,7 +621,7 @@ def header_intl(headers, col_names):
         else:
             tail = ""
 
-        yield col_names[h] + tail
+        yield col_names.get(h, h) + tail
 
 class OrderSearchBase(list):
 
@@ -947,23 +974,34 @@ class OrderSummary(OrderSearchBase):
 class OrderDownload(OrderSearchBase):
     target = order_product_summary_joins
     columns = detail_summary_columns
-    default_order = t_order.c.created_at.asc()
+    default_order = [t_order.c.order_no.asc(),
+                     t_order.c.created_at.asc(),
+                     t_ordered_product.c.id,
+                     t_ordered_product_item.c.id,
+                     t_seat.c.id]
 
     def __init__(self, *args, **kwargs):
         super(OrderDownload, self).__init__(*args, **kwargs)
         self.init_mailsub_joins()
 
     def order_by(self, query):
-        return query.order_by(self.default_order)
+        return query.order_by(*self.default_order)
 
 class OrderSeatDownload(OrderSearchBase):
     target = order_product_summary_joins
     columns = detail_summary_columns
-    default_order = t_seat.c.id
+    default_order = [t_seat.c.id]
 
     def __init__(self, *args, **kwargs):
         super(OrderSeatDownload, self).__init__(*args, **kwargs)
         self.init_mailsub_joins()
 
     def order_by(self, query):
-        return query.order_by(self.default_order)
+        return query.order_by(*self.default_order)
+
+
+class BoosterDownload(OrderSearchBase):
+    """ FC会員入会専用
+attribute[last_name][0][0]	区分 (継続=yes)[0][0]	会員種別[0][0]	性別[0][0]	attribute[email_1][0][0]	誕生日 (年)[0][0]	attribute[city][0][0]	attribute[first_name][0][0]	attribute[prefecture][0][0]	attribute[tel_2][0][0]	attribute[mail_permission][0][0]	attribute[first_name_kana][0][0]	昨年度会員番号[0][0]	attribute[last_name_kana][0][0]	attribute[zipcode2][0][0]	attribute[zipcode1][0][0]	attribute[address1][0][0]	attribute[address2][0][0]	誕生日 (月)[0][0]	誕生日 (日)[0][0]	ブースターシャツサイズ[0][0]	attribute[tel_1][0][0]	attribute[publicity][0][0]	ブースターシャツサイズ[0][1]	attribute[email_1_confirm][0][0]	ブースタークラブに入会しようと思ったきっかけ[0][0]	メモリアルブックへの氏名掲載希望[0][0]	昨シーズンの会場での観戦回数[0][0]	メールマガジン[0][0]
+
+    """
