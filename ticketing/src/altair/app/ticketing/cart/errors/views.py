@@ -162,6 +162,10 @@ class XHROnlyExcView(object):
 
 @view_defaults(renderer=selectable_renderer('altair.app.ticketing.cart:templates/%(membership)s/mobile/error.html'), request_type='altair.mobile.interfaces.IMobileRequest')
 class MobileOnlyExcView(object):
+    def __init__(self, context, request):
+        self.context = context
+        self.request = request
+
     @view_config(context=OverQuantityLimitError)
     def over_quantity_limit_error(self):
         upper_limit = self.context.upper_limit
