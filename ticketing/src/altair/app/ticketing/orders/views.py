@@ -514,7 +514,7 @@ def download(request):
 
     renderers['zip'] = render_zip
 
-    for n in ('created_at', 'paid_at', 'delivered_at', 'canceled_at', 'performance_start_on', 'product_quantity', 'item_quantity'):
+    for n in ('created_at', 'paid_at', 'delivered_at', 'canceled_at', 'performance_start_on', 'product_quantity', 'item_quantity', 'seat_quantity'):
         renderers[n] = render_plain
 
     def render(name, v):
