@@ -714,11 +714,16 @@ class OrderSearchBase(list):
         # 氏名 name:
         if condition.name.data:
             value = condition.name.data
-            cond = and_(cond,
-                        or_(t_shipping_address.c.last_name + " " + t_shipping_address.c.first_name == value,
-                            t_shipping_address.c.last_name == value,
-                            t_shipping_address.c.first_name == value,
-                        ))
+            items = re.split(ur'[ \t　]+', value)
+            for item in items:
+                cond = and_(cond,
+                    or_(
+                        or_(t_shipping_address.c.first_name.like('%s%%' % item),
+                            t_shipping_address.c.last_name.like('%s%%' % item)),
+                        or_(t_shipping_address.c.first_name_kana.like('%s%%' % item),
+                            t_shipping_address.c.last_name_kana.like('%s%%' % item))
+                        )
+                    )
 
         # メールアドレス email:
         if condition.email.data:
@@ -744,7 +749,7 @@ class OrderSearchBase(list):
         if condition.ordered_to.data:
             value = condition.ordered_to.data
             cond = and_(cond,
-                        t_order.c.created_at<value)
+                        t_order.c.created_at<=value)
 
         # セブン−イレブン払込票/引換票番号
         if condition.billing_or_exchange_number.data:
