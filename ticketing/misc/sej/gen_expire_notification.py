@@ -1,6 +1,6 @@
 # encoding: utf-8
 
-from altair.app.ticketing.sej.api import create_sej_notification_data_from_record
+from altair.app.ticketing.sej.notification.builder import SejNotificationRequestParamBuilder
 from altair.app.ticketing.sej import models as sej_models
 from pyramid.paster import bootstrap
 from sqlalchemy.sql.expression import desc
@@ -108,9 +108,8 @@ def main(env, args):
             raise ApplicationError('unknown action')
         order = DBSession.query(c_models.Order).filter_by(order_no=args[1]).one()
         tenant = DBSession.query(sej_models.SejTenant).filter_by(organization_id=order.organization_id).one()
-        params = create_sej_notification_data_from_record(
-            action(tenant.shop_id, order),
-            tenant.api_key or settings['sej.api_key'])
+        builder = SejNotificationRequestParamBuilder(tenant.api_key or settings['sej.api_key'])
+        params = builder(action(tenant.shop_id, order))
         sys.stdout.write(uniurlencode(params, method='raw', encoding='CP932'))
     except ApplicationError as e:
         sys.stderr.write(e.message + "\n")
