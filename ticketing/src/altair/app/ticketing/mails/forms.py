@@ -85,7 +85,7 @@ class OrderInfoDefault(SubjectInfoDefault):
     for_seat = SubjectInfo(name=u"for_seat", label=u"ご購入いただいた座席", getval=get_seat_no)
     system_fee = SubjectInfo(name=u"system_fee", label=u"システム利用料", getval=lambda order: ch.format_currency(order.system_fee))
     special_fee = SubjectInfo(name=u'special_fee', label=u'特別手数料', getval=lambda order: ch.format_currency(order.special_fee))
-    special_fee_name = SubjectInfo(name=u'special_fee_name', label=u'特別手数料名', getval=lambda order: order.special_fee_name)
+    special_fee_name = SubjectInfo(name=u'special_fee_name', label=u'特別手数料名', getval=lambda order: order.special_fee_name)        
     transaction_fee = SubjectInfo(name=u"transaction_fee", label=u"決済手数料", getval=lambda order: ch.format_currency(order.transaction_fee))
     delivery_fee = SubjectInfo(name=u"delivery_fee", label=u"発券／引取手数料", getval=lambda order: ch.format_currency(order.delivery_fee))
     total_amount = SubjectInfo(name=u"total_amount", label=u"合計金額", getval=lambda order: ch.format_currency(order.total_amount))

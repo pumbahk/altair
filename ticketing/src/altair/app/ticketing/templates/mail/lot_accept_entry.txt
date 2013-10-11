@@ -59,7 +59,7 @@ ${get("total_amount").label}：${h.format_currency(wish.tickets_amount)}
 ${get("system_fee").label}：${h.format_currency(wish.system_fee)}円（税込）
 %endif
 %if get("special_fee").status:
-${get("special_fee_name").body}：${h.format_currency(wish.special_fee)}円（税込）
+${wish.special_fee_name}：${h.format_currency(wish.special_fee)}円（税込）
 %endif
 %if get("transaction_fee").status:
 ${get("transaction_fee").label}：${h.format_currency(wish.transaction_fee)}円

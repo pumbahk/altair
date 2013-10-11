@@ -41,6 +41,8 @@ class LotsInfoDefault(SubjectInfoDefault):
     review_url = SubjectInfo(name="review_url", label=u"抽選結果確認ページ", getval=lambda _ : "https://rt.tstar.jp/lots/review")
 
     system_fee = SubjectInfo(name=u"system_fee", label=u"システム利用料", getval=lambda _: "") #xxx:
+    special_fee = SubjectInfo(name=u"special_fee", label=u"特別手数料", getval=lambda _: "") #xxx:
+    special_fee_name = SubjectInfo(name=u"special_fee_name", label=u"特別手数料名", getval=lambda _: "") #xxx:
     transaction_fee = SubjectInfo(name=u"transaction_fee", label=u"決済手数料", getval=lambda _: "") #xxx:
     delivery_fee = SubjectInfo(name=u"delivery_fee", label=u"発券／引取手数料", getval=lambda _: "") #xxx:
     total_amount = SubjectInfo(name=u"total_amount", label=u"合計金額", getval=lambda _: "") #xxx:
