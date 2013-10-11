@@ -371,7 +371,7 @@ def download(request):
             "card_ahead_com_name",
             "billing_number",
             "exchange_number",
-            #"メールマガジン受信可否",
+            "mail_permission", #"メールマガジン受信可否",
             "user_last_name",
             "user_first_name",
             "user_last_name_kana",
@@ -425,7 +425,7 @@ def download(request):
             "card_ahead_com_name",  # 仕向け先企業名
             "billing_number",  # SEJ払込票番号
             "exchange_number",  # SEJ引換票番号
-            #メールマガジン受信可否
+            "mail_permission", #"メールマガジン受信可否",
             "user_last_name",  # 姓
             "user_first_name",  # 名
             "user_last_name_kana",  # 姓(カナ)

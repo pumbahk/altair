@@ -45,6 +45,10 @@ from altair.app.ticketing.users.models import (
 from altair.app.ticketing.operators.models import (
     Operator,
 )
+from altair.app.ticketing.mailmags.models import (
+    MailSubscription,
+    MailMagazine,
+)
 from altair.app.ticketing.sej.models import SejOrder
 from altair.keybreak import (
     KeyBreakCounter,
@@ -157,6 +161,9 @@ t_venue = Venue.__table__
 t_membership = Membership.__table__
 t_member_group = MemberGroup.__table__
 t_operator = Operator.__table__
+t_mail_subscription = MailSubscription.__table__
+t_mailmagazine = MailMagazine.__table__
+
 
 summary_columns = [
     t_order.c.id,
@@ -922,6 +929,31 @@ class OrderSearchBase(list):
         logger.debug("count = {0}".format(c))
         return c
 
+    def init_mailsub_joins(self):
+
+        mailsub = select([t_mail_subscription.c.user_id,
+                          func.group_concat(t_mail_subscription.c.email).label('email')],
+                         from_obj=t_mail_subscription.join(
+                             t_mailmagazine,
+                             t_mailmagazine.c.id==t_mail_subscription.c.segment_id,
+                         ),
+                         whereclause=and_(t_mailmagazine.c.organization_id==self.organization_id,
+                                          t_mail_subscription.c.deleted_at==None),
+                         ).group_by(t_mail_subscription.c.user_id).alias()
+
+        self.target = OrderDownload.target.outerjoin(
+            mailsub,
+            mailsub.c.user_id==t_user.c.id)
+
+        self.columns = OrderDownload.columns + [
+            mailsub.c.email.label('mailsub_mails'),
+            case([(mailsub.c.email, '1'),
+                  ],
+                 else_='0'
+            ).label('mail_permission'),
+            ]
+
+
 class OrderSummary(OrderSearchBase):
     target = order_summary_joins
     columns = summary_columns
@@ -932,7 +964,11 @@ class OrderDownload(OrderSearchBase):
     target = order_product_summary_joins
     columns = detail_summary_columns
     default_order = t_order.c.created_at.asc()
-    
+
+    def __init__(self, *args, **kwargs):
+        super(OrderDownload, self).__init__(*args, **kwargs)
+        self.init_mailsub_joins()
+
     def order_by(self, query):
         return query.order_by(self.default_order)
 
@@ -940,6 +976,10 @@ class OrderSeatDownload(OrderSearchBase):
     target = order_product_summary_joins
     columns = detail_summary_columns
     default_order = t_seat.c.id
+
+    def __init__(self, *args, **kwargs):
+        super(OrderSeatDownload, self).__init__(*args, **kwargs)
+        self.init_mailsub_joins()
 
     def order_by(self, query):
         return query.order_by(self.default_order)
