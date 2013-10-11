@@ -122,7 +122,7 @@ def svg_data_from_token(ordered_product_item_token):
         u'order_id': ordered_product_item_token.item.ordered_product.order.id,
         u'seat_id': ordered_product_item_token.seat_id or "",
         u'serial': ordered_product_item_token.serial,
-        u'data': json_safe_coerce(pair[1])
+        u'data': json_safe_coerce(pair[0]),
         }
     producer = ApplicableTicketsProducer.from_bundle(ordered_product_item_token.item.product_item.ticket_bundle)
     
