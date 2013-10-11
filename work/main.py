@@ -125,6 +125,9 @@ class DecisionMaker(object):
         if "ie6" in filepath:
             return filepath.replace("/static/", "/static/base/")
 
+        for rep in ["common", "music", "settlement"]:
+            filepath = filepath.replace("images/{}".format(rep), "images")
+
         ## staticのprefix整理
         static_ext = 'static/{0}/{1}/'.format(self.org_name, device)
         if not file_type in os.path.splitext(filepath)[0]:
