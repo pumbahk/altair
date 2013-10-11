@@ -465,13 +465,24 @@ order_product_summary_joins = order_summary_joins.join(
 )
 
 
-# Userに対してUserProfileが複数あると行数が増える可能性
+attr_pt = re.compile(r"attribute\[(?P<name>\w+)](\[(?P<i>\d+)\]\[(?P<j>\d+)\])?", re.UNICODE)
+def attribute_cols_sort_key(a):
+    m = attr_pt.match(a)
+    if m is None:
+        return None
+    d = m.groupdict()
+    if d['i'] and d['j']:
+        return int(d['i']), int(d['j']), d['name']
+    else:
+        return d['name']
+
 
 class SeatSummaryKeyBreakAdapter(object):
     def __init__(self, iter, key1, key2, childitems):
         self.results = []
         last_item = None
         breaked_items = []
+        attribute_cols = set()
 
         break_counter = KeyBreakCounter(keys=[key1, key2])
         first = True
@@ -488,6 +499,13 @@ class SeatSummaryKeyBreakAdapter(object):
                         result[name] = unicode(value)
                 self.results.append(result)
                 breaked_items = []
+
+            name = "attribute[{0}]".format(item['attribute_name'])
+            attribute_cols.add(name)
+            if item['attribute_value']:
+                breaked_items.append(
+                    (name,
+                     item['attribute_value']))
 
             for childitem in childitems:
                 name = "{0}".format(childitem)
@@ -512,17 +530,12 @@ class SeatSummaryKeyBreakAdapter(object):
         self.results.append(result)
         headers = list(result)
         self.headers = headers
+        self.extra_headers = []
+        self.extra_headers += sorted(list(attribute_cols),
+                                     key=attribute_cols_sort_key)
 
     def __iter__(self):
         return iter(self.results)
-
-attr_pt = re.compile(r"attribute\[(?P<name>\w+)]\[(?P<i>\d+)\]\[(?P<j>\d+)\]", re.UNICODE)
-def attribute_cols_sort_key(a):
-    m = attr_pt.match(a)
-    if m is None:
-        return None
-    d = m.groupdict()
-    return int(d['i']), int(d['j']), d['name']
 
 
 class OrderSummaryKeyBreakAdapter(object):

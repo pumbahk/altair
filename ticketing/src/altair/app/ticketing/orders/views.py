@@ -467,7 +467,7 @@ def download(request):
             "seat_quantity",  # 商品明細個数
             "item_print_histories",  #発券作業者
             "seat_name",  # 座席名
-        ]
+        ] + query.extra_headers
 
     headers = [
         ('Content-Type', 'application/octet-stream; charset=Windows-31J'),
