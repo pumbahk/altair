@@ -1,3 +1,5 @@
+# encoding: utf-8
+
 import venusian
 from beaker.cache import CacheManager, cache_regions
 from pyramid.threadlocal import get_current_request
@@ -42,12 +44,13 @@ class LimitterDecorators(object):
             return func
         limits = {'strong': 0, 'decent': 0, 'weak': 0}
         def _(*args, **kwargs):
+            counts = []
             try:
                 request = get_current_request()
                 for id_, strength in get_cart_user_identifiers(request):
                     logger.debug('user_identifier=%s, strength=%s' % (id_, strength))
                     count = self.cache.get(id_, createfunc=lambda: 0) + 1
-                    self.cache.put(id_, count)
+                    counts.append((id_, count))
                     if count > limits[strength]:
                         raise self.exc_class(id_)
             except self.exc_class:
@@ -56,7 +59,17 @@ class LimitterDecorators(object):
                 import sys
                 logger.error('failed to acquire counter', exc_info=sys.exc_info())
 
-            return func_(*args, **kwargs)
+            resp = func_(*args, **kwargs)
+
+            # INGRESSで例外が出なかったときのみコミットする
+            try:
+                for id_, count in counts:
+                    self.cache.put(id_, count)
+            except Exception as e:
+                import sys
+                logger.error('failed to store counter values', exc_info=sys.exc_info())
+
+            return resp
 
         info = self.venusian.attach(
             func,
