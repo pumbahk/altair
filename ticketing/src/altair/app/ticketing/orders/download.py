@@ -946,13 +946,20 @@ class OrderSearchBase(list):
             mailsub.c.user_id==t_user.c.id)
 
         self.columns = OrderDownload.columns + [
-            mailsub.c.email.label('mailsub_mails'),
             case([(mailsub.c.email, '1'),
                   ],
                  else_='0'
             ).label('mail_permission'),
             ]
 
+    def init_mailsub_joins2(self):
+        self.columns = OrderDownload.columns + [
+            case([(func.exists(select([t_mail_subscription.c.id],
+                                      whereclause=t_mail_subscription.c.user_id==t_user.c.id).as_scalar()), '1'),
+                  ],
+                 else_='0'
+            ).label('mail_permission'),
+            ]
 
 class OrderSummary(OrderSearchBase):
     target = order_summary_joins
@@ -967,7 +974,7 @@ class OrderDownload(OrderSearchBase):
 
     def __init__(self, *args, **kwargs):
         super(OrderDownload, self).__init__(*args, **kwargs)
-        self.init_mailsub_joins()
+        self.init_mailsub_joins2()
 
     def order_by(self, query):
         return query.order_by(self.default_order)
@@ -979,7 +986,7 @@ class OrderSeatDownload(OrderSearchBase):
 
     def __init__(self, *args, **kwargs):
         super(OrderSeatDownload, self).__init__(*args, **kwargs)
-        self.init_mailsub_joins()
+        self.init_mailsub_joins2()
 
     def order_by(self, query):
         return query.order_by(self.default_order)
