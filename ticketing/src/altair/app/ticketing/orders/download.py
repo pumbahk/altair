@@ -575,7 +575,7 @@ class OrderSummaryKeyBreakAdapter(object):
                     breaked_items.append(
                         (name, 
                          item[childitem3]))
-                child3_count[(counter[child1_key], counter[child2_key])] = max(child3_count.get((counter[child1_key], counter[child2_key]), 0), counter[child3_key])
+                    child3_count[(counter[child1_key], counter[child2_key])] = max(child3_count.get((counter[child1_key], counter[child2_key]), 0), counter[child3_key])
 
             last_item = item
             first = False
