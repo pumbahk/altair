@@ -281,7 +281,7 @@ class SejTicket(BaseModel,  WithTimestamp, LogicallyDeleted, Base):
     ticket_template_id      = Column(String(10))
     ticket_data_xml         = Column(String(5000))
     order                   = relationship("SejOrder")
-    order_no                = Column(Identifier, ForeignKey("SejOrder.order_no"), nullable=True)
+    order_no                = Column(String(12), ForeignKey("SejOrder.order_no"), nullable=True)
     ticket_idx              = Column(Integer)
     product_item_id         = Column(Identifier, ForeignKey("ProductItem.id"), nullable=True)
 
