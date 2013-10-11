@@ -95,6 +95,10 @@ class DecisionMaker(object):
         if not file_type in os.path.splitext(filepath)[0]:
             static_ext = '{0}{1}/'.format(static_ext, file_type)
 
+
+        ## device削除
+        filepath = filepath.replace("/{}".format(device), "").replace("{}_".format(device), "")
+
         filepath = filepath.replace("static/", static_ext)
         return filepath
 
