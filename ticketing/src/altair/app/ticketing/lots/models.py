@@ -601,12 +601,13 @@ class LotEntryWishSupport(object):
                                                            self.product_quantities)
 
     @property
+    def special_fee_name(self):
+        return  self.lot_entry.payment_delivery_method_pair.special_fee_name
+
+    @property
     def special_fee(self):
         return self.lot_entry.sales_segment.get_special_fee(self.lot_entry.payment_delivery_method_pair,
                                                             self.product_quantities)
-
-
-
 
 class TemporaryLotEntry(object):
     def __init__(self, payment_delivery_method_pair, sales_segment):
