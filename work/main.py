@@ -40,7 +40,12 @@ ALIAS_MAP = {
     "vissel": []
 }
 
-COMMON_IMG_PREFIX_LIST = ["bg_", "btn_", "header_", "ie6border", "side_", "icon_", "title_", "amex_logo", "visa", "jcb", "kc_logo"]
+COMMON_IMG_PREFIX_LIST = [
+    # "btn_", 
+    "bg_", "title_","header_", "side_", "icon_",
+    "amex_logo", "visa", "jcb", "kc_logo", "master",  #mobile cresit cards
+    "familymart", 
+    "border1", "border2", "loading"]
 class Dump(object):
     def __init__(self, stdout=sys.stdout, stderr=sys.stderr):
         self.stdout = stdout
