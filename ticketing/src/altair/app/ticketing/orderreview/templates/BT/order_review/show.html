@@ -42,6 +42,14 @@
           <td colspan="3">システム利用料</td>
           <td class="textR">￥${h.format_number(order.system_fee)}</td>
         </tr>
+
+        %if order.special_fee > 0:
+        <tr>
+          <td colspan="3">${order.special_fee_name}</td>
+          <td class="textR">￥${h.format_number(order.special_fee)}</td>
+        </tr>
+        %endif
+        
         <tr>
           <td colspan="3">合計金額</td>
           <td class="textR">￥${h.format_number(order.total_amount)}</td>
