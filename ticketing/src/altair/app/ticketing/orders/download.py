@@ -264,9 +264,28 @@ detail_summary_columns = summary_columns + [
     t_order.c.note, #メモ
 
     # SEJOrder
-    t_sej_order.c.billing_number, #SEJ払込票番号
-    t_sej_order.c.exchange_number, #SEJ引換票番号
-
+    select([t_sej_order.c.billing_number],
+           whereclause=and_(
+               t_sej_order.c.deleted_at==None,
+               t_sej_order.c.order_no==t_order.c.order_no,
+               t_sej_order.c.branch_no==select([func.max(t_sej_order.c.branch_no)],
+                                              from_obj=t_sej_order,
+                                              whereclause=and_(
+                                                  t_sej_order.c.deleted_at==None
+                                              )
+                                          ).as_scalar(),
+           )).label('billing_number'), #SEJ払込票番号
+    select([t_sej_order.c.exchange_number],
+           whereclause=and_(
+               t_sej_order.c.deleted_at==None,
+               t_sej_order.c.order_no==t_order.c.order_no,
+               t_sej_order.c.branch_no==select([func.max(t_sej_order.c.branch_no)],
+                                              from_obj=t_sej_order,
+                                              whereclause=and_(
+                                                  t_sej_order.c.deleted_at==None
+                                              )
+                                          ).as_scalar(),
+               )).label('exchange_number'),  #SEJ引換票番号
     #UserProfile
     #メールマガジン受信可否
     t_user_profile.c.last_name.label('user_last_name'), #姓
@@ -387,10 +406,6 @@ order_summary_joins = t_order.join(
     t_membership,
     and_(t_membership.c.id==t_user_credential.c.membership_id,
          t_membership.c.deleted_at==None),
-).outerjoin(
-    t_sej_order,
-    and_(t_sej_order.c.order_no==t_order.c.order_no,
-         t_sej_order.c.deleted_at==None),
 )
 
 
@@ -422,6 +437,10 @@ order_product_summary_joins = order_summary_joins.join(
     t_product_sales_segment_group,
     and_(t_product_sales_segment_group.c.id==t_product_sales_segment.c.sales_segment_group_id,
          t_product_sales_segment_group.c.deleted_at==None),
+# ).outerjoin(
+#     t_sej_order,
+#     and_(t_sej_order.c.order_no==t_order.c.order_no,
+#          t_sej_order.c.deleted_at==None),
 ).outerjoin(
     orders_seat_table,
     t_ordered_product_item.c.id==orders_seat_table.c.OrderedProductItem_id,
@@ -755,8 +774,15 @@ class OrderSearchBase(list):
         if condition.billing_or_exchange_number.data:
             value = condition.billing_or_exchange_number.data
             cond = and_(cond,
-                        or_(t_sej_order.c.exchange_number==value,
-                            t_sej_order.c.billing_number==value))
+                        t_order.c.order_no.in_(
+                            select([t_sej_order.c.order_no],
+                                   whereclause=and_(
+                                       t_sej_order.c.deleted_at==None,
+                                       or_(
+                                           t_sej_order.c.exchange_number==value,
+                                           t_sej_order.c.billing_number==value))
+                               ).as_scalar()
+                        ))
 
         # イベント event_id
         if condition.event_id.data:
@@ -1012,10 +1038,3 @@ class OrderSeatDownload(OrderSearchBase):
 
     def order_by(self, query):
         return query.order_by(*self.default_order)
-
-
-class BoosterDownload(OrderSearchBase):
-    """ FC会員入会専用
-attribute[last_name][0][0]	区分 (継続=yes)[0][0]	会員種別[0][0]	性別[0][0]	attribute[email_1][0][0]	誕生日 (年)[0][0]	attribute[city][0][0]	attribute[first_name][0][0]	attribute[prefecture][0][0]	attribute[tel_2][0][0]	attribute[mail_permission][0][0]	attribute[first_name_kana][0][0]	昨年度会員番号[0][0]	attribute[last_name_kana][0][0]	attribute[zipcode2][0][0]	attribute[zipcode1][0][0]	attribute[address1][0][0]	attribute[address2][0][0]	誕生日 (月)[0][0]	誕生日 (日)[0][0]	ブースターシャツサイズ[0][0]	attribute[tel_1][0][0]	attribute[publicity][0][0]	ブースターシャツサイズ[0][1]	attribute[email_1_confirm][0][0]	ブースタークラブに入会しようと思ったきっかけ[0][0]	メモリアルブックへの氏名掲載希望[0][0]	昨シーズンの会場での観戦回数[0][0]	メールマガジン[0][0]
-
-    """
