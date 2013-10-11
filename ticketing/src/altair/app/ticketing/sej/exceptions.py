@@ -31,17 +31,3 @@ class SejServerError(SejErrorBase):
 
     def __str__(self):
         return "status_code=%d&reason=%s: body: %s" % (self.status_code, self.reason, self.body)
-
-class SejResponseError(SejErrorBase):
-    code = 0
-    reason = ''
-    params = dict()
-
-    def __init__(self, code, reason, params):
-        self.code = code
-        self.reason = reason
-        self.params = params
-
-    def response(self):
-        from .helpers import make_sej_response
-        return make_sej_response(self.params)

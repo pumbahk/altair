@@ -25,8 +25,7 @@ def main(global_config, **local_config):
     config.set_root_factory('.resources.TicketingApiResource')
     config.registry['sa.engine'] = engine
 
-    config.add_renderer('.html' , 'pyramid.mako_templating.renderer_factory')
-
+    config.add_tween('.tweens.encoding_converter_tween_factory')
     config.include('.', "/altair/sej/")
     config.scan()
 

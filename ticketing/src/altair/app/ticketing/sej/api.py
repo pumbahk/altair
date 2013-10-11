@@ -1,6 +1,5 @@
 # -*- coding:utf-8 -*-
 
-from dateutil.parser import parse
 from datetime import timedelta
 import logging
 logger = logging.getLogger(__name__)
@@ -15,114 +14,12 @@ import sqlahelper
 from .utils import JavaHashMap
 from .models import SejNotification, SejOrder, SejTicket, SejTenant, SejRefundEvent, SejRefundTicket, SejNotificationType
 
-from .helpers import make_sej_response, create_hash_from_x_start_params
-from .exceptions import SejResponseError
+from .helpers import create_hash_from_x_start_params
 from altair.app.ticketing.sej.exceptions import SejServerError
 from altair.app.ticketing.sej.payment import request_cancel_order
 from pyramid.threadlocal import get_current_registry
 
 DBSession = sqlahelper.get_session()
-
-def callback_notification(params,
-                          secret_key = u'E6PuZ7Vhe7nWraFW'):
-
-    hash_map = JavaHashMap()
-    for k,v in params.items():
-        hash_map[k] = v
-
-    hash = create_hash_from_x_start_params(hash_map, secret_key)
-
-    if hash != params.get('xcode'):
-        raise SejResponseError(
-            400, 'Bad Request',dict(status='400', Error_Type='00', Error_Msg='Bad Value', Error_Field='xcode'))
-
-    process_number = params.get('X_shori_id')
-    if not process_number:
-        raise SejResponseError(
-             400, 'Bad Request',dict(status='422', Error_Type='01', Error_Msg='No Data', Error_Field='X_shori_id'))
-
-    retry_data = False
-    q = SejNotification.query.filter_by(process_number = process_number)
-    if q.count():
-        n = q.one()
-        retry_data = True
-    else:
-        n = SejNotification()
-        DBSession.add(n)
-
-    def process_payment_complete():
-        '''3-1.入金発券完了通知'''
-        n.process_number        = hash_map['X_shori_id']
-        n.shop_id               = hash_map['X_shop_id']
-        n.payment_type          = str(int(hash_map['X_shori_kbn']))
-        n.order_no              = hash_map['X_shop_order_id']
-        n.billing_number        = hash_map['X_haraikomi_no']
-        n.exchange_number       = hash_map['X_hikikae_no']
-        n.total_price           = hash_map['X_goukei_kingaku']
-        n.total_ticket_count    = hash_map['X_ticket_cnt']
-        n.ticket_count          = hash_map['X_ticket_hon_cnt']
-        n.return_ticket_count   = hash_map['X_kaishu_cnt']
-        n.pay_store_number      = hash_map['X_pay_mise_no']
-        n.pay_store_name        = hash_map['pay_mise_name']
-        n.ticketing_store_number= hash_map['X_hakken_mise_no']
-        n.ticketing_store_name  = hash_map['hakken_mise_name']
-        n.cancel_reason         = hash_map['X_torikeshi_riyu']
-        n.processed_at          = parse(hash_map['X_shori_time'])
-        n.signature             = hash_map['xcode']
-        return make_sej_response(dict(status='800' if not retry_data else '810'))
-
-
-    def process_re_grant():
-        n.process_number                = hash_map['X_shori_id']
-        n.shop_id                       = hash_map['X_shop_id']
-        n.payment_type                  = str(int(hash_map['X_shori_kbn']))
-        n.order_no                      = hash_map['X_shop_order_id']
-        n.billing_number                = hash_map['X_haraikomi_no']
-        n.exchange_number               = hash_map['X_hikikae_no']
-        n.payment_type_new              = str(int(hash_map['X_shori_kbn_new']))
-        n.billing_number_new            = hash_map['X_haraikomi_no_new']
-        n.exchange_number_new           = hash_map['X_hikikae_no_new']
-        n.ticketing_due_at_new    = parse(hash_map['X_lmt_time_new'])
-        n.barcode_numbers = dict()
-
-        for idx in range(1, 20):
-            barcode_number = hash_map['X_barcode_no_new_%02d' % idx]
-            if barcode_number:
-                n.barcode_numbers[idx] = barcode_number
-        n.processed_at          = parse(hash_map['X_shori_time'])
-        n.signature                     = hash_map['xcode']
-
-        return make_sej_response(dict(status='800' if not retry_data else '810'))
-
-    def process_expire():
-        n.process_number                = hash_map['X_shori_id']
-        n.shop_id                       = hash_map['X_shop_id']
-        n.order_no                      = hash_map['X_shop_order_id']
-        n.payment_type                  = str(int(hash_map['X_shori_kbn']))
-        n.ticketing_due_at              = parse(hash_map['X_lmt_time'])
-        n.billing_number                = hash_map['X_haraikomi_no']
-        n.exchange_number               = hash_map['X_hikikae_no']
-        n.processed_at                  = parse(hash_map['X_shori_time'])
-        n.signature                     = hash_map['xcode']
-
-        return make_sej_response(dict(status='800' if not retry_data else '810'))
-
-    def dummy():
-        raise SejResponseError(
-             422, 'Bad Request',dict(status='422', Error_Type='01', Error_Msg='Bad Value', Error_Field='X_tuchi_type'))
-
-    ret = {
-        SejNotificationType.PaymentComplete.v   : process_payment_complete,
-        SejNotificationType.CancelFromSVC.v     : process_payment_complete,
-        SejNotificationType.ReGrant.v           : process_re_grant,
-        SejNotificationType.TicketingExpire.v   : process_expire,
-    }.get(int(params['X_tuchi_type']), dummy)()
-    n.notification_type = str(int(params['X_tuchi_type']))
-
-    DBSession.flush()
-
-    return ret
-
 
 def cancel_sej_order(sej_order, organization_id):
     if not sej_order:
