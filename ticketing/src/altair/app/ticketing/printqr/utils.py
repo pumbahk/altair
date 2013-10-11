@@ -154,7 +154,7 @@ def svg_data_from_token_with_descinfo(history, ordered_product_item_token):
             u'seat_id': ordered_product_item_token.seat_id or "",
             u'serial': ordered_product_item_token.serial,
             u"ticket_name": ticket_name, 
-            u'data': json_safe_coerce(pair[1]), 
+            u'data': json_safe_coerce(pair[0]), 
             u"printed_at": str(ordered_product_item_token.printed_at) if ordered_product_item_token.printed_at else None, 
             u"refreshed_at": str(ordered_product_item_token.refreshed_at) if ordered_product_item_token.refreshed_at else None
             }
