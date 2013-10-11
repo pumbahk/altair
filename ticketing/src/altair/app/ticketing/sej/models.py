@@ -212,7 +212,7 @@ class SejOrder(BaseModel,  WithTimestamp, LogicallyDeleted, Base):
 
     @property
     def tickets(self):
-        return SejTicket.query.filter_by(order_no=self.order_no).order_by(SejTicket.ticket_idx).all()
+        return SejTicket.query.filter_by(sej_order_id=self.id).order_by(SejTicket.ticket_idx).all()
 
     def new_branch(self, payment_type, ticketing_due_at, exchange_number=None, billing_number=None, processed_at=None):
         # payment_type は文字列になり得る (MySQLのENUM型をDBAPIは文字列として扱う)
@@ -280,9 +280,27 @@ class SejTicket(BaseModel,  WithTimestamp, LogicallyDeleted, Base):
     performance_datetime    = Column(DateTime)
     ticket_template_id      = Column(String(10))
     ticket_data_xml         = Column(String(5000))
-    order                   = relationship("SejOrder")
+    sej_order_id            = Column(Identifier, ForeignKey("SejOrder.id"), nullable=False)
+    order                   = relationship("SejOrder", primaryjoin='SejOrder.id==SejTicket.sej_order_id', foreign_keys=[sej_order_id])
     order_no                = Column(String(12), ForeignKey("SejOrder.order_no"), nullable=True)
     ticket_idx              = Column(Integer)
     product_item_id         = Column(Identifier, ForeignKey("ProductItem.id"), nullable=True)
+
+    def new_branch(self, **kwargs):
+        values = dict(
+            ticket_type=self.ticket_type,
+            barcode_number=self.barcode_number,
+            event_name=self.event_name,
+            performance_name=self.performance_name,
+            performance_datetime=self.performance_datetime,
+            ticket_template_id=self.ticket_template_id,
+            ticket_data_xml=self.ticket_data_xml,
+            order=self.order,
+            order_no=self.order_no,
+            ticket_idx=self.ticket_idx,
+            product_item_id=self.product_item_id
+            )
+        values.update(kwargs)
+        return self.__class__(**values)
 
 from .notification.models import *
