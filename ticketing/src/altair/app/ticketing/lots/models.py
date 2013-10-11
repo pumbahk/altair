@@ -451,6 +451,19 @@ class LotEntry(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         return self.order.system_fee
 
     @property
+    def special_fee(self):
+        if self.order is None:
+            return None
+        return self.order.special_fee
+
+    @property
+    def special_fee_name(self):
+        if self.order is None:
+            return None
+        return self.order.special_fee_name
+
+        
+    @property
     def transaction_fee(self):
         if self.order is None:
             return None
