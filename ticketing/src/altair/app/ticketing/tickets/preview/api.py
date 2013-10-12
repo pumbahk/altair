@@ -12,7 +12,7 @@ from StringIO import StringIO
 
 from ..response import FileLikeResponse
 from altair.app.ticketing.api.impl import BaseCommunicationApi
-from altair.app.ticketing.payments.payment import get_delivery_plugin
+from altair.app.ticketing.payments.api import get_delivery_plugin
 from altair.app.ticketing.payments.plugins import SEJ_DELIVERY_PLUGIN_ID
 from altair.app.ticketing import urllib2ext
 from . import TicketPreviewAPIException

@@ -120,3 +120,19 @@ class IDeliveryErrorEvent(Interface):
     exception = Attribute(u"error")
     request = Attribute(u"request")
     order = Attribute(u"order caused error")
+
+class IPayment(Interface):
+    def call_prepare(self):
+        pass
+
+    def call_delegator(self):
+        pass
+
+    def call_validate(self):
+        pass
+
+    def call_payment(self):
+        pass
+
+    def call_delivery(self, order):
+        pass
