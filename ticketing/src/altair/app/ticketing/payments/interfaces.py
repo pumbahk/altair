@@ -83,7 +83,10 @@ class IDeliveryPlugin(Interface):
         """ 確定済みか判定する"""
 
     def cancel(request, order):
-        pass
+        """ キャンセル """
+
+    def refresh(request, order):
+        """ 内容変更 """
 
 class IPaymentPlugin(Interface, IPaymentPreparer):
     """ 決済プラグイン"""
@@ -93,11 +96,17 @@ class IPaymentPlugin(Interface, IPaymentPreparer):
     def finish(request, cart):
         """ 確定処理 """
 
+    def sales(request, cart):
+        """ 売上確定処理 """
+
     def finished(request, order):
-        """ 確定済みか判定する"""
+        """ *売上*確定済みか判定する (メソッド名がミスリードなのは歴史的経緯) """
 
     def cancel(request, order):
-        pass
+        """ キャンセル """
+
+    def refresh(request, order):
+        """ 注文金額変更 """
 
 class IPaymentDeliveryPlugin(Interface):
     """ 決済配送を一度に行うプラグイン"""
@@ -106,6 +115,9 @@ class IPaymentDeliveryPlugin(Interface):
 
     def finish(request, cart):
         """ 確定処理 """
+
+    def refresh(request, order):
+        """ 内容変更 """
 
 class IOrderPayment(Interface):
     """ 完了画面の決済ビューレットのコンテキスト"""

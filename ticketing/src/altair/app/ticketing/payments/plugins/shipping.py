@@ -44,6 +44,10 @@ class ShippingDeliveryPlugin(object):
         """ shipping addressがあればOK?"""
         return bool(order.shipping_address)
 
+    def refresh(self, request, order):
+        if order.delivered_at is not None:
+            raise Exception('order %s is already delivered' % order.order_no)
+
 @view_config(context=ICompleteMailDelivery, name="delivery-%d" % PLUGIN_ID, renderer="altair.app.ticketing.payments.plugins:templates/shipping_delivery_mail_complete.html")
 @view_config(context=ILotsElectedMailDelivery, name="delivery-%d" % PLUGIN_ID, renderer="altair.app.ticketing.payments.plugins:templates/shipping_delivery_mail_complete.html")
 def completion_delivery_mail_viewlet(context, request):

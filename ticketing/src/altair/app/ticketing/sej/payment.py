@@ -124,8 +124,8 @@ class SejPayment(object):
 
 def create_sej_request_data(
         order_no,
-        total,
-        ticket_total,
+        total_price,
+        ticket_price,
         commission_fee,
         payment_type,
         ticketing_fee,
@@ -145,30 +145,35 @@ def create_sej_request_data(
     if order_no is not None:
         params['X_shop_order_id']   = order_no
 
-    if payment_type != SejPaymentType.Paid and payment_due_at:
-        # コンビニでの決済を行う場合の支払い期限の設定
-        params['X_pay_lmt']         = payment_due_at.strftime('%Y%m%d%H%M')
+    if int(payment_type) == int(SejPaymentType.Paid):
+        assert payment_due_at is None, '%s is not None' % payment_due_at
+        x_ticket_daikin = 0
+        x_ticket_kounyu_daikin = 0
+        x_hakken_daikin = 0
+        x_goukei_kingaku = 0
+        x_pay_lmt = None
+    else:
+        x_ticket_daikin = ticket_price
+        x_ticket_kounyu_daikin = commission_fee
+        x_hakken_daikin = ticketing_fee
+        x_goukei_kingaku = x_ticket_daikin + x_ticket_kounyu_daikin + x_hakken_daikin
+        x_pay_lmt = payment_due_at and payment_due_at.strftime('%Y%m%d%H%M')
+        assert x_goukei_kingaku == total_price, "%s != %s" % (x_goukei_kingaku, total_price)
 
+    if x_pay_lmt is not None:
+        # 支払い期限
+        params['X_pay_lmt']          = x_pay_lmt
     # チケット代金
-    x_ticket_daikin = ticket_total if payment_type != SejPaymentType.Paid else 0
-    params['X_ticket_daikin']   = u'%06d' % x_ticket_daikin
+    params['X_ticket_daikin']        = u'%06d' % x_ticket_daikin
     # チケット購入代金
-    x_ticket_kounyu_daikin = commission_fee if payment_type != SejPaymentType.Paid else 0
     params['X_ticket_kounyu_daikin'] = u'%06d' % x_ticket_kounyu_daikin
     # 発券代金
-    x_hakken_daikin = ticketing_fee if payment_type != SejPaymentType.PrepaymentOnly else 0
-    params['X_hakken_daikin']       = u'%06d' % x_hakken_daikin
-
+    params['X_hakken_daikin']        = u'%06d' % x_hakken_daikin
     # 合計金額 = チケット代金 + チケット購入代金+発券代金の場合
-    x_goukei_kingaku = x_ticket_daikin + x_ticket_kounyu_daikin + x_hakken_daikin
-    params['X_goukei_kingaku']  = u'%06d' % x_goukei_kingaku
-
-    assert x_goukei_kingaku == x_ticket_daikin + x_ticket_kounyu_daikin + x_hakken_daikin
-    if payment_type == SejPaymentType.Paid:
-        assert x_ticket_daikin + x_ticket_kounyu_daikin == 0
+    params['X_goukei_kingaku']       = u'%06d' % x_goukei_kingaku
 
     # 前払い
-    if payment_type == SejPaymentType.Prepayment or payment_type == SejPaymentType.Paid:
+    if int(payment_type) in (int(SejPaymentType.Prepayment), int(SejPaymentType.Paid)):
         # 支払いと発券が異なる場合、発券開始日時と発券期限を指定できる。
         if ticketing_start_at is not None:
             params['X_hakken_mise_date'] = ticketing_start_at.strftime('%Y%m%d%H%M')
@@ -234,19 +239,36 @@ def create_sej_request_data(
 
     return params
 
+def build_sej_tickets_from_dicts(sej_order, tickets, barcode_number_getter):
+    return [
+        SejTicket(
+            order                = sej_order,
+            order_no             = sej_order.order_no,
+            ticket_idx           = (i + 1),
+            ticket_type          = '%d' % ticket.get('ticket_type').v,
+            event_name           = ticket.get('event_name'),
+            performance_name     = ticket.get('performance_name'),
+            performance_datetime = ticket.get('performance_datetime'),
+            ticket_template_id   = ticket.get('ticket_template_id'),
+            ticket_data_xml      = ticket.get('xml').xml,
+            product_item_id      = ticket.get('product_item_id'),
+            barcode_number       = barcode_number_getter(i + 1)
+            )
+        for i, ticket in enumerate(tickets)
+        ]
 
 def request_order(
         shop_name,
         contact_01,
         contact_02,
         order_no,
-        username,
-        username_kana,
+        user_name,
+        user_name_kana,
         tel,
-        zip,
+        zip_code,
         email,
-        total,
-        ticket_total,
+        total_price,
+        ticket_price,
         commission_fee,
         payment_type,
         ticketing_fee=0,
@@ -264,11 +286,14 @@ def request_order(
     if type(payment_type) is not SejPaymentType:
         raise ValueError('payment_type')
 
+    if int(payment_type) == int(SejPaymentType.Paid):
+        payment_due_at = None
+
     payment = SejPayment(url = hostname + '/order/order.do', secret_key = secret_key)
     params = create_sej_request_data(
         order_no=order_no,
-        total=total,
-        ticket_total=ticket_total,
+        total_price=total_price,
+        ticket_price=ticket_price,
         commission_fee=commission_fee,
         payment_type=payment_type,
         ticketing_fee=ticketing_fee,
@@ -287,13 +312,13 @@ def request_order(
     # 連絡先2
     params['renraku_saki']      = contact_02
     # お客様氏名
-    params['user_namek']        = username
+    params['user_namek']        = user_name
     # お客様氏名カナ
-    params['user_name_kana']    = username_kana
+    params['user_name_kana']    = user_name_kana
     # お客様電話番号
     params['X_user_tel_no']     = tel
     #　お客様郵便番号
-    params['X_user_post']       = zip
+    params['X_user_post']       = zip_code
     # お客様メールアドレス
     params['X_user_email']      = email
     # 処理区分
@@ -326,10 +351,10 @@ def request_order(
         shop_name                 = shop_name,
         contact_01                = contact_01,
         contact_02                = contact_02,
-        user_name                 = username,
-        user_name_kana            = username_kana,
+        user_name                 = user_name,
+        user_name_kana            = user_name_kana,
         tel                       = tel,
-        zip_code                  = zip,
+        zip_code                  = zip_code,
         email                     = email,
         payment_type              = payment_type.v,
         billing_number            = ret.get('X_haraikomi_no'),
@@ -349,22 +374,12 @@ def request_order(
         ticketing_due_at          = ticketing_due_at,
         regrant_number_due_at     = regrant_number_due_at
         )
-    idx = 1
-    for ticket in tickets:
-        sej_ticket = SejTicket(
-            order                = sej_order,
-            order_no             = sej_order.order_no,
-            ticket_idx           = idx,
-            ticket_type          = '%d' % ticket.get('ticket_type').v,
-            event_name           = ticket.get('event_name'),
-            performance_name     = ticket.get('performance_name'),
-            performance_datetime = ticket.get('performance_datetime'),
-            ticket_template_id   = ticket.get('ticket_template_id'),
-            ticket_data_xml      = ticket.get('xml').xml,
-            product_item_id      = ticket.get('product_item_id'),
-            barcode_number       = ret.get('X_barcode_no_%02d' % idx) or None
-            )
-        idx += 1
+    sej_tickets = build_sej_tickets_from_dicts(
+        sej_order,
+        tickets,
+        lambda idx: ret.get('X_barcode_no_%02d' % idx) or None
+        )
+    for sej_ticket in sej_tickets:
         DBSession.add(sej_ticket)
 
     DBSession.add(sej_order)
@@ -417,11 +432,6 @@ def request_cancel_order(
 def request_update_order(
         new_order,
         update_reason,
-        payment_due_at = None,
-        ticketing_start_at = None,
-        ticketing_due_at = None,
-        regrant_number_due_at = None,
-        tickets = list(),
         shop_id = u'30520',
         secret_key = u'E6PuZ7Vhe7nWraFW',
         hostname = sej_hostname
@@ -434,16 +444,21 @@ def request_update_order(
 
     ticket_dict = dict(
         (ticket.ticket_idx, ticket)
-        for ticket in SejTicket.query.filter_by(sej_order_id=new_order.id)
+        for ticket in new_order.tickets
         )
 
-    assert len(ticket_dict) == new_order.total_ticket_count and new_order.total_ticket_count <= 20
+    assert int(new_order.payment_type) == int(SejPaymentType.PrepaymentOnly) or \
+           (
+                len(ticket_dict) == new_order.total_ticket_count and
+                new_order.total_ticket_count <= 20
+                ), \
+           '%d == %d and %d < 20' % (len(ticket_dict), new_order.total_ticket_count, new_order.total_ticket_count)
 
     payment = SejPayment(url = hostname + u'/order/updateorder.do', secret_key = secret_key)
     params = create_sej_request_data(
         order_no=new_order.order_no,
-        total=new_order.total_price,
-        ticket_total=new_order.ticket_price,
+        total_price=new_order.total_price,
+        ticket_price=new_order.ticket_price,
         commission_fee=new_order.commission_fee,
         payment_type=new_order.payment_type,
         ticketing_fee=new_order.ticketing_fee,
@@ -498,8 +513,9 @@ def request_update_order(
     assert (not new_order.order_no) or new_order.order_no == ret.get('X_shop_order_id')
     assert (not new_order.billing_number) or new_order.billing_number == ret.get('X_haraikomi_no')
     assert (not new_order.exchange_number) or new_order.exchange_number == ret.get('X_hikikae_no')
-    assert (not new_order.total_ticket_count) or new_order.total_ticket_count == int(ret.get('X_ticket_cnt', 0))
-    assert (not new_order.ticket_count) or new_order.ticket_count == int(ret.get('X_ticket_hon_cnt', 0))
+    if int(new_order.payment_type) != int(SejPaymentType.PrepaymentOnly):
+        assert (not new_order.total_ticket_count) or new_order.total_ticket_count == int(ret.get('X_ticket_cnt', 0))
+        assert (not new_order.ticket_count) or new_order.ticket_count == int(ret.get('X_ticket_hon_cnt', 0))
     assert (not new_order.exchange_sheet_url) or new_order.exchange_sheet_url == ret.get('X_url_info')
     assert (not new_order.exchange_sheet_number) or new_order.exchange_sheet_number == ret.get('iraihyo_id_00')
 
@@ -508,7 +524,7 @@ def request_update_order(
     for idx in range(1, 21):
         ticket = ticket_dict.get(idx)
         barcode_number = ret.get('X_barcode_no_%02d' % idx)
-        assert (not barcode_number and not ticket) or (barcode_number and ticket)
+        assert (not barcode_number and not ticket) or (barcode_number and ticket), '%d: %r / %r' % (idx, ret, ticket_dict)
         if not ticket:
             continue
         ticket.barcode_number = barcode_number

@@ -67,9 +67,14 @@ class CartedProductTests(unittest.TestCase, CartTestMixin):
 
     def _create_items(self, num):
         from .models import CartedProductItem
-        from altair.app.ticketing.core.models import ProductItem
+        from altair.app.ticketing.core.models import ProductItem, SeatStatusEnum
         stocks = self._create_stocks(self._create_stock_types(num))
-        return [CartedProductItem(product_item=ProductItem(price=0, stock=stock), seats=self._create_seats([stock])) for stock in stocks]
+        seats = self._create_seats(stocks)
+        seat_stock_dict = {}
+        for seat in seats:
+            seat.status = SeatStatusEnum.InCart.v
+            seat_stock_dict.setdefault(seat.stock, []).append(seat)
+        return [CartedProductItem(product_item=ProductItem(price=0, stock=stock), seats=seat_stock_dict[stock]) for stock in stocks]
 
     def test_seats(self):
         target = self._makeOne(items=self._create_items(5))
@@ -103,4 +108,5 @@ class CartedProductTests(unittest.TestCase, CartTestMixin):
         self.session.add(target)
         self.session.flush()
         target.release()
-        self.assertTrue(target.finished_at is not None and all(item.finished_at is not None for item in target.items))
+        self.assertTrue(target.finished_at is not None)
+        self.assertTrue(all(item.finished_at is not None for item in target.items))

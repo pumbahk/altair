@@ -20,10 +20,12 @@ import sqlahelper
 import sqlalchemy as sa
 import sqlalchemy.orm as orm
 import altair.app.ticketing.core.models as c_models
+from altair.app.ticketing.core.interfaces import IPurchase
 from sqlalchemy import sql
 from sqlalchemy.ext.hybrid import hybrid_property, hybrid_method
 from sqlalchemy.orm.exc import NoResultFound
 from zope.deprecation import deprecate
+from zope.interface import implementer
 
 logger = logging.getLogger(__name__)
 
@@ -381,6 +383,7 @@ class Lot(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                 LotEntry.entry_no==entry_no
         ).first()
 
+@implementer(IPurchase)
 class LotEntry(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     """ 抽選申し込み """
     
@@ -417,6 +420,15 @@ class LotEntry(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     organization_id = sa.Column(Identifier,
                                 sa.ForeignKey('Organization.id'))
     organization = orm.relationship('Organization', backref='lot_entries')
+
+    #xxx: for order
+    @property
+    def order_no(self):
+        return self.entry_no
+
+    @order_no.setter
+    def order_no(self, value):
+        self.entry_no = value 
 
     #xxx: for order
     @property

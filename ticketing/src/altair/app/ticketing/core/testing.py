@@ -1,3 +1,7 @@
+# encoding: utf-8
+
+from decimal import Decimal
+
 class CoreTestMixin(object):
     def setUp(self):
         from altair.app.ticketing.core.models import (
@@ -13,9 +17,13 @@ class CoreTestMixin(object):
             )
         from altair.app.ticketing.payments import plugins as _payment_plugins
         import re
-        self.organization = Organization(short_name=u'')
-        self.event = Event(organization=self.organization)
-        self.performance = Performance(event=self.event, venue=Venue(organization=self.organization, site=Site()))
+        self.organization = Organization(id=1, short_name=u'')
+        self.event = Event(organization=self.organization, title=u'イベント')
+        self.performance = Performance(
+            event=self.event,
+            venue=Venue(organization=self.organization, site=Site()),
+            name=u'パフォーマンス'
+            )
         payment_methods = {}
         delivery_methods = {}
         for attr_name in dir(_payment_plugins):
@@ -27,6 +35,7 @@ class CoreTestMixin(object):
                     PaymentMethod(
                         name=name, fee=0.,
                         organization=self.organization,
+                        payment_plugin_id=id,
                         _payment_plugin=PaymentMethodPlugin(id=id, name=name)
                         )
             else:
@@ -38,20 +47,26 @@ class CoreTestMixin(object):
                         DeliveryMethod(
                             name=name, fee=0.,
                             organization=self.organization,
+                            delivery_plugin_id=id,
                             _delivery_plugin=DeliveryMethodPlugin(id=id, name=name)
                             )
         self.payment_methods = payment_methods
         self.delivery_methods = delivery_methods
+        self.order_no_list = []
 
+    def new_order_no(self):
+        order_no = '%012d' % len(self.order_no_list)
+        self.order_no_list.append(order_no)
+        return order_no
 
     def _create_stock_types(self, num):
         from altair.app.ticketing.core.models import StockType
         return [StockType(name=name) for name in 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'[0:num]]
 
     def _create_stocks(self, stock_types):
-        from altair.app.ticketing.core.models import Stock, StockStatus, Performance, Venue, Site
+        from altair.app.ticketing.core.models import Stock, StockStatus, StockHolder, Performance, Venue, Site
         quantity = 4
-        return [Stock(performance=self.performance, stock_type=stock_type, quantity=quantity, stock_status=StockStatus(quantity=quantity)) for stock_type in stock_types]
+        return [Stock(performance=self.performance, stock_type=stock_type, quantity=quantity, stock_holder=StockHolder(name='holder of %s' % stock_type.name), stock_status=StockStatus(quantity=quantity)) for stock_type in stock_types]
 
     def _create_seats(self, stocks):
         from altair.app.ticketing.core.models import Seat, SeatStatus, SeatStatusEnum
@@ -59,34 +74,47 @@ class CoreTestMixin(object):
                      l0_id="seat-%s-%d" % (stock.stock_type.name, i),
                      stock=stock,
                      venue=stock.performance and stock.performance.venue,
-                     status_=SeatStatus(status=SeatStatusEnum.InCart.v)) \
+                     status_=SeatStatus(status=SeatStatusEnum.Vacant.v)) \
                 for stock in stocks for i in range(stock.quantity)]
 
-    def _create_ticket_bundle(self):
+    def _create_ticket_format(self, name='ticket_format', delivery_methods=None):
+        from altair.app.ticketing.core.models import TicketFormat
+        return TicketFormat(
+            name=name,
+            delivery_methods=delivery_methods,
+            data={
+                u'print_offset': { u'x': u'0', u'y': u'0' }
+                }
+            )
+
+    def _generate_ticket_formats(self):
         from itertools import combinations
-        from altair.app.ticketing.core.models import TicketBundle, Ticket, TicketFormat
+        for n in range(1, len(self.delivery_methods)):
+            for j, combination in enumerate(combinations(self.delivery_methods.values(), n)):
+                yield self._create_ticket_format(
+                    name='%d-%d' % (n, j),
+                    delivery_methods=list(combination),
+                    )
+
+    def _create_ticket_bundle(self):
+        from altair.app.ticketing.core.models import TicketBundle, Ticket
         return TicketBundle(
             tickets=[
-                Ticket(
-                    ticket_format=TicketFormat(
-                        name='%d-%d' % (n, j),
-                        delivery_methods=list(combination),
-                        ),
-                    flags=Ticket.FLAG_PRICED
-                    )
-                for n in range(1, len(self.delivery_methods))
-                for j, combination in enumerate(combinations(self.delivery_methods.values(), n))
+                Ticket(ticket_format=ticket_format, flags=Ticket.FLAG_PRICED)
+                for ticket_format in self._generate_ticket_formats()
                 ]
             )
  
     def _create_products(self, stocks):
         from altair.app.ticketing.core.models import Product, ProductItem
-        price = 100.
+        price = Decimal(100.)
         return [
             Product(
                 name=stock.stock_type.name,
                 price=price,
                 items=[ProductItem(stock=stock, price=price,
+                                   performance=self.performance,
+                                   quantity=1,
                                    ticket_bundle=self._create_ticket_bundle())]
                 )
             for stock in stocks
@@ -97,20 +125,48 @@ class CoreTestMixin(object):
         return [
             PaymentDeliveryMethodPair(
                 sales_segment_group=sales_segment_group,
-                system_fee=system_fee,
-                transaction_fee=transaction_fee,
-                delivery_fee=delivery_fee,
+                system_fee=Decimal(system_fee),
+                transaction_fee=Decimal(transaction_fee),
+                delivery_fee=Decimal(delivery_fee),
                 discount=discount,
                 discount_unit=discount_unit,
                 public=True,
                 payment_method=payment_method,
-                delivery_method=delivery_method
+                delivery_method=delivery_method,
                 )
             for payment_method in self.payment_methods.values()
             for delivery_method in self.delivery_methods.values()
             ]
 
-    def _create_order(self, product_quantity_pairs, pdmp=None):
+    def _create_shipping_address(self):
+        from .models import ShippingAddress
+        return ShippingAddress(
+            email_1="dev+test000@ticketstar.jp",
+            email_2="dev+mobile-test000@ticketstar.jp",
+            first_name=u"太郎0",
+            last_name=u"楽天",
+            first_name_kana=u"タロウ",
+            last_name_kana=u"ラクテン",
+            zip="251-0036",
+            prefecture=u"東京都",
+            city=u"品川区",
+            address_1=u"東五反田5-21-15'",
+            address_2=u"メタリオンOSビル",
+            tel_1=u"03-9999-9999",
+            tel_2=u"090-0000-0000",
+            fax=u"03-9876-5432"
+            )
+
+    def _pick_seats(self, stock, quantity):
+        from altair.app.ticketing.core.models import Seat, SeatStatus, SeatStatusEnum
+        return [Seat(
+            name='seat',
+            l0_id='seat',
+            venue=stock.performance and stock.performance.venue,
+            status_=SeatStatus(status=SeatStatusEnum.InCart.v))
+            ]
+
+    def _create_order(self, product_quantity_pairs, sales_segment, pdmp=None):
         from altair.app.ticketing.core.models import Order, OrderedProduct, OrderedProductItem, SeatStatusEnum
 
         def mark_ordered(seat):
@@ -119,11 +175,13 @@ class CoreTestMixin(object):
 
         return Order(
             organization_id=self.organization.id,
+            shipping_address=self._create_shipping_address(),
             total_amount=sum(product.price for product, _ in product_quantity_pairs),
             payment_delivery_pair=pdmp,
-            system_fee=pdmp and pdmp.system_fee or 0.,
-            transaction_fee=pdmp and pdmp.transaction_fee or 0.,
-            delivery_fee=pdmp and pdmp.delivery_fee or 0.,
+            sales_segment=sales_segment,
+            system_fee=Decimal(pdmp and pdmp.system_fee or 0.),
+            transaction_fee=Decimal(pdmp and pdmp.transaction_fee or 0.),
+            delivery_fee=Decimal(pdmp and pdmp.delivery_fee or 0.),
             issued=False,
             items=[
                 OrderedProduct(
@@ -135,7 +193,7 @@ class CoreTestMixin(object):
                             price=product_item.price,
                             seats=[
                                 mark_ordered(seat)
-                                for seat in self._create_seats([product_item.stock])
+                                for seat in self._pick_seats(product_item.stock, quantity * product_item.quantity)
                                 ]
                             )
                         for product_item in product.items

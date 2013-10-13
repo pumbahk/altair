@@ -114,10 +114,10 @@ class CardForm(CSRFSecureForm):
 def get_error_message(request, error_code):
     return u'決済エラー:' + error_messages.get(error_code, u'決済に失敗しました。カードや内容を確認の上再度お試しください。')
 
-def get_order_no(request, cart):
+def get_order_no(request, order_like):
     if request.registry.settings.get('multicheckout.testing', False):
-        return cart.order_no + "00"
-    return cart.order_no
+        return order_like.order_no + "00"
+    return order_like.order_no
 
 @implementer(IPaymentPlugin)
 class MultiCheckoutPlugin(object):
@@ -202,7 +202,6 @@ class MultiCheckoutPlugin(object):
 
         return order
 
-
     def finished(self, request, order):
         """ 売上確定済か判定 """
 
@@ -219,6 +218,49 @@ class MultiCheckoutPlugin(object):
             # 金額が０でないことも確認？
             return True
         return False
+
+    def sales(self, request, order):
+        # finish で全部終わっているので後処理不要
+        pass
+
+    def refresh(self, request, order):
+        real_order_no = get_order_no(request, order)
+
+        if order.delivered_at is not None:
+            raise Exception('order %s is already delivered' % order.order_no)
+
+        res = multicheckout_api.checkout_inquiry(request, real_order_no)
+        if res.CmnErrorCd != '000000':
+            raise MultiCheckoutSettlementFailure(
+                message='checkout_sales_part_cancel: generic failure',
+                order_no=order.order_no,
+                back_url=back_url(self.request),
+                error_code=part_cancel_res.CmnErrorCd
+                )
+
+        if res.Status not in (str(MultiCheckoutStatusEnum.Settled), str(MultiCheckoutStatusEnum.PartCanceled)):
+            raise MultiCheckoutSettlementFailure("status of order %s (%s) is neither `Settled' nor `PartCanceled' (%s)" % (order.order_no, real_order_no, res.Status), order.order_no, None)
+
+        if order.total_amount == res.SalesAmount:
+            # no need to make requests
+            logger.info('total amount (%s) of order %s (%s) is equal to the amount already committed (%s). nothing seems to be done' % (order.total_amount, order.order_no, real_order_no, res.SalesAmount))
+            return
+        elif order.total_amount > res.SalesAmount:
+            # we can't get the amount increased later
+            raise MultiCheckoutSettlementFailure('total amount (%s) of order %s (%s) cannot be greater than the amount already committed (%s)' % (order.total_amount, order.order_no, real_order_no, res.SalesAmount), order.order_no, None)
+
+        part_cancel_res = multicheckout_api.checkout_sales_part_cancel(
+            request,
+            real_order_no,
+            res.SalesAmount - order.total_amount,
+            0)
+        if part_cancel_res.CmnErrorCd != '000000':
+            raise MultiCheckoutSettlementFailure(
+                message='checkout_sales_part_cancel: generic failure',
+                order_no=order.order_no,
+                back_url=back_url(self.request),
+                error_code=part_cancel_res.CmnErrorCd
+                )
 
 
 def card_number_mask(number):

@@ -79,6 +79,7 @@ class SejNotificationProcessorTest(unittest.TestCase, CoreTestMixin):
         from altair.app.ticketing.payments.plugins import SEJ_PAYMENT_PLUGIN_ID, SEJ_DELIVERY_PLUGIN_ID
         order = self._create_order(
             [(product, 1) for product in self.products],
+            sales_segment=None,
             pdmp=PaymentDeliveryMethodPair(
                 system_fee=0.,
                 transaction_fee=0.,
@@ -119,6 +120,7 @@ class SejNotificationProcessorTest(unittest.TestCase, CoreTestMixin):
         from altair.app.ticketing.payments.plugins import SEJ_PAYMENT_PLUGIN_ID, SEJ_DELIVERY_PLUGIN_ID
         order = self._create_order(
             [(product, 1) for product in self.products],
+            sales_segment=None,
             pdmp=PaymentDeliveryMethodPair(
                 system_fee=0.,
                 transaction_fee=0.,
@@ -160,6 +162,7 @@ class SejNotificationProcessorTest(unittest.TestCase, CoreTestMixin):
         from altair.app.ticketing.payments.plugins import SEJ_PAYMENT_PLUGIN_ID, SEJ_DELIVERY_PLUGIN_ID
         order = self._create_order(
             [(product, 1) for product in self.products],
+            sales_segment=None,
             pdmp=PaymentDeliveryMethodPair(
                 system_fee=0.,
                 transaction_fee=0.,
@@ -201,6 +204,7 @@ class SejNotificationProcessorTest(unittest.TestCase, CoreTestMixin):
         from altair.app.ticketing.payments.plugins import SEJ_PAYMENT_PLUGIN_ID, SEJ_DELIVERY_PLUGIN_ID
         order = self._create_order(
             [(product, 1) for product in self.products],
+            sales_segment=None,
             pdmp=PaymentDeliveryMethodPair(
                 system_fee=0.,
                 transaction_fee=0.,
@@ -239,6 +243,7 @@ class SejNotificationProcessorTest(unittest.TestCase, CoreTestMixin):
         from altair.app.ticketing.payments.plugins import SEJ_PAYMENT_PLUGIN_ID, SEJ_DELIVERY_PLUGIN_ID
         order = self._create_order(
             [(product, 1) for product in self.products],
+            sales_segment=None,
             pdmp=PaymentDeliveryMethodPair(
                 system_fee=0.,
                 transaction_fee=0.,
@@ -279,6 +284,7 @@ class SejNotificationProcessorTest(unittest.TestCase, CoreTestMixin):
         from altair.app.ticketing.payments.plugins import SEJ_PAYMENT_PLUGIN_ID, SEJ_DELIVERY_PLUGIN_ID
         order = self._create_order(
             [(product, 1) for product in self.products],
+            sales_segment=None,
             pdmp=PaymentDeliveryMethodPair(
                 system_fee=0.,
                 transaction_fee=0.,
@@ -290,6 +296,8 @@ class SejNotificationProcessorTest(unittest.TestCase, CoreTestMixin):
                 delivery_method=self.delivery_methods[SEJ_DELIVERY_PLUGIN_ID]
                 )
             )
+        self.session.add(order)
+        self.session.flush()
         order.order_no = '012301230123'
         sej_order = SejOrder(
             order_no=order.order_no,
@@ -313,6 +321,7 @@ class SejNotificationProcessorTest(unittest.TestCase, CoreTestMixin):
         from altair.app.ticketing.payments.plugins import SEJ_PAYMENT_PLUGIN_ID, SEJ_DELIVERY_PLUGIN_ID
         order = self._create_order(
             [(product, 1) for product in self.products],
+            sales_segment=None,
             pdmp=PaymentDeliveryMethodPair(
                 system_fee=0.,
                 transaction_fee=0.,

@@ -16,17 +16,20 @@ def includeme(config):
     config.set_multicheckout_setting_factory(get_multicheckout_setting)
 
 # appの実装
-def get_multicheckout_setting(request, override_name):
+def get_multicheckout_setting(request, override_name=None, organization_id=None):
     import altair.app.ticketing.core.api as core_api
     import altair.app.ticketing.core.models as core_models
 
     logger.info('get_multicheckout_setting override_name = %s, request_host = %s' % (override_name, request.host))
     if override_name:
         os = core_models.OrganizationSetting.query.filter_by(multicheckout_shop_name=override_name).one()
-        return MulticheckoutSetting(os)
     else:
-        organization = core_api.get_organization(request)
-        return MulticheckoutSetting(organization.setting)
+        if organization_id != None:
+            os = core_Models.OrganizationSetting.query.filter_by(organization_id=organization_id).one()
+        else:
+            organization = core_api.get_organization(request)
+            os = organization.setting
+    return MulticheckoutSetting(os)
 
 # これは app で実装する
 @implementer(IMulticheckoutSetting)
@@ -56,3 +59,4 @@ def get_multicheckout_settings(request):
     return [MulticheckoutSetting(os) 
             for os in core_models.OrganizationSetting.all() 
             if os.multicheckout_shop_id and os.multicheckout_shop_name]
+

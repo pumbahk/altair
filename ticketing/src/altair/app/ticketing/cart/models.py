@@ -32,15 +32,16 @@ from sqlalchemy import sql
 from sqlalchemy.ext.hybrid import hybrid_method, hybrid_property
 from sqlalchemy.orm.exc import NoResultFound
 from zope.deprecation import deprecate
+from zope.interface import implementer
 
 from pyramid.i18n import TranslationString as _
 from altair.saannotation import AnnotatedColumn
 
 from altair.app.ticketing.utils import sensible_alnum_encode
-#from altair.app.ticketing.utils import sensible_alnum_decode
 from altair.app.ticketing.models import Identifier
 from altair.app.ticketing.core import models as c_models
 from altair.app.ticketing.core import api as c_api
+from altair.app.ticketing.core.interfaces import IOrderLike, IOrderedProductLike, IOrderedProductItemLike
 from . import logger
 from .exceptions import NoCartError, CartCreationException, InvalidCartStatusError
 
@@ -66,6 +67,7 @@ cart_seat_table = sa.Table("CartedProductItem_Seat", Base.metadata,
     sa.Column("carted_product_item_id", Identifier, sa.ForeignKey("CartedProductItem.id")),
 )
 
+@implementer(IOrderLike)
 class Cart(Base):
     __tablename__ = 'Cart'
 
@@ -110,6 +112,14 @@ class Cart(Base):
 
     has_different_amount = False  ## 差額(オーソリ時と売上確定処理で差額がある場合にTrue)
     different_amount = 0
+
+    @property
+    def items(self):
+        return self.products
+
+    @items.setter
+    def items(self, value):
+        self.products = value
 
     @property
     def name(self):
@@ -289,6 +299,7 @@ class Cart(Base):
     def from_order_no(cls, order_no):
         return Cart.query.filter_by(_order_no=order_no).one()
 
+@implementer(IOrderedProductLike)
 class CartedProduct(Base):
     __tablename__ = 'CartedProduct'
 
@@ -310,6 +321,14 @@ class CartedProduct(Base):
     organization_id = sa.Column(Identifier,
                                 sa.ForeignKey('Organization.id'))
     organization = orm.relationship('Organization', backref='carted_products')
+
+    @property
+    def elements(self):
+        return self.items
+
+    @elements.setter
+    def elements(self, value):
+        self.items = value
 
     @property
     def amount(self):
@@ -378,8 +397,9 @@ class CartedProduct(Base):
 
     def is_valid(self):
         return all([i.is_valid() for i in self.items])
-        
 
+
+@implementer(IOrderedProductItemLike)
 class CartedProductItem(Base):
     """ カート内プロダクトアイテム + 座席 + 座席状況
     """

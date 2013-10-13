@@ -107,13 +107,13 @@ class SejTest(unittest.TestCase):
             contact_01      = u'contact',
             contact_02      = u'連絡先2',
             order_no        = u"orderid00001",
-            username        = u"お客様氏名",
-            username_kana   = u'コイズミモリヨシ',
+            user_name       = u"お客様氏名",
+            user_name_kana  = u'コイズミモリヨシ',
             tel             = u'0312341234',
-            zip             = u'1070062',
+            zip_code        = u'1070062',
             email           = u'dev@ticketstar.jp',
-            total           = 15000,
-            ticket_total    = 13000,
+            total_price     = 15000,
+            ticket_price    = 13000,
             commission_fee  = 1000,
             ticketing_fee   = 1000,
             payment_type    = SejPaymentType.CashOnDelivery,
@@ -258,13 +258,13 @@ class SejTest(unittest.TestCase):
              contact_01      = u'contact',
              contact_02      = u'連絡先2',
              order_no        = u"orderid00001",
-             username        = u"お客様氏名",
-             username_kana   = u'コイズミモリヨシ',
+             user_name       = u"お客様氏名",
+             user_name_kana  = u'コイズミモリヨシ',
              tel             = u'0312341234',
-             zip             = u'1070062',
+             zip_code        = u'1070062',
              email           = u'dev@ticketstar.jp',
-             total           = 15000,
-             ticket_total    = 13000,
+             total_price     = 15000,
+             ticket_price    = 13000,
              commission_fee  = 1000,
              ticketing_fee   = 1000,
              payment_type    = SejPaymentType.Paid,
@@ -417,13 +417,14 @@ class SejTest(unittest.TestCase):
     def test_request_order_update(self):
         import webob.util
         import sqlahelper
-        from altair.app.ticketing.sej.models import SejOrder, SejTicket, SejTicketType, SejOrderUpdateReason
+        from altair.app.ticketing.sej.models import SejOrder, SejTicket, SejTicketType, SejOrderUpdateReason, SejPaymentType
         from altair.app.ticketing.sej.payment import request_update_order
         webob.util.status_reasons[800] = 'OK'
 
         target = self._makeServer(lambda environ: '<SENBDATA>X_haraikomi_no=00000001&X_hikikae_no=00001111&X_ticket_cnt=01&X_ticket_hon_cnt=01&X_url_info=https://www.r1test.com/order/hi.do&X_shop_order_id=orderid00001&iraihyo_id_00=11111111&X_barcode_no_01=00002000</SENBDATA><SENBDATA>DATA=END</SENBDATA>', host='127.0.0.1', port=38002, status=800)
 
         sej_order = SejOrder(
+            payment_type='%d' % SejPaymentType.CashOnDelivery.v,
             shop_id           = u'30520',
             billing_number    = u'00000001',
             exchange_number   = u'00001111',

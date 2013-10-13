@@ -33,7 +33,7 @@ from pyramid.i18n import TranslationString as _
 from zope.deprecation import deprecation
 
 from .exceptions import InvalidStockStateError
-from .interfaces import ISalesSegmentQueryable
+from .interfaces import ISalesSegmentQueryable, IOrderLike, IOrderedProductLike, IOrderedProductItemLike
 
 from altair.app.ticketing.models import (
     Base, DBSession, 
@@ -2256,6 +2256,7 @@ class OrderCancelReasonEnum(StandardEnum):
     Promoter = (2, u'主催者都合')
     CallOff = (3, u'中止')
 
+@implementer(IOrderLike)
 class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'Order'
     __table_args__= (
@@ -2274,7 +2275,6 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     operator = relationship('Operator', uselist=False)
     channel = Column(Integer, nullable=True)
 
-    items = relationship('OrderedProduct')
     total_amount = Column(Numeric(precision=16, scale=2), nullable=False)
     system_fee = Column(Numeric(precision=16, scale=2), nullable=False)
     
@@ -2318,6 +2318,14 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     sales_segment_id = Column(Identifier, ForeignKey('SalesSegment.id'))
     sales_segment = relationship('SalesSegment', backref='orders')
+
+    @property
+    def items(self):
+        return self.ordered_products
+
+    @items.setter
+    def items(self, value):
+        self.ordered_products = value
 
     def is_canceled(self):
         return bool(self.canceled_at)
@@ -2793,6 +2801,7 @@ class OrderedProductAttribute(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     name = Column(String(255), primary_key=True, nullable=False)
     value = Column(String(1023))
 
+@implementer(IOrderedProductLike)
 class OrderedProduct(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'OrderedProduct'
     __clone_excluded__ = ['order_id', 'product']
@@ -2804,6 +2813,14 @@ class OrderedProduct(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     product = relationship('Product', backref='ordered_products')
     price = Column(Numeric(precision=16, scale=2), nullable=False)
     quantity = Column(Integer)
+
+    @property
+    def elements(self):
+        return self.ordered_product_items
+
+    @elements.setter
+    def _set_elements(self, value):
+        self.ordered_product_items = value 
 
     @property
     def seats(self):
@@ -2830,6 +2847,7 @@ class OrderedProduct(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
         super(OrderedProduct, self).delete()
 
+@implementer(IOrderedProductItemLike)
 class OrderedProductItem(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'OrderedProductItem'
     __clone_excluded__ = ['ordered_product_id', 'product_item', 'seats', '_attributes']

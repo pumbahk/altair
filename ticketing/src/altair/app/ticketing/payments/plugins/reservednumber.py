@@ -81,7 +81,11 @@ class ReservedNumberDeliveryPlugin(object):
             m.ReservedNumber.order_no==order.order_no).first()
         return bool(reserved_number)
 
-
+    def refresh(self, request, order):
+        if order.delivered_at is not None:
+            raise Exception('order %s is already delivered' % order.order_no)
+        # 引換番号を再発行するべきだと思うけど...
+ 
 @view_config(context=ICompleteMailPayment, name="payment-%d" % PAYMENT_PLUGIN_ID, renderer="altair.app.ticketing.payments.plugins:templates/reserved_number_payment_mail_complete.html")
 @view_config(context=ICompleteMailDelivery, name="delivery-%d" % PLUGIN_ID, renderer="altair.app.ticketing.payments.plugins:templates/reserved_number_mail_complete.html")
 def completion_delivery_mail_viewlet(context, request):
@@ -136,3 +140,9 @@ class ReservedNumberPaymentPlugin(object):
         reserved_number = m.DBSession.query(m.PaymentReservedNumber).filter(
             m.PaymentReservedNumber.order_no==order.order_no).first()
         return bool(reserved_number)
+
+    def refresh(self, request, order):
+        if order.delivered_at is not None:
+            raise Exception('order %s is already delivered' % order.order_no)
+        # 支払番号を再発行すべきだと思うけど...
+

@@ -113,6 +113,9 @@ class CheckoutPlugin(object):
         checkout = order.checkout
         return bool(checkout.sales_at)
 
+    def refresh(self, request, order):
+        raise NotImplementedError()
+
 @view_config(context=ICartPayment, name="payment-%d" % PAYMENT_PLUGIN_ID)
 def confirm_viewlet(context, request):
     """ 確認画面表示
