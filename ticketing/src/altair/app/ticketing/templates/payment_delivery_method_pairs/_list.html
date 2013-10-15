@@ -9,6 +9,7 @@
     <th>${HH.label_text_for(PDMP.payment_method_id)}</th>
     <th>${HH.label_text_for(PDMP.delivery_method_id)}</th>
     <th>${HH.label_text_for(PDMP.system_fee)}</th>
+    <th>${HH.label_text_for(PDMP.special_fee)}</th>
     <th>${HH.label_text_for(PDMP.transaction_fee)}</th>
     <th>${HH.label_text_for(PDMP.delivery_fee)}</th>
     <th>${HH.label_text_for(PDMP.discount)}</th>
@@ -28,9 +29,18 @@
         fee_type = u' / 件'
       if pdmp.system_fee_type == int(FeeTypeEnum.PerUnit.v[0]):
         fee_type = u' / 枚'
-    %>      
-    
+    %>          
     <td>${vh.price(pdmp.system_fee)}${fee_type}</td>
+
+    <%
+      fee_type = ''
+      if pdmp.special_fee_type == int(FeeTypeEnum.Once.v[0]):
+        fee_type = u' / 件'
+      if pdmp.special_fee_type == int(FeeTypeEnum.PerUnit.v[0]):
+        fee_type = u' / 枚'
+    %>          
+    <td>${vh.price(pdmp.special_fee)}${fee_type}</td>
+
     <%
       fee_type = ''
       if pdmp.payment_method.fee_type == int(FeeTypeEnum.Once.v[0]):
@@ -39,6 +49,7 @@
         fee_type = u' / 枚'
     %>
     <td>${vh.price(pdmp.transaction_fee)}${fee_type}</td>
+
     <%
       fee_type = ''
       if pdmp.delivery_method.fee_type == int(FeeTypeEnum.Once.v[0]):
@@ -47,6 +58,7 @@
         fee_type = u' / 枚'
     %>
     <td>${vh.price(pdmp.delivery_fee)}${fee_type}</td>
+
     <td>${vh.price(pdmp.discount)}</td>
     <td>${pdmp.discount_unit or ''}</td>
     <td>${u'販売終了%s日前から' % pdmp.unavailable_period_days if pdmp.unavailable_period_days else ''}</td>

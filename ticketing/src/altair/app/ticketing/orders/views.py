@@ -364,8 +364,10 @@ def download(request):
             "transaction_fee",
             "delivery_fee",
             "system_fee",
+            "special_fee",
             "margin",
             "note",
+            "special_fee_name",
             "card_brand",
             "card_ahead_com_code",
             "card_ahead_com_name",
@@ -418,8 +420,10 @@ def download(request):
             "transaction_fee",  # 決済手数料
             "delivery_fee",  # 配送手数料
             "system_fee",  # システム利用料
+            "special_fee",  # 特別手数料
             "margin",  # 内手数料金額
             "note",  # メモ
+            "special_fee_name", # 特別手数料名
             "card_brand",  # カードブランド
             "card_ahead_com_code",  #  仕向け先企業コード
             "card_ahead_com_name",  # 仕向け先企業名
@@ -509,7 +513,7 @@ def download(request):
         return format_number(float(v))
 
     renderers = dict()
-    for n in ('total_amount', 'transaction_fee', 'delimiter', 'system_fee', 'margin', 'product_margin', 'product_price', 'item_price'):
+    for n in ('total_amount', 'transaction_fee', 'delimiter', 'system_fee', 'special_fee', 'margin', 'product_margin', 'product_price', 'item_price'):
         renderers[n] = render_currency
 
     renderers['zip'] = render_zip
@@ -975,11 +979,12 @@ class OrderDetailView(BaseView):
         try:
             if not f.validate():
                 raise ValidationError()
-
             new_order = Order.clone(order, deep=True)
             new_order.system_fee = f.system_fee.data
             new_order.transaction_fee = f.transaction_fee.data
             new_order.delivery_fee = f.delivery_fee.data
+            new_order.special_fee = f.special_fee.data
+            new_order.special_fee_name = f.special_fee_name.data
 
             for op, nop in itertools.izip(order.items, new_order.items):
                 # 個数が変更できるのは数受けのケースのみ
@@ -998,7 +1003,7 @@ class OrderDetailView(BaseView):
                 nop.price = sum(nopi.price * nopi.product_item.quantity for nopi in nop.ordered_product_items)
 
             total_amount = sum(nop.price * nop.quantity for nop in new_order.items)\
-                           + new_order.system_fee + new_order.transaction_fee + new_order.delivery_fee
+                           + new_order.system_fee + new_order.transaction_fee + new_order.delivery_fee + new_order.special_fee
             if new_order.payment_status != 'unpaid':
                 if total_amount != new_order.total_amount:
                     raise ValidationError(u'入金済みの為、合計金額は変更できません')

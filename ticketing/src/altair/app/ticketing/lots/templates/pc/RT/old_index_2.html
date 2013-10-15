@@ -39,6 +39,12 @@
                 <th class="line">システム利用料</th>
                 <td class="line">${h.format_currency(payment_delivery_method_pair.system_fee)}</td>
               </tr>
+              %if payment_delivery_method_pair.special_fee > 0:
+              <tr>
+                <th class="line">${payment_delivery_method_pair.special_fee_name}</th>
+                <td class="line">${h.format_currency(payment_delivery_method_pair.special_fee)}</td>
+              </tr>
+              %endif
               <tr>
                 <th><strong>合計金額</strong></th>
                 <td><strong>${h.format_currency(total_amount)}</strong></td>
