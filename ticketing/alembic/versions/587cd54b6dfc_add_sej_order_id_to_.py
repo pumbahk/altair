@@ -60,9 +60,13 @@ FROM
 WHERE
     SejOrder.branch_no <> 1
 ''')
-    op.create_foreign_key('SejTicket_ibfk_3', 'SejTicket', 'SejOrder', ['sej_order_id'], ['id'], ondelete='CASCADE')
+    op.drop_constraint('SejTicket_ibfk_1', 'SejTicket', type='foreignkey')
+    op.drop_index('SejTicket_ibfk_1', 'SejTicket')
+    op.create_foreign_key('SejTicket_ibfk_1', 'SejTicket', 'SejOrder', ['sej_order_id'], ['id'], ondelete='CASCADE')
 
 def downgrade():
-    op.drop_constraint('SejTicket_ibfk_3', 'SejTicket', type='foreignkey')
+    op.drop_constraint('SejTicket_ibfk_1', 'SejTicket', type='foreignkey')
+    op.drop_index('SejTicket_ibfk_1', 'SejTicket')
     op.execute('DELETE SejTicket FROM SejTicket JOIN SejOrder ON SejTicket.sej_order_id=SejOrder.id WHERE SejOrder.branch_no <> 1')
     op.drop_column('SejTicket', 'sej_order_id')
+    op.create_foreign_key('SejTicket_ibfk_1', 'SejTicket', 'SejOrder', ['order_no'], ['order_no'], ondelete='CASCADE')
