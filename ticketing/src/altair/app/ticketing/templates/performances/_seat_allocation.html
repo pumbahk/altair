@@ -474,9 +474,7 @@ function transferStocks() {
       }
     } else {
       var unavailable = parseInt(from_stock.get('assigned')) - parseInt(from_stock.get('available'));
-      to_stock.set('available', parseInt(to_stock.get('available')) + parseInt(from_stock.get('available')));
       to_stock.set('assigned', parseInt(to_stock.get('assigned')) + parseInt(from_stock.get('available')));
-      from_stock.set('available', 0);
       from_stock.set('assigned', unavailable);
     }
   }
