@@ -2,16 +2,103 @@ var util = require('util.js');
 var CONF = require('CONF.js');
 var IdentifiableSet = require('identifiableset.js').IdentifiableSet;
 
+var AltairCollection = function (models, options) {
+  if (options.model) this.model = options.model;
+  this.initialize.apply(this, arguments);
+};
+
+AltairCollection.extend = function(protoProps, staticProps) {
+  var parent = this;
+  var child;
+
+  if (protoProps && _.has(protoProps, 'constructor')) {
+    child = protoProps.constructor;
+  } else {
+    child = function(){ return parent.apply(this, arguments); };
+  }
+
+  _.extend(child, parent, staticProps);
+
+  var Surrogate = function(){ this.constructor = child; };
+  Surrogate.prototype = parent.prototype;
+  child.prototype = new Surrogate;
+
+  if (protoProps) _.extend(child.prototype, protoProps);
+
+  child.__super__ = parent.prototype;
+
+  return child;
+};
+
+_.extend(AltairCollection.prototype, {
+  model: null,
+  models: null,
+  _byId: null,
+  length: 0,
+  idx: 0,
+
+  initialize: function(){
+    this.models = [];
+    this._byId = {};
+  },
+
+  each: function(args) {
+    return _.each(this.models, args);
+  },
+
+  add: function(models, options) {
+    return this.set(models, options);
+  },
+
+  set: function(models, options) {
+    var _models = models;
+    if (!_.isArray(_models)) {
+      _models = [models];
+    }
+    for (var i = 0; i < _models.length; i++) {
+      var model = _models[i];
+      this.length += 1;
+      this.models.push(model);
+      this._byId[model.cid] = model;
+      if (model.id != null) this._byId[model.id] = model;
+    }
+  },
+
+  reset: function(models, options) {
+    this.models = [];
+    return this.models;
+  },
+
+  push: function(model, options) {
+    return this.set(model, options);
+  },
+
+  pop: function(options) {
+    var model = this.at(this.length - 1);
+    this.remove(model, options);
+    return model;
+  },
+
+  at: function(index) {
+    return this.models[index];
+  },
+
+  get: function(obj) {
+    if (obj == null) return void 0;
+    return (obj.id && this._byId[obj.id]) || (obj.cid && this._byId[obj.cid]) || this._byId[obj];
+  }
+});
+
 var VenueItemCollectionMixin = {
   venue: null,
 
   initialize: function VenueItemCollectionMixin_initialize(models, options) {
-    Backbone.Collection.prototype.initialize.apply(this, arguments);
+    AltairCollection.prototype.initialize.apply(this, arguments);
     this.venue = options.venue;
   },
 
   _prepareModel: function VenueItemCollectionMixin__prepareModel(model, options) {
-    model = Backbone.Collection.prototype._prepareModel.call(this, model, options);
+    model = AltairCollection.prototype._prepareModel.call(this, model, options);
     if (!model)
       return model;
     model.set('venue', this.venue);
@@ -32,6 +119,7 @@ Venue.prototype.initialize = function Venue_initialize(initialData, options) {
 Venue.prototype.load_data = function Venue_load_data(data, options) {
   data = data || { seats: {}, stock_types: [], stock_holders: [], stocks: [] };
 
+  console.log(new Date() + ' load_data initialize');
   if (!options || !options.update) {
     this.stockHolders = new StockTypeCollection(null, { venue: this });
     this.stockTypes = new StockHolderCollection(null, { venue: this });
@@ -42,19 +130,21 @@ Venue.prototype.load_data = function Venue_load_data(data, options) {
     this.perStockTypeStockMap = {};
     this.callbacks = options && options.callbacks ? _.clone(options.callbacks) : {};
 
-    this.stockTypes.add({
+    this.stockTypes.add(new StockType({
       id: "",
       name: I18n ? I18n.t("altair.venue_editor.unassigned"): "Unassigned",
       isSeat: true,
       quantityOnly: false,
       quantity: 0,
-      style: {}
-    });
-    this.stockHolders.add({
+      style: {},
+      venue: this
+    }));
+    this.stockHolders.add(new StockHolder({
       id: "",
       name: I18n ? I18n.t("altair.venue_editor.unassigned"): "Unassigned",
-      style: {}
-    });
+      style: {},
+      venue: this
+    }));
   }
 
   var stockTypes = this.stockTypes;
@@ -65,6 +155,7 @@ Venue.prototype.load_data = function Venue_load_data(data, options) {
   var perStockHolderStockMap = this.perStockHolderStockMap;
   var perStockTypeStockMap = this.perStockTypeStockMap;
 
+  console.log(new Date() + ' load_data stock_type');
   if (data.stock_types) {
     for (var i = 0; i < data.stock_types.length; i++) {
       var stockTypeDatum = data.stock_types[i];
@@ -75,7 +166,8 @@ Venue.prototype.load_data = function Venue_load_data(data, options) {
           name: stockTypeDatum.name,
           isSeat: stockTypeDatum.is_seat,
           quantityOnly: stockTypeDatum.quantity_only,
-          style: stockTypeDatum.style
+          style: stockTypeDatum.style,
+          venue: this
         });
       } else {
         stockType.set('name', stockTypeDatum.name);
@@ -88,6 +180,7 @@ Venue.prototype.load_data = function Venue_load_data(data, options) {
     }
   }
 
+  console.log(new Date() + ' load_data stock_holder');
   if (data.stock_holders) {
     for (var i = 0; i < data.stock_holders.length; i++) {
       var stockHolderDatum = data.stock_holders[i];
@@ -96,7 +189,8 @@ Venue.prototype.load_data = function Venue_load_data(data, options) {
         stockHolder = new StockHolder({
           id: stockHolderDatum.id,
           name: stockHolderDatum.name,
-          style: stockHolderDatum.style
+          style: stockHolderDatum.style,
+          venue: this
         });
       } else {
         stockHolder.set('name', stockHolderDatum.name);
@@ -107,6 +201,7 @@ Venue.prototype.load_data = function Venue_load_data(data, options) {
     }
   }
 
+  console.log(new Date() + ' load_data stock');
   function normalizedId(id) { return id === null ? "": "" + id; }
   for (var i = 0; i < data.stocks.length; i++) {
     var stockDatum = data.stocks[i];
@@ -134,6 +229,7 @@ Venue.prototype.load_data = function Venue_load_data(data, options) {
     stocks.add(stock);
   }
 
+  console.log(new Date() + ' load_data seat');
   for (var id in data.seats) {
     var seatDatum = data.seats[id];
     var stock = stocks.get(seatDatum.stock_id);
@@ -162,6 +258,7 @@ Venue.prototype.load_data = function Venue_load_data(data, options) {
     seats.add(seat);
   }
 
+  console.log(new Date() + ' load_data before end');
   this.stockHolders = stockHolders;
   this.stockTypes = stockTypes;
   this.stocks = stocks;
@@ -170,6 +267,7 @@ Venue.prototype.load_data = function Venue_load_data(data, options) {
   this.perStockHolderStockMap = perStockHolderStockMap;
   this.perStockTypeStockMap = perStockTypeStockMap;
   this.callbacks = options && options.callbacks ? _.clone(options.callbacks) : {};
+  console.log(new Date() + ' load_data end');
 };
 
 Venue.prototype.setCallback = function Venue_setCallback(name, value) {
@@ -262,6 +360,7 @@ var ProvidesStyle = exports.ProvidesStyle = Backbone.Model.extend({
 var StockType = exports.StockType = ProvidesStyle.extend({
   defaults: {
     id: null,
+    venue: null,
     name: '',
     isSeat: false,
     quantityOnly: false,
@@ -278,7 +377,7 @@ var StockType = exports.StockType = ProvidesStyle.extend({
   },
 
   keyedStocks: function StockType_stocks() {
-    return this.collection.venue.perStockTypeStockMap[this.id];
+    return this.get('venue').perStockTypeStockMap[this.id];
   },
 
   recalculateQuantity: function StockType_recalculateQuantity() {
@@ -296,6 +395,7 @@ var StockType = exports.StockType = ProvidesStyle.extend({
 var StockHolder = exports.StockHolder = ProvidesStyle.extend({
   defaults: {
     id: null,
+    venue: null,
     name: '',
     assigned: 0,
     available: 0
@@ -310,7 +410,7 @@ var StockHolder = exports.StockHolder = ProvidesStyle.extend({
   },
 
   keyedStocks: function StockHolder_stocks() {
-    return this.collection.venue.perStockHolderStockMap[this.id];
+    return this.get('venue').perStockHolderStockMap[this.id];
   },
 
   recalculateQuantity: function StockHolder_recalculateQuantity() {
@@ -329,9 +429,9 @@ var Stock = exports.Stock = Backbone.Model.extend({
   idAttribute: "id",
 
   defaults: {
+    venue: null,
     stockHolder: null,
     stockType: null,
-    venue: null,
     assigned: 0,
     available: 0,
     style: CONF.DEFAULT.SEAT_STYLE,
@@ -492,10 +592,10 @@ var Seat = exports.Seat = Backbone.Model.extend({
   }
 });
 
-var SeatCollection = exports.SeatCollection = Backbone.Collection.extend(_.extend({ model: Seat }, VenueItemCollectionMixin));
-var StockTypeCollection = exports.StockTypeCollection = Backbone.Collection.extend(_.extend({ model: StockType }, VenueItemCollectionMixin));
-var StockHolderCollection = exports.StockHolderCollection = Backbone.Collection.extend(_.extend({ model: StockHolder }, VenueItemCollectionMixin));
-var StockCollection = exports.StockCollection = Backbone.Collection.extend(_.extend({ model: Stock }, VenueItemCollectionMixin));
+var SeatCollection = exports.SeatCollection = AltairCollection.extend(_.extend({ model: Seat }, VenueItemCollectionMixin));
+var StockTypeCollection = exports.StockTypeCollection = AltairCollection.extend(_.extend({ model: StockType }, VenueItemCollectionMixin));
+var StockHolderCollection = exports.StockHolderCollection = AltairCollection.extend(_.extend({ model: StockHolder }, VenueItemCollectionMixin));
+var StockCollection = exports.StockCollection = AltairCollection.extend(_.extend({ model: Stock }, VenueItemCollectionMixin));
 
 var SeatAdjacencies = exports.SeatAdjacencies = function SeatAdjacencies(src) {
   this.tbl = {};

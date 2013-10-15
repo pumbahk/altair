@@ -302,16 +302,22 @@
   };
 
   VenueEditor.prototype.load = function VenueEditor_load(data) {
+    console.log(new Date() + ' load start');
     if (this.drawable !== null)
       this.drawable.dispose();
     this.drawing = data.drawing;
     this.metadata = data.metadata;
     if (data.metadata.seat_adjacencies)
       this.seatAdjacencies = new models.SeatAdjacencies(data.metadata.seat_adjacencies);
+    console.log(new Date() + ' initDrawable start');
     this.initDrawable();
+    console.log(new Date() + ' initModel start');
     this.initModel();
+    console.log(new Date() + ' initSeats start');
     this.initSeats();
+    console.log(new Date() + ' callback.load start');
     this.callbacks.load && this.callbacks.load(this);
+    console.log(new Date() + ' load end');
   };
 
   VenueEditor.prototype.refresh = function VenueEditor_refresh(data) {
@@ -360,14 +366,21 @@
     var shapes = {};
     var styleClasses = CONF.DEFAULT.STYLES;
 
+    var shapes_count = 0;
+    var seats_count = 0;
+    var node_count = {};
+    console.log(new Date() + ' create shape start');
     (function iter(svgStyle, defs, nodeList) {
       outer:
         for (var i = 0; i < nodeList.length; i++) {
+          shapes_count++;
           var n = nodeList[i];
           if (n.nodeType != 1) continue;
 
           var shape = null;
           var attrs = util.allAttributes(n);
+          var seat = this.metadata.seats[attrs.id];
+          if (seat) seats_count++;
 
           var currentSvgStyle = _.clone(svgStyle);
           if (attrs['class']) {
@@ -382,12 +395,14 @@
             if (matrix) {
               if (currentSvgStyle._transform) {
                 currentSvgStyle._transform = currentSvgStyle._transform.multiply(matrix);
-	  		} else {
+              } else {
                 currentSvgStyle._transform = matrix;
               }
             }
           }
 
+          if (!node_count[n.nodeName]) node_count[n.nodeName] = 0;
+          node_count[n.nodeName]++;
           switch (n.nodeName) {
             case 'defs':
               parseDefs(n, defs);
@@ -473,7 +488,15 @@
       },
       {},
       drawing.documentElement.childNodes);
+    console.log(new Date() + ' create shape end');
 
+    var shapes_length = 0;
+    for (aaa in shapes) {shapes_length++;}
+    console.log('shapes count =' + shapes_count);
+    console.log('shapes length=' + shapes_length);
+    console.log('seats  count =' + seats_count);
+    console.log('node   count =');
+    console.log(node_count);
     drawable.addEvent({
       mousewheel: function (evt) {
         if (self.shift) {
@@ -486,7 +509,9 @@
     self.drawable = drawable;
     self.shapes = shapes;
 
+    console.log(new Date() + ' zoom start');
     self.zoom(self.zoomRatio);
+    console.log(new Date() + ' changeUIMode start');
     self.changeUIMode(self.uiMode);
   };
 
@@ -831,15 +856,22 @@
   };
 
   VenueEditor.prototype.zoom = function VenueEditor_zoom(ratio, center) {
+    console.log(new Date() + ' zoom start');
+    console.log(new Date() + ' scroll1');
     var sp = this.drawable.scrollPosition();
     var lvs;
 
+    console.log(new Date() + ' apply1');
     lvs = this.drawable._inverse_transform.apply(this.drawable.viewportInnerSize());
     center = center || { x: sp.x + lvs.x / 2, y: sp.y + lvs.y / 2 };
     this.zoomRatio = ratio;
+    console.log(new Date() + ' transform');
     this.drawable.transform(Fashion.Matrix.scale(this.zoomRatio));
+    console.log(new Date() + ' apply2');
     lvs = this.drawable._inverse_transform.apply(this.drawable.viewportInnerSize());
+    console.log(new Date() + ' scroll2');
     this.drawable.scrollPosition({ x: center.x - lvs.x / 2, y: center.y - lvs.y / 2 });
+    console.log(new Date() + ' zoom end');
   };
 
   $.fn.venueeditor = function (options) {
@@ -878,21 +910,29 @@
               }
             });
             // Load drawing
+            console.log(new Date() + ' ajax get drawing start');
             if (aux.dataSource.drawing) {
               $.ajax({
                 type: 'get',
                 url: aux.dataSource.drawing,
                 dataType: 'xml',
-                success: function(xml) { waiter.charge('drawing', xml); },
+                success: function(xml) {
+                  console.log(new Date() + ' ajax get drawing success');
+                  waiter.charge('drawing', xml);
+                },
                 error: function(xhr, text) { aux.callbacks.message && aux.callbacks.message("Failed to load drawing data (reason: " + text + ")"); }
               });
             }
 
             // Load metadata
+            console.log(new Date() + ' ajax get metadata start');
             $.ajax({
               url: aux.dataSource.metadata,
               dataType: 'json',
-              success: function(data) { waiter.charge('metadata', data); },
+              success: function(data) {
+                console.log(new Date() + ' ajax get metadata success');
+                waiter.charge('metadata', data);
+              },
               error: function(xhr, text) { aux.callbacks.message && aux.callbacks.message("Failed to load seat data (reason: " + text + ")"); }
             });
             aux.callbacks.loading && aux.callbacks.loading(aux.manager);

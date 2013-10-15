@@ -86,7 +86,7 @@ def main(global_config, **local_config):
         config.set_authorization_policy(ACLAuthorizationPolicy())
     
         config.add_static_view('static', 'altair.app.ticketing:static', cache_max_age=3600)
-    
+ 
         config.add_view('pyramid.view.append_slash_notfound_view',
                         context='pyramid.httpexceptions.HTTPNotFound')
     
