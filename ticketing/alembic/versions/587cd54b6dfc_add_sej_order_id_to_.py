@@ -1,14 +1,14 @@
 """add_sej_order_id_to_SejTicket
 
 Revision ID: 587cd54b6dfc
-Revises: 4e6dd834d693
+Revises: 1c5a9494dd9a
 Create Date: 2013-10-11 13:13:36.647051
 
 """
 
 # revision identifiers, used by Alembic.
 revision = '587cd54b6dfc'
-down_revision = '4e6dd834d693'
+down_revision = '1c5a9494dd9a'
 
 from alembic import op
 import sqlalchemy as sa
