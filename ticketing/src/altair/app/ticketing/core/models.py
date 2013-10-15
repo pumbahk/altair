@@ -2744,6 +2744,8 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             )
 
         for product in cart.products:
+            # この ordered_product はコンストラクタに order を指定しているので
+            # 勝手に order.ordered_products に追加されるから、append は不要
             ordered_product = OrderedProduct(
                 order=order, product=product.product, price=product.product.price, quantity=product.quantity)
             for item in product.items:
@@ -2756,7 +2758,6 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                     )
                 for i, seat in ordered_product_item.iterate_serial_and_seat():
                     token = OrderedProductItemToken(
-                        item = ordered_product_item, 
                         serial = i, 
                         seat = seat, 
                         valid=True #valid=Falseの時は何時だろう？
