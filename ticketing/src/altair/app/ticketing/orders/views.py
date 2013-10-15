@@ -279,7 +279,7 @@ def index(request):
 
     form_search = OrderSearchForm(params, organization_id=organization_id)
     from .download import OrderSummary
-    if request.method == "POST" and form_search.validate():
+    if form_search.validate():
         query = OrderSummary(slave_session,
                             organization_id,
                             condition=form_search)
