@@ -53,7 +53,7 @@ def page_formats_for_organization(organization):
         ]
 
 def _order_and_history_from_qrdata(qrdata):
-    return DBSession.query(Order, TicketPrintHistory)\
+    qs =  DBSession.query(Order, TicketPrintHistory)\
         .filter(TicketPrintHistory.id==qrdata["serial"])\
         .filter(TicketPrintHistory.ordered_product_item_id==OrderedProductItem.id)\
         .filter(OrderedProductItem.ordered_product_id == OrderedProduct.id)\
@@ -63,8 +63,8 @@ def _order_and_history_from_qrdata(qrdata):
                  orm.joinedload(Order.shipping_address), 
                  orm.joinedload(TicketPrintHistory.ordered_product_item), 
                  orm.joinedload(TicketPrintHistory.item_token), 
-                 orm.joinedload(TicketPrintHistory.seat))\
-        .first()
+                 orm.joinedload(TicketPrintHistory.seat))
+    return qs.first()
 
 def ticketdata_from_qrdata(qrdata, event_id="*"):
     order, history = _order_and_history_from_qrdata(qrdata)
