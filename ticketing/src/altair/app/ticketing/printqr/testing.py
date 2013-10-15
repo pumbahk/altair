@@ -1,5 +1,30 @@
 # -*- coding:utf-8 -*-
 from datetime import datetime
+import sqlalchemy as sa
+_engine = None
+
+def setUpSwappedDB():
+    from altair.app.ticketing.core.models import Base
+    import sqlahelper
+    try:
+        engine__ = sqlahelper.get_engine()
+    except RuntimeError:
+        engine__ = sa.create_engine("sqlite://", echo=False)
+        sqlahelper.add_engine(engine__)
+        assert Base.metadata.bind == sqlahelper.get_engine()
+        Base.metadata.create_all()
+    global _engine
+    from altair.app.ticketing.models import Base
+    engine = sa.create_engine("sqlite://", echo=False)
+    _engine = swap_engine(engine)
+    assert engine__ != engine
+    assert Base.metadata.bind == engine
+    Base.metadata.create_all()
+
+def tearDownSwappedDB():
+    global _engine
+    swap_engine(_engine)
+
 
 def set_default_engine(engine, name="default"):
     "i hate sqlahelper"
