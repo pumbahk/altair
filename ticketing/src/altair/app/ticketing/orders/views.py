@@ -340,15 +340,15 @@ def download(request):
 
     if export_type == OrderCSV.EXPORT_TYPE_ORDER:
         query = OrderSummaryKeyBreakAdapter(query, 'id',
-                                ('product_price', 'product_quantity',
-                                 'product_name',
-                                 'product_sales_segment', 'product_margin_ratio'),
-                                'product_id',
-                                ('item_name', 'item_price', 'item_quantity'),
-                                'product_item_id',
-                                ('item_print_histories',),
-                                ('seat_name',),
-                                'seat_id',)
+                                            ('product_price', 'product_quantity',
+                                             'product_name',
+                                             'product_sales_segment', 'product_margin_ratio'),
+                                            'product_id',
+                                            ('item_name', 'item_price', 'item_quantity'),
+                                            'product_item_id',
+                                            ('item_print_histories',),
+                                            ('seat_name',),
+                                            'seat_id',)
         csv_headers = ([
             "order_no",
             "status",
@@ -370,7 +370,7 @@ def download(request):
             "card_ahead_com_name",
             "billing_number",
             "exchange_number",
-            #"メールマガジン受信可否",
+            "mail_permission", #"メールマガジン受信可否",
             "user_last_name",
             "user_first_name",
             "user_last_name_kana",
@@ -426,7 +426,7 @@ def download(request):
             "card_ahead_com_name",  # 仕向け先企業名
             "billing_number",  # SEJ払込票番号
             "exchange_number",  # SEJ引換票番号
-            #メールマガジン受信可否
+            "mail_permission", #"メールマガジン受信可否",
             "user_last_name",  # 姓
             "user_first_name",  # 名
             "user_last_name_kana",  # 姓(カナ)
@@ -468,7 +468,7 @@ def download(request):
             "seat_quantity",  # 商品明細個数
             "item_print_histories",  #発券作業者
             "seat_name",  # 座席名
-        ]
+        ] + query.extra_headers
 
     headers = [
         ('Content-Type', 'application/octet-stream; charset=Windows-31J'),
@@ -476,7 +476,9 @@ def download(request):
     ]
 
     response = Response(headers=headers)
-    iheaders = header_intl(csv_headers, japanese_columns)
+    ordered_product_metadata_provider_registry = get_ordered_product_metadata_provider_registry(request)
+    iheaders = header_intl(csv_headers, japanese_columns,
+                           ordered_product_metadata_provider_registry)
     logger.debug("csv headers = {0}".format(csv_headers))
     results = iter(query)
     writer = csv.writer(response, delimiter=',')
