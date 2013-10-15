@@ -5,7 +5,6 @@ import logging
 from zope.interface import implementer
 
 from altair.app.ticketing.orders.events import notify_order_canceled
-from altair.app.ticketing.models import DBSession
 
 from .models import SejNotification, SejNotificationType
 
@@ -117,13 +116,11 @@ class SejNotificationProcessor(object):
             ticketing_due_at=notification.ticketing_due_at,
             processed_at = notification.processed_at
             )
-        DBSession.add(branch)
-        # XXX: バーコード番号は無条件で更新してしまう (ごめんなさい)
-        # やっぱり古い番号はキープしておいたほうがよいかもしれない
+        self.session.add(branch)
         for sej_ticket in SejTicket.query.filter_by(order_no=sej_order.order_no):
-            code = notification.barcode_numbers.get(str(sej_ticket.ticket_idx))
-            if code:
-                sej_ticket.barcode_number = code
+            barcode_number = notification.barcode_numbers.get(str(sej_ticket.ticket_idx), sej_ticket.barcode_number)
+            self.session.add(sej_ticket.new_branch(order=branch, barcode_number=barcode_number))
+                
         notification.reflected_at = self.now
 
     actions = {
@@ -133,9 +130,11 @@ class SejNotificationProcessor(object):
         SejNotificationType.TicketingExpire.v  : reflect_expire
         }
 
-    def __init__(self, request, now):
-        self.request = request     
+    def __init__(self, request, now, session=None):
+        from altair.app.ticketing.models import DBSession
+        self.request = request
         self.now = now
+        self.session = session or DBSession
 
     def __call__(self, sej_order, order, notification):
         action = self.actions.get(int(notification.notification_type), None)

@@ -2,49 +2,59 @@ from pyramid.view import view_config, view_defaults
 from pyramid.response import Response
 from pyramid.httpexceptions import HTTPClientError
 
-from .exceptions import SejResponseError
-from .api import callback_notification
+from .helpers import make_sej_response
+
+from .notification.receiver import (
+    SejNotificationReceiver,
+    SejNotificationSignatureMismatch,
+    SejNotificationMissingValue,
+    SejNotificationUnknown,
+    )
 
 import traceback
 import logging
 
-class SejHTTPErrorResponse(HTTPClientError):
+logger = logging.getLogger(__name__)
 
+class SejHTTPErrorResponse(HTTPClientError):
     empty_body = True
 
-    def __init__(self, sej_error):
-        self.code = sej_error.code
-        super(HTTPClientError, self).__init__()
-        self.body = sej_error.response()
+    def __init__(self, code, reason, params):
+        super(HTTPClientError, self).__init__(code=code, body=make_sej_response(params))
+
+def makeReceiver(request):
+    settings = request.registry.settings
+    api_key = settings['sej.api_key']
+    return SejNotificationReceiver(api_key)
 
 class SejCallback(object):
-
-    log = logging.getLogger(__name__)
-    log_sej = logging.getLogger('sej_payment')
-
     def __init__(self, request):
+        self.context = request.context
         self.request = request
+        from altair.app.ticketing.models import DBSession
+        self.session = DBSession
 
     @view_config(route_name='sej.callback')
     def callback(self):
+        logger.info('[callback] %s' % self.request.body)
+
         try:
+            receiver = makeReceiver(self.request)
+            sej_notification, retry_data = receiver(self.request.POST)
+            self.session.add(sej_notification)
+        except SejNotificationSignatureMismatch as e:
+            return SejHTTPErrorResponse(
+                400, 'Bad Request', dict(status='400', Error_Type='00', Error_Msg='Bad Value', Error_Field='xcode'))
+        except SejNotificationMissingValue as e:
+            return SejHTTPErrorResponse(
+                400, 'Bad Request', dict(status='422', Error_Type='01', Error_Msg='No Data', Error_Field=e.field_name))
+        except SejNotificationUnknown as e:
+            return SejHTTPErrorResponse(
+                422, 'Bad Request', dict(status='422', Error_Type='01', Error_Msg='Bad Value', Error_Field='X_tuchi_type'))
 
-            settings = self.request.registry.settings
-            api_key = settings['sej.api_key']
+        return Response(body=make_sej_response(dict(status='800' if not retry_data else '810')))
 
-            self.log_sej.info('[callback] %s' % self.request.body)
-            self.request = self.request.decode('CP932')
-
-            response = callback_notification(self.request.POST, api_key)
-        except SejResponseError, e:
-           raise SejHTTPErrorResponse(e)
-        except Exception, de:
-
-            self.log.error(de)
-            self.log.error(traceback.format_exc())
-
-            e = SejResponseError(
-                500, 'Internal Server Error', dict(status='500')) 
-            raise SejHTTPErrorResponse(e)
-
-        return Response(body=response)
+    @view_config(context=Exception)
+    def error(self):
+        logger.exception(self.context)
+        return SejHTTPErrorResponse(500, 'Internal Server Error', dict(status='500'))
