@@ -181,7 +181,7 @@ def build_sej_args(payment_type, order_like, now):
         user_name_kana      = u'%s%s' % (shipping_address.last_name_kana, shipping_address.first_name_kana),
         tel                 = tel1 if tel1 else tel2,
         zip_code            = shipping_address.zip.replace('-', '') if shipping_address.zip else '',
-        email               = shipping_address.email_1 or '',
+        email               = shipping_address.email_1 or shipping_address.email_2 or '',
         total_price         = total_price,
         ticket_price        = ticket_price,
         commission_fee      = commission_fee,
@@ -189,7 +189,7 @@ def build_sej_args(payment_type, order_like, now):
         payment_due_at      = payment_due_at,
         ticketing_start_at  = ticketing_start_at,
         ticketing_due_at    = ticketing_due_at,
-        regrant_number_due_at = performance.start_on + timedelta(days=1) if performance.start_on else now + timedelta(days=365)
+        regrant_number_due_at = performance.start_on + timedelta(days=1) if performance and performance.start_on else now + timedelta(days=365)
         )
 
 @implementer(IPaymentPlugin)
