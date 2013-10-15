@@ -11,7 +11,7 @@
 
 <script type="text/javascript">
   $(function() {
-    $('#system_fee, #transaction_fee, #delivery_fee').load(function(){
+    $('#system_fee, #transaction_fee, #delivery_fee, #special_fee').load(function(){
       $(this).val(Math.floor($(this).val()));
     }).load();
   });
@@ -113,6 +113,11 @@
           <tr>
             <td colspan="2">システム利用料</td>
             <td>${form.system_fee}</td>
+            <td></td>
+          </tr>
+          <tr>
+            <td colspan="2">${form.special_fee_name}</td>
+            <td>${form.special_fee}</td>
             <td></td>
           </tr>
           % endfor

@@ -32,6 +32,12 @@ ${h.format_currency(wish.delivery_fee)}
 <div align="right" style="text-align:right">
 ${h.format_currency(wish.system_fee)}
 </div>
+%if wish.special_fee > 0:
+・${wish.special_fee_name}<br />
+<div align="right" style="text-align:right">
+${h.format_currency(wish.special_fee)}
+</div>
+%endif
 <div align="right" style="text-align:right">
 合計 ${h.format_currency(wish.total_amount)} (税込)
 </font></div>

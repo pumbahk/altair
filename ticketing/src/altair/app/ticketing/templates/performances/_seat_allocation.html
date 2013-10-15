@@ -255,7 +255,11 @@ var makeEditable = (function () {
        top: (editable.parent().innerHeight() - editing.outerHeight()) / 2 + 'px'
       });
       editing.focus();
-      editing.blur(cancel);
+      editing.blur(function (e) {
+        var _value = endEdit();
+        save && save(_value);
+        return false;
+      });
       editing.keydown(function (e) {
         if (e.which == 13) {
           var _value = endEdit();
@@ -414,9 +418,9 @@ function buildSeatDetailRow(seat) {
 function buildSeatDetailTable(selection) {
   var table = $('<table class="table table-condensed"></table>');
   var tbody = $('<tbody></tbody>').appendTo(table);
+  var header = $('<th width="8%"></th width="15%"><th>ID</th><th width="30%">座席</th><th width="27%">席種</th><th width="20%">配券先</th>');
+  tbody.append(header);
   if (selection.length) {
-    var header = $('<th width="8%"></th width="15%"><th>ID</th><th width="30%">座席</th><th width="27%">席種</th><th width="20%">配券先</th>');
-    tbody.append(header);
     selection.each(function (seat) {
       tbody.append(buildSeatDetailRow(seat));
     });
@@ -470,9 +474,7 @@ function transferStocks() {
       }
     } else {
       var unavailable = parseInt(from_stock.get('assigned')) - parseInt(from_stock.get('available'));
-      to_stock.set('available', parseInt(to_stock.get('available')) + parseInt(from_stock.get('available')));
       to_stock.set('assigned', parseInt(to_stock.get('assigned')) + parseInt(from_stock.get('available')));
-      from_stock.set('available', 0);
       from_stock.set('assigned', unavailable);
     }
   }

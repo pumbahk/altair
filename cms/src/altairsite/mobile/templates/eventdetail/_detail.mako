@@ -146,61 +146,6 @@ ${helper.nl2br(info['content'])|n}
 % endif
 <div>
   <% index = 0 %>
-% if event.id == 211 or event.id == 219:
-        <%m:line width="2" />
-        <%m:header>
-          楽天オープン
-        </%m:header>
-        <%m:line width="2" />
-        <% first = True %>
-        % for i, perf in enumerate(perfs):
-            <% index += 1 %>
-            <%
-                start_on_candidates = [salessegment.start_on for salessegment in perf['perf'].sales if salessegment.publicp and salessegment.group.publicp]
-                end_on_candidates = [salessegment.end_on for salessegment in perf['perf'].sales if salessegment.end_on and salessegment.publicp and salessegment.group.publicp]
-            %>
-            % if not first:
-                <hr />
-            % endif
-            % if event.deal_close <  get_now(request):
-            [${index}]<font size="-1">${perf['perf'].title}</font><br />
-            % else:
-            [${index}]<font size="-1"><a href="${purchase_links[perf['perf'].id]}">${perf['perf'].title}</a></font><br />
-            % endif
-            % if perf['perf'].open_on:
-                開場:${str(perf['perf'].open_on.year)[2:]}/${str(perf['perf'].open_on.month).zfill(2)}/${str(perf['perf'].open_on.day).zfill(2)}(${week[perf['perf'].open_on.weekday()]})
-                ${str(perf['perf'].open_on.hour).zfill(2)}:${str(perf['perf'].open_on.minute).zfill(2)}<br />
-            % endif
-            % if perf['perf'].start_on:
-                開演:${str(perf['perf'].start_on.year)[2:]}/${str(perf['perf'].start_on.month).zfill(2)}/${str(perf['perf'].start_on.day).zfill(2)}(${week[perf['perf'].start_on.weekday()]})
-                ${str(perf['perf'].start_on.hour).zfill(2)}:${str(perf['perf'].start_on.minute).zfill(2)}<br />
-            % endif
-            % if perf['perf'].venue:
-                会場:${perf['perf'].venue}<br/>
-            % endif
-            % if not start_on_candidates:
-                準備中
-            %elif min(start_on_candidates) >= get_now(request):
-                販売前
-            %elif max(end_on_candidates) >= get_now(request):
-                % if not perf['perf'].purchase_link and stock_status.scores.get(int(perf['perf'].backend_id),0) <= 0:
-                    予定枚数終了
-                % else:
-                    <div align="center">
-                    <%m:band bgcolor="#ffcccc">
-                    % if event.deal_close >= get_now(request):
-                      <a href="${purchase_links[perf['perf'].id]}"><font color="#cc0000">この公演のチケットを購入</font></a>
-                    % endif
-                    </%m:band>
-                    </div>
-                % endif
-            % else:
-                販売期間終了
-            % endif
-            <% first = False %>
-        % endfor
-        <br />
-% else:
     % for count in range(len(month_unit_keys)):
         <% month = month_unit_keys[count] %>
         <% prev_month = month_unit_keys[count - 1] if count > 0 else None %>
@@ -268,5 +213,4 @@ ${helper.nl2br(info['content'])|n}
         % endfor
         <br />
     % endfor
-% endif
 </div>

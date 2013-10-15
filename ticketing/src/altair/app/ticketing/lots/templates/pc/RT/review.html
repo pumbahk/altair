@@ -50,6 +50,10 @@
                   <dd class="delivery-fee">${h.format_currency(wish.delivery_fee)}</dd>
                   <dt class="delivery-method">システム利用料</dt>
                   <dd class="delivery-fee">${h.format_currency(wish.system_fee)}</dd>
+                  %if wish.special_fee > 0:
+                  <dt class="delivery-method">${wish.special_fee_name}</dt>
+                  <dd class="delivery-fee">${h.format_currency(wish.special_fee)}</dd>
+                  %endif
                   <dt class="total-amount">合計</dt>
                   <dd class="total-amount">${h.format_currency(wish.total_amount)} (税込)</dd>
                 </dl>

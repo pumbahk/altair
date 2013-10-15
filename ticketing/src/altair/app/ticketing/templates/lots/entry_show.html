@@ -49,6 +49,7 @@ Altair Backend -- ${lot.event.title}[${lot.name}]
 	      <th>商品</th>
 	      <th>合計枚数</th>
 	      <th>システム手数料</th>
+          <th>特別手数料</th>
 	      <th>決済手数料</th>
 	      <th>引取手数料</th>
 	      <th>合計金額</th>
@@ -70,6 +71,7 @@ Altair Backend -- ${lot.event.title}[${lot.name}]
 	      </td>
 	      <td>${wish.total_quantity}</td>
 	      <td>${format_currency(w.system_fee)}</td>
+	      <td>${format_currency(w.special_fee)}<br/>${w.special_fee_name}</td>
 	      <td>${format_currency(w.transaction_fee)} <br> ${wish.payment_method_name}</td>
 	      <td>${format_currency(w.delivery_fee)} <br> ${wish.delivery_method_name}</td>
 	      <td>${format_currency(w.total_amount)}</td>

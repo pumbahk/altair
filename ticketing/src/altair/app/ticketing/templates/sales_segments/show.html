@@ -67,7 +67,13 @@ function get_selected_sales_segment_id() {
     </tr>
   </tbody>
 </table>
-<a href="${request.route_path('sales_segments.edit', event_id=sales_segment.sales_segment_group.event_id, sales_segment_id=sales_segment.id)}" class="btn">編集</a>
+<div class="pull-left">
+  <%include file="/sales_segments/_action_button.html" args="order=['edit', 'copy', 'delete']" />
+</div>
+<div class="clearfix" id="sales_segments-form" style="margin-bottom: 20px;">
+  <%include file="/sales_segments/_modal.html" args="modal_id='modal-sales_segment'" />
+</div>
+
 <h2>決済・引取方法</h2>
 <%include file="/payment_delivery_method_pairs/_list.html" args="payment_delivery_method_pairs=sales_segment.payment_delivery_method_pairs" />
 % if request.context.organization.point_feature_enabled:
