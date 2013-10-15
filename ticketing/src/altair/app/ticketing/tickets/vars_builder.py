@@ -521,7 +521,7 @@ class TicketDictBuilder(object):
         else:
             d = self.build_dict_from_stock(ordered_product_item.product_item.stock, d)
             d = self.build_dict_from_venue(ordered_product_item.product_item.performance.venue, d)
-            d.update(extra)
+        d.update(extra)
         return d
 
     def build_dict_from_ordered_product_item_token(self, ordered_product_item_token, user_profile=None, ticket_number_issuer=None):
