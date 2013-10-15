@@ -146,3 +146,11 @@ class PaymentDeliveryMethodPairForm(Form):
         pdmp = PaymentDeliveryMethodPair.filter_by(**kwargs).first()
         if pdmp and (form.id is None or pdmp.id != form.id.data):
             raise ValidationError(u'既に設定済みの決済・引取方法の組み合せがあります')
+
+    def validate_special_fee_name(form, field):
+        if field.data is None:
+            return
+        elif form.special_fee.data > 0 and form.special_fee_name.data == "":
+            raise ValidationError(u'特別手数料金額を設定する場合、特別手数料名も設定してください。')
+
+        
