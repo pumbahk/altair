@@ -3,7 +3,7 @@ import unittest
 from pyramid import testing
 from datetime import datetime
 import transaction
-import sqlalchemy as sa
+import mock
 from .testing import (
     setUpSwappedDB, 
     tearDownSwappedDB, 
@@ -35,8 +35,18 @@ def setup_ticket_bundle(event, drawing):
     ticket = Ticket(name="Ticket:name", ticket_format=ticket_format, event=event, data={"drawing": drawing})
     bundle = TicketBundle(name=":TicketBundle:name", event=event, tickets=[ticket])
     return bundle
+
+ORGANIZATION_ID = 12345
+AUTH_ID = 23456
     
-def get_ordered_product_item__full_relation(quantity, quantity_only, organization_id=12345):
+def setup_operator(auth_id=AUTH_ID, organization_id=ORGANIZATION_ID):
+    from altair.app.ticketing.operators.models import OperatorAuth
+    from altair.app.ticketing.operators.models import Operator
+    operator = Operator(organization_id=organization_id)
+    OperatorAuth(operator=operator, login_id=auth_id)
+    return operator
+
+def get_ordered_product_item__full_relation(quantity, quantity_only, organization_id=ORGANIZATION_ID):
     """copied. from altair/app/ticketing/tickets/tests_builder_it.py"""
     from altair.app.ticketing.core.models import OrderedProductItemToken
     from altair.app.ticketing.core.models import OrderedProductItem
@@ -160,12 +170,17 @@ def get_ordered_product_item__full_relation(quantity, quantity_only, organizatio
     stock.stock_status = StockStatus(quantity=10)
     return ordered_product_item
 
-def make_view(view, context=None, request=None, organization=None):
+def do_view(view, context=None, request=None, attr=None):
     from .resources import PrintQRResource
     request = request or DummyRequest()
     context = context or PrintQRResource(request)
-    context.organization = organization
-    return view(context, request)
+
+    with mock.patch("altair.app.ticketing.printqr.resources.authenticated_userid") as m:
+        m.return_value = AUTH_ID
+        result = view(context, request)
+        if attr:
+            return getattr(result, attr)()
+        return result
     
 def qrsigned_from_token(token):
     from altair.app.ticketing.qr.utils import get_or_create_matched_history_from_token
@@ -180,8 +195,10 @@ def qrsigned_from_token(token):
     assert history.ordered_product_item
     return _signed_string_from_history(builder, history)
 
+## todo: assertion strictly
 class Tests(unittest.TestCase):
     TOKEN_ID = 9999
+    DRAWING_DATA = "drawing-data-for-svg"
     @classmethod
     def setUpClass(cls):
         cls.config = testing.setUp()
@@ -193,10 +210,12 @@ class Tests(unittest.TestCase):
         item = get_ordered_product_item__full_relation(quantity=2, quantity_only=True)
         event = item.product_item.performance.event
         setup_ordered_product_token_from_ordered_product_item(item)
-        bundle = setup_ticket_bundle(event, drawing="dummy")
+        bundle = setup_ticket_bundle(event, drawing=cls.DRAWING_DATA)
+        operator = setup_operator()
         item.product_item.ticket_bundle = bundle
         DBSession.add(item)
         DBSession.add(bundle)
+        DBSession.add(operator)
 
         token = item.tokens[0]
         token.id = cls.TOKEN_ID
@@ -205,6 +224,8 @@ class Tests(unittest.TestCase):
         cls.token = property(lambda self: DBSession.merge(token))
         cls.event = property(lambda self: DBSession.merge(self.item.product_item.performance.event))
         cls.order = property(lambda self: DBSession.merge(self.item.ordered_product.order))
+        cls.budnle = property(lambda self: DBSession.merge(bundle))
+        cls.ticket = property(lambda self: DBSession.merge(bundle).tickets[0])
         transaction.commit()
 
     @classmethod
@@ -222,14 +243,11 @@ class Tests(unittest.TestCase):
         ## qrcode
         qrsigned = qrsigned_from_token(self.token)
         event_id = self.event.id
-        result = make_view(
+        result = do_view(
             _getTarget(), 
             request=DummyRequest(params={"qrsigned": qrsigned}, 
                                  matchdict={"event_id": event_id})
         )
-        """
-        {'status': 'success', 'data': {'seat_id': None, 'performance_name': u':Performance:name (:Venue:name)', 'ordered_product_item_token_id': 9999, 'event_id': 1, 'order_id': 1, 'ordered_product_item_id': 1, 'seat_name': u'\u81ea\u7531\u5e2d', 'performance_date': u'2000\u5e741\u67081\u65e5(\u571f)10\u66420\u52060\u79d2', 'printed_at': None, 'canceled': None, 'refreshed_at': None, 'user': u':last_name_kana :first_name_kana', 'codeno': 1, 'orderno': ':order_no', 'product_name': ':Product:name', 'note': None, 'printed': None}}
-        """
         self.assertEqual(str(result["data"]["ordered_product_item_token_id"]), 
                          str(self.token.id))
 
@@ -237,14 +255,45 @@ class Tests(unittest.TestCase):
         def _getTarget():
             from .views import AppletAPIView
             return AppletAPIView
-        result = make_view(
+        result = do_view(
             _getTarget(), 
             request=DummyRequest(json_body={"ordered_product_item_token_id": self.token.id}, 
                                  matchdict={"event_id": self.event.id}), 
-            organization=self.event.organization
-        ).ticket_data()
+            attr="ticket_data")
         self.assertEquals(len(result["data"]), 1)
         self.assertEquals(result["data"][0][u'ordered_product_item_token_id'], self.token.id)
-        self.assertEquals(result["data"][0]["data"], "dummy")
-        
+        self.assertEquals(result["data"][0]["data"], self.DRAWING_DATA)
 
+    def test_ticket_data_order(self):
+        def _getTarget():
+            from .views import AppletAPIView
+            return AppletAPIView
+        result = do_view(
+            _getTarget(), 
+            request=DummyRequest(json_body={"order_no": self.order.order_no}, 
+                                 matchdict={"event_id": self.event.id}), 
+            attr="ticket_data_order")
+        self.assertEquals(len(result["data"]), 2)
+        self.assertEquals(result["data"][0][u'ordered_product_item_token_id'], self.token.id)
+        self.assertEquals(result["data"][0]["data"], self.DRAWING_DATA)
+        self.assertEquals(result["data"][1]["data"], self.DRAWING_DATA)
+
+    @mock.patch("altair.app.ticketing.printqr.views.datetime")
+    def test_ticket_update_token_status(self, m):
+        m.now.return_value = datetime(2000, 1, 1)
+
+        def _getTarget():
+            from .views import ticket_after_printed_edit_status
+            return ticket_after_printed_edit_status
+            
+        from altair.app.ticketing.core.models import TicketPrintHistory
+        prev = TicketPrintHistory.query.count()
+        result = do_view(
+            _getTarget(), 
+            request=DummyRequest(json_body={"ordered_product_item_token_id": str(self.token.id), 
+                                            "order_no": self.order.order_no, 
+                                            "ticket_id": self.ticket.id}, 
+                                 matchdict={"event_id": self.event.id}), 
+        )
+        self.assertEquals(TicketPrintHistory.query.count(), prev+1)
+        self.assertEquals(result["data"], {'printed': '2000-01-01 00:00:00'})
