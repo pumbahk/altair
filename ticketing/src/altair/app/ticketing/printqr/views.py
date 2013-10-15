@@ -274,6 +274,7 @@ class AppletAPIView(object):
                              % (ordered_product_item_token_id, self.context.organization.id))
             return { u'status': u'error', u'message': u'券面データがみつかりません' }
         retval = utils.svg_data_from_token(ordered_product_item_token)
+        assert retval
         return {
             u'status': u'success',
             u'data': retval

@@ -3242,7 +3242,7 @@ class TicketPrintHistory(Base, BaseModel, WithTimestamp):
     item_token = relationship('OrderedProductItemToken')
     order_id = Column(Identifier, ForeignKey('Order.id'), nullable=True)
     order = relationship('Order')
-    ticket_id = Column(Identifier, ForeignKey('Ticket.id'), nullable=False)
+    ticket_id = Column(Identifier, ForeignKey('Ticket.id'), nullable=True)
     ticket = relationship('Ticket')
 
 class PageFormat(Base, BaseModel, WithTimestamp, LogicallyDeleted):
