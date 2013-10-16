@@ -980,7 +980,7 @@ class OrderSearchBase(list):
     def __getslice__(self, start, stop):
         return self.execute(start, stop)
 
-    def execute(self, start):
+    def execute(self, start, stop=None):
         #logger.debug("start = {0}, stop = {1}".format(start, stop))
         #limit = min(1000, stop-start)
         limit = 1000
@@ -1009,6 +1009,8 @@ class OrderSearchBase(list):
                         row.items()
                     )
                 offset = offset + limit
+                if stop and offset > stop:
+                    break
                 #limit = min(stop - offset, limit)
                 if limit <= 0:
                     break
