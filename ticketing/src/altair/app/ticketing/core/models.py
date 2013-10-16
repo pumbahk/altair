@@ -1599,14 +1599,18 @@ class ProductItem(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             product_item.performance_id = kwargs['performance_id']
         if 'product_id' in kwargs:
             product_item.product_id = kwargs['product_id']
+            product = Product.query.filter_by(id=kwargs['product_id']).first()
+            product_item.performance_id = product.performance_id
         if 'stock_id' in kwargs:
             product_item.stock_id = kwargs['stock_id']
-        elif 'stock_holder_id' in kwargs and kwargs['stock_holder_id']:
-            conditions ={
-                'performance_id':product_item.performance_id,
-                'stock_holder_id':kwargs['stock_holder_id'],
-                'stock_type_id':template.stock.stock_type_id
-            }
+        else:
+            conditions = dict(
+                performance_id=product_item.performance_id,
+                stock_holder_id=template.stock.stock_holder_id,
+                stock_type_id=template.stock.stock_type_id
+            )
+            if 'stock_holder_id' in kwargs and kwargs['stock_holder_id']:
+                conditions['stock_holder_id'] = kwargs['stock_holder_id']
             stock = Stock.filter_by(**conditions).first()
             product_item.stock = stock
         product_item.save()
