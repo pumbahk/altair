@@ -435,6 +435,10 @@ class LotEntry(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     def payment_delivery_pair(self):
         return self.payment_delivery_method_pair
 
+    @property
+    def order_no(self):
+        return self.order.order_no
+
     gender = sa.Column(sa.Integer, default=int(SexEnum.NoAnswer))
     birthday = sa.Column(sa.Date)
     memo = sa.Column(sa.UnicodeText)

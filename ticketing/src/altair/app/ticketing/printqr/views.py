@@ -274,6 +274,7 @@ class AppletAPIView(object):
                              % (ordered_product_item_token_id, self.context.organization.id))
             return { u'status': u'error', u'message': u'券面データがみつかりません' }
         retval = utils.svg_data_from_token(ordered_product_item_token)
+        assert retval
         return {
             u'status': u'success',
             u'data': retval
@@ -299,7 +300,7 @@ class AppletAPIView(object):
             logger.error(str(e))
             return { u'status': u'error', u'message': u'不正な注文番号のようです' }
 
-    @view_config(route_name='api.applet.history', request_method='POST', renderer='json')
+    @view_config(route_name='api.applet.history', request_method='POST', renderer='json') #deprecated
     def history(self):
         history = utils.add_history(
             self.request, 

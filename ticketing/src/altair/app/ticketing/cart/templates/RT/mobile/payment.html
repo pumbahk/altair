@@ -144,7 +144,7 @@ ${h.format_currency(m.delivery_fee)} (${h.fee_type(m.delivery_method.fee_type)})
 ■システム利用料:<br/>
 ${h.format_currency(m.system_fee)} (${h.fee_type(m.system_fee_type)})<br/>
 %if m.special_fee > 0:
-■{$._special_fee_name{}:<br/>
+■${m.special_fee_name}:<br/>
 ${h.format_currency(m.special_fee)} (${h.fee_type(m.special_fee_type)})<br/>
 %endif
 <div>

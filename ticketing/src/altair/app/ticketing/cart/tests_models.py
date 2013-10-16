@@ -67,14 +67,14 @@ class CartedProductTests(unittest.TestCase, CartTestMixin):
 
     def _create_items(self, num):
         from .models import CartedProductItem
-        from altair.app.ticketing.core.models import ProductItem, SeatStatusEnum
+        from ..core.models import SeatStatusEnum
+        from altair.app.ticketing.core.models import ProductItem
         stocks = self._create_stocks(self._create_stock_types(num))
-        seats = self._create_seats(stocks)
-        seat_stock_dict = {}
-        for seat in seats:
-            seat.status = SeatStatusEnum.InCart.v
-            seat_stock_dict.setdefault(seat.stock, []).append(seat)
-        return [CartedProductItem(product_item=ProductItem(price=0, stock=stock), seats=seat_stock_dict[stock]) for stock in stocks]
+        def mark_in_cart(seats):
+            for seat in seats:
+                seat.status = SeatStatusEnum.InCart.v
+            return seats
+        return [CartedProductItem(product_item=ProductItem(price=0, stock=stock), seats=mark_in_cart(self._create_seats([stock]))) for stock in stocks]
 
     def test_seats(self):
         target = self._makeOne(items=self._create_items(5))

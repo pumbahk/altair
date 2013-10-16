@@ -33,7 +33,7 @@ class CoreTestMixin(object):
                 name = g.group(1)
                 payment_methods[id] = \
                     PaymentMethod(
-                        name=name, fee=0.,
+                        name=name, fee=Decimal(0.),
                         organization=self.organization,
                         payment_plugin_id=id,
                         _payment_plugin=PaymentMethodPlugin(id=id, name=name)
@@ -45,7 +45,7 @@ class CoreTestMixin(object):
                     name = g.group(1)
                     delivery_methods[id] = \
                         DeliveryMethod(
-                            name=name, fee=0.,
+                            name=name, fee=Decimal(0.),
                             organization=self.organization,
                             delivery_plugin_id=id,
                             _delivery_plugin=DeliveryMethodPlugin(id=id, name=name)
@@ -120,19 +120,23 @@ class CoreTestMixin(object):
             for stock in stocks
             ]
 
-    def _create_payment_delivery_method_pairs(self, sales_segment_group, system_fee=0., transaction_fee=0., delivery_fee=0., discount=0., discount_unit=0):
+    def _create_payment_delivery_method_pairs(self, sales_segment_group, system_fee=0., system_fee_type=0, transaction_fee=0., delivery_fee=0., special_fee=0, special_fee_type=0, discount=0., discount_unit=0):
         from altair.app.ticketing.core.models import PaymentDeliveryMethodPair
         return [
             PaymentDeliveryMethodPair(
                 sales_segment_group=sales_segment_group,
                 system_fee=Decimal(system_fee),
+                system_fee_type=system_fee_type,
                 transaction_fee=Decimal(transaction_fee),
                 delivery_fee=Decimal(delivery_fee),
-                discount=discount,
+                special_fee=Decimal(special_fee),
+                special_fee_type=special_fee_type,
+                discount=Decimal(discount),
                 discount_unit=discount_unit,
                 public=True,
                 payment_method=payment_method,
                 delivery_method=delivery_method,
+                issuing_interval_days=5
                 )
             for payment_method in self.payment_methods.values()
             for delivery_method in self.delivery_methods.values()
@@ -166,12 +170,47 @@ class CoreTestMixin(object):
             status_=SeatStatus(status=SeatStatusEnum.InCart.v))
             ]
 
-    def _create_order(self, product_quantity_pairs, sales_segment, pdmp=None):
-        from altair.app.ticketing.core.models import Order, OrderedProduct, OrderedProductItem, SeatStatusEnum
+    def _create_order(self, product_quantity_pairs, sales_segment=None, pdmp=None):
+        from altair.app.ticketing.core.models import Order, OrderedProduct, OrderedProductItem, SeatStatusEnum, FeeTypeEnum, Ticket
 
         def mark_ordered(seat):
             seat.status = SeatStatusEnum.Ordered.v
             return seat
+
+        items = []
+        for product, quantity in product_quantity_pairs:
+            elements = []
+            for product_item in product.items:
+                seats = [ 
+                    mark_ordered(seat)
+                    for seat in self._pick_seats(product_item.stock, quantity * product_item.quantity)
+                    ]
+                ordered_product_item = OrderedProductItem(
+                    product_item=product_item,
+                    price=product_item.price,
+                    seats=seats,
+                    quantity=len(seats)
+                    )
+                elements.append(ordered_product_item)
+            ordered_product = OrderedProduct(
+                product=product, quantity=quantity,
+                price=product.price,
+                ordered_product_items=elements
+                )
+            items.append(ordered_product)
+        if pdmp:
+            num_tickets = sum(
+                ordered_product_item.quantity * sum(
+                    int((ticket.flags & Ticket.FLAG_PRICED) and (pdmp.delivery_method in ticket.ticket_format.delivery_methods))
+                    for ticket in ordered_product_item.product_item.ticket_bundle.tickets
+                    )
+                for ordered_product in items
+                for ordered_product_item in ordered_product.ordered_product_items)
+            system_fee = pdmp.system_fee if pdmp.system_fee_type == FeeTypeEnum.Once.v[0] else pdmp.system_fee * num_tickets
+            special_fee = pdmp.special_fee if pdmp.special_fee_type == FeeTypeEnum.Once.v[0] else pdmp.special_fee * num_tickets
+        else:
+            system_fee = Decimal()
+            special_fee = Decimal()
 
         return Order(
             organization_id=self.organization.id,
@@ -179,26 +218,11 @@ class CoreTestMixin(object):
             total_amount=sum(product.price for product, _ in product_quantity_pairs),
             payment_delivery_pair=pdmp,
             sales_segment=sales_segment,
-            system_fee=Decimal(pdmp and pdmp.system_fee or 0.),
+            system_fee=Decimal(system_fee),
             transaction_fee=Decimal(pdmp and pdmp.transaction_fee or 0.),
             delivery_fee=Decimal(pdmp and pdmp.delivery_fee or 0.),
+            special_fee=Decimal(special_fee),
             issued=False,
-            items=[
-                OrderedProduct(
-                    product=product, quantity=quantity,
-                    price=product.price,
-                    ordered_product_items=[
-                        OrderedProductItem(
-                            product_item=product_item,
-                            price=product_item.price,
-                            seats=[
-                                mark_ordered(seat)
-                                for seat in self._pick_seats(product_item.stock, quantity * product_item.quantity)
-                                ]
-                            )
-                        for product_item in product.items
-                        ]
-                    )
-                for product, quantity in product_quantity_pairs
-                ]
+            items=items
             )
+

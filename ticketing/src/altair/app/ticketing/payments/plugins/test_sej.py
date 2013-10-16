@@ -3,6 +3,7 @@
 import unittest
 from mock import patch
 from pyramid import testing
+from decimal import Decimal
 from altair.app.ticketing.testing import _setup_db, _teardown_db
 from altair.app.ticketing.core.testing import CoreTestMixin
 from altair.app.ticketing.cart.testing import CartTestMixin
@@ -1344,6 +1345,7 @@ class BuildSejArgsTest(unittest.TestCase):
                 system_fee=300,
                 transaction_fee=400,
                 delivery_fee=200,
+                special_fee=0,
                 performance=testing.DummyModel(
                     start_on=datetime(2013, 3, 1, 2, 3, 4)
                     )
@@ -1512,9 +1514,9 @@ class PluginTestBase(unittest.TestCase, CoreTestMixin, CartTestMixin):
             order_pairs[payment_type] = (order, sej_order)
         return order_pairs
 
-    def _create_cart_pairs(self):
+    def _create_carts(self):
         from datetime import datetime
-        cart_pairs = {}
+        carts = {}
         for payment_type in self._payment_types:
             cart = self._create_cart(
                 zip(self.products, [1]),
@@ -1523,11 +1525,9 @@ class PluginTestBase(unittest.TestCase, CoreTestMixin, CartTestMixin):
                 )
             cart.performance = self.performance
             cart.created_at = datetime(2012, 1, 1, 0, 0, 0)
-            sej_order = self._create_sej_order(cart, payment_type)
-            self.session.add(cart)
-            self.session.add(sej_order)
-            cart_pairs[payment_type] = (cart, sej_order)
-        return cart_pairs
+
+            carts[payment_type] = cart
+        return carts
 
     def tearDown(self):
         testing.tearDown()
@@ -1584,19 +1584,20 @@ class PaymentPluginTest(PluginTestBase):
     def test_finish(self):
         from altair.app.ticketing.core.models import SeatStatusEnum
 
-        cart_pairs = self._create_cart_pairs()
+        carts = self._create_carts()
         plugin = self._makeOne()
-        for payment_type, (cart, sej_order)  in cart_pairs.items():
+        for payment_type, cart in carts.items():
             with patch('altair.app.ticketing.sej.payment.SejPayment') as SejPayment:
                 SejPayment.return_value.response = {
-                    'X_haraikomi_no': sej_order.billing_number,
-                    'X_hikikae_no': sej_order.exchange_number,
-                    'X_url_info': sej_order.exchange_sheet_url,
-                    'iraihyo_id_00': sej_order.exchange_sheet_number,
-                    'X_goukei_kingaku': sej_order.total_price,
-                    'X_ticket_daikin': sej_order.ticket_price,
-                    'X_ticket_kounyu_daikin': sej_order.commission_fee,
-                    'X_hakken_daikin': sej_order.ticketing_fee,
+                    'X_shop_order_id': cart.order_no,
+                    'X_haraikomi_no': '00001001',
+                    'X_hikikae_no': '00001002',
+                    'X_url_info': 'http://example.com/',
+                    'iraihyo_id_00': '10000000',
+                    'X_goukei_kingaku': cart.total_amount,
+                    'X_ticket_daikin': cart.total_amount - cart.system_fee - cart.delivery_fee - cart.transaction_fee - cart.special_fee,
+                    'X_ticket_kounyu_daikin': cart.system_fee + cart.special_fee,
+                    'X_hakken_daikin': cart.transaction_fee,
                     }
                 order = plugin.finish(self.request, cart)
                 self.assertTrue(SejPayment.called)
@@ -1636,26 +1637,32 @@ class DeliveryPluginTest(PluginTestBase):
 
     def test_finish(self):
         from altair.app.ticketing.core.models import SeatStatusEnum
+        from altair.app.ticketing.sej.models import SejOrder, SejTicket
 
-        cart_pairs = self._create_cart_pairs()
+        carts = self._create_carts()
         plugin = self._makeOne()
-        for payment_type, (cart, sej_order)  in cart_pairs.items():
+        for payment_type, cart in carts.items():
             with patch('altair.app.ticketing.sej.payment.SejPayment') as SejPayment:
                 SejPayment.return_value.response = {
-                    'X_haraikomi_no': sej_order.billing_number,
-                    'X_hikikae_no': sej_order.exchange_number,
-                    'X_url_info': sej_order.exchange_sheet_url,
-                    'iraihyo_id_00': sej_order.exchange_sheet_number,
-                    'X_goukei_kingaku': sej_order.total_price,
-                    'X_ticket_daikin': sej_order.ticket_price,
-                    'X_ticket_kounyu_daikin': sej_order.commission_fee,
-                    'X_hakken_daikin': sej_order.ticketing_fee,
+                    'X_shop_order_id': cart.order_no,
+                    'X_haraikomi_no': '00001001',
+                    'X_hikikae_no': '00001002',
+                    'X_url_info': 'http://example.com/',
+                    'iraihyo_id_00': '10000000',
+                    'X_goukei_kingaku': cart.total_amount,
+                    'X_ticket_daikin': cart.total_amount - cart.system_fee - cart.delivery_fee - cart.transaction_fee - cart.special_fee,
+                    'X_ticket_kounyu_daikin': cart.system_fee + cart.special_fee,
+                    'X_hakken_daikin': cart.transaction_fee,
                     'X_barcode_no_01': '00000001',
                     }
-                order = plugin.finish(self.request, cart)
+                plugin.finish(self.request, cart)
+                self.session.flush()
                 self.assertTrue(SejPayment.called)
                 self.assertTrue(SejPayment.return_value.request.called)
-                self.assertTrue(sej_order.tickets[0].barcode_number, '00000001')
+                new_sej_order = self.session.query(SejOrder).filter_by(order_no=cart.order_no).one()
+                new_sej_tickets = self.session.query(SejTicket).filter_by(sej_order_id=new_sej_order.id).all()
+                self.assertTrue(len(new_sej_tickets), 1)
+                self.assertTrue(new_sej_tickets[0].barcode_number, '00000001')
 
     def test_refresh(self):
         order_pairs = self._create_order_pairs()
@@ -1695,26 +1702,31 @@ class PaymentDeliveryPluginTest(PluginTestBase):
 
     def test_finish(self):
         from altair.app.ticketing.core.models import SeatStatusEnum
+        from altair.app.ticketing.sej.models import SejOrder, SejTicket
 
-        cart_pairs = self._create_cart_pairs()
+        carts = self._create_carts()
         plugin = self._makeOne()
-        for payment_type, (cart, sej_order)  in cart_pairs.items():
+        for payment_type, cart in carts.items():
             with patch('altair.app.ticketing.sej.payment.SejPayment') as SejPayment:
                 SejPayment.return_value.response = {
-                    'X_haraikomi_no': sej_order.billing_number,
-                    'X_hikikae_no': sej_order.exchange_number,
-                    'X_url_info': sej_order.exchange_sheet_url,
-                    'iraihyo_id_00': sej_order.exchange_sheet_number,
-                    'X_goukei_kingaku': sej_order.total_price,
-                    'X_ticket_daikin': sej_order.ticket_price,
-                    'X_ticket_kounyu_daikin': sej_order.commission_fee,
-                    'X_hakken_daikin': sej_order.ticketing_fee,
+                    'X_shop_order_id': cart.order_no,
+                    'X_haraikomi_no': '00001001',
+                    'X_hikikae_no': '00001002',
+                    'X_url_info': 'http://example.com/',
+                    'iraihyo_id_00': '10000000',
+                    'X_goukei_kingaku': cart.total_amount,
+                    'X_ticket_daikin': cart.total_amount - cart.system_fee - cart.delivery_fee - cart.transaction_fee - cart.special_fee,
+                    'X_ticket_kounyu_daikin': cart.system_fee + cart.special_fee,
+                    'X_hakken_daikin': cart.transaction_fee,
                     'X_barcode_no_01': '00000001',
                     }
                 order = plugin.finish(self.request, cart)
+                self.session.flush()
                 self.assertTrue(SejPayment.called)
                 self.assertTrue(SejPayment.return_value.request.called)
-                self.assertTrue(sej_order.tickets[0].barcode_number, '00000001')
+                new_sej_order = self.session.query(SejOrder).filter_by(order_no=order.order_no).one()
+                new_sej_tickets = self.session.query(SejTicket).filter_by(sej_order_id=new_sej_order.id).all()
+                self.assertTrue(new_sej_tickets[0].barcode_number, '00000001')
 
     def test_refresh(self):
         order_pairs = self._create_order_pairs()

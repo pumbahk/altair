@@ -1299,9 +1299,9 @@ class PaymentDeliveryMethodPair(Base, BaseModel, WithTimestamp, LogicallyDeleted
     delivery_method_id = AnnotatedColumn(Identifier, ForeignKey('DeliveryMethod.id'), _a_label=_(u'引取方法'))
     delivery_method = relationship('DeliveryMethod', backref='payment_delivery_method_pairs')
 
-    special_fee_name = AnnotatedColumn(String(255), nullable=False, _a_label=_(u'特別徴収'), default="")
+    special_fee_name = AnnotatedColumn(String(255), nullable=False, _a_label=_(u'特別手数料名'), default="")
     special_fee = AnnotatedColumn(Numeric(precision=16, scale=2), nullable=False,
-                                  _a_label=_(u'特別徴収額'), default=FeeTypeEnum.Once.v[0])
+                                  _a_label=_(u'特別徴手数料'), default=FeeTypeEnum.Once.v[0])
     special_fee_type = Column(Integer, nullable=False, default=FeeTypeEnum.Once.v[0])
 
     @property
@@ -1395,7 +1395,7 @@ class PaymentDeliveryMethodPair(Base, BaseModel, WithTimestamp, LogicallyDeleted
 
     @property
     def per_product_fee(self):
-        return self.system_fee_per_product + self.special_fee_per_order + self.delivery_fee_per_product + self.transaction_fee_per_product
+        return self.system_fee_per_product + self.special_fee_per_product + self.delivery_fee_per_product + self.transaction_fee_per_product
     
     @property
     def per_ticket_fee(self):
@@ -1625,14 +1625,18 @@ class ProductItem(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             product_item.performance_id = kwargs['performance_id']
         if 'product_id' in kwargs:
             product_item.product_id = kwargs['product_id']
+            product = Product.query.filter_by(id=kwargs['product_id']).first()
+            product_item.performance_id = product.performance_id
         if 'stock_id' in kwargs:
             product_item.stock_id = kwargs['stock_id']
-        elif 'stock_holder_id' in kwargs and kwargs['stock_holder_id']:
-            conditions ={
-                'performance_id':product_item.performance_id,
-                'stock_holder_id':kwargs['stock_holder_id'],
-                'stock_type_id':template.stock.stock_type_id
-            }
+        else:
+            conditions = dict(
+                performance_id=product_item.performance_id,
+                stock_holder_id=template.stock.stock_holder_id,
+                stock_type_id=template.stock.stock_type_id
+            )
+            if 'stock_holder_id' in kwargs and kwargs['stock_holder_id']:
+                conditions['stock_holder_id'] = kwargs['stock_holder_id']
             stock = Stock.filter_by(**conditions).first()
             product_item.stock = stock
         product_item.save()
@@ -2771,6 +2775,7 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                         valid=True #valid=Falseの時は何時だろう？
                         )
                     ordered_product_item.tokens.append(token)
+        DBSession.flush() # これとっちゃだめ
         return order
 
     @staticmethod
@@ -3260,7 +3265,7 @@ class TicketPrintHistory(Base, BaseModel, WithTimestamp):
     item_token = relationship('OrderedProductItemToken')
     order_id = Column(Identifier, ForeignKey('Order.id'), nullable=True)
     order = relationship('Order')
-    ticket_id = Column(Identifier, ForeignKey('Ticket.id'), nullable=False)
+    ticket_id = Column(Identifier, ForeignKey('Ticket.id'), nullable=True)
     ticket = relationship('Ticket')
 
 class PageFormat(Base, BaseModel, WithTimestamp, LogicallyDeleted):

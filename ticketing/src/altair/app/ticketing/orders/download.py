@@ -49,6 +49,7 @@ from altair.app.ticketing.operators.models import (
 from altair.app.ticketing.mailmags.models import (
     MailSubscription,
     MailMagazine,
+    MailSubscriptionStatus,
 )
 from altair.app.ticketing.sej.models import SejOrder
 from altair.keybreak import (
@@ -338,7 +339,7 @@ detail_summary_columns = summary_columns + [
     t_ordered_product.c.quantity.label('product_quantity'), #商品個数[0]
     t_product_sales_segment_group.c.name.label('product_sales_segment'), #販売区分[0]
     t_product_sales_segment.c.margin_ratio.label('product_margin_ratio'), #販売手数料率[0] margin_ratio
-    (t_product.c.price * t_ordered_product.c.quantity * t_product_sales_segment.c.margin_ratio / 100).label('product_margin'),
+    #(t_product.c.price * t_ordered_product.c.quantity * t_product_sales_segment.c.margin_ratio / 100).label('product_margin'),
     # ProductItem
     t_product_item.c.id.label('product_item_id'), #商品明細名[0][0]
     t_product_item.c.name.label('item_name'), #商品明細名[0][0]
@@ -355,6 +356,7 @@ detail_summary_columns = summary_columns + [
     ).label('seat_quantity'),
     t_ordered_product_attribute.c.name.label('attribute_name'),
     t_ordered_product_attribute.c.value.label('attribute_value'),
+    t_mail_subscription.c.id.label('mail_subscription'),
 ]
 
 order_summary_joins = t_order.join(
@@ -411,7 +413,6 @@ order_summary_joins = t_order.join(
          t_membership.c.deleted_at==None),
 )
 
-
 order_product_summary_joins = order_summary_joins.join(
     t_ordered_product,
     and_(t_ordered_product.c.order_id==t_order.c.id,
@@ -440,10 +441,6 @@ order_product_summary_joins = order_summary_joins.join(
     t_product_sales_segment_group,
     and_(t_product_sales_segment_group.c.id==t_product_sales_segment.c.sales_segment_group_id,
          t_product_sales_segment_group.c.deleted_at==None),
-# ).outerjoin(
-#     t_sej_order,
-#     and_(t_sej_order.c.order_no==t_order.c.order_no,
-#          t_sej_order.c.deleted_at==None),
 ).outerjoin(
     orders_seat_table,
     t_ordered_product_item.c.id==orders_seat_table.c.OrderedProductItem_id,
@@ -465,6 +462,17 @@ order_product_summary_joins = order_summary_joins.join(
     t_ordered_product_attribute,
     and_(t_ordered_product_attribute.c.ordered_product_item_id==t_ordered_product_item.c.id,
          t_ordered_product_attribute.c.deleted_at==None),
+).outerjoin(
+    t_mailmagazine,
+    t_mailmagazine.c.organization_id==t_organization.c.id
+).outerjoin(
+    t_mail_subscription,
+    and_(t_mail_subscription.c.email.in_(
+        [t_shipping_address.c.email_1,
+         t_shipping_address.c.email_2,]
+        ),
+         t_mail_subscription.c.segment_id==t_mailmagazine.c.id,
+         t_mail_subscription.c.status==MailSubscriptionStatus.Subscribed.v),
 )
 
 
@@ -503,12 +511,13 @@ class SeatSummaryKeyBreakAdapter(object):
                 self.results.append(result)
                 breaked_items = []
 
-            name = "attribute[{0}]".format(item['attribute_name'])
-            attribute_cols.add(name)
-            if item['attribute_value']:
-                breaked_items.append(
-                    (name,
-                     item['attribute_value']))
+            if item['attribute_name']:
+                name = "attribute[{0}]".format(item['attribute_name'])
+                attribute_cols.add(name)
+                if item['attribute_value']:
+                    breaked_items.append(
+                        (name,
+                         item['attribute_value']))
 
             for childitem in childitems:
                 name = "{0}".format(childitem)
@@ -516,6 +525,9 @@ class SeatSummaryKeyBreakAdapter(object):
                     breaked_items.append(
                         (name,
                          item[childitem]))
+
+            if item['mail_subscription']:
+                item['mail_permission'] = '1'
             last_item = item
             first = False
 
@@ -591,12 +603,13 @@ class OrderSummaryKeyBreakAdapter(object):
                          item[childitem2]))
                     child2_count[counter[child1_key]] = max(child2_count.get(counter[child1_key], 0), counter[child2_key])
 
-            name = "attribute[{0}][{1}][{2}]".format(item['attribute_name'], counter[child1_key], counter[child2_key])
-            attribute_cols.add(name)
-            if item['attribute_value']:
-                breaked_items.append(
-                    (name,
-                     item['attribute_value']))
+            if item['attribute_name']:
+                name = "attribute[{0}][{1}][{2}]".format(item['attribute_name'], counter[child1_key], counter[child2_key])
+                attribute_cols.add(name)
+                if item['attribute_value']:
+                    breaked_items.append(
+                        (name,
+                         item['attribute_value']))
 
             for childitem3 in child3_comma_separated:
                 name = "{0}[{1}][{2}]".format(childitem3, counter[child1_key], counter[child2_key])
@@ -612,6 +625,8 @@ class OrderSummaryKeyBreakAdapter(object):
                          item[childitem3]))
                     child3_count[(counter[child1_key], counter[child2_key])] = max(child3_count.get((counter[child1_key], counter[child2_key]), 0), counter[child3_key])
 
+            if item['mail_subscription']:
+                item['mail_permission'] = '1'
             last_item = item
             first = False
 
@@ -940,9 +955,10 @@ class OrderSearchBase(list):
 
     def __iter__(self):
         start = 0
-        stop = self.count()
+        #stop = self.count()
 
-        return self.execute(start, stop)
+        #return self.execute(start, stop)
+        return self.execute(start)
 
 
     def count(self):
@@ -964,9 +980,10 @@ class OrderSearchBase(list):
     def __getslice__(self, start, stop):
         return self.execute(start, stop)
 
-    def execute(self, start, stop):
-        logger.debug("start = {0}, stop = {1}".format(start, stop))
-        limit = min(1000, stop-start)
+    def execute(self, start, stop=None):
+        #logger.debug("start = {0}, stop = {1}".format(start, stop))
+        #limit = min(1000, stop-start)
+        limit = 1000
         offset = start
         while True:
             sql = select(self.columns, 
@@ -992,7 +1009,9 @@ class OrderSearchBase(list):
                         row.items()
                     )
                 offset = offset + limit
-                limit = min(stop - offset, limit)
+                if stop and offset > stop:
+                    break
+                #limit = min(stop - offset, limit)
                 if limit <= 0:
                     break
             finally:
@@ -1036,10 +1055,6 @@ class OrderDownload(OrderSearchBase):
                      t_ordered_product_item.c.id,
                      t_seat.c.id]
 
-    def __init__(self, *args, **kwargs):
-        super(OrderDownload, self).__init__(*args, **kwargs)
-        self.init_mailsub_joins()
-
     def order_by(self, query):
         return query.order_by(*self.default_order)
 
@@ -1048,9 +1063,21 @@ class OrderSeatDownload(OrderSearchBase):
     columns = detail_summary_columns
     default_order = [t_seat.c.id]
 
-    def __init__(self, *args, **kwargs):
-        super(OrderSeatDownload, self).__init__(*args, **kwargs)
-        self.init_mailsub_joins()
-
     def order_by(self, query):
         return query.order_by(*self.default_order)
+
+class MailPermissionCache(OrderSearchBase):
+    target = t_mail_subscription.join(
+        t_mailmagazine,
+        t_mailmagazine.c.id==t_mail_subscription.c.segment_id
+        )
+    columns = [t_mail_subscription.c.email]
+    default_order = []
+
+    def order_by(self, query):
+        return query
+
+    def query_cond(self, condition):
+        return and_(t_mailmagazine.c.organization_id==self.organization_id,
+                    t_mail_subscription.c.status==MailSubscriptionStatus.Subscribed.v)
+

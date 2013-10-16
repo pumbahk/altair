@@ -94,8 +94,8 @@ def applicable_tickets_iter(bundle):
 
 def get_tickets(order):
     tickets = []
-    for ordered_product in order.items:
-        for ordered_product_item in ordered_product.elements:
+    for ordered_product in order.ordered_products:
+        for ordered_product_item in ordered_product.ordered_product_items:
             dicts = build_dicts_from_ordered_product_item(ordered_product_item)
             bundle = ordered_product_item.product_item.ticket_bundle
             for seat, dict_ in dicts:
@@ -161,14 +161,14 @@ def build_sej_args(payment_type, order_like, now):
     elif int(payment_type) == int(SejPaymentType.PrepaymentOnly):
         # 支払いのみの場合は、ticketing_fee が無視されるので、commission に算入してあげないといけない。
         total_price         = order_like.total_amount
-        ticket_price        = order_like.total_amount - (order_like.system_fee + order_like.transaction_fee + order_like.delivery_fee)
-        commission_fee      = order_like.system_fee + order_like.transaction_fee + order_like.delivery_fee
+        ticket_price        = order_like.total_amount - (order_like.system_fee + order_like.special_fee + order_like.transaction_fee + order_like.delivery_fee)
+        commission_fee      = order_like.system_fee + order_like.special_fee + order_like.transaction_fee + order_like.delivery_fee
         ticketing_fee       = 0
         payment_due_at      = get_payment_due_at(now, order_like)
     elif int(payment_type) in (int(SejPaymentType.CashOnDelivery), int(payment_type) == int(SejPaymentType.Prepayment)):
         total_price         = order_like.total_amount
-        ticket_price        = order_like.total_amount - (order_like.system_fee + order_like.transaction_fee + order_like.delivery_fee)
-        commission_fee      = order_like.system_fee + order_like.transaction_fee
+        ticket_price        = order_like.total_amount - (order_like.system_fee + order_like.special_fee + order_like.transaction_fee + order_like.delivery_fee)
+        commission_fee      = order_like.system_fee + order_like.special_fee + order_like.transaction_fee
         ticketing_fee       = order_like.delivery_fee
         payment_due_at      = get_payment_due_at(now, order_like)
     else:

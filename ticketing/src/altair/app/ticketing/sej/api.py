@@ -60,6 +60,8 @@ def get_per_order_fee(order):
     fee = 0
     if order.refund.include_system_fee:
         fee += order.system_fee
+    if order.refund.include_special_fee:
+        fee += order.special_fee
     if order.refund.include_transaction_fee:
         fee += pdmp.transaction_fee_per_order
     if order.refund.include_delivery_fee:

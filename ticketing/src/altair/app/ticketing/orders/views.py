@@ -280,7 +280,7 @@ def index(request):
 
     form_search = OrderSearchForm(params, organization_id=organization_id)
     from .download import OrderSummary
-    if request.method == "POST" and form_search.validate():
+    if form_search.validate():
         query = OrderSummary(slave_session,
                             organization_id,
                             condition=form_search)
@@ -311,7 +311,7 @@ def index(request):
         'page': page,
     }
 
-@view_config(route_name='orders.download')
+#@view_config(route_name='orders.download')
 def download(request):
     slave_session = get_db_session(request, name="slave")
 
@@ -481,7 +481,21 @@ def download(request):
     iheaders = header_intl(csv_headers, japanese_columns,
                            ordered_product_metadata_provider_registry)
     logger.debug("csv headers = {0}".format(csv_headers))
-    results = iter(query)
+    results = list(query)
+
+    # from .download import MailPermissionCache
+    # mail_perms = set([m['email'] for m in 
+    #                   MailPermissionCache(slave_session,
+    #                                       organization_id,
+    #                                       condition=form_search)])
+
+    # for row in results:
+    #     m1, m2 = row.get('email_1'), row.get('email_2')
+    #     if m1 in mail_perms or m2 in mail_perms:
+    #         row['mail_permission'] = '1'
+    #     else:
+    #         row['mail_permission'] = ''
+
     writer = csv.writer(response, delimiter=',')
 
     if excel_csv:
@@ -518,12 +532,14 @@ def download(request):
 
     renderers['zip'] = render_zip
 
-    for n in ('created_at', 'paid_at', 'delivered_at', 'canceled_at', 'performance_start_on', 'product_quantity', 'item_quantity', 'seat_quantity'):
-        renderers[n] = render_plain
+    # for n in ('created_at', 'paid_at', 'delivered_at', 'canceled_at', 'performance_start_on', 'product_quantity', 'item_quantity', 'seat_quantity'):
+    #     renderers[n] = render_plain
+    for n in ('order_no', 'tel_1', 'tel_2', 'fax'):
+        renderers[n] = render_text
 
     def render(name, v):
         name, _, _ = name.partition('[')
-        renderer = renderers.get(name, render_text)
+        renderer = renderers.get(name, render_plain)
         return renderer(v)
 
     writer.writerows([[encode_to_cp932(c)
@@ -576,7 +592,7 @@ class Orders(BaseView):
             'page': page,
         }
 
-    # @view_config(route_name='orders.download')
+    @view_config(route_name='orders.download')
     def download(self):
         slave_session = get_db_session(self.request, name="slave")
 

@@ -84,6 +84,7 @@ class SejNotificationProcessorTest(unittest.TestCase, CoreTestMixin):
                 system_fee=0.,
                 transaction_fee=0.,
                 delivery_fee=0.,
+                special_fee=0.,
                 discount=0.,
                 discount_unit=0,
                 public=True,
@@ -125,6 +126,7 @@ class SejNotificationProcessorTest(unittest.TestCase, CoreTestMixin):
                 system_fee=0.,
                 transaction_fee=0.,
                 delivery_fee=0.,
+                special_fee=0.,
                 discount=0.,
                 discount_unit=0,
                 public=True,
@@ -169,6 +171,7 @@ class SejNotificationProcessorTest(unittest.TestCase, CoreTestMixin):
                 delivery_fee=0.,
                 discount=0.,
                 discount_unit=0,
+                special_fee=0.,
                 public=True,
                 payment_method=self.payment_methods[SEJ_PAYMENT_PLUGIN_ID],
                 delivery_method=self.delivery_methods[SEJ_DELIVERY_PLUGIN_ID]
@@ -211,6 +214,7 @@ class SejNotificationProcessorTest(unittest.TestCase, CoreTestMixin):
                 delivery_fee=0.,
                 discount=0.,
                 discount_unit=0,
+                special_fee=0.,
                 public=True,
                 payment_method=self.payment_methods[SEJ_PAYMENT_PLUGIN_ID],
                 delivery_method=self.delivery_methods[SEJ_DELIVERY_PLUGIN_ID]
@@ -250,6 +254,7 @@ class SejNotificationProcessorTest(unittest.TestCase, CoreTestMixin):
                 delivery_fee=0.,
                 discount=0.,
                 discount_unit=0,
+                special_fee=0.,
                 public=True,
                 payment_method=self.payment_methods[SEJ_PAYMENT_PLUGIN_ID],
                 delivery_method=self.delivery_methods[SEJ_DELIVERY_PLUGIN_ID]
@@ -291,6 +296,7 @@ class SejNotificationProcessorTest(unittest.TestCase, CoreTestMixin):
                 delivery_fee=0.,
                 discount=0.,
                 discount_unit=0,
+                special_fee=0.,
                 public=True,
                 payment_method=self.payment_methods[SEJ_PAYMENT_PLUGIN_ID],
                 delivery_method=self.delivery_methods[SEJ_DELIVERY_PLUGIN_ID]
@@ -328,6 +334,7 @@ class SejNotificationProcessorTest(unittest.TestCase, CoreTestMixin):
                 delivery_fee=0.,
                 discount=0.,
                 discount_unit=0,
+                special_fee=0.,
                 public=True,
                 payment_method=self.payment_methods[SEJ_PAYMENT_PLUGIN_ID],
                 delivery_method=self.delivery_methods[SEJ_DELIVERY_PLUGIN_ID]

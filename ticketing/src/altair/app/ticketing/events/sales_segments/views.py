@@ -222,7 +222,7 @@ class EditSalesSegment(BaseView):
     @view_config(route_name='sales_segments.copy', request_method='GET', renderer='altair.app.ticketing:templates/sales_segments/_form.html', xhr=True)
     @view_config(route_name='sales_segments.edit', request_method='GET', renderer='altair.app.ticketing:templates/sales_segments/_form.html', xhr=True)
     def get(self):
-        form = SalesSegmentForm(obj=self.context.sales_segment, formdata=self.request.POST, context=self.context)
+        form = SalesSegmentForm(obj=self.context.sales_segment, formdata=self.request.GET, context=self.context)
         form.payment_delivery_method_pairs.data = [pdmp.id for pdmp in self.context.sales_segment.payment_delivery_method_pairs]
         return self._render_params(form)
 
@@ -256,6 +256,7 @@ class EditSalesSegment(BaseView):
                             Product.create_from_template(
                                 template=product,
                                 with_product_items=True,
+                                performance_id=performance_id,
                                 sales_segment=id_map
                             )
             else:
