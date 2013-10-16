@@ -338,7 +338,7 @@ detail_summary_columns = summary_columns + [
     t_ordered_product.c.quantity.label('product_quantity'), #商品個数[0]
     t_product_sales_segment_group.c.name.label('product_sales_segment'), #販売区分[0]
     t_product_sales_segment.c.margin_ratio.label('product_margin_ratio'), #販売手数料率[0] margin_ratio
-    (t_product.c.price * t_ordered_product.c.quantity * t_product_sales_segment.c.margin_ratio / 100).label('product_margin'),
+    #(t_product.c.price * t_ordered_product.c.quantity * t_product_sales_segment.c.margin_ratio / 100).label('product_margin'),
     # ProductItem
     t_product_item.c.id.label('product_item_id'), #商品明細名[0][0]
     t_product_item.c.name.label('item_name'), #商品明細名[0][0]
@@ -355,6 +355,18 @@ detail_summary_columns = summary_columns + [
     ).label('seat_quantity'),
     t_ordered_product_attribute.c.name.label('attribute_name'),
     t_ordered_product_attribute.c.value.label('attribute_value'),
+    case([(func.exists(select(
+        [t_mail_subscription.c.id],
+        whereclause=and_(
+            t_mail_subscription.c.email.in_([t_shipping_address.c.email_1,
+                                             t_shipping_address.c.email_2]),
+            t_mail_subscription.c.segment_id.in_(
+                select([t_mailmagazine.c.id],
+                       whereclause=t_mailmagazine.c.organization_id==t_organization.c.id
+                   ).as_scalar()))
+                      ).as_scalar()), '1')],
+         else_=''
+     ).label('mail_permission'),
 ]
 
 order_summary_joins = t_order.join(
@@ -440,10 +452,6 @@ order_product_summary_joins = order_summary_joins.join(
     t_product_sales_segment_group,
     and_(t_product_sales_segment_group.c.id==t_product_sales_segment.c.sales_segment_group_id,
          t_product_sales_segment_group.c.deleted_at==None),
-# ).outerjoin(
-#     t_sej_order,
-#     and_(t_sej_order.c.order_no==t_order.c.order_no,
-#          t_sej_order.c.deleted_at==None),
 ).outerjoin(
     orders_seat_table,
     t_ordered_product_item.c.id==orders_seat_table.c.OrderedProductItem_id,
@@ -592,12 +600,13 @@ class OrderSummaryKeyBreakAdapter(object):
                          item[childitem2]))
                     child2_count[counter[child1_key]] = max(child2_count.get(counter[child1_key], 0), counter[child2_key])
 
-            name = "attribute[{0}][{1}][{2}]".format(item['attribute_name'], counter[child1_key], counter[child2_key])
-            attribute_cols.add(name)
-            if item['attribute_value']:
-                breaked_items.append(
-                    (name,
-                     item['attribute_value']))
+            if item['attribute_name']:
+                name = "attribute[{0}][{1}][{2}]".format(item['attribute_name'], counter[child1_key], counter[child2_key])
+                attribute_cols.add(name)
+                if item['attribute_value']:
+                    breaked_items.append(
+                        (name,
+                         item['attribute_value']))
 
             for childitem3 in child3_comma_separated:
                 name = "{0}[{1}][{2}]".format(childitem3, counter[child1_key], counter[child2_key])
@@ -1037,10 +1046,6 @@ class OrderDownload(OrderSearchBase):
                      t_ordered_product_item.c.id,
                      t_seat.c.id]
 
-    def __init__(self, *args, **kwargs):
-        super(OrderDownload, self).__init__(*args, **kwargs)
-        self.init_mailsub_joins()
-
     def order_by(self, query):
         return query.order_by(*self.default_order)
 
@@ -1048,10 +1053,6 @@ class OrderSeatDownload(OrderSearchBase):
     target = order_product_summary_joins
     columns = detail_summary_columns
     default_order = [t_seat.c.id]
-
-    def __init__(self, *args, **kwargs):
-        super(OrderSeatDownload, self).__init__(*args, **kwargs)
-        self.init_mailsub_joins()
 
     def order_by(self, query):
         return query.order_by(*self.default_order)
