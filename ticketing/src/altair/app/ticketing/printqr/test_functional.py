@@ -1,6 +1,5 @@
 # -*- coding:utf-8 -*-
 import unittest
-import contextlib
 from pyramid import testing
 from datetime import datetime
 import transaction
@@ -18,7 +17,7 @@ def setUpModule():
 def tearDownModule():
     tearDownSwappedDB()
 
-def setup_ordered_product_token_from_ordered_product_item(ordered_product_item):
+def setup_ordered_product_token(ordered_product_item):
     from altair.app.ticketing.core.models import OrderedProductItemToken
     for i, seat in ordered_product_item.iterate_serial_and_seat():
         token = OrderedProductItemToken(
@@ -33,13 +32,17 @@ def setup_ticket_bundle(event, drawing):
     from altair.app.ticketing.core.models import TicketFormat
     from altair.app.ticketing.core.models import PageFormat
     from altair.app.ticketing.core.models import Ticket
-    page_format = PageFormat(name=":PageFormat:name",
-                             printer_name=":PageFormat:printer_name",                             
-                             organization=event.organization,
-                             data={})
-    ticket_format = TicketFormat(name=":TicketFormat:name",
+    page_format = PageFormat.query.first()
+    if page_format is None:
+        page_format = PageFormat(name=":PageFormat:name",
+                                 printer_name=":PageFormat:printer_name",                             
                                  organization=event.organization,
                                  data={})
+    ticket_format = TicketFormat.query.first()
+    if ticket_format is None:
+        ticket_format = TicketFormat(name=":TicketFormat:name",
+                                     organization=event.organization,
+                                     data={})
     ticket_template = Ticket(name=":TicketTemplate:name",
                              ticket_format=ticket_format,
                              organization=event.organization,
@@ -58,13 +61,19 @@ AUTH_ID = 23456
 def setup_operator(auth_id=AUTH_ID, organization_id=ORGANIZATION_ID):
     from altair.app.ticketing.operators.models import OperatorAuth
     from altair.app.ticketing.operators.models import Operator
-    operator = Operator(organization_id=organization_id)
-    OperatorAuth(operator=operator, login_id=auth_id)
+    from altair.app.ticketing.core.models import Organization
+    operator = Operator.query.first()
+    if operator is None:
+        organization = Organization(name=":Organization:name",
+                                    short_name=":Organization:short_name", 
+                                    code=":Organization:code", 
+                                    id=organization_id)
+        operator = Operator(organization_id=organization_id, organization=organization)
+        OperatorAuth(operator=operator, login_id=auth_id)
     return operator
 
-def get_ordered_product_item__full_relation(quantity, quantity_only, organization_id=ORGANIZATION_ID):
+def setup_ordered_product_items(quantity, quantity_only, organization, order_no="Order:order_no"):
     """copied. from altair/app/ticketing/tickets/tests_builder_it.py"""
-    from altair.app.ticketing.core.models import OrderedProductItemToken
     from altair.app.ticketing.core.models import OrderedProductItem
     from altair.app.ticketing.core.models import OrderedProduct
     from altair.app.ticketing.core.models import Stock
@@ -80,18 +89,12 @@ def get_ordered_product_item__full_relation(quantity, quantity_only, organizatio
     from altair.app.ticketing.core.models import SalesSegment
     from altair.app.ticketing.core.models import SalesSegmentGroup
     from altair.app.ticketing.core.models import Event
-    from altair.app.ticketing.core.models import Organization
     from altair.app.ticketing.core.models import TicketBundle
     from altair.app.ticketing.core.models import Venue
     from altair.app.ticketing.core.models import Site
     from altair.app.ticketing.core.models import PaymentDeliveryMethodPair
     from altair.app.ticketing.core.models import PaymentMethod
     from altair.app.ticketing.core.models import DeliveryMethod
-
-    organization = Organization(name=":Organization:name",
-                                short_name=":Organization:short_name", 
-                                code=":Organization:code", 
-                                id=organization_id)
 
     sales_segment = SalesSegment(start_at=datetime(2000, 1, 1), 
                          end_at=datetime(2000, 1, 1, 23), 
@@ -126,13 +129,13 @@ def get_ordered_product_item__full_relation(quantity, quantity_only, organizatio
                   transaction_fee=200, 
                   delivery_fee=300, 
                   multicheckout_approval_no=":multicheckout_approval_no", 
-                  order_no=":order_no", 
+                  order_no=order_no, 
                   paid_at=datetime(2000, 1, 1, 1, 10), 
                   delivered_at=None, 
                   canceled_at=None, 
                   created_at=datetime(2000, 1, 1, 1), 
                   issued_at=datetime(2000, 1, 1, 1, 13),
-                  organization_id=organization_id
+                  organization_id=organization.id
                   )
 
     payment_delivery_method_pair = order.payment_delivery_pair = PaymentDeliveryMethodPair(system_fee=100, transaction_fee=200, delivery_fee=300, discount=0)
@@ -147,7 +150,7 @@ def get_ordered_product_item__full_relation(quantity, quantity_only, organizatio
     ordered_product = OrderedProduct(price=12000, 
                                      quantity=quantity)
     ordered_product.order = order
-    ordered_product_item = OrderedProductItem(id=1, price=14000, quantity=quantity)
+    ordered_product_item = OrderedProductItem(price=14000, quantity=quantity)
     ordered_product_item.ordered_product = ordered_product
     product_item = ordered_product_item.product_item = ProductItem(name=":ProductItem:name", 
                         price=12000, 
@@ -212,9 +215,7 @@ def qrsigned_from_token(token):
     return _signed_string_from_history(builder, history)
 
 ## todo: assertion strictly
-class Tests(unittest.TestCase):
-    TOKEN_ID = 9999
-    DRAWING_DATA = "drawing-data-for-svg"
+class BaseTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.config = testing.setUp()
@@ -222,10 +223,115 @@ class Tests(unittest.TestCase):
         cls.config.include('altair.app.ticketing.qr', route_prefix='qr')
         cls.config.include("altair.app.ticketing.printqr")
 
+    @classmethod
+    def tearDownClass(cls):
+        testing.tearDown()
+
+    def tearDown(self):
+        transaction.abort()
+
+class QRTestsWithSeat(BaseTests):
+    TOKEN_ID = 19999
+    DRAWING_DATA = "drawing-data-for-svg"
+    @classmethod
+    def setUpClass(cls):
+        BaseTests.setUpClass()
+
         from altair.app.ticketing.models import DBSession
-        item = get_ordered_product_item__full_relation(quantity=2, quantity_only=True)
+        from altair.app.ticketing.core.models import Seat
+        operator = setup_operator()
+        item = setup_ordered_product_items(quantity=1, quantity_only=False,
+                                           organization=operator.organization, order_no="Demo:OrderNO:02")
         event = item.product_item.performance.event
-        setup_ordered_product_token_from_ordered_product_item(item)
+        seat = Seat(l0_id=":l0_id", 
+                    seat_no=":seat_no", 
+                    name=":Seat:name", 
+                    stock = item.product_item.stock, 
+                    venue = item.product_item.performance.venue)
+        item.seats.append(seat)
+        setup_ordered_product_token(item)
+        bundle = setup_ticket_bundle(event, drawing=cls.DRAWING_DATA)
+        item.product_item.ticket_bundle = bundle
+        DBSession.add(item)
+        DBSession.add(bundle)
+        DBSession.add(operator)
+
+        seat = Seat(l0_id=":l0_id", 
+                    seat_no=":seat_no", 
+                    name=":Seat:name", 
+                    stock = item.product_item.stock, 
+                    venue = item.product_item.performance.venue)
+        item.seats.append(seat)
+
+        token = item.tokens[0]
+        token.id = cls.TOKEN_ID
+
+        cls.item = property(lambda self: DBSession.merge(item))
+        cls.token = property(lambda self: DBSession.merge(token))
+        cls.event = property(lambda self: DBSession.merge(self.item.product_item.performance.event))
+        cls.order = property(lambda self: DBSession.merge(self.item.ordered_product.order))
+        cls.budnle = property(lambda self: DBSession.merge(bundle))
+        cls.ticket = property(lambda self: DBSession.merge(bundle).tickets[0])
+        transaction.commit()
+
+    def test_ticket_data(self):
+        def _getTarget():
+            from .views import AppletAPIView
+            return AppletAPIView
+        result = do_view(
+            _getTarget(), 
+            request=DummyRequest(json_body={"ordered_product_item_token_id": self.token.id}, 
+                                 matchdict={"event_id": self.event.id}), 
+            attr="ticket_data")
+        self.assertEquals(len(result["data"]), 1)
+        self.assertEquals(result["data"][0][u'ordered_product_item_token_id'], self.token.id)
+
+        self.assertEquals(result["data"][0]["data"][u"席番"], u":Seat:name") #xxx!
+
+        self.assertEquals(result["data"][0]["data"][u"イベント名"], ":Event:title")
+        self.assertEquals(result["data"][0]["data"][u"対戦名"], ":Performance:name")
+        self.assertEquals(result["data"][0]["data"][u"開始時刻"], u"10時 00分")
+        self.assertEquals(result["data"][0]["data"][u"会場名"], ":Venue:name")
+        self.assertEquals(result["data"][0]["data"][u"チケット価格"], u"14,000円")
+        self.assertEquals(result["data"][0]["data"][u"席種名"], ":StockType:name")
+        self.assertEquals(result["data"][0]["data"][u"商品名"], ":ProductItem:name")
+        self.assertEquals(result["data"][0]["data"][u"受付日時"], u"2000年 01月 01日 (土) 01時 00分")
+
+    def test_ticket_data_order(self):
+        def _getTarget():
+            from .views import AppletAPIView
+            return AppletAPIView
+        result = do_view(
+            _getTarget(), 
+            request=DummyRequest(json_body={"order_no": self.order.order_no}, 
+                                 matchdict={"event_id": self.event.id}), 
+            attr="ticket_data_order")
+        self.assertEquals(len(result["data"]), 1)
+        self.assertEquals(result["data"][0][u'ordered_product_item_token_id'], self.token.id)
+
+        self.assertEquals(result["data"][0]["data"][u"イベント名"], ":Event:title")
+        self.assertEquals(result["data"][0]["data"][u"対戦名"], ":Performance:name")
+        self.assertEquals(result["data"][0]["data"][u"開始時刻"], u"10時 00分")
+        self.assertEquals(result["data"][0]["data"][u"会場名"], ":Venue:name")
+        self.assertEquals(result["data"][0]["data"][u"チケット価格"], u"14,000円")
+        self.assertEquals(result["data"][0]["data"][u"席種名"], ":StockType:name")
+        self.assertEquals(result["data"][0]["data"][u"商品名"], ":ProductItem:name")
+        self.assertEquals(result["data"][0]["data"][u"受付日時"], u"2000年 01月 01日 (土) 01時 00分")
+
+
+class QRTestsWithoutSeat(BaseTests):
+    TOKEN_ID = 9999
+    DRAWING_DATA = "drawing-data-for-svg"
+    @classmethod
+    def setUpClass(cls):
+        BaseTests.setUpClass()
+
+        from altair.app.ticketing.models import DBSession
+        operator = setup_operator()
+        item = setup_ordered_product_items(quantity=2, quantity_only=True,
+                                           organization=operator.organization, order_no="Demo:OrderNO:01")
+        event = item.product_item.performance.event
+        setup_ordered_product_token(item)
         bundle = setup_ticket_bundle(event, drawing=cls.DRAWING_DATA)
         operator = setup_operator()
         item.product_item.ticket_bundle = bundle
@@ -243,13 +349,6 @@ class Tests(unittest.TestCase):
         cls.budnle = property(lambda self: DBSession.merge(bundle))
         cls.ticket = property(lambda self: DBSession.merge(bundle).tickets[0])
         transaction.commit()
-
-    @classmethod
-    def tearDownClass(cls):
-        testing.tearDown()
-
-    def tearDown(self):
-        transaction.abort()
 
     def test_ticketdata_from_qrsigned_string__success(self):
         def _getTarget():
@@ -279,14 +378,14 @@ class Tests(unittest.TestCase):
         self.assertEquals(len(result["data"]), 1)
         self.assertEquals(result["data"][0][u'ordered_product_item_token_id'], self.token.id)
 
-        self.assertEquals(result["data"][0]["data"]["イベント名"], ":Event:title")
-        self.assertEquals(result["data"][0]["data"]["対戦名"], ":Performance:name")
-        self.assertEquals(result["data"][0]["data"]["開始時刻"], "10時 00分")
-        self.assertEquals(result["data"][0]["data"]["会場名"], ":Venue:name")
-        self.assertEquals(result["data"][0]["data"]["チケット価格"], "14,000円")
-        self.assertEquals(result["data"][0]["data"]["席種名"], ":StockType:name")
-        self.assertEquals(result["data"][0]["data"]["商品名"], ":ProductItem:name")
-        self.assertEquals(result["data"][0]["data"]["受付日時"], "2000年 01月 01日 (土) 01時 00分")
+        self.assertEquals(result["data"][0]["data"][u"イベント名"], ":Event:title")
+        self.assertEquals(result["data"][0]["data"][u"対戦名"], ":Performance:name")
+        self.assertEquals(result["data"][0]["data"][u"開始時刻"], u"10時 00分")
+        self.assertEquals(result["data"][0]["data"][u"会場名"], ":Venue:name")
+        self.assertEquals(result["data"][0]["data"][u"チケット価格"], u"14,000円")
+        self.assertEquals(result["data"][0]["data"][u"席種名"], ":StockType:name")
+        self.assertEquals(result["data"][0]["data"][u"商品名"], ":ProductItem:name")
+        self.assertEquals(result["data"][0]["data"][u"受付日時"], u"2000年 01月 01日 (土) 01時 00分")
 
     def test_ticket_data_order(self):
         def _getTarget():
@@ -300,23 +399,23 @@ class Tests(unittest.TestCase):
         self.assertEquals(len(result["data"]), 2)
         self.assertEquals(result["data"][0][u'ordered_product_item_token_id'], self.token.id)
 
-        self.assertEquals(result["data"][0]["data"]["イベント名"], ":Event:title")
-        self.assertEquals(result["data"][0]["data"]["対戦名"], ":Performance:name")
-        self.assertEquals(result["data"][0]["data"]["開始時刻"], "10時 00分")
-        self.assertEquals(result["data"][0]["data"]["会場名"], ":Venue:name")
-        self.assertEquals(result["data"][0]["data"]["チケット価格"], "14,000円")
-        self.assertEquals(result["data"][0]["data"]["席種名"], ":StockType:name")
-        self.assertEquals(result["data"][0]["data"]["商品名"], ":ProductItem:name")
-        self.assertEquals(result["data"][0]["data"]["受付日時"], "2000年 01月 01日 (土) 01時 00分")
+        self.assertEquals(result["data"][0]["data"][u"イベント名"], ":Event:title")
+        self.assertEquals(result["data"][0]["data"][u"対戦名"], ":Performance:name")
+        self.assertEquals(result["data"][0]["data"][u"開始時刻"], u"10時 00分")
+        self.assertEquals(result["data"][0]["data"][u"会場名"], ":Venue:name")
+        self.assertEquals(result["data"][0]["data"][u"チケット価格"], u"14,000円")
+        self.assertEquals(result["data"][0]["data"][u"席種名"], ":StockType:name")
+        self.assertEquals(result["data"][0]["data"][u"商品名"], ":ProductItem:name")
+        self.assertEquals(result["data"][0]["data"][u"受付日時"], u"2000年 01月 01日 (土) 01時 00分")
 
-        self.assertEquals(result["data"][1]["data"]["イベント名"], ":Event:title")
-        self.assertEquals(result["data"][1]["data"]["対戦名"], ":Performance:name")
-        self.assertEquals(result["data"][1]["data"]["開始時刻"], "10時 00分")
-        self.assertEquals(result["data"][1]["data"]["会場名"], ":Venue:name")
-        self.assertEquals(result["data"][1]["data"]["チケット価格"], "14,000円")
-        self.assertEquals(result["data"][1]["data"]["席種名"], ":StockType:name")
-        self.assertEquals(result["data"][1]["data"]["商品名"], ":ProductItem:name")
-        self.assertEquals(result["data"][1]["data"]["受付日時"], "2000年 01月 01日 (土) 01時 00分")
+        self.assertEquals(result["data"][1]["data"][u"イベント名"], ":Event:title")
+        self.assertEquals(result["data"][1]["data"][u"対戦名"], ":Performance:name")
+        self.assertEquals(result["data"][1]["data"][u"開始時刻"], u"10時 00分")
+        self.assertEquals(result["data"][1]["data"][u"会場名"], ":Venue:name")
+        self.assertEquals(result["data"][1]["data"][u"チケット価格"], u"14,000円")
+        self.assertEquals(result["data"][1]["data"][u"席種名"], ":StockType:name")
+        self.assertEquals(result["data"][1]["data"][u"商品名"], ":ProductItem:name")
+        self.assertEquals(result["data"][1]["data"][u"受付日時"], u"2000年 01月 01日 (土) 01時 00分")
 
 
     @mock.patch("altair.app.ticketing.printqr.views.datetime")
@@ -413,10 +512,11 @@ class Tests(unittest.TestCase):
         )
         self.assertEquals(result["data"]["page_formats"], 
                           [{u'printer_name': u':PageFormat:printer_name', u'id': 1, u'name': u':PageFormat:name'}])
+
         self.assertEquals(result["data"]["ticket_formats"],
                           [{u'id': 1, u'name': u':TicketFormat:name'}])
-        self.assertEquals(result["data"]["ticket_templates"],
-                          [{u'ticket_format_id': 1, u'drawing': u'drawing-data-for-svg',
-                            u'name': u'Ticket:name', u'id': 2}])
 
-
+        self.assertEquals(len(result["data"]["ticket_templates"]),1)
+        self.assertEquals(result["data"]["ticket_templates"][0][u'ticket_format_id'], 1)
+        self.assertEquals(result["data"]["ticket_templates"][0][u'drawing'], u'drawing-data-for-svg')
+        self.assertEquals(result["data"]["ticket_templates"][0][u'name'], u'Ticket:name')
