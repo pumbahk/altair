@@ -2763,6 +2763,7 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                         valid=True #valid=Falseの時は何時だろう？
                         )
                     ordered_product_item.tokens.append(token)
+        DBSession.flush() # これとっちゃだめ
         return order
 
     @staticmethod

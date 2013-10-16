@@ -94,7 +94,7 @@ def applicable_tickets_iter(bundle):
 
 def get_tickets(order):
     tickets = []
-    for ordered_product in order.items:
+    for ordered_product in order.ordered_products:
         for ordered_product_item in ordered_product.ordered_product_items:
             dicts = build_dicts_from_ordered_product_item(ordered_product_item)
             bundle = ordered_product_item.product_item.ticket_bundle
