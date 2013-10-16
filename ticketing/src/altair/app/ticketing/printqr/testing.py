@@ -3,6 +3,18 @@ from ..testing import DummyRequest
 import sqlalchemy as sa
 _engine = None
 
+class SetupTearDownManager(object):
+    def __init__(self, setup=None, teardown=None):
+        self.setup = setup
+        self.teardown = teardown
+
+    def __enter__(self):
+        self.setup and self.setup()
+
+    def __exit__(self, exc, val, tb):
+        self.teardown and self.teardown()
+        return True
+
 def setUpSwappedDB():
     from altair.app.ticketing.core.models import Base
     import sqlahelper
@@ -24,7 +36,6 @@ def setUpSwappedDB():
 def tearDownSwappedDB():
     global _engine
     swap_engine(_engine)
-
 
 def set_default_engine(engine, name="default"):
     "i hate sqlahelper"

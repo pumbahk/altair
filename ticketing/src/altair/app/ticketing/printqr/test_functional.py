@@ -1,5 +1,6 @@
 # -*- coding:utf-8 -*-
 import unittest
+import contextlib
 from pyramid import testing
 from datetime import datetime
 import transaction
@@ -7,6 +8,7 @@ import mock
 from .testing import (
     setUpSwappedDB, 
     tearDownSwappedDB, 
+    SetupTearDownManager, 
     DummyRequest
 )
 
@@ -29,10 +31,24 @@ def setup_ordered_product_token_from_ordered_product_item(ordered_product_item):
 def setup_ticket_bundle(event, drawing):
     from altair.app.ticketing.core.models import TicketBundle
     from altair.app.ticketing.core.models import TicketFormat
+    from altair.app.ticketing.core.models import PageFormat
     from altair.app.ticketing.core.models import Ticket
-    ticket_format = TicketFormat(name=":TicketFormat:name")
-    ticket_template = Ticket(name=":TicketTemplate:name", ticket_format=ticket_format, data={"drawing": drawing})
-    ticket = Ticket(name="Ticket:name", ticket_format=ticket_format, event=event, data={"drawing": drawing})
+    page_format = PageFormat(name=":PageFormat:name",
+                             printer_name=":PageFormat:printer_name",                             
+                             organization=event.organization,
+                             data={})
+    ticket_format = TicketFormat(name=":TicketFormat:name",
+                                 organization=event.organization,
+                                 data={})
+    ticket_template = Ticket(name=":TicketTemplate:name",
+                             ticket_format=ticket_format,
+                             organization=event.organization,
+                             data={"drawing": drawing})
+    ticket = Ticket(name="Ticket:name",
+                    ticket_format=ticket_format,
+                    event=event,
+                    organization=event.organization,
+                    data={"drawing": drawing})
     bundle = TicketBundle(name=":TicketBundle:name", event=event, tickets=[ticket])
     return bundle
 
@@ -262,7 +278,15 @@ class Tests(unittest.TestCase):
             attr="ticket_data")
         self.assertEquals(len(result["data"]), 1)
         self.assertEquals(result["data"][0][u'ordered_product_item_token_id'], self.token.id)
-        self.assertEquals(result["data"][0]["data"], self.DRAWING_DATA)
+
+        self.assertEquals(result["data"][0]["data"]["イベント名"], ":Event:title")
+        self.assertEquals(result["data"][0]["data"]["対戦名"], ":Performance:name")
+        self.assertEquals(result["data"][0]["data"]["開始時刻"], "10時 00分")
+        self.assertEquals(result["data"][0]["data"]["会場名"], ":Venue:name")
+        self.assertEquals(result["data"][0]["data"]["チケット価格"], "14,000円")
+        self.assertEquals(result["data"][0]["data"]["席種名"], ":StockType:name")
+        self.assertEquals(result["data"][0]["data"]["商品名"], ":ProductItem:name")
+        self.assertEquals(result["data"][0]["data"]["受付日時"], "2000年 01月 01日 (土) 01時 00分")
 
     def test_ticket_data_order(self):
         def _getTarget():
@@ -275,16 +299,90 @@ class Tests(unittest.TestCase):
             attr="ticket_data_order")
         self.assertEquals(len(result["data"]), 2)
         self.assertEquals(result["data"][0][u'ordered_product_item_token_id'], self.token.id)
-        self.assertEquals(result["data"][0]["data"], self.DRAWING_DATA)
-        self.assertEquals(result["data"][1]["data"], self.DRAWING_DATA)
+
+        self.assertEquals(result["data"][0]["data"]["イベント名"], ":Event:title")
+        self.assertEquals(result["data"][0]["data"]["対戦名"], ":Performance:name")
+        self.assertEquals(result["data"][0]["data"]["開始時刻"], "10時 00分")
+        self.assertEquals(result["data"][0]["data"]["会場名"], ":Venue:name")
+        self.assertEquals(result["data"][0]["data"]["チケット価格"], "14,000円")
+        self.assertEquals(result["data"][0]["data"]["席種名"], ":StockType:name")
+        self.assertEquals(result["data"][0]["data"]["商品名"], ":ProductItem:name")
+        self.assertEquals(result["data"][0]["data"]["受付日時"], "2000年 01月 01日 (土) 01時 00分")
+
+        self.assertEquals(result["data"][1]["data"]["イベント名"], ":Event:title")
+        self.assertEquals(result["data"][1]["data"]["対戦名"], ":Performance:name")
+        self.assertEquals(result["data"][1]["data"]["開始時刻"], "10時 00分")
+        self.assertEquals(result["data"][1]["data"]["会場名"], ":Venue:name")
+        self.assertEquals(result["data"][1]["data"]["チケット価格"], "14,000円")
+        self.assertEquals(result["data"][1]["data"]["席種名"], ":StockType:name")
+        self.assertEquals(result["data"][1]["data"]["商品名"], ":ProductItem:name")
+        self.assertEquals(result["data"][1]["data"]["受付日時"], "2000年 01月 01日 (土) 01時 00分")
+
+
+    @mock.patch("altair.app.ticketing.printqr.views.datetime")
+    def test_refresh_printed_status(self, m):
+        m.now.return_value = datetime(2000, 1, 1)
+
+        def _getTarget():
+            from .views import refresh_printed_status
+            return refresh_printed_status
+        
+        def setup():
+            self.token.printed_at = datetime(2000, 1, 1)
+            
+        def teardown():
+            self.token.printed_at = None
+            self.token.refreshed_at = None
+            
+        with SetupTearDownManager(setup, teardown):
+            result = do_view(
+                _getTarget(), 
+                request=DummyRequest(
+                    json_body={
+                        "ordered_product_item_token_id": str(self.token.id), 
+                        "order_no": str(self.order.order_no)
+                    }                   
+                )
+            )
+            self.assertEquals(result["status"], "success")
+            self.assertEqual(self.token.refreshed_at, datetime(2000, 1, 1))
 
     @mock.patch("altair.app.ticketing.printqr.views.datetime")
     def test_ticket_update_token_status(self, m):
         m.now.return_value = datetime(2000, 1, 1)
 
+        from altair.app.ticketing.core.utils import PrintedAtBubblingSetter
+        from altair.app.ticketing.core.models import TicketPrintHistory
+        def teardown():
+            ## todo: not use bubbling.
+            setter = PrintedAtBubblingSetter(None)
+            setter.printed_token(self.token)
+            setter.start_bubbling()
+            self.assertEqual(self.token.printed_at, None)
+            
         def _getTarget():
             from .views import ticket_after_printed_edit_status
             return ticket_after_printed_edit_status
+           
+        with SetupTearDownManager(teardown=teardown):
+            prev = TicketPrintHistory.query.count()
+            result = do_view(
+                _getTarget(), 
+                request=DummyRequest(json_body={"ordered_product_item_token_id": str(self.token.id), 
+                                                "order_no": self.order.order_no, 
+                                                "ticket_id": self.ticket.id}, 
+                                     matchdict={"event_id": self.event.id}), 
+            )
+            self.assertEquals(TicketPrintHistory.query.count(), prev+1)
+            self.assertEquals(result["data"], {'printed': '2000-01-01 00:00:00'})
+            
+    @mock.patch("altair.app.ticketing.printqr.views.datetime")
+    def test_ticket_update_token_status_order(self, m):
+        m.now.return_value = datetime(2000, 1, 1)
+
+        def _getTarget():
+            from .views import ticket_after_printed_edit_status_order
+            return ticket_after_printed_edit_status_order
             
         from altair.app.ticketing.core.models import TicketPrintHistory
         prev = TicketPrintHistory.query.count()
@@ -292,8 +390,33 @@ class Tests(unittest.TestCase):
             _getTarget(), 
             request=DummyRequest(json_body={"ordered_product_item_token_id": str(self.token.id), 
                                             "order_no": self.order.order_no, 
-                                            "ticket_id": self.ticket.id}, 
+                                            "order_id": self.order.id, 
+                                            "consumed_tokens": [t.id for t in self.item.tokens]
+                                        }, 
                                  matchdict={"event_id": self.event.id}), 
         )
-        self.assertEquals(TicketPrintHistory.query.count(), prev+1)
+        self.assertEquals(TicketPrintHistory.query.count(), prev+2)
         self.assertEquals(result["data"], {'printed': '2000-01-01 00:00:00'})
+
+    ## from applet
+    def test_fetch_ticket_format_candidates(self):
+        def _getTarget():
+            from .views import AppletAPIView
+            return AppletAPIView
+
+        result = do_view(
+            _getTarget(), 
+            request=DummyRequest(
+                matchdict={"event_id": str(self.event.id), "id": ""}
+            ), 
+            attr="ticket"
+        )
+        self.assertEquals(result["data"]["page_formats"], 
+                          [{u'printer_name': u':PageFormat:printer_name', u'id': 1, u'name': u':PageFormat:name'}])
+        self.assertEquals(result["data"]["ticket_formats"],
+                          [{u'id': 1, u'name': u':TicketFormat:name'}])
+        self.assertEquals(result["data"]["ticket_templates"],
+                          [{u'ticket_format_id': 1, u'drawing': u'drawing-data-for-svg',
+                            u'name': u'Ticket:name', u'id': 2}])
+
+
