@@ -34,8 +34,8 @@ class Asset(BaseOriginalMixin, WithOrganizationMixin, Base):
     title = sa.Column(sa.Unicode(255))
     discriminator = sa.Column("type", sa.String(32), nullable=False)
 
-    created_at = sa.Column(sa.DateTime, default=datetime.now())
-    updated_at = sa.Column(sa.DateTime, default=datetime.now())
+    created_at = sa.Column(sa.DateTime, default=datetime.now)
+    updated_at = sa.Column(sa.DateTime, default=datetime.now)
 
     created_by_id = sa.Column(sa.Integer, sa.ForeignKey("operator.id"))
     created_by = orm.relationship("Operator", backref="created_assets",
