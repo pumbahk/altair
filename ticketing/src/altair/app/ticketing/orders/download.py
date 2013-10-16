@@ -411,17 +411,6 @@ order_summary_joins = t_order.join(
     t_membership,
     and_(t_membership.c.id==t_user_credential.c.membership_id,
          t_membership.c.deleted_at==None),
-).outerjoin(
-    t_mailmagazine,
-    t_mailmagazine.c.organization_id==t_organization.c.id
-).outerjoin(
-    t_mail_subscription,
-    and_(t_mail_subscription.c.email.in_(
-        [t_shipping_address.c.email_1,
-         t_shipping_address.c.email_2,]
-        ),
-         t_mail_subscription.c.segment_id==t_mailmagazine.c.id,
-         t_mail_subscription.c.status==MailSubscriptionStatus.Subscribed.v),
 )
 
 order_product_summary_joins = order_summary_joins.join(
@@ -473,6 +462,17 @@ order_product_summary_joins = order_summary_joins.join(
     t_ordered_product_attribute,
     and_(t_ordered_product_attribute.c.ordered_product_item_id==t_ordered_product_item.c.id,
          t_ordered_product_attribute.c.deleted_at==None),
+).outerjoin(
+    t_mailmagazine,
+    t_mailmagazine.c.organization_id==t_organization.c.id
+).outerjoin(
+    t_mail_subscription,
+    and_(t_mail_subscription.c.email.in_(
+        [t_shipping_address.c.email_1,
+         t_shipping_address.c.email_2,]
+        ),
+         t_mail_subscription.c.segment_id==t_mailmagazine.c.id,
+         t_mail_subscription.c.status==MailSubscriptionStatus.Subscribed.v),
 )
 
 
