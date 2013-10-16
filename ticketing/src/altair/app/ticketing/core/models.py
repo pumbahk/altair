@@ -1299,9 +1299,9 @@ class PaymentDeliveryMethodPair(Base, BaseModel, WithTimestamp, LogicallyDeleted
     delivery_method_id = AnnotatedColumn(Identifier, ForeignKey('DeliveryMethod.id'), _a_label=_(u'引取方法'))
     delivery_method = relationship('DeliveryMethod', backref='payment_delivery_method_pairs')
 
-    special_fee_name = AnnotatedColumn(String(255), nullable=False, _a_label=_(u'特別徴収'), default="")
+    special_fee_name = AnnotatedColumn(String(255), nullable=False, _a_label=_(u'特別手数料名'), default="")
     special_fee = AnnotatedColumn(Numeric(precision=16, scale=2), nullable=False,
-                                  _a_label=_(u'特別徴収額'), default=FeeTypeEnum.Once.v[0])
+                                  _a_label=_(u'特別徴手数料'), default=FeeTypeEnum.Once.v[0])
     special_fee_type = Column(Integer, nullable=False, default=FeeTypeEnum.Once.v[0])
 
     @property
@@ -1395,7 +1395,7 @@ class PaymentDeliveryMethodPair(Base, BaseModel, WithTimestamp, LogicallyDeleted
 
     @property
     def per_product_fee(self):
-        return self.system_fee_per_product + self.special_fee_per_order + self.delivery_fee_per_product + self.transaction_fee_per_product
+        return self.system_fee_per_product + self.special_fee_per_product + self.delivery_fee_per_product + self.transaction_fee_per_product
     
     @property
     def per_ticket_fee(self):
