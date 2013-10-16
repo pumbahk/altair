@@ -955,9 +955,10 @@ class OrderSearchBase(list):
 
     def __iter__(self):
         start = 0
-        stop = self.count()
+        #stop = self.count()
 
-        return self.execute(start, stop)
+        #return self.execute(start, stop)
+        return self.execute(start)
 
 
     def count(self):
@@ -979,9 +980,10 @@ class OrderSearchBase(list):
     def __getslice__(self, start, stop):
         return self.execute(start, stop)
 
-    def execute(self, start, stop):
-        logger.debug("start = {0}, stop = {1}".format(start, stop))
-        limit = min(1000, stop-start)
+    def execute(self, start):
+        #logger.debug("start = {0}, stop = {1}".format(start, stop))
+        #limit = min(1000, stop-start)
+        limit = 1000
         offset = start
         while True:
             sql = select(self.columns, 
@@ -1007,7 +1009,7 @@ class OrderSearchBase(list):
                         row.items()
                     )
                 offset = offset + limit
-                limit = min(stop - offset, limit)
+                #limit = min(stop - offset, limit)
                 if limit <= 0:
                     break
             finally:
