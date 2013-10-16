@@ -1919,7 +1919,7 @@ class MailInfoView(BaseView):
         mutil = get_mail_utility(self.request, MailTypeEnum.PurchaseCancelMail)
         message = mutil.build_message(self.request, order)
         mail_form = SendingMailForm(subject=message.subject,
-                                    recipient=message.recipients[0],
+                                    recipient=message.recipients[0] if message.recipients else "",
                                     bcc=message.bcc[0] if message.bcc else "")
         performance = order.performance
         return dict(order=order, mail_form=mail_form, performance=performance)

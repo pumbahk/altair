@@ -97,7 +97,7 @@ class Venue(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     site_id = Column(Identifier, ForeignKey("Site.id"), nullable=False)
     performance_id = Column(Identifier, ForeignKey("Performance.id", ondelete='CASCADE'), nullable=True)
     organization_id = Column(Identifier, ForeignKey("Organization.id", ondelete='CASCADE'), nullable=False)
-    name = Column(String(255))
+    name = AnnotatedColumn(String(255), _a_label=(u"会場名"))
     sub_name = Column(String(255))
 
     original_venue_id = Column(Identifier, ForeignKey("Venue.id"), nullable=True)
@@ -428,15 +428,15 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'Performance'
 
     id = Column(Identifier, primary_key=True)
-    name = Column(String(255))
+    name = AnnotatedColumn(String(255), _a_label=(u'名称'))
     code = Column(String(12))  # Organization.code(2桁) + Event.code(3桁) + 7桁(デフォルトはstart.onのYYMMDD+ランダム1桁)
     abbreviated_title = Column(Unicode(255), doc=u"公演名略称", default=u"")
     subtitle = Column(Unicode(255), doc=u"公演名副題", default=u"")
     note = Column(UnicodeText, doc=u"公演名備考", default=u"")
 
-    open_on = Column(DateTime)
-    start_on = Column(DateTime)
-    end_on = Column(DateTime)
+    open_on = AnnotatedColumn(DateTime, _a_label=(u"開場"))
+    start_on = AnnotatedColumn(DateTime, _a_label=(u"開演"))
+    end_on = AnnotatedColumn(DateTime, _a_label=(u"終了"))
     public = Column(Boolean, nullable=False, default=False)  # 一般公開するか
 
     event_id = Column(Identifier, ForeignKey('Event.id'))
@@ -767,10 +767,10 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     id = Column(Identifier, primary_key=True)
     code = Column(String(12))  # Organization.code(2桁) + 3桁英数字大文字のみ
-    title = Column(String(1024))
-    abbreviated_title = Column(String(1024))
+    title = AnnotatedColumn(String(1024), _a_label=(u'名称'))
+    abbreviated_title = AnnotatedColumn(String(1024), _a_label=(u'略称'))
 
-    account_id = Column(Identifier, ForeignKey('Account.id'))
+    account_id = AnnotatedColumn(Identifier, ForeignKey('Account.id'), _a_label=(u'配券元'))
     account = relationship('Account', backref='events')
 
     organization_id = Column(Identifier, ForeignKey('Organization.id'))

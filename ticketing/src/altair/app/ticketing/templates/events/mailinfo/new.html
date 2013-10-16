@@ -22,6 +22,15 @@ ${ch.breadcrumbs(
   <span class="label">パフォーマンス</span>
 </div>
 
+<h4>情報</h4>
+<table class="table table-striped">
+<%! from altair.app.ticketing.description.api import get_description %>
+%for item in get_description(request,event):
+  <tr><th>${item.display_name}</th><td>${item.value}</td></tr>
+%endfor
+</table>
+
+<h4>説明</h4>
 <pre>
 メールの付加情報は以下のようにして取得されます
   1. 購入されたチケットの公演(パフォーマンス)に紐づく設定を取得。
