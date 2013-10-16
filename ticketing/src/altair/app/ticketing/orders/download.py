@@ -597,12 +597,13 @@ class OrderSummaryKeyBreakAdapter(object):
                          item[childitem2]))
                     child2_count[counter[child1_key]] = max(child2_count.get(counter[child1_key], 0), counter[child2_key])
 
-            name = "attribute[{0}][{1}][{2}]".format(item['attribute_name'], counter[child1_key], counter[child2_key])
-            attribute_cols.add(name)
-            if item['attribute_value']:
-                breaked_items.append(
-                    (name,
-                     item['attribute_value']))
+            if item['attribute_name']:
+                name = "attribute[{0}][{1}][{2}]".format(item['attribute_name'], counter[child1_key], counter[child2_key])
+                attribute_cols.add(name)
+                if item['attribute_value']:
+                    breaked_items.append(
+                        (name,
+                         item['attribute_value']))
 
             for childitem3 in child3_comma_separated:
                 name = "{0}[{1}][{2}]".format(childitem3, counter[child1_key], counter[child2_key])
