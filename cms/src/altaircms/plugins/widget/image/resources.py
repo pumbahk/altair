@@ -111,7 +111,7 @@ class ImageWidgetResource(HandleSessionMixin, #todo:remove
     @reify
     def asset_repository(self):
         qs = AssetRepository(self.request, ImageAsset, offset=self.page_offset)
-        return qs.order_by(sa.desc(ImageAsset.updated_at))
+        return qs.order_by(sa.desc(ImageAsset.updated_at), sa.desc(ImageAsset.id))
 
     @reify
     def widget_repository(self):
