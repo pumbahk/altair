@@ -49,6 +49,7 @@ from altair.app.ticketing.operators.models import (
 from altair.app.ticketing.mailmags.models import (
     MailSubscription,
     MailMagazine,
+    MailSubscriptionStatus,
 )
 from altair.app.ticketing.sej.models import SejOrder
 from altair.keybreak import (
@@ -355,18 +356,6 @@ detail_summary_columns = summary_columns + [
     ).label('seat_quantity'),
     t_ordered_product_attribute.c.name.label('attribute_name'),
     t_ordered_product_attribute.c.value.label('attribute_value'),
-    case([(func.exists(select(
-        [t_mail_subscription.c.id],
-        whereclause=and_(
-            t_mail_subscription.c.email.in_([t_shipping_address.c.email_1,
-                                             t_shipping_address.c.email_2]),
-            t_mail_subscription.c.segment_id.in_(
-                select([t_mailmagazine.c.id],
-                       whereclause=t_mailmagazine.c.organization_id==t_organization.c.id
-                   ).as_scalar()))
-                      ).as_scalar()), '1')],
-         else_=''
-     ).label('mail_permission'),
 ]
 
 order_summary_joins = t_order.join(
@@ -1056,3 +1045,19 @@ class OrderSeatDownload(OrderSearchBase):
 
     def order_by(self, query):
         return query.order_by(*self.default_order)
+
+class MailPermissionCache(OrderSearchBase):
+    target = t_mail_subscription.join(
+        t_mailmagazine,
+        t_mailmagazine.c.id==t_mail_subscription.c.segment_id
+        )
+    columns = [t_mail_subscription.c.email]
+    default_order = []
+
+    def order_by(self, query):
+        return query
+
+    def query_cond(self, condition):
+        return and_(t_mailmagazine.c.organization_id==self.organization_id,
+                    t_mail_subscription.c.status==MailSubscriptionStatus.Subscribed.v)
+
