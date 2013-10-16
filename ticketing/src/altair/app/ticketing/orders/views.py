@@ -480,7 +480,21 @@ def download(request):
     iheaders = header_intl(csv_headers, japanese_columns,
                            ordered_product_metadata_provider_registry)
     logger.debug("csv headers = {0}".format(csv_headers))
-    results = iter(query)
+    results = list(query)
+
+    from .download import MailPermissionCache
+    mail_perms = set([m['email'] for m in 
+                      MailPermissionCache(slave_session,
+                                          organization_id,
+                                          condition=form_search)])
+
+    for row in results:
+        m1, m2 = row.get('email_1'), row.get('email_2')
+        if m1 in mail_perms or m2 in mail_perms:
+            row['mail_permission'] = '1'
+        else:
+            row['mail_permission'] = ''
+
     writer = csv.writer(response, delimiter=',')
 
     if excel_csv:
