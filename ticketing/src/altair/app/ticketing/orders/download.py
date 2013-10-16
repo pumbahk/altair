@@ -503,12 +503,13 @@ class SeatSummaryKeyBreakAdapter(object):
                 self.results.append(result)
                 breaked_items = []
 
-            name = "attribute[{0}]".format(item['attribute_name'])
-            attribute_cols.add(name)
-            if item['attribute_value']:
-                breaked_items.append(
-                    (name,
-                     item['attribute_value']))
+            if item['attribute_name']:
+                name = "attribute[{0}]".format(item['attribute_name'])
+                attribute_cols.add(name)
+                if item['attribute_value']:
+                    breaked_items.append(
+                        (name,
+                         item['attribute_value']))
 
             for childitem in childitems:
                 name = "{0}".format(childitem)

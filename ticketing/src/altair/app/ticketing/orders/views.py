@@ -517,12 +517,14 @@ def download(request):
 
     renderers['zip'] = render_zip
 
-    for n in ('created_at', 'paid_at', 'delivered_at', 'canceled_at', 'performance_start_on', 'product_quantity', 'item_quantity', 'seat_quantity'):
-        renderers[n] = render_plain
+    # for n in ('created_at', 'paid_at', 'delivered_at', 'canceled_at', 'performance_start_on', 'product_quantity', 'item_quantity', 'seat_quantity'):
+    #     renderers[n] = render_plain
+    for n in ('order_no', 'tel_1', 'tel_2', 'fax'):
+        renderers[n] = render_text
 
     def render(name, v):
         name, _, _ = name.partition('[')
-        renderer = renderers.get(name, render_text)
+        renderer = renderers.get(name, render_plain)
         return renderer(v)
 
     writer.writerows([[encode_to_cp932(c)
