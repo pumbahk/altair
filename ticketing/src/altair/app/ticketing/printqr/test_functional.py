@@ -228,6 +228,8 @@ class BaseTests(unittest.TestCase):
         testing.tearDown()
 
     def tearDown(self):
+        from .utils import reset_issuer
+        reset_issuer()
         transaction.abort()
 
 class QRTestsWithSeat(BaseTests):
@@ -387,6 +389,8 @@ class QRTestsWithoutSeat(BaseTests):
         self.assertEquals(result["data"][0]["data"][u"商品名"], ":ProductItem:name")
         self.assertEquals(result["data"][0]["data"][u"受付日時"], u"2000年 01月 01日 (土) 01時 00分")
 
+        self.assertEquals(result["data"][0]["data"][u"発券番号"], 1)
+
     def test_ticket_data_order(self):
         def _getTarget():
             from .views import AppletAPIView
@@ -417,6 +421,8 @@ class QRTestsWithoutSeat(BaseTests):
         self.assertEquals(result["data"][1]["data"][u"商品名"], ":ProductItem:name")
         self.assertEquals(result["data"][1]["data"][u"受付日時"], u"2000年 01月 01日 (土) 01時 00分")
 
+        self.assertEquals(result["data"][0]["data"][u"発券番号"], 1)
+        self.assertEquals(result["data"][1]["data"][u"発券番号"], 2)
 
     @mock.patch("altair.app.ticketing.printqr.views.datetime")
     def test_refresh_printed_status(self, m):
