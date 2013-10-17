@@ -303,3 +303,7 @@ def get_cart_user_identifiers(request):
             # remote address is *weakest*
             retval.append((remote_addr, 'weak'))
     return retval
+
+def is_smartphone_organization(context, request):
+    organization = c_api.get_organization(request)
+    return organization.id == 15 or organization.id == 24

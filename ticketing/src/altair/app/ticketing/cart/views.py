@@ -35,7 +35,7 @@ from altair.mobile.interfaces import IMobileRequest
 from . import api
 from . import helpers as h
 from . import schemas
-from .api import set_rendered_event
+from .api import set_rendered_event, is_smartphone_organization
 from altair.mobile.api import set_we_need_pc_access, set_we_invalidate_pc_access
 from .events import notify_order_completed
 from .reserving import InvalidSeatSelectionException, NotEnoughAdjacencyException
@@ -131,10 +131,6 @@ def gzip_preferred(request, response):
     if 'gzip' in request.accept_encoding:
         response.encode_content('gzip')
 
-def is_organization_rs(context, request):
-    organization = c_api.get_organization(request)
-    return organization.id == 15
-
 @view_defaults(decorator=with_jquery.not_when(mobile_request))
 class IndexView(IndexViewMixin):
     """ 座席選択画面 """
@@ -173,7 +169,7 @@ class IndexView(IndexViewMixin):
     @view_config(decorator=with_jquery_tools, route_name='cart.index',
                   renderer=selectable_renderer("%(membership)s/pc/index.html"), xhr=False, permission="buy")
     @view_config(decorator=with_jquery_tools, route_name='cart.index',request_type="altair.mobile.interfaces.ISmartphoneRequest", 
-                 custom_predicates=(is_organization_rs, ), renderer=selectable_renderer("RT/smartphone/index.html"), xhr=False, permission="buy")
+                 custom_predicates=(is_smartphone_organization, ), renderer=selectable_renderer("%(membership)s/smartphone/index.html"), xhr=False, permission="buy")
     def event_based_landing_page(self):
         self.check_redirect(mobile=False)
 
@@ -245,7 +241,7 @@ class IndexView(IndexViewMixin):
     @view_config(decorator=with_jquery_tools, route_name='cart.index2',
                   renderer=selectable_renderer("%(membership)s/pc/index.html"), xhr=False, permission="buy")
     @view_config(decorator=with_jquery_tools, route_name='cart.index2',request_type="altair.mobile.interfaces.ISmartphoneRequest", 
-                 custom_predicates=(is_organization_rs, ), renderer=selectable_renderer("RT/smartphone/index.html"), xhr=False, permission="buy")
+                 custom_predicates=(is_smartphone_organization, ), renderer=selectable_renderer("%(membership)s/smartphone/index.html"), xhr=False, permission="buy")
     def performance_based_landing_page(self):
         self.check_redirect(mobile=False)
 
@@ -612,7 +608,7 @@ class PaymentView(object):
 
     @view_config(route_name='cart.payment', request_method="GET", renderer=selectable_renderer("%(membership)s/pc/payment.html"))
     @view_config(route_name='cart.payment', request_method="GET", request_type='altair.mobile.interfaces.IMobileRequest', renderer=selectable_renderer("%(membership)s/mobile/payment.html"))
-    @view_config(route_name='cart.payment', request_method="GET", request_type="altair.mobile.interfaces.ISmartphoneRequest", renderer=selectable_renderer("RT/smartphone/payment.html"), custom_predicates=(is_organization_rs, ))
+    @view_config(route_name='cart.payment', request_method="GET", request_type="altair.mobile.interfaces.ISmartphoneRequest", renderer=selectable_renderer("%(membership)s/smartphone/payment.html"), custom_predicates=(is_smartphone_organization, ))
     def __call__(self):
         """ 支払い方法、引き取り方法選択
         """
@@ -694,7 +690,7 @@ class PaymentView(object):
     @back(back_to_top, back_to_product_list_for_mobile)
     @view_config(route_name='cart.payment', request_method="POST", renderer=selectable_renderer("%(membership)s/pc/payment.html"))
     @view_config(route_name='cart.payment', request_method="POST", request_type='altair.mobile.interfaces.IMobileRequest', renderer=selectable_renderer("%(membership)s/mobile/payment.html"))
-    @view_config(route_name='cart.payment', request_method="POST", request_type="altair.mobile.interfaces.ISmartphoneRequest", renderer=selectable_renderer("RT/smartphone/payment.html"), custom_predicates=(is_organization_rs, ))
+    @view_config(route_name='cart.payment', request_method="POST", request_type="altair.mobile.interfaces.ISmartphoneRequest", renderer=selectable_renderer("%(membership)s/smartphone/payment.html"), custom_predicates=(is_smartphone_organization, ))
     def post(self):
         """ 支払い方法、引き取り方法選択
         """
@@ -781,7 +777,7 @@ class ConfirmView(object):
 
     @view_config(route_name='payment.confirm', request_method="GET", renderer=selectable_renderer("%(membership)s/pc/confirm.html"))
     @view_config(route_name='payment.confirm', request_method="GET", request_type='altair.mobile.interfaces.IMobileRequest', renderer=selectable_renderer("%(membership)s/mobile/confirm.html"))
-    @view_config(route_name='payment.confirm', request_method="GET", request_type="altair.mobile.interfaces.ISmartphoneRequest", renderer=selectable_renderer("RT/smartphone/confirm.html"), custom_predicates=(is_organization_rs, ))
+    @view_config(route_name='payment.confirm', request_method="GET", request_type="altair.mobile.interfaces.ISmartphoneRequest", renderer=selectable_renderer("%(membership)s/smartphone/confirm.html"), custom_predicates=(is_smartphone_organization, ))
     def get(self):
         form = schemas.CSRFSecureForm(csrf_context=self.request.session)
         cart = self.request.context.cart
@@ -816,7 +812,7 @@ class CompleteView(object):
     @back(back_to_top, back_to_product_list_for_mobile)
     @view_config(route_name='payment.finish', request_method="POST", renderer=selectable_renderer("%(membership)s/pc/completion.html"))
     @view_config(route_name='payment.finish', request_method="POST", request_type='altair.mobile.interfaces.IMobileRequest', renderer=selectable_renderer("%(membership)s/mobile/completion.html"))
-    @view_config(route_name='payment.finish', request_method="POST", request_type="altair.mobile.interfaces.ISmartphoneRequest", renderer=selectable_renderer("RT/smartphone/completion.html"), custom_predicates=(is_organization_rs, ))
+    @view_config(route_name='payment.finish', request_method="POST", request_type="altair.mobile.interfaces.ISmartphoneRequest", renderer=selectable_renderer("%(membership)s/smartphone/completion.html"), custom_predicates=(is_smartphone_organization, ))
     def __call__(self):
         form = schemas.CSRFSecureForm(formdata=self.request.params, csrf_context=self.request.session)
         if not form.validate():
