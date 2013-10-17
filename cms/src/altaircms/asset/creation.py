@@ -287,6 +287,7 @@ def update_asset(asset, datalist):
     for vs in datalist:
         for k, v in vs.iteritems():
             setattr(asset, k, v)
+    asset.updated_at = datetime.now()
     return asset
 
 
