@@ -265,7 +265,7 @@ detail_summary_columns = summary_columns + [
     t_order.c.delivery_fee, #配送手数料
     t_order.c.system_fee, #システム利用料
     t_order.c.special_fee, #特別手数料
-    (t_order.c.total_amount * t_sales_segment.c.margin_ratio / 100).label('margin'), 
+    #(t_order.c.total_amount * t_sales_segment.c.margin_ratio / 100).label('margin'), 
     # t_order.c.margin, #内手数料金額
     t_order.c.note, #メモ
     t_order.c.special_fee_name, #特別手数料名
@@ -341,7 +341,7 @@ detail_summary_columns = summary_columns + [
     t_ordered_product.c.quantity.label('product_quantity'), #商品個数[0]
     t_product_sales_segment_group.c.name.label('product_sales_segment'), #販売区分[0]
     t_product_sales_segment.c.margin_ratio.label('product_margin_ratio'), #販売手数料率[0] margin_ratio
-    #(t_product.c.price * t_ordered_product.c.quantity * t_product_sales_segment.c.margin_ratio / 100).label('product_margin'),
+    (t_product.c.price * t_ordered_product.c.quantity * t_product_sales_segment.c.margin_ratio / 100).label('product_margin'),
     # ProductItem
     t_product_item.c.id.label('product_item_id'), #商品明細名[0][0]
     t_product_item.c.name.label('item_name'), #商品明細名[0][0]
@@ -499,8 +499,9 @@ class SeatSummaryKeyBreakAdapter(object):
         last_item = None
         breaked_items = []
         attribute_cols = set()
+        margins = {}  # order_no: margin
 
-        break_counter = KeyBreakCounter(keys=[key1, key2])
+        break_counter = KeyBreakCounter(keys=[key1, key2, 'product_id'])
         first = True
         for counter, key_changes, item in break_counter(iter):
             if (key_changes[key1] or key_changes[key2]) and not first:
@@ -515,7 +516,8 @@ class SeatSummaryKeyBreakAdapter(object):
                         result[name] = unicode(value)
                 self.results.append(result)
                 breaked_items = []
-
+            if key_changes[key2] or key_changes['product_id'] or first:
+                margins[item['order_no']] = margins.get(item['order_no'], 0) + item['product_margin']
             if item['attribute_name']:
                 name = "attribute[{0}]".format(item['attribute_name'])
                 attribute_cols.add(name)
@@ -548,6 +550,8 @@ class SeatSummaryKeyBreakAdapter(object):
                 result[name] = unicode(value)
 
         self.results.append(result)
+        for row in self.results:
+            row['margin'] = margins.get(row['order_no'], 0)
         headers = list(result)
         self.headers = headers
         self.extra_headers = []
@@ -569,8 +573,8 @@ class OrderSummaryKeyBreakAdapter(object):
         child3_count = {}
 
         break_counter = KeyBreakCounter(keys=[key, child1_key, child2_key, child3_key])
-        #margin = 0  # very hack
         first = True
+        margin = 0
         attribute_cols = set()
         for counter, key_changes, item in break_counter(iter):
             if key_changes[key] and not first:
@@ -579,15 +583,15 @@ class OrderSummaryKeyBreakAdapter(object):
                     result.pop(c)
                 for name, value in breaked_items:
                     if name in result:
-                        assert isinstance(result[name], basestring), result
+                        assert isinstance(result[name], basestring), "%s %s %s" % (name, type(result[name]), result)
                         if value not in result[name].split(","):
                             result[name] = unicode(result[name]) + "," + unicode(value)
                     else:
                         result[name] = value
-                #result['margin'] = margin
+                result['margin'] = margin
                 self.results.append(result)
                 breaked_items = []
-                #margin = 0
+                margin = 0
 
             # second key break
             if key_changes[key] or key_changes[child1_key] or first:
@@ -597,7 +601,8 @@ class OrderSummaryKeyBreakAdapter(object):
                         (name,
                          item[childitem1]))
                     child1_count = max(child1_count, counter[child1_key])
-                # margin += item['product_margin']
+                # breaked_items['margin'] = breaked_items.get('margin', 0) + item['product_margin']
+                margin += item['product_margin']
 
             # third key break
             if key_changes[key] or key_changes[child1_key] or key_changes[child2_key] or first:
@@ -646,6 +651,7 @@ class OrderSummaryKeyBreakAdapter(object):
                     result[name] = unicode(result[name]) + "," + unicode(value)
             else:
                 result[name] = value
+        result['margin'] = margin
         self.results.append(result)
 
         headers = list(result)

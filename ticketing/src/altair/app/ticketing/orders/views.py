@@ -310,7 +310,7 @@ def index(request):
         'page': page,
     }
 
-#@view_config(route_name='orders.download')
+@view_config(route_name='orders.download')
 def download(request):
     slave_session = get_db_session(request, name="slave")
 
@@ -591,7 +591,7 @@ class Orders(BaseView):
             'page': page,
         }
 
-    @view_config(route_name='orders.download')
+    #@view_config(route_name='orders.download')
     def download(self):
         slave_session = get_db_session(self.request, name="slave")
 
