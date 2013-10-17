@@ -17,10 +17,6 @@ ${ch.breadcrumbs(
 
 <div class="page-header">
   <h2>${mutil.get_mailtype_description()}付加情報 ${organization.name}</h2>
-  <span class="label label-warning">${organization.name}</span> &gt
-  <span class="label">イベント</span> &gt
-  <span class="label">パフォーマンス</span>
-
 </div>
 
 <h4>説明</h4>
@@ -28,11 +24,18 @@ ${ch.breadcrumbs(
 メールの付加情報は以下のようにして取得されます
   1. 購入されたチケットの公演(パフォーマンス)に紐づく設定を取得。
   2. 購入されたチケットの公演が所属しているイベントに紐づく設定を取得。
-  3. 購入されたチケットの公演が所属しているイベントが所属している取引先に紐づく設定を取得。
+  3. ${organization.name}全体で設定されているデフォルトの設定を取得。
 </pre>
 
 <div class="btn-group" style="margin-bottom:20px;">
  <a class="btn btn-info" href="#PreviewModal" data-toggle="modal"><i class="icon-eye-open"></i> preview</a>
+</div>
+
+<div class="page-header">
+  <h4>「${organization.name}」に対するメール文言テンプレートの変更</h4>
+  <span class="label label-warning">${organization.name}</span> &gt
+  <span class="label">イベント</span> &gt
+  <span class="label">パフォーマンス</span>
 </div>
 
 <ul class="nav nav-tabs">
