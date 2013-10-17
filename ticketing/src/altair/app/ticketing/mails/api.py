@@ -268,6 +268,7 @@ def create_fake_lot_entry(request, organization, payment_method_id, delivery_met
     ## must not save models 
     now = datetime.now()
     lot_entry = FakeObject("T")
+    lot_entry.entry_no = lot_entry.order_no = None
     lot_entry.lot_entryed_from = organization
     lot_entry.created_at = now
     lot_entry._cached_mail_traverser = None
