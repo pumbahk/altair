@@ -239,6 +239,7 @@ def create_fake_order(request, organization, payment_method_id, delivery_method_
     now = datetime.now()
     order = FakeObject("T")
     order.ordered_from = organization
+    order.order_no = None
     order.created_at = now
     order._cached_mail_traverser = None
 
