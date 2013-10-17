@@ -7,7 +7,7 @@ import logging
 import json
 import argparse
 from pyramid.paster import bootstrap, setup_logging
-from altair.mq.interfaces import IPublisher
+from altair.mq import get_publisher
 
 
 logger = logging.getLogger(__name__)
@@ -20,7 +20,7 @@ class PublishLotElectingCommand(object):
 
     @property
     def publisher(self):
-        return self.request.registry.getUtility(IPublisher)
+        return get_publisher(self.request, 'lots')
 
     def run(self):
         publisher = self.publisher

@@ -21,7 +21,9 @@ class ElectingTests(unittest.TestCase):
         from altair.mq.interfaces import IPublisher
         publisher = DummyPublisher()
         self.config.registry.registerUtility(publisher,
-                                             IPublisher)
+                                             IPublisher,
+                                             'lots'
+                                             )
         return publisher
 
     def test_it(self):

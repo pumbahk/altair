@@ -70,6 +70,7 @@ def includeme(config):
 
 
     config.include(".mailinfo", route_prefix="/lots/mailinfo/")
+    config.include("altair.mq")
     # adapters
     reg = config.registry
     settings = reg.settings
@@ -78,16 +79,13 @@ def includeme(config):
     from altair.app.ticketing.lots.models import Lot
     from altair.app.ticketing.lots.electing import Electing
     from altair.app.ticketing.lots.interfaces import IElecting
-    from altair.mq.interfaces import IPublisher
-    from altair.mq.publisher import Publisher
 
     reg.registerAdapter(LotEntryStatus, [Lot, IRequest], 
                         ILotEntryStatus)
     reg.registerAdapter(Electing, [Lot, IRequest],
                         IElecting)
-    reg.registerUtility(Publisher(settings.get('altair.ticketing.lots.mq.url',
-                                               'amqp://guest:guest@localhost:5672/%2F')),
-                        IPublisher)
+    config.add_publisher_consumer('lots', 'altair.ticketing.lots.mq')
     config.include('altair.app.ticketing.lots.sendmail')
+    config.scan("altair.app.ticketing.lots.workers")
     config.scan('altair.app.ticketing.lots.subscribers')
 

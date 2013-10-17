@@ -1,10 +1,8 @@
 from zope.interface import Interface, Attribute
 
-class IConsumerFactory(Interface):
-    parameters = Attribute(u"connection parameter")
-
-    def __call__(self, task):
-        """ create consumer for task """
+class IPublisherConsumerFactory(Interface):
+    def __call__(config, config_prefix):
+        pass
 
 
 class IConsumer(Interface):
