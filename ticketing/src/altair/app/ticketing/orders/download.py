@@ -987,8 +987,10 @@ class OrderSearchBase(list):
 
     def execute(self, start, stop=None):
         #logger.debug("start = {0}, stop = {1}".format(start, stop))
-        #limit = min(1000, stop-start)
-        limit = 1000
+        limit_span = 1000
+        limit = limit_span
+        if stop:
+            limit = min(limit_span, stop-start)
         offset = start
         while True:
             sql = select(self.columns, 
@@ -1013,12 +1015,11 @@ class OrderSearchBase(list):
                     yield OrderedDict(
                         row.items()
                     )
-                offset = offset + limit
-                if stop and offset > stop:
-                    break
-                #limit = min(stop - offset, limit)
-                if limit <= 0:
-                    break
+                offset = offset + limit_span
+                if stop:
+                    if offset > stop:
+                        break
+                    limit = min(limit_span, stop - offset)
             finally:
                 logger.debug('close')
                 cur.close()
