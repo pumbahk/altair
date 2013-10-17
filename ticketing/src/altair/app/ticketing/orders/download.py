@@ -167,6 +167,8 @@ t_membership = Membership.__table__
 t_member_group = MemberGroup.__table__
 t_operator = Operator.__table__
 t_mail_subscription = MailSubscription.__table__
+t_mail_subscription_1 = t_mail_subscription.alias()
+t_mail_subscription_2 = t_mail_subscription.alias()
 t_mailmagazine = MailMagazine.__table__
 
 
@@ -356,7 +358,8 @@ detail_summary_columns = summary_columns + [
     ).label('seat_quantity'),
     t_ordered_product_attribute.c.name.label('attribute_name'),
     t_ordered_product_attribute.c.value.label('attribute_value'),
-    t_mail_subscription.c.id.label('mail_subscription'),
+    t_mail_subscription_1.c.email.label('mail_subscription_1'),
+    t_mail_subscription_2.c.email.label('mail_subscription_2'),
 ]
 
 order_summary_joins = t_order.join(
@@ -466,13 +469,15 @@ order_product_summary_joins = order_summary_joins.join(
     t_mailmagazine,
     t_mailmagazine.c.organization_id==t_organization.c.id
 ).outerjoin(
-    t_mail_subscription,
-    and_(t_mail_subscription.c.email.in_(
-        [t_shipping_address.c.email_1,
-         t_shipping_address.c.email_2,]
-        ),
-         t_mail_subscription.c.segment_id==t_mailmagazine.c.id,
-         t_mail_subscription.c.status==MailSubscriptionStatus.Subscribed.v),
+    t_mail_subscription_1,
+    and_(t_mail_subscription_1.c.email==t_shipping_address.c.email_1,
+         t_mail_subscription_1.c.segment_id==t_mailmagazine.c.id,
+         t_mail_subscription_1.c.status==MailSubscriptionStatus.Subscribed.v),
+).outerjoin(
+    t_mail_subscription_2,
+    and_(t_mail_subscription_2.c.email==t_shipping_address.c.email_2,
+         t_mail_subscription_2.c.segment_id==t_mailmagazine.c.id,
+         t_mail_subscription_2.c.status==MailSubscriptionStatus.Subscribed.v),
 )
 
 
@@ -526,7 +531,7 @@ class SeatSummaryKeyBreakAdapter(object):
                         (name,
                          item[childitem]))
 
-            if item['mail_subscription']:
+            if item['mail_subscription_1'] or item['mail_subscription_2']:
                 item['mail_permission'] = '1'
             last_item = item
             first = False
@@ -625,7 +630,7 @@ class OrderSummaryKeyBreakAdapter(object):
                          item[childitem3]))
                     child3_count[(counter[child1_key], counter[child2_key])] = max(child3_count.get((counter[child1_key], counter[child2_key]), 0), counter[child3_key])
 
-            if item['mail_subscription']:
+            if item['mail_subscription_1'] or item['mail_subscription_2']:
                 item['mail_permission'] = '1'
             last_item = item
             first = False
