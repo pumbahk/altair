@@ -228,6 +228,10 @@ class LotWishSummary(Base):
         return o
 
     @property
+    def sej_order(self):
+        return self.sej
+
+    @property
     def status(self):
         """ """
         if self.is_other_electing():

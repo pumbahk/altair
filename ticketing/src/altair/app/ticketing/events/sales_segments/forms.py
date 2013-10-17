@@ -7,9 +7,9 @@ from wtforms.widgets import CheckboxInput
 from sqlalchemy.sql import or_, and_, select
 
 from altair.formhelpers import (Translations, Required, RequiredOnUpdate, DateTimeFormat, OurForm, OurDateTimeField,
-                                   OurIntegerField, OurBooleanField, OurSelectField, OurDecimalField,
-                                   BugFreeSelectField, PHPCompatibleSelectMultipleField, CheckboxMultipleSelect,
-                                SwitchOptional, zero_as_none
+                                OurIntegerField, OurBooleanField, OurSelectField, OurDecimalField,
+                                BugFreeSelectField, PHPCompatibleSelectMultipleField, CheckboxMultipleSelect,
+                                BugFreeSelectMultipleField, SwitchOptional, zero_as_none
 )
 from altair.app.ticketing.core.models import SalesSegmentGroup, SalesSegment, Account
 from altair.app.ticketing.loyalty.models import PointGrantSetting, SalesSegment_PointGrantSetting
@@ -199,6 +199,20 @@ class SalesSegmentForm(OurForm):
     )
     use_default_auth3d_notice = OurBooleanField(
         label=u'グループの値を利用',
+        widget=CheckboxInput()
+    )
+
+    copy_performances = PHPCompatibleSelectMultipleField(
+        label=u'コピー先の公演(複数選択可)',
+        validators=[Optional()],
+        choices=lambda field: [
+            (p.id, u'%s' % p.name) for p in field.form.context.event.performances
+        ] if field.form.context.event else [],
+        coerce=lambda x : int(x) if x else u''
+    )
+    copy_products = OurBooleanField(
+        label=u'商品をコピーする',
+        default=True,
         widget=CheckboxInput()
     )
 

@@ -94,7 +94,7 @@ def applicable_tickets_iter(bundle):
 
 def get_tickets(order):
     tickets = []
-    for ordered_product in order.items:
+    for ordered_product in order.ordered_products:
         for ordered_product_item in ordered_product.ordered_product_items:
             dicts = build_dicts_from_ordered_product_item(ordered_product_item)
             bundle = ordered_product_item.product_item.ticket_bundle
@@ -163,9 +163,9 @@ class SejPaymentPlugin(object):
                 zip                 = shipping_address.zip.replace('-', '') if shipping_address.zip else '',
                 email               = shipping_address.email_1 or '',
                 total               = order.total_amount,
-                ticket_total        = order.total_amount - (order.system_fee + order.transaction_fee + order.delivery_fee),
+                ticket_total        = order.total_amount - (order.system_fee + order.special_fee + order.transaction_fee + order.delivery_fee),
                 # 支払いのみの場合は、ticketing_fee が無視されるので、commission に算入してあげないといけない。
-                commission_fee      = order.system_fee + order.transaction_fee + order.delivery_fee,
+                commission_fee      = order.system_fee + order.special_fee + order.transaction_fee + order.delivery_fee,
                 payment_type        = SejPaymentType.PrepaymentOnly,
                 ticketing_fee       = 0,
                 payment_due_at      = payment_due_at,
@@ -294,8 +294,8 @@ class SejPaymentDeliveryPlugin(object):
                 zip                 = shipping_address.zip.replace('-', '') if shipping_address.zip else '',
                 email               = shipping_address.email_1 or '',
                 total               = order.total_amount,
-                ticket_total        = order.total_amount - (order.system_fee + order.transaction_fee + order.delivery_fee),
-                commission_fee      = order.system_fee + order.transaction_fee,
+                ticket_total        = order.total_amount - (order.system_fee + order.special_fee + order.transaction_fee + order.delivery_fee),
+                commission_fee      = order.system_fee + order.special_fee + order.transaction_fee,
                 payment_type        = SejPaymentType.CashOnDelivery,
                 ticketing_fee       = order.delivery_fee,
                 payment_due_at      = payment_due_at,

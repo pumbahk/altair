@@ -346,6 +346,11 @@ var Stock = exports.Stock = Backbone.Model.extend({
 
     self.on('change:assigned', function () {
       this.set('edited', true);
+
+      var diff = this.get('assigned') - this.previous('assigned');
+      var available = this.previous('available') + diff;
+      this.set('available', available);
+
       this.get('stockHolder').recalculateQuantity();
       this.get('stockType').recalculateQuantity();
     });
@@ -455,7 +460,6 @@ var Seat = exports.Seat = Backbone.Model.extend({
           perStockSeatSet[prev.id].remove(this);
           if (prev.has('assigned')) {
             prev.set('edited', true);
-            if (this.get('selectable')) prev.set('available', prev.get('available') - 1);
             prev.set('assigned', perStockSeatSet[prev.id].length);
           }
         }
@@ -467,7 +471,6 @@ var Seat = exports.Seat = Backbone.Model.extend({
 
           if (new_.has('assigned')) {
             new_.set('edited', true);
-            if (this.get('selectable')) new_.set('available', new_.get('available') + 1);
             new_.set('assigned', perStockSeatSet[new_.id].length);
           }
         }

@@ -20,10 +20,11 @@ class Payment(object):
     """
     get_preparer = get_preparer
 
-    def __init__(self, cart, request):
+    def __init__(self, cart, request, session=None):
         self.request = request
         self.cart = cart
         self.sales_segment = cart.sales_segment
+        self.session = session or DBSession
 
     def call_prepare(self):
         """ 決済方法前呼び出し
@@ -52,12 +53,12 @@ class Payment(object):
     def call_payment_delivery(self, payment_delivery_plugin):
         # 決済配送を両方一度に処理する
         order = payment_delivery_plugin.finish(self.request, self.cart)
-        DBSession.add(order)
+        self.session.add(order)
         return order
 
     def call_payment_plugin(self, payment_plugin):
         order = payment_plugin.finish(self.request, self.cart)
-        DBSession.add(order)
+        self.session.add(order)
         return order
 
     def get_plugins(self, payment_delivery_pair):
@@ -101,15 +102,15 @@ class Payment(object):
             self._bind_order(order)
             # 注文確定として、他の処理でロールバックされないようにコミット
             transaction.commit()
-            DBSession.add(self.cart)
+            self.session.add(self.cart)
             try:
                 delivery_plugin.finish(self.request, self.cart)
             except Exception as e:
-                DBSession.add(order)
+                self.session.add(order)
                 self.request.registry.notify(DeliveryErrorEvent(e, self.request, order))
                 raise
         # transaction.commit() で order がデタッチされるので再度アタッチ
-        DBSession.add(order)
+        self.session.add(order)
         return order
 
     def call_delivery(self, order):

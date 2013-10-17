@@ -279,7 +279,7 @@ def index(request):
 
     form_search = OrderSearchForm(params, organization_id=organization_id)
     from .download import OrderSummary
-    if request.method == "POST" and form_search.validate():
+    if form_search.validate():
         query = OrderSummary(slave_session,
                             organization_id,
                             condition=form_search)
@@ -310,7 +310,7 @@ def index(request):
         'page': page,
     }
 
-@view_config(route_name='orders.download')
+#@view_config(route_name='orders.download')
 def download(request):
     slave_session = get_db_session(request, name="slave")
 
@@ -340,15 +340,15 @@ def download(request):
 
     if export_type == OrderCSV.EXPORT_TYPE_ORDER:
         query = OrderSummaryKeyBreakAdapter(query, 'id',
-                                ('product_price', 'product_quantity',
-                                 'product_name',
-                                 'product_sales_segment', 'product_margin_ratio'),
-                                'product_id',
-                                ('item_name', 'item_price', 'item_quantity'),
-                                'product_item_id',
-                                ('item_print_histories',),
-                                ('seat_name',),
-                                'seat_id',)
+                                            ('product_price', 'product_quantity',
+                                             'product_name',
+                                             'product_sales_segment', 'product_margin_ratio'),
+                                            'product_id',
+                                            ('item_name', 'item_price', 'item_quantity'),
+                                            'product_item_id',
+                                            ('item_print_histories',),
+                                            ('seat_name',),
+                                            'seat_id',)
         csv_headers = ([
             "order_no",
             "status",
@@ -361,14 +361,16 @@ def download(request):
             "transaction_fee",
             "delivery_fee",
             "system_fee",
+            "special_fee",
             "margin",
             "note",
+            "special_fee_name",
             "card_brand",
             "card_ahead_com_code",
             "card_ahead_com_name",
             "billing_number",
             "exchange_number",
-            #"メールマガジン受信可否",
+            "mail_permission", #"メールマガジン受信可否",
             "user_last_name",
             "user_first_name",
             "user_last_name_kana",
@@ -415,14 +417,16 @@ def download(request):
             "transaction_fee",  # 決済手数料
             "delivery_fee",  # 配送手数料
             "system_fee",  # システム利用料
+            "special_fee",  # 特別手数料
             "margin",  # 内手数料金額
             "note",  # メモ
+            "special_fee_name", # 特別手数料名
             "card_brand",  # カードブランド
             "card_ahead_com_code",  #  仕向け先企業コード
             "card_ahead_com_name",  # 仕向け先企業名
             "billing_number",  # SEJ払込票番号
             "exchange_number",  # SEJ引換票番号
-            #メールマガジン受信可否
+            "mail_permission", #"メールマガジン受信可否",
             "user_last_name",  # 姓
             "user_first_name",  # 名
             "user_last_name_kana",  # 姓(カナ)
@@ -464,7 +468,7 @@ def download(request):
             "seat_quantity",  # 商品明細個数
             "item_print_histories",  #発券作業者
             "seat_name",  # 座席名
-        ]
+        ] + query.extra_headers
 
     headers = [
         ('Content-Type', 'application/octet-stream; charset=Windows-31J'),
@@ -472,9 +476,25 @@ def download(request):
     ]
 
     response = Response(headers=headers)
-    iheaders = header_intl(csv_headers, japanese_columns)
+    ordered_product_metadata_provider_registry = get_ordered_product_metadata_provider_registry(request)
+    iheaders = header_intl(csv_headers, japanese_columns,
+                           ordered_product_metadata_provider_registry)
     logger.debug("csv headers = {0}".format(csv_headers))
-    results = iter(query)
+    results = list(query)
+
+    # from .download import MailPermissionCache
+    # mail_perms = set([m['email'] for m in 
+    #                   MailPermissionCache(slave_session,
+    #                                       organization_id,
+    #                                       condition=form_search)])
+
+    # for row in results:
+    #     m1, m2 = row.get('email_1'), row.get('email_2')
+    #     if m1 in mail_perms or m2 in mail_perms:
+    #         row['mail_permission'] = '1'
+    #     else:
+    #         row['mail_permission'] = ''
+
     writer = csv.writer(response, delimiter=',')
 
     if excel_csv:
@@ -506,17 +526,19 @@ def download(request):
         return format_number(float(v))
 
     renderers = dict()
-    for n in ('total_amount', 'transaction_fee', 'delimiter', 'system_fee', 'margin', 'product_margin', 'product_price', 'item_price'):
+    for n in ('total_amount', 'transaction_fee', 'delimiter', 'system_fee', 'special_fee', 'margin', 'product_margin', 'product_price', 'item_price'):
         renderers[n] = render_currency
 
     renderers['zip'] = render_zip
 
-    for n in ('created_at', 'paid_at', 'delivered_at', 'canceled_at', 'performance_start_on', 'product_quantity', 'item_quantity'):
-        renderers[n] = render_plain
+    # for n in ('created_at', 'paid_at', 'delivered_at', 'canceled_at', 'performance_start_on', 'product_quantity', 'item_quantity', 'seat_quantity'):
+    #     renderers[n] = render_plain
+    for n in ('order_no', 'tel_1', 'tel_2', 'fax'):
+        renderers[n] = render_text
 
     def render(name, v):
         name, _, _ = name.partition('[')
-        renderer = renderers.get(name, render_text)
+        renderer = renderers.get(name, render_plain)
         return renderer(v)
 
     writer.writerows([[encode_to_cp932(c)
@@ -569,7 +591,7 @@ class Orders(BaseView):
             'page': page,
         }
 
-    # @view_config(route_name='orders.download')
+    @view_config(route_name='orders.download')
     def download(self):
         slave_session = get_db_session(self.request, name="slave")
 
@@ -972,11 +994,12 @@ class OrderDetailView(BaseView):
         try:
             if not f.validate():
                 raise ValidationError()
-
             new_order = Order.clone(order, deep=True)
             new_order.system_fee = f.system_fee.data
             new_order.transaction_fee = f.transaction_fee.data
             new_order.delivery_fee = f.delivery_fee.data
+            new_order.special_fee = f.special_fee.data
+            new_order.special_fee_name = f.special_fee_name.data
 
             for op, nop in itertools.izip(order.items, new_order.items):
                 # 個数が変更できるのは数受けのケースのみ
@@ -995,7 +1018,7 @@ class OrderDetailView(BaseView):
                 nop.price = sum(nopi.price * nopi.product_item.quantity for nopi in nop.ordered_product_items)
 
             total_amount = sum(nop.price * nop.quantity for nop in new_order.items)\
-                           + new_order.system_fee + new_order.transaction_fee + new_order.delivery_fee
+                           + new_order.system_fee + new_order.transaction_fee + new_order.delivery_fee + new_order.special_fee
             if new_order.payment_status != 'unpaid':
                 if total_amount != new_order.total_amount:
                     raise ValidationError(u'入金済みの為、合計金額は変更できません')
