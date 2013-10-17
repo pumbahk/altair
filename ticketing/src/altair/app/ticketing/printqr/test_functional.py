@@ -4,10 +4,10 @@ from pyramid import testing
 from datetime import datetime
 import transaction
 import mock
+from ..testing import SetUpTearDownManager 
 from .testing import (
     setUpSwappedDB, 
     tearDownSwappedDB, 
-    SetupTearDownManager, 
     DummyRequest
 )
 
@@ -433,7 +433,7 @@ class QRTestsWithoutSeat(BaseTests):
             self.token.printed_at = None
             self.token.refreshed_at = None
             
-        with SetupTearDownManager(setup, teardown):
+        with SetUpTearDownManager(setup, teardown):
             result = do_view(
                 _getTarget(), 
                 request=DummyRequest(
@@ -463,7 +463,7 @@ class QRTestsWithoutSeat(BaseTests):
             from .views import ticket_after_printed_edit_status
             return ticket_after_printed_edit_status
            
-        with SetupTearDownManager(teardown=teardown):
+        with SetUpTearDownManager(teardown=teardown):
             prev = TicketPrintHistory.query.count()
             result = do_view(
                 _getTarget(), 

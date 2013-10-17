@@ -2,13 +2,14 @@
 
 from pyramid.decorator import reify
 from altair.app.ticketing.core import models as c_models
-from zope.interface import implementer
+from zope.interface import implementer, provider
 
 from .interfaces import ICompleteMailPayment, ICompleteMailDelivery
 from .interfaces import IOrderCancelMailPayment, IOrderCancelMailDelivery
 from .interfaces import ILotsAcceptedMailPayment, ILotsAcceptedMailDelivery
 from .interfaces import ILotsElectedMailPayment, ILotsElectedMailDelivery
 from .interfaces import ILotsRejectedMailPayment, ILotsRejectedMailDelivery
+from .interfaces import IMailDataStoreGetter
 from .api import get_mail_utility
 
 def payment_key(order, k):
@@ -20,6 +21,11 @@ def delivery_key(order, k):
     return "D%s%s" % (delivery_plugin_id, k)
 
 
+@provider(IMailDataStoreGetter)
+def get_mail_data_store(request, order, mtype):
+    mutil = get_mail_utility(request, mtype)
+    return mutil.get_traverser(request, order).data
+    
 class MailForOrderContext(object):
     mtype = None
     get_key = None
@@ -28,12 +34,12 @@ class MailForOrderContext(object):
         self.order = order
 
     @reify
-    def mailinfo_traverser(self):
-        mutil = get_mail_utility(self.request, self.__class__.mtype)
-        return mutil.get_traverser(self.request, self.order)
+    def mail_data_store(self):
+        getter = self.request.registry.getUtility(IMailDataStoreGetter)
+        return getter(self.request, self.order, self.__class__.mtype)
 
     def mail_data(self, k):
-        return self.mailinfo_traverser.data[self.__class__.get_key(self.order, k)]
+        return self.mail_data_store[self.__class__.get_key(self.order, k)]
 
 @implementer(ICompleteMailDelivery)
 class PurchaseCompleteMailDelivery(MailForOrderContext):
