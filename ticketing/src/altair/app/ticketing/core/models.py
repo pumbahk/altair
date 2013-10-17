@@ -2647,6 +2647,8 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         order = Order.clone(self, deep=True)
         if self.refund.include_system_fee:
             order.system_fee = 0
+        if self.refund.include_special_fee:
+            order.special_fee = 0
         if self.refund.include_transaction_fee:
             order.transaction_fee = 0
         if self.refund.include_delivery_fee:
