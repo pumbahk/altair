@@ -66,7 +66,7 @@ def includeme(config):
     config.add_subscriber('.workers.on_delivery_error',
                           'altair.app.ticketing.payments.events.DeliveryErrorEvent')
 
-    config.scan(".workers")
+    #config.scan(".workers")
     #config.scan(".subscribers")
 
 
