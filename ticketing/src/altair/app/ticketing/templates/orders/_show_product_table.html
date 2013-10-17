@@ -125,6 +125,15 @@
       <td></td>
       <td style="text-align: right;">${vh.price(order.system_fee)}</td>
     </tr>
+    %if order.special_fee_name:
+    <tr>
+      <td colspan="2">${order.special_fee_name}</td>
+      <td></td>
+      <td></td>
+      <td></td>
+      <td style="text-align: right;">${vh.price(order.special_fee)}</td>
+    </tr>
+    %endif
     <tr>
       <td colspan="2" class="span2"><strong>合計</strong></td>
       <td></td>

@@ -1,6 +1,6 @@
 # encoding: utf-8
 
-from altair.app.ticketing.sej.api import create_sej_notification_data_from_record
+from altair.app.ticketing.sej.notification.builder import SejNotificationRequestParamBuilder
 from altair.app.ticketing.sej import models as sej_models
 from pyramid.paster import bootstrap
 from sqlalchemy.sql.expression import desc
@@ -57,6 +57,29 @@ def create_payment_notification_from_order(shop_id, order):
         processed_at=datetime.now()
         )
 
+def create_cancel_notification_from_order(shop_id, order):
+    sej_order = get_sej_order(order.order_no)
+    return sej_models.SejNotification(
+        notification_type=sej_models.SejNotificationType.CancelFromSVC.v,
+        process_number=generate_process_number(order),
+        shop_id=shop_id,
+        order_no=sej_order.order_no,
+        payment_type=sej_order.payment_type,
+        ticketing_due_at=sej_order.ticketing_due_at,
+        billing_number=sej_order.billing_number,
+        exchange_number=sej_order.exchange_number,
+        total_price=sej_order.total_price,
+        ticket_count=sej_order.ticket_count,
+        total_ticket_count=sej_order.total_ticket_count,
+        pay_store_name=u'テスト店舗',
+        pay_store_number=u'000000',
+        ticketing_store_name=u'テスト店舗',
+        ticketing_store_number=u'000000',
+        cancel_reason=u'',
+        return_ticket_count=0,
+        processed_at=datetime.now()
+        )
+
 def create_regrant_notification_from_order(shop_id, order):
     sej_order = get_sej_order(order.order_no)
     billing_number_new = sej_order.billing_number and '%d' % (int(sej_order.billing_number) + 1)
@@ -93,6 +116,7 @@ def create_regrant_notification_from_order(shop_id, order):
 
 actions = {
     sej_models.SejNotificationType.PaymentComplete.v: create_payment_notification_from_order,
+    sej_models.SejNotificationType.CancelFromSVC.v:   create_cancel_notification_from_order,
     sej_models.SejNotificationType.TicketingExpire.v: create_expire_notification_from_order,
     sej_models.SejNotificationType.ReGrant.v:         create_regrant_notification_from_order,
     }
@@ -108,9 +132,8 @@ def main(env, args):
             raise ApplicationError('unknown action')
         order = DBSession.query(c_models.Order).filter_by(order_no=args[1]).one()
         tenant = DBSession.query(sej_models.SejTenant).filter_by(organization_id=order.organization_id).one()
-        params = create_sej_notification_data_from_record(
-            action(tenant.shop_id, order),
-            tenant.api_key or settings['sej.api_key'])
+        builder = SejNotificationRequestParamBuilder(tenant.api_key or settings['sej.api_key'])
+        params = builder(action(tenant.shop_id, order))
         sys.stdout.write(uniurlencode(params, method='raw', encoding='CP932'))
     except ApplicationError as e:
         sys.stderr.write(e.message + "\n")

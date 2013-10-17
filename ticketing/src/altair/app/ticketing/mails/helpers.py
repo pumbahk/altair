@@ -78,13 +78,13 @@ def render_delivery_lots_accepted_mail_viewlet(request, lot_entry):
 def render_payment_lots_accepted_mail_viewlet(request, lot_entry):
     return LotsAcceptedMailPayment(request, lot_entry)
 
-@as_delivery_viewlet(faildefault="", message="*lots_elected mail*: %s is not found", get_pdmp=get_pdmp_order)
-def render_delivery_lots_elected_mail_viewlet(request, order):
-    return LotsElectedMailDelivery(request, order)
+@as_delivery_viewlet(faildefault="", message="*lots_elected mail*: %s is not found", get_pdmp=get_pdmp_lot_entry)
+def render_delivery_lots_elected_mail_viewlet(request, lot_entry):
+    return LotsElectedMailDelivery(request, lot_entry)
 
-@as_payment_viewlet(faildefault="", message="*lots_elected mail*: %s is not found", get_pdmp=get_pdmp_order)
-def render_payment_lots_elected_mail_viewlet(request, order):
-    return LotsElectedMailPayment(request, order)
+@as_payment_viewlet(faildefault="", message="*lots_elected mail*: %s is not found", get_pdmp=get_pdmp_lot_entry)
+def render_payment_lots_elected_mail_viewlet(request, lot_entry):
+    return LotsElectedMailPayment(request, lot_entry)
 
 @as_delivery_viewlet(faildefault="", message="*lots_rejected mail*: %s is not found", get_pdmp=get_pdmp_lot_entry)
 def render_delivery_lots_rejected_mail_viewlet(request, lot_entry):

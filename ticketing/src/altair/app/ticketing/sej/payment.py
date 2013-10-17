@@ -19,14 +19,13 @@ from .models import (
     SejTicketType
     )
 from .helpers import (
-    make_sej_response,
     parse_sej_response,
     create_sej_request,
     create_request_params,
     create_sej_request_data,
     create_hash_from_x_start_params
     )
-from .exceptions import SejResponseError, SejServerError, SejError
+from .exceptions import SejServerError, SejError
 
 import sqlahelper
 

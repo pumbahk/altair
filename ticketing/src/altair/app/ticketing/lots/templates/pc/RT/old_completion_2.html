@@ -44,6 +44,12 @@
                 <th class="line">システム利用料</th>
                 <td class="line">${h.format_currency(order.system_fee)}</td>
               </tr>
+              %if order.special_fee > 0:
+              <tr>
+                <th class="line">${order.special_fee_name}</th>
+                <td class="line">${h.format_currency(order.special_fee)}</td>
+              </tr>
+              %endif
               <tr>
                 <th><strong>合計金額</strong></th>
                 <td><strong>${h.format_currency(order.total_amount)}</strong></td>

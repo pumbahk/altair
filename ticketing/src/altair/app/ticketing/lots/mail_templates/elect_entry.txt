@@ -37,6 +37,10 @@ ${product.product.name} ${h.format_currency(product.product.price)} x ${product.
 %endfor
 チケット代金計：${h.format_currency(elected_wish.tickets_amount)}
 システム利用料：${h.format_currency(elected_wish.system_fee)}円（税込）
+%if wish.special_fee > 0:
+${wish.special_fee_name}：${h.format_currency(wish.special_fee)}円（税込）
+%endif
+
 
 
 ■お支払

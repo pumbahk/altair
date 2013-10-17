@@ -1299,6 +1299,11 @@ class PaymentDeliveryMethodPair(Base, BaseModel, WithTimestamp, LogicallyDeleted
     delivery_method_id = AnnotatedColumn(Identifier, ForeignKey('DeliveryMethod.id'), _a_label=_(u'引取方法'))
     delivery_method = relationship('DeliveryMethod', backref='payment_delivery_method_pairs')
 
+    special_fee_name = AnnotatedColumn(String(255), nullable=False, _a_label=_(u'特別手数料名'), default="")
+    special_fee = AnnotatedColumn(Numeric(precision=16, scale=2), nullable=False,
+                                  _a_label=_(u'特別手数料'), default=FeeTypeEnum.Once.v[0])
+    special_fee_type = Column(Integer, nullable=False, default=FeeTypeEnum.Once.v[0])
+
     @property
     def delivery_fee_per_product(self):
         """商品ごとの引取手数料"""
@@ -1363,17 +1368,38 @@ class PaymentDeliveryMethodPair(Base, BaseModel, WithTimestamp, LogicallyDeleted
             return Decimal()
 
     @property
+    def special_fee_per_product(self):
+        """商品ごとの特別手数料"""
+        return Decimal()
+
+    @property
+    def special_fee_per_ticket(self):
+        """発券ごとの特別手数料"""
+        if self.special_fee_type == FeeTypeEnum.PerUnit.v[0]:
+            return self.special_fee
+        else:
+            return Decimal()
+
+    @property
+    def special_fee_per_order(self):
+        """注文ごとの特別手数料"""
+        if self.special_fee_type == FeeTypeEnum.Once.v[0]:
+            return self.special_fee
+        else:
+            return Decimal()
+
+    @property
     def per_order_fee(self):
         """注文ごと手数料"""
-        return self.system_fee_per_order + self.delivery_fee_per_order + self.transaction_fee_per_order
+        return self.system_fee_per_order + self.special_fee_per_order + self.delivery_fee_per_order + self.transaction_fee_per_order
 
     @property
     def per_product_fee(self):
-        return self.system_fee_per_product + self.delivery_fee_per_product + self.transaction_fee_per_product
+        return self.system_fee_per_product + self.special_fee_per_product + self.delivery_fee_per_product + self.transaction_fee_per_product
     
     @property
     def per_ticket_fee(self):
-        return self.system_fee_per_ticket + self.delivery_fee_per_ticket + self.transaction_fee_per_ticket
+        return self.system_fee_per_ticket + self.special_fee_per_ticket + self.delivery_fee_per_ticket + self.transaction_fee_per_ticket
 
     def is_available_for(self, sales_segment, on_day):
         return self.public and (
@@ -1599,14 +1625,18 @@ class ProductItem(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             product_item.performance_id = kwargs['performance_id']
         if 'product_id' in kwargs:
             product_item.product_id = kwargs['product_id']
+            product = Product.query.filter_by(id=kwargs['product_id']).first()
+            product_item.performance_id = product.performance_id
         if 'stock_id' in kwargs:
             product_item.stock_id = kwargs['stock_id']
-        elif 'stock_holder_id' in kwargs and kwargs['stock_holder_id']:
-            conditions ={
-                'performance_id':product_item.performance_id,
-                'stock_holder_id':kwargs['stock_holder_id'],
-                'stock_type_id':template.stock.stock_type_id
-            }
+        else:
+            conditions = dict(
+                performance_id=product_item.performance_id,
+                stock_holder_id=template.stock.stock_holder_id,
+                stock_type_id=template.stock.stock_type_id
+            )
+            if 'stock_holder_id' in kwargs and kwargs['stock_holder_id']:
+                conditions['stock_holder_id'] = kwargs['stock_holder_id']
             stock = Stock.filter_by(**conditions).first()
             product_item.stock = stock
         product_item.save()
@@ -2251,6 +2281,10 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     items = relationship('OrderedProduct')
     total_amount = Column(Numeric(precision=16, scale=2), nullable=False)
     system_fee = Column(Numeric(precision=16, scale=2), nullable=False)
+    
+    special_fee_name = Column(String(255), nullable=False, default="")
+    special_fee = Column(Numeric(precision=16, scale=2), nullable=False, default=0)
+    
     transaction_fee = Column(Numeric(precision=16, scale=2), nullable=False)
     delivery_fee = Column(Numeric(precision=16, scale=2), nullable=False)
 
@@ -2613,6 +2647,8 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         order = Order.clone(self, deep=True)
         if self.refund.include_system_fee:
             order.system_fee = 0
+        if self.refund.include_special_fee:
+            order.special_fee = 0
         if self.refund.include_transaction_fee:
             order.transaction_fee = 0
         if self.refund.include_delivery_fee:
@@ -2683,6 +2719,7 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             for opi, nopi in itertools.izip(op.ordered_product_items, nop.ordered_product_items):
                 nopi.seats = opi.seats
                 nopi.attributes = opi.attributes
+
         new_order.add()
         origin.delete(force=True)
         return Order.get(new_order.id, new_order.organization_id)
@@ -2700,6 +2737,8 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             shipping_address=cart.shipping_address,
             payment_delivery_pair=cart.payment_delivery_pair,
             system_fee=cart.system_fee,
+            special_fee_name=cart.special_fee_name,
+            special_fee=cart.special_fee,
             transaction_fee=cart.transaction_fee,
             delivery_fee=cart.delivery_fee,
             performance=cart.performance,
@@ -2730,6 +2769,7 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                         valid=True #valid=Falseの時は何時だろう？
                         )
                     ordered_product_item.tokens.append(token)
+        DBSession.flush() # これとっちゃだめ
         return order
 
     @staticmethod
@@ -3209,7 +3249,7 @@ class TicketPrintHistory(Base, BaseModel, WithTimestamp):
     item_token = relationship('OrderedProductItemToken')
     order_id = Column(Identifier, ForeignKey('Order.id'), nullable=True)
     order = relationship('Order')
-    ticket_id = Column(Identifier, ForeignKey('Ticket.id'), nullable=False)
+    ticket_id = Column(Identifier, ForeignKey('Ticket.id'), nullable=True)
     ticket = relationship('Ticket')
 
 class PageFormat(Base, BaseModel, WithTimestamp, LogicallyDeleted):
@@ -3343,6 +3383,7 @@ class Refund(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     payment_method_id = Column(Identifier, ForeignKey('PaymentMethod.id'))
     payment_method = relationship('PaymentMethod')
     include_system_fee = Column(Boolean, nullable=False, default=False)
+    include_special_fee = Column(Boolean, nullable=False, default=False)
     include_transaction_fee = Column(Boolean, nullable=False, default=False)
     include_delivery_fee = Column(Boolean, nullable=False, default=False)
     include_item = Column(Boolean, nullable=False, default=False)
@@ -3355,6 +3396,8 @@ class Refund(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         total_fee = 0
         if self.include_system_fee:
             total_fee += order.system_fee
+        if self.include_special_fee:
+            total_fee += order.special_fee
         if self.include_transaction_fee:
             total_fee += order.transaction_fee
         if self.include_delivery_fee:
@@ -3597,6 +3640,12 @@ class SalesSegment(Base, BaseModel, LogicallyDeleted, WithTimestamp):
         return pdmp.system_fee_per_order + sum([
             (pdmp.system_fee_per_product + \
              pdmp.system_fee_per_ticket * product.num_priced_tickets(pdmp)) * quantity
+            for product, quantity in product_quantities])
+
+    def get_special_fee(self, pdmp, product_quantities):
+        return pdmp.special_fee_per_order + sum([
+            (pdmp.special_fee_per_product + \
+             pdmp.special_fee_per_ticket * product.num_priced_tickets(pdmp)) * quantity
             for product, quantity in product_quantities])
 
     def get_products_amount(self, pdmp, product_quantities):

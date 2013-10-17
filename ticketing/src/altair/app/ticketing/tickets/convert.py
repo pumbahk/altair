@@ -9,6 +9,7 @@ import cssutils
 import numpy
 import logging
 import itertools
+from collections import OrderedDict
 
 __all__ = (
     'to_opcodes',
@@ -56,6 +57,22 @@ def _len(value):
     try:
         return len(value)
     except TypeError:
+        return None
+
+def singletons(elem):
+    def helper(l, elem):
+        l.append(elem)
+        tail, text = elem.tail, elem.text
+        if len(elem) == 0:
+            return True
+        elif len(elem) == 1 and not (tail and tail.strip()) and not (text and text.strip()):
+            return helper(l, elem[0])
+        else:
+            return False
+    retval = []
+    if helper(retval, elem):
+        return retval
+    else:
         return None
 
 class TicketNotationEmitter(object):
@@ -303,6 +320,29 @@ class Optimizer(object):
                 break
         return opcodes[0:i+1]
 
+    def remove_unnecessary_specifiers(self, opcodes):
+        nonstacked_style_specifiers = ('fill_color', 'stroke_color', 'stroke_width', 'font_size', 'line_height')
+        retval = []
+        accumulated_styles = None
+        state = 0
+        for pair in opcodes:
+            if state == 0:
+                if pair[0] in nonstacked_style_specifiers:
+                    accumulated_styles = OrderedDict()
+                    accumulated_styles[pair[0]] = pair
+                    state = 1
+                else:
+                    retval.append(pair)
+            elif state == 1:
+                if pair[0] in nonstacked_style_specifiers:
+                    accumulated_styles[pair[0]] = pair
+                else:
+                    retval.extend(accumulated_styles.values())
+                    retval.append(pair)
+                    pair = 0
+                    state = 0
+        return retval
+
     def remove_unnecessary_push_pop(self, opcodes):
         retval = []
         last_push = None
@@ -327,6 +367,7 @@ class Optimizer(object):
 
     def __call__(self, opcodes):
         opcodes = self.remove_unnecessary_push_pop(opcodes)
+        opcodes = self.remove_unnecessary_specifiers(opcodes)
         opcodes = self.remove_unnecessary_modifiers(opcodes)
         return opcodes
 
@@ -473,12 +514,13 @@ class EmittingPathDataHandler(object):
         self.emitter.emit_arc(rx, ry, phi, largearc, sweep, x, y)
 
 class StyleNoneType(object):
-    pass
+    def __repr__(self):
+        return 'StyleNone'
 
 StyleNone = StyleNoneType()
 
 class Style(object):
-    __slots__ = [
+    __attrs__ = __slots__ = [
         'fill_color',
         'stroke_color',
         'stroke_width',
@@ -501,6 +543,9 @@ class Style(object):
                 for key in self.__slots__
                 )
             )
+
+    def __repr__(self):
+        return 'Style(%s)' % ', '.join('%s=%r' % (k, getattr(self, k)) for k in self.__attrs__)
 
 def text_and_elements(elem):
     if isinstance(elem, unicode):
@@ -552,6 +597,7 @@ class Visitor(object):
                   stroke_color=StyleNone,
                   stroke_width=1,
                   font_size=12,
+                  line_height=StyleNone,
                   text_anchor='start'),
             {})
         self.style_stack = []
@@ -992,7 +1038,6 @@ class Visitor(object):
     def visit_flowRoot(self, scanner, ns, local_name, elem):
         flow_region_visited = False
         flow_div_visited = False
-        self.apply_styles(elem)
         contents = []
         for n in elem:
             if n.tag == u'{%s}flowRegion' % SVG_NAMESPACE:
@@ -1008,15 +1053,18 @@ class Visitor(object):
         if not flow_region_visited:
             raise Exception('<flowRoot> contains no <flowRegion>')
 
-        if contents: 
-            if len(contents) == 1:
-                emission = self._html_emitter(self.flow_bbox, self.build_html_from_flow_elements(text_and_elements(contents[0])))
+        if contents:
+            singleton_elems = len(contents) == 1 and singletons(contents[0])
+            if singleton_elems:
+                emission = self._html_emitter(self.flow_bbox, self.build_html_from_flow_elements(text_and_elements(singleton_elems[-1])))
                 # Specially treat a sole container element :-p
                 if emission:
                     self.emitter.emit_move_to(self.flow_bbox[0], self.flow_bbox[1])
-                    self.apply_styles(contents[0])
+                    for elem in singleton_elems:
+                        self.apply_styles(elem)
                     emission()
-                    self.unapply_styles()
+                    for _ in singleton_elems:
+                        self.unapply_styles()
             else:
                 emission = self._html_emitter(self.flow_bbox, self.build_html_from_flow_elements(contents))
                 if emission:

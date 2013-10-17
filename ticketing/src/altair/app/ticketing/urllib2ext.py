@@ -17,9 +17,14 @@ class SensibleRequest(urllib2.Request):
             x = userinfo_and_host.split('@', 1)
             if len(x) == 1:
                 x = (None, x[0])
-            userinfo = x[0].split(':', 1)
-            if len(userinfo) == 1:
-                userinfo = (userinfo[0], None)
+            if x[0] is not None:
+                userinfo = x[0].split(':', 1)
+                if len(userinfo) == 1:
+                    userinfo = (userinfo[0], None)
+                else:
+                    userinfo = tuple(userinfo)
+            else:
+                userinfo = None
             self.host = x[1]
             self.userinfo = userinfo
 

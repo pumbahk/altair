@@ -1,6 +1,6 @@
 # -*- coding:utf-8 -*-
 """
-予約番号	ステータス	決済ステータス	予約日時	支払日時	配送日時	キャンセル日時	合計金額	決済手数料	配送手数料	システム利用料	内手数料金額	メモ	カードブランド	仕向け先企業コード	仕向け先企業名	SEJ払込票番号	SEJ引換票番号	メールマガジン受信可否	姓	名	姓(カナ)	名(カナ)	ニックネーム	性別	会員種別名	会員グループ名	会員種別ID	配送先姓	配送先名	配送先姓(カナ)	配送先名(カナ)	郵便番号	国	都道府県	市区町村	住所1	住所2	電話番号1	電話番号2	FAX	メールアドレス1	メールアドレス2	決済方法	引取方法	イベント	公演	公演コード	公演日	会場	商品単価[0]	商品個数[0]	商品名[0]	販売区分[0]	販売手数料率[0]	商品明細名[0][0]	商品明細単価[0][0]	商品明細個数[0][0]	発券作業者[0][0]	座席名[0][0][0]
+予約番号	ステータス	決済ステータス	予約日時	支払日時	配送日時	キャンセル日時	合計金額	決済手数料	配送手数料	システム利用料	特別手数料	内手数料金額	メモ	特別手数料	カードブランド	仕向け先企業コード	仕向け先企業名	SEJ払込票番号	SEJ引換票番号	メールマガジン受信可否	姓	名	姓(カナ)	名(カナ)	ニックネーム	性別	会員種別名	会員グループ名	会員種別ID	配送先姓	配送先名	配送先姓(カナ)	配送先名(カナ)	郵便番号	国	都道府県	市区町村	住所1	住所2	電話番号1	電話番号2	FAX	メールアドレス1	メールアドレス2	決済方法	引取方法	イベント	公演	公演コード	公演日	会場	商品単価[0]	商品個数[0]	商品名[0]	販売区分[0]	販売手数料率[0]	商品明細名[0][0]	商品明細単価[0][0]	商品明細個数[0][0]	発券作業者[0][0]	座席名[0][0][0]
 
 """
 
@@ -26,6 +26,7 @@ from altair.app.ticketing.core.models import (
     orders_seat_table,
     Order,
     OrderedProduct,
+    OrderedProductAttribute,
     OrderedProductItem,
     PaymentDeliveryMethodPair,
     PaymentMethod,
@@ -44,6 +45,11 @@ from altair.app.ticketing.users.models import (
 )
 from altair.app.ticketing.operators.models import (
     Operator,
+)
+from altair.app.ticketing.mailmags.models import (
+    MailSubscription,
+    MailMagazine,
+    MailSubscriptionStatus,
 )
 from altair.app.ticketing.sej.models import SejOrder
 from altair.keybreak import (
@@ -71,6 +77,8 @@ japanese_columns = {
     u'transaction_fee': u'決済手数料',
     u'delivery_fee': u'配送手数料',
     u'system_fee': u'システム利用料',
+    u'special_fee': u'特別手数料',
+    u'special_fee_name': u'特別手数料名',
     u'margin': u'内手数料金額',
     u'note': u'メモ',
     u'card_brand': u'カードブランド',
@@ -151,12 +159,16 @@ t_seat = Seat.__table__
 t_print_hisotry = TicketPrintHistory.__table__
 t_ordered_product = OrderedProduct.__table__
 t_ordered_product_item = OrderedProductItem.__table__
+t_ordered_product_attribute = OrderedProductAttribute.__table__
 t_product = Product.__table__
 t_product_item = ProductItem.__table__
 t_venue = Venue.__table__
 t_membership = Membership.__table__
 t_member_group = MemberGroup.__table__
 t_operator = Operator.__table__
+t_mail_subscription = MailSubscription.__table__
+t_mailmagazine = MailMagazine.__table__
+
 
 summary_columns = [
     t_order.c.id,
@@ -250,14 +262,34 @@ detail_summary_columns = summary_columns + [
     t_order.c.transaction_fee, #決済手数料
     t_order.c.delivery_fee, #配送手数料
     t_order.c.system_fee, #システム利用料
+    t_order.c.special_fee, #特別手数料
     (t_order.c.total_amount * t_sales_segment.c.margin_ratio / 100).label('margin'), 
     # t_order.c.margin, #内手数料金額
     t_order.c.note, #メモ
-
+    t_order.c.special_fee_name, #特別手数料名
     # SEJOrder
-    t_sej_order.c.billing_number, #SEJ払込票番号
-    t_sej_order.c.exchange_number, #SEJ引換票番号
-
+    select([t_sej_order.c.billing_number],
+           whereclause=and_(
+               t_sej_order.c.deleted_at==None,
+               t_sej_order.c.order_no==t_order.c.order_no,
+               t_sej_order.c.branch_no==select([func.max(t_sej_order.c.branch_no)],
+                                              from_obj=t_sej_order,
+                                              whereclause=and_(
+                                                  t_sej_order.c.deleted_at==None
+                                              )
+                                          ).as_scalar(),
+           )).label('billing_number'), #SEJ払込票番号
+    select([t_sej_order.c.exchange_number],
+           whereclause=and_(
+               t_sej_order.c.deleted_at==None,
+               t_sej_order.c.order_no==t_order.c.order_no,
+               t_sej_order.c.branch_no==select([func.max(t_sej_order.c.branch_no)],
+                                              from_obj=t_sej_order,
+                                              whereclause=and_(
+                                                  t_sej_order.c.deleted_at==None
+                                              )
+                                          ).as_scalar(),
+               )).label('exchange_number'),  #SEJ引換票番号
     #UserProfile
     #メールマガジン受信可否
     t_user_profile.c.last_name.label('user_last_name'), #姓
@@ -307,7 +339,7 @@ detail_summary_columns = summary_columns + [
     t_ordered_product.c.quantity.label('product_quantity'), #商品個数[0]
     t_product_sales_segment_group.c.name.label('product_sales_segment'), #販売区分[0]
     t_product_sales_segment.c.margin_ratio.label('product_margin_ratio'), #販売手数料率[0] margin_ratio
-    (t_product.c.price * t_ordered_product.c.quantity * t_product_sales_segment.c.margin_ratio / 100).label('product_margin'),
+    #(t_product.c.price * t_ordered_product.c.quantity * t_product_sales_segment.c.margin_ratio / 100).label('product_margin'),
     # ProductItem
     t_product_item.c.id.label('product_item_id'), #商品明細名[0][0]
     t_product_item.c.name.label('item_name'), #商品明細名[0][0]
@@ -322,6 +354,9 @@ detail_summary_columns = summary_columns + [
           ],
           else_=t_ordered_product_item.c.quantity,
     ).label('seat_quantity'),
+    t_ordered_product_attribute.c.name.label('attribute_name'),
+    t_ordered_product_attribute.c.value.label('attribute_value'),
+    t_mail_subscription.c.id.label('mail_subscription'),
 ]
 
 order_summary_joins = t_order.join(
@@ -376,12 +411,7 @@ order_summary_joins = t_order.join(
     t_membership,
     and_(t_membership.c.id==t_user_credential.c.membership_id,
          t_membership.c.deleted_at==None),
-).outerjoin(
-    t_sej_order,
-    and_(t_sej_order.c.order_no==t_order.c.order_no,
-         t_sej_order.c.deleted_at==None),
 )
-
 
 order_product_summary_joins = order_summary_joins.join(
     t_ordered_product,
@@ -428,16 +458,42 @@ order_product_summary_joins = order_summary_joins.join(
 ).outerjoin(
     t_member_group_names,
     t_member_group_names.c.membership_id==t_membership.c.id,
+).outerjoin(
+    t_ordered_product_attribute,
+    and_(t_ordered_product_attribute.c.ordered_product_item_id==t_ordered_product_item.c.id,
+         t_ordered_product_attribute.c.deleted_at==None),
+).outerjoin(
+    t_mailmagazine,
+    t_mailmagazine.c.organization_id==t_organization.c.id
+).outerjoin(
+    t_mail_subscription,
+    and_(t_mail_subscription.c.email.in_(
+        [t_shipping_address.c.email_1,
+         t_shipping_address.c.email_2,]
+        ),
+         t_mail_subscription.c.segment_id==t_mailmagazine.c.id,
+         t_mail_subscription.c.status==MailSubscriptionStatus.Subscribed.v),
 )
 
 
-# Userに対してUserProfileが複数あると行数が増える可能性
+attr_pt = re.compile(r"attribute\[(?P<name>\w+)](\[(?P<i>\d+)\]\[(?P<j>\d+)\])?", re.UNICODE)
+def attribute_cols_sort_key(a):
+    m = attr_pt.match(a)
+    if m is None:
+        return None
+    d = m.groupdict()
+    if d['i'] and d['j']:
+        return int(d['i']), int(d['j']), d['name']
+    else:
+        return d['name']
+
 
 class SeatSummaryKeyBreakAdapter(object):
     def __init__(self, iter, key1, key2, childitems):
         self.results = []
         last_item = None
         breaked_items = []
+        attribute_cols = set()
 
         break_counter = KeyBreakCounter(keys=[key1, key2])
         first = True
@@ -455,12 +511,23 @@ class SeatSummaryKeyBreakAdapter(object):
                 self.results.append(result)
                 breaked_items = []
 
+            if item['attribute_name']:
+                name = "attribute[{0}]".format(item['attribute_name'])
+                attribute_cols.add(name)
+                if item['attribute_value']:
+                    breaked_items.append(
+                        (name,
+                         item['attribute_value']))
+
             for childitem in childitems:
                 name = "{0}".format(childitem)
                 if item[childitem]:
                     breaked_items.append(
                         (name,
                          item[childitem]))
+
+            if item['mail_subscription']:
+                item['mail_permission'] = '1'
             last_item = item
             first = False
 
@@ -478,6 +545,9 @@ class SeatSummaryKeyBreakAdapter(object):
         self.results.append(result)
         headers = list(result)
         self.headers = headers
+        self.extra_headers = []
+        self.extra_headers += sorted(list(attribute_cols),
+                                     key=attribute_cols_sort_key)
 
     def __iter__(self):
         return iter(self.results)
@@ -496,6 +566,7 @@ class OrderSummaryKeyBreakAdapter(object):
         break_counter = KeyBreakCounter(keys=[key, child1_key, child2_key, child3_key])
         #margin = 0  # very hack
         first = True
+        attribute_cols = set()
         for counter, key_changes, item in break_counter(iter):
             if key_changes[key] and not first:
                 result = OrderedDict(last_item)
@@ -531,6 +602,15 @@ class OrderSummaryKeyBreakAdapter(object):
                         (name,
                          item[childitem2]))
                     child2_count[counter[child1_key]] = max(child2_count.get(counter[child1_key], 0), counter[child2_key])
+
+            if item['attribute_name']:
+                name = "attribute[{0}][{1}][{2}]".format(item['attribute_name'], counter[child1_key], counter[child2_key])
+                attribute_cols.add(name)
+                if item['attribute_value']:
+                    breaked_items.append(
+                        (name,
+                         item['attribute_value']))
+
             for childitem3 in child3_comma_separated:
                 name = "{0}[{1}][{2}]".format(childitem3, counter[child1_key], counter[child2_key])
                 if item[childitem3]:
@@ -543,8 +623,10 @@ class OrderSummaryKeyBreakAdapter(object):
                     breaked_items.append(
                         (name, 
                          item[childitem3]))
-                child3_count[(counter[child1_key], counter[child2_key])] = max(child3_count.get((counter[child1_key], counter[child2_key]), 0), counter[child3_key])
+                    child3_count[(counter[child1_key], counter[child2_key])] = max(child3_count.get((counter[child1_key], counter[child2_key]), 0), counter[child3_key])
 
+            if item['mail_subscription']:
+                item['mail_permission'] = '1'
             last_item = item
             first = False
 
@@ -575,11 +657,13 @@ class OrderSummaryKeyBreakAdapter(object):
                 for k in range(child3_count.get((i, j), -1) + 1):
                     for n in child3_indexed:
                         self.extra_headers.append("{0}[{1}][{2}][{3}]".format(n, i, j, k))
+        self.extra_headers += sorted(list(attribute_cols),
+                                     key=attribute_cols_sort_key)
 
     def __iter__(self):
         return iter(self.results)
 
-def header_intl(headers, col_names):
+def header_intl(headers, col_names, ordered_product_metadata_provider_registry):
     for h in headers:
         if h.find('[') > -1:
             h, tail = h.split('[', 1)
@@ -587,7 +671,16 @@ def header_intl(headers, col_names):
         else:
             tail = ""
 
-        yield col_names[h] + tail
+        if h == "attribute":
+            key, tail = tail.lstrip("[").split("]", 1)
+            for provider in ordered_product_metadata_provider_registry.getProviders():
+                if key in provider:
+                    yield provider[key].get_display_name('ja_JP') + tail
+                    break
+            else:
+                yield h + "[" + key + "]" + tail
+        else:
+            yield col_names.get(h, h) + tail
 
 class OrderSearchBase(list):
 
@@ -671,11 +764,16 @@ class OrderSearchBase(list):
         # 氏名 name:
         if condition.name.data:
             value = condition.name.data
-            cond = and_(cond,
-                        or_(t_shipping_address.c.last_name + " " + t_shipping_address.c.first_name == value,
-                            t_shipping_address.c.last_name == value,
-                            t_shipping_address.c.first_name == value,
-                        ))
+            items = re.split(ur'[ \t　]+', value)
+            for item in items:
+                cond = and_(cond,
+                    or_(
+                        or_(t_shipping_address.c.first_name.like('%s%%' % item),
+                            t_shipping_address.c.last_name.like('%s%%' % item)),
+                        or_(t_shipping_address.c.first_name_kana.like('%s%%' % item),
+                            t_shipping_address.c.last_name_kana.like('%s%%' % item))
+                        )
+                    )
 
         # メールアドレス email:
         if condition.email.data:
@@ -701,14 +799,21 @@ class OrderSearchBase(list):
         if condition.ordered_to.data:
             value = condition.ordered_to.data
             cond = and_(cond,
-                        t_order.c.created_at<value)
+                        t_order.c.created_at<=value)
 
         # セブン−イレブン払込票/引換票番号
         if condition.billing_or_exchange_number.data:
             value = condition.billing_or_exchange_number.data
             cond = and_(cond,
-                        or_(t_sej_order.c.exchange_number==value,
-                            t_sej_order.c.billing_number==value))
+                        t_order.c.order_no.in_(
+                            select([t_sej_order.c.order_no],
+                                   whereclause=and_(
+                                       t_sej_order.c.deleted_at==None,
+                                       or_(
+                                           t_sej_order.c.exchange_number==value,
+                                           t_sej_order.c.billing_number==value))
+                               ).as_scalar()
+                        ))
 
         # イベント event_id
         if condition.event_id.data:
@@ -850,9 +955,10 @@ class OrderSearchBase(list):
 
     def __iter__(self):
         start = 0
-        stop = self.count()
+        #stop = self.count()
 
-        return self.execute(start, stop)
+        #return self.execute(start, stop)
+        return self.execute(start)
 
 
     def count(self):
@@ -874,9 +980,10 @@ class OrderSearchBase(list):
     def __getslice__(self, start, stop):
         return self.execute(start, stop)
 
-    def execute(self, start, stop):
-        logger.debug("start = {0}, stop = {1}".format(start, stop))
-        limit = min(1000, stop-start)
+    def execute(self, start, stop=None):
+        #logger.debug("start = {0}, stop = {1}".format(start, stop))
+        #limit = min(1000, stop-start)
+        limit = 1000
         offset = start
         while True:
             sql = select(self.columns, 
@@ -902,7 +1009,9 @@ class OrderSearchBase(list):
                         row.items()
                     )
                 offset = offset + limit
-                limit = min(stop - offset, limit)
+                if stop and offset > stop:
+                    break
+                #limit = min(stop - offset, limit)
                 if limit <= 0:
                     break
             finally:
@@ -922,6 +1031,15 @@ class OrderSearchBase(list):
         logger.debug("count = {0}".format(c))
         return c
 
+    def init_mailsub_joins(self):
+        self.columns = OrderDownload.columns + [
+            case([(func.exists(select([t_mail_subscription.c.id],
+                                      whereclause=t_mail_subscription.c.user_id==t_user.c.id).as_scalar()), '1'),
+                  ],
+                 else_='0'
+            ).label('mail_permission'),
+            ]
+
 class OrderSummary(OrderSearchBase):
     target = order_summary_joins
     columns = summary_columns
@@ -931,15 +1049,35 @@ class OrderSummary(OrderSearchBase):
 class OrderDownload(OrderSearchBase):
     target = order_product_summary_joins
     columns = detail_summary_columns
-    default_order = t_order.c.created_at.asc()
-    
+    default_order = [t_order.c.order_no.asc(),
+                     t_order.c.created_at.asc(),
+                     t_ordered_product.c.id,
+                     t_ordered_product_item.c.id,
+                     t_seat.c.id]
+
     def order_by(self, query):
-        return query.order_by(self.default_order)
+        return query.order_by(*self.default_order)
 
 class OrderSeatDownload(OrderSearchBase):
     target = order_product_summary_joins
     columns = detail_summary_columns
-    default_order = t_seat.c.id
+    default_order = [t_seat.c.id]
 
     def order_by(self, query):
-        return query.order_by(self.default_order)
+        return query.order_by(*self.default_order)
+
+class MailPermissionCache(OrderSearchBase):
+    target = t_mail_subscription.join(
+        t_mailmagazine,
+        t_mailmagazine.c.id==t_mail_subscription.c.segment_id
+        )
+    columns = [t_mail_subscription.c.email]
+    default_order = []
+
+    def order_by(self, query):
+        return query
+
+    def query_cond(self, condition):
+        return and_(t_mailmagazine.c.organization_id==self.organization_id,
+                    t_mail_subscription.c.status==MailSubscriptionStatus.Subscribed.v)
+

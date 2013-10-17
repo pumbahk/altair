@@ -147,8 +147,9 @@ class PaymentTests(unittest.TestCase):
         payment_delivery_pair = testing.DummyModel()
         cart = testing.DummyModel(payment_delivery_pair=payment_delivery_pair,
             sales_segment=None)
+        session = mock.Mock()
 
-        target = self._makeOne(cart, request)
+        target = self._makeOne(cart, request, session)
         result = target.call_prepare()
 
         self.assertIsNone(result)
@@ -172,8 +173,9 @@ class PaymentTests(unittest.TestCase):
         cart = testing.DummyModel(payment_delivery_pair=payment_delivery_pair,
             sales_segment=None,
             performance=order.performance)
+        session = mock.Mock()
 
-        target = self._makeOne(cart, request)
+        target = self._makeOne(cart, request, session)
         target.get_plugins = lambda pair: (payment_delivery_plugin, None, None)
 
         result = target.call_payment()
@@ -204,8 +206,9 @@ class PaymentTests(unittest.TestCase):
         cart = testing.DummyModel(payment_delivery_pair=payment_delivery_pair,
             sales_segment=None,
             performance=order.performance)
+        session = mock.Mock()
 
-        target = self._makeOne(cart, request)
+        target = self._makeOne(cart, request, session)
         target.get_plugins = lambda pair: (None, payment_plugin, delivery_plugin)
 
         result = target.call_payment()
@@ -244,8 +247,9 @@ class PaymentTests(unittest.TestCase):
         cart = testing.DummyModel(payment_delivery_pair=payment_delivery_pair,
             sales_segment=None,
             performance=order.performance)
+        session = mock.Mock()
 
-        target = self._makeOne(cart, request)
+        target = self._makeOne(cart, request, session)
         target.get_plugins = lambda pair: (None, payment_plugin, delivery_plugin)
 
         self.assertRaises(PaymentPluginException, target.call_payment)

@@ -1,7 +1,7 @@
 <%page args="form, action='#'" />
 <%namespace file="/common/helpers.html" name="ch" />
 <%from altair.formhelpers.widgets import LabelledCheckboxInput %>
-<form action="${action}" method="POST">
+<form class="form-horizontal" action="${action}" method="POST">
 % if form.context.sales_segment_group is None:
 <label for="${form.sales_segment_group_id.name}">${HH.label_text_for(form.sales_segment_group_id)}</label>
 ${form.sales_segment_group_id}
@@ -20,6 +20,11 @@ ${lot.name}
 % else:
 <label for="${form.performance_id.name}">${HH.label_text_for(form.performance_id)}</label>
 ${form.performance_id}
+% endif
+
+% if request.matched_route.name == 'sales_segments.copy':
+${ch.form_item(form.copy_performances)}
+${ch.form_item(form.copy_products)}
 % endif
 
 <script type="text/javascript">

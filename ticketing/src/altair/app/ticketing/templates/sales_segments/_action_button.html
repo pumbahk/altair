@@ -11,6 +11,11 @@ var get_selected_sales_segment_id;
       url='javascript:new_sales_segment();',
       icon='icon-plus',
     ),
+    'copy':dict(
+      label=u'コピー',
+      url='javascript:copy_sales_segment(get_selected_sales_segment_id());',
+      icon='icon-plus',
+    ),
     'edit':dict(
       label=u'編集',
       url='javascript:edit_sales_segment(get_selected_sales_segment_id());',
@@ -22,7 +27,7 @@ var get_selected_sales_segment_id;
       icon='icon-minus',
     ),
   }
-  order = iter(order or ['new', 'edit', 'delete'])
+  order = iter(order or ['new', 'copy', 'edit', 'delete'])
 %>
 ${HH.action_button(actions, order)}
 ${delete_modal()}
