@@ -17,7 +17,18 @@ ${ch.breadcrumbs(
 
 <div class="page-header">
   <h2>${mutil.get_mailtype_description()}付加情報 ${organization.name}</h2>
+  <span class="label label-warning">${organization.name}</span> &gt
+  <span class="label">イベント</span> &gt
+  <span class="label">パフォーマンス</span>
 </div>
+
+<h4>情報</h4>
+<%! from altair.app.ticketing.description.api import get_description %>
+<table class="table table-striped">
+%for item in get_description(request,organization):
+  <tr><th>${item.display_name}</th><td>${item.value}</td></tr>
+%endfor
+</table>
 
 <h4>説明</h4>
 <pre>
@@ -33,9 +44,6 @@ ${ch.breadcrumbs(
 
 <div class="page-header">
   <h4>「${organization.name}」に対するメール文言テンプレートの変更</h4>
-  <span class="label label-warning">${organization.name}</span> &gt
-  <span class="label">イベント</span> &gt
-  <span class="label">パフォーマンス</span>
 </div>
 
 <ul class="nav nav-tabs">

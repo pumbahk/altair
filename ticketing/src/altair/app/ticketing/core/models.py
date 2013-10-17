@@ -2139,7 +2139,7 @@ class OrganizationTypeEnum(StandardEnum):
 class Organization(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = "Organization"
     id = Column(Identifier, primary_key=True)
-    name = Column(String(255))
+    name = AnnotatedColumn(String(255), _a_label=(u"名称"))
     code = Column(String(3))  # 2桁英字大文字のみ
     short_name = Column(String(32), nullable=False, index=True, doc=u"templateの出し分けなどに使う e.g. %(short_name)s/index.html")
     client_type = Column(Integer)
