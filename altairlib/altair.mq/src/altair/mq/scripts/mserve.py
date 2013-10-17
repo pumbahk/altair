@@ -15,7 +15,7 @@ class MServeCommand(object):
     def build_option_parser(self):
         parser = argparse.ArgumentParser()
         parser.add_argument("config")
-        parser.add_argument("consumer", nargs=1, default='pika')
+        parser.add_argument("consumer", default='pika')
         return parser
 
 
