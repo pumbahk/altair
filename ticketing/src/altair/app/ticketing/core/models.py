@@ -1301,7 +1301,7 @@ class PaymentDeliveryMethodPair(Base, BaseModel, WithTimestamp, LogicallyDeleted
 
     special_fee_name = AnnotatedColumn(String(255), nullable=False, _a_label=_(u'特別手数料名'), default="")
     special_fee = AnnotatedColumn(Numeric(precision=16, scale=2), nullable=False,
-                                  _a_label=_(u'特別徴手数料'), default=FeeTypeEnum.Once.v[0])
+                                  _a_label=_(u'特別手数料'), default=FeeTypeEnum.Once.v[0])
     special_fee_type = Column(Integer, nullable=False, default=FeeTypeEnum.Once.v[0])
 
     @property
@@ -1369,7 +1369,7 @@ class PaymentDeliveryMethodPair(Base, BaseModel, WithTimestamp, LogicallyDeleted
 
     @property
     def special_fee_per_product(self):
-        """商品ごとのと区別手数料"""
+        """商品ごとの特別手数料"""
         return Decimal()
 
     @property
