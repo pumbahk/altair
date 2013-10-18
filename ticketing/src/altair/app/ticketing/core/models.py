@@ -2116,6 +2116,11 @@ class Product(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             .filter(Ticket.priced == True) \
             .scalar() or 0
 
+    def has_lot_entry_products(self):
+        from altair.app.ticketing.lots.models import LotEntryProduct
+        return bool(LotEntryProduct.query.filter(LotEntryProduct.product_id==self.id).count())
+
+
 class SeatIndexType(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__  = "SeatIndexType"
     id             = Column(Identifier, primary_key=True)

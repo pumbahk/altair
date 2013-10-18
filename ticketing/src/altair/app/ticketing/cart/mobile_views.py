@@ -357,6 +357,8 @@ class MobileSelectProductView(object):
             old_cart.release()
             api.remove_cart(self.request)
             transaction.commit()
+            c_api.refresh_organization(self.request)
+                
 
         # セールスセグメント必須
         sales_segment = c_models.SalesSegment.filter_by(id=sales_segment_group_id).first()
