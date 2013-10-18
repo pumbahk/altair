@@ -83,7 +83,7 @@ def resolve_predicates(registry, predicates_config):
                 )
     else:
         def interceptor_predicate(request):
-            lambda request: True
+            return True
 
     if injector_predicates:
         def injector_predicate(request, response):
