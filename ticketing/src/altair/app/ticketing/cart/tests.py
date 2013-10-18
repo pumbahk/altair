@@ -171,9 +171,9 @@ class CartTests(unittest.TestCase):
         target = self._makeOne(performance_id=1)
         target.add_seat(seats, ordered_products)
 
-        self.assertEqual(target.products[0].product.id, 0)
-        self.assertEqual(target.products[0].quantity, 1)
-        self.assertEqual(len(target.products[0].items), 1)
+        self.assertEqual(target.items[0].product.id, 0)
+        self.assertEqual(target.items[0].quantity, 1)
+        self.assertEqual(len(target.items[0].elements), 1)
 
     def test_add_products(self):
         from altair.app.ticketing.core.models import Product, ProductItem
@@ -191,9 +191,9 @@ class CartTests(unittest.TestCase):
         target = self._makeOne(performance_id=1)
         target.add_products(ordered_products)
 
-        self.assertEqual(target.products[0].product.id, 0)
-        self.assertEqual(target.products[0].quantity, 1)
-        self.assertEqual(len(target.products[0].items), 1)
+        self.assertEqual(target.items[0].product.id, 0)
+        self.assertEqual(target.items[0].quantity, 1)
+        self.assertEqual(len(target.items[0].elements), 1)
 
 
 class CartedProductTests(unittest.TestCase):
@@ -231,7 +231,7 @@ class CartedProductTests(unittest.TestCase):
             performance_id=1
             )
 
-        self.assertEqual(len(target.items), 2)
+        self.assertEqual(len(target.elements), 2)
         self.assertEqual(len(result), 1)
         self.assertEqual(result[0].stock_id, 1)
 
@@ -775,9 +775,9 @@ class ReserveViewTests(unittest.TestCase):
         cart = self.session.query(Cart).filter(Cart.id==cart_id).one()
 
         self.assertIsNotNone(cart)
-        self.assertEqual(len(cart.products), 1)
-        self.assertEqual(len(cart.products[0].items), 1)
-        self.assertEqual(cart.products[0].items[0].quantity, 2)
+        self.assertEqual(len(cart.items), 1)
+        self.assertEqual(len(cart.items[0].elements), 1)
+        self.assertEqual(cart.items[0].elements[0].quantity, 2)
 
         from sqlalchemy import sql
         stock_statuses = self.session.bind.execute(sql.select([StockStatus.quantity]).where(StockStatus.stock_id==stock_id))

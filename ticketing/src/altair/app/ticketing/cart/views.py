@@ -72,7 +72,7 @@ def back_to_product_list_for_mobile(request):
             event_id=cart.performance.event_id,
             performance_id=cart.performance_id,
             sales_segment_id=cart.sales_segment_id,
-            seat_type_id=cart.products[0].product.items[0].stock.stock_type_id))
+            seat_type_id=cart.items[0].product.items[0].stock.stock_type_id))
 
 def back_to_top(request):
     event_id = None
@@ -572,7 +572,7 @@ class ReserveView(object):
                                              seats=p.seats if self.context.sales_segment.seat_choice else [],
                                              unit_template=h.build_unit_template(p.product.items),
                                         )
-                                        for p in cart.products],
+                                        for p in cart.items],
                               total_amount=h.format_number(get_amount_without_pdmp(cart))
                              )
                     )

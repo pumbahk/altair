@@ -109,4 +109,4 @@ class CartedProductTests(unittest.TestCase, CartTestMixin):
         self.session.flush()
         target.release()
         self.assertTrue(target.finished_at is not None)
-        self.assertTrue(all(item.finished_at is not None for item in target.items))
+        self.assertTrue(all(element.finished_at is not None for element in target.elements))

@@ -14,7 +14,7 @@ ${form.csrf_token()}
 <div>
 ${cart.performance.event.title} ${cart.performance.name} ${h.performance_date(cart.performance)} ${cart.performance.venue.name}
 </div>
-% for idx, product in enumerate(cart.products):
+% for idx, product in enumerate(cart.items):
 <%mobile:form_header>商品${idx + 1}</%mobile:form_header>
 <div>
 ${product.product.name} ${product.seat_quantity} 枚<br/>

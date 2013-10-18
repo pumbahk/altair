@@ -75,7 +75,7 @@
           <br/>
 
           <table id="contentsOfShopping" summary="席種、金額などのお買い物内容" class="methodArea">
-            %for product in cart.products:
+            %for product in cart.items:
                 <tr id="commission">
                   <th scope="row"><img src="${request.static_url('altair.app.ticketing.cart:static/img/settlement/icon_dummy.gif')}" alt="" width="21" height="21" />${product.product.name}<strong>${product.seat_quantity}</strong>枚<br/></th>
                   <td>&nbsp;</td>

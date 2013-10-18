@@ -31,7 +31,7 @@ import sqlalchemy.orm as orm
 from sqlalchemy import sql
 from sqlalchemy.ext.hybrid import hybrid_method, hybrid_property
 from sqlalchemy.orm.exc import NoResultFound
-from zope.deprecation import deprecate
+from zope.deprecation import deprecate, deprecated
 from zope.interface import implementer
 
 from pyramid.i18n import TranslationString as _
@@ -114,12 +114,14 @@ class Cart(Base):
     different_amount = 0
 
     @property
-    def items(self):
-        return self.products
+    def products(self):
+        return self.items
 
-    @items.setter
-    def items(self, value):
-        self.products = value
+    @products.setter
+    def products(self, value):
+        self.items = value
+
+    products = deprecated(products, "use items property instead")
 
     @property
     def name(self):
@@ -178,8 +180,8 @@ class Cart(Base):
             sales_segment_group_id=that.sales_segment_group_id
             )
         # translate all the products in the specified cart to the new cart
-        for carted_product in that.products:
-            new_cart.products.append(carted_product) 
+        for carted_product in that.items:
+            new_cart.items.append(carted_product) 
         that.disposed = True
         that.products = []
         return new_cart
@@ -202,35 +204,35 @@ class Cart(Base):
             raise InvalidCartStatusError(self.id)
         return self.sales_segment.get_amount(
             self.payment_delivery_pair,
-            [(p.product, p.quantity) for p in self.products])
+            [(p.product, p.quantity) for p in self.items])
 
     @property
     def delivery_fee(self):
         """ 引取手数料 """
         return self.sales_segment.get_delivery_fee(
             self.payment_delivery_pair,
-            [(p.product, p.quantity) for p in self.products])
+            [(p.product, p.quantity) for p in self.items])
 
     @property
     def transaction_fee(self):
         """ 決済手数料 """
         return self.sales_segment.get_transaction_fee(
             self.payment_delivery_pair,
-            [(p.product, p.quantity) for p in self.products])
+            [(p.product, p.quantity) for p in self.items])
 
     @property
     def system_fee(self):
         """システム利用料"""
         return self.sales_segment.get_system_fee(
             self.payment_delivery_pair,
-            [(p.product, p.quantity) for p in self.products])
+            [(p.product, p.quantity) for p in self.items])
 
     @property
     def special_fee(self):
         """特別手数料"""
         return self.sales_segment.get_special_fee(
             self.payment_delivery_pair,
-            [(p.product, p.quantity) for p in self.products])
+            [(p.product, p.quantity) for p in self.items])
 
     @property
     def special_fee_name(self):
@@ -279,21 +281,21 @@ class Cart(Base):
     def finish(self):
         """ 決済完了
         """
-        for product in self.products:
-            product.finish()
+        for item in self.items:
+            item.finish()
         self.finished_at = datetime.now() # SAFE TO USE datetime.now() HERE
 
     def release(self):
         """ カート開放
         """
         logger.info('trying to release Cart (id=%d, order_no=%s)' % (self.id, self._order_no))
-        for product in self.products:
-            if not product.release():
+        for item in self.items:
+            if not item.release():
                 return False
         return True
 
     def is_valid(self):
-        return all([p.is_valid() for p in self.products])
+        return all(item.is_valid() for item in self.items)
 
     @classmethod
     def from_order_no(cls, order_no):
@@ -308,7 +310,7 @@ class CartedProduct(Base):
     id = sa.Column(Identifier, primary_key=True)
     quantity = sa.Column(sa.Integer)
     cart_id = sa.Column(Identifier, sa.ForeignKey(Cart.id, onupdate='cascade', ondelete='cascade'))
-    cart = orm.relationship("Cart", backref="products", cascade='all')
+    cart = orm.relationship("Cart", backref="items", cascade='all')
 
     product_id = sa.Column(Identifier, sa.ForeignKey("Product.id"))
     product = orm.relationship("Product")
@@ -323,12 +325,14 @@ class CartedProduct(Base):
     organization = orm.relationship('Organization', backref='carted_products')
 
     @property
-    def elements(self):
-        return self.items
+    def items(self):
+        return self.elements
 
-    @elements.setter
-    def elements(self, value):
-        self.items = value
+    @items.setter
+    def items(self, value):
+        self.elements = value
+
+    items = deprecated(items, 'use elements property instead')
 
     @property
     def amount(self):
@@ -338,7 +342,7 @@ class CartedProduct(Base):
 
     @property
     def seats(self):
-        return sorted(itertools.chain.from_iterable(i.seatdicts for i in self.items), 
+        return sorted(itertools.chain.from_iterable(i.seatdicts for i in self.elements), 
             key=operator.itemgetter('l0_id'))
 
     @property
@@ -376,8 +380,8 @@ class CartedProduct(Base):
     def finish(self):
         """ 決済処理
         """
-        for item in self.items:
-            item.finish()
+        for element in self.elements:
+            element.finish()
         self._mark_finished()
 
     def release(self):
@@ -385,8 +389,8 @@ class CartedProduct(Base):
         """
         logger.info('trying to release CartedProduct (id=%d)' % self.id)
         if not self.finished_at:
-            for item in self.items:
-                if not item.release():
+            for element in self.elements:
+                if not element.release():
                     logger.info('returing False to abort. NO FURTHER SQL EXECUTION IS SUPPOSED!')
                     return False
             self._mark_finished()
@@ -396,7 +400,7 @@ class CartedProduct(Base):
         return True
 
     def is_valid(self):
-        return all([i.is_valid() for i in self.items])
+        return all(element.is_valid() for element in self.elements)
 
 
 @implementer(IOrderedProductItemLike)
@@ -419,7 +423,7 @@ class CartedProductItem(Base):
     #seat_status = orm.relationship("SeatStatus")
 
     carted_product_id = sa.Column(Identifier, sa.ForeignKey(CartedProduct.id, onupdate='cascade', ondelete='cascade'))
-    carted_product = orm.relationship("CartedProduct", backref="items", cascade='all')
+    carted_product = orm.relationship("CartedProduct", backref="elements", cascade='all')
 
     created_at = sa.Column(sa.DateTime, default=datetime.now)
     updated_at = sa.Column(sa.DateTime, nullable=True, onupdate=datetime.now)

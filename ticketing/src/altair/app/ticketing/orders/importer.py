@@ -40,11 +40,11 @@ from altair.app.ticketing.orders.api import create_inner_order
 from altair.app.ticketing.orders.export import japanese_columns
 from altair.app.ticketing.payments import plugins as payments_plugins
 from altair.app.ticketing.payments.plugins.sej import get_ticketing_start_at
-from altair.app.ticketing.payments.interfaces import (
-    IPaymentCart,
-    IPaymentCartedProduct,
-    IPaymentCartedProductItem,
-    IPaymentShippingAddress
+from altair.app.ticketing.payments.interfaces import IPaymentCart
+from altair.app.ticketing.core.interfaces import (
+    IOrderedProductLike,
+    IOrderedProductItemLike,
+    IShippingAddress,
 )
 from altair.app.ticketing.users.models import UserCredential, Membership
 from altair.app.ticketing.utils import sensible_alnum_encode
@@ -104,7 +104,7 @@ class TemporaryCart(TemporaryModel):
         pass
 
 
-@implementer(IPaymentCartedProduct)
+@implementer(IOrderedProductLike)
 class TemporaryCartedProduct(TemporaryModel):
 
     def __init__(self, **kwargs):
@@ -125,7 +125,7 @@ class TemporaryCartedProduct(TemporaryModel):
         return self._parent
 
 
-@implementer(IPaymentCartedProductItem)
+@implementer(IOrderedProductItemLike)
 class TemporaryCartedProductItem(TemporaryModel):
 
     def __init__(self, **kwargs):
@@ -143,7 +143,7 @@ class TemporaryCartedProductItem(TemporaryModel):
         return self._parent
 
 
-@implementer(IPaymentShippingAddress)
+@implementer(IShippingAddress)
 class TemporaryShippingAddress(TemporaryModel):
 
     def __init__(self, **kwargs):
@@ -156,6 +156,7 @@ class TemporaryShippingAddress(TemporaryModel):
         self.last_name_kana  = None
         self.zip             = None
         self.email_1         = None
+        self.email_2         = None
         super(type(self), self).__init__(**kwargs)
 
     @property
@@ -200,7 +201,7 @@ class ImportTypeEnum(StandardEnum):
     Update = (2, u'同じ予約番号を更新')
 
 
-class OrderImporter():
+class OrderImporter(object):
 
     def __init__(self, operator, organization, performance_id, order_csv, import_type, **kwargs):
         self.operator_id = operator.id
@@ -325,7 +326,7 @@ class OrderImporter():
             # - ここでは在庫総数のチェックのみ
             # - 実際に配席しないと連席判定も含めた在庫の過不足は分からない為
             try:
-                for cp in cart.products:
+                for cp in cart.items:
                     for cpi in cp.items:
                         product_item = cpi.product_item
                         stock = product_item.stock
@@ -511,14 +512,14 @@ class OrderImporter():
     def get_seat_count(self, carts):
         count = 0
         for cart in carts.values():
-            for cp in cart.products:
+            for cp in cart.items:
                 count += sum([cpi.quantity for cpi in cp.items])
         return count
 
     def get_seat_per_product(self, carts):
         seat_per_product = OrderedDict()
         for cart in carts.values():
-            for cp in cart.products:
+            for cp in cart.items:
                 p = cp.product
                 if p not in seat_per_product:
                     seat_per_product[p] = 0
@@ -602,7 +603,7 @@ class OrderImporter():
 
             # 配席/在庫更新
             try:
-                for temp_cp in temp_cart.products:
+                for temp_cp in temp_cart.items:
                     for temp_cpi in temp_cp.items:
                         product_item = temp_cpi.product_item
                         stock = temp_cpi.product_item.stock

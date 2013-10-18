@@ -40,7 +40,7 @@ def order_desc(order):
     return profile, t_shirts
 
 def is_include_t_shirts(cart):
-    for carted_product in cart.products:
+    for carted_product in cart.items:
         product = carted_product.product
         for item in product.items:
             if item.stock.stock_type.name == u'Tシャツ':

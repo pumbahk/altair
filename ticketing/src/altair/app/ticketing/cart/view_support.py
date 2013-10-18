@@ -40,7 +40,7 @@ class IndexViewMixin(object):
                     raise HTTPFound(specified.redirect_url_pc)
 
 def get_amount_without_pdmp(cart):
-    return sum([cp.product.price * cp.quantity for cp in cart.products])
+    return sum([cp.product.price * cp.quantity for cp in cart.items])
 
 def get_seat_type_dicts(request, sales_segment, seat_type_id=None):
     # TODO: cachable

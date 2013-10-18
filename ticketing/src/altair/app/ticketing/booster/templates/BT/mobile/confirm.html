@@ -13,7 +13,7 @@ pm = request.context.load_user_profile()
 <div>${pm.get('old_id_number')}</div>
 % endif:
 <%mobile:form_header>会員種別</%mobile:form_header>
-<div>${cart.products[0].product.name}</div>
+<div>${cart.items[0].product.name}</div>
 <%mobile:form_header>ブースターシャツサイズ</%mobile:form_header>
 <div>${pm.get('t_shirts_size') or u"-"}</div>
 <%mobile:form_header>氏名</%mobile:form_header>

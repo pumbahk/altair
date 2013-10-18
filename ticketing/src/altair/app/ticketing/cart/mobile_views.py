@@ -485,7 +485,7 @@ class MobileReserveView(object):
                         seats=p.seats if p.product.sales_segment.seat_choice else [],
                         seat_quantity=p.seat_quantity
                         )
-                    for p in cart.products
+                    for p in cart.items
                     ],
                 total_amount=h.format_number(get_amount_without_pdmp(cart)),
                 ),

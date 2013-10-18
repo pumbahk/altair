@@ -112,8 +112,8 @@ class SejNotificationProcessorTest(unittest.TestCase, CoreTestMixin):
         assert order.issued
         assert order.issued_at == notification.processed_at
         assert order.printed_at == notification.processed_at
-        assert all(ordered_product_item.issued_at is not None for ordered_product in order.items for ordered_product_item in ordered_product.ordered_product_items)
-        assert all(ordered_product_item.printed_at is not None for ordered_product in order.items for ordered_product_item in ordered_product.ordered_product_items)
+        assert all(ordered_product_item.issued_at is not None for ordered_product in order.items for ordered_product_item in ordered_product.elements)
+        assert all(ordered_product_item.printed_at is not None for ordered_product in order.items for ordered_product_item in ordered_product.elements)
 
     def test_payment_complete_prepayment_1(self):
         from ..models import SejOrder, SejPaymentType
@@ -155,8 +155,8 @@ class SejNotificationProcessorTest(unittest.TestCase, CoreTestMixin):
         assert order.issued == False
         assert order.issued_at is None
         assert order.printed_at is None
-        assert not any(ordered_product_item.issued_at is not None for ordered_product in order.items for ordered_product_item in ordered_product.ordered_product_items)
-        assert not any(ordered_product_item.printed_at is not None for ordered_product in order.items for ordered_product_item in ordered_product.ordered_product_items)
+        assert not any(ordered_product_item.issued_at is not None for ordered_product in order.items for ordered_product_item in ordered_product.elements)
+        assert not any(ordered_product_item.printed_at is not None for ordered_product in order.items for ordered_product_item in ordered_product.elements)
 
     def test_payment_complete_prepayment_2(self):
         from ..models import SejOrder, SejPaymentType
@@ -238,8 +238,8 @@ class SejNotificationProcessorTest(unittest.TestCase, CoreTestMixin):
         assert order.issued
         assert order.issued_at == notification.processed_at
         assert order.printed_at == notification.processed_at
-        assert all(ordered_product_item.issued_at is not None for ordered_product in order.items for ordered_product_item in ordered_product.ordered_product_items)
-        assert all(ordered_product_item.printed_at is not None for ordered_product in order.items for ordered_product_item in ordered_product.ordered_product_items)
+        assert all(ordered_product_item.issued_at is not None for ordered_product in order.items for ordered_product_item in ordered_product.elements)
+        assert all(ordered_product_item.printed_at is not None for ordered_product in order.items for ordered_product_item in ordered_product.elements)
 
     def test_payment_complete_prepayment_only(self):
         from ..models import SejOrder, SejPaymentType

@@ -205,7 +205,7 @@ class CoreTestMixin(object):
                     for ticket in ordered_product_item.product_item.ticket_bundle.tickets
                     )
                 for ordered_product in items
-                for ordered_product_item in ordered_product.ordered_product_items)
+                for ordered_product_item in ordered_product.elements)
             system_fee = pdmp.system_fee if pdmp.system_fee_type == FeeTypeEnum.Once.v[0] else pdmp.system_fee * num_tickets
             special_fee = pdmp.special_fee if pdmp.special_fee_type == FeeTypeEnum.Once.v[0] else pdmp.special_fee * num_tickets
         else:
