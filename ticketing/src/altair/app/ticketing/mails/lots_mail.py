@@ -34,7 +34,7 @@ class LotsInfoDefault(SubjectInfoDefault):
 抽選結果発表日時以降、抽選結果確認ページにて当選・落選をご確認下さい。
 """
 
-    first_sentence = SubjectInfoWithValue(name="first_sentence", label=u"はじめの文章", getval=(lambda _: LotsInfoDefault.first_sentence_default),  value=first_sentence_default)
+    first_sentence = SubjectInfoWithValue(name="first_sentence", label=u"はじめの文章", value="", getval=(lambda _: LotsInfoDefault.first_sentence_default))
     event_name = SubjectInfo(name="event_name", label=u"イベント名", getval=lambda lot_entry: lot_entry.lot.event.title)
     lot_name = SubjectInfo(name="lot_name", label=u"受付名称", getval=lambda lot_entry: lot_entry.lot.name)
     announce_date = SubjectInfo(name="announce_date", label=u"抽選結果発表日時", getval=get_announce_date)
