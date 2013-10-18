@@ -21,8 +21,8 @@ def setup_excviews(config):
     config.add_view('.excviews.notfound_view', context=HTTPNotFound,  renderer='base/mobile/errors/not_found.html', request_type='altair.mobile.interfaces.IMobileRequest')
     config.add_view('.excviews.forbidden_view', context='pyramid.httpexceptions.HTTPForbidden', renderer='base/pc/errors/not_found.html', )
     config.add_view('.excviews.forbidden_view', context='pyramid.httpexceptions.HTTPForbidden', renderer='base/mobile/errors/not_found.html', request_type='altair.mobile.interfaces.IMobileRequest')
-    config.add_view('.excviews.cart_creation_exception', context=PaymentPluginException, renderer='altair.app.ticketing.cart:templates/errors/error.html')
-    config.add_view('.excviews.cart_creation_exception', context=PaymentPluginException, renderer='altair.app.ticketing.cart:templates/errors_mobile/error.html', request_type='altair.mobile.interfaces.IMobileRequest')
+    config.add_view('.excviews.cart_creation_exception', context=PaymentPluginException, renderer='base/pc/errors/error.html')
+    config.add_view('.excviews.cart_creation_exception', context=PaymentPluginException, renderer='base/mobile/errors/error.html', request_type='altair.mobile.interfaces.IMobileRequest')
     config.add_view('.excviews.exception_view',  context=StandardError, renderer='base/pc/errors/error.html')
     config.add_view('.excviews.exception_view', context=StandardError,  renderer='base/mobile/errors/error.html', request_type='altair.mobile.interfaces.IMobileRequest')
     ## xxxx
