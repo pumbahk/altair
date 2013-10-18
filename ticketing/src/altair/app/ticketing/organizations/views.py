@@ -221,6 +221,7 @@ class MailInfoNewView(BaseView):
         mailtype = self.request.matchdict["mailtype"]
         form = formclass(**(organization.extra_mailinfo.data.get(mailtype, {}) if organization.extra_mailinfo else {}))
         return {"organization": organization, "form": form, "mailtype": mailtype, "choice_form": choice_form, 
+                "extra_mailinfo": organization.extra_mailinfo, 
                 "mutil": mutil, "choices": MailTypeChoices}
 
     @view_config(request_method="POST")
