@@ -28,7 +28,8 @@ from altair.app.ticketing.views import mobile_request
 from altair.app.ticketing.fanstatic import with_jquery, with_jquery_tools
 from altair.app.ticketing.payments.payment import Payment
 from altair.app.ticketing.payments.exceptions import PaymentDeliveryMethodPairNotFound
-from altair.app.ticketing.users.api import get_or_create_user
+from altair.app.ticketing.users.api import get_or_create_user, get_or_create_user_from_point_no\
+    , create_user_point_account_from_point_no, get_user_point_account
 from altair.app.ticketing.venues.api import get_venue_site_adapter
 from altair.mobile.interfaces import IMobileRequest
 
@@ -725,6 +726,15 @@ class PaymentView(object):
 
         cart.payment_delivery_pair = payment_delivery_pair
         cart.shipping_address = self.create_shipping_address(user, shipping_address_params)
+
+        if is_smartphone_organization(self.context, self.request):
+            point = shipping_address_params.pop("point")
+            if point:
+                if not user:
+                    user = get_or_create_user_from_point_no(point)
+                    cart.shipping_address.user_id = user.id
+                create_user_point_account_from_point_no(user.id, point)
+
         DBSession.add(cart)
 
         order = api.new_order_session(
@@ -779,10 +789,13 @@ class ConfirmView(object):
     @view_config(route_name='payment.confirm', request_method="GET", request_type='altair.mobile.interfaces.IMobileRequest', renderer=selectable_renderer("%(membership)s/mobile/confirm.html"))
     @view_config(route_name='payment.confirm', request_method="GET", request_type="altair.mobile.interfaces.ISmartphoneRequest", renderer=selectable_renderer("%(membership)s/smartphone/confirm.html"), custom_predicates=(is_smartphone_organization, ))
     def get(self):
+
         form = schemas.CSRFSecureForm(csrf_context=self.request.session)
         cart = self.request.context.cart
         if cart.shipping_address is None:
             raise InvalidCartStatusError(cart.id)
+
+        acc = get_user_point_account(cart.shipping_address.user_id)
 
         magazines_to_subscribe = get_magazines_to_subscribe(cart.performance.event.organization, cart.shipping_address.emails)
 
@@ -797,6 +810,7 @@ class ConfirmView(object):
             mailmagazines_to_subscribe=magazines_to_subscribe,
             form=form,
             delegator=delegator,
+            point=acc.account_number if acc else ""
         )
 
 

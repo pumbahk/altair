@@ -188,6 +188,15 @@ ${h.get_nickname(request)}
       </div>
     </div>
 
+    <div class="dispBox">
+      <%t:header>楽天スーパーポイント口座(半角数字)</%t:header>
+      <div class="dispBoxInner">
+        ${form['point'].label}
+        ${form['point']}(例: 1111222233334444)ハイフン無し
+        ${h.error_list(request, form, 'point')}
+      </div>
+    </div>
+
 <!--
   </div>
   </div>
