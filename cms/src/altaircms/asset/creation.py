@@ -21,6 +21,7 @@ from .detect import MovieInfoDatector
 from .detect import FlashInfoDatector
 from ..filelib import File
 from .forms import normalize_filename
+from datetime import datetime
 
 def get_asset_filesession(request):
     return get_adapts_filesession(request, name=SESSION_NAME)

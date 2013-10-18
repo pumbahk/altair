@@ -143,6 +143,7 @@ class AssetUpdateView(object):
             FlashMessage.success("image asset updated", request=self.request)    
             return HTTPFound(self.request.route_path("asset_image_detail", asset_id=asset.id))
         except ValidationError, e:
+            logger.info(repr(e))
             FlashMessage.error(e.message, request=self.request)    
             return HTTPFound(self.request.route_path("asset_image_input", asset_id=asset.id))
         except Exception, e:
@@ -162,6 +163,7 @@ class AssetUpdateView(object):
             FlashMessage.success("movie asset updated", request=self.request)    
             return HTTPFound(self.request.route_path("asset_movie_detail", asset_id=asset.id))
         except ValidationError, e:
+            logger.info(repr(e))
             FlashMessage.error(e.message, request=self.request)    
             return HTTPFound(self.request.route_path("asset_movie_input", asset_id=asset.id))
         except Exception, e:
@@ -181,6 +183,7 @@ class AssetUpdateView(object):
             FlashMessage.success("flash asset updated", request=self.request)    
             return HTTPFound(self.request.route_path("asset_flash_detail", asset_id=asset.id))
         except ValidationError, e:
+            logger.info(repr(e))
             FlashMessage.error(e.message, request=self.request)    
             return HTTPFound(self.request.route_path("asset_flash_input", asset_id=asset.id))
         except Exception, e:
