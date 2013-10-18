@@ -167,6 +167,8 @@ t_membership = Membership.__table__
 t_member_group = MemberGroup.__table__
 t_operator = Operator.__table__
 t_mail_subscription = MailSubscription.__table__
+t_mail_subscription_1 = t_mail_subscription.alias()
+t_mail_subscription_2 = t_mail_subscription.alias()
 t_mailmagazine = MailMagazine.__table__
 
 
@@ -263,7 +265,7 @@ detail_summary_columns = summary_columns + [
     t_order.c.delivery_fee, #配送手数料
     t_order.c.system_fee, #システム利用料
     t_order.c.special_fee, #特別手数料
-    (t_order.c.total_amount * t_sales_segment.c.margin_ratio / 100).label('margin'), 
+    #(t_order.c.total_amount * t_sales_segment.c.margin_ratio / 100).label('margin'), 
     # t_order.c.margin, #内手数料金額
     t_order.c.note, #メモ
     t_order.c.special_fee_name, #特別手数料名
@@ -339,7 +341,7 @@ detail_summary_columns = summary_columns + [
     t_ordered_product.c.quantity.label('product_quantity'), #商品個数[0]
     t_product_sales_segment_group.c.name.label('product_sales_segment'), #販売区分[0]
     t_product_sales_segment.c.margin_ratio.label('product_margin_ratio'), #販売手数料率[0] margin_ratio
-    #(t_product.c.price * t_ordered_product.c.quantity * t_product_sales_segment.c.margin_ratio / 100).label('product_margin'),
+    (t_product.c.price * t_ordered_product.c.quantity * t_product_sales_segment.c.margin_ratio / 100).label('product_margin'),
     # ProductItem
     t_product_item.c.id.label('product_item_id'), #商品明細名[0][0]
     t_product_item.c.name.label('item_name'), #商品明細名[0][0]
@@ -356,7 +358,8 @@ detail_summary_columns = summary_columns + [
     ).label('seat_quantity'),
     t_ordered_product_attribute.c.name.label('attribute_name'),
     t_ordered_product_attribute.c.value.label('attribute_value'),
-    t_mail_subscription.c.id.label('mail_subscription'),
+    t_mail_subscription_1.c.email.label('mail_subscription_1'),
+    t_mail_subscription_2.c.email.label('mail_subscription_2'),
 ]
 
 order_summary_joins = t_order.join(
@@ -466,13 +469,15 @@ order_product_summary_joins = order_summary_joins.join(
     t_mailmagazine,
     t_mailmagazine.c.organization_id==t_organization.c.id
 ).outerjoin(
-    t_mail_subscription,
-    and_(t_mail_subscription.c.email.in_(
-        [t_shipping_address.c.email_1,
-         t_shipping_address.c.email_2,]
-        ),
-         t_mail_subscription.c.segment_id==t_mailmagazine.c.id,
-         t_mail_subscription.c.status==MailSubscriptionStatus.Subscribed.v),
+    t_mail_subscription_1,
+    and_(t_mail_subscription_1.c.email==t_shipping_address.c.email_1,
+         t_mail_subscription_1.c.segment_id==t_mailmagazine.c.id,
+         t_mail_subscription_1.c.status==MailSubscriptionStatus.Subscribed.v),
+).outerjoin(
+    t_mail_subscription_2,
+    and_(t_mail_subscription_2.c.email==t_shipping_address.c.email_2,
+         t_mail_subscription_2.c.segment_id==t_mailmagazine.c.id,
+         t_mail_subscription_2.c.status==MailSubscriptionStatus.Subscribed.v),
 )
 
 
@@ -494,8 +499,9 @@ class SeatSummaryKeyBreakAdapter(object):
         last_item = None
         breaked_items = []
         attribute_cols = set()
+        margins = {}  # order_no: margin
 
-        break_counter = KeyBreakCounter(keys=[key1, key2])
+        break_counter = KeyBreakCounter(keys=[key1, key2, 'product_id'])
         first = True
         for counter, key_changes, item in break_counter(iter):
             if (key_changes[key1] or key_changes[key2]) and not first:
@@ -510,7 +516,8 @@ class SeatSummaryKeyBreakAdapter(object):
                         result[name] = unicode(value)
                 self.results.append(result)
                 breaked_items = []
-
+            if key_changes[key2] or key_changes['product_id'] or first:
+                margins[item['order_no']] = margins.get(item['order_no'], 0) + item['product_margin']
             if item['attribute_name']:
                 name = "attribute[{0}]".format(item['attribute_name'])
                 attribute_cols.add(name)
@@ -526,7 +533,7 @@ class SeatSummaryKeyBreakAdapter(object):
                         (name,
                          item[childitem]))
 
-            if item['mail_subscription']:
+            if item['mail_subscription_1'] or item['mail_subscription_2']:
                 item['mail_permission'] = '1'
             last_item = item
             first = False
@@ -543,6 +550,8 @@ class SeatSummaryKeyBreakAdapter(object):
                 result[name] = unicode(value)
 
         self.results.append(result)
+        for row in self.results:
+            row['margin'] = margins.get(row['order_no'], 0)
         headers = list(result)
         self.headers = headers
         self.extra_headers = []
@@ -564,8 +573,8 @@ class OrderSummaryKeyBreakAdapter(object):
         child3_count = {}
 
         break_counter = KeyBreakCounter(keys=[key, child1_key, child2_key, child3_key])
-        #margin = 0  # very hack
         first = True
+        margin = 0
         attribute_cols = set()
         for counter, key_changes, item in break_counter(iter):
             if key_changes[key] and not first:
@@ -574,15 +583,15 @@ class OrderSummaryKeyBreakAdapter(object):
                     result.pop(c)
                 for name, value in breaked_items:
                     if name in result:
-                        assert isinstance(result[name], basestring), result
+                        assert isinstance(result[name], basestring), "%s %s %s" % (name, type(result[name]), result)
                         if value not in result[name].split(","):
                             result[name] = unicode(result[name]) + "," + unicode(value)
                     else:
                         result[name] = value
-                #result['margin'] = margin
+                result['margin'] = margin
                 self.results.append(result)
                 breaked_items = []
-                #margin = 0
+                margin = 0
 
             # second key break
             if key_changes[key] or key_changes[child1_key] or first:
@@ -592,7 +601,8 @@ class OrderSummaryKeyBreakAdapter(object):
                         (name,
                          item[childitem1]))
                     child1_count = max(child1_count, counter[child1_key])
-                # margin += item['product_margin']
+                # breaked_items['margin'] = breaked_items.get('margin', 0) + item['product_margin']
+                margin += item['product_margin']
 
             # third key break
             if key_changes[key] or key_changes[child1_key] or key_changes[child2_key] or first:
@@ -625,7 +635,7 @@ class OrderSummaryKeyBreakAdapter(object):
                          item[childitem3]))
                     child3_count[(counter[child1_key], counter[child2_key])] = max(child3_count.get((counter[child1_key], counter[child2_key]), 0), counter[child3_key])
 
-            if item['mail_subscription']:
+            if item['mail_subscription_1'] or item['mail_subscription_2']:
                 item['mail_permission'] = '1'
             last_item = item
             first = False
@@ -641,6 +651,7 @@ class OrderSummaryKeyBreakAdapter(object):
                     result[name] = unicode(result[name]) + "," + unicode(value)
             else:
                 result[name] = value
+        result['margin'] = margin
         self.results.append(result)
 
         headers = list(result)
@@ -982,8 +993,10 @@ class OrderSearchBase(list):
 
     def execute(self, start, stop=None):
         #logger.debug("start = {0}, stop = {1}".format(start, stop))
-        #limit = min(1000, stop-start)
-        limit = 1000
+        limit_span = 1000
+        limit = limit_span
+        if stop:
+            limit = min(limit_span, stop-start)
         offset = start
         while True:
             sql = select(self.columns, 
@@ -1008,12 +1021,11 @@ class OrderSearchBase(list):
                     yield OrderedDict(
                         row.items()
                     )
-                offset = offset + limit
-                if stop and offset > stop:
-                    break
-                #limit = min(stop - offset, limit)
-                if limit <= 0:
-                    break
+                offset = offset + limit_span
+                if stop:
+                    if offset > stop:
+                        break
+                    limit = min(limit_span, stop - offset)
             finally:
                 logger.debug('close')
                 cur.close()

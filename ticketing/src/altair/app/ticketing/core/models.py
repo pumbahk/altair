@@ -1301,7 +1301,7 @@ class PaymentDeliveryMethodPair(Base, BaseModel, WithTimestamp, LogicallyDeleted
 
     special_fee_name = AnnotatedColumn(String(255), nullable=False, _a_label=_(u'特別手数料名'), default="")
     special_fee = AnnotatedColumn(Numeric(precision=16, scale=2), nullable=False,
-                                  _a_label=_(u'特別徴手数料'), default=FeeTypeEnum.Once.v[0])
+                                  _a_label=_(u'特別手数料'), default=FeeTypeEnum.Once.v[0])
     special_fee_type = Column(Integer, nullable=False, default=FeeTypeEnum.Once.v[0])
 
     @property
@@ -1369,7 +1369,7 @@ class PaymentDeliveryMethodPair(Base, BaseModel, WithTimestamp, LogicallyDeleted
 
     @property
     def special_fee_per_product(self):
-        """商品ごとのと区別手数料"""
+        """商品ごとの特別手数料"""
         return Decimal()
 
     @property
@@ -2116,6 +2116,11 @@ class Product(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             .filter(Ticket.priced == True) \
             .scalar() or 0
 
+    def has_lot_entry_products(self):
+        from altair.app.ticketing.lots.models import LotEntryProduct
+        return bool(LotEntryProduct.query.filter(LotEntryProduct.product_id==self.id).count())
+
+
 class SeatIndexType(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__  = "SeatIndexType"
     id             = Column(Identifier, primary_key=True)
@@ -2655,6 +2660,8 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         order = Order.clone(self, deep=True)
         if self.refund.include_system_fee:
             order.system_fee = 0
+        if self.refund.include_special_fee:
+            order.special_fee = 0
         if self.refund.include_transaction_fee:
             order.transaction_fee = 0
         if self.refund.include_delivery_fee:

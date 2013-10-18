@@ -125,7 +125,7 @@
       <td></td>
       <td style="text-align: right;">${vh.price(order.system_fee)}</td>
     </tr>
-    %if order.special_fee > 0:
+    %if order.special_fee_name:
     <tr>
       <td colspan="2">${order.special_fee_name}</td>
       <td></td>

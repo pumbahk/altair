@@ -2,6 +2,7 @@
 
 import logging
 from decimal import Decimal
+from datetime import datetime
 
 from wtforms import Form
 from wtforms import TextField, SelectField, IntegerField, DecimalField, SelectMultipleField, HiddenField, BooleanField
@@ -142,6 +143,26 @@ class ProductForm(OurForm):
             product = Product.get(form.id.data)
             if product.items and field.data != product.seat_stock_type_id:
                 raise ValidationError(u'既に在庫が割り当てられているため、席種は変更できません')
+
+    def validate(self):
+        status = super(type(self), self).validate()
+        if status:
+            if self.id.data:
+                # 販売期間内で公開済みの場合、またはこの商品が予約/抽選申込されている場合は
+                # 価格、席種の変更は不可
+                product = Product.query.filter_by(id=self.id.data).one()
+                now = datetime.now()
+                if (product.public and product.sales_segment.public and product.sales_segment.in_term(now))\
+                   or product.ordered_products or product.has_lot_entry_products():
+                    error_message = u'既に販売中か予約および抽選申込がある為、変更できません'
+                    if self.price.data != product.price:
+                        self.price.errors.append(error_message)
+                        status = False
+                    if self.seat_stock_type_id.data != product.seat_stock_type_id:
+                        self.seat_stock_type_id.errors.append(error_message)
+                        status = False
+        return status
+
 
 class ProductItemForm(OurForm):
 

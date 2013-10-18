@@ -1,5 +1,8 @@
 # -*- coding:utf-8 -*-
 
+import logging
+from datetime import datetime
+
 from wtforms import Form
 from wtforms import TextField, SelectField, HiddenField, IntegerField, BooleanField, TextAreaField
 from wtforms.validators import Regexp, Length, Optional, ValidationError
@@ -16,6 +19,8 @@ from altair.app.ticketing.events.sales_segments.resources import SalesSegmentGro
 from altair.app.ticketing.lots.models import Lot
 
 from .models import LotEntryReportSetting
+
+logger = logging.getLogger(__name__)
 
 class LotForm(Form):
     name = TextField(
@@ -196,6 +201,9 @@ class ProductForm(Form):
         coerce=int,
     )
 
+    def __init__(self, formdata=None, obj=None, **kwargs):
+        super(type(self), self).__init__(formdata, obj, **kwargs)
+        self.obj = obj
 
     def create_product(self, lot):
         product = Product(
@@ -218,6 +226,24 @@ class ProductForm(Form):
 
         return product
 
+    def validate(self):
+        status = super(type(self), self).validate()
+        if status:
+            if self.obj is not None:
+                # 販売期間内で公開済みの場合、またはこの商品が抽選申込されている場合は
+                # 価格、席種の変更は不可
+                product = self.obj
+                now = datetime.now()
+                if (product.public and product.sales_segment.public and product.sales_segment.in_term(now))\
+                   or product.has_lot_entry_products():
+                    error_message = u'既に販売中か抽選申込がある為、変更できません'
+                    if self.price.data != str(product.price):
+                        self.price.errors.append(error_message)
+                        status = False
+                    if self.seat_stock_type_id.data != product.seat_stock_type_id:
+                        self.seat_stock_type_id.errors.append(error_message)
+                        status = False
+        return status
 
 class SearchEntryForm(Form):
     """

@@ -6,8 +6,9 @@
 
 各種手数料の他、公演によりシステム利用料がかかります。
 %else:
+%if sej_order:
 払込票番号：${sej_order.billing_number}
 支払期日：${h.japanese_datetime(sej_order.payment_due_at)}
-　
+%endif
 ${notice}
 %endif
