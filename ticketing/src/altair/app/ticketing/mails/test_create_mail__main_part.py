@@ -47,6 +47,10 @@ def setup_operator(auth_id=AUTH_ID, organization_id=ORGANIZATION_ID):
     return operator
 
 def setup_product_item(quantity, quantity_only, organization):
+    from altair.app.ticketing.core.models import Stock
+    from altair.app.ticketing.core.models import StockStatus
+    from altair.app.ticketing.core.models import StockType
+    from altair.app.ticketing.core.models import StockHolder
     from altair.app.ticketing.core.models import Performance
     from altair.app.ticketing.core.models import PerformanceSetting
     from altair.app.ticketing.core.models import Product
@@ -114,11 +118,23 @@ def setup_product_item(quantity, quantity_only, organization):
         name=":ProductItem:name", 
         price=12000, 
         quantity=quantity, 
+        performance=performance, 
         product=Product(
             sales_segment=sales_segment, 
             name=":Product:name", 
             price=10000), 
-        performance=performance
+        stock=Stock(
+            quantity=10,
+            performance=performance, 
+            stock_type=StockType(
+                name=":StockType:name",
+                type=":type",
+                display_order=50,
+                quantity_only=quantity_only
+            ), 
+            stock_holder=StockHolder(name=":StockHolder:name"), 
+            stock_status=StockStatus(quantity=10)
+        )
     )
     return product_item
 
@@ -143,7 +159,7 @@ def setup_shipping_address(mail_address="my@test.mail.com"):
             fax=":fax")
 
 
-def setup_order(quantity, quantity_only, organization, order_no="Order:order_no", product_item=None):
+def setup_ordered_product_item(quantity, quantity_only, organization, order_no="Order:order_no", product_item=None):
     """copied. from altair/ticketing/src/altair/app/ticketing/printqr/test_functional.py"""
     from altair.app.ticketing.core.models import OrderedProductItem
     from altair.app.ticketing.core.models import OrderedProduct
@@ -170,12 +186,17 @@ def setup_order(quantity, quantity_only, organization, order_no="Order:order_no"
         payment_delivery_pair = payment_delivery_method_pair, 
         performance=product_item.performance, 
     )
-    OrderedProduct(price=12000, 
-                   product=product_item.product, 
-                   order=order, 
-                   quantity=quantity)
-    OrderedProductItem(price=14000, quantity=quantity, product_item=product_item)
-    return order
+    ordered_product = OrderedProduct(
+        price=12000, 
+        product=product_item.product, 
+        order=order, 
+        quantity=quantity
+    )
+    return OrderedProductItem(price=14000, quantity=quantity, product_item=product_item, ordered_product=ordered_product)
+
+def setup_order(quantity, quantity_only, organization, order_no="Order:order_no", product_item=None):
+    ordered_product_item = setup_ordered_product_item(quantity, quantity_only, organization, order_no=order_no, product_item=product_item)
+    return ordered_product_item.ordered_product.order
 
 def setup_lot_entry(quantity, quantity_only, organization, entry_no="LotEntry:entry_no", product_item=None):
     from altair.app.ticketing.lots.models import (
