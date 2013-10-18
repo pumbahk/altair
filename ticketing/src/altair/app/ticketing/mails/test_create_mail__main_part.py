@@ -7,11 +7,16 @@
 * PDMPごとの分岐箇所はtest_create_main__pdmp_part.pyで
 """
 
+"""
+LotEntry.entry_noとOrder.order_noは同じ
+  mysql> select le.* from `Order` as o join LotEntry as le on o.id = le.order_id where le.entry_no <> o.order_no limit 10;
+  Empty set (0.48 sec)
+"""
+
 import unittest
 from pyramid import testing
 from datetime import datetime
 import mock
-from ..testing import SetUpTearDownManager
 
 from altair.app.ticketing.testing import _setup_db, _teardown_db
 
@@ -301,7 +306,6 @@ class MailTemplateCreationTest(unittest.TestCase):
         from altair.app.ticketing.core.models import MailTypeEnum
         operator = setup_operator()
         entry_no = "*entryno*"
-        order_no = "*orderno*"
 
         quantity_settings=dict(
             quantity=2,
@@ -310,7 +314,7 @@ class MailTemplateCreationTest(unittest.TestCase):
         )
         product_item = setup_product_item(**quantity_settings)
         order = setup_order(
-            order_no=order_no, 
+            order_no=entry_no, 
             product_item=product_item, 
             **quantity_settings
         )
@@ -326,8 +330,7 @@ class MailTemplateCreationTest(unittest.TestCase):
             with mock.patch("altair.app.ticketing.mails.lots_mail.ch.render_delivery_lots_elected_mail_viewlet") as drender:
                 result = self._callAction(request, (lot_entry, elected_wish), MailTypeEnum.LotsElectedMail)
                 self.assertTrue(result.body.data, str) #xxx:
-                self.assertIn("*entryno*", result.body.data)
-                print result.body.data
+                self.assertIn("*entryno*", result.body.data) #order_no == entry_no らしい
                 self.assertTrue(prender.called)
                 self.assertTrue(drender.called)
 
