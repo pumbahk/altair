@@ -2,12 +2,14 @@
 
 from wtforms import Form
 from wtforms import TextField, HiddenField, SelectField, DecimalField
-from wtforms.validators import Length, Optional, NumberRange
+from wtforms.validators import Length, Optional, NumberRange, ValidationError
 from wtforms.widgets import TextArea
 
 from altair.formhelpers import Translations, Required
 from altair.formhelpers.fields import OurBooleanField, LazySelectField
 from altair.app.ticketing.core.models import PaymentMethodPlugin, FeeTypeEnum
+from altair.app.ticketing.payments.plugins import CHECKOUT_PAYMENT_PLUGIN_ID
+
 
 class PaymentMethodForm(Form):
 
@@ -56,4 +58,7 @@ class PaymentMethodForm(Form):
     public = OurBooleanField(
         label=u'公開する',
     )
-    
+
+    def validate_payment_plugin_id(form, field):
+        if field.data == CHECKOUT_PAYMENT_PLUGIN_ID and form.fee.data > 0:
+            raise ValidationError(u'楽天あんしん支払いサービスでは、決済手数料は設定できません')
