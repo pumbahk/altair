@@ -72,7 +72,7 @@ requires = [
     'redis',
     'beaker-extensions == 0.2.0dev-moriyoshi2',
     'boto',
-    'fluent-logger == 0.3.3moriyoshi3',
+    'fluent-logger == 0.3.3moriyoshi4',
     'Pillow', # for qrcode.image.pil
     'altair.findable_label', 
     'altair.log',

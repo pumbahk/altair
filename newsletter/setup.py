@@ -41,7 +41,7 @@ requires = [
     'gunicorn',
     'altair.findable_label', 
     'altair.log',
-    'fluent-logger == 0.3.3moriyoshi3',
+    'fluent-logger == 0.3.3moriyoshi4',
     'altair.exclog', 
     'altair.browserid', 
     'altair.formhelpers',
