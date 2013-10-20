@@ -1,10 +1,13 @@
 # coding: utf-8
 
+import logging
 from sqlalchemy.sql.expression import desc
 
 __all__ = [ 
     'fetch_notifications',
     ]
+
+logger = logging.getLogger(__name__)
 
 def get_sej_order(notification):
     from ..models import SejOrder
@@ -27,4 +30,4 @@ def fetch_notifications():
             order = get_order(sej_order)
             yield sej_order, order, notification
         else:
-            logging.error("SejOrder Not found: order_no=%s, exchange_number=%s, billing_number=%s" % (notification.order_no, notification.exchange_number,notification.billing_number))
+            logger.error("SejOrder Not found: order_no=%s, exchange_number=%s, billing_number=%s" % (notification.order_no, notification.exchange_number,notification.billing_number))
