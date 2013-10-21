@@ -7,7 +7,7 @@ from ..separation import enable_smartphone
 @view_config(context="pyramid.exceptions.Forbidden", 
              request_type='altairsite.tweens.ISmartphoneRequest', 
              custom_predicates=(enable_smartphone, ), 
-             renderer="altairsite.smartphone:templates/errors/notfound.html")
+             renderer=selectable_renderer("altairsite.smartphone:templates/%(prefix)s/errors/notfound.html"))
 @view_config(context="pyramid.exceptions.Forbidden", 
              request_type='altairsite.tweens.IMobileRequest', 
              renderer=tstar_mobile_or_not_renderer({"RT": "altaircms:templates/mobile/notfound.html"}, 
@@ -22,7 +22,7 @@ def forbidden(request):
 @view_config(context="pyramid.exceptions.NotFound", 
              request_type='altairsite.tweens.ISmartphoneRequest', 
              custom_predicates=(enable_smartphone, ), 
-             renderer="altairsite.smartphone:templates/errors/notfound.html")
+             renderer=selectable_renderer("altairsite.smartphone:templates/%(prefix)s/errors/notfound.html"))
 @view_config(context="pyramid.exceptions.NotFound", 
              request_type='altairsite.tweens.IMobileRequest', 
              renderer=tstar_mobile_or_not_renderer({"RT": "altaircms:templates/mobile/notfound.html"}, 
@@ -43,7 +43,7 @@ def notfound(request):
 @view_config(context="altairsite.exceptions.UsersiteException", 
              request_type='altairsite.tweens.ISmartphoneRequest', 
              custom_predicates=(enable_smartphone, ), 
-             renderer="altairsite.smartphone:templates/errors/notfound.html")
+             renderer=selectable_renderer("altairsite.smartphone:templates/%(prefix)s/errors/notfound.html"))
 @view_config(context="altairsite.exceptions.UsersiteException", 
              request_type='altairsite.tweens.IMobileRequest', 
              renderer=tstar_mobile_or_not_renderer(

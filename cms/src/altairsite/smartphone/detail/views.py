@@ -9,12 +9,13 @@ from altairsite.config import smartphone_site_view_config
 from altairsite.mobile.core.helper import get_performances_month_unit, get_purchase_links \
     , get_tickets, get_sales_date
 from altairsite.exceptions import UsersiteException
+from altairsite.separation import selectable_renderer
 
 class ValidationFailure(UsersiteException):
     pass
 
 @smartphone_site_view_config(route_name='smartphone.detail',request_type="altairsite.tweens.ISmartphoneRequest"
-             , renderer='altairsite.smartphone:templates/detail/detail.html')
+             , renderer=selectable_renderer('altairsite.smartphone:templates/%(prefix)s/detail/detail.html'))
 def moveDetail(context, request):
     form = DetailForm(request.GET)
     event = context.get_event(form.data['event_id'])
@@ -49,6 +50,6 @@ def moveDetail(context, request):
     }
 
 @smartphone_site_view_config(route_name='smartphone.detail', context=ValidationFailure
-    , request_type="altairsite.tweens.ISmartphoneRequest", renderer='altairsite.smartphone:templates/common/error.html')
+    , request_type="altairsite.tweens.ISmartphoneRequest", renderer=selectable_renderer('altairsite.smartphone:templates/%(prefix)s/common/error.html'))
 def failed_validation(request):
     return {}
