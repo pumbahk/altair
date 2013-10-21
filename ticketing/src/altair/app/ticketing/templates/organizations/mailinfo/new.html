@@ -31,6 +31,12 @@ ${ch.breadcrumbs(
 </table>
 
 <h4>説明</h4>
+%if not extra_mailinfo:
+<div class="alert">
+  現在登録されているデータがありません。
+</div>
+%endif
+
 <pre>
 メールの付加情報は以下のようにして取得されます
   1. 購入されたチケットの公演(パフォーマンス)に紐づく設定を取得。
