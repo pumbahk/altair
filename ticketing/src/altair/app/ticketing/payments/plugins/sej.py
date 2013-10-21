@@ -37,6 +37,7 @@ from altair.app.ticketing.sej.utils import han2zen
 
 from altair.app.ticketing.tickets.convert import convert_svg
 from altair.app.ticketing.tickets.utils import (
+    NumberIssuer, 
     as_user_unit,
     build_dicts_from_ordered_product_item,
     build_dicts_from_carted_product_item,
@@ -92,11 +93,13 @@ def get_sej_ticket_data(product_item, svg):
 def applicable_tickets_iter(bundle):
     return ApplicableTicketsProducer(bundle).sej_only_tickets()
 
+
 def get_tickets(order):
     tickets = []
+    issuer = NumberIssuer()
     for ordered_product in order.ordered_products:
         for ordered_product_item in ordered_product.ordered_product_items:
-            dicts = build_dicts_from_ordered_product_item(ordered_product_item)
+            dicts = build_dicts_from_ordered_product_item(ordered_product_item, ticket_number_issuer=issuer)
             bundle = ordered_product_item.product_item.ticket_bundle
             for seat, dict_ in dicts:
                 for ticket in applicable_tickets_iter(bundle):
@@ -109,10 +112,11 @@ def get_tickets(order):
 
 def get_tickets_from_cart(cart, now):
     tickets = []
+    issuer = NumberIssuer()
     for carted_product in cart.products:
         for carted_product_item in carted_product.items:
             bundle = carted_product_item.product_item.ticket_bundle
-            dicts = build_dicts_from_carted_product_item(carted_product_item, now=now)
+            dicts = build_dicts_from_carted_product_item(carted_product_item, now=now, ticket_number_issuer=issuer)
             for (seat, dict_) in dicts:
                 for ticket in applicable_tickets_iter(bundle):
                     ticket_format = ticket.ticket_format
