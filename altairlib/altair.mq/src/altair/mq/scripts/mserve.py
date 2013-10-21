@@ -15,6 +15,7 @@ class MServeCommand(object):
     def build_option_parser(self):
         parser = argparse.ArgumentParser()
         parser.add_argument("config")
+        parser.add_argument("consumer", default='pika')
         return parser
 
 
@@ -26,7 +27,7 @@ class MServeCommand(object):
 
         request = app['request']
         request.browserid = "mserve worker"
-        consumer = get_consumer(request)
+        consumer = get_consumer(request, args.consumer)
 
         logger.info("into loop")
         io_loop = ioloop.IOLoop.instance()

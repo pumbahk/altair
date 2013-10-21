@@ -74,18 +74,28 @@ class TaskMapperTests(unittest.TestCase):
 
 class PikaClientFactoryTests(unittest.TestCase):
     def _getTarget(self):
-        from ..consumer import PikaClientFactory
-        return PikaClientFactory
+        from ..consumer import pika_client_factory 
+        return pika_client_factory
 
-    def _makeOne(self, *args, **kwargs):
+    def _callFUT(self, *args, **kwargs):
         return self._getTarget()(*args, **kwargs)
 
-    def test_it(self):
-        parameters = mock.Mock()
-        target = self._makeOne(parameters)
-        result = target()
-
-        self.assertEqual(result.parameters, parameters)
+    @mock.patch('altair.mq.consumer.PikaClient')
+    @mock.patch('pika.URLParameters')
+    def test_it(self, _URLParameters, _PikaClient):
+        config = testing.DummyModel(
+            registry=testing.DummyModel(
+                settings={
+                    'altair.mq.pika.url': 'url'
+                    }
+                )
+            )
+        _URLParameters.return_value = 'XXX'
+        _PikaClient.return_value = 'YYY'
+        result = self._callFUT(config, 'altair.mq.pika')
+        _URLParameters.assert_called_with('url')
+        _PikaClient.assert_called_with('XXX')
+        self.assertEqual(result, 'YYY')
 
 
 class PikaClientTests(unittest.TestCase):

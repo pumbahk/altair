@@ -8,7 +8,7 @@ import json
 from sqlalchemy import sql
 from pyramid.decorator import reify
 from zope.interface import implementer
-from altair.mq.interfaces import IPublisher
+from altair.mq import get_publisher
 from .interfaces import IElecting
 from altair.app.ticketing.models import (
     DBSession,
@@ -105,7 +105,7 @@ class Electing(object):
 
     @property
     def publisher(self):
-        return self.request.registry.getUtility(IPublisher)
+        return get_publisher(self.request, 'lots')
 
     def elect_lot_entries(self):
         publisher = self.publisher
