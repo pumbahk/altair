@@ -39,6 +39,7 @@ class MailInfoNewView(BaseView):
         return {"event": event, 
                 "form": form, 
                 "organization": event.organization, 
+                "extra_mailinfo": event.extra_mailinfo, 
                 "mailtype": mailtype, 
                 "mutil": mutil, 
                 "choices": MailTypeChoices, 

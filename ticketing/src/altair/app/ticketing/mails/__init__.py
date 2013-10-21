@@ -12,7 +12,9 @@ def install_mail_utility(config):
         asbool(config.registry.settings.get("altair.mails.bcc.show_flash_message", "false"))
         )
     config.registry.registerUtility(mail_default_setting, IMailSettingDefault)
-
+    
+    from .interfaces import IMailDataStoreGetter
+    config.registry.registerUtility(config.maybe_dotted(".resources.get_mail_data_store"), IMailDataStoreGetter)
    
     # from altair.app.ticketing.mails.simple import SimpleMail
     # config.add_mail_utility(MailTypeEnum.PurchaseCompleteMail, ".simple", SimpleMail)

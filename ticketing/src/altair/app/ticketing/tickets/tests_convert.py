@@ -12,6 +12,8 @@ class DummyHandler(logging.Handler):
         self.records.append(record)
 
 class ConverterTest(unittest.TestCase):
+    maxDiff = None
+
     def setUp(self):
         from .convert import logger
         self.dummy_handler = DummyHandler(logging.DEBUG)
@@ -81,6 +83,12 @@ class ConverterTest(unittest.TestCase):
         self.assertConversionResult(
             input=u'<svg xmlns="http://www.w3.org/2000/svg"><text x="0" y="0" width="100" height="100">\ufeff{{発券日時s}}\ufeff</text></svg>',
             expected=u'<TICKET><b>0.1 S :px U 0 0 m 1000 1000 "FIXTAG04" xn sxn X</b><FIXTAG01/><FIXTAG02/><FIXTAG03/><FIXTAG04/><FIXTAG05/><FIXTAG06/></TICKET>')
+
+    def test_singleton(self):
+        self.assertConversionResult(
+            input=u'<svg xmlns="http://www.w3.org/2000/svg"><flowRoot><flowRegion><rect x="0" y="0" width="100" height="100" /></flowRegion><flowDiv style="text-anchor:middle"><flowSpan>test</flowSpan><flowSpan style="font-size:13px">test</flowSpan></flowDiv></flowRoot></svg>',
+            expected=u'<TICKET><b>0.1 S :px U 0 0 m 1000 1000 "&lt;div style=\\"text-align:center\\"&gt;test&lt;span style=\\"font-size:13px;line-height:13px\\"&gt;test&lt;/span&gt;&lt;/div&gt;" X</b><FIXTAG01/><FIXTAG02/><FIXTAG03/><FIXTAG04/><FIXTAG05/><FIXTAG06/></TICKET>')
+
 
 if __name__ == "__main__":
     unittest.main()

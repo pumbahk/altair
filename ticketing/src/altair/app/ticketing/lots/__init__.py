@@ -88,7 +88,10 @@ def includeme(config):
     add_route('rakuten_auth.verify2', '/verify2')
     add_route('rakuten_auth.error', '/error')
 
-    config.scan(".")
+    config.scan(".subscribers")
+    config.scan(".views")
+    config.scan(".mobile_views")
+    config.scan(".layouts")
 
 # TODO: carts.includemeに移動
 def setup_cart(config):

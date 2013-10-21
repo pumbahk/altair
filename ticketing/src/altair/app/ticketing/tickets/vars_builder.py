@@ -78,6 +78,7 @@ class TicketDictListBuilder(object):
                 d = extra.copy()
                 d = builder.build_dict_from_stock(ordered_product_item.product_item.stock, d)
                 d = builder.build_dict_from_venue(ordered_product_item.product_item.performance.venue, d)
+                d[u'発券番号'] = ticket_number_issuer(ordered_product_item.product_item.id) if ticket_number_issuer else ""
                 retval.append((None, d))
         else: #BC
             for seat in ordered_product_item.seats:

@@ -931,6 +931,7 @@ cart.OrderFormView = Backbone.View.extend({
         return $('<li class="productListItem"></li>')
             .append(name)
             .append(payment)
+            .append('<br/>')
             .append(description)
             .append(quantity);
     }

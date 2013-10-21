@@ -62,10 +62,11 @@ def includeme(config):
     reg.adapters.register([IRequest], IStocker, "", Stocker)
     reg.adapters.register([IRequest], IReserving, "", Reserving)
     reg.adapters.register([IRequest], ICartFactory, "", CartFactory)
+    config.add_publisher_consumer('lots', 'altair.ticketing.lots.mq')
     config.add_subscriber('.workers.on_delivery_error',
                           'altair.app.ticketing.payments.events.DeliveryErrorEvent')
 
-    config.scan(".workers")
+    #config.scan(".workers")
     #config.scan(".subscribers")
 
 
@@ -131,6 +132,7 @@ def dummy_task(context, message):
 
 
 @task_config(root_factory=WorkerResource,
+             consumer="lots",
              queue="lots")
 @multicheckout.multicheckout_session
 def elect_lots_task(context, message):

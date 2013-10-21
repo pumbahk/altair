@@ -208,6 +208,10 @@ class SejDeliveryPlugin(object):
         payment_due_at = get_payment_due_at(current_date,cart)
         ticketing_start_at = get_ticketing_start_at(current_date,cart)
         ticketing_due_at = cart.payment_delivery_pair.issuing_end_at
+        if ticketing_due_at is None:
+            # この処理は代済発券のみでよい
+            # 発券期限はつねに確定させておかなければ再付番できない
+            ticketing_due_at = current_date + timedelta(days=365)
         tickets = get_tickets_from_cart(cart, current_date)
         order_no = cart.order_no
         tel1 = shipping_address.tel_1 and shipping_address.tel_1.replace('-', '')

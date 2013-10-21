@@ -132,7 +132,7 @@ class CommonErrorView(object):
         if hasattr(self.context, 'back_url') and self.context.back_url is not None:
             try:
                 # カートの救済可能な場合
-                api.recover_cart(request)
+                api.recover_cart(self.request)
                 transaction.commit()
             except Exception as e:
                 import sys

@@ -868,6 +868,17 @@ class OrderSearchBase(list):
                 cond = and_(cond,
                             t_delivery_method.c.id==value)
 
+        # 公演日時
+        if condition.start_on_from.data:
+            value = condition.start_on_from.data
+            cond = and_(cond,
+                        t_performance.c.start_on>=value)
+
+        if condition.start_on_to.data:
+            value = condition.start_on_to.data
+            cond = and_(cond,
+                        t_performance.c.start_on<=value)
+
         # ステータス(注文)
         if condition.status.data:
             status_cond = []

@@ -20,6 +20,15 @@ cache.type = ${altair:beaker_backend_type}
 altair.site_data.base_url = s3://tstar-dev/venue-layouts/frontend/
 altair.queryprofile.summary_path = __queryprofile
 
+; altair.mq
+altair.ticketing.lots.mq = altair.mq.consumer.pika_client_factory
+                           altair.mq.publisher.pika_publisher_factory
+altair.ticketing.lots.mq.url = amqp://guest:guest@localhost:5672/%2F
+
+;; altair.mq -- Pika (AMQP) を使わないでローカルで同期的にディスパッチする場合
+;altair.ticketing.lots.mq = altair.mq.publisher.locally_dispatching_publisher_consumer_factory
+;altair.ticketing.lots.mq.routes = lots:lots
+
 [app:www-check]
 use = egg:Paste#static
 document_root = %(www_check_docroot)s

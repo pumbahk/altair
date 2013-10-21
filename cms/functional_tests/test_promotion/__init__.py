@@ -136,7 +136,7 @@ class PromotionFunctionalTests(AppFunctionalTests):
          create_input_response = detail_response.click(linkid="create_link")
          form = find_form(create_input_response.forms, action_part="create")
          form.set("main_image", 1)
-         form.set("tag_content", PromotionTag.query.first().label)
+         form.set("tag_content", [PromotionTag.query.first().label])
          form.set("text", u"this-is-text-message")
          form.set("link", u"http://www.example.com")
          form.set("publish_open_on", datetime(1900, 1, 1))
