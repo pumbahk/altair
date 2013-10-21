@@ -3,10 +3,14 @@
 import logging
 from sqlalchemy.orm import joinedload
 from sqlalchemy.orm.exc import NoResultFound
-from .models import Host, Organization, OrderNoSequence, ChannelEnum, OrganizationSetting
+from .models import Host, Organization, OrderNoSequence, ChannelEnum, OrganizationSetting, DBSession
 from datetime import datetime
 
 logger = logging.getLogger(__name__)
+
+def refresh_organization(request):
+    if hasattr(request, "organization"):
+        request.organization = DBSession.merge(request.organization)
 
 def get_organization(request, override_host=None):
     if hasattr(request, 'organization'):
