@@ -66,6 +66,8 @@ class TemporaryCart(TemporaryModel):
         self.order_no = None
         self.total_amount = 0
         self.system_fee = 0
+        self.special_fee = 0
+        self.special_fee_name = u''
         self.delivery_fee = 0
         self.transaction_fee = 0
         self.shipping_address = None
@@ -97,7 +99,7 @@ class TemporaryCart(TemporaryModel):
 
     @property
     def calculated_total_amount(self):
-        return (self.transaction_fee + self.delivery_fee + self.system_fee
+        return (self.transaction_fee + self.delivery_fee + self.system_fee + self.special_fee
                 + sum([p.price * p.quantity for p in self.products]))
 
     def finish(self):
@@ -448,6 +450,8 @@ class OrderImporter():
             order_no            = row.get(u'order.order_no'),
             total_amount        = price_to_number(row.get(u'order.total_amount')),
             system_fee          = price_to_number(row.get(u'order.system_fee')),
+            special_fee         = price_to_number(row.get(u'order.special_fee')),
+            special_fee_name    = row.get(u'order.special_fee_name'),
             transaction_fee     = price_to_number(row.get(u'order.transaction_fee')),
             delivery_fee        = price_to_number(row.get(u'order.delivery_fee')),
             note                = row.get(u'order.note'),
