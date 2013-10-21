@@ -522,7 +522,9 @@ class BuilderItTest(_IntegrationAssertionMixin, unittest.TestCase):
         target = self._makeOne()
         data = {}
         model = Order(total_amount=600, 
-                      system_fee=100, 
+                      system_fee=100,
+                      special_fee=400,
+                      special_fee_name=u'特別手数料',
                       transaction_fee=200, 
                       delivery_fee=300, 
                       multicheckout_approval_no=":multicheckout_approval_no", 
@@ -545,6 +547,8 @@ class BuilderItTest(_IntegrationAssertionMixin, unittest.TestCase):
             sub = result["order"]
             self.assertEqual(sub[u'total_amount'],  600)
             self.assertEqual(sub[u'system_fee'],  100)
+            self.assertEqual(sub[u'special_fee'],  400)
+            self.assertEqual(sub[u'special_fee_name'],  u'特別手数料')
             self.assertEqual(sub[u'transaction_fee'],  200)
             self.assertEqual(sub[u'delivery_fee'],  300)
             self.assertEqual(sub[u'multicheckout_approval_no'],  ":multicheckout_approval_no")
@@ -590,9 +594,13 @@ class BuilderItTest(_IntegrationAssertionMixin, unittest.TestCase):
         
     def test_build_payment_delivery_method_pair(self):
         from altair.app.ticketing.core.models import PaymentDeliveryMethodPair
+        from altair.app.ticketing.core.models import FeeTypeEnum
         target = self._makeOne()
         model = PaymentDeliveryMethodPair(
-            system_fee=100, 
+            system_fee=100,
+            special_fee=400,
+            special_fee_name=u'特別手数料',
+            special_fee_type=FeeTypeEnum.PerUnit.v[0],            
             transaction_fee=200, 
             delivery_fee=300, 
             )
@@ -718,6 +726,7 @@ def get_ordered_product_item__full_relation(quantity, quantity_only):
     from altair.app.ticketing.core.models import PaymentDeliveryMethodPair
     from altair.app.ticketing.core.models import PaymentMethod
     from altair.app.ticketing.core.models import DeliveryMethod
+    from altair.app.ticketing.core.models import FeeTypeEnum
 
     sales_segment = SalesSegment(start_at=datetime(2000, 1, 1), 
                          end_at=datetime(2000, 1, 1, 23), 
@@ -749,6 +758,8 @@ def get_ordered_product_item__full_relation(quantity, quantity_only):
     order = Order(shipping_address=shipping_address, 
                   total_amount=600, 
                   system_fee=100, 
+                  special_fee=400,
+                  special_fee_name=u'特別手数料',
                   transaction_fee=200, 
                   delivery_fee=300, 
                   multicheckout_approval_no=":multicheckout_approval_no", 
@@ -759,7 +770,10 @@ def get_ordered_product_item__full_relation(quantity, quantity_only):
                   created_at=datetime(2000, 1, 1, 1), 
                   issued_at=datetime(2000, 1, 1, 1, 13),                                        
                   )
-    payment_delivery_method_pair = order.payment_delivery_pair = PaymentDeliveryMethodPair(system_fee=100, transaction_fee=200, delivery_fee=300, )
+    payment_delivery_method_pair = order.payment_delivery_pair = PaymentDeliveryMethodPair(system_fee=100, transaction_fee=200, delivery_fee=300,
+                                                                                           special_fee=400, special_fee_name=u'特別手数料',
+                                                                                           special_fee_type=FeeTypeEnum.PerUnit.v[0])
+
     payment_method = payment_delivery_method_pair.payment_method = PaymentMethod(name=":PaymentMethod:name", 
                           fee=300, 
                           fee_type=1, 
@@ -1036,12 +1050,16 @@ class BuilderItTicketListCreateTest(_IntegrationAssertionMixin, unittest.TestCas
         from altair.app.ticketing.core.models import PaymentDeliveryMethodPair
         from altair.app.ticketing.core.models import PaymentMethod
         from altair.app.ticketing.core.models import DeliveryMethod
+        from altair.app.ticketing.core.models import FeeTypeEnum
         target = self._makeOne()
         carted_product_item = get_carted_product_item__full_relation(quantity=2, quantity_only=True)
         payment_delivery_method_pair = PaymentDeliveryMethodPair(
             delivery_fee=300, 
             transaction_fee=200, 
-            system_fee=100, 
+            system_fee=100,
+            special_fee=300,
+            special_fee_name=u'特別手数料',
+            special_fee_type=FeeTypeEnum.PerUnit.v[0],
             payment_method = PaymentMethod(name=":PaymentMethod:name", 
                                            fee=300, 
                                            fee_type=1, 
@@ -1080,6 +1098,7 @@ class BuilderItTicketListCreateTest(_IntegrationAssertionMixin, unittest.TestCas
         from altair.app.ticketing.core.models import PaymentMethod
         from altair.app.ticketing.core.models import DeliveryMethod
         from altair.app.ticketing.core.models import Seat
+        from altair.app.ticketing.core.models import FeeTypeEnum
 
         target = self._makeOne()
         carted_product_item = get_carted_product_item__full_relation(quantity=2, quantity_only=False)
@@ -1092,7 +1111,10 @@ class BuilderItTicketListCreateTest(_IntegrationAssertionMixin, unittest.TestCas
         payment_delivery_method_pair = PaymentDeliveryMethodPair(
             delivery_fee=300, 
             transaction_fee=200, 
-            system_fee=100, 
+            system_fee=100,
+            special_fee=400,
+            special_fee_name=u'特別手数料',
+            special_fee_type=FeeTypeEnum.PerUnit.v[0],
             payment_method = PaymentMethod(name=":PaymentMethod:name", 
                                            fee=300, 
                                            fee_type=1, 

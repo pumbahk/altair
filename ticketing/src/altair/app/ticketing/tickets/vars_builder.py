@@ -398,6 +398,8 @@ class TicketDictBuilder(object):
             u'order': {
                 u'total_amount': order.total_amount,
                 u'system_fee': order.system_fee,
+                u'special_fee': order.special_fee,
+                u'special_fee_name': order.special_fee_name,
                 u'transaction_fee': order.transaction_fee,
                 u'delivery_fee': order.delivery_fee,
                 u'multicheckout_approval_no': order.multicheckout_approval_no,
@@ -540,6 +542,8 @@ class TicketDictBuilder(object):
             u'order': {
                 u'total_amount': cart.total_amount,
                 u'system_fee': cart.system_fee,
+                u'special_fee': cart.special_fee,
+                u'special_fee_name': cart.special_fee_name,
                 u'transaction_fee': cart.transaction_fee,
                 u'delivery_fee': cart.delivery_fee,
                 u'order_no': cart.order_no
