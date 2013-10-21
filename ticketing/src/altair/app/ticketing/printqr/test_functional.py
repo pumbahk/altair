@@ -4,10 +4,10 @@ from pyramid import testing
 from datetime import datetime
 import transaction
 import mock
+from ..testing import SetUpTearDownManager 
 from .testing import (
     setUpSwappedDB, 
     tearDownSwappedDB, 
-    SetupTearDownManager, 
     DummyRequest
 )
 
@@ -62,20 +62,19 @@ def setup_operator(auth_id=AUTH_ID, organization_id=ORGANIZATION_ID):
     from altair.app.ticketing.operators.models import OperatorAuth
     from altair.app.ticketing.operators.models import Operator
     from altair.app.ticketing.core.models import Organization
+    from altair.app.ticketing.core.models import OrganizationSetting
     operator = Operator.query.first()
     if operator is None:
         organization = Organization(name=":Organization:name",
                                     short_name=":Organization:short_name", 
                                     code=":Organization:code", 
                                     id=organization_id)
+        OrganizationSetting(organization=organization, name="default")
         operator = Operator(organization_id=organization_id, organization=organization)
         OperatorAuth(operator=operator, login_id=auth_id)
     return operator
 
-def setup_ordered_product_items(quantity, quantity_only, organization, order_no="Order:order_no"):
-    """copied. from altair/app/ticketing/tickets/tests_builder_it.py"""
-    from altair.app.ticketing.core.models import OrderedProductItem
-    from altair.app.ticketing.core.models import OrderedProduct
+def setup_product_item(quantity, quantity_only, organization):
     from altair.app.ticketing.core.models import Stock
     from altair.app.ticketing.core.models import StockStatus
     from altair.app.ticketing.core.models import StockType
@@ -84,12 +83,9 @@ def setup_ordered_product_items(quantity, quantity_only, organization, order_no=
     from altair.app.ticketing.core.models import PerformanceSetting
     from altair.app.ticketing.core.models import Product
     from altair.app.ticketing.core.models import ProductItem
-    from altair.app.ticketing.core.models import Order
-    from altair.app.ticketing.core.models import ShippingAddress
     from altair.app.ticketing.core.models import SalesSegment
     from altair.app.ticketing.core.models import SalesSegmentGroup
     from altair.app.ticketing.core.models import Event
-    from altair.app.ticketing.core.models import TicketBundle
     from altair.app.ticketing.core.models import Venue
     from altair.app.ticketing.core.models import Site
     from altair.app.ticketing.core.models import PaymentDeliveryMethodPair
@@ -105,89 +101,127 @@ def setup_ordered_product_items(quantity, quantity_only, organization, order_no=
         name=":SalesSegmentGroup:name", 
         kind=":kind")
 
-    shipping_address = ShippingAddress(
-        email_1=":email_1",
-        email_2=":email_2",
-        nick_name=":nick_name",
-        first_name=":first_name",
-        last_name=":last_name",
-        first_name_kana=":first_name_kana",
-        last_name_kana=":last_name_kana",
-        zip=":zip",
-        country=":country",
-        prefecture=":prefecture",
-        city=":city",
-        address_1=":address_1",
-        address_2=":address_2",
-        tel_1=":tel_1",
-        tel_2=":tel_2",
-        fax=":fax",
-        )
-    order = Order(shipping_address=shipping_address, 
-                  total_amount=600, 
-                  system_fee=100, 
-                  transaction_fee=200, 
-                  delivery_fee=300, 
-                  multicheckout_approval_no=":multicheckout_approval_no", 
-                  order_no=order_no, 
-                  paid_at=datetime(2000, 1, 1, 1, 10), 
-                  delivered_at=None, 
-                  canceled_at=None, 
-                  created_at=datetime(2000, 1, 1, 1), 
-                  issued_at=datetime(2000, 1, 1, 1, 13),
-                  organization_id=organization.id
-                  )
+    payment_delivery_method_pair = PaymentDeliveryMethodPair(
+        system_fee=100, 
+        transaction_fee=200, 
+        delivery_fee=300, 
+        discount=0, 
+        payment_method=PaymentMethod(
+            name=":PaymentMethod:name", 
+            fee=300, 
+            fee_type=1, 
+            payment_plugin_id=2), 
+        delivery_method=DeliveryMethod(
+            name=":DeliveryMethod:name", 
+            fee=300, 
+            fee_type=1, 
+            delivery_plugin_id=2)
+    )
 
-    payment_delivery_method_pair = order.payment_delivery_pair = PaymentDeliveryMethodPair(system_fee=100, transaction_fee=200, delivery_fee=300, discount=0)
-    payment_method = payment_delivery_method_pair.payment_method = PaymentMethod(name=":PaymentMethod:name", 
-                          fee=300, 
-                          fee_type=1, 
-                          payment_plugin_id=2)
-    delivery_method = payment_delivery_method_pair.delivery_method = DeliveryMethod(name=":DeliveryMethod:name", 
-                          fee=300, 
-                          fee_type=1, 
-                          delivery_plugin_id=2)
-    ordered_product = OrderedProduct(price=12000, 
-                                     quantity=quantity)
-    ordered_product.order = order
-    ordered_product_item = OrderedProductItem(price=14000, quantity=quantity)
-    ordered_product_item.ordered_product = ordered_product
-    product_item = ordered_product_item.product_item = ProductItem(name=":ProductItem:name", 
-                        price=12000, 
-                        quantity=quantity, 
-                        )
-    product = product_item.product = Product(name=":Product:name", 
-                                             price=10000)
-    ordered_product.product = product
-    product_item.product.sales_segment = sales_segment
-    performance = order.performance = product_item.performance = Performance(name=":Performance:name",
-                       code=":code", 
-                       open_on=datetime(2000, 1, 1), 
-                       start_on=datetime(2000, 1, 1, 10), 
-                       end_on=datetime(2000, 1, 1, 23), 
-                       abbreviated_title=":PerformanceSetting:abbreviated_title", 
-                       subtitle=":PerformanceSetting:subtitle", 
-                       note=":PerformanceSetting:note")
+    sales_segment.payment_delivery_method_pairs.append(payment_delivery_method_pair)
+    performance = Performance(
+        name=":Performance:name",
+        code=":code", 
+        open_on=datetime(2000, 1, 1), 
+        start_on=datetime(2000, 1, 1, 10), 
+        end_on=datetime(2000, 1, 1, 23), 
+        abbreviated_title=":PerformanceSetting:abbreviated_title", 
+        subtitle=":PerformanceSetting:subtitle", 
+        note=":PerformanceSetting:note", 
+        event=Event(
+            title=":Event:title",
+            abbreviated_title=":abbreviated_title", 
+            organization=organization, 
+            code=":Event:code"), 
+        venue=Venue(
+            name=":Venue:name", 
+            organization=organization, 
+            sub_name=":sub_name", 
+            site=Site()
+        )
+    )
     performance.settings.append(PerformanceSetting())
 
-    site = Site()
-    venue = performance.venue = Venue(name=":Venue:name", 
-                                      organization=organization, 
-                                      sub_name=":sub_name", 
-                                      site=site)
+    product_item = ProductItem(
+        name=":ProductItem:name", 
+        price=12000, 
+        quantity=quantity, 
+        performance=performance, 
+        product=Product(
+            sales_segment=sales_segment, 
+            name=":Product:name", 
+            price=10000), 
+        stock=Stock(
+            quantity=10,
+            performance=performance, 
+            stock_type=StockType(
+                name=":StockType:name",
+                type=":type",
+                display_order=50,
+                quantity_only=quantity_only
+            ), 
+            stock_holder=StockHolder(name=":StockHolder:name"), 
+            stock_status=StockStatus(quantity=10)
+        )
+    )
+    return product_item
 
-    event = performance.event = Event(title=":Event:title",
-                  abbreviated_title=":abbreviated_title", 
-                  organization=organization, 
-                  code=":Event:code")
-    ticket_bundle = event.ticket_bundle = TicketBundle()
-    ticket_bundle.attributes = {"key": "value"}
-    product_item.ticket_bundle = ticket_bundle
-    stock = product_item.stock = Stock(quantity=10, performance=performance)
-    stock.stock_type = StockType(name=":StockType:name", type=":type", display_order=50, quantity_only=quantity_only)
-    stock.stock_holder = StockHolder(name=":StockHolder:name")
-    stock.stock_status = StockStatus(quantity=10)
-    return ordered_product_item
+def setup_shipping_address(mail_address="my@test.mail.com"):
+    from altair.app.ticketing.core.models import ShippingAddress
+    return ShippingAddress(
+            email_1=mail_address, #xxx:
+            email_2=":email_2",
+            nick_name=":nick_name",
+            first_name=":first_name",
+            last_name=":last_name",
+            first_name_kana=":first_name_kana",
+            last_name_kana=":last_name_kana",
+            zip=":zip",
+            country=":country",
+            prefecture=":prefecture",
+            city=":city",
+            address_1=":address_1",
+            address_2=":address_2",
+            tel_1=":tel_1",
+            tel_2=":tel_2",
+            fax=":fax")
+
+
+def setup_ordered_product_item(quantity, quantity_only, organization, order_no="Order:order_no", product_item=None):
+    """copied. from altair/ticketing/src/altair/app/ticketing/printqr/test_functional.py"""
+    from altair.app.ticketing.core.models import OrderedProductItem
+    from altair.app.ticketing.core.models import OrderedProduct
+    from altair.app.ticketing.core.models import Order
+
+    product_item = product_item or setup_product_item(quantity, quantity_only, organization) #xxx:
+    payment_delivery_method_pair = product_item.product.sales_segment.payment_delivery_method_pairs[0] #xxx:
+    order = Order(
+        shipping_address=setup_shipping_address(), #xxx:
+        total_amount=600, 
+        system_fee=100, 
+        transaction_fee=200, 
+        delivery_fee=300, 
+        special_fee=400, 
+        multicheckout_approval_no=":multicheckout_approval_no", 
+        order_no=order_no, 
+        paid_at=datetime(2000, 1, 1, 1, 10), 
+        delivered_at=None, 
+        canceled_at=None, 
+        created_at=datetime(2000, 1, 1, 1), 
+        issued_at=datetime(2000, 1, 1, 1, 13),
+        organization_id=organization.id, 
+        ordered_from=organization,  #xxx:
+        payment_delivery_pair = payment_delivery_method_pair, 
+        performance=product_item.performance, 
+    )
+    ordered_product = OrderedProduct(
+        price=12000, 
+        product=product_item.product, 
+        order=order, 
+        quantity=quantity
+    )
+    return OrderedProductItem(price=14000, quantity=quantity, product_item=product_item, ordered_product=ordered_product)
+
 
 def do_view(view, context=None, request=None, attr=None):
     from .resources import PrintQRResource
@@ -242,7 +276,7 @@ class QRTestsWithSeat(BaseTests):
         from altair.app.ticketing.models import DBSession
         from altair.app.ticketing.core.models import Seat
         operator = setup_operator()
-        item = setup_ordered_product_items(quantity=1, quantity_only=False,
+        item = setup_ordered_product_item(quantity=1, quantity_only=False,
                                            organization=operator.organization, order_no="Demo:OrderNO:02")
         event = item.product_item.performance.event
         seat = Seat(l0_id=":l0_id", 
@@ -330,7 +364,7 @@ class QRTestsWithoutSeat(BaseTests):
 
         from altair.app.ticketing.models import DBSession
         operator = setup_operator()
-        item = setup_ordered_product_items(quantity=2, quantity_only=True,
+        item = setup_ordered_product_item(quantity=2, quantity_only=True,
                                            organization=operator.organization, order_no="Demo:OrderNO:01")
         event = item.product_item.performance.event
         setup_ordered_product_token(item)
@@ -439,7 +473,7 @@ class QRTestsWithoutSeat(BaseTests):
             self.token.printed_at = None
             self.token.refreshed_at = None
             
-        with SetupTearDownManager(setup, teardown):
+        with SetUpTearDownManager(setup, teardown):
             result = do_view(
                 _getTarget(), 
                 request=DummyRequest(
@@ -469,7 +503,7 @@ class QRTestsWithoutSeat(BaseTests):
             from .views import ticket_after_printed_edit_status
             return ticket_after_printed_edit_status
            
-        with SetupTearDownManager(teardown=teardown):
+        with SetUpTearDownManager(teardown=teardown):
             prev = TicketPrintHistory.query.count()
             result = do_view(
                 _getTarget(), 
