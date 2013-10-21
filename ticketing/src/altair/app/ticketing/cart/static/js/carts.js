@@ -245,7 +245,7 @@ cart.ApplicationController.prototype.init = function(salesSegmentsSelection, sel
     this.performance = new cart.Performance({
     });
     this.venue = new cart.Venue({
-            data_source: null
+        data_source: null
     });
     // 絞込み
     this.performanceSearchPresenter = new cart.PerformanceSearchPresenter({
@@ -417,13 +417,14 @@ cart.VenuePresenter.prototype = {
         this.performance.on("change",
             function() {self.onPerformanceChanged();});
         this.selectedStockType = null;
+        this.seatGroups = {};
     },
     onPerformanceChanged: function() {
         if (!this.view.readOnly) {
             this.setStockType(null);
             this.view.reset();
         }
-        var dataSource = this.performance.createDataSource();
+        var dataSource = this.performance.createDataSource(this);
         this.view.updateVenueViewer(dataSource, this.callbacks);
     },
     onCancelPressed: function () {
@@ -447,12 +448,17 @@ cart.VenuePresenter.prototype = {
         this.selectedStockType = stock_type;
         var self = this;
         if (this.selectedStockType) {
-          self.stockTypeListPresenter.setActivePane('venue');
-          this.view.currentViewer.venueviewer('loadSeats', function() {
-            self.view.render();
-          });
+            self.stockTypeListPresenter.setActivePane('venue');
+            if (self.view.currentDataSource._reset !== void(0))
+                self.view.currentDataSource._reset();
+            this.view.currentViewer.venueviewer('loadSeats', function() {
+                self.view.render();
+                self.view.currentDataSource.seatGroups(function (data) {
+                    self.seatGroups = data;
+                });
+            });
         } else {
-          self.stockTypeListPresenter.setActivePane('stockTypeList');
+            self.stockTypeListPresenter.setActivePane('stockTypeList');
         }
     },
     selectable: function (viewer, seat) {
@@ -575,8 +581,62 @@ cart.PerformanceSearch = Backbone.Model.extend({
 });
 
 cart.Performance = Backbone.Model.extend({
-    createDataSource: function() {
-        return createDataSource(this.attributes);
+    createDataSource: function(venuePresenter) {
+        var params = this.attributes;
+        var factory_i = newMetadataLoaderFactory(params['data_source']['info']);
+        var factory_s = newMetadataLoaderFactory(function () { return venuePresenter.selectedStockType.get('seats_url') });
+        var drawingCache = {};
+        return {
+            drawing: function (page) {
+                return function (next, error) {
+                    var data = drawingCache[page];
+                    if (data) {
+                        next(data);
+                        return;
+                    }
+                    $.ajax({
+                        url: params['data_source']['venue_drawings'][page],
+                        dataType: 'xml',
+                        headers: {
+                            'X-Dummy': true
+                        },
+                        success: function (data) {
+                            drawingCache[page] = data;
+                            next(data);
+                        },
+                        error: function (xhr, text, status) {
+                            error("Failed to load drawing data (" + text + " - " + status + ")");
+                        }
+                    });
+                }
+            },
+            stockTypes: function (next, error) {
+                var stock_types = {};
+                for (var i = params.seat_types.length; --i >= 0;)
+                    stock_types[params.seat_types[i].id] = params.seat_types[i];
+                next(stock_types);
+            },
+            info: factory_i.create(function (data) { return data['info']; }),
+            seats: factory_s.create(function (data) { return data['seats']; }),
+            areas: factory_i.create(function (data) { return data['areas']; }),
+            seatGroups: factory_s.create(function (data) { return data['seatGroups'] }),
+            seatAdjacencies: function (next, error, length) {
+                var _params = $.extend(params, { length_or_range: length });
+                $.ajax({
+                    url: util.build_route_path(params.data_source.seat_adjacencies._params),
+                    dataType: 'json',
+                    success: function (data) { next(data); },
+                    error: function (xhr, text) {
+                        error("Failed to load adjacency data (" + text + ")");
+                    }
+                });
+            },
+            pages: factory_i.create(function (data) { return data['pages']; }),
+            _reset: function () {
+                factory_i.reset();
+                factory_s.reset();
+            }
+        };
     }
 });
 
@@ -945,6 +1005,7 @@ cart.VenueView = Backbone.View.extend({
         this.zoomRatioMin = 1;
         this.zoomRatioMax = 2.5;
         this.updateQueue = [];
+        this.currentDataSource = null;
 
         var self = this;
         $('#selectSeat .btn-select-seat').click(function () {
@@ -1169,6 +1230,7 @@ cart.VenueView = Backbone.View.extend({
             viewportSize: { x: 490, y: 430 },
             deferSeatLoading: true
         });
+        this.currentDataSource = dataSource;
         this.currentViewer.venueviewer("load");
     },
     updateUIState: function () {
@@ -1253,9 +1315,9 @@ cart.Venue = Backbone.Model.extend({
               stock_types[params.seat_types[i].id] = params.seat_types[i];
             next(stock_types);
           },
-          info: factory(function (data) { return data['info']; }),
-          seats: factory(function (data) { return data['seats']; }),
-          areas: factory(function (data) { return data['areas']; }),
+          info: factory.create(function (data) { return data['info']; }),
+          seats: factory.create(function (data) { return data['seats']; }),
+          areas: factory.create(function (data) { return data['areas']; }),
           seatAdjacencies: function (next, error, length) {
             var _params = $.extend(params, { length_or_range: length });
             $.ajax({
@@ -1282,88 +1344,48 @@ cart.Venue = Backbone.Model.extend({
 
 
 function newMetadataLoaderFactory(url) {
-  var conts = [], allData = null, first = true;
-  return function createMetadataLoader(fetch) {
-    return function metadataLoader(next, error) {
-      conts.push({ fetch: fetch, next: next, error: error });
-      if (first) {
-        $.ajax({
-          url: url,
-          dataType: 'json',
-          success: function(data) {
-            allData = data;
-            var _conts = conts;
-            conts = [];
-            for (var i = 0; i < _conts.length; i++)
-              _conts[i].next(_conts[i].fetch(data));
-          },
-          error: function(xhr, text) {
-            var message = "Failed to load " + url + " (reason: " + text + ")";
-            var _conts = conts;
-            conts = [];
-            for (var i = 0; i < _conts.length; i++)
-              _conts[i].error && _conts[i].error(message);
-          }
-        });
-        first = false;
-        return;
-      } else {
-        if (allData)
-          next(fetch(allData));
-      }
+    var ctx = {
+        conts: null,
+        data: null,
+        first: null,
+        reset: function reset() {
+            this.conts = [];
+            this.data = null;
+            this.first = true;
+        },
+        create: function createMetadataLoader(fetch) {
+            return function metadataLoader(next, error) {
+                ctx.conts.push({ fetch: fetch, next: next, error: error });
+                if (ctx.first) {
+                    var _url = typeof url == 'function' ? url(): url;
+                    $.ajax({
+                        url: _url,
+                        dataType: 'json',
+                        success: function(data) {
+                            ctx.data = data;
+                            var _conts = ctx.conts;
+                            ctx.conts = [];
+                            for (var i = 0; i < _conts.length; i++)
+                                _conts[i].next(_conts[i].fetch(data));
+                        },
+                        error: function(xhr, text) {
+                            var message = "Failed to load " + _url + " (reason: " + text + ")";
+                            var _conts = ctx.conts;
+                            ctx.conts = [];
+                            for (var i = 0; i < _conts.length; i++)
+                                _conts[i].error && _conts[i].error(message);
+                        }
+                    });
+                    ctx.first = false;
+                    return;
+                } else {
+                    if (ctx.data)
+                        next(fetch(ctx.data));
+                }
+            }
+        }
     };
-  };
-}
-
-function createDataSource(params) {
-  var factory_i = newMetadataLoaderFactory(params['data_source']['info']);
-  var factory_s = newMetadataLoaderFactory(params['data_source']['seats']);
-  var drawingCache = {};
-  return {
-    drawing: function (page) {
-      return function (next, error) {
-        var data = drawingCache[page];
-        if (data) {
-          next(data);
-          return;
-        }
-        $.ajax({
-          url: params['data_source']['venue_drawings'][page],
-          dataType: 'xml',
-          headers: {
-            'X-Dummy': true
-          },
-          success: function (data) {
-            drawingCache[page] = data;
-            next(data);
-          },
-          error: function (xhr, text, status) {
-            error("Failed to load drawing data (" + text + " - " + status + ")");
-          }
-        });
-      }
-    },
-    stockTypes: function (next, error) {
-      var stock_types = {};
-      for (var i = params.seat_types.length; --i >= 0;)
-        stock_types[params.seat_types[i].id] = params.seat_types[i];
-      next(stock_types);
-    },
-    info: factory_i(function (data) { return data['info']; }),
-    seats: factory_s(function (data) { return data['seats']; }),
-    areas: factory_i(function (data) { return data['areas']; }),
-    seatAdjacencies: function (next, error, length) {
-      var _params = $.extend(params, { length_or_range: length });
-      $.ajax({
-        url: util.build_route_path(params.data_source.seat_adjacencies._params),
-        dataType: 'json',
-        success: function (data) { next(data); },
-        error: function (xhr, text) {
-          error("Failed to load adjacency data (" + text + ")");
-        }
-      });
-    },
-    pages: factory_i(function (data) { return data['pages']; })
-  };
+    ctx.reset();
+    return ctx;
 }
 
