@@ -159,7 +159,7 @@ class BuildSejArgsTest(unittest.TestCase):
             ticketing_fee         = 0,
             payment_due_at        = None,
             ticketing_start_at    = datetime(2013, 1, 5, 0, 0, 0),
-            ticketing_due_at      = None,
+            ticketing_due_at      = datetime(2014, 1, 1, 0, 0, 0),
             regrant_number_due_at = datetime(2013, 3, 2, 2, 3, 4),
             ),
         dict(
@@ -175,7 +175,7 @@ class BuildSejArgsTest(unittest.TestCase):
             ticketing_fee         = 0,
             payment_due_at        = None,
             ticketing_start_at    = datetime(2013, 1, 5, 0, 0, 0),
-            ticketing_due_at      = None,
+            ticketing_due_at      = datetime(2014, 1, 1, 0, 0, 0),
             regrant_number_due_at = datetime(2013, 3, 2, 2, 3, 4),
             ),
         dict(
@@ -191,7 +191,7 @@ class BuildSejArgsTest(unittest.TestCase):
             ticketing_fee         = 0,
             payment_due_at        = None,
             ticketing_start_at    = datetime(2013, 1, 5, 0, 0, 0),
-            ticketing_due_at      = None,
+            ticketing_due_at      = datetime(2014, 1, 1, 0, 0, 0),
             regrant_number_due_at = datetime(2013, 3, 2, 2, 3, 4),
             ),
         dict(
@@ -207,7 +207,7 @@ class BuildSejArgsTest(unittest.TestCase):
             ticketing_fee         = 0,
             payment_due_at        = None,
             ticketing_start_at    = datetime(2013, 1, 5, 0, 0, 0),
-            ticketing_due_at      = None,
+            ticketing_due_at      = datetime(2014, 1, 1, 0, 0, 0),
             regrant_number_due_at = datetime(2013, 3, 2, 2, 3, 4),
             ),
         dict(
@@ -223,7 +223,7 @@ class BuildSejArgsTest(unittest.TestCase):
             ticketing_fee         = 0,
             payment_due_at        = None,
             ticketing_start_at    = datetime(2013, 1, 5, 0, 0, 0),
-            ticketing_due_at      = None,
+            ticketing_due_at      = datetime(2014, 1, 1, 0, 0, 0),
             regrant_number_due_at = datetime(2013, 3, 2, 2, 3, 4),
             ),
         dict(
@@ -239,7 +239,7 @@ class BuildSejArgsTest(unittest.TestCase):
             ticketing_fee         = 0,
             payment_due_at        = None,
             ticketing_start_at    = datetime(2013, 1, 5, 0, 0, 0),
-            ticketing_due_at      = None,
+            ticketing_due_at      = datetime(2014, 1, 1, 0, 0, 0),
             regrant_number_due_at = datetime(2013, 3, 2, 2, 3, 4),
             ),
         #
