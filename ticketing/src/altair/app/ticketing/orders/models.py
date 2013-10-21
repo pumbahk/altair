@@ -192,6 +192,8 @@ class OrderSummary(Base):
             Order.__table__.c.transaction_fee,
             Order.__table__.c.delivery_fee,
             Order.__table__.c.system_fee,
+            Order.__table__.c.special_fee,
+            Order.__table__.c.special_fee_name,
             Order.__table__.c.total_amount,
             Order.__table__.c.note,
             Order.__table__.c.card_brand,
