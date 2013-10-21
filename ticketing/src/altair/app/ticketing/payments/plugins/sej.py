@@ -158,6 +158,10 @@ def build_sej_args(payment_type, order_like, now):
         commission_fee      = 0
         ticketing_fee       = 0
         payment_due_at      = None
+        if ticketing_due_at is None:
+            # この処理は代済発券のみでよい
+            # 発券期限はつねに確定させておかなければ再付番できない
+            ticketing_due_at = now + timedelta(days=365)
     elif int(payment_type) == int(SejPaymentType.PrepaymentOnly):
         # 支払いのみの場合は、ticketing_fee が無視されるので、commission に算入してあげないといけない。
         total_price         = order_like.total_amount

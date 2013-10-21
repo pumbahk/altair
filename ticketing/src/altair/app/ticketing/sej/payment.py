@@ -182,10 +182,10 @@ def create_sej_request_data(
             params['X_hakken_mise_date_sts'] = u'1'
 
         if ticketing_due_at is not None:
-            # 発券開始日時状態フラグ
-            params['X_hakken_lmt']      = ticketing_due_at.strftime('%Y%m%d%H%M')
             # 発券期限日時状態フラグ
+            params['X_hakken_lmt']      = ticketing_due_at.strftime('%Y%m%d%H%M')
         else:
+            # 発券期限日時
             params['X_hakken_lmt_sts'] = u'1'
     #else:
     #    if ticketing_start_at is not None:
