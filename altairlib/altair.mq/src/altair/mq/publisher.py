@@ -2,7 +2,7 @@ import logging
 from altair.mq.interfaces import IPublisher, IConsumer, IPublisherConsumerFactory
 from zope.interface import implementer, provider
 from pyramid.settings import asbool
-
+from pyramid.config import ConfigurationError
 import pika
 
 logger = logging.getLogger(__name__)
