@@ -22,15 +22,31 @@ ${ch.breadcrumbs(
   <span class="label">パフォーマンス</span>
 </div>
 
+<h4>情報</h4>
+<table class="table table-striped">
+<%! from altair.app.ticketing.description.api import get_description %>
+%for item in get_description(request,event.organization):
+  <tr><th>${item.display_name}</th><td>${item.value}</td></tr>
+%endfor
+%for item in get_description(request,event):
+  <tr><th>${item.display_name}</th><td>${item.value}</td></tr>
+%endfor
+</table>
+
+<h4>説明</h4>
 <pre>
 メールの付加情報は以下のようにして取得されます
   1. 購入されたチケットの公演(パフォーマンス)に紐づく設定を取得。
   2. 購入されたチケットの公演が所属しているイベントに紐づく設定を取得。
-  3. 購入されたチケットの公演が所属しているイベントが所属している取引先に紐づく設定を取得。
+  3. ${organization.name}全体で設定されているデフォルトの設定を取得。
 </pre>
 
 <div class="btn-group" style="margin-bottom:20px;">
   <a class="btn btn-info" href="#PreviewModal" data-toggle="modal"><i class="icon-eye-open"></i> preview</a>
+</div>
+
+<div class="page-header">
+  <h4>イベント「(${event.title})」に対するメール文言テンプレートの変更</h4>
 </div>
 
 <ul class="nav nav-tabs">

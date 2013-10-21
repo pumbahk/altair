@@ -148,6 +148,7 @@ def main(global_config, **local_config):
         config.include('altair.app.ticketing.lots_admin')
 
         config.include('altair.app.ticketing.carturl')
+        config.include('altair.app.ticketing.description')
 
         ## TBA
         config.add_route("qr.make", "___________") ##xxx:
