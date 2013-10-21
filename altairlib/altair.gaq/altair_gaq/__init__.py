@@ -99,7 +99,7 @@ def resolve_predicates(registry, predicates_config):
 
 def gaq_tween_factory(handler, registry):
     import re
-    setting_names = re.split(r'\s+', registry.settings.get(CONFIG_PREFIX, ''))
+    setting_names = [c for c in re.split(r'\s+', registry.settings.get(CONFIG_PREFIX, '')) if c]
     settings_dict = retrieve_settings(registry)
 
     tracker_configs = {}
