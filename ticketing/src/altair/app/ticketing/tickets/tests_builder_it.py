@@ -8,6 +8,7 @@ import mock
 from contextlib import nested
 ###
 
+import altair.app.ticketing.operators.models
 import altair.app.ticketing.core.models
 from altair.app.ticketing.tickets.utils import datetime_as_dict
 
@@ -693,211 +694,210 @@ class BuilderItTest(_IntegrationAssertionMixin, unittest.TestCase):
             m.assert_called_once_with(model.ordered_product.order, user_profile=user_profile, retval=result)
             n.assert_called_once_with(model.product_item, retval=result)
 
-def get_ordered_product_item__full_relation(quantity, quantity_only):
-    from altair.app.ticketing.core.models import OrderedProductItemToken
+
+ORGANIZATION_ID = 12345
+
+def setup_organization(organization_id=ORGANIZATION_ID):
+    from altair.app.ticketing.core.models import Organization
+    organization = Organization(name=":Organization:name",
+                                short_name=":Organization:short_name", 
+                                code=":Organization:code", 
+                                id=organization_id)
+    return organization
+
+def setup_product_item(quantity, quantity_only, organization):
+    from altair.app.ticketing.core.models import Stock
+    from altair.app.ticketing.core.models import StockStatus
+    from altair.app.ticketing.core.models import StockType
+    from altair.app.ticketing.core.models import StockHolder
+    from altair.app.ticketing.core.models import Performance
+    from altair.app.ticketing.core.models import PerformanceSetting
+    from altair.app.ticketing.core.models import Product
+    from altair.app.ticketing.core.models import ProductItem
+    from altair.app.ticketing.core.models import SalesSegment
+    from altair.app.ticketing.core.models import SalesSegmentGroup
+    from altair.app.ticketing.core.models import Event
+    from altair.app.ticketing.core.models import Venue
+    from altair.app.ticketing.core.models import Site
+    from altair.app.ticketing.core.models import PaymentDeliveryMethodPair
+    from altair.app.ticketing.core.models import PaymentMethod
+    from altair.app.ticketing.core.models import DeliveryMethod
+
+    sales_segment = SalesSegment(start_at=datetime(2000, 1, 1),
+                         end_at=datetime(2000, 1, 1, 23),
+                         upper_limit=8,
+                         seat_choice=True
+                         )
+    sales_segment.sales_segment_group = SalesSegmentGroup(
+        name=":SalesSegmentGroup:name",
+        kind=":kind")
+
+    payment_delivery_method_pair = PaymentDeliveryMethodPair(
+        system_fee=100,
+        transaction_fee=200,
+        delivery_fee=300,
+        discount=0,
+        payment_method=PaymentMethod(
+            name=":PaymentMethod:name",
+            fee=300,
+            fee_type=1,
+            payment_plugin_id=2),
+        delivery_method=DeliveryMethod(
+            name=":DeliveryMethod:name",
+            fee=300,
+            fee_type=1,
+            delivery_plugin_id=2)
+    )
+
+    sales_segment.payment_delivery_method_pairs.append(payment_delivery_method_pair)
+    performance = Performance(
+        name=":Performance:name",
+        code=":code",
+        open_on=datetime(2000, 1, 1),
+        start_on=datetime(2000, 1, 1, 10),
+        end_on=datetime(2000, 1, 1, 23),
+        abbreviated_title=":PerformanceSetting:abbreviated_title",
+        subtitle=":PerformanceSetting:subtitle",
+        note=":PerformanceSetting:note",
+        event=Event(
+            title=":Event:title",
+            abbreviated_title=":abbreviated_title",
+            organization=organization,
+            code=":Event:code"),
+        venue=Venue(
+            name=":Venue:name",
+            organization=organization,
+            sub_name=":sub_name",
+            site=Site()
+        )
+    )
+    performance.settings.append(PerformanceSetting())
+
+    product_item = ProductItem(
+        name=":ProductItem:name",
+        price=14000,
+        quantity=quantity,
+        performance=performance,
+        product=Product(
+            sales_segment=sales_segment,
+            name=":Product:name",
+            price=12000),
+        stock=Stock(
+            quantity=10,
+            performance=performance,
+            stock_type=StockType(
+                name=":StockType:name",
+                type=":type",
+                display_order=50,
+                quantity_only=quantity_only
+            ),
+            stock_holder=StockHolder(name=":StockHolder:name"),
+            stock_status=StockStatus(quantity=10)
+        )
+    )
+    return product_item
+
+def setup_shipping_address(mail_address="my@test.mail.com"):
+    from altair.app.ticketing.core.models import ShippingAddress
+    return ShippingAddress(
+            email_1=mail_address, #xxx:
+            email_2=":email_2",
+            nick_name=":nick_name",
+            first_name=":first_name",
+            last_name=":last_name",
+            first_name_kana=":first_name_kana",
+            last_name_kana=":last_name_kana",
+            zip=":zip",
+            country=":country",
+            prefecture=":prefecture",
+            city=":city",
+            address_1=":address_1",
+            address_2=":address_2",
+            tel_1=":tel_1",
+            tel_2=":tel_2",
+            fax=":fax")
+
+
+def setup_ordered_product_item(quantity, quantity_only, organization, order_no="Order:order_no", product_item=None):
+    """copied. from altair/ticketing/src/altair/app/ticketing/printqr/test_functional.py"""
     from altair.app.ticketing.core.models import OrderedProductItem
     from altair.app.ticketing.core.models import OrderedProduct
-    from altair.app.ticketing.core.models import Stock
-    from altair.app.ticketing.core.models import StockStatus
-    from altair.app.ticketing.core.models import StockType
-    from altair.app.ticketing.core.models import StockHolder
-    from altair.app.ticketing.core.models import Performance
-    from altair.app.ticketing.core.models import PerformanceSetting
-    from altair.app.ticketing.core.models import Product
-    from altair.app.ticketing.core.models import ProductItem
     from altair.app.ticketing.core.models import Order
-    from altair.app.ticketing.core.models import ShippingAddress
-    from altair.app.ticketing.core.models import SalesSegment
-    from altair.app.ticketing.core.models import SalesSegmentGroup
-    from altair.app.ticketing.core.models import Event
-    from altair.app.ticketing.core.models import Organization
+
+    product_item = product_item or setup_product_item(quantity, quantity_only, organization) #xxx:
+    payment_delivery_method_pair = product_item.product.sales_segment.payment_delivery_method_pairs[0] #xxx:
+    order = Order(
+        shipping_address=setup_shipping_address(), #xxx:
+        total_amount=600,
+        system_fee=100,
+        transaction_fee=200,
+        delivery_fee=300,
+        special_fee=400,
+        multicheckout_approval_no=":multicheckout_approval_no",
+        order_no=order_no,
+        paid_at=datetime(2000, 1, 1, 1, 10),
+        delivered_at=None,
+        canceled_at=None,
+        created_at=datetime(2000, 1, 1, 1),
+        issued_at=datetime(2000, 1, 1, 1, 13),
+        organization_id=organization.id,
+        ordered_from=organization,  #xxx:
+        payment_delivery_pair = payment_delivery_method_pair,
+        performance=product_item.performance,
+    )
+    ordered_product = OrderedProduct(
+        price=12000,
+        product=product_item.product,
+        order=order,
+        quantity=quantity
+    )
+    return OrderedProductItem(price=14000, quantity=quantity, product_item=product_item, ordered_product=ordered_product)
+
+def setup_ticket_bundle(product_item):
     from altair.app.ticketing.core.models import TicketBundle
-    from altair.app.ticketing.core.models import Venue
-    from altair.app.ticketing.core.models import PaymentDeliveryMethodPair
-    from altair.app.ticketing.core.models import PaymentMethod
-    from altair.app.ticketing.core.models import DeliveryMethod
+    event = product_item.performance.event
+    ticket_bundle = event.ticket_bundle = product_item.ticket_bundle = TicketBundle()
+    ticket_bundle.attributes["key"] = "value"
+    return ticket_bundle
 
-    sales_segment = SalesSegment(start_at=datetime(2000, 1, 1), 
-                         end_at=datetime(2000, 1, 1, 23), 
-                         upper_limit=8, 
-                         seat_choice=True
-                         )
-    sales_segment.sales_segment_group = SalesSegmentGroup(
-        name=":SalesSegmentGroup:name", 
-        kind=":kind")
-
-    shipping_address = ShippingAddress(
-        email_1=":email_1",
-        email_2=":email_2",
-        nick_name=":nick_name",
-        first_name=":first_name",
-        last_name=":last_name",
-        first_name_kana=":first_name_kana",
-        last_name_kana=":last_name_kana",
-        zip=":zip",
-        country=":country",
-        prefecture=":prefecture",
-        city=":city",
-        address_1=":address_1",
-        address_2=":address_2",
-        tel_1=":tel_1",
-        tel_2=":tel_2",
-        fax=":fax",
-        )
-    order = Order(shipping_address=shipping_address, 
-                  total_amount=600, 
-                  system_fee=100, 
-                  transaction_fee=200, 
-                  delivery_fee=300, 
-                  multicheckout_approval_no=":multicheckout_approval_no", 
-                  order_no=":order_no", 
-                  paid_at=datetime(2000, 1, 1, 1, 10), 
-                  delivered_at=None, 
-                  canceled_at=None, 
-                  created_at=datetime(2000, 1, 1, 1), 
-                  issued_at=datetime(2000, 1, 1, 1, 13),                                        
-                  )
-    payment_delivery_method_pair = order.payment_delivery_pair = PaymentDeliveryMethodPair(system_fee=100, transaction_fee=200, delivery_fee=300, )
-    payment_method = payment_delivery_method_pair.payment_method = PaymentMethod(name=":PaymentMethod:name", 
-                          fee=300, 
-                          fee_type=1, 
-                          payment_plugin_id=2)
-    delivery_method = payment_delivery_method_pair.delivery_method = DeliveryMethod(name=":DeliveryMethod:name", 
-                          fee=300, 
-                          fee_type=1, 
-                          delivery_plugin_id=2)
-    ordered_product = OrderedProduct(price=12000, 
-                                     quantity=quantity)
-    ordered_product.order = order
-    ordered_product_item = OrderedProductItem(id=1, price=14000, quantity=quantity)
-    ordered_product_item.ordered_product = ordered_product
-    product_item = ordered_product_item.product_item = ProductItem(name=":ProductItem:name", 
-                        price=12000, 
-                        quantity=quantity, 
-                        )
-    product = product_item.product = Product(name=":Product:name", 
-                                             price=10000)
-    ordered_product.product = product
-    product_item.product.sales_segment = sales_segment
-    performance = product_item.performance = Performance(name=":Performance:name",
-                       code=":code", 
-                       open_on=datetime(2000, 1, 1), 
-                       start_on=datetime(2000, 1, 1, 10), 
-                       end_on=datetime(2000, 1, 1, 23), 
-                       abbreviated_title=":PerformanceSetting:abbreviated_title", 
-                       subtitle=":PerformanceSetting:subtitle", 
-                       note=":PerformanceSetting:note")
-    performance.settings.append(PerformanceSetting())
-
-    venue = performance.venue = Venue(name=":Venue:name", 
-                                      sub_name=":sub_name")
-
-    event = performance.event = Event(title=":Event:title",
-                  abbreviated_title=":abbreviated_title", 
-                  code=":Event:code")
-    event.organization = Organization(name=":Organization:name", 
-                                      code=":Organization:code")
-    ticket_bundle = event.ticket_bundle = TicketBundle()
-    ticket_bundle.attributes = {"key": "value"}
-    product_item.ticket_bundle = ticket_bundle
-    stock = product_item.stock = Stock(quantity=10)
-    stock.stock_type = StockType(name=":StockType:name", type=":type", display_order=50, quantity_only=quantity_only)
-    stock.stock_holder = StockHolder(name=":StockHolder:name")
-    stock.stock_status = StockStatus(quantity=10)
-    return ordered_product_item
-
-def get_carted_product_item__full_relation(quantity, quantity_only):
+def setup_carted_product_item(quantity, quantity_only, organization, product_item=None, order_no="Cart:orderno"):
     from altair.app.ticketing.cart.models import CartedProductItem
     from altair.app.ticketing.cart.models import CartedProduct
-    from altair.app.ticketing.core.models import Stock
-    from altair.app.ticketing.core.models import StockStatus
-    from altair.app.ticketing.core.models import StockType
-    from altair.app.ticketing.core.models import StockHolder
-    from altair.app.ticketing.core.models import Performance
-    from altair.app.ticketing.core.models import PerformanceSetting
-    from altair.app.ticketing.core.models import Product
-    from altair.app.ticketing.core.models import ProductItem
     from altair.app.ticketing.cart.models import Cart
-    from altair.app.ticketing.core.models import ShippingAddress
-    from altair.app.ticketing.core.models import SalesSegment
-    from altair.app.ticketing.core.models import SalesSegmentGroup
-    from altair.app.ticketing.core.models import Event
-    from altair.app.ticketing.core.models import Organization
-    from altair.app.ticketing.core.models import TicketBundle
-    from altair.app.ticketing.core.models import Venue
-    from altair.app.ticketing.core.models import PaymentDeliveryMethodPair
-    from altair.app.ticketing.core.models import PaymentMethod
-    from altair.app.ticketing.core.models import DeliveryMethod
 
-    sales_segment = SalesSegment(start_at=datetime(2000, 1, 1), 
-                         end_at=datetime(2000, 1, 1, 23), 
-                         upper_limit=8, 
-                         seat_choice=True
-                         )
-    sales_segment.sales_segment_group = SalesSegmentGroup(
-        name=":SalesSegmentGroup:name", 
-        kind=":kind")
+    product_item = product_item or setup_product_item(quantity, quantity_only, organization) #xxx:
+    shipping_address=setup_shipping_address() #xxx:
+    sales_segment = product_item.product.sales_segment #xxx:
 
-    shipping_address = ShippingAddress(
-        email_1=":email_1",
-        email_2=":email_2",
-        nick_name=":nick_name",
-        first_name=":first_name",
-        last_name=":last_name",
-        first_name_kana=":first_name_kana",
-        last_name_kana=":last_name_kana",
-        zip=":zip",
-        country=":country",
-        prefecture=":prefecture",
-        city=":city",
-        address_1=":address_1",
-        address_2=":address_2",
-        tel_1=":tel_1",
-        tel_2=":tel_2",
-        fax=":fax",
+    cart = Cart(
+        shipping_address=shipping_address, 
+        _order_no=order_no, 
+        created_at=datetime(2000, 1, 1, 1), 
+        sales_segment=sales_segment
+    )
+    carted_product_item = CartedProductItem(
+        quantity=quantity, 
+        product_item=product_item, 
+        carted_product=CartedProduct(
+            cart=cart, 
+            quantity=quantity, 
+            product=product_item.product
         )
-    cart = Cart(shipping_address=shipping_address, 
-                _order_no=":order_no", 
-                created_at=datetime(2000, 1, 1, 1), 
-                sales_segment=sales_segment
-                )
-    carted_product = CartedProduct(cart=cart, 
-                                   quantity=quantity)
-    carted_product_item = CartedProductItem(id=1, quantity=quantity)
-    carted_product_item.carted_product = carted_product
-    product_item = carted_product_item.product_item = ProductItem(name=":ProductItem:name", 
-                        price=14000, 
-                        quantity=quantity, 
-                        )
-    carted_product.product = product_item.product = Product(name=":Product:name", 
-                                   price=12000)
-    product_item.product.sales_segment = sales_segment
-    performance = product_item.performance = Performance(name=":Performance:name",
-                       code=":code", 
-                       open_on=datetime(2000, 1, 1), 
-                       start_on=datetime(2000, 1, 1, 10), 
-                       end_on=datetime(2000, 1, 1, 23), 
-                       abbreviated_title=":PerformanceSetting:abbreviated_title", 
-                       subtitle=":PerformanceSetting:subtitle", 
-                       note=":PerformanceSetting:note")
-    performance.settings.append(PerformanceSetting())
-
-    venue = performance.venue = Venue(name=":Venue:name", 
-                  sub_name=":sub_name")
-
-    event = performance.event = Event(title=":Event:title",
-                  abbreviated_title=":abbreviated_title", 
-                  code=":Event:code")
-    event.organization = Organization(name=":Organization:name", 
-                                      code=":Organization:code")
-    ticket_bundle = event.ticket_bundle = TicketBundle()
-    ticket_bundle.attributes = {"key": "value"}
-    product_item.ticket_bundle = ticket_bundle
-    stock = product_item.stock = Stock(quantity=10)
-    stock.stock_type = StockType(name=":StockType:name", type=":type", display_order=50, quantity_only=quantity_only)
-    stock.stock_holder = StockHolder(name=":StockHolder:name")
-    stock.stock_status = StockStatus(quantity=10)
+    )
     return carted_product_item
+
+
+def get_ordered_product_item__full_relation(quantity, quantity_only):
+    organization = setup_organization()
+    product_item = setup_product_item(quantity, quantity_only, organization)
+    setup_ticket_bundle(product_item)
+    return setup_ordered_product_item(quantity, quantity_only, organization, product_item=product_item, order_no=":order_no")
+
+def get_carted_product_item__full_relation(quantity, quantity_only):
+    organization = setup_organization()
+    product_item = setup_product_item(quantity, quantity_only, organization)
+    setup_ticket_bundle(product_item)
+    return setup_carted_product_item(quantity, quantity_only, organization, product_item=product_item, order_no=":order_no")
 
 def setup_ordered_product_token_from_ordered_product_item(ordered_product_item):
     from altair.app.ticketing.core.models import OrderedProductItemToken
@@ -1116,7 +1116,8 @@ class BuilderItTicketListCreateTest(_IntegrationAssertionMixin, unittest.TestCas
             m.return_value = 0
             result = target.build_dicts_from_carted_product_item(model, 
                                                                  payment_delivery_method_pair=payment_delivery_method_pair, 
-                                                                 now=datetime(2000, 1, 1, 1)
+                                                                 now=datetime(2000, 1, 1, 1), 
+                                                                 ticket_number_issuer=self._makeIssuer()
                                                                  ) #attribute, number issuer, now
         
         self.assertEqual(len(result), 2)
@@ -1163,7 +1164,8 @@ class BuilderItTicketListCreateTest(_IntegrationAssertionMixin, unittest.TestCas
             m.return_value = 0
             result = target.build_dicts_from_carted_product_item(model, 
                                                                  payment_delivery_method_pair=payment_delivery_method_pair, 
-                                                                 now=datetime(2000, 1, 1, 1)
+                                                                 now=datetime(2000, 1, 1, 1), 
+                                                                 ticket_number_issuer=self._makeIssuer()
                                                                  ) #attribute, number issuer, now
         
         self.assertEqual(len(result), 1)
