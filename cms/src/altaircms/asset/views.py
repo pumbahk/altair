@@ -43,7 +43,7 @@ class AssetListView(object):
     @view_config(route_name="asset_list", renderer="altaircms:templates/asset/list.html", 
                  decorator=with_bootstrap)
     def all_asset_list(self):
-        assets = self.request.allowable(models.Asset).order_by(sa.desc(models.Asset.id))
+        assets = self.request.allowable(models.Asset).order_by(sa.desc(models.Asset.updated_at), sa.desc(models.Asset.id))
         return {"assets": assets, 
                 "image_asset_form": forms.ImageAssetForm(), 
                 "movie_asset_form": forms.MovieAssetForm(), 
@@ -53,7 +53,7 @@ class AssetListView(object):
     @view_config(route_name="asset_image_list", renderer="altaircms:templates/asset/image/list.html", 
                  decorator=with_bootstrap)
     def image_asset_list(self):
-        assets = self.request.allowable(models.ImageAsset).order_by(sa.desc(models.ImageAsset.id))
+        assets = self.request.allowable(models.ImageAsset).order_by(sa.desc(models.ImageAsset.updated_at), sa.desc(models.ImageAsset.id))
         form = forms.ImageAssetForm()
         search_form = forms.AssetSearchForm()
         return {"assets": assets, "form": form, "search_form": search_form}
@@ -61,7 +61,7 @@ class AssetListView(object):
     @view_config(route_name="asset_movie_list", renderer="altaircms:templates/asset/movie/list.html", 
                  decorator=with_bootstrap)
     def movie_asset_list(self):
-        assets = self.request.allowable(models.MovieAsset).order_by(sa.desc(models.MovieAsset.id))
+        assets = self.request.allowable(models.MovieAsset).order_by(sa.desc(models.MovieAsset.updated_at), sa.desc(models.MovieAsset.id))
         form = forms.MovieAssetForm()
         search_form = forms.AssetSearchForm()
         return {"assets": assets, "form": form, "search_form": search_form}
@@ -69,7 +69,7 @@ class AssetListView(object):
     @view_config(route_name="asset_flash_list", renderer="altaircms:templates/asset/flash/list.html", 
                  decorator=with_bootstrap)
     def flash_asset_list(self):
-        assets = self.request.allowable(models.FlashAsset).order_by(sa.desc(models.FlashAsset.id))
+        assets = self.request.allowable(models.FlashAsset).order_by(sa.desc(models.FlashAsset.updated_at), sa.desc(models.FlashAsset.id))
         form = forms.FlashAssetForm()
         search_form = forms.AssetSearchForm()
         return {"assets": assets, "form": form, "search_form": search_form}
@@ -143,6 +143,7 @@ class AssetUpdateView(object):
             FlashMessage.success("image asset updated", request=self.request)    
             return HTTPFound(self.request.route_path("asset_image_detail", asset_id=asset.id))
         except ValidationError, e:
+            logger.info(repr(e))
             FlashMessage.error(e.message, request=self.request)    
             return HTTPFound(self.request.route_path("asset_image_input", asset_id=asset.id))
         except Exception, e:
@@ -162,6 +163,7 @@ class AssetUpdateView(object):
             FlashMessage.success("movie asset updated", request=self.request)    
             return HTTPFound(self.request.route_path("asset_movie_detail", asset_id=asset.id))
         except ValidationError, e:
+            logger.info(repr(e))
             FlashMessage.error(e.message, request=self.request)    
             return HTTPFound(self.request.route_path("asset_movie_input", asset_id=asset.id))
         except Exception, e:
@@ -181,6 +183,7 @@ class AssetUpdateView(object):
             FlashMessage.success("flash asset updated", request=self.request)    
             return HTTPFound(self.request.route_path("asset_flash_detail", asset_id=asset.id))
         except ValidationError, e:
+            logger.info(repr(e))
             FlashMessage.error(e.message, request=self.request)    
             return HTTPFound(self.request.route_path("asset_flash_input", asset_id=asset.id))
         except Exception, e:
