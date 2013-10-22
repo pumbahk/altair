@@ -93,7 +93,7 @@ def get_publisher(request_or_registry, name=''):
 def add_publisher_consumer(config, name, config_prefix, dotted_names=None):
     if dotted_names is None:
         import re
-        dotted_names = re.split(r'(?:\s*,\s*|\s+)', config.registry.settings[config_prefix].strip())
+        dotted_names = [c for c in re.split(r'(?:\s*,\s*|\s+)', config.registry.settings[config_prefix].strip()) if c]
 
     publisher = consumer = None
 
