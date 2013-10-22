@@ -43,6 +43,8 @@ def rendering_page(context, request):
         static_page = control.fetch_static_page_from_params(url, dt)
         if static_page:
             if static_page.interceptive:
+                if url == "": #hmm..
+                    url = "index.html"
                 return as_static_page_response(request, static_page, url)
     except StaticPageNotFound:
         logger.info(u'no corresponding static page found for url=%s; falls back to standard page discovery' % url)
