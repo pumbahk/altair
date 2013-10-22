@@ -74,7 +74,10 @@ def setup_operator(auth_id=AUTH_ID, organization_id=ORGANIZATION_ID):
         OperatorAuth(operator=operator, login_id=auth_id)
     return operator
 
-def setup_product_item(quantity, quantity_only, organization):
+def setup_ordered_product_items(quantity, quantity_only, organization, order_no="Order:order_no"):
+    """copied. from altair/app/ticketing/tickets/tests_builder_it.py"""
+    from altair.app.ticketing.core.models import OrderedProductItem
+    from altair.app.ticketing.core.models import OrderedProduct
     from altair.app.ticketing.core.models import Stock
     from altair.app.ticketing.core.models import StockStatus
     from altair.app.ticketing.core.models import StockType
