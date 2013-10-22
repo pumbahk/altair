@@ -17,7 +17,9 @@ def install_fetcher(config):
     from altairsite.fetcher import ICurrentPageFetcher
     from altairsite.fetcher import CurrentPageFetcher
     fetcher = CurrentPageFetcher(settings["altaircms.static.pagetype.pc"], 
-                                 settings["altaircms.static.pagetype.mobile"])
+                                 settings["altaircms.static.pagetype.mobile"], 
+                                 settings["altaircms.static.pagetype.smartphone"], 
+    )
     config.registry.registerUtility(fetcher, ICurrentPageFetcher)
 
 def install_tracking_image_generator(config):

@@ -6,6 +6,7 @@ from altaircms.datelib import get_now
 
 from . import api 
 from ..fetcher import get_current_page_fetcher
+from altair.mobile.interfaces import ISmartphoneRequest
 
 class PageRenderingResource(object):
     def __init__(self, request):
@@ -57,11 +58,16 @@ class AccessControlPC(object):
     def _fetch_page_from_params(self, url, dt):
         return get_current_page_fetcher(self.request).front_page(self.request, url, dt)
 
+    ## todo: refactoring
     def fetch_static_page_from_params(self, url,  dt):
         prefix = url.split("/", 1)[0]
         if prefix == url:
             prefix = ""
-        return get_current_page_fetcher(self.request).pc_static_page(self.request, prefix, dt)
+        fetcher = get_current_page_fetcher(self.request)
+        if ISmartphoneRequest.providedBy(self.request) and not self.request.organization.use_only_one_static_page_type:
+            return fetcher.smartphone_static_page(self.request, prefix, dt)
+        else:
+            return fetcher.pc_static_page(self.request, prefix, dt)
 
     def fetch_page_from_params(self, url, dt):
         page = self._fetch_page_from_params(url, dt)
