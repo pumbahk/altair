@@ -154,7 +154,8 @@ def locally_dispatching_publisher_consumer_factory(config, config_prefix):
     publisher_consumer = LocallyDispatchingPublisherConsumer(
         continue_on_exception=continue_on_exception
         )
-    for pattern_queue_pair in re.split(r'[ \t]*(?:\r|\n|\r\n)[ \t]*', config.registry.settings.get('%s.routes' % config_prefix, '').strip()):
+    pattern_queue_pairs = [c for c in re.split(r'[ \t]*(?:\r|\n|\r\n)[ \t]*', config.registry.settings.get('%s.routes' % config_prefix, '').strip()) if c]
+    for pattern_queue_pair in pattern_queue_pairs:
         pattern_queue_pair = re.split(r'\s*:\s*', pattern_queue_pair, 2)
         if len(pattern_queue_pair) < 2:
             raise ConfigurationError('queue name is missing for %s' % pattern_queue_pair[0])
