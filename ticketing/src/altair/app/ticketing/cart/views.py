@@ -393,19 +393,47 @@ class IndexView(IndexViewMixin):
 
         sales_segment = c_models.SalesSegment.query.filter(c_models.SalesSegment.id==self.context.sales_segment.id).one()
         sales_stocks = sales_segment.stocks
-        seats = []
+        seats_query = None
         if sales_segment.seat_choice:
-            seats = c_models.Seat.query_sales_seats(sales_segment)\
+            seats_query = c_models.Seat.query_sales_seats(sales_segment)\
                 .options(joinedload('areas'), joinedload('status_'))\
                 .join(c_models.SeatStatus)\
                 .join(c_models.Stock)\
                 .filter(c_models.Seat.venue_id==venue.id)\
                 .filter(c_models.SeatStatus.status==int(c_models.SeatStatusEnum.Vacant))
-        if stock_type_id is not None:
-            seats = seats.filter(c_models.Stock.stock_type_id == stock_type_id)
+            seat_groups_queries = [
+                DBSession.query(c_models.SeatGroup.l0_id, c_models.SeatGroup.name, c_models.Seat.l0_id) \
+                    .join(c_models.Seat, c_models.SeatGroup.l0_id == l0_id_column) \
+                    .join(c_models.Stock, c_models.Seat.stock_id == c_models.Stock.id) \
+                    .filter(c_models.SeatGroup.site_id == venue.site_id) \
+                    .filter(c_models.Seat.venue_id == venue.id)
+                    for l0_id_column in [c_models.Seat.row_l0_id, c_models.Seat.group_l0_id]
+                    ]
+
+            if stock_type_id is not None:
+                seats_query = seats_query.filter(c_models.Stock.stock_type_id == stock_type_id)
+                seat_groups_queries = [
+                    seat_groups_query.filter(c_models.Stock.stock_type_id == stock_type_id) 
+                    for seat_groups_query in seat_groups_queries
+                    ]
+            seats = seats_query.all()
+            seat_groups = {}
+            for seat_group_l0_id, seat_group_name, seat_l0_id in seat_groups_queries[0].union(*seat_groups_queries[1:]):
+                seat_group = seat_groups.get(seat_group_l0_id)
+                if seat_group is None:
+                    seat_group = seat_groups[seat_group_l0_id] = {
+                        'name': seat_group_name,
+                        'seats': [],
+                        }
+                seat_group['seats'].append(seat_l0_id) 
+        else:
+            seats = []
+            seat_groups = {}
+
         stock_map = dict([(s.id, s) for s in sales_stocks])
 
         self.request.add_response_callback(gzip_preferred)
+                
 
         return dict(
             seats=dict(
@@ -420,7 +448,8 @@ class IndexView(IndexViewMixin):
                         is_hold=seat.stock_id in stock_map,
                         )
                     )
-                for seat in seats)
+                for seat in seats),
+            seat_groups=seat_groups
             )
 
     @view_config(route_name='cart.seat_adjacencies', renderer="json")

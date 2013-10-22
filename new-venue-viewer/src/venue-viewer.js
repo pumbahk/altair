@@ -892,7 +892,7 @@
               },
               mousedown: function(evt) {
                 self.nextSingleClickAction = function () {
-                  self.callbacks.click(self, self, self.highlighted);
+                  self.callbacks.click.call(self, self, self.highlighted);
                 };
               }
             });
@@ -939,7 +939,7 @@
           }
         }
         this.uiMode = type;
-        this.callbacks.uimodeselect(this, type);
+        this.callbacks.uimodeselect.call(this, this, type);
       },
 
       zoom: function(ratio, anchor) {
@@ -983,7 +983,7 @@
           return;
         var previousRatio = this.zoomRatio;
         if (this.callbacks.zoomRatioChanging) {
-          var corrected = this.callbacks.zoomRatioChanging(ratio);
+          var corrected = this.callbacks.zoomRatioChanging.call(this, ratio);
           if (corrected === false)
             return;
           if (corrected)
@@ -991,7 +991,7 @@
         }
         if (!this.drawable) {
           this.zoomRatio = ratio;
-          this.callbacks.zoomRatioChange && this.callbacks.zoomRatioChange(ratio);
+          this.callbacks.zoomRatioChange && this.callbacks.zoomRatioChange.call(this, ratio);
           return;
         }
         this.drawable.transform(Fashion.Matrix.scale(ratio)
@@ -1000,7 +1000,7 @@
 
         this.drawable.scrollPosition(scrollPos);
         this.zoomRatio = ratio;
-        this.callbacks.zoomRatioChange && this.callbacks.zoomRatioChange(ratio);
+        this.callbacks.zoomRatioChange && this.callbacks.zoomRatioChange.call(this, ratio);
       },
 
       unselectAll: function VenueViewer_unselectAll() {

@@ -418,6 +418,7 @@ cart.VenuePresenter.prototype = {
             function() {self.onPerformanceChanged();});
         this.selectedStockType = null;
         this.seatGroups = {};
+        this.seatIdToSeatGroup = {};
     },
     onPerformanceChanged: function() {
         if (!this.view.readOnly) {
@@ -455,6 +456,14 @@ cart.VenuePresenter.prototype = {
                 self.view.render();
                 self.view.currentDataSource.seatGroups(function (data) {
                     self.seatGroups = data;
+                    var seatIdToSeatGroup = {};
+                    for (var k in data) {
+                        var seatGroup = data[k];
+                        var seats = seatGroup['seats'];
+                        for (var i = seats.length; --i >= 0; )
+                            seatIdToSeatGroup[seats[i]] = k;
+                    }
+                    self.seatIdToSeatGroup = seatIdToSeatGroup;
                 });
             });
         } else {
@@ -470,15 +479,32 @@ cart.VenuePresenter.prototype = {
         return isValidStockType && isVacant && seat.meta.is_hold;
     },
 
-    click: function (viewer, seat, highlighted) {
+    click: function (viewer, highlighted) {
         // クリック位置から、座席選択をする
         var self = this;
         $.each(highlighted, function (id, seat) {
+            var seatGroupId = self.seatIdToSeatGroup[id];
+            var seatsInGroup = null;
+            if (seatGroupId !== void(0))
+                seatsInGroup = self.seatGroups[seatGroupId]['seats'];
             if (seat.selected()) {
-                seat.selected(false);
+                if (seatsInGroup) {
+                    for (var i = seatsInGroup.length; --i >= 0; )
+                        viewer.seats[seatsInGroup[i]].selected(false);
+                } else {
+                    seat.selected(false);
+                }
             } else {
-                var selectable = viewer.selectionCount < self.orderFormPresenter.quantity_to_select;
-                seat.selected(selectable);
+                if (seatsInGroup) {
+                    console.log(viewer.selectionCount + seatsInGroup.length, self.orderFormPresenter.quantity_to_select);
+                    if (viewer.selectionCount + seatsInGroup.length <= self.orderFormPresenter.quantity_to_select) {
+                        for (var i = seatsInGroup.length; --i >= 0; )
+                            viewer.seats[seatsInGroup[i]].selected(true);
+                    }
+                } else {
+                    if (viewer.selectionCount < self.orderFormPresenter.quantity_to_select)
+                        seat.selected(true);
+                }
             }
         });
     }
@@ -619,7 +645,7 @@ cart.Performance = Backbone.Model.extend({
             info: factory_i.create(function (data) { return data['info']; }),
             seats: factory_s.create(function (data) { return data['seats']; }),
             areas: factory_i.create(function (data) { return data['areas']; }),
-            seatGroups: factory_s.create(function (data) { return data['seatGroups'] }),
+            seatGroups: factory_s.create(function (data) { return data['seat_groups'] }),
             seatAdjacencies: function (next, error, length) {
                 var _params = $.extend(params, { length_or_range: length });
                 $.ajax({

@@ -1,6 +1,6 @@
 (function () {
 var __LIBS__ = {};
-__LIBS__['YM5FU9NRFDOO5EY9'] = (function (exports) { (function () { 
+__LIBS__['fNEP8G2XY023XLG9'] = (function (exports) { (function () { 
 
 /************** util.js **************/
 exports.eventKey = function Util_eventKey(e) {
@@ -127,7 +127,7 @@ exports.makeHitTester = function Util_makeHitTester(a) {
   }
 };
  })(); return exports; })({});
-__LIBS__['r9KUO84IAV4J3_XU'] = (function (exports) { (function () { 
+__LIBS__['B1OXVEFKMNGQ2KQT'] = (function (exports) { (function () { 
 
 /************** CONF.js **************/
 exports.DEFAULT = {
@@ -182,11 +182,11 @@ exports.DEFAULT = {
   }
 };
  })(); return exports; })({});
-__LIBS__['u11ZA5ZHHZ1DGIJ2'] = (function (exports) { (function () { 
+__LIBS__['uE6BA6JJ5JLBTDML'] = (function (exports) { (function () { 
 
 /************** seat.js **************/
-var util = __LIBS__['YM5FU9NRFDOO5EY9'];
-var CONF = __LIBS__['r9KUO84IAV4J3_XU'];
+var util = __LIBS__['fNEP8G2XY023XLG9'];
+var CONF = __LIBS__['B1OXVEFKMNGQ2KQT'];
 
 function clone(obj) {
   return $.extend({}, obj);
@@ -1099,9 +1099,9 @@ function parseTransform(transform_str) {
     throw new Error('invalid transform function: ' + f);
 }
 
-  var CONF = __LIBS__['r9KUO84IAV4J3_XU'];
-  var seat = __LIBS__['u11ZA5ZHHZ1DGIJ2'];
-  var util = __LIBS__['YM5FU9NRFDOO5EY9'];
+  var CONF = __LIBS__['B1OXVEFKMNGQ2KQT'];
+  var seat = __LIBS__['uE6BA6JJ5JLBTDML'];
+  var util = __LIBS__['fNEP8G2XY023XLG9'];
 
   var StoreObject = _class("StoreObject", {
     props: {
@@ -1988,7 +1988,7 @@ function parseTransform(transform_str) {
               },
               mousedown: function(evt) {
                 self.nextSingleClickAction = function () {
-                  self.callbacks.click(self, self, self.highlighted);
+                  self.callbacks.click.call(self, self, self.highlighted);
                 };
               }
             });
@@ -2035,7 +2035,7 @@ function parseTransform(transform_str) {
           }
         }
         this.uiMode = type;
-        this.callbacks.uimodeselect(this, type);
+        this.callbacks.uimodeselect.call(this, this, type);
       },
 
       zoom: function(ratio, anchor) {
@@ -2079,7 +2079,7 @@ function parseTransform(transform_str) {
           return;
         var previousRatio = this.zoomRatio;
         if (this.callbacks.zoomRatioChanging) {
-          var corrected = this.callbacks.zoomRatioChanging(ratio);
+          var corrected = this.callbacks.zoomRatioChanging.call(this, ratio);
           if (corrected === false)
             return;
           if (corrected)
@@ -2087,7 +2087,7 @@ function parseTransform(transform_str) {
         }
         if (!this.drawable) {
           this.zoomRatio = ratio;
-          this.callbacks.zoomRatioChange && this.callbacks.zoomRatioChange(ratio);
+          this.callbacks.zoomRatioChange && this.callbacks.zoomRatioChange.call(this, ratio);
           return;
         }
         this.drawable.transform(Fashion.Matrix.scale(ratio)
@@ -2096,7 +2096,7 @@ function parseTransform(transform_str) {
 
         this.drawable.scrollPosition(scrollPos);
         this.zoomRatio = ratio;
-        this.callbacks.zoomRatioChange && this.callbacks.zoomRatioChange(ratio);
+        this.callbacks.zoomRatioChange && this.callbacks.zoomRatioChange.call(this, ratio);
       },
 
       unselectAll: function VenueViewer_unselectAll() {
