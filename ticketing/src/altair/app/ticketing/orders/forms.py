@@ -697,7 +697,7 @@ class OrderRefundForm(Form):
             elif refund_pm.payment_plugin_id == settlement_payment_plugin_id:
                 # 決済方法 = 払戻方法ならOK
                 continue
-            elif refund_pm.payment_plugin_id not in [plugins.SEJ_PAYMENT_PLUGIN_ID, plugins.BANK_PAYMENT_PLUGIN_ID]:
+            elif refund_pm.payment_plugin_id not in [plugins.SEJ_PAYMENT_PLUGIN_ID, plugins.RESERVE_NUMBER_PAYMENT_PLUGIN_ID]:
                 # 決済と払戻が別でもよいのは、払戻方法が 銀行振込 コンビニ払戻 のケースのみ
                 raise ValidationError('%s: (%s)' % (error_msg, refund_order.order_no))
 
