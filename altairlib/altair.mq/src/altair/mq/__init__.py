@@ -127,14 +127,14 @@ def includeme(config):
             publisher.pika_publisher_factory
             ])
     except:
-        logger.warning('failed to configure publisher/worker: %s' % __name__, exc_info=sys.exc_info())
+        logger.info('failed to configure publisher/worker: %s' % __name__, exc_info=sys.exc_info())
     try:
         config.add_publisher_consumer('pika', '%s.pika' % __name__, [
             consumer.pika_client_factory,
             publisher.pika_publisher_factory
             ])
     except:
-        logger.warning('failed to configure publisher/worker: %s' % __name__, exc_info=sys.exc_info())
+        logger.info('failed to configure publisher/worker: %s' % ('%s.pika' % __name__), exc_info=sys.exc_info())
     try:
         config.add_publisher_consumer('local', '%s.local' % __name__, [publisher.locally_dispatching_publisher_consumer_factory])
     except:
