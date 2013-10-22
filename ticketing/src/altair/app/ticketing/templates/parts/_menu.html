@@ -25,9 +25,6 @@
     % if HH.has_permission('master_viewer'):
     <li><a href="${request.route_path('accounts.index')}">取引先</a></li>
     % endif
-    % if HH.has_permission('sales_editor'):
-    <li><a href="${request.route_path('orders.refund.index')}">払戻</a></li>
-    % endif
     <li class="divider"></li>
     % if HH.has_permission('master_viewer'):
     <li class="nav-header">マスタ管理</li>
@@ -59,6 +56,9 @@
     % endif
     <li class="nav-header">ユーザー管理</li>
     <li><a href="${request.route_path('orders.index')}">購入情報</a></li>
+    % if HH.has_permission('sales_editor'):
+    <li><a href="${request.route_path('orders.refund.index')}">払戻</a></li>
+    % endif
     <li class="nav-header">抽選管理</li>
     <li><a href="${request.route_path('altair.app.ticketing.lots_admin.index')}">抽選一覧</a></li>
     <li><a href="${request.route_path('altair.app.ticketing.lots_admin.search')}">抽選申込検索</a></li>
