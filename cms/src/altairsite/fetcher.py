@@ -87,12 +87,10 @@ class PageFetcherForMobile(object):
     def front_page(self, request, url, dt):
         return self.control.widget_pageset_query(request, url, dt).first()
  
+    ## mobileアクセスは常にstaticpage(name="mobile")を見る
     def static_page(self, request, url, dt):
         control = self.control
-        if request.organization.use_only_one_static_page_type:
-            page_type = control.pc_pagetype
-        else:
-            page_type = control.mobile_pagetype
+        page_type = control.mobile_pagetype
 
         page = control.static_pageset_query(request, url, dt, page_type).first()
         if page is None:

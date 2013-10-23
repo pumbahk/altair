@@ -176,6 +176,7 @@ class StaticPageQueryFoundTests(TestBase):
         self.assertTrue(self.control.static_pageset_query.called)
         self.assertEquals(result, self.control.smartphone_pagetype)
 
+    ## mobile request is always using mobile pagetype
     def test_mobile__one__static_pagetype(self):
         organization = setup_organization(use_only_one_static_page_type=True)
         request = make_mobile_request(self._makeRequest(organization))
@@ -184,7 +185,7 @@ class StaticPageQueryFoundTests(TestBase):
         result = target.fetch_static_page_from_params(url="<url>", dt=S.dt)
         
         self.assertTrue(self.control.static_pageset_query.called)
-        self.assertEquals(result, self.control.pc_pagetype)
+        self.assertEquals(result, self.control.mobile_pagetype)
 
     def test_mobile__two__static_pagetype(self):
         organization = setup_organization(use_only_one_static_page_type=False)
