@@ -73,9 +73,12 @@ def confirm_stage():
 def execute_stage():
     return hidden_input("stage", "execute")
 
-def deal_limit(today, deal_open, deal_close):
+def deal_limit(today, deal_open, deal_close, in_preparation):
     today_date = datetime.datetime(today.year, today.month, today.day)
     deal_open_date = datetime.datetime(deal_open.year, deal_open.month, deal_open.day)
+
+    if in_preparation:
+        return u"準備中"
 
     N = (deal_open_date - today_date).days
     if N > 0:
@@ -103,7 +106,7 @@ def deal_limit_class(limit):
         limit_class = "searchRemainingToday"
     if limit == u"販売終了":
         limit_class = "searchRemainingSalesTermination"
-    if limit.find(u"販売開始") != -1:
+    if limit.find(u"販売開始") != -1 or limit == u"準備中":
         limit_class = "searchRemaining"
     return limit_class
 
