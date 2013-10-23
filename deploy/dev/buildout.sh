@@ -22,4 +22,4 @@ if tty >/dev/null; then
     echo "Press enter to continue, ^C to abort"
     read
 fi
-bin/buildout -c ${cfg} deploy:root="/srv/altair${suffix}"
+bin/buildout -c ${cfg} deploy:root="/srv/altair"
