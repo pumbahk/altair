@@ -67,6 +67,10 @@ from altairsite.mobile.dispatch.views import dispatch_view as mobile_dispatch_vi
 from altairsite.smartphone.dispatch.views import dispatch_view as smartphone_dispatch_view
 from pyramid.httpexceptions import HTTPFound
 
+"""
+ここから下はstatic pageを見ていない？
+"""
+
 @usersite_view_config(route_name="front", request_type="altairsite.tweens.IMobileRequest", custom_predicates=(enable_mobile, ))
 def mobile_rendering_page__rakuten(context, request):
     url = request.matchdict["page_name"]

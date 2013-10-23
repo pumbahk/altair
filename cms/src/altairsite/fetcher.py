@@ -32,7 +32,7 @@ class PageQueryControl(object):
         self.mobile_pagetype = mobile_pagetype
         self.smartphone_pagetype = smartphone_pagetype
 
-    def pageset_query(self, request, url, dt):
+    def widget_pageset_query(self, request, url, dt):
         qs = request.allowable(Page).filter(PageSet.id==Page.pageset_id)
         qs = qs.filter(PageSet.url==url)
         qs = qs.filter(Page.in_term(dt))
@@ -55,7 +55,7 @@ class PageFetcherForPC(object):
         self.control = control
 
     def front_page(self, request, url, dt):
-        return self.control.pageset_query(request, url, dt).first()
+        return self.control.widget_pageset_query(request, url, dt).first()
  
     def static_page(self, request, url, dt):
         control = self.control
@@ -68,14 +68,14 @@ class PageFetcherForSmartphone(object):
         self.control = control
 
     def front_page(self, request, url, dt):
-        return self.control.pageset_query(request, url, dt).first()
+        return self.control.widget_pageset_query(request, url, dt).first()
  
     def static_page(self, request, url, dt):
         control = self.control
         if request.organization.use_only_one_static_page_type:
-            page_type = control.smartphone_pagetype
-        else:
             page_type = control.pc_pagetype
+        else:
+            page_type = control.smartphone_pagetype
         return control.static_pageset_query(request, url, dt, page_type).first()
 
 @implementer(ICurrentPageFetcher)
@@ -84,12 +84,12 @@ class PageFetcherForMobile(object):
         self.control = control
 
     def front_page(self, request, url, dt):
-        return self.control.pageset_query(request, url, dt).first()
+        return self.control.widget_pageset_query(request, url, dt).first()
  
     def static_page(self, request, url, dt):
         control = self.control
         if request.organization.use_only_one_static_page_type:
-            page_type = control.smartphone_pagetype
+            page_type = control.pc_pagetype
         else:
             page_type = control.mobile_pagetype
         return control.static_pageset_query(request, url, dt, page_type).first()
@@ -97,5 +97,10 @@ class PageFetcherForMobile(object):
 ## api
 def get_current_page_fetcher(request):
     adapters = request.registry.adapters
-    return adapters.lookup(providedBy(request), ICurrentPageFetcher)
+    for iface in providedBy(request).flattened():
+        ifaces = [iface]
+        fetcher = adapters.lookup(ifaces, ICurrentPageFetcher)
+        if fetcher:
+            return fetcher
+    raise Exception("ICurrentPageFetcher is not found")
 
