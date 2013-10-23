@@ -101,10 +101,8 @@ class PageFetcherForMobile(object):
 ## api
 def get_current_page_fetcher(request):
     adapters = request.registry.adapters
-    for iface in providedBy(request).flattened():
-        ifaces = [iface]
-        fetcher = adapters.lookup(ifaces, ICurrentPageFetcher)
-        if fetcher:
-            return fetcher
+    fetcher = adapters.lookup([providedBy(request)], ICurrentPageFetcher)
+    if fetcher:
+        return fetcher
     raise Exception("ICurrentPageFetcher is not found")
 
