@@ -1,5 +1,5 @@
 [loggers]
-keys = root, ticketing
+keys = root, altair_mq, ticketing
 
 [handlers]
 keys = stderr, spool, fluent
@@ -10,6 +10,12 @@ keys = generic
 [logger_root]
 level = INFO
 handlers = spool, fluent
+
+[logger_altair_mq]
+level = WARNING
+handlers = spool, fluent
+qualname = altair.mq
+propagate = 0
 
 [logger_ticketing]
 level = INFO
