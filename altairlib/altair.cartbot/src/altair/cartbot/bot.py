@@ -138,6 +138,10 @@ class CartBot(object):
         set_form_value(form, 'p', self.credentials['password'])
         self.m.submit_form(form)
 
+    def do_fc_auth_guest_login(self):
+        form = self.m.page.root.find('.//form')
+        self.m.submit_form(form)
+
     def choose_seat_type(self, sales_segment_detail):
         seat_type_choices = self.seat_type_choices_map.get(sales_segment_detail['sales_segment_id'])
         if seat_type_choices is None:
@@ -178,6 +182,8 @@ class CartBot(object):
     def buy_something(self): 
         self.m.navigate(self.first_page_url)
         actual_first_page_url = urlparse(self.m.location)
+        if re.match("/cart/fc/.*/login", actual_first_page_url.path) is not None:
+            self.do_fc_auth_guest_login()
         if actual_first_page_url.netloc.endswith('.id.rakuten.co.jp') and \
                actual_first_page_url.path == '/rms/nid/login':
             self.do_open_id_login()

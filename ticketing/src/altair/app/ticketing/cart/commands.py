@@ -65,13 +65,15 @@ def release_carts():
     if target_from:
         target_from = datetime.strptime(target_from, '%Y-%m-%d %H:%M:%S')
 
+    logfile = os.path.abspath(sys.argv[2])
+    logging.config.fileConfig(logfile)
+
     app_env = bootstrap(config_file)
+
     import sqlahelper
     assert sqlahelper.get_session().bind
     m.DBSession.bind = m.DBSession.bind or sqlahelper.get_session().bind
     
-    logfile = os.path.abspath(sys.argv[2])
-    logging.config.fileConfig(logfile)
     request = app_env['request']
     registry = app_env['registry']
     settings = registry.settings
