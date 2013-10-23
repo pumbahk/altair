@@ -155,7 +155,8 @@ def gaq_tween_factory(handler, registry):
 
 def includeme(config):
     import pyramid
+    from pyramid.tweens import EXCVIEW
     config.include('.predicates')
     config.include('.ga')
-    # fanstaticよりも先
-    config.add_tween(".gaq_tween_factory", over='pyramid_fanstatic.tween_factory')    
+    # EXCVIEW より上
+    config.add_tween(".gaq_tween_factory", over=EXCVIEW)
