@@ -17,6 +17,7 @@ from altair.app.ticketing.payments.plugins.qr import DELIVERY_PLUGIN_ID as QR_DE
 from altair.app.ticketing.core import models as c_models
 
 from altair.app.ticketing.tickets.utils import build_dict_from_ordered_product_item_token
+from altair.app.ticketing.tickets.utils import NumberIssuer
 from altair.app.ticketing.utils import json_safe_coerce
 
 import logging
@@ -104,8 +105,18 @@ def ticketdata_from_qrdata(qrdata, event_id="*"):
         "note": note,
         }
 
+_issuer = None
+def get_issuer():
+    global _issuer
+    if _issuer is None:
+        _issuer = NumberIssuer()
+    return _issuer
+
+def reset_issuer():
+    get_issuer().clear()
+
 def vars_dict_and_seat_pair_from_token(token):
-    d = build_dict_from_ordered_product_item_token(token)
+    d = build_dict_from_ordered_product_item_token(token, ticket_number_issuer=get_issuer())
     if d is None:
         return None
     return d, token.seat    

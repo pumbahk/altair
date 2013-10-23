@@ -258,6 +258,8 @@ def create_fake_order(request, organization, payment_method_id, delivery_method_
     if delivery_method:
         order.payment_delivery_pair.delivery_method = delivery_method
 
+    order.performance.start_on = datetime.now()
+
     if event:
         order.performance.event = event
     if performance:

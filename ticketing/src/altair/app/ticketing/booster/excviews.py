@@ -22,6 +22,7 @@ def cart_creation_exception(context, request):
         cart_api.recover_cart(request) 
         transaction.commit()
         return HTTPFound(location=context.back_url)
+    return {}
 
     # #以下のコードはまったく動かない
     # else:

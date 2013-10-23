@@ -50,3 +50,17 @@ class ElementTreeTestMixin(object):
         if hasattr(expected, 'getroot'):
             expected = expected.getroot()
         self.assertTrue(checker.compare_docs(expected, result), msg)
+
+class SetUpTearDownManager(object):
+    def __init__(self, setup=None, teardown=None):
+        self.setup = setup
+        self.teardown = teardown
+
+    def __enter__(self):
+        self.setup and self.setup()
+
+    def __exit__(self, exc, val, tb):
+        self.teardown and self.teardown()
+        if exc is not None:
+            return None
+        return True

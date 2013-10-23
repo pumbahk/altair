@@ -456,6 +456,7 @@ class MailInfoNewView(BaseView):
         return {"performance": performance,
                 "form": form, 
                 "organization": performance.event.organization,
+                "extra_mailinfo": performance.extra_mailinfo, 
                 "mailtype": self.request.matchdict["mailtype"], 
                 "choices": MailTypeChoices, 
                 "mutil": mutil, 

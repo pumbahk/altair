@@ -1,6 +1,6 @@
 # coding: utf-8
 import re
-from altaircms.formhelpers import Form, fields, validators
+from altaircms.formhelpers import Form, fields, validators, MaybeIntegerField
 from altaircms.interfaces import IForm
 from altaircms.interfaces import implementer
 from altaircms.formhelpers import required_field
@@ -80,12 +80,13 @@ class MovieAssetForm(Form):
     tags = fields.TextField(label=u"タグ")
     private_tags = fields.TextField(label=u"非公開タグ")
 
+
 @implementer(IForm)
 class MovieAssetUpdateForm(Form):
     type = "movie"
     title = fields.TextField(label=u"タイトル", validators=[required_field()])
-    width = fields.TextField(label=u"幅", validators=[required_field()])
-    height = fields.TextField(label=u"高さ", validators=[required_field()])
+    width = MaybeIntegerField(label=u"幅", default=None)
+    height = MaybeIntegerField(label=u"高さ", default=None)
     filepath = fields.FileField(label=u'動画を投稿(空欄の場合には以前の画像がそのまま使われます)',
                                 validators=[only_movie_file.none_is_ok, validate_filepath])
     placeholder = fields.FileField(label=u'プレースホルダー(空欄の場合にはダミーの画像が使われます)',

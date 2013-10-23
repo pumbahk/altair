@@ -1,12 +1,13 @@
 import logging
 import transaction
 import json
+import pika
 from pyramid.threadlocal import get_current_request
 from pika.adapters.tornado_connection import TornadoConnection
-from zope.interface import implementer
+from zope.interface import implementer, provider
 from .interfaces import (
     IConsumer, 
-    IConsumerFactory,
+    IPublisherConsumerFactory,
     IMessage,
 )
 
@@ -27,13 +28,11 @@ class Message(object):
         return json.loads(self.body)
 
 
-@implementer(IConsumerFactory)
-class PikaClientFactory(object):
-    def __init__(self, parameters):
-        self.parameters = parameters
-
-    def __call__(self):
-        return PikaClient(self.parameters)
+@provider(IPublisherConsumerFactory)
+def pika_client_factory(config, config_prefix):
+    url = config.registry.settings['%s.url' % config_prefix]
+    parameters = pika.URLParameters(url)
+    return PikaClient(parameters)
 
 class TaskMapper(object):
     Message = Message

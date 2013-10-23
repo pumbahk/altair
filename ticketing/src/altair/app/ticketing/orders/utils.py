@@ -1,11 +1,12 @@
 # -*- coding:utf-8 -*-
 ## TODO: move to enqueue.py
-from collections import Counter
+
 import re
 import logging
 from altair.app.ticketing.tickets.utils import build_dict_from_ordered_product_item_token
 from altair.app.ticketing.tickets.utils import build_dicts_from_ordered_product_item
 from altair.app.ticketing.tickets.utils import build_cover_dict_from_order
+from altair.app.ticketing.tickets.utils import NumberIssuer
 from altair.app.ticketing.core.models import TicketPrintQueueEntry, TicketCover
 from altair.app.ticketing.core.utils import ApplicableTicketsProducer
 from altair.app.ticketing.payments.plugins import SEJ_DELIVERY_PLUGIN_ID
@@ -105,14 +106,6 @@ def compare_by_comfortable_order((seat, dicts_)):
     else:
         return [(int(x) if x.isdigit() else x) for x in re.split(DIGIT_RX, seat.name) if x]
 
-class NumberIssuer(object):
-    def __init__(self):
-        self.counter = Counter()
-
-    def __call__(self, k):
-        v = self.counter[k] + 1
-        self.counter[k] = v
-        return v
         
 def comfortable_sorted_built_dicts(ordered_product_item):
     dicts = build_dicts_from_ordered_product_item(ordered_product_item, ticket_number_issuer=NumberIssuer())

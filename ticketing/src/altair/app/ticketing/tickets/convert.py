@@ -648,6 +648,15 @@ class Visitor(object):
             u'発券日時': u'FIXTAG04',
             u'発券日時s': u'FIXTAG04',
             }
+        self.text_anchor_to_text_align_map = {
+            'start': 'left',
+            'middle': 'center',
+            'end': 'right',
+            'left': 'left',
+            'center': 'center',
+            'right': 'right',
+            }
+
 
     @staticmethod
     def parse_color_style(color):
@@ -713,26 +722,35 @@ class Visitor(object):
                     line_height = style.line_height
 
                 if self.current_style_ctx.style.font_size != style.font_size:
-                    html_styles.append((u'font-size', unicode(style.font_size) + u'px'))
+                    html_styles.append((u'font-size', u'%gpx' % style.font_size))
                     # XXX: workaround to cope with the difference of
                     # interpretation of line-height between HTML and SVG
                     if line_height is None:
                         line_height = style.font_size
-
                 if line_height is not None:
-                    html_styles.append((u'line-height', unicode(line_height) + u'px'))
+                    html_styles.append((u'line-height', u'%gpx' % line_height))
                 if self.current_style_ctx.style.fill_color != style.fill_color:
-                    html_styles.append((u'color', style.fill_color))
+                    if style.fill_color is not StyleNone:
+                        html_styles.append((u'color', style.fill_color))
                 if self.current_style_ctx.style.font_weight != style.font_weight:
                     html_styles.append((u'font-weight', style.font_weight))
+                if self.current_style_ctx.style.text_anchor != style.text_anchor:
+                    text_align = self.text_anchor_to_text_align_map.get(style.text_anchor.lower())
+                    if text_align is not None:
+                        html_styles.append((u'text-align', text_align))
+                    else:
+                        logger.warning("unknown text-anchor value: %s" % style.text_anchor)
                 current_font_family_class = self.font_classes.get(self.current_style_ctx.style.font_family)
                 if current_font_family_class is None:
                     # silenty falls back to the default font
                     current_font_family_class = u"f16"
-                new_font_family_class = self.font_classes.get(style.font_family)
-                if new_font_family_class is None:
-                    logger.warning('Unsupported font %s; falling back to "f16"' % style.font_family)
-                    new_font_family_class = u"f16"
+                if style.font_family is not None:
+                    new_font_family_class = self.font_classes.get(style.font_family)
+                    if new_font_family_class is None:
+                        logger.warning('Unsupported font %s; falling back to "f16"' % style.font_family)
+                        new_font_family_class = u"f16"
+                else:
+                    new_font_family_class = current_font_family_class
                 subelem = self._build_html_from_flow_elements(text_and_elements(elem), tag)
                 if current_font_family_class != new_font_family_class:
                     subelem.set('class', new_font_family_class)
@@ -782,26 +800,34 @@ class Visitor(object):
                     line_height = style.line_height
 
                 if self.current_style_ctx.style.font_size != style.font_size:
-                    html_styles.append((u'font-size', unicode(style.font_size) + u'px'))
+                    html_styles.append((u'font-size', u'%gpx' % style.font_size))
                     # XXX: workaround to cope with the difference of
                     # interpretation of line-height between HTML and SVG
                     if line_height is None:
                         line_height = style.font_size
-
                 if line_height is not None:
-                    html_styles.append((u'line-height', unicode(line_height) + u'px'))
+                    html_styles.append((u'line-height', u'%gpx' % line_height))
                 if self.current_style_ctx.style.fill_color != style.fill_color:
                     html_styles.append((u'color', style.fill_color))
                 if self.current_style_ctx.style.font_weight != style.font_weight:
                     html_styles.append((u'font-weight', style.font_weight))
+                if self.current_style_ctx.style.text_anchor != style.text_anchor:
+                    text_align = self.text_anchor_to_text_align_map.get(style.text_anchor.lower())
+                    if text_align is not None:
+                        html_styles.append((u'text-align', text_align))
+                    else:
+                        logger.warning("unknown text-anchor value: %s" % style.text_anchor)
                 current_font_family_class = self.font_classes.get(self.current_style_ctx.style.font_family)
                 if current_font_family_class is None:
                     # silenty falls back to the default font
                     current_font_family_class = u"f16"
-                new_font_family_class = self.font_classes.get(style.font_family)
-                if new_font_family_class is None:
-                    logger.warning('Unsupported font %s; falling back to "f16"' % style.font_family)
-                    new_font_family_class = u"f16"
+                if style.font_family is not None:
+                    new_font_family_class = self.font_classes.get(style.font_family)
+                    if new_font_family_class is None:
+                        logger.warning('Unsupported font %s; falling back to "f16"' % style.font_family)
+                        new_font_family_class = u"f16"
+                else:
+                    new_font_family_class = current_font_family_class
                 subelem = self._build_html_from_text_elements(text_and_elements(elem), tag)
                 if current_font_family_class != new_font_family_class:
                     subelem.set('class', new_font_family_class)

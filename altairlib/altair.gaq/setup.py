@@ -4,11 +4,10 @@ setup(name="altair_gaq",
     install_requires=[
         "setuptools>0.7",
         "pyramid",
-        "fanstatic",
+        "zope.interface",
+        "altair.mobile",
     ],
 
     entry_points="""
-    [fanstatic.libraries]
-    altair_gaq=altair_gaq.fanstatic_resources:altair_gaq
     """
 )

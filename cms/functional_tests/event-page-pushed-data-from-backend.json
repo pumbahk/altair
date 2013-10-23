@@ -59,7 +59,8 @@
               "seat_choice": "false", 
               "end_on": "2012-01-22T10:00:00", 
               "id": 40039, 
-              "kind_label": "最速抽選"
+              "kind_label": "最速抽選",
+              "publicp": true
             }
           ]
         }, 
@@ -110,7 +111,8 @@
               "seat_choice": "false", 
               "end_on": "", 
               "id": 40040, 
-              "kind_label": "一般販売"
+              "kind_label": "一般販売",
+              "publicp": true
             }
           ]
         }
