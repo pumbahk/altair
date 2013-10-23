@@ -23,11 +23,12 @@ def main(argv=sys.argv):
         print 'ERROR: invalid args %s' % sys.argv
         return
 
+    log_file = os.path.abspath(argv[2])
+    logging.config.fileConfig(log_file)
+
     config_file = argv[1]
     app_env = bootstrap(config_file)
 
-    log_file = os.path.abspath(argv[2])
-    logging.config.fileConfig(log_file)
     logger.info('start send_sales_report batch')
 
     now = datetime.now().replace(minute=0, second=0)
