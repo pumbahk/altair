@@ -6,7 +6,7 @@ from zope.interface import providedBy
 import logging
 logger = logging.getLogger(__name__)
 import sqlalchemy as sa
-
+from pyramid.httpexceptions import HTTPNotFound
 from altaircms.page.models import (
     PageType, 
     Page, 
@@ -80,6 +80,7 @@ class PageFetcherForSmartphone(object):
 
 @implementer(ICurrentPageFetcher)
 class PageFetcherForMobile(object):
+    exc_clacss = HTTPNotFound
     def __init__(self, control):
         self.control = control
 
@@ -92,7 +93,12 @@ class PageFetcherForMobile(object):
             page_type = control.pc_pagetype
         else:
             page_type = control.mobile_pagetype
-        return control.static_pageset_query(request, url, dt, page_type).first()
+
+        page = control.static_pageset_query(request, url, dt, page_type).first()
+        if page is None:
+            raise self.exc_clacss("mobile page static page is not found. raise Exception, immedieately.")
+        return page
+
 
 ## api
 def get_current_page_fetcher(request):
