@@ -202,7 +202,7 @@ class SearchResultRender(object):
 
     def make_result(self):
         # assert self.pageset.event
-        limit = deal_limit(self.today, self.pageset.event.deal_open, self.pageset.event.deal_close)
+        limit = deal_limit(self.today, self.pageset.event.deal_open, self.pageset.event.deal_close, self.pageset.event.in_preparation)
         return SearchResult(
             category_icons = self.category_icons(), 
             page_description = self.page_description(),
