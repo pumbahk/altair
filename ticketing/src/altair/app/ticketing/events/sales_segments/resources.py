@@ -134,6 +134,7 @@ class SalesSegmentEditor(object):
         "start_at",
         "end_at",
         "upper_limit",
+        "product_limit",
         "order_limit",
         "account_id",
         "margin_ratio",
@@ -262,6 +263,8 @@ def update_sales_segment(ssg, ss):
         sync_attr(ss, ssg, 'payment_delivery_method_pairs')
     if ss.use_default_upper_limit:
         sync_attr(ss, ssg, 'upper_limit')
+    if ss.use_default_product_limit:
+        sync_attr(ss, ssg, 'product_limit')
     if ss.use_default_order_limit:
         sync_attr(ss, ssg, 'order_limit')
     if ss.use_default_account_id:
