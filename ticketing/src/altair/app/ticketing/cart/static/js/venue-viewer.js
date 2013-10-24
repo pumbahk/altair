@@ -1,6 +1,6 @@
 (function () {
 var __LIBS__ = {};
-__LIBS__['XCS5N6NCN3SV63MZ'] = (function (exports) { (function () { 
+__LIBS__['HBGBXSJ1QE9GBH12'] = (function (exports) { (function () { 
 
 /************** util.js **************/
 exports.eventKey = function Util_eventKey(e) {
@@ -127,7 +127,7 @@ exports.makeHitTester = function Util_makeHitTester(a) {
   }
 };
  })(); return exports; })({});
-__LIBS__['AQC0V13W9HM71XTS'] = (function (exports) { (function () { 
+__LIBS__['kG09JHDN3MR7ZADP'] = (function (exports) { (function () { 
 
 /************** CONF.js **************/
 exports.DEFAULT = {
@@ -182,11 +182,11 @@ exports.DEFAULT = {
   }
 };
  })(); return exports; })({});
-__LIBS__['JN7JK3ONNBVOIB5_'] = (function (exports) { (function () { 
+__LIBS__['d0B27JRX7SVAF9JB'] = (function (exports) { (function () { 
 
 /************** seat.js **************/
-var util = __LIBS__['XCS5N6NCN3SV63MZ'];
-var CONF = __LIBS__['AQC0V13W9HM71XTS'];
+var util = __LIBS__['HBGBXSJ1QE9GBH12'];
+var CONF = __LIBS__['kG09JHDN3MR7ZADP'];
 
 function clone(obj) {
   return $.extend({}, obj);
@@ -332,10 +332,12 @@ Seat.prototype.stylize = function Seat_stylize() {
 
 Seat.prototype.addOverlay = function Seat_addOverlay(value) {
   if (!(value in this._overlays)) {
-    var shape = copyShape(this.shape)
-    shape.style(util.convertToFashionStyle(CONF.DEFAULT.OVERLAYS[value]));
-    this._overlays[value] = shape;
-    this.parent.drawable.draw(shape);
+    if (this.shape) {
+      var shape = copyShape(this.shape)
+      shape.style(util.convertToFashionStyle(CONF.DEFAULT.OVERLAYS[value]));
+      this._overlays[value] = shape;
+      this.parent.drawable.draw(shape);
+    }
   }
 };
 
@@ -1048,9 +1050,9 @@ function parseTransform(transform_str) {
     throw new Error('invalid transform function: ' + f);
 }
 
-  var CONF = __LIBS__['AQC0V13W9HM71XTS'];
-  var seat = __LIBS__['JN7JK3ONNBVOIB5_'];
-  var util = __LIBS__['XCS5N6NCN3SV63MZ'];
+  var CONF = __LIBS__['kG09JHDN3MR7ZADP'];
+  var seat = __LIBS__['d0B27JRX7SVAF9JB'];
+  var util = __LIBS__['HBGBXSJ1QE9GBH12'];
 
   var VenueViewer = _class("VenueViewer", {
 

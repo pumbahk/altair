@@ -145,10 +145,12 @@ Seat.prototype.stylize = function Seat_stylize() {
 
 Seat.prototype.addOverlay = function Seat_addOverlay(value) {
   if (!(value in this._overlays)) {
-    var shape = copyShape(this.shape)
-    shape.style(util.convertToFashionStyle(CONF.DEFAULT.OVERLAYS[value]));
-    this._overlays[value] = shape;
-    this.parent.drawable.draw(shape);
+    if (this.shape) {
+      var shape = copyShape(this.shape)
+      shape.style(util.convertToFashionStyle(CONF.DEFAULT.OVERLAYS[value]));
+      this._overlays[value] = shape;
+      this.parent.drawable.draw(shape);
+    }
   }
 };
 
