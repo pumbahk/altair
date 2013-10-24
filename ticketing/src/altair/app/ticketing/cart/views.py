@@ -551,11 +551,18 @@ class ReserveView(object):
         else:
             for product, quantity in order_items:
                 sum_quantity += quantity * product.get_quantity_power(product.seat_stock_type, product.performance_id)
-        logger.debug('sum_quantity=%s' % sum_quantity)
+        sum_product_quantity = sum(quantity for _, quantity in order_items)
+
+        logger.debug('sum_quantity=%d, sum_product_quantity=%d' % (sum_quantity, sum_product_quantity))
 
         if self.context.sales_segment.upper_limit < sum_quantity:
             logger.debug('upper_limit over')
             return dict(result='NG', reason="upper_limit")
+
+        if self.context.sales_segment.product_limit is not None and \
+           self.context.sales_segment.product_limit < sum_product_quantity:
+            logger.debug('product_limit over')
+            return dict(result='NG', reason="product_limit")
 
         try:
             cart = api.order_products(self.request, self.request.context.sales_segment.id, order_items, selected_seats=selected_seats)

@@ -42,8 +42,8 @@ function get_selected_sales_segment_id() {
       <td>${sales_segment.account.name}</td>
     </tr>
     <tr>
-      <th>購入上限枚数</th>
-      <td>${sales_segment.upper_limit or u'-'}</td>
+      <th>購入上限</th>
+      <td>${u'%s枚' % sales_segment.upper_limit if sales_segment.upper_limit else u'-'} / ${u'%s個' % sales_segment.product_limit if sales_segment.product_limit else u'-'}</td>
     </tr>
     <tr>
       <th>購入回数制限</th>

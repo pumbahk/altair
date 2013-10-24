@@ -36,7 +36,9 @@
           <%doc><td ${rowspan}>${vh.datetime(sales_segment_group.start_at)}</td></%doc>
           <%doc><td ${rowspan}>${vh.datetime(sales_segment_group.end_at)}</td></%doc>
           <td ${rowspan}>${sales_segment_group.account.name}</td>
-          <td ${rowspan}>${sales_segment_group.upper_limit or u''}</td>
+          <td ${rowspan}>
+            ${u'%s枚' % sales_segment_group.upper_limit if sales_segment_group.upper_limit else u'-'} / ${u'%s個' % sales_segment_group.product_limit if sales_segment_group.product_limit else u'-'}
+          </td>
           <%doc><td ${rowspan}>${sales_segment_group.order_limit or u''}</td></%doc>
           <td ${rowspan}>${u'○' if sales_segment_group.seat_choice else u'×'}</td>
           <td ${rowspan}>${u'○' if sales_segment_group.public else u'×'}</td>
