@@ -19,6 +19,7 @@ def includeme(config):
     config.add_route('orders.reserve.complete'          , '/reserve/complete/')
     config.add_route('orders.reserve.reselect'          , '/reserve/reselect/')
     config.add_route('orders.memo_on_order'             , '/memo_on_order/{order_id}')
+    config.add_route('orders.attributes_edit'           , '/attributes/edit/{order_id}')
     config.add_route('orders.note'                      , '/note/{order_id}')
     config.add_route('orders.issue_status'              , '/issue_status/{order_id}')
     config.add_route('orders.api.get'                   , '/api/get/')

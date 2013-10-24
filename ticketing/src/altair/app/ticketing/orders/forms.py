@@ -1103,4 +1103,3 @@ def OrderMemoEditFormFactory(N, memo_field_name_fmt="memo_on_order{}",
     attrs["get_result"] = get_result
     return type("OrderMemoEditForm", (Form, ), attrs)
 
-    

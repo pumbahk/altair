@@ -1106,6 +1106,26 @@ class OrderDetailView(BaseView):
                         for t in tickets]
         return {"results": results, "names": names, "ticket_dicts": ticket_dicts}
 
+    @view_config(route_name="orders.attributes_edit", request_method="POST")
+    def edit_order_attributes(self):
+        order_id = int(self.request.matchdict.get('order_id', 0))
+        order = Order.get(order_id, self.context.organization.id)
+        if order is None:
+            raise HTTPBadRequest(body=json.dumps({
+                'message':u'不正なデータです',
+            }))
+        ## todo:validation?
+        for k, v in self.request.POST.items():
+            if k.startswith("_"):
+                continue
+            if v:
+                order.attributes[k] = v
+            else:
+                del order.attributes[k]
+        order.save()
+        self.request.session.flash(u'属性を変更しました')
+        return HTTPFound(self.request.route_path(route_name="orders.show", order_id=order_id)+"#order_attributes")
+
     @view_config(route_name="orders.memo_on_order", request_method="POST", renderer="json")
     def edit_memo_on_order(self):
         order_id = int(self.request.matchdict.get('order_id', 0))
