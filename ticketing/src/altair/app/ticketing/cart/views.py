@@ -936,12 +936,12 @@ class OutTermSalesView(object):
         api.logout(self.request)
         return dict(which=which, outer=self.context, available_sales_segments=available_sales_segments, **datum)
 
-@view_config(decorator=with_jquery.not_when(mobile_request), route_name='cart.logout')
+@view_config(decorator=with_jquery.not_when(mobile_request), request_method="POST", route_name='cart.logout')
 @limitter.release
 def logout(request):
     headers = security.forget(request)
-    location = c_api.get_host_base_url(request)
-    res = HTTPFound(location=location)
+    back = back_to_top(request)
+    res = HTTPFound(location=back.location)
     res.headerlist.extend(headers)
     return res
 
