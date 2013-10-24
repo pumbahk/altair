@@ -1,14 +1,14 @@
 """add_seatgroup
 
 Revision ID: 4bd1e96e03eb
-Revises: 246e00308204
+Revises: 3f1cc8732e9
 Create Date: 2013-10-21 23:37:25.252662
 
 """
 
 # revision identifiers, used by Alembic.
 revision = '4bd1e96e03eb'
-down_revision = '246e00308204'
+down_revision = '3f1cc8732e9'
 
 from alembic import op
 import sqlalchemy as sa
