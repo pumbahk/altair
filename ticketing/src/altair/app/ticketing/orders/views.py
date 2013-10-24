@@ -89,7 +89,7 @@ from altair.app.ticketing.tickets.preview.api import SVGPreviewCommunication
 from altair.app.ticketing.tickets.preview.transform import SVGTransformer
 from altair.app.ticketing.tickets.utils import build_cover_dict_from_order
 from altair.app.ticketing.core.models import TicketCover
-
+from altair.app.ticketing.core.models import OrderAttributeManager
 
 logger = logging.getLogger(__name__)
 
@@ -1115,13 +1115,8 @@ class OrderDetailView(BaseView):
                 'message':u'不正なデータです',
             }))
         ## todo:validation?
-        for k, v in self.request.POST.items():
-            if k.startswith("_"):
-                continue
-            if v:
-                order.attributes[k] = v
-            else:
-                del order.attributes[k]
+        params = {k:v for k, v in self.request.POST.items() if not k.startswith("_")}
+        order = OrderAttributeManager.update(order, params)
         order.save()
         self.request.session.flash(u'属性を変更しました')
         return HTTPFound(self.request.route_path(route_name="orders.show", order_id=order_id)+"#order_attributes")

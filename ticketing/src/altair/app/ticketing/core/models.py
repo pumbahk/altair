@@ -2800,18 +2800,16 @@ class AttributesManager(object):
         self.key_name = key_name
         self.value_name = value_name
 
-    def update(self, parent, params, blank_value=""):
-        obj_map =  getattr(parent, self.attribute_name)
+    def update(self, parent, params, blank_value="", encoding="utf-8"):
         association = getattr(parent, self.association_name)
         for k, v in params.items():
-            if k in obj_map:
-                if v == blank_value:
-                    del association[k]
-                else:
-                    setattr(obj_map[k], self.value_name, v)
+            if encoding and not isinstance(k, unicode):
+                if hasattr(k, "decode"):
+                    k = k.decode(encoding)
+            if v == blank_value:
+                del association[k]
             else:
-                if v != blank_value:
-                    association[k] = v
+                association[k] = v
         return parent
 
 OrderAttributeManager = AttributesManager("_attributes", "attributes", "name", "value")        

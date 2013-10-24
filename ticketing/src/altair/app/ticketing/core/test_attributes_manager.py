@@ -61,43 +61,66 @@ class AttributesManagerTests(unittest.TestCase):
         from altair.app.ticketing.core.models import OrderAttributeManager
         return OrderAttributeManager
 
+    # def test_why_need_this(self):
+    #     order = self.order
+    #     attributes = order.attributes
+    #     attributes[u"あ"] = "v"
+    #     import transaction
+    #     transaction.commit()
+
+    #     order = self.refreshed_order()
+    #     attributes = order.attributes
+    #     attributes[u"あ".encode("utf-8")] = "v2"
+
     def test_create(self):
-        data = {"k": "v"}
-        result = self._getTarget().update(self.order, data)
-        self.assertEquals(result.attributes, {"k": "v"})
+        data = {u"あ": "v"}
+        result = self._getTarget().update(self.order, data, encoding="utf-8")
+        self.assertEquals(result.attributes, {u"あ": "v"})
 
     def test_update_another(self):
         import transaction
 
-        data = {"k": "v"}
-        self._getTarget().update(self.order, data)
+        data = {u"あ": "v"}
+        self._getTarget().update(self.order, data, encoding="utf-8")
         transaction.commit()
         
         order = self.refreshed_order()
-        data = {"k2": "v2"}
+        data = {u"あ2": "v2"}
         result = self._getTarget().update(order, data)
-        self.assertEquals(result.attributes, {"k": "v", "k2": "v2"})
+        self.assertEquals(result.attributes, {u"あ": "v", u"あ2": "v2"})
 
     def test_update_same_key(self):
         import transaction
 
-        data = {"k": "v"}
-        self._getTarget().update(self.order, data)
+        data = {u"あ": "v"}
+        self._getTarget().update(self.order, data, encoding="utf-8")
         transaction.commit()
         
         order = self.refreshed_order()
-        data = {"k": "v2"}
+        data = {u"あ": "v2"}
         result = self._getTarget().update(order, data)
-        self.assertEquals(result.attributes, {"k": "v2"})
+        self.assertEquals(result.attributes, {u"あ": "v2"})
+
+    def test_update_same_key__not_unicode(self):
+        import transaction
+
+        data = {u"あ": "v"}
+        self._getTarget().update(self.order, data, encoding="utf-8")
+        transaction.commit()
+        
+        order = self.refreshed_order()
+        data = {u"あ".encode("utf-8"): "v2"}
+        result = self._getTarget().update(order, data)
+        self.assertEquals(result.attributes, {u"あ": "v2"})
 
     def test_update_drop_item(self):
         import transaction
 
-        data = {"k": "v"}
-        self._getTarget().update(self.order, data)
+        data = {u"あ": "v"}
+        self._getTarget().update(self.order, data, encoding="utf-8")
         transaction.commit()
         
         order = self.refreshed_order()
-        data = {"k": ""}
+        data = {u"あ": ""}
         result = self._getTarget().update(order, data, blank_value="")
         self.assertEquals(result.attributes, {})
