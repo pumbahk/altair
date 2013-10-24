@@ -208,63 +208,6 @@ Seat.prototype.selectable = function Seat_selectable() {
     this.parent.callbacks.selectable(this.parent, this);
 };
 
-var SeatAdjacencies = exports.SeatAdjacencies = function SeatAdjacencies(parent) {
-  this.tbl = [];
-  this.src = parent.dataSource.seatAdjacencies;
-  this.availableAdjacencies = parent.availableAdjacencies;
-  this.callbacks = parent.callbacks;
-};
-
-SeatAdjacencies.prototype.getCandidates = function SeatAdjacencies_getCandidates(id, length, next, error) {
-  if (length == 1)
-    return next([[id]]);
-
-  var tbl = this.tbl[length];
-  if (tbl !== void(0)) {
-    next(tbl[id] || []);
-    return;
-  }
-  this.callbacks.loadstart && this.callbacks.loadstart('seatAdjacencies');
-  var self = this;
-  this.src(function (data) {
-    var _data;
-    if (data === void(0) || (_data = data[length]) === void(0)) {
-      error("Invalid adjacency data");
-      return;
-    }
-    tbl = self.tbl[length] = self.convertToTable(length, _data);
-    next(tbl[id] || []);
-  }, error, length);
-};
-
-SeatAdjacencies.prototype.convertToTable = function SeatAdjacencies_convertToTable(len, src) {
-  var rt = {};
-
-  for (var i = 0, l = src.length; i < l; i++) {
-    // sort by string.
-    src[i] = src[i].sort();
-    for (var j = 0;j < len;j++) {
-      var id  =  src[i][j];
-      if (!rt[id]) rt[id] = [];
-      rt[id].push(src[i]);
-    }
-  }
-
-  // sort by string-array.
-  for (var i in rt) rt[i].sort().reverse();
-
-  return rt;
-};
-
-/*
-// test code
-// ad == ad2
-
-var ad = new SeatAdjacencies({"3": [["A1", "A2", "A3"], ["A2", "A3", "A4"], ["A3", "A4", "A5"], ["A4", "A5", "A6"]]});
-var ad2 = new SeatAdjacencies({"3": [["A1", "A3", "A2"], ["A2", "A3", "A4"], ["A4", "A3", "A5"], ["A6", "A5", "A4"]]});
-console.log(ad);
-console.log(ad2);
-*/
 /*
  * vim: sts=2 sw=2 ts=2 et
  */

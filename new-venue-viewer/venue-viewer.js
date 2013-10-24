@@ -1,6 +1,6 @@
 (function () {
 var __LIBS__ = {};
-__LIBS__['nEUOZ7E5AS2T9M8Y'] = (function (exports) { (function () { 
+__LIBS__['XCS5N6NCN3SV63MZ'] = (function (exports) { (function () { 
 
 /************** util.js **************/
 exports.eventKey = function Util_eventKey(e) {
@@ -127,7 +127,7 @@ exports.makeHitTester = function Util_makeHitTester(a) {
   }
 };
  })(); return exports; })({});
-__LIBS__['h4MHCX9F06FMJVWY'] = (function (exports) { (function () { 
+__LIBS__['AQC0V13W9HM71XTS'] = (function (exports) { (function () { 
 
 /************** CONF.js **************/
 exports.DEFAULT = {
@@ -182,11 +182,11 @@ exports.DEFAULT = {
   }
 };
  })(); return exports; })({});
-__LIBS__['Z98P0DIL5_JRZLA9'] = (function (exports) { (function () { 
+__LIBS__['JN7JK3ONNBVOIB5_'] = (function (exports) { (function () { 
 
 /************** seat.js **************/
-var util = __LIBS__['nEUOZ7E5AS2T9M8Y'];
-var CONF = __LIBS__['h4MHCX9F06FMJVWY'];
+var util = __LIBS__['XCS5N6NCN3SV63MZ'];
+var CONF = __LIBS__['AQC0V13W9HM71XTS'];
 
 function clone(obj) {
   return $.extend({}, obj);
@@ -395,63 +395,6 @@ Seat.prototype.selectable = function Seat_selectable() {
     this.parent.callbacks.selectable(this.parent, this);
 };
 
-var SeatAdjacencies = exports.SeatAdjacencies = function SeatAdjacencies(parent) {
-  this.tbl = [];
-  this.src = parent.dataSource.seatAdjacencies;
-  this.availableAdjacencies = parent.availableAdjacencies;
-  this.callbacks = parent.callbacks;
-};
-
-SeatAdjacencies.prototype.getCandidates = function SeatAdjacencies_getCandidates(id, length, next, error) {
-  if (length == 1)
-    return next([[id]]);
-
-  var tbl = this.tbl[length];
-  if (tbl !== void(0)) {
-    next(tbl[id] || []);
-    return;
-  }
-  this.callbacks.loadstart && this.callbacks.loadstart('seatAdjacencies');
-  var self = this;
-  this.src(function (data) {
-    var _data;
-    if (data === void(0) || (_data = data[length]) === void(0)) {
-      error("Invalid adjacency data");
-      return;
-    }
-    tbl = self.tbl[length] = self.convertToTable(length, _data);
-    next(tbl[id] || []);
-  }, error, length);
-};
-
-SeatAdjacencies.prototype.convertToTable = function SeatAdjacencies_convertToTable(len, src) {
-  var rt = {};
-
-  for (var i = 0, l = src.length; i < l; i++) {
-    // sort by string.
-    src[i] = src[i].sort();
-    for (var j = 0;j < len;j++) {
-      var id  =  src[i][j];
-      if (!rt[id]) rt[id] = [];
-      rt[id].push(src[i]);
-    }
-  }
-
-  // sort by string-array.
-  for (var i in rt) rt[i].sort().reverse();
-
-  return rt;
-};
-
-/*
-// test code
-// ad == ad2
-
-var ad = new SeatAdjacencies({"3": [["A1", "A2", "A3"], ["A2", "A3", "A4"], ["A3", "A4", "A5"], ["A4", "A5", "A6"]]});
-var ad2 = new SeatAdjacencies({"3": [["A1", "A3", "A2"], ["A2", "A3", "A4"], ["A4", "A3", "A5"], ["A6", "A5", "A4"]]});
-console.log(ad);
-console.log(ad2);
-*/
 /*
  * vim: sts=2 sw=2 ts=2 et
  */
@@ -1105,28 +1048,29 @@ function parseTransform(transform_str) {
     throw new Error('invalid transform function: ' + f);
 }
 
-  var CONF = __LIBS__['h4MHCX9F06FMJVWY'];
-  var seat = __LIBS__['Z98P0DIL5_JRZLA9'];
-  var util = __LIBS__['nEUOZ7E5AS2T9M8Y'];
+  var CONF = __LIBS__['AQC0V13W9HM71XTS'];
+  var seat = __LIBS__['JN7JK3ONNBVOIB5_'];
+  var util = __LIBS__['XCS5N6NCN3SV63MZ'];
 
   var VenueViewer = _class("VenueViewer", {
 
     props: {
       canvas: null,
       callbacks: {
-        uimodeselect: null,
-        load: null,
-        loadPartStart: null,
-        loadPartEnd: null,
-        loadAbort: null,
-        click: null,
-        selectable: null,
-        select: null,
-        pageChanging: null,
-        message: null,
-        messageBoard: null,
-        zoomRatioChanging: null,
-        zoomRatioChange: null
+        uimodeselect: function () {},
+        load: function () {},
+        loadPartStart: function () {},
+        loadPartEnd: function () {},
+        loadAbort: function () {},
+        click: function () {},
+        selectable: function () {},
+        select: function () {},
+        pageChanging: function () {},
+        message: function () {},
+        messageBoard: function () {},
+        zoomRatioChanging: function () {},
+        zoomRatioChange: function () {},
+        queryAdjacency: null
       },
       dataSource: null,
       zoomRatio: CONF.DEFAULT.ZOOM_RATIO,
@@ -1134,7 +1078,6 @@ function parseTransform(transform_str) {
       dragging: false,
       startPos: { x: 0, y: 0 },
       drawable: null,
-      availableAdjacencies: [ 1 ],
       overlayShapes: {},
       shift: false,
       keyEvents: null,
@@ -1170,9 +1113,9 @@ function parseTransform(transform_str) {
       init: function VenueViewer_init(canvas, options) {
         this.canvas = canvas;
         this.stockTypes = null;
-        if (options.callbacks) {
-          for (var k in this.callbacks)
-            this.callbacks[k] = options.callbacks[k] || function () {};
+        for (var k in this.callbacks) {
+          if (options.callbacks[k])
+            this.callbacks[k] = options.callbacks[k];
         }
         this.dataSource = options.dataSource;
         if (options.zoomRatio) zoom(options.zoomRatio);
@@ -1205,7 +1148,6 @@ function parseTransform(transform_str) {
 
       load: function VenueViewer_load() {
         this.loading = true;
-        this.seatAdjacencies = null;
         var self = this;
 
         self.callbacks.loadPartStart.call(self, self, 'pages');
@@ -1243,14 +1185,6 @@ function parseTransform(transform_str) {
               }
               self.loading = true;
               self.callbacks.loadPartEnd.call(self, self, 'info');
-              if (!'available_adjacencies' in data) {
-                self.callbacks.message.call(self, "Invalid data");
-                self.loading = false;
-                return;
-              }
-              self.availableAdjacencies = data.available_adjacencies;
-              self.seatAdjacencies = new seat.SeatAdjacencies(self);
-
               if (self.currentPage) {
                 self.loadDrawing(self.currentPage, function () {
                   self.callbacks.load.call(self, self);
@@ -1304,7 +1238,6 @@ function parseTransform(transform_str) {
           self.seats = null;
           self.selection = null;
           self.highlighted = null;
-          self.availableAdjacencies = [1];
           self.shapes = null;
           self.small_texts = [ ];
           self.link_pairs = null;
@@ -1932,7 +1865,7 @@ function parseTransform(transform_str) {
             var seat_ = seats[id] = new seat.Seat(id, seatMeta[id], self, {
               mouseover: function(evt) {
                 self.callbacks.messageBoard.up.call(self, self.seatTitles[this.id]);
-                self.seatAdjacencies.getCandidates(this.id, self.adjacencyLength(), function (candidates) {
+                self.queryAdjacency(this.id, self.adjacencyLength(), function (candidates) {
                   if (candidates.length == 0)
                     return;
                   var candidate = null;
@@ -2162,6 +2095,12 @@ function parseTransform(transform_str) {
             this.small_texts[i].visibility(false);
           this._smallTextsShown = false;
         }
+      },
+
+      queryAdjacency: function VenueViewer_queryAdjacency(id, adjacency, success, failure) {
+        if (this.callbacks.queryAdjacency)
+          return this.callbacks.queryAdjacency(id, adjacency, success, failure);
+        success([[id]]);
       }
     }
   });
@@ -2222,7 +2161,6 @@ function parseTransform(transform_str) {
             [ 'seats', 'seats' ],
             [ 'areas', 'areas' ],
             [ 'info', 'info' ],
-            [ 'seatAdjacencies', 'seat_adjacencies' ],
             [ 'pages', 'pages' ]
           ],
           function(n, k) {

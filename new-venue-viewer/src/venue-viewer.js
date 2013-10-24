@@ -12,19 +12,20 @@
     props: {
       canvas: null,
       callbacks: {
-        uimodeselect: null,
-        load: null,
-        loadPartStart: null,
-        loadPartEnd: null,
-        loadAbort: null,
-        click: null,
-        selectable: null,
-        select: null,
-        pageChanging: null,
-        message: null,
-        messageBoard: null,
-        zoomRatioChanging: null,
-        zoomRatioChange: null
+        uimodeselect: function () {},
+        load: function () {},
+        loadPartStart: function () {},
+        loadPartEnd: function () {},
+        loadAbort: function () {},
+        click: function () {},
+        selectable: function () {},
+        select: function () {},
+        pageChanging: function () {},
+        message: function () {},
+        messageBoard: function () {},
+        zoomRatioChanging: function () {},
+        zoomRatioChange: function () {},
+        queryAdjacency: null
       },
       dataSource: null,
       zoomRatio: CONF.DEFAULT.ZOOM_RATIO,
@@ -32,7 +33,6 @@
       dragging: false,
       startPos: { x: 0, y: 0 },
       drawable: null,
-      availableAdjacencies: [ 1 ],
       overlayShapes: {},
       shift: false,
       keyEvents: null,
@@ -68,9 +68,9 @@
       init: function VenueViewer_init(canvas, options) {
         this.canvas = canvas;
         this.stockTypes = null;
-        if (options.callbacks) {
-          for (var k in this.callbacks)
-            this.callbacks[k] = options.callbacks[k] || function () {};
+        for (var k in this.callbacks) {
+          if (options.callbacks[k])
+            this.callbacks[k] = options.callbacks[k];
         }
         this.dataSource = options.dataSource;
         if (options.zoomRatio) zoom(options.zoomRatio);
@@ -103,7 +103,6 @@
 
       load: function VenueViewer_load() {
         this.loading = true;
-        this.seatAdjacencies = null;
         var self = this;
 
         self.callbacks.loadPartStart.call(self, self, 'pages');
@@ -141,14 +140,6 @@
               }
               self.loading = true;
               self.callbacks.loadPartEnd.call(self, self, 'info');
-              if (!'available_adjacencies' in data) {
-                self.callbacks.message.call(self, "Invalid data");
-                self.loading = false;
-                return;
-              }
-              self.availableAdjacencies = data.available_adjacencies;
-              self.seatAdjacencies = new seat.SeatAdjacencies(self);
-
               if (self.currentPage) {
                 self.loadDrawing(self.currentPage, function () {
                   self.callbacks.load.call(self, self);
@@ -202,7 +193,6 @@
           self.seats = null;
           self.selection = null;
           self.highlighted = null;
-          self.availableAdjacencies = [1];
           self.shapes = null;
           self.small_texts = [ ];
           self.link_pairs = null;
@@ -830,7 +820,7 @@
             var seat_ = seats[id] = new seat.Seat(id, seatMeta[id], self, {
               mouseover: function(evt) {
                 self.callbacks.messageBoard.up.call(self, self.seatTitles[this.id]);
-                self.seatAdjacencies.getCandidates(this.id, self.adjacencyLength(), function (candidates) {
+                self.queryAdjacency(this.id, self.adjacencyLength(), function (candidates) {
                   if (candidates.length == 0)
                     return;
                   var candidate = null;
@@ -1060,6 +1050,12 @@
             this.small_texts[i].visibility(false);
           this._smallTextsShown = false;
         }
+      },
+
+      queryAdjacency: function VenueViewer_queryAdjacency(id, adjacency, success, failure) {
+        if (this.callbacks.queryAdjacency)
+          return this.callbacks.queryAdjacency(id, adjacency, success, failure);
+        success([[id]]);
       }
     }
   });
@@ -1120,7 +1116,6 @@
             [ 'seats', 'seats' ],
             [ 'areas', 'areas' ],
             [ 'info', 'info' ],
-            [ 'seatAdjacencies', 'seat_adjacencies' ],
             [ 'pages', 'pages' ]
           ],
           function(n, k) {

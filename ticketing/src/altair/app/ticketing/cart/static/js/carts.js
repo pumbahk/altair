@@ -409,6 +409,22 @@ cart.VenuePresenter.prototype = {
             click: function () { self.click.apply(self, arguments); },
             error: function (err) {
                 alert(err);
+            },
+            queryAdjacency: function (id, adjacency, success, failure) {
+                var candidates = null;
+                if (self.seatGroups) {
+                    var seatGroupId = self.seatIdToSeatGroup[id];
+                    if (seatGroupId !== void(0)) {
+                        var seatGroup = self.seatGroups[seatGroupId];
+                        if (seatGroup['seats'].length <= adjacency)
+                            candidates = [seatGroup['seats']];
+                        else
+                            candidates = [];
+                    }
+                }
+                if (candidates === null)
+                    candidates = [[id]];
+                success(candidates);
             }
         };
         this.view = new this.viewType({
@@ -453,6 +469,7 @@ cart.VenuePresenter.prototype = {
             if (self.view.currentDataSource._reset !== void(0))
                 self.view.currentDataSource._reset();
             this.view.currentViewer.venueviewer('loadSeats', function() {
+                self.view.setAdjacency(self.orderFormPresenter.quantity_to_select);
                 self.view.render();
                 self.view.currentDataSource.seatGroups(function (data) {
                     self.seatGroups = data;
@@ -482,29 +499,25 @@ cart.VenuePresenter.prototype = {
     click: function (viewer, highlighted) {
         // クリック位置から、座席選択をする
         var self = this;
+        var seatsToSelect = {};
         $.each(highlighted, function (id, seat) {
             var seatGroupId = self.seatIdToSeatGroup[id];
-            var seatsInGroup = null;
+            var seatsInGroup = [id];
             if (seatGroupId !== void(0))
                 seatsInGroup = self.seatGroups[seatGroupId]['seats'];
+            for (var i = seatsInGroup.length; --i >= 0; )
+                seatsToSelect[seatsInGroup[i]] = true;
+        });
+
+        for (var id in seatsToSelect)
+            seatsToSelect[id] = viewer.seats[id];
+
+        $.each(seatsToSelect, function (id, seat) {
             if (seat.selected()) {
-                if (seatsInGroup) {
-                    for (var i = seatsInGroup.length; --i >= 0; )
-                        viewer.seats[seatsInGroup[i]].selected(false);
-                } else {
-                    seat.selected(false);
-                }
+                seat.selected(false);
             } else {
-                if (seatsInGroup) {
-                    console.log(viewer.selectionCount + seatsInGroup.length, self.orderFormPresenter.quantity_to_select);
-                    if (viewer.selectionCount + seatsInGroup.length <= self.orderFormPresenter.quantity_to_select) {
-                        for (var i = seatsInGroup.length; --i >= 0; )
-                            viewer.seats[seatsInGroup[i]].selected(true);
-                    }
-                } else {
-                    if (viewer.selectionCount < self.orderFormPresenter.quantity_to_select)
-                        seat.selected(true);
-                }
+                if (viewer.selectionCount < self.orderFormPresenter.quantity_to_select)
+                    seat.selected(true);
             }
         });
     }
@@ -1068,6 +1081,9 @@ cart.VenueView = Backbone.View.extend({
                 'position': 'absolute'
             })
             .appendTo(document.body);
+    },
+    setAdjacency: function (adjacency) {
+        this.currentViewer.venueviewer('adjacency', adjacency);
     },
     getChoices: function () {
         var selection = this.currentViewer.venueviewer('selection');
