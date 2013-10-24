@@ -2793,6 +2793,30 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 def no_filter(value):
     return value
 
+class AttributesManager(object):
+    def __init__(self, attribute_name, association_name, key_name, value_name):
+        self.attribute_name = attribute_name
+        self.association_name = association_name
+        self.key_name = key_name
+        self.value_name = value_name
+
+    def update(self, parent, params, blank_value=""):
+        obj_map =  getattr(parent, self.attribute_name)
+        association = getattr(parent, self.association_name)
+        for k, v in params.items():
+            if k in obj_map:
+                if v == blank_value:
+                    del association[k]
+                else:
+                    setattr(obj_map[k], self.value_name, v)
+            else:
+                if v != blank_value:
+                    association[k] = v
+        return parent
+
+OrderAttributeManager = AttributesManager("_attributes", "attributes", "name", "value")        
+OrderedProductItemAttributeManager = AttributesManager("_attributes", "attributes", "name", "value")        
+
 class OrderAttribute(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__   = "OrderAttribute"
     order_id  = Column(Identifier, ForeignKey('Order.id'), primary_key=True, nullable=False)
