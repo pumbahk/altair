@@ -1101,7 +1101,10 @@ class OrderDetailView(BaseView):
                 r["preview_type"] = preview_type
                 r.update(drawing=svg)
                 results.append(r)
-        return {"results": results, "names": names}
+
+        ticket_dicts = [{"name": t.name, "id": t.id, "url": self.request.route_path("events.tickets.boundtickets.show", event_id=t.event_id, id=t.id)}
+                        for t in tickets]
+        return {"results": results, "names": names, "ticket_dicts": ticket_dicts}
 
     @view_config(route_name="orders.memo_on_order", request_method="POST", renderer="json")
     def edit_memo_on_order(self):
