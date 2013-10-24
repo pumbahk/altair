@@ -89,18 +89,20 @@ Seat.prototype.attach = function Seat_attach(shape) {
   this.shape = shape;
   this.originalStyle = this.defaultStyle();
   this.refresh();
-  shape.addEvent(this.events);
+  if (shape)
+    shape.addEvent(this.events);
 };
 
 Seat.prototype.detach = function Seat_detach(shape) {
-  if (this.shape) {
-    if (this.label) {
-      this.parent.drawable.erase(this.label);
-      this.label = null;
-    }
-    this.shape.removeEvent();
-    this.shape = null;
+  if (!this.shape)
+    return;
+
+  if (this.label) {
+    this.parent.drawable.erase(this.label);
+    this.label = null;
   }
+  this.shape.removeEvent();
+  this.shape = null;
 };
 
 Seat.prototype.stylize = function Seat_stylize() {

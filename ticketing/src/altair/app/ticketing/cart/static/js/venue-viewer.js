@@ -1,6 +1,6 @@
 (function () {
 var __LIBS__ = {};
-__LIBS__['g67FQ8Q3A0ZQ1J30'] = (function (exports) { (function () { 
+__LIBS__['nEUOZ7E5AS2T9M8Y'] = (function (exports) { (function () { 
 
 /************** util.js **************/
 exports.eventKey = function Util_eventKey(e) {
@@ -127,7 +127,7 @@ exports.makeHitTester = function Util_makeHitTester(a) {
   }
 };
  })(); return exports; })({});
-__LIBS__['t9_6NQA1XI04Q9O4'] = (function (exports) { (function () { 
+__LIBS__['h4MHCX9F06FMJVWY'] = (function (exports) { (function () { 
 
 /************** CONF.js **************/
 exports.DEFAULT = {
@@ -182,11 +182,11 @@ exports.DEFAULT = {
   }
 };
  })(); return exports; })({});
-__LIBS__['nL6W2CKR5I_BJ8TJ'] = (function (exports) { (function () { 
+__LIBS__['Z98P0DIL5_JRZLA9'] = (function (exports) { (function () { 
 
 /************** seat.js **************/
-var util = __LIBS__['g67FQ8Q3A0ZQ1J30'];
-var CONF = __LIBS__['t9_6NQA1XI04Q9O4'];
+var util = __LIBS__['nEUOZ7E5AS2T9M8Y'];
+var CONF = __LIBS__['h4MHCX9F06FMJVWY'];
 
 function clone(obj) {
   return $.extend({}, obj);
@@ -276,18 +276,20 @@ Seat.prototype.attach = function Seat_attach(shape) {
   this.shape = shape;
   this.originalStyle = this.defaultStyle();
   this.refresh();
-  shape.addEvent(this.events);
+  if (shape)
+    shape.addEvent(this.events);
 };
 
 Seat.prototype.detach = function Seat_detach(shape) {
-  if (this.shape) {
-    if (this.label) {
-      this.parent.drawable.erase(this.label);
-      this.label = null;
-    }
-    this.shape.removeEvent();
-    this.shape = null;
+  if (!this.shape)
+    return;
+
+  if (this.label) {
+    this.parent.drawable.erase(this.label);
+    this.label = null;
   }
+  this.shape.removeEvent();
+  this.shape = null;
 };
 
 Seat.prototype.stylize = function Seat_stylize() {
@@ -1103,9 +1105,9 @@ function parseTransform(transform_str) {
     throw new Error('invalid transform function: ' + f);
 }
 
-  var CONF = __LIBS__['t9_6NQA1XI04Q9O4'];
-  var seat = __LIBS__['nL6W2CKR5I_BJ8TJ'];
-  var util = __LIBS__['g67FQ8Q3A0ZQ1J30'];
+  var CONF = __LIBS__['h4MHCX9F06FMJVWY'];
+  var seat = __LIBS__['Z98P0DIL5_JRZLA9'];
+  var util = __LIBS__['nEUOZ7E5AS2T9M8Y'];
 
   var VenueViewer = _class("VenueViewer", {
 
