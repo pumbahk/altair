@@ -4,8 +4,8 @@ from webob.multidict import MultiDict
 
 class FormMemoAttributeFormTests(unittest.TestCase):
     def _getTarget(self):
-        from altair.app.ticketing.orders.forms import OrderAttributesEditFormFactory
-        return OrderAttributesEditFormFactory
+        from altair.app.ticketing.orders.forms import OrderMemoEditFormFactory
+        return OrderMemoEditFormFactory
 
     def test_render(self):
         target = self._getTarget()

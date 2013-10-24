@@ -33,7 +33,7 @@ from altair.app.ticketing.orders.forms import (
     OrderForm,
     OrderReserveForm,
     OrderRefundForm,
-    OrderAttributesEditFormFactory, 
+    OrderMemoEditFormFactory, 
     ClientOptionalForm,
  )
 from .enqueue import (
@@ -115,7 +115,7 @@ class OrderShowFormProvider(object):
         return OrderRefundForm(MultiDict(payment_method_id=order.payment_delivery_pair.payment_method.id), organization_id=order.organization_id)
 
     def get_order_edit_attribute(self):
-        return OrderAttributesEditFormFactory(3)()
+        return OrderMemoEditFormFactory(3)()
 
 class OrderResource(TicketingAdminResource):
     @reify

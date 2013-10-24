@@ -59,7 +59,7 @@ from altair.app.ticketing.orders.forms import (OrderForm, OrderSearchForm, Order
                                     PerformanceSearchForm, OrderReserveForm, OrderRefundForm, ClientOptionalForm,
                                     SalesSegmentGroupSearchForm, PreviewTicketSelectForm, CartSearchForm, 
                                                )
-from altair.app.ticketing.orders.forms import OrderAttributesEditFormFactory
+from altair.app.ticketing.orders.forms import OrderMemoEditFormFactory
 from altair.app.ticketing.views import BaseView
 from altair.app.ticketing.fanstatic import with_bootstrap
 from altair.app.ticketing.orders.events import notify_order_canceled
@@ -1115,7 +1115,7 @@ class OrderDetailView(BaseView):
                 'message':u'不正なデータです',
             }))
 
-        f = OrderAttributesEditFormFactory(3)(MultiDict(self.request.json_body))
+        f = OrderMemoEditFormFactory(3)(MultiDict(self.request.json_body))
         if not f.validate():
             raise HTTPBadRequest(body=json.dumps({
                 'message':f.get_error_messages(), 
@@ -1404,7 +1404,7 @@ class OrdersReserveView(BaseView):
         return {
             'seats':seats,
             'form':form_reserve,
-            'form_order_edit_attribute': OrderAttributesEditFormFactory(3)(), 
+            'form_order_edit_attribute': OrderMemoEditFormFactory(3)(), 
             'performance':performance,
         }
 
@@ -1424,7 +1424,7 @@ class OrdersReserveView(BaseView):
         return {
             'seats':selected_seats,
             'form':f,
-            'form_order_edit_attribute': OrderAttributesEditFormFactory(3)(post_data), 
+            'form_order_edit_attribute': OrderMemoEditFormFactory(3)(post_data), 
             'performance':performance,
         }
 
@@ -1450,7 +1450,7 @@ class OrdersReserveView(BaseView):
                 raise ValidationError(reduce(lambda a,b: a+b, f.errors.values(), []))
 
             ## memo
-            form_order_edit_attribute = OrderAttributesEditFormFactory(3)(post_data)
+            form_order_edit_attribute = OrderMemoEditFormFactory(3)(post_data)
             if not form_order_edit_attribute.validate():
                 raise ValidationError(form_order_edit_attribute.get_error_messages())
 
@@ -1554,7 +1554,7 @@ class OrdersReserveView(BaseView):
                     order.paid_at = datetime.now()
 
             ## memo
-            form_order_edit_attribute = OrderAttributesEditFormFactory(3)(post_data)
+            form_order_edit_attribute = OrderMemoEditFormFactory(3)(post_data)
             if not form_order_edit_attribute.validate():
                 raise HTTPBadRequest(body=json.dumps({
                     "message": u"文言・メモの設定でエラーが発生しました",
