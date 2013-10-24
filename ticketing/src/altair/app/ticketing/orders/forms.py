@@ -389,6 +389,15 @@ class OrderRefundSearchForm(OrderSearchForm):
         validators=[Optional()],
     )
 
+    def validate(self):
+        status = super(type(self), self).validate()
+        if status:
+            # 決済方法か引取方法のいずれかは必須
+            if not self.payment_method.data and not self.delivery_method.data:
+                self.payment_method.errors.append(u'決済方法か引取方法のいずれかを選択してください')
+                status = False
+        return status
+
 class PerformanceSearchForm(Form):
     event_id = HiddenField(
         validators=[Optional()],
@@ -607,9 +616,7 @@ class OrderRefundForm(Form):
         if organization_id:
             self.payment_method_id.choices = [(int(pm.id), pm.name) for pm in PaymentMethod.filter_by_organization_id(organization_id)]
 
-        settlement_payment_method_id = kwargs.get('settlement_payment_method_id')
-        if settlement_payment_method_id:
-            self.settlement_payment_method_id = settlement_payment_method_id
+        self.orders = kwargs.get('orders', [])
 
     def _get_translations(self):
         return Translations()
@@ -675,15 +682,24 @@ class OrderRefundForm(Form):
     )
 
     def validate_payment_method_id(form, field):
-        if field.data and hasattr(form, 'settlement_payment_method_id'):
-            refund_pm = PaymentMethod.get(field.data)
-            settlement_pm = PaymentMethod.get(form.settlement_payment_method_id)
-            if refund_pm.payment_plugin_id == settlement_pm.payment_plugin_id:
-                # 決済と払戻が同じ方法ならOK
-                pass
-            elif refund_pm.payment_plugin_id not in [plugins.SEJ_PAYMENT_PLUGIN_ID]:
-                # 決済と払戻が別でもよいのは、払戻方法が 銀行振込 コンビニ決済 のケースのみ
-                raise ValidationError(u'指定された払戻方法は、この決済方法では選択できません')
+        refund_pm = PaymentMethod.get(field.data)
+        error_msg = u'指定された払戻方法は、この決済引取方法では選択できません'
+        for refund_order in form.orders:
+            settlement_payment_plugin_id = refund_order.payment_delivery_pair.payment_method.payment_plugin_id
+            settlement_delivery_plugin_id = refund_order.payment_delivery_pair.delivery_method.delivery_plugin_id
+            if settlement_delivery_plugin_id == plugins.SEJ_DELIVERY_PLUGIN_ID and refund_order.is_issued():
+                # 引取方法が「コンビニ」で発券済みなら「コンビニ払戻」のみ可能
+                if refund_pm.payment_plugin_id != plugins.SEJ_PAYMENT_PLUGIN_ID:
+                    raise ValidationError('%s: %s(%s)' % (error_msg, u'既にコンビニ発券済なのでコンビニ払戻を選択してください', refund_order.order_no))
+            elif refund_pm.payment_plugin_id == plugins.SEJ_PAYMENT_PLUGIN_ID and settlement_delivery_plugin_id != plugins.SEJ_DELIVERY_PLUGIN_ID:
+                # コンビニ引取でないなら「コンビニ払戻」は不可
+                raise ValidationError('%s: %s(%s)' % (error_msg, u'コンビニ引取ではありません', refund_order.order_no))
+            elif refund_pm.payment_plugin_id == settlement_payment_plugin_id:
+                # 決済方法 = 払戻方法ならOK
+                continue
+            elif refund_pm.payment_plugin_id not in [plugins.SEJ_PAYMENT_PLUGIN_ID, plugins.RESERVE_NUMBER_PAYMENT_PLUGIN_ID]:
+                # 決済と払戻が別でもよいのは、払戻方法が 銀行振込 コンビニ払戻 のケースのみ
+                raise ValidationError('%s: (%s)' % (error_msg, refund_order.order_no))
 
     def validate(self):
         status = super(type(self), self).validate()

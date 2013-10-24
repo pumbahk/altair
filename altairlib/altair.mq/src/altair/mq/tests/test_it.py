@@ -6,6 +6,7 @@ from pyramid import testing
 class TestIt(unittest.TestCase):
     
     settings = {
+        'altair.mq': '..publisher.pika_publisher_factory, ..consumer.pika_client_factory',
         'altair.mq.url': 'amqp://guest:guest@localhost:5672/%2F',
     }
     def setUp(self):

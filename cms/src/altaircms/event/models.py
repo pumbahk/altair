@@ -41,6 +41,7 @@ class Event(BaseOriginalMixin, WithOrganizationMixin, Base):
     ticket_pickup = sa.Column(sa.UnicodeText, doc=u"チケット引き取り方法")
     ticket_payment = sa.Column(sa.UnicodeText, doc=u"支払い方法")
     code = sa.Column(sa.String(12), doc=u"event code (backend)")
+    in_preparation = sa.Column(sa.Boolean, default=False)
 
     @reify
     def organization(self):

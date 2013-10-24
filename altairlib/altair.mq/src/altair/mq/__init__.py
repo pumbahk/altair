@@ -1,9 +1,7 @@
 # This package may contain traces of nuts
 import logging
-import pika
-from . import consumer
-from .interfaces import IConsumerFactory, ITask, IConsumer
-
+from .interfaces import IPublisherConsumerFactory, ITask, IConsumer, IPublisher
+from pyramid.config import ConfigurationError
 
 logger = logging.getLogger(__name__)
 
@@ -39,10 +37,12 @@ def add_task(config, task,
              name,
              root_factory=None,
              queue="test",
+             consumer="",
              durable=True, 
              exclusive=False, 
              auto_delete=False,
              nowait=False):
+    from .consumer import TaskMapper
     _root_factory = root_factory
     logger.info("{name} root factory = {0}".format(root_factory, name=name))
     if root_factory is None:
@@ -53,19 +53,19 @@ def add_task(config, task,
     logger.info("{name} root factory = {0}".format(root_factory, name=name))
 
     def register():
-        pika_consumer = get_consumer(config)
+        pika_consumer = get_consumer(config.registry, consumer)
         queue_settings = QueueSettings(queue=queue,
                                        durable=durable,
                                        exclusive=exclusive,
                                        auto_delete=auto_delete,
                                        nowait=nowait)
         if pika_consumer is None:
-            return
+            raise ConfigurationError("no such consumer: %s" % (consumer or "(default)"))
 
-        pika_consumer.add_task(consumer.TaskMapper(task=task,
-                                                   name=name,
-                                                   root_factory=root_factory,
-                                                   queue_settings=queue_settings))
+        pika_consumer.add_task(TaskMapper(task=task,
+                                          name=name,
+                                          root_factory=root_factory,
+                                          queue_settings=queue_settings))
         logger.info("_root_factory = {0}".format(_root_factory))
         logger.info("register task {name} {root_factory} {queue_settings}".format(name=name,
                                                                    root_factory=root_factory,
@@ -76,27 +76,67 @@ def add_task(config, task,
                   register)
 
 
-def get_consumer(config):
-    reg = config.registry
-    consumer = reg.queryUtility(IConsumer)
+def get_consumer(request_or_registry, name=''):
+    if hasattr(request_or_registry, 'registry'):
+        reg = request_or_registry.registry
+    else:
+        reg = request_or_registry
+    return reg.queryUtility(IConsumer, name)
 
-    if consumer is None:
-        factory = reg.queryUtility(IConsumerFactory)
-        if factory is None:
-            return None
-        consumer = factory()
-        reg.registerUtility(consumer, IConsumer)
+def get_publisher(request_or_registry, name=''):
+    if hasattr(request_or_registry, 'registry'):
+        reg = request_or_registry.registry
+    else:
+        reg = request_or_registry
+    return reg.queryUtility(IPublisher, name)
 
-    return consumer
+def add_publisher_consumer(config, name, config_prefix, dotted_names=None):
+    if dotted_names is None:
+        import re
+        dotted_names = [c for c in re.split(r'(?:\s*,\s*|\s+)', config.registry.settings[config_prefix].strip()) if c]
+
+    publisher = consumer = None
+
+    for dotted_name in dotted_names:
+        factory = config.maybe_dotted(dotted_name)
+        publisher_or_consumer = factory(config, config_prefix)
+        if IPublisher.providedBy(publisher_or_consumer):
+            if publisher is not None:
+                raise ConfigurationError('publisher is already defined for %s' % name)
+            publisher = publisher_or_consumer
+        if IConsumer.providedBy(publisher_or_consumer):
+            if consumer is not None:
+                raise ConfigurationError('consumer is already defined for %s' % name)
+            consumer = publisher_or_consumer
+
+    if publisher is not None:
+        config.registry.registerUtility(publisher, IPublisher, name)
+    if consumer is not None:
+        config.registry.registerUtility(consumer, IConsumer, name)
 
 
-
-        
 def includeme(config):
-    url = config.registry.settings['altair.mq.url']
-    parameters = pika.URLParameters(url)
-
-    config.registry.registerUtility(consumer.PikaClientFactory(parameters))
-
-
+    import sys
+    from . import consumer, publisher
     config.add_directive("add_task", add_task)
+    config.add_directive("add_publisher_consumer", add_publisher_consumer)
+
+    try:
+        config.add_publisher_consumer('', __name__, [
+            consumer.pika_client_factory,
+            publisher.pika_publisher_factory
+            ])
+    except:
+        logger.info('failed to configure publisher/worker: %s' % __name__, exc_info=sys.exc_info())
+    try:
+        config.add_publisher_consumer('pika', '%s.pika' % __name__, [
+            consumer.pika_client_factory,
+            publisher.pika_publisher_factory
+            ])
+    except:
+        logger.info('failed to configure publisher/worker: %s' % ('%s.pika' % __name__), exc_info=sys.exc_info())
+    try:
+        config.add_publisher_consumer('local', '%s.local' % __name__, [publisher.locally_dispatching_publisher_consumer_factory])
+    except:
+        logger.warning('failed to configure publisher/worker: %s' % __name__, exc_info=sys.exc_info())
+

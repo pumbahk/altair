@@ -7,6 +7,7 @@ class task_config(object):
     def __init__(self,
                  name="",
                  root_factory=None,
+                 consumer="",
                  queue="",
                  passive=False,
                  durable=True, 
@@ -16,6 +17,7 @@ class task_config(object):
                  arguments=None):
         self.name = name
         self.root_factory = root_factory
+        self.consumer = consumer
         self.queue_settings = QueueSettings(
                  queue=queue,
                  passive=passive, 
@@ -33,6 +35,7 @@ class task_config(object):
                      ob,
                      root_factory=self.root_factory,
                      name=self.name,
+                     consumer=self.consumer,
                      queue=self.queue_settings.queue,
                      durable=self.queue_settings.durable,
                      exclusive=self.queue_settings.exclusive,

@@ -793,10 +793,11 @@ class OrdersRefundConfirmView(BaseView):
             self.request.session.flash(u'払戻対象を選択してください')
             return HTTPFound(location=route_path('orders.refund.checked', self.request))
 
+        orders = Order.query.filter(Order.id.in_(self.checked_orders)).all()
         form_refund = OrderRefundForm(
             self.request.POST,
             organization_id=self.organization_id,
-            settlement_payment_method_id=self.form_search.payment_method.data
+            orders=orders
         )
         if not form_refund.validate():
             return {
@@ -807,7 +808,6 @@ class OrdersRefundConfirmView(BaseView):
             }
 
         # 払戻予約
-        orders = Order.query.filter(Order.id.in_(self.checked_orders)).all()
         refund_param = form_refund.data
         refund_param.update(dict(orders=orders))
         Order.reserve_refund(refund_param)
@@ -903,7 +903,7 @@ class OrderDetailView(BaseView):
         f = OrderRefundForm(
             self.request.POST,
             organization_id=self.context.organization.id,
-            settlement_payment_method_id=order.payment_delivery_pair.payment_method_id
+            orders=[order]
         )
         if f.validate():
             refund_param = f.data
@@ -1934,7 +1934,7 @@ class MailInfoView(BaseView):
         mutil = get_mail_utility(self.request, MailTypeEnum.PurchaseCancelMail)
         message = mutil.build_message(self.request, order)
         mail_form = SendingMailForm(subject=message.subject,
-                                    recipient=message.recipients[0],
+                                    recipient=message.recipients[0] if message.recipients else "",
                                     bcc=message.bcc[0] if message.bcc else "")
         performance = order.performance
         return dict(order=order, mail_form=mail_form, performance=performance)

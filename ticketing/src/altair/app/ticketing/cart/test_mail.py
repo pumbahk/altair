@@ -1,6 +1,8 @@
 # -*- coding:utf-8 -*-
 
 """ integreation test
+
+these tests are obsolete, partially?
 """
 
 import unittest

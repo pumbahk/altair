@@ -1,6 +1,10 @@
 # -*- coding:utf-8 -*-
 from zope.interface import Interface, Attribute
 
+class IMailDataStoreGetter(Interface):
+    def __call__(request, subject, mtype):
+        pass
+
 class ITraverser(Interface):
     data = Attribute(u"traversed mail information")
     def visit(target):

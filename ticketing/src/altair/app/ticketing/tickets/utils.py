@@ -2,7 +2,7 @@
 
 from lxml import etree
 from collections import namedtuple
-
+from collections import Counter
 from ..users.models import SexEnum
 
 from .constants import SVG_NAMESPACE, TS_SVG_EXT_NAMESPACE
@@ -18,6 +18,18 @@ from .vars_builder import (
     )
 I = numpy.matrix('1 0 0; 0 1 0; 0 0 1', dtype=numpy.float64)
 
+
+class NumberIssuer(object):
+    def __init__(self):
+        self.counter = Counter()
+
+    def clear(self):
+        self.counter = Counter()
+
+    def __call__(self, k):
+        v = self.counter[k] + 1
+        self.counter[k] = v
+        return v
 
 #b/c
 DictBuilder = TicketDictBuilder

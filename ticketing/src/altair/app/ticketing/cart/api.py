@@ -124,7 +124,7 @@ def get_cart_safe(request, for_update=True):
 
 def recover_cart(request):
     cart = get_cart_safe(request, True)
-    new_cart = Cart.create_from(cart)
+    new_cart = Cart.create_from(request, cart)
     DBSession.flush()
     set_cart(request, new_cart)
     return cart

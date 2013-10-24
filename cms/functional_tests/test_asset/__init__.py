@@ -260,6 +260,8 @@ class AssetFunctionalMovieTests(AppFunctionalTests):
             form.set("placeholder", "")
             form.set("title", asset_title)
             form.set("tags", "tag-is-updated")
+            form.set("width", "300")
+            form.set("height", "")
             form.set("private_tags", "ptag, ptag2")
 
             form.submit()
@@ -268,6 +270,10 @@ class AssetFunctionalMovieTests(AppFunctionalTests):
             self.assertEqual(self._count_of_movie_asset(), 1)
             updated_asset = self._get_movie_asset_by_title(asset_title)
             self.assertEqual(updated_asset.title, asset_title)
+
+            ## width, heightは数値に指定されていない場合にはNone
+            self.assertEqual(updated_asset.width, 300)
+            self.assertEqual(updated_asset.height, None)
 
             ## 動画は変わらない
             self.assertEqual(updated_asset.filepath, created_asset_filepath)
